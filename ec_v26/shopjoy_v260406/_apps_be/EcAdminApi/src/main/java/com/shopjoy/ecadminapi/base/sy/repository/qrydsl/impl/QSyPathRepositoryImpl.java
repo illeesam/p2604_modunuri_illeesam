@@ -27,19 +27,30 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyPathRepositoryImpl";
-    private static final QSyPath p = QSyPath.syPath;
+    private static final QSyPath a = QSyPath.syPath;
+
+    /* baseSelColumnQuery */
+    private JPAQuery<SyPathDto.Item> baseSelColumnQuery() {
+        return queryFactory
+                .select(Projections.bean(SyPathDto.Item.class,
+                        a.pathId, a.bizCd, a.parentPathId, a.pathLabel, a.sortOrd,
+                        a.useYn, a.pathRemark,
+                        a.regBy, a.regDate, a.updBy, a.updDate
+                ))
+                .from(a);
+    }
 
     /* 키조회 */
     @Override
     public Optional<SyPathDto.Item> selectById(String pathId) {
-        SyPathDto.Item dto = baseQuery().where(p.pathId.eq(pathId)).fetchOne();
+        SyPathDto.Item dto = baseSelColumnQuery().where(a.pathId.eq(pathId)).fetchOne();
         return Optional.ofNullable(dto);
     }
 
     /* 목록조회 */
     @Override
     public List<SyPathDto.Item> selectList(SyPathDto.Request search) {
-        JPAQuery<SyPathDto.Item> query = baseQuery().where(
+        JPAQuery<SyPathDto.Item> query = baseSelColumnQuery().where(
                 baseAndBizCd(search),
                 baseAndUseYn(search),
                 baseAndSearchValue(search)
@@ -62,7 +73,7 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
 
-        JPAQuery<SyPathDto.Item> query = baseQuery().where(
+        JPAQuery<SyPathDto.Item> query = baseSelColumnQuery().where(
                 baseAndBizCd(search),
                 baseAndUseYn(search),
                 baseAndSearchValue(search)
@@ -70,7 +81,7 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
         query = query.orderBy(buildOrder().toArray(OrderSpecifier[]::new));
         List<SyPathDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(p.count()).from(p).where(
+        Long total = queryFactory.select(a.count()).from(a).where(
                 baseAndBizCd(search),
                 baseAndUseYn(search),
                 baseAndSearchValue(search)
@@ -79,18 +90,6 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
         SyPathDto.PageResponse res = new SyPathDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-
-    /* baseQuery */
-    private JPAQuery<SyPathDto.Item> baseQuery() {
-        return queryFactory
-                .select(Projections.bean(SyPathDto.Item.class,
-                        p.pathId, p.bizCd, p.parentPathId, p.pathLabel, p.sortOrd,
-                        p.useYn, p.pathRemark,
-                        p.regBy, p.regDate, p.updBy, p.updDate
-                ))
-                .from(p);
-    }
-
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
@@ -101,13 +100,13 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
     /* bizCd 정확 일치 */
     private BooleanExpression baseAndBizCd(SyPathDto.Request search) {
         return search != null && StringUtils.hasText(search.getBizCd())
-                ? p.bizCd.eq(search.getBizCd()) : null;
+                ? a.bizCd.eq(search.getBizCd()) : null;
     }
 
     /* useYn 정확 일치 */
     private BooleanExpression baseAndUseYn(SyPathDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
-                ? p.useYn.eq(search.getUseYn()) : null;
+                ? a.useYn.eq(search.getUseYn()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
@@ -118,13 +117,13 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",bizCd,", p.bizCd, pattern);
-        or = orLike(or, all, types, ",parentPathId,", p.parentPathId, pattern);
-        or = orLike(or, all, types, ",pathId,", p.pathId, pattern);
-        or = orLike(or, all, types, ",pathLabel,", p.pathLabel, pattern);
-        or = orLike(or, all, types, ",pathRemark,", p.pathRemark, pattern);
-        or = orLike(or, all, types, ",siteId,", p.siteId, pattern);
-        or = orLike(or, all, types, ",useYn,", p.useYn, pattern);
+        or = orLike(or, all, types, ",bizCd,", a.bizCd, pattern);
+        or = orLike(or, all, types, ",parentPathId,", a.parentPathId, pattern);
+        or = orLike(or, all, types, ",pathId,", a.pathId, pattern);
+        or = orLike(or, all, types, ",pathLabel,", a.pathLabel, pattern);
+        or = orLike(or, all, types, ",pathRemark,", a.pathRemark, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",useYn,", a.useYn, pattern);
         return or;
     }
 
@@ -143,32 +142,34 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder() {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
-        orders.add(new OrderSpecifier(Order.ASC, p.sortOrd));
-        orders.add(new OrderSpecifier(Order.ASC, p.pathId));
+        orders.add(new OrderSpecifier(Order.ASC, a.sortOrd));
+        orders.add(new OrderSpecifier(Order.ASC, a.pathId));
         return orders;
     }
 
     /* 수정 */
+
+
     @Override
     public int updateSelective(SyPath entity) {
         if (entity.getPathId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(p);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getBizCd()        != null) { update.set(p.bizCd,        entity.getBizCd());        hasAny = true; }
-        if (entity.getParentPathId() != null) { update.set(p.parentPathId, entity.getParentPathId()); hasAny = true; }
-        if (entity.getPathLabel()    != null) { update.set(p.pathLabel,    entity.getPathLabel());    hasAny = true; }
-        if (entity.getSortOrd()      != null) { update.set(p.sortOrd,      entity.getSortOrd());      hasAny = true; }
-        if (entity.getUseYn()        != null) { update.set(p.useYn,        entity.getUseYn());        hasAny = true; }
-        if (entity.getPathRemark()   != null) { update.set(p.pathRemark,   entity.getPathRemark());   hasAny = true; }
-        if (entity.getUpdBy()        != null) { update.set(p.updBy,        entity.getUpdBy());        hasAny = true; }
+        if (entity.getBizCd()        != null) { update.set(a.bizCd,        entity.getBizCd());        hasAny = true; }
+        if (entity.getParentPathId() != null) { update.set(a.parentPathId, entity.getParentPathId()); hasAny = true; }
+        if (entity.getPathLabel()    != null) { update.set(a.pathLabel,    entity.getPathLabel());    hasAny = true; }
+        if (entity.getSortOrd()      != null) { update.set(a.sortOrd,      entity.getSortOrd());      hasAny = true; }
+        if (entity.getUseYn()        != null) { update.set(a.useYn,        entity.getUseYn());        hasAny = true; }
+        if (entity.getPathRemark()   != null) { update.set(a.pathRemark,   entity.getPathRemark());   hasAny = true; }
+        if (entity.getUpdBy()        != null) { update.set(a.updBy,        entity.getUpdBy());        hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(p.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(p.pathId.eq(entity.getPathId())).execute();
+        long affected = update.where(a.pathId.eq(entity.getPathId())).execute();
         return (int) affected;
     }
 }

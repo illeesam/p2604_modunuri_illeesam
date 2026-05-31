@@ -29,13 +29,26 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdReviewRepositoryImpl";
-    private static final QPdReview r = QPdReview.pdReview;
+    private static final QPdReview a = QPdReview.pdReview;
 
     /** 단건 조회 */
+    private JPAQuery<PdReviewDto.Item> baseSelColumnQuery() {
+        return queryFactory
+                .select(Projections.bean(PdReviewDto.Item.class,
+                        a.reviewId, a.siteId, a.prodId, a.memberId,
+                        a.reviewTitle, a.reviewContent, a.rating,
+                        a.helpfulCnt, a.unhelpfulCnt,
+                        a.reviewStatusCd, a.reviewStatusCdBefore,
+                        a.reviewDate,
+                        a.regBy, a.regDate, a.updBy, a.updDate
+                ))
+                .from(a);
+    }
+
     @Override
     public Optional<PdReviewDto.Item> selectById(String reviewId) {
-        PdReviewDto.Item dto = baseQuery()
-                .where(r.reviewId.eq(reviewId))
+        PdReviewDto.Item dto = baseSelColumnQuery()
+                .where(a.reviewId.eq(reviewId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -45,7 +58,7 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
     public List<PdReviewDto.Item> selectList(PdReviewDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdReviewDto.Item> query = baseQuery().where(
+        JPAQuery<PdReviewDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndReviewId(search),
                 baseAndProdId(search),
@@ -73,7 +86,7 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdReviewDto.Item> query = baseQuery().where(
+        JPAQuery<PdReviewDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndReviewId(search),
                 baseAndProdId(search),
@@ -85,7 +98,7 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
         }
         List<PdReviewDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(r.count()).from(r).where(
+        Long total = queryFactory.select(a.count()).from(a).where(
                 baseAndSiteId(search),
                 baseAndReviewId(search),
                 baseAndProdId(search),
@@ -98,19 +111,6 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
     }
 
     /** 단건/목록/페이지 공용 base query (DTO Item 필드만 매핑) */
-    private JPAQuery<PdReviewDto.Item> baseQuery() {
-        return queryFactory
-                .select(Projections.bean(PdReviewDto.Item.class,
-                        r.reviewId, r.siteId, r.prodId, r.memberId,
-                        r.reviewTitle, r.reviewContent, r.rating,
-                        r.helpfulCnt, r.unhelpfulCnt,
-                        r.reviewStatusCd, r.reviewStatusCdBefore,
-                        r.reviewDate,
-                        r.regBy, r.regDate, r.updBy, r.updDate
-                ))
-                .from(r);
-    }
-
     /** 검색조건 빌드 — Mapper XML pdReviewCond 와 동일 동작 */
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     /* ============================================================
@@ -122,19 +122,19 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(PdReviewDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? r.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* reviewId 정확 일치 */
     private BooleanExpression baseAndReviewId(PdReviewDto.Request search) {
         return search != null && StringUtils.hasText(search.getReviewId())
-                ? r.reviewId.eq(search.getReviewId()) : null;
+                ? a.reviewId.eq(search.getReviewId()) : null;
     }
 
     /* prodId 정확 일치 */
     private BooleanExpression baseAndProdId(PdReviewDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdId())
-                ? r.prodId.eq(search.getProdId()) : null;
+                ? a.prodId.eq(search.getProdId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -147,8 +147,8 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return r.regDate.goe(start).and(r.regDate.lt(endExcl));
-            case "upd_date": return r.updDate.goe(start).and(r.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -161,14 +161,14 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",memberId,", r.memberId, pattern);
-        or = orLike(or, all, types, ",prodId,", r.prodId, pattern);
-        or = orLike(or, all, types, ",reviewContent,", r.reviewContent, pattern);
-        or = orLike(or, all, types, ",reviewId,", r.reviewId, pattern);
-        or = orLike(or, all, types, ",reviewStatusCd,", r.reviewStatusCd, pattern);
-        or = orLike(or, all, types, ",reviewStatusCdBefore,", r.reviewStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",reviewTitle,", r.reviewTitle, pattern);
-        or = orLike(or, all, types, ",siteId,", r.siteId, pattern);
+        or = orLike(or, all, types, ",memberId,", a.memberId, pattern);
+        or = orLike(or, all, types, ",prodId,", a.prodId, pattern);
+        or = orLike(or, all, types, ",reviewContent,", a.reviewContent, pattern);
+        or = orLike(or, all, types, ",reviewId,", a.reviewId, pattern);
+        or = orLike(or, all, types, ",reviewStatusCd,", a.reviewStatusCd, pattern);
+        or = orLike(or, all, types, ",reviewStatusCdBefore,", a.reviewStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",reviewTitle,", a.reviewTitle, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
         return or;
     }
 
@@ -189,8 +189,8 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, r.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, r.reviewId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.reviewId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -201,49 +201,50 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("reviewId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, r.reviewId));
+                    orders.add(new OrderSpecifier(order, a.reviewId));
                 } else if ("reviewTitle".equals(field)) {
-                    orders.add(new OrderSpecifier(order, r.reviewTitle));
+                    orders.add(new OrderSpecifier(order, a.reviewTitle));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, r.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, r.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, r.reviewId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.reviewId));
         }
         return orders;
     }
 
     /** updateSelective — Mapper XML 과 동일한 컬럼셋만 갱신 */
+
     @Override
     public int updateSelective(PdReview entity) {
         if (entity.getReviewId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(r);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getSiteId()               != null) { update.set(r.siteId,               entity.getSiteId());               hasAny = true; }
-        if (entity.getProdId()               != null) { update.set(r.prodId,               entity.getProdId());               hasAny = true; }
-        if (entity.getMemberId()             != null) { update.set(r.memberId,             entity.getMemberId());             hasAny = true; }
-        if (entity.getReviewTitle()          != null) { update.set(r.reviewTitle,          entity.getReviewTitle());          hasAny = true; }
-        if (entity.getReviewContent()        != null) { update.set(r.reviewContent,        entity.getReviewContent());        hasAny = true; }
-        if (entity.getRating()               != null) { update.set(r.rating,               entity.getRating());               hasAny = true; }
-        if (entity.getHelpfulCnt()           != null) { update.set(r.helpfulCnt,           entity.getHelpfulCnt());           hasAny = true; }
-        if (entity.getUnhelpfulCnt()         != null) { update.set(r.unhelpfulCnt,         entity.getUnhelpfulCnt());         hasAny = true; }
-        if (entity.getReviewStatusCd()       != null) { update.set(r.reviewStatusCd,       entity.getReviewStatusCd());       hasAny = true; }
-        if (entity.getReviewStatusCdBefore() != null) { update.set(r.reviewStatusCdBefore, entity.getReviewStatusCdBefore()); hasAny = true; }
-        if (entity.getReviewDate()           != null) { update.set(r.reviewDate,           entity.getReviewDate());           hasAny = true; }
-        if (entity.getUpdBy()                != null) { update.set(r.updBy,                entity.getUpdBy());                hasAny = true; }
+        if (entity.getSiteId()               != null) { update.set(a.siteId,               entity.getSiteId());               hasAny = true; }
+        if (entity.getProdId()               != null) { update.set(a.prodId,               entity.getProdId());               hasAny = true; }
+        if (entity.getMemberId()             != null) { update.set(a.memberId,             entity.getMemberId());             hasAny = true; }
+        if (entity.getReviewTitle()          != null) { update.set(a.reviewTitle,          entity.getReviewTitle());          hasAny = true; }
+        if (entity.getReviewContent()        != null) { update.set(a.reviewContent,        entity.getReviewContent());        hasAny = true; }
+        if (entity.getRating()               != null) { update.set(a.rating,               entity.getRating());               hasAny = true; }
+        if (entity.getHelpfulCnt()           != null) { update.set(a.helpfulCnt,           entity.getHelpfulCnt());           hasAny = true; }
+        if (entity.getUnhelpfulCnt()         != null) { update.set(a.unhelpfulCnt,         entity.getUnhelpfulCnt());         hasAny = true; }
+        if (entity.getReviewStatusCd()       != null) { update.set(a.reviewStatusCd,       entity.getReviewStatusCd());       hasAny = true; }
+        if (entity.getReviewStatusCdBefore() != null) { update.set(a.reviewStatusCdBefore, entity.getReviewStatusCdBefore()); hasAny = true; }
+        if (entity.getReviewDate()           != null) { update.set(a.reviewDate,           entity.getReviewDate());           hasAny = true; }
+        if (entity.getUpdBy()                != null) { update.set(a.updBy,                entity.getUpdBy());                hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(r.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(r.reviewId.eq(entity.getReviewId())).execute();
+        long affected = update.where(a.reviewId.eq(entity.getReviewId())).execute();
         return (int) affected;
     }
 }

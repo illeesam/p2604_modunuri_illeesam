@@ -29,14 +29,28 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyContactRepositoryImpl";
-    private static final QSyContact c = QSyContact.syContact;
+    private static final QSyContact a = QSyContact.syContact;
     private static final QSySite ste = QSySite.sySite;
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+    /* 문의 baseSelColumnQuery */
+    private JPAQuery<SyContactDto.Item> baseSelColumnQuery() {
+        return queryFactory
+                .select(Projections.bean(SyContactDto.Item.class,
+                        a.contactId, a.siteId, a.memberId, a.memberNm, a.categoryCd,
+                        a.contactTitle, a.contactContent, a.contentAttachGrpId, a.contactStatusCd,
+                        a.contactAnswer, a.answerAttachGrpId, a.answerUserId, a.answerDate, a.contactDate,
+                        a.regBy, a.regDate, a.updBy, a.updDate,
+                        ste.siteNm.as("siteNm")
+                ))
+                .from(a)
+                .leftJoin(ste).on(ste.siteId.eq(a.siteId));
+    }
 
     /* 문의 키조회 */
     @Override
     public Optional<SyContactDto.Item> selectById(String contactId) {
-        SyContactDto.Item dto = baseQuery().where(c.contactId.eq(contactId)).fetchOne();
+        SyContactDto.Item dto = baseSelColumnQuery().where(a.contactId.eq(contactId)).fetchOne();
         return Optional.ofNullable(dto);
     }
 
@@ -44,7 +58,7 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
     @Override
     public List<SyContactDto.Item> selectList(SyContactDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyContactDto.Item> query = baseQuery().where(
+        JPAQuery<SyContactDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndContactId(search),
                 baseAndMemberId(search),
@@ -70,7 +84,7 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyContactDto.Item> query = baseQuery().where(
+        JPAQuery<SyContactDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndContactId(search),
                 baseAndMemberId(search),
@@ -80,7 +94,7 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyContactDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(c.count()).from(c).where(
+        Long total = queryFactory.select(a.count()).from(a).where(
                 baseAndSiteId(search),
                 baseAndContactId(search),
                 baseAndMemberId(search),
@@ -91,21 +105,6 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
         SyContactDto.PageResponse res = new SyContactDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-
-    /* 문의 baseQuery */
-    private JPAQuery<SyContactDto.Item> baseQuery() {
-        return queryFactory
-                .select(Projections.bean(SyContactDto.Item.class,
-                        c.contactId, c.siteId, c.memberId, c.memberNm, c.categoryCd,
-                        c.contactTitle, c.contactContent, c.contentAttachGrpId, c.contactStatusCd,
-                        c.contactAnswer, c.answerAttachGrpId, c.answerUserId, c.answerDate, c.contactDate,
-                        c.regBy, c.regDate, c.updBy, c.updDate,
-                        ste.siteNm.as("siteNm")
-                ))
-                .from(c)
-                .leftJoin(ste).on(ste.siteId.eq(c.siteId));
-    }
-
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
@@ -116,25 +115,25 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(SyContactDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? c.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* contactId 정확 일치 */
     private BooleanExpression baseAndContactId(SyContactDto.Request search) {
         return search != null && StringUtils.hasText(search.getContactId())
-                ? c.contactId.eq(search.getContactId()) : null;
+                ? a.contactId.eq(search.getContactId()) : null;
     }
 
     /* memberId 정확 일치 */
     private BooleanExpression baseAndMemberId(SyContactDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberId())
-                ? c.memberId.eq(search.getMemberId()) : null;
+                ? a.memberId.eq(search.getMemberId()) : null;
     }
 
     /* contactStatusCd 정확 일치 */
     private BooleanExpression baseAndStatus(SyContactDto.Request search) {
         return search != null && StringUtils.hasText(search.getStatus())
-                ? c.contactStatusCd.eq(search.getStatus()) : null;
+                ? a.contactStatusCd.eq(search.getStatus()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
@@ -145,18 +144,18 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",answerUserId,", c.answerUserId, pattern);
-        or = orLike(or, all, types, ",contentAttachGrpId,", c.contentAttachGrpId, pattern);
-        or = orLike(or, all, types, ",answerAttachGrpId,", c.answerAttachGrpId, pattern);
-        or = orLike(or, all, types, ",categoryCd,", c.categoryCd, pattern);
-        or = orLike(or, all, types, ",contactAnswer,", c.contactAnswer, pattern);
-        or = orLike(or, all, types, ",contactContent,", c.contactContent, pattern);
-        or = orLike(or, all, types, ",contactId,", c.contactId, pattern);
-        or = orLike(or, all, types, ",contactStatusCd,", c.contactStatusCd, pattern);
-        or = orLike(or, all, types, ",contactTitle,", c.contactTitle, pattern);
-        or = orLike(or, all, types, ",memberId,", c.memberId, pattern);
-        or = orLike(or, all, types, ",memberNm,", c.memberNm, pattern);
-        or = orLike(or, all, types, ",siteId,", c.siteId, pattern);
+        or = orLike(or, all, types, ",answerUserId,", a.answerUserId, pattern);
+        or = orLike(or, all, types, ",contentAttachGrpId,", a.contentAttachGrpId, pattern);
+        or = orLike(or, all, types, ",answerAttachGrpId,", a.answerAttachGrpId, pattern);
+        or = orLike(or, all, types, ",categoryCd,", a.categoryCd, pattern);
+        or = orLike(or, all, types, ",contactAnswer,", a.contactAnswer, pattern);
+        or = orLike(or, all, types, ",contactContent,", a.contactContent, pattern);
+        or = orLike(or, all, types, ",contactId,", a.contactId, pattern);
+        or = orLike(or, all, types, ",contactStatusCd,", a.contactStatusCd, pattern);
+        or = orLike(or, all, types, ",contactTitle,", a.contactTitle, pattern);
+        or = orLike(or, all, types, ",memberId,", a.memberId, pattern);
+        or = orLike(or, all, types, ",memberNm,", a.memberNm, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
         return or;
     }
 
@@ -177,8 +176,8 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, c.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, c.contactId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.contactId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -189,51 +188,53 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("contactId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, c.contactId));
+                    orders.add(new OrderSpecifier(order, a.contactId));
                 } else if ("memberNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, c.memberNm));
+                    orders.add(new OrderSpecifier(order, a.memberNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, c.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, c.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, c.contactId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.contactId));
         }
         return orders;
     }
 
     /* 문의 수정 */
+
+
     @Override
     public int updateSelective(SyContact entity) {
         if (entity.getContactId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(c);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getSiteId()          != null) { update.set(c.siteId,          entity.getSiteId());          hasAny = true; }
-        if (entity.getMemberId()        != null) { update.set(c.memberId,        entity.getMemberId());        hasAny = true; }
-        if (entity.getMemberNm()        != null) { update.set(c.memberNm,        entity.getMemberNm());        hasAny = true; }
-        if (entity.getCategoryCd()      != null) { update.set(c.categoryCd,      entity.getCategoryCd());      hasAny = true; }
-        if (entity.getContactTitle()    != null) { update.set(c.contactTitle,    entity.getContactTitle());    hasAny = true; }
-        if (entity.getContactContent()  != null) { update.set(c.contactContent,  entity.getContactContent());  hasAny = true; }
-        if (entity.getContentAttachGrpId() != null) { update.set(c.contentAttachGrpId, entity.getContentAttachGrpId()); hasAny = true; }
-        if (entity.getContactStatusCd() != null) { update.set(c.contactStatusCd, entity.getContactStatusCd()); hasAny = true; }
-        if (entity.getContactAnswer()   != null) { update.set(c.contactAnswer,   entity.getContactAnswer());   hasAny = true; }
-        if (entity.getAnswerAttachGrpId() != null) { update.set(c.answerAttachGrpId, entity.getAnswerAttachGrpId()); hasAny = true; }
-        if (entity.getAnswerUserId()    != null) { update.set(c.answerUserId,    entity.getAnswerUserId());    hasAny = true; }
-        if (entity.getAnswerDate()      != null) { update.set(c.answerDate,      entity.getAnswerDate());      hasAny = true; }
-        if (entity.getContactDate()     != null) { update.set(c.contactDate,     entity.getContactDate());     hasAny = true; }
-        if (entity.getUpdBy()           != null) { update.set(c.updBy,           entity.getUpdBy());           hasAny = true; }
+        if (entity.getSiteId()          != null) { update.set(a.siteId,          entity.getSiteId());          hasAny = true; }
+        if (entity.getMemberId()        != null) { update.set(a.memberId,        entity.getMemberId());        hasAny = true; }
+        if (entity.getMemberNm()        != null) { update.set(a.memberNm,        entity.getMemberNm());        hasAny = true; }
+        if (entity.getCategoryCd()      != null) { update.set(a.categoryCd,      entity.getCategoryCd());      hasAny = true; }
+        if (entity.getContactTitle()    != null) { update.set(a.contactTitle,    entity.getContactTitle());    hasAny = true; }
+        if (entity.getContactContent()  != null) { update.set(a.contactContent,  entity.getContactContent());  hasAny = true; }
+        if (entity.getContentAttachGrpId() != null) { update.set(a.contentAttachGrpId, entity.getContentAttachGrpId()); hasAny = true; }
+        if (entity.getContactStatusCd() != null) { update.set(a.contactStatusCd, entity.getContactStatusCd()); hasAny = true; }
+        if (entity.getContactAnswer()   != null) { update.set(a.contactAnswer,   entity.getContactAnswer());   hasAny = true; }
+        if (entity.getAnswerAttachGrpId() != null) { update.set(a.answerAttachGrpId, entity.getAnswerAttachGrpId()); hasAny = true; }
+        if (entity.getAnswerUserId()    != null) { update.set(a.answerUserId,    entity.getAnswerUserId());    hasAny = true; }
+        if (entity.getAnswerDate()      != null) { update.set(a.answerDate,      entity.getAnswerDate());      hasAny = true; }
+        if (entity.getContactDate()     != null) { update.set(a.contactDate,     entity.getContactDate());     hasAny = true; }
+        if (entity.getUpdBy()           != null) { update.set(a.updBy,           entity.getUpdBy());           hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(c.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(c.contactId.eq(entity.getContactId())).execute();
+        long affected = update.where(a.contactId.eq(entity.getContactId())).execute();
         return (int) affected;
     }
 }

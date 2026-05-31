@@ -31,29 +31,29 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmPlanItemRepositoryImpl";
-    private static final QPmPlanItem i   = QPmPlanItem.pmPlanItem;
+    private static final QPmPlanItem a   = QPmPlanItem.pmPlanItem;
     private static final QPmPlan     pla = QPmPlan.pmPlan;
     private static final QPdProd     prd = QPdProd.pdProd;
     private static final QSySite     ste = QSySite.sySite;
 
-    /* 프로모션 플랜 아이템 baseQuery */
-    private JPAQuery<PmPlanItemDto.Item> baseQuery() {
+    /* 프로모션 플랜 아이템 baseSelColumnQuery */
+    private JPAQuery<PmPlanItemDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PmPlanItemDto.Item.class,
-                        i.planItemId, i.planId, i.siteId, i.prodId, i.sortOrd,
-                        i.planItemMemo, i.regBy, i.regDate, i.updBy, i.updDate
+                        a.planItemId, a.planId, a.siteId, a.prodId, a.sortOrd,
+                        a.planItemMemo, a.regBy, a.regDate, a.updBy, a.updDate
                 ))
-                .from(i)
-                .leftJoin(pla).on(pla.planId.eq(i.planId))
-                .leftJoin(prd).on(prd.prodId.eq(i.prodId))
-                .leftJoin(ste).on(ste.siteId.eq(i.siteId));
+                .from(a)
+                .leftJoin(pla).on(pla.planId.eq(a.planId))
+                .leftJoin(prd).on(prd.prodId.eq(a.prodId))
+                .leftJoin(ste).on(ste.siteId.eq(a.siteId));
     }
 
     /* 프로모션 플랜 아이템 키조회 */
     @Override
     public Optional<PmPlanItemDto.Item> selectById(String planItemId) {
-        PmPlanItemDto.Item dto = baseQuery()
-                .where(i.planItemId.eq(planItemId))
+        PmPlanItemDto.Item dto = baseSelColumnQuery()
+                .where(a.planItemId.eq(planItemId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -63,7 +63,7 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
     public List<PmPlanItemDto.Item> selectList(PmPlanItemDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PmPlanItemDto.Item> query = baseQuery().where(
+        JPAQuery<PmPlanItemDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndPlanItemId(search),
                 baseAndDateRange(search),
@@ -90,7 +90,7 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PmPlanItemDto.Item> query = baseQuery().where(
+        JPAQuery<PmPlanItemDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndPlanItemId(search),
                 baseAndDateRange(search),
@@ -102,8 +102,8 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
         List<PmPlanItemDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(i.count())
-                .from(i)
+                .select(a.count())
+                .from(a)
                 .where(
                 baseAndSiteId(search),
                 baseAndPlanItemId(search),
@@ -126,13 +126,13 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(PmPlanItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? i.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* planItemId 정확 일치 */
     private BooleanExpression baseAndPlanItemId(PmPlanItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getPlanItemId())
-                ? i.planItemId.eq(search.getPlanItemId()) : null;
+                ? a.planItemId.eq(search.getPlanItemId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -145,8 +145,8 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return i.regDate.goe(start).and(i.regDate.lt(endExcl));
-            case "upd_date": return i.updDate.goe(start).and(i.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -159,11 +159,11 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",planId,", i.planId, pattern);
-        or = orLike(or, all, types, ",planItemId,", i.planItemId, pattern);
-        or = orLike(or, all, types, ",planItemMemo,", i.planItemMemo, pattern);
-        or = orLike(or, all, types, ",prodId,", i.prodId, pattern);
-        or = orLike(or, all, types, ",siteId,", i.siteId, pattern);
+        or = orLike(or, all, types, ",planId,", a.planId, pattern);
+        or = orLike(or, all, types, ",planItemId,", a.planItemId, pattern);
+        or = orLike(or, all, types, ",planItemMemo,", a.planItemMemo, pattern);
+        or = orLike(or, all, types, ",prodId,", a.prodId, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
         return or;
     }
 
@@ -186,9 +186,9 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
         if (!StringUtils.hasText(sort)) {
 
             /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, i.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, i.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, i.planItemId));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.planItemId));
 
             return orders;
         }
@@ -200,18 +200,18 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("planItemId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, i.planItemId));
+                    orders.add(new OrderSpecifier(order, a.planItemId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, i.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, i.sortOrd)); }
+                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, a.sortOrd)); }
             }
         }
         /* unknown sort → sortOrd ASC + regDate ASC fallback */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, i.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, i.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, i.planItemId));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.planItemId));
         }
         return orders;
     }
@@ -221,21 +221,21 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
     public int updateSelective(PmPlanItem entity) {
         if (entity.getPlanItemId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(i);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getPlanId()       != null) { update.set(i.planId,       entity.getPlanId());       hasAny = true; }
-        if (entity.getSiteId()       != null) { update.set(i.siteId,       entity.getSiteId());       hasAny = true; }
-        if (entity.getProdId()       != null) { update.set(i.prodId,       entity.getProdId());       hasAny = true; }
-        if (entity.getSortOrd()      != null) { update.set(i.sortOrd,      entity.getSortOrd());      hasAny = true; }
-        if (entity.getPlanItemMemo() != null) { update.set(i.planItemMemo, entity.getPlanItemMemo()); hasAny = true; }
-        if (entity.getUpdBy()        != null) { update.set(i.updBy,        entity.getUpdBy());        hasAny = true; }
+        if (entity.getPlanId()       != null) { update.set(a.planId,       entity.getPlanId());       hasAny = true; }
+        if (entity.getSiteId()       != null) { update.set(a.siteId,       entity.getSiteId());       hasAny = true; }
+        if (entity.getProdId()       != null) { update.set(a.prodId,       entity.getProdId());       hasAny = true; }
+        if (entity.getSortOrd()      != null) { update.set(a.sortOrd,      entity.getSortOrd());      hasAny = true; }
+        if (entity.getPlanItemMemo() != null) { update.set(a.planItemMemo, entity.getPlanItemMemo()); hasAny = true; }
+        if (entity.getUpdBy()        != null) { update.set(a.updBy,        entity.getUpdBy());        hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(i.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(i.planItemId.eq(entity.getPlanItemId())).execute();
+        long affected = update.where(a.planItemId.eq(entity.getPlanItemId())).execute();
         return (int) affected;
     }
 }

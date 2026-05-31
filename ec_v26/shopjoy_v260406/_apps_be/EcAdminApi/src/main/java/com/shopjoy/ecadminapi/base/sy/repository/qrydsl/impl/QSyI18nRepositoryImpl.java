@@ -29,14 +29,27 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyI18nRepositoryImpl";
-    private static final QSyI18n i = QSyI18n.syI18n;
+    private static final QSyI18n a = QSyI18n.syI18n;
     private static final QSySite ste = QSySite.sySite;
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+    /* 다국어 baseSelColumnQuery */
+    private JPAQuery<SyI18nDto.Item> baseSelColumnQuery() {
+        return queryFactory
+                .select(Projections.bean(SyI18nDto.Item.class,
+                        a.i18nId, a.siteId, a.i18nKey, a.i18nDesc, a.i18nScopeCd,
+                        a.i18nCategory, a.sortOrd, a.useYn,
+                        a.regBy, a.regDate, a.updBy, a.updDate,
+                        ste.siteNm.as("siteNm")
+                ))
+                .from(a)
+                .leftJoin(ste).on(ste.siteId.eq(a.siteId));
+    }
 
     /* 다국어 키조회 */
     @Override
     public Optional<SyI18nDto.Item> selectById(String i18nId) {
-        SyI18nDto.Item dto = baseQuery().where(i.i18nId.eq(i18nId)).fetchOne();
+        SyI18nDto.Item dto = baseSelColumnQuery().where(a.i18nId.eq(i18nId)).fetchOne();
         return Optional.ofNullable(dto);
     }
 
@@ -44,7 +57,7 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
     @Override
     public List<SyI18nDto.Item> selectList(SyI18nDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyI18nDto.Item> query = baseQuery().where(
+        JPAQuery<SyI18nDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndI18nId(search),
                 baseAndSearchValue(search)
@@ -68,7 +81,7 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyI18nDto.Item> query = baseQuery().where(
+        JPAQuery<SyI18nDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndI18nId(search),
                 baseAndSearchValue(search)
@@ -76,7 +89,7 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyI18nDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(i.count()).from(i).where(
+        Long total = queryFactory.select(a.count()).from(a).where(
                 baseAndSiteId(search),
                 baseAndI18nId(search),
                 baseAndSearchValue(search)
@@ -85,20 +98,6 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
         SyI18nDto.PageResponse res = new SyI18nDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-
-    /* 다국어 baseQuery */
-    private JPAQuery<SyI18nDto.Item> baseQuery() {
-        return queryFactory
-                .select(Projections.bean(SyI18nDto.Item.class,
-                        i.i18nId, i.siteId, i.i18nKey, i.i18nDesc, i.i18nScopeCd,
-                        i.i18nCategory, i.sortOrd, i.useYn,
-                        i.regBy, i.regDate, i.updBy, i.updDate,
-                        ste.siteNm.as("siteNm")
-                ))
-                .from(i)
-                .leftJoin(ste).on(ste.siteId.eq(i.siteId));
-    }
-
     /* 다국어 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
@@ -109,13 +108,13 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(SyI18nDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? i.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* i18nId 정확 일치 */
     private BooleanExpression baseAndI18nId(SyI18nDto.Request search) {
         return search != null && StringUtils.hasText(search.getI18nId())
-                ? i.i18nId.eq(search.getI18nId()) : null;
+                ? a.i18nId.eq(search.getI18nId()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
@@ -126,13 +125,13 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",i18nCategory,", i.i18nCategory, pattern);
-        or = orLike(or, all, types, ",i18nDesc,", i.i18nDesc, pattern);
-        or = orLike(or, all, types, ",i18nId,", i.i18nId, pattern);
-        or = orLike(or, all, types, ",i18nKey,", i.i18nKey, pattern);
-        or = orLike(or, all, types, ",i18nScopeCd,", i.i18nScopeCd, pattern);
-        or = orLike(or, all, types, ",siteId,", i.siteId, pattern);
-        or = orLike(or, all, types, ",useYn,", i.useYn, pattern);
+        or = orLike(or, all, types, ",i18nCategory,", a.i18nCategory, pattern);
+        or = orLike(or, all, types, ",i18nDesc,", a.i18nDesc, pattern);
+        or = orLike(or, all, types, ",i18nId,", a.i18nId, pattern);
+        or = orLike(or, all, types, ",i18nKey,", a.i18nKey, pattern);
+        or = orLike(or, all, types, ",i18nScopeCd,", a.i18nScopeCd, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",useYn,", a.useYn, pattern);
         return or;
     }
 
@@ -155,9 +154,9 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
         if (!StringUtils.hasText(sort)) {
 
             /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, i.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, i.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, i.i18nId));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.i18nId));
 
             return orders;
         }
@@ -169,44 +168,46 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("i18nId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, i.i18nId));
+                    orders.add(new OrderSpecifier(order, a.i18nId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, i.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, i.sortOrd)); }
+                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, a.sortOrd)); }
             }
         }
         /* unknown sort → sortOrd ASC + regDate ASC fallback */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, i.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, i.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, i.i18nId));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.i18nId));
         }
         return orders;
     }
 
     /* 다국어 수정 */
+
+
     @Override
     public int updateSelective(SyI18n entity) {
         if (entity.getI18nId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(i);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getSiteId()       != null) { update.set(i.siteId,       entity.getSiteId());       hasAny = true; }
-        if (entity.getI18nKey()      != null) { update.set(i.i18nKey,      entity.getI18nKey());      hasAny = true; }
-        if (entity.getI18nDesc()     != null) { update.set(i.i18nDesc,     entity.getI18nDesc());     hasAny = true; }
-        if (entity.getI18nScopeCd()  != null) { update.set(i.i18nScopeCd,  entity.getI18nScopeCd());  hasAny = true; }
-        if (entity.getI18nCategory() != null) { update.set(i.i18nCategory, entity.getI18nCategory()); hasAny = true; }
-        if (entity.getSortOrd()      != null) { update.set(i.sortOrd,      entity.getSortOrd());      hasAny = true; }
-        if (entity.getUseYn()        != null) { update.set(i.useYn,        entity.getUseYn());        hasAny = true; }
-        if (entity.getUpdBy()        != null) { update.set(i.updBy,        entity.getUpdBy());        hasAny = true; }
+        if (entity.getSiteId()       != null) { update.set(a.siteId,       entity.getSiteId());       hasAny = true; }
+        if (entity.getI18nKey()      != null) { update.set(a.i18nKey,      entity.getI18nKey());      hasAny = true; }
+        if (entity.getI18nDesc()     != null) { update.set(a.i18nDesc,     entity.getI18nDesc());     hasAny = true; }
+        if (entity.getI18nScopeCd()  != null) { update.set(a.i18nScopeCd,  entity.getI18nScopeCd());  hasAny = true; }
+        if (entity.getI18nCategory() != null) { update.set(a.i18nCategory, entity.getI18nCategory()); hasAny = true; }
+        if (entity.getSortOrd()      != null) { update.set(a.sortOrd,      entity.getSortOrd());      hasAny = true; }
+        if (entity.getUseYn()        != null) { update.set(a.useYn,        entity.getUseYn());        hasAny = true; }
+        if (entity.getUpdBy()        != null) { update.set(a.updBy,        entity.getUpdBy());        hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(i.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(i.i18nId.eq(entity.getI18nId())).execute();
+        long affected = update.where(a.i18nId.eq(entity.getI18nId())).execute();
         return (int) affected;
     }
 }

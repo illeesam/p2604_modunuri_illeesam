@@ -33,7 +33,7 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdOrderRepositoryImpl";
-    private static final QOdOrder  o   = QOdOrder.odOrder;
+    private static final QOdOrder  a   = QOdOrder.odOrder;
     private static final QMbMember m   = QMbMember.mbMember;
     private static final QSySite   s   = QSySite.sySite;
     private static final QPmCoupon cou = QPmCoupon.pmCoupon;
@@ -50,19 +50,19 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
     public Optional<OdOrderDto.Item> selectById(String orderId) {
         OdOrderDto.Item dto = queryFactory
                 .select(Projections.bean(OdOrderDto.Item.class,
-                        // o.* equivalent (DTO Item 에 존재하는 필드만)
-                        o.orderId, o.siteId, o.memberId, o.memberNm, o.ordererEmail,
-                        o.totalAmt, o.payAmt,
-                        o.orderStatusCd, o.orderStatusCdBefore,
-                        o.payMethodCd, o.dlivStatusCd, o.couponId,
-                        o.recvNm, o.recvPhone, o.recvZip, o.recvAddr, o.recvAddrDetail, o.recvMemo,
-                        o.refundBankCd, o.refundAccountNo, o.refundAccountNm,
-                        o.accessChannelCd,
-                        o.apprStatusCd, o.apprStatusCdBefore, o.apprAmt,
-                        o.apprTargetCd, o.apprTargetNm, o.apprReason,
-                        o.apprReqUserId, o.apprReqDate, o.apprAprvUserId, o.apprAprvDate,
-                        o.memo, o.orderDate,
-                        o.regBy, o.regDate, o.updBy, o.updDate,
+                        // a.* equivalent (DTO Item 에 존재하는 필드만)
+                        a.orderId, a.siteId, a.memberId, a.memberNm, a.ordererEmail,
+                        a.totalAmt, a.payAmt,
+                        a.orderStatusCd, a.orderStatusCdBefore,
+                        a.payMethodCd, a.dlivStatusCd, a.couponId,
+                        a.recvNm, a.recvPhone, a.recvZip, a.recvAddr, a.recvAddrDetail, a.recvMemo,
+                        a.refundBankCd, a.refundAccountNo, a.refundAccountNm,
+                        a.accessChannelCd,
+                        a.apprStatusCd, a.apprStatusCdBefore, a.apprAmt,
+                        a.apprTargetCd, a.apprTargetNm, a.apprReason,
+                        a.apprReqUserId, a.apprReqDate, a.apprAprvUserId, a.apprAprvDate,
+                        a.memo, a.orderDate,
+                        a.regBy, a.regDate, a.updBy, a.updDate,
                         // joined
                         m.loginId.as("memberEmail"),
                         m.memberPhone.as("memberPhoneOrigin"),
@@ -78,17 +78,17 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
                         cdAp.codeLabel.as("apprStatusCdNm"),
                         cdAt.codeLabel.as("apprTargetCdNm")
                 ))
-                .from(o)
-                .leftJoin(m).on(m.memberId.eq(o.memberId))
-                .leftJoin(s).on(s.siteId.eq(o.siteId))
-                .leftJoin(cou).on(cou.couponId.eq(o.couponId))
-                .leftJoin(cdOs).on(cdOs.codeGrp.eq("ORDER_STATUS").and(cdOs.codeValue.eq(o.orderStatusCd)))
-                .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(o.payMethodCd)))
-                .leftJoin(cdDs).on(cdDs.codeGrp.eq("DLIV_STATUS").and(cdDs.codeValue.eq(o.dlivStatusCd)))
-                .leftJoin(cdRb).on(cdRb.codeGrp.eq("BANK_CODE").and(cdRb.codeValue.eq(o.refundBankCd)))
-                .leftJoin(cdAp).on(cdAp.codeGrp.eq("APPROVAL_STATUS").and(cdAp.codeValue.eq(o.apprStatusCd)))
-                .leftJoin(cdAt).on(cdAt.codeGrp.eq("APPROVAL_TARGET").and(cdAt.codeValue.eq(o.apprTargetCd)))
-                .where(o.orderId.eq(orderId))
+                .from(a)
+                .leftJoin(m).on(m.memberId.eq(a.memberId))
+                .leftJoin(s).on(s.siteId.eq(a.siteId))
+                .leftJoin(cou).on(cou.couponId.eq(a.couponId))
+                .leftJoin(cdOs).on(cdOs.codeGrp.eq("ORDER_STATUS").and(cdOs.codeValue.eq(a.orderStatusCd)))
+                .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(a.payMethodCd)))
+                .leftJoin(cdDs).on(cdDs.codeGrp.eq("DLIV_STATUS").and(cdDs.codeValue.eq(a.dlivStatusCd)))
+                .leftJoin(cdRb).on(cdRb.codeGrp.eq("BANK_CODE").and(cdRb.codeValue.eq(a.refundBankCd)))
+                .leftJoin(cdAp).on(cdAp.codeGrp.eq("APPROVAL_STATUS").and(cdAp.codeValue.eq(a.apprStatusCd)))
+                .leftJoin(cdAt).on(cdAt.codeGrp.eq("APPROVAL_TARGET").and(cdAt.codeValue.eq(a.apprTargetCd)))
+                .where(a.orderId.eq(orderId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -141,9 +141,9 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
         List<OdOrderDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(o.count())
-                .from(o)
-                .leftJoin(m).on(m.memberId.eq(o.memberId))
+                .select(a.count())
+                .from(a)
+                .leftJoin(m).on(m.memberId.eq(a.memberId))
                 .where(
                 baseAndSiteId(search),
                 baseAndOrderId(search),
@@ -162,18 +162,18 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
     private JPAQuery<OdOrderDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(OdOrderDto.Item.class,
-                        o.orderId, o.siteId, o.memberId, o.memberNm, o.ordererEmail,
-                        o.totalAmt, o.payAmt,
-                        o.orderStatusCd, o.orderStatusCdBefore,
-                        o.payMethodCd, o.dlivStatusCd, o.couponId,
-                        o.recvNm, o.recvPhone, o.recvZip, o.recvAddr, o.recvAddrDetail, o.recvMemo,
-                        o.refundBankCd, o.refundAccountNo, o.refundAccountNm,
-                        o.accessChannelCd,
-                        o.apprStatusCd, o.apprStatusCdBefore, o.apprAmt,
-                        o.apprTargetCd, o.apprTargetNm, o.apprReason,
-                        o.apprReqUserId, o.apprReqDate, o.apprAprvUserId, o.apprAprvDate,
-                        o.memo, o.orderDate,
-                        o.regBy, o.regDate, o.updBy, o.updDate,
+                        a.orderId, a.siteId, a.memberId, a.memberNm, a.ordererEmail,
+                        a.totalAmt, a.payAmt,
+                        a.orderStatusCd, a.orderStatusCdBefore,
+                        a.payMethodCd, a.dlivStatusCd, a.couponId,
+                        a.recvNm, a.recvPhone, a.recvZip, a.recvAddr, a.recvAddrDetail, a.recvMemo,
+                        a.refundBankCd, a.refundAccountNo, a.refundAccountNm,
+                        a.accessChannelCd,
+                        a.apprStatusCd, a.apprStatusCdBefore, a.apprAmt,
+                        a.apprTargetCd, a.apprTargetNm, a.apprReason,
+                        a.apprReqUserId, a.apprReqDate, a.apprAprvUserId, a.apprAprvDate,
+                        a.memo, a.orderDate,
+                        a.regBy, a.regDate, a.updBy, a.updDate,
                         m.loginId.as("memberEmail"),
                         s.siteNm.as("siteNm"),
                         cou.couponNm.as("couponNm"),
@@ -183,15 +183,15 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
                         cdAc.codeLabel.as("accessChannelCdNm"),
                         cdAp.codeLabel.as("apprStatusCdNm")
                 ))
-                .from(o)
-                .leftJoin(m).on(m.memberId.eq(o.memberId))
-                .leftJoin(s).on(s.siteId.eq(o.siteId))
-                .leftJoin(cou).on(cou.couponId.eq(o.couponId))
-                .leftJoin(cdOs).on(cdOs.codeGrp.eq("ORDER_STATUS").and(cdOs.codeValue.eq(o.orderStatusCd)))
-                .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(o.payMethodCd)))
-                .leftJoin(cdDs).on(cdDs.codeGrp.eq("DLIV_STATUS").and(cdDs.codeValue.eq(o.dlivStatusCd)))
-                .leftJoin(cdAc).on(cdAc.codeGrp.eq("ACCESS_CHANNEL").and(cdAc.codeValue.eq(o.accessChannelCd)))
-                .leftJoin(cdAp).on(cdAp.codeGrp.eq("APPROVAL_STATUS").and(cdAp.codeValue.eq(o.apprStatusCd)));
+                .from(a)
+                .leftJoin(m).on(m.memberId.eq(a.memberId))
+                .leftJoin(s).on(s.siteId.eq(a.siteId))
+                .leftJoin(cou).on(cou.couponId.eq(a.couponId))
+                .leftJoin(cdOs).on(cdOs.codeGrp.eq("ORDER_STATUS").and(cdOs.codeValue.eq(a.orderStatusCd)))
+                .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(a.payMethodCd)))
+                .leftJoin(cdDs).on(cdDs.codeGrp.eq("DLIV_STATUS").and(cdDs.codeValue.eq(a.dlivStatusCd)))
+                .leftJoin(cdAc).on(cdAc.codeGrp.eq("ACCESS_CHANNEL").and(cdAc.codeValue.eq(a.accessChannelCd)))
+                .leftJoin(cdAp).on(cdAp.codeGrp.eq("APPROVAL_STATUS").and(cdAp.codeValue.eq(a.apprStatusCd)));
     }
 
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
@@ -204,25 +204,25 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(OdOrderDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? o.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* orderId 정확 일치 */
     private BooleanExpression baseAndOrderId(OdOrderDto.Request search) {
         return search != null && StringUtils.hasText(search.getOrderId())
-                ? o.orderId.eq(search.getOrderId()) : null;
+                ? a.orderId.eq(search.getOrderId()) : null;
     }
 
     /* memberId 정확 일치 */
     private BooleanExpression baseAndMemberId(OdOrderDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberId())
-                ? o.memberId.eq(search.getMemberId()) : null;
+                ? a.memberId.eq(search.getMemberId()) : null;
     }
 
     /* orderStatusCd 정확 일치 */
     private BooleanExpression baseAndOrderStatusCd(OdOrderDto.Request search) {
         return search != null && StringUtils.hasText(search.getOrderStatusCd())
-                ? o.orderStatusCd.eq(search.getOrderStatusCd()) : null;
+                ? a.orderStatusCd.eq(search.getOrderStatusCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -235,11 +235,11 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "order_date": return o.orderDate.goe(start).and(o.orderDate.lt(endExcl));
-            case "reg_date": return o.regDate.goe(start).and(o.regDate.lt(endExcl));
-            case "upd_date": return o.updDate.goe(start).and(o.updDate.lt(endExcl));
-            case "pay_date": return o.payDate.goe(start).and(o.payDate.lt(endExcl));
-            case "dliv_ship_date": return o.dlivShipDate.goe(start).and(o.dlivShipDate.lt(endExcl));
+            case "order_date": return a.orderDate.goe(start).and(a.orderDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "pay_date": return a.payDate.goe(start).and(a.payDate.lt(endExcl));
+            case "dliv_ship_date": return a.dlivShipDate.goe(start).and(a.dlivShipDate.lt(endExcl));
             default: return null;
         }
     }
@@ -252,39 +252,39 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",accessChannelCd,", o.accessChannelCd, pattern);
-        or = orLike(or, all, types, ",apprAprvUserId,", o.apprAprvUserId, pattern);
-        or = orLike(or, all, types, ",apprReason,", o.apprReason, pattern);
-        or = orLike(or, all, types, ",apprReqUserId,", o.apprReqUserId, pattern);
-        or = orLike(or, all, types, ",apprStatusCd,", o.apprStatusCd, pattern);
-        or = orLike(or, all, types, ",apprStatusCdBefore,", o.apprStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",apprTargetCd,", o.apprTargetCd, pattern);
-        or = orLike(or, all, types, ",apprTargetNm,", o.apprTargetNm, pattern);
-        or = orLike(or, all, types, ",couponId,", o.couponId, pattern);
-        or = orLike(or, all, types, ",dlivCourierCd,", o.dlivCourierCd, pattern);
-        or = orLike(or, all, types, ",dlivStatusCd,", o.dlivStatusCd, pattern);
-        or = orLike(or, all, types, ",dlivStatusCdBefore,", o.dlivStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",dlivTrackingNo,", o.dlivTrackingNo, pattern);
-        or = orLike(or, all, types, ",entrancePwd,", o.entrancePwd, pattern);
-        or = orLike(or, all, types, ",memberId,", o.memberId, pattern);
-        or = orLike(or, all, types, ",memberNm,", o.memberNm, pattern);
-        or = orLike(or, all, types, ",memo,", o.memo, pattern);
-        or = orLike(or, all, types, ",orderGradeCd,", o.orderGradeCd, pattern);
-        or = orLike(or, all, types, ",orderId,", o.orderId, pattern);
-        or = orLike(or, all, types, ",orderStatusCd,", o.orderStatusCd, pattern);
-        or = orLike(or, all, types, ",orderStatusCdBefore,", o.orderStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",ordererEmail,", o.ordererEmail, pattern);
-        or = orLike(or, all, types, ",payMethodCd,", o.payMethodCd, pattern);
-        or = orLike(or, all, types, ",recvAddr,", o.recvAddr, pattern);
-        or = orLike(or, all, types, ",recvAddrDetail,", o.recvAddrDetail, pattern);
-        or = orLike(or, all, types, ",recvMemo,", o.recvMemo, pattern);
-        or = orLike(or, all, types, ",recvNm,", o.recvNm, pattern);
-        or = orLike(or, all, types, ",recvPhone,", o.recvPhone, pattern);
-        or = orLike(or, all, types, ",recvZip,", o.recvZip, pattern);
-        or = orLike(or, all, types, ",refundAccountNm,", o.refundAccountNm, pattern);
-        or = orLike(or, all, types, ",refundAccountNo,", o.refundAccountNo, pattern);
-        or = orLike(or, all, types, ",refundBankCd,", o.refundBankCd, pattern);
-        or = orLike(or, all, types, ",siteId,", o.siteId, pattern);
+        or = orLike(or, all, types, ",accessChannelCd,", a.accessChannelCd, pattern);
+        or = orLike(or, all, types, ",apprAprvUserId,", a.apprAprvUserId, pattern);
+        or = orLike(or, all, types, ",apprReason,", a.apprReason, pattern);
+        or = orLike(or, all, types, ",apprReqUserId,", a.apprReqUserId, pattern);
+        or = orLike(or, all, types, ",apprStatusCd,", a.apprStatusCd, pattern);
+        or = orLike(or, all, types, ",apprStatusCdBefore,", a.apprStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",apprTargetCd,", a.apprTargetCd, pattern);
+        or = orLike(or, all, types, ",apprTargetNm,", a.apprTargetNm, pattern);
+        or = orLike(or, all, types, ",couponId,", a.couponId, pattern);
+        or = orLike(or, all, types, ",dlivCourierCd,", a.dlivCourierCd, pattern);
+        or = orLike(or, all, types, ",dlivStatusCd,", a.dlivStatusCd, pattern);
+        or = orLike(or, all, types, ",dlivStatusCdBefore,", a.dlivStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",dlivTrackingNo,", a.dlivTrackingNo, pattern);
+        or = orLike(or, all, types, ",entrancePwd,", a.entrancePwd, pattern);
+        or = orLike(or, all, types, ",memberId,", a.memberId, pattern);
+        or = orLike(or, all, types, ",memberNm,", a.memberNm, pattern);
+        or = orLike(or, all, types, ",memo,", a.memo, pattern);
+        or = orLike(or, all, types, ",orderGradeCd,", a.orderGradeCd, pattern);
+        or = orLike(or, all, types, ",orderId,", a.orderId, pattern);
+        or = orLike(or, all, types, ",orderStatusCd,", a.orderStatusCd, pattern);
+        or = orLike(or, all, types, ",orderStatusCdBefore,", a.orderStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",ordererEmail,", a.ordererEmail, pattern);
+        or = orLike(or, all, types, ",payMethodCd,", a.payMethodCd, pattern);
+        or = orLike(or, all, types, ",recvAddr,", a.recvAddr, pattern);
+        or = orLike(or, all, types, ",recvAddrDetail,", a.recvAddrDetail, pattern);
+        or = orLike(or, all, types, ",recvMemo,", a.recvMemo, pattern);
+        or = orLike(or, all, types, ",recvNm,", a.recvNm, pattern);
+        or = orLike(or, all, types, ",recvPhone,", a.recvPhone, pattern);
+        or = orLike(or, all, types, ",recvZip,", a.recvZip, pattern);
+        or = orLike(or, all, types, ",refundAccountNm,", a.refundAccountNm, pattern);
+        or = orLike(or, all, types, ",refundAccountNo,", a.refundAccountNo, pattern);
+        or = orLike(or, all, types, ",refundBankCd,", a.refundBankCd, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
         return or;
     }
 
@@ -305,8 +305,8 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, o.orderDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, o.orderId));
+            orders.add(new OrderSpecifier(Order.DESC, a.orderDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.orderId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -317,19 +317,19 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("orderId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, o.orderId));
+                    orders.add(new OrderSpecifier(order, a.orderId));
                 } else if ("memberNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, o.memberNm));
+                    orders.add(new OrderSpecifier(order, a.memberNm));
                 } else if ("orderDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, o.orderDate));
+                    orders.add(new OrderSpecifier(order, a.orderDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, o.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, o.orderId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.orderId));
         }
         return orders;
     }
@@ -339,22 +339,22 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
     public int updateSelective(OdOrder entity) {
         if (entity.getOrderId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(o);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getOrderStatusCd()       != null) { update.set(o.orderStatusCd,       entity.getOrderStatusCd());       hasAny = true; }
-        if (entity.getOrderStatusCdBefore() != null) { update.set(o.orderStatusCdBefore, entity.getOrderStatusCdBefore()); hasAny = true; }
-        if (entity.getPayAmt()              != null) { update.set(o.payAmt,              entity.getPayAmt());              hasAny = true; }
-        if (entity.getDlivStatusCd()        != null) { update.set(o.dlivStatusCd,        entity.getDlivStatusCd());        hasAny = true; }
-        if (entity.getMemo()                != null) { update.set(o.memo,                entity.getMemo());                hasAny = true; }
-        if (entity.getApprStatusCd()        != null) { update.set(o.apprStatusCd,        entity.getApprStatusCd());        hasAny = true; }
-        if (entity.getUpdBy()               != null) { update.set(o.updBy,               entity.getUpdBy());               hasAny = true; }
+        if (entity.getOrderStatusCd()       != null) { update.set(a.orderStatusCd,       entity.getOrderStatusCd());       hasAny = true; }
+        if (entity.getOrderStatusCdBefore() != null) { update.set(a.orderStatusCdBefore, entity.getOrderStatusCdBefore()); hasAny = true; }
+        if (entity.getPayAmt()              != null) { update.set(a.payAmt,              entity.getPayAmt());              hasAny = true; }
+        if (entity.getDlivStatusCd()        != null) { update.set(a.dlivStatusCd,        entity.getDlivStatusCd());        hasAny = true; }
+        if (entity.getMemo()                != null) { update.set(a.memo,                entity.getMemo());                hasAny = true; }
+        if (entity.getApprStatusCd()        != null) { update.set(a.apprStatusCd,        entity.getApprStatusCd());        hasAny = true; }
+        if (entity.getUpdBy()               != null) { update.set(a.updBy,               entity.getUpdBy());               hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(o.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(o.orderId.eq(entity.getOrderId())).execute();
+        long affected = update.where(a.orderId.eq(entity.getOrderId())).execute();
         return (int) affected;
     }
 }

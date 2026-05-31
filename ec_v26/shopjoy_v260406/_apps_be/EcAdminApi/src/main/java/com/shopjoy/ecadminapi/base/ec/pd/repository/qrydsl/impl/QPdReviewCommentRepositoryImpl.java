@@ -30,13 +30,24 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdReviewCommentRepositoryImpl";
-    private static final QPdReviewComment c = QPdReviewComment.pdReviewComment;
+    private static final QPdReviewComment a = QPdReviewComment.pdReviewComment;
 
     /** 단건 조회 */
+    private JPAQuery<PdReviewCommentDto.Item> baseSelColumnQuery() {
+        return queryFactory
+                .select(Projections.bean(PdReviewCommentDto.Item.class,
+                        a.reviewCommentId, a.siteId, a.reviewId, a.parentReplyId,
+                        a.writerTypeCd, a.writerId, a.writerNm,
+                        a.reviewReplyContent, a.replyStatusCd,
+                        a.regBy, a.regDate, a.updBy, a.updDate
+                ))
+                .from(a);
+    }
+
     @Override
     public Optional<PdReviewCommentDto.Item> selectById(String reviewCommentId) {
-        PdReviewCommentDto.Item dto = baseQuery()
-                .where(c.reviewCommentId.eq(reviewCommentId))
+        PdReviewCommentDto.Item dto = baseSelColumnQuery()
+                .where(a.reviewCommentId.eq(reviewCommentId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -46,7 +57,7 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
     public List<PdReviewCommentDto.Item> selectList(PdReviewCommentDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdReviewCommentDto.Item> query = baseQuery().where(
+        JPAQuery<PdReviewCommentDto.Item> query = baseSelColumnQuery().where(
                 baseAndReviewIds(search),
                 baseAndReviewId(search),
                 baseAndSiteId(search),
@@ -75,7 +86,7 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdReviewCommentDto.Item> query = baseQuery().where(
+        JPAQuery<PdReviewCommentDto.Item> query = baseSelColumnQuery().where(
                 baseAndReviewIds(search),
                 baseAndReviewId(search),
                 baseAndSiteId(search),
@@ -88,7 +99,7 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
         }
         List<PdReviewCommentDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(c.count()).from(c).where(
+        Long total = queryFactory.select(a.count()).from(a).where(
                 baseAndReviewIds(search),
                 baseAndReviewId(search),
                 baseAndSiteId(search),
@@ -102,17 +113,6 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
     }
 
     /** 단건/목록/페이지 공용 base query */
-    private JPAQuery<PdReviewCommentDto.Item> baseQuery() {
-        return queryFactory
-                .select(Projections.bean(PdReviewCommentDto.Item.class,
-                        c.reviewCommentId, c.siteId, c.reviewId, c.parentReplyId,
-                        c.writerTypeCd, c.writerId, c.writerNm,
-                        c.reviewReplyContent, c.replyStatusCd,
-                        c.regBy, c.regDate, c.updBy, c.updDate
-                ))
-                .from(c);
-    }
-
     /** 검색조건 빌드 — Mapper XML pdReviewCommentCond 와 동일 동작 */
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     /* ============================================================
@@ -124,25 +124,25 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
     /* reviewId IN */
     private BooleanExpression baseAndReviewIds(PdReviewCommentDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getReviewIds())
-                ? c.reviewId.in(search.getReviewIds()) : null;
+                ? a.reviewId.in(search.getReviewIds()) : null;
     }
 
     /* reviewId 정확 일치 */
     private BooleanExpression baseAndReviewId(PdReviewCommentDto.Request search) {
         return search != null && StringUtils.hasText(search.getReviewId())
-                ? c.reviewId.eq(search.getReviewId()) : null;
+                ? a.reviewId.eq(search.getReviewId()) : null;
     }
 
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(PdReviewCommentDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? c.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* reviewCommentId 정확 일치 */
     private BooleanExpression baseAndReviewCommentId(PdReviewCommentDto.Request search) {
         return search != null && StringUtils.hasText(search.getReviewCommentId())
-                ? c.reviewCommentId.eq(search.getReviewCommentId()) : null;
+                ? a.reviewCommentId.eq(search.getReviewCommentId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -155,8 +155,8 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return c.regDate.goe(start).and(c.regDate.lt(endExcl));
-            case "upd_date": return c.updDate.goe(start).and(c.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -169,15 +169,15 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",parentReplyId,", c.parentReplyId, pattern);
-        or = orLike(or, all, types, ",replyStatusCd,", c.replyStatusCd, pattern);
-        or = orLike(or, all, types, ",reviewCommentId,", c.reviewCommentId, pattern);
-        or = orLike(or, all, types, ",reviewId,", c.reviewId, pattern);
-        or = orLike(or, all, types, ",reviewReplyContent,", c.reviewReplyContent, pattern);
-        or = orLike(or, all, types, ",siteId,", c.siteId, pattern);
-        or = orLike(or, all, types, ",writerId,", c.writerId, pattern);
-        or = orLike(or, all, types, ",writerNm,", c.writerNm, pattern);
-        or = orLike(or, all, types, ",writerTypeCd,", c.writerTypeCd, pattern);
+        or = orLike(or, all, types, ",parentReplyId,", a.parentReplyId, pattern);
+        or = orLike(or, all, types, ",replyStatusCd,", a.replyStatusCd, pattern);
+        or = orLike(or, all, types, ",reviewCommentId,", a.reviewCommentId, pattern);
+        or = orLike(or, all, types, ",reviewId,", a.reviewId, pattern);
+        or = orLike(or, all, types, ",reviewReplyContent,", a.reviewReplyContent, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",writerId,", a.writerId, pattern);
+        or = orLike(or, all, types, ",writerNm,", a.writerNm, pattern);
+        or = orLike(or, all, types, ",writerTypeCd,", a.writerTypeCd, pattern);
         return or;
     }
 
@@ -198,8 +198,8 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, c.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, c.reviewCommentId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.reviewCommentId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -210,46 +210,47 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("reviewCommentId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, c.reviewCommentId));
+                    orders.add(new OrderSpecifier(order, a.reviewCommentId));
                 } else if ("writerNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, c.writerNm));
+                    orders.add(new OrderSpecifier(order, a.writerNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, c.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, c.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, c.reviewCommentId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.reviewCommentId));
         }
         return orders;
     }
 
     /** updateSelective — Mapper XML 과 동일한 컬럼셋만 갱신 */
+
     @Override
     public int updateSelective(PdReviewComment entity) {
         if (entity.getReviewCommentId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(c);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getSiteId()             != null) { update.set(c.siteId,             entity.getSiteId());             hasAny = true; }
-        if (entity.getReviewId()           != null) { update.set(c.reviewId,           entity.getReviewId());           hasAny = true; }
-        if (entity.getParentReplyId()      != null) { update.set(c.parentReplyId,      entity.getParentReplyId());      hasAny = true; }
-        if (entity.getWriterTypeCd()       != null) { update.set(c.writerTypeCd,       entity.getWriterTypeCd());       hasAny = true; }
-        if (entity.getWriterId()           != null) { update.set(c.writerId,           entity.getWriterId());           hasAny = true; }
-        if (entity.getWriterNm()           != null) { update.set(c.writerNm,           entity.getWriterNm());           hasAny = true; }
-        if (entity.getReviewReplyContent() != null) { update.set(c.reviewReplyContent, entity.getReviewReplyContent()); hasAny = true; }
-        if (entity.getReplyStatusCd()      != null) { update.set(c.replyStatusCd,      entity.getReplyStatusCd());      hasAny = true; }
-        if (entity.getUpdBy()              != null) { update.set(c.updBy,              entity.getUpdBy());              hasAny = true; }
+        if (entity.getSiteId()             != null) { update.set(a.siteId,             entity.getSiteId());             hasAny = true; }
+        if (entity.getReviewId()           != null) { update.set(a.reviewId,           entity.getReviewId());           hasAny = true; }
+        if (entity.getParentReplyId()      != null) { update.set(a.parentReplyId,      entity.getParentReplyId());      hasAny = true; }
+        if (entity.getWriterTypeCd()       != null) { update.set(a.writerTypeCd,       entity.getWriterTypeCd());       hasAny = true; }
+        if (entity.getWriterId()           != null) { update.set(a.writerId,           entity.getWriterId());           hasAny = true; }
+        if (entity.getWriterNm()           != null) { update.set(a.writerNm,           entity.getWriterNm());           hasAny = true; }
+        if (entity.getReviewReplyContent() != null) { update.set(a.reviewReplyContent, entity.getReviewReplyContent()); hasAny = true; }
+        if (entity.getReplyStatusCd()      != null) { update.set(a.replyStatusCd,      entity.getReplyStatusCd());      hasAny = true; }
+        if (entity.getUpdBy()              != null) { update.set(a.updBy,              entity.getUpdBy());              hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(c.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(c.reviewCommentId.eq(entity.getReviewCommentId())).execute();
+        long affected = update.where(a.reviewCommentId.eq(entity.getReviewCommentId())).execute();
         return (int) affected;
     }
 }

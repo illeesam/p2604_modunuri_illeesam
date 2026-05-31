@@ -28,13 +28,31 @@ public class QPdProdContentRepositoryImpl implements QPdProdContentRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdProdContentRepositoryImpl";
-    private static final QPdProdContent c = QPdProdContent.pdProdContent;
+    private static final QPdProdContent a = QPdProdContent.pdProdContent;
+
+    private JPAQuery<PdProdContentDto.Item> baseSelColumnQuery() {
+        return queryFactory
+                .select(Projections.bean(PdProdContentDto.Item.class,
+                        a.prodContentId,
+                        a.siteId,
+                        a.prodId,
+                        a.contentTypeCd,
+                        a.contentHtml,
+                        a.sortOrd,
+                        a.useYn,
+                        a.regBy,
+                        a.regDate,
+                        a.updBy,
+                        a.updDate
+                ))
+                .from(a);
+    }
 
     /* 상품 상세 콘텐츠 키조회 */
     @Override
     public Optional<PdProdContentDto.Item> selectById(String prodContentId) {
-        PdProdContentDto.Item dto = baseQuery()
-                .where(c.prodContentId.eq(prodContentId))
+        PdProdContentDto.Item dto = baseSelColumnQuery()
+                .where(a.prodContentId.eq(prodContentId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -44,7 +62,7 @@ public class QPdProdContentRepositoryImpl implements QPdProdContentRepository {
     public List<PdProdContentDto.Item> selectList(PdProdContentDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdProdContentDto.Item> query = baseQuery().where(
+        JPAQuery<PdProdContentDto.Item> query = baseSelColumnQuery().where(
                 baseAndProdId(search),
                 baseAndSiteId(search),
                 baseAndProdContentId(search),
@@ -72,7 +90,7 @@ public class QPdProdContentRepositoryImpl implements QPdProdContentRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdProdContentDto.Item> query = baseQuery().where(
+        JPAQuery<PdProdContentDto.Item> query = baseSelColumnQuery().where(
                 baseAndProdId(search),
                 baseAndSiteId(search),
                 baseAndProdContentId(search),
@@ -84,7 +102,7 @@ public class QPdProdContentRepositoryImpl implements QPdProdContentRepository {
         }
         List<PdProdContentDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(c.count()).from(c).where(
+        Long total = queryFactory.select(a.count()).from(a).where(
                 baseAndProdId(search),
                 baseAndSiteId(search),
                 baseAndProdContentId(search),
@@ -97,24 +115,6 @@ public class QPdProdContentRepositoryImpl implements QPdProdContentRepository {
     }
 
     /** 단건/목록/페이지 공용 base query — DTO 필드만 프로젝션 */
-    private JPAQuery<PdProdContentDto.Item> baseQuery() {
-        return queryFactory
-                .select(Projections.bean(PdProdContentDto.Item.class,
-                        c.prodContentId,
-                        c.siteId,
-                        c.prodId,
-                        c.contentTypeCd,
-                        c.contentHtml,
-                        c.sortOrd,
-                        c.useYn,
-                        c.regBy,
-                        c.regDate,
-                        c.updBy,
-                        c.updDate
-                ))
-                .from(c);
-    }
-
     /* 상품 상세 콘텐츠 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
@@ -125,19 +125,19 @@ public class QPdProdContentRepositoryImpl implements QPdProdContentRepository {
     /* prodId 정확 일치 */
     private BooleanExpression baseAndProdId(PdProdContentDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdId())
-                ? c.prodId.eq(search.getProdId()) : null;
+                ? a.prodId.eq(search.getProdId()) : null;
     }
 
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(PdProdContentDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? c.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* prodContentId 정확 일치 */
     private BooleanExpression baseAndProdContentId(PdProdContentDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdContentId())
-                ? c.prodContentId.eq(search.getProdContentId()) : null;
+                ? a.prodContentId.eq(search.getProdContentId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -150,8 +150,8 @@ public class QPdProdContentRepositoryImpl implements QPdProdContentRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return c.regDate.goe(start).and(c.regDate.lt(endExcl));
-            case "upd_date": return c.updDate.goe(start).and(c.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -164,12 +164,12 @@ public class QPdProdContentRepositoryImpl implements QPdProdContentRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",contentHtml,", c.contentHtml, pattern);
-        or = orLike(or, all, types, ",contentTypeCd,", c.contentTypeCd, pattern);
-        or = orLike(or, all, types, ",prodContentId,", c.prodContentId, pattern);
-        or = orLike(or, all, types, ",prodId,", c.prodId, pattern);
-        or = orLike(or, all, types, ",siteId,", c.siteId, pattern);
-        or = orLike(or, all, types, ",useYn,", c.useYn, pattern);
+        or = orLike(or, all, types, ",contentHtml,", a.contentHtml, pattern);
+        or = orLike(or, all, types, ",contentTypeCd,", a.contentTypeCd, pattern);
+        or = orLike(or, all, types, ",prodContentId,", a.prodContentId, pattern);
+        or = orLike(or, all, types, ",prodId,", a.prodId, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",useYn,", a.useYn, pattern);
         return or;
     }
 
@@ -192,9 +192,9 @@ public class QPdProdContentRepositoryImpl implements QPdProdContentRepository {
         if (!StringUtils.hasText(sort)) {
 
             /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, c.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, c.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, c.prodContentId));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.prodContentId));
 
             return orders;
         }
@@ -206,43 +206,44 @@ public class QPdProdContentRepositoryImpl implements QPdProdContentRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("prodContentId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, c.prodContentId));
+                    orders.add(new OrderSpecifier(order, a.prodContentId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, c.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, c.sortOrd)); }
+                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, a.sortOrd)); }
             }
         }
         /* unknown sort → sortOrd ASC + regDate ASC fallback */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, c.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, c.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, c.prodContentId));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.prodContentId));
         }
         return orders;
     }
 
     /* 상품 상세 콘텐츠 수정 */
+
     @Override
     public int updateSelective(PdProdContent entity) {
         if (entity.getProdContentId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(c);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getSiteId()        != null) { update.set(c.siteId,        entity.getSiteId());        hasAny = true; }
-        if (entity.getProdId()        != null) { update.set(c.prodId,        entity.getProdId());        hasAny = true; }
-        if (entity.getContentTypeCd() != null) { update.set(c.contentTypeCd, entity.getContentTypeCd()); hasAny = true; }
-        if (entity.getContentHtml()   != null) { update.set(c.contentHtml,   entity.getContentHtml());   hasAny = true; }
-        if (entity.getSortOrd()       != null) { update.set(c.sortOrd,       entity.getSortOrd());       hasAny = true; }
-        if (entity.getUseYn()         != null) { update.set(c.useYn,         entity.getUseYn());         hasAny = true; }
-        if (entity.getUpdBy()         != null) { update.set(c.updBy,         entity.getUpdBy());         hasAny = true; }
+        if (entity.getSiteId()        != null) { update.set(a.siteId,        entity.getSiteId());        hasAny = true; }
+        if (entity.getProdId()        != null) { update.set(a.prodId,        entity.getProdId());        hasAny = true; }
+        if (entity.getContentTypeCd() != null) { update.set(a.contentTypeCd, entity.getContentTypeCd()); hasAny = true; }
+        if (entity.getContentHtml()   != null) { update.set(a.contentHtml,   entity.getContentHtml());   hasAny = true; }
+        if (entity.getSortOrd()       != null) { update.set(a.sortOrd,       entity.getSortOrd());       hasAny = true; }
+        if (entity.getUseYn()         != null) { update.set(a.useYn,         entity.getUseYn());         hasAny = true; }
+        if (entity.getUpdBy()         != null) { update.set(a.updBy,         entity.getUpdBy());         hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(c.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(c.prodContentId.eq(entity.getProdContentId())).execute();
+        long affected = update.where(a.prodContentId.eq(entity.getProdContentId())).execute();
         return (int) affected;
     }
 }

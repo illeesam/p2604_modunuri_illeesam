@@ -31,23 +31,37 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.mb.repository.qrydsl.impl.QMbLikeRepositoryImpl";
-    private static final QMbLike   l    = QMbLike.mbLike;
+    private static final QMbLike   a    = QMbLike.mbLike;
     private static final QSySite   ste  = QSySite.sySite;
     private static final QMbMember mem  = QMbMember.mbMember;
     private static final QPdProd   prd  = QPdProd.pdProd;
     private static final QSyCode   cdLt = new QSyCode("cd_ltt");
 
+    /* 좋아요(찜) baseSelColumnQuery */
+    private JPAQuery<MbLikeDto.Item> baseSelColumnQuery() {
+        return queryFactory
+                .select(Projections.bean(MbLikeDto.Item.class,
+                        a.likeId, a.siteId, a.memberId, a.targetTypeCd, a.targetId,
+                        a.regBy, a.regDate, a.updBy, a.updDate
+                ))
+                .from(a)
+                .leftJoin(ste).on(ste.siteId.eq(a.siteId))
+                .leftJoin(mem).on(mem.memberId.eq(a.memberId))
+                .leftJoin(prd).on(prd.prodId.eq(a.targetId))
+                .leftJoin(cdLt).on(cdLt.codeGrp.eq("LIKE_TARGET_TYPE").and(cdLt.codeValue.eq(a.targetTypeCd)));
+    }
+
     /* 좋아요(찜) 키조회 */
     @Override
     public Optional<MbLikeDto.Item> selectById(String likeId) {
-        return Optional.ofNullable(baseQuery().where(l.likeId.eq(likeId)).fetchOne());
+        return Optional.ofNullable(baseSelColumnQuery().where(a.likeId.eq(likeId)).fetchOne());
     }
 
     /* 좋아요(찜) 목록조회 */
     @Override
     public List<MbLikeDto.Item> selectList(MbLikeDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<MbLikeDto.Item> query = baseQuery().where(
+        JPAQuery<MbLikeDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndLikeId(search),
                 baseAndMemberId(search),
@@ -71,7 +85,7 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<MbLikeDto.Item> query = baseQuery().where(
+        JPAQuery<MbLikeDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndLikeId(search),
                 baseAndMemberId(search),
@@ -83,7 +97,7 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<MbLikeDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(l.count()).from(l).where(
+        Long total = queryFactory.select(a.count()).from(a).where(
                 baseAndSiteId(search),
                 baseAndLikeId(search),
                 baseAndMemberId(search),
@@ -96,21 +110,6 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
         MbLikeDto.PageResponse res = new MbLikeDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-
-    /* 좋아요(찜) baseQuery */
-    private JPAQuery<MbLikeDto.Item> baseQuery() {
-        return queryFactory
-                .select(Projections.bean(MbLikeDto.Item.class,
-                        l.likeId, l.siteId, l.memberId, l.targetTypeCd, l.targetId,
-                        l.regBy, l.regDate, l.updBy, l.updDate
-                ))
-                .from(l)
-                .leftJoin(ste).on(ste.siteId.eq(l.siteId))
-                .leftJoin(mem).on(mem.memberId.eq(l.memberId))
-                .leftJoin(prd).on(prd.prodId.eq(l.targetId))
-                .leftJoin(cdLt).on(cdLt.codeGrp.eq("LIKE_TARGET_TYPE").and(cdLt.codeValue.eq(l.targetTypeCd)));
-    }
-
     /* 좋아요(찜) buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
@@ -121,31 +120,31 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(MbLikeDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? l.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* likeId 정확 일치 */
     private BooleanExpression baseAndLikeId(MbLikeDto.Request search) {
         return search != null && StringUtils.hasText(search.getLikeId())
-                ? l.likeId.eq(search.getLikeId()) : null;
+                ? a.likeId.eq(search.getLikeId()) : null;
     }
 
     /* memberId 정확 일치 */
     private BooleanExpression baseAndMemberId(MbLikeDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberId())
-                ? l.memberId.eq(search.getMemberId()) : null;
+                ? a.memberId.eq(search.getMemberId()) : null;
     }
 
     /* targetId 정확 일치 */
     private BooleanExpression baseAndTargetId(MbLikeDto.Request search) {
         return search != null && StringUtils.hasText(search.getTargetId())
-                ? l.targetId.eq(search.getTargetId()) : null;
+                ? a.targetId.eq(search.getTargetId()) : null;
     }
 
     /* targetTypeCd 정확 일치 */
     private BooleanExpression baseAndTargetTypeCd(MbLikeDto.Request search) {
         return search != null && StringUtils.hasText(search.getTargetTypeCd())
-                ? l.targetTypeCd.eq(search.getTargetTypeCd()) : null;
+                ? a.targetTypeCd.eq(search.getTargetTypeCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -158,8 +157,8 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return l.regDate.goe(start).and(l.regDate.lt(endExcl));
-            case "upd_date": return l.updDate.goe(start).and(l.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -172,11 +171,11 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",likeId,", l.likeId, pattern);
-        or = orLike(or, all, types, ",memberId,", l.memberId, pattern);
-        or = orLike(or, all, types, ",siteId,", l.siteId, pattern);
-        or = orLike(or, all, types, ",targetId,", l.targetId, pattern);
-        or = orLike(or, all, types, ",targetTypeCd,", l.targetTypeCd, pattern);
+        or = orLike(or, all, types, ",likeId,", a.likeId, pattern);
+        or = orLike(or, all, types, ",memberId,", a.memberId, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",targetId,", a.targetId, pattern);
+        or = orLike(or, all, types, ",targetTypeCd,", a.targetTypeCd, pattern);
         return or;
     }
 
@@ -197,8 +196,8 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, l.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, l.likeId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.likeId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -209,35 +208,37 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("likeId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, l.likeId));
+                    orders.add(new OrderSpecifier(order, a.likeId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, l.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, l.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, l.likeId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.likeId));
         }
         return orders;
     }
 
     /* 좋아요(찜) 수정 */
+
+
     @Override
     public int updateSelective(MbLike entity) {
         if (entity.getLikeId() == null) return 0;
-        JPAUpdateClause update = queryFactory.update(l);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
-        if (entity.getSiteId()       != null) { update.set(l.siteId,       entity.getSiteId());       hasAny = true; }
-        if (entity.getMemberId()     != null) { update.set(l.memberId,     entity.getMemberId());     hasAny = true; }
-        if (entity.getTargetTypeCd() != null) { update.set(l.targetTypeCd, entity.getTargetTypeCd()); hasAny = true; }
-        if (entity.getTargetId()     != null) { update.set(l.targetId,     entity.getTargetId());     hasAny = true; }
-        if (entity.getUpdBy()        != null) { update.set(l.updBy,        entity.getUpdBy());        hasAny = true; }
+        if (entity.getSiteId()       != null) { update.set(a.siteId,       entity.getSiteId());       hasAny = true; }
+        if (entity.getMemberId()     != null) { update.set(a.memberId,     entity.getMemberId());     hasAny = true; }
+        if (entity.getTargetTypeCd() != null) { update.set(a.targetTypeCd, entity.getTargetTypeCd()); hasAny = true; }
+        if (entity.getTargetId()     != null) { update.set(a.targetId,     entity.getTargetId());     hasAny = true; }
+        if (entity.getUpdBy()        != null) { update.set(a.updBy,        entity.getUpdBy());        hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(l.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
         if (!hasAny) return 0;
-        return (int) update.where(l.likeId.eq(entity.getLikeId())).execute();
+        return (int) update.where(a.likeId.eq(entity.getLikeId())).execute();
     }
 }

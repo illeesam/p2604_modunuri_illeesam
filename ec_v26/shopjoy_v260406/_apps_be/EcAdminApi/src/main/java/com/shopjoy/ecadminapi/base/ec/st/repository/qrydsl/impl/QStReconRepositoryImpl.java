@@ -32,7 +32,7 @@ public class QStReconRepositoryImpl implements QStReconRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.st.repository.qrydsl.impl.QStReconRepositoryImpl";
-    private static final QStRecon     r    = QStRecon.stRecon;
+    private static final QStRecon     a    = QStRecon.stRecon;
     private static final QSySite      ste  = QSySite.sySite;
     private static final QSyVendor    vnd  = QSyVendor.syVendor;
     private static final QStSettleRaw raw  = QStSettleRaw.stSettleRaw;
@@ -43,7 +43,7 @@ public class QStReconRepositoryImpl implements QStReconRepository {
     @Override
     public Optional<StReconDto.Item> selectById(String id) {
         StReconDto.Item dto = baseListQuery()
-                .where(r.reconId.eq(id))
+                .where(a.reconId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -92,8 +92,8 @@ public class QStReconRepositoryImpl implements QStReconRepository {
         List<StReconDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(r.count())
-                .from(r)
+                .select(a.count())
+                .from(a)
                 .where(
                 baseAndSiteId(search),
                 baseAndReconId(search),
@@ -110,24 +110,24 @@ public class QStReconRepositoryImpl implements QStReconRepository {
     private JPAQuery<StReconDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(StReconDto.Item.class,
-                        r.reconId, r.siteId, r.vendorId, r.reconTypeCd,
-                        r.reconStatusCd, r.reconStatusCdBefore, r.settleId, r.settleRawId,
-                        r.refId, r.refNo, r.settlePeriod,
-                        r.expectedAmt, r.actualAmt, r.diffAmt, r.reconNote,
-                        r.resolvedBy, r.resolvedDate,
-                        r.regBy, r.regDate, r.updBy, r.updDate,
+                        a.reconId, a.siteId, a.vendorId, a.reconTypeCd,
+                        a.reconStatusCd, a.reconStatusCdBefore, a.settleId, a.settleRawId,
+                        a.refId, a.refNo, a.settlePeriod,
+                        a.expectedAmt, a.actualAmt, a.diffAmt, a.reconNote,
+                        a.resolvedBy, a.resolvedDate,
+                        a.regBy, a.regDate, a.updBy, a.updDate,
                         ste.siteNm.as("siteNm"),
                         vnd.vendorNm.as("vendorNm"),
                         raw.prodNm.as("settleRawNm"),
                         cdRt.codeLabel.as("reconTypeCdNm"),
                         cdRs.codeLabel.as("reconStatusCdNm")
                 ))
-                .from(r)
-                .leftJoin(ste).on(ste.siteId.eq(r.siteId))
-                .leftJoin(vnd).on(vnd.vendorId.eq(r.vendorId))
-                .leftJoin(raw).on(raw.settleRawId.eq(r.settleRawId))
-                .leftJoin(cdRt).on(cdRt.codeGrp.eq("RECON_TYPE").and(cdRt.codeValue.eq(r.reconTypeCd)))
-                .leftJoin(cdRs).on(cdRs.codeGrp.eq("RECON_STATUS").and(cdRs.codeValue.eq(r.reconStatusCd)));
+                .from(a)
+                .leftJoin(ste).on(ste.siteId.eq(a.siteId))
+                .leftJoin(vnd).on(vnd.vendorId.eq(a.vendorId))
+                .leftJoin(raw).on(raw.settleRawId.eq(a.settleRawId))
+                .leftJoin(cdRt).on(cdRt.codeGrp.eq("RECON_TYPE").and(cdRt.codeValue.eq(a.reconTypeCd)))
+                .leftJoin(cdRs).on(cdRs.codeGrp.eq("RECON_STATUS").and(cdRs.codeValue.eq(a.reconStatusCd)));
     }
 
     /* 정산 대사(Reconciliation) buildCondition */
@@ -140,13 +140,13 @@ public class QStReconRepositoryImpl implements QStReconRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(StReconDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? r.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* reconId 정확 일치 */
     private BooleanExpression baseAndReconId(StReconDto.Request search) {
         return search != null && StringUtils.hasText(search.getReconId())
-                ? r.reconId.eq(search.getReconId()) : null;
+                ? a.reconId.eq(search.getReconId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -159,8 +159,8 @@ public class QStReconRepositoryImpl implements QStReconRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return r.regDate.goe(start).and(r.regDate.lt(endExcl));
-            case "upd_date": return r.updDate.goe(start).and(r.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -173,19 +173,19 @@ public class QStReconRepositoryImpl implements QStReconRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",reconId,", r.reconId, pattern);
-        or = orLike(or, all, types, ",reconNote,", r.reconNote, pattern);
-        or = orLike(or, all, types, ",reconStatusCd,", r.reconStatusCd, pattern);
-        or = orLike(or, all, types, ",reconStatusCdBefore,", r.reconStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",reconTypeCd,", r.reconTypeCd, pattern);
-        or = orLike(or, all, types, ",refId,", r.refId, pattern);
-        or = orLike(or, all, types, ",refNo,", r.refNo, pattern);
-        or = orLike(or, all, types, ",resolvedBy,", r.resolvedBy, pattern);
-        or = orLike(or, all, types, ",settleId,", r.settleId, pattern);
-        or = orLike(or, all, types, ",settlePeriod,", r.settlePeriod, pattern);
-        or = orLike(or, all, types, ",settleRawId,", r.settleRawId, pattern);
-        or = orLike(or, all, types, ",siteId,", r.siteId, pattern);
-        or = orLike(or, all, types, ",vendorId,", r.vendorId, pattern);
+        or = orLike(or, all, types, ",reconId,", a.reconId, pattern);
+        or = orLike(or, all, types, ",reconNote,", a.reconNote, pattern);
+        or = orLike(or, all, types, ",reconStatusCd,", a.reconStatusCd, pattern);
+        or = orLike(or, all, types, ",reconStatusCdBefore,", a.reconStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",reconTypeCd,", a.reconTypeCd, pattern);
+        or = orLike(or, all, types, ",refId,", a.refId, pattern);
+        or = orLike(or, all, types, ",refNo,", a.refNo, pattern);
+        or = orLike(or, all, types, ",resolvedBy,", a.resolvedBy, pattern);
+        or = orLike(or, all, types, ",settleId,", a.settleId, pattern);
+        or = orLike(or, all, types, ",settlePeriod,", a.settlePeriod, pattern);
+        or = orLike(or, all, types, ",settleRawId,", a.settleRawId, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",vendorId,", a.vendorId, pattern);
         return or;
     }
 
@@ -206,8 +206,8 @@ public class QStReconRepositoryImpl implements QStReconRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = c == null ? null : c.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, r.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, r.reconId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.reconId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -218,17 +218,17 @@ public class QStReconRepositoryImpl implements QStReconRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("reconId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, r.reconId));
+                    orders.add(new OrderSpecifier(order, a.reconId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, r.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, r.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, r.reconId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.reconId));
         }
         return orders;
     }
@@ -238,32 +238,32 @@ public class QStReconRepositoryImpl implements QStReconRepository {
     public int updateSelective(StRecon entity) {
         if (entity.getReconId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(r);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getSiteId()              != null) { update.set(r.siteId,              entity.getSiteId());              hasAny = true; }
-        if (entity.getVendorId()            != null) { update.set(r.vendorId,            entity.getVendorId());            hasAny = true; }
-        if (entity.getReconTypeCd()         != null) { update.set(r.reconTypeCd,         entity.getReconTypeCd());         hasAny = true; }
-        if (entity.getReconStatusCd()       != null) { update.set(r.reconStatusCd,       entity.getReconStatusCd());       hasAny = true; }
-        if (entity.getReconStatusCdBefore() != null) { update.set(r.reconStatusCdBefore, entity.getReconStatusCdBefore()); hasAny = true; }
-        if (entity.getSettleId()            != null) { update.set(r.settleId,            entity.getSettleId());            hasAny = true; }
-        if (entity.getSettleRawId()         != null) { update.set(r.settleRawId,         entity.getSettleRawId());         hasAny = true; }
-        if (entity.getRefId()               != null) { update.set(r.refId,               entity.getRefId());               hasAny = true; }
-        if (entity.getRefNo()               != null) { update.set(r.refNo,               entity.getRefNo());               hasAny = true; }
-        if (entity.getSettlePeriod()        != null) { update.set(r.settlePeriod,        entity.getSettlePeriod());        hasAny = true; }
-        if (entity.getExpectedAmt()         != null) { update.set(r.expectedAmt,         entity.getExpectedAmt());         hasAny = true; }
-        if (entity.getActualAmt()           != null) { update.set(r.actualAmt,           entity.getActualAmt());           hasAny = true; }
-        if (entity.getDiffAmt()             != null) { update.set(r.diffAmt,             entity.getDiffAmt());             hasAny = true; }
-        if (entity.getReconNote()           != null) { update.set(r.reconNote,           entity.getReconNote());           hasAny = true; }
-        if (entity.getResolvedBy()          != null) { update.set(r.resolvedBy,          entity.getResolvedBy());          hasAny = true; }
-        if (entity.getResolvedDate()        != null) { update.set(r.resolvedDate,        entity.getResolvedDate());        hasAny = true; }
-        if (entity.getUpdBy()               != null) { update.set(r.updBy,               entity.getUpdBy());               hasAny = true; }
+        if (entity.getSiteId()              != null) { update.set(a.siteId,              entity.getSiteId());              hasAny = true; }
+        if (entity.getVendorId()            != null) { update.set(a.vendorId,            entity.getVendorId());            hasAny = true; }
+        if (entity.getReconTypeCd()         != null) { update.set(a.reconTypeCd,         entity.getReconTypeCd());         hasAny = true; }
+        if (entity.getReconStatusCd()       != null) { update.set(a.reconStatusCd,       entity.getReconStatusCd());       hasAny = true; }
+        if (entity.getReconStatusCdBefore() != null) { update.set(a.reconStatusCdBefore, entity.getReconStatusCdBefore()); hasAny = true; }
+        if (entity.getSettleId()            != null) { update.set(a.settleId,            entity.getSettleId());            hasAny = true; }
+        if (entity.getSettleRawId()         != null) { update.set(a.settleRawId,         entity.getSettleRawId());         hasAny = true; }
+        if (entity.getRefId()               != null) { update.set(a.refId,               entity.getRefId());               hasAny = true; }
+        if (entity.getRefNo()               != null) { update.set(a.refNo,               entity.getRefNo());               hasAny = true; }
+        if (entity.getSettlePeriod()        != null) { update.set(a.settlePeriod,        entity.getSettlePeriod());        hasAny = true; }
+        if (entity.getExpectedAmt()         != null) { update.set(a.expectedAmt,         entity.getExpectedAmt());         hasAny = true; }
+        if (entity.getActualAmt()           != null) { update.set(a.actualAmt,           entity.getActualAmt());           hasAny = true; }
+        if (entity.getDiffAmt()             != null) { update.set(a.diffAmt,             entity.getDiffAmt());             hasAny = true; }
+        if (entity.getReconNote()           != null) { update.set(a.reconNote,           entity.getReconNote());           hasAny = true; }
+        if (entity.getResolvedBy()          != null) { update.set(a.resolvedBy,          entity.getResolvedBy());          hasAny = true; }
+        if (entity.getResolvedDate()        != null) { update.set(a.resolvedDate,        entity.getResolvedDate());        hasAny = true; }
+        if (entity.getUpdBy()               != null) { update.set(a.updBy,               entity.getUpdBy());               hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(r.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(r.reconId.eq(entity.getReconId())).execute();
+        long affected = update.where(a.reconId.eq(entity.getReconId())).execute();
         return (int) affected;
     }
 }

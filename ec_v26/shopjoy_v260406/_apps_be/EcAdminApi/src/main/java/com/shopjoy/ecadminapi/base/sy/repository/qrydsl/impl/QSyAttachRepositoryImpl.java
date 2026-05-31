@@ -33,10 +33,25 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
     private static final QSySite ste = QSySite.sySite;
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+    /* 첨부파일 baseSelColumnQuery */
+    private JPAQuery<SyAttachDto.Item> baseSelColumnQuery() {
+        return queryFactory
+                .select(Projections.bean(SyAttachDto.Item.class,
+                        a.attachId, a.siteId, a.attachGrpId, a.fileNm, a.fileSize, a.fileExt,
+                        a.mimeTypeCd, a.storedNm, a.attachUrl, a.storagePath, a.physicalPath,
+                        a.cdnHost, a.cdnImgUrl, a.cdnThumbUrl, a.thumbFileNm, a.thumbStoredNm,
+                        a.thumbUrl, a.thumbCdnUrl, a.thumbGeneratedYn, a.sortOrd, a.attachMemo,
+                        a.regBy, a.regDate, a.updBy, a.updDate,
+                        ste.siteNm.as("siteNm")
+                ))
+                .from(a)
+                .leftJoin(ste).on(ste.siteId.eq(a.siteId));
+    }
+
     /* 첨부파일 키조회 */
     @Override
     public Optional<SyAttachDto.Item> selectById(String attachId) {
-        SyAttachDto.Item dto = baseQuery().where(a.attachId.eq(attachId)).fetchOne();
+        SyAttachDto.Item dto = baseSelColumnQuery().where(a.attachId.eq(attachId)).fetchOne();
         return Optional.ofNullable(dto);
     }
 
@@ -44,7 +59,7 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
     @Override
     public List<SyAttachDto.Item> selectList(SyAttachDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search, false);
-        JPAQuery<SyAttachDto.Item> query = baseQuery().where(
+        JPAQuery<SyAttachDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndAttachId(search),
                 baseAndAttachGrpId(search),
@@ -70,7 +85,7 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search, true);
 
-        JPAQuery<SyAttachDto.Item> query = baseQuery().where(
+        JPAQuery<SyAttachDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndAttachId(search),
                 baseAndAttachGrpId(search),
@@ -91,22 +106,6 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
         SyAttachDto.PageResponse res = new SyAttachDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-
-    /* 첨부파일 baseQuery */
-    private JPAQuery<SyAttachDto.Item> baseQuery() {
-        return queryFactory
-                .select(Projections.bean(SyAttachDto.Item.class,
-                        a.attachId, a.siteId, a.attachGrpId, a.fileNm, a.fileSize, a.fileExt,
-                        a.mimeTypeCd, a.storedNm, a.attachUrl, a.storagePath, a.physicalPath,
-                        a.cdnHost, a.cdnImgUrl, a.cdnThumbUrl, a.thumbFileNm, a.thumbStoredNm,
-                        a.thumbUrl, a.thumbCdnUrl, a.thumbGeneratedYn, a.sortOrd, a.attachMemo,
-                        a.regBy, a.regDate, a.updBy, a.updDate,
-                        ste.siteNm.as("siteNm")
-                ))
-                .from(a)
-                .leftJoin(ste).on(ste.siteId.eq(a.siteId));
-    }
-
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
@@ -222,6 +221,8 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
     }
 
     /* 첨부파일 수정 */
+
+
     @Override
     public int updateSelective(SyAttach entity) {
         if (entity.getAttachId() == null) return 0;

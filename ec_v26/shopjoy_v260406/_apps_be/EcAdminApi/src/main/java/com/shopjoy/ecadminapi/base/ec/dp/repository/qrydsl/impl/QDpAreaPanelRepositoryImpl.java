@@ -28,19 +28,29 @@ public class QDpAreaPanelRepositoryImpl implements QDpAreaPanelRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpAreaPanelRepositoryImpl";
-    private static final QDpAreaPanel p = QDpAreaPanel.dpAreaPanel;
+    private static final QDpAreaPanel a = QDpAreaPanel.dpAreaPanel;
+
+    /* 전시 영역-패널 매핑 baseSelColumnQuery */
+    private JPAQuery<DpAreaPanelDto.Item> baseSelColumnQuery() {
+        return queryFactory.select(Projections.bean(DpAreaPanelDto.Item.class,
+                a.areaPanelId, a.areaId, a.panelId, a.panelSortOrd,
+                a.visibilityTargets, a.dispYn, a.dispStartDt, a.dispEndDt,
+                a.dispEnv, a.useYn,
+                a.regBy, a.regDate, a.updBy, a.updDate
+        )).from(a);
+    }
 
     /* 전시 영역-패널 매핑 키조회 */
     @Override
     public Optional<DpAreaPanelDto.Item> selectById(String areaPanelId) {
-        return Optional.ofNullable(baseQuery().where(p.areaPanelId.eq(areaPanelId)).fetchOne());
+        return Optional.ofNullable(baseSelColumnQuery().where(a.areaPanelId.eq(areaPanelId)).fetchOne());
     }
 
     /* 전시 영역-패널 매핑 목록조회 */
     @Override
     public List<DpAreaPanelDto.Item> selectList(DpAreaPanelDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<DpAreaPanelDto.Item> query = baseQuery().where(
+        JPAQuery<DpAreaPanelDto.Item> query = baseSelColumnQuery().where(
                 baseAndAreaIds(search),
                 baseAndAreaId(search),
                 baseAndAreaPanelId(search),
@@ -62,7 +72,7 @@ public class QDpAreaPanelRepositoryImpl implements QDpAreaPanelRepository {
         int pageNo = search != null && search.getPageNo() != null && search.getPageNo() > 0 ? search.getPageNo() : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<DpAreaPanelDto.Item> query = baseQuery().where(
+        JPAQuery<DpAreaPanelDto.Item> query = baseSelColumnQuery().where(
                 baseAndAreaIds(search),
                 baseAndAreaId(search),
                 baseAndAreaPanelId(search),
@@ -72,7 +82,7 @@ public class QDpAreaPanelRepositoryImpl implements QDpAreaPanelRepository {
         );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<DpAreaPanelDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
-        Long total = queryFactory.select(p.count()).from(p).where(
+        Long total = queryFactory.select(a.count()).from(a).where(
                 baseAndAreaIds(search),
                 baseAndAreaId(search),
                 baseAndAreaPanelId(search),
@@ -83,17 +93,6 @@ public class QDpAreaPanelRepositoryImpl implements QDpAreaPanelRepository {
         DpAreaPanelDto.PageResponse res = new DpAreaPanelDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-
-    /* 전시 영역-패널 매핑 baseQuery */
-    private JPAQuery<DpAreaPanelDto.Item> baseQuery() {
-        return queryFactory.select(Projections.bean(DpAreaPanelDto.Item.class,
-                p.areaPanelId, p.areaId, p.panelId, p.panelSortOrd,
-                p.visibilityTargets, p.dispYn, p.dispStartDt, p.dispEndDt,
-                p.dispEnv, p.useYn,
-                p.regBy, p.regDate, p.updBy, p.updDate
-        )).from(p);
-    }
-
     /* ============================================================
      * 검색조건 -- 개별 andXxx() BooleanExpression 반환 메서드 모음
      * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
@@ -103,25 +102,25 @@ public class QDpAreaPanelRepositoryImpl implements QDpAreaPanelRepository {
     /* areaIds (IN) */
     private BooleanExpression baseAndAreaIds(DpAreaPanelDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getAreaIds())
-                ? p.areaId.in(search.getAreaIds()) : null;
+                ? a.areaId.in(search.getAreaIds()) : null;
     }
 
     /* areaId 정확 일치 */
     private BooleanExpression baseAndAreaId(DpAreaPanelDto.Request search) {
         return search != null && StringUtils.hasText(search.getAreaId())
-                ? p.areaId.eq(search.getAreaId()) : null;
+                ? a.areaId.eq(search.getAreaId()) : null;
     }
 
     /* areaPanelId 정확 일치 */
     private BooleanExpression baseAndAreaPanelId(DpAreaPanelDto.Request search) {
         return search != null && StringUtils.hasText(search.getAreaPanelId())
-                ? p.areaPanelId.eq(search.getAreaPanelId()) : null;
+                ? a.areaPanelId.eq(search.getAreaPanelId()) : null;
     }
 
     /* useYn 정확 일치 */
     private BooleanExpression baseAndUseYn(DpAreaPanelDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
-                ? p.useYn.eq(search.getUseYn()) : null;
+                ? a.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -134,8 +133,8 @@ public class QDpAreaPanelRepositoryImpl implements QDpAreaPanelRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return p.regDate.goe(start).and(p.regDate.lt(endExcl));
-            case "upd_date": return p.updDate.goe(start).and(p.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default:         return null;
         }
     }
@@ -148,14 +147,14 @@ public class QDpAreaPanelRepositoryImpl implements QDpAreaPanelRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",areaId,",            p.areaId,            pattern);
-        or = orLike(or, all, types, ",areaPanelId,",       p.areaPanelId,       pattern);
-        or = orLike(or, all, types, ",dispEnv,",           p.dispEnv,           pattern);
-        or = orLike(or, all, types, ",dispYn,",            p.dispYn,            pattern);
-        or = orLike(or, all, types, ",panelId,",           p.panelId,           pattern);
-        or = orLike(or, all, types, ",siteId,",            p.siteId,            pattern);
-        or = orLike(or, all, types, ",useYn,",             p.useYn,             pattern);
-        or = orLike(or, all, types, ",visibilityTargets,", p.visibilityTargets, pattern);
+        or = orLike(or, all, types, ",areaId,",            a.areaId,            pattern);
+        or = orLike(or, all, types, ",areaPanelId,",       a.areaPanelId,       pattern);
+        or = orLike(or, all, types, ",dispEnv,",           a.dispEnv,           pattern);
+        or = orLike(or, all, types, ",dispYn,",            a.dispYn,            pattern);
+        or = orLike(or, all, types, ",panelId,",           a.panelId,           pattern);
+        or = orLike(or, all, types, ",siteId,",            a.siteId,            pattern);
+        or = orLike(or, all, types, ",useYn,",             a.useYn,             pattern);
+        or = orLike(or, all, types, ",visibilityTargets,", a.visibilityTargets, pattern);
         return or;
     }
 
@@ -176,8 +175,8 @@ public class QDpAreaPanelRepositoryImpl implements QDpAreaPanelRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, p.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, p.areaPanelId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.areaPanelId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -188,40 +187,42 @@ public class QDpAreaPanelRepositoryImpl implements QDpAreaPanelRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("areaPanelId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, p.areaPanelId));
+                    orders.add(new OrderSpecifier(order, a.areaPanelId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, p.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, p.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, p.areaPanelId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.areaPanelId));
         }
         return orders;
     }
 
     /* 전시 영역-패널 매핑 수정 */
+
+
     @Override
     public int updateSelective(DpAreaPanel entity) {
         if (entity.getAreaPanelId() == null) return 0;
-        JPAUpdateClause update = queryFactory.update(p);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
-        if (entity.getAreaId()            != null) { update.set(p.areaId,            entity.getAreaId());            hasAny = true; }
-        if (entity.getPanelId()           != null) { update.set(p.panelId,           entity.getPanelId());           hasAny = true; }
-        if (entity.getPanelSortOrd()      != null) { update.set(p.panelSortOrd,      entity.getPanelSortOrd());      hasAny = true; }
-        if (entity.getVisibilityTargets() != null) { update.set(p.visibilityTargets, entity.getVisibilityTargets()); hasAny = true; }
-        if (entity.getDispYn()            != null) { update.set(p.dispYn,            entity.getDispYn());            hasAny = true; }
-        if (entity.getDispStartDt()       != null) { update.set(p.dispStartDt,       entity.getDispStartDt());       hasAny = true; }
-        if (entity.getDispEndDt()         != null) { update.set(p.dispEndDt,         entity.getDispEndDt());         hasAny = true; }
-        if (entity.getDispEnv()           != null) { update.set(p.dispEnv,           entity.getDispEnv());           hasAny = true; }
-        if (entity.getUseYn()             != null) { update.set(p.useYn,             entity.getUseYn());             hasAny = true; }
-        if (entity.getUpdBy()             != null) { update.set(p.updBy,             entity.getUpdBy());             hasAny = true; }
+        if (entity.getAreaId()            != null) { update.set(a.areaId,            entity.getAreaId());            hasAny = true; }
+        if (entity.getPanelId()           != null) { update.set(a.panelId,           entity.getPanelId());           hasAny = true; }
+        if (entity.getPanelSortOrd()      != null) { update.set(a.panelSortOrd,      entity.getPanelSortOrd());      hasAny = true; }
+        if (entity.getVisibilityTargets() != null) { update.set(a.visibilityTargets, entity.getVisibilityTargets()); hasAny = true; }
+        if (entity.getDispYn()            != null) { update.set(a.dispYn,            entity.getDispYn());            hasAny = true; }
+        if (entity.getDispStartDt()       != null) { update.set(a.dispStartDt,       entity.getDispStartDt());       hasAny = true; }
+        if (entity.getDispEndDt()         != null) { update.set(a.dispEndDt,         entity.getDispEndDt());         hasAny = true; }
+        if (entity.getDispEnv()           != null) { update.set(a.dispEnv,           entity.getDispEnv());           hasAny = true; }
+        if (entity.getUseYn()             != null) { update.set(a.useYn,             entity.getUseYn());             hasAny = true; }
+        if (entity.getUpdBy()             != null) { update.set(a.updBy,             entity.getUpdBy());             hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(p.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
         if (!hasAny) return 0;
-        return (int) update.where(p.areaPanelId.eq(entity.getAreaPanelId())).execute();
+        return (int) update.where(a.areaPanelId.eq(entity.getAreaPanelId())).execute();
     }
 }

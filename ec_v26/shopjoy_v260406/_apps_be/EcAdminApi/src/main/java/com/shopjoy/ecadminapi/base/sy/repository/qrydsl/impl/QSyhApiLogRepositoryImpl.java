@@ -29,38 +29,38 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhApiLogRepositoryImpl";
-    private static final QSyhApiLog l   = QSyhApiLog.syhApiLog;
+    private static final QSyhApiLog a   = QSyhApiLog.syhApiLog;
     private static final QSySite    ste = QSySite.sySite;
 
     /* API 로그 buildBaseQuery */
     private JPAQuery<SyhApiLogDto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(SyhApiLogDto.Item.class,
-                        l.logId,
-                        l.siteId,
-                        l.apiTypeCd,
-                        l.apiNm,
-                        l.uiNm,
-                        l.cmdNm,
-                        l.methodCd,
-                        l.endpoint,
-                        l.reqBody,
-                        l.resBody,
-                        l.httpStatus,
-                        l.resultCd,
-                        l.errorMsg,
-                        l.elapsedMs,
-                        l.refTypeCd,
-                        l.refId,
-                        l.callDate,
-                        l.regBy,
-                        l.regDate,
-                        l.updBy,
-                        l.updDate,
+                        a.logId,
+                        a.siteId,
+                        a.apiTypeCd,
+                        a.apiNm,
+                        a.uiNm,
+                        a.cmdNm,
+                        a.methodCd,
+                        a.endpoint,
+                        a.reqBody,
+                        a.resBody,
+                        a.httpStatus,
+                        a.resultCd,
+                        a.errorMsg,
+                        a.elapsedMs,
+                        a.refTypeCd,
+                        a.refId,
+                        a.callDate,
+                        a.regBy,
+                        a.regDate,
+                        a.updBy,
+                        a.updDate,
                         ste.siteNm.as("siteNm")
                 ))
-                .from(l)
-                .leftJoin(ste).on(ste.siteId.eq(l.siteId));
+                .from(a)
+                .leftJoin(ste).on(ste.siteId.eq(a.siteId));
     }
 
     /* API 로그 키조회 */
@@ -68,7 +68,7 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
     public Optional<SyhApiLogDto.Item> selectById(String id) {
         SyhApiLogDto.Item dto = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
-                .where(l.logId.eq(id))
+                .where(a.logId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -121,8 +121,8 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
         List<SyhApiLogDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(l.count())
-                .from(l)
+                .select(a.count())
+                .from(a)
                 .where(
                 baseAndSiteId(search),
                 baseAndLogId(search),
@@ -146,19 +146,19 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(SyhApiLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? l.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* logId 정확 일치 */
     private BooleanExpression baseAndLogId(SyhApiLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getLogId())
-                ? l.logId.eq(search.getLogId()) : null;
+                ? a.logId.eq(search.getLogId()) : null;
     }
 
     /* apiTypeCd 정확 일치 */
     private BooleanExpression baseAndTypeCd(SyhApiLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getTypeCd())
-                ? l.apiTypeCd.eq(search.getTypeCd()) : null;
+                ? a.apiTypeCd.eq(search.getTypeCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -171,8 +171,8 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return l.regDate.goe(start).and(l.regDate.lt(endExcl));
-            case "upd_date": return l.updDate.goe(start).and(l.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -185,20 +185,20 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",apiNm,", l.apiNm, pattern);
-        or = orLike(or, all, types, ",apiTypeCd,", l.apiTypeCd, pattern);
-        or = orLike(or, all, types, ",cmdNm,", l.cmdNm, pattern);
-        or = orLike(or, all, types, ",endpoint,", l.endpoint, pattern);
-        or = orLike(or, all, types, ",errorMsg,", l.errorMsg, pattern);
-        or = orLike(or, all, types, ",logId,", l.logId, pattern);
-        or = orLike(or, all, types, ",methodCd,", l.methodCd, pattern);
-        or = orLike(or, all, types, ",refId,", l.refId, pattern);
-        or = orLike(or, all, types, ",refTypeCd,", l.refTypeCd, pattern);
-        or = orLike(or, all, types, ",reqBody,", l.reqBody, pattern);
-        or = orLike(or, all, types, ",resBody,", l.resBody, pattern);
-        or = orLike(or, all, types, ",resultCd,", l.resultCd, pattern);
-        or = orLike(or, all, types, ",siteId,", l.siteId, pattern);
-        or = orLike(or, all, types, ",uiNm,", l.uiNm, pattern);
+        or = orLike(or, all, types, ",apiNm,", a.apiNm, pattern);
+        or = orLike(or, all, types, ",apiTypeCd,", a.apiTypeCd, pattern);
+        or = orLike(or, all, types, ",cmdNm,", a.cmdNm, pattern);
+        or = orLike(or, all, types, ",endpoint,", a.endpoint, pattern);
+        or = orLike(or, all, types, ",errorMsg,", a.errorMsg, pattern);
+        or = orLike(or, all, types, ",logId,", a.logId, pattern);
+        or = orLike(or, all, types, ",methodCd,", a.methodCd, pattern);
+        or = orLike(or, all, types, ",refId,", a.refId, pattern);
+        or = orLike(or, all, types, ",refTypeCd,", a.refTypeCd, pattern);
+        or = orLike(or, all, types, ",reqBody,", a.reqBody, pattern);
+        or = orLike(or, all, types, ",resBody,", a.resBody, pattern);
+        or = orLike(or, all, types, ",resultCd,", a.resultCd, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",uiNm,", a.uiNm, pattern);
         return or;
     }
 
@@ -219,8 +219,8 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, l.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, l.logId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.logId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -231,19 +231,19 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("logId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, l.logId));
+                    orders.add(new OrderSpecifier(order, a.logId));
                 } else if ("apiNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, l.apiNm));
+                    orders.add(new OrderSpecifier(order, a.apiNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, l.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, l.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, l.logId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.logId));
         }
         return orders;
     }
@@ -253,32 +253,32 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
     public int updateSelective(SyhApiLog entity) {
         if (entity.getLogId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(l);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getSiteId()     != null) { update.set(l.siteId,     entity.getSiteId());     hasAny = true; }
-        if (entity.getApiTypeCd()  != null) { update.set(l.apiTypeCd,  entity.getApiTypeCd());  hasAny = true; }
-        if (entity.getApiNm()      != null) { update.set(l.apiNm,      entity.getApiNm());      hasAny = true; }
-        if (entity.getUiNm()       != null) { update.set(l.uiNm,       entity.getUiNm());       hasAny = true; }
-        if (entity.getCmdNm()      != null) { update.set(l.cmdNm,      entity.getCmdNm());      hasAny = true; }
-        if (entity.getMethodCd()   != null) { update.set(l.methodCd,   entity.getMethodCd());   hasAny = true; }
-        if (entity.getEndpoint()   != null) { update.set(l.endpoint,   entity.getEndpoint());   hasAny = true; }
-        if (entity.getReqBody()    != null) { update.set(l.reqBody,    entity.getReqBody());    hasAny = true; }
-        if (entity.getResBody()    != null) { update.set(l.resBody,    entity.getResBody());    hasAny = true; }
-        if (entity.getHttpStatus() != null) { update.set(l.httpStatus, entity.getHttpStatus()); hasAny = true; }
-        if (entity.getResultCd()   != null) { update.set(l.resultCd,   entity.getResultCd());   hasAny = true; }
-        if (entity.getErrorMsg()   != null) { update.set(l.errorMsg,   entity.getErrorMsg());   hasAny = true; }
-        if (entity.getElapsedMs()  != null) { update.set(l.elapsedMs,  entity.getElapsedMs());  hasAny = true; }
-        if (entity.getRefTypeCd()  != null) { update.set(l.refTypeCd,  entity.getRefTypeCd());  hasAny = true; }
-        if (entity.getRefId()      != null) { update.set(l.refId,      entity.getRefId());      hasAny = true; }
-        if (entity.getCallDate()   != null) { update.set(l.callDate,   entity.getCallDate());   hasAny = true; }
-        if (entity.getUpdBy()      != null) { update.set(l.updBy,      entity.getUpdBy());      hasAny = true; }
+        if (entity.getSiteId()     != null) { update.set(a.siteId,     entity.getSiteId());     hasAny = true; }
+        if (entity.getApiTypeCd()  != null) { update.set(a.apiTypeCd,  entity.getApiTypeCd());  hasAny = true; }
+        if (entity.getApiNm()      != null) { update.set(a.apiNm,      entity.getApiNm());      hasAny = true; }
+        if (entity.getUiNm()       != null) { update.set(a.uiNm,       entity.getUiNm());       hasAny = true; }
+        if (entity.getCmdNm()      != null) { update.set(a.cmdNm,      entity.getCmdNm());      hasAny = true; }
+        if (entity.getMethodCd()   != null) { update.set(a.methodCd,   entity.getMethodCd());   hasAny = true; }
+        if (entity.getEndpoint()   != null) { update.set(a.endpoint,   entity.getEndpoint());   hasAny = true; }
+        if (entity.getReqBody()    != null) { update.set(a.reqBody,    entity.getReqBody());    hasAny = true; }
+        if (entity.getResBody()    != null) { update.set(a.resBody,    entity.getResBody());    hasAny = true; }
+        if (entity.getHttpStatus() != null) { update.set(a.httpStatus, entity.getHttpStatus()); hasAny = true; }
+        if (entity.getResultCd()   != null) { update.set(a.resultCd,   entity.getResultCd());   hasAny = true; }
+        if (entity.getErrorMsg()   != null) { update.set(a.errorMsg,   entity.getErrorMsg());   hasAny = true; }
+        if (entity.getElapsedMs()  != null) { update.set(a.elapsedMs,  entity.getElapsedMs());  hasAny = true; }
+        if (entity.getRefTypeCd()  != null) { update.set(a.refTypeCd,  entity.getRefTypeCd());  hasAny = true; }
+        if (entity.getRefId()      != null) { update.set(a.refId,      entity.getRefId());      hasAny = true; }
+        if (entity.getCallDate()   != null) { update.set(a.callDate,   entity.getCallDate());   hasAny = true; }
+        if (entity.getUpdBy()      != null) { update.set(a.updBy,      entity.getUpdBy());      hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(l.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(l.logId.eq(entity.getLogId())).execute();
+        long affected = update.where(a.logId.eq(entity.getLogId())).execute();
         return (int) affected;
     }
 }

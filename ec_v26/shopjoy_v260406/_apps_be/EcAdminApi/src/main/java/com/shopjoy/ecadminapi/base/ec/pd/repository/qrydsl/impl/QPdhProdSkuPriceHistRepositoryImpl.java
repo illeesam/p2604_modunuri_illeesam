@@ -29,7 +29,7 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdhProdSkuPriceHistRepositoryImpl";
-    private static final QPdhProdSkuPriceHist h   = QPdhProdSkuPriceHist.pdhProdSkuPriceHist;
+    private static final QPdhProdSkuPriceHist a   = QPdhProdSkuPriceHist.pdhProdSkuPriceHist;
     private static final QSySite              ste = QSySite.sySite;
     private static final QPdProd              prd = QPdProd.pdProd;
 
@@ -37,21 +37,21 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
     private JPAQuery<PdhProdSkuPriceHistDto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(PdhProdSkuPriceHistDto.Item.class,
-                        h.histId,
-                        h.siteId,
-                        h.skuId,
-                        h.prodId,
-                        h.addPriceBefore,
-                        h.addPriceAfter,
-                        h.chgReason,
-                        h.chgBy,
-                        h.chgDate,
-                        h.regBy,
-                        h.regDate
+                        a.histId,
+                        a.siteId,
+                        a.skuId,
+                        a.prodId,
+                        a.addPriceBefore,
+                        a.addPriceAfter,
+                        a.chgReason,
+                        a.chgBy,
+                        a.chgDate,
+                        a.regBy,
+                        a.regDate
                 ))
-                .from(h)
-                .leftJoin(ste).on(ste.siteId.eq(h.siteId))
-                .leftJoin(prd).on(prd.prodId.eq(h.prodId));
+                .from(a)
+                .leftJoin(ste).on(ste.siteId.eq(a.siteId))
+                .leftJoin(prd).on(prd.prodId.eq(a.prodId));
     }
 
     /* 상품 SKU 가격 이력 키조회 */
@@ -59,7 +59,7 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
     public Optional<PdhProdSkuPriceHistDto.Item> selectById(String id) {
         PdhProdSkuPriceHistDto.Item dto = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
-                .where(h.histId.eq(id))
+                .where(a.histId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -108,8 +108,8 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
         List<PdhProdSkuPriceHistDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(h.count())
-                .from(h)
+                .select(a.count())
+                .from(a)
                 .where(
                 baseAndSiteId(search),
                 baseAndHistId(search),
@@ -131,13 +131,13 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(PdhProdSkuPriceHistDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? h.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* histId 정확 일치 */
     private BooleanExpression baseAndHistId(PdhProdSkuPriceHistDto.Request search) {
         return search != null && StringUtils.hasText(search.getHistId())
-                ? h.histId.eq(search.getHistId()) : null;
+                ? a.histId.eq(search.getHistId()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
@@ -148,12 +148,12 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",chgBy,", h.chgBy, pattern);
-        or = orLike(or, all, types, ",chgReason,", h.chgReason, pattern);
-        or = orLike(or, all, types, ",histId,", h.histId, pattern);
-        or = orLike(or, all, types, ",prodId,", h.prodId, pattern);
-        or = orLike(or, all, types, ",siteId,", h.siteId, pattern);
-        or = orLike(or, all, types, ",skuId,", h.skuId, pattern);
+        or = orLike(or, all, types, ",chgBy,", a.chgBy, pattern);
+        or = orLike(or, all, types, ",chgReason,", a.chgReason, pattern);
+        or = orLike(or, all, types, ",histId,", a.histId, pattern);
+        or = orLike(or, all, types, ",prodId,", a.prodId, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",skuId,", a.skuId, pattern);
         return or;
     }
 
@@ -174,8 +174,8 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, h.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, h.histId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.histId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -186,17 +186,17 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("histId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, h.histId));
+                    orders.add(new OrderSpecifier(order, a.histId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, h.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, h.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, h.histId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.histId));
         }
         return orders;
     }
@@ -206,21 +206,21 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
     public int updateSelective(PdhProdSkuPriceHist entity) {
         if (entity.getHistId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(h);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getSiteId()         != null) { update.set(h.siteId,         entity.getSiteId());         hasAny = true; }
-        if (entity.getSkuId()          != null) { update.set(h.skuId,          entity.getSkuId());          hasAny = true; }
-        if (entity.getProdId()         != null) { update.set(h.prodId,         entity.getProdId());         hasAny = true; }
-        if (entity.getAddPriceBefore() != null) { update.set(h.addPriceBefore, entity.getAddPriceBefore()); hasAny = true; }
-        if (entity.getAddPriceAfter()  != null) { update.set(h.addPriceAfter,  entity.getAddPriceAfter());  hasAny = true; }
-        if (entity.getChgReason()      != null) { update.set(h.chgReason,      entity.getChgReason());      hasAny = true; }
-        if (entity.getChgBy()          != null) { update.set(h.chgBy,          entity.getChgBy());          hasAny = true; }
-        if (entity.getChgDate()        != null) { update.set(h.chgDate,        entity.getChgDate());        hasAny = true; }
+        if (entity.getSiteId()         != null) { update.set(a.siteId,         entity.getSiteId());         hasAny = true; }
+        if (entity.getSkuId()          != null) { update.set(a.skuId,          entity.getSkuId());          hasAny = true; }
+        if (entity.getProdId()         != null) { update.set(a.prodId,         entity.getProdId());         hasAny = true; }
+        if (entity.getAddPriceBefore() != null) { update.set(a.addPriceBefore, entity.getAddPriceBefore()); hasAny = true; }
+        if (entity.getAddPriceAfter()  != null) { update.set(a.addPriceAfter,  entity.getAddPriceAfter());  hasAny = true; }
+        if (entity.getChgReason()      != null) { update.set(a.chgReason,      entity.getChgReason());      hasAny = true; }
+        if (entity.getChgBy()          != null) { update.set(a.chgBy,          entity.getChgBy());          hasAny = true; }
+        if (entity.getChgDate()        != null) { update.set(a.chgDate,        entity.getChgDate());        hasAny = true; }
 
         if (!hasAny) return 0;
 
-        long affected = update.where(h.histId.eq(entity.getHistId())).execute();
+        long affected = update.where(a.histId.eq(entity.getHistId())).execute();
         return (int) affected;
     }
 }

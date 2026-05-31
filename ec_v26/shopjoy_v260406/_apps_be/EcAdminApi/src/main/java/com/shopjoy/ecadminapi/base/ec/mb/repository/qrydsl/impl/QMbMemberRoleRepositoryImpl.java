@@ -30,22 +30,39 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.mb.repository.qrydsl.impl.QMbMemberRoleRepositoryImpl";
-    private static final QMbMemberRole r   = QMbMemberRole.mbMemberRole;
+    private static final QMbMemberRole a   = QMbMemberRole.mbMemberRole;
     private static final QMbMember     mem = QMbMember.mbMember;
     private static final QSyRole       rol = QSyRole.syRole;
     private static final QSyUser       gu  = new QSyUser("gu");
 
+    /* 회원 역할 연결 baseSelColumnQuery */
+    private JPAQuery<MbMemberRoleDto.Item> baseSelColumnQuery() {
+        return queryFactory
+                .select(Projections.bean(MbMemberRoleDto.Item.class,
+                        a.memberRoleId, a.memberId, a.roleId, a.grantUserId,
+                        a.grantDate, a.validFrom, a.validTo, a.memberRoleRemark,
+                        a.regBy, a.regDate, a.updBy, a.updDate,
+                        mem.memberNm.as("memberNm"),
+                        rol.roleNm.as("roleNm"),
+                        gu.userNm.as("grantUserNm")
+                ))
+                .from(a)
+                .leftJoin(mem).on(mem.memberId.eq(a.memberId))
+                .leftJoin(rol).on(rol.roleId.eq(a.roleId))
+                .leftJoin(gu).on(gu.userId.eq(a.grantUserId));
+    }
+
     /* 회원 역할 연결 키조회 */
     @Override
     public Optional<MbMemberRoleDto.Item> selectById(String memberRoleId) {
-        return Optional.ofNullable(baseQuery().where(r.memberRoleId.eq(memberRoleId)).fetchOne());
+        return Optional.ofNullable(baseSelColumnQuery().where(a.memberRoleId.eq(memberRoleId)).fetchOne());
     }
 
     /* 회원 역할 연결 목록조회 */
     @Override
     public List<MbMemberRoleDto.Item> selectList(MbMemberRoleDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<MbMemberRoleDto.Item> query = baseQuery().where(
+        JPAQuery<MbMemberRoleDto.Item> query = baseSelColumnQuery().where(
                 baseAndMemberRoleId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
@@ -65,7 +82,7 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<MbMemberRoleDto.Item> query = baseQuery().where(
+        JPAQuery<MbMemberRoleDto.Item> query = baseSelColumnQuery().where(
                 baseAndMemberRoleId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
@@ -73,7 +90,7 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<MbMemberRoleDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(r.count()).from(r).where(
+        Long total = queryFactory.select(a.count()).from(a).where(
                 baseAndMemberRoleId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
@@ -82,24 +99,6 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
         MbMemberRoleDto.PageResponse res = new MbMemberRoleDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-
-    /* 회원 역할 연결 baseQuery */
-    private JPAQuery<MbMemberRoleDto.Item> baseQuery() {
-        return queryFactory
-                .select(Projections.bean(MbMemberRoleDto.Item.class,
-                        r.memberRoleId, r.memberId, r.roleId, r.grantUserId,
-                        r.grantDate, r.validFrom, r.validTo, r.memberRoleRemark,
-                        r.regBy, r.regDate, r.updBy, r.updDate,
-                        mem.memberNm.as("memberNm"),
-                        rol.roleNm.as("roleNm"),
-                        gu.userNm.as("grantUserNm")
-                ))
-                .from(r)
-                .leftJoin(mem).on(mem.memberId.eq(r.memberId))
-                .leftJoin(rol).on(rol.roleId.eq(r.roleId))
-                .leftJoin(gu).on(gu.userId.eq(r.grantUserId));
-    }
-
     /* 회원 역할 연결 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
@@ -110,7 +109,7 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
     /* memberRoleId 정확 일치 */
     private BooleanExpression baseAndMemberRoleId(MbMemberRoleDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberRoleId())
-                ? r.memberRoleId.eq(search.getMemberRoleId()) : null;
+                ? a.memberRoleId.eq(search.getMemberRoleId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -123,8 +122,8 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return r.regDate.goe(start).and(r.regDate.lt(endExcl));
-            case "upd_date": return r.updDate.goe(start).and(r.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -137,12 +136,12 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",grantUserId,", r.grantUserId, pattern);
-        or = orLike(or, all, types, ",memberId,", r.memberId, pattern);
-        or = orLike(or, all, types, ",memberRoleId,", r.memberRoleId, pattern);
-        or = orLike(or, all, types, ",memberRoleRemark,", r.memberRoleRemark, pattern);
-        or = orLike(or, all, types, ",roleId,", r.roleId, pattern);
-        or = orLike(or, all, types, ",siteId,", r.siteId, pattern);
+        or = orLike(or, all, types, ",grantUserId,", a.grantUserId, pattern);
+        or = orLike(or, all, types, ",memberId,", a.memberId, pattern);
+        or = orLike(or, all, types, ",memberRoleId,", a.memberRoleId, pattern);
+        or = orLike(or, all, types, ",memberRoleRemark,", a.memberRoleRemark, pattern);
+        or = orLike(or, all, types, ",roleId,", a.roleId, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
         return or;
     }
 
@@ -163,8 +162,8 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, r.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, r.memberRoleId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.memberRoleId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -175,38 +174,40 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("memberRoleId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, r.memberRoleId));
+                    orders.add(new OrderSpecifier(order, a.memberRoleId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, r.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, r.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, r.memberRoleId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.memberRoleId));
         }
         return orders;
     }
 
     /* 회원 역할 연결 수정 */
+
+
     @Override
     public int updateSelective(MbMemberRole entity) {
         if (entity.getMemberRoleId() == null) return 0;
-        JPAUpdateClause update = queryFactory.update(r);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
-        if (entity.getMemberId()         != null) { update.set(r.memberId,         entity.getMemberId());         hasAny = true; }
-        if (entity.getRoleId()           != null) { update.set(r.roleId,           entity.getRoleId());           hasAny = true; }
-        if (entity.getGrantUserId()      != null) { update.set(r.grantUserId,      entity.getGrantUserId());      hasAny = true; }
-        if (entity.getGrantDate()        != null) { update.set(r.grantDate,        entity.getGrantDate());        hasAny = true; }
-        if (entity.getValidFrom()        != null) { update.set(r.validFrom,        entity.getValidFrom());        hasAny = true; }
-        if (entity.getValidTo()          != null) { update.set(r.validTo,          entity.getValidTo());          hasAny = true; }
-        if (entity.getMemberRoleRemark() != null) { update.set(r.memberRoleRemark, entity.getMemberRoleRemark()); hasAny = true; }
-        if (entity.getUpdBy()            != null) { update.set(r.updBy,            entity.getUpdBy());            hasAny = true; }
+        if (entity.getMemberId()         != null) { update.set(a.memberId,         entity.getMemberId());         hasAny = true; }
+        if (entity.getRoleId()           != null) { update.set(a.roleId,           entity.getRoleId());           hasAny = true; }
+        if (entity.getGrantUserId()      != null) { update.set(a.grantUserId,      entity.getGrantUserId());      hasAny = true; }
+        if (entity.getGrantDate()        != null) { update.set(a.grantDate,        entity.getGrantDate());        hasAny = true; }
+        if (entity.getValidFrom()        != null) { update.set(a.validFrom,        entity.getValidFrom());        hasAny = true; }
+        if (entity.getValidTo()          != null) { update.set(a.validTo,          entity.getValidTo());          hasAny = true; }
+        if (entity.getMemberRoleRemark() != null) { update.set(a.memberRoleRemark, entity.getMemberRoleRemark()); hasAny = true; }
+        if (entity.getUpdBy()            != null) { update.set(a.updBy,            entity.getUpdBy());            hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(r.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
         if (!hasAny) return 0;
-        return (int) update.where(r.memberRoleId.eq(entity.getMemberRoleId())).execute();
+        return (int) update.where(a.memberRoleId.eq(entity.getMemberRoleId())).execute();
     }
 }

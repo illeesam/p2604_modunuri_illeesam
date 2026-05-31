@@ -39,19 +39,29 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
     private EntityManager em;
 
     private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpPanelRepositoryImpl";
-    private static final QDpPanel p = QDpPanel.dpPanel;
+    private static final QDpPanel a = QDpPanel.dpPanel;
+
+    /* 전시 패널 baseSelColumnQuery */
+    private JPAQuery<DpPanelDto.Item> baseSelColumnQuery() {
+        return queryFactory.select(Projections.bean(DpPanelDto.Item.class,
+                a.panelId, a.siteId, a.panelNm, a.panelTypeCd, a.pathId,
+                a.visibilityTargets, a.useYn, a.useStartDate, a.useEndDate,
+                a.dispPanelStatusCd, a.dispPanelStatusCdBefore, a.contentJson,
+                a.regBy, a.regDate, a.updBy, a.updDate
+        )).from(a);
+    }
 
     /* 전시 패널 키조회 */
     @Override
     public Optional<DpPanelDto.Item> selectById(String panelId) {
-        return Optional.ofNullable(baseQuery().where(p.panelId.eq(panelId)).fetchOne());
+        return Optional.ofNullable(baseSelColumnQuery().where(a.panelId.eq(panelId)).fetchOne());
     }
 
     /* 전시 패널 목록조회 */
     @Override
     public List<DpPanelDto.Item> selectList(DpPanelDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<DpPanelDto.Item> query = baseQuery().where(
+        JPAQuery<DpPanelDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndPathId(search),
                 baseAndPanelId(search),
@@ -75,7 +85,7 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
         int pageNo = search != null && search.getPageNo() != null && search.getPageNo() > 0 ? search.getPageNo() : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<DpPanelDto.Item> query = baseQuery().where(
+        JPAQuery<DpPanelDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndPathId(search),
                 baseAndPanelId(search),
@@ -87,7 +97,7 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
         );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<DpPanelDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
-        Long total = queryFactory.select(p.count()).from(p).where(
+        Long total = queryFactory.select(a.count()).from(a).where(
                 baseAndSiteId(search),
                 baseAndPathId(search),
                 baseAndPanelId(search),
@@ -100,17 +110,6 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
         DpPanelDto.PageResponse res = new DpPanelDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-
-    /* 전시 패널 baseQuery */
-    private JPAQuery<DpPanelDto.Item> baseQuery() {
-        return queryFactory.select(Projections.bean(DpPanelDto.Item.class,
-                p.panelId, p.siteId, p.panelNm, p.panelTypeCd, p.pathId,
-                p.visibilityTargets, p.useYn, p.useStartDate, p.useEndDate,
-                p.dispPanelStatusCd, p.dispPanelStatusCdBefore, p.contentJson,
-                p.regBy, p.regDate, p.updBy, p.updDate
-        )).from(p);
-    }
-
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
@@ -121,38 +120,38 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(DpPanelDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? p.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression baseAndPathId(DpPanelDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
-                ? p.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "dp_panel"))
+                ? a.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "dp_panel"))
                 : null;
     }
 
     /* panelId 정확 일치 */
     private BooleanExpression baseAndPanelId(DpPanelDto.Request search) {
         return search != null && StringUtils.hasText(search.getPanelId())
-                ? p.panelId.eq(search.getPanelId()) : null;
+                ? a.panelId.eq(search.getPanelId()) : null;
     }
 
     /* dispPanelStatusCd 정확 일치 */
     private BooleanExpression baseAndDispPanelStatusCd(DpPanelDto.Request search) {
         return search != null && StringUtils.hasText(search.getDispPanelStatusCd())
-                ? p.dispPanelStatusCd.eq(search.getDispPanelStatusCd()) : null;
+                ? a.dispPanelStatusCd.eq(search.getDispPanelStatusCd()) : null;
     }
 
     /* panelTypeCd 정확 일치 */
     private BooleanExpression baseAndPanelTypeCd(DpPanelDto.Request search) {
         return search != null && StringUtils.hasText(search.getPanelTypeCd())
-                ? p.panelTypeCd.eq(search.getPanelTypeCd()) : null;
+                ? a.panelTypeCd.eq(search.getPanelTypeCd()) : null;
     }
 
     /* useYn 정확 일치 */
     private BooleanExpression baseAndUseYn(DpPanelDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
-                ? p.useYn.eq(search.getUseYn()) : null;
+                ? a.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -165,8 +164,8 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return p.regDate.goe(start).and(p.regDate.lt(endExcl));
-            case "upd_date": return p.updDate.goe(start).and(p.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -179,16 +178,16 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",contentJson,", p.contentJson, pattern);
-        or = orLike(or, all, types, ",dispPanelStatusCd,", p.dispPanelStatusCd, pattern);
-        or = orLike(or, all, types, ",dispPanelStatusCdBefore,", p.dispPanelStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",panelId,", p.panelId, pattern);
-        or = orLike(or, all, types, ",panelNm,", p.panelNm, pattern);
-        or = orLike(or, all, types, ",panelTypeCd,", p.panelTypeCd, pattern);
-        or = orLike(or, all, types, ",pathId,", p.pathId, pattern);
-        or = orLike(or, all, types, ",siteId,", p.siteId, pattern);
-        or = orLike(or, all, types, ",useYn,", p.useYn, pattern);
-        or = orLike(or, all, types, ",visibilityTargets,", p.visibilityTargets, pattern);
+        or = orLike(or, all, types, ",contentJson,", a.contentJson, pattern);
+        or = orLike(or, all, types, ",dispPanelStatusCd,", a.dispPanelStatusCd, pattern);
+        or = orLike(or, all, types, ",dispPanelStatusCdBefore,", a.dispPanelStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",panelId,", a.panelId, pattern);
+        or = orLike(or, all, types, ",panelNm,", a.panelNm, pattern);
+        or = orLike(or, all, types, ",panelTypeCd,", a.panelTypeCd, pattern);
+        or = orLike(or, all, types, ",pathId,", a.pathId, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",useYn,", a.useYn, pattern);
+        or = orLike(or, all, types, ",visibilityTargets,", a.visibilityTargets, pattern);
         return or;
     }
 
@@ -209,8 +208,8 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, p.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, p.panelId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.panelId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -221,45 +220,47 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("panelId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, p.panelId));
+                    orders.add(new OrderSpecifier(order, a.panelId));
                 } else if ("panelNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, p.panelNm));
+                    orders.add(new OrderSpecifier(order, a.panelNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, p.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, p.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, p.panelId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.panelId));
         }
         return orders;
     }
 
     /* 전시 패널 수정 */
+
+
     @Override
     public int updateSelective(DpPanel entity) {
         if (entity.getPanelId() == null) return 0;
-        JPAUpdateClause update = queryFactory.update(p);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
-        if (entity.getSiteId()                  != null) { update.set(p.siteId,                  entity.getSiteId());                  hasAny = true; }
-        if (entity.getPanelNm()                 != null) { update.set(p.panelNm,                 entity.getPanelNm());                 hasAny = true; }
-        if (entity.getPanelTypeCd()             != null) { update.set(p.panelTypeCd,             entity.getPanelTypeCd());             hasAny = true; }
-        if (entity.getPathId()                  != null) { update.set(p.pathId,                  entity.getPathId());                  hasAny = true; }
-        if (entity.getVisibilityTargets()       != null) { update.set(p.visibilityTargets,       entity.getVisibilityTargets());       hasAny = true; }
-        if (entity.getUseYn()                   != null) { update.set(p.useYn,                   entity.getUseYn());                   hasAny = true; }
-        if (entity.getUseStartDate()            != null) { update.set(p.useStartDate,            entity.getUseStartDate());            hasAny = true; }
-        if (entity.getUseEndDate()              != null) { update.set(p.useEndDate,              entity.getUseEndDate());              hasAny = true; }
-        if (entity.getDispPanelStatusCd()       != null) { update.set(p.dispPanelStatusCd,       entity.getDispPanelStatusCd());       hasAny = true; }
-        if (entity.getDispPanelStatusCdBefore() != null) { update.set(p.dispPanelStatusCdBefore, entity.getDispPanelStatusCdBefore()); hasAny = true; }
-        if (entity.getContentJson()             != null) { update.set(p.contentJson,             entity.getContentJson());             hasAny = true; }
-        if (entity.getUpdBy()                   != null) { update.set(p.updBy,                   entity.getUpdBy());                   hasAny = true; }
+        if (entity.getSiteId()                  != null) { update.set(a.siteId,                  entity.getSiteId());                  hasAny = true; }
+        if (entity.getPanelNm()                 != null) { update.set(a.panelNm,                 entity.getPanelNm());                 hasAny = true; }
+        if (entity.getPanelTypeCd()             != null) { update.set(a.panelTypeCd,             entity.getPanelTypeCd());             hasAny = true; }
+        if (entity.getPathId()                  != null) { update.set(a.pathId,                  entity.getPathId());                  hasAny = true; }
+        if (entity.getVisibilityTargets()       != null) { update.set(a.visibilityTargets,       entity.getVisibilityTargets());       hasAny = true; }
+        if (entity.getUseYn()                   != null) { update.set(a.useYn,                   entity.getUseYn());                   hasAny = true; }
+        if (entity.getUseStartDate()            != null) { update.set(a.useStartDate,            entity.getUseStartDate());            hasAny = true; }
+        if (entity.getUseEndDate()              != null) { update.set(a.useEndDate,              entity.getUseEndDate());              hasAny = true; }
+        if (entity.getDispPanelStatusCd()       != null) { update.set(a.dispPanelStatusCd,       entity.getDispPanelStatusCd());       hasAny = true; }
+        if (entity.getDispPanelStatusCdBefore() != null) { update.set(a.dispPanelStatusCdBefore, entity.getDispPanelStatusCdBefore()); hasAny = true; }
+        if (entity.getContentJson()             != null) { update.set(a.contentJson,             entity.getContentJson());             hasAny = true; }
+        if (entity.getUpdBy()                   != null) { update.set(a.updBy,                   entity.getUpdBy());                   hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(p.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
         if (!hasAny) return 0;
-        return (int) update.where(p.panelId.eq(entity.getPanelId())).execute();
+        return (int) update.where(a.panelId.eq(entity.getPanelId())).execute();
     }
 
     /* 표시경로 노드별 dp_panel 수 집계 (자손 누적 + 검색조건 필터, native CTE 동적 SQL)
@@ -288,30 +289,10 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
                 """);
         params.put("bizCd", "dp_panel");
 
-        if (search != null && StringUtils.hasText(search.getDispPanelStatusCd())) {
-            sql.append("      AND t.disp_panel_status_cd = :statusCd\n");
-            params.put("statusCd", search.getDispPanelStatusCd());
-        }
-        if (search != null && StringUtils.hasText(search.getSearchValue())) {
-            String raw = search.getSearchType();
-
-            boolean noType = !StringUtils.hasText(raw);
-
-            String searchType = noType ? "" : "," + raw.trim() + ",";
-            sql.append("      AND (\n");
-            sql.append("            1=0\n");
-            if (noType || searchType.contains(",panelNm,")) sql.append("         OR t.panel_nm ILIKE '%' || :searchValue || '%'\n");
-            sql.append("      )\n");
-            params.put("searchValue", search.getSearchValue());
-        }
-        if (search != null && StringUtils.hasText(search.getDateStart())) {
-            sql.append("      AND t.reg_date >= CAST(:dateStart AS timestamp)\n");
-            params.put("dateStart", search.getDateStart());
-        }
-        if (search != null && StringUtils.hasText(search.getDateEnd())) {
-            sql.append("      AND t.reg_date <= CAST(:dateEnd   AS timestamp) + INTERVAL '1 day'\n");
-            params.put("dateEnd", search.getDateEnd());
-        }
+        /* 검색조건 — fpdpAnd*() 헬퍼로 SQL 조각 + 파라미터 함께 추가 */
+        fpdpAndStatus(search, sql, params);
+        fpdpAndSearchValue(search, sql, params);
+        fpdpAndDateRange(search, sql, params);
 
         sql.append("""
                 )
@@ -345,5 +326,44 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
             result.add(m);
         }
         return result;
+    }
+
+    /* ============================================================
+     * findPathDpPanelTreeNodeCounts 전용 SQL 조건 헬퍼 (fpdp prefix)
+     *   - QueryDSL baseAnd*() (BooleanExpression 반환) 과 구분
+     *   - 각 메서드는 SQL 조각을 sql 에 추가하고 동시에 params 에 바인딩
+     * ============================================================ */
+
+    /* AND t.disp_panel_status_cd = :statusCd */
+    private void fpdpAndStatus(DpPanelDto.Request s, StringBuilder sql, Map<String, Object> p) {
+        if (s == null || !StringUtils.hasText(s.getDispPanelStatusCd())) return;
+        sql.append("      AND t.disp_panel_status_cd = :statusCd\n");
+        p.put("statusCd", s.getDispPanelStatusCd());
+    }
+
+    /* AND ( OR t.col_x ILIKE :searchValue ... ) — searchType csv 로 컬럼 분기 */
+    private void fpdpAndSearchValue(DpPanelDto.Request s, StringBuilder sql, Map<String, Object> p) {
+        if (s == null || !StringUtils.hasText(s.getSearchValue())) return;
+        String raw = s.getSearchType();
+        boolean noType = !StringUtils.hasText(raw);
+        String searchType = noType ? "" : "," + raw.trim() + ",";
+        sql.append("      AND (\n");
+        sql.append("            1=0\n");
+        if (noType || searchType.contains(",panelNm,")) sql.append("         OR t.panel_nm ILIKE '%' || :searchValue || '%'\n");
+        sql.append("      )\n");
+        p.put("searchValue", s.getSearchValue());
+    }
+
+    /* AND t.reg_date >= :dateStart AND t.reg_date <= :dateEnd + 1 day */
+    private void fpdpAndDateRange(DpPanelDto.Request s, StringBuilder sql, Map<String, Object> p) {
+        if (s == null) return;
+        if (StringUtils.hasText(s.getDateStart())) {
+            sql.append("      AND t.reg_date >= CAST(:dateStart AS timestamp)\n");
+            p.put("dateStart", s.getDateStart());
+        }
+        if (StringUtils.hasText(s.getDateEnd())) {
+            sql.append("      AND t.reg_date <= CAST(:dateEnd   AS timestamp) + INTERVAL '1 day'\n");
+            p.put("dateEnd", s.getDateEnd());
+        }
     }
 }

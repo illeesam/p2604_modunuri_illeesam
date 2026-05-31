@@ -32,7 +32,7 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdOrderDiscntRepositoryImpl";
-    private static final QOdOrderDiscnt d   = QOdOrderDiscnt.odOrderDiscnt;
+    private static final QOdOrderDiscnt a   = QOdOrderDiscnt.odOrderDiscnt;
     private static final QSySite        ste = new QSySite("ste");
     private static final QOdOrder       ord = new QOdOrder("ord");
     private static final QPmCoupon      cpn = new QPmCoupon("cpn");
@@ -42,7 +42,7 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
     @Override
     public Optional<OdOrderDiscntDto.Item> selectById(String orderDiscntId) {
         OdOrderDiscntDto.Item dto = baseListQuery()
-                .where(d.orderDiscntId.eq(orderDiscntId))
+                .where(a.orderDiscntId.eq(orderDiscntId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -95,8 +95,8 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
         List<OdOrderDiscntDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(d.count())
-                .from(d)
+                .select(a.count())
+                .from(a)
                 .where(
                 baseAndOrderIds(search),
                 baseAndOrderId(search),
@@ -115,17 +115,17 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
     private JPAQuery<OdOrderDiscntDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(OdOrderDiscntDto.Item.class,
-                        d.orderDiscntId, d.siteId, d.orderId,
-                        d.discntTypeCd, d.couponId, d.couponIssueId,
-                        d.discntRate, d.discntAmt, d.baseItemAmt,
-                        d.restoreYn, d.restoreAmt, d.restoreDate,
-                        d.regBy, d.regDate
+                        a.orderDiscntId, a.siteId, a.orderId,
+                        a.discntTypeCd, a.couponId, a.couponIssueId,
+                        a.discntRate, a.discntAmt, a.baseItemAmt,
+                        a.restoreYn, a.restoreAmt, a.restoreDate,
+                        a.regBy, a.regDate
                 ))
-                .from(d)
-                .leftJoin(ste).on(ste.siteId.eq(d.siteId))
-                .leftJoin(ord).on(ord.orderId.eq(d.orderId))
-                .leftJoin(cpn).on(cpn.couponId.eq(d.couponId))
-                .leftJoin(cdOdt).on(cdOdt.codeGrp.eq("ORDER_DISCNT_TYPE").and(cdOdt.codeValue.eq(d.discntTypeCd)));
+                .from(a)
+                .leftJoin(ste).on(ste.siteId.eq(a.siteId))
+                .leftJoin(ord).on(ord.orderId.eq(a.orderId))
+                .leftJoin(cpn).on(cpn.couponId.eq(a.couponId))
+                .leftJoin(cdOdt).on(cdOdt.codeGrp.eq("ORDER_DISCNT_TYPE").and(cdOdt.codeValue.eq(a.discntTypeCd)));
     }
 
     /* 주문 할인 buildCondition */
@@ -138,25 +138,25 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
     /* orderId IN */
     private BooleanExpression baseAndOrderIds(OdOrderDiscntDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getOrderIds())
-                ? d.orderId.in(search.getOrderIds()) : null;
+                ? a.orderId.in(search.getOrderIds()) : null;
     }
 
     /* orderId 정확 일치 */
     private BooleanExpression baseAndOrderId(OdOrderDiscntDto.Request search) {
         return search != null && StringUtils.hasText(search.getOrderId())
-                ? d.orderId.eq(search.getOrderId()) : null;
+                ? a.orderId.eq(search.getOrderId()) : null;
     }
 
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(OdOrderDiscntDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? d.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* orderDiscntId 정확 일치 */
     private BooleanExpression baseAndOrderDiscntId(OdOrderDiscntDto.Request search) {
         return search != null && StringUtils.hasText(search.getOrderDiscntId())
-                ? d.orderDiscntId.eq(search.getOrderDiscntId()) : null;
+                ? a.orderDiscntId.eq(search.getOrderDiscntId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -169,8 +169,8 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return d.regDate.goe(start).and(d.regDate.lt(endExcl));
-            case "upd_date": return d.updDate.goe(start).and(d.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -183,13 +183,13 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",couponId,", d.couponId, pattern);
-        or = orLike(or, all, types, ",couponIssueId,", d.couponIssueId, pattern);
-        or = orLike(or, all, types, ",discntTypeCd,", d.discntTypeCd, pattern);
-        or = orLike(or, all, types, ",orderDiscntId,", d.orderDiscntId, pattern);
-        or = orLike(or, all, types, ",orderId,", d.orderId, pattern);
-        or = orLike(or, all, types, ",restoreYn,", d.restoreYn, pattern);
-        or = orLike(or, all, types, ",siteId,", d.siteId, pattern);
+        or = orLike(or, all, types, ",couponId,", a.couponId, pattern);
+        or = orLike(or, all, types, ",couponIssueId,", a.couponIssueId, pattern);
+        or = orLike(or, all, types, ",discntTypeCd,", a.discntTypeCd, pattern);
+        or = orLike(or, all, types, ",orderDiscntId,", a.orderDiscntId, pattern);
+        or = orLike(or, all, types, ",orderId,", a.orderId, pattern);
+        or = orLike(or, all, types, ",restoreYn,", a.restoreYn, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
         return or;
     }
 
@@ -210,8 +210,8 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, d.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, d.orderDiscntId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.orderDiscntId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -222,17 +222,17 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("orderDiscntId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, d.orderDiscntId));
+                    orders.add(new OrderSpecifier(order, a.orderDiscntId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, d.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, d.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, d.orderDiscntId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.orderDiscntId));
         }
         return orders;
     }
@@ -242,24 +242,24 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
     public int updateSelective(OdOrderDiscnt entity) {
         if (entity.getOrderDiscntId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(d);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getSiteId()        != null) { update.set(d.siteId,        entity.getSiteId());        hasAny = true; }
-        if (entity.getOrderId()       != null) { update.set(d.orderId,       entity.getOrderId());       hasAny = true; }
-        if (entity.getDiscntTypeCd()  != null) { update.set(d.discntTypeCd,  entity.getDiscntTypeCd());  hasAny = true; }
-        if (entity.getCouponId()      != null) { update.set(d.couponId,      entity.getCouponId());      hasAny = true; }
-        if (entity.getCouponIssueId() != null) { update.set(d.couponIssueId, entity.getCouponIssueId()); hasAny = true; }
-        if (entity.getDiscntRate()    != null) { update.set(d.discntRate,    entity.getDiscntRate());    hasAny = true; }
-        if (entity.getDiscntAmt()     != null) { update.set(d.discntAmt,     entity.getDiscntAmt());     hasAny = true; }
-        if (entity.getBaseItemAmt()   != null) { update.set(d.baseItemAmt,   entity.getBaseItemAmt());   hasAny = true; }
-        if (entity.getRestoreYn()     != null) { update.set(d.restoreYn,     entity.getRestoreYn());     hasAny = true; }
-        if (entity.getRestoreAmt()    != null) { update.set(d.restoreAmt,    entity.getRestoreAmt());    hasAny = true; }
-        if (entity.getRestoreDate()   != null) { update.set(d.restoreDate,   entity.getRestoreDate());   hasAny = true; }
+        if (entity.getSiteId()        != null) { update.set(a.siteId,        entity.getSiteId());        hasAny = true; }
+        if (entity.getOrderId()       != null) { update.set(a.orderId,       entity.getOrderId());       hasAny = true; }
+        if (entity.getDiscntTypeCd()  != null) { update.set(a.discntTypeCd,  entity.getDiscntTypeCd());  hasAny = true; }
+        if (entity.getCouponId()      != null) { update.set(a.couponId,      entity.getCouponId());      hasAny = true; }
+        if (entity.getCouponIssueId() != null) { update.set(a.couponIssueId, entity.getCouponIssueId()); hasAny = true; }
+        if (entity.getDiscntRate()    != null) { update.set(a.discntRate,    entity.getDiscntRate());    hasAny = true; }
+        if (entity.getDiscntAmt()     != null) { update.set(a.discntAmt,     entity.getDiscntAmt());     hasAny = true; }
+        if (entity.getBaseItemAmt()   != null) { update.set(a.baseItemAmt,   entity.getBaseItemAmt());   hasAny = true; }
+        if (entity.getRestoreYn()     != null) { update.set(a.restoreYn,     entity.getRestoreYn());     hasAny = true; }
+        if (entity.getRestoreAmt()    != null) { update.set(a.restoreAmt,    entity.getRestoreAmt());    hasAny = true; }
+        if (entity.getRestoreDate()   != null) { update.set(a.restoreDate,   entity.getRestoreDate());   hasAny = true; }
 
         if (!hasAny) return 0;
 
-        long affected = update.where(d.orderDiscntId.eq(entity.getOrderDiscntId())).execute();
+        long affected = update.where(a.orderDiscntId.eq(entity.getOrderDiscntId())).execute();
         return (int) affected;
     }
 }

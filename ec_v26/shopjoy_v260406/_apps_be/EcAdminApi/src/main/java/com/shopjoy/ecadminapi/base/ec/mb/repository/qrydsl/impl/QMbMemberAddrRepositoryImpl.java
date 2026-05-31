@@ -34,17 +34,33 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
     private static final QMbMember     mem = QMbMember.mbMember;
     private static final QSySite       ste = QSySite.sySite;
 
+    /* 회원 주소 baseSelColumnQuery */
+    private JPAQuery<MbMemberAddrDto.Item> baseSelColumnQuery() {
+        return queryFactory
+                .select(Projections.bean(MbMemberAddrDto.Item.class,
+                        a.memberAddrId, a.memberId,
+                        a.addrNm, a.recvNm, a.recvPhone,
+                        a.zipCd.as("zipCode"),
+                        a.addr, a.addrDetail,
+                        a.isDefault.as("defaultYn"),
+                        a.regBy, a.regDate, a.updBy, a.updDate
+                ))
+                .from(a)
+                .leftJoin(mem).on(mem.memberId.eq(a.memberId))
+                .leftJoin(ste).on(ste.siteId.eq(a.siteId));
+    }
+
     /* 회원 주소 키조회 */
     @Override
     public Optional<MbMemberAddrDto.Item> selectById(String memberAddrId) {
-        return Optional.ofNullable(baseQuery().where(a.memberAddrId.eq(memberAddrId)).fetchOne());
+        return Optional.ofNullable(baseSelColumnQuery().where(a.memberAddrId.eq(memberAddrId)).fetchOne());
     }
 
     /* 회원 주소 목록조회 */
     @Override
     public List<MbMemberAddrDto.Item> selectList(MbMemberAddrDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<MbMemberAddrDto.Item> query = baseQuery().where(
+        JPAQuery<MbMemberAddrDto.Item> query = baseSelColumnQuery().where(
                 baseAndMemberIds(search),
                 baseAndMemberAddrId(search),
                 baseAndMemberId(search),
@@ -66,7 +82,7 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<MbMemberAddrDto.Item> query = baseQuery().where(
+        JPAQuery<MbMemberAddrDto.Item> query = baseSelColumnQuery().where(
                 baseAndMemberIds(search),
                 baseAndMemberAddrId(search),
                 baseAndMemberId(search),
@@ -87,23 +103,6 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
         MbMemberAddrDto.PageResponse res = new MbMemberAddrDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-
-    /* 회원 주소 baseQuery */
-    private JPAQuery<MbMemberAddrDto.Item> baseQuery() {
-        return queryFactory
-                .select(Projections.bean(MbMemberAddrDto.Item.class,
-                        a.memberAddrId, a.memberId,
-                        a.addrNm, a.recvNm, a.recvPhone,
-                        a.zipCd.as("zipCode"),
-                        a.addr, a.addrDetail,
-                        a.isDefault.as("defaultYn"),
-                        a.regBy, a.regDate, a.updBy, a.updDate
-                ))
-                .from(a)
-                .leftJoin(mem).on(mem.memberId.eq(a.memberId))
-                .leftJoin(ste).on(ste.siteId.eq(a.siteId));
-    }
-
     /* searchType 사용 예  searchType = "addrNm,recvNm" (Entity 필드명) */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
@@ -213,6 +212,8 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
     }
 
     /* 회원 주소 수정 */
+
+
     @Override
     public int updateSelective(MbMemberAddr entity) {
         if (entity.getMemberAddrId() == null) return 0;

@@ -24,43 +24,43 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhAccessErrorLogRepositoryImpl";
-    private static final QSyhAccessErrorLog l = QSyhAccessErrorLog.syhAccessErrorLog;
+    private static final QSyhAccessErrorLog a = QSyhAccessErrorLog.syhAccessErrorLog;
 
     /* buildBaseQuery */
     private JPAQuery<SyhAccessErrorLogDto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(SyhAccessErrorLogDto.Item.class,
-                        l.logId,
-                        l.reqMethod,
-                        l.reqHost,
-                        l.reqPath,
-                        l.reqQuery,
-                        l.reqIp,
-                        l.reqUa,
-                        l.appTypeCd,
-                        l.userId,
-                        l.roleId,
-                        l.deptId,
-                        l.vendorId,
-                        l.localeId,
-                        l.respTimeMs,
-                        l.errorType,
-                        l.errorMsg,
-                        l.stackTrace,
-                        l.uiNm,
-                        l.cmdNm,
-                        l.fileNm,
-                        l.funcNm,
-                        l.lineNo,
-                        l.traceId,
-                        l.serverNm,
-                        l.profile,
-                        l.threadNm,
-                        l.loggerNm,
-                        l.logDt,
-                        l.regDate
+                        a.logId,
+                        a.reqMethod,
+                        a.reqHost,
+                        a.reqPath,
+                        a.reqQuery,
+                        a.reqIp,
+                        a.reqUa,
+                        a.appTypeCd,
+                        a.userId,
+                        a.roleId,
+                        a.deptId,
+                        a.vendorId,
+                        a.localeId,
+                        a.respTimeMs,
+                        a.errorType,
+                        a.errorMsg,
+                        a.stackTrace,
+                        a.uiNm,
+                        a.cmdNm,
+                        a.fileNm,
+                        a.funcNm,
+                        a.lineNo,
+                        a.traceId,
+                        a.serverNm,
+                        a.profile,
+                        a.threadNm,
+                        a.loggerNm,
+                        a.logDt,
+                        a.regDate
                 ))
-                .from(l);
+                .from(a);
     }
 
     /* 페이지조회 */
@@ -85,8 +85,8 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
         List<SyhAccessErrorLogDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(l.count())
-                .from(l)
+                .select(a.count())
+                .from(a)
                 .where(
                 baseAndMethod(search),
                 baseAndAppTypeCd(search),
@@ -109,13 +109,13 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
     /* reqMethod 정확 일치 */
     private BooleanExpression baseAndMethod(SyhAccessErrorLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getMethod())
-                ? l.reqMethod.eq(search.getMethod()) : null;
+                ? a.reqMethod.eq(search.getMethod()) : null;
     }
 
     /* appTypeCd 정확 일치 */
     private BooleanExpression baseAndAppTypeCd(SyhAccessErrorLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getAppTypeCd())
-                ? l.appTypeCd.eq(search.getAppTypeCd()) : null;
+                ? a.appTypeCd.eq(search.getAppTypeCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -128,7 +128,7 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return l.regDate.goe(start).and(l.regDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
             default: return null;
         }
     }
@@ -141,33 +141,33 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",appTypeCd,", l.appTypeCd, pattern);
-        or = orLike(or, all, types, ",cmdNm,", l.cmdNm, pattern);
-        or = orLike(or, all, types, ",deptId,", l.deptId, pattern);
-        or = orLike(or, all, types, ",errorMsg,", l.errorMsg, pattern);
-        or = orLike(or, all, types, ",errorType,", l.errorType, pattern);
-        or = orLike(or, all, types, ",fileNm,", l.fileNm, pattern);
-        or = orLike(or, all, types, ",funcNm,", l.funcNm, pattern);
-        or = orLike(or, all, types, ",lineNo,", l.lineNo, pattern);
-        or = orLike(or, all, types, ",localeId,", l.localeId, pattern);
-        or = orLike(or, all, types, ",logId,", l.logId, pattern);
-        or = orLike(or, all, types, ",loggerNm,", l.loggerNm, pattern);
-        or = orLike(or, all, types, ",profile,", l.profile, pattern);
-        or = orLike(or, all, types, ",reqHost,", l.reqHost, pattern);
-        or = orLike(or, all, types, ",reqIp,", l.reqIp, pattern);
-        or = orLike(or, all, types, ",reqMethod,", l.reqMethod, pattern);
-        or = orLike(or, all, types, ",reqPath,", l.reqPath, pattern);
-        or = orLike(or, all, types, ",reqQuery,", l.reqQuery, pattern);
-        or = orLike(or, all, types, ",reqUa,", l.reqUa, pattern);
-        or = orLike(or, all, types, ",roleId,", l.roleId, pattern);
-        or = orLike(or, all, types, ",serverNm,", l.serverNm, pattern);
-        or = orLike(or, all, types, ",siteId,", l.siteId, pattern);
-        or = orLike(or, all, types, ",stackTrace,", l.stackTrace, pattern);
-        or = orLike(or, all, types, ",threadNm,", l.threadNm, pattern);
-        or = orLike(or, all, types, ",traceId,", l.traceId, pattern);
-        or = orLike(or, all, types, ",uiNm,", l.uiNm, pattern);
-        or = orLike(or, all, types, ",userId,", l.userId, pattern);
-        or = orLike(or, all, types, ",vendorId,", l.vendorId, pattern);
+        or = orLike(or, all, types, ",appTypeCd,", a.appTypeCd, pattern);
+        or = orLike(or, all, types, ",cmdNm,", a.cmdNm, pattern);
+        or = orLike(or, all, types, ",deptId,", a.deptId, pattern);
+        or = orLike(or, all, types, ",errorMsg,", a.errorMsg, pattern);
+        or = orLike(or, all, types, ",errorType,", a.errorType, pattern);
+        or = orLike(or, all, types, ",fileNm,", a.fileNm, pattern);
+        or = orLike(or, all, types, ",funcNm,", a.funcNm, pattern);
+        or = orLike(or, all, types, ",lineNo,", a.lineNo, pattern);
+        or = orLike(or, all, types, ",localeId,", a.localeId, pattern);
+        or = orLike(or, all, types, ",logId,", a.logId, pattern);
+        or = orLike(or, all, types, ",loggerNm,", a.loggerNm, pattern);
+        or = orLike(or, all, types, ",profile,", a.profile, pattern);
+        or = orLike(or, all, types, ",reqHost,", a.reqHost, pattern);
+        or = orLike(or, all, types, ",reqIp,", a.reqIp, pattern);
+        or = orLike(or, all, types, ",reqMethod,", a.reqMethod, pattern);
+        or = orLike(or, all, types, ",reqPath,", a.reqPath, pattern);
+        or = orLike(or, all, types, ",reqQuery,", a.reqQuery, pattern);
+        or = orLike(or, all, types, ",reqUa,", a.reqUa, pattern);
+        or = orLike(or, all, types, ",roleId,", a.roleId, pattern);
+        or = orLike(or, all, types, ",serverNm,", a.serverNm, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",stackTrace,", a.stackTrace, pattern);
+        or = orLike(or, all, types, ",threadNm,", a.threadNm, pattern);
+        or = orLike(or, all, types, ",traceId,", a.traceId, pattern);
+        or = orLike(or, all, types, ",uiNm,", a.uiNm, pattern);
+        or = orLike(or, all, types, ",userId,", a.userId, pattern);
+        or = orLike(or, all, types, ",vendorId,", a.vendorId, pattern);
         return or;
     }
 
@@ -188,15 +188,15 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, l.logDt));
-            orders.add(new OrderSpecifier<>(Order.ASC, l.logId));
+            orders.add(new OrderSpecifier(Order.DESC, a.logDt));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.logId));
             return orders;
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, l.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, l.logId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.logId));
         }
         return orders;
     }

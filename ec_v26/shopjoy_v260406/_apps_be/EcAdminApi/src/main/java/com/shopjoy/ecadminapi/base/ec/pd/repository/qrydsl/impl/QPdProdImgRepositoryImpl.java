@@ -29,13 +29,36 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdProdImgRepositoryImpl";
-    private static final QPdProdImg i = QPdProdImg.pdProdImg;
+    private static final QPdProdImg a = QPdProdImg.pdProdImg;
+
+    private JPAQuery<PdProdImgDto.Item> baseSelColumnQuery() {
+        return queryFactory
+                .select(Projections.bean(PdProdImgDto.Item.class,
+                        a.prodImgId,
+                        a.siteId,
+                        a.prodId,
+                        a.optItemId1,
+                        a.optItemId2,
+                        a.attachId,
+                        a.cdnHost,
+                        a.cdnImgUrl,
+                        a.cdnThumbUrl,
+                        a.imgAltText,
+                        a.sortOrd,
+                        a.isThumb,
+                        a.regBy,
+                        a.regDate,
+                        a.updBy,
+                        a.updDate
+                ))
+                .from(a);
+    }
 
     /* 상품 이미지 키조회 */
     @Override
     public Optional<PdProdImgDto.Item> selectById(String prodImgId) {
-        PdProdImgDto.Item dto = baseQuery()
-                .where(i.prodImgId.eq(prodImgId))
+        PdProdImgDto.Item dto = baseSelColumnQuery()
+                .where(a.prodImgId.eq(prodImgId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -45,7 +68,7 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
     public List<PdProdImgDto.Item> selectList(PdProdImgDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdProdImgDto.Item> query = baseQuery().where(
+        JPAQuery<PdProdImgDto.Item> query = baseSelColumnQuery().where(
                 baseAndProdIds(search),
                 baseAndProdId(search),
                 baseAndSiteId(search),
@@ -74,7 +97,7 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdProdImgDto.Item> query = baseQuery().where(
+        JPAQuery<PdProdImgDto.Item> query = baseSelColumnQuery().where(
                 baseAndProdIds(search),
                 baseAndProdId(search),
                 baseAndSiteId(search),
@@ -87,7 +110,7 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
         }
         List<PdProdImgDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(i.count()).from(i).where(
+        Long total = queryFactory.select(a.count()).from(a).where(
                 baseAndProdIds(search),
                 baseAndProdId(search),
                 baseAndSiteId(search),
@@ -101,29 +124,6 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
     }
 
     /** 단건/목록/페이지 공용 base query — DTO 필드만 프로젝션 */
-    private JPAQuery<PdProdImgDto.Item> baseQuery() {
-        return queryFactory
-                .select(Projections.bean(PdProdImgDto.Item.class,
-                        i.prodImgId,
-                        i.siteId,
-                        i.prodId,
-                        i.optItemId1,
-                        i.optItemId2,
-                        i.attachId,
-                        i.cdnHost,
-                        i.cdnImgUrl,
-                        i.cdnThumbUrl,
-                        i.imgAltText,
-                        i.sortOrd,
-                        i.isThumb,
-                        i.regBy,
-                        i.regDate,
-                        i.updBy,
-                        i.updDate
-                ))
-                .from(i);
-    }
-
     /* 상품 이미지 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
@@ -134,25 +134,25 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
     /* prodId IN */
     private BooleanExpression baseAndProdIds(PdProdImgDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getProdIds())
-                ? i.prodId.in(search.getProdIds()) : null;
+                ? a.prodId.in(search.getProdIds()) : null;
     }
 
     /* prodId 정확 일치 */
     private BooleanExpression baseAndProdId(PdProdImgDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdId())
-                ? i.prodId.eq(search.getProdId()) : null;
+                ? a.prodId.eq(search.getProdId()) : null;
     }
 
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(PdProdImgDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? i.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* prodImgId 정확 일치 */
     private BooleanExpression baseAndProdImgId(PdProdImgDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdImgId())
-                ? i.prodImgId.eq(search.getProdImgId()) : null;
+                ? a.prodImgId.eq(search.getProdImgId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -165,8 +165,8 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return i.regDate.goe(start).and(i.regDate.lt(endExcl));
-            case "upd_date": return i.updDate.goe(start).and(i.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -179,17 +179,17 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",attachId,", i.attachId, pattern);
-        or = orLike(or, all, types, ",cdnHost,", i.cdnHost, pattern);
-        or = orLike(or, all, types, ",cdnImgUrl,", i.cdnImgUrl, pattern);
-        or = orLike(or, all, types, ",cdnThumbUrl,", i.cdnThumbUrl, pattern);
-        or = orLike(or, all, types, ",imgAltText,", i.imgAltText, pattern);
-        or = orLike(or, all, types, ",isThumb,", i.isThumb, pattern);
-        or = orLike(or, all, types, ",optItemId1,", i.optItemId1, pattern);
-        or = orLike(or, all, types, ",optItemId2,", i.optItemId2, pattern);
-        or = orLike(or, all, types, ",prodId,", i.prodId, pattern);
-        or = orLike(or, all, types, ",prodImgId,", i.prodImgId, pattern);
-        or = orLike(or, all, types, ",siteId,", i.siteId, pattern);
+        or = orLike(or, all, types, ",attachId,", a.attachId, pattern);
+        or = orLike(or, all, types, ",cdnHost,", a.cdnHost, pattern);
+        or = orLike(or, all, types, ",cdnImgUrl,", a.cdnImgUrl, pattern);
+        or = orLike(or, all, types, ",cdnThumbUrl,", a.cdnThumbUrl, pattern);
+        or = orLike(or, all, types, ",imgAltText,", a.imgAltText, pattern);
+        or = orLike(or, all, types, ",isThumb,", a.isThumb, pattern);
+        or = orLike(or, all, types, ",optItemId1,", a.optItemId1, pattern);
+        or = orLike(or, all, types, ",optItemId2,", a.optItemId2, pattern);
+        or = orLike(or, all, types, ",prodId,", a.prodId, pattern);
+        or = orLike(or, all, types, ",prodImgId,", a.prodImgId, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
         return or;
     }
 
@@ -212,9 +212,9 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
         if (!StringUtils.hasText(sort)) {
 
             /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, i.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, i.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, i.prodImgId));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.prodImgId));
 
             return orders;
         }
@@ -226,48 +226,49 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("prodImgId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, i.prodImgId));
+                    orders.add(new OrderSpecifier(order, a.prodImgId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, i.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, i.sortOrd)); }
+                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, a.sortOrd)); }
             }
         }
         /* unknown sort → sortOrd ASC + regDate ASC fallback */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, i.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, i.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, i.prodImgId));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.prodImgId));
         }
         return orders;
     }
 
     /* 상품 이미지 수정 */
+
     @Override
     public int updateSelective(PdProdImg entity) {
         if (entity.getProdImgId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(i);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getSiteId()      != null) { update.set(i.siteId,      entity.getSiteId());      hasAny = true; }
-        if (entity.getProdId()      != null) { update.set(i.prodId,      entity.getProdId());      hasAny = true; }
-        if (entity.getOptItemId1()  != null) { update.set(i.optItemId1,  entity.getOptItemId1());  hasAny = true; }
-        if (entity.getOptItemId2()  != null) { update.set(i.optItemId2,  entity.getOptItemId2());  hasAny = true; }
-        if (entity.getAttachId()    != null) { update.set(i.attachId,    entity.getAttachId());    hasAny = true; }
-        if (entity.getCdnHost()     != null) { update.set(i.cdnHost,     entity.getCdnHost());     hasAny = true; }
-        if (entity.getCdnImgUrl()   != null) { update.set(i.cdnImgUrl,   entity.getCdnImgUrl());   hasAny = true; }
-        if (entity.getCdnThumbUrl() != null) { update.set(i.cdnThumbUrl, entity.getCdnThumbUrl()); hasAny = true; }
-        if (entity.getImgAltText()  != null) { update.set(i.imgAltText,  entity.getImgAltText());  hasAny = true; }
-        if (entity.getSortOrd()     != null) { update.set(i.sortOrd,     entity.getSortOrd());     hasAny = true; }
-        if (entity.getIsThumb()     != null) { update.set(i.isThumb,     entity.getIsThumb());     hasAny = true; }
-        if (entity.getUpdBy()       != null) { update.set(i.updBy,       entity.getUpdBy());       hasAny = true; }
+        if (entity.getSiteId()      != null) { update.set(a.siteId,      entity.getSiteId());      hasAny = true; }
+        if (entity.getProdId()      != null) { update.set(a.prodId,      entity.getProdId());      hasAny = true; }
+        if (entity.getOptItemId1()  != null) { update.set(a.optItemId1,  entity.getOptItemId1());  hasAny = true; }
+        if (entity.getOptItemId2()  != null) { update.set(a.optItemId2,  entity.getOptItemId2());  hasAny = true; }
+        if (entity.getAttachId()    != null) { update.set(a.attachId,    entity.getAttachId());    hasAny = true; }
+        if (entity.getCdnHost()     != null) { update.set(a.cdnHost,     entity.getCdnHost());     hasAny = true; }
+        if (entity.getCdnImgUrl()   != null) { update.set(a.cdnImgUrl,   entity.getCdnImgUrl());   hasAny = true; }
+        if (entity.getCdnThumbUrl() != null) { update.set(a.cdnThumbUrl, entity.getCdnThumbUrl()); hasAny = true; }
+        if (entity.getImgAltText()  != null) { update.set(a.imgAltText,  entity.getImgAltText());  hasAny = true; }
+        if (entity.getSortOrd()     != null) { update.set(a.sortOrd,     entity.getSortOrd());     hasAny = true; }
+        if (entity.getIsThumb()     != null) { update.set(a.isThumb,     entity.getIsThumb());     hasAny = true; }
+        if (entity.getUpdBy()       != null) { update.set(a.updBy,       entity.getUpdBy());       hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(i.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(i.prodImgId.eq(entity.getProdImgId())).execute();
+        long affected = update.where(a.prodImgId.eq(entity.getProdImgId())).execute();
         return (int) affected;
     }
 }

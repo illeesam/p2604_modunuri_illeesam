@@ -28,13 +28,23 @@ public class QSyI18nMsgRepositoryImpl implements QSyI18nMsgRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyI18nMsgRepositoryImpl";
-    private static final QSyI18nMsg m = QSyI18nMsg.syI18nMsg;
+    private static final QSyI18nMsg a = QSyI18nMsg.syI18nMsg;
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+    /* 다국어 메시지 baseSelColumnQuery */
+    private JPAQuery<SyI18nMsgDto.Item> baseSelColumnQuery() {
+        return queryFactory
+                .select(Projections.bean(SyI18nMsgDto.Item.class,
+                        a.i18nMsgId, a.i18nId, a.langCd, a.i18nMsg,
+                        a.regBy, a.regDate, a.updBy, a.updDate
+                ))
+                .from(a);
+    }
 
     /* 다국어 메시지 키조회 */
     @Override
     public Optional<SyI18nMsgDto.Item> selectById(String i18nMsgId) {
-        SyI18nMsgDto.Item dto = baseQuery().where(m.i18nMsgId.eq(i18nMsgId)).fetchOne();
+        SyI18nMsgDto.Item dto = baseSelColumnQuery().where(a.i18nMsgId.eq(i18nMsgId)).fetchOne();
         return Optional.ofNullable(dto);
     }
 
@@ -42,7 +52,7 @@ public class QSyI18nMsgRepositoryImpl implements QSyI18nMsgRepository {
     @Override
     public List<SyI18nMsgDto.Item> selectList(SyI18nMsgDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyI18nMsgDto.Item> query = baseQuery().where(
+        JPAQuery<SyI18nMsgDto.Item> query = baseSelColumnQuery().where(
                 baseAndI18nMsgId(search),
                 baseAndI18nId(search),
                 baseAndLangCd(search),
@@ -67,7 +77,7 @@ public class QSyI18nMsgRepositoryImpl implements QSyI18nMsgRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyI18nMsgDto.Item> query = baseQuery().where(
+        JPAQuery<SyI18nMsgDto.Item> query = baseSelColumnQuery().where(
                 baseAndI18nMsgId(search),
                 baseAndI18nId(search),
                 baseAndLangCd(search),
@@ -76,7 +86,7 @@ public class QSyI18nMsgRepositoryImpl implements QSyI18nMsgRepository {
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyI18nMsgDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(m.count()).from(m).where(
+        Long total = queryFactory.select(a.count()).from(a).where(
                 baseAndI18nMsgId(search),
                 baseAndI18nId(search),
                 baseAndLangCd(search),
@@ -86,17 +96,6 @@ public class QSyI18nMsgRepositoryImpl implements QSyI18nMsgRepository {
         SyI18nMsgDto.PageResponse res = new SyI18nMsgDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-
-    /* 다국어 메시지 baseQuery */
-    private JPAQuery<SyI18nMsgDto.Item> baseQuery() {
-        return queryFactory
-                .select(Projections.bean(SyI18nMsgDto.Item.class,
-                        m.i18nMsgId, m.i18nId, m.langCd, m.i18nMsg,
-                        m.regBy, m.regDate, m.updBy, m.updDate
-                ))
-                .from(m);
-    }
-
     /* 다국어 메시지 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
@@ -107,19 +106,19 @@ public class QSyI18nMsgRepositoryImpl implements QSyI18nMsgRepository {
     /* i18nMsgId 정확 일치 */
     private BooleanExpression baseAndI18nMsgId(SyI18nMsgDto.Request search) {
         return search != null && StringUtils.hasText(search.getI18nMsgId())
-                ? m.i18nMsgId.eq(search.getI18nMsgId()) : null;
+                ? a.i18nMsgId.eq(search.getI18nMsgId()) : null;
     }
 
     /* i18nId 정확 일치 */
     private BooleanExpression baseAndI18nId(SyI18nMsgDto.Request search) {
         return search != null && StringUtils.hasText(search.getI18nId())
-                ? m.i18nId.eq(search.getI18nId()) : null;
+                ? a.i18nId.eq(search.getI18nId()) : null;
     }
 
     /* langCd 정확 일치 */
     private BooleanExpression baseAndLangCd(SyI18nMsgDto.Request search) {
         return search != null && StringUtils.hasText(search.getLangCd())
-                ? m.langCd.eq(search.getLangCd()) : null;
+                ? a.langCd.eq(search.getLangCd()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
@@ -130,11 +129,11 @@ public class QSyI18nMsgRepositoryImpl implements QSyI18nMsgRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",i18nId,", m.i18nId, pattern);
-        or = orLike(or, all, types, ",i18nMsg,", m.i18nMsg, pattern);
-        or = orLike(or, all, types, ",i18nMsgId,", m.i18nMsgId, pattern);
-        or = orLike(or, all, types, ",langCd,", m.langCd, pattern);
-        or = orLike(or, all, types, ",siteId,", m.siteId, pattern);
+        or = orLike(or, all, types, ",i18nId,", a.i18nId, pattern);
+        or = orLike(or, all, types, ",i18nMsg,", a.i18nMsg, pattern);
+        or = orLike(or, all, types, ",i18nMsgId,", a.i18nMsgId, pattern);
+        or = orLike(or, all, types, ",langCd,", a.langCd, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
         return or;
     }
 
@@ -155,8 +154,8 @@ public class QSyI18nMsgRepositoryImpl implements QSyI18nMsgRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, m.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, m.i18nMsgId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.i18nMsgId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -167,39 +166,41 @@ public class QSyI18nMsgRepositoryImpl implements QSyI18nMsgRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("i18nMsgId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, m.i18nMsgId));
+                    orders.add(new OrderSpecifier(order, a.i18nMsgId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, m.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, m.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, m.i18nMsgId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.i18nMsgId));
         }
         return orders;
     }
 
     /* 다국어 메시지 수정 */
+
+
     @Override
     public int updateSelective(SyI18nMsg entity) {
         if (entity.getI18nMsgId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(m);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getI18nId()  != null) { update.set(m.i18nId,  entity.getI18nId());  hasAny = true; }
-        if (entity.getLangCd()  != null) { update.set(m.langCd,  entity.getLangCd());  hasAny = true; }
-        if (entity.getI18nMsg() != null) { update.set(m.i18nMsg, entity.getI18nMsg()); hasAny = true; }
-        if (entity.getUpdBy()   != null) { update.set(m.updBy,   entity.getUpdBy());   hasAny = true; }
+        if (entity.getI18nId()  != null) { update.set(a.i18nId,  entity.getI18nId());  hasAny = true; }
+        if (entity.getLangCd()  != null) { update.set(a.langCd,  entity.getLangCd());  hasAny = true; }
+        if (entity.getI18nMsg() != null) { update.set(a.i18nMsg, entity.getI18nMsg()); hasAny = true; }
+        if (entity.getUpdBy()   != null) { update.set(a.updBy,   entity.getUpdBy());   hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(m.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(m.i18nMsgId.eq(entity.getI18nMsgId())).execute();
+        long affected = update.where(a.i18nMsgId.eq(entity.getI18nMsgId())).execute();
         return (int) affected;
     }
 }

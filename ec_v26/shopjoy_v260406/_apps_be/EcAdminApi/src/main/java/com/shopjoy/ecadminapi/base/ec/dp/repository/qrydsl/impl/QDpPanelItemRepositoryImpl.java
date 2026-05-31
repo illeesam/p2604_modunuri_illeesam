@@ -28,19 +28,31 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpPanelItemRepositoryImpl";
-    private static final QDpPanelItem i = QDpPanelItem.dpPanelItem;
+    private static final QDpPanelItem a = QDpPanelItem.dpPanelItem;
+
+    /* 전시 패널 아이템 baseSelColumnQuery */
+    private JPAQuery<DpPanelItemDto.Item> baseSelColumnQuery() {
+        return queryFactory.select(Projections.bean(DpPanelItemDto.Item.class,
+                a.panelItemId, a.panelId, a.widgetLibId, a.widgetTypeCd,
+                a.widgetTitle, a.widgetContent, a.titleShowYn, a.widgetLibRefYn,
+                a.contentTypeCd, a.sortOrd, a.widgetConfigJson,
+                a.visibilityTargets, a.dispYn, a.dispStartDt, a.dispEndDt,
+                a.dispEnv, a.useYn,
+                a.regBy, a.regDate, a.updBy, a.updDate
+        )).from(a);
+    }
 
     /* 전시 패널 아이템 키조회 */
     @Override
     public Optional<DpPanelItemDto.Item> selectById(String panelItemId) {
-        return Optional.ofNullable(baseQuery().where(i.panelItemId.eq(panelItemId)).fetchOne());
+        return Optional.ofNullable(baseSelColumnQuery().where(a.panelItemId.eq(panelItemId)).fetchOne());
     }
 
     /* 전시 패널 아이템 목록조회 */
     @Override
     public List<DpPanelItemDto.Item> selectList(DpPanelItemDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<DpPanelItemDto.Item> query = baseQuery().where(
+        JPAQuery<DpPanelItemDto.Item> query = baseSelColumnQuery().where(
                 baseAndPanelIds(search),
                 baseAndPanelItemId(search),
                 baseAndWidgetTypeCd(search),
@@ -64,7 +76,7 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
         int pageNo = search != null && search.getPageNo() != null && search.getPageNo() > 0 ? search.getPageNo() : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<DpPanelItemDto.Item> query = baseQuery().where(
+        JPAQuery<DpPanelItemDto.Item> query = baseSelColumnQuery().where(
                 baseAndPanelIds(search),
                 baseAndPanelItemId(search),
                 baseAndWidgetTypeCd(search),
@@ -76,7 +88,7 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
         );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<DpPanelItemDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
-        Long total = queryFactory.select(i.count()).from(i).where(
+        Long total = queryFactory.select(a.count()).from(a).where(
                 baseAndPanelIds(search),
                 baseAndPanelItemId(search),
                 baseAndWidgetTypeCd(search),
@@ -89,19 +101,6 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
         DpPanelItemDto.PageResponse res = new DpPanelItemDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-
-    /* 전시 패널 아이템 baseQuery */
-    private JPAQuery<DpPanelItemDto.Item> baseQuery() {
-        return queryFactory.select(Projections.bean(DpPanelItemDto.Item.class,
-                i.panelItemId, i.panelId, i.widgetLibId, i.widgetTypeCd,
-                i.widgetTitle, i.widgetContent, i.titleShowYn, i.widgetLibRefYn,
-                i.contentTypeCd, i.sortOrd, i.widgetConfigJson,
-                i.visibilityTargets, i.dispYn, i.dispStartDt, i.dispEndDt,
-                i.dispEnv, i.useYn,
-                i.regBy, i.regDate, i.updBy, i.updDate
-        )).from(i);
-    }
-
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
@@ -112,37 +111,37 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
     /* panelId IN */
     private BooleanExpression baseAndPanelIds(DpPanelItemDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getPanelIds())
-                ? i.panelId.in(search.getPanelIds()) : null;
+                ? a.panelId.in(search.getPanelIds()) : null;
     }
 
     /* panelItemId 정확 일치 */
     private BooleanExpression baseAndPanelItemId(DpPanelItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getPanelItemId())
-                ? i.panelItemId.eq(search.getPanelItemId()) : null;
+                ? a.panelItemId.eq(search.getPanelItemId()) : null;
     }
 
     /* widgetTypeCd 정확 일치 */
     private BooleanExpression baseAndWidgetTypeCd(DpPanelItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getWidgetTypeCd())
-                ? i.widgetTypeCd.eq(search.getWidgetTypeCd()) : null;
+                ? a.widgetTypeCd.eq(search.getWidgetTypeCd()) : null;
     }
 
     /* widgetLibId 정확 일치 */
     private BooleanExpression baseAndWidgetLibId(DpPanelItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getWidgetLibId())
-                ? i.widgetLibId.eq(search.getWidgetLibId()) : null;
+                ? a.widgetLibId.eq(search.getWidgetLibId()) : null;
     }
 
     /* panelId 정확 일치 */
     private BooleanExpression baseAndPanelId(DpPanelItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getPanelId())
-                ? i.panelId.eq(search.getPanelId()) : null;
+                ? a.panelId.eq(search.getPanelId()) : null;
     }
 
     /* useYn 정확 일치 */
     private BooleanExpression baseAndUseYn(DpPanelItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
-                ? i.useYn.eq(search.getUseYn()) : null;
+                ? a.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -155,8 +154,8 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return i.regDate.goe(start).and(i.regDate.lt(endExcl));
-            case "upd_date": return i.updDate.goe(start).and(i.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -169,21 +168,21 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",contentTypeCd,", i.contentTypeCd, pattern);
-        or = orLike(or, all, types, ",dispEnv,", i.dispEnv, pattern);
-        or = orLike(or, all, types, ",dispYn,", i.dispYn, pattern);
-        or = orLike(or, all, types, ",panelId,", i.panelId, pattern);
-        or = orLike(or, all, types, ",panelItemId,", i.panelItemId, pattern);
-        or = orLike(or, all, types, ",siteId,", i.siteId, pattern);
-        or = orLike(or, all, types, ",titleShowYn,", i.titleShowYn, pattern);
-        or = orLike(or, all, types, ",useYn,", i.useYn, pattern);
-        or = orLike(or, all, types, ",visibilityTargets,", i.visibilityTargets, pattern);
-        or = orLike(or, all, types, ",widgetConfigJson,", i.widgetConfigJson, pattern);
-        or = orLike(or, all, types, ",widgetContent,", i.widgetContent, pattern);
-        or = orLike(or, all, types, ",widgetLibId,", i.widgetLibId, pattern);
-        or = orLike(or, all, types, ",widgetLibRefYn,", i.widgetLibRefYn, pattern);
-        or = orLike(or, all, types, ",widgetTitle,", i.widgetTitle, pattern);
-        or = orLike(or, all, types, ",widgetTypeCd,", i.widgetTypeCd, pattern);
+        or = orLike(or, all, types, ",contentTypeCd,", a.contentTypeCd, pattern);
+        or = orLike(or, all, types, ",dispEnv,", a.dispEnv, pattern);
+        or = orLike(or, all, types, ",dispYn,", a.dispYn, pattern);
+        or = orLike(or, all, types, ",panelId,", a.panelId, pattern);
+        or = orLike(or, all, types, ",panelItemId,", a.panelItemId, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",titleShowYn,", a.titleShowYn, pattern);
+        or = orLike(or, all, types, ",useYn,", a.useYn, pattern);
+        or = orLike(or, all, types, ",visibilityTargets,", a.visibilityTargets, pattern);
+        or = orLike(or, all, types, ",widgetConfigJson,", a.widgetConfigJson, pattern);
+        or = orLike(or, all, types, ",widgetContent,", a.widgetContent, pattern);
+        or = orLike(or, all, types, ",widgetLibId,", a.widgetLibId, pattern);
+        or = orLike(or, all, types, ",widgetLibRefYn,", a.widgetLibRefYn, pattern);
+        or = orLike(or, all, types, ",widgetTitle,", a.widgetTitle, pattern);
+        or = orLike(or, all, types, ",widgetTypeCd,", a.widgetTypeCd, pattern);
         return or;
     }
 
@@ -206,9 +205,9 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
         if (!StringUtils.hasText(sort)) {
 
             /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, i.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, i.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, i.panelItemId));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.panelItemId));
 
             return orders;
         }
@@ -220,50 +219,52 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("panelItemId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, i.panelItemId));
+                    orders.add(new OrderSpecifier(order, a.panelItemId));
                 } else if ("widgetTitle".equals(field)) {
-                    orders.add(new OrderSpecifier(order, i.widgetTitle));
+                    orders.add(new OrderSpecifier(order, a.widgetTitle));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, i.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, i.sortOrd)); }
+                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, a.sortOrd)); }
             }
         }
         /* unknown sort → sortOrd ASC + regDate ASC fallback */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, i.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, i.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, i.panelItemId));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.panelItemId));
         }
         return orders;
     }
 
     /* 전시 패널 아이템 수정 */
+
+
     @Override
     public int updateSelective(DpPanelItem entity) {
         if (entity.getPanelItemId() == null) return 0;
-        JPAUpdateClause update = queryFactory.update(i);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
-        if (entity.getPanelId()           != null) { update.set(i.panelId,           entity.getPanelId());           hasAny = true; }
-        if (entity.getWidgetLibId()       != null) { update.set(i.widgetLibId,       entity.getWidgetLibId());       hasAny = true; }
-        if (entity.getWidgetTypeCd()      != null) { update.set(i.widgetTypeCd,      entity.getWidgetTypeCd());      hasAny = true; }
-        if (entity.getWidgetTitle()       != null) { update.set(i.widgetTitle,       entity.getWidgetTitle());       hasAny = true; }
-        if (entity.getWidgetContent()     != null) { update.set(i.widgetContent,     entity.getWidgetContent());     hasAny = true; }
-        if (entity.getTitleShowYn()       != null) { update.set(i.titleShowYn,       entity.getTitleShowYn());       hasAny = true; }
-        if (entity.getWidgetLibRefYn()    != null) { update.set(i.widgetLibRefYn,    entity.getWidgetLibRefYn());    hasAny = true; }
-        if (entity.getContentTypeCd()     != null) { update.set(i.contentTypeCd,     entity.getContentTypeCd());     hasAny = true; }
-        if (entity.getSortOrd()           != null) { update.set(i.sortOrd,           entity.getSortOrd());           hasAny = true; }
-        if (entity.getWidgetConfigJson()  != null) { update.set(i.widgetConfigJson,  entity.getWidgetConfigJson());  hasAny = true; }
-        if (entity.getVisibilityTargets() != null) { update.set(i.visibilityTargets, entity.getVisibilityTargets()); hasAny = true; }
-        if (entity.getDispYn()            != null) { update.set(i.dispYn,            entity.getDispYn());            hasAny = true; }
-        if (entity.getDispStartDt()       != null) { update.set(i.dispStartDt,       entity.getDispStartDt());       hasAny = true; }
-        if (entity.getDispEndDt()         != null) { update.set(i.dispEndDt,         entity.getDispEndDt());         hasAny = true; }
-        if (entity.getDispEnv()           != null) { update.set(i.dispEnv,           entity.getDispEnv());           hasAny = true; }
-        if (entity.getUseYn()             != null) { update.set(i.useYn,             entity.getUseYn());             hasAny = true; }
-        if (entity.getUpdBy()             != null) { update.set(i.updBy,             entity.getUpdBy());             hasAny = true; }
+        if (entity.getPanelId()           != null) { update.set(a.panelId,           entity.getPanelId());           hasAny = true; }
+        if (entity.getWidgetLibId()       != null) { update.set(a.widgetLibId,       entity.getWidgetLibId());       hasAny = true; }
+        if (entity.getWidgetTypeCd()      != null) { update.set(a.widgetTypeCd,      entity.getWidgetTypeCd());      hasAny = true; }
+        if (entity.getWidgetTitle()       != null) { update.set(a.widgetTitle,       entity.getWidgetTitle());       hasAny = true; }
+        if (entity.getWidgetContent()     != null) { update.set(a.widgetContent,     entity.getWidgetContent());     hasAny = true; }
+        if (entity.getTitleShowYn()       != null) { update.set(a.titleShowYn,       entity.getTitleShowYn());       hasAny = true; }
+        if (entity.getWidgetLibRefYn()    != null) { update.set(a.widgetLibRefYn,    entity.getWidgetLibRefYn());    hasAny = true; }
+        if (entity.getContentTypeCd()     != null) { update.set(a.contentTypeCd,     entity.getContentTypeCd());     hasAny = true; }
+        if (entity.getSortOrd()           != null) { update.set(a.sortOrd,           entity.getSortOrd());           hasAny = true; }
+        if (entity.getWidgetConfigJson()  != null) { update.set(a.widgetConfigJson,  entity.getWidgetConfigJson());  hasAny = true; }
+        if (entity.getVisibilityTargets() != null) { update.set(a.visibilityTargets, entity.getVisibilityTargets()); hasAny = true; }
+        if (entity.getDispYn()            != null) { update.set(a.dispYn,            entity.getDispYn());            hasAny = true; }
+        if (entity.getDispStartDt()       != null) { update.set(a.dispStartDt,       entity.getDispStartDt());       hasAny = true; }
+        if (entity.getDispEndDt()         != null) { update.set(a.dispEndDt,         entity.getDispEndDt());         hasAny = true; }
+        if (entity.getDispEnv()           != null) { update.set(a.dispEnv,           entity.getDispEnv());           hasAny = true; }
+        if (entity.getUseYn()             != null) { update.set(a.useYn,             entity.getUseYn());             hasAny = true; }
+        if (entity.getUpdBy()             != null) { update.set(a.updBy,             entity.getUpdBy());             hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(i.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
         if (!hasAny) return 0;
-        return (int) update.where(i.panelItemId.eq(entity.getPanelItemId())).execute();
+        return (int) update.where(a.panelItemId.eq(entity.getPanelItemId())).execute();
     }
 }

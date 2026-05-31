@@ -37,7 +37,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
     private final SyPathRepository syPathRepository;
     private final EntityManager em;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSySiteRepositoryImpl";
-    private static final QSySite s = QSySite.sySite;
+    private static final QSySite a = QSySite.sySite;
     private static final QSyCode cdSt = new QSyCode("cd_st");
     private static final QSyCode cdSs = new QSyCode("cd_ss");
 
@@ -45,17 +45,17 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
     private JPAQuery<SySiteDto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(SySiteDto.Item.class,
-                        s.siteId, s.siteCode, s.siteTypeCd, s.siteNm, s.siteDomain,
-                        s.logoUrl, s.faviconUrl, s.siteDesc, s.siteEmail, s.sitePhone,
-                        s.siteZipCode, s.siteAddress, s.siteBusinessNo, s.siteCeo,
-                        s.siteStatusCd, s.configJson,
-                        s.regBy, s.regDate, s.updBy, s.updDate, s.pathId,
+                        a.siteId, a.siteCode, a.siteTypeCd, a.siteNm, a.siteDomain,
+                        a.logoUrl, a.faviconUrl, a.siteDesc, a.siteEmail, a.sitePhone,
+                        a.siteZipCode, a.siteAddress, a.siteBusinessNo, a.siteCeo,
+                        a.siteStatusCd, a.configJson,
+                        a.regBy, a.regDate, a.updBy, a.updDate, a.pathId,
                         cdSt.codeLabel.as("siteTypeCdNm"),
                         cdSs.codeLabel.as("siteStatusCdNm")
                 ))
-                .from(s)
-                .leftJoin(cdSt).on(cdSt.codeGrp.eq("SITE_TYPE").and(cdSt.codeValue.eq(s.siteTypeCd)))
-                .leftJoin(cdSs).on(cdSs.codeGrp.eq("SITE_STATUS").and(cdSs.codeValue.eq(s.siteStatusCd)));
+                .from(a)
+                .leftJoin(cdSt).on(cdSt.codeGrp.eq("SITE_TYPE").and(cdSt.codeValue.eq(a.siteTypeCd)))
+                .leftJoin(cdSs).on(cdSs.codeGrp.eq("SITE_STATUS").and(cdSs.codeValue.eq(a.siteStatusCd)));
     }
 
     /* 사이트 키조회 */
@@ -63,7 +63,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
     public Optional<SySiteDto.Item> selectById(String siteId) {
         SySiteDto.Item dto = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
-                .where(s.siteId.eq(siteId))
+                .where(a.siteId.eq(siteId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -118,7 +118,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
         }
         List<SySiteDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(s.count()).from(s)
+        Long total = queryFactory.select(a.count()).from(a)
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: count")
                 .where(
                         baseAndSiteId(search),
@@ -136,33 +136,33 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(baseAndSiteId(s), baseAndDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(baseAndSiteId(a), baseAndDeptId(a), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(SySiteDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? s.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression baseAndPathId(SySiteDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
-                ? s.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_site"))
+                ? a.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_site"))
                 : null;
     }
 
     /* siteStatusCd 정확 일치 */
     private BooleanExpression baseAndStatus(SySiteDto.Request search) {
         return search != null && StringUtils.hasText(search.getStatus())
-                ? s.siteStatusCd.eq(search.getStatus()) : null;
+                ? a.siteStatusCd.eq(search.getStatus()) : null;
     }
 
     /* siteTypeCd 정확 일치 */
     private BooleanExpression baseAndTypeCd(SySiteDto.Request search) {
         return search != null && StringUtils.hasText(search.getTypeCd())
-                ? s.siteTypeCd.eq(search.getTypeCd()) : null;
+                ? a.siteTypeCd.eq(search.getTypeCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -175,8 +175,8 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return s.regDate.goe(start).and(s.regDate.lt(endExcl));
-            case "upd_date": return s.updDate.goe(start).and(s.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -189,23 +189,23 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",configJson,", s.configJson, pattern);
-        or = orLike(or, all, types, ",faviconUrl,", s.faviconUrl, pattern);
-        or = orLike(or, all, types, ",logoUrl,", s.logoUrl, pattern);
-        or = orLike(or, all, types, ",pathId,", s.pathId, pattern);
-        or = orLike(or, all, types, ",siteAddress,", s.siteAddress, pattern);
-        or = orLike(or, all, types, ",siteBusinessNo,", s.siteBusinessNo, pattern);
-        or = orLike(or, all, types, ",siteCeo,", s.siteCeo, pattern);
-        or = orLike(or, all, types, ",siteCode,", s.siteCode, pattern);
-        or = orLike(or, all, types, ",siteDesc,", s.siteDesc, pattern);
-        or = orLike(or, all, types, ",siteDomain,", s.siteDomain, pattern);
-        or = orLike(or, all, types, ",siteEmail,", s.siteEmail, pattern);
-        or = orLike(or, all, types, ",siteId,", s.siteId, pattern);
-        or = orLike(or, all, types, ",siteNm,", s.siteNm, pattern);
-        or = orLike(or, all, types, ",sitePhone,", s.sitePhone, pattern);
-        or = orLike(or, all, types, ",siteStatusCd,", s.siteStatusCd, pattern);
-        or = orLike(or, all, types, ",siteTypeCd,", s.siteTypeCd, pattern);
-        or = orLike(or, all, types, ",siteZipCode,", s.siteZipCode, pattern);
+        or = orLike(or, all, types, ",configJson,", a.configJson, pattern);
+        or = orLike(or, all, types, ",faviconUrl,", a.faviconUrl, pattern);
+        or = orLike(or, all, types, ",logoUrl,", a.logoUrl, pattern);
+        or = orLike(or, all, types, ",pathId,", a.pathId, pattern);
+        or = orLike(or, all, types, ",siteAddress,", a.siteAddress, pattern);
+        or = orLike(or, all, types, ",siteBusinessNo,", a.siteBusinessNo, pattern);
+        or = orLike(or, all, types, ",siteCeo,", a.siteCeo, pattern);
+        or = orLike(or, all, types, ",siteCode,", a.siteCode, pattern);
+        or = orLike(or, all, types, ",siteDesc,", a.siteDesc, pattern);
+        or = orLike(or, all, types, ",siteDomain,", a.siteDomain, pattern);
+        or = orLike(or, all, types, ",siteEmail,", a.siteEmail, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",siteNm,", a.siteNm, pattern);
+        or = orLike(or, all, types, ",sitePhone,", a.sitePhone, pattern);
+        or = orLike(or, all, types, ",siteStatusCd,", a.siteStatusCd, pattern);
+        or = orLike(or, all, types, ",siteTypeCd,", a.siteTypeCd, pattern);
+        or = orLike(or, all, types, ",siteZipCode,", a.siteZipCode, pattern);
         return or;
     }
 
@@ -226,8 +226,8 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = q == null ? null : q.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, s.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, s.siteId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.siteId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -238,19 +238,19 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("siteId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, s.siteId));
+                    orders.add(new OrderSpecifier(order, a.siteId));
                 } else if ("siteNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, s.siteNm));
+                    orders.add(new OrderSpecifier(order, a.siteNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, s.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, s.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, s.siteId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.siteId));
         }
         return orders;
     }
@@ -260,32 +260,32 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
     public int updateSelective(SySite entity) {
         if (entity.getSiteId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(s);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getSiteCode()       != null) { update.set(s.siteCode,       entity.getSiteCode());       hasAny = true; }
-        if (entity.getSiteTypeCd()     != null) { update.set(s.siteTypeCd,     entity.getSiteTypeCd());     hasAny = true; }
-        if (entity.getSiteNm()         != null) { update.set(s.siteNm,         entity.getSiteNm());         hasAny = true; }
-        if (entity.getSiteDomain()     != null) { update.set(s.siteDomain,     entity.getSiteDomain());     hasAny = true; }
-        if (entity.getLogoUrl()        != null) { update.set(s.logoUrl,        entity.getLogoUrl());        hasAny = true; }
-        if (entity.getFaviconUrl()     != null) { update.set(s.faviconUrl,     entity.getFaviconUrl());     hasAny = true; }
-        if (entity.getSiteDesc()       != null) { update.set(s.siteDesc,       entity.getSiteDesc());       hasAny = true; }
-        if (entity.getSiteEmail()      != null) { update.set(s.siteEmail,      entity.getSiteEmail());      hasAny = true; }
-        if (entity.getSitePhone()      != null) { update.set(s.sitePhone,      entity.getSitePhone());      hasAny = true; }
-        if (entity.getSiteZipCode()    != null) { update.set(s.siteZipCode,    entity.getSiteZipCode());    hasAny = true; }
-        if (entity.getSiteAddress()    != null) { update.set(s.siteAddress,    entity.getSiteAddress());    hasAny = true; }
-        if (entity.getSiteBusinessNo() != null) { update.set(s.siteBusinessNo, entity.getSiteBusinessNo()); hasAny = true; }
-        if (entity.getSiteCeo()        != null) { update.set(s.siteCeo,        entity.getSiteCeo());        hasAny = true; }
-        if (entity.getSiteStatusCd()   != null) { update.set(s.siteStatusCd,   entity.getSiteStatusCd());   hasAny = true; }
-        if (entity.getConfigJson()     != null) { update.set(s.configJson,     entity.getConfigJson());     hasAny = true; }
-        if (entity.getUpdBy()          != null) { update.set(s.updBy,          entity.getUpdBy());          hasAny = true; }
+        if (entity.getSiteCode()       != null) { update.set(a.siteCode,       entity.getSiteCode());       hasAny = true; }
+        if (entity.getSiteTypeCd()     != null) { update.set(a.siteTypeCd,     entity.getSiteTypeCd());     hasAny = true; }
+        if (entity.getSiteNm()         != null) { update.set(a.siteNm,         entity.getSiteNm());         hasAny = true; }
+        if (entity.getSiteDomain()     != null) { update.set(a.siteDomain,     entity.getSiteDomain());     hasAny = true; }
+        if (entity.getLogoUrl()        != null) { update.set(a.logoUrl,        entity.getLogoUrl());        hasAny = true; }
+        if (entity.getFaviconUrl()     != null) { update.set(a.faviconUrl,     entity.getFaviconUrl());     hasAny = true; }
+        if (entity.getSiteDesc()       != null) { update.set(a.siteDesc,       entity.getSiteDesc());       hasAny = true; }
+        if (entity.getSiteEmail()      != null) { update.set(a.siteEmail,      entity.getSiteEmail());      hasAny = true; }
+        if (entity.getSitePhone()      != null) { update.set(a.sitePhone,      entity.getSitePhone());      hasAny = true; }
+        if (entity.getSiteZipCode()    != null) { update.set(a.siteZipCode,    entity.getSiteZipCode());    hasAny = true; }
+        if (entity.getSiteAddress()    != null) { update.set(a.siteAddress,    entity.getSiteAddress());    hasAny = true; }
+        if (entity.getSiteBusinessNo() != null) { update.set(a.siteBusinessNo, entity.getSiteBusinessNo()); hasAny = true; }
+        if (entity.getSiteCeo()        != null) { update.set(a.siteCeo,        entity.getSiteCeo());        hasAny = true; }
+        if (entity.getSiteStatusCd()   != null) { update.set(a.siteStatusCd,   entity.getSiteStatusCd());   hasAny = true; }
+        if (entity.getConfigJson()     != null) { update.set(a.configJson,     entity.getConfigJson());     hasAny = true; }
+        if (entity.getUpdBy()          != null) { update.set(a.updBy,          entity.getUpdBy());          hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(s.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
-        if (entity.getPathId()         != null) { update.set(s.pathId,         entity.getPathId());         hasAny = true; }
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        if (entity.getPathId()         != null) { update.set(a.pathId,         entity.getPathId());         hasAny = true; }
 
         if (!hasAny) return 0;
 
-        long affected = update.where(s.siteId.eq(entity.getSiteId())).execute();
+        long affected = update.where(a.siteId.eq(entity.getSiteId())).execute();
         return (int) affected;
     }
 
@@ -316,7 +316,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
                 ),
                 filtered_site /* 검색조건이 적용된 사이트 집합 */ AS (
                     SELECT site_id, path_id
-                    FROM sy_site s
+                    FROM sy_site a
                     WHERE 1=1
                 """);
         params.put("bizCd", "sy_site");
@@ -331,9 +331,9 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
         sql.append("""
                 )
                   /* (1) 일반 path_id 행 : 노드 + 자손 누적 카운트 */
-                  SELECT d.root_id AS path_id, COUNT(s.site_id) AS cnt
+                  SELECT d.root_id AS path_id, COUNT(a.site_id) AS cnt
                   FROM descendants d
-                    LEFT JOIN filtered_site s ON s.path_id = d.leaf_id
+                    LEFT JOIN filtered_site a ON a.path_id = d.leaf_id
                   GROUP BY d.root_id
                 UNION ALL
                   /* (2) '__total__' : 트리 루트 "전체" 노드용 — 검색조건에 부합하는 전체 카운트 */
@@ -369,48 +369,48 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
      *   - 각 메서드는 SQL 조각을 sql 에 추가하고 동시에 params 에 바인딩
      * ============================================================ */
 
-    /* AND s.site_status_cd = :statusCd */
-    private void fpstAndStatus(SySiteDto.Request s, StringBuilder sql, Map<String, Object> p) {
-        if (s == null || !StringUtils.hasText(s.getStatus())) return;
-        sql.append("      AND s.site_status_cd = :statusCd \n");
-        p.put("statusCd", s.getStatus());
+    /* AND a.site_status_cd = :statusCd */
+    private void fpstAndStatus(SySiteDto.Request a, StringBuilder sql, Map<String, Object> p) {
+        if (a == null || !StringUtils.hasText(a.getStatus())) return;
+        sql.append("      AND a.site_status_cd = :statusCd \n");
+        p.put("statusCd", a.getStatus());
     }
 
-    /* AND s.site_type_cd = :typeCd */
-    private void fpstAndTypeCd(SySiteDto.Request s, StringBuilder sql, Map<String, Object> p) {
-        if (s == null || !StringUtils.hasText(s.getTypeCd())) return;
-        sql.append("      AND s.site_type_cd   = :typeCd \n");
-        p.put("typeCd", s.getTypeCd());
+    /* AND a.site_type_cd = :typeCd */
+    private void fpstAndTypeCd(SySiteDto.Request a, StringBuilder sql, Map<String, Object> p) {
+        if (a == null || !StringUtils.hasText(a.getTypeCd())) return;
+        sql.append("      AND a.site_type_cd   = :typeCd \n");
+        p.put("typeCd", a.getTypeCd());
     }
 
-    /* AND ( OR s.col_x ILIKE :searchValue ... ) — searchType csv 로 컬럼 분기
+    /* AND ( OR a.col_x ILIKE :searchValue ... ) — searchType csv 로 컬럼 분기
      *   searchType 은 ",a,b,c," 양끝 콤마 wrap 후 contains() 매칭 — "a"/"c" 같은 양끝 토큰 누락 방지 */
-    private void fpstAndSearchValue(SySiteDto.Request s, StringBuilder sql, Map<String, Object> p) {
-        if (s == null || !StringUtils.hasText(s.getSearchValue())) return;
-        String raw = s.getSearchType();
+    private void fpstAndSearchValue(SySiteDto.Request a, StringBuilder sql, Map<String, Object> p) {
+        if (a == null || !StringUtils.hasText(a.getSearchValue())) return;
+        String raw = a.getSearchType();
         boolean noType = !StringUtils.hasText(raw);
         String st = noType ? "" : "," + raw.trim() + ",";
         sql.append("      AND ( \n");
         sql.append("            1=0 \n");
-        if (noType || st.contains(",siteCode,"))   sql.append("         OR s.site_code   ILIKE '%' || :searchValue || '%' \n");
-        if (noType || st.contains(",siteNm,"))     sql.append("         OR s.site_nm     ILIKE '%' || :searchValue || '%' \n");
-        if (noType || st.contains(",siteDomain,")) sql.append("         OR s.site_domain ILIKE '%' || :searchValue || '%' \n");
-        if (noType || st.contains(",siteEmail,"))  sql.append("         OR s.site_email  ILIKE '%' || :searchValue || '%' \n");
-        if (noType || st.contains(",siteCeo,"))    sql.append("         OR s.site_ceo    ILIKE '%' || :searchValue || '%' \n");
+        if (noType || st.contains(",siteCode,"))   sql.append("         OR a.site_code   ILIKE '%' || :searchValue || '%' \n");
+        if (noType || st.contains(",siteNm,"))     sql.append("         OR a.site_nm     ILIKE '%' || :searchValue || '%' \n");
+        if (noType || st.contains(",siteDomain,")) sql.append("         OR a.site_domain ILIKE '%' || :searchValue || '%' \n");
+        if (noType || st.contains(",siteEmail,"))  sql.append("         OR a.site_email  ILIKE '%' || :searchValue || '%' \n");
+        if (noType || st.contains(",siteCeo,"))    sql.append("         OR a.site_ceo    ILIKE '%' || :searchValue || '%' \n");
         sql.append("      ) \n");
-        p.put("searchValue", s.getSearchValue());
+        p.put("searchValue", a.getSearchValue());
     }
 
-    /* AND s.reg_date >= :dateStart AND s.reg_date <= :dateEnd + 1 day */
-    private void fpstAndDateRange(SySiteDto.Request s, StringBuilder sql, Map<String, Object> p) {
-        if (s == null) return;
-        if (StringUtils.hasText(s.getDateStart())) {
-            sql.append("      AND s.reg_date >= CAST(:dateStart AS timestamp) \n");
-            p.put("dateStart", s.getDateStart());
+    /* AND a.reg_date >= :dateStart AND a.reg_date <= :dateEnd + 1 day */
+    private void fpstAndDateRange(SySiteDto.Request a, StringBuilder sql, Map<String, Object> p) {
+        if (a == null) return;
+        if (StringUtils.hasText(a.getDateStart())) {
+            sql.append("      AND a.reg_date >= CAST(:dateStart AS timestamp) \n");
+            p.put("dateStart", a.getDateStart());
         }
-        if (StringUtils.hasText(s.getDateEnd())) {
-            sql.append("      AND s.reg_date <= CAST(:dateEnd   AS timestamp) + INTERVAL '1 day' \n");
-            p.put("dateEnd", s.getDateEnd());
+        if (StringUtils.hasText(a.getDateEnd())) {
+            sql.append("      AND a.reg_date <= CAST(:dateEnd   AS timestamp) + INTERVAL '1 day' \n");
+            p.put("dateEnd", a.getDateEnd());
         }
     }
 }

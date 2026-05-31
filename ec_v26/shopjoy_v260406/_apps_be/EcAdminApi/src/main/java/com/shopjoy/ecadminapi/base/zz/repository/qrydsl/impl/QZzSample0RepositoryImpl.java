@@ -24,33 +24,33 @@ public class QZzSample0RepositoryImpl implements QZzSample0Repository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.zz.repository.qrydsl.impl.QZzSample0RepositoryImpl";
-    private static final QZzSample0 s = QZzSample0.zzSample0;
+    private static final QZzSample0 a = QZzSample0.zzSample0;
 
     /* buildBaseQuery */
     private JPAQuery<ZzSample0Dto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(ZzSample0Dto.Item.class,
-                        s.sample0Id,
-                        s.sampleName,
-                        s.sampleDesc,
-                        s.sampleValue,
-                        s.sortOrd,
-                        s.useYn,
-                        s.regBy,
-                        s.regDate,
-                        s.updBy,
-                        s.updDate,
-                        s.col01,
-                        s.col02,
-                        s.col03,
-                        s.col04,
-                        s.col05,
-                        s.col06,
-                        s.col07,
-                        s.col08,
-                        s.col09
+                        a.sample0Id,
+                        a.sampleName,
+                        a.sampleDesc,
+                        a.sampleValue,
+                        a.sortOrd,
+                        a.useYn,
+                        a.regBy,
+                        a.regDate,
+                        a.updBy,
+                        a.updDate,
+                        a.col01,
+                        a.col02,
+                        a.col03,
+                        a.col04,
+                        a.col05,
+                        a.col06,
+                        a.col07,
+                        a.col08,
+                        a.col09
                 ))
-                .from(s);
+                .from(a);
     }
 
     /* 키조회 */
@@ -58,7 +58,7 @@ public class QZzSample0RepositoryImpl implements QZzSample0Repository {
     public Optional<ZzSample0Dto.Item> selectById(String id) {
         ZzSample0Dto.Item dto = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
-                .where(s.sample0Id.eq(id))
+                .where(a.sample0Id.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -107,8 +107,8 @@ public class QZzSample0RepositoryImpl implements QZzSample0Repository {
         List<ZzSample0Dto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(s.count())
-                .from(s)
+                .select(a.count())
+                .from(a)
                 .where(
                 baseAndSample0Id(search),
                 baseAndUseYn(search),
@@ -123,20 +123,20 @@ public class QZzSample0RepositoryImpl implements QZzSample0Repository {
     /* buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
-     * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
+     * .where(andSiteId(a), andDeptId(a), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
 
     /* sample0Id 정확 일치 */
     private BooleanExpression baseAndSample0Id(ZzSample0Dto.Request search) {
         return search != null && StringUtils.hasText(search.getSample0Id())
-                ? s.sample0Id.eq(search.getSample0Id()) : null;
+                ? a.sample0Id.eq(search.getSample0Id()) : null;
     }
 
     /* useYn 정확 일치 */
     private BooleanExpression baseAndUseYn(ZzSample0Dto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
-                ? s.useYn.eq(search.getUseYn()) : null;
+                ? a.useYn.eq(search.getUseYn()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
@@ -147,20 +147,20 @@ public class QZzSample0RepositoryImpl implements QZzSample0Repository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",col01,", s.col01, pattern);
-        or = orLike(or, all, types, ",col02,", s.col02, pattern);
-        or = orLike(or, all, types, ",col03,", s.col03, pattern);
-        or = orLike(or, all, types, ",col04,", s.col04, pattern);
-        or = orLike(or, all, types, ",col05,", s.col05, pattern);
-        or = orLike(or, all, types, ",col06,", s.col06, pattern);
-        or = orLike(or, all, types, ",col07,", s.col07, pattern);
-        or = orLike(or, all, types, ",col08,", s.col08, pattern);
-        or = orLike(or, all, types, ",col09,", s.col09, pattern);
-        or = orLike(or, all, types, ",sample0Id,", s.sample0Id, pattern);
-        or = orLike(or, all, types, ",sampleDesc,", s.sampleDesc, pattern);
-        or = orLike(or, all, types, ",sampleName,", s.sampleName, pattern);
-        or = orLike(or, all, types, ",sampleValue,", s.sampleValue, pattern);
-        or = orLike(or, all, types, ",useYn,", s.useYn, pattern);
+        or = orLike(or, all, types, ",col01,", a.col01, pattern);
+        or = orLike(or, all, types, ",col02,", a.col02, pattern);
+        or = orLike(or, all, types, ",col03,", a.col03, pattern);
+        or = orLike(or, all, types, ",col04,", a.col04, pattern);
+        or = orLike(or, all, types, ",col05,", a.col05, pattern);
+        or = orLike(or, all, types, ",col06,", a.col06, pattern);
+        or = orLike(or, all, types, ",col07,", a.col07, pattern);
+        or = orLike(or, all, types, ",col08,", a.col08, pattern);
+        or = orLike(or, all, types, ",col09,", a.col09, pattern);
+        or = orLike(or, all, types, ",sample0Id,", a.sample0Id, pattern);
+        or = orLike(or, all, types, ",sampleDesc,", a.sampleDesc, pattern);
+        or = orLike(or, all, types, ",sampleName,", a.sampleName, pattern);
+        or = orLike(or, all, types, ",sampleValue,", a.sampleValue, pattern);
+        or = orLike(or, all, types, ",useYn,", a.useYn, pattern);
         return or;
     }
 
@@ -181,8 +181,8 @@ public class QZzSample0RepositoryImpl implements QZzSample0Repository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = search == null ? null : search.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.ASC, s.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, s.sample0Id));
+            orders.add(new OrderSpecifier(Order.ASC, a.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.sample0Id));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -193,20 +193,20 @@ public class QZzSample0RepositoryImpl implements QZzSample0Repository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("sample0Id".equals(field)) {
-                    orders.add(new OrderSpecifier(order, s.sample0Id));
+                    orders.add(new OrderSpecifier(order, a.sample0Id));
                 } else if ("sampleName".equals(field)) {
-                    orders.add(new OrderSpecifier(order, s.sampleName));
+                    orders.add(new OrderSpecifier(order, a.sampleName));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, s.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, s.sortOrd)); }
+                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, a.sortOrd)); }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, s.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, s.sample0Id));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.sample0Id));
         }
         return orders;
     }
@@ -216,20 +216,20 @@ public class QZzSample0RepositoryImpl implements QZzSample0Repository {
     public int updateSelective(ZzSample0 entity) {
         if (entity.getSample0Id() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(s);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getSampleName()  != null) { update.set(s.sampleName,  entity.getSampleName());  hasAny = true; }
-        if (entity.getSampleDesc()  != null) { update.set(s.sampleDesc,  entity.getSampleDesc());  hasAny = true; }
-        if (entity.getSampleValue() != null) { update.set(s.sampleValue, entity.getSampleValue()); hasAny = true; }
-        if (entity.getSortOrd()     != null) { update.set(s.sortOrd,     entity.getSortOrd());     hasAny = true; }
-        if (entity.getUseYn()       != null) { update.set(s.useYn,       entity.getUseYn());       hasAny = true; }
-        if (entity.getUpdBy()       != null) { update.set(s.updBy,       entity.getUpdBy());       hasAny = true; }
-        if (entity.getUpdDate()     != null) { update.set(s.updDate,     entity.getUpdDate());     hasAny = true; }
+        if (entity.getSampleName()  != null) { update.set(a.sampleName,  entity.getSampleName());  hasAny = true; }
+        if (entity.getSampleDesc()  != null) { update.set(a.sampleDesc,  entity.getSampleDesc());  hasAny = true; }
+        if (entity.getSampleValue() != null) { update.set(a.sampleValue, entity.getSampleValue()); hasAny = true; }
+        if (entity.getSortOrd()     != null) { update.set(a.sortOrd,     entity.getSortOrd());     hasAny = true; }
+        if (entity.getUseYn()       != null) { update.set(a.useYn,       entity.getUseYn());       hasAny = true; }
+        if (entity.getUpdBy()       != null) { update.set(a.updBy,       entity.getUpdBy());       hasAny = true; }
+        if (entity.getUpdDate()     != null) { update.set(a.updDate,     entity.getUpdDate());     hasAny = true; }
 
         if (!hasAny) return 0;
 
-        long affected = update.where(s.sample0Id.eq(entity.getSample0Id())).execute();
+        long affected = update.where(a.sample0Id.eq(entity.getSample0Id())).execute();
         return (int) affected;
     }
 }

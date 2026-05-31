@@ -29,30 +29,30 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhAlarmSendHistRepositoryImpl";
-    private static final QSyhAlarmSendHist h   = QSyhAlarmSendHist.syhAlarmSendHist;
+    private static final QSyhAlarmSendHist a   = QSyhAlarmSendHist.syhAlarmSendHist;
     private static final QSySite           ste = QSySite.sySite;
 
     /* 알람 발송 이력 buildBaseQuery */
     private JPAQuery<SyhAlarmSendHistDto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(SyhAlarmSendHistDto.Item.class,
-                        h.sendHistId,
-                        h.siteId,
-                        h.alarmId,
-                        h.memberId,
-                        h.channel,
-                        h.sendTo,
-                        h.sendDate,
-                        h.sendHistStatusCd,
-                        h.errorMsg,
-                        h.regBy,
-                        h.regDate,
-                        h.updBy,
-                        h.updDate,
+                        a.sendHistId,
+                        a.siteId,
+                        a.alarmId,
+                        a.memberId,
+                        a.channel,
+                        a.sendTo,
+                        a.sendDate,
+                        a.sendHistStatusCd,
+                        a.errorMsg,
+                        a.regBy,
+                        a.regDate,
+                        a.updBy,
+                        a.updDate,
                         ste.siteNm.as("siteNm")
                 ))
-                .from(h)
-                .leftJoin(ste).on(ste.siteId.eq(h.siteId));
+                .from(a)
+                .leftJoin(ste).on(ste.siteId.eq(a.siteId));
     }
 
     /* 알람 발송 이력 키조회 */
@@ -60,7 +60,7 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
     public Optional<SyhAlarmSendHistDto.Item> selectById(String id) {
         SyhAlarmSendHistDto.Item dto = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
-                .where(h.sendHistId.eq(id))
+                .where(a.sendHistId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -113,8 +113,8 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
         List<SyhAlarmSendHistDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(h.count())
-                .from(h)
+                .select(a.count())
+                .from(a)
                 .where(
                 baseAndSiteId(search),
                 baseAndSendHistId(search),
@@ -138,19 +138,19 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(SyhAlarmSendHistDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? h.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* sendHistId 정확 일치 */
     private BooleanExpression baseAndSendHistId(SyhAlarmSendHistDto.Request search) {
         return search != null && StringUtils.hasText(search.getSendHistId())
-                ? h.sendHistId.eq(search.getSendHistId()) : null;
+                ? a.sendHistId.eq(search.getSendHistId()) : null;
     }
 
     /* sendHistStatusCd 정확 일치 */
     private BooleanExpression baseAndStatus(SyhAlarmSendHistDto.Request search) {
         return search != null && StringUtils.hasText(search.getStatus())
-                ? h.sendHistStatusCd.eq(search.getStatus()) : null;
+                ? a.sendHistStatusCd.eq(search.getStatus()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -163,9 +163,9 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "send_date": return h.sendDate.goe(start).and(h.sendDate.lt(endExcl));
-            case "reg_date": return h.regDate.goe(start).and(h.regDate.lt(endExcl));
-            case "upd_date": return h.updDate.goe(start).and(h.updDate.lt(endExcl));
+            case "send_date": return a.sendDate.goe(start).and(a.sendDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -178,14 +178,14 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",alarmId,", h.alarmId, pattern);
-        or = orLike(or, all, types, ",channel,", h.channel, pattern);
-        or = orLike(or, all, types, ",errorMsg,", h.errorMsg, pattern);
-        or = orLike(or, all, types, ",memberId,", h.memberId, pattern);
-        or = orLike(or, all, types, ",sendHistId,", h.sendHistId, pattern);
-        or = orLike(or, all, types, ",sendHistStatusCd,", h.sendHistStatusCd, pattern);
-        or = orLike(or, all, types, ",sendTo,", h.sendTo, pattern);
-        or = orLike(or, all, types, ",siteId,", h.siteId, pattern);
+        or = orLike(or, all, types, ",alarmId,", a.alarmId, pattern);
+        or = orLike(or, all, types, ",channel,", a.channel, pattern);
+        or = orLike(or, all, types, ",errorMsg,", a.errorMsg, pattern);
+        or = orLike(or, all, types, ",memberId,", a.memberId, pattern);
+        or = orLike(or, all, types, ",sendHistId,", a.sendHistId, pattern);
+        or = orLike(or, all, types, ",sendHistStatusCd,", a.sendHistStatusCd, pattern);
+        or = orLike(or, all, types, ",sendTo,", a.sendTo, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
         return or;
     }
 
@@ -206,8 +206,8 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, h.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, h.sendHistId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.sendHistId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -218,17 +218,17 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("sendHistId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, h.sendHistId));
+                    orders.add(new OrderSpecifier(order, a.sendHistId));
                 } else if ("sendDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, h.sendDate));
+                    orders.add(new OrderSpecifier(order, a.sendDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, h.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, h.sendHistId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.sendHistId));
         }
         return orders;
     }
@@ -238,24 +238,24 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
     public int updateSelective(SyhAlarmSendHist entity) {
         if (entity.getSendHistId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(h);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getSiteId()           != null) { update.set(h.siteId,           entity.getSiteId());           hasAny = true; }
-        if (entity.getAlarmId()          != null) { update.set(h.alarmId,          entity.getAlarmId());          hasAny = true; }
-        if (entity.getMemberId()         != null) { update.set(h.memberId,         entity.getMemberId());         hasAny = true; }
-        if (entity.getChannel()          != null) { update.set(h.channel,          entity.getChannel());          hasAny = true; }
-        if (entity.getSendTo()           != null) { update.set(h.sendTo,           entity.getSendTo());           hasAny = true; }
-        if (entity.getSendDate()         != null) { update.set(h.sendDate,         entity.getSendDate());         hasAny = true; }
-        if (entity.getSendHistStatusCd() != null) { update.set(h.sendHistStatusCd, entity.getSendHistStatusCd()); hasAny = true; }
-        if (entity.getErrorMsg()         != null) { update.set(h.errorMsg,         entity.getErrorMsg());         hasAny = true; }
-        if (entity.getUpdBy()            != null) { update.set(h.updBy,            entity.getUpdBy());            hasAny = true; }
+        if (entity.getSiteId()           != null) { update.set(a.siteId,           entity.getSiteId());           hasAny = true; }
+        if (entity.getAlarmId()          != null) { update.set(a.alarmId,          entity.getAlarmId());          hasAny = true; }
+        if (entity.getMemberId()         != null) { update.set(a.memberId,         entity.getMemberId());         hasAny = true; }
+        if (entity.getChannel()          != null) { update.set(a.channel,          entity.getChannel());          hasAny = true; }
+        if (entity.getSendTo()           != null) { update.set(a.sendTo,           entity.getSendTo());           hasAny = true; }
+        if (entity.getSendDate()         != null) { update.set(a.sendDate,         entity.getSendDate());         hasAny = true; }
+        if (entity.getSendHistStatusCd() != null) { update.set(a.sendHistStatusCd, entity.getSendHistStatusCd()); hasAny = true; }
+        if (entity.getErrorMsg()         != null) { update.set(a.errorMsg,         entity.getErrorMsg());         hasAny = true; }
+        if (entity.getUpdBy()            != null) { update.set(a.updBy,            entity.getUpdBy());            hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(h.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(h.sendHistId.eq(entity.getSendHistId())).execute();
+        long affected = update.where(a.sendHistId.eq(entity.getSendHistId())).execute();
         return (int) affected;
     }
 }

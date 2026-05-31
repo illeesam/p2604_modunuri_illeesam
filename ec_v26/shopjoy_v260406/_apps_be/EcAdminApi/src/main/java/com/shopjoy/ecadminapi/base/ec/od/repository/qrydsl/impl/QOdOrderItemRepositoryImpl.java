@@ -34,7 +34,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdOrderItemRepositoryImpl";
-    private static final QOdOrderItem   oi   = QOdOrderItem.odOrderItem;
+    private static final QOdOrderItem   a   = QOdOrderItem.odOrderItem;
     private static final QPdProd        p    = QPdProd.pdProd;
     private static final QPdProdSku     sk   = QPdProdSku.pdProdSku;
     private static final QPdProdOptItem oi1  = new QPdProdOptItem("oi1");
@@ -42,11 +42,46 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
     private static final QSyCode        cdIs = new QSyCode("cd_is");
     private static final QSyCode        cdDc = new QSyCode("cd_dc");
 
+    /* 주문 아이템(상품) baseSelColumnQuery */
+    private JPAQuery<OdOrderItemDto.Item> baseSelColumnQuery() {
+        return queryFactory
+                .select(Projections.bean(OdOrderItemDto.Item.class,
+                        a.orderItemId, a.siteId, a.orderId, a.prodId, a.skuId,
+                        a.optItemId1, a.optItemId2, a.prodNm, a.brandNm, a.dlivTmpltId,
+                        a.normalPrice, a.unitPrice, a.orderQty, a.itemOrderAmt,
+                        a.cancelQty, a.itemCancelAmt, a.completQty, a.itemCompletedAmt,
+                        a.orgUnitPrice, a.orgItemOrderAmt, a.orgDiscountAmt, a.orgShippingFee,
+                        a.saveRate, a.saveUseAmt, a.saveSchdAmt,
+                        a.orderItemStatusCd, a.orderItemStatusCdBefore,
+                        a.claimYn, a.buyConfirmYn, a.buyConfirmSchdDate, a.buyConfirmDate,
+                        a.settleYn, a.settleDate,
+                        a.reserveSaleYn, a.reserveDlivSchdDate,
+                        a.bundleGroupId, a.bundlePriceRate, a.giftId,
+                        a.outboundShippingFee, a.dlivCourierCd, a.dlivTrackingNo, a.dlivShipDate,
+                        a.regBy, a.regDate, a.updBy, a.updDate,
+                        p.thumbnailUrl.as("thumbnailUrl"),
+                        p.salePrice.as("salePriceCurrent"),
+                        p.prodNm.as("prodNmCurrent"),
+                        sk.skuCode.as("skuCode"),
+                        oi1.optNm.as("optItemNm1"),
+                        oi2.optNm.as("optItemNm2"),
+                        cdIs.codeLabel.as("orderItemStatusCdNm"),
+                        cdDc.codeLabel.as("dlivCourierCdNm")
+                ))
+                .from(a)
+                .leftJoin(p).on(p.prodId.eq(a.prodId))
+                .leftJoin(sk).on(sk.skuId.eq(a.skuId))
+                .leftJoin(oi1).on(oi1.optItemId.eq(a.optItemId1))
+                .leftJoin(oi2).on(oi2.optItemId.eq(a.optItemId2))
+                .leftJoin(cdIs).on(cdIs.codeGrp.eq("ORDER_ITEM_STATUS").and(cdIs.codeValue.eq(a.orderItemStatusCd)))
+                .leftJoin(cdDc).on(cdDc.codeGrp.eq("COURIER").and(cdDc.codeValue.eq(a.dlivCourierCd)));
+    }
+
     /* 주문 아이템(상품) 키조회 */
     @Override
     public Optional<OdOrderItemDto.Item> selectById(String orderItemId) {
-        OdOrderItemDto.Item dto = baseQuery()
-                .where(oi.orderItemId.eq(orderItemId))
+        OdOrderItemDto.Item dto = baseSelColumnQuery()
+                .where(a.orderItemId.eq(orderItemId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -56,7 +91,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
     public List<OdOrderItemDto.Item> selectList(OdOrderItemDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<OdOrderItemDto.Item> query = baseQuery().where(
+        JPAQuery<OdOrderItemDto.Item> query = baseSelColumnQuery().where(
                 baseAndOrderIds(search),
                 baseAndOrderId(search),
                 baseAndSiteId(search),
@@ -85,7 +120,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<OdOrderItemDto.Item> query = baseQuery().where(
+        JPAQuery<OdOrderItemDto.Item> query = baseSelColumnQuery().where(
                 baseAndOrderIds(search),
                 baseAndOrderId(search),
                 baseAndSiteId(search),
@@ -99,8 +134,8 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
         List<OdOrderItemDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(oi.count())
-                .from(oi)
+                .select(a.count())
+                .from(a)
                 .where(
                 baseAndOrderIds(search),
                 baseAndOrderId(search),
@@ -114,42 +149,6 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
         OdOrderItemDto.PageResponse res = new OdOrderItemDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-
-    /* 주문 아이템(상품) baseQuery */
-    private JPAQuery<OdOrderItemDto.Item> baseQuery() {
-        return queryFactory
-                .select(Projections.bean(OdOrderItemDto.Item.class,
-                        oi.orderItemId, oi.siteId, oi.orderId, oi.prodId, oi.skuId,
-                        oi.optItemId1, oi.optItemId2, oi.prodNm, oi.brandNm, oi.dlivTmpltId,
-                        oi.normalPrice, oi.unitPrice, oi.orderQty, oi.itemOrderAmt,
-                        oi.cancelQty, oi.itemCancelAmt, oi.completQty, oi.itemCompletedAmt,
-                        oi.orgUnitPrice, oi.orgItemOrderAmt, oi.orgDiscountAmt, oi.orgShippingFee,
-                        oi.saveRate, oi.saveUseAmt, oi.saveSchdAmt,
-                        oi.orderItemStatusCd, oi.orderItemStatusCdBefore,
-                        oi.claimYn, oi.buyConfirmYn, oi.buyConfirmSchdDate, oi.buyConfirmDate,
-                        oi.settleYn, oi.settleDate,
-                        oi.reserveSaleYn, oi.reserveDlivSchdDate,
-                        oi.bundleGroupId, oi.bundlePriceRate, oi.giftId,
-                        oi.outboundShippingFee, oi.dlivCourierCd, oi.dlivTrackingNo, oi.dlivShipDate,
-                        oi.regBy, oi.regDate, oi.updBy, oi.updDate,
-                        p.thumbnailUrl.as("thumbnailUrl"),
-                        p.salePrice.as("salePriceCurrent"),
-                        p.prodNm.as("prodNmCurrent"),
-                        sk.skuCode.as("skuCode"),
-                        oi1.optNm.as("optItemNm1"),
-                        oi2.optNm.as("optItemNm2"),
-                        cdIs.codeLabel.as("orderItemStatusCdNm"),
-                        cdDc.codeLabel.as("dlivCourierCdNm")
-                ))
-                .from(oi)
-                .leftJoin(p).on(p.prodId.eq(oi.prodId))
-                .leftJoin(sk).on(sk.skuId.eq(oi.skuId))
-                .leftJoin(oi1).on(oi1.optItemId.eq(oi.optItemId1))
-                .leftJoin(oi2).on(oi2.optItemId.eq(oi.optItemId2))
-                .leftJoin(cdIs).on(cdIs.codeGrp.eq("ORDER_ITEM_STATUS").and(cdIs.codeValue.eq(oi.orderItemStatusCd)))
-                .leftJoin(cdDc).on(cdDc.codeGrp.eq("COURIER").and(cdDc.codeValue.eq(oi.dlivCourierCd)));
-    }
-
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
@@ -160,25 +159,25 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
     /* orderId IN */
     private BooleanExpression baseAndOrderIds(OdOrderItemDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getOrderIds())
-                ? oi.orderId.in(search.getOrderIds()) : null;
+                ? a.orderId.in(search.getOrderIds()) : null;
     }
 
     /* orderId 정확 일치 */
     private BooleanExpression baseAndOrderId(OdOrderItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getOrderId())
-                ? oi.orderId.eq(search.getOrderId()) : null;
+                ? a.orderId.eq(search.getOrderId()) : null;
     }
 
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(OdOrderItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? oi.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* orderItemId 정확 일치 */
     private BooleanExpression baseAndOrderItemId(OdOrderItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getOrderItemId())
-                ? oi.orderItemId.eq(search.getOrderItemId()) : null;
+                ? a.orderItemId.eq(search.getOrderItemId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -191,8 +190,8 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return oi.regDate.goe(start).and(oi.regDate.lt(endExcl));
-            case "upd_date": return oi.updDate.goe(start).and(oi.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -205,26 +204,26 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",brandNm,", oi.brandNm, pattern);
-        or = orLike(or, all, types, ",bundleGroupId,", oi.bundleGroupId, pattern);
-        or = orLike(or, all, types, ",buyConfirmYn,", oi.buyConfirmYn, pattern);
-        or = orLike(or, all, types, ",claimYn,", oi.claimYn, pattern);
-        or = orLike(or, all, types, ",dlivCourierCd,", oi.dlivCourierCd, pattern);
-        or = orLike(or, all, types, ",dlivTmpltId,", oi.dlivTmpltId, pattern);
-        or = orLike(or, all, types, ",dlivTrackingNo,", oi.dlivTrackingNo, pattern);
-        or = orLike(or, all, types, ",giftId,", oi.giftId, pattern);
-        or = orLike(or, all, types, ",optItemId1,", oi.optItemId1, pattern);
-        or = orLike(or, all, types, ",optItemId2,", oi.optItemId2, pattern);
-        or = orLike(or, all, types, ",orderId,", oi.orderId, pattern);
-        or = orLike(or, all, types, ",orderItemId,", oi.orderItemId, pattern);
-        or = orLike(or, all, types, ",orderItemStatusCd,", oi.orderItemStatusCd, pattern);
-        or = orLike(or, all, types, ",orderItemStatusCdBefore,", oi.orderItemStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",prodId,", oi.prodId, pattern);
-        or = orLike(or, all, types, ",prodNm,", oi.prodNm, pattern);
-        or = orLike(or, all, types, ",reserveSaleYn,", oi.reserveSaleYn, pattern);
-        or = orLike(or, all, types, ",settleYn,", oi.settleYn, pattern);
-        or = orLike(or, all, types, ",siteId,", oi.siteId, pattern);
-        or = orLike(or, all, types, ",skuId,", oi.skuId, pattern);
+        or = orLike(or, all, types, ",brandNm,", a.brandNm, pattern);
+        or = orLike(or, all, types, ",bundleGroupId,", a.bundleGroupId, pattern);
+        or = orLike(or, all, types, ",buyConfirmYn,", a.buyConfirmYn, pattern);
+        or = orLike(or, all, types, ",claimYn,", a.claimYn, pattern);
+        or = orLike(or, all, types, ",dlivCourierCd,", a.dlivCourierCd, pattern);
+        or = orLike(or, all, types, ",dlivTmpltId,", a.dlivTmpltId, pattern);
+        or = orLike(or, all, types, ",dlivTrackingNo,", a.dlivTrackingNo, pattern);
+        or = orLike(or, all, types, ",giftId,", a.giftId, pattern);
+        or = orLike(or, all, types, ",optItemId1,", a.optItemId1, pattern);
+        or = orLike(or, all, types, ",optItemId2,", a.optItemId2, pattern);
+        or = orLike(or, all, types, ",orderId,", a.orderId, pattern);
+        or = orLike(or, all, types, ",orderItemId,", a.orderItemId, pattern);
+        or = orLike(or, all, types, ",orderItemStatusCd,", a.orderItemStatusCd, pattern);
+        or = orLike(or, all, types, ",orderItemStatusCdBefore,", a.orderItemStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",prodId,", a.prodId, pattern);
+        or = orLike(or, all, types, ",prodNm,", a.prodNm, pattern);
+        or = orLike(or, all, types, ",reserveSaleYn,", a.reserveSaleYn, pattern);
+        or = orLike(or, all, types, ",settleYn,", a.settleYn, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",skuId,", a.skuId, pattern);
         return or;
     }
 
@@ -245,8 +244,8 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, oi.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, oi.orderItemId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.orderItemId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -257,44 +256,46 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("orderItemId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, oi.orderItemId));
+                    orders.add(new OrderSpecifier(order, a.orderItemId));
                 } else if ("prodNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, oi.prodNm));
+                    orders.add(new OrderSpecifier(order, a.prodNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, oi.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, oi.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, oi.orderItemId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.orderItemId));
         }
         return orders;
     }
 
     /* 주문 아이템(상품) 수정 */
+
+
     @Override
     public int updateSelective(OdOrderItem entity) {
         if (entity.getOrderItemId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(oi);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getOrderItemStatusCd()       != null) { update.set(oi.orderItemStatusCd,       entity.getOrderItemStatusCd());       hasAny = true; }
-        if (entity.getOrderItemStatusCdBefore() != null) { update.set(oi.orderItemStatusCdBefore, entity.getOrderItemStatusCdBefore()); hasAny = true; }
-        if (entity.getBuyConfirmYn()            != null) { update.set(oi.buyConfirmYn,            entity.getBuyConfirmYn());            hasAny = true; }
-        if (entity.getBuyConfirmDate()          != null) { update.set(oi.buyConfirmDate,          entity.getBuyConfirmDate());          hasAny = true; }
-        if (entity.getSettleYn()                != null) { update.set(oi.settleYn,                entity.getSettleYn());                hasAny = true; }
-        if (entity.getSettleDate()              != null) { update.set(oi.settleDate,              entity.getSettleDate());              hasAny = true; }
-        if (entity.getUpdBy()                   != null) { update.set(oi.updBy,                   entity.getUpdBy());                   hasAny = true; }
+        if (entity.getOrderItemStatusCd()       != null) { update.set(a.orderItemStatusCd,       entity.getOrderItemStatusCd());       hasAny = true; }
+        if (entity.getOrderItemStatusCdBefore() != null) { update.set(a.orderItemStatusCdBefore, entity.getOrderItemStatusCdBefore()); hasAny = true; }
+        if (entity.getBuyConfirmYn()            != null) { update.set(a.buyConfirmYn,            entity.getBuyConfirmYn());            hasAny = true; }
+        if (entity.getBuyConfirmDate()          != null) { update.set(a.buyConfirmDate,          entity.getBuyConfirmDate());          hasAny = true; }
+        if (entity.getSettleYn()                != null) { update.set(a.settleYn,                entity.getSettleYn());                hasAny = true; }
+        if (entity.getSettleDate()              != null) { update.set(a.settleDate,              entity.getSettleDate());              hasAny = true; }
+        if (entity.getUpdBy()                   != null) { update.set(a.updBy,                   entity.getUpdBy());                   hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(oi.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(oi.orderItemId.eq(entity.getOrderItemId())).execute();
+        long affected = update.where(a.orderItemId.eq(entity.getOrderItemId())).execute();
         return (int) affected;
     }
 }

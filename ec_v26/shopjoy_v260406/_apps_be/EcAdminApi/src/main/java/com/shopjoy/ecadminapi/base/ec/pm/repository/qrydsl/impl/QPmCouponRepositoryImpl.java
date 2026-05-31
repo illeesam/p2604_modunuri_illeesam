@@ -30,17 +30,43 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmCouponRepositoryImpl";
-    private static final QPmCoupon c   = QPmCoupon.pmCoupon;
+    private static final QPmCoupon a   = QPmCoupon.pmCoupon;
     private static final QSyCode  cdCt = new QSyCode("cd_ct");
     private static final QSyCode  cdCs = new QSyCode("cd_cs");
     private static final QSyCode  cdTt = new QSyCode("cd_tt");
     private static final QSyCode  cdMg = new QSyCode("cd_mg");
 
+    /* 쿠폰 baseSelColumnQuery */
+    private JPAQuery<PmCouponDto.Item> baseSelColumnQuery() {
+        return queryFactory
+                .select(Projections.bean(PmCouponDto.Item.class,
+                        a.couponId, a.siteId, a.couponCd, a.couponNm,
+                        a.couponTypeCd, a.discountRate, a.discountAmt,
+                        a.minOrderAmt, a.minOrderQty, a.maxDiscountAmt,
+                        a.issueLimit, a.issueCnt, a.maxIssuePerMem,
+                        a.couponDesc, a.validFrom, a.validTo,
+                        a.couponStatusCd, a.couponStatusCdBefore,
+                        a.useYn, a.targetTypeCd, a.targetValue, a.memGradeCd,
+                        a.selfCdivRate, a.sellerCdivRate, a.sellerCdivRemark,
+                        a.dvcPcYn, a.dvcMwebYn, a.dvcMappYn, a.memo,
+                        a.regBy, a.regDate, a.updBy, a.updDate,
+                        cdCt.codeLabel.as("couponTypeCdNm"),
+                        cdCs.codeLabel.as("couponStatusCdNm"),
+                        cdTt.codeLabel.as("targetTypeCdNm"),
+                        cdMg.codeLabel.as("memGradeCdNm")
+                ))
+                .from(a)
+                .leftJoin(cdCt).on(cdCt.codeGrp.eq("COUPON_TYPE").and(cdCt.codeValue.eq(a.couponTypeCd)))
+                .leftJoin(cdCs).on(cdCs.codeGrp.eq("COUPON_STATUS").and(cdCs.codeValue.eq(a.couponStatusCd)))
+                .leftJoin(cdTt).on(cdTt.codeGrp.eq("COUPON_TARGET").and(cdTt.codeValue.eq(a.targetTypeCd)))
+                .leftJoin(cdMg).on(cdMg.codeGrp.eq("MEMBER_GRADE").and(cdMg.codeValue.eq(a.memGradeCd)));
+    }
+
     /* 쿠폰 키조회 */
     @Override
     public Optional<PmCouponDto.Item> selectById(String couponId) {
-        PmCouponDto.Item dto = baseQuery()
-                .where(c.couponId.eq(couponId))
+        PmCouponDto.Item dto = baseSelColumnQuery()
+                .where(a.couponId.eq(couponId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -50,7 +76,7 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
     public List<PmCouponDto.Item> selectList(PmCouponDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PmCouponDto.Item> query = baseQuery().where(
+        JPAQuery<PmCouponDto.Item> query = baseSelColumnQuery().where(
                 baseAndCouponIds(search),
                 baseAndSiteId(search),
                 baseAndCouponId(search),
@@ -79,7 +105,7 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PmCouponDto.Item> query = baseQuery().where(
+        JPAQuery<PmCouponDto.Item> query = baseSelColumnQuery().where(
                 baseAndCouponIds(search),
                 baseAndSiteId(search),
                 baseAndCouponId(search),
@@ -93,8 +119,8 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
         List<PmCouponDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(c.count())
-                .from(c)
+                .select(a.count())
+                .from(a)
                 .where(
                 baseAndCouponIds(search),
                 baseAndSiteId(search),
@@ -108,33 +134,6 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
         PmCouponDto.PageResponse res = new PmCouponDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-
-    /* 쿠폰 baseQuery */
-    private JPAQuery<PmCouponDto.Item> baseQuery() {
-        return queryFactory
-                .select(Projections.bean(PmCouponDto.Item.class,
-                        c.couponId, c.siteId, c.couponCd, c.couponNm,
-                        c.couponTypeCd, c.discountRate, c.discountAmt,
-                        c.minOrderAmt, c.minOrderQty, c.maxDiscountAmt,
-                        c.issueLimit, c.issueCnt, c.maxIssuePerMem,
-                        c.couponDesc, c.validFrom, c.validTo,
-                        c.couponStatusCd, c.couponStatusCdBefore,
-                        c.useYn, c.targetTypeCd, c.targetValue, c.memGradeCd,
-                        c.selfCdivRate, c.sellerCdivRate, c.sellerCdivRemark,
-                        c.dvcPcYn, c.dvcMwebYn, c.dvcMappYn, c.memo,
-                        c.regBy, c.regDate, c.updBy, c.updDate,
-                        cdCt.codeLabel.as("couponTypeCdNm"),
-                        cdCs.codeLabel.as("couponStatusCdNm"),
-                        cdTt.codeLabel.as("targetTypeCdNm"),
-                        cdMg.codeLabel.as("memGradeCdNm")
-                ))
-                .from(c)
-                .leftJoin(cdCt).on(cdCt.codeGrp.eq("COUPON_TYPE").and(cdCt.codeValue.eq(c.couponTypeCd)))
-                .leftJoin(cdCs).on(cdCs.codeGrp.eq("COUPON_STATUS").and(cdCs.codeValue.eq(c.couponStatusCd)))
-                .leftJoin(cdTt).on(cdTt.codeGrp.eq("COUPON_TARGET").and(cdTt.codeValue.eq(c.targetTypeCd)))
-                .leftJoin(cdMg).on(cdMg.codeGrp.eq("MEMBER_GRADE").and(cdMg.codeValue.eq(c.memGradeCd)));
-    }
-
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
@@ -145,25 +144,25 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
     /* couponId IN */
     private BooleanExpression baseAndCouponIds(PmCouponDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getCouponIds())
-                ? c.couponId.in(search.getCouponIds()) : null;
+                ? a.couponId.in(search.getCouponIds()) : null;
     }
 
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(PmCouponDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? c.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* couponId 정확 일치 */
     private BooleanExpression baseAndCouponId(PmCouponDto.Request search) {
         return search != null && StringUtils.hasText(search.getCouponId())
-                ? c.couponId.eq(search.getCouponId()) : null;
+                ? a.couponId.eq(search.getCouponId()) : null;
     }
 
     /* useYn 정확 일치 */
     private BooleanExpression baseAndUseYn(PmCouponDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
-                ? c.useYn.eq(search.getUseYn()) : null;
+                ? a.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -176,8 +175,8 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return c.regDate.goe(start).and(c.regDate.lt(endExcl));
-            case "upd_date": return c.updDate.goe(start).and(c.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -190,23 +189,23 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",couponCd,", c.couponCd, pattern);
-        or = orLike(or, all, types, ",couponDesc,", c.couponDesc, pattern);
-        or = orLike(or, all, types, ",couponId,", c.couponId, pattern);
-        or = orLike(or, all, types, ",couponNm,", c.couponNm, pattern);
-        or = orLike(or, all, types, ",couponStatusCd,", c.couponStatusCd, pattern);
-        or = orLike(or, all, types, ",couponStatusCdBefore,", c.couponStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",couponTypeCd,", c.couponTypeCd, pattern);
-        or = orLike(or, all, types, ",dvcMappYn,", c.dvcMappYn, pattern);
-        or = orLike(or, all, types, ",dvcMwebYn,", c.dvcMwebYn, pattern);
-        or = orLike(or, all, types, ",dvcPcYn,", c.dvcPcYn, pattern);
-        or = orLike(or, all, types, ",memGradeCd,", c.memGradeCd, pattern);
-        or = orLike(or, all, types, ",memo,", c.memo, pattern);
-        or = orLike(or, all, types, ",sellerCdivRemark,", c.sellerCdivRemark, pattern);
-        or = orLike(or, all, types, ",siteId,", c.siteId, pattern);
-        or = orLike(or, all, types, ",targetTypeCd,", c.targetTypeCd, pattern);
-        or = orLike(or, all, types, ",targetValue,", c.targetValue, pattern);
-        or = orLike(or, all, types, ",useYn,", c.useYn, pattern);
+        or = orLike(or, all, types, ",couponCd,", a.couponCd, pattern);
+        or = orLike(or, all, types, ",couponDesc,", a.couponDesc, pattern);
+        or = orLike(or, all, types, ",couponId,", a.couponId, pattern);
+        or = orLike(or, all, types, ",couponNm,", a.couponNm, pattern);
+        or = orLike(or, all, types, ",couponStatusCd,", a.couponStatusCd, pattern);
+        or = orLike(or, all, types, ",couponStatusCdBefore,", a.couponStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",couponTypeCd,", a.couponTypeCd, pattern);
+        or = orLike(or, all, types, ",dvcMappYn,", a.dvcMappYn, pattern);
+        or = orLike(or, all, types, ",dvcMwebYn,", a.dvcMwebYn, pattern);
+        or = orLike(or, all, types, ",dvcPcYn,", a.dvcPcYn, pattern);
+        or = orLike(or, all, types, ",memGradeCd,", a.memGradeCd, pattern);
+        or = orLike(or, all, types, ",memo,", a.memo, pattern);
+        or = orLike(or, all, types, ",sellerCdivRemark,", a.sellerCdivRemark, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",targetTypeCd,", a.targetTypeCd, pattern);
+        or = orLike(or, all, types, ",targetValue,", a.targetValue, pattern);
+        or = orLike(or, all, types, ",useYn,", a.useYn, pattern);
         return or;
     }
 
@@ -227,8 +226,8 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, c.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, c.couponId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.couponId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -239,46 +238,48 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("couponId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, c.couponId));
+                    orders.add(new OrderSpecifier(order, a.couponId));
                 } else if ("couponNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, c.couponNm));
+                    orders.add(new OrderSpecifier(order, a.couponNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, c.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, c.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, c.couponId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.couponId));
         }
         return orders;
     }
 
     /* 쿠폰 수정 */
+
+
     @Override
     public int updateSelective(PmCoupon entity) {
         if (entity.getCouponId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(c);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getCouponStatusCd()       != null) { update.set(c.couponStatusCd,       entity.getCouponStatusCd());       hasAny = true; }
-        if (entity.getCouponStatusCdBefore() != null) { update.set(c.couponStatusCdBefore, entity.getCouponStatusCdBefore()); hasAny = true; }
-        if (entity.getCouponNm()             != null) { update.set(c.couponNm,             entity.getCouponNm());             hasAny = true; }
-        if (entity.getUseYn()                != null) { update.set(c.useYn,                entity.getUseYn());                hasAny = true; }
-        if (entity.getValidFrom()            != null) { update.set(c.validFrom,            entity.getValidFrom());            hasAny = true; }
-        if (entity.getValidTo()              != null) { update.set(c.validTo,              entity.getValidTo());              hasAny = true; }
-        if (entity.getIssueCnt()             != null) { update.set(c.issueCnt,             entity.getIssueCnt());             hasAny = true; }
-        if (entity.getMemo()                 != null) { update.set(c.memo,                 entity.getMemo());                 hasAny = true; }
-        if (entity.getUpdBy()                != null) { update.set(c.updBy,                entity.getUpdBy());                hasAny = true; }
+        if (entity.getCouponStatusCd()       != null) { update.set(a.couponStatusCd,       entity.getCouponStatusCd());       hasAny = true; }
+        if (entity.getCouponStatusCdBefore() != null) { update.set(a.couponStatusCdBefore, entity.getCouponStatusCdBefore()); hasAny = true; }
+        if (entity.getCouponNm()             != null) { update.set(a.couponNm,             entity.getCouponNm());             hasAny = true; }
+        if (entity.getUseYn()                != null) { update.set(a.useYn,                entity.getUseYn());                hasAny = true; }
+        if (entity.getValidFrom()            != null) { update.set(a.validFrom,            entity.getValidFrom());            hasAny = true; }
+        if (entity.getValidTo()              != null) { update.set(a.validTo,              entity.getValidTo());              hasAny = true; }
+        if (entity.getIssueCnt()             != null) { update.set(a.issueCnt,             entity.getIssueCnt());             hasAny = true; }
+        if (entity.getMemo()                 != null) { update.set(a.memo,                 entity.getMemo());                 hasAny = true; }
+        if (entity.getUpdBy()                != null) { update.set(a.updBy,                entity.getUpdBy());                hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(c.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(c.couponId.eq(entity.getCouponId())).execute();
+        long affected = update.where(a.couponId.eq(entity.getCouponId())).execute();
         return (int) affected;
     }
 }

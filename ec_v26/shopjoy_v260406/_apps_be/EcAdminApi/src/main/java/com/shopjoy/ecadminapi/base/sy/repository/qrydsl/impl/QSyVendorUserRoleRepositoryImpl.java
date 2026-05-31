@@ -34,7 +34,7 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
     private final JPAQueryFactory queryFactory;
     private final SyRoleRepository syRoleRepository;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyVendorUserRoleRepositoryImpl";
-    private static final QSyVendorUserRole r = QSyVendorUserRole.syVendorUserRole;
+    private static final QSyVendorUserRole a = QSyVendorUserRole.syVendorUserRole;
     private static final QSyVendor vnd = QSyVendor.syVendor;
     private static final QSyVendorUser vu = QSyVendorUser.syVendorUser;
     private static final QSyRole rol = QSyRole.syRole;
@@ -44,20 +44,20 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
     private JPAQuery<SyVendorUserRoleDto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(SyVendorUserRoleDto.Item.class,
-                        r.vendorUserRoleId, r.vendorId, r.userId, r.roleId,
-                        r.grantUserId, r.grantDate, r.validFrom, r.validTo,
-                        r.vendorUserRoleRemark,
-                        r.regBy, r.regDate, r.updBy, r.updDate,
+                        a.vendorUserRoleId, a.vendorId, a.userId, a.roleId,
+                        a.grantUserId, a.grantDate, a.validFrom, a.validTo,
+                        a.vendorUserRoleRemark,
+                        a.regBy, a.regDate, a.updBy, a.updDate,
                         vnd.vendorNm.as("vendorNm"),
                         vu.memberNm.as("memberNm"),
                         rol.roleNm.as("roleNm"),
                         gu.userNm.as("grantUserNm")
                 ))
-                .from(r)
-                .leftJoin(vnd).on(vnd.vendorId.eq(r.vendorId))
-                .leftJoin(vu).on(vu.vendorUserId.eq(r.userId))
-                .leftJoin(rol).on(rol.roleId.eq(r.roleId))
-                .leftJoin(gu).on(gu.userId.eq(r.grantUserId));
+                .from(a)
+                .leftJoin(vnd).on(vnd.vendorId.eq(a.vendorId))
+                .leftJoin(vu).on(vu.vendorUserId.eq(a.userId))
+                .leftJoin(rol).on(rol.roleId.eq(a.roleId))
+                .leftJoin(gu).on(gu.userId.eq(a.grantUserId));
     }
 
     /* 업체 사용자 역할 연결 키조회 */
@@ -65,7 +65,7 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
     public Optional<SyVendorUserRoleDto.Item> selectById(String vendorUserRoleId) {
         SyVendorUserRoleDto.Item dto = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
-                .where(r.vendorUserRoleId.eq(vendorUserRoleId))
+                .where(a.vendorUserRoleId.eq(vendorUserRoleId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -116,7 +116,7 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
         }
         List<SyVendorUserRoleDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(r.count()).from(r).where(
+        Long total = queryFactory.select(a.count()).from(a).where(
                 baseAndVendorUserRoleId(search),
                 baseAndVendorId(search),
                 baseAndUserId(search),
@@ -138,19 +138,19 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
     /* vendorUserRoleId 정확 일치 */
     private BooleanExpression baseAndVendorUserRoleId(SyVendorUserRoleDto.Request search) {
         return search != null && StringUtils.hasText(search.getVendorUserRoleId())
-                ? r.vendorUserRoleId.eq(search.getVendorUserRoleId()) : null;
+                ? a.vendorUserRoleId.eq(search.getVendorUserRoleId()) : null;
     }
 
     /* vendorId 정확 일치 */
     private BooleanExpression baseAndVendorId(SyVendorUserRoleDto.Request search) {
         return search != null && StringUtils.hasText(search.getVendorId())
-                ? r.vendorId.eq(search.getVendorId()) : null;
+                ? a.vendorId.eq(search.getVendorId()) : null;
     }
 
     /* userId 정확 일치 */
     private BooleanExpression baseAndUserId(SyVendorUserRoleDto.Request search) {
         return search != null && StringUtils.hasText(search.getUserId())
-                ? r.userId.eq(search.getUserId()) : null;
+                ? a.userId.eq(search.getUserId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -163,8 +163,8 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return r.regDate.goe(start).and(r.regDate.lt(endExcl));
-            case "upd_date": return r.updDate.goe(start).and(r.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -177,13 +177,13 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",grantUserId,", r.grantUserId, pattern);
-        or = orLike(or, all, types, ",roleId,", r.roleId, pattern);
-        or = orLike(or, all, types, ",siteId,", r.siteId, pattern);
-        or = orLike(or, all, types, ",userId,", r.userId, pattern);
-        or = orLike(or, all, types, ",vendorId,", r.vendorId, pattern);
-        or = orLike(or, all, types, ",vendorUserRoleId,", r.vendorUserRoleId, pattern);
-        or = orLike(or, all, types, ",vendorUserRoleRemark,", r.vendorUserRoleRemark, pattern);
+        or = orLike(or, all, types, ",grantUserId,", a.grantUserId, pattern);
+        or = orLike(or, all, types, ",roleId,", a.roleId, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",userId,", a.userId, pattern);
+        or = orLike(or, all, types, ",vendorId,", a.vendorId, pattern);
+        or = orLike(or, all, types, ",vendorUserRoleId,", a.vendorUserRoleId, pattern);
+        or = orLike(or, all, types, ",vendorUserRoleRemark,", a.vendorUserRoleRemark, pattern);
         return or;
     }
 
@@ -204,8 +204,8 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, r.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, r.vendorUserRoleId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.vendorUserRoleId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -216,17 +216,17 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("vendorUserRoleId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, r.vendorUserRoleId));
+                    orders.add(new OrderSpecifier(order, a.vendorUserRoleId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, r.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, r.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, r.vendorUserRoleId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.vendorUserRoleId));
         }
         return orders;
     }
@@ -236,24 +236,24 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
     public int updateSelective(SyVendorUserRole entity) {
         if (entity.getVendorUserRoleId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(r);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getVendorId()             != null) { update.set(r.vendorId,             entity.getVendorId());             hasAny = true; }
-        if (entity.getUserId()               != null) { update.set(r.userId,               entity.getUserId());               hasAny = true; }
-        if (entity.getRoleId()               != null) { update.set(r.roleId,               entity.getRoleId());               hasAny = true; }
-        if (entity.getGrantUserId()          != null) { update.set(r.grantUserId,          entity.getGrantUserId());          hasAny = true; }
-        if (entity.getGrantDate()            != null) { update.set(r.grantDate,            entity.getGrantDate());            hasAny = true; }
-        if (entity.getValidFrom()            != null) { update.set(r.validFrom,            entity.getValidFrom());            hasAny = true; }
-        if (entity.getValidTo()              != null) { update.set(r.validTo,              entity.getValidTo());              hasAny = true; }
-        if (entity.getVendorUserRoleRemark() != null) { update.set(r.vendorUserRoleRemark, entity.getVendorUserRoleRemark()); hasAny = true; }
-        if (entity.getUpdBy()                != null) { update.set(r.updBy,                entity.getUpdBy());                hasAny = true; }
+        if (entity.getVendorId()             != null) { update.set(a.vendorId,             entity.getVendorId());             hasAny = true; }
+        if (entity.getUserId()               != null) { update.set(a.userId,               entity.getUserId());               hasAny = true; }
+        if (entity.getRoleId()               != null) { update.set(a.roleId,               entity.getRoleId());               hasAny = true; }
+        if (entity.getGrantUserId()          != null) { update.set(a.grantUserId,          entity.getGrantUserId());          hasAny = true; }
+        if (entity.getGrantDate()            != null) { update.set(a.grantDate,            entity.getGrantDate());            hasAny = true; }
+        if (entity.getValidFrom()            != null) { update.set(a.validFrom,            entity.getValidFrom());            hasAny = true; }
+        if (entity.getValidTo()              != null) { update.set(a.validTo,              entity.getValidTo());              hasAny = true; }
+        if (entity.getVendorUserRoleRemark() != null) { update.set(a.vendorUserRoleRemark, entity.getVendorUserRoleRemark()); hasAny = true; }
+        if (entity.getUpdBy()                != null) { update.set(a.updBy,                entity.getUpdBy());                hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(r.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(r.vendorUserRoleId.eq(entity.getVendorUserRoleId())).execute();
+        long affected = update.where(a.vendorUserRoleId.eq(entity.getVendorUserRoleId())).execute();
         return (int) affected;
     }
 }

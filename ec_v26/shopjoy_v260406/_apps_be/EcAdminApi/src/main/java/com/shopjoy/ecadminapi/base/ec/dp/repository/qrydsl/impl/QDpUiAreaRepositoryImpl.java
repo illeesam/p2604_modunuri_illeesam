@@ -30,10 +30,22 @@ public class QDpUiAreaRepositoryImpl implements QDpUiAreaRepository {
     private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpUiAreaRepositoryImpl";
     private static final QDpUiArea a = QDpUiArea.dpUiArea;
 
+    /* 전시 UI-영역 매핑 baseSelColumnQuery */
+    private JPAQuery<DpUiAreaDto.Item> baseSelColumnQuery() {
+        return queryFactory
+                .select(Projections.bean(DpUiAreaDto.Item.class,
+                        a.uiAreaId, a.uiId, a.areaId, a.areaSortOrd,
+                        a.visibilityTargets, a.dispEnv, a.dispYn,
+                        a.dispStartDt, a.dispEndDt, a.useYn,
+                        a.regBy, a.regDate, a.updBy, a.updDate
+                ))
+                .from(a);
+    }
+
     /* 전시 UI-영역 매핑 키조회 */
     @Override
     public Optional<DpUiAreaDto.Item> selectById(String uiAreaId) {
-        DpUiAreaDto.Item dto = baseQuery()
+        DpUiAreaDto.Item dto = baseSelColumnQuery()
                 .where(a.uiAreaId.eq(uiAreaId))
                 .fetchOne();
         return Optional.ofNullable(dto);
@@ -44,7 +56,7 @@ public class QDpUiAreaRepositoryImpl implements QDpUiAreaRepository {
     public List<DpUiAreaDto.Item> selectList(DpUiAreaDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<DpUiAreaDto.Item> query = baseQuery().where(
+        JPAQuery<DpUiAreaDto.Item> query = baseSelColumnQuery().where(
                 baseAndUiAreaId(search),
                 baseAndUseYn(search),
                 baseAndDateRange(search),
@@ -71,7 +83,7 @@ public class QDpUiAreaRepositoryImpl implements QDpUiAreaRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<DpUiAreaDto.Item> query = baseQuery().where(
+        JPAQuery<DpUiAreaDto.Item> query = baseSelColumnQuery().where(
                 baseAndUiAreaId(search),
                 baseAndUseYn(search),
                 baseAndDateRange(search),
@@ -92,19 +104,6 @@ public class QDpUiAreaRepositoryImpl implements QDpUiAreaRepository {
         DpUiAreaDto.PageResponse res = new DpUiAreaDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-
-    /* 전시 UI-영역 매핑 baseQuery */
-    private JPAQuery<DpUiAreaDto.Item> baseQuery() {
-        return queryFactory
-                .select(Projections.bean(DpUiAreaDto.Item.class,
-                        a.uiAreaId, a.uiId, a.areaId, a.areaSortOrd,
-                        a.visibilityTargets, a.dispEnv, a.dispYn,
-                        a.dispStartDt, a.dispEndDt, a.useYn,
-                        a.regBy, a.regDate, a.updBy, a.updDate
-                ))
-                .from(a);
-    }
-
     /* 전시 UI-영역 매핑 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
@@ -204,6 +203,8 @@ public class QDpUiAreaRepositoryImpl implements QDpUiAreaRepository {
     }
 
     /* 전시 UI-영역 매핑 수정 */
+
+
     @Override
     public int updateSelective(DpUiArea entity) {
         if (entity.getUiAreaId() == null) return 0;

@@ -31,17 +31,36 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdDlivTmpltRepositoryImpl";
-    private static final QPdDlivTmplt t      = QPdDlivTmplt.pdDlivTmplt;
+    private static final QPdDlivTmplt a      = QPdDlivTmplt.pdDlivTmplt;
     private static final QSySite      ste    = QSySite.sySite;
     private static final QSyVendor    vnd    = QSyVendor.syVendor;
     private static final QSyCode      cdDm   = new QSyCode("cd_dm");
     private static final QSyCode      cdDpt  = new QSyCode("cd_dpt");
 
+    /* 배송 템플릿 baseSelColumnQuery */
+    private JPAQuery<PdDlivTmpltDto.Item> baseSelColumnQuery() {
+        return queryFactory
+                .select(Projections.bean(PdDlivTmpltDto.Item.class,
+                        a.dlivTmpltId, a.siteId, a.vendorId, a.dlivTmpltNm,
+                        a.dlivMethodCd, a.dlivPayTypeCd, a.dlivCourierCd,
+                        a.dlivCost, a.freeDlivMinAmt, a.islandExtraCost,
+                        a.returnCost, a.exchangeCost, a.returnCourierCd,
+                        a.returnAddrZip, a.returnAddr, a.returnAddrDetail, a.returnTelNo,
+                        a.baseDlivYn, a.useYn,
+                        a.regBy, a.regDate, a.updBy, a.updDate
+                ))
+                .from(a)
+                .leftJoin(ste).on(ste.siteId.eq(a.siteId))
+                .leftJoin(vnd).on(vnd.vendorId.eq(a.vendorId))
+                .leftJoin(cdDm).on(cdDm.codeGrp.eq("DLIV_METHOD").and(cdDm.codeValue.eq(a.dlivMethodCd)))
+                .leftJoin(cdDpt).on(cdDpt.codeGrp.eq("DLIV_PAY_TYPE").and(cdDpt.codeValue.eq(a.dlivPayTypeCd)));
+    }
+
     /* 배송 템플릿 키조회 */
     @Override
     public Optional<PdDlivTmpltDto.Item> selectById(String dlivTmpltId) {
-        PdDlivTmpltDto.Item dto = baseQuery()
-                .where(t.dlivTmpltId.eq(dlivTmpltId))
+        PdDlivTmpltDto.Item dto = baseSelColumnQuery()
+                .where(a.dlivTmpltId.eq(dlivTmpltId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -51,7 +70,7 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
     public List<PdDlivTmpltDto.Item> selectList(PdDlivTmpltDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdDlivTmpltDto.Item> query = baseQuery().where(
+        JPAQuery<PdDlivTmpltDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndDlivTmpltId(search),
                 baseAndDateRange(search),
@@ -78,7 +97,7 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdDlivTmpltDto.Item> query = baseQuery().where(
+        JPAQuery<PdDlivTmpltDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndDlivTmpltId(search),
                 baseAndDateRange(search),
@@ -89,7 +108,7 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
         }
         List<PdDlivTmpltDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(t.count()).from(t).where(
+        Long total = queryFactory.select(a.count()).from(a).where(
                 baseAndSiteId(search),
                 baseAndDlivTmpltId(search),
                 baseAndDateRange(search),
@@ -99,26 +118,6 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
         PdDlivTmpltDto.PageResponse res = new PdDlivTmpltDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-
-    /* 배송 템플릿 baseQuery */
-    private JPAQuery<PdDlivTmpltDto.Item> baseQuery() {
-        return queryFactory
-                .select(Projections.bean(PdDlivTmpltDto.Item.class,
-                        t.dlivTmpltId, t.siteId, t.vendorId, t.dlivTmpltNm,
-                        t.dlivMethodCd, t.dlivPayTypeCd, t.dlivCourierCd,
-                        t.dlivCost, t.freeDlivMinAmt, t.islandExtraCost,
-                        t.returnCost, t.exchangeCost, t.returnCourierCd,
-                        t.returnAddrZip, t.returnAddr, t.returnAddrDetail, t.returnTelNo,
-                        t.baseDlivYn, t.useYn,
-                        t.regBy, t.regDate, t.updBy, t.updDate
-                ))
-                .from(t)
-                .leftJoin(ste).on(ste.siteId.eq(t.siteId))
-                .leftJoin(vnd).on(vnd.vendorId.eq(t.vendorId))
-                .leftJoin(cdDm).on(cdDm.codeGrp.eq("DLIV_METHOD").and(cdDm.codeValue.eq(t.dlivMethodCd)))
-                .leftJoin(cdDpt).on(cdDpt.codeGrp.eq("DLIV_PAY_TYPE").and(cdDpt.codeValue.eq(t.dlivPayTypeCd)));
-    }
-
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
@@ -129,13 +128,13 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(PdDlivTmpltDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? t.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* dlivTmpltId 정확 일치 */
     private BooleanExpression baseAndDlivTmpltId(PdDlivTmpltDto.Request search) {
         return search != null && StringUtils.hasText(search.getDlivTmpltId())
-                ? t.dlivTmpltId.eq(search.getDlivTmpltId()) : null;
+                ? a.dlivTmpltId.eq(search.getDlivTmpltId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -148,8 +147,8 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return t.regDate.goe(start).and(t.regDate.lt(endExcl));
-            case "upd_date": return t.updDate.goe(start).and(t.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -162,20 +161,20 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",baseDlivYn,", t.baseDlivYn, pattern);
-        or = orLike(or, all, types, ",dlivCourierCd,", t.dlivCourierCd, pattern);
-        or = orLike(or, all, types, ",dlivMethodCd,", t.dlivMethodCd, pattern);
-        or = orLike(or, all, types, ",dlivPayTypeCd,", t.dlivPayTypeCd, pattern);
-        or = orLike(or, all, types, ",dlivTmpltId,", t.dlivTmpltId, pattern);
-        or = orLike(or, all, types, ",dlivTmpltNm,", t.dlivTmpltNm, pattern);
-        or = orLike(or, all, types, ",returnAddr,", t.returnAddr, pattern);
-        or = orLike(or, all, types, ",returnAddrDetail,", t.returnAddrDetail, pattern);
-        or = orLike(or, all, types, ",returnAddrZip,", t.returnAddrZip, pattern);
-        or = orLike(or, all, types, ",returnCourierCd,", t.returnCourierCd, pattern);
-        or = orLike(or, all, types, ",returnTelNo,", t.returnTelNo, pattern);
-        or = orLike(or, all, types, ",siteId,", t.siteId, pattern);
-        or = orLike(or, all, types, ",useYn,", t.useYn, pattern);
-        or = orLike(or, all, types, ",vendorId,", t.vendorId, pattern);
+        or = orLike(or, all, types, ",baseDlivYn,", a.baseDlivYn, pattern);
+        or = orLike(or, all, types, ",dlivCourierCd,", a.dlivCourierCd, pattern);
+        or = orLike(or, all, types, ",dlivMethodCd,", a.dlivMethodCd, pattern);
+        or = orLike(or, all, types, ",dlivPayTypeCd,", a.dlivPayTypeCd, pattern);
+        or = orLike(or, all, types, ",dlivTmpltId,", a.dlivTmpltId, pattern);
+        or = orLike(or, all, types, ",dlivTmpltNm,", a.dlivTmpltNm, pattern);
+        or = orLike(or, all, types, ",returnAddr,", a.returnAddr, pattern);
+        or = orLike(or, all, types, ",returnAddrDetail,", a.returnAddrDetail, pattern);
+        or = orLike(or, all, types, ",returnAddrZip,", a.returnAddrZip, pattern);
+        or = orLike(or, all, types, ",returnCourierCd,", a.returnCourierCd, pattern);
+        or = orLike(or, all, types, ",returnTelNo,", a.returnTelNo, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",useYn,", a.useYn, pattern);
+        or = orLike(or, all, types, ",vendorId,", a.vendorId, pattern);
         return or;
     }
 
@@ -196,8 +195,8 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, t.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, t.dlivTmpltId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.dlivTmpltId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -208,56 +207,58 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("dlivTmpltId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, t.dlivTmpltId));
+                    orders.add(new OrderSpecifier(order, a.dlivTmpltId));
                 } else if ("dlivTmpltNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, t.dlivTmpltNm));
+                    orders.add(new OrderSpecifier(order, a.dlivTmpltNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, t.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, t.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, t.dlivTmpltId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.dlivTmpltId));
         }
         return orders;
     }
 
     /* 배송 템플릿 수정 */
+
+
     @Override
     public int updateSelective(PdDlivTmplt entity) {
         if (entity.getDlivTmpltId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(t);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getSiteId()           != null) { update.set(t.siteId,           entity.getSiteId());           hasAny = true; }
-        if (entity.getVendorId()         != null) { update.set(t.vendorId,         entity.getVendorId());         hasAny = true; }
-        if (entity.getDlivTmpltNm()      != null) { update.set(t.dlivTmpltNm,      entity.getDlivTmpltNm());      hasAny = true; }
-        if (entity.getDlivMethodCd()     != null) { update.set(t.dlivMethodCd,     entity.getDlivMethodCd());     hasAny = true; }
-        if (entity.getDlivPayTypeCd()    != null) { update.set(t.dlivPayTypeCd,    entity.getDlivPayTypeCd());    hasAny = true; }
-        if (entity.getDlivCourierCd()    != null) { update.set(t.dlivCourierCd,    entity.getDlivCourierCd());    hasAny = true; }
-        if (entity.getDlivCost()         != null) { update.set(t.dlivCost,         entity.getDlivCost());         hasAny = true; }
-        if (entity.getFreeDlivMinAmt()   != null) { update.set(t.freeDlivMinAmt,   entity.getFreeDlivMinAmt());   hasAny = true; }
-        if (entity.getIslandExtraCost()  != null) { update.set(t.islandExtraCost,  entity.getIslandExtraCost());  hasAny = true; }
-        if (entity.getReturnCost()       != null) { update.set(t.returnCost,       entity.getReturnCost());       hasAny = true; }
-        if (entity.getExchangeCost()     != null) { update.set(t.exchangeCost,     entity.getExchangeCost());     hasAny = true; }
-        if (entity.getReturnCourierCd()  != null) { update.set(t.returnCourierCd,  entity.getReturnCourierCd());  hasAny = true; }
-        if (entity.getReturnAddrZip()    != null) { update.set(t.returnAddrZip,    entity.getReturnAddrZip());    hasAny = true; }
-        if (entity.getReturnAddr()       != null) { update.set(t.returnAddr,       entity.getReturnAddr());       hasAny = true; }
-        if (entity.getReturnAddrDetail() != null) { update.set(t.returnAddrDetail, entity.getReturnAddrDetail()); hasAny = true; }
-        if (entity.getReturnTelNo()      != null) { update.set(t.returnTelNo,      entity.getReturnTelNo());      hasAny = true; }
-        if (entity.getBaseDlivYn()       != null) { update.set(t.baseDlivYn,       entity.getBaseDlivYn());       hasAny = true; }
-        if (entity.getUseYn()            != null) { update.set(t.useYn,            entity.getUseYn());            hasAny = true; }
-        if (entity.getUpdBy()            != null) { update.set(t.updBy,            entity.getUpdBy());            hasAny = true; }
+        if (entity.getSiteId()           != null) { update.set(a.siteId,           entity.getSiteId());           hasAny = true; }
+        if (entity.getVendorId()         != null) { update.set(a.vendorId,         entity.getVendorId());         hasAny = true; }
+        if (entity.getDlivTmpltNm()      != null) { update.set(a.dlivTmpltNm,      entity.getDlivTmpltNm());      hasAny = true; }
+        if (entity.getDlivMethodCd()     != null) { update.set(a.dlivMethodCd,     entity.getDlivMethodCd());     hasAny = true; }
+        if (entity.getDlivPayTypeCd()    != null) { update.set(a.dlivPayTypeCd,    entity.getDlivPayTypeCd());    hasAny = true; }
+        if (entity.getDlivCourierCd()    != null) { update.set(a.dlivCourierCd,    entity.getDlivCourierCd());    hasAny = true; }
+        if (entity.getDlivCost()         != null) { update.set(a.dlivCost,         entity.getDlivCost());         hasAny = true; }
+        if (entity.getFreeDlivMinAmt()   != null) { update.set(a.freeDlivMinAmt,   entity.getFreeDlivMinAmt());   hasAny = true; }
+        if (entity.getIslandExtraCost()  != null) { update.set(a.islandExtraCost,  entity.getIslandExtraCost());  hasAny = true; }
+        if (entity.getReturnCost()       != null) { update.set(a.returnCost,       entity.getReturnCost());       hasAny = true; }
+        if (entity.getExchangeCost()     != null) { update.set(a.exchangeCost,     entity.getExchangeCost());     hasAny = true; }
+        if (entity.getReturnCourierCd()  != null) { update.set(a.returnCourierCd,  entity.getReturnCourierCd());  hasAny = true; }
+        if (entity.getReturnAddrZip()    != null) { update.set(a.returnAddrZip,    entity.getReturnAddrZip());    hasAny = true; }
+        if (entity.getReturnAddr()       != null) { update.set(a.returnAddr,       entity.getReturnAddr());       hasAny = true; }
+        if (entity.getReturnAddrDetail() != null) { update.set(a.returnAddrDetail, entity.getReturnAddrDetail()); hasAny = true; }
+        if (entity.getReturnTelNo()      != null) { update.set(a.returnTelNo,      entity.getReturnTelNo());      hasAny = true; }
+        if (entity.getBaseDlivYn()       != null) { update.set(a.baseDlivYn,       entity.getBaseDlivYn());       hasAny = true; }
+        if (entity.getUseYn()            != null) { update.set(a.useYn,            entity.getUseYn());            hasAny = true; }
+        if (entity.getUpdBy()            != null) { update.set(a.updBy,            entity.getUpdBy());            hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(t.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(t.dlivTmpltId.eq(entity.getDlivTmpltId())).execute();
+        long affected = update.where(a.dlivTmpltId.eq(entity.getDlivTmpltId())).execute();
         return (int) affected;
     }
 }

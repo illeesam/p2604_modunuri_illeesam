@@ -34,7 +34,7 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmSaveIssueRepositoryImpl";
-    private static final QPmSaveIssue i    = QPmSaveIssue.pmSaveIssue;
+    private static final QPmSaveIssue a    = QPmSaveIssue.pmSaveIssue;
     private static final QSySite      ste  = QSySite.sySite;
     private static final QMbMember    mem  = QMbMember.mbMember;
     private static final QOdOrder     ord  = QOdOrder.odOrder;
@@ -43,30 +43,30 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
     private static final QSyCode      cdSit = new QSyCode("cd_sit");
     private static final QSyCode      cdSis = new QSyCode("cd_sis");
 
-    /* 적립금 지급 이력 baseQuery */
-    private JPAQuery<PmSaveIssueDto.Item> baseQuery() {
+    /* 적립금 지급 이력 baseSelColumnQuery */
+    private JPAQuery<PmSaveIssueDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PmSaveIssueDto.Item.class,
-                        i.saveIssueId, i.siteId, i.memberId, i.saveIssueTypeCd, i.saveAmt,
-                        i.saveRate, i.refTypeCd, i.refId, i.orderId, i.orderItemId, i.prodId,
-                        i.expireDate, i.issueStatusCd, i.issueStatusCdBefore, i.saveMemo,
-                        i.regBy, i.regDate, i.updBy, i.updDate
+                        a.saveIssueId, a.siteId, a.memberId, a.saveIssueTypeCd, a.saveAmt,
+                        a.saveRate, a.refTypeCd, a.refId, a.orderId, a.orderItemId, a.prodId,
+                        a.expireDate, a.issueStatusCd, a.issueStatusCdBefore, a.saveMemo,
+                        a.regBy, a.regDate, a.updBy, a.updDate
                 ))
-                .from(i)
-                .leftJoin(ste).on(ste.siteId.eq(i.siteId))
-                .leftJoin(mem).on(mem.memberId.eq(i.memberId))
-                .leftJoin(ord).on(ord.orderId.eq(i.orderId))
-                .leftJoin(ite).on(ite.orderItemId.eq(i.orderItemId))
-                .leftJoin(prd).on(prd.prodId.eq(i.prodId))
-                .leftJoin(cdSit).on(cdSit.codeGrp.eq("SAVE_ISSUE_TYPE").and(cdSit.codeValue.eq(i.saveIssueTypeCd)))
-                .leftJoin(cdSis).on(cdSis.codeGrp.eq("SAVE_ISSUE_STATUS").and(cdSis.codeValue.eq(i.issueStatusCd)));
+                .from(a)
+                .leftJoin(ste).on(ste.siteId.eq(a.siteId))
+                .leftJoin(mem).on(mem.memberId.eq(a.memberId))
+                .leftJoin(ord).on(ord.orderId.eq(a.orderId))
+                .leftJoin(ite).on(ite.orderItemId.eq(a.orderItemId))
+                .leftJoin(prd).on(prd.prodId.eq(a.prodId))
+                .leftJoin(cdSit).on(cdSit.codeGrp.eq("SAVE_ISSUE_TYPE").and(cdSit.codeValue.eq(a.saveIssueTypeCd)))
+                .leftJoin(cdSis).on(cdSis.codeGrp.eq("SAVE_ISSUE_STATUS").and(cdSis.codeValue.eq(a.issueStatusCd)));
     }
 
     /* 적립금 지급 이력 키조회 */
     @Override
     public Optional<PmSaveIssueDto.Item> selectById(String saveIssueId) {
-        PmSaveIssueDto.Item dto = baseQuery()
-                .where(i.saveIssueId.eq(saveIssueId))
+        PmSaveIssueDto.Item dto = baseSelColumnQuery()
+                .where(a.saveIssueId.eq(saveIssueId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -76,7 +76,7 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
     public List<PmSaveIssueDto.Item> selectList(PmSaveIssueDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PmSaveIssueDto.Item> query = baseQuery().where(
+        JPAQuery<PmSaveIssueDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndSaveIssueId(search),
                 baseAndDateRange(search),
@@ -103,7 +103,7 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PmSaveIssueDto.Item> query = baseQuery().where(
+        JPAQuery<PmSaveIssueDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndSaveIssueId(search),
                 baseAndDateRange(search),
@@ -115,8 +115,8 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
         List<PmSaveIssueDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(i.count())
-                .from(i)
+                .select(a.count())
+                .from(a)
                 .where(
                 baseAndSiteId(search),
                 baseAndSaveIssueId(search),
@@ -139,13 +139,13 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(PmSaveIssueDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? i.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* saveIssueId 정확 일치 */
     private BooleanExpression baseAndSaveIssueId(PmSaveIssueDto.Request search) {
         return search != null && StringUtils.hasText(search.getSaveIssueId())
-                ? i.saveIssueId.eq(search.getSaveIssueId()) : null;
+                ? a.saveIssueId.eq(search.getSaveIssueId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -158,8 +158,8 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return i.regDate.goe(start).and(i.regDate.lt(endExcl));
-            case "upd_date": return i.updDate.goe(start).and(i.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -172,18 +172,18 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",issueStatusCd,", i.issueStatusCd, pattern);
-        or = orLike(or, all, types, ",issueStatusCdBefore,", i.issueStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",memberId,", i.memberId, pattern);
-        or = orLike(or, all, types, ",orderId,", i.orderId, pattern);
-        or = orLike(or, all, types, ",orderItemId,", i.orderItemId, pattern);
-        or = orLike(or, all, types, ",prodId,", i.prodId, pattern);
-        or = orLike(or, all, types, ",refId,", i.refId, pattern);
-        or = orLike(or, all, types, ",refTypeCd,", i.refTypeCd, pattern);
-        or = orLike(or, all, types, ",saveIssueId,", i.saveIssueId, pattern);
-        or = orLike(or, all, types, ",saveIssueTypeCd,", i.saveIssueTypeCd, pattern);
-        or = orLike(or, all, types, ",saveMemo,", i.saveMemo, pattern);
-        or = orLike(or, all, types, ",siteId,", i.siteId, pattern);
+        or = orLike(or, all, types, ",issueStatusCd,", a.issueStatusCd, pattern);
+        or = orLike(or, all, types, ",issueStatusCdBefore,", a.issueStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",memberId,", a.memberId, pattern);
+        or = orLike(or, all, types, ",orderId,", a.orderId, pattern);
+        or = orLike(or, all, types, ",orderItemId,", a.orderItemId, pattern);
+        or = orLike(or, all, types, ",prodId,", a.prodId, pattern);
+        or = orLike(or, all, types, ",refId,", a.refId, pattern);
+        or = orLike(or, all, types, ",refTypeCd,", a.refTypeCd, pattern);
+        or = orLike(or, all, types, ",saveIssueId,", a.saveIssueId, pattern);
+        or = orLike(or, all, types, ",saveIssueTypeCd,", a.saveIssueTypeCd, pattern);
+        or = orLike(or, all, types, ",saveMemo,", a.saveMemo, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
         return or;
     }
 
@@ -204,8 +204,8 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, i.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, i.saveIssueId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.saveIssueId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -216,17 +216,17 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("saveIssueId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, i.saveIssueId));
+                    orders.add(new OrderSpecifier(order, a.saveIssueId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, i.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, i.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, i.saveIssueId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.saveIssueId));
         }
         return orders;
     }
@@ -236,30 +236,30 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
     public int updateSelective(PmSaveIssue entity) {
         if (entity.getSaveIssueId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(i);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getSiteId()              != null) { update.set(i.siteId,              entity.getSiteId());              hasAny = true; }
-        if (entity.getMemberId()            != null) { update.set(i.memberId,            entity.getMemberId());            hasAny = true; }
-        if (entity.getSaveIssueTypeCd()     != null) { update.set(i.saveIssueTypeCd,     entity.getSaveIssueTypeCd());     hasAny = true; }
-        if (entity.getSaveAmt()             != null) { update.set(i.saveAmt,             entity.getSaveAmt());             hasAny = true; }
-        if (entity.getSaveRate()            != null) { update.set(i.saveRate,            entity.getSaveRate());            hasAny = true; }
-        if (entity.getRefTypeCd()           != null) { update.set(i.refTypeCd,           entity.getRefTypeCd());           hasAny = true; }
-        if (entity.getRefId()               != null) { update.set(i.refId,               entity.getRefId());               hasAny = true; }
-        if (entity.getOrderId()             != null) { update.set(i.orderId,             entity.getOrderId());             hasAny = true; }
-        if (entity.getOrderItemId()         != null) { update.set(i.orderItemId,         entity.getOrderItemId());         hasAny = true; }
-        if (entity.getProdId()              != null) { update.set(i.prodId,              entity.getProdId());              hasAny = true; }
-        if (entity.getExpireDate()          != null) { update.set(i.expireDate,          entity.getExpireDate());          hasAny = true; }
-        if (entity.getIssueStatusCd()       != null) { update.set(i.issueStatusCd,       entity.getIssueStatusCd());       hasAny = true; }
-        if (entity.getIssueStatusCdBefore() != null) { update.set(i.issueStatusCdBefore, entity.getIssueStatusCdBefore()); hasAny = true; }
-        if (entity.getSaveMemo()            != null) { update.set(i.saveMemo,            entity.getSaveMemo());            hasAny = true; }
-        if (entity.getUpdBy()               != null) { update.set(i.updBy,               entity.getUpdBy());               hasAny = true; }
+        if (entity.getSiteId()              != null) { update.set(a.siteId,              entity.getSiteId());              hasAny = true; }
+        if (entity.getMemberId()            != null) { update.set(a.memberId,            entity.getMemberId());            hasAny = true; }
+        if (entity.getSaveIssueTypeCd()     != null) { update.set(a.saveIssueTypeCd,     entity.getSaveIssueTypeCd());     hasAny = true; }
+        if (entity.getSaveAmt()             != null) { update.set(a.saveAmt,             entity.getSaveAmt());             hasAny = true; }
+        if (entity.getSaveRate()            != null) { update.set(a.saveRate,            entity.getSaveRate());            hasAny = true; }
+        if (entity.getRefTypeCd()           != null) { update.set(a.refTypeCd,           entity.getRefTypeCd());           hasAny = true; }
+        if (entity.getRefId()               != null) { update.set(a.refId,               entity.getRefId());               hasAny = true; }
+        if (entity.getOrderId()             != null) { update.set(a.orderId,             entity.getOrderId());             hasAny = true; }
+        if (entity.getOrderItemId()         != null) { update.set(a.orderItemId,         entity.getOrderItemId());         hasAny = true; }
+        if (entity.getProdId()              != null) { update.set(a.prodId,              entity.getProdId());              hasAny = true; }
+        if (entity.getExpireDate()          != null) { update.set(a.expireDate,          entity.getExpireDate());          hasAny = true; }
+        if (entity.getIssueStatusCd()       != null) { update.set(a.issueStatusCd,       entity.getIssueStatusCd());       hasAny = true; }
+        if (entity.getIssueStatusCdBefore() != null) { update.set(a.issueStatusCdBefore, entity.getIssueStatusCdBefore()); hasAny = true; }
+        if (entity.getSaveMemo()            != null) { update.set(a.saveMemo,            entity.getSaveMemo());            hasAny = true; }
+        if (entity.getUpdBy()               != null) { update.set(a.updBy,               entity.getUpdBy());               hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(i.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(i.saveIssueId.eq(entity.getSaveIssueId())).execute();
+        long affected = update.where(a.saveIssueId.eq(entity.getSaveIssueId())).execute();
         return (int) affected;
     }
 }

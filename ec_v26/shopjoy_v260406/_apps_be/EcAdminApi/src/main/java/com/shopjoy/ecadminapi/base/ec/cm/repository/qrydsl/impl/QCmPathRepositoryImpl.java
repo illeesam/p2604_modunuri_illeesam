@@ -28,17 +28,17 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmPathRepositoryImpl";
-    private static final QCmPath p = QCmPath.cmPath;
+    private static final QCmPath a = QCmPath.cmPath;
 
     /** 기본 쿼리 빌드 */
     private JPAQuery<CmPathDto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(CmPathDto.Item.class,
-                        p.bizCd, p.parentPathId, p.pathLabel, p.sortOrd,
-                        p.useYn, p.pathRemark,
-                        p.regBy, p.regDate, p.updBy, p.updDate
+                        a.bizCd, a.parentPathId, a.pathLabel, a.sortOrd,
+                        a.useYn, a.pathRemark,
+                        a.regBy, a.regDate, a.updBy, a.updDate
                 ))
-                .from(p);
+                .from(a);
     }
 
     /** 단건 조회 */
@@ -46,7 +46,7 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
     public Optional<CmPathDto.Item> selectById(String bizCd) {
         CmPathDto.Item dto = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
-                .where(p.bizCd.eq(bizCd))
+                .where(a.bizCd.eq(bizCd))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -96,8 +96,8 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
         List<CmPathDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(p.count())
-                .from(p)
+                .select(a.count())
+                .from(a)
                 .where(
                 baseAndUseYn(search),
                 baseAndBizCd(search),
@@ -120,13 +120,13 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
     /* useYn 정확 일치 */
     private BooleanExpression baseAndUseYn(CmPathDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
-                ? p.useYn.eq(search.getUseYn()) : null;
+                ? a.useYn.eq(search.getUseYn()) : null;
     }
 
     /* bizCd 정확 일치 */
     private BooleanExpression baseAndBizCd(CmPathDto.Request search) {
         return search != null && StringUtils.hasText(search.getBizCd())
-                ? p.bizCd.eq(search.getBizCd()) : null;
+                ? a.bizCd.eq(search.getBizCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -139,8 +139,8 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return p.regDate.goe(start).and(p.regDate.lt(endExcl));
-            case "upd_date": return p.updDate.goe(start).and(p.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -153,11 +153,11 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",bizCd,", p.bizCd, pattern);
-        or = orLike(or, all, types, ",pathLabel,", p.pathLabel, pattern);
-        or = orLike(or, all, types, ",pathRemark,", p.pathRemark, pattern);
-        or = orLike(or, all, types, ",siteId,", p.siteId, pattern);
-        or = orLike(or, all, types, ",useYn,", p.useYn, pattern);
+        or = orLike(or, all, types, ",bizCd,", a.bizCd, pattern);
+        or = orLike(or, all, types, ",pathLabel,", a.pathLabel, pattern);
+        or = orLike(or, all, types, ",pathRemark,", a.pathRemark, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",useYn,", a.useYn, pattern);
         return or;
     }
 
@@ -180,9 +180,9 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
         if (!StringUtils.hasText(sort)) {
 
             /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, p.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, p.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, p.bizCd));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.bizCd));
 
             return orders;
         }
@@ -194,18 +194,18 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("bizCd".equals(field)) {
-                    orders.add(new OrderSpecifier(order, p.bizCd));
+                    orders.add(new OrderSpecifier(order, a.bizCd));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, p.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, p.sortOrd)); }
+                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, a.sortOrd)); }
             }
         }
         /* unknown sort → sortOrd ASC + regDate ASC fallback */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, p.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, p.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, p.bizCd));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.bizCd));
         }
         return orders;
     }
@@ -215,21 +215,21 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
     public int updateSelective(CmPath entity) {
         if (entity.getBizCd() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(p);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getParentPathId() != null) { update.set(p.parentPathId, entity.getParentPathId()); hasAny = true; }
-        if (entity.getPathLabel()    != null) { update.set(p.pathLabel,    entity.getPathLabel());    hasAny = true; }
-        if (entity.getSortOrd()      != null) { update.set(p.sortOrd,      entity.getSortOrd());      hasAny = true; }
-        if (entity.getUseYn()        != null) { update.set(p.useYn,        entity.getUseYn());        hasAny = true; }
-        if (entity.getPathRemark()   != null) { update.set(p.pathRemark,   entity.getPathRemark());   hasAny = true; }
-        if (entity.getUpdBy()        != null) { update.set(p.updBy,        entity.getUpdBy());        hasAny = true; }
+        if (entity.getParentPathId() != null) { update.set(a.parentPathId, entity.getParentPathId()); hasAny = true; }
+        if (entity.getPathLabel()    != null) { update.set(a.pathLabel,    entity.getPathLabel());    hasAny = true; }
+        if (entity.getSortOrd()      != null) { update.set(a.sortOrd,      entity.getSortOrd());      hasAny = true; }
+        if (entity.getUseYn()        != null) { update.set(a.useYn,        entity.getUseYn());        hasAny = true; }
+        if (entity.getPathRemark()   != null) { update.set(a.pathRemark,   entity.getPathRemark());   hasAny = true; }
+        if (entity.getUpdBy()        != null) { update.set(a.updBy,        entity.getUpdBy());        hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(p.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(p.bizCd.eq(entity.getBizCd())).execute();
+        long affected = update.where(a.bizCd.eq(entity.getBizCd())).execute();
         return (int) affected;
     }
 }

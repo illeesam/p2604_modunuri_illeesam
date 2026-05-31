@@ -28,13 +28,24 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmEventItemRepositoryImpl";
-    private static final QPmEventItem i = QPmEventItem.pmEventItem;
+    private static final QPmEventItem a = QPmEventItem.pmEventItem;
+
+    /* 이벤트 대상 상품 baseSelColumnQuery */
+    private JPAQuery<PmEventItemDto.Item> baseSelColumnQuery() {
+        return queryFactory
+                .select(Projections.bean(PmEventItemDto.Item.class,
+                        a.eventItemId, a.eventId, a.siteId,
+                        a.targetTypeCd, a.targetId, a.sortNo,
+                        a.regBy, a.regDate
+                ))
+                .from(a);
+    }
 
     /* 이벤트 대상 상품 키조회 */
     @Override
     public Optional<PmEventItemDto.Item> selectById(String eventItemId) {
-        PmEventItemDto.Item dto = baseQuery()
-                .where(i.eventItemId.eq(eventItemId))
+        PmEventItemDto.Item dto = baseSelColumnQuery()
+                .where(a.eventItemId.eq(eventItemId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -44,7 +55,7 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
     public List<PmEventItemDto.Item> selectList(PmEventItemDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PmEventItemDto.Item> query = baseQuery().where(
+        JPAQuery<PmEventItemDto.Item> query = baseSelColumnQuery().where(
                 baseAndEventIds(search),
                 baseAndEventId(search),
                 baseAndSiteId(search),
@@ -73,7 +84,7 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PmEventItemDto.Item> query = baseQuery().where(
+        JPAQuery<PmEventItemDto.Item> query = baseSelColumnQuery().where(
                 baseAndEventIds(search),
                 baseAndEventId(search),
                 baseAndSiteId(search),
@@ -87,8 +98,8 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
         List<PmEventItemDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(i.count())
-                .from(i)
+                .select(a.count())
+                .from(a)
                 .where(
                 baseAndEventIds(search),
                 baseAndEventId(search),
@@ -102,18 +113,6 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
         PmEventItemDto.PageResponse res = new PmEventItemDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-
-    /* 이벤트 대상 상품 baseQuery */
-    private JPAQuery<PmEventItemDto.Item> baseQuery() {
-        return queryFactory
-                .select(Projections.bean(PmEventItemDto.Item.class,
-                        i.eventItemId, i.eventId, i.siteId,
-                        i.targetTypeCd, i.targetId, i.sortNo,
-                        i.regBy, i.regDate
-                ))
-                .from(i);
-    }
-
     /* 이벤트 대상 상품 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
@@ -124,25 +123,25 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
     /* eventId IN */
     private BooleanExpression baseAndEventIds(PmEventItemDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getEventIds())
-                ? i.eventId.in(search.getEventIds()) : null;
+                ? a.eventId.in(search.getEventIds()) : null;
     }
 
     /* eventId 정확 일치 */
     private BooleanExpression baseAndEventId(PmEventItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getEventId())
-                ? i.eventId.eq(search.getEventId()) : null;
+                ? a.eventId.eq(search.getEventId()) : null;
     }
 
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(PmEventItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? i.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* eventItemId 정확 일치 */
     private BooleanExpression baseAndEventItemId(PmEventItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getEventItemId())
-                ? i.eventItemId.eq(search.getEventItemId()) : null;
+                ? a.eventItemId.eq(search.getEventItemId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -155,8 +154,8 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return i.regDate.goe(start).and(i.regDate.lt(endExcl));
-            case "upd_date": return i.updDate.goe(start).and(i.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -169,11 +168,11 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",eventId,", i.eventId, pattern);
-        or = orLike(or, all, types, ",eventItemId,", i.eventItemId, pattern);
-        or = orLike(or, all, types, ",siteId,", i.siteId, pattern);
-        or = orLike(or, all, types, ",targetId,", i.targetId, pattern);
-        or = orLike(or, all, types, ",targetTypeCd,", i.targetTypeCd, pattern);
+        or = orLike(or, all, types, ",eventId,", a.eventId, pattern);
+        or = orLike(or, all, types, ",eventItemId,", a.eventItemId, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",targetId,", a.targetId, pattern);
+        or = orLike(or, all, types, ",targetTypeCd,", a.targetTypeCd, pattern);
         return or;
     }
 
@@ -194,8 +193,8 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, i.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, i.eventItemId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.eventItemId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -206,38 +205,40 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("eventItemId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, i.eventItemId));
+                    orders.add(new OrderSpecifier(order, a.eventItemId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, i.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, i.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, i.eventItemId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.eventItemId));
         }
         return orders;
     }
 
     /* 이벤트 대상 상품 수정 */
+
+
     @Override
     public int updateSelective(PmEventItem entity) {
         if (entity.getEventItemId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(i);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getEventId()     != null) { update.set(i.eventId,     entity.getEventId());     hasAny = true; }
-        if (entity.getSiteId()      != null) { update.set(i.siteId,      entity.getSiteId());      hasAny = true; }
-        if (entity.getTargetTypeCd()!= null) { update.set(i.targetTypeCd,entity.getTargetTypeCd());hasAny = true; }
-        if (entity.getTargetId()    != null) { update.set(i.targetId,    entity.getTargetId());    hasAny = true; }
-        if (entity.getSortNo()      != null) { update.set(i.sortNo,      entity.getSortNo());      hasAny = true; }
+        if (entity.getEventId()     != null) { update.set(a.eventId,     entity.getEventId());     hasAny = true; }
+        if (entity.getSiteId()      != null) { update.set(a.siteId,      entity.getSiteId());      hasAny = true; }
+        if (entity.getTargetTypeCd()!= null) { update.set(a.targetTypeCd,entity.getTargetTypeCd());hasAny = true; }
+        if (entity.getTargetId()    != null) { update.set(a.targetId,    entity.getTargetId());    hasAny = true; }
+        if (entity.getSortNo()      != null) { update.set(a.sortNo,      entity.getSortNo());      hasAny = true; }
 
         if (!hasAny) return 0;
 
-        long affected = update.where(i.eventItemId.eq(entity.getEventItemId())).execute();
+        long affected = update.where(a.eventItemId.eq(entity.getEventItemId())).execute();
         return (int) affected;
     }
 }

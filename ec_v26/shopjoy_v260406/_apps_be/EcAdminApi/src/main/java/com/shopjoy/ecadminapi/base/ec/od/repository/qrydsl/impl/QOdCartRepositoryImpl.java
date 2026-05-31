@@ -33,7 +33,7 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdCartRepositoryImpl";
-    private static final QOdCart        c   = QOdCart.odCart;
+    private static final QOdCart        a   = QOdCart.odCart;
     private static final QSySite        ste = QSySite.sySite;
     private static final QMbMember      mem = QMbMember.mbMember;
     private static final QPdProd        prd = QPdProd.pdProd;
@@ -44,7 +44,7 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
     @Override
     public Optional<OdCartDto.Item> selectById(String cartId) {
         OdCartDto.Item dto = baseListQuery()
-                .where(c.cartId.eq(cartId))
+                .where(a.cartId.eq(cartId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -95,10 +95,10 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
         List<OdCartDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(c.count())
-                .from(c)
-                .leftJoin(mem).on(mem.memberId.eq(c.memberId))
-                .leftJoin(prd).on(prd.prodId.eq(c.prodId))
+                .select(a.count())
+                .from(a)
+                .leftJoin(mem).on(mem.memberId.eq(a.memberId))
+                .leftJoin(prd).on(prd.prodId.eq(a.prodId))
                 .where(
                 baseAndSiteId(search),
                 baseAndCartId(search),
@@ -116,21 +116,21 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
     private JPAQuery<OdCartDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(OdCartDto.Item.class,
-                        c.cartId, c.siteId, c.memberId, c.sessionKey, c.prodId, c.skuId,
-                        c.optItemId1, c.optItemId2, c.unitPrice, c.orderQty, c.itemPrice, c.isChecked,
-                        c.regBy, c.regDate, c.updBy, c.updDate,
+                        a.cartId, a.siteId, a.memberId, a.sessionKey, a.prodId, a.skuId,
+                        a.optItemId1, a.optItemId2, a.unitPrice, a.orderQty, a.itemPrice, a.isChecked,
+                        a.regBy, a.regDate, a.updBy, a.updDate,
                         ste.siteNm.as("siteNm"),
                         mem.memberNm.as("memberNm"),
                         prd.prodNm.as("prodNm"),
                         oi1.optNm.as("optNm1"),
                         oi2.optNm.as("optNm2")
                 ))
-                .from(c)
-                .leftJoin(ste).on(ste.siteId.eq(c.siteId))
-                .leftJoin(mem).on(mem.memberId.eq(c.memberId))
-                .leftJoin(prd).on(prd.prodId.eq(c.prodId))
-                .leftJoin(oi1).on(oi1.optItemId.eq(c.optItemId1))
-                .leftJoin(oi2).on(oi2.optItemId.eq(c.optItemId2));
+                .from(a)
+                .leftJoin(ste).on(ste.siteId.eq(a.siteId))
+                .leftJoin(mem).on(mem.memberId.eq(a.memberId))
+                .leftJoin(prd).on(prd.prodId.eq(a.prodId))
+                .leftJoin(oi1).on(oi1.optItemId.eq(a.optItemId1))
+                .leftJoin(oi2).on(oi2.optItemId.eq(a.optItemId2));
     }
 
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
@@ -143,19 +143,19 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(OdCartDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? c.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* cartId 정확 일치 */
     private BooleanExpression baseAndCartId(OdCartDto.Request search) {
         return search != null && StringUtils.hasText(search.getCartId())
-                ? c.cartId.eq(search.getCartId()) : null;
+                ? a.cartId.eq(search.getCartId()) : null;
     }
 
     /* memberId 정확 일치 */
     private BooleanExpression baseAndMemberId(OdCartDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberId())
-                ? c.memberId.eq(search.getMemberId()) : null;
+                ? a.memberId.eq(search.getMemberId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -168,8 +168,8 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return c.regDate.goe(start).and(c.regDate.lt(endExcl));
-            case "upd_date": return c.updDate.goe(start).and(c.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -182,15 +182,15 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",cartId,", c.cartId, pattern);
-        or = orLike(or, all, types, ",isChecked,", c.isChecked, pattern);
-        or = orLike(or, all, types, ",memberId,", c.memberId, pattern);
-        or = orLike(or, all, types, ",optItemId1,", c.optItemId1, pattern);
-        or = orLike(or, all, types, ",optItemId2,", c.optItemId2, pattern);
-        or = orLike(or, all, types, ",prodId,", c.prodId, pattern);
-        or = orLike(or, all, types, ",sessionKey,", c.sessionKey, pattern);
-        or = orLike(or, all, types, ",siteId,", c.siteId, pattern);
-        or = orLike(or, all, types, ",skuId,", c.skuId, pattern);
+        or = orLike(or, all, types, ",cartId,", a.cartId, pattern);
+        or = orLike(or, all, types, ",isChecked,", a.isChecked, pattern);
+        or = orLike(or, all, types, ",memberId,", a.memberId, pattern);
+        or = orLike(or, all, types, ",optItemId1,", a.optItemId1, pattern);
+        or = orLike(or, all, types, ",optItemId2,", a.optItemId2, pattern);
+        or = orLike(or, all, types, ",prodId,", a.prodId, pattern);
+        or = orLike(or, all, types, ",sessionKey,", a.sessionKey, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",skuId,", a.skuId, pattern);
         return or;
     }
 
@@ -211,8 +211,8 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, c.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, c.cartId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.cartId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -223,17 +223,17 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("cartId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, c.cartId));
+                    orders.add(new OrderSpecifier(order, a.cartId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, c.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, c.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, c.cartId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.cartId));
         }
         return orders;
     }
@@ -243,27 +243,27 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
     public int updateSelective(OdCart entity) {
         if (entity.getCartId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(c);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getSiteId()      != null) { update.set(c.siteId,      entity.getSiteId());      hasAny = true; }
-        if (entity.getMemberId()    != null) { update.set(c.memberId,    entity.getMemberId());    hasAny = true; }
-        if (entity.getSessionKey()  != null) { update.set(c.sessionKey,  entity.getSessionKey());  hasAny = true; }
-        if (entity.getProdId()      != null) { update.set(c.prodId,      entity.getProdId());      hasAny = true; }
-        if (entity.getSkuId()       != null) { update.set(c.skuId,       entity.getSkuId());       hasAny = true; }
-        if (entity.getOptItemId1()  != null) { update.set(c.optItemId1,  entity.getOptItemId1());  hasAny = true; }
-        if (entity.getOptItemId2()  != null) { update.set(c.optItemId2,  entity.getOptItemId2());  hasAny = true; }
-        if (entity.getUnitPrice()   != null) { update.set(c.unitPrice,   entity.getUnitPrice());   hasAny = true; }
-        if (entity.getOrderQty()    != null) { update.set(c.orderQty,    entity.getOrderQty());    hasAny = true; }
-        if (entity.getItemPrice()   != null) { update.set(c.itemPrice,   entity.getItemPrice());   hasAny = true; }
-        if (entity.getIsChecked()   != null) { update.set(c.isChecked,   entity.getIsChecked());   hasAny = true; }
-        if (entity.getUpdBy()       != null) { update.set(c.updBy,       entity.getUpdBy());       hasAny = true; }
+        if (entity.getSiteId()      != null) { update.set(a.siteId,      entity.getSiteId());      hasAny = true; }
+        if (entity.getMemberId()    != null) { update.set(a.memberId,    entity.getMemberId());    hasAny = true; }
+        if (entity.getSessionKey()  != null) { update.set(a.sessionKey,  entity.getSessionKey());  hasAny = true; }
+        if (entity.getProdId()      != null) { update.set(a.prodId,      entity.getProdId());      hasAny = true; }
+        if (entity.getSkuId()       != null) { update.set(a.skuId,       entity.getSkuId());       hasAny = true; }
+        if (entity.getOptItemId1()  != null) { update.set(a.optItemId1,  entity.getOptItemId1());  hasAny = true; }
+        if (entity.getOptItemId2()  != null) { update.set(a.optItemId2,  entity.getOptItemId2());  hasAny = true; }
+        if (entity.getUnitPrice()   != null) { update.set(a.unitPrice,   entity.getUnitPrice());   hasAny = true; }
+        if (entity.getOrderQty()    != null) { update.set(a.orderQty,    entity.getOrderQty());    hasAny = true; }
+        if (entity.getItemPrice()   != null) { update.set(a.itemPrice,   entity.getItemPrice());   hasAny = true; }
+        if (entity.getIsChecked()   != null) { update.set(a.isChecked,   entity.getIsChecked());   hasAny = true; }
+        if (entity.getUpdBy()       != null) { update.set(a.updBy,       entity.getUpdBy());       hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(c.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(c.cartId.eq(entity.getCartId())).execute();
+        long affected = update.where(a.cartId.eq(entity.getCartId())).execute();
         return (int) affected;
     }
 }

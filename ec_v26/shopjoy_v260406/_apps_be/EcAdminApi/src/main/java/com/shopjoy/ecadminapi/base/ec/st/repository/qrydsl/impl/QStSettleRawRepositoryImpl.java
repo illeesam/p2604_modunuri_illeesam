@@ -45,7 +45,7 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.st.repository.qrydsl.impl.QStSettleRawRepositoryImpl";
-    private static final QStSettleRaw r    = QStSettleRaw.stSettleRaw;
+    private static final QStSettleRaw a    = QStSettleRaw.stSettleRaw;
     private static final QSySite      ste  = QSySite.sySite;
     private static final QOdOrder     ord  = QOdOrder.odOrder;
     private static final QOdOrderItem ite  = QOdOrderItem.odOrderItem;
@@ -71,7 +71,7 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
     @Override
     public Optional<StSettleRawDto.Item> selectById(String id) {
         StSettleRawDto.Item dto = baseListQuery()
-                .where(r.settleRawId.eq(id))
+                .where(a.settleRawId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -120,8 +120,8 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
         List<StSettleRawDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(r.count())
-                .from(r)
+                .select(a.count())
+                .from(a)
                 .where(
                 baseAndSiteId(search),
                 baseAndSettleRawId(search),
@@ -138,21 +138,21 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
     private JPAQuery<StSettleRawDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(StSettleRawDto.Item.class,
-                        r.settleRawId, r.siteId, r.rawTypeCd, r.rawStatusCd, r.rawStatusCdBefore,
-                        r.orderId, r.orderNo, r.orderItemId, r.orderDate, r.orderItemStatusCd,
-                        r.memberId, r.claimId, r.claimItemId, r.vendorId, r.vendorTypeCd,
-                        r.prodId, r.prodNm, r.brandId, r.brandNm,
-                        r.categoryId1, r.categoryId2, r.categoryId3, r.categoryId4, r.categoryId5,
-                        r.skuId, r.optItemId1, r.optItemId2, r.mdUserId,
-                        r.normalPrice, r.unitPrice, r.orderQty, r.itemPrice, r.discntAmt,
-                        r.couponDiscntAmt, r.promoDiscntAmt, r.promoId, r.couponId, r.couponIssueId,
-                        r.discntId, r.voucherId, r.voucherIssueId, r.voucherUseAmt,
-                        r.cacheUseAmt, r.mileageUseAmt, r.saveSchdAmt, r.giftId, r.giftAmt,
-                        r.payMethodCd, r.buyConfirmYn, r.buyConfirmDate, r.bundlePriceRate,
-                        r.settleTargetAmt, r.settleFeeRate, r.settleFeeAmt, r.settleAmt,
-                        r.settlePeriod, r.settleId, r.closeYn, r.closeDate, r.settleCloseId,
-                        r.erpVoucherId, r.erpVoucherLineNo, r.erpSendYn, r.erpSendDate,
-                        r.regBy, r.regDate, r.updBy, r.updDate,
+                        a.settleRawId, a.siteId, a.rawTypeCd, a.rawStatusCd, a.rawStatusCdBefore,
+                        a.orderId, a.orderNo, a.orderItemId, a.orderDate, a.orderItemStatusCd,
+                        a.memberId, a.claimId, a.claimItemId, a.vendorId, a.vendorTypeCd,
+                        a.prodId, a.prodNm, a.brandId, a.brandNm,
+                        a.categoryId1, a.categoryId2, a.categoryId3, a.categoryId4, a.categoryId5,
+                        a.skuId, a.optItemId1, a.optItemId2, a.mdUserId,
+                        a.normalPrice, a.unitPrice, a.orderQty, a.itemPrice, a.discntAmt,
+                        a.couponDiscntAmt, a.promoDiscntAmt, a.promoId, a.couponId, a.couponIssueId,
+                        a.discntId, a.voucherId, a.voucherIssueId, a.voucherUseAmt,
+                        a.cacheUseAmt, a.mileageUseAmt, a.saveSchdAmt, a.giftId, a.giftAmt,
+                        a.payMethodCd, a.buyConfirmYn, a.buyConfirmDate, a.bundlePriceRate,
+                        a.settleTargetAmt, a.settleFeeRate, a.settleFeeAmt, a.settleAmt,
+                        a.settlePeriod, a.settleId, a.closeYn, a.closeDate, a.settleCloseId,
+                        a.erpVoucherId, a.erpVoucherLineNo, a.erpSendYn, a.erpSendDate,
+                        a.regBy, a.regDate, a.updBy, a.updDate,
                         ste.siteNm.as("siteNm"),
                         ord.memberNm.as("orderNm"),
                         ite.prodNm.as("orderItemNm"),
@@ -174,27 +174,27 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
                         cdVt.codeLabel.as("vendorTypeCdNm"),
                         cdPmc.codeLabel.as("payMethodCdNm")
                 ))
-                .from(r)
-                .leftJoin(ste).on(ste.siteId.eq(r.siteId))
-                .leftJoin(ord).on(ord.orderId.eq(r.orderId))
-                .leftJoin(ite).on(ite.orderItemId.eq(r.orderItemId))
-                .leftJoin(mem).on(mem.memberId.eq(r.memberId))
-                .leftJoin(cla).on(cla.claimId.eq(r.claimId))
-                .leftJoin(ite2).on(ite2.claimItemId.eq(r.claimItemId))
-                .leftJoin(vnd).on(vnd.vendorId.eq(r.vendorId))
-                .leftJoin(prd).on(prd.prodId.eq(r.prodId))
-                .leftJoin(brd).on(brd.brandId.eq(r.brandId))
-                .leftJoin(usr).on(usr.userId.eq(r.mdUserId))
-                .leftJoin(evt).on(evt.eventId.eq(r.promoId))
-                .leftJoin(cpn).on(cpn.couponId.eq(r.couponId))
-                .leftJoin(dis).on(dis.discntId.eq(r.discntId))
-                .leftJoin(vou).on(vou.voucherId.eq(r.voucherId))
-                .leftJoin(gif).on(gif.giftId.eq(r.giftId))
-                .leftJoin(cdRt).on(cdRt.codeGrp.eq("RAW_TYPE").and(cdRt.codeValue.eq(r.rawTypeCd)))
-                .leftJoin(cdRs).on(cdRs.codeGrp.eq("RAW_STATUS").and(cdRs.codeValue.eq(r.rawStatusCd)))
-                .leftJoin(cdOis).on(cdOis.codeGrp.eq("ORDER_ITEM_STATUS").and(cdOis.codeValue.eq(r.orderItemStatusCd)))
-                .leftJoin(cdVt).on(cdVt.codeGrp.eq("VENDOR_TYPE").and(cdVt.codeValue.eq(r.vendorTypeCd)))
-                .leftJoin(cdPmc).on(cdPmc.codeGrp.eq("PAY_METHOD_CD").and(cdPmc.codeValue.eq(r.payMethodCd)));
+                .from(a)
+                .leftJoin(ste).on(ste.siteId.eq(a.siteId))
+                .leftJoin(ord).on(ord.orderId.eq(a.orderId))
+                .leftJoin(ite).on(ite.orderItemId.eq(a.orderItemId))
+                .leftJoin(mem).on(mem.memberId.eq(a.memberId))
+                .leftJoin(cla).on(cla.claimId.eq(a.claimId))
+                .leftJoin(ite2).on(ite2.claimItemId.eq(a.claimItemId))
+                .leftJoin(vnd).on(vnd.vendorId.eq(a.vendorId))
+                .leftJoin(prd).on(prd.prodId.eq(a.prodId))
+                .leftJoin(brd).on(brd.brandId.eq(a.brandId))
+                .leftJoin(usr).on(usr.userId.eq(a.mdUserId))
+                .leftJoin(evt).on(evt.eventId.eq(a.promoId))
+                .leftJoin(cpn).on(cpn.couponId.eq(a.couponId))
+                .leftJoin(dis).on(dis.discntId.eq(a.discntId))
+                .leftJoin(vou).on(vou.voucherId.eq(a.voucherId))
+                .leftJoin(gif).on(gif.giftId.eq(a.giftId))
+                .leftJoin(cdRt).on(cdRt.codeGrp.eq("RAW_TYPE").and(cdRt.codeValue.eq(a.rawTypeCd)))
+                .leftJoin(cdRs).on(cdRs.codeGrp.eq("RAW_STATUS").and(cdRs.codeValue.eq(a.rawStatusCd)))
+                .leftJoin(cdOis).on(cdOis.codeGrp.eq("ORDER_ITEM_STATUS").and(cdOis.codeValue.eq(a.orderItemStatusCd)))
+                .leftJoin(cdVt).on(cdVt.codeGrp.eq("VENDOR_TYPE").and(cdVt.codeValue.eq(a.vendorTypeCd)))
+                .leftJoin(cdPmc).on(cdPmc.codeGrp.eq("PAY_METHOD_CD").and(cdPmc.codeValue.eq(a.payMethodCd)));
     }
 
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
@@ -207,13 +207,13 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(StSettleRawDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? r.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* settleRawId 정확 일치 */
     private BooleanExpression baseAndSettleRawId(StSettleRawDto.Request search) {
         return search != null && StringUtils.hasText(search.getSettleRawId())
-                ? r.settleRawId.eq(search.getSettleRawId()) : null;
+                ? a.settleRawId.eq(search.getSettleRawId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -226,9 +226,9 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "order_date": return r.orderDate.goe(start).and(r.orderDate.lt(endExcl));
-            case "reg_date": return r.regDate.goe(start).and(r.regDate.lt(endExcl));
-            case "upd_date": return r.updDate.goe(start).and(r.updDate.lt(endExcl));
+            case "order_date": return a.orderDate.goe(start).and(a.orderDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -241,48 +241,48 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",brandId,", r.brandId, pattern);
-        or = orLike(or, all, types, ",brandNm,", r.brandNm, pattern);
-        or = orLike(or, all, types, ",buyConfirmYn,", r.buyConfirmYn, pattern);
-        or = orLike(or, all, types, ",categoryId1,", r.categoryId1, pattern);
-        or = orLike(or, all, types, ",categoryId2,", r.categoryId2, pattern);
-        or = orLike(or, all, types, ",categoryId3,", r.categoryId3, pattern);
-        or = orLike(or, all, types, ",categoryId4,", r.categoryId4, pattern);
-        or = orLike(or, all, types, ",categoryId5,", r.categoryId5, pattern);
-        or = orLike(or, all, types, ",claimId,", r.claimId, pattern);
-        or = orLike(or, all, types, ",claimItemId,", r.claimItemId, pattern);
-        or = orLike(or, all, types, ",closeYn,", r.closeYn, pattern);
-        or = orLike(or, all, types, ",couponId,", r.couponId, pattern);
-        or = orLike(or, all, types, ",couponIssueId,", r.couponIssueId, pattern);
-        or = orLike(or, all, types, ",discntId,", r.discntId, pattern);
-        or = orLike(or, all, types, ",erpSendYn,", r.erpSendYn, pattern);
-        or = orLike(or, all, types, ",erpVoucherId,", r.erpVoucherId, pattern);
-        or = orLike(or, all, types, ",giftId,", r.giftId, pattern);
-        or = orLike(or, all, types, ",mdUserId,", r.mdUserId, pattern);
-        or = orLike(or, all, types, ",memberId,", r.memberId, pattern);
-        or = orLike(or, all, types, ",optItemId1,", r.optItemId1, pattern);
-        or = orLike(or, all, types, ",optItemId2,", r.optItemId2, pattern);
-        or = orLike(or, all, types, ",orderId,", r.orderId, pattern);
-        or = orLike(or, all, types, ",orderItemId,", r.orderItemId, pattern);
-        or = orLike(or, all, types, ",orderItemStatusCd,", r.orderItemStatusCd, pattern);
-        or = orLike(or, all, types, ",orderNo,", r.orderNo, pattern);
-        or = orLike(or, all, types, ",payMethodCd,", r.payMethodCd, pattern);
-        or = orLike(or, all, types, ",prodId,", r.prodId, pattern);
-        or = orLike(or, all, types, ",prodNm,", r.prodNm, pattern);
-        or = orLike(or, all, types, ",promoId,", r.promoId, pattern);
-        or = orLike(or, all, types, ",rawStatusCd,", r.rawStatusCd, pattern);
-        or = orLike(or, all, types, ",rawStatusCdBefore,", r.rawStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",rawTypeCd,", r.rawTypeCd, pattern);
-        or = orLike(or, all, types, ",settleCloseId,", r.settleCloseId, pattern);
-        or = orLike(or, all, types, ",settleId,", r.settleId, pattern);
-        or = orLike(or, all, types, ",settlePeriod,", r.settlePeriod, pattern);
-        or = orLike(or, all, types, ",settleRawId,", r.settleRawId, pattern);
-        or = orLike(or, all, types, ",siteId,", r.siteId, pattern);
-        or = orLike(or, all, types, ",skuId,", r.skuId, pattern);
-        or = orLike(or, all, types, ",vendorId,", r.vendorId, pattern);
-        or = orLike(or, all, types, ",vendorTypeCd,", r.vendorTypeCd, pattern);
-        or = orLike(or, all, types, ",voucherId,", r.voucherId, pattern);
-        or = orLike(or, all, types, ",voucherIssueId,", r.voucherIssueId, pattern);
+        or = orLike(or, all, types, ",brandId,", a.brandId, pattern);
+        or = orLike(or, all, types, ",brandNm,", a.brandNm, pattern);
+        or = orLike(or, all, types, ",buyConfirmYn,", a.buyConfirmYn, pattern);
+        or = orLike(or, all, types, ",categoryId1,", a.categoryId1, pattern);
+        or = orLike(or, all, types, ",categoryId2,", a.categoryId2, pattern);
+        or = orLike(or, all, types, ",categoryId3,", a.categoryId3, pattern);
+        or = orLike(or, all, types, ",categoryId4,", a.categoryId4, pattern);
+        or = orLike(or, all, types, ",categoryId5,", a.categoryId5, pattern);
+        or = orLike(or, all, types, ",claimId,", a.claimId, pattern);
+        or = orLike(or, all, types, ",claimItemId,", a.claimItemId, pattern);
+        or = orLike(or, all, types, ",closeYn,", a.closeYn, pattern);
+        or = orLike(or, all, types, ",couponId,", a.couponId, pattern);
+        or = orLike(or, all, types, ",couponIssueId,", a.couponIssueId, pattern);
+        or = orLike(or, all, types, ",discntId,", a.discntId, pattern);
+        or = orLike(or, all, types, ",erpSendYn,", a.erpSendYn, pattern);
+        or = orLike(or, all, types, ",erpVoucherId,", a.erpVoucherId, pattern);
+        or = orLike(or, all, types, ",giftId,", a.giftId, pattern);
+        or = orLike(or, all, types, ",mdUserId,", a.mdUserId, pattern);
+        or = orLike(or, all, types, ",memberId,", a.memberId, pattern);
+        or = orLike(or, all, types, ",optItemId1,", a.optItemId1, pattern);
+        or = orLike(or, all, types, ",optItemId2,", a.optItemId2, pattern);
+        or = orLike(or, all, types, ",orderId,", a.orderId, pattern);
+        or = orLike(or, all, types, ",orderItemId,", a.orderItemId, pattern);
+        or = orLike(or, all, types, ",orderItemStatusCd,", a.orderItemStatusCd, pattern);
+        or = orLike(or, all, types, ",orderNo,", a.orderNo, pattern);
+        or = orLike(or, all, types, ",payMethodCd,", a.payMethodCd, pattern);
+        or = orLike(or, all, types, ",prodId,", a.prodId, pattern);
+        or = orLike(or, all, types, ",prodNm,", a.prodNm, pattern);
+        or = orLike(or, all, types, ",promoId,", a.promoId, pattern);
+        or = orLike(or, all, types, ",rawStatusCd,", a.rawStatusCd, pattern);
+        or = orLike(or, all, types, ",rawStatusCdBefore,", a.rawStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",rawTypeCd,", a.rawTypeCd, pattern);
+        or = orLike(or, all, types, ",settleCloseId,", a.settleCloseId, pattern);
+        or = orLike(or, all, types, ",settleId,", a.settleId, pattern);
+        or = orLike(or, all, types, ",settlePeriod,", a.settlePeriod, pattern);
+        or = orLike(or, all, types, ",settleRawId,", a.settleRawId, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",skuId,", a.skuId, pattern);
+        or = orLike(or, all, types, ",vendorId,", a.vendorId, pattern);
+        or = orLike(or, all, types, ",vendorTypeCd,", a.vendorTypeCd, pattern);
+        or = orLike(or, all, types, ",voucherId,", a.voucherId, pattern);
+        or = orLike(or, all, types, ",voucherIssueId,", a.voucherIssueId, pattern);
         return or;
     }
 
@@ -303,8 +303,8 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = c == null ? null : c.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, r.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, r.settleRawId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.settleRawId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -315,19 +315,19 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("settleRawId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, r.settleRawId));
+                    orders.add(new OrderSpecifier(order, a.settleRawId));
                 } else if ("prodNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, r.prodNm));
+                    orders.add(new OrderSpecifier(order, a.prodNm));
                 } else if ("orderDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, r.orderDate));
+                    orders.add(new OrderSpecifier(order, a.orderDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, r.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, r.settleRawId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.settleRawId));
         }
         return orders;
     }
@@ -337,79 +337,79 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
     public int updateSelective(StSettleRaw entity) {
         if (entity.getSettleRawId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(r);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getSiteId()              != null) { update.set(r.siteId,              entity.getSiteId());              hasAny = true; }
-        if (entity.getRawTypeCd()           != null) { update.set(r.rawTypeCd,           entity.getRawTypeCd());           hasAny = true; }
-        if (entity.getRawStatusCd()         != null) { update.set(r.rawStatusCd,         entity.getRawStatusCd());         hasAny = true; }
-        if (entity.getRawStatusCdBefore()   != null) { update.set(r.rawStatusCdBefore,   entity.getRawStatusCdBefore());   hasAny = true; }
-        if (entity.getOrderId()             != null) { update.set(r.orderId,             entity.getOrderId());             hasAny = true; }
-        if (entity.getOrderNo()             != null) { update.set(r.orderNo,             entity.getOrderNo());             hasAny = true; }
-        if (entity.getOrderItemId()         != null) { update.set(r.orderItemId,         entity.getOrderItemId());         hasAny = true; }
-        if (entity.getOrderDate()           != null) { update.set(r.orderDate,           entity.getOrderDate());           hasAny = true; }
-        if (entity.getOrderItemStatusCd()   != null) { update.set(r.orderItemStatusCd,   entity.getOrderItemStatusCd());   hasAny = true; }
-        if (entity.getMemberId()            != null) { update.set(r.memberId,            entity.getMemberId());            hasAny = true; }
-        if (entity.getClaimId()             != null) { update.set(r.claimId,             entity.getClaimId());             hasAny = true; }
-        if (entity.getClaimItemId()         != null) { update.set(r.claimItemId,         entity.getClaimItemId());         hasAny = true; }
-        if (entity.getVendorId()            != null) { update.set(r.vendorId,            entity.getVendorId());            hasAny = true; }
-        if (entity.getVendorTypeCd()        != null) { update.set(r.vendorTypeCd,        entity.getVendorTypeCd());        hasAny = true; }
-        if (entity.getProdId()              != null) { update.set(r.prodId,              entity.getProdId());              hasAny = true; }
-        if (entity.getProdNm()              != null) { update.set(r.prodNm,              entity.getProdNm());              hasAny = true; }
-        if (entity.getBrandId()             != null) { update.set(r.brandId,             entity.getBrandId());             hasAny = true; }
-        if (entity.getBrandNm()             != null) { update.set(r.brandNm,             entity.getBrandNm());             hasAny = true; }
-        if (entity.getCategoryId1()         != null) { update.set(r.categoryId1,         entity.getCategoryId1());         hasAny = true; }
-        if (entity.getCategoryId2()         != null) { update.set(r.categoryId2,         entity.getCategoryId2());         hasAny = true; }
-        if (entity.getCategoryId3()         != null) { update.set(r.categoryId3,         entity.getCategoryId3());         hasAny = true; }
-        if (entity.getCategoryId4()         != null) { update.set(r.categoryId4,         entity.getCategoryId4());         hasAny = true; }
-        if (entity.getCategoryId5()         != null) { update.set(r.categoryId5,         entity.getCategoryId5());         hasAny = true; }
-        if (entity.getSkuId()               != null) { update.set(r.skuId,               entity.getSkuId());               hasAny = true; }
-        if (entity.getOptItemId1()          != null) { update.set(r.optItemId1,          entity.getOptItemId1());          hasAny = true; }
-        if (entity.getOptItemId2()          != null) { update.set(r.optItemId2,          entity.getOptItemId2());          hasAny = true; }
-        if (entity.getMdUserId()            != null) { update.set(r.mdUserId,            entity.getMdUserId());            hasAny = true; }
-        if (entity.getNormalPrice()         != null) { update.set(r.normalPrice,         entity.getNormalPrice());         hasAny = true; }
-        if (entity.getUnitPrice()           != null) { update.set(r.unitPrice,           entity.getUnitPrice());           hasAny = true; }
-        if (entity.getOrderQty()            != null) { update.set(r.orderQty,            entity.getOrderQty());            hasAny = true; }
-        if (entity.getItemPrice()           != null) { update.set(r.itemPrice,           entity.getItemPrice());           hasAny = true; }
-        if (entity.getDiscntAmt()           != null) { update.set(r.discntAmt,           entity.getDiscntAmt());           hasAny = true; }
-        if (entity.getCouponDiscntAmt()     != null) { update.set(r.couponDiscntAmt,     entity.getCouponDiscntAmt());     hasAny = true; }
-        if (entity.getPromoDiscntAmt()      != null) { update.set(r.promoDiscntAmt,      entity.getPromoDiscntAmt());      hasAny = true; }
-        if (entity.getPromoId()             != null) { update.set(r.promoId,             entity.getPromoId());             hasAny = true; }
-        if (entity.getCouponId()            != null) { update.set(r.couponId,            entity.getCouponId());            hasAny = true; }
-        if (entity.getCouponIssueId()       != null) { update.set(r.couponIssueId,       entity.getCouponIssueId());       hasAny = true; }
-        if (entity.getDiscntId()            != null) { update.set(r.discntId,            entity.getDiscntId());            hasAny = true; }
-        if (entity.getVoucherId()           != null) { update.set(r.voucherId,           entity.getVoucherId());           hasAny = true; }
-        if (entity.getVoucherIssueId()      != null) { update.set(r.voucherIssueId,      entity.getVoucherIssueId());      hasAny = true; }
-        if (entity.getVoucherUseAmt()       != null) { update.set(r.voucherUseAmt,       entity.getVoucherUseAmt());       hasAny = true; }
-        if (entity.getCacheUseAmt()         != null) { update.set(r.cacheUseAmt,         entity.getCacheUseAmt());         hasAny = true; }
-        if (entity.getMileageUseAmt()       != null) { update.set(r.mileageUseAmt,       entity.getMileageUseAmt());       hasAny = true; }
-        if (entity.getSaveSchdAmt()         != null) { update.set(r.saveSchdAmt,         entity.getSaveSchdAmt());         hasAny = true; }
-        if (entity.getGiftId()              != null) { update.set(r.giftId,              entity.getGiftId());              hasAny = true; }
-        if (entity.getGiftAmt()             != null) { update.set(r.giftAmt,             entity.getGiftAmt());             hasAny = true; }
-        if (entity.getPayMethodCd()         != null) { update.set(r.payMethodCd,         entity.getPayMethodCd());         hasAny = true; }
-        if (entity.getBuyConfirmYn()        != null) { update.set(r.buyConfirmYn,        entity.getBuyConfirmYn());        hasAny = true; }
-        if (entity.getBuyConfirmDate()      != null) { update.set(r.buyConfirmDate,      entity.getBuyConfirmDate());      hasAny = true; }
-        if (entity.getBundlePriceRate()     != null) { update.set(r.bundlePriceRate,     entity.getBundlePriceRate());     hasAny = true; }
-        if (entity.getSettleTargetAmt()     != null) { update.set(r.settleTargetAmt,     entity.getSettleTargetAmt());     hasAny = true; }
-        if (entity.getSettleFeeRate()       != null) { update.set(r.settleFeeRate,       entity.getSettleFeeRate());       hasAny = true; }
-        if (entity.getSettleFeeAmt()        != null) { update.set(r.settleFeeAmt,        entity.getSettleFeeAmt());        hasAny = true; }
-        if (entity.getSettleAmt()           != null) { update.set(r.settleAmt,           entity.getSettleAmt());           hasAny = true; }
-        if (entity.getSettlePeriod()        != null) { update.set(r.settlePeriod,        entity.getSettlePeriod());        hasAny = true; }
-        if (entity.getSettleId()            != null) { update.set(r.settleId,            entity.getSettleId());            hasAny = true; }
-        if (entity.getCloseYn()             != null) { update.set(r.closeYn,             entity.getCloseYn());             hasAny = true; }
-        if (entity.getCloseDate()           != null) { update.set(r.closeDate,           entity.getCloseDate());           hasAny = true; }
-        if (entity.getSettleCloseId()       != null) { update.set(r.settleCloseId,       entity.getSettleCloseId());       hasAny = true; }
-        if (entity.getErpVoucherId()        != null) { update.set(r.erpVoucherId,        entity.getErpVoucherId());        hasAny = true; }
-        if (entity.getErpVoucherLineNo()    != null) { update.set(r.erpVoucherLineNo,    entity.getErpVoucherLineNo());    hasAny = true; }
-        if (entity.getErpSendYn()           != null) { update.set(r.erpSendYn,           entity.getErpSendYn());           hasAny = true; }
-        if (entity.getErpSendDate()         != null) { update.set(r.erpSendDate,         entity.getErpSendDate());         hasAny = true; }
-        if (entity.getUpdBy()               != null) { update.set(r.updBy,               entity.getUpdBy());               hasAny = true; }
+        if (entity.getSiteId()              != null) { update.set(a.siteId,              entity.getSiteId());              hasAny = true; }
+        if (entity.getRawTypeCd()           != null) { update.set(a.rawTypeCd,           entity.getRawTypeCd());           hasAny = true; }
+        if (entity.getRawStatusCd()         != null) { update.set(a.rawStatusCd,         entity.getRawStatusCd());         hasAny = true; }
+        if (entity.getRawStatusCdBefore()   != null) { update.set(a.rawStatusCdBefore,   entity.getRawStatusCdBefore());   hasAny = true; }
+        if (entity.getOrderId()             != null) { update.set(a.orderId,             entity.getOrderId());             hasAny = true; }
+        if (entity.getOrderNo()             != null) { update.set(a.orderNo,             entity.getOrderNo());             hasAny = true; }
+        if (entity.getOrderItemId()         != null) { update.set(a.orderItemId,         entity.getOrderItemId());         hasAny = true; }
+        if (entity.getOrderDate()           != null) { update.set(a.orderDate,           entity.getOrderDate());           hasAny = true; }
+        if (entity.getOrderItemStatusCd()   != null) { update.set(a.orderItemStatusCd,   entity.getOrderItemStatusCd());   hasAny = true; }
+        if (entity.getMemberId()            != null) { update.set(a.memberId,            entity.getMemberId());            hasAny = true; }
+        if (entity.getClaimId()             != null) { update.set(a.claimId,             entity.getClaimId());             hasAny = true; }
+        if (entity.getClaimItemId()         != null) { update.set(a.claimItemId,         entity.getClaimItemId());         hasAny = true; }
+        if (entity.getVendorId()            != null) { update.set(a.vendorId,            entity.getVendorId());            hasAny = true; }
+        if (entity.getVendorTypeCd()        != null) { update.set(a.vendorTypeCd,        entity.getVendorTypeCd());        hasAny = true; }
+        if (entity.getProdId()              != null) { update.set(a.prodId,              entity.getProdId());              hasAny = true; }
+        if (entity.getProdNm()              != null) { update.set(a.prodNm,              entity.getProdNm());              hasAny = true; }
+        if (entity.getBrandId()             != null) { update.set(a.brandId,             entity.getBrandId());             hasAny = true; }
+        if (entity.getBrandNm()             != null) { update.set(a.brandNm,             entity.getBrandNm());             hasAny = true; }
+        if (entity.getCategoryId1()         != null) { update.set(a.categoryId1,         entity.getCategoryId1());         hasAny = true; }
+        if (entity.getCategoryId2()         != null) { update.set(a.categoryId2,         entity.getCategoryId2());         hasAny = true; }
+        if (entity.getCategoryId3()         != null) { update.set(a.categoryId3,         entity.getCategoryId3());         hasAny = true; }
+        if (entity.getCategoryId4()         != null) { update.set(a.categoryId4,         entity.getCategoryId4());         hasAny = true; }
+        if (entity.getCategoryId5()         != null) { update.set(a.categoryId5,         entity.getCategoryId5());         hasAny = true; }
+        if (entity.getSkuId()               != null) { update.set(a.skuId,               entity.getSkuId());               hasAny = true; }
+        if (entity.getOptItemId1()          != null) { update.set(a.optItemId1,          entity.getOptItemId1());          hasAny = true; }
+        if (entity.getOptItemId2()          != null) { update.set(a.optItemId2,          entity.getOptItemId2());          hasAny = true; }
+        if (entity.getMdUserId()            != null) { update.set(a.mdUserId,            entity.getMdUserId());            hasAny = true; }
+        if (entity.getNormalPrice()         != null) { update.set(a.normalPrice,         entity.getNormalPrice());         hasAny = true; }
+        if (entity.getUnitPrice()           != null) { update.set(a.unitPrice,           entity.getUnitPrice());           hasAny = true; }
+        if (entity.getOrderQty()            != null) { update.set(a.orderQty,            entity.getOrderQty());            hasAny = true; }
+        if (entity.getItemPrice()           != null) { update.set(a.itemPrice,           entity.getItemPrice());           hasAny = true; }
+        if (entity.getDiscntAmt()           != null) { update.set(a.discntAmt,           entity.getDiscntAmt());           hasAny = true; }
+        if (entity.getCouponDiscntAmt()     != null) { update.set(a.couponDiscntAmt,     entity.getCouponDiscntAmt());     hasAny = true; }
+        if (entity.getPromoDiscntAmt()      != null) { update.set(a.promoDiscntAmt,      entity.getPromoDiscntAmt());      hasAny = true; }
+        if (entity.getPromoId()             != null) { update.set(a.promoId,             entity.getPromoId());             hasAny = true; }
+        if (entity.getCouponId()            != null) { update.set(a.couponId,            entity.getCouponId());            hasAny = true; }
+        if (entity.getCouponIssueId()       != null) { update.set(a.couponIssueId,       entity.getCouponIssueId());       hasAny = true; }
+        if (entity.getDiscntId()            != null) { update.set(a.discntId,            entity.getDiscntId());            hasAny = true; }
+        if (entity.getVoucherId()           != null) { update.set(a.voucherId,           entity.getVoucherId());           hasAny = true; }
+        if (entity.getVoucherIssueId()      != null) { update.set(a.voucherIssueId,      entity.getVoucherIssueId());      hasAny = true; }
+        if (entity.getVoucherUseAmt()       != null) { update.set(a.voucherUseAmt,       entity.getVoucherUseAmt());       hasAny = true; }
+        if (entity.getCacheUseAmt()         != null) { update.set(a.cacheUseAmt,         entity.getCacheUseAmt());         hasAny = true; }
+        if (entity.getMileageUseAmt()       != null) { update.set(a.mileageUseAmt,       entity.getMileageUseAmt());       hasAny = true; }
+        if (entity.getSaveSchdAmt()         != null) { update.set(a.saveSchdAmt,         entity.getSaveSchdAmt());         hasAny = true; }
+        if (entity.getGiftId()              != null) { update.set(a.giftId,              entity.getGiftId());              hasAny = true; }
+        if (entity.getGiftAmt()             != null) { update.set(a.giftAmt,             entity.getGiftAmt());             hasAny = true; }
+        if (entity.getPayMethodCd()         != null) { update.set(a.payMethodCd,         entity.getPayMethodCd());         hasAny = true; }
+        if (entity.getBuyConfirmYn()        != null) { update.set(a.buyConfirmYn,        entity.getBuyConfirmYn());        hasAny = true; }
+        if (entity.getBuyConfirmDate()      != null) { update.set(a.buyConfirmDate,      entity.getBuyConfirmDate());      hasAny = true; }
+        if (entity.getBundlePriceRate()     != null) { update.set(a.bundlePriceRate,     entity.getBundlePriceRate());     hasAny = true; }
+        if (entity.getSettleTargetAmt()     != null) { update.set(a.settleTargetAmt,     entity.getSettleTargetAmt());     hasAny = true; }
+        if (entity.getSettleFeeRate()       != null) { update.set(a.settleFeeRate,       entity.getSettleFeeRate());       hasAny = true; }
+        if (entity.getSettleFeeAmt()        != null) { update.set(a.settleFeeAmt,        entity.getSettleFeeAmt());        hasAny = true; }
+        if (entity.getSettleAmt()           != null) { update.set(a.settleAmt,           entity.getSettleAmt());           hasAny = true; }
+        if (entity.getSettlePeriod()        != null) { update.set(a.settlePeriod,        entity.getSettlePeriod());        hasAny = true; }
+        if (entity.getSettleId()            != null) { update.set(a.settleId,            entity.getSettleId());            hasAny = true; }
+        if (entity.getCloseYn()             != null) { update.set(a.closeYn,             entity.getCloseYn());             hasAny = true; }
+        if (entity.getCloseDate()           != null) { update.set(a.closeDate,           entity.getCloseDate());           hasAny = true; }
+        if (entity.getSettleCloseId()       != null) { update.set(a.settleCloseId,       entity.getSettleCloseId());       hasAny = true; }
+        if (entity.getErpVoucherId()        != null) { update.set(a.erpVoucherId,        entity.getErpVoucherId());        hasAny = true; }
+        if (entity.getErpVoucherLineNo()    != null) { update.set(a.erpVoucherLineNo,    entity.getErpVoucherLineNo());    hasAny = true; }
+        if (entity.getErpSendYn()           != null) { update.set(a.erpSendYn,           entity.getErpSendYn());           hasAny = true; }
+        if (entity.getErpSendDate()         != null) { update.set(a.erpSendDate,         entity.getErpSendDate());         hasAny = true; }
+        if (entity.getUpdBy()               != null) { update.set(a.updBy,               entity.getUpdBy());               hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(r.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(r.settleRawId.eq(entity.getSettleRawId())).execute();
+        long affected = update.where(a.settleRawId.eq(entity.getSettleRawId())).execute();
         return (int) affected;
     }
 }

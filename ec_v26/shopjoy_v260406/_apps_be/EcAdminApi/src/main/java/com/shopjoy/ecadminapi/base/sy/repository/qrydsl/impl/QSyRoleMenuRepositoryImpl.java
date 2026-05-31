@@ -29,18 +29,18 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyRoleMenuRepositoryImpl";
-    private static final QSyRoleMenu m = QSyRoleMenu.syRoleMenu;
+    private static final QSyRoleMenu a = QSyRoleMenu.syRoleMenu;
     private static final QSySite ste = QSySite.sySite;
 
     /* 역할별 메뉴 권한 buildBaseQuery */
     private JPAQuery<SyRoleMenuDto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(SyRoleMenuDto.Item.class,
-                        m.roleMenuId, m.siteId, m.roleId, m.menuId, m.permLevel,
-                        m.regBy, m.regDate, m.updBy, m.updDate
+                        a.roleMenuId, a.siteId, a.roleId, a.menuId, a.permLevel,
+                        a.regBy, a.regDate, a.updBy, a.updDate
                 ))
-                .from(m)
-                .leftJoin(ste).on(ste.siteId.eq(m.siteId));
+                .from(a)
+                .leftJoin(ste).on(ste.siteId.eq(a.siteId));
     }
 
     /* 역할별 메뉴 권한 키조회 */
@@ -48,7 +48,7 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
     public Optional<SyRoleMenuDto.Item> selectById(String roleMenuId) {
         SyRoleMenuDto.Item dto = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
-                .where(m.roleMenuId.eq(roleMenuId))
+                .where(a.roleMenuId.eq(roleMenuId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -97,7 +97,7 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
         }
         List<SyRoleMenuDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(m.count()).from(m).where(
+        Long total = queryFactory.select(a.count()).from(a).where(
                 baseAndSiteId(search),
                 baseAndRoleMenuId(search),
                 baseAndDateRange(search),
@@ -118,13 +118,13 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(SyRoleMenuDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? m.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* roleMenuId 정확 일치 */
     private BooleanExpression baseAndRoleMenuId(SyRoleMenuDto.Request search) {
         return search != null && StringUtils.hasText(search.getRoleMenuId())
-                ? m.roleMenuId.eq(search.getRoleMenuId()) : null;
+                ? a.roleMenuId.eq(search.getRoleMenuId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -137,8 +137,8 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return m.regDate.goe(start).and(m.regDate.lt(endExcl));
-            case "upd_date": return m.updDate.goe(start).and(m.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -151,10 +151,10 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",menuId,", m.menuId, pattern);
-        or = orLike(or, all, types, ",roleId,", m.roleId, pattern);
-        or = orLike(or, all, types, ",roleMenuId,", m.roleMenuId, pattern);
-        or = orLike(or, all, types, ",siteId,", m.siteId, pattern);
+        or = orLike(or, all, types, ",menuId,", a.menuId, pattern);
+        or = orLike(or, all, types, ",roleId,", a.roleId, pattern);
+        or = orLike(or, all, types, ",roleMenuId,", a.roleMenuId, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
         return or;
     }
 
@@ -175,8 +175,8 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, m.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, m.roleMenuId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.roleMenuId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -187,17 +187,17 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("roleMenuId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, m.roleMenuId));
+                    orders.add(new OrderSpecifier(order, a.roleMenuId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, m.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, m.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, m.roleMenuId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.roleMenuId));
         }
         return orders;
     }
@@ -207,20 +207,20 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
     public int updateSelective(SyRoleMenu entity) {
         if (entity.getRoleMenuId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(m);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getSiteId()    != null) { update.set(m.siteId,    entity.getSiteId());    hasAny = true; }
-        if (entity.getRoleId()    != null) { update.set(m.roleId,    entity.getRoleId());    hasAny = true; }
-        if (entity.getMenuId()    != null) { update.set(m.menuId,    entity.getMenuId());    hasAny = true; }
-        if (entity.getPermLevel() != null) { update.set(m.permLevel, entity.getPermLevel()); hasAny = true; }
-        if (entity.getUpdBy()     != null) { update.set(m.updBy,     entity.getUpdBy());     hasAny = true; }
+        if (entity.getSiteId()    != null) { update.set(a.siteId,    entity.getSiteId());    hasAny = true; }
+        if (entity.getRoleId()    != null) { update.set(a.roleId,    entity.getRoleId());    hasAny = true; }
+        if (entity.getMenuId()    != null) { update.set(a.menuId,    entity.getMenuId());    hasAny = true; }
+        if (entity.getPermLevel() != null) { update.set(a.permLevel, entity.getPermLevel()); hasAny = true; }
+        if (entity.getUpdBy()     != null) { update.set(a.updBy,     entity.getUpdBy());     hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(m.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(m.roleMenuId.eq(entity.getRoleMenuId())).execute();
+        long affected = update.where(a.roleMenuId.eq(entity.getRoleMenuId())).execute();
         return (int) affected;
     }
 }

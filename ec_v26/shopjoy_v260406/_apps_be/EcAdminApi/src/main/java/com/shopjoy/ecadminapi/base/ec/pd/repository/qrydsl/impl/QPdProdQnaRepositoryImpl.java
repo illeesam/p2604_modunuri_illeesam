@@ -29,13 +29,25 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdProdQnaRepositoryImpl";
-    private static final QPdProdQna q = QPdProdQna.pdProdQna;
+    private static final QPdProdQna a = QPdProdQna.pdProdQna;
 
     /** 단건 조회 */
+    private JPAQuery<PdProdQnaDto.Item> baseSelColumnQuery() {
+        return queryFactory
+                .select(Projections.bean(PdProdQnaDto.Item.class,
+                        a.qnaId, a.siteId, a.prodId, a.skuId, a.memberId, a.orderId,
+                        a.qnaTypeCd, a.qnaTitle, a.qnaContent,
+                        a.scrtYn, a.answYn, a.answContent, a.answDate, a.answUserId,
+                        a.dispYn, a.useYn,
+                        a.regBy, a.regDate, a.updBy, a.updDate
+                ))
+                .from(a);
+    }
+
     @Override
     public Optional<PdProdQnaDto.Item> selectById(String qnaId) {
-        PdProdQnaDto.Item dto = baseQuery()
-                .where(q.qnaId.eq(qnaId))
+        PdProdQnaDto.Item dto = baseSelColumnQuery()
+                .where(a.qnaId.eq(qnaId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -45,7 +57,7 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
     public List<PdProdQnaDto.Item> selectList(PdProdQnaDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdProdQnaDto.Item> query = baseQuery().where(
+        JPAQuery<PdProdQnaDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndQnaId(search),
                 baseAndProdId(search),
@@ -74,7 +86,7 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdProdQnaDto.Item> query = baseQuery().where(
+        JPAQuery<PdProdQnaDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndQnaId(search),
                 baseAndProdId(search),
@@ -87,7 +99,7 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
         }
         List<PdProdQnaDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(q.count()).from(q).where(
+        Long total = queryFactory.select(a.count()).from(a).where(
                 baseAndSiteId(search),
                 baseAndQnaId(search),
                 baseAndProdId(search),
@@ -101,18 +113,6 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
     }
 
     /** 단건/목록/페이지 공용 base query */
-    private JPAQuery<PdProdQnaDto.Item> baseQuery() {
-        return queryFactory
-                .select(Projections.bean(PdProdQnaDto.Item.class,
-                        q.qnaId, q.siteId, q.prodId, q.skuId, q.memberId, q.orderId,
-                        q.qnaTypeCd, q.qnaTitle, q.qnaContent,
-                        q.scrtYn, q.answYn, q.answContent, q.answDate, q.answUserId,
-                        q.dispYn, q.useYn,
-                        q.regBy, q.regDate, q.updBy, q.updDate
-                ))
-                .from(q);
-    }
-
     /** 검색조건 빌드 — Mapper XML pdProdQnaCond 와 동일 동작 (DTO Request 필드 한정) */
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     /* ============================================================
@@ -124,25 +124,25 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(PdProdQnaDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? q.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* qnaId 정확 일치 */
     private BooleanExpression baseAndQnaId(PdProdQnaDto.Request search) {
         return search != null && StringUtils.hasText(search.getQnaId())
-                ? q.qnaId.eq(search.getQnaId()) : null;
+                ? a.qnaId.eq(search.getQnaId()) : null;
     }
 
     /* prodId 정확 일치 */
     private BooleanExpression baseAndProdId(PdProdQnaDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdId())
-                ? q.prodId.eq(search.getProdId()) : null;
+                ? a.prodId.eq(search.getProdId()) : null;
     }
 
     /* useYn 정확 일치 */
     private BooleanExpression baseAndUseYn(PdProdQnaDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
-                ? q.useYn.eq(search.getUseYn()) : null;
+                ? a.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -155,8 +155,8 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return q.regDate.goe(start).and(q.regDate.lt(endExcl));
-            case "upd_date": return q.updDate.goe(start).and(q.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -169,21 +169,21 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",answContent,", q.answContent, pattern);
-        or = orLike(or, all, types, ",answUserId,", q.answUserId, pattern);
-        or = orLike(or, all, types, ",answYn,", q.answYn, pattern);
-        or = orLike(or, all, types, ",dispYn,", q.dispYn, pattern);
-        or = orLike(or, all, types, ",memberId,", q.memberId, pattern);
-        or = orLike(or, all, types, ",orderId,", q.orderId, pattern);
-        or = orLike(or, all, types, ",prodId,", q.prodId, pattern);
-        or = orLike(or, all, types, ",qnaContent,", q.qnaContent, pattern);
-        or = orLike(or, all, types, ",qnaId,", q.qnaId, pattern);
-        or = orLike(or, all, types, ",qnaTitle,", q.qnaTitle, pattern);
-        or = orLike(or, all, types, ",qnaTypeCd,", q.qnaTypeCd, pattern);
-        or = orLike(or, all, types, ",scrtYn,", q.scrtYn, pattern);
-        or = orLike(or, all, types, ",siteId,", q.siteId, pattern);
-        or = orLike(or, all, types, ",skuId,", q.skuId, pattern);
-        or = orLike(or, all, types, ",useYn,", q.useYn, pattern);
+        or = orLike(or, all, types, ",answContent,", a.answContent, pattern);
+        or = orLike(or, all, types, ",answUserId,", a.answUserId, pattern);
+        or = orLike(or, all, types, ",answYn,", a.answYn, pattern);
+        or = orLike(or, all, types, ",dispYn,", a.dispYn, pattern);
+        or = orLike(or, all, types, ",memberId,", a.memberId, pattern);
+        or = orLike(or, all, types, ",orderId,", a.orderId, pattern);
+        or = orLike(or, all, types, ",prodId,", a.prodId, pattern);
+        or = orLike(or, all, types, ",qnaContent,", a.qnaContent, pattern);
+        or = orLike(or, all, types, ",qnaId,", a.qnaId, pattern);
+        or = orLike(or, all, types, ",qnaTitle,", a.qnaTitle, pattern);
+        or = orLike(or, all, types, ",qnaTypeCd,", a.qnaTypeCd, pattern);
+        or = orLike(or, all, types, ",scrtYn,", a.scrtYn, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",skuId,", a.skuId, pattern);
+        or = orLike(or, all, types, ",useYn,", a.useYn, pattern);
         return or;
     }
 
@@ -204,8 +204,8 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, q.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, q.qnaId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.qnaId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -216,53 +216,54 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("qnaId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, q.qnaId));
+                    orders.add(new OrderSpecifier(order, a.qnaId));
                 } else if ("qnaTitle".equals(field)) {
-                    orders.add(new OrderSpecifier(order, q.qnaTitle));
+                    orders.add(new OrderSpecifier(order, a.qnaTitle));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, q.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, q.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, q.qnaId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.qnaId));
         }
         return orders;
     }
 
     /** updateSelective — Mapper XML 과 동일한 컬럼셋만 갱신 */
+
     @Override
     public int updateSelective(PdProdQna entity) {
         if (entity.getQnaId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(q);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getSiteId()      != null) { update.set(q.siteId,      entity.getSiteId());      hasAny = true; }
-        if (entity.getProdId()      != null) { update.set(q.prodId,      entity.getProdId());      hasAny = true; }
-        if (entity.getSkuId()       != null) { update.set(q.skuId,       entity.getSkuId());       hasAny = true; }
-        if (entity.getMemberId()    != null) { update.set(q.memberId,    entity.getMemberId());    hasAny = true; }
-        if (entity.getOrderId()     != null) { update.set(q.orderId,     entity.getOrderId());     hasAny = true; }
-        if (entity.getQnaTypeCd()   != null) { update.set(q.qnaTypeCd,   entity.getQnaTypeCd());   hasAny = true; }
-        if (entity.getQnaTitle()    != null) { update.set(q.qnaTitle,    entity.getQnaTitle());    hasAny = true; }
-        if (entity.getQnaContent()  != null) { update.set(q.qnaContent,  entity.getQnaContent());  hasAny = true; }
-        if (entity.getScrtYn()      != null) { update.set(q.scrtYn,      entity.getScrtYn());      hasAny = true; }
-        if (entity.getAnswYn()      != null) { update.set(q.answYn,      entity.getAnswYn());      hasAny = true; }
-        if (entity.getAnswContent() != null) { update.set(q.answContent, entity.getAnswContent()); hasAny = true; }
-        if (entity.getAnswDate()    != null) { update.set(q.answDate,    entity.getAnswDate());    hasAny = true; }
-        if (entity.getAnswUserId()  != null) { update.set(q.answUserId,  entity.getAnswUserId());  hasAny = true; }
-        if (entity.getDispYn()      != null) { update.set(q.dispYn,      entity.getDispYn());      hasAny = true; }
-        if (entity.getUseYn()       != null) { update.set(q.useYn,       entity.getUseYn());       hasAny = true; }
-        if (entity.getUpdBy()       != null) { update.set(q.updBy,       entity.getUpdBy());       hasAny = true; }
+        if (entity.getSiteId()      != null) { update.set(a.siteId,      entity.getSiteId());      hasAny = true; }
+        if (entity.getProdId()      != null) { update.set(a.prodId,      entity.getProdId());      hasAny = true; }
+        if (entity.getSkuId()       != null) { update.set(a.skuId,       entity.getSkuId());       hasAny = true; }
+        if (entity.getMemberId()    != null) { update.set(a.memberId,    entity.getMemberId());    hasAny = true; }
+        if (entity.getOrderId()     != null) { update.set(a.orderId,     entity.getOrderId());     hasAny = true; }
+        if (entity.getQnaTypeCd()   != null) { update.set(a.qnaTypeCd,   entity.getQnaTypeCd());   hasAny = true; }
+        if (entity.getQnaTitle()    != null) { update.set(a.qnaTitle,    entity.getQnaTitle());    hasAny = true; }
+        if (entity.getQnaContent()  != null) { update.set(a.qnaContent,  entity.getQnaContent());  hasAny = true; }
+        if (entity.getScrtYn()      != null) { update.set(a.scrtYn,      entity.getScrtYn());      hasAny = true; }
+        if (entity.getAnswYn()      != null) { update.set(a.answYn,      entity.getAnswYn());      hasAny = true; }
+        if (entity.getAnswContent() != null) { update.set(a.answContent, entity.getAnswContent()); hasAny = true; }
+        if (entity.getAnswDate()    != null) { update.set(a.answDate,    entity.getAnswDate());    hasAny = true; }
+        if (entity.getAnswUserId()  != null) { update.set(a.answUserId,  entity.getAnswUserId());  hasAny = true; }
+        if (entity.getDispYn()      != null) { update.set(a.dispYn,      entity.getDispYn());      hasAny = true; }
+        if (entity.getUseYn()       != null) { update.set(a.useYn,       entity.getUseYn());       hasAny = true; }
+        if (entity.getUpdBy()       != null) { update.set(a.updBy,       entity.getUpdBy());       hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(q.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(q.qnaId.eq(entity.getQnaId())).execute();
+        long affected = update.where(a.qnaId.eq(entity.getQnaId())).execute();
         return (int) affected;
     }
 }

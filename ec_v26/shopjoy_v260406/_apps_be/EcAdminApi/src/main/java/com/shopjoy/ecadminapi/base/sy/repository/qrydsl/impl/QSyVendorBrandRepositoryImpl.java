@@ -32,7 +32,7 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyVendorBrandRepositoryImpl";
-    private static final QSyVendorBrand b = QSyVendorBrand.syVendorBrand;
+    private static final QSyVendorBrand a = QSyVendorBrand.syVendorBrand;
     private static final QSySite ste = QSySite.sySite;
     private static final QSyVendor vnd = QSyVendor.syVendor;
     private static final QSyBrand brd = QSyBrand.syBrand;
@@ -42,18 +42,18 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
     private JPAQuery<SyVendorBrandDto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(SyVendorBrandDto.Item.class,
-                        b.vendorBrandId, b.siteId, b.vendorId, b.brandId, b.isMain,
-                        b.contractCd, b.startDate, b.endDate, b.commissionRate,
-                        b.sortOrd, b.useYn, b.vendorBrandRemark,
-                        b.regBy, b.regDate, b.updBy, b.updDate,
+                        a.vendorBrandId, a.siteId, a.vendorId, a.brandId, a.isMain,
+                        a.contractCd, a.startDate, a.endDate, a.commissionRate,
+                        a.sortOrd, a.useYn, a.vendorBrandRemark,
+                        a.regBy, a.regDate, a.updBy, a.updDate,
                         vnd.vendorNm.as("vendorNm"),
                         brd.brandNm.as("brandNm")
                 ))
-                .from(b)
-                .leftJoin(ste).on(ste.siteId.eq(b.siteId))
-                .leftJoin(vnd).on(vnd.vendorId.eq(b.vendorId))
-                .leftJoin(brd).on(brd.brandId.eq(b.brandId))
-                .leftJoin(cdVbc).on(cdVbc.codeGrp.eq("VENDOR_BRAND_CONTRACT").and(cdVbc.codeValue.eq(b.contractCd)));
+                .from(a)
+                .leftJoin(ste).on(ste.siteId.eq(a.siteId))
+                .leftJoin(vnd).on(vnd.vendorId.eq(a.vendorId))
+                .leftJoin(brd).on(brd.brandId.eq(a.brandId))
+                .leftJoin(cdVbc).on(cdVbc.codeGrp.eq("VENDOR_BRAND_CONTRACT").and(cdVbc.codeValue.eq(a.contractCd)));
     }
 
     /* 업체별 브랜드 키조회 */
@@ -61,7 +61,7 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
     public Optional<SyVendorBrandDto.Item> selectById(String vendorBrandId) {
         SyVendorBrandDto.Item dto = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
-                .where(b.vendorBrandId.eq(vendorBrandId))
+                .where(a.vendorBrandId.eq(vendorBrandId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -114,7 +114,7 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
         }
         List<SyVendorBrandDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(b.count()).from(b).where(
+        Long total = queryFactory.select(a.count()).from(a).where(
                 baseAndSiteId(search),
                 baseAndVendorBrandId(search),
                 baseAndBrandId(search),
@@ -137,25 +137,25 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(SyVendorBrandDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? b.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* vendorBrandId 정확 일치 */
     private BooleanExpression baseAndVendorBrandId(SyVendorBrandDto.Request search) {
         return search != null && StringUtils.hasText(search.getVendorBrandId())
-                ? b.vendorBrandId.eq(search.getVendorBrandId()) : null;
+                ? a.vendorBrandId.eq(search.getVendorBrandId()) : null;
     }
 
     /* brandId 정확 일치 */
     private BooleanExpression baseAndBrandId(SyVendorBrandDto.Request search) {
         return search != null && StringUtils.hasText(search.getBrandId())
-                ? b.brandId.eq(search.getBrandId()) : null;
+                ? a.brandId.eq(search.getBrandId()) : null;
     }
 
     /* vendorId 정확 일치 */
     private BooleanExpression baseAndVendorId(SyVendorBrandDto.Request search) {
         return search != null && StringUtils.hasText(search.getVendorId())
-                ? b.vendorId.eq(search.getVendorId()) : null;
+                ? a.vendorId.eq(search.getVendorId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -168,8 +168,8 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return b.regDate.goe(start).and(b.regDate.lt(endExcl));
-            case "upd_date": return b.updDate.goe(start).and(b.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -182,14 +182,14 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",brandId,", b.brandId, pattern);
-        or = orLike(or, all, types, ",contractCd,", b.contractCd, pattern);
-        or = orLike(or, all, types, ",isMain,", b.isMain, pattern);
-        or = orLike(or, all, types, ",siteId,", b.siteId, pattern);
-        or = orLike(or, all, types, ",useYn,", b.useYn, pattern);
-        or = orLike(or, all, types, ",vendorBrandId,", b.vendorBrandId, pattern);
-        or = orLike(or, all, types, ",vendorBrandRemark,", b.vendorBrandRemark, pattern);
-        or = orLike(or, all, types, ",vendorId,", b.vendorId, pattern);
+        or = orLike(or, all, types, ",brandId,", a.brandId, pattern);
+        or = orLike(or, all, types, ",contractCd,", a.contractCd, pattern);
+        or = orLike(or, all, types, ",isMain,", a.isMain, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",useYn,", a.useYn, pattern);
+        or = orLike(or, all, types, ",vendorBrandId,", a.vendorBrandId, pattern);
+        or = orLike(or, all, types, ",vendorBrandRemark,", a.vendorBrandRemark, pattern);
+        or = orLike(or, all, types, ",vendorId,", a.vendorId, pattern);
         return or;
     }
 
@@ -212,9 +212,9 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
         if (!StringUtils.hasText(sort)) {
 
             /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, b.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, b.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, b.vendorBrandId));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.vendorBrandId));
 
             return orders;
         }
@@ -226,18 +226,18 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("vendorBrandId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, b.vendorBrandId));
+                    orders.add(new OrderSpecifier(order, a.vendorBrandId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, b.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, b.sortOrd)); }
+                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, a.sortOrd)); }
             }
         }
         /* unknown sort → sortOrd ASC + regDate ASC fallback */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, b.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, b.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, b.vendorBrandId));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.vendorBrandId));
         }
         return orders;
     }
@@ -247,27 +247,27 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
     public int updateSelective(SyVendorBrand entity) {
         if (entity.getVendorBrandId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(b);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getSiteId()            != null) { update.set(b.siteId,            entity.getSiteId());            hasAny = true; }
-        if (entity.getVendorId()          != null) { update.set(b.vendorId,          entity.getVendorId());          hasAny = true; }
-        if (entity.getBrandId()           != null) { update.set(b.brandId,           entity.getBrandId());           hasAny = true; }
-        if (entity.getIsMain()            != null) { update.set(b.isMain,            entity.getIsMain());            hasAny = true; }
-        if (entity.getContractCd()        != null) { update.set(b.contractCd,        entity.getContractCd());        hasAny = true; }
-        if (entity.getStartDate()         != null) { update.set(b.startDate,         entity.getStartDate());         hasAny = true; }
-        if (entity.getEndDate()           != null) { update.set(b.endDate,           entity.getEndDate());           hasAny = true; }
-        if (entity.getCommissionRate()    != null) { update.set(b.commissionRate,    entity.getCommissionRate());    hasAny = true; }
-        if (entity.getSortOrd()           != null) { update.set(b.sortOrd,           entity.getSortOrd());           hasAny = true; }
-        if (entity.getUseYn()             != null) { update.set(b.useYn,             entity.getUseYn());             hasAny = true; }
-        if (entity.getVendorBrandRemark() != null) { update.set(b.vendorBrandRemark, entity.getVendorBrandRemark()); hasAny = true; }
-        if (entity.getUpdBy()             != null) { update.set(b.updBy,             entity.getUpdBy());             hasAny = true; }
+        if (entity.getSiteId()            != null) { update.set(a.siteId,            entity.getSiteId());            hasAny = true; }
+        if (entity.getVendorId()          != null) { update.set(a.vendorId,          entity.getVendorId());          hasAny = true; }
+        if (entity.getBrandId()           != null) { update.set(a.brandId,           entity.getBrandId());           hasAny = true; }
+        if (entity.getIsMain()            != null) { update.set(a.isMain,            entity.getIsMain());            hasAny = true; }
+        if (entity.getContractCd()        != null) { update.set(a.contractCd,        entity.getContractCd());        hasAny = true; }
+        if (entity.getStartDate()         != null) { update.set(a.startDate,         entity.getStartDate());         hasAny = true; }
+        if (entity.getEndDate()           != null) { update.set(a.endDate,           entity.getEndDate());           hasAny = true; }
+        if (entity.getCommissionRate()    != null) { update.set(a.commissionRate,    entity.getCommissionRate());    hasAny = true; }
+        if (entity.getSortOrd()           != null) { update.set(a.sortOrd,           entity.getSortOrd());           hasAny = true; }
+        if (entity.getUseYn()             != null) { update.set(a.useYn,             entity.getUseYn());             hasAny = true; }
+        if (entity.getVendorBrandRemark() != null) { update.set(a.vendorBrandRemark, entity.getVendorBrandRemark()); hasAny = true; }
+        if (entity.getUpdBy()             != null) { update.set(a.updBy,             entity.getUpdBy());             hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(b.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(b.vendorBrandId.eq(entity.getVendorBrandId())).execute();
+        long affected = update.where(a.vendorBrandId.eq(entity.getVendorBrandId())).execute();
         return (int) affected;
     }
 }

@@ -29,13 +29,26 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdDlivItemRepositoryImpl";
-    private static final QOdDlivItem i = QOdDlivItem.odDlivItem;
+    private static final QOdDlivItem a = QOdDlivItem.odDlivItem;
+
+    /* 배송 아이템 baseSelColumnQuery */
+    private JPAQuery<OdDlivItemDto.Item> baseSelColumnQuery() {
+        return queryFactory
+                .select(Projections.bean(OdDlivItemDto.Item.class,
+                        a.dlivItemId, a.siteId, a.dlivId, a.orderItemId,
+                        a.prodId, a.optItemId1, a.optItemId2,
+                        a.dlivTypeCd, a.unitPrice, a.dlivQty,
+                        a.dlivItemStatusCd, a.dlivItemStatusCdBefore,
+                        a.regBy, a.regDate, a.updBy, a.updDate
+                ))
+                .from(a);
+    }
 
     /* 배송 아이템 키조회 */
     @Override
     public Optional<OdDlivItemDto.Item> selectById(String dlivItemId) {
-        OdDlivItemDto.Item dto = baseQuery()
-                .where(i.dlivItemId.eq(dlivItemId))
+        OdDlivItemDto.Item dto = baseSelColumnQuery()
+                .where(a.dlivItemId.eq(dlivItemId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -45,7 +58,7 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
     public List<OdDlivItemDto.Item> selectList(OdDlivItemDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<OdDlivItemDto.Item> query = baseQuery().where(
+        JPAQuery<OdDlivItemDto.Item> query = baseSelColumnQuery().where(
                 baseAndDlivIds(search),
                 baseAndDlivId(search),
                 baseAndSiteId(search),
@@ -74,7 +87,7 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<OdDlivItemDto.Item> query = baseQuery().where(
+        JPAQuery<OdDlivItemDto.Item> query = baseSelColumnQuery().where(
                 baseAndDlivIds(search),
                 baseAndDlivId(search),
                 baseAndSiteId(search),
@@ -88,8 +101,8 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
         List<OdDlivItemDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(i.count())
-                .from(i)
+                .select(a.count())
+                .from(a)
                 .where(
                 baseAndDlivIds(search),
                 baseAndDlivId(search),
@@ -103,20 +116,6 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
         OdDlivItemDto.PageResponse res = new OdDlivItemDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-
-    /* 배송 아이템 baseQuery */
-    private JPAQuery<OdDlivItemDto.Item> baseQuery() {
-        return queryFactory
-                .select(Projections.bean(OdDlivItemDto.Item.class,
-                        i.dlivItemId, i.siteId, i.dlivId, i.orderItemId,
-                        i.prodId, i.optItemId1, i.optItemId2,
-                        i.dlivTypeCd, i.unitPrice, i.dlivQty,
-                        i.dlivItemStatusCd, i.dlivItemStatusCdBefore,
-                        i.regBy, i.regDate, i.updBy, i.updDate
-                ))
-                .from(i);
-    }
-
     /* 배송 아이템 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
@@ -127,25 +126,25 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
     /* dlivId IN */
     private BooleanExpression baseAndDlivIds(OdDlivItemDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getDlivIds())
-                ? i.dlivId.in(search.getDlivIds()) : null;
+                ? a.dlivId.in(search.getDlivIds()) : null;
     }
 
     /* dlivId 정확 일치 */
     private BooleanExpression baseAndDlivId(OdDlivItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getDlivId())
-                ? i.dlivId.eq(search.getDlivId()) : null;
+                ? a.dlivId.eq(search.getDlivId()) : null;
     }
 
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(OdDlivItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? i.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* dlivItemId 정확 일치 */
     private BooleanExpression baseAndDlivItemId(OdDlivItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getDlivItemId())
-                ? i.dlivItemId.eq(search.getDlivItemId()) : null;
+                ? a.dlivItemId.eq(search.getDlivItemId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -158,8 +157,8 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return i.regDate.goe(start).and(i.regDate.lt(endExcl));
-            case "upd_date": return i.updDate.goe(start).and(i.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -172,16 +171,16 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",dlivId,", i.dlivId, pattern);
-        or = orLike(or, all, types, ",dlivItemId,", i.dlivItemId, pattern);
-        or = orLike(or, all, types, ",dlivItemStatusCd,", i.dlivItemStatusCd, pattern);
-        or = orLike(or, all, types, ",dlivItemStatusCdBefore,", i.dlivItemStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",dlivTypeCd,", i.dlivTypeCd, pattern);
-        or = orLike(or, all, types, ",optItemId1,", i.optItemId1, pattern);
-        or = orLike(or, all, types, ",optItemId2,", i.optItemId2, pattern);
-        or = orLike(or, all, types, ",orderItemId,", i.orderItemId, pattern);
-        or = orLike(or, all, types, ",prodId,", i.prodId, pattern);
-        or = orLike(or, all, types, ",siteId,", i.siteId, pattern);
+        or = orLike(or, all, types, ",dlivId,", a.dlivId, pattern);
+        or = orLike(or, all, types, ",dlivItemId,", a.dlivItemId, pattern);
+        or = orLike(or, all, types, ",dlivItemStatusCd,", a.dlivItemStatusCd, pattern);
+        or = orLike(or, all, types, ",dlivItemStatusCdBefore,", a.dlivItemStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",dlivTypeCd,", a.dlivTypeCd, pattern);
+        or = orLike(or, all, types, ",optItemId1,", a.optItemId1, pattern);
+        or = orLike(or, all, types, ",optItemId2,", a.optItemId2, pattern);
+        or = orLike(or, all, types, ",orderItemId,", a.orderItemId, pattern);
+        or = orLike(or, all, types, ",prodId,", a.prodId, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
         return or;
     }
 
@@ -202,8 +201,8 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, i.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, i.dlivItemId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.dlivItemId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -214,47 +213,49 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("dlivItemId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, i.dlivItemId));
+                    orders.add(new OrderSpecifier(order, a.dlivItemId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, i.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, i.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, i.dlivItemId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.dlivItemId));
         }
         return orders;
     }
 
     /* 배송 아이템 수정 */
+
+
     @Override
     public int updateSelective(OdDlivItem entity) {
         if (entity.getDlivItemId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(i);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getSiteId()                 != null) { update.set(i.siteId,                 entity.getSiteId());                 hasAny = true; }
-        if (entity.getDlivId()                 != null) { update.set(i.dlivId,                 entity.getDlivId());                 hasAny = true; }
-        if (entity.getOrderItemId()            != null) { update.set(i.orderItemId,            entity.getOrderItemId());            hasAny = true; }
-        if (entity.getProdId()                 != null) { update.set(i.prodId,                 entity.getProdId());                 hasAny = true; }
-        if (entity.getOptItemId1()             != null) { update.set(i.optItemId1,             entity.getOptItemId1());             hasAny = true; }
-        if (entity.getOptItemId2()             != null) { update.set(i.optItemId2,             entity.getOptItemId2());             hasAny = true; }
-        if (entity.getDlivTypeCd()             != null) { update.set(i.dlivTypeCd,             entity.getDlivTypeCd());             hasAny = true; }
-        if (entity.getUnitPrice()              != null) { update.set(i.unitPrice,              entity.getUnitPrice());              hasAny = true; }
-        if (entity.getDlivQty()                != null) { update.set(i.dlivQty,                entity.getDlivQty());                hasAny = true; }
-        if (entity.getDlivItemStatusCd()       != null) { update.set(i.dlivItemStatusCd,       entity.getDlivItemStatusCd());       hasAny = true; }
-        if (entity.getDlivItemStatusCdBefore() != null) { update.set(i.dlivItemStatusCdBefore, entity.getDlivItemStatusCdBefore()); hasAny = true; }
-        if (entity.getUpdBy()                  != null) { update.set(i.updBy,                  entity.getUpdBy());                  hasAny = true; }
+        if (entity.getSiteId()                 != null) { update.set(a.siteId,                 entity.getSiteId());                 hasAny = true; }
+        if (entity.getDlivId()                 != null) { update.set(a.dlivId,                 entity.getDlivId());                 hasAny = true; }
+        if (entity.getOrderItemId()            != null) { update.set(a.orderItemId,            entity.getOrderItemId());            hasAny = true; }
+        if (entity.getProdId()                 != null) { update.set(a.prodId,                 entity.getProdId());                 hasAny = true; }
+        if (entity.getOptItemId1()             != null) { update.set(a.optItemId1,             entity.getOptItemId1());             hasAny = true; }
+        if (entity.getOptItemId2()             != null) { update.set(a.optItemId2,             entity.getOptItemId2());             hasAny = true; }
+        if (entity.getDlivTypeCd()             != null) { update.set(a.dlivTypeCd,             entity.getDlivTypeCd());             hasAny = true; }
+        if (entity.getUnitPrice()              != null) { update.set(a.unitPrice,              entity.getUnitPrice());              hasAny = true; }
+        if (entity.getDlivQty()                != null) { update.set(a.dlivQty,                entity.getDlivQty());                hasAny = true; }
+        if (entity.getDlivItemStatusCd()       != null) { update.set(a.dlivItemStatusCd,       entity.getDlivItemStatusCd());       hasAny = true; }
+        if (entity.getDlivItemStatusCdBefore() != null) { update.set(a.dlivItemStatusCdBefore, entity.getDlivItemStatusCdBefore()); hasAny = true; }
+        if (entity.getUpdBy()                  != null) { update.set(a.updBy,                  entity.getUpdBy());                  hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(i.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(i.dlivItemId.eq(entity.getDlivItemId())).execute();
+        long affected = update.where(a.dlivItemId.eq(entity.getDlivItemId())).execute();
         return (int) affected;
     }
 }

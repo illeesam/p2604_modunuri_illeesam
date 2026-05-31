@@ -30,29 +30,29 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdhProdViewLogRepositoryImpl";
-    private static final QPdhProdViewLog l   = QPdhProdViewLog.pdhProdViewLog;
+    private static final QPdhProdViewLog a   = QPdhProdViewLog.pdhProdViewLog;
     private static final QSySite         ste = QSySite.sySite;
 
     /* 상품 조회 로그 buildBaseQuery */
     private JPAQuery<PdhProdViewLogDto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(PdhProdViewLogDto.Item.class,
-                        l.logId,
-                        l.siteId,
-                        l.memberId,
-                        l.sessionKey,
-                        l.prodId,
-                        l.refId,
-                        l.refNm,
-                        l.searchKw,
-                        l.ip,
-                        l.device,
-                        l.referrer,
-                        l.viewDate,
-                        l.regBy, l.regDate, l.updBy, l.updDate
+                        a.logId,
+                        a.siteId,
+                        a.memberId,
+                        a.sessionKey,
+                        a.prodId,
+                        a.refId,
+                        a.refNm,
+                        a.searchKw,
+                        a.ip,
+                        a.device,
+                        a.referrer,
+                        a.viewDate,
+                        a.regBy, a.regDate, a.updBy, a.updDate
                 ))
-                .from(l)
-                .leftJoin(ste).on(ste.siteId.eq(l.siteId));
+                .from(a)
+                .leftJoin(ste).on(ste.siteId.eq(a.siteId));
     }
 
     /* 상품 조회 로그 키조회 */
@@ -60,7 +60,7 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
     public Optional<PdhProdViewLogDto.Item> selectById(String id) {
         PdhProdViewLogDto.Item dto = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
-                .where(l.logId.eq(id))
+                .where(a.logId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -111,8 +111,8 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
         List<PdhProdViewLogDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(l.count())
-                .from(l)
+                .select(a.count())
+                .from(a)
                 .where(
                 baseAndSiteId(search),
                 baseAndLogId(search),
@@ -135,13 +135,13 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(PdhProdViewLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? l.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* logId 정확 일치 */
     private BooleanExpression baseAndLogId(PdhProdViewLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getLogId())
-                ? l.logId.eq(search.getLogId()) : null;
+                ? a.logId.eq(search.getLogId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -154,8 +154,8 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return l.regDate.goe(start).and(l.regDate.lt(endExcl));
-            case "upd_date": return l.updDate.goe(start).and(l.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -168,17 +168,17 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",device,", l.device, pattern);
-        or = orLike(or, all, types, ",ip,", l.ip, pattern);
-        or = orLike(or, all, types, ",logId,", l.logId, pattern);
-        or = orLike(or, all, types, ",memberId,", l.memberId, pattern);
-        or = orLike(or, all, types, ",prodId,", l.prodId, pattern);
-        or = orLike(or, all, types, ",refId,", l.refId, pattern);
-        or = orLike(or, all, types, ",refNm,", l.refNm, pattern);
-        or = orLike(or, all, types, ",referrer,", l.referrer, pattern);
-        or = orLike(or, all, types, ",searchKw,", l.searchKw, pattern);
-        or = orLike(or, all, types, ",sessionKey,", l.sessionKey, pattern);
-        or = orLike(or, all, types, ",siteId,", l.siteId, pattern);
+        or = orLike(or, all, types, ",device,", a.device, pattern);
+        or = orLike(or, all, types, ",ip,", a.ip, pattern);
+        or = orLike(or, all, types, ",logId,", a.logId, pattern);
+        or = orLike(or, all, types, ",memberId,", a.memberId, pattern);
+        or = orLike(or, all, types, ",prodId,", a.prodId, pattern);
+        or = orLike(or, all, types, ",refId,", a.refId, pattern);
+        or = orLike(or, all, types, ",refNm,", a.refNm, pattern);
+        or = orLike(or, all, types, ",referrer,", a.referrer, pattern);
+        or = orLike(or, all, types, ",searchKw,", a.searchKw, pattern);
+        or = orLike(or, all, types, ",sessionKey,", a.sessionKey, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
         return or;
     }
 
@@ -199,8 +199,8 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, l.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, l.logId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.logId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -211,19 +211,19 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("logId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, l.logId));
+                    orders.add(new OrderSpecifier(order, a.logId));
                 } else if ("refNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, l.refNm));
+                    orders.add(new OrderSpecifier(order, a.refNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, l.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, l.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, l.logId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.logId));
         }
         return orders;
     }
@@ -233,27 +233,27 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
     public int updateSelective(PdhProdViewLog entity) {
         if (entity.getLogId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(l);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getSiteId()     != null) { update.set(l.siteId,     entity.getSiteId());     hasAny = true; }
-        if (entity.getMemberId()   != null) { update.set(l.memberId,   entity.getMemberId());   hasAny = true; }
-        if (entity.getSessionKey() != null) { update.set(l.sessionKey, entity.getSessionKey()); hasAny = true; }
-        if (entity.getProdId()     != null) { update.set(l.prodId,     entity.getProdId());     hasAny = true; }
-        if (entity.getRefId()      != null) { update.set(l.refId,      entity.getRefId());      hasAny = true; }
-        if (entity.getRefNm()      != null) { update.set(l.refNm,      entity.getRefNm());      hasAny = true; }
-        if (entity.getSearchKw()   != null) { update.set(l.searchKw,   entity.getSearchKw());   hasAny = true; }
-        if (entity.getIp()         != null) { update.set(l.ip,         entity.getIp());         hasAny = true; }
-        if (entity.getDevice()     != null) { update.set(l.device,     entity.getDevice());     hasAny = true; }
-        if (entity.getReferrer()   != null) { update.set(l.referrer,   entity.getReferrer());   hasAny = true; }
-        if (entity.getViewDate()   != null) { update.set(l.viewDate,   entity.getViewDate());   hasAny = true; }
-        if (entity.getUpdBy()      != null) { update.set(l.updBy,      entity.getUpdBy());      hasAny = true; }
+        if (entity.getSiteId()     != null) { update.set(a.siteId,     entity.getSiteId());     hasAny = true; }
+        if (entity.getMemberId()   != null) { update.set(a.memberId,   entity.getMemberId());   hasAny = true; }
+        if (entity.getSessionKey() != null) { update.set(a.sessionKey, entity.getSessionKey()); hasAny = true; }
+        if (entity.getProdId()     != null) { update.set(a.prodId,     entity.getProdId());     hasAny = true; }
+        if (entity.getRefId()      != null) { update.set(a.refId,      entity.getRefId());      hasAny = true; }
+        if (entity.getRefNm()      != null) { update.set(a.refNm,      entity.getRefNm());      hasAny = true; }
+        if (entity.getSearchKw()   != null) { update.set(a.searchKw,   entity.getSearchKw());   hasAny = true; }
+        if (entity.getIp()         != null) { update.set(a.ip,         entity.getIp());         hasAny = true; }
+        if (entity.getDevice()     != null) { update.set(a.device,     entity.getDevice());     hasAny = true; }
+        if (entity.getReferrer()   != null) { update.set(a.referrer,   entity.getReferrer());   hasAny = true; }
+        if (entity.getViewDate()   != null) { update.set(a.viewDate,   entity.getViewDate());   hasAny = true; }
+        if (entity.getUpdBy()      != null) { update.set(a.updBy,      entity.getUpdBy());      hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(l.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(l.logId.eq(entity.getLogId())).execute();
+        long affected = update.where(a.logId.eq(entity.getLogId())).execute();
         return (int) affected;
     }
 }

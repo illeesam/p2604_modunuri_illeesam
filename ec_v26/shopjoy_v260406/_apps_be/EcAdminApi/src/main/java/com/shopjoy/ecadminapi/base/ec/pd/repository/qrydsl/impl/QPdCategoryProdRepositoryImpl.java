@@ -30,16 +30,34 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdCategoryProdRepositoryImpl";
-    private static final QPdCategoryProd p   = QPdCategoryProd.pdCategoryProd;
+    private static final QPdCategoryProd a   = QPdCategoryProd.pdCategoryProd;
     private static final QSySite         ste = QSySite.sySite;
     private static final QPdCategory     cat = QPdCategory.pdCategory;
     private static final QPdProd         prd = QPdProd.pdProd;
 
+    /* 카테고리-상품 매핑 baseSelColumnQuery */
+    private JPAQuery<PdCategoryProdDto.Item> baseSelColumnQuery() {
+        return queryFactory
+                .select(Projections.bean(PdCategoryProdDto.Item.class,
+                        a.categoryProdId, a.siteId, a.categoryId, a.prodId,
+                        a.categoryProdTypeCd, a.sortOrd, a.emphasisCd,
+                        a.dispYn, a.dispStartDate, a.dispEndDate,
+                        a.regBy, a.regDate, a.updBy, a.updDate,
+                        ste.siteNm.as("siteNm"),
+                        cat.categoryNm.as("categoryNm"),
+                        prd.prodNm.as("prodNm")
+                ))
+                .from(a)
+                .leftJoin(ste).on(ste.siteId.eq(a.siteId))
+                .leftJoin(cat).on(cat.categoryId.eq(a.categoryId))
+                .leftJoin(prd).on(prd.prodId.eq(a.prodId));
+    }
+
     /* 카테고리-상품 매핑 키조회 */
     @Override
     public Optional<PdCategoryProdDto.Item> selectById(String categoryProdId) {
-        PdCategoryProdDto.Item dto = baseQuery()
-                .where(p.categoryProdId.eq(categoryProdId))
+        PdCategoryProdDto.Item dto = baseSelColumnQuery()
+                .where(a.categoryProdId.eq(categoryProdId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -49,7 +67,7 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
     public List<PdCategoryProdDto.Item> selectList(PdCategoryProdDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdCategoryProdDto.Item> query = baseQuery().where(
+        JPAQuery<PdCategoryProdDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndCategoryProdId(search),
                 baseAndProdId(search),
@@ -78,7 +96,7 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdCategoryProdDto.Item> query = baseQuery().where(
+        JPAQuery<PdCategoryProdDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndCategoryProdId(search),
                 baseAndProdId(search),
@@ -91,7 +109,7 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
         }
         List<PdCategoryProdDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(p.count()).from(p).where(
+        Long total = queryFactory.select(a.count()).from(a).where(
                 baseAndSiteId(search),
                 baseAndCategoryProdId(search),
                 baseAndProdId(search),
@@ -103,25 +121,6 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
         PdCategoryProdDto.PageResponse res = new PdCategoryProdDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-
-    /* 카테고리-상품 매핑 baseQuery */
-    private JPAQuery<PdCategoryProdDto.Item> baseQuery() {
-        return queryFactory
-                .select(Projections.bean(PdCategoryProdDto.Item.class,
-                        p.categoryProdId, p.siteId, p.categoryId, p.prodId,
-                        p.categoryProdTypeCd, p.sortOrd, p.emphasisCd,
-                        p.dispYn, p.dispStartDate, p.dispEndDate,
-                        p.regBy, p.regDate, p.updBy, p.updDate,
-                        ste.siteNm.as("siteNm"),
-                        cat.categoryNm.as("categoryNm"),
-                        prd.prodNm.as("prodNm")
-                ))
-                .from(p)
-                .leftJoin(ste).on(ste.siteId.eq(p.siteId))
-                .leftJoin(cat).on(cat.categoryId.eq(p.categoryId))
-                .leftJoin(prd).on(prd.prodId.eq(p.prodId));
-    }
-
     /* 카테고리-상품 매핑 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
@@ -132,25 +131,25 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(PdCategoryProdDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? p.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* categoryProdId 정확 일치 */
     private BooleanExpression baseAndCategoryProdId(PdCategoryProdDto.Request search) {
         return search != null && StringUtils.hasText(search.getCategoryProdId())
-                ? p.categoryProdId.eq(search.getCategoryProdId()) : null;
+                ? a.categoryProdId.eq(search.getCategoryProdId()) : null;
     }
 
     /* prodId 정확 일치 */
     private BooleanExpression baseAndProdId(PdCategoryProdDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdId())
-                ? p.prodId.eq(search.getProdId()) : null;
+                ? a.prodId.eq(search.getProdId()) : null;
     }
 
     /* categoryProdTypeCd 정확 일치 */
     private BooleanExpression baseAndTypeCd(PdCategoryProdDto.Request search) {
         return search != null && StringUtils.hasText(search.getTypeCd())
-                ? p.categoryProdTypeCd.eq(search.getTypeCd()) : null;
+                ? a.categoryProdTypeCd.eq(search.getTypeCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -163,8 +162,8 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return p.regDate.goe(start).and(p.regDate.lt(endExcl));
-            case "upd_date": return p.updDate.goe(start).and(p.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -177,13 +176,13 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",categoryId,", p.categoryId, pattern);
-        or = orLike(or, all, types, ",categoryProdId,", p.categoryProdId, pattern);
-        or = orLike(or, all, types, ",categoryProdTypeCd,", p.categoryProdTypeCd, pattern);
-        or = orLike(or, all, types, ",dispYn,", p.dispYn, pattern);
-        or = orLike(or, all, types, ",emphasisCd,", p.emphasisCd, pattern);
-        or = orLike(or, all, types, ",prodId,", p.prodId, pattern);
-        or = orLike(or, all, types, ",siteId,", p.siteId, pattern);
+        or = orLike(or, all, types, ",categoryId,", a.categoryId, pattern);
+        or = orLike(or, all, types, ",categoryProdId,", a.categoryProdId, pattern);
+        or = orLike(or, all, types, ",categoryProdTypeCd,", a.categoryProdTypeCd, pattern);
+        or = orLike(or, all, types, ",dispYn,", a.dispYn, pattern);
+        or = orLike(or, all, types, ",emphasisCd,", a.emphasisCd, pattern);
+        or = orLike(or, all, types, ",prodId,", a.prodId, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
         return or;
     }
 
@@ -206,9 +205,9 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
         if (!StringUtils.hasText(sort)) {
 
             /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, p.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, p.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, p.categoryProdId));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.categoryProdId));
 
             return orders;
         }
@@ -220,43 +219,45 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("categoryProdId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, p.categoryProdId));
+                    orders.add(new OrderSpecifier(order, a.categoryProdId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, p.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, p.sortOrd)); }
+                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, a.sortOrd)); }
             }
         }
         /* unknown sort → sortOrd ASC + regDate ASC fallback */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, p.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, p.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, p.categoryProdId));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.categoryProdId));
         }
         return orders;
     }
 
     /* 카테고리-상품 매핑 수정 */
+
+
     @Override
     public int updateSelective(PdCategoryProd entity) {
         if (entity.getCategoryProdId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(p);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getSiteId()             != null) { update.set(p.siteId,             entity.getSiteId());             hasAny = true; }
-        if (entity.getCategoryId()         != null) { update.set(p.categoryId,         entity.getCategoryId());         hasAny = true; }
-        if (entity.getProdId()             != null) { update.set(p.prodId,             entity.getProdId());             hasAny = true; }
-        if (entity.getCategoryProdTypeCd() != null) { update.set(p.categoryProdTypeCd, entity.getCategoryProdTypeCd()); hasAny = true; }
-        if (entity.getSortOrd()            != null) { update.set(p.sortOrd,            entity.getSortOrd());            hasAny = true; }
-        if (entity.getEmphasisCd()         != null) { update.set(p.emphasisCd,         entity.getEmphasisCd());         hasAny = true; }
-        if (entity.getDispYn()             != null) { update.set(p.dispYn,             entity.getDispYn());             hasAny = true; }
-        if (entity.getDispStartDate()      != null) { update.set(p.dispStartDate,      entity.getDispStartDate());      hasAny = true; }
-        if (entity.getDispEndDate()        != null) { update.set(p.dispEndDate,        entity.getDispEndDate());        hasAny = true; }
+        if (entity.getSiteId()             != null) { update.set(a.siteId,             entity.getSiteId());             hasAny = true; }
+        if (entity.getCategoryId()         != null) { update.set(a.categoryId,         entity.getCategoryId());         hasAny = true; }
+        if (entity.getProdId()             != null) { update.set(a.prodId,             entity.getProdId());             hasAny = true; }
+        if (entity.getCategoryProdTypeCd() != null) { update.set(a.categoryProdTypeCd, entity.getCategoryProdTypeCd()); hasAny = true; }
+        if (entity.getSortOrd()            != null) { update.set(a.sortOrd,            entity.getSortOrd());            hasAny = true; }
+        if (entity.getEmphasisCd()         != null) { update.set(a.emphasisCd,         entity.getEmphasisCd());         hasAny = true; }
+        if (entity.getDispYn()             != null) { update.set(a.dispYn,             entity.getDispYn());             hasAny = true; }
+        if (entity.getDispStartDate()      != null) { update.set(a.dispStartDate,      entity.getDispStartDate());      hasAny = true; }
+        if (entity.getDispEndDate()        != null) { update.set(a.dispEndDate,        entity.getDispEndDate());        hasAny = true; }
 
         if (!hasAny) return 0;
 
-        long affected = update.where(p.categoryProdId.eq(entity.getCategoryProdId())).execute();
+        long affected = update.where(a.categoryProdId.eq(entity.getCategoryProdId())).execute();
         return (int) affected;
     }
 }

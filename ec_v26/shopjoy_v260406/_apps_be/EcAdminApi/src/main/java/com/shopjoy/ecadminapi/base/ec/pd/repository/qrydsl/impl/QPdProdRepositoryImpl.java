@@ -40,7 +40,7 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
     private final JPAQueryFactory queryFactory;
     private final PdCategoryRepository pdCategoryRepository;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdProdRepositoryImpl";
-    private static final QPdProd     p   = QPdProd.pdProd;
+    private static final QPdProd     a   = QPdProd.pdProd;
     private static final QPdCategory cat = QPdCategory.pdCategory;
     private static final QSyBrand    b   = QSyBrand.syBrand;
     private static final QSyVendor   v   = QSyVendor.syVendor;
@@ -54,20 +54,20 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
     public Optional<PdProdDto.Item> selectById(String prodId) {
         PdProdDto.Item dto = queryFactory
                 .select(Projections.bean(PdProdDto.Item.class,
-                        // p.* equivalent
-                        p.prodId, p.siteId, p.categoryId, p.brandId, p.vendorId, p.mdUserId,
-                        p.prodNm, p.prodTypeCd, p.prodCode,
-                        p.listPrice, p.salePrice, p.purchasePrice, p.marginRate,
-                        p.platformFeeRate, p.platformFeeAmount,
-                        p.prodStock, p.prodStatusCd, p.prodStatusCdBefore,
-                        p.thumbnailUrl, p.contentHtml, p.weight, p.sizeInfoCd,
-                        p.isNew, p.isBest, p.viewCount, p.saleCount,
-                        p.saleStartDate, p.saleEndDate,
-                        p.minBuyQty, p.maxBuyQty, p.dayMaxBuyQty, p.idMaxBuyQty,
-                        p.adltYn, p.sameDayDlivYn, p.soldOutYn, p.dlivTmpltId,
-                        p.couponUseYn, p.saveUseYn, p.discntUseYn,
-                        p.advrtStmt, p.advrtStartDate, p.advrtEndDate,
-                        p.regBy, p.regDate, p.updBy, p.updDate,
+                        // a.* equivalent
+                        a.prodId, a.siteId, a.categoryId, a.brandId, a.vendorId, a.mdUserId,
+                        a.prodNm, a.prodTypeCd, a.prodCode,
+                        a.listPrice, a.salePrice, a.purchasePrice, a.marginRate,
+                        a.platformFeeRate, a.platformFeeAmount,
+                        a.prodStock, a.prodStatusCd, a.prodStatusCdBefore,
+                        a.thumbnailUrl, a.contentHtml, a.weight, a.sizeInfoCd,
+                        a.isNew, a.isBest, a.viewCount, a.saleCount,
+                        a.saleStartDate, a.saleEndDate,
+                        a.minBuyQty, a.maxBuyQty, a.dayMaxBuyQty, a.idMaxBuyQty,
+                        a.adltYn, a.sameDayDlivYn, a.soldOutYn, a.dlivTmpltId,
+                        a.couponUseYn, a.saveUseYn, a.discntUseYn,
+                        a.advrtStmt, a.advrtStartDate, a.advrtEndDate,
+                        a.regBy, a.regDate, a.updBy, a.updDate,
                         // joined
                         cat.categoryNm.as("cateNm"),
                         cat.parentCategoryId.as("parentCategoryId"),
@@ -79,15 +79,15 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                         cdPt.codeLabel.as("prodTypeCdNm"),
                         cdSz.codeLabel.as("sizeInfoCdNm")
                 ))
-                .from(p)
-                .leftJoin(cat).on(cat.categoryId.eq(p.categoryId))
-                .leftJoin(b).on(b.brandId.eq(p.brandId))
-                .leftJoin(v).on(v.vendorId.eq(p.vendorId))
-                .leftJoin(u).on(u.userId.eq(p.mdUserId))
-                .leftJoin(cdPs).on(cdPs.codeGrp.eq("PRODUCT_STATUS").and(cdPs.codeValue.eq(p.prodStatusCd)))
-                .leftJoin(cdPt).on(cdPt.codeGrp.eq("PRODUCT_TYPE").and(cdPt.codeValue.eq(p.prodTypeCd)))
-                .leftJoin(cdSz).on(cdSz.codeGrp.eq("PRODUCT_SIZE").and(cdSz.codeValue.eq(p.sizeInfoCd)))
-                .where(p.prodId.eq(prodId))
+                .from(a)
+                .leftJoin(cat).on(cat.categoryId.eq(a.categoryId))
+                .leftJoin(b).on(b.brandId.eq(a.brandId))
+                .leftJoin(v).on(v.vendorId.eq(a.vendorId))
+                .leftJoin(u).on(u.userId.eq(a.mdUserId))
+                .leftJoin(cdPs).on(cdPs.codeGrp.eq("PRODUCT_STATUS").and(cdPs.codeValue.eq(a.prodStatusCd)))
+                .leftJoin(cdPt).on(cdPt.codeGrp.eq("PRODUCT_TYPE").and(cdPt.codeValue.eq(a.prodTypeCd)))
+                .leftJoin(cdSz).on(cdSz.codeGrp.eq("PRODUCT_SIZE").and(cdSz.codeValue.eq(a.sizeInfoCd)))
+                .where(a.prodId.eq(prodId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -146,9 +146,9 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
         List<PdProdDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(p.count())
-                .from(p)
-                .leftJoin(b).on(b.brandId.eq(p.brandId))
+                .select(a.count())
+                .from(a)
+                .leftJoin(b).on(b.brandId.eq(a.brandId))
                 .where(
                 baseAndProdIds(search),
                 baseAndSiteId(search),
@@ -173,48 +173,48 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
 
         return queryFactory
                 .select(Projections.bean(PdProdDto.Item.class,
-                        p.prodId, p.siteId, p.categoryId, p.brandId, p.vendorId, p.mdUserId,
-                        p.prodNm, p.prodTypeCd, p.prodCode,
-                        p.listPrice, p.salePrice, p.purchasePrice, p.marginRate,
-                        p.platformFeeRate, p.platformFeeAmount,
-                        p.prodStock, p.prodStatusCd, p.prodStatusCdBefore,
-                        p.contentHtml, p.weight, p.sizeInfoCd,
-                        p.isNew, p.isBest, p.viewCount, p.saleCount,
-                        p.saleStartDate, p.saleEndDate,
-                        p.minBuyQty, p.maxBuyQty, p.dayMaxBuyQty, p.idMaxBuyQty,
-                        p.adltYn, p.sameDayDlivYn, p.soldOutYn, p.dlivTmpltId,
-                        p.couponUseYn, p.saveUseYn, p.discntUseYn,
-                        p.advrtStmt, p.advrtStartDate, p.advrtEndDate,
-                        p.regBy, p.regDate, p.updBy, p.updDate,
+                        a.prodId, a.siteId, a.categoryId, a.brandId, a.vendorId, a.mdUserId,
+                        a.prodNm, a.prodTypeCd, a.prodCode,
+                        a.listPrice, a.salePrice, a.purchasePrice, a.marginRate,
+                        a.platformFeeRate, a.platformFeeAmount,
+                        a.prodStock, a.prodStatusCd, a.prodStatusCdBefore,
+                        a.contentHtml, a.weight, a.sizeInfoCd,
+                        a.isNew, a.isBest, a.viewCount, a.saleCount,
+                        a.saleStartDate, a.saleEndDate,
+                        a.minBuyQty, a.maxBuyQty, a.dayMaxBuyQty, a.idMaxBuyQty,
+                        a.adltYn, a.sameDayDlivYn, a.soldOutYn, a.dlivTmpltId,
+                        a.couponUseYn, a.saveUseYn, a.discntUseYn,
+                        a.advrtStmt, a.advrtStartDate, a.advrtEndDate,
+                        a.regBy, a.regDate, a.updBy, a.updDate,
                         cat.categoryNm.as("cateNm"),
                         b.brandNm.as("brandNm"),
                         v.vendorNm.as("vendorNm"),
                         u.userNm.as("mdUserNm"),
                         cdPs.codeLabel.as("prodStatusCdNm"),
                         cdPt.codeLabel.as("prodTypeCdNm"),
-                        // COALESCE(p.thumbnail_url, thumb 1순위, 정렬 1순위)
+                        // COALESCE(a.thumbnail_url, thumb 1순위, 정렬 1순위)
                         Expressions.stringTemplate(
                             "COALESCE({0}, ({1}), ({2}))",
-                            p.thumbnailUrl,
+                            a.thumbnailUrl,
                             JPAExpressions.select(pi.cdnImgUrl)
                                 .from(pi)
-                                .where(pi.prodId.eq(p.prodId).and(pi.isThumb.eq("Y")))
+                                .where(pi.prodId.eq(a.prodId).and(pi.isThumb.eq("Y")))
                                 .orderBy(pi.sortOrd.asc())
                                 .limit(1L),
                             JPAExpressions.select(pi2.cdnImgUrl)
                                 .from(pi2)
-                                .where(pi2.prodId.eq(p.prodId))
+                                .where(pi2.prodId.eq(a.prodId))
                                 .orderBy(pi2.sortOrd.asc())
                                 .limit(1L)
                         ).as("thumbnailUrl")
                 ))
-                .from(p)
-                .leftJoin(cat).on(cat.categoryId.eq(p.categoryId))
-                .leftJoin(b).on(b.brandId.eq(p.brandId))
-                .leftJoin(v).on(v.vendorId.eq(p.vendorId))
-                .leftJoin(u).on(u.userId.eq(p.mdUserId))
-                .leftJoin(cdPs).on(cdPs.codeGrp.eq("PRODUCT_STATUS").and(cdPs.codeValue.eq(p.prodStatusCd)))
-                .leftJoin(cdPt).on(cdPt.codeGrp.eq("PRODUCT_TYPE").and(cdPt.codeValue.eq(p.prodTypeCd)));
+                .from(a)
+                .leftJoin(cat).on(cat.categoryId.eq(a.categoryId))
+                .leftJoin(b).on(b.brandId.eq(a.brandId))
+                .leftJoin(v).on(v.vendorId.eq(a.vendorId))
+                .leftJoin(u).on(u.userId.eq(a.mdUserId))
+                .leftJoin(cdPs).on(cdPs.codeGrp.eq("PRODUCT_STATUS").and(cdPs.codeValue.eq(a.prodStatusCd)))
+                .leftJoin(cdPt).on(cdPt.codeGrp.eq("PRODUCT_TYPE").and(cdPt.codeValue.eq(a.prodTypeCd)));
     }
 
     /** 검색조건 빌드 — Mapper XML pdProdCond 와 동일 동작 */
@@ -228,43 +228,43 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
     /* prodId IN */
     private BooleanExpression baseAndProdIds(PdProdDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getProdIds())
-                ? p.prodId.in(search.getProdIds()) : null;
+                ? a.prodId.in(search.getProdIds()) : null;
     }
 
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(PdProdDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? p.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* prodId 정확 일치 */
     private BooleanExpression baseAndProdId(PdProdDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdId())
-                ? p.prodId.eq(search.getProdId()) : null;
+                ? a.prodId.eq(search.getProdId()) : null;
     }
 
     /* brandId 정확 일치 */
     private BooleanExpression baseAndBrandId(PdProdDto.Request search) {
         return search != null && StringUtils.hasText(search.getBrandId())
-                ? p.brandId.eq(search.getBrandId()) : null;
+                ? a.brandId.eq(search.getBrandId()) : null;
     }
 
     /* mdUserId 정확 일치 */
     private BooleanExpression baseAndMdUserId(PdProdDto.Request search) {
         return search != null && StringUtils.hasText(search.getMdUserId())
-                ? p.mdUserId.eq(search.getMdUserId()) : null;
+                ? a.mdUserId.eq(search.getMdUserId()) : null;
     }
 
     /* prodStatusCd 정확 일치 */
     private BooleanExpression baseAndProdStatusCd(PdProdDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdStatusCd())
-                ? p.prodStatusCd.eq(search.getProdStatusCd()) : null;
+                ? a.prodStatusCd.eq(search.getProdStatusCd()) : null;
     }
 
     /* vendorId 정확 일치 */
     private BooleanExpression baseAndVendorId(PdProdDto.Request search) {
         return search != null && StringUtils.hasText(search.getVendorId())
-                ? p.vendorId.eq(search.getVendorId()) : null;
+                ? a.vendorId.eq(search.getVendorId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -277,8 +277,8 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return p.regDate.goe(start).and(p.regDate.lt(endExcl));
-            case "upd_date": return p.updDate.goe(start).and(p.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -291,30 +291,30 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",adltYn,", p.adltYn, pattern);
-        or = orLike(or, all, types, ",advrtStmt,", p.advrtStmt, pattern);
-        or = orLike(or, all, types, ",brandId,", p.brandId, pattern);
-        or = orLike(or, all, types, ",categoryId,", p.categoryId, pattern);
-        or = orLike(or, all, types, ",contentHtml,", p.contentHtml, pattern);
-        or = orLike(or, all, types, ",couponUseYn,", p.couponUseYn, pattern);
-        or = orLike(or, all, types, ",discntUseYn,", p.discntUseYn, pattern);
-        or = orLike(or, all, types, ",dlivTmpltId,", p.dlivTmpltId, pattern);
-        or = orLike(or, all, types, ",isBest,", p.isBest, pattern);
-        or = orLike(or, all, types, ",isNew,", p.isNew, pattern);
-        or = orLike(or, all, types, ",mdUserId,", p.mdUserId, pattern);
-        or = orLike(or, all, types, ",prodCode,", p.prodCode, pattern);
-        or = orLike(or, all, types, ",prodId,", p.prodId, pattern);
-        or = orLike(or, all, types, ",prodNm,", p.prodNm, pattern);
-        or = orLike(or, all, types, ",prodStatusCd,", p.prodStatusCd, pattern);
-        or = orLike(or, all, types, ",prodStatusCdBefore,", p.prodStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",prodTypeCd,", p.prodTypeCd, pattern);
-        or = orLike(or, all, types, ",sameDayDlivYn,", p.sameDayDlivYn, pattern);
-        or = orLike(or, all, types, ",saveUseYn,", p.saveUseYn, pattern);
-        or = orLike(or, all, types, ",siteId,", p.siteId, pattern);
-        or = orLike(or, all, types, ",sizeInfoCd,", p.sizeInfoCd, pattern);
-        or = orLike(or, all, types, ",soldOutYn,", p.soldOutYn, pattern);
-        or = orLike(or, all, types, ",thumbnailUrl,", p.thumbnailUrl, pattern);
-        or = orLike(or, all, types, ",vendorId,", p.vendorId, pattern);
+        or = orLike(or, all, types, ",adltYn,", a.adltYn, pattern);
+        or = orLike(or, all, types, ",advrtStmt,", a.advrtStmt, pattern);
+        or = orLike(or, all, types, ",brandId,", a.brandId, pattern);
+        or = orLike(or, all, types, ",categoryId,", a.categoryId, pattern);
+        or = orLike(or, all, types, ",contentHtml,", a.contentHtml, pattern);
+        or = orLike(or, all, types, ",couponUseYn,", a.couponUseYn, pattern);
+        or = orLike(or, all, types, ",discntUseYn,", a.discntUseYn, pattern);
+        or = orLike(or, all, types, ",dlivTmpltId,", a.dlivTmpltId, pattern);
+        or = orLike(or, all, types, ",isBest,", a.isBest, pattern);
+        or = orLike(or, all, types, ",isNew,", a.isNew, pattern);
+        or = orLike(or, all, types, ",mdUserId,", a.mdUserId, pattern);
+        or = orLike(or, all, types, ",prodCode,", a.prodCode, pattern);
+        or = orLike(or, all, types, ",prodId,", a.prodId, pattern);
+        or = orLike(or, all, types, ",prodNm,", a.prodNm, pattern);
+        or = orLike(or, all, types, ",prodStatusCd,", a.prodStatusCd, pattern);
+        or = orLike(or, all, types, ",prodStatusCdBefore,", a.prodStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",prodTypeCd,", a.prodTypeCd, pattern);
+        or = orLike(or, all, types, ",sameDayDlivYn,", a.sameDayDlivYn, pattern);
+        or = orLike(or, all, types, ",saveUseYn,", a.saveUseYn, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",sizeInfoCd,", a.sizeInfoCd, pattern);
+        or = orLike(or, all, types, ",soldOutYn,", a.soldOutYn, pattern);
+        or = orLike(or, all, types, ",thumbnailUrl,", a.thumbnailUrl, pattern);
+        or = orLike(or, all, types, ",vendorId,", a.vendorId, pattern);
         return or;
     }
 
@@ -335,8 +335,8 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, p.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, p.prodId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.prodId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -347,19 +347,19 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("prodId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, p.prodId));
+                    orders.add(new OrderSpecifier(order, a.prodId));
                 } else if ("prodNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, p.prodNm));
+                    orders.add(new OrderSpecifier(order, a.prodNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, p.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, p.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, p.prodId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.prodId));
         }
         return orders;
     }
@@ -369,25 +369,25 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
     public int updateSelective(PdProd entity) {
         if (entity.getProdId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(p);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getProdStatusCd()       != null) { update.set(p.prodStatusCd,       entity.getProdStatusCd());       hasAny = true; }
-        if (entity.getProdStatusCdBefore() != null) { update.set(p.prodStatusCdBefore, entity.getProdStatusCdBefore()); hasAny = true; }
-        if (entity.getProdNm()             != null) { update.set(p.prodNm,             entity.getProdNm());             hasAny = true; }
-        if (entity.getSalePrice()          != null) { update.set(p.salePrice,          entity.getSalePrice());          hasAny = true; }
-        if (entity.getProdStock()          != null) { update.set(p.prodStock,          entity.getProdStock());          hasAny = true; }
-        if (entity.getThumbnailUrl()       != null) { update.set(p.thumbnailUrl,       entity.getThumbnailUrl());       hasAny = true; }
-        if (entity.getIsBest()             != null) { update.set(p.isBest,             entity.getIsBest());             hasAny = true; }
-        if (entity.getIsNew()              != null) { update.set(p.isNew,              entity.getIsNew());              hasAny = true; }
-        if (entity.getSoldOutYn()          != null) { update.set(p.soldOutYn,          entity.getSoldOutYn());          hasAny = true; }
-        if (entity.getUpdBy()              != null) { update.set(p.updBy,              entity.getUpdBy());              hasAny = true; }
+        if (entity.getProdStatusCd()       != null) { update.set(a.prodStatusCd,       entity.getProdStatusCd());       hasAny = true; }
+        if (entity.getProdStatusCdBefore() != null) { update.set(a.prodStatusCdBefore, entity.getProdStatusCdBefore()); hasAny = true; }
+        if (entity.getProdNm()             != null) { update.set(a.prodNm,             entity.getProdNm());             hasAny = true; }
+        if (entity.getSalePrice()          != null) { update.set(a.salePrice,          entity.getSalePrice());          hasAny = true; }
+        if (entity.getProdStock()          != null) { update.set(a.prodStock,          entity.getProdStock());          hasAny = true; }
+        if (entity.getThumbnailUrl()       != null) { update.set(a.thumbnailUrl,       entity.getThumbnailUrl());       hasAny = true; }
+        if (entity.getIsBest()             != null) { update.set(a.isBest,             entity.getIsBest());             hasAny = true; }
+        if (entity.getIsNew()              != null) { update.set(a.isNew,              entity.getIsNew());              hasAny = true; }
+        if (entity.getSoldOutYn()          != null) { update.set(a.soldOutYn,          entity.getSoldOutYn());          hasAny = true; }
+        if (entity.getUpdBy()              != null) { update.set(a.updBy,              entity.getUpdBy());              hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(p.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(p.prodId.eq(entity.getProdId())).execute();
+        long affected = update.where(a.prodId.eq(entity.getProdId())).execute();
         return (int) affected;
     }
 }

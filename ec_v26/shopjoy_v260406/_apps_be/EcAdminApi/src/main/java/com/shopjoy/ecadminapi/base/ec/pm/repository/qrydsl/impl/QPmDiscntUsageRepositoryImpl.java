@@ -27,13 +27,25 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmDiscntUsageRepositoryImpl";
-    private static final QPmDiscntUsage u = QPmDiscntUsage.pmDiscntUsage;
+    private static final QPmDiscntUsage a = QPmDiscntUsage.pmDiscntUsage;
+
+    /* 할인 사용 이력 baseSelColumnQuery */
+    private JPAQuery<PmDiscntUsageDto.Item> baseSelColumnQuery() {
+        return queryFactory
+                .select(Projections.bean(PmDiscntUsageDto.Item.class,
+                        a.discntUsageId, a.siteId, a.discntId, a.discntNm,
+                        a.memberId, a.orderId, a.orderItemId, a.prodId,
+                        a.discntTypeCd, a.discntValue, a.discntAmt, a.usedDate,
+                        a.regBy, a.regDate
+                ))
+                .from(a);
+    }
 
     /* 할인 사용 이력 키조회 */
     @Override
     public Optional<PmDiscntUsageDto.Item> selectById(String discntUsageId) {
-        PmDiscntUsageDto.Item dto = baseQuery()
-                .where(u.discntUsageId.eq(discntUsageId))
+        PmDiscntUsageDto.Item dto = baseSelColumnQuery()
+                .where(a.discntUsageId.eq(discntUsageId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -43,7 +55,7 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
     public List<PmDiscntUsageDto.Item> selectList(PmDiscntUsageDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PmDiscntUsageDto.Item> query = baseQuery().where(
+        JPAQuery<PmDiscntUsageDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndDiscntUsageId(search),
                 baseAndDateRange(search),
@@ -70,7 +82,7 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PmDiscntUsageDto.Item> query = baseQuery().where(
+        JPAQuery<PmDiscntUsageDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndDiscntUsageId(search),
                 baseAndDateRange(search),
@@ -82,8 +94,8 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
         List<PmDiscntUsageDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(u.count())
-                .from(u)
+                .select(a.count())
+                .from(a)
                 .where(
                 baseAndSiteId(search),
                 baseAndDiscntUsageId(search),
@@ -95,19 +107,6 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
         PmDiscntUsageDto.PageResponse res = new PmDiscntUsageDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-
-    /* 할인 사용 이력 baseQuery */
-    private JPAQuery<PmDiscntUsageDto.Item> baseQuery() {
-        return queryFactory
-                .select(Projections.bean(PmDiscntUsageDto.Item.class,
-                        u.discntUsageId, u.siteId, u.discntId, u.discntNm,
-                        u.memberId, u.orderId, u.orderItemId, u.prodId,
-                        u.discntTypeCd, u.discntValue, u.discntAmt, u.usedDate,
-                        u.regBy, u.regDate
-                ))
-                .from(u);
-    }
-
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
@@ -118,13 +117,13 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(PmDiscntUsageDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? u.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* discntUsageId 정확 일치 */
     private BooleanExpression baseAndDiscntUsageId(PmDiscntUsageDto.Request search) {
         return search != null && StringUtils.hasText(search.getDiscntUsageId())
-                ? u.discntUsageId.eq(search.getDiscntUsageId()) : null;
+                ? a.discntUsageId.eq(search.getDiscntUsageId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -137,8 +136,8 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return u.regDate.goe(start).and(u.regDate.lt(endExcl));
-            case "upd_date": return u.updDate.goe(start).and(u.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -151,15 +150,15 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",discntId,", u.discntId, pattern);
-        or = orLike(or, all, types, ",discntNm,", u.discntNm, pattern);
-        or = orLike(or, all, types, ",discntTypeCd,", u.discntTypeCd, pattern);
-        or = orLike(or, all, types, ",discntUsageId,", u.discntUsageId, pattern);
-        or = orLike(or, all, types, ",memberId,", u.memberId, pattern);
-        or = orLike(or, all, types, ",orderId,", u.orderId, pattern);
-        or = orLike(or, all, types, ",orderItemId,", u.orderItemId, pattern);
-        or = orLike(or, all, types, ",prodId,", u.prodId, pattern);
-        or = orLike(or, all, types, ",siteId,", u.siteId, pattern);
+        or = orLike(or, all, types, ",discntId,", a.discntId, pattern);
+        or = orLike(or, all, types, ",discntNm,", a.discntNm, pattern);
+        or = orLike(or, all, types, ",discntTypeCd,", a.discntTypeCd, pattern);
+        or = orLike(or, all, types, ",discntUsageId,", a.discntUsageId, pattern);
+        or = orLike(or, all, types, ",memberId,", a.memberId, pattern);
+        or = orLike(or, all, types, ",orderId,", a.orderId, pattern);
+        or = orLike(or, all, types, ",orderItemId,", a.orderItemId, pattern);
+        or = orLike(or, all, types, ",prodId,", a.prodId, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
         return or;
     }
 
@@ -180,8 +179,8 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, u.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, u.discntUsageId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.discntUsageId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -192,46 +191,48 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("discntUsageId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, u.discntUsageId));
+                    orders.add(new OrderSpecifier(order, a.discntUsageId));
                 } else if ("discntNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, u.discntNm));
+                    orders.add(new OrderSpecifier(order, a.discntNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, u.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, u.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, u.discntUsageId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.discntUsageId));
         }
         return orders;
     }
 
     /* 할인 사용 이력 수정 */
+
+
     @Override
     public int updateSelective(PmDiscntUsage entity) {
         if (entity.getDiscntUsageId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(u);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getSiteId()        != null) { update.set(u.siteId,        entity.getSiteId());        hasAny = true; }
-        if (entity.getDiscntId()      != null) { update.set(u.discntId,      entity.getDiscntId());      hasAny = true; }
-        if (entity.getDiscntNm()      != null) { update.set(u.discntNm,      entity.getDiscntNm());      hasAny = true; }
-        if (entity.getMemberId()      != null) { update.set(u.memberId,      entity.getMemberId());      hasAny = true; }
-        if (entity.getOrderId()       != null) { update.set(u.orderId,       entity.getOrderId());       hasAny = true; }
-        if (entity.getOrderItemId()   != null) { update.set(u.orderItemId,   entity.getOrderItemId());   hasAny = true; }
-        if (entity.getProdId()        != null) { update.set(u.prodId,        entity.getProdId());        hasAny = true; }
-        if (entity.getDiscntTypeCd()  != null) { update.set(u.discntTypeCd,  entity.getDiscntTypeCd());  hasAny = true; }
-        if (entity.getDiscntValue()   != null) { update.set(u.discntValue,   entity.getDiscntValue());   hasAny = true; }
-        if (entity.getDiscntAmt()     != null) { update.set(u.discntAmt,     entity.getDiscntAmt());     hasAny = true; }
-        if (entity.getUsedDate()      != null) { update.set(u.usedDate,      entity.getUsedDate());      hasAny = true; }
+        if (entity.getSiteId()        != null) { update.set(a.siteId,        entity.getSiteId());        hasAny = true; }
+        if (entity.getDiscntId()      != null) { update.set(a.discntId,      entity.getDiscntId());      hasAny = true; }
+        if (entity.getDiscntNm()      != null) { update.set(a.discntNm,      entity.getDiscntNm());      hasAny = true; }
+        if (entity.getMemberId()      != null) { update.set(a.memberId,      entity.getMemberId());      hasAny = true; }
+        if (entity.getOrderId()       != null) { update.set(a.orderId,       entity.getOrderId());       hasAny = true; }
+        if (entity.getOrderItemId()   != null) { update.set(a.orderItemId,   entity.getOrderItemId());   hasAny = true; }
+        if (entity.getProdId()        != null) { update.set(a.prodId,        entity.getProdId());        hasAny = true; }
+        if (entity.getDiscntTypeCd()  != null) { update.set(a.discntTypeCd,  entity.getDiscntTypeCd());  hasAny = true; }
+        if (entity.getDiscntValue()   != null) { update.set(a.discntValue,   entity.getDiscntValue());   hasAny = true; }
+        if (entity.getDiscntAmt()     != null) { update.set(a.discntAmt,     entity.getDiscntAmt());     hasAny = true; }
+        if (entity.getUsedDate()      != null) { update.set(a.usedDate,      entity.getUsedDate());      hasAny = true; }
 
         if (!hasAny) return 0;
 
-        long affected = update.where(u.discntUsageId.eq(entity.getDiscntUsageId())).execute();
+        long affected = update.where(a.discntUsageId.eq(entity.getDiscntUsageId())).execute();
         return (int) affected;
     }
 }

@@ -28,24 +28,24 @@ public class QOdhClaimItemStatusHistRepositoryImpl implements QOdhClaimItemStatu
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdhClaimItemStatusHistRepositoryImpl";
-    private static final QOdhClaimItemStatusHist h = QOdhClaimItemStatusHist.odhClaimItemStatusHist;
+    private static final QOdhClaimItemStatusHist a = QOdhClaimItemStatusHist.odhClaimItemStatusHist;
 
-    /* 클레임 아이템 상태 이력 baseQuery */
-    private JPAQuery<OdhClaimItemStatusHistDto.Item> baseQuery() {
+    /* 클레임 아이템 상태 이력 baseSelColumnQuery */
+    private JPAQuery<OdhClaimItemStatusHistDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(OdhClaimItemStatusHistDto.Item.class,
-                        h.claimItemStatusHistId, h.siteId, h.claimItemId, h.claimId, h.orderItemId,
-                        h.claimItemStatusCdBefore, h.claimItemStatusCd, h.statusReason,
-                        h.chgUserId, h.chgDate, h.memo,
-                        h.regBy, h.regDate, h.updBy, h.updDate))
-                .from(h);
+                        a.claimItemStatusHistId, a.siteId, a.claimItemId, a.claimId, a.orderItemId,
+                        a.claimItemStatusCdBefore, a.claimItemStatusCd, a.statusReason,
+                        a.chgUserId, a.chgDate, a.memo,
+                        a.regBy, a.regDate, a.updBy, a.updDate))
+                .from(a);
     }
 
     /* 클레임 아이템 상태 이력 키조회 */
     @Override
     public Optional<OdhClaimItemStatusHistDto.Item> selectById(String id) {
-        OdhClaimItemStatusHistDto.Item dto = baseQuery()
-                .where(h.claimItemStatusHistId.eq(id))
+        OdhClaimItemStatusHistDto.Item dto = baseSelColumnQuery()
+                .where(a.claimItemStatusHistId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -55,7 +55,7 @@ public class QOdhClaimItemStatusHistRepositoryImpl implements QOdhClaimItemStatu
     public List<OdhClaimItemStatusHistDto.Item> selectList(OdhClaimItemStatusHistDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<OdhClaimItemStatusHistDto.Item> query = baseQuery().where(
+        JPAQuery<OdhClaimItemStatusHistDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndClaimItemStatusHistId(search),
                 baseAndSearchValue(search)
@@ -81,7 +81,7 @@ public class QOdhClaimItemStatusHistRepositoryImpl implements QOdhClaimItemStatu
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<OdhClaimItemStatusHistDto.Item> query = baseQuery().where(
+        JPAQuery<OdhClaimItemStatusHistDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndClaimItemStatusHistId(search),
                 baseAndSearchValue(search)
@@ -91,7 +91,7 @@ public class QOdhClaimItemStatusHistRepositoryImpl implements QOdhClaimItemStatu
         }
         List<OdhClaimItemStatusHistDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(h.count()).from(h).where(
+        Long total = queryFactory.select(a.count()).from(a).where(
                 baseAndSiteId(search),
                 baseAndClaimItemStatusHistId(search),
                 baseAndSearchValue(search)
@@ -111,13 +111,13 @@ public class QOdhClaimItemStatusHistRepositoryImpl implements QOdhClaimItemStatu
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(OdhClaimItemStatusHistDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? h.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* claimItemStatusHistId 정확 일치 */
     private BooleanExpression baseAndClaimItemStatusHistId(OdhClaimItemStatusHistDto.Request search) {
         return search != null && StringUtils.hasText(search.getClaimItemStatusHistId())
-                ? h.claimItemStatusHistId.eq(search.getClaimItemStatusHistId()) : null;
+                ? a.claimItemStatusHistId.eq(search.getClaimItemStatusHistId()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
@@ -128,16 +128,16 @@ public class QOdhClaimItemStatusHistRepositoryImpl implements QOdhClaimItemStatu
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",chgUserId,", h.chgUserId, pattern);
-        or = orLike(or, all, types, ",claimId,", h.claimId, pattern);
-        or = orLike(or, all, types, ",claimItemId,", h.claimItemId, pattern);
-        or = orLike(or, all, types, ",claimItemStatusCd,", h.claimItemStatusCd, pattern);
-        or = orLike(or, all, types, ",claimItemStatusCdBefore,", h.claimItemStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",claimItemStatusHistId,", h.claimItemStatusHistId, pattern);
-        or = orLike(or, all, types, ",memo,", h.memo, pattern);
-        or = orLike(or, all, types, ",orderItemId,", h.orderItemId, pattern);
-        or = orLike(or, all, types, ",siteId,", h.siteId, pattern);
-        or = orLike(or, all, types, ",statusReason,", h.statusReason, pattern);
+        or = orLike(or, all, types, ",chgUserId,", a.chgUserId, pattern);
+        or = orLike(or, all, types, ",claimId,", a.claimId, pattern);
+        or = orLike(or, all, types, ",claimItemId,", a.claimItemId, pattern);
+        or = orLike(or, all, types, ",claimItemStatusCd,", a.claimItemStatusCd, pattern);
+        or = orLike(or, all, types, ",claimItemStatusCdBefore,", a.claimItemStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",claimItemStatusHistId,", a.claimItemStatusHistId, pattern);
+        or = orLike(or, all, types, ",memo,", a.memo, pattern);
+        or = orLike(or, all, types, ",orderItemId,", a.orderItemId, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",statusReason,", a.statusReason, pattern);
         return or;
     }
 
@@ -158,8 +158,8 @@ public class QOdhClaimItemStatusHistRepositoryImpl implements QOdhClaimItemStatu
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, h.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, h.claimItemStatusHistId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.claimItemStatusHistId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -170,17 +170,17 @@ public class QOdhClaimItemStatusHistRepositoryImpl implements QOdhClaimItemStatu
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("claimItemStatusHistId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, h.claimItemStatusHistId));
+                    orders.add(new OrderSpecifier(order, a.claimItemStatusHistId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, h.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, h.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, h.claimItemStatusHistId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.claimItemStatusHistId));
         }
         return orders;
     }
@@ -190,26 +190,26 @@ public class QOdhClaimItemStatusHistRepositoryImpl implements QOdhClaimItemStatu
     public int updateSelective(OdhClaimItemStatusHist entity) {
         if (entity.getClaimItemStatusHistId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(h);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getSiteId()                  != null) { update.set(h.siteId,                  entity.getSiteId());                  hasAny = true; }
-        if (entity.getClaimItemId()             != null) { update.set(h.claimItemId,             entity.getClaimItemId());             hasAny = true; }
-        if (entity.getClaimId()                 != null) { update.set(h.claimId,                 entity.getClaimId());                 hasAny = true; }
-        if (entity.getOrderItemId()             != null) { update.set(h.orderItemId,             entity.getOrderItemId());             hasAny = true; }
-        if (entity.getClaimItemStatusCdBefore() != null) { update.set(h.claimItemStatusCdBefore, entity.getClaimItemStatusCdBefore()); hasAny = true; }
-        if (entity.getClaimItemStatusCd()       != null) { update.set(h.claimItemStatusCd,       entity.getClaimItemStatusCd());       hasAny = true; }
-        if (entity.getStatusReason()            != null) { update.set(h.statusReason,            entity.getStatusReason());            hasAny = true; }
-        if (entity.getChgUserId()               != null) { update.set(h.chgUserId,               entity.getChgUserId());               hasAny = true; }
-        if (entity.getChgDate()                 != null) { update.set(h.chgDate,                 entity.getChgDate());                 hasAny = true; }
-        if (entity.getMemo()                    != null) { update.set(h.memo,                    entity.getMemo());                    hasAny = true; }
-        if (entity.getUpdBy()                   != null) { update.set(h.updBy,                   entity.getUpdBy());                   hasAny = true; }
+        if (entity.getSiteId()                  != null) { update.set(a.siteId,                  entity.getSiteId());                  hasAny = true; }
+        if (entity.getClaimItemId()             != null) { update.set(a.claimItemId,             entity.getClaimItemId());             hasAny = true; }
+        if (entity.getClaimId()                 != null) { update.set(a.claimId,                 entity.getClaimId());                 hasAny = true; }
+        if (entity.getOrderItemId()             != null) { update.set(a.orderItemId,             entity.getOrderItemId());             hasAny = true; }
+        if (entity.getClaimItemStatusCdBefore() != null) { update.set(a.claimItemStatusCdBefore, entity.getClaimItemStatusCdBefore()); hasAny = true; }
+        if (entity.getClaimItemStatusCd()       != null) { update.set(a.claimItemStatusCd,       entity.getClaimItemStatusCd());       hasAny = true; }
+        if (entity.getStatusReason()            != null) { update.set(a.statusReason,            entity.getStatusReason());            hasAny = true; }
+        if (entity.getChgUserId()               != null) { update.set(a.chgUserId,               entity.getChgUserId());               hasAny = true; }
+        if (entity.getChgDate()                 != null) { update.set(a.chgDate,                 entity.getChgDate());                 hasAny = true; }
+        if (entity.getMemo()                    != null) { update.set(a.memo,                    entity.getMemo());                    hasAny = true; }
+        if (entity.getUpdBy()                   != null) { update.set(a.updBy,                   entity.getUpdBy());                   hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(h.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(h.claimItemStatusHistId.eq(entity.getClaimItemStatusHistId())).execute();
+        long affected = update.where(a.claimItemStatusHistId.eq(entity.getClaimItemStatusHistId())).execute();
         return (int) affected;
     }
 }

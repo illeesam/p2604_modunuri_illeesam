@@ -28,17 +28,17 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmBlogFileRepositoryImpl";
-    private static final QCmBlogFile f = QCmBlogFile.cmBlogFile;
+    private static final QCmBlogFile a = QCmBlogFile.cmBlogFile;
 
     /* 게시물 첨부파일 buildBaseQuery */
     private JPAQuery<CmBlogFileDto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(CmBlogFileDto.Item.class,
-                        f.blogImgId, f.blogId, f.imgUrl, f.thumbUrl,
-                        f.imgAltText, f.sortOrd,
-                        f.regBy, f.regDate
+                        a.blogImgId, a.blogId, a.imgUrl, a.thumbUrl,
+                        a.imgAltText, a.sortOrd,
+                        a.regBy, a.regDate
                 ))
-                .from(f);
+                .from(a);
     }
 
     /* 게시물 첨부파일 키조회 */
@@ -46,7 +46,7 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
     public Optional<CmBlogFileDto.Item> selectById(String blogImgId) {
         CmBlogFileDto.Item dto = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
-                .where(f.blogImgId.eq(blogImgId))
+                .where(a.blogImgId.eq(blogImgId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -98,8 +98,8 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
         List<CmBlogFileDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(f.count())
-                .from(f)
+                .select(a.count())
+                .from(a)
                 .where(
                 baseAndBlogIds(search),
                 baseAndBlogId(search),
@@ -123,19 +123,19 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
     /* blogId IN */
     private BooleanExpression baseAndBlogIds(CmBlogFileDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getBlogIds())
-                ? f.blogId.in(search.getBlogIds()) : null;
+                ? a.blogId.in(search.getBlogIds()) : null;
     }
 
     /* blogId 정확 일치 */
     private BooleanExpression baseAndBlogId(CmBlogFileDto.Request search) {
         return search != null && StringUtils.hasText(search.getBlogId())
-                ? f.blogId.eq(search.getBlogId()) : null;
+                ? a.blogId.eq(search.getBlogId()) : null;
     }
 
     /* blogImgId 정확 일치 */
     private BooleanExpression baseAndBlogImgId(CmBlogFileDto.Request search) {
         return search != null && StringUtils.hasText(search.getBlogImgId())
-                ? f.blogImgId.eq(search.getBlogImgId()) : null;
+                ? a.blogImgId.eq(search.getBlogImgId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -148,8 +148,8 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return f.regDate.goe(start).and(f.regDate.lt(endExcl));
-            case "upd_date": return f.updDate.goe(start).and(f.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -162,12 +162,12 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",blogId,", f.blogId, pattern);
-        or = orLike(or, all, types, ",blogImgId,", f.blogImgId, pattern);
-        or = orLike(or, all, types, ",imgAltText,", f.imgAltText, pattern);
-        or = orLike(or, all, types, ",imgUrl,", f.imgUrl, pattern);
-        or = orLike(or, all, types, ",siteId,", f.siteId, pattern);
-        or = orLike(or, all, types, ",thumbUrl,", f.thumbUrl, pattern);
+        or = orLike(or, all, types, ",blogId,", a.blogId, pattern);
+        or = orLike(or, all, types, ",blogImgId,", a.blogImgId, pattern);
+        or = orLike(or, all, types, ",imgAltText,", a.imgAltText, pattern);
+        or = orLike(or, all, types, ",imgUrl,", a.imgUrl, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",thumbUrl,", a.thumbUrl, pattern);
         return or;
     }
 
@@ -190,9 +190,9 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
         if (!StringUtils.hasText(sort)) {
 
             /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, f.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, f.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, f.blogImgId));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.blogImgId));
 
             return orders;
         }
@@ -204,18 +204,18 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("blogImgId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, f.blogImgId));
+                    orders.add(new OrderSpecifier(order, a.blogImgId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, f.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, f.sortOrd)); }
+                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, a.sortOrd)); }
             }
         }
         /* unknown sort → sortOrd ASC + regDate ASC fallback */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, f.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, f.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, f.blogImgId));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.blogImgId));
         }
         return orders;
     }
@@ -225,18 +225,18 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
     public int updateSelective(CmBlogFile entity) {
         if (entity.getBlogImgId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(f);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getBlogId()     != null) { update.set(f.blogId,     entity.getBlogId());     hasAny = true; }
-        if (entity.getImgUrl()     != null) { update.set(f.imgUrl,     entity.getImgUrl());     hasAny = true; }
-        if (entity.getThumbUrl()   != null) { update.set(f.thumbUrl,   entity.getThumbUrl());   hasAny = true; }
-        if (entity.getImgAltText() != null) { update.set(f.imgAltText, entity.getImgAltText()); hasAny = true; }
-        if (entity.getSortOrd()    != null) { update.set(f.sortOrd,    entity.getSortOrd());    hasAny = true; }
+        if (entity.getBlogId()     != null) { update.set(a.blogId,     entity.getBlogId());     hasAny = true; }
+        if (entity.getImgUrl()     != null) { update.set(a.imgUrl,     entity.getImgUrl());     hasAny = true; }
+        if (entity.getThumbUrl()   != null) { update.set(a.thumbUrl,   entity.getThumbUrl());   hasAny = true; }
+        if (entity.getImgAltText() != null) { update.set(a.imgAltText, entity.getImgAltText()); hasAny = true; }
+        if (entity.getSortOrd()    != null) { update.set(a.sortOrd,    entity.getSortOrd());    hasAny = true; }
 
         if (!hasAny) return 0;
 
-        long affected = update.where(f.blogImgId.eq(entity.getBlogImgId())).execute();
+        long affected = update.where(a.blogImgId.eq(entity.getBlogImgId())).execute();
         return (int) affected;
     }
 }

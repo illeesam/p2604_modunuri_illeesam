@@ -32,7 +32,7 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyVendorUserRepositoryImpl";
-    private static final QSyVendorUser u = QSyVendorUser.syVendorUser;
+    private static final QSyVendorUser a = QSyVendorUser.syVendorUser;
     private static final QSySite ste = QSySite.sySite;
     private static final QSyVendor vnd = QSyVendor.syVendor;
     private static final QSyUser usr = QSyUser.syUser;
@@ -43,20 +43,20 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
     private JPAQuery<SyVendorUserDto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(SyVendorUserDto.Item.class,
-                        u.vendorUserId, u.siteId, u.vendorId, u.userId,
-                        u.memberNm, u.positionCd, u.vendorUserDeptNm,
-                        u.vendorUserPhone, u.vendorUserMobile, u.vendorUserEmail,
-                        u.birthDate, u.isMain, u.authYn, u.joinDate, u.leaveDate,
-                        u.vendorUserStatusCd, u.vendorUserRemark,
-                        u.regBy, u.regDate, u.updBy, u.updDate,
+                        a.vendorUserId, a.siteId, a.vendorId, a.userId,
+                        a.memberNm, a.positionCd, a.vendorUserDeptNm,
+                        a.vendorUserPhone, a.vendorUserMobile, a.vendorUserEmail,
+                        a.birthDate, a.isMain, a.authYn, a.joinDate, a.leaveDate,
+                        a.vendorUserStatusCd, a.vendorUserRemark,
+                        a.regBy, a.regDate, a.updBy, a.updDate,
                         vnd.vendorNm.as("vendorNm")
                 ))
-                .from(u)
-                .leftJoin(ste).on(ste.siteId.eq(u.siteId))
-                .leftJoin(vnd).on(vnd.vendorId.eq(u.vendorId))
-                .leftJoin(usr).on(usr.userId.eq(u.userId))
-                .leftJoin(cdP).on(cdP.codeGrp.eq("POSITION").and(cdP.codeValue.eq(u.positionCd)))
-                .leftJoin(cdVms).on(cdVms.codeGrp.eq("VENDOR_MEMBER_STATUS").and(cdVms.codeValue.eq(u.vendorUserStatusCd)));
+                .from(a)
+                .leftJoin(ste).on(ste.siteId.eq(a.siteId))
+                .leftJoin(vnd).on(vnd.vendorId.eq(a.vendorId))
+                .leftJoin(usr).on(usr.userId.eq(a.userId))
+                .leftJoin(cdP).on(cdP.codeGrp.eq("POSITION").and(cdP.codeValue.eq(a.positionCd)))
+                .leftJoin(cdVms).on(cdVms.codeGrp.eq("VENDOR_MEMBER_STATUS").and(cdVms.codeValue.eq(a.vendorUserStatusCd)));
     }
 
     /* 업체 사용자 키조회 */
@@ -64,7 +64,7 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
     public Optional<SyVendorUserDto.Item> selectById(String vendorUserId) {
         SyVendorUserDto.Item dto = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
-                .where(u.vendorUserId.eq(vendorUserId))
+                .where(a.vendorUserId.eq(vendorUserId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -119,7 +119,7 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
         }
         List<SyVendorUserDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(u.count()).from(u).where(
+        Long total = queryFactory.select(a.count()).from(a).where(
                 baseAndSiteId(search),
                 baseAndVendorUserId(search),
                 baseAndUserId(search),
@@ -143,31 +143,31 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(SyVendorUserDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? u.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* vendorUserId 정확 일치 */
     private BooleanExpression baseAndVendorUserId(SyVendorUserDto.Request search) {
         return search != null && StringUtils.hasText(search.getVendorUserId())
-                ? u.vendorUserId.eq(search.getVendorUserId()) : null;
+                ? a.vendorUserId.eq(search.getVendorUserId()) : null;
     }
 
     /* userId 정확 일치 */
     private BooleanExpression baseAndUserId(SyVendorUserDto.Request search) {
         return search != null && StringUtils.hasText(search.getUserId())
-                ? u.userId.eq(search.getUserId()) : null;
+                ? a.userId.eq(search.getUserId()) : null;
     }
 
     /* vendorId 정확 일치 */
     private BooleanExpression baseAndVendorId(SyVendorUserDto.Request search) {
         return search != null && StringUtils.hasText(search.getVendorId())
-                ? u.vendorId.eq(search.getVendorId()) : null;
+                ? a.vendorId.eq(search.getVendorId()) : null;
     }
 
     /* vendorUserStatusCd 정확 일치 */
     private BooleanExpression baseAndStatus(SyVendorUserDto.Request search) {
         return search != null && StringUtils.hasText(search.getStatus())
-                ? u.vendorUserStatusCd.eq(search.getStatus()) : null;
+                ? a.vendorUserStatusCd.eq(search.getStatus()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -180,8 +180,8 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return u.regDate.goe(start).and(u.regDate.lt(endExcl));
-            case "upd_date": return u.updDate.goe(start).and(u.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -194,20 +194,20 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",authYn,", u.authYn, pattern);
-        or = orLike(or, all, types, ",isMain,", u.isMain, pattern);
-        or = orLike(or, all, types, ",memberNm,", u.memberNm, pattern);
-        or = orLike(or, all, types, ",positionCd,", u.positionCd, pattern);
-        or = orLike(or, all, types, ",siteId,", u.siteId, pattern);
-        or = orLike(or, all, types, ",userId,", u.userId, pattern);
-        or = orLike(or, all, types, ",vendorId,", u.vendorId, pattern);
-        or = orLike(or, all, types, ",vendorUserDeptNm,", u.vendorUserDeptNm, pattern);
-        or = orLike(or, all, types, ",vendorUserEmail,", u.vendorUserEmail, pattern);
-        or = orLike(or, all, types, ",vendorUserId,", u.vendorUserId, pattern);
-        or = orLike(or, all, types, ",vendorUserMobile,", u.vendorUserMobile, pattern);
-        or = orLike(or, all, types, ",vendorUserPhone,", u.vendorUserPhone, pattern);
-        or = orLike(or, all, types, ",vendorUserRemark,", u.vendorUserRemark, pattern);
-        or = orLike(or, all, types, ",vendorUserStatusCd,", u.vendorUserStatusCd, pattern);
+        or = orLike(or, all, types, ",authYn,", a.authYn, pattern);
+        or = orLike(or, all, types, ",isMain,", a.isMain, pattern);
+        or = orLike(or, all, types, ",memberNm,", a.memberNm, pattern);
+        or = orLike(or, all, types, ",positionCd,", a.positionCd, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",userId,", a.userId, pattern);
+        or = orLike(or, all, types, ",vendorId,", a.vendorId, pattern);
+        or = orLike(or, all, types, ",vendorUserDeptNm,", a.vendorUserDeptNm, pattern);
+        or = orLike(or, all, types, ",vendorUserEmail,", a.vendorUserEmail, pattern);
+        or = orLike(or, all, types, ",vendorUserId,", a.vendorUserId, pattern);
+        or = orLike(or, all, types, ",vendorUserMobile,", a.vendorUserMobile, pattern);
+        or = orLike(or, all, types, ",vendorUserPhone,", a.vendorUserPhone, pattern);
+        or = orLike(or, all, types, ",vendorUserRemark,", a.vendorUserRemark, pattern);
+        or = orLike(or, all, types, ",vendorUserStatusCd,", a.vendorUserStatusCd, pattern);
         return or;
     }
 
@@ -228,8 +228,8 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, u.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, u.vendorUserId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.vendorUserId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -240,19 +240,19 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("vendorUserId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, u.vendorUserId));
+                    orders.add(new OrderSpecifier(order, a.vendorUserId));
                 } else if ("memberNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, u.memberNm));
+                    orders.add(new OrderSpecifier(order, a.memberNm));
                 } else if ("joinDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, u.joinDate));
+                    orders.add(new OrderSpecifier(order, a.joinDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, u.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, u.vendorUserId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.vendorUserId));
         }
         return orders;
     }
@@ -262,32 +262,32 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
     public int updateSelective(SyVendorUser entity) {
         if (entity.getVendorUserId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(u);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getSiteId()             != null) { update.set(u.siteId,             entity.getSiteId());             hasAny = true; }
-        if (entity.getVendorId()           != null) { update.set(u.vendorId,           entity.getVendorId());           hasAny = true; }
-        if (entity.getUserId()             != null) { update.set(u.userId,             entity.getUserId());             hasAny = true; }
-        if (entity.getMemberNm()           != null) { update.set(u.memberNm,           entity.getMemberNm());           hasAny = true; }
-        if (entity.getPositionCd()         != null) { update.set(u.positionCd,         entity.getPositionCd());         hasAny = true; }
-        if (entity.getVendorUserDeptNm()   != null) { update.set(u.vendorUserDeptNm,   entity.getVendorUserDeptNm());   hasAny = true; }
-        if (entity.getVendorUserPhone()    != null) { update.set(u.vendorUserPhone,    entity.getVendorUserPhone());    hasAny = true; }
-        if (entity.getVendorUserMobile()   != null) { update.set(u.vendorUserMobile,   entity.getVendorUserMobile());   hasAny = true; }
-        if (entity.getVendorUserEmail()    != null) { update.set(u.vendorUserEmail,    entity.getVendorUserEmail());    hasAny = true; }
-        if (entity.getBirthDate()          != null) { update.set(u.birthDate,          entity.getBirthDate());          hasAny = true; }
-        if (entity.getIsMain()             != null) { update.set(u.isMain,             entity.getIsMain());             hasAny = true; }
-        if (entity.getAuthYn()             != null) { update.set(u.authYn,             entity.getAuthYn());             hasAny = true; }
-        if (entity.getJoinDate()           != null) { update.set(u.joinDate,           entity.getJoinDate());           hasAny = true; }
-        if (entity.getLeaveDate()          != null) { update.set(u.leaveDate,          entity.getLeaveDate());          hasAny = true; }
-        if (entity.getVendorUserStatusCd() != null) { update.set(u.vendorUserStatusCd, entity.getVendorUserStatusCd()); hasAny = true; }
-        if (entity.getVendorUserRemark()   != null) { update.set(u.vendorUserRemark,   entity.getVendorUserRemark());   hasAny = true; }
-        if (entity.getUpdBy()              != null) { update.set(u.updBy,              entity.getUpdBy());              hasAny = true; }
+        if (entity.getSiteId()             != null) { update.set(a.siteId,             entity.getSiteId());             hasAny = true; }
+        if (entity.getVendorId()           != null) { update.set(a.vendorId,           entity.getVendorId());           hasAny = true; }
+        if (entity.getUserId()             != null) { update.set(a.userId,             entity.getUserId());             hasAny = true; }
+        if (entity.getMemberNm()           != null) { update.set(a.memberNm,           entity.getMemberNm());           hasAny = true; }
+        if (entity.getPositionCd()         != null) { update.set(a.positionCd,         entity.getPositionCd());         hasAny = true; }
+        if (entity.getVendorUserDeptNm()   != null) { update.set(a.vendorUserDeptNm,   entity.getVendorUserDeptNm());   hasAny = true; }
+        if (entity.getVendorUserPhone()    != null) { update.set(a.vendorUserPhone,    entity.getVendorUserPhone());    hasAny = true; }
+        if (entity.getVendorUserMobile()   != null) { update.set(a.vendorUserMobile,   entity.getVendorUserMobile());   hasAny = true; }
+        if (entity.getVendorUserEmail()    != null) { update.set(a.vendorUserEmail,    entity.getVendorUserEmail());    hasAny = true; }
+        if (entity.getBirthDate()          != null) { update.set(a.birthDate,          entity.getBirthDate());          hasAny = true; }
+        if (entity.getIsMain()             != null) { update.set(a.isMain,             entity.getIsMain());             hasAny = true; }
+        if (entity.getAuthYn()             != null) { update.set(a.authYn,             entity.getAuthYn());             hasAny = true; }
+        if (entity.getJoinDate()           != null) { update.set(a.joinDate,           entity.getJoinDate());           hasAny = true; }
+        if (entity.getLeaveDate()          != null) { update.set(a.leaveDate,          entity.getLeaveDate());          hasAny = true; }
+        if (entity.getVendorUserStatusCd() != null) { update.set(a.vendorUserStatusCd, entity.getVendorUserStatusCd()); hasAny = true; }
+        if (entity.getVendorUserRemark()   != null) { update.set(a.vendorUserRemark,   entity.getVendorUserRemark());   hasAny = true; }
+        if (entity.getUpdBy()              != null) { update.set(a.updBy,              entity.getUpdBy());              hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(u.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(u.vendorUserId.eq(entity.getVendorUserId())).execute();
+        long affected = update.where(a.vendorUserId.eq(entity.getVendorUserId())).execute();
         return (int) affected;
     }
 }

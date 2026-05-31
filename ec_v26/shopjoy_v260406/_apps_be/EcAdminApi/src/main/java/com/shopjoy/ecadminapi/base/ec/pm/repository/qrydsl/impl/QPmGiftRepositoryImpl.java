@@ -32,7 +32,7 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmGiftRepositoryImpl";
-    private static final QPmGift  g    = QPmGift.pmGift;
+    private static final QPmGift  a    = QPmGift.pmGift;
     private static final QPdProd  prd  = QPdProd.pdProd;
     private static final QSySite  ste  = QSySite.sySite;
     private static final QSyCode  cdGt = new QSyCode("cd_gt");
@@ -40,28 +40,28 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
     private static final QSyCode  cdMg = new QSyCode("cd_mg");
 
     /** 공통 base query — JOIN 일치, Item 필드만 projection */
-    private JPAQuery<PmGiftDto.Item> baseQuery() {
+    private JPAQuery<PmGiftDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PmGiftDto.Item.class,
-                        g.giftId, g.siteId, g.giftNm, g.giftTypeCd, g.prodId,
-                        g.giftStock, g.giftDesc, g.startDate, g.endDate,
-                        g.giftStatusCd, g.giftStatusCdBefore, g.memGradeCd,
-                        g.minOrderAmt, g.minOrderQty, g.selfCdivRate, g.sellerCdivRate,
-                        g.useYn, g.regBy, g.regDate, g.updBy, g.updDate
+                        a.giftId, a.siteId, a.giftNm, a.giftTypeCd, a.prodId,
+                        a.giftStock, a.giftDesc, a.startDate, a.endDate,
+                        a.giftStatusCd, a.giftStatusCdBefore, a.memGradeCd,
+                        a.minOrderAmt, a.minOrderQty, a.selfCdivRate, a.sellerCdivRate,
+                        a.useYn, a.regBy, a.regDate, a.updBy, a.updDate
                 ))
-                .from(g)
-                .leftJoin(prd).on(prd.prodId.eq(g.prodId))
-                .leftJoin(ste).on(ste.siteId.eq(g.siteId))
-                .leftJoin(cdGt).on(cdGt.codeGrp.eq("GIFT_TYPE").and(cdGt.codeValue.eq(g.giftTypeCd)))
-                .leftJoin(cdGs).on(cdGs.codeGrp.eq("GIFT_STATUS").and(cdGs.codeValue.eq(g.giftStatusCd)))
-                .leftJoin(cdMg).on(cdMg.codeGrp.eq("MEMBER_GRADE").and(cdMg.codeValue.eq(g.memGradeCd)));
+                .from(a)
+                .leftJoin(prd).on(prd.prodId.eq(a.prodId))
+                .leftJoin(ste).on(ste.siteId.eq(a.siteId))
+                .leftJoin(cdGt).on(cdGt.codeGrp.eq("GIFT_TYPE").and(cdGt.codeValue.eq(a.giftTypeCd)))
+                .leftJoin(cdGs).on(cdGs.codeGrp.eq("GIFT_STATUS").and(cdGs.codeValue.eq(a.giftStatusCd)))
+                .leftJoin(cdMg).on(cdMg.codeGrp.eq("MEMBER_GRADE").and(cdMg.codeValue.eq(a.memGradeCd)));
     }
 
     /** 단건 조회 */
     @Override
     public Optional<PmGiftDto.Item> selectById(String giftId) {
-        PmGiftDto.Item dto = baseQuery()
-                .where(g.giftId.eq(giftId))
+        PmGiftDto.Item dto = baseSelColumnQuery()
+                .where(a.giftId.eq(giftId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -71,7 +71,7 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
     public List<PmGiftDto.Item> selectList(PmGiftDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PmGiftDto.Item> query = baseQuery().where(
+        JPAQuery<PmGiftDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndGiftId(search),
                 baseAndUseYn(search),
@@ -99,7 +99,7 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PmGiftDto.Item> query = baseQuery().where(
+        JPAQuery<PmGiftDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndGiftId(search),
                 baseAndUseYn(search),
@@ -112,8 +112,8 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
         List<PmGiftDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(g.count())
-                .from(g)
+                .select(a.count())
+                .from(a)
                 .where(
                 baseAndSiteId(search),
                 baseAndGiftId(search),
@@ -138,19 +138,19 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(PmGiftDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? g.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* giftId 정확 일치 */
     private BooleanExpression baseAndGiftId(PmGiftDto.Request search) {
         return search != null && StringUtils.hasText(search.getGiftId())
-                ? g.giftId.eq(search.getGiftId()) : null;
+                ? a.giftId.eq(search.getGiftId()) : null;
     }
 
     /* useYn 정확 일치 */
     private BooleanExpression baseAndUseYn(PmGiftDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
-                ? g.useYn.eq(search.getUseYn()) : null;
+                ? a.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -163,8 +163,8 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return g.regDate.goe(start).and(g.regDate.lt(endExcl));
-            case "upd_date": return g.updDate.goe(start).and(g.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -177,16 +177,16 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",giftDesc,", g.giftDesc, pattern);
-        or = orLike(or, all, types, ",giftId,", g.giftId, pattern);
-        or = orLike(or, all, types, ",giftNm,", g.giftNm, pattern);
-        or = orLike(or, all, types, ",giftStatusCd,", g.giftStatusCd, pattern);
-        or = orLike(or, all, types, ",giftStatusCdBefore,", g.giftStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",giftTypeCd,", g.giftTypeCd, pattern);
-        or = orLike(or, all, types, ",memGradeCd,", g.memGradeCd, pattern);
-        or = orLike(or, all, types, ",prodId,", g.prodId, pattern);
-        or = orLike(or, all, types, ",siteId,", g.siteId, pattern);
-        or = orLike(or, all, types, ",useYn,", g.useYn, pattern);
+        or = orLike(or, all, types, ",giftDesc,", a.giftDesc, pattern);
+        or = orLike(or, all, types, ",giftId,", a.giftId, pattern);
+        or = orLike(or, all, types, ",giftNm,", a.giftNm, pattern);
+        or = orLike(or, all, types, ",giftStatusCd,", a.giftStatusCd, pattern);
+        or = orLike(or, all, types, ",giftStatusCdBefore,", a.giftStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",giftTypeCd,", a.giftTypeCd, pattern);
+        or = orLike(or, all, types, ",memGradeCd,", a.memGradeCd, pattern);
+        or = orLike(or, all, types, ",prodId,", a.prodId, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",useYn,", a.useYn, pattern);
         return or;
     }
 
@@ -207,8 +207,8 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, g.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, g.giftId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.giftId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -219,19 +219,19 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("giftId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, g.giftId));
+                    orders.add(new OrderSpecifier(order, a.giftId));
                 } else if ("giftNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, g.giftNm));
+                    orders.add(new OrderSpecifier(order, a.giftNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, g.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, g.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, g.giftId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.giftId));
         }
         return orders;
     }
@@ -241,32 +241,32 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
     public int updateSelective(PmGift entity) {
         if (entity.getGiftId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(g);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getSiteId()             != null) { update.set(g.siteId,             entity.getSiteId());             hasAny = true; }
-        if (entity.getGiftNm()             != null) { update.set(g.giftNm,             entity.getGiftNm());             hasAny = true; }
-        if (entity.getGiftTypeCd()         != null) { update.set(g.giftTypeCd,         entity.getGiftTypeCd());         hasAny = true; }
-        if (entity.getProdId()             != null) { update.set(g.prodId,             entity.getProdId());             hasAny = true; }
-        if (entity.getGiftStock()          != null) { update.set(g.giftStock,          entity.getGiftStock());          hasAny = true; }
-        if (entity.getGiftDesc()           != null) { update.set(g.giftDesc,           entity.getGiftDesc());           hasAny = true; }
-        if (entity.getStartDate()          != null) { update.set(g.startDate,          entity.getStartDate());          hasAny = true; }
-        if (entity.getEndDate()            != null) { update.set(g.endDate,            entity.getEndDate());            hasAny = true; }
-        if (entity.getGiftStatusCd()       != null) { update.set(g.giftStatusCd,       entity.getGiftStatusCd());       hasAny = true; }
-        if (entity.getGiftStatusCdBefore() != null) { update.set(g.giftStatusCdBefore, entity.getGiftStatusCdBefore()); hasAny = true; }
-        if (entity.getMemGradeCd()         != null) { update.set(g.memGradeCd,         entity.getMemGradeCd());         hasAny = true; }
-        if (entity.getMinOrderAmt()        != null) { update.set(g.minOrderAmt,        entity.getMinOrderAmt());        hasAny = true; }
-        if (entity.getMinOrderQty()        != null) { update.set(g.minOrderQty,        entity.getMinOrderQty());        hasAny = true; }
-        if (entity.getSelfCdivRate()       != null) { update.set(g.selfCdivRate,       entity.getSelfCdivRate());       hasAny = true; }
-        if (entity.getSellerCdivRate()     != null) { update.set(g.sellerCdivRate,     entity.getSellerCdivRate());     hasAny = true; }
-        if (entity.getUseYn()              != null) { update.set(g.useYn,              entity.getUseYn());              hasAny = true; }
-        if (entity.getUpdBy()              != null) { update.set(g.updBy,              entity.getUpdBy());              hasAny = true; }
+        if (entity.getSiteId()             != null) { update.set(a.siteId,             entity.getSiteId());             hasAny = true; }
+        if (entity.getGiftNm()             != null) { update.set(a.giftNm,             entity.getGiftNm());             hasAny = true; }
+        if (entity.getGiftTypeCd()         != null) { update.set(a.giftTypeCd,         entity.getGiftTypeCd());         hasAny = true; }
+        if (entity.getProdId()             != null) { update.set(a.prodId,             entity.getProdId());             hasAny = true; }
+        if (entity.getGiftStock()          != null) { update.set(a.giftStock,          entity.getGiftStock());          hasAny = true; }
+        if (entity.getGiftDesc()           != null) { update.set(a.giftDesc,           entity.getGiftDesc());           hasAny = true; }
+        if (entity.getStartDate()          != null) { update.set(a.startDate,          entity.getStartDate());          hasAny = true; }
+        if (entity.getEndDate()            != null) { update.set(a.endDate,            entity.getEndDate());            hasAny = true; }
+        if (entity.getGiftStatusCd()       != null) { update.set(a.giftStatusCd,       entity.getGiftStatusCd());       hasAny = true; }
+        if (entity.getGiftStatusCdBefore() != null) { update.set(a.giftStatusCdBefore, entity.getGiftStatusCdBefore()); hasAny = true; }
+        if (entity.getMemGradeCd()         != null) { update.set(a.memGradeCd,         entity.getMemGradeCd());         hasAny = true; }
+        if (entity.getMinOrderAmt()        != null) { update.set(a.minOrderAmt,        entity.getMinOrderAmt());        hasAny = true; }
+        if (entity.getMinOrderQty()        != null) { update.set(a.minOrderQty,        entity.getMinOrderQty());        hasAny = true; }
+        if (entity.getSelfCdivRate()       != null) { update.set(a.selfCdivRate,       entity.getSelfCdivRate());       hasAny = true; }
+        if (entity.getSellerCdivRate()     != null) { update.set(a.sellerCdivRate,     entity.getSellerCdivRate());     hasAny = true; }
+        if (entity.getUseYn()              != null) { update.set(a.useYn,              entity.getUseYn());              hasAny = true; }
+        if (entity.getUpdBy()              != null) { update.set(a.updBy,              entity.getUpdBy());              hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(g.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(g.giftId.eq(entity.getGiftId())).execute();
+        long affected = update.where(a.giftId.eq(entity.getGiftId())).execute();
         return (int) affected;
     }
 }

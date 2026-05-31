@@ -26,26 +26,26 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.zz.repository.qrydsl.impl.QZzExam3RepositoryImpl";
-    private static final QZzExam3 e = QZzExam3.zzExam3;
+    private static final QZzExam3 a = QZzExam3.zzExam3;
 
     /* zz_exam3 buildBaseQuery */
     private JPAQuery<ZzExam3Dto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(ZzExam3Dto.Item.class,
-                        e.exam1Id,
-                        e.exam2Id,
-                        e.exam3Id,
-                        e.col31,
-                        e.col32,
-                        e.col33,
-                        e.col34,
-                        e.col35,
-                        e.regBy,
-                        e.regDate,
-                        e.updBy,
-                        e.updDate
+                        a.exam1Id,
+                        a.exam2Id,
+                        a.exam3Id,
+                        a.col31,
+                        a.col32,
+                        a.col33,
+                        a.col34,
+                        a.col35,
+                        a.regBy,
+                        a.regDate,
+                        a.updBy,
+                        a.updDate
                 ))
-                .from(e);
+                .from(a);
     }
 
     /* zz_exam3 키조회 */
@@ -53,9 +53,9 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
     public Optional<ZzExam3Dto.Item> selectById(String exam1Id, String exam2Id, String exam3Id) {
         ZzExam3Dto.Item dto = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
-                .where(e.exam1Id.eq(exam1Id)
-                        .and(e.exam2Id.eq(exam2Id))
-                        .and(e.exam3Id.eq(exam3Id)))
+                .where(a.exam1Id.eq(exam1Id)
+                        .and(a.exam2Id.eq(exam2Id))
+                        .and(a.exam3Id.eq(exam3Id)))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -108,8 +108,8 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
         List<ZzExam3Dto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(e.count())
-                .from(e)
+                .select(a.count())
+                .from(a)
                 .where(
                 baseAndExam1Ids(search),
                 baseAndExam1Id(search),
@@ -133,25 +133,25 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
     /* exam1Id IN */
     private BooleanExpression baseAndExam1Ids(ZzExam3Dto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getExam1Ids())
-                ? e.exam1Id.in(search.getExam1Ids()) : null;
+                ? a.exam1Id.in(search.getExam1Ids()) : null;
     }
 
     /* exam1Id 정확 일치 */
     private BooleanExpression baseAndExam1Id(ZzExam3Dto.Request search) {
         return search != null && StringUtils.hasText(search.getExam1Id())
-                ? e.exam1Id.eq(search.getExam1Id()) : null;
+                ? a.exam1Id.eq(search.getExam1Id()) : null;
     }
 
     /* exam2Id 정확 일치 */
     private BooleanExpression baseAndExam2Id(ZzExam3Dto.Request search) {
         return search != null && StringUtils.hasText(search.getExam2Id())
-                ? e.exam2Id.eq(search.getExam2Id()) : null;
+                ? a.exam2Id.eq(search.getExam2Id()) : null;
     }
 
     /* exam3Id 정확 일치 */
     private BooleanExpression baseAndExam3Id(ZzExam3Dto.Request search) {
         return search != null && StringUtils.hasText(search.getExam3Id())
-                ? e.exam3Id.eq(search.getExam3Id()) : null;
+                ? a.exam3Id.eq(search.getExam3Id()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
@@ -162,14 +162,14 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",col31,", e.col31, pattern);
-        or = orLike(or, all, types, ",col32,", e.col32, pattern);
-        or = orLike(or, all, types, ",col33,", e.col33, pattern);
-        or = orLike(or, all, types, ",col34,", e.col34, pattern);
-        or = orLike(or, all, types, ",col35,", e.col35, pattern);
-        or = orLike(or, all, types, ",exam1Id,", e.exam1Id, pattern);
-        or = orLike(or, all, types, ",exam2Id,", e.exam2Id, pattern);
-        or = orLike(or, all, types, ",exam3Id,", e.exam3Id, pattern);
+        or = orLike(or, all, types, ",col31,", a.col31, pattern);
+        or = orLike(or, all, types, ",col32,", a.col32, pattern);
+        or = orLike(or, all, types, ",col33,", a.col33, pattern);
+        or = orLike(or, all, types, ",col34,", a.col34, pattern);
+        or = orLike(or, all, types, ",col35,", a.col35, pattern);
+        or = orLike(or, all, types, ",exam1Id,", a.exam1Id, pattern);
+        or = orLike(or, all, types, ",exam2Id,", a.exam2Id, pattern);
+        or = orLike(or, all, types, ",exam3Id,", a.exam3Id, pattern);
         return or;
     }
 
@@ -187,10 +187,10 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = search == null ? null : search.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.ASC, e.exam1Id));
-            orders.add(new OrderSpecifier(Order.ASC, e.exam2Id));
-            orders.add(new OrderSpecifier(Order.ASC, e.exam3Id));
-            orders.add(new OrderSpecifier<>(Order.ASC, e.exam1Id));
+            orders.add(new OrderSpecifier(Order.ASC, a.exam1Id));
+            orders.add(new OrderSpecifier(Order.ASC, a.exam2Id));
+            orders.add(new OrderSpecifier(Order.ASC, a.exam3Id));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.exam1Id));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -201,19 +201,19 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("exam1Id".equals(field)) {
-                    orders.add(new OrderSpecifier(order, e.exam1Id));
+                    orders.add(new OrderSpecifier(order, a.exam1Id));
                 } else if ("exam2Id".equals(field)) {
-                    orders.add(new OrderSpecifier(order, e.exam2Id));
+                    orders.add(new OrderSpecifier(order, a.exam2Id));
                 } else if ("exam3Id".equals(field)) {
-                    orders.add(new OrderSpecifier(order, e.exam3Id));
+                    orders.add(new OrderSpecifier(order, a.exam3Id));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, e.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, e.exam1Id));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.exam1Id));
         }
         return orders;
     }
@@ -223,21 +223,21 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
     public int updateSelective(ZzExam3 entity) {
         if (entity.getExam1Id() == null || entity.getExam2Id() == null || entity.getExam3Id() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(e);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getCol31() != null) { update.set(e.col31, entity.getCol31()); hasAny = true; }
-        if (entity.getCol32() != null) { update.set(e.col32, entity.getCol32()); hasAny = true; }
-        if (entity.getCol33() != null) { update.set(e.col33, entity.getCol33()); hasAny = true; }
-        if (entity.getCol34() != null) { update.set(e.col34, entity.getCol34()); hasAny = true; }
-        if (entity.getCol35() != null) { update.set(e.col35, entity.getCol35()); hasAny = true; }
+        if (entity.getCol31() != null) { update.set(a.col31, entity.getCol31()); hasAny = true; }
+        if (entity.getCol32() != null) { update.set(a.col32, entity.getCol32()); hasAny = true; }
+        if (entity.getCol33() != null) { update.set(a.col33, entity.getCol33()); hasAny = true; }
+        if (entity.getCol34() != null) { update.set(a.col34, entity.getCol34()); hasAny = true; }
+        if (entity.getCol35() != null) { update.set(a.col35, entity.getCol35()); hasAny = true; }
 
         if (!hasAny) return 0;
 
         long affected = update
-                .where(e.exam1Id.eq(entity.getExam1Id())
-                        .and(e.exam2Id.eq(entity.getExam2Id()))
-                        .and(e.exam3Id.eq(entity.getExam3Id())))
+                .where(a.exam1Id.eq(entity.getExam1Id())
+                        .and(a.exam2Id.eq(entity.getExam2Id()))
+                        .and(a.exam3Id.eq(entity.getExam3Id())))
                 .execute();
         return (int) affected;
     }

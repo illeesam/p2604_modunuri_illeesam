@@ -32,7 +32,7 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.st.repository.qrydsl.impl.QStSettlePayRepositoryImpl";
-    private static final QStSettlePay p     = QStSettlePay.stSettlePay;
+    private static final QStSettlePay a     = QStSettlePay.stSettlePay;
     private static final QSyVendor    vnd   = QSyVendor.syVendor;
     private static final QSySite      ste   = QSySite.sySite;
     private static final QSyCode      cdPmc = new QSyCode("cd_pmc");
@@ -42,7 +42,7 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
     @Override
     public Optional<StSettlePayDto.Item> selectById(String id) {
         StSettlePayDto.Item dto = baseListQuery()
-                .where(p.settlePayId.eq(id))
+                .where(a.settlePayId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -91,8 +91,8 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
         List<StSettlePayDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(p.count())
-                .from(p)
+                .select(a.count())
+                .from(a)
                 .where(
                 baseAndSiteId(search),
                 baseAndSettlePayId(search),
@@ -109,20 +109,20 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
     private JPAQuery<StSettlePayDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(StSettlePayDto.Item.class,
-                        p.settlePayId, p.settleId, p.siteId, p.vendorId,
-                        p.payAmt, p.payMethodCd, p.bankNm, p.bankAccount, p.bankHolder,
-                        p.payStatusCd, p.payStatusCdBefore, p.payDate, p.payBy, p.settlePayMemo,
-                        p.regBy, p.regDate, p.updBy, p.updDate,
+                        a.settlePayId, a.settleId, a.siteId, a.vendorId,
+                        a.payAmt, a.payMethodCd, a.bankNm, a.bankAccount, a.bankHolder,
+                        a.payStatusCd, a.payStatusCdBefore, a.payDate, a.payBy, a.settlePayMemo,
+                        a.regBy, a.regDate, a.updBy, a.updDate,
                         vnd.vendorNm.as("vendorNm"),
                         ste.siteNm.as("siteNm"),
                         cdPmc.codeLabel.as("payMethodCdNm"),
                         cdSps.codeLabel.as("payStatusCdNm")
                 ))
-                .from(p)
-                .leftJoin(vnd).on(vnd.vendorId.eq(p.vendorId))
-                .leftJoin(ste).on(ste.siteId.eq(p.siteId))
-                .leftJoin(cdPmc).on(cdPmc.codeGrp.eq("PAY_METHOD_CD").and(cdPmc.codeValue.eq(p.payMethodCd)))
-                .leftJoin(cdSps).on(cdSps.codeGrp.eq("SETTLE_PAY_STATUS").and(cdSps.codeValue.eq(p.payStatusCd)));
+                .from(a)
+                .leftJoin(vnd).on(vnd.vendorId.eq(a.vendorId))
+                .leftJoin(ste).on(ste.siteId.eq(a.siteId))
+                .leftJoin(cdPmc).on(cdPmc.codeGrp.eq("PAY_METHOD_CD").and(cdPmc.codeValue.eq(a.payMethodCd)))
+                .leftJoin(cdSps).on(cdSps.codeGrp.eq("SETTLE_PAY_STATUS").and(cdSps.codeValue.eq(a.payStatusCd)));
     }
 
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
@@ -135,13 +135,13 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(StSettlePayDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? p.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* settlePayId 정확 일치 */
     private BooleanExpression baseAndSettlePayId(StSettlePayDto.Request search) {
         return search != null && StringUtils.hasText(search.getSettlePayId())
-                ? p.settlePayId.eq(search.getSettlePayId()) : null;
+                ? a.settlePayId.eq(search.getSettlePayId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -154,8 +154,8 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return p.regDate.goe(start).and(p.regDate.lt(endExcl));
-            case "upd_date": return p.updDate.goe(start).and(p.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -168,18 +168,18 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",bankAccount,", p.bankAccount, pattern);
-        or = orLike(or, all, types, ",bankHolder,", p.bankHolder, pattern);
-        or = orLike(or, all, types, ",bankNm,", p.bankNm, pattern);
-        or = orLike(or, all, types, ",payBy,", p.payBy, pattern);
-        or = orLike(or, all, types, ",payMethodCd,", p.payMethodCd, pattern);
-        or = orLike(or, all, types, ",payStatusCd,", p.payStatusCd, pattern);
-        or = orLike(or, all, types, ",payStatusCdBefore,", p.payStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",settleId,", p.settleId, pattern);
-        or = orLike(or, all, types, ",settlePayId,", p.settlePayId, pattern);
-        or = orLike(or, all, types, ",settlePayMemo,", p.settlePayMemo, pattern);
-        or = orLike(or, all, types, ",siteId,", p.siteId, pattern);
-        or = orLike(or, all, types, ",vendorId,", p.vendorId, pattern);
+        or = orLike(or, all, types, ",bankAccount,", a.bankAccount, pattern);
+        or = orLike(or, all, types, ",bankHolder,", a.bankHolder, pattern);
+        or = orLike(or, all, types, ",bankNm,", a.bankNm, pattern);
+        or = orLike(or, all, types, ",payBy,", a.payBy, pattern);
+        or = orLike(or, all, types, ",payMethodCd,", a.payMethodCd, pattern);
+        or = orLike(or, all, types, ",payStatusCd,", a.payStatusCd, pattern);
+        or = orLike(or, all, types, ",payStatusCdBefore,", a.payStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",settleId,", a.settleId, pattern);
+        or = orLike(or, all, types, ",settlePayId,", a.settlePayId, pattern);
+        or = orLike(or, all, types, ",settlePayMemo,", a.settlePayMemo, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",vendorId,", a.vendorId, pattern);
         return or;
     }
 
@@ -200,8 +200,8 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = c == null ? null : c.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, p.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, p.settlePayId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.settlePayId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -212,19 +212,19 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("settlePayId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, p.settlePayId));
+                    orders.add(new OrderSpecifier(order, a.settlePayId));
                 } else if ("bankNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, p.bankNm));
+                    orders.add(new OrderSpecifier(order, a.bankNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, p.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, p.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, p.settlePayId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.settlePayId));
         }
         return orders;
     }
@@ -234,29 +234,29 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
     public int updateSelective(StSettlePay entity) {
         if (entity.getSettlePayId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(p);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getSettleId()         != null) { update.set(p.settleId,         entity.getSettleId());         hasAny = true; }
-        if (entity.getSiteId()           != null) { update.set(p.siteId,           entity.getSiteId());           hasAny = true; }
-        if (entity.getVendorId()         != null) { update.set(p.vendorId,         entity.getVendorId());         hasAny = true; }
-        if (entity.getPayAmt()           != null) { update.set(p.payAmt,           entity.getPayAmt());           hasAny = true; }
-        if (entity.getPayMethodCd()      != null) { update.set(p.payMethodCd,      entity.getPayMethodCd());      hasAny = true; }
-        if (entity.getBankNm()           != null) { update.set(p.bankNm,           entity.getBankNm());           hasAny = true; }
-        if (entity.getBankAccount()      != null) { update.set(p.bankAccount,      entity.getBankAccount());      hasAny = true; }
-        if (entity.getBankHolder()       != null) { update.set(p.bankHolder,       entity.getBankHolder());       hasAny = true; }
-        if (entity.getPayStatusCd()      != null) { update.set(p.payStatusCd,      entity.getPayStatusCd());      hasAny = true; }
-        if (entity.getPayStatusCdBefore()!= null) { update.set(p.payStatusCdBefore,entity.getPayStatusCdBefore());hasAny = true; }
-        if (entity.getPayDate()          != null) { update.set(p.payDate,          entity.getPayDate());          hasAny = true; }
-        if (entity.getPayBy()            != null) { update.set(p.payBy,            entity.getPayBy());            hasAny = true; }
-        if (entity.getSettlePayMemo()    != null) { update.set(p.settlePayMemo,    entity.getSettlePayMemo());    hasAny = true; }
-        if (entity.getUpdBy()            != null) { update.set(p.updBy,            entity.getUpdBy());            hasAny = true; }
+        if (entity.getSettleId()         != null) { update.set(a.settleId,         entity.getSettleId());         hasAny = true; }
+        if (entity.getSiteId()           != null) { update.set(a.siteId,           entity.getSiteId());           hasAny = true; }
+        if (entity.getVendorId()         != null) { update.set(a.vendorId,         entity.getVendorId());         hasAny = true; }
+        if (entity.getPayAmt()           != null) { update.set(a.payAmt,           entity.getPayAmt());           hasAny = true; }
+        if (entity.getPayMethodCd()      != null) { update.set(a.payMethodCd,      entity.getPayMethodCd());      hasAny = true; }
+        if (entity.getBankNm()           != null) { update.set(a.bankNm,           entity.getBankNm());           hasAny = true; }
+        if (entity.getBankAccount()      != null) { update.set(a.bankAccount,      entity.getBankAccount());      hasAny = true; }
+        if (entity.getBankHolder()       != null) { update.set(a.bankHolder,       entity.getBankHolder());       hasAny = true; }
+        if (entity.getPayStatusCd()      != null) { update.set(a.payStatusCd,      entity.getPayStatusCd());      hasAny = true; }
+        if (entity.getPayStatusCdBefore()!= null) { update.set(a.payStatusCdBefore,entity.getPayStatusCdBefore());hasAny = true; }
+        if (entity.getPayDate()          != null) { update.set(a.payDate,          entity.getPayDate());          hasAny = true; }
+        if (entity.getPayBy()            != null) { update.set(a.payBy,            entity.getPayBy());            hasAny = true; }
+        if (entity.getSettlePayMemo()    != null) { update.set(a.settlePayMemo,    entity.getSettlePayMemo());    hasAny = true; }
+        if (entity.getUpdBy()            != null) { update.set(a.updBy,            entity.getUpdBy());            hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(p.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(p.settlePayId.eq(entity.getSettlePayId())).execute();
+        long affected = update.where(a.settlePayId.eq(entity.getSettlePayId())).execute();
         return (int) affected;
     }
 }

@@ -29,20 +29,20 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmBlogCateRepositoryImpl";
-    private static final QCmBlogCate c = QCmBlogCate.cmBlogCate;
+    private static final QCmBlogCate a = QCmBlogCate.cmBlogCate;
     private static final QSySite s = QSySite.sySite;
 
     /* 게시판 카테고리 buildBaseQuery */
     private JPAQuery<CmBlogCateDto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(CmBlogCateDto.Item.class,
-                        c.blogCateId, c.siteId, c.blogCateNm, c.parentBlogCateId,
-                        c.sortOrd, c.useYn,
-                        c.regBy, c.regDate, c.updBy, c.updDate,
+                        a.blogCateId, a.siteId, a.blogCateNm, a.parentBlogCateId,
+                        a.sortOrd, a.useYn,
+                        a.regBy, a.regDate, a.updBy, a.updDate,
                         s.siteNm.as("siteNm")
                 ))
-                .from(c)
-                .leftJoin(s).on(s.siteId.eq(c.siteId));
+                .from(a)
+                .leftJoin(s).on(s.siteId.eq(a.siteId));
     }
 
     /* 게시판 카테고리 키조회 */
@@ -50,7 +50,7 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
     public Optional<CmBlogCateDto.Item> selectById(String blogCateId) {
         CmBlogCateDto.Item dto = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
-                .where(c.blogCateId.eq(blogCateId))
+                .where(a.blogCateId.eq(blogCateId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -102,8 +102,8 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
         List<CmBlogCateDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(c.count())
-                .from(c)
+                .select(a.count())
+                .from(a)
                 .where(
                 baseAndSiteId(search),
                 baseAndBlogCateId(search),
@@ -127,19 +127,19 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(CmBlogCateDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? c.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* blogCateId 정확 일치 */
     private BooleanExpression baseAndBlogCateId(CmBlogCateDto.Request search) {
         return search != null && StringUtils.hasText(search.getBlogCateId())
-                ? c.blogCateId.eq(search.getBlogCateId()) : null;
+                ? a.blogCateId.eq(search.getBlogCateId()) : null;
     }
 
     /* useYn 정확 일치 */
     private BooleanExpression baseAndUseYn(CmBlogCateDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
-                ? c.useYn.eq(search.getUseYn()) : null;
+                ? a.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -152,8 +152,8 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return c.regDate.goe(start).and(c.regDate.lt(endExcl));
-            case "upd_date": return c.updDate.goe(start).and(c.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -166,11 +166,11 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",blogCateId,", c.blogCateId, pattern);
-        or = orLike(or, all, types, ",blogCateNm,", c.blogCateNm, pattern);
-        or = orLike(or, all, types, ",parentBlogCateId,", c.parentBlogCateId, pattern);
-        or = orLike(or, all, types, ",siteId,", c.siteId, pattern);
-        or = orLike(or, all, types, ",useYn,", c.useYn, pattern);
+        or = orLike(or, all, types, ",blogCateId,", a.blogCateId, pattern);
+        or = orLike(or, all, types, ",blogCateNm,", a.blogCateNm, pattern);
+        or = orLike(or, all, types, ",parentBlogCateId,", a.parentBlogCateId, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",useYn,", a.useYn, pattern);
         return or;
     }
 
@@ -193,9 +193,9 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
         if (!StringUtils.hasText(sort)) {
 
             /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, c.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, c.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, c.blogCateId));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.blogCateId));
 
             return orders;
         }
@@ -207,20 +207,20 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("blogCateId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, c.blogCateId));
+                    orders.add(new OrderSpecifier(order, a.blogCateId));
                 } else if ("blogCateNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, c.blogCateNm));
+                    orders.add(new OrderSpecifier(order, a.blogCateNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, c.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, c.sortOrd)); }
+                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, a.sortOrd)); }
             }
         }
         /* unknown sort → sortOrd ASC + regDate ASC fallback */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, c.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, c.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, c.blogCateId));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.blogCateId));
         }
         return orders;
     }
@@ -230,21 +230,21 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
     public int updateSelective(CmBlogCate entity) {
         if (entity.getBlogCateId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(c);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getSiteId()           != null) { update.set(c.siteId,           entity.getSiteId());           hasAny = true; }
-        if (entity.getBlogCateNm()       != null) { update.set(c.blogCateNm,       entity.getBlogCateNm());       hasAny = true; }
-        if (entity.getParentBlogCateId() != null) { update.set(c.parentBlogCateId, entity.getParentBlogCateId()); hasAny = true; }
-        if (entity.getSortOrd()          != null) { update.set(c.sortOrd,          entity.getSortOrd());          hasAny = true; }
-        if (entity.getUseYn()            != null) { update.set(c.useYn,            entity.getUseYn());            hasAny = true; }
-        if (entity.getUpdBy()            != null) { update.set(c.updBy,            entity.getUpdBy());            hasAny = true; }
+        if (entity.getSiteId()           != null) { update.set(a.siteId,           entity.getSiteId());           hasAny = true; }
+        if (entity.getBlogCateNm()       != null) { update.set(a.blogCateNm,       entity.getBlogCateNm());       hasAny = true; }
+        if (entity.getParentBlogCateId() != null) { update.set(a.parentBlogCateId, entity.getParentBlogCateId()); hasAny = true; }
+        if (entity.getSortOrd()          != null) { update.set(a.sortOrd,          entity.getSortOrd());          hasAny = true; }
+        if (entity.getUseYn()            != null) { update.set(a.useYn,            entity.getUseYn());            hasAny = true; }
+        if (entity.getUpdBy()            != null) { update.set(a.updBy,            entity.getUpdBy());            hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(c.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(c.blogCateId.eq(entity.getBlogCateId())).execute();
+        long affected = update.where(a.blogCateId.eq(entity.getBlogCateId())).execute();
         return (int) affected;
     }
 }

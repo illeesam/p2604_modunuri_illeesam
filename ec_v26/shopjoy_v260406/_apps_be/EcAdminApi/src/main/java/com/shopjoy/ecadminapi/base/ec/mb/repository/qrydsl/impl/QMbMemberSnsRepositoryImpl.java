@@ -29,21 +29,33 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.mb.repository.qrydsl.impl.QMbMemberSnsRepositoryImpl";
-    private static final QMbMemberSns m    = QMbMemberSns.mbMemberSns;
+    private static final QMbMemberSns a    = QMbMemberSns.mbMemberSns;
     private static final QMbMember    mem  = QMbMember.mbMember;
     private static final QSyCode      cdSc = new QSyCode("cd_sc");
+
+    /* SNS 연동 회원 baseSelColumnQuery */
+    private JPAQuery<MbMemberSnsDto.Item> baseSelColumnQuery() {
+        return queryFactory
+                .select(Projections.bean(MbMemberSnsDto.Item.class,
+                        a.memberSnsId, a.memberId, a.snsChannelCd, a.snsUserId,
+                        a.regBy, a.regDate
+                ))
+                .from(a)
+                .leftJoin(mem).on(mem.memberId.eq(a.memberId))
+                .leftJoin(cdSc).on(cdSc.codeGrp.eq("SNS_CHANNEL").and(cdSc.codeValue.eq(a.snsChannelCd)));
+    }
 
     /* SNS 연동 회원 키조회 */
     @Override
     public Optional<MbMemberSnsDto.Item> selectById(String memberSnsId) {
-        return Optional.ofNullable(baseQuery().where(m.memberSnsId.eq(memberSnsId)).fetchOne());
+        return Optional.ofNullable(baseSelColumnQuery().where(a.memberSnsId.eq(memberSnsId)).fetchOne());
     }
 
     /* SNS 연동 회원 목록조회 */
     @Override
     public List<MbMemberSnsDto.Item> selectList(MbMemberSnsDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<MbMemberSnsDto.Item> query = baseQuery().where(
+        JPAQuery<MbMemberSnsDto.Item> query = baseSelColumnQuery().where(
                 baseAndMemberIds(search),
                 baseAndMemberId(search),
                 baseAndMemberSnsId(search),
@@ -65,7 +77,7 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<MbMemberSnsDto.Item> query = baseQuery().where(
+        JPAQuery<MbMemberSnsDto.Item> query = baseSelColumnQuery().where(
                 baseAndMemberIds(search),
                 baseAndMemberId(search),
                 baseAndMemberSnsId(search),
@@ -75,7 +87,7 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<MbMemberSnsDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(m.count()).from(m).where(
+        Long total = queryFactory.select(a.count()).from(a).where(
                 baseAndMemberIds(search),
                 baseAndMemberId(search),
                 baseAndMemberSnsId(search),
@@ -86,19 +98,6 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
         MbMemberSnsDto.PageResponse res = new MbMemberSnsDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-
-    /* SNS 연동 회원 baseQuery */
-    private JPAQuery<MbMemberSnsDto.Item> baseQuery() {
-        return queryFactory
-                .select(Projections.bean(MbMemberSnsDto.Item.class,
-                        m.memberSnsId, m.memberId, m.snsChannelCd, m.snsUserId,
-                        m.regBy, m.regDate
-                ))
-                .from(m)
-                .leftJoin(mem).on(mem.memberId.eq(m.memberId))
-                .leftJoin(cdSc).on(cdSc.codeGrp.eq("SNS_CHANNEL").and(cdSc.codeValue.eq(m.snsChannelCd)));
-    }
-
     /* SNS 연동 회원 buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
@@ -109,19 +108,19 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
     /* memberId IN */
     private BooleanExpression baseAndMemberIds(MbMemberSnsDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getMemberIds())
-                ? m.memberId.in(search.getMemberIds()) : null;
+                ? a.memberId.in(search.getMemberIds()) : null;
     }
 
     /* memberId 정확 일치 */
     private BooleanExpression baseAndMemberId(MbMemberSnsDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberId())
-                ? m.memberId.eq(search.getMemberId()) : null;
+                ? a.memberId.eq(search.getMemberId()) : null;
     }
 
     /* memberSnsId 정확 일치 */
     private BooleanExpression baseAndMemberSnsId(MbMemberSnsDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberSnsId())
-                ? m.memberSnsId.eq(search.getMemberSnsId()) : null;
+                ? a.memberSnsId.eq(search.getMemberSnsId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -134,8 +133,8 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return m.regDate.goe(start).and(m.regDate.lt(endExcl));
-            case "upd_date": return m.updDate.goe(start).and(m.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -148,11 +147,11 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",memberId,", m.memberId, pattern);
-        or = orLike(or, all, types, ",memberSnsId,", m.memberSnsId, pattern);
-        or = orLike(or, all, types, ",siteId,", m.siteId, pattern);
-        or = orLike(or, all, types, ",snsChannelCd,", m.snsChannelCd, pattern);
-        or = orLike(or, all, types, ",snsUserId,", m.snsUserId, pattern);
+        or = orLike(or, all, types, ",memberId,", a.memberId, pattern);
+        or = orLike(or, all, types, ",memberSnsId,", a.memberSnsId, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",snsChannelCd,", a.snsChannelCd, pattern);
+        or = orLike(or, all, types, ",snsUserId,", a.snsUserId, pattern);
         return or;
     }
 
@@ -173,8 +172,8 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, m.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, m.memberSnsId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.memberSnsId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -185,31 +184,33 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("memberSnsId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, m.memberSnsId));
+                    orders.add(new OrderSpecifier(order, a.memberSnsId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, m.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, m.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, m.memberSnsId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.memberSnsId));
         }
         return orders;
     }
 
     /* SNS 연동 회원 수정 */
+
+
     @Override
     public int updateSelective(MbMemberSns entity) {
         if (entity.getMemberSnsId() == null) return 0;
-        JPAUpdateClause update = queryFactory.update(m);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
-        if (entity.getMemberId()     != null) { update.set(m.memberId,     entity.getMemberId());     hasAny = true; }
-        if (entity.getSnsChannelCd() != null) { update.set(m.snsChannelCd, entity.getSnsChannelCd()); hasAny = true; }
-        if (entity.getSnsUserId()    != null) { update.set(m.snsUserId,    entity.getSnsUserId());    hasAny = true; }
+        if (entity.getMemberId()     != null) { update.set(a.memberId,     entity.getMemberId());     hasAny = true; }
+        if (entity.getSnsChannelCd() != null) { update.set(a.snsChannelCd, entity.getSnsChannelCd()); hasAny = true; }
+        if (entity.getSnsUserId()    != null) { update.set(a.snsUserId,    entity.getSnsUserId());    hasAny = true; }
         if (!hasAny) return 0;
-        return (int) update.where(m.memberSnsId.eq(entity.getMemberSnsId())).execute();
+        return (int) update.where(a.memberSnsId.eq(entity.getMemberSnsId())).execute();
     }
 }

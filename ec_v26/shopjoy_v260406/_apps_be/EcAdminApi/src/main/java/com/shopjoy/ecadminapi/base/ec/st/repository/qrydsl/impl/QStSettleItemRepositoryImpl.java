@@ -31,7 +31,7 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.st.repository.qrydsl.impl.QStSettleItemRepositoryImpl";
-    private static final QStSettleItem i    = QStSettleItem.stSettleItem;
+    private static final QStSettleItem a    = QStSettleItem.stSettleItem;
     private static final QOdOrder      ord  = QOdOrder.odOrder;
     private static final QOdOrderItem  ite  = QOdOrderItem.odOrderItem;
     private static final QSySite       ste  = QSySite.sySite;
@@ -41,7 +41,7 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
     @Override
     public Optional<StSettleItemDto.Item> selectById(String id) {
         StSettleItemDto.Item dto = baseListQuery()
-                .where(i.settleItemId.eq(id))
+                .where(a.settleItemId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -90,8 +90,8 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
         List<StSettleItemDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(i.count())
-                .from(i)
+                .select(a.count())
+                .from(a)
                 .where(
                 baseAndSiteId(search),
                 baseAndSettleItemId(search),
@@ -108,20 +108,20 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
     private JPAQuery<StSettleItemDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(StSettleItemDto.Item.class,
-                        i.settleItemId, i.settleId, i.siteId, i.orderId, i.orderItemId,
-                        i.vendorId, i.prodId, i.settleItemTypeCd, i.orderDate, i.orderQty,
-                        i.unitPrice, i.itemPrice, i.discntAmt, i.commissionRate, i.commissionAmt,
-                        i.settleItemAmt, i.regBy, i.regDate,
+                        a.settleItemId, a.settleId, a.siteId, a.orderId, a.orderItemId,
+                        a.vendorId, a.prodId, a.settleItemTypeCd, a.orderDate, a.orderQty,
+                        a.unitPrice, a.itemPrice, a.discntAmt, a.commissionRate, a.commissionAmt,
+                        a.settleItemAmt, a.regBy, a.regDate,
                         ord.memberNm.as("orderNm"),
                         ite.prodNm.as("orderItemNm"),
                         ste.siteNm.as("siteNm"),
                         cdSit.codeLabel.as("settleItemTypeCdNm")
                 ))
-                .from(i)
-                .leftJoin(ord).on(ord.orderId.eq(i.orderId))
-                .leftJoin(ite).on(ite.orderItemId.eq(i.orderItemId))
-                .leftJoin(ste).on(ste.siteId.eq(i.siteId))
-                .leftJoin(cdSit).on(cdSit.codeGrp.eq("SETTLE_ITEM_TYPE").and(cdSit.codeValue.eq(i.settleItemTypeCd)));
+                .from(a)
+                .leftJoin(ord).on(ord.orderId.eq(a.orderId))
+                .leftJoin(ite).on(ite.orderItemId.eq(a.orderItemId))
+                .leftJoin(ste).on(ste.siteId.eq(a.siteId))
+                .leftJoin(cdSit).on(cdSit.codeGrp.eq("SETTLE_ITEM_TYPE").and(cdSit.codeValue.eq(a.settleItemTypeCd)));
     }
 
     /* 정산 항목 buildCondition */
@@ -134,13 +134,13 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(StSettleItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? i.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* settleItemId 정확 일치 */
     private BooleanExpression baseAndSettleItemId(StSettleItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getSettleItemId())
-                ? i.settleItemId.eq(search.getSettleItemId()) : null;
+                ? a.settleItemId.eq(search.getSettleItemId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -153,9 +153,9 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "order_date": return i.orderDate.goe(start).and(i.orderDate.lt(endExcl));
-            case "reg_date": return i.regDate.goe(start).and(i.regDate.lt(endExcl));
-            case "upd_date": return i.updDate.goe(start).and(i.updDate.lt(endExcl));
+            case "order_date": return a.orderDate.goe(start).and(a.orderDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -168,14 +168,14 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",orderId,", i.orderId, pattern);
-        or = orLike(or, all, types, ",orderItemId,", i.orderItemId, pattern);
-        or = orLike(or, all, types, ",prodId,", i.prodId, pattern);
-        or = orLike(or, all, types, ",settleId,", i.settleId, pattern);
-        or = orLike(or, all, types, ",settleItemId,", i.settleItemId, pattern);
-        or = orLike(or, all, types, ",settleItemTypeCd,", i.settleItemTypeCd, pattern);
-        or = orLike(or, all, types, ",siteId,", i.siteId, pattern);
-        or = orLike(or, all, types, ",vendorId,", i.vendorId, pattern);
+        or = orLike(or, all, types, ",orderId,", a.orderId, pattern);
+        or = orLike(or, all, types, ",orderItemId,", a.orderItemId, pattern);
+        or = orLike(or, all, types, ",prodId,", a.prodId, pattern);
+        or = orLike(or, all, types, ",settleId,", a.settleId, pattern);
+        or = orLike(or, all, types, ",settleItemId,", a.settleItemId, pattern);
+        or = orLike(or, all, types, ",settleItemTypeCd,", a.settleItemTypeCd, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",vendorId,", a.vendorId, pattern);
         return or;
     }
 
@@ -196,8 +196,8 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = c == null ? null : c.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, i.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, i.settleItemId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.settleItemId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -208,17 +208,17 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("settleItemId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, i.settleItemId));
+                    orders.add(new OrderSpecifier(order, a.settleItemId));
                 } else if ("orderDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, i.orderDate));
+                    orders.add(new OrderSpecifier(order, a.orderDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, i.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, i.settleItemId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.settleItemId));
         }
         return orders;
     }
@@ -228,28 +228,28 @@ public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
     public int updateSelective(StSettleItem entity) {
         if (entity.getSettleItemId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(i);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getSettleId()         != null) { update.set(i.settleId,         entity.getSettleId());         hasAny = true; }
-        if (entity.getSiteId()           != null) { update.set(i.siteId,           entity.getSiteId());           hasAny = true; }
-        if (entity.getOrderId()          != null) { update.set(i.orderId,          entity.getOrderId());          hasAny = true; }
-        if (entity.getOrderItemId()      != null) { update.set(i.orderItemId,      entity.getOrderItemId());      hasAny = true; }
-        if (entity.getVendorId()         != null) { update.set(i.vendorId,         entity.getVendorId());         hasAny = true; }
-        if (entity.getProdId()           != null) { update.set(i.prodId,           entity.getProdId());           hasAny = true; }
-        if (entity.getSettleItemTypeCd() != null) { update.set(i.settleItemTypeCd, entity.getSettleItemTypeCd()); hasAny = true; }
-        if (entity.getOrderDate()        != null) { update.set(i.orderDate,        entity.getOrderDate());        hasAny = true; }
-        if (entity.getOrderQty()         != null) { update.set(i.orderQty,         entity.getOrderQty());         hasAny = true; }
-        if (entity.getUnitPrice()        != null) { update.set(i.unitPrice,        entity.getUnitPrice());        hasAny = true; }
-        if (entity.getItemPrice()        != null) { update.set(i.itemPrice,        entity.getItemPrice());        hasAny = true; }
-        if (entity.getDiscntAmt()        != null) { update.set(i.discntAmt,        entity.getDiscntAmt());        hasAny = true; }
-        if (entity.getCommissionRate()   != null) { update.set(i.commissionRate,   entity.getCommissionRate());   hasAny = true; }
-        if (entity.getCommissionAmt()    != null) { update.set(i.commissionAmt,    entity.getCommissionAmt());    hasAny = true; }
-        if (entity.getSettleItemAmt()    != null) { update.set(i.settleItemAmt,    entity.getSettleItemAmt());    hasAny = true; }
+        if (entity.getSettleId()         != null) { update.set(a.settleId,         entity.getSettleId());         hasAny = true; }
+        if (entity.getSiteId()           != null) { update.set(a.siteId,           entity.getSiteId());           hasAny = true; }
+        if (entity.getOrderId()          != null) { update.set(a.orderId,          entity.getOrderId());          hasAny = true; }
+        if (entity.getOrderItemId()      != null) { update.set(a.orderItemId,      entity.getOrderItemId());      hasAny = true; }
+        if (entity.getVendorId()         != null) { update.set(a.vendorId,         entity.getVendorId());         hasAny = true; }
+        if (entity.getProdId()           != null) { update.set(a.prodId,           entity.getProdId());           hasAny = true; }
+        if (entity.getSettleItemTypeCd() != null) { update.set(a.settleItemTypeCd, entity.getSettleItemTypeCd()); hasAny = true; }
+        if (entity.getOrderDate()        != null) { update.set(a.orderDate,        entity.getOrderDate());        hasAny = true; }
+        if (entity.getOrderQty()         != null) { update.set(a.orderQty,         entity.getOrderQty());         hasAny = true; }
+        if (entity.getUnitPrice()        != null) { update.set(a.unitPrice,        entity.getUnitPrice());        hasAny = true; }
+        if (entity.getItemPrice()        != null) { update.set(a.itemPrice,        entity.getItemPrice());        hasAny = true; }
+        if (entity.getDiscntAmt()        != null) { update.set(a.discntAmt,        entity.getDiscntAmt());        hasAny = true; }
+        if (entity.getCommissionRate()   != null) { update.set(a.commissionRate,   entity.getCommissionRate());   hasAny = true; }
+        if (entity.getCommissionAmt()    != null) { update.set(a.commissionAmt,    entity.getCommissionAmt());    hasAny = true; }
+        if (entity.getSettleItemAmt()    != null) { update.set(a.settleItemAmt,    entity.getSettleItemAmt());    hasAny = true; }
 
         if (!hasAny) return 0;
 
-        long affected = update.where(i.settleItemId.eq(entity.getSettleItemId())).execute();
+        long affected = update.where(a.settleItemId.eq(entity.getSettleItemId())).execute();
         return (int) affected;
     }
 }

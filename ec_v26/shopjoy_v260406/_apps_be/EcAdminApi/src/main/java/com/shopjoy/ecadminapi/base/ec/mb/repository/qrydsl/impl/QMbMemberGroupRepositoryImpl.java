@@ -28,20 +28,31 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.mb.repository.qrydsl.impl.QMbMemberGroupRepositoryImpl";
-    private static final QMbMemberGroup g   = QMbMemberGroup.mbMemberGroup;
+    private static final QMbMemberGroup a   = QMbMemberGroup.mbMemberGroup;
     private static final QSySite        ste = QSySite.sySite;
+
+    /* 회원 그룹 baseSelColumnQuery */
+    private JPAQuery<MbMemberGroupDto.Item> baseSelColumnQuery() {
+        return queryFactory
+                .select(Projections.bean(MbMemberGroupDto.Item.class,
+                        a.memberGroupId, a.siteId, a.groupNm, a.groupMemo, a.useYn,
+                        a.regBy, a.regDate, a.updBy, a.updDate
+                ))
+                .from(a)
+                .leftJoin(ste).on(ste.siteId.eq(a.siteId));
+    }
 
     /* 회원 그룹 키조회 */
     @Override
     public Optional<MbMemberGroupDto.Item> selectById(String memberGroupId) {
-        return Optional.ofNullable(baseQuery().where(g.memberGroupId.eq(memberGroupId)).fetchOne());
+        return Optional.ofNullable(baseSelColumnQuery().where(a.memberGroupId.eq(memberGroupId)).fetchOne());
     }
 
     /* 회원 그룹 목록조회 */
     @Override
     public List<MbMemberGroupDto.Item> selectList(MbMemberGroupDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<MbMemberGroupDto.Item> query = baseQuery().where(
+        JPAQuery<MbMemberGroupDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndMemberGroupId(search),
                 baseAndDateRange(search),
@@ -62,7 +73,7 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<MbMemberGroupDto.Item> query = baseQuery().where(
+        JPAQuery<MbMemberGroupDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndMemberGroupId(search),
                 baseAndDateRange(search),
@@ -71,7 +82,7 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<MbMemberGroupDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(g.count()).from(g).where(
+        Long total = queryFactory.select(a.count()).from(a).where(
                 baseAndSiteId(search),
                 baseAndMemberGroupId(search),
                 baseAndDateRange(search),
@@ -81,18 +92,6 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
         MbMemberGroupDto.PageResponse res = new MbMemberGroupDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-
-    /* 회원 그룹 baseQuery */
-    private JPAQuery<MbMemberGroupDto.Item> baseQuery() {
-        return queryFactory
-                .select(Projections.bean(MbMemberGroupDto.Item.class,
-                        g.memberGroupId, g.siteId, g.groupNm, g.groupMemo, g.useYn,
-                        g.regBy, g.regDate, g.updBy, g.updDate
-                ))
-                .from(g)
-                .leftJoin(ste).on(ste.siteId.eq(g.siteId));
-    }
-
     /* searchType 사용 예  searchType = "groupNm" (Entity 필드명) */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
@@ -103,13 +102,13 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(MbMemberGroupDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? g.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* memberGroupId 정확 일치 */
     private BooleanExpression baseAndMemberGroupId(MbMemberGroupDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberGroupId())
-                ? g.memberGroupId.eq(search.getMemberGroupId()) : null;
+                ? a.memberGroupId.eq(search.getMemberGroupId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -122,8 +121,8 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return g.regDate.goe(start).and(g.regDate.lt(endExcl));
-            case "upd_date": return g.updDate.goe(start).and(g.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -136,11 +135,11 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",groupMemo,", g.groupMemo, pattern);
-        or = orLike(or, all, types, ",groupNm,", g.groupNm, pattern);
-        or = orLike(or, all, types, ",memberGroupId,", g.memberGroupId, pattern);
-        or = orLike(or, all, types, ",siteId,", g.siteId, pattern);
-        or = orLike(or, all, types, ",useYn,", g.useYn, pattern);
+        or = orLike(or, all, types, ",groupMemo,", a.groupMemo, pattern);
+        or = orLike(or, all, types, ",groupNm,", a.groupNm, pattern);
+        or = orLike(or, all, types, ",memberGroupId,", a.memberGroupId, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",useYn,", a.useYn, pattern);
         return or;
     }
 
@@ -161,8 +160,8 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, g.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, g.memberGroupId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.memberGroupId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -173,37 +172,39 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("memberGroupId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, g.memberGroupId));
+                    orders.add(new OrderSpecifier(order, a.memberGroupId));
                 } else if ("groupNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, g.groupNm));
+                    orders.add(new OrderSpecifier(order, a.groupNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, g.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, g.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, g.memberGroupId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.memberGroupId));
         }
         return orders;
     }
 
     /* 회원 그룹 수정 */
+
+
     @Override
     public int updateSelective(MbMemberGroup entity) {
         if (entity.getMemberGroupId() == null) return 0;
-        JPAUpdateClause update = queryFactory.update(g);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
-        if (entity.getSiteId()    != null) { update.set(g.siteId,    entity.getSiteId());    hasAny = true; }
-        if (entity.getGroupNm()   != null) { update.set(g.groupNm,   entity.getGroupNm());   hasAny = true; }
-        if (entity.getGroupMemo() != null) { update.set(g.groupMemo, entity.getGroupMemo()); hasAny = true; }
-        if (entity.getUseYn()     != null) { update.set(g.useYn,     entity.getUseYn());     hasAny = true; }
-        if (entity.getUpdBy()     != null) { update.set(g.updBy,     entity.getUpdBy());     hasAny = true; }
+        if (entity.getSiteId()    != null) { update.set(a.siteId,    entity.getSiteId());    hasAny = true; }
+        if (entity.getGroupNm()   != null) { update.set(a.groupNm,   entity.getGroupNm());   hasAny = true; }
+        if (entity.getGroupMemo() != null) { update.set(a.groupMemo, entity.getGroupMemo()); hasAny = true; }
+        if (entity.getUseYn()     != null) { update.set(a.useYn,     entity.getUseYn());     hasAny = true; }
+        if (entity.getUpdBy()     != null) { update.set(a.updBy,     entity.getUpdBy());     hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(g.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
         if (!hasAny) return 0;
-        return (int) update.where(g.memberGroupId.eq(entity.getMemberGroupId())).execute();
+        return (int) update.where(a.memberGroupId.eq(entity.getMemberGroupId())).execute();
     }
 }

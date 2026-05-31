@@ -29,13 +29,25 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmEventBenefitRepositoryImpl";
-    private static final QPmEventBenefit b = QPmEventBenefit.pmEventBenefit;
+    private static final QPmEventBenefit a = QPmEventBenefit.pmEventBenefit;
+
+    /* 이벤트 혜택 baseSelColumnQuery */
+    private JPAQuery<PmEventBenefitDto.Item> baseSelColumnQuery() {
+        return queryFactory
+                .select(Projections.bean(PmEventBenefitDto.Item.class,
+                        a.benefitId, a.siteId, a.eventId, a.benefitNm,
+                        a.benefitTypeCd, a.conditionDesc, a.benefitValue,
+                        a.couponId, a.sortOrd,
+                        a.regBy, a.regDate, a.updBy, a.updDate
+                ))
+                .from(a);
+    }
 
     /* 이벤트 혜택 키조회 */
     @Override
     public Optional<PmEventBenefitDto.Item> selectById(String benefitId) {
-        PmEventBenefitDto.Item dto = baseQuery()
-                .where(b.benefitId.eq(benefitId))
+        PmEventBenefitDto.Item dto = baseSelColumnQuery()
+                .where(a.benefitId.eq(benefitId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -45,7 +57,7 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
     public List<PmEventBenefitDto.Item> selectList(PmEventBenefitDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PmEventBenefitDto.Item> query = baseQuery().where(
+        JPAQuery<PmEventBenefitDto.Item> query = baseSelColumnQuery().where(
                 baseAndEventIds(search),
                 baseAndEventId(search),
                 baseAndSiteId(search),
@@ -74,7 +86,7 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PmEventBenefitDto.Item> query = baseQuery().where(
+        JPAQuery<PmEventBenefitDto.Item> query = baseSelColumnQuery().where(
                 baseAndEventIds(search),
                 baseAndEventId(search),
                 baseAndSiteId(search),
@@ -88,8 +100,8 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
         List<PmEventBenefitDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(b.count())
-                .from(b)
+                .select(a.count())
+                .from(a)
                 .where(
                 baseAndEventIds(search),
                 baseAndEventId(search),
@@ -103,19 +115,6 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
         PmEventBenefitDto.PageResponse res = new PmEventBenefitDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-
-    /* 이벤트 혜택 baseQuery */
-    private JPAQuery<PmEventBenefitDto.Item> baseQuery() {
-        return queryFactory
-                .select(Projections.bean(PmEventBenefitDto.Item.class,
-                        b.benefitId, b.siteId, b.eventId, b.benefitNm,
-                        b.benefitTypeCd, b.conditionDesc, b.benefitValue,
-                        b.couponId, b.sortOrd,
-                        b.regBy, b.regDate, b.updBy, b.updDate
-                ))
-                .from(b);
-    }
-
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
@@ -126,25 +125,25 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
     /* eventId IN */
     private BooleanExpression baseAndEventIds(PmEventBenefitDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getEventIds())
-                ? b.eventId.in(search.getEventIds()) : null;
+                ? a.eventId.in(search.getEventIds()) : null;
     }
 
     /* eventId 정확 일치 */
     private BooleanExpression baseAndEventId(PmEventBenefitDto.Request search) {
         return search != null && StringUtils.hasText(search.getEventId())
-                ? b.eventId.eq(search.getEventId()) : null;
+                ? a.eventId.eq(search.getEventId()) : null;
     }
 
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(PmEventBenefitDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? b.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* benefitId 정확 일치 */
     private BooleanExpression baseAndBenefitId(PmEventBenefitDto.Request search) {
         return search != null && StringUtils.hasText(search.getBenefitId())
-                ? b.benefitId.eq(search.getBenefitId()) : null;
+                ? a.benefitId.eq(search.getBenefitId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -157,8 +156,8 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return b.regDate.goe(start).and(b.regDate.lt(endExcl));
-            case "upd_date": return b.updDate.goe(start).and(b.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -171,14 +170,14 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",benefitId,", b.benefitId, pattern);
-        or = orLike(or, all, types, ",benefitNm,", b.benefitNm, pattern);
-        or = orLike(or, all, types, ",benefitTypeCd,", b.benefitTypeCd, pattern);
-        or = orLike(or, all, types, ",benefitValue,", b.benefitValue, pattern);
-        or = orLike(or, all, types, ",conditionDesc,", b.conditionDesc, pattern);
-        or = orLike(or, all, types, ",couponId,", b.couponId, pattern);
-        or = orLike(or, all, types, ",eventId,", b.eventId, pattern);
-        or = orLike(or, all, types, ",siteId,", b.siteId, pattern);
+        or = orLike(or, all, types, ",benefitId,", a.benefitId, pattern);
+        or = orLike(or, all, types, ",benefitNm,", a.benefitNm, pattern);
+        or = orLike(or, all, types, ",benefitTypeCd,", a.benefitTypeCd, pattern);
+        or = orLike(or, all, types, ",benefitValue,", a.benefitValue, pattern);
+        or = orLike(or, all, types, ",conditionDesc,", a.conditionDesc, pattern);
+        or = orLike(or, all, types, ",couponId,", a.couponId, pattern);
+        or = orLike(or, all, types, ",eventId,", a.eventId, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
         return or;
     }
 
@@ -201,9 +200,9 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
         if (!StringUtils.hasText(sort)) {
 
             /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, b.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, b.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, b.benefitId));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.benefitId));
 
             return orders;
         }
@@ -215,47 +214,49 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("benefitId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, b.benefitId));
+                    orders.add(new OrderSpecifier(order, a.benefitId));
                 } else if ("benefitNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, b.benefitNm));
+                    orders.add(new OrderSpecifier(order, a.benefitNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, b.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, b.sortOrd)); }
+                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, a.sortOrd)); }
             }
         }
         /* unknown sort → sortOrd ASC + regDate ASC fallback */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, b.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, b.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, b.benefitId));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.benefitId));
         }
         return orders;
     }
 
     /* 이벤트 혜택 수정 */
+
+
     @Override
     public int updateSelective(PmEventBenefit entity) {
         if (entity.getBenefitId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(b);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getSiteId()        != null) { update.set(b.siteId,        entity.getSiteId());        hasAny = true; }
-        if (entity.getEventId()       != null) { update.set(b.eventId,       entity.getEventId());       hasAny = true; }
-        if (entity.getBenefitNm()     != null) { update.set(b.benefitNm,     entity.getBenefitNm());     hasAny = true; }
-        if (entity.getBenefitTypeCd() != null) { update.set(b.benefitTypeCd, entity.getBenefitTypeCd()); hasAny = true; }
-        if (entity.getConditionDesc() != null) { update.set(b.conditionDesc, entity.getConditionDesc()); hasAny = true; }
-        if (entity.getBenefitValue()  != null) { update.set(b.benefitValue,  entity.getBenefitValue());  hasAny = true; }
-        if (entity.getCouponId()      != null) { update.set(b.couponId,      entity.getCouponId());      hasAny = true; }
-        if (entity.getSortOrd()       != null) { update.set(b.sortOrd,       entity.getSortOrd());       hasAny = true; }
-        if (entity.getUpdBy()         != null) { update.set(b.updBy,         entity.getUpdBy());         hasAny = true; }
+        if (entity.getSiteId()        != null) { update.set(a.siteId,        entity.getSiteId());        hasAny = true; }
+        if (entity.getEventId()       != null) { update.set(a.eventId,       entity.getEventId());       hasAny = true; }
+        if (entity.getBenefitNm()     != null) { update.set(a.benefitNm,     entity.getBenefitNm());     hasAny = true; }
+        if (entity.getBenefitTypeCd() != null) { update.set(a.benefitTypeCd, entity.getBenefitTypeCd()); hasAny = true; }
+        if (entity.getConditionDesc() != null) { update.set(a.conditionDesc, entity.getConditionDesc()); hasAny = true; }
+        if (entity.getBenefitValue()  != null) { update.set(a.benefitValue,  entity.getBenefitValue());  hasAny = true; }
+        if (entity.getCouponId()      != null) { update.set(a.couponId,      entity.getCouponId());      hasAny = true; }
+        if (entity.getSortOrd()       != null) { update.set(a.sortOrd,       entity.getSortOrd());       hasAny = true; }
+        if (entity.getUpdBy()         != null) { update.set(a.updBy,         entity.getUpdBy());         hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(b.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(b.benefitId.eq(entity.getBenefitId())).execute();
+        long affected = update.where(a.benefitId.eq(entity.getBenefitId())).execute();
         return (int) affected;
     }
 }

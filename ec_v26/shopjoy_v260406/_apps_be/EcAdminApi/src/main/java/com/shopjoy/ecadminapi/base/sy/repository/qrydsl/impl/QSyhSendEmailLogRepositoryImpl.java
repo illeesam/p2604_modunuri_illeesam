@@ -32,7 +32,7 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhSendEmailLogRepositoryImpl";
-    private static final QSyhSendEmailLog l   = QSyhSendEmailLog.syhSendEmailLog;
+    private static final QSyhSendEmailLog a   = QSyhSendEmailLog.syhSendEmailLog;
     private static final QSySite          ste = QSySite.sySite;
     private static final QSyTemplate      tpl = QSyTemplate.syTemplate;
     private static final QSyUser          usr = QSyUser.syUser;
@@ -42,38 +42,38 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
     private JPAQuery<SyhSendEmailLogDto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(SyhSendEmailLogDto.Item.class,
-                        l.logId,
-                        l.siteId,
-                        l.templateId,
-                        l.templateCode,
-                        l.memberId,
-                        l.userId,
-                        l.fromAddr,
-                        l.toAddr,
-                        l.ccAddr,
-                        l.bccAddr,
-                        l.subject,
-                        l.content,
-                        l.params,
-                        l.resultCd,
-                        l.failReason,
-                        l.sendDate,
-                        l.refTypeCd,
-                        l.refId,
-                        l.regBy,
-                        l.regDate,
-                        l.updBy,
-                        l.updDate,
+                        a.logId,
+                        a.siteId,
+                        a.templateId,
+                        a.templateCode,
+                        a.memberId,
+                        a.userId,
+                        a.fromAddr,
+                        a.toAddr,
+                        a.ccAddr,
+                        a.bccAddr,
+                        a.subject,
+                        a.content,
+                        a.params,
+                        a.resultCd,
+                        a.failReason,
+                        a.sendDate,
+                        a.refTypeCd,
+                        a.refId,
+                        a.regBy,
+                        a.regDate,
+                        a.updBy,
+                        a.updDate,
                         ste.siteNm.as("siteNm"),
                         tpl.templateNm.as("templateNm"),
                         usr.userNm.as("userNm"),
                         cd_sr.codeLabel.as("resultCdNm")
                 ))
-                .from(l)
-                .leftJoin(ste).on(ste.siteId.eq(l.siteId))
-                .leftJoin(tpl).on(tpl.templateId.eq(l.templateId))
-                .leftJoin(usr).on(usr.userId.eq(l.userId))
-                .leftJoin(cd_sr).on(cd_sr.codeGrp.eq("SEND_RESULT").and(cd_sr.codeValue.eq(l.resultCd)));
+                .from(a)
+                .leftJoin(ste).on(ste.siteId.eq(a.siteId))
+                .leftJoin(tpl).on(tpl.templateId.eq(a.templateId))
+                .leftJoin(usr).on(usr.userId.eq(a.userId))
+                .leftJoin(cd_sr).on(cd_sr.codeGrp.eq("SEND_RESULT").and(cd_sr.codeValue.eq(a.resultCd)));
     }
 
     /* 이메일 발송 로그 키조회 */
@@ -81,7 +81,7 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
     public Optional<SyhSendEmailLogDto.Item> selectById(String id) {
         SyhSendEmailLogDto.Item dto = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
-                .where(l.logId.eq(id))
+                .where(a.logId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -138,8 +138,8 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
         List<SyhSendEmailLogDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(l.count())
-                .from(l)
+                .select(a.count())
+                .from(a)
                 .where(
                 baseAndSiteId(search),
                 baseAndLogId(search),
@@ -165,31 +165,31 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(SyhSendEmailLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? l.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* logId 정확 일치 */
     private BooleanExpression baseAndLogId(SyhSendEmailLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getLogId())
-                ? l.logId.eq(search.getLogId()) : null;
+                ? a.logId.eq(search.getLogId()) : null;
     }
 
     /* userId 정확 일치 */
     private BooleanExpression baseAndUserId(SyhSendEmailLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getUserId())
-                ? l.userId.eq(search.getUserId()) : null;
+                ? a.userId.eq(search.getUserId()) : null;
     }
 
     /* templateId 정확 일치 */
     private BooleanExpression baseAndTemplateId(SyhSendEmailLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getTemplateId())
-                ? l.templateId.eq(search.getTemplateId()) : null;
+                ? a.templateId.eq(search.getTemplateId()) : null;
     }
 
     /* refTypeCd 정확 일치 */
     private BooleanExpression baseAndTypeCd(SyhSendEmailLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getTypeCd())
-                ? l.refTypeCd.eq(search.getTypeCd()) : null;
+                ? a.refTypeCd.eq(search.getTypeCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -202,9 +202,9 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "send_date": return l.sendDate.goe(start).and(l.sendDate.lt(endExcl));
-            case "reg_date": return l.regDate.goe(start).and(l.regDate.lt(endExcl));
-            case "upd_date": return l.updDate.goe(start).and(l.updDate.lt(endExcl));
+            case "send_date": return a.sendDate.goe(start).and(a.sendDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -217,23 +217,23 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",bccAddr,", l.bccAddr, pattern);
-        or = orLike(or, all, types, ",ccAddr,", l.ccAddr, pattern);
-        or = orLike(or, all, types, ",content,", l.content, pattern);
-        or = orLike(or, all, types, ",failReason,", l.failReason, pattern);
-        or = orLike(or, all, types, ",fromAddr,", l.fromAddr, pattern);
-        or = orLike(or, all, types, ",logId,", l.logId, pattern);
-        or = orLike(or, all, types, ",memberId,", l.memberId, pattern);
-        or = orLike(or, all, types, ",params,", l.params, pattern);
-        or = orLike(or, all, types, ",refId,", l.refId, pattern);
-        or = orLike(or, all, types, ",refTypeCd,", l.refTypeCd, pattern);
-        or = orLike(or, all, types, ",resultCd,", l.resultCd, pattern);
-        or = orLike(or, all, types, ",siteId,", l.siteId, pattern);
-        or = orLike(or, all, types, ",subject,", l.subject, pattern);
-        or = orLike(or, all, types, ",templateCode,", l.templateCode, pattern);
-        or = orLike(or, all, types, ",templateId,", l.templateId, pattern);
-        or = orLike(or, all, types, ",toAddr,", l.toAddr, pattern);
-        or = orLike(or, all, types, ",userId,", l.userId, pattern);
+        or = orLike(or, all, types, ",bccAddr,", a.bccAddr, pattern);
+        or = orLike(or, all, types, ",ccAddr,", a.ccAddr, pattern);
+        or = orLike(or, all, types, ",content,", a.content, pattern);
+        or = orLike(or, all, types, ",failReason,", a.failReason, pattern);
+        or = orLike(or, all, types, ",fromAddr,", a.fromAddr, pattern);
+        or = orLike(or, all, types, ",logId,", a.logId, pattern);
+        or = orLike(or, all, types, ",memberId,", a.memberId, pattern);
+        or = orLike(or, all, types, ",params,", a.params, pattern);
+        or = orLike(or, all, types, ",refId,", a.refId, pattern);
+        or = orLike(or, all, types, ",refTypeCd,", a.refTypeCd, pattern);
+        or = orLike(or, all, types, ",resultCd,", a.resultCd, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",subject,", a.subject, pattern);
+        or = orLike(or, all, types, ",templateCode,", a.templateCode, pattern);
+        or = orLike(or, all, types, ",templateId,", a.templateId, pattern);
+        or = orLike(or, all, types, ",toAddr,", a.toAddr, pattern);
+        or = orLike(or, all, types, ",userId,", a.userId, pattern);
         return or;
     }
 
@@ -254,8 +254,8 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, l.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, l.logId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.logId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -266,17 +266,17 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("logId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, l.logId));
+                    orders.add(new OrderSpecifier(order, a.logId));
                 } else if ("sendDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, l.sendDate));
+                    orders.add(new OrderSpecifier(order, a.sendDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, l.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, l.logId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.logId));
         }
         return orders;
     }
@@ -286,33 +286,33 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
     public int updateSelective(SyhSendEmailLog entity) {
         if (entity.getLogId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(l);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getSiteId()       != null) { update.set(l.siteId,       entity.getSiteId());       hasAny = true; }
-        if (entity.getTemplateId()   != null) { update.set(l.templateId,   entity.getTemplateId());   hasAny = true; }
-        if (entity.getTemplateCode() != null) { update.set(l.templateCode, entity.getTemplateCode()); hasAny = true; }
-        if (entity.getMemberId()     != null) { update.set(l.memberId,     entity.getMemberId());     hasAny = true; }
-        if (entity.getUserId()       != null) { update.set(l.userId,       entity.getUserId());       hasAny = true; }
-        if (entity.getFromAddr()     != null) { update.set(l.fromAddr,     entity.getFromAddr());     hasAny = true; }
-        if (entity.getToAddr()       != null) { update.set(l.toAddr,       entity.getToAddr());       hasAny = true; }
-        if (entity.getCcAddr()       != null) { update.set(l.ccAddr,       entity.getCcAddr());       hasAny = true; }
-        if (entity.getBccAddr()      != null) { update.set(l.bccAddr,      entity.getBccAddr());      hasAny = true; }
-        if (entity.getSubject()      != null) { update.set(l.subject,      entity.getSubject());      hasAny = true; }
-        if (entity.getContent()      != null) { update.set(l.content,      entity.getContent());      hasAny = true; }
-        if (entity.getParams()       != null) { update.set(l.params,       entity.getParams());       hasAny = true; }
-        if (entity.getResultCd()     != null) { update.set(l.resultCd,     entity.getResultCd());     hasAny = true; }
-        if (entity.getFailReason()   != null) { update.set(l.failReason,   entity.getFailReason());   hasAny = true; }
-        if (entity.getSendDate()     != null) { update.set(l.sendDate,     entity.getSendDate());     hasAny = true; }
-        if (entity.getRefTypeCd()    != null) { update.set(l.refTypeCd,    entity.getRefTypeCd());    hasAny = true; }
-        if (entity.getRefId()        != null) { update.set(l.refId,        entity.getRefId());        hasAny = true; }
-        if (entity.getUpdBy()        != null) { update.set(l.updBy,        entity.getUpdBy());        hasAny = true; }
+        if (entity.getSiteId()       != null) { update.set(a.siteId,       entity.getSiteId());       hasAny = true; }
+        if (entity.getTemplateId()   != null) { update.set(a.templateId,   entity.getTemplateId());   hasAny = true; }
+        if (entity.getTemplateCode() != null) { update.set(a.templateCode, entity.getTemplateCode()); hasAny = true; }
+        if (entity.getMemberId()     != null) { update.set(a.memberId,     entity.getMemberId());     hasAny = true; }
+        if (entity.getUserId()       != null) { update.set(a.userId,       entity.getUserId());       hasAny = true; }
+        if (entity.getFromAddr()     != null) { update.set(a.fromAddr,     entity.getFromAddr());     hasAny = true; }
+        if (entity.getToAddr()       != null) { update.set(a.toAddr,       entity.getToAddr());       hasAny = true; }
+        if (entity.getCcAddr()       != null) { update.set(a.ccAddr,       entity.getCcAddr());       hasAny = true; }
+        if (entity.getBccAddr()      != null) { update.set(a.bccAddr,      entity.getBccAddr());      hasAny = true; }
+        if (entity.getSubject()      != null) { update.set(a.subject,      entity.getSubject());      hasAny = true; }
+        if (entity.getContent()      != null) { update.set(a.content,      entity.getContent());      hasAny = true; }
+        if (entity.getParams()       != null) { update.set(a.params,       entity.getParams());       hasAny = true; }
+        if (entity.getResultCd()     != null) { update.set(a.resultCd,     entity.getResultCd());     hasAny = true; }
+        if (entity.getFailReason()   != null) { update.set(a.failReason,   entity.getFailReason());   hasAny = true; }
+        if (entity.getSendDate()     != null) { update.set(a.sendDate,     entity.getSendDate());     hasAny = true; }
+        if (entity.getRefTypeCd()    != null) { update.set(a.refTypeCd,    entity.getRefTypeCd());    hasAny = true; }
+        if (entity.getRefId()        != null) { update.set(a.refId,        entity.getRefId());        hasAny = true; }
+        if (entity.getUpdBy()        != null) { update.set(a.updBy,        entity.getUpdBy());        hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(l.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(l.logId.eq(entity.getLogId())).execute();
+        long affected = update.where(a.logId.eq(entity.getLogId())).execute();
         return (int) affected;
     }
 }

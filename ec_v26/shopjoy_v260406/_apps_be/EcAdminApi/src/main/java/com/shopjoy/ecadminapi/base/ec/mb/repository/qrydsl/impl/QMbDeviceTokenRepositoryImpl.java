@@ -28,20 +28,33 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.mb.repository.qrydsl.impl.QMbDeviceTokenRepositoryImpl";
-    private static final QMbDeviceToken t   = QMbDeviceToken.mbDeviceToken;
+    private static final QMbDeviceToken a   = QMbDeviceToken.mbDeviceToken;
     private static final QMbMember      mem = QMbMember.mbMember;
+
+    /* baseSelColumnQuery */
+    private JPAQuery<MbDeviceTokenDto.Item> baseSelColumnQuery() {
+        return queryFactory
+                .select(Projections.bean(MbDeviceTokenDto.Item.class,
+                        a.deviceTokenId, a.deviceToken, a.siteId, a.memberId,
+                        a.osType, a.benefitNotiYn, a.alimReadDate,
+                        a.regBy, a.regDate, a.updBy, a.updDate,
+                        mem.memberNm.as("memberNm")
+                ))
+                .from(a)
+                .leftJoin(mem).on(mem.memberId.eq(a.memberId));
+    }
 
     /* 키조회 */
     @Override
     public Optional<MbDeviceTokenDto.Item> selectById(String deviceTokenId) {
-        return Optional.ofNullable(baseQuery().where(t.deviceTokenId.eq(deviceTokenId)).fetchOne());
+        return Optional.ofNullable(baseSelColumnQuery().where(a.deviceTokenId.eq(deviceTokenId)).fetchOne());
     }
 
     /* 목록조회 */
     @Override
     public List<MbDeviceTokenDto.Item> selectList(MbDeviceTokenDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<MbDeviceTokenDto.Item> query = baseQuery().where(
+        JPAQuery<MbDeviceTokenDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndDeviceTokenId(search),
                 baseAndDateRange(search),
@@ -62,7 +75,7 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<MbDeviceTokenDto.Item> query = baseQuery().where(
+        JPAQuery<MbDeviceTokenDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndDeviceTokenId(search),
                 baseAndDateRange(search),
@@ -71,7 +84,7 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<MbDeviceTokenDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(t.count()).from(t).where(
+        Long total = queryFactory.select(a.count()).from(a).where(
                 baseAndSiteId(search),
                 baseAndDeviceTokenId(search),
                 baseAndDateRange(search),
@@ -81,20 +94,6 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
         MbDeviceTokenDto.PageResponse res = new MbDeviceTokenDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-
-    /* baseQuery */
-    private JPAQuery<MbDeviceTokenDto.Item> baseQuery() {
-        return queryFactory
-                .select(Projections.bean(MbDeviceTokenDto.Item.class,
-                        t.deviceTokenId, t.deviceToken, t.siteId, t.memberId,
-                        t.osType, t.benefitNotiYn, t.alimReadDate,
-                        t.regBy, t.regDate, t.updBy, t.updDate,
-                        mem.memberNm.as("memberNm")
-                ))
-                .from(t)
-                .leftJoin(mem).on(mem.memberId.eq(t.memberId));
-    }
-
     /* buildCondition */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
@@ -105,13 +104,13 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(MbDeviceTokenDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? t.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* deviceTokenId 정확 일치 */
     private BooleanExpression baseAndDeviceTokenId(MbDeviceTokenDto.Request search) {
         return search != null && StringUtils.hasText(search.getDeviceTokenId())
-                ? t.deviceTokenId.eq(search.getDeviceTokenId()) : null;
+                ? a.deviceTokenId.eq(search.getDeviceTokenId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -124,8 +123,8 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return t.regDate.goe(start).and(t.regDate.lt(endExcl));
-            case "upd_date": return t.updDate.goe(start).and(t.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -138,12 +137,12 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",benefitNotiYn,", t.benefitNotiYn, pattern);
-        or = orLike(or, all, types, ",deviceToken,", t.deviceToken, pattern);
-        or = orLike(or, all, types, ",deviceTokenId,", t.deviceTokenId, pattern);
-        or = orLike(or, all, types, ",memberId,", t.memberId, pattern);
-        or = orLike(or, all, types, ",osType,", t.osType, pattern);
-        or = orLike(or, all, types, ",siteId,", t.siteId, pattern);
+        or = orLike(or, all, types, ",benefitNotiYn,", a.benefitNotiYn, pattern);
+        or = orLike(or, all, types, ",deviceToken,", a.deviceToken, pattern);
+        or = orLike(or, all, types, ",deviceTokenId,", a.deviceTokenId, pattern);
+        or = orLike(or, all, types, ",memberId,", a.memberId, pattern);
+        or = orLike(or, all, types, ",osType,", a.osType, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
         return or;
     }
 
@@ -164,8 +163,8 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, t.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, t.deviceTokenId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.deviceTokenId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -176,36 +175,38 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("deviceTokenId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, t.deviceTokenId));
+                    orders.add(new OrderSpecifier(order, a.deviceTokenId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, t.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, t.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, t.deviceTokenId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.deviceTokenId));
         }
         return orders;
     }
 
     /* 수정 */
+
+
     @Override
     public int updateSelective(MbDeviceToken entity) {
         if (entity.getDeviceTokenId() == null) return 0;
-        JPAUpdateClause update = queryFactory.update(t);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
-        if (entity.getDeviceToken()   != null) { update.set(t.deviceToken,   entity.getDeviceToken());   hasAny = true; }
-        if (entity.getMemberId()      != null) { update.set(t.memberId,      entity.getMemberId());      hasAny = true; }
-        if (entity.getOsType()        != null) { update.set(t.osType,        entity.getOsType());        hasAny = true; }
-        if (entity.getBenefitNotiYn() != null) { update.set(t.benefitNotiYn, entity.getBenefitNotiYn()); hasAny = true; }
-        if (entity.getAlimReadDate()  != null) { update.set(t.alimReadDate,  entity.getAlimReadDate());  hasAny = true; }
-        if (entity.getUpdBy()         != null) { update.set(t.updBy,         entity.getUpdBy());         hasAny = true; }
+        if (entity.getDeviceToken()   != null) { update.set(a.deviceToken,   entity.getDeviceToken());   hasAny = true; }
+        if (entity.getMemberId()      != null) { update.set(a.memberId,      entity.getMemberId());      hasAny = true; }
+        if (entity.getOsType()        != null) { update.set(a.osType,        entity.getOsType());        hasAny = true; }
+        if (entity.getBenefitNotiYn() != null) { update.set(a.benefitNotiYn, entity.getBenefitNotiYn()); hasAny = true; }
+        if (entity.getAlimReadDate()  != null) { update.set(a.alimReadDate,  entity.getAlimReadDate());  hasAny = true; }
+        if (entity.getUpdBy()         != null) { update.set(a.updBy,         entity.getUpdBy());         hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(t.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
         if (!hasAny) return 0;
-        return (int) update.where(t.deviceTokenId.eq(entity.getDeviceTokenId())).execute();
+        return (int) update.where(a.deviceTokenId.eq(entity.getDeviceTokenId())).execute();
     }
 }

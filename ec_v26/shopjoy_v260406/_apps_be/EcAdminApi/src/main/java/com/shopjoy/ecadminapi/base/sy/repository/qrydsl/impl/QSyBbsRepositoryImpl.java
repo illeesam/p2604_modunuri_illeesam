@@ -32,14 +32,28 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
     private final JPAQueryFactory queryFactory;
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyBbsRepositoryImpl";
-    private static final QSyBbs b = QSyBbs.syBbs;
+    private static final QSyBbs a = QSyBbs.syBbs;
     private static final QSySite ste = QSySite.sySite;
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+    /* 게시판 게시물 baseSelColumnQuery */
+    private JPAQuery<SyBbsDto.Item> baseSelColumnQuery() {
+        return queryFactory
+                .select(Projections.bean(SyBbsDto.Item.class,
+                        a.bbsId, a.siteId, a.bbmId, a.parentBbsId, a.memberId, a.authorNm,
+                        a.bbsTitle, a.contentHtml, a.attachGrpId, a.viewCount, a.likeCount,
+                        a.commentCount, a.isFixed, a.bbsStatusCd, a.pathId,
+                        a.regBy, a.regDate, a.updBy, a.updDate,
+                        ste.siteNm.as("siteNm")
+                ))
+                .from(a)
+                .leftJoin(ste).on(ste.siteId.eq(a.siteId));
+    }
 
     /* 게시판 게시물 키조회 */
     @Override
     public Optional<SyBbsDto.Item> selectById(String bbsId) {
-        SyBbsDto.Item dto = baseQuery().where(b.bbsId.eq(bbsId)).fetchOne();
+        SyBbsDto.Item dto = baseSelColumnQuery().where(a.bbsId.eq(bbsId)).fetchOne();
         return Optional.ofNullable(dto);
     }
 
@@ -47,7 +61,7 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
     @Override
     public List<SyBbsDto.Item> selectList(SyBbsDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyBbsDto.Item> query = baseQuery().where(
+        JPAQuery<SyBbsDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndBbsId(search),
                 baseAndStatus(search),
@@ -72,7 +86,7 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyBbsDto.Item> query = baseQuery().where(
+        JPAQuery<SyBbsDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndBbsId(search),
                 baseAndStatus(search),
@@ -81,7 +95,7 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyBbsDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(b.count()).from(b).where(
+        Long total = queryFactory.select(a.count()).from(a).where(
                 baseAndSiteId(search),
                 baseAndBbsId(search),
                 baseAndStatus(search),
@@ -91,21 +105,6 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
         SyBbsDto.PageResponse res = new SyBbsDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-
-    /* 게시판 게시물 baseQuery */
-    private JPAQuery<SyBbsDto.Item> baseQuery() {
-        return queryFactory
-                .select(Projections.bean(SyBbsDto.Item.class,
-                        b.bbsId, b.siteId, b.bbmId, b.parentBbsId, b.memberId, b.authorNm,
-                        b.bbsTitle, b.contentHtml, b.attachGrpId, b.viewCount, b.likeCount,
-                        b.commentCount, b.isFixed, b.bbsStatusCd, b.pathId,
-                        b.regBy, b.regDate, b.updBy, b.updDate,
-                        ste.siteNm.as("siteNm")
-                ))
-                .from(b)
-                .leftJoin(ste).on(ste.siteId.eq(b.siteId));
-    }
-
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
@@ -116,19 +115,19 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(SyBbsDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? b.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* bbsId 정확 일치 */
     private BooleanExpression baseAndBbsId(SyBbsDto.Request search) {
         return search != null && StringUtils.hasText(search.getBbsId())
-                ? b.bbsId.eq(search.getBbsId()) : null;
+                ? a.bbsId.eq(search.getBbsId()) : null;
     }
 
     /* bbsStatusCd 정확 일치 */
     private BooleanExpression baseAndStatus(SyBbsDto.Request search) {
         return search != null && StringUtils.hasText(search.getStatus())
-                ? b.bbsStatusCd.eq(search.getStatus()) : null;
+                ? a.bbsStatusCd.eq(search.getStatus()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
@@ -139,18 +138,18 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",attachGrpId,", b.attachGrpId, pattern);
-        or = orLike(or, all, types, ",authorNm,", b.authorNm, pattern);
-        or = orLike(or, all, types, ",bbmId,", b.bbmId, pattern);
-        or = orLike(or, all, types, ",bbsId,", b.bbsId, pattern);
-        or = orLike(or, all, types, ",bbsStatusCd,", b.bbsStatusCd, pattern);
-        or = orLike(or, all, types, ",bbsTitle,", b.bbsTitle, pattern);
-        or = orLike(or, all, types, ",contentHtml,", b.contentHtml, pattern);
-        or = orLike(or, all, types, ",isFixed,", b.isFixed, pattern);
-        or = orLike(or, all, types, ",memberId,", b.memberId, pattern);
-        or = orLike(or, all, types, ",parentBbsId,", b.parentBbsId, pattern);
-        or = orLike(or, all, types, ",pathId,", b.pathId, pattern);
-        or = orLike(or, all, types, ",siteId,", b.siteId, pattern);
+        or = orLike(or, all, types, ",attachGrpId,", a.attachGrpId, pattern);
+        or = orLike(or, all, types, ",authorNm,", a.authorNm, pattern);
+        or = orLike(or, all, types, ",bbmId,", a.bbmId, pattern);
+        or = orLike(or, all, types, ",bbsId,", a.bbsId, pattern);
+        or = orLike(or, all, types, ",bbsStatusCd,", a.bbsStatusCd, pattern);
+        or = orLike(or, all, types, ",bbsTitle,", a.bbsTitle, pattern);
+        or = orLike(or, all, types, ",contentHtml,", a.contentHtml, pattern);
+        or = orLike(or, all, types, ",isFixed,", a.isFixed, pattern);
+        or = orLike(or, all, types, ",memberId,", a.memberId, pattern);
+        or = orLike(or, all, types, ",parentBbsId,", a.parentBbsId, pattern);
+        or = orLike(or, all, types, ",pathId,", a.pathId, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
         return or;
     }
 
@@ -171,8 +170,8 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, b.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, b.bbsId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.bbsId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -183,52 +182,54 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("bbsId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, b.bbsId));
+                    orders.add(new OrderSpecifier(order, a.bbsId));
                 } else if ("authorNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, b.authorNm));
+                    orders.add(new OrderSpecifier(order, a.authorNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, b.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, b.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, b.bbsId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.bbsId));
         }
         return orders;
     }
 
     /* 게시판 게시물 수정 */
+
+
     @Override
     public int updateSelective(SyBbs entity) {
         if (entity.getBbsId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(b);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getSiteId()       != null) { update.set(b.siteId,       entity.getSiteId());       hasAny = true; }
-        if (entity.getBbmId()        != null) { update.set(b.bbmId,        entity.getBbmId());        hasAny = true; }
-        if (entity.getParentBbsId()  != null) { update.set(b.parentBbsId,  entity.getParentBbsId());  hasAny = true; }
-        if (entity.getMemberId()     != null) { update.set(b.memberId,     entity.getMemberId());     hasAny = true; }
-        if (entity.getAuthorNm()     != null) { update.set(b.authorNm,     entity.getAuthorNm());     hasAny = true; }
-        if (entity.getBbsTitle()     != null) { update.set(b.bbsTitle,     entity.getBbsTitle());     hasAny = true; }
-        if (entity.getContentHtml()  != null) { update.set(b.contentHtml,  entity.getContentHtml());  hasAny = true; }
-        if (entity.getAttachGrpId()  != null) { update.set(b.attachGrpId,  entity.getAttachGrpId());  hasAny = true; }
-        if (entity.getViewCount()    != null) { update.set(b.viewCount,    entity.getViewCount());    hasAny = true; }
-        if (entity.getLikeCount()    != null) { update.set(b.likeCount,    entity.getLikeCount());    hasAny = true; }
-        if (entity.getCommentCount() != null) { update.set(b.commentCount, entity.getCommentCount()); hasAny = true; }
-        if (entity.getIsFixed()      != null) { update.set(b.isFixed,      entity.getIsFixed());      hasAny = true; }
-        if (entity.getBbsStatusCd()  != null) { update.set(b.bbsStatusCd,  entity.getBbsStatusCd());  hasAny = true; }
-        if (entity.getUpdBy()        != null) { update.set(b.updBy,        entity.getUpdBy());        hasAny = true; }
+        if (entity.getSiteId()       != null) { update.set(a.siteId,       entity.getSiteId());       hasAny = true; }
+        if (entity.getBbmId()        != null) { update.set(a.bbmId,        entity.getBbmId());        hasAny = true; }
+        if (entity.getParentBbsId()  != null) { update.set(a.parentBbsId,  entity.getParentBbsId());  hasAny = true; }
+        if (entity.getMemberId()     != null) { update.set(a.memberId,     entity.getMemberId());     hasAny = true; }
+        if (entity.getAuthorNm()     != null) { update.set(a.authorNm,     entity.getAuthorNm());     hasAny = true; }
+        if (entity.getBbsTitle()     != null) { update.set(a.bbsTitle,     entity.getBbsTitle());     hasAny = true; }
+        if (entity.getContentHtml()  != null) { update.set(a.contentHtml,  entity.getContentHtml());  hasAny = true; }
+        if (entity.getAttachGrpId()  != null) { update.set(a.attachGrpId,  entity.getAttachGrpId());  hasAny = true; }
+        if (entity.getViewCount()    != null) { update.set(a.viewCount,    entity.getViewCount());    hasAny = true; }
+        if (entity.getLikeCount()    != null) { update.set(a.likeCount,    entity.getLikeCount());    hasAny = true; }
+        if (entity.getCommentCount() != null) { update.set(a.commentCount, entity.getCommentCount()); hasAny = true; }
+        if (entity.getIsFixed()      != null) { update.set(a.isFixed,      entity.getIsFixed());      hasAny = true; }
+        if (entity.getBbsStatusCd()  != null) { update.set(a.bbsStatusCd,  entity.getBbsStatusCd());  hasAny = true; }
+        if (entity.getUpdBy()        != null) { update.set(a.updBy,        entity.getUpdBy());        hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(b.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
-        if (entity.getPathId()       != null) { update.set(b.pathId,       entity.getPathId());       hasAny = true; }
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        if (entity.getPathId()       != null) { update.set(a.pathId,       entity.getPathId());       hasAny = true; }
 
         if (!hasAny) return 0;
 
-        long affected = update.where(b.bbsId.eq(entity.getBbsId())).execute();
+        long affected = update.where(a.bbsId.eq(entity.getBbsId())).execute();
         return (int) affected;
     }
 }

@@ -29,21 +29,34 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.mb.repository.qrydsl.impl.QMbMemberGradeRepositoryImpl";
-    private static final QMbMemberGrade g    = QMbMemberGrade.mbMemberGrade;
+    private static final QMbMemberGrade a    = QMbMemberGrade.mbMemberGrade;
     private static final QSySite        ste  = QSySite.sySite;
     private static final QSyCode        cdMg = new QSyCode("cd_mg");
+
+    /* 회원 등급 baseSelColumnQuery */
+    private JPAQuery<MbMemberGradeDto.Item> baseSelColumnQuery() {
+        return queryFactory
+                .select(Projections.bean(MbMemberGradeDto.Item.class,
+                        a.memberGradeId, a.siteId, a.gradeCd, a.gradeNm, a.gradeRank,
+                        a.minPurchaseAmt, a.saveRate, a.useYn,
+                        a.regBy, a.regDate, a.updBy, a.updDate
+                ))
+                .from(a)
+                .leftJoin(ste).on(ste.siteId.eq(a.siteId))
+                .leftJoin(cdMg).on(cdMg.codeGrp.eq("MEMBER_GRADE").and(cdMg.codeValue.eq(a.gradeCd)));
+    }
 
     /* 회원 등급 키조회 */
     @Override
     public Optional<MbMemberGradeDto.Item> selectById(String memberGradeId) {
-        return Optional.ofNullable(baseQuery().where(g.memberGradeId.eq(memberGradeId)).fetchOne());
+        return Optional.ofNullable(baseSelColumnQuery().where(a.memberGradeId.eq(memberGradeId)).fetchOne());
     }
 
     /* 회원 등급 목록조회 */
     @Override
     public List<MbMemberGradeDto.Item> selectList(MbMemberGradeDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<MbMemberGradeDto.Item> query = baseQuery().where(
+        JPAQuery<MbMemberGradeDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndMemberGradeId(search),
                 baseAndDateRange(search),
@@ -64,7 +77,7 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<MbMemberGradeDto.Item> query = baseQuery().where(
+        JPAQuery<MbMemberGradeDto.Item> query = baseSelColumnQuery().where(
                 baseAndSiteId(search),
                 baseAndMemberGradeId(search),
                 baseAndDateRange(search),
@@ -73,7 +86,7 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<MbMemberGradeDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(g.count()).from(g).where(
+        Long total = queryFactory.select(a.count()).from(a).where(
                 baseAndSiteId(search),
                 baseAndMemberGradeId(search),
                 baseAndDateRange(search),
@@ -83,20 +96,6 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
         MbMemberGradeDto.PageResponse res = new MbMemberGradeDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
-
-    /* 회원 등급 baseQuery */
-    private JPAQuery<MbMemberGradeDto.Item> baseQuery() {
-        return queryFactory
-                .select(Projections.bean(MbMemberGradeDto.Item.class,
-                        g.memberGradeId, g.siteId, g.gradeCd, g.gradeNm, g.gradeRank,
-                        g.minPurchaseAmt, g.saveRate, g.useYn,
-                        g.regBy, g.regDate, g.updBy, g.updDate
-                ))
-                .from(g)
-                .leftJoin(ste).on(ste.siteId.eq(g.siteId))
-                .leftJoin(cdMg).on(cdMg.codeGrp.eq("MEMBER_GRADE").and(cdMg.codeValue.eq(g.gradeCd)));
-    }
-
     /* searchType 사용 예  searchType = "gradeNm,gradeCd" (Entity 필드명) */
     /* ============================================================
      * 검색조건 — 개별 andXxx() BooleanExpression 반환 메서드 모음
@@ -107,13 +106,13 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(MbMemberGradeDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? g.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* memberGradeId 정확 일치 */
     private BooleanExpression baseAndMemberGradeId(MbMemberGradeDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberGradeId())
-                ? g.memberGradeId.eq(search.getMemberGradeId()) : null;
+                ? a.memberGradeId.eq(search.getMemberGradeId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -126,8 +125,8 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return g.regDate.goe(start).and(g.regDate.lt(endExcl));
-            case "upd_date": return g.updDate.goe(start).and(g.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -140,11 +139,11 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",gradeCd,", g.gradeCd, pattern);
-        or = orLike(or, all, types, ",gradeNm,", g.gradeNm, pattern);
-        or = orLike(or, all, types, ",memberGradeId,", g.memberGradeId, pattern);
-        or = orLike(or, all, types, ",siteId,", g.siteId, pattern);
-        or = orLike(or, all, types, ",useYn,", g.useYn, pattern);
+        or = orLike(or, all, types, ",gradeCd,", a.gradeCd, pattern);
+        or = orLike(or, all, types, ",gradeNm,", a.gradeNm, pattern);
+        or = orLike(or, all, types, ",memberGradeId,", a.memberGradeId, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",useYn,", a.useYn, pattern);
         return or;
     }
 
@@ -165,8 +164,8 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, g.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, g.memberGradeId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.memberGradeId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -177,40 +176,42 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("memberGradeId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, g.memberGradeId));
+                    orders.add(new OrderSpecifier(order, a.memberGradeId));
                 } else if ("gradeNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, g.gradeNm));
+                    orders.add(new OrderSpecifier(order, a.gradeNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, g.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, g.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, g.memberGradeId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.memberGradeId));
         }
         return orders;
     }
 
     /* 회원 등급 수정 */
+
+
     @Override
     public int updateSelective(MbMemberGrade entity) {
         if (entity.getMemberGradeId() == null) return 0;
-        JPAUpdateClause update = queryFactory.update(g);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
-        if (entity.getSiteId()         != null) { update.set(g.siteId,         entity.getSiteId());         hasAny = true; }
-        if (entity.getGradeCd()        != null) { update.set(g.gradeCd,        entity.getGradeCd());        hasAny = true; }
-        if (entity.getGradeNm()        != null) { update.set(g.gradeNm,        entity.getGradeNm());        hasAny = true; }
-        if (entity.getGradeRank()      != null) { update.set(g.gradeRank,      entity.getGradeRank());      hasAny = true; }
-        if (entity.getMinPurchaseAmt() != null) { update.set(g.minPurchaseAmt, entity.getMinPurchaseAmt()); hasAny = true; }
-        if (entity.getSaveRate()       != null) { update.set(g.saveRate,       entity.getSaveRate());       hasAny = true; }
-        if (entity.getUseYn()          != null) { update.set(g.useYn,          entity.getUseYn());          hasAny = true; }
-        if (entity.getUpdBy()          != null) { update.set(g.updBy,          entity.getUpdBy());          hasAny = true; }
+        if (entity.getSiteId()         != null) { update.set(a.siteId,         entity.getSiteId());         hasAny = true; }
+        if (entity.getGradeCd()        != null) { update.set(a.gradeCd,        entity.getGradeCd());        hasAny = true; }
+        if (entity.getGradeNm()        != null) { update.set(a.gradeNm,        entity.getGradeNm());        hasAny = true; }
+        if (entity.getGradeRank()      != null) { update.set(a.gradeRank,      entity.getGradeRank());      hasAny = true; }
+        if (entity.getMinPurchaseAmt() != null) { update.set(a.minPurchaseAmt, entity.getMinPurchaseAmt()); hasAny = true; }
+        if (entity.getSaveRate()       != null) { update.set(a.saveRate,       entity.getSaveRate());       hasAny = true; }
+        if (entity.getUseYn()          != null) { update.set(a.useYn,          entity.getUseYn());          hasAny = true; }
+        if (entity.getUpdBy()          != null) { update.set(a.updBy,          entity.getUpdBy());          hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(g.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
         if (!hasAny) return 0;
-        return (int) update.where(g.memberGradeId.eq(entity.getMemberGradeId())).execute();
+        return (int) update.where(a.memberGradeId.eq(entity.getMemberGradeId())).execute();
     }
 }

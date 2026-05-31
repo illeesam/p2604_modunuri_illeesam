@@ -32,7 +32,7 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdRefundMethodRepositoryImpl";
-    private static final QOdRefundMethod m   = QOdRefundMethod.odRefundMethod;
+    private static final QOdRefundMethod a   = QOdRefundMethod.odRefundMethod;
     private static final QSySite         ste = new QSySite("ste");
     private static final QOdOrder        ord = new QOdOrder("ord");
     private static final QOdPay          pay = new QOdPay("pay");
@@ -43,7 +43,7 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
     @Override
     public Optional<OdRefundMethodDto.Item> selectById(String refundMethodId) {
         OdRefundMethodDto.Item dto = baseListQuery()
-                .where(m.refundMethodId.eq(refundMethodId))
+                .where(a.refundMethodId.eq(refundMethodId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -92,8 +92,8 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
         List<OdRefundMethodDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(m.count())
-                .from(m)
+                .select(a.count())
+                .from(a)
                 .where(
                 baseAndSiteId(search),
                 baseAndRefundMethodId(search),
@@ -110,18 +110,18 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
     private JPAQuery<OdRefundMethodDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(OdRefundMethodDto.Item.class,
-                        m.refundMethodId, m.siteId, m.refundId, m.orderId,
-                        m.payMethodCd, m.refundPriority, m.refundAmt, m.refundAvailAmt,
-                        m.refundStatusCd, m.refundStatusCdBefore, m.refundDate,
-                        m.payId, m.pgRefundId, m.pgResponse,
-                        m.regBy, m.regDate, m.updBy, m.updDate
+                        a.refundMethodId, a.siteId, a.refundId, a.orderId,
+                        a.payMethodCd, a.refundPriority, a.refundAmt, a.refundAvailAmt,
+                        a.refundStatusCd, a.refundStatusCdBefore, a.refundDate,
+                        a.payId, a.pgRefundId, a.pgResponse,
+                        a.regBy, a.regDate, a.updBy, a.updDate
                 ))
-                .from(m)
-                .leftJoin(ste).on(ste.siteId.eq(m.siteId))
-                .leftJoin(ord).on(ord.orderId.eq(m.orderId))
-                .leftJoin(pay).on(pay.payId.eq(m.payId))
-                .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(m.payMethodCd)))
-                .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS").and(cdRs.codeValue.eq(m.refundStatusCd)));
+                .from(a)
+                .leftJoin(ste).on(ste.siteId.eq(a.siteId))
+                .leftJoin(ord).on(ord.orderId.eq(a.orderId))
+                .leftJoin(pay).on(pay.payId.eq(a.payId))
+                .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(a.payMethodCd)))
+                .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS").and(cdRs.codeValue.eq(a.refundStatusCd)));
     }
 
     /* 환불수단 buildCondition */
@@ -134,13 +134,13 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(OdRefundMethodDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? m.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* refundMethodId 정확 일치 */
     private BooleanExpression baseAndRefundMethodId(OdRefundMethodDto.Request search) {
         return search != null && StringUtils.hasText(search.getRefundMethodId())
-                ? m.refundMethodId.eq(search.getRefundMethodId()) : null;
+                ? a.refundMethodId.eq(search.getRefundMethodId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -153,8 +153,8 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return m.regDate.goe(start).and(m.regDate.lt(endExcl));
-            case "upd_date": return m.updDate.goe(start).and(m.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -167,16 +167,16 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",orderId,", m.orderId, pattern);
-        or = orLike(or, all, types, ",payId,", m.payId, pattern);
-        or = orLike(or, all, types, ",payMethodCd,", m.payMethodCd, pattern);
-        or = orLike(or, all, types, ",pgRefundId,", m.pgRefundId, pattern);
-        or = orLike(or, all, types, ",pgResponse,", m.pgResponse, pattern);
-        or = orLike(or, all, types, ",refundId,", m.refundId, pattern);
-        or = orLike(or, all, types, ",refundMethodId,", m.refundMethodId, pattern);
-        or = orLike(or, all, types, ",refundStatusCd,", m.refundStatusCd, pattern);
-        or = orLike(or, all, types, ",refundStatusCdBefore,", m.refundStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",siteId,", m.siteId, pattern);
+        or = orLike(or, all, types, ",orderId,", a.orderId, pattern);
+        or = orLike(or, all, types, ",payId,", a.payId, pattern);
+        or = orLike(or, all, types, ",payMethodCd,", a.payMethodCd, pattern);
+        or = orLike(or, all, types, ",pgRefundId,", a.pgRefundId, pattern);
+        or = orLike(or, all, types, ",pgResponse,", a.pgResponse, pattern);
+        or = orLike(or, all, types, ",refundId,", a.refundId, pattern);
+        or = orLike(or, all, types, ",refundMethodId,", a.refundMethodId, pattern);
+        or = orLike(or, all, types, ",refundStatusCd,", a.refundStatusCd, pattern);
+        or = orLike(or, all, types, ",refundStatusCdBefore,", a.refundStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
         return or;
     }
 
@@ -197,8 +197,8 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, m.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, m.refundMethodId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.refundMethodId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -209,17 +209,17 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("refundMethodId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, m.refundMethodId));
+                    orders.add(new OrderSpecifier(order, a.refundMethodId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, m.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, m.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, m.refundMethodId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.refundMethodId));
         }
         return orders;
     }
@@ -229,29 +229,29 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
     public int updateSelective(OdRefundMethod entity) {
         if (entity.getRefundMethodId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(m);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getSiteId()               != null) { update.set(m.siteId,               entity.getSiteId());               hasAny = true; }
-        if (entity.getRefundId()             != null) { update.set(m.refundId,             entity.getRefundId());             hasAny = true; }
-        if (entity.getOrderId()              != null) { update.set(m.orderId,              entity.getOrderId());              hasAny = true; }
-        if (entity.getPayMethodCd()          != null) { update.set(m.payMethodCd,          entity.getPayMethodCd());          hasAny = true; }
-        if (entity.getRefundPriority()       != null) { update.set(m.refundPriority,       entity.getRefundPriority());       hasAny = true; }
-        if (entity.getRefundAmt()            != null) { update.set(m.refundAmt,            entity.getRefundAmt());            hasAny = true; }
-        if (entity.getRefundAvailAmt()       != null) { update.set(m.refundAvailAmt,       entity.getRefundAvailAmt());       hasAny = true; }
-        if (entity.getRefundStatusCd()       != null) { update.set(m.refundStatusCd,       entity.getRefundStatusCd());       hasAny = true; }
-        if (entity.getRefundStatusCdBefore() != null) { update.set(m.refundStatusCdBefore, entity.getRefundStatusCdBefore()); hasAny = true; }
-        if (entity.getRefundDate()           != null) { update.set(m.refundDate,           entity.getRefundDate());           hasAny = true; }
-        if (entity.getPayId()                != null) { update.set(m.payId,                entity.getPayId());                hasAny = true; }
-        if (entity.getPgRefundId()           != null) { update.set(m.pgRefundId,           entity.getPgRefundId());           hasAny = true; }
-        if (entity.getPgResponse()           != null) { update.set(m.pgResponse,           entity.getPgResponse());           hasAny = true; }
-        if (entity.getUpdBy()                != null) { update.set(m.updBy,                entity.getUpdBy());                hasAny = true; }
+        if (entity.getSiteId()               != null) { update.set(a.siteId,               entity.getSiteId());               hasAny = true; }
+        if (entity.getRefundId()             != null) { update.set(a.refundId,             entity.getRefundId());             hasAny = true; }
+        if (entity.getOrderId()              != null) { update.set(a.orderId,              entity.getOrderId());              hasAny = true; }
+        if (entity.getPayMethodCd()          != null) { update.set(a.payMethodCd,          entity.getPayMethodCd());          hasAny = true; }
+        if (entity.getRefundPriority()       != null) { update.set(a.refundPriority,       entity.getRefundPriority());       hasAny = true; }
+        if (entity.getRefundAmt()            != null) { update.set(a.refundAmt,            entity.getRefundAmt());            hasAny = true; }
+        if (entity.getRefundAvailAmt()       != null) { update.set(a.refundAvailAmt,       entity.getRefundAvailAmt());       hasAny = true; }
+        if (entity.getRefundStatusCd()       != null) { update.set(a.refundStatusCd,       entity.getRefundStatusCd());       hasAny = true; }
+        if (entity.getRefundStatusCdBefore() != null) { update.set(a.refundStatusCdBefore, entity.getRefundStatusCdBefore()); hasAny = true; }
+        if (entity.getRefundDate()           != null) { update.set(a.refundDate,           entity.getRefundDate());           hasAny = true; }
+        if (entity.getPayId()                != null) { update.set(a.payId,                entity.getPayId());                hasAny = true; }
+        if (entity.getPgRefundId()           != null) { update.set(a.pgRefundId,           entity.getPgRefundId());           hasAny = true; }
+        if (entity.getPgResponse()           != null) { update.set(a.pgResponse,           entity.getPgResponse());           hasAny = true; }
+        if (entity.getUpdBy()                != null) { update.set(a.updBy,                entity.getUpdBy());                hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(m.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(m.refundMethodId.eq(entity.getRefundMethodId())).execute();
+        long affected = update.where(a.refundMethodId.eq(entity.getRefundMethodId())).execute();
         return (int) affected;
     }
 }

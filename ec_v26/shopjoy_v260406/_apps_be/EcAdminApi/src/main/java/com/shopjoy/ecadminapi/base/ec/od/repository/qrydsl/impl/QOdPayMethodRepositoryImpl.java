@@ -31,7 +31,7 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdPayMethodRepositoryImpl";
-    private static final QOdPayMethod m   = QOdPayMethod.odPayMethod;
+    private static final QOdPayMethod a   = QOdPayMethod.odPayMethod;
     private static final QMbMember    mem = new QMbMember("mem");
     private static final QSyCode      cdPm = new QSyCode("cd_pm");
 
@@ -39,7 +39,7 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
     @Override
     public Optional<OdPayMethodDto.Item> selectById(String payMethodId) {
         OdPayMethodDto.Item dto = baseListQuery()
-                .where(m.payMethodId.eq(payMethodId))
+                .where(a.payMethodId.eq(payMethodId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -86,8 +86,8 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
         List<OdPayMethodDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(m.count())
-                .from(m)
+                .select(a.count())
+                .from(a)
                 .where(
                 baseAndPayMethodId(search),
                 baseAndDateRange(search),
@@ -103,13 +103,13 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
     private JPAQuery<OdPayMethodDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(OdPayMethodDto.Item.class,
-                        m.payMethodId, m.memberId, m.payMethodTypeCd, m.payMethodNm,
-                        m.payMethodAlias, m.payKeyNo, m.mainMethodYn,
-                        m.regBy, m.regDate, m.updBy, m.updDate
+                        a.payMethodId, a.memberId, a.payMethodTypeCd, a.payMethodNm,
+                        a.payMethodAlias, a.payKeyNo, a.mainMethodYn,
+                        a.regBy, a.regDate, a.updBy, a.updDate
                 ))
-                .from(m)
-                .leftJoin(mem).on(mem.memberId.eq(m.memberId))
-                .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(m.payMethodTypeCd)));
+                .from(a)
+                .leftJoin(mem).on(mem.memberId.eq(a.memberId))
+                .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(a.payMethodTypeCd)));
     }
 
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
@@ -122,7 +122,7 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
     /* payMethodId 정확 일치 */
     private BooleanExpression baseAndPayMethodId(OdPayMethodDto.Request search) {
         return search != null && StringUtils.hasText(search.getPayMethodId())
-                ? m.payMethodId.eq(search.getPayMethodId()) : null;
+                ? a.payMethodId.eq(search.getPayMethodId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -135,8 +135,8 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return m.regDate.goe(start).and(m.regDate.lt(endExcl));
-            case "upd_date": return m.updDate.goe(start).and(m.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -149,14 +149,14 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",mainMethodYn,", m.mainMethodYn, pattern);
-        or = orLike(or, all, types, ",memberId,", m.memberId, pattern);
-        or = orLike(or, all, types, ",payKeyNo,", m.payKeyNo, pattern);
-        or = orLike(or, all, types, ",payMethodAlias,", m.payMethodAlias, pattern);
-        or = orLike(or, all, types, ",payMethodId,", m.payMethodId, pattern);
-        or = orLike(or, all, types, ",payMethodNm,", m.payMethodNm, pattern);
-        or = orLike(or, all, types, ",payMethodTypeCd,", m.payMethodTypeCd, pattern);
-        or = orLike(or, all, types, ",siteId,", m.siteId, pattern);
+        or = orLike(or, all, types, ",mainMethodYn,", a.mainMethodYn, pattern);
+        or = orLike(or, all, types, ",memberId,", a.memberId, pattern);
+        or = orLike(or, all, types, ",payKeyNo,", a.payKeyNo, pattern);
+        or = orLike(or, all, types, ",payMethodAlias,", a.payMethodAlias, pattern);
+        or = orLike(or, all, types, ",payMethodId,", a.payMethodId, pattern);
+        or = orLike(or, all, types, ",payMethodNm,", a.payMethodNm, pattern);
+        or = orLike(or, all, types, ",payMethodTypeCd,", a.payMethodTypeCd, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
         return or;
     }
 
@@ -177,8 +177,8 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, m.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, m.payMethodId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.payMethodId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -189,19 +189,19 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("payMethodId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, m.payMethodId));
+                    orders.add(new OrderSpecifier(order, a.payMethodId));
                 } else if ("payMethodNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, m.payMethodNm));
+                    orders.add(new OrderSpecifier(order, a.payMethodNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, m.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, m.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, m.payMethodId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.payMethodId));
         }
         return orders;
     }
@@ -211,22 +211,22 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
     public int updateSelective(OdPayMethod entity) {
         if (entity.getPayMethodId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(m);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getMemberId()        != null) { update.set(m.memberId,        entity.getMemberId());        hasAny = true; }
-        if (entity.getPayMethodTypeCd() != null) { update.set(m.payMethodTypeCd, entity.getPayMethodTypeCd()); hasAny = true; }
-        if (entity.getPayMethodNm()     != null) { update.set(m.payMethodNm,     entity.getPayMethodNm());     hasAny = true; }
-        if (entity.getPayMethodAlias()  != null) { update.set(m.payMethodAlias,  entity.getPayMethodAlias());  hasAny = true; }
-        if (entity.getPayKeyNo()        != null) { update.set(m.payKeyNo,        entity.getPayKeyNo());        hasAny = true; }
-        if (entity.getMainMethodYn()    != null) { update.set(m.mainMethodYn,    entity.getMainMethodYn());    hasAny = true; }
-        if (entity.getUpdBy()           != null) { update.set(m.updBy,           entity.getUpdBy());           hasAny = true; }
+        if (entity.getMemberId()        != null) { update.set(a.memberId,        entity.getMemberId());        hasAny = true; }
+        if (entity.getPayMethodTypeCd() != null) { update.set(a.payMethodTypeCd, entity.getPayMethodTypeCd()); hasAny = true; }
+        if (entity.getPayMethodNm()     != null) { update.set(a.payMethodNm,     entity.getPayMethodNm());     hasAny = true; }
+        if (entity.getPayMethodAlias()  != null) { update.set(a.payMethodAlias,  entity.getPayMethodAlias());  hasAny = true; }
+        if (entity.getPayKeyNo()        != null) { update.set(a.payKeyNo,        entity.getPayKeyNo());        hasAny = true; }
+        if (entity.getMainMethodYn()    != null) { update.set(a.mainMethodYn,    entity.getMainMethodYn());    hasAny = true; }
+        if (entity.getUpdBy()           != null) { update.set(a.updBy,           entity.getUpdBy());           hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(m.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(m.payMethodId.eq(entity.getPayMethodId())).execute();
+        long affected = update.where(a.payMethodId.eq(entity.getPayMethodId())).execute();
         return (int) affected;
     }
 }

@@ -29,19 +29,19 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmChattRoomRepositoryImpl";
-    private static final QCmChattRoom r = QCmChattRoom.cmChattRoom;
+    private static final QCmChattRoom a = QCmChattRoom.cmChattRoom;
 
     /** 기본 쿼리 빌드 */
     private JPAQuery<CmChattRoomDto.Item> buildBaseQuery() {
         return queryFactory
                 .select(Projections.bean(CmChattRoomDto.Item.class,
-                        r.chattRoomId, r.siteId, r.memberId, r.memberNm,
-                        r.adminUserId, r.subject, r.chattStatusCd, r.chattStatusCdBefore,
-                        r.lastMsgDate, r.memberUnreadCnt, r.adminUnreadCnt,
-                        r.chattMemo, r.closeDate, r.closeReason,
-                        r.regBy, r.regDate, r.updBy, r.updDate
+                        a.chattRoomId, a.siteId, a.memberId, a.memberNm,
+                        a.adminUserId, a.subject, a.chattStatusCd, a.chattStatusCdBefore,
+                        a.lastMsgDate, a.memberUnreadCnt, a.adminUnreadCnt,
+                        a.chattMemo, a.closeDate, a.closeReason,
+                        a.regBy, a.regDate, a.updBy, a.updDate
                 ))
-                .from(r);
+                .from(a);
     }
 
     /** 단건 조회 */
@@ -49,7 +49,7 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
     public Optional<CmChattRoomDto.Item> selectById(String chattRoomId) {
         CmChattRoomDto.Item dto = buildBaseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
-                .where(r.chattRoomId.eq(chattRoomId))
+                .where(a.chattRoomId.eq(chattRoomId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -101,8 +101,8 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
         List<CmChattRoomDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(r.count())
-                .from(r)
+                .select(a.count())
+                .from(a)
                 .where(
                 baseAndSiteId(search),
                 baseAndChattRoomId(search),
@@ -127,19 +127,19 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(CmChattRoomDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? r.siteId.eq(search.getSiteId()) : null;
+                ? a.siteId.eq(search.getSiteId()) : null;
     }
 
     /* chattRoomId 정확 일치 */
     private BooleanExpression baseAndChattRoomId(CmChattRoomDto.Request search) {
         return search != null && StringUtils.hasText(search.getChattRoomId())
-                ? r.chattRoomId.eq(search.getChattRoomId()) : null;
+                ? a.chattRoomId.eq(search.getChattRoomId()) : null;
     }
 
     /* memberId 정확 일치 */
     private BooleanExpression baseAndMemberId(CmChattRoomDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberId())
-                ? r.memberId.eq(search.getMemberId()) : null;
+                ? a.memberId.eq(search.getMemberId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -152,8 +152,8 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return r.regDate.goe(start).and(r.regDate.lt(endExcl));
-            case "upd_date": return r.updDate.goe(start).and(r.updDate.lt(endExcl));
+            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -166,16 +166,16 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",adminUserId,", r.adminUserId, pattern);
-        or = orLike(or, all, types, ",chattMemo,", r.chattMemo, pattern);
-        or = orLike(or, all, types, ",chattRoomId,", r.chattRoomId, pattern);
-        or = orLike(or, all, types, ",chattStatusCd,", r.chattStatusCd, pattern);
-        or = orLike(or, all, types, ",chattStatusCdBefore,", r.chattStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",closeReason,", r.closeReason, pattern);
-        or = orLike(or, all, types, ",memberId,", r.memberId, pattern);
-        or = orLike(or, all, types, ",memberNm,", r.memberNm, pattern);
-        or = orLike(or, all, types, ",siteId,", r.siteId, pattern);
-        or = orLike(or, all, types, ",subject,", r.subject, pattern);
+        or = orLike(or, all, types, ",adminUserId,", a.adminUserId, pattern);
+        or = orLike(or, all, types, ",chattMemo,", a.chattMemo, pattern);
+        or = orLike(or, all, types, ",chattRoomId,", a.chattRoomId, pattern);
+        or = orLike(or, all, types, ",chattStatusCd,", a.chattStatusCd, pattern);
+        or = orLike(or, all, types, ",chattStatusCdBefore,", a.chattStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",closeReason,", a.closeReason, pattern);
+        or = orLike(or, all, types, ",memberId,", a.memberId, pattern);
+        or = orLike(or, all, types, ",memberNm,", a.memberNm, pattern);
+        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",subject,", a.subject, pattern);
         return or;
     }
 
@@ -196,8 +196,8 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, r.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, r.chattRoomId));
+            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.chattRoomId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -208,19 +208,19 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("chattRoomId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, r.chattRoomId));
+                    orders.add(new OrderSpecifier(order, a.chattRoomId));
                 } else if ("memberNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, r.memberNm));
+                    orders.add(new OrderSpecifier(order, a.memberNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, r.regDate));
+                    orders.add(new OrderSpecifier(order, a.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, r.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, r.chattRoomId));
+            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, a.chattRoomId));
         }
         return orders;
     }
@@ -230,29 +230,29 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
     public int updateSelective(CmChattRoom entity) {
         if (entity.getChattRoomId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(r);
+        JPAUpdateClause update = queryFactory.update(a);
         boolean hasAny = false;
 
-        if (entity.getSiteId()              != null) { update.set(r.siteId,              entity.getSiteId());              hasAny = true; }
-        if (entity.getMemberId()            != null) { update.set(r.memberId,            entity.getMemberId());            hasAny = true; }
-        if (entity.getMemberNm()            != null) { update.set(r.memberNm,            entity.getMemberNm());            hasAny = true; }
-        if (entity.getAdminUserId()         != null) { update.set(r.adminUserId,         entity.getAdminUserId());         hasAny = true; }
-        if (entity.getSubject()             != null) { update.set(r.subject,             entity.getSubject());             hasAny = true; }
-        if (entity.getChattStatusCd()       != null) { update.set(r.chattStatusCd,       entity.getChattStatusCd());       hasAny = true; }
-        if (entity.getChattStatusCdBefore() != null) { update.set(r.chattStatusCdBefore, entity.getChattStatusCdBefore()); hasAny = true; }
-        if (entity.getLastMsgDate()         != null) { update.set(r.lastMsgDate,         entity.getLastMsgDate());         hasAny = true; }
-        if (entity.getMemberUnreadCnt()     != null) { update.set(r.memberUnreadCnt,     entity.getMemberUnreadCnt());     hasAny = true; }
-        if (entity.getAdminUnreadCnt()      != null) { update.set(r.adminUnreadCnt,      entity.getAdminUnreadCnt());      hasAny = true; }
-        if (entity.getChattMemo()           != null) { update.set(r.chattMemo,           entity.getChattMemo());           hasAny = true; }
-        if (entity.getCloseDate()           != null) { update.set(r.closeDate,           entity.getCloseDate());           hasAny = true; }
-        if (entity.getCloseReason()         != null) { update.set(r.closeReason,         entity.getCloseReason());         hasAny = true; }
-        if (entity.getUpdBy()               != null) { update.set(r.updBy,               entity.getUpdBy());               hasAny = true; }
+        if (entity.getSiteId()              != null) { update.set(a.siteId,              entity.getSiteId());              hasAny = true; }
+        if (entity.getMemberId()            != null) { update.set(a.memberId,            entity.getMemberId());            hasAny = true; }
+        if (entity.getMemberNm()            != null) { update.set(a.memberNm,            entity.getMemberNm());            hasAny = true; }
+        if (entity.getAdminUserId()         != null) { update.set(a.adminUserId,         entity.getAdminUserId());         hasAny = true; }
+        if (entity.getSubject()             != null) { update.set(a.subject,             entity.getSubject());             hasAny = true; }
+        if (entity.getChattStatusCd()       != null) { update.set(a.chattStatusCd,       entity.getChattStatusCd());       hasAny = true; }
+        if (entity.getChattStatusCdBefore() != null) { update.set(a.chattStatusCdBefore, entity.getChattStatusCdBefore()); hasAny = true; }
+        if (entity.getLastMsgDate()         != null) { update.set(a.lastMsgDate,         entity.getLastMsgDate());         hasAny = true; }
+        if (entity.getMemberUnreadCnt()     != null) { update.set(a.memberUnreadCnt,     entity.getMemberUnreadCnt());     hasAny = true; }
+        if (entity.getAdminUnreadCnt()      != null) { update.set(a.adminUnreadCnt,      entity.getAdminUnreadCnt());      hasAny = true; }
+        if (entity.getChattMemo()           != null) { update.set(a.chattMemo,           entity.getChattMemo());           hasAny = true; }
+        if (entity.getCloseDate()           != null) { update.set(a.closeDate,           entity.getCloseDate());           hasAny = true; }
+        if (entity.getCloseReason()         != null) { update.set(a.closeReason,         entity.getCloseReason());         hasAny = true; }
+        if (entity.getUpdBy()               != null) { update.set(a.updBy,               entity.getUpdBy());               hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(r.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(r.chattRoomId.eq(entity.getChattRoomId())).execute();
+        long affected = update.where(a.chattRoomId.eq(entity.getChattRoomId())).execute();
         return (int) affected;
     }
 }
