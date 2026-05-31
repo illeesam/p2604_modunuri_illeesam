@@ -134,7 +134,7 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression andPathId(SyCodeGrpDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
-                ? g.pathId.in(syPathRepository.findTreePathIds(search.getPathId()))
+                ? g.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_code_grp"))
                 : null;
     }
 

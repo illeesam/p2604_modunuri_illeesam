@@ -113,7 +113,7 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression andPathId(DpWidgetLibDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
-                ? l.pathId.in(syPathRepository.findTreePathIds(search.getPathId()))
+                ? l.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "dp_widget_lib"))
                 : null;
     }
 

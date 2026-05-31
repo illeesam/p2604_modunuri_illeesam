@@ -126,7 +126,7 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression andPathId(SyTemplateDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
-                ? t.pathId.in(syPathRepository.findTreePathIds(search.getPathId()))
+                ? t.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_template"))
                 : null;
     }
 

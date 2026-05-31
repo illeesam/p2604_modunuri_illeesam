@@ -10,18 +10,22 @@ import java.util.List;
 
 public interface SyPathRepository extends JpaRepository<SyPath, String>, QSyPathRepository {
 
-    /* 루트 path + 모든 자손 path_id 수집 (PostgreSQL 재귀 CTE) */
+    /* 루트 path + 모든 자손 path_id 수집 (PostgreSQL 재귀 CTE, biz_cd 한정) */
     @Query(value = """
             WITH RECURSIVE t /* 표시경로 parent_path_id 의 자식 path_id (list) 반환 */ AS (
                 SELECT path_id
-                  FROM sy_path
-                 WHERE path_id = :rootPathId
+                FROM sy_path
+                WHERE path_id = :rootPathId
+                  AND biz_cd  = :bizCd
                 UNION ALL
                 SELECT c.path_id
-                  FROM sy_path c
-                  JOIN t ON c.parent_path_id = t.path_id
+                FROM sy_path c
+                JOIN t ON c.parent_path_id = t.path_id
+                WHERE c.biz_cd = :bizCd
             )
-            SELECT path_id FROM t
+            SELECT path_id
+            FROM t
             """, nativeQuery = true)
-    List<String> findTreePathIds(@Param("rootPathId") String rootPathId);
+    List<String> findTreePathIds(@Param("rootPathId") String rootPathId,
+                                 @Param("bizCd")      String bizCd);
 }

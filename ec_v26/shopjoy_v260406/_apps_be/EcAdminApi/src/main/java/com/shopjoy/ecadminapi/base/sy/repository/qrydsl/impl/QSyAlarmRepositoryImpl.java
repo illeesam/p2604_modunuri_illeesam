@@ -138,7 +138,7 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression andPathId(SyAlarmDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
-                ? a.pathId.in(syPathRepository.findTreePathIds(search.getPathId()))
+                ? a.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_alarm"))
                 : null;
     }
 

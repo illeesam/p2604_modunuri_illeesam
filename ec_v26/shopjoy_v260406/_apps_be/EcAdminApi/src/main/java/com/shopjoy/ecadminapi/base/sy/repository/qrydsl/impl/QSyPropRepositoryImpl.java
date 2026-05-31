@@ -122,7 +122,7 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression andPathId(SyPropDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
-                ? p.pathId.in(syPathRepository.findTreePathIds(search.getPathId()))
+                ? p.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_prop"))
                 : null;
     }
 
