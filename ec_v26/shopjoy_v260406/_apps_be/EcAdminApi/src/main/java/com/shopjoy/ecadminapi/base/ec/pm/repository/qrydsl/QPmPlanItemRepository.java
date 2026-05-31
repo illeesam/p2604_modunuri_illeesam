@@ -13,7 +13,7 @@ public interface QPmPlanItemRepository {
 
     List<PmPlanItemDto.Item> selectList(PmPlanItemDto.Request search);
 
-    PmPlanItemDto.PageResponse selectPageList(PmPlanItemDto.Request search);
+    PmPlanItemDto.PageResponse selectPageData(PmPlanItemDto.Request search);
 
     int updateSelective(PmPlanItem entity);
 }

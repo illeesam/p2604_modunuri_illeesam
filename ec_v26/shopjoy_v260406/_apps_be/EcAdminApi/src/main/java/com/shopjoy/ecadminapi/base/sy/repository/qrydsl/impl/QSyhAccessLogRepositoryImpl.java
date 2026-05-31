@@ -62,7 +62,7 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
 
     /* 페이지조회 */
     @Override
-    public SyhAccessLogDto.PageResponse selectPageList(SyhAccessLogDto.Request search) {
+    public SyhAccessLogDto.PageResponse selectPageData(SyhAccessLogDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -70,7 +70,7 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<SyhAccessLogDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
                 baseAndMethod(search),
                 baseAndAppTypeCd(search),
                 baseAndDateRange(search),

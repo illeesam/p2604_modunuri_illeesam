@@ -69,7 +69,7 @@ public class OdClaimItemService {
     /* 클레임 아이템 페이지조회 */
     public OdClaimItemDto.PageResponse getPageData(OdClaimItemDto.Request req) {
         PageHelper.addPaging(req);
-        return odClaimItemRepository.selectPageList(req);
+        return odClaimItemRepository.selectPageData(req);
     }
 
     /* 클레임 아이템 등록 */

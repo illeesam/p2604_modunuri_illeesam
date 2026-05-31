@@ -19,7 +19,7 @@ public interface ZzExmy3Mapper {
     List<ZzExmy3Dto.Item> selectList(ZzExmy3Dto.Request search);
 
     /** 페이지 목록 */
-    List<ZzExmy3Dto.Item> selectPageList(ZzExmy3Dto.Request search);
+    List<ZzExmy3Dto.Item> selectPageData(ZzExmy3Dto.Request search);
 
     /** 페이지 건수 */
     long selectPageCount(ZzExmy3Dto.Request search);

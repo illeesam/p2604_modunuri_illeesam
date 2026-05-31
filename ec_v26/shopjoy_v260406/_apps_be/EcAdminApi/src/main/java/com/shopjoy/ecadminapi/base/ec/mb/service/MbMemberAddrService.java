@@ -69,7 +69,7 @@ public class MbMemberAddrService {
     /* 회원 주소 페이지조회 */
     public MbMemberAddrDto.PageResponse getPageData(MbMemberAddrDto.Request req) {
         PageHelper.addPaging(req);
-        return mbMemberAddrRepository.selectPageList(req);
+        return mbMemberAddrRepository.selectPageData(req);
     }
 
     /* 회원 주소 등록 */

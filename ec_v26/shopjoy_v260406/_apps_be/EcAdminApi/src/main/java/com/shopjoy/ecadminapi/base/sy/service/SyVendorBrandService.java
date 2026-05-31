@@ -69,7 +69,7 @@ public class SyVendorBrandService {
     /* 업체별 브랜드 페이지조회 */
     public SyVendorBrandDto.PageResponse getPageData(SyVendorBrandDto.Request req) {
         PageHelper.addPaging(req);
-        return syVendorBrandRepository.selectPageList(req);
+        return syVendorBrandRepository.selectPageData(req);
     }
 
     /* 업체별 브랜드 등록 */

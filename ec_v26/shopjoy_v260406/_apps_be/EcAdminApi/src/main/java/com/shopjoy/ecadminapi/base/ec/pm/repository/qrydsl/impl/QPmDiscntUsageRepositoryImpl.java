@@ -75,7 +75,7 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
 
     /* 할인 사용 이력 페이지조회 */
     @Override
-    public PmDiscntUsageDto.PageResponse selectPageList(PmDiscntUsageDto.Request search) {
+    public PmDiscntUsageDto.PageResponse selectPageData(PmDiscntUsageDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

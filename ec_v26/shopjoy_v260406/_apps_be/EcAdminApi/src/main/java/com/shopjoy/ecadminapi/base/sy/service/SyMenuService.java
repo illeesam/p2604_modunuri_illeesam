@@ -69,7 +69,7 @@ public class SyMenuService {
     /* 메뉴 페이지조회 */
     public SyMenuDto.PageResponse getPageData(SyMenuDto.Request req) {
         PageHelper.addPaging(req);
-        return syMenuRepository.selectPageList(req);
+        return syMenuRepository.selectPageData(req);
     }
 
     /* 메뉴 등록 */

@@ -14,7 +14,7 @@ public interface QSyMenuRepository {
 
     List<SyMenuDto.Item> selectList(SyMenuDto.Request search);
 
-    SyMenuDto.PageResponse selectPageList(SyMenuDto.Request search);
+    SyMenuDto.PageResponse selectPageData(SyMenuDto.Request search);
 
     int updateSelective(SyMenu entity);
 

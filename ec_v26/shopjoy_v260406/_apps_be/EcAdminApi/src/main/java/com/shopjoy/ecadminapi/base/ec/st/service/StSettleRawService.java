@@ -69,7 +69,7 @@ public class StSettleRawService {
     /* 정산 원천 데이터 페이지조회 */
     public StSettleRawDto.PageResponse getPageData(StSettleRawDto.Request req) {
         PageHelper.addPaging(req);
-        return stSettleRawRepository.selectPageList(req);
+        return stSettleRawRepository.selectPageData(req);
     }
 
     /* 정산 원천 데이터 등록 */

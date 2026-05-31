@@ -69,7 +69,7 @@ public class PmEventService {
     /* 이벤트 페이지조회 */
     public PmEventDto.PageResponse getPageData(PmEventDto.Request req) {
         PageHelper.addPaging(req);
-        return pmEventRepository.selectPageList(req);
+        return pmEventRepository.selectPageData(req);
     }
 
     /* 이벤트 등록 */

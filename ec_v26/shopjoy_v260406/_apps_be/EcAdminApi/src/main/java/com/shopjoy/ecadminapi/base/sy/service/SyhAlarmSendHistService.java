@@ -30,7 +30,7 @@ public class SyhAlarmSendHistService {
     /** getPageData — 페이징조회 */
     public SyhAlarmSendHistDto.PageResponse getPageData(SyhAlarmSendHistDto.Request req) {
         PageHelper.addPaging(req);
-        return syhAlarmSendHistRepository.selectPageList(req);
+        return syhAlarmSendHistRepository.selectPageData(req);
     }
 
     /** update — 수정 */

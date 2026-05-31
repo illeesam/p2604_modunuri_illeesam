@@ -14,7 +14,7 @@ public interface QSyVendorRepository {
 
     List<SyVendorDto.Item> selectList(SyVendorDto.Request search);
 
-    SyVendorDto.PageResponse selectPageList(SyVendorDto.Request search);
+    SyVendorDto.PageResponse selectPageData(SyVendorDto.Request search);
 
     int updateSelective(SyVendor entity);
     /** 표시경로 노드별 수 집계 (자손 누적 + 검색조건 필터, native CTE 동적 SQL).

@@ -91,7 +91,7 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
 
     /* 공통 코드 그룹 페이지조회 */
     @Override
-    public SyCodeGrpDto.PageResponse selectPageList(SyCodeGrpDto.Request search) {
+    public SyCodeGrpDto.PageResponse selectPageData(SyCodeGrpDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -99,7 +99,7 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<SyCodeGrpDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
                 baseAndSiteId(search),
                 baseAndPathId(search),
                 baseAndCodeGrpId(search),

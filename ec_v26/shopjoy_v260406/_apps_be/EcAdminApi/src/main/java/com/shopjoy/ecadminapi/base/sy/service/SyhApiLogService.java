@@ -30,7 +30,7 @@ public class SyhApiLogService {
     /** getPageData — 페이징조회 */
     public SyhApiLogDto.PageResponse getPageData(SyhApiLogDto.Request req) {
         PageHelper.addPaging(req);
-        return syhApiLogRepository.selectPageList(req);
+        return syhApiLogRepository.selectPageData(req);
     }
 
     /** update — 수정 */

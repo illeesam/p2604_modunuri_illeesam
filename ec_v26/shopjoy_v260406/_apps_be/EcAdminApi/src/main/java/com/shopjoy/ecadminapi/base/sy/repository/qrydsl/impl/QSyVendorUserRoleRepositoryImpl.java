@@ -96,7 +96,7 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
 
     /* 업체 사용자 역할 연결 페이지조회 */
     @Override
-    public SyVendorUserRoleDto.PageResponse selectPageList(SyVendorUserRoleDto.Request search) {
+    public SyVendorUserRoleDto.PageResponse selectPageData(SyVendorUserRoleDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -104,7 +104,7 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<SyVendorUserRoleDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
                 baseAndVendorUserRoleId(search),
                 baseAndVendorId(search),
                 baseAndUserId(search),

@@ -69,7 +69,7 @@ public class PdReviewCommentService {
     /* 리뷰 댓글 페이지조회 */
     public PdReviewCommentDto.PageResponse getPageData(PdReviewCommentDto.Request req) {
         PageHelper.addPaging(req);
-        return pdReviewCommentRepository.selectPageList(req);
+        return pdReviewCommentRepository.selectPageData(req);
     }
 
     /* 리뷰 댓글 등록 */

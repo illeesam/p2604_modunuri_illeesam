@@ -30,7 +30,7 @@ public class SyhBatchHistService {
     /** getPageData — 페이징조회 */
     public SyhBatchHistDto.PageResponse getPageData(SyhBatchHistDto.Request req) {
         PageHelper.addPaging(req);
-        return syhBatchHistRepository.selectPageList(req);
+        return syhBatchHistRepository.selectPageData(req);
     }
 
     /** update — 수정 */

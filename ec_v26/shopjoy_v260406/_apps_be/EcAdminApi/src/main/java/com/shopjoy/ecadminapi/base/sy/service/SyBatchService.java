@@ -69,7 +69,7 @@ public class SyBatchService {
     /* 배치 페이지조회 */
     public SyBatchDto.PageResponse getPageData(SyBatchDto.Request req) {
         PageHelper.addPaging(req);
-        return syBatchRepository.selectPageList(req);
+        return syBatchRepository.selectPageData(req);
     }
 
     /* 배치 등록 */

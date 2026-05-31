@@ -120,7 +120,7 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
 
     /* 메시지 발송 로그 페이지조회 */
     @Override
-    public SyhSendMsgLogDto.PageResponse selectPageList(SyhSendMsgLogDto.Request search) {
+    public SyhSendMsgLogDto.PageResponse selectPageData(SyhSendMsgLogDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -128,7 +128,7 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<SyhSendMsgLogDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
                 baseAndSiteId(search),
                 baseAndLogId(search),
                 baseAndUserId(search),

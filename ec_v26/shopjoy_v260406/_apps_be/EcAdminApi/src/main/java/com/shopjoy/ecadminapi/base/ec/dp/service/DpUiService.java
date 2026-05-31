@@ -69,7 +69,7 @@ public class DpUiService {
     /* 전시 UI 페이지조회 */
     public DpUiDto.PageResponse getPageData(DpUiDto.Request req) {
         PageHelper.addPaging(req);
-        return dpUiRepository.selectPageList(req);
+        return dpUiRepository.selectPageData(req);
     }
 
     /* 전시 UI 등록 */

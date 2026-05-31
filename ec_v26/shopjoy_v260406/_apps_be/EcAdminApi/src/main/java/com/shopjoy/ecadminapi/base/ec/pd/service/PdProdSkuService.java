@@ -71,7 +71,7 @@ public class PdProdSkuService {
     /* 상품 SKU 페이지조회 */
     public PdProdSkuDto.PageResponse getPageData(PdProdSkuDto.Request req) {
         PageHelper.addPaging(req);
-        return pdProdSkuRepository.selectPageList(req);
+        return pdProdSkuRepository.selectPageData(req);
     }
 
     /* 상품 SKU 등록 */

@@ -69,7 +69,7 @@ public class PmSaveItemService {
     /* 적립금 대상 상품 페이지조회 */
     public PmSaveItemDto.PageResponse getPageData(PmSaveItemDto.Request req) {
         PageHelper.addPaging(req);
-        return pmSaveItemRepository.selectPageList(req);
+        return pmSaveItemRepository.selectPageData(req);
     }
 
     /* 적립금 대상 상품 등록 */

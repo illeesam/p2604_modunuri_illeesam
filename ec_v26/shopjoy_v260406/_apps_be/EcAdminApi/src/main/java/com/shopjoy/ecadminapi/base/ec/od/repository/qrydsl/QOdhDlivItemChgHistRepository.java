@@ -13,7 +13,7 @@ public interface QOdhDlivItemChgHistRepository {
 
     List<OdhDlivItemChgHistDto.Item> selectList(OdhDlivItemChgHistDto.Request search);
 
-    OdhDlivItemChgHistDto.PageResponse selectPageList(OdhDlivItemChgHistDto.Request search);
+    OdhDlivItemChgHistDto.PageResponse selectPageData(OdhDlivItemChgHistDto.Request search);
 
     int updateSelective(OdhDlivItemChgHist entity);
 }

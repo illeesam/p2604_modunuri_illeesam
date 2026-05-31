@@ -30,7 +30,7 @@ public class SyhUserLoginLogService {
     /** getPageData — 페이징조회 */
     public SyhUserLoginLogDto.PageResponse getPageData(SyhUserLoginLogDto.Request req) {
         PageHelper.addPaging(req);
-        return syhUserLoginLogRepository.selectPageList(req);
+        return syhUserLoginLogRepository.selectPageData(req);
     }
 
     /** update — 수정 */

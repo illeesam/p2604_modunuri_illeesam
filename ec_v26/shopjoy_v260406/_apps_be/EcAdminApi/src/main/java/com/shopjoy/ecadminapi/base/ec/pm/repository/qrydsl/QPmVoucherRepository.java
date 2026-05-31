@@ -13,7 +13,7 @@ public interface QPmVoucherRepository {
 
     List<PmVoucherDto.Item> selectList(PmVoucherDto.Request search);
 
-    PmVoucherDto.PageResponse selectPageList(PmVoucherDto.Request search);
+    PmVoucherDto.PageResponse selectPageData(PmVoucherDto.Request search);
 
     int updateSelective(PmVoucher entity);
 }

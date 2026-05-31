@@ -69,7 +69,7 @@ public class PmDiscntItemService {
     /* 할인 대상 상품 페이지조회 */
     public PmDiscntItemDto.PageResponse getPageData(PmDiscntItemDto.Request req) {
         PageHelper.addPaging(req);
-        return pmDiscntItemRepository.selectPageList(req);
+        return pmDiscntItemRepository.selectPageData(req);
     }
 
     /* 할인 대상 상품 등록 */

@@ -13,7 +13,7 @@ public interface QMbMemberGradeRepository {
 
     List<MbMemberGradeDto.Item> selectList(MbMemberGradeDto.Request search);
 
-    MbMemberGradeDto.PageResponse selectPageList(MbMemberGradeDto.Request search);
+    MbMemberGradeDto.PageResponse selectPageData(MbMemberGradeDto.Request search);
 
     int updateSelective(MbMemberGrade entity);
 }

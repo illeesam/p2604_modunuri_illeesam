@@ -48,7 +48,7 @@ public class ZzExmy3Service {
     /** getPageData — 조회 (각 항목에 상위 exmy1 / exmy2 포함) */
     public ZzExmy3Dto.PageResponse getPageData(ZzExmy3Dto.Request req) {
         PageHelper.addPaging(req);
-        List<ZzExmy3Dto.Item> list = zzExmy3Mapper.selectPageList(req);
+        List<ZzExmy3Dto.Item> list = zzExmy3Mapper.selectPageData(req);
         _listFillRelations(list);
         long total = zzExmy3Mapper.selectPageCount(req);
         ZzExmy3Dto.PageResponse res = new ZzExmy3Dto.PageResponse();

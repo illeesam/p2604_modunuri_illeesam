@@ -69,7 +69,7 @@ public class MbLikeService {
     /* 좋아요(찜) 페이지조회 */
     public MbLikeDto.PageResponse getPageData(MbLikeDto.Request req) {
         PageHelper.addPaging(req);
-        return mbLikeRepository.selectPageList(req);
+        return mbLikeRepository.selectPageData(req);
     }
 
     /* 좋아요(찜) 등록 */

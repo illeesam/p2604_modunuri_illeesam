@@ -13,7 +13,7 @@ public interface QMbMemberRoleRepository {
 
     List<MbMemberRoleDto.Item> selectList(MbMemberRoleDto.Request search);
 
-    MbMemberRoleDto.PageResponse selectPageList(MbMemberRoleDto.Request search);
+    MbMemberRoleDto.PageResponse selectPageData(MbMemberRoleDto.Request search);
 
     int updateSelective(MbMemberRole entity);
 }

@@ -69,7 +69,7 @@ public class PdProdSetItemService {
     /* 세트상품 구성 페이지조회 */
     public PdProdSetItemDto.PageResponse getPageData(PdProdSetItemDto.Request req) {
         PageHelper.addPaging(req);
-        return pdProdSetItemRepository.selectPageList(req);
+        return pdProdSetItemRepository.selectPageData(req);
     }
 
     /* 세트상품 구성 등록 */

@@ -11,7 +11,7 @@ import java.util.Optional;
 public interface QSyBbmRepository {
     Optional<SyBbmDto.Item> selectById(String bbmId);
     List<SyBbmDto.Item> selectList(SyBbmDto.Request search);
-    SyBbmDto.PageResponse selectPageList(SyBbmDto.Request search);
+    SyBbmDto.PageResponse selectPageData(SyBbmDto.Request search);
     int updateSelective(SyBbm entity);
     /** 표시경로 노드별 수 집계 (자손 누적 + 검색조건 필터, native CTE 동적 SQL).
      *   반환: [{pathId, cnt}, ...] — '__total__' / '__orphan__' 특수 path 행 포함. */

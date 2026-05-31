@@ -13,7 +13,7 @@ public interface QSyCodeRepository {
 
     List<SyCodeDto.Item> selectList(SyCodeDto.Request search);
 
-    SyCodeDto.PageResponse selectPageList(SyCodeDto.Request search);
+    SyCodeDto.PageResponse selectPageData(SyCodeDto.Request search);
 
     int updateSelective(SyCode entity);
 }

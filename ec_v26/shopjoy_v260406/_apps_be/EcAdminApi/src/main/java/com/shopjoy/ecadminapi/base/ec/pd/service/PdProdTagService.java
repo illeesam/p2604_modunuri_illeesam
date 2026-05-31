@@ -69,7 +69,7 @@ public class PdProdTagService {
     /* 상품 태그 페이지조회 */
     public PdProdTagDto.PageResponse getPageData(PdProdTagDto.Request req) {
         PageHelper.addPaging(req);
-        return pdProdTagRepository.selectPageList(req);
+        return pdProdTagRepository.selectPageData(req);
     }
 
     /* 상품 태그 등록 */

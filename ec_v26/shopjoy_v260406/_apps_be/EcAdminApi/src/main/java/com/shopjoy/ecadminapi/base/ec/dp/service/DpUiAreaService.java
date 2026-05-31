@@ -70,7 +70,7 @@ public class DpUiAreaService {
     /* 전시 UI-영역 매핑 페이지조회 */
     public DpUiAreaDto.PageResponse getPageData(DpUiAreaDto.Request req) {
         PageHelper.addPaging(req);
-        return dpUiAreaRepository.selectPageList(req);
+        return dpUiAreaRepository.selectPageData(req);
     }
 
     /* 전시 UI-영역 매핑 등록 */

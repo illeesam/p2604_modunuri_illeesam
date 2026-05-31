@@ -83,7 +83,7 @@ public class QPdProdBundleItemRepositoryImpl implements QPdProdBundleItemReposit
 
     /* 묶음상품 구성 페이지조회 */
     @Override
-    public PdProdBundleItemDto.PageResponse selectPageList(PdProdBundleItemDto.Request search) {
+    public PdProdBundleItemDto.PageResponse selectPageData(PdProdBundleItemDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

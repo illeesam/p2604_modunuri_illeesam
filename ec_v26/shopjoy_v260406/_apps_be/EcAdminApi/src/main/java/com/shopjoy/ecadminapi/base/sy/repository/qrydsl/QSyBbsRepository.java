@@ -10,6 +10,6 @@ import java.util.Optional;
 public interface QSyBbsRepository {
     Optional<SyBbsDto.Item> selectById(String bbsId);
     List<SyBbsDto.Item> selectList(SyBbsDto.Request search);
-    SyBbsDto.PageResponse selectPageList(SyBbsDto.Request search);
+    SyBbsDto.PageResponse selectPageData(SyBbsDto.Request search);
     int updateSelective(SyBbs entity);
 }

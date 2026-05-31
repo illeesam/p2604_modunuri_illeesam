@@ -60,7 +60,7 @@ public class PdhProdSkuStockHistService {
     /* 상품 SKU 재고 이력 페이지조회 */
     public PdhProdSkuStockHistDto.PageResponse getPageData(PdhProdSkuStockHistDto.Request req) {
         PageHelper.addPaging(req);
-        return pdhProdSkuStockHistRepository.selectPageList(req);
+        return pdhProdSkuStockHistRepository.selectPageData(req);
     }
 
     /* 상품 SKU 재고 이력 등록 */

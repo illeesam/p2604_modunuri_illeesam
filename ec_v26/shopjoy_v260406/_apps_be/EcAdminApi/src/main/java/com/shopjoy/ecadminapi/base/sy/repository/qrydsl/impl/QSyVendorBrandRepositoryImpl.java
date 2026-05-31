@@ -93,7 +93,7 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
 
     /* 업체별 브랜드 페이지조회 */
     @Override
-    public SyVendorBrandDto.PageResponse selectPageList(SyVendorBrandDto.Request search) {
+    public SyVendorBrandDto.PageResponse selectPageData(SyVendorBrandDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -101,7 +101,7 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<SyVendorBrandDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
                 baseAndSiteId(search),
                 baseAndVendorBrandId(search),
                 baseAndBrandId(search),

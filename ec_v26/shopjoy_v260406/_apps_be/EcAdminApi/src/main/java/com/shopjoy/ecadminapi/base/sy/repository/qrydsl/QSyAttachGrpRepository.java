@@ -10,6 +10,6 @@ import java.util.Optional;
 public interface QSyAttachGrpRepository {
     Optional<SyAttachGrpDto.Item> selectById(String attachGrpId);
     List<SyAttachGrpDto.Item> selectList(SyAttachGrpDto.Request search);
-    SyAttachGrpDto.PageResponse selectPageList(SyAttachGrpDto.Request search);
+    SyAttachGrpDto.PageResponse selectPageData(SyAttachGrpDto.Request search);
     int updateSelective(SyAttachGrp entity);
 }

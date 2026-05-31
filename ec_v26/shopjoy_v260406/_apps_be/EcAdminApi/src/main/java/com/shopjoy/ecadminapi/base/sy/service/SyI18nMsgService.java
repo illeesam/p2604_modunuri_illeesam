@@ -69,7 +69,7 @@ public class SyI18nMsgService {
     /* 다국어 메시지 페이지조회 */
     public SyI18nMsgDto.PageResponse getPageData(SyI18nMsgDto.Request req) {
         PageHelper.addPaging(req);
-        return syI18nMsgRepository.selectPageList(req);
+        return syI18nMsgRepository.selectPageData(req);
     }
 
     /* 다국어 메시지 등록 */

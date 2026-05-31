@@ -13,7 +13,7 @@ public interface QStSettleRawRepository {
 
     List<StSettleRawDto.Item> selectList(StSettleRawDto.Request search);
 
-    StSettleRawDto.PageResponse selectPageList(StSettleRawDto.Request search);
+    StSettleRawDto.PageResponse selectPageData(StSettleRawDto.Request search);
 
     int updateSelective(StSettleRaw entity);
 }

@@ -13,7 +13,7 @@ public interface QPmCacheRepository {
 
     List<PmCacheDto.Item> selectList(PmCacheDto.Request search);
 
-    PmCacheDto.PageResponse selectPageList(PmCacheDto.Request search);
+    PmCacheDto.PageResponse selectPageData(PmCacheDto.Request search);
 
     int updateSelective(PmCache entity);
 }

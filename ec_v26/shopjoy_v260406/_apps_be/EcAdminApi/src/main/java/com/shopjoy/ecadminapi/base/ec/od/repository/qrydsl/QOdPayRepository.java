@@ -13,7 +13,7 @@ public interface QOdPayRepository {
 
     List<OdPayDto.Item> selectList(OdPayDto.Request search);
 
-    OdPayDto.PageResponse selectPageList(OdPayDto.Request search);
+    OdPayDto.PageResponse selectPageData(OdPayDto.Request search);
 
     int updateSelective(OdPay entity);
 }

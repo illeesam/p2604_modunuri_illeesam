@@ -69,7 +69,7 @@ public class StSettleCloseService {
     /* 정산 마감 페이지조회 */
     public StSettleCloseDto.PageResponse getPageData(StSettleCloseDto.Request req) {
         PageHelper.addPaging(req);
-        return stSettleCloseRepository.selectPageList(req);
+        return stSettleCloseRepository.selectPageData(req);
     }
 
     /* 정산 마감 등록 */

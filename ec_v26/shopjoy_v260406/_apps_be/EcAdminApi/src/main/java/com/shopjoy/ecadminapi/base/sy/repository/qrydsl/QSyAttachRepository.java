@@ -10,6 +10,6 @@ import java.util.Optional;
 public interface QSyAttachRepository {
     Optional<SyAttachDto.Item> selectById(String attachId);
     List<SyAttachDto.Item> selectList(SyAttachDto.Request search);
-    SyAttachDto.PageResponse selectPageList(SyAttachDto.Request search);
+    SyAttachDto.PageResponse selectPageData(SyAttachDto.Request search);
     int updateSelective(SyAttach entity);
 }

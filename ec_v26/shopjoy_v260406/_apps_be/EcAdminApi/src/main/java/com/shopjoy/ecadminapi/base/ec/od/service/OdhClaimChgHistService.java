@@ -69,7 +69,7 @@ public class OdhClaimChgHistService {
     /* 클레임 변경 이력 페이지조회 */
     public OdhClaimChgHistDto.PageResponse getPageData(OdhClaimChgHistDto.Request req) {
         PageHelper.addPaging(req);
-        return odhClaimChgHistRepository.selectPageList(req);
+        return odhClaimChgHistRepository.selectPageData(req);
     }
 
     /* 클레임 변경 이력 등록 */

@@ -17,7 +17,7 @@ public interface ZzSamy1Mapper {
     List<ZzSamy1Dto.Item> selectList(ZzSamy1Dto.Request search);
 
     /** 페이지 목록 */
-    List<ZzSamy1Dto.Item> selectPageList(ZzSamy1Dto.Request search);
+    List<ZzSamy1Dto.Item> selectPageData(ZzSamy1Dto.Request search);
 
     /** 페이지 건수 */
     long selectPageCount(ZzSamy1Dto.Request search);

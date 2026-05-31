@@ -13,7 +13,7 @@ public interface QMbLikeRepository {
 
     List<MbLikeDto.Item> selectList(MbLikeDto.Request search);
 
-    MbLikeDto.PageResponse selectPageList(MbLikeDto.Request search);
+    MbLikeDto.PageResponse selectPageData(MbLikeDto.Request search);
 
     int updateSelective(MbLike entity);
 }

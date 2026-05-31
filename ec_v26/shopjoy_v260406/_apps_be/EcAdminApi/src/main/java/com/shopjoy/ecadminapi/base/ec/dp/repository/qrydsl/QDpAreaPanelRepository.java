@@ -9,6 +9,6 @@ import java.util.Optional;
 public interface QDpAreaPanelRepository {
     Optional<DpAreaPanelDto.Item> selectById(String areaPanelId);
     List<DpAreaPanelDto.Item> selectList(DpAreaPanelDto.Request search);
-    DpAreaPanelDto.PageResponse selectPageList(DpAreaPanelDto.Request search);
+    DpAreaPanelDto.PageResponse selectPageData(DpAreaPanelDto.Request search);
     int updateSelective(DpAreaPanel entity);
 }

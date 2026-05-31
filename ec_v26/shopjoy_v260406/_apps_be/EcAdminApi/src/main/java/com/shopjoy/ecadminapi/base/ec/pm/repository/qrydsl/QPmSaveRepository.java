@@ -13,7 +13,7 @@ public interface QPmSaveRepository {
 
     List<PmSaveDto.Item> selectList(PmSaveDto.Request search);
 
-    PmSaveDto.PageResponse selectPageList(PmSaveDto.Request search);
+    PmSaveDto.PageResponse selectPageData(PmSaveDto.Request search);
 
     int updateSelective(PmSave entity);
 }

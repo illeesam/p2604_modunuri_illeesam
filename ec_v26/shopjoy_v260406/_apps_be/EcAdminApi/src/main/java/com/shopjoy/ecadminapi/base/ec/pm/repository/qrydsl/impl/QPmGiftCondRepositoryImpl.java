@@ -83,7 +83,7 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
 
     /* 사은품 지급 조건 페이지조회 */
     @Override
-    public PmGiftCondDto.PageResponse selectPageList(PmGiftCondDto.Request search) {
+    public PmGiftCondDto.PageResponse selectPageData(PmGiftCondDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

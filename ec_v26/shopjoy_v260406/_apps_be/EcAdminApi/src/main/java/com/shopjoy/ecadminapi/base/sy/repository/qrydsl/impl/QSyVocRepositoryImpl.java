@@ -76,7 +76,7 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
 
     /* 고객의 소리(VOC) 페이지조회 */
     @Override
-    public SyVocDto.PageResponse selectPageList(SyVocDto.Request search) {
+    public SyVocDto.PageResponse selectPageData(SyVocDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

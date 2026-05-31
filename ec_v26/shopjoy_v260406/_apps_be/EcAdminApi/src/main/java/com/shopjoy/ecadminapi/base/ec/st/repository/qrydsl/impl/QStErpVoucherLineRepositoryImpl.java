@@ -63,7 +63,7 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
 
     /* ERP 전표 상세 페이지조회 */
     @Override
-    public StErpVoucherLineDto.PageResponse selectPageList(StErpVoucherLineDto.Request search) {
+    public StErpVoucherLineDto.PageResponse selectPageData(StErpVoucherLineDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

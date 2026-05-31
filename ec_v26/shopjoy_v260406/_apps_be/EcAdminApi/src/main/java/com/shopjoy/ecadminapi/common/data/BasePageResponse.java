@@ -19,7 +19,7 @@ import java.util.List;
  *
  *   // Service.getPageData() — list/count/페이징 항목을 setPageInfo() 로 풀어서 한 번에 전달
  *   PageResponse res = new PageResponse();
- *   List<Item> list = mapper.selectPageList(req);
+ *   List<Item> list = mapper.selectPageData(req);
  *   long count = mapper.selectPageCount(req);
  *   return res.setPageInfo(list, count,
  *                          PageHelper.getPageNo(), PageHelper.getPageSize(), req);

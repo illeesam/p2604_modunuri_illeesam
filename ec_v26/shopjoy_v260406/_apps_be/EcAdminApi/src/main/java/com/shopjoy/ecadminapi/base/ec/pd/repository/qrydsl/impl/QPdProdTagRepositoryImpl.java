@@ -79,7 +79,7 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
 
     /* 상품 태그 페이지조회 */
     @Override
-    public PdProdTagDto.PageResponse selectPageList(PdProdTagDto.Request search) {
+    public PdProdTagDto.PageResponse selectPageData(PdProdTagDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

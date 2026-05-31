@@ -13,7 +13,7 @@ public interface QStSettleCloseRepository {
 
     List<StSettleCloseDto.Item> selectList(StSettleCloseDto.Request search);
 
-    StSettleCloseDto.PageResponse selectPageList(StSettleCloseDto.Request search);
+    StSettleCloseDto.PageResponse selectPageData(StSettleCloseDto.Request search);
 
     int updateSelective(StSettleClose entity);
 }

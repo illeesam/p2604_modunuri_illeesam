@@ -69,7 +69,7 @@ public class SyCodeService {
     /* 페이지조회 */
     public SyCodeDto.PageResponse getPageData(SyCodeDto.Request req) {
         PageHelper.addPaging(req);
-        return syCodeRepository.selectPageList(req);
+        return syCodeRepository.selectPageData(req);
     }
 
     /* 등록 */

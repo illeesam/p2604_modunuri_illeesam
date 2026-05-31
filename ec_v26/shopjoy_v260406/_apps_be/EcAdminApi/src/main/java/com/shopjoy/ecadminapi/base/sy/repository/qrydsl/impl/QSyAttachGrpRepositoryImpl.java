@@ -69,7 +69,7 @@ public class QSyAttachGrpRepositoryImpl implements QSyAttachGrpRepository {
 
     /* 첨부파일 그룹 페이지조회 */
     @Override
-    public SyAttachGrpDto.PageResponse selectPageList(SyAttachGrpDto.Request search) {
+    public SyAttachGrpDto.PageResponse selectPageData(SyAttachGrpDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

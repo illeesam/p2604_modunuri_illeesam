@@ -69,7 +69,7 @@ public class PmGiftIssueService {
     /* 사은품 발행 이력 페이지조회 */
     public PmGiftIssueDto.PageResponse getPageData(PmGiftIssueDto.Request req) {
         PageHelper.addPaging(req);
-        return pmGiftIssueRepository.selectPageList(req);
+        return pmGiftIssueRepository.selectPageData(req);
     }
 
     /* 사은품 발행 이력 등록 */

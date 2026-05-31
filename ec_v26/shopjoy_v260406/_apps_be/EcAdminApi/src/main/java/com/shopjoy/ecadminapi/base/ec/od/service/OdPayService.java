@@ -69,7 +69,7 @@ public class OdPayService {
     /* 결제 페이지조회 */
     public OdPayDto.PageResponse getPageData(OdPayDto.Request req) {
         PageHelper.addPaging(req);
-        return odPayRepository.selectPageList(req);
+        return odPayRepository.selectPageData(req);
     }
 
     /* 결제 등록 */

@@ -71,7 +71,7 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
 
     /* 회원 등급 페이지조회 */
     @Override
-    public MbMemberGradeDto.PageResponse selectPageList(MbMemberGradeDto.Request search) {
+    public MbMemberGradeDto.PageResponse selectPageData(MbMemberGradeDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
 

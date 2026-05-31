@@ -81,7 +81,7 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
 
     /* zz_exam1 페이지조회 */
     @Override
-    public ZzExam1Dto.PageResponse selectPageList(ZzExam1Dto.Request search) {
+    public ZzExam1Dto.PageResponse selectPageData(ZzExam1Dto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -89,7 +89,7 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<ZzExam1Dto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
                 baseAndExam1Ids(search),
                 baseAndExam1Id(search),
                 baseAndSearchValue(search)

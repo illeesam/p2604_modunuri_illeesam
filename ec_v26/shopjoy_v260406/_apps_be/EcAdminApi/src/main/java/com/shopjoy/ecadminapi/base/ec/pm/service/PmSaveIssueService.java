@@ -69,7 +69,7 @@ public class PmSaveIssueService {
     /* 적립금 지급 이력 페이지조회 */
     public PmSaveIssueDto.PageResponse getPageData(PmSaveIssueDto.Request req) {
         PageHelper.addPaging(req);
-        return pmSaveIssueRepository.selectPageList(req);
+        return pmSaveIssueRepository.selectPageData(req);
     }
 
     /* 적립금 지급 이력 등록 */

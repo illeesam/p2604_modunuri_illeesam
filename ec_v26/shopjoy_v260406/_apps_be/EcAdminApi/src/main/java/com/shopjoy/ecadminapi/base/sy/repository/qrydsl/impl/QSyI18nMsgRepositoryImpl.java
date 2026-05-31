@@ -70,7 +70,7 @@ public class QSyI18nMsgRepositoryImpl implements QSyI18nMsgRepository {
 
     /* 다국어 메시지 페이지조회 */
     @Override
-    public SyI18nMsgDto.PageResponse selectPageList(SyI18nMsgDto.Request search) {
+    public SyI18nMsgDto.PageResponse selectPageData(SyI18nMsgDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

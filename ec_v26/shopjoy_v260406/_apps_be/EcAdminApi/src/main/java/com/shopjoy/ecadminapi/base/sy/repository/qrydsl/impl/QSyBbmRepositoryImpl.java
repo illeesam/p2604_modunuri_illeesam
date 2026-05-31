@@ -71,7 +71,7 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
 
     /* 게시판 마스터 페이지조회 */
     @Override
-    public SyBbmDto.PageResponse selectPageList(SyBbmDto.Request search) {
+    public SyBbmDto.PageResponse selectPageData(SyBbmDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

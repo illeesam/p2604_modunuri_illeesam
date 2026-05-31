@@ -69,7 +69,7 @@ public class CmBlogTagService {
     /* 게시물 태그 페이지조회 */
     public CmBlogTagDto.PageResponse getPageData(CmBlogTagDto.Request req) {
         PageHelper.addPaging(req);
-        return cmBlogTagRepository.selectPageList(req);
+        return cmBlogTagRepository.selectPageData(req);
     }
 
     /* 게시물 태그 등록 */

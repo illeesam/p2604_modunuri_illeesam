@@ -72,7 +72,7 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
 
     /* 전시 패널 아이템 페이지조회 */
     @Override
-    public DpPanelItemDto.PageResponse selectPageList(DpPanelItemDto.Request search) {
+    public DpPanelItemDto.PageResponse selectPageData(DpPanelItemDto.Request search) {
         int pageNo = search != null && search.getPageNo() != null && search.getPageNo() > 0 ? search.getPageNo() : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         List<OrderSpecifier<?>> orderList = buildOrder(search);

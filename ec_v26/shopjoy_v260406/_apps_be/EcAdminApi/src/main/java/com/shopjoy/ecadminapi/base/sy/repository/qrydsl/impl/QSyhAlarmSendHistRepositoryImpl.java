@@ -92,7 +92,7 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
 
     /* 알람 발송 이력 페이지조회 */
     @Override
-    public SyhAlarmSendHistDto.PageResponse selectPageList(SyhAlarmSendHistDto.Request search) {
+    public SyhAlarmSendHistDto.PageResponse selectPageData(SyhAlarmSendHistDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -100,7 +100,7 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<SyhAlarmSendHistDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
                 baseAndSiteId(search),
                 baseAndSendHistId(search),
                 baseAndStatus(search),

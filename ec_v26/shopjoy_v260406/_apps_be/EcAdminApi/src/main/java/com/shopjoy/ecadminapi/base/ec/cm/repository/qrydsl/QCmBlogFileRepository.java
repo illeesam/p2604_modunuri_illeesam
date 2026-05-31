@@ -13,7 +13,7 @@ public interface QCmBlogFileRepository {
 
     List<CmBlogFileDto.Item> selectList(CmBlogFileDto.Request search);
 
-    CmBlogFileDto.PageResponse selectPageList(CmBlogFileDto.Request search);
+    CmBlogFileDto.PageResponse selectPageData(CmBlogFileDto.Request search);
 
     int updateSelective(CmBlogFile entity);
 }

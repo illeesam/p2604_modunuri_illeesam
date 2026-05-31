@@ -77,7 +77,7 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
 
     /* 알람 페이지조회 */
     @Override
-    public SyAlarmDto.PageResponse selectPageList(SyAlarmDto.Request search) {
+    public SyAlarmDto.PageResponse selectPageData(SyAlarmDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

@@ -13,7 +13,7 @@ public interface QPdRestockNotiRepository {
 
     List<PdRestockNotiDto.Item> selectList(PdRestockNotiDto.Request search);
 
-    PdRestockNotiDto.PageResponse selectPageList(PdRestockNotiDto.Request search);
+    PdRestockNotiDto.PageResponse selectPageData(PdRestockNotiDto.Request search);
 
     int updateSelective(PdRestockNoti entity);
 }

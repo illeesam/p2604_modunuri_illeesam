@@ -69,7 +69,7 @@ public class SyRoleService {
     /* 역할(권한) 페이지조회 */
     public SyRoleDto.PageResponse getPageData(SyRoleDto.Request req) {
         PageHelper.addPaging(req);
-        return syRoleRepository.selectPageList(req);
+        return syRoleRepository.selectPageData(req);
     }
 
     /** countList — 검색조건 기준 전체 카운트 (대량 export 시 안전 상한 검증용) */

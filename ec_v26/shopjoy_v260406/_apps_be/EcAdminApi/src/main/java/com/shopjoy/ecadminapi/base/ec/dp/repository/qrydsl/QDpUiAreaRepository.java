@@ -13,7 +13,7 @@ public interface QDpUiAreaRepository {
 
     List<DpUiAreaDto.Item> selectList(DpUiAreaDto.Request search);
 
-    DpUiAreaDto.PageResponse selectPageList(DpUiAreaDto.Request search);
+    DpUiAreaDto.PageResponse selectPageData(DpUiAreaDto.Request search);
 
     int updateSelective(DpUiArea entity);
 }

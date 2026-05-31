@@ -92,7 +92,7 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
 
     /** 페이지 목록 */
     @Override
-    public PmGiftDto.PageResponse selectPageList(PmGiftDto.Request search) {
+    public PmGiftDto.PageResponse selectPageData(PmGiftDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

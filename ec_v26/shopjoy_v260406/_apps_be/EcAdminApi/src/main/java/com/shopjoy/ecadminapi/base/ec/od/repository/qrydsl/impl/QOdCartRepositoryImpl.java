@@ -75,7 +75,7 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
 
     /* 장바구니 페이지조회 */
     @Override
-    public OdCartDto.PageResponse selectPageList(OdCartDto.Request search) {
+    public OdCartDto.PageResponse selectPageData(OdCartDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

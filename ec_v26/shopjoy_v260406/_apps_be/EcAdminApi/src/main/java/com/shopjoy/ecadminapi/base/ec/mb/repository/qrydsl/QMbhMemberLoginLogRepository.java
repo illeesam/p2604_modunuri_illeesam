@@ -13,7 +13,7 @@ public interface QMbhMemberLoginLogRepository {
 
     List<MbhMemberLoginLogDto.Item> selectList(MbhMemberLoginLogDto.Request search);
 
-    MbhMemberLoginLogDto.PageResponse selectPageList(MbhMemberLoginLogDto.Request search);
+    MbhMemberLoginLogDto.PageResponse selectPageData(MbhMemberLoginLogDto.Request search);
 
     int updateSelective(MbhMemberLoginLog entity);
 }

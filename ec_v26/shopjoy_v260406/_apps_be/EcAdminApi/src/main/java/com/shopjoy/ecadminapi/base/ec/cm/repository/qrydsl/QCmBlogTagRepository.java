@@ -16,7 +16,7 @@ public interface QCmBlogTagRepository {
     List<CmBlogTagDto.Item> selectList(CmBlogTagDto.Request search);
 
     /** 페이지 목록 (pageNo/pageSize 미지정 시 1페이지/10건 기본) */
-    CmBlogTagDto.PageResponse selectPageList(CmBlogTagDto.Request search);
+    CmBlogTagDto.PageResponse selectPageData(CmBlogTagDto.Request search);
 
     int updateSelective(CmBlogTag entity);
 }

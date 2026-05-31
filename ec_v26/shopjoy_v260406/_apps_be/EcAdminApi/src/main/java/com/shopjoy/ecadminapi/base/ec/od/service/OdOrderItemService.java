@@ -69,7 +69,7 @@ public class OdOrderItemService {
     /* 주문 아이템(상품) 페이지조회 */
     public OdOrderItemDto.PageResponse getPageData(OdOrderItemDto.Request req) {
         PageHelper.addPaging(req);
-        return odOrderItemRepository.selectPageList(req);
+        return odOrderItemRepository.selectPageData(req);
     }
 
     /* 주문 아이템(상품) 등록 */

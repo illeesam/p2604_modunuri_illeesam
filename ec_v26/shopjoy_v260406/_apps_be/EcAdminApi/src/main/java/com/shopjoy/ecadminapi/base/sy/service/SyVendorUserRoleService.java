@@ -69,7 +69,7 @@ public class SyVendorUserRoleService {
     /* 업체 사용자 역할 연결 페이지조회 */
     public SyVendorUserRoleDto.PageResponse getPageData(SyVendorUserRoleDto.Request req) {
         PageHelper.addPaging(req);
-        return syVendorUserRoleRepository.selectPageList(req);
+        return syVendorUserRoleRepository.selectPageData(req);
     }
 
     /* 업체 사용자 역할 연결 등록 */

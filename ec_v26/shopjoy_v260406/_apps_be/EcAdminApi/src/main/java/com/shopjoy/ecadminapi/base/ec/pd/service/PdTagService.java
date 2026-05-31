@@ -69,7 +69,7 @@ public class PdTagService {
     /* 태그 페이지조회 */
     public PdTagDto.PageResponse getPageData(PdTagDto.Request req) {
         PageHelper.addPaging(req);
-        return pdTagRepository.selectPageList(req);
+        return pdTagRepository.selectPageData(req);
     }
 
     /* 태그 등록 */

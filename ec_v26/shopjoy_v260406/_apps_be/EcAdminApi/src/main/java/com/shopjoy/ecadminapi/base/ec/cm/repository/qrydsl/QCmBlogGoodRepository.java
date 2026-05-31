@@ -16,7 +16,7 @@ public interface QCmBlogGoodRepository {
     List<CmBlogGoodDto.Item> selectList(CmBlogGoodDto.Request search);
 
     /** 페이지 목록 (pageNo/pageSize 미지정 시 1페이지/10건 기본) */
-    CmBlogGoodDto.PageResponse selectPageList(CmBlogGoodDto.Request search);
+    CmBlogGoodDto.PageResponse selectPageData(CmBlogGoodDto.Request search);
 
     int updateSelective(CmBlogGood entity);
 }

@@ -69,7 +69,7 @@ public class SyVocService {
     /* 고객의 소리(VOC) 페이지조회 */
     public SyVocDto.PageResponse getPageData(SyVocDto.Request req) {
         PageHelper.addPaging(req);
-        return syVocRepository.selectPageList(req);
+        return syVocRepository.selectPageData(req);
     }
 
     /* 고객의 소리(VOC) 등록 */

@@ -69,7 +69,7 @@ public class CmBlogGoodService {
     /* 게시물 좋아요 페이지조회 */
     public CmBlogGoodDto.PageResponse getPageData(CmBlogGoodDto.Request req) {
         PageHelper.addPaging(req);
-        return cmBlogGoodRepository.selectPageList(req);
+        return cmBlogGoodRepository.selectPageData(req);
     }
 
     /* 게시물 좋아요 등록 */

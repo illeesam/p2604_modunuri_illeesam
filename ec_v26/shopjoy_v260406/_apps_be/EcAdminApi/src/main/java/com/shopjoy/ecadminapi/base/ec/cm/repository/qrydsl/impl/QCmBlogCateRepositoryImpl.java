@@ -81,7 +81,7 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
 
     /* 게시판 카테고리 페이지조회 */
     @Override
-    public CmBlogCateDto.PageResponse selectPageList(CmBlogCateDto.Request search) {
+    public CmBlogCateDto.PageResponse selectPageData(CmBlogCateDto.Request search) {
         int pageNo = search != null && search.getPageNo() != null && search.getPageNo() > 0 ? search.getPageNo() : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset = (pageNo - 1) * pageSize;
@@ -89,7 +89,7 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<CmBlogCateDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
                 baseAndSiteId(search),
                 baseAndBlogCateId(search),
                 baseAndUseYn(search),

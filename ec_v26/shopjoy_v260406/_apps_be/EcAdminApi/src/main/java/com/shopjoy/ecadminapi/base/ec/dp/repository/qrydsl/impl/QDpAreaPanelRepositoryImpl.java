@@ -68,7 +68,7 @@ public class QDpAreaPanelRepositoryImpl implements QDpAreaPanelRepository {
 
     /* 전시 영역-패널 매핑 페이지조회 */
     @Override
-    public DpAreaPanelDto.PageResponse selectPageList(DpAreaPanelDto.Request search) {
+    public DpAreaPanelDto.PageResponse selectPageData(DpAreaPanelDto.Request search) {
         int pageNo = search != null && search.getPageNo() != null && search.getPageNo() > 0 ? search.getPageNo() : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         List<OrderSpecifier<?>> orderList = buildOrder(search);

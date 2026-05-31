@@ -13,7 +13,7 @@ public interface QOdClaimRepository {
 
     List<OdClaimDto.Item> selectList(OdClaimDto.Request search);
 
-    OdClaimDto.PageResponse selectPageList(OdClaimDto.Request search);
+    OdClaimDto.PageResponse selectPageData(OdClaimDto.Request search);
 
     int updateSelective(OdClaim entity);
 }

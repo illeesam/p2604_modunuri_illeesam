@@ -69,7 +69,7 @@ public class OdhClaimItemStatusHistService {
     /* 클레임 아이템 상태 이력 페이지조회 */
     public OdhClaimItemStatusHistDto.PageResponse getPageData(OdhClaimItemStatusHistDto.Request req) {
         PageHelper.addPaging(req);
-        return odhClaimItemStatusHistRepository.selectPageList(req);
+        return odhClaimItemStatusHistRepository.selectPageData(req);
     }
 
     /* 클레임 아이템 상태 이력 등록 */

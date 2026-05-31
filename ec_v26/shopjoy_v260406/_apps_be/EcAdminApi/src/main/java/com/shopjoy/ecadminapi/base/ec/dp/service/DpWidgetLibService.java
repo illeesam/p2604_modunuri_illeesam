@@ -69,7 +69,7 @@ public class DpWidgetLibService {
     /* 전시 위젯 라이브러리 페이지조회 */
     public DpWidgetLibDto.PageResponse getPageData(DpWidgetLibDto.Request req) {
         PageHelper.addPaging(req);
-        return dpWidgetLibRepository.selectPageList(req);
+        return dpWidgetLibRepository.selectPageData(req);
     }
 
     /* 전시 위젯 라이브러리 등록 */

@@ -13,7 +13,7 @@ public interface QSyRoleRepository {
 
     List<SyRoleDto.Item> selectList(SyRoleDto.Request search);
 
-    SyRoleDto.PageResponse selectPageList(SyRoleDto.Request search);
+    SyRoleDto.PageResponse selectPageData(SyRoleDto.Request search);
 
     /** 검색조건 기준 전체 카운트 (대량 export 안전 상한 검증용) */
     long selectCount(SyRoleDto.Request search);

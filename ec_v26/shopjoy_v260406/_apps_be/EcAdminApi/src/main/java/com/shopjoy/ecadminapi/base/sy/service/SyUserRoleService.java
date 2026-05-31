@@ -76,7 +76,7 @@ public class SyUserRoleService {
     /* 사용자별 역할 페이지조회 */
     public SyUserRoleDto.PageResponse getPageData(SyUserRoleDto.Request req) {
         PageHelper.addPaging(req);
-        return syUserRoleRepository.selectPageList(req);
+        return syUserRoleRepository.selectPageData(req);
     }
 
     /* 사용자별 역할 등록 */

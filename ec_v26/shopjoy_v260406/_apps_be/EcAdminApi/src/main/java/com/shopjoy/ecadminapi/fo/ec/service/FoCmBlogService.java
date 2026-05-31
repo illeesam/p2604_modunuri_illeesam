@@ -55,7 +55,7 @@ public class FoCmBlogService {
     /** getPageData — 조회 */
     public CmBlogDto.PageResponse getPageData(CmBlogDto.Request req) {
         PageHelper.addPaging(req);
-        CmBlogDto.PageResponse res = cmBlogRepository.selectPageList(req);
+        CmBlogDto.PageResponse res = cmBlogRepository.selectPageData(req);
         _listFillRelations(res.getPageList());
         return res;
     }

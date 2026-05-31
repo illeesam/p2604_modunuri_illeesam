@@ -69,7 +69,7 @@ public class PmCouponItemService {
     /* 쿠폰 대상 상품 페이지조회 */
     public PmCouponItemDto.PageResponse getPageData(PmCouponItemDto.Request req) {
         PageHelper.addPaging(req);
-        return pmCouponItemRepository.selectPageList(req);
+        return pmCouponItemRepository.selectPageData(req);
     }
 
     /* 쿠폰 대상 상품 등록 */

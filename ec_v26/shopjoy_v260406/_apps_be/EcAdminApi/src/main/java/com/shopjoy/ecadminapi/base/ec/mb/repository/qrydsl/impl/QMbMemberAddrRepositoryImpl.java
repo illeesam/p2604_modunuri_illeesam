@@ -76,7 +76,7 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
 
     /* 회원 주소 페이지조회 */
     @Override
-    public MbMemberAddrDto.PageResponse selectPageList(MbMemberAddrDto.Request search) {
+    public MbMemberAddrDto.PageResponse selectPageData(MbMemberAddrDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
 

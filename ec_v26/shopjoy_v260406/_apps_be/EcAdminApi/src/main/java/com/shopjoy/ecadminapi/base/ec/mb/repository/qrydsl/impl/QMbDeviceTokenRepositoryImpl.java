@@ -69,7 +69,7 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
 
     /* 페이지조회 */
     @Override
-    public MbDeviceTokenDto.PageResponse selectPageList(MbDeviceTokenDto.Request search) {
+    public MbDeviceTokenDto.PageResponse selectPageData(MbDeviceTokenDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
 

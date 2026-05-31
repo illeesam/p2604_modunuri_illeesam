@@ -71,7 +71,7 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
 
     /* 배치 페이지조회 */
     @Override
-    public SyBatchDto.PageResponse selectPageList(SyBatchDto.Request search) {
+    public SyBatchDto.PageResponse selectPageData(SyBatchDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

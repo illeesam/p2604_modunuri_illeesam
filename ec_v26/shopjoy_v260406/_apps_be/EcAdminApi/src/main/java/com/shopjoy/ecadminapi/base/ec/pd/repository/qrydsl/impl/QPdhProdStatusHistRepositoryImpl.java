@@ -92,7 +92,7 @@ public class QPdhProdStatusHistRepositoryImpl implements QPdhProdStatusHistRepos
 
     /* 상품 상태 이력 페이지조회 */
     @Override
-    public PdhProdStatusHistDto.PageResponse selectPageList(PdhProdStatusHistDto.Request search) {
+    public PdhProdStatusHistDto.PageResponse selectPageData(PdhProdStatusHistDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -100,7 +100,7 @@ public class QPdhProdStatusHistRepositoryImpl implements QPdhProdStatusHistRepos
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PdhProdStatusHistDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
                 baseAndSiteId(search),
                 baseAndProdStatusHistId(search),
                 baseAndDateRange(search),

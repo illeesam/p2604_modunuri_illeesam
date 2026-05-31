@@ -69,7 +69,7 @@ public class PdhProdStatusHistService {
     /* 상품 상태 이력 페이지조회 */
     public PdhProdStatusHistDto.PageResponse getPageData(PdhProdStatusHistDto.Request req) {
         PageHelper.addPaging(req);
-        return pdhProdStatusHistRepository.selectPageList(req);
+        return pdhProdStatusHistRepository.selectPageData(req);
     }
 
     /* 상품 상태 이력 등록 */

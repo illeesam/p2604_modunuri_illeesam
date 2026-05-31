@@ -100,7 +100,7 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
 
     /* API 로그 페이지조회 */
     @Override
-    public SyhApiLogDto.PageResponse selectPageList(SyhApiLogDto.Request search) {
+    public SyhApiLogDto.PageResponse selectPageData(SyhApiLogDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -108,7 +108,7 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<SyhApiLogDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
                 baseAndSiteId(search),
                 baseAndLogId(search),
                 baseAndTypeCd(search),

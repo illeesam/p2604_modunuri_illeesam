@@ -69,7 +69,7 @@ public class SyPropService {
     /* 시스템 속성 페이지조회 */
     public SyPropDto.PageResponse getPageData(SyPropDto.Request req) {
         PageHelper.addPaging(req);
-        return syPropRepository.selectPageList(req);
+        return syPropRepository.selectPageData(req);
     }
 
     /* 시스템 속성 등록 */

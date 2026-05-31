@@ -76,7 +76,7 @@ public class QOdhPayChgHistRepositoryImpl implements QOdhPayChgHistRepository {
 
     /* 결제 변경 이력 페이지조회 */
     @Override
-    public OdhPayChgHistDto.PageResponse selectPageList(OdhPayChgHistDto.Request search) {
+    public OdhPayChgHistDto.PageResponse selectPageData(OdhPayChgHistDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

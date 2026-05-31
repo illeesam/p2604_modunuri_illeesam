@@ -69,7 +69,7 @@ public class SyBrandService {
     /* 브랜드 페이지조회 */
     public SyBrandDto.PageResponse getPageData(SyBrandDto.Request req) {
         PageHelper.addPaging(req);
-        return syBrandRepository.selectPageList(req);
+        return syBrandRepository.selectPageData(req);
     }
 
     /* 브랜드 등록 */

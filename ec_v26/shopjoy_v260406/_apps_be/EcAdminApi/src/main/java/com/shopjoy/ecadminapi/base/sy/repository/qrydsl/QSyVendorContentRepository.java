@@ -13,7 +13,7 @@ public interface QSyVendorContentRepository {
 
     List<SyVendorContentDto.Item> selectList(SyVendorContentDto.Request search);
 
-    SyVendorContentDto.PageResponse selectPageList(SyVendorContentDto.Request search);
+    SyVendorContentDto.PageResponse selectPageData(SyVendorContentDto.Request search);
 
     int updateSelective(SyVendorContent entity);
 }

@@ -83,7 +83,7 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
 
     /* 세트상품 구성 페이지조회 */
     @Override
-    public PdProdSetItemDto.PageResponse selectPageList(PdProdSetItemDto.Request search) {
+    public PdProdSetItemDto.PageResponse selectPageData(PdProdSetItemDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

@@ -17,7 +17,7 @@ public interface QSyAlarmRepository {
     List<SyAlarmDto.Item> selectList(SyAlarmDto.Request search);
 
     /** 페이지 목록 (pageNo/pageSize 미지정 시 1페이지/10건 기본) */
-    SyAlarmDto.PageResponse selectPageList(SyAlarmDto.Request search);
+    SyAlarmDto.PageResponse selectPageData(SyAlarmDto.Request search);
 
     int updateSelective(SyAlarm entity);
     /** 표시경로 노드별 수 집계 (자손 누적 + 검색조건 필터, native CTE 동적 SQL).

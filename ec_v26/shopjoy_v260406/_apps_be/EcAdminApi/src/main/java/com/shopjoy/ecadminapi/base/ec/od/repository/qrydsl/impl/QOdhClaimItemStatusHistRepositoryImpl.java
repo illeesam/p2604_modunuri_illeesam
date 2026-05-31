@@ -74,7 +74,7 @@ public class QOdhClaimItemStatusHistRepositoryImpl implements QOdhClaimItemStatu
 
     /* 클레임 아이템 상태 이력 페이지조회 */
     @Override
-    public OdhClaimItemStatusHistDto.PageResponse selectPageList(OdhClaimItemStatusHistDto.Request search) {
+    public OdhClaimItemStatusHistDto.PageResponse selectPageData(OdhClaimItemStatusHistDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

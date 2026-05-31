@@ -69,7 +69,7 @@ public class OdhDlivItemChgHistService {
     /* 배송 아이템 변경 이력 페이지조회 */
     public OdhDlivItemChgHistDto.PageResponse getPageData(OdhDlivItemChgHistDto.Request req) {
         PageHelper.addPaging(req);
-        return odhDlivItemChgHistRepository.selectPageList(req);
+        return odhDlivItemChgHistRepository.selectPageData(req);
     }
 
     /* 배송 아이템 변경 이력 등록 */

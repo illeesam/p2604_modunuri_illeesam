@@ -73,7 +73,7 @@ public class QOdOrderItemDiscntRepositoryImpl implements QOdOrderItemDiscntRepos
 
     /* 주문 아이템 할인 페이지조회 */
     @Override
-    public OdOrderItemDiscntDto.PageResponse selectPageList(OdOrderItemDiscntDto.Request search) {
+    public OdOrderItemDiscntDto.PageResponse selectPageData(OdOrderItemDiscntDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

@@ -13,7 +13,7 @@ public interface QSyDeptRepository {
 
     List<SyDeptDto.Item> selectList(SyDeptDto.Request search);
 
-    SyDeptDto.PageResponse selectPageList(SyDeptDto.Request search);
+    SyDeptDto.PageResponse selectPageData(SyDeptDto.Request search);
 
     int updateSelective(SyDept entity);
 }

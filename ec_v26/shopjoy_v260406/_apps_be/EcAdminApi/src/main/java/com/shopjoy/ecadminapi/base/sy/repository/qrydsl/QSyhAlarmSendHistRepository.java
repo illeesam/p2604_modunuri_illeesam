@@ -16,7 +16,7 @@ public interface QSyhAlarmSendHistRepository {
     List<SyhAlarmSendHistDto.Item> selectList(SyhAlarmSendHistDto.Request search);
 
     /** 페이지 목록 */
-    SyhAlarmSendHistDto.PageResponse selectPageList(SyhAlarmSendHistDto.Request search);
+    SyhAlarmSendHistDto.PageResponse selectPageData(SyhAlarmSendHistDto.Request search);
 
     int updateSelective(SyhAlarmSendHist entity);
 }

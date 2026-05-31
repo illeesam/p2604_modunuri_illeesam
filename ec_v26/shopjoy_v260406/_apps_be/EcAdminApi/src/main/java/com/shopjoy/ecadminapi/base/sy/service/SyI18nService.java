@@ -69,7 +69,7 @@ public class SyI18nService {
     /* 다국어 페이지조회 */
     public SyI18nDto.PageResponse getPageData(SyI18nDto.Request req) {
         PageHelper.addPaging(req);
-        return syI18nRepository.selectPageList(req);
+        return syI18nRepository.selectPageData(req);
     }
 
     /* 다국어 등록 */

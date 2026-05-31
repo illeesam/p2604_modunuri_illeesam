@@ -13,7 +13,7 @@ public interface QOdRefundMethodRepository {
 
     List<OdRefundMethodDto.Item> selectList(OdRefundMethodDto.Request search);
 
-    OdRefundMethodDto.PageResponse selectPageList(OdRefundMethodDto.Request search);
+    OdRefundMethodDto.PageResponse selectPageData(OdRefundMethodDto.Request search);
 
     int updateSelective(OdRefundMethod entity);
 }

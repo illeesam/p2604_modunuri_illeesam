@@ -69,7 +69,7 @@ public class StSettlePayService {
     /* 정산 지급 페이지조회 */
     public StSettlePayDto.PageResponse getPageData(StSettlePayDto.Request req) {
         PageHelper.addPaging(req);
-        return stSettlePayRepository.selectPageList(req);
+        return stSettlePayRepository.selectPageData(req);
     }
 
     /* 정산 지급 등록 */

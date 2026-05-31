@@ -97,7 +97,7 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
 
     /* 쿠폰 발행 페이지조회 */
     @Override
-    public PmCouponIssueDto.PageResponse selectPageList(PmCouponIssueDto.Request search) {
+    public PmCouponIssueDto.PageResponse selectPageData(PmCouponIssueDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

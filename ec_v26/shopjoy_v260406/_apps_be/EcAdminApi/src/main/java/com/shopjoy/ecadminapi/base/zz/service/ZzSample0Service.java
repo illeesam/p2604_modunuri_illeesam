@@ -69,7 +69,7 @@ public class ZzSample0Service {
     /** getPageData — 조회 */
     public ZzSample0Dto.PageResponse getPageData(ZzSample0Dto.Request req) {
         PageHelper.addPaging(req);
-        return zzSample0Repository.selectPageList(req);
+        return zzSample0Repository.selectPageData(req);
     }
 
     /** create — 생성 */

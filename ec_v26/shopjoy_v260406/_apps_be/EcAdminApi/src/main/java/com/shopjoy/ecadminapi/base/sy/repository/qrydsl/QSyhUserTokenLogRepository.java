@@ -16,7 +16,7 @@ public interface QSyhUserTokenLogRepository {
     List<SyhUserTokenLogDto.Item> selectList(SyhUserTokenLogDto.Request search);
 
     /** 페이지 목록 */
-    SyhUserTokenLogDto.PageResponse selectPageList(SyhUserTokenLogDto.Request search);
+    SyhUserTokenLogDto.PageResponse selectPageData(SyhUserTokenLogDto.Request search);
 
     int updateSelective(SyhUserTokenLog entity);
 }

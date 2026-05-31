@@ -13,7 +13,7 @@ public interface QStReconRepository {
 
     List<StReconDto.Item> selectList(StReconDto.Request search);
 
-    StReconDto.PageResponse selectPageList(StReconDto.Request search);
+    StReconDto.PageResponse selectPageData(StReconDto.Request search);
 
     int updateSelective(StRecon entity);
 }

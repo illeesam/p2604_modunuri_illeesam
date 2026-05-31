@@ -96,7 +96,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
     }
 
     /* ============================================================
-     * 조회 메서드 — selectById / selectList / selectPageList / selectCount
+     * 조회 메서드 — selectById / selectList / selectPageData / selectCount
      * 검색조건은 .where(andXxx(...), ...) 형태로 직접 나열
      * ============================================================ */
 
@@ -137,7 +137,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
 
     /** 페이지 목록 (pageNo/pageSize 미지정 시 1페이지/10건 기본) */
     @Override
-    public SyUserDto.PageResponse selectPageList(SyUserDto.Request search) {
+    public SyUserDto.PageResponse selectPageData(SyUserDto.Request search) {
         int pageNo   = search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -146,7 +146,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         var query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list")
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(
                         baseAndSiteId(search),
                         baseAndDeptId(search),

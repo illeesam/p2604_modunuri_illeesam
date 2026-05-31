@@ -83,7 +83,7 @@ public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepos
 
     /* 페이지조회 */
     @Override
-    public MbhMemberTokenLogDto.PageResponse selectPageList(MbhMemberTokenLogDto.Request search) {
+    public MbhMemberTokenLogDto.PageResponse selectPageData(MbhMemberTokenLogDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
 

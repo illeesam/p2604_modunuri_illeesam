@@ -41,7 +41,7 @@ public class FoPmEventService {
     /** getPageData — 조회 */
     public PmEventDto.PageResponse getPageData(PmEventDto.Request req) {
         PageHelper.addPaging(req);
-        PmEventDto.PageResponse res = pmEventRepository.selectPageList(req);
+        PmEventDto.PageResponse res = pmEventRepository.selectPageData(req);
         _listFillRelations(res.getPageList());
         return res;
     }

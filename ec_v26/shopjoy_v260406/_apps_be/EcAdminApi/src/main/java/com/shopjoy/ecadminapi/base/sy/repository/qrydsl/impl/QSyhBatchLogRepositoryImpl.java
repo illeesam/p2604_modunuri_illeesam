@@ -95,7 +95,7 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
 
     /* 배치 로그 페이지조회 */
     @Override
-    public SyhBatchLogDto.PageResponse selectPageList(SyhBatchLogDto.Request search) {
+    public SyhBatchLogDto.PageResponse selectPageData(SyhBatchLogDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -103,7 +103,7 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<SyhBatchLogDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
                 baseAndSiteId(search),
                 baseAndBatchLogId(search),
                 baseAndDateRange(search),

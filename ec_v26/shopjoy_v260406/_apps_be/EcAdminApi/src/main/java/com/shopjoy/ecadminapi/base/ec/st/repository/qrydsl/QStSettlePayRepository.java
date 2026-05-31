@@ -13,7 +13,7 @@ public interface QStSettlePayRepository {
 
     List<StSettlePayDto.Item> selectList(StSettlePayDto.Request search);
 
-    StSettlePayDto.PageResponse selectPageList(StSettlePayDto.Request search);
+    StSettlePayDto.PageResponse selectPageData(StSettlePayDto.Request search);
 
     int updateSelective(StSettlePay entity);
 }

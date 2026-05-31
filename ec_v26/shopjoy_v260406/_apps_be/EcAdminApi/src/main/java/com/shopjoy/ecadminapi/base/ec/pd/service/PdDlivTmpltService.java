@@ -69,7 +69,7 @@ public class PdDlivTmpltService {
     /* 배송 템플릿 페이지조회 */
     public PdDlivTmpltDto.PageResponse getPageData(PdDlivTmpltDto.Request req) {
         PageHelper.addPaging(req);
-        return pdDlivTmpltRepository.selectPageList(req);
+        return pdDlivTmpltRepository.selectPageData(req);
     }
 
     /* 배송 템플릿 등록 */

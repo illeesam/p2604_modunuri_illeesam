@@ -79,7 +79,7 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
 
     /** 페이지 목록 */
     @Override
-    public PdReviewCommentDto.PageResponse selectPageList(PdReviewCommentDto.Request search) {
+    public PdReviewCommentDto.PageResponse selectPageData(PdReviewCommentDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

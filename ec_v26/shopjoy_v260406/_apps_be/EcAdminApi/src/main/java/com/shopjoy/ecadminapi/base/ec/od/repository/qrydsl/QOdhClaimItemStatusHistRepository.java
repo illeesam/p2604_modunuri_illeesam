@@ -13,7 +13,7 @@ public interface QOdhClaimItemStatusHistRepository {
 
     List<OdhClaimItemStatusHistDto.Item> selectList(OdhClaimItemStatusHistDto.Request search);
 
-    OdhClaimItemStatusHistDto.PageResponse selectPageList(OdhClaimItemStatusHistDto.Request search);
+    OdhClaimItemStatusHistDto.PageResponse selectPageData(OdhClaimItemStatusHistDto.Request search);
 
     int updateSelective(OdhClaimItemStatusHist entity);
 }

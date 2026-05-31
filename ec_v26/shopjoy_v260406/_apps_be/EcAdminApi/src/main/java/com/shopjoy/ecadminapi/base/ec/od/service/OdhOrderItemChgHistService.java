@@ -69,7 +69,7 @@ public class OdhOrderItemChgHistService {
     /* 주문 아이템 변경 이력 페이지조회 */
     public OdhOrderItemChgHistDto.PageResponse getPageData(OdhOrderItemChgHistDto.Request req) {
         PageHelper.addPaging(req);
-        return odhOrderItemChgHistRepository.selectPageList(req);
+        return odhOrderItemChgHistRepository.selectPageData(req);
     }
 
     /* 주문 아이템 변경 이력 등록 */

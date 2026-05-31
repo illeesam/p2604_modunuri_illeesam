@@ -76,7 +76,7 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
 
     /* 회원 역할 연결 페이지조회 */
     @Override
-    public MbMemberRoleDto.PageResponse selectPageList(MbMemberRoleDto.Request search) {
+    public MbMemberRoleDto.PageResponse selectPageData(MbMemberRoleDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
 

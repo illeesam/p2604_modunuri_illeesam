@@ -16,7 +16,7 @@ public interface QSyhSendEmailLogRepository {
     List<SyhSendEmailLogDto.Item> selectList(SyhSendEmailLogDto.Request search);
 
     /** 페이지 목록 */
-    SyhSendEmailLogDto.PageResponse selectPageList(SyhSendEmailLogDto.Request search);
+    SyhSendEmailLogDto.PageResponse selectPageData(SyhSendEmailLogDto.Request search);
 
     int updateSelective(SyhSendEmailLog entity);
 }

@@ -69,7 +69,7 @@ public class MbMemberGradeService {
     /* 회원 등급 페이지조회 */
     public MbMemberGradeDto.PageResponse getPageData(MbMemberGradeDto.Request req) {
         PageHelper.addPaging(req);
-        return mbMemberGradeRepository.selectPageList(req);
+        return mbMemberGradeRepository.selectPageData(req);
     }
 
     /* 회원 등급 등록 */

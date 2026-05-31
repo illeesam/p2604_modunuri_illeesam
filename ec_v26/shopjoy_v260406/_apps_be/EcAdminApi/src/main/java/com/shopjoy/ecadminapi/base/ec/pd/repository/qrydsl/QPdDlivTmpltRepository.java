@@ -13,7 +13,7 @@ public interface QPdDlivTmpltRepository {
 
     List<PdDlivTmpltDto.Item> selectList(PdDlivTmpltDto.Request search);
 
-    PdDlivTmpltDto.PageResponse selectPageList(PdDlivTmpltDto.Request search);
+    PdDlivTmpltDto.PageResponse selectPageData(PdDlivTmpltDto.Request search);
 
     int updateSelective(PdDlivTmplt entity);
 }

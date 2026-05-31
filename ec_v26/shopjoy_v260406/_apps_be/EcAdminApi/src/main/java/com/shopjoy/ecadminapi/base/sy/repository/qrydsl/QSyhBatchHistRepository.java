@@ -16,7 +16,7 @@ public interface QSyhBatchHistRepository {
     List<SyhBatchHistDto.Item> selectList(SyhBatchHistDto.Request search);
 
     /** 페이지 목록 */
-    SyhBatchHistDto.PageResponse selectPageList(SyhBatchHistDto.Request search);
+    SyhBatchHistDto.PageResponse selectPageData(SyhBatchHistDto.Request search);
 
     int updateSelective(SyhBatchHist entity);
 }

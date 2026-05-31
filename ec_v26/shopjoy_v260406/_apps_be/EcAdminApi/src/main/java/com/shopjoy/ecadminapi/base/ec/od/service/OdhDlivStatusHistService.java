@@ -69,7 +69,7 @@ public class OdhDlivStatusHistService {
     /* 배송 상태 이력 페이지조회 */
     public OdhDlivStatusHistDto.PageResponse getPageData(OdhDlivStatusHistDto.Request req) {
         PageHelper.addPaging(req);
-        return odhDlivStatusHistRepository.selectPageList(req);
+        return odhDlivStatusHistRepository.selectPageData(req);
     }
 
     /* 배송 상태 이력 등록 */

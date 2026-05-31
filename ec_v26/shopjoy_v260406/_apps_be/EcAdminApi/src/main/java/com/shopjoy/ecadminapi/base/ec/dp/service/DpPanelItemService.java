@@ -69,7 +69,7 @@ public class DpPanelItemService {
     /* 전시 패널 아이템 페이지조회 */
     public DpPanelItemDto.PageResponse getPageData(DpPanelItemDto.Request req) {
         PageHelper.addPaging(req);
-        return dpPanelItemRepository.selectPageList(req);
+        return dpPanelItemRepository.selectPageData(req);
     }
 
     /* 전시 패널 아이템 등록 */

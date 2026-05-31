@@ -16,7 +16,7 @@ public interface QZzSample3Repository {
     List<ZzSample3Dto.Item> selectList(ZzSample3Dto.Request search);
 
     /** 페이지 목록 */
-    ZzSample3Dto.PageResponse selectPageList(ZzSample3Dto.Request search);
+    ZzSample3Dto.PageResponse selectPageData(ZzSample3Dto.Request search);
 
     int updateSelective(ZzSample3 entity);
 }

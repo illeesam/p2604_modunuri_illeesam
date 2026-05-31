@@ -69,7 +69,7 @@ public class OdCartService {
     /* 장바구니 페이지조회 */
     public OdCartDto.PageResponse getPageData(OdCartDto.Request req) {
         PageHelper.addPaging(req);
-        return odCartRepository.selectPageList(req);
+        return odCartRepository.selectPageData(req);
     }
 
     /* 장바구니 등록 */

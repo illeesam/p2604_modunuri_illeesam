@@ -69,7 +69,7 @@ public class SyPathService {
     /* 페이지조회 */
     public SyPathDto.PageResponse getPageData(SyPathDto.Request req) {
         PageHelper.addPaging(req);
-        return syPathRepository.selectPageList(req);
+        return syPathRepository.selectPageData(req);
     }
 
     /* 등록 */

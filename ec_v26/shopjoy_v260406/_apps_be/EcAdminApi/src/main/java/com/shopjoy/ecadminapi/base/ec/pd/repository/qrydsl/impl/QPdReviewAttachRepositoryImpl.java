@@ -70,7 +70,7 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
 
     /** 페이지 목록 */
     @Override
-    public PdReviewAttachDto.PageResponse selectPageList(PdReviewAttachDto.Request search) {
+    public PdReviewAttachDto.PageResponse selectPageData(PdReviewAttachDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

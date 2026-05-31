@@ -76,7 +76,7 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
 
     /** 페이지 목록 */
     @Override
-    public CmPathDto.PageResponse selectPageList(CmPathDto.Request search) {
+    public CmPathDto.PageResponse selectPageData(CmPathDto.Request search) {
         int pageNo = search != null && search.getPageNo() != null && search.getPageNo() > 0 ? search.getPageNo() : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset = (pageNo - 1) * pageSize;
@@ -84,7 +84,7 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<CmPathDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
                 baseAndUseYn(search),
                 baseAndBizCd(search),
                 baseAndDateRange(search),

@@ -88,7 +88,7 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
 
     /* 적립금 사용 이력 페이지조회 */
     @Override
-    public PmSaveUsageDto.PageResponse selectPageList(PmSaveUsageDto.Request search) {
+    public PmSaveUsageDto.PageResponse selectPageData(PmSaveUsageDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

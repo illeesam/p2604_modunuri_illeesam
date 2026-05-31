@@ -69,7 +69,7 @@ public class PmDiscntUsageService {
     /* 할인 사용 이력 페이지조회 */
     public PmDiscntUsageDto.PageResponse getPageData(PmDiscntUsageDto.Request req) {
         PageHelper.addPaging(req);
-        return pmDiscntUsageRepository.selectPageList(req);
+        return pmDiscntUsageRepository.selectPageData(req);
     }
 
     /* 할인 사용 이력 등록 */

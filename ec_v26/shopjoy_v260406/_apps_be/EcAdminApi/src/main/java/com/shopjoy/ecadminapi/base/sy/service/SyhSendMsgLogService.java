@@ -30,7 +30,7 @@ public class SyhSendMsgLogService {
     /** getPageData — 페이징조회 */
     public SyhSendMsgLogDto.PageResponse getPageData(SyhSendMsgLogDto.Request req) {
         PageHelper.addPaging(req);
-        return syhSendMsgLogRepository.selectPageList(req);
+        return syhSendMsgLogRepository.selectPageData(req);
     }
 
     /** update — 수정 */

@@ -69,7 +69,7 @@ public class PmCacheService {
     /* 캐시(충전금) 페이지조회 */
     public PmCacheDto.PageResponse getPageData(PmCacheDto.Request req) {
         PageHelper.addPaging(req);
-        return pmCacheRepository.selectPageList(req);
+        return pmCacheRepository.selectPageData(req);
     }
 
     /* 캐시(충전금) 등록 */

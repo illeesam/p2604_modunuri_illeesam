@@ -69,7 +69,7 @@ public class OdRefundService {
     /* 환불 페이지조회 */
     public OdRefundDto.PageResponse getPageData(OdRefundDto.Request req) {
         PageHelper.addPaging(req);
-        return odRefundRepository.selectPageList(req);
+        return odRefundRepository.selectPageData(req);
     }
 
     /* 환불 등록 */

@@ -13,7 +13,7 @@ public interface QMbhMemberTokenLogRepository {
 
     List<MbhMemberTokenLogDto.Item> selectList(MbhMemberTokenLogDto.Request search);
 
-    MbhMemberTokenLogDto.PageResponse selectPageList(MbhMemberTokenLogDto.Request search);
+    MbhMemberTokenLogDto.PageResponse selectPageData(MbhMemberTokenLogDto.Request search);
 
     int updateSelective(MbhMemberTokenLog entity);
 }

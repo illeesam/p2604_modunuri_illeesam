@@ -13,7 +13,7 @@ public interface QOdDlivRepository {
 
     List<OdDlivDto.Item> selectList(OdDlivDto.Request search);
 
-    OdDlivDto.PageResponse selectPageList(OdDlivDto.Request search);
+    OdDlivDto.PageResponse selectPageData(OdDlivDto.Request search);
 
     int updateSelective(OdDliv entity);
 }

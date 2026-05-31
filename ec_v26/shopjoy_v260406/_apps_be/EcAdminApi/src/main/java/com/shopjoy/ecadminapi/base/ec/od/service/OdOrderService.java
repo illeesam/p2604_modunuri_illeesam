@@ -70,7 +70,7 @@ public class OdOrderService {
     /* 주문 페이지조회 */
     public OdOrderDto.PageResponse getPageData(OdOrderDto.Request req) {
         PageHelper.addPaging(req);
-        return odOrderRepository.selectPageList(req);
+        return odOrderRepository.selectPageData(req);
     }
 
     /* 주문 등록 */

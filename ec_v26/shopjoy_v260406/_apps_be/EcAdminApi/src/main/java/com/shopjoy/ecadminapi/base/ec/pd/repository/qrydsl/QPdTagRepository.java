@@ -13,7 +13,7 @@ public interface QPdTagRepository {
 
     List<PdTagDto.Item> selectList(PdTagDto.Request search);
 
-    PdTagDto.PageResponse selectPageList(PdTagDto.Request search);
+    PdTagDto.PageResponse selectPageData(PdTagDto.Request search);
 
     int updateSelective(PdTag entity);
 }

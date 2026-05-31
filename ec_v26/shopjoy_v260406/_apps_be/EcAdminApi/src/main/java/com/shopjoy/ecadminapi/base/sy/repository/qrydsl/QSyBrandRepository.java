@@ -14,7 +14,7 @@ public interface QSyBrandRepository {
 
     List<SyBrandDto.Item> selectList(SyBrandDto.Request search);
 
-    SyBrandDto.PageResponse selectPageList(SyBrandDto.Request search);
+    SyBrandDto.PageResponse selectPageData(SyBrandDto.Request search);
 
     int updateSelective(SyBrand entity);
     /** 표시경로 노드별 수 집계 (자손 누적 + 검색조건 필터, native CTE 동적 SQL).

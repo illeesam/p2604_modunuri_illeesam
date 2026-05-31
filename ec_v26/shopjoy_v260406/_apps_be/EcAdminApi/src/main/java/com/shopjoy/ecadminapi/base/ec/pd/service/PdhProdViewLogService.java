@@ -69,7 +69,7 @@ public class PdhProdViewLogService {
     /* 상품 조회 로그 페이지조회 */
     public PdhProdViewLogDto.PageResponse getPageData(PdhProdViewLogDto.Request req) {
         PageHelper.addPaging(req);
-        return pdhProdViewLogRepository.selectPageList(req);
+        return pdhProdViewLogRepository.selectPageData(req);
     }
 
     /* 상품 조회 로그 등록 */

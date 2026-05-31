@@ -70,7 +70,7 @@ public class DpAreaService {
     /* 전시 영역 페이지조회 */
     public DpAreaDto.PageResponse getPageData(DpAreaDto.Request req) {
         PageHelper.addPaging(req);
-        return dpAreaRepository.selectPageList(req);
+        return dpAreaRepository.selectPageData(req);
     }
 
     /* 전시 영역 등록 */

@@ -83,7 +83,7 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
 
     /* 프로모션 플랜 아이템 페이지조회 */
     @Override
-    public PmPlanItemDto.PageResponse selectPageList(PmPlanItemDto.Request search) {
+    public PmPlanItemDto.PageResponse selectPageData(PmPlanItemDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

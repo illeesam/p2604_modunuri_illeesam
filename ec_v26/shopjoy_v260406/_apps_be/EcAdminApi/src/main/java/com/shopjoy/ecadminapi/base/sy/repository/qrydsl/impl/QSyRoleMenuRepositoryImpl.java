@@ -61,6 +61,8 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 baseAndSiteId(search),
                 baseAndRoleMenuId(search),
+                baseAndRoleId(search),
+                baseAndMenuId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
         );
@@ -78,7 +80,7 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
 
     /* 역할별 메뉴 권한 페이지조회 */
     @Override
-    public SyRoleMenuDto.PageResponse selectPageList(SyRoleMenuDto.Request search) {
+    public SyRoleMenuDto.PageResponse selectPageData(SyRoleMenuDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -86,9 +88,11 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<SyRoleMenuDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
                 baseAndSiteId(search),
                 baseAndRoleMenuId(search),
+                baseAndRoleId(search),
+                baseAndMenuId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
         );
@@ -100,6 +104,8 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
         Long total = queryFactory.select(a.count()).from(a).where(
                 baseAndSiteId(search),
                 baseAndRoleMenuId(search),
+                baseAndRoleId(search),
+                baseAndMenuId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
         ).fetchOne();
@@ -125,6 +131,18 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
     private BooleanExpression baseAndRoleMenuId(SyRoleMenuDto.Request search) {
         return search != null && StringUtils.hasText(search.getRoleMenuId())
                 ? a.roleMenuId.eq(search.getRoleMenuId()) : null;
+    }
+
+    /* roleId 정확 일치 */
+    private BooleanExpression baseAndRoleId(SyRoleMenuDto.Request search) {
+        return search != null && StringUtils.hasText(search.getRoleId())
+                ? a.roleId.eq(search.getRoleId()) : null;
+    }
+
+    /* menuId 정확 일치 */
+    private BooleanExpression baseAndMenuId(SyRoleMenuDto.Request search) {
+        return search != null && StringUtils.hasText(search.getMenuId())
+                ? a.menuId.eq(search.getMenuId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */

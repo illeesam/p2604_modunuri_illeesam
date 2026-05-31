@@ -69,7 +69,7 @@ public class PdRestockNotiService {
     /* 재입고 알림 페이지조회 */
     public PdRestockNotiDto.PageResponse getPageData(PdRestockNotiDto.Request req) {
         PageHelper.addPaging(req);
-        return pdRestockNotiRepository.selectPageList(req);
+        return pdRestockNotiRepository.selectPageData(req);
     }
 
     /* 재입고 알림 등록 */

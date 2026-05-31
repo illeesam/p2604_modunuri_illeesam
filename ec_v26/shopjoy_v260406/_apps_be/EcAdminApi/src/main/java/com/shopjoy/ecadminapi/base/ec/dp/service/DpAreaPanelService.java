@@ -69,7 +69,7 @@ public class DpAreaPanelService {
     /* 전시 영역-패널 매핑 페이지조회 */
     public DpAreaPanelDto.PageResponse getPageData(DpAreaPanelDto.Request req) {
         PageHelper.addPaging(req);
-        return dpAreaPanelRepository.selectPageList(req);
+        return dpAreaPanelRepository.selectPageData(req);
     }
 
     /* 전시 영역-패널 매핑 등록 */

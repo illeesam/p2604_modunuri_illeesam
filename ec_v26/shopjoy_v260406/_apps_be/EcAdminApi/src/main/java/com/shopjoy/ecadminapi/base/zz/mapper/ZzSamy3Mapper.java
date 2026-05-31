@@ -17,7 +17,7 @@ public interface ZzSamy3Mapper {
     List<ZzSamy3Dto.Item> selectList(ZzSamy3Dto.Request search);
 
     /** 페이지 목록 */
-    List<ZzSamy3Dto.Item> selectPageList(ZzSamy3Dto.Request search);
+    List<ZzSamy3Dto.Item> selectPageData(ZzSamy3Dto.Request search);
 
     /** 페이지 건수 */
     long selectPageCount(ZzSamy3Dto.Request search);

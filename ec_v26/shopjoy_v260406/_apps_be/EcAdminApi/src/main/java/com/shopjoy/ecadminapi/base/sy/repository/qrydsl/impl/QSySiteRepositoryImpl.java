@@ -96,7 +96,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
 
     /* 사이트 페이지조회 */
     @Override
-    public SySiteDto.PageResponse selectPageList(SySiteDto.Request search) {
+    public SySiteDto.PageResponse selectPageData(SySiteDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -104,7 +104,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<SySiteDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list")
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
                 .where(
                         baseAndSiteId(search),
                         baseAndPathId(search),
@@ -119,7 +119,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
         List<SySiteDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory.select(a.count()).from(a)
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: count")
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: count")
                 .where(
                         baseAndSiteId(search),
                         baseAndPathId(search),

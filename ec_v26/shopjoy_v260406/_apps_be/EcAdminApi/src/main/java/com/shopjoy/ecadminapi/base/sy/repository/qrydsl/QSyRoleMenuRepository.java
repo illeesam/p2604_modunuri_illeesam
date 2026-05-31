@@ -13,7 +13,7 @@ public interface QSyRoleMenuRepository {
 
     List<SyRoleMenuDto.Item> selectList(SyRoleMenuDto.Request search);
 
-    SyRoleMenuDto.PageResponse selectPageList(SyRoleMenuDto.Request search);
+    SyRoleMenuDto.PageResponse selectPageData(SyRoleMenuDto.Request search);
 
     int updateSelective(SyRoleMenu entity);
 }

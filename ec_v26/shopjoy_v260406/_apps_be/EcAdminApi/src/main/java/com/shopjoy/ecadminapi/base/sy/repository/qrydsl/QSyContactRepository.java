@@ -10,6 +10,6 @@ import java.util.Optional;
 public interface QSyContactRepository {
     Optional<SyContactDto.Item> selectById(String contactId);
     List<SyContactDto.Item> selectList(SyContactDto.Request search);
-    SyContactDto.PageResponse selectPageList(SyContactDto.Request search);
+    SyContactDto.PageResponse selectPageData(SyContactDto.Request search);
     int updateSelective(SyContact entity);
 }

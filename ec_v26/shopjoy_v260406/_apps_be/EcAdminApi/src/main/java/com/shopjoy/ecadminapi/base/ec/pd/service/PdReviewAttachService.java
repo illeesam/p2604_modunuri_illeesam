@@ -69,7 +69,7 @@ public class PdReviewAttachService {
     /* 리뷰 첨부파일 페이지조회 */
     public PdReviewAttachDto.PageResponse getPageData(PdReviewAttachDto.Request req) {
         PageHelper.addPaging(req);
-        return pdReviewAttachRepository.selectPageList(req);
+        return pdReviewAttachRepository.selectPageData(req);
     }
 
     /* 리뷰 첨부파일 등록 */

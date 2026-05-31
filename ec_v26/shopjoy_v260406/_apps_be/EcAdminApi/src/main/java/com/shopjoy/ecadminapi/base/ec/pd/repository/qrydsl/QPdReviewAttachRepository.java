@@ -16,7 +16,7 @@ public interface QPdReviewAttachRepository {
     List<PdReviewAttachDto.Item> selectList(PdReviewAttachDto.Request search);
 
     /** 페이지 목록 (pageNo/pageSize 미지정 시 1페이지/10건 기본) */
-    PdReviewAttachDto.PageResponse selectPageList(PdReviewAttachDto.Request search);
+    PdReviewAttachDto.PageResponse selectPageData(PdReviewAttachDto.Request search);
 
     int updateSelective(PdReviewAttach entity);
 }

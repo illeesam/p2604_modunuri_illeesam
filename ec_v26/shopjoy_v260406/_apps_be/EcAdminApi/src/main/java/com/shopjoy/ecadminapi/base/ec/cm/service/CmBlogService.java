@@ -69,7 +69,7 @@ public class CmBlogService {
     /* 게시물 페이지조회 */
     public CmBlogDto.PageResponse getPageData(CmBlogDto.Request req) {
         PageHelper.addPaging(req);
-        return cmBlogRepository.selectPageList(req);
+        return cmBlogRepository.selectPageData(req);
     }
 
     /* 게시물 등록 */

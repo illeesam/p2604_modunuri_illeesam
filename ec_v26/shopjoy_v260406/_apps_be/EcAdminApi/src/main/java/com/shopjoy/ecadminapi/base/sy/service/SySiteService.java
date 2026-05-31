@@ -69,7 +69,7 @@ public class SySiteService {
     /** getPageData — 페이징조회 (QueryDSL) */
     public SySiteDto.PageResponse getPageData(SySiteDto.Request req) {
         PageHelper.addPaging(req);
-        return sySiteRepository.selectPageList(req);
+        return sySiteRepository.selectPageData(req);
     }
 
     /** getPathTreeNodeCounts — 표시경로 노드별 사이트수 집계 (검색조건 + 자손 누적, 동적 native CTE).

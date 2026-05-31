@@ -69,7 +69,7 @@ public class SyContactService {
     /* 문의 페이지조회 */
     public SyContactDto.PageResponse getPageData(SyContactDto.Request req) {
         PageHelper.addPaging(req);
-        return syContactRepository.selectPageList(req);
+        return syContactRepository.selectPageData(req);
     }
 
     /* 문의 등록 */

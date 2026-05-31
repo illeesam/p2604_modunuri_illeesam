@@ -71,7 +71,7 @@ public class SyRoleMenuService {
     /* 역할별 메뉴 권한 페이지조회 */
     public SyRoleMenuDto.PageResponse getPageData(SyRoleMenuDto.Request req) {
         PageHelper.addPaging(req);
-        return syRoleMenuRepository.selectPageList(req);
+        return syRoleMenuRepository.selectPageData(req);
     }
 
     /* 역할별 메뉴 권한 등록 */

@@ -89,7 +89,7 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
 
     /* 카테고리-상품 매핑 페이지조회 */
     @Override
-    public PdCategoryProdDto.PageResponse selectPageList(PdCategoryProdDto.Request search) {
+    public PdCategoryProdDto.PageResponse selectPageData(PdCategoryProdDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

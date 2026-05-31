@@ -74,7 +74,7 @@ public class QOdhPayStatusHistRepositoryImpl implements QOdhPayStatusHistReposit
 
     /* 결제 상태 이력 페이지조회 */
     @Override
-    public OdhPayStatusHistDto.PageResponse selectPageList(OdhPayStatusHistDto.Request search) {
+    public OdhPayStatusHistDto.PageResponse selectPageData(OdhPayStatusHistDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

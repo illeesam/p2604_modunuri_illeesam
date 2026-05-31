@@ -78,7 +78,7 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
 
     /* 회원 로그인 로그 페이지조회 */
     @Override
-    public MbhMemberLoginLogDto.PageResponse selectPageList(MbhMemberLoginLogDto.Request search) {
+    public MbhMemberLoginLogDto.PageResponse selectPageData(MbhMemberLoginLogDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
 

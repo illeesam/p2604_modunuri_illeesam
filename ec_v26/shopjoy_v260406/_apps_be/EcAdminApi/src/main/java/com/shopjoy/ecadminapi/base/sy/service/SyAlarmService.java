@@ -68,7 +68,7 @@ public class SyAlarmService {
     /* 알람 페이지조회 */
     public SyAlarmDto.PageResponse getPageData(SyAlarmDto.Request req) {
         PageHelper.addPaging(req);
-        return syAlarmRepository.selectPageList(req);
+        return syAlarmRepository.selectPageData(req);
     }
 
     /* 알람 등록 */

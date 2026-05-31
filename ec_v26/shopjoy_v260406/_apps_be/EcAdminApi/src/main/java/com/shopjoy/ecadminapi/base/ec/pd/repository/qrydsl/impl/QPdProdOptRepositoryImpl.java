@@ -97,7 +97,7 @@ public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
 
     /* 상품 옵션 페이지조회 */
     @Override
-    public PdProdOptDto.PageResponse selectPageList(PdProdOptDto.Request search) {
+    public PdProdOptDto.PageResponse selectPageData(PdProdOptDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

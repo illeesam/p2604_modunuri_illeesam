@@ -76,7 +76,7 @@ public class ZzExam2Service {
     /** getPageData — 조회 (각 항목에 상위 exam1 / 하위 exam3s 포함) */
     public ZzExam2Dto.PageResponse getPageData(ZzExam2Dto.Request req) {
         PageHelper.addPaging(req);
-        ZzExam2Dto.PageResponse res = zzExam2Repository.selectPageList(req);
+        ZzExam2Dto.PageResponse res = zzExam2Repository.selectPageData(req);
         _listFillRelations(res.getPageList());
         return res;
     }

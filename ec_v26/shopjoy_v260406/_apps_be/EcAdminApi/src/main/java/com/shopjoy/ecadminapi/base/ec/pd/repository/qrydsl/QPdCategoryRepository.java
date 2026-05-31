@@ -13,7 +13,7 @@ public interface QPdCategoryRepository {
 
     List<PdCategoryDto.Item> selectList(PdCategoryDto.Request search);
 
-    PdCategoryDto.PageResponse selectPageList(PdCategoryDto.Request search);
+    PdCategoryDto.PageResponse selectPageData(PdCategoryDto.Request search);
 
     int updateSelective(PdCategory entity);
 }

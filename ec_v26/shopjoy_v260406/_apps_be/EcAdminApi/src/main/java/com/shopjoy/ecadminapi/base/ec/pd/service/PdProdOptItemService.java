@@ -71,7 +71,7 @@ public class PdProdOptItemService {
     /* 상품 옵션 아이템 페이지조회 */
     public PdProdOptItemDto.PageResponse getPageData(PdProdOptItemDto.Request req) {
         PageHelper.addPaging(req);
-        return pdProdOptItemRepository.selectPageList(req);
+        return pdProdOptItemRepository.selectPageData(req);
     }
 
     /* 상품 옵션 아이템 등록 */

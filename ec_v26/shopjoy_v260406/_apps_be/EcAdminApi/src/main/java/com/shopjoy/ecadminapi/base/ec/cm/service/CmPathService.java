@@ -69,7 +69,7 @@ public class CmPathService {
     /* 경로(메뉴/URL) 페이지조회 */
     public CmPathDto.PageResponse getPageData(CmPathDto.Request req) {
         PageHelper.addPaging(req);
-        return cmPathRepository.selectPageList(req);
+        return cmPathRepository.selectPageData(req);
     }
 
     /* 경로(메뉴/URL) 등록 */

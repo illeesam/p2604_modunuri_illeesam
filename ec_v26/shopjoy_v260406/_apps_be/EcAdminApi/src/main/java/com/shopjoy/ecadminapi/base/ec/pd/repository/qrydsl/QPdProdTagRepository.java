@@ -13,7 +13,7 @@ public interface QPdProdTagRepository {
 
     List<PdProdTagDto.Item> selectList(PdProdTagDto.Request search);
 
-    PdProdTagDto.PageResponse selectPageList(PdProdTagDto.Request search);
+    PdProdTagDto.PageResponse selectPageData(PdProdTagDto.Request search);
 
     int updateSelective(PdProdTag entity);
 }

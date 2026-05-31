@@ -79,7 +79,7 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
 
     /** 페이지 목록 */
     @Override
-    public CmhPushLogDto.PageResponse selectPageList(CmhPushLogDto.Request search) {
+    public CmhPushLogDto.PageResponse selectPageData(CmhPushLogDto.Request search) {
         int pageNo = search != null && search.getPageNo() != null && search.getPageNo() > 0 ? search.getPageNo() : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset = (pageNo - 1) * pageSize;
@@ -87,7 +87,7 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<CmhPushLogDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
                 baseAndSiteId(search),
                 baseAndLogId(search),
                 baseAndDateRange(search),

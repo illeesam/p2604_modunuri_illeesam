@@ -69,7 +69,7 @@ public class MbMemberGroupService {
     /* 회원 그룹 페이지조회 */
     public MbMemberGroupDto.PageResponse getPageData(MbMemberGroupDto.Request req) {
         PageHelper.addPaging(req);
-        return mbMemberGroupRepository.selectPageList(req);
+        return mbMemberGroupRepository.selectPageData(req);
     }
 
     /* 회원 그룹 등록 */

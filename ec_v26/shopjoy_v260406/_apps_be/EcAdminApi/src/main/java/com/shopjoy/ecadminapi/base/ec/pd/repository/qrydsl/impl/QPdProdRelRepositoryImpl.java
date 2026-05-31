@@ -75,7 +75,7 @@ public class QPdProdRelRepositoryImpl implements QPdProdRelRepository {
 
     /** 페이지 목록 */
     @Override
-    public PdProdRelDto.PageResponse selectPageList(PdProdRelDto.Request search) {
+    public PdProdRelDto.PageResponse selectPageData(PdProdRelDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

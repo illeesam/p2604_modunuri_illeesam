@@ -16,7 +16,7 @@ public interface QPdReviewCommentRepository {
     List<PdReviewCommentDto.Item> selectList(PdReviewCommentDto.Request search);
 
     /** 페이지 목록 (pageNo/pageSize 미지정 시 1페이지/10건 기본) */
-    PdReviewCommentDto.PageResponse selectPageList(PdReviewCommentDto.Request search);
+    PdReviewCommentDto.PageResponse selectPageData(PdReviewCommentDto.Request search);
 
     int updateSelective(PdReviewComment entity);
 }

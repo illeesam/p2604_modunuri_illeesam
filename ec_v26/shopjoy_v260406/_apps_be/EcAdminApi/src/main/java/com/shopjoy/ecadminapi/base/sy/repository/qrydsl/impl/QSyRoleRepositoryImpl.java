@@ -101,7 +101,7 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
 
     /* 역할(권한) 페이지조회 */
     @Override
-    public SyRoleDto.PageResponse selectPageList(SyRoleDto.Request search) {
+    public SyRoleDto.PageResponse selectPageData(SyRoleDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -109,7 +109,7 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<SyRoleDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
                 baseAndSiteId(search),
                 baseAndRoleId(search),
                 baseAndParentRoleId(search),

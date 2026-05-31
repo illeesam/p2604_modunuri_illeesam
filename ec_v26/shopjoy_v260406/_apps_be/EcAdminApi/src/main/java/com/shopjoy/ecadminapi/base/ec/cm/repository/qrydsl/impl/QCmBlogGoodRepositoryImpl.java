@@ -75,7 +75,7 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
 
     /** 페이지 목록 */
     @Override
-    public CmBlogGoodDto.PageResponse selectPageList(CmBlogGoodDto.Request search) {
+    public CmBlogGoodDto.PageResponse selectPageData(CmBlogGoodDto.Request search) {
         int pageNo = search != null && search.getPageNo() != null && search.getPageNo() > 0 ? search.getPageNo() : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset = (pageNo - 1) * pageSize;
@@ -83,7 +83,7 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<CmBlogGoodDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
                 baseAndLikeId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)

@@ -10,6 +10,6 @@ import java.util.Optional;
 public interface QSyNoticeRepository {
     Optional<SyNoticeDto.Item> selectById(String noticeId);
     List<SyNoticeDto.Item> selectList(SyNoticeDto.Request search);
-    SyNoticeDto.PageResponse selectPageList(SyNoticeDto.Request search);
+    SyNoticeDto.PageResponse selectPageData(SyNoticeDto.Request search);
     int updateSelective(SyNotice entity);
 }

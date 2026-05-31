@@ -69,7 +69,7 @@ public class PmEventItemService {
     /* 이벤트 대상 상품 페이지조회 */
     public PmEventItemDto.PageResponse getPageData(PmEventItemDto.Request req) {
         PageHelper.addPaging(req);
-        return pmEventItemRepository.selectPageList(req);
+        return pmEventItemRepository.selectPageData(req);
     }
 
     /* 이벤트 대상 상품 등록 */

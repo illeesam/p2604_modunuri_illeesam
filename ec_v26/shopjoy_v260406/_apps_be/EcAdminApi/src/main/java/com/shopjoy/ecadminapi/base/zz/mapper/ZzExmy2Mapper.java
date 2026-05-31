@@ -18,7 +18,7 @@ public interface ZzExmy2Mapper {
     List<ZzExmy2Dto.Item> selectList(ZzExmy2Dto.Request search);
 
     /** 페이지 목록 */
-    List<ZzExmy2Dto.Item> selectPageList(ZzExmy2Dto.Request search);
+    List<ZzExmy2Dto.Item> selectPageData(ZzExmy2Dto.Request search);
 
     /** 페이지 건수 */
     long selectPageCount(ZzExmy2Dto.Request search);

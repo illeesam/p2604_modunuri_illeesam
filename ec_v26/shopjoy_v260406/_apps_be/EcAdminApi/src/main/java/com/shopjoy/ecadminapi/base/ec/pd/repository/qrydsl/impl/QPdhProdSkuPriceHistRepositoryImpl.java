@@ -89,7 +89,7 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
 
     /* 상품 SKU 가격 이력 페이지조회 */
     @Override
-    public PdhProdSkuPriceHistDto.PageResponse selectPageList(PdhProdSkuPriceHistDto.Request search) {
+    public PdhProdSkuPriceHistDto.PageResponse selectPageData(PdhProdSkuPriceHistDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -97,7 +97,7 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PdhProdSkuPriceHistDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
                 baseAndSiteId(search),
                 baseAndHistId(search),
                 baseAndSearchValue(search)

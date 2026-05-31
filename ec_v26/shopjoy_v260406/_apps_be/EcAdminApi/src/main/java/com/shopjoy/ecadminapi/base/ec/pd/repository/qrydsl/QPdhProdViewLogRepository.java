@@ -16,7 +16,7 @@ public interface QPdhProdViewLogRepository {
     List<PdhProdViewLogDto.Item> selectList(PdhProdViewLogDto.Request search);
 
     /** 페이지 목록 */
-    PdhProdViewLogDto.PageResponse selectPageList(PdhProdViewLogDto.Request search);
+    PdhProdViewLogDto.PageResponse selectPageData(PdhProdViewLogDto.Request search);
 
     int updateSelective(PdhProdViewLog entity);
 }

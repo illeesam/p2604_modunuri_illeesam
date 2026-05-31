@@ -76,7 +76,7 @@ public class SyDeptService {
     /** getPageData — 페이징조회 */
     public SyDeptDto.PageResponse getPageData(SyDeptDto.Request req) {
         PageHelper.addPaging(req);
-        return syDeptRepository.selectPageList(req);
+        return syDeptRepository.selectPageData(req);
     }
 
     /* 부서 등록 */

@@ -17,7 +17,7 @@ public class SyhAccessLogService {
     /** getPageData — 페이징조회 */
     public SyhAccessLogDto.PageResponse getPageData(SyhAccessLogDto.Request req) {
         PageHelper.addPaging(req);
-        return syhAccessLogRepository.selectPageList(req);
+        return syhAccessLogRepository.selectPageData(req);
     }
 
     /** deleteAll — 삭제 */

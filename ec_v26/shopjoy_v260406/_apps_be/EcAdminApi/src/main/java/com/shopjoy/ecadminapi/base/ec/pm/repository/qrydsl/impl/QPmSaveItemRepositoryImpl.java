@@ -84,7 +84,7 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
 
     /* 적립금 대상 상품 페이지조회 */
     @Override
-    public PmSaveItemDto.PageResponse selectPageList(PmSaveItemDto.Request search) {
+    public PmSaveItemDto.PageResponse selectPageData(PmSaveItemDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

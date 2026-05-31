@@ -67,7 +67,7 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
 
     /* 전시 영역 페이지조회 */
     @Override
-    public DpAreaDto.PageResponse selectPageList(DpAreaDto.Request search) {
+    public DpAreaDto.PageResponse selectPageData(DpAreaDto.Request search) {
         int pageNo = search.getPageNo() != null && search.getPageNo() > 0 ? search.getPageNo() : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         List<OrderSpecifier<?>> orderList = buildOrder(search);

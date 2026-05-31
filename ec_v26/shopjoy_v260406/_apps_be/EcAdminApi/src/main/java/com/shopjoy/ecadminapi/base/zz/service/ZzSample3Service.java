@@ -82,7 +82,7 @@ public class ZzSample3Service {
     /** getPageData — 조회 (각 항목에 상위 sample1 / sample2 포함) */
     public ZzSample3Dto.PageResponse getPageData(ZzSample3Dto.Request req) {
         PageHelper.addPaging(req);
-        ZzSample3Dto.PageResponse res = zzSample3Repository.selectPageList(req);
+        ZzSample3Dto.PageResponse res = zzSample3Repository.selectPageData(req);
         _listFillRelations(res.getPageList());
         return res;
     }

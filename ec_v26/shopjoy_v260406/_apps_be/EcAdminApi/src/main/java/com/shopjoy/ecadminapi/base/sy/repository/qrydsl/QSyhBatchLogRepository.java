@@ -16,7 +16,7 @@ public interface QSyhBatchLogRepository {
     List<SyhBatchLogDto.Item> selectList(SyhBatchLogDto.Request search);
 
     /** 페이지 목록 */
-    SyhBatchLogDto.PageResponse selectPageList(SyhBatchLogDto.Request search);
+    SyhBatchLogDto.PageResponse selectPageData(SyhBatchLogDto.Request search);
 
     int updateSelective(SyhBatchLog entity);
 }

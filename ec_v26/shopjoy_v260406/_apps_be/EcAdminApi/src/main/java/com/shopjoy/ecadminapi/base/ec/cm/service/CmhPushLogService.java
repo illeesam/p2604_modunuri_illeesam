@@ -69,7 +69,7 @@ public class CmhPushLogService {
     /* 푸시 발송 이력 페이지조회 */
     public CmhPushLogDto.PageResponse getPageData(CmhPushLogDto.Request req) {
         PageHelper.addPaging(req);
-        return cmhPushLogRepository.selectPageList(req);
+        return cmhPushLogRepository.selectPageData(req);
     }
 
     /* 푸시 발송 이력 등록 */

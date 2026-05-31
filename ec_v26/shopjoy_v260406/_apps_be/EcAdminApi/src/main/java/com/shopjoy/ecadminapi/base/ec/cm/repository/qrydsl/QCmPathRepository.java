@@ -16,7 +16,7 @@ public interface QCmPathRepository {
     List<CmPathDto.Item> selectList(CmPathDto.Request search);
 
     /** 페이지 목록 (pageNo/pageSize 미지정 시 1페이지/10건 기본) */
-    CmPathDto.PageResponse selectPageList(CmPathDto.Request search);
+    CmPathDto.PageResponse selectPageData(CmPathDto.Request search);
 
     int updateSelective(CmPath entity);
 }

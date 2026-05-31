@@ -69,7 +69,7 @@ public class CmBlogCateService {
     /* 게시판 카테고리 페이지조회 */
     public CmBlogCateDto.PageResponse getPageData(CmBlogCateDto.Request req) {
         PageHelper.addPaging(req);
-        return cmBlogCateRepository.selectPageList(req);
+        return cmBlogCateRepository.selectPageData(req);
     }
 
     /* 게시판 카테고리 등록 */

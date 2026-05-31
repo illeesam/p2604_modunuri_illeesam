@@ -69,7 +69,7 @@ public class StSettleService {
     /* 정산 페이지조회 */
     public StSettleDto.PageResponse getPageData(StSettleDto.Request req) {
         PageHelper.addPaging(req);
-        return stSettleRepository.selectPageList(req);
+        return stSettleRepository.selectPageData(req);
     }
 
     /* 정산 등록 */

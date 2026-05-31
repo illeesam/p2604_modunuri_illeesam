@@ -13,7 +13,7 @@ public interface QSyVendorBrandRepository {
 
     List<SyVendorBrandDto.Item> selectList(SyVendorBrandDto.Request search);
 
-    SyVendorBrandDto.PageResponse selectPageList(SyVendorBrandDto.Request search);
+    SyVendorBrandDto.PageResponse selectPageData(SyVendorBrandDto.Request search);
 
     int updateSelective(SyVendorBrand entity);
 }

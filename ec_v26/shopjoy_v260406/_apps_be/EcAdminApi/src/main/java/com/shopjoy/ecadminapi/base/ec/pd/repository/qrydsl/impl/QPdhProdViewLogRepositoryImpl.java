@@ -91,7 +91,7 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
 
     /* 상품 조회 로그 페이지조회 */
     @Override
-    public PdhProdViewLogDto.PageResponse selectPageList(PdhProdViewLogDto.Request search) {
+    public PdhProdViewLogDto.PageResponse selectPageData(PdhProdViewLogDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -99,7 +99,7 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PdhProdViewLogDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
                 baseAndSiteId(search),
                 baseAndLogId(search),
                 baseAndDateRange(search),

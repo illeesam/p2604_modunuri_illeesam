@@ -73,7 +73,7 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
 
     /* 환불수단 페이지조회 */
     @Override
-    public OdRefundMethodDto.PageResponse selectPageList(OdRefundMethodDto.Request search) {
+    public OdRefundMethodDto.PageResponse selectPageData(OdRefundMethodDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

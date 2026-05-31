@@ -13,7 +13,7 @@ public interface QMbDeviceTokenRepository {
 
     List<MbDeviceTokenDto.Item> selectList(MbDeviceTokenDto.Request search);
 
-    MbDeviceTokenDto.PageResponse selectPageList(MbDeviceTokenDto.Request search);
+    MbDeviceTokenDto.PageResponse selectPageData(MbDeviceTokenDto.Request search);
 
     int updateSelective(MbDeviceToken entity);
 }

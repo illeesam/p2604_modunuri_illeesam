@@ -116,7 +116,7 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
 
     /* 결제 페이지조회 */
     @Override
-    public OdPayDto.PageResponse selectPageList(OdPayDto.Request search) {
+    public OdPayDto.PageResponse selectPageData(OdPayDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

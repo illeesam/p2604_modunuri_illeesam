@@ -16,7 +16,7 @@ public interface QMbMemberRepository {
     List<MbMemberDto.Item> selectList(MbMemberDto.Request search);
 
     /** 페이지 목록 (pageNo/pageSize 미지정 시 1페이지/10건 기본) */
-    MbMemberDto.PageResponse selectPageList(MbMemberDto.Request search);
+    MbMemberDto.PageResponse selectPageData(MbMemberDto.Request search);
 
     int updateSelective(MbMember entity);
 }

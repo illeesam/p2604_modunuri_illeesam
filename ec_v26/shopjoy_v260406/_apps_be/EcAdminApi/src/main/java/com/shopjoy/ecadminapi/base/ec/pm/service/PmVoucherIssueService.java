@@ -69,7 +69,7 @@ public class PmVoucherIssueService {
     /* 바우처(상품권) 발행 이력 페이지조회 */
     public PmVoucherIssueDto.PageResponse getPageData(PmVoucherIssueDto.Request req) {
         PageHelper.addPaging(req);
-        return pmVoucherIssueRepository.selectPageList(req);
+        return pmVoucherIssueRepository.selectPageData(req);
     }
 
     /* 바우처(상품권) 발행 이력 등록 */

@@ -16,7 +16,7 @@ public interface QSyhUserLoginLogRepository {
     List<SyhUserLoginLogDto.Item> selectList(SyhUserLoginLogDto.Request search);
 
     /** 페이지 목록 */
-    SyhUserLoginLogDto.PageResponse selectPageList(SyhUserLoginLogDto.Request search);
+    SyhUserLoginLogDto.PageResponse selectPageData(SyhUserLoginLogDto.Request search);
 
     int updateSelective(SyhUserLoginLog entity);
 }

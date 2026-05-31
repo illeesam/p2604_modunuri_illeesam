@@ -69,7 +69,7 @@ public class PmCouponUsageService {
     /* 쿠폰 사용 이력 페이지조회 */
     public PmCouponUsageDto.PageResponse getPageData(PmCouponUsageDto.Request req) {
         PageHelper.addPaging(req);
-        return pmCouponUsageRepository.selectPageList(req);
+        return pmCouponUsageRepository.selectPageData(req);
     }
 
     /* 쿠폰 사용 이력 등록 */

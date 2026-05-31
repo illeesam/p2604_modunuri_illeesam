@@ -995,7 +995,7 @@ window.SyRoleMng = {
                 </button>
               </div>
               <!-- ===== ■.■.■.■.■.■. 선택된 사용자 목록 ==================================== -->
-              <div v-if="uiState.selectedRoleId">
+              <div v-if="uiState.selectedRoleId" style="max-height:340px;overflow-y:auto;border:1px solid #f0f0f0;border-radius:6px;padding:6px;">
                 <div v-if="!fnRoleUsersList().length"
                 style="text-align:center;color:#bbb;padding:36px 0;font-size:13px;border:1px dashed #e0e0e0;border-radius:6px;">
                   추가된 사용자가 없습니다.
@@ -1004,7 +1004,7 @@ window.SyRoleMng = {
                     [사용자 추가] 버튼으로 추가하세요.
                   </span>
                 </div>
-                <div v-else style="display:flex;flex-direction:column;gap:6px;padding-top:4px;">
+                <div v-else style="display:flex;flex-direction:column;gap:6px;">
                   <div v-for="u in fnRoleUsersList()" :key="u.boUserId"
                   style="display:flex;align-items:center;padding:9px 14px;background:#fafafa;border:1px solid #f0f0f0;border-radius:6px;transition:background .1s;"
                   @mouseenter="$event.currentTarget.style.background='#fff0f4'"

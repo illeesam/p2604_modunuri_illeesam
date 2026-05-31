@@ -69,7 +69,7 @@ public class MbDeviceTokenService {
     /* 페이지조회 */
     public MbDeviceTokenDto.PageResponse getPageData(MbDeviceTokenDto.Request req) {
         PageHelper.addPaging(req);
-        return mbDeviceTokenRepository.selectPageList(req);
+        return mbDeviceTokenRepository.selectPageData(req);
     }
 
     /* 등록 */

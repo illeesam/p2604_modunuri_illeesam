@@ -76,7 +76,7 @@ public class QDpUiAreaRepositoryImpl implements QDpUiAreaRepository {
 
     /* 전시 UI-영역 매핑 페이지조회 */
     @Override
-    public DpUiAreaDto.PageResponse selectPageList(DpUiAreaDto.Request search) {
+    public DpUiAreaDto.PageResponse selectPageData(DpUiAreaDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

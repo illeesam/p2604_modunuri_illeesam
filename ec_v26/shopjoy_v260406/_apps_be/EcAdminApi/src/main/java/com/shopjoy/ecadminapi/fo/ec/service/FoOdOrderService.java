@@ -54,7 +54,7 @@ public class FoOdOrderService {
         if (req == null) req = new OdOrderDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
         PageHelper.addPaging(req);
-        OdOrderDto.PageResponse res = odOrderRepository.selectPageList(req);
+        OdOrderDto.PageResponse res = odOrderRepository.selectPageData(req);
         _listFillRelations(res.getPageList());
         return res;
     }

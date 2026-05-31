@@ -60,7 +60,7 @@ public class PdhProdSkuChgHistService {
     /* 상품 SKU 변경 이력 페이지조회 */
     public PdhProdSkuChgHistDto.PageResponse getPageData(PdhProdSkuChgHistDto.Request req) {
         PageHelper.addPaging(req);
-        return pdhProdSkuChgHistRepository.selectPageList(req);
+        return pdhProdSkuChgHistRepository.selectPageData(req);
     }
 
     /* 상품 SKU 변경 이력 등록 */

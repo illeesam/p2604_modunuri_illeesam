@@ -90,7 +90,7 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
 
     /* 배송 템플릿 페이지조회 */
     @Override
-    public PdDlivTmpltDto.PageResponse selectPageList(PdDlivTmpltDto.Request search) {
+    public PdDlivTmpltDto.PageResponse selectPageData(PdDlivTmpltDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

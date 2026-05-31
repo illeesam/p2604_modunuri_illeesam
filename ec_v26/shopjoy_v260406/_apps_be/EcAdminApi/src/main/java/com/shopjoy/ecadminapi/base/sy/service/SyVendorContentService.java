@@ -69,7 +69,7 @@ public class SyVendorContentService {
     /* 업체 콘텐츠 페이지조회 */
     public SyVendorContentDto.PageResponse getPageData(SyVendorContentDto.Request req) {
         PageHelper.addPaging(req);
-        return syVendorContentRepository.selectPageList(req);
+        return syVendorContentRepository.selectPageData(req);
     }
 
     /* 업체 콘텐츠 등록 */

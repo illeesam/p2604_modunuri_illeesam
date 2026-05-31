@@ -16,7 +16,7 @@ public interface QCmhPushLogRepository {
     List<CmhPushLogDto.Item> selectList(CmhPushLogDto.Request search);
 
     /** 페이지 목록 (pageNo/pageSize 미지정 시 1페이지/10건 기본) */
-    CmhPushLogDto.PageResponse selectPageList(CmhPushLogDto.Request search);
+    CmhPushLogDto.PageResponse selectPageData(CmhPushLogDto.Request search);
 
     int updateSelective(CmhPushLog entity);
 }

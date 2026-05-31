@@ -65,7 +65,7 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
 
     /* 전시 위젯 라이브러리 페이지조회 */
     @Override
-    public DpWidgetLibDto.PageResponse selectPageList(DpWidgetLibDto.Request search) {
+    public DpWidgetLibDto.PageResponse selectPageData(DpWidgetLibDto.Request search) {
         int pageNo = search != null && search.getPageNo() != null && search.getPageNo() > 0 ? search.getPageNo() : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         List<OrderSpecifier<?>> orderList = buildOrder(search);

@@ -13,7 +13,7 @@ public interface QPmEventRepository {
 
     List<PmEventDto.Item> selectList(PmEventDto.Request search);
 
-    PmEventDto.PageResponse selectPageList(PmEventDto.Request search);
+    PmEventDto.PageResponse selectPageData(PmEventDto.Request search);
 
     int updateSelective(PmEvent entity);
 }

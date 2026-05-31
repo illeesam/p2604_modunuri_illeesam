@@ -69,7 +69,7 @@ public class SyTemplateService {
     /* 템플릿 페이지조회 */
     public SyTemplateDto.PageResponse getPageData(SyTemplateDto.Request req) {
         PageHelper.addPaging(req);
-        return syTemplateRepository.selectPageList(req);
+        return syTemplateRepository.selectPageData(req);
     }
 
     /* 템플릿 등록 */

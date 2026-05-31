@@ -102,7 +102,7 @@ public class QZzSample1RepositoryImpl implements QZzSample1Repository {
 
     /* 페이지조회 */
     @Override
-    public ZzSample1Dto.PageResponse selectPageList(ZzSample1Dto.Request search) {
+    public ZzSample1Dto.PageResponse selectPageData(ZzSample1Dto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -110,7 +110,7 @@ public class QZzSample1RepositoryImpl implements QZzSample1Repository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<ZzSample1Dto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
                 baseAndSample1Ids(search),
                 baseAndSample1Id(search),
                 baseAndUseYn(search),

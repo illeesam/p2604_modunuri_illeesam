@@ -80,7 +80,7 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
 
     /** 페이지 목록 */
     @Override
-    public CmChattRoomDto.PageResponse selectPageList(CmChattRoomDto.Request search) {
+    public CmChattRoomDto.PageResponse selectPageData(CmChattRoomDto.Request search) {
         int pageNo = search != null && search.getPageNo() != null && search.getPageNo() > 0 ? search.getPageNo() : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset = (pageNo - 1) * pageSize;
@@ -88,7 +88,7 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<CmChattRoomDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
                 baseAndSiteId(search),
                 baseAndChattRoomId(search),
                 baseAndMemberId(search),

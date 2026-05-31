@@ -69,7 +69,7 @@ public class MbhMemberTokenLogService {
     /* 페이지조회 */
     public MbhMemberTokenLogDto.PageResponse getPageData(MbhMemberTokenLogDto.Request req) {
         PageHelper.addPaging(req);
-        return mbhMemberTokenLogRepository.selectPageList(req);
+        return mbhMemberTokenLogRepository.selectPageData(req);
     }
 
     /* 등록 */

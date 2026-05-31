@@ -69,7 +69,7 @@ public class StSettleEtcAdjService {
     /* 정산 기타 조정 페이지조회 */
     public StSettleEtcAdjDto.PageResponse getPageData(StSettleEtcAdjDto.Request req) {
         PageHelper.addPaging(req);
-        return stSettleEtcAdjRepository.selectPageList(req);
+        return stSettleEtcAdjRepository.selectPageData(req);
     }
 
     /* 정산 기타 조정 등록 */

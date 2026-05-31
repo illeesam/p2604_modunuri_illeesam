@@ -13,7 +13,7 @@ public interface QStSettleEtcAdjRepository {
 
     List<StSettleEtcAdjDto.Item> selectList(StSettleEtcAdjDto.Request search);
 
-    StSettleEtcAdjDto.PageResponse selectPageList(StSettleEtcAdjDto.Request search);
+    StSettleEtcAdjDto.PageResponse selectPageData(StSettleEtcAdjDto.Request search);
 
     int updateSelective(StSettleEtcAdj entity);
 }

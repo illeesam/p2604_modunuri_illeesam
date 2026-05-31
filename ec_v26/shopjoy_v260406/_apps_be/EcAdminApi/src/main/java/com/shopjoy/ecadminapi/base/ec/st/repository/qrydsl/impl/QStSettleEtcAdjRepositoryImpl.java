@@ -69,7 +69,7 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
 
     /* 정산 기타 조정 페이지조회 */
     @Override
-    public StSettleEtcAdjDto.PageResponse selectPageList(StSettleEtcAdjDto.Request search) {
+    public StSettleEtcAdjDto.PageResponse selectPageData(StSettleEtcAdjDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

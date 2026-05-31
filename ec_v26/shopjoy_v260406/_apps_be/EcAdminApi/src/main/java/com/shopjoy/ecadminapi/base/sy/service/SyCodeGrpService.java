@@ -69,7 +69,7 @@ public class SyCodeGrpService {
     /* 공통 코드 그룹 페이지조회 */
     public SyCodeGrpDto.PageResponse getPageData(SyCodeGrpDto.Request req) {
         PageHelper.addPaging(req);
-        return syCodeGrpRepository.selectPageList(req);
+        return syCodeGrpRepository.selectPageData(req);
     }
 
     /* 공통 코드 그룹 등록 */

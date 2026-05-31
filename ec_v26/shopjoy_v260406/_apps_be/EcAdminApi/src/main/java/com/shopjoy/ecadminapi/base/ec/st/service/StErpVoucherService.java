@@ -69,7 +69,7 @@ public class StErpVoucherService {
     /* ERP 전표 페이지조회 */
     public StErpVoucherDto.PageResponse getPageData(StErpVoucherDto.Request req) {
         PageHelper.addPaging(req);
-        return stErpVoucherRepository.selectPageList(req);
+        return stErpVoucherRepository.selectPageData(req);
     }
 
     /* ERP 전표 등록 */

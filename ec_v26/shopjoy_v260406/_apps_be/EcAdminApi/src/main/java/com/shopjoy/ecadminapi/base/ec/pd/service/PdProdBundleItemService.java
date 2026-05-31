@@ -69,7 +69,7 @@ public class PdProdBundleItemService {
     /* 묶음상품 구성 페이지조회 */
     public PdProdBundleItemDto.PageResponse getPageData(PdProdBundleItemDto.Request req) {
         PageHelper.addPaging(req);
-        return pdProdBundleItemRepository.selectPageList(req);
+        return pdProdBundleItemRepository.selectPageData(req);
     }
 
     /* 묶음상품 구성 등록 */

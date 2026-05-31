@@ -14,7 +14,7 @@ public interface QSySiteRepository {
 
     List<SySiteDto.Item> selectList(SySiteDto.Request search);
 
-    SySiteDto.PageResponse selectPageList(SySiteDto.Request search);
+    SySiteDto.PageResponse selectPageData(SySiteDto.Request search);
 
     int updateSelective(SySite entity);
 

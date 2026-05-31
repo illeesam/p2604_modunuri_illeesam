@@ -69,7 +69,7 @@ public class PmGiftCondService {
     /* 사은품 지급 조건 페이지조회 */
     public PmGiftCondDto.PageResponse getPageData(PmGiftCondDto.Request req) {
         PageHelper.addPaging(req);
-        return pmGiftCondRepository.selectPageList(req);
+        return pmGiftCondRepository.selectPageData(req);
     }
 
     /* 사은품 지급 조건 등록 */

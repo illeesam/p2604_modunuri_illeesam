@@ -10,6 +10,6 @@ import java.util.Optional;
 public interface QSyPathRepository {
     Optional<SyPathDto.Item> selectById(String pathId);
     List<SyPathDto.Item> selectList(SyPathDto.Request search);
-    SyPathDto.PageResponse selectPageList(SyPathDto.Request search);
+    SyPathDto.PageResponse selectPageData(SyPathDto.Request search);
     int updateSelective(SyPath entity);
 }

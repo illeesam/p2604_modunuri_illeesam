@@ -13,7 +13,7 @@ public interface QOdCartRepository {
 
     List<OdCartDto.Item> selectList(OdCartDto.Request search);
 
-    OdCartDto.PageResponse selectPageList(OdCartDto.Request search);
+    OdCartDto.PageResponse selectPageData(OdCartDto.Request search);
 
     int updateSelective(OdCart entity);
 }

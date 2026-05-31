@@ -14,7 +14,7 @@ import java.util.Properties;
  * MyBatis 쿼리 실행 인터셉터 (local/dev 전용).
  *
  * query/update 실행 후 Mapper 메서드명과 결과 건수를 DEBUG 로그로 출력한다.
- * P6SpyFormatter와 연동해 SQL 헤더에 "MbMemberMapper.selectPageList [12ms]" 형태로 표시.
+ * P6SpyFormatter와 연동해 SQL 헤더에 "MbMemberMapper.selectPageData [12ms]" 형태로 표시.
  *
  * ThreadLocal로 현재 실행 중인 Mapper 정보를 P6SpyFormatter에 전달한다.
  * 요청이 끝나면 반드시 remove()로 정리하여 스레드 풀 오염을 방지한다.
@@ -41,7 +41,7 @@ public class MyBatisQueryInterceptor implements Interceptor {
     /**
      * 현재 스레드에서 실행 중인 {@code Mapper.메서드명} 을 반환한다(P6SpyFormatter 헤더용).
      *
-     * @return 단축 매퍼 식별자(예: "MbMemberMapper.selectPageList"). 인터셉트 전이면 null
+     * @return 단축 매퍼 식별자(예: "MbMemberMapper.selectPageData"). 인터셉트 전이면 null
      */
     public static String getCurrentMapperInfo() { return MAPPER_INFO.get(); }
 
@@ -71,7 +71,7 @@ public class MyBatisQueryInterceptor implements Interceptor {
         String fullId = ms.getId();
 
         // FQ statement id 에서 마지막 두 세그먼트만 추출:
-        // com.shopjoy.ecadminapi.mapper.mb.MbMemberMapper.selectPageList → MbMemberMapper.selectPageList
+        // com.shopjoy.ecadminapi.mapper.mb.MbMemberMapper.selectPageData → MbMemberMapper.selectPageData
         int lastDot = fullId.lastIndexOf('.');
         int prevDot = fullId.lastIndexOf('.', lastDot - 1);
         String shortId = prevDot >= 0 ? fullId.substring(prevDot + 1) : fullId;

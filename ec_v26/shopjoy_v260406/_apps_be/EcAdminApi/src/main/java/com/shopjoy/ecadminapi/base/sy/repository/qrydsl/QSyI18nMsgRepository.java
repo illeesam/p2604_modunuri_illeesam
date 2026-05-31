@@ -10,6 +10,6 @@ import java.util.Optional;
 public interface QSyI18nMsgRepository {
     Optional<SyI18nMsgDto.Item> selectById(String i18nMsgId);
     List<SyI18nMsgDto.Item> selectList(SyI18nMsgDto.Request search);
-    SyI18nMsgDto.PageResponse selectPageList(SyI18nMsgDto.Request search);
+    SyI18nMsgDto.PageResponse selectPageData(SyI18nMsgDto.Request search);
     int updateSelective(SyI18nMsg entity);
 }

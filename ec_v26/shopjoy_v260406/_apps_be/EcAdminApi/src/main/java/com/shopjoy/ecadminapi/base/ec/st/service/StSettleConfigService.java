@@ -69,7 +69,7 @@ public class StSettleConfigService {
     /* 정산 설정 페이지조회 */
     public StSettleConfigDto.PageResponse getPageData(StSettleConfigDto.Request req) {
         PageHelper.addPaging(req);
-        return stSettleConfigRepository.selectPageList(req);
+        return stSettleConfigRepository.selectPageData(req);
     }
 
     /* 정산 설정 등록 */

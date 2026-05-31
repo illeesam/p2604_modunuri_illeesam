@@ -69,7 +69,7 @@ public class PmPlanService {
     /* 프로모션 플랜 페이지조회 */
     public PmPlanDto.PageResponse getPageData(PmPlanDto.Request req) {
         PageHelper.addPaging(req);
-        return pmPlanRepository.selectPageList(req);
+        return pmPlanRepository.selectPageData(req);
     }
 
     /* 프로모션 플랜 등록 */

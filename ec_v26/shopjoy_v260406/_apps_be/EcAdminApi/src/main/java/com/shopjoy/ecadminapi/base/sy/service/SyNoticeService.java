@@ -69,7 +69,7 @@ public class SyNoticeService {
     /* 공지사항 페이지조회 */
     public SyNoticeDto.PageResponse getPageData(SyNoticeDto.Request req) {
         PageHelper.addPaging(req);
-        return syNoticeRepository.selectPageList(req);
+        return syNoticeRepository.selectPageData(req);
     }
 
     /* 공지사항 등록 */

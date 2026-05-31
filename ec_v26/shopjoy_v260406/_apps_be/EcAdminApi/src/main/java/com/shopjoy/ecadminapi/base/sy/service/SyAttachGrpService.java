@@ -69,7 +69,7 @@ public class SyAttachGrpService {
     /* 첨부파일 그룹 페이지조회 */
     public SyAttachGrpDto.PageResponse getPageData(SyAttachGrpDto.Request req) {
         PageHelper.addPaging(req);
-        return syAttachGrpRepository.selectPageList(req);
+        return syAttachGrpRepository.selectPageData(req);
     }
 
     /* 첨부파일 그룹 등록 */

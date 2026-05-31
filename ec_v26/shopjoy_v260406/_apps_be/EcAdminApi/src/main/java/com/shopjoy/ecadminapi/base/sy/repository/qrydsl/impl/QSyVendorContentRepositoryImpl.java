@@ -97,7 +97,7 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
 
     /* 업체 콘텐츠 페이지조회 */
     @Override
-    public SyVendorContentDto.PageResponse selectPageList(SyVendorContentDto.Request search) {
+    public SyVendorContentDto.PageResponse selectPageData(SyVendorContentDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -105,7 +105,7 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<SyVendorContentDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
                 baseAndSiteId(search),
                 baseAndVendorContentId(search),
                 baseAndVendorId(search),

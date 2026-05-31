@@ -79,7 +79,7 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
 
     /* 이벤트 혜택 페이지조회 */
     @Override
-    public PmEventBenefitDto.PageResponse selectPageList(PmEventBenefitDto.Request search) {
+    public PmEventBenefitDto.PageResponse selectPageData(PmEventBenefitDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

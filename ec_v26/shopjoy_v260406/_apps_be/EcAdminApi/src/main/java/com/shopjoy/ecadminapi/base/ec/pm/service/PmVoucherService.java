@@ -69,7 +69,7 @@ public class PmVoucherService {
     /* 바우처(상품권) 페이지조회 */
     public PmVoucherDto.PageResponse getPageData(PmVoucherDto.Request req) {
         PageHelper.addPaging(req);
-        return pmVoucherRepository.selectPageList(req);
+        return pmVoucherRepository.selectPageData(req);
     }
 
     /* 바우처(상품권) 등록 */

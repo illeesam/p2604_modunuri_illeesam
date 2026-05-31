@@ -13,7 +13,7 @@ public interface QPdProdContentRepository {
 
     List<PdProdContentDto.Item> selectList(PdProdContentDto.Request search);
 
-    PdProdContentDto.PageResponse selectPageList(PdProdContentDto.Request search);
+    PdProdContentDto.PageResponse selectPageData(PdProdContentDto.Request search);
 
     int updateSelective(PdProdContent entity);
 }

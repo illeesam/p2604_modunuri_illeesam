@@ -69,7 +69,7 @@ public class OdhDlivChgHistService {
     /* 배송 변경 이력 페이지조회 */
     public OdhDlivChgHistDto.PageResponse getPageData(OdhDlivChgHistDto.Request req) {
         PageHelper.addPaging(req);
-        return odhDlivChgHistRepository.selectPageList(req);
+        return odhDlivChgHistRepository.selectPageData(req);
     }
 
     /* 배송 변경 이력 등록 */

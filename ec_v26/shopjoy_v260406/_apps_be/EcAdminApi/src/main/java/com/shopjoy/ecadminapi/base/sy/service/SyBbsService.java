@@ -69,7 +69,7 @@ public class SyBbsService {
     /* 게시판 게시물 페이지조회 */
     public SyBbsDto.PageResponse getPageData(SyBbsDto.Request req) {
         PageHelper.addPaging(req);
-        return syBbsRepository.selectPageList(req);
+        return syBbsRepository.selectPageData(req);
     }
 
     /* 게시판 게시물 등록 */

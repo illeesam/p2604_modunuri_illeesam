@@ -69,7 +69,7 @@ public class MbMemberSnsService {
     /* SNS 연동 회원 페이지조회 */
     public MbMemberSnsDto.PageResponse getPageData(MbMemberSnsDto.Request req) {
         PageHelper.addPaging(req);
-        return mbMemberSnsRepository.selectPageList(req);
+        return mbMemberSnsRepository.selectPageData(req);
     }
 
     /* SNS 연동 회원 등록 */

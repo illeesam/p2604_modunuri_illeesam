@@ -95,7 +95,7 @@ public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistR
 
     /* 상품 SKU 재고 이력 페이지조회 */
     @Override
-    public PdhProdSkuStockHistDto.PageResponse selectPageList(PdhProdSkuStockHistDto.Request search) {
+    public PdhProdSkuStockHistDto.PageResponse selectPageData(PdhProdSkuStockHistDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -103,7 +103,7 @@ public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistR
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<PdhProdSkuStockHistDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
                 baseAndSiteId(search),
                 baseAndHistId(search),
                 baseAndSearchValue(search)

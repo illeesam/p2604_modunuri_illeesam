@@ -80,7 +80,7 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
 
     /* 배송 아이템 페이지조회 */
     @Override
-    public OdDlivItemDto.PageResponse selectPageList(OdDlivItemDto.Request search) {
+    public OdDlivItemDto.PageResponse selectPageData(OdDlivItemDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

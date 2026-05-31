@@ -60,7 +60,7 @@ public class PdhProdSkuPriceHistService {
     /* 상품 SKU 가격 이력 페이지조회 */
     public PdhProdSkuPriceHistDto.PageResponse getPageData(PdhProdSkuPriceHistDto.Request req) {
         PageHelper.addPaging(req);
-        return pdhProdSkuPriceHistRepository.selectPageList(req);
+        return pdhProdSkuPriceHistRepository.selectPageData(req);
     }
 
     /* 상품 SKU 가격 이력 등록 */

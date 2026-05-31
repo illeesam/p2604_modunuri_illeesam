@@ -48,7 +48,7 @@ public class ZzExmy2Service {
     /** getPageData — 조회 (각 항목에 하위 exmy3s 포함) */
     public ZzExmy2Dto.PageResponse getPageData(ZzExmy2Dto.Request req) {
         PageHelper.addPaging(req);
-        List<ZzExmy2Dto.Item> list = zzExmy2Mapper.selectPageList(req);
+        List<ZzExmy2Dto.Item> list = zzExmy2Mapper.selectPageData(req);
         _listFillRelations(list);
         long total = zzExmy2Mapper.selectPageCount(req);
         ZzExmy2Dto.PageResponse res = new ZzExmy2Dto.PageResponse();

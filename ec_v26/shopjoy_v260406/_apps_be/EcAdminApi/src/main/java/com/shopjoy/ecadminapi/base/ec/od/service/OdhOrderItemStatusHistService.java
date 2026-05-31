@@ -69,7 +69,7 @@ public class OdhOrderItemStatusHistService {
     /* 주문 아이템 상태 이력 페이지조회 */
     public OdhOrderItemStatusHistDto.PageResponse getPageData(OdhOrderItemStatusHistDto.Request req) {
         PageHelper.addPaging(req);
-        return odhOrderItemStatusHistRepository.selectPageList(req);
+        return odhOrderItemStatusHistRepository.selectPageData(req);
     }
 
     /* 주문 아이템 상태 이력 등록 */

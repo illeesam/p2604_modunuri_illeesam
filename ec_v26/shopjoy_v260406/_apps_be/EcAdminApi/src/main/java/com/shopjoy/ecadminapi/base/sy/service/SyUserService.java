@@ -73,7 +73,7 @@ public class SyUserService {
     /** getPageData — 페이징조회 (QueryDSL Request → Repository 호출) */
     public SyUserDto.PageResponse getPageData(SyUserDto.Request req) {
         PageHelper.addPaging(req);
-        return syUserRepository.selectPageList(req);
+        return syUserRepository.selectPageData(req);
     }
 
     /** countList — 검색조건 기준 전체 카운트 (대량 export 시 안전 상한 검증용) */

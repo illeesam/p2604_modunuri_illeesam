@@ -16,7 +16,7 @@ public interface QStSettleConfigRepository {
     List<StSettleConfigDto.Item> selectList(StSettleConfigDto.Request search);
 
     /** 페이지 목록 */
-    StSettleConfigDto.PageResponse selectPageList(StSettleConfigDto.Request search);
+    StSettleConfigDto.PageResponse selectPageData(StSettleConfigDto.Request search);
 
     int updateSelective(StSettleConfig entity);
 }

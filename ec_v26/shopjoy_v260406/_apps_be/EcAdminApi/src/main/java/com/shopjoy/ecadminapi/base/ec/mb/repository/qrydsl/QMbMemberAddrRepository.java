@@ -13,7 +13,7 @@ public interface QMbMemberAddrRepository {
 
     List<MbMemberAddrDto.Item> selectList(MbMemberAddrDto.Request search);
 
-    MbMemberAddrDto.PageResponse selectPageList(MbMemberAddrDto.Request search);
+    MbMemberAddrDto.PageResponse selectPageData(MbMemberAddrDto.Request search);
 
     int updateSelective(MbMemberAddr entity);
 }

@@ -79,7 +79,7 @@ public class QCmBlogTagRepositoryImpl implements QCmBlogTagRepository {
 
     /** 페이지 목록 */
     @Override
-    public CmBlogTagDto.PageResponse selectPageList(CmBlogTagDto.Request search) {
+    public CmBlogTagDto.PageResponse selectPageData(CmBlogTagDto.Request search) {
         int pageNo = search != null && search.getPageNo() != null && search.getPageNo() > 0 ? search.getPageNo() : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset = (pageNo - 1) * pageSize;
@@ -87,7 +87,7 @@ public class QCmBlogTagRepositoryImpl implements QCmBlogTagRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<CmBlogTagDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
                 baseAndBlogIds(search),
                 baseAndBlogId(search),
                 baseAndSiteId(search),

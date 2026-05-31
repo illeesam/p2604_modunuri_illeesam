@@ -82,7 +82,7 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
 
     /* 할인 페이지조회 */
     @Override
-    public PmDiscntDto.PageResponse selectPageList(PmDiscntDto.Request search) {
+    public PmDiscntDto.PageResponse selectPageData(PmDiscntDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

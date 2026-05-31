@@ -13,7 +13,7 @@ public interface QOdOrderItemRepository {
 
     List<OdOrderItemDto.Item> selectList(OdOrderItemDto.Request search);
 
-    OdOrderItemDto.PageResponse selectPageList(OdOrderItemDto.Request search);
+    OdOrderItemDto.PageResponse selectPageData(OdOrderItemDto.Request search);
 
     int updateSelective(OdOrderItem entity);
 }

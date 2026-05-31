@@ -6,5 +6,5 @@ import com.shopjoy.ecadminapi.base.sy.data.dto.SyhAccessLogDto;
 public interface QSyhAccessLogRepository {
 
     /** 페이지 목록 */
-    SyhAccessLogDto.PageResponse selectPageList(SyhAccessLogDto.Request search);
+    SyhAccessLogDto.PageResponse selectPageData(SyhAccessLogDto.Request search);
 }

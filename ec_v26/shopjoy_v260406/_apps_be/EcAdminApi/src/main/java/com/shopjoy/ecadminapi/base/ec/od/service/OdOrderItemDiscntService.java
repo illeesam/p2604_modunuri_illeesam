@@ -69,7 +69,7 @@ public class OdOrderItemDiscntService {
     /* 주문 아이템 할인 페이지조회 */
     public OdOrderItemDiscntDto.PageResponse getPageData(OdOrderItemDiscntDto.Request req) {
         PageHelper.addPaging(req);
-        return odOrderItemDiscntRepository.selectPageList(req);
+        return odOrderItemDiscntRepository.selectPageData(req);
     }
 
     /* 주문 아이템 할인 등록 */

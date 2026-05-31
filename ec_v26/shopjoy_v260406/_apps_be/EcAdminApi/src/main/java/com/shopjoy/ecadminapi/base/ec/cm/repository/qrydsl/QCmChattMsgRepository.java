@@ -16,7 +16,7 @@ public interface QCmChattMsgRepository {
     List<CmChattMsgDto.Item> selectList(CmChattMsgDto.Request search);
 
     /** 페이지 목록 (pageNo/pageSize 미지정 시 1페이지/10건 기본) */
-    CmChattMsgDto.PageResponse selectPageList(CmChattMsgDto.Request search);
+    CmChattMsgDto.PageResponse selectPageData(CmChattMsgDto.Request search);
 
     int updateSelective(CmChattMsg entity);
 }

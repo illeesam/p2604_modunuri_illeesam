@@ -13,7 +13,7 @@ public interface QPmDiscntItemRepository {
 
     List<PmDiscntItemDto.Item> selectList(PmDiscntItemDto.Request search);
 
-    PmDiscntItemDto.PageResponse selectPageList(PmDiscntItemDto.Request search);
+    PmDiscntItemDto.PageResponse selectPageData(PmDiscntItemDto.Request search);
 
     int updateSelective(PmDiscntItem entity);
 }

@@ -69,7 +69,7 @@ public class MbMemberRoleService {
     /* 회원 역할 연결 페이지조회 */
     public MbMemberRoleDto.PageResponse getPageData(MbMemberRoleDto.Request req) {
         PageHelper.addPaging(req);
-        return mbMemberRoleRepository.selectPageList(req);
+        return mbMemberRoleRepository.selectPageData(req);
     }
 
     /* 회원 역할 연결 등록 */

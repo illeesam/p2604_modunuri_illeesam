@@ -69,7 +69,7 @@ public class PdhProdContentChgHistService {
     /* 상품 콘텐츠 변경 이력 페이지조회 */
     public PdhProdContentChgHistDto.PageResponse getPageData(PdhProdContentChgHistDto.Request req) {
         PageHelper.addPaging(req);
-        return pdhProdContentChgHistRepository.selectPageList(req);
+        return pdhProdContentChgHistRepository.selectPageData(req);
     }
 
     /* 상품 콘텐츠 변경 이력 등록 */

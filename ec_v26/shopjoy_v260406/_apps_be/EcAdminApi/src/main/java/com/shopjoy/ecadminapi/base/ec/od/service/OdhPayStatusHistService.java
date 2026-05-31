@@ -69,7 +69,7 @@ public class OdhPayStatusHistService {
     /* 결제 상태 이력 페이지조회 */
     public OdhPayStatusHistDto.PageResponse getPageData(OdhPayStatusHistDto.Request req) {
         PageHelper.addPaging(req);
-        return odhPayStatusHistRepository.selectPageList(req);
+        return odhPayStatusHistRepository.selectPageData(req);
     }
 
     /* 결제 상태 이력 등록 */

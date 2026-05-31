@@ -13,7 +13,7 @@ public interface QSyVendorUserRoleRepository {
 
     List<SyVendorUserRoleDto.Item> selectList(SyVendorUserRoleDto.Request search);
 
-    SyVendorUserRoleDto.PageResponse selectPageList(SyVendorUserRoleDto.Request search);
+    SyVendorUserRoleDto.PageResponse selectPageData(SyVendorUserRoleDto.Request search);
 
     int updateSelective(SyVendorUserRole entity);
 }

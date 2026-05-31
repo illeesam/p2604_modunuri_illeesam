@@ -71,7 +71,7 @@ public class PdProdImgService {
     /* 상품 이미지 페이지조회 */
     public PdProdImgDto.PageResponse getPageData(PdProdImgDto.Request req) {
         PageHelper.addPaging(req);
-        return pdProdImgRepository.selectPageList(req);
+        return pdProdImgRepository.selectPageData(req);
     }
 
     /* 상품 이미지 등록 */

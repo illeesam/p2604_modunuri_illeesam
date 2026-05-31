@@ -70,7 +70,7 @@ public class OdClaimService {
     /* 클레임(취소/반품/교환) 페이지조회 */
     public OdClaimDto.PageResponse getPageData(OdClaimDto.Request req) {
         PageHelper.addPaging(req);
-        return odClaimRepository.selectPageList(req);
+        return odClaimRepository.selectPageData(req);
     }
 
     /* 클레임(취소/반품/교환) 등록 */

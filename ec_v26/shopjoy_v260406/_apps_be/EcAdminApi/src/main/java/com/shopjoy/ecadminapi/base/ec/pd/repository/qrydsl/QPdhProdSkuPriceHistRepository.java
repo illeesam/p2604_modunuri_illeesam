@@ -16,7 +16,7 @@ public interface QPdhProdSkuPriceHistRepository {
     List<PdhProdSkuPriceHistDto.Item> selectList(PdhProdSkuPriceHistDto.Request search);
 
     /** 페이지 목록 */
-    PdhProdSkuPriceHistDto.PageResponse selectPageList(PdhProdSkuPriceHistDto.Request search);
+    PdhProdSkuPriceHistDto.PageResponse selectPageData(PdhProdSkuPriceHistDto.Request search);
 
     int updateSelective(PdhProdSkuPriceHist entity);
 }

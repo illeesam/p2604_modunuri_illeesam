@@ -69,7 +69,7 @@ public class OdhPayChgHistService {
     /* 결제 변경 이력 페이지조회 */
     public OdhPayChgHistDto.PageResponse getPageData(OdhPayChgHistDto.Request req) {
         PageHelper.addPaging(req);
-        return odhPayChgHistRepository.selectPageList(req);
+        return odhPayChgHistRepository.selectPageData(req);
     }
 
     /* 결제 변경 이력 등록 */

@@ -69,7 +69,7 @@ public class SyAttachService {
     /* 첨부파일 페이지조회 */
     public SyAttachDto.PageResponse getPageData(SyAttachDto.Request req) {
         PageHelper.addPaging(req);
-        return syAttachRepository.selectPageList(req);
+        return syAttachRepository.selectPageData(req);
     }
 
     /* 첨부파일 등록 */

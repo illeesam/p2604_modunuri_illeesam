@@ -17,7 +17,7 @@ public interface QSyUserRepository {
     List<SyUserDto.Item> selectList(SyUserDto.Request search);
 
     /** 페이지 목록 (pageNo/pageSize 미지정 시 1페이지/10건 기본) */
-    SyUserDto.PageResponse selectPageList(SyUserDto.Request search);
+    SyUserDto.PageResponse selectPageData(SyUserDto.Request search);
 
     /** 검색조건 기준 전체 카운트 (스트리밍 export 시 안전 상한 검증용) */
     long selectCount(SyUserDto.Request search);

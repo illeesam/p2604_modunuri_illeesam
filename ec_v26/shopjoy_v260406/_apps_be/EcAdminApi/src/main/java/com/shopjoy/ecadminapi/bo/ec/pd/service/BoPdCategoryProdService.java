@@ -30,7 +30,7 @@ public class BoPdCategoryProdService {
     /** getPageData — 조회 */
     public PdCategoryProdDto.PageResponse getPageData(PdCategoryProdDto.Request req) {
         PageHelper.addPaging(req);
-        return pdCategoryProdRepository.selectPageList(req);
+        return pdCategoryProdRepository.selectPageData(req);
     }
 
     /** saveProds — 저장 */

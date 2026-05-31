@@ -13,7 +13,7 @@ public interface QPmCouponUsageRepository {
 
     List<PmCouponUsageDto.Item> selectList(PmCouponUsageDto.Request search);
 
-    PmCouponUsageDto.PageResponse selectPageList(PmCouponUsageDto.Request search);
+    PmCouponUsageDto.PageResponse selectPageData(PmCouponUsageDto.Request search);
 
     int updateSelective(PmCouponUsage entity);
 }

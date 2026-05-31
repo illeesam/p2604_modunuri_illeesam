@@ -13,7 +13,7 @@ public interface QPmEventBenefitRepository {
 
     List<PmEventBenefitDto.Item> selectList(PmEventBenefitDto.Request search);
 
-    PmEventBenefitDto.PageResponse selectPageList(PmEventBenefitDto.Request search);
+    PmEventBenefitDto.PageResponse selectPageData(PmEventBenefitDto.Request search);
 
     int updateSelective(PmEventBenefit entity);
 }

@@ -69,7 +69,7 @@ public class PdCategoryProdService {
     /* 카테고리-상품 매핑 페이지조회 */
     public PdCategoryProdDto.PageResponse getPageData(PdCategoryProdDto.Request req) {
         PageHelper.addPaging(req);
-        return pdCategoryProdRepository.selectPageList(req);
+        return pdCategoryProdRepository.selectPageData(req);
     }
 
     /* 카테고리-상품 매핑 등록 */

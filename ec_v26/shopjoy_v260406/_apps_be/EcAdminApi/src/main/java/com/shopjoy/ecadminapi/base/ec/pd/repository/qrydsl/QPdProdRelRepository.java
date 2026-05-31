@@ -16,7 +16,7 @@ public interface QPdProdRelRepository {
     List<PdProdRelDto.Item> selectList(PdProdRelDto.Request search);
 
     /** 페이지 목록 (pageNo/pageSize 미지정 시 1페이지/10건 기본) */
-    PdProdRelDto.PageResponse selectPageList(PdProdRelDto.Request search);
+    PdProdRelDto.PageResponse selectPageData(PdProdRelDto.Request search);
 
     int updateSelective(PdProdRel entity);
 }

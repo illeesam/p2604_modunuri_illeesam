@@ -69,7 +69,7 @@ public class PdProdRelService {
     /* 연관 상품 페이지조회 */
     public PdProdRelDto.PageResponse getPageData(PdProdRelDto.Request req) {
         PageHelper.addPaging(req);
-        return pdProdRelRepository.selectPageList(req);
+        return pdProdRelRepository.selectPageData(req);
     }
 
     /* 연관 상품 등록 */

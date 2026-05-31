@@ -79,7 +79,7 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
 
     /* 게시판 게시물 페이지조회 */
     @Override
-    public SyBbsDto.PageResponse selectPageList(SyBbsDto.Request search) {
+    public SyBbsDto.PageResponse selectPageData(SyBbsDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

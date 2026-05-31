@@ -69,7 +69,7 @@ public class CmChattRoomService {
     /* 채팅방 페이지조회 */
     public CmChattRoomDto.PageResponse getPageData(CmChattRoomDto.Request req) {
         PageHelper.addPaging(req);
-        return cmChattRoomRepository.selectPageList(req);
+        return cmChattRoomRepository.selectPageData(req);
     }
 
     /* 채팅방 등록 */

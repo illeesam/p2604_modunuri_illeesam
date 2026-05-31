@@ -10,6 +10,6 @@ import java.util.Optional;
 public interface QSyVocRepository {
     Optional<SyVocDto.Item> selectById(String vocId);
     List<SyVocDto.Item> selectList(SyVocDto.Request search);
-    SyVocDto.PageResponse selectPageList(SyVocDto.Request search);
+    SyVocDto.PageResponse selectPageData(SyVocDto.Request search);
     int updateSelective(SyVoc entity);
 }

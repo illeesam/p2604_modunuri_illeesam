@@ -67,7 +67,7 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
 
     /* 회원 그룹 페이지조회 */
     @Override
-    public MbMemberGroupDto.PageResponse selectPageList(MbMemberGroupDto.Request search) {
+    public MbMemberGroupDto.PageResponse selectPageData(MbMemberGroupDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
 

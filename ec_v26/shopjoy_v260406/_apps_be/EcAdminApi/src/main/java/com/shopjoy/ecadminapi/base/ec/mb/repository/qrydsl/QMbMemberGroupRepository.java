@@ -13,7 +13,7 @@ public interface QMbMemberGroupRepository {
 
     List<MbMemberGroupDto.Item> selectList(MbMemberGroupDto.Request search);
 
-    MbMemberGroupDto.PageResponse selectPageList(MbMemberGroupDto.Request search);
+    MbMemberGroupDto.PageResponse selectPageData(MbMemberGroupDto.Request search);
 
     int updateSelective(MbMemberGroup entity);
 }

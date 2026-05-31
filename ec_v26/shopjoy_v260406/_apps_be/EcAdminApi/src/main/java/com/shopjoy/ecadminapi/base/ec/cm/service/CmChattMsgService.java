@@ -69,7 +69,7 @@ public class CmChattMsgService {
     /* 채팅 메시지 페이지조회 */
     public CmChattMsgDto.PageResponse getPageData(CmChattMsgDto.Request req) {
         PageHelper.addPaging(req);
-        return cmChattMsgRepository.selectPageList(req);
+        return cmChattMsgRepository.selectPageData(req);
     }
 
     /* 채팅 메시지 등록 */

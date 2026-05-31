@@ -16,7 +16,7 @@ public interface QStSettleAdjRepository {
     List<StSettleAdjDto.Item> selectList(StSettleAdjDto.Request search);
 
     /** 페이지 목록 (pageNo/pageSize 미지정 시 1페이지/10건 기본) */
-    StSettleAdjDto.PageResponse selectPageList(StSettleAdjDto.Request search);
+    StSettleAdjDto.PageResponse selectPageData(StSettleAdjDto.Request search);
 
     int updateSelective(StSettleAdj entity);
 }

@@ -138,7 +138,7 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
 
     /* 클레임(취소/반품/교환) 페이지조회 */
     @Override
-    public OdClaimDto.PageResponse selectPageList(OdClaimDto.Request search) {
+    public OdClaimDto.PageResponse selectPageData(OdClaimDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

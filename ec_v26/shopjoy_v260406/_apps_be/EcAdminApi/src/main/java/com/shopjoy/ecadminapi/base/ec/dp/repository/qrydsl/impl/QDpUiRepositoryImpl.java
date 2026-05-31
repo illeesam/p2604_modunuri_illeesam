@@ -78,7 +78,7 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
 
     /* 전시 UI 페이지조회 */
     @Override
-    public DpUiDto.PageResponse selectPageList(DpUiDto.Request search) {
+    public DpUiDto.PageResponse selectPageData(DpUiDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

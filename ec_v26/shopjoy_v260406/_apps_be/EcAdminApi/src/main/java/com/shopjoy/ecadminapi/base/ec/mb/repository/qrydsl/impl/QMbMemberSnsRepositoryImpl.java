@@ -71,7 +71,7 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
 
     /* SNS 연동 회원 페이지조회 */
     @Override
-    public MbMemberSnsDto.PageResponse selectPageList(MbMemberSnsDto.Request search) {
+    public MbMemberSnsDto.PageResponse selectPageData(MbMemberSnsDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
 

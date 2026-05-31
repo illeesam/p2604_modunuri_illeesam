@@ -72,6 +72,7 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 baseAndUserRoleId(search),
                 baseAndUserId(search),
+                baseAndRoleId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
         );
@@ -89,7 +90,7 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
 
     /* 사용자별 역할 페이지조회 */
     @Override
-    public SyUserRoleDto.PageResponse selectPageList(SyUserRoleDto.Request search) {
+    public SyUserRoleDto.PageResponse selectPageData(SyUserRoleDto.Request search) {
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -97,9 +98,10 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         JPAQuery<SyUserRoleDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
                 baseAndUserRoleId(search),
                 baseAndUserId(search),
+                baseAndRoleId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
         );
@@ -111,6 +113,7 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
         Long total = queryFactory.select(a.count()).from(a).where(
                 baseAndUserRoleId(search),
                 baseAndUserId(search),
+                baseAndRoleId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
         ).fetchOne();
@@ -136,6 +139,12 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
     private BooleanExpression baseAndUserId(SyUserRoleDto.Request search) {
         return search != null && StringUtils.hasText(search.getUserId())
                 ? a.userId.eq(search.getUserId()) : null;
+    }
+
+    /* roleId 정확 일치 */
+    private BooleanExpression baseAndRoleId(SyUserRoleDto.Request search) {
+        return search != null && StringUtils.hasText(search.getRoleId())
+                ? a.roleId.eq(search.getRoleId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */

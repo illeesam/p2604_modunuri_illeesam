@@ -101,7 +101,7 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
 
     /* 정산 원천 데이터 페이지조회 */
     @Override
-    public StSettleRawDto.PageResponse selectPageList(StSettleRawDto.Request search) {
+    public StSettleRawDto.PageResponse selectPageData(StSettleRawDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

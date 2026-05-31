@@ -16,7 +16,7 @@ public interface QSyhApiLogRepository {
     List<SyhApiLogDto.Item> selectList(SyhApiLogDto.Request search);
 
     /** 페이지 목록 */
-    SyhApiLogDto.PageResponse selectPageList(SyhApiLogDto.Request search);
+    SyhApiLogDto.PageResponse selectPageData(SyhApiLogDto.Request search);
 
     int updateSelective(SyhApiLog entity);
 }

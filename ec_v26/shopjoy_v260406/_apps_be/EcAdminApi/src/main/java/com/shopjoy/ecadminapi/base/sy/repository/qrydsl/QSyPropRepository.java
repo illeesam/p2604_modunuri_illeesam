@@ -11,7 +11,7 @@ import java.util.Optional;
 public interface QSyPropRepository {
     Optional<SyPropDto.Item> selectById(String propId);
     List<SyPropDto.Item> selectList(SyPropDto.Request search);
-    SyPropDto.PageResponse selectPageList(SyPropDto.Request search);
+    SyPropDto.PageResponse selectPageData(SyPropDto.Request search);
     int updateSelective(SyProp entity);
     /** 표시경로 노드별 수 집계 (자손 누적 + 검색조건 필터, native CTE 동적 SQL).
      *   반환: [{pathId, cnt}, ...] — '__total__' / '__orphan__' 특수 path 행 포함. */

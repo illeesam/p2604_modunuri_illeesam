@@ -13,7 +13,7 @@ public interface QSyUserRoleRepository {
 
     List<SyUserRoleDto.Item> selectList(SyUserRoleDto.Request search);
 
-    SyUserRoleDto.PageResponse selectPageList(SyUserRoleDto.Request search);
+    SyUserRoleDto.PageResponse selectPageData(SyUserRoleDto.Request search);
 
     int updateSelective(SyUserRole entity);
 }

@@ -67,7 +67,7 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
 
     /* 정산 마감 페이지조회 */
     @Override
-    public StSettleCloseDto.PageResponse selectPageList(StSettleCloseDto.Request search) {
+    public StSettleCloseDto.PageResponse selectPageData(StSettleCloseDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

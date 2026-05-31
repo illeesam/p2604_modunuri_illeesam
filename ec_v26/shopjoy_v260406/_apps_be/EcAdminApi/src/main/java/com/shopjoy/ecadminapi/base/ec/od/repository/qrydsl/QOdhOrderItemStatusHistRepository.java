@@ -13,7 +13,7 @@ public interface QOdhOrderItemStatusHistRepository {
 
     List<OdhOrderItemStatusHistDto.Item> selectList(OdhOrderItemStatusHistDto.Request search);
 
-    OdhOrderItemStatusHistDto.PageResponse selectPageList(OdhOrderItemStatusHistDto.Request search);
+    OdhOrderItemStatusHistDto.PageResponse selectPageData(OdhOrderItemStatusHistDto.Request search);
 
     int updateSelective(OdhOrderItemStatusHist entity);
 }

@@ -69,7 +69,7 @@ public class OdDlivItemService {
     /* 배송 아이템 페이지조회 */
     public OdDlivItemDto.PageResponse getPageData(OdDlivItemDto.Request req) {
         PageHelper.addPaging(req);
-        return odDlivItemRepository.selectPageList(req);
+        return odDlivItemRepository.selectPageData(req);
     }
 
     /* 배송 아이템 등록 */

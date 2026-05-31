@@ -69,7 +69,7 @@ public class StReconService {
     /* 정산 대사(Reconciliation) 페이지조회 */
     public StReconDto.PageResponse getPageData(StReconDto.Request req) {
         PageHelper.addPaging(req);
-        return stReconRepository.selectPageList(req);
+        return stReconRepository.selectPageData(req);
     }
 
     /* 정산 대사(Reconciliation) 등록 */

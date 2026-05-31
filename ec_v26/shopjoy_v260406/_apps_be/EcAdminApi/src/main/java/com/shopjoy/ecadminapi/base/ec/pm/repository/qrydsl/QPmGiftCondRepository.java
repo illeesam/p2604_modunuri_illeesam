@@ -13,7 +13,7 @@ public interface QPmGiftCondRepository {
 
     List<PmGiftCondDto.Item> selectList(PmGiftCondDto.Request search);
 
-    PmGiftCondDto.PageResponse selectPageList(PmGiftCondDto.Request search);
+    PmGiftCondDto.PageResponse selectPageData(PmGiftCondDto.Request search);
 
     int updateSelective(PmGiftCond entity);
 }

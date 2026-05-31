@@ -13,7 +13,7 @@ public interface QStErpVoucherRepository {
 
     List<StErpVoucherDto.Item> selectList(StErpVoucherDto.Request search);
 
-    StErpVoucherDto.PageResponse selectPageList(StErpVoucherDto.Request search);
+    StErpVoucherDto.PageResponse selectPageData(StErpVoucherDto.Request search);
 
     int updateSelective(StErpVoucher entity);
 }

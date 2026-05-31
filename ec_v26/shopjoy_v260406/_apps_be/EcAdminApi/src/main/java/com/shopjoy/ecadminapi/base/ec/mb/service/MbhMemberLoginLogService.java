@@ -69,7 +69,7 @@ public class MbhMemberLoginLogService {
     /* 회원 로그인 로그 페이지조회 */
     public MbhMemberLoginLogDto.PageResponse getPageData(MbhMemberLoginLogDto.Request req) {
         PageHelper.addPaging(req);
-        return mbhMemberLoginLogRepository.selectPageList(req);
+        return mbhMemberLoginLogRepository.selectPageData(req);
     }
 
     /* 회원 로그인 로그 등록 */

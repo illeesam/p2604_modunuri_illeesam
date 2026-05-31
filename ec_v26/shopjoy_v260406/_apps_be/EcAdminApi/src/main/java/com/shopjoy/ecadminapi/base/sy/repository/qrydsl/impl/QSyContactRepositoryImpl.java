@@ -77,7 +77,7 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
 
     /* 문의 페이지조회 */
     @Override
-    public SyContactDto.PageResponse selectPageList(SyContactDto.Request search) {
+    public SyContactDto.PageResponse selectPageData(SyContactDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;

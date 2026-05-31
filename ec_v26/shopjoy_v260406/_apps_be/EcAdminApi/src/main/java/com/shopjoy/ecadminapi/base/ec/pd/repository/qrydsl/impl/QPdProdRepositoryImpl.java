@@ -122,7 +122,7 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
 
     /** 페이지 목록 */
     @Override
-    public PdProdDto.PageResponse selectPageList(PdProdDto.Request search) {
+    public PdProdDto.PageResponse selectPageData(PdProdDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
@@ -166,7 +166,7 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /** 목록/페이지 공용 base query — selectList/selectPageList 의 컬럼 셋 (thumbnail COALESCE 포함) */
+    /** 목록/페이지 공용 base query — selectList/selectPageData 의 컬럼 셋 (thumbnail COALESCE 포함) */
     private JPAQuery<PdProdDto.Item> baseListQuery() {
         QPdProdImg pi  = new QPdProdImg("pi");
         QPdProdImg pi2 = new QPdProdImg("pi2");

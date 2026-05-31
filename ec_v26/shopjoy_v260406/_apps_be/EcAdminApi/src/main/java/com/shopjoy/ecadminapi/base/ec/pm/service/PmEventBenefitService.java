@@ -69,7 +69,7 @@ public class PmEventBenefitService {
     /* 이벤트 혜택 페이지조회 */
     public PmEventBenefitDto.PageResponse getPageData(PmEventBenefitDto.Request req) {
         PageHelper.addPaging(req);
-        return pmEventBenefitRepository.selectPageList(req);
+        return pmEventBenefitRepository.selectPageData(req);
     }
 
     /* 이벤트 혜택 등록 */

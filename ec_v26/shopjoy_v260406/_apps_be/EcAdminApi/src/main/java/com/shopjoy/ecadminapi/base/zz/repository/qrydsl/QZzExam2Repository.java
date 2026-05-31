@@ -16,7 +16,7 @@ public interface QZzExam2Repository {
     List<ZzExam2Dto.Item> selectList(ZzExam2Dto.Request search);
 
     /** 페이지 목록 */
-    ZzExam2Dto.PageResponse selectPageList(ZzExam2Dto.Request search);
+    ZzExam2Dto.PageResponse selectPageData(ZzExam2Dto.Request search);
 
     int updateSelective(ZzExam2 entity);
 }
