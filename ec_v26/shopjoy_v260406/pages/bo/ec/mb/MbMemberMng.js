@@ -341,7 +341,7 @@ window.MbMemberMng = {
       </button>
     </template>
     <template #row-actions="{ row }">
-      <button class="btn btn-blue btn-sm" @click="handleSelectAction('members-rowEdit', row)">
+      <button class="btn btn-blue btn-xs" @click="handleSelectAction('members-rowEdit', row)">
         수정
       </button>
     </template>

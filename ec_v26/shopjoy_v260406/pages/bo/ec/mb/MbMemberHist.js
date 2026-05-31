@@ -149,7 +149,7 @@ window.MbMemberHist = {
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid bare :columns="orderGridColumns" :rows="cfMemberOrders" row-key="orderId" empty-text="주문 내역이 없습니다." @ref-click="ref => handleSelectAction('row-ref', ref)" row-actions>
         <template #row-actions="{ row }">
-          <button class="btn btn-blue btn-sm" @click="handleSelectAction('orders-rowView', row.orderId)">
+          <button class="btn btn-blue btn-xs" @click="handleSelectAction('orders-rowView', row.orderId)">
             상세
           </button>
         </template>
@@ -167,7 +167,7 @@ window.MbMemberHist = {
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid bare :columns="claimGridColumns" :rows="cfMemberClaims" row-key="claimId" empty-text="클레임 내역이 없습니다." @ref-click="ref => handleSelectAction('row-ref', ref)" row-actions>
         <template #row-actions="{ row }">
-          <button class="btn btn-blue btn-sm" @click="handleSelectAction('claims-rowView', row.claimId)">
+          <button class="btn btn-blue btn-xs" @click="handleSelectAction('claims-rowView', row.claimId)">
             상세
           </button>
         </template>

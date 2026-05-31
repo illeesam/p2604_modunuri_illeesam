@@ -247,7 +247,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         액션
       </template>
       <template #row-actions="{ row: r }">
-        <button v-if="r.payStatus==='지급대기'" class="btn btn-sm btn-green" @click="handleSelectAction('settlePays-rowPay', r)">
+        <button v-if="r.payStatus==='지급대기'" class="btn btn-xs btn-green" @click="handleSelectAction('settlePays-rowPay', r)">
           지급처리
         </button>
       </template>

@@ -1,6 +1,8 @@
 package com.shopjoy.ecadminapi.bo.sy.controller;
 
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleDto;
+import com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleMenuDto;
+import com.shopjoy.ecadminapi.base.sy.data.dto.SyUserRoleDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyRole;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyRoleService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
@@ -70,5 +72,17 @@ public class BoSyRoleController {
             @PathVariable("cmd") String cmd, @RequestBody List<SyRole> rows) {
         boSyRoleService.saveList(cmd, rows);
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    }
+
+    /* 역할별 메뉴 권한 조회 */
+    @GetMapping("/{id}/menus")
+    public ResponseEntity<ApiResponse<List<SyRoleMenuDto.Item>>> getMenus(@PathVariable("id") String id) {
+        return ResponseEntity.ok(ApiResponse.ok(boSyRoleService.getMenusByRoleId(id)));
+    }
+
+    /* 역할별 대상 사용자 조회 */
+    @GetMapping("/{id}/users")
+    public ResponseEntity<ApiResponse<List<SyUserRoleDto.Item>>> getUsers(@PathVariable("id") String id) {
+        return ResponseEntity.ok(ApiResponse.ok(boSyRoleService.getUsersByRoleId(id)));
     }
 }

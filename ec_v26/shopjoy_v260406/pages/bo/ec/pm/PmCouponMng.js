@@ -345,10 +345,10 @@ window.PmCouponMng = {
       </template>
       <template #row-actions="{ row: c }">
         <div class="actions">
-          <button class="btn btn-blue btn-sm" @click="handleSelectAction('coupons-rowEdit', c.couponId)">
+          <button class="btn btn-blue btn-xs" @click="handleSelectAction('coupons-rowEdit', c.couponId)">
             수정
           </button>
-          <button class="btn btn-danger btn-sm" @click="handleSelectAction('coupons-rowDelete', c)">
+          <button class="btn btn-danger btn-xs" @click="handleSelectAction('coupons-rowDelete', c)">
             삭제
           </button>
         </div>

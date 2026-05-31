@@ -364,10 +364,10 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
       </template>
       <template #row-actions="{ row: d }">
         <div class="actions">
-          <button class="btn btn-blue btn-sm" @click="handleLoadDetail(d.discntId)">
+          <button class="btn btn-blue btn-xs" @click="handleLoadDetail(d.discntId)">
             수정
           </button>
-          <button class="btn btn-danger btn-sm" @click="handleDelete(d)">
+          <button class="btn btn-danger btn-xs" @click="handleDelete(d)">
             삭제
           </button>
         </div>

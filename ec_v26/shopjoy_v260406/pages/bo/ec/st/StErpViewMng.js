@@ -230,7 +230,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         액션
       </template>
       <template #row-actions="{ row: r }">
-        <button v-if="r.sendStatus!=='전송완료'" class="btn btn-sm btn-blue" @click="handleSelectAction('slips-rowResend', r)">
+        <button v-if="r.sendStatus!=='전송완료'" class="btn btn-xs btn-blue" @click="handleSelectAction('slips-rowResend', r)">
           재전송
         </button>
       </template>

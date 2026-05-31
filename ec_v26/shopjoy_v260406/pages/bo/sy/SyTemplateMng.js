@@ -407,16 +407,16 @@ window.SyTemplateMng = {
         <template #row-actions="{ row }">
           <td>
             <div class="actions">
-              <button class="btn btn-secondary btn-sm" @click="handleSelectAction('templates-rowPreview', row)">
+              <button class="btn btn-secondary btn-xs" @click="handleSelectAction('templates-rowPreview', row)">
                 미리보기
               </button>
-              <button class="btn btn-sm" style="background:#52c41a;color:#fff;border-color:#52c41a;" @click="handleSelectAction('templates-rowSend', row)">
+              <button class="btn btn-xs" style="background:#52c41a;color:#fff;border-color:#52c41a;" @click="handleSelectAction('templates-rowSend', row)">
                 발송
               </button>
-              <button class="btn btn-blue btn-sm" @click="handleSelectAction('templates-rowEdit', row.templateId)">
+              <button class="btn btn-blue btn-xs" @click="handleSelectAction('templates-rowEdit', row.templateId)">
                 수정
               </button>
-              <button class="btn btn-danger btn-sm" @click="handleSelectAction('templates-rowDelete', row)">
+              <button class="btn btn-danger btn-xs" @click="handleSelectAction('templates-rowDelete', row)">
                 삭제
               </button>
             </div>

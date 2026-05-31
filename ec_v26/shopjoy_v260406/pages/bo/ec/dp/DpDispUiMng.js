@@ -288,10 +288,10 @@ window.DpDispUiMng = {
         </button>
       </template>
       <template #row-actions="{ row }">
-        <button class="btn btn-sm btn-secondary" @click="handleSelectAction('uis-rowView', row.uiId)">
+        <button class="btn btn-xs btn-secondary" @click="handleSelectAction('uis-rowView', row.uiId)">
           상세
         </button>
-        <button class="btn btn-sm btn-primary" @click="handleSelectAction('uis-rowEdit', row.uiId)">
+        <button class="btn btn-xs btn-primary" @click="handleSelectAction('uis-rowEdit', row.uiId)">
           수정
         </button>
       </template>

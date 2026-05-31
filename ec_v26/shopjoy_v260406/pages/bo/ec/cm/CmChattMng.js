@@ -303,10 +303,10 @@ window.CmChattMng = {
     </template>
     <template #row-actions="{ row }">
       <div class="actions">
-        <button class="btn btn-blue btn-sm" @click="handleSelectAction('chatts-rowEdit', row.chattRoomId)">
+        <button class="btn btn-blue btn-xs" @click="handleSelectAction('chatts-rowEdit', row.chattRoomId)">
           보기
         </button>
-        <button class="btn btn-danger btn-sm" @click="handleSelectAction('chatts-rowDelete', row)">
+        <button class="btn btn-danger btn-xs" @click="handleSelectAction('chatts-rowDelete', row)">
           삭제
         </button>
       </div>

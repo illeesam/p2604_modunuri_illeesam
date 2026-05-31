@@ -278,7 +278,7 @@ window.StSettleCloseMng = {
         액션
       </template>
       <template #row-actions="{ row: r }">
-        <button v-if="r.status==='마감완료'" class="btn btn-sm btn-secondary" @click="handleSelectAction('settleCloses-rowReopen', r)">
+        <button v-if="r.status==='마감완료'" class="btn btn-xs btn-secondary" @click="handleSelectAction('settleCloses-rowReopen', r)">
           마감취소
         </button>
       </template>

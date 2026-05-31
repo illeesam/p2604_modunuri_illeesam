@@ -350,10 +350,10 @@ window.PmGiftMng = {
       </template>
       <template #row-actions="{ row: g }">
         <div class="actions">
-          <button class="btn btn-blue btn-sm" @click="handleSelectAction('gifts-rowEdit', g.giftId)">
+          <button class="btn btn-blue btn-xs" @click="handleSelectAction('gifts-rowEdit', g.giftId)">
             수정
           </button>
-          <button class="btn btn-danger btn-sm" @click="handleSelectAction('gifts-rowDelete', g)">
+          <button class="btn btn-danger btn-xs" @click="handleSelectAction('gifts-rowDelete', g)">
             삭제
           </button>
         </div>

@@ -326,10 +326,10 @@ window.PmPlanMng = {
       </template>
       <template #row-actions="{ row: p }">
         <div class="actions" style="display:flex;gap:6px;align-items:center;">
-          <button class="btn btn-blue btn-sm" @click="handleSelectAction('plans-rowEdit', p.planId)">
+          <button class="btn btn-blue btn-xs" @click="handleSelectAction('plans-rowEdit', p.planId)">
             수정
           </button>
-          <button class="btn btn-danger btn-sm" @click="handleSelectAction('plans-rowDelete', p)">
+          <button class="btn btn-danger btn-xs" @click="handleSelectAction('plans-rowDelete', p)">
             삭제
           </button>
           <span style="font-size:11px;color:#999;margin-left:auto;">

@@ -290,10 +290,10 @@ window.DpDispAreaMng = {
         </button>
       </template>
       <template #row-actions="{ row }">
-        <button class="btn btn-sm btn-secondary" @click="handleSelectAction('areas-rowView', row.areaId)">
+        <button class="btn btn-xs btn-secondary" @click="handleSelectAction('areas-rowView', row.areaId)">
           상세
         </button>
-        <button class="btn btn-sm btn-primary" @click="handleSelectAction('areas-rowEdit', row.areaId)">
+        <button class="btn btn-xs btn-primary" @click="handleSelectAction('areas-rowEdit', row.areaId)">
           수정
         </button>
       </template>

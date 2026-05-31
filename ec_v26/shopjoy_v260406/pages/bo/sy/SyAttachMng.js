@@ -617,10 +617,10 @@ window.SyAttachMng = {
             @size-change="handleSelectAction('attaches-pager-sizeChange')" row-actions>
             <template #row-actions="{ row }">
               <div class="actions">
-                <button class="btn btn-blue btn-sm" @click="handleSelectAction('attaches-rowEdit', row)">
+                <button class="btn btn-blue btn-xs" @click="handleSelectAction('attaches-rowEdit', row)">
                   수정
                 </button>
-                <button class="btn btn-danger btn-sm" @click="handleSelectAction('attaches-rowDelete', row)">
+                <button class="btn btn-danger btn-xs" @click="handleSelectAction('attaches-rowDelete', row)">
                   삭제
                 </button>
               </div>

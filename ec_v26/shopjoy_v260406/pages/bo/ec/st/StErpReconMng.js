@@ -243,7 +243,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         액션
       </template>
       <template #row-actions="{ row: r }">
-        <button v-if="r.diffStatus!=='일치'" class="btn btn-sm btn-primary" @click="handleSelectAction('recons-rowFix', r)">
+        <button v-if="r.diffStatus!=='일치'" class="btn btn-xs btn-primary" @click="handleSelectAction('recons-rowFix', r)">
           조정
         </button>
       </template>

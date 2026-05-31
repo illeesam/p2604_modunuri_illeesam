@@ -1,8 +1,12 @@
 package com.shopjoy.ecadminapi.bo.sy.service;
 
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleDto;
+import com.shopjoy.ecadminapi.base.sy.data.dto.SyRoleMenuDto;
+import com.shopjoy.ecadminapi.base.sy.data.dto.SyUserRoleDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyRole;
+import com.shopjoy.ecadminapi.base.sy.service.SyRoleMenuService;
 import com.shopjoy.ecadminapi.base.sy.service.SyRoleService;
+import com.shopjoy.ecadminapi.base.sy.service.SyUserRoleService;
 import com.shopjoy.ecadminapi.cache.redisstore.SyRoleMenuRedisStore;
 import com.shopjoy.ecadminapi.cache.redisstore.SyRoleRedisStore;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +24,8 @@ import java.util.List;
 public class BoSyRoleService {
 
     private final SyRoleService syRoleService;
+    private final SyRoleMenuService syRoleMenuService;
+    private final SyUserRoleService syUserRoleService;
     private final SyRoleRedisStore roleCache;
     private final SyRoleMenuRedisStore roleMenuCache;
 
@@ -59,5 +65,19 @@ public class BoSyRoleService {
     public void saveList(String cmd, List<SyRole> rows) {
         syRoleService.saveList(cmd, rows);
         roleCache.evictAll();
+    }
+
+    /* 역할별 메뉴 권한 조회 */
+    public List<SyRoleMenuDto.Item> getMenusByRoleId(String roleId) {
+        SyRoleMenuDto.Request req = new SyRoleMenuDto.Request();
+        req.setRoleId(roleId);
+        return syRoleMenuService.getList(req);
+    }
+
+    /* 역할별 대상 사용자 조회 */
+    public List<SyUserRoleDto.Item> getUsersByRoleId(String roleId) {
+        SyUserRoleDto.Request req = new SyUserRoleDto.Request();
+        req.setRoleId(roleId);
+        return syUserRoleService.getList(req);
     }
 }

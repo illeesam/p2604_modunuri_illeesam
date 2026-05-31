@@ -318,10 +318,10 @@ window.PmCacheMng = {
       </template>
       <template #row-actions="{ row: c }">
         <div class="actions">
-          <button class="btn btn-blue btn-sm" @click="handleSelectAction('caches-rowEdit', c.cacheId)">
+          <button class="btn btn-blue btn-xs" @click="handleSelectAction('caches-rowEdit', c.cacheId)">
             수정
           </button>
-          <button class="btn btn-danger btn-sm" @click="handleSelectAction('caches-rowDelete', c)">
+          <button class="btn btn-danger btn-xs" @click="handleSelectAction('caches-rowDelete', c)">
             삭제
           </button>
         </div>

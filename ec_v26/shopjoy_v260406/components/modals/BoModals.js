@@ -373,47 +373,74 @@ window.BoUserSelectModal = {
     const { computed, reactive, watch, onMounted } = Vue;
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
-    const depts = reactive([]);
-    const uiState = reactive({ loading: false, deptSearchValue: '', selectedDeptId: null });
+    /* ##### [01] 초기 변수 정의 #################################################### */
+    const depts = reactive([]);                          // 부서 전체
+    const deptCounts = reactive({});                     // 부서별 사용자 카운트
+    const expanded = reactive(new Set());                // 트리 펼침 상태
+    const uiState = reactive({
+      loading: false,
+      deptSearchValue: '',
+      selectedDeptId: null,
+    });
     const searchParam = reactive({ searchValue: '' });
-    const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageNums: [], pageSizes: [5, 10, 20, 30, 50]});
-    const userList = reactive([]);
-    const selectedIds = reactive(new Set());
-    const selectedUsers = reactive([]);
+    const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageNums: [], pageSizes: [5, 10, 20, 30, 50] });
+    const userList = reactive([]);                       // 현재 페이지 사용자 목록
 
-    /* ── 부서 트리 (전체 로드) ── */
-    const fnBuildDeptTree = (items, parentId, depth) =>
-      items.filter(d => (d.parentDeptId || null) === (parentId || null) && d.useYn === 'Y')
-        .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
-        .map(d => ({ ...d, _depth: depth, _kids: fnBuildDeptTree(items, d.deptId, depth + 1) }));
-
-    /* fnFlattenDept */
-    const fnFlattenDept = (nodes, result = []) => {
-      nodes.forEach(n => { result.push(n); fnFlattenDept(n._kids, result); });
-      return result;
-    };
-    const cfFlatDeptTree = computed(() => {
+    /* ##### [02] 부서 트리 (재귀 빌드) ############################################## */
+    /* cfTree — BoDeptTreeNode 가 받는 단일 루트 노드 ("전체") */
+    const cfTree = computed(() => {
       const searchVal = uiState.deptSearchValue.trim().toLowerCase();
       const base = searchVal
-        ? depts.filter(d => d.useYn === 'Y' && d.deptNm.toLowerCase().includes(searchVal))
-        : depts;
-      return fnFlattenDept(fnBuildDeptTree(base, null, 1));
+        ? depts.filter(d => d.useYn === 'Y' && (d.deptNm || '').toLowerCase().includes(searchVal))
+        : depts.filter(d => d.useYn === 'Y');
+
+      const build = (parentId) =>
+        base.filter(d => (d.parentDeptId || null) === (parentId || null))
+          .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
+          .map(d => ({ ...d, children: build(d.deptId) }));
+
+      return { deptId: null, deptNm: '전체', children: build(null) };
     });
 
-    /* ── 사용자 페이지 조회 ── */
+    /* ##### [03] 데이터 조회 ######################################################## */
+    /* fnBuildPagerNums — 페이지 번호 배열 생성 */
     const fnBuildPagerNums = () => {
       const c = pager.pageNo, l = pager.pageTotalPage, s = Math.max(1, c - 2), e = Math.min(l, s + 4);
       pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
     };
 
-    /* handleSearchUsers */
+    /* fnLoadDepts — 부서 전체 로드 + 트리 자동 펼침 */
+    const fnLoadDepts = async () => {
+      try {
+        const deptRes = await boApiSvc.syDept.getList({ pageSize: 10000 }, '사용자선택', '부서조회');
+        depts.splice(0, depts.length, ...(deptRes.data?.data || []));
+        /* 트리 기본 펼침 — 모든 부서 노드 + 루트 ("전체") */
+        expanded.clear();
+        expanded.add(null);
+        depts.forEach(d => expanded.add(d.deptId));
+      } catch (e) { depts.splice(0); }
+    };
+
+    /* fnLoadDeptCounts — 부서별 사용자 카운트 (ACTIVE 고정) */
+    const fnLoadDeptCounts = async () => {
+      try {
+        const params = { userStatusCd: 'ACTIVE' };
+        if (searchParam.searchValue.trim()) params.searchValue = searchParam.searchValue.trim();
+        const res = await boApiSvc.syUser.getDeptTreeNodeCounts(params, '사용자선택', '부서별카운트');
+        const rows = res.data?.data || [];
+        Object.keys(deptCounts).forEach(k => { delete deptCounts[k]; });
+        for (const r of rows) { if (r && r.deptId != null) deptCounts[r.deptId] = r.cnt; }
+      } catch (e) { /* silent */ }
+    };
+
+    /* handleSearchUsers — 사용자 페이지 조회 (ACTIVE 고정) */
     const handleSearchUsers = async () => {
       uiState.loading = true;
       userList.splice(0, userList.length);
       pager.pageTotalCount = 0;
       pager.pageTotalPage = 1;
       try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize };
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, userStatusCd: 'ACTIVE' };
         if (searchParam.searchValue.trim()) params.searchValue = searchParam.searchValue.trim();
         if (uiState.selectedDeptId != null) params.deptId = uiState.selectedDeptId;
         const res = await boApiSvc.syUser.getPage(params, '사용자선택', '목록조회');
@@ -425,83 +452,64 @@ window.BoUserSelectModal = {
       } catch (e) { userList.splice(0, userList.length); } finally { uiState.loading = false; }
     };
 
-    /* 목록조회 */
+    /* handleSearchList — 초기/전체 조회 (부서 + 카운트 + 사용자) */
     const handleSearchList = async () => {
       uiState.loading = true;
       try {
-        const deptRes = await boApiSvc.syDept.getList({ pageSize: 10000 }, '부서관리', '목록조회');
-        depts.splice(0, depts.length, ...(deptRes.data?.data || []));
-      } catch (e) { depts.splice(0); } finally { uiState.loading = false; }
+        await Promise.all([fnLoadDepts(), fnLoadDeptCounts()]);
+      } finally { uiState.loading = false; }
       await handleSearchUsers();
     };
     onMounted(() => { handleSearchList(); });
     watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
 
-    /* ── 선택 ── */
-    const fnIsChecked = (u) => selectedIds.has(u.userId || u.boUserId);
-
-    /* handleToggleUser */
-    const handleToggleUser = (u) => {
-      const id = u.userId || u.boUserId;
-      if (selectedIds.has(id)) {
-        selectedIds.delete(id);
-        const idx = selectedUsers.findIndex(x => (x.userId || x.boUserId) === id);
-        if (idx !== -1) selectedUsers.splice(idx, 1);
-      } else {
-        selectedIds.add(id);
-        selectedUsers.push(u);
-      }
+    /* ##### [04] 선택 처리 ######################################################### */
+    /* handlePickUser — 단건 선택 → 즉시 emit + 모달 닫기 */
+    const handlePickUser = (u) => {
+      emit('select', [u]);
+      emit('close');
     };
-    const cfAllChecked = computed(() => userList.length > 0 && userList.every(u => selectedIds.has(u.userId || u.boUserId)));
 
-    /* handleToggleAll */
-    const handleToggleAll = () => {
-      if (cfAllChecked.value) {
-        userList.forEach(u => {
-          const id = u.userId || u.boUserId;
-          selectedIds.delete(id);
-          const idx = selectedUsers.findIndex(x => (x.userId || x.boUserId) === id);
-          if (idx !== -1) selectedUsers.splice(idx, 1);
-        });
-      } else {
-        userList.forEach(u => {
-          const id = u.userId || u.boUserId;
-          if (!selectedIds.has(id)) { selectedIds.add(id); selectedUsers.push(u); }
-        });
-      }
+    /* onSearch — 검색 (페이지 1 부터) */
+    const onSearch = async () => {
+      pager.pageNo = 1;
+      await fnLoadDeptCounts();
+      await handleSearchUsers();
     };
-    const cfSelectedCount = computed(() => selectedIds.size);
 
-    /* handleConfirm */
-    const handleConfirm = () => { emit('select', [...selectedUsers]); };
+    /* onReset — 초기화 */
+    const onReset = async () => {
+      searchParam.searchValue = '';
+      uiState.selectedDeptId = null;
+      pager.pageNo = 1;
+      await fnLoadDeptCounts();
+      await handleSearchUsers();
+    };
 
-    /* 목록조회 */
-    const onSearch = () => { pager.pageNo = 1; handleSearchUsers(); };
-
-    /* setPage */
+    /* setPage — 페이지 이동 */
     const setPage = (n) => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchUsers(); } };
-
-    /* onSizeChange */
+    /* onSizeChange — 사이즈 변경 */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchUsers(); };
 
+    /* ##### [05] dispatch ########################################################## */
     /* handleBtnAction — 버튼 액션 dispatch */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ BoUserSelectModal : handleBtnAction -> ', cmd, param);
-      // 모달 닫기
       if (cmd === 'modal-close') {
         return emit('close');
-      // 확인 (선택 확정)
-      } else if (cmd === 'modal-confirm') {
-        return handleConfirm();
-      // 사용자 검색
       } else if (cmd === 'searchParam-search') {
         return onSearch();
-      // 전체 선택/해제 토글
-      } else if (cmd === 'users-toggle-all') {
-        return handleToggleAll();
-      // 페이지 이동
-      } else if (cmd === 'pager-set') {
-        return setPage(param);
+      } else if (cmd === 'searchParam-reset') {
+        return onReset();
+      } else if (cmd === 'deptTree-expandAll') {
+        depts.forEach(d => expanded.add(d.deptId));
+        return;
+      } else if (cmd === 'deptTree-collapseAll') {
+        expanded.clear();
+        return;
+      } else if (cmd === 'deptTree-toggle') {
+        if (expanded.has(param)) expanded.delete(param); else expanded.add(param);
+        return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -510,190 +518,109 @@ window.BoUserSelectModal = {
     /* handleSelectAction — 행/선택 액션 dispatch */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ BoUserSelectModal : handleSelectAction -> ', cmd, param);
-      // 부서 선택
       if (cmd === 'deptTree-select') {
         uiState.selectedDeptId = param;
-        return onSearch();
-      // 사용자 토글
-      } else if (cmd === 'users-toggle') {
-        return handleToggleUser(param);
+        pager.pageNo = 1;
+        return handleSearchUsers();
+      } else if (cmd === 'users-pick') {
+        return handlePickUser(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
     };
-    /* baseSearchColumns — 사용자 검색 영역 컬럼 */
+
+    /* ##### [06] 컬럼 정의 ######################################################### */
+    /* baseSearchColumns — 검색 영역 컬럼 */
     const baseSearchColumns = [
-      { key: 'searchValue', type: 'text', placeholder: '이름 / 로그인ID / 이메일 검색' },
+      { key: 'searchValue', label: '검색어', type: 'text', placeholder: '이름 / 로그인ID / 이메일 검색' },
     ];
 
-    /* userGridColumns — BoGrid 컬럼 정의 */
+    /* userGridColumns — 사용자 목록 그리드 컬럼 (SyUserMng 패턴 준용) */
     const userGridColumns = [
-      { key: '_check', label: '', style: 'width:36px;text-align:center;', html: true, fmt: (v, row) => {
-        const id = row.userId || row.boUserId;
-        return selectedIds.has(id)
-          ? `<span style="display:inline-block;width:15px;height:15px;border-radius:3px;background:#e8587a;color:#fff;font-size:10px;line-height:15px;font-weight:700;">✓</span>`
-          : `<span style="display:inline-block;width:15px;height:15px;border-radius:3px;border:1.5px solid #d1d5db;background:#fff;"></span>`;
-      } },
-      { key: '_user', label: '사용자', html: true, fmt: (v, row) => {
-        const checked = selectedIds.has(row.userId || row.boUserId);
-        const ch = (row.userNm || row.name || '?').charAt(0);
-        const avatarBg = checked ? '#e8587a;color:#fff' : '#f3f4f6;color:#6b7280';
-        return `<div style="display:flex;align-items:center;gap:10px;">`
-             + `<div style="width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;font-weight:800;background:${avatarBg};">${ch}</div>`
-             + `<div style="min-width:0;">`
-             + `<div style="font-size:13px;font-weight:600;color:#1a1a2e;">${row.userNm || row.name || '-'}`
-             + `<span style="font-size:11px;color:#9ca3af;font-weight:400;margin-left:5px;">${row.loginId || ''}</span></div>`
-             + `<div style="font-size:11px;color:#b0b7c3;margin-top:2px;">${row.deptNm || row.dept || '-'} · ${row.roleNm || row.role || ''}</div>`
-             + `</div></div>`;
-      } },
-      { key: 'useYn', label: '상태', style: 'width:60px;text-align:center;', html: true, fmt: (v, row) => {
-        const active = (row.useYn === 'Y') || (row.status === '활성');
-        const lbl = row.useYn === 'Y' ? '활성' : row.useYn === 'N' ? '비활성' : (row.status || '');
-        const sty = active ? 'background:#dcfce7;color:#16a34a;' : 'background:#f3f4f6;color:#9ca3af;';
-        return `<span style="font-size:10px;padding:2px 8px;border-radius:20px;font-weight:700;${sty}">${lbl}</span>`;
-      } },
+      { key: 'userNm',       label: '이름',
+        cellInnerStyle: 'font-weight:600;color:#1a1a2e;' },
+      { key: 'userEmail',    label: '이메일' },
+      { key: 'userPhone',    label: '연락처' },
+      { key: 'deptNm',       label: '부서', cellStyle: 'color:#666;' },
+      { key: '_act',         label: '선택', style: 'width:80px;text-align:center;', html: true,
+        fmt: () => `<button class="btn btn-primary btn-xs" data-act="pick" style="font-weight:600;">선택</button>` },
     ];
-
-    /* fnRowStyle — 선택된 행 강조 */
-    const fnRowStyle = (row) => selectedIds.has(row.userId || row.boUserId) ? 'background:#fff5f7;' : '';
 
     return {
-      cfSiteNm, depts, uiState, searchParam, pager, userList, selectedIds, cfFlatDeptTree,  // 데이터
-      baseSearchColumns, userGridColumns, fnRowStyle,                      // 컬럼 정의
-      fnIsChecked, cfAllChecked, cfSelectedCount,                          // 헬퍼/computed
+      cfSiteNm, depts, deptCounts, expanded, uiState, searchParam, pager, userList, cfTree,  // 데이터
+      baseSearchColumns, userGridColumns,                                  // 컬럼 정의
       setPage, onSizeChange,                                                // BoGrid pager 콜백
       handleBtnAction, handleSelectAction,                                 // dispatch
     };
   },
   template: /* html */`
-<bo-modal :show="true" max-width="780px" height="82vh" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
-  <div style="background:#fff;border-radius:14px;height:100%;display:flex;flex-direction:column;overflow:hidden;">
-    <!-- ── 헤더 ── -->
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:15px 20px 14px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
+<bo-modal :show="true" width="1000px" max-width="95vw" height="auto" max-height="86vh" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
+  <div style="background:#fff;border-radius:14px;width:100%;display:flex;flex-direction:column;overflow:hidden;">
+    <!-- ===== ■. 헤더 ===================================================== -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #f0f0f0;flex-shrink:0;background:linear-gradient(135deg,#fff0f4 0%,#ffe4ec 50%,#ffd5e1 100%);">
       <div style="display:flex;align-items:center;gap:10px;">
-        <span style="font-size:15px;font-weight:800;color:#1a1a2e;">
-          사용자 선택
+        <span style="font-size:16px;font-weight:800;color:#1a1a2e;">
+          👤 사용자 선택
         </span>
-        <span style="font-size:10px;font-weight:600;color:#2563eb;background:#eff6ff;padding:2px 8px;border-radius:20px;letter-spacing:.02em;">
+        <span style="font-size:11px;font-weight:600;color:#2563eb;background:#fff;padding:2px 10px;border-radius:20px;">
           {{ cfSiteNm }}
         </span>
       </div>
-      <div style="display:flex;align-items:center;gap:10px;">
-        <span v-if="cfSelectedCount" style="font-size:12px;color:#e8587a;font-weight:700;background:#fff0f4;padding:3px 10px;border-radius:20px;">
-          {{ cfSelectedCount }}명 선택됨
-        </span>
-        <span style="cursor:pointer;font-size:20px;color:#d1d5db;line-height:1;" @click="handleBtnAction('modal-close')">
-          ✕
-        </span>
-      </div>
+      <span style="cursor:pointer;font-size:22px;color:#888;line-height:1;" @click="handleBtnAction('modal-close')">
+        ✕
+      </span>
     </div>
-    <!-- ── 바디 ── -->
-    <div style="display:flex;flex:1;min-height:0;overflow:hidden;">
-      <!-- 좌: 부서 트리 -->
-      <div style="width:216px;flex-shrink:0;border-right:1px solid #f0f0f0;display:flex;flex-direction:column;background:#f8f9fb;">
-        <!-- 부서 검색 -->
+    <!-- ===== ■. 검색 영역 ================================================== -->
+    <div style="padding:10px 16px;border-bottom:1px solid #f0f0f0;background:#fafafa;flex-shrink:0;">
+      <bo-search-area :columns="baseSearchColumns" :param="searchParam" :loading="uiState.loading"
+        @search="handleBtnAction('searchParam-search')" @reset="handleBtnAction('searchParam-reset')" />
+    </div>
+    <!-- ===== ■. 바디 (좌:부서트리 / 우:사용자목록) ============================= -->
+    <div style="display:flex;min-height:0;overflow:hidden;">
+      <!-- ===== ■.■. 좌: 부서 트리 ========================================== -->
+      <div style="width:240px;flex-shrink:0;border-right:1px solid #f0f0f0;display:flex;flex-direction:column;background:#fafbfc;">
         <div style="padding:10px 10px 8px;border-bottom:1px solid #ebebeb;">
-          <div style="font-size:10px;font-weight:700;color:#9ca3af;letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px;">
-            조직 / 부서
+          <div style="font-size:11px;font-weight:700;color:#9ca3af;letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px;">
+            📁 부서
           </div>
-          <div style="position:relative;">
-            <span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:11px;color:#bbb;">
-              🔍
-            </span>
-            <input v-model="uiState.deptSearchValue" placeholder="부서 검색"
-              style="width:100%;border:1px solid #e5e7eb;border-radius:7px;padding:5px 8px 5px 24px;font-size:12px;outline:none;box-sizing:border-box;background:#fff;color:#374151;" />
-          </div>
+          <input v-model="uiState.deptSearchValue" placeholder="🔍 부서 검색"
+            style="width:100%;border:1px solid #e5e7eb;border-radius:6px;padding:5px 8px;font-size:12px;outline:none;box-sizing:border-box;background:#fff;color:#374151;" />
         </div>
-        <!-- 트리 목록 -->
-        <div style="flex:1;overflow-y:auto;padding:6px 6px;">
-          <!-- 루트: 전체 (1레벨) -->
-          <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;margin-bottom:2px;transition:all .12s;"
-            :style="uiState.selectedDeptId===null?'background:#e8587a;box-shadow:0 2px 8px rgba(232,88,122,0.25);':'background:transparent;'"
-            @click="handleSelectAction('deptTree-select', null)">
-            <span style="font-size:8px;font-weight:900;flex-shrink:0;line-height:1;"
-              :style="{ color: uiState.selectedDeptId===null?'#fff':'#e8587a' }">
-              ●
-            </span>
-            <span style="font-size:13px;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
-              :style="{ color: uiState.selectedDeptId===null?'#fff':'#374151' }">
-              전체
-            </span>
-            <span style="font-size:10px;font-weight:600;flex-shrink:0;"
-              :style="{ color: uiState.selectedDeptId===null?'rgba(255,255,255,0.75)':'#bbb' }">
-              {{ pager.pageTotalCount }}
-            </span>
-          </div>
-          <!-- 2레벨~: 실 데이터 -->
-          <div v-for="d in cfFlatDeptTree" :key="d.deptId"
-            style="display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:8px;cursor:pointer;margin-bottom:1px;transition:all .12s;"
-            :style="uiState.selectedDeptId===d.deptId?'background:#e8587a;box-shadow:0 2px 8px rgba(232,88,122,0.2);':'background:transparent;'"
-            @click="handleSelectAction('deptTree-select', d.deptId)">
-            <span style="flex-shrink:0;font-weight:800;line-height:1;"
-              :style="{
-              marginLeft: ((d._depth-1)*13)+'px',
-              fontSize: d._depth===1?'10px':'8px',
-              color: uiState.selectedDeptId===d.deptId?'#fff':['#2563eb','#52c41a','#f59e0b'][Math.min(d._depth-1,2)]
-              }">
-              {{ ['●','◦','·'][Math.min(d._depth-1,2)] }}
-            </span>
-            <span style="font-size:12px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
-              :style="{ fontWeight: d._depth===1?'600':'400', color: uiState.selectedDeptId===d.deptId?'#fff':'#374151' }">
-              {{ d.deptNm }}
-            </span>
-          </div>
-          <div v-if="cfFlatDeptTree.length===0" style="padding:20px 0;text-align:center;font-size:12px;color:#bbb;">
-            없음
-          </div>
+        <div style="display:flex;gap:4px;padding:6px 10px;border-bottom:1px solid #ebebeb;">
+          <button class="btn btn-sm" @click="handleBtnAction('deptTree-expandAll')" style="flex:1;font-size:11px;padding:3px 4px;">
+            ▼ 전체펼치기
+          </button>
+          <button class="btn btn-sm" @click="handleBtnAction('deptTree-collapseAll')" style="flex:1;font-size:11px;padding:3px 4px;">
+            ▶ 전체닫기
+          </button>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:6px;max-height:560px;">
+          <bo-dept-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedDeptId"
+            :on-toggle="id => handleBtnAction('deptTree-toggle', id)"
+            :on-select="id => handleSelectAction('deptTree-select', id)"
+            :depth="0" :counts="deptCounts" />
         </div>
       </div>
-      <!-- 우: 사용자 목록 -->
+      <!-- ===== ■.■. 우: 사용자 목록 ======================================== -->
       <div style="flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden;background:#fff;">
-        <!-- 검색 -->
-        <div style="padding:10px 14px 8px;border-bottom:1px solid #f0f0f0;flex-shrink:0;">
-          <bo-search-area :columns="baseSearchColumns" :param="searchParam"
-            @search="handleBtnAction('searchParam-search')" :show-reset="false" />
-        </div>
-        <!-- 전체선택 바 -->
-        <div style="display:flex;align-items:center;padding:7px 14px;border-bottom:1px solid #f0f0f0;flex-shrink:0;background:#fafafa;">
-          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;font-weight:600;color:#374151;user-select:none;">
-            <input type="checkbox" :checked="cfAllChecked" @change="handleBtnAction('users-toggle-all')" style="width:14px;height:14px;" />
-            전체선택
-          </label>
+        <!-- ===== ■.■.■. 카운트 바 =========================================== -->
+        <div style="display:flex;align-items:center;padding:8px 14px;border-bottom:1px solid #f0f0f0;flex-shrink:0;background:#fafafa;">
           <span style="margin-left:auto;font-size:12px;color:#9ca3af;">
-            총
-            <b style="color:#374151;">
+            사용자목록
+            <b style="color:#e8587a;margin:0 2px;">
               {{ pager.pageTotalCount }}
             </b>
-            명
+            건
           </span>
         </div>
-        <!-- 목록 + 페이저 (BoGrid 내장) -->
-        <div style="flex:1;overflow-y:auto;">
+        <!-- ===== ■.■.■. 그리드 + 페이저 (BoGrid 내장) ======================= -->
+        <div style="display:flex;flex-direction:column;">
           <bo-grid :columns="userGridColumns" :rows="userList" :pager="pager" row-key="userId"
-            row-clickable :row-style="fnRowStyle"
+            row-clickable
             :empty-text="uiState.loading ? '로딩 중...' : '🔍 검색 결과가 없습니다.'"
-            @row-click="row => handleSelectAction('users-toggle', row)"
-            @set-page="setPage" @size-change="() => setPage(1)"
-            @size-change="onSizeChange" />
+            @row-click="row => handleSelectAction('users-pick', row)"
+            @set-page="setPage" @size-change="onSizeChange" />
         </div>
-      </div>
-    </div>
-    <!-- ── 푸터 ── -->
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-top:1px solid #f0f0f0;flex-shrink:0;background:#fff;">
-      <span style="font-size:12px;" :style="cfSelectedCount?'color:#e8587a;font-weight:600;':'color:#bbb;'">
-        {{ cfSelectedCount ? cfSelectedCount+'명이 선택되었습니다.' : '목록에서 사용자를 선택하세요.' }}
-      </span>
-      <div style="display:flex;gap:8px;">
-        <button style="padding:8px 22px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;color:#6b7280;font-size:13px;font-weight:600;cursor:pointer;"
-          @click="handleBtnAction('modal-close')">
-          취소
-        </button>
-        <button :disabled="!cfSelectedCount"
-          style="padding:8px 22px;border-radius:8px;border:none;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;"
-          :style="cfSelectedCount?'background:#e8587a;color:#fff;box-shadow:0 2px 8px rgba(232,88,122,0.35);':'background:#f3f4f6;color:#d1d5db;cursor:not-allowed;'"
-          @click="handleBtnAction('modal-confirm')">
-          확인{{ cfSelectedCount?' ('+cfSelectedCount+'명)':'' }}
-        </button>
       </div>
     </div>
   </div>

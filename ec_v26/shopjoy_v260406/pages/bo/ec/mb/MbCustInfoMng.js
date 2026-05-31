@@ -877,7 +877,7 @@
       @row-click="row => handleSelectAction('memberModal-pick', row)"
       @set-page="n => onSetPage('modal', n)" @size-change="() => onSizeChange('modal')" row-actions>
       <template #row-actions="{ row }">
-        <button class="btn btn-primary btn-sm" @click.stop="handleSelectAction('memberModal-pick', row)">
+        <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('memberModal-pick', row)">
           선택
         </button>
       </template>

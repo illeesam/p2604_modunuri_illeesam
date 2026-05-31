@@ -432,10 +432,10 @@ window.SySiteMng = {
         <template #row-actions="{ row }">
           <td>
             <div class="actions">
-              <button class="btn btn-blue btn-sm" @click="handleSelectAction('sites-rowEdit', row.siteId)">
+              <button class="btn btn-blue btn-xs" @click="handleSelectAction('sites-rowEdit', row.siteId)">
                 수정
               </button>
-              <button class="btn btn-danger btn-sm" @click="handleSelectAction('sites-rowDelete', row)">
+              <button class="btn btn-danger btn-xs" @click="handleSelectAction('sites-rowDelete', row)">
                 삭제
               </button>
             </div>

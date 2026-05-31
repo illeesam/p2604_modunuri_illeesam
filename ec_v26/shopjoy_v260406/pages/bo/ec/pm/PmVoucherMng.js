@@ -328,10 +328,10 @@ window.PmVoucherMng = {
       </template>
       <template #row-actions="{ row: v }">
         <div class="actions">
-          <button class="btn btn-blue btn-sm" @click="handleSelectAction('vouchers-rowEdit', v.voucherId)">
+          <button class="btn btn-blue btn-xs" @click="handleSelectAction('vouchers-rowEdit', v.voucherId)">
             수정
           </button>
-          <button class="btn btn-danger btn-sm" @click="handleSelectAction('vouchers-rowDelete', v)">
+          <button class="btn btn-danger btn-xs" @click="handleSelectAction('vouchers-rowDelete', v)">
             삭제
           </button>
         </div>

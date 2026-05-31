@@ -397,14 +397,14 @@ window.PdProdMng = {
       </template>
       <template #row-actions="{ row: p }">
         <div class="actions">
-          <button class="btn btn-sm" style="background:#fff;border:1px solid #d9d9d9;color:#555;" title="미리보기"
+          <button class="btn btn-xs" style="background:#fff;border:1px solid #d9d9d9;color:#555;" title="미리보기"
             @click="handleSelectAction('prods-rowPreview', p.prodId)">
             👁
           </button>
-          <button class="btn btn-blue btn-sm" @click="handleSelectAction('prods-rowEdit', p.prodId)">
+          <button class="btn btn-blue btn-xs" @click="handleSelectAction('prods-rowEdit', p.prodId)">
             수정
           </button>
-          <button class="btn btn-danger btn-sm" @click="handleSelectAction('prods-rowDelete', p)">
+          <button class="btn btn-danger btn-xs" @click="handleSelectAction('prods-rowDelete', p)">
             삭제
           </button>
         </div>

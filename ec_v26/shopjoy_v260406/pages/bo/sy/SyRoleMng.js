@@ -10,7 +10,8 @@ window.SyRoleMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-    const roles = reactive([]);     // 역할 목록 (메인 그리드 데이터)
+    const roles = reactive([]);     // 역할 목록 (메인 그리드 데이터 — selectedPath 필터 적용)
+    const treeRoles = reactive([]); // 좌측 트리용 전체 역할 (검색조건 무관, 항상 전체)
     const menus = reactive([]);     // 전체 메뉴 정의 (sy_menu)
     const roleMenus = reactive([]); // 역할-메뉴 권한 매핑 (sy_role_menu)
     const roleUsers = reactive([]); // 역할-사용자 매핑 (sy_role_user)
@@ -167,6 +168,39 @@ window.SyRoleMng = {
       }
     };
 
+    /* callbackModal — 모든 모달의 select/close 콜백 통합 dispatch.
+     *   cmd    = 모달 이름 (예: 'user-select', 'parent-pick', 'path-pick', 'excel-upload')
+     *   params = { action: 'select'|'close', data: payload }
+     */
+    const callbackModal = (cmd, params = {}) => {
+      console.log(' ■■ SyRoleMng.js : callbackModal -> ', cmd, params);
+      const action = params.action;
+      const data = params.data;
+      if (cmd === 'user-select') {
+        if (action === 'select') return onUserSelect(Array.isArray(data) ? data : [data]);
+        if (action === 'close')  { uiState.userSelectOpen = false; return; }
+      } else if (cmd === 'parent-pick') {
+        if (action === 'select') {
+          if (roleTreeModal.targetRow) {
+            roleTreeModal.targetRow.parentRoleId = data.roleId;
+            roleTreeModal.targetRow._depth = 0;
+            onCellChange(roleTreeModal.targetRow);
+          }
+          roleTreeModal.show = false;
+          return;
+        }
+        if (action === 'close')  { roleTreeModal.show = false; return; }
+      } else if (cmd === 'path-pick') {
+        if (action === 'select') return onPathPicked(data);
+        if (action === 'close')  { pathPickModal.show = false; pathPickModal.row = null; return; }
+      } else if (cmd === 'excel-upload') {
+        if (action === 'saved') { excelUploadModal.show = false; return handleSearchList(); }
+        if (action === 'close') { excelUploadModal.show = false; return; }
+      } else {
+        console.warn('[callbackModal] unknown cmd:', cmd);
+      }
+    };
+
     const _initSearchParam = () => {
       return { searchType: '', searchValue: '', type: '', useYn: 'Y', cat: '', treeCatFilter: '' };
     };
@@ -193,7 +227,7 @@ window.SyRoleMng = {
 
     // onMounted에서 API 로드
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
-    /* handleSearchList — 목록 조회 */
+    /* handleSearchList — 목록 조회 (RELOAD 모드 — 저장 후 호출 시 좌측 트리도 동기 갱신) */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
@@ -208,6 +242,10 @@ window.SyRoleMng = {
         gridRows.splice(0);
         buildTreeRows(list).forEach(r => gridRows.push(makeRow(r)));
         uiState.error = null;
+        /* 저장/삭제 후 RELOAD 모드면 좌측 트리도 새로 받아 refresh */
+        if (searchType === 'RELOAD') {
+          await fnLoadTreeRoles();
+        }
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;
@@ -247,14 +285,16 @@ window.SyRoleMng = {
 
     /* selectNode — 노드 선택 */
     const selectNode = (path) => { uiState.selectedPath = path; handleSearchList(); };
+    /* cfTree — 좌측 역할 트리 (treeRoles API 응답 기반, store 비의존)
+     *   treeRoles 가 변경되면 자동 재빌드 — 그리드 저장 후 fnLoadTreeRoles() 호출로 갱신. */
     const cfTree = computed(() => {
-      const t = boUtil.bofBuildRoleTree();
-      const rolesById = Object.fromEntries((roles || []).map(r => [r.roleId, r]));
+      const t = coUtil.cofBuildGenericTree(treeRoles, 'roleId', 'parentRoleId', 'roleNm', 'sortOrd');
+      const rolesById = Object.fromEntries((treeRoles || []).map(r => [r.roleId, r]));
       const ROOT_MAP = { SUPER_ADMIN:['관리자','#7c3aed'], SITE_GROUP:['사이트','#2563eb'],
                           SITE_MGR_ROOT:['판매업체','#16a34a'], DLIV_ROOT:['배송업체','#f59e0b'] };
       const ROOT_BY_CAT = { ADMIN:'SUPER_ADMIN', SITE:'SITE_GROUP', SALES:'SITE_MGR_ROOT', DLIV:'DLIV_ROOT' };
 
-      /* enrich — enrich */
+      /* enrich — 루트 코드 기반 색상 뱃지 추가 */
       const enrich = (n) => {
         if (n._raw && n._raw.roleId != null) {
           let cur = n._raw;
@@ -295,10 +335,22 @@ window.SyRoleMng = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
+    /* fnLoadTreeRoles — 좌측 트리용 전체 역할 데이터 로드 (treeRoles reactive 갱신).
+     *   그리드는 selectedPath 자손 필터된 조회를 쓰지만, 트리는 항상 전체 계층을 보여야 하므로 별도 API 호출.
+     *   그리드 저장/삭제 후 호출하면 트리도 즉시 refresh. */
+    const fnLoadTreeRoles = async () => {
+      try {
+        const res = await boApiSvc.syRole.getPage({ pageNo: 1, pageSize: 10000 }, '역할관리', '트리조회');
+        const list = res.data?.data?.pageList || res.data?.data?.list || [];
+        treeRoles.splice(0, treeRoles.length, ...list);
+      } catch (e) { console.error('[fnLoadTreeRoles]', e); }
+    };
+
     // ★ onMounted
-    onMounted(() => {
+    onMounted(async () => {
       if (isAppReady.value) { fnLoadCodes(); }
       fnLoadMenusAndUsers();
+      await fnLoadTreeRoles();
       const initSet = coUtil.cofCollectExpandedToDepth(cfTree.value, 2);
       expanded.clear(); initSet.forEach(v => expanded.add(v));
       handleSearchList('DEFAULT');
@@ -450,19 +502,20 @@ window.SyRoleMng = {
       }
     };
 
-    /* setFocused — 포커스 설정 */
+    /* setFocused — 포커스 설정. row.roleId 는 문자열(예: "RL000015") 또는 신규 행은 음수 임시ID */
     const setFocused = (realIdx) => {
       uiState.focusedIdx = realIdx;
       const row = gridRows[realIdx];
-      const newRoleId = row && row.roleId > 0 ? row.roleId : null;
+      /* 신규 행(음수 임시ID) 은 권한 설정 대상 외 — null. 기존 행은 문자열 roleId 사용 */
+      const newRoleId = row && row.roleId && (typeof row.roleId !== 'number' || row.roleId > 0) ? row.roleId : null;
       if (newRoleId !== uiState.selectedRoleId) {
         uiState.selectedRoleId = newRoleId;
         handleLoadRoleDetail(newRoleId);
       }
     };
 
-    /* cfShowRoleSetting — 파생값 */
-    const cfShowRoleSetting = (row) => row.roleId > 0 && row._row_status !== 'D';
+    /* cfShowRoleSetting — 파생값. roleId 가 존재하고(신규/삭제 행 아님) D 상태 아니면 [설정] 노출 */
+    const cfShowRoleSetting = (row) => !!row.roleId && row._row_status !== 'I' && row._row_status !== 'D';
 
     /* onOpenSetting — 이벤트 */
     const onOpenSetting = (idx) => {
@@ -563,7 +616,8 @@ window.SyRoleMng = {
       try {
         await boApiSvc.syRole.saveList('base', saveRows, '역할관리', '저장');
         showToast('저장되었습니다.');
-        await handleSearchList();
+        /* RELOAD 모드 — 그리드 + 좌측 트리(treeRoles) 모두 새로고침 */
+        await handleSearchList('RELOAD');
       } catch (err) {
         showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
       }
@@ -584,8 +638,9 @@ window.SyRoleMng = {
 
     const roleTreeModal = reactive({ show: false, targetRow: null });
 
-    /* openParentModal — 열기 */
-    const openParentModal = async (row) => { roleTreeModal.targetRow = row; await handleSearchList('DEFAULT'); roleTreeModal.show = true; };
+    /* openParentModal — 상위역할 선택 모달 열기
+     *   주의: 그리드 재조회 금지 — 사용자가 편집 중인 행 객체가 새로 교체되면 onCellChange 의 _row_status 변경이 반영되지 않음 */
+    const openParentModal = (row) => { roleTreeModal.targetRow = row; roleTreeModal.show = true; };
 
     /* onParentSelect — 이벤트 */
     const onParentSelect  = (role) => {
@@ -661,21 +716,48 @@ window.SyRoleMng = {
       return cfMenuTree.value.every(m => getMenuPerm(m.menuId) !== '없음');
     });
 
-    /* -- 하단: 대상사용자 (모달 선택) -- */
-    const cfRoleUsersList = computed(() => {
+    /* fnRoleUsersList — 하단 대상사용자 목록 (선택된 역할 기준). computed 미사용 — 반응성은 roleUsers/uiState 가 reactive 라 v-for 가 자동 재평가됨 */
+    const fnRoleUsersList = () => {
       if (!uiState.selectedRoleId) { return []; }
       return roleUsers
         .filter(x => x.roleId === uiState.selectedRoleId)
-        .map(x => boUsers.find(u => u.boUserId === x.boUserId))
-        .filter(Boolean);
-    });
+        .map(x => {
+          const pool = boUsers.find(u => (u.userId || u.boUserId) === x.boUserId) || {};
+          return {
+            boUserId: x.boUserId,
+            userNm:       x.userNm       || pool.userNm       || pool.name || '',
+            loginId:      x.loginId      || pool.loginId      || '',
+            userEmail:    x.userEmail    || pool.userEmail    || '',
+            deptNm:       x.deptNm       || pool.deptNm       || pool.dept || '',
+            roleNm:       x.roleNm       || pool.roleNm       || pool.role || '',
+            userStatusCd: x.userStatusCd || pool.userStatusCd || pool.status || '',
+          };
+        });
+    };
 
-    /* onUserSelect — 이벤트 */
+    /* onUserSelect — 이벤트. 모달에서 받은 user 객체(syUser 응답) 그대로 보존하여 렌더에서 직접 사용 */
     const onUserSelect = (users) => {
       if (!uiState.selectedRoleId) { return; }
       users.forEach(u => {
-        const already = roleUsers.some(x => x.roleId === uiState.selectedRoleId && x.boUserId === u.boUserId);
-        if (!already) { roleUsers.push({ roleId: uiState.selectedRoleId, boUserId: u.boUserId }); }
+        const uid = u.userId || u.boUserId;
+        if (!uid) { return; }
+        const already = roleUsers.some(x => x.roleId === uiState.selectedRoleId && x.boUserId === uid);
+        if (!already) {
+          roleUsers.push({
+            roleId: uiState.selectedRoleId,
+            boUserId: uid,
+            userNm: u.userNm || u.name || '',
+            loginId: u.loginId || '',
+            userEmail: u.userEmail || '',
+            deptNm: u.deptNm || '',
+            roleNm: u.roleNm || '',
+            userStatusCd: u.userStatusCd || '',
+          });
+        }
+        /* boUsers 풀에도 보강 — 이름/부서 lookup 보장 */
+        if (!boUsers.find(x => (x.userId || x.boUserId) === uid)) {
+          boUsers.push({ ...u, boUserId: uid });
+        }
       });
       uiState.userSelectOpen = false;
     };
@@ -728,7 +810,7 @@ window.SyRoleMng = {
       { key: 'parentRoleId', label: '상위역할', style: 'min-width:120px;',
         parentPick: { label: parentNm, open: (row) => handleSelectAction('parentModal-open', row), title: '상위역할 선택' } },
       { key: 'sortOrd',      label: '순서',     cls: 'col-ord',  edit: 'number' },
-      { key: 'useYn',        label: '사용여부', cls: 'col-use',  edit: 'select', options: codes.use_yn },
+      { key: 'useYn',        label: '사용여부', cls: 'col-use',  edit: 'select', options: () => codes.use_yn },
       { key: 'roleCat',      label: '역할구분', style: 'width:100px;',
         cellStyle: (v, row) => {
           const cat = effectiveRoleCat(row)[0];
@@ -755,7 +837,8 @@ window.SyRoleMng = {
       excelUploadModal,                                                                                      // 엑셀 업로드 모달
       baseSearchColumns, baseGridColumns,                                                                    // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                                   // dispatch (모든 이벤트 / 액션 라우팅)
-      cfTree, cfShowRoleSetting, cfSelectedRoleNm, cfMenuTree, cfMenuAllChecked, cfRoleUsersList,            // computed
+      cfTree, cfShowRoleSetting, cfSelectedRoleNm, cfMenuTree, cfMenuAllChecked,                            // computed
+      fnRoleUsersList, callbackModal,                                                                       // 함수 / 모달 콜백 dispatch
       fnPermColor, getMenuPerm, isMenuChecked,                                                               // 헬퍼
       pathPickModal, roleTreeModal,                                                                          // 모달 상태
       showToast, showConfirm,                                                                                // 모달 콜백
@@ -803,16 +886,19 @@ window.SyRoleMng = {
         @export="handleBtnAction('roles-excel')"
         @excel-upload="handleBtnAction('roles-excel-upload')">
         <template #row-actions="{ row, idx }">
-          <bo-row-cancel-delete :row="row" @cancel="handleSelectAction('roles-rowCancel', idx)" @delete="handleSelectAction('roles-rowDelete', idx)">
-          </bo-row-cancel-delete>
-          <button v-if="cfShowRoleSetting(row)"
-            class="btn btn-blue btn-xs"
-            :style="{ fontWeight: uiState.selectedRoleId === row.roleId ? '700' : '400',
-            outline: uiState.selectedRoleId === row.roleId ? '2px solid #2563eb' : 'none' }"
-            @click.stop="handleSelectAction('roles-rowOpenSetting', idx)"
-            title="하단 메뉴접근권한 / 대상사용자 설정">
-            설정
-          </button>
+          <span style="display:inline-flex;gap:3px;white-space:nowrap;">
+            <bo-row-cancel-delete :row="row" @cancel="handleSelectAction('roles-rowCancel', idx)" @delete="handleSelectAction('roles-rowDelete', idx)">
+            </bo-row-cancel-delete>
+            <button v-if="cfShowRoleSetting(row)"
+              class="btn btn-blue"
+              :style="{ fontSize:'11px', padding:'2px 6px', lineHeight:'1.3',
+              fontWeight: uiState.selectedRoleId === row.roleId ? '700' : '400',
+              outline: uiState.selectedRoleId === row.roleId ? '2px solid #2563eb' : 'none' }"
+              @click.stop="handleSelectAction('roles-rowOpenSetting', idx)"
+              title="하단 메뉴접근권한 / 대상사용자 설정">
+              설정
+            </button>
+          </span>
         </template>
       </bo-grid-crud>
       <!-- ===== ■.■.■. 하단: 메뉴 배분 + 사용자 배분 ================================== -->
@@ -826,7 +912,7 @@ window.SyRoleMng = {
                   메뉴 접근권한
                 </b>
                 <span v-if="cfSelectedRoleNm" style="font-size:12px;color:#e8587a;">
-                  — {{ cfSelectedRoleNm }}
+                  #{{ cfSelectedRoleNm }}
                 </span>
                 <span v-else style="font-size:12px;color:#bbb;">
                   위 목록에서 역할의 [설정] 버튼을 클릭하세요
@@ -900,7 +986,7 @@ window.SyRoleMng = {
                     대상사용자
                   </b>
                   <span v-if="cfSelectedRoleNm" style="font-size:12px;color:#e8587a;margin-left:8px;">
-                    — {{ cfSelectedRoleNm }}
+                    #{{ cfSelectedRoleNm }}
                   </span>
                   <span v-else style="font-size:12px;color:#bbb;margin-left:8px;">
                     위 목록에서 역할의 [설정] 버튼을 클릭하세요
@@ -913,7 +999,7 @@ window.SyRoleMng = {
               </div>
               <!-- ===== ■.■.■.■.■.■. 선택된 사용자 목록 ==================================== -->
               <div v-if="uiState.selectedRoleId">
-                <div v-if="!cfRoleUsersList.length"
+                <div v-if="!fnRoleUsersList().length"
                 style="text-align:center;color:#bbb;padding:36px 0;font-size:13px;border:1px dashed #e0e0e0;border-radius:6px;">
                   추가된 사용자가 없습니다.
                   <br>
@@ -922,25 +1008,25 @@ window.SyRoleMng = {
                   </span>
                 </div>
                 <div v-else style="display:flex;flex-direction:column;gap:6px;padding-top:4px;">
-                  <div v-for="u in cfRoleUsersList" :key="u.boUserId"
+                  <div v-for="u in fnRoleUsersList()" :key="u.boUserId"
                   style="display:flex;align-items:center;padding:9px 14px;background:#fafafa;border:1px solid #f0f0f0;border-radius:6px;transition:background .1s;"
                   @mouseenter="$event.currentTarget.style.background='#fff0f4'"
                   @mouseleave="$event.currentTarget.style.background='#fafafa'">
                     <div style="width:32px;height:32px;border-radius:50%;background:#e8587a22;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-right:10px;">
                       <span style="font-size:13px;font-weight:700;color:#e8587a;">
-                        {{ u.name.charAt(0) }}
+                        {{ (u.userNm || '?').charAt(0) }}
                       </span>
                     </div>
                     <div style="flex:1;min-width:0;">
                       <div style="font-size:13px;font-weight:600;color:#222;">
-                        {{ u.name }}
+                        {{ u.userNm || '-' }}
                       </div>
                       <div style="font-size:11px;color:#888;margin-top:1px;">
-                        {{ u.loginId }} · {{ u.dept || '-' }} · {{ u.role }}
+                        {{ u.loginId || '-' }} · {{ u.deptNm || '-' }} · {{ u.roleNm || '-' }}
                       </div>
                     </div>
-                    <span class="badge" :class="u.status==='활성'?'badge-green':'badge-gray'" style="font-size:10px;margin-right:8px;">
-                      {{ u.status }}
+                    <span class="badge" :class="u.userStatusCd==='ACTIVE'?'badge-green':'badge-gray'" style="font-size:10px;margin-right:8px;">
+                      {{ u.userStatusCd || '-' }}
                     </span>
                     <button class="btn btn-danger btn-xs" @click="handleSelectAction('roleUsers-remove', u.boUserId)" title="제거">
                       ✕
@@ -955,21 +1041,28 @@ window.SyRoleMng = {
           </div>
         </div>
         <!-- ===== ■.■.■. 사용자 선택 모달 =========================================== -->
-        <bo-user-select-modal v-if="uiState.userSelectOpen" @select="users => handleSelectAction('roleUsers-select', users)"
-        @close="handleBtnAction('roleUsers-closeSelect')" />
+        <bo-user-select-modal v-if="uiState.userSelectOpen"
+          @select="users => callbackModal('user-select', { action:'select', data: users })"
+          @close="callbackModal('user-select', { action:'close' })" />
         <!-- ===== ■.■.■. 상위역할 선택 모달 ========================================== -->
-        <role-tree-modal v-if="roleTreeModal && roleTreeModal.show" :exclude-id="roleTreeModal.targetRow && roleTreeModal.targetRow.roleId > 0 ? roleTreeModal.targetRow.roleId : null" @select="role => handleSelectAction('parentModal-select', role)" @close="handleBtnAction('parentModal-close')" />
+        <role-tree-modal v-if="roleTreeModal && roleTreeModal.show"
+          :exclude-id="roleTreeModal.targetRow && roleTreeModal.targetRow.roleId > 0 ? roleTreeModal.targetRow.roleId : null"
+          @select="role => callbackModal('parent-pick', { action:'select', data: role })"
+          @close="callbackModal('parent-pick', { action:'close' })" />
       </div>
     </div>
     <!-- ===== □. 좌 트리 + 우 영역 ============================================= -->
     <!-- ===== ■. 조건부 영역 ================================================== -->
-    <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_role" :value="pathPickModal.row ? pathPickModal.row.pathId : null" @select="pathId => handleSelectAction('pathModal-pick', pathId)" @close="handleBtnAction('pathModal-close')" />
+    <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_role"
+      :value="pathPickModal.row ? pathPickModal.row.pathId : null"
+      @select="pathId => callbackModal('path-pick', { action:'select', data: pathId })"
+      @close="callbackModal('path-pick', { action:'close' })" />
 
     <!-- ===== ■. 엑셀 업로드 모달 (도메인은 모달 안의 select 로 전환 가능) ===== -->
     <bo-excel-upload-modal v-if="excelUploadModal.show"
       default-domain="role"
-      @close="excelUploadModal.show = false"
-      @saved="handleBtnAction('roles-reload')" />
+      @close="callbackModal('excel-upload', { action:'close' })"
+      @saved="callbackModal('excel-upload', { action:'saved' })" />
   </div>
   <!-- ===== □. 조건부 영역 ================================================== -->
 `,

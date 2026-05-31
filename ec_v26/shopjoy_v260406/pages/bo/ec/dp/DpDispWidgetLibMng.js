@@ -376,10 +376,10 @@ window.DpDispWidgetLibMng = {
           </template>
           <template #row-actions="{ row }">
             <div class="actions">
-              <button class="btn btn-blue btn-sm" @click="handleSelectAction('widgetLibs-rowEdit', row.widgetLibId)">
+              <button class="btn btn-blue btn-xs" @click="handleSelectAction('widgetLibs-rowEdit', row.widgetLibId)">
                 수정
               </button>
-              <button class="btn btn-danger btn-sm" @click="handleSelectAction('widgetLibs-rowDelete', row)">
+              <button class="btn btn-danger btn-xs" @click="handleSelectAction('widgetLibs-rowDelete', row)">
                 삭제
               </button>
             </div>

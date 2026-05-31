@@ -319,7 +319,7 @@ window.PdProdHist = {
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid bare :columns="orderGridColumns" :rows="relatedOrders" row-key="orderId" :row-style="fnNoCursor" empty-text="연관 주문이 없습니다." @ref-click="({type,id}) => handleSelectAction('orders-refClick', { type, id })" row-actions>
         <template #row-actions="{ row }">
-          <button class="btn btn-blue btn-sm" @click="handleSelectAction('orders-rowDetail', row)">
+          <button class="btn btn-blue btn-xs" @click="handleSelectAction('orders-rowDetail', row)">
             상세
           </button>
         </template>

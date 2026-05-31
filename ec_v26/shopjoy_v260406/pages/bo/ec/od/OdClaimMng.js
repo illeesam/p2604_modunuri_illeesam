@@ -610,10 +610,10 @@ window.OdClaimMng = {
         @ref-click="({type,id}) => handleSelectAction('claims-rowRefClick', {type, id})" row-actions>
         <template #row-actions="{ row }">
           <div class="actions">
-            <button class="btn btn-blue btn-sm" @click="handleSelectAction('claims-rowEdit', row.claimId)">
+            <button class="btn btn-blue btn-xs" @click="handleSelectAction('claims-rowEdit', row.claimId)">
               수정
             </button>
-            <button class="btn btn-danger btn-sm" @click="handleSelectAction('claims-rowDelete', row)">
+            <button class="btn btn-danger btn-xs" @click="handleSelectAction('claims-rowDelete', row)">
               삭제
             </button>
           </div>

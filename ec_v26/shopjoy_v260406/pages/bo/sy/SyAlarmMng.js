@@ -421,10 +421,10 @@ window.SyAlarmMng = {
         <template #row-actions="{ row }">
           <td>
             <div class="actions">
-              <button class="btn btn-blue btn-sm" @click="handleSelectAction('alarms-rowEdit', row.alarmId)">
+              <button class="btn btn-blue btn-xs" @click="handleSelectAction('alarms-rowEdit', row.alarmId)">
                 수정
               </button>
-              <button class="btn btn-danger btn-sm" @click="handleSelectAction('alarms-rowDelete', row)">
+              <button class="btn btn-danger btn-xs" @click="handleSelectAction('alarms-rowDelete', row)">
                 삭제
               </button>
             </div>

@@ -303,10 +303,10 @@ window.SyContactMng = {
     <template #row-actions="{ row }">
       <td>
         <div class="actions">
-          <button class="btn btn-blue btn-sm" @click="handleSelectAction('contacts-rowEdit', row.contactId)">
+          <button class="btn btn-blue btn-xs" @click="handleSelectAction('contacts-rowEdit', row.contactId)">
             수정
           </button>
-          <button class="btn btn-danger btn-sm" @click="handleSelectAction('contacts-rowDelete', row)">
+          <button class="btn btn-danger btn-xs" @click="handleSelectAction('contacts-rowDelete', row)">
             삭제
           </button>
         </div>

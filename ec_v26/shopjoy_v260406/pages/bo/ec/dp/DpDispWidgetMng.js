@@ -500,10 +500,10 @@ window.DpDispWidgetMng = {
         </template>
         <template #row-actions="{ row }">
           <div class="actions" style="justify-content:flex-end;">
-            <button @click.stop="handleSelectAction('widgets-rowEdit', row.widgetId)" class="btn btn-blue btn-sm">
+            <button @click.stop="handleSelectAction('widgets-rowEdit', row.widgetId)" class="btn btn-blue btn-xs">
               수정
             </button>
-            <button @click.stop="handleSelectAction('widgets-rowDelete', row)" class="btn btn-danger btn-sm">
+            <button @click.stop="handleSelectAction('widgets-rowDelete', row)" class="btn btn-danger btn-xs">
               삭제
             </button>
           </div>

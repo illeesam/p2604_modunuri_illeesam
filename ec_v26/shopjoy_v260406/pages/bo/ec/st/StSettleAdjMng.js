@@ -351,13 +351,13 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         액션
       </template>
       <template #row-actions="{ row: r }">
-        <button v-if="r.aprvStatusCd==='대기'" class="btn btn-sm btn-green" @click="handleSelectAction('settleAdjs-rowApprove', r)">
+        <button v-if="r.aprvStatusCd==='대기'" class="btn btn-xs btn-green" @click="handleSelectAction('settleAdjs-rowApprove', r)">
           승인
         </button>
-        <button class="btn btn-sm btn-primary" @click="handleSelectAction('settleAdjs-rowEdit', r)">
+        <button class="btn btn-xs btn-primary" @click="handleSelectAction('settleAdjs-rowEdit', r)">
           수정
         </button>
-        <button class="btn btn-sm btn-danger"  @click="handleSelectAction('settleAdjs-rowDelete', r)">
+        <button class="btn btn-xs btn-danger"  @click="handleSelectAction('settleAdjs-rowDelete', r)">
           삭제
         </button>
       </template>

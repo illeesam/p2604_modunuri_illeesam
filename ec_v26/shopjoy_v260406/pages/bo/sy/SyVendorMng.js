@@ -336,10 +336,10 @@ window.SyVendorMng = {
         <template #row-actions="{ row }">
           <td>
             <div class="actions">
-              <button class="btn btn-blue btn-sm" @click="handleSelectAction('vendors-rowEdit', row.vendorId)">
+              <button class="btn btn-blue btn-xs" @click="handleSelectAction('vendors-rowEdit', row.vendorId)">
                 수정
               </button>
-              <button class="btn btn-danger btn-sm" @click="handleSelectAction('vendors-rowDelete', row)">
+              <button class="btn btn-danger btn-xs" @click="handleSelectAction('vendors-rowDelete', row)">
                 삭제
               </button>
             </div>

@@ -587,10 +587,10 @@ window.OdOrderMng = {
         @ref-click="({type,id}) => handleSelectAction('orders-rowRefClick', {type, id})" row-actions>
         <template #row-actions="{ row }">
           <div class="actions">
-            <button class="btn btn-blue btn-sm" @click="handleSelectAction('orders-rowEdit', row.orderId)">
+            <button class="btn btn-blue btn-xs" @click="handleSelectAction('orders-rowEdit', row.orderId)">
               수정
             </button>
-            <button class="btn btn-danger btn-sm" @click="handleSelectAction('orders-rowDelete', row)">
+            <button class="btn btn-danger btn-xs" @click="handleSelectAction('orders-rowDelete', row)">
               삭제
             </button>
           </div>

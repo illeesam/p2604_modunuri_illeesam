@@ -352,10 +352,10 @@ window.PmSaveMng = {
       </template>
       <template #row-actions="{ row: s }">
         <div class="actions">
-          <button class="btn btn-blue btn-sm" @click="handleSelectAction('saves-rowEdit', s.saveId)">
+          <button class="btn btn-blue btn-xs" @click="handleSelectAction('saves-rowEdit', s.saveId)">
             수정
           </button>
-          <button class="btn btn-danger btn-sm" @click="handleSelectAction('saves-rowDelete', s)">
+          <button class="btn btn-danger btn-xs" @click="handleSelectAction('saves-rowDelete', s)">
             삭제
           </button>
         </div>

@@ -198,8 +198,8 @@ window.CmNoticeMng = {
     </template>
     <template #row-actions="{ row }">
       <div class="actions">
-        <button class="btn btn-blue btn-sm" @click="handleSelectAction('notices-rowEdit', row.noticeId)">수정</button>
-        <button class="btn btn-danger btn-sm" @click="handleSelectAction('notices-rowDelete', row)">삭제</button>
+        <button class="btn btn-blue btn-xs" @click="handleSelectAction('notices-rowEdit', row.noticeId)">수정</button>
+        <button class="btn btn-danger btn-xs" @click="handleSelectAction('notices-rowDelete', row)">삭제</button>
       </div>
     </template>
   </bo-grid>

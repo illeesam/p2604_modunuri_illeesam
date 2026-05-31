@@ -182,7 +182,7 @@ window.OdOrderHist = {
       <bo-grid bare :columns="itemGridColumns" :rows="orderItems" row-key="no"
         empty-text="구성 상품 정보가 없습니다." row-actions>
         <template #row-actions="{ row }">
-          <button class="btn btn-secondary btn-sm" @click="handleBtnAction('histList-orderRef')">
+          <button class="btn btn-secondary btn-xs" @click="handleBtnAction('histList-orderRef')">
             보기
           </button>
         </template>
@@ -247,7 +247,7 @@ window.OdOrderHist = {
       <bo-grid bare :columns="claimGridColumns" :rows="cfRelatedClaims" row-key="claimId"
         empty-text="연관 클레임이 없습니다." @ref-click="({type,id}) => handleSelectAction('histList-rowRefClick', {type, id})" row-actions>
         <template #row-actions="{ row }">
-          <button class="btn btn-blue btn-sm" @click="handleSelectAction('histList-rowClaimEdit', row.claimId)">
+          <button class="btn btn-blue btn-xs" @click="handleSelectAction('histList-rowClaimEdit', row.claimId)">
             상세
           </button>
         </template>

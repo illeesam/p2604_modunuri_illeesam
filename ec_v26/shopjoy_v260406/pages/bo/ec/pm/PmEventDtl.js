@@ -565,7 +565,7 @@ window.PmEventDtl = {
   <bo-grid bare :columns="productGridColumns" :rows="cfSelectedProducts" row-key="productId"
         empty-text="선택된 상품이 없습니다." @ref-click="({type,id}) => handleSelectAction('items-ref', {type, id})" row-actions>
     <template #row-actions="{ row }">
-      <button class="btn btn-danger btn-sm" @click="handleSelectAction('items-rowDelete', row.productId)">
+      <button class="btn btn-danger btn-xs" @click="handleSelectAction('items-rowDelete', row.productId)">
         제거
       </button>
     </template>

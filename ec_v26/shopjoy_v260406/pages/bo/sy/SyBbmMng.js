@@ -342,10 +342,10 @@ window.SyBbmMng = {
         <template #row-actions="{ row }">
           <td>
             <div class="actions">
-              <button class="btn btn-blue btn-sm" @click="handleSelectAction('bbms-rowEdit', row.bbmId)">
+              <button class="btn btn-blue btn-xs" @click="handleSelectAction('bbms-rowEdit', row.bbmId)">
                 수정
               </button>
-              <button class="btn btn-danger btn-sm" @click="handleSelectAction('bbms-rowDelete', row)">
+              <button class="btn btn-danger btn-xs" @click="handleSelectAction('bbms-rowDelete', row)">
                 삭제
               </button>
             </div>

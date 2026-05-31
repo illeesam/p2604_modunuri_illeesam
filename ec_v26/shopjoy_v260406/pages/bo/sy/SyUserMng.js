@@ -436,10 +436,10 @@ window.SyUserMng = {
         <template #row-actions="{ row }">
           <td>
             <div class="actions">
-              <button class="btn btn-blue btn-sm" @click="handleSelectAction('users-rowEdit', row.userId)">
+              <button class="btn btn-blue btn-xs" @click="handleSelectAction('users-rowEdit', row.userId)">
                 수정
               </button>
-              <button class="btn btn-danger btn-sm" @click="handleSelectAction('users-rowDelete', row)">
+              <button class="btn btn-danger btn-xs" @click="handleSelectAction('users-rowDelete', row)">
                 삭제
               </button>
             </div>

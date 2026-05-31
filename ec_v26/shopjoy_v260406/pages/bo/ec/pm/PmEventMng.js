@@ -314,10 +314,10 @@ window.PmEventMng = {
       </template>
       <template #row-actions="{ row: e }">
         <div class="actions" style="display:flex;gap:6px;align-items:center;">
-          <button class="btn btn-blue btn-sm" @click="handleSelectAction('events-rowEdit', e.eventId)">
+          <button class="btn btn-blue btn-xs" @click="handleSelectAction('events-rowEdit', e.eventId)">
             수정
           </button>
-          <button class="btn btn-danger btn-sm" @click="handleSelectAction('events-rowDelete', e)">
+          <button class="btn btn-danger btn-xs" @click="handleSelectAction('events-rowDelete', e)">
             삭제
           </button>
           <span style="font-size:11px;color:#999;margin-left:auto;">

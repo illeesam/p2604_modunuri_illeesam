@@ -203,7 +203,7 @@ window.OdDlivHist = {
       <bo-grid bare :columns="claimGridColumns" :rows="cfRelatedClaims" row-key="claimId"
         empty-text="연관 클레임이 없습니다." @ref-click="({type,id}) => handleSelectAction('histList-rowRefClick', {type, id})" row-actions>
         <template #row-actions="{ row }">
-          <button class="btn btn-blue btn-sm" @click="handleSelectAction('histList-rowClaimEdit', row.claimId)">
+          <button class="btn btn-blue btn-xs" @click="handleSelectAction('histList-rowClaimEdit', row.claimId)">
             상세
           </button>
         </template>

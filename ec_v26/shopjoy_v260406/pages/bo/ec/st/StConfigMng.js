@@ -276,10 +276,10 @@ window.StConfigMng = {
         액션
       </template>
       <template #row-actions="{ row: c }">
-        <button class="btn btn-sm btn-primary" @click="handleSelectAction('configs-rowEdit', c)">
+        <button class="btn btn-xs btn-primary" @click="handleSelectAction('configs-rowEdit', c)">
           수정
         </button>
-        <button class="btn btn-sm btn-danger"  @click="handleSelectAction('configs-rowDelete', c)">
+        <button class="btn btn-xs btn-danger"  @click="handleSelectAction('configs-rowDelete', c)">
           삭제
         </button>
       </template>

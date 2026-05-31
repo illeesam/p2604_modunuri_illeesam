@@ -382,7 +382,7 @@ window.CmChattDtl = {
         <!-- ===== ■.■.■.■. 목록 영역 ============================================= -->
         <bo-grid bare :columns="memberChatGridColumns" :rows="cfMemberChats" row-key="chattRoomId" empty-text="다른 채팅 이력이 없습니다." row-actions>
           <template #row-actions="{ row }">
-            <button class="btn btn-blue btn-sm" @click="handleSelectAction('memberChats-rowView', row.chattRoomId)">
+            <button class="btn btn-blue btn-xs" @click="handleSelectAction('memberChats-rowView', row.chattRoomId)">
               상세
             </button>
           </template>
@@ -428,7 +428,7 @@ window.CmChattDtl = {
         <!-- ===== ■.■.■.■. 목록 영역 ============================================= -->
         <bo-grid bare :columns="userChatGridColumns" :rows="cfUserChats" row-key="chattRoomId" :empty-text="uiState.searchUserId ? '해당 회원을 찾을 수 없습니다.' : '회원 ID를 입력하세요.'" row-actions>
           <template #row-actions="{ row }">
-            <button class="btn btn-blue btn-sm" @click="handleSelectAction('userChats-rowView', row.chattRoomId)">
+            <button class="btn btn-blue btn-xs" @click="handleSelectAction('userChats-rowView', row.chattRoomId)">
               보기
             </button>
           </template>
