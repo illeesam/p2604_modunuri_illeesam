@@ -83,7 +83,7 @@ public class SySiteService {
         String searchVal  = (req == null) ? null : nullIfBlank(req.getSearchValue());
         String dateStart  = (req == null) ? null : nullIfBlank(req.getDateStart());
         String dateEnd    = (req == null) ? null : nullIfBlank(req.getDateEnd());
-        for (Object[] row : sySiteRepository.findPathSiteTreeNodeCounts(statusCd, typeCd, searchType, searchVal, dateStart, dateEnd)) {
+        for (Object[] row : sySiteRepository.findPathSiteTreeNodeCounts("sy_site", statusCd, typeCd, searchType, searchVal, dateStart, dateEnd)) {
             String pathId = row[0] == null ? null : String.valueOf(row[0]);
             Long cnt = row[1] == null ? 0L : ((Number) row[1]).longValue();
             result.put(pathId, cnt);

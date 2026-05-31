@@ -24,13 +24,13 @@ public interface DpWidgetRepository extends JpaRepository<DpWidget, String>, QDp
                 SELECT path_id AS root_id,
                        path_id AS leaf_id
                 FROM sy_path
-                WHERE biz_cd = 'dp_widget'
+                WHERE biz_cd = :bizCd
                 UNION ALL
                 SELECT d.root_id,
                        c.path_id
                   FROM descendants d
                   JOIN sy_path c ON c.parent_path_id = d.leaf_id
-                 WHERE c.biz_cd = 'dp_widget'
+                 WHERE c.biz_cd = :bizCd
             ),
             filtered AS (
                 SELECT t.widget_id,
@@ -47,22 +47,26 @@ public interface DpWidgetRepository extends JpaRepository<DpWidget, String>, QDp
                    AND (CAST(:dateStart AS varchar) IS NULL OR t.reg_date >= CAST(:dateStart AS timestamp))
                    AND (CAST(:dateEnd   AS varchar) IS NULL OR t.reg_date <= CAST(:dateEnd   AS timestamp) + INTERVAL '1 day')
             )
+            /* (1) 일반 path_id 행 : 노드 + 자손 누적 카운트 */
             SELECT d.root_id AS path_id,
                    COUNT(t.widget_id) AS cnt
               FROM descendants d
               LEFT JOIN filtered t ON t.path_id = d.leaf_id
              GROUP BY d.root_id
             UNION ALL
+            /* (2) '__total__' : 트리 루트 "전체" 노드용 — 검색조건에 부합하는 전체 카운트 */
             SELECT '__total__' AS path_id,
                    COUNT(*) AS cnt
             FROM filtered
             UNION ALL
+            /* (3) '__orphan__' : 경로 미지정(path_id IS NULL) 카운트 — 트리 외 표시 */
             SELECT '__orphan__' AS path_id,
                    COUNT(*) AS cnt
             FROM filtered
             WHERE path_id IS NULL
             """, nativeQuery = true)
     List<Object[]> findPathDpWidgetTreeNodeCounts(
+            @Param("bizCd")     String bizCd,
             @Param("useYn")       String useYn,
             @Param("searchType")  String searchType,
             @Param("searchValue") String searchValue,

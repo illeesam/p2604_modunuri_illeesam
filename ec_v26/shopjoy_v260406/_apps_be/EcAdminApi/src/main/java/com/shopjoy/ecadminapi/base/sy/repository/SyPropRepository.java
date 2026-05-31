@@ -23,13 +23,13 @@ public interface SyPropRepository extends JpaRepository<SyProp, String>, QSyProp
                 SELECT path_id AS root_id,
                        path_id AS leaf_id
                 FROM sy_path
-                WHERE biz_cd = 'sy_prop'
+                WHERE biz_cd = :bizCd
                 UNION ALL
                 SELECT d.root_id,
                        c.path_id
                   FROM descendants d
                   JOIN sy_path c ON c.parent_path_id = d.leaf_id
-                 WHERE c.biz_cd = 'sy_prop'
+                 WHERE c.biz_cd = :bizCd
             ),
             filtered AS (
                 SELECT prop_id,
@@ -43,22 +43,26 @@ public interface SyPropRepository extends JpaRepository<SyProp, String>, QSyProp
                           OR ((CAST(:searchType AS varchar) IS NULL OR :searchType = '' OR :searchType LIKE '%,propLabel,%') AND t.prop_label ILIKE '%' || :searchValue || '%')
                           ))
             )
+            /* (1) 일반 path_id 행 : 노드 + 자손 누적 카운트 */
             SELECT d.root_id AS path_id,
                    COUNT(t.prop_id) AS cnt
               FROM descendants d
               LEFT JOIN filtered t ON t.path_id = d.leaf_id
              GROUP BY d.root_id
             UNION ALL
+            /* (2) '__total__' : 트리 루트 "전체" 노드용 — 검색조건에 부합하는 전체 카운트 */
             SELECT '__total__' AS path_id,
                    COUNT(*) AS cnt
             FROM filtered
             UNION ALL
+            /* (3) '__orphan__' : 경로 미지정(path_id IS NULL) 카운트 — 트리 외 표시 */
             SELECT '__orphan__' AS path_id,
                    COUNT(*) AS cnt
             FROM filtered
             WHERE path_id IS NULL
             """, nativeQuery = true)
     List<Object[]> findPathSyPropTreeNodeCounts(
+            @Param("bizCd")     String bizCd,
             @Param("useYn")       String useYn,
             @Param("propType")    String propType,
             @Param("searchType")  String searchType,

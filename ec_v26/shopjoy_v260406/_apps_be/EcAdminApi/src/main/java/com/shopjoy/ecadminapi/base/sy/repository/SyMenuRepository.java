@@ -37,15 +37,17 @@ public interface SyMenuRepository extends JpaRepository<SyMenu, String>, QSyMenu
      *     - searchValue : menu_code/menu_nm/menu_remark 부분일치 OR
      *     - dateStart/End : reg_date 범위 */
     @Query(value = """
-            WITH RECURSIVE descendants AS (
+            WITH RECURSIVE descendants /* 메뉴 표시경로 자손 (biz_cd = :bizCd 한정) */ AS (
                 SELECT path_id AS root_id,
                        path_id AS leaf_id
                 FROM sy_path
+                WHERE biz_cd = :bizCd
                 UNION ALL
                 SELECT d.root_id,
                        c.path_id
                   FROM descendants d
                   JOIN sy_path c ON c.parent_path_id = d.leaf_id
+                 WHERE c.biz_cd = :bizCd
             ),
             filtered AS (
                 SELECT menu_id,
@@ -61,17 +63,20 @@ public interface SyMenuRepository extends JpaRepository<SyMenu, String>, QSyMenu
                    AND (CAST(:dateStart AS varchar) IS NULL OR t.reg_date >= CAST(:dateStart AS timestamp))
                    AND (CAST(:dateEnd   AS varchar) IS NULL OR t.reg_date <= CAST(:dateEnd   AS timestamp) + INTERVAL '1 day')
             )
+            /* (1) 일반 path_id 행 : 노드 + 자손 누적 카운트 */
             SELECT d.root_id AS path_id,
                    COUNT(t.menu_id) AS cnt
               FROM descendants d
               LEFT JOIN filtered t ON t.menu_code = d.leaf_id
              GROUP BY d.root_id
             UNION ALL
+            /* (2) '__total__' : 트리 루트 "전체" 노드용 — 검색조건에 부합하는 전체 카운트 */
             SELECT '__total__' AS path_id,
                    COUNT(*) AS cnt
             FROM filtered
             """, nativeQuery = true)
     List<Object[]> findPathSyMenuTreeNodeCounts(
+            @Param("bizCd")     String bizCd,
             @Param("useYn")       String useYn,
             @Param("searchType")  String searchType,
             @Param("searchValue") String searchValue,

@@ -238,7 +238,7 @@ public class SyBbmService {
         String searchValue = (req == null) ? null : nullIfBlank(req.getSearchValue());
         String dateStart   = (req == null) ? null : nullIfBlank(req.getDateStart());
         String dateEnd     = (req == null) ? null : nullIfBlank(req.getDateEnd());
-        for (Object[] row : syBbmRepository.findPathSyBbmTreeNodeCounts(useYn, searchType, searchValue, dateStart, dateEnd)) {
+        for (Object[] row : syBbmRepository.findPathSyBbmTreeNodeCounts("sy_bbm", useYn, searchType, searchValue, dateStart, dateEnd)) {
             String pathId = row[0] == null ? null : String.valueOf(row[0]);
             Long cnt = row[1] == null ? 0L : ((Number) row[1]).longValue();
             result.put(pathId, cnt);

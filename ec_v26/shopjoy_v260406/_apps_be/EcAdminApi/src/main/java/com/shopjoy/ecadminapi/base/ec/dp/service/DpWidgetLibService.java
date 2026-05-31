@@ -237,7 +237,7 @@ public class DpWidgetLibService {
         String searchValue = (req == null) ? null : nullIfBlank(req.getSearchValue());
         String dateStart   = (req == null) ? null : nullIfBlank(req.getDateStart());
         String dateEnd     = (req == null) ? null : nullIfBlank(req.getDateEnd());
-        for (Object[] row : dpWidgetLibRepository.findPathDpWidgetLibTreeNodeCounts(useYn, searchType, searchValue, dateStart, dateEnd)) {
+        for (Object[] row : dpWidgetLibRepository.findPathDpWidgetLibTreeNodeCounts("dp_widget_lib", useYn, searchType, searchValue, dateStart, dateEnd)) {
             String pathId = row[0] == null ? null : String.valueOf(row[0]);
             Long cnt = row[1] == null ? 0L : ((Number) row[1]).longValue();
             result.put(pathId, cnt);

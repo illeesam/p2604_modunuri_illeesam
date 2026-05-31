@@ -236,7 +236,7 @@ public class SyPropService {
         String propType    = (req == null) ? null : nullIfBlank(req.getPropTypeCd());
         String searchType  = (req == null) ? null : wrapCsv(req.getSearchType());
         String searchValue = (req == null) ? null : nullIfBlank(req.getSearchValue());
-        for (Object[] row : syPropRepository.findPathSyPropTreeNodeCounts(useYn, propType, searchType, searchValue)) {
+        for (Object[] row : syPropRepository.findPathSyPropTreeNodeCounts("sy_prop", useYn, propType, searchType, searchValue)) {
             String pathId = row[0] == null ? null : String.valueOf(row[0]);
             Long cnt = row[1] == null ? 0L : ((Number) row[1]).longValue();
             result.put(pathId, cnt);
