@@ -99,6 +99,20 @@ window.SyBatchMng = {
       }
     };
 
+
+    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ SyBatchMng : fnCallbackModal -> ', cmd, param, result);
+      if (cmd === 'path-pick') {
+        if (result == null) return handleBtnAction('pathModal-close');
+        return handleSelectAction('pathModal-pick', result);
+      } else if (cmd === 'cron') {
+        if (result == null) return handleBtnAction('cronModal-close');
+        return handleSelectAction('cronModal-apply', result);
+      } else {
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      }
+    };
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
@@ -381,7 +395,7 @@ window.SyBatchMng = {
     return {
       batches, uiState, batchCounts, codes, searchParam, gridRows, pathPickModal, cronModal,         // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                                // 컬럼 정의
-      handleBtnAction, handleSelectAction,                                               // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, fnCallbackModal,                                               // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfShowRunNow,                                                            // computed / 헬퍼
     };
   },
@@ -430,8 +444,7 @@ window.SyBatchMng = {
         </template>
       </bo-grid-crud>
       <!-- ===== ■.■.■. Cron 편집 모달 (BoCronModal 컴포넌트) ======================= -->
-      <bo-cron-modal :show="cronModal.show" :value="cronModal.value"
-        @apply="cronExpr => handleSelectAction('cronModal-apply', cronExpr)" @close="handleBtnAction('cronModal-close')" />
+      <bo-cron-modal :show="cronModal.show" :value="cronModal.value" modal-name="cron" :on-callback="fnCallbackModal" />
     </div>
     <!-- ===== □.□. 경로 트리 ================================================= -->
   </div>
@@ -442,7 +455,7 @@ window.SyBatchMng = {
   </div>
   <!-- ===== □. 배치 실행이력 (전체 폭) ========================================== -->
   <!-- ===== ■. 표시경로 선택 모달 ============================================= -->
-  <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_batch" :value="pathPickModal.row ? pathPickModal.row.pathId : null" @select="pathId => handleSelectAction('pathModal-pick', pathId)" @close="handleBtnAction('pathModal-close')" />
+  <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_batch" :value="pathPickModal.row ? pathPickModal.row.pathId : null" modal-name="path-pick" :on-callback="fnCallbackModal" />
   <!-- ===== □. 표시경로 선택 모달 ============================================= -->
 </div>
 `,

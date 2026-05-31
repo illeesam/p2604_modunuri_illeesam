@@ -134,6 +134,17 @@ window.OdClaimMng = {
       }
     };
 
+    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ OdClaimMng : fnCallbackModal -> ', cmd, param, result);
+      if (cmd === 'member-pick') {
+        if (result == null) { memberPick.open = false; return; }
+        return handleSelectAction('memberPickModal-select', result);
+      } else {
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      }
+    };
+
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
@@ -551,7 +562,7 @@ window.OdClaimMng = {
       claims, members, uiState, codes, searchParam, pager, detailPanel, checked, bulkForm, bulkOpen, memberPick,         // 상태 / 데이터
       baseSearchColumns, listGridColumns, apprContactFormColumns, apprTargetFormColumns, apprDetailFormColumns,           // 컬럼 정의
       bulkApprovalFormColumns,                                                                                            // 컬럼 정의
-      handleBtnAction, handleSelectAction,                                                                                // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, fnCallbackModal,                                                                 // dispatch + 모달 통합 콜백
       cfDetailEditId, cfIsViewMode, cfDetailKey, cfAllChecked, cfBuildTmplMsg, cfBulkPreview, cfSiteNm, cfCheckedByType,   // computed
       selectedId: computed(() => detailPanel.selectedId),                                                                 // template 직접 참조
       CLAIM_STATUS_BY_TYPE, CLAIM_TYPE_OPTIONS,                                                                           // 상수
@@ -767,9 +778,7 @@ window.OdClaimMng = {
       <!-- ===== ■. 회원 선택 팝업 ================================================ -->
       <!-- ===== ■. 영역 ====================================================== -->
       <od-member-pick-modal :show="memberPick.open" ui-nm="클레임관리"
-    subtitle="클레임 조회 기준 회원을 선택해주세요"
-    @select="m => handleSelectAction('memberPickModal-select', m)"
-    @close="handleBtnAction('memberPickModal-close')" />
+    subtitle="클레임 조회 기준 회원을 선택해주세요" modal-name="member-pick" :on-callback="fnCallbackModal" />
     </div>
     <!-- ===== □. 영역 ====================================================== -->
 `

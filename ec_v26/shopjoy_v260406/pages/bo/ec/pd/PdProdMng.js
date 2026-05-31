@@ -104,6 +104,17 @@ window.PdProdMng = {
       }
     };
 
+
+    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ PdProdMng : fnCallbackModal -> ', cmd, param, result);
+      if (cmd === 'category-pick') {
+        if (result == null) return handleBtnAction('catModal-close');
+        return handleSelectAction('catModal-select', result);
+      } else {
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      }
+    };
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
@@ -319,7 +330,7 @@ window.PdProdMng = {
     return {
       products, uiState, codes, searchParam, pager, detailPanel, catModal,        // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                          // 컬럼 정의
-      handleBtnAction, handleSelectAction,                                         // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, fnCallbackModal,                                         // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                         // computed
       fnStatusBadge, sortIcon,                                                     // 헬퍼
       inlineNavigate,                                                              // Dtl 콜백 (closure 필요)
@@ -415,9 +426,7 @@ window.PdProdMng = {
   <!-- ===== ■. 카테고리 선택 모달 ============================================== -->
   <bo-category-tree-modal
     v-if="catModal && catModal.show"
-    :exclude-id="null"
-    @select="cat => handleSelectAction('catModal-select', cat)"
-    @close="handleBtnAction('catModal-close')" />
+    :exclude-id="null" modal-name="category-pick" :on-callback="fnCallbackModal" />
   <!-- ===== □. 카테고리 선택 모달 ============================================== -->
   <!-- ===== ■. 하단 상세: ProdDtl 임베드 ====================================== -->
   <div v-if="detailPanel.selectedId" style="margin-top:4px;">

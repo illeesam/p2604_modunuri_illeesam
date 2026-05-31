@@ -98,6 +98,18 @@ window.SyUserMng = {
       }
     };
 
+    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ SyUserMng : fnCallbackModal -> ', cmd, param, result);
+      if (cmd === 'excel-upload') {
+        if (result == null) { excelUploadModal.show = false; return; }
+        /* saved: 목록 재조회 */
+        return handleSearchList();
+      } else {
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      }
+    };
+
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
@@ -362,7 +374,7 @@ window.SyUserMng = {
       users, uiState, codes, searchParam, pager, detailPanel, expanded, deptCounts,  // 상태 / 데이터
       excelUploadModal,                                                  // 엑셀 업로드 모달
       baseSearchColumns, baseGridColumns,                                // 컬럼 정의
-      handleBtnAction, handleSelectAction,                               // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, fnCallbackModal,                // dispatch + 모달 통합 콜백
       cfTree, cfDetailEditId, cfIsViewMode, cfDetailKey,                 // computed
       fnRowStyle,                                                        // 헬퍼
       inlineNavigate, showToast, showConfirm, setApiRes,                 // Dtl 콜백 (closure 필요)
@@ -465,9 +477,7 @@ window.SyUserMng = {
 
   <!-- ===== ■. 엑셀 업로드 모달 (도메인은 모달 안의 select 로 전환 가능) ===== -->
   <bo-excel-upload-modal v-if="excelUploadModal.show"
-    default-domain="user"
-    @close="excelUploadModal.show = false"
-    @saved="handleSearchList" />
+    default-domain="user" modal-name="excel-upload" :on-callback="fnCallbackModal" />
 </div>
 `,
 };

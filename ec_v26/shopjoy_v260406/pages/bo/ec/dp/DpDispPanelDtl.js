@@ -131,6 +131,26 @@ window.DpDispPanelDtl = {
       }
     };
 
+
+    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ DpDispPanelDtl : fnCallbackModal -> ', cmd, param, result);
+      if (cmd === 'widget-lib-pick') {
+        if (result == null) { uiState.libPickOpen = false; return; }
+        return handleSelectAction('libPick-select', result);
+      } else       if (cmd === 'row-pick') {
+        if (result == null) { uiState.rowCopyOpen = false; return; }
+        return handleSelectAction('rowCopyModal-copy', result);
+      } else       if (cmd === 'path-pick') {
+        if (result == null) { pathPickModal.show = false; return; }
+        return handleSelectAction('pathModal-pick', result);
+      } else if (cmd === 'disp-preview') {
+        if (result == null) return closePreview();
+        return;
+      } else {
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      }
+    };
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -900,7 +920,7 @@ window.DpDispPanelDtl = {
       uiState, pathPickModal, form, rows, codes, preview, cardPreview,              // 상태 / 데이터
       basePanelFormColumns, pathAreaFormColumns, widgetRowFormColumns,                // 컬럼 정의
       sectionInfoFormColumns, fileListGridColumns,                                    // 컬럼 정의
-      handleBtnAction, handleSelectAction,                                            // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, fnCallbackModal,                             // dispatch + 모달 통합 콜백
       cfIsNew, cfAreas, cfTabLabels, cfTabRowMap, cfActiveRowIdx, cfActiveRow,        // computed
       cfDisplayRows, cfRelatedEvent, cfFileListItems, cfPreviewWidget,                // computed
       cfCurrentAreaLabel, cfDtlMode, cfPreviewFrameWidth, cfVisibilityOptions,        // computed
@@ -2132,9 +2152,7 @@ window.DpDispPanelDtl = {
     :tab-label="preview.tabLabel"
     :area="form.area"
     :widgets="[]"
-    :widget="cfPreviewWidget"
-    @close="closePreview"
-    />
+    :widget="cfPreviewWidget" modal-name="disp-preview" :on-callback="fnCallbackModal" />
                       <!-- ===== □. 위젯미리보기 모달 =============================================== -->
                       <!-- ===== ■. 패널미리보기 오버레이 ============================================= -->
                       <div v-if="cardPreview && cardPreview.show" @click.self="closeCardPreview" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;display:flex;align-items:center;justify-content:center;">
@@ -2199,21 +2217,17 @@ window.DpDispPanelDtl = {
                     <!-- ===== □. 패널미리보기 오버레이 ============================================= -->
                     <!-- ===== ■. 전시위젯Lib 선택 팝업 =========================================== -->
                     <widget-lib-pick-modal v-if="libPickOpen" :mode="libPickMode"
-    :widget-libs="[] || []"
-    @close="uiState.libPickOpen=false"
-    @pick="lib => handleSelectAction('libPick-select', lib)" />
+    :widget-libs="[] || []" modal-name="widget-lib-pick" :on-callback="fnCallbackModal" />
                     <!-- ===== □. 전시위젯Lib 선택 팝업 =========================================== -->
                     <!-- ===== ■. 전시항목 복사 팝업 ============================================== -->
                     <row-pick-modal v-if="rowCopyOpen"
     :title="'전시항목 복사 [' + (form.name || '현재 패널') + ']'"
     :displays="[] || []"
     :areas="([]||[]).filter(c => c.codeGrp==='DISP_AREA')"
-    :exclude-panel-id="form.dispId"
-    @close="uiState.rowCopyOpen=false"
-    @pick-multi="rs => handleSelectAction('rowCopyModal-copy', rs)" />
+    :exclude-panel-id="form.dispId" modal-name="row-pick" :on-callback="fnCallbackModal" />
                     <!-- ===== □. 전시항목 복사 팝업 ============================================== -->
                     <!-- ===== ■. 조건부 영역 ================================================== -->
-                    <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="ec_disp_panel" :value="form.pathId" title="표시경로 선택" @select="pathId => handleSelectAction('pathModal-pick', pathId)" @close="pathPickModal.show=false" />
+                    <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="ec_disp_panel" :value="form.pathId" title="표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
                   </div>
                   <!-- ===== □. 조건부 영역 ================================================== -->
 `,

@@ -114,6 +114,17 @@ window.PdSetMng = {
       }
     };
 
+
+    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ PdSetMng : fnCallbackModal -> ', cmd, param, result);
+      if (cmd === 'category-pick') {
+        if (result == null) return handleBtnAction('categoryModal-close');
+        return handleSelectAction('categoryModal-select', result);
+      } else {
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      }
+    };
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -550,7 +561,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
       codes, uiState, setList, searchParam, pager,                                          // 상태 / 데이터
       dtlCategories, dtlItems, newForm, newErrors, pickerResults,                           // 상태 / 데이터
       baseSearchColumns, setGridColumns, setItemGridColumns, pickerGridColumns, newSetFormColumns, // 컬럼 정의
-      handleBtnAction, handleSelectAction,                                                  // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, fnCallbackModal,                                                  // dispatch (모든 이벤트 / 액션 라우팅)
       cfCatExcludeSet, cfDtlProdNm, cfSetPageRows, cfPickerList,                            // computed
       fnSetRowStyle, fnSetItemRowStyle,                                                     // 헬퍼
       getProdNm, getProd, getBrandNm, getCategoryNm, getCategoryDepth,                      // 헬퍼
@@ -879,8 +890,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
 </teleport>
 <!-- ===== □. 상품 피커 모달 ================================================ -->
 <!-- ===== ■. 카테고리 피커 모달 ============================================== -->
-<bo-category-tree mode="picker" :show="uiState.catPickerOpen" :exclude-ids="cfCatExcludeSet"
-    @select="cat => handleSelectAction('categoryModal-select', cat)" @close="handleBtnAction('categoryModal-close')" />
+<bo-category-tree mode="picker" :show="uiState.catPickerOpen" :exclude-ids="cfCatExcludeSet" modal-name="category-pick" :on-callback="fnCallbackModal" />
 </div>
 <!-- ===== □. 카테고리 피커 모달 ============================================== -->
 `

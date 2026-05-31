@@ -89,6 +89,17 @@ window.SyMenuMng = {
       }
     };
 
+
+    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ SyMenuMng : fnCallbackModal -> ', cmd, param, result);
+      if (cmd === 'parent-menu') {
+        if (result == null) return handleBtnAction('parentModal-close');
+        return handleSelectAction('parentModal-select', result);
+      } else {
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      }
+    };
     const _initSearchParam = () => {
       return { searchType: '', searchValue: '', type: '', useYn: 'Y' };
     };
@@ -337,7 +348,7 @@ window.SyMenuMng = {
     return {
       menus, uiState, menuCounts, codes, searchParam, gridRows, parentModal,         // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                // 컬럼 정의
-      handleBtnAction, handleSelectAction,                               // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, fnCallbackModal,                               // dispatch (모든 이벤트 / 액션 라우팅)
     };
   },
   template: /* html */`
@@ -376,7 +387,7 @@ window.SyMenuMng = {
         </template>
       </bo-grid-crud>
       <!-- ===== ■.■.■. 상위메뉴 선택 모달 ========================================= -->
-      <menu-tree-modal v-if="parentModal && parentModal.show" :exclude-id="parentModal.targetRow && parentModal.targetRow.menuId > 0 ? parentModal.targetRow.menuId : null" @select="menu => handleSelectAction('parentModal-select', menu)" @close="handleBtnAction('parentModal-close')" />
+      <menu-tree-modal v-if="parentModal && parentModal.show" :exclude-id="parentModal.targetRow && parentModal.targetRow.menuId > 0 ? parentModal.targetRow.menuId : null" modal-name="parent-menu" :on-callback="fnCallbackModal" />
     </div>
   </div>
   <!-- ===== □. 본문 영역 =================================================== -->

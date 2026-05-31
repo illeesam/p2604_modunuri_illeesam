@@ -71,6 +71,20 @@ window.SyTemplateDtl = {
       }
     };
 
+    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ SyTemplateDtl : fnCallbackModal -> ', cmd, param, result);
+      if (cmd === 'template-preview') {
+        if (result == null) return handleBtnAction('previewModal-close');
+        return;
+      } else if (cmd === 'template-send') {
+        if (result == null) return handleBtnAction('sendModal-close');
+        return;
+      } else {
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      }
+    };
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* handleLoadDetail — 상세 조회 */
     const handleLoadDetail = async () => {
@@ -169,7 +183,7 @@ window.SyTemplateDtl = {
     return {
       uiState, codes, form, errors,                                     // 상태 / 데이터
       baseFormColumns,                                                  // 컬럼 정의
-      handleBtnAction,                                                  // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, fnCallbackModal,                                   // dispatch + 모달 통합 콜백
       cfIsNew, cfDtlMode, cfUseHtmlEditor, cfIsLongContent,             // computed
       showToast, showConfirm,                                           // 모달 props
     };
@@ -227,13 +241,11 @@ window.SyTemplateDtl = {
     <!-- ===== □. 카드 영역 =================================================== -->
     <!-- ===== ■. 미리보기 모달 ================================================= -->
     <template-preview-modal v-if="uiState.previewOpen"
-    :tmpl="form" :sample-params="form.sampleParams"
-    @close="handleBtnAction('previewModal-close')" />
+    :tmpl="form" :sample-params="form.sampleParams" modal-name="template-preview" :on-callback="fnCallbackModal" />
     <!-- ===== □. 미리보기 모달 ================================================= -->
     <!-- ===== ■. 발송하기 모달 ================================================= -->
     <template-send-modal v-if="uiState.sendOpen"
-    :tmpl="form" :show-toast="showToast" :show-confirm="showConfirm"
-    @close="handleBtnAction('sendModal-close')" />
+    :tmpl="form" :show-toast="showToast" :show-confirm="showConfirm" modal-name="template-send" :on-callback="fnCallbackModal" />
     <!-- ===== □. 발송하기 모달 ================================================= -->
   </div>
 `,

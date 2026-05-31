@@ -90,6 +90,17 @@ window.SyUserDtl = {
       }
     };
 
+
+    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ SyUserDtl : fnCallbackModal -> ', cmd, param, result);
+      if (cmd === 'dept-pick') {
+        if (result == null) return handleBtnAction('deptModal-close');
+        return handleSelectAction('deptModal-select', result);
+      } else {
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      }
+    };
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* handleLoadDetail — 상세 조회 */
     const handleLoadDetail = async () => {
@@ -238,7 +249,7 @@ window.SyUserDtl = {
       uiState, codes, form, errors, addrDetailRef, deptModal,             // 상태 / 데이터
       baseFormColumns,                                                    // 컬럼 정의
       userRoleGridColumns, cfUserRoles,                                   // 역할 목록 (하단)
-      handleBtnAction, handleSelectAction,                                // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, fnCallbackModal,                                // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfDtlMode,                                                 // computed
       showToast,                                                          // BaseAttachOne 콜백
     };
@@ -325,7 +336,7 @@ window.SyUserDtl = {
   </div>
   <!-- ===== □. 적용 역할 목록 ================================================ -->
   <!-- ===== ■. 부서 선택 팝업 ================================================ -->
-  <dept-tree-modal v-if="deptModal && deptModal.show" :exclude-id="null" @select="dept => handleSelectAction('deptModal-select', dept)" @close="handleBtnAction('deptModal-close')" />
+  <dept-tree-modal v-if="deptModal && deptModal.show" :exclude-id="null" modal-name="dept-pick" :on-callback="fnCallbackModal" />
   <!-- ===== □. 부서 선택 팝업 ================================================ -->
 </div>
 `,

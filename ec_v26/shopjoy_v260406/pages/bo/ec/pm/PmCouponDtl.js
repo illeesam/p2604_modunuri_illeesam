@@ -116,6 +116,17 @@ window.PmCouponDtl = {
       }
     };
 
+
+    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ PmCouponDtl : fnCallbackModal -> ', cmd, param, result);
+      if (cmd === 'vendor-pick') {
+        if (result == null) return handleBtnAction('vendorModal-close');
+        return handleSelectAction('vendorModal-select', result);
+      } else {
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      }
+    };
     // 단건 조회
     /* loadVendors — 로드 */
     const loadVendors = async () => {
@@ -413,7 +424,7 @@ window.PmCouponDtl = {
       uiState, codes, form, errors, vendors,                                          // 상태 / 데이터
       infoFormColumns, detailIssueFormColumns, detailUseFormColumns,                  // 폼 컬럼 정의
       issuedGridColumns, usedGridColumns,                                             // 그리드 컬럼 정의
-      handleBtnAction, handleSelectAction,                                            // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, fnCallbackModal,                                            // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfHasId, cfSaveDisabled, cfIssuedList, cfUsedList, cfIssuedTop, cfUsedTop, cfSelectedVendorNm, tabs, // computed / reactive(tabs)
       tab, tabMode2, previewTab, barcodeContainer, qrcodeContainer, showVendorModal,  // toRef
       showTab,                                                                        // 헬퍼
@@ -466,8 +477,7 @@ window.PmCouponDtl = {
         </template>
       </bo-form-area>
       <!-- ===== ■.■.■. 판매업체 선택 모달 ========================================== -->
-      <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId"
-        @select="v => handleSelectAction('vendorModal-select', v)" @close="handleBtnAction('vendorModal-close')" />
+      <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId" modal-name="vendor-pick" :on-callback="fnCallbackModal" />
     </div>
     <!-- ===== □.□. 기본정보 탭 (BoFormArea 자동 렌더) ============================= -->
     <!-- ===== ■.■. 미리보기 ================================================== -->

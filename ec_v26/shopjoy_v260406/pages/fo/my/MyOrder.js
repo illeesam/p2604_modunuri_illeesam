@@ -105,6 +105,23 @@ window.MyOrder = {
       }
     };
 
+    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ MyOrder : fnCallbackModal -> ', cmd, param, result);
+      if (cmd === 'order-detail') {
+        if (result == null) { myStore.orderDetailModal.show = false; return; }
+        return;
+      } else if (cmd === 'product') {
+        if (result == null) { myStore.productModal.show = false; return; }
+        return;
+      } else if (cmd === 'customer') {
+        if (result == null) { myStore.customerModal.show = false; return; }
+        return;
+      } else {
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      }
+    };
+
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -331,7 +348,7 @@ window.MyOrder = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       uiState, codes,                                                        // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                                   // dispatch
+      handleBtnAction, handleSelectAction, fnCallbackModal,                    // dispatch + 모달 통합 콜백
       // ===== orders 영역 ======================================================
       myStore, orders, claimsByOrderId, cfDateFilteredOrders,
       pager, paginate, flowStatusFilter,
@@ -1205,11 +1222,11 @@ window.MyOrder = {
 </div>
 <!-- ===== □.□. 교환·반품 신청 모달 =========================================== -->
 <!-- ===== ■.■. 주문 상세 모달 ============================================== -->
-<OrderDetailModal :show="myStore.orderDetailModal.show" :order="myStore.orderDetailModal.order" @close="myStore.orderDetailModal.show=false" />
+<OrderDetailModal :show="myStore.orderDetailModal.show" :order="myStore.orderDetailModal.order" modal-name="order-detail" :on-callback="fnCallbackModal" />
 <!-- ===== ■.■. 상품 모달 ================================================= -->
-<ProductModal :show="myStore.productModal.show" :prod="myStore.productModal.prod" @close="myStore.productModal.show=false" />
+<ProductModal :show="myStore.productModal.show" :prod="myStore.productModal.prod" modal-name="product" :on-callback="fnCallbackModal" />
 <!-- ===== ■.■. 주문자 모달 ================================================ -->
-<CustomerModal :show="myStore.customerModal.show" :user="myStore.customerModal.user" :order="myStore.customerModal.order" @close="myStore.customerModal.show=false" />
+<CustomerModal :show="myStore.customerModal.show" :user="myStore.customerModal.user" :order="myStore.customerModal.order" modal-name="customer" :on-callback="fnCallbackModal" />
 </teleport>
 </fo-my-layout>
 <!-- ===== □.□. 주문자 모달 ================================================ -->

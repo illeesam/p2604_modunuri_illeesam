@@ -38,6 +38,17 @@ window.MyCache = {
       }
     };
 
+    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ MyCache : fnCallbackModal -> ', cmd, param, result);
+      if (cmd === 'order-detail') {
+        if (result == null) { myStore.orderDetailModal.show = false; return; }
+        return;
+      } else {
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      }
+    };
+
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -102,7 +113,7 @@ window.MyCache = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       uiState, codes,                                                        // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                                   // dispatch
+      handleBtnAction, handleSelectAction, fnCallbackModal,                    // dispatch + 모달 통합 콜백
       // ===== caches 영역 ======================================================
       myStore, cashBalance, cashHistory, chargeAmount,
       pager, paginate, cfDateFilteredHistory,
@@ -276,7 +287,7 @@ window.MyCache = {
   <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 영역 ====================================================== -->
   <Teleport to="body">
-    <OrderDetailModal :show="myStore.orderDetailModal.show" :order="myStore.orderDetailModal.order" @close="myStore.orderDetailModal.show=false" />
+    <OrderDetailModal :show="myStore.orderDetailModal.show" :order="myStore.orderDetailModal.order" modal-name="order-detail" :on-callback="fnCallbackModal" />
   </teleport>
 </fo-my-layout>
 <!-- ===== □. 영역 ====================================================== -->

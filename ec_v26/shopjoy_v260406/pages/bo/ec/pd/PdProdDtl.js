@@ -63,6 +63,20 @@ window.PdProdDtl = {
       console.warn('[handleSelectAction] unknown cmd:', cmd);
     };
 
+    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ PdProdDtl : fnCallbackModal -> ', cmd, param, result);
+      if (cmd === 'category-pick') {
+        if (result == null) { uiState.catPickerOpen = false; return; }
+        return addCategory(result);
+      } else if (cmd === 'code-grp') {
+        if (result == null) { codeGrpModal.show = false; return; }
+        return;
+      } else {
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      }
+    };
+
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -1347,7 +1361,7 @@ window.PdProdDtl = {
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
-    return { handleBtnAction, handleSelectAction,                                  // dispatch (상위 레벨 이벤트 / 액션 라우팅)
+    return { handleBtnAction, handleSelectAction, fnCallbackModal,                   // dispatch + 모달 통합 콜백
       cfIsNew, cfHasProdId, cfSaveDisabled, showTab, topTab, cfDtlMode, tabMode2, tabs, form, errors, handleSave, onPreview, codeGrpModal, openCodeGrpModal,
       tabPage, tabData, cfTabPageList, onTabPageChange, cfTabTotalPages, fnTabPageNos,
       uiState, cfMdUserList, cfMdUserListFiltered, cfMdSelectedNm, openMdModal, selectMdUser, mdSearchTypeRef, prodPickerSearchType,
@@ -1496,8 +1510,7 @@ window.PdProdDtl = {
         </template>
       </bo-form-area>
       <!-- ===== ■.■.■. 카테고리 피커 모달 ========================================== -->
-      <bo-category-tree mode="picker" :show="catPickerOpen" :exclude-ids="cfCatExcludeSet"
-        @select="addCategory" @close="catPickerOpen=false" />
+      <bo-category-tree mode="picker" :show="catPickerOpen" :exclude-ids="cfCatExcludeSet" modal-name="category-pick" :on-callback="fnCallbackModal" />
       <!-- ===== ■.■.■. 담당MD 선택 모달 ========================================== -->
       <teleport to="body">
         <div v-if="mdModalOpen"
@@ -2722,8 +2735,7 @@ window.PdProdDtl = {
 <bo-code-grp-modal
     :show="codeGrpModal.show"
     :code-grp="codeGrpModal.codeGrp"
-    :title="codeGrpModal.title"
-    @close="codeGrpModal.show=false" />
+    :title="codeGrpModal.title" modal-name="code-grp" :on-callback="fnCallbackModal" />
 </div>
 <!-- ===== □. 영역 ====================================================== -->
 `

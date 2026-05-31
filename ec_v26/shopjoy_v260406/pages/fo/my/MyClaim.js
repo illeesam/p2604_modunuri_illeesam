@@ -57,6 +57,23 @@ window.MyClaim = {
       }
     };
 
+    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ MyClaim : fnCallbackModal -> ', cmd, param, result);
+      if (cmd === 'order-detail') {
+        if (result == null) { myStore.orderDetailModal.show = false; return; }
+        return;
+      } else if (cmd === 'product') {
+        if (result == null) { myStore.productModal.show = false; return; }
+        return;
+      } else if (cmd === 'customer') {
+        if (result == null) { myStore.customerModal.show = false; return; }
+        return;
+      } else {
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      }
+    };
+
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -163,7 +180,7 @@ window.MyClaim = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       uiState, codes,                                                        // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                                   // dispatch
+      handleBtnAction, handleSelectAction, fnCallbackModal,                    // dispatch + 모달 통합 콜백
       // ===== claims 영역 ======================================================
       myStore, claims, claimFilter, filteredClaims, orders,
       pager, paginate, cfDateFilteredClaims, claimStatusFilter,
@@ -436,9 +453,9 @@ window.MyClaim = {
 <!-- ===== □. 영역 ====================================================== -->
 <!-- ===== ■. 영역 ====================================================== -->
 <Teleport to="body">
-  <OrderDetailModal :show="myStore.orderDetailModal.show" :order="myStore.orderDetailModal.order" @close="myStore.orderDetailModal.show=false" />
-  <ProductModal :show="myStore.productModal.show" :prod="myStore.productModal.prod" @close="myStore.productModal.show=false" />
-  <CustomerModal :show="myStore.customerModal.show" :user="myStore.customerModal.user" :order="myStore.customerModal.order" @close="myStore.customerModal.show=false" />
+  <OrderDetailModal :show="myStore.orderDetailModal.show" :order="myStore.orderDetailModal.order" modal-name="order-detail" :on-callback="fnCallbackModal" />
+  <ProductModal :show="myStore.productModal.show" :prod="myStore.productModal.prod" modal-name="product" :on-callback="fnCallbackModal" />
+  <CustomerModal :show="myStore.customerModal.show" :user="myStore.customerModal.user" :order="myStore.customerModal.order" modal-name="customer" :on-callback="fnCallbackModal" />
 </teleport>
 </fo-my-layout>
 <!-- ===== □. 영역 ====================================================== -->

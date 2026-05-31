@@ -102,6 +102,17 @@ window.PmGiftDtl = {
       }
     };
 
+
+    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ PmGiftDtl : fnCallbackModal -> ', cmd, param, result);
+      if (cmd === 'vendor-pick') {
+        if (result == null) return handleBtnAction('vendorModal-close');
+        return handleSelectAction('vendorModal-select', result);
+      } else {
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      }
+    };
     // 단건 조회
     /* loadVendors — 로드 */
     const loadVendors = async () => {
@@ -292,7 +303,7 @@ window.PmGiftDtl = {
     return {
       vendors, uiState, codes, form, errors,                                          // 상태 / 데이터
       infoFormColumns,                                                                // 폼 컬럼 정의
-      handleBtnAction, handleSelectAction,                                            // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, fnCallbackModal,                                            // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfHasId, cfSaveDisabled, cfIsView, cfVisibilityOptions, cfCondValLabel, cfSelectedVendorNm, // computed
       tab, tabMode2, showVendorModal,                                                 // toRef
       showTab, hasVisibility,                                                          // 헬퍼
@@ -341,8 +352,7 @@ window.PmGiftDtl = {
         </template>
       </bo-form-area>
       <!-- ===== ■.■.■. 판매업체 선택 모달 ========================================== -->
-      <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId"
-        @select="v => handleSelectAction('vendorModal-select', v)" @close="handleBtnAction('vendorModal-close')" />
+      <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId" modal-name="vendor-pick" :on-callback="fnCallbackModal" />
       <div class="form-actions" v-if="!cfIsView">
         <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           저장

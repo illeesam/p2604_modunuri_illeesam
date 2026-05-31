@@ -120,6 +120,17 @@ window.SyVendorUserMng = {
       }
     };
 
+
+    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ SyVendorUserMng : fnCallbackModal -> ', cmd, param, result);
+      if (cmd === 'role-select') {
+        if (result == null) return handleBtnAction('roleModal-close');
+        return handleBtnAction('roleModal-confirm');
+      } else {
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      }
+    };
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* handleLoadData — 처리 */
     const handleLoadData = async () => {
@@ -655,7 +666,7 @@ window.SyVendorUserMng = {
     return {
       uiState, codes, vendorUsers, vendors, bizPager, pager, formData, userRoles, roleTreeExpanded,            // 상태 / 데이터
       vendorSearchColumns, userSearchColumns, vendorGridColumns, userGridColumns, userRoleGridColumns, baseVendorUserFormColumns, // 컬럼 정의
-      handleBtnAction, handleSelectAction,                                                                     // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, fnCallbackModal,                                                                     // dispatch (모든 이벤트 / 액션 라우팅)
       cfVendorMap, cfFormRoleTree, cfFormAllowedRootCode, cfSelectedModalRole, cfModalMenuList,                // computed
       fnVendorNm, fnVendorTypeCd, fnVendorSummary, fnVendorStatusBadge, fnVendorStatusLabel,                   // 헬퍼
       fnVendorTypeBadge, fnVendorTypeLabel, fnStatusBadge, fnStatusLabel, fnVendorRowStyle, fnUserRowStyle,    // 헬퍼
@@ -792,8 +803,7 @@ window.SyVendorUserMng = {
 <!-- ===== □. 인라인 폼 =================================================== -->
 <!-- ===== ■. 역할 선택 모달 (BoRoleSelectModal) ============================ -->
 <bo-role-select-modal :show="uiState.roleModalOpen" title="🎭 역할 선택"
-  :confirm-disabled="!uiState.roleModalTemp"
-  @close="handleBtnAction('roleModal-close')" @confirm="handleBtnAction('roleModal-confirm')">
+  :confirm-disabled="!uiState.roleModalTemp" modal-name="role-select" :on-callback="fnCallbackModal">
   <!-- ===== □. 역할 선택 모달 (BoRoleSelectModal) ============================ -->
   <!-- ===== ■. 영역 ====================================================== -->
   <template #header-extra>

@@ -100,6 +100,17 @@ window.SyPathMng = {
       }
     };
 
+
+    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ SyPathMng : fnCallbackModal -> ', cmd, param, result);
+      if (cmd === 'parent-path') {
+        if (result == null) return handleBtnAction('parentModal-close');
+        return handleSelectAction('parentModal-select', result);
+      } else {
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      }
+    };
     const _initSearchParam = () => {
       return { searchType: '', searchValue: '', bizCd: '', useYn: 'Y' };
     };
@@ -335,7 +346,7 @@ window.SyPathMng = {
     return {
       uiState, searchParam, codes, expanded, gridRows, pager, parentModal,         // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                          // 컬럼 정의
-      handleBtnAction, handleSelectAction,                                         // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, fnCallbackModal,                                         // dispatch (모든 이벤트 / 액션 라우팅)
       cfTree, cfParentTree, cfDirtyRows,                                           // computed
       fnRowClass,                                                                  // 헬퍼
     };
@@ -393,8 +404,7 @@ window.SyPathMng = {
   <bo-tree-selector-modal :show="parentModal.show" title="부모경로 선택"
     :node="cfParentTree" :expanded="parentModal.expanded"
     :on-toggle="id => handleBtnAction('parentModal-toggle', id)"
-    root-label="(루트 — 상위없음)"
-    @select="pid => handleSelectAction('parentModal-select', pid)" @close="handleBtnAction('parentModal-close')" />
+    root-label="(루트 — 상위없음)" modal-name="parent-path" :on-callback="fnCallbackModal" />
   <!-- ===== □. 부모경로 선택 모달 (BoTreeSelectorModal) ======================== -->
 </div>
 `,

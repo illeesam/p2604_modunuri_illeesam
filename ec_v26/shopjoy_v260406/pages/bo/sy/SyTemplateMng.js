@@ -106,6 +106,23 @@ window.SyTemplateMng = {
       }
     };
 
+
+    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ SyTemplateMng : fnCallbackModal -> ', cmd, param, result);
+      if (cmd === 'path-pick') {
+        if (result == null) return handleBtnAction('pathModal-close');
+        return handleSelectAction('pathModal-pick', result);
+      } else if (cmd === 'template-preview') {
+        if (result == null) return handleBtnAction('previewModal-close');
+        return;
+      } else if (cmd === 'template-send') {
+        if (result == null) return handleBtnAction('sendModal-close');
+        return;
+      } else {
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      }
+    };
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
@@ -355,7 +372,7 @@ window.SyTemplateMng = {
     return {
       templates, uiState, templateCounts, codes, searchParam, pager, detailPanel, pathPickModal, previewModal, sendModal, // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                                                  // 컬럼 정의
-      handleBtnAction, handleSelectAction,                                                                 // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, fnCallbackModal,                                                                 // dispatch (모든 이벤트 / 액션 라우팅)
       cfDetailEditId, cfIsViewMode, cfDetailKey,                                                           // computed
       fnRowStyle,                                                                                          // 헬퍼
       inlineNavigate, handleSearchList,                                                                    // Dtl 콜백 (closure 필요)
@@ -424,8 +441,8 @@ window.SyTemplateMng = {
         </template>
       </bo-grid>
       <!-- ===== ■.■.■. 미리보기/발송 모달 (position:fixed) ========================= -->
-      <template-preview-modal v-if="previewModal && previewModal.show" :tmpl="previewModal.template" :sample-params="previewModal.template?.sampleParams || '{}'" @close="handleBtnAction('previewModal-close')" />
-      <template-send-modal v-if="sendModal && sendModal.show" :tmpl="sendModal.template" :show-toast="showToast" :show-confirm="showConfirm" @close="handleBtnAction('sendModal-close')" />
+      <template-preview-modal v-if="previewModal && previewModal.show" :tmpl="previewModal.template" :sample-params="previewModal.template?.sampleParams || '{}'" modal-name="template-preview" :on-callback="fnCallbackModal" />
+      <template-send-modal v-if="sendModal && sendModal.show" :tmpl="sendModal.template" :show-toast="showToast" :show-confirm="showConfirm" modal-name="template-send" :on-callback="fnCallbackModal" />
     </div>
     <!-- ===== □.□. 경로 트리 ================================================= -->
     <!-- ===== ■.■. 수정 패널 (grid 직접 자식 → 전체 폭) ============================= -->
@@ -440,7 +457,7 @@ window.SyTemplateMng = {
         :reload-trigger="detailPanel.reloadTrigger"
         :on-list-reload="handleSearchList" />
     </div>
-    <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_template" :value="pathPickModal.row ? pathPickModal.row.pathId : null" @select="pid => handleSelectAction('pathModal-pick', pid)" @close="handleBtnAction('pathModal-close')" />
+    <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_template" :value="pathPickModal.row ? pathPickModal.row.pathId : null" modal-name="path-pick" :on-callback="fnCallbackModal" />
   </div>
   <!-- ===== □.□. 수정 패널 (grid 직접 자식 → 전체 폭) ============================= -->
   <!-- ===== □. 좌 트리 + 우 영역 ============================================= -->

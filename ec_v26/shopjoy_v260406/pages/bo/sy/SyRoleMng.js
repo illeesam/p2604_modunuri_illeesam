@@ -168,12 +168,12 @@ window.SyRoleMng = {
       }
     };
 
-    /* callbackModal — 모든 모달의 select/close 콜백 통합 dispatch.
+    /* fnCallbackModal — 모든 모달의 select/close 콜백 통합 dispatch.
      *   cmd    = 모달 이름 (예: 'user-select', 'parent-pick', 'path-pick', 'excel-upload')
      *   params = { action: 'select'|'close', data: payload }
      */
-    const callbackModal = (cmd, params = {}) => {
-      console.log(' ■■ SyRoleMng.js : callbackModal -> ', cmd, params);
+    const fnCallbackModal = (cmd, params = {}) => {
+      console.log(' ■■ SyRoleMng.js : fnCallbackModal -> ', cmd, params);
       const action = params.action;
       const data = params.data;
       if (cmd === 'user-select') {
@@ -197,7 +197,7 @@ window.SyRoleMng = {
         if (action === 'saved') { excelUploadModal.show = false; return handleSearchList(); }
         if (action === 'close') { excelUploadModal.show = false; return; }
       } else {
-        console.warn('[callbackModal] unknown cmd:', cmd);
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
       }
     };
 
@@ -838,7 +838,7 @@ window.SyRoleMng = {
       baseSearchColumns, baseGridColumns,                                                                    // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                                   // dispatch (모든 이벤트 / 액션 라우팅)
       cfTree, cfShowRoleSetting, cfSelectedRoleNm, cfMenuTree, cfMenuAllChecked,                            // computed
-      fnRoleUsersList, callbackModal,                                                                       // 함수 / 모달 콜백 dispatch
+      fnRoleUsersList, fnCallbackModal,                                                                       // 함수 / 모달 콜백 dispatch
       fnPermColor, getMenuPerm, isMenuChecked,                                                               // 헬퍼
       pathPickModal, roleTreeModal,                                                                          // 모달 상태
       showToast, showConfirm,                                                                                // 모달 콜백
@@ -1041,28 +1041,20 @@ window.SyRoleMng = {
           </div>
         </div>
         <!-- ===== ■.■.■. 사용자 선택 모달 =========================================== -->
-        <bo-user-select-modal v-if="uiState.userSelectOpen"
-          @select="users => callbackModal('user-select', { action:'select', data: users })"
-          @close="callbackModal('user-select', { action:'close' })" />
+        <bo-user-select-modal v-if="uiState.userSelectOpen" modal-name="user-select" :on-callback="fnCallbackModal" />
         <!-- ===== ■.■.■. 상위역할 선택 모달 ========================================== -->
         <role-tree-modal v-if="roleTreeModal && roleTreeModal.show"
-          :exclude-id="roleTreeModal.targetRow && roleTreeModal.targetRow.roleId > 0 ? roleTreeModal.targetRow.roleId : null"
-          @select="role => callbackModal('parent-pick', { action:'select', data: role })"
-          @close="callbackModal('parent-pick', { action:'close' })" />
+          :exclude-id="roleTreeModal.targetRow && roleTreeModal.targetRow.roleId > 0 ? roleTreeModal.targetRow.roleId : null" modal-name="parent-pick" :on-callback="fnCallbackModal" />
       </div>
     </div>
     <!-- ===== □. 좌 트리 + 우 영역 ============================================= -->
     <!-- ===== ■. 조건부 영역 ================================================== -->
     <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_role"
-      :value="pathPickModal.row ? pathPickModal.row.pathId : null"
-      @select="pathId => callbackModal('path-pick', { action:'select', data: pathId })"
-      @close="callbackModal('path-pick', { action:'close' })" />
+      :value="pathPickModal.row ? pathPickModal.row.pathId : null" modal-name="path-pick" :on-callback="fnCallbackModal" />
 
     <!-- ===== ■. 엑셀 업로드 모달 (도메인은 모달 안의 select 로 전환 가능) ===== -->
     <bo-excel-upload-modal v-if="excelUploadModal.show"
-      default-domain="role"
-      @close="callbackModal('excel-upload', { action:'close' })"
-      @saved="callbackModal('excel-upload', { action:'saved' })" />
+      default-domain="role" modal-name="excel-upload" :on-callback="fnCallbackModal" />
   </div>
   <!-- ===== □. 조건부 영역 ================================================== -->
 `,

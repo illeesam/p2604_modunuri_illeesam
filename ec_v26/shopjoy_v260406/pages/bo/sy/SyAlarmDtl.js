@@ -77,6 +77,17 @@ window.SyAlarmDtl = {
       }
     };
 
+
+    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ SyAlarmDtl : fnCallbackModal -> ', cmd, param, result);
+      if (cmd === 'path-pick') {
+        if (result == null) return handleBtnAction('pathModal-close');
+        return handleSelectAction('pathModal-pick', result);
+      } else {
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      }
+    };
     /* pathLabel — 경로 라벨 변환 */
     const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
 
@@ -174,7 +185,7 @@ window.SyAlarmDtl = {
     return {
       uiState, codes, form, errors, pathPickModal,  // 상태 / 데이터
       baseFormColumns,                              // 컬럼 정의
-      handleBtnAction, handleSelectAction,          // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, fnCallbackModal,          // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfSiteNm, cfDtlMode,                 // computed
     };
   },
@@ -207,8 +218,7 @@ window.SyAlarmDtl = {
   <!-- ===== ■. 표시경로 선택 모달 ============================================= -->
   <path-pick-modal v-if="pathPickModal.show" biz-cd="sy_alarm"
     :value="form.pathId"
-    title="알림 표시경로 선택"
-    @select="pathId => handleSelectAction('pathModal-pick', pathId)" @close="handleBtnAction('pathModal-close')" />
+    title="알림 표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
 </div>
 `,
 };

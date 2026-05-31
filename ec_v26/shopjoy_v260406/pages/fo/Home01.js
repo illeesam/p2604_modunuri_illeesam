@@ -76,6 +76,17 @@ window.Home01 = {
       }
     };
 
+
+    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ Home01 : fnCallbackModal -> ', cmd, param, result);
+      if (cmd === 'quick-view') {
+        if (result == null) return handleBtnAction('quickViewModal-close');
+        return;
+      } else {
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      }
+    };
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -147,7 +158,7 @@ window.Home01 = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       uiState, codes, banners, siteConfig,                                 // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                                 // dispatch
+      handleBtnAction, handleSelectAction, fnCallbackModal,                                 // dispatch
       cfNewProds, cfBestProds, cfAllHomeProds, cfSaleProds,                // computed
       fnCategoryLabel, fnCatEmoji, isLiked,                                // 헬퍼
       selectProd, toggleLike,                                              // 모달 전달용
@@ -444,7 +455,7 @@ window.Home01 = {
 </div>
 <!-- ===== □. ══ 블로그 포스트 ══ =========================================== -->
 <!-- ===== ■. ══ 빠른보기 모달 (ProductModal 컴포넌트) ══ ======================= -->
-<prod-modal :show="!!uiState.quickViewProduct" :prod="uiState.quickViewProduct" :cart-mode="uiState.cartModalMode" :navigate="(page, opts) => { if(opts&&opts.instantOrder){ navigate('order',opts); uiState.quickViewProduct=null; } else { selectProd(uiState.quickViewProduct); uiState.quickViewProduct=null; } }" :toggle-like="toggleLike" :is-liked="isLiked" @close="handleBtnAction('quickViewModal-close')" />
+<prod-modal :show="!!uiState.quickViewProduct" :prod="uiState.quickViewProduct" :cart-mode="uiState.cartModalMode" :navigate="(page, opts) => { if(opts&&opts.instantOrder){ navigate('order',opts); uiState.quickViewProduct=null; } else { selectProd(uiState.quickViewProduct); uiState.quickViewProduct=null; } }" :toggle-like="toggleLike" :is-liked="isLiked" modal-name="quick-view" :on-callback="fnCallbackModal" />
 </div>
 <!-- ===== □. ══ 빠른보기 모달 (ProductModal 컴포넌트) ══ ======================= -->
 `

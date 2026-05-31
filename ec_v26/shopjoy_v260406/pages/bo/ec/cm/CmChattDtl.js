@@ -95,6 +95,17 @@ window.CmChattDtl = {
       }
     };
 
+    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ CmChattDtl : fnCallbackModal -> ', cmd, param, result);
+      if (cmd === 'ref') {
+        if (result == null) return handleBtnAction('refModal-close');
+        return;
+      } else {
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      }
+    };
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* handleSearchDetail — 상세 조회 */
     const handleSearchDetail = async () => {
@@ -278,7 +289,7 @@ window.CmChattDtl = {
     return {
       uiState, codes, form, errors, refModal, msgBoxRef, cfUserChats,                  // 상태 / 데이터
       memberChatGridColumns, userChatGridColumns, newFormColumns,                      // 컬럼 정의
-      handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, fnCallbackModal,                              // dispatch + 모달 통합 콜백
       cfIsNew, cfDtlMode, cfMemberChats, tabs, newTabs,                                // computed / reactive(tabs)
       showTab, hasRef, refLabel,                                                       // 헬퍼
       showRefModal,                                                                    // 참조 모달 (직접 호출)
@@ -439,8 +450,7 @@ window.CmChattDtl = {
   <!-- ===== □. 신규 채팅 등록 ================================================ -->
   <!-- ===== ■. 메시지 내 참조 모달 (상품/주문/클레임) ================================= -->
   <bo-modal :show="refModal.show"
-    :title="refModal.type==='product'?'상품 상세':refModal.type==='order'?'주문 상세':'클레임 상세'"
-    @close="handleBtnAction('refModal-close')">
+    :title="refModal.type==='product'?'상품 상세':refModal.type==='order'?'주문 상세':'클레임 상세'" modal-name="ref" :on-callback="fnCallbackModal">
     <div style="text-align:center;color:#aaa;padding:20px;">
       정보를 찾을 수 없습니다.
     </div>

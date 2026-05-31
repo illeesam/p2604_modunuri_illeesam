@@ -87,6 +87,20 @@ window.DpDispWidgetLibDtl = {
       }
     };
 
+
+    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ DpDispWidgetLibDtl : fnCallbackModal -> ', cmd, param, result);
+      if (cmd === 'widget-lib-pick') {
+        if (result == null) return handleBtnAction('libPickModal-close');
+        return handleSelectAction('libPickModal-select', result);
+      } else       if (cmd === 'path-pick') {
+        if (result == null) return handleBtnAction('pathModal-close');
+        return handleSelectAction('pathModal-pick', result);
+      } else {
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      }
+    };
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -644,7 +658,7 @@ window.DpDispWidgetLibDtl = {
     return {
       pathPickModal, uiState, codes, form, errors,                                   // 상태 / 데이터
       baseLibFormColumns, clickActionFormColumns,                                    // 컬럼 정의
-      handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, fnCallbackModal,                            // dispatch + 모달 통합 콜백
       cfDtlMode, cfIsNew, cfDisplayRows, cfFileListItems,                            // computed
       cfPreviewWidget, cfSampleJson, cfPreviewFrameWidth,                            // computed
       cfIsImage, cfIsProduct, cfIsCondProduct, cfIsChart, cfIsText, cfIsInfo,        // computed (위젯 유형 분기)
@@ -682,9 +696,7 @@ window.DpDispWidgetLibDtl = {
       </button>
     </div>
     <widget-lib-pick-modal v-if="libPickOpen" mode="copy"
-      :widget-libs="[] || []"
-      @close="handleBtnAction('libPickModal-close')"
-      @pick="lib => handleSelectAction('libPickModal-select', lib)" />
+      :widget-libs="[] || []" modal-name="widget-lib-pick" :on-callback="fnCallbackModal" />
   </div>
   <!-- ===== □. 헤더 ====================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
@@ -905,7 +917,7 @@ window.DpDispWidgetLibDtl = {
       <!-- ===== □.□. 오른쪽: 위젯Lib미리보기 ======================================== -->
       <!-- ===== □. 본문 영역 =================================================== -->
       <!-- ===== ■. 조건부 영역 ================================================== -->
-      <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="ec_disp_widget_lib" :value="form.pathId" title="위젯 표시경로 선택" @select="pathId => handleSelectAction('pathModal-pick', pathId)" @close="handleBtnAction('pathModal-close')" />
+      <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="ec_disp_widget_lib" :value="form.pathId" title="위젯 표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
     </div>
     <!-- ===== □. 조건부 영역 ================================================== -->
 `

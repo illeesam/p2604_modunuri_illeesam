@@ -144,6 +144,20 @@ window.DpDispUiDtl = {
       }
     };
 
+
+    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ DpDispUiDtl : fnCallbackModal -> ', cmd, param, result);
+      if (cmd === 'area-pick') {
+        if (result == null) return handleBtnAction('pickModal-close');
+        return handleSelectAction('pickModal-select', result);
+      } else       if (cmd === 'path-pick') {
+        if (result == null) return handleBtnAction('pathModal-close');
+        return handleSelectAction('pathModal-pick', result);
+      } else {
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      }
+    };
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -448,7 +462,7 @@ window.DpDispUiDtl = {
     return {
       codes, uis, areas, uiState, pathPickModal, form, errors,                       // 상태 / 데이터
       baseUiFormColumns, settingUiFormColumns, pathPickFormColumns,                  // 컬럼 정의
-      handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, fnCallbackModal,                            // dispatch + 모달 통합 콜백
       cfIsNew, cfRelatedAreas, cfActiveArea, cfPreviewFrameWidth,                    // computed
       cfAvailableAreas, cfVisibilityOptions,                                         // computed
       activeTab, previewMode, expanded, pickOpen, previewPaneWidth,                  // toRef
@@ -923,12 +937,10 @@ window.DpDispUiDtl = {
       <area-pick-modal v-if="pickOpen"
     :title="'전시영역 추가 [' + form.codeValue + ']'"
     :areas="cfAvailableAreas"
-    :exclude-ui="form.codeValue"
-    @close="handleBtnAction('pickModal-close')"
-    @pick="a => handleSelectAction('pickModal-select', a)" />
+    :exclude-ui="form.codeValue" modal-name="area-pick" :on-callback="fnCallbackModal" />
       <!-- ===== □. 영역 선택 팝업 ================================================ -->
       <!-- ===== ■. 조건부 영역 ================================================== -->
-      <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="ec_disp_ui" :value="form.pathId" title="UI 표시경로 선택" @select="pathId => handleSelectAction('pathModal-pick', pathId)" @close="handleBtnAction('pathModal-close')" />
+      <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="ec_disp_ui" :value="form.pathId" title="UI 표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
       <!-- ===== □. 조건부 영역 ================================================== -->
     </div>
 `,

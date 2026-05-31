@@ -213,6 +213,20 @@ window.DpDispUiSimul = {
       }
     };
 
+    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ DpDispUiSimul : fnCallbackModal -> ', cmd, param, result);
+      if (cmd === 'disp-ui') {
+        if (result == null) { uiState.dispUiModalOpen = false; return; }
+        /* open-popup 응답: result = scope (fo/bo) */
+        openDispUiPopup(result || 'fo');
+        uiState.dispUiModalOpen = false;
+        return;
+      } else {
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      }
+    };
+
     /* handleSearchData — 처리 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
       try {
@@ -1077,7 +1091,7 @@ window.DpDispUiSimul = {
     const tabMode = Vue.toRef(uiState, 'tabMode');
 
     return {
-      handleBtnAction, handleSelectAction,                                          // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, fnCallbackModal,                           // dispatch + 모달 통합 콜백
       today, cfSiteNm, codes,
       uiState, switchTab,
       searchParam,
@@ -1531,10 +1545,7 @@ window.DpDispUiSimul = {
       <disp-ui-modal
     :show="uiState.dispUiModalOpen"
     :params="cfDispUiParamObj" :disp-opt="cfDispOpt"
-    title="DispUi미리보기"
-    @close="uiState.dispUiModalOpen=false"
-    @open-popup="(scope) => { openDispUiPopup(scope || 'fo'); uiState.dispUiModalOpen=false; }"
-    />
+    title="DispUi미리보기" modal-name="disp-ui" :on-callback="fnCallbackModal" />
       <!-- ===== □. DispUi 모달 =============================================== -->
       <!-- ===== ■. DispUi 사이트 선택 모달 ======================================== -->
       <div v-if="dispUiSiteModalOpen"

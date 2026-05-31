@@ -91,6 +91,17 @@ window.SyAlarmMng = {
       }
     };
 
+
+    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ SyAlarmMng : fnCallbackModal -> ', cmd, param, result);
+      if (cmd === 'path-pick') {
+        if (result == null) return handleBtnAction('pathModal-close');
+        return handleSelectAction('pathModal-pick', result);
+      } else {
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      }
+    };
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
@@ -370,7 +381,7 @@ window.SyAlarmMng = {
     return {
       alarms, uiState, alarmCounts, codes, searchParam, pager, detailModal, pathPickModal,         // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                              // 컬럼 정의
-      handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, fnCallbackModal,                                             // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                             // computed
       fnRowStyle,                                                                      // 헬퍼
       inlineNavigate, showToast, showConfirm, setApiRes,                               // Dtl props (closure 필요)
@@ -445,7 +456,7 @@ window.SyAlarmMng = {
         :reload-trigger="detailModal.reloadTrigger" />
     </div>
     <!-- ===== ■.■. 표시경로 선택 모달 ========================================== -->
-    <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_alarm" :value="pathPickModal.row ? pathPickModal.row.pathId : null" @select="pathId => handleSelectAction('pathModal-pick', pathId)" @close="handleBtnAction('pathModal-close')" />
+    <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_alarm" :value="pathPickModal.row ? pathPickModal.row.pathId : null" modal-name="path-pick" :on-callback="fnCallbackModal" />
   </div>
   <!-- ===== □. 좌 트리 + 우 영역 ============================================= -->
 </div>

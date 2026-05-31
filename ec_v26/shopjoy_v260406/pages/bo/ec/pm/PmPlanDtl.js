@@ -129,6 +129,20 @@ window.PmPlanDtl = {
       }
     };
 
+
+    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ PmPlanDtl : fnCallbackModal -> ', cmd, param, result);
+      if (cmd === 'vendor-pick') {
+        if (result == null) return handleBtnAction('vendorModal-close');
+        return handleSelectAction('vendorModal-select', result);
+      } else if (cmd === 'prod-pick') {
+        if (result == null) return handleBtnAction('prodPickModal-close');
+        return handleSelectAction('prodPickModal-toggle', result);
+      } else {
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      }
+    };
     // 단건 조회 + 상품목록 로드
     /* loadVendors — 로드 */
     const loadVendors = async () => {
@@ -354,7 +368,7 @@ window.PmPlanDtl = {
     return {
       vendors, products, uiState, codes, form, errors, VISIBILITY_OPTIONS,           // 상태 / 데이터
       infoFormColumns, vendorFormColumns,                                            // 폼 컬럼 정의
-      handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, fnCallbackModal,                                           // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfHasId, cfSaveDisabled, cfDtlMode, cfFilteredProds, cfSelectedProducts, cfSelectedVendorNm, // computed
       tab, tabMode2, activeContentTab, prodSearch, showProdPopup, showVendorModal,   // toRef
       showTab, isSelected, hasVisibility,                                            // 헬퍼
@@ -442,8 +456,7 @@ window.PmPlanDtl = {
         </bo-form-area>
       </div>
       <!-- ===== ■.■.■. 판매업체 선택 모달 ========================================== -->
-      <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId"
-        @select="v => handleSelectAction('vendorModal-select', v)" @close="handleBtnAction('vendorModal-close')" />
+      <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId" modal-name="vendor-pick" :on-callback="fnCallbackModal" />
       <div class="form-actions" v-if="!cfDtlMode">
         <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           💾 저장
@@ -624,7 +637,7 @@ window.PmPlanDtl = {
 <!-- ===== □. 탭 컨텐츠 =================================================== -->
 <!-- ===== ■. 상품선택 모달 ================================================= -->
 <simple-prod-pick-modal :show="showProdPopup" :prods="products" :selected-ids="form.productIds"
-  title="상품선택" @toggle="pid => handleSelectAction('prodPickModal-toggle', pid)" @close="handleBtnAction('prodPickModal-close')" />
+  title="상품선택" modal-name="prod-pick" :on-callback="fnCallbackModal" />
 <!-- ===== □. 상품선택 모달 ================================================= -->
 `
 };

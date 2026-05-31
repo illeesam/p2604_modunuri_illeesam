@@ -72,6 +72,17 @@ window.PmCacheDtl = {
       }
     };
 
+
+    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ PmCacheDtl : fnCallbackModal -> ', cmd, param, result);
+      if (cmd === 'vendor-pick') {
+        if (result == null) return handleBtnAction('vendorModal-close');
+        return handleSelectAction('vendorModal-select', result);
+      } else {
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      }
+    };
     // ===== Vue Composition API / boApp 전역 의존 ===========================
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, onMounted, watch } = Vue;
@@ -262,7 +273,7 @@ window.PmCacheDtl = {
     return {
       vendors, uiState, codes, form, errors,                                        // 상태 / 데이터
       baseFormColumns, cacheHistGridColumns,                                         // 컬럼 정의
-      handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, fnCallbackModal,                                           // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfDtlMode, cfMemberCacheHistory, cfTotalBalance, cfSelectedVendorNm, // computed
       tab, tabMode2, showVendorModal,                                                // toRef
       showTab, fnTypeBadge,                                                          // 헬퍼
@@ -324,8 +335,7 @@ window.PmCacheDtl = {
         </template>
       </bo-form-area>
       <!-- ===== ■.■.■. 판매업체 선택 모달 ========================================== -->
-      <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId"
-        @select="v => handleSelectAction('vendorModal-select', v)" @close="handleBtnAction('vendorModal-close')" />
+      <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId" modal-name="vendor-pick" :on-callback="fnCallbackModal" />
       <!-- ===== ■.■.■. 폼 액션 버튼 (수정/저장/취소/닫기) =============================== -->
       <div class="form-actions" v-if="!cfDtlMode">
         <template v-if="cfDtlMode">

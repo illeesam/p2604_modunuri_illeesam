@@ -82,6 +82,20 @@ window.PmVoucherDtl = {
       }
     };
 
+
+    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ PmVoucherDtl : fnCallbackModal -> ', cmd, param, result);
+      if (cmd === 'vendor-pick') {
+        if (result == null) return handleBtnAction('vendorModal-close');
+        return handleSelectAction('vendorModal-select', result);
+      } else if (cmd === 'sns') {
+        if (result == null) return handleBtnAction('snsModal-close');
+        return;
+      } else {
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      }
+    };
     const loadVendors = async () => {
       try {
         const _vr = await boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, '관리', '조회');
@@ -372,7 +386,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
     return {
       vendors, showVendorModal, uiState, codes, form, errors, snsModal, snsMsg,        // 상태 / 데이터
       infoFormColumns, issueGridColumns, usageGridColumns,                             // 컬럼 정의
-      handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, fnCallbackModal,                                             // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfHasId, cfSaveDisabled, cfDtlMode, cfIssuedList, cfUsedList, cfSelectedVendorNm, tabs, // computed / reactive(tabs)
       tab, tabMode2, previewTab, barcodeContainer, qrcodeContainer,                    // toRef
       showTab, DEFAULT_START, DEFAULT_END,                                             // 헬퍼
@@ -421,8 +435,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
     </bo-form-area>
     <!-- ===== □.□. 폼 영역 ================================================== -->
     <!-- ===== ■.■. 판매업체 선택 모달 ============================================ -->
-    <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId"
-      @select="v => handleSelectAction('vendorModal-select', v)" @close="handleBtnAction('vendorModal-close')" />
+    <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId" modal-name="vendor-pick" :on-callback="fnCallbackModal" />
     <div class="form-actions" v-if="!cfDtlMode">
       <button @click="handleBtnAction('form-save')" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요. (발급/사용/미리보기 탭은 조회 전용)' : ''" class="btn btn-primary">
         {{ cfIsNew ? '등록' : '저장' }}
@@ -692,7 +705,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
   <!-- ===== ■. SNS 전송 모달 =============================================== -->
   <bo-modal :show="snsModal.show"
     :title="(snsModal.channel==='kakao' ? '💬 카카오톡' : '📧 이메일') + ' 전송'"
-    width="500px" @close="handleBtnAction('snsModal-close')">
+    width="500px" modal-name="sns" :on-callback="fnCallbackModal">
     <div style="margin-bottom:12px;">
       <label class="form-label">
         전송 메시지

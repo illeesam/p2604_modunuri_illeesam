@@ -91,6 +91,17 @@ window.OdCartMng = {
       }
     };
 
+    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ OdCartMng : fnCallbackModal -> ', cmd, param, result);
+      if (cmd === 'member-pick') {
+        if (result == null) { memberPick.open = false; return; }
+        return handleSelectAction('memberPickModal-select', result);
+      } else {
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      }
+    };
+
     const _initSearchParam = () => ({ siteId: '', memberId: '', memberNm: '', searchType: '', searchValue: '', dateType: 'reg_date', dateStart: '', dateEnd: '' });
     const searchParam = reactive(_initSearchParam());
 
@@ -249,7 +260,7 @@ window.OdCartMng = {
     return {
       carts, pager, searchParam, uiState, codes, memberPick,                   // 상태 / 데이터
       baseSearchColumns, listGridColumns,                                      // 컬럼 정의
-      handleBtnAction, handleSelectAction,                                     // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, fnCallbackModal,                      // dispatch + 모달 통합 콜백
       cfAllChecked,                                                            // computed
       isChecked, fnGridRowStyle,                                               // 헬퍼
     };
@@ -311,9 +322,7 @@ window.OdCartMng = {
   <!-- ===== ■. 회원 선택 팝업 ================================================ -->
   <!-- ===== ■. 영역 ====================================================== -->
   <od-member-pick-modal :show="memberPick.open" ui-nm="장바구니관리"
-    subtitle="장바구니를 조회할 회원을 선택해주세요"
-    @select="m => handleSelectAction('memberPickModal-select', m)"
-    @close="handleBtnAction('memberPickModal-close')" />
+    subtitle="장바구니를 조회할 회원을 선택해주세요" modal-name="member-pick" :on-callback="fnCallbackModal" />
 </div>
 <!-- ===== □. 영역 ====================================================== -->
 `

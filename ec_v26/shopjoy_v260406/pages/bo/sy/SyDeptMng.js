@@ -98,6 +98,17 @@ window.SyDeptMng = {
       }
     };
 
+
+    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ SyDeptMng : fnCallbackModal -> ', cmd, param, result);
+      if (cmd === 'parent-dept') {
+        if (result == null) return handleBtnAction('parentModal-close');
+        return handleSelectAction('parentModal-select', result);
+      } else {
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      }
+    };
     const _initSearchParam = () => {
       return { searchType: '', searchValue: '', type: '', useYn: 'Y' };
     };
@@ -408,7 +419,7 @@ window.SyDeptMng = {
     return {
       depts, uiState, codes, searchParam, gridRows, expanded, parentModal,                                   // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                                                    // 컬럼 정의
-      handleBtnAction, handleSelectAction,                                                                   // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, fnCallbackModal,                                                                   // dispatch (모든 이벤트 / 액션 라우팅)
       cfTree, cfDeptCounts,                                                                                  // computed
     };
   },
@@ -466,7 +477,7 @@ window.SyDeptMng = {
         </template>
       </bo-grid-crud>
       <!-- ===== ■.■.■. 상위부서 선택 모달 ========================================= -->
-      <dept-tree-modal v-if="parentModal && parentModal.show" :exclude-id="parentModal.targetRow && parentModal.targetRow.deptId > 0 ? parentModal.targetRow.deptId : null" @select="dept => handleSelectAction('parentModal-select', dept)" @close="handleBtnAction('parentModal-close')" />
+      <dept-tree-modal v-if="parentModal && parentModal.show" :exclude-id="parentModal.targetRow && parentModal.targetRow.deptId > 0 ? parentModal.targetRow.deptId : null" modal-name="parent-dept" :on-callback="fnCallbackModal" />
     </div>
   </div>
   <!-- ===== □. 본문 영역 =================================================== -->

@@ -87,6 +87,20 @@ window.SyBbsDtl = {
       }
     };
 
+
+    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ SyBbsDtl : fnCallbackModal -> ', cmd, param, result);
+      if (cmd === 'bbm-select') {
+        if (result == null) return handleBtnAction('bbmModal-close');
+        return handleSelectAction('bbmModal-select', result);
+      } else if (cmd === 'bbm-detail') {
+        if (result == null) return handleBtnAction('bbmDetail-close');
+        return;
+      } else {
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      }
+    };
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* onBbmSelect — 게시판 선택 결과 적용 */
     const onBbmSelect = (b) => {
@@ -222,7 +236,7 @@ window.SyBbsDtl = {
     return {
       uiState, codes, form, errors, showBbmModal, dtlId,                            // 상태 / 데이터
       baseFormColumns, siteFormColumns, bbmDetailColumns, contentFormColumns,        // 컬럼 정의
-      handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, fnCallbackModal,                                           // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfSiteNm, cfDtlMode, cfContentType, cfAllowAttach, cfAttachMaxCount,  // computed
       selectedBbm, showBbmDetail,                                                    // computed (ref)
       showToast, coUtil,                                                             // 헬퍼 / 의존
@@ -358,13 +372,11 @@ window.SyBbsDtl = {
 <!-- ===== □. 카드 영역 =================================================== -->
 <!-- ===== ■. 게시판 선택 팝업 =============================================== -->
 <bbm-select-modal
-    v-if="showBbmModal"
-    @select="b => handleSelectAction('bbmModal-select', b)"
-    @close="handleBtnAction('bbmModal-close')" />
+    v-if="showBbmModal" modal-name="bbm-select" :on-callback="fnCallbackModal" />
 <!-- ===== □. 게시판 선택 팝업 =============================================== -->
 <!-- ===== ■. 게시판 상세보기 팝업 ============================================= -->
 <bo-modal :show="coUtil.cofAnd(showBbmDetail, selectedBbm)" title="게시판 상세"
-    width="420px" @close="handleBtnAction('bbmDetail-close')">
+    width="420px" modal-name="bbm-detail" :on-callback="fnCallbackModal">
     <bo-form-area v-if="selectedBbm" :columns="bbmDetailColumns" :form="selectedBbm" :errors="{}"
       :cols="1" :show-actions="false" />
     <template #footer>

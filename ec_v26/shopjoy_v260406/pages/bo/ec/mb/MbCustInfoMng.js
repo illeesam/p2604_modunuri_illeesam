@@ -174,6 +174,17 @@
         }
       };
 
+      /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+      const fnCallbackModal = (cmd, param, result) => {
+        console.log(' ■■ MbCustInfoMng : fnCallbackModal -> ', cmd, param, result);
+        if (cmd === 'member-pick') {
+          if (result == null) return handleBtnAction('memberModal-close');
+          return handleSelectAction('memberModal-pick', result);
+        } else {
+          console.warn('[fnCallbackModal] unknown cmd:', cmd);
+        }
+      };
+
       /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
 
       /* ===== 영역별 메타 정의 (api / dateType / pager / rows / dateField) ===== */
@@ -503,7 +514,7 @@
         ordersPager, claimsPager, dlivPager, cachePager, contactsPager, chatsPager, loginPager, couponPager, sendPager, modalPager, // 페이저
         cfPageModalList,                                                                                                            // 모달용 클라이언트 슬라이스 (picker)
         onSetPage, onSizeChange,                                                                                                    // BoGrid pager 콜백
-        handleBtnAction, handleSelectAction,                                                                                        // dispatch (모든 이벤트 / 액션 라우팅)
+        handleBtnAction, handleSelectAction, fnCallbackModal,                                                                         // dispatch + 모달 통합 콜백
         cfDateFrom, cfDateTo, cfCustCacheBalance, tabs,                                                                             // computed
         showTab, fnFmtPrice,                                                                                                        // 헬퍼
       };
@@ -868,7 +879,7 @@
   <!-- ===== □. 고객 정보 영역 ================================================ -->
   <!-- ===== ■. 고객 선택 모달 ================================================ -->
   <bo-modal :show="memberModal.show" title="고객 검색" width="760px" max-width="96vw"
-    max-height="85vh" @close="handleBtnAction('memberModal-close')">
+    max-height="85vh" modal-name="member-pick" :on-callback="fnCallbackModal">
     <bo-search-area :columns="memberModalSearchColumns" :param="memberModal" :show-reset="false"
       @search="handleBtnAction('memberModal-search')" />
     <!-- ===== ■.■. 목록 영역 ================================================= -->

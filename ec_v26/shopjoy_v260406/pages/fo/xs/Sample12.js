@@ -111,6 +111,17 @@ window.XsSample12 = {
       }
     };
 
+
+    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ Sample12 : fnCallbackModal -> ', cmd, param, result);
+      if (cmd === 'category-pick') {
+        if (result == null) return handleBtnAction('categoryModal-close');
+        return handleSelectAction('categoryModal-apply', result);
+      } else {
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      }
+    };
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -288,7 +299,7 @@ window.XsSample12 = {
 
     return {
       uiState, codes, searchParam,                                     // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                              // dispatch
+      handleBtnAction, handleSelectAction, fnCallbackModal,                              // dispatch
       // ===== 영역 / 카테고리 ==================================================
       selectedAreas, cfAllAreas, cfAreaBtnLabel,
       selectedCatIds, cfCatBtnLabel, cfSelectedCatNames,
@@ -896,7 +907,7 @@ window.XsSample12 = {
       <!-- ===== □.□. 우: 위젯 컨텐츠 미리보기 ======================================== -->
       <!-- ===== □. 본문 영역 =================================================== -->
       <!-- ===== ■. 카테고리 선택 모달 ============================================== -->
-      <category-select-modal :show="uiState.showCatModal" :selected-ids="[...selectedCatIds]" @close="handleBtnAction('categoryModal-close')" @apply="handleSelectAction('categoryModal-apply', $event)" />
+      <category-select-modal :show="uiState.showCatModal" :selected-ids="[...selectedCatIds]" modal-name="category-pick" :on-callback="fnCallbackModal" />
     </div>
     <!-- ===== □. 카테고리 선택 모달 ============================================== -->
 `,

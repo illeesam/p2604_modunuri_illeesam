@@ -140,6 +140,17 @@ window.Prod03View = {
       }
     };
 
+
+    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ Prod03View : fnCallbackModal -> ', cmd, param, result);
+      if (cmd === 'size-guide') {
+        if (result == null) return handleBtnAction('sizeGuideModal-close');
+        return;
+      } else {
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      }
+    };
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* toggleLike — 토글 */
     const toggleLike           = (id) => window.foApp.toggleLike(id);
@@ -870,7 +881,7 @@ window.Prod03View = {
     return {
       uiState, codes, prod: svProduct,                                                                          // 상태 / 데이터
       svContents, svRels, svReviews, svReviewSummary, svReviewImages, svQnas, svPromotions,                      // 데이터 (lazy)
-      handleBtnAction, handleSelectAction,                                                                      // dispatch
+      handleBtnAction, handleSelectAction, fnCallbackModal,                                                                      // dispatch
       cfMockImages, cfMockReviews, cfReviewsWithPhoto, cfFilteredReviews, cfAvgRating, cfRatingDist,            // computed - 리뷰/갤러리
       cfQuickBuyTotal, cfDisplayPrice, cfPhotoNavIdx, cfPhotoGridPageCount, cfPhotoGridItems,                   // computed - 가격/포토
       sizeGuideRows, sizeGuideGridColumns, sizeGuideColsShort, styleItems, TABS,                                // 데이터 (정적)
@@ -1705,8 +1716,7 @@ window.Prod03View = {
 </teleport>
 <!-- ===== □. ══ 포토 리뷰 개별 팝업 ══ ======================================= -->
 <!-- ===== ■. ══ 사이즈 가이드 모달 ══ ======================================== -->
-<fo-modal :show="uiState.showSizeGuide" title="📏 사이즈 가이드" width="480px"
-    @close="handleBtnAction('sizeGuideModal-close')">
+<fo-modal :show="uiState.showSizeGuide" title="📏 사이즈 가이드" width="480px" modal-name="size-guide" :on-callback="fnCallbackModal">
   <!-- ===== ■.■. 목록 영역 ================================================= -->
   <fo-grid bare :columns="sizeGuideColsShort" :rows="sizeGuideRows" :show-row-no="false" />
   <p style="margin-top:14px;font-size:0.75rem;color:var(--text-muted);">

@@ -81,6 +81,17 @@ window.SyBbmDtl = {
       }
     };
 
+
+    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ SyBbmDtl : fnCallbackModal -> ', cmd, param, result);
+      if (cmd === 'path-pick') {
+        if (result == null) return handleBtnAction('pathModal-close');
+        return handleSelectAction('pathModal-pick', result);
+      } else {
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      }
+    };
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* pathLabel — 경로 라벨 */
     const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
@@ -182,7 +193,7 @@ window.SyBbmDtl = {
     return {
       uiState, codes, form, errors, pathPickModal,         // 상태 / 데이터
       baseFormColumns,                                     // 컬럼 정의
-      handleBtnAction, handleSelectAction,                 // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, fnCallbackModal,                 // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfSiteNm, cfDtlMode,                        // computed
     };
   },
@@ -213,8 +224,7 @@ window.SyBbmDtl = {
   <!-- ===== ■. 조건부 영역 ================================================== -->
   <path-pick-modal v-if="pathPickModal.show" biz-cd="sy_bbm"
     :value="form.pathId"
-    title="게시판 표시경로 선택"
-    @select="pathId => handleSelectAction('pathModal-pick', pathId)" @close="handleBtnAction('pathModal-close')" />
+    title="게시판 표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
 </div>
 <!-- ===== □. 조건부 영역 ================================================== -->
 `
