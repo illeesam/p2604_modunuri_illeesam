@@ -22,36 +22,48 @@ public interface SySiteRepository extends JpaRepository<SySite, String>, QSySite
      *     - dateStart/End: reg_date  범위 (BETWEEN 등가)
      */
     @Query(value = """
-            WITH RECURSIVE descendants /* 각 path 의 자손 path_id (자신 포함) */ AS (
-                SELECT path_id AS root_id, path_id AS leaf_id
+            WITH RECURSIVE descendants /* 각 path 의 자손 path_id (자신 포함, biz_cd='sy_site' 한정) */ AS (
+                SELECT path_id AS root_id,
+                       path_id AS leaf_id
                   FROM sy_path
+                  WHERE biz_cd = 'sy_site'
                 UNION ALL
-                SELECT d.root_id, c.path_id
+                SELECT d.root_id,
+                       c.path_id
                   FROM descendants d
                   JOIN sy_path c ON c.parent_path_id = d.leaf_id
+                 WHERE c.biz_cd = 'sy_site'
             ),
             filtered_site /* 검색조건이 적용된 사이트 집합 */ AS (
-                SELECT site_id, path_id FROM sy_site s
+                SELECT site_id,
+                       path_id
+                FROM sy_site s
                  WHERE (CAST(:statusCd AS varchar) IS NULL OR s.site_status_cd = :statusCd)
                    AND (CAST(:typeCd   AS varchar) IS NULL OR s.site_type_cd   = :typeCd)
                    AND (CAST(:searchValue AS varchar) IS NULL OR (
-                             ((CAST(:searchType AS varchar) IS NULL OR :searchType = '' OR :searchType LIKE '%,siteCode,%') AND t.site_code ILIKE '%' || :searchValue || '%')
-                          OR ((CAST(:searchType AS varchar) IS NULL OR :searchType = '' OR :searchType LIKE '%,siteNm,%') AND t.site_nm ILIKE '%' || :searchValue || '%')
-                          OR ((CAST(:searchType AS varchar) IS NULL OR :searchType = '' OR :searchType LIKE '%,siteDomain,%') AND t.site_domain ILIKE '%' || :searchValue || '%')
-                          OR ((CAST(:searchType AS varchar) IS NULL OR :searchType = '' OR :searchType LIKE '%,siteEmail,%') AND t.site_email ILIKE '%' || :searchValue || '%')
-                          OR ((CAST(:searchType AS varchar) IS NULL OR :searchType = '' OR :searchType LIKE '%,siteCeo,%') AND t.site_ceo ILIKE '%' || :searchValue || '%')
+                             ((CAST(:searchType AS varchar) IS NULL OR :searchType = '' OR :searchType LIKE '%,siteCode,%') AND s.site_code ILIKE '%' || :searchValue || '%')
+                          OR ((CAST(:searchType AS varchar) IS NULL OR :searchType = '' OR :searchType LIKE '%,siteNm,%') AND s.site_nm ILIKE '%' || :searchValue || '%')
+                          OR ((CAST(:searchType AS varchar) IS NULL OR :searchType = '' OR :searchType LIKE '%,siteDomain,%') AND s.site_domain ILIKE '%' || :searchValue || '%')
+                          OR ((CAST(:searchType AS varchar) IS NULL OR :searchType = '' OR :searchType LIKE '%,siteEmail,%') AND s.site_email ILIKE '%' || :searchValue || '%')
+                          OR ((CAST(:searchType AS varchar) IS NULL OR :searchType = '' OR :searchType LIKE '%,siteCeo,%') AND s.site_ceo ILIKE '%' || :searchValue || '%')
                           ))
                    AND (CAST(:dateStart AS varchar) IS NULL OR s.reg_date >= CAST(:dateStart AS timestamp))
                    AND (CAST(:dateEnd   AS varchar) IS NULL OR s.reg_date <= CAST(:dateEnd   AS timestamp) + INTERVAL '1 day')
             )
-            SELECT d.root_id AS path_id, COUNT(s.site_id) AS cnt
+            SELECT d.root_id AS path_id,
+                   COUNT(s.site_id) AS cnt
               FROM descendants d
               LEFT JOIN filtered_site s ON s.path_id = d.leaf_id
              GROUP BY d.root_id
             UNION ALL
-            SELECT '__total__' AS path_id, COUNT(*) AS cnt FROM filtered_site
+            SELECT '__total__' AS path_id,
+                   COUNT(*) AS cnt
+            FROM filtered_site
             UNION ALL
-            SELECT '__orphan__' AS path_id, COUNT(*) AS cnt FROM filtered_site WHERE path_id IS NULL
+            SELECT '__orphan__' AS path_id,
+                   COUNT(*) AS cnt
+            FROM filtered_site
+            WHERE path_id IS NULL
             """, nativeQuery = true)
     List<Object[]> findPathSiteTreeNodeCounts(
             @Param("statusCd")    String statusCd,

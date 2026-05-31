@@ -22,13 +22,19 @@ public interface SyUserRepository extends JpaRepository<SyUser, String>, QSyUser
      *     - dateStart/End : reg_date 범위 */
     @Query(value = """
             WITH RECURSIVE descendants AS (
-                SELECT dept_id AS root_id, dept_id AS leaf_id FROM sy_dept
+                SELECT dept_id AS root_id,
+                       dept_id AS leaf_id
+                FROM sy_dept
                 UNION ALL
-                SELECT d.root_id, c.dept_id
-                  FROM descendants d JOIN sy_dept c ON c.parent_dept_id = d.leaf_id
+                SELECT d.root_id,
+                       c.dept_id
+                  FROM descendants d
+                  JOIN sy_dept c ON c.parent_dept_id = d.leaf_id
             ),
             filtered AS (
-                SELECT user_id, dept_id FROM sy_user t
+                SELECT user_id,
+                       dept_id
+                FROM sy_user t
                  WHERE 1=1
                    AND (CAST(:statusCd AS varchar) IS NULL OR t.user_status_cd = :statusCd)
                    AND (CAST(:searchValue AS varchar) IS NULL OR (
@@ -40,14 +46,20 @@ public interface SyUserRepository extends JpaRepository<SyUser, String>, QSyUser
                    AND (CAST(:dateStart AS varchar) IS NULL OR t.reg_date >= CAST(:dateStart AS timestamp))
                    AND (CAST(:dateEnd   AS varchar) IS NULL OR t.reg_date <= CAST(:dateEnd   AS timestamp) + INTERVAL '1 day')
             )
-            SELECT d.root_id AS dept_id, COUNT(t.user_id) AS cnt
+            SELECT d.root_id AS dept_id,
+                   COUNT(t.user_id) AS cnt
               FROM descendants d
               LEFT JOIN filtered t ON t.dept_id = d.leaf_id
              GROUP BY d.root_id
             UNION ALL
-            SELECT '__total__' AS dept_id, COUNT(*) AS cnt FROM filtered
+            SELECT '__total__' AS dept_id,
+                   COUNT(*) AS cnt
+            FROM filtered
             UNION ALL
-            SELECT '__orphan__' AS dept_id, COUNT(*) AS cnt FROM filtered WHERE dept_id IS NULL
+            SELECT '__orphan__' AS dept_id,
+                   COUNT(*) AS cnt
+            FROM filtered
+            WHERE dept_id IS NULL
             """, nativeQuery = true)
     List<Object[]> findDeptSyUserTreeNodeCounts(
             @Param("statusCd")    String statusCd,

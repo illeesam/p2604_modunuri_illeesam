@@ -159,6 +159,12 @@ public class MvcLogAspect {
             return pjp.proceed();
         }
 
+        /* 감사 로그(SyhAccessLog) 자동 저장 — 매 요청 끝에 호출되어 비즈니스 로그를 묻어버림.
+         * 콘솔 노이즈 억제를 위해 로깅 생략 (저장 자체는 정상 수행). */
+        if (simpleName.contains("SyhAccessLog")) {
+            return pjp.proceed();
+        }
+
         ComponentType type = ComponentType.fromClassName(simpleName);
 
         String strInParams = formatInputParams(pjp);

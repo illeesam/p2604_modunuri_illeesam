@@ -10,8 +10,12 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Repository 메서드 실행 결과를 자동으로 로깅하는 AOP Aspect.
@@ -47,6 +51,13 @@ public class RepositoryResultLogAspect {
         String methodName = joinPoint.getSignature().getName();
         String simpleClassName = getRepositorySimpleName(joinPoint);
         String fullClassName   = getRepositoryClassName(joinPoint);
+
+        /* 로그 노이즈 억제 — 감사 로그(SyhAccessLog) 자동 저장은 매 요청 끝에 호출되어 화면과 무관.
+         *   비즈니스 SQL 가독성 보호를 위해 결과/상세 박스 출력 생략. */
+        if (loggingEnabled && (simpleClassName.contains("SyhAccessLog") || fullClassName.contains("SyhAccessLog"))) {
+            return joinPoint.proceed();
+        }
+
         String callerInfo = loggingEnabled ? getCallerInfo() : null;
         Object[] args = joinPoint.getArgs();
 
@@ -179,41 +190,222 @@ public class RepositoryResultLogAspect {
      * @param result 반환값(null 허용)
      */
     private void logResult(Object result) {
-        StringBuilder sb = new StringBuilder("\n");
+        StringBuilder sb = new StringBuilder();
+        sb.append("\n┌── 결과 미리보기 (최대 3행) ─────────────────────────\n");
 
         if (result == null) {
-            sb.append("Result: null\n");
+            sb.append("   Result: null\n");
         } else if (result instanceof java.util.Optional<?> optional) {
-            sb.append("Result: ").append(optional.isPresent() ? formatObject(optional.get()) : "Optional.empty").append("\n");
-        } else if (result instanceof List<?> list) {
-            if (list.isEmpty()) {
-                sb.append("NO DATA\n");
+            if (optional.isEmpty()) {
+                sb.append("   Result: Optional.empty\n");
             } else {
-                int preview = Math.min(3, list.size());
-                for (int i = 0; i < preview; i++) {
-                    sb.append("[").append(i + 1).append("] ").append(formatObject(list.get(i))).append("\n");
-                }
-                sb.append("-".repeat(70)).append("\n");
-                sb.append("Total: ").append(list.size()).append(" rows\n");
+                appendVerticalTable(sb, optional.get());
             }
         } else if (result instanceof Collection<?> col) {
             if (col.isEmpty()) {
-                sb.append("NO DATA\n");
+                sb.append("   NO DATA\n");
             } else {
-                int idx = 1;
-                for (Object obj : col) {
-                    if (idx > 3) break;
-                    sb.append("[").append(idx++).append("] ").append(formatObject(obj)).append("\n");
-                }
-                sb.append("-".repeat(70)).append("\n");
-                sb.append("Total: ").append(col.size()).append(" rows\n");
+                List<Object> rows = new ArrayList<>(col);
+                appendTable(sb, rows, rows.size());
             }
+        } else if (result instanceof String || result instanceof Number || result instanceof Boolean ||
+                   result instanceof Character || result instanceof Enum<?> ||
+                   result instanceof java.time.LocalDateTime || result instanceof java.time.LocalDate ||
+                   result instanceof java.time.LocalTime || result instanceof java.util.Date) {
+            // COUNT/단일값 스칼라 — 세로 표 (value 컬럼)
+            appendVerticalTable(sb, result);
         } else {
-            sb.append("Result: ").append(formatObject(result)).append("\n");
+            // 단건 DTO/Entity/Map/Object[] — 세로 표 (필드 | 값)
+            appendVerticalTable(sb, result);
         }
 
-        sb.append("=".repeat(70));
+        sb.append("└─────────────────────────────────────────────────────");
         log.debug("{}", sb);
+    }
+
+    /**
+     * 단건 객체를 (필드 | 값) 2열 세로 표로 sb 에 추가.
+     *
+     * <p>Map/Object[]/DTO/Entity 공통으로 {@link #extractRow} 결과를 행 단위로 풀어
+     * 한 줄에 한 필드씩 출력한다. 다건 표(여러 행) 와 시각적으로 구분되어
+     * PageResponse/단건 Entity 의 가독성이 높아진다.</p>
+     */
+    private void appendVerticalTable(StringBuilder sb, Object obj) {
+        LinkedHashMap<String, String> row = extractRow(obj);
+        if (row.isEmpty()) {
+            sb.append("   (no extractable fields)\n");
+            return;
+        }
+        int keyWidth = 0;
+        int valWidth = 0;
+        for (Map.Entry<String, String> e : row.entrySet()) {
+            keyWidth = Math.max(keyWidth, displayWidth(e.getKey()));
+            valWidth = Math.max(valWidth, displayWidth(e.getValue()));
+        }
+        keyWidth = Math.max(keyWidth, displayWidth("field"));
+        valWidth = Math.max(valWidth, displayWidth("value"));
+
+        // 헤더 + 구분선
+        sb.append("   | ").append(padRight("field", keyWidth)).append(" | ")
+          .append(padRight("value", valWidth)).append(" |\n");
+        sb.append("   |").append("-".repeat(keyWidth + 2)).append("|")
+          .append("-".repeat(valWidth + 2)).append("|\n");
+        for (Map.Entry<String, String> e : row.entrySet()) {
+            sb.append("   | ").append(padRight(e.getKey(), keyWidth)).append(" | ")
+              .append(padRight(e.getValue(), valWidth)).append(" |\n");
+        }
+    }
+
+    /**
+     * 결과 행을 표 형태로 sb 에 추가한다. 최대 3행 미리보기 + Total 표기.
+     *
+     * <p>행 타입 분기:
+     * <ul>
+     *   <li>{@code Object[]} — 인덱스 col1,col2... 컬럼</li>
+     *   <li>{@code Map} — 키를 컬럼명</li>
+     *   <li>{@code DTO/Entity} — reflection 필드명을 컬럼명</li>
+     *   <li>스칼라(String/Number/Boolean/temporal) — 단일 value 컬럼</li>
+     * </ul>
+     * 컬럼 너비는 첫 3행 + 헤더 길이 중 최대값. 셀 값이 40자를 넘으면 "..." 으로 절단.</p>
+     */
+    private void appendTable(StringBuilder sb, List<?> rows, int totalCount) {
+        int previewCnt = Math.min(3, rows.size());
+        List<LinkedHashMap<String, String>> previewRows = new ArrayList<>(previewCnt);
+        LinkedHashMap<String, Integer> widths = new LinkedHashMap<>();
+
+        // 1) 미리보기 행을 (컬럼명→문자열값) 으로 정규화 + 누적 컬럼 순서/너비 산출
+        for (int i = 0; i < previewCnt; i++) {
+            LinkedHashMap<String, String> row = extractRow(rows.get(i));
+            previewRows.add(row);
+            for (Map.Entry<String, String> e : row.entrySet()) {
+                int valLen = displayWidth(e.getValue());
+                int hdrLen = displayWidth(e.getKey());
+                int cur = widths.getOrDefault(e.getKey(), 0);
+                widths.put(e.getKey(), Math.max(cur, Math.max(valLen, hdrLen)));
+            }
+        }
+
+        if (widths.isEmpty()) {
+            sb.append("   (no extractable fields)\n");
+            sb.append("   Total: ").append(totalCount).append(" rows\n");
+            return;
+        }
+
+        // 2) 헤더 / 구분선 / 데이터 행 출력
+        sb.append("   ").append(formatTableRow(widths.keySet().stream().toList(), widths, null)).append("\n");
+        sb.append("   ").append(formatSeparator(widths)).append("\n");
+        for (LinkedHashMap<String, String> row : previewRows) {
+            sb.append("   ").append(formatTableRow(widths.keySet().stream().toList(), widths, row)).append("\n");
+        }
+        sb.append("   Total: ").append(totalCount).append(" rows\n");
+    }
+
+    /** 한 행을 컬럼명→값 맵으로 추출. 타입별 분기. */
+    private LinkedHashMap<String, String> extractRow(Object row) {
+        LinkedHashMap<String, String> out = new LinkedHashMap<>();
+        if (row == null) {
+            out.put("value", "null");
+            return out;
+        }
+        // 1) Object[] — col1, col2 ... 자동
+        if (row instanceof Object[] arr) {
+            for (int i = 0; i < arr.length; i++) {
+                out.put("col" + (i + 1), cellText(arr[i]));
+            }
+            return out;
+        }
+        // 2) Map
+        if (row instanceof Map<?, ?> map) {
+            for (Map.Entry<?, ?> e : map.entrySet()) {
+                out.put(String.valueOf(e.getKey()), cellText(e.getValue()));
+            }
+            return out;
+        }
+        // 3) 스칼라 / 시간 — 단일 컬럼
+        if (row instanceof String || row instanceof Number || row instanceof Boolean ||
+            row instanceof Character || row instanceof Enum<?> ||
+            row instanceof java.time.LocalDateTime || row instanceof java.time.LocalDate ||
+            row instanceof java.time.LocalTime || row instanceof java.util.Date) {
+            out.put("value", cellText(row));
+            return out;
+        }
+        // 4) DTO/Entity — reflection 필드 덤프
+        try {
+            Class<?> clazz = row.getClass();
+            if (clazz.getName().contains("$$")) {
+                Class<?> sc = clazz.getSuperclass();
+                if (sc != null && sc != Object.class) clazz = sc;
+            }
+            List<Class<?>> chain = new ArrayList<>();
+            for (Class<?> c = clazz; c != null && c != Object.class; c = c.getSuperclass()) chain.add(0, c);
+            for (Class<?> c : chain) {
+                for (Field f : c.getDeclaredFields()) {
+                    int mod = f.getModifiers();
+                    if (Modifier.isStatic(mod) || Modifier.isTransient(mod)) continue;
+                    if (f.getName().startsWith("$") || f.getName().contains("logger") || f.getName().contains("CACHE")) continue;
+                    f.setAccessible(true);
+                    Object v = f.get(row);
+                    out.put(f.getName(), cellText(v));
+                }
+            }
+        } catch (Exception ignored) {
+            out.put("value", row.getClass().getSimpleName() + "@" + Integer.toHexString(row.hashCode()));
+        }
+        return out;
+    }
+
+    /** 셀 값 문자열화 — null 은 빈 문자열, 컬렉션은 [n], 너무 길면 절단. */
+    private String cellText(Object v) {
+        if (v == null) return "";
+        String s;
+        if (v instanceof Collection<?> c) s = "[" + c.size() + " items]";
+        else if (v instanceof Map<?, ?> m) s = "{" + m.size() + " entries}";
+        else if (v.getClass().isArray()) s = "[" + java.lang.reflect.Array.getLength(v) + " items]";
+        else s = String.valueOf(v);
+        s = s.replace("\n", " ").replace("\r", " ").replace("\t", " ");
+        if (s.length() > 40) s = s.substring(0, 37) + "...";
+        return s;
+    }
+
+    /** 표 한 행 포맷: {@code | val1 | val2 |}. row 가 null 이면 헤더 행으로 간주. */
+    private String formatTableRow(List<String> cols, LinkedHashMap<String, Integer> widths, Map<String, String> row) {
+        StringBuilder sb = new StringBuilder("|");
+        for (String col : cols) {
+            String value = row == null ? col : row.getOrDefault(col, "");
+            int width = widths.get(col);
+            sb.append(' ').append(padRight(value, width)).append(" |");
+        }
+        return sb.toString();
+    }
+
+    /** 구분선 포맷: {@code |---|---|}. */
+    private String formatSeparator(LinkedHashMap<String, Integer> widths) {
+        StringBuilder sb = new StringBuilder("|");
+        for (int w : widths.values()) {
+            sb.append("-".repeat(w + 2)).append("|");
+        }
+        return sb.toString();
+    }
+
+    /** 한글 등 광폭 문자는 폭 2 로 카운트. */
+    private int displayWidth(String s) {
+        if (s == null) return 0;
+        int w = 0;
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            w += (c >= 0x1100 && (c <= 0x115F || (c >= 0x2E80 && c <= 0x9FFF) ||
+                 (c >= 0xA960 && c <= 0xA97F) || (c >= 0xAC00 && c <= 0xD7A3) ||
+                 (c >= 0xF900 && c <= 0xFAFF) || (c >= 0xFE30 && c <= 0xFE4F) ||
+                 (c >= 0xFF00 && c <= 0xFF60) || (c >= 0xFFE0 && c <= 0xFFE6))) ? 2 : 1;
+        }
+        return w;
+    }
+
+    /** 광폭 문자 고려한 우측 공백 패딩. */
+    private String padRight(String s, int targetWidth) {
+        int cur = displayWidth(s);
+        if (cur >= targetWidth) return s;
+        return s + " ".repeat(targetWidth - cur);
     }
 
     /**

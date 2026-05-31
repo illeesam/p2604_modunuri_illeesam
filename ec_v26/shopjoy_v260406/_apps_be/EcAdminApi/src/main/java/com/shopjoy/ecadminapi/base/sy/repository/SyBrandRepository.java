@@ -22,13 +22,21 @@ public interface SyBrandRepository extends JpaRepository<SyBrand, String>, QSyBr
      */
     @Query(value = """
             WITH RECURSIVE descendants AS (
-                SELECT path_id AS root_id, path_id AS leaf_id FROM sy_path
+                SELECT path_id AS root_id,
+                       path_id AS leaf_id
+                FROM sy_path
+                WHERE biz_cd = 'sy_brand'
                 UNION ALL
-                SELECT d.root_id, c.path_id
-                  FROM descendants d JOIN sy_path c ON c.parent_path_id = d.leaf_id
+                SELECT d.root_id,
+                       c.path_id
+                  FROM descendants d
+                  JOIN sy_path c ON c.parent_path_id = d.leaf_id
+                 WHERE c.biz_cd = 'sy_brand'
             ),
             filtered AS (
-                SELECT brand_id, path_id FROM sy_brand t
+                SELECT brand_id,
+                       path_id
+                FROM sy_brand t
                  WHERE (CAST(:vendorId    AS varchar) IS NULL OR t.vendor_id = :vendorId)
                    AND (CAST(:searchValue AS varchar) IS NULL OR (
                           ((CAST(:searchType AS varchar) IS NULL OR :searchType = '' OR :searchType LIKE '%,brandCode,%')  AND t.brand_code  ILIKE '%' || :searchValue || '%')
@@ -38,14 +46,20 @@ public interface SyBrandRepository extends JpaRepository<SyBrand, String>, QSyBr
                    AND (CAST(:dateStart AS varchar) IS NULL OR t.reg_date >= CAST(:dateStart AS timestamp))
                    AND (CAST(:dateEnd   AS varchar) IS NULL OR t.reg_date <= CAST(:dateEnd   AS timestamp) + INTERVAL '1 day')
             )
-            SELECT d.root_id AS path_id, COUNT(t.brand_id) AS cnt
+            SELECT d.root_id AS path_id,
+                   COUNT(t.brand_id) AS cnt
               FROM descendants d
               LEFT JOIN filtered t ON t.path_id = d.leaf_id
              GROUP BY d.root_id
             UNION ALL
-            SELECT '__total__' AS path_id, COUNT(*) AS cnt FROM filtered
+            SELECT '__total__' AS path_id,
+                   COUNT(*) AS cnt
+            FROM filtered
             UNION ALL
-            SELECT '__orphan__' AS path_id, COUNT(*) AS cnt FROM filtered WHERE path_id IS NULL
+            SELECT '__orphan__' AS path_id,
+                   COUNT(*) AS cnt
+            FROM filtered
+            WHERE path_id IS NULL
             """, nativeQuery = true)
     List<Object[]> findPathSyBrandTreeNodeCounts(
             @Param("vendorId")    String vendorId,

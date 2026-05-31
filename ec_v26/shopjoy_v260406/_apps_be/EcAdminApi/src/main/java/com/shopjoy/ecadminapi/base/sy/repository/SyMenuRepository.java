@@ -21,7 +21,8 @@ public interface SyMenuRepository extends JpaRepository<SyMenu, String>, QSyMenu
                   FROM sy_menu c
                   JOIN t ON c.parent_menu_id = t.menu_id
             )
-            SELECT menu_id FROM t
+            SELECT menu_id
+            FROM t
             """, nativeQuery = true)
     List<String> findTreeMenuIds(@Param("rootMenuId") String rootMenuId);
 
@@ -37,13 +38,19 @@ public interface SyMenuRepository extends JpaRepository<SyMenu, String>, QSyMenu
      *     - dateStart/End : reg_date 범위 */
     @Query(value = """
             WITH RECURSIVE descendants AS (
-                SELECT path_id AS root_id, path_id AS leaf_id FROM sy_path
+                SELECT path_id AS root_id,
+                       path_id AS leaf_id
+                FROM sy_path
                 UNION ALL
-                SELECT d.root_id, c.path_id
-                  FROM descendants d JOIN sy_path c ON c.parent_path_id = d.leaf_id
+                SELECT d.root_id,
+                       c.path_id
+                  FROM descendants d
+                  JOIN sy_path c ON c.parent_path_id = d.leaf_id
             ),
             filtered AS (
-                SELECT menu_id, menu_code FROM sy_menu t
+                SELECT menu_id,
+                       menu_code
+                FROM sy_menu t
                  WHERE 1=1
                    AND (CAST(:useYn AS varchar) IS NULL OR t.use_yn = :useYn)
                    AND (CAST(:searchValue AS varchar) IS NULL OR (
@@ -54,12 +61,15 @@ public interface SyMenuRepository extends JpaRepository<SyMenu, String>, QSyMenu
                    AND (CAST(:dateStart AS varchar) IS NULL OR t.reg_date >= CAST(:dateStart AS timestamp))
                    AND (CAST(:dateEnd   AS varchar) IS NULL OR t.reg_date <= CAST(:dateEnd   AS timestamp) + INTERVAL '1 day')
             )
-            SELECT d.root_id AS path_id, COUNT(t.menu_id) AS cnt
+            SELECT d.root_id AS path_id,
+                   COUNT(t.menu_id) AS cnt
               FROM descendants d
               LEFT JOIN filtered t ON t.menu_code = d.leaf_id
              GROUP BY d.root_id
             UNION ALL
-            SELECT '__total__' AS path_id, COUNT(*) AS cnt FROM filtered
+            SELECT '__total__' AS path_id,
+                   COUNT(*) AS cnt
+            FROM filtered
             """, nativeQuery = true)
     List<Object[]> findPathSyMenuTreeNodeCounts(
             @Param("useYn")       String useYn,

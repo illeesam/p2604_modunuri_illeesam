@@ -20,13 +20,21 @@ public interface SyAlarmRepository extends JpaRepository<SyAlarm, String>, QSyAl
      *     - dateStart/End : reg_date 범위 */
     @Query(value = """
             WITH RECURSIVE descendants AS (
-                SELECT path_id AS root_id, path_id AS leaf_id FROM sy_path
+                SELECT path_id AS root_id,
+                       path_id AS leaf_id
+                FROM sy_path
+                WHERE biz_cd = 'sy_alarm'
                 UNION ALL
-                SELECT d.root_id, c.path_id
-                  FROM descendants d JOIN sy_path c ON c.parent_path_id = d.leaf_id
+                SELECT d.root_id,
+                       c.path_id
+                  FROM descendants d
+                  JOIN sy_path c ON c.parent_path_id = d.leaf_id
+                 WHERE c.biz_cd = 'sy_alarm'
             ),
             filtered AS (
-                SELECT alarm_id, path_id FROM sy_alarm t
+                SELECT alarm_id,
+                       path_id
+                FROM sy_alarm t
                  WHERE 1=1
                    AND (CAST(:statusCd AS varchar) IS NULL OR t.alarm_status_cd = :statusCd)
                    AND (CAST(:searchValue AS varchar) IS NULL OR (
@@ -36,14 +44,20 @@ public interface SyAlarmRepository extends JpaRepository<SyAlarm, String>, QSyAl
                    AND (CAST(:dateStart AS varchar) IS NULL OR t.reg_date >= CAST(:dateStart AS timestamp))
                    AND (CAST(:dateEnd   AS varchar) IS NULL OR t.reg_date <= CAST(:dateEnd   AS timestamp) + INTERVAL '1 day')
             )
-            SELECT d.root_id AS path_id, COUNT(t.alarm_id) AS cnt
+            SELECT d.root_id AS path_id,
+                   COUNT(t.alarm_id) AS cnt
               FROM descendants d
               LEFT JOIN filtered t ON t.path_id = d.leaf_id
              GROUP BY d.root_id
             UNION ALL
-            SELECT '__total__' AS path_id, COUNT(*) AS cnt FROM filtered
+            SELECT '__total__' AS path_id,
+                   COUNT(*) AS cnt
+            FROM filtered
             UNION ALL
-            SELECT '__orphan__' AS path_id, COUNT(*) AS cnt FROM filtered WHERE path_id IS NULL
+            SELECT '__orphan__' AS path_id,
+                   COUNT(*) AS cnt
+            FROM filtered
+            WHERE path_id IS NULL
             """, nativeQuery = true)
     List<Object[]> findPathSyAlarmTreeNodeCounts(@Param("statusCd")    String statusCd,
             @Param("searchType")  String searchType,

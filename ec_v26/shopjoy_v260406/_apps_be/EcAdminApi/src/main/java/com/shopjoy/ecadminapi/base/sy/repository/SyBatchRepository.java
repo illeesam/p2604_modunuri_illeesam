@@ -23,13 +23,21 @@ public interface SyBatchRepository extends JpaRepository<SyBatch, String>, QSyBa
      *     - dateStart/End : reg_date 범위 */
     @Query(value = """
             WITH RECURSIVE descendants AS (
-                SELECT path_id AS root_id, path_id AS leaf_id FROM sy_path
+                SELECT path_id AS root_id,
+                       path_id AS leaf_id
+                FROM sy_path
+                WHERE biz_cd = 'sy_batch'
                 UNION ALL
-                SELECT d.root_id, c.path_id
-                  FROM descendants d JOIN sy_path c ON c.parent_path_id = d.leaf_id
+                SELECT d.root_id,
+                       c.path_id
+                  FROM descendants d
+                  JOIN sy_path c ON c.parent_path_id = d.leaf_id
+                 WHERE c.biz_cd = 'sy_batch'
             ),
             filtered AS (
-                SELECT batch_id, path_id FROM sy_batch t
+                SELECT batch_id,
+                       path_id
+                FROM sy_batch t
                  WHERE 1=1
                    AND (CAST(:statusCd AS varchar) IS NULL OR t.batch_status_cd = :statusCd)
                    AND (CAST(:searchValue AS varchar) IS NULL OR (
@@ -40,14 +48,20 @@ public interface SyBatchRepository extends JpaRepository<SyBatch, String>, QSyBa
                    AND (CAST(:dateStart AS varchar) IS NULL OR t.reg_date >= CAST(:dateStart AS timestamp))
                    AND (CAST(:dateEnd   AS varchar) IS NULL OR t.reg_date <= CAST(:dateEnd   AS timestamp) + INTERVAL '1 day')
             )
-            SELECT d.root_id AS path_id, COUNT(t.batch_id) AS cnt
+            SELECT d.root_id AS path_id,
+                   COUNT(t.batch_id) AS cnt
               FROM descendants d
               LEFT JOIN filtered t ON t.path_id = d.leaf_id
              GROUP BY d.root_id
             UNION ALL
-            SELECT '__total__' AS path_id, COUNT(*) AS cnt FROM filtered
+            SELECT '__total__' AS path_id,
+                   COUNT(*) AS cnt
+            FROM filtered
             UNION ALL
-            SELECT '__orphan__' AS path_id, COUNT(*) AS cnt FROM filtered WHERE path_id IS NULL
+            SELECT '__orphan__' AS path_id,
+                   COUNT(*) AS cnt
+            FROM filtered
+            WHERE path_id IS NULL
             """, nativeQuery = true)
     List<Object[]> findPathSyBatchTreeNodeCounts(@Param("statusCd")    String statusCd,
             @Param("searchType")  String searchType,
