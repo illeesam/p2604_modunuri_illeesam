@@ -332,15 +332,15 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
 
         sql.append("""
                 )
-                /* (1) 일반 path_id 행 : 노드 + 자손 누적 카운트 */
-                SELECT d.root_id AS path_id, COUNT(t.menu_id) AS cnt
-                FROM descendants d
-                LEFT JOIN filtered t ON t.menu_code = d.leaf_id
-                GROUP BY d.root_id
+                  /* (1) 일반 path_id 행 : 노드 + 자손 누적 카운트 */
+                  SELECT d.root_id AS path_id, COUNT(t.menu_id) AS cnt
+                  FROM descendants d
+                    LEFT JOIN filtered t ON t.menu_code = d.leaf_id
+                  GROUP BY d.root_id
                 UNION ALL
-                /* (2) '__total__' : 트리 루트 "전체" 노드용 — 검색조건에 부합하는 전체 카운트 */
-                SELECT '__total__' AS path_id, COUNT(*) AS cnt
-                FROM filtered
+                  /* (2) '__total__' : 트리 루트 "전체" 노드용 — 검색조건에 부합하는 전체 카운트 */
+                  SELECT '__total__' AS path_id, COUNT(*) AS cnt
+                  FROM filtered
                 """);
 
         Query q = em.createNativeQuery(sql.toString());

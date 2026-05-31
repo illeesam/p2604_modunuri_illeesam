@@ -325,20 +325,20 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
 
         sql.append("""
                 )
-                /* (1) 일반 path_id 행 : 노드 + 자손 누적 카운트 */
-                SELECT d.root_id AS path_id, COUNT(t.brand_id) AS cnt
-                FROM descendants d
-                LEFT JOIN filtered t ON t.path_id = d.leaf_id
-                GROUP BY d.root_id
+                  /* (1) 일반 path_id 행 : 노드 + 자손 누적 카운트 */
+                  SELECT d.root_id AS path_id, COUNT(t.brand_id) AS cnt
+                  FROM descendants d
+                    LEFT JOIN filtered t ON t.path_id = d.leaf_id
+                  GROUP BY d.root_id
                 UNION ALL
-                /* (2) '__total__' : 트리 루트 "전체" 노드용 — 검색조건에 부합하는 전체 카운트 */
-                SELECT '__total__' AS path_id, COUNT(*) AS cnt
-                FROM filtered
+                  /* (2) '__total__' : 트리 루트 "전체" 노드용 — 검색조건에 부합하는 전체 카운트 */
+                  SELECT '__total__' AS path_id, COUNT(*) AS cnt
+                  FROM filtered
                 UNION ALL
-                /* (3) '__orphan__' : 경로 미지정(path_id IS NULL) 카운트 — 트리 외 표시 */
-                SELECT '__orphan__' AS path_id, COUNT(*) AS cnt
-                FROM filtered
-                WHERE path_id IS NULL
+                  /* (3) '__orphan__' : 경로 미지정(path_id IS NULL) 카운트 — 트리 외 표시 */
+                  SELECT '__orphan__' AS path_id, COUNT(*) AS cnt
+                  FROM filtered
+                  WHERE path_id IS NULL
                 """);
 
         Query q = em.createNativeQuery(sql.toString());

@@ -401,20 +401,20 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
         /* CTE 닫기 + 메인 UNION ALL 3블록 */
         sql.append("""
                 )
-                /* (1) 일반 dept_id 행 : 부서 + 자손 부서 누적 카운트 */
-                SELECT d.root_id AS dept_id, COUNT(t.user_id) AS cnt
-                FROM descendants d
-                LEFT JOIN filtered t ON t.dept_id = d.leaf_id
-                GROUP BY d.root_id
+                  /* (1) 일반 dept_id 행 : 부서 + 자손 부서 누적 카운트 */
+                  SELECT d.root_id AS dept_id, COUNT(t.user_id) AS cnt
+                  FROM descendants d
+                    LEFT JOIN filtered t ON t.dept_id = d.leaf_id
+                  GROUP BY d.root_id
                 UNION ALL
-                /* (2) '__total__' : 트리 루트 "전체" 노드용 — 검색조건에 부합하는 전체 카운트 */
-                SELECT '__total__' AS dept_id, COUNT(*) AS cnt
-                FROM filtered
+                  /* (2) '__total__' : 트리 루트 "전체" 노드용 — 검색조건에 부합하는 전체 카운트 */
+                  SELECT '__total__' AS dept_id, COUNT(*) AS cnt
+                  FROM filtered
                 UNION ALL
-                /* (3) '__orphan__' : 부서 미지정(dept_id IS NULL) 카운트 — 트리 외 표시 */
-                SELECT '__orphan__' AS dept_id, COUNT(*) AS cnt
-                FROM filtered
-                WHERE dept_id IS NULL
+                  /* (3) '__orphan__' : 부서 미지정(dept_id IS NULL) 카운트 — 트리 외 표시 */
+                  SELECT '__orphan__' AS dept_id, COUNT(*) AS cnt
+                  FROM filtered
+                  WHERE dept_id IS NULL
                 """);
 
         Query q = em.createNativeQuery(sql.toString());
