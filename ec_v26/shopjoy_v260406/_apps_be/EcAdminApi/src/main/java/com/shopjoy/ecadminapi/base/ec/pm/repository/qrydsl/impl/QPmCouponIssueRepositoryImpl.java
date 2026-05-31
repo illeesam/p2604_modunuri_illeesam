@@ -30,6 +30,7 @@ import java.util.Optional;
 public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmCouponIssueRepositoryImpl";
     private static final QPmCouponIssue ci    = QPmCouponIssue.pmCouponIssue;
     private static final QPmCoupon       c    = QPmCoupon.pmCoupon;
     private static final QMbMember       m    = QMbMember.mbMember;

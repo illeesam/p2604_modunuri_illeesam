@@ -28,6 +28,7 @@ import java.util.Optional;
 public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhBatchLogRepositoryImpl";
     private static final QSyhBatchLog l   = QSyhBatchLog.syhBatchLog;
     private static final QSySite      ste = QSySite.sySite;
 
@@ -62,6 +63,7 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
     @Override
     public Optional<SyhBatchLogDto.Item> selectById(String id) {
         SyhBatchLogDto.Item dto = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(l.batchLogId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
@@ -72,7 +74,8 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
     public List<SyhBatchLogDto.Item> selectList(SyhBatchLogDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyhBatchLogDto.Item> query = buildBaseQuery().where(
+        JPAQuery<SyhBatchLogDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andSiteId(search),
                 andBatchLogId(search),
                 andDateRange(search),
@@ -99,7 +102,8 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyhBatchLogDto.Item> query = buildBaseQuery().where(
+        JPAQuery<SyhBatchLogDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 andSiteId(search),
                 andBatchLogId(search),
                 andDateRange(search),

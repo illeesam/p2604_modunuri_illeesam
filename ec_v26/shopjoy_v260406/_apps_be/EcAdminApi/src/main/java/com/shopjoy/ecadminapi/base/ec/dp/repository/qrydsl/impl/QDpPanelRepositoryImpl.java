@@ -35,6 +35,7 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
     @PersistenceContext
     private EntityManager em;
 
+    private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpPanelRepositoryImpl";
     private static final QDpPanel p = QDpPanel.dpPanel;
 
     /* 전시 패널 키조회 */

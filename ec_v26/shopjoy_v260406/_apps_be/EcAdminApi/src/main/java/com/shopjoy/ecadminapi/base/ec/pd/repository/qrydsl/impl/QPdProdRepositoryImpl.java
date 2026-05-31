@@ -39,6 +39,7 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
 
     private final JPAQueryFactory queryFactory;
     private final PdCategoryRepository pdCategoryRepository;
+    private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdProdRepositoryImpl";
     private static final QPdProd     p   = QPdProd.pdProd;
     private static final QPdCategory cat = QPdCategory.pdCategory;
     private static final QSyBrand    b   = QSyBrand.syBrand;

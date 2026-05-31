@@ -33,6 +33,7 @@ import java.util.Optional;
 public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmSaveIssueRepositoryImpl";
     private static final QPmSaveIssue i    = QPmSaveIssue.pmSaveIssue;
     private static final QSySite      ste  = QSySite.sySite;
     private static final QMbMember    mem  = QMbMember.mbMember;

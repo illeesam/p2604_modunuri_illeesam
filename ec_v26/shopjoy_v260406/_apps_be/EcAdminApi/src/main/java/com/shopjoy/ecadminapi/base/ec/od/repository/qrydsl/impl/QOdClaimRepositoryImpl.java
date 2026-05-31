@@ -31,6 +31,7 @@ import java.util.Optional;
 public class QOdClaimRepositoryImpl implements QOdClaimRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdClaimRepositoryImpl";
     private static final QOdClaim  c   = QOdClaim.odClaim;
     private static final QOdOrder  o   = QOdOrder.odOrder;
     private static final QMbMember m   = QMbMember.mbMember;

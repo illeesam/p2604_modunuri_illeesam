@@ -32,6 +32,7 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
 
     private final JPAQueryFactory queryFactory;
     private final SyPathRepository syPathRepository;
+    private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyVendorRepositoryImpl";
     private static final QSyVendor v = QSyVendor.syVendor;
     private static final QSySite ste = QSySite.sySite;
     private static final QSyCode cdVc = new QSyCode("cd_vc");
@@ -60,6 +61,7 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
     @Override
     public Optional<SyVendorDto.Item> selectById(String vendorId) {
         SyVendorDto.Item dto = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(v.vendorId.eq(vendorId))
                 .fetchOne();
         return Optional.ofNullable(dto);
@@ -69,7 +71,8 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
     @Override
     public List<SyVendorDto.Item> selectList(SyVendorDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyVendorDto.Item> query = buildBaseQuery().where(
+        JPAQuery<SyVendorDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andSiteId(search),
                 andPathId(search),
                 andVendorId(search),
@@ -99,7 +102,8 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyVendorDto.Item> query = buildBaseQuery().where(
+        JPAQuery<SyVendorDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 andSiteId(search),
                 andPathId(search),
                 andVendorId(search),

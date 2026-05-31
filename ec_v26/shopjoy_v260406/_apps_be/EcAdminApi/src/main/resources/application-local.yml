@@ -100,6 +100,7 @@ spring:
       hibernate:
         default_schema: shopjoy_2604
         format_sql: true
+        use_sql_comments: true   # JPAQuery setHint("org.hibernate.comment", ...) 로 SQL 헤더에 /* 주석 */ 출력 활성
         # 부팅 시간 단축 옵션 — dialect 명시했으므로 메타조회 생략 가능
         boot:
           allow_jdbc_metadata_access: false   # JDBC 메타데이터 조회 생략 (부팅 1~2초 단축)

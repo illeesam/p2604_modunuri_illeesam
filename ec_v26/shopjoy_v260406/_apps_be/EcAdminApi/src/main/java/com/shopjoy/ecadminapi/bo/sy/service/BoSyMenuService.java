@@ -58,7 +58,7 @@ public class BoSyMenuService {
         menuCache.evictAll();
     }
     /** getPathTreeNodeCounts — 표시경로 노드별 SyMenu 수 (자손 누적) */
-    public java.util.Map<String, Long> getPathTreeNodeCounts(SyMenuDto.Request req) {
+    public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(SyMenuDto.Request req) {
         return syMenuService.getPathTreeNodeCounts(req);
     }
 

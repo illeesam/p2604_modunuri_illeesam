@@ -27,6 +27,7 @@ import java.util.Optional;
 public class QOdhOrderChgHistRepositoryImpl implements QOdhOrderChgHistRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdhOrderChgHistRepositoryImpl";
     private static final QOdhOrderChgHist h = QOdhOrderChgHist.odhOrderChgHist;
 
     /* 주문 변경 이력 baseQuery */

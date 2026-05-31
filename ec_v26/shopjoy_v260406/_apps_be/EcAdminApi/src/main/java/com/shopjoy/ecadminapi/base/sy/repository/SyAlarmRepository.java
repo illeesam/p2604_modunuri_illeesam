@@ -19,6 +19,7 @@ public interface SyAlarmRepository extends JpaRepository<SyAlarm, String>, QSyAl
      *     - searchValue : alarm_title, alarm_msg 부분일치 OR
      *     - dateStart/End : reg_date 범위 */
     @Query(value = """
+            /* com.shopjoy.ecadminapi.base.sy.repository.SyAlarmRepository :: findPathSyAlarmTreeNodeCounts() */
             WITH RECURSIVE descendants AS (
                 SELECT path_id AS root_id,
                        path_id AS leaf_id

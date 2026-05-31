@@ -27,6 +27,7 @@ import java.util.Optional;
 public class QDpUiAreaRepositoryImpl implements QDpUiAreaRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpUiAreaRepositoryImpl";
     private static final QDpUiArea a = QDpUiArea.dpUiArea;
 
     /* 전시 UI-영역 매핑 키조회 */

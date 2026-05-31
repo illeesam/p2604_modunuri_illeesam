@@ -32,6 +32,7 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
 
     private final JPAQueryFactory queryFactory;
     private final SyDeptRepository syDeptRepository;
+    private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyDeptRepositoryImpl";
     private static final QSyDept d = QSyDept.syDept;
 
     public QSyDeptRepositoryImpl(JPAQueryFactory queryFactory, @Lazy SyDeptRepository syDeptRepository) {
@@ -61,6 +62,7 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
     @Override
     public Optional<SyDeptDto.Item> selectById(String deptId) {
         SyDeptDto.Item dto = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(d.deptId.eq(deptId))
                 .fetchOne();
         return Optional.ofNullable(dto);
@@ -70,7 +72,8 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
     @Override
     public List<SyDeptDto.Item> selectList(SyDeptDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyDeptDto.Item> query = buildBaseQuery().where(
+        JPAQuery<SyDeptDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andSiteId(search),
                 andTypeCd(search),
                 andUseYn(search),
@@ -98,7 +101,8 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyDeptDto.Item> query = buildBaseQuery().where(
+        JPAQuery<SyDeptDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 andSiteId(search),
                 andTypeCd(search),
                 andUseYn(search),

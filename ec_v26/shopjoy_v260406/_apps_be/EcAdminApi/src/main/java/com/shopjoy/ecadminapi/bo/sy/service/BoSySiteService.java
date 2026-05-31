@@ -35,7 +35,7 @@ public class BoSySiteService {
     }
 
     /** getPathTreeNodeCounts — 표시경로 노드별 사이트수 (검색조건 + 자손 누적) */
-    public java.util.Map<String, Long> getPathTreeNodeCounts(SySiteDto.Request req) {
+    public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(SySiteDto.Request req) {
         return sySiteService.getPathTreeNodeCounts(req);
     }
 

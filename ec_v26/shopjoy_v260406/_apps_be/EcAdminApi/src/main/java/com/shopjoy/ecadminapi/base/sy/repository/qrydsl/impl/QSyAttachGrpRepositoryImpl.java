@@ -27,6 +27,7 @@ import java.util.Optional;
 public class QSyAttachGrpRepositoryImpl implements QSyAttachGrpRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyAttachGrpRepositoryImpl";
     private static final QSyAttachGrp g = QSyAttachGrp.syAttachGrp;
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 

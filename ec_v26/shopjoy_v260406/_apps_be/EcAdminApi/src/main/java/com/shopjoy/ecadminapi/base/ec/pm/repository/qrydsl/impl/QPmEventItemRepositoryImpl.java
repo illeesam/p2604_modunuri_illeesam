@@ -27,6 +27,7 @@ import java.util.Optional;
 public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmEventItemRepositoryImpl";
     private static final QPmEventItem i = QPmEventItem.pmEventItem;
 
     /* 이벤트 대상 상품 키조회 */

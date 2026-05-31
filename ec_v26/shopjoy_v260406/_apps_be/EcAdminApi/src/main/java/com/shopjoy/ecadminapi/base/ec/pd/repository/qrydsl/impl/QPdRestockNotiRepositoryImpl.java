@@ -30,6 +30,7 @@ import java.util.Optional;
 public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdRestockNotiRepositoryImpl";
     private static final QPdRestockNoti n   = QPdRestockNoti.pdRestockNoti;
     private static final QSySite        ste = QSySite.sySite;
     private static final QPdProd        prd = QPdProd.pdProd;

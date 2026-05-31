@@ -27,6 +27,7 @@ import java.util.Optional;
 public class QOdhPayStatusHistRepositoryImpl implements QOdhPayStatusHistRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdhPayStatusHistRepositoryImpl";
     private static final QOdhPayStatusHist h = QOdhPayStatusHist.odhPayStatusHist;
 
     /* 결제 상태 이력 baseQuery */

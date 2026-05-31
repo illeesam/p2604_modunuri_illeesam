@@ -28,6 +28,7 @@ import java.util.Optional;
 public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyRoleMenuRepositoryImpl";
     private static final QSyRoleMenu m = QSyRoleMenu.syRoleMenu;
     private static final QSySite ste = QSySite.sySite;
 
@@ -46,6 +47,7 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
     @Override
     public Optional<SyRoleMenuDto.Item> selectById(String roleMenuId) {
         SyRoleMenuDto.Item dto = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(m.roleMenuId.eq(roleMenuId))
                 .fetchOne();
         return Optional.ofNullable(dto);
@@ -55,7 +57,8 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
     @Override
     public List<SyRoleMenuDto.Item> selectList(SyRoleMenuDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyRoleMenuDto.Item> query = buildBaseQuery().where(
+        JPAQuery<SyRoleMenuDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andSiteId(search),
                 andRoleMenuId(search),
                 andDateRange(search),
@@ -82,7 +85,8 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyRoleMenuDto.Item> query = buildBaseQuery().where(
+        JPAQuery<SyRoleMenuDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 andSiteId(search),
                 andRoleMenuId(search),
                 andDateRange(search),

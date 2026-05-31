@@ -29,6 +29,7 @@ import java.util.Optional;
 public class QPmCouponRepositoryImpl implements QPmCouponRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmCouponRepositoryImpl";
     private static final QPmCoupon c   = QPmCoupon.pmCoupon;
     private static final QSyCode  cdCt = new QSyCode("cd_ct");
     private static final QSyCode  cdCs = new QSyCode("cd_cs");

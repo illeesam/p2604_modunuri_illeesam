@@ -27,6 +27,7 @@ import java.util.Optional;
 public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.mb.repository.qrydsl.impl.QMbDeviceTokenRepositoryImpl";
     private static final QMbDeviceToken t   = QMbDeviceToken.mbDeviceToken;
     private static final QMbMember      mem = QMbMember.mbMember;
 

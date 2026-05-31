@@ -29,6 +29,7 @@ import java.util.Optional;
 public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmSaveItemRepositoryImpl";
     private static final QPmSaveItem i    = QPmSaveItem.pmSaveItem;
     private static final QPmSave     sav  = QPmSave.pmSave;
     private static final QSySite     ste  = QSySite.sySite;

@@ -19,6 +19,7 @@ public interface DpPanelRepository extends JpaRepository<DpPanel, String>, QDpPa
      *     - searchValue : panel_nm 부분일치 OR
      *     - dateStart/End : reg_date 범위 */
     @Query(value = """
+            /* com.shopjoy.ecadminapi.base.ec.dp.repository.DpPanelRepository :: findPathDpPanelTreeNodeCounts() */
             WITH RECURSIVE descendants AS (
                 SELECT path_id AS root_id,
                        path_id AS leaf_id

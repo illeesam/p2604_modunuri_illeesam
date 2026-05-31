@@ -28,6 +28,7 @@ import java.util.Optional;
 public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdDlivItemRepositoryImpl";
     private static final QOdDlivItem i = QOdDlivItem.odDlivItem;
 
     /* 배송 아이템 키조회 */

@@ -27,6 +27,7 @@ import java.util.Optional;
 public class QSyI18nMsgRepositoryImpl implements QSyI18nMsgRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyI18nMsgRepositoryImpl";
     private static final QSyI18nMsg m = QSyI18nMsg.syI18nMsg;
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 

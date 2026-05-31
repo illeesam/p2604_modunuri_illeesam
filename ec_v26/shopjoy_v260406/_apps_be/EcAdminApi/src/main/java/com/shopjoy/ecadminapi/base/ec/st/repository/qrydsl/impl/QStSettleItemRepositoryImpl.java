@@ -30,6 +30,7 @@ import java.util.Optional;
 public class QStSettleItemRepositoryImpl implements QStSettleItemRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.st.repository.qrydsl.impl.QStSettleItemRepositoryImpl";
     private static final QStSettleItem i    = QStSettleItem.stSettleItem;
     private static final QOdOrder      ord  = QOdOrder.odOrder;
     private static final QOdOrderItem  ite  = QOdOrderItem.odOrderItem;

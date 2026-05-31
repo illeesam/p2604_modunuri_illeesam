@@ -31,6 +31,7 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
 
     private final JPAQueryFactory queryFactory;
     private final SyMenuRepository syMenuRepository;
+    private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyMenuRepositoryImpl";
     private static final QSyMenu m = QSyMenu.syMenu;
 
     public QSyMenuRepositoryImpl(JPAQueryFactory queryFactory, @Lazy SyMenuRepository syMenuRepository) {
@@ -59,6 +60,7 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
     @Override
     public Optional<SyMenuDto.Item> selectById(String menuId) {
         SyMenuDto.Item dto = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(m.menuId.eq(menuId))
                 .fetchOne();
         return Optional.ofNullable(dto);
@@ -68,7 +70,8 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
     @Override
     public List<SyMenuDto.Item> selectList(SyMenuDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyMenuDto.Item> query = buildBaseQuery().where(
+        JPAQuery<SyMenuDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andSiteId(search),
                 andMenuId(search),
                 andMenuTypeCd(search),
@@ -97,7 +100,8 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyMenuDto.Item> query = buildBaseQuery().where(
+        JPAQuery<SyMenuDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 andSiteId(search),
                 andMenuId(search),
                 andMenuTypeCd(search),

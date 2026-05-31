@@ -27,6 +27,7 @@ import java.util.Optional;
 public class QPdProdContentRepositoryImpl implements QPdProdContentRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdProdContentRepositoryImpl";
     private static final QPdProdContent c = QPdProdContent.pdProdContent;
 
     /* 상품 상세 콘텐츠 키조회 */

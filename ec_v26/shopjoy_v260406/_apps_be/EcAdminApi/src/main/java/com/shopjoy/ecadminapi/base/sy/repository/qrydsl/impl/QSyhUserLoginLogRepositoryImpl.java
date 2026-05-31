@@ -30,6 +30,7 @@ import java.util.Optional;
 public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhUserLoginLogRepositoryImpl";
     private static final QSyhUserLoginLog l   = QSyhUserLoginLog.syhUserLoginLog;
     private static final QSySite          ste = QSySite.sySite;
     private static final QSyUser          usr = QSyUser.syUser;
@@ -74,6 +75,7 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
     @Override
     public Optional<SyhUserLoginLogDto.Item> selectById(String id) {
         SyhUserLoginLogDto.Item dto = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(l.logId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
@@ -84,7 +86,8 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
     public List<SyhUserLoginLogDto.Item> selectList(SyhUserLoginLogDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyhUserLoginLogDto.Item> query = buildBaseQuery().where(
+        JPAQuery<SyhUserLoginLogDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andSiteId(search),
                 andLogId(search),
                 andUserId(search),
@@ -113,7 +116,8 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyhUserLoginLogDto.Item> query = buildBaseQuery().where(
+        JPAQuery<SyhUserLoginLogDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 andSiteId(search),
                 andLogId(search),
                 andUserId(search),

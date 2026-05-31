@@ -32,6 +32,7 @@ import java.util.Optional;
 public class QOdCartRepositoryImpl implements QOdCartRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdCartRepositoryImpl";
     private static final QOdCart        c   = QOdCart.odCart;
     private static final QSySite        ste = QSySite.sySite;
     private static final QMbMember      mem = QMbMember.mbMember;

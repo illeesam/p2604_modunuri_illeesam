@@ -230,17 +230,21 @@ public class SyMenuService {
         /** getPathTreeNodeCounts — 표시경로 노드별 SyMenu 수 (검색조건 + 자손 누적, 트리 우측 뱃지용).
      *   sy_menu 는 path_id 컬럼 대신 menu_code 가 sy_path.path_id 와 일치하는 관례를 따른다.
      *   결과: { pathId: cnt, '__total__': 전체 } */
-    public java.util.Map<String, Long> getPathTreeNodeCounts(SyMenuDto.Request req) {
-        java.util.Map<String, Long> result = new java.util.LinkedHashMap<>();
+    public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(SyMenuDto.Request req) {
+        java.util.List<java.util.Map<String, Object>> result = new java.util.ArrayList<>();
         String useYn       = (req == null) ? null : nullIfBlank(req.getUseYn());
         String searchType  = (req == null) ? null : wrapCsv(req.getSearchType());
         String searchValue = (req == null) ? null : nullIfBlank(req.getSearchValue());
         String dateStart   = (req == null) ? null : nullIfBlank(req.getDateStart());
         String dateEnd     = (req == null) ? null : nullIfBlank(req.getDateEnd());
         for (Object[] row : syMenuRepository.findPathSyMenuTreeNodeCounts("sy_menu", useYn, searchType, searchValue, dateStart, dateEnd)) {
-            String pathId = row[0] == null ? null : String.valueOf(row[0]);
-            Long cnt = row[1] == null ? 0L : ((Number) row[1]).longValue();
-            result.put(pathId, cnt);
+            java.util.Map<String, Object> _m = new java.util.LinkedHashMap<>();
+
+            _m.put("pathId", row[0] == null ? null : String.valueOf(row[0]));
+
+            _m.put("cnt",    row[1] == null ? 0L   : ((Number) row[1]).longValue());
+
+            result.add(_m);
         }
         return result;
     }

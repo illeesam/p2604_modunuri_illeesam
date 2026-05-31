@@ -27,6 +27,7 @@ import java.util.Optional;
 public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.st.repository.qrydsl.impl.QStErpVoucherLineRepositoryImpl";
     private static final QStErpVoucherLine l = QStErpVoucherLine.stErpVoucherLine;
 
     /* ERP 전표 상세 키조회 */

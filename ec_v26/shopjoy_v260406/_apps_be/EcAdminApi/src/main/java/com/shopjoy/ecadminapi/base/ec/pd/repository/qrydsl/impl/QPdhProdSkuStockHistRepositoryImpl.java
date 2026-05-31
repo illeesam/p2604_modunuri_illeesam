@@ -29,6 +29,7 @@ import java.util.Optional;
 public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdhProdSkuStockHistRepositoryImpl";
     private static final QPdhProdSkuStockHist h      = QPdhProdSkuStockHist.pdhProdSkuStockHist;
     private static final QSySite              ste    = QSySite.sySite;
     private static final QPdProd              prd    = QPdProd.pdProd;
@@ -63,6 +64,7 @@ public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistR
     @Override
     public Optional<PdhProdSkuStockHistDto.Item> selectById(String id) {
         PdhProdSkuStockHistDto.Item dto = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(h.histId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
@@ -73,7 +75,8 @@ public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistR
     public List<PdhProdSkuStockHistDto.Item> selectList(PdhProdSkuStockHistDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdhProdSkuStockHistDto.Item> query = buildBaseQuery().where(
+        JPAQuery<PdhProdSkuStockHistDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andSiteId(search),
                 andHistId(search),
                 andSearchValue(search)
@@ -99,7 +102,8 @@ public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistR
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdhProdSkuStockHistDto.Item> query = buildBaseQuery().where(
+        JPAQuery<PdhProdSkuStockHistDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 andSiteId(search),
                 andHistId(search),
                 andSearchValue(search)

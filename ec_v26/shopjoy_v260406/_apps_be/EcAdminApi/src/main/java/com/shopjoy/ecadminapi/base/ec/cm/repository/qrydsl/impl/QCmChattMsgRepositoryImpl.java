@@ -27,6 +27,7 @@ import java.util.Optional;
 public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmChattMsgRepositoryImpl";
     private static final QCmChattMsg m = QCmChattMsg.cmChattMsg;
 
     /** 기본 쿼리 빌드 */
@@ -44,6 +45,7 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
     @Override
     public Optional<CmChattMsgDto.Item> selectById(String chattMsgId) {
         CmChattMsgDto.Item dto = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(m.chattMsgId.eq(chattMsgId))
                 .fetchOne();
         return Optional.ofNullable(dto);
@@ -53,7 +55,8 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
     @Override
     public List<CmChattMsgDto.Item> selectList(CmChattMsgDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<CmChattMsgDto.Item> query = buildBaseQuery().where(
+        JPAQuery<CmChattMsgDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andSiteId(search),
                 andChattMsgId(search),
                 andDateRange(search),
@@ -80,7 +83,8 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<CmChattMsgDto.Item> query = buildBaseQuery().where(
+        JPAQuery<CmChattMsgDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 andSiteId(search),
                 andChattMsgId(search),
                 andDateRange(search),

@@ -36,6 +36,7 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
     @PersistenceContext
     private EntityManager em;
 
+    private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpUiRepositoryImpl";
     private static final QDpUi u = QDpUi.dpUi;
 
     /* 전시 UI 키조회 */

@@ -95,9 +95,11 @@ window.SyBbmMng = {
         const params = Object.fromEntries(Object.entries(searchParam)
           .filter(([k, v]) => v !== '' && v !== null && v !== undefined && k !== 'pathId'));
         const res = await boApiSvc.syBbm.getPathTreeNodeCounts(params, '경로별카운트', '조회');
-        const map = res.data?.data || {};
+        const rows = res.data?.data || [];
+
         Object.keys(bbmCounts).forEach(k => { delete bbmCounts[k]; });
-        Object.assign(bbmCounts, map);
+
+        for (const r of rows) { if (r && r.pathId != null) bbmCounts[r.pathId] = r.cnt; }
       } catch (e) { console.error('[handleLoadPathTreeNodeCounts]', e); }
     };
 

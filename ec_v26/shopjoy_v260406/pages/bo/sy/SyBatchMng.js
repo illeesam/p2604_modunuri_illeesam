@@ -124,9 +124,11 @@ window.SyBatchMng = {
         const params = Object.fromEntries(Object.entries(searchParam)
           .filter(([k, v]) => v !== '' && v !== null && v !== undefined && k !== 'pathId'));
         const res = await boApiSvc.syBatch.getPathTreeNodeCounts(params, '경로별카운트', '조회');
-        const map = res.data?.data || {};
+        const rows = res.data?.data || [];
+
         Object.keys(batchCounts).forEach(k => { delete batchCounts[k]; });
-        Object.assign(batchCounts, map);
+
+        for (const r of rows) { if (r && r.pathId != null) batchCounts[r.pathId] = r.cnt; }
       } catch (e) { console.error('[handleLoadPathTreeNodeCounts]', e); }
     };
 

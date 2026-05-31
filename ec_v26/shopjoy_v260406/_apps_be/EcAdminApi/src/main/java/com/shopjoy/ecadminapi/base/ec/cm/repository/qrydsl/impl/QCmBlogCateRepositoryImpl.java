@@ -28,6 +28,7 @@ import java.util.Optional;
 public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmBlogCateRepositoryImpl";
     private static final QCmBlogCate c = QCmBlogCate.cmBlogCate;
     private static final QSySite s = QSySite.sySite;
 
@@ -48,6 +49,7 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
     @Override
     public Optional<CmBlogCateDto.Item> selectById(String blogCateId) {
         CmBlogCateDto.Item dto = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(c.blogCateId.eq(blogCateId))
                 .fetchOne();
         return Optional.ofNullable(dto);
@@ -57,7 +59,8 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
     @Override
     public List<CmBlogCateDto.Item> selectList(CmBlogCateDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<CmBlogCateDto.Item> query = buildBaseQuery().where(
+        JPAQuery<CmBlogCateDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andSiteId(search),
                 andBlogCateId(search),
                 andUseYn(search),
@@ -85,7 +88,8 @@ public class QCmBlogCateRepositoryImpl implements QCmBlogCateRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<CmBlogCateDto.Item> query = buildBaseQuery().where(
+        JPAQuery<CmBlogCateDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 andSiteId(search),
                 andBlogCateId(search),
                 andUseYn(search),

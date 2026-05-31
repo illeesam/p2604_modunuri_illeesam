@@ -73,7 +73,7 @@ public class BoSyVendorController {
     }
     /** pathCounts — 표시경로 노드별 SyVendor 수 (자손 누적, 트리 우측 뱃지용) */
     @GetMapping("/path-counts")
-    public ResponseEntity<ApiResponse<java.util.Map<String, Long>>> pathCounts(@Valid @ModelAttribute SyVendorDto.Request req) {
+    public ResponseEntity<ApiResponse<java.util.List<java.util.Map<String, Object>>>> pathCounts(@Valid @ModelAttribute SyVendorDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boSyVendorService.getPathTreeNodeCounts(req)));
     }
 

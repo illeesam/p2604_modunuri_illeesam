@@ -31,6 +31,7 @@ import java.util.Optional;
 public class QStReconRepositoryImpl implements QStReconRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.st.repository.qrydsl.impl.QStReconRepositoryImpl";
     private static final QStRecon     r    = QStRecon.stRecon;
     private static final QSySite      ste  = QSySite.sySite;
     private static final QSyVendor    vnd  = QSyVendor.syVendor;

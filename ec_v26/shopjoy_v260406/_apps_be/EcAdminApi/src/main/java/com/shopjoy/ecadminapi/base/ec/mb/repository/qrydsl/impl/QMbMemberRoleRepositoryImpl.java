@@ -29,6 +29,7 @@ import java.util.Optional;
 public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.mb.repository.qrydsl.impl.QMbMemberRoleRepositoryImpl";
     private static final QMbMemberRole r   = QMbMemberRole.mbMemberRole;
     private static final QMbMember     mem = QMbMember.mbMember;
     private static final QSyRole       rol = QSyRole.syRole;

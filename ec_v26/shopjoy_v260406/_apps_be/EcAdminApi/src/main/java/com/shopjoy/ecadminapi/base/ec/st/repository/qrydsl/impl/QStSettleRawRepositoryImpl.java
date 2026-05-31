@@ -44,6 +44,7 @@ import java.util.Optional;
 public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.st.repository.qrydsl.impl.QStSettleRawRepositoryImpl";
     private static final QStSettleRaw r    = QStSettleRaw.stSettleRaw;
     private static final QSySite      ste  = QSySite.sySite;
     private static final QOdOrder     ord  = QOdOrder.odOrder;

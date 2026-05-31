@@ -28,6 +28,7 @@ import java.util.Optional;
 public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyNoticeRepositoryImpl";
     private static final QSyNotice n = QSyNotice.syNotice;
     private static final QSySite ste = QSySite.sySite;
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");

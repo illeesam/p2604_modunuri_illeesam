@@ -28,6 +28,7 @@ import java.util.Optional;
 public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdhProdChgHistRepositoryImpl";
     private static final QPdhProdChgHist h   = QPdhProdChgHist.pdhProdChgHist;
     private static final QSySite        ste = QSySite.sySite;
 
@@ -54,6 +55,7 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
     @Override
     public Optional<PdhProdChgHistDto.Item> selectById(String id) {
         PdhProdChgHistDto.Item dto = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(h.prodChgHistId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
@@ -64,7 +66,8 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
     public List<PdhProdChgHistDto.Item> selectList(PdhProdChgHistDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdhProdChgHistDto.Item> query = buildBaseQuery().where(
+        JPAQuery<PdhProdChgHistDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andSiteId(search),
                 andProdChgHistId(search),
                 andDateRange(search),
@@ -91,7 +94,8 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdhProdChgHistDto.Item> query = buildBaseQuery().where(
+        JPAQuery<PdhProdChgHistDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 andSiteId(search),
                 andProdChgHistId(search),
                 andDateRange(search),

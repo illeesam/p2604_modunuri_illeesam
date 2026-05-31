@@ -16,6 +16,8 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SySite;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSySiteRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
@@ -23,7 +25,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 /** SySite QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
@@ -31,6 +35,8 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
 
     private final JPAQueryFactory queryFactory;
     private final SyPathRepository syPathRepository;
+    private final EntityManager em;
+    private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSySiteRepositoryImpl";
     private static final QSySite s = QSySite.sySite;
     private static final QSyCode cdSt = new QSyCode("cd_st");
     private static final QSyCode cdSs = new QSyCode("cd_ss");
@@ -56,6 +62,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
     @Override
     public Optional<SySiteDto.Item> selectById(String siteId) {
         SySiteDto.Item dto = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(s.siteId.eq(siteId))
                 .fetchOne();
         return Optional.ofNullable(dto);
@@ -65,14 +72,16 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
     @Override
     public List<SySiteDto.Item> selectList(SySiteDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SySiteDto.Item> query = buildBaseQuery().where(
-                andSiteId(search),
-                andPathId(search),
-                andStatus(search),
-                andTypeCd(search),
-                andDateRange(search),
-                andSearchValue(search)
-        );
+        JPAQuery<SySiteDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                        andSiteId(search),
+                        andPathId(search),
+                        andStatus(search),
+                        andTypeCd(search),
+                        andDateRange(search),
+                        andSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -94,27 +103,31 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SySiteDto.Item> query = buildBaseQuery().where(
-                andSiteId(search),
-                andPathId(search),
-                andStatus(search),
-                andTypeCd(search),
-                andDateRange(search),
-                andSearchValue(search)
-        );
+        JPAQuery<SySiteDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list")
+                .where(
+                        andSiteId(search),
+                        andPathId(search),
+                        andStatus(search),
+                        andTypeCd(search),
+                        andDateRange(search),
+                        andSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
         List<SySiteDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(s.count()).from(s).where(
-                andSiteId(search),
-                andPathId(search),
-                andStatus(search),
-                andTypeCd(search),
-                andDateRange(search),
-                andSearchValue(search)
-        ).fetchOne();
+        Long total = queryFactory.select(s.count()).from(s)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: count")
+                .where(
+                        andSiteId(search),
+                        andPathId(search),
+                        andStatus(search),
+                        andTypeCd(search),
+                        andDateRange(search),
+                        andSearchValue(search)
+                ).fetchOne();
 
         SySiteDto.PageResponse res = new SySiteDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
@@ -274,5 +287,104 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
 
         long affected = update.where(s.siteId.eq(entity.getSiteId())).execute();
         return (int) affected;
+    }
+
+    /* 표시경로 노드별 사이트 수 집계 (자손 누적 + 검색조건 필터, native CTE 동적 SQL)
+     *   - 일반 path_id 행 : 해당 노드 + 자손 path 의 사이트 수 (검색조건 적용)
+     *   - '__total__'     : 검색조건에 부합하는 전체 사이트 수 (트리 루트 "전체" 노드)
+     *   - '__orphan__'    : 검색조건에 부합 + path_id IS NULL 인 사이트 수
+     *
+     *   동적 SQL — search 의 null 항목은 SQL 에 포함하지 않아 옵티마이저 부담을 줄인다.
+     */
+    @Override
+    public List<Map<String, Object>> findPathSiteTreeNodeCounts(SySiteDto.Request search) {
+        StringBuilder sql = new StringBuilder();
+        Map<String, Object> params = new LinkedHashMap<>();
+
+        sql.append("/* base.sy.repository.qrydsl.impl.QSySiteRepositoryImpl :: findPathSiteTreeNodeCounts() */ \n");
+        /* CTE 헤더 — 재귀 path 자손 누적 + filtered_site WHERE 시작 */
+        sql.append("""
+                WITH RECURSIVE descendants /* 각 path 의 자손 path_id (자신 포함, biz_cd 한정) */ AS (
+                    SELECT path_id AS root_id, path_id AS leaf_id
+                    FROM sy_path
+                    WHERE biz_cd = :bizCd
+                    UNION ALL
+                    SELECT d.root_id, c.path_id
+                    FROM descendants d
+                    JOIN sy_path c ON c.parent_path_id = d.leaf_id
+                    WHERE c.biz_cd = :bizCd
+                ),
+                filtered_site /* 검색조건이 적용된 사이트 집합 */ AS (
+                    SELECT site_id, path_id
+                    FROM sy_site s
+                    WHERE 1=1
+                """);
+        params.put("bizCd", "sy_site");
+
+        /* 검색조건 — if 분기로 SQL 조각 + 파라미터 함께 추가 */
+        if (search != null && StringUtils.hasText(search.getStatus())) {
+            sql.append("      AND s.site_status_cd = :statusCd \n");
+            params.put("statusCd", search.getStatus());
+        }
+        if (search != null && StringUtils.hasText(search.getTypeCd())) {
+            sql.append("      AND s.site_type_cd   = :typeCd \n");
+            params.put("typeCd", search.getTypeCd());
+        }
+        if (search != null && StringUtils.hasText(search.getSearchValue())) {
+            String searchType = search.getSearchType();
+            boolean noType = !StringUtils.hasText(searchType);
+            sql.append("      AND ( \n");
+            sql.append("            1=0 \n");
+            if (noType || searchType.contains(",siteCode,"))   sql.append("         OR s.site_code   ILIKE '%' || :searchValue || '%' \n");
+            if (noType || searchType.contains(",siteNm,"))     sql.append("         OR s.site_nm     ILIKE '%' || :searchValue || '%' \n");
+            if (noType || searchType.contains(",siteDomain,")) sql.append("         OR s.site_domain ILIKE '%' || :searchValue || '%' \n");
+            if (noType || searchType.contains(",siteEmail,"))  sql.append("         OR s.site_email  ILIKE '%' || :searchValue || '%' \n");
+            if (noType || searchType.contains(",siteCeo,"))    sql.append("         OR s.site_ceo    ILIKE '%' || :searchValue || '%' \n");
+            sql.append("      ) \n");
+            params.put("searchValue", search.getSearchValue());
+        }
+        if (search != null && StringUtils.hasText(search.getDateStart())) {
+            sql.append("      AND s.reg_date >= CAST(:dateStart AS timestamp) \n");
+            params.put("dateStart", search.getDateStart());
+        }
+        if (search != null && StringUtils.hasText(search.getDateEnd())) {
+            sql.append("      AND s.reg_date <= CAST(:dateEnd   AS timestamp) + INTERVAL '1 day' \n");
+            params.put("dateEnd", search.getDateEnd());
+        }
+
+        /* CTE 닫기 + 메인 UNION ALL 3블록 */
+        sql.append("""
+                )
+                /* (1) 일반 path_id 행 : 노드 + 자손 누적 카운트 */
+                SELECT d.root_id AS path_id, COUNT(s.site_id) AS cnt
+                FROM descendants d
+                LEFT JOIN filtered_site s ON s.path_id = d.leaf_id
+                GROUP BY d.root_id
+                UNION ALL
+                /* (2) '__total__' : 트리 루트 "전체" 노드용 — 검색조건에 부합하는 전체 카운트 */
+                SELECT '__total__' AS path_id, COUNT(*) AS cnt
+                FROM filtered_site
+                UNION ALL
+                /* (3) '__orphan__' : 경로 미지정(path_id IS NULL) 카운트 — 트리 외 표시 */
+                SELECT '__orphan__' AS path_id, COUNT(*) AS cnt
+                FROM filtered_site
+                WHERE path_id IS NULL
+                """);
+
+        Query q = em.createNativeQuery(sql.toString());
+        params.forEach(q::setParameter);
+
+        @SuppressWarnings("unchecked")
+        List<Object[]> rows = (List<Object[]>) q.getResultList();
+
+        /* Object[] → { pathId, cnt } 매핑 — Controller 가 그대로 JSON 직렬화 */
+        List<Map<String, Object>> result = new ArrayList<>(rows.size());
+        for (Object[] row : rows) {
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("pathId", row[0] == null ? null : String.valueOf(row[0]));
+            m.put("cnt",    row[1] == null ? 0L   : ((Number) row[1]).longValue());
+            result.add(m);
+        }
+        return result;
     }
 }

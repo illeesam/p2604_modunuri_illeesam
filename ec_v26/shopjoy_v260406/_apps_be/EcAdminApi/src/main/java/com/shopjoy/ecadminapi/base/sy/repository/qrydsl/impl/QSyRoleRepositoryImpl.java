@@ -34,6 +34,7 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
     private final JPAQueryFactory queryFactory;
     private final SyRoleRepository syRoleRepository;
     private final SyPathRepository syPathRepository;
+    private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyRoleRepositoryImpl";
     private static final QSyRole r = QSyRole.syRole;
 
     public QSyRoleRepositoryImpl(JPAQueryFactory queryFactory, SyPathRepository syPathRepository, @Lazy SyRoleRepository syRoleRepository) {
@@ -62,6 +63,7 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
     @Override
     public Optional<SyRoleDto.Item> selectById(String roleId) {
         SyRoleDto.Item dto = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(r.roleId.eq(roleId))
                 .fetchOne();
         return Optional.ofNullable(dto);
@@ -71,7 +73,8 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
     @Override
     public List<SyRoleDto.Item> selectList(SyRoleDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyRoleDto.Item> query = buildBaseQuery().where(
+        JPAQuery<SyRoleDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andSiteId(search),
                 andRoleId(search),
                 andRoleTypeCd(search),
@@ -100,7 +103,8 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyRoleDto.Item> query = buildBaseQuery().where(
+        JPAQuery<SyRoleDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 andSiteId(search),
                 andRoleId(search),
                 andRoleTypeCd(search),

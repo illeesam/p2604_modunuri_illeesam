@@ -134,9 +134,11 @@ window.SyAlarmMng = {
         const params = Object.fromEntries(Object.entries(searchParam)
           .filter(([k, v]) => v !== '' && v !== null && v !== undefined && k !== 'pathId'));
         const res = await boApiSvc.syAlarm.getPathTreeNodeCounts(params, '경로별카운트', '조회');
-        const map = res.data?.data || {};
+        const rows = res.data?.data || [];
+
         Object.keys(alarmCounts).forEach(k => { delete alarmCounts[k]; });
-        Object.assign(alarmCounts, map);
+
+        for (const r of rows) { if (r && r.pathId != null) alarmCounts[r.pathId] = r.cnt; }
       } catch (e) { console.error('[handleLoadPathTreeNodeCounts]', e); }
     };
 

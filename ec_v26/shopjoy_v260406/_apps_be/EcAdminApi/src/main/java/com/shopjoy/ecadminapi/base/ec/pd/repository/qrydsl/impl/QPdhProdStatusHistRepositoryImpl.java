@@ -30,6 +30,7 @@ import java.util.Optional;
 public class QPdhProdStatusHistRepositoryImpl implements QPdhProdStatusHistRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdhProdStatusHistRepositoryImpl";
     private static final QPdhProdStatusHist h     = QPdhProdStatusHist.pdhProdStatusHist;
     private static final QSySite            ste   = QSySite.sySite;
     private static final QSyUser            usr   = QSyUser.syUser;
@@ -59,6 +60,7 @@ public class QPdhProdStatusHistRepositoryImpl implements QPdhProdStatusHistRepos
     @Override
     public Optional<PdhProdStatusHistDto.Item> selectById(String id) {
         PdhProdStatusHistDto.Item dto = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(h.prodStatusHistId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
@@ -69,7 +71,8 @@ public class QPdhProdStatusHistRepositoryImpl implements QPdhProdStatusHistRepos
     public List<PdhProdStatusHistDto.Item> selectList(PdhProdStatusHistDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdhProdStatusHistDto.Item> query = buildBaseQuery().where(
+        JPAQuery<PdhProdStatusHistDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andSiteId(search),
                 andProdStatusHistId(search),
                 andDateRange(search),
@@ -96,7 +99,8 @@ public class QPdhProdStatusHistRepositoryImpl implements QPdhProdStatusHistRepos
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdhProdStatusHistDto.Item> query = buildBaseQuery().where(
+        JPAQuery<PdhProdStatusHistDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 andSiteId(search),
                 andProdStatusHistId(search),
                 andDateRange(search),

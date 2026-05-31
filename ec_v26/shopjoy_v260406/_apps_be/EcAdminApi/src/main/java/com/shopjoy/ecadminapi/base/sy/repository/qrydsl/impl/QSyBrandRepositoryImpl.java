@@ -31,6 +31,7 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
 
     private final JPAQueryFactory queryFactory;
     private final SyPathRepository syPathRepository;
+    private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyBrandRepositoryImpl";
     private static final QSyBrand b = QSyBrand.syBrand;
     private static final QSySite ste = QSySite.sySite;
 
@@ -52,6 +53,7 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
     @Override
     public Optional<SyBrandDto.Item> selectById(String brandId) {
         SyBrandDto.Item dto = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(b.brandId.eq(brandId))
                 .fetchOne();
         return Optional.ofNullable(dto);
@@ -61,7 +63,8 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
     @Override
     public List<SyBrandDto.Item> selectList(SyBrandDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyBrandDto.Item> query = buildBaseQuery().where(
+        JPAQuery<SyBrandDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andSiteId(search),
                 andPathId(search),
                 andBrandId(search),
@@ -90,7 +93,8 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyBrandDto.Item> query = buildBaseQuery().where(
+        JPAQuery<SyBrandDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 andSiteId(search),
                 andPathId(search),
                 andBrandId(search),

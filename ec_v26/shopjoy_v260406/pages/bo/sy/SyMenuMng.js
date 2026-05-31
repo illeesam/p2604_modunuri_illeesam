@@ -118,9 +118,11 @@ window.SyMenuMng = {
         const params = Object.fromEntries(Object.entries(searchParam)
           .filter(([k, v]) => v !== '' && v !== null && v !== undefined && k !== 'pathId'));
         const res = await boApiSvc.syMenu.getPathTreeNodeCounts(params, '경로별카운트', '조회');
-        const map = res.data?.data || {};
+        const rows = res.data?.data || [];
+
         Object.keys(menuCounts).forEach(k => { delete menuCounts[k]; });
-        Object.assign(menuCounts, map);
+
+        for (const r of rows) { if (r && r.pathId != null) menuCounts[r.pathId] = r.cnt; }
       } catch (e) { console.error('[handleLoadPathTreeNodeCounts]', e); }
     };
 

@@ -31,6 +31,7 @@ import java.util.Optional;
 public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdRefundMethodRepositoryImpl";
     private static final QOdRefundMethod m   = QOdRefundMethod.odRefundMethod;
     private static final QSySite         ste = new QSySite("ste");
     private static final QOdOrder        ord = new QOdOrder("ord");

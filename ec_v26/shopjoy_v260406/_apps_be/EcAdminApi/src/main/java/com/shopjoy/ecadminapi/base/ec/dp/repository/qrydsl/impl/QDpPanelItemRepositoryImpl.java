@@ -27,6 +27,7 @@ import java.util.Optional;
 public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpPanelItemRepositoryImpl";
     private static final QDpPanelItem i = QDpPanelItem.dpPanelItem;
 
     /* 전시 패널 아이템 키조회 */

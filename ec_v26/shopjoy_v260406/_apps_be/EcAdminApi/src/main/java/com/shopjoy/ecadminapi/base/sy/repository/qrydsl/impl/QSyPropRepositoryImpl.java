@@ -30,6 +30,7 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
 
     private final JPAQueryFactory queryFactory;
     private final SyPathRepository syPathRepository;
+    private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyPropRepositoryImpl";
     private static final QSyProp p = QSyProp.syProp;
     private static final QSySite ste = QSySite.sySite;
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");

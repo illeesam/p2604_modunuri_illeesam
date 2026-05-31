@@ -29,6 +29,7 @@ import java.util.Optional;
 public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdProdSetItemRepositoryImpl";
     private static final QPdProdSetItem i    = QPdProdSetItem.pdProdSetItem;
     private static final QSySite        ste  = QSySite.sySite;
     private static final QPdProd        prd  = new QPdProd("prd");

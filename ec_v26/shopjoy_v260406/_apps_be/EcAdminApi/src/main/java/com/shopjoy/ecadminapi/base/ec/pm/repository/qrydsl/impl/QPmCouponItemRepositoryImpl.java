@@ -26,6 +26,7 @@ import java.util.Optional;
 public class QPmCouponItemRepositoryImpl implements QPmCouponItemRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmCouponItemRepositoryImpl";
     private static final QPmCouponItem i = QPmCouponItem.pmCouponItem;
 
     /* 쿠폰 대상 상품 키조회 */

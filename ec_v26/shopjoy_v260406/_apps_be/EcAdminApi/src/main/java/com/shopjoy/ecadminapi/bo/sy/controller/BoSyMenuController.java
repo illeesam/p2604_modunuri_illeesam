@@ -73,7 +73,7 @@ public class BoSyMenuController {
     }
     /** pathCounts — 표시경로 노드별 SyMenu 수 (자손 누적, 트리 우측 뱃지용) */
     @GetMapping("/path-counts")
-    public ResponseEntity<ApiResponse<java.util.Map<String, Long>>> pathCounts(@Valid @ModelAttribute SyMenuDto.Request req) {
+    public ResponseEntity<ApiResponse<java.util.List<java.util.Map<String, Object>>>> pathCounts(@Valid @ModelAttribute SyMenuDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boSyMenuService.getPathTreeNodeCounts(req)));
     }
 

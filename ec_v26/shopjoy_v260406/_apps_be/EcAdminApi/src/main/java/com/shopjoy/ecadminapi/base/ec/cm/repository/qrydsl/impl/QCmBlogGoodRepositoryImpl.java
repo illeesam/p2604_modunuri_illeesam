@@ -27,6 +27,7 @@ import java.util.Optional;
 public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmBlogGoodRepositoryImpl";
     private static final QCmBlogGood g = QCmBlogGood.cmBlogGood;
     private static final QCmBlog blt = QCmBlog.cmBlog;
 
@@ -44,6 +45,7 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
     @Override
     public Optional<CmBlogGoodDto.Item> selectById(String likeId) {
         CmBlogGoodDto.Item dto = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(g.likeId.eq(likeId))
                 .fetchOne();
         return Optional.ofNullable(dto);
@@ -53,7 +55,8 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
     @Override
     public List<CmBlogGoodDto.Item> selectList(CmBlogGoodDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<CmBlogGoodDto.Item> query = buildBaseQuery().where(
+        JPAQuery<CmBlogGoodDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andLikeId(search),
                 andDateRange(search),
                 andSearchValue(search)
@@ -79,7 +82,8 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<CmBlogGoodDto.Item> query = buildBaseQuery().where(
+        JPAQuery<CmBlogGoodDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 andLikeId(search),
                 andDateRange(search),
                 andSearchValue(search)

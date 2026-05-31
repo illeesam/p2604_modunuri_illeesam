@@ -29,6 +29,7 @@ import java.util.Optional;
 public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdhProdViewLogRepositoryImpl";
     private static final QPdhProdViewLog l   = QPdhProdViewLog.pdhProdViewLog;
     private static final QSySite         ste = QSySite.sySite;
 
@@ -58,6 +59,7 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
     @Override
     public Optional<PdhProdViewLogDto.Item> selectById(String id) {
         PdhProdViewLogDto.Item dto = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(l.logId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
@@ -68,7 +70,8 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
     public List<PdhProdViewLogDto.Item> selectList(PdhProdViewLogDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdhProdViewLogDto.Item> query = buildBaseQuery().where(
+        JPAQuery<PdhProdViewLogDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andSiteId(search),
                 andLogId(search),
                 andDateRange(search),
@@ -95,7 +98,8 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdhProdViewLogDto.Item> query = buildBaseQuery().where(
+        JPAQuery<PdhProdViewLogDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 andSiteId(search),
                 andLogId(search),
                 andDateRange(search),

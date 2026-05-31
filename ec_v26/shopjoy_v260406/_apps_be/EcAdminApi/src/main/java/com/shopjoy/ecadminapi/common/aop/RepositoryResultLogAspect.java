@@ -3,13 +3,17 @@ package com.shopjoy.ecadminapi.common.aop;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Component;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -60,6 +64,7 @@ public class RepositoryResultLogAspect {
 
         String callerInfo = loggingEnabled ? getCallerInfo() : null;
         Object[] args = joinPoint.getArgs();
+        String[] paramNames = loggingEnabled ? getParamNames(joinPoint) : null;
 
         boolean isSaveDelete = methodName.startsWith("save") || methodName.startsWith("delete");
 
@@ -68,7 +73,7 @@ public class RepositoryResultLogAspect {
             if (isSaveDelete) {
                 logSaveDeleteHeader(simpleClassName, fullClassName, methodName, callerInfo, args);
             } else {
-                logResultHeader(simpleClassName, fullClassName, methodName, callerInfo, args);
+                logResultHeader(simpleClassName, fullClassName, methodName, callerInfo, args, paramNames);
             }
         }
 
@@ -166,14 +171,14 @@ public class RepositoryResultLogAspect {
      * @param result          반환값(null 허용)
      */
     private void logResultHeader(String simpleClassName, String fullClassName, String methodName,
-                                 String callerInfo, Object[] args) {
+                                 String callerInfo, Object[] args, String[] paramNames) {
         StringBuilder sb = new StringBuilder();
         sb.append("\n").append("▶▶▶ ").append("=".repeat(65)).append("\n");
         sb.append("   Called From: ").append(callerInfo).append("\n");
         sb.append("   Interface: ").append(fullClassName).append(" ").append(simpleClassName)
           .append(".").append(methodName).append("()");
         if (args.length > 0) {
-            sb.append("\n   Parameters: ").append(formatParameters(args));
+            sb.append("\n   Parameters: ").append(formatNamedParameters(paramNames, args));
         }
         log.debug("{}", sb);
     }
@@ -476,6 +481,54 @@ public class RepositoryResultLogAspect {
             sb.append(formatParameterValue(args[i]));
         }
         return sb.append("]").toString();
+    }
+
+    /**
+     * 파라미터를 {@code [name1=v1, name2=v2, ...]} 형태로 포맷한다.
+     *
+     * <p>paramNames 가 비어있거나 일부가 누락되면 인덱스(arg0/arg1...)로 대체.
+     * Repository 의 {@code @Param("xxx")} 어노테이션이 우선, 없으면 reflection 파라미터명 사용.</p>
+     */
+    private String formatNamedParameters(String[] paramNames, Object[] args) {
+        if (args == null || args.length == 0) return "[]";
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < args.length; i++) {
+            if (i > 0) sb.append(", ");
+            String name = (paramNames != null && i < paramNames.length && paramNames[i] != null)
+                    ? paramNames[i] : ("arg" + i);
+            sb.append(name).append("=").append(formatParameterValue(args[i]));
+        }
+        return sb.append("]").toString();
+    }
+
+    /**
+     * 메서드 파라미터의 이름 배열을 추출한다.
+     *
+     * <p>우선순위: (1) {@link Param @Param("...")} 어노테이션 값, (2) reflection 파라미터명
+     * ({@code -parameters} 컴파일 옵션 필요), (3) 둘 다 없으면 null 슬롯.</p>
+     */
+    private String[] getParamNames(ProceedingJoinPoint joinPoint) {
+        try {
+            MethodSignature sig = (MethodSignature) joinPoint.getSignature();
+            Method method = sig.getMethod();
+            Annotation[][] paramAnns = method.getParameterAnnotations();
+            java.lang.reflect.Parameter[] params = method.getParameters();
+            String[] names = new String[paramAnns.length];
+            for (int i = 0; i < paramAnns.length; i++) {
+                for (Annotation a : paramAnns[i]) {
+                    if (a instanceof Param p) {
+                        names[i] = p.value();
+                        break;
+                    }
+                }
+                if (names[i] == null && params[i].isNamePresent()) {
+                    names[i] = params[i].getName();
+                }
+            }
+            return names;
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 
     /**

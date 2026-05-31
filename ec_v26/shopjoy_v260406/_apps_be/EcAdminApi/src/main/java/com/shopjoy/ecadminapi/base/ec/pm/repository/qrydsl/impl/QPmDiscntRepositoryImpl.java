@@ -27,6 +27,7 @@ import java.util.Optional;
 public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmDiscntRepositoryImpl";
     private static final QPmDiscnt d = QPmDiscnt.pmDiscnt;
 
     /* 할인 키조회 */

@@ -28,6 +28,7 @@ import java.util.Optional;
 public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdProdImgRepositoryImpl";
     private static final QPdProdImg i = QPdProdImg.pdProdImg;
 
     /* 상품 이미지 키조회 */

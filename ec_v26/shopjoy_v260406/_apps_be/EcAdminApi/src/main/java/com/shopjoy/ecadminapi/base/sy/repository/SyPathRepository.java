@@ -12,6 +12,7 @@ public interface SyPathRepository extends JpaRepository<SyPath, String>, QSyPath
 
     /* 루트 path + 모든 자손 path_id 수집 (PostgreSQL 재귀 CTE, biz_cd 한정) */
     @Query(value = """
+            /* com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository :: findTreePathIds() */
             WITH RECURSIVE t /* 표시경로 parent_path_id 의 자식 path_id (list) 반환 */ AS (
                 SELECT path_id
                 FROM sy_path

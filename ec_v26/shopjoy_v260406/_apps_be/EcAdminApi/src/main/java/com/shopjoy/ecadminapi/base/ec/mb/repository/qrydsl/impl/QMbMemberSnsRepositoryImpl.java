@@ -28,6 +28,7 @@ import java.util.Optional;
 public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.mb.repository.qrydsl.impl.QMbMemberSnsRepositoryImpl";
     private static final QMbMemberSns m    = QMbMemberSns.mbMemberSns;
     private static final QMbMember    mem  = QMbMember.mbMember;
     private static final QSyCode      cdSc = new QSyCode("cd_sc");

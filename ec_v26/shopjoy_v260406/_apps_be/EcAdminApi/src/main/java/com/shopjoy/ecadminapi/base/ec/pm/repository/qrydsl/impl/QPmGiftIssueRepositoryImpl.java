@@ -32,6 +32,7 @@ import java.util.Optional;
 public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmGiftIssueRepositoryImpl";
     private static final QPmGiftIssue i    = QPmGiftIssue.pmGiftIssue;
     private static final QPmGift      gif  = QPmGift.pmGift;
     private static final QMbMember    mem  = QMbMember.mbMember;

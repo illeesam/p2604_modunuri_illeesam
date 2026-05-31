@@ -31,6 +31,7 @@ import java.util.Optional;
 public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhSendMsgLogRepositoryImpl";
     private static final QSyhSendMsgLog l   = QSyhSendMsgLog.syhSendMsgLog;
     private static final QSySite        ste = QSySite.sySite;
     private static final QSyTemplate    tpl = QSyTemplate.syTemplate;
@@ -84,6 +85,7 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
     @Override
     public Optional<SyhSendMsgLogDto.Item> selectById(String id) {
         SyhSendMsgLogDto.Item dto = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(l.logId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
@@ -94,7 +96,8 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
     public List<SyhSendMsgLogDto.Item> selectList(SyhSendMsgLogDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyhSendMsgLogDto.Item> query = buildBaseQuery().where(
+        JPAQuery<SyhSendMsgLogDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andSiteId(search),
                 andLogId(search),
                 andUserId(search),
@@ -124,7 +127,8 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyhSendMsgLogDto.Item> query = buildBaseQuery().where(
+        JPAQuery<SyhSendMsgLogDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 andSiteId(search),
                 andLogId(search),
                 andUserId(search),

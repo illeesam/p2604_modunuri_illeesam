@@ -43,7 +43,7 @@ public class BoSySiteController {
      *   응답: { pathId: 사이트수, '__total__': 전체합계, '__orphan__': path 없음 }.
      *   검색조건(searchValue / status / typeCd / dateStart / dateEnd) 이 있으면 그 조건에 부합하는 사이트만 카운트. */
     @GetMapping("/path-counts")
-    public ResponseEntity<ApiResponse<java.util.Map<String, Long>>> pathCounts(@Valid @ModelAttribute SySiteDto.Request req) {
+    public ResponseEntity<ApiResponse<java.util.List<java.util.Map<String, Object>>>> pathCounts(@Valid @ModelAttribute SySiteDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boSySiteService.getPathTreeNodeCounts(req)));
     }
 

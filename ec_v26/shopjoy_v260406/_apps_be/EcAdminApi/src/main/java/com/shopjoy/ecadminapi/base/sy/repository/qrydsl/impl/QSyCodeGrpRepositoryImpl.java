@@ -31,6 +31,7 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
 
     private final JPAQueryFactory queryFactory;
     private final SyPathRepository syPathRepository;
+    private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyCodeGrpRepositoryImpl";
     private static final QSyCodeGrp g = QSyCodeGrp.syCodeGrp;
     private static final QSySite ste = QSySite.sySite;
 
@@ -51,6 +52,7 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
     @Override
     public Optional<SyCodeGrpDto.Item> selectById(String codeGrpId) {
         SyCodeGrpDto.Item dto = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(g.codeGrpId.eq(codeGrpId))
                 .fetchOne();
         return Optional.ofNullable(dto);
@@ -60,7 +62,8 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
     @Override
     public List<SyCodeGrpDto.Item> selectList(SyCodeGrpDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyCodeGrpDto.Item> query = buildBaseQuery().where(
+        JPAQuery<SyCodeGrpDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andSiteId(search),
                 andPathId(search),
                 andCodeGrpId(search),
@@ -90,7 +93,8 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyCodeGrpDto.Item> query = buildBaseQuery().where(
+        JPAQuery<SyCodeGrpDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 andSiteId(search),
                 andPathId(search),
                 andCodeGrpId(search),

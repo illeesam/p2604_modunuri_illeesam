@@ -31,6 +31,7 @@ import java.util.Optional;
 public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhSendEmailLogRepositoryImpl";
     private static final QSyhSendEmailLog l   = QSyhSendEmailLog.syhSendEmailLog;
     private static final QSySite          ste = QSySite.sySite;
     private static final QSyTemplate      tpl = QSyTemplate.syTemplate;
@@ -79,6 +80,7 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
     @Override
     public Optional<SyhSendEmailLogDto.Item> selectById(String id) {
         SyhSendEmailLogDto.Item dto = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(l.logId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
@@ -89,7 +91,8 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
     public List<SyhSendEmailLogDto.Item> selectList(SyhSendEmailLogDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyhSendEmailLogDto.Item> query = buildBaseQuery().where(
+        JPAQuery<SyhSendEmailLogDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andSiteId(search),
                 andLogId(search),
                 andUserId(search),
@@ -119,7 +122,8 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyhSendEmailLogDto.Item> query = buildBaseQuery().where(
+        JPAQuery<SyhSendEmailLogDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 andSiteId(search),
                 andLogId(search),
                 andUserId(search),

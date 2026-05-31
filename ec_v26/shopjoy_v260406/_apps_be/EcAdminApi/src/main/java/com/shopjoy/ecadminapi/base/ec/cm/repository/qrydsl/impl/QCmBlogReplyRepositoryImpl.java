@@ -29,6 +29,7 @@ import java.util.Optional;
 public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmBlogReplyRepositoryImpl";
     private static final QCmBlogReply r = QCmBlogReply.cmBlogReply;
 
     /** 기본 쿼리 빌드 */
@@ -47,6 +48,7 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
     @Override
     public Optional<CmBlogReplyDto.Item> selectById(String commentId) {
         CmBlogReplyDto.Item dto = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(r.commentId.eq(commentId))
                 .fetchOne();
         return Optional.ofNullable(dto);
@@ -56,7 +58,8 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
     @Override
     public List<CmBlogReplyDto.Item> selectList(CmBlogReplyDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<CmBlogReplyDto.Item> query = buildBaseQuery().where(
+        JPAQuery<CmBlogReplyDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andBlogIds(search),
                 andBlogId(search),
                 andSiteId(search),
@@ -85,7 +88,8 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<CmBlogReplyDto.Item> query = buildBaseQuery().where(
+        JPAQuery<CmBlogReplyDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 andBlogIds(search),
                 andBlogId(search),
                 andSiteId(search),

@@ -33,6 +33,7 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
 
     private final JPAQueryFactory queryFactory;
     private final SyRoleRepository syRoleRepository;
+    private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyVendorUserRoleRepositoryImpl";
     private static final QSyVendorUserRole r = QSyVendorUserRole.syVendorUserRole;
     private static final QSyVendor vnd = QSyVendor.syVendor;
     private static final QSyVendorUser vu = QSyVendorUser.syVendorUser;
@@ -63,6 +64,7 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
     @Override
     public Optional<SyVendorUserRoleDto.Item> selectById(String vendorUserRoleId) {
         SyVendorUserRoleDto.Item dto = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(r.vendorUserRoleId.eq(vendorUserRoleId))
                 .fetchOne();
         return Optional.ofNullable(dto);
@@ -72,7 +74,8 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
     @Override
     public List<SyVendorUserRoleDto.Item> selectList(SyVendorUserRoleDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyVendorUserRoleDto.Item> query = buildBaseQuery().where(
+        JPAQuery<SyVendorUserRoleDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andVendorUserRoleId(search),
                 andVendorId(search),
                 andUserId(search),
@@ -100,7 +103,8 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyVendorUserRoleDto.Item> query = buildBaseQuery().where(
+        JPAQuery<SyVendorUserRoleDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 andVendorUserRoleId(search),
                 andVendorId(search),
                 andUserId(search),

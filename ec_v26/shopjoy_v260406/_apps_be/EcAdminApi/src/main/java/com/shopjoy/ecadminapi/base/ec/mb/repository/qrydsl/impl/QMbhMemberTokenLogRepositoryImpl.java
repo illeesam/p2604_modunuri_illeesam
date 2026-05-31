@@ -29,6 +29,7 @@ import java.util.Optional;
 public class QMbhMemberTokenLogRepositoryImpl implements QMbhMemberTokenLogRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.mb.repository.qrydsl.impl.QMbhMemberTokenLogRepositoryImpl";
     private static final QMbhMemberTokenLog l    = QMbhMemberTokenLog.mbhMemberTokenLog;
     private static final QSySite            ste  = QSySite.sySite;
     private static final QMbMember          mem  = QMbMember.mbMember;

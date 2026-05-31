@@ -141,17 +141,19 @@ window.SySiteMng = {
      *   백엔드 GET /bo/sy/site/path-counts — PostgreSQL 재귀 CTE 로 자손 누적 + 검색조건 적용.
      *   handleSearchList 와 동일한 searchParam(searchValue/status/typeCd/dateStart/dateEnd)
      *   을 그대로 전달해 트리 뱃지 카운트가 페이지 그리드와 항상 일치하게 유지.
-     *   응답: { pathId: cnt, '__total__': 전체, '__orphan__': path 없음 } */
+     *   응답: [{pathId, cnt}, ...] — '__total__'/'__orphan__' 특수 path 행 포함 */
     const handleLoadSiteTreeNodeCounts = async () => {
       try {
         /* pathId 는 트리 필터 자체이므로 제외 — 검색조건만 그대로 전달 */
         const params = Object.fromEntries(Object.entries(searchParam)
           .filter(([k, v]) => v !== '' && v !== null && v !== undefined && k !== 'pathId'));
         const res = await boApiSvc.sySite.getPathTreeNodeCounts(params, '사이트관리', '경로별카운트');
-        const map = res.data?.data || {};
-        // siteCounts in-place 갱신 (반응성 유지)
+        const rows = res.data?.data || [];
+        // siteCounts in-place 갱신 (반응성 유지) — 배열 → { pathId: cnt } 매핑
         Object.keys(siteCounts).forEach(k => { delete siteCounts[k]; });
-        Object.assign(siteCounts, map);
+        for (const r of rows) {
+          if (r && r.pathId != null) siteCounts[r.pathId] = r.cnt;
+        }
       } catch (e) {
         console.error('[handleLoadSiteTreeNodeCounts]', e);
       }

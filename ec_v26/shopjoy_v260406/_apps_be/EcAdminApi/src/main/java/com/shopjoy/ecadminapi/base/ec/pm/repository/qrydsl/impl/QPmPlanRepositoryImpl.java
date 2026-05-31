@@ -29,6 +29,7 @@ import java.util.Optional;
 public class QPmPlanRepositoryImpl implements QPmPlanRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmPlanRepositoryImpl";
     private static final QPmPlan p    = QPmPlan.pmPlan;
     private static final QSySite ste  = QSySite.sySite;
     private static final QSyCode cdPt = new QSyCode("cd_pt");

@@ -21,6 +21,7 @@ public interface SyUserRepository extends JpaRepository<SyUser, String>, QSyUser
      *     - searchValue : login_id/user_nm/user_email/user_phone 부분일치 OR
      *     - dateStart/End : reg_date 범위 */
     @Query(value = """
+            /* com.shopjoy.ecadminapi.base.sy.repository.SyUserRepository :: findDeptSyUserTreeNodeCounts() */
             WITH RECURSIVE descendants AS (
                 SELECT dept_id AS root_id,
                        dept_id AS leaf_id

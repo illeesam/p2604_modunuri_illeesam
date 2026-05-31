@@ -31,6 +31,7 @@ import java.util.Optional;
 public class QPmGiftRepositoryImpl implements QPmGiftRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmGiftRepositoryImpl";
     private static final QPmGift  g    = QPmGift.pmGift;
     private static final QPdProd  prd  = QPdProd.pdProd;
     private static final QSySite  ste  = QSySite.sySite;

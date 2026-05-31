@@ -39,6 +39,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
     private final JPAQueryFactory queryFactory;
     private final SyDeptRepository syDeptRepository;
 
+    private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyUserRepositoryImpl";
     private static final QSyUser syUser = QSyUser.syUser;
     private static final QSySite sySite = QSySite.sySite;
     private static final QSyDept syDept = QSyDept.syDept;
@@ -98,6 +99,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
     @Override
     public Optional<SyUserDto.Item> selectById(String userId) {
         SyUserDto.Item dto = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(syUser.userId.eq(userId))
                 .fetchOne();
         return Optional.ofNullable(dto);
@@ -108,6 +110,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
     public List<SyUserDto.Item> selectList(SyUserDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         var query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                         andSiteId(search),
                         andDeptId(search),
@@ -138,6 +141,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
         var query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list")
                 .where(
                         andSiteId(search),
                         andDeptId(search),

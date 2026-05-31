@@ -28,6 +28,7 @@ import java.util.Optional;
 public class QSyAttachRepositoryImpl implements QSyAttachRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyAttachRepositoryImpl";
     private static final QSyAttach a = QSyAttach.syAttach;
     private static final QSySite ste = QSySite.sySite;
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");

@@ -86,7 +86,7 @@ public class BoDpPanelService {
     @Transactional public void delete(String id) { dpPanelService.delete(id); }
     @Transactional public void saveList(String cmd, List<DpPanel> rows) { dpPanelService.saveList(cmd, rows); }
     /** getPathTreeNodeCounts — 표시경로 노드별 DpPanel 수 (자손 누적) */
-    public java.util.Map<String, Long> getPathTreeNodeCounts(DpPanelDto.Request req) {
+    public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(DpPanelDto.Request req) {
         return dpPanelService.getPathTreeNodeCounts(req);
     }
 

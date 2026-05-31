@@ -28,6 +28,7 @@ import java.util.Optional;
 public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdProdTagRepositoryImpl";
     private static final QPdProdTag t   = QPdProdTag.pdProdTag;
     private static final QPdProd    prd = QPdProd.pdProd;
     private static final QSySite    ste = QSySite.sySite;

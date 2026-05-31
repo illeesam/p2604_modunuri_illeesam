@@ -26,6 +26,7 @@ import java.util.Optional;
 public class QPmDiscntItemRepositoryImpl implements QPmDiscntItemRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmDiscntItemRepositoryImpl";
     private static final QPmDiscntItem i = QPmDiscntItem.pmDiscntItem;
 
     /* 할인 대상 상품 키조회 */

@@ -31,7 +31,7 @@ public class BoSyBbmService {
     @Transactional public void delete(String id) { syBbmService.delete(id); }
     @Transactional public void saveList(String cmd, List<SyBbm> rows) { syBbmService.saveList(cmd, rows); }
     /** getPathTreeNodeCounts — 표시경로 노드별 SyBbm 수 (자손 누적) */
-    public java.util.Map<String, Long> getPathTreeNodeCounts(SyBbmDto.Request req) {
+    public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(SyBbmDto.Request req) {
         return syBbmService.getPathTreeNodeCounts(req);
     }
 

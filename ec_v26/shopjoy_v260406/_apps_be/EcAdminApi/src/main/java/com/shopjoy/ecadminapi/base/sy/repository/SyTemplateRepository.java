@@ -19,6 +19,7 @@ public interface SyTemplateRepository extends JpaRepository<SyTemplate, String>,
      *     - searchValue : template_code, template_nm 부분일치 OR
      *     - dateStart/End : reg_date 범위 */
     @Query(value = """
+            /* com.shopjoy.ecadminapi.base.sy.repository.SyTemplateRepository :: findPathSyTemplateTreeNodeCounts() */
             WITH RECURSIVE descendants AS (
                 SELECT path_id AS root_id,
                        path_id AS leaf_id

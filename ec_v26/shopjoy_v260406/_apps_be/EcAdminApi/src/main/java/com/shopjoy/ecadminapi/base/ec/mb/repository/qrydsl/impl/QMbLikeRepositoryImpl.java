@@ -30,6 +30,7 @@ import java.util.Optional;
 public class QMbLikeRepositoryImpl implements QMbLikeRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.mb.repository.qrydsl.impl.QMbLikeRepositoryImpl";
     private static final QMbLike   l    = QMbLike.mbLike;
     private static final QSySite   ste  = QSySite.sySite;
     private static final QMbMember mem  = QMbMember.mbMember;

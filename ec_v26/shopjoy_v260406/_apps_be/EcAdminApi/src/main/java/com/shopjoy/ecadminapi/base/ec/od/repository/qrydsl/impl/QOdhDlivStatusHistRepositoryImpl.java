@@ -27,6 +27,7 @@ import java.util.Optional;
 public class QOdhDlivStatusHistRepositoryImpl implements QOdhDlivStatusHistRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdhDlivStatusHistRepositoryImpl";
     private static final QOdhDlivStatusHist h = QOdhDlivStatusHist.odhDlivStatusHist;
 
     /* 배송 상태 이력 baseQuery */

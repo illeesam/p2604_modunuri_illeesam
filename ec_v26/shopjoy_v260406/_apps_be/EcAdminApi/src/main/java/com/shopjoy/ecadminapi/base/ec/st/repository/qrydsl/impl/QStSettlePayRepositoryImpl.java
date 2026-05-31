@@ -31,6 +31,7 @@ import java.util.Optional;
 public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.st.repository.qrydsl.impl.QStSettlePayRepositoryImpl";
     private static final QStSettlePay p     = QStSettlePay.stSettlePay;
     private static final QSyVendor    vnd   = QSyVendor.syVendor;
     private static final QSySite      ste   = QSySite.sySite;

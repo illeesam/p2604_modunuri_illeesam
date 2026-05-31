@@ -31,7 +31,7 @@ public class BoDpWidgetService {
     @Transactional public void delete(String id) { dpWidgetService.delete(id); }
     @Transactional public void saveList(String cmd, List<DpWidget> rows) { dpWidgetService.saveList(cmd, rows); }
     /** getPathTreeNodeCounts — 표시경로 노드별 DpWidget 수 (자손 누적) */
-    public java.util.Map<String, Long> getPathTreeNodeCounts(DpWidgetDto.Request req) {
+    public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(DpWidgetDto.Request req) {
         return dpWidgetService.getPathTreeNodeCounts(req);
     }
 

@@ -31,6 +31,7 @@ import java.util.Optional;
 public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyVendorContentRepositoryImpl";
     private static final QSyVendorContent c = QSyVendorContent.syVendorContent;
     private static final QSySite ste = QSySite.sySite;
     private static final QSyVendor vnd = QSyVendor.syVendor;
@@ -62,6 +63,7 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
     @Override
     public Optional<SyVendorContentDto.Item> selectById(String vendorContentId) {
         SyVendorContentDto.Item dto = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(c.vendorContentId.eq(vendorContentId))
                 .fetchOne();
         return Optional.ofNullable(dto);
@@ -71,7 +73,8 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
     @Override
     public List<SyVendorContentDto.Item> selectList(SyVendorContentDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyVendorContentDto.Item> query = buildBaseQuery().where(
+        JPAQuery<SyVendorContentDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andSiteId(search),
                 andVendorContentId(search),
                 andVendorId(search),
@@ -101,7 +104,8 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyVendorContentDto.Item> query = buildBaseQuery().where(
+        JPAQuery<SyVendorContentDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 andSiteId(search),
                 andVendorContentId(search),
                 andVendorId(search),

@@ -28,6 +28,7 @@ import java.util.Optional;
 public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmChattRoomRepositoryImpl";
     private static final QCmChattRoom r = QCmChattRoom.cmChattRoom;
 
     /** 기본 쿼리 빌드 */
@@ -47,6 +48,7 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
     @Override
     public Optional<CmChattRoomDto.Item> selectById(String chattRoomId) {
         CmChattRoomDto.Item dto = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(r.chattRoomId.eq(chattRoomId))
                 .fetchOne();
         return Optional.ofNullable(dto);
@@ -56,7 +58,8 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
     @Override
     public List<CmChattRoomDto.Item> selectList(CmChattRoomDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<CmChattRoomDto.Item> query = buildBaseQuery().where(
+        JPAQuery<CmChattRoomDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andSiteId(search),
                 andChattRoomId(search),
                 andMemberId(search),
@@ -84,7 +87,8 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<CmChattRoomDto.Item> query = buildBaseQuery().where(
+        JPAQuery<CmChattRoomDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 andSiteId(search),
                 andChattRoomId(search),
                 andMemberId(search),

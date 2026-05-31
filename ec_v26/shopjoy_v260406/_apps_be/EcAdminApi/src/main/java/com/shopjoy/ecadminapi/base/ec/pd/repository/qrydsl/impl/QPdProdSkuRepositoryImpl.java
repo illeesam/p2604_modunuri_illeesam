@@ -28,6 +28,7 @@ import java.util.Optional;
 public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdProdSkuRepositoryImpl";
     private static final QPdProdSku s = QPdProdSku.pdProdSku;
 
     /* 상품 SKU 키조회 */

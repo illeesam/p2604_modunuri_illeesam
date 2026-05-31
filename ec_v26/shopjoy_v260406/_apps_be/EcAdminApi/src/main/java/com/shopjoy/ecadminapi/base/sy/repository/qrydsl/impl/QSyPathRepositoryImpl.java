@@ -26,6 +26,7 @@ import java.util.Optional;
 public class QSyPathRepositoryImpl implements QSyPathRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyPathRepositoryImpl";
     private static final QSyPath p = QSyPath.syPath;
 
     /* 키조회 */

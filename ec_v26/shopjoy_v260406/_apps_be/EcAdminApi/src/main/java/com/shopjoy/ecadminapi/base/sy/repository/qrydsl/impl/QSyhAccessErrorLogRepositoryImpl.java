@@ -23,6 +23,7 @@ import java.util.List;
 public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhAccessErrorLogRepositoryImpl";
     private static final QSyhAccessErrorLog l = QSyhAccessErrorLog.syhAccessErrorLog;
 
     /* buildBaseQuery */
@@ -71,7 +72,8 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyhAccessErrorLogDto.Item> query = buildBaseQuery().where(
+        JPAQuery<SyhAccessErrorLogDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 andMethod(search),
                 andAppTypeCd(search),
                 andDateRange(search),

@@ -28,6 +28,7 @@ import java.util.Optional;
 public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.mb.repository.qrydsl.impl.QMbMemberGradeRepositoryImpl";
     private static final QMbMemberGrade g    = QMbMemberGrade.mbMemberGrade;
     private static final QSySite        ste  = QSySite.sySite;
     private static final QSyCode        cdMg = new QSyCode("cd_mg");

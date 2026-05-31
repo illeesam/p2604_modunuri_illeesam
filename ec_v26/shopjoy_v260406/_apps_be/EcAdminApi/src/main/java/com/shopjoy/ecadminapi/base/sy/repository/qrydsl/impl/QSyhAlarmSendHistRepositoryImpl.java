@@ -28,6 +28,7 @@ import java.util.Optional;
 public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhAlarmSendHistRepositoryImpl";
     private static final QSyhAlarmSendHist h   = QSyhAlarmSendHist.syhAlarmSendHist;
     private static final QSySite           ste = QSySite.sySite;
 
@@ -58,6 +59,7 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
     @Override
     public Optional<SyhAlarmSendHistDto.Item> selectById(String id) {
         SyhAlarmSendHistDto.Item dto = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(h.sendHistId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
@@ -68,7 +70,8 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
     public List<SyhAlarmSendHistDto.Item> selectList(SyhAlarmSendHistDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyhAlarmSendHistDto.Item> query = buildBaseQuery().where(
+        JPAQuery<SyhAlarmSendHistDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andSiteId(search),
                 andSendHistId(search),
                 andStatus(search),
@@ -96,7 +99,8 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyhAlarmSendHistDto.Item> query = buildBaseQuery().where(
+        JPAQuery<SyhAlarmSendHistDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 andSiteId(search),
                 andSendHistId(search),
                 andStatus(search),

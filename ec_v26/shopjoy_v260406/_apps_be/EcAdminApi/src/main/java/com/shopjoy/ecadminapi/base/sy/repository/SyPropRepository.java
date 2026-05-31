@@ -19,6 +19,7 @@ public interface SyPropRepository extends JpaRepository<SyProp, String>, QSyProp
      *     - propType    : prop_type_cd 일치
      *     - searchValue : prop_key/prop_value/prop_label 부분일치 OR 검색 */
     @Query(value = """
+            /* com.shopjoy.ecadminapi.base.sy.repository.SyPropRepository :: findPathSyPropTreeNodeCounts() */
             WITH RECURSIVE descendants AS (
                 SELECT path_id AS root_id,
                        path_id AS leaf_id

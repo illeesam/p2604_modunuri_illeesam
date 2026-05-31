@@ -19,6 +19,7 @@ public interface SyCodeGrpRepository extends JpaRepository<SyCodeGrp, String>, Q
      *     - searchValue : code_grp, grp_nm, code_grp_desc 부분일치 OR
      *     - dateStart/End : reg_date 범위 */
     @Query(value = """
+            /* com.shopjoy.ecadminapi.base.sy.repository.SyCodeGrpRepository :: findPathSyCodeGrpTreeNodeCounts() */
             WITH RECURSIVE descendants AS (
                 SELECT path_id AS root_id,
                        path_id AS leaf_id

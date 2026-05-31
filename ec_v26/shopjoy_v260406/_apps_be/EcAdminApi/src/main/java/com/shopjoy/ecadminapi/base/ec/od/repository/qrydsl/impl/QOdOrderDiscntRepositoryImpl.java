@@ -31,6 +31,7 @@ import java.util.Optional;
 public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdOrderDiscntRepositoryImpl";
     private static final QOdOrderDiscnt d   = QOdOrderDiscnt.odOrderDiscnt;
     private static final QSySite        ste = new QSySite("ste");
     private static final QOdOrder       ord = new QOdOrder("ord");

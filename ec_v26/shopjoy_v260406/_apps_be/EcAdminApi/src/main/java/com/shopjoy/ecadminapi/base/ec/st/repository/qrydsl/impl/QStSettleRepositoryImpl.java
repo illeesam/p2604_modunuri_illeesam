@@ -30,6 +30,7 @@ import java.util.Optional;
 public class QStSettleRepositoryImpl implements QStSettleRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.st.repository.qrydsl.impl.QStSettleRepositoryImpl";
     private static final QStSettle  s   = QStSettle.stSettle;
     private static final QSyVendor  vnd = QSyVendor.syVendor;
     private static final QSySite    ste = QSySite.sySite;

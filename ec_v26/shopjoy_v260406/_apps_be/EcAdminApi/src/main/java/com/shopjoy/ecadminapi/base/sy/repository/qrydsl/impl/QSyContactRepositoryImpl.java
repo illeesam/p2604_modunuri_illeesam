@@ -28,6 +28,7 @@ import java.util.Optional;
 public class QSyContactRepositoryImpl implements QSyContactRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyContactRepositoryImpl";
     private static final QSyContact c = QSyContact.syContact;
     private static final QSySite ste = QSySite.sySite;
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");

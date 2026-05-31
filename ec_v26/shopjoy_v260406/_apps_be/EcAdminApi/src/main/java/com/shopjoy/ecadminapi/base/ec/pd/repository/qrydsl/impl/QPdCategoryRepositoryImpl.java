@@ -28,6 +28,7 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
 
     private final JPAQueryFactory queryFactory;
     private final PdCategoryRepository pdCategoryRepository;
+    private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdCategoryRepositoryImpl";
     private static final QPdCategory c   = QPdCategory.pdCategory;
 
     public QPdCategoryRepositoryImpl(JPAQueryFactory queryFactory, @Lazy PdCategoryRepository pdCategoryRepository) {

@@ -29,6 +29,7 @@ import java.util.Optional;
 public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.mb.repository.qrydsl.impl.QMbMemberAddrRepositoryImpl";
     private static final QMbMemberAddr a   = QMbMemberAddr.mbMemberAddr;
     private static final QMbMember     mem = QMbMember.mbMember;
     private static final QSySite       ste = QSySite.sySite;

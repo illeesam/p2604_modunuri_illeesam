@@ -29,6 +29,7 @@ import java.util.Optional;
 public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmGiftCondRepositoryImpl";
     private static final QPmGiftCond c    = QPmGiftCond.pmGiftCond;
     private static final QPmGift     gif  = QPmGift.pmGift;
     private static final QSySite     ste  = QSySite.sySite;

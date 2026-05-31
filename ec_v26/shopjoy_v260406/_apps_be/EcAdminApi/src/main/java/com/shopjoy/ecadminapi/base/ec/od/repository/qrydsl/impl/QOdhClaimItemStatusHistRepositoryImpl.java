@@ -27,6 +27,7 @@ import java.util.Optional;
 public class QOdhClaimItemStatusHistRepositoryImpl implements QOdhClaimItemStatusHistRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdhClaimItemStatusHistRepositoryImpl";
     private static final QOdhClaimItemStatusHist h = QOdhClaimItemStatusHist.odhClaimItemStatusHist;
 
     /* 클레임 아이템 상태 이력 baseQuery */

@@ -19,6 +19,7 @@ public interface SyBbmRepository extends JpaRepository<SyBbm, String>, QSyBbmRep
      *     - searchValue : bbm_code, bbm_nm, bbm_remark 부분일치 OR
      *     - dateStart/End : reg_date 범위 */
     @Query(value = """
+            /* com.shopjoy.ecadminapi.base.sy.repository.SyBbmRepository :: findPathSyBbmTreeNodeCounts() */
             WITH RECURSIVE descendants AS (
                 SELECT path_id AS root_id,
                        path_id AS leaf_id

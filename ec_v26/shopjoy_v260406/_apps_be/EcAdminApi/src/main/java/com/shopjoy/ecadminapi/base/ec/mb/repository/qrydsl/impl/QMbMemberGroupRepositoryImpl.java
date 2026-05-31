@@ -27,6 +27,7 @@ import java.util.Optional;
 public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.mb.repository.qrydsl.impl.QMbMemberGroupRepositoryImpl";
     private static final QMbMemberGroup g   = QMbMemberGroup.mbMemberGroup;
     private static final QSySite        ste = QSySite.sySite;
 

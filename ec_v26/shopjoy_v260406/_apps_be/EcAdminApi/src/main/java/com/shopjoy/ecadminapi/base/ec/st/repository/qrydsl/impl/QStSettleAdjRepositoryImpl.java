@@ -29,6 +29,7 @@ import java.util.Optional;
 public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.st.repository.qrydsl.impl.QStSettleAdjRepositoryImpl";
     private static final QStSettleAdj a    = QStSettleAdj.stSettleAdj;
     private static final QSySite     ste  = QSySite.sySite;
     private static final QSyCode     cdSat = new QSyCode("cd_sat");

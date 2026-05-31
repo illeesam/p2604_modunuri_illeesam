@@ -240,6 +240,16 @@ public class P6SpyFormatter implements MessageFormattingStrategy {
         StringBuilder buf = new StringBuilder();
         while (i < n) {
             char c = sql.charAt(i);
+            /* 블록 주석 — /* ... *​/ 를 통째로 한 WORD 토큰으로 보존 (내부 공백 유지) */
+            if (c == '/' && i + 1 < n && sql.charAt(i + 1) == '*') {
+                flushWord(buf, out);
+                int start = i;
+                i += 2;
+                while (i + 1 < n && !(sql.charAt(i) == '*' && sql.charAt(i + 1) == '/')) i++;
+                if (i + 1 < n) i += 2; // *​/ 까지 포함
+                out.add(new Segment(Type.WORD, sql.substring(start, i)));
+                continue;
+            }
             if (c == '\'') {
                 // 문자열 리터럴 — '' 이스케이프 처리
                 flushWord(buf, out);

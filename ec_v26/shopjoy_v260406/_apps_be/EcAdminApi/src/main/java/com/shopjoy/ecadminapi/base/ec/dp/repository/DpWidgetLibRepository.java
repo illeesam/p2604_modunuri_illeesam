@@ -19,6 +19,7 @@ public interface DpWidgetLibRepository extends JpaRepository<DpWidgetLib, String
      *     - searchValue : widget_code, widget_nm, widget_lib_desc 부분일치 OR
      *     - dateStart/End : reg_date 범위 */
     @Query(value = """
+            /* com.shopjoy.ecadminapi.base.ec.dp.repository.DpWidgetLibRepository :: findPathDpWidgetLibTreeNodeCounts() */
             WITH RECURSIVE descendants AS (
                 SELECT path_id AS root_id,
                        path_id AS leaf_id

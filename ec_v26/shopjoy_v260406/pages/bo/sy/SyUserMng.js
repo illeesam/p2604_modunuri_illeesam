@@ -144,9 +144,11 @@ window.SyUserMng = {
         const params = Object.fromEntries(Object.entries(searchParam)
           .filter(([k, v]) => v !== '' && v !== null && v !== undefined && k !== 'deptId'));
         const res = await boApiSvc.syUser.getDeptTreeNodeCounts(params, '사용자관리', '부서별카운트');
-        const map = res.data?.data || {};
+        const rows = res.data?.data || [];
+
         Object.keys(deptCounts).forEach(k => { delete deptCounts[k]; });
-        Object.assign(deptCounts, map);
+
+        for (const r of rows) { if (r && r.deptId != null) deptCounts[r.deptId] = r.cnt; }
       } catch (e) { console.error('[handleLoadDeptTreeNodeCounts]', e); }
     };
 

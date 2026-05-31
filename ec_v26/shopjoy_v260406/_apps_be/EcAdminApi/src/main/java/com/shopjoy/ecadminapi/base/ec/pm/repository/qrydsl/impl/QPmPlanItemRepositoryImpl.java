@@ -30,6 +30,7 @@ import java.util.Optional;
 public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmPlanItemRepositoryImpl";
     private static final QPmPlanItem i   = QPmPlanItem.pmPlanItem;
     private static final QPmPlan     pla = QPmPlan.pmPlan;
     private static final QPdProd     prd = QPdProd.pdProd;

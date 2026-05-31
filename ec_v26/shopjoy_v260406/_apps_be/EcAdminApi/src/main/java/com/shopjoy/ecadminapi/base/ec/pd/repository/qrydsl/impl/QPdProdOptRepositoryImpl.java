@@ -30,6 +30,7 @@ import java.util.Optional;
 public class QPdProdOptRepositoryImpl implements QPdProdOptRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdProdOptRepositoryImpl";
     private static final QPdProdOpt o    = QPdProdOpt.pdProdOpt;
     private static final QSySite    ste  = QSySite.sySite;
     private static final QSyCode    cdOt  = new QSyCode("cd_ot");

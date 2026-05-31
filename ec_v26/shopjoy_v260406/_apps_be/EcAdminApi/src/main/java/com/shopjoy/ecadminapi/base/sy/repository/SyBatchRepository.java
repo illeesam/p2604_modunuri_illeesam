@@ -22,6 +22,7 @@ public interface SyBatchRepository extends JpaRepository<SyBatch, String>, QSyBa
      *     - searchValue : batch_code, batch_nm, batch_desc 부분일치 OR
      *     - dateStart/End : reg_date 범위 */
     @Query(value = """
+            /* com.shopjoy.ecadminapi.base.sy.repository.SyBatchRepository :: findPathSyBatchTreeNodeCounts() */
             WITH RECURSIVE descendants AS (
                 SELECT path_id AS root_id,
                        path_id AS leaf_id

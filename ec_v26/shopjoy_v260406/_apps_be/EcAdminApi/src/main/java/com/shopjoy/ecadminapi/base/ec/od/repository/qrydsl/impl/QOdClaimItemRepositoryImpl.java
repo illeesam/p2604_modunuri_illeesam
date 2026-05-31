@@ -29,6 +29,7 @@ import java.util.Optional;
 public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdClaimItemRepositoryImpl";
     private static final QOdClaimItem i = QOdClaimItem.odClaimItem;
 
     /* 클레임 아이템 키조회 */

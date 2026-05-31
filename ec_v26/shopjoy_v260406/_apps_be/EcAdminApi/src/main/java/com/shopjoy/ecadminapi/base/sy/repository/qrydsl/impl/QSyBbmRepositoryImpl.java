@@ -31,6 +31,7 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
 
     private final JPAQueryFactory queryFactory;
     private final SyPathRepository syPathRepository;
+    private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyBbmRepositoryImpl";
     private static final QSyBbm b = QSyBbm.syBbm;
     private static final QSySite ste = QSySite.sySite;
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");

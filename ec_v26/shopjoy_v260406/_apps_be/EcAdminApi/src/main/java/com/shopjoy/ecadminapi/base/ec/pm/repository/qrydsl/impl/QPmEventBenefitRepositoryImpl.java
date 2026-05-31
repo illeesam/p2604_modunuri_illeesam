@@ -28,6 +28,7 @@ import java.util.Optional;
 public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmEventBenefitRepositoryImpl";
     private static final QPmEventBenefit b = QPmEventBenefit.pmEventBenefit;
 
     /* 이벤트 혜택 키조회 */

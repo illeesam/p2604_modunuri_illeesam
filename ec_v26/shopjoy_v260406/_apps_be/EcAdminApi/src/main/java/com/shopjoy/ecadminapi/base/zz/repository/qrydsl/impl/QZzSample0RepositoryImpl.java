@@ -23,6 +23,7 @@ import java.util.Optional;
 public class QZzSample0RepositoryImpl implements QZzSample0Repository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.zz.repository.qrydsl.impl.QZzSample0RepositoryImpl";
     private static final QZzSample0 s = QZzSample0.zzSample0;
 
     /* buildBaseQuery */
@@ -56,6 +57,7 @@ public class QZzSample0RepositoryImpl implements QZzSample0Repository {
     @Override
     public Optional<ZzSample0Dto.Item> selectById(String id) {
         ZzSample0Dto.Item dto = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(s.sample0Id.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
@@ -66,7 +68,8 @@ public class QZzSample0RepositoryImpl implements QZzSample0Repository {
     public List<ZzSample0Dto.Item> selectList(ZzSample0Dto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<ZzSample0Dto.Item> query = buildBaseQuery().where(
+        JPAQuery<ZzSample0Dto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andSample0Id(search),
                 andUseYn(search),
                 andSearchValue(search)
@@ -92,7 +95,8 @@ public class QZzSample0RepositoryImpl implements QZzSample0Repository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<ZzSample0Dto.Item> query = buildBaseQuery().where(
+        JPAQuery<ZzSample0Dto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 andSample0Id(search),
                 andUseYn(search),
                 andSearchValue(search)

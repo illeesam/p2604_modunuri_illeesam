@@ -25,6 +25,7 @@ import java.util.Optional;
 public class QZzExam3RepositoryImpl implements QZzExam3Repository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.zz.repository.qrydsl.impl.QZzExam3RepositoryImpl";
     private static final QZzExam3 e = QZzExam3.zzExam3;
 
     /* zz_exam3 buildBaseQuery */
@@ -51,6 +52,7 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
     @Override
     public Optional<ZzExam3Dto.Item> selectById(String exam1Id, String exam2Id, String exam3Id) {
         ZzExam3Dto.Item dto = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(e.exam1Id.eq(exam1Id)
                         .and(e.exam2Id.eq(exam2Id))
                         .and(e.exam3Id.eq(exam3Id)))
@@ -63,7 +65,8 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
     public List<ZzExam3Dto.Item> selectList(ZzExam3Dto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<ZzExam3Dto.Item> query = buildBaseQuery().where(
+        JPAQuery<ZzExam3Dto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andExam1Ids(search),
                 andExam1Id(search),
                 andExam2Id(search),
@@ -91,7 +94,8 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<ZzExam3Dto.Item> query = buildBaseQuery().where(
+        JPAQuery<ZzExam3Dto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 andExam1Ids(search),
                 andExam1Id(search),
                 andExam2Id(search),

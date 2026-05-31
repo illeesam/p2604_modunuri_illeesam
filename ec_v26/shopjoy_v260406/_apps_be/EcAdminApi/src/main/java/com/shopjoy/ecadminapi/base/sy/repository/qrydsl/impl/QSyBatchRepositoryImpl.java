@@ -31,6 +31,7 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
 
     private final JPAQueryFactory queryFactory;
     private final SyPathRepository syPathRepository;
+    private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyBatchRepositoryImpl";
     private static final QSyBatch b = QSyBatch.syBatch;
     private static final QSySite ste = QSySite.sySite;
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");

@@ -230,17 +230,21 @@ public class DpWidgetService {
         /** getPathTreeNodeCounts — 표시경로 노드별 DpWidget 수 (검색조건 + 자손 누적, 트리 우측 뱃지용).
      *   dp_widget 은 widget_lib_id → dp_widget_lib.path_id 로 간접 연결되어 카운트.
      *   결과: { pathId: cnt, '__total__': 전체, '__orphan__': lib path 없음 } */
-    public java.util.Map<String, Long> getPathTreeNodeCounts(DpWidgetDto.Request req) {
-        java.util.Map<String, Long> result = new java.util.LinkedHashMap<>();
+    public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(DpWidgetDto.Request req) {
+        java.util.List<java.util.Map<String, Object>> result = new java.util.ArrayList<>();
         String useYn       = (req == null) ? null : nullIfBlank(req.getUseYn());
         String searchType  = (req == null) ? null : wrapCsv(req.getSearchType());
         String searchValue = (req == null) ? null : nullIfBlank(req.getSearchValue());
         String dateStart   = (req == null) ? null : nullIfBlank(req.getDateStart());
         String dateEnd     = (req == null) ? null : nullIfBlank(req.getDateEnd());
         for (Object[] row : dpWidgetRepository.findPathDpWidgetTreeNodeCounts("dp_widget", useYn, searchType, searchValue, dateStart, dateEnd)) {
-            String pathId = row[0] == null ? null : String.valueOf(row[0]);
-            Long cnt = row[1] == null ? 0L : ((Number) row[1]).longValue();
-            result.put(pathId, cnt);
+            java.util.Map<String, Object> _m = new java.util.LinkedHashMap<>();
+
+            _m.put("pathId", row[0] == null ? null : String.valueOf(row[0]));
+
+            _m.put("cnt",    row[1] == null ? 0L   : ((Number) row[1]).longValue());
+
+            result.add(_m);
         }
         return result;
     }

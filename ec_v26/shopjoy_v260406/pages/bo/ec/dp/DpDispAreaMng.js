@@ -121,9 +121,11 @@ window.DpDispAreaMng = {
         const params = Object.fromEntries(Object.entries(searchParam)
           .filter(([k, v]) => v !== '' && v !== null && v !== undefined && k !== 'pathId'));
         const res = await boApiSvc.dpArea.getPathTreeNodeCounts(params, '경로별카운트', '조회');
-        const map = res.data?.data || {};
+        const rows = res.data?.data || [];
+
         Object.keys(areaCounts).forEach(k => { delete areaCounts[k]; });
-        Object.assign(areaCounts, map);
+
+        for (const r of rows) { if (r && r.pathId != null) areaCounts[r.pathId] = r.cnt; }
       } catch (e) { console.error('[handleLoadPathTreeNodeCounts]', e); }
     };
 

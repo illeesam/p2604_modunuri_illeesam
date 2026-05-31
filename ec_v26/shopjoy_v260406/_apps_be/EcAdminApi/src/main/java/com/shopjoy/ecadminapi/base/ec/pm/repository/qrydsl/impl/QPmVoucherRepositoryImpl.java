@@ -29,6 +29,7 @@ import java.util.Optional;
 public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmVoucherRepositoryImpl";
     private static final QPmVoucher v    = QPmVoucher.pmVoucher;
     private static final QSySite    ste  = QSySite.sySite;
     private static final QSyCode    cdVt = new QSyCode("cd_vt");

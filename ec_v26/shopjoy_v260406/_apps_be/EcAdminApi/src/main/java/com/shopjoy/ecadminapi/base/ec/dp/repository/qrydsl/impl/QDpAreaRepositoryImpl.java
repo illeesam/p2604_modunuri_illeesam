@@ -30,6 +30,7 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
 
     private final JPAQueryFactory queryFactory;
     private final SyPathRepository syPathRepository;
+    private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpAreaRepositoryImpl";
     private static final QDpArea a = QDpArea.dpArea;
 
     /* 전시 영역 키조회 */

@@ -30,6 +30,7 @@ import java.util.Optional;
 public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.st.repository.qrydsl.impl.QStErpVoucherRepositoryImpl";
     private static final QStErpVoucher v    = QStErpVoucher.stErpVoucher;
     private static final QSySite       ste  = QSySite.sySite;
     private static final QSyVendor     vnd  = QSyVendor.syVendor;

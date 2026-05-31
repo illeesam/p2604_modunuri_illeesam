@@ -29,6 +29,7 @@ import java.util.Optional;
 public class QPmCacheRepositoryImpl implements QPmCacheRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmCacheRepositoryImpl";
     private static final QPmCache c    = QPmCache.pmCache;
     private static final QSySite  ste  = QSySite.sySite;
     private static final QSyCode  cdCt = new QSyCode("cd_ct");

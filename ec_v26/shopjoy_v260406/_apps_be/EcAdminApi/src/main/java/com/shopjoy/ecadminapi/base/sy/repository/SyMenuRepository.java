@@ -12,6 +12,7 @@ public interface SyMenuRepository extends JpaRepository<SyMenu, String>, QSyMenu
 
     /* 루트 menu + 모든 자손 menu_id 수집 (PostgreSQL 재귀 CTE) */
     @Query(value = """
+            /* com.shopjoy.ecadminapi.base.sy.repository.SyMenuRepository :: findTreeMenuIds() */
             WITH RECURSIVE t /* 메뉴 parent_menu_id 의 자식 menu_id (list) 반환 */ AS (
                 SELECT menu_id
                   FROM sy_menu
@@ -37,6 +38,7 @@ public interface SyMenuRepository extends JpaRepository<SyMenu, String>, QSyMenu
      *     - searchValue : menu_code/menu_nm/menu_remark 부분일치 OR
      *     - dateStart/End : reg_date 범위 */
     @Query(value = """
+            /* com.shopjoy.ecadminapi.base.sy.repository.SyMenuRepository :: findPathSyMenuTreeNodeCounts() */
             WITH RECURSIVE descendants /* 메뉴 표시경로 자손 (biz_cd = :bizCd 한정) */ AS (
                 SELECT path_id AS root_id,
                        path_id AS leaf_id

@@ -26,6 +26,7 @@ import java.util.Optional;
 public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpWidgetRepositoryImpl";
     private static final QDpWidget w = QDpWidget.dpWidget;
 
     /* 전시 위젯 키조회 */

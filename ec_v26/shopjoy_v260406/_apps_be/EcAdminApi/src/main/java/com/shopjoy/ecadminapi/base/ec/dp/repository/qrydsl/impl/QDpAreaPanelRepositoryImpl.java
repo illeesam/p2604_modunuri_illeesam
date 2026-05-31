@@ -27,6 +27,7 @@ import java.util.Optional;
 public class QDpAreaPanelRepositoryImpl implements QDpAreaPanelRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpAreaPanelRepositoryImpl";
     private static final QDpAreaPanel p = QDpAreaPanel.dpAreaPanel;
 
     /* 전시 영역-패널 매핑 키조회 */

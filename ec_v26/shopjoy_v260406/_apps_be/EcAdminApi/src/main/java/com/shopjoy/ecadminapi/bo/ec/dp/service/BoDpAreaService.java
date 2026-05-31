@@ -86,7 +86,7 @@ public class BoDpAreaService {
     @Transactional public void delete(String id) { dpAreaService.delete(id); }
     @Transactional public void saveList(String cmd, List<DpArea> rows) { dpAreaService.saveList(cmd, rows); }
     /** getPathTreeNodeCounts — 표시경로 노드별 DpArea 수 (자손 누적) */
-    public java.util.Map<String, Long> getPathTreeNodeCounts(DpAreaDto.Request req) {
+    public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(DpAreaDto.Request req) {
         return dpAreaService.getPathTreeNodeCounts(req);
     }
 

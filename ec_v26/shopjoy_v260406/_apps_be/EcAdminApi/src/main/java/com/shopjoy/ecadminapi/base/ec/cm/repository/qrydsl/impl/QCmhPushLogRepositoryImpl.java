@@ -28,6 +28,7 @@ import java.util.Optional;
 public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmhPushLogRepositoryImpl";
     private static final QCmhPushLog l = QCmhPushLog.cmhPushLog;
 
     /** 기본 쿼리 빌드 */
@@ -47,6 +48,7 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
     @Override
     public Optional<CmhPushLogDto.Item> selectById(String logId) {
         CmhPushLogDto.Item dto = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(l.logId.eq(logId))
                 .fetchOne();
         return Optional.ofNullable(dto);
@@ -56,7 +58,8 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
     @Override
     public List<CmhPushLogDto.Item> selectList(CmhPushLogDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<CmhPushLogDto.Item> query = buildBaseQuery().where(
+        JPAQuery<CmhPushLogDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andSiteId(search),
                 andLogId(search),
                 andDateRange(search),
@@ -83,7 +86,8 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<CmhPushLogDto.Item> query = buildBaseQuery().where(
+        JPAQuery<CmhPushLogDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 andSiteId(search),
                 andLogId(search),
                 andDateRange(search),

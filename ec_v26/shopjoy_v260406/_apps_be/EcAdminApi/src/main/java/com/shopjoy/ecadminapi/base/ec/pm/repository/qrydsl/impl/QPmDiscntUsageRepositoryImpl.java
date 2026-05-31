@@ -26,6 +26,7 @@ import java.util.Optional;
 public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmDiscntUsageRepositoryImpl";
     private static final QPmDiscntUsage u = QPmDiscntUsage.pmDiscntUsage;
 
     /* 할인 사용 이력 키조회 */

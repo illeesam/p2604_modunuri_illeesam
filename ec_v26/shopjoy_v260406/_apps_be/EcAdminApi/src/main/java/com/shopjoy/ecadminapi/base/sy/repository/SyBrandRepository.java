@@ -21,6 +21,7 @@ public interface SyBrandRepository extends JpaRepository<SyBrand, String>, QSyBr
      *     - dateStart/End : reg_date 범위 (BETWEEN 등가)
      */
     @Query(value = """
+            /* com.shopjoy.ecadminapi.base.sy.repository.SyBrandRepository :: findPathSyBrandTreeNodeCounts() */
             WITH RECURSIVE descendants AS (
                 SELECT path_id AS root_id,
                        path_id AS leaf_id

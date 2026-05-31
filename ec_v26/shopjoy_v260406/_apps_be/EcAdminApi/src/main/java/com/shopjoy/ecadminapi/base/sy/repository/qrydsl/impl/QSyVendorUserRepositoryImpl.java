@@ -31,6 +31,7 @@ import java.util.Optional;
 public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyVendorUserRepositoryImpl";
     private static final QSyVendorUser u = QSyVendorUser.syVendorUser;
     private static final QSySite ste = QSySite.sySite;
     private static final QSyVendor vnd = QSyVendor.syVendor;
@@ -62,6 +63,7 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
     @Override
     public Optional<SyVendorUserDto.Item> selectById(String vendorUserId) {
         SyVendorUserDto.Item dto = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(u.vendorUserId.eq(vendorUserId))
                 .fetchOne();
         return Optional.ofNullable(dto);
@@ -71,7 +73,8 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
     @Override
     public List<SyVendorUserDto.Item> selectList(SyVendorUserDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyVendorUserDto.Item> query = buildBaseQuery().where(
+        JPAQuery<SyVendorUserDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andSiteId(search),
                 andVendorUserId(search),
                 andUserId(search),
@@ -101,7 +104,8 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyVendorUserDto.Item> query = buildBaseQuery().where(
+        JPAQuery<SyVendorUserDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 andSiteId(search),
                 andVendorUserId(search),
                 andUserId(search),

@@ -31,7 +31,7 @@ public class BoSyBatchService {
     @Transactional public void delete(String id) { syBatchService.delete(id); }
     @Transactional public void saveList(String cmd, List<SyBatch> rows) { syBatchService.saveList(cmd, rows); }
     /** getPathTreeNodeCounts — 표시경로 노드별 SyBatch 수 (자손 누적) */
-    public java.util.Map<String, Long> getPathTreeNodeCounts(SyBatchDto.Request req) {
+    public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(SyBatchDto.Request req) {
         return syBatchService.getPathTreeNodeCounts(req);
     }
 

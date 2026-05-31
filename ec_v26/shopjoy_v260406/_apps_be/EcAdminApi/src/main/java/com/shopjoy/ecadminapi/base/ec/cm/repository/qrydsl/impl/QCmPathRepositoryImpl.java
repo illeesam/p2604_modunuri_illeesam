@@ -27,6 +27,7 @@ import java.util.Optional;
 public class QCmPathRepositoryImpl implements QCmPathRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmPathRepositoryImpl";
     private static final QCmPath p = QCmPath.cmPath;
 
     /** 기본 쿼리 빌드 */
@@ -44,6 +45,7 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
     @Override
     public Optional<CmPathDto.Item> selectById(String bizCd) {
         CmPathDto.Item dto = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(p.bizCd.eq(bizCd))
                 .fetchOne();
         return Optional.ofNullable(dto);
@@ -53,7 +55,8 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
     @Override
     public List<CmPathDto.Item> selectList(CmPathDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<CmPathDto.Item> query = buildBaseQuery().where(
+        JPAQuery<CmPathDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andUseYn(search),
                 andBizCd(search),
                 andDateRange(search),
@@ -80,7 +83,8 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<CmPathDto.Item> query = buildBaseQuery().where(
+        JPAQuery<CmPathDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 andUseYn(search),
                 andBizCd(search),
                 andDateRange(search),

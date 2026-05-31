@@ -30,6 +30,7 @@ import java.util.Optional;
 public class QPdhProdContentChgHistRepositoryImpl implements QPdhProdContentChgHistRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdhProdContentChgHistRepositoryImpl";
     private static final QPdhProdContentChgHist h   = QPdhProdContentChgHist.pdhProdContentChgHist;
     private static final QSySite                ste = QSySite.sySite;
     private static final QPdProd                prd = QPdProd.pdProd;
@@ -61,6 +62,7 @@ public class QPdhProdContentChgHistRepositoryImpl implements QPdhProdContentChgH
     @Override
     public Optional<PdhProdContentChgHistDto.Item> selectById(String id) {
         PdhProdContentChgHistDto.Item dto = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(h.histId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
@@ -71,7 +73,8 @@ public class QPdhProdContentChgHistRepositoryImpl implements QPdhProdContentChgH
     public List<PdhProdContentChgHistDto.Item> selectList(PdhProdContentChgHistDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdhProdContentChgHistDto.Item> query = buildBaseQuery().where(
+        JPAQuery<PdhProdContentChgHistDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andSiteId(search),
                 andHistId(search),
                 andDateRange(search),
@@ -98,7 +101,8 @@ public class QPdhProdContentChgHistRepositoryImpl implements QPdhProdContentChgH
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdhProdContentChgHistDto.Item> query = buildBaseQuery().where(
+        JPAQuery<PdhProdContentChgHistDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 andSiteId(search),
                 andHistId(search),
                 andDateRange(search),

@@ -28,6 +28,7 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
 
     private final JPAQueryFactory queryFactory;
     private final SyPathRepository syPathRepository;
+    private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpWidgetLibRepositoryImpl";
     private static final QDpWidgetLib l = QDpWidgetLib.dpWidgetLib;
 
     /* 전시 위젯 라이브러리 키조회 */

@@ -29,6 +29,7 @@ import java.util.Optional;
 public class QPdhProdSkuChgHistRepositoryImpl implements QPdhProdSkuChgHistRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdhProdSkuChgHistRepositoryImpl";
     private static final QPdhProdSkuChgHist h      = QPdhProdSkuChgHist.pdhProdSkuChgHist;
     private static final QSySite            ste    = QSySite.sySite;
     private static final QPdProd            prd    = QPdProd.pdProd;
@@ -61,6 +62,7 @@ public class QPdhProdSkuChgHistRepositoryImpl implements QPdhProdSkuChgHistRepos
     @Override
     public Optional<PdhProdSkuChgHistDto.Item> selectById(String id) {
         PdhProdSkuChgHistDto.Item dto = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(h.histId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
@@ -71,7 +73,8 @@ public class QPdhProdSkuChgHistRepositoryImpl implements QPdhProdSkuChgHistRepos
     public List<PdhProdSkuChgHistDto.Item> selectList(PdhProdSkuChgHistDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdhProdSkuChgHistDto.Item> query = buildBaseQuery().where(
+        JPAQuery<PdhProdSkuChgHistDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andSiteId(search),
                 andHistId(search),
                 andSearchValue(search)
@@ -97,7 +100,8 @@ public class QPdhProdSkuChgHistRepositoryImpl implements QPdhProdSkuChgHistRepos
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdhProdSkuChgHistDto.Item> query = buildBaseQuery().where(
+        JPAQuery<PdhProdSkuChgHistDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 andSiteId(search),
                 andHistId(search),
                 andSearchValue(search)

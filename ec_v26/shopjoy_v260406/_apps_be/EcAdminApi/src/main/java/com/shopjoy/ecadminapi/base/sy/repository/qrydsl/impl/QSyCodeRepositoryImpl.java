@@ -28,6 +28,7 @@ import java.util.Optional;
 public class QSyCodeRepositoryImpl implements QSyCodeRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyCodeRepositoryImpl";
     private static final QSyCode c = QSyCode.syCode;
     private static final QSySite ste = QSySite.sySite;
 
@@ -49,6 +50,7 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
     @Override
     public Optional<SyCodeDto.Item> selectById(String codeId) {
         SyCodeDto.Item dto = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(c.codeId.eq(codeId))
                 .fetchOne();
         return Optional.ofNullable(dto);
@@ -58,7 +60,8 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
     @Override
     public List<SyCodeDto.Item> selectList(SyCodeDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyCodeDto.Item> query = buildBaseQuery().where(
+        JPAQuery<SyCodeDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andSiteId(search),
                 andCodeId(search),
                 andCodeGrp(search),
@@ -89,7 +92,8 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyCodeDto.Item> query = buildBaseQuery().where(
+        JPAQuery<SyCodeDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 andSiteId(search),
                 andCodeId(search),
                 andCodeGrp(search),

@@ -27,6 +27,7 @@ import java.util.Optional;
 public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmBlogFileRepositoryImpl";
     private static final QCmBlogFile f = QCmBlogFile.cmBlogFile;
 
     /* 게시물 첨부파일 buildBaseQuery */
@@ -44,6 +45,7 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
     @Override
     public Optional<CmBlogFileDto.Item> selectById(String blogImgId) {
         CmBlogFileDto.Item dto = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(f.blogImgId.eq(blogImgId))
                 .fetchOne();
         return Optional.ofNullable(dto);
@@ -53,7 +55,8 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
     @Override
     public List<CmBlogFileDto.Item> selectList(CmBlogFileDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<CmBlogFileDto.Item> query = buildBaseQuery().where(
+        JPAQuery<CmBlogFileDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andBlogIds(search),
                 andBlogId(search),
                 andBlogImgId(search),
@@ -81,7 +84,8 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<CmBlogFileDto.Item> query = buildBaseQuery().where(
+        JPAQuery<CmBlogFileDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 andBlogIds(search),
                 andBlogId(search),
                 andBlogImgId(search),

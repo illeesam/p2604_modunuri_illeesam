@@ -32,6 +32,7 @@ import java.util.Optional;
 public class QOdPayRepositoryImpl implements QOdPayRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdPayRepositoryImpl";
     private static final QOdPay    p   = QOdPay.odPay;
     private static final QOdOrder  o   = QOdOrder.odOrder;
     private static final QMbMember m   = QMbMember.mbMember;

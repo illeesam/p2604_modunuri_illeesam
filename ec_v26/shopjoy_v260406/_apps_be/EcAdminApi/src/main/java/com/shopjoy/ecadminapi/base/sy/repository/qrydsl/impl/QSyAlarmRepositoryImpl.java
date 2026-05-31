@@ -32,6 +32,7 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
 
     private final JPAQueryFactory queryFactory;
     private final SyPathRepository syPathRepository;
+    private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyAlarmRepositoryImpl";
     private static final QSyAlarm a = QSyAlarm.syAlarm;
     private static final QSySite ste = QSySite.sySite;
     private static final QSyCode cdAt = new QSyCode("cd_at");

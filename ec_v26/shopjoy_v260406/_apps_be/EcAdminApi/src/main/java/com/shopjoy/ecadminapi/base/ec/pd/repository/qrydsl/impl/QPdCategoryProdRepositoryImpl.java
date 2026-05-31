@@ -29,6 +29,7 @@ import java.util.Optional;
 public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdCategoryProdRepositoryImpl";
     private static final QPdCategoryProd p   = QPdCategoryProd.pdCategoryProd;
     private static final QSySite         ste = QSySite.sySite;
     private static final QPdCategory     cat = QPdCategory.pdCategory;

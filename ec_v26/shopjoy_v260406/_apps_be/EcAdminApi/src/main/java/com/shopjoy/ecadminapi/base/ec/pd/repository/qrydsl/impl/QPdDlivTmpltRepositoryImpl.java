@@ -30,6 +30,7 @@ import java.util.Optional;
 public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdDlivTmpltRepositoryImpl";
     private static final QPdDlivTmplt t      = QPdDlivTmplt.pdDlivTmplt;
     private static final QSySite      ste    = QSySite.sySite;
     private static final QSyVendor    vnd    = QSyVendor.syVendor;

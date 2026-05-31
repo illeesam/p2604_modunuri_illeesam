@@ -31,6 +31,7 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
 
     private final JPAQueryFactory queryFactory;
     private final SyRoleRepository syRoleRepository;
+    private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyUserRoleRepositoryImpl";
     private static final QSyUserRole r = QSyUserRole.syUserRole;
     private static final QSyUser usr  = new QSyUser("usr");
     private static final QSyRole rol  = QSyRole.syRole;
@@ -57,6 +58,7 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
     @Override
     public Optional<SyUserRoleDto.Item> selectById(String userRoleId) {
         SyUserRoleDto.Item dto = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(r.userRoleId.eq(userRoleId))
                 .fetchOne();
         return Optional.ofNullable(dto);
@@ -66,7 +68,8 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
     @Override
     public List<SyUserRoleDto.Item> selectList(SyUserRoleDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyUserRoleDto.Item> query = buildBaseQuery().where(
+        JPAQuery<SyUserRoleDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andUserRoleId(search),
                 andUserId(search),
                 andDateRange(search),
@@ -93,7 +96,8 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyUserRoleDto.Item> query = buildBaseQuery().where(
+        JPAQuery<SyUserRoleDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 andUserRoleId(search),
                 andUserId(search),
                 andDateRange(search),

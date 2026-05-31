@@ -28,6 +28,7 @@ import java.util.Optional;
 public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.st.repository.qrydsl.impl.QStSettleCloseRepositoryImpl";
     private static final QStSettleClose c   = QStSettleClose.stSettleClose;
     private static final QSySite        ste = QSySite.sySite;
     private static final QSyCode        cdScs = new QSyCode("cd_scs");

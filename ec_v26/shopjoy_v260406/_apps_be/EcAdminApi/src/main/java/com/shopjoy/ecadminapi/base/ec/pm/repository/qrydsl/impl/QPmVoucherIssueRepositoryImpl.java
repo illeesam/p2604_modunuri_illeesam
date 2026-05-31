@@ -31,6 +31,7 @@ import java.util.Optional;
 public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmVoucherIssueRepositoryImpl";
     private static final QPmVoucherIssue i    = QPmVoucherIssue.pmVoucherIssue;
     private static final QPmVoucher      vou  = QPmVoucher.pmVoucher;
     private static final QOdOrder        ord  = QOdOrder.odOrder;

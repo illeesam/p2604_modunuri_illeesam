@@ -31,7 +31,7 @@ public class BoSyVendorService {
     @Transactional public void delete(String id) { syVendorService.delete(id); }
     @Transactional public void saveList(String cmd, List<SyVendor> rows) { syVendorService.saveList(cmd, rows); }
     /** getPathTreeNodeCounts — 표시경로 노드별 SyVendor 수 (자손 누적) */
-    public java.util.Map<String, Long> getPathTreeNodeCounts(SyVendorDto.Request req) {
+    public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(SyVendorDto.Request req) {
         return syVendorService.getPathTreeNodeCounts(req);
     }
 

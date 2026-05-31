@@ -31,6 +31,7 @@ import java.util.Optional;
 public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyVendorBrandRepositoryImpl";
     private static final QSyVendorBrand b = QSyVendorBrand.syVendorBrand;
     private static final QSySite ste = QSySite.sySite;
     private static final QSyVendor vnd = QSyVendor.syVendor;
@@ -59,6 +60,7 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
     @Override
     public Optional<SyVendorBrandDto.Item> selectById(String vendorBrandId) {
         SyVendorBrandDto.Item dto = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .where(b.vendorBrandId.eq(vendorBrandId))
                 .fetchOne();
         return Optional.ofNullable(dto);
@@ -68,7 +70,8 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
     @Override
     public List<SyVendorBrandDto.Item> selectList(SyVendorBrandDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyVendorBrandDto.Item> query = buildBaseQuery().where(
+        JPAQuery<SyVendorBrandDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 andSiteId(search),
                 andVendorBrandId(search),
                 andBrandId(search),
@@ -97,7 +100,8 @@ public class QSyVendorBrandRepositoryImpl implements QSyVendorBrandRepository {
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<SyVendorBrandDto.Item> query = buildBaseQuery().where(
+        JPAQuery<SyVendorBrandDto.Item> query = buildBaseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageList() :: list").where(
                 andSiteId(search),
                 andVendorBrandId(search),
                 andBrandId(search),

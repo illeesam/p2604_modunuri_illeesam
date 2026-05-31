@@ -28,6 +28,7 @@ import java.util.Optional;
 public class QPdReviewRepositoryImpl implements QPdReviewRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdReviewRepositoryImpl";
     private static final QPdReview r = QPdReview.pdReview;
 
     /** 단건 조회 */

@@ -27,6 +27,7 @@ import java.util.Optional;
 public class QPdProdRelRepositoryImpl implements QPdProdRelRepository {
 
     private final JPAQueryFactory queryFactory;
+    private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdProdRelRepositoryImpl";
     private static final QPdProdRel r = QPdProdRel.pdProdRel;
 
     /** 단건 조회 */
