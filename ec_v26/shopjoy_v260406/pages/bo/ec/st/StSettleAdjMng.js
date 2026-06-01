@@ -269,7 +269,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     // 기본 그리드
     const baseGridColumns = [
       { key: 'adjId',        label: '조정ID' },
-      { key: 'adjDate',      label: '조정일자' },
+      { key: 'adjDate',      label: '조정일자',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
       { key: 'vendorNm',     label: '업체명' },
       { key: 'adjType',      label: '유형', badge: (row) => fnTypeBadge(row.adjType) },
       { key: 'adjAmt',       label: '조정금액', fmt: fmtW,

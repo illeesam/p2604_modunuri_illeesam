@@ -187,7 +187,7 @@ const raws = reactive([]);
         fmt: (v, row) => isExpanded(row.settleRawId) ? '▲' : '▼' },
       { key: 'settleRawId',    label: '원장ID',
         cellStyle: 'font-size:12px;color:#555;' },
-      { key: 'orderDate',      label: '거래일자' },
+      { key: 'orderDate',      label: '거래일자',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
       { key: 'rawTypeCd',      label: '유형',
         badge: (row) => row.rawTypeCd === 'ORDER' ? 'badge-blue' : 'badge-orange' },
       { key: 'orderId',        label: '소스ID', cellStyle: 'color:#555' },

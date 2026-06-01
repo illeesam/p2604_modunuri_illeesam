@@ -174,7 +174,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     // 기본 그리드
     const baseGridColumns = [
       { key: 'slipId',     label: '전표ID', cellStyle: 'font-size:11px' },
-      { key: 'slipDate',   label: '전표일자' },
+      { key: 'slipDate',   label: '전표일자',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
       { key: 'slipType',   label: '유형', badge: (row) => fnTypeBadge(row.slipType) },
       { key: 'debit',      label: '차변계정' },
       { key: 'credit',     label: '대변계정' },

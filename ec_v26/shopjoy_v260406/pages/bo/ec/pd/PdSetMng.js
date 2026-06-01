@@ -824,7 +824,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
     </td>
   </template>
   <template #row-actions="{ idx }">
-    <td style="text-align:center">
+    <td style="text-align:center;white-space:nowrap;">
       <button class="btn btn-danger btn-xs" @click="handleSelectAction('detailPanel-itemRemove', idx)">
         ✕
       </button>

@@ -15,7 +15,7 @@ window.OdOrderMng = {
     const orders = reactive([]);                                                // 주문 목록 (메인 그리드 데이터)
     const members = reactive([]);                                               // 회원 목록 (추가결재요청 picker)
     const claims = reactive([]);                                                // 클레임 목록 (셀 렌더용)
-    const uiState = reactive({ bulkOpen: false, loading: false, error: null, isPageCodeLoad: false, bulkTab: 'status', sortKey: '', sortDir: 'asc' });
+    const uiState = reactive({ bulkOpen: false, loading: false, error: null, isPageCodeLoad: false, bulkTab: 'status', sortKey: '', sortDir: 'asc', autoOpenedOnce: false }); // autoOpenedOnce: 진입 시 첫 행 자동 오픈 1회만
     const codes = reactive({ order_statuses: [], payment_methods: [], dliv_statuses: [], order_date_types: [], approval_actions: [], req_targets: [], date_range_opts: [] });
 
     const SORT_MAP = { reg: { asc: 'orderDate asc', desc: 'orderDate desc' } };
@@ -220,6 +220,11 @@ window.OdOrderMng = {
         fnBuildPagerNums();
         Object.assign(pager.pageCond, ordersRes.data?.data?.pageCond || pager.pageCond);
         uiState.error = null;
+        /* 진입 시 첫 행 상세 자동 오픈 — 1회만(이후 사용자가 닫으면 재오픈 안 함) */
+        if (!uiState.autoOpenedOnce && !detailPanel.selectedId && orders.length) {
+          uiState.autoOpenedOnce = true;
+          handleSelectAction('orders-rowEdit', orders[0].orderId);
+        }
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;
@@ -474,7 +479,7 @@ window.OdOrderMng = {
         cellInnerStyle: (v) => detailPanel.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'memberNm',      label: '회원', refLink: 'member', refKey: 'memberId',
         fmt: (v, row) => `${row.memberNm || '-'}  #${row.memberId || row.sessionKey || '-'}` },
-      { key: 'orderDate',     label: '주문일시', sortKey: 'reg', style: 'white-space:nowrap;' },
+      { key: 'orderDate',     label: '주문일시', sortKey: 'reg', style: 'white-space:nowrap;',  fmt: (v) => v ? String(v).slice(0, 16) : '-' },
       { key: 'prodNm',        label: '상품',
         fmt: (v, row) => `${row.prodNm || ''} (${getItemCount(row)}개)` },
       { key: 'payAmt',        label: '결제금액', fmt: (v) => (v || 0).toLocaleString() + '원' },

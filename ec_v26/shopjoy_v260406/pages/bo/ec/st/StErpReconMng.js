@@ -176,7 +176,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     // 기본 그리드
     const baseGridColumns = [
       { key: 'reconId',    label: '대사ID' },
-      { key: 'reconDate',  label: '대사일자' },
+      { key: 'reconDate',  label: '대사일자',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
       { key: 'slipId',     label: '전표ID', cellStyle: 'font-size:11px' },
       { key: 'slipType',   label: '유형', badge: (row) => fnTypeBadge(row.slipType) },
       { key: 'sysAmt',     label: '시스템금액', fmt: fmtW, cellStyle: 'font-weight:700' },

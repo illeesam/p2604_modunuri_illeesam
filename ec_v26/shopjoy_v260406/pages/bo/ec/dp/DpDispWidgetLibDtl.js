@@ -5,6 +5,7 @@ window.DpDispWidgetLibDtl = {
     navigate:      { type: Function, required: true }, // 페이지 이동
     dtlId:         { type: String, default: null }, // 수정 대상 ID
     dtlMode:       { type: String, default: 'view' }, // 상세 모드 (new/view/edit),
+    active:        { type: Boolean, default: true }, // false=행 미선택 빈 폼(저장/취소 등 버튼 숨김)
     reloadTrigger: { type: Number, default: 0 }, // 부모 Mng 가 ++ 로 신호 보내면 상세 API 재조회 (정책: 행상세/행수정 클릭 시 항상 호출)
   },
   emits: ['close'],
@@ -28,9 +29,12 @@ window.DpDispWidgetLibDtl = {
       // 폼 삭제
       } else if (cmd === 'form-delete') {
         return handleDelete();
-      // 패널 닫기
+      // 폼 닫기/취소 → 상세영역 유지 + 빈 신규 폼으로 초기화 (영역 사라지지 않음)
       } else if (cmd === 'form-close') {
-        return emit('close');
+        return props.navigate('__cancelEdit__');
+      // 폼 취소 → 상세영역 유지 + 빈 신규 폼으로 초기화
+      } else if (cmd === 'form-cancel') {
+        return props.navigate('__cancelEdit__');
       // 위젯Lib 선택 팝업 열기
       } else if (cmd === 'libPickModal-open') {
         return openLibPick();
@@ -686,7 +690,7 @@ window.DpDispWidgetLibDtl = {
         #{{ String(form.libId).padStart(4,'0') }}
       </span>
     </div>
-    <div class="form-actions" v-if="!cfDtlMode" style="margin:0;gap:8px;">
+    <div class="form-actions" v-if="active" style="margin:0;gap:8px;">
       <button @click="handleBtnAction('libPickModal-open')" class="btn btn-outline" style="font-size:12px;background:#e3f2fd;color:#1565c0;border-color:#90caf9;">
         📋 전시위젯Lib 내용복사
       </button>

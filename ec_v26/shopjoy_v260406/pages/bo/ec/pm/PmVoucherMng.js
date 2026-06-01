@@ -20,8 +20,8 @@ window.PmVoucherMng = {
     });
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-    /* 하단 상세 */
-    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+    /* 하단 상세 (항상 표시 — 진입 시 빈 신규 폼, 비활성) */
+    const detailPanel = reactive({ selectedId: '__new__', openMode: 'edit', reloadTrigger: 0, resetSeq: 0, active: false });
 
     /* _initSearchParam — 초기화 */
 
@@ -166,26 +166,35 @@ window.PmVoucherMng = {
     };
 
     /* loadView — 뷰 로드 */
-    const loadView = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'view'; detailPanel.reloadTrigger++; };
+    const loadView = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'view'; detailPanel.active = true; detailPanel.reloadTrigger++; };
 
-    /* handleLoadDetail — 상세 조회 */
-    const handleLoadDetail = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    /* handleLoadDetail — 상세 조회 (행 선택 → 활성) */
+    const handleLoadDetail = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'edit'; detailPanel.active = true; detailPanel.reloadTrigger++; };
 
-    /* openNew — 신규 열기 */
-    const openNew = () => { detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    /* openNew — 신규 열기 (빈 폼 + 활성 → 저장/취소 노출) */
+    const openNew = () => { detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.active = true; detailPanel.resetSeq++; detailPanel.reloadTrigger++; };
 
-    /* closeDetail — 상세 닫기 */
-    const closeDetail = () => { detailPanel.selectedId = null; };
+    /* resetDetailToNew — 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역은 항상 표시 유지) */
+    const resetDetailToNew = () => {
+      detailPanel.selectedId = '__new__';
+      detailPanel.openMode = 'edit';
+      detailPanel.active = false;   // 버튼 숨김
+      detailPanel.resetSeq++;       // :key 재마운트 → 폼 초기화
+    };
+
+    /* closeDetail — 상세 닫기 = 빈 신규 폼(비활성)으로 초기화 (영역 유지) */
+    const closeDetail = () => { resetDetailToNew(); };
 
     /* inlineNavigate — 인라인 이동 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'pmVoucherMng') { detailPanel.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
+      if (pg === 'pmVoucherMng') { if (opts.reload) handleSearchList('RELOAD'); resetDetailToNew(); return; }
+      if (pg === '__cancelEdit__') { resetDetailToNew(); return; }
       if (pg === '__switchToEdit__') { detailPanel.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
     const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
     const cfIsViewMode = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
-    const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}`);
+    const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}_${detailPanel.resetSeq}`);
 
     /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
@@ -207,7 +216,7 @@ window.PmVoucherMng = {
       if (!ok) { return; }
       const idx = (vouchers || []).findIndex(x => x.voucherId === v.voucherId);
       if (idx !== -1) { vouchers.splice(idx, 1); }
-      if (detailPanel.selectedId === v.voucherId) { detailPanel.selectedId = null; }
+      if (detailPanel.selectedId === v.voucherId) { resetDetailToNew(); }
       try {
         const res = await boApiSvc.pmVoucher.remove(v.voucherId, '바우처관리', '삭제');
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
@@ -256,8 +265,8 @@ window.PmVoucherMng = {
         fmt: (v) => (v || 0).toLocaleString() + '개' },
       { key: 'remain',          label: '잔여', align: 'center',
         fmt: (v, row) => ((row.issueQty || 0) - (row.soldQty || 0)).toLocaleString() + '개' },
-      { key: 'startDate',       label: '시작일', sortKey: 'reg' },
-      { key: 'endDate',         label: '종료일' },
+      { key: 'startDate',       label: '시작일', sortKey: 'reg',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
+      { key: 'endDate',         label: '종료일',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
       { key: 'voucherStatusCd', label: '상태', badge: (row) => fnStatusBadge(row.voucherStatusCd) },
       { key: 'siteNm',          label: '사이트', cellStyle: 'color:#2563eb', fmt: () => cfSiteNm.value },
     ];
@@ -392,8 +401,8 @@ window.PmVoucherMng = {
   <!-- ===== □.□. 카드 뷰 ================================================== -->
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 하단 상세: VoucherDtl 임베드 =================================== -->
-  <div v-if="detailPanel.selectedId" style="margin-top:4px;">
-    <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
+  <div style="margin-top:4px;">
+    <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기
       </button>
@@ -406,7 +415,7 @@ window.PmVoucherMng = {
       :set-api-res="setApiRes"
       :dtl-id="cfDetailEditId"
       :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-
+      :active="detailPanel.active"
       :reload-trigger="detailPanel.reloadTrigger"
       :on-list-reload="handleBtnAction"
       />

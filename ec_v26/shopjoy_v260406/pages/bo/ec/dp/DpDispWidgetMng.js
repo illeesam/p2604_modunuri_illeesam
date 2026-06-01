@@ -31,6 +31,7 @@ window.DpDispWidgetMng = {
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
         uiState.sortKey = ''; uiState.sortDir = 'asc';
+        uiState.selectedPath = null;          // 표시경로 트리 전체로 복귀
         pager.pageNo = 1;
         return handleSearchData('DEFAULT');
       // 위젯 신규 등록 (인라인 패널)
@@ -89,8 +90,14 @@ window.DpDispWidgetMng = {
 
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
-    /* ===== 상세 인라인 패널 ===== */
-    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+    /* ===== 상세 인라인 패널 (항상 표시. 진입 시 빈 신규 폼) ===== */
+    const detailPanel = reactive({
+      selectedId: '__new__',  // 초기: 신규(빈) 폼. 행 클릭 시 해당 ID 로 전환
+      openMode: 'edit',
+      reloadTrigger: 0,
+      resetSeq: 0,            // 취소 시 ++ → :key 재마운트로 상세 폼 초기화
+      active: false,          // 행 선택/신규 시 true → 저장/취소 노출. 초기/취소 시 false → 버튼 숨김
+    });
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -209,28 +216,50 @@ window.DpDispWidgetMng = {
     /* wIcon — w 아이콘 */
     const wIcon      = (v) => WIDGET_ICONS[v] || '▪';
 
-    /* handleLoadDetail — 상세 조회 */
+    /* resetDetailToNew — 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역은 항상 표시 유지)
+     *   active=false → 저장/취소 등 버튼 숨김 (행 미선택 안내 상태) */
+    const resetDetailToNew = () => {
+      detailPanel.selectedId = '__new__';
+      detailPanel.openMode = 'edit';
+      detailPanel.active = false;    // 버튼 숨김
+      detailPanel.resetSeq++;        // :key 재마운트 → 폼 초기화
+    };
+
+    /* handleLoadDetail — 상세 조회 (행 선택 → 활성) */
     const handleLoadDetail = (id) => {
       detailPanel.selectedId = id;
       detailPanel.openMode = 'edit';
+      detailPanel.active = true;     // 행 선택 → 저장/취소 노출
       detailPanel.reloadTrigger++;
     };
 
-    /* openNew — 신규 열기 */
-    const openNew = () => { detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    /* openNew — 신규 열기 (빈 폼 + 활성 → 저장/취소 노출) */
+    const openNew = () => {
+      detailPanel.selectedId = '__new__';
+      detailPanel.openMode = 'edit';
+      detailPanel.active = true;     // 신규 입력 가능 → 저장/취소 노출
+      detailPanel.resetSeq++;
+    };
 
-    /* closeDetail — 상세 닫기 */
-    const closeDetail = () => { detailPanel.selectedId = null; };
+    /* closeDetail — 상세 닫기 = 빈 신규 폼(비활성)으로 초기화 (영역 유지) */
+    const closeDetail = () => { resetDetailToNew(); };
 
     /* inlineNavigate — 인라인 이동 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'dpDispWidgetMng') { detailPanel.selectedId = null; if (opts.reload) handleSearchData('RELOAD'); return; }
+      if (pg === 'dpDispWidgetMng') {
+        /* 저장 완료 등: 영역은 유지하고 빈 신규 폼으로 초기화 */
+        if (opts.reload) handleSearchData('RELOAD');
+        resetDetailToNew();
+        return;
+      }
+      /* 취소: 패널은 그대로 두고 상세영역만 빈 신규 폼으로 초기화 */
+      if (pg === '__cancelEdit__') { resetDetailToNew(); return; }
       if (pg === '__switchToEdit__') { detailPanel.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
     const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
-    /* key 는 'open' / 'closed' 두 값만 사용 — id 가 바뀌어도 컴포넌트 remount 하지 않고 props.dtlId / reloadTrigger watch 로 내용만 교체 */
-    const cfDetailKey = computed(() => detailPanel.selectedId === null ? 'closed' : 'open');
+    /* key 에 resetSeq 포함 — 취소/닫기 시 ++ 하면 remount 되어 폼 초기화. 그 외 id 변경은 props.dtlId / reloadTrigger watch 로 내용만 교체 */
+    const cfDetailKey = computed(() => `open_${detailPanel.resetSeq}`);
 
     /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
@@ -256,8 +285,8 @@ window.DpDispWidgetMng = {
     /* onSizeChange — 페이지 크기 변경 */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData(); };
 
-    /* selectNode — 노드 선택 */
-    const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; detailPanel.selectedId = null; handleSearchData(); };
+    /* selectNode — 노드 선택 (트리 필터 변경 → 선택 행이 목록에서 사라질 수 있으므로 상세 빈 신규 폼으로 초기화) */
+    const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; resetDetailToNew(); handleSearchData(); };
 
     /* handleDelete — 삭제 */
     const handleDelete = async (d) => {
@@ -266,6 +295,7 @@ window.DpDispWidgetMng = {
       try {
         await boApiSvc.dpWidget.remove(d.widgetId, '전시위젯관리', '삭제');
         showToast('삭제되었습니다.', 'success');
+        if (detailPanel.selectedId === d.widgetId) { resetDetailToNew(); }
         handleSearchData();
       } catch (err) {
         showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
@@ -360,11 +390,11 @@ window.DpDispWidgetMng = {
       <span v-if="cfFilterDirty" style="font-size:11px;color:#e8587a;font-weight:600;align-self:center;">
         변경됨 →
       </span>
-      <button @click="handleBtnAction('searchParam-list')" class="btn btn-primary" style="height:36px;padding:0 20px;"
+      <button @click="handleBtnAction('searchParam-list')" class="btn btn-primary btn-sm"
         :style="cfFilterDirty ? 'box-shadow:0 0 0 3px rgba(232,88,122,0.35);' : ''">
         조회
       </button>
-      <button @click="handleBtnAction('searchParam-reset')"  class="btn btn-outline" style="height:36px;padding:0 16px;">
+      <button @click="handleBtnAction('searchParam-reset')"  class="btn btn-secondary btn-sm">
         초기화
       </button>
     </div>
@@ -516,8 +546,8 @@ window.DpDispWidgetMng = {
   <!-- ===== /본문 flex =================================================== -->
   <!-- ===== □.□. 우측 목록 ================================================= -->
   <!-- ===== □. 본문: 좌측 트리 + 우측 목록 ======================================= -->
-  <!-- ===== ■. 인라인 상세 ================================================== -->
-  <div v-if="selectedId !== null" style="margin-top:16px;">
+  <!-- ===== ■. 인라인 상세 (항상 표시 / 진입 시 빈 신규 폼) ================================================== -->
+  <div style="margin-top:16px;">
     <dp-disp-widget-dtl
       :key="cfDetailKey"
       :navigate="inlineNavigate"
@@ -527,6 +557,7 @@ window.DpDispWidgetMng = {
       :set-api-res="setApiRes"
       :dtl-id="cfDetailEditId"
       :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+      :active="detailPanel.active"
       :reload-trigger="detailPanel.reloadTrigger"
       @close="handleBtnAction('detailPanel-close')"
       />

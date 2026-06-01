@@ -31,10 +31,11 @@ window.SyUserMng = {
       if (cmd === 'searchParam-list') {
         pager.pageNo = 1;
         return handleSearchList('DEFAULT');
-      // 검색조건 초기화 + 재조회
+      // 검색조건 초기화 + 재조회 (부서 트리도 전체로)
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
         uiState.sortKey = ''; uiState.sortDir = 'asc';
+        uiState.selectedDeptId = null;        // 부서 트리 전체로 복귀
         pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 기간 옵션 변경
@@ -87,11 +88,11 @@ window.SyUserMng = {
       // 그리드 행 삭제
       } else if (cmd === 'users-rowDelete') {
         return handleDelete(param);
-      // 부서 트리 노드 선택 → 우측 그리드 필터링 + 상세 패널 닫기
+      // 부서 트리 노드 선택 → 우측 그리드 필터링 + 상세 패널 빈 신규 폼으로 초기화
       } else if (cmd === 'deptTree-select') {
         uiState.selectedDeptId = param;
         pager.pageNo = 1;
-        detailPanel.selectedId = null;
+        resetDetailToNew();
         return handleSearchList();
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -124,7 +125,13 @@ window.SyUserMng = {
     const expanded = reactive(new Set([null]));
 
     /* ===== 상세 인라인 패널 ===== */
-    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 }); // 인라인 Dtl 패널 상태
+    const detailPanel = reactive({   // 인라인 Dtl 패널 상태 (항상 표시, 진입 시 빈 신규 폼)
+      selectedId: '__new__',         // 초기: 신규(빈) 폼. 행 클릭 시 해당 ID 로 전환
+      openMode: 'edit',              // 'view' | 'edit'
+      reloadTrigger: 0,
+      resetSeq: 0,                   // 취소 시 ++ → :key 재마운트로 상세 폼 초기화
+      active: false,                 // 행 선택/신규 시 true → 저장/취소 노출. 초기/취소 시 false → 버튼 숨김
+    });
 
     /* ===== 엑셀 업로드 모달 (컬럼은 다운로드 파일의 3행 헤더에서 자동 추출) ===== */
     const excelUploadModal = reactive({ show: false, reloadTrigger: 0 });
@@ -241,20 +248,36 @@ window.SyUserMng = {
     };
 
     /* loadView — 인라인 패널 뷰 모드로 열기 */
-    const loadView = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'view'; detailPanel.reloadTrigger++; };
+    const loadView = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'view'; detailPanel.active = true; detailPanel.reloadTrigger++; };
 
-    /* handleLoadDetail — 인라인 패널 편집 모드로 열기 */
-    const handleLoadDetail = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    /* resetDetailToNew — 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역은 항상 표시 유지)
+     *   active=false → 저장/취소 등 버튼 숨김 (행 미선택 안내 상태) */
+    const resetDetailToNew = () => {
+      detailPanel.selectedId = '__new__';
+      detailPanel.openMode = 'edit';
+      detailPanel.active = false;    // 버튼 숨김
+      detailPanel.resetSeq++;        // :key 재마운트 → 폼 초기화
+    };
 
-    /* openNew — 신규 등록 */
-    const openNew = () => { detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    /* handleLoadDetail — 인라인 패널 편집 모드로 열기 (행 선택 → 저장/취소 노출) */
+    const handleLoadDetail = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'edit'; detailPanel.active = true; detailPanel.reloadTrigger++; };
 
-    /* closeDetail — 상세 닫기 */
-    const closeDetail = () => { detailPanel.selectedId = null; };
+    /* openNew — 신규 등록 (빈 폼 + 활성 → 저장/취소 노출) */
+    const openNew = () => { detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.active = true; detailPanel.resetSeq++; };
+
+    /* closeDetail — 상세 닫기 = 빈 신규 폼(비활성)으로 초기화 (영역 유지) */
+    const closeDetail = () => { resetDetailToNew(); };
 
     /* inlineNavigate — 인라인 Dtl 의 navigate 콜백 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'syUserMng') { detailPanel.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
+      if (pg === 'syUserMng') {
+        /* 저장 완료 등: 영역은 유지하고 빈 신규 폼으로 초기화 */
+        if (opts.reload) { handleSearchList('RELOAD'); }
+        resetDetailToNew();
+        return;
+      }
+      /* 취소: 패널은 그대로 두고 상세영역만 빈 신규 폼으로 초기화 */
+      if (pg === '__cancelEdit__') { resetDetailToNew(); return; }
       if (pg === '__switchToEdit__') { detailPanel.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
@@ -271,7 +294,7 @@ window.SyUserMng = {
       if (!ok) { return; }
       const idx = users.findIndex(x => x.userId === u.userId);
       if (idx !== -1) { users.splice(idx, 1); }
-      if (detailPanel.selectedId === u.userId) { detailPanel.selectedId = null; }
+      if (detailPanel.selectedId === u.userId) { resetDetailToNew(); }
       try {
         const res = await boApiSvc.syUser.remove(u.userId, '사용자관리', '삭제');
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
@@ -320,7 +343,7 @@ window.SyUserMng = {
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
     const cfIsViewMode = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
-    const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}`);
+    const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}_${detailPanel.resetSeq}`);
 
     /* fnRoleBadge — 권한 배지 */
     const _USER_ROLE_FB = { '슈퍼관리자': 'badge-red', '관리자': 'badge-purple', '운영자': 'badge-blue' };
@@ -446,8 +469,8 @@ window.SyUserMng = {
           </th>
         </template>
         <template #row-actions="{ row }">
-          <td>
-            <div class="actions">
+          <td style="white-space:nowrap;">
+            <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
               <button class="btn btn-blue btn-xs" @click="handleSelectAction('users-rowEdit', row.userId)">
                 수정
               </button>
@@ -462,19 +485,15 @@ window.SyUserMng = {
     </div>
   </div>
   <!-- ===== □. 본문 영역 =================================================== -->
-  <!-- ===== ■. 상세 패널 (인라인 임베드) ========================================= -->
-  <div v-if="detailPanel.selectedId" style="margin-top:4px;">
-    <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
-        ✕ 닫기
-      </button>
-    </div>
+  <!-- ===== ■. 상세 패널 (인라인 임베드, 항상 표시) ================================ -->
+  <div style="margin-top:4px;">
     <sy-user-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
       :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+      :active="detailPanel.active"
       :reload-trigger="detailPanel.reloadTrigger"
       :on-list-reload="handleSearchList" />
   </div>
-  <!-- ===== □. 상세 패널 (인라인 임베드) ========================================= -->
+  <!-- ===== □. 상세 패널 (인라인 임베드, 항상 표시) ================================ -->
 
   <!-- ===== ■. 엑셀 업로드 모달 (도메인은 모달 안의 select 로 전환 가능) ===== -->
   <bo-excel-upload-modal v-if="excelUploadModal.show"

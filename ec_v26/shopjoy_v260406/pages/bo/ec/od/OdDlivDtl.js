@@ -245,7 +245,7 @@ window.OdDlivDtl = {
         align: 'right', cellStyle: 'font-weight:700', fmt: (v) => fmt(v) },
       { key: 'payMethod', label: '결제수단' },
       { key: 'payStatus', label: '결제상태', badge: () => 'badge-blue' },
-      { key: 'payDate',   label: '결제일시' },
+      { key: 'payDate',   label: '결제일시', fmt: (v) => v ? String(v).slice(0, 16) : '-' },
     ];
 
     /* 정보수정이력 컬럼 */

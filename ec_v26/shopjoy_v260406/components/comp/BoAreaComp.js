@@ -280,7 +280,7 @@ window.BoSearchArea = {
 <div v-if="showActions" class="search-actions">
   <slot name="actions-before">
   </slot>
-  <button class="btn btn-primary" :disabled="loading" @click="handleBtnAction('search-emit')">
+  <button class="btn btn-primary btn-sm" :disabled="loading" @click="handleBtnAction('search-emit')">
     {{ searchLabel }}
   </button>
   <button class="btn btn-secondary btn-sm" @click="handleBtnAction('search-reset')">
@@ -336,6 +336,12 @@ window._boAreaCompUtil = {
     let s = 'font-size:12px;';
     if (col.align) s += 'text-align:' + col.align + ';';
     if (col.mono)  s += 'font-family:monospace;';
+    // 모든 셀 기본 한 줄 말줄임(...). 편집/슬롯 셀은 col.noEllipsis 로 끌 수 있음.
+    // col.style/cellStyle 의 width(또는 max-width) 가 있으면 그 폭에서 잘리고,
+    // 폭 미지정이면 한 줄 유지(nowrap)만 — 줄바꿈으로 인한 행 높이 증가 방지.
+    if (!col.noEllipsis && !col.edit) {
+      s += 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+    }
     // AG-Grid 식 cellStyle: 문자열 또는 (value,row)=>string. 마지막에 합성(미지정 시 기존 동작 동일)
     if (col.cellStyle != null) {
       const ext = (typeof col.cellStyle === 'function')
@@ -354,8 +360,16 @@ window._boAreaCompUtil = {
   },
   /* AG-Grid 식 tooltipValueGetter 대응: cellTitle — true(=cellText) | string | (v,row)=>string. ellipsis 셀의 :title 슬롯 제거용 */
   cellTitle(col, row) {
-    if (col.cellTitle == null) return null;
-    if (col.cellTitle === true) return String(this.cellText(col, row) || '');
+    // 기본: 셀 텍스트를 title 로 노출 (말줄임된 내용 hover 시 전체 표시).
+    //  - col.cellTitle 미지정 → cellText 자동
+    //  - col.cellTitle === true → cellText
+    //  - 문자열/함수 → 해당 값
+    //  - col.cellTitle === false → title 없음
+    if (col.cellTitle === false) return null;
+    if (col.cellTitle == null || col.cellTitle === true) {
+      const t = this.cellText(col, row);
+      return (t == null || t === '') ? null : String(t);
+    }
     if (typeof col.cellTitle === 'function') {
       const v = col.cellTitle(row ? row[col.key] : undefined, row);
       return v == null ? null : String(v);
@@ -546,7 +560,7 @@ window.BoGrid = {
               </span>
             </th>
           </slot>
-          <th v-if="rowActions" style="width:40px;text-align:center;">
+          <th v-if="rowActions" style="min-width:40px;text-align:center;white-space:nowrap;">
             <slot name="head-actions">
               관리
             </slot>
@@ -648,11 +662,12 @@ window.BoGrid = {
                   :show-now="col.dateTimePick.showNow !== false" :show-clear="col.dateTimePick.showClear !== false"
                   :date-width="col.dateTimePick.dateWidth || '104px'" :time-width="col.dateTimePick.timeWidth || '64px'" />
                   <!-- 인라인 path-button (라벨 + 🔍 버튼 + onOpen 콜백) -->
-                  <div v-else-if="col.pathLabelOpen" :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color:row[col.key]!=null?'#374151':'#9ca3af',fontWeight:row[col.key]!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}">
-                    <span style="flex:1;">
+                  <div v-else-if="col.pathLabelOpen" :style="{padding:'1px 6px 1px 8px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'22px',background:'#f5f5f7',color:row[col.key]!=null?'#374151':'#9ca3af',fontWeight:row[col.key]!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}">
+                    <span style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
+                      :title="(typeof col.pathLabelOpen.label==='function' ? col.pathLabelOpen.label(row[col.key]) : '') || ''">
                       {{ (typeof col.pathLabelOpen.label==='function' ? col.pathLabelOpen.label(row[col.key]) : '') || (col.pathLabelOpen.placeholder || '경로 선택...') }}
                     </span>
-                    <button type="button" @click.stop="col.pathLabelOpen.open(row)" title="표시경로 선택" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:#fff;border:1px solid #d1d5db;border-radius:4px;font-size:11px;color:#6b7280;flex-shrink:0;padding:0;">
+                    <button type="button" @click.stop="col.pathLabelOpen.open(row)" title="표시경로 선택" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:#fff;border:1px solid #d1d5db;border-radius:4px;font-size:11px;color:#6b7280;flex-shrink:0;padding:0;">
                       🔍
                     </button>
                   </div>
@@ -678,7 +693,7 @@ window.BoGrid = {
                 </td>
               </slot>
             </template>
-            <td v-if="rowActions" style="text-align:center">
+            <td v-if="rowActions" style="text-align:center;white-space:nowrap;">
               <slot name="row-actions" :row="row" :idx="idx">
                 <button class="btn btn-danger btn-xs" @click="handleSelectAction('grid-row-remove', { row })">
                   ✕
@@ -993,11 +1008,12 @@ window.BoGridCrud = {
               </option>
             </select>
             <bo-path-pick-field v-else-if="col.pathPick" :biz-cd="col.pathPick" :row="fnRow(item)" :disabled="fnRow(item)._row_status==='D'" @change="handleSelectAction('grid-row-cell-change', { row: fnRow(item), col })" />
-            <div v-else-if="col.pathLabelOpen" :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',background:'#f5f5f7',color:fnRow(item)[col.key]!=null?'#374151':'#9ca3af',fontWeight:fnRow(item)[col.key]!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}">
-              <span style="flex:1;">
+            <div v-else-if="col.pathLabelOpen" :style="{padding:'1px 6px 1px 8px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'22px',background:'#f5f5f7',color:fnRow(item)[col.key]!=null?'#374151':'#9ca3af',fontWeight:fnRow(item)[col.key]!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}">
+              <span style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
+                :title="(typeof col.pathLabelOpen.label==='function' ? col.pathLabelOpen.label(fnRow(item)[col.key]) : '') || ''">
                 {{ (typeof col.pathLabelOpen.label==='function' ? col.pathLabelOpen.label(fnRow(item)[col.key]) : '') || (col.pathLabelOpen.placeholder || '경로 선택...') }}
               </span>
-              <button type="button" @click.stop="col.pathLabelOpen.open(fnRow(item))" title="표시경로 선택" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;background:#fff;border:1px solid #d1d5db;border-radius:4px;font-size:11px;color:#6b7280;flex-shrink:0;padding:0;">
+              <button type="button" @click.stop="col.pathLabelOpen.open(fnRow(item))" title="표시경로 선택" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:#fff;border:1px solid #d1d5db;border-radius:4px;font-size:11px;color:#6b7280;flex-shrink:0;padding:0;">
                 🔍
               </button>
             </div>
@@ -1848,6 +1864,7 @@ window.BoFormArea = {
     cols:        { type: Number,  default: 3 },      // 한 줄 필드 수
     labelLeft:   { type: Boolean, default: false },  // true=라벨 좌측 / 값 우측 분리, false=라벨 위 / 값 아래
     labelWidth:  { type: String,  default: '90px' }, // labelLeft 모드에서 라벨 컬럼 폭
+    compact:     { type: Boolean, default: false },  // true=필드 높이/간격 축소 (행 펼침·인라인 패널용)
     showActions: { type: Boolean, default: true },
     saveLabel:   { type: String,  default: '저장' },
     cancelLabel: { type: String,  default: '취소' },
@@ -1881,7 +1898,7 @@ window.BoFormArea = {
       let s = '';
       if (cs > 1) s += `grid-column:span ${Math.min(cs, props.cols)};flex:${cs};`;
       if (rs > 1) s += `grid-row:span ${rs};`;
-      if (props.labelLeft) s += `display:grid;grid-template-columns:${props.labelWidth} 1fr;align-items:center;gap:8px;margin-bottom:6px;`;
+      if (props.labelLeft) s += `display:grid;grid-template-columns:${props.labelWidth} 1fr;align-items:center;gap:8px;margin-bottom:${props.compact ? '2px' : '6px'};`;
       return s;
     };
 
@@ -1928,7 +1945,7 @@ window.BoFormArea = {
     return { cfRows, cfFieldStyle, normOpts, dispVal, handleBtnAction, handleSelectAction };
   },
   template: /* html */`
-<div class="bo-form-area">
+<div class="bo-form-area" :class="compact?'bo-form-compact':''">
   <div v-for="(row, ri) in cfRows" :key="ri" class="form-row" :class="cols===3?'col3':''" :style="cols!==2&&cols!==3?('grid-template-columns:repeat('+cols+',1fr)'):''">
     <div v-for="col in row" :key="col.key" class="form-group" :style="cfFieldStyle(col)">
     <!-- 라벨 (hideLabel:true 면 라벨 영역만 빈 칸으로 자리 유지)
@@ -2010,15 +2027,17 @@ window.BoFormArea = {
 </select>
 <!-- pathPick (표시경로 선택 박스) -->
 <div v-else-if="col.type === 'pathPick'" style="display:flex;align-items:center;gap:8px;">
-  <div :style="{flex:1,padding:'6px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'13px',background:readonly?'#f9fafb':'#fff',color:form[col.key]!=null?'#374151':'#9ca3af',minHeight:'34px',display:'flex',alignItems:'center'}">
+  <div :style="{flex:1,padding:compact?'4px 10px':'6px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'13px',background:readonly?'#f9fafb':'#fff',color:form[col.key]!=null?'#374151':'#9ca3af',minHeight:compact?'28px':'34px',display:'flex',alignItems:'center'}">
     {{ col.pathLabel ? col.pathLabel(form[col.key]) : (form[col.key] != null ? '#' + form[col.key] : '경로 선택...') }}
   </div>
-  <button v-if="!readonly" type="button" class="btn btn-secondary btn-sm" @click="handleSelectAction('field-pathPick-open', { col })">
-    🔍 선택
-  </button>
-  <button v-if="!readonly && form[col.key] != null" type="button" class="btn btn-sm" @click="handleBtnAction('form-pathPick-clear', { col })" style="color:#999;">
-  ✕
-</button>
+  <span v-if="!readonly" style="display:inline-flex;align-items:flex-end;gap:2px;flex-shrink:0;align-self:stretch;">
+    <button type="button" class="btn btn-secondary btn-sm" title="표시경로 선택" @click="handleSelectAction('field-pathPick-open', { col })" :style="{padding:'0',width:compact?'28px':'34px',height:compact?'28px':'34px',display:'inline-flex',alignItems:'center',justifyContent:'center',flexShrink:0}">
+      🔍
+    </button>
+    <button v-if="form[col.key] != null" type="button" title="선택 해제" @click="handleBtnAction('form-pathPick-clear', { col })" style="background:none;border:none;padding:0 2px 2px;color:#999;cursor:pointer;font-size:13px;line-height:1;">
+      x
+    </button>
+  </span>
 </div>
 <!-- slot 탈출구 -->
 <slot v-else-if="col.type === 'slot'" :name="col.name || col.key" :form="form" :col="col" :readonly="readonly">
@@ -2037,18 +2056,18 @@ window.BoFormArea = {
   <slot name="actions-before">
   </slot>
   <template v-if="readonly">
-    <button class="btn btn-primary" @click="handleBtnAction('form-edit')">
+    <button class="btn btn-primary" :class="compact?'btn-sm':''" @click="handleBtnAction('form-edit')">
       {{ editLabel }}
     </button>
-    <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
+    <button class="btn btn-secondary" :class="compact?'btn-sm':''" @click="handleBtnAction('form-close')">
       {{ closeLabel }}
     </button>
   </template>
   <template v-else>
-    <button class="btn btn-primary" @click="handleBtnAction('form-save')">
+    <button class="btn btn-primary" :class="compact?'btn-sm':''" @click="handleBtnAction('form-save')">
       {{ saveLabel }}
     </button>
-    <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+    <button class="btn btn-secondary" :class="compact?'btn-sm':''" @click="handleBtnAction('form-cancel')">
       {{ cancelLabel }}
     </button>
   </template>

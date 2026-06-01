@@ -244,7 +244,7 @@ window.SyPropMng = {
 
     // 기본 그리드
     const baseGridColumns = [
-      { key: 'pathId',     label: '표시경로',  style: 'min-width:160px;', pathPick: 'sy_prop' },
+      { key: 'pathId',     label: '표시경로',  style: 'width:170px;max-width:170px;', pathPick: 'sy_prop' },
       { key: 'propKey',    label: '키',        edit: 'text', mono: true },
       { key: 'propValue',  label: '값',        edit: 'text' },
       { key: 'propLabel',  label: '라벨',      edit: 'text' },

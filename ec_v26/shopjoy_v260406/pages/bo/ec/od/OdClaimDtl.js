@@ -278,7 +278,7 @@ window.OdClaimDtl = {
       { key: 'status',  label: '환불상태', badge: () => 'badge-orange' },
       { key: 'amount',  label: '환불금액', style: 'text-align:right;', fmt: (v) => fmt(v),
         align: 'right', cellStyle: 'font-weight:700;' },
-      { key: 'payDate', label: '처리일시' },
+      { key: 'payDate', label: '처리일시', fmt: (v) => v ? String(v).slice(0, 16) : '-' },
       { key: 'account', label: '계좌/카드' },
       { key: 'apprNo',  label: '승인번호' },
     ];

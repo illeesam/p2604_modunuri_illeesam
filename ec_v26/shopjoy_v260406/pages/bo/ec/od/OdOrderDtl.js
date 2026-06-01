@@ -349,7 +349,7 @@ window.OdOrderDtl = {
       { key: 'payStatus', label: '결제상태', badge: (row) => fnPayStatusBadge(row.payStatus) },
       { key: 'amount',    label: '결제금액', style: 'text-align:right;',
         align: 'right', fmt: (v) => fmt(v), cellStyle: 'font-weight:700;' },
-      { key: 'payDate',   label: '결제일시' },
+      { key: 'payDate',   label: '결제일시', fmt: (v) => v ? String(v).slice(0, 16) : '-' },
       { key: 'apprNo',    label: '승인번호' },
       { key: 'issuer',    label: '카드사/계좌' },
     ];

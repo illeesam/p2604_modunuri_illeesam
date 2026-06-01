@@ -2296,7 +2296,7 @@ window.PdProdDtl = {
           @reorder="onCodeDrop"
           @ref-click="({id}) => navigate('pdProdDtl', { id })">
       <template #row-actions="{ idx }">
-        <td style="text-align:center;">
+        <td style="text-align:center;;white-space:nowrap;">
           <button class="btn btn-xs btn-danger" @click="removeCodeProd(idx)">
             삭제
           </button>

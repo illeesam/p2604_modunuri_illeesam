@@ -262,7 +262,7 @@ window.CmChattDtl = {
         badge: (row) => row.chattStatusCd === '진행중' ? 'badge-green' : 'badge-gray',
         fmt: (v, row) => row.chattStatusCd },
       { key: 'lastMsgDate', label: '최근 메시지', style: 'max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;', fmt: (v) => v || '-' },
-      { key: 'regDate', label: '일시' },
+      { key: 'regDate', label: '일시', fmt: (v) => v ? String(v).slice(0, 16) : '-' },
     ];
 
     // 사용자 채팅 그리드
@@ -272,7 +272,7 @@ window.CmChattDtl = {
         badge: (row) => row.chattStatusCd === '진행중' ? 'badge-green' : 'badge-gray',
         fmt: (v, row) => row.chattStatusCd },
       { key: 'lastMsgDate', label: '최근 메시지', style: 'max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;', fmt: (v) => v || '-' },
-      { key: 'regDate', label: '일시' },
+      { key: 'regDate', label: '일시', fmt: (v) => v ? String(v).slice(0, 16) : '-' },
     ];
 
     // 신규 폼

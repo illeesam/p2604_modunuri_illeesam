@@ -5,6 +5,7 @@ window.SyTemplateDtl = {
     navigate:      { type: Function, required: true },        // 페이지 이동
     dtlId:         { type: String, default: null },           // 수정 대상 ID
     dtlMode:       { type: String, default: 'view' },         // 상세 모드 (new/view/edit)
+    active:        { type: Boolean, default: true },          // false=행 미선택 빈 폼(저장/취소 등 버튼 숨김)
     reloadTrigger: { type: Number, default: 0 },              // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
@@ -47,9 +48,9 @@ window.SyTemplateDtl = {
       // 폼 저장 (신규 등록 또는 수정)
       if (cmd === 'form-save') {
         return handleSave();
-      // 폼 취소 → 목록으로 이동
+      // 폼 취소 → 상세영역 유지 + 빈 신규 폼으로 초기화 (영역 사라지지 않음)
       } else if (cmd === 'form-cancel') {
-        return props.navigate('syTemplateMng');
+        return props.navigate('__cancelEdit__');
       // 미리보기 모달 열기
       } else if (cmd === 'previewModal-open') {
         uiState.previewOpen = true;
@@ -198,9 +199,12 @@ window.SyTemplateDtl = {
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">
-    {{ cfIsNew ? '템플릿 등록' : (cfDtlMode ? '템플릿 상세' : '템플릿 수정') }}
-    <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
+    {{ !active ? '템플릿 상세' : (cfIsNew ? '템플릿 등록' : (cfDtlMode ? '템플릿 상세' : '템플릿 수정')) }}
+    <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
       #{{ form.templateId }}
+    </span>
+    <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+      목록에서 행을 선택하거나 [+신규]를 누르세요
     </span>
   </div>
   <!-- ===== □. 페이지 타이틀 ================================================= -->
@@ -228,7 +232,7 @@ window.SyTemplateDtl = {
       </bo-form-area>
       <!-- ===== □.□. 폼 영역 ================================================== -->
       <!-- ===== ■.■. 폼 액션 버튼 (미리보기/발송하기 포함 커스텀) ============================ -->
-      <div class="form-actions" v-if="!cfDtlMode">
+      <div class="form-actions" v-if="active && !cfDtlMode">
         <button class="btn btn-secondary" @click="handleBtnAction('previewModal-open')">
           📄 미리보기
         </button>

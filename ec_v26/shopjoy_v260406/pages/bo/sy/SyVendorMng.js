@@ -30,10 +30,11 @@ window.SyVendorMng = {
       if (cmd === 'searchParam-list') {
         pager.pageNo = 1;
         return handleSearchList('DEFAULT');
-      // 검색조건 초기화 + 재조회
+      // 검색조건 초기화 + 재조회 (표시경로 트리도 전체로)
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
         uiState.sortKey = ''; uiState.sortDir = 'asc';
+        uiState.selectedPath = null;          // 표시경로 트리 전체로 복귀
         pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 기간 옵션 변경
@@ -74,11 +75,11 @@ window.SyVendorMng = {
       // 그리드 행 삭제
       } else if (cmd === 'vendors-rowDelete') {
         return handleDelete(param);
-      // 좌측 경로 트리 노드 선택 → 우측 그리드 필터링 + 상세 패널 닫기
+      // 좌측 경로 트리 노드 선택 → 우측 그리드 필터링 + 상세 패널 초기화
       } else if (cmd === 'pathTree-select') {
         uiState.selectedPath = param;
         pager.pageNo = 1;
-        detailPanel.selectedId = null;
+        resetDetailToNew();
         return handleSearchList();
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -96,7 +97,13 @@ window.SyVendorMng = {
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* ===== 상세 인라인 패널 ===== */
-    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 }); // 인라인 Dtl 패널 상태
+    const detailPanel = reactive({   // 인라인 Dtl 패널 상태
+      selectedId: '__new__',         // 초기: 신규(빈) 폼. 행 클릭 시 해당 ID 로 전환
+      openMode: 'edit',              // 'view' | 'edit'
+      reloadTrigger: 0,
+      resetSeq: 0,                   // 취소 시 ++ → :key 재마운트로 상세 폼 초기화
+      active: false,                 // 행 선택/신규 시 true → 저장/취소 노출. 초기/취소 시 false → 버튼 숨김
+    });
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* getSortParam — 정렬 파라미터 */
     const getSortParam = () => {
@@ -165,20 +172,36 @@ window.SyVendorMng = {
     };
 
     /* loadView — 인라인 패널 뷰 모드로 열기 */
-    const loadView = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'view'; detailPanel.reloadTrigger++; };
+    const loadView = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'view'; detailPanel.active = true; detailPanel.reloadTrigger++; };
 
-    /* handleLoadDetail — 인라인 패널 편집 모드로 열기 */
-    const handleLoadDetail = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    /* resetDetailToNew — 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역은 항상 표시 유지)
+     *   active=false → 저장/취소 등 버튼 숨김 (행 미선택 안내 상태) */
+    const resetDetailToNew = () => {
+      detailPanel.selectedId = '__new__';
+      detailPanel.openMode = 'edit';
+      detailPanel.active = false;    // 버튼 숨김
+      detailPanel.resetSeq++;        // :key 재마운트 → 폼 초기화
+    };
 
-    /* openNew — 신규 등록 */
-    const openNew = () => { detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    /* handleLoadDetail — 인라인 패널 편집 모드로 열기 (행 선택 → 저장/취소 노출) */
+    const handleLoadDetail = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'edit'; detailPanel.active = true; detailPanel.reloadTrigger++; };
 
-    /* closeDetail — 상세 닫기 */
-    const closeDetail = () => { detailPanel.selectedId = null; };
+    /* openNew — 신규 등록 (빈 폼 + 활성 → 저장/취소 노출) */
+    const openNew = () => { detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.active = true; detailPanel.resetSeq++; };
+
+    /* closeDetail — 상세 닫기 = 빈 신규 폼(비활성)으로 초기화 (영역 유지) */
+    const closeDetail = () => { resetDetailToNew(); };
 
     /* inlineNavigate — 인라인 Dtl 의 navigate 콜백 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'syVendorMng') { detailPanel.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
+      if (pg === 'syVendorMng') {
+        /* 저장 완료 등: 영역은 유지하고 빈 신규 폼으로 초기화 */
+        if (opts.reload) { handleSearchList('RELOAD'); }
+        resetDetailToNew();
+        return;
+      }
+      /* 취소: 패널은 그대로 두고 상세영역만 빈 신규 폼으로 초기화 */
+      if (pg === '__cancelEdit__') { resetDetailToNew(); return; }
       if (pg === '__switchToEdit__') { detailPanel.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
@@ -195,7 +218,7 @@ window.SyVendorMng = {
       if (!ok) { return; }
       const idx = vendors.findIndex(x => x.vendorId === v.vendorId);
       if (idx !== -1) { vendors.splice(idx, 1); }
-      if (detailPanel.selectedId === v.vendorId) { detailPanel.selectedId = null; }
+      if (detailPanel.selectedId === v.vendorId) { resetDetailToNew(); }
       try {
         const res = await boApiSvc.syVendor.remove(v.vendorId, '판매자관리', '삭제');
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
@@ -234,7 +257,7 @@ window.SyVendorMng = {
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
     const cfIsViewMode = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
-    const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}`);
+    const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}_${detailPanel.resetSeq}`);
 
     /* fnTypeBadge — 유형 배지 */
     const fnTypeBadge = t => ({ '판매업체': 'badge-blue', '배송업체': 'badge-orange' }[t] || 'badge-gray');
@@ -265,7 +288,7 @@ window.SyVendorMng = {
 
     // 기본 그리드
     const baseGridColumns = [
-      { key: 'pathId',        label: '표시경로', pathPick: 'sy_vendor' },
+      { key: 'pathId',        label: '표시경로', style: 'width:170px;max-width:170px;', pathPick: 'sy_vendor' },
       { key: 'vendorId',      label: 'ID' },
       { key: 'vendorType',    label: '업체유형', badge: (row) => fnTypeBadge(row.vendorType) },
       { key: 'vendorNm',      label: '업체명', sortKey: 'nm', link: true,
@@ -274,7 +297,7 @@ window.SyVendorMng = {
       { key: 'vendorNo',      label: '사업자번호' },
       { key: 'vendorPhone',   label: '전화번호' },
       { key: 'vendorEmail',   label: '이메일' },
-      { key: 'contractDate',  label: '계약일', sortKey: 'reg' },
+      { key: 'contractDate',  label: '계약일', sortKey: 'reg',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
       { key: 'vendorStatusCd', label: '상태', badge: (row) => fnStatusBadge(row.vendorStatusCd) },
       { key: 'siteNm',        label: '사이트명', cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
     ];
@@ -334,8 +357,8 @@ window.SyVendorMng = {
           </th>
         </template>
         <template #row-actions="{ row }">
-          <td>
-            <div class="actions">
+          <td style="white-space:nowrap;">
+            <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
               <button class="btn btn-blue btn-xs" @click="handleSelectAction('vendors-rowEdit', row.vendorId)">
                 수정
               </button>
@@ -348,15 +371,16 @@ window.SyVendorMng = {
       </bo-grid>
         <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('vendors-pager-setPage', n)" :on-size-change="() => handleSelectAction('vendors-pager-sizeChange')" />
     </div>
-    <!-- ===== ■.■. 상세 패널 (전체 폭, grid 직접 자식) ============================ -->
-    <div v-if="detailPanel.selectedId" style="grid-column:1/-1;margin-top:4px;">
-      <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
+    <!-- ===== ■.■. 상세 패널 (전체 폭, grid 직접 자식, 항상 표시) ===================== -->
+    <div style="grid-column:1/-1;margin-top:4px;">
+      <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
         <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
           ✕ 닫기
         </button>
       </div>
       <sy-vendor-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
         :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+        :active="detailPanel.active"
         :reload-trigger="detailPanel.reloadTrigger"
         :on-list-reload="handleSearchList" />
     </div>

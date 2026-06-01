@@ -5,6 +5,7 @@ window.DpDispWidgetDtl = {
     navigate:      { type: Function, required: true }, // 페이지 이동
     dtlId:         { type: String, default: null }, // 수정 대상 ID
     dtlMode:       { type: String, default: 'view' }, // 상세 모드 (new/view/edit),
+    active:        { type: Boolean, default: true }, // false=행 미선택 빈 폼(저장/취소 등 버튼 숨김)
     reloadTrigger: { type: Number, default: 0 }, // 부모 Mng 가 ++ 로 신호 보내면 상세 API 재조회 (정책: 수정 클릭 시 항상 호출)
   },
   emits: ['close'],
@@ -28,9 +29,12 @@ window.DpDispWidgetDtl = {
       // 폼 삭제
       } else if (cmd === 'form-delete') {
         return handleDelete();
-      // 패널 닫기
+      // 폼 편집 취소 → 상세영역 유지 + 빈 신규 폼으로 초기화 (영역 사라지지 않음)
+      } else if (cmd === 'form-cancel') {
+        return props.navigate('__cancelEdit__');
+      // 패널 닫기 → 상세영역 유지 + 빈 신규 폼으로 초기화
       } else if (cmd === 'form-close') {
-        return emit('close');
+        return props.navigate('__cancelEdit__');
       // 위젯Lib 선택 팝업 열기 (param: 'copy' 또는 'ref')
       } else if (cmd === 'libPickModal-open') {
         return openLibPick(param);
@@ -661,6 +665,8 @@ window.DpDispWidgetDtl = {
 
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
+    // 저장/취소/삭제 등 액션 버튼 노출 여부 (행 선택/신규 시 active && 편집모드)
+    const cfShowActions = computed(() => props.active && !cfDtlMode.value);
 
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - 위젯 기본 설정 ================
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
@@ -685,7 +691,7 @@ window.DpDispWidgetDtl = {
       pathPickModal, uiState, codes, form, errors,                                   // 상태 / 데이터
       baseWidgetFormColumns, clickActionFormColumns,                                 // 컬럼 정의
       handleBtnAction, handleSelectAction, fnCallbackModal,                            // dispatch + 모달 통합 콜백
-      cfDtlMode, cfIsNew, cfDisplayRows, cfFileListItems,                            // computed
+      cfDtlMode, cfIsNew, cfShowActions, cfDisplayRows, cfFileListItems,             // computed
       cfPreviewWidget, cfSampleJson, cfPreviewFrameWidth,                            // computed
       cfIsImage, cfIsProduct, cfIsCondProduct, cfIsChart, cfIsText, cfIsInfo,        // computed (위젯 유형 분기)
       cfIsPopup, cfIsFile, cfIsFileList, cfIsCoupon, cfIsHtmlEditor,                 // computed
@@ -702,13 +708,16 @@ window.DpDispWidgetDtl = {
   <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #f0f0f0;background:#fafafa;border-radius:8px 8px 0 0;">
     <div style="display:flex;align-items:center;gap:10px;">
       <span style="font-size:15px;font-weight:700;color:#222;">
-        {{ cfIsNew ? '위젯 신규등록' : '위젯 수정' }}
+        {{ !active ? '위젯 상세' : (cfIsNew ? '위젯 신규등록' : '위젯 수정') }}
       </span>
-      <span v-if="!cfIsNew" style="font-size:11px;background:#eee;color:#666;border-radius:4px;padding:1px 7px;">
+      <span v-if="active && !cfIsNew" style="font-size:11px;background:#eee;color:#666;border-radius:4px;padding:1px 7px;">
         #{{ String(form.widgetLibId).padStart(4,'0') }}
       </span>
+      <span v-if="!active" style="font-size:12px;color:#bbb;font-weight:400;">
+        목록에서 행을 선택하거나 [+신규등록]을 누르세요
+      </span>
     </div>
-    <div class="form-actions" v-if="!cfDtlMode" style="margin:0;gap:8px;">
+    <div class="form-actions" v-if="cfShowActions" style="margin:0;gap:8px;">
       <button @click="handleBtnAction('libPickModal-open', 'copy')" class="btn btn-outline" style="font-size:12px;background:#e3f2fd;color:#1565c0;border-color:#90caf9;">
         📋 전시위젯Lib 내용복사
       </button>

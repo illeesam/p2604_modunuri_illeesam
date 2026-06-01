@@ -150,7 +150,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     // 기본 그리드
     const baseGridColumns = [
       { key: 'orderId',    label: '주문ID' },
-      { key: 'txDate',     label: '거래일' },
+      { key: 'txDate',     label: '거래일',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
       { key: 'payMethod',  label: '결제수단', badge: (row) => fnPayBadge(row.payMethod) },
       { key: 'payAmt',     label: '주문금액', fmt: fmtW },
       { key: 'pgAmt',      label: 'PG정산액', fmt: fmtW },

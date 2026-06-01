@@ -211,30 +211,40 @@ window.DpDispPanelMng = {
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 /* 하단 상세
  * 정책: 행상세/행수정 클릭 시 항상 상세 API 재조회. 같은 id 재클릭이어도 닫지 않고 reloadTrigger 만 ++ */
-    const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+    const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reloadTrigger: 0, resetSeq: 0, active: false });
 
     /* loadView — 뷰 로드 */
-    const loadView         = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; uiStateDetail.reloadTrigger++; };
+    const loadView         = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; uiStateDetail.active = true; uiStateDetail.reloadTrigger++; };
 
     /* handleLoadDetail — 상세 조회 */
-    const handleLoadDetail = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
+    const handleLoadDetail = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; uiStateDetail.active = true; uiStateDetail.reloadTrigger++; };
 
-    /* openNew — 신규 열기 */
-    const openNew     = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
+    /* openNew — 신규 열기 (빈 폼 + 활성 → 저장/취소 노출) */
+    const openNew     = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; uiStateDetail.active = true; uiStateDetail.resetSeq++; };
 
-    /* closeDetail — 상세 닫기 */
-    const closeDetail = () => { uiStateDetail.selectedId = null; };
+    /* resetDetailToNew — 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역은 항상 표시 유지) */
+    const resetDetailToNew = () => {
+      uiStateDetail.selectedId = '__new__';
+      uiStateDetail.openMode = 'edit';
+      uiStateDetail.active = false;   // 버튼 숨김
+      uiStateDetail.resetSeq++;       // :key 재마운트 → 폼 초기화
+    };
+
+    /* closeDetail — 상세 닫기 = 빈 신규 폼(비활성)으로 초기화 (영역 유지) */
+    const closeDetail = () => { resetDetailToNew(); };
 
     /* inlineNavigate — 인라인 이동 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'dpDispPanelMng') { uiStateDetail.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
+      if (pg === 'dpDispPanelMng') { if (opts.reload) handleSearchData(buildSearchParams()); resetDetailToNew(); return; }
+      /* 취소: 패널은 그대로 두고 상세영역만 빈 신규 폼으로 초기화 */
+      if (pg === '__cancelEdit__') { resetDetailToNew(); return; }
       if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
     const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId);
     const cfIsViewMode = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__');
-    /* key 는 'open' / 'closed' 두 값만 — id 가 바뀌어도 컴포넌트 remount 안 함, reloadTrigger watch 로 내용만 교체 */
-    const cfDetailKey = computed(() => uiStateDetail.selectedId === null ? 'closed' : 'open');
+    /* resetSeq 포함 → 취소/신규 시 컴포넌트 remount 로 폼 초기화 */
+    const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}_${uiStateDetail.resetSeq}`);
 
     /* previewDisp — 미리보기 Disp */
     const previewDisp = (d) => {
@@ -389,8 +399,9 @@ window.DpDispPanelMng = {
     const onReset = () => {
       Object.assign(searchParam, _initSearchParam());
       uiState.sortKey = ''; uiState.sortDir = 'asc';
+      uiState.selectedPath = null;   // 표시경로 트리 전체로 복귀
       pager.pageNo = 1;
-      handleSearchData({});
+      handleSearchData(buildSearchParams());
     };
 
     /* setPage — 설정 */
@@ -947,8 +958,8 @@ window.DpDispPanelMng = {
 <!-- ===== □.□. 우측 목록 ================================================= -->
 <!-- ===== □. 본문: 좌측 트리 + 우측 목록 ======================================= -->
 <!-- ===== ■. 하단 상세: DispDtl 임베드 ====================================== -->
-<div v-if="uiStateDetail.selectedId" style="margin-top:4px;">
-  <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
+<div style="margin-top:4px;">
+  <div v-if="uiStateDetail.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
     <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
       ✕ 닫기
     </button>
@@ -962,6 +973,7 @@ window.DpDispPanelMng = {
       :set-api-res="setApiRes"
       :dtl-id="cfDetailEditId"
       :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+      :active="uiStateDetail.active"
       :reload-trigger="uiStateDetail.reloadTrigger"
       :on-list-reload="handleSearchData"
       />

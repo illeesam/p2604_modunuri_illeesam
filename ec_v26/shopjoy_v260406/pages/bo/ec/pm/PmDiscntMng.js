@@ -174,31 +174,41 @@ window.PmDiscntMng = {
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
      // 'list' | 'card'
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reloadTrigger: 0, resetSeq: 0, active: false });
   const searchParam = reactive(_initSearchParam());
 
     // ===== 상세 임베드: 보기/수정/신규/닫기/인라인 이동 ====================
     /* loadView — 뷰 로드 */
-    const loadView   = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; uiStateDetail.reloadTrigger++; };
+    const loadView   = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; uiStateDetail.active = true; uiStateDetail.reloadTrigger++; };
 
-    /* handleLoadDetail — 상세 조회 */
-    const handleLoadDetail = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
+    /* handleLoadDetail — 상세 조회 (행 선택 → 저장/취소 노출) */
+    const handleLoadDetail = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; uiStateDetail.active = true; uiStateDetail.reloadTrigger++; };
 
-    /* openNew — 신규 열기 */
-    const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
+    /* openNew — 신규 열기 (빈 폼 + 활성 → 저장/취소 노출) */
+    const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; uiStateDetail.active = true; uiStateDetail.resetSeq++; uiStateDetail.reloadTrigger++; };
 
-    /* closeDetail — 상세 닫기 */
-    const closeDetail = () => { uiStateDetail.selectedId = null; };
+    /* resetDetailToNew — 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역은 항상 표시 유지)
+     *   active=false → 저장/취소 등 버튼 숨김 (행 미선택 안내 상태) */
+    const resetDetailToNew = () => {
+      uiStateDetail.selectedId = '__new__';
+      uiStateDetail.openMode = 'edit';
+      uiStateDetail.active = false;
+      uiStateDetail.resetSeq++;
+    };
+
+    /* closeDetail — 상세 닫기 = 빈 신규 폼(비활성)으로 초기화 (영역 유지) */
+    const closeDetail = () => { resetDetailToNew(); };
 
     /* inlineNavigate — 인라인 이동 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'pmDiscntMng') { uiStateDetail.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
+      if (pg === 'pmDiscntMng') { if (opts.reload) handleSearchList('RELOAD'); resetDetailToNew(); return; }
+      if (pg === '__cancelEdit__') { resetDetailToNew(); return; }
       if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
     const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId);
     const cfIsViewMode   = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__');
-    const cfDetailKey    = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
+    const cfDetailKey    = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}_${uiStateDetail.resetSeq}`);
 
     // ===== 페이저 번호 빌더 ================================================
     /* fnBuildPagerNums — 유틸 */
@@ -293,8 +303,8 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
           : (row.discntValue || 0).toLocaleString() + '원' },
       { key: 'discntTargetCd', label: '적용대상', cellStyle: 'color:#555',
         fmt: (v) => v || '전체상품' },
-      { key: 'startDate',      label: '시작일', sortKey: 'reg' },
-      { key: 'endDate',        label: '종료일' },
+      { key: 'startDate',      label: '시작일', sortKey: 'reg',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
+      { key: 'endDate',        label: '종료일',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
       { key: 'discntStatusCd', label: '상태', badge: (row) => fnStatusBadge(row.discntStatusCd) },
       { key: 'siteNm',         label: '사이트', cellStyle: 'color:#2563eb', fmt: () => cfSiteNm.value },
     ];
@@ -433,8 +443,8 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 하단 상세영역: PmDiscntDtl 인라인 임베드 ============================ -->
   <!-- ===== ■. 상세 패널 (인라인 임베드) ========================================= -->
-  <div v-if="selectedId" style="margin-top:4px;">
-    <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
+  <div style="margin-top:4px;">
+    <div v-if="uiStateDetail.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="closeDetail">
         ✕ 닫기
       </button>
@@ -447,7 +457,7 @@ const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigg
       :set-api-res="setApiRes"
       :dtl-id="cfDetailEditId"
       :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-      
+      :active="uiStateDetail.active"
       :reload-trigger="uiStateDetail.reloadTrigger"
       :on-list-reload="handleSearchList"
       />

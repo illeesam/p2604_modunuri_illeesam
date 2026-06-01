@@ -5,6 +5,7 @@ window.DpDispUiDtl = {
     navigate:      { type: Function, required: true }, // 페이지 이동
     dtlId:         { type: String, default: null }, // 수정 대상 ID
     dtlMode:       { type: String, default: 'view' }, // 상세 모드 (new/view/edit),
+    active:        { type: Boolean, default: true }, // false=행 미선택 빈 폼(저장/취소 등 버튼 숨김)
     reloadTrigger: { type: Number, default: 0 }, // 부모 Mng 가 ++ 로 신호 보내면 상세 API 재조회 (정책: 행상세/행수정 클릭 시 항상 호출)
   },
   setup(props) {
@@ -72,9 +73,12 @@ window.DpDispUiDtl = {
       // 폼 저장 (신규 등록 또는 수정)
       if (cmd === 'form-save') {
         return handleSave();
-      // 폼 편집 취소 → 목록으로 이동
+      // 폼 편집 취소 → 상세영역 유지 + 빈 신규 폼으로 초기화 (영역 사라지지 않음)
       } else if (cmd === 'form-cancel') {
-        return props.navigate('dpDispUiMng');
+        return props.navigate('__cancelEdit__');
+      // 폼 닫기 → 상세영역 유지 + 빈 신규 폼으로 초기화
+      } else if (cmd === 'form-close') {
+        return props.navigate('__cancelEdit__');
       // 헤더 영역 펼치기/접기 토글
       } else if (cmd === 'form-toggleExpand') {
         uiState.expanded = !uiState.expanded;
@@ -485,12 +489,15 @@ window.DpDispUiDtl = {
       <span style="color:#e8587a;">
         UI
       </span>
-      {{ cfIsNew ? '등록' : '수정' }}
-      <span v-if="!cfIsNew" style="font-size:12px;color:#888;font-weight:400;margin-left:6px;">
+      {{ !active ? '상세' : (cfIsNew ? '등록' : '수정') }}
+      <span v-if="active && !cfIsNew" style="font-size:12px;color:#888;font-weight:400;margin-left:6px;">
         #{{ form.codeId }}
       </span>
+      <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+        목록에서 행을 선택하거나 [✚ 신규등록]을 누르세요
+      </span>
     </div>
-    <div style="display:flex;gap:8px;align-items:center;">
+    <div v-if="active" style="display:flex;gap:8px;align-items:center;">
       <button class="btn btn-sm" :disabled="cfIsNew"
         :style="cfIsNew ? 'background:#f5f5f5;border:1px solid #ddd;color:#bbb;cursor:not-allowed;' : 'background:#e3f2fd;border:1px solid #90caf9;color:#1565c0;font-weight:600;'"
         :title="cfIsNew ? '저장 후 영역을 추가할 수 있습니다.' : ''"

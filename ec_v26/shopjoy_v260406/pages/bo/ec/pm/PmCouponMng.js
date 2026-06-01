@@ -97,7 +97,7 @@ window.PmCouponMng = {
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 /* 하단 상세 */
-    const uiStateDetail = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+    const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reloadTrigger: 0, resetSeq: 0, active: false }); // 진입 시 빈 신규 폼(비활성). 행 선택/신규 시 active=true
 
     /* _initSearchParam — 초기화 */
     const _initSearchParam = () => {
@@ -166,26 +166,36 @@ window.PmCouponMng = {
       if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT'); });
 
     /* loadView — 뷰 로드 */
-    const loadView = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; uiStateDetail.reloadTrigger++; };
+    const loadView = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; uiStateDetail.active = true; uiStateDetail.reloadTrigger++; };
 
-    /* handleLoadDetail — 상세 조회 */
-    const handleLoadDetail = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
+    /* resetDetailToNew — 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역은 항상 표시 유지)
+     *   active=false → 저장/취소 등 버튼 숨김 (행 미선택 안내 상태) */
+    const resetDetailToNew = () => {
+      uiStateDetail.selectedId = '__new__';
+      uiStateDetail.openMode = 'edit';
+      uiStateDetail.active = false;    // 버튼 숨김
+      uiStateDetail.resetSeq++;        // :key 재마운트 → 폼 초기화
+    };
 
-    /* openNew — 신규 열기 */
-    const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; uiStateDetail.reloadTrigger++; };
+    /* handleLoadDetail — 상세 조회 (행 선택 → active=true) */
+    const handleLoadDetail = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; uiStateDetail.active = true; uiStateDetail.reloadTrigger++; };
 
-    /* closeDetail — 상세 닫기 */
-    const closeDetail = () => { uiStateDetail.selectedId = null; };
+    /* openNew — 신규 열기 (빈 폼 + 활성 → 저장/취소 노출) */
+    const openNew = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; uiStateDetail.active = true; uiStateDetail.resetSeq++; uiStateDetail.reloadTrigger++; };
+
+    /* closeDetail — 상세 닫기 = 빈 신규 폼(비활성)으로 초기화 (영역 유지) */
+    const closeDetail = () => { resetDetailToNew(); };
 
     /* inlineNavigate — 인라인 이동 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'pmCouponMng') { uiStateDetail.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
+      if (pg === 'pmCouponMng') { if (opts.reload) handleSearchList('RELOAD'); resetDetailToNew(); return; }
+      if (pg === '__cancelEdit__') { resetDetailToNew(); return; }
       if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
     const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId);
     const cfIsViewMode = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__');
-    const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}`);
+    const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}_${uiStateDetail.resetSeq}`);
 
     /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
@@ -225,7 +235,7 @@ window.PmCouponMng = {
       if (!Array.isArray(coupons)) { return; }
       const idx = coupons.findIndex(x => x.couponId === c.couponId);
       if (idx !== -1) { coupons.splice(idx, 1); }
-      if (uiStateDetail.selectedId === c.couponId) { uiStateDetail.selectedId = null; }
+      if (uiStateDetail.selectedId === c.couponId) { resetDetailToNew(); }
       try {
         const res = await boApiSvc.pmCoupon.remove(c.couponId, '쿠폰관리', '삭제');
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
@@ -408,22 +418,22 @@ window.PmCouponMng = {
   </div>
   <!-- ===== □.□. 카드 뷰 ================================================== -->
   <!-- ===== □. 카드 영역 =================================================== -->
-  <!-- ===== ■. 하단 상세: CouponDtl 임베드 ==================================== -->
-  <div v-if="selectedId" style="margin-top:4px;">
-    <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
+  <!-- ===== ■. 하단 상세: CouponDtl 임베드 (항상 표시, 진입 시 빈 신규 폼) ============= -->
+  <div style="margin-top:4px;">
+    <div v-if="uiStateDetail.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기
       </button>
     </div>
     <pm-coupon-dtl
-      :key="selectedId"
+      :key="cfDetailKey"
       :navigate="inlineNavigate" :show-ref-modal="showRefModal"
       :show-toast="showToast"
       :show-confirm="showConfirm"
       :set-api-res="setApiRes"
       :dtl-id="cfDetailEditId"
       :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-      
+      :active="uiStateDetail.active"
       :reload-trigger="uiStateDetail.reloadTrigger"
       :on-list-reload="handleSearchList"
       />

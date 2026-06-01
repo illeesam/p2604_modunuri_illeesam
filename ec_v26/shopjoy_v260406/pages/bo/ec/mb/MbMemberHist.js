@@ -97,7 +97,7 @@ window.MbMemberHist = {
     // 주문 그리드
     const orderGridColumns = [
       { key: 'orderId', label: '주문ID', refLink: 'order' },
-      { key: 'orderDate', label: '주문일' },
+      { key: 'orderDate', label: '주문일',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
       { key: 'prodNm', label: '상품' },
       { key: 'totalPrice', label: '금액', fmt: (v) => (v || 0).toLocaleString() + '원' },
       { key: 'statusCd', label: '상태' },

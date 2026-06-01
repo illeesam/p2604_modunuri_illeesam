@@ -232,9 +232,9 @@ window.SyBatchHist = {
     </template>
     <template #row-expand="{ row, colspan }">
       <td :colspan="colspan"
-        :style="row.runStatus==='실패' ? 'background:#fff0f0;padding:12px 16px 14px;border-top:1px dashed #e0e0e0;' : 'background:#f8faff;padding:12px 16px 14px;border-top:1px dashed #e0e0e0;'">
-        <bo-form-area :columns="histExpandColumns" :form="row" :cols="5" readonly label-left :show-actions="false" />
-        <div style="font-size:11px;font-weight:600;color:#888;margin:10px 0 4px;">
+        :style="row.runStatus==='실패' ? 'background:#fff0f0;padding:8px 16px 10px;border-top:1px dashed #e0e0e0;' : 'background:#f8faff;padding:8px 16px 10px;border-top:1px dashed #e0e0e0;'">
+        <bo-form-area :columns="histExpandColumns" :form="row" :cols="5" readonly label-left compact :show-actions="false" />
+        <div style="font-size:11px;font-weight:600;color:#888;margin:6px 0 3px;">
           메시지
         </div>
         <div style="font-size:12px;padding:8px 12px;border-radius:5px;line-height:1.7;white-space:pre-wrap;word-break:break-all;"
@@ -244,7 +244,7 @@ window.SyBatchHist = {
           {{ row.message }}
         </div>
         <template v-if="row.detail">
-          <div style="font-size:11px;font-weight:600;color:#888;margin:10px 0 4px;">
+          <div style="font-size:11px;font-weight:600;color:#888;margin:6px 0 3px;">
             상세 내용
           </div>
           <pre style="margin:0;font-size:11px;padding:10px 12px;border-radius:5px;white-space:pre-wrap;word-break:break-all;line-height:1.65;font-family:monospace;"

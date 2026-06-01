@@ -412,7 +412,7 @@
       // 주문 그리드
       const orderGridColumns = [
         { key: 'orderId', label: '주문번호', refLink: 'order' },
-        { key: 'orderDate', label: '일시', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;' },
+        { key: 'orderDate', label: '일시', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;',  fmt: (v) => v ? String(v).slice(0, 16) : '-' },
         { key: 'prodNm', label: '상품명', cellStyle: _ellipsis(150), cellTitle: true },
         { key: 'totalPrice', label: '금액', style: 'text-align:right;', align: 'right', cellStyle: 'font-weight:600;', fmt: (v) => fnFmtPrice(v) },
         { key: 'status', label: '상태', badge: (row) => fnBadgeCls(row.status) },
@@ -457,14 +457,14 @@
       ];
       // 로그인 그리드
       const loginGridColumns = [
-        { key: 'loginDate', label: '일시', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;' },
+        { key: 'loginDate', label: '일시', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;',  fmt: (v) => v ? String(v).slice(0, 16) : '-' },
         { key: 'ip', label: 'IP', cellStyle: 'color:#666;font-family:monospace;' },
         { key: 'device', label: '기기/브라우저', cellStyle: 'color:#555;' },
         { key: 'result', label: '결과', badge: (row) => fnBadgeCls(row.result) },
       ];
       // 쿠폰 그리드
       const couponGridColumns = [
-        { key: 'usedDate', label: '사용일', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;' },
+        { key: 'usedDate', label: '사용일', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
         { key: 'couponNm', label: '쿠폰명', cellStyle: _ellipsis(150), cellTitle: true },
         { key: 'couponCode', label: '코드', cellStyle: 'font-family:monospace;color:#666;' },
         { key: 'orderId', label: '주문번호', refLink: 'order' },
@@ -472,7 +472,7 @@
       ];
       // 발송 그리드
       const sendGridColumns = [
-        { key: 'sendDate', label: '발송일시', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;' },
+        { key: 'sendDate', label: '발송일시', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;',  fmt: (v) => v ? String(v).slice(0, 16) : '-' },
         { key: 'channelCd', label: '채널', badge: (row) => fnChannelCls(row.channelCd) },
         { key: 'title', label: '제목/내용', cellStyle: _ellipsis(220, 'color:#333;'), cellTitle: true },
         { key: 'statusCd', label: '결과', badge: (row) => fnBadgeCls(row.statusCd) },

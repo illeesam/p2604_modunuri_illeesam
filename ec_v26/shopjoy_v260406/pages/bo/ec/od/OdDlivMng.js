@@ -14,7 +14,7 @@ window.OdDlivMng = {
 
     const dlivs = reactive([]);                                                 // 배송 목록 (메인 그리드 데이터)
     const members = reactive([]);                                               // 회원 목록 (추가결재요청 picker)
-    const uiState = reactive({ bulkOpen: false, loading: false, error: null, isPageCodeLoad: false, bulkTab: 'status', sortKey: '', sortDir: 'asc' });
+    const uiState = reactive({ bulkOpen: false, loading: false, error: null, isPageCodeLoad: false, bulkTab: 'status', sortKey: '', sortDir: 'asc', autoOpenedOnce: false }); // autoOpenedOnce: 진입 시 첫 행 자동 오픈 1회만
     const codes = reactive({ order_statuses: [], dliv_statuses: [], dliv_types: [], payment_methods: [], courier_codes: [], dliv_date_types: [], approval_actions: [], req_targets: [], date_range_opts: [] });
 
     const SORT_MAP = { reg: { asc: 'regDate asc', desc: 'regDate desc' } };
@@ -214,6 +214,11 @@ window.OdDlivMng = {
         pager.pageTotalPage = delivRes.data?.data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         fnBuildPagerNums();
         Object.assign(pager.pageCond, delivRes.data?.data?.pageCond || pager.pageCond);
+        /* 진입 시 첫 행 상세 자동 오픈 — 1회만(이후 사용자가 닫으면 재오픈 안 함) */
+        if (!uiState.autoOpenedOnce && !detailPanel.selectedId && dlivs.length) {
+          uiState.autoOpenedOnce = true;
+          handleSelectAction('dlivs-rowEdit', dlivs[0].dlivId);
+        }
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);

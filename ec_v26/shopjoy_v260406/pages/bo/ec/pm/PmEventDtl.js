@@ -6,6 +6,7 @@ window.PmEventDtl = {
     navigate:     { type: Function, required: true }, // 페이지 이동
     dtlId:        { type: String, default: null }, // 수정 대상 ID
     dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit),
+    active:       { type: Boolean, default: true }, // false=행 미선택 빈 폼(저장/취소 등 버튼 숨김)
     reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
@@ -55,12 +56,12 @@ window.PmEventDtl = {
       // 폼 저장
       if (cmd === 'form-save') {
         return handleSave();
-      // 폼 취소 (목록으로)
+      // 폼 취소 → 상세영역 유지 + 빈 신규 폼으로 초기화 (영역 사라지지 않음)
       } else if (cmd === 'form-cancel') {
-        return props.navigate('pmEventMng');
-      // 폼 닫기 (목록으로)
+        return props.navigate('__cancelEdit__');
+      // 폼 닫기 → 상세영역 유지 + 빈 신규 폼으로 초기화
       } else if (cmd === 'form-close') {
-        return props.navigate('pmEventMng');
+        return props.navigate('__cancelEdit__');
       // 상세 보기 → 편집 모드 전환
       } else if (cmd === 'form-edit') {
         return props.navigate('__switchToEdit__');
@@ -396,9 +397,12 @@ window.PmEventDtl = {
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">
-    {{ cfIsNew ? '이벤트 등록' : (cfDtlMode ? '이벤트 상세' : '이벤트 수정') }}
-    <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
+    {{ !active ? '이벤트 상세' : (cfIsNew ? '이벤트 등록' : (cfDtlMode ? '이벤트 상세' : '이벤트 수정')) }}
+    <span v-if="coUtil.cofAnd(active, !cfIsNew)" style="font-size:12px;color:#999;margin-left:8px;">
       #{{ form.eventId }}
+    </span>
+    <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+      목록에서 행을 선택하거나 [+신규]를 누르세요
     </span>
   </div>
   <!-- ===== □. 페이지 타이틀 ================================================= -->
@@ -420,7 +424,7 @@ window.PmEventDtl = {
         </div>
         <base-html-editor v-model="form.bannerImage" height="320px" />
       </div>
-      <div class="form-actions" v-if="!cfDtlMode">
+      <div class="form-actions" v-if="coUtil.cofAnd(active, !cfDtlMode)">
         <template v-if="cfDtlMode">
           <button class="btn btn-primary" @click="handleBtnAction('form-edit')">
             수정
@@ -496,7 +500,7 @@ window.PmEventDtl = {
       </div>
       <!-- ===== ■.■.■. 판매업체 선택 모달 ========================================== -->
       <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId" modal-name="vendor-pick" :on-callback="fnCallbackModal" />
-      <div class="form-actions" v-if="!cfDtlMode">
+      <div class="form-actions" v-if="coUtil.cofAnd(active, !cfDtlMode)">
         <template v-if="cfDtlMode">
           <button class="btn btn-primary" @click="handleBtnAction('form-edit')">
             수정
@@ -544,7 +548,7 @@ window.PmEventDtl = {
     </div>
     <base-html-editor v-else :model-value="form['content'+n]" @update:model-value="v => form['content'+n] = v" height="220px" />
   </div>
-  <div class="form-actions" v-if="!cfDtlMode" style="margin-top:16px;">
+  <div class="form-actions" v-if="coUtil.cofAnd(active, !cfDtlMode)" style="margin-top:16px;">
     <template v-if="cfDtlMode">
       <button class="btn btn-primary" @click="handleBtnAction('form-edit')">
         수정
@@ -589,7 +593,7 @@ window.PmEventDtl = {
       </button>
     </template>
   </bo-grid>
-  <div class="form-actions" v-if="!cfDtlMode">
+  <div class="form-actions" v-if="coUtil.cofAnd(active, !cfDtlMode)">
     <template v-if="cfDtlMode">
       <button class="btn btn-primary" @click="handleBtnAction('form-edit')">
         수정

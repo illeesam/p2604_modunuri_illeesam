@@ -15,6 +15,7 @@ window.SyBbmMng = {
     const bbmCounts = reactive({});                 // 좌 트리 노드별 카운트 (검색조건 동기)
     const uiState = reactive({                     // UI 상태
       loading: false, error: null, isPageCodeLoad: false, selectedPath: null,
+      autoOpenedOnce: false, // 진입 시 첫 행 자동 오픈 1회만
     });
     const codes = reactive({ bbm_type: [], bbm_status: [], use_yn: [] });
 
@@ -120,6 +121,11 @@ window.SyBbmMng = {
         fnBuildPagerNums();
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
+        /* 진입 시 첫 행 상세 자동 오픈 — 1회만(이후 사용자가 닫으면 재오픈 안 함) */
+        if (!uiState.autoOpenedOnce && !detailModal.dtlId && bbms.length) {
+          uiState.autoOpenedOnce = true;
+          handleLoadDetail(bbms[0].bbmId);
+        }
         /* 좌 트리 카운트 동기 갱신 */
         handleLoadPathTreeNodeCounts();
       } catch (err) {
@@ -269,7 +275,7 @@ window.SyBbmMng = {
 
     // 기본 그리드
     const baseGridColumns = [
-      { key: 'pathId',        label: '표시경로', pathPick: 'sy_bbm' },
+      { key: 'pathId',        label: '표시경로', style: 'width:170px;max-width:170px;', pathPick: 'sy_bbm' },
       { key: 'bbmCode',       label: '게시판코드',
         cellInnerStyle: 'font-size:11px;color:#555;font-family:monospace;' },
       { key: 'bbmNm',         label: '게시판명', link: true,
@@ -284,7 +290,7 @@ window.SyBbmMng = {
       { key: 'sortOrd',       label: '정렬순서', align: 'center' },
       { key: 'useYn',         label: '사용여부', badge: (row) => fnYnBadge(row.useYn), fmt: (v) => v === 'Y' ? '사용' : '미사용' },
       { key: 'siteNm',        label: '사이트명', cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
-      { key: 'regDate',       label: '등록일' },
+      { key: 'regDate',       label: '등록일',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
@@ -340,8 +346,8 @@ window.SyBbmMng = {
           </th>
         </template>
         <template #row-actions="{ row }">
-          <td>
-            <div class="actions">
+          <td style="white-space:nowrap;">
+            <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
               <button class="btn btn-blue btn-xs" @click="handleSelectAction('bbms-rowEdit', row.bbmId)">
                 수정
               </button>

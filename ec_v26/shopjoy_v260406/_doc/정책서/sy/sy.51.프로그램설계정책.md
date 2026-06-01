@@ -538,6 +538,56 @@ AG-Grid 의 `valueFormatter`/`cellStyle`/`cellClass` 와 동일한 패턴.
 4. **helper 함수**: setup return 에 포함된 함수만 columns 속성 클로저에서 참조 가능.
 5. **함수형 `options`**: `options: ()=>codes.xxx` 는 렌더 시점 호출 → codes 지연 로드 안전.
 
+#### 그리드 셀 공통 표시 정책 ⭐ (2026-06-01)
+
+BoGrid/FoGrid 의 **모든 데이터 셀**은 다음을 기본으로 한다. `BoAreaComp.js` / `FoAreaComp.js`
+의 `tdStyle` / `cellTitle` 헬퍼에 내장되어 **전 그리드 자동 적용**된다.
+
+1. **한 줄 말줄임(ellipsis)**: 모든 td 는 `white-space:nowrap;overflow:hidden;text-overflow:ellipsis`
+   를 기본 적용한다. 셀 내용이 길어도 **줄바꿈 없이 한 줄 유지** → 행 높이 균일.
+   - `...` 말줄임은 컬럼에 폭(`style:'width:NNpx;max-width:NNpx'`)이 지정된 경우 작동.
+   - 폭 미지정 컬럼은 한 줄 유지(nowrap)만 — 매우 긴 내용은 컬럼 폭 지정으로 통제.
+   - 끄기: 컬럼에 `noEllipsis: true`. 인라인 편집(`col.edit`) 셀은 자동 제외.
+   - ⚠️ `table-layout:fixed` 로 바꾸지 말 것 — 기존 폭 분배가 전부 틀어짐. `auto` 유지.
+2. **hover 시 title 툴팁**: 모든 셀은 셀 텍스트를 `:title` 로 자동 노출 → 말줄임된 전체 값
+   확인 가능. `cellTitle` 기본값이 `cellText`. 끄기: `cellTitle: false`. 커스텀: 문자열/함수.
+3. **날짜/일시 컬럼 포맷**: TIMESTAMP/ISO 원본(`2026-04-20T00:00:00`)을 그대로 노출 금지.
+   날짜만 필요하면 `fmt: (v) => v ? String(v).slice(0,10) : '-'` (→ `2026-04-20`),
+   폭은 `style:'width:110px'`. 일시까지면 `slice(0,16)` (→ `2026-04-20 00:00`, 폭 140px).
+4. **표시경로(`pathLabelOpen`)·link 셀**: 동일하게 한 줄 말줄임 + title. 컬럼 폭 지정 필수
+   (표시경로 170px, 사이트명/제목류 140px 권장).
+
+```js
+// ✅ 표준 컬럼 정의 예시
+{ key: 'regDate',  label: '등록일', sortKey: 'reg', style: 'width:110px;',
+  fmt: (v) => v ? String(v).slice(0, 10) : '-' },          // 날짜 포맷 + 폭
+{ key: 'siteNm',   label: '사이트명', link: true, style: 'width:140px;max-width:140px;' }, // 말줄임용 폭
+{ key: 'pathId',   label: '표시경로', style: 'width:170px;max-width:170px;',
+  pathLabelOpen: { label: pathLabel, open: ..., placeholder: '미설정' } },
+```
+
+#### 관리(액션) 컬럼 표준 ⭐ (2026-06-01)
+
+`rowActions` / `#row-actions` 의 [수정][삭제] 등 버튼 묶음은 **세로 개행 금지**.
+
+- `BoAreaComp.js` 의 관리 컬럼 헤더 th: `min-width:40px;white-space:nowrap`, 셀 td: `white-space:nowrap`
+  (공통 적용됨). 버튼은 `btn-xs`(최소 크기) 사용.
+- `#row-actions` 슬롯에 **자체 `<td>` 를 직접 작성**하는 화면(SySiteMng 등)은 공통 td 가 아니므로
+  `<td style="white-space:nowrap">` + `.actions { white-space:nowrap;flex-wrap:nowrap }` +
+  버튼 `style="white-space:nowrap"` 을 **개별 명시**해야 한다.
+
+```html
+<!-- ✅ #row-actions 자체 td 작성 시 (개행 방지) -->
+<template #row-actions="{ row }">
+  <td style="white-space:nowrap;">
+    <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
+      <button class="btn btn-blue btn-xs" style="white-space:nowrap;" @click="...">수정</button>
+      <button class="btn btn-danger btn-xs" style="white-space:nowrap;" @click="...">삭제</button>
+    </div>
+  </td>
+</template>
+```
+
 #### KEEP 패턴 (슬롯 유지 — 변환 금지)
 
 다음 케이스는 columns 속성으로 표현 불가하므로 `#cell-` 슬롯 유지:
@@ -547,7 +597,8 @@ AG-Grid 의 `valueFormatter`/`cellStyle`/`cellClass` 와 동일한 패턴.
 2. **참조 모달**: `class="ref-link" @click="showRefModal('member', row.x)"`
 3. **`<code>` / 박스형 인라인 배지**: `<span style="background;border-radius;padding">`
    는 td 전체 cellStyle 과 모양이 다름. cellStyle 로 td 배경을 주면 칸 전체가 채워짐.
-4. **동적 `:title="row.x"`** : columns 로 동적 title 속성 불가
+4. ~~**동적 `:title="row.x"`** : columns 로 동적 title 속성 불가~~ → **해소됨(2026-06-01)**:
+   모든 셀 기본 `cellTitle=cellText`. 커스텀 title 은 `cellTitle: (v,row)=>...`, 끄기는 `cellTitle: false`.
 5. **복합 셀**: v-if 다중 분기, v-for, 이미지+텍스트 복합, 2줄 div 중첩
 6. **버튼 다수 / `_act`**: 수정/삭제/이동 등 액션 버튼 묶음 (`#row-actions` 활용도 가능)
 7. **외부값 참조**: fmt 는 `v=row[col.key]` 만 받음. row 외 값(cfSiteNm 등) 참조는

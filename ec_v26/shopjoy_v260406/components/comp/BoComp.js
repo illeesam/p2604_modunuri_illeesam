@@ -765,6 +765,21 @@ window.BoPager = {
     pager:        { type: Object,   default: () => ({ pageNo: 1, pageTotalPage: 1, pageNums: [1], pageSize: 20, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500] }) },
     onSetPage:    { type: Function, default: () => {} },
     onSizeChange: { type: Function, default: () => {} },
+    pageWindow:   { type: Number,   default: 10 },   // 한 번에 보일 페이지 번호 칸 수
+  },
+  setup(props) {
+    /* cfPageNums — 현재 페이지 기준 최대 pageWindow(기본 10)칸 페이지 번호 윈도우.
+       각 화면 fnBuildPagerNums 가 5칸만 만들어도 여기서 일괄 10칸으로 통일. */
+    const cfPageNums = Vue.computed(() => {
+      const total = Math.max(1, props.pager?.pageTotalPage || 1);
+      const cur   = Math.min(Math.max(1, props.pager?.pageNo || 1), total);
+      const win   = Math.max(1, props.pageWindow);
+      let start = Math.max(1, cur - Math.floor(win / 2));
+      let end   = Math.min(total, start + win - 1);
+      start = Math.max(1, end - win + 1);   // 끝에서 윈도우 채우기
+      return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+    });
+    return { cfPageNums };
   },
   template: /* html */`
 <div v-if="pager" class="pagination">
@@ -777,7 +792,7 @@ window.BoPager = {
     <button :disabled="pager.pageNo===1" @click="onSetPage(pager.pageNo-1)">
       ‹
     </button>
-    <button v-for="n in (pager.pageNums||[])" :key="n" :class="{active:pager.pageNo===n}" @click="onSetPage(n)">
+    <button v-for="n in cfPageNums" :key="n" :class="{active:pager.pageNo===n}" @click="onSetPage(n)">
       {{ n }}
     </button>
     <button :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageNo+1)">
@@ -985,7 +1000,7 @@ window.BoMultiCheckSelect = {
   template: /* html */`
 <div ref="rootRef" class="multi-check-select" :style="'position:relative;display:inline-block;min-width:'+minWidth">
   <div @click="handleBtnAction('select-toggle')"
-    :style="'border:1px solid #d4d4d8;border-radius:6px;padding:6px 28px 6px 10px;background:'+(disabled?'#f5f5f5':'#fff')+';cursor:'+(disabled?'not-allowed':'pointer')+';font-size:13px;color:'+(noneMode?'#aaa':'#333')+';position:relative;user-select:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'">
+    :style="'border:1px solid #d4d4d8;border-radius:6px;padding:4px 28px 4px 10px;background:'+(disabled?'#f5f5f5':'#fff')+';cursor:'+(disabled?'not-allowed':'pointer')+';font-size:13px;color:'+(noneMode?'#aaa':'#333')+';position:relative;user-select:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'">
     {{ cfDisplay }}
     <span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);color:#888;font-size:10px;">
       ▼
@@ -1245,18 +1260,18 @@ window.BoPathPickField = {
   },
   template: /* html */`
 <component :is="bare ? 'div' : 'td'">
-  <div :style="{padding:'5px 6px 5px 10px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'26px',
+  <div :style="{padding:'0 6px 0 8px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'20px',
     background:'#f5f5f7',
     color: cfHasVal ? '#374151' : '#9ca3af',
     fontWeight: cfHasVal ? 600 : 400,
     display:'flex',alignItems:'center',gap:'6px'}">
-    <span style="flex:1;">
+    <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="cfLabel || ''">
       {{ cfLabel || placeholder }}
     </span>
     <button type="button" :disabled="disabled"
       @click.stop="handleBtnAction('pathPick-open')" @dblclick.stop="handleBtnAction('pathPick-open')"
       :title="modalTitle"
-      :style="{cursor: disabled ? 'not-allowed' : 'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'22px',height:'22px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0',opacity: disabled ? 0.4 : 1}"
+      :style="{cursor: disabled ? 'not-allowed' : 'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'18px',height:'18px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0',opacity: disabled ? 0.4 : 1}"
       @mouseover="handleSelectAction('pathPick-hover', $event)" @mouseout="handleSelectAction('pathPick-leave', $event)">
       🔍
     </button>

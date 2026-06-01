@@ -245,7 +245,7 @@ window.PmCacheDtl = {
     // ===== 그리드 컬럼 정의 (회원 캐쉬 내역) ===============================
     /* BoGrid(bare) 컬럼 정의 — 회원 캐쉬 내역 */
     const cacheHistGridColumns = [
-      { key: 'cacheDate',  label: '일시' },
+      { key: 'cacheDate',  label: '일시', fmt: (v) => v ? String(v).slice(0, 16) : '-' },
       { key: 'cacheTypeCd', label: '유형', badge: row => fnTypeBadge(row.cacheTypeCd) },
       { key: 'cacheAmt',   label: '금액',
         cellStyle: (v, row) => row.cacheAmt > 0 ? 'color:#389e0d;font-weight:600' : 'color:#cf1322;font-weight:600',

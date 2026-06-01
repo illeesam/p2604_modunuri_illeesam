@@ -6,6 +6,7 @@ window.PmCouponDtl = {
     navigate:     { type: Function, required: true }, // 페이지 이동
     dtlId:        { type: String, default: null }, // 수정 대상 ID
     dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit),
+    active:       { type: Boolean, default: true }, // false=행 미선택 빈 폼(저장/취소 등 버튼 숨김)
     reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
@@ -74,9 +75,12 @@ window.PmCouponDtl = {
       // 폼 저장
       if (cmd === 'form-save') {
         return handleSave();
-      // 폼 취소 (목록으로)
+      // 폼 취소 → 상세영역 유지 + 빈 신규 폼으로 초기화 (영역 사라지지 않음)
       } else if (cmd === 'form-cancel') {
-        return props.navigate('pmCouponMng');
+        return props.navigate('__cancelEdit__');
+      // 폼 닫기 → 상세영역 유지 + 빈 신규 폼으로 초기화
+      } else if (cmd === 'form-close') {
+        return props.navigate('__cancelEdit__');
       // 탭 전환 (info/detail/issued/used/preview)
       } else if (cmd === 'tab-select') {
         return onTabChange(param);
@@ -437,9 +441,12 @@ window.PmCouponDtl = {
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">
-    {{ cfIsNew ? '쿠폰 등록' : '쿠폰 수정' }}
-    <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
+    {{ !active ? '쿠폰 상세' : (cfIsNew ? '쿠폰 등록' : '쿠폰 수정') }}
+    <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
       #{{ form.couponId }}
+    </span>
+    <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+      목록에서 행을 선택하거나 [+신규]를 누르세요
     </span>
   </div>
   <!-- ===== □. 페이지 타이틀 ================================================= -->
@@ -809,7 +816,7 @@ window.PmCouponDtl = {
   <!-- ===== □.□. 사용목록 ================================================== -->
   <!-- ===== □. 탭 컨텐츠 =================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
-  <div style="margin-top:16px;text-align:center;gap:8px;display:flex;justify-content:center;">
+  <div v-if="active" style="margin-top:16px;text-align:center;gap:8px;display:flex;justify-content:center;">
     <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요. (발급/사용/미리보기 탭은 조회 전용)' : ''" @click="handleBtnAction('form-save')" style="min-width:120px;">
       저장
     </button>

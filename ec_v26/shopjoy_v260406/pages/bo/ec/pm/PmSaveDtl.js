@@ -6,6 +6,7 @@ window.PmSaveDtl = {
     navigate:     { type: Function, required: true }, // 페이지 이동
     dtlId:        { type: String, default: null }, // 수정 대상 ID
     dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit),
+    active:       { type: Boolean, default: true }, // false=행 미선택 빈 폼(저장/취소 등 버튼 숨김)
     reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
@@ -30,9 +31,9 @@ window.PmSaveDtl = {
       // 폼 저장
       if (cmd === 'form-save') {
         return handleSave();
-      // 폼 취소 (목록으로)
+      // 폼 취소 → 상세영역 유지 + 빈 신규 폼으로 초기화 (영역 사라지지 않음)
       } else if (cmd === 'form-cancel') {
-        return props.navigate('pmSaveMng');
+        return props.navigate('__cancelEdit__');
       // 탭 전환
       } else if (cmd === 'tab-select') {
         uiState.tab = param;
@@ -295,15 +296,19 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
       cfIsNew, cfHasId, cfSaveDisabled, cfDtlMode, cfVisibilityOptions, cfSelectedVendorNm, // computed
       tab, tabMode2,                                                                // toRef
       showTab, hasVisibility,                                                       // 헬퍼
+      coUtil,                                                                       // 의존 (템플릿 cofAnd)
     };
   },
   template: /* html */`
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">
-    {{ cfIsNew ? '마일리지 등록' : '마일리지 수정' }}
-    <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
+    {{ !active ? '마일리지 상세' : (cfIsNew ? '마일리지 등록' : '마일리지 수정') }}
+    <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
       #{{ form.saveId }}
+    </span>
+    <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+      목록에서 행을 선택하거나 [+신규]를 누르세요
     </span>
   </div>
   <!-- ===== □. 페이지 타이틀 ================================================= -->
@@ -341,7 +346,7 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
       </bo-form-area>
       <!-- ===== ■.■.■. 판매업체 선택 모달 ========================================== -->
       <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId" modal-name="vendor-pick" :on-callback="fnCallbackModal" />
-      <div class="form-actions" v-if="!cfDtlMode">
+      <div class="form-actions" v-if="coUtil.cofAnd(active, !cfDtlMode)">
         <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           저장
         </button>
@@ -366,7 +371,7 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
           {{ opt.codeLabel }}
         </label>
       </div>
-      <div class="form-actions" v-if="!cfDtlMode">
+      <div class="form-actions" v-if="coUtil.cofAnd(active, !cfDtlMode)">
         <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           저장
         </button>

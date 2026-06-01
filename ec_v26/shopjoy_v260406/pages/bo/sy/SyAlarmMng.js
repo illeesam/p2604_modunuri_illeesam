@@ -16,6 +16,7 @@ window.SyAlarmMng = {
     const uiState = reactive({                     // UI 상태
       loading: false, error: null, isPageCodeLoad: false,
       selectedPath: null, sortKey: '', sortDir: 'asc',
+      autoOpenedOnce: false,                        // 진입 시 첫 행 자동 오픈 1회만
     });
     const codes = reactive({ alarm_type: [], alarm_status: [], date_range_opts: [] });
     const SORT_MAP = { nm: { asc: 'alarmTitle asc', desc: 'alarmTitle desc' }, reg: { asc: 'alarmSendDate asc', desc: 'alarmSendDate desc' } };
@@ -178,6 +179,11 @@ window.SyAlarmMng = {
         uiState.error = null;
         /* 좌 트리 카운트 동기 갱신 */
         handleLoadPathTreeNodeCounts();
+        /* 진입 시 첫 행 상세 자동 오픈 — 1회만(이후 사용자가 닫으면 재오픈 안 함) */
+        if (!uiState.autoOpenedOnce && !detailModal.dtlId && alarms.length) {
+          uiState.autoOpenedOnce = true;
+          handleLoadDetail(alarms[0].alarmId);
+        }
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;
@@ -364,7 +370,7 @@ window.SyAlarmMng = {
 
     // 기본 그리드
     const baseGridColumns = [
-      { key: 'pathId',        label: '표시경로',
+      { key: 'pathId',        label: '표시경로', style: 'width:170px;max-width:170px;',
         pathLabelOpen: { label: pathLabel, open: (row) => handleSelectAction('pathModal-open', row), placeholder: '경로 선택...' } },
       { key: 'alarmTypeCd',   label: '유형', badge: (row) => fnTypeBadge(row.alarmTypeCd) },
       { key: 'alarmTitle',    label: '제목', sortKey: 'nm', link: true,
@@ -374,7 +380,7 @@ window.SyAlarmMng = {
       { key: 'alarmSendDate', label: '발송일', fmt: (v) => v || '-' },
       { key: 'alarmStatusCd', label: '상태', badge: (row) => fnStatusBadge(row.alarmStatusCd) },
       { key: 'siteNm',        label: '사이트명', cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
-      { key: 'regDate',       label: '등록일', sortKey: 'reg' },
+      { key: 'regDate',       label: '등록일', sortKey: 'reg',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
@@ -430,8 +436,8 @@ window.SyAlarmMng = {
           </th>
         </template>
         <template #row-actions="{ row }">
-          <td>
-            <div class="actions">
+          <td style="white-space:nowrap;">
+            <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
               <button class="btn btn-blue btn-xs" @click="handleSelectAction('alarms-rowEdit', row.alarmId)">
                 수정
               </button>

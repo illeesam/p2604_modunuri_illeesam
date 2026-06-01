@@ -180,7 +180,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     // 기본 그리드
     const baseGridColumns = [
       { key: 'payId',      label: '지급ID' },
-      { key: 'payDate',    label: '지급일' },
+      { key: 'payDate',    label: '지급일',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
       { key: 'vendorNm',   label: '업체명', cellStyle: 'font-weight:700' },
       { key: 'closeMon',   label: '정산월' },
       { key: 'settleAmt',  label: '정산액', fmt: fmtW, cellStyle: 'font-weight:700' },

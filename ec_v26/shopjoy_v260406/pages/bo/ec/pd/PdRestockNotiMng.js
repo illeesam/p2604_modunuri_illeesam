@@ -165,7 +165,7 @@ window.PdRestockNotiMng = {
       { key: 'notiYn',   label: '발송여부', style: 'width:80px;text-align:center', align: 'center',
         badge: (row) => fnYnBadge(row.notiYn), fmt: (v, row) => row.notiYn === 'Y' ? '발송완료' : '미발송' },
       { key: 'notiDate', label: '발송일시', style: 'width:140px', cellStyle: 'color:#888', fmt: (v) => v || '-' },
-      { key: 'regDate',  label: '신청일',  style: 'width:140px' },
+      { key: 'regDate',  label: '신청일',  style: 'width:140px',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */

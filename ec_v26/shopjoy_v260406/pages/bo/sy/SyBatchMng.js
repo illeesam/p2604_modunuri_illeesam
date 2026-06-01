@@ -378,7 +378,7 @@ window.SyBatchMng = {
 
     // 기본 그리드
     const baseGridColumns = [
-      { key: 'pathId',        label: '표시경로',     style: 'min-width:140px;',
+      { key: 'pathId',        label: '표시경로',     style: 'width:170px;max-width:170px;',
         pathLabelOpen: { label: pathLabel, open: (row) => handleSelectAction('pathModal-open', row), placeholder: '경로 선택...' } },
       { key: 'batchNm',       label: '배치명',       style: 'min-width:120px;', edit: 'text', placeholder: '배치명' },
       { key: 'batchCode',     label: '배치코드',     style: 'min-width:160px;', edit: 'text', mono: true, placeholder: 'BATCH_CODE' },
@@ -440,10 +440,12 @@ window.SyBatchMng = {
           </td>
         </template>
         <template #row-actions="{ row, idx }">
-          <button v-if="cfShowRunNow(row)" class="btn btn-secondary btn-xs" title="즉시실행" @click.stop="handleSelectAction('batches-rowRunNow', row)">
-            ▶
-          </button>
-          <bo-row-cancel-delete :row="row" @cancel="handleSelectAction('batches-rowCancel', idx)" @delete="handleSelectAction('batches-rowDelete', idx)" />
+          <span style="display:inline-flex;flex-wrap:nowrap;align-items:center;gap:3px;white-space:nowrap;">
+            <button v-if="cfShowRunNow(row)" class="btn btn-secondary btn-xs" title="즉시실행" @click.stop="handleSelectAction('batches-rowRunNow', row)">
+              ▶
+            </button>
+            <bo-row-cancel-delete :row="row" @cancel="handleSelectAction('batches-rowCancel', idx)" @delete="handleSelectAction('batches-rowDelete', idx)" />
+          </span>
         </template>
       </bo-grid-crud>
       <!-- ===== ■.■.■. Cron 편집 모달 (BoCronModal 컴포넌트) ======================= -->

@@ -214,7 +214,7 @@ window.StSettleCloseMng = {
       { key: 'comm',      label: '수수료', fmt: fmtW, cellStyle: 'color:#e67e22' },
       { key: 'promo',     label: '프로모션비', fmt: fmtW, cellStyle: 'color:#9b59b6' },
       { key: 'settle',    label: '정산액', fmt: fmtW, cellStyle: 'color:#27ae60;font-weight:700' },
-      { key: 'closeDate', label: '마감일' },
+      { key: 'closeDate', label: '마감일',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
       { key: 'status',    label: '상태', badge: (row) => fnStatusBadge(row.status) },
       { key: 'regUserNm', label: '담당자' },
     ];

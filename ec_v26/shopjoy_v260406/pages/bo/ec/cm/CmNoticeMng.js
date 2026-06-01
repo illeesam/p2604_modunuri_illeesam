@@ -20,7 +20,7 @@ window.CmNoticeMng = {
     const { reactive, onMounted } = Vue;
     const { showToast, showConfirm, setApiRes } = window.boApp;
     const notices = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, autoOpenedOnce: false }); // 진입 시 첫 행 자동 오픈 1회만
     const codes = reactive({ noticeTypes: [], noticeStatuses: [], date_range_opts: [] });
 
     const _initSearchParam = () => {
@@ -102,6 +102,11 @@ window.CmNoticeMng = {
         const list = baseGrid.applyPage(d);
         notices.splice(0, notices.length, ...list);
         uiState.error = null;
+        /* 진입 시 첫 행 상세 자동 오픈 — 1회만(이후 사용자가 닫으면 재오픈 안 함) */
+        if (!uiState.autoOpenedOnce && !baseDetail.selectedId && notices.length) {
+          uiState.autoOpenedOnce = true;
+          baseDetail.openEdit(notices[0].noticeId);
+        }
       } catch (err) {
         uiState.error = err.message;
       } finally {
@@ -160,7 +165,8 @@ window.CmNoticeMng = {
       { key: 'noticeStatusCd', label: '상태',     style: 'width:80px;',
         badge: (row) => coUtil.cofCodeBadge('NOTICE_STATUS', row.noticeStatusCd, _STATUS_FB[row.noticeStatusCd] || 'badge-gray') },
       { key: 'siteNm',         label: '사이트명', style: 'width:110px;', cellStyle: 'color:#2563eb;', fmt: () => boUtil.bofGetSiteNm() },
-      { key: 'regDate',        label: '등록일',   style: 'width:140px;', sortKey: 'reg' },
+      { key: 'regDate',        label: '등록일',   style: 'width:110px;', sortKey: 'reg',
+        fmt: (v) => v ? String(v).slice(0, 10) : '-' },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
@@ -197,9 +203,9 @@ window.CmNoticeMng = {
       <button class="btn btn-primary btn-sm" @click="handleBtnAction('notices-add')">+ 신규</button>
     </template>
     <template #row-actions="{ row }">
-      <div class="actions">
-        <button class="btn btn-blue btn-xs" @click="handleSelectAction('notices-rowEdit', row.noticeId)">수정</button>
-        <button class="btn btn-danger btn-xs" @click="handleSelectAction('notices-rowDelete', row)">삭제</button>
+      <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
+        <button class="btn btn-blue btn-xs" style="white-space:nowrap;" @click="handleSelectAction('notices-rowEdit', row.noticeId)">수정</button>
+        <button class="btn btn-danger btn-xs" style="white-space:nowrap;" @click="handleSelectAction('notices-rowDelete', row)">삭제</button>
       </div>
     </template>
   </bo-grid>

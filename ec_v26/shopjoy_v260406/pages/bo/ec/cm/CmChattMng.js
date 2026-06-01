@@ -15,6 +15,7 @@ window.CmChattMng = {
     const uiState = reactive({                     // UI 상태
       loading: false, error: null, isPageCodeLoad: false,
       sortKey: '', sortDir: 'asc',
+      autoOpenedOnce: false,                        // 진입 시 첫 행 자동 오픈 1회만
     });
     const codes = reactive({ chatt_message_types: [], chatt_statuses: [], date_range_opts: [] });
     const SORT_MAP = { reg: { asc: 'regDate asc', desc: 'regDate desc' } };
@@ -139,6 +140,11 @@ window.CmChattMng = {
         fnBuildPagerNums();
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
+        /* 진입 시 첫 행 상세 자동 오픈 — 1회만(이후 사용자가 닫으면 재오픈 안 함) */
+        if (!uiState.autoOpenedOnce && !detailPanel.selectedId && chatts.length) {
+          uiState.autoOpenedOnce = true;
+          handleLoadDetail(chatts[0].chattRoomId);
+        }
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;
@@ -257,7 +263,7 @@ window.CmChattMng = {
         fmt: (v, row) => row.memberUnreadCnt > 0 ? row.memberUnreadCnt : 0 },
       { key: 'chattStatusCd', label: '상태',    style: 'width:90px;',
         badge: (row) => fnStatusBadge(row.chattStatusCd) },
-      { key: 'regDate',     label: '일시',      style: 'width:140px;', sortKey: 'reg' },
+      { key: 'regDate',     label: '일시',      style: 'width:140px;', sortKey: 'reg',  fmt: (v) => v ? String(v).slice(0, 16) : '-' },
       { key: 'siteNm',      label: '사이트명',  style: 'width:110px;', cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
     ];
 

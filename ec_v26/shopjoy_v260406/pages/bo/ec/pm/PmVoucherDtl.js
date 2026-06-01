@@ -6,6 +6,7 @@ window.PmVoucherDtl = {
     navigate:     { type: Function, required: true }, // 페이지 이동
     dtlId:        { type: String, default: null }, // 수정 대상 ID
     dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit),
+    active:       { type: Boolean, default: true }, // false=행 미선택 빈 폼(저장/취소 등 버튼 숨김)
     reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
@@ -30,9 +31,9 @@ window.PmVoucherDtl = {
       // 폼 저장
       if (cmd === 'form-save') {
         return handleSave();
-      // 폼 취소 (목록으로)
+      // 폼 취소 → 상세영역 유지 + 빈 신규 폼으로 초기화 (영역 사라지지 않음)
       } else if (cmd === 'form-cancel') {
-        return props.navigate('pmVoucherMng');
+        return props.navigate('__cancelEdit__');
       // 탭 전환
       } else if (cmd === 'tab-select') {
         return onTabChange(param);
@@ -353,9 +354,9 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
     const issueGridColumns = [
       { key: 'issueNo',     label: '발급번호' },
       { key: 'memberNm',    label: '회원명' },
-      { key: 'issueDate',   label: '발급일' },
+      { key: 'issueDate',   label: '발급일', fmt: (v) => v ? String(v).slice(0, 10) : '-' },
       { key: 'issuePrice',  label: '발급가격', style: 'text-align:right;', fmt: v => (v||0).toLocaleString() + '원' },
-      { key: 'expiryDate',  label: '만료일' },
+      { key: 'expiryDate',  label: '만료일', fmt: (v) => v ? String(v).slice(0, 10) : '-' },
       { key: 'status',      label: '상태',
         badge: row => row.status === '정상' ? 'badge-green' : row.status === '사용완료' ? 'badge-blue' : row.status === '만료됨' ? 'badge-gray' : 'badge-gray' },
     ];
@@ -366,7 +367,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       { key: 'memberNm',   label: '회원명' },
       { key: 'orderId',    label: '주문ID' },
       { key: 'useAmount',  label: '사용금액', style: 'text-align:right;', fmt: v => (v||0).toLocaleString() + '원' },
-      { key: 'useDate',    label: '사용일시' },
+      { key: 'useDate',    label: '사용일시', fmt: (v) => v ? String(v).slice(0, 16) : '-' },
     ];
 
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - info 탭 ======================
@@ -402,9 +403,12 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">
-    {{ cfIsNew ? '상품권 등록' : '상품권 수정' }}
-    <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
+    {{ !active ? '상품권 상세' : (cfIsNew ? '상품권 등록' : '상품권 수정') }}
+    <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
       #{{ form.voucherId }}
+    </span>
+    <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+      목록에서 행을 선택하거나 [+신규]를 누르세요
     </span>
   </div>
   <!-- ===== □. 페이지 타이틀 ================================================= -->
@@ -442,7 +446,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
     <!-- ===== □.□. 폼 영역 ================================================== -->
     <!-- ===== ■.■. 판매업체 선택 모달 ============================================ -->
     <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId" modal-name="vendor-pick" :on-callback="fnCallbackModal" />
-    <div class="form-actions" v-if="!cfDtlMode">
+    <div class="form-actions" v-if="active && !cfDtlMode">
       <button @click="handleBtnAction('form-save')" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요. (발급/사용/미리보기 탭은 조회 전용)' : ''" class="btn btn-primary">
         {{ cfIsNew ? '등록' : '저장' }}
       </button>

@@ -15,7 +15,7 @@ window.DpDispAreaMng = {
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* ===== 상세 인라인 패널 ===== */
-    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+    const detailPanel = reactive({ selectedId: '__new__', openMode: 'edit', reloadTrigger: 0, resetSeq: 0, active: false }); // 진입 시 빈 신규 폼(비활성). active=true 시 저장/취소 노출
 
     /* ===== 검색조건 ===== */
     /* _initSearchParam — 초기화 */
@@ -32,6 +32,7 @@ window.DpDispAreaMng = {
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
         uiState.sortKey = ''; uiState.sortDir = 'asc';
+        uiState.selectedPath = null;          // 표시경로 트리 전체로 복귀
         pager.pageNo = 1;
         return handleSearchData('SEARCH');
       // 기간 옵션 변경
@@ -166,8 +167,8 @@ window.DpDispAreaMng = {
     /* fnPathLabel — 경로 라벨 */
     const fnPathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
 
-    /* selectNode — 노드 선택 (상세 패널 닫기) */
-    const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; detailPanel.selectedId = null; handleSearchData('DEFAULT'); };
+    /* selectNode — 노드 선택 (상세영역 빈 신규 폼으로 초기화) */
+    const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; resetDetailToNew(); handleSearchData('DEFAULT'); };
 
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
@@ -178,21 +179,37 @@ window.DpDispAreaMng = {
       }
     };
 
-    /* loadView — 뷰 로드 */
-    const loadView         = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'view'; detailPanel.reloadTrigger++; };
+    /* resetDetailToNew — 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역은 항상 표시 유지)
+     *   active=false → 저장/취소 등 버튼 숨김 (행 미선택 안내 상태) */
+    const resetDetailToNew = () => {
+      detailPanel.selectedId = '__new__';
+      detailPanel.openMode = 'edit';
+      detailPanel.active = false;    // 버튼 숨김
+      detailPanel.resetSeq++;        // :key 재마운트 → 폼 초기화
+    };
 
-    /* handleLoadDetail — 상세 조회 */
-    const handleLoadDetail = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    /* loadView — 뷰 로드 (행 선택 → 활성) */
+    const loadView         = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'view'; detailPanel.active = true; detailPanel.reloadTrigger++; };
 
-    /* openNew — 신규 열기 */
-    const openNew     = () => { detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    /* handleLoadDetail — 상세 조회 (행 선택 → 활성) */
+    const handleLoadDetail = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'edit'; detailPanel.active = true; detailPanel.reloadTrigger++; };
 
-    /* closeDetail — 상세 닫기 */
-    const closeDetail = () => { detailPanel.selectedId = null; };
+    /* openNew — 신규 열기 (빈 폼 + 활성 → 저장/취소 노출) */
+    const openNew     = () => { detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.active = true; detailPanel.resetSeq++; };
+
+    /* closeDetail — 상세 닫기 = 빈 신규 폼(비활성)으로 초기화 (영역 유지) */
+    const closeDetail = () => { resetDetailToNew(); };
 
     /* inlineNavigate — 인라인 이동 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'dpDispAreaMng') { detailPanel.selectedId = null; if (opts.reload) handleSearchData('RELOAD'); return; }
+      if (pg === 'dpDispAreaMng') {
+        /* 저장 완료 등: 영역은 유지하고 빈 신규 폼으로 초기화 */
+        if (opts.reload) handleSearchData('RELOAD');
+        resetDetailToNew();
+        return;
+      }
+      /* 취소: 패널은 그대로 두고 상세영역만 빈 신규 폼으로 초기화 */
+      if (pg === '__cancelEdit__') { resetDetailToNew(); return; }
       props.navigate(pg, opts);
     };
 
@@ -207,6 +224,7 @@ window.DpDispAreaMng = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
+    const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}_${detailPanel.resetSeq}`);
 
     // 기본 검색
     const baseSearchColumns = [
@@ -237,7 +255,7 @@ window.DpDispAreaMng = {
       areas, uiState, areaCounts, codes, searchParam, pager, detailPanel,                       // 상태 / 데이터
       baseSearchColumns, listGridColumns,                                           // 컬럼 정의
       handleBtnAction, handleSelectAction,                                          // dispatch (모든 이벤트 / 액션 라우팅)
-      cfDetailEditId,                                                               // computed
+      cfDetailEditId, cfDetailKey,                                                  // computed
       fnPathLabel, sortIcon,                                                        // 헬퍼
       inlineNavigate, handleSearchData,                                             // Dtl 콜백 (closure 필요)
     };
@@ -301,13 +319,14 @@ window.DpDispAreaMng = {
         <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('areas-pager-setPage', n)" :on-size-change="() => handleSelectAction('areas-pager-sizeChange')" />
   </div>
   <!-- ===== □. 본문 영역 =================================================== -->
-  <!-- ===== ■. 상세 패널 =================================================== -->
-  <div v-if="detailPanel.selectedId" class="card" style="margin-top:10px;">
-    <dp-disp-area-dtl
+  <!-- ===== ■. 상세 패널 (항상 표시, 진입 시 빈 신규 폼) ============================== -->
+  <div class="card" style="margin-top:10px;">
+    <dp-disp-area-dtl :key="cfDetailKey"
       :navigate="inlineNavigate"
       :dtl-id="cfDetailEditId"
       :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
       :tab-mode="detailPanel.openMode"
+      :active="detailPanel.active"
       :reload-trigger="detailPanel.reloadTrigger"
       :on-list-reload="handleSearchData"
       @close="handleBtnAction('detailPanel-close')"

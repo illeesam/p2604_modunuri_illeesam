@@ -17,7 +17,13 @@ window.DpDispUiMng = {
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* ===== 상세 인라인 패널 ===== */
-    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+    const detailPanel = reactive({   // 인라인 Dtl 패널 상태 (항상 표시, 진입 시 빈 신규 폼)
+      selectedId: '__new__',         // 초기: 신규(빈) 폼. 행 클릭 시 해당 ID 로 전환
+      openMode: 'edit',              // 'view' | 'edit'
+      reloadTrigger: 0,
+      resetSeq: 0,                   // 취소 시 ++ → :key 재마운트로 상세 폼 초기화
+      active: false,                 // 행 선택/신규 시 true → 저장/취소 노출. 초기/취소 시 false → 버튼 숨김
+    });
 
     /* ===== 검색조건 ===== */
     /* _initSearchParam — 초기화 */
@@ -30,10 +36,11 @@ window.DpDispUiMng = {
       if (cmd === 'searchParam-list') {
         pager.pageNo = 1;
         return handleSearchList('SEARCH');
-      // 검색조건 초기화 + 재조회
+      // 검색조건 초기화 + 재조회 (표시경로 트리도 전체로)
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
         uiState.sortKey = ''; uiState.sortDir = 'asc';
+        uiState.selectedPath = null;          // 표시경로 트리 전체로 복귀
         pager.pageNo = 1;
         return handleSearchList('SEARCH');
       // 기간 옵션 변경
@@ -171,7 +178,7 @@ window.DpDispUiMng = {
     const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
 
     /* selectNode — 노드 선택 */
-    const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; detailPanel.selectedId = null; handleSearchList('DEFAULT'); };
+    const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; resetDetailToNew(); handleSearchList('DEFAULT'); };
 
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
@@ -183,20 +190,29 @@ window.DpDispUiMng = {
     };
 
     /* loadView — 뷰 로드 */
-    const loadView         = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'view'; detailPanel.reloadTrigger++; };
+    const loadView         = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'view'; detailPanel.active = true; detailPanel.reloadTrigger++; };
+
+    /* resetDetailToNew — 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역은 항상 표시 유지) */
+    const resetDetailToNew = () => {
+      detailPanel.selectedId = '__new__';
+      detailPanel.openMode = 'edit';
+      detailPanel.active = false;    // 버튼 숨김
+      detailPanel.resetSeq++;        // :key 재마운트 → 폼 초기화
+    };
 
     /* handleLoadDetail — 상세 조회 */
-    const handleLoadDetail = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    const handleLoadDetail = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'edit'; detailPanel.active = true; detailPanel.reloadTrigger++; };
 
     /* openNew — 신규 열기 */
-    const openNew     = () => { detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    const openNew     = () => { detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.active = true; detailPanel.resetSeq++; };
 
-    /* closeDetail — 상세 닫기 */
-    const closeDetail = () => { detailPanel.selectedId = null; };
+    /* closeDetail — 상세 닫기 = 빈 신규 폼(비활성)으로 초기화 (영역 유지) */
+    const closeDetail = () => { resetDetailToNew(); };
 
     /* inlineNavigate — 인라인 이동 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'dpDispUiMng') { detailPanel.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
+      if (pg === 'dpDispUiMng') { if (opts.reload) handleSearchList('RELOAD'); resetDetailToNew(); return; }
+      if (pg === '__cancelEdit__') { resetDetailToNew(); return; }
       if (pg === '__switchToEdit__') { detailPanel.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
@@ -212,6 +228,7 @@ window.DpDispUiMng = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
+    const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}_${detailPanel.resetSeq}`);
 
     // 기본 검색
     const baseSearchColumns = [
@@ -235,7 +252,7 @@ window.DpDispUiMng = {
       uis, uiState, uiCounts, codes, searchParam, pager, detailPanel,                           // 상태 / 데이터
       baseSearchColumns, baseGridColumns,                                             // 컬럼 정의
       handleBtnAction, handleSelectAction,                                            // dispatch (모든 이벤트 / 액션 라우팅)
-      cfDetailEditId,                                                                 // computed
+      cfDetailEditId, cfDetailKey,                                                    // computed
       pathLabel, sortIcon,                                                            // 헬퍼
       inlineNavigate,                                                                 // Dtl 콜백 (closure 필요)
     };
@@ -300,13 +317,15 @@ window.DpDispUiMng = {
   </div>
   <!-- ===== □.□. 목록 영역 ================================================= -->
   <!-- ===== □. 본문 영역 =================================================== -->
-  <!-- ===== ■. 상세 패널 =================================================== -->
-  <div v-if="detailPanel.selectedId" class="card" style="margin-top:10px;">
+  <!-- ===== ■. 상세 패널 (항상 표시, 진입 시 빈 신규 폼) =========================== -->
+  <div class="card" style="margin-top:10px;">
     <dp-disp-ui-dtl
+      :key="cfDetailKey"
       :navigate="inlineNavigate"
       :dtl-id="cfDetailEditId"
       :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
       :tab-mode="detailPanel.openMode"
+      :active="detailPanel.active"
       :reload-trigger="detailPanel.reloadTrigger"
       />
   </div>

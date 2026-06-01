@@ -30,6 +30,7 @@ window.DpDispWidgetLibMng = {
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
         uiState.sortKey = ''; uiState.sortDir = 'asc';
+        uiState.selectedPath = null;          // 표시경로 트리 전체로 복귀
         pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 위젯Lib 신규 등록 (인라인 패널)
@@ -88,8 +89,14 @@ window.DpDispWidgetLibMng = {
 
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
-    /* ===== 상세 인라인 패널 ===== */
-    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+    /* ===== 상세 인라인 패널 (항상 표시, 진입 시 빈 신규 폼) ===== */
+    const detailPanel = reactive({
+      selectedId: '__new__',   // 초기: 신규(빈) 폼. 행 클릭 시 해당 ID 로 전환
+      openMode: 'edit',
+      reloadTrigger: 0,
+      resetSeq: 0,             // 취소 시 ++ → :key 재마운트로 상세 폼 초기화
+      active: false,           // 행 선택/신규 시 true → 저장/취소 노출. 초기/취소 시 false → 버튼 숨김
+    });
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -201,29 +208,40 @@ window.DpDispWidgetLibMng = {
     /* wIcon — w 아이콘 */
     const wIcon      = (v) => WIDGET_ICONS[v] || '▪';
 
-    /* selectNode — 노드 선택 */
-    const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; detailPanel.selectedId = null; handleSearchList('DEFAULT'); };
+    /* selectNode — 노드 선택 (트리 필터 변경 → 상세영역은 빈 신규 폼으로 초기화) */
+    const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; resetDetailToNew(); handleSearchList('DEFAULT'); };
 
     /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
-    /* handleLoadDetail — 상세 조회 */
-    const handleLoadDetail = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    /* resetDetailToNew — 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역은 항상 표시 유지)
+     *   active=false → 저장/취소 등 버튼 숨김 (행 미선택 안내 상태) */
+    const resetDetailToNew = () => {
+      detailPanel.selectedId = '__new__';
+      detailPanel.openMode = 'edit';
+      detailPanel.active = false;    // 버튼 숨김
+      detailPanel.resetSeq++;        // :key 재마운트 → 폼 초기화
+    };
 
-    /* openNew — 신규 열기 */
-    const openNew     = () => { detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    /* handleLoadDetail — 상세 조회 (행 선택 → 활성화 + 저장/취소 노출) */
+    const handleLoadDetail = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'edit'; detailPanel.active = true; detailPanel.reloadTrigger++; };
 
-    /* closeDetail — 상세 닫기 */
-    const closeDetail = () => { detailPanel.selectedId = null; };
+    /* openNew — 신규 열기 (빈 폼 + 활성 → 저장/취소 노출) */
+    const openNew     = () => { detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.active = true; detailPanel.resetSeq++; detailPanel.reloadTrigger++; };
+
+    /* closeDetail — 상세 닫기 = 빈 신규 폼(비활성)으로 초기화 (영역 유지) */
+    const closeDetail = () => { resetDetailToNew(); };
 
     /* inlineNavigate — 인라인 이동 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'dpDispWidgetLibMng') { detailPanel.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
+      if (pg === 'dpDispWidgetLibMng') { if (opts.reload) handleSearchList('RELOAD'); resetDetailToNew(); return; }
+      /* 취소/닫기: 패널은 그대로 두고 상세영역만 빈 신규 폼으로 초기화 */
+      if (pg === '__cancelEdit__') { resetDetailToNew(); return; }
       props.navigate(pg, opts);
     };
     const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
-    /* key 는 'open' / 'closed' 두 값만 — id 가 바뀌어도 컴포넌트 remount 안 함 */
-    const cfDetailKey = computed(() => detailPanel.selectedId === null ? 'closed' : 'open');
+    /* key 에 resetSeq 포함 → 취소 시 remount 로 폼 초기화 */
+    const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}_${detailPanel.resetSeq}`);
 
     /* setPage — 설정 */
     const setPage = (n) => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList(); } };
@@ -246,7 +264,7 @@ window.DpDispWidgetLibMng = {
       if (!ok) { return; }
       const idx = widgetLibs.findIndex(x => x.widgetLibId === lib.widgetLibId);
       if (idx !== -1) { widgetLibs.splice(idx, 1); }
-      if (detailPanel.selectedId === lib.widgetLibId) { detailPanel.selectedId = null; }
+      if (detailPanel.selectedId === lib.widgetLibId) { resetDetailToNew(); }
       try {
         const res = await boApiSvc.dpWidgetLib.remove(lib.widgetLibId, '전시위젯라이브러리', '삭제');
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
@@ -312,7 +330,7 @@ window.DpDispWidgetLibMng = {
           <span v-if="cfFilterDirty" style="font-size:11px;color:#e8587a;font-weight:600;animation:pulse 1.2s ease-in-out infinite;">
             변경됨 →
           </span>
-          <button class="btn btn-primary" @click="handleBtnAction('searchParam-list')"
+          <button class="btn btn-primary btn-sm" @click="handleBtnAction('searchParam-list')"
           :style="cfFilterDirty ? 'box-shadow:0 0 0 3px rgba(232,88,122,0.35);animation:pulse 1.2s ease-in-out infinite;' : ''">
             조회
           </button>
@@ -389,9 +407,9 @@ window.DpDispWidgetLibMng = {
       </div>
     </div>
     <!-- ===== □. 본문 영역 =================================================== -->
-    <!-- ===== ■. 상세 패널 (인라인 임베드) ========================================= -->
-    <div v-if="detailPanel.selectedId" style="margin-top:4px;">
-      <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
+    <!-- ===== ■. 상세 패널 (인라인 임베드 — 항상 표시) ========================================= -->
+    <div style="margin-top:4px;">
+      <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
         <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
           ✕ 닫기
         </button>
@@ -402,6 +420,7 @@ window.DpDispWidgetLibMng = {
       :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes"
       :dtl-id="cfDetailEditId"
       :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+      :active="detailPanel.active"
       :reload-trigger="detailPanel.reloadTrigger"
       :on-list-reload="handleSearchList"
       />

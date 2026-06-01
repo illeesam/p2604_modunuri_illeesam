@@ -16,6 +16,7 @@ window.SyBbsMng = {
     const uiState = reactive({                     // UI 상태
       loading: false, error: null, isPageCodeLoad: false,
       sortKey: '', sortDir: 'asc',
+      autoOpenedOnce: false,                        // 진입 시 첫 행 자동 오픈 1회만
     });
     const codes = reactive({ bbs_status: [], bbs_post_statuses: [], date_range_opts: [] });
     const SORT_MAP = { nm: { asc: 'authorNm asc', desc: 'authorNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
@@ -130,6 +131,11 @@ window.SyBbsMng = {
         fnBuildPagerNums();
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
+        /* 진입 시 첫 행 상세 자동 오픈 — 1회만(이후 사용자가 닫으면 재오픈 안 함) */
+        if (!uiState.autoOpenedOnce && !detailModal.dtlId && bbsList.length) {
+          uiState.autoOpenedOnce = true;
+          handleLoadDetail(bbsList[0].bbsId);
+        }
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;
@@ -347,8 +353,8 @@ window.SyBbsMng = {
       </th>
     </template>
     <template #row-actions="{ row }">
-      <td>
-        <div class="actions">
+      <td style="white-space:nowrap;">
+        <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
           <button class="btn btn-blue btn-xs" @click="handleSelectAction('bbsList-rowEdit', row.bbsId)">
             수정
           </button>

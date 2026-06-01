@@ -6,7 +6,7 @@ window.SyCodeMng = {
   },
   setup(props) {
     /* ##### [01] 초기 변수 정의 #################################################### */
-    const { reactive, watch, onMounted, nextTick } = Vue;
+    const { reactive, computed, watch, onMounted, nextTick } = Vue;
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
 
@@ -16,7 +16,9 @@ window.SyCodeMng = {
     const uiState   = reactive({
       checkAll: false, dragMoved: false, loading: false,
       isPageCodeLoad: false, selectedGrp: '', grpSelectedPath: '',
-      focusedIdx: null, selectedCodeId: null, codeReloadTrigger: 0, dragSrc: null, activeCodeTab: '일반',
+      focusedIdx: null, selectedCodeId: '__new__', codeReloadTrigger: 0, dragSrc: null, activeCodeTab: '일반',
+      detailActive: false,   // 행 선택/신규 시 true → 저장/취소 노출. 초기/취소 시 false → 버튼 숨김
+      detailResetSeq: 0,     // 취소 시 ++ → :key 재마운트로 상세 폼 초기화
       isTreeType: false,
       grpDirtyCount: 0,
       grpSortKey: '', grpSortDir: 'asc',
@@ -509,13 +511,48 @@ window.SyCodeMng = {
       rebuildTree();
     };
 
-    /* handleLoadDetail — 상세 패널 열기 */
-    const handleLoadDetail = (codeId) => { uiState.selectedCodeId = codeId; uiState.codeReloadTrigger++; };
+    /* handleLoadDetail — 상세 패널 열기 (행 선택 → 저장/취소 노출) */
+    const handleLoadDetail = (codeId) => {
+      uiState.selectedCodeId = codeId;
+      uiState.detailActive = true;     // 행 선택 → 저장/취소 노출
+      uiState.codeReloadTrigger++;
+    };
 
-    /* closeDetail — 상세 패널 닫기 */
-    const closeDetail = () => { uiState.selectedCodeId = null; };
+    /* resetDetailToNew — 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역은 항상 표시 유지)
+     *   detailActive=false → 저장/취소 등 버튼 숨김 (행 미선택 안내 상태) */
+    const resetDetailToNew = () => {
+      uiState.selectedCodeId = '__new__';
+      uiState.detailActive = false;    // 버튼 숨김
+      uiState.detailResetSeq++;        // :key 재마운트 → 폼 초기화
+    };
+
+    /* openNew — 신규 등록 (빈 폼 + 활성 → 저장/취소 노출) */
+    const openNew = () => {
+      uiState.selectedCodeId = '__new__';
+      uiState.detailActive = true;     // 신규 입력 가능 → 저장/취소 노출
+      uiState.detailResetSeq++;
+    };
+
+    /* closeDetail — 상세 닫기 = 빈 신규 폼(비활성)으로 초기화 (영역 유지) */
+    const closeDetail = () => { resetDetailToNew(); };
+
+    /* inlineNavigate — 인라인 Dtl 의 navigate 콜백 */
+    const inlineNavigate = (pg, opts = {}) => {
+      if (pg === 'syCodeMng') {
+        /* 저장 완료 등: 영역은 유지하고 빈 신규 폼으로 초기화 */
+        if (opts.reload) { handleSearchList(); }
+        resetDetailToNew();
+        return;
+      }
+      /* 취소: 패널은 그대로 두고 상세영역만 빈 신규 폼으로 초기화 */
+      if (pg === '__cancelEdit__') { resetDetailToNew(); return; }
+      props.navigate(pg, opts);
+    };
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+    const cfDetailEditId = computed(() => uiState.selectedCodeId === '__new__' ? null : uiState.selectedCodeId);
+    const cfDetailKey = computed(() => `${uiState.selectedCodeId}_${uiState.detailResetSeq}`);
+
     /* fnCodeListTitle — 코드목록 타이틀 */
     const fnCodeListTitle = () => {
       const tag = uiState.selectedGrp || '';
@@ -652,7 +689,7 @@ window.SyCodeMng = {
 
     // 그룹 그리드
     const grpGridColumns = [
-      { key: 'pathId',      label: '표시경로 (예: aa.bb.cc)', pathPick: 'sy_code_grp' },
+      { key: 'pathId',      label: '표시경로 (예: aa.bb.cc)', style: 'width:170px;max-width:170px;', pathPick: 'sy_code_grp' },
       { key: 'codeGrp',     label: '코드그룹', sortKey: 'codeGrp', edit: 'text', mono: true },
       { key: 'grpNm',       label: '그룹명',   sortKey: 'grpNm' },
       { key: 'type',        label: '유형',     style: 'width:70px;', align: 'center',

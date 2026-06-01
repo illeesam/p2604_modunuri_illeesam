@@ -30,10 +30,11 @@ window.SySiteMng = {
       if (cmd === 'searchParam-list') {
         pager.pageNo = 1;
         return handleSearchList('SEARCH');
-      // 검색조건 초기화 + 재조회
+      // 검색조건 초기화 + 재조회 (표시경로 트리도 전체로)
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
         uiState.sortKey = ''; uiState.sortDir = 'asc';
+        uiState.selectedPath = null;          // 표시경로 트리 전체로 복귀
         pager.pageNo = 1;
         return handleSearchList('SEARCH');
       // 기간 옵션 변경
@@ -122,10 +123,12 @@ window.SySiteMng = {
 
     /* ===== 상세 인라인 패널 ===== */
     const detailModal = reactive({   // 인라인 Dtl 패널 상태 (modal_reload_trigger 표준)
-      show: false,
-      dtlId: null,
-      dtlMode: 'view',               // 'view' | 'edit'
+      show: true,                    // 상세영역 항상 표시 (진입 시 빈 신규 폼)
+      dtlId: '__new__',              // 초기: 신규(빈) 폼. 행 클릭 시 해당 ID 로 전환
+      dtlMode: 'edit',               // 'view' | 'edit'
       reloadTrigger: 0,
+      resetSeq: 0,                   // 취소 시 ++ → :key 재마운트로 상세 폼 초기화
+      active: false,                 // 행 선택/신규 시 true → 저장/취소 노출. 초기/취소 시 false → 버튼 숨김
     });
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* getSortParam — 정렬 파라미터 */
@@ -249,31 +252,50 @@ window.SySiteMng = {
       detailModal.reloadTrigger++;
     };
 
-    /* handleLoadDetail — 인라인 패널 편집 모드로 열기 (토글) */
+    /* resetDetailToNew — 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역은 항상 표시 유지)
+     *   active=false → 저장/취소 등 버튼 숨김 (행 미선택 안내 상태) */
+    const resetDetailToNew = () => {
+      detailModal.show = true;
+      detailModal.dtlId = '__new__';
+      detailModal.dtlMode = 'edit';
+      detailModal.active = false;    // 버튼 숨김
+      detailModal.resetSeq++;        // :key 재마운트 → 폼 초기화
+    };
+
+    /* handleLoadDetail — 그리드 행 클릭 시 해당 ID 상세 로드 (재클릭 시 신규 폼으로 초기화) */
     const handleLoadDetail = (id) => {
-      if (detailModal.dtlId === id && detailModal.dtlMode === 'edit') {
-        detailModal.show = false; detailModal.dtlId = null; return;
+      if (detailModal.dtlId === id && detailModal.dtlMode === 'edit' && detailModal.active) {
+        resetDetailToNew(); return;  // 같은 행 재클릭 → 신규 폼(비활성)으로 초기화
       }
       detailModal.dtlId = id;
       detailModal.dtlMode = 'edit';
       detailModal.show = true;
+      detailModal.active = true;     // 행 선택 → 저장/취소 노출
       detailModal.reloadTrigger++;
     };
 
-    /* openNew — 신규 등록 */
-    const openNew = () => { detailModal.dtlId = '__new__'; detailModal.dtlMode = 'edit'; detailModal.show = true; };
+    /* openNew — 신규 등록 (빈 폼 + 활성 → 저장/취소 노출) */
+    const openNew = () => {
+      detailModal.show = true;
+      detailModal.dtlId = '__new__';
+      detailModal.dtlMode = 'edit';
+      detailModal.active = true;     // 신규 입력 가능 → 저장/취소 노출
+      detailModal.resetSeq++;
+    };
 
-    /* closeDetail — 상세 닫기 */
-    const closeDetail = () => { detailModal.show = false; detailModal.dtlId = null; };
+    /* closeDetail — 상세 닫기 = 빈 신규 폼(비활성)으로 초기화 (영역 유지) */
+    const closeDetail = () => { resetDetailToNew(); };
 
     /* inlineNavigate — 인라인 Dtl 의 navigate 콜백 */
     const inlineNavigate = (pg, opts = {}) => {
       if (pg === 'sySiteMng') {
-        detailModal.show = false;
-        detailModal.dtlId = null;
+        /* 저장 완료 등: 영역은 유지하고 빈 신규 폼으로 초기화 */
         if (opts.reload) { handleSearchList('RELOAD'); }   // handleSearchList 내부에서 트리 카운트도 갱신
+        resetDetailToNew();
         return;
       }
+      /* 취소: 패널은 그대로 두고 상세영역만 빈 신규 폼으로 초기화 */
+      if (pg === '__cancelEdit__') { resetDetailToNew(); return; }
       if (pg === '__switchToEdit__') { detailModal.dtlMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
@@ -350,7 +372,7 @@ window.SySiteMng = {
     const cfTypeOptions = computed(() => [...new Set(sites.map(s => s.siteTypeCd).filter(v => v != null && v !== ''))].sort());
     const cfDetailEditId = computed(() => detailModal.dtlId === '__new__' ? null : detailModal.dtlId);
     const cfIsViewMode = computed(() => detailModal.dtlMode === 'view' && detailModal.dtlId !== '__new__');
-    const cfDetailKey = computed(() => `${detailModal.dtlId}_${detailModal.dtlMode}`);
+    const cfDetailKey = computed(() => `${detailModal.dtlId}_${detailModal.dtlMode}_${detailModal.resetSeq}`);
 
     // 기본 검색
     const baseSearchColumns = [
@@ -372,18 +394,19 @@ window.SySiteMng = {
 
     // 기본 그리드
     const baseGridColumns = [
-      { key: 'pathId',        label: '표시경로',
+      { key: 'pathId',        label: '표시경로', style: 'width:170px;max-width:170px;',
         pathLabelOpen: { label: pathLabel, open: (row) => handleSelectAction('pathModal-open', row), placeholder: '미설정' } },
       { key: 'siteCode',      label: '사이트코드',
         cellInnerStyle: 'background:#f0f4ff;padding:2px 6px;border-radius:3px;color:#2563eb;font-weight:600;font-size:11px;font-family:monospace;' },
       { key: 'siteTypeCd',    label: '유형', badge: (row) => fnTypeBadge(row.siteTypeCd) },
-      { key: 'siteNm',        label: '사이트명', sortKey: 'nm', link: true,
+      { key: 'siteNm',        label: '사이트명', sortKey: 'nm', link: true, style: 'width:140px;max-width:140px;',
         cellInnerStyle: (v) => detailModal.dtlId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'siteDomain',    label: '도메인', cellStyle: 'color:#2563eb' },
       { key: 'siteEmail',     label: '대표이메일' },
       { key: 'sitePhone',     label: '대표전화' },
       { key: 'siteCeo',       label: '대표자' },
-      { key: 'regDate',       label: '등록일', sortKey: 'reg' },
+      { key: 'regDate',       label: '등록일', sortKey: 'reg', style: 'width:110px;',
+        fmt: (v) => v ? String(v).slice(0, 10) : '-' },
       { key: 'siteStatusCd',  label: '상태', badge: (row) => fnStatusBadge(row.siteStatusCd) },
     ];
 
@@ -441,12 +464,12 @@ window.SySiteMng = {
           </th>
         </template>
         <template #row-actions="{ row }">
-          <td>
-            <div class="actions">
-              <button class="btn btn-blue btn-xs" @click="handleSelectAction('sites-rowEdit', row.siteId)">
+          <td style="white-space:nowrap;">
+            <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
+              <button class="btn btn-blue btn-xs" style="white-space:nowrap;" @click="handleSelectAction('sites-rowEdit', row.siteId)">
                 수정
               </button>
-              <button class="btn btn-danger btn-xs" @click="handleSelectAction('sites-rowDelete', row)">
+              <button class="btn btn-danger btn-xs" style="white-space:nowrap;" @click="handleSelectAction('sites-rowDelete', row)">
                 삭제
               </button>
             </div>
@@ -456,15 +479,11 @@ window.SySiteMng = {
         <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('sites-pager-setPage', n)" :on-size-change="() => handleSelectAction('sites-pager-sizeChange')" />
     </div>
     <!-- ===== □.□. 경로 트리 ================================================= -->
-    <!-- ===== ■.■. 상세 인라인 패널 (grid 직접 자식 → 전체 폭) ===================== -->
-    <div v-if="detailModal.show" style="grid-column:1/-1;margin-top:4px;">
-      <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
-          ✕ 닫기
-        </button>
-      </div>
+    <!-- ===== ■.■. 상세 인라인 패널 (grid 직접 자식 → 전체 폭, 항상 표시) ===================== -->
+    <div style="grid-column:1/-1;margin-top:4px;">
       <sy-site-dtl :key="cfDetailKey" :navigate="inlineNavigate" :dtl-id="cfDetailEditId"
         :dtl-mode="detailModal.dtlMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+        :active="detailModal.active"
         :reload-trigger="detailModal.reloadTrigger" />
     </div>
     <!-- ===== ■.■. 표시경로 선택 모달 ========================================== -->

@@ -615,7 +615,7 @@ window.PdCategoryProdMng = {
         </td>
       </template>
       <template #row-actions="{ row }">
-        <td style="text-align:center">
+        <td style="text-align:center;white-space:nowrap;">
           <button class="btn btn-danger btn-xs" @click="handleSelectAction('categoryProds-rowRemove', row)">
             ✕
           </button>

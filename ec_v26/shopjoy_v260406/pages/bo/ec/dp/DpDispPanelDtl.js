@@ -5,6 +5,7 @@ window.DpDispPanelDtl = {
     navigate:      { type: Function, required: true }, // 페이지 이동
     dtlId:         { type: String, default: null }, // 수정 대상 ID
     dtlMode:       { type: String, default: 'view' }, // 상세 모드 (new/view/edit),
+    active:        { type: Boolean, default: true }, // false=행 미선택 빈 폼(저장/취소 등 버튼 숨김)
     reloadTrigger: { type: Number, default: 0 }, // 부모 Mng 가 ++ 로 신호 보내면 상세 API 재조회 (정책: 행상세/행수정 클릭 시 항상 호출)
   },
   setup(props) {
@@ -31,9 +32,9 @@ window.DpDispPanelDtl = {
       // 폼 편집 모드 전환
       } else if (cmd === 'form-edit') {
         return props.navigate('__switchToEdit__');
-      // 폼 닫기 → 목록으로
+      // 폼 닫기/취소 → 상세영역 유지 + 빈 신규 폼으로 초기화 (영역 사라지지 않음)
       } else if (cmd === 'form-close') {
-        return props.navigate('dpDispPanelMng');
+        return props.navigate('__cancelEdit__');
       // 전체 펼치기/탭 보기 토글
       } else if (cmd === 'form-toggleViewAll') {
         viewAll.value = !viewAll.value;
@@ -947,9 +948,12 @@ window.DpDispPanelDtl = {
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title" style="display:flex;align-items:center;justify-content:space-between;">
     <span>
-      {{ cfIsNew ? '전시패널 등록' : (cfDtlMode ? '전시패널 상세' : '전시패널 수정') }}
-      <span v-if="!cfIsNew" style="font-size:13px;color:#888;font-weight:400;margin-left:6px;">
+      {{ !active ? '전시패널 상세' : (cfIsNew ? '전시패널 등록' : (cfDtlMode ? '전시패널 상세' : '전시패널 수정')) }}
+      <span v-if="active && !cfIsNew" style="font-size:13px;color:#888;font-weight:400;margin-left:6px;">
         #{{ form.dispId }}
+      </span>
+      <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+        목록에서 행을 선택하거나 [+신규]를 누르세요
       </span>
     </span>
     <div style="display:flex;align-items:center;gap:6px;">
@@ -968,7 +972,7 @@ window.DpDispPanelDtl = {
         @click="handleBtnAction('rowCopyModal-open')">
         📄 전시항목 복사
       </button>
-      <button v-if="!cfDtlMode" class="btn btn-primary btn-sm" @click="handleBtnAction('form-save')" style="font-weight:700;">
+      <button v-if="active && !cfDtlMode" class="btn btn-primary btn-sm" @click="handleBtnAction('form-save')" style="font-weight:700;">
         💾 저장
       </button>
     </div>
@@ -1211,7 +1215,7 @@ window.DpDispPanelDtl = {
               <base-html-editor v-else v-model="form.htmlDesc" height="280px" />
             </div>
             <!-- ===== /내용 ======================================================== -->
-            <div class="form-actions" v-if="!cfDtlMode">
+            <div class="form-actions" v-if="active && !cfDtlMode">
               <template v-if="cfDtlMode">
                 <button class="btn btn-primary" @click="handleBtnAction('form-edit')">
                   수정
@@ -1648,7 +1652,7 @@ window.DpDispPanelDtl = {
                             </table>
                           </div>
                           <!-- ===== /내용 영역 ===================================================== -->
-                          <div class="form-actions" v-if="!cfDtlMode">
+                          <div class="form-actions" v-if="active && !cfDtlMode">
                             <template v-if="cfDtlMode">
                               <button class="btn btn-primary" @click="handleBtnAction('form-edit')">
                                 수정
@@ -1867,7 +1871,7 @@ window.DpDispPanelDtl = {
                         </div>
                         <div v-else v-model="form.htmlDesc" is="base-html-editor" height="280px" style="margin-bottom:16px;">
                         </div>
-                        <div class="form-actions" v-if="!cfDtlMode">
+                        <div class="form-actions" v-if="active && !cfDtlMode">
                           <template v-if="cfDtlMode">
                             <button class="btn btn-primary" @click="handleBtnAction('form-edit')">
                               수정
@@ -2114,7 +2118,7 @@ window.DpDispPanelDtl = {
                                       </tr>
                                     </tbody>
                                   </table>
-                                  <div class="form-actions" v-if="!cfDtlMode">
+                                  <div class="form-actions" v-if="active && !cfDtlMode">
                                     <template v-if="cfDtlMode">
                                       <button class="btn btn-primary" @click="handleBtnAction('form-edit')">
                                         수정

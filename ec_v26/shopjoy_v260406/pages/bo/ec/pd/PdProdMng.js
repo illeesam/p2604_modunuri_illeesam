@@ -15,6 +15,7 @@ window.PdProdMng = {
     const uiState = reactive({                     // UI 상태
       descOpen: false, loading: false, error: null, isPageCodeLoad: false,
       sortKey: '', sortDir: 'asc',
+      autoOpenedOnce: false,                       // 진입 시 첫 행 자동 오픈 1회만
     });
     const codes = reactive({ product_statuses: [], option_types: [], category_depths: [], prod_date_types: [], date_range_opts: [] });
     const SORT_MAP = { nm: { asc: 'prodNm asc', desc: 'prodNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
@@ -175,6 +176,11 @@ window.PdProdMng = {
         fnBuildPagerNums();
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
+        /* 진입 시 첫 행 상세 자동 오픈 — 1회만(이후 사용자가 닫으면 재오픈 안 함) */
+        if (!uiState.autoOpenedOnce && !detailPanel.selectedId && products.length) {
+          uiState.autoOpenedOnce = true;
+          handleLoadDetail(products[0].prodId);
+        }
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;
@@ -325,7 +331,7 @@ window.PdProdMng = {
       { key: 'prodStock',    label: '재고', fmt: (v) => (v + '개') },
       { key: 'brandNm',      label: '브랜드' },
       { key: 'prodStatusCd', label: '상태', badge: (p) => fnStatusBadge(p.prodStatusCd), fmt: (v, p) => (p.prodStatusCdNm || p.prodStatusCd) },
-      { key: 'regDate',      label: '등록일', sortKey: 'reg' },
+      { key: 'regDate',      label: '등록일', sortKey: 'reg',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
       { key: 'siteNm',       label: '사이트명', cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
     ];
 

@@ -419,7 +419,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     // 주문 그리드
     const orderGridColumns = [
       { key: 'orderId',    label: '주문ID' },
-      { key: 'orderDate',  label: '주문일시' },
+      { key: 'orderDate',  label: '주문일시',  fmt: (v) => v ? String(v).slice(0, 16) : '-' },
       { key: 'userNm',     label: '고객명' },
       { key: 'vendorNm',   label: '업체' },
       { key: 'prodNm',     label: '상품명' },
@@ -434,7 +434,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     // 클레임 그리드
     const claimGridColumns = [
       { key: 'claimId',      label: '클레임ID' },
-      { key: 'requestDate',  label: '요청일시' },
+      { key: 'requestDate',  label: '요청일시',  fmt: (v) => v ? String(v).slice(0, 16) : '-' },
       { key: 'userNm',       label: '고객명' },
       { key: 'orderId',      label: '주문ID' },
       { key: 'prodNm',       label: '상품명' },

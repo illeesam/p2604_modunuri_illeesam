@@ -156,7 +156,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     // 기본 그리드
     const baseGridColumns = [
       { key: 'orderId',    label: '주문ID' },
-      { key: 'orderDate',  label: '주문일' },
+      { key: 'orderDate',  label: '주문일',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
       { key: 'vendorNm',   label: '업체' },
       { key: 'orderAmt',   label: '주문금액', fmt: fmtW },
       { key: 'settleAmt',  label: '정산기준액', fmt: fmtW },

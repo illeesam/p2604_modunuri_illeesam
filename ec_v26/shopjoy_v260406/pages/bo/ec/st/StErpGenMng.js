@@ -136,7 +136,7 @@ window.StErpGenMng = {
       { key: 'slipType',  label: '전표유형', badge: () => 'badge-blue' },
       { key: 'slipCnt',   label: '전표수', fmt: (v) => v + '건' },
       { key: 'totalAmt',  label: '총금액', fmt: fmtW, cellStyle: 'font-weight:700' },
-      { key: 'genDate',   label: '생성일' },
+      { key: 'genDate',   label: '생성일',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
       { key: 'status',    label: '상태', badge: (row) => fnStatusBadge(row.status) },
       { key: 'regUserNm', label: '담당자' },
     ];

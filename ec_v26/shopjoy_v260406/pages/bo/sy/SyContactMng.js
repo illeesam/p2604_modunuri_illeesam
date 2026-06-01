@@ -88,17 +88,19 @@ window.SyContactMng = {
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* ===== 상세 인라인 패널 ===== */
-    const detailModal = reactive({
-      show: false,
-      dtlId: null,
-      dtlMode: 'view', // 'view' | 'edit'
-      reloadTrigger: 0 // 부모→Dtl 재조회 신호 (modal_reload_trigger 표준)
+    const detailModal = reactive({   // 인라인 Dtl 패널 상태 (modal_reload_trigger 표준)
+      show: true,                    // 상세영역 항상 표시 (진입 시 빈 신규 폼)
+      dtlId: '__new__',              // 초기: 신규(빈) 폼. 행 클릭 시 해당 ID 로 전환
+      dtlMode: 'edit',               // 'view' | 'edit'
+      reloadTrigger: 0,              // 부모→Dtl 재조회 신호 (modal_reload_trigger 표준)
+      resetSeq: 0,                   // 취소 시 ++ → :key 재마운트로 상세 폼 초기화
+      active: false,                 // 행 선택/신규 시 true → 저장/취소 노출. 초기/취소 시 false → 버튼 숨김
     });
 
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const cfDetailEditId = computed(() => detailModal.dtlId === '__new__' ? null : detailModal.dtlId);
     const cfIsViewMode = computed(() => detailModal.dtlMode === 'view' && detailModal.dtlId !== '__new__');
-    const cfDetailKey = computed(() => `${detailModal.dtlId}_${detailModal.dtlMode}`);
+    const cfDetailKey = computed(() => `${detailModal.dtlId}_${detailModal.dtlMode}_${detailModal.resetSeq}`);
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* getSortParam — 조회 */
     const getSortParam = () => {
@@ -169,20 +171,52 @@ window.SyContactMng = {
     };
 
     /* loadView — 뷰 로드 */
-    const loadView = (id) => { if (detailModal.dtlId === id && detailModal.dtlMode === 'view') { detailModal.show = false; detailModal.dtlId = null; return; } detailModal.dtlId = id; detailModal.dtlMode = 'view'; detailModal.show = true; detailModal.reloadTrigger++; };
+    const loadView = (id) => { if (detailModal.dtlId === id && detailModal.dtlMode === 'view' && detailModal.active) { resetDetailToNew(); return; } detailModal.dtlId = id; detailModal.dtlMode = 'view'; detailModal.show = true; detailModal.active = true; detailModal.reloadTrigger++; };
 
-    /* handleLoadDetail — 상세 조회 */
-    const handleLoadDetail = (id) => { if (detailModal.dtlId === id && detailModal.dtlMode === 'edit') { detailModal.show = false; detailModal.dtlId = null; return; } detailModal.dtlId = id; detailModal.dtlMode = 'edit'; detailModal.show = true; detailModal.reloadTrigger++; };
+    /* resetDetailToNew — 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역은 항상 표시 유지)
+     *   active=false → 저장/취소 등 버튼 숨김 (행 미선택 안내 상태) */
+    const resetDetailToNew = () => {
+      detailModal.show = true;
+      detailModal.dtlId = '__new__';
+      detailModal.dtlMode = 'edit';
+      detailModal.active = false;    // 버튼 숨김
+      detailModal.resetSeq++;        // :key 재마운트 → 폼 초기화
+    };
 
-    /* openNew — 신규 열기 */
-    const openNew = () => { detailModal.dtlId = '__new__'; detailModal.dtlMode = 'edit'; detailModal.show = true; detailModal.reloadTrigger++; };
+    /* handleLoadDetail — 상세 조회 (재클릭 시 신규 폼으로 초기화) */
+    const handleLoadDetail = (id) => {
+      if (detailModal.dtlId === id && detailModal.dtlMode === 'edit' && detailModal.active) {
+        resetDetailToNew(); return;  // 같은 행 재클릭 → 신규 폼(비활성)으로 초기화
+      }
+      detailModal.dtlId = id;
+      detailModal.dtlMode = 'edit';
+      detailModal.show = true;
+      detailModal.active = true;     // 행 선택 → 저장/취소 노출
+      detailModal.reloadTrigger++;
+    };
 
-    /* closeDetail — 상세 닫기 */
-    const closeDetail = () => { detailModal.show = false; detailModal.dtlId = null; };
+    /* openNew — 신규 등록 (빈 폼 + 활성 → 저장/취소 노출) */
+    const openNew = () => {
+      detailModal.show = true;
+      detailModal.dtlId = '__new__';
+      detailModal.dtlMode = 'edit';
+      detailModal.active = true;     // 신규 입력 가능 → 저장/취소 노출
+      detailModal.resetSeq++;
+    };
+
+    /* closeDetail — 상세 닫기 = 빈 신규 폼(비활성)으로 초기화 (영역 유지) */
+    const closeDetail = () => { resetDetailToNew(); };
 
     /* inlineNavigate — 인라인 이동 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'syContactMng') { detailModal.show = false; detailModal.dtlId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
+      if (pg === 'syContactMng') {
+        /* 저장 완료 등: 영역은 유지하고 빈 신규 폼으로 초기화 */
+        if (opts.reload) { handleSearchList('RELOAD'); }
+        resetDetailToNew();
+        return;
+      }
+      /* 취소: 패널은 그대로 두고 상세영역만 빈 신규 폼으로 초기화 */
+      if (pg === '__cancelEdit__') { resetDetailToNew(); return; }
       if (pg === '__switchToEdit__') { detailModal.dtlMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
@@ -207,7 +241,7 @@ window.SyContactMng = {
       if (!ok) { return; }
       const idx = contacts.findIndex(x => x.contactId === c.contactId);
       if (idx !== -1) { contacts.splice(idx, 1); }
-      if (detailModal.dtlId === c.contactId) { detailModal.show = false; detailModal.dtlId = null; }
+      if (detailModal.dtlId === c.contactId) { resetDetailToNew(); }
       try {
         const res = await boApiSvc.syContact.remove(c.contactId, '문의관리', '삭제');
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
@@ -301,8 +335,8 @@ window.SyContactMng = {
       </th>
     </template>
     <template #row-actions="{ row }">
-      <td>
-        <div class="actions">
+      <td style="white-space:nowrap;">
+        <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
           <button class="btn btn-blue btn-xs" @click="handleSelectAction('contacts-rowEdit', row.contactId)">
             수정
           </button>
@@ -315,22 +349,22 @@ window.SyContactMng = {
   </bo-grid>
         <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('contacts-pager-setPage', n)" :on-size-change="() => handleSelectAction('contacts-pager-sizeChange')" />
   <!-- ===== □. 목록 영역 =================================================== -->
-  <!-- ===== ■. 하단 상세: ContactDtl 임베드 =================================== -->
-  <div v-if="detailModal.show" style="margin-top:4px;">
-    <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
+  <!-- ===== ■. 하단 상세: ContactDtl 임베드 (항상 표시) =========================== -->
+  <div style="margin-top:4px;">
+    <div v-if="detailModal.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기
       </button>
     </div>
     <sy-contact-dtl
-      :key="detailModal.dtlId"
+      :key="cfDetailKey"
       :navigate="inlineNavigate" :show-ref-modal="showRefModal"
       :show-toast="showToast"
       :show-confirm="showConfirm"
       :set-api-res="setApiRes"
       :dtl-id="cfDetailEditId"
       :dtl-mode="detailModal.dtlMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-
+      :active="detailModal.active"
       :reload-trigger="detailModal.reloadTrigger"
       :on-list-reload="handleSearchList"
       />

@@ -14,7 +14,7 @@ window.OdClaimMng = {
 
     const claims = reactive([]);                                                // 클레임 목록 (메인 그리드 데이터)
     const members = reactive([]);                                               // 회원 목록 (추가결재요청 picker)
-    const uiState = reactive({ bulkOpen: false, loading: false, error: null, isPageCodeLoad: false, bulkTab: 'status', sortKey: '', sortDir: 'asc' });
+    const uiState = reactive({ bulkOpen: false, loading: false, error: null, isPageCodeLoad: false, bulkTab: 'status', sortKey: '', sortDir: 'asc', autoOpenedOnce: false }); // autoOpenedOnce: 진입 시 첫 행 자동 오픈 1회만
     const codes = reactive({ order_statuses: [], claim_types: [], claim_statuses: [], dliv_statuses: [], payment_methods: [], claim_date_types: [], approval_actions: [], req_targets: [], date_range_opts: [] });
 
     const SORT_MAP = { reg: { asc: 'regDate asc', desc: 'regDate desc' } };
@@ -214,6 +214,11 @@ window.OdClaimMng = {
         pager.pageTotalPage = claimsRes.data?.data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         fnBuildPagerNums();
         Object.assign(pager.pageCond, claimsRes.data?.data?.pageCond || pager.pageCond);
+        /* 진입 시 첫 행 상세 자동 오픈 — 1회만(이후 사용자가 닫으면 재오픈 안 함) */
+        if (!uiState.autoOpenedOnce && !detailPanel.selectedId && claims.length) {
+          uiState.autoOpenedOnce = true;
+          handleSelectAction('claims-rowEdit', claims[0].claimId);
+        }
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);

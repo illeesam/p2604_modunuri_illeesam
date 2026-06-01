@@ -19,7 +19,13 @@ window.PmCacheMng = {
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* ===== 상세 인라인 패널 ===== */
-    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+    const detailPanel = reactive({   // 인라인 Dtl 패널 상태 (항상 표시, 진입 시 빈 신규 폼)
+      selectedId: '__new__',         // 초기: 신규(빈) 폼. 행 클릭 시 해당 ID 로 전환
+      openMode: 'edit',              // 'view' | 'edit'
+      reloadTrigger: 0,
+      resetSeq: 0,                   // 취소 시 ++ → :key 재마운트로 상세 폼 초기화
+      active: false,                 // 행 선택/신규 시 true → 저장/취소 노출. 초기/취소 시 false → 버튼 숨김
+    });
 
     /* ===== 검색조건 ===== */
     /* _initSearchParam — 초기화 */
@@ -165,20 +171,30 @@ window.PmCacheMng = {
     });
 
     /* loadView — 뷰 로드 */
-    const loadView = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'view'; detailPanel.reloadTrigger++; };
+    const loadView = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'view'; detailPanel.active = true; detailPanel.reloadTrigger++; };
+
+    /* resetDetailToNew — 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역은 항상 표시 유지)
+     *   active=false → 저장/취소 등 버튼 숨김 (행 미선택 안내 상태) */
+    const resetDetailToNew = () => {
+      detailPanel.selectedId = '__new__';
+      detailPanel.openMode = 'edit';
+      detailPanel.active = false;    // 버튼 숨김
+      detailPanel.resetSeq++;        // :key 재마운트 → 폼 초기화
+    };
 
     /* handleLoadDetail — 상세 조회 */
-    const handleLoadDetail = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    const handleLoadDetail = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'edit'; detailPanel.active = true; detailPanel.reloadTrigger++; };
 
-    /* openNew — 신규 열기 */
-    const openNew = () => { detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    /* openNew — 신규 열기 (빈 폼 + 활성 → 저장/취소 노출) */
+    const openNew = () => { detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.active = true; detailPanel.resetSeq++; detailPanel.reloadTrigger++; };
 
-    /* closeDetail — 상세 닫기 */
-    const closeDetail = () => { detailPanel.selectedId = null; };
+    /* closeDetail — 상세 닫기 = 빈 신규 폼(비활성)으로 초기화 (영역 유지) */
+    const closeDetail = () => { resetDetailToNew(); };
 
     /* inlineNavigate — 인라인 이동 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'pmCacheMng') { detailPanel.selectedId = null; if (opts.reload) { handleSearchList('RELOAD'); } return; }
+      if (pg === 'pmCacheMng') { if (opts.reload) { handleSearchList('RELOAD'); } resetDetailToNew(); return; }
+      if (pg === '__cancelEdit__') { resetDetailToNew(); return; }
       if (pg === '__switchToEdit__') { detailPanel.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
@@ -202,7 +218,7 @@ window.PmCacheMng = {
       if (!ok) { return; }
       const idx = caches.findIndex(x => x.cacheId === c.cacheId);
       if (idx !== -1) { caches.splice(idx, 1); }
-      if (detailPanel.selectedId === c.cacheId) { detailPanel.selectedId = null; }
+      if (detailPanel.selectedId === c.cacheId) { resetDetailToNew(); }
       try {
         const res = await boApiSvc.pmCache.remove(c.cacheId, '캐시관리', '삭제');
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
@@ -221,7 +237,7 @@ window.PmCacheMng = {
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
     const cfIsViewMode = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
-    const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}`);
+    const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}_${detailPanel.resetSeq}`);
 
     // 기본 검색
     const baseSearchColumns = [
@@ -243,7 +259,7 @@ window.PmCacheMng = {
     // 기본 그리드
     const baseGridColumns = [
       { key: 'memberNm',    label: '회원', refLink: 'member', refKey: 'memberId' },
-      { key: 'cacheDate',   label: '일시', sortKey: 'reg' },
+      { key: 'cacheDate',   label: '일시', sortKey: 'reg',  fmt: (v) => v ? String(v).slice(0, 16) : '-' },
       { key: 'cacheTypeCd', label: '유형', badge: (row) => fnTypeBadge(row.cacheTypeCd) },
       { key: 'cacheAmt',    label: '금액',
         fmt: (v) => ((v || 0) > 0 ? '+' : '') + (v || 0).toLocaleString() + '원',
@@ -366,9 +382,9 @@ window.PmCacheMng = {
     <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('caches-pager-setPage', n)" :on-size-change="() => handleSelectAction('caches-pager-sizeChange')" />
   </div>
   <!-- ===== □. 목록 영역 ================================================== -->
-  <!-- ===== ■. 상세 패널 (인라인 임베드) ========================================= -->
-  <div v-if="detailPanel.selectedId" style="margin-top:4px;">
-    <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
+  <!-- ===== ■. 상세 패널 (인라인 임베드, 항상 표시) ================================ -->
+  <div style="margin-top:4px;">
+    <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기
       </button>
@@ -378,6 +394,7 @@ window.PmCacheMng = {
       :navigate="inlineNavigate"
       :dtl-id="cfDetailEditId"
       :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+      :active="detailPanel.active"
       :reload-trigger="detailPanel.reloadTrigger" />
   </div>
   <!-- ===== □. 상세 패널 (인라인 임베드) ========================================= -->

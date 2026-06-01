@@ -83,7 +83,7 @@ window.PmGiftMng = {
     });
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+    const detailPanel = reactive({ selectedId: '__new__', openMode: 'edit', reloadTrigger: 0, resetSeq: 0, active: false }); // 상세영역 항상 표시 (진입 시 빈 신규 폼, active=false → 버튼 숨김)
 
     /* _initSearchParam — 초기화 */
     const _initSearchParam = () => {
@@ -174,26 +174,36 @@ window.PmGiftMng = {
 
     // ===== 상세 임베드: 보기/수정/신규/닫기/인라인 이동 ====================
     /* loadView — 뷰 로드 */
-    const loadView   = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'view'; detailPanel.reloadTrigger++; };
+    const loadView   = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'view'; detailPanel.active = true; detailPanel.reloadTrigger++; };
 
-    /* handleLoadDetail — 상세 조회 */
-    const handleLoadDetail = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    /* resetDetailToNew — 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역은 항상 표시 유지)
+     *   active=false → 저장/취소 등 버튼 숨김 (행 미선택 안내 상태) */
+    const resetDetailToNew = () => {
+      detailPanel.selectedId = '__new__';
+      detailPanel.openMode = 'edit';
+      detailPanel.active = false;    // 버튼 숨김
+      detailPanel.resetSeq++;        // :key 재마운트 → 폼 초기화
+    };
 
-    /* openNew — 신규 열기 */
-    const openNew = () => { detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    /* handleLoadDetail — 상세 조회 (행 선택 → active=true) */
+    const handleLoadDetail = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'edit'; detailPanel.active = true; detailPanel.reloadTrigger++; };
 
-    /* closeDetail — 상세 닫기 */
-    const closeDetail = () => { detailPanel.selectedId = null; };
+    /* openNew — 신규 열기 (빈 폼 + 활성 → 저장/취소 노출) */
+    const openNew = () => { detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.active = true; detailPanel.resetSeq++; };
+
+    /* closeDetail — 상세 닫기 = 빈 신규 폼(비활성)으로 초기화 (영역 유지) */
+    const closeDetail = () => { resetDetailToNew(); };
 
     /* inlineNavigate — 인라인 이동 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'pmGiftMng') { detailPanel.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
+      if (pg === 'pmGiftMng') { if (opts.reload) handleSearchList('RELOAD'); resetDetailToNew(); return; }
+      if (pg === '__cancelEdit__') { resetDetailToNew(); return; }
       if (pg === '__switchToEdit__') { detailPanel.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
     const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
     const cfIsViewMode   = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
-    const cfDetailKey    = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}`);
+    const cfDetailKey    = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}_${detailPanel.resetSeq}`);
 
     // ===== 페이저 번호 빌더 ================================================
     /* fnBuildPagerNums — 유틸 */
@@ -223,7 +233,7 @@ window.PmGiftMng = {
       if (!ok) { return; }
       const idx = (gifts || []).findIndex(x => x.giftId === g.giftId);
       if (idx !== -1) { gifts.splice(idx, 1); }
-      if (detailPanel.selectedId === g.giftId) { detailPanel.selectedId = null; }
+      if (detailPanel.selectedId === g.giftId) { resetDetailToNew(); }
       try {
         const res = await boApiSvc.pmGift.remove(g.giftId, '사은품관리', '삭제');
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
@@ -272,8 +282,8 @@ window.PmGiftMng = {
         fmt: (v, row) => row.giftTypeCd === '금액조건' ? (row.minOrderAmt || 0).toLocaleString() + '원↑'
           : row.giftTypeCd === '수량조건' ? (row.minOrderQty || 0) + '개↑' : '-' },
       { key: 'giftStock',    label: '재고', fmt: (v) => (v || 0).toLocaleString() + '개' },
-      { key: 'startDate',    label: '시작일', sortKey: 'reg' },
-      { key: 'endDate',      label: '종료일' },
+      { key: 'startDate',    label: '시작일', sortKey: 'reg',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
+      { key: 'endDate',      label: '종료일',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
       { key: 'giftStatusCd', label: '상태', badge: (row) => fnStatusBadge(row.giftStatusCd) },
       { key: 'siteNm',       label: '사이트', cellStyle: 'color:#2563eb', fmt: () => cfSiteNm.value },
     ];
@@ -420,8 +430,8 @@ window.PmGiftMng = {
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 하단 상세영역: PmGiftDtl 인라인 임베드 ============================== -->
   <!-- ===== ■. 상세 패널 (인라인 임베드) ========================================= -->
-  <div v-if="detailPanel.selectedId" style="margin-top:4px;">
-    <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
+  <div style="margin-top:4px;">
+    <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기
       </button>
@@ -434,7 +444,7 @@ window.PmGiftMng = {
       :set-api-res="setApiRes"
       :dtl-id="cfDetailEditId"
       :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-
+      :active="detailPanel.active"
       :reload-trigger="detailPanel.reloadTrigger"
       :on-list-reload="handleBtnAction"
       />

@@ -540,6 +540,117 @@ const onSearch = async () => { pager.pageNo = 1; await handleSearchList(); };
 </tr>
 ```
 
+### 10.7 표준 행 높이 (셀 패딩) ⭐ (2026-06-01)
+
+모든 BO 그리드(`<bo-grid>` = `.bo-table`)의 행 높이는 **셀 세로 패딩**으로 통일한다.
+표시경로 picker(`bo-path-pick-field`)·인라인 select/input 등 위젯 셀이 포함된 그리드도
+일반 텍스트 그리드와 같은 행 높이를 유지해야 한다.
+
+**통일 기준값 = `padding 4px 10px` / `font-size 13px`** — 검색란·그리드·상세(compact) 세 영역이
+모두 동일한 필드 크기를 갖는다. (검색란이 기준)
+
+| 대상 | 세로 패딩 | 가로 패딩 | font |
+|---|---|---|---|
+| `.search-bar input/select/.form-control` (검색 필드) ⭐기준 | `4px` | `10px` | `13px` |
+| `.bo-table td` (그리드 본문) | `4px` | `10px` | `13px` |
+| `.bo-table th` (그리드 헤더) | `6px` | `10px` | `12px` |
+| `.bo-form-compact .form-control/.readonly-field` (상세 compact 필드) | `4px` | `10px` | `13px` |
+| `.crud-grid td` (CRUD/드래그 그리드) | `4px` | `6px` (촘촘 셀 — 유지) | `13px` |
+| `.date-range-input` (검색 날짜) | `4px` | `8px` | `13px` |
+| `multi-check-select` 트리거 (검색 다중선택) | `4px` | `10px`/`28px`(우측 ▼) | `13px` |
+
+세 영역(검색/그리드/상세)의 **필드 높이·폰트가 동일**해야 한다. 라벨은 `12px`(`.search-label`
+= `.bo-form-compact .form-label`), 그리드 헤더만 세로 `6px`(헤더는 관례상 약간 높음).
+- **상세란**은 일반 Dtl 의 `.form-control`(`8px 11px`/13px)이 아니라, `compact` 일 때
+  검색란과 같은 `4px 10px`/13px 가 된다. compact 미사용(전체 폭) Dtl 은 기본 크기 유지.
+
+**검색 버튼(조회/초기화)은 `btn-sm`** — 그리드 툴바의 `+행추가`/`엑셀`(`btn-sm`, padding `4px 10px`)
+및 슬림 검색 필드(`4px`)와 동일한 크기로 통일한다.
+- `<bo-search-area>` 의 기본 조회/초기화 버튼은 둘 다 `btn-sm` 으로 렌더된다(컴포넌트 내장).
+- 검색 영역을 직접 작성하거나 `#actions-*` 슬롯에 버튼을 추가할 때도 **조회=`btn btn-primary btn-sm`,
+  초기화=`btn btn-secondary btn-sm`** 를 쓴다. `height:36px` 등 인라인 고정 높이 금지.
+
+```css
+/* assets/css/boGlobalStyle0{1,2,3}.css — 3개 파일 동일 */
+.bo-table th { padding: 6px 12px; ... }
+.bo-table td { padding: 4px 12px; ... }
+.search-bar input, .search-bar select, .search-bar .form-control { padding: 4px 10px; ... }
+```
+
+**원칙**:
+- 행 높이·필드 높이·버튼 크기는 **공통 컴포넌트(`bo-search-area`/`bo-grid`/`bo-form-area`)와
+  전역 CSS(`.bo-table`/`.search-bar`/`.btn-sm`)로만 제어**한다. 한 곳만 바꾸면 전 BO 화면에
+  일관 적용된다 — 개별 화면에서 `dense` prop·인라인 `padding`/`height` 오버라이드 금지.
+- 검색 영역은 가능한 한 `<bo-search-area :columns>` 로 작성한다. 직접 마크업이 불가피하면
+  위 표준 클래스(`.search-bar` + `btn-sm`)를 그대로 따른다.
+- 위젯 셀이 행을 키우면 셀 위젯 자체(`minHeight`)를 슬림하게 맞추되, 행 높이의 기준은
+  여전히 `.bo-table td` 패딩이다.
+- `font-size`(td 13px / th 12px)는 변경하지 않는다 — 높이 조정은 패딩으로만.
+
+> 2026-06-01 표준화: 그리드 `td` `10px→4px`, 검색 필드 `7~8px→4px`, 검색 버튼 `btn-sm`.
+> 적용: `boGlobalStyle01/02/03.css` 3개 + `BoSearchArea`/`BoGrid`/`BoFormArea` 공통 컴포넌트.
+> 비표준 직접작성 2건(DpDispWidgetMng·DpDispWidgetLibMng 조회 버튼) 표준 클래스로 일괄 수정.
+
+### 10.8 우측 행 액션 버튼은 한 줄 ⭐ (2026-06-01)
+
+`#row-actions` 슬롯에 버튼이 **2개 이상**(예: 즉시실행 ▶ + 취소/삭제)일 때는 한 줄로 표시한다.
+CRUD 그리드의 액션 셀(`.col-act-box`)은 `flex-wrap: wrap`(버튼 3개 이상 화면 대비)이므로,
+버튼이 세로로 쌓여 행이 커지는 화면은 **버튼들을 nowrap 인라인 컨테이너로 묶는다**.
+
+```html
+<!-- ✅ ▶ + 취소/삭제 를 한 줄로 (SyBatchMng 패턴) -->
+<template #row-actions="{ row, idx }">
+  <span style="display:inline-flex;flex-wrap:nowrap;align-items:center;gap:3px;white-space:nowrap;">
+    <button v-if="cfShowRunNow(row)" class="btn btn-secondary btn-xs" @click.stop="...">▶</button>
+    <bo-row-cancel-delete :row="row" @cancel="..." @delete="..." />
+  </span>
+</template>
+```
+
+### 10.9 행 펼침·인라인 패널 폼은 compact ⭐ (2026-06-01)
+
+`<bo-grid>` 의 `#row-expand` 펼침 영역이나 **Mng 하단 인라인 Dtl 패널**에 `<bo-form-area>` 를
+쓸 때는 **`compact` 속성**을 부여해 필드 높이/간격/버튼을 그리드·검색란과 같은 톤으로 줄인다.
+
+```html
+<!-- ✅ 실행이력 펼침 (SyBatchHist 패턴, readonly + show-actions=false) -->
+<bo-form-area :columns="histExpandColumns" :form="row" :cols="5" readonly label-left compact :show-actions="false" />
+
+<!-- ✅ Mng 인라인 Dtl 패널 (SySiteDtl 패턴, 편집 가능 + 저장/취소 버튼) -->
+<bo-form-area :columns="baseFormColumns" :form="form" :errors="errors" :readonly="cfDtlMode" :cols="3" compact ... />
+```
+
+`compact` 적용 시 (`.bo-form-compact`, 3개 CSS 동일):
+- `.readonly-field` 패딩 `8px 11px → 4px 9px`, font 13px → 12px
+- `.form-control` 패딩 `8px 11px → 4px 9px`(그리드 td 와 동일 톤), font 12px, `min-height:0`
+- `.form-label` 12px + `margin-bottom 2px`(라벨↔필드 간격 유지)
+- `.form-group` `margin-bottom 6px`(줄 간격 유지 — 0 으로 죽이지 말 것)
+- labelLeft 행 간격 `margin-bottom 6px → 2px`
+- `pathPick` 박스: 검색란과 동일 `padding 4px 10px` / `font 13px` / `minHeight 28px`
+- **액션 버튼(저장/취소/수정/닫기)도 `btn-sm`** 으로 자동 렌더, `.form-actions` margin-top `20px → 12px`
+
+> ⚠️ 과압축 금지: 라벨↔필드(`form-label margin`)·줄 간격(`form-group margin`)을 0 으로 만들면
+> 폼만 유독 빽빽해 보인다. 필드 **높이**만 그리드 톤(4px)으로 줄이고 **간격은 유지**한다.
+> 일반(전체 폭) Dtl 폼에는 `compact` 미사용 — 기본 높이 + 기본 크기 버튼(CLAUDE.md §"Mng 인라인 상세 패널 표준 구조")이 원칙이고, compact 는 펼침/좁은 인라인 패널 전용.
+
+### 10.10 표시경로(pathPick) 선택/해제 버튼 ⭐ (2026-06-01)
+
+상세 폼의 표시경로(`type: 'pathPick'`) 필드 우측 버튼 표준:
+- **🔍 선택 버튼**: 아이콘만(텍스트 "선택" 제거), **정사각형** — `width/height` 가 필드 높이와 동일
+  (compact `28px` / 일반 `34px`), `padding:0`, flex 중앙정렬. `title="표시경로 선택"` 툴팁.
+- **해제 버튼**: 버튼 박스 없이 **소문자 `x` 글자만** (`background:none;border:none`), 🔍 버튼
+  **바로 옆에 `gap:2px`** 로 밀착, **아래정렬**(부모 `align-items:flex-end`). `title="선택 해제"`.
+
+```html
+<span style="display:inline-flex;align-items:flex-end;gap:2px;align-self:stretch;">
+  <button class="btn btn-secondary btn-sm" :style="{padding:0,width:'28px',height:'28px',display:'inline-flex',alignItems:'center',justifyContent:'center'}">🔍</button>
+  <button v-if="hasValue" style="background:none;border:none;padding:0 2px 2px;color:#999;font-size:13px;">x</button>
+</span>
+```
+
+> 코드: [components/comp/BoAreaComp.js](../../../components/comp/BoAreaComp.js) `col.type === 'pathPick'`.
+> 그리드 셀 picker(`bo-path-pick-field`)는 별도(이미 아이콘만).
+
 ---
 
 ## 11. 페이지네이션
@@ -572,23 +683,27 @@ rows.value  = d?.list || d?.content || [];      // ❌ list, content 없음
 pager.total = d?.totalCount ?? d?.total ?? 0;   // ❌ totalCount, total 없음
 ```
 
-### 11.2 페이지네이션 템플릿
+### 11.2 페이지네이션 컴포넌트 (`<bo-pager>`) ⭐
+
+페이지네이션은 **`<bo-pager>` 공통 컴포넌트**로 그리드 바로 아래에 둔다. 직접 마크업 금지.
 
 ```html
-<div class="pagination" v-if="pager.totalPage > 1">
-  <button class="pager" @click="setPage(pager.pageNo-1)" :disabled="pager.pageNo===1">◀</button>
-  <button v-for="n in cfPageNums" :key="n" class="pager" :class="{active:n===pager.pageNo}" @click="setPage(n)">{{ n }}</button>
-  <button class="pager" @click="setPage(pager.pageNo+1)" :disabled="pager.pageNo===pager.totalPage">▶</button>
-</div>
+<bo-grid ... ></bo-grid>
+<bo-pager :pager="pager" :on-set-page="setPage" :on-size-change="onSizeChange" />
 ```
 
-pageNums (현재 ±2, 최대 5개):
-```js
-const cfPageNums = computed(() => {
-  const c=pager.pageNo, l=pager.totalPage, s=Math.max(1,c-2), e=Math.min(l,s+4);
-  return Array.from({length:e-s+1},(_,i)=>s+i);
-});
-```
+**표준** (2026-06-01):
+- **표시 칸 수 10개**: 보이는 페이지 번호 윈도우는 **BoPager 내부 `cfPageNums` computed** 가
+  `pager.pageNo`/`pager.pageTotalPage` 로 **최대 10칸**(현재 페이지 중앙) 자동 계산한다.
+  - 각 화면의 `fnBuildPagerNums`(5칸 `s+4`)는 더 이상 표시 칸 수를 결정하지 않는다 — BoPager 가 일괄 처리.
+  - 칸 수를 바꾸려면 `:page-window="N"` prop (기본 10).
+- **슬림 + 영역 박스 + 그리드에 붙임** (`.pagination`, 3개 CSS 동일):
+  - 버튼 `30px→26px` / font `13→12px`
+  - `.pagination` 에 배경(`#fafafa`)+테두리(`1px #eee`)+`border-radius:6px`+`padding:6px 10px` → **영역으로 보임**
+  - `margin-top 14px→8px` → 그리드 바로 아래 붙음
+
+> 코드: [components/comp/BoComp.js](../../../components/comp/BoComp.js) `BoPager` (`cfPageNums` 10칸 윈도우).
+> CSS: `boGlobalStyle0{1,2,3}.css` `.pagination` / `.pager button`.
 
 ---
 
@@ -617,6 +732,54 @@ const cfPageNums = computed(() => {
 
 Order / Claim / Dliv / Prod / Event / Cache / Coupon / Chatt Dtl — 5개 뷰모드 지원 (§6.5).  
 Hist 컴포넌트가 Dtl 의 "hist" 탭 안에 임베드되는 경우 뷰모드 버튼 제거, 항상 tab 모드.
+
+### 12.3 인라인 Dtl 상세영역 — 항상 표시 + 선택 시에만 편집 ⭐ (2026-06-01)
+
+Mng 하단 인라인 Dtl 패널의 동작 표준. (※ 이전의 "진입 시 첫 행 자동 오픈"은 폐기 — 진입 시
+**데이터를 자동 로드하지 않는다**. 대신 빈 상세영역을 항상 띄운다.)
+
+| 상태 | 상세영역 | 하단 버튼(저장/취소) |
+|---|---|---|
+| 진입 직후 / 취소 후 / 저장 후 | **항상 표시**, 빈 신규 폼 + "행을 선택하세요" 안내 | **모두 숨김** |
+| 그리드 행 클릭 | 해당 행 데이터 로드 | 표시 |
+| `+신규` 클릭 | 빈 폼(입력 가능) | 표시 |
+
+**규칙**:
+1. **상세영역은 항상 렌더** — 패널을 `v-if` 로 숨기지 않는다. 빈 상태에서도 영역이 사라지면 안 된다.
+2. **진입 시 자동 로드 금지** — 첫 행을 자동 선택하지 않는다(빈 신규 폼으로 시작).
+3. **빈 상태에서는 저장/취소 등 모든 버튼 숨김** — `:show-actions` 를 `active` 플래그로 제어.
+   취소를 눌렀을 때 저장 버튼이 남으면 안 된다.
+4. **취소/닫기 = 영역 유지 + 빈 폼으로 초기화**(`active=false`). 영역을 닫지 않는다.
+5. **검색 초기화(`searchParam-reset`)는 표시경로/부서 트리도 전체로**(`selectedPath=null`).
+
+**참조 모델 패턴** (SySiteMng/SySiteDtl):
+```js
+// Mng — 패널 상태: 항상 show, 초기 빈 신규 폼, active 로 버튼 토글
+const detailModal = reactive({ show:true, dtlId:'__new__', dtlMode:'edit',
+  reloadTrigger:0, resetSeq:0, active:false });
+const cfDetailKey = computed(() => `${detailModal.dtlId}_${detailModal.dtlMode}_${detailModal.resetSeq}`);
+const resetDetailToNew = () => { detailModal.show=true; detailModal.dtlId='__new__';
+  detailModal.dtlMode='edit'; detailModal.active=false; detailModal.resetSeq++; };  // 버튼 숨김
+const handleLoadDetail = (id) => { /* 행 클릭 */ detailModal.dtlId=id; detailModal.dtlMode='edit';
+  detailModal.active=true; detailModal.reloadTrigger++; };                          // 버튼 표시
+const openNew = () => { detailModal.dtlId='__new__'; detailModal.active=true; detailModal.resetSeq++; };
+// inlineNavigate: '__cancelEdit__' => resetDetailToNew(); 저장성공 'xxxMng'{reload} => 재조회 + resetDetailToNew()
+// searchParam-reset: ... uiState.selectedPath = null; (트리 전체)
+```
+```html
+<!-- 패널 항상 렌더 (v-if 제거) -->
+<xxx-dtl :key="cfDetailKey" :dtl-id="cfDetailEditId" :active="detailModal.active" ... />
+```
+```js
+// Dtl — active prop 으로 버튼 노출, cancel/close 는 '__cancelEdit__' 로
+props: { ..., active: { type: Boolean, default: true } }
+// <bo-form-area ... :show-actions="active" ...>   // 빈 상태(active=false) 면 버튼 영역 자체 미렌더
+// form-cancel / form-close => props.navigate('__cancelEdit__')
+```
+
+> 참조 모델: [`pages/bo/sy/SySiteMng.js`](../../../pages/bo/sy/SySiteMng.js) + [`SySiteDtl.js`](../../../pages/bo/sy/SySiteDtl.js).
+> 적용 대상: Mng 하단 인라인 Dtl 임베드 화면 28개 전체. 패널 변수는 화면마다 상이
+> (`detailPanel`/`detailModal`/`uiStateDetail`/`baseDetail`/`uiState.selectedCodeId`) — 각 변수에 맞춰 적용.
 
 ---
 

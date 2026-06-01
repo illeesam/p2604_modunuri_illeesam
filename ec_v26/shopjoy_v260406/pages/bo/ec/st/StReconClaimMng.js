@@ -158,7 +158,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     // 기본 그리드
     const baseGridColumns = [
       { key: 'claimId',    label: '클레임ID' },
-      { key: 'reqDate',    label: '요청일' },
+      { key: 'reqDate',    label: '요청일',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
       { key: 'type',       label: '유형', badge: (row) => fnTypeBadge(row.type) },
       { key: 'refundAmt',  label: '환불액', fmt: (v) => v > 0 ? fmtW(v) : '-' },
       { key: 'settleAdj',  label: '정산조정기준', fmt: (v) => v !== 0 ? fmtW(v) : '-',

@@ -280,7 +280,7 @@ window.CmBlogMng = {
       { key: 'viewCount',  label: '조회수',   style: 'width:80px;', align: 'right',  fmt: v => (v||0).toLocaleString() },
       { key: 'isNotice',   label: '공지',     style: 'width:70px;', align: 'center', badge: row => row.isNotice==='Y' ? 'badge-orange' : 'badge-gray' },
       { key: 'useYn',      label: '공개',     style: 'width:70px;', align: 'center', badge: row => fnYnBadge(row.useYn), fmt: v => v==='Y' ? '공개' : '비공개' },
-      { key: 'regDate',    label: '등록일',   style: 'width:140px;', sortKey: 'reg' },
+      { key: 'regDate',    label: '등록일',   style: 'width:140px;', sortKey: 'reg',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
     ];
 
     // 블로그 폼

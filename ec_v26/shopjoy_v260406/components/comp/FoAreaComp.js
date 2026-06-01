@@ -332,6 +332,10 @@ window._foAreaCompUtil = {
     let s = '';
     if (col.align) s += 'text-align:' + col.align + ';';
     if (col.mono)  s += 'font-family:monospace;';
+    // 모든 셀 기본 한 줄 말줄임(...). 편집/슬롯 셀은 col.noEllipsis 로 끌 수 있음.
+    if (!col.noEllipsis && !col.edit) {
+      s += 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+    }
     // AG-Grid 식 cellStyle: 문자열 또는 (value,row)=>string. 미지정 시 기존 동작 동일
     if (col.cellStyle != null) {
       const ext = (typeof col.cellStyle === 'function')
@@ -350,8 +354,12 @@ window._foAreaCompUtil = {
   },
   /* AG-Grid 식 tooltipValueGetter 대응: cellTitle — true(=cellText) | string | (v,row)=>string */
   cellTitle(col, row) {
-    if (col.cellTitle == null) return null;
-    if (col.cellTitle === true) return String(this.cellText(col, row) || '');
+    // 기본: 셀 텍스트를 title 로 노출 (말줄임된 내용 hover 시 전체 표시).
+    if (col.cellTitle === false) return null;
+    if (col.cellTitle == null || col.cellTitle === true) {
+      const t = this.cellText(col, row);
+      return (t == null || t === '') ? null : String(t);
+    }
     if (typeof col.cellTitle === 'function') {
       const v = col.cellTitle(row ? row[col.key] : undefined, row);
       return v == null ? null : String(v);
