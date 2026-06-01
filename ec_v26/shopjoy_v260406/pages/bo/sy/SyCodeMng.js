@@ -546,6 +546,7 @@ window.SyCodeMng = {
       }
       /* 취소: 패널은 그대로 두고 상세영역만 빈 신규 폼으로 초기화 */
       if (pg === '__cancelEdit__') { resetDetailToNew(); return; }
+      if (pg === '__switchToEdit__') { return; }
       props.navigate(pg, opts);
     };
 
@@ -707,6 +708,8 @@ window.SyCodeMng = {
       treeRowAccessor, treeRowKeyFn,                                            // 컬럼 부속
       handleBtnAction, handleSelectAction,                                      // dispatch (모든 이벤트 / 액션 라우팅)
       fnCodeListTitle,                                                          // 헬퍼
+      cfDetailEditId, cfDetailKey,                                              // computed (상세 패널)
+      openNew, inlineNavigate,                                                  // 상세 패널 제어 / Dtl 콜백 (closure 필요)
       showToast, showConfirm,                                                   // Dtl 콜백
       handleSearchList,                                                         // Dtl reload 콜백
     };
@@ -871,23 +874,24 @@ window.SyCodeMng = {
 </div>
 <!-- ===== □.□. 트리 탭 (BoGridCrud 트리 모드) =============================== -->
 <!-- ===== □. 코드 목록 영역 ================================================ -->
-<!-- ===== ■. 코드 상세 패널 (인라인 임베드) ====================================== -->
-<div v-if="uiState.selectedCodeId" style="margin-top:20px;padding:20px;background:#fff;border-radius:8px;border:1px solid #e5e7eb;">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #e5e7eb;">
+<!-- ===== ■. 코드 상세 패널 (인라인 임베드, 항상 표시) ============================== -->
+<div style="margin-top:20px;padding:20px;background:#fff;border-radius:8px;border:1px solid #e5e7eb;">
+  <div v-if="uiState.detailActive" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #e5e7eb;">
     <h3 style="margin:0;font-size:16px;font-weight:600;color:#1f2937;">
       코드 상세
     </h3>
-    <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+    <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
       ✕ 닫기
     </button>
   </div>
-  <sy-code-dtl :navigate="navigate" :show-toast="showToast"
+  <sy-code-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast"
       :show-confirm="showConfirm"
       :set-api-res="() => {}"
       :on-list-reload="handleSearchList"
+      :active="uiState.detailActive"
       :reload-trigger="uiState.codeReloadTrigger"
-      :dtl-id="uiState.selectedCodeId"
-      :dtl-mode="uiState.selectedCodeId ? 'edit' : 'new'" />
+      :dtl-id="cfDetailEditId"
+      :dtl-mode="cfDetailEditId ? 'edit' : 'new'" />
 </div>
 </div>
 <!-- ===== □. 코드 상세 패널 (인라인 임베드) ====================================== -->

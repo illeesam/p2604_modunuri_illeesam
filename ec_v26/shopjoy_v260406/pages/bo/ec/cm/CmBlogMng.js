@@ -88,7 +88,9 @@ window.CmBlogMng = {
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* ===== 상세 인라인 패널 ===== */
-    const detailPanel = reactive({ show: false, isNew: false, dtlId: null, form: {} }); // 인라인 Dtl 패널 상태
+    /* _initBlogForm — 빈(신규) 블로그 폼 기본값 */
+    const _initBlogForm = () => ({ blogId: null, siteId: 1, blogCateId: null, blogTitle: '', blogSummary: '', blogContent: '', blogAuthor: '', viewCount: 0, useYn: 'Y', isNotice: 'N' });
+    const detailPanel = reactive({ show: true, active: false, isNew: false, dtlId: null, form: _initBlogForm() }); // 인라인 Dtl 패널 상태 (항상 표시, active=false 면 버튼 숨김)
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* getSortParam — 정렬 파라미터 */
     const getSortParam = () => {
@@ -148,21 +150,28 @@ window.CmBlogMng = {
     /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
+    /* resetDetailToNew — 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역은 항상 표시 유지)
+     *   active=false → 저장/삭제/닫기 버튼 숨김 (행 미선택 안내 상태) */
+    const resetDetailToNew = () => {
+      Object.assign(detailPanel.form, _initBlogForm());
+      detailPanel.dtlId = null; detailPanel.isNew = false; detailPanel.show = true; detailPanel.active = false;
+    };
+
     /* openDetail — 인라인 패널 열기 (토글) */
     const openDetail = (row) => {
-      if (detailPanel.dtlId === row.blogId) { detailPanel.show = false; detailPanel.dtlId = null; return; }
-      Object.assign(detailPanel.form, { ...row });
-      detailPanel.dtlId = row.blogId; detailPanel.isNew = false; detailPanel.show = true;
+      if (detailPanel.dtlId === row.blogId && detailPanel.active) { resetDetailToNew(); return; }
+      Object.assign(detailPanel.form, _initBlogForm(), { ...row });
+      detailPanel.dtlId = row.blogId; detailPanel.isNew = false; detailPanel.show = true; detailPanel.active = true;
     };
 
     /* openNew — 신규 등록 */
     const openNew = () => {
-      Object.assign(detailPanel.form, { blogId: null, siteId: 1, blogCateId: null, blogTitle: '', blogSummary: '', blogContent: '', blogAuthor: '', viewCount: 0, useYn: 'Y', isNotice: 'N' });
-      detailPanel.dtlId = '__new__'; detailPanel.isNew = true; detailPanel.show = true;
+      Object.assign(detailPanel.form, _initBlogForm());
+      detailPanel.dtlId = '__new__'; detailPanel.isNew = true; detailPanel.show = true; detailPanel.active = true;
     };
 
-    /* closeDetail — 상세 닫기 */
-    const closeDetail = () => { detailPanel.show = false; detailPanel.dtlId = null; };
+    /* closeDetail — 상세 닫기 = 빈 신규 폼(비활성)으로 초기화 (영역 유지) */
+    const closeDetail = () => { resetDetailToNew(); };
 
     /* handleSave — 저장 */
     const handleSave = async () => {
@@ -185,6 +194,8 @@ window.CmBlogMng = {
           : boApiSvc.cmBlog.update(detailPanel.form.blogId, { ...detailPanel.form }, '블로그관리', '저장'));
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast('저장되었습니다.', 'success'); }
+        /* 저장 완료: 상세영역은 유지하고 빈 신규 폼(비활성)으로 초기화 */
+        resetDetailToNew();
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -340,21 +351,25 @@ window.CmBlogMng = {
   </bo-grid>
         <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('blogs-pager-setPage', n)" :on-size-change="() => handleSelectAction('blogs-pager-sizeChange')" />
   <!-- ===== □. 목록 영역 =================================================== -->
-  <!-- ===== ■. 상세 패널 =================================================== -->
-  <div class="card" v-if="detailPanel.show">
+  <!-- ===== ■. 상세 패널 (항상 표시, active=false 면 안내문구) ===================== -->
+  <div class="card">
     <div class="toolbar">
       <span class="list-title">
-        {{ detailPanel.isNew ? '신규 등록' : '상세 / 수정' }}
-        <span v-if="!detailPanel.isNew && detailPanel.form.blogId" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+        {{ !detailPanel.active ? '상세 / 등록' : (detailPanel.isNew ? '신규 등록' : '상세 / 수정') }}
+        <span v-if="detailPanel.active && !detailPanel.isNew && detailPanel.form.blogId" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
           #{{ detailPanel.form.blogId }}
         </span>
       </span>
     </div>
+    <!-- ===== ■.■. 행 미선택 안내 (active=false) ============================== -->
+    <div v-if="!detailPanel.active" style="padding:40px 12px;text-align:center;color:#999;">
+      목록에서 행을 선택하거나 [+신규]를 누르세요
+    </div>
     <!-- ===== ■.■. 블로그 detail 폼 (BoFormArea 자동 렌더) ======================= -->
-    <div style="padding:12px">
+    <div v-else style="padding:12px">
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="blogFormColumns" :form="detailPanel.form" :errors="{}"
-        :cols="3" :show-actions="false">
+        :cols="3" compact :show-actions="false">
         <template #blogContent>
           <base-html-editor v-model="detailPanel.form.blogContent" height="320px" />
         </template>

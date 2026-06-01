@@ -15,7 +15,7 @@ window.PdBundleMng = {
     const brands = reactive([]);
     const bundles = reactive([]);
     const categoryProds = reactive([]);
-    const uiState = reactive({ descOpen: false, loading: false, error: null, isPageCodeLoad: false, dtlMode: null, editBundleId: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, pickerOpen: false, pickerSearchType: '', pickerSearch: '', dragIdx: null, dragoverIdx: null });
+    const uiState = reactive({ descOpen: false, loading: false, error: null, isPageCodeLoad: false, dtlMode: 'new', detailActive: false, editBundleId: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, pickerOpen: false, pickerSearchType: '', pickerSearch: '', dragIdx: null, dragoverIdx: null });
     const codes = reactive({
       product_statuses: [],
       bundle_types: [],
@@ -329,9 +329,11 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
     /* onSizeChange — 페이지 크기 변경 */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData(); };
 
-    /* openNew — 신규 열기 */
-    const openNew = () => {
+    /* resetDetailToNew — 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역은 항상 표시 유지)
+     *   detailActive=false → 저장/취소 등 버튼 숨김 (행 미선택 안내 상태) */
+    const resetDetailToNew = () => {
       uiState.dtlMode = 'new';
+      uiState.detailActive = false;   // 버튼 숨김
       uiState.editBundleId = null;
       Object.assign(newForm, { prodNm: '', brandId: '', vendorId: '', listPrice: 0, salePrice: 0, prodStatusCd: 'DRAFT' });
       Object.keys(newErrors).forEach(k => delete newErrors[k]);
@@ -339,9 +341,21 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
       dtlItems.length = 0;
     };
 
-    /* openDtl — 열기 */
+    /* openNew — 신규 열기 (빈 폼 + 활성 → 저장/취소 노출) */
+    const openNew = () => {
+      uiState.dtlMode = 'new';
+      uiState.detailActive = true;    // 신규 입력 가능 → 저장/취소 노출
+      uiState.editBundleId = null;
+      Object.assign(newForm, { prodNm: '', brandId: '', vendorId: '', listPrice: 0, salePrice: 0, prodStatusCd: 'DRAFT' });
+      Object.keys(newErrors).forEach(k => delete newErrors[k]);
+      dtlCategories.length = 0;
+      dtlItems.length = 0;
+    };
+
+    /* openDtl — 열기 (행 선택 → 저장/취소 노출) */
     const openDtl = bundleProdId => {
       uiState.dtlMode = 'edit';
+      uiState.detailActive = true;    // 행 선택 → 저장/취소 노출
       uiState.editBundleId = bundleProdId;
       const src = (bundles)
         .filter(b => b.bundleProdId === bundleProdId)
@@ -361,8 +375,8 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
       dtlCategories.splice(0, dtlCategories.length, ..._cats);
     };
 
-    /* closeDtl — 닫기 */
-    const closeDtl = () => { uiState.dtlMode = null; uiState.editBundleId = null; dtlItems.length = 0; };
+    /* closeDtl — 닫기 = 빈 신규 폼(비활성)으로 초기화 (영역 유지) */
+    const closeDtl = () => { resetDetailToNew(); };
 
     /* -- 편집 모드에서 표시할 묶음상품명 -- */
     const cfDtlProdNm = computed(() => uiState.dtlMode === 'new' ? (newForm.prodNm || '(신규 묶음상품)') : getProdNm(uiState.editBundleId));
@@ -511,6 +525,9 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
           : boApiSvc.pdBundle.updateItems(bundleProdId, { items: bundleItems }, '묶음상품관리', '저장'));
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast(isNewBundle ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
+        /* 저장 완료: 목록 재조회 + 상세영역은 유지하고 빈 신규 폼(비활성)으로 초기화 */
+        await handleSearchData('RELOAD');
+        resetDetailToNew();
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -683,9 +700,15 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
 </bo-grid>
         <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('bundles-pager-setPage', n)" :on-size-change="() => handleSelectAction('bundles-pager-sizeChange')" />
 <!-- ===== □. 목록 ====================================================== -->
-<!-- ===== ■. 신규등록 / 구성관리 (인라인 Dtl) =================================== -->
-<div v-if="uiState.dtlMode !== null" class="card"
-    :style="uiState.dtlMode==='new' ? 'border-top:3px solid #52c41a' : 'border-top:3px solid #1677ff'">
+<!-- ===== ■. 신규등록 / 구성관리 (인라인 Dtl, 항상 표시) =================================== -->
+<div class="card"
+    :style="!uiState.detailActive ? 'border-top:3px solid #d9d9d9' : (uiState.dtlMode==='new' ? 'border-top:3px solid #52c41a' : 'border-top:3px solid #1677ff')">
+  <!-- ===== ■.■. 미선택 안내 (영역은 항상 표시) ================================= -->
+  <div v-if="!uiState.detailActive" style="padding:24px;text-align:center;color:#aaa;font-size:13px">
+    목록에서 행을 선택하거나 [+신규]를 누르세요
+  </div>
+  <!-- ===== ■.■. 활성 상세영역 (행 선택 / 신규 시) ============================= -->
+  <div v-if="uiState.detailActive">
   <!-- ===== ■.■. Dtl 헤더 ================================================ -->
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f0f0f0">
     <div style="display:flex;align-items:center;gap:10px">
@@ -726,7 +749,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
     </div>
     <!-- ===== ■.■.■. 폼 영역 ================================================ -->
     <bo-form-area :columns="newBundleFormColumns" :form="newForm" :errors="newErrors"
-        :cols="3" :show-actions="false">
+        :cols="3" compact :show-actions="false">
       <!-- ===== ■.■.■.■. 브랜드/판매업체는 빈 옵션 선택 (실데이터 미반영) — 슬롯 처리 ============== -->
       <template #brand>
         <select class="form-control" v-model="newForm.brandId">
@@ -909,6 +932,8 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
     </span>
   </div>
 </div>
+  </div>
+  <!-- ===== □.□. 활성 상세영역 (행 선택 / 신규 시) ============================= -->
 </div>
 <!-- ===== □.□. 구성품 추가 / 안분율 안내 ======================================= -->
 <!-- ===== □. 신규등록 / 구성관리 (인라인 Dtl) =================================== -->

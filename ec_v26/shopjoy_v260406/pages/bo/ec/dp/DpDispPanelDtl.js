@@ -1070,11 +1070,11 @@ window.DpDispPanelDtl = {
             <!-- ===== ■.■.■.■.■.■.■.■. 패널코드/패널명/상태 (BoFormArea 자동 렌더) ============ -->
             <!-- ===== ■.■.■.■.■.■.■.■. 폼 영역 ====================================== -->
             <bo-form-area :columns="basePanelFormColumns" :form="form" :errors="{}"
-                  :readonly="cfDtlMode" :cols="3" :show-actions="false" />
+                  :readonly="cfDtlMode" :cols="3" compact :show-actions="false" />
             <!-- ===== ■.■.■.■.■.■.■.■. 표시경로 + 포함된 화면영역 (BoFormArea 자동 렌더) ======== -->
             <!-- ===== ■.■.■.■.■.■.■.■. 폼 영역 ====================================== -->
             <bo-form-area :columns="pathAreaFormColumns" :form="form" :errors="{}"
-                  :readonly="cfDtlMode" :cols="3" :show-actions="false">
+                  :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
               <template #pathPick>
                 <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
                   <span style="flex:1;">
@@ -1799,7 +1799,7 @@ window.DpDispPanelDtl = {
                       <!-- ===== ■.■.■.■.■.■. 패널코드/패널명/표시경로/포함영역 (BoFormArea 자동 렌더) ========= -->
                       <!-- ===== ■.■.■.■.■.■. 폼 영역 ========================================== -->
                       <bo-form-area :columns="sectionInfoFormColumns" :form="form" :errors="{}"
-              :readonly="cfDtlMode" :cols="3" :show-actions="false">
+              :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
                         <template #pathPick2>
                           <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
                             <span style="flex:1;">
@@ -1896,7 +1896,7 @@ window.DpDispPanelDtl = {
                         <!-- ===== ■.■.■.■.■.■. 위젯 유형/노출 순서 (BoFormArea 자동 렌더, r 로컬 변수에 바인딩) ===== -->
                         <!-- ===== ■.■.■.■.■.■. 폼 영역 ========================================== -->
                         <bo-form-area :columns="widgetRowFormColumns" :form="r" :errors="{}"
-              :readonly="cfDtlMode" :cols="3" :show-actions="false" />
+              :readonly="cfDtlMode" :cols="3" compact :show-actions="false" />
                         <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
                           <label style="font-size:12px;font-weight:600;color:#555;width:90px;flex-shrink:0;">
                             타이틀 표시

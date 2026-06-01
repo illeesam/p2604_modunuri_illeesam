@@ -20,7 +20,7 @@ window.CmNoticeMng = {
     const { reactive, onMounted } = Vue;
     const { showToast, showConfirm, setApiRes } = window.boApp;
     const notices = reactive([]);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, autoOpenedOnce: false }); // 진입 시 첫 행 자동 오픈 1회만
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({ noticeTypes: [], noticeStatuses: [], date_range_opts: [] });
 
     const _initSearchParam = () => {
@@ -36,8 +36,38 @@ window.CmNoticeMng = {
                  reg: { asc: 'regDate asc',    desc: 'regDate desc' } },
     });
 
-    /* baseDetail — 인라인 Dtl 패널 (coUtil.cofDetail) */
+    /* baseDetail — 인라인 Dtl 패널 (coUtil.cofDetail)
+     *   + active : 행 선택/신규 시 true → 저장/취소 노출. 초기/취소 시 false → 버튼 숨김
+     *   + resetSeq : 취소 시 ++ → :key 재마운트로 상세 폼 초기화
+     *   영역은 항상 표시(진입 시 빈 신규 폼). */
     const baseDetail = coUtil.cofDetail();
+    baseDetail.active = false;
+    baseDetail.resetSeq = 0;
+
+    /* resetDetailToNew — 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역은 항상 표시 유지) */
+    const resetDetailToNew = () => {
+      baseDetail.selectedId = '__new__';
+      baseDetail.openMode = 'edit';
+      baseDetail.active = false;     // 버튼 숨김
+      baseDetail.resetSeq++;         // :key 재마운트 → 폼 초기화
+    };
+    resetDetailToNew();              // 진입 시 빈 신규 폼(비활성)으로 시작
+
+    /* openDetailEdit — 행 선택 → 상세 편집 (저장/취소 노출) */
+    const openDetailEdit = (id) => {
+      if (baseDetail.selectedId === id && baseDetail.openMode === 'edit' && baseDetail.active) {
+        resetDetailToNew(); return;  // 같은 행 재클릭 → 신규 폼(비활성)으로 초기화
+      }
+      baseDetail.openEdit(id);
+      baseDetail.active = true;       // 행 선택 → 저장/취소 노출
+    };
+
+    /* openDetailNew — 신규 등록 (빈 폼 + 활성 → 저장/취소 노출) */
+    const openDetailNew = () => {
+      baseDetail.openNew();
+      baseDetail.active = true;
+      baseDetail.resetSeq++;
+    };
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
@@ -54,12 +84,12 @@ window.CmNoticeMng = {
         baseGrid.pager.pageNo = 1;
         return;
       }
-      if (cmd === 'notices-add')       return baseDetail.openNew();
+      if (cmd === 'notices-add')       return openDetailNew();
       if (cmd === 'notices-excel')     return coUtil.cofExportCsv(notices,
         [{ label: 'ID', key: 'noticeId' }, { label: '제목', key: 'noticeTitle' }, { label: '유형', key: 'noticeTypeCd' },
          { label: '상태', key: 'noticeStatusCd' }, { label: '조회수', key: 'viewCount' }, { label: '등록일', key: 'regDate' }],
         '공지목록.csv');
-      if (cmd === 'baseDetail-close') return baseDetail.close();
+      if (cmd === 'baseDetail-close') return resetDetailToNew();
       console.warn('[handleBtnAction] unknown cmd:', cmd);
     };
 
@@ -68,7 +98,7 @@ window.CmNoticeMng = {
       if (cmd === 'notices-sort')             return baseGrid.onSort(param);
       if (cmd === 'notices-pager-setPage')    return baseGrid.setPage(param);
       if (cmd === 'notices-pager-sizeChange') return baseGrid.onSizeChange();
-      if (cmd === 'notices-rowEdit')          return baseDetail.openEdit(param);
+      if (cmd === 'notices-rowEdit')          return openDetailEdit(param);
       if (cmd === 'notices-rowDelete')        return handleDelete(param);
       console.warn('[handleSelectAction] unknown cmd:', cmd);
     };
@@ -102,11 +132,6 @@ window.CmNoticeMng = {
         const list = baseGrid.applyPage(d);
         notices.splice(0, notices.length, ...list);
         uiState.error = null;
-        /* 진입 시 첫 행 상세 자동 오픈 — 1회만(이후 사용자가 닫으면 재오픈 안 함) */
-        if (!uiState.autoOpenedOnce && !baseDetail.selectedId && notices.length) {
-          uiState.autoOpenedOnce = true;
-          baseDetail.openEdit(notices[0].noticeId);
-        }
       } catch (err) {
         uiState.error = err.message;
       } finally {
@@ -121,7 +146,7 @@ window.CmNoticeMng = {
         const res = await boApiSvc.cmNotice.remove(n.noticeId, '공지사항관리', '삭제');
         setApiRes({ ok: true, status: res.status, data: res.data });
         showToast('삭제되었습니다.', 'success');
-        if (baseDetail.selectedId === n.noticeId) baseDetail.close();
+        if (baseDetail.selectedId === n.noticeId) resetDetailToNew();
         await handleSearchList();
       } catch (err) {
         setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
@@ -131,7 +156,10 @@ window.CmNoticeMng = {
 
     /* inlineNavigate — 인라인 Dtl 의 navigate 콜백 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'cmNoticeMng')      { baseDetail.close(); if (opts.reload) handleSearchList(); return; }
+      /* 저장 완료 등: 목록 재조회 + 영역은 유지하고 빈 신규 폼으로 초기화 */
+      if (pg === 'cmNoticeMng')      { if (opts.reload) handleSearchList(); resetDetailToNew(); return; }
+      /* 취소: 패널은 그대로 두고 상세영역만 빈 신규 폼으로 초기화 */
+      if (pg === '__cancelEdit__')   { resetDetailToNew(); return; }
       if (pg === '__switchToEdit__') return baseDetail.switchToEdit();
       props.navigate(pg, opts);
     };
@@ -145,8 +173,7 @@ window.CmNoticeMng = {
       { key: 'searchValue', label: '제목', type: 'text', placeholder: '제목 검색' },
       { key: 'type',        label: '유형', type: 'select', options: () => codes.noticeTypes,    nullLabel: '유형 전체' },
       { key: 'status',      label: '상태', type: 'select', options: () => codes.noticeStatuses, nullLabel: '상태 전체' },
-      { type: 'label', label: '등록일' },
-      { key: 'dateRange', type: 'dateRange', startKey: 'dateStart', endKey: 'dateEnd',
+      { key: 'dateRange', label: '등록일', type: 'dateRange', startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => handleBtnAction('searchParam-dateRange') },
     ];
@@ -209,13 +236,14 @@ window.CmNoticeMng = {
       </div>
     </template>
   </bo-grid>
-  <!-- ===== ■. 상세 패널 (인라인 임베드) ===================================== -->
-  <div v-if="baseDetail.selectedId" style="margin-top:4px;">
-    <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('baseDetail-close')">✕ 닫기</button>
+  <!-- ===== ■. 상세 패널 (인라인 임베드 — 항상 표시, 진입 시 빈 신규 폼) ============= -->
+  <div style="margin-top:4px;">
+    <div v-if="baseDetail.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
+      <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('baseDetail-close')">✕ 닫기</button>
     </div>
-    <cm-notice-dtl :key="baseDetail.panelKey" :navigate="inlineNavigate"
+    <cm-notice-dtl :key="baseDetail.panelKey + '_' + baseDetail.resetSeq" :navigate="inlineNavigate"
       :dtl-id="baseDetail.editId" :dtl-mode="baseDetail.dtlMode"
+      :active="baseDetail.active"
       :reload-trigger="baseDetail.reloadTrigger" />
   </div>
 </div>

@@ -175,7 +175,7 @@ window.SyBatchDtl = {
   <div class="card">
     <!-- ===== ■.■. 폼 영역 ================================================== -->
     <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
-      :readonly="cfDtlMode" :cols="3"
+      :readonly="cfDtlMode" :cols="3" compact
       @save="handleBtnAction('form-save')"
       @cancel="handleBtnAction('form-cancel')"
       @edit="handleBtnAction('form-edit')"

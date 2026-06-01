@@ -15,7 +15,7 @@ window.PdSetMng = {
     const brands = reactive([]);
     const sets = reactive([]);
     const categoryProds = reactive([]);
-    const uiState = reactive({ descOpen: false, loading: false, error: null, isPageCodeLoad: false, dtlMode: null, editSetId: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, dragIdx: null, dragoverIdx: null, pickerOpen: false, pickerSearchType: '', pickerSearch: '' });
+    const uiState = reactive({ descOpen: false, loading: false, error: null, isPageCodeLoad: false, dtlMode: 'new', detailActive: false, editSetId: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, dragIdx: null, dragoverIdx: null, pickerOpen: false, pickerSearchType: '', pickerSearch: '' });
     const codes = reactive({
       product_statuses: [],
       bundle_statuses: [],
@@ -338,9 +338,11 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
     /* onSizeChange — 페이지 크기 변경 */
     const onSizeChange = () => { pager.pageNo = 1; };
 
-    /* openNew — 신규 열기 */
-    const openNew = () => {
+    /* resetDetailToNew — 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역은 항상 표시 유지)
+     *   detailActive=false → 저장/닫기 등 버튼 숨김 (행 미선택 안내 상태) */
+    const resetDetailToNew = () => {
       uiState.dtlMode = 'new';
+      uiState.detailActive = false;   // 버튼 숨김
       uiState.editSetId = null;
       Object.assign(newForm, { prodNm: '', brandId: '', vendorId: '', listPrice: 0, salePrice: 0, stock: 0, prodStatusCd: 'DRAFT' });
       Object.keys(newErrors).forEach(k => delete newErrors[k]);
@@ -348,9 +350,16 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
       dtlItems.length = 0;
     };
 
+    /* openNew — 신규 열기 (빈 폼 + 활성 → 저장/닫기 노출) */
+    const openNew = () => {
+      resetDetailToNew();
+      uiState.detailActive = true;    // 신규 입력 가능 → 저장/닫기 노출
+    };
+
     /* openDtl — 열기 */
     const openDtl = setProdId => {
       uiState.dtlMode = 'edit';
+      uiState.detailActive = true;    // 행 선택 → 저장/닫기 노출
       uiState.editSetId = setProdId;
       const src = (sets)
         .filter(s => s.setProdId === setProdId)
@@ -375,8 +384,8 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
       dtlCategories.splice(0, dtlCategories.length, ..._catArr);
     };
 
-    /* closeDtl — 닫기 */
-    const closeDtl = () => { uiState.dtlMode = null; uiState.editSetId = null; dtlItems.length = 0; };
+    /* closeDtl — 닫기 = 빈 신규 폼(비활성)으로 초기화 (영역 유지) */
+    const closeDtl = () => { resetDetailToNew(); };
 
     const cfDtlProdNm = computed(() => uiState.dtlMode === 'new' ? (newForm.prodNm || '(신규 세트상품)') : getProdNm(uiState.editSetId));
 
@@ -476,6 +485,9 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
           : boApiSvc.pdSet.updateItems(setProdId, { items: setItems }, '세트상품관리', '저장'));
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast(isNewSet ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
+        /* 저장 완료: 목록 재조회 후 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역 유지) */
+        await handleSearchData('RELOAD');
+        resetDetailToNew();
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -686,23 +698,33 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
   </div>
   <!-- ===== □.□. 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ============================= -->
   <!-- ===== □. 목록 ====================================================== -->
-  <!-- ===== ■. 신규등록 / 구성관리 (인라인 Dtl) =================================== -->
-  <div v-if="uiState.dtlMode !== null" class="card"
-    :style="uiState.dtlMode==='new' ? 'border-top:3px solid #52c41a' : 'border-top:3px solid #f59e0b'">
+  <!-- ===== ■. 신규등록 / 구성관리 (인라인 Dtl, 항상 표시) =========================== -->
+  <div class="card"
+    :style="!uiState.detailActive ? '' : (uiState.dtlMode==='new' ? 'border-top:3px solid #52c41a' : 'border-top:3px solid #f59e0b')">
     <!-- ===== ■.■. Dtl 헤더 ================================================ -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f0f0f0">
       <div style="display:flex;align-items:center;gap:10px">
-        <span :class="['badge', uiState.dtlMode==='new' ? 'badge-green' : 'badge-orange']">
-          {{ uiState.dtlMode==='new' ? '신규' : '세트' }}
-        </span>
-        <strong style="font-size:15px">
-          {{ cfDtlProdNm }}
-        </strong>
-        <span style="font-size:12px;color:#aaa">
-          {{ uiState.dtlMode==='new' ? '세트상품 등록' : '구성품 관리' }}
-        </span>
+        <template v-if="uiState.detailActive">
+          <span :class="['badge', uiState.dtlMode==='new' ? 'badge-green' : 'badge-orange']">
+            {{ uiState.dtlMode==='new' ? '신규' : '세트' }}
+          </span>
+          <strong style="font-size:15px">
+            {{ cfDtlProdNm }}
+          </strong>
+          <span style="font-size:12px;color:#aaa">
+            {{ uiState.dtlMode==='new' ? '세트상품 등록' : '구성품 관리' }}
+          </span>
+        </template>
+        <template v-else>
+          <strong style="font-size:15px">
+            세트상품 상세
+          </strong>
+          <span style="font-size:12px;color:#bbb;font-weight:400">
+            목록에서 행을 선택하거나 [+신규등록]을 누르세요
+          </span>
+        </template>
       </div>
-      <div style="display:flex;align-items:center;gap:8px">
+      <div v-if="uiState.detailActive" style="display:flex;align-items:center;gap:8px">
         <span style="font-size:12px;color:#888;background:#fff7ed;border:1px solid #fed7aa;border-radius:6px;padding:3px 10px">
           🔒 세트 전체 단위로만 클레임 가능
         </span>
@@ -715,6 +737,8 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
       </div>
     </div>
     <!-- ===== □.□. Dtl 헤더 ================================================ -->
+    <!-- ===== ■.■. Dtl 본문 (활성 시에만 표시) ====================================== -->
+    <template v-if="uiState.detailActive">
     <!-- ===== ■.■. 신규 세트상품 기본정보 (BoFormArea 자동 렌더, 신규 시만 표시) ============= -->
     <div v-if="uiState.dtlMode==='new'" style="background:#fafafa;border:1px solid #f0f0f0;border-radius:8px;padding:16px 20px;margin-bottom:20px">
       <div style="font-size:13px;font-weight:600;color:#555;margin-bottom:12px">
@@ -722,7 +746,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
       </div>
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="newSetFormColumns" :form="newForm" :errors="newErrors"
-        :cols="3" :show-actions="false">
+        :cols="3" compact :show-actions="false">
         <template #brand>
           <select class="form-control" v-model="newForm.brandId">
             <option value="">
@@ -844,6 +868,8 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
     </span>
   </button>
 </div>
+</template>
+<!-- ===== □.□. Dtl 본문 (활성 시에만 표시) ====================================== -->
 </div>
 <!-- ===== □.□. 구성품 추가 버튼 ============================================= -->
 <!-- ===== □. 신규등록 / 구성관리 (인라인 Dtl) =================================== -->

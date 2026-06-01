@@ -38,7 +38,6 @@ window.SyTemplateDtl = {
       const c = form.templateContent || '';
       return /<\s*\w+[^>]*>/.test(c); // HTML 태그 패턴 자동 감지
     });
-    const cfNeedSubject   = computed(() => ['메일템플릿', 'MMS템플릿', '시스템알림'].includes(form.templateTypeCd));
     const cfIsLongContent = computed(() => ['MMS템플릿'].includes(form.templateTypeCd));
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
@@ -177,7 +176,7 @@ window.SyTemplateDtl = {
         onChange: (v, f) => { f.templateCode = (f.templateCode || '').toUpperCase().replace(/[^A-Z0-9_]/g, ''); } },
       { key: 'templateNm',     label: '템플릿명', type: 'text', required: true, placeholder: '템플릿명 입력' },
       { key: 'templateSubject', label: '제목 (Subject)', type: 'text', colSpan: 3,
-        placeholder: '메일/MMS/시스템 제목', visible: () => cfNeedSubject.value },
+        placeholder: '메일/MMS/시스템 제목' },
       { key: 'templateContent', label: '내용', required: true, type: 'slot', name: 'content', colSpan: 3,
         hint: '사용 가능 변수: {{username}}, {{orderId}}, {{prodNm}}, {{trackingNo}} 등' },
       { key: 'sampleParams',   label: '파라미터 샘플 (JSON)', type: 'textarea', rows: 3, mono: true, colSpan: 3,
@@ -212,7 +211,7 @@ window.SyTemplateDtl = {
   <div class="card">
     <!-- ===== ■.■. 폼 영역 ================================================== -->
     <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
-      :readonly="cfDtlMode" :cols="3" :show-actions="false">
+      :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
       <!-- ===== ■.■.■. 내용 (Quill 에디터 또는 textarea, view 모드는 HTML) =========== -->
       <template #content>
         <template v-if="cfUseHtmlEditor">

@@ -79,9 +79,13 @@ window.MbMemberMng = {
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* ===== 상세 인라인 패널 ===== */
+    /* _emptyForm — 빈(신규) 폼 기본값 */
+    const _emptyForm = () => ({ memberId: null, loginId: '', memberNm: '', memberPhone: '', gradeCd: '일반', memberStatusCd: '활성', joinDate: '', memberMemo: '' });
     const detailPanel = reactive({                 // 인라인 Dtl 패널 상태
-      show: false, isNew: false, dtlId: null, reloadTrigger: 0,
-      form: { memberId: null, loginId: '', memberNm: '', memberPhone: '', gradeCd: '일반', memberStatusCd: '활성', joinDate: '', memberMemo: '' }
+      show: true,                                  // 상세영역 항상 표시 (진입 시 빈 신규 폼)
+      isNew: false, dtlId: null, reloadTrigger: 0,
+      active: false,                               // 행 선택/신규 시 true → 저장/취소 노출. 초기/취소 시 false → 버튼 숨김
+      form: _emptyForm()
     });
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* getSortParam — 정렬 파라미터 */
@@ -142,11 +146,12 @@ window.MbMemberMng = {
       });
     };
 
-    /* openDetail — 인라인 패널 편집 모드로 열기 */
+    /* openDetail — 인라인 패널 편집 모드로 열기 (행 선택 → 저장/취소 노출) */
     const openDetail = async (row) => {
       detailPanel.dtlId = row.memberId;
       detailPanel.isNew = false;
       detailPanel.show = true;
+      detailPanel.active = true;     // 행 선택 → 저장/취소 노출
       detailPanel.reloadTrigger++;
       fnApplyForm(row); // 목록 row 데이터로 먼저 표시
       try {
@@ -158,20 +163,28 @@ window.MbMemberMng = {
       }
     };
 
-    /* openNew — 신규 등록 */
+    /* openNew — 신규 등록 (빈 폼 + 활성 → 저장/취소 노출) */
     const openNew = () => {
-      Object.assign(detailPanel.form, { memberId: null, loginId: '', memberNm: '', memberPhone: '', gradeCd: '일반', memberStatusCd: '활성', joinDate: new Date().toISOString().split('T')[0], memberMemo: '' });
+      Object.assign(detailPanel.form, _emptyForm(), { joinDate: new Date().toISOString().split('T')[0] });
       detailPanel.dtlId = '__new__';
       detailPanel.isNew = true;
       detailPanel.show = true;
+      detailPanel.active = true;     // 신규 입력 가능 → 저장/취소 노출
       detailPanel.reloadTrigger++;
     };
 
-    /* closeDetail — 상세 닫기 */
-    const closeDetail = () => {
-      detailPanel.show = false;
+    /* resetDetailToNew — 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역은 항상 표시 유지)
+     *   active=false → 저장/취소 등 버튼 숨김 (행 미선택 안내 상태) */
+    const resetDetailToNew = () => {
+      Object.assign(detailPanel.form, _emptyForm());
+      detailPanel.show = true;
       detailPanel.dtlId = null;
+      detailPanel.isNew = false;
+      detailPanel.active = false;    // 버튼 숨김
     };
+
+    /* closeDetail — 상세 닫기 = 빈 신규 폼(비활성)으로 초기화 (영역 유지) */
+    const closeDetail = () => { resetDetailToNew(); };
 
     /* handleSave — 저장 */
     const handleSave = async () => {
@@ -210,6 +223,9 @@ window.MbMemberMng = {
           : boApiSvc.mbMember.update(detailPanel.form.memberId, payload, '회원관리', '저장'));
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast('저장되었습니다.', 'success'); }
+        /* 저장 완료: 목록 재조회 + 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역 유지) */
+        handleSearchList('RELOAD');
+        resetDetailToNew();
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
@@ -348,8 +364,9 @@ window.MbMemberMng = {
   </bo-grid>
         <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('members-pager-setPage', n)" :on-size-change="() => handleSelectAction('members-pager-sizeChange')" />
   <!-- ===== □. 목록 영역 =================================================== -->
-  <!-- ===== ■. 상세 패널 (인라인 임베드) ========================================= -->
-  <mb-member-dtl :detail-modal="detailPanel" :handle-save="handleSave" :handle-delete="handleDelete" :close-detail="closeDetail"
+  <!-- ===== ■. 상세 패널 (인라인 임베드, 항상 표시) ================================== -->
+  <mb-member-dtl :detail-modal="detailPanel" :active="detailPanel.active"
+    :handle-save="handleSave" :handle-delete="handleDelete" :close-detail="closeDetail"
     :reload-trigger="detailPanel.reloadTrigger"
     :on-list-reload="handleSearchList"
     />

@@ -352,7 +352,7 @@ window.SyContactMng = {
   <!-- ===== ■. 하단 상세: ContactDtl 임베드 (항상 표시) =========================== -->
   <div style="margin-top:4px;">
     <div v-if="detailModal.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+      <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기
       </button>
     </div>

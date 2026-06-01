@@ -215,7 +215,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card" style="margin-top:12px">
-    <bo-form-area :columns="summaryFormColumns" :form="{}" :cols="3" readonly label-left :show-actions="false" label-width="100px" />
+    <bo-form-area :columns="summaryFormColumns" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
     <div style="height:12px"></div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid

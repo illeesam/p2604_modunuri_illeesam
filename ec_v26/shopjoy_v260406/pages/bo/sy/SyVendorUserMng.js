@@ -230,12 +230,13 @@ window.SyVendorUserMng = {
 
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회 + 상세영역 빈 신규 폼(비활성)
     onMounted(() => {
       if (isAppReady.value) { fnLoadCodes(); }
       handleLoadData();
       expandAll();
       handleLoadDetail();
+      Object.assign(formData, blank());   // 상세영역 항상 표시: 진입 시 빈 폼 (formMode='' → 버튼 숨김)
     });
 
     const cfVendorMap = computed(() => Object.fromEntries(vendors.map(v => [v.vendorId, v])));
@@ -275,13 +276,14 @@ window.SyVendorUserMng = {
     /* fnStatusLabel — 유틸 */
     const fnStatusLabel = (s) => ({ ACTIVE:'재직', LEFT:'퇴직', SUSPENDED:'중지' }[s]||s);
 
-    /* pickVendorRow — 선택 업체 행 */
+    /* pickVendorRow — 선택 업체 행 (업체 변경 시 상세영역은 빈 신규 폼으로 초기화) */
     const pickVendorRow = (v) => {
       uiState.searchVendorId = v.vendorId;
       uiState.treeRoleCat = ({ SALES:'SALES', DELIVERY:'DELIVERY', CS:'CS', SITE:'SITE', PROG:'PROG',
                               PARTNER:'SITE', INTERNAL:'SITE' })[v.vendorTypeCd] || '';
       loadVendorUsers(v.vendorId);
       pager.pageNo = 1;
+      resetFormToNew();    // 업체 전환 → 이전 선택 사용자 폼 초기화 (빈 폼 + 버튼 숨김)
     };
 
     /* onSearch — 조회 */
@@ -293,6 +295,7 @@ window.SyVendorUserMng = {
       uiState.bizSearchValue = '';
       uiState.bizVendorFlt = '';
       uiState.bizStatusFlt = '';
+      uiState.selectedPath = null;          // 표시경로 트리 전체로 복귀
       bizPager.pageNo = 1;
       handleLoadDetail();
     };
@@ -368,21 +371,31 @@ window.SyVendorUserMng = {
       vendorUserStatusCd: 'ACTIVE', vendorUserRemark: '',
     });
 
-    /* openNew — 신규 열기 */
+    /* resetFormToNew — 폼을 빈 신규 폼(비활성)으로 초기화 (영역은 항상 표시 유지)
+     *   formMode='' → 저장/취소 등 버튼 숨김 (행 미선택 안내 상태) */
+    const resetFormToNew = () => {
+      Object.assign(formData, blank());
+      if (uiState.searchVendorId) { formData.vendorId = uiState.searchVendorId; }
+      userRoles.splice(0);
+      uiState.formMode = '';     // 버튼 숨김 (비활성)
+    };
+
+    /* openNew — 신규 열기 (빈 폼 + 활성 → 저장/취소 노출) */
     const openNew = () => {
       const vid = uiState.searchVendorId;
       if (!vid) { showToast('업체를 먼저 선택해주세요.', 'warning'); return; }
       Object.assign(formData, blank());
       formData.vendorId = vid;
       formData.joinDate = new Date().toISOString().slice(0,10);
-      uiState.formMode = 'new';
+      userRoles.splice(0);
+      uiState.formMode = 'new';  // 신규 입력 가능 → 저장/취소 노출
     };
 
-    /* openEdit — 열기 */
+    /* openEdit — 열기 (행 선택 → 저장/취소 노출) */
     const openEdit = (u) => { Object.assign(formData, u); uiState.formMode = 'edit'; loadUserRoles(u.vendorUserId); };
 
-    /* closeForm — 닫기 */
-    const closeForm = () => { uiState.formMode = ''; userRoles.splice(0); };
+    /* closeForm — 닫기/취소 = 빈 신규 폼(비활성)으로 초기화 (영역 유지) */
+    const closeForm = () => { resetFormToNew(); };
 
     /* handleSaveForm — 저장 */
     const handleSaveForm = async () => {
@@ -740,18 +753,18 @@ window.SyVendorUserMng = {
     <!-- ===== □.□. 우: 사용자 검색 + 목록 =================================== -->
   </div>
   <!-- ===== □. 업체 목록 (좌) + 사용자 목록 (우) =================================== -->
-  <!-- ===== ■. 인라인 폼 =================================================== -->
-  <div v-if="uiState.formMode" class="card" style="margin-top:16px;border:2px solid #e8587a;">
+  <!-- ===== ■. 인라인 폼 (항상 표시 — 미선택 시 빈 폼 + 버튼 숨김 + 안내) ============ -->
+  <div class="card" style="margin-top:16px;border:2px solid #e8587a;">
     <div class="toolbar">
       <span class="list-title">
         <span style="color:#e8587a;">
-          {{ uiState.formMode==='new' ? '+ 신규 업체사용자' : '✏ 업체사용자 수정' }}
+          {{ uiState.formMode==='new' ? '+ 신규 업체사용자' : uiState.formMode==='edit' ? '✏ 업체사용자 수정' : '업체사용자 상세' }}
         </span>
         <span v-if="uiState.formMode==='edit'" style="margin-left:8px;font-size:11px;color:#888;">
           #{{ formData.vendorUserId }}
         </span>
       </span>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+      <div v-if="uiState.formMode" style="display:flex;gap:6px;flex-wrap:wrap;">
         <button class="btn btn-blue btn-sm" @click="handleBtnAction('vendorUsers-sendJoinMail')">
           ✉ 회원가입메일
         </button>
@@ -766,11 +779,15 @@ window.SyVendorUserMng = {
         </button>
       </div>
     </div>
+    <!-- ===== ■.■. 미선택 안내 (행 미선택 시) ==================================== -->
+    <div v-if="!uiState.formMode" style="padding:14px 16px;color:#9ca3af;font-size:12.5px;">
+      {{ uiState.searchVendorId ? '사용자 목록에서 행을 선택하거나 [+신규등록]을 누르세요.' : '좌측에서 업체를 먼저 선택하세요.' }}
+    </div>
     <!-- ===== ■.■. 업체사용자 상세 폼 (BoFormArea 자동 렌더) ========================= -->
     <div style="padding:16px;">
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="baseVendorUserFormColumns" :form="formData" :errors="{}"
-        :cols="3" :show-actions="false" />
+        :cols="3" compact :show-actions="false" />
     </div>
     <!-- ===== □.□. 업체사용자 상세 폼 (BoFormArea 자동 렌더) ========================= -->
     <!-- ===== ■.■. 역할 목록 (수정 모드에서만) ====================================== -->

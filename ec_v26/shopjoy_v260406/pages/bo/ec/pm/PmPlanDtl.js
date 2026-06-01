@@ -430,7 +430,7 @@ window.PmPlanDtl = {
       <!-- ===== ■.■.■. 기본정보 폼 (BoFormArea 자동 렌더) =========================== -->
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
-        :readonly="false" :cols="3" :show-actions="false">
+        :readonly="false" :cols="3" compact :show-actions="false">
         <!-- ===== ■.■.■.■. 공개대상 체크박스 그리드 ===================================== -->
         <template #visibility>
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:8px 0;">
@@ -447,7 +447,7 @@ window.PmPlanDtl = {
       <div style="margin-top:20px;padding-top:20px;border-top:1px solid #e8e8e8;">
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
         <bo-form-area :columns="vendorFormColumns" :form="form" :errors="errors"
-          :cols="3" :show-actions="false">
+          :cols="3" compact :show-actions="false">
           <template #vendor>
             <div style="display:flex;gap:8px;align-items:center;">
               <div class="form-control" style="background:#f9f9f9;cursor:pointer;padding:0;display:flex;align-items:center;" @click="handleBtnAction('vendorModal-open')">

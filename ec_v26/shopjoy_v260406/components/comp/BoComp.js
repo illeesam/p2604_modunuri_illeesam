@@ -786,8 +786,8 @@ window.BoPager = {
   <div>
   </div>
   <div class="pager">
-    <button :disabled="pager.pageNo===1" @click="onSetPage(1)">
-      «
+    <button :disabled="pager.pageNo===1" @click="onSetPage(1)" title="처음">
+      1
     </button>
     <button :disabled="pager.pageNo===1" @click="onSetPage(pager.pageNo-1)">
       ‹
@@ -798,8 +798,8 @@ window.BoPager = {
     <button :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageNo+1)">
       ›
     </button>
-    <button :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageTotalPage)">
-      »
+    <button :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageTotalPage)" title="마지막">
+      {{ pager.pageTotalPage }}
     </button>
   </div>
   <div class="pager-right">

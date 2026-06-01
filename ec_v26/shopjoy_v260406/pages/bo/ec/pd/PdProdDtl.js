@@ -6,6 +6,7 @@ window.PdProdDtl = {
     navigate:     { type: Function, required: true }, // 페이지 이동
     dtlId:        { type: String, default: null }, // 수정 대상 ID
     dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit)
+    active:       { type: Boolean, default: true }, // false=행 미선택 빈 폼(저장/취소 등 버튼 숨김)
     onListReload: { type: Function, default: () => {} },
     reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
@@ -38,9 +39,12 @@ window.PdProdDtl = {
       // 폼 저장 (현재 탭)
       if (cmd === 'form-save') {
         return handleSave();
-      // 폼 취소 (목록으로)
+      // 폼 취소 → 상세영역 유지 + 빈 신규 폼으로 초기화 (영역 사라지지 않음)
       } else if (cmd === 'form-cancel') {
-        return props.navigate('pdProdMng');
+        return props.navigate('__cancelEdit__');
+      // 폼 닫기 → 상세영역 유지 + 빈 신규 폼으로 초기화
+      } else if (cmd === 'form-close') {
+        return props.navigate('__cancelEdit__');
       // 탭 전환
       } else if (cmd === 'tab-select') {
         topTab.value = param;
@@ -1440,12 +1444,15 @@ window.PdProdDtl = {
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title" style="display:flex;align-items:center;justify-content:space-between;">
     <span>
-      {{ cfIsNew ? '상품 등록' : '상품 수정' }}
-      <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
+      {{ !active ? '상품 상세' : (cfIsNew ? '상품 등록' : '상품 수정') }}
+      <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
         #{{ form.prodId }}
       </span>
+      <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+        목록에서 행을 선택하거나 [+신규]를 누르세요
+      </span>
     </span>
-    <button v-if="!cfIsNew" class="btn btn-sm" style="background:#fff;border:1px solid #d9d9d9;color:#555;font-weight:500;"
+    <button v-if="active && !cfIsNew" class="btn btn-sm" style="background:#fff;border:1px solid #d9d9d9;color:#555;font-weight:500;"
       title="사용자 페이스에서 상품 상세 미리보기" @click="handleBtnAction('form-preview')">
       👁 미리보기
     </button>
@@ -1467,7 +1474,7 @@ window.PdProdDtl = {
       </div>
       <!-- ===== ■.■.■. 기본정보 통합 폼 (BoFormArea 자동 렌더, cols=3 한 줄 3필드) ======== -->
       <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="3" :show-actions="false">
+        :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
         <template #categories>
           <div style="border:1px solid #e2e8f0;border-radius:6px;background:#fff;min-height:38px;padding:4px 6px;">
             <div v-if="prodCategories.length===0" style="color:#aaa;font-size:12px;padding:4px 2px;">
@@ -1622,7 +1629,7 @@ window.PdProdDtl = {
           </span>
         </label>
       </div>
-      <div class="form-actions" v-if="!cfDtlMode">
+      <div class="form-actions" v-if="!cfDtlMode && active">
         <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           저장
         </button>
@@ -1904,7 +1911,7 @@ window.PdProdDtl = {
   </strong>
   탭에서 관리합니다.
 </div>
-<div class="form-actions" v-if="!cfDtlMode" style="margin-top:16px;">
+<div class="form-actions" v-if="!cfDtlMode && active" style="margin-top:16px;">
   <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
     저장
   </button>
@@ -2048,7 +2055,7 @@ window.PdProdDtl = {
     </div>
   </div>
 </div>
-<div class="form-actions" v-if="!cfDtlMode" style="padding:12px 16px;border-top:1px solid #f0f0f0;">
+<div class="form-actions" v-if="!cfDtlMode && active" style="padding:12px 16px;border-top:1px solid #f0f0f0;">
   <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
     저장
   </button>
@@ -2076,7 +2083,7 @@ window.PdProdDtl = {
   </div>
   <!-- ===== ■.■.■. 상세설정 통합 폼 (광고 노출 + 구매 제한, cols=3 한 줄 3필드) ===== -->
   <bo-form-area :columns="detailFormColumns" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="3" :show-actions="false">
+        :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
     <template #advrtStart>
       <bo-date-time-picker v-model="form.advrtStartDate" />
     </template>
@@ -2102,7 +2109,7 @@ window.PdProdDtl = {
       할인 적용 가능 (discnt_use_yn)
     </label>
   </div>
-  <div class="form-actions" v-if="!cfDtlMode" style="margin-top:20px;">
+  <div class="form-actions" v-if="!cfDtlMode && active" style="margin-top:20px;">
     <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
       저장
     </button>
@@ -2221,7 +2228,7 @@ window.PdProdDtl = {
 </div>
 </div>
 <!-- ===== ■.■.■. /이미지 스크롤 컨테이너 ======================================= -->
-<div class="form-actions" v-if="!cfDtlMode">
+<div class="form-actions" v-if="!cfDtlMode && active">
   <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
     저장
   </button>
@@ -2304,7 +2311,7 @@ window.PdProdDtl = {
       </template>
     </bo-grid>
   </div>
-  <div class="form-actions" v-if="!cfDtlMode">
+  <div class="form-actions" v-if="!cfDtlMode && active">
     <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
       저장
     </button>
@@ -2335,7 +2342,7 @@ window.PdProdDtl = {
   </div>
   <!-- ===== ■.■.■. 폼 영역 ================================================ -->
   <bo-form-area :columns="basePriceFormColumns" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="3" :show-actions="false">
+        :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
     <!-- ===== ■.■.■.■. 마진율 (purchasePrice 입력 시 자동 계산) ==================== -->
     <template #marginRate>
       <div class="form-control" :style="{ background:'#f5f5f5', color: cfMarginRateCalc ? '#389e0d' : '#bbb' }">
@@ -2674,7 +2681,7 @@ window.PdProdDtl = {
     <!-- ===== ■.■.■.■. 재고수량 (BoFormArea 자동 렌더) =========================== -->
     <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
     <bo-form-area :columns="singleStockFormColumns" :form="form" :errors="errors"
-          :readonly="cfDtlMode" :cols="3" :show-actions="false" />
+          :readonly="cfDtlMode" :cols="3" compact :show-actions="false" />
     <template v-if="tabData.skus.length">
       <div style="font-size:12px;font-weight:600;color:#888;margin-bottom:8px;">
         잔존 SKU 데이터
@@ -2715,7 +2722,7 @@ window.PdProdDtl = {
     </template>
   </template>
   <!-- ===== ■.■.■. 저장/취소 버튼 (맨 아래) ===================================== -->
-  <div class="form-actions" v-if="!cfDtlMode" style="margin-top:24px;">
+  <div class="form-actions" v-if="!cfDtlMode && active" style="margin-top:24px;">
     <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
       저장
     </button>

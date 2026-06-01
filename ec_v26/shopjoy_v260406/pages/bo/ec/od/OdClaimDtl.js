@@ -6,6 +6,7 @@ window.OdClaimDtl = {
     navigate:     { type: Function, required: true }, // 페이지 이동
     dtlId:        { type: String, default: null }, // 수정 대상 ID
     dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit),
+    active:       { type: Boolean, default: true }, // false=행 미선택 빈 폼(저장/취소 등 버튼 숨김)
     reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
@@ -44,15 +45,15 @@ window.OdClaimDtl = {
       // 폼 저장 (신규 등록 또는 수정)
       if (cmd === 'form-save') {
         return handleSave();
-      // 폼 편집 취소 → 목록으로 이동
+      // 폼 편집 취소 → 상세영역 유지 + 빈 신규 폼으로 초기화 (영역 사라지지 않음)
       } else if (cmd === 'form-cancel') {
-        return props.navigate('odClaimMng');
+        return props.navigate('__cancelEdit__');
       // 상세 보기 → 편집 모드 전환
       } else if (cmd === 'form-edit') {
         return props.navigate('__switchToEdit__');
-      // 폼 닫기 → 목록으로 이동
+      // 폼 닫기 → 상세영역 유지 + 빈 신규 폼으로 초기화
       } else if (cmd === 'form-close') {
-        return props.navigate('odClaimMng');
+        return props.navigate('__cancelEdit__');
       // 주문 참조 모달 열기
       } else if (cmd === 'form-orderRef') {
         return showRefModal('order', form.orderId);
@@ -372,9 +373,12 @@ window.OdClaimDtl = {
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">
-    {{ cfIsNew ? '클레임 등록' : (cfDtlMode ? '클레임 상세' : '클레임 수정') }}
-    <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
+    {{ !active ? '클레임 상세' : (cfIsNew ? '클레임 등록' : (cfDtlMode ? '클레임 상세' : '클레임 수정')) }}
+    <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
       #{{ form.claimId }}
+    </span>
+    <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+      목록에서 행을 선택하거나 [+신규]를 누르세요
     </span>
   </div>
   <!-- ===== □. 페이지 타이틀 ================================================= -->
@@ -443,7 +447,7 @@ window.OdClaimDtl = {
 <!-- ===== ■.■.■. 기본정보 폼 (BoFormArea 자동 렌더) =========================== -->
 <!-- ===== ■.■.■. 폼 영역 ================================================ -->
 <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="3"
+        :readonly="cfDtlMode" :cols="3" compact :show-actions="active"
         @save="handleBtnAction('form-save')"
         @cancel="handleBtnAction('form-cancel')"
         @edit="handleBtnAction('form-edit')"
@@ -498,7 +502,7 @@ window.OdClaimDtl = {
   </template>
   <template #row-expand="{ row, colspan }">
     <td :colspan="colspan" style="padding:10px 14px;background:#f0f7ff;">
-      <bo-form-area :columns="itemExpandColumns" :form="row" :cols="3" readonly label-left :show-actions="false">
+      <bo-form-area :columns="itemExpandColumns" :form="row" :cols="3" compact readonly label-left :show-actions="false">
         <template #tracking>
           <div class="readonly-field" @click="handleBtnAction('tracking-open', { courier: getExchangedItem(row).courier, trackingNo: getExchangedItem(row).trackingNo })" style="cursor:pointer;padding:2px 8px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-size:11px;font-weight:700;display:inline-block;">
             {{ getExchangedItem(row).courier }} · {{ getExchangedItem(row).trackingNo || '-' }} 🔍

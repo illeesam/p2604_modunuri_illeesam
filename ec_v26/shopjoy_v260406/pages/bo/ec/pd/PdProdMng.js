@@ -15,7 +15,6 @@ window.PdProdMng = {
     const uiState = reactive({                     // UI 상태
       descOpen: false, loading: false, error: null, isPageCodeLoad: false,
       sortKey: '', sortDir: 'asc',
-      autoOpenedOnce: false,                       // 진입 시 첫 행 자동 오픈 1회만
     });
     const codes = reactive({ product_statuses: [], option_types: [], category_depths: [], prod_date_types: [], date_range_opts: [] });
     const SORT_MAP = { nm: { asc: 'prodNm asc', desc: 'prodNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
@@ -133,10 +132,12 @@ window.PdProdMng = {
     const catModal = reactive({ show: false });    // 카테고리 선택 모달 상태
 
     /* ===== 상세 인라인 패널 ===== */
-    const detailPanel = reactive({                 // 인라인 Dtl 패널 상태
-      selectedId: null,
-      openMode: 'view',                            // 'view' | 'edit'
+    const detailPanel = reactive({                 // 인라인 Dtl 패널 상태 (항상 표시, 진입 시 빈 신규 폼)
+      selectedId: '__new__',                       // 초기: 신규(빈) 폼. 행 클릭 시 해당 ID 로 전환
+      openMode: 'edit',                            // 'view' | 'edit'
       reloadTrigger: 0,
+      resetSeq: 0,                                 // 취소 시 ++ → :key 재마운트로 상세 폼 초기화
+      active: false,                               // 행 선택/신규 시 true → 저장/취소 노출. 초기/취소 시 false → 버튼 숨김
     });
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* getSortParam — 정렬 파라미터 */
@@ -176,11 +177,6 @@ window.PdProdMng = {
         fnBuildPagerNums();
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
-        /* 진입 시 첫 행 상세 자동 오픈 — 1회만(이후 사용자가 닫으면 재오픈 안 함) */
-        if (!uiState.autoOpenedOnce && !detailPanel.selectedId && products.length) {
-          uiState.autoOpenedOnce = true;
-          handleLoadDetail(products[0].prodId);
-        }
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;
@@ -199,21 +195,37 @@ window.PdProdMng = {
       pager.pageNo = 1;
     };
 
+    /* resetDetailToNew — 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역은 항상 표시 유지)
+     *   active=false → 저장/취소 등 버튼 숨김 (행 미선택 안내 상태) */
+    const resetDetailToNew = () => {
+      detailPanel.selectedId = '__new__';
+      detailPanel.openMode = 'edit';
+      detailPanel.active = false;      // 버튼 숨김
+      detailPanel.resetSeq++;          // :key 재마운트 → 폼 초기화
+    };
+
     /* loadView — 인라인 패널 뷰 모드로 열기 */
-    const loadView = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'view'; detailPanel.reloadTrigger++; };
+    const loadView = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'view'; detailPanel.active = true; detailPanel.reloadTrigger++; };
 
-    /* handleLoadDetail — 인라인 패널 편집 모드로 열기 */
-    const handleLoadDetail = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    /* handleLoadDetail — 인라인 패널 편집 모드로 열기 (행 선택 → 저장/취소 노출) */
+    const handleLoadDetail = (id) => { detailPanel.selectedId = id; detailPanel.openMode = 'edit'; detailPanel.active = true; detailPanel.reloadTrigger++; };
 
-    /* openNew — 신규 등록 */
-    const openNew = () => { detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++; };
+    /* openNew — 신규 등록 (빈 폼 + 활성 → 저장/취소 노출) */
+    const openNew = () => { detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.active = true; detailPanel.resetSeq++; detailPanel.reloadTrigger++; };
 
-    /* closeDetail — 상세 닫기 */
-    const closeDetail = () => { detailPanel.selectedId = null; };
+    /* closeDetail — 상세 닫기 = 빈 신규 폼(비활성)으로 초기화 (영역 유지) */
+    const closeDetail = () => { resetDetailToNew(); };
 
     /* inlineNavigate — 인라인 Dtl 의 navigate 콜백 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'pdProdMng') { detailPanel.selectedId = null; if (opts.reload) handleSearchList('RELOAD'); return; }
+      if (pg === 'pdProdMng') {
+        /* 저장 완료 등: 영역은 유지하고 빈 신규 폼으로 초기화 */
+        if (opts.reload) { handleSearchList('RELOAD'); }
+        resetDetailToNew();
+        return;
+      }
+      /* 취소: 패널은 그대로 두고 상세영역만 빈 신규 폼으로 초기화 */
+      if (pg === '__cancelEdit__') { resetDetailToNew(); return; }
       if (pg === '__switchToEdit__') { detailPanel.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
@@ -230,7 +242,7 @@ window.PdProdMng = {
       if (!ok) { return; }
       const idx = products.findIndex(x => x.prodId === p.prodId);
       if (idx !== -1) { products.splice(idx, 1); }
-      if (detailPanel.selectedId === p.prodId) { detailPanel.selectedId = null; }
+      if (detailPanel.selectedId === p.prodId) { resetDetailToNew(); }
       try {
         const res = await boApiSvc.pdProd.remove(p.prodId, '상품관리', '삭제');
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
@@ -298,7 +310,7 @@ window.PdProdMng = {
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
     const cfIsViewMode = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
-    const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}`);
+    const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}_${detailPanel.resetSeq}`);
 
     // 기본 검색
     const baseSearchColumns = [
@@ -438,15 +450,15 @@ window.PdProdMng = {
     v-if="catModal && catModal.show"
     :exclude-id="null" modal-name="category-pick" :on-callback="fnCallbackModal" />
   <!-- ===== □. 카테고리 선택 모달 ============================================== -->
-  <!-- ===== ■. 하단 상세: ProdDtl 임베드 ====================================== -->
-  <div v-if="detailPanel.selectedId" style="margin-top:4px;">
-    <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+  <!-- ===== ■. 하단 상세: ProdDtl 임베드 (항상 표시, 진입 시 빈 신규 폼) ============== -->
+  <div style="margin-top:4px;">
+    <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
+      <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기
       </button>
     </div>
     <pd-prod-dtl
-      :key="detailPanel.selectedId"
+      :key="cfDetailKey"
       :navigate="inlineNavigate"
       :show-ref-modal="showRefModal"
       :show-toast="showToast"
@@ -454,6 +466,7 @@ window.PdProdMng = {
       :set-api-res="setApiRes"
       :dtl-id="cfDetailEditId"
       :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+      :active="detailPanel.active"
       :reload-trigger="detailPanel.reloadTrigger"
       :on-list-reload="handleSearchList"
       />

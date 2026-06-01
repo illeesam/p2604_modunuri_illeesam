@@ -45,6 +45,7 @@ window.SyRoleMng = {
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
+        uiState.selectedPath = null;          // 표시경로 트리 전체로 복귀
         return handleSearchList();
       // 역할 그리드 저장
       } else if (cmd === 'roles-save') {

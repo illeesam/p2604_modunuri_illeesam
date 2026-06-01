@@ -621,10 +621,10 @@ window.DpDispUiDtl = {
           </div>
           <!-- ===== ■.■.■.■.■. UI코드/UI명/UI유형 (BoFormArea 자동 렌더) ================ -->
           <bo-form-area :columns="baseUiFormColumns" :form="form" :errors="errors"
-            :readonly="false" :cols="3" :show-actions="false" />
+            :readonly="false" :cols="3" compact :show-actions="false" />
           <!-- ===== ■.■.■.■.■. 표시경로 (BoFormArea 자동 렌더) ========================= -->
           <bo-form-area :columns="pathPickFormColumns" :form="form" :errors="{}"
-            :cols="3" :show-actions="false">
+            :cols="3" compact :show-actions="false">
             <template #pathPick>
               <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
                 <span style="flex:1;">
@@ -641,7 +641,7 @@ window.DpDispUiDtl = {
           </bo-form-area>
           <!-- ===== ■.■.■.■.■. 정렬순서/사용여부/설명 (BoFormArea 자동 렌더) ================= -->
           <bo-form-area :columns="settingUiFormColumns" :form="form" :errors="errors"
-            :readonly="false" :cols="3" :show-actions="false" />
+            :readonly="false" :cols="3" compact :show-actions="false" />
           <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">
             📅 사용기간
           </div>

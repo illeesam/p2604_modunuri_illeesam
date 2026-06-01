@@ -354,7 +354,7 @@ window.PmPlanMng = {
       <div v-if="plans.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">
         데이터가 없습니다.
       </div>
-      <div v-for="p in plans" :key="p?.planId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
+      <div v-for="(p, idx) in plans" :key="p?.planId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
         :style="detailPanel.selectedId===p.planId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
         @click="handleSelectAction('plans-rowEdit', p.planId)">
         <!-- ===== ■.■.■.■. 배너 이미지 ============================================ -->
@@ -393,7 +393,7 @@ window.PmPlanMng = {
             </div>
           </div>
         </div>
-        <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:flex-end;align-items:center;">
+        <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:center;align-items:center;">
           <button class="btn btn-blue btn-sm" @click="handleSelectAction('plans-rowEdit', p.planId)" style="font-size:11px;padding:4px 12px;">
             수정
           </button>
@@ -406,14 +406,14 @@ window.PmPlanMng = {
         </div>
       </div>
     </div>
-    <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('plans-pager-setPage', n)" :on-size-change="() => handleSelectAction('plans-pager-sizeChange')" />
+    <bo-pager v-if="tabMode!=='list' && pager.pageTotalCount > 0" :pager="pager" :on-set-page="n => handleSelectAction('plans-pager-setPage', n)" :on-size-change="() => handleSelectAction('plans-pager-sizeChange')" />
   </div>
   <!-- ===== □.□. 카드 뷰 ================================================== -->
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 하단 상세: PlanDtl 임베드 (항상 표시, 진입 시 빈 신규 폼) ============= -->
   <div style="margin-top:4px;">
     <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+      <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기
       </button>
     </div>

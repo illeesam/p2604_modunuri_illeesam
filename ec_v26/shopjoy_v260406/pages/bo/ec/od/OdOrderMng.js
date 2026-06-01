@@ -15,7 +15,7 @@ window.OdOrderMng = {
     const orders = reactive([]);                                                // 주문 목록 (메인 그리드 데이터)
     const members = reactive([]);                                               // 회원 목록 (추가결재요청 picker)
     const claims = reactive([]);                                                // 클레임 목록 (셀 렌더용)
-    const uiState = reactive({ bulkOpen: false, loading: false, error: null, isPageCodeLoad: false, bulkTab: 'status', sortKey: '', sortDir: 'asc', autoOpenedOnce: false }); // autoOpenedOnce: 진입 시 첫 행 자동 오픈 1회만
+    const uiState = reactive({ bulkOpen: false, loading: false, error: null, isPageCodeLoad: false, bulkTab: 'status', sortKey: '', sortDir: 'asc' });
     const codes = reactive({ order_statuses: [], payment_methods: [], dliv_statuses: [], order_date_types: [], approval_actions: [], req_targets: [], date_range_opts: [] });
 
     const SORT_MAP = { reg: { asc: 'orderDate asc', desc: 'orderDate desc' } };
@@ -45,7 +45,7 @@ window.OdOrderMng = {
         return handleDateRangeChange();
       // 신규 주문 등록 (인라인 Dtl)
       } else if (cmd === 'orders-add') {
-        detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++;
+        detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.active = true; detailPanel.resetSeq++; detailPanel.reloadTrigger++;
         return;
       // 엑셀 내보내기
       } else if (cmd === 'orders-excel') {
@@ -70,10 +70,9 @@ window.OdOrderMng = {
       // 요청대상 변경
       } else if (cmd === 'actionsModal-reqTargetChange') {
         return onReqTargetChange();
-      // 상세 인라인 패널 닫기
+      // 상세 인라인 패널 닫기 → 빈 신규 폼(비활성)으로 초기화 (영역 유지)
       } else if (cmd === 'detailPanel-close') {
-        detailPanel.selectedId = null;
-        return;
+        return resetDetailToNew();
       // 회원 선택 모달 열기
       } else if (cmd === 'memberPickModal-open') {
         memberPick.open = true;
@@ -107,11 +106,11 @@ window.OdOrderMng = {
         return handleSearchData('DEFAULT');
       // 그리드 행 클릭 → 편집 인라인 패널 열기
       } else if (cmd === 'orders-rowEdit') {
-        detailPanel.selectedId = param; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++;
+        detailPanel.selectedId = param; detailPanel.openMode = 'edit'; detailPanel.active = true; detailPanel.reloadTrigger++;
         return;
       // 그리드 행 보기
       } else if (cmd === 'orders-rowView') {
-        detailPanel.selectedId = param; detailPanel.openMode = 'view'; detailPanel.reloadTrigger++;
+        detailPanel.selectedId = param; detailPanel.openMode = 'view'; detailPanel.active = true; detailPanel.reloadTrigger++;
         return;
       // 그리드 행 삭제
       } else if (cmd === 'orders-rowDelete') {
@@ -161,8 +160,8 @@ window.OdOrderMng = {
 
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
-    /* 하단 상세 (인라인 Dtl) */
-    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+    /* 하단 상세 (인라인 Dtl) — 항상 표시. 진입 시 빈 신규 폼(비활성) */
+    const detailPanel = reactive({ selectedId: '__new__', openMode: 'edit', reloadTrigger: 0, active: false, resetSeq: 0 });
 
     /* 일괄선택 */
     const checked = reactive(new Set());
@@ -220,11 +219,6 @@ window.OdOrderMng = {
         fnBuildPagerNums();
         Object.assign(pager.pageCond, ordersRes.data?.data?.pageCond || pager.pageCond);
         uiState.error = null;
-        /* 진입 시 첫 행 상세 자동 오픈 — 1회만(이후 사용자가 닫으면 재오픈 안 함) */
-        if (!uiState.autoOpenedOnce && !detailPanel.selectedId && orders.length) {
-          uiState.autoOpenedOnce = true;
-          handleSelectAction('orders-rowEdit', orders[0].orderId);
-        }
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;
@@ -268,15 +262,25 @@ window.OdOrderMng = {
       handleSearchData('DEFAULT');
     });
 
+    /* resetDetailToNew — 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역은 항상 표시 유지)
+     *   active=false → 저장/취소 등 버튼 숨김 (행 미선택 안내 상태) */
+    const resetDetailToNew = () => {
+      detailPanel.selectedId = '__new__';
+      detailPanel.openMode = 'edit';
+      detailPanel.active = false;   // 버튼 숨김
+      detailPanel.resetSeq++;       // :key 재마운트 → 폼 초기화
+    };
+
     /* inlineNavigate — 인라인 이동 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'odOrderMng') { detailPanel.selectedId = null; if (opts.reload) { handleSearchData('RELOAD'); } return; }
+      if (pg === 'odOrderMng') { if (opts.reload) { handleSearchData('RELOAD'); } resetDetailToNew(); return; }
+      if (pg === '__cancelEdit__') { resetDetailToNew(); return; }
       if (pg === '__switchToEdit__') { detailPanel.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
     const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
     const cfIsViewMode = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
-    const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}`);
+    const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}_${detailPanel.resetSeq}`);
 
     /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
@@ -305,7 +309,7 @@ window.OdOrderMng = {
       if (!Array.isArray(orders)) { return; }
       const idx = orders.findIndex(x => x.orderId === o.orderId);
       if (idx !== -1) { orders.splice(idx, 1); }
-      if (detailPanel.selectedId === o.orderId) { detailPanel.selectedId = null; }
+      if (detailPanel.selectedId === o.orderId) { resetDetailToNew(); }
       try {
         const res = await boApiSvc.odOrder.remove(o.orderId, '주문관리', '삭제');
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
@@ -626,18 +630,19 @@ window.OdOrderMng = {
   </div>
   <!-- ===== □.□. 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ============================= -->
   <!-- ===== □. 카드 영역 =================================================== -->
-  <!-- ===== ■. 하단 상세: OrderDtl 임베드 ===================================== -->
-  <div v-if="selectedId" style="margin-top:4px;">
-    <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+  <!-- ===== ■. 하단 상세: OrderDtl 임베드 (항상 표시, 진입 시 빈 신규 폼) ===================== -->
+  <div style="margin-top:4px;">
+    <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
+      <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기
       </button>
     </div>
     <od-order-dtl
-      :key="selectedId"
+      :key="cfDetailKey"
       :navigate="inlineNavigate"
       :dtl-id="cfDetailEditId"
       :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+      :active="detailPanel.active"
       :reload-trigger="detailPanel.reloadTrigger"
       />
   </div>

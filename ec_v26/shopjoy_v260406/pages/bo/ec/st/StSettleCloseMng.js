@@ -252,7 +252,7 @@ window.StSettleCloseMng = {
     <div style="font-weight:700;font-size:15px;margin-bottom:12px">
       {{ thisMonth }} 정산마감 대상
     </div>
-    <bo-form-area :columns="thisMonthFormColumns" :form="{}" :cols="6" readonly label-left :show-actions="false" label-width="100px" />
+    <bo-form-area :columns="thisMonthFormColumns" :form="{}" :cols="6" readonly label-left compact :show-actions="false" label-width="100px" />
     <div style="text-align:right">
       <button v-if="!cfAlreadyClosed" class="btn btn-primary" @click="handleBtnAction('settleCloses-doClose')">
         📋 {{ thisMonth }} 정산마감 실행

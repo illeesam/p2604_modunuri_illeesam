@@ -1147,6 +1147,9 @@ window.FoFormArea = {
     <span v-if="col.required" class="form-required">
       *
     </span>
+    <span v-if="col.hint" style="font-size:11px;color:#888;font-weight:400;margin-left:6px;">
+      {{ col.hint }}
+    </span>
   </label>
   <!-- readonly 표시 -->
   <div v-if="col.type === 'readonly'"
@@ -1193,12 +1196,9 @@ window.FoFormArea = {
     <!-- slot 탈출구 -->
     <slot v-else-if="col.type === 'slot'" :name="col.name || col.key" :form="form" :col="col">
     </slot>
-    <!-- 에러 메시지 / 힌트 -->
+    <!-- 에러 메시지 (힌트는 라벨 우측에 표시) -->
     <div v-if="errors[col.key]" class="form-error">
       {{ errors[col.key] }}
-    </div>
-    <div v-else-if="col.hint" style="font-size:11px;color:#888;margin-top:4px;">
-      {{ col.hint }}
     </div>
   </div>
 </div>

@@ -32,6 +32,7 @@ window.SyBatchMng = {
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
+        uiState.selectedPath = null;          // 표시경로 트리 전체로 복귀
         return handleSearchList('DEFAULT');
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {

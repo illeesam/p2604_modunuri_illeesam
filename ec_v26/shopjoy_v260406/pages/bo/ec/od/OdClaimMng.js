@@ -14,7 +14,7 @@ window.OdClaimMng = {
 
     const claims = reactive([]);                                                // 클레임 목록 (메인 그리드 데이터)
     const members = reactive([]);                                               // 회원 목록 (추가결재요청 picker)
-    const uiState = reactive({ bulkOpen: false, loading: false, error: null, isPageCodeLoad: false, bulkTab: 'status', sortKey: '', sortDir: 'asc', autoOpenedOnce: false }); // autoOpenedOnce: 진입 시 첫 행 자동 오픈 1회만
+    const uiState = reactive({ bulkOpen: false, loading: false, error: null, isPageCodeLoad: false, bulkTab: 'status', sortKey: '', sortDir: 'asc' });
     const codes = reactive({ order_statuses: [], claim_types: [], claim_statuses: [], dliv_statuses: [], payment_methods: [], claim_date_types: [], approval_actions: [], req_targets: [], date_range_opts: [] });
 
     const SORT_MAP = { reg: { asc: 'regDate asc', desc: 'regDate desc' } };
@@ -42,10 +42,9 @@ window.OdClaimMng = {
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {
         return handleDateRangeChange();
-      // 신규 클레임 등록 (인라인 Dtl)
+      // 신규 클레임 등록 (인라인 Dtl) → 빈 폼 + 활성(저장/취소 노출)
       } else if (cmd === 'claims-add') {
-        detailPanel.selectedId = '__new__'; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++;
-        return;
+        return openNew();
       // 엑셀 내보내기
       } else if (cmd === 'claims-excel') {
         return exportExcel();
@@ -69,10 +68,9 @@ window.OdClaimMng = {
       // 요청대상 변경
       } else if (cmd === 'actionsModal-reqTargetChange') {
         return onReqTargetChange();
-      // 상세 인라인 패널 닫기
+      // 상세 인라인 패널 닫기 → 빈 신규 폼(비활성)으로 초기화 (영역 유지)
       } else if (cmd === 'detailPanel-close') {
-        detailPanel.selectedId = null;
-        return;
+        return closeDetail();
       // 회원 선택 모달 열기
       } else if (cmd === 'memberPickModal-open') {
         memberPick.open = true;
@@ -104,10 +102,9 @@ window.OdClaimMng = {
       } else if (cmd === 'claims-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchData('DEFAULT');
-      // 그리드 행 수정
+      // 그리드 행 수정 → 행 선택(저장/취소 노출)
       } else if (cmd === 'claims-rowEdit') {
-        detailPanel.selectedId = param; detailPanel.openMode = 'edit'; detailPanel.reloadTrigger++;
-        return;
+        return selectRow(param);
       // 그리드 행 삭제
       } else if (cmd === 'claims-rowDelete') {
         return handleDelete(param);
@@ -156,8 +153,8 @@ window.OdClaimMng = {
 
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
-    /* 하단 상세 (인라인 Dtl) */
-    const detailPanel = reactive({ selectedId: null, openMode: 'view', reloadTrigger: 0 });
+    /* 하단 상세 (인라인 Dtl) — 항상 표시. 진입 시 빈 신규 폼(비활성) */
+    const detailPanel = reactive({ selectedId: '__new__', openMode: 'edit', reloadTrigger: 0, resetSeq: 0, active: false }); // active=false → 저장/취소 숨김 (행 미선택 안내). resetSeq → :key 재마운트로 폼 초기화
 
     /* 일괄선택 */
     const checked = reactive(new Set());
@@ -214,11 +211,6 @@ window.OdClaimMng = {
         pager.pageTotalPage = claimsRes.data?.data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         fnBuildPagerNums();
         Object.assign(pager.pageCond, claimsRes.data?.data?.pageCond || pager.pageCond);
-        /* 진입 시 첫 행 상세 자동 오픈 — 1회만(이후 사용자가 닫으면 재오픈 안 함) */
-        if (!uiState.autoOpenedOnce && !detailPanel.selectedId && claims.length) {
-          uiState.autoOpenedOnce = true;
-          handleSelectAction('claims-rowEdit', claims[0].claimId);
-        }
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -264,15 +256,50 @@ window.OdClaimMng = {
       handleSearchData('DEFAULT');
     });
 
+    /* resetDetailToNew — 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역은 항상 표시 유지)
+     *   active=false → 저장/취소 등 버튼 숨김 (행 미선택 안내 상태) */
+    const resetDetailToNew = () => {
+      detailPanel.selectedId = '__new__';
+      detailPanel.openMode = 'edit';
+      detailPanel.active = false;    // 버튼 숨김
+      detailPanel.resetSeq++;        // :key 재마운트 → 폼 초기화
+    };
+
+    /* selectRow — 그리드 행 선택 → 편집 패널 활성(저장/취소 노출) */
+    const selectRow = (id) => {
+      detailPanel.selectedId = id;
+      detailPanel.openMode = 'edit';
+      detailPanel.active = true;     // 행 선택 → 저장/취소 노출
+      detailPanel.reloadTrigger++;
+    };
+
+    /* openNew — 신규 등록 (빈 폼 + 활성 → 저장/취소 노출) */
+    const openNew = () => {
+      detailPanel.selectedId = '__new__';
+      detailPanel.openMode = 'edit';
+      detailPanel.active = true;     // 신규 입력 가능 → 저장/취소 노출
+      detailPanel.resetSeq++;
+    };
+
+    /* closeDetail — 상세 닫기 = 빈 신규 폼(비활성)으로 초기화 (영역 유지) */
+    const closeDetail = () => { resetDetailToNew(); };
+
     /* inlineNavigate — 인라인 이동 */
     const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'odClaimMng') { detailPanel.selectedId = null; if (opts.reload) { handleSearchData('RELOAD'); } return; }
+      if (pg === 'odClaimMng') {
+        /* 저장 완료 등: 목록 재조회 + 영역은 유지하고 빈 신규 폼으로 초기화 */
+        if (opts.reload) { handleSearchData('RELOAD'); }
+        resetDetailToNew();
+        return;
+      }
+      /* 취소: 패널은 그대로 두고 상세영역만 빈 신규 폼으로 초기화 */
+      if (pg === '__cancelEdit__') { resetDetailToNew(); return; }
       if (pg === '__switchToEdit__') { detailPanel.openMode = 'edit'; return; }
       props.navigate(pg, opts);
     };
     const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
     const cfIsViewMode = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
-    const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}`);
+    const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}_${detailPanel.resetSeq}`);
 
     /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
@@ -301,7 +328,7 @@ window.OdClaimMng = {
       if (!Array.isArray(claims)) { return; }
       const idx = claims.findIndex(x => x.claimId === c.claimId);
       if (idx !== -1) { claims.splice(idx, 1); }
-      if (detailPanel.selectedId === c.claimId) { detailPanel.selectedId = null; }
+      if (detailPanel.selectedId === c.claimId) { resetDetailToNew(); }
       try {
         const res = await boApiSvc.odClaim.remove(c.claimId, '클레임관리', '삭제');
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
@@ -649,18 +676,19 @@ window.OdClaimMng = {
   </div>
   <!-- ===== □.□. 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ============================= -->
   <!-- ===== □. 카드 영역 =================================================== -->
-  <!-- ===== ■. 하단 상세: ClaimDtl 임베드 ===================================== -->
-  <div v-if="selectedId" style="margin-top:4px;">
-    <div style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+  <!-- ===== ■. 하단 상세: ClaimDtl 임베드 (항상 표시, 진입 시 빈 신규 폼) ============= -->
+  <div style="margin-top:4px;">
+    <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
+      <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기
       </button>
     </div>
     <od-claim-dtl
-      :key="selectedId"
+      :key="cfDetailKey"
       :navigate="inlineNavigate"
       :dtl-id="cfDetailEditId"
       :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+      :active="detailPanel.active"
       :reload-trigger="detailPanel.reloadTrigger"
       />
   </div>

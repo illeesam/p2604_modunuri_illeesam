@@ -263,7 +263,7 @@ window.SyUserDtl = {
   <div class="card">
     <!-- ===== ■.■. 기본정보 폼 ============================================== -->
     <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
-      :readonly="cfDtlMode" :cols="3" :show-actions="false">
+      :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
       <!-- ===== ■.■.■. 부서: picker ========================================== -->
       <template #dept>
         <div v-if="cfDtlMode" class="readonly-field">

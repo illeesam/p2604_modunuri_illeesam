@@ -370,7 +370,7 @@ const raws = reactive([]);
   <!-- ===== □. 검색 카드 =================================================== -->
   <!-- ===== ■. 집계 카드 =================================================== -->
   <div class="card" style="margin-bottom:12px;">
-    <bo-form-area :columns="summaryFormColumns" :form="{}" :cols="7" readonly label-left :show-actions="false" label-width="100px" />
+    <bo-form-area :columns="summaryFormColumns" :form="{}" :cols="7" readonly label-left compact :show-actions="false" label-width="100px" />
   </div>
   <!-- ===== □. 집계 카드 =================================================== -->
   <!-- ===== ■. 목록 카드 =================================================== -->
@@ -397,7 +397,7 @@ const raws = reactive([]);
     </template>
     <template #row-expand="{ row: r, colspan }">
       <td :colspan="colspan" style="background:#f4f6fb;padding:12px 20px;border-top:none">
-        <bo-form-area :columns="rawExpandColumns" :form="r" :cols="3" readonly label-left :show-actions="false" />
+        <bo-form-area :columns="rawExpandColumns" :form="r" :cols="3" readonly label-left compact :show-actions="false" />
       </td>
     </template>
   </bo-grid>

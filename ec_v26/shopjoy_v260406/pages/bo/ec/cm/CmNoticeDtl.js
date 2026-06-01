@@ -17,6 +17,7 @@ window.CmNoticeDtl = {
     navigate:      { type: Function, required: true }, // 페이지 이동
     dtlId:         { type: String, default: null },    // 수정 대상 ID
     dtlMode:       { type: String, default: 'view' },  // 상세 모드 (new/view/edit)
+    active:        { type: Boolean, default: true },   // false=행 미선택 빈 폼(저장/취소 등 버튼 숨김)
     reloadTrigger: { type: Number, default: 0 },       // 상위 reload signal
   },
   setup(props) {
@@ -47,9 +48,9 @@ window.CmNoticeDtl = {
     /* handleBtnAction — 버튼 액션 dispatch */
     const handleBtnAction = (cmd) => {
       if (cmd === 'baseForm-save')   return handleSave();
-      if (cmd === 'baseForm-cancel') return props.navigate('cmNoticeMng');
+      if (cmd === 'baseForm-cancel') return props.navigate('__cancelEdit__');
       if (cmd === 'baseForm-edit')   return props.navigate('__switchToEdit__');
-      if (cmd === 'baseForm-close')  return props.navigate('cmNoticeMng');
+      if (cmd === 'baseForm-close')  return props.navigate('__cancelEdit__');
       console.warn('[handleBtnAction] unknown cmd:', cmd);
     };
 
@@ -125,6 +126,7 @@ window.CmNoticeDtl = {
       { key: 'isFixed',        label: '상단고정', type: 'checkbox',
         checkboxLabel: '상단고정', hideLabel: true,
         checkedValue: 'Y', uncheckedValue: 'N' },
+      { key: 'contentHtml',    label: '내용',    type: 'slot', name: 'content', colSpan: 3 },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
@@ -141,24 +143,27 @@ window.CmNoticeDtl = {
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">
-    {{ cfIsNew ? '공지사항 등록' : (cfReadonly ? '공지사항 상세' : '공지사항 수정') }}
-    <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
+    {{ !active ? '공지사항 상세' : (cfIsNew ? '공지사항 등록' : (cfReadonly ? '공지사항 상세' : '공지사항 수정')) }}
+    <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
       #{{ baseForm.noticeId }}
+    </span>
+    <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+      목록에서 행을 선택하거나 [+신규]를 누르세요
     </span>
   </div>
   <!-- ===== ■. 폼 영역 ===================================================== -->
   <div class="card">
     <bo-form-area :columns="baseFormColumns" :form="baseForm" :errors="errors"
-      :readonly="cfReadonly" :cols="3" :show-actions="false" />
-    <!-- 내용 (HtmlEditor 또는 view 모드 HTML) -->
-    <div class="form-group" style="margin-top:12px;">
-      <label class="form-label">내용</label>
-      <div v-if="cfReadonly" class="form-control" style="min-height:200px;line-height:1.6;">
-        <div v-if="baseForm.contentHtml" v-html="baseForm.contentHtml"></div>
-        <span v-else style="color:#bbb;">-</span>
-      </div>
-      <base-html-editor v-else v-model="baseForm.contentHtml" height="280px" />
-    </div>
+      :readonly="cfReadonly" :cols="3" compact :show-actions="false">
+      <!-- 내용 (HtmlEditor 또는 view 모드 HTML) -->
+      <template #content>
+        <div v-if="cfReadonly" class="form-control" style="min-height:200px;line-height:1.6;overflow:auto;">
+          <div v-if="baseForm.contentHtml" v-html="baseForm.contentHtml"></div>
+          <span v-else style="color:#bbb;">-</span>
+        </div>
+        <base-html-editor v-else v-model="baseForm.contentHtml" height="280px" />
+      </template>
+    </bo-form-area>
     <!-- 첨부파일 -->
     <div class="form-group" style="margin-top:12px;">
       <label class="form-label">첨부파일</label>
@@ -167,8 +172,8 @@ window.CmNoticeDtl = {
         grp-code="NOTICE_ATTACH" grp-nm="공지 첨부파일"
         :max-count="5" :max-size-mb="10" allow-ext="jpg,png,gif,pdf,xlsx,docx" />
     </div>
-    <!-- 폼 액션 -->
-    <div class="form-actions">
+    <!-- 폼 액션 (행 선택/신규 시에만 노출) -->
+    <div class="form-actions" v-if="active">
       <template v-if="cfReadonly">
         <button class="btn btn-primary"   @click="handleBtnAction('baseForm-edit')">수정</button>
         <button class="btn btn-secondary" @click="handleBtnAction('baseForm-close')">닫기</button>

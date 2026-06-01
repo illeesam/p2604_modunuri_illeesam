@@ -194,7 +194,7 @@ window.SyVendorDtl = {
   <div class="card">
     <!-- ===== ■.■. 폼 영역 ================================================== -->
     <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
-      :readonly="cfDtlMode" :cols="3" :show-actions="active"
+      :readonly="cfDtlMode" :cols="3" compact :show-actions="active"
       @save="handleBtnAction('form-save')"
       @cancel="handleBtnAction('form-cancel')"
       @edit="handleBtnAction('form-edit')"

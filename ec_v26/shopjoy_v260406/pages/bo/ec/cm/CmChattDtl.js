@@ -6,6 +6,7 @@ window.CmChattDtl = {
     navigate:      { type: Function, required: true }, // 페이지 이동
     dtlId:         { type: String, default: null },    // 수정 대상 ID
     dtlMode:       { type: String, default: 'view' },  // 상세 모드 (new/view/edit)
+    active:        { type: Boolean, default: true },   // false=행 미선택 빈 폼(저장/취소 등 버튼 숨김)
     reloadTrigger: { type: Number, default: 0 },       // 상위 reload signal
   },
   setup(props) {
@@ -47,18 +48,21 @@ window.CmChattDtl = {
       // 폼 저장 (신규 등록)
       if (cmd === 'form-save') {
         return handleSave();
-      // 신규 등록 취소 → 목록으로
+      // 신규 등록 취소 → 상세영역 유지 + 빈 신규 폼으로 초기화
       } else if (cmd === 'form-cancel') {
-        return props.navigate('cmChattMng');
+        return props.navigate('__cancelEdit__');
+      // 폼 닫기 → 상세영역 유지 + 빈 신규 폼으로 초기화
+      } else if (cmd === 'form-close') {
+        return props.navigate('__cancelEdit__');
       // 채팅 답변 전송
       } else if (cmd === 'chat-sendReply') {
         return sendReply();
       // 채팅 종료
       } else if (cmd === 'chat-close') {
         return closeChat();
-      // 목록으로 이동
+      // 목록으로 이동 → 상세영역 유지 + 빈 신규 폼으로 초기화
       } else if (cmd === 'chat-back') {
-        return props.navigate('cmChattMng');
+        return props.navigate('__cancelEdit__');
       // 참조 모달 닫기 (상품/주문/클레임)
       } else if (cmd === 'refModal-close') {
         return closeRefModal();
@@ -292,6 +296,7 @@ window.CmChattDtl = {
       handleBtnAction, handleSelectAction, fnCallbackModal,                              // dispatch + 모달 통합 콜백
       cfIsNew, cfDtlMode, cfMemberChats, tabs, newTabs,                                // computed / reactive(tabs)
       showTab, hasRef, refLabel,                                                       // 헬퍼
+      cofAnd: coUtil.cofAnd,                                                            // 템플릿 && 대체 (속성값 && 금지)
       showRefModal,                                                                    // 참조 모달 (직접 호출)
     };
   },
@@ -299,11 +304,14 @@ window.CmChattDtl = {
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">
-    {{ cfIsNew ? '채팅 등록' : '채팅 상세' }}
-    <span v-if="!cfIsNew && uiState.chat" style="font-size:12px;color:#999;margin-left:8px;">
-    #{{ uiState.chat.chattRoomId }}
-  </span>
-</div>
+    {{ !active ? '채팅 상세' : (cfIsNew ? '채팅 등록' : '채팅 상세') }}
+    <span v-if="active && !cfIsNew && uiState.chat" style="font-size:12px;color:#999;margin-left:8px;">
+      #{{ uiState.chat.chattRoomId }}
+    </span>
+    <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+      목록에서 행을 선택하거나 [+신규]를 누르세요
+    </span>
+  </div>
 <!-- ===== □. 페이지 타이틀 ================================================= -->
 <!-- ===== ■. 채팅 상세 =================================================== -->
 <div v-if="!cfIsNew">
@@ -364,7 +372,7 @@ window.CmChattDtl = {
           <div v-else style="margin-top:12px;text-align:center;color:#aaa;font-size:13px;padding:10px;background:#fafafa;border-radius:6px;">
             종료된 채팅입니다.
           </div>
-          <div class="form-actions" v-if="!cfDtlMode">
+          <div class="form-actions" v-if="cofAnd(active, !cfDtlMode)">
             <button class="btn btn-secondary" @click="handleBtnAction('chat-back')">
               목록으로
             </button>
@@ -403,7 +411,7 @@ window.CmChattDtl = {
   </div>
   <!-- ===== □. 채팅 상세 =================================================== -->
   <!-- ===== ■. 신규 채팅 등록 ================================================ -->
-  <template v-if="cfIsNew">
+  <template v-if="cofAnd(cfIsNew, active)">
     <div class="card">
       <bo-tab-bar :tabs="newTabs" :tab="uiState.tab" :show-modes="false"
         @tab-select="id => handleSelectAction('tab-select', id)" />
@@ -411,7 +419,7 @@ window.CmChattDtl = {
       <div v-show="uiState.tab==='new'">
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
         <bo-form-area :columns="newFormColumns" :form="form" :errors="errors"
-          :readonly="false" :cols="3" :show-actions="false">
+          :readonly="false" :cols="3" compact :show-actions="false">
           <!-- ===== ■.■.■.■.■. 회원ID + 보기 ======================================= -->
           <template #memberId>
             <div style="display:flex;gap:8px;align-items:center;">

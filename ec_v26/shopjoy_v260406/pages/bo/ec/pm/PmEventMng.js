@@ -349,7 +349,7 @@ window.PmEventMng = {
       <div v-if="events.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">
         데이터가 없습니다.
       </div>
-      <div v-for="e in events" :key="e?.eventId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
+      <div v-for="(e, idx) in events" :key="e?.eventId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
         :style="detailPanel.selectedId===e.eventId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
         @click="handleSelectAction('events-rowEdit', e.eventId)">
         <!-- ===== ■.■.■.■. 배너 이미지 ============================================ -->
@@ -357,7 +357,7 @@ window.PmEventMng = {
         </div>
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
           <div style="font-size:12px;color:#999;margin-bottom:6px;">
-            이벤트 #{{ e.eventId }}
+            <span style="display:inline-block;min-width:20px;font-weight:700;color:#e8587a;">{{ (pager.pageNo-1)*pager.pageSize + idx + 1 }}</span> 이벤트 #{{ e.eventId }}
           </div>
           <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleSelectAction('events-rowEdit', e.eventId)" :style="detailPanel.selectedId===e.eventId?{color:'#e8587a'}:{}">
             {{ e.eventTitle }}
@@ -385,7 +385,7 @@ window.PmEventMng = {
             </div>
           </div>
         </div>
-        <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:flex-end;align-items:center;">
+        <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:center;align-items:center;">
           <button class="btn btn-blue btn-sm" @click="handleSelectAction('events-rowEdit', e.eventId)" style="font-size:11px;padding:4px 12px;">
             수정
           </button>
@@ -398,14 +398,14 @@ window.PmEventMng = {
         </div>
       </div>
     </div>
-    <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('events-pager-setPage', n)" :on-size-change="() => handleSelectAction('events-pager-sizeChange')" />
+    <bo-pager v-if="tabMode!=='list' && pager.pageTotalCount > 0" :pager="pager" :on-set-page="n => handleSelectAction('events-pager-setPage', n)" :on-size-change="() => handleSelectAction('events-pager-sizeChange')" />
   </div>
   <!-- ===== □.□. 카드 뷰 ================================================== -->
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 하단 상세: EventDtl 임베드 ===================================== -->
   <div style="margin-top:4px;">
     <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+      <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기
       </button>
     </div>

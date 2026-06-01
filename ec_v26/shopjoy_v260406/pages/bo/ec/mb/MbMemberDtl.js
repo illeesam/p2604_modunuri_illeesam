@@ -5,6 +5,7 @@ window.MbMemberDtl = {
     navigate:      { type: Function, required: true },        // 페이지 이동
     dtlId:         { type: String, default: null },           // 수정 대상 ID
     detailModal:   { type: Object, default: () => ({}) },     // 부모 Mng 의 detailPanel 객체
+    active:        { type: Boolean, default: true },          // false=행 미선택 빈 폼(저장/취소 등 버튼 숨김)
     handleSave:    { type: Function, default: () => {} },     // 저장 콜백
     handleDelete:  { type: Function, default: () => {} },     // 삭제 콜백
     closeDetail:   { type: Function, default: () => {} },     // 닫기 콜백
@@ -81,15 +82,21 @@ window.MbMemberDtl = {
     };
   },
   template: /* html */`
-<div v-if="detailModal.show">
-  <!-- ===== ■. 상세/수정 카드 ================================================ -->
+<div>
+  <!-- ===== ■. 상세/수정 카드 (항상 표시) ====================================== -->
   <div class="card">
-    <!-- ===== ■.■. 상세 툴바: 제목 + 저장/삭제/닫기 ================================== -->
+    <!-- ===== ■.■. 상세 툴바: 제목 + 저장/삭제/닫기 (active 시에만 버튼 노출) ============ -->
     <div class="toolbar">
       <span class="list-title">
-        {{ detailModal.isNew ? '신규 등록' : '상세 / 수정' }}
+        {{ !active ? '회원 상세' : (detailModal.isNew ? '신규 등록' : '상세 / 수정') }}
+        <span v-if="active && !detailModal.isNew && detailModal.form && detailModal.form.memberId" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+          #{{ detailModal.form.memberId }}
+        </span>
+        <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+          목록에서 행을 선택하거나 [+신규]를 누르세요
+        </span>
       </span>
-      <div style="margin-left:auto;display:flex;gap:6px;">
+      <div v-if="active" style="margin-left:auto;display:flex;gap:6px;">
         <button class="btn btn-blue btn-sm" @click="handleBtnAction('form-save')">
           저장
         </button>
@@ -106,13 +113,13 @@ window.MbMemberDtl = {
     <div style="padding:12px;">
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="baseFormColumns" :form="detailModal.form" :errors="{}"
-        :readonly="false" :cols="3" :show-actions="false" />
+        :readonly="!active" :cols="3" compact :show-actions="false" />
     </div>
     <!-- ===== □.■. 폼 영역 ================================================== -->
   </div>
   <!-- ===== □. 상세/수정 카드 ================================================ -->
-  <!-- ===== ■. 이력정보 카드 ================================================= -->
-  <div v-if="!detailModal.isNew" class="card">
+  <!-- ===== ■. 이력정보 카드 (행 선택 + 기존 회원일 때만) ============================= -->
+  <div v-if="active && !detailModal.isNew" class="card">
     <mb-member-hist :member-id="currentId" :key="currentId" />
   </div>
   <!-- ===== □. 이력정보 카드 ================================================= -->

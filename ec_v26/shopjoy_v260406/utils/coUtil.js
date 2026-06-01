@@ -785,6 +785,12 @@
         t.selectedId = (t.selectedId === id) ? null : id;
         opts.onSelect && opts.onSelect(t.selectedId);
       },
+      /* reset — 트리 선택을 '전체'(null)로 되돌린다. [초기화] 버튼 공통.
+       *   토글 로직을 타지 않도록 selectedId 를 직접 null 로 설정. */
+      reset: () => {
+        t.selectedId = null;
+        opts.onSelect && opts.onSelect(null);
+      },
       toggle: (id) => { if (t.expanded.has(id)) t.expanded.delete(id); else t.expanded.add(id); },
       expand:   (id) => { t.expanded.add(id); },
       collapse: (id) => { t.expanded.delete(id); },

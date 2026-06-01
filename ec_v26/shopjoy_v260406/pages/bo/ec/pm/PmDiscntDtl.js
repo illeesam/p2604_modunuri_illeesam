@@ -335,7 +335,7 @@ window.PmDiscntDtl = {
       </div>
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="3" :show-actions="false">
+        :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
         <!-- ===== ■.■.■.■. 판매업체 picker ======================================= -->
         <template #vendor>
           <div style="display:flex;gap:8px;align-items:center;">
@@ -393,7 +393,7 @@ window.PmDiscntDtl = {
         </h3>
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
         <bo-form-area :columns="discntApplyFormColumns" :form="form" :errors="errors"
-          :cols="3" :show-actions="false" />
+          :cols="3" compact :show-actions="false" />
       </div>
       <!-- ===== ■.■.■. 기간설정 (BoFormArea 자동 렌더) ============================= -->
       <div style="margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid #e8e8e8;">
@@ -402,7 +402,7 @@ window.PmDiscntDtl = {
         </h3>
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
         <bo-form-area :columns="discntPeriodFormColumns" :form="form" :errors="errors"
-          :cols="3" :show-actions="false" />
+          :cols="3" compact :show-actions="false" />
       </div>
       <!-- ===== ■.■.■. 상태 및 비고 (BoFormArea 자동 렌더) ========================== -->
       <div>
@@ -411,7 +411,7 @@ window.PmDiscntDtl = {
         </h3>
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
         <bo-form-area :columns="discntStatusFormColumns" :form="form" :errors="errors"
-          :cols="3" :show-actions="false" />
+          :cols="3" compact :show-actions="false" />
       </div>
       <div class="form-actions" v-if="active && !cfDtlMode">
         <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">

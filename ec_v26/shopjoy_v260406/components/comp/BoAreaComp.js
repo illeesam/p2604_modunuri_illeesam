@@ -193,20 +193,21 @@ window.BoSearchArea = {
 <div class="search-bar" :style="barStyle" @keyup.enter="handleBtnAction('search-emit')">
   <!-- ▼ search 영역 -->
   <template v-if="columns && param">
+  <!-- 라벨 텍스트(type:'label') / 슬롯(type:'slot') 은 묶음(search-field) 밖에 단독 배치 -->
   <template v-for="(col, ci) in columns" :key="col.key || ('_' + ci)">
-    <!-- 필드 좌측 라벨 (label/slot 타입 제외, col.label 지정 시) -->
-    <label v-if="col.label && col.type!=='label' && col.type!=='slot'" class="search-label">
-    {{ col.label }}
-  </label>
-  <!-- 라벨 텍스트 -->
   <label v-if="col.type==='label'" class="search-label">
     {{ col.label }}
   </label>
-  <!-- 슬롯 탈출구 -->
   <slot v-else-if="col.type==='slot'" :name="col.name || 'extra'">
   </slot>
+  <!-- 그 외 컨트롤은 라벨+컨트롤을 한 묶음(search-field)으로 감싸 함께 줄바꿈되게 함 -->
+  <div v-else class="search-field">
+    <!-- 필드 좌측 라벨 (col.label 지정 시) -->
+    <label v-if="col.label" class="search-label">
+    {{ col.label }}
+  </label>
   <!-- 회원/항목 picker 박스 (input readonly + 검색 버튼 + 클리어) — col.type==='pick' -->
-  <template v-else-if="col.type==='pick'">
+  <template v-if="col.type==='pick'">
     <input :value="col.display ? col.display(po(col)) : (po(col)[col.nameKey] || po(col)[col.key])"
           readonly :placeholder="col.placeholder || '선택'"
           class="form-control" :style="(col.width ? ('width:' + col.width) : 'width:140px;') + ';background:#f9f9f9;cursor:pointer;'"
@@ -273,6 +274,7 @@ window.BoSearchArea = {
   </option>
 </select>
 </template>
+  </div>
 </template>
 </template>
 <slot>
@@ -535,9 +537,9 @@ window.BoGrid = {
       </button>
     </div>
   </div>
-  <!-- 그리드 본문 — non-bare 모드에서는 max-height 로 감싸 내부 스크롤 + 페이저 하단 고정 -->
-  <!-- 380px: 상단nav/탭바/페이지타이틀(~165) + 검색바카드(~80) + toolbar(~40) + 페이저(~50) + 여백(~45) -->
-  <div :style="bare ? '' : 'max-height:calc(100vh - 380px);min-height:200px;overflow:auto;'">
+  <!-- 그리드 본문 — non-bare 모드에서는 max-height 로 감싸 내부 스크롤 + 페이저 하단 고정.
+       min-height 미지정: 행 수가 적으면 내용 높이만큼만 차지(하단 빈 공백 제거). max-height 로만 상한 제한. -->
+  <div :style="bare ? '' : 'max-height:calc(100vh - 380px);overflow:auto;'">
     <table class="bo-table" :class="{ 'crud-grid': draggable || showSave }">
       <thead>
         <tr>
@@ -1876,6 +1878,17 @@ window.BoFormArea = {
     const U = window._boAreaCompUtil;
 
     /* ── ▼ 초기 reactive / 파생 변수 ─────────────────────────────────────── */
+    /* fnEffSpan — 유효 colSpan 산출.
+     *   내용/긴 입력 영역(textarea·htmlEditor)은 colSpan 미지정 시 항상 한 줄 전체 폭(cols).
+     *   다른 필드가 같은 줄에 끼지 않게 한다. (정책: CLAUDE.md "큰 영역은 한 줄 전체 폭")
+     *   colSpan 이 명시돼 있으면 그 값을 우선 존중한다. */
+    const FULL_WIDTH_TYPES = ['textarea', 'htmlEditor'];
+    const fnEffSpan = (col) => {
+      if (col.colSpan != null) return Math.min(col.colSpan, props.cols);
+      if (FULL_WIDTH_TYPES.includes(col.type)) return props.cols;
+      return 1;
+    };
+
     /* columns → 행별 그룹화 (rowBreak 또는 colSpan 누적이 cols 초과 시 줄바꿈)
      *           rowSpan>1 인 필드는 다음 행들에도 col 자리를 점유한다. */
     const cfRows = Vue.computed(() => {
@@ -1883,9 +1896,10 @@ window.BoFormArea = {
       for (const col of props.columns) {
         if (col.visible && !col.visible(props.form)) continue;
         if (col.type === 'rowBreak') { if (cur.length) { rows.push(cur); cur = []; used = 0; } continue; }
-        const span = Math.min(col.colSpan || 1, props.cols);
+        const span = fnEffSpan(col);
         if (used + span > props.cols && cur.length) { rows.push(cur); cur = []; used = 0; }
         cur.push(col); used += span;
+        if (used >= props.cols) { rows.push(cur); cur = []; used = 0; }
       }
       if (cur.length) rows.push(cur);
       return rows;
@@ -1893,7 +1907,7 @@ window.BoFormArea = {
 
     /* cfFieldStyle — 공통 style 헬퍼 (template 가독성용) */
     const cfFieldStyle = (col) => {
-      const cs = col.colSpan || 1;
+      const cs = fnEffSpan(col);
       const rs = col.rowSpan || 1;
       let s = '';
       if (cs > 1) s += `grid-column:span ${Math.min(cs, props.cols)};flex:${cs};`;
@@ -1956,6 +1970,9 @@ window.BoFormArea = {
     <span v-if="col.required && !readonly" class="req">
     *
   </span>
+    <span v-if="col.hint" class="form-hint" style="font-size:11px;color:#888;font-weight:400;margin-left:6px;">
+    {{ col.hint }}
+  </span>
 </label>
 <label v-else-if="col.type !== 'slot' && col.hideLabel" class="form-label" :style="'visibility:hidden;'+(labelLeft?'margin-bottom:0;':'')">
 ·
@@ -1970,6 +1987,9 @@ window.BoFormArea = {
 {{ col.label }}
 <span v-if="col.required && !readonly" class="req">
 *
+</span>
+<span v-if="col.hint" class="form-hint" style="font-size:11px;color:#888;font-weight:400;margin-left:6px;">
+{{ col.hint }}
 </span>
 </label>
 <!-- readonly 표시 -->
@@ -2042,12 +2062,9 @@ window.BoFormArea = {
 <!-- slot 탈출구 -->
 <slot v-else-if="col.type === 'slot'" :name="col.name || col.key" :form="form" :col="col" :readonly="readonly">
 </slot>
-<!-- 에러 메시지 / 힌트 -->
+<!-- 에러 메시지 (힌트는 라벨 우측에 표시) -->
 <span v-if="errors[col.key]" class="field-error">
   {{ errors[col.key] }}
-</span>
-<span v-else-if="col.hint" class="form-hint" style="font-size:11px;color:#888;">
-  {{ col.hint }}
 </span>
 </div>
 </div>

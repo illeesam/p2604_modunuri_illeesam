@@ -313,11 +313,14 @@ window.PdReviewMng = {
       await handleSearchList('DEFAULT');
     };
 
-    /* onReset — 초기화 */
+    /* onReset — 초기화 (선택된 리뷰 상세 + 상품별 드릴다운도 전체로 복귀) */
     const onReset = async () => {
       Object.assign(searchParam, _initSearchParam());
       uiState.sortKey = ''; uiState.sortDir = 'asc';
       pager.pageNo = 1;
+      selectedId.value = null;            // 상세 패널 빈(안내) 상태로
+      selectedProdId.value = null;        // 상품별 리뷰 드릴다운 전체로
+      prodReviews.splice(0);
       await handleSearchList();
     };
 
@@ -429,7 +432,7 @@ window.PdReviewMng = {
       <span class="list-count">
         총 {{ prodReviewPager.pageTotalCount }}건
       </span>
-      <button class="btn btn-xs" style="margin-left:auto;background:#f5f5f5;border:1px solid #ddd;color:#666;font-size:11px;padding:2px 8px;" @click="handleBtnAction('prodReviews-close')">
+      <button data-hide-close style="display:none;" class="btn btn-xs" style="margin-left:auto;background:#f5f5f5;border:1px solid #ddd;color:#666;font-size:11px;padding:2px 8px;" @click="handleBtnAction('prodReviews-close')">
         ✕ 닫기
       </button>
     </div>
@@ -452,13 +455,16 @@ window.PdReviewMng = {
   </div>
   <!-- ===== □.□. 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ============================= -->
   <!-- ===== □. 상품ID 클릭 시: 해당 상품의 리뷰 페이징 목록 ============================= -->
-  <!-- ===== ■. 상세 패널 =================================================== -->
-  <div class="card" v-if="cfSelectedRow">
+  <!-- ===== ■. 상세 패널 (항상 표시, 리뷰 선택 시에만 액션 노출) ============================ -->
+  <div class="card">
     <div class="toolbar">
       <span class="list-title">
         리뷰 내용
+        <span v-if="!cfSelectedRow" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+          목록에서 리뷰를 선택하세요
+        </span>
       </span>
-      <span style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+      <span v-if="cfSelectedRow" style="margin-left:auto;display:flex;align-items:center;gap:8px;">
         <span style="font-size:12px;color:#888;">
           현재 상태:
         </span>
@@ -475,44 +481,49 @@ window.PdReviewMng = {
             {{ s.label }}
           </option>
         </select>
-        <button class="btn btn-xs" style="margin-left:6px;background:#f5f5f5;border:1px solid #ddd;color:#666;font-size:11px;padding:3px 10px;" @click="handleBtnAction('detailPanel-close')">
+        <button data-hide-close style="display:none;" class="btn btn-xs" style="margin-left:6px;background:#f5f5f5;border:1px solid #ddd;color:#666;font-size:11px;padding:3px 10px;" @click="handleBtnAction('detailPanel-close')">
           ✕ 닫기
         </button>
       </span>
     </div>
     <div style="padding:16px">
-      <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:#555;margin-bottom:10px;">
-        <span>
-          <b style="color:#888;">
-            상품:
-          </b>
-          [{{ cfSelectedRow.prodId }}] {{ getProdNm(cfSelectedRow.prodId) || cfSelectedRow.prodNm || '' }}
-        </span>
-        <span>
-          <b style="color:#888;">
-            작성자:
-          </b>
-          {{ getMemNm(cfSelectedRow.memberId) }}
-        </span>
-        <span>
-          <b style="color:#888;">
-            작성일:
-          </b>
-          {{ cfSelectedRow.reviewDate }}
-        </span>
+      <div v-if="!cfSelectedRow" style="padding:24px 8px;color:#aaa;font-size:13px;text-align:center;">
+        목록에서 리뷰를 선택하면 상세 내용이 표시됩니다.
       </div>
-      <div style="font-size:16px;font-weight:600;margin-bottom:8px">
-        {{ cfSelectedRow.reviewTitle }}
-      </div>
-      <div style="color:#f59e0b;margin-bottom:8px">
-        평점: {{ Number(cfSelectedRow.rating || 0).toFixed(1) }} / 5.0
-      </div>
-      <div style="background:#f9f9f9;padding:12px;border-radius:6px;white-space:pre-wrap;font-size:14px">
-        {{ cfSelectedRow.reviewContent }}
-      </div>
-      <div style="margin-top:8px;font-size:12px;color:#888">
-        도움이 됐어요 {{ cfSelectedRow.helpfulCnt }} | 도움이 안됐어요 {{ cfSelectedRow.unhelpfulCnt }}
-      </div>
+      <template v-else>
+        <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:#555;margin-bottom:10px;">
+          <span>
+            <b style="color:#888;">
+              상품:
+            </b>
+            [{{ cfSelectedRow.prodId }}] {{ getProdNm(cfSelectedRow.prodId) || cfSelectedRow.prodNm || '' }}
+          </span>
+          <span>
+            <b style="color:#888;">
+              작성자:
+            </b>
+            {{ getMemNm(cfSelectedRow.memberId) }}
+          </span>
+          <span>
+            <b style="color:#888;">
+              작성일:
+            </b>
+            {{ cfSelectedRow.reviewDate }}
+          </span>
+        </div>
+        <div style="font-size:16px;font-weight:600;margin-bottom:8px">
+          {{ cfSelectedRow.reviewTitle }}
+        </div>
+        <div style="color:#f59e0b;margin-bottom:8px">
+          평점: {{ Number(cfSelectedRow.rating || 0).toFixed(1) }} / 5.0
+        </div>
+        <div style="background:#f9f9f9;padding:12px;border-radius:6px;white-space:pre-wrap;font-size:14px">
+          {{ cfSelectedRow.reviewContent }}
+        </div>
+        <div style="margin-top:8px;font-size:12px;color:#888">
+          도움이 됐어요 {{ cfSelectedRow.helpfulCnt }} | 도움이 안됐어요 {{ cfSelectedRow.unhelpfulCnt }}
+        </div>
+      </template>
     </div>
   </div>
   <!-- ===== □. 상세 패널 =================================================== -->

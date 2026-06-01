@@ -452,7 +452,7 @@ window.PmEventDtl = {
       <!-- ===== ■.■.■. 이벤트 제목/기간/상태 (BoFormArea 자동 렌더) ===================== -->
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="3" :show-actions="false" />
+        :readonly="cfDtlMode" :cols="3" compact :show-actions="false" />
       <div v-if="form.authRequired" style="padding:10px 14px;background:#fff7e6;border-radius:6px;border:1px solid #ffd591;font-size:12px;color:#d46b08;">
         ⚠️ 인증 필요 설정 시, 이벤트 내용 3~5는 로그인 회원에게만 표시됩니다.
       </div>
@@ -480,7 +480,7 @@ window.PmEventDtl = {
       <div style="margin-top:20px;padding-top:20px;border-top:1px solid #e8e8e8;">
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
         <bo-form-area :columns="vendorFormColumns" :form="form" :errors="errors"
-          :readonly="cfDtlMode" :cols="3" :show-actions="false">
+          :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
           <template #vendor>
             <div style="display:flex;gap:8px;align-items:center;">
               <div class="form-control" style="background:#f9f9f9;cursor:pointer;padding:0;display:flex;align-items:center;" @click="handleBtnAction('vendorModal-open')">

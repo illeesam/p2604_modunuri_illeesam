@@ -340,7 +340,7 @@ window.PmGiftDtl = {
       </div>
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
-        :readonly="cfIsView" :cols="3" :show-actions="false">
+        :readonly="cfIsView" :cols="3" compact :show-actions="false">
         <!-- ===== ■.■.■.■. 판매업체 picker ======================================= -->
         <template #vendor>
           <div style="display:flex;gap:8px;align-items:center;">
