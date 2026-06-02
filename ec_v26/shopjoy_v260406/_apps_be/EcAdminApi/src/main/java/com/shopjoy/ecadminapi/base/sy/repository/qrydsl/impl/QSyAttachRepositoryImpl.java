@@ -84,24 +84,19 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search, true);
-
-        JPAQuery<SyAttachDto.Item> query = baseSelColumnQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndAttachId(search),
                 baseAndAttachGrpId(search),
                 baseAndMimeTypeCd(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<SyAttachDto.Item> query = baseSelColumnQuery().where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyAttachDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syAttach.count()).from(syAttach).where(
-                baseAndSiteId(search),
-                baseAndAttachId(search),
-                baseAndAttachGrpId(search),
-                baseAndMimeTypeCd(search),
-                baseAndSearchValue(search)
-        ).fetchOne();
+        Long total = queryFactory.select(syAttach.count()).from(syAttach).where(wheres).fetchOne();
 
         SyAttachDto.PageResponse res = new SyAttachDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

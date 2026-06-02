@@ -76,8 +76,7 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search, false);
-
-        JPAQuery<PdReviewAttachDto.Item> query = baseQueryWithJoin().where(
+        BooleanExpression[] wheres = {
                 baseAndReviewIds(search),
                 baseAndReviewId(search),
                 baseAndSiteId(search),
@@ -85,7 +84,9 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
                 baseAndProdId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<PdReviewAttachDto.Item> query = baseQueryWithJoin().where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -94,15 +95,7 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
         Long total = queryFactory.select(pdReviewAttach.count())
                 .from(pdReviewAttach)
                 .leftJoin(pdReview).on(pdReview.reviewId.eq(pdReviewAttach.reviewId))
-                .where(
-                baseAndReviewIds(search),
-                baseAndReviewId(search),
-                baseAndSiteId(search),
-                baseAndReviewAttachId(search),
-                baseAndProdId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         PdReviewAttachDto.PageResponse res = new PdReviewAttachDto.PageResponse();

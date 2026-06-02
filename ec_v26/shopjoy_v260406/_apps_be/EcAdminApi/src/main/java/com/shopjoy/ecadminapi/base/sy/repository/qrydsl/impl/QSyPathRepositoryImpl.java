@@ -73,19 +73,17 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
 
-        JPAQuery<SyPathDto.Item> query = baseSelColumnQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndBizCd(search),
                 baseAndUseYn(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<SyPathDto.Item> query = baseSelColumnQuery().where(wheres);
         query = query.orderBy(buildOrder().toArray(OrderSpecifier[]::new));
         List<SyPathDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syPath.count()).from(syPath).where(
-                baseAndBizCd(search),
-                baseAndUseYn(search),
-                baseAndSearchValue(search)
-        ).fetchOne();
+        Long total = queryFactory.select(syPath.count()).from(syPath).where(wheres).fetchOne();
 
         SyPathDto.PageResponse res = new SyPathDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
