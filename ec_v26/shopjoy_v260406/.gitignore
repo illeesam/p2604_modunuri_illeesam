@@ -177,7 +177,7 @@ _uploads/
 *.csv
 *.tsv
 *.json
-*.xml
+# *.xml   # 주석처리: logback-spring.xml / MyBatis Mapper XML 등 소스 XML 추적 필요
 *.json.bak
 *.xml.bak
 
