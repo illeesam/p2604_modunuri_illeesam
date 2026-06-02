@@ -268,3 +268,19 @@ debug.log
 !assets/cdn/prod/**
 !.gitignore
 !.gitattributes
+
+# ─── 소스/설정 JSON·TXT·CSV 명시 허용 ─────────────────────────────────────
+# 위의 블랭킷 *.json / *.txt / *.csv / *.tsv 규칙이 정상 소스를 누락시키는 것을 방지.
+# (증상: 로컬에는 있으나 커밋되지 않아 다른 환경에서 "소스 미반영"으로 나타남)
+# 프론트 목업 API 응답 (CLAUDE.md 데이터 소스)
+!api/**/*.json
+# Spring Boot 리소스 (banner.txt 등) — uploads/cdn 제외하고 소스성 파일 허용
+!_apps_be/**/src/main/resources/**/*.json
+!_apps_be/**/src/main/resources/**/*.txt
+# 프로젝트 루트/도구 설정 JSON (package.json, tsconfig 등)
+!package.json
+!package-lock.json
+!tsconfig*.json
+!jsconfig.json
+# 패키지 매니페스트 (CDN 로컬 복사본 메타 등)
+!assets/cdn/**/*.json

@@ -775,15 +775,15 @@ window.SyCodeMng = {
   <!-- ===== □. 표시경로 트리 + 코드그룹 CRUD ===================================== -->
   <!-- ===== ■. 코드 목록 영역 ================================================ -->
   <div class="card">
-    <!-- ===== ■.■. 일반/트리 탭 =============================================== -->
-    <div style="display:flex;gap:8px;padding:12px;border-bottom:1px solid #e5e7eb;background:#f9fafb;">
+    <!-- ===== ■.■. 일반/트리 탭 (슬림) ====================================== -->
+    <div style="display:flex;gap:8px;padding:0 12px;border-bottom:1px solid #e5e7eb;background:#f9fafb;">
       <button @click="handleBtnAction('tab-change', '일반')"
-        style="padding:8px 16px;border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;color:#6b7280;font-weight:500;transition:all 0.2s;"
+        style="padding:4px 14px;border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;color:#6b7280;font-weight:500;font-size:13px;line-height:1.5;transition:all 0.2s;"
         :style="uiState.activeCodeTab==='일반' ? {borderBottomColor:'#e8587a',color:'#e8587a'} : {}">
         일반
       </button>
       <button @click="handleBtnAction('tab-change', '트리')" :disabled="!uiState.selectedGrp"
-        style="padding:8px 16px;border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;color:#6b7280;font-weight:500;transition:all 0.2s;"
+        style="padding:4px 14px;border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;color:#6b7280;font-weight:500;font-size:13px;line-height:1.5;transition:all 0.2s;"
         :style="uiState.activeCodeTab==='트리' ? {borderBottomColor:'#e8587a',color:'#e8587a'} : {}">
         트리
       </button>

@@ -1,0 +1,60 @@
+═══════════════════════════════════════════════════════
+  fo 패키지 — 회원(FO) 전용 API
+  권한: @FoOnly (일부 공개)  |  context-path: /api → /api/fo/...
+═══════════════════════════════════════════════════════
+
+■ 상품 (pd)
+  GET    /fo/ec/pd/prod               상품 목록
+  GET    /fo/ec/pd/prod/page          상품 페이징
+  GET    /fo/ec/pd/prod/{id}          상품 상세
+
+■ 이벤트 (pm)
+  GET    /fo/ec/pm/event              이벤트 목록
+  GET    /fo/ec/pm/event/page         이벤트 페이징
+  GET    /fo/ec/pm/event/{eventId}    이벤트 상세
+
+■ 장바구니 (od)
+  GET    /fo/ec/od/cart               내 장바구니 조회
+  POST   /fo/ec/od/cart               상품 담기
+  PATCH  /fo/ec/od/cart/{cartId}      수량 변경
+  DELETE /fo/ec/od/cart/{cartId}      상품 제거
+
+■ 주문 (od)
+  GET    /fo/ec/od/order              내 주문 목록
+  GET    /fo/ec/od/order/page         내 주문 페이징
+  GET    /fo/ec/od/order/{orderId}    주문 상세
+  POST   /fo/ec/od/order              주문 생성
+
+■ 찜 (mb)
+  GET    /fo/ec/mb/like               내 찜 목록
+  POST   /fo/ec/mb/like/{type}/{id}   찜 토글 (추가/취소)
+  DELETE /fo/ec/mb/like/{type}/{id}   찜 취소
+
+■ 쿠폰 (pm)
+  GET    /fo/ec/pm/coupon/available   미사용 쿠폰 목록
+
+■ 캐시/충전금 (pm)
+  GET    /fo/ec/pm/cache/balance      현재 잔액 조회
+
+■ 블로그/게시물 (cm)
+  GET    /fo/ec/cm/bltn               게시물 목록
+  GET    /fo/ec/cm/bltn/page          게시물 페이징
+  GET    /fo/ec/cm/bltn/{blogId}      게시물 상세 (조회수 +1)
+  POST   /fo/ec/cm/bltn               게시물 작성
+  PUT    /fo/ec/cm/bltn/{blogId}      게시물 수정
+  DELETE /fo/ec/cm/bltn/{blogId}      게시물 삭제
+
+■ 고객 문의 (cm)
+  POST   /fo/ec/cm/contact            문의 접수
+
+■ 마이페이지 (my)
+  GET    /fo/ec/my/info               내 정보 조회
+  PUT    /fo/ec/my/info               내 정보 수정
+  POST   /fo/ec/my/password           비밀번호 변경
+  GET    /fo/ec/my/addr               내 배송지 목록
+  POST   /fo/ec/my/addr               배송지 추가
+  DELETE /fo/ec/my/addr/{addrId}      배송지 삭제
+  GET    /fo/ec/my/order              내 주문 목록
+  GET    /fo/ec/my/claim              내 클레임 목록
+  GET    /fo/ec/my/coupon             내 쿠폰 목록
+  GET    /fo/ec/my/cache              내 캐시 내역

@@ -262,8 +262,8 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
                     WHERE c.biz_cd = :bizCd
                 ),
                 filtered /* 검색조건이 적용된 행 */ AS (
-                    SELECT template_id, path_id
-                    FROM sy_template syTemplate
+                    SELECT t.template_id, t.path_id
+                    FROM sy_template t
                     WHERE 1=1
                 """);
         params.put("bizCd", "sy_template");

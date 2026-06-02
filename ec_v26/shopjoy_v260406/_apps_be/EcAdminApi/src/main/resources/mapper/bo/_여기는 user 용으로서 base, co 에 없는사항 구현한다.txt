@@ -1,0 +1,271 @@
+═══════════════════════════════════════════════════════
+  bo 패키지 — 관리자(BO) 전용 API
+  권한: @BoOnly  |  context-path: /api  →  /api/bo/...
+═══════════════════════════════════════════════════════
+
+■ EC > 회원 (mb)
+  GET    /bo/ec/mb/member               회원 목록
+  GET    /bo/ec/mb/member/page          회원 페이징
+  POST   /bo/ec/mb/member               회원 등록
+  PUT    /bo/ec/mb/member/{id}          회원 수정
+  DELETE /bo/ec/mb/member/{id}          회원 삭제
+  PATCH  /bo/ec/mb/member/{id}/status   회원 상태변경
+
+  GET    /bo/ec/mb/mem-grade            회원등급 목록
+  GET    /bo/ec/mb/mem-grade/page       회원등급 페이징
+  POST   /bo/ec/mb/mem-grade            회원등급 등록
+  PUT    /bo/ec/mb/mem-grade/{id}       회원등급 수정
+  DELETE /bo/ec/mb/mem-grade/{id}       회원등급 삭제
+
+  GET    /bo/ec/mb/mem-group            회원그룹 목록
+  GET    /bo/ec/mb/mem-group/page       회원그룹 페이징
+  POST   /bo/ec/mb/mem-group            회원그룹 등록
+  PUT    /bo/ec/mb/mem-group/{id}       회원그룹 수정
+  DELETE /bo/ec/mb/mem-group/{id}       회원그룹 삭제
+
+■ EC > 상품 (pd)
+  GET    /bo/ec/pd/category             카테고리 목록
+  GET    /bo/ec/pd/category/page        카테고리 페이징
+  POST   /bo/ec/pd/category             카테고리 등록
+  PUT    /bo/ec/pd/category/{id}        카테고리 수정
+  DELETE /bo/ec/pd/category/{id}        카테고리 삭제
+
+  GET    /bo/ec/pd/prod                 상품 목록
+  GET    /bo/ec/pd/prod/page            상품 페이징
+  POST   /bo/ec/pd/prod                 상품 등록
+  PUT    /bo/ec/pd/prod/{id}            상품 수정
+  DELETE /bo/ec/pd/prod/{id}            상품 삭제
+
+  GET    /bo/ec/pd/qna                  상품문의 목록
+  GET    /bo/ec/pd/qna/page             상품문의 페이징
+  POST   /bo/ec/pd/qna                  상품문의 등록
+  PUT    /bo/ec/pd/qna/{id}             상품문의 수정
+  DELETE /bo/ec/pd/qna/{id}             상품문의 삭제
+
+  GET    /bo/ec/pd/review               리뷰 목록
+  GET    /bo/ec/pd/review/page          리뷰 페이징
+  POST   /bo/ec/pd/review               리뷰 등록
+  PUT    /bo/ec/pd/review/{id}          리뷰 수정
+  DELETE /bo/ec/pd/review/{id}          리뷰 삭제
+
+■ EC > 주문/배송/클레임 (od)
+  GET    /bo/ec/od/order                주문 목록
+  GET    /bo/ec/od/order/page           주문 페이징
+  POST   /bo/ec/od/order                주문 등록
+  PUT    /bo/ec/od/order/{id}           주문 수정
+  DELETE /bo/ec/od/order/{id}           주문 삭제
+  PATCH  /bo/ec/od/order/{id}/status    주문 상태변경
+
+  GET    /bo/ec/od/dliv                 배송 목록
+  GET    /bo/ec/od/dliv/page            배송 페이징
+  POST   /bo/ec/od/dliv                 배송 등록
+  PUT    /bo/ec/od/dliv/{id}            배송 수정
+  DELETE /bo/ec/od/dliv/{id}            배송 삭제
+  PATCH  /bo/ec/od/dliv/{id}/status     배송 상태변경
+
+  GET    /bo/ec/od/claim                클레임 목록
+  GET    /bo/ec/od/claim/page           클레임 페이징
+  POST   /bo/ec/od/claim                클레임 등록
+  PUT    /bo/ec/od/claim/{id}           클레임 수정
+  DELETE /bo/ec/od/claim/{id}           클레임 삭제
+  PATCH  /bo/ec/od/claim/{id}/status    클레임 상태변경
+
+■ EC > 프로모션 (pm)
+  GET    /bo/ec/pm/coupon               쿠폰 목록
+  GET    /bo/ec/pm/coupon/page          쿠폰 페이징
+  POST   /bo/ec/pm/coupon               쿠폰 등록
+  PUT    /bo/ec/pm/coupon/{id}          쿠폰 수정
+  DELETE /bo/ec/pm/coupon/{id}          쿠폰 삭제
+  PATCH  /bo/ec/pm/coupon/{id}/status   쿠폰 상태변경
+
+  GET    /bo/ec/pm/cache                캐시(충전금) 목록
+  GET    /bo/ec/pm/cache/page           캐시 페이징
+  POST   /bo/ec/pm/cache                캐시 등록
+  PUT    /bo/ec/pm/cache/{id}           캐시 수정
+  DELETE /bo/ec/pm/cache/{id}           캐시 삭제
+
+  GET    /bo/ec/pm/event                이벤트 목록
+  GET    /bo/ec/pm/event/page           이벤트 페이징
+  POST   /bo/ec/pm/event                이벤트 등록
+  PUT    /bo/ec/pm/event/{id}           이벤트 수정
+  DELETE /bo/ec/pm/event/{id}           이벤트 삭제
+  PATCH  /bo/ec/pm/event/{id}/status    이벤트 상태변경
+
+  GET    /bo/ec/pm/discnt               할인 목록
+  GET    /bo/ec/pm/discnt/page          할인 페이징
+  POST   /bo/ec/pm/discnt               할인 등록
+  PUT    /bo/ec/pm/discnt/{id}          할인 수정
+  DELETE /bo/ec/pm/discnt/{id}          할인 삭제
+  PATCH  /bo/ec/pm/discnt/{id}/status   할인 상태변경
+
+  GET    /bo/ec/pm/gift                 사은품 목록
+  GET    /bo/ec/pm/gift/page            사은품 페이징
+  POST   /bo/ec/pm/gift                 사은품 등록
+  PUT    /bo/ec/pm/gift/{id}            사은품 수정
+  DELETE /bo/ec/pm/gift/{id}            사은품 삭제
+  PATCH  /bo/ec/pm/gift/{id}/status     사은품 상태변경
+
+  GET    /bo/ec/pm/plan                 기획전 목록
+  GET    /bo/ec/pm/plan/page            기획전 페이징
+  POST   /bo/ec/pm/plan                 기획전 등록
+  PUT    /bo/ec/pm/plan/{id}            기획전 수정
+  DELETE /bo/ec/pm/plan/{id}            기획전 삭제
+  PATCH  /bo/ec/pm/plan/{id}/status     기획전 상태변경
+
+  GET    /bo/ec/pm/save                 적립금 목록
+  GET    /bo/ec/pm/save/page            적립금 페이징
+  POST   /bo/ec/pm/save                 적립금 등록
+  PUT    /bo/ec/pm/save/{id}            적립금 수정
+  DELETE /bo/ec/pm/save/{id}            적립금 삭제
+
+  GET    /bo/ec/pm/voucher              바우처 목록
+  GET    /bo/ec/pm/voucher/page         바우처 페이징
+  POST   /bo/ec/pm/voucher              바우처 등록
+  PUT    /bo/ec/pm/voucher/{id}         바우처 수정
+  DELETE /bo/ec/pm/voucher/{id}         바우처 삭제
+  PATCH  /bo/ec/pm/voucher/{id}/status  바우처 상태변경
+
+■ EC > 전시 (dp)
+  GET    /bo/ec/dp/ui                   전시 UI 목록
+  GET    /bo/ec/dp/ui/page              전시 UI 페이징
+  POST   /bo/ec/dp/ui                   전시 UI 등록
+  PUT    /bo/ec/dp/ui/{id}              전시 UI 수정
+  DELETE /bo/ec/dp/ui/{id}              전시 UI 삭제
+
+  GET    /bo/ec/dp/area                 전시 영역 목록
+  GET    /bo/ec/dp/area/page            전시 영역 페이징
+  POST   /bo/ec/dp/area                 전시 영역 등록
+  PUT    /bo/ec/dp/area/{id}            전시 영역 수정
+  DELETE /bo/ec/dp/area/{id}            전시 영역 삭제
+
+  GET    /bo/ec/dp/panel                전시 패널 목록
+  GET    /bo/ec/dp/panel/page           전시 패널 페이징
+  POST   /bo/ec/dp/panel                전시 패널 등록
+  PUT    /bo/ec/dp/panel/{id}           전시 패널 수정
+  DELETE /bo/ec/dp/panel/{id}           전시 패널 삭제
+
+  GET    /bo/ec/dp/widget               위젯 목록
+  GET    /bo/ec/dp/widget/page          위젯 페이징
+  POST   /bo/ec/dp/widget               위젯 등록
+  PUT    /bo/ec/dp/widget/{id}          위젯 수정
+  DELETE /bo/ec/dp/widget/{id}          위젯 삭제
+
+  GET    /bo/ec/dp/widget-lib           위젯 라이브러리 목록
+  GET    /bo/ec/dp/widget-lib/page      위젯 라이브러리 페이징
+  POST   /bo/ec/dp/widget-lib           위젯 라이브러리 등록
+  PUT    /bo/ec/dp/widget-lib/{id}      위젯 라이브러리 수정
+  DELETE /bo/ec/dp/widget-lib/{id}      위젯 라이브러리 삭제
+
+■ EC > 커뮤니티 (cm)
+  GET    /bo/ec/cm/notice               공지사항 목록
+  GET    /bo/ec/cm/notice/page          공지사항 페이징
+  POST   /bo/ec/cm/notice               공지사항 등록
+  PUT    /bo/ec/cm/notice/{id}          공지사항 수정
+  DELETE /bo/ec/cm/notice/{id}          공지사항 삭제
+
+  GET    /bo/ec/cm/bltn                 게시글 목록
+  GET    /bo/ec/cm/bltn/page            게시글 페이징
+  POST   /bo/ec/cm/bltn                 게시글 등록
+  PUT    /bo/ec/cm/bltn/{id}            게시글 수정
+  DELETE /bo/ec/cm/bltn/{id}            게시글 삭제
+
+  GET    /bo/ec/cm/chatt                채팅 목록
+  GET    /bo/ec/cm/chatt/page           채팅 페이징
+  POST   /bo/ec/cm/chatt                채팅 등록
+  PUT    /bo/ec/cm/chatt/{id}           채팅 수정
+  DELETE /bo/ec/cm/chatt/{id}           채팅 삭제
+  PATCH  /bo/ec/cm/chatt/{id}/status    채팅 상태변경
+
+■ EC > 정산 (st)
+  GET    /bo/ec/st/settle               정산 목록
+  GET    /bo/ec/st/settle/page          정산 페이징
+  POST   /bo/ec/st/settle               정산 등록
+  PUT    /bo/ec/st/settle/{id}          정산 수정
+  DELETE /bo/ec/st/settle/{id}          정산 삭제
+  PATCH  /bo/ec/st/settle/{id}/status   정산 상태변경
+
+■ SY > 시스템 (sy)
+  GET    /bo/sy/site                    사이트 목록
+  GET    /bo/sy/site/page               사이트 페이징
+  POST   /bo/sy/site                    사이트 등록
+  PUT    /bo/sy/site/{id}               사이트 수정
+  DELETE /bo/sy/site/{id}               사이트 삭제
+
+  GET    /bo/sy/code                    공통코드 목록
+  GET    /bo/sy/code/page               공통코드 페이징
+  POST   /bo/sy/code                    공통코드 등록
+  PUT    /bo/sy/code/{id}               공통코드 수정
+  DELETE /bo/sy/code/{id}               공통코드 삭제
+
+  GET    /bo/sy/brand                   브랜드 목록
+  GET    /bo/sy/brand/page              브랜드 페이징
+  POST   /bo/sy/brand                   브랜드 등록
+  PUT    /bo/sy/brand/{id}              브랜드 수정
+  DELETE /bo/sy/brand/{id}              브랜드 삭제
+
+  GET    /bo/sy/vendor                  업체 목록
+  GET    /bo/sy/vendor/page             업체 페이징
+  POST   /bo/sy/vendor                  업체 등록
+  PUT    /bo/sy/vendor/{id}             업체 수정
+  DELETE /bo/sy/vendor/{id}             업체 삭제
+
+  GET    /bo/sy/user                    시스템 사용자 목록
+  GET    /bo/sy/user/page               시스템 사용자 페이징
+  POST   /bo/sy/user                    시스템 사용자 등록
+  PUT    /bo/sy/user/{id}               시스템 사용자 수정
+  DELETE /bo/sy/user/{id}               시스템 사용자 삭제
+
+  GET    /bo/sy/dept                    부서 목록
+  GET    /bo/sy/dept/page               부서 페이징
+  POST   /bo/sy/dept                    부서 등록
+  PUT    /bo/sy/dept/{id}               부서 수정
+  DELETE /bo/sy/dept/{id}               부서 삭제
+
+  GET    /bo/sy/role                    역할/권한 목록
+  GET    /bo/sy/role/page               역할/권한 페이징
+  POST   /bo/sy/role                    역할/권한 등록
+  PUT    /bo/sy/role/{id}               역할/권한 수정
+  DELETE /bo/sy/role/{id}               역할/권한 삭제
+
+  GET    /bo/sy/menu                    메뉴 목록
+  GET    /bo/sy/menu/page               메뉴 페이징
+  POST   /bo/sy/menu                    메뉴 등록
+  PUT    /bo/sy/menu/{id}               메뉴 수정
+  DELETE /bo/sy/menu/{id}               메뉴 삭제
+
+  GET    /bo/sy/template                템플릿 목록
+  GET    /bo/sy/template/page           템플릿 페이징
+  POST   /bo/sy/template                템플릿 등록
+  PUT    /bo/sy/template/{id}           템플릿 수정
+  DELETE /bo/sy/template/{id}           템플릿 삭제
+
+  GET    /bo/sy/attach                  첨부파일 목록
+  GET    /bo/sy/attach/page             첨부파일 페이징
+  POST   /bo/sy/attach                  첨부파일 등록
+  PUT    /bo/sy/attach/{id}             첨부파일 수정
+  DELETE /bo/sy/attach/{id}             첨부파일 삭제
+
+  GET    /bo/sy/batch                   배치 목록
+  GET    /bo/sy/batch/page              배치 페이징
+  POST   /bo/sy/batch                   배치 등록
+  PUT    /bo/sy/batch/{id}              배치 수정
+  DELETE /bo/sy/batch/{id}              배치 삭제
+
+  GET    /bo/sy/alarm                   알람 목록
+  GET    /bo/sy/alarm/page              알람 페이징
+  GET    /bo/sy/alarm/{id}              알람 상세
+  POST   /bo/sy/alarm                   알람 등록
+  PUT    /bo/sy/alarm/{id}              알람 수정
+  DELETE /bo/sy/alarm/{id}              알람 삭제
+
+  GET    /bo/sy/bbm                     BBM(문자/푸시) 목록
+  GET    /bo/sy/bbm/page                BBM 페이징
+  POST   /bo/sy/bbm                     BBM 등록
+  PUT    /bo/sy/bbm/{id}                BBM 수정
+  DELETE /bo/sy/bbm/{id}                BBM 삭제
+
+  GET    /bo/sy/contact                 문의 목록
+  GET    /bo/sy/contact/page            문의 페이징
+  POST   /bo/sy/contact                 문의 등록
+  PUT    /bo/sy/contact/{id}            문의 수정
+  DELETE /bo/sy/contact/{id}            문의 삭제
