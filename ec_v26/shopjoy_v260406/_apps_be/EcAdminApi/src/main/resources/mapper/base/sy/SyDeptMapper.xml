@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.base.sy.mapper.SyDeptMapper">
+
+    <!-- 부서 트리 조회 -->
+    <select id="selectTree" resultType="com.shopjoy.ecadminapi.base.sy.data.dto.SyDeptDto$Item">
+        SELECT d.dept_id, d.parent_dept_id, d.dept_nm, d.sort_ord
+        FROM shopjoy_2604.sy_dept d
+        ORDER BY d.sort_ord ASC, d.dept_id ASC
+    </select>
+
+</mapper>

@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.base.zz.mapper.ZzSamy2Mapper">
+
+    <sql id="cols">
+        s.samy2_id, s.cd_grp, s.cd_vl, s.cd_nm, s.srtord_vl,
+        s.attr_nm1, s.attr_nm2, s.attr_nm3, s.attr_nm4,
+        s.expln_cn, s.cd_infw_se_cd, s.use_yn,
+        s.rgtr, s.reg_dt, s.mdfr, s.mdfcn_dt, s.group_cd,
+        s.col01, s.col02, s.col03, s.col04, s.col05,
+        s.col06, s.col07, s.col08, s.col09,
+        s.status_cd, s.type_cd, s.div_cd, s.kind_cd, s.cate_cds, s.samy1_id
+    </sql>
+
+    <sql id="searchWhere">
+        <where>
+            <if test="samy1Ids != null and samy1Ids.size() > 0">
+                AND s.samy1_id IN
+                <foreach collection="samy1Ids" item="id" open="(" separator="," close=")">#{id}</foreach>
+            </if>
+            <if test="samy2Ids != null and samy2Ids.size() > 0">
+                AND s.samy2_id IN
+                <foreach collection="samy2Ids" item="id" open="(" separator="," close=")">#{id}</foreach>
+            </if>
+            <if test="samy2Id != null and samy2Id != ''">AND s.samy2_id = #{samy2Id}</if>
+            <if test="samy1Id != null and samy1Id != ''">AND s.samy1_id = #{samy1Id}</if>
+            <if test="useYn != null and useYn != ''">AND s.use_yn = #{useYn}</if>
+            <if test="searchValue != null and searchValue != ''">
+                AND (s.samy2_id ILIKE '%'||#{searchValue}||'%'
+                  OR s.cd_nm ILIKE '%'||#{searchValue}||'%'
+                  OR s.cd_grp ILIKE '%'||#{searchValue}||'%')
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.zz.data.dto.ZzSamy2Dto$Item">
+        SELECT <include refid="cols"/> /* base.zz :: ZzSamy2 :: selectById */
+        FROM shopjoy_2604.zz_samy2 s
+        WHERE s.samy2_id = #{samy2Id}
+    </select>
+
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.zz.data.dto.ZzSamy2Dto$Item">
+        SELECT <include refid="cols"/> /* base.zz :: ZzSamy2 :: selectList */
+        FROM shopjoy_2604.zz_samy2 s
+        <include refid="searchWhere"/>
+        ORDER BY s.reg_dt DESC, s.samy2_id ASC
+    </select>
+
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.zz.data.dto.ZzSamy2Dto$Item">
+        SELECT <include refid="cols"/> /* base.zz :: ZzSamy2 :: selectPageList */
+        FROM shopjoy_2604.zz_samy2 s
+        <include refid="searchWhere"/>
+        ORDER BY s.reg_dt DESC, s.samy2_id ASC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(s.*) /* base.zz :: ZzSamy2 :: selectPageCount */
+        FROM shopjoy_2604.zz_samy2 s
+        <include refid="searchWhere"/>
+    </select>
+
+    <insert id="insert">
+        INSERT INTO shopjoy_2604.zz_samy2 /* base.zz :: ZzSamy2 :: insert */
+            (samy2_id, cd_grp, cd_vl, cd_nm, srtord_vl,
+             attr_nm1, attr_nm2, attr_nm3, attr_nm4,
+             expln_cn, cd_infw_se_cd, use_yn,
+             rgtr, reg_dt, mdfr, mdfcn_dt, group_cd,
+             col01, col02, col03, col04, col05, col06, col07, col08, col09,
+             status_cd, type_cd, div_cd, kind_cd, cate_cds, samy1_id)
+        VALUES
+            (#{samy2Id}, #{cdGrp}, #{cdVl}, #{cdNm}, #{srtordVl},
+             #{attrNm1}, #{attrNm2}, #{attrNm3}, #{attrNm4},
+             #{explnCn}, #{cdInfwSeCd}, #{useYn},
+             #{rgtr}, #{regDt}, #{mdfr}, #{mdfcnDt}, #{groupCd},
+             #{col01}, #{col02}, #{col03}, #{col04}, #{col05}, #{col06}, #{col07}, #{col08}, #{col09},
+             #{statusCd}, #{typeCd}, #{divCd}, #{kindCd}, #{cateCds}, #{samy1Id})
+    </insert>
+
+    <update id="update">
+        UPDATE shopjoy_2604.zz_samy2 /* base.zz :: ZzSamy2 :: update */
+        SET cd_grp = #{cdGrp}, cd_vl = #{cdVl}, cd_nm = #{cdNm}, srtord_vl = #{srtordVl},
+            attr_nm1 = #{attrNm1}, attr_nm2 = #{attrNm2}, attr_nm3 = #{attrNm3}, attr_nm4 = #{attrNm4},
+            expln_cn = #{explnCn}, cd_infw_se_cd = #{cdInfwSeCd}, use_yn = #{useYn},
+            mdfr = #{mdfr}, mdfcn_dt = #{mdfcnDt}, group_cd = #{groupCd},
+            col01 = #{col01}, col02 = #{col02}, col03 = #{col03}, col04 = #{col04}, col05 = #{col05},
+            col06 = #{col06}, col07 = #{col07}, col08 = #{col08}, col09 = #{col09},
+            status_cd = #{statusCd}, type_cd = #{typeCd}, div_cd = #{divCd},
+            kind_cd = #{kindCd}, cate_cds = #{cateCds}, samy1_id = #{samy1Id}
+        WHERE samy2_id = #{samy2Id}
+    </update>
+
+    <update id="updateSelective">
+        UPDATE shopjoy_2604.zz_samy2 /* base.zz :: ZzSamy2 :: updateSelective */
+        <set>
+            <if test="cdGrp != null">cd_grp = #{cdGrp},</if>
+            <if test="cdVl != null">cd_vl = #{cdVl},</if>
+            <if test="cdNm != null">cd_nm = #{cdNm},</if>
+            <if test="srtordVl != null">srtord_vl = #{srtordVl},</if>
+            <if test="attrNm1 != null">attr_nm1 = #{attrNm1},</if>
+            <if test="attrNm2 != null">attr_nm2 = #{attrNm2},</if>
+            <if test="attrNm3 != null">attr_nm3 = #{attrNm3},</if>
+            <if test="attrNm4 != null">attr_nm4 = #{attrNm4},</if>
+            <if test="explnCn != null">expln_cn = #{explnCn},</if>
+            <if test="cdInfwSeCd != null">cd_infw_se_cd = #{cdInfwSeCd},</if>
+            <if test="useYn != null">use_yn = #{useYn},</if>
+            <if test="mdfr != null">mdfr = #{mdfr},</if>
+            <if test="mdfcnDt != null">mdfcn_dt = #{mdfcnDt},</if>
+            <if test="groupCd != null">group_cd = #{groupCd},</if>
+            <if test="col01 != null">col01 = #{col01},</if>
+            <if test="col02 != null">col02 = #{col02},</if>
+            <if test="col03 != null">col03 = #{col03},</if>
+            <if test="col04 != null">col04 = #{col04},</if>
+            <if test="col05 != null">col05 = #{col05},</if>
+            <if test="col06 != null">col06 = #{col06},</if>
+            <if test="col07 != null">col07 = #{col07},</if>
+            <if test="col08 != null">col08 = #{col08},</if>
+            <if test="col09 != null">col09 = #{col09},</if>
+            <if test="statusCd != null">status_cd = #{statusCd},</if>
+            <if test="typeCd != null">type_cd = #{typeCd},</if>
+            <if test="divCd != null">div_cd = #{divCd},</if>
+            <if test="kindCd != null">kind_cd = #{kindCd},</if>
+            <if test="cateCds != null">cate_cds = #{cateCds},</if>
+            <if test="samy1Id != null">samy1_id = #{samy1Id},</if>
+        </set>
+        WHERE samy2_id = #{samy2Id}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM shopjoy_2604.zz_samy2 /* base.zz :: ZzSamy2 :: delete */
+        WHERE samy2_id = #{samy2Id}
+    </delete>
+
+</mapper>

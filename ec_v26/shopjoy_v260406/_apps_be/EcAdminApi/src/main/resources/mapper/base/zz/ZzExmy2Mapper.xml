@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.shopjoy.ecadminapi.base.zz.mapper.ZzExmy2Mapper">
+
+    <sql id="searchWhere">
+        <where>
+            <if test="exmy1Ids != null and exmy1Ids.size() > 0">
+                AND e.exmy1_id IN
+                <foreach collection="exmy1Ids" item="id" open="(" separator="," close=")">#{id}</foreach>
+            </if>
+            <if test="exmy1Id != null and exmy1Id != ''">AND e.exmy1_id = #{exmy1Id}</if>
+            <if test="exmy2Id != null and exmy2Id != ''">AND e.exmy2_id = #{exmy2Id}</if>
+            <if test="exmy1IdLike != null and exmy1IdLike != ''">AND e.exmy1_id ILIKE '%'||#{exmy1IdLike}||'%'</if>
+            <if test="exmy2IdLike != null and exmy2IdLike != ''">AND e.exmy2_id ILIKE '%'||#{exmy2IdLike}||'%'</if>
+            <if test="col21 != null and col21 != ''">AND e.col21 ILIKE '%'||#{col21}||'%'</if>
+            <if test="col22 != null and col22 != ''">AND e.col22 ILIKE '%'||#{col22}||'%'</if>
+            <if test="col23 != null and col23 != ''">AND e.col23 ILIKE '%'||#{col23}||'%'</if>
+            <if test="col24 != null and col24 != ''">AND e.col24 ILIKE '%'||#{col24}||'%'</if>
+            <if test="col25 != null and col25 != ''">AND e.col25 ILIKE '%'||#{col25}||'%'</if>
+            <if test="searchValue != null and searchValue != ''">
+                AND (e.exmy1_id ILIKE '%'||#{searchValue}||'%'
+                  OR e.exmy2_id ILIKE '%'||#{searchValue}||'%'
+                  OR e.col21 ILIKE '%'||#{searchValue}||'%'
+                  OR e.col22 ILIKE '%'||#{searchValue}||'%'
+                  OR e.col23 ILIKE '%'||#{searchValue}||'%'
+                  OR e.col24 ILIKE '%'||#{searchValue}||'%'
+                  OR e.col25 ILIKE '%'||#{searchValue}||'%')
+            </if>
+        </where>
+    </sql>
+
+    <select id="selectById" resultType="com.shopjoy.ecadminapi.base.zz.data.dto.ZzExmy2Dto$Item">
+        SELECT /* base.zz :: ZzExmy2 :: selectById */
+            e.exmy1_id, e.exmy2_id, e.col21, e.col22, e.col23, e.col24, e.col25,
+            e.reg_by, e.reg_date, e.upd_by, e.upd_date
+        FROM shopjoy_2604.zz_exmy2 e
+        WHERE e.exmy1_id = #{exmy1Id} AND e.exmy2_id = #{exmy2Id}
+    </select>
+
+    <select id="selectList" resultType="com.shopjoy.ecadminapi.base.zz.data.dto.ZzExmy2Dto$Item">
+        SELECT /* base.zz :: ZzExmy2 :: selectList */
+            e.exmy1_id, e.exmy2_id, e.col21, e.col22, e.col23, e.col24, e.col25,
+            e.reg_by, e.reg_date, e.upd_by, e.upd_date
+        FROM shopjoy_2604.zz_exmy2 e
+        <include refid="searchWhere"/>
+        ORDER BY e.exmy1_id ASC, e.exmy2_id ASC
+    </select>
+
+    <select id="selectPageList" resultType="com.shopjoy.ecadminapi.base.zz.data.dto.ZzExmy2Dto$Item">
+        SELECT /* base.zz :: ZzExmy2 :: selectPageList */
+            e.exmy1_id, e.exmy2_id, e.col21, e.col22, e.col23, e.col24, e.col25,
+            e.reg_by, e.reg_date, e.upd_by, e.upd_date
+        FROM shopjoy_2604.zz_exmy2 e
+        <include refid="searchWhere"/>
+        ORDER BY e.exmy1_id ASC, e.exmy2_id ASC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="selectPageCount" resultType="long">
+        SELECT COUNT(e.*) /* base.zz :: ZzExmy2 :: selectPageCount */
+        FROM shopjoy_2604.zz_exmy2 e
+        <include refid="searchWhere"/>
+    </select>
+
+    <insert id="insert">
+        INSERT INTO shopjoy_2604.zz_exmy2 /* base.zz :: ZzExmy2 :: insert */
+            (exmy1_id, exmy2_id, col21, col22, col23, col24, col25,
+             reg_by, reg_date, upd_by, upd_date)
+        VALUES
+            (#{exmy1Id}, #{exmy2Id}, #{col21}, #{col22}, #{col23}, #{col24}, #{col25},
+             #{regBy}, #{regDate}, #{updBy}, #{updDate})
+    </insert>
+
+    <update id="update">
+        UPDATE shopjoy_2604.zz_exmy2 /* base.zz :: ZzExmy2 :: update */
+        SET col21 = #{col21}, col22 = #{col22}, col23 = #{col23},
+            col24 = #{col24}, col25 = #{col25},
+            upd_by = #{updBy}, upd_date = #{updDate}
+        WHERE exmy1_id = #{exmy1Id} AND exmy2_id = #{exmy2Id}
+    </update>
+
+    <update id="updateSelective">
+        UPDATE shopjoy_2604.zz_exmy2 /* base.zz :: ZzExmy2 :: updateSelective */
+        <set>
+            <if test="col21 != null">col21 = #{col21},</if>
+            <if test="col22 != null">col22 = #{col22},</if>
+            <if test="col23 != null">col23 = #{col23},</if>
+            <if test="col24 != null">col24 = #{col24},</if>
+            <if test="col25 != null">col25 = #{col25},</if>
+            <if test="updBy != null">upd_by = #{updBy},</if>
+            <if test="updDate != null">upd_date = #{updDate},</if>
+        </set>
+        WHERE exmy1_id = #{exmy1Id} AND exmy2_id = #{exmy2Id}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM shopjoy_2604.zz_exmy2 /* base.zz :: ZzExmy2 :: delete */
+        WHERE exmy1_id = #{exmy1Id} AND exmy2_id = #{exmy2Id}
+    </delete>
+
+</mapper>
