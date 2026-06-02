@@ -33,6 +33,7 @@ window.SyContactMng = {
         Object.assign(searchParam, _initSearchParam());
         uiState.sortKey = ''; uiState.sortDir = 'asc';
         pager.pageNo = 1;
+        resetDetailToNew();
         return handleSearchList('DEFAULT');
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {
@@ -350,7 +351,7 @@ window.SyContactMng = {
         <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('contacts-pager-setPage', n)" :on-size-change="() => handleSelectAction('contacts-pager-sizeChange')" />
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 하단 상세: ContactDtl 임베드 (항상 표시) =========================== -->
-  <div style="margin-top:4px;">
+  <div style="margin-top:16px;">
     <div v-if="detailModal.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기

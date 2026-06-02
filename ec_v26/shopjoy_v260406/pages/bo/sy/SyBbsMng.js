@@ -55,6 +55,7 @@ window.SyBbsMng = {
         Object.assign(searchParam, _initSearchParam());
         uiState.sortKey = ''; uiState.sortDir = 'asc';
         pager.pageNo = 1;
+        resetDetailToNew();
         return handleSearchBbs('DEFAULT');
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {
@@ -384,7 +385,7 @@ window.SyBbsMng = {
         <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('bbsList-pager-setPage', n)" :on-size-change="() => handleSelectAction('bbsList-pager-sizeChange')" />
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 상세 패널 (인라인 임베드, 항상 표시) =================================== -->
-  <div style="margin-top:4px;">
+  <div style="margin-top:16px;">
     <div v-if="detailModal.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기

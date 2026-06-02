@@ -38,6 +38,7 @@ window.CmBlogMng = {
         Object.assign(searchParam, _initSearchParam());
         uiState.sortKey = ''; uiState.sortDir = 'asc';
         pager.pageNo = 1;
+        resetDetailToNew();
         return handleSearchList('SEARCH');
       // 블로그 신규 등록 (인라인 패널)
       } else if (cmd === 'blogs-add') {

@@ -1128,7 +1128,7 @@ window.DpDispPanelDtl = {
                   </label>
                   <div style="display:flex;align-items:center;gap:6px;">
                     <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;">
-                      <button v-for="n in [1,2,3,4]" :key="Math.random()" type="button"
+                      <button v-for="n in [1,2,3,4]" :key="n" type="button"
                           @click="!cfDtlMode ? (form.gridCols = n) : null"
                           style="padding:6px 12px;font-size:12px;border:none;border-left:1px solid #d1d5db;cursor:pointer;transition:all .15s;"
                           :style="[n===1?'border-left:none;':'', form.gridCols===n ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;', cfDtlMode?'cursor:default;opacity:.6;':'']">
@@ -1461,7 +1461,7 @@ window.DpDispPanelDtl = {
                       <div v-if="cfFileListItems.length===0" style="color:#bbb;padding:12px 0;font-size:13px;">
                         첨부파일 없음
                       </div>
-                      <div v-for="(f, i) in cfFileListItems" :key="Math.random()"
+                      <div v-for="(f, i) in cfFileListItems" :key="i"
                       style="display:flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid #e8e8e8;border-radius:6px;margin-bottom:6px;background:#fafafa;">
                         <span style="font-size:16px;">
                           📎
@@ -1869,7 +1869,8 @@ window.DpDispPanelDtl = {
                             내용 없음
                           </span>
                         </div>
-                        <div v-else v-model="form.htmlDesc" is="base-html-editor" height="280px" style="margin-bottom:16px;">
+                        <div v-else style="margin-bottom:16px;">
+                          <base-html-editor v-model="form.htmlDesc" height="280px" />
                         </div>
                         <div class="form-actions" v-if="active && !cfDtlMode">
                           <template v-if="cfDtlMode">
@@ -1888,8 +1889,9 @@ window.DpDispPanelDtl = {
                         </div>
                       </div>
                       <!-- ===== ■.■.■.■.■. 위젯 1~5: 각 섹션이 독립 row 바인딩 ======================== -->
-                      <!-- ===== ■.■.■.■.■. v-for 단일 아이템 트릭으로 r 로컬 변수 생성 ==================== -->
-                      <template v-else-if="t.key !== 'info'" v-for="r in [rows[cfTabRowMap[t.key]]]" :key="'r_'+t.key">
+                      <!-- ===== ■.■.■.■.■. v-else-if 와 v-for 를 분리 (같은 엘리먼트 동시 사용 금지 → _vei 크래시) === -->
+                      <template v-else-if="t.key !== 'info'">
+                      <template v-for="r in [rows[cfTabRowMap[t.key]]]" :key="'r_'+t.key">
                         <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #f0f0f0;">
                           📐 위젯 설정
                         </div>
@@ -2134,6 +2136,7 @@ window.DpDispPanelDtl = {
                                     </template>
                                   </div>
                                 </template>
+                                </template>
                               </div>
                               <!-- ===== /섹션 콘텐츠 ==================================================== -->
                             </div>
@@ -2193,7 +2196,7 @@ window.DpDispPanelDtl = {
                               <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin-bottom:10px;">
                                 📐 위젯 구성
                               </div>
-                              <div v-for="(r, i) in rows" :key="Math.random()"
+                              <div v-for="(r, i) in rows" :key="i"
             style="display:flex;align-items:center;gap:10px;padding:9px 14px;border:1px solid #f0f0f0;border-radius:8px;margin-bottom:6px;background:#fafafa;">
                                 <span style="font-size:11px;color:#bbb;font-weight:700;min-width:16px;text-align:center;">
                                   {{ i+1 }}

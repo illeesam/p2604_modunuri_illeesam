@@ -232,7 +232,11 @@ window.SyBatchHist = {
     </template>
     <template #row-expand="{ row, colspan }">
       <td :colspan="colspan"
-        :style="row.runStatus==='실패' ? 'background:#fff0f0;padding:8px 16px 10px;border-top:1px dashed #e0e0e0;' : 'background:#f8faff;padding:8px 16px 10px;border-top:1px dashed #e0e0e0;'">
+        :style="(row.runStatus==='실패' ? 'background:#fff5f5;' : 'background:#eef3fb;') + 'padding:0;border-top:2px solid ' + (row.runStatus==='실패' ? '#f3b4b4' : '#bcd0ee') + ';'">
+        <div :style="'margin:10px 14px 12px;padding:12px 14px;background:#fff;border-radius:8px;border:1px solid ' + (row.runStatus==='실패' ? '#f0c4c4' : '#d4e0f2') + ';box-shadow:inset 3px 0 0 ' + (row.runStatus==='실패' ? '#ef4444' : '#3b82f6') + ';'">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.3px;margin-bottom:8px;" :style="row.runStatus==='실패' ? 'color:#b91c1c;' : 'color:#1d4ed8;'">
+          ▼ 실행 상세
+        </div>
         <bo-form-area :columns="histExpandColumns" :form="row" :cols="5" readonly label-left compact :show-actions="false" />
         <div style="font-size:11px;font-weight:600;color:#888;margin:6px 0 3px;">
           메시지
@@ -252,6 +256,7 @@ window.SyBatchHist = {
               ? 'background:#1e1e1e;color:#f87171;border:1px solid #7f1d1d;'
               : 'background:#1e1e1e;color:#86efac;border:1px solid #14532d;'">{{ row.detail }}</pre>
         </template>
+        </div>
       </td>
     </template>
       </bo-grid>

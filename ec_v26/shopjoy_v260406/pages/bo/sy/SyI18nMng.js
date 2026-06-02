@@ -243,16 +243,19 @@ window.SyI18nMng = {
     @row-click="row => handleSelectAction('i18ns-rowOpen', row)" />
   <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('i18ns-pager-setPage', n)" :on-size-change="() => handleSelectAction('i18ns-pager-sizeChange')" />
   <!-- ===== □. 목록 영역 =================================================== -->
-  <!-- ===== ■. 번역 편집 패널 ================================================ -->
-  <div class="card" v-if="cfSelectedKey">
+  <!-- ===== ■. 번역 편집 패널 (항상 표시) ====================================== -->
+  <div class="card">
     <div class="toolbar">
       <span class="list-title">
         번역 편집
-        <span v-if="cfSelectedKey.i18nKey" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+        <span v-if="cfSelectedKey && cfSelectedKey.i18nKey" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
           #{{ cfSelectedKey.i18nKey }}
         </span>
+        <span v-else style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+          목록에서 다국어 키를 선택하세요
+        </span>
       </span>
-        <div style="margin-left:auto;display:flex;gap:6px;">
+        <div v-if="cfSelectedKey" style="margin-left:auto;display:flex;gap:6px;">
           <button class="btn btn-blue btn-sm" @click="handleBtnAction('msgForm-save')">
             저장
           </button>
@@ -264,8 +267,11 @@ window.SyI18nMng = {
       <!-- ===== ■.■. 언어별 번역 입력 (BoFormArea 자동 렌더) ========================== -->
       <div style="padding:12px">
         <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-        <bo-form-area :columns="msgFormColumns" :form="msgForm" :errors="{}"
+        <bo-form-area v-if="cfSelectedKey" :columns="msgFormColumns" :form="msgForm" :errors="{}"
         :cols="3" :show-actions="false" />
+        <div v-else style="text-align:center;color:#bbb;padding:28px 12px;font-size:13px;">
+          목록에서 다국어 키를 선택하면 언어별 번역을 편집할 수 있습니다.
+        </div>
       </div>
     </div>
     <!-- ===== □.□. 언어별 번역 입력 (BoFormArea 자동 렌더) ========================== -->

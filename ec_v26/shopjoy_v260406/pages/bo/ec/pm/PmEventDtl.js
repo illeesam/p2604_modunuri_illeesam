@@ -385,7 +385,7 @@ window.PmEventDtl = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      vendors, products, uiState, codes, form, errors,                              // 상태 / 데이터
+      vendors, products, uiState, codes, form, errors, tabs,                        // 상태 / 데이터
       infoFormColumns, vendorFormColumns, productGridColumns,                       // 폼/그리드 컬럼 정의
       handleBtnAction, handleSelectAction, fnCallbackModal,                                          // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfHasId, cfSaveDisabled, cfDtlMode, cfFilteredProds, cfSelectedProducts, cfVisibilityOptions, cfSelectedVendorNm, // computed
@@ -398,7 +398,7 @@ window.PmEventDtl = {
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">
     {{ !active ? '이벤트 상세' : (cfIsNew ? '이벤트 등록' : (cfDtlMode ? '이벤트 상세' : '이벤트 수정')) }}
-    <span v-if="coUtil.cofAnd(active, !cfIsNew)" style="font-size:12px;color:#999;margin-left:8px;">
+    <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
       #{{ form.eventId }}
     </span>
     <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
@@ -424,7 +424,7 @@ window.PmEventDtl = {
         </div>
         <base-html-editor v-model="form.bannerImage" height="320px" />
       </div>
-      <div class="form-actions" v-if="coUtil.cofAnd(active, !cfDtlMode)">
+      <div class="form-actions" v-if="active && !cfDtlMode">
         <template v-if="cfDtlMode">
           <button class="btn btn-primary" @click="handleBtnAction('form-edit')">
             수정
@@ -500,7 +500,7 @@ window.PmEventDtl = {
       </div>
       <!-- ===== ■.■.■. 판매업체 선택 모달 ========================================== -->
       <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId" modal-name="vendor-pick" :on-callback="fnCallbackModal" />
-      <div class="form-actions" v-if="coUtil.cofAnd(active, !cfDtlMode)">
+      <div class="form-actions" v-if="active && !cfDtlMode">
         <template v-if="cfDtlMode">
           <button class="btn btn-primary" @click="handleBtnAction('form-edit')">
             수정
@@ -548,7 +548,7 @@ window.PmEventDtl = {
     </div>
     <base-html-editor v-else :model-value="form['content'+n]" @update:model-value="v => form['content'+n] = v" height="220px" />
   </div>
-  <div class="form-actions" v-if="coUtil.cofAnd(active, !cfDtlMode)" style="margin-top:16px;">
+  <div class="form-actions" v-if="active && !cfDtlMode" style="margin-top:16px;">
     <template v-if="cfDtlMode">
       <button class="btn btn-primary" @click="handleBtnAction('form-edit')">
         수정
@@ -593,7 +593,7 @@ window.PmEventDtl = {
       </button>
     </template>
   </bo-grid>
-  <div class="form-actions" v-if="coUtil.cofAnd(active, !cfDtlMode)">
+  <div class="form-actions" v-if="active && !cfDtlMode">
     <template v-if="cfDtlMode">
       <button class="btn btn-primary" @click="handleBtnAction('form-edit')">
         수정

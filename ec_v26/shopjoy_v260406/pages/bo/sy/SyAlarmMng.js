@@ -37,6 +37,7 @@ window.SyAlarmMng = {
         uiState.sortKey = ''; uiState.sortDir = 'asc';
         uiState.selectedPath = null;          // 표시경로 트리 전체로 복귀
         pager.pageNo = 1;
+        resetDetailToNew();
         return handleSearchList('DEFAULT');
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {
@@ -469,12 +470,7 @@ window.SyAlarmMng = {
     </div>
     <!-- ===== □.□. 경로 트리 ================================================= -->
     <!-- ===== ■.■. 상세 인라인 패널 (grid 직접 자식 → 전체 폭, 항상 표시) ===================== -->
-    <div style="grid-column:1/-1;margin-top:4px;">
-      <div v-if="detailModal.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-        <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
-          ✕ 닫기
-        </button>
-      </div>
+    <div style="grid-column:1/-1;margin-top:12px;">
       <sy-alarm-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
         :dtl-mode="detailModal.dtlMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
         :active="detailModal.active"

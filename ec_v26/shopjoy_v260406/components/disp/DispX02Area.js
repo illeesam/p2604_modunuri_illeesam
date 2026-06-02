@@ -122,6 +122,10 @@ window.DispX02Area = {
     {{ areaItem.info.title }}
   </div>
   <!-- ===== □. 조건부 영역 ================================================== -->
+  <!-- ===== ■. 영역코멘트 (htmlDesc) — 입력 시 실시간 반영 ========================= -->
+  <div v-if="areaItem.info && areaItem.info.htmlDesc" style="padding:12px 16px;background:#fff;border:1px solid #e0e0e0;border-top:none;font-size:13px;color:#333;line-height:1.6;" v-html="areaItem.info.htmlDesc">
+  </div>
+  <!-- ===== □. 영역코멘트 ================================================== -->
   <!-- ===== ■. 리스트 모드 ================================================== -->
   <div v-if="mode==='list'"
     style="background:#fff;border:1px solid #e0e0e0;border-top:none;border-radius:0 0 8px 8px;overflow:hidden;">

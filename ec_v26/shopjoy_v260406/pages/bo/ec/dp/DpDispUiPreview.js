@@ -43,7 +43,7 @@ const _WP_DispUiPreview = {
       {{ lib.name }}
     </div>
     <div style="display:flex;gap:6px;overflow-x:auto;">
-      <div v-for="i in 4" :key="Math.random()" style="flex-shrink:0;width:64px;text-align:center;">
+      <div v-for="i in 4" :key="i" style="flex-shrink:0;width:64px;text-align:center;">
         <div style="height:56px;background:#f5f5f5;border-radius:5px;margin-bottom:4px;display:flex;align-items:center;justify-content:center;font-size:16px;">
           👗
         </div>
@@ -60,7 +60,7 @@ const _WP_DispUiPreview = {
     {{ lib.chartTitle||lib.name }}
   </div>
   <div v-if="cfChartBars.length" style="display:flex;align-items:flex-end;gap:4px;height:60px;">
-    <div v-for="(bar,i) in cfChartBars" :key="Math.random()" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
+    <div v-for="(bar,i) in cfChartBars" :key="i" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
       <div :style="{height:bar.pct+'%',background:bar.color,borderRadius:'3px 3px 0 0',width:'100%',minHeight:'3px'}">
       </div>
       <div style="font-size:9px;color:#aaa;">
@@ -556,10 +556,18 @@ window.DpDispUiPreview = {
     };
 
     /* -- 드래그·드롭 (그리드) -- */
-    const onDragOver  = (e, idx) => { e.preventDefault(); uiState.dragOverIdx = idx; };
+    const onDragOver  = (e, idx) => {
+      e.preventDefault();
+      if (e.dataTransfer) { e.dataTransfer.dropEffect = 'copy'; }
+      if (uiState.dragOverIdx !== idx) { uiState.dragOverIdx = idx; }
+    };
 
     /* onDragLeave — 드래그 떠남 */
-    const onDragLeave = () => { uiState.dragOverIdx = -1; };
+    const onDragLeave = (e, idx) => {
+      const to = e && e.relatedTarget;
+      if (to && e.currentTarget && e.currentTarget.contains(to)) { return; }
+      if (uiState.dragOverIdx === idx) { uiState.dragOverIdx = -1; }
+    };
 
     /* onDrop — 드롭 */
     const onDrop = (e, idx) => {
@@ -851,6 +859,7 @@ window.DpDispUiPreview = {
       <div style="padding:7px 12px;border-bottom:1px solid #f0f0f0;font-size:12px;font-weight:700;color:#555;background:#fafafa;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;">
         <span>
           표시경로
+          <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;margin-left:4px;">#ec_disp_ui</span>
         </span>
         <span style="font-size:10px;color:#aaa;font-weight:400;">
           ⠿ 드래그하여 배치
@@ -983,7 +992,7 @@ window.DpDispUiPreview = {
           </button>
           <div style="width:1px;height:18px;background:#e5e7eb;margin-right:2px;">
           </div>
-          <button v-for="(vp, key) in VIEWPORT" :key="Math.random()" @click="handleSelectAction('preview-viewport', key)"
+          <button v-for="(vp, key) in VIEWPORT" :key="key" @click="handleSelectAction('preview-viewport', key)"
             style="font-size:11px;padding:3px 8px;border-radius:6px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;"
             :style="uiState.viewportMode===key
             ? 'background:#1d4ed8;color:#fff;border-color:#1d4ed8;'
@@ -1027,8 +1036,8 @@ window.DpDispUiPreview = {
               gridTemplateColumns: cfAutoGridColumns,
               gap: '10px',
               }">
-              <template v-for="(slot, idx) in cfCurrentSlots" :key="Math.random()">
-                <div v-if="!gridState.showRealContent || slot" @dragover="onDragOver($event, idx)" @dragleave="onDragLeave" @drop="onDrop($event, idx)" style="border-radius:8px;transition:all .15s;position:relative;" :style="[ uiState.dragOverIdx===idx ? 'border:2px dashed #1d4ed8;background:#eff6ff;min-height:110px;' : slot ? (gridState.showRealContent ? 'border:none;background:transparent;min-height:0;' : 'border:1px solid #e5e7eb;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.07);min-height:110px;') : 'border:2px dashed #d1d5db;background:#f9fafb;min-height:60px;', slot && (slot.colSpan||1) > 1 ? { gridColumn: 'span ' + slot.colSpan } : {}, slot && (slot.rowSpan||1) > 1 ? { gridRow: 'span ' + slot.rowSpan } : {}, ]">
+              <template v-for="(slot, idx) in cfCurrentSlots" :key="idx">
+                <div v-if="!gridState.showRealContent || slot" @dragover="onDragOver($event, idx)" @dragleave="onDragLeave($event, idx)" @drop="onDrop($event, idx)" style="border-radius:8px;transition:all .15s;position:relative;" :style="[ uiState.dragOverIdx===idx ? 'border:2px dashed #1d4ed8;background:#eff6ff;min-height:110px;' : slot ? (gridState.showRealContent ? 'border:none;background:transparent;min-height:0;' : 'border:1px solid #e5e7eb;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.07);min-height:110px;') : 'border:2px dashed #d1d5db;background:#f9fafb;min-height:60px;', slot && (slot.colSpan||1) > 1 ? { gridColumn: 'span ' + slot.colSpan } : {}, slot && (slot.rowSpan||1) > 1 ? { gridRow: 'span ' + slot.rowSpan } : {}, ]">
                 <!-- ===== ■.■.■.■.■.■.■.■.■. 비어있음 ==================================== -->
                 <div v-if="!slot && uiState.dragOverIdx!==idx" style="height:100%;min-height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:#d1d5db;padding:10px;">
                 <span style="font-size:20px;">

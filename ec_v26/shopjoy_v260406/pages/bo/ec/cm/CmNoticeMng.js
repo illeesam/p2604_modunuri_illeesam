@@ -74,7 +74,8 @@ window.CmNoticeMng = {
     /* handleBtnAction — 버튼 액션 dispatch */
     const handleBtnAction = (cmd) => {
       if (cmd === 'searchParam-list')  { baseGrid.pager.pageNo = 1; return handleSearchList(); }
-      if (cmd === 'searchParam-reset') { Object.assign(searchParam, _initSearchParam()); baseGrid.reset(); return handleSearchList(); }
+      if (cmd === 'searchParam-reset') { Object.assign(searchParam, _initSearchParam()); baseGrid.reset(); resetDetailToNew();
+      return handleSearchList(); }
       if (cmd === 'searchParam-dateRange') {
         if (searchParam.dateRange) {
           const r = boUtil.bofGetDateRange(searchParam.dateRange);
@@ -237,7 +238,7 @@ window.CmNoticeMng = {
     </template>
   </bo-grid>
   <!-- ===== ■. 상세 패널 (인라인 임베드 — 항상 표시, 진입 시 빈 신규 폼) ============= -->
-  <div style="margin-top:4px;">
+  <div style="margin-top:16px;">
     <div v-if="baseDetail.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('baseDetail-close')">✕ 닫기</button>
     </div>

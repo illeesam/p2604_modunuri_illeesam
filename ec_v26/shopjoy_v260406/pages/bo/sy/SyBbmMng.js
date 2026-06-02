@@ -34,6 +34,7 @@ window.SyBbmMng = {
         Object.assign(searchParam, _initSearchParam());
         uiState.selectedPath = null;          // 표시경로 트리 전체로 복귀
         pager.pageNo = 1;
+        resetDetailToNew();
         return handleSearchList('DEFAULT');
       // 게시판 신규 등록 (인라인 패널)
       } else if (cmd === 'bbms-add') {
@@ -381,7 +382,7 @@ window.SyBbmMng = {
   </div>
   <!-- ===== □. 본문 영역 =================================================== -->
   <!-- ===== ■. 상세 인라인 패널 (전체 폭, 항상 표시) ============================ -->
-  <div style="margin-top:4px;">
+  <div style="margin-top:16px;">
     <div v-if="detailModal.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기

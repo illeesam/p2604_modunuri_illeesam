@@ -41,7 +41,7 @@ const _WidgetPreview = {
   <template v-else-if="lib.widgetType==='product_slider'||lib.widgetType==='product'">
     <div style="font-size:12px;font-weight:700;color:#222;margin-bottom:7px;">{{ lib.name }}</div>
     <div style="display:flex;gap:6px;overflow-x:auto;">
-      <div v-for="i in 4" :key="Math.random()" style="flex-shrink:0;width:64px;text-align:center;">
+      <div v-for="i in 4" :key="i" style="flex-shrink:0;width:64px;text-align:center;">
         <div style="height:56px;background:#f5f5f5;border-radius:5px;margin-bottom:4px;display:flex;align-items:center;justify-content:center;font-size:16px;">
           👗
         </div>
@@ -54,7 +54,7 @@ const _WidgetPreview = {
   <template v-else-if="lib.widgetType&&lib.widgetType.startsWith('chart_')">
     <div style="font-size:12px;font-weight:700;color:#222;margin-bottom:8px;">{{ lib.chartTitle||lib.name }}</div>
     <div v-if="cfChartBars.length" style="display:flex;align-items:flex-end;gap:4px;height:60px;">
-      <div v-for="(bar,i) in cfChartBars" :key="Math.random()" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
+      <div v-for="(bar,i) in cfChartBars" :key="i" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;">
         <div :style="{height:bar.pct+'%',background:bar.color,borderRadius:'3px 3px 0 0',width:'100%',minHeight:'3px'}"></div>
         <div style="font-size:9px;color:#aaa;">{{ bar.label }}</div>
       </div>
@@ -469,10 +469,18 @@ window.DpDispWidgetLibPreview = {
     };
 
     /* -- 드래그·드롭 (그리드) -- */
-        const onDragOver  = (e, idx) => { e.preventDefault(); uiState.dragOverIdx = idx; };
+    const onDragOver  = (e, idx) => {
+      e.preventDefault();
+      if (e.dataTransfer) { e.dataTransfer.dropEffect = 'copy'; }
+      if (uiState.dragOverIdx !== idx) { uiState.dragOverIdx = idx; }
+    };
 
-    /* onDragLeave — 이벤트 */
-    const onDragLeave = () => { uiState.dragOverIdx = -1; };
+    /* onDragLeave — 슬롯 밖 이탈 시에만 해제 (깜빡임 방지) */
+    const onDragLeave = (e, idx) => {
+      const to = e && e.relatedTarget;
+      if (to && e.currentTarget && e.currentTarget.contains(to)) { return; }
+      if (uiState.dragOverIdx === idx) { uiState.dragOverIdx = -1; }
+    };
 
     /* onDrop — 이벤트 */
     const onDrop = (e, idx) => {
@@ -701,7 +709,7 @@ window.DpDispWidgetLibPreview = {
         <span style="font-size:12px;font-weight:600;color:#555;">등급제한</span>
         <select v-model="searchParam.filterAuthGrade" class="form-control" style="width:72px;margin:0;font-size:12px;">
           <option value="">전체</option>
-          <option v-for="g in codes.auth_grade_opts" :key="Math.random()" :value="g">{{ g }}↑</option>
+          <option v-for="g in codes.auth_grade_opts" :key="g" :value="g">{{ g }}↑</option>
         </select>
       </div>
       <div style="width:1px;height:24px;background:#e0e0e0;"></div>
@@ -733,7 +741,9 @@ window.DpDispWidgetLibPreview = {
     <!-- ===== ■.■. 왼쪽: 트리 (카드) =========================================== -->
     <div class="card" style="width:340px;flex-shrink:0;display:flex;flex-direction:column;padding:0;overflow:hidden;">
       <div style="padding:7px 12px;border-bottom:1px solid #f0f0f0;font-size:12px;font-weight:700;color:#555;background:#fafafa;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;">
-        <span>표시경로</span>
+        <span>표시경로
+          <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;margin-left:4px;">#ec_disp_widget_lib</span>
+        </span>
         <span style="font-size:10px;color:#aaa;font-weight:400;">⠿ 드래그하여 배치</span>
       </div>
       <!-- ===== ■.■.■. 전체펼치기 / 전체닫기 ======================================== -->
@@ -853,7 +863,7 @@ window.DpDispWidgetLibPreview = {
             {{ uiState.showRealContent ? '✅ 실제컨텐츠' : '👁 실제컨텐츠' }}
           </button>
           <div style="width:1px;height:18px;background:#e5e7eb;margin-right:2px;"></div>
-          <button v-for="(vp, key) in VIEWPORT" :key="Math.random()" @click="handleSelectAction('preview-viewport', key)"
+          <button v-for="(vp, key) in VIEWPORT" :key="key" @click="handleSelectAction('preview-viewport', key)"
             style="font-size:11px;padding:3px 8px;border-radius:6px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;"
             :style="uiState.viewportMode===key
             ? 'background:#1d4ed8;color:#fff;border-color:#1d4ed8;'
@@ -895,10 +905,10 @@ window.DpDispWidgetLibPreview = {
               gridTemplateColumns: cfAutoGridColumns,
               gap: '10px',
               }">
-              <template v-for="(slot, idx) in cfCurrentSlots" :key="Math.random()">
+              <template v-for="(slot, idx) in cfCurrentSlots" :key="idx">
                 <div v-if="!uiState.showRealContent || slot"
                   @dragover="onDragOver($event, idx)"
-                  @dragleave="onDragLeave"
+                  @dragleave="onDragLeave($event, idx)"
                   @drop="onDrop($event, idx)"
                   style="border-radius:8px;transition:all .15s;position:relative;"
                   :style="[

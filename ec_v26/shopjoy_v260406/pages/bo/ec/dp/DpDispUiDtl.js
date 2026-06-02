@@ -528,31 +528,6 @@ window.DpDispUiDtl = {
     </div>
   </div>
   <!-- ===== □. 헤더 ====================================================== -->
-  <!-- ===== ■. 안내 배너 =================================================== -->
-  <div style="background:linear-gradient(135deg,#e3f2fd 0%,#f3e5f5 100%);border:1px solid #90caf9;border-radius:8px;padding:12px 14px;margin:12px 20px;font-size:11px;color:#444;line-height:1.6;">
-    <div style="font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
-      <span>
-        ℹ️ 여부 및 기간 관리 안내
-      </span>
-    </div>
-    <ul style="margin:0;padding-left:18px;">
-      <li>
-        배치로 매시 55분에
-        <b>
-          전시여부, 사용여부
-        </b>
-        정보가 자동 반영됩니다
-      </li>
-      <li>
-        전시관리정보 수정 후 저장하면
-        <b>
-          전시여부, 사용여부
-        </b>
-        정보가 즉시 반영됩니다
-      </li>
-    </ul>
-  </div>
-  <!-- ===== □. 안내 배너 =================================================== -->
   <!-- ===== ■. 본문 ====================================================== -->
   <div style="display:flex;min-height:520px;">
     <!-- ===== ■.■. 좌측 탭 ================================================== -->
@@ -611,7 +586,13 @@ window.DpDispUiDtl = {
     <!-- ===== ■.■. 중앙 본문 ================================================= -->
     <div style="flex:1;padding:20px;min-width:0;overflow-y:auto;">
       <!-- ===== ■.■.■. 기본정보 탭 ============================================== -->
-      <div v-if="activeTab==='base'">
+      <div v-if="activeTab==='base'" class="ui-base-tab">
+        <!-- 행간 압축 (이 탭 내부 한정) -->
+        <style>
+          .ui-base-tab .form-group { margin-bottom: 6px; }
+          .ui-base-tab .form-label { margin-bottom: 2px; font-size: 12px; }
+          .ui-base-tab .form-row { gap: 10px; row-gap: 6px; }
+        </style>
         <!-- ===== ■.■.■.■. 설정 ================================================ -->
         <div style="margin-bottom:14px;padding:14px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;">
           <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
@@ -655,11 +636,11 @@ window.DpDispUiDtl = {
         </div>
         <!-- ===== ■.■.■.■. 제목 ================================================ -->
         <div style="margin-bottom:14px;padding:14px;background:#faf8ff;border:1px solid #e9d5ff;border-radius:8px;">
-          <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
-            <span style="display:inline-block;width:4px;height:16px;background:#7c3aed;border-radius:2px;">
+          <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+            <span style="display:inline-block;width:4px;height:16px;background:#7c3aed;border-radius:2px;flex-shrink:0;">
             </span>
-            제목
-            <span style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+            <span style="white-space:nowrap;">제목</span>
+            <span style="margin-left:auto;display:flex;align-items:center;gap:8px;flex-shrink:0;">
               <span style="font-size:11px;font-weight:600;color:#888;">
                 타이틀 표시
               </span>
@@ -914,6 +895,9 @@ window.DpDispUiDtl = {
         }">
           <!-- ===== ■.■.■.■. UI 기본정보: 모든 영역 렌더 ================================= -->
           <div v-if="activeTab==='base'" style="max-height:560px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;">
+            <!-- UI코멘트 (htmlDesc) — 입력 시 실시간 반영 -->
+            <div v-if="form.htmlDesc" style="padding:10px 12px;background:#fff;border:1px solid #e0e0e0;border-radius:6px;font-size:13px;color:#333;line-height:1.6;" v-html="form.htmlDesc">
+            </div>
             <div v-if="!cfRelatedAreas.length" style="padding:20px 8px;text-align:center;color:#bbb;font-size:11px;">
               연결된 영역이 없습니다.
             </div>
