@@ -309,8 +309,8 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
                     WHERE c.biz_cd = :bizCd
                 ),
                 filtered_site /* 검색조건이 적용된 사이트 집합 */ AS (
-                    SELECT site_id, path_id
-                    FROM sy_site sySite
+                    SELECT a.site_id, a.path_id
+                    FROM sy_site a
                     WHERE 1=1
                 """);
         params.put("bizCd", "sy_site");
@@ -363,21 +363,21 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
      *   - 각 메서드는 SQL 조각을 sql 에 추가하고 동시에 params 에 바인딩
      * ============================================================ */
 
-    /* AND sySite.site_status_cd = :statusCd */
+    /* AND a.site_status_cd = :statusCd (a = filtered_site CTE 의 sy_site) */
     private void pathtreeAndStatus(SySiteDto.Request sySite, StringBuilder sql, Map<String, Object> p) {
         if (sySite == null || !StringUtils.hasText(sySite.getStatus())) return;
         sql.append("      AND a.site_status_cd = :statusCd \n");
         p.put("statusCd", sySite.getStatus());
     }
 
-    /* AND sySite.site_type_cd = :typeCd */
+    /* AND a.site_type_cd = :typeCd */
     private void pathtreeAndTypeCd(SySiteDto.Request sySite, StringBuilder sql, Map<String, Object> p) {
         if (sySite == null || !StringUtils.hasText(sySite.getTypeCd())) return;
         sql.append("      AND a.site_type_cd   = :typeCd \n");
         p.put("typeCd", sySite.getTypeCd());
     }
 
-    /* AND ( OR sySite.col_x ILIKE :searchValue ... ) — searchType csv 로 컬럼 분기
+    /* AND ( OR a.col_x ILIKE :searchValue ... ) — searchType csv 로 컬럼 분기
      *   searchType 은 ",a,b,c," 양끝 콤마 wrap 후 contains() 매칭 — "a"/"c" 같은 양끝 토큰 누락 방지 */
     private void pathtreeAndSearchValue(SySiteDto.Request sySite, StringBuilder sql, Map<String, Object> p) {
         if (sySite == null || !StringUtils.hasText(sySite.getSearchValue())) return;
@@ -395,7 +395,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
         p.put("searchValue", sySite.getSearchValue());
     }
 
-    /* AND sySite.reg_date >= :dateStart AND sySite.reg_date <= :dateEnd + 1 day */
+    /* AND a.reg_date >= :dateStart AND a.reg_date <= :dateEnd + 1 day */
     private void pathtreeAndDateRange(SySiteDto.Request sySite, StringBuilder sql, Map<String, Object> p) {
         if (sySite == null) return;
         if (StringUtils.hasText(sySite.getDateStart())) {
