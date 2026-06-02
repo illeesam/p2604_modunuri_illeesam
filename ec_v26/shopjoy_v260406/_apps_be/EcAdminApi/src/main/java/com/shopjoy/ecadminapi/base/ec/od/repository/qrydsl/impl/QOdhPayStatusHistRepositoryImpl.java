@@ -28,24 +28,24 @@ public class QOdhPayStatusHistRepositoryImpl implements QOdhPayStatusHistReposit
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdhPayStatusHistRepositoryImpl";
-    private static final QOdhPayStatusHist a = QOdhPayStatusHist.odhPayStatusHist;
+    private static final QOdhPayStatusHist odhPayStatusHist = QOdhPayStatusHist.odhPayStatusHist;
 
     /* 결제 상태 이력 baseSelColumnQuery */
     private JPAQuery<OdhPayStatusHistDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(OdhPayStatusHistDto.Item.class,
-                        a.payStatusHistId, a.siteId, a.payId, a.orderId,
-                        a.payStatusCdBefore, a.payStatusCd, a.statusReason,
-                        a.chgUserId, a.chgDate, a.memo,
-                        a.regBy, a.regDate, a.updBy, a.updDate))
-                .from(a);
+                        odhPayStatusHist.payStatusHistId, odhPayStatusHist.siteId, odhPayStatusHist.payId, odhPayStatusHist.orderId,
+                        odhPayStatusHist.payStatusCdBefore, odhPayStatusHist.payStatusCd, odhPayStatusHist.statusReason,
+                        odhPayStatusHist.chgUserId, odhPayStatusHist.chgDate, odhPayStatusHist.memo,
+                        odhPayStatusHist.regBy, odhPayStatusHist.regDate, odhPayStatusHist.updBy, odhPayStatusHist.updDate))
+                .from(odhPayStatusHist);
     }
 
     /* 결제 상태 이력 키조회 */
     @Override
     public Optional<OdhPayStatusHistDto.Item> selectById(String id) {
         OdhPayStatusHistDto.Item dto = baseSelColumnQuery()
-                .where(a.payStatusHistId.eq(id))
+                .where(odhPayStatusHist.payStatusHistId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -91,7 +91,7 @@ public class QOdhPayStatusHistRepositoryImpl implements QOdhPayStatusHistReposit
         }
         List<OdhPayStatusHistDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(a.count()).from(a).where(
+        Long total = queryFactory.select(odhPayStatusHist.count()).from(odhPayStatusHist).where(
                 baseAndSiteId(search),
                 baseAndPayStatusHistId(search),
                 baseAndSearchValue(search)
@@ -111,13 +111,13 @@ public class QOdhPayStatusHistRepositoryImpl implements QOdhPayStatusHistReposit
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(OdhPayStatusHistDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? odhPayStatusHist.siteId.eq(search.getSiteId()) : null;
     }
 
     /* payStatusHistId 정확 일치 */
     private BooleanExpression baseAndPayStatusHistId(OdhPayStatusHistDto.Request search) {
         return search != null && StringUtils.hasText(search.getPayStatusHistId())
-                ? a.payStatusHistId.eq(search.getPayStatusHistId()) : null;
+                ? odhPayStatusHist.payStatusHistId.eq(search.getPayStatusHistId()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
@@ -128,15 +128,15 @@ public class QOdhPayStatusHistRepositoryImpl implements QOdhPayStatusHistReposit
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",chgUserId,", a.chgUserId, pattern);
-        or = orLike(or, all, types, ",memo,", a.memo, pattern);
-        or = orLike(or, all, types, ",orderId,", a.orderId, pattern);
-        or = orLike(or, all, types, ",payId,", a.payId, pattern);
-        or = orLike(or, all, types, ",payStatusCd,", a.payStatusCd, pattern);
-        or = orLike(or, all, types, ",payStatusCdBefore,", a.payStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",payStatusHistId,", a.payStatusHistId, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
-        or = orLike(or, all, types, ",statusReason,", a.statusReason, pattern);
+        or = orLike(or, all, types, ",chgUserId,", odhPayStatusHist.chgUserId, pattern);
+        or = orLike(or, all, types, ",memo,", odhPayStatusHist.memo, pattern);
+        or = orLike(or, all, types, ",orderId,", odhPayStatusHist.orderId, pattern);
+        or = orLike(or, all, types, ",payId,", odhPayStatusHist.payId, pattern);
+        or = orLike(or, all, types, ",payStatusCd,", odhPayStatusHist.payStatusCd, pattern);
+        or = orLike(or, all, types, ",payStatusCdBefore,", odhPayStatusHist.payStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",payStatusHistId,", odhPayStatusHist.payStatusHistId, pattern);
+        or = orLike(or, all, types, ",siteId,", odhPayStatusHist.siteId, pattern);
+        or = orLike(or, all, types, ",statusReason,", odhPayStatusHist.statusReason, pattern);
         return or;
     }
 
@@ -157,8 +157,8 @@ public class QOdhPayStatusHistRepositoryImpl implements QOdhPayStatusHistReposit
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.payStatusHistId));
+            orders.add(new OrderSpecifier(Order.DESC, odhPayStatusHist.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, odhPayStatusHist.payStatusHistId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -169,17 +169,17 @@ public class QOdhPayStatusHistRepositoryImpl implements QOdhPayStatusHistReposit
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("payStatusHistId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.payStatusHistId));
+                    orders.add(new OrderSpecifier(order, odhPayStatusHist.payStatusHistId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, odhPayStatusHist.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.payStatusHistId));
+            orders.add(new OrderSpecifier<>(Order.DESC, odhPayStatusHist.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, odhPayStatusHist.payStatusHistId));
         }
         return orders;
     }
@@ -189,25 +189,25 @@ public class QOdhPayStatusHistRepositoryImpl implements QOdhPayStatusHistReposit
     public int updateSelective(OdhPayStatusHist entity) {
         if (entity.getPayStatusHistId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(odhPayStatusHist);
         boolean hasAny = false;
 
-        if (entity.getSiteId()            != null) { update.set(a.siteId,            entity.getSiteId());            hasAny = true; }
-        if (entity.getPayId()             != null) { update.set(a.payId,             entity.getPayId());             hasAny = true; }
-        if (entity.getOrderId()           != null) { update.set(a.orderId,           entity.getOrderId());           hasAny = true; }
-        if (entity.getPayStatusCdBefore() != null) { update.set(a.payStatusCdBefore, entity.getPayStatusCdBefore()); hasAny = true; }
-        if (entity.getPayStatusCd()       != null) { update.set(a.payStatusCd,       entity.getPayStatusCd());       hasAny = true; }
-        if (entity.getStatusReason()      != null) { update.set(a.statusReason,      entity.getStatusReason());      hasAny = true; }
-        if (entity.getChgUserId()         != null) { update.set(a.chgUserId,         entity.getChgUserId());         hasAny = true; }
-        if (entity.getChgDate()           != null) { update.set(a.chgDate,           entity.getChgDate());           hasAny = true; }
-        if (entity.getMemo()              != null) { update.set(a.memo,              entity.getMemo());              hasAny = true; }
-        if (entity.getUpdBy()             != null) { update.set(a.updBy,             entity.getUpdBy());             hasAny = true; }
+        if (entity.getSiteId()            != null) { update.set(odhPayStatusHist.siteId,            entity.getSiteId());            hasAny = true; }
+        if (entity.getPayId()             != null) { update.set(odhPayStatusHist.payId,             entity.getPayId());             hasAny = true; }
+        if (entity.getOrderId()           != null) { update.set(odhPayStatusHist.orderId,           entity.getOrderId());           hasAny = true; }
+        if (entity.getPayStatusCdBefore() != null) { update.set(odhPayStatusHist.payStatusCdBefore, entity.getPayStatusCdBefore()); hasAny = true; }
+        if (entity.getPayStatusCd()       != null) { update.set(odhPayStatusHist.payStatusCd,       entity.getPayStatusCd());       hasAny = true; }
+        if (entity.getStatusReason()      != null) { update.set(odhPayStatusHist.statusReason,      entity.getStatusReason());      hasAny = true; }
+        if (entity.getChgUserId()         != null) { update.set(odhPayStatusHist.chgUserId,         entity.getChgUserId());         hasAny = true; }
+        if (entity.getChgDate()           != null) { update.set(odhPayStatusHist.chgDate,           entity.getChgDate());           hasAny = true; }
+        if (entity.getMemo()              != null) { update.set(odhPayStatusHist.memo,              entity.getMemo());              hasAny = true; }
+        if (entity.getUpdBy()             != null) { update.set(odhPayStatusHist.updBy,             entity.getUpdBy());             hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(odhPayStatusHist.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.payStatusHistId.eq(entity.getPayStatusHistId())).execute();
+        long affected = update.where(odhPayStatusHist.payStatusHistId.eq(entity.getPayStatusHistId())).execute();
         return (int) affected;
     }
 }

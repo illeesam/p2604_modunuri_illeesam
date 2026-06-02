@@ -31,44 +31,44 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhUserLoginLogRepositoryImpl";
-    private static final QSyhUserLoginLog a   = QSyhUserLoginLog.syhUserLoginLog;
-    private static final QSySite          ste = QSySite.sySite;
-    private static final QSyUser          usr = QSyUser.syUser;
+    private static final QSyhUserLoginLog syhUserLoginLog   = QSyhUserLoginLog.syhUserLoginLog;
+    private static final QSySite          sySite = QSySite.sySite;
+    private static final QSyUser          syUser = QSyUser.syUser;
     private static final QSyCode          cd_lr = new QSyCode("cd_lr");
 
     /* 사용자 로그인 로그 baseSelColumnQuery */
     private JPAQuery<SyhUserLoginLogDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyhUserLoginLogDto.Item.class,
-                        a.logId,
-                        a.siteId,
-                        a.userId,
-                        a.loginId,
-                        a.loginDate,
-                        a.resultCd,
-                        a.failCnt,
-                        a.ip,
-                        a.device,
-                        a.os,
-                        a.browser,
-                        a.accessToken,
-                        a.accessTokenExp,
-                        a.refreshToken,
-                        a.refreshTokenExp,
-                        a.uiNm,
-                        a.cmdNm,
-                        a.regBy,
-                        a.regDate,
-                        a.updBy,
-                        a.updDate,
-                        ste.siteNm.as("siteNm"),
-                        usr.userNm.as("userNm"),
+                        syhUserLoginLog.logId,
+                        syhUserLoginLog.siteId,
+                        syhUserLoginLog.userId,
+                        syhUserLoginLog.loginId,
+                        syhUserLoginLog.loginDate,
+                        syhUserLoginLog.resultCd,
+                        syhUserLoginLog.failCnt,
+                        syhUserLoginLog.ip,
+                        syhUserLoginLog.device,
+                        syhUserLoginLog.os,
+                        syhUserLoginLog.browser,
+                        syhUserLoginLog.accessToken,
+                        syhUserLoginLog.accessTokenExp,
+                        syhUserLoginLog.refreshToken,
+                        syhUserLoginLog.refreshTokenExp,
+                        syhUserLoginLog.uiNm,
+                        syhUserLoginLog.cmdNm,
+                        syhUserLoginLog.regBy,
+                        syhUserLoginLog.regDate,
+                        syhUserLoginLog.updBy,
+                        syhUserLoginLog.updDate,
+                        sySite.siteNm.as("siteNm"),
+                        syUser.userNm.as("userNm"),
                         cd_lr.codeLabel.as("resultCdNm")
                 ))
-                .from(a)
-                .leftJoin(ste).on(ste.siteId.eq(a.siteId))
-                .leftJoin(usr).on(usr.userId.eq(a.userId))
-                .leftJoin(cd_lr).on(cd_lr.codeGrp.eq("LOGIN_RESULT").and(cd_lr.codeValue.eq(a.resultCd)));
+                .from(syhUserLoginLog)
+                .leftJoin(sySite).on(sySite.siteId.eq(syhUserLoginLog.siteId))
+                .leftJoin(syUser).on(syUser.userId.eq(syhUserLoginLog.userId))
+                .leftJoin(cd_lr).on(cd_lr.codeGrp.eq("LOGIN_RESULT").and(cd_lr.codeValue.eq(syhUserLoginLog.resultCd)));
     }
 
     /* 사용자 로그인 로그 키조회 */
@@ -76,7 +76,7 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
     public Optional<SyhUserLoginLogDto.Item> selectById(String id) {
         SyhUserLoginLogDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
-                .where(a.logId.eq(id))
+                .where(syhUserLoginLog.logId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -131,8 +131,8 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
         List<SyhUserLoginLogDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(a.count())
-                .from(a)
+                .select(syhUserLoginLog.count())
+                .from(syhUserLoginLog)
                 .where(
                 baseAndSiteId(search),
                 baseAndLogId(search),
@@ -157,25 +157,25 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(SyhUserLoginLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? syhUserLoginLog.siteId.eq(search.getSiteId()) : null;
     }
 
     /* logId 정확 일치 */
     private BooleanExpression baseAndLogId(SyhUserLoginLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getLogId())
-                ? a.logId.eq(search.getLogId()) : null;
+                ? syhUserLoginLog.logId.eq(search.getLogId()) : null;
     }
 
     /* userId 정확 일치 */
     private BooleanExpression baseAndUserId(SyhUserLoginLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getUserId())
-                ? a.userId.eq(search.getUserId()) : null;
+                ? syhUserLoginLog.userId.eq(search.getUserId()) : null;
     }
 
     /* resultCd 정확 일치 */
     private BooleanExpression baseAndResultCd(SyhUserLoginLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getResultCd())
-                ? a.resultCd.eq(search.getResultCd()) : null;
+                ? syhUserLoginLog.resultCd.eq(search.getResultCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -188,7 +188,7 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "reg_date": return syhUserLoginLog.regDate.goe(start).and(syhUserLoginLog.regDate.lt(endExcl));
             default: return null;
         }
     }
@@ -201,20 +201,20 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",accessToken,", a.accessToken, pattern);
-        or = orLike(or, all, types, ",authId,", a.authId, pattern);
-        or = orLike(or, all, types, ",browser,", a.browser, pattern);
-        or = orLike(or, all, types, ",cmdNm,", a.cmdNm, pattern);
-        or = orLike(or, all, types, ",device,", a.device, pattern);
-        or = orLike(or, all, types, ",ip,", a.ip, pattern);
-        or = orLike(or, all, types, ",logId,", a.logId, pattern);
-        or = orLike(or, all, types, ",loginId,", a.loginId, pattern);
-        or = orLike(or, all, types, ",os,", a.os, pattern);
-        or = orLike(or, all, types, ",refreshToken,", a.refreshToken, pattern);
-        or = orLike(or, all, types, ",resultCd,", a.resultCd, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
-        or = orLike(or, all, types, ",uiNm,", a.uiNm, pattern);
-        or = orLike(or, all, types, ",userId,", a.userId, pattern);
+        or = orLike(or, all, types, ",accessToken,", syhUserLoginLog.accessToken, pattern);
+        or = orLike(or, all, types, ",authId,", syhUserLoginLog.authId, pattern);
+        or = orLike(or, all, types, ",browser,", syhUserLoginLog.browser, pattern);
+        or = orLike(or, all, types, ",cmdNm,", syhUserLoginLog.cmdNm, pattern);
+        or = orLike(or, all, types, ",device,", syhUserLoginLog.device, pattern);
+        or = orLike(or, all, types, ",ip,", syhUserLoginLog.ip, pattern);
+        or = orLike(or, all, types, ",logId,", syhUserLoginLog.logId, pattern);
+        or = orLike(or, all, types, ",loginId,", syhUserLoginLog.loginId, pattern);
+        or = orLike(or, all, types, ",os,", syhUserLoginLog.os, pattern);
+        or = orLike(or, all, types, ",refreshToken,", syhUserLoginLog.refreshToken, pattern);
+        or = orLike(or, all, types, ",resultCd,", syhUserLoginLog.resultCd, pattern);
+        or = orLike(or, all, types, ",siteId,", syhUserLoginLog.siteId, pattern);
+        or = orLike(or, all, types, ",uiNm,", syhUserLoginLog.uiNm, pattern);
+        or = orLike(or, all, types, ",userId,", syhUserLoginLog.userId, pattern);
         return or;
     }
 
@@ -235,8 +235,8 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.logId));
+            orders.add(new OrderSpecifier(Order.DESC, syhUserLoginLog.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syhUserLoginLog.logId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -247,17 +247,17 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("logId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.logId));
+                    orders.add(new OrderSpecifier(order, syhUserLoginLog.logId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, syhUserLoginLog.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.logId));
+            orders.add(new OrderSpecifier<>(Order.DESC, syhUserLoginLog.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syhUserLoginLog.logId));
         }
         return orders;
     }
@@ -267,32 +267,32 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
     public int updateSelective(SyhUserLoginLog entity) {
         if (entity.getLogId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(syhUserLoginLog);
         boolean hasAny = false;
 
-        if (entity.getSiteId()          != null) { update.set(a.siteId,          entity.getSiteId());          hasAny = true; }
-        if (entity.getUserId()          != null) { update.set(a.userId,          entity.getUserId());          hasAny = true; }
-        if (entity.getLoginId()         != null) { update.set(a.loginId,         entity.getLoginId());         hasAny = true; }
-        if (entity.getLoginDate()       != null) { update.set(a.loginDate,       entity.getLoginDate());       hasAny = true; }
-        if (entity.getResultCd()        != null) { update.set(a.resultCd,        entity.getResultCd());        hasAny = true; }
-        if (entity.getFailCnt()         != null) { update.set(a.failCnt,         entity.getFailCnt());         hasAny = true; }
-        if (entity.getIp()              != null) { update.set(a.ip,              entity.getIp());              hasAny = true; }
-        if (entity.getDevice()          != null) { update.set(a.device,          entity.getDevice());          hasAny = true; }
-        if (entity.getOs()              != null) { update.set(a.os,              entity.getOs());              hasAny = true; }
-        if (entity.getBrowser()         != null) { update.set(a.browser,         entity.getBrowser());         hasAny = true; }
-        if (entity.getAccessToken()     != null) { update.set(a.accessToken,     entity.getAccessToken());     hasAny = true; }
-        if (entity.getAccessTokenExp()  != null) { update.set(a.accessTokenExp,  entity.getAccessTokenExp());  hasAny = true; }
-        if (entity.getRefreshToken()    != null) { update.set(a.refreshToken,    entity.getRefreshToken());    hasAny = true; }
-        if (entity.getRefreshTokenExp() != null) { update.set(a.refreshTokenExp, entity.getRefreshTokenExp()); hasAny = true; }
-        if (entity.getUiNm()            != null) { update.set(a.uiNm,            entity.getUiNm());            hasAny = true; }
-        if (entity.getCmdNm()           != null) { update.set(a.cmdNm,           entity.getCmdNm());           hasAny = true; }
-        if (entity.getUpdBy()           != null) { update.set(a.updBy,           entity.getUpdBy());           hasAny = true; }
+        if (entity.getSiteId()          != null) { update.set(syhUserLoginLog.siteId,          entity.getSiteId());          hasAny = true; }
+        if (entity.getUserId()          != null) { update.set(syhUserLoginLog.userId,          entity.getUserId());          hasAny = true; }
+        if (entity.getLoginId()         != null) { update.set(syhUserLoginLog.loginId,         entity.getLoginId());         hasAny = true; }
+        if (entity.getLoginDate()       != null) { update.set(syhUserLoginLog.loginDate,       entity.getLoginDate());       hasAny = true; }
+        if (entity.getResultCd()        != null) { update.set(syhUserLoginLog.resultCd,        entity.getResultCd());        hasAny = true; }
+        if (entity.getFailCnt()         != null) { update.set(syhUserLoginLog.failCnt,         entity.getFailCnt());         hasAny = true; }
+        if (entity.getIp()              != null) { update.set(syhUserLoginLog.ip,              entity.getIp());              hasAny = true; }
+        if (entity.getDevice()          != null) { update.set(syhUserLoginLog.device,          entity.getDevice());          hasAny = true; }
+        if (entity.getOs()              != null) { update.set(syhUserLoginLog.os,              entity.getOs());              hasAny = true; }
+        if (entity.getBrowser()         != null) { update.set(syhUserLoginLog.browser,         entity.getBrowser());         hasAny = true; }
+        if (entity.getAccessToken()     != null) { update.set(syhUserLoginLog.accessToken,     entity.getAccessToken());     hasAny = true; }
+        if (entity.getAccessTokenExp()  != null) { update.set(syhUserLoginLog.accessTokenExp,  entity.getAccessTokenExp());  hasAny = true; }
+        if (entity.getRefreshToken()    != null) { update.set(syhUserLoginLog.refreshToken,    entity.getRefreshToken());    hasAny = true; }
+        if (entity.getRefreshTokenExp() != null) { update.set(syhUserLoginLog.refreshTokenExp, entity.getRefreshTokenExp()); hasAny = true; }
+        if (entity.getUiNm()            != null) { update.set(syhUserLoginLog.uiNm,            entity.getUiNm());            hasAny = true; }
+        if (entity.getCmdNm()           != null) { update.set(syhUserLoginLog.cmdNm,           entity.getCmdNm());           hasAny = true; }
+        if (entity.getUpdBy()           != null) { update.set(syhUserLoginLog.updBy,           entity.getUpdBy());           hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(syhUserLoginLog.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.logId.eq(entity.getLogId())).execute();
+        long affected = update.where(syhUserLoginLog.logId.eq(entity.getLogId())).execute();
         return (int) affected;
     }
 }

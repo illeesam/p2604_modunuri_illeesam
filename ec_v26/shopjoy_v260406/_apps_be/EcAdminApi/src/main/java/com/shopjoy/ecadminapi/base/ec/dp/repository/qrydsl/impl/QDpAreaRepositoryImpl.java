@@ -36,12 +36,12 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
     private final EntityManager em;
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpAreaRepositoryImpl";
-    private static final QDpArea a = QDpArea.dpArea;
+    private static final QDpArea dpArea = QDpArea.dpArea;
 
     /* 전시 영역 키조회 */
     @Override
     public Optional<DpAreaDto.Item> selectById(String areaId) {
-        return Optional.ofNullable(baseQuery().where(a.areaId.eq(areaId)).fetchOne());
+        return Optional.ofNullable(baseQuery().where(dpArea.areaId.eq(areaId)).fetchOne());
     }
 
     /* 전시 영역 목록조회 */
@@ -83,7 +83,7 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
         );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<DpAreaDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
-        Long total = queryFactory.select(a.count()).from(a).where(
+        Long total = queryFactory.select(dpArea.count()).from(dpArea).where(
                 baseAndUiIds(search),
                 baseAndSiteId(search),
                 baseAndPathId(search),
@@ -100,10 +100,10 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
     /* 전시 영역 baseQuery */
     private JPAQuery<DpAreaDto.Item> baseQuery() {
         return queryFactory.select(Projections.bean(DpAreaDto.Item.class,
-                a.areaId, a.uiId, a.siteId, a.areaCd, a.areaNm, a.areaTypeCd, a.areaDesc,
-                a.pathId, a.useYn, a.useStartDate, a.useEndDate,
-                a.regBy, a.regDate, a.updBy, a.updDate
-        )).from(a);
+                dpArea.areaId, dpArea.uiId, dpArea.siteId, dpArea.areaCd, dpArea.areaNm, dpArea.areaTypeCd, dpArea.areaDesc,
+                dpArea.pathId, dpArea.useYn, dpArea.useStartDate, dpArea.useEndDate,
+                dpArea.regBy, dpArea.regDate, dpArea.updBy, dpArea.updDate
+        )).from(dpArea);
     }
 
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
@@ -116,44 +116,44 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
     /* uiId IN */
     private BooleanExpression baseAndUiIds(DpAreaDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getUiIds())
-                ? a.uiId.in(search.getUiIds()) : null;
+                ? dpArea.uiId.in(search.getUiIds()) : null;
     }
 
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(DpAreaDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? dpArea.siteId.eq(search.getSiteId()) : null;
     }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression baseAndPathId(DpAreaDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
-                ? a.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "dp_area"))
+                ? dpArea.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "dp_area"))
                 : null;
     }
 
     /* useYn 정확 일치 */
     private BooleanExpression baseAndUseYn(DpAreaDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
-                ? a.useYn.eq(search.getUseYn()) : null;
+                ? dpArea.useYn.eq(search.getUseYn()) : null;
     }
 
     /* areaId 정확 일치 */
     private BooleanExpression baseAndAreaId(DpAreaDto.Request search) {
         return search != null && StringUtils.hasText(search.getAreaId())
-                ? a.areaId.eq(search.getAreaId()) : null;
+                ? dpArea.areaId.eq(search.getAreaId()) : null;
     }
 
     /* uiId 정확 일치 */
     private BooleanExpression baseAndUiId(DpAreaDto.Request search) {
         return search != null && StringUtils.hasText(search.getUiId())
-                ? a.uiId.eq(search.getUiId()) : null;
+                ? dpArea.uiId.eq(search.getUiId()) : null;
     }
 
     /* areaTypeCd 정확 일치 */
     private BooleanExpression baseAndAreaTypeCd(DpAreaDto.Request search) {
         return search != null && StringUtils.hasText(search.getAreaTypeCd())
-                ? a.areaTypeCd.eq(search.getAreaTypeCd()) : null;
+                ? dpArea.areaTypeCd.eq(search.getAreaTypeCd()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
@@ -164,15 +164,15 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",areaCd,", a.areaCd, pattern);
-        or = orLike(or, all, types, ",areaDesc,", a.areaDesc, pattern);
-        or = orLike(or, all, types, ",areaId,", a.areaId, pattern);
-        or = orLike(or, all, types, ",areaNm,", a.areaNm, pattern);
-        or = orLike(or, all, types, ",areaTypeCd,", a.areaTypeCd, pattern);
-        or = orLike(or, all, types, ",pathId,", a.pathId, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
-        or = orLike(or, all, types, ",uiId,", a.uiId, pattern);
-        or = orLike(or, all, types, ",useYn,", a.useYn, pattern);
+        or = orLike(or, all, types, ",areaCd,", dpArea.areaCd, pattern);
+        or = orLike(or, all, types, ",areaDesc,", dpArea.areaDesc, pattern);
+        or = orLike(or, all, types, ",areaId,", dpArea.areaId, pattern);
+        or = orLike(or, all, types, ",areaNm,", dpArea.areaNm, pattern);
+        or = orLike(or, all, types, ",areaTypeCd,", dpArea.areaTypeCd, pattern);
+        or = orLike(or, all, types, ",pathId,", dpArea.pathId, pattern);
+        or = orLike(or, all, types, ",siteId,", dpArea.siteId, pattern);
+        or = orLike(or, all, types, ",uiId,", dpArea.uiId, pattern);
+        or = orLike(or, all, types, ",useYn,", dpArea.useYn, pattern);
         return or;
     }
 
@@ -193,8 +193,8 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.areaId));
+            orders.add(new OrderSpecifier(Order.DESC, dpArea.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, dpArea.areaId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -205,19 +205,19 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("areaId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.areaId));
+                    orders.add(new OrderSpecifier(order, dpArea.areaId));
                 } else if ("areaNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.areaNm));
+                    orders.add(new OrderSpecifier(order, dpArea.areaNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, dpArea.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.areaId));
+            orders.add(new OrderSpecifier<>(Order.DESC, dpArea.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, dpArea.areaId));
         }
         return orders;
     }
@@ -226,23 +226,23 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
     @Override
     public int updateSelective(DpArea entity) {
         if (entity.getAreaId() == null) return 0;
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(dpArea);
         boolean hasAny = false;
-        if (entity.getUiId()         != null) { update.set(a.uiId,         entity.getUiId());         hasAny = true; }
-        if (entity.getSiteId()       != null) { update.set(a.siteId,       entity.getSiteId());       hasAny = true; }
-        if (entity.getAreaCd()       != null) { update.set(a.areaCd,       entity.getAreaCd());       hasAny = true; }
-        if (entity.getAreaNm()       != null) { update.set(a.areaNm,       entity.getAreaNm());       hasAny = true; }
-        if (entity.getAreaTypeCd()   != null) { update.set(a.areaTypeCd,   entity.getAreaTypeCd());   hasAny = true; }
-        if (entity.getAreaDesc()     != null) { update.set(a.areaDesc,     entity.getAreaDesc());     hasAny = true; }
-        if (entity.getPathId()       != null) { update.set(a.pathId,       entity.getPathId());       hasAny = true; }
-        if (entity.getUseYn()        != null) { update.set(a.useYn,        entity.getUseYn());        hasAny = true; }
-        if (entity.getUseStartDate() != null) { update.set(a.useStartDate, entity.getUseStartDate()); hasAny = true; }
-        if (entity.getUseEndDate()   != null) { update.set(a.useEndDate,   entity.getUseEndDate());   hasAny = true; }
-        if (entity.getUpdBy()        != null) { update.set(a.updBy,        entity.getUpdBy());        hasAny = true; }
+        if (entity.getUiId()         != null) { update.set(dpArea.uiId,         entity.getUiId());         hasAny = true; }
+        if (entity.getSiteId()       != null) { update.set(dpArea.siteId,       entity.getSiteId());       hasAny = true; }
+        if (entity.getAreaCd()       != null) { update.set(dpArea.areaCd,       entity.getAreaCd());       hasAny = true; }
+        if (entity.getAreaNm()       != null) { update.set(dpArea.areaNm,       entity.getAreaNm());       hasAny = true; }
+        if (entity.getAreaTypeCd()   != null) { update.set(dpArea.areaTypeCd,   entity.getAreaTypeCd());   hasAny = true; }
+        if (entity.getAreaDesc()     != null) { update.set(dpArea.areaDesc,     entity.getAreaDesc());     hasAny = true; }
+        if (entity.getPathId()       != null) { update.set(dpArea.pathId,       entity.getPathId());       hasAny = true; }
+        if (entity.getUseYn()        != null) { update.set(dpArea.useYn,        entity.getUseYn());        hasAny = true; }
+        if (entity.getUseStartDate() != null) { update.set(dpArea.useStartDate, entity.getUseStartDate()); hasAny = true; }
+        if (entity.getUseEndDate()   != null) { update.set(dpArea.useEndDate,   entity.getUseEndDate());   hasAny = true; }
+        if (entity.getUpdBy()        != null) { update.set(dpArea.updBy,        entity.getUpdBy());        hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(dpArea.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
         if (!hasAny) return 0;
-        return (int) update.where(a.areaId.eq(entity.getAreaId())).execute();
+        return (int) update.where(dpArea.areaId.eq(entity.getAreaId())).execute();
     }
 
     /* 표시경로 노드별 dp_area 수 집계 (자손 누적 + 검색조건 필터, native CTE 동적 SQL)

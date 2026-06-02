@@ -37,14 +37,14 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
     private final EntityManager em;
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyBatchRepositoryImpl";
-    private static final QSyBatch b = QSyBatch.syBatch;
-    private static final QSySite ste = QSySite.sySite;
+    private static final QSyBatch syBatch = QSyBatch.syBatch;
+    private static final QSySite sySite = QSySite.sySite;
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     /* 배치 키조회 */
     @Override
     public Optional<SyBatchDto.Item> selectById(String batchId) {
-        SyBatchDto.Item dto = baseQuery().where(b.batchId.eq(batchId)).fetchOne();
+        SyBatchDto.Item dto = baseQuery().where(syBatch.batchId.eq(batchId)).fetchOne();
         return Optional.ofNullable(dto);
     }
 
@@ -88,7 +88,7 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyBatchDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(b.count()).from(b).where(
+        Long total = queryFactory.select(syBatch.count()).from(syBatch).where(
                 baseAndSiteId(search),
                 baseAndPathId(search),
                 baseAndBatchId(search),
@@ -104,14 +104,14 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
     private JPAQuery<SyBatchDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(SyBatchDto.Item.class,
-                        b.batchId, b.siteId, b.batchCode, b.batchNm, b.batchDesc, b.cronExpr,
-                        b.batchCycleCd, b.batchLastRun, b.batchNextRun, b.batchRunCount,
-                        b.batchStatusCd, b.batchRunStatus, b.batchTimeoutSec, b.batchMemo,
-                        b.regBy, b.regDate, b.updBy, b.updDate, b.pathId,
-                        ste.siteNm.as("siteNm")
+                        syBatch.batchId, syBatch.siteId, syBatch.batchCode, syBatch.batchNm, syBatch.batchDesc, syBatch.cronExpr,
+                        syBatch.batchCycleCd, syBatch.batchLastRun, syBatch.batchNextRun, syBatch.batchRunCount,
+                        syBatch.batchStatusCd, syBatch.batchRunStatus, syBatch.batchTimeoutSec, syBatch.batchMemo,
+                        syBatch.regBy, syBatch.regDate, syBatch.updBy, syBatch.updDate, syBatch.pathId,
+                        sySite.siteNm.as("siteNm")
                 ))
-                .from(b)
-                .leftJoin(ste).on(ste.siteId.eq(b.siteId));
+                .from(syBatch)
+                .leftJoin(sySite).on(sySite.siteId.eq(syBatch.siteId));
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
@@ -124,26 +124,26 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(SyBatchDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? b.siteId.eq(search.getSiteId()) : null;
+                ? syBatch.siteId.eq(search.getSiteId()) : null;
     }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression baseAndPathId(SyBatchDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
-                ? b.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_batch"))
+                ? syBatch.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_batch"))
                 : null;
     }
 
     /* batchId 정확 일치 */
     private BooleanExpression baseAndBatchId(SyBatchDto.Request search) {
         return search != null && StringUtils.hasText(search.getBatchId())
-                ? b.batchId.eq(search.getBatchId()) : null;
+                ? syBatch.batchId.eq(search.getBatchId()) : null;
     }
 
     /* batchStatusCd 정확 일치 */
     private BooleanExpression baseAndStatus(SyBatchDto.Request search) {
         return search != null && StringUtils.hasText(search.getStatus())
-                ? b.batchStatusCd.eq(search.getStatus()) : null;
+                ? syBatch.batchStatusCd.eq(search.getStatus()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
@@ -154,17 +154,17 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",batchCode,", b.batchCode, pattern);
-        or = orLike(or, all, types, ",batchCycleCd,", b.batchCycleCd, pattern);
-        or = orLike(or, all, types, ",batchDesc,", b.batchDesc, pattern);
-        or = orLike(or, all, types, ",batchId,", b.batchId, pattern);
-        or = orLike(or, all, types, ",batchMemo,", b.batchMemo, pattern);
-        or = orLike(or, all, types, ",batchNm,", b.batchNm, pattern);
-        or = orLike(or, all, types, ",batchRunStatus,", b.batchRunStatus, pattern);
-        or = orLike(or, all, types, ",batchStatusCd,", b.batchStatusCd, pattern);
-        or = orLike(or, all, types, ",cronExpr,", b.cronExpr, pattern);
-        or = orLike(or, all, types, ",pathId,", b.pathId, pattern);
-        or = orLike(or, all, types, ",siteId,", b.siteId, pattern);
+        or = orLike(or, all, types, ",batchCode,", syBatch.batchCode, pattern);
+        or = orLike(or, all, types, ",batchCycleCd,", syBatch.batchCycleCd, pattern);
+        or = orLike(or, all, types, ",batchDesc,", syBatch.batchDesc, pattern);
+        or = orLike(or, all, types, ",batchId,", syBatch.batchId, pattern);
+        or = orLike(or, all, types, ",batchMemo,", syBatch.batchMemo, pattern);
+        or = orLike(or, all, types, ",batchNm,", syBatch.batchNm, pattern);
+        or = orLike(or, all, types, ",batchRunStatus,", syBatch.batchRunStatus, pattern);
+        or = orLike(or, all, types, ",batchStatusCd,", syBatch.batchStatusCd, pattern);
+        or = orLike(or, all, types, ",cronExpr,", syBatch.cronExpr, pattern);
+        or = orLike(or, all, types, ",pathId,", syBatch.pathId, pattern);
+        or = orLike(or, all, types, ",siteId,", syBatch.siteId, pattern);
         return or;
     }
 
@@ -185,8 +185,8 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, b.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, b.batchId));
+            orders.add(new OrderSpecifier(Order.DESC, syBatch.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syBatch.batchId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -197,19 +197,19 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("batchId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, b.batchId));
+                    orders.add(new OrderSpecifier(order, syBatch.batchId));
                 } else if ("batchNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, b.batchNm));
+                    orders.add(new OrderSpecifier(order, syBatch.batchNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, b.regDate));
+                    orders.add(new OrderSpecifier(order, syBatch.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, b.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, b.batchId));
+            orders.add(new OrderSpecifier<>(Order.DESC, syBatch.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syBatch.batchId));
         }
         return orders;
     }
@@ -219,30 +219,30 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
     public int updateSelective(SyBatch entity) {
         if (entity.getBatchId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(b);
+        JPAUpdateClause update = queryFactory.update(syBatch);
         boolean hasAny = false;
 
-        if (entity.getSiteId()          != null) { update.set(b.siteId,          entity.getSiteId());          hasAny = true; }
-        if (entity.getBatchCode()       != null) { update.set(b.batchCode,       entity.getBatchCode());       hasAny = true; }
-        if (entity.getBatchNm()         != null) { update.set(b.batchNm,         entity.getBatchNm());         hasAny = true; }
-        if (entity.getBatchDesc()       != null) { update.set(b.batchDesc,       entity.getBatchDesc());       hasAny = true; }
-        if (entity.getCronExpr()        != null) { update.set(b.cronExpr,        entity.getCronExpr());        hasAny = true; }
-        if (entity.getBatchCycleCd()    != null) { update.set(b.batchCycleCd,    entity.getBatchCycleCd());    hasAny = true; }
-        if (entity.getBatchLastRun()    != null) { update.set(b.batchLastRun,    entity.getBatchLastRun());    hasAny = true; }
-        if (entity.getBatchNextRun()    != null) { update.set(b.batchNextRun,    entity.getBatchNextRun());    hasAny = true; }
-        if (entity.getBatchRunCount()   != null) { update.set(b.batchRunCount,   entity.getBatchRunCount());   hasAny = true; }
-        if (entity.getBatchStatusCd()   != null) { update.set(b.batchStatusCd,   entity.getBatchStatusCd());   hasAny = true; }
-        if (entity.getBatchRunStatus()  != null) { update.set(b.batchRunStatus,  entity.getBatchRunStatus());  hasAny = true; }
-        if (entity.getBatchTimeoutSec() != null) { update.set(b.batchTimeoutSec, entity.getBatchTimeoutSec()); hasAny = true; }
-        if (entity.getBatchMemo()       != null) { update.set(b.batchMemo,       entity.getBatchMemo());       hasAny = true; }
-        if (entity.getUpdBy()           != null) { update.set(b.updBy,           entity.getUpdBy());           hasAny = true; }
+        if (entity.getSiteId()          != null) { update.set(syBatch.siteId,          entity.getSiteId());          hasAny = true; }
+        if (entity.getBatchCode()       != null) { update.set(syBatch.batchCode,       entity.getBatchCode());       hasAny = true; }
+        if (entity.getBatchNm()         != null) { update.set(syBatch.batchNm,         entity.getBatchNm());         hasAny = true; }
+        if (entity.getBatchDesc()       != null) { update.set(syBatch.batchDesc,       entity.getBatchDesc());       hasAny = true; }
+        if (entity.getCronExpr()        != null) { update.set(syBatch.cronExpr,        entity.getCronExpr());        hasAny = true; }
+        if (entity.getBatchCycleCd()    != null) { update.set(syBatch.batchCycleCd,    entity.getBatchCycleCd());    hasAny = true; }
+        if (entity.getBatchLastRun()    != null) { update.set(syBatch.batchLastRun,    entity.getBatchLastRun());    hasAny = true; }
+        if (entity.getBatchNextRun()    != null) { update.set(syBatch.batchNextRun,    entity.getBatchNextRun());    hasAny = true; }
+        if (entity.getBatchRunCount()   != null) { update.set(syBatch.batchRunCount,   entity.getBatchRunCount());   hasAny = true; }
+        if (entity.getBatchStatusCd()   != null) { update.set(syBatch.batchStatusCd,   entity.getBatchStatusCd());   hasAny = true; }
+        if (entity.getBatchRunStatus()  != null) { update.set(syBatch.batchRunStatus,  entity.getBatchRunStatus());  hasAny = true; }
+        if (entity.getBatchTimeoutSec() != null) { update.set(syBatch.batchTimeoutSec, entity.getBatchTimeoutSec()); hasAny = true; }
+        if (entity.getBatchMemo()       != null) { update.set(syBatch.batchMemo,       entity.getBatchMemo());       hasAny = true; }
+        if (entity.getUpdBy()           != null) { update.set(syBatch.updBy,           entity.getUpdBy());           hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(b.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
-        if (entity.getPathId()          != null) { update.set(b.pathId,          entity.getPathId());          hasAny = true; }
+        update.set(syBatch.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        if (entity.getPathId()          != null) { update.set(syBatch.pathId,          entity.getPathId());          hasAny = true; }
 
         if (!hasAny) return 0;
 
-        long affected = update.where(b.batchId.eq(entity.getBatchId())).execute();
+        long affected = update.where(syBatch.batchId.eq(entity.getBatchId())).execute();
         return (int) affected;
     }
 

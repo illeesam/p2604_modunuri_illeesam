@@ -29,36 +29,36 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdProdImgRepositoryImpl";
-    private static final QPdProdImg a = QPdProdImg.pdProdImg;
+    private static final QPdProdImg pdProdImg = QPdProdImg.pdProdImg;
 
     private JPAQuery<PdProdImgDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdProdImgDto.Item.class,
-                        a.prodImgId,
-                        a.siteId,
-                        a.prodId,
-                        a.optItemId1,
-                        a.optItemId2,
-                        a.attachId,
-                        a.cdnHost,
-                        a.cdnImgUrl,
-                        a.cdnThumbUrl,
-                        a.imgAltText,
-                        a.sortOrd,
-                        a.isThumb,
-                        a.regBy,
-                        a.regDate,
-                        a.updBy,
-                        a.updDate
+                        pdProdImg.prodImgId,
+                        pdProdImg.siteId,
+                        pdProdImg.prodId,
+                        pdProdImg.optItemId1,
+                        pdProdImg.optItemId2,
+                        pdProdImg.attachId,
+                        pdProdImg.cdnHost,
+                        pdProdImg.cdnImgUrl,
+                        pdProdImg.cdnThumbUrl,
+                        pdProdImg.imgAltText,
+                        pdProdImg.sortOrd,
+                        pdProdImg.isThumb,
+                        pdProdImg.regBy,
+                        pdProdImg.regDate,
+                        pdProdImg.updBy,
+                        pdProdImg.updDate
                 ))
-                .from(a);
+                .from(pdProdImg);
     }
 
     /* 상품 이미지 키조회 */
     @Override
     public Optional<PdProdImgDto.Item> selectById(String prodImgId) {
         PdProdImgDto.Item dto = baseSelColumnQuery()
-                .where(a.prodImgId.eq(prodImgId))
+                .where(pdProdImg.prodImgId.eq(prodImgId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -110,7 +110,7 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
         }
         List<PdProdImgDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(a.count()).from(a).where(
+        Long total = queryFactory.select(pdProdImg.count()).from(pdProdImg).where(
                 baseAndProdIds(search),
                 baseAndProdId(search),
                 baseAndSiteId(search),
@@ -134,25 +134,25 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
     /* prodId IN */
     private BooleanExpression baseAndProdIds(PdProdImgDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getProdIds())
-                ? a.prodId.in(search.getProdIds()) : null;
+                ? pdProdImg.prodId.in(search.getProdIds()) : null;
     }
 
     /* prodId 정확 일치 */
     private BooleanExpression baseAndProdId(PdProdImgDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdId())
-                ? a.prodId.eq(search.getProdId()) : null;
+                ? pdProdImg.prodId.eq(search.getProdId()) : null;
     }
 
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(PdProdImgDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? pdProdImg.siteId.eq(search.getSiteId()) : null;
     }
 
     /* prodImgId 정확 일치 */
     private BooleanExpression baseAndProdImgId(PdProdImgDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdImgId())
-                ? a.prodImgId.eq(search.getProdImgId()) : null;
+                ? pdProdImg.prodImgId.eq(search.getProdImgId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -165,8 +165,8 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "reg_date": return pdProdImg.regDate.goe(start).and(pdProdImg.regDate.lt(endExcl));
+            case "upd_date": return pdProdImg.updDate.goe(start).and(pdProdImg.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -179,17 +179,17 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",attachId,", a.attachId, pattern);
-        or = orLike(or, all, types, ",cdnHost,", a.cdnHost, pattern);
-        or = orLike(or, all, types, ",cdnImgUrl,", a.cdnImgUrl, pattern);
-        or = orLike(or, all, types, ",cdnThumbUrl,", a.cdnThumbUrl, pattern);
-        or = orLike(or, all, types, ",imgAltText,", a.imgAltText, pattern);
-        or = orLike(or, all, types, ",isThumb,", a.isThumb, pattern);
-        or = orLike(or, all, types, ",optItemId1,", a.optItemId1, pattern);
-        or = orLike(or, all, types, ",optItemId2,", a.optItemId2, pattern);
-        or = orLike(or, all, types, ",prodId,", a.prodId, pattern);
-        or = orLike(or, all, types, ",prodImgId,", a.prodImgId, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",attachId,", pdProdImg.attachId, pattern);
+        or = orLike(or, all, types, ",cdnHost,", pdProdImg.cdnHost, pattern);
+        or = orLike(or, all, types, ",cdnImgUrl,", pdProdImg.cdnImgUrl, pattern);
+        or = orLike(or, all, types, ",cdnThumbUrl,", pdProdImg.cdnThumbUrl, pattern);
+        or = orLike(or, all, types, ",imgAltText,", pdProdImg.imgAltText, pattern);
+        or = orLike(or, all, types, ",isThumb,", pdProdImg.isThumb, pattern);
+        or = orLike(or, all, types, ",optItemId1,", pdProdImg.optItemId1, pattern);
+        or = orLike(or, all, types, ",optItemId2,", pdProdImg.optItemId2, pattern);
+        or = orLike(or, all, types, ",prodId,", pdProdImg.prodId, pattern);
+        or = orLike(or, all, types, ",prodImgId,", pdProdImg.prodImgId, pattern);
+        or = orLike(or, all, types, ",siteId,", pdProdImg.siteId, pattern);
         return or;
     }
 
@@ -212,9 +212,9 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
         if (!StringUtils.hasText(sort)) {
 
             /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.prodImgId));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdProdImg.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdProdImg.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdProdImg.prodImgId));
 
             return orders;
         }
@@ -226,18 +226,18 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("prodImgId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.prodImgId));
+                    orders.add(new OrderSpecifier(order, pdProdImg.prodImgId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, pdProdImg.regDate));
                 }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, a.sortOrd)); }
+                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, pdProdImg.sortOrd)); }
             }
         }
         /* unknown sort → sortOrd ASC + regDate ASC fallback */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.prodImgId));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdProdImg.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdProdImg.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdProdImg.prodImgId));
         }
         return orders;
     }
@@ -248,27 +248,27 @@ public class QPdProdImgRepositoryImpl implements QPdProdImgRepository {
     public int updateSelective(PdProdImg entity) {
         if (entity.getProdImgId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(pdProdImg);
         boolean hasAny = false;
 
-        if (entity.getSiteId()      != null) { update.set(a.siteId,      entity.getSiteId());      hasAny = true; }
-        if (entity.getProdId()      != null) { update.set(a.prodId,      entity.getProdId());      hasAny = true; }
-        if (entity.getOptItemId1()  != null) { update.set(a.optItemId1,  entity.getOptItemId1());  hasAny = true; }
-        if (entity.getOptItemId2()  != null) { update.set(a.optItemId2,  entity.getOptItemId2());  hasAny = true; }
-        if (entity.getAttachId()    != null) { update.set(a.attachId,    entity.getAttachId());    hasAny = true; }
-        if (entity.getCdnHost()     != null) { update.set(a.cdnHost,     entity.getCdnHost());     hasAny = true; }
-        if (entity.getCdnImgUrl()   != null) { update.set(a.cdnImgUrl,   entity.getCdnImgUrl());   hasAny = true; }
-        if (entity.getCdnThumbUrl() != null) { update.set(a.cdnThumbUrl, entity.getCdnThumbUrl()); hasAny = true; }
-        if (entity.getImgAltText()  != null) { update.set(a.imgAltText,  entity.getImgAltText());  hasAny = true; }
-        if (entity.getSortOrd()     != null) { update.set(a.sortOrd,     entity.getSortOrd());     hasAny = true; }
-        if (entity.getIsThumb()     != null) { update.set(a.isThumb,     entity.getIsThumb());     hasAny = true; }
-        if (entity.getUpdBy()       != null) { update.set(a.updBy,       entity.getUpdBy());       hasAny = true; }
+        if (entity.getSiteId()      != null) { update.set(pdProdImg.siteId,      entity.getSiteId());      hasAny = true; }
+        if (entity.getProdId()      != null) { update.set(pdProdImg.prodId,      entity.getProdId());      hasAny = true; }
+        if (entity.getOptItemId1()  != null) { update.set(pdProdImg.optItemId1,  entity.getOptItemId1());  hasAny = true; }
+        if (entity.getOptItemId2()  != null) { update.set(pdProdImg.optItemId2,  entity.getOptItemId2());  hasAny = true; }
+        if (entity.getAttachId()    != null) { update.set(pdProdImg.attachId,    entity.getAttachId());    hasAny = true; }
+        if (entity.getCdnHost()     != null) { update.set(pdProdImg.cdnHost,     entity.getCdnHost());     hasAny = true; }
+        if (entity.getCdnImgUrl()   != null) { update.set(pdProdImg.cdnImgUrl,   entity.getCdnImgUrl());   hasAny = true; }
+        if (entity.getCdnThumbUrl() != null) { update.set(pdProdImg.cdnThumbUrl, entity.getCdnThumbUrl()); hasAny = true; }
+        if (entity.getImgAltText()  != null) { update.set(pdProdImg.imgAltText,  entity.getImgAltText());  hasAny = true; }
+        if (entity.getSortOrd()     != null) { update.set(pdProdImg.sortOrd,     entity.getSortOrd());     hasAny = true; }
+        if (entity.getIsThumb()     != null) { update.set(pdProdImg.isThumb,     entity.getIsThumb());     hasAny = true; }
+        if (entity.getUpdBy()       != null) { update.set(pdProdImg.updBy,       entity.getUpdBy());       hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(pdProdImg.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.prodImgId.eq(entity.getProdImgId())).execute();
+        long affected = update.where(pdProdImg.prodImgId.eq(entity.getProdImgId())).execute();
         return (int) affected;
     }
 }

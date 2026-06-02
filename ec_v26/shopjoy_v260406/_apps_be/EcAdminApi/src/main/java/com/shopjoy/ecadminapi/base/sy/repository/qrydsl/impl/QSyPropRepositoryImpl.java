@@ -36,14 +36,14 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
     private final EntityManager em;
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyPropRepositoryImpl";
-    private static final QSyProp p = QSyProp.syProp;
-    private static final QSySite ste = QSySite.sySite;
+    private static final QSyProp syProp = QSyProp.syProp;
+    private static final QSySite sySite = QSySite.sySite;
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     /* 시스템 속성 키조회 */
     @Override
     public Optional<SyPropDto.Item> selectById(String propId) {
-        SyPropDto.Item dto = baseQuery().where(p.propId.eq(propId)).fetchOne();
+        SyPropDto.Item dto = baseQuery().where(syProp.propId.eq(propId)).fetchOne();
         return Optional.ofNullable(dto);
     }
 
@@ -87,7 +87,7 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyPropDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(p.count()).from(p).where(
+        Long total = queryFactory.select(syProp.count()).from(syProp).where(
                 baseAndSiteId(search),
                 baseAndPathId(search),
                 baseAndPropTypeCd(search),
@@ -103,13 +103,13 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
     private JPAQuery<SyPropDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(SyPropDto.Item.class,
-                        p.propId, p.siteId, p.pathId, p.propKey, p.propValue, p.propLabel,
-                        p.propTypeCd, p.sortOrd, p.useYn, p.propRemark,
-                        p.regBy, p.regDate, p.updBy, p.updDate,
-                        ste.siteNm.as("siteNm")
+                        syProp.propId, syProp.siteId, syProp.pathId, syProp.propKey, syProp.propValue, syProp.propLabel,
+                        syProp.propTypeCd, syProp.sortOrd, syProp.useYn, syProp.propRemark,
+                        syProp.regBy, syProp.regDate, syProp.updBy, syProp.updDate,
+                        sySite.siteNm.as("siteNm")
                 ))
-                .from(p)
-                .leftJoin(ste).on(ste.siteId.eq(p.siteId));
+                .from(syProp)
+                .leftJoin(sySite).on(sySite.siteId.eq(syProp.siteId));
     }
 
     /* 시스템 속성 buildCondition */
@@ -122,26 +122,26 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(SyPropDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? p.siteId.eq(search.getSiteId()) : null;
+                ? syProp.siteId.eq(search.getSiteId()) : null;
     }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression baseAndPathId(SyPropDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
-                ? p.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_prop"))
+                ? syProp.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_prop"))
                 : null;
     }
 
     /* propTypeCd 정확 일치 */
     private BooleanExpression baseAndPropTypeCd(SyPropDto.Request search) {
         return search != null && StringUtils.hasText(search.getPropTypeCd())
-                ? p.propTypeCd.eq(search.getPropTypeCd()) : null;
+                ? syProp.propTypeCd.eq(search.getPropTypeCd()) : null;
     }
 
     /* useYn 정확 일치 */
     private BooleanExpression baseAndUseYn(SyPropDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
-                ? p.useYn.eq(search.getUseYn()) : null;
+                ? syProp.useYn.eq(search.getUseYn()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
@@ -152,15 +152,15 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",pathId,", p.pathId, pattern);
-        or = orLike(or, all, types, ",propId,", p.propId, pattern);
-        or = orLike(or, all, types, ",propKey,", p.propKey, pattern);
-        or = orLike(or, all, types, ",propLabel,", p.propLabel, pattern);
-        or = orLike(or, all, types, ",propRemark,", p.propRemark, pattern);
-        or = orLike(or, all, types, ",propTypeCd,", p.propTypeCd, pattern);
-        or = orLike(or, all, types, ",propValue,", p.propValue, pattern);
-        or = orLike(or, all, types, ",siteId,", p.siteId, pattern);
-        or = orLike(or, all, types, ",useYn,", p.useYn, pattern);
+        or = orLike(or, all, types, ",pathId,", syProp.pathId, pattern);
+        or = orLike(or, all, types, ",propId,", syProp.propId, pattern);
+        or = orLike(or, all, types, ",propKey,", syProp.propKey, pattern);
+        or = orLike(or, all, types, ",propLabel,", syProp.propLabel, pattern);
+        or = orLike(or, all, types, ",propRemark,", syProp.propRemark, pattern);
+        or = orLike(or, all, types, ",propTypeCd,", syProp.propTypeCd, pattern);
+        or = orLike(or, all, types, ",propValue,", syProp.propValue, pattern);
+        or = orLike(or, all, types, ",siteId,", syProp.siteId, pattern);
+        or = orLike(or, all, types, ",useYn,", syProp.useYn, pattern);
         return or;
     }
 
@@ -183,9 +183,9 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
         if (!StringUtils.hasText(sort)) {
 
             /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, p.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, p.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, p.propId));
+            orders.add(new OrderSpecifier<>(Order.ASC, syProp.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, syProp.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syProp.propId));
 
             return orders;
         }
@@ -197,18 +197,18 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("propId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, p.propId));
+                    orders.add(new OrderSpecifier(order, syProp.propId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, p.regDate));
+                    orders.add(new OrderSpecifier(order, syProp.regDate));
                 }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, p.sortOrd)); }
+                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, syProp.sortOrd)); }
             }
         }
         /* unknown sort → sortOrd ASC + regDate ASC fallback */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, p.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, p.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, p.propId));
+            orders.add(new OrderSpecifier<>(Order.ASC, syProp.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, syProp.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syProp.propId));
         }
         return orders;
     }
@@ -218,25 +218,25 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
     public int updateSelective(SyProp entity) {
         if (entity.getPropId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(p);
+        JPAUpdateClause update = queryFactory.update(syProp);
         boolean hasAny = false;
 
-        if (entity.getSiteId()     != null) { update.set(p.siteId,     entity.getSiteId());     hasAny = true; }
-        if (entity.getPathId()     != null) { update.set(p.pathId,     entity.getPathId());     hasAny = true; }
-        if (entity.getPropKey()    != null) { update.set(p.propKey,    entity.getPropKey());    hasAny = true; }
-        if (entity.getPropValue()  != null) { update.set(p.propValue,  entity.getPropValue());  hasAny = true; }
-        if (entity.getPropLabel()  != null) { update.set(p.propLabel,  entity.getPropLabel());  hasAny = true; }
-        if (entity.getPropTypeCd() != null) { update.set(p.propTypeCd, entity.getPropTypeCd()); hasAny = true; }
-        if (entity.getSortOrd()    != null) { update.set(p.sortOrd,    entity.getSortOrd());    hasAny = true; }
-        if (entity.getUseYn()      != null) { update.set(p.useYn,      entity.getUseYn());      hasAny = true; }
-        if (entity.getPropRemark() != null) { update.set(p.propRemark, entity.getPropRemark()); hasAny = true; }
-        if (entity.getUpdBy()      != null) { update.set(p.updBy,      entity.getUpdBy());      hasAny = true; }
+        if (entity.getSiteId()     != null) { update.set(syProp.siteId,     entity.getSiteId());     hasAny = true; }
+        if (entity.getPathId()     != null) { update.set(syProp.pathId,     entity.getPathId());     hasAny = true; }
+        if (entity.getPropKey()    != null) { update.set(syProp.propKey,    entity.getPropKey());    hasAny = true; }
+        if (entity.getPropValue()  != null) { update.set(syProp.propValue,  entity.getPropValue());  hasAny = true; }
+        if (entity.getPropLabel()  != null) { update.set(syProp.propLabel,  entity.getPropLabel());  hasAny = true; }
+        if (entity.getPropTypeCd() != null) { update.set(syProp.propTypeCd, entity.getPropTypeCd()); hasAny = true; }
+        if (entity.getSortOrd()    != null) { update.set(syProp.sortOrd,    entity.getSortOrd());    hasAny = true; }
+        if (entity.getUseYn()      != null) { update.set(syProp.useYn,      entity.getUseYn());      hasAny = true; }
+        if (entity.getPropRemark() != null) { update.set(syProp.propRemark, entity.getPropRemark()); hasAny = true; }
+        if (entity.getUpdBy()      != null) { update.set(syProp.updBy,      entity.getUpdBy());      hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(p.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(syProp.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(p.propId.eq(entity.getPropId())).execute();
+        long affected = update.where(syProp.propId.eq(entity.getPropId())).execute();
         return (int) affected;
     }
 
@@ -310,19 +310,19 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
      * selectPathTreePropCnts 전용 SQL 조건 헬퍼
      * ============================================================ */
 
-    private void pathtreeAndUseYn(SyPropDto.Request s, StringBuilder sql, Map<String, Object> p) {
+    private void pathtreeAndUseYn(SyPropDto.Request s, StringBuilder sql, Map<String, Object> syProp) {
         if (s == null || !StringUtils.hasText(s.getUseYn())) return;
         sql.append("      AND t.use_yn = :useYn\n");
-        p.put("useYn", s.getUseYn());
+        syProp.put("useYn", s.getUseYn());
     }
 
-    private void pathtreeAndPropType(SyPropDto.Request s, StringBuilder sql, Map<String, Object> p) {
+    private void pathtreeAndPropType(SyPropDto.Request s, StringBuilder sql, Map<String, Object> syProp) {
         if (s == null || !StringUtils.hasText(s.getPropTypeCd())) return;
         sql.append("      AND t.prop_type_cd = :propType\n");
-        p.put("propType", s.getPropTypeCd());
+        syProp.put("propType", s.getPropTypeCd());
     }
 
-    private void pathtreeAndSearchValue(SyPropDto.Request s, StringBuilder sql, Map<String, Object> p) {
+    private void pathtreeAndSearchValue(SyPropDto.Request s, StringBuilder sql, Map<String, Object> syProp) {
         if (s == null || !StringUtils.hasText(s.getSearchValue())) return;
         String raw = s.getSearchType();
         boolean noType = !StringUtils.hasText(raw);
@@ -333,18 +333,18 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
         if (noType || st.contains(",propValue,")) sql.append("         OR t.prop_value ILIKE '%' || :searchValue || '%'\n");
         if (noType || st.contains(",propLabel,")) sql.append("         OR t.prop_label ILIKE '%' || :searchValue || '%'\n");
         sql.append("      )\n");
-        p.put("searchValue", s.getSearchValue());
+        syProp.put("searchValue", s.getSearchValue());
     }
 
-    private void pathtreeAndDateRange(SyPropDto.Request s, StringBuilder sql, Map<String, Object> p) {
+    private void pathtreeAndDateRange(SyPropDto.Request s, StringBuilder sql, Map<String, Object> syProp) {
         if (s == null) return;
         if (StringUtils.hasText(s.getDateStart())) {
             sql.append("      AND t.reg_date >= CAST(:dateStart AS timestamp)\n");
-            p.put("dateStart", s.getDateStart());
+            syProp.put("dateStart", s.getDateStart());
         }
         if (StringUtils.hasText(s.getDateEnd())) {
             sql.append("      AND t.reg_date <= CAST(:dateEnd   AS timestamp) + INTERVAL '1 day'\n");
-            p.put("dateEnd", s.getDateEnd());
+            syProp.put("dateEnd", s.getDateEnd());
         }
     }
 }

@@ -31,30 +31,30 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdRestockNotiRepositoryImpl";
-    private static final QPdRestockNoti a   = QPdRestockNoti.pdRestockNoti;
-    private static final QSySite        ste = QSySite.sySite;
-    private static final QPdProd        prd = QPdProd.pdProd;
-    private static final QMbMember      mem = QMbMember.mbMember;
+    private static final QPdRestockNoti pdRestockNoti   = QPdRestockNoti.pdRestockNoti;
+    private static final QSySite        sySite = QSySite.sySite;
+    private static final QPdProd        pdProd = QPdProd.pdProd;
+    private static final QMbMember      mbMember = QMbMember.mbMember;
 
     /* 재입고 알림 baseSelColumnQuery */
     private JPAQuery<PdRestockNotiDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdRestockNotiDto.Item.class,
-                        a.restockNotiId, a.siteId, a.prodId, a.skuId, a.memberId,
-                        a.notiYn, a.notiDate,
-                        a.regBy, a.regDate, a.updBy, a.updDate
+                        pdRestockNoti.restockNotiId, pdRestockNoti.siteId, pdRestockNoti.prodId, pdRestockNoti.skuId, pdRestockNoti.memberId,
+                        pdRestockNoti.notiYn, pdRestockNoti.notiDate,
+                        pdRestockNoti.regBy, pdRestockNoti.regDate, pdRestockNoti.updBy, pdRestockNoti.updDate
                 ))
-                .from(a)
-                .leftJoin(ste).on(ste.siteId.eq(a.siteId))
-                .leftJoin(prd).on(prd.prodId.eq(a.prodId))
-                .leftJoin(mem).on(mem.memberId.eq(a.memberId));
+                .from(pdRestockNoti)
+                .leftJoin(sySite).on(sySite.siteId.eq(pdRestockNoti.siteId))
+                .leftJoin(pdProd).on(pdProd.prodId.eq(pdRestockNoti.prodId))
+                .leftJoin(mbMember).on(mbMember.memberId.eq(pdRestockNoti.memberId));
     }
 
     /* 재입고 알림 키조회 */
     @Override
     public Optional<PdRestockNotiDto.Item> selectById(String restockNotiId) {
         PdRestockNotiDto.Item dto = baseSelColumnQuery()
-                .where(a.restockNotiId.eq(restockNotiId))
+                .where(pdRestockNoti.restockNotiId.eq(restockNotiId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -102,7 +102,7 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
         }
         List<PdRestockNotiDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(a.count()).from(a).where(
+        Long total = queryFactory.select(pdRestockNoti.count()).from(pdRestockNoti).where(
                 baseAndSiteId(search),
                 baseAndRestockNotiId(search),
                 baseAndDateRange(search),
@@ -122,13 +122,13 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(PdRestockNotiDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? pdRestockNoti.siteId.eq(search.getSiteId()) : null;
     }
 
     /* restockNotiId 정확 일치 */
     private BooleanExpression baseAndRestockNotiId(PdRestockNotiDto.Request search) {
         return search != null && StringUtils.hasText(search.getRestockNotiId())
-                ? a.restockNotiId.eq(search.getRestockNotiId()) : null;
+                ? pdRestockNoti.restockNotiId.eq(search.getRestockNotiId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -141,8 +141,8 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "reg_date": return pdRestockNoti.regDate.goe(start).and(pdRestockNoti.regDate.lt(endExcl));
+            case "upd_date": return pdRestockNoti.updDate.goe(start).and(pdRestockNoti.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -155,12 +155,12 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",memberId,", a.memberId, pattern);
-        or = orLike(or, all, types, ",notiYn,", a.notiYn, pattern);
-        or = orLike(or, all, types, ",prodId,", a.prodId, pattern);
-        or = orLike(or, all, types, ",restockNotiId,", a.restockNotiId, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
-        or = orLike(or, all, types, ",skuId,", a.skuId, pattern);
+        or = orLike(or, all, types, ",memberId,", pdRestockNoti.memberId, pattern);
+        or = orLike(or, all, types, ",notiYn,", pdRestockNoti.notiYn, pattern);
+        or = orLike(or, all, types, ",prodId,", pdRestockNoti.prodId, pattern);
+        or = orLike(or, all, types, ",restockNotiId,", pdRestockNoti.restockNotiId, pattern);
+        or = orLike(or, all, types, ",siteId,", pdRestockNoti.siteId, pattern);
+        or = orLike(or, all, types, ",skuId,", pdRestockNoti.skuId, pattern);
         return or;
     }
 
@@ -181,8 +181,8 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.restockNotiId));
+            orders.add(new OrderSpecifier(Order.DESC, pdRestockNoti.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdRestockNoti.restockNotiId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -193,17 +193,17 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("restockNotiId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.restockNotiId));
+                    orders.add(new OrderSpecifier(order, pdRestockNoti.restockNotiId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, pdRestockNoti.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.restockNotiId));
+            orders.add(new OrderSpecifier<>(Order.DESC, pdRestockNoti.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdRestockNoti.restockNotiId));
         }
         return orders;
     }
@@ -215,22 +215,22 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
     public int updateSelective(PdRestockNoti entity) {
         if (entity.getRestockNotiId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(pdRestockNoti);
         boolean hasAny = false;
 
-        if (entity.getSiteId()   != null) { update.set(a.siteId,   entity.getSiteId());   hasAny = true; }
-        if (entity.getProdId()   != null) { update.set(a.prodId,   entity.getProdId());   hasAny = true; }
-        if (entity.getSkuId()    != null) { update.set(a.skuId,    entity.getSkuId());    hasAny = true; }
-        if (entity.getMemberId() != null) { update.set(a.memberId, entity.getMemberId()); hasAny = true; }
-        if (entity.getNotiYn()   != null) { update.set(a.notiYn,   entity.getNotiYn());   hasAny = true; }
-        if (entity.getNotiDate() != null) { update.set(a.notiDate, entity.getNotiDate()); hasAny = true; }
-        if (entity.getUpdBy()    != null) { update.set(a.updBy,    entity.getUpdBy());    hasAny = true; }
+        if (entity.getSiteId()   != null) { update.set(pdRestockNoti.siteId,   entity.getSiteId());   hasAny = true; }
+        if (entity.getProdId()   != null) { update.set(pdRestockNoti.prodId,   entity.getProdId());   hasAny = true; }
+        if (entity.getSkuId()    != null) { update.set(pdRestockNoti.skuId,    entity.getSkuId());    hasAny = true; }
+        if (entity.getMemberId() != null) { update.set(pdRestockNoti.memberId, entity.getMemberId()); hasAny = true; }
+        if (entity.getNotiYn()   != null) { update.set(pdRestockNoti.notiYn,   entity.getNotiYn());   hasAny = true; }
+        if (entity.getNotiDate() != null) { update.set(pdRestockNoti.notiDate, entity.getNotiDate()); hasAny = true; }
+        if (entity.getUpdBy()    != null) { update.set(pdRestockNoti.updBy,    entity.getUpdBy());    hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(pdRestockNoti.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.restockNotiId.eq(entity.getRestockNotiId())).execute();
+        long affected = update.where(pdRestockNoti.restockNotiId.eq(entity.getRestockNotiId())).execute();
         return (int) affected;
     }
 }

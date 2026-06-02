@@ -30,36 +30,36 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.mb.repository.qrydsl.impl.QMbMemberRepositoryImpl";
-    private static final QMbMember a     = QMbMember.mbMember;
-    private static final QSySite   s     = QSySite.sySite;
+    private static final QMbMember mbMember     = QMbMember.mbMember;
+    private static final QSySite   sySite     = QSySite.sySite;
     private static final QSyCode   cdGr  = new QSyCode("cd_gr");
     private static final QSyCode   cdMs  = new QSyCode("cd_ms");
 
     private JPAQuery<MbMemberDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(MbMemberDto.Item.class,
-                        a.memberId, a.siteId, a.loginId, a.memberNm, a.memberPhone,
-                        a.memberGender, a.birthDate,
-                        a.gradeCd, a.memberStatusCd, a.memberStatusCdBefore,
-                        a.joinDate, a.lastLogin,
-                        a.orderCount, a.totalPurchaseAmt, a.cacheBalanceAmt,
-                        a.memberZipCode, a.memberAddr, a.memberAddrDetail, a.memberMemo,
-                        a.regBy, a.regDate, a.updBy, a.updDate,
-                        s.siteNm.as("siteNm"),
+                        mbMember.memberId, mbMember.siteId, mbMember.loginId, mbMember.memberNm, mbMember.memberPhone,
+                        mbMember.memberGender, mbMember.birthDate,
+                        mbMember.gradeCd, mbMember.memberStatusCd, mbMember.memberStatusCdBefore,
+                        mbMember.joinDate, mbMember.lastLogin,
+                        mbMember.orderCount, mbMember.totalPurchaseAmt, mbMember.cacheBalanceAmt,
+                        mbMember.memberZipCode, mbMember.memberAddr, mbMember.memberAddrDetail, mbMember.memberMemo,
+                        mbMember.regBy, mbMember.regDate, mbMember.updBy, mbMember.updDate,
+                        sySite.siteNm.as("siteNm"),
                         cdGr.codeLabel.as("gradeCdNm"),
                         cdMs.codeLabel.as("memberStatusCdNm")
                 ))
-                .from(a)
-                .leftJoin(s).on(s.siteId.eq(a.siteId))
-                .leftJoin(cdGr).on(cdGr.codeGrp.eq("MEMBER_GRADE").and(cdGr.codeValue.eq(a.gradeCd)))
-                .leftJoin(cdMs).on(cdMs.codeGrp.eq("MEMBER_STATUS").and(cdMs.codeValue.eq(a.memberStatusCd)));
+                .from(mbMember)
+                .leftJoin(sySite).on(sySite.siteId.eq(mbMember.siteId))
+                .leftJoin(cdGr).on(cdGr.codeGrp.eq("MEMBER_GRADE").and(cdGr.codeValue.eq(mbMember.gradeCd)))
+                .leftJoin(cdMs).on(cdMs.codeGrp.eq("MEMBER_STATUS").and(cdMs.codeValue.eq(mbMember.memberStatusCd)));
     }
 
     /* 회원 키조회 */
     @Override
     public Optional<MbMemberDto.Item> selectById(String memberId) {
         MbMemberDto.Item dto = baseSelColumnQuery()
-                .where(a.memberId.eq(memberId))
+                .where(mbMember.memberId.eq(memberId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -108,8 +108,8 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
         List<MbMemberDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(a.count())
-                .from(a)
+                .select(mbMember.count())
+                .from(mbMember)
                 .where(
                 baseAndSiteId(search),
                 baseAndMemberId(search),
@@ -133,13 +133,13 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(MbMemberDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? mbMember.siteId.eq(search.getSiteId()) : null;
     }
 
     /* memberId 정확 일치 */
     private BooleanExpression baseAndMemberId(MbMemberDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberId())
-                ? a.memberId.eq(search.getMemberId()) : null;
+                ? mbMember.memberId.eq(search.getMemberId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -152,9 +152,9 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "join_date": return a.joinDate.goe(start).and(a.joinDate.lt(endExcl));
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "join_date": return mbMember.joinDate.goe(start).and(mbMember.joinDate.lt(endExcl));
+            case "reg_date": return mbMember.regDate.goe(start).and(mbMember.regDate.lt(endExcl));
+            case "upd_date": return mbMember.updDate.goe(start).and(mbMember.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -167,20 +167,20 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",gradeCd,", a.gradeCd, pattern);
-        or = orLike(or, all, types, ",loginId,", a.loginId, pattern);
-        or = orLike(or, all, types, ",loginPwdHash,", a.loginPwdHash, pattern);
-        or = orLike(or, all, types, ",memberAddr,", a.memberAddr, pattern);
-        or = orLike(or, all, types, ",memberAddrDetail,", a.memberAddrDetail, pattern);
-        or = orLike(or, all, types, ",memberGender,", a.memberGender, pattern);
-        or = orLike(or, all, types, ",memberId,", a.memberId, pattern);
-        or = orLike(or, all, types, ",memberMemo,", a.memberMemo, pattern);
-        or = orLike(or, all, types, ",memberNm,", a.memberNm, pattern);
-        or = orLike(or, all, types, ",memberPhone,", a.memberPhone, pattern);
-        or = orLike(or, all, types, ",memberStatusCd,", a.memberStatusCd, pattern);
-        or = orLike(or, all, types, ",memberStatusCdBefore,", a.memberStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",memberZipCode,", a.memberZipCode, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",gradeCd,", mbMember.gradeCd, pattern);
+        or = orLike(or, all, types, ",loginId,", mbMember.loginId, pattern);
+        or = orLike(or, all, types, ",loginPwdHash,", mbMember.loginPwdHash, pattern);
+        or = orLike(or, all, types, ",memberAddr,", mbMember.memberAddr, pattern);
+        or = orLike(or, all, types, ",memberAddrDetail,", mbMember.memberAddrDetail, pattern);
+        or = orLike(or, all, types, ",memberGender,", mbMember.memberGender, pattern);
+        or = orLike(or, all, types, ",memberId,", mbMember.memberId, pattern);
+        or = orLike(or, all, types, ",memberMemo,", mbMember.memberMemo, pattern);
+        or = orLike(or, all, types, ",memberNm,", mbMember.memberNm, pattern);
+        or = orLike(or, all, types, ",memberPhone,", mbMember.memberPhone, pattern);
+        or = orLike(or, all, types, ",memberStatusCd,", mbMember.memberStatusCd, pattern);
+        or = orLike(or, all, types, ",memberStatusCdBefore,", mbMember.memberStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",memberZipCode,", mbMember.memberZipCode, pattern);
+        or = orLike(or, all, types, ",siteId,", mbMember.siteId, pattern);
         return or;
     }
 
@@ -197,12 +197,12 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
      * 예: "userId asc, userNm desc, regDate asc"
      */
     @SuppressWarnings({"rawtypes","unchecked"})
-    private List<OrderSpecifier<?>> buildOrder(MbMemberDto.Request s) {
+    private List<OrderSpecifier<?>> buildOrder(MbMemberDto.Request sySite) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = s == null ? null : s.getSort();
+        String sort = sySite == null ? null : sySite.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.joinDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.memberId));
+            orders.add(new OrderSpecifier(Order.DESC, mbMember.joinDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, mbMember.memberId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -213,19 +213,19 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("memberId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.memberId));
+                    orders.add(new OrderSpecifier(order, mbMember.memberId));
                 } else if ("memberNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.memberNm));
+                    orders.add(new OrderSpecifier(order, mbMember.memberNm));
                 } else if ("joinDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.joinDate));
+                    orders.add(new OrderSpecifier(order, mbMember.joinDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.memberId));
+            orders.add(new OrderSpecifier<>(Order.DESC, mbMember.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, mbMember.memberId));
         }
         return orders;
     }
@@ -236,22 +236,22 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
     public int updateSelective(MbMember entity) {
         if (entity.getMemberId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(mbMember);
         boolean hasAny = false;
 
-        if (entity.getMemberStatusCd()       != null) { update.set(a.memberStatusCd,       entity.getMemberStatusCd());       hasAny = true; }
-        if (entity.getMemberStatusCdBefore() != null) { update.set(a.memberStatusCdBefore, entity.getMemberStatusCdBefore()); hasAny = true; }
-        if (entity.getGradeCd()              != null) { update.set(a.gradeCd,              entity.getGradeCd());              hasAny = true; }
-        if (entity.getMemberNm()             != null) { update.set(a.memberNm,             entity.getMemberNm());             hasAny = true; }
-        if (entity.getMemberPhone()          != null) { update.set(a.memberPhone,          entity.getMemberPhone());          hasAny = true; }
-        if (entity.getMemberMemo()           != null) { update.set(a.memberMemo,           entity.getMemberMemo());           hasAny = true; }
-        if (entity.getUpdBy()                != null) { update.set(a.updBy,                entity.getUpdBy());                hasAny = true; }
+        if (entity.getMemberStatusCd()       != null) { update.set(mbMember.memberStatusCd,       entity.getMemberStatusCd());       hasAny = true; }
+        if (entity.getMemberStatusCdBefore() != null) { update.set(mbMember.memberStatusCdBefore, entity.getMemberStatusCdBefore()); hasAny = true; }
+        if (entity.getGradeCd()              != null) { update.set(mbMember.gradeCd,              entity.getGradeCd());              hasAny = true; }
+        if (entity.getMemberNm()             != null) { update.set(mbMember.memberNm,             entity.getMemberNm());             hasAny = true; }
+        if (entity.getMemberPhone()          != null) { update.set(mbMember.memberPhone,          entity.getMemberPhone());          hasAny = true; }
+        if (entity.getMemberMemo()           != null) { update.set(mbMember.memberMemo,           entity.getMemberMemo());           hasAny = true; }
+        if (entity.getUpdBy()                != null) { update.set(mbMember.updBy,                entity.getUpdBy());                hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(mbMember.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.memberId.eq(entity.getMemberId())).execute();
+        long affected = update.where(mbMember.memberId.eq(entity.getMemberId())).execute();
         return (int) affected;
     }
 }

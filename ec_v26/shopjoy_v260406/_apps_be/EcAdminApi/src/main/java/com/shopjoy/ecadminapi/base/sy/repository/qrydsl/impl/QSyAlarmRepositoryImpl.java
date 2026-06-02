@@ -38,8 +38,8 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
     private final EntityManager em;
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyAlarmRepositoryImpl";
-    private static final QSyAlarm a = QSyAlarm.syAlarm;
-    private static final QSySite ste = QSySite.sySite;
+    private static final QSyAlarm syAlarm = QSyAlarm.syAlarm;
+    private static final QSySite sySite = QSySite.sySite;
     private static final QSyCode cdAt = new QSyCode("cd_at");
     private static final QSyCode cdAc = new QSyCode("cd_ac");
     private static final QSyCode cdAtt = new QSyCode("cd_att");
@@ -49,7 +49,7 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
     /* 알람 키조회 */
     @Override
     public Optional<SyAlarmDto.Item> selectById(String alarmId) {
-        SyAlarmDto.Item dto = baseQuery().where(a.alarmId.eq(alarmId)).fetchOne();
+        SyAlarmDto.Item dto = baseQuery().where(syAlarm.alarmId.eq(alarmId)).fetchOne();
         return Optional.ofNullable(dto);
     }
 
@@ -95,7 +95,7 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyAlarmDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(a.count()).from(a).where(
+        Long total = queryFactory.select(syAlarm.count()).from(syAlarm).where(
                 baseAndSiteId(search),
                 baseAndPathId(search),
                 baseAndAlarmId(search),
@@ -112,20 +112,20 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
     private JPAQuery<SyAlarmDto.Item> baseQuery() {
         return queryFactory
                 .select(Projections.bean(SyAlarmDto.Item.class,
-                        a.alarmId, a.siteId, a.alarmTitle, a.alarmTypeCd, a.channelCd,
-                        a.targetTypeCd, a.targetId, a.templateId, a.alarmMsg, a.alarmSendDate,
-                        a.alarmStatusCd, a.alarmSendCount, a.alarmFailCount, a.pathId,
-                        a.regBy, a.regDate, a.updBy, a.updDate,
-                        ste.siteNm.as("siteNm"),
+                        syAlarm.alarmId, syAlarm.siteId, syAlarm.alarmTitle, syAlarm.alarmTypeCd, syAlarm.channelCd,
+                        syAlarm.targetTypeCd, syAlarm.targetId, syAlarm.templateId, syAlarm.alarmMsg, syAlarm.alarmSendDate,
+                        syAlarm.alarmStatusCd, syAlarm.alarmSendCount, syAlarm.alarmFailCount, syAlarm.pathId,
+                        syAlarm.regBy, syAlarm.regDate, syAlarm.updBy, syAlarm.updDate,
+                        sySite.siteNm.as("siteNm"),
                         cdAt.codeLabel.as("alarmTypeCdNm"),
                         cdAc.codeLabel.as("channelCdNm"),
                         cdAtt.codeLabel.as("targetTypeCdNm")
                 ))
-                .from(a)
-                .leftJoin(ste).on(ste.siteId.eq(a.siteId))
-                .leftJoin(cdAt).on(cdAt.codeGrp.eq("ALARM_TYPE").and(cdAt.codeValue.eq(a.alarmTypeCd)))
-                .leftJoin(cdAc).on(cdAc.codeGrp.eq("ALARM_CHANNEL").and(cdAc.codeValue.eq(a.channelCd)))
-                .leftJoin(cdAtt).on(cdAtt.codeGrp.eq("ALARM_TARGET_TYPE").and(cdAtt.codeValue.eq(a.targetTypeCd)));
+                .from(syAlarm)
+                .leftJoin(sySite).on(sySite.siteId.eq(syAlarm.siteId))
+                .leftJoin(cdAt).on(cdAt.codeGrp.eq("ALARM_TYPE").and(cdAt.codeValue.eq(syAlarm.alarmTypeCd)))
+                .leftJoin(cdAc).on(cdAc.codeGrp.eq("ALARM_CHANNEL").and(cdAc.codeValue.eq(syAlarm.channelCd)))
+                .leftJoin(cdAtt).on(cdAtt.codeGrp.eq("ALARM_TARGET_TYPE").and(cdAtt.codeValue.eq(syAlarm.targetTypeCd)));
     }
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
@@ -138,32 +138,32 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(SyAlarmDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? syAlarm.siteId.eq(search.getSiteId()) : null;
     }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression baseAndPathId(SyAlarmDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
-                ? a.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_alarm"))
+                ? syAlarm.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_alarm"))
                 : null;
     }
 
     /* alarmId 정확 일치 */
     private BooleanExpression baseAndAlarmId(SyAlarmDto.Request search) {
         return search != null && StringUtils.hasText(search.getAlarmId())
-                ? a.alarmId.eq(search.getAlarmId()) : null;
+                ? syAlarm.alarmId.eq(search.getAlarmId()) : null;
     }
 
     /* alarmStatusCd 정확 일치 */
     private BooleanExpression baseAndStatus(SyAlarmDto.Request search) {
         return search != null && StringUtils.hasText(search.getStatus())
-                ? a.alarmStatusCd.eq(search.getStatus()) : null;
+                ? syAlarm.alarmStatusCd.eq(search.getStatus()) : null;
     }
 
     /* alarmTypeCd 정확 일치 */
     private BooleanExpression baseAndTypeCd(SyAlarmDto.Request search) {
         return search != null && StringUtils.hasText(search.getTypeCd())
-                ? a.alarmTypeCd.eq(search.getTypeCd()) : null;
+                ? syAlarm.alarmTypeCd.eq(search.getTypeCd()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
@@ -174,17 +174,17 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",alarmId,", a.alarmId, pattern);
-        or = orLike(or, all, types, ",alarmMsg,", a.alarmMsg, pattern);
-        or = orLike(or, all, types, ",alarmStatusCd,", a.alarmStatusCd, pattern);
-        or = orLike(or, all, types, ",alarmTitle,", a.alarmTitle, pattern);
-        or = orLike(or, all, types, ",alarmTypeCd,", a.alarmTypeCd, pattern);
-        or = orLike(or, all, types, ",channelCd,", a.channelCd, pattern);
-        or = orLike(or, all, types, ",pathId,", a.pathId, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
-        or = orLike(or, all, types, ",targetId,", a.targetId, pattern);
-        or = orLike(or, all, types, ",targetTypeCd,", a.targetTypeCd, pattern);
-        or = orLike(or, all, types, ",templateId,", a.templateId, pattern);
+        or = orLike(or, all, types, ",alarmId,", syAlarm.alarmId, pattern);
+        or = orLike(or, all, types, ",alarmMsg,", syAlarm.alarmMsg, pattern);
+        or = orLike(or, all, types, ",alarmStatusCd,", syAlarm.alarmStatusCd, pattern);
+        or = orLike(or, all, types, ",alarmTitle,", syAlarm.alarmTitle, pattern);
+        or = orLike(or, all, types, ",alarmTypeCd,", syAlarm.alarmTypeCd, pattern);
+        or = orLike(or, all, types, ",channelCd,", syAlarm.channelCd, pattern);
+        or = orLike(or, all, types, ",pathId,", syAlarm.pathId, pattern);
+        or = orLike(or, all, types, ",siteId,", syAlarm.siteId, pattern);
+        or = orLike(or, all, types, ",targetId,", syAlarm.targetId, pattern);
+        or = orLike(or, all, types, ",targetTypeCd,", syAlarm.targetTypeCd, pattern);
+        or = orLike(or, all, types, ",templateId,", syAlarm.templateId, pattern);
         return or;
     }
 
@@ -205,8 +205,8 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.alarmId));
+            orders.add(new OrderSpecifier(Order.DESC, syAlarm.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syAlarm.alarmId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -217,19 +217,19 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("alarmId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.alarmId));
+                    orders.add(new OrderSpecifier(order, syAlarm.alarmId));
                 } else if ("alarmTitle".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.alarmTitle));
+                    orders.add(new OrderSpecifier(order, syAlarm.alarmTitle));
                 } else if ("alarmSendDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.alarmSendDate));
+                    orders.add(new OrderSpecifier(order, syAlarm.alarmSendDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.alarmId));
+            orders.add(new OrderSpecifier<>(Order.DESC, syAlarm.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syAlarm.alarmId));
         }
         return orders;
     }
@@ -239,29 +239,29 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
     public int updateSelective(SyAlarm entity) {
         if (entity.getAlarmId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(syAlarm);
         boolean hasAny = false;
 
-        if (entity.getSiteId()         != null) { update.set(a.siteId,         entity.getSiteId());         hasAny = true; }
-        if (entity.getAlarmTitle()     != null) { update.set(a.alarmTitle,     entity.getAlarmTitle());     hasAny = true; }
-        if (entity.getAlarmTypeCd()    != null) { update.set(a.alarmTypeCd,    entity.getAlarmTypeCd());    hasAny = true; }
-        if (entity.getChannelCd()      != null) { update.set(a.channelCd,      entity.getChannelCd());      hasAny = true; }
-        if (entity.getTargetTypeCd()   != null) { update.set(a.targetTypeCd,   entity.getTargetTypeCd());   hasAny = true; }
-        if (entity.getTargetId()       != null) { update.set(a.targetId,       entity.getTargetId());       hasAny = true; }
-        if (entity.getTemplateId()     != null) { update.set(a.templateId,     entity.getTemplateId());     hasAny = true; }
-        if (entity.getAlarmMsg()       != null) { update.set(a.alarmMsg,       entity.getAlarmMsg());       hasAny = true; }
-        if (entity.getAlarmSendDate()  != null) { update.set(a.alarmSendDate,  entity.getAlarmSendDate());  hasAny = true; }
-        if (entity.getAlarmStatusCd()  != null) { update.set(a.alarmStatusCd,  entity.getAlarmStatusCd());  hasAny = true; }
-        if (entity.getAlarmSendCount() != null) { update.set(a.alarmSendCount, entity.getAlarmSendCount()); hasAny = true; }
-        if (entity.getAlarmFailCount() != null) { update.set(a.alarmFailCount, entity.getAlarmFailCount()); hasAny = true; }
-        if (entity.getUpdBy()          != null) { update.set(a.updBy,          entity.getUpdBy());          hasAny = true; }
+        if (entity.getSiteId()         != null) { update.set(syAlarm.siteId,         entity.getSiteId());         hasAny = true; }
+        if (entity.getAlarmTitle()     != null) { update.set(syAlarm.alarmTitle,     entity.getAlarmTitle());     hasAny = true; }
+        if (entity.getAlarmTypeCd()    != null) { update.set(syAlarm.alarmTypeCd,    entity.getAlarmTypeCd());    hasAny = true; }
+        if (entity.getChannelCd()      != null) { update.set(syAlarm.channelCd,      entity.getChannelCd());      hasAny = true; }
+        if (entity.getTargetTypeCd()   != null) { update.set(syAlarm.targetTypeCd,   entity.getTargetTypeCd());   hasAny = true; }
+        if (entity.getTargetId()       != null) { update.set(syAlarm.targetId,       entity.getTargetId());       hasAny = true; }
+        if (entity.getTemplateId()     != null) { update.set(syAlarm.templateId,     entity.getTemplateId());     hasAny = true; }
+        if (entity.getAlarmMsg()       != null) { update.set(syAlarm.alarmMsg,       entity.getAlarmMsg());       hasAny = true; }
+        if (entity.getAlarmSendDate()  != null) { update.set(syAlarm.alarmSendDate,  entity.getAlarmSendDate());  hasAny = true; }
+        if (entity.getAlarmStatusCd()  != null) { update.set(syAlarm.alarmStatusCd,  entity.getAlarmStatusCd());  hasAny = true; }
+        if (entity.getAlarmSendCount() != null) { update.set(syAlarm.alarmSendCount, entity.getAlarmSendCount()); hasAny = true; }
+        if (entity.getAlarmFailCount() != null) { update.set(syAlarm.alarmFailCount, entity.getAlarmFailCount()); hasAny = true; }
+        if (entity.getUpdBy()          != null) { update.set(syAlarm.updBy,          entity.getUpdBy());          hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
-        if (entity.getPathId()         != null) { update.set(a.pathId,         entity.getPathId());         hasAny = true; }
+        update.set(syAlarm.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        if (entity.getPathId()         != null) { update.set(syAlarm.pathId,         entity.getPathId());         hasAny = true; }
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.alarmId.eq(entity.getAlarmId())).execute();
+        long affected = update.where(syAlarm.alarmId.eq(entity.getAlarmId())).execute();
         return (int) affected;
     }
 

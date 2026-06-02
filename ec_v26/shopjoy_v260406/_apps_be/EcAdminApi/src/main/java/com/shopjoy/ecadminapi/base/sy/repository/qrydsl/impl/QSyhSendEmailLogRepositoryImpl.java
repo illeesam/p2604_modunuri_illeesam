@@ -32,48 +32,48 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhSendEmailLogRepositoryImpl";
-    private static final QSyhSendEmailLog a   = QSyhSendEmailLog.syhSendEmailLog;
-    private static final QSySite          ste = QSySite.sySite;
-    private static final QSyTemplate      tpl = QSyTemplate.syTemplate;
-    private static final QSyUser          usr = QSyUser.syUser;
+    private static final QSyhSendEmailLog syhSendEmailLog   = QSyhSendEmailLog.syhSendEmailLog;
+    private static final QSySite          sySite = QSySite.sySite;
+    private static final QSyTemplate      syTemplate = QSyTemplate.syTemplate;
+    private static final QSyUser          syUser = QSyUser.syUser;
     private static final QSyCode          cd_sr = new QSyCode("cd_sr");
 
     /* 이메일 발송 로그 baseSelColumnQuery */
     private JPAQuery<SyhSendEmailLogDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyhSendEmailLogDto.Item.class,
-                        a.logId,
-                        a.siteId,
-                        a.templateId,
-                        a.templateCode,
-                        a.memberId,
-                        a.userId,
-                        a.fromAddr,
-                        a.toAddr,
-                        a.ccAddr,
-                        a.bccAddr,
-                        a.subject,
-                        a.content,
-                        a.params,
-                        a.resultCd,
-                        a.failReason,
-                        a.sendDate,
-                        a.refTypeCd,
-                        a.refId,
-                        a.regBy,
-                        a.regDate,
-                        a.updBy,
-                        a.updDate,
-                        ste.siteNm.as("siteNm"),
-                        tpl.templateNm.as("templateNm"),
-                        usr.userNm.as("userNm"),
+                        syhSendEmailLog.logId,
+                        syhSendEmailLog.siteId,
+                        syhSendEmailLog.templateId,
+                        syhSendEmailLog.templateCode,
+                        syhSendEmailLog.memberId,
+                        syhSendEmailLog.userId,
+                        syhSendEmailLog.fromAddr,
+                        syhSendEmailLog.toAddr,
+                        syhSendEmailLog.ccAddr,
+                        syhSendEmailLog.bccAddr,
+                        syhSendEmailLog.subject,
+                        syhSendEmailLog.content,
+                        syhSendEmailLog.params,
+                        syhSendEmailLog.resultCd,
+                        syhSendEmailLog.failReason,
+                        syhSendEmailLog.sendDate,
+                        syhSendEmailLog.refTypeCd,
+                        syhSendEmailLog.refId,
+                        syhSendEmailLog.regBy,
+                        syhSendEmailLog.regDate,
+                        syhSendEmailLog.updBy,
+                        syhSendEmailLog.updDate,
+                        sySite.siteNm.as("siteNm"),
+                        syTemplate.templateNm.as("templateNm"),
+                        syUser.userNm.as("userNm"),
                         cd_sr.codeLabel.as("resultCdNm")
                 ))
-                .from(a)
-                .leftJoin(ste).on(ste.siteId.eq(a.siteId))
-                .leftJoin(tpl).on(tpl.templateId.eq(a.templateId))
-                .leftJoin(usr).on(usr.userId.eq(a.userId))
-                .leftJoin(cd_sr).on(cd_sr.codeGrp.eq("SEND_RESULT").and(cd_sr.codeValue.eq(a.resultCd)));
+                .from(syhSendEmailLog)
+                .leftJoin(sySite).on(sySite.siteId.eq(syhSendEmailLog.siteId))
+                .leftJoin(syTemplate).on(syTemplate.templateId.eq(syhSendEmailLog.templateId))
+                .leftJoin(syUser).on(syUser.userId.eq(syhSendEmailLog.userId))
+                .leftJoin(cd_sr).on(cd_sr.codeGrp.eq("SEND_RESULT").and(cd_sr.codeValue.eq(syhSendEmailLog.resultCd)));
     }
 
     /* 이메일 발송 로그 키조회 */
@@ -81,7 +81,7 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
     public Optional<SyhSendEmailLogDto.Item> selectById(String id) {
         SyhSendEmailLogDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
-                .where(a.logId.eq(id))
+                .where(syhSendEmailLog.logId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -138,8 +138,8 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
         List<SyhSendEmailLogDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(a.count())
-                .from(a)
+                .select(syhSendEmailLog.count())
+                .from(syhSendEmailLog)
                 .where(
                 baseAndSiteId(search),
                 baseAndLogId(search),
@@ -165,31 +165,31 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(SyhSendEmailLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? syhSendEmailLog.siteId.eq(search.getSiteId()) : null;
     }
 
     /* logId 정확 일치 */
     private BooleanExpression baseAndLogId(SyhSendEmailLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getLogId())
-                ? a.logId.eq(search.getLogId()) : null;
+                ? syhSendEmailLog.logId.eq(search.getLogId()) : null;
     }
 
     /* userId 정확 일치 */
     private BooleanExpression baseAndUserId(SyhSendEmailLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getUserId())
-                ? a.userId.eq(search.getUserId()) : null;
+                ? syhSendEmailLog.userId.eq(search.getUserId()) : null;
     }
 
     /* templateId 정확 일치 */
     private BooleanExpression baseAndTemplateId(SyhSendEmailLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getTemplateId())
-                ? a.templateId.eq(search.getTemplateId()) : null;
+                ? syhSendEmailLog.templateId.eq(search.getTemplateId()) : null;
     }
 
     /* refTypeCd 정확 일치 */
     private BooleanExpression baseAndTypeCd(SyhSendEmailLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getTypeCd())
-                ? a.refTypeCd.eq(search.getTypeCd()) : null;
+                ? syhSendEmailLog.refTypeCd.eq(search.getTypeCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -202,9 +202,9 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "send_date": return a.sendDate.goe(start).and(a.sendDate.lt(endExcl));
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "send_date": return syhSendEmailLog.sendDate.goe(start).and(syhSendEmailLog.sendDate.lt(endExcl));
+            case "reg_date": return syhSendEmailLog.regDate.goe(start).and(syhSendEmailLog.regDate.lt(endExcl));
+            case "upd_date": return syhSendEmailLog.updDate.goe(start).and(syhSendEmailLog.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -217,23 +217,23 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",bccAddr,", a.bccAddr, pattern);
-        or = orLike(or, all, types, ",ccAddr,", a.ccAddr, pattern);
-        or = orLike(or, all, types, ",content,", a.content, pattern);
-        or = orLike(or, all, types, ",failReason,", a.failReason, pattern);
-        or = orLike(or, all, types, ",fromAddr,", a.fromAddr, pattern);
-        or = orLike(or, all, types, ",logId,", a.logId, pattern);
-        or = orLike(or, all, types, ",memberId,", a.memberId, pattern);
-        or = orLike(or, all, types, ",params,", a.params, pattern);
-        or = orLike(or, all, types, ",refId,", a.refId, pattern);
-        or = orLike(or, all, types, ",refTypeCd,", a.refTypeCd, pattern);
-        or = orLike(or, all, types, ",resultCd,", a.resultCd, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
-        or = orLike(or, all, types, ",subject,", a.subject, pattern);
-        or = orLike(or, all, types, ",templateCode,", a.templateCode, pattern);
-        or = orLike(or, all, types, ",templateId,", a.templateId, pattern);
-        or = orLike(or, all, types, ",toAddr,", a.toAddr, pattern);
-        or = orLike(or, all, types, ",userId,", a.userId, pattern);
+        or = orLike(or, all, types, ",bccAddr,", syhSendEmailLog.bccAddr, pattern);
+        or = orLike(or, all, types, ",ccAddr,", syhSendEmailLog.ccAddr, pattern);
+        or = orLike(or, all, types, ",content,", syhSendEmailLog.content, pattern);
+        or = orLike(or, all, types, ",failReason,", syhSendEmailLog.failReason, pattern);
+        or = orLike(or, all, types, ",fromAddr,", syhSendEmailLog.fromAddr, pattern);
+        or = orLike(or, all, types, ",logId,", syhSendEmailLog.logId, pattern);
+        or = orLike(or, all, types, ",memberId,", syhSendEmailLog.memberId, pattern);
+        or = orLike(or, all, types, ",params,", syhSendEmailLog.params, pattern);
+        or = orLike(or, all, types, ",refId,", syhSendEmailLog.refId, pattern);
+        or = orLike(or, all, types, ",refTypeCd,", syhSendEmailLog.refTypeCd, pattern);
+        or = orLike(or, all, types, ",resultCd,", syhSendEmailLog.resultCd, pattern);
+        or = orLike(or, all, types, ",siteId,", syhSendEmailLog.siteId, pattern);
+        or = orLike(or, all, types, ",subject,", syhSendEmailLog.subject, pattern);
+        or = orLike(or, all, types, ",templateCode,", syhSendEmailLog.templateCode, pattern);
+        or = orLike(or, all, types, ",templateId,", syhSendEmailLog.templateId, pattern);
+        or = orLike(or, all, types, ",toAddr,", syhSendEmailLog.toAddr, pattern);
+        or = orLike(or, all, types, ",userId,", syhSendEmailLog.userId, pattern);
         return or;
     }
 
@@ -254,8 +254,8 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.logId));
+            orders.add(new OrderSpecifier(Order.DESC, syhSendEmailLog.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syhSendEmailLog.logId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -266,17 +266,17 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("logId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.logId));
+                    orders.add(new OrderSpecifier(order, syhSendEmailLog.logId));
                 } else if ("sendDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.sendDate));
+                    orders.add(new OrderSpecifier(order, syhSendEmailLog.sendDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.logId));
+            orders.add(new OrderSpecifier<>(Order.DESC, syhSendEmailLog.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syhSendEmailLog.logId));
         }
         return orders;
     }
@@ -286,33 +286,33 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
     public int updateSelective(SyhSendEmailLog entity) {
         if (entity.getLogId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(syhSendEmailLog);
         boolean hasAny = false;
 
-        if (entity.getSiteId()       != null) { update.set(a.siteId,       entity.getSiteId());       hasAny = true; }
-        if (entity.getTemplateId()   != null) { update.set(a.templateId,   entity.getTemplateId());   hasAny = true; }
-        if (entity.getTemplateCode() != null) { update.set(a.templateCode, entity.getTemplateCode()); hasAny = true; }
-        if (entity.getMemberId()     != null) { update.set(a.memberId,     entity.getMemberId());     hasAny = true; }
-        if (entity.getUserId()       != null) { update.set(a.userId,       entity.getUserId());       hasAny = true; }
-        if (entity.getFromAddr()     != null) { update.set(a.fromAddr,     entity.getFromAddr());     hasAny = true; }
-        if (entity.getToAddr()       != null) { update.set(a.toAddr,       entity.getToAddr());       hasAny = true; }
-        if (entity.getCcAddr()       != null) { update.set(a.ccAddr,       entity.getCcAddr());       hasAny = true; }
-        if (entity.getBccAddr()      != null) { update.set(a.bccAddr,      entity.getBccAddr());      hasAny = true; }
-        if (entity.getSubject()      != null) { update.set(a.subject,      entity.getSubject());      hasAny = true; }
-        if (entity.getContent()      != null) { update.set(a.content,      entity.getContent());      hasAny = true; }
-        if (entity.getParams()       != null) { update.set(a.params,       entity.getParams());       hasAny = true; }
-        if (entity.getResultCd()     != null) { update.set(a.resultCd,     entity.getResultCd());     hasAny = true; }
-        if (entity.getFailReason()   != null) { update.set(a.failReason,   entity.getFailReason());   hasAny = true; }
-        if (entity.getSendDate()     != null) { update.set(a.sendDate,     entity.getSendDate());     hasAny = true; }
-        if (entity.getRefTypeCd()    != null) { update.set(a.refTypeCd,    entity.getRefTypeCd());    hasAny = true; }
-        if (entity.getRefId()        != null) { update.set(a.refId,        entity.getRefId());        hasAny = true; }
-        if (entity.getUpdBy()        != null) { update.set(a.updBy,        entity.getUpdBy());        hasAny = true; }
+        if (entity.getSiteId()       != null) { update.set(syhSendEmailLog.siteId,       entity.getSiteId());       hasAny = true; }
+        if (entity.getTemplateId()   != null) { update.set(syhSendEmailLog.templateId,   entity.getTemplateId());   hasAny = true; }
+        if (entity.getTemplateCode() != null) { update.set(syhSendEmailLog.templateCode, entity.getTemplateCode()); hasAny = true; }
+        if (entity.getMemberId()     != null) { update.set(syhSendEmailLog.memberId,     entity.getMemberId());     hasAny = true; }
+        if (entity.getUserId()       != null) { update.set(syhSendEmailLog.userId,       entity.getUserId());       hasAny = true; }
+        if (entity.getFromAddr()     != null) { update.set(syhSendEmailLog.fromAddr,     entity.getFromAddr());     hasAny = true; }
+        if (entity.getToAddr()       != null) { update.set(syhSendEmailLog.toAddr,       entity.getToAddr());       hasAny = true; }
+        if (entity.getCcAddr()       != null) { update.set(syhSendEmailLog.ccAddr,       entity.getCcAddr());       hasAny = true; }
+        if (entity.getBccAddr()      != null) { update.set(syhSendEmailLog.bccAddr,      entity.getBccAddr());      hasAny = true; }
+        if (entity.getSubject()      != null) { update.set(syhSendEmailLog.subject,      entity.getSubject());      hasAny = true; }
+        if (entity.getContent()      != null) { update.set(syhSendEmailLog.content,      entity.getContent());      hasAny = true; }
+        if (entity.getParams()       != null) { update.set(syhSendEmailLog.params,       entity.getParams());       hasAny = true; }
+        if (entity.getResultCd()     != null) { update.set(syhSendEmailLog.resultCd,     entity.getResultCd());     hasAny = true; }
+        if (entity.getFailReason()   != null) { update.set(syhSendEmailLog.failReason,   entity.getFailReason());   hasAny = true; }
+        if (entity.getSendDate()     != null) { update.set(syhSendEmailLog.sendDate,     entity.getSendDate());     hasAny = true; }
+        if (entity.getRefTypeCd()    != null) { update.set(syhSendEmailLog.refTypeCd,    entity.getRefTypeCd());    hasAny = true; }
+        if (entity.getRefId()        != null) { update.set(syhSendEmailLog.refId,        entity.getRefId());        hasAny = true; }
+        if (entity.getUpdBy()        != null) { update.set(syhSendEmailLog.updBy,        entity.getUpdBy());        hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(syhSendEmailLog.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.logId.eq(entity.getLogId())).execute();
+        long affected = update.where(syhSendEmailLog.logId.eq(entity.getLogId())).execute();
         return (int) affected;
     }
 }

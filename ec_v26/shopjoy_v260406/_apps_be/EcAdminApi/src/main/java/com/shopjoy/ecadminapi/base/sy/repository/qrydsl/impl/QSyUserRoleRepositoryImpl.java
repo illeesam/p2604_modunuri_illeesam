@@ -32,26 +32,26 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
     private final JPAQueryFactory queryFactory;
     private final SyRoleRepository syRoleRepository;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyUserRoleRepositoryImpl";
-    private static final QSyUserRole a = QSyUserRole.syUserRole;
+    private static final QSyUserRole syUserRole = QSyUserRole.syUserRole;
     private static final QSyUser usr  = new QSyUser("usr");
-    private static final QSyRole rol  = QSyRole.syRole;
+    private static final QSyRole syRole  = QSyRole.syRole;
     private static final QSyUser usr2 = new QSyUser("usr2");
 
     /* 사용자별 역할 baseSelColumnQuery */
     private JPAQuery<SyUserRoleDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyUserRoleDto.Item.class,
-                        a.userRoleId, a.userId, a.roleId, a.grantUserId,
-                        a.grantDate, a.validFrom, a.validTo, a.userRoleRemark,
-                        a.regBy, a.regDate, a.updBy, a.updDate,
-                        rol.roleNm.as("roleNm"),
-                        rol.roleCode.as("roleCode"),
+                        syUserRole.userRoleId, syUserRole.userId, syUserRole.roleId, syUserRole.grantUserId,
+                        syUserRole.grantDate, syUserRole.validFrom, syUserRole.validTo, syUserRole.userRoleRemark,
+                        syUserRole.regBy, syUserRole.regDate, syUserRole.updBy, syUserRole.updDate,
+                        syRole.roleNm.as("roleNm"),
+                        syRole.roleCode.as("roleCode"),
                         usr2.userNm.as("grantUserNm")
                 ))
-                .from(a)
-                .leftJoin(usr).on(usr.userId.eq(a.userId))
-                .leftJoin(rol).on(rol.roleId.eq(a.roleId))
-                .leftJoin(usr2).on(usr2.userId.eq(a.grantUserId));
+                .from(syUserRole)
+                .leftJoin(usr).on(usr.userId.eq(syUserRole.userId))
+                .leftJoin(syRole).on(syRole.roleId.eq(syUserRole.roleId))
+                .leftJoin(usr2).on(usr2.userId.eq(syUserRole.grantUserId));
     }
 
     /* 사용자별 역할 키조회 */
@@ -59,7 +59,7 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
     public Optional<SyUserRoleDto.Item> selectById(String userRoleId) {
         SyUserRoleDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
-                .where(a.userRoleId.eq(userRoleId))
+                .where(syUserRole.userRoleId.eq(userRoleId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -110,7 +110,7 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
         }
         List<SyUserRoleDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(a.count()).from(a).where(
+        Long total = queryFactory.select(syUserRole.count()).from(syUserRole).where(
                 baseAndUserRoleId(search),
                 baseAndUserId(search),
                 baseAndRoleId(search),
@@ -132,19 +132,19 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
     /* userRoleId 정확 일치 */
     private BooleanExpression baseAndUserRoleId(SyUserRoleDto.Request search) {
         return search != null && StringUtils.hasText(search.getUserRoleId())
-                ? a.userRoleId.eq(search.getUserRoleId()) : null;
+                ? syUserRole.userRoleId.eq(search.getUserRoleId()) : null;
     }
 
     /* userId 정확 일치 */
     private BooleanExpression baseAndUserId(SyUserRoleDto.Request search) {
         return search != null && StringUtils.hasText(search.getUserId())
-                ? a.userId.eq(search.getUserId()) : null;
+                ? syUserRole.userId.eq(search.getUserId()) : null;
     }
 
     /* roleId 정확 일치 */
     private BooleanExpression baseAndRoleId(SyUserRoleDto.Request search) {
         return search != null && StringUtils.hasText(search.getRoleId())
-                ? a.roleId.eq(search.getRoleId()) : null;
+                ? syUserRole.roleId.eq(search.getRoleId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -157,8 +157,8 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "reg_date": return syUserRole.regDate.goe(start).and(syUserRole.regDate.lt(endExcl));
+            case "upd_date": return syUserRole.updDate.goe(start).and(syUserRole.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -171,12 +171,12 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",grantUserId,", a.grantUserId, pattern);
-        or = orLike(or, all, types, ",roleId,", a.roleId, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
-        or = orLike(or, all, types, ",userId,", a.userId, pattern);
-        or = orLike(or, all, types, ",userRoleId,", a.userRoleId, pattern);
-        or = orLike(or, all, types, ",userRoleRemark,", a.userRoleRemark, pattern);
+        or = orLike(or, all, types, ",grantUserId,", syUserRole.grantUserId, pattern);
+        or = orLike(or, all, types, ",roleId,", syUserRole.roleId, pattern);
+        or = orLike(or, all, types, ",siteId,", syUserRole.siteId, pattern);
+        or = orLike(or, all, types, ",userId,", syUserRole.userId, pattern);
+        or = orLike(or, all, types, ",userRoleId,", syUserRole.userRoleId, pattern);
+        or = orLike(or, all, types, ",userRoleRemark,", syUserRole.userRoleRemark, pattern);
         return or;
     }
 
@@ -197,8 +197,8 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.userRoleId));
+            orders.add(new OrderSpecifier(Order.DESC, syUserRole.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syUserRole.userRoleId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -209,17 +209,17 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("userRoleId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.userRoleId));
+                    orders.add(new OrderSpecifier(order, syUserRole.userRoleId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, syUserRole.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.userRoleId));
+            orders.add(new OrderSpecifier<>(Order.DESC, syUserRole.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syUserRole.userRoleId));
         }
         return orders;
     }
@@ -229,23 +229,23 @@ public class QSyUserRoleRepositoryImpl implements QSyUserRoleRepository {
     public int updateSelective(SyUserRole entity) {
         if (entity.getUserRoleId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(syUserRole);
         boolean hasAny = false;
 
-        if (entity.getUserId()         != null) { update.set(a.userId,         entity.getUserId());         hasAny = true; }
-        if (entity.getRoleId()         != null) { update.set(a.roleId,         entity.getRoleId());         hasAny = true; }
-        if (entity.getGrantUserId()    != null) { update.set(a.grantUserId,    entity.getGrantUserId());    hasAny = true; }
-        if (entity.getGrantDate()      != null) { update.set(a.grantDate,      entity.getGrantDate());      hasAny = true; }
-        if (entity.getValidFrom()      != null) { update.set(a.validFrom,      entity.getValidFrom());      hasAny = true; }
-        if (entity.getValidTo()        != null) { update.set(a.validTo,        entity.getValidTo());        hasAny = true; }
-        if (entity.getUserRoleRemark() != null) { update.set(a.userRoleRemark, entity.getUserRoleRemark()); hasAny = true; }
-        if (entity.getUpdBy()          != null) { update.set(a.updBy,          entity.getUpdBy());          hasAny = true; }
+        if (entity.getUserId()         != null) { update.set(syUserRole.userId,         entity.getUserId());         hasAny = true; }
+        if (entity.getRoleId()         != null) { update.set(syUserRole.roleId,         entity.getRoleId());         hasAny = true; }
+        if (entity.getGrantUserId()    != null) { update.set(syUserRole.grantUserId,    entity.getGrantUserId());    hasAny = true; }
+        if (entity.getGrantDate()      != null) { update.set(syUserRole.grantDate,      entity.getGrantDate());      hasAny = true; }
+        if (entity.getValidFrom()      != null) { update.set(syUserRole.validFrom,      entity.getValidFrom());      hasAny = true; }
+        if (entity.getValidTo()        != null) { update.set(syUserRole.validTo,        entity.getValidTo());        hasAny = true; }
+        if (entity.getUserRoleRemark() != null) { update.set(syUserRole.userRoleRemark, entity.getUserRoleRemark()); hasAny = true; }
+        if (entity.getUpdBy()          != null) { update.set(syUserRole.updBy,          entity.getUpdBy());          hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(syUserRole.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.userRoleId.eq(entity.getUserRoleId())).execute();
+        long affected = update.where(syUserRole.userRoleId.eq(entity.getUserRoleId())).execute();
         return (int) affected;
     }
 }

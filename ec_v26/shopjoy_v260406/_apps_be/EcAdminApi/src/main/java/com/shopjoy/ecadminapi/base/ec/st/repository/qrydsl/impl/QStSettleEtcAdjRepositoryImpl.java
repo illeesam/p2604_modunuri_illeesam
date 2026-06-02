@@ -30,8 +30,8 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.st.repository.qrydsl.impl.QStSettleEtcAdjRepositoryImpl";
-    private static final QStSettleEtcAdj a     = QStSettleEtcAdj.stSettleEtcAdj;
-    private static final QSySite         ste   = QSySite.sySite;
+    private static final QStSettleEtcAdj stSettleEtcAdj     = QStSettleEtcAdj.stSettleEtcAdj;
+    private static final QSySite         sySite   = QSySite.sySite;
     private static final QSyCode         cdSeat = new QSyCode("cd_seat");
     private static final QSyCode         cdAd   = new QSyCode("cd_ad");
 
@@ -39,7 +39,7 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
     @Override
     public Optional<StSettleEtcAdjDto.Item> selectById(String id) {
         StSettleEtcAdjDto.Item dto = baseListQuery()
-                .where(a.settleEtcAdjId.eq(id))
+                .where(stSettleEtcAdj.settleEtcAdjId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -88,8 +88,8 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
         List<StSettleEtcAdjDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(a.count())
-                .from(a)
+                .select(stSettleEtcAdj.count())
+                .from(stSettleEtcAdj)
                 .where(
                 baseAndSiteId(search),
                 baseAndSettleEtcAdjId(search),
@@ -106,18 +106,18 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
     private JPAQuery<StSettleEtcAdjDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(StSettleEtcAdjDto.Item.class,
-                        a.settleEtcAdjId, a.settleId, a.siteId,
-                        a.etcAdjTypeCd, a.etcAdjDirCd, a.etcAdjAmt,
-                        a.etcAdjReason, a.settleEtcAdjMemo,
-                        a.regBy, a.regDate, a.updBy, a.updDate,
-                        ste.siteNm.as("siteNm"),
+                        stSettleEtcAdj.settleEtcAdjId, stSettleEtcAdj.settleId, stSettleEtcAdj.siteId,
+                        stSettleEtcAdj.etcAdjTypeCd, stSettleEtcAdj.etcAdjDirCd, stSettleEtcAdj.etcAdjAmt,
+                        stSettleEtcAdj.etcAdjReason, stSettleEtcAdj.settleEtcAdjMemo,
+                        stSettleEtcAdj.regBy, stSettleEtcAdj.regDate, stSettleEtcAdj.updBy, stSettleEtcAdj.updDate,
+                        sySite.siteNm.as("siteNm"),
                         cdSeat.codeLabel.as("etcAdjTypeCdNm"),
                         cdAd.codeLabel.as("etcAdjDirCdNm")
                 ))
-                .from(a)
-                .leftJoin(ste).on(ste.siteId.eq(a.siteId))
-                .leftJoin(cdSeat).on(cdSeat.codeGrp.eq("SETTLE_ETC_ADJ_TYPE").and(cdSeat.codeValue.eq(a.etcAdjTypeCd)))
-                .leftJoin(cdAd).on(cdAd.codeGrp.eq("ADJ_DIR").and(cdAd.codeValue.eq(a.etcAdjDirCd)));
+                .from(stSettleEtcAdj)
+                .leftJoin(sySite).on(sySite.siteId.eq(stSettleEtcAdj.siteId))
+                .leftJoin(cdSeat).on(cdSeat.codeGrp.eq("SETTLE_ETC_ADJ_TYPE").and(cdSeat.codeValue.eq(stSettleEtcAdj.etcAdjTypeCd)))
+                .leftJoin(cdAd).on(cdAd.codeGrp.eq("ADJ_DIR").and(cdAd.codeValue.eq(stSettleEtcAdj.etcAdjDirCd)));
     }
 
     /* 정산 기타 조정 buildCondition */
@@ -130,13 +130,13 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(StSettleEtcAdjDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? stSettleEtcAdj.siteId.eq(search.getSiteId()) : null;
     }
 
     /* settleEtcAdjId 정확 일치 */
     private BooleanExpression baseAndSettleEtcAdjId(StSettleEtcAdjDto.Request search) {
         return search != null && StringUtils.hasText(search.getSettleEtcAdjId())
-                ? a.settleEtcAdjId.eq(search.getSettleEtcAdjId()) : null;
+                ? stSettleEtcAdj.settleEtcAdjId.eq(search.getSettleEtcAdjId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -149,8 +149,8 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "reg_date": return stSettleEtcAdj.regDate.goe(start).and(stSettleEtcAdj.regDate.lt(endExcl));
+            case "upd_date": return stSettleEtcAdj.updDate.goe(start).and(stSettleEtcAdj.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -163,13 +163,13 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",etcAdjDirCd,", a.etcAdjDirCd, pattern);
-        or = orLike(or, all, types, ",etcAdjReason,", a.etcAdjReason, pattern);
-        or = orLike(or, all, types, ",etcAdjTypeCd,", a.etcAdjTypeCd, pattern);
-        or = orLike(or, all, types, ",settleEtcAdjId,", a.settleEtcAdjId, pattern);
-        or = orLike(or, all, types, ",settleEtcAdjMemo,", a.settleEtcAdjMemo, pattern);
-        or = orLike(or, all, types, ",settleId,", a.settleId, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",etcAdjDirCd,", stSettleEtcAdj.etcAdjDirCd, pattern);
+        or = orLike(or, all, types, ",etcAdjReason,", stSettleEtcAdj.etcAdjReason, pattern);
+        or = orLike(or, all, types, ",etcAdjTypeCd,", stSettleEtcAdj.etcAdjTypeCd, pattern);
+        or = orLike(or, all, types, ",settleEtcAdjId,", stSettleEtcAdj.settleEtcAdjId, pattern);
+        or = orLike(or, all, types, ",settleEtcAdjMemo,", stSettleEtcAdj.settleEtcAdjMemo, pattern);
+        or = orLike(or, all, types, ",settleId,", stSettleEtcAdj.settleId, pattern);
+        or = orLike(or, all, types, ",siteId,", stSettleEtcAdj.siteId, pattern);
         return or;
     }
 
@@ -190,8 +190,8 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = c == null ? null : c.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.settleEtcAdjId));
+            orders.add(new OrderSpecifier(Order.DESC, stSettleEtcAdj.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, stSettleEtcAdj.settleEtcAdjId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -202,17 +202,17 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("settleEtcAdjId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.settleEtcAdjId));
+                    orders.add(new OrderSpecifier(order, stSettleEtcAdj.settleEtcAdjId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, stSettleEtcAdj.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.settleEtcAdjId));
+            orders.add(new OrderSpecifier<>(Order.DESC, stSettleEtcAdj.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, stSettleEtcAdj.settleEtcAdjId));
         }
         return orders;
     }
@@ -222,23 +222,23 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
     public int updateSelective(StSettleEtcAdj entity) {
         if (entity.getSettleEtcAdjId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(stSettleEtcAdj);
         boolean hasAny = false;
 
-        if (entity.getSettleId()         != null) { update.set(a.settleId,         entity.getSettleId());         hasAny = true; }
-        if (entity.getSiteId()           != null) { update.set(a.siteId,           entity.getSiteId());           hasAny = true; }
-        if (entity.getEtcAdjTypeCd()     != null) { update.set(a.etcAdjTypeCd,     entity.getEtcAdjTypeCd());     hasAny = true; }
-        if (entity.getEtcAdjDirCd()      != null) { update.set(a.etcAdjDirCd,      entity.getEtcAdjDirCd());      hasAny = true; }
-        if (entity.getEtcAdjAmt()        != null) { update.set(a.etcAdjAmt,        entity.getEtcAdjAmt());        hasAny = true; }
-        if (entity.getEtcAdjReason()     != null) { update.set(a.etcAdjReason,     entity.getEtcAdjReason());     hasAny = true; }
-        if (entity.getSettleEtcAdjMemo() != null) { update.set(a.settleEtcAdjMemo, entity.getSettleEtcAdjMemo()); hasAny = true; }
-        if (entity.getUpdBy()            != null) { update.set(a.updBy,            entity.getUpdBy());            hasAny = true; }
+        if (entity.getSettleId()         != null) { update.set(stSettleEtcAdj.settleId,         entity.getSettleId());         hasAny = true; }
+        if (entity.getSiteId()           != null) { update.set(stSettleEtcAdj.siteId,           entity.getSiteId());           hasAny = true; }
+        if (entity.getEtcAdjTypeCd()     != null) { update.set(stSettleEtcAdj.etcAdjTypeCd,     entity.getEtcAdjTypeCd());     hasAny = true; }
+        if (entity.getEtcAdjDirCd()      != null) { update.set(stSettleEtcAdj.etcAdjDirCd,      entity.getEtcAdjDirCd());      hasAny = true; }
+        if (entity.getEtcAdjAmt()        != null) { update.set(stSettleEtcAdj.etcAdjAmt,        entity.getEtcAdjAmt());        hasAny = true; }
+        if (entity.getEtcAdjReason()     != null) { update.set(stSettleEtcAdj.etcAdjReason,     entity.getEtcAdjReason());     hasAny = true; }
+        if (entity.getSettleEtcAdjMemo() != null) { update.set(stSettleEtcAdj.settleEtcAdjMemo, entity.getSettleEtcAdjMemo()); hasAny = true; }
+        if (entity.getUpdBy()            != null) { update.set(stSettleEtcAdj.updBy,            entity.getUpdBy());            hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(stSettleEtcAdj.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.settleEtcAdjId.eq(entity.getSettleEtcAdjId())).execute();
+        long affected = update.where(stSettleEtcAdj.settleEtcAdjId.eq(entity.getSettleEtcAdjId())).execute();
         return (int) affected;
     }
 }

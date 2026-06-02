@@ -39,22 +39,22 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
     private EntityManager em;
 
     private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpPanelRepositoryImpl";
-    private static final QDpPanel a = QDpPanel.dpPanel;
+    private static final QDpPanel dpPanel = QDpPanel.dpPanel;
 
     /* 전시 패널 baseSelColumnQuery */
     private JPAQuery<DpPanelDto.Item> baseSelColumnQuery() {
         return queryFactory.select(Projections.bean(DpPanelDto.Item.class,
-                a.panelId, a.siteId, a.panelNm, a.panelTypeCd, a.pathId,
-                a.visibilityTargets, a.useYn, a.useStartDate, a.useEndDate,
-                a.dispPanelStatusCd, a.dispPanelStatusCdBefore, a.contentJson,
-                a.regBy, a.regDate, a.updBy, a.updDate
-        )).from(a);
+                dpPanel.panelId, dpPanel.siteId, dpPanel.panelNm, dpPanel.panelTypeCd, dpPanel.pathId,
+                dpPanel.visibilityTargets, dpPanel.useYn, dpPanel.useStartDate, dpPanel.useEndDate,
+                dpPanel.dispPanelStatusCd, dpPanel.dispPanelStatusCdBefore, dpPanel.contentJson,
+                dpPanel.regBy, dpPanel.regDate, dpPanel.updBy, dpPanel.updDate
+        )).from(dpPanel);
     }
 
     /* 전시 패널 키조회 */
     @Override
     public Optional<DpPanelDto.Item> selectById(String panelId) {
-        return Optional.ofNullable(baseSelColumnQuery().where(a.panelId.eq(panelId)).fetchOne());
+        return Optional.ofNullable(baseSelColumnQuery().where(dpPanel.panelId.eq(panelId)).fetchOne());
     }
 
     /* 전시 패널 목록조회 */
@@ -97,7 +97,7 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
         );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<DpPanelDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
-        Long total = queryFactory.select(a.count()).from(a).where(
+        Long total = queryFactory.select(dpPanel.count()).from(dpPanel).where(
                 baseAndSiteId(search),
                 baseAndPathId(search),
                 baseAndPanelId(search),
@@ -120,38 +120,38 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(DpPanelDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? dpPanel.siteId.eq(search.getSiteId()) : null;
     }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression baseAndPathId(DpPanelDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
-                ? a.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "dp_panel"))
+                ? dpPanel.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "dp_panel"))
                 : null;
     }
 
     /* panelId 정확 일치 */
     private BooleanExpression baseAndPanelId(DpPanelDto.Request search) {
         return search != null && StringUtils.hasText(search.getPanelId())
-                ? a.panelId.eq(search.getPanelId()) : null;
+                ? dpPanel.panelId.eq(search.getPanelId()) : null;
     }
 
     /* dispPanelStatusCd 정확 일치 */
     private BooleanExpression baseAndDispPanelStatusCd(DpPanelDto.Request search) {
         return search != null && StringUtils.hasText(search.getDispPanelStatusCd())
-                ? a.dispPanelStatusCd.eq(search.getDispPanelStatusCd()) : null;
+                ? dpPanel.dispPanelStatusCd.eq(search.getDispPanelStatusCd()) : null;
     }
 
     /* panelTypeCd 정확 일치 */
     private BooleanExpression baseAndPanelTypeCd(DpPanelDto.Request search) {
         return search != null && StringUtils.hasText(search.getPanelTypeCd())
-                ? a.panelTypeCd.eq(search.getPanelTypeCd()) : null;
+                ? dpPanel.panelTypeCd.eq(search.getPanelTypeCd()) : null;
     }
 
     /* useYn 정확 일치 */
     private BooleanExpression baseAndUseYn(DpPanelDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
-                ? a.useYn.eq(search.getUseYn()) : null;
+                ? dpPanel.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -164,8 +164,8 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "reg_date": return dpPanel.regDate.goe(start).and(dpPanel.regDate.lt(endExcl));
+            case "upd_date": return dpPanel.updDate.goe(start).and(dpPanel.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -178,16 +178,16 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",contentJson,", a.contentJson, pattern);
-        or = orLike(or, all, types, ",dispPanelStatusCd,", a.dispPanelStatusCd, pattern);
-        or = orLike(or, all, types, ",dispPanelStatusCdBefore,", a.dispPanelStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",panelId,", a.panelId, pattern);
-        or = orLike(or, all, types, ",panelNm,", a.panelNm, pattern);
-        or = orLike(or, all, types, ",panelTypeCd,", a.panelTypeCd, pattern);
-        or = orLike(or, all, types, ",pathId,", a.pathId, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
-        or = orLike(or, all, types, ",useYn,", a.useYn, pattern);
-        or = orLike(or, all, types, ",visibilityTargets,", a.visibilityTargets, pattern);
+        or = orLike(or, all, types, ",contentJson,", dpPanel.contentJson, pattern);
+        or = orLike(or, all, types, ",dispPanelStatusCd,", dpPanel.dispPanelStatusCd, pattern);
+        or = orLike(or, all, types, ",dispPanelStatusCdBefore,", dpPanel.dispPanelStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",panelId,", dpPanel.panelId, pattern);
+        or = orLike(or, all, types, ",panelNm,", dpPanel.panelNm, pattern);
+        or = orLike(or, all, types, ",panelTypeCd,", dpPanel.panelTypeCd, pattern);
+        or = orLike(or, all, types, ",pathId,", dpPanel.pathId, pattern);
+        or = orLike(or, all, types, ",siteId,", dpPanel.siteId, pattern);
+        or = orLike(or, all, types, ",useYn,", dpPanel.useYn, pattern);
+        or = orLike(or, all, types, ",visibilityTargets,", dpPanel.visibilityTargets, pattern);
         return or;
     }
 
@@ -208,8 +208,8 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.panelId));
+            orders.add(new OrderSpecifier(Order.DESC, dpPanel.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, dpPanel.panelId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -220,19 +220,19 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("panelId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.panelId));
+                    orders.add(new OrderSpecifier(order, dpPanel.panelId));
                 } else if ("panelNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.panelNm));
+                    orders.add(new OrderSpecifier(order, dpPanel.panelNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, dpPanel.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.panelId));
+            orders.add(new OrderSpecifier<>(Order.DESC, dpPanel.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, dpPanel.panelId));
         }
         return orders;
     }
@@ -243,24 +243,24 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
     @Override
     public int updateSelective(DpPanel entity) {
         if (entity.getPanelId() == null) return 0;
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(dpPanel);
         boolean hasAny = false;
-        if (entity.getSiteId()                  != null) { update.set(a.siteId,                  entity.getSiteId());                  hasAny = true; }
-        if (entity.getPanelNm()                 != null) { update.set(a.panelNm,                 entity.getPanelNm());                 hasAny = true; }
-        if (entity.getPanelTypeCd()             != null) { update.set(a.panelTypeCd,             entity.getPanelTypeCd());             hasAny = true; }
-        if (entity.getPathId()                  != null) { update.set(a.pathId,                  entity.getPathId());                  hasAny = true; }
-        if (entity.getVisibilityTargets()       != null) { update.set(a.visibilityTargets,       entity.getVisibilityTargets());       hasAny = true; }
-        if (entity.getUseYn()                   != null) { update.set(a.useYn,                   entity.getUseYn());                   hasAny = true; }
-        if (entity.getUseStartDate()            != null) { update.set(a.useStartDate,            entity.getUseStartDate());            hasAny = true; }
-        if (entity.getUseEndDate()              != null) { update.set(a.useEndDate,              entity.getUseEndDate());              hasAny = true; }
-        if (entity.getDispPanelStatusCd()       != null) { update.set(a.dispPanelStatusCd,       entity.getDispPanelStatusCd());       hasAny = true; }
-        if (entity.getDispPanelStatusCdBefore() != null) { update.set(a.dispPanelStatusCdBefore, entity.getDispPanelStatusCdBefore()); hasAny = true; }
-        if (entity.getContentJson()             != null) { update.set(a.contentJson,             entity.getContentJson());             hasAny = true; }
-        if (entity.getUpdBy()                   != null) { update.set(a.updBy,                   entity.getUpdBy());                   hasAny = true; }
+        if (entity.getSiteId()                  != null) { update.set(dpPanel.siteId,                  entity.getSiteId());                  hasAny = true; }
+        if (entity.getPanelNm()                 != null) { update.set(dpPanel.panelNm,                 entity.getPanelNm());                 hasAny = true; }
+        if (entity.getPanelTypeCd()             != null) { update.set(dpPanel.panelTypeCd,             entity.getPanelTypeCd());             hasAny = true; }
+        if (entity.getPathId()                  != null) { update.set(dpPanel.pathId,                  entity.getPathId());                  hasAny = true; }
+        if (entity.getVisibilityTargets()       != null) { update.set(dpPanel.visibilityTargets,       entity.getVisibilityTargets());       hasAny = true; }
+        if (entity.getUseYn()                   != null) { update.set(dpPanel.useYn,                   entity.getUseYn());                   hasAny = true; }
+        if (entity.getUseStartDate()            != null) { update.set(dpPanel.useStartDate,            entity.getUseStartDate());            hasAny = true; }
+        if (entity.getUseEndDate()              != null) { update.set(dpPanel.useEndDate,              entity.getUseEndDate());              hasAny = true; }
+        if (entity.getDispPanelStatusCd()       != null) { update.set(dpPanel.dispPanelStatusCd,       entity.getDispPanelStatusCd());       hasAny = true; }
+        if (entity.getDispPanelStatusCdBefore() != null) { update.set(dpPanel.dispPanelStatusCdBefore, entity.getDispPanelStatusCdBefore()); hasAny = true; }
+        if (entity.getContentJson()             != null) { update.set(dpPanel.contentJson,             entity.getContentJson());             hasAny = true; }
+        if (entity.getUpdBy()                   != null) { update.set(dpPanel.updBy,                   entity.getUpdBy());                   hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(dpPanel.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
         if (!hasAny) return 0;
-        return (int) update.where(a.panelId.eq(entity.getPanelId())).execute();
+        return (int) update.where(dpPanel.panelId.eq(entity.getPanelId())).execute();
     }
 
     /* 표시경로 노드별 dp_panel 수 집계 (자손 누적 + 검색조건 필터, native CTE 동적 SQL)

@@ -32,10 +32,10 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhSendMsgLogRepositoryImpl";
-    private static final QSyhSendMsgLog a   = QSyhSendMsgLog.syhSendMsgLog;
-    private static final QSySite        ste = QSySite.sySite;
-    private static final QSyTemplate    tpl = QSyTemplate.syTemplate;
-    private static final QSyUser        usr = QSyUser.syUser;
+    private static final QSyhSendMsgLog syhSendMsgLog   = QSyhSendMsgLog.syhSendMsgLog;
+    private static final QSySite        sySite = QSySite.sySite;
+    private static final QSyTemplate    syTemplate = QSyTemplate.syTemplate;
+    private static final QSyUser        syUser = QSyUser.syUser;
     private static final QSyCode        cd_mc = new QSyCode("cd_mc");
     private static final QSyCode        cd_sr = new QSyCode("cd_sr");
 
@@ -43,42 +43,42 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
     private JPAQuery<SyhSendMsgLogDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyhSendMsgLogDto.Item.class,
-                        a.logId,
-                        a.siteId,
-                        a.channelCd,
-                        a.templateId,
-                        a.templateCode,
-                        a.memberId,
-                        a.userId,
-                        a.recvPhone,
-                        a.deviceToken,
-                        a.senderPhone,
-                        a.title,
-                        a.content,
-                        a.params,
-                        a.kakaoTplCode,
-                        a.resultCd,
-                        a.resultMsg,
-                        a.failReason,
-                        a.sendDate,
-                        a.refTypeCd,
-                        a.refId,
-                        a.regBy,
-                        a.regDate,
-                        a.updBy,
-                        a.updDate,
-                        ste.siteNm.as("siteNm"),
-                        tpl.templateNm.as("templateNm"),
-                        usr.userNm.as("userNm"),
+                        syhSendMsgLog.logId,
+                        syhSendMsgLog.siteId,
+                        syhSendMsgLog.channelCd,
+                        syhSendMsgLog.templateId,
+                        syhSendMsgLog.templateCode,
+                        syhSendMsgLog.memberId,
+                        syhSendMsgLog.userId,
+                        syhSendMsgLog.recvPhone,
+                        syhSendMsgLog.deviceToken,
+                        syhSendMsgLog.senderPhone,
+                        syhSendMsgLog.title,
+                        syhSendMsgLog.content,
+                        syhSendMsgLog.params,
+                        syhSendMsgLog.kakaoTplCode,
+                        syhSendMsgLog.resultCd,
+                        syhSendMsgLog.resultMsg,
+                        syhSendMsgLog.failReason,
+                        syhSendMsgLog.sendDate,
+                        syhSendMsgLog.refTypeCd,
+                        syhSendMsgLog.refId,
+                        syhSendMsgLog.regBy,
+                        syhSendMsgLog.regDate,
+                        syhSendMsgLog.updBy,
+                        syhSendMsgLog.updDate,
+                        sySite.siteNm.as("siteNm"),
+                        syTemplate.templateNm.as("templateNm"),
+                        syUser.userNm.as("userNm"),
                         cd_mc.codeLabel.as("channelCdNm"),
                         cd_sr.codeLabel.as("resultCdNm")
                 ))
-                .from(a)
-                .leftJoin(ste).on(ste.siteId.eq(a.siteId))
-                .leftJoin(tpl).on(tpl.templateId.eq(a.templateId))
-                .leftJoin(usr).on(usr.userId.eq(a.userId))
-                .leftJoin(cd_mc).on(cd_mc.codeGrp.eq("MSG_CHANNEL").and(cd_mc.codeValue.eq(a.channelCd)))
-                .leftJoin(cd_sr).on(cd_sr.codeGrp.eq("SEND_RESULT").and(cd_sr.codeValue.eq(a.resultCd)));
+                .from(syhSendMsgLog)
+                .leftJoin(sySite).on(sySite.siteId.eq(syhSendMsgLog.siteId))
+                .leftJoin(syTemplate).on(syTemplate.templateId.eq(syhSendMsgLog.templateId))
+                .leftJoin(syUser).on(syUser.userId.eq(syhSendMsgLog.userId))
+                .leftJoin(cd_mc).on(cd_mc.codeGrp.eq("MSG_CHANNEL").and(cd_mc.codeValue.eq(syhSendMsgLog.channelCd)))
+                .leftJoin(cd_sr).on(cd_sr.codeGrp.eq("SEND_RESULT").and(cd_sr.codeValue.eq(syhSendMsgLog.resultCd)));
     }
 
     /* 메시지 발송 로그 키조회 */
@@ -86,7 +86,7 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
     public Optional<SyhSendMsgLogDto.Item> selectById(String id) {
         SyhSendMsgLogDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
-                .where(a.logId.eq(id))
+                .where(syhSendMsgLog.logId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -143,8 +143,8 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
         List<SyhSendMsgLogDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(a.count())
-                .from(a)
+                .select(syhSendMsgLog.count())
+                .from(syhSendMsgLog)
                 .where(
                 baseAndSiteId(search),
                 baseAndLogId(search),
@@ -170,31 +170,31 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(SyhSendMsgLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? syhSendMsgLog.siteId.eq(search.getSiteId()) : null;
     }
 
     /* logId 정확 일치 */
     private BooleanExpression baseAndLogId(SyhSendMsgLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getLogId())
-                ? a.logId.eq(search.getLogId()) : null;
+                ? syhSendMsgLog.logId.eq(search.getLogId()) : null;
     }
 
     /* userId 정확 일치 */
     private BooleanExpression baseAndUserId(SyhSendMsgLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getUserId())
-                ? a.userId.eq(search.getUserId()) : null;
+                ? syhSendMsgLog.userId.eq(search.getUserId()) : null;
     }
 
     /* templateId 정확 일치 */
     private BooleanExpression baseAndTemplateId(SyhSendMsgLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getTemplateId())
-                ? a.templateId.eq(search.getTemplateId()) : null;
+                ? syhSendMsgLog.templateId.eq(search.getTemplateId()) : null;
     }
 
     /* refTypeCd 정확 일치 */
     private BooleanExpression baseAndTypeCd(SyhSendMsgLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getTypeCd())
-                ? a.refTypeCd.eq(search.getTypeCd()) : null;
+                ? syhSendMsgLog.refTypeCd.eq(search.getTypeCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -207,9 +207,9 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "send_date": return a.sendDate.goe(start).and(a.sendDate.lt(endExcl));
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "send_date": return syhSendMsgLog.sendDate.goe(start).and(syhSendMsgLog.sendDate.lt(endExcl));
+            case "reg_date": return syhSendMsgLog.regDate.goe(start).and(syhSendMsgLog.regDate.lt(endExcl));
+            case "upd_date": return syhSendMsgLog.updDate.goe(start).and(syhSendMsgLog.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -222,25 +222,25 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",channelCd,", a.channelCd, pattern);
-        or = orLike(or, all, types, ",content,", a.content, pattern);
-        or = orLike(or, all, types, ",deviceToken,", a.deviceToken, pattern);
-        or = orLike(or, all, types, ",failReason,", a.failReason, pattern);
-        or = orLike(or, all, types, ",kakaoTplCode,", a.kakaoTplCode, pattern);
-        or = orLike(or, all, types, ",logId,", a.logId, pattern);
-        or = orLike(or, all, types, ",memberId,", a.memberId, pattern);
-        or = orLike(or, all, types, ",params,", a.params, pattern);
-        or = orLike(or, all, types, ",recvPhone,", a.recvPhone, pattern);
-        or = orLike(or, all, types, ",refId,", a.refId, pattern);
-        or = orLike(or, all, types, ",refTypeCd,", a.refTypeCd, pattern);
-        or = orLike(or, all, types, ",resultCd,", a.resultCd, pattern);
-        or = orLike(or, all, types, ",resultMsg,", a.resultMsg, pattern);
-        or = orLike(or, all, types, ",senderPhone,", a.senderPhone, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
-        or = orLike(or, all, types, ",templateCode,", a.templateCode, pattern);
-        or = orLike(or, all, types, ",templateId,", a.templateId, pattern);
-        or = orLike(or, all, types, ",title,", a.title, pattern);
-        or = orLike(or, all, types, ",userId,", a.userId, pattern);
+        or = orLike(or, all, types, ",channelCd,", syhSendMsgLog.channelCd, pattern);
+        or = orLike(or, all, types, ",content,", syhSendMsgLog.content, pattern);
+        or = orLike(or, all, types, ",deviceToken,", syhSendMsgLog.deviceToken, pattern);
+        or = orLike(or, all, types, ",failReason,", syhSendMsgLog.failReason, pattern);
+        or = orLike(or, all, types, ",kakaoTplCode,", syhSendMsgLog.kakaoTplCode, pattern);
+        or = orLike(or, all, types, ",logId,", syhSendMsgLog.logId, pattern);
+        or = orLike(or, all, types, ",memberId,", syhSendMsgLog.memberId, pattern);
+        or = orLike(or, all, types, ",params,", syhSendMsgLog.params, pattern);
+        or = orLike(or, all, types, ",recvPhone,", syhSendMsgLog.recvPhone, pattern);
+        or = orLike(or, all, types, ",refId,", syhSendMsgLog.refId, pattern);
+        or = orLike(or, all, types, ",refTypeCd,", syhSendMsgLog.refTypeCd, pattern);
+        or = orLike(or, all, types, ",resultCd,", syhSendMsgLog.resultCd, pattern);
+        or = orLike(or, all, types, ",resultMsg,", syhSendMsgLog.resultMsg, pattern);
+        or = orLike(or, all, types, ",senderPhone,", syhSendMsgLog.senderPhone, pattern);
+        or = orLike(or, all, types, ",siteId,", syhSendMsgLog.siteId, pattern);
+        or = orLike(or, all, types, ",templateCode,", syhSendMsgLog.templateCode, pattern);
+        or = orLike(or, all, types, ",templateId,", syhSendMsgLog.templateId, pattern);
+        or = orLike(or, all, types, ",title,", syhSendMsgLog.title, pattern);
+        or = orLike(or, all, types, ",userId,", syhSendMsgLog.userId, pattern);
         return or;
     }
 
@@ -261,8 +261,8 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.logId));
+            orders.add(new OrderSpecifier(Order.DESC, syhSendMsgLog.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syhSendMsgLog.logId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -273,17 +273,17 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("logId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.logId));
+                    orders.add(new OrderSpecifier(order, syhSendMsgLog.logId));
                 } else if ("sendDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.sendDate));
+                    orders.add(new OrderSpecifier(order, syhSendMsgLog.sendDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.logId));
+            orders.add(new OrderSpecifier<>(Order.DESC, syhSendMsgLog.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syhSendMsgLog.logId));
         }
         return orders;
     }
@@ -293,35 +293,35 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
     public int updateSelective(SyhSendMsgLog entity) {
         if (entity.getLogId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(syhSendMsgLog);
         boolean hasAny = false;
 
-        if (entity.getSiteId()       != null) { update.set(a.siteId,       entity.getSiteId());       hasAny = true; }
-        if (entity.getChannelCd()    != null) { update.set(a.channelCd,    entity.getChannelCd());    hasAny = true; }
-        if (entity.getTemplateId()   != null) { update.set(a.templateId,   entity.getTemplateId());   hasAny = true; }
-        if (entity.getTemplateCode() != null) { update.set(a.templateCode, entity.getTemplateCode()); hasAny = true; }
-        if (entity.getMemberId()     != null) { update.set(a.memberId,     entity.getMemberId());     hasAny = true; }
-        if (entity.getUserId()       != null) { update.set(a.userId,       entity.getUserId());       hasAny = true; }
-        if (entity.getRecvPhone()    != null) { update.set(a.recvPhone,    entity.getRecvPhone());    hasAny = true; }
-        if (entity.getDeviceToken()  != null) { update.set(a.deviceToken,  entity.getDeviceToken());  hasAny = true; }
-        if (entity.getSenderPhone()  != null) { update.set(a.senderPhone,  entity.getSenderPhone());  hasAny = true; }
-        if (entity.getTitle()        != null) { update.set(a.title,        entity.getTitle());        hasAny = true; }
-        if (entity.getContent()      != null) { update.set(a.content,      entity.getContent());      hasAny = true; }
-        if (entity.getParams()       != null) { update.set(a.params,       entity.getParams());       hasAny = true; }
-        if (entity.getKakaoTplCode() != null) { update.set(a.kakaoTplCode, entity.getKakaoTplCode()); hasAny = true; }
-        if (entity.getResultCd()     != null) { update.set(a.resultCd,     entity.getResultCd());     hasAny = true; }
-        if (entity.getResultMsg()    != null) { update.set(a.resultMsg,    entity.getResultMsg());    hasAny = true; }
-        if (entity.getFailReason()   != null) { update.set(a.failReason,   entity.getFailReason());   hasAny = true; }
-        if (entity.getSendDate()     != null) { update.set(a.sendDate,     entity.getSendDate());     hasAny = true; }
-        if (entity.getRefTypeCd()    != null) { update.set(a.refTypeCd,    entity.getRefTypeCd());    hasAny = true; }
-        if (entity.getRefId()        != null) { update.set(a.refId,        entity.getRefId());        hasAny = true; }
-        if (entity.getUpdBy()        != null) { update.set(a.updBy,        entity.getUpdBy());        hasAny = true; }
+        if (entity.getSiteId()       != null) { update.set(syhSendMsgLog.siteId,       entity.getSiteId());       hasAny = true; }
+        if (entity.getChannelCd()    != null) { update.set(syhSendMsgLog.channelCd,    entity.getChannelCd());    hasAny = true; }
+        if (entity.getTemplateId()   != null) { update.set(syhSendMsgLog.templateId,   entity.getTemplateId());   hasAny = true; }
+        if (entity.getTemplateCode() != null) { update.set(syhSendMsgLog.templateCode, entity.getTemplateCode()); hasAny = true; }
+        if (entity.getMemberId()     != null) { update.set(syhSendMsgLog.memberId,     entity.getMemberId());     hasAny = true; }
+        if (entity.getUserId()       != null) { update.set(syhSendMsgLog.userId,       entity.getUserId());       hasAny = true; }
+        if (entity.getRecvPhone()    != null) { update.set(syhSendMsgLog.recvPhone,    entity.getRecvPhone());    hasAny = true; }
+        if (entity.getDeviceToken()  != null) { update.set(syhSendMsgLog.deviceToken,  entity.getDeviceToken());  hasAny = true; }
+        if (entity.getSenderPhone()  != null) { update.set(syhSendMsgLog.senderPhone,  entity.getSenderPhone());  hasAny = true; }
+        if (entity.getTitle()        != null) { update.set(syhSendMsgLog.title,        entity.getTitle());        hasAny = true; }
+        if (entity.getContent()      != null) { update.set(syhSendMsgLog.content,      entity.getContent());      hasAny = true; }
+        if (entity.getParams()       != null) { update.set(syhSendMsgLog.params,       entity.getParams());       hasAny = true; }
+        if (entity.getKakaoTplCode() != null) { update.set(syhSendMsgLog.kakaoTplCode, entity.getKakaoTplCode()); hasAny = true; }
+        if (entity.getResultCd()     != null) { update.set(syhSendMsgLog.resultCd,     entity.getResultCd());     hasAny = true; }
+        if (entity.getResultMsg()    != null) { update.set(syhSendMsgLog.resultMsg,    entity.getResultMsg());    hasAny = true; }
+        if (entity.getFailReason()   != null) { update.set(syhSendMsgLog.failReason,   entity.getFailReason());   hasAny = true; }
+        if (entity.getSendDate()     != null) { update.set(syhSendMsgLog.sendDate,     entity.getSendDate());     hasAny = true; }
+        if (entity.getRefTypeCd()    != null) { update.set(syhSendMsgLog.refTypeCd,    entity.getRefTypeCd());    hasAny = true; }
+        if (entity.getRefId()        != null) { update.set(syhSendMsgLog.refId,        entity.getRefId());        hasAny = true; }
+        if (entity.getUpdBy()        != null) { update.set(syhSendMsgLog.updBy,        entity.getUpdBy());        hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(syhSendMsgLog.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.logId.eq(entity.getLogId())).execute();
+        long affected = update.where(syhSendMsgLog.logId.eq(entity.getLogId())).execute();
         return (int) affected;
     }
 }

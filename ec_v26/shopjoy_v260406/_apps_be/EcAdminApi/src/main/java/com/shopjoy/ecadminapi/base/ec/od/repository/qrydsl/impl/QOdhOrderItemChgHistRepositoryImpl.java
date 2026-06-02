@@ -28,24 +28,24 @@ public class QOdhOrderItemChgHistRepositoryImpl implements QOdhOrderItemChgHistR
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdhOrderItemChgHistRepositoryImpl";
-    private static final QOdhOrderItemChgHist a = QOdhOrderItemChgHist.odhOrderItemChgHist;
+    private static final QOdhOrderItemChgHist odhOrderItemChgHist = QOdhOrderItemChgHist.odhOrderItemChgHist;
 
     /* 주문 아이템 변경 이력 baseSelColumnQuery */
     private JPAQuery<OdhOrderItemChgHistDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(OdhOrderItemChgHistDto.Item.class,
-                        a.orderItemChgHistId, a.siteId, a.orderId, a.orderItemId,
-                        a.chgTypeCd, a.chgField, a.beforeVal, a.afterVal,
-                        a.chgReason, a.chgUserId, a.chgDate,
-                        a.regBy, a.regDate, a.updBy, a.updDate))
-                .from(a);
+                        odhOrderItemChgHist.orderItemChgHistId, odhOrderItemChgHist.siteId, odhOrderItemChgHist.orderId, odhOrderItemChgHist.orderItemId,
+                        odhOrderItemChgHist.chgTypeCd, odhOrderItemChgHist.chgField, odhOrderItemChgHist.beforeVal, odhOrderItemChgHist.afterVal,
+                        odhOrderItemChgHist.chgReason, odhOrderItemChgHist.chgUserId, odhOrderItemChgHist.chgDate,
+                        odhOrderItemChgHist.regBy, odhOrderItemChgHist.regDate, odhOrderItemChgHist.updBy, odhOrderItemChgHist.updDate))
+                .from(odhOrderItemChgHist);
     }
 
     /* 주문 아이템 변경 이력 키조회 */
     @Override
     public Optional<OdhOrderItemChgHistDto.Item> selectById(String id) {
         OdhOrderItemChgHistDto.Item dto = baseSelColumnQuery()
-                .where(a.orderItemChgHistId.eq(id))
+                .where(odhOrderItemChgHist.orderItemChgHistId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -91,7 +91,7 @@ public class QOdhOrderItemChgHistRepositoryImpl implements QOdhOrderItemChgHistR
         }
         List<OdhOrderItemChgHistDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(a.count()).from(a).where(
+        Long total = queryFactory.select(odhOrderItemChgHist.count()).from(odhOrderItemChgHist).where(
                 baseAndSiteId(search),
                 baseAndOrderItemChgHistId(search),
                 baseAndSearchValue(search)
@@ -111,13 +111,13 @@ public class QOdhOrderItemChgHistRepositoryImpl implements QOdhOrderItemChgHistR
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(OdhOrderItemChgHistDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? odhOrderItemChgHist.siteId.eq(search.getSiteId()) : null;
     }
 
     /* orderItemChgHistId 정확 일치 */
     private BooleanExpression baseAndOrderItemChgHistId(OdhOrderItemChgHistDto.Request search) {
         return search != null && StringUtils.hasText(search.getOrderItemChgHistId())
-                ? a.orderItemChgHistId.eq(search.getOrderItemChgHistId()) : null;
+                ? odhOrderItemChgHist.orderItemChgHistId.eq(search.getOrderItemChgHistId()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
@@ -128,16 +128,16 @@ public class QOdhOrderItemChgHistRepositoryImpl implements QOdhOrderItemChgHistR
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",afterVal,", a.afterVal, pattern);
-        or = orLike(or, all, types, ",beforeVal,", a.beforeVal, pattern);
-        or = orLike(or, all, types, ",chgField,", a.chgField, pattern);
-        or = orLike(or, all, types, ",chgReason,", a.chgReason, pattern);
-        or = orLike(or, all, types, ",chgTypeCd,", a.chgTypeCd, pattern);
-        or = orLike(or, all, types, ",chgUserId,", a.chgUserId, pattern);
-        or = orLike(or, all, types, ",orderId,", a.orderId, pattern);
-        or = orLike(or, all, types, ",orderItemChgHistId,", a.orderItemChgHistId, pattern);
-        or = orLike(or, all, types, ",orderItemId,", a.orderItemId, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",afterVal,", odhOrderItemChgHist.afterVal, pattern);
+        or = orLike(or, all, types, ",beforeVal,", odhOrderItemChgHist.beforeVal, pattern);
+        or = orLike(or, all, types, ",chgField,", odhOrderItemChgHist.chgField, pattern);
+        or = orLike(or, all, types, ",chgReason,", odhOrderItemChgHist.chgReason, pattern);
+        or = orLike(or, all, types, ",chgTypeCd,", odhOrderItemChgHist.chgTypeCd, pattern);
+        or = orLike(or, all, types, ",chgUserId,", odhOrderItemChgHist.chgUserId, pattern);
+        or = orLike(or, all, types, ",orderId,", odhOrderItemChgHist.orderId, pattern);
+        or = orLike(or, all, types, ",orderItemChgHistId,", odhOrderItemChgHist.orderItemChgHistId, pattern);
+        or = orLike(or, all, types, ",orderItemId,", odhOrderItemChgHist.orderItemId, pattern);
+        or = orLike(or, all, types, ",siteId,", odhOrderItemChgHist.siteId, pattern);
         return or;
     }
 
@@ -158,8 +158,8 @@ public class QOdhOrderItemChgHistRepositoryImpl implements QOdhOrderItemChgHistR
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.orderItemChgHistId));
+            orders.add(new OrderSpecifier(Order.DESC, odhOrderItemChgHist.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, odhOrderItemChgHist.orderItemChgHistId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -170,17 +170,17 @@ public class QOdhOrderItemChgHistRepositoryImpl implements QOdhOrderItemChgHistR
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("orderItemChgHistId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.orderItemChgHistId));
+                    orders.add(new OrderSpecifier(order, odhOrderItemChgHist.orderItemChgHistId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, odhOrderItemChgHist.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.orderItemChgHistId));
+            orders.add(new OrderSpecifier<>(Order.DESC, odhOrderItemChgHist.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, odhOrderItemChgHist.orderItemChgHistId));
         }
         return orders;
     }
@@ -190,26 +190,26 @@ public class QOdhOrderItemChgHistRepositoryImpl implements QOdhOrderItemChgHistR
     public int updateSelective(OdhOrderItemChgHist entity) {
         if (entity.getOrderItemChgHistId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(odhOrderItemChgHist);
         boolean hasAny = false;
 
-        if (entity.getSiteId()      != null) { update.set(a.siteId,      entity.getSiteId());      hasAny = true; }
-        if (entity.getOrderId()     != null) { update.set(a.orderId,     entity.getOrderId());     hasAny = true; }
-        if (entity.getOrderItemId() != null) { update.set(a.orderItemId, entity.getOrderItemId()); hasAny = true; }
-        if (entity.getChgTypeCd()   != null) { update.set(a.chgTypeCd,   entity.getChgTypeCd());   hasAny = true; }
-        if (entity.getChgField()    != null) { update.set(a.chgField,    entity.getChgField());    hasAny = true; }
-        if (entity.getBeforeVal()   != null) { update.set(a.beforeVal,   entity.getBeforeVal());   hasAny = true; }
-        if (entity.getAfterVal()    != null) { update.set(a.afterVal,    entity.getAfterVal());    hasAny = true; }
-        if (entity.getChgReason()   != null) { update.set(a.chgReason,   entity.getChgReason());   hasAny = true; }
-        if (entity.getChgUserId()   != null) { update.set(a.chgUserId,   entity.getChgUserId());   hasAny = true; }
-        if (entity.getChgDate()     != null) { update.set(a.chgDate,     entity.getChgDate());     hasAny = true; }
-        if (entity.getUpdBy()       != null) { update.set(a.updBy,       entity.getUpdBy());       hasAny = true; }
+        if (entity.getSiteId()      != null) { update.set(odhOrderItemChgHist.siteId,      entity.getSiteId());      hasAny = true; }
+        if (entity.getOrderId()     != null) { update.set(odhOrderItemChgHist.orderId,     entity.getOrderId());     hasAny = true; }
+        if (entity.getOrderItemId() != null) { update.set(odhOrderItemChgHist.orderItemId, entity.getOrderItemId()); hasAny = true; }
+        if (entity.getChgTypeCd()   != null) { update.set(odhOrderItemChgHist.chgTypeCd,   entity.getChgTypeCd());   hasAny = true; }
+        if (entity.getChgField()    != null) { update.set(odhOrderItemChgHist.chgField,    entity.getChgField());    hasAny = true; }
+        if (entity.getBeforeVal()   != null) { update.set(odhOrderItemChgHist.beforeVal,   entity.getBeforeVal());   hasAny = true; }
+        if (entity.getAfterVal()    != null) { update.set(odhOrderItemChgHist.afterVal,    entity.getAfterVal());    hasAny = true; }
+        if (entity.getChgReason()   != null) { update.set(odhOrderItemChgHist.chgReason,   entity.getChgReason());   hasAny = true; }
+        if (entity.getChgUserId()   != null) { update.set(odhOrderItemChgHist.chgUserId,   entity.getChgUserId());   hasAny = true; }
+        if (entity.getChgDate()     != null) { update.set(odhOrderItemChgHist.chgDate,     entity.getChgDate());     hasAny = true; }
+        if (entity.getUpdBy()       != null) { update.set(odhOrderItemChgHist.updBy,       entity.getUpdBy());       hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(odhOrderItemChgHist.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.orderItemChgHistId.eq(entity.getOrderItemChgHistId())).execute();
+        long affected = update.where(odhOrderItemChgHist.orderItemChgHistId.eq(entity.getOrderItemChgHistId())).execute();
         return (int) affected;
     }
 }

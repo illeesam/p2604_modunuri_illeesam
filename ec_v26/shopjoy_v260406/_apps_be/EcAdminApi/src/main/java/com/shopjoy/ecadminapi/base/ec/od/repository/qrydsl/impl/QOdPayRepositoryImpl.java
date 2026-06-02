@@ -33,9 +33,9 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdPayRepositoryImpl";
-    private static final QOdPay    a   = QOdPay.odPay;
-    private static final QOdOrder  o   = QOdOrder.odOrder;
-    private static final QMbMember m   = QMbMember.mbMember;
+    private static final QOdPay    odPay   = QOdPay.odPay;
+    private static final QOdOrder  odOrder   = QOdOrder.odOrder;
+    private static final QMbMember mbMember   = QMbMember.mbMember;
     private static final QSyCode   cdPs = new QSyCode("cd_ps");
     private static final QSyCode   cdPm = new QSyCode("cd_pm");
     private static final QSyCode   cdPd = new QSyCode("cd_pd");
@@ -49,23 +49,23 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
     public Optional<OdPayDto.Item> selectById(String payId) {
         OdPayDto.Item dto = queryFactory
                 .select(Projections.bean(OdPayDto.Item.class,
-                        a.payId, a.siteId, a.orderId,
-                        a.payStatusCd, a.payStatusCdBefore,
-                        a.payMethodCd, a.payDirCd, a.payChannelCd,
-                        a.payAmt, a.refundAmt, a.refundStatusCd, a.refundDate,
-                        a.pgTransactionId, a.payDate,
-                        a.cardNo, a.cardTypeCd,
-                        a.installmentMonth.as("cardInstallMonth"),
-                        a.vbankBankCode,
-                        a.vbankAccount.as("vbankAccountNo"),
-                        a.vbankHolderNm.as("vbankAccountNm"),
-                        a.vbankDepositDate.as("vbankExpireDate"),
-                        a.memo, a.regBy, a.regDate, a.updBy, a.updDate,
+                        odPay.payId, odPay.siteId, odPay.orderId,
+                        odPay.payStatusCd, odPay.payStatusCdBefore,
+                        odPay.payMethodCd, odPay.payDirCd, odPay.payChannelCd,
+                        odPay.payAmt, odPay.refundAmt, odPay.refundStatusCd, odPay.refundDate,
+                        odPay.pgTransactionId, odPay.payDate,
+                        odPay.cardNo, odPay.cardTypeCd,
+                        odPay.installmentMonth.as("cardInstallMonth"),
+                        odPay.vbankBankCode,
+                        odPay.vbankAccount.as("vbankAccountNo"),
+                        odPay.vbankHolderNm.as("vbankAccountNm"),
+                        odPay.vbankDepositDate.as("vbankExpireDate"),
+                        odPay.memo, odPay.regBy, odPay.regDate, odPay.updBy, odPay.updDate,
                         // joined
-                        o.memberNm.as("memberNm"),
-                        o.orderDate.as("orderDate"),
-                        o.orderStatusCd.as("orderStatusCd"),
-                        m.loginId.as("memberEmail"),
+                        odOrder.memberNm.as("memberNm"),
+                        odOrder.orderDate.as("orderDate"),
+                        odOrder.orderStatusCd.as("orderStatusCd"),
+                        mbMember.loginId.as("memberEmail"),
                         cdPs.codeLabel.as("payStatusCdNm"),
                         cdPm.codeLabel.as("payMethodCdNm"),
                         cdPd.codeLabel.as("payDirCdNm"),
@@ -74,17 +74,17 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
                         cdVb.codeLabel.as("vbankBankCodeNm"),
                         cdCt.codeLabel.as("cardTypeCdNm")
                 ))
-                .from(a)
-                .leftJoin(o).on(o.orderId.eq(a.orderId))
-                .leftJoin(m).on(m.memberId.eq(o.memberId))
-                .leftJoin(cdPs).on(cdPs.codeGrp.eq("PAY_STATUS").and(cdPs.codeValue.eq(a.payStatusCd)))
-                .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(a.payMethodCd)))
-                .leftJoin(cdPd).on(cdPd.codeGrp.eq("PAY_DIR").and(cdPd.codeValue.eq(a.payDirCd)))
-                .leftJoin(cdPc).on(cdPc.codeGrp.eq("PAY_CHANNEL").and(cdPc.codeValue.eq(a.payChannelCd)))
-                .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS").and(cdRs.codeValue.eq(a.refundStatusCd)))
-                .leftJoin(cdVb).on(cdVb.codeGrp.eq("BANK_CODE").and(cdVb.codeValue.eq(a.vbankBankCode)))
-                .leftJoin(cdCt).on(cdCt.codeGrp.eq("CARD_TYPE").and(cdCt.codeValue.eq(a.cardTypeCd)))
-                .where(a.payId.eq(payId))
+                .from(odPay)
+                .leftJoin(odOrder).on(odOrder.orderId.eq(odPay.orderId))
+                .leftJoin(mbMember).on(mbMember.memberId.eq(odOrder.memberId))
+                .leftJoin(cdPs).on(cdPs.codeGrp.eq("PAY_STATUS").and(cdPs.codeValue.eq(odPay.payStatusCd)))
+                .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odPay.payMethodCd)))
+                .leftJoin(cdPd).on(cdPd.codeGrp.eq("PAY_DIR").and(cdPd.codeValue.eq(odPay.payDirCd)))
+                .leftJoin(cdPc).on(cdPc.codeGrp.eq("PAY_CHANNEL").and(cdPc.codeValue.eq(odPay.payChannelCd)))
+                .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS").and(cdRs.codeValue.eq(odPay.refundStatusCd)))
+                .leftJoin(cdVb).on(cdVb.codeGrp.eq("BANK_CODE").and(cdVb.codeValue.eq(odPay.vbankBankCode)))
+                .leftJoin(cdCt).on(cdCt.codeGrp.eq("CARD_TYPE").and(cdCt.codeValue.eq(odPay.cardTypeCd)))
+                .where(odPay.payId.eq(payId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -137,10 +137,10 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
         List<OdPayDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(a.count())
-                .from(a)
-                .leftJoin(o).on(o.orderId.eq(a.orderId))
-                .leftJoin(m).on(m.memberId.eq(o.memberId))
+                .select(odPay.count())
+                .from(odPay)
+                .leftJoin(odOrder).on(odOrder.orderId.eq(odPay.orderId))
+                .leftJoin(mbMember).on(mbMember.memberId.eq(odOrder.memberId))
                 .where(
                 baseAndOrderIds(search),
                 baseAndOrderId(search),
@@ -159,33 +159,33 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
     private JPAQuery<OdPayDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(OdPayDto.Item.class,
-                        a.payId, a.siteId, a.orderId,
-                        a.payStatusCd, a.payStatusCdBefore,
-                        a.payMethodCd, a.payDirCd, a.payChannelCd,
-                        a.payAmt, a.refundAmt, a.refundStatusCd, a.refundDate,
-                        a.pgTransactionId, a.payDate,
-                        a.cardNo, a.cardTypeCd,
-                        a.installmentMonth.as("cardInstallMonth"),
-                        a.vbankBankCode,
-                        a.vbankAccount.as("vbankAccountNo"),
-                        a.vbankHolderNm.as("vbankAccountNm"),
-                        a.vbankDepositDate.as("vbankExpireDate"),
-                        a.memo, a.regBy, a.regDate, a.updBy, a.updDate,
-                        o.memberNm.as("memberNm"),
-                        o.orderDate.as("orderDate"),
-                        m.loginId.as("memberEmail"),
+                        odPay.payId, odPay.siteId, odPay.orderId,
+                        odPay.payStatusCd, odPay.payStatusCdBefore,
+                        odPay.payMethodCd, odPay.payDirCd, odPay.payChannelCd,
+                        odPay.payAmt, odPay.refundAmt, odPay.refundStatusCd, odPay.refundDate,
+                        odPay.pgTransactionId, odPay.payDate,
+                        odPay.cardNo, odPay.cardTypeCd,
+                        odPay.installmentMonth.as("cardInstallMonth"),
+                        odPay.vbankBankCode,
+                        odPay.vbankAccount.as("vbankAccountNo"),
+                        odPay.vbankHolderNm.as("vbankAccountNm"),
+                        odPay.vbankDepositDate.as("vbankExpireDate"),
+                        odPay.memo, odPay.regBy, odPay.regDate, odPay.updBy, odPay.updDate,
+                        odOrder.memberNm.as("memberNm"),
+                        odOrder.orderDate.as("orderDate"),
+                        mbMember.loginId.as("memberEmail"),
                         cdPs.codeLabel.as("payStatusCdNm"),
                         cdPm.codeLabel.as("payMethodCdNm"),
                         cdPd.codeLabel.as("payDirCdNm"),
                         cdRs.codeLabel.as("refundStatusCdNm")
                 ))
-                .from(a)
-                .leftJoin(o).on(o.orderId.eq(a.orderId))
-                .leftJoin(m).on(m.memberId.eq(o.memberId))
-                .leftJoin(cdPs).on(cdPs.codeGrp.eq("PAY_STATUS").and(cdPs.codeValue.eq(a.payStatusCd)))
-                .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(a.payMethodCd)))
-                .leftJoin(cdPd).on(cdPd.codeGrp.eq("PAY_DIR").and(cdPd.codeValue.eq(a.payDirCd)))
-                .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS").and(cdRs.codeValue.eq(a.refundStatusCd)));
+                .from(odPay)
+                .leftJoin(odOrder).on(odOrder.orderId.eq(odPay.orderId))
+                .leftJoin(mbMember).on(mbMember.memberId.eq(odOrder.memberId))
+                .leftJoin(cdPs).on(cdPs.codeGrp.eq("PAY_STATUS").and(cdPs.codeValue.eq(odPay.payStatusCd)))
+                .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odPay.payMethodCd)))
+                .leftJoin(cdPd).on(cdPd.codeGrp.eq("PAY_DIR").and(cdPd.codeValue.eq(odPay.payDirCd)))
+                .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS").and(cdRs.codeValue.eq(odPay.refundStatusCd)));
     }
 
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
@@ -198,25 +198,25 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
     /* orderId IN */
     private BooleanExpression baseAndOrderIds(OdPayDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getOrderIds())
-                ? a.orderId.in(search.getOrderIds()) : null;
+                ? odPay.orderId.in(search.getOrderIds()) : null;
     }
 
     /* orderId 정확 일치 */
     private BooleanExpression baseAndOrderId(OdPayDto.Request search) {
         return search != null && StringUtils.hasText(search.getOrderId())
-                ? a.orderId.eq(search.getOrderId()) : null;
+                ? odPay.orderId.eq(search.getOrderId()) : null;
     }
 
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(OdPayDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? odPay.siteId.eq(search.getSiteId()) : null;
     }
 
     /* payId 정확 일치 */
     private BooleanExpression baseAndPayId(OdPayDto.Request search) {
         return search != null && StringUtils.hasText(search.getPayId())
-                ? a.payId.eq(search.getPayId()) : null;
+                ? odPay.payId.eq(search.getPayId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -229,9 +229,9 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "pay_date": return a.payDate.goe(start).and(a.payDate.lt(endExcl));
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "pay_date": return odPay.payDate.goe(start).and(odPay.payDate.lt(endExcl));
+            case "reg_date": return odPay.regDate.goe(start).and(odPay.regDate.lt(endExcl));
+            case "upd_date": return odPay.updDate.goe(start).and(odPay.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -244,36 +244,36 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",cardIssuerCd,", a.cardIssuerCd, pattern);
-        or = orLike(or, all, types, ",cardIssuerNm,", a.cardIssuerNm, pattern);
-        or = orLike(or, all, types, ",cardNo,", a.cardNo, pattern);
-        or = orLike(or, all, types, ",cardTypeCd,", a.cardTypeCd, pattern);
-        or = orLike(or, all, types, ",claimId,", a.claimId, pattern);
-        or = orLike(or, all, types, ",failureCode,", a.failureCode, pattern);
-        or = orLike(or, all, types, ",failureReason,", a.failureReason, pattern);
-        or = orLike(or, all, types, ",memo,", a.memo, pattern);
-        or = orLike(or, all, types, ",orderId,", a.orderId, pattern);
-        or = orLike(or, all, types, ",payChannelCd,", a.payChannelCd, pattern);
-        or = orLike(or, all, types, ",payDirCd,", a.payDirCd, pattern);
-        or = orLike(or, all, types, ",payDivCd,", a.payDivCd, pattern);
-        or = orLike(or, all, types, ",payId,", a.payId, pattern);
-        or = orLike(or, all, types, ",payMethodCd,", a.payMethodCd, pattern);
-        or = orLike(or, all, types, ",payOccurTypeCd,", a.payOccurTypeCd, pattern);
-        or = orLike(or, all, types, ",payStatusCd,", a.payStatusCd, pattern);
-        or = orLike(or, all, types, ",payStatusCdBefore,", a.payStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",pgApprovalNo,", a.pgApprovalNo, pattern);
-        or = orLike(or, all, types, ",pgCompanyCd,", a.pgCompanyCd, pattern);
-        or = orLike(or, all, types, ",pgResponse,", a.pgResponse, pattern);
-        or = orLike(or, all, types, ",pgTransactionId,", a.pgTransactionId, pattern);
-        or = orLike(or, all, types, ",refundReason,", a.refundReason, pattern);
-        or = orLike(or, all, types, ",refundStatusCd,", a.refundStatusCd, pattern);
-        or = orLike(or, all, types, ",refundStatusCdBefore,", a.refundStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
-        or = orLike(or, all, types, ",vbankAccount,", a.vbankAccount, pattern);
-        or = orLike(or, all, types, ",vbankBankCode,", a.vbankBankCode, pattern);
-        or = orLike(or, all, types, ",vbankBankNm,", a.vbankBankNm, pattern);
-        or = orLike(or, all, types, ",vbankDepositNm,", a.vbankDepositNm, pattern);
-        or = orLike(or, all, types, ",vbankHolderNm,", a.vbankHolderNm, pattern);
+        or = orLike(or, all, types, ",cardIssuerCd,", odPay.cardIssuerCd, pattern);
+        or = orLike(or, all, types, ",cardIssuerNm,", odPay.cardIssuerNm, pattern);
+        or = orLike(or, all, types, ",cardNo,", odPay.cardNo, pattern);
+        or = orLike(or, all, types, ",cardTypeCd,", odPay.cardTypeCd, pattern);
+        or = orLike(or, all, types, ",claimId,", odPay.claimId, pattern);
+        or = orLike(or, all, types, ",failureCode,", odPay.failureCode, pattern);
+        or = orLike(or, all, types, ",failureReason,", odPay.failureReason, pattern);
+        or = orLike(or, all, types, ",memo,", odPay.memo, pattern);
+        or = orLike(or, all, types, ",orderId,", odPay.orderId, pattern);
+        or = orLike(or, all, types, ",payChannelCd,", odPay.payChannelCd, pattern);
+        or = orLike(or, all, types, ",payDirCd,", odPay.payDirCd, pattern);
+        or = orLike(or, all, types, ",payDivCd,", odPay.payDivCd, pattern);
+        or = orLike(or, all, types, ",payId,", odPay.payId, pattern);
+        or = orLike(or, all, types, ",payMethodCd,", odPay.payMethodCd, pattern);
+        or = orLike(or, all, types, ",payOccurTypeCd,", odPay.payOccurTypeCd, pattern);
+        or = orLike(or, all, types, ",payStatusCd,", odPay.payStatusCd, pattern);
+        or = orLike(or, all, types, ",payStatusCdBefore,", odPay.payStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",pgApprovalNo,", odPay.pgApprovalNo, pattern);
+        or = orLike(or, all, types, ",pgCompanyCd,", odPay.pgCompanyCd, pattern);
+        or = orLike(or, all, types, ",pgResponse,", odPay.pgResponse, pattern);
+        or = orLike(or, all, types, ",pgTransactionId,", odPay.pgTransactionId, pattern);
+        or = orLike(or, all, types, ",refundReason,", odPay.refundReason, pattern);
+        or = orLike(or, all, types, ",refundStatusCd,", odPay.refundStatusCd, pattern);
+        or = orLike(or, all, types, ",refundStatusCdBefore,", odPay.refundStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",siteId,", odPay.siteId, pattern);
+        or = orLike(or, all, types, ",vbankAccount,", odPay.vbankAccount, pattern);
+        or = orLike(or, all, types, ",vbankBankCode,", odPay.vbankBankCode, pattern);
+        or = orLike(or, all, types, ",vbankBankNm,", odPay.vbankBankNm, pattern);
+        or = orLike(or, all, types, ",vbankDepositNm,", odPay.vbankDepositNm, pattern);
+        or = orLike(or, all, types, ",vbankHolderNm,", odPay.vbankHolderNm, pattern);
         return or;
     }
 
@@ -294,8 +294,8 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.payId));
+            orders.add(new OrderSpecifier(Order.DESC, odPay.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, odPay.payId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -306,19 +306,19 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("payId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.payId));
+                    orders.add(new OrderSpecifier(order, odPay.payId));
                 } else if ("vbankBankNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.vbankBankNm));
+                    orders.add(new OrderSpecifier(order, odPay.vbankBankNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, odPay.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.payId));
+            orders.add(new OrderSpecifier<>(Order.DESC, odPay.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, odPay.payId));
         }
         return orders;
     }
@@ -328,23 +328,23 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
     public int updateSelective(OdPay entity) {
         if (entity.getPayId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(odPay);
         boolean hasAny = false;
 
-        if (entity.getPayStatusCd()       != null) { update.set(a.payStatusCd,       entity.getPayStatusCd());       hasAny = true; }
-        if (entity.getPayStatusCdBefore() != null) { update.set(a.payStatusCdBefore, entity.getPayStatusCdBefore()); hasAny = true; }
-        if (entity.getPayDate()           != null) { update.set(a.payDate,           entity.getPayDate());           hasAny = true; }
-        if (entity.getRefundAmt()         != null) { update.set(a.refundAmt,         entity.getRefundAmt());         hasAny = true; }
-        if (entity.getRefundStatusCd()    != null) { update.set(a.refundStatusCd,    entity.getRefundStatusCd());    hasAny = true; }
-        if (entity.getRefundDate()        != null) { update.set(a.refundDate,        entity.getRefundDate());        hasAny = true; }
-        if (entity.getMemo()              != null) { update.set(a.memo,              entity.getMemo());              hasAny = true; }
-        if (entity.getUpdBy()             != null) { update.set(a.updBy,             entity.getUpdBy());             hasAny = true; }
+        if (entity.getPayStatusCd()       != null) { update.set(odPay.payStatusCd,       entity.getPayStatusCd());       hasAny = true; }
+        if (entity.getPayStatusCdBefore() != null) { update.set(odPay.payStatusCdBefore, entity.getPayStatusCdBefore()); hasAny = true; }
+        if (entity.getPayDate()           != null) { update.set(odPay.payDate,           entity.getPayDate());           hasAny = true; }
+        if (entity.getRefundAmt()         != null) { update.set(odPay.refundAmt,         entity.getRefundAmt());         hasAny = true; }
+        if (entity.getRefundStatusCd()    != null) { update.set(odPay.refundStatusCd,    entity.getRefundStatusCd());    hasAny = true; }
+        if (entity.getRefundDate()        != null) { update.set(odPay.refundDate,        entity.getRefundDate());        hasAny = true; }
+        if (entity.getMemo()              != null) { update.set(odPay.memo,              entity.getMemo());              hasAny = true; }
+        if (entity.getUpdBy()             != null) { update.set(odPay.updBy,             entity.getUpdBy());             hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(odPay.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.payId.eq(entity.getPayId())).execute();
+        long affected = update.where(odPay.payId.eq(entity.getPayId())).execute();
         return (int) affected;
     }
 }

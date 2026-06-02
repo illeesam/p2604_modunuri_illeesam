@@ -27,24 +27,24 @@ public class QPmDiscntItemRepositoryImpl implements QPmDiscntItemRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmDiscntItemRepositoryImpl";
-    private static final QPmDiscntItem a = QPmDiscntItem.pmDiscntItem;
+    private static final QPmDiscntItem pmDiscntItem = QPmDiscntItem.pmDiscntItem;
 
     /* 할인 대상 상품 baseSelColumnQuery */
     private JPAQuery<PmDiscntItemDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PmDiscntItemDto.Item.class,
-                        a.discntItemId, a.discntId, a.siteId,
-                        a.targetTypeCd, a.targetId,
-                        a.regBy, a.regDate
+                        pmDiscntItem.discntItemId, pmDiscntItem.discntId, pmDiscntItem.siteId,
+                        pmDiscntItem.targetTypeCd, pmDiscntItem.targetId,
+                        pmDiscntItem.regBy, pmDiscntItem.regDate
                 ))
-                .from(a);
+                .from(pmDiscntItem);
     }
 
     /* 할인 대상 상품 키조회 */
     @Override
     public Optional<PmDiscntItemDto.Item> selectById(String discntItemId) {
         PmDiscntItemDto.Item dto = baseSelColumnQuery()
-                .where(a.discntItemId.eq(discntItemId))
+                .where(pmDiscntItem.discntItemId.eq(discntItemId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -93,8 +93,8 @@ public class QPmDiscntItemRepositoryImpl implements QPmDiscntItemRepository {
         List<PmDiscntItemDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(a.count())
-                .from(a)
+                .select(pmDiscntItem.count())
+                .from(pmDiscntItem)
                 .where(
                 baseAndSiteId(search),
                 baseAndDiscntItemId(search),
@@ -116,13 +116,13 @@ public class QPmDiscntItemRepositoryImpl implements QPmDiscntItemRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(PmDiscntItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? pmDiscntItem.siteId.eq(search.getSiteId()) : null;
     }
 
     /* discntItemId 정확 일치 */
     private BooleanExpression baseAndDiscntItemId(PmDiscntItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getDiscntItemId())
-                ? a.discntItemId.eq(search.getDiscntItemId()) : null;
+                ? pmDiscntItem.discntItemId.eq(search.getDiscntItemId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -135,8 +135,8 @@ public class QPmDiscntItemRepositoryImpl implements QPmDiscntItemRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "reg_date": return pmDiscntItem.regDate.goe(start).and(pmDiscntItem.regDate.lt(endExcl));
+            case "upd_date": return pmDiscntItem.updDate.goe(start).and(pmDiscntItem.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -149,11 +149,11 @@ public class QPmDiscntItemRepositoryImpl implements QPmDiscntItemRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",discntId,", a.discntId, pattern);
-        or = orLike(or, all, types, ",discntItemId,", a.discntItemId, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
-        or = orLike(or, all, types, ",targetId,", a.targetId, pattern);
-        or = orLike(or, all, types, ",targetTypeCd,", a.targetTypeCd, pattern);
+        or = orLike(or, all, types, ",discntId,", pmDiscntItem.discntId, pattern);
+        or = orLike(or, all, types, ",discntItemId,", pmDiscntItem.discntItemId, pattern);
+        or = orLike(or, all, types, ",siteId,", pmDiscntItem.siteId, pattern);
+        or = orLike(or, all, types, ",targetId,", pmDiscntItem.targetId, pattern);
+        or = orLike(or, all, types, ",targetTypeCd,", pmDiscntItem.targetTypeCd, pattern);
         return or;
     }
 
@@ -174,8 +174,8 @@ public class QPmDiscntItemRepositoryImpl implements QPmDiscntItemRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.discntItemId));
+            orders.add(new OrderSpecifier(Order.DESC, pmDiscntItem.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, pmDiscntItem.discntItemId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -186,17 +186,17 @@ public class QPmDiscntItemRepositoryImpl implements QPmDiscntItemRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("discntItemId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.discntItemId));
+                    orders.add(new OrderSpecifier(order, pmDiscntItem.discntItemId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, pmDiscntItem.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.discntItemId));
+            orders.add(new OrderSpecifier<>(Order.DESC, pmDiscntItem.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, pmDiscntItem.discntItemId));
         }
         return orders;
     }
@@ -208,17 +208,17 @@ public class QPmDiscntItemRepositoryImpl implements QPmDiscntItemRepository {
     public int updateSelective(PmDiscntItem entity) {
         if (entity.getDiscntItemId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(pmDiscntItem);
         boolean hasAny = false;
 
-        if (entity.getDiscntId()    != null) { update.set(a.discntId,    entity.getDiscntId());    hasAny = true; }
-        if (entity.getSiteId()      != null) { update.set(a.siteId,      entity.getSiteId());      hasAny = true; }
-        if (entity.getTargetTypeCd()!= null) { update.set(a.targetTypeCd,entity.getTargetTypeCd());hasAny = true; }
-        if (entity.getTargetId()    != null) { update.set(a.targetId,    entity.getTargetId());    hasAny = true; }
+        if (entity.getDiscntId()    != null) { update.set(pmDiscntItem.discntId,    entity.getDiscntId());    hasAny = true; }
+        if (entity.getSiteId()      != null) { update.set(pmDiscntItem.siteId,      entity.getSiteId());      hasAny = true; }
+        if (entity.getTargetTypeCd()!= null) { update.set(pmDiscntItem.targetTypeCd,entity.getTargetTypeCd());hasAny = true; }
+        if (entity.getTargetId()    != null) { update.set(pmDiscntItem.targetId,    entity.getTargetId());    hasAny = true; }
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.discntItemId.eq(entity.getDiscntItemId())).execute();
+        long affected = update.where(pmDiscntItem.discntItemId.eq(entity.getDiscntItemId())).execute();
         return (int) affected;
     }
 }

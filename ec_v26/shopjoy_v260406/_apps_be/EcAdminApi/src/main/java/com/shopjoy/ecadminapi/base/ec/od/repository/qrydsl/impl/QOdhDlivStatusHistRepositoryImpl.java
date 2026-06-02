@@ -28,24 +28,24 @@ public class QOdhDlivStatusHistRepositoryImpl implements QOdhDlivStatusHistRepos
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdhDlivStatusHistRepositoryImpl";
-    private static final QOdhDlivStatusHist a = QOdhDlivStatusHist.odhDlivStatusHist;
+    private static final QOdhDlivStatusHist odhDlivStatusHist = QOdhDlivStatusHist.odhDlivStatusHist;
 
     /* 배송 상태 이력 baseSelColumnQuery */
     private JPAQuery<OdhDlivStatusHistDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(OdhDlivStatusHistDto.Item.class,
-                        a.dlivStatusHistId, a.siteId, a.dlivId, a.orderId,
-                        a.dlivStatusCdBefore, a.dlivStatusCd, a.statusReason,
-                        a.chgUserId, a.chgDate, a.memo,
-                        a.regBy, a.regDate, a.updBy, a.updDate))
-                .from(a);
+                        odhDlivStatusHist.dlivStatusHistId, odhDlivStatusHist.siteId, odhDlivStatusHist.dlivId, odhDlivStatusHist.orderId,
+                        odhDlivStatusHist.dlivStatusCdBefore, odhDlivStatusHist.dlivStatusCd, odhDlivStatusHist.statusReason,
+                        odhDlivStatusHist.chgUserId, odhDlivStatusHist.chgDate, odhDlivStatusHist.memo,
+                        odhDlivStatusHist.regBy, odhDlivStatusHist.regDate, odhDlivStatusHist.updBy, odhDlivStatusHist.updDate))
+                .from(odhDlivStatusHist);
     }
 
     /* 배송 상태 이력 키조회 */
     @Override
     public Optional<OdhDlivStatusHistDto.Item> selectById(String id) {
         OdhDlivStatusHistDto.Item dto = baseSelColumnQuery()
-                .where(a.dlivStatusHistId.eq(id))
+                .where(odhDlivStatusHist.dlivStatusHistId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -91,7 +91,7 @@ public class QOdhDlivStatusHistRepositoryImpl implements QOdhDlivStatusHistRepos
         }
         List<OdhDlivStatusHistDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(a.count()).from(a).where(
+        Long total = queryFactory.select(odhDlivStatusHist.count()).from(odhDlivStatusHist).where(
                 baseAndSiteId(search),
                 baseAndDlivStatusHistId(search),
                 baseAndSearchValue(search)
@@ -111,13 +111,13 @@ public class QOdhDlivStatusHistRepositoryImpl implements QOdhDlivStatusHistRepos
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(OdhDlivStatusHistDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? odhDlivStatusHist.siteId.eq(search.getSiteId()) : null;
     }
 
     /* dlivStatusHistId 정확 일치 */
     private BooleanExpression baseAndDlivStatusHistId(OdhDlivStatusHistDto.Request search) {
         return search != null && StringUtils.hasText(search.getDlivStatusHistId())
-                ? a.dlivStatusHistId.eq(search.getDlivStatusHistId()) : null;
+                ? odhDlivStatusHist.dlivStatusHistId.eq(search.getDlivStatusHistId()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
@@ -128,15 +128,15 @@ public class QOdhDlivStatusHistRepositoryImpl implements QOdhDlivStatusHistRepos
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",chgUserId,", a.chgUserId, pattern);
-        or = orLike(or, all, types, ",dlivId,", a.dlivId, pattern);
-        or = orLike(or, all, types, ",dlivStatusCd,", a.dlivStatusCd, pattern);
-        or = orLike(or, all, types, ",dlivStatusCdBefore,", a.dlivStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",dlivStatusHistId,", a.dlivStatusHistId, pattern);
-        or = orLike(or, all, types, ",memo,", a.memo, pattern);
-        or = orLike(or, all, types, ",orderId,", a.orderId, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
-        or = orLike(or, all, types, ",statusReason,", a.statusReason, pattern);
+        or = orLike(or, all, types, ",chgUserId,", odhDlivStatusHist.chgUserId, pattern);
+        or = orLike(or, all, types, ",dlivId,", odhDlivStatusHist.dlivId, pattern);
+        or = orLike(or, all, types, ",dlivStatusCd,", odhDlivStatusHist.dlivStatusCd, pattern);
+        or = orLike(or, all, types, ",dlivStatusCdBefore,", odhDlivStatusHist.dlivStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",dlivStatusHistId,", odhDlivStatusHist.dlivStatusHistId, pattern);
+        or = orLike(or, all, types, ",memo,", odhDlivStatusHist.memo, pattern);
+        or = orLike(or, all, types, ",orderId,", odhDlivStatusHist.orderId, pattern);
+        or = orLike(or, all, types, ",siteId,", odhDlivStatusHist.siteId, pattern);
+        or = orLike(or, all, types, ",statusReason,", odhDlivStatusHist.statusReason, pattern);
         return or;
     }
 
@@ -157,8 +157,8 @@ public class QOdhDlivStatusHistRepositoryImpl implements QOdhDlivStatusHistRepos
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.dlivStatusHistId));
+            orders.add(new OrderSpecifier(Order.DESC, odhDlivStatusHist.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, odhDlivStatusHist.dlivStatusHistId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -169,17 +169,17 @@ public class QOdhDlivStatusHistRepositoryImpl implements QOdhDlivStatusHistRepos
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("dlivStatusHistId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.dlivStatusHistId));
+                    orders.add(new OrderSpecifier(order, odhDlivStatusHist.dlivStatusHistId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, odhDlivStatusHist.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.dlivStatusHistId));
+            orders.add(new OrderSpecifier<>(Order.DESC, odhDlivStatusHist.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, odhDlivStatusHist.dlivStatusHistId));
         }
         return orders;
     }
@@ -189,25 +189,25 @@ public class QOdhDlivStatusHistRepositoryImpl implements QOdhDlivStatusHistRepos
     public int updateSelective(OdhDlivStatusHist entity) {
         if (entity.getDlivStatusHistId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(odhDlivStatusHist);
         boolean hasAny = false;
 
-        if (entity.getSiteId()             != null) { update.set(a.siteId,             entity.getSiteId());             hasAny = true; }
-        if (entity.getDlivId()             != null) { update.set(a.dlivId,             entity.getDlivId());             hasAny = true; }
-        if (entity.getOrderId()            != null) { update.set(a.orderId,            entity.getOrderId());            hasAny = true; }
-        if (entity.getDlivStatusCdBefore() != null) { update.set(a.dlivStatusCdBefore, entity.getDlivStatusCdBefore()); hasAny = true; }
-        if (entity.getDlivStatusCd()       != null) { update.set(a.dlivStatusCd,       entity.getDlivStatusCd());       hasAny = true; }
-        if (entity.getStatusReason()       != null) { update.set(a.statusReason,       entity.getStatusReason());       hasAny = true; }
-        if (entity.getChgUserId()          != null) { update.set(a.chgUserId,          entity.getChgUserId());          hasAny = true; }
-        if (entity.getChgDate()            != null) { update.set(a.chgDate,            entity.getChgDate());            hasAny = true; }
-        if (entity.getMemo()               != null) { update.set(a.memo,               entity.getMemo());               hasAny = true; }
-        if (entity.getUpdBy()              != null) { update.set(a.updBy,              entity.getUpdBy());              hasAny = true; }
+        if (entity.getSiteId()             != null) { update.set(odhDlivStatusHist.siteId,             entity.getSiteId());             hasAny = true; }
+        if (entity.getDlivId()             != null) { update.set(odhDlivStatusHist.dlivId,             entity.getDlivId());             hasAny = true; }
+        if (entity.getOrderId()            != null) { update.set(odhDlivStatusHist.orderId,            entity.getOrderId());            hasAny = true; }
+        if (entity.getDlivStatusCdBefore() != null) { update.set(odhDlivStatusHist.dlivStatusCdBefore, entity.getDlivStatusCdBefore()); hasAny = true; }
+        if (entity.getDlivStatusCd()       != null) { update.set(odhDlivStatusHist.dlivStatusCd,       entity.getDlivStatusCd());       hasAny = true; }
+        if (entity.getStatusReason()       != null) { update.set(odhDlivStatusHist.statusReason,       entity.getStatusReason());       hasAny = true; }
+        if (entity.getChgUserId()          != null) { update.set(odhDlivStatusHist.chgUserId,          entity.getChgUserId());          hasAny = true; }
+        if (entity.getChgDate()            != null) { update.set(odhDlivStatusHist.chgDate,            entity.getChgDate());            hasAny = true; }
+        if (entity.getMemo()               != null) { update.set(odhDlivStatusHist.memo,               entity.getMemo());               hasAny = true; }
+        if (entity.getUpdBy()              != null) { update.set(odhDlivStatusHist.updBy,              entity.getUpdBy());              hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(odhDlivStatusHist.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.dlivStatusHistId.eq(entity.getDlivStatusHistId())).execute();
+        long affected = update.where(odhDlivStatusHist.dlivStatusHistId.eq(entity.getDlivStatusHistId())).execute();
         return (int) affected;
     }
 }

@@ -29,19 +29,19 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmhPushLogRepositoryImpl";
-    private static final QCmhPushLog a = QCmhPushLog.cmhPushLog;
+    private static final QCmhPushLog cmhPushLog = QCmhPushLog.cmhPushLog;
 
     /** 기본 쿼리 빌드 */
     private JPAQuery<CmhPushLogDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(CmhPushLogDto.Item.class,
-                        a.logId, a.siteId, a.channelCd, a.templateId, a.memberId,
-                        a.recvAddr, a.pushLogTitle, a.pushLogContent,
-                        a.resultCd, a.failReason, a.sendDate,
-                        a.refTypeCd, a.refId,
-                        a.regBy, a.regDate, a.updBy, a.updDate
+                        cmhPushLog.logId, cmhPushLog.siteId, cmhPushLog.channelCd, cmhPushLog.templateId, cmhPushLog.memberId,
+                        cmhPushLog.recvAddr, cmhPushLog.pushLogTitle, cmhPushLog.pushLogContent,
+                        cmhPushLog.resultCd, cmhPushLog.failReason, cmhPushLog.sendDate,
+                        cmhPushLog.refTypeCd, cmhPushLog.refId,
+                        cmhPushLog.regBy, cmhPushLog.regDate, cmhPushLog.updBy, cmhPushLog.updDate
                 ))
-                .from(a);
+                .from(cmhPushLog);
     }
 
     /** 단건 조회 */
@@ -49,7 +49,7 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
     public Optional<CmhPushLogDto.Item> selectById(String logId) {
         CmhPushLogDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
-                .where(a.logId.eq(logId))
+                .where(cmhPushLog.logId.eq(logId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -99,8 +99,8 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
         List<CmhPushLogDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(a.count())
-                .from(a)
+                .select(cmhPushLog.count())
+                .from(cmhPushLog)
                 .where(
                 baseAndSiteId(search),
                 baseAndLogId(search),
@@ -124,13 +124,13 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(CmhPushLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? cmhPushLog.siteId.eq(search.getSiteId()) : null;
     }
 
     /* logId 정확 일치 */
     private BooleanExpression baseAndLogId(CmhPushLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getLogId())
-                ? a.logId.eq(search.getLogId()) : null;
+                ? cmhPushLog.logId.eq(search.getLogId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -143,9 +143,9 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "send_date": return a.sendDate.goe(start).and(a.sendDate.lt(endExcl));
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "send_date": return cmhPushLog.sendDate.goe(start).and(cmhPushLog.sendDate.lt(endExcl));
+            case "reg_date": return cmhPushLog.regDate.goe(start).and(cmhPushLog.regDate.lt(endExcl));
+            case "upd_date": return cmhPushLog.updDate.goe(start).and(cmhPushLog.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -158,18 +158,18 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",channelCd,", a.channelCd, pattern);
-        or = orLike(or, all, types, ",failReason,", a.failReason, pattern);
-        or = orLike(or, all, types, ",logId,", a.logId, pattern);
-        or = orLike(or, all, types, ",memberId,", a.memberId, pattern);
-        or = orLike(or, all, types, ",pushLogContent,", a.pushLogContent, pattern);
-        or = orLike(or, all, types, ",pushLogTitle,", a.pushLogTitle, pattern);
-        or = orLike(or, all, types, ",recvAddr,", a.recvAddr, pattern);
-        or = orLike(or, all, types, ",refId,", a.refId, pattern);
-        or = orLike(or, all, types, ",refTypeCd,", a.refTypeCd, pattern);
-        or = orLike(or, all, types, ",resultCd,", a.resultCd, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
-        or = orLike(or, all, types, ",templateId,", a.templateId, pattern);
+        or = orLike(or, all, types, ",channelCd,", cmhPushLog.channelCd, pattern);
+        or = orLike(or, all, types, ",failReason,", cmhPushLog.failReason, pattern);
+        or = orLike(or, all, types, ",logId,", cmhPushLog.logId, pattern);
+        or = orLike(or, all, types, ",memberId,", cmhPushLog.memberId, pattern);
+        or = orLike(or, all, types, ",pushLogContent,", cmhPushLog.pushLogContent, pattern);
+        or = orLike(or, all, types, ",pushLogTitle,", cmhPushLog.pushLogTitle, pattern);
+        or = orLike(or, all, types, ",recvAddr,", cmhPushLog.recvAddr, pattern);
+        or = orLike(or, all, types, ",refId,", cmhPushLog.refId, pattern);
+        or = orLike(or, all, types, ",refTypeCd,", cmhPushLog.refTypeCd, pattern);
+        or = orLike(or, all, types, ",resultCd,", cmhPushLog.resultCd, pattern);
+        or = orLike(or, all, types, ",siteId,", cmhPushLog.siteId, pattern);
+        or = orLike(or, all, types, ",templateId,", cmhPushLog.templateId, pattern);
         return or;
     }
 
@@ -190,8 +190,8 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.logId));
+            orders.add(new OrderSpecifier(Order.DESC, cmhPushLog.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, cmhPushLog.logId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -202,19 +202,19 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("logId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.logId));
+                    orders.add(new OrderSpecifier(order, cmhPushLog.logId));
                 } else if ("pushLogTitle".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.pushLogTitle));
+                    orders.add(new OrderSpecifier(order, cmhPushLog.pushLogTitle));
                 } else if ("sendDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.sendDate));
+                    orders.add(new OrderSpecifier(order, cmhPushLog.sendDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.logId));
+            orders.add(new OrderSpecifier<>(Order.DESC, cmhPushLog.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, cmhPushLog.logId));
         }
         return orders;
     }
@@ -224,28 +224,28 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
     public int updateSelective(CmhPushLog entity) {
         if (entity.getLogId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(cmhPushLog);
         boolean hasAny = false;
 
-        if (entity.getSiteId()         != null) { update.set(a.siteId,         entity.getSiteId());         hasAny = true; }
-        if (entity.getChannelCd()      != null) { update.set(a.channelCd,      entity.getChannelCd());      hasAny = true; }
-        if (entity.getTemplateId()     != null) { update.set(a.templateId,     entity.getTemplateId());     hasAny = true; }
-        if (entity.getMemberId()       != null) { update.set(a.memberId,       entity.getMemberId());       hasAny = true; }
-        if (entity.getRecvAddr()       != null) { update.set(a.recvAddr,       entity.getRecvAddr());       hasAny = true; }
-        if (entity.getPushLogTitle()   != null) { update.set(a.pushLogTitle,   entity.getPushLogTitle());   hasAny = true; }
-        if (entity.getPushLogContent() != null) { update.set(a.pushLogContent, entity.getPushLogContent()); hasAny = true; }
-        if (entity.getResultCd()       != null) { update.set(a.resultCd,       entity.getResultCd());       hasAny = true; }
-        if (entity.getFailReason()     != null) { update.set(a.failReason,     entity.getFailReason());     hasAny = true; }
-        if (entity.getSendDate()       != null) { update.set(a.sendDate,       entity.getSendDate());       hasAny = true; }
-        if (entity.getRefTypeCd()      != null) { update.set(a.refTypeCd,      entity.getRefTypeCd());      hasAny = true; }
-        if (entity.getRefId()          != null) { update.set(a.refId,          entity.getRefId());          hasAny = true; }
-        if (entity.getUpdBy()          != null) { update.set(a.updBy,          entity.getUpdBy());          hasAny = true; }
+        if (entity.getSiteId()         != null) { update.set(cmhPushLog.siteId,         entity.getSiteId());         hasAny = true; }
+        if (entity.getChannelCd()      != null) { update.set(cmhPushLog.channelCd,      entity.getChannelCd());      hasAny = true; }
+        if (entity.getTemplateId()     != null) { update.set(cmhPushLog.templateId,     entity.getTemplateId());     hasAny = true; }
+        if (entity.getMemberId()       != null) { update.set(cmhPushLog.memberId,       entity.getMemberId());       hasAny = true; }
+        if (entity.getRecvAddr()       != null) { update.set(cmhPushLog.recvAddr,       entity.getRecvAddr());       hasAny = true; }
+        if (entity.getPushLogTitle()   != null) { update.set(cmhPushLog.pushLogTitle,   entity.getPushLogTitle());   hasAny = true; }
+        if (entity.getPushLogContent() != null) { update.set(cmhPushLog.pushLogContent, entity.getPushLogContent()); hasAny = true; }
+        if (entity.getResultCd()       != null) { update.set(cmhPushLog.resultCd,       entity.getResultCd());       hasAny = true; }
+        if (entity.getFailReason()     != null) { update.set(cmhPushLog.failReason,     entity.getFailReason());     hasAny = true; }
+        if (entity.getSendDate()       != null) { update.set(cmhPushLog.sendDate,       entity.getSendDate());       hasAny = true; }
+        if (entity.getRefTypeCd()      != null) { update.set(cmhPushLog.refTypeCd,      entity.getRefTypeCd());      hasAny = true; }
+        if (entity.getRefId()          != null) { update.set(cmhPushLog.refId,          entity.getRefId());          hasAny = true; }
+        if (entity.getUpdBy()          != null) { update.set(cmhPushLog.updBy,          entity.getUpdBy());          hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(cmhPushLog.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.logId.eq(entity.getLogId())).execute();
+        long affected = update.where(cmhPushLog.logId.eq(entity.getLogId())).execute();
         return (int) affected;
     }
 }

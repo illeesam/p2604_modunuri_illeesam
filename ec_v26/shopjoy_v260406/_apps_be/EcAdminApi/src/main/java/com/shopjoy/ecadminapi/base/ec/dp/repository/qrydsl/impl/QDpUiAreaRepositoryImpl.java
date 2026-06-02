@@ -28,25 +28,25 @@ public class QDpUiAreaRepositoryImpl implements QDpUiAreaRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpUiAreaRepositoryImpl";
-    private static final QDpUiArea a = QDpUiArea.dpUiArea;
+    private static final QDpUiArea dpUiArea = QDpUiArea.dpUiArea;
 
     /* 전시 UI-영역 매핑 baseSelColumnQuery */
     private JPAQuery<DpUiAreaDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(DpUiAreaDto.Item.class,
-                        a.uiAreaId, a.uiId, a.areaId, a.areaSortOrd,
-                        a.visibilityTargets, a.dispEnv, a.dispYn,
-                        a.dispStartDt, a.dispEndDt, a.useYn,
-                        a.regBy, a.regDate, a.updBy, a.updDate
+                        dpUiArea.uiAreaId, dpUiArea.uiId, dpUiArea.areaId, dpUiArea.areaSortOrd,
+                        dpUiArea.visibilityTargets, dpUiArea.dispEnv, dpUiArea.dispYn,
+                        dpUiArea.dispStartDt, dpUiArea.dispEndDt, dpUiArea.useYn,
+                        dpUiArea.regBy, dpUiArea.regDate, dpUiArea.updBy, dpUiArea.updDate
                 ))
-                .from(a);
+                .from(dpUiArea);
     }
 
     /* 전시 UI-영역 매핑 키조회 */
     @Override
     public Optional<DpUiAreaDto.Item> selectById(String uiAreaId) {
         DpUiAreaDto.Item dto = baseSelColumnQuery()
-                .where(a.uiAreaId.eq(uiAreaId))
+                .where(dpUiArea.uiAreaId.eq(uiAreaId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -94,7 +94,7 @@ public class QDpUiAreaRepositoryImpl implements QDpUiAreaRepository {
         }
         List<DpUiAreaDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(a.count()).from(a).where(
+        Long total = queryFactory.select(dpUiArea.count()).from(dpUiArea).where(
                 baseAndUiAreaId(search),
                 baseAndUseYn(search),
                 baseAndDateRange(search),
@@ -114,13 +114,13 @@ public class QDpUiAreaRepositoryImpl implements QDpUiAreaRepository {
     /* uiAreaId 정확 일치 */
     private BooleanExpression baseAndUiAreaId(DpUiAreaDto.Request search) {
         return search != null && StringUtils.hasText(search.getUiAreaId())
-                ? a.uiAreaId.eq(search.getUiAreaId()) : null;
+                ? dpUiArea.uiAreaId.eq(search.getUiAreaId()) : null;
     }
 
     /* useYn 정확 일치 */
     private BooleanExpression baseAndUseYn(DpUiAreaDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
-                ? a.useYn.eq(search.getUseYn()) : null;
+                ? dpUiArea.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -133,8 +133,8 @@ public class QDpUiAreaRepositoryImpl implements QDpUiAreaRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "reg_date": return dpUiArea.regDate.goe(start).and(dpUiArea.regDate.lt(endExcl));
+            case "upd_date": return dpUiArea.updDate.goe(start).and(dpUiArea.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -147,14 +147,14 @@ public class QDpUiAreaRepositoryImpl implements QDpUiAreaRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",areaId,", a.areaId, pattern);
-        or = orLike(or, all, types, ",dispEnv,", a.dispEnv, pattern);
-        or = orLike(or, all, types, ",dispYn,", a.dispYn, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
-        or = orLike(or, all, types, ",uiAreaId,", a.uiAreaId, pattern);
-        or = orLike(or, all, types, ",uiId,", a.uiId, pattern);
-        or = orLike(or, all, types, ",useYn,", a.useYn, pattern);
-        or = orLike(or, all, types, ",visibilityTargets,", a.visibilityTargets, pattern);
+        or = orLike(or, all, types, ",areaId,", dpUiArea.areaId, pattern);
+        or = orLike(or, all, types, ",dispEnv,", dpUiArea.dispEnv, pattern);
+        or = orLike(or, all, types, ",dispYn,", dpUiArea.dispYn, pattern);
+        or = orLike(or, all, types, ",siteId,", dpUiArea.siteId, pattern);
+        or = orLike(or, all, types, ",uiAreaId,", dpUiArea.uiAreaId, pattern);
+        or = orLike(or, all, types, ",uiId,", dpUiArea.uiId, pattern);
+        or = orLike(or, all, types, ",useYn,", dpUiArea.useYn, pattern);
+        or = orLike(or, all, types, ",visibilityTargets,", dpUiArea.visibilityTargets, pattern);
         return or;
     }
 
@@ -175,8 +175,8 @@ public class QDpUiAreaRepositoryImpl implements QDpUiAreaRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.uiAreaId));
+            orders.add(new OrderSpecifier(Order.DESC, dpUiArea.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, dpUiArea.uiAreaId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -187,17 +187,17 @@ public class QDpUiAreaRepositoryImpl implements QDpUiAreaRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("uiAreaId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.uiAreaId));
+                    orders.add(new OrderSpecifier(order, dpUiArea.uiAreaId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, dpUiArea.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.uiAreaId));
+            orders.add(new OrderSpecifier<>(Order.DESC, dpUiArea.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, dpUiArea.uiAreaId));
         }
         return orders;
     }
@@ -209,25 +209,25 @@ public class QDpUiAreaRepositoryImpl implements QDpUiAreaRepository {
     public int updateSelective(DpUiArea entity) {
         if (entity.getUiAreaId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(dpUiArea);
         boolean hasAny = false;
 
-        if (entity.getUiId()              != null) { update.set(a.uiId,              entity.getUiId());              hasAny = true; }
-        if (entity.getAreaId()            != null) { update.set(a.areaId,            entity.getAreaId());            hasAny = true; }
-        if (entity.getAreaSortOrd()       != null) { update.set(a.areaSortOrd,       entity.getAreaSortOrd());       hasAny = true; }
-        if (entity.getVisibilityTargets() != null) { update.set(a.visibilityTargets, entity.getVisibilityTargets()); hasAny = true; }
-        if (entity.getDispEnv()           != null) { update.set(a.dispEnv,           entity.getDispEnv());           hasAny = true; }
-        if (entity.getDispYn()            != null) { update.set(a.dispYn,            entity.getDispYn());            hasAny = true; }
-        if (entity.getDispStartDt()       != null) { update.set(a.dispStartDt,       entity.getDispStartDt());       hasAny = true; }
-        if (entity.getDispEndDt()         != null) { update.set(a.dispEndDt,         entity.getDispEndDt());         hasAny = true; }
-        if (entity.getUseYn()             != null) { update.set(a.useYn,             entity.getUseYn());             hasAny = true; }
-        if (entity.getUpdBy()             != null) { update.set(a.updBy,             entity.getUpdBy());             hasAny = true; }
+        if (entity.getUiId()              != null) { update.set(dpUiArea.uiId,              entity.getUiId());              hasAny = true; }
+        if (entity.getAreaId()            != null) { update.set(dpUiArea.areaId,            entity.getAreaId());            hasAny = true; }
+        if (entity.getAreaSortOrd()       != null) { update.set(dpUiArea.areaSortOrd,       entity.getAreaSortOrd());       hasAny = true; }
+        if (entity.getVisibilityTargets() != null) { update.set(dpUiArea.visibilityTargets, entity.getVisibilityTargets()); hasAny = true; }
+        if (entity.getDispEnv()           != null) { update.set(dpUiArea.dispEnv,           entity.getDispEnv());           hasAny = true; }
+        if (entity.getDispYn()            != null) { update.set(dpUiArea.dispYn,            entity.getDispYn());            hasAny = true; }
+        if (entity.getDispStartDt()       != null) { update.set(dpUiArea.dispStartDt,       entity.getDispStartDt());       hasAny = true; }
+        if (entity.getDispEndDt()         != null) { update.set(dpUiArea.dispEndDt,         entity.getDispEndDt());         hasAny = true; }
+        if (entity.getUseYn()             != null) { update.set(dpUiArea.useYn,             entity.getUseYn());             hasAny = true; }
+        if (entity.getUpdBy()             != null) { update.set(dpUiArea.updBy,             entity.getUpdBy());             hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(dpUiArea.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.uiAreaId.eq(entity.getUiAreaId())).execute();
+        long affected = update.where(dpUiArea.uiAreaId.eq(entity.getUiAreaId())).execute();
         return (int) affected;
     }
 }

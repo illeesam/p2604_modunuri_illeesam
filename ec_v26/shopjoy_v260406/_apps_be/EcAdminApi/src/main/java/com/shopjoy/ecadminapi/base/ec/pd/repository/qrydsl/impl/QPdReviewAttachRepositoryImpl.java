@@ -30,14 +30,14 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdReviewAttachRepositoryImpl";
-    private static final QPdReviewAttach a = QPdReviewAttach.pdReviewAttach;
-    private static final QPdReview       r = QPdReview.pdReview;
+    private static final QPdReviewAttach pdReviewAttach = QPdReviewAttach.pdReviewAttach;
+    private static final QPdReview       pdReview = QPdReview.pdReview;
 
     /** 단건 조회 */
     @Override
     public Optional<PdReviewAttachDto.Item> selectById(String reviewAttachId) {
         PdReviewAttachDto.Item dto = baseQuerySingle()
-                .where(a.reviewAttachId.eq(reviewAttachId))
+                .where(pdReviewAttach.reviewAttachId.eq(reviewAttachId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -91,9 +91,9 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
         }
         List<PdReviewAttachDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(a.count())
-                .from(a)
-                .leftJoin(r).on(r.reviewId.eq(a.reviewId))
+        Long total = queryFactory.select(pdReviewAttach.count())
+                .from(pdReviewAttach)
+                .leftJoin(pdReview).on(pdReview.reviewId.eq(pdReviewAttach.reviewId))
                 .where(
                 baseAndReviewIds(search),
                 baseAndReviewId(search),
@@ -113,23 +113,23 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
     private JPAQuery<PdReviewAttachDto.Item> baseQuerySingle() {
         return queryFactory
                 .select(Projections.bean(PdReviewAttachDto.Item.class,
-                        a.reviewAttachId, a.siteId, a.reviewId, a.attachId,
-                        a.mediaTypeCd, a.thumbUrl, a.sortOrd,
-                        a.regBy, a.regDate, a.updBy, a.updDate
+                        pdReviewAttach.reviewAttachId, pdReviewAttach.siteId, pdReviewAttach.reviewId, pdReviewAttach.attachId,
+                        pdReviewAttach.mediaTypeCd, pdReviewAttach.thumbUrl, pdReviewAttach.sortOrd,
+                        pdReviewAttach.regBy, pdReviewAttach.regDate, pdReviewAttach.updBy, pdReviewAttach.updDate
                 ))
-                .from(a);
+                .from(pdReviewAttach);
     }
 
     /** 목록/페이지 용 base query — pd_review LEFT JOIN 포함 (prodId 조건 지원) */
     private JPAQuery<PdReviewAttachDto.Item> baseQueryWithJoin() {
         return queryFactory
                 .select(Projections.bean(PdReviewAttachDto.Item.class,
-                        a.reviewAttachId, a.siteId, a.reviewId, a.attachId,
-                        a.mediaTypeCd, a.thumbUrl, a.sortOrd,
-                        a.regBy, a.regDate, a.updBy, a.updDate
+                        pdReviewAttach.reviewAttachId, pdReviewAttach.siteId, pdReviewAttach.reviewId, pdReviewAttach.attachId,
+                        pdReviewAttach.mediaTypeCd, pdReviewAttach.thumbUrl, pdReviewAttach.sortOrd,
+                        pdReviewAttach.regBy, pdReviewAttach.regDate, pdReviewAttach.updBy, pdReviewAttach.updDate
                 ))
-                .from(a)
-                .leftJoin(r).on(r.reviewId.eq(a.reviewId));
+                .from(pdReviewAttach)
+                .leftJoin(pdReview).on(pdReview.reviewId.eq(pdReviewAttach.reviewId));
     }
 
     /** 검색조건 빌드 — Mapper XML pdReviewAttachCond 와 동일 동작 */
@@ -142,31 +142,31 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
     /* reviewId IN */
     private BooleanExpression baseAndReviewIds(PdReviewAttachDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getReviewIds())
-                ? a.reviewId.in(search.getReviewIds()) : null;
+                ? pdReviewAttach.reviewId.in(search.getReviewIds()) : null;
     }
 
     /* reviewId 정확 일치 */
     private BooleanExpression baseAndReviewId(PdReviewAttachDto.Request search) {
         return search != null && StringUtils.hasText(search.getReviewId())
-                ? a.reviewId.eq(search.getReviewId()) : null;
+                ? pdReviewAttach.reviewId.eq(search.getReviewId()) : null;
     }
 
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(PdReviewAttachDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? pdReviewAttach.siteId.eq(search.getSiteId()) : null;
     }
 
     /* reviewAttachId 정확 일치 */
     private BooleanExpression baseAndReviewAttachId(PdReviewAttachDto.Request search) {
         return search != null && StringUtils.hasText(search.getReviewAttachId())
-                ? a.reviewAttachId.eq(search.getReviewAttachId()) : null;
+                ? pdReviewAttach.reviewAttachId.eq(search.getReviewAttachId()) : null;
     }
 
     /* prodId 정확 일치 */
     private BooleanExpression baseAndProdId(PdReviewAttachDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdId())
-                ? r.prodId.eq(search.getProdId()) : null;
+                ? pdReview.prodId.eq(search.getProdId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -179,8 +179,8 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "reg_date": return pdReviewAttach.regDate.goe(start).and(pdReviewAttach.regDate.lt(endExcl));
+            case "upd_date": return pdReviewAttach.updDate.goe(start).and(pdReviewAttach.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -193,12 +193,12 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",attachId,", a.attachId, pattern);
-        or = orLike(or, all, types, ",mediaTypeCd,", a.mediaTypeCd, pattern);
-        or = orLike(or, all, types, ",reviewAttachId,", a.reviewAttachId, pattern);
-        or = orLike(or, all, types, ",reviewId,", a.reviewId, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
-        or = orLike(or, all, types, ",thumbUrl,", a.thumbUrl, pattern);
+        or = orLike(or, all, types, ",attachId,", pdReviewAttach.attachId, pattern);
+        or = orLike(or, all, types, ",mediaTypeCd,", pdReviewAttach.mediaTypeCd, pattern);
+        or = orLike(or, all, types, ",reviewAttachId,", pdReviewAttach.reviewAttachId, pattern);
+        or = orLike(or, all, types, ",reviewId,", pdReviewAttach.reviewId, pattern);
+        or = orLike(or, all, types, ",siteId,", pdReviewAttach.siteId, pattern);
+        or = orLike(or, all, types, ",thumbUrl,", pdReviewAttach.thumbUrl, pattern);
         return or;
     }
 
@@ -220,38 +220,38 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
             if (withSortOrd) {
-                orders.add(new OrderSpecifier(Order.ASC, a.sortOrd));
-                orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+                orders.add(new OrderSpecifier(Order.ASC, pdReviewAttach.sortOrd));
+                orders.add(new OrderSpecifier(Order.DESC, pdReviewAttach.regDate));
             } else {
-                orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+                orders.add(new OrderSpecifier(Order.DESC, pdReviewAttach.regDate));
             }
             /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
             /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
             if (orders.isEmpty()) {
-                orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-                orders.add(new OrderSpecifier<>(Order.ASC, a.reviewAttachId));
+                orders.add(new OrderSpecifier<>(Order.DESC, pdReviewAttach.regDate));
+                orders.add(new OrderSpecifier<>(Order.ASC, pdReviewAttach.reviewAttachId));
             }
-                orders.add(new OrderSpecifier<>(Order.ASC, a.reviewAttachId));
+                orders.add(new OrderSpecifier<>(Order.ASC, pdReviewAttach.reviewAttachId));
             return orders;
         }
         if ("id_asc".equals(sort)) {
-            orders.add(new OrderSpecifier(Order.ASC,  a.reviewAttachId));
+            orders.add(new OrderSpecifier(Order.ASC,  pdReviewAttach.reviewAttachId));
         } else if ("id_desc".equals(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.reviewAttachId));
+            orders.add(new OrderSpecifier(Order.DESC, pdReviewAttach.reviewAttachId));
         } else if ("reg_asc".equals(sort)) {
-            orders.add(new OrderSpecifier(Order.ASC,  a.regDate));
+            orders.add(new OrderSpecifier(Order.ASC,  pdReviewAttach.regDate));
         } else if ("reg_desc".equals(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier(Order.DESC, pdReviewAttach.regDate));
         } else {
             if (withSortOrd) {
-                orders.add(new OrderSpecifier(Order.ASC, a.sortOrd));
-                orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+                orders.add(new OrderSpecifier(Order.ASC, pdReviewAttach.sortOrd));
+                orders.add(new OrderSpecifier(Order.DESC, pdReviewAttach.regDate));
             } else {
-                orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+                orders.add(new OrderSpecifier(Order.DESC, pdReviewAttach.regDate));
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        if (orders.isEmpty()) orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+        if (orders.isEmpty()) orders.add(new OrderSpecifier<>(Order.DESC, pdReviewAttach.regDate));
         return orders;
     }
 
@@ -260,22 +260,22 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
     public int updateSelective(PdReviewAttach entity) {
         if (entity.getReviewAttachId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(pdReviewAttach);
         boolean hasAny = false;
 
-        if (entity.getSiteId()      != null) { update.set(a.siteId,      entity.getSiteId());      hasAny = true; }
-        if (entity.getReviewId()    != null) { update.set(a.reviewId,    entity.getReviewId());    hasAny = true; }
-        if (entity.getAttachId()    != null) { update.set(a.attachId,    entity.getAttachId());    hasAny = true; }
-        if (entity.getMediaTypeCd() != null) { update.set(a.mediaTypeCd, entity.getMediaTypeCd()); hasAny = true; }
-        if (entity.getThumbUrl()    != null) { update.set(a.thumbUrl,    entity.getThumbUrl());    hasAny = true; }
-        if (entity.getSortOrd()     != null) { update.set(a.sortOrd,     entity.getSortOrd());     hasAny = true; }
-        if (entity.getUpdBy()       != null) { update.set(a.updBy,       entity.getUpdBy());       hasAny = true; }
+        if (entity.getSiteId()      != null) { update.set(pdReviewAttach.siteId,      entity.getSiteId());      hasAny = true; }
+        if (entity.getReviewId()    != null) { update.set(pdReviewAttach.reviewId,    entity.getReviewId());    hasAny = true; }
+        if (entity.getAttachId()    != null) { update.set(pdReviewAttach.attachId,    entity.getAttachId());    hasAny = true; }
+        if (entity.getMediaTypeCd() != null) { update.set(pdReviewAttach.mediaTypeCd, entity.getMediaTypeCd()); hasAny = true; }
+        if (entity.getThumbUrl()    != null) { update.set(pdReviewAttach.thumbUrl,    entity.getThumbUrl());    hasAny = true; }
+        if (entity.getSortOrd()     != null) { update.set(pdReviewAttach.sortOrd,     entity.getSortOrd());     hasAny = true; }
+        if (entity.getUpdBy()       != null) { update.set(pdReviewAttach.updBy,       entity.getUpdBy());       hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(pdReviewAttach.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.reviewAttachId.eq(entity.getReviewAttachId())).execute();
+        long affected = update.where(pdReviewAttach.reviewAttachId.eq(entity.getReviewAttachId())).execute();
         return (int) affected;
     }
 }

@@ -86,6 +86,17 @@ window.BoPathTree = {
         (byParent[k] = byParent[k] || []).push(p);
       });
 
+      /* 최상위(parent=null) 노드 중 label 이 bizCd 와 동일한 "더미 루트"는 건너뛴다.
+       *   (예: ec_disp_ui 경로의 최상위 노드 label='ec_disp_ui' → '전체' 아래 구분코드가
+       *    그대로 노출되는 문제 제거). 더미 루트의 자식들을 '전체' 직속으로 끌어올린다. */
+      const rootNodes = byParent['__root__'] || [];
+      rootNodes.forEach(p => {
+        if (rootBizCd && p.pathLabel === rootBizCd) {
+          const kids = byParent[p.pathId] || [];
+          byParent['__root__'] = byParent['__root__'].filter(x => x !== p).concat(kids);
+        }
+      });
+
       /* build */
       const build = (pk, inheritBizCd) => (byParent[pk] || [])
         .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))

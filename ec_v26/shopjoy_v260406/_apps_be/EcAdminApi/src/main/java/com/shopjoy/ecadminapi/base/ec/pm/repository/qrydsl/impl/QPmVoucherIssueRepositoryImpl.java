@@ -32,33 +32,33 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmVoucherIssueRepositoryImpl";
-    private static final QPmVoucherIssue a    = QPmVoucherIssue.pmVoucherIssue;
-    private static final QPmVoucher      vou  = QPmVoucher.pmVoucher;
-    private static final QOdOrder        ord  = QOdOrder.odOrder;
-    private static final QSySite         ste  = QSySite.sySite;
+    private static final QPmVoucherIssue pmVoucherIssue    = QPmVoucherIssue.pmVoucherIssue;
+    private static final QPmVoucher      pmVoucher  = QPmVoucher.pmVoucher;
+    private static final QOdOrder        odOrder  = QOdOrder.odOrder;
+    private static final QSySite         sySite  = QSySite.sySite;
     private static final QSyCode         cdVis = new QSyCode("cd_vis");
 
     /* 바우처(상품권) 발행 이력 baseSelColumnQuery */
     private JPAQuery<PmVoucherIssueDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PmVoucherIssueDto.Item.class,
-                        a.voucherIssueId, a.voucherId, a.siteId, a.memberId, a.voucherCode,
-                        a.issueDate, a.expireDate, a.useDate, a.orderId, a.useAmt,
-                        a.voucherIssueStatusCd, a.voucherIssueStatusCdBefore,
-                        a.regBy, a.regDate, a.updBy, a.updDate
+                        pmVoucherIssue.voucherIssueId, pmVoucherIssue.voucherId, pmVoucherIssue.siteId, pmVoucherIssue.memberId, pmVoucherIssue.voucherCode,
+                        pmVoucherIssue.issueDate, pmVoucherIssue.expireDate, pmVoucherIssue.useDate, pmVoucherIssue.orderId, pmVoucherIssue.useAmt,
+                        pmVoucherIssue.voucherIssueStatusCd, pmVoucherIssue.voucherIssueStatusCdBefore,
+                        pmVoucherIssue.regBy, pmVoucherIssue.regDate, pmVoucherIssue.updBy, pmVoucherIssue.updDate
                 ))
-                .from(a)
-                .leftJoin(vou).on(vou.voucherId.eq(a.voucherId))
-                .leftJoin(ord).on(ord.orderId.eq(a.orderId))
-                .leftJoin(ste).on(ste.siteId.eq(a.siteId))
-                .leftJoin(cdVis).on(cdVis.codeGrp.eq("VOUCHER_ISSUE_STATUS").and(cdVis.codeValue.eq(a.voucherIssueStatusCd)));
+                .from(pmVoucherIssue)
+                .leftJoin(pmVoucher).on(pmVoucher.voucherId.eq(pmVoucherIssue.voucherId))
+                .leftJoin(odOrder).on(odOrder.orderId.eq(pmVoucherIssue.orderId))
+                .leftJoin(sySite).on(sySite.siteId.eq(pmVoucherIssue.siteId))
+                .leftJoin(cdVis).on(cdVis.codeGrp.eq("VOUCHER_ISSUE_STATUS").and(cdVis.codeValue.eq(pmVoucherIssue.voucherIssueStatusCd)));
     }
 
     /* 바우처(상품권) 발행 이력 키조회 */
     @Override
     public Optional<PmVoucherIssueDto.Item> selectById(String voucherIssueId) {
         PmVoucherIssueDto.Item dto = baseSelColumnQuery()
-                .where(a.voucherIssueId.eq(voucherIssueId))
+                .where(pmVoucherIssue.voucherIssueId.eq(voucherIssueId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -107,8 +107,8 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
         List<PmVoucherIssueDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(a.count())
-                .from(a)
+                .select(pmVoucherIssue.count())
+                .from(pmVoucherIssue)
                 .where(
                 baseAndSiteId(search),
                 baseAndVoucherIssueId(search),
@@ -131,13 +131,13 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(PmVoucherIssueDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? pmVoucherIssue.siteId.eq(search.getSiteId()) : null;
     }
 
     /* voucherIssueId 정확 일치 */
     private BooleanExpression baseAndVoucherIssueId(PmVoucherIssueDto.Request search) {
         return search != null && StringUtils.hasText(search.getVoucherIssueId())
-                ? a.voucherIssueId.eq(search.getVoucherIssueId()) : null;
+                ? pmVoucherIssue.voucherIssueId.eq(search.getVoucherIssueId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -150,9 +150,9 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "issue_date": return a.issueDate.goe(start).and(a.issueDate.lt(endExcl));
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "issue_date": return pmVoucherIssue.issueDate.goe(start).and(pmVoucherIssue.issueDate.lt(endExcl));
+            case "reg_date": return pmVoucherIssue.regDate.goe(start).and(pmVoucherIssue.regDate.lt(endExcl));
+            case "upd_date": return pmVoucherIssue.updDate.goe(start).and(pmVoucherIssue.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -165,14 +165,14 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",memberId,", a.memberId, pattern);
-        or = orLike(or, all, types, ",orderId,", a.orderId, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
-        or = orLike(or, all, types, ",voucherCode,", a.voucherCode, pattern);
-        or = orLike(or, all, types, ",voucherId,", a.voucherId, pattern);
-        or = orLike(or, all, types, ",voucherIssueId,", a.voucherIssueId, pattern);
-        or = orLike(or, all, types, ",voucherIssueStatusCd,", a.voucherIssueStatusCd, pattern);
-        or = orLike(or, all, types, ",voucherIssueStatusCdBefore,", a.voucherIssueStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",memberId,", pmVoucherIssue.memberId, pattern);
+        or = orLike(or, all, types, ",orderId,", pmVoucherIssue.orderId, pattern);
+        or = orLike(or, all, types, ",siteId,", pmVoucherIssue.siteId, pattern);
+        or = orLike(or, all, types, ",voucherCode,", pmVoucherIssue.voucherCode, pattern);
+        or = orLike(or, all, types, ",voucherId,", pmVoucherIssue.voucherId, pattern);
+        or = orLike(or, all, types, ",voucherIssueId,", pmVoucherIssue.voucherIssueId, pattern);
+        or = orLike(or, all, types, ",voucherIssueStatusCd,", pmVoucherIssue.voucherIssueStatusCd, pattern);
+        or = orLike(or, all, types, ",voucherIssueStatusCdBefore,", pmVoucherIssue.voucherIssueStatusCdBefore, pattern);
         return or;
     }
 
@@ -193,8 +193,8 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.voucherIssueId));
+            orders.add(new OrderSpecifier(Order.DESC, pmVoucherIssue.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, pmVoucherIssue.voucherIssueId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -205,17 +205,17 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("voucherIssueId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.voucherIssueId));
+                    orders.add(new OrderSpecifier(order, pmVoucherIssue.voucherIssueId));
                 } else if ("issueDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.issueDate));
+                    orders.add(new OrderSpecifier(order, pmVoucherIssue.issueDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.voucherIssueId));
+            orders.add(new OrderSpecifier<>(Order.DESC, pmVoucherIssue.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, pmVoucherIssue.voucherIssueId));
         }
         return orders;
     }
@@ -225,27 +225,27 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
     public int updateSelective(PmVoucherIssue entity) {
         if (entity.getVoucherIssueId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(pmVoucherIssue);
         boolean hasAny = false;
 
-        if (entity.getVoucherId()                  != null) { update.set(a.voucherId,                  entity.getVoucherId());                  hasAny = true; }
-        if (entity.getSiteId()                     != null) { update.set(a.siteId,                     entity.getSiteId());                     hasAny = true; }
-        if (entity.getMemberId()                   != null) { update.set(a.memberId,                   entity.getMemberId());                   hasAny = true; }
-        if (entity.getVoucherCode()                != null) { update.set(a.voucherCode,                entity.getVoucherCode());                hasAny = true; }
-        if (entity.getIssueDate()                  != null) { update.set(a.issueDate,                  entity.getIssueDate());                  hasAny = true; }
-        if (entity.getExpireDate()                 != null) { update.set(a.expireDate,                 entity.getExpireDate());                 hasAny = true; }
-        if (entity.getUseDate()                    != null) { update.set(a.useDate,                    entity.getUseDate());                    hasAny = true; }
-        if (entity.getOrderId()                    != null) { update.set(a.orderId,                    entity.getOrderId());                    hasAny = true; }
-        if (entity.getUseAmt()                     != null) { update.set(a.useAmt,                     entity.getUseAmt());                     hasAny = true; }
-        if (entity.getVoucherIssueStatusCd()       != null) { update.set(a.voucherIssueStatusCd,       entity.getVoucherIssueStatusCd());       hasAny = true; }
-        if (entity.getVoucherIssueStatusCdBefore() != null) { update.set(a.voucherIssueStatusCdBefore, entity.getVoucherIssueStatusCdBefore()); hasAny = true; }
-        if (entity.getUpdBy()                      != null) { update.set(a.updBy,                      entity.getUpdBy());                      hasAny = true; }
+        if (entity.getVoucherId()                  != null) { update.set(pmVoucherIssue.voucherId,                  entity.getVoucherId());                  hasAny = true; }
+        if (entity.getSiteId()                     != null) { update.set(pmVoucherIssue.siteId,                     entity.getSiteId());                     hasAny = true; }
+        if (entity.getMemberId()                   != null) { update.set(pmVoucherIssue.memberId,                   entity.getMemberId());                   hasAny = true; }
+        if (entity.getVoucherCode()                != null) { update.set(pmVoucherIssue.voucherCode,                entity.getVoucherCode());                hasAny = true; }
+        if (entity.getIssueDate()                  != null) { update.set(pmVoucherIssue.issueDate,                  entity.getIssueDate());                  hasAny = true; }
+        if (entity.getExpireDate()                 != null) { update.set(pmVoucherIssue.expireDate,                 entity.getExpireDate());                 hasAny = true; }
+        if (entity.getUseDate()                    != null) { update.set(pmVoucherIssue.useDate,                    entity.getUseDate());                    hasAny = true; }
+        if (entity.getOrderId()                    != null) { update.set(pmVoucherIssue.orderId,                    entity.getOrderId());                    hasAny = true; }
+        if (entity.getUseAmt()                     != null) { update.set(pmVoucherIssue.useAmt,                     entity.getUseAmt());                     hasAny = true; }
+        if (entity.getVoucherIssueStatusCd()       != null) { update.set(pmVoucherIssue.voucherIssueStatusCd,       entity.getVoucherIssueStatusCd());       hasAny = true; }
+        if (entity.getVoucherIssueStatusCdBefore() != null) { update.set(pmVoucherIssue.voucherIssueStatusCdBefore, entity.getVoucherIssueStatusCdBefore()); hasAny = true; }
+        if (entity.getUpdBy()                      != null) { update.set(pmVoucherIssue.updBy,                      entity.getUpdBy());                      hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(pmVoucherIssue.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.voucherIssueId.eq(entity.getVoucherIssueId())).execute();
+        long affected = update.where(pmVoucherIssue.voucherIssueId.eq(entity.getVoucherIssueId())).execute();
         return (int) affected;
     }
 }

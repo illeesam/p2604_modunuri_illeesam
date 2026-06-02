@@ -29,29 +29,29 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyAttachRepositoryImpl";
-    private static final QSyAttach a = QSyAttach.syAttach;
-    private static final QSySite ste = QSySite.sySite;
+    private static final QSyAttach syAttach = QSyAttach.syAttach;
+    private static final QSySite sySite = QSySite.sySite;
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     /* 첨부파일 baseSelColumnQuery */
     private JPAQuery<SyAttachDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyAttachDto.Item.class,
-                        a.attachId, a.siteId, a.attachGrpId, a.fileNm, a.fileSize, a.fileExt,
-                        a.mimeTypeCd, a.storedNm, a.attachUrl, a.storagePath, a.physicalPath,
-                        a.cdnHost, a.cdnImgUrl, a.cdnThumbUrl, a.thumbFileNm, a.thumbStoredNm,
-                        a.thumbUrl, a.thumbCdnUrl, a.thumbGeneratedYn, a.sortOrd, a.attachMemo,
-                        a.regBy, a.regDate, a.updBy, a.updDate,
-                        ste.siteNm.as("siteNm")
+                        syAttach.attachId, syAttach.siteId, syAttach.attachGrpId, syAttach.fileNm, syAttach.fileSize, syAttach.fileExt,
+                        syAttach.mimeTypeCd, syAttach.storedNm, syAttach.attachUrl, syAttach.storagePath, syAttach.physicalPath,
+                        syAttach.cdnHost, syAttach.cdnImgUrl, syAttach.cdnThumbUrl, syAttach.thumbFileNm, syAttach.thumbStoredNm,
+                        syAttach.thumbUrl, syAttach.thumbCdnUrl, syAttach.thumbGeneratedYn, syAttach.sortOrd, syAttach.attachMemo,
+                        syAttach.regBy, syAttach.regDate, syAttach.updBy, syAttach.updDate,
+                        sySite.siteNm.as("siteNm")
                 ))
-                .from(a)
-                .leftJoin(ste).on(ste.siteId.eq(a.siteId));
+                .from(syAttach)
+                .leftJoin(sySite).on(sySite.siteId.eq(syAttach.siteId));
     }
 
     /* 첨부파일 키조회 */
     @Override
     public Optional<SyAttachDto.Item> selectById(String attachId) {
-        SyAttachDto.Item dto = baseSelColumnQuery().where(a.attachId.eq(attachId)).fetchOne();
+        SyAttachDto.Item dto = baseSelColumnQuery().where(syAttach.attachId.eq(attachId)).fetchOne();
         return Optional.ofNullable(dto);
     }
 
@@ -95,7 +95,7 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyAttachDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(a.count()).from(a).where(
+        Long total = queryFactory.select(syAttach.count()).from(syAttach).where(
                 baseAndSiteId(search),
                 baseAndAttachId(search),
                 baseAndAttachGrpId(search),
@@ -116,25 +116,25 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(SyAttachDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? syAttach.siteId.eq(search.getSiteId()) : null;
     }
 
     /* attachId 정확 일치 */
     private BooleanExpression baseAndAttachId(SyAttachDto.Request search) {
         return search != null && StringUtils.hasText(search.getAttachId())
-                ? a.attachId.eq(search.getAttachId()) : null;
+                ? syAttach.attachId.eq(search.getAttachId()) : null;
     }
 
     /* attachGrpId 정확 일치 */
     private BooleanExpression baseAndAttachGrpId(SyAttachDto.Request search) {
         return search != null && StringUtils.hasText(search.getAttachGrpId())
-                ? a.attachGrpId.eq(search.getAttachGrpId()) : null;
+                ? syAttach.attachGrpId.eq(search.getAttachGrpId()) : null;
     }
 
     /* mimeTypeCd 정확 일치 */
     private BooleanExpression baseAndMimeTypeCd(SyAttachDto.Request search) {
         return search != null && StringUtils.hasText(search.getMimeTypeCd())
-                ? a.mimeTypeCd.eq(search.getMimeTypeCd()) : null;
+                ? syAttach.mimeTypeCd.eq(search.getMimeTypeCd()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
@@ -145,26 +145,26 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",attachGrpId,", a.attachGrpId, pattern);
-        or = orLike(or, all, types, ",attachId,", a.attachId, pattern);
-        or = orLike(or, all, types, ",attachMemo,", a.attachMemo, pattern);
-        or = orLike(or, all, types, ",attachUrl,", a.attachUrl, pattern);
-        or = orLike(or, all, types, ",cdnHost,", a.cdnHost, pattern);
-        or = orLike(or, all, types, ",cdnImgUrl,", a.cdnImgUrl, pattern);
-        or = orLike(or, all, types, ",cdnThumbUrl,", a.cdnThumbUrl, pattern);
-        or = orLike(or, all, types, ",fileExt,", a.fileExt, pattern);
-        or = orLike(or, all, types, ",fileNm,", a.fileNm, pattern);
-        or = orLike(or, all, types, ",mimeTypeCd,", a.mimeTypeCd, pattern);
-        or = orLike(or, all, types, ",physicalPath,", a.physicalPath, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
-        or = orLike(or, all, types, ",storagePath,", a.storagePath, pattern);
-        or = orLike(or, all, types, ",storageType,", a.storageType, pattern);
-        or = orLike(or, all, types, ",storedNm,", a.storedNm, pattern);
-        or = orLike(or, all, types, ",thumbCdnUrl,", a.thumbCdnUrl, pattern);
-        or = orLike(or, all, types, ",thumbFileNm,", a.thumbFileNm, pattern);
-        or = orLike(or, all, types, ",thumbGeneratedYn,", a.thumbGeneratedYn, pattern);
-        or = orLike(or, all, types, ",thumbStoredNm,", a.thumbStoredNm, pattern);
-        or = orLike(or, all, types, ",thumbUrl,", a.thumbUrl, pattern);
+        or = orLike(or, all, types, ",attachGrpId,", syAttach.attachGrpId, pattern);
+        or = orLike(or, all, types, ",attachId,", syAttach.attachId, pattern);
+        or = orLike(or, all, types, ",attachMemo,", syAttach.attachMemo, pattern);
+        or = orLike(or, all, types, ",attachUrl,", syAttach.attachUrl, pattern);
+        or = orLike(or, all, types, ",cdnHost,", syAttach.cdnHost, pattern);
+        or = orLike(or, all, types, ",cdnImgUrl,", syAttach.cdnImgUrl, pattern);
+        or = orLike(or, all, types, ",cdnThumbUrl,", syAttach.cdnThumbUrl, pattern);
+        or = orLike(or, all, types, ",fileExt,", syAttach.fileExt, pattern);
+        or = orLike(or, all, types, ",fileNm,", syAttach.fileNm, pattern);
+        or = orLike(or, all, types, ",mimeTypeCd,", syAttach.mimeTypeCd, pattern);
+        or = orLike(or, all, types, ",physicalPath,", syAttach.physicalPath, pattern);
+        or = orLike(or, all, types, ",siteId,", syAttach.siteId, pattern);
+        or = orLike(or, all, types, ",storagePath,", syAttach.storagePath, pattern);
+        or = orLike(or, all, types, ",storageType,", syAttach.storageType, pattern);
+        or = orLike(or, all, types, ",storedNm,", syAttach.storedNm, pattern);
+        or = orLike(or, all, types, ",thumbCdnUrl,", syAttach.thumbCdnUrl, pattern);
+        or = orLike(or, all, types, ",thumbFileNm,", syAttach.thumbFileNm, pattern);
+        or = orLike(or, all, types, ",thumbGeneratedYn,", syAttach.thumbGeneratedYn, pattern);
+        or = orLike(or, all, types, ",thumbStoredNm,", syAttach.thumbStoredNm, pattern);
+        or = orLike(or, all, types, ",thumbUrl,", syAttach.thumbUrl, pattern);
         return or;
     }
 
@@ -186,37 +186,37 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
             if (forPage) {
-                orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+                orders.add(new OrderSpecifier(Order.DESC, syAttach.regDate));
             } else {
-                orders.add(new OrderSpecifier(Order.ASC, a.sortOrd));
-                orders.add(new OrderSpecifier(Order.ASC, a.regDate));
+                orders.add(new OrderSpecifier(Order.ASC, syAttach.sortOrd));
+                orders.add(new OrderSpecifier(Order.ASC, syAttach.regDate));
             }
             /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
             /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
             if (orders.isEmpty()) {
-                orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-                orders.add(new OrderSpecifier<>(Order.ASC, a.attachId));
+                orders.add(new OrderSpecifier<>(Order.DESC, syAttach.regDate));
+                orders.add(new OrderSpecifier<>(Order.ASC, syAttach.attachId));
             }
-                orders.add(new OrderSpecifier<>(Order.ASC, a.attachId));
+                orders.add(new OrderSpecifier<>(Order.ASC, syAttach.attachId));
             return orders;
         }
         if ("id_asc".equals(sort)) {
-            orders.add(new OrderSpecifier(Order.ASC,  a.attachId));
+            orders.add(new OrderSpecifier(Order.ASC,  syAttach.attachId));
         } else if ("id_desc".equals(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.attachId));
+            orders.add(new OrderSpecifier(Order.DESC, syAttach.attachId));
         } else if ("nm_asc".equals(sort)) {
-            orders.add(new OrderSpecifier(Order.ASC,  a.fileNm));
+            orders.add(new OrderSpecifier(Order.ASC,  syAttach.fileNm));
         } else if ("nm_desc".equals(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.fileNm));
+            orders.add(new OrderSpecifier(Order.DESC, syAttach.fileNm));
         } else if ("reg_asc".equals(sort)) {
-            orders.add(new OrderSpecifier(Order.ASC,  a.regDate));
+            orders.add(new OrderSpecifier(Order.ASC,  syAttach.regDate));
         } else if ("reg_desc".equals(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier(Order.DESC, syAttach.regDate));
         } else {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
+            orders.add(new OrderSpecifier(Order.DESC, syAttach.regDate));
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        if (orders.isEmpty()) orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
+        if (orders.isEmpty()) orders.add(new OrderSpecifier<>(Order.DESC, syAttach.regDate));
         return orders;
     }
 
@@ -227,30 +227,30 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
     public int updateSelective(SyAttach entity) {
         if (entity.getAttachId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(syAttach);
         boolean hasAny = false;
 
-        if (entity.getSiteId()       != null) { update.set(a.siteId,       entity.getSiteId());       hasAny = true; }
-        if (entity.getAttachGrpId()  != null) { update.set(a.attachGrpId,  entity.getAttachGrpId());  hasAny = true; }
-        if (entity.getFileNm()       != null) { update.set(a.fileNm,       entity.getFileNm());       hasAny = true; }
-        if (entity.getFileSize()     != null) { update.set(a.fileSize,     entity.getFileSize());     hasAny = true; }
-        if (entity.getFileExt()      != null) { update.set(a.fileExt,      entity.getFileExt());      hasAny = true; }
-        if (entity.getMimeTypeCd()   != null) { update.set(a.mimeTypeCd,   entity.getMimeTypeCd());   hasAny = true; }
-        if (entity.getStoredNm()     != null) { update.set(a.storedNm,     entity.getStoredNm());     hasAny = true; }
-        if (entity.getAttachUrl()    != null) { update.set(a.attachUrl,    entity.getAttachUrl());    hasAny = true; }
-        if (entity.getPhysicalPath() != null) { update.set(a.physicalPath, entity.getPhysicalPath()); hasAny = true; }
-        if (entity.getCdnHost()      != null) { update.set(a.cdnHost,      entity.getCdnHost());      hasAny = true; }
-        if (entity.getCdnImgUrl()    != null) { update.set(a.cdnImgUrl,    entity.getCdnImgUrl());    hasAny = true; }
-        if (entity.getCdnThumbUrl()  != null) { update.set(a.cdnThumbUrl,  entity.getCdnThumbUrl());  hasAny = true; }
-        if (entity.getSortOrd()      != null) { update.set(a.sortOrd,      entity.getSortOrd());      hasAny = true; }
-        if (entity.getAttachMemo()   != null) { update.set(a.attachMemo,   entity.getAttachMemo());   hasAny = true; }
-        if (entity.getUpdBy()        != null) { update.set(a.updBy,        entity.getUpdBy());        hasAny = true; }
+        if (entity.getSiteId()       != null) { update.set(syAttach.siteId,       entity.getSiteId());       hasAny = true; }
+        if (entity.getAttachGrpId()  != null) { update.set(syAttach.attachGrpId,  entity.getAttachGrpId());  hasAny = true; }
+        if (entity.getFileNm()       != null) { update.set(syAttach.fileNm,       entity.getFileNm());       hasAny = true; }
+        if (entity.getFileSize()     != null) { update.set(syAttach.fileSize,     entity.getFileSize());     hasAny = true; }
+        if (entity.getFileExt()      != null) { update.set(syAttach.fileExt,      entity.getFileExt());      hasAny = true; }
+        if (entity.getMimeTypeCd()   != null) { update.set(syAttach.mimeTypeCd,   entity.getMimeTypeCd());   hasAny = true; }
+        if (entity.getStoredNm()     != null) { update.set(syAttach.storedNm,     entity.getStoredNm());     hasAny = true; }
+        if (entity.getAttachUrl()    != null) { update.set(syAttach.attachUrl,    entity.getAttachUrl());    hasAny = true; }
+        if (entity.getPhysicalPath() != null) { update.set(syAttach.physicalPath, entity.getPhysicalPath()); hasAny = true; }
+        if (entity.getCdnHost()      != null) { update.set(syAttach.cdnHost,      entity.getCdnHost());      hasAny = true; }
+        if (entity.getCdnImgUrl()    != null) { update.set(syAttach.cdnImgUrl,    entity.getCdnImgUrl());    hasAny = true; }
+        if (entity.getCdnThumbUrl()  != null) { update.set(syAttach.cdnThumbUrl,  entity.getCdnThumbUrl());  hasAny = true; }
+        if (entity.getSortOrd()      != null) { update.set(syAttach.sortOrd,      entity.getSortOrd());      hasAny = true; }
+        if (entity.getAttachMemo()   != null) { update.set(syAttach.attachMemo,   entity.getAttachMemo());   hasAny = true; }
+        if (entity.getUpdBy()        != null) { update.set(syAttach.updBy,        entity.getUpdBy());        hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(syAttach.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.attachId.eq(entity.getAttachId())).execute();
+        long affected = update.where(syAttach.attachId.eq(entity.getAttachId())).execute();
         return (int) affected;
     }
 }

@@ -29,34 +29,34 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhBatchLogRepositoryImpl";
-    private static final QSyhBatchLog a   = QSyhBatchLog.syhBatchLog;
-    private static final QSySite      ste = QSySite.sySite;
+    private static final QSyhBatchLog syhBatchLog   = QSyhBatchLog.syhBatchLog;
+    private static final QSySite      sySite = QSySite.sySite;
 
     /* 배치 로그 baseSelColumnQuery */
     private JPAQuery<SyhBatchLogDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyhBatchLogDto.Item.class,
-                        a.batchLogId,
-                        a.siteId,
-                        a.batchId,
-                        a.batchCode,
-                        a.batchNm,
-                        a.runAt,
-                        a.endAt,
-                        a.durationMs,
-                        a.runStatus,
-                        a.procCount,
-                        a.errorCount,
-                        a.message,
-                        a.detail,
-                        a.regBy,
-                        a.regDate,
-                        a.updBy,
-                        a.updDate,
-                        ste.siteNm.as("siteNm")
+                        syhBatchLog.batchLogId,
+                        syhBatchLog.siteId,
+                        syhBatchLog.batchId,
+                        syhBatchLog.batchCode,
+                        syhBatchLog.batchNm,
+                        syhBatchLog.runAt,
+                        syhBatchLog.endAt,
+                        syhBatchLog.durationMs,
+                        syhBatchLog.runStatus,
+                        syhBatchLog.procCount,
+                        syhBatchLog.errorCount,
+                        syhBatchLog.message,
+                        syhBatchLog.detail,
+                        syhBatchLog.regBy,
+                        syhBatchLog.regDate,
+                        syhBatchLog.updBy,
+                        syhBatchLog.updDate,
+                        sySite.siteNm.as("siteNm")
                 ))
-                .from(a)
-                .leftJoin(ste).on(ste.siteId.eq(a.siteId));
+                .from(syhBatchLog)
+                .leftJoin(sySite).on(sySite.siteId.eq(syhBatchLog.siteId));
     }
 
     /* 배치 로그 키조회 */
@@ -64,7 +64,7 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
     public Optional<SyhBatchLogDto.Item> selectById(String id) {
         SyhBatchLogDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
-                .where(a.batchLogId.eq(id))
+                .where(syhBatchLog.batchLogId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -115,8 +115,8 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
         List<SyhBatchLogDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(a.count())
-                .from(a)
+                .select(syhBatchLog.count())
+                .from(syhBatchLog)
                 .where(
                 baseAndSiteId(search),
                 baseAndBatchLogId(search),
@@ -139,13 +139,13 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(SyhBatchLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? syhBatchLog.siteId.eq(search.getSiteId()) : null;
     }
 
     /* batchLogId 정확 일치 */
     private BooleanExpression baseAndBatchLogId(SyhBatchLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getBatchLogId())
-                ? a.batchLogId.eq(search.getBatchLogId()) : null;
+                ? syhBatchLog.batchLogId.eq(search.getBatchLogId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -158,8 +158,8 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "reg_date": return syhBatchLog.regDate.goe(start).and(syhBatchLog.regDate.lt(endExcl));
+            case "upd_date": return syhBatchLog.updDate.goe(start).and(syhBatchLog.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -172,14 +172,14 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",batchCode,", a.batchCode, pattern);
-        or = orLike(or, all, types, ",batchId,", a.batchId, pattern);
-        or = orLike(or, all, types, ",batchLogId,", a.batchLogId, pattern);
-        or = orLike(or, all, types, ",batchNm,", a.batchNm, pattern);
-        or = orLike(or, all, types, ",detail,", a.detail, pattern);
-        or = orLike(or, all, types, ",message,", a.message, pattern);
-        or = orLike(or, all, types, ",runStatus,", a.runStatus, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",batchCode,", syhBatchLog.batchCode, pattern);
+        or = orLike(or, all, types, ",batchId,", syhBatchLog.batchId, pattern);
+        or = orLike(or, all, types, ",batchLogId,", syhBatchLog.batchLogId, pattern);
+        or = orLike(or, all, types, ",batchNm,", syhBatchLog.batchNm, pattern);
+        or = orLike(or, all, types, ",detail,", syhBatchLog.detail, pattern);
+        or = orLike(or, all, types, ",message,", syhBatchLog.message, pattern);
+        or = orLike(or, all, types, ",runStatus,", syhBatchLog.runStatus, pattern);
+        or = orLike(or, all, types, ",siteId,", syhBatchLog.siteId, pattern);
         return or;
     }
 
@@ -200,8 +200,8 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.batchLogId));
+            orders.add(new OrderSpecifier(Order.DESC, syhBatchLog.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syhBatchLog.batchLogId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -212,19 +212,19 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("batchLogId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.batchLogId));
+                    orders.add(new OrderSpecifier(order, syhBatchLog.batchLogId));
                 } else if ("batchNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.batchNm));
+                    orders.add(new OrderSpecifier(order, syhBatchLog.batchNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, syhBatchLog.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.batchLogId));
+            orders.add(new OrderSpecifier<>(Order.DESC, syhBatchLog.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syhBatchLog.batchLogId));
         }
         return orders;
     }
@@ -234,28 +234,28 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
     public int updateSelective(SyhBatchLog entity) {
         if (entity.getBatchLogId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(syhBatchLog);
         boolean hasAny = false;
 
-        if (entity.getSiteId()     != null) { update.set(a.siteId,     entity.getSiteId());     hasAny = true; }
-        if (entity.getBatchId()    != null) { update.set(a.batchId,    entity.getBatchId());    hasAny = true; }
-        if (entity.getBatchCode()  != null) { update.set(a.batchCode,  entity.getBatchCode());  hasAny = true; }
-        if (entity.getBatchNm()    != null) { update.set(a.batchNm,    entity.getBatchNm());    hasAny = true; }
-        if (entity.getRunAt()      != null) { update.set(a.runAt,      entity.getRunAt());      hasAny = true; }
-        if (entity.getEndAt()      != null) { update.set(a.endAt,      entity.getEndAt());      hasAny = true; }
-        if (entity.getDurationMs() != null) { update.set(a.durationMs, entity.getDurationMs()); hasAny = true; }
-        if (entity.getRunStatus()  != null) { update.set(a.runStatus,  entity.getRunStatus());  hasAny = true; }
-        if (entity.getProcCount()  != null) { update.set(a.procCount,  entity.getProcCount());  hasAny = true; }
-        if (entity.getErrorCount() != null) { update.set(a.errorCount, entity.getErrorCount()); hasAny = true; }
-        if (entity.getMessage()    != null) { update.set(a.message,    entity.getMessage());    hasAny = true; }
-        if (entity.getDetail()     != null) { update.set(a.detail,     entity.getDetail());     hasAny = true; }
-        if (entity.getUpdBy()      != null) { update.set(a.updBy,      entity.getUpdBy());      hasAny = true; }
+        if (entity.getSiteId()     != null) { update.set(syhBatchLog.siteId,     entity.getSiteId());     hasAny = true; }
+        if (entity.getBatchId()    != null) { update.set(syhBatchLog.batchId,    entity.getBatchId());    hasAny = true; }
+        if (entity.getBatchCode()  != null) { update.set(syhBatchLog.batchCode,  entity.getBatchCode());  hasAny = true; }
+        if (entity.getBatchNm()    != null) { update.set(syhBatchLog.batchNm,    entity.getBatchNm());    hasAny = true; }
+        if (entity.getRunAt()      != null) { update.set(syhBatchLog.runAt,      entity.getRunAt());      hasAny = true; }
+        if (entity.getEndAt()      != null) { update.set(syhBatchLog.endAt,      entity.getEndAt());      hasAny = true; }
+        if (entity.getDurationMs() != null) { update.set(syhBatchLog.durationMs, entity.getDurationMs()); hasAny = true; }
+        if (entity.getRunStatus()  != null) { update.set(syhBatchLog.runStatus,  entity.getRunStatus());  hasAny = true; }
+        if (entity.getProcCount()  != null) { update.set(syhBatchLog.procCount,  entity.getProcCount());  hasAny = true; }
+        if (entity.getErrorCount() != null) { update.set(syhBatchLog.errorCount, entity.getErrorCount()); hasAny = true; }
+        if (entity.getMessage()    != null) { update.set(syhBatchLog.message,    entity.getMessage());    hasAny = true; }
+        if (entity.getDetail()     != null) { update.set(syhBatchLog.detail,     entity.getDetail());     hasAny = true; }
+        if (entity.getUpdBy()      != null) { update.set(syhBatchLog.updBy,      entity.getUpdBy());      hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(syhBatchLog.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.batchLogId.eq(entity.getBatchLogId())).execute();
+        long affected = update.where(syhBatchLog.batchLogId.eq(entity.getBatchLogId())).execute();
         return (int) affected;
     }
 }

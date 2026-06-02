@@ -31,29 +31,29 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmPlanItemRepositoryImpl";
-    private static final QPmPlanItem a   = QPmPlanItem.pmPlanItem;
-    private static final QPmPlan     pla = QPmPlan.pmPlan;
-    private static final QPdProd     prd = QPdProd.pdProd;
-    private static final QSySite     ste = QSySite.sySite;
+    private static final QPmPlanItem pmPlanItem   = QPmPlanItem.pmPlanItem;
+    private static final QPmPlan     pmPlan = QPmPlan.pmPlan;
+    private static final QPdProd     pdProd = QPdProd.pdProd;
+    private static final QSySite     sySite = QSySite.sySite;
 
     /* 프로모션 플랜 아이템 baseSelColumnQuery */
     private JPAQuery<PmPlanItemDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PmPlanItemDto.Item.class,
-                        a.planItemId, a.planId, a.siteId, a.prodId, a.sortOrd,
-                        a.planItemMemo, a.regBy, a.regDate, a.updBy, a.updDate
+                        pmPlanItem.planItemId, pmPlanItem.planId, pmPlanItem.siteId, pmPlanItem.prodId, pmPlanItem.sortOrd,
+                        pmPlanItem.planItemMemo, pmPlanItem.regBy, pmPlanItem.regDate, pmPlanItem.updBy, pmPlanItem.updDate
                 ))
-                .from(a)
-                .leftJoin(pla).on(pla.planId.eq(a.planId))
-                .leftJoin(prd).on(prd.prodId.eq(a.prodId))
-                .leftJoin(ste).on(ste.siteId.eq(a.siteId));
+                .from(pmPlanItem)
+                .leftJoin(pmPlan).on(pmPlan.planId.eq(pmPlanItem.planId))
+                .leftJoin(pdProd).on(pdProd.prodId.eq(pmPlanItem.prodId))
+                .leftJoin(sySite).on(sySite.siteId.eq(pmPlanItem.siteId));
     }
 
     /* 프로모션 플랜 아이템 키조회 */
     @Override
     public Optional<PmPlanItemDto.Item> selectById(String planItemId) {
         PmPlanItemDto.Item dto = baseSelColumnQuery()
-                .where(a.planItemId.eq(planItemId))
+                .where(pmPlanItem.planItemId.eq(planItemId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -102,8 +102,8 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
         List<PmPlanItemDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(a.count())
-                .from(a)
+                .select(pmPlanItem.count())
+                .from(pmPlanItem)
                 .where(
                 baseAndSiteId(search),
                 baseAndPlanItemId(search),
@@ -126,13 +126,13 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(PmPlanItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? pmPlanItem.siteId.eq(search.getSiteId()) : null;
     }
 
     /* planItemId 정확 일치 */
     private BooleanExpression baseAndPlanItemId(PmPlanItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getPlanItemId())
-                ? a.planItemId.eq(search.getPlanItemId()) : null;
+                ? pmPlanItem.planItemId.eq(search.getPlanItemId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -145,8 +145,8 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "reg_date": return pmPlanItem.regDate.goe(start).and(pmPlanItem.regDate.lt(endExcl));
+            case "upd_date": return pmPlanItem.updDate.goe(start).and(pmPlanItem.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -159,11 +159,11 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",planId,", a.planId, pattern);
-        or = orLike(or, all, types, ",planItemId,", a.planItemId, pattern);
-        or = orLike(or, all, types, ",planItemMemo,", a.planItemMemo, pattern);
-        or = orLike(or, all, types, ",prodId,", a.prodId, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",planId,", pmPlanItem.planId, pattern);
+        or = orLike(or, all, types, ",planItemId,", pmPlanItem.planItemId, pattern);
+        or = orLike(or, all, types, ",planItemMemo,", pmPlanItem.planItemMemo, pattern);
+        or = orLike(or, all, types, ",prodId,", pmPlanItem.prodId, pattern);
+        or = orLike(or, all, types, ",siteId,", pmPlanItem.siteId, pattern);
         return or;
     }
 
@@ -186,9 +186,9 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
         if (!StringUtils.hasText(sort)) {
 
             /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.planItemId));
+            orders.add(new OrderSpecifier<>(Order.ASC, pmPlanItem.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, pmPlanItem.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, pmPlanItem.planItemId));
 
             return orders;
         }
@@ -200,18 +200,18 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("planItemId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.planItemId));
+                    orders.add(new OrderSpecifier(order, pmPlanItem.planItemId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, pmPlanItem.regDate));
                 }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, a.sortOrd)); }
+                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, pmPlanItem.sortOrd)); }
             }
         }
         /* unknown sort → sortOrd ASC + regDate ASC fallback */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.planItemId));
+            orders.add(new OrderSpecifier<>(Order.ASC, pmPlanItem.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, pmPlanItem.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, pmPlanItem.planItemId));
         }
         return orders;
     }
@@ -221,21 +221,21 @@ public class QPmPlanItemRepositoryImpl implements QPmPlanItemRepository {
     public int updateSelective(PmPlanItem entity) {
         if (entity.getPlanItemId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(pmPlanItem);
         boolean hasAny = false;
 
-        if (entity.getPlanId()       != null) { update.set(a.planId,       entity.getPlanId());       hasAny = true; }
-        if (entity.getSiteId()       != null) { update.set(a.siteId,       entity.getSiteId());       hasAny = true; }
-        if (entity.getProdId()       != null) { update.set(a.prodId,       entity.getProdId());       hasAny = true; }
-        if (entity.getSortOrd()      != null) { update.set(a.sortOrd,      entity.getSortOrd());      hasAny = true; }
-        if (entity.getPlanItemMemo() != null) { update.set(a.planItemMemo, entity.getPlanItemMemo()); hasAny = true; }
-        if (entity.getUpdBy()        != null) { update.set(a.updBy,        entity.getUpdBy());        hasAny = true; }
+        if (entity.getPlanId()       != null) { update.set(pmPlanItem.planId,       entity.getPlanId());       hasAny = true; }
+        if (entity.getSiteId()       != null) { update.set(pmPlanItem.siteId,       entity.getSiteId());       hasAny = true; }
+        if (entity.getProdId()       != null) { update.set(pmPlanItem.prodId,       entity.getProdId());       hasAny = true; }
+        if (entity.getSortOrd()      != null) { update.set(pmPlanItem.sortOrd,      entity.getSortOrd());      hasAny = true; }
+        if (entity.getPlanItemMemo() != null) { update.set(pmPlanItem.planItemMemo, entity.getPlanItemMemo()); hasAny = true; }
+        if (entity.getUpdBy()        != null) { update.set(pmPlanItem.updBy,        entity.getUpdBy());        hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(pmPlanItem.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.planItemId.eq(entity.getPlanItemId())).execute();
+        long affected = update.where(pmPlanItem.planItemId.eq(entity.getPlanItemId())).execute();
         return (int) affected;
     }
 }

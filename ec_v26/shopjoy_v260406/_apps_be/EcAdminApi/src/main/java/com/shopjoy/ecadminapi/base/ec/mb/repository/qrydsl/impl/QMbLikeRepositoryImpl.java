@@ -31,30 +31,30 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.mb.repository.qrydsl.impl.QMbLikeRepositoryImpl";
-    private static final QMbLike   a    = QMbLike.mbLike;
-    private static final QSySite   ste  = QSySite.sySite;
-    private static final QMbMember mem  = QMbMember.mbMember;
-    private static final QPdProd   prd  = QPdProd.pdProd;
+    private static final QMbLike   mbLike    = QMbLike.mbLike;
+    private static final QSySite   sySite  = QSySite.sySite;
+    private static final QMbMember mbMember  = QMbMember.mbMember;
+    private static final QPdProd   pdProd  = QPdProd.pdProd;
     private static final QSyCode   cdLt = new QSyCode("cd_ltt");
 
     /* 좋아요(찜) baseSelColumnQuery */
     private JPAQuery<MbLikeDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(MbLikeDto.Item.class,
-                        a.likeId, a.siteId, a.memberId, a.targetTypeCd, a.targetId,
-                        a.regBy, a.regDate, a.updBy, a.updDate
+                        mbLike.likeId, mbLike.siteId, mbLike.memberId, mbLike.targetTypeCd, mbLike.targetId,
+                        mbLike.regBy, mbLike.regDate, mbLike.updBy, mbLike.updDate
                 ))
-                .from(a)
-                .leftJoin(ste).on(ste.siteId.eq(a.siteId))
-                .leftJoin(mem).on(mem.memberId.eq(a.memberId))
-                .leftJoin(prd).on(prd.prodId.eq(a.targetId))
-                .leftJoin(cdLt).on(cdLt.codeGrp.eq("LIKE_TARGET_TYPE").and(cdLt.codeValue.eq(a.targetTypeCd)));
+                .from(mbLike)
+                .leftJoin(sySite).on(sySite.siteId.eq(mbLike.siteId))
+                .leftJoin(mbMember).on(mbMember.memberId.eq(mbLike.memberId))
+                .leftJoin(pdProd).on(pdProd.prodId.eq(mbLike.targetId))
+                .leftJoin(cdLt).on(cdLt.codeGrp.eq("LIKE_TARGET_TYPE").and(cdLt.codeValue.eq(mbLike.targetTypeCd)));
     }
 
     /* 좋아요(찜) 키조회 */
     @Override
     public Optional<MbLikeDto.Item> selectById(String likeId) {
-        return Optional.ofNullable(baseSelColumnQuery().where(a.likeId.eq(likeId)).fetchOne());
+        return Optional.ofNullable(baseSelColumnQuery().where(mbLike.likeId.eq(likeId)).fetchOne());
     }
 
     /* 좋아요(찜) 목록조회 */
@@ -97,7 +97,7 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<MbLikeDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(a.count()).from(a).where(
+        Long total = queryFactory.select(mbLike.count()).from(mbLike).where(
                 baseAndSiteId(search),
                 baseAndLikeId(search),
                 baseAndMemberId(search),
@@ -120,31 +120,31 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(MbLikeDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? mbLike.siteId.eq(search.getSiteId()) : null;
     }
 
     /* likeId 정확 일치 */
     private BooleanExpression baseAndLikeId(MbLikeDto.Request search) {
         return search != null && StringUtils.hasText(search.getLikeId())
-                ? a.likeId.eq(search.getLikeId()) : null;
+                ? mbLike.likeId.eq(search.getLikeId()) : null;
     }
 
     /* memberId 정확 일치 */
     private BooleanExpression baseAndMemberId(MbLikeDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberId())
-                ? a.memberId.eq(search.getMemberId()) : null;
+                ? mbLike.memberId.eq(search.getMemberId()) : null;
     }
 
     /* targetId 정확 일치 */
     private BooleanExpression baseAndTargetId(MbLikeDto.Request search) {
         return search != null && StringUtils.hasText(search.getTargetId())
-                ? a.targetId.eq(search.getTargetId()) : null;
+                ? mbLike.targetId.eq(search.getTargetId()) : null;
     }
 
     /* targetTypeCd 정확 일치 */
     private BooleanExpression baseAndTargetTypeCd(MbLikeDto.Request search) {
         return search != null && StringUtils.hasText(search.getTargetTypeCd())
-                ? a.targetTypeCd.eq(search.getTargetTypeCd()) : null;
+                ? mbLike.targetTypeCd.eq(search.getTargetTypeCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -157,8 +157,8 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "reg_date": return mbLike.regDate.goe(start).and(mbLike.regDate.lt(endExcl));
+            case "upd_date": return mbLike.updDate.goe(start).and(mbLike.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -171,11 +171,11 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",likeId,", a.likeId, pattern);
-        or = orLike(or, all, types, ",memberId,", a.memberId, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
-        or = orLike(or, all, types, ",targetId,", a.targetId, pattern);
-        or = orLike(or, all, types, ",targetTypeCd,", a.targetTypeCd, pattern);
+        or = orLike(or, all, types, ",likeId,", mbLike.likeId, pattern);
+        or = orLike(or, all, types, ",memberId,", mbLike.memberId, pattern);
+        or = orLike(or, all, types, ",siteId,", mbLike.siteId, pattern);
+        or = orLike(or, all, types, ",targetId,", mbLike.targetId, pattern);
+        or = orLike(or, all, types, ",targetTypeCd,", mbLike.targetTypeCd, pattern);
         return or;
     }
 
@@ -196,8 +196,8 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.likeId));
+            orders.add(new OrderSpecifier(Order.DESC, mbLike.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, mbLike.likeId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -208,17 +208,17 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("likeId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.likeId));
+                    orders.add(new OrderSpecifier(order, mbLike.likeId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, mbLike.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.likeId));
+            orders.add(new OrderSpecifier<>(Order.DESC, mbLike.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, mbLike.likeId));
         }
         return orders;
     }
@@ -229,16 +229,16 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
     @Override
     public int updateSelective(MbLike entity) {
         if (entity.getLikeId() == null) return 0;
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(mbLike);
         boolean hasAny = false;
-        if (entity.getSiteId()       != null) { update.set(a.siteId,       entity.getSiteId());       hasAny = true; }
-        if (entity.getMemberId()     != null) { update.set(a.memberId,     entity.getMemberId());     hasAny = true; }
-        if (entity.getTargetTypeCd() != null) { update.set(a.targetTypeCd, entity.getTargetTypeCd()); hasAny = true; }
-        if (entity.getTargetId()     != null) { update.set(a.targetId,     entity.getTargetId());     hasAny = true; }
-        if (entity.getUpdBy()        != null) { update.set(a.updBy,        entity.getUpdBy());        hasAny = true; }
+        if (entity.getSiteId()       != null) { update.set(mbLike.siteId,       entity.getSiteId());       hasAny = true; }
+        if (entity.getMemberId()     != null) { update.set(mbLike.memberId,     entity.getMemberId());     hasAny = true; }
+        if (entity.getTargetTypeCd() != null) { update.set(mbLike.targetTypeCd, entity.getTargetTypeCd()); hasAny = true; }
+        if (entity.getTargetId()     != null) { update.set(mbLike.targetId,     entity.getTargetId());     hasAny = true; }
+        if (entity.getUpdBy()        != null) { update.set(mbLike.updBy,        entity.getUpdBy());        hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(mbLike.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
         if (!hasAny) return 0;
-        return (int) update.where(a.likeId.eq(entity.getLikeId())).execute();
+        return (int) update.where(mbLike.likeId.eq(entity.getLikeId())).execute();
     }
 }

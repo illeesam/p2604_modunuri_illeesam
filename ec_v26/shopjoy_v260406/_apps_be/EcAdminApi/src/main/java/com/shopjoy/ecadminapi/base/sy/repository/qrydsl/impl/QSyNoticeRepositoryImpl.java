@@ -29,28 +29,28 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyNoticeRepositoryImpl";
-    private static final QSyNotice a = QSyNotice.syNotice;
-    private static final QSySite ste = QSySite.sySite;
+    private static final QSyNotice syNotice = QSyNotice.syNotice;
+    private static final QSySite sySite = QSySite.sySite;
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     /* 공지사항 baseSelColumnQuery */
     private JPAQuery<SyNoticeDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyNoticeDto.Item.class,
-                        a.noticeId, a.siteId, a.noticeTitle, a.noticeTypeCd, a.isFixed,
-                        a.contentHtml, a.attachGrpId, a.startDate, a.endDate,
-                        a.noticeStatusCd, a.viewCount,
-                        a.regBy, a.regDate, a.updBy, a.updDate,
-                        ste.siteNm.as("siteNm")
+                        syNotice.noticeId, syNotice.siteId, syNotice.noticeTitle, syNotice.noticeTypeCd, syNotice.isFixed,
+                        syNotice.contentHtml, syNotice.attachGrpId, syNotice.startDate, syNotice.endDate,
+                        syNotice.noticeStatusCd, syNotice.viewCount,
+                        syNotice.regBy, syNotice.regDate, syNotice.updBy, syNotice.updDate,
+                        sySite.siteNm.as("siteNm")
                 ))
-                .from(a)
-                .leftJoin(ste).on(ste.siteId.eq(a.siteId));
+                .from(syNotice)
+                .leftJoin(sySite).on(sySite.siteId.eq(syNotice.siteId));
     }
 
     /* 공지사항 키조회 */
     @Override
     public Optional<SyNoticeDto.Item> selectById(String noticeId) {
-        SyNoticeDto.Item dto = baseSelColumnQuery().where(a.noticeId.eq(noticeId)).fetchOne();
+        SyNoticeDto.Item dto = baseSelColumnQuery().where(syNotice.noticeId.eq(noticeId)).fetchOne();
         return Optional.ofNullable(dto);
     }
 
@@ -96,7 +96,7 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyNoticeDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(a.count()).from(a).where(
+        Long total = queryFactory.select(syNotice.count()).from(syNotice).where(
                 baseAndSiteId(search),
                 baseAndNoticeId(search),
                 baseAndStatus(search),
@@ -118,31 +118,31 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(SyNoticeDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? syNotice.siteId.eq(search.getSiteId()) : null;
     }
 
     /* noticeId 정확 일치 */
     private BooleanExpression baseAndNoticeId(SyNoticeDto.Request search) {
         return search != null && StringUtils.hasText(search.getNoticeId())
-                ? a.noticeId.eq(search.getNoticeId()) : null;
+                ? syNotice.noticeId.eq(search.getNoticeId()) : null;
     }
 
     /* noticeStatusCd 정확 일치 */
     private BooleanExpression baseAndStatus(SyNoticeDto.Request search) {
         return search != null && StringUtils.hasText(search.getStatus())
-                ? a.noticeStatusCd.eq(search.getStatus()) : null;
+                ? syNotice.noticeStatusCd.eq(search.getStatus()) : null;
     }
 
     /* noticeTypeCd 정확 일치 */
     private BooleanExpression baseAndNoticeTypeCd(SyNoticeDto.Request search) {
         return search != null && StringUtils.hasText(search.getNoticeTypeCd())
-                ? a.noticeTypeCd.eq(search.getNoticeTypeCd()) : null;
+                ? syNotice.noticeTypeCd.eq(search.getNoticeTypeCd()) : null;
     }
 
     /* isFixed 정확 일치 */
     private BooleanExpression baseAndIsFixed(SyNoticeDto.Request search) {
         return search != null && StringUtils.hasText(search.getIsFixed())
-                ? a.isFixed.eq(search.getIsFixed()) : null;
+                ? syNotice.isFixed.eq(search.getIsFixed()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
@@ -153,14 +153,14 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",attachGrpId,", a.attachGrpId, pattern);
-        or = orLike(or, all, types, ",contentHtml,", a.contentHtml, pattern);
-        or = orLike(or, all, types, ",isFixed,", a.isFixed, pattern);
-        or = orLike(or, all, types, ",noticeId,", a.noticeId, pattern);
-        or = orLike(or, all, types, ",noticeStatusCd,", a.noticeStatusCd, pattern);
-        or = orLike(or, all, types, ",noticeTitle,", a.noticeTitle, pattern);
-        or = orLike(or, all, types, ",noticeTypeCd,", a.noticeTypeCd, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",attachGrpId,", syNotice.attachGrpId, pattern);
+        or = orLike(or, all, types, ",contentHtml,", syNotice.contentHtml, pattern);
+        or = orLike(or, all, types, ",isFixed,", syNotice.isFixed, pattern);
+        or = orLike(or, all, types, ",noticeId,", syNotice.noticeId, pattern);
+        or = orLike(or, all, types, ",noticeStatusCd,", syNotice.noticeStatusCd, pattern);
+        or = orLike(or, all, types, ",noticeTitle,", syNotice.noticeTitle, pattern);
+        or = orLike(or, all, types, ",noticeTypeCd,", syNotice.noticeTypeCd, pattern);
+        or = orLike(or, all, types, ",siteId,", syNotice.siteId, pattern);
         return or;
     }
 
@@ -181,8 +181,8 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.noticeId));
+            orders.add(new OrderSpecifier(Order.DESC, syNotice.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syNotice.noticeId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -193,19 +193,19 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("noticeId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.noticeId));
+                    orders.add(new OrderSpecifier(order, syNotice.noticeId));
                 } else if ("noticeTitle".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.noticeTitle));
+                    orders.add(new OrderSpecifier(order, syNotice.noticeTitle));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, syNotice.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.noticeId));
+            orders.add(new OrderSpecifier<>(Order.DESC, syNotice.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syNotice.noticeId));
         }
         return orders;
     }
@@ -217,26 +217,26 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
     public int updateSelective(SyNotice entity) {
         if (entity.getNoticeId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(syNotice);
         boolean hasAny = false;
 
-        if (entity.getSiteId()         != null) { update.set(a.siteId,         entity.getSiteId());         hasAny = true; }
-        if (entity.getNoticeTitle()    != null) { update.set(a.noticeTitle,    entity.getNoticeTitle());    hasAny = true; }
-        if (entity.getNoticeTypeCd()   != null) { update.set(a.noticeTypeCd,   entity.getNoticeTypeCd());   hasAny = true; }
-        if (entity.getIsFixed()        != null) { update.set(a.isFixed,        entity.getIsFixed());        hasAny = true; }
-        if (entity.getContentHtml()    != null) { update.set(a.contentHtml,    entity.getContentHtml());    hasAny = true; }
-        if (entity.getAttachGrpId()    != null) { update.set(a.attachGrpId,    entity.getAttachGrpId());    hasAny = true; }
-        if (entity.getStartDate()      != null) { update.set(a.startDate,      entity.getStartDate());      hasAny = true; }
-        if (entity.getEndDate()        != null) { update.set(a.endDate,        entity.getEndDate());        hasAny = true; }
-        if (entity.getNoticeStatusCd() != null) { update.set(a.noticeStatusCd, entity.getNoticeStatusCd()); hasAny = true; }
-        if (entity.getViewCount()      != null) { update.set(a.viewCount,      entity.getViewCount());      hasAny = true; }
-        if (entity.getUpdBy()          != null) { update.set(a.updBy,          entity.getUpdBy());          hasAny = true; }
+        if (entity.getSiteId()         != null) { update.set(syNotice.siteId,         entity.getSiteId());         hasAny = true; }
+        if (entity.getNoticeTitle()    != null) { update.set(syNotice.noticeTitle,    entity.getNoticeTitle());    hasAny = true; }
+        if (entity.getNoticeTypeCd()   != null) { update.set(syNotice.noticeTypeCd,   entity.getNoticeTypeCd());   hasAny = true; }
+        if (entity.getIsFixed()        != null) { update.set(syNotice.isFixed,        entity.getIsFixed());        hasAny = true; }
+        if (entity.getContentHtml()    != null) { update.set(syNotice.contentHtml,    entity.getContentHtml());    hasAny = true; }
+        if (entity.getAttachGrpId()    != null) { update.set(syNotice.attachGrpId,    entity.getAttachGrpId());    hasAny = true; }
+        if (entity.getStartDate()      != null) { update.set(syNotice.startDate,      entity.getStartDate());      hasAny = true; }
+        if (entity.getEndDate()        != null) { update.set(syNotice.endDate,        entity.getEndDate());        hasAny = true; }
+        if (entity.getNoticeStatusCd() != null) { update.set(syNotice.noticeStatusCd, entity.getNoticeStatusCd()); hasAny = true; }
+        if (entity.getViewCount()      != null) { update.set(syNotice.viewCount,      entity.getViewCount());      hasAny = true; }
+        if (entity.getUpdBy()          != null) { update.set(syNotice.updBy,          entity.getUpdBy());          hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(syNotice.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.noticeId.eq(entity.getNoticeId())).execute();
+        long affected = update.where(syNotice.noticeId.eq(entity.getNoticeId())).execute();
         return (int) affected;
     }
 }

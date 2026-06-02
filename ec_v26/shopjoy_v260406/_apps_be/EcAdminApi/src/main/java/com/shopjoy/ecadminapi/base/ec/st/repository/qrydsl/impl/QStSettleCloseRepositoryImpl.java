@@ -29,15 +29,15 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.st.repository.qrydsl.impl.QStSettleCloseRepositoryImpl";
-    private static final QStSettleClose a   = QStSettleClose.stSettleClose;
-    private static final QSySite        ste = QSySite.sySite;
+    private static final QStSettleClose stSettleClose   = QStSettleClose.stSettleClose;
+    private static final QSySite        sySite = QSySite.sySite;
     private static final QSyCode        cdScs = new QSyCode("cd_scs");
 
     /* 정산 마감 키조회 */
     @Override
     public Optional<StSettleCloseDto.Item> selectById(String id) {
         StSettleCloseDto.Item dto = baseListQuery()
-                .where(a.settleCloseId.eq(id))
+                .where(stSettleClose.settleCloseId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -86,8 +86,8 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
         List<StSettleCloseDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(a.count())
-                .from(a)
+                .select(stSettleClose.count())
+                .from(stSettleClose)
                 .where(
                 baseAndSiteId(search),
                 baseAndSettleCloseId(search),
@@ -104,15 +104,15 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
     private JPAQuery<StSettleCloseDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(StSettleCloseDto.Item.class,
-                        a.settleCloseId, a.settleId, a.siteId, a.closeStatusCd,
-                        a.closeReason, a.finalSettleAmt, a.closeBy, a.closeDate,
-                        a.regBy, a.regDate,
-                        ste.siteNm.as("siteNm"),
+                        stSettleClose.settleCloseId, stSettleClose.settleId, stSettleClose.siteId, stSettleClose.closeStatusCd,
+                        stSettleClose.closeReason, stSettleClose.finalSettleAmt, stSettleClose.closeBy, stSettleClose.closeDate,
+                        stSettleClose.regBy, stSettleClose.regDate,
+                        sySite.siteNm.as("siteNm"),
                         cdScs.codeLabel.as("closeStatusCdNm")
                 ))
-                .from(a)
-                .leftJoin(ste).on(ste.siteId.eq(a.siteId))
-                .leftJoin(cdScs).on(cdScs.codeGrp.eq("SETTLE_CLOSE_STATUS").and(cdScs.codeValue.eq(a.closeStatusCd)));
+                .from(stSettleClose)
+                .leftJoin(sySite).on(sySite.siteId.eq(stSettleClose.siteId))
+                .leftJoin(cdScs).on(cdScs.codeGrp.eq("SETTLE_CLOSE_STATUS").and(cdScs.codeValue.eq(stSettleClose.closeStatusCd)));
     }
 
     /* 정산 마감 buildCondition */
@@ -125,13 +125,13 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(StSettleCloseDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? stSettleClose.siteId.eq(search.getSiteId()) : null;
     }
 
     /* settleCloseId 정확 일치 */
     private BooleanExpression baseAndSettleCloseId(StSettleCloseDto.Request search) {
         return search != null && StringUtils.hasText(search.getSettleCloseId())
-                ? a.settleCloseId.eq(search.getSettleCloseId()) : null;
+                ? stSettleClose.settleCloseId.eq(search.getSettleCloseId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -144,8 +144,8 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "reg_date": return stSettleClose.regDate.goe(start).and(stSettleClose.regDate.lt(endExcl));
+            case "upd_date": return stSettleClose.updDate.goe(start).and(stSettleClose.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -158,12 +158,12 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",closeBy,", a.closeBy, pattern);
-        or = orLike(or, all, types, ",closeReason,", a.closeReason, pattern);
-        or = orLike(or, all, types, ",closeStatusCd,", a.closeStatusCd, pattern);
-        or = orLike(or, all, types, ",settleCloseId,", a.settleCloseId, pattern);
-        or = orLike(or, all, types, ",settleId,", a.settleId, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",closeBy,", stSettleClose.closeBy, pattern);
+        or = orLike(or, all, types, ",closeReason,", stSettleClose.closeReason, pattern);
+        or = orLike(or, all, types, ",closeStatusCd,", stSettleClose.closeStatusCd, pattern);
+        or = orLike(or, all, types, ",settleCloseId,", stSettleClose.settleCloseId, pattern);
+        or = orLike(or, all, types, ",settleId,", stSettleClose.settleId, pattern);
+        or = orLike(or, all, types, ",siteId,", stSettleClose.siteId, pattern);
         return or;
     }
 
@@ -184,8 +184,8 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.settleCloseId));
+            orders.add(new OrderSpecifier(Order.DESC, stSettleClose.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, stSettleClose.settleCloseId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -196,17 +196,17 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("settleCloseId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.settleCloseId));
+                    orders.add(new OrderSpecifier(order, stSettleClose.settleCloseId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, stSettleClose.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.settleCloseId));
+            orders.add(new OrderSpecifier<>(Order.DESC, stSettleClose.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, stSettleClose.settleCloseId));
         }
         return orders;
     }
@@ -216,20 +216,20 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
     public int updateSelective(StSettleClose entity) {
         if (entity.getSettleCloseId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(stSettleClose);
         boolean hasAny = false;
 
-        if (entity.getSettleId()      != null) { update.set(a.settleId,      entity.getSettleId());      hasAny = true; }
-        if (entity.getSiteId()        != null) { update.set(a.siteId,        entity.getSiteId());        hasAny = true; }
-        if (entity.getCloseStatusCd() != null) { update.set(a.closeStatusCd, entity.getCloseStatusCd()); hasAny = true; }
-        if (entity.getCloseReason()   != null) { update.set(a.closeReason,   entity.getCloseReason());   hasAny = true; }
-        if (entity.getFinalSettleAmt()!= null) { update.set(a.finalSettleAmt,entity.getFinalSettleAmt());hasAny = true; }
-        if (entity.getCloseBy()       != null) { update.set(a.closeBy,       entity.getCloseBy());       hasAny = true; }
-        if (entity.getCloseDate()     != null) { update.set(a.closeDate,     entity.getCloseDate());     hasAny = true; }
+        if (entity.getSettleId()      != null) { update.set(stSettleClose.settleId,      entity.getSettleId());      hasAny = true; }
+        if (entity.getSiteId()        != null) { update.set(stSettleClose.siteId,        entity.getSiteId());        hasAny = true; }
+        if (entity.getCloseStatusCd() != null) { update.set(stSettleClose.closeStatusCd, entity.getCloseStatusCd()); hasAny = true; }
+        if (entity.getCloseReason()   != null) { update.set(stSettleClose.closeReason,   entity.getCloseReason());   hasAny = true; }
+        if (entity.getFinalSettleAmt()!= null) { update.set(stSettleClose.finalSettleAmt,entity.getFinalSettleAmt());hasAny = true; }
+        if (entity.getCloseBy()       != null) { update.set(stSettleClose.closeBy,       entity.getCloseBy());       hasAny = true; }
+        if (entity.getCloseDate()     != null) { update.set(stSettleClose.closeDate,     entity.getCloseDate());     hasAny = true; }
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.settleCloseId.eq(entity.getSettleCloseId())).execute();
+        long affected = update.where(stSettleClose.settleCloseId.eq(entity.getSettleCloseId())).execute();
         return (int) affected;
     }
 }

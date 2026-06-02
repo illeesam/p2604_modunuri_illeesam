@@ -28,24 +28,24 @@ public class QSyAttachGrpRepositoryImpl implements QSyAttachGrpRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyAttachGrpRepositoryImpl";
-    private static final QSyAttachGrp a = QSyAttachGrp.syAttachGrp;
+    private static final QSyAttachGrp syAttachGrp = QSyAttachGrp.syAttachGrp;
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     /* 첨부파일 그룹 baseSelColumnQuery */
     private JPAQuery<SyAttachGrpDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyAttachGrpDto.Item.class,
-                        a.attachGrpId, a.attachGrpCode, a.attachGrpNm, a.fileExtAllow,
-                        a.maxFileSize, a.maxFileCount, a.storagePath, a.useYn, a.sortOrd,
-                        a.attachGrpRemark, a.regBy, a.regDate, a.updBy, a.updDate
+                        syAttachGrp.attachGrpId, syAttachGrp.attachGrpCode, syAttachGrp.attachGrpNm, syAttachGrp.fileExtAllow,
+                        syAttachGrp.maxFileSize, syAttachGrp.maxFileCount, syAttachGrp.storagePath, syAttachGrp.useYn, syAttachGrp.sortOrd,
+                        syAttachGrp.attachGrpRemark, syAttachGrp.regBy, syAttachGrp.regDate, syAttachGrp.updBy, syAttachGrp.updDate
                 ))
-                .from(a);
+                .from(syAttachGrp);
     }
 
     /* 첨부파일 그룹 키조회 */
     @Override
     public Optional<SyAttachGrpDto.Item> selectById(String attachGrpId) {
-        SyAttachGrpDto.Item dto = baseSelColumnQuery().where(a.attachGrpId.eq(attachGrpId)).fetchOne();
+        SyAttachGrpDto.Item dto = baseSelColumnQuery().where(syAttachGrp.attachGrpId.eq(attachGrpId)).fetchOne();
         return Optional.ofNullable(dto);
     }
 
@@ -83,7 +83,7 @@ public class QSyAttachGrpRepositoryImpl implements QSyAttachGrpRepository {
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyAttachGrpDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(a.count()).from(a).where(
+        Long total = queryFactory.select(syAttachGrp.count()).from(syAttachGrp).where(
                 baseAndAttachGrpId(search),
                 baseAndSearchValue(search)
         ).fetchOne();
@@ -101,7 +101,7 @@ public class QSyAttachGrpRepositoryImpl implements QSyAttachGrpRepository {
     /* attachGrpId 정확 일치 */
     private BooleanExpression baseAndAttachGrpId(SyAttachGrpDto.Request search) {
         return search != null && StringUtils.hasText(search.getAttachGrpId())
-                ? a.attachGrpId.eq(search.getAttachGrpId()) : null;
+                ? syAttachGrp.attachGrpId.eq(search.getAttachGrpId()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
@@ -112,14 +112,14 @@ public class QSyAttachGrpRepositoryImpl implements QSyAttachGrpRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",attachGrpCode,", a.attachGrpCode, pattern);
-        or = orLike(or, all, types, ",attachGrpId,", a.attachGrpId, pattern);
-        or = orLike(or, all, types, ",attachGrpNm,", a.attachGrpNm, pattern);
-        or = orLike(or, all, types, ",attachGrpRemark,", a.attachGrpRemark, pattern);
-        or = orLike(or, all, types, ",fileExtAllow,", a.fileExtAllow, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
-        or = orLike(or, all, types, ",storagePath,", a.storagePath, pattern);
-        or = orLike(or, all, types, ",useYn,", a.useYn, pattern);
+        or = orLike(or, all, types, ",attachGrpCode,", syAttachGrp.attachGrpCode, pattern);
+        or = orLike(or, all, types, ",attachGrpId,", syAttachGrp.attachGrpId, pattern);
+        or = orLike(or, all, types, ",attachGrpNm,", syAttachGrp.attachGrpNm, pattern);
+        or = orLike(or, all, types, ",attachGrpRemark,", syAttachGrp.attachGrpRemark, pattern);
+        or = orLike(or, all, types, ",fileExtAllow,", syAttachGrp.fileExtAllow, pattern);
+        or = orLike(or, all, types, ",siteId,", syAttachGrp.siteId, pattern);
+        or = orLike(or, all, types, ",storagePath,", syAttachGrp.storagePath, pattern);
+        or = orLike(or, all, types, ",useYn,", syAttachGrp.useYn, pattern);
         return or;
     }
 
@@ -142,9 +142,9 @@ public class QSyAttachGrpRepositoryImpl implements QSyAttachGrpRepository {
         if (!StringUtils.hasText(sort)) {
 
             /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.attachGrpId));
+            orders.add(new OrderSpecifier<>(Order.ASC, syAttachGrp.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, syAttachGrp.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syAttachGrp.attachGrpId));
 
             return orders;
         }
@@ -156,20 +156,20 @@ public class QSyAttachGrpRepositoryImpl implements QSyAttachGrpRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("attachGrpId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.attachGrpId));
+                    orders.add(new OrderSpecifier(order, syAttachGrp.attachGrpId));
                 } else if ("attachGrpNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.attachGrpNm));
+                    orders.add(new OrderSpecifier(order, syAttachGrp.attachGrpNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, syAttachGrp.regDate));
                 }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, a.sortOrd)); }
+                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, syAttachGrp.sortOrd)); }
             }
         }
         /* unknown sort → sortOrd ASC + regDate ASC fallback */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.attachGrpId));
+            orders.add(new OrderSpecifier<>(Order.ASC, syAttachGrp.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, syAttachGrp.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syAttachGrp.attachGrpId));
         }
         return orders;
     }
@@ -181,25 +181,25 @@ public class QSyAttachGrpRepositoryImpl implements QSyAttachGrpRepository {
     public int updateSelective(SyAttachGrp entity) {
         if (entity.getAttachGrpId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(syAttachGrp);
         boolean hasAny = false;
 
-        if (entity.getAttachGrpCode()   != null) { update.set(a.attachGrpCode,   entity.getAttachGrpCode());   hasAny = true; }
-        if (entity.getAttachGrpNm()     != null) { update.set(a.attachGrpNm,     entity.getAttachGrpNm());     hasAny = true; }
-        if (entity.getFileExtAllow()    != null) { update.set(a.fileExtAllow,    entity.getFileExtAllow());    hasAny = true; }
-        if (entity.getMaxFileSize()     != null) { update.set(a.maxFileSize,     entity.getMaxFileSize());     hasAny = true; }
-        if (entity.getMaxFileCount()    != null) { update.set(a.maxFileCount,    entity.getMaxFileCount());    hasAny = true; }
-        if (entity.getStoragePath()     != null) { update.set(a.storagePath,     entity.getStoragePath());     hasAny = true; }
-        if (entity.getUseYn()           != null) { update.set(a.useYn,           entity.getUseYn());           hasAny = true; }
-        if (entity.getSortOrd()         != null) { update.set(a.sortOrd,         entity.getSortOrd());         hasAny = true; }
-        if (entity.getAttachGrpRemark() != null) { update.set(a.attachGrpRemark, entity.getAttachGrpRemark()); hasAny = true; }
-        if (entity.getUpdBy()           != null) { update.set(a.updBy,           entity.getUpdBy());           hasAny = true; }
+        if (entity.getAttachGrpCode()   != null) { update.set(syAttachGrp.attachGrpCode,   entity.getAttachGrpCode());   hasAny = true; }
+        if (entity.getAttachGrpNm()     != null) { update.set(syAttachGrp.attachGrpNm,     entity.getAttachGrpNm());     hasAny = true; }
+        if (entity.getFileExtAllow()    != null) { update.set(syAttachGrp.fileExtAllow,    entity.getFileExtAllow());    hasAny = true; }
+        if (entity.getMaxFileSize()     != null) { update.set(syAttachGrp.maxFileSize,     entity.getMaxFileSize());     hasAny = true; }
+        if (entity.getMaxFileCount()    != null) { update.set(syAttachGrp.maxFileCount,    entity.getMaxFileCount());    hasAny = true; }
+        if (entity.getStoragePath()     != null) { update.set(syAttachGrp.storagePath,     entity.getStoragePath());     hasAny = true; }
+        if (entity.getUseYn()           != null) { update.set(syAttachGrp.useYn,           entity.getUseYn());           hasAny = true; }
+        if (entity.getSortOrd()         != null) { update.set(syAttachGrp.sortOrd,         entity.getSortOrd());         hasAny = true; }
+        if (entity.getAttachGrpRemark() != null) { update.set(syAttachGrp.attachGrpRemark, entity.getAttachGrpRemark()); hasAny = true; }
+        if (entity.getUpdBy()           != null) { update.set(syAttachGrp.updBy,           entity.getUpdBy());           hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(syAttachGrp.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.attachGrpId.eq(entity.getAttachGrpId())).execute();
+        long affected = update.where(syAttachGrp.attachGrpId.eq(entity.getAttachGrpId())).execute();
         return (int) affected;
     }
 }

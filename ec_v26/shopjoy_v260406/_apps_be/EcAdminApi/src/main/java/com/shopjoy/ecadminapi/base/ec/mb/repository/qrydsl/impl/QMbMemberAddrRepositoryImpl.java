@@ -30,30 +30,30 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.mb.repository.qrydsl.impl.QMbMemberAddrRepositoryImpl";
-    private static final QMbMemberAddr a   = QMbMemberAddr.mbMemberAddr;
-    private static final QMbMember     mem = QMbMember.mbMember;
-    private static final QSySite       ste = QSySite.sySite;
+    private static final QMbMemberAddr mbMemberAddr   = QMbMemberAddr.mbMemberAddr;
+    private static final QMbMember     mbMember = QMbMember.mbMember;
+    private static final QSySite       sySite = QSySite.sySite;
 
     /* 회원 주소 baseSelColumnQuery */
     private JPAQuery<MbMemberAddrDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(MbMemberAddrDto.Item.class,
-                        a.memberAddrId, a.memberId,
-                        a.addrNm, a.recvNm, a.recvPhone,
-                        a.zipCd.as("zipCode"),
-                        a.addr, a.addrDetail,
-                        a.isDefault.as("defaultYn"),
-                        a.regBy, a.regDate, a.updBy, a.updDate
+                        mbMemberAddr.memberAddrId, mbMemberAddr.memberId,
+                        mbMemberAddr.addrNm, mbMemberAddr.recvNm, mbMemberAddr.recvPhone,
+                        mbMemberAddr.zipCd.as("zipCode"),
+                        mbMemberAddr.addr, mbMemberAddr.addrDetail,
+                        mbMemberAddr.isDefault.as("defaultYn"),
+                        mbMemberAddr.regBy, mbMemberAddr.regDate, mbMemberAddr.updBy, mbMemberAddr.updDate
                 ))
-                .from(a)
-                .leftJoin(mem).on(mem.memberId.eq(a.memberId))
-                .leftJoin(ste).on(ste.siteId.eq(a.siteId));
+                .from(mbMemberAddr)
+                .leftJoin(mbMember).on(mbMember.memberId.eq(mbMemberAddr.memberId))
+                .leftJoin(sySite).on(sySite.siteId.eq(mbMemberAddr.siteId));
     }
 
     /* 회원 주소 키조회 */
     @Override
     public Optional<MbMemberAddrDto.Item> selectById(String memberAddrId) {
-        return Optional.ofNullable(baseSelColumnQuery().where(a.memberAddrId.eq(memberAddrId)).fetchOne());
+        return Optional.ofNullable(baseSelColumnQuery().where(mbMemberAddr.memberAddrId.eq(memberAddrId)).fetchOne());
     }
 
     /* 회원 주소 목록조회 */
@@ -92,7 +92,7 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<MbMemberAddrDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(a.count()).from(a).where(
+        Long total = queryFactory.select(mbMemberAddr.count()).from(mbMemberAddr).where(
                 baseAndMemberIds(search),
                 baseAndMemberAddrId(search),
                 baseAndMemberId(search),
@@ -113,19 +113,19 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
     /* memberId IN */
     private BooleanExpression baseAndMemberIds(MbMemberAddrDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getMemberIds())
-                ? a.memberId.in(search.getMemberIds()) : null;
+                ? mbMemberAddr.memberId.in(search.getMemberIds()) : null;
     }
 
     /* memberAddrId 정확 일치 */
     private BooleanExpression baseAndMemberAddrId(MbMemberAddrDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberAddrId())
-                ? a.memberAddrId.eq(search.getMemberAddrId()) : null;
+                ? mbMemberAddr.memberAddrId.eq(search.getMemberAddrId()) : null;
     }
 
     /* memberId 정확 일치 */
     private BooleanExpression baseAndMemberId(MbMemberAddrDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberId())
-                ? a.memberId.eq(search.getMemberId()) : null;
+                ? mbMemberAddr.memberId.eq(search.getMemberId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -138,8 +138,8 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "reg_date": return mbMemberAddr.regDate.goe(start).and(mbMemberAddr.regDate.lt(endExcl));
+            case "upd_date": return mbMemberAddr.updDate.goe(start).and(mbMemberAddr.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -152,16 +152,16 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",addr,", a.addr, pattern);
-        or = orLike(or, all, types, ",addrDetail,", a.addrDetail, pattern);
-        or = orLike(or, all, types, ",addrNm,", a.addrNm, pattern);
-        or = orLike(or, all, types, ",isDefault,", a.isDefault, pattern);
-        or = orLike(or, all, types, ",memberAddrId,", a.memberAddrId, pattern);
-        or = orLike(or, all, types, ",memberId,", a.memberId, pattern);
-        or = orLike(or, all, types, ",recvNm,", a.recvNm, pattern);
-        or = orLike(or, all, types, ",recvPhone,", a.recvPhone, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
-        or = orLike(or, all, types, ",zipCd,", a.zipCd, pattern);
+        or = orLike(or, all, types, ",addr,", mbMemberAddr.addr, pattern);
+        or = orLike(or, all, types, ",addrDetail,", mbMemberAddr.addrDetail, pattern);
+        or = orLike(or, all, types, ",addrNm,", mbMemberAddr.addrNm, pattern);
+        or = orLike(or, all, types, ",isDefault,", mbMemberAddr.isDefault, pattern);
+        or = orLike(or, all, types, ",memberAddrId,", mbMemberAddr.memberAddrId, pattern);
+        or = orLike(or, all, types, ",memberId,", mbMemberAddr.memberId, pattern);
+        or = orLike(or, all, types, ",recvNm,", mbMemberAddr.recvNm, pattern);
+        or = orLike(or, all, types, ",recvPhone,", mbMemberAddr.recvPhone, pattern);
+        or = orLike(or, all, types, ",siteId,", mbMemberAddr.siteId, pattern);
+        or = orLike(or, all, types, ",zipCd,", mbMemberAddr.zipCd, pattern);
         return or;
     }
 
@@ -182,8 +182,8 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.memberAddrId));
+            orders.add(new OrderSpecifier(Order.DESC, mbMemberAddr.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, mbMemberAddr.memberAddrId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -194,19 +194,19 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("memberAddrId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.memberAddrId));
+                    orders.add(new OrderSpecifier(order, mbMemberAddr.memberAddrId));
                 } else if ("addrNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.addrNm));
+                    orders.add(new OrderSpecifier(order, mbMemberAddr.addrNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, mbMemberAddr.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.memberAddrId));
+            orders.add(new OrderSpecifier<>(Order.DESC, mbMemberAddr.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, mbMemberAddr.memberAddrId));
         }
         return orders;
     }
@@ -217,21 +217,21 @@ public class QMbMemberAddrRepositoryImpl implements QMbMemberAddrRepository {
     @Override
     public int updateSelective(MbMemberAddr entity) {
         if (entity.getMemberAddrId() == null) return 0;
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(mbMemberAddr);
         boolean hasAny = false;
-        if (entity.getSiteId()     != null) { update.set(a.siteId,     entity.getSiteId());     hasAny = true; }
-        if (entity.getMemberId()   != null) { update.set(a.memberId,   entity.getMemberId());   hasAny = true; }
-        if (entity.getAddrNm()     != null) { update.set(a.addrNm,     entity.getAddrNm());     hasAny = true; }
-        if (entity.getRecvNm()     != null) { update.set(a.recvNm,     entity.getRecvNm());     hasAny = true; }
-        if (entity.getRecvPhone()  != null) { update.set(a.recvPhone,  entity.getRecvPhone());  hasAny = true; }
-        if (entity.getZipCd()      != null) { update.set(a.zipCd,      entity.getZipCd());      hasAny = true; }
-        if (entity.getAddr()       != null) { update.set(a.addr,       entity.getAddr());       hasAny = true; }
-        if (entity.getAddrDetail() != null) { update.set(a.addrDetail, entity.getAddrDetail()); hasAny = true; }
-        if (entity.getIsDefault()  != null) { update.set(a.isDefault,  entity.getIsDefault());  hasAny = true; }
-        if (entity.getUpdBy()      != null) { update.set(a.updBy,      entity.getUpdBy());      hasAny = true; }
+        if (entity.getSiteId()     != null) { update.set(mbMemberAddr.siteId,     entity.getSiteId());     hasAny = true; }
+        if (entity.getMemberId()   != null) { update.set(mbMemberAddr.memberId,   entity.getMemberId());   hasAny = true; }
+        if (entity.getAddrNm()     != null) { update.set(mbMemberAddr.addrNm,     entity.getAddrNm());     hasAny = true; }
+        if (entity.getRecvNm()     != null) { update.set(mbMemberAddr.recvNm,     entity.getRecvNm());     hasAny = true; }
+        if (entity.getRecvPhone()  != null) { update.set(mbMemberAddr.recvPhone,  entity.getRecvPhone());  hasAny = true; }
+        if (entity.getZipCd()      != null) { update.set(mbMemberAddr.zipCd,      entity.getZipCd());      hasAny = true; }
+        if (entity.getAddr()       != null) { update.set(mbMemberAddr.addr,       entity.getAddr());       hasAny = true; }
+        if (entity.getAddrDetail() != null) { update.set(mbMemberAddr.addrDetail, entity.getAddrDetail()); hasAny = true; }
+        if (entity.getIsDefault()  != null) { update.set(mbMemberAddr.isDefault,  entity.getIsDefault());  hasAny = true; }
+        if (entity.getUpdBy()      != null) { update.set(mbMemberAddr.updBy,      entity.getUpdBy());      hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(mbMemberAddr.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
         if (!hasAny) return 0;
-        return (int) update.where(a.memberAddrId.eq(entity.getMemberAddrId())).execute();
+        return (int) update.where(mbMemberAddr.memberAddrId.eq(entity.getMemberAddrId())).execute();
     }
 }

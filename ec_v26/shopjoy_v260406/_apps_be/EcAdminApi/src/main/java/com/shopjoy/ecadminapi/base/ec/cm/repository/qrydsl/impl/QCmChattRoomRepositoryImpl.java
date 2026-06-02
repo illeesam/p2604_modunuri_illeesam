@@ -29,19 +29,19 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmChattRoomRepositoryImpl";
-    private static final QCmChattRoom a = QCmChattRoom.cmChattRoom;
+    private static final QCmChattRoom cmChattRoom = QCmChattRoom.cmChattRoom;
 
     /** 기본 쿼리 빌드 */
     private JPAQuery<CmChattRoomDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(CmChattRoomDto.Item.class,
-                        a.chattRoomId, a.siteId, a.memberId, a.memberNm,
-                        a.adminUserId, a.subject, a.chattStatusCd, a.chattStatusCdBefore,
-                        a.lastMsgDate, a.memberUnreadCnt, a.adminUnreadCnt,
-                        a.chattMemo, a.closeDate, a.closeReason,
-                        a.regBy, a.regDate, a.updBy, a.updDate
+                        cmChattRoom.chattRoomId, cmChattRoom.siteId, cmChattRoom.memberId, cmChattRoom.memberNm,
+                        cmChattRoom.adminUserId, cmChattRoom.subject, cmChattRoom.chattStatusCd, cmChattRoom.chattStatusCdBefore,
+                        cmChattRoom.lastMsgDate, cmChattRoom.memberUnreadCnt, cmChattRoom.adminUnreadCnt,
+                        cmChattRoom.chattMemo, cmChattRoom.closeDate, cmChattRoom.closeReason,
+                        cmChattRoom.regBy, cmChattRoom.regDate, cmChattRoom.updBy, cmChattRoom.updDate
                 ))
-                .from(a);
+                .from(cmChattRoom);
     }
 
     /** 단건 조회 */
@@ -49,7 +49,7 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
     public Optional<CmChattRoomDto.Item> selectById(String chattRoomId) {
         CmChattRoomDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
-                .where(a.chattRoomId.eq(chattRoomId))
+                .where(cmChattRoom.chattRoomId.eq(chattRoomId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -101,8 +101,8 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
         List<CmChattRoomDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(a.count())
-                .from(a)
+                .select(cmChattRoom.count())
+                .from(cmChattRoom)
                 .where(
                 baseAndSiteId(search),
                 baseAndChattRoomId(search),
@@ -127,19 +127,19 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(CmChattRoomDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? cmChattRoom.siteId.eq(search.getSiteId()) : null;
     }
 
     /* chattRoomId 정확 일치 */
     private BooleanExpression baseAndChattRoomId(CmChattRoomDto.Request search) {
         return search != null && StringUtils.hasText(search.getChattRoomId())
-                ? a.chattRoomId.eq(search.getChattRoomId()) : null;
+                ? cmChattRoom.chattRoomId.eq(search.getChattRoomId()) : null;
     }
 
     /* memberId 정확 일치 */
     private BooleanExpression baseAndMemberId(CmChattRoomDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberId())
-                ? a.memberId.eq(search.getMemberId()) : null;
+                ? cmChattRoom.memberId.eq(search.getMemberId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -152,8 +152,8 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "reg_date": return cmChattRoom.regDate.goe(start).and(cmChattRoom.regDate.lt(endExcl));
+            case "upd_date": return cmChattRoom.updDate.goe(start).and(cmChattRoom.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -166,16 +166,16 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",adminUserId,", a.adminUserId, pattern);
-        or = orLike(or, all, types, ",chattMemo,", a.chattMemo, pattern);
-        or = orLike(or, all, types, ",chattRoomId,", a.chattRoomId, pattern);
-        or = orLike(or, all, types, ",chattStatusCd,", a.chattStatusCd, pattern);
-        or = orLike(or, all, types, ",chattStatusCdBefore,", a.chattStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",closeReason,", a.closeReason, pattern);
-        or = orLike(or, all, types, ",memberId,", a.memberId, pattern);
-        or = orLike(or, all, types, ",memberNm,", a.memberNm, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
-        or = orLike(or, all, types, ",subject,", a.subject, pattern);
+        or = orLike(or, all, types, ",adminUserId,", cmChattRoom.adminUserId, pattern);
+        or = orLike(or, all, types, ",chattMemo,", cmChattRoom.chattMemo, pattern);
+        or = orLike(or, all, types, ",chattRoomId,", cmChattRoom.chattRoomId, pattern);
+        or = orLike(or, all, types, ",chattStatusCd,", cmChattRoom.chattStatusCd, pattern);
+        or = orLike(or, all, types, ",chattStatusCdBefore,", cmChattRoom.chattStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",closeReason,", cmChattRoom.closeReason, pattern);
+        or = orLike(or, all, types, ",memberId,", cmChattRoom.memberId, pattern);
+        or = orLike(or, all, types, ",memberNm,", cmChattRoom.memberNm, pattern);
+        or = orLike(or, all, types, ",siteId,", cmChattRoom.siteId, pattern);
+        or = orLike(or, all, types, ",subject,", cmChattRoom.subject, pattern);
         return or;
     }
 
@@ -196,8 +196,8 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.chattRoomId));
+            orders.add(new OrderSpecifier(Order.DESC, cmChattRoom.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, cmChattRoom.chattRoomId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -208,19 +208,19 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("chattRoomId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.chattRoomId));
+                    orders.add(new OrderSpecifier(order, cmChattRoom.chattRoomId));
                 } else if ("memberNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.memberNm));
+                    orders.add(new OrderSpecifier(order, cmChattRoom.memberNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, cmChattRoom.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.chattRoomId));
+            orders.add(new OrderSpecifier<>(Order.DESC, cmChattRoom.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, cmChattRoom.chattRoomId));
         }
         return orders;
     }
@@ -230,29 +230,29 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
     public int updateSelective(CmChattRoom entity) {
         if (entity.getChattRoomId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(cmChattRoom);
         boolean hasAny = false;
 
-        if (entity.getSiteId()              != null) { update.set(a.siteId,              entity.getSiteId());              hasAny = true; }
-        if (entity.getMemberId()            != null) { update.set(a.memberId,            entity.getMemberId());            hasAny = true; }
-        if (entity.getMemberNm()            != null) { update.set(a.memberNm,            entity.getMemberNm());            hasAny = true; }
-        if (entity.getAdminUserId()         != null) { update.set(a.adminUserId,         entity.getAdminUserId());         hasAny = true; }
-        if (entity.getSubject()             != null) { update.set(a.subject,             entity.getSubject());             hasAny = true; }
-        if (entity.getChattStatusCd()       != null) { update.set(a.chattStatusCd,       entity.getChattStatusCd());       hasAny = true; }
-        if (entity.getChattStatusCdBefore() != null) { update.set(a.chattStatusCdBefore, entity.getChattStatusCdBefore()); hasAny = true; }
-        if (entity.getLastMsgDate()         != null) { update.set(a.lastMsgDate,         entity.getLastMsgDate());         hasAny = true; }
-        if (entity.getMemberUnreadCnt()     != null) { update.set(a.memberUnreadCnt,     entity.getMemberUnreadCnt());     hasAny = true; }
-        if (entity.getAdminUnreadCnt()      != null) { update.set(a.adminUnreadCnt,      entity.getAdminUnreadCnt());      hasAny = true; }
-        if (entity.getChattMemo()           != null) { update.set(a.chattMemo,           entity.getChattMemo());           hasAny = true; }
-        if (entity.getCloseDate()           != null) { update.set(a.closeDate,           entity.getCloseDate());           hasAny = true; }
-        if (entity.getCloseReason()         != null) { update.set(a.closeReason,         entity.getCloseReason());         hasAny = true; }
-        if (entity.getUpdBy()               != null) { update.set(a.updBy,               entity.getUpdBy());               hasAny = true; }
+        if (entity.getSiteId()              != null) { update.set(cmChattRoom.siteId,              entity.getSiteId());              hasAny = true; }
+        if (entity.getMemberId()            != null) { update.set(cmChattRoom.memberId,            entity.getMemberId());            hasAny = true; }
+        if (entity.getMemberNm()            != null) { update.set(cmChattRoom.memberNm,            entity.getMemberNm());            hasAny = true; }
+        if (entity.getAdminUserId()         != null) { update.set(cmChattRoom.adminUserId,         entity.getAdminUserId());         hasAny = true; }
+        if (entity.getSubject()             != null) { update.set(cmChattRoom.subject,             entity.getSubject());             hasAny = true; }
+        if (entity.getChattStatusCd()       != null) { update.set(cmChattRoom.chattStatusCd,       entity.getChattStatusCd());       hasAny = true; }
+        if (entity.getChattStatusCdBefore() != null) { update.set(cmChattRoom.chattStatusCdBefore, entity.getChattStatusCdBefore()); hasAny = true; }
+        if (entity.getLastMsgDate()         != null) { update.set(cmChattRoom.lastMsgDate,         entity.getLastMsgDate());         hasAny = true; }
+        if (entity.getMemberUnreadCnt()     != null) { update.set(cmChattRoom.memberUnreadCnt,     entity.getMemberUnreadCnt());     hasAny = true; }
+        if (entity.getAdminUnreadCnt()      != null) { update.set(cmChattRoom.adminUnreadCnt,      entity.getAdminUnreadCnt());      hasAny = true; }
+        if (entity.getChattMemo()           != null) { update.set(cmChattRoom.chattMemo,           entity.getChattMemo());           hasAny = true; }
+        if (entity.getCloseDate()           != null) { update.set(cmChattRoom.closeDate,           entity.getCloseDate());           hasAny = true; }
+        if (entity.getCloseReason()         != null) { update.set(cmChattRoom.closeReason,         entity.getCloseReason());         hasAny = true; }
+        if (entity.getUpdBy()               != null) { update.set(cmChattRoom.updBy,               entity.getUpdBy());               hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(cmChattRoom.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.chattRoomId.eq(entity.getChattRoomId())).execute();
+        long affected = update.where(cmChattRoom.chattRoomId.eq(entity.getChattRoomId())).execute();
         return (int) affected;
     }
 }

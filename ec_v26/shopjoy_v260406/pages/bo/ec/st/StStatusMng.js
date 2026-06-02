@@ -482,6 +482,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const vendorSearchColumns = [
       { key: 'vendorSearchValue', label: '업체', type: 'text', placeholder: '업체명 검색', width: '200px' },
     ];
+    // 상단 공통 검색바 컬럼 — 기간 + (업체별현황 탭이면 업체명 검색 추가)
+    const cfTopSearchColumns = computed(() =>
+      uiState.activeTab === 'vendor' ? [...dateSearchColumns, ...vendorSearchColumns] : dateSearchColumns);
     // 주문 검색
     const orderSearchColumns = [
       { key: 'orderSearchValue',  label: '검색어', type: 'text',   placeholder: '주문ID / 고객명 / 상품명', width: '220px' },
@@ -536,7 +539,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     return {
       uiState, codes, TABS,                                                         // 상태 / 데이터
       vendorGridColumns, orderGridColumns, claimGridColumns, promoGridColumns, settleGridColumns,             // 컬럼 정의
-      dateSearchColumns, vendorSearchColumns, orderSearchColumns, claimSearchColumns, promoSearchColumns, settleSearchColumns, // 검색 컬럼 정의
+      dateSearchColumns, vendorSearchColumns, orderSearchColumns, claimSearchColumns, promoSearchColumns, settleSearchColumns, cfTopSearchColumns, // 검색 컬럼 정의
       vendorSummaryColumns, orderSummaryColumns, claimSummaryColumns, promoSummaryColumns, settleSummaryColumns,               // 요약 카드 컬럼 정의
       handleBtnAction, handleSelectAction,                                          // dispatch (모든 이벤트 / 액션 라우팅)
       vendorPager, cfVendorTotal, cfVendorPageList, cfVendorSummary,                // vendor
@@ -570,7 +573,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <div class="card" style="margin-bottom:12px">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :bar-style="'flex-wrap:wrap;gap:8px'"
-      :columns="dateSearchColumns" :param="uiState"
+      :columns="cfTopSearchColumns" :param="uiState"
       @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')">
       <template #actions-after>
         <button class="btn btn-secondary" @click="handleBtnAction('statuses-export')">
@@ -591,11 +594,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <bo-form-area :columns="vendorSummaryColumns" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
     <div style="height:12px"></div>
     <!-- ===== □.□. 요약 카드 ================================================= -->
-    <!-- ===== ■.■. 검색 ==================================================== -->
-    <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'"
-      :columns="vendorSearchColumns" :param="uiState"
-      @search="handleBtnAction('searchParam-list')" />
-    <!-- ===== □.□. 검색 ==================================================== -->
+    <!-- 업체명 검색은 상단 공통 검색바(cfTopSearchColumns)로 이동 (2026-06-02) -->
     <!-- ===== ■.■. 테이블 =================================================== -->
     <bo-grid
       :columns="vendorGridColumns"

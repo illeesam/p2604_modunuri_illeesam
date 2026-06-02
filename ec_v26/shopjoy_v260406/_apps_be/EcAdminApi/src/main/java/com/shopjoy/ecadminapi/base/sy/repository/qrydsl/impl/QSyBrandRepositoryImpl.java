@@ -37,21 +37,21 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
     private final EntityManager em;
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyBrandRepositoryImpl";
-    private static final QSyBrand b = QSyBrand.syBrand;
-    private static final QSySite ste = QSySite.sySite;
+    private static final QSyBrand syBrand = QSyBrand.syBrand;
+    private static final QSySite sySite = QSySite.sySite;
 
     /* 브랜드 baseSelColumnQuery */
     private JPAQuery<SyBrandDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyBrandDto.Item.class,
-                        b.brandId, b.siteId, b.brandCode, b.brandNm, b.brandEnNm,
-                        b.pathId, b.logoUrl, b.vendorId, b.sortOrd, b.useYn,
-                        b.brandRemark,
-                        b.regBy, b.regDate, b.updBy, b.updDate,
-                        ste.siteNm.as("siteNm")
+                        syBrand.brandId, syBrand.siteId, syBrand.brandCode, syBrand.brandNm, syBrand.brandEnNm,
+                        syBrand.pathId, syBrand.logoUrl, syBrand.vendorId, syBrand.sortOrd, syBrand.useYn,
+                        syBrand.brandRemark,
+                        syBrand.regBy, syBrand.regDate, syBrand.updBy, syBrand.updDate,
+                        sySite.siteNm.as("siteNm")
                 ))
-                .from(b)
-                .leftJoin(ste).on(ste.siteId.eq(b.siteId));
+                .from(syBrand)
+                .leftJoin(sySite).on(sySite.siteId.eq(syBrand.siteId));
     }
 
     /* 브랜드 키조회 */
@@ -59,7 +59,7 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
     public Optional<SyBrandDto.Item> selectById(String brandId) {
         SyBrandDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
-                .where(b.brandId.eq(brandId))
+                .where(syBrand.brandId.eq(brandId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -112,7 +112,7 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
         }
         List<SyBrandDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(b.count()).from(b).where(
+        Long total = queryFactory.select(syBrand.count()).from(syBrand).where(
                 baseAndSiteId(search),
                 baseAndPathId(search),
                 baseAndBrandId(search),
@@ -135,26 +135,26 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(SyBrandDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? b.siteId.eq(search.getSiteId()) : null;
+                ? syBrand.siteId.eq(search.getSiteId()) : null;
     }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression baseAndPathId(SyBrandDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
-                ? b.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_brand"))
+                ? syBrand.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_brand"))
                 : null;
     }
 
     /* brandId 정확 일치 */
     private BooleanExpression baseAndBrandId(SyBrandDto.Request search) {
         return search != null && StringUtils.hasText(search.getBrandId())
-                ? b.brandId.eq(search.getBrandId()) : null;
+                ? syBrand.brandId.eq(search.getBrandId()) : null;
     }
 
     /* vendorId 정확 일치 */
     private BooleanExpression baseAndVendorId(SyBrandDto.Request search) {
         return search != null && StringUtils.hasText(search.getVendorId())
-                ? b.vendorId.eq(search.getVendorId()) : null;
+                ? syBrand.vendorId.eq(search.getVendorId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -167,8 +167,8 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return b.regDate.goe(start).and(b.regDate.lt(endExcl));
-            case "upd_date": return b.updDate.goe(start).and(b.updDate.lt(endExcl));
+            case "reg_date": return syBrand.regDate.goe(start).and(syBrand.regDate.lt(endExcl));
+            case "upd_date": return syBrand.updDate.goe(start).and(syBrand.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -181,16 +181,16 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",brandCode,", b.brandCode, pattern);
-        or = orLike(or, all, types, ",brandEnNm,", b.brandEnNm, pattern);
-        or = orLike(or, all, types, ",brandId,", b.brandId, pattern);
-        or = orLike(or, all, types, ",brandNm,", b.brandNm, pattern);
-        or = orLike(or, all, types, ",brandRemark,", b.brandRemark, pattern);
-        or = orLike(or, all, types, ",logoUrl,", b.logoUrl, pattern);
-        or = orLike(or, all, types, ",pathId,", b.pathId, pattern);
-        or = orLike(or, all, types, ",siteId,", b.siteId, pattern);
-        or = orLike(or, all, types, ",useYn,", b.useYn, pattern);
-        or = orLike(or, all, types, ",vendorId,", b.vendorId, pattern);
+        or = orLike(or, all, types, ",brandCode,", syBrand.brandCode, pattern);
+        or = orLike(or, all, types, ",brandEnNm,", syBrand.brandEnNm, pattern);
+        or = orLike(or, all, types, ",brandId,", syBrand.brandId, pattern);
+        or = orLike(or, all, types, ",brandNm,", syBrand.brandNm, pattern);
+        or = orLike(or, all, types, ",brandRemark,", syBrand.brandRemark, pattern);
+        or = orLike(or, all, types, ",logoUrl,", syBrand.logoUrl, pattern);
+        or = orLike(or, all, types, ",pathId,", syBrand.pathId, pattern);
+        or = orLike(or, all, types, ",siteId,", syBrand.siteId, pattern);
+        or = orLike(or, all, types, ",useYn,", syBrand.useYn, pattern);
+        or = orLike(or, all, types, ",vendorId,", syBrand.vendorId, pattern);
         return or;
     }
 
@@ -213,9 +213,9 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
         if (!StringUtils.hasText(sort)) {
 
             /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, b.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, b.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, b.brandId));
+            orders.add(new OrderSpecifier<>(Order.ASC, syBrand.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, syBrand.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syBrand.brandId));
 
             return orders;
         }
@@ -227,20 +227,20 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("brandId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, b.brandId));
+                    orders.add(new OrderSpecifier(order, syBrand.brandId));
                 } else if ("brandNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, b.brandNm));
+                    orders.add(new OrderSpecifier(order, syBrand.brandNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, b.regDate));
+                    orders.add(new OrderSpecifier(order, syBrand.regDate));
                 }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, b.sortOrd)); }
+                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, syBrand.sortOrd)); }
             }
         }
         /* unknown sort → sortOrd ASC + regDate ASC fallback */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, b.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, b.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, b.brandId));
+            orders.add(new OrderSpecifier<>(Order.ASC, syBrand.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, syBrand.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syBrand.brandId));
         }
         return orders;
     }
@@ -250,26 +250,26 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
     public int updateSelective(SyBrand entity) {
         if (entity.getBrandId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(b);
+        JPAUpdateClause update = queryFactory.update(syBrand);
         boolean hasAny = false;
 
-        if (entity.getSiteId()      != null) { update.set(b.siteId,      entity.getSiteId());      hasAny = true; }
-        if (entity.getBrandCode()   != null) { update.set(b.brandCode,   entity.getBrandCode());   hasAny = true; }
-        if (entity.getBrandNm()     != null) { update.set(b.brandNm,     entity.getBrandNm());     hasAny = true; }
-        if (entity.getBrandEnNm()   != null) { update.set(b.brandEnNm,   entity.getBrandEnNm());   hasAny = true; }
-        if (entity.getPathId()      != null) { update.set(b.pathId,      entity.getPathId());      hasAny = true; }
-        if (entity.getLogoUrl()     != null) { update.set(b.logoUrl,     entity.getLogoUrl());     hasAny = true; }
-        if (entity.getVendorId()    != null) { update.set(b.vendorId,    entity.getVendorId());    hasAny = true; }
-        if (entity.getSortOrd()     != null) { update.set(b.sortOrd,     entity.getSortOrd());     hasAny = true; }
-        if (entity.getUseYn()       != null) { update.set(b.useYn,       entity.getUseYn());       hasAny = true; }
-        if (entity.getBrandRemark() != null) { update.set(b.brandRemark, entity.getBrandRemark()); hasAny = true; }
-        if (entity.getUpdBy()       != null) { update.set(b.updBy,       entity.getUpdBy());       hasAny = true; }
+        if (entity.getSiteId()      != null) { update.set(syBrand.siteId,      entity.getSiteId());      hasAny = true; }
+        if (entity.getBrandCode()   != null) { update.set(syBrand.brandCode,   entity.getBrandCode());   hasAny = true; }
+        if (entity.getBrandNm()     != null) { update.set(syBrand.brandNm,     entity.getBrandNm());     hasAny = true; }
+        if (entity.getBrandEnNm()   != null) { update.set(syBrand.brandEnNm,   entity.getBrandEnNm());   hasAny = true; }
+        if (entity.getPathId()      != null) { update.set(syBrand.pathId,      entity.getPathId());      hasAny = true; }
+        if (entity.getLogoUrl()     != null) { update.set(syBrand.logoUrl,     entity.getLogoUrl());     hasAny = true; }
+        if (entity.getVendorId()    != null) { update.set(syBrand.vendorId,    entity.getVendorId());    hasAny = true; }
+        if (entity.getSortOrd()     != null) { update.set(syBrand.sortOrd,     entity.getSortOrd());     hasAny = true; }
+        if (entity.getUseYn()       != null) { update.set(syBrand.useYn,       entity.getUseYn());       hasAny = true; }
+        if (entity.getBrandRemark() != null) { update.set(syBrand.brandRemark, entity.getBrandRemark()); hasAny = true; }
+        if (entity.getUpdBy()       != null) { update.set(syBrand.updBy,       entity.getUpdBy());       hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(b.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(syBrand.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(b.brandId.eq(entity.getBrandId())).execute();
+        long affected = update.where(syBrand.brandId.eq(entity.getBrandId())).execute();
         return (int) affected;
     }
 

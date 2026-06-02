@@ -29,18 +29,18 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyRoleMenuRepositoryImpl";
-    private static final QSyRoleMenu a = QSyRoleMenu.syRoleMenu;
-    private static final QSySite ste = QSySite.sySite;
+    private static final QSyRoleMenu syRoleMenu = QSyRoleMenu.syRoleMenu;
+    private static final QSySite sySite = QSySite.sySite;
 
     /* 역할별 메뉴 권한 baseSelColumnQuery */
     private JPAQuery<SyRoleMenuDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyRoleMenuDto.Item.class,
-                        a.roleMenuId, a.siteId, a.roleId, a.menuId, a.permLevel,
-                        a.regBy, a.regDate, a.updBy, a.updDate
+                        syRoleMenu.roleMenuId, syRoleMenu.siteId, syRoleMenu.roleId, syRoleMenu.menuId, syRoleMenu.permLevel,
+                        syRoleMenu.regBy, syRoleMenu.regDate, syRoleMenu.updBy, syRoleMenu.updDate
                 ))
-                .from(a)
-                .leftJoin(ste).on(ste.siteId.eq(a.siteId));
+                .from(syRoleMenu)
+                .leftJoin(sySite).on(sySite.siteId.eq(syRoleMenu.siteId));
     }
 
     /* 역할별 메뉴 권한 키조회 */
@@ -48,7 +48,7 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
     public Optional<SyRoleMenuDto.Item> selectById(String roleMenuId) {
         SyRoleMenuDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
-                .where(a.roleMenuId.eq(roleMenuId))
+                .where(syRoleMenu.roleMenuId.eq(roleMenuId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -101,7 +101,7 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
         }
         List<SyRoleMenuDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(a.count()).from(a).where(
+        Long total = queryFactory.select(syRoleMenu.count()).from(syRoleMenu).where(
                 baseAndSiteId(search),
                 baseAndRoleMenuId(search),
                 baseAndRoleId(search),
@@ -124,25 +124,25 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(SyRoleMenuDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? syRoleMenu.siteId.eq(search.getSiteId()) : null;
     }
 
     /* roleMenuId 정확 일치 */
     private BooleanExpression baseAndRoleMenuId(SyRoleMenuDto.Request search) {
         return search != null && StringUtils.hasText(search.getRoleMenuId())
-                ? a.roleMenuId.eq(search.getRoleMenuId()) : null;
+                ? syRoleMenu.roleMenuId.eq(search.getRoleMenuId()) : null;
     }
 
     /* roleId 정확 일치 */
     private BooleanExpression baseAndRoleId(SyRoleMenuDto.Request search) {
         return search != null && StringUtils.hasText(search.getRoleId())
-                ? a.roleId.eq(search.getRoleId()) : null;
+                ? syRoleMenu.roleId.eq(search.getRoleId()) : null;
     }
 
     /* menuId 정확 일치 */
     private BooleanExpression baseAndMenuId(SyRoleMenuDto.Request search) {
         return search != null && StringUtils.hasText(search.getMenuId())
-                ? a.menuId.eq(search.getMenuId()) : null;
+                ? syRoleMenu.menuId.eq(search.getMenuId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -155,8 +155,8 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "reg_date": return syRoleMenu.regDate.goe(start).and(syRoleMenu.regDate.lt(endExcl));
+            case "upd_date": return syRoleMenu.updDate.goe(start).and(syRoleMenu.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -169,10 +169,10 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",menuId,", a.menuId, pattern);
-        or = orLike(or, all, types, ",roleId,", a.roleId, pattern);
-        or = orLike(or, all, types, ",roleMenuId,", a.roleMenuId, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",menuId,", syRoleMenu.menuId, pattern);
+        or = orLike(or, all, types, ",roleId,", syRoleMenu.roleId, pattern);
+        or = orLike(or, all, types, ",roleMenuId,", syRoleMenu.roleMenuId, pattern);
+        or = orLike(or, all, types, ",siteId,", syRoleMenu.siteId, pattern);
         return or;
     }
 
@@ -193,8 +193,8 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.roleMenuId));
+            orders.add(new OrderSpecifier(Order.DESC, syRoleMenu.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syRoleMenu.roleMenuId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -205,17 +205,17 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("roleMenuId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.roleMenuId));
+                    orders.add(new OrderSpecifier(order, syRoleMenu.roleMenuId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, syRoleMenu.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.roleMenuId));
+            orders.add(new OrderSpecifier<>(Order.DESC, syRoleMenu.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syRoleMenu.roleMenuId));
         }
         return orders;
     }
@@ -225,20 +225,20 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
     public int updateSelective(SyRoleMenu entity) {
         if (entity.getRoleMenuId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(syRoleMenu);
         boolean hasAny = false;
 
-        if (entity.getSiteId()    != null) { update.set(a.siteId,    entity.getSiteId());    hasAny = true; }
-        if (entity.getRoleId()    != null) { update.set(a.roleId,    entity.getRoleId());    hasAny = true; }
-        if (entity.getMenuId()    != null) { update.set(a.menuId,    entity.getMenuId());    hasAny = true; }
-        if (entity.getPermLevel() != null) { update.set(a.permLevel, entity.getPermLevel()); hasAny = true; }
-        if (entity.getUpdBy()     != null) { update.set(a.updBy,     entity.getUpdBy());     hasAny = true; }
+        if (entity.getSiteId()    != null) { update.set(syRoleMenu.siteId,    entity.getSiteId());    hasAny = true; }
+        if (entity.getRoleId()    != null) { update.set(syRoleMenu.roleId,    entity.getRoleId());    hasAny = true; }
+        if (entity.getMenuId()    != null) { update.set(syRoleMenu.menuId,    entity.getMenuId());    hasAny = true; }
+        if (entity.getPermLevel() != null) { update.set(syRoleMenu.permLevel, entity.getPermLevel()); hasAny = true; }
+        if (entity.getUpdBy()     != null) { update.set(syRoleMenu.updBy,     entity.getUpdBy());     hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(syRoleMenu.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.roleMenuId.eq(entity.getRoleMenuId())).execute();
+        long affected = update.where(syRoleMenu.roleMenuId.eq(entity.getRoleMenuId())).execute();
         return (int) affected;
     }
 }

@@ -28,28 +28,28 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmEventRepositoryImpl";
-    private static final QPmEvent a = QPmEvent.pmEvent;
+    private static final QPmEvent pmEvent = QPmEvent.pmEvent;
 
     /* 이벤트 baseSelColumnQuery */
     private JPAQuery<PmEventDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PmEventDto.Item.class,
-                        a.eventId, a.siteId, a.eventNm, a.eventTypeCd,
-                        a.imgUrl, a.eventTitle, a.eventContent,
-                        a.startDate, a.endDate, a.noticeStart, a.noticeEnd,
-                        a.eventStatusCd, a.eventStatusCdBefore,
-                        a.targetTypeCd, a.sortOrd, a.viewCnt,
-                        a.useYn, a.eventDesc,
-                        a.regBy, a.regDate, a.updBy, a.updDate
+                        pmEvent.eventId, pmEvent.siteId, pmEvent.eventNm, pmEvent.eventTypeCd,
+                        pmEvent.imgUrl, pmEvent.eventTitle, pmEvent.eventContent,
+                        pmEvent.startDate, pmEvent.endDate, pmEvent.noticeStart, pmEvent.noticeEnd,
+                        pmEvent.eventStatusCd, pmEvent.eventStatusCdBefore,
+                        pmEvent.targetTypeCd, pmEvent.sortOrd, pmEvent.viewCnt,
+                        pmEvent.useYn, pmEvent.eventDesc,
+                        pmEvent.regBy, pmEvent.regDate, pmEvent.updBy, pmEvent.updDate
                 ))
-                .from(a);
+                .from(pmEvent);
     }
 
     /* 이벤트 키조회 */
     @Override
     public Optional<PmEventDto.Item> selectById(String eventId) {
         PmEventDto.Item dto = baseSelColumnQuery()
-                .where(a.eventId.eq(eventId))
+                .where(pmEvent.eventId.eq(eventId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -100,8 +100,8 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
         List<PmEventDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(a.count())
-                .from(a)
+                .select(pmEvent.count())
+                .from(pmEvent)
                 .where(
                 baseAndSiteId(search),
                 baseAndEventId(search),
@@ -124,19 +124,19 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(PmEventDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? pmEvent.siteId.eq(search.getSiteId()) : null;
     }
 
     /* eventId 정확 일치 */
     private BooleanExpression baseAndEventId(PmEventDto.Request search) {
         return search != null && StringUtils.hasText(search.getEventId())
-                ? a.eventId.eq(search.getEventId()) : null;
+                ? pmEvent.eventId.eq(search.getEventId()) : null;
     }
 
     /* useYn 정확 일치 */
     private BooleanExpression baseAndUseYn(PmEventDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
-                ? a.useYn.eq(search.getUseYn()) : null;
+                ? pmEvent.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -149,8 +149,8 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "reg_date": return pmEvent.regDate.goe(start).and(pmEvent.regDate.lt(endExcl));
+            case "upd_date": return pmEvent.updDate.goe(start).and(pmEvent.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -163,18 +163,18 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",eventContent,", a.eventContent, pattern);
-        or = orLike(or, all, types, ",eventDesc,", a.eventDesc, pattern);
-        or = orLike(or, all, types, ",eventId,", a.eventId, pattern);
-        or = orLike(or, all, types, ",eventNm,", a.eventNm, pattern);
-        or = orLike(or, all, types, ",eventStatusCd,", a.eventStatusCd, pattern);
-        or = orLike(or, all, types, ",eventStatusCdBefore,", a.eventStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",eventTitle,", a.eventTitle, pattern);
-        or = orLike(or, all, types, ",eventTypeCd,", a.eventTypeCd, pattern);
-        or = orLike(or, all, types, ",imgUrl,", a.imgUrl, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
-        or = orLike(or, all, types, ",targetTypeCd,", a.targetTypeCd, pattern);
-        or = orLike(or, all, types, ",useYn,", a.useYn, pattern);
+        or = orLike(or, all, types, ",eventContent,", pmEvent.eventContent, pattern);
+        or = orLike(or, all, types, ",eventDesc,", pmEvent.eventDesc, pattern);
+        or = orLike(or, all, types, ",eventId,", pmEvent.eventId, pattern);
+        or = orLike(or, all, types, ",eventNm,", pmEvent.eventNm, pattern);
+        or = orLike(or, all, types, ",eventStatusCd,", pmEvent.eventStatusCd, pattern);
+        or = orLike(or, all, types, ",eventStatusCdBefore,", pmEvent.eventStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",eventTitle,", pmEvent.eventTitle, pattern);
+        or = orLike(or, all, types, ",eventTypeCd,", pmEvent.eventTypeCd, pattern);
+        or = orLike(or, all, types, ",imgUrl,", pmEvent.imgUrl, pattern);
+        or = orLike(or, all, types, ",siteId,", pmEvent.siteId, pattern);
+        or = orLike(or, all, types, ",targetTypeCd,", pmEvent.targetTypeCd, pattern);
+        or = orLike(or, all, types, ",useYn,", pmEvent.useYn, pattern);
         return or;
     }
 
@@ -197,9 +197,9 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
         if (!StringUtils.hasText(sort)) {
 
             /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.eventId));
+            orders.add(new OrderSpecifier<>(Order.ASC, pmEvent.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, pmEvent.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, pmEvent.eventId));
 
             return orders;
         }
@@ -211,20 +211,20 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("eventId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.eventId));
+                    orders.add(new OrderSpecifier(order, pmEvent.eventId));
                 } else if ("eventNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.eventNm));
+                    orders.add(new OrderSpecifier(order, pmEvent.eventNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, pmEvent.regDate));
                 }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, a.sortOrd)); }
+                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, pmEvent.sortOrd)); }
             }
         }
         /* unknown sort → sortOrd ASC + regDate ASC fallback */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.eventId));
+            orders.add(new OrderSpecifier<>(Order.ASC, pmEvent.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, pmEvent.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, pmEvent.eventId));
         }
         return orders;
     }
@@ -236,33 +236,33 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
     public int updateSelective(PmEvent entity) {
         if (entity.getEventId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(pmEvent);
         boolean hasAny = false;
 
-        if (entity.getSiteId()              != null) { update.set(a.siteId,              entity.getSiteId());              hasAny = true; }
-        if (entity.getEventNm()             != null) { update.set(a.eventNm,             entity.getEventNm());             hasAny = true; }
-        if (entity.getEventTypeCd()         != null) { update.set(a.eventTypeCd,         entity.getEventTypeCd());         hasAny = true; }
-        if (entity.getImgUrl()              != null) { update.set(a.imgUrl,              entity.getImgUrl());              hasAny = true; }
-        if (entity.getEventTitle()          != null) { update.set(a.eventTitle,          entity.getEventTitle());          hasAny = true; }
-        if (entity.getEventContent()        != null) { update.set(a.eventContent,        entity.getEventContent());        hasAny = true; }
-        if (entity.getStartDate()           != null) { update.set(a.startDate,           entity.getStartDate());           hasAny = true; }
-        if (entity.getEndDate()             != null) { update.set(a.endDate,             entity.getEndDate());             hasAny = true; }
-        if (entity.getNoticeStart()         != null) { update.set(a.noticeStart,         entity.getNoticeStart());         hasAny = true; }
-        if (entity.getNoticeEnd()           != null) { update.set(a.noticeEnd,           entity.getNoticeEnd());           hasAny = true; }
-        if (entity.getEventStatusCd()       != null) { update.set(a.eventStatusCd,       entity.getEventStatusCd());       hasAny = true; }
-        if (entity.getEventStatusCdBefore() != null) { update.set(a.eventStatusCdBefore, entity.getEventStatusCdBefore()); hasAny = true; }
-        if (entity.getTargetTypeCd()        != null) { update.set(a.targetTypeCd,        entity.getTargetTypeCd());        hasAny = true; }
-        if (entity.getSortOrd()             != null) { update.set(a.sortOrd,             entity.getSortOrd());             hasAny = true; }
-        if (entity.getViewCnt()             != null) { update.set(a.viewCnt,             entity.getViewCnt());             hasAny = true; }
-        if (entity.getUseYn()               != null) { update.set(a.useYn,               entity.getUseYn());               hasAny = true; }
-        if (entity.getEventDesc()           != null) { update.set(a.eventDesc,           entity.getEventDesc());           hasAny = true; }
-        if (entity.getUpdBy()               != null) { update.set(a.updBy,               entity.getUpdBy());               hasAny = true; }
+        if (entity.getSiteId()              != null) { update.set(pmEvent.siteId,              entity.getSiteId());              hasAny = true; }
+        if (entity.getEventNm()             != null) { update.set(pmEvent.eventNm,             entity.getEventNm());             hasAny = true; }
+        if (entity.getEventTypeCd()         != null) { update.set(pmEvent.eventTypeCd,         entity.getEventTypeCd());         hasAny = true; }
+        if (entity.getImgUrl()              != null) { update.set(pmEvent.imgUrl,              entity.getImgUrl());              hasAny = true; }
+        if (entity.getEventTitle()          != null) { update.set(pmEvent.eventTitle,          entity.getEventTitle());          hasAny = true; }
+        if (entity.getEventContent()        != null) { update.set(pmEvent.eventContent,        entity.getEventContent());        hasAny = true; }
+        if (entity.getStartDate()           != null) { update.set(pmEvent.startDate,           entity.getStartDate());           hasAny = true; }
+        if (entity.getEndDate()             != null) { update.set(pmEvent.endDate,             entity.getEndDate());             hasAny = true; }
+        if (entity.getNoticeStart()         != null) { update.set(pmEvent.noticeStart,         entity.getNoticeStart());         hasAny = true; }
+        if (entity.getNoticeEnd()           != null) { update.set(pmEvent.noticeEnd,           entity.getNoticeEnd());           hasAny = true; }
+        if (entity.getEventStatusCd()       != null) { update.set(pmEvent.eventStatusCd,       entity.getEventStatusCd());       hasAny = true; }
+        if (entity.getEventStatusCdBefore() != null) { update.set(pmEvent.eventStatusCdBefore, entity.getEventStatusCdBefore()); hasAny = true; }
+        if (entity.getTargetTypeCd()        != null) { update.set(pmEvent.targetTypeCd,        entity.getTargetTypeCd());        hasAny = true; }
+        if (entity.getSortOrd()             != null) { update.set(pmEvent.sortOrd,             entity.getSortOrd());             hasAny = true; }
+        if (entity.getViewCnt()             != null) { update.set(pmEvent.viewCnt,             entity.getViewCnt());             hasAny = true; }
+        if (entity.getUseYn()               != null) { update.set(pmEvent.useYn,               entity.getUseYn());               hasAny = true; }
+        if (entity.getEventDesc()           != null) { update.set(pmEvent.eventDesc,           entity.getEventDesc());           hasAny = true; }
+        if (entity.getUpdBy()               != null) { update.set(pmEvent.updBy,               entity.getUpdBy());               hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(pmEvent.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.eventId.eq(entity.getEventId())).execute();
+        long affected = update.where(pmEvent.eventId.eq(entity.getEventId())).execute();
         return (int) affected;
     }
 }

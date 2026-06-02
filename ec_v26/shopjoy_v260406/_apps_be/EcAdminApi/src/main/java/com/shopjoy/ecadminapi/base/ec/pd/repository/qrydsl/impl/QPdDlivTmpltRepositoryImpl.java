@@ -31,9 +31,9 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdDlivTmpltRepositoryImpl";
-    private static final QPdDlivTmplt a      = QPdDlivTmplt.pdDlivTmplt;
-    private static final QSySite      ste    = QSySite.sySite;
-    private static final QSyVendor    vnd    = QSyVendor.syVendor;
+    private static final QPdDlivTmplt pdDlivTmplt      = QPdDlivTmplt.pdDlivTmplt;
+    private static final QSySite      sySite    = QSySite.sySite;
+    private static final QSyVendor    syVendor    = QSyVendor.syVendor;
     private static final QSyCode      cdDm   = new QSyCode("cd_dm");
     private static final QSyCode      cdDpt  = new QSyCode("cd_dpt");
 
@@ -41,26 +41,26 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
     private JPAQuery<PdDlivTmpltDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdDlivTmpltDto.Item.class,
-                        a.dlivTmpltId, a.siteId, a.vendorId, a.dlivTmpltNm,
-                        a.dlivMethodCd, a.dlivPayTypeCd, a.dlivCourierCd,
-                        a.dlivCost, a.freeDlivMinAmt, a.islandExtraCost,
-                        a.returnCost, a.exchangeCost, a.returnCourierCd,
-                        a.returnAddrZip, a.returnAddr, a.returnAddrDetail, a.returnTelNo,
-                        a.baseDlivYn, a.useYn,
-                        a.regBy, a.regDate, a.updBy, a.updDate
+                        pdDlivTmplt.dlivTmpltId, pdDlivTmplt.siteId, pdDlivTmplt.vendorId, pdDlivTmplt.dlivTmpltNm,
+                        pdDlivTmplt.dlivMethodCd, pdDlivTmplt.dlivPayTypeCd, pdDlivTmplt.dlivCourierCd,
+                        pdDlivTmplt.dlivCost, pdDlivTmplt.freeDlivMinAmt, pdDlivTmplt.islandExtraCost,
+                        pdDlivTmplt.returnCost, pdDlivTmplt.exchangeCost, pdDlivTmplt.returnCourierCd,
+                        pdDlivTmplt.returnAddrZip, pdDlivTmplt.returnAddr, pdDlivTmplt.returnAddrDetail, pdDlivTmplt.returnTelNo,
+                        pdDlivTmplt.baseDlivYn, pdDlivTmplt.useYn,
+                        pdDlivTmplt.regBy, pdDlivTmplt.regDate, pdDlivTmplt.updBy, pdDlivTmplt.updDate
                 ))
-                .from(a)
-                .leftJoin(ste).on(ste.siteId.eq(a.siteId))
-                .leftJoin(vnd).on(vnd.vendorId.eq(a.vendorId))
-                .leftJoin(cdDm).on(cdDm.codeGrp.eq("DLIV_METHOD").and(cdDm.codeValue.eq(a.dlivMethodCd)))
-                .leftJoin(cdDpt).on(cdDpt.codeGrp.eq("DLIV_PAY_TYPE").and(cdDpt.codeValue.eq(a.dlivPayTypeCd)));
+                .from(pdDlivTmplt)
+                .leftJoin(sySite).on(sySite.siteId.eq(pdDlivTmplt.siteId))
+                .leftJoin(syVendor).on(syVendor.vendorId.eq(pdDlivTmplt.vendorId))
+                .leftJoin(cdDm).on(cdDm.codeGrp.eq("DLIV_METHOD").and(cdDm.codeValue.eq(pdDlivTmplt.dlivMethodCd)))
+                .leftJoin(cdDpt).on(cdDpt.codeGrp.eq("DLIV_PAY_TYPE").and(cdDpt.codeValue.eq(pdDlivTmplt.dlivPayTypeCd)));
     }
 
     /* 배송 템플릿 키조회 */
     @Override
     public Optional<PdDlivTmpltDto.Item> selectById(String dlivTmpltId) {
         PdDlivTmpltDto.Item dto = baseSelColumnQuery()
-                .where(a.dlivTmpltId.eq(dlivTmpltId))
+                .where(pdDlivTmplt.dlivTmpltId.eq(dlivTmpltId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -108,7 +108,7 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
         }
         List<PdDlivTmpltDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(a.count()).from(a).where(
+        Long total = queryFactory.select(pdDlivTmplt.count()).from(pdDlivTmplt).where(
                 baseAndSiteId(search),
                 baseAndDlivTmpltId(search),
                 baseAndDateRange(search),
@@ -128,13 +128,13 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(PdDlivTmpltDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? pdDlivTmplt.siteId.eq(search.getSiteId()) : null;
     }
 
     /* dlivTmpltId 정확 일치 */
     private BooleanExpression baseAndDlivTmpltId(PdDlivTmpltDto.Request search) {
         return search != null && StringUtils.hasText(search.getDlivTmpltId())
-                ? a.dlivTmpltId.eq(search.getDlivTmpltId()) : null;
+                ? pdDlivTmplt.dlivTmpltId.eq(search.getDlivTmpltId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -147,8 +147,8 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "reg_date": return pdDlivTmplt.regDate.goe(start).and(pdDlivTmplt.regDate.lt(endExcl));
+            case "upd_date": return pdDlivTmplt.updDate.goe(start).and(pdDlivTmplt.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -161,20 +161,20 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",baseDlivYn,", a.baseDlivYn, pattern);
-        or = orLike(or, all, types, ",dlivCourierCd,", a.dlivCourierCd, pattern);
-        or = orLike(or, all, types, ",dlivMethodCd,", a.dlivMethodCd, pattern);
-        or = orLike(or, all, types, ",dlivPayTypeCd,", a.dlivPayTypeCd, pattern);
-        or = orLike(or, all, types, ",dlivTmpltId,", a.dlivTmpltId, pattern);
-        or = orLike(or, all, types, ",dlivTmpltNm,", a.dlivTmpltNm, pattern);
-        or = orLike(or, all, types, ",returnAddr,", a.returnAddr, pattern);
-        or = orLike(or, all, types, ",returnAddrDetail,", a.returnAddrDetail, pattern);
-        or = orLike(or, all, types, ",returnAddrZip,", a.returnAddrZip, pattern);
-        or = orLike(or, all, types, ",returnCourierCd,", a.returnCourierCd, pattern);
-        or = orLike(or, all, types, ",returnTelNo,", a.returnTelNo, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
-        or = orLike(or, all, types, ",useYn,", a.useYn, pattern);
-        or = orLike(or, all, types, ",vendorId,", a.vendorId, pattern);
+        or = orLike(or, all, types, ",baseDlivYn,", pdDlivTmplt.baseDlivYn, pattern);
+        or = orLike(or, all, types, ",dlivCourierCd,", pdDlivTmplt.dlivCourierCd, pattern);
+        or = orLike(or, all, types, ",dlivMethodCd,", pdDlivTmplt.dlivMethodCd, pattern);
+        or = orLike(or, all, types, ",dlivPayTypeCd,", pdDlivTmplt.dlivPayTypeCd, pattern);
+        or = orLike(or, all, types, ",dlivTmpltId,", pdDlivTmplt.dlivTmpltId, pattern);
+        or = orLike(or, all, types, ",dlivTmpltNm,", pdDlivTmplt.dlivTmpltNm, pattern);
+        or = orLike(or, all, types, ",returnAddr,", pdDlivTmplt.returnAddr, pattern);
+        or = orLike(or, all, types, ",returnAddrDetail,", pdDlivTmplt.returnAddrDetail, pattern);
+        or = orLike(or, all, types, ",returnAddrZip,", pdDlivTmplt.returnAddrZip, pattern);
+        or = orLike(or, all, types, ",returnCourierCd,", pdDlivTmplt.returnCourierCd, pattern);
+        or = orLike(or, all, types, ",returnTelNo,", pdDlivTmplt.returnTelNo, pattern);
+        or = orLike(or, all, types, ",siteId,", pdDlivTmplt.siteId, pattern);
+        or = orLike(or, all, types, ",useYn,", pdDlivTmplt.useYn, pattern);
+        or = orLike(or, all, types, ",vendorId,", pdDlivTmplt.vendorId, pattern);
         return or;
     }
 
@@ -195,8 +195,8 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.dlivTmpltId));
+            orders.add(new OrderSpecifier(Order.DESC, pdDlivTmplt.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdDlivTmplt.dlivTmpltId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -207,19 +207,19 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("dlivTmpltId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.dlivTmpltId));
+                    orders.add(new OrderSpecifier(order, pdDlivTmplt.dlivTmpltId));
                 } else if ("dlivTmpltNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.dlivTmpltNm));
+                    orders.add(new OrderSpecifier(order, pdDlivTmplt.dlivTmpltNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, pdDlivTmplt.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.dlivTmpltId));
+            orders.add(new OrderSpecifier<>(Order.DESC, pdDlivTmplt.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdDlivTmplt.dlivTmpltId));
         }
         return orders;
     }
@@ -231,34 +231,34 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
     public int updateSelective(PdDlivTmplt entity) {
         if (entity.getDlivTmpltId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(pdDlivTmplt);
         boolean hasAny = false;
 
-        if (entity.getSiteId()           != null) { update.set(a.siteId,           entity.getSiteId());           hasAny = true; }
-        if (entity.getVendorId()         != null) { update.set(a.vendorId,         entity.getVendorId());         hasAny = true; }
-        if (entity.getDlivTmpltNm()      != null) { update.set(a.dlivTmpltNm,      entity.getDlivTmpltNm());      hasAny = true; }
-        if (entity.getDlivMethodCd()     != null) { update.set(a.dlivMethodCd,     entity.getDlivMethodCd());     hasAny = true; }
-        if (entity.getDlivPayTypeCd()    != null) { update.set(a.dlivPayTypeCd,    entity.getDlivPayTypeCd());    hasAny = true; }
-        if (entity.getDlivCourierCd()    != null) { update.set(a.dlivCourierCd,    entity.getDlivCourierCd());    hasAny = true; }
-        if (entity.getDlivCost()         != null) { update.set(a.dlivCost,         entity.getDlivCost());         hasAny = true; }
-        if (entity.getFreeDlivMinAmt()   != null) { update.set(a.freeDlivMinAmt,   entity.getFreeDlivMinAmt());   hasAny = true; }
-        if (entity.getIslandExtraCost()  != null) { update.set(a.islandExtraCost,  entity.getIslandExtraCost());  hasAny = true; }
-        if (entity.getReturnCost()       != null) { update.set(a.returnCost,       entity.getReturnCost());       hasAny = true; }
-        if (entity.getExchangeCost()     != null) { update.set(a.exchangeCost,     entity.getExchangeCost());     hasAny = true; }
-        if (entity.getReturnCourierCd()  != null) { update.set(a.returnCourierCd,  entity.getReturnCourierCd());  hasAny = true; }
-        if (entity.getReturnAddrZip()    != null) { update.set(a.returnAddrZip,    entity.getReturnAddrZip());    hasAny = true; }
-        if (entity.getReturnAddr()       != null) { update.set(a.returnAddr,       entity.getReturnAddr());       hasAny = true; }
-        if (entity.getReturnAddrDetail() != null) { update.set(a.returnAddrDetail, entity.getReturnAddrDetail()); hasAny = true; }
-        if (entity.getReturnTelNo()      != null) { update.set(a.returnTelNo,      entity.getReturnTelNo());      hasAny = true; }
-        if (entity.getBaseDlivYn()       != null) { update.set(a.baseDlivYn,       entity.getBaseDlivYn());       hasAny = true; }
-        if (entity.getUseYn()            != null) { update.set(a.useYn,            entity.getUseYn());            hasAny = true; }
-        if (entity.getUpdBy()            != null) { update.set(a.updBy,            entity.getUpdBy());            hasAny = true; }
+        if (entity.getSiteId()           != null) { update.set(pdDlivTmplt.siteId,           entity.getSiteId());           hasAny = true; }
+        if (entity.getVendorId()         != null) { update.set(pdDlivTmplt.vendorId,         entity.getVendorId());         hasAny = true; }
+        if (entity.getDlivTmpltNm()      != null) { update.set(pdDlivTmplt.dlivTmpltNm,      entity.getDlivTmpltNm());      hasAny = true; }
+        if (entity.getDlivMethodCd()     != null) { update.set(pdDlivTmplt.dlivMethodCd,     entity.getDlivMethodCd());     hasAny = true; }
+        if (entity.getDlivPayTypeCd()    != null) { update.set(pdDlivTmplt.dlivPayTypeCd,    entity.getDlivPayTypeCd());    hasAny = true; }
+        if (entity.getDlivCourierCd()    != null) { update.set(pdDlivTmplt.dlivCourierCd,    entity.getDlivCourierCd());    hasAny = true; }
+        if (entity.getDlivCost()         != null) { update.set(pdDlivTmplt.dlivCost,         entity.getDlivCost());         hasAny = true; }
+        if (entity.getFreeDlivMinAmt()   != null) { update.set(pdDlivTmplt.freeDlivMinAmt,   entity.getFreeDlivMinAmt());   hasAny = true; }
+        if (entity.getIslandExtraCost()  != null) { update.set(pdDlivTmplt.islandExtraCost,  entity.getIslandExtraCost());  hasAny = true; }
+        if (entity.getReturnCost()       != null) { update.set(pdDlivTmplt.returnCost,       entity.getReturnCost());       hasAny = true; }
+        if (entity.getExchangeCost()     != null) { update.set(pdDlivTmplt.exchangeCost,     entity.getExchangeCost());     hasAny = true; }
+        if (entity.getReturnCourierCd()  != null) { update.set(pdDlivTmplt.returnCourierCd,  entity.getReturnCourierCd());  hasAny = true; }
+        if (entity.getReturnAddrZip()    != null) { update.set(pdDlivTmplt.returnAddrZip,    entity.getReturnAddrZip());    hasAny = true; }
+        if (entity.getReturnAddr()       != null) { update.set(pdDlivTmplt.returnAddr,       entity.getReturnAddr());       hasAny = true; }
+        if (entity.getReturnAddrDetail() != null) { update.set(pdDlivTmplt.returnAddrDetail, entity.getReturnAddrDetail()); hasAny = true; }
+        if (entity.getReturnTelNo()      != null) { update.set(pdDlivTmplt.returnTelNo,      entity.getReturnTelNo());      hasAny = true; }
+        if (entity.getBaseDlivYn()       != null) { update.set(pdDlivTmplt.baseDlivYn,       entity.getBaseDlivYn());       hasAny = true; }
+        if (entity.getUseYn()            != null) { update.set(pdDlivTmplt.useYn,            entity.getUseYn());            hasAny = true; }
+        if (entity.getUpdBy()            != null) { update.set(pdDlivTmplt.updBy,            entity.getUpdBy());            hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(pdDlivTmplt.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.dlivTmpltId.eq(entity.getDlivTmpltId())).execute();
+        long affected = update.where(pdDlivTmplt.dlivTmpltId.eq(entity.getDlivTmpltId())).execute();
         return (int) affected;
     }
 }

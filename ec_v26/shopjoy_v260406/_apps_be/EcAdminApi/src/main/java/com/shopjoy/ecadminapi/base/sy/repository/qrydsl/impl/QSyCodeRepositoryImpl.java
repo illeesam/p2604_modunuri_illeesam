@@ -29,21 +29,21 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyCodeRepositoryImpl";
-    private static final QSyCode a = QSyCode.syCode;
-    private static final QSySite ste = QSySite.sySite;
+    private static final QSyCode syCode = QSyCode.syCode;
+    private static final QSySite sySite = QSySite.sySite;
 
     /* baseSelColumnQuery */
     private JPAQuery<SyCodeDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyCodeDto.Item.class,
-                        a.codeId, a.siteId, a.codeGrp, a.codeValue, a.codeLabel,
-                        a.sortOrd, a.useYn, a.parentCodeValue, a.childCodeValues,
-                        a.codeRemark, a.codeLevel, a.codeOpt1,
-                        a.regBy, a.regDate, a.updBy, a.updDate,
-                        ste.siteNm.as("siteNm")
+                        syCode.codeId, syCode.siteId, syCode.codeGrp, syCode.codeValue, syCode.codeLabel,
+                        syCode.sortOrd, syCode.useYn, syCode.parentCodeValue, syCode.childCodeValues,
+                        syCode.codeRemark, syCode.codeLevel, syCode.codeOpt1,
+                        syCode.regBy, syCode.regDate, syCode.updBy, syCode.updDate,
+                        sySite.siteNm.as("siteNm")
                 ))
-                .from(a)
-                .leftJoin(ste).on(ste.siteId.eq(a.siteId));
+                .from(syCode)
+                .leftJoin(sySite).on(sySite.siteId.eq(syCode.siteId));
     }
 
     /* 키조회 */
@@ -51,7 +51,7 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
     public Optional<SyCodeDto.Item> selectById(String codeId) {
         SyCodeDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
-                .where(a.codeId.eq(codeId))
+                .where(syCode.codeId.eq(codeId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -108,7 +108,7 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
         }
         List<SyCodeDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(a.count()).from(a).where(
+        Long total = queryFactory.select(syCode.count()).from(syCode).where(
                 baseAndSiteId(search),
                 baseAndCodeId(search),
                 baseAndCodeGrp(search),
@@ -133,37 +133,37 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(SyCodeDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? syCode.siteId.eq(search.getSiteId()) : null;
     }
 
     /* codeId 정확 일치 */
     private BooleanExpression baseAndCodeId(SyCodeDto.Request search) {
         return search != null && StringUtils.hasText(search.getCodeId())
-                ? a.codeId.eq(search.getCodeId()) : null;
+                ? syCode.codeId.eq(search.getCodeId()) : null;
     }
 
     /* codeGrp 정확 일치 */
     private BooleanExpression baseAndCodeGrp(SyCodeDto.Request search) {
         return search != null && StringUtils.hasText(search.getCodeGrp())
-                ? a.codeGrp.eq(search.getCodeGrp()) : null;
+                ? syCode.codeGrp.eq(search.getCodeGrp()) : null;
     }
 
     /* codeValue 정확 일치 */
     private BooleanExpression baseAndCodeValue(SyCodeDto.Request search) {
         return search != null && StringUtils.hasText(search.getCodeValue())
-                ? a.codeValue.eq(search.getCodeValue()) : null;
+                ? syCode.codeValue.eq(search.getCodeValue()) : null;
     }
 
     /* parentCodeValue 정확 일치 */
     private BooleanExpression baseAndParentCodeValue(SyCodeDto.Request search) {
         return search != null && StringUtils.hasText(search.getParentCodeValue())
-                ? a.parentCodeValue.eq(search.getParentCodeValue()) : null;
+                ? syCode.parentCodeValue.eq(search.getParentCodeValue()) : null;
     }
 
     /* useYn 정확 일치 */
     private BooleanExpression baseAndUseYn(SyCodeDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
-                ? a.useYn.eq(search.getUseYn()) : null;
+                ? syCode.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -176,8 +176,8 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "reg_date": return syCode.regDate.goe(start).and(syCode.regDate.lt(endExcl));
+            case "upd_date": return syCode.updDate.goe(start).and(syCode.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -190,16 +190,16 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",childCodeValues,", a.childCodeValues, pattern);
-        or = orLike(or, all, types, ",codeGrp,", a.codeGrp, pattern);
-        or = orLike(or, all, types, ",codeId,", a.codeId, pattern);
-        or = orLike(or, all, types, ",codeLabel,", a.codeLabel, pattern);
-        or = orLike(or, all, types, ",codeOpt1,", a.codeOpt1, pattern);
-        or = orLike(or, all, types, ",codeRemark,", a.codeRemark, pattern);
-        or = orLike(or, all, types, ",codeValue,", a.codeValue, pattern);
-        or = orLike(or, all, types, ",parentCodeValue,", a.parentCodeValue, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
-        or = orLike(or, all, types, ",useYn,", a.useYn, pattern);
+        or = orLike(or, all, types, ",childCodeValues,", syCode.childCodeValues, pattern);
+        or = orLike(or, all, types, ",codeGrp,", syCode.codeGrp, pattern);
+        or = orLike(or, all, types, ",codeId,", syCode.codeId, pattern);
+        or = orLike(or, all, types, ",codeLabel,", syCode.codeLabel, pattern);
+        or = orLike(or, all, types, ",codeOpt1,", syCode.codeOpt1, pattern);
+        or = orLike(or, all, types, ",codeRemark,", syCode.codeRemark, pattern);
+        or = orLike(or, all, types, ",codeValue,", syCode.codeValue, pattern);
+        or = orLike(or, all, types, ",parentCodeValue,", syCode.parentCodeValue, pattern);
+        or = orLike(or, all, types, ",siteId,", syCode.siteId, pattern);
+        or = orLike(or, all, types, ",useYn,", syCode.useYn, pattern);
         return or;
     }
 
@@ -222,9 +222,9 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
         if (!StringUtils.hasText(sort)) {
 
             /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.codeId));
+            orders.add(new OrderSpecifier<>(Order.ASC, syCode.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, syCode.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syCode.codeId));
 
             return orders;
         }
@@ -236,18 +236,18 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("codeId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.codeId));
+                    orders.add(new OrderSpecifier(order, syCode.codeId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, syCode.regDate));
                 }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, a.sortOrd)); }
+                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, syCode.sortOrd)); }
             }
         }
         /* unknown sort → sortOrd ASC + regDate ASC fallback */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.codeId));
+            orders.add(new OrderSpecifier<>(Order.ASC, syCode.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, syCode.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syCode.codeId));
         }
         return orders;
     }
@@ -257,25 +257,25 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
     public int updateSelective(SyCode entity) {
         if (entity.getCodeId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(syCode);
         boolean hasAny = false;
 
-        if (entity.getSiteId()          != null) { update.set(a.siteId,          entity.getSiteId());          hasAny = true; }
-        if (entity.getCodeGrp()         != null) { update.set(a.codeGrp,         entity.getCodeGrp());         hasAny = true; }
-        if (entity.getCodeValue()       != null) { update.set(a.codeValue,       entity.getCodeValue());       hasAny = true; }
-        if (entity.getCodeLabel()       != null) { update.set(a.codeLabel,       entity.getCodeLabel());       hasAny = true; }
-        if (entity.getSortOrd()         != null) { update.set(a.sortOrd,         entity.getSortOrd());         hasAny = true; }
-        if (entity.getUseYn()           != null) { update.set(a.useYn,           entity.getUseYn());           hasAny = true; }
-        if (entity.getParentCodeValue() != null) { update.set(a.parentCodeValue, entity.getParentCodeValue()); hasAny = true; }
-        if (entity.getChildCodeValues() != null) { update.set(a.childCodeValues, entity.getChildCodeValues()); hasAny = true; }
-        if (entity.getCodeRemark()      != null) { update.set(a.codeRemark,      entity.getCodeRemark());      hasAny = true; }
-        if (entity.getUpdBy()           != null) { update.set(a.updBy,           entity.getUpdBy());           hasAny = true; }
+        if (entity.getSiteId()          != null) { update.set(syCode.siteId,          entity.getSiteId());          hasAny = true; }
+        if (entity.getCodeGrp()         != null) { update.set(syCode.codeGrp,         entity.getCodeGrp());         hasAny = true; }
+        if (entity.getCodeValue()       != null) { update.set(syCode.codeValue,       entity.getCodeValue());       hasAny = true; }
+        if (entity.getCodeLabel()       != null) { update.set(syCode.codeLabel,       entity.getCodeLabel());       hasAny = true; }
+        if (entity.getSortOrd()         != null) { update.set(syCode.sortOrd,         entity.getSortOrd());         hasAny = true; }
+        if (entity.getUseYn()           != null) { update.set(syCode.useYn,           entity.getUseYn());           hasAny = true; }
+        if (entity.getParentCodeValue() != null) { update.set(syCode.parentCodeValue, entity.getParentCodeValue()); hasAny = true; }
+        if (entity.getChildCodeValues() != null) { update.set(syCode.childCodeValues, entity.getChildCodeValues()); hasAny = true; }
+        if (entity.getCodeRemark()      != null) { update.set(syCode.codeRemark,      entity.getCodeRemark());      hasAny = true; }
+        if (entity.getUpdBy()           != null) { update.set(syCode.updBy,           entity.getUpdBy());           hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(syCode.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.codeId.eq(entity.getCodeId())).execute();
+        long affected = update.where(syCode.codeId.eq(entity.getCodeId())).execute();
         return (int) affected;
     }
 }

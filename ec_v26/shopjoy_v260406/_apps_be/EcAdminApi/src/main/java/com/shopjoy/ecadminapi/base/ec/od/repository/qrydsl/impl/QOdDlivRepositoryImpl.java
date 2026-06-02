@@ -33,9 +33,9 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdDlivRepositoryImpl";
-    private static final QOdDliv   a    = QOdDliv.odDliv;
-    private static final QOdOrder  o    = QOdOrder.odOrder;
-    private static final QSyVendor v    = QSyVendor.syVendor;
+    private static final QOdDliv   odDliv    = QOdDliv.odDliv;
+    private static final QOdOrder  odOrder    = QOdOrder.odOrder;
+    private static final QSyVendor syVendor    = QSyVendor.syVendor;
     private static final QSyCode   cdDs = new QSyCode("cd_ds");
     private static final QSyCode   cdDt = new QSyCode("cd_dt");
     private static final QSyCode   cdDd = new QSyCode("cd_dd");
@@ -46,41 +46,41 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
     private JPAQuery<OdDlivDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(OdDlivDto.Item.class,
-                        a.dlivId, a.siteId, a.orderId, a.vendorId,
-                        a.dlivTypeCd, a.dlivDivCd, a.dlivStatusCd, a.dlivStatusCdBefore,
-                        a.outboundCourierCd, a.outboundTrackingNo,
-                        a.dlivShipDate, a.dlivDate,
-                        a.shippingFee,
-                        a.inboundCourierCd, a.inboundTrackingNo,
-                        a.recvNm, a.recvPhone, a.recvZip, a.recvAddr, a.recvAddrDetail,
-                        a.dlivMemo,
-                        a.regBy, a.regDate, a.updBy, a.updDate,
-                        o.memberNm.as("memberNm"),
-                        o.orderDate.as("orderDate"),
-                        o.orderStatusCd.as("orderStatusCd"),
-                        v.vendorNm.as("vendorNm"),
-                        v.vendorPhone.as("vendorTel"),
+                        odDliv.dlivId, odDliv.siteId, odDliv.orderId, odDliv.vendorId,
+                        odDliv.dlivTypeCd, odDliv.dlivDivCd, odDliv.dlivStatusCd, odDliv.dlivStatusCdBefore,
+                        odDliv.outboundCourierCd, odDliv.outboundTrackingNo,
+                        odDliv.dlivShipDate, odDliv.dlivDate,
+                        odDliv.shippingFee,
+                        odDliv.inboundCourierCd, odDliv.inboundTrackingNo,
+                        odDliv.recvNm, odDliv.recvPhone, odDliv.recvZip, odDliv.recvAddr, odDliv.recvAddrDetail,
+                        odDliv.dlivMemo,
+                        odDliv.regBy, odDliv.regDate, odDliv.updBy, odDliv.updDate,
+                        odOrder.memberNm.as("memberNm"),
+                        odOrder.orderDate.as("orderDate"),
+                        odOrder.orderStatusCd.as("orderStatusCd"),
+                        syVendor.vendorNm.as("vendorNm"),
+                        syVendor.vendorPhone.as("vendorTel"),
                         cdDs.codeLabel.as("dlivStatusCdNm"),
                         cdDt.codeLabel.as("dlivTypeCdNm"),
                         cdDd.codeLabel.as("dlivDivCdNm"),
                         cdOc.codeLabel.as("outboundCourierCdNm"),
                         cdIc.codeLabel.as("inboundCourierCdNm")
                 ))
-                .from(a)
-                .leftJoin(o).on(o.orderId.eq(a.orderId))
-                .leftJoin(v).on(v.vendorId.eq(a.vendorId))
-                .leftJoin(cdDs).on(cdDs.codeGrp.eq("DLIV_STATUS").and(cdDs.codeValue.eq(a.dlivStatusCd)))
-                .leftJoin(cdDt).on(cdDt.codeGrp.eq("DLIV_TYPE").and(cdDt.codeValue.eq(a.dlivTypeCd)))
-                .leftJoin(cdDd).on(cdDd.codeGrp.eq("DLIV_DIV").and(cdDd.codeValue.eq(a.dlivDivCd)))
-                .leftJoin(cdOc).on(cdOc.codeGrp.eq("COURIER").and(cdOc.codeValue.eq(a.outboundCourierCd)))
-                .leftJoin(cdIc).on(cdIc.codeGrp.eq("COURIER").and(cdIc.codeValue.eq(a.inboundCourierCd)));
+                .from(odDliv)
+                .leftJoin(odOrder).on(odOrder.orderId.eq(odDliv.orderId))
+                .leftJoin(syVendor).on(syVendor.vendorId.eq(odDliv.vendorId))
+                .leftJoin(cdDs).on(cdDs.codeGrp.eq("DLIV_STATUS").and(cdDs.codeValue.eq(odDliv.dlivStatusCd)))
+                .leftJoin(cdDt).on(cdDt.codeGrp.eq("DLIV_TYPE").and(cdDt.codeValue.eq(odDliv.dlivTypeCd)))
+                .leftJoin(cdDd).on(cdDd.codeGrp.eq("DLIV_DIV").and(cdDd.codeValue.eq(odDliv.dlivDivCd)))
+                .leftJoin(cdOc).on(cdOc.codeGrp.eq("COURIER").and(cdOc.codeValue.eq(odDliv.outboundCourierCd)))
+                .leftJoin(cdIc).on(cdIc.codeGrp.eq("COURIER").and(cdIc.codeValue.eq(odDliv.inboundCourierCd)));
     }
 
     /* 배송 키조회 */
     @Override
     public Optional<OdDlivDto.Item> selectById(String dlivId) {
         OdDlivDto.Item dto = baseSelColumnQuery()
-                .where(a.dlivId.eq(dlivId))
+                .where(odDliv.dlivId.eq(dlivId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -133,9 +133,9 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
         List<OdDlivDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(a.count())
-                .from(a)
-                .leftJoin(o).on(o.orderId.eq(a.orderId))
+                .select(odDliv.count())
+                .from(odDliv)
+                .leftJoin(odOrder).on(odOrder.orderId.eq(odDliv.orderId))
                 .where(
                 baseAndOrderIds(search),
                 baseAndOrderId(search),
@@ -159,25 +159,25 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
     /* orderId IN */
     private BooleanExpression baseAndOrderIds(OdDlivDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getOrderIds())
-                ? a.orderId.in(search.getOrderIds()) : null;
+                ? odDliv.orderId.in(search.getOrderIds()) : null;
     }
 
     /* orderId 정확 일치 */
     private BooleanExpression baseAndOrderId(OdDlivDto.Request search) {
         return search != null && StringUtils.hasText(search.getOrderId())
-                ? a.orderId.eq(search.getOrderId()) : null;
+                ? odDliv.orderId.eq(search.getOrderId()) : null;
     }
 
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(OdDlivDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? odDliv.siteId.eq(search.getSiteId()) : null;
     }
 
     /* dlivId 정확 일치 */
     private BooleanExpression baseAndDlivId(OdDlivDto.Request search) {
         return search != null && StringUtils.hasText(search.getDlivId())
-                ? a.dlivId.eq(search.getDlivId()) : null;
+                ? odDliv.dlivId.eq(search.getDlivId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -190,10 +190,10 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "dliv_ship_date": return a.dlivShipDate.goe(start).and(a.dlivShipDate.lt(endExcl));
-            case "dliv_date": return a.dlivDate.goe(start).and(a.dlivDate.lt(endExcl));
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "dliv_ship_date": return odDliv.dlivShipDate.goe(start).and(odDliv.dlivShipDate.lt(endExcl));
+            case "dliv_date": return odDliv.dlivDate.goe(start).and(odDliv.dlivDate.lt(endExcl));
+            case "reg_date": return odDliv.regDate.goe(start).and(odDliv.regDate.lt(endExcl));
+            case "upd_date": return odDliv.updDate.goe(start).and(odDliv.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -206,37 +206,37 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",apprAprvUserId,", a.apprAprvUserId, pattern);
-        or = orLike(or, all, types, ",apprReason,", a.apprReason, pattern);
-        or = orLike(or, all, types, ",apprReqUserId,", a.apprReqUserId, pattern);
-        or = orLike(or, all, types, ",apprStatusCd,", a.apprStatusCd, pattern);
-        or = orLike(or, all, types, ",apprStatusCdBefore,", a.apprStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",apprTargetCd,", a.apprTargetCd, pattern);
-        or = orLike(or, all, types, ",apprTargetNm,", a.apprTargetNm, pattern);
-        or = orLike(or, all, types, ",claimId,", a.claimId, pattern);
-        or = orLike(or, all, types, ",dlivDivCd,", a.dlivDivCd, pattern);
-        or = orLike(or, all, types, ",dlivId,", a.dlivId, pattern);
-        or = orLike(or, all, types, ",dlivMemo,", a.dlivMemo, pattern);
-        or = orLike(or, all, types, ",dlivPayTypeCd,", a.dlivPayTypeCd, pattern);
-        or = orLike(or, all, types, ",dlivStatusCd,", a.dlivStatusCd, pattern);
-        or = orLike(or, all, types, ",dlivStatusCdBefore,", a.dlivStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",dlivTypeCd,", a.dlivTypeCd, pattern);
-        or = orLike(or, all, types, ",inboundCourierCd,", a.inboundCourierCd, pattern);
-        or = orLike(or, all, types, ",inboundTrackingNo,", a.inboundTrackingNo, pattern);
-        or = orLike(or, all, types, ",memberId,", a.memberId, pattern);
-        or = orLike(or, all, types, ",memberNm,", a.memberNm, pattern);
-        or = orLike(or, all, types, ",orderId,", a.orderId, pattern);
-        or = orLike(or, all, types, ",outboundCourierCd,", a.outboundCourierCd, pattern);
-        or = orLike(or, all, types, ",outboundTrackingNo,", a.outboundTrackingNo, pattern);
-        or = orLike(or, all, types, ",parentDlivId,", a.parentDlivId, pattern);
-        or = orLike(or, all, types, ",recvAddr,", a.recvAddr, pattern);
-        or = orLike(or, all, types, ",recvAddrDetail,", a.recvAddrDetail, pattern);
-        or = orLike(or, all, types, ",recvNm,", a.recvNm, pattern);
-        or = orLike(or, all, types, ",recvPhone,", a.recvPhone, pattern);
-        or = orLike(or, all, types, ",recvZip,", a.recvZip, pattern);
-        or = orLike(or, all, types, ",shippingFeeTypeCd,", a.shippingFeeTypeCd, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
-        or = orLike(or, all, types, ",vendorId,", a.vendorId, pattern);
+        or = orLike(or, all, types, ",apprAprvUserId,", odDliv.apprAprvUserId, pattern);
+        or = orLike(or, all, types, ",apprReason,", odDliv.apprReason, pattern);
+        or = orLike(or, all, types, ",apprReqUserId,", odDliv.apprReqUserId, pattern);
+        or = orLike(or, all, types, ",apprStatusCd,", odDliv.apprStatusCd, pattern);
+        or = orLike(or, all, types, ",apprStatusCdBefore,", odDliv.apprStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",apprTargetCd,", odDliv.apprTargetCd, pattern);
+        or = orLike(or, all, types, ",apprTargetNm,", odDliv.apprTargetNm, pattern);
+        or = orLike(or, all, types, ",claimId,", odDliv.claimId, pattern);
+        or = orLike(or, all, types, ",dlivDivCd,", odDliv.dlivDivCd, pattern);
+        or = orLike(or, all, types, ",dlivId,", odDliv.dlivId, pattern);
+        or = orLike(or, all, types, ",dlivMemo,", odDliv.dlivMemo, pattern);
+        or = orLike(or, all, types, ",dlivPayTypeCd,", odDliv.dlivPayTypeCd, pattern);
+        or = orLike(or, all, types, ",dlivStatusCd,", odDliv.dlivStatusCd, pattern);
+        or = orLike(or, all, types, ",dlivStatusCdBefore,", odDliv.dlivStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",dlivTypeCd,", odDliv.dlivTypeCd, pattern);
+        or = orLike(or, all, types, ",inboundCourierCd,", odDliv.inboundCourierCd, pattern);
+        or = orLike(or, all, types, ",inboundTrackingNo,", odDliv.inboundTrackingNo, pattern);
+        or = orLike(or, all, types, ",memberId,", odDliv.memberId, pattern);
+        or = orLike(or, all, types, ",memberNm,", odDliv.memberNm, pattern);
+        or = orLike(or, all, types, ",orderId,", odDliv.orderId, pattern);
+        or = orLike(or, all, types, ",outboundCourierCd,", odDliv.outboundCourierCd, pattern);
+        or = orLike(or, all, types, ",outboundTrackingNo,", odDliv.outboundTrackingNo, pattern);
+        or = orLike(or, all, types, ",parentDlivId,", odDliv.parentDlivId, pattern);
+        or = orLike(or, all, types, ",recvAddr,", odDliv.recvAddr, pattern);
+        or = orLike(or, all, types, ",recvAddrDetail,", odDliv.recvAddrDetail, pattern);
+        or = orLike(or, all, types, ",recvNm,", odDliv.recvNm, pattern);
+        or = orLike(or, all, types, ",recvPhone,", odDliv.recvPhone, pattern);
+        or = orLike(or, all, types, ",recvZip,", odDliv.recvZip, pattern);
+        or = orLike(or, all, types, ",shippingFeeTypeCd,", odDliv.shippingFeeTypeCd, pattern);
+        or = orLike(or, all, types, ",siteId,", odDliv.siteId, pattern);
+        or = orLike(or, all, types, ",vendorId,", odDliv.vendorId, pattern);
         return or;
     }
 
@@ -258,8 +258,8 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
             /* 기본 정렬: regDate DESC + PK ASC (안정 정렬 — 저장 시마다 동률 행 순서 흔들림 방지) */
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier(Order.ASC,  a.dlivId));
+            orders.add(new OrderSpecifier(Order.DESC, odDliv.regDate));
+            orders.add(new OrderSpecifier(Order.ASC,  odDliv.dlivId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -270,18 +270,18 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("dlivId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.dlivId));
+                    orders.add(new OrderSpecifier(order, odDliv.dlivId));
                 } else if ("memberNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.memberNm));
+                    orders.add(new OrderSpecifier(order, odDliv.memberNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, odDliv.regDate));
                 }
             }
         }
         /* unknown sort fallback: regDate DESC + PK ASC */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC,  a.dlivId));
+            orders.add(new OrderSpecifier<>(Order.DESC, odDliv.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC,  odDliv.dlivId));
         }
         return orders;
     }
@@ -293,23 +293,23 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
     public int updateSelective(OdDliv entity) {
         if (entity.getDlivId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(odDliv);
         boolean hasAny = false;
 
-        if (entity.getDlivStatusCd()       != null) { update.set(a.dlivStatusCd,       entity.getDlivStatusCd());       hasAny = true; }
-        if (entity.getDlivStatusCdBefore() != null) { update.set(a.dlivStatusCdBefore, entity.getDlivStatusCdBefore()); hasAny = true; }
-        if (entity.getOutboundCourierCd()  != null) { update.set(a.outboundCourierCd,  entity.getOutboundCourierCd());  hasAny = true; }
-        if (entity.getOutboundTrackingNo() != null) { update.set(a.outboundTrackingNo, entity.getOutboundTrackingNo()); hasAny = true; }
-        if (entity.getDlivShipDate()       != null) { update.set(a.dlivShipDate,       entity.getDlivShipDate());       hasAny = true; }
-        if (entity.getDlivDate()           != null) { update.set(a.dlivDate,           entity.getDlivDate());           hasAny = true; }
-        if (entity.getDlivMemo()           != null) { update.set(a.dlivMemo,           entity.getDlivMemo());           hasAny = true; }
-        if (entity.getUpdBy()              != null) { update.set(a.updBy,              entity.getUpdBy());              hasAny = true; }
+        if (entity.getDlivStatusCd()       != null) { update.set(odDliv.dlivStatusCd,       entity.getDlivStatusCd());       hasAny = true; }
+        if (entity.getDlivStatusCdBefore() != null) { update.set(odDliv.dlivStatusCdBefore, entity.getDlivStatusCdBefore()); hasAny = true; }
+        if (entity.getOutboundCourierCd()  != null) { update.set(odDliv.outboundCourierCd,  entity.getOutboundCourierCd());  hasAny = true; }
+        if (entity.getOutboundTrackingNo() != null) { update.set(odDliv.outboundTrackingNo, entity.getOutboundTrackingNo()); hasAny = true; }
+        if (entity.getDlivShipDate()       != null) { update.set(odDliv.dlivShipDate,       entity.getDlivShipDate());       hasAny = true; }
+        if (entity.getDlivDate()           != null) { update.set(odDliv.dlivDate,           entity.getDlivDate());           hasAny = true; }
+        if (entity.getDlivMemo()           != null) { update.set(odDliv.dlivMemo,           entity.getDlivMemo());           hasAny = true; }
+        if (entity.getUpdBy()              != null) { update.set(odDliv.updBy,              entity.getUpdBy());              hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(odDliv.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.dlivId.eq(entity.getDlivId())).execute();
+        long affected = update.where(odDliv.dlivId.eq(entity.getDlivId())).execute();
         return (int) affected;
     }
 }

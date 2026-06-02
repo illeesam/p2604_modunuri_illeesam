@@ -331,10 +331,10 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
         <template #vendor>
           <div style="display:flex;gap:8px;align-items:center;">
             <div class="form-control" style="background:#f9f9f9;cursor:pointer;padding:0;display:flex;align-items:center;" @click="handleBtnAction('vendorModal-open')">
-              <span style="padding:8px 12px;flex:1;">
+              <span style="padding:4px 10px;flex:1;">
                 {{ cfSelectedVendorNm }}
               </span>
-              <span style="padding:8px 12px;color:#999;font-size:12px;">
+              <span style="padding:4px 10px;color:#999;font-size:12px;">
                 ▼
               </span>
             </div>

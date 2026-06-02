@@ -30,33 +30,33 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.mb.repository.qrydsl.impl.QMbhMemberLoginLogRepositoryImpl";
-    private static final QMbhMemberLoginLog a    = QMbhMemberLoginLog.mbhMemberLoginLog;
-    private static final QSySite            ste  = QSySite.sySite;
-    private static final QMbMember          mem  = QMbMember.mbMember;
+    private static final QMbhMemberLoginLog mbhMemberLoginLog    = QMbhMemberLoginLog.mbhMemberLoginLog;
+    private static final QSySite            sySite  = QSySite.sySite;
+    private static final QMbMember          mbMember  = QMbMember.mbMember;
     private static final QSyCode            cdLr = new QSyCode("cd_lr");
 
     /* 회원 로그인 로그 baseSelColumnQuery */
     private JPAQuery<MbhMemberLoginLogDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(MbhMemberLoginLogDto.Item.class,
-                        a.logId, a.siteId, a.memberId, a.loginId, a.loginDate,
-                        a.resultCd, a.failCnt, a.ip, a.device, a.os, a.browser, a.country,
-                        a.accessToken, a.accessTokenExp, a.refreshToken, a.refreshTokenExp,
-                        a.uiNm, a.cmdNm,
-                        a.regBy, a.regDate, a.updBy, a.updDate,
-                        ste.siteNm.as("siteNm"),
-                        mem.memberNm.as("memberNm")
+                        mbhMemberLoginLog.logId, mbhMemberLoginLog.siteId, mbhMemberLoginLog.memberId, mbhMemberLoginLog.loginId, mbhMemberLoginLog.loginDate,
+                        mbhMemberLoginLog.resultCd, mbhMemberLoginLog.failCnt, mbhMemberLoginLog.ip, mbhMemberLoginLog.device, mbhMemberLoginLog.os, mbhMemberLoginLog.browser, mbhMemberLoginLog.country,
+                        mbhMemberLoginLog.accessToken, mbhMemberLoginLog.accessTokenExp, mbhMemberLoginLog.refreshToken, mbhMemberLoginLog.refreshTokenExp,
+                        mbhMemberLoginLog.uiNm, mbhMemberLoginLog.cmdNm,
+                        mbhMemberLoginLog.regBy, mbhMemberLoginLog.regDate, mbhMemberLoginLog.updBy, mbhMemberLoginLog.updDate,
+                        sySite.siteNm.as("siteNm"),
+                        mbMember.memberNm.as("memberNm")
                 ))
-                .from(a)
-                .leftJoin(ste).on(ste.siteId.eq(a.siteId))
-                .leftJoin(mem).on(mem.memberId.eq(a.memberId))
-                .leftJoin(cdLr).on(cdLr.codeGrp.eq("LOGIN_RESULT").and(cdLr.codeValue.eq(a.resultCd)));
+                .from(mbhMemberLoginLog)
+                .leftJoin(sySite).on(sySite.siteId.eq(mbhMemberLoginLog.siteId))
+                .leftJoin(mbMember).on(mbMember.memberId.eq(mbhMemberLoginLog.memberId))
+                .leftJoin(cdLr).on(cdLr.codeGrp.eq("LOGIN_RESULT").and(cdLr.codeValue.eq(mbhMemberLoginLog.resultCd)));
     }
 
     /* 회원 로그인 로그 키조회 */
     @Override
     public Optional<MbhMemberLoginLogDto.Item> selectById(String logId) {
-        return Optional.ofNullable(baseSelColumnQuery().where(a.logId.eq(logId)).fetchOne());
+        return Optional.ofNullable(baseSelColumnQuery().where(mbhMemberLoginLog.logId.eq(logId)).fetchOne());
     }
 
     /* 회원 로그인 로그 목록조회 */
@@ -93,7 +93,7 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<MbhMemberLoginLogDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(a.count()).from(a).where(
+        Long total = queryFactory.select(mbhMemberLoginLog.count()).from(mbhMemberLoginLog).where(
                 baseAndSiteId(search),
                 baseAndLogId(search),
                 baseAndDateRange(search),
@@ -113,13 +113,13 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(MbhMemberLoginLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? mbhMemberLoginLog.siteId.eq(search.getSiteId()) : null;
     }
 
     /* logId 정확 일치 */
     private BooleanExpression baseAndLogId(MbhMemberLoginLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getLogId())
-                ? a.logId.eq(search.getLogId()) : null;
+                ? mbhMemberLoginLog.logId.eq(search.getLogId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -132,7 +132,7 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
+            case "reg_date": return mbhMemberLoginLog.regDate.goe(start).and(mbhMemberLoginLog.regDate.lt(endExcl));
             default: return null;
         }
     }
@@ -145,21 +145,21 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",accessToken,", a.accessToken, pattern);
-        or = orLike(or, all, types, ",authId,", a.authId, pattern);
-        or = orLike(or, all, types, ",browser,", a.browser, pattern);
-        or = orLike(or, all, types, ",cmdNm,", a.cmdNm, pattern);
-        or = orLike(or, all, types, ",country,", a.country, pattern);
-        or = orLike(or, all, types, ",device,", a.device, pattern);
-        or = orLike(or, all, types, ",ip,", a.ip, pattern);
-        or = orLike(or, all, types, ",logId,", a.logId, pattern);
-        or = orLike(or, all, types, ",loginId,", a.loginId, pattern);
-        or = orLike(or, all, types, ",memberId,", a.memberId, pattern);
-        or = orLike(or, all, types, ",os,", a.os, pattern);
-        or = orLike(or, all, types, ",refreshToken,", a.refreshToken, pattern);
-        or = orLike(or, all, types, ",resultCd,", a.resultCd, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
-        or = orLike(or, all, types, ",uiNm,", a.uiNm, pattern);
+        or = orLike(or, all, types, ",accessToken,", mbhMemberLoginLog.accessToken, pattern);
+        or = orLike(or, all, types, ",authId,", mbhMemberLoginLog.authId, pattern);
+        or = orLike(or, all, types, ",browser,", mbhMemberLoginLog.browser, pattern);
+        or = orLike(or, all, types, ",cmdNm,", mbhMemberLoginLog.cmdNm, pattern);
+        or = orLike(or, all, types, ",country,", mbhMemberLoginLog.country, pattern);
+        or = orLike(or, all, types, ",device,", mbhMemberLoginLog.device, pattern);
+        or = orLike(or, all, types, ",ip,", mbhMemberLoginLog.ip, pattern);
+        or = orLike(or, all, types, ",logId,", mbhMemberLoginLog.logId, pattern);
+        or = orLike(or, all, types, ",loginId,", mbhMemberLoginLog.loginId, pattern);
+        or = orLike(or, all, types, ",memberId,", mbhMemberLoginLog.memberId, pattern);
+        or = orLike(or, all, types, ",os,", mbhMemberLoginLog.os, pattern);
+        or = orLike(or, all, types, ",refreshToken,", mbhMemberLoginLog.refreshToken, pattern);
+        or = orLike(or, all, types, ",resultCd,", mbhMemberLoginLog.resultCd, pattern);
+        or = orLike(or, all, types, ",siteId,", mbhMemberLoginLog.siteId, pattern);
+        or = orLike(or, all, types, ",uiNm,", mbhMemberLoginLog.uiNm, pattern);
         return or;
     }
 
@@ -180,8 +180,8 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.logId));
+            orders.add(new OrderSpecifier(Order.DESC, mbhMemberLoginLog.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, mbhMemberLoginLog.logId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -192,17 +192,17 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("logId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.logId));
+                    orders.add(new OrderSpecifier(order, mbhMemberLoginLog.logId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, mbhMemberLoginLog.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.logId));
+            orders.add(new OrderSpecifier<>(Order.DESC, mbhMemberLoginLog.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, mbhMemberLoginLog.logId));
         }
         return orders;
     }
@@ -213,30 +213,30 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
     @Override
     public int updateSelective(MbhMemberLoginLog entity) {
         if (entity.getLogId() == null) return 0;
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(mbhMemberLoginLog);
         boolean hasAny = false;
-        if (entity.getSiteId()          != null) { update.set(a.siteId,          entity.getSiteId());          hasAny = true; }
-        if (entity.getAuthId()          != null) { update.set(a.authId,          entity.getAuthId());          hasAny = true; }
-        if (entity.getMemberId()        != null) { update.set(a.memberId,        entity.getMemberId());        hasAny = true; }
-        if (entity.getLoginId()         != null) { update.set(a.loginId,         entity.getLoginId());         hasAny = true; }
-        if (entity.getLoginDate()       != null) { update.set(a.loginDate,       entity.getLoginDate());       hasAny = true; }
-        if (entity.getResultCd()        != null) { update.set(a.resultCd,        entity.getResultCd());        hasAny = true; }
-        if (entity.getFailCnt()         != null) { update.set(a.failCnt,         entity.getFailCnt());         hasAny = true; }
-        if (entity.getIp()              != null) { update.set(a.ip,              entity.getIp());              hasAny = true; }
-        if (entity.getDevice()          != null) { update.set(a.device,          entity.getDevice());          hasAny = true; }
-        if (entity.getOs()              != null) { update.set(a.os,              entity.getOs());              hasAny = true; }
-        if (entity.getBrowser()         != null) { update.set(a.browser,         entity.getBrowser());         hasAny = true; }
-        if (entity.getCountry()         != null) { update.set(a.country,         entity.getCountry());         hasAny = true; }
-        if (entity.getAccessToken()     != null) { update.set(a.accessToken,     entity.getAccessToken());     hasAny = true; }
-        if (entity.getAccessTokenExp()  != null) { update.set(a.accessTokenExp,  entity.getAccessTokenExp());  hasAny = true; }
-        if (entity.getRefreshToken()    != null) { update.set(a.refreshToken,    entity.getRefreshToken());    hasAny = true; }
-        if (entity.getRefreshTokenExp() != null) { update.set(a.refreshTokenExp, entity.getRefreshTokenExp()); hasAny = true; }
-        if (entity.getUiNm()            != null) { update.set(a.uiNm,            entity.getUiNm());            hasAny = true; }
-        if (entity.getCmdNm()           != null) { update.set(a.cmdNm,           entity.getCmdNm());           hasAny = true; }
-        if (entity.getUpdBy()           != null) { update.set(a.updBy,           entity.getUpdBy());           hasAny = true; }
+        if (entity.getSiteId()          != null) { update.set(mbhMemberLoginLog.siteId,          entity.getSiteId());          hasAny = true; }
+        if (entity.getAuthId()          != null) { update.set(mbhMemberLoginLog.authId,          entity.getAuthId());          hasAny = true; }
+        if (entity.getMemberId()        != null) { update.set(mbhMemberLoginLog.memberId,        entity.getMemberId());        hasAny = true; }
+        if (entity.getLoginId()         != null) { update.set(mbhMemberLoginLog.loginId,         entity.getLoginId());         hasAny = true; }
+        if (entity.getLoginDate()       != null) { update.set(mbhMemberLoginLog.loginDate,       entity.getLoginDate());       hasAny = true; }
+        if (entity.getResultCd()        != null) { update.set(mbhMemberLoginLog.resultCd,        entity.getResultCd());        hasAny = true; }
+        if (entity.getFailCnt()         != null) { update.set(mbhMemberLoginLog.failCnt,         entity.getFailCnt());         hasAny = true; }
+        if (entity.getIp()              != null) { update.set(mbhMemberLoginLog.ip,              entity.getIp());              hasAny = true; }
+        if (entity.getDevice()          != null) { update.set(mbhMemberLoginLog.device,          entity.getDevice());          hasAny = true; }
+        if (entity.getOs()              != null) { update.set(mbhMemberLoginLog.os,              entity.getOs());              hasAny = true; }
+        if (entity.getBrowser()         != null) { update.set(mbhMemberLoginLog.browser,         entity.getBrowser());         hasAny = true; }
+        if (entity.getCountry()         != null) { update.set(mbhMemberLoginLog.country,         entity.getCountry());         hasAny = true; }
+        if (entity.getAccessToken()     != null) { update.set(mbhMemberLoginLog.accessToken,     entity.getAccessToken());     hasAny = true; }
+        if (entity.getAccessTokenExp()  != null) { update.set(mbhMemberLoginLog.accessTokenExp,  entity.getAccessTokenExp());  hasAny = true; }
+        if (entity.getRefreshToken()    != null) { update.set(mbhMemberLoginLog.refreshToken,    entity.getRefreshToken());    hasAny = true; }
+        if (entity.getRefreshTokenExp() != null) { update.set(mbhMemberLoginLog.refreshTokenExp, entity.getRefreshTokenExp()); hasAny = true; }
+        if (entity.getUiNm()            != null) { update.set(mbhMemberLoginLog.uiNm,            entity.getUiNm());            hasAny = true; }
+        if (entity.getCmdNm()           != null) { update.set(mbhMemberLoginLog.cmdNm,           entity.getCmdNm());           hasAny = true; }
+        if (entity.getUpdBy()           != null) { update.set(mbhMemberLoginLog.updBy,           entity.getUpdBy());           hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(mbhMemberLoginLog.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
         if (!hasAny) return 0;
-        return (int) update.where(a.logId.eq(entity.getLogId())).execute();
+        return (int) update.where(mbhMemberLoginLog.logId.eq(entity.getLogId())).execute();
     }
 }

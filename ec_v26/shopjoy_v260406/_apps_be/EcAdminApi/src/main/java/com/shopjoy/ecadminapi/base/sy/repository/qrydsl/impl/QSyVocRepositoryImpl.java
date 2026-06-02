@@ -29,26 +29,26 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyVocRepositoryImpl";
-    private static final QSyVoc a = QSyVoc.syVoc;
-    private static final QSySite ste = QSySite.sySite;
+    private static final QSyVoc syVoc = QSyVoc.syVoc;
+    private static final QSySite sySite = QSySite.sySite;
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     /* 고객의 소리(VOC) baseSelColumnQuery */
     private JPAQuery<SyVocDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyVocDto.Item.class,
-                        a.vocId, a.siteId, a.vocMasterCd, a.vocDetailCd, a.vocNm, a.vocContent, a.useYn,
-                        a.regBy, a.regDate, a.updBy, a.updDate,
-                        ste.siteNm.as("siteNm")
+                        syVoc.vocId, syVoc.siteId, syVoc.vocMasterCd, syVoc.vocDetailCd, syVoc.vocNm, syVoc.vocContent, syVoc.useYn,
+                        syVoc.regBy, syVoc.regDate, syVoc.updBy, syVoc.updDate,
+                        sySite.siteNm.as("siteNm")
                 ))
-                .from(a)
-                .leftJoin(ste).on(ste.siteId.eq(a.siteId));
+                .from(syVoc)
+                .leftJoin(sySite).on(sySite.siteId.eq(syVoc.siteId));
     }
 
     /* 고객의 소리(VOC) 키조회 */
     @Override
     public Optional<SyVocDto.Item> selectById(String vocId) {
-        SyVocDto.Item dto = baseSelColumnQuery().where(a.vocId.eq(vocId)).fetchOne();
+        SyVocDto.Item dto = baseSelColumnQuery().where(syVoc.vocId.eq(vocId)).fetchOne();
         return Optional.ofNullable(dto);
     }
 
@@ -94,7 +94,7 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyVocDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(a.count()).from(a).where(
+        Long total = queryFactory.select(syVoc.count()).from(syVoc).where(
                 baseAndSiteId(search),
                 baseAndVocId(search),
                 baseAndVocMasterCd(search),
@@ -116,31 +116,31 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(SyVocDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? syVoc.siteId.eq(search.getSiteId()) : null;
     }
 
     /* vocId 정확 일치 */
     private BooleanExpression baseAndVocId(SyVocDto.Request search) {
         return search != null && StringUtils.hasText(search.getVocId())
-                ? a.vocId.eq(search.getVocId()) : null;
+                ? syVoc.vocId.eq(search.getVocId()) : null;
     }
 
     /* vocMasterCd 정확 일치 */
     private BooleanExpression baseAndVocMasterCd(SyVocDto.Request search) {
         return search != null && StringUtils.hasText(search.getVocMasterCd())
-                ? a.vocMasterCd.eq(search.getVocMasterCd()) : null;
+                ? syVoc.vocMasterCd.eq(search.getVocMasterCd()) : null;
     }
 
     /* vocDetailCd 정확 일치 */
     private BooleanExpression baseAndVocDetailCd(SyVocDto.Request search) {
         return search != null && StringUtils.hasText(search.getVocDetailCd())
-                ? a.vocDetailCd.eq(search.getVocDetailCd()) : null;
+                ? syVoc.vocDetailCd.eq(search.getVocDetailCd()) : null;
     }
 
     /* useYn 정확 일치 */
     private BooleanExpression baseAndUseYn(SyVocDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
-                ? a.useYn.eq(search.getUseYn()) : null;
+                ? syVoc.useYn.eq(search.getUseYn()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
@@ -151,13 +151,13 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
-        or = orLike(or, all, types, ",useYn,", a.useYn, pattern);
-        or = orLike(or, all, types, ",vocContent,", a.vocContent, pattern);
-        or = orLike(or, all, types, ",vocDetailCd,", a.vocDetailCd, pattern);
-        or = orLike(or, all, types, ",vocId,", a.vocId, pattern);
-        or = orLike(or, all, types, ",vocMasterCd,", a.vocMasterCd, pattern);
-        or = orLike(or, all, types, ",vocNm,", a.vocNm, pattern);
+        or = orLike(or, all, types, ",siteId,", syVoc.siteId, pattern);
+        or = orLike(or, all, types, ",useYn,", syVoc.useYn, pattern);
+        or = orLike(or, all, types, ",vocContent,", syVoc.vocContent, pattern);
+        or = orLike(or, all, types, ",vocDetailCd,", syVoc.vocDetailCd, pattern);
+        or = orLike(or, all, types, ",vocId,", syVoc.vocId, pattern);
+        or = orLike(or, all, types, ",vocMasterCd,", syVoc.vocMasterCd, pattern);
+        or = orLike(or, all, types, ",vocNm,", syVoc.vocNm, pattern);
         return or;
     }
 
@@ -178,8 +178,8 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.vocId));
+            orders.add(new OrderSpecifier(Order.DESC, syVoc.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syVoc.vocId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -190,19 +190,19 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("vocId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.vocId));
+                    orders.add(new OrderSpecifier(order, syVoc.vocId));
                 } else if ("vocNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.vocNm));
+                    orders.add(new OrderSpecifier(order, syVoc.vocNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, syVoc.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.vocId));
+            orders.add(new OrderSpecifier<>(Order.DESC, syVoc.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syVoc.vocId));
         }
         return orders;
     }
@@ -214,22 +214,22 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
     public int updateSelective(SyVoc entity) {
         if (entity.getVocId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(syVoc);
         boolean hasAny = false;
 
-        if (entity.getSiteId()      != null) { update.set(a.siteId,      entity.getSiteId());      hasAny = true; }
-        if (entity.getVocMasterCd() != null) { update.set(a.vocMasterCd, entity.getVocMasterCd()); hasAny = true; }
-        if (entity.getVocDetailCd() != null) { update.set(a.vocDetailCd, entity.getVocDetailCd()); hasAny = true; }
-        if (entity.getVocNm()       != null) { update.set(a.vocNm,       entity.getVocNm());       hasAny = true; }
-        if (entity.getVocContent()  != null) { update.set(a.vocContent,  entity.getVocContent());  hasAny = true; }
-        if (entity.getUseYn()       != null) { update.set(a.useYn,       entity.getUseYn());       hasAny = true; }
-        if (entity.getUpdBy()       != null) { update.set(a.updBy,       entity.getUpdBy());       hasAny = true; }
+        if (entity.getSiteId()      != null) { update.set(syVoc.siteId,      entity.getSiteId());      hasAny = true; }
+        if (entity.getVocMasterCd() != null) { update.set(syVoc.vocMasterCd, entity.getVocMasterCd()); hasAny = true; }
+        if (entity.getVocDetailCd() != null) { update.set(syVoc.vocDetailCd, entity.getVocDetailCd()); hasAny = true; }
+        if (entity.getVocNm()       != null) { update.set(syVoc.vocNm,       entity.getVocNm());       hasAny = true; }
+        if (entity.getVocContent()  != null) { update.set(syVoc.vocContent,  entity.getVocContent());  hasAny = true; }
+        if (entity.getUseYn()       != null) { update.set(syVoc.useYn,       entity.getUseYn());       hasAny = true; }
+        if (entity.getUpdBy()       != null) { update.set(syVoc.updBy,       entity.getUpdBy());       hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(syVoc.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.vocId.eq(entity.getVocId())).execute();
+        long affected = update.where(syVoc.vocId.eq(entity.getVocId())).execute();
         return (int) affected;
     }
 }

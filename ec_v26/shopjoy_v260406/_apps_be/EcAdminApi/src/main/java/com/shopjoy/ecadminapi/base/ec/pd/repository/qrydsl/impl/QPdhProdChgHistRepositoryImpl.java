@@ -29,26 +29,26 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdhProdChgHistRepositoryImpl";
-    private static final QPdhProdChgHist a   = QPdhProdChgHist.pdhProdChgHist;
-    private static final QSySite        ste = QSySite.sySite;
+    private static final QPdhProdChgHist pdhProdChgHist   = QPdhProdChgHist.pdhProdChgHist;
+    private static final QSySite        sySite = QSySite.sySite;
 
     /** 기본 쿼리 빌드 */
     private JPAQuery<PdhProdChgHistDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdhProdChgHistDto.Item.class,
-                        a.prodChgHistId,
-                        a.siteId,
-                        a.prodId,
-                        a.chgTypeCd,
-                        a.beforeVal,
-                        a.afterVal,
-                        a.chgReason,
-                        a.chgUserId,
-                        a.chgDate,
-                        a.regBy, a.regDate, a.updBy, a.updDate
+                        pdhProdChgHist.prodChgHistId,
+                        pdhProdChgHist.siteId,
+                        pdhProdChgHist.prodId,
+                        pdhProdChgHist.chgTypeCd,
+                        pdhProdChgHist.beforeVal,
+                        pdhProdChgHist.afterVal,
+                        pdhProdChgHist.chgReason,
+                        pdhProdChgHist.chgUserId,
+                        pdhProdChgHist.chgDate,
+                        pdhProdChgHist.regBy, pdhProdChgHist.regDate, pdhProdChgHist.updBy, pdhProdChgHist.updDate
                 ))
-                .from(a)
-                .leftJoin(ste).on(ste.siteId.eq(a.siteId));
+                .from(pdhProdChgHist)
+                .leftJoin(sySite).on(sySite.siteId.eq(pdhProdChgHist.siteId));
     }
 
     /* 상품 변경 이력 키조회 */
@@ -56,7 +56,7 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
     public Optional<PdhProdChgHistDto.Item> selectById(String id) {
         PdhProdChgHistDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
-                .where(a.prodChgHistId.eq(id))
+                .where(pdhProdChgHist.prodChgHistId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -107,8 +107,8 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
         List<PdhProdChgHistDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(a.count())
-                .from(a)
+                .select(pdhProdChgHist.count())
+                .from(pdhProdChgHist)
                 .where(
                 baseAndSiteId(search),
                 baseAndProdChgHistId(search),
@@ -131,13 +131,13 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(PdhProdChgHistDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? pdhProdChgHist.siteId.eq(search.getSiteId()) : null;
     }
 
     /* prodChgHistId 정확 일치 */
     private BooleanExpression baseAndProdChgHistId(PdhProdChgHistDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdChgHistId())
-                ? a.prodChgHistId.eq(search.getProdChgHistId()) : null;
+                ? pdhProdChgHist.prodChgHistId.eq(search.getProdChgHistId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -150,8 +150,8 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "reg_date": return pdhProdChgHist.regDate.goe(start).and(pdhProdChgHist.regDate.lt(endExcl));
+            case "upd_date": return pdhProdChgHist.updDate.goe(start).and(pdhProdChgHist.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -164,14 +164,14 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",afterVal,", a.afterVal, pattern);
-        or = orLike(or, all, types, ",beforeVal,", a.beforeVal, pattern);
-        or = orLike(or, all, types, ",chgReason,", a.chgReason, pattern);
-        or = orLike(or, all, types, ",chgTypeCd,", a.chgTypeCd, pattern);
-        or = orLike(or, all, types, ",chgUserId,", a.chgUserId, pattern);
-        or = orLike(or, all, types, ",prodChgHistId,", a.prodChgHistId, pattern);
-        or = orLike(or, all, types, ",prodId,", a.prodId, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",afterVal,", pdhProdChgHist.afterVal, pattern);
+        or = orLike(or, all, types, ",beforeVal,", pdhProdChgHist.beforeVal, pattern);
+        or = orLike(or, all, types, ",chgReason,", pdhProdChgHist.chgReason, pattern);
+        or = orLike(or, all, types, ",chgTypeCd,", pdhProdChgHist.chgTypeCd, pattern);
+        or = orLike(or, all, types, ",chgUserId,", pdhProdChgHist.chgUserId, pattern);
+        or = orLike(or, all, types, ",prodChgHistId,", pdhProdChgHist.prodChgHistId, pattern);
+        or = orLike(or, all, types, ",prodId,", pdhProdChgHist.prodId, pattern);
+        or = orLike(or, all, types, ",siteId,", pdhProdChgHist.siteId, pattern);
         return or;
     }
 
@@ -192,8 +192,8 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.prodChgHistId));
+            orders.add(new OrderSpecifier(Order.DESC, pdhProdChgHist.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdhProdChgHist.prodChgHistId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -204,17 +204,17 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("prodChgHistId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.prodChgHistId));
+                    orders.add(new OrderSpecifier(order, pdhProdChgHist.prodChgHistId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, pdhProdChgHist.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.prodChgHistId));
+            orders.add(new OrderSpecifier<>(Order.DESC, pdhProdChgHist.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdhProdChgHist.prodChgHistId));
         }
         return orders;
     }
@@ -224,24 +224,24 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
     public int updateSelective(PdhProdChgHist entity) {
         if (entity.getProdChgHistId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(pdhProdChgHist);
         boolean hasAny = false;
 
-        if (entity.getSiteId()      != null) { update.set(a.siteId,      entity.getSiteId());      hasAny = true; }
-        if (entity.getProdId()      != null) { update.set(a.prodId,      entity.getProdId());      hasAny = true; }
-        if (entity.getChgTypeCd()   != null) { update.set(a.chgTypeCd,   entity.getChgTypeCd());   hasAny = true; }
-        if (entity.getBeforeVal()   != null) { update.set(a.beforeVal,   entity.getBeforeVal());   hasAny = true; }
-        if (entity.getAfterVal()    != null) { update.set(a.afterVal,    entity.getAfterVal());    hasAny = true; }
-        if (entity.getChgReason()   != null) { update.set(a.chgReason,   entity.getChgReason());   hasAny = true; }
-        if (entity.getChgUserId()   != null) { update.set(a.chgUserId,   entity.getChgUserId());   hasAny = true; }
-        if (entity.getChgDate()     != null) { update.set(a.chgDate,     entity.getChgDate());     hasAny = true; }
-        if (entity.getUpdBy()       != null) { update.set(a.updBy,       entity.getUpdBy());       hasAny = true; }
+        if (entity.getSiteId()      != null) { update.set(pdhProdChgHist.siteId,      entity.getSiteId());      hasAny = true; }
+        if (entity.getProdId()      != null) { update.set(pdhProdChgHist.prodId,      entity.getProdId());      hasAny = true; }
+        if (entity.getChgTypeCd()   != null) { update.set(pdhProdChgHist.chgTypeCd,   entity.getChgTypeCd());   hasAny = true; }
+        if (entity.getBeforeVal()   != null) { update.set(pdhProdChgHist.beforeVal,   entity.getBeforeVal());   hasAny = true; }
+        if (entity.getAfterVal()    != null) { update.set(pdhProdChgHist.afterVal,    entity.getAfterVal());    hasAny = true; }
+        if (entity.getChgReason()   != null) { update.set(pdhProdChgHist.chgReason,   entity.getChgReason());   hasAny = true; }
+        if (entity.getChgUserId()   != null) { update.set(pdhProdChgHist.chgUserId,   entity.getChgUserId());   hasAny = true; }
+        if (entity.getChgDate()     != null) { update.set(pdhProdChgHist.chgDate,     entity.getChgDate());     hasAny = true; }
+        if (entity.getUpdBy()       != null) { update.set(pdhProdChgHist.updBy,       entity.getUpdBy());       hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(pdhProdChgHist.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.prodChgHistId.eq(entity.getProdChgHistId())).execute();
+        long affected = update.where(pdhProdChgHist.prodChgHistId.eq(entity.getProdChgHistId())).execute();
         return (int) affected;
     }
 }

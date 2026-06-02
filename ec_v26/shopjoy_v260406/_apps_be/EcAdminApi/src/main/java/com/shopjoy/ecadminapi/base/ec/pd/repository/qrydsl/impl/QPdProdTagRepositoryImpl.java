@@ -29,27 +29,27 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdProdTagRepositoryImpl";
-    private static final QPdProdTag a   = QPdProdTag.pdProdTag;
-    private static final QPdProd    prd = QPdProd.pdProd;
-    private static final QSySite    ste = QSySite.sySite;
+    private static final QPdProdTag pdProdTag   = QPdProdTag.pdProdTag;
+    private static final QPdProd    pdProd = QPdProd.pdProd;
+    private static final QSySite    sySite = QSySite.sySite;
 
     /* 상품 태그 baseSelColumnQuery */
     private JPAQuery<PdProdTagDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdProdTagDto.Item.class,
-                        a.prodTagId, a.siteId, a.prodId, a.tagId,
-                        a.regBy, a.regDate
+                        pdProdTag.prodTagId, pdProdTag.siteId, pdProdTag.prodId, pdProdTag.tagId,
+                        pdProdTag.regBy, pdProdTag.regDate
                 ))
-                .from(a)
-                .leftJoin(prd).on(prd.prodId.eq(a.prodId))
-                .leftJoin(ste).on(ste.siteId.eq(a.siteId));
+                .from(pdProdTag)
+                .leftJoin(pdProd).on(pdProd.prodId.eq(pdProdTag.prodId))
+                .leftJoin(sySite).on(sySite.siteId.eq(pdProdTag.siteId));
     }
 
     /* 상품 태그 키조회 */
     @Override
     public Optional<PdProdTagDto.Item> selectById(String prodTagId) {
         PdProdTagDto.Item dto = baseSelColumnQuery()
-                .where(a.prodTagId.eq(prodTagId))
+                .where(pdProdTag.prodTagId.eq(prodTagId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -97,7 +97,7 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
         }
         List<PdProdTagDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(a.count()).from(a).where(
+        Long total = queryFactory.select(pdProdTag.count()).from(pdProdTag).where(
                 baseAndSiteId(search),
                 baseAndProdTagId(search),
                 baseAndDateRange(search),
@@ -117,13 +117,13 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(PdProdTagDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? pdProdTag.siteId.eq(search.getSiteId()) : null;
     }
 
     /* prodTagId 정확 일치 */
     private BooleanExpression baseAndProdTagId(PdProdTagDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdTagId())
-                ? a.prodTagId.eq(search.getProdTagId()) : null;
+                ? pdProdTag.prodTagId.eq(search.getProdTagId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -136,8 +136,8 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "reg_date": return pdProdTag.regDate.goe(start).and(pdProdTag.regDate.lt(endExcl));
+            case "upd_date": return pdProdTag.updDate.goe(start).and(pdProdTag.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -150,10 +150,10 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",prodId,", a.prodId, pattern);
-        or = orLike(or, all, types, ",prodTagId,", a.prodTagId, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
-        or = orLike(or, all, types, ",tagId,", a.tagId, pattern);
+        or = orLike(or, all, types, ",prodId,", pdProdTag.prodId, pattern);
+        or = orLike(or, all, types, ",prodTagId,", pdProdTag.prodTagId, pattern);
+        or = orLike(or, all, types, ",siteId,", pdProdTag.siteId, pattern);
+        or = orLike(or, all, types, ",tagId,", pdProdTag.tagId, pattern);
         return or;
     }
 
@@ -174,8 +174,8 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.prodTagId));
+            orders.add(new OrderSpecifier(Order.DESC, pdProdTag.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdProdTag.prodTagId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -186,17 +186,17 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("prodTagId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.prodTagId));
+                    orders.add(new OrderSpecifier(order, pdProdTag.prodTagId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, pdProdTag.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.prodTagId));
+            orders.add(new OrderSpecifier<>(Order.DESC, pdProdTag.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdProdTag.prodTagId));
         }
         return orders;
     }
@@ -208,16 +208,16 @@ public class QPdProdTagRepositoryImpl implements QPdProdTagRepository {
     public int updateSelective(PdProdTag entity) {
         if (entity.getProdTagId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(pdProdTag);
         boolean hasAny = false;
 
-        if (entity.getSiteId() != null) { update.set(a.siteId, entity.getSiteId()); hasAny = true; }
-        if (entity.getProdId() != null) { update.set(a.prodId, entity.getProdId()); hasAny = true; }
-        if (entity.getTagId()  != null) { update.set(a.tagId,  entity.getTagId());  hasAny = true; }
+        if (entity.getSiteId() != null) { update.set(pdProdTag.siteId, entity.getSiteId()); hasAny = true; }
+        if (entity.getProdId() != null) { update.set(pdProdTag.prodId, entity.getProdId()); hasAny = true; }
+        if (entity.getTagId()  != null) { update.set(pdProdTag.tagId,  entity.getTagId());  hasAny = true; }
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.prodTagId.eq(entity.getProdTagId())).execute();
+        long affected = update.where(pdProdTag.prodTagId.eq(entity.getProdTagId())).execute();
         return (int) affected;
     }
 }

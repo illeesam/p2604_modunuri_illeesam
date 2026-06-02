@@ -31,36 +31,36 @@ public class QPdProdOptItemRepositoryImpl implements QPdProdOptItemRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdProdOptItemRepositoryImpl";
-    private static final QPdProdOptItem a = QPdProdOptItem.pdProdOptItem;
-    private static final QPdProdOpt     opt = QPdProdOpt.pdProdOpt;
+    private static final QPdProdOptItem pdProdOptItem = QPdProdOptItem.pdProdOptItem;
+    private static final QPdProdOpt     pdProdOpt = QPdProdOpt.pdProdOpt;
 
     private JPAQuery<PdProdOptItemDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdProdOptItemDto.Item.class,
-                        a.optItemId,
-                        a.siteId,
-                        a.optId,
-                        a.optTypeCd,
-                        a.optNm,
-                        a.optVal,
-                        a.optValCodeId,
-                        a.parentOptItemId,
-                        a.optStyle,
-                        a.sortOrd,
-                        a.useYn,
-                        a.regBy,
-                        a.regDate,
-                        a.updBy,
-                        a.updDate
+                        pdProdOptItem.optItemId,
+                        pdProdOptItem.siteId,
+                        pdProdOptItem.optId,
+                        pdProdOptItem.optTypeCd,
+                        pdProdOptItem.optNm,
+                        pdProdOptItem.optVal,
+                        pdProdOptItem.optValCodeId,
+                        pdProdOptItem.parentOptItemId,
+                        pdProdOptItem.optStyle,
+                        pdProdOptItem.sortOrd,
+                        pdProdOptItem.useYn,
+                        pdProdOptItem.regBy,
+                        pdProdOptItem.regDate,
+                        pdProdOptItem.updBy,
+                        pdProdOptItem.updDate
                 ))
-                .from(a);
+                .from(pdProdOptItem);
     }
 
     /* 상품 옵션 아이템 키조회 */
     @Override
     public Optional<PdProdOptItemDto.Item> selectById(String optItemId) {
         PdProdOptItemDto.Item dto = baseSelColumnQuery()
-                .where(a.optItemId.eq(optItemId))
+                .where(pdProdOptItem.optItemId.eq(optItemId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -110,7 +110,7 @@ public class QPdProdOptItemRepositoryImpl implements QPdProdOptItemRepository {
         }
         List<PdProdOptItemDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(a.count()).from(a).where(
+        Long total = queryFactory.select(pdProdOptItem.count()).from(pdProdOptItem).where(
                 baseAndOptId(search),
                 baseAndSiteId(search),
                 baseAndOptItemId(search),
@@ -133,19 +133,19 @@ public class QPdProdOptItemRepositoryImpl implements QPdProdOptItemRepository {
     /* optId 정확 일치 */
     private BooleanExpression baseAndOptId(PdProdOptItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getOptId())
-                ? a.optId.eq(search.getOptId()) : null;
+                ? pdProdOptItem.optId.eq(search.getOptId()) : null;
     }
 
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(PdProdOptItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? pdProdOptItem.siteId.eq(search.getSiteId()) : null;
     }
 
     /* optItemId 정확 일치 */
     private BooleanExpression baseAndOptItemId(PdProdOptItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getOptItemId())
-                ? a.optItemId.eq(search.getOptItemId()) : null;
+                ? pdProdOptItem.optItemId.eq(search.getOptItemId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -158,8 +158,8 @@ public class QPdProdOptItemRepositoryImpl implements QPdProdOptItemRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "reg_date": return pdProdOptItem.regDate.goe(start).and(pdProdOptItem.regDate.lt(endExcl));
+            case "upd_date": return pdProdOptItem.updDate.goe(start).and(pdProdOptItem.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -172,16 +172,16 @@ public class QPdProdOptItemRepositoryImpl implements QPdProdOptItemRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",optId,", a.optId, pattern);
-        or = orLike(or, all, types, ",optItemId,", a.optItemId, pattern);
-        or = orLike(or, all, types, ",optNm,", a.optNm, pattern);
-        or = orLike(or, all, types, ",optStyle,", a.optStyle, pattern);
-        or = orLike(or, all, types, ",optTypeCd,", a.optTypeCd, pattern);
-        or = orLike(or, all, types, ",optVal,", a.optVal, pattern);
-        or = orLike(or, all, types, ",optValCodeId,", a.optValCodeId, pattern);
-        or = orLike(or, all, types, ",parentOptItemId,", a.parentOptItemId, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
-        or = orLike(or, all, types, ",useYn,", a.useYn, pattern);
+        or = orLike(or, all, types, ",optId,", pdProdOptItem.optId, pattern);
+        or = orLike(or, all, types, ",optItemId,", pdProdOptItem.optItemId, pattern);
+        or = orLike(or, all, types, ",optNm,", pdProdOptItem.optNm, pattern);
+        or = orLike(or, all, types, ",optStyle,", pdProdOptItem.optStyle, pattern);
+        or = orLike(or, all, types, ",optTypeCd,", pdProdOptItem.optTypeCd, pattern);
+        or = orLike(or, all, types, ",optVal,", pdProdOptItem.optVal, pattern);
+        or = orLike(or, all, types, ",optValCodeId,", pdProdOptItem.optValCodeId, pattern);
+        or = orLike(or, all, types, ",parentOptItemId,", pdProdOptItem.parentOptItemId, pattern);
+        or = orLike(or, all, types, ",siteId,", pdProdOptItem.siteId, pattern);
+        or = orLike(or, all, types, ",useYn,", pdProdOptItem.useYn, pattern);
         return or;
     }
 
@@ -204,9 +204,9 @@ public class QPdProdOptItemRepositoryImpl implements QPdProdOptItemRepository {
         if (!StringUtils.hasText(sort)) {
 
             /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.optItemId));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdProdOptItem.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdProdOptItem.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdProdOptItem.optItemId));
 
             return orders;
         }
@@ -218,20 +218,20 @@ public class QPdProdOptItemRepositoryImpl implements QPdProdOptItemRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("optItemId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.optItemId));
+                    orders.add(new OrderSpecifier(order, pdProdOptItem.optItemId));
                 } else if ("optNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.optNm));
+                    orders.add(new OrderSpecifier(order, pdProdOptItem.optNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, pdProdOptItem.regDate));
                 }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, a.sortOrd)); }
+                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, pdProdOptItem.sortOrd)); }
             }
         }
         /* unknown sort → sortOrd ASC + regDate ASC fallback */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.optItemId));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdProdOptItem.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdProdOptItem.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdProdOptItem.optItemId));
         }
         return orders;
     }
@@ -242,25 +242,25 @@ public class QPdProdOptItemRepositoryImpl implements QPdProdOptItemRepository {
     public int updateSelective(PdProdOptItem entity) {
         if (entity.getOptItemId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(pdProdOptItem);
         boolean hasAny = false;
 
-        if (entity.getSiteId()          != null) { update.set(a.siteId,          entity.getSiteId());          hasAny = true; }
-        if (entity.getOptId()           != null) { update.set(a.optId,           entity.getOptId());           hasAny = true; }
-        if (entity.getOptTypeCd()       != null) { update.set(a.optTypeCd,       entity.getOptTypeCd());       hasAny = true; }
-        if (entity.getOptNm()           != null) { update.set(a.optNm,           entity.getOptNm());           hasAny = true; }
-        if (entity.getOptVal()          != null) { update.set(a.optVal,          entity.getOptVal());          hasAny = true; }
-        if (entity.getOptValCodeId()    != null) { update.set(a.optValCodeId,    entity.getOptValCodeId());    hasAny = true; }
-        if (entity.getParentOptItemId() != null) { update.set(a.parentOptItemId, entity.getParentOptItemId()); hasAny = true; }
-        if (entity.getSortOrd()         != null) { update.set(a.sortOrd,         entity.getSortOrd());         hasAny = true; }
-        if (entity.getUseYn()           != null) { update.set(a.useYn,           entity.getUseYn());           hasAny = true; }
-        if (entity.getUpdBy()           != null) { update.set(a.updBy,           entity.getUpdBy());           hasAny = true; }
+        if (entity.getSiteId()          != null) { update.set(pdProdOptItem.siteId,          entity.getSiteId());          hasAny = true; }
+        if (entity.getOptId()           != null) { update.set(pdProdOptItem.optId,           entity.getOptId());           hasAny = true; }
+        if (entity.getOptTypeCd()       != null) { update.set(pdProdOptItem.optTypeCd,       entity.getOptTypeCd());       hasAny = true; }
+        if (entity.getOptNm()           != null) { update.set(pdProdOptItem.optNm,           entity.getOptNm());           hasAny = true; }
+        if (entity.getOptVal()          != null) { update.set(pdProdOptItem.optVal,          entity.getOptVal());          hasAny = true; }
+        if (entity.getOptValCodeId()    != null) { update.set(pdProdOptItem.optValCodeId,    entity.getOptValCodeId());    hasAny = true; }
+        if (entity.getParentOptItemId() != null) { update.set(pdProdOptItem.parentOptItemId, entity.getParentOptItemId()); hasAny = true; }
+        if (entity.getSortOrd()         != null) { update.set(pdProdOptItem.sortOrd,         entity.getSortOrd());         hasAny = true; }
+        if (entity.getUseYn()           != null) { update.set(pdProdOptItem.useYn,           entity.getUseYn());           hasAny = true; }
+        if (entity.getUpdBy()           != null) { update.set(pdProdOptItem.updBy,           entity.getUpdBy());           hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(pdProdOptItem.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.optItemId.eq(entity.getOptItemId())).execute();
+        long affected = update.where(pdProdOptItem.optItemId.eq(entity.getOptItemId())).execute();
         return (int) affected;
     }
 }

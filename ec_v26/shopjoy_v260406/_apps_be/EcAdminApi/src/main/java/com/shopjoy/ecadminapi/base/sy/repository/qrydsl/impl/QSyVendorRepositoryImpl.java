@@ -38,8 +38,8 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
     private final EntityManager em;
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyVendorRepositoryImpl";
-    private static final QSyVendor v = QSyVendor.syVendor;
-    private static final QSySite ste = QSySite.sySite;
+    private static final QSyVendor syVendor = QSyVendor.syVendor;
+    private static final QSySite sySite = QSySite.sySite;
     private static final QSyCode cdVc = new QSyCode("cd_vc");
     private static final QSyCode cdVs = new QSyCode("cd_vs");
 
@@ -47,19 +47,19 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
     private JPAQuery<SyVendorDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyVendorDto.Item.class,
-                        v.vendorId, v.siteId, v.vendorNo, v.corpNo,
-                        v.vendorNm, v.vendorNmEn, v.ceoNm, v.vendorType, v.vendorItem,
-                        v.vendorClassCd, v.vendorZipCode, v.vendorAddr, v.vendorAddrDetail,
-                        v.vendorPhone, v.vendorFax, v.vendorEmail, v.vendorHomepage,
-                        v.vendorBankNm, v.vendorBankAccount, v.vendorBankHolder, v.vendorRegUrl,
-                        v.openDate, v.contractDate, v.vendorStatusCd, v.pathId, v.vendorRemark,
-                        v.regBy, v.regDate, v.updBy, v.updDate,
-                        ste.siteNm.as("siteNm")
+                        syVendor.vendorId, syVendor.siteId, syVendor.vendorNo, syVendor.corpNo,
+                        syVendor.vendorNm, syVendor.vendorNmEn, syVendor.ceoNm, syVendor.vendorType, syVendor.vendorItem,
+                        syVendor.vendorClassCd, syVendor.vendorZipCode, syVendor.vendorAddr, syVendor.vendorAddrDetail,
+                        syVendor.vendorPhone, syVendor.vendorFax, syVendor.vendorEmail, syVendor.vendorHomepage,
+                        syVendor.vendorBankNm, syVendor.vendorBankAccount, syVendor.vendorBankHolder, syVendor.vendorRegUrl,
+                        syVendor.openDate, syVendor.contractDate, syVendor.vendorStatusCd, syVendor.pathId, syVendor.vendorRemark,
+                        syVendor.regBy, syVendor.regDate, syVendor.updBy, syVendor.updDate,
+                        sySite.siteNm.as("siteNm")
                 ))
-                .from(v)
-                .leftJoin(ste).on(ste.siteId.eq(v.siteId))
-                .leftJoin(cdVc).on(cdVc.codeGrp.eq("VENDOR_CLASS").and(cdVc.codeValue.eq(v.vendorClassCd)))
-                .leftJoin(cdVs).on(cdVs.codeGrp.eq("VENDOR_STATUS").and(cdVs.codeValue.eq(v.vendorStatusCd)));
+                .from(syVendor)
+                .leftJoin(sySite).on(sySite.siteId.eq(syVendor.siteId))
+                .leftJoin(cdVc).on(cdVc.codeGrp.eq("VENDOR_CLASS").and(cdVc.codeValue.eq(syVendor.vendorClassCd)))
+                .leftJoin(cdVs).on(cdVs.codeGrp.eq("VENDOR_STATUS").and(cdVs.codeValue.eq(syVendor.vendorStatusCd)));
     }
 
     /* 업체(판매자) 키조회 */
@@ -67,7 +67,7 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
     public Optional<SyVendorDto.Item> selectById(String vendorId) {
         SyVendorDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
-                .where(v.vendorId.eq(vendorId))
+                .where(syVendor.vendorId.eq(vendorId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -122,7 +122,7 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
         }
         List<SyVendorDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(v.count()).from(v).where(
+        Long total = queryFactory.select(syVendor.count()).from(syVendor).where(
                 baseAndSiteId(search),
                 baseAndPathId(search),
                 baseAndVendorId(search),
@@ -146,32 +146,32 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(SyVendorDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? v.siteId.eq(search.getSiteId()) : null;
+                ? syVendor.siteId.eq(search.getSiteId()) : null;
     }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression baseAndPathId(SyVendorDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
-                ? v.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_vendor"))
+                ? syVendor.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_vendor"))
                 : null;
     }
 
     /* vendorId 정확 일치 */
     private BooleanExpression baseAndVendorId(SyVendorDto.Request search) {
         return search != null && StringUtils.hasText(search.getVendorId())
-                ? v.vendorId.eq(search.getVendorId()) : null;
+                ? syVendor.vendorId.eq(search.getVendorId()) : null;
     }
 
     /* vendorStatusCd 정확 일치 */
     private BooleanExpression baseAndStatus(SyVendorDto.Request search) {
         return search != null && StringUtils.hasText(search.getStatus())
-                ? v.vendorStatusCd.eq(search.getStatus()) : null;
+                ? syVendor.vendorStatusCd.eq(search.getStatus()) : null;
     }
 
     /* vendorClassCd 정확 일치 */
     private BooleanExpression baseAndVendorClassCd(SyVendorDto.Request search) {
         return search != null && StringUtils.hasText(search.getVendorClassCd())
-                ? v.vendorClassCd.eq(search.getVendorClassCd()) : null;
+                ? syVendor.vendorClassCd.eq(search.getVendorClassCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -184,8 +184,8 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return v.regDate.goe(start).and(v.regDate.lt(endExcl));
-            case "upd_date": return v.updDate.goe(start).and(v.updDate.lt(endExcl));
+            case "reg_date": return syVendor.regDate.goe(start).and(syVendor.regDate.lt(endExcl));
+            case "upd_date": return syVendor.updDate.goe(start).and(syVendor.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -198,30 +198,30 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",ceoNm,", v.ceoNm, pattern);
-        or = orLike(or, all, types, ",corpNo,", v.corpNo, pattern);
-        or = orLike(or, all, types, ",pathId,", v.pathId, pattern);
-        or = orLike(or, all, types, ",siteId,", v.siteId, pattern);
-        or = orLike(or, all, types, ",vendorAddr,", v.vendorAddr, pattern);
-        or = orLike(or, all, types, ",vendorAddrDetail,", v.vendorAddrDetail, pattern);
-        or = orLike(or, all, types, ",vendorBankAccount,", v.vendorBankAccount, pattern);
-        or = orLike(or, all, types, ",vendorBankHolder,", v.vendorBankHolder, pattern);
-        or = orLike(or, all, types, ",vendorBankNm,", v.vendorBankNm, pattern);
-        or = orLike(or, all, types, ",vendorClassCd,", v.vendorClassCd, pattern);
-        or = orLike(or, all, types, ",vendorEmail,", v.vendorEmail, pattern);
-        or = orLike(or, all, types, ",vendorFax,", v.vendorFax, pattern);
-        or = orLike(or, all, types, ",vendorHomepage,", v.vendorHomepage, pattern);
-        or = orLike(or, all, types, ",vendorId,", v.vendorId, pattern);
-        or = orLike(or, all, types, ",vendorItem,", v.vendorItem, pattern);
-        or = orLike(or, all, types, ",vendorNm,", v.vendorNm, pattern);
-        or = orLike(or, all, types, ",vendorNmEn,", v.vendorNmEn, pattern);
-        or = orLike(or, all, types, ",vendorNo,", v.vendorNo, pattern);
-        or = orLike(or, all, types, ",vendorPhone,", v.vendorPhone, pattern);
-        or = orLike(or, all, types, ",vendorRegUrl,", v.vendorRegUrl, pattern);
-        or = orLike(or, all, types, ",vendorRemark,", v.vendorRemark, pattern);
-        or = orLike(or, all, types, ",vendorStatusCd,", v.vendorStatusCd, pattern);
-        or = orLike(or, all, types, ",vendorType,", v.vendorType, pattern);
-        or = orLike(or, all, types, ",vendorZipCode,", v.vendorZipCode, pattern);
+        or = orLike(or, all, types, ",ceoNm,", syVendor.ceoNm, pattern);
+        or = orLike(or, all, types, ",corpNo,", syVendor.corpNo, pattern);
+        or = orLike(or, all, types, ",pathId,", syVendor.pathId, pattern);
+        or = orLike(or, all, types, ",siteId,", syVendor.siteId, pattern);
+        or = orLike(or, all, types, ",vendorAddr,", syVendor.vendorAddr, pattern);
+        or = orLike(or, all, types, ",vendorAddrDetail,", syVendor.vendorAddrDetail, pattern);
+        or = orLike(or, all, types, ",vendorBankAccount,", syVendor.vendorBankAccount, pattern);
+        or = orLike(or, all, types, ",vendorBankHolder,", syVendor.vendorBankHolder, pattern);
+        or = orLike(or, all, types, ",vendorBankNm,", syVendor.vendorBankNm, pattern);
+        or = orLike(or, all, types, ",vendorClassCd,", syVendor.vendorClassCd, pattern);
+        or = orLike(or, all, types, ",vendorEmail,", syVendor.vendorEmail, pattern);
+        or = orLike(or, all, types, ",vendorFax,", syVendor.vendorFax, pattern);
+        or = orLike(or, all, types, ",vendorHomepage,", syVendor.vendorHomepage, pattern);
+        or = orLike(or, all, types, ",vendorId,", syVendor.vendorId, pattern);
+        or = orLike(or, all, types, ",vendorItem,", syVendor.vendorItem, pattern);
+        or = orLike(or, all, types, ",vendorNm,", syVendor.vendorNm, pattern);
+        or = orLike(or, all, types, ",vendorNmEn,", syVendor.vendorNmEn, pattern);
+        or = orLike(or, all, types, ",vendorNo,", syVendor.vendorNo, pattern);
+        or = orLike(or, all, types, ",vendorPhone,", syVendor.vendorPhone, pattern);
+        or = orLike(or, all, types, ",vendorRegUrl,", syVendor.vendorRegUrl, pattern);
+        or = orLike(or, all, types, ",vendorRemark,", syVendor.vendorRemark, pattern);
+        or = orLike(or, all, types, ",vendorStatusCd,", syVendor.vendorStatusCd, pattern);
+        or = orLike(or, all, types, ",vendorType,", syVendor.vendorType, pattern);
+        or = orLike(or, all, types, ",vendorZipCode,", syVendor.vendorZipCode, pattern);
         return or;
     }
 
@@ -242,8 +242,8 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, v.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, v.vendorId));
+            orders.add(new OrderSpecifier(Order.DESC, syVendor.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syVendor.vendorId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -254,19 +254,19 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("vendorId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, v.vendorId));
+                    orders.add(new OrderSpecifier(order, syVendor.vendorId));
                 } else if ("vendorNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, v.vendorNm));
+                    orders.add(new OrderSpecifier(order, syVendor.vendorNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, v.regDate));
+                    orders.add(new OrderSpecifier(order, syVendor.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, v.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, v.vendorId));
+            orders.add(new OrderSpecifier<>(Order.DESC, syVendor.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syVendor.vendorId));
         }
         return orders;
     }
@@ -276,41 +276,41 @@ public class QSyVendorRepositoryImpl implements QSyVendorRepository {
     public int updateSelective(SyVendor entity) {
         if (entity.getVendorId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(v);
+        JPAUpdateClause update = queryFactory.update(syVendor);
         boolean hasAny = false;
 
-        if (entity.getSiteId()            != null) { update.set(v.siteId,            entity.getSiteId());            hasAny = true; }
-        if (entity.getVendorNo()          != null) { update.set(v.vendorNo,          entity.getVendorNo());          hasAny = true; }
-        if (entity.getCorpNo()            != null) { update.set(v.corpNo,            entity.getCorpNo());            hasAny = true; }
-        if (entity.getVendorNm()          != null) { update.set(v.vendorNm,          entity.getVendorNm());          hasAny = true; }
-        if (entity.getVendorNmEn()        != null) { update.set(v.vendorNmEn,        entity.getVendorNmEn());        hasAny = true; }
-        if (entity.getCeoNm()             != null) { update.set(v.ceoNm,             entity.getCeoNm());             hasAny = true; }
-        if (entity.getVendorType()        != null) { update.set(v.vendorType,        entity.getVendorType());        hasAny = true; }
-        if (entity.getVendorItem()        != null) { update.set(v.vendorItem,        entity.getVendorItem());        hasAny = true; }
-        if (entity.getVendorClassCd()     != null) { update.set(v.vendorClassCd,     entity.getVendorClassCd());     hasAny = true; }
-        if (entity.getVendorZipCode()     != null) { update.set(v.vendorZipCode,     entity.getVendorZipCode());     hasAny = true; }
-        if (entity.getVendorAddr()        != null) { update.set(v.vendorAddr,        entity.getVendorAddr());        hasAny = true; }
-        if (entity.getVendorAddrDetail()  != null) { update.set(v.vendorAddrDetail,  entity.getVendorAddrDetail());  hasAny = true; }
-        if (entity.getVendorPhone()       != null) { update.set(v.vendorPhone,       entity.getVendorPhone());       hasAny = true; }
-        if (entity.getVendorFax()         != null) { update.set(v.vendorFax,         entity.getVendorFax());         hasAny = true; }
-        if (entity.getVendorEmail()       != null) { update.set(v.vendorEmail,       entity.getVendorEmail());       hasAny = true; }
-        if (entity.getVendorHomepage()    != null) { update.set(v.vendorHomepage,    entity.getVendorHomepage());    hasAny = true; }
-        if (entity.getVendorBankNm()      != null) { update.set(v.vendorBankNm,      entity.getVendorBankNm());      hasAny = true; }
-        if (entity.getVendorBankAccount() != null) { update.set(v.vendorBankAccount, entity.getVendorBankAccount()); hasAny = true; }
-        if (entity.getVendorBankHolder()  != null) { update.set(v.vendorBankHolder,  entity.getVendorBankHolder());  hasAny = true; }
-        if (entity.getVendorRegUrl()      != null) { update.set(v.vendorRegUrl,      entity.getVendorRegUrl());      hasAny = true; }
-        if (entity.getOpenDate()          != null) { update.set(v.openDate,          entity.getOpenDate());          hasAny = true; }
-        if (entity.getContractDate()      != null) { update.set(v.contractDate,      entity.getContractDate());      hasAny = true; }
-        if (entity.getVendorStatusCd()    != null) { update.set(v.vendorStatusCd,    entity.getVendorStatusCd());    hasAny = true; }
-        if (entity.getPathId()            != null) { update.set(v.pathId,            entity.getPathId());            hasAny = true; }
-        if (entity.getVendorRemark()      != null) { update.set(v.vendorRemark,      entity.getVendorRemark());      hasAny = true; }
-        if (entity.getUpdBy()             != null) { update.set(v.updBy,             entity.getUpdBy());             hasAny = true; }
+        if (entity.getSiteId()            != null) { update.set(syVendor.siteId,            entity.getSiteId());            hasAny = true; }
+        if (entity.getVendorNo()          != null) { update.set(syVendor.vendorNo,          entity.getVendorNo());          hasAny = true; }
+        if (entity.getCorpNo()            != null) { update.set(syVendor.corpNo,            entity.getCorpNo());            hasAny = true; }
+        if (entity.getVendorNm()          != null) { update.set(syVendor.vendorNm,          entity.getVendorNm());          hasAny = true; }
+        if (entity.getVendorNmEn()        != null) { update.set(syVendor.vendorNmEn,        entity.getVendorNmEn());        hasAny = true; }
+        if (entity.getCeoNm()             != null) { update.set(syVendor.ceoNm,             entity.getCeoNm());             hasAny = true; }
+        if (entity.getVendorType()        != null) { update.set(syVendor.vendorType,        entity.getVendorType());        hasAny = true; }
+        if (entity.getVendorItem()        != null) { update.set(syVendor.vendorItem,        entity.getVendorItem());        hasAny = true; }
+        if (entity.getVendorClassCd()     != null) { update.set(syVendor.vendorClassCd,     entity.getVendorClassCd());     hasAny = true; }
+        if (entity.getVendorZipCode()     != null) { update.set(syVendor.vendorZipCode,     entity.getVendorZipCode());     hasAny = true; }
+        if (entity.getVendorAddr()        != null) { update.set(syVendor.vendorAddr,        entity.getVendorAddr());        hasAny = true; }
+        if (entity.getVendorAddrDetail()  != null) { update.set(syVendor.vendorAddrDetail,  entity.getVendorAddrDetail());  hasAny = true; }
+        if (entity.getVendorPhone()       != null) { update.set(syVendor.vendorPhone,       entity.getVendorPhone());       hasAny = true; }
+        if (entity.getVendorFax()         != null) { update.set(syVendor.vendorFax,         entity.getVendorFax());         hasAny = true; }
+        if (entity.getVendorEmail()       != null) { update.set(syVendor.vendorEmail,       entity.getVendorEmail());       hasAny = true; }
+        if (entity.getVendorHomepage()    != null) { update.set(syVendor.vendorHomepage,    entity.getVendorHomepage());    hasAny = true; }
+        if (entity.getVendorBankNm()      != null) { update.set(syVendor.vendorBankNm,      entity.getVendorBankNm());      hasAny = true; }
+        if (entity.getVendorBankAccount() != null) { update.set(syVendor.vendorBankAccount, entity.getVendorBankAccount()); hasAny = true; }
+        if (entity.getVendorBankHolder()  != null) { update.set(syVendor.vendorBankHolder,  entity.getVendorBankHolder());  hasAny = true; }
+        if (entity.getVendorRegUrl()      != null) { update.set(syVendor.vendorRegUrl,      entity.getVendorRegUrl());      hasAny = true; }
+        if (entity.getOpenDate()          != null) { update.set(syVendor.openDate,          entity.getOpenDate());          hasAny = true; }
+        if (entity.getContractDate()      != null) { update.set(syVendor.contractDate,      entity.getContractDate());      hasAny = true; }
+        if (entity.getVendorStatusCd()    != null) { update.set(syVendor.vendorStatusCd,    entity.getVendorStatusCd());    hasAny = true; }
+        if (entity.getPathId()            != null) { update.set(syVendor.pathId,            entity.getPathId());            hasAny = true; }
+        if (entity.getVendorRemark()      != null) { update.set(syVendor.vendorRemark,      entity.getVendorRemark());      hasAny = true; }
+        if (entity.getUpdBy()             != null) { update.set(syVendor.updBy,             entity.getUpdBy());             hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(v.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(syVendor.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(v.vendorId.eq(entity.getVendorId())).execute();
+        long affected = update.where(syVendor.vendorId.eq(entity.getVendorId())).execute();
         return (int) affected;
     }
 

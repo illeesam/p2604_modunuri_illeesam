@@ -29,7 +29,7 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
     private final JPAQueryFactory queryFactory;
     private final PdCategoryRepository pdCategoryRepository;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdCategoryRepositoryImpl";
-    private static final QPdCategory a   = QPdCategory.pdCategory;
+    private static final QPdCategory pdCategory   = QPdCategory.pdCategory;
 
     public QPdCategoryRepositoryImpl(JPAQueryFactory queryFactory, @Lazy PdCategoryRepository pdCategoryRepository) {
         this.queryFactory = queryFactory;
@@ -42,25 +42,25 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
     private JPAQuery<PdCategoryDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdCategoryDto.Item.class,
-                        a.categoryId, a.siteId, a.parentCategoryId, a.categoryNm,
-                        a.categoryDepth, a.sortOrd, a.categoryStatusCd, a.categoryStatusCdBefore,
-                        a.imgUrl, a.categoryDesc,
-                        a.regBy, a.regDate, a.updBy, a.updDate,
+                        pdCategory.categoryId, pdCategory.siteId, pdCategory.parentCategoryId, pdCategory.categoryNm,
+                        pdCategory.categoryDepth, pdCategory.sortOrd, pdCategory.categoryStatusCd, pdCategory.categoryStatusCdBefore,
+                        pdCategory.imgUrl, pdCategory.categoryDesc,
+                        pdCategory.regBy, pdCategory.regDate, pdCategory.updBy, pdCategory.updDate,
                         p1.categoryNm.as("parentCategoryNm"),
                         p2.categoryNm.as("grandParentCategoryNm"),
                         cdCs.codeLabel.as("categoryStatusCdNm")
                 ))
-                .from(a)
-                .leftJoin(p1).on(p1.categoryId.eq(a.parentCategoryId))
+                .from(pdCategory)
+                .leftJoin(p1).on(p1.categoryId.eq(pdCategory.parentCategoryId))
                 .leftJoin(p2).on(p2.categoryId.eq(p1.parentCategoryId))
-                .leftJoin(cdCs).on(cdCs.codeGrp.eq("USE_YN").and(cdCs.codeValue.eq(a.categoryStatusCd)));
+                .leftJoin(cdCs).on(cdCs.codeGrp.eq("USE_YN").and(cdCs.codeValue.eq(pdCategory.categoryStatusCd)));
     }
 
     /* 상품 카테고리 키조회 */
     @Override
     public Optional<PdCategoryDto.Item> selectById(String categoryId) {
         PdCategoryDto.Item dto = baseSelColumnQuery()
-                .where(a.categoryId.eq(categoryId))
+                .where(pdCategory.categoryId.eq(categoryId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -110,7 +110,7 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
         }
         List<PdCategoryDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(a.count()).from(a).where(
+        Long total = queryFactory.select(pdCategory.count()).from(pdCategory).where(
                 baseAndSiteId(search),
                 baseAndCategoryId(search),
                 baseAndParentCategoryId(search),
@@ -133,26 +133,26 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(PdCategoryDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? pdCategory.siteId.eq(search.getSiteId()) : null;
     }
 
     /* categoryId 정확 일치 */
     private BooleanExpression baseAndCategoryId(PdCategoryDto.Request search) {
         return search != null && StringUtils.hasText(search.getCategoryId())
-                ? a.categoryId.eq(search.getCategoryId()) : null;
+                ? pdCategory.categoryId.eq(search.getCategoryId()) : null;
     }
 
     /* 카테고리 트리 — 선택 노드 + 모든 자손 카테고리 포함 */
     private BooleanExpression baseAndParentCategoryId(PdCategoryDto.Request search) {
         return search != null && StringUtils.hasText(search.getParentCategoryId())
-                ? a.categoryId.in(pdCategoryRepository.findTreeCategoryIds(search.getParentCategoryId()))
+                ? pdCategory.categoryId.in(pdCategoryRepository.findTreeCategoryIds(search.getParentCategoryId()))
                 : null;
     }
 
     /* categoryStatusCd 정확 일치 */
     private BooleanExpression baseAndStatus(PdCategoryDto.Request search) {
         return search != null && StringUtils.hasText(search.getStatus())
-                ? a.categoryStatusCd.eq(search.getStatus()) : null;
+                ? pdCategory.categoryStatusCd.eq(search.getStatus()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
@@ -163,14 +163,14 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",categoryDesc,", a.categoryDesc, pattern);
-        or = orLike(or, all, types, ",categoryId,", a.categoryId, pattern);
-        or = orLike(or, all, types, ",categoryNm,", a.categoryNm, pattern);
-        or = orLike(or, all, types, ",categoryStatusCd,", a.categoryStatusCd, pattern);
-        or = orLike(or, all, types, ",categoryStatusCdBefore,", a.categoryStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",imgUrl,", a.imgUrl, pattern);
-        or = orLike(or, all, types, ",parentCategoryId,", a.parentCategoryId, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",categoryDesc,", pdCategory.categoryDesc, pattern);
+        or = orLike(or, all, types, ",categoryId,", pdCategory.categoryId, pattern);
+        or = orLike(or, all, types, ",categoryNm,", pdCategory.categoryNm, pattern);
+        or = orLike(or, all, types, ",categoryStatusCd,", pdCategory.categoryStatusCd, pattern);
+        or = orLike(or, all, types, ",categoryStatusCdBefore,", pdCategory.categoryStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",imgUrl,", pdCategory.imgUrl, pattern);
+        or = orLike(or, all, types, ",parentCategoryId,", pdCategory.parentCategoryId, pattern);
+        or = orLike(or, all, types, ",siteId,", pdCategory.siteId, pattern);
         return or;
     }
 
@@ -191,11 +191,11 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.ASC, a.categoryDepth));
+            orders.add(new OrderSpecifier(Order.ASC, pdCategory.categoryDepth));
             /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.categoryId));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdCategory.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdCategory.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdCategory.categoryId));
 
             return orders;
         }
@@ -207,20 +207,20 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("categoryId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.categoryId));
+                    orders.add(new OrderSpecifier(order, pdCategory.categoryId));
                 } else if ("categoryNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.categoryNm));
+                    orders.add(new OrderSpecifier(order, pdCategory.categoryNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, pdCategory.regDate));
                 }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, a.sortOrd)); }
+                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, pdCategory.sortOrd)); }
             }
         }
         /* unknown sort → sortOrd ASC + regDate ASC fallback */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.categoryId));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdCategory.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdCategory.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdCategory.categoryId));
         }
         return orders;
     }
@@ -231,22 +231,22 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
     public int updateSelective(PdCategory entity) {
         if (entity.getCategoryId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(pdCategory);
         boolean hasAny = false;
 
-        if (entity.getCategoryNm()             != null) { update.set(a.categoryNm,             entity.getCategoryNm());             hasAny = true; }
-        if (entity.getCategoryStatusCd()       != null) { update.set(a.categoryStatusCd,       entity.getCategoryStatusCd());       hasAny = true; }
-        if (entity.getCategoryStatusCdBefore() != null) { update.set(a.categoryStatusCdBefore, entity.getCategoryStatusCdBefore()); hasAny = true; }
-        if (entity.getSortOrd()                != null) { update.set(a.sortOrd,                entity.getSortOrd());                hasAny = true; }
-        if (entity.getImgUrl()                 != null) { update.set(a.imgUrl,                 entity.getImgUrl());                 hasAny = true; }
-        if (entity.getCategoryDesc()           != null) { update.set(a.categoryDesc,           entity.getCategoryDesc());           hasAny = true; }
-        if (entity.getUpdBy()                  != null) { update.set(a.updBy,                  entity.getUpdBy());                  hasAny = true; }
+        if (entity.getCategoryNm()             != null) { update.set(pdCategory.categoryNm,             entity.getCategoryNm());             hasAny = true; }
+        if (entity.getCategoryStatusCd()       != null) { update.set(pdCategory.categoryStatusCd,       entity.getCategoryStatusCd());       hasAny = true; }
+        if (entity.getCategoryStatusCdBefore() != null) { update.set(pdCategory.categoryStatusCdBefore, entity.getCategoryStatusCdBefore()); hasAny = true; }
+        if (entity.getSortOrd()                != null) { update.set(pdCategory.sortOrd,                entity.getSortOrd());                hasAny = true; }
+        if (entity.getImgUrl()                 != null) { update.set(pdCategory.imgUrl,                 entity.getImgUrl());                 hasAny = true; }
+        if (entity.getCategoryDesc()           != null) { update.set(pdCategory.categoryDesc,           entity.getCategoryDesc());           hasAny = true; }
+        if (entity.getUpdBy()                  != null) { update.set(pdCategory.updBy,                  entity.getUpdBy());                  hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(pdCategory.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.categoryId.eq(entity.getCategoryId())).execute();
+        long affected = update.where(pdCategory.categoryId.eq(entity.getCategoryId())).execute();
         return (int) affected;
     }
 }

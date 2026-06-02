@@ -28,13 +28,13 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.st.repository.qrydsl.impl.QStErpVoucherLineRepositoryImpl";
-    private static final QStErpVoucherLine a = QStErpVoucherLine.stErpVoucherLine;
+    private static final QStErpVoucherLine stErpVoucherLine = QStErpVoucherLine.stErpVoucherLine;
 
     /* ERP 전표 상세 키조회 */
     @Override
     public Optional<StErpVoucherLineDto.Item> selectById(String id) {
         StErpVoucherLineDto.Item dto = baseListQuery()
-                .where(a.erpVoucherLineId.eq(id))
+                .where(stErpVoucherLine.erpVoucherLineId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -81,8 +81,8 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
         List<StErpVoucherLineDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(a.count())
-                .from(a)
+                .select(stErpVoucherLine.count())
+                .from(stErpVoucherLine)
                 .where(
                 baseAndErpVoucherLineId(search),
                 baseAndDateRange(search),
@@ -98,13 +98,13 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
     private JPAQuery<StErpVoucherLineDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(StErpVoucherLineDto.Item.class,
-                        a.erpVoucherLineId, a.erpVoucherId, a.lineNo,
-                        a.accountCd, a.accountNm, a.costCenterCd, a.profitCenterCd,
-                        a.debitAmt, a.creditAmt,
-                        a.refTypeCd, a.refId, a.lineMemo,
-                        a.regBy, a.regDate
+                        stErpVoucherLine.erpVoucherLineId, stErpVoucherLine.erpVoucherId, stErpVoucherLine.lineNo,
+                        stErpVoucherLine.accountCd, stErpVoucherLine.accountNm, stErpVoucherLine.costCenterCd, stErpVoucherLine.profitCenterCd,
+                        stErpVoucherLine.debitAmt, stErpVoucherLine.creditAmt,
+                        stErpVoucherLine.refTypeCd, stErpVoucherLine.refId, stErpVoucherLine.lineMemo,
+                        stErpVoucherLine.regBy, stErpVoucherLine.regDate
                 ))
-                .from(a);
+                .from(stErpVoucherLine);
     }
 
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
@@ -117,7 +117,7 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
     /* erpVoucherLineId 정확 일치 */
     private BooleanExpression baseAndErpVoucherLineId(StErpVoucherLineDto.Request search) {
         return search != null && StringUtils.hasText(search.getErpVoucherLineId())
-                ? a.erpVoucherLineId.eq(search.getErpVoucherLineId()) : null;
+                ? stErpVoucherLine.erpVoucherLineId.eq(search.getErpVoucherLineId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -130,8 +130,8 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "reg_date": return stErpVoucherLine.regDate.goe(start).and(stErpVoucherLine.regDate.lt(endExcl));
+            case "upd_date": return stErpVoucherLine.updDate.goe(start).and(stErpVoucherLine.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -144,16 +144,16 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",accountCd,", a.accountCd, pattern);
-        or = orLike(or, all, types, ",accountNm,", a.accountNm, pattern);
-        or = orLike(or, all, types, ",costCenterCd,", a.costCenterCd, pattern);
-        or = orLike(or, all, types, ",erpVoucherId,", a.erpVoucherId, pattern);
-        or = orLike(or, all, types, ",erpVoucherLineId,", a.erpVoucherLineId, pattern);
-        or = orLike(or, all, types, ",lineMemo,", a.lineMemo, pattern);
-        or = orLike(or, all, types, ",profitCenterCd,", a.profitCenterCd, pattern);
-        or = orLike(or, all, types, ",refId,", a.refId, pattern);
-        or = orLike(or, all, types, ",refTypeCd,", a.refTypeCd, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",accountCd,", stErpVoucherLine.accountCd, pattern);
+        or = orLike(or, all, types, ",accountNm,", stErpVoucherLine.accountNm, pattern);
+        or = orLike(or, all, types, ",costCenterCd,", stErpVoucherLine.costCenterCd, pattern);
+        or = orLike(or, all, types, ",erpVoucherId,", stErpVoucherLine.erpVoucherId, pattern);
+        or = orLike(or, all, types, ",erpVoucherLineId,", stErpVoucherLine.erpVoucherLineId, pattern);
+        or = orLike(or, all, types, ",lineMemo,", stErpVoucherLine.lineMemo, pattern);
+        or = orLike(or, all, types, ",profitCenterCd,", stErpVoucherLine.profitCenterCd, pattern);
+        or = orLike(or, all, types, ",refId,", stErpVoucherLine.refId, pattern);
+        or = orLike(or, all, types, ",refTypeCd,", stErpVoucherLine.refTypeCd, pattern);
+        or = orLike(or, all, types, ",siteId,", stErpVoucherLine.siteId, pattern);
         return or;
     }
 
@@ -174,8 +174,8 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = c == null ? null : c.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.erpVoucherLineId));
+            orders.add(new OrderSpecifier(Order.DESC, stErpVoucherLine.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, stErpVoucherLine.erpVoucherLineId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -186,19 +186,19 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("erpVoucherLineId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.erpVoucherLineId));
+                    orders.add(new OrderSpecifier(order, stErpVoucherLine.erpVoucherLineId));
                 } else if ("accountNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.accountNm));
+                    orders.add(new OrderSpecifier(order, stErpVoucherLine.accountNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, stErpVoucherLine.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.erpVoucherLineId));
+            orders.add(new OrderSpecifier<>(Order.DESC, stErpVoucherLine.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, stErpVoucherLine.erpVoucherLineId));
         }
         return orders;
     }
@@ -208,24 +208,24 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
     public int updateSelective(StErpVoucherLine entity) {
         if (entity.getErpVoucherLineId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(stErpVoucherLine);
         boolean hasAny = false;
 
-        if (entity.getErpVoucherId()  != null) { update.set(a.erpVoucherId,  entity.getErpVoucherId());  hasAny = true; }
-        if (entity.getLineNo()        != null) { update.set(a.lineNo,        entity.getLineNo());        hasAny = true; }
-        if (entity.getAccountCd()     != null) { update.set(a.accountCd,     entity.getAccountCd());     hasAny = true; }
-        if (entity.getAccountNm()     != null) { update.set(a.accountNm,     entity.getAccountNm());     hasAny = true; }
-        if (entity.getCostCenterCd()  != null) { update.set(a.costCenterCd,  entity.getCostCenterCd());  hasAny = true; }
-        if (entity.getProfitCenterCd()!= null) { update.set(a.profitCenterCd,entity.getProfitCenterCd());hasAny = true; }
-        if (entity.getDebitAmt()      != null) { update.set(a.debitAmt,      entity.getDebitAmt());      hasAny = true; }
-        if (entity.getCreditAmt()     != null) { update.set(a.creditAmt,     entity.getCreditAmt());     hasAny = true; }
-        if (entity.getRefTypeCd()     != null) { update.set(a.refTypeCd,     entity.getRefTypeCd());     hasAny = true; }
-        if (entity.getRefId()         != null) { update.set(a.refId,         entity.getRefId());         hasAny = true; }
-        if (entity.getLineMemo()      != null) { update.set(a.lineMemo,      entity.getLineMemo());      hasAny = true; }
+        if (entity.getErpVoucherId()  != null) { update.set(stErpVoucherLine.erpVoucherId,  entity.getErpVoucherId());  hasAny = true; }
+        if (entity.getLineNo()        != null) { update.set(stErpVoucherLine.lineNo,        entity.getLineNo());        hasAny = true; }
+        if (entity.getAccountCd()     != null) { update.set(stErpVoucherLine.accountCd,     entity.getAccountCd());     hasAny = true; }
+        if (entity.getAccountNm()     != null) { update.set(stErpVoucherLine.accountNm,     entity.getAccountNm());     hasAny = true; }
+        if (entity.getCostCenterCd()  != null) { update.set(stErpVoucherLine.costCenterCd,  entity.getCostCenterCd());  hasAny = true; }
+        if (entity.getProfitCenterCd()!= null) { update.set(stErpVoucherLine.profitCenterCd,entity.getProfitCenterCd());hasAny = true; }
+        if (entity.getDebitAmt()      != null) { update.set(stErpVoucherLine.debitAmt,      entity.getDebitAmt());      hasAny = true; }
+        if (entity.getCreditAmt()     != null) { update.set(stErpVoucherLine.creditAmt,     entity.getCreditAmt());     hasAny = true; }
+        if (entity.getRefTypeCd()     != null) { update.set(stErpVoucherLine.refTypeCd,     entity.getRefTypeCd());     hasAny = true; }
+        if (entity.getRefId()         != null) { update.set(stErpVoucherLine.refId,         entity.getRefId());         hasAny = true; }
+        if (entity.getLineMemo()      != null) { update.set(stErpVoucherLine.lineMemo,      entity.getLineMemo());      hasAny = true; }
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.erpVoucherLineId.eq(entity.getErpVoucherLineId())).execute();
+        long affected = update.where(stErpVoucherLine.erpVoucherLineId.eq(entity.getErpVoucherLineId())).execute();
         return (int) affected;
     }
 }

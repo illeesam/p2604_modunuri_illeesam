@@ -29,26 +29,26 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.mb.repository.qrydsl.impl.QMbMemberSnsRepositoryImpl";
-    private static final QMbMemberSns a    = QMbMemberSns.mbMemberSns;
-    private static final QMbMember    mem  = QMbMember.mbMember;
+    private static final QMbMemberSns mbMemberSns    = QMbMemberSns.mbMemberSns;
+    private static final QMbMember    mbMember  = QMbMember.mbMember;
     private static final QSyCode      cdSc = new QSyCode("cd_sc");
 
     /* SNS 연동 회원 baseSelColumnQuery */
     private JPAQuery<MbMemberSnsDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(MbMemberSnsDto.Item.class,
-                        a.memberSnsId, a.memberId, a.snsChannelCd, a.snsUserId,
-                        a.regBy, a.regDate
+                        mbMemberSns.memberSnsId, mbMemberSns.memberId, mbMemberSns.snsChannelCd, mbMemberSns.snsUserId,
+                        mbMemberSns.regBy, mbMemberSns.regDate
                 ))
-                .from(a)
-                .leftJoin(mem).on(mem.memberId.eq(a.memberId))
-                .leftJoin(cdSc).on(cdSc.codeGrp.eq("SNS_CHANNEL").and(cdSc.codeValue.eq(a.snsChannelCd)));
+                .from(mbMemberSns)
+                .leftJoin(mbMember).on(mbMember.memberId.eq(mbMemberSns.memberId))
+                .leftJoin(cdSc).on(cdSc.codeGrp.eq("SNS_CHANNEL").and(cdSc.codeValue.eq(mbMemberSns.snsChannelCd)));
     }
 
     /* SNS 연동 회원 키조회 */
     @Override
     public Optional<MbMemberSnsDto.Item> selectById(String memberSnsId) {
-        return Optional.ofNullable(baseSelColumnQuery().where(a.memberSnsId.eq(memberSnsId)).fetchOne());
+        return Optional.ofNullable(baseSelColumnQuery().where(mbMemberSns.memberSnsId.eq(memberSnsId)).fetchOne());
     }
 
     /* SNS 연동 회원 목록조회 */
@@ -87,7 +87,7 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<MbMemberSnsDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(a.count()).from(a).where(
+        Long total = queryFactory.select(mbMemberSns.count()).from(mbMemberSns).where(
                 baseAndMemberIds(search),
                 baseAndMemberId(search),
                 baseAndMemberSnsId(search),
@@ -108,19 +108,19 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
     /* memberId IN */
     private BooleanExpression baseAndMemberIds(MbMemberSnsDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getMemberIds())
-                ? a.memberId.in(search.getMemberIds()) : null;
+                ? mbMemberSns.memberId.in(search.getMemberIds()) : null;
     }
 
     /* memberId 정확 일치 */
     private BooleanExpression baseAndMemberId(MbMemberSnsDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberId())
-                ? a.memberId.eq(search.getMemberId()) : null;
+                ? mbMemberSns.memberId.eq(search.getMemberId()) : null;
     }
 
     /* memberSnsId 정확 일치 */
     private BooleanExpression baseAndMemberSnsId(MbMemberSnsDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberSnsId())
-                ? a.memberSnsId.eq(search.getMemberSnsId()) : null;
+                ? mbMemberSns.memberSnsId.eq(search.getMemberSnsId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -133,8 +133,8 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "reg_date": return mbMemberSns.regDate.goe(start).and(mbMemberSns.regDate.lt(endExcl));
+            case "upd_date": return mbMemberSns.updDate.goe(start).and(mbMemberSns.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -147,11 +147,11 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",memberId,", a.memberId, pattern);
-        or = orLike(or, all, types, ",memberSnsId,", a.memberSnsId, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
-        or = orLike(or, all, types, ",snsChannelCd,", a.snsChannelCd, pattern);
-        or = orLike(or, all, types, ",snsUserId,", a.snsUserId, pattern);
+        or = orLike(or, all, types, ",memberId,", mbMemberSns.memberId, pattern);
+        or = orLike(or, all, types, ",memberSnsId,", mbMemberSns.memberSnsId, pattern);
+        or = orLike(or, all, types, ",siteId,", mbMemberSns.siteId, pattern);
+        or = orLike(or, all, types, ",snsChannelCd,", mbMemberSns.snsChannelCd, pattern);
+        or = orLike(or, all, types, ",snsUserId,", mbMemberSns.snsUserId, pattern);
         return or;
     }
 
@@ -172,8 +172,8 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.memberSnsId));
+            orders.add(new OrderSpecifier(Order.DESC, mbMemberSns.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, mbMemberSns.memberSnsId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -184,17 +184,17 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("memberSnsId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.memberSnsId));
+                    orders.add(new OrderSpecifier(order, mbMemberSns.memberSnsId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, mbMemberSns.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.memberSnsId));
+            orders.add(new OrderSpecifier<>(Order.DESC, mbMemberSns.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, mbMemberSns.memberSnsId));
         }
         return orders;
     }
@@ -205,12 +205,12 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
     @Override
     public int updateSelective(MbMemberSns entity) {
         if (entity.getMemberSnsId() == null) return 0;
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(mbMemberSns);
         boolean hasAny = false;
-        if (entity.getMemberId()     != null) { update.set(a.memberId,     entity.getMemberId());     hasAny = true; }
-        if (entity.getSnsChannelCd() != null) { update.set(a.snsChannelCd, entity.getSnsChannelCd()); hasAny = true; }
-        if (entity.getSnsUserId()    != null) { update.set(a.snsUserId,    entity.getSnsUserId());    hasAny = true; }
+        if (entity.getMemberId()     != null) { update.set(mbMemberSns.memberId,     entity.getMemberId());     hasAny = true; }
+        if (entity.getSnsChannelCd() != null) { update.set(mbMemberSns.snsChannelCd, entity.getSnsChannelCd()); hasAny = true; }
+        if (entity.getSnsUserId()    != null) { update.set(mbMemberSns.snsUserId,    entity.getSnsUserId());    hasAny = true; }
         if (!hasAny) return 0;
-        return (int) update.where(a.memberSnsId.eq(entity.getMemberSnsId())).execute();
+        return (int) update.where(mbMemberSns.memberSnsId.eq(entity.getMemberSnsId())).execute();
     }
 }

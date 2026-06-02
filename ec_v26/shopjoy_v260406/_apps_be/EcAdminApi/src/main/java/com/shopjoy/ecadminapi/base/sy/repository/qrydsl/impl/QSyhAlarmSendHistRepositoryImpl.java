@@ -29,30 +29,30 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhAlarmSendHistRepositoryImpl";
-    private static final QSyhAlarmSendHist a   = QSyhAlarmSendHist.syhAlarmSendHist;
-    private static final QSySite           ste = QSySite.sySite;
+    private static final QSyhAlarmSendHist syhAlarmSendHist   = QSyhAlarmSendHist.syhAlarmSendHist;
+    private static final QSySite           sySite = QSySite.sySite;
 
     /* 알람 발송 이력 baseSelColumnQuery */
     private JPAQuery<SyhAlarmSendHistDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyhAlarmSendHistDto.Item.class,
-                        a.sendHistId,
-                        a.siteId,
-                        a.alarmId,
-                        a.memberId,
-                        a.channel,
-                        a.sendTo,
-                        a.sendDate,
-                        a.sendHistStatusCd,
-                        a.errorMsg,
-                        a.regBy,
-                        a.regDate,
-                        a.updBy,
-                        a.updDate,
-                        ste.siteNm.as("siteNm")
+                        syhAlarmSendHist.sendHistId,
+                        syhAlarmSendHist.siteId,
+                        syhAlarmSendHist.alarmId,
+                        syhAlarmSendHist.memberId,
+                        syhAlarmSendHist.channel,
+                        syhAlarmSendHist.sendTo,
+                        syhAlarmSendHist.sendDate,
+                        syhAlarmSendHist.sendHistStatusCd,
+                        syhAlarmSendHist.errorMsg,
+                        syhAlarmSendHist.regBy,
+                        syhAlarmSendHist.regDate,
+                        syhAlarmSendHist.updBy,
+                        syhAlarmSendHist.updDate,
+                        sySite.siteNm.as("siteNm")
                 ))
-                .from(a)
-                .leftJoin(ste).on(ste.siteId.eq(a.siteId));
+                .from(syhAlarmSendHist)
+                .leftJoin(sySite).on(sySite.siteId.eq(syhAlarmSendHist.siteId));
     }
 
     /* 알람 발송 이력 키조회 */
@@ -60,7 +60,7 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
     public Optional<SyhAlarmSendHistDto.Item> selectById(String id) {
         SyhAlarmSendHistDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
-                .where(a.sendHistId.eq(id))
+                .where(syhAlarmSendHist.sendHistId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -113,8 +113,8 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
         List<SyhAlarmSendHistDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(a.count())
-                .from(a)
+                .select(syhAlarmSendHist.count())
+                .from(syhAlarmSendHist)
                 .where(
                 baseAndSiteId(search),
                 baseAndSendHistId(search),
@@ -138,19 +138,19 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(SyhAlarmSendHistDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? syhAlarmSendHist.siteId.eq(search.getSiteId()) : null;
     }
 
     /* sendHistId 정확 일치 */
     private BooleanExpression baseAndSendHistId(SyhAlarmSendHistDto.Request search) {
         return search != null && StringUtils.hasText(search.getSendHistId())
-                ? a.sendHistId.eq(search.getSendHistId()) : null;
+                ? syhAlarmSendHist.sendHistId.eq(search.getSendHistId()) : null;
     }
 
     /* sendHistStatusCd 정확 일치 */
     private BooleanExpression baseAndStatus(SyhAlarmSendHistDto.Request search) {
         return search != null && StringUtils.hasText(search.getStatus())
-                ? a.sendHistStatusCd.eq(search.getStatus()) : null;
+                ? syhAlarmSendHist.sendHistStatusCd.eq(search.getStatus()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -163,9 +163,9 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "send_date": return a.sendDate.goe(start).and(a.sendDate.lt(endExcl));
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "send_date": return syhAlarmSendHist.sendDate.goe(start).and(syhAlarmSendHist.sendDate.lt(endExcl));
+            case "reg_date": return syhAlarmSendHist.regDate.goe(start).and(syhAlarmSendHist.regDate.lt(endExcl));
+            case "upd_date": return syhAlarmSendHist.updDate.goe(start).and(syhAlarmSendHist.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -178,14 +178,14 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",alarmId,", a.alarmId, pattern);
-        or = orLike(or, all, types, ",channel,", a.channel, pattern);
-        or = orLike(or, all, types, ",errorMsg,", a.errorMsg, pattern);
-        or = orLike(or, all, types, ",memberId,", a.memberId, pattern);
-        or = orLike(or, all, types, ",sendHistId,", a.sendHistId, pattern);
-        or = orLike(or, all, types, ",sendHistStatusCd,", a.sendHistStatusCd, pattern);
-        or = orLike(or, all, types, ",sendTo,", a.sendTo, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",alarmId,", syhAlarmSendHist.alarmId, pattern);
+        or = orLike(or, all, types, ",channel,", syhAlarmSendHist.channel, pattern);
+        or = orLike(or, all, types, ",errorMsg,", syhAlarmSendHist.errorMsg, pattern);
+        or = orLike(or, all, types, ",memberId,", syhAlarmSendHist.memberId, pattern);
+        or = orLike(or, all, types, ",sendHistId,", syhAlarmSendHist.sendHistId, pattern);
+        or = orLike(or, all, types, ",sendHistStatusCd,", syhAlarmSendHist.sendHistStatusCd, pattern);
+        or = orLike(or, all, types, ",sendTo,", syhAlarmSendHist.sendTo, pattern);
+        or = orLike(or, all, types, ",siteId,", syhAlarmSendHist.siteId, pattern);
         return or;
     }
 
@@ -206,8 +206,8 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.sendHistId));
+            orders.add(new OrderSpecifier(Order.DESC, syhAlarmSendHist.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syhAlarmSendHist.sendHistId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -218,17 +218,17 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("sendHistId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.sendHistId));
+                    orders.add(new OrderSpecifier(order, syhAlarmSendHist.sendHistId));
                 } else if ("sendDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.sendDate));
+                    orders.add(new OrderSpecifier(order, syhAlarmSendHist.sendDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.sendHistId));
+            orders.add(new OrderSpecifier<>(Order.DESC, syhAlarmSendHist.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syhAlarmSendHist.sendHistId));
         }
         return orders;
     }
@@ -238,24 +238,24 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
     public int updateSelective(SyhAlarmSendHist entity) {
         if (entity.getSendHistId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(syhAlarmSendHist);
         boolean hasAny = false;
 
-        if (entity.getSiteId()           != null) { update.set(a.siteId,           entity.getSiteId());           hasAny = true; }
-        if (entity.getAlarmId()          != null) { update.set(a.alarmId,          entity.getAlarmId());          hasAny = true; }
-        if (entity.getMemberId()         != null) { update.set(a.memberId,         entity.getMemberId());         hasAny = true; }
-        if (entity.getChannel()          != null) { update.set(a.channel,          entity.getChannel());          hasAny = true; }
-        if (entity.getSendTo()           != null) { update.set(a.sendTo,           entity.getSendTo());           hasAny = true; }
-        if (entity.getSendDate()         != null) { update.set(a.sendDate,         entity.getSendDate());         hasAny = true; }
-        if (entity.getSendHistStatusCd() != null) { update.set(a.sendHistStatusCd, entity.getSendHistStatusCd()); hasAny = true; }
-        if (entity.getErrorMsg()         != null) { update.set(a.errorMsg,         entity.getErrorMsg());         hasAny = true; }
-        if (entity.getUpdBy()            != null) { update.set(a.updBy,            entity.getUpdBy());            hasAny = true; }
+        if (entity.getSiteId()           != null) { update.set(syhAlarmSendHist.siteId,           entity.getSiteId());           hasAny = true; }
+        if (entity.getAlarmId()          != null) { update.set(syhAlarmSendHist.alarmId,          entity.getAlarmId());          hasAny = true; }
+        if (entity.getMemberId()         != null) { update.set(syhAlarmSendHist.memberId,         entity.getMemberId());         hasAny = true; }
+        if (entity.getChannel()          != null) { update.set(syhAlarmSendHist.channel,          entity.getChannel());          hasAny = true; }
+        if (entity.getSendTo()           != null) { update.set(syhAlarmSendHist.sendTo,           entity.getSendTo());           hasAny = true; }
+        if (entity.getSendDate()         != null) { update.set(syhAlarmSendHist.sendDate,         entity.getSendDate());         hasAny = true; }
+        if (entity.getSendHistStatusCd() != null) { update.set(syhAlarmSendHist.sendHistStatusCd, entity.getSendHistStatusCd()); hasAny = true; }
+        if (entity.getErrorMsg()         != null) { update.set(syhAlarmSendHist.errorMsg,         entity.getErrorMsg());         hasAny = true; }
+        if (entity.getUpdBy()            != null) { update.set(syhAlarmSendHist.updBy,            entity.getUpdBy());            hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(syhAlarmSendHist.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.sendHistId.eq(entity.getSendHistId())).execute();
+        long affected = update.where(syhAlarmSendHist.sendHistId.eq(entity.getSendHistId())).execute();
         return (int) affected;
     }
 }

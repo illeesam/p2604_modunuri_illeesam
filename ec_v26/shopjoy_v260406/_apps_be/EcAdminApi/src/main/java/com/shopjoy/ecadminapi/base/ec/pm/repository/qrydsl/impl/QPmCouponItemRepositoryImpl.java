@@ -27,24 +27,24 @@ public class QPmCouponItemRepositoryImpl implements QPmCouponItemRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmCouponItemRepositoryImpl";
-    private static final QPmCouponItem a = QPmCouponItem.pmCouponItem;
+    private static final QPmCouponItem pmCouponItem = QPmCouponItem.pmCouponItem;
 
     /* 쿠폰 대상 상품 baseSelColumnQuery */
     private JPAQuery<PmCouponItemDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PmCouponItemDto.Item.class,
-                        a.couponItemId, a.couponId, a.siteId,
-                        a.targetTypeCd, a.targetId,
-                        a.regBy, a.regDate
+                        pmCouponItem.couponItemId, pmCouponItem.couponId, pmCouponItem.siteId,
+                        pmCouponItem.targetTypeCd, pmCouponItem.targetId,
+                        pmCouponItem.regBy, pmCouponItem.regDate
                 ))
-                .from(a);
+                .from(pmCouponItem);
     }
 
     /* 쿠폰 대상 상품 키조회 */
     @Override
     public Optional<PmCouponItemDto.Item> selectById(String couponItemId) {
         PmCouponItemDto.Item dto = baseSelColumnQuery()
-                .where(a.couponItemId.eq(couponItemId))
+                .where(pmCouponItem.couponItemId.eq(couponItemId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -93,8 +93,8 @@ public class QPmCouponItemRepositoryImpl implements QPmCouponItemRepository {
         List<PmCouponItemDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(a.count())
-                .from(a)
+                .select(pmCouponItem.count())
+                .from(pmCouponItem)
                 .where(
                 baseAndSiteId(search),
                 baseAndCouponItemId(search),
@@ -116,13 +116,13 @@ public class QPmCouponItemRepositoryImpl implements QPmCouponItemRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(PmCouponItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? pmCouponItem.siteId.eq(search.getSiteId()) : null;
     }
 
     /* couponItemId 정확 일치 */
     private BooleanExpression baseAndCouponItemId(PmCouponItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getCouponItemId())
-                ? a.couponItemId.eq(search.getCouponItemId()) : null;
+                ? pmCouponItem.couponItemId.eq(search.getCouponItemId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -135,8 +135,8 @@ public class QPmCouponItemRepositoryImpl implements QPmCouponItemRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "reg_date": return pmCouponItem.regDate.goe(start).and(pmCouponItem.regDate.lt(endExcl));
+            case "upd_date": return pmCouponItem.updDate.goe(start).and(pmCouponItem.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -149,11 +149,11 @@ public class QPmCouponItemRepositoryImpl implements QPmCouponItemRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",couponId,", a.couponId, pattern);
-        or = orLike(or, all, types, ",couponItemId,", a.couponItemId, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
-        or = orLike(or, all, types, ",targetId,", a.targetId, pattern);
-        or = orLike(or, all, types, ",targetTypeCd,", a.targetTypeCd, pattern);
+        or = orLike(or, all, types, ",couponId,", pmCouponItem.couponId, pattern);
+        or = orLike(or, all, types, ",couponItemId,", pmCouponItem.couponItemId, pattern);
+        or = orLike(or, all, types, ",siteId,", pmCouponItem.siteId, pattern);
+        or = orLike(or, all, types, ",targetId,", pmCouponItem.targetId, pattern);
+        or = orLike(or, all, types, ",targetTypeCd,", pmCouponItem.targetTypeCd, pattern);
         return or;
     }
 
@@ -174,8 +174,8 @@ public class QPmCouponItemRepositoryImpl implements QPmCouponItemRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.couponItemId));
+            orders.add(new OrderSpecifier(Order.DESC, pmCouponItem.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, pmCouponItem.couponItemId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -186,17 +186,17 @@ public class QPmCouponItemRepositoryImpl implements QPmCouponItemRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("couponItemId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.couponItemId));
+                    orders.add(new OrderSpecifier(order, pmCouponItem.couponItemId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, pmCouponItem.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.couponItemId));
+            orders.add(new OrderSpecifier<>(Order.DESC, pmCouponItem.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, pmCouponItem.couponItemId));
         }
         return orders;
     }
@@ -208,17 +208,17 @@ public class QPmCouponItemRepositoryImpl implements QPmCouponItemRepository {
     public int updateSelective(PmCouponItem entity) {
         if (entity.getCouponItemId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(pmCouponItem);
         boolean hasAny = false;
 
-        if (entity.getCouponId()    != null) { update.set(a.couponId,    entity.getCouponId());    hasAny = true; }
-        if (entity.getSiteId()      != null) { update.set(a.siteId,      entity.getSiteId());      hasAny = true; }
-        if (entity.getTargetTypeCd()!= null) { update.set(a.targetTypeCd,entity.getTargetTypeCd());hasAny = true; }
-        if (entity.getTargetId()    != null) { update.set(a.targetId,    entity.getTargetId());    hasAny = true; }
+        if (entity.getCouponId()    != null) { update.set(pmCouponItem.couponId,    entity.getCouponId());    hasAny = true; }
+        if (entity.getSiteId()      != null) { update.set(pmCouponItem.siteId,      entity.getSiteId());      hasAny = true; }
+        if (entity.getTargetTypeCd()!= null) { update.set(pmCouponItem.targetTypeCd,entity.getTargetTypeCd());hasAny = true; }
+        if (entity.getTargetId()    != null) { update.set(pmCouponItem.targetId,    entity.getTargetId());    hasAny = true; }
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.couponItemId.eq(entity.getCouponItemId())).execute();
+        long affected = update.where(pmCouponItem.couponItemId.eq(entity.getCouponItemId())).execute();
         return (int) affected;
     }
 }

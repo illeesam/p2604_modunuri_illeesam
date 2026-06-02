@@ -30,15 +30,15 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.st.repository.qrydsl.impl.QStSettleAdjRepositoryImpl";
-    private static final QStSettleAdj a    = QStSettleAdj.stSettleAdj;
-    private static final QSySite     ste  = QSySite.sySite;
+    private static final QStSettleAdj stSettleAdj    = QStSettleAdj.stSettleAdj;
+    private static final QSySite     sySite  = QSySite.sySite;
     private static final QSyCode     cdSat = new QSyCode("cd_sat");
 
     /* 정산 조정 키조회 */
     @Override
     public Optional<StSettleAdjDto.Item> selectById(String id) {
         StSettleAdjDto.Item dto = baseListQuery()
-                .where(a.settleAdjId.eq(id))
+                .where(stSettleAdj.settleAdjId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -87,8 +87,8 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
         List<StSettleAdjDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(a.count())
-                .from(a)
+                .select(stSettleAdj.count())
+                .from(stSettleAdj)
                 .where(
                 baseAndSiteId(search),
                 baseAndSettleAdjId(search),
@@ -105,16 +105,16 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
     private JPAQuery<StSettleAdjDto.Item> baseListQuery() {
         return queryFactory
                 .select(Projections.bean(StSettleAdjDto.Item.class,
-                        a.settleAdjId, a.settleId, a.siteId,
-                        a.adjTypeCd, a.adjAmt, a.adjReason,
-                        a.settleAdjMemo, a.aprvStatusCd,
-                        a.regBy, a.regDate, a.updBy, a.updDate,
-                        ste.siteNm.as("siteNm"),
+                        stSettleAdj.settleAdjId, stSettleAdj.settleId, stSettleAdj.siteId,
+                        stSettleAdj.adjTypeCd, stSettleAdj.adjAmt, stSettleAdj.adjReason,
+                        stSettleAdj.settleAdjMemo, stSettleAdj.aprvStatusCd,
+                        stSettleAdj.regBy, stSettleAdj.regDate, stSettleAdj.updBy, stSettleAdj.updDate,
+                        sySite.siteNm.as("siteNm"),
                         cdSat.codeLabel.as("adjTypeCdNm")
                 ))
-                .from(a)
-                .leftJoin(ste).on(ste.siteId.eq(a.siteId))
-                .leftJoin(cdSat).on(cdSat.codeGrp.eq("SETTLE_ADJ_TYPE").and(cdSat.codeValue.eq(a.adjTypeCd)));
+                .from(stSettleAdj)
+                .leftJoin(sySite).on(sySite.siteId.eq(stSettleAdj.siteId))
+                .leftJoin(cdSat).on(cdSat.codeGrp.eq("SETTLE_ADJ_TYPE").and(cdSat.codeValue.eq(stSettleAdj.adjTypeCd)));
     }
 
     /* 정산 조정 buildCondition */
@@ -127,13 +127,13 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(StSettleAdjDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? stSettleAdj.siteId.eq(search.getSiteId()) : null;
     }
 
     /* settleAdjId 정확 일치 */
     private BooleanExpression baseAndSettleAdjId(StSettleAdjDto.Request search) {
         return search != null && StringUtils.hasText(search.getSettleAdjId())
-                ? a.settleAdjId.eq(search.getSettleAdjId()) : null;
+                ? stSettleAdj.settleAdjId.eq(search.getSettleAdjId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -146,8 +146,8 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "reg_date": return stSettleAdj.regDate.goe(start).and(stSettleAdj.regDate.lt(endExcl));
+            case "upd_date": return stSettleAdj.updDate.goe(start).and(stSettleAdj.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -160,13 +160,13 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",adjReason,", a.adjReason, pattern);
-        or = orLike(or, all, types, ",adjTypeCd,", a.adjTypeCd, pattern);
-        or = orLike(or, all, types, ",aprvStatusCd,", a.aprvStatusCd, pattern);
-        or = orLike(or, all, types, ",settleAdjId,", a.settleAdjId, pattern);
-        or = orLike(or, all, types, ",settleAdjMemo,", a.settleAdjMemo, pattern);
-        or = orLike(or, all, types, ",settleId,", a.settleId, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",adjReason,", stSettleAdj.adjReason, pattern);
+        or = orLike(or, all, types, ",adjTypeCd,", stSettleAdj.adjTypeCd, pattern);
+        or = orLike(or, all, types, ",aprvStatusCd,", stSettleAdj.aprvStatusCd, pattern);
+        or = orLike(or, all, types, ",settleAdjId,", stSettleAdj.settleAdjId, pattern);
+        or = orLike(or, all, types, ",settleAdjMemo,", stSettleAdj.settleAdjMemo, pattern);
+        or = orLike(or, all, types, ",settleId,", stSettleAdj.settleId, pattern);
+        or = orLike(or, all, types, ",siteId,", stSettleAdj.siteId, pattern);
         return or;
     }
 
@@ -187,8 +187,8 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = c == null ? null : c.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.settleAdjId));
+            orders.add(new OrderSpecifier(Order.DESC, stSettleAdj.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, stSettleAdj.settleAdjId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -199,17 +199,17 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("settleAdjId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.settleAdjId));
+                    orders.add(new OrderSpecifier(order, stSettleAdj.settleAdjId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, stSettleAdj.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.settleAdjId));
+            orders.add(new OrderSpecifier<>(Order.DESC, stSettleAdj.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, stSettleAdj.settleAdjId));
         }
         return orders;
     }
@@ -219,22 +219,22 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
     public int updateSelective(StSettleAdj entity) {
         if (entity.getSettleAdjId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(stSettleAdj);
         boolean hasAny = false;
 
-        if (entity.getSettleId()      != null) { update.set(a.settleId,      entity.getSettleId());      hasAny = true; }
-        if (entity.getSiteId()        != null) { update.set(a.siteId,        entity.getSiteId());        hasAny = true; }
-        if (entity.getAdjTypeCd()     != null) { update.set(a.adjTypeCd,     entity.getAdjTypeCd());     hasAny = true; }
-        if (entity.getAdjAmt()        != null) { update.set(a.adjAmt,        entity.getAdjAmt());        hasAny = true; }
-        if (entity.getAdjReason()     != null) { update.set(a.adjReason,     entity.getAdjReason());     hasAny = true; }
-        if (entity.getSettleAdjMemo() != null) { update.set(a.settleAdjMemo, entity.getSettleAdjMemo()); hasAny = true; }
-        if (entity.getUpdBy()         != null) { update.set(a.updBy,         entity.getUpdBy());         hasAny = true; }
+        if (entity.getSettleId()      != null) { update.set(stSettleAdj.settleId,      entity.getSettleId());      hasAny = true; }
+        if (entity.getSiteId()        != null) { update.set(stSettleAdj.siteId,        entity.getSiteId());        hasAny = true; }
+        if (entity.getAdjTypeCd()     != null) { update.set(stSettleAdj.adjTypeCd,     entity.getAdjTypeCd());     hasAny = true; }
+        if (entity.getAdjAmt()        != null) { update.set(stSettleAdj.adjAmt,        entity.getAdjAmt());        hasAny = true; }
+        if (entity.getAdjReason()     != null) { update.set(stSettleAdj.adjReason,     entity.getAdjReason());     hasAny = true; }
+        if (entity.getSettleAdjMemo() != null) { update.set(stSettleAdj.settleAdjMemo, entity.getSettleAdjMemo()); hasAny = true; }
+        if (entity.getUpdBy()         != null) { update.set(stSettleAdj.updBy,         entity.getUpdBy());         hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(stSettleAdj.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.settleAdjId.eq(entity.getSettleAdjId())).execute();
+        long affected = update.where(stSettleAdj.settleAdjId.eq(entity.getSettleAdjId())).execute();
         return (int) affected;
     }
 }

@@ -30,30 +30,30 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pm.repository.qrydsl.impl.QPmCacheRepositoryImpl";
-    private static final QPmCache a    = QPmCache.pmCache;
-    private static final QSySite  ste  = QSySite.sySite;
+    private static final QPmCache pmCache    = QPmCache.pmCache;
+    private static final QSySite  sySite  = QSySite.sySite;
     private static final QSyCode  cdCt = new QSyCode("cd_ct");
 
     /* 캐시(충전금) baseSelColumnQuery */
     private JPAQuery<PmCacheDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PmCacheDto.Item.class,
-                        a.cacheId, a.siteId, a.memberId, a.memberNm,
-                        a.cacheTypeCd, a.cacheAmt, a.balanceAmt,
-                        a.refId, a.cacheDesc, a.procUserId,
-                        a.cacheDate, a.expireDate,
-                        a.regBy, a.regDate, a.updBy, a.updDate
+                        pmCache.cacheId, pmCache.siteId, pmCache.memberId, pmCache.memberNm,
+                        pmCache.cacheTypeCd, pmCache.cacheAmt, pmCache.balanceAmt,
+                        pmCache.refId, pmCache.cacheDesc, pmCache.procUserId,
+                        pmCache.cacheDate, pmCache.expireDate,
+                        pmCache.regBy, pmCache.regDate, pmCache.updBy, pmCache.updDate
                 ))
-                .from(a)
-                .leftJoin(ste).on(ste.siteId.eq(a.siteId))
-                .leftJoin(cdCt).on(cdCt.codeGrp.eq("CACHE_TYPE").and(cdCt.codeValue.eq(a.cacheTypeCd)));
+                .from(pmCache)
+                .leftJoin(sySite).on(sySite.siteId.eq(pmCache.siteId))
+                .leftJoin(cdCt).on(cdCt.codeGrp.eq("CACHE_TYPE").and(cdCt.codeValue.eq(pmCache.cacheTypeCd)));
     }
 
     /* 캐시(충전금) 키조회 */
     @Override
     public Optional<PmCacheDto.Item> selectById(String cacheId) {
         PmCacheDto.Item dto = baseSelColumnQuery()
-                .where(a.cacheId.eq(cacheId))
+                .where(pmCache.cacheId.eq(cacheId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -102,8 +102,8 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
         List<PmCacheDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory
-                .select(a.count())
-                .from(a)
+                .select(pmCache.count())
+                .from(pmCache)
                 .where(
                 baseAndSiteId(search),
                 baseAndCacheId(search),
@@ -125,13 +125,13 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(PmCacheDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? pmCache.siteId.eq(search.getSiteId()) : null;
     }
 
     /* cacheId 정확 일치 */
     private BooleanExpression baseAndCacheId(PmCacheDto.Request search) {
         return search != null && StringUtils.hasText(search.getCacheId())
-                ? a.cacheId.eq(search.getCacheId()) : null;
+                ? pmCache.cacheId.eq(search.getCacheId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -144,8 +144,8 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "reg_date": return pmCache.regDate.goe(start).and(pmCache.regDate.lt(endExcl));
+            case "upd_date": return pmCache.updDate.goe(start).and(pmCache.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -158,14 +158,14 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",cacheDesc,", a.cacheDesc, pattern);
-        or = orLike(or, all, types, ",cacheId,", a.cacheId, pattern);
-        or = orLike(or, all, types, ",cacheTypeCd,", a.cacheTypeCd, pattern);
-        or = orLike(or, all, types, ",memberId,", a.memberId, pattern);
-        or = orLike(or, all, types, ",memberNm,", a.memberNm, pattern);
-        or = orLike(or, all, types, ",procUserId,", a.procUserId, pattern);
-        or = orLike(or, all, types, ",refId,", a.refId, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",cacheDesc,", pmCache.cacheDesc, pattern);
+        or = orLike(or, all, types, ",cacheId,", pmCache.cacheId, pattern);
+        or = orLike(or, all, types, ",cacheTypeCd,", pmCache.cacheTypeCd, pattern);
+        or = orLike(or, all, types, ",memberId,", pmCache.memberId, pattern);
+        or = orLike(or, all, types, ",memberNm,", pmCache.memberNm, pattern);
+        or = orLike(or, all, types, ",procUserId,", pmCache.procUserId, pattern);
+        or = orLike(or, all, types, ",refId,", pmCache.refId, pattern);
+        or = orLike(or, all, types, ",siteId,", pmCache.siteId, pattern);
         return or;
     }
 
@@ -186,8 +186,8 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.cacheId));
+            orders.add(new OrderSpecifier(Order.DESC, pmCache.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, pmCache.cacheId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -198,19 +198,19 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("cacheId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.cacheId));
+                    orders.add(new OrderSpecifier(order, pmCache.cacheId));
                 } else if ("memberNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.memberNm));
+                    orders.add(new OrderSpecifier(order, pmCache.memberNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, pmCache.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.cacheId));
+            orders.add(new OrderSpecifier<>(Order.DESC, pmCache.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, pmCache.cacheId));
         }
         return orders;
     }
@@ -222,27 +222,27 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
     public int updateSelective(PmCache entity) {
         if (entity.getCacheId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(pmCache);
         boolean hasAny = false;
 
-        if (entity.getSiteId()      != null) { update.set(a.siteId,      entity.getSiteId());      hasAny = true; }
-        if (entity.getMemberId()    != null) { update.set(a.memberId,    entity.getMemberId());    hasAny = true; }
-        if (entity.getMemberNm()    != null) { update.set(a.memberNm,    entity.getMemberNm());    hasAny = true; }
-        if (entity.getCacheTypeCd() != null) { update.set(a.cacheTypeCd, entity.getCacheTypeCd()); hasAny = true; }
-        if (entity.getCacheAmt()    != null) { update.set(a.cacheAmt,    entity.getCacheAmt());    hasAny = true; }
-        if (entity.getBalanceAmt()  != null) { update.set(a.balanceAmt,  entity.getBalanceAmt());  hasAny = true; }
-        if (entity.getRefId()       != null) { update.set(a.refId,       entity.getRefId());       hasAny = true; }
-        if (entity.getCacheDesc()   != null) { update.set(a.cacheDesc,   entity.getCacheDesc());   hasAny = true; }
-        if (entity.getProcUserId()  != null) { update.set(a.procUserId,  entity.getProcUserId());  hasAny = true; }
-        if (entity.getCacheDate()   != null) { update.set(a.cacheDate,   entity.getCacheDate());   hasAny = true; }
-        if (entity.getExpireDate()  != null) { update.set(a.expireDate,  entity.getExpireDate());  hasAny = true; }
-        if (entity.getUpdBy()       != null) { update.set(a.updBy,       entity.getUpdBy());       hasAny = true; }
+        if (entity.getSiteId()      != null) { update.set(pmCache.siteId,      entity.getSiteId());      hasAny = true; }
+        if (entity.getMemberId()    != null) { update.set(pmCache.memberId,    entity.getMemberId());    hasAny = true; }
+        if (entity.getMemberNm()    != null) { update.set(pmCache.memberNm,    entity.getMemberNm());    hasAny = true; }
+        if (entity.getCacheTypeCd() != null) { update.set(pmCache.cacheTypeCd, entity.getCacheTypeCd()); hasAny = true; }
+        if (entity.getCacheAmt()    != null) { update.set(pmCache.cacheAmt,    entity.getCacheAmt());    hasAny = true; }
+        if (entity.getBalanceAmt()  != null) { update.set(pmCache.balanceAmt,  entity.getBalanceAmt());  hasAny = true; }
+        if (entity.getRefId()       != null) { update.set(pmCache.refId,       entity.getRefId());       hasAny = true; }
+        if (entity.getCacheDesc()   != null) { update.set(pmCache.cacheDesc,   entity.getCacheDesc());   hasAny = true; }
+        if (entity.getProcUserId()  != null) { update.set(pmCache.procUserId,  entity.getProcUserId());  hasAny = true; }
+        if (entity.getCacheDate()   != null) { update.set(pmCache.cacheDate,   entity.getCacheDate());   hasAny = true; }
+        if (entity.getExpireDate()  != null) { update.set(pmCache.expireDate,  entity.getExpireDate());  hasAny = true; }
+        if (entity.getUpdBy()       != null) { update.set(pmCache.updBy,       entity.getUpdBy());       hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(pmCache.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.cacheId.eq(entity.getCacheId())).execute();
+        long affected = update.where(pmCache.cacheId.eq(entity.getCacheId())).execute();
         return (int) affected;
     }
 }

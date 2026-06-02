@@ -30,8 +30,8 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdProdSetItemRepositoryImpl";
-    private static final QPdProdSetItem a    = QPdProdSetItem.pdProdSetItem;
-    private static final QSySite        ste  = QSySite.sySite;
+    private static final QPdProdSetItem pdProdSetItem    = QPdProdSetItem.pdProdSetItem;
+    private static final QSySite        sySite  = QSySite.sySite;
     private static final QPdProd        prd  = new QPdProd("prd");
     private static final QPdProd        prd2 = new QPdProd("prd2");
 
@@ -39,21 +39,21 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
     private JPAQuery<PdProdSetItemDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdProdSetItemDto.Item.class,
-                        a.setItemId, a.siteId, a.setProdId, a.itemProdId, a.itemSkuId,
-                        a.itemNm, a.itemQty, a.itemDesc, a.sortOrd, a.useYn,
-                        a.regBy, a.regDate, a.updBy, a.updDate
+                        pdProdSetItem.setItemId, pdProdSetItem.siteId, pdProdSetItem.setProdId, pdProdSetItem.itemProdId, pdProdSetItem.itemSkuId,
+                        pdProdSetItem.itemNm, pdProdSetItem.itemQty, pdProdSetItem.itemDesc, pdProdSetItem.sortOrd, pdProdSetItem.useYn,
+                        pdProdSetItem.regBy, pdProdSetItem.regDate, pdProdSetItem.updBy, pdProdSetItem.updDate
                 ))
-                .from(a)
-                .leftJoin(ste).on(ste.siteId.eq(a.siteId))
-                .leftJoin(prd).on(prd.prodId.eq(a.setProdId))
-                .leftJoin(prd2).on(prd2.prodId.eq(a.itemProdId));
+                .from(pdProdSetItem)
+                .leftJoin(sySite).on(sySite.siteId.eq(pdProdSetItem.siteId))
+                .leftJoin(prd).on(prd.prodId.eq(pdProdSetItem.setProdId))
+                .leftJoin(prd2).on(prd2.prodId.eq(pdProdSetItem.itemProdId));
     }
 
     /* 세트상품 구성 키조회 */
     @Override
     public Optional<PdProdSetItemDto.Item> selectById(String setItemId) {
         PdProdSetItemDto.Item dto = baseSelColumnQuery()
-                .where(a.setItemId.eq(setItemId))
+                .where(pdProdSetItem.setItemId.eq(setItemId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -101,7 +101,7 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
         }
         List<PdProdSetItemDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(a.count()).from(a).where(
+        Long total = queryFactory.select(pdProdSetItem.count()).from(pdProdSetItem).where(
                 baseAndSiteId(search),
                 baseAndSetItemId(search),
                 baseAndDateRange(search),
@@ -121,13 +121,13 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(PdProdSetItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? pdProdSetItem.siteId.eq(search.getSiteId()) : null;
     }
 
     /* setItemId 정확 일치 */
     private BooleanExpression baseAndSetItemId(PdProdSetItemDto.Request search) {
         return search != null && StringUtils.hasText(search.getSetItemId())
-                ? a.setItemId.eq(search.getSetItemId()) : null;
+                ? pdProdSetItem.setItemId.eq(search.getSetItemId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -140,8 +140,8 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "reg_date": return pdProdSetItem.regDate.goe(start).and(pdProdSetItem.regDate.lt(endExcl));
+            case "upd_date": return pdProdSetItem.updDate.goe(start).and(pdProdSetItem.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -154,14 +154,14 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",itemDesc,", a.itemDesc, pattern);
-        or = orLike(or, all, types, ",itemNm,", a.itemNm, pattern);
-        or = orLike(or, all, types, ",itemProdId,", a.itemProdId, pattern);
-        or = orLike(or, all, types, ",itemSkuId,", a.itemSkuId, pattern);
-        or = orLike(or, all, types, ",setItemId,", a.setItemId, pattern);
-        or = orLike(or, all, types, ",setProdId,", a.setProdId, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
-        or = orLike(or, all, types, ",useYn,", a.useYn, pattern);
+        or = orLike(or, all, types, ",itemDesc,", pdProdSetItem.itemDesc, pattern);
+        or = orLike(or, all, types, ",itemNm,", pdProdSetItem.itemNm, pattern);
+        or = orLike(or, all, types, ",itemProdId,", pdProdSetItem.itemProdId, pattern);
+        or = orLike(or, all, types, ",itemSkuId,", pdProdSetItem.itemSkuId, pattern);
+        or = orLike(or, all, types, ",setItemId,", pdProdSetItem.setItemId, pattern);
+        or = orLike(or, all, types, ",setProdId,", pdProdSetItem.setProdId, pattern);
+        or = orLike(or, all, types, ",siteId,", pdProdSetItem.siteId, pattern);
+        or = orLike(or, all, types, ",useYn,", pdProdSetItem.useYn, pattern);
         return or;
     }
 
@@ -184,9 +184,9 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
         if (!StringUtils.hasText(sort)) {
 
             /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.setItemId));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdProdSetItem.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdProdSetItem.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdProdSetItem.setItemId));
 
             return orders;
         }
@@ -198,20 +198,20 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("setItemId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.setItemId));
+                    orders.add(new OrderSpecifier(order, pdProdSetItem.setItemId));
                 } else if ("itemNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.itemNm));
+                    orders.add(new OrderSpecifier(order, pdProdSetItem.itemNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, pdProdSetItem.regDate));
                 }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, a.sortOrd)); }
+                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, pdProdSetItem.sortOrd)); }
             }
         }
         /* unknown sort → sortOrd ASC + regDate ASC fallback */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.setItemId));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdProdSetItem.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdProdSetItem.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdProdSetItem.setItemId));
         }
         return orders;
     }
@@ -223,25 +223,25 @@ public class QPdProdSetItemRepositoryImpl implements QPdProdSetItemRepository {
     public int updateSelective(PdProdSetItem entity) {
         if (entity.getSetItemId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(pdProdSetItem);
         boolean hasAny = false;
 
-        if (entity.getSiteId()     != null) { update.set(a.siteId,     entity.getSiteId());     hasAny = true; }
-        if (entity.getSetProdId()  != null) { update.set(a.setProdId,  entity.getSetProdId());  hasAny = true; }
-        if (entity.getItemProdId() != null) { update.set(a.itemProdId, entity.getItemProdId()); hasAny = true; }
-        if (entity.getItemSkuId()  != null) { update.set(a.itemSkuId,  entity.getItemSkuId());  hasAny = true; }
-        if (entity.getItemNm()     != null) { update.set(a.itemNm,     entity.getItemNm());     hasAny = true; }
-        if (entity.getItemQty()    != null) { update.set(a.itemQty,    entity.getItemQty());    hasAny = true; }
-        if (entity.getItemDesc()   != null) { update.set(a.itemDesc,   entity.getItemDesc());   hasAny = true; }
-        if (entity.getSortOrd()    != null) { update.set(a.sortOrd,    entity.getSortOrd());    hasAny = true; }
-        if (entity.getUseYn()      != null) { update.set(a.useYn,      entity.getUseYn());      hasAny = true; }
-        if (entity.getUpdBy()      != null) { update.set(a.updBy,      entity.getUpdBy());      hasAny = true; }
+        if (entity.getSiteId()     != null) { update.set(pdProdSetItem.siteId,     entity.getSiteId());     hasAny = true; }
+        if (entity.getSetProdId()  != null) { update.set(pdProdSetItem.setProdId,  entity.getSetProdId());  hasAny = true; }
+        if (entity.getItemProdId() != null) { update.set(pdProdSetItem.itemProdId, entity.getItemProdId()); hasAny = true; }
+        if (entity.getItemSkuId()  != null) { update.set(pdProdSetItem.itemSkuId,  entity.getItemSkuId());  hasAny = true; }
+        if (entity.getItemNm()     != null) { update.set(pdProdSetItem.itemNm,     entity.getItemNm());     hasAny = true; }
+        if (entity.getItemQty()    != null) { update.set(pdProdSetItem.itemQty,    entity.getItemQty());    hasAny = true; }
+        if (entity.getItemDesc()   != null) { update.set(pdProdSetItem.itemDesc,   entity.getItemDesc());   hasAny = true; }
+        if (entity.getSortOrd()    != null) { update.set(pdProdSetItem.sortOrd,    entity.getSortOrd());    hasAny = true; }
+        if (entity.getUseYn()      != null) { update.set(pdProdSetItem.useYn,      entity.getUseYn());      hasAny = true; }
+        if (entity.getUpdBy()      != null) { update.set(pdProdSetItem.updBy,      entity.getUpdBy());      hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(pdProdSetItem.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.setItemId.eq(entity.getSetItemId())).execute();
+        long affected = update.where(pdProdSetItem.setItemId.eq(entity.getSetItemId())).execute();
         return (int) affected;
     }
 }

@@ -37,29 +37,29 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
     private final EntityManager em;
     private final SyMenuRepository syMenuRepository;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyMenuRepositoryImpl";
-    private static final QSyMenu m = QSyMenu.syMenu;
+    private static final QSyMenu syMenu = QSyMenu.syMenu;
 
     public QSyMenuRepositoryImpl(JPAQueryFactory queryFactory, @Lazy SyMenuRepository syMenuRepository, EntityManager em) {
         this.queryFactory = queryFactory;
         this.syMenuRepository = syMenuRepository;
         this.em = em;
     }
-    private static final QSySite ste = QSySite.sySite;
+    private static final QSySite sySite = QSySite.sySite;
     private static final QSyCode cdMt = new QSyCode("cd_mt");
 
     /* 메뉴 baseSelColumnQuery */
     private JPAQuery<SyMenuDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyMenuDto.Item.class,
-                        m.menuId, m.siteId, m.menuCode, m.menuNm, m.parentMenuId,
-                        m.menuUrl, m.menuTypeCd, m.iconClass, m.sortOrd, m.useYn,
-                        m.menuRemark,
-                        m.regBy, m.regDate, m.updBy, m.updDate,
-                        ste.siteNm.as("siteNm")
+                        syMenu.menuId, syMenu.siteId, syMenu.menuCode, syMenu.menuNm, syMenu.parentMenuId,
+                        syMenu.menuUrl, syMenu.menuTypeCd, syMenu.iconClass, syMenu.sortOrd, syMenu.useYn,
+                        syMenu.menuRemark,
+                        syMenu.regBy, syMenu.regDate, syMenu.updBy, syMenu.updDate,
+                        sySite.siteNm.as("siteNm")
                 ))
-                .from(m)
-                .leftJoin(ste).on(ste.siteId.eq(m.siteId))
-                .leftJoin(cdMt).on(cdMt.codeGrp.eq("MENU_TYPE").and(cdMt.codeValue.eq(m.menuTypeCd)));
+                .from(syMenu)
+                .leftJoin(sySite).on(sySite.siteId.eq(syMenu.siteId))
+                .leftJoin(cdMt).on(cdMt.codeGrp.eq("MENU_TYPE").and(cdMt.codeValue.eq(syMenu.menuTypeCd)));
     }
 
     /* 메뉴 키조회 */
@@ -67,7 +67,7 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
     public Optional<SyMenuDto.Item> selectById(String menuId) {
         SyMenuDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
-                .where(m.menuId.eq(menuId))
+                .where(syMenu.menuId.eq(menuId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -120,7 +120,7 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
         }
         List<SyMenuDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(m.count()).from(m).where(
+        Long total = queryFactory.select(syMenu.count()).from(syMenu).where(
                 baseAndSiteId(search),
                 baseAndMenuId(search),
                 baseAndMenuTypeCd(search),
@@ -143,7 +143,7 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(SyMenuDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? m.siteId.eq(search.getSiteId()) : null;
+                ? syMenu.siteId.eq(search.getSiteId()) : null;
     }
 
     /* menuId 트리 — 선택 노드 + 모든 자손 메뉴 포함 (sy_menu 자기참조 재귀 CTE 인라인) */
@@ -158,19 +158,19 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
         Query q = em.createNativeQuery(sql);
         q.setParameter("rootMenuId", search.getMenuId());
         List<String> menuIds = (List<String>) q.getResultList();
-        return m.menuId.in(menuIds);
+        return syMenu.menuId.in(menuIds);
     }
 
     /* menuTypeCd 정확 일치 */
     private BooleanExpression baseAndMenuTypeCd(SyMenuDto.Request search) {
         return search != null && StringUtils.hasText(search.getMenuTypeCd())
-                ? m.menuTypeCd.eq(search.getMenuTypeCd()) : null;
+                ? syMenu.menuTypeCd.eq(search.getMenuTypeCd()) : null;
     }
 
     /* useYn 정확 일치 */
     private BooleanExpression baseAndUseYn(SyMenuDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
-                ? m.useYn.eq(search.getUseYn()) : null;
+                ? syMenu.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -183,8 +183,8 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return m.regDate.goe(start).and(m.regDate.lt(endExcl));
-            case "upd_date": return m.updDate.goe(start).and(m.updDate.lt(endExcl));
+            case "reg_date": return syMenu.regDate.goe(start).and(syMenu.regDate.lt(endExcl));
+            case "upd_date": return syMenu.updDate.goe(start).and(syMenu.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -197,16 +197,16 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",iconClass,", m.iconClass, pattern);
-        or = orLike(or, all, types, ",menuCode,", m.menuCode, pattern);
-        or = orLike(or, all, types, ",menuId,", m.menuId, pattern);
-        or = orLike(or, all, types, ",menuNm,", m.menuNm, pattern);
-        or = orLike(or, all, types, ",menuRemark,", m.menuRemark, pattern);
-        or = orLike(or, all, types, ",menuTypeCd,", m.menuTypeCd, pattern);
-        or = orLike(or, all, types, ",menuUrl,", m.menuUrl, pattern);
-        or = orLike(or, all, types, ",parentMenuId,", m.parentMenuId, pattern);
-        or = orLike(or, all, types, ",siteId,", m.siteId, pattern);
-        or = orLike(or, all, types, ",useYn,", m.useYn, pattern);
+        or = orLike(or, all, types, ",iconClass,", syMenu.iconClass, pattern);
+        or = orLike(or, all, types, ",menuCode,", syMenu.menuCode, pattern);
+        or = orLike(or, all, types, ",menuId,", syMenu.menuId, pattern);
+        or = orLike(or, all, types, ",menuNm,", syMenu.menuNm, pattern);
+        or = orLike(or, all, types, ",menuRemark,", syMenu.menuRemark, pattern);
+        or = orLike(or, all, types, ",menuTypeCd,", syMenu.menuTypeCd, pattern);
+        or = orLike(or, all, types, ",menuUrl,", syMenu.menuUrl, pattern);
+        or = orLike(or, all, types, ",parentMenuId,", syMenu.parentMenuId, pattern);
+        or = orLike(or, all, types, ",siteId,", syMenu.siteId, pattern);
+        or = orLike(or, all, types, ",useYn,", syMenu.useYn, pattern);
         return or;
     }
 
@@ -229,9 +229,9 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
         if (!StringUtils.hasText(sort)) {
 
             /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, m.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, m.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, m.menuId));
+            orders.add(new OrderSpecifier<>(Order.ASC, syMenu.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, syMenu.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syMenu.menuId));
 
             return orders;
         }
@@ -243,20 +243,20 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("menuId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, m.menuId));
+                    orders.add(new OrderSpecifier(order, syMenu.menuId));
                 } else if ("menuNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, m.menuNm));
+                    orders.add(new OrderSpecifier(order, syMenu.menuNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, m.regDate));
+                    orders.add(new OrderSpecifier(order, syMenu.regDate));
                 }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, m.sortOrd)); }
+                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, syMenu.sortOrd)); }
             }
         }
         /* unknown sort → sortOrd ASC + regDate ASC fallback */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, m.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, m.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, m.menuId));
+            orders.add(new OrderSpecifier<>(Order.ASC, syMenu.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, syMenu.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syMenu.menuId));
         }
         return orders;
     }
@@ -266,26 +266,26 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
     public int updateSelective(SyMenu entity) {
         if (entity.getMenuId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(m);
+        JPAUpdateClause update = queryFactory.update(syMenu);
         boolean hasAny = false;
 
-        if (entity.getSiteId()       != null) { update.set(m.siteId,       entity.getSiteId());       hasAny = true; }
-        if (entity.getMenuCode()     != null) { update.set(m.menuCode,     entity.getMenuCode());     hasAny = true; }
-        if (entity.getMenuNm()       != null) { update.set(m.menuNm,       entity.getMenuNm());       hasAny = true; }
-        if (entity.getParentMenuId() != null) { update.set(m.parentMenuId, entity.getParentMenuId()); hasAny = true; }
-        if (entity.getMenuUrl()      != null) { update.set(m.menuUrl,      entity.getMenuUrl());      hasAny = true; }
-        if (entity.getMenuTypeCd()   != null) { update.set(m.menuTypeCd,   entity.getMenuTypeCd());   hasAny = true; }
-        if (entity.getIconClass()    != null) { update.set(m.iconClass,    entity.getIconClass());    hasAny = true; }
-        if (entity.getSortOrd()      != null) { update.set(m.sortOrd,      entity.getSortOrd());      hasAny = true; }
-        if (entity.getUseYn()        != null) { update.set(m.useYn,        entity.getUseYn());        hasAny = true; }
-        if (entity.getMenuRemark()   != null) { update.set(m.menuRemark,   entity.getMenuRemark());   hasAny = true; }
-        if (entity.getUpdBy()        != null) { update.set(m.updBy,        entity.getUpdBy());        hasAny = true; }
+        if (entity.getSiteId()       != null) { update.set(syMenu.siteId,       entity.getSiteId());       hasAny = true; }
+        if (entity.getMenuCode()     != null) { update.set(syMenu.menuCode,     entity.getMenuCode());     hasAny = true; }
+        if (entity.getMenuNm()       != null) { update.set(syMenu.menuNm,       entity.getMenuNm());       hasAny = true; }
+        if (entity.getParentMenuId() != null) { update.set(syMenu.parentMenuId, entity.getParentMenuId()); hasAny = true; }
+        if (entity.getMenuUrl()      != null) { update.set(syMenu.menuUrl,      entity.getMenuUrl());      hasAny = true; }
+        if (entity.getMenuTypeCd()   != null) { update.set(syMenu.menuTypeCd,   entity.getMenuTypeCd());   hasAny = true; }
+        if (entity.getIconClass()    != null) { update.set(syMenu.iconClass,    entity.getIconClass());    hasAny = true; }
+        if (entity.getSortOrd()      != null) { update.set(syMenu.sortOrd,      entity.getSortOrd());      hasAny = true; }
+        if (entity.getUseYn()        != null) { update.set(syMenu.useYn,        entity.getUseYn());        hasAny = true; }
+        if (entity.getMenuRemark()   != null) { update.set(syMenu.menuRemark,   entity.getMenuRemark());   hasAny = true; }
+        if (entity.getUpdBy()        != null) { update.set(syMenu.updBy,        entity.getUpdBy());        hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(m.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(syMenu.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(m.menuId.eq(entity.getMenuId())).execute();
+        long affected = update.where(syMenu.menuId.eq(entity.getMenuId())).execute();
         return (int) affected;
     }
 
@@ -339,10 +339,10 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
 
         List<Map<String, Object>> result = new ArrayList<>(rows.size());
         for (Object[] row : rows) {
-            Map<String, Object> m = new LinkedHashMap<>();
-            m.put("menuId", row[0] == null ? null : String.valueOf(row[0]));
-            m.put("cnt",    row[1] == null ? 0L   : ((Number) row[1]).longValue());
-            result.add(m);
+            Map<String, Object> syMenu = new LinkedHashMap<>();
+            syMenu.put("menuId", row[0] == null ? null : String.valueOf(row[0]));
+            syMenu.put("cnt",    row[1] == null ? 0L   : ((Number) row[1]).longValue());
+            result.add(syMenu);
         }
         return result;
     }

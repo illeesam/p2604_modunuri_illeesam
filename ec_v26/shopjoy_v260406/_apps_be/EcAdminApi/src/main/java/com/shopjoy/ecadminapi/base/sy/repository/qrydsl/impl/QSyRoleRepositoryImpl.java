@@ -38,7 +38,7 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
     private final SyPathRepository syPathRepository;
     private final EntityManager em;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyRoleRepositoryImpl";
-    private static final QSyRole a = QSyRole.syRole;
+    private static final QSyRole syRole = QSyRole.syRole;
 
     public QSyRoleRepositoryImpl(JPAQueryFactory queryFactory, SyPathRepository syPathRepository, @Lazy SyRoleRepository syRoleRepository, EntityManager em) {
         this.queryFactory = queryFactory;
@@ -46,21 +46,21 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
         this.syRoleRepository = syRoleRepository;
         this.em = em;
     }
-    private static final QSySite ste = QSySite.sySite;
+    private static final QSySite sySite = QSySite.sySite;
     private static final QSyCode cdRt = new QSyCode("cd_rt");
 
     /* 역할(권한) baseSelColumnQuery */
     private JPAQuery<SyRoleDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyRoleDto.Item.class,
-                        a.roleId, a.siteId, a.roleCode, a.roleNm, a.parentRoleId,
-                        a.roleTypeCd, a.sortOrd, a.useYn, a.restrictPerm, a.roleRemark,
-                        a.regBy, a.regDate, a.updBy, a.updDate, a.pathId,
-                        ste.siteNm.as("siteNm")
+                        syRole.roleId, syRole.siteId, syRole.roleCode, syRole.roleNm, syRole.parentRoleId,
+                        syRole.roleTypeCd, syRole.sortOrd, syRole.useYn, syRole.restrictPerm, syRole.roleRemark,
+                        syRole.regBy, syRole.regDate, syRole.updBy, syRole.updDate, syRole.pathId,
+                        sySite.siteNm.as("siteNm")
                 ))
-                .from(a)
-                .leftJoin(ste).on(ste.siteId.eq(a.siteId))
-                .leftJoin(cdRt).on(cdRt.codeGrp.eq("ROLE_TYPE").and(cdRt.codeValue.eq(a.roleTypeCd)));
+                .from(syRole)
+                .leftJoin(sySite).on(sySite.siteId.eq(syRole.siteId))
+                .leftJoin(cdRt).on(cdRt.codeGrp.eq("ROLE_TYPE").and(cdRt.codeValue.eq(syRole.roleTypeCd)));
     }
 
     /* 역할(권한) 키조회 */
@@ -68,7 +68,7 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
     public Optional<SyRoleDto.Item> selectById(String roleId) {
         SyRoleDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
-                .where(a.roleId.eq(roleId))
+                .where(syRole.roleId.eq(roleId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -123,7 +123,7 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
         }
         List<SyRoleDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(a.count()).from(a).where(
+        Long total = queryFactory.select(syRole.count()).from(syRole).where(
                 baseAndSiteId(search),
                 baseAndRoleId(search),
                 baseAndParentRoleId(search),
@@ -140,7 +140,7 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
     /* 검색조건 기준 전체 카운트 (대량 export 안전 상한 검증용) */
     @Override
     public long selectCount(SyRoleDto.Request search) {
-        Long total = queryFactory.select(a.count()).from(a).where(
+        Long total = queryFactory.select(syRole.count()).from(syRole).where(
                 baseAndSiteId(search),
                 baseAndRoleId(search),
                 baseAndParentRoleId(search),
@@ -162,13 +162,13 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(SyRoleDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? syRole.siteId.eq(search.getSiteId()) : null;
     }
 
     /* roleId 정확 일치 */
     private BooleanExpression baseAndRoleId(SyRoleDto.Request search) {
         return search != null && StringUtils.hasText(search.getRoleId())
-                ? a.roleId.eq(search.getRoleId()) : null;
+                ? syRole.roleId.eq(search.getRoleId()) : null;
     }
 
     /* parentRoleId 트리 — 선택 노드 + 모든 자손 역할 포함 (sy_role 자기참조 재귀 CTE 인라인) */
@@ -183,19 +183,19 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
         Query q = em.createNativeQuery(sql);
         q.setParameter("rootRoleId", search.getParentRoleId());
         List<String> roleIds = (List<String>) q.getResultList();
-        return a.roleId.in(roleIds);
+        return syRole.roleId.in(roleIds);
     }
 
     /* roleTypeCd 정확 일치 */
     private BooleanExpression baseAndRoleTypeCd(SyRoleDto.Request search) {
         return search != null && StringUtils.hasText(search.getRoleTypeCd())
-                ? a.roleTypeCd.eq(search.getRoleTypeCd()) : null;
+                ? syRole.roleTypeCd.eq(search.getRoleTypeCd()) : null;
     }
 
     /* useYn 정확 일치 */
     private BooleanExpression baseAndUseYn(SyRoleDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
-                ? a.useYn.eq(search.getUseYn()) : null;
+                ? syRole.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -208,8 +208,8 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "reg_date": return syRole.regDate.goe(start).and(syRole.regDate.lt(endExcl));
+            case "upd_date": return syRole.updDate.goe(start).and(syRole.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -222,16 +222,16 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",parentRoleId,", a.parentRoleId, pattern);
-        or = orLike(or, all, types, ",pathId,", a.pathId, pattern);
-        or = orLike(or, all, types, ",restrictPerm,", a.restrictPerm, pattern);
-        or = orLike(or, all, types, ",roleCode,", a.roleCode, pattern);
-        or = orLike(or, all, types, ",roleId,", a.roleId, pattern);
-        or = orLike(or, all, types, ",roleNm,", a.roleNm, pattern);
-        or = orLike(or, all, types, ",roleRemark,", a.roleRemark, pattern);
-        or = orLike(or, all, types, ",roleTypeCd,", a.roleTypeCd, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
-        or = orLike(or, all, types, ",useYn,", a.useYn, pattern);
+        or = orLike(or, all, types, ",parentRoleId,", syRole.parentRoleId, pattern);
+        or = orLike(or, all, types, ",pathId,", syRole.pathId, pattern);
+        or = orLike(or, all, types, ",restrictPerm,", syRole.restrictPerm, pattern);
+        or = orLike(or, all, types, ",roleCode,", syRole.roleCode, pattern);
+        or = orLike(or, all, types, ",roleId,", syRole.roleId, pattern);
+        or = orLike(or, all, types, ",roleNm,", syRole.roleNm, pattern);
+        or = orLike(or, all, types, ",roleRemark,", syRole.roleRemark, pattern);
+        or = orLike(or, all, types, ",roleTypeCd,", syRole.roleTypeCd, pattern);
+        or = orLike(or, all, types, ",siteId,", syRole.siteId, pattern);
+        or = orLike(or, all, types, ",useYn,", syRole.useYn, pattern);
         return or;
     }
 
@@ -254,9 +254,9 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
         if (!StringUtils.hasText(sort)) {
 
             /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.roleId));
+            orders.add(new OrderSpecifier<>(Order.ASC, syRole.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, syRole.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syRole.roleId));
 
             return orders;
         }
@@ -268,20 +268,20 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("roleId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.roleId));
+                    orders.add(new OrderSpecifier(order, syRole.roleId));
                 } else if ("roleNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.roleNm));
+                    orders.add(new OrderSpecifier(order, syRole.roleNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, syRole.regDate));
                 }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, a.sortOrd)); }
+                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, syRole.sortOrd)); }
             }
         }
         /* unknown sort → sortOrd ASC + regDate ASC fallback */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.roleId));
+            orders.add(new OrderSpecifier<>(Order.ASC, syRole.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, syRole.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syRole.roleId));
         }
         return orders;
     }
@@ -291,26 +291,26 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
     public int updateSelective(SyRole entity) {
         if (entity.getRoleId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(syRole);
         boolean hasAny = false;
 
-        if (entity.getSiteId()       != null) { update.set(a.siteId,       entity.getSiteId());       hasAny = true; }
-        if (entity.getRoleCode()     != null) { update.set(a.roleCode,     entity.getRoleCode());     hasAny = true; }
-        if (entity.getRoleNm()       != null) { update.set(a.roleNm,       entity.getRoleNm());       hasAny = true; }
-        if (entity.getParentRoleId() != null) { update.set(a.parentRoleId, entity.getParentRoleId()); hasAny = true; }
-        if (entity.getRoleTypeCd()   != null) { update.set(a.roleTypeCd,   entity.getRoleTypeCd());   hasAny = true; }
-        if (entity.getSortOrd()      != null) { update.set(a.sortOrd,      entity.getSortOrd());      hasAny = true; }
-        if (entity.getUseYn()        != null) { update.set(a.useYn,        entity.getUseYn());        hasAny = true; }
-        if (entity.getRestrictPerm() != null) { update.set(a.restrictPerm, entity.getRestrictPerm()); hasAny = true; }
-        if (entity.getRoleRemark()   != null) { update.set(a.roleRemark,   entity.getRoleRemark());   hasAny = true; }
-        if (entity.getUpdBy()        != null) { update.set(a.updBy,        entity.getUpdBy());        hasAny = true; }
+        if (entity.getSiteId()       != null) { update.set(syRole.siteId,       entity.getSiteId());       hasAny = true; }
+        if (entity.getRoleCode()     != null) { update.set(syRole.roleCode,     entity.getRoleCode());     hasAny = true; }
+        if (entity.getRoleNm()       != null) { update.set(syRole.roleNm,       entity.getRoleNm());       hasAny = true; }
+        if (entity.getParentRoleId() != null) { update.set(syRole.parentRoleId, entity.getParentRoleId()); hasAny = true; }
+        if (entity.getRoleTypeCd()   != null) { update.set(syRole.roleTypeCd,   entity.getRoleTypeCd());   hasAny = true; }
+        if (entity.getSortOrd()      != null) { update.set(syRole.sortOrd,      entity.getSortOrd());      hasAny = true; }
+        if (entity.getUseYn()        != null) { update.set(syRole.useYn,        entity.getUseYn());        hasAny = true; }
+        if (entity.getRestrictPerm() != null) { update.set(syRole.restrictPerm, entity.getRestrictPerm()); hasAny = true; }
+        if (entity.getRoleRemark()   != null) { update.set(syRole.roleRemark,   entity.getRoleRemark());   hasAny = true; }
+        if (entity.getUpdBy()        != null) { update.set(syRole.updBy,        entity.getUpdBy());        hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
-        if (entity.getPathId()       != null) { update.set(a.pathId,       entity.getPathId());       hasAny = true; }
+        update.set(syRole.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        if (entity.getPathId()       != null) { update.set(syRole.pathId,       entity.getPathId());       hasAny = true; }
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.roleId.eq(entity.getRoleId())).execute();
+        long affected = update.where(syRole.roleId.eq(entity.getRoleId())).execute();
         return (int) affected;
     }
 }

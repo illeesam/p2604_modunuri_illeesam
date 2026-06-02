@@ -37,20 +37,20 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
     private final EntityManager em;
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyCodeGrpRepositoryImpl";
-    private static final QSyCodeGrp g = QSyCodeGrp.syCodeGrp;
-    private static final QSySite ste = QSySite.sySite;
+    private static final QSyCodeGrp syCodeGrp = QSyCodeGrp.syCodeGrp;
+    private static final QSySite sySite = QSySite.sySite;
 
     /* 공통 코드 그룹 baseSelColumnQuery */
     private JPAQuery<SyCodeGrpDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyCodeGrpDto.Item.class,
-                        g.codeGrpId, g.siteId, g.codeGrp, g.grpNm, g.pathId,
-                        g.codeGrpDesc, g.useYn,
-                        g.regBy, g.regDate, g.updBy, g.updDate,
-                        ste.siteNm.as("siteNm")
+                        syCodeGrp.codeGrpId, syCodeGrp.siteId, syCodeGrp.codeGrp, syCodeGrp.grpNm, syCodeGrp.pathId,
+                        syCodeGrp.codeGrpDesc, syCodeGrp.useYn,
+                        syCodeGrp.regBy, syCodeGrp.regDate, syCodeGrp.updBy, syCodeGrp.updDate,
+                        sySite.siteNm.as("siteNm")
                 ))
-                .from(g)
-                .leftJoin(ste).on(ste.siteId.eq(g.siteId));
+                .from(syCodeGrp)
+                .leftJoin(sySite).on(sySite.siteId.eq(syCodeGrp.siteId));
     }
 
     /* 공통 코드 그룹 키조회 */
@@ -58,7 +58,7 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
     public Optional<SyCodeGrpDto.Item> selectById(String codeGrpId) {
         SyCodeGrpDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
-                .where(g.codeGrpId.eq(codeGrpId))
+                .where(syCodeGrp.codeGrpId.eq(codeGrpId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -113,7 +113,7 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
         }
         List<SyCodeGrpDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(g.count()).from(g).where(
+        Long total = queryFactory.select(syCodeGrp.count()).from(syCodeGrp).where(
                 baseAndSiteId(search),
                 baseAndPathId(search),
                 baseAndCodeGrpId(search),
@@ -137,32 +137,32 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(SyCodeGrpDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? g.siteId.eq(search.getSiteId()) : null;
+                ? syCodeGrp.siteId.eq(search.getSiteId()) : null;
     }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression baseAndPathId(SyCodeGrpDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
-                ? g.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_code_grp"))
+                ? syCodeGrp.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_code_grp"))
                 : null;
     }
 
     /* codeGrpId 정확 일치 */
     private BooleanExpression baseAndCodeGrpId(SyCodeGrpDto.Request search) {
         return search != null && StringUtils.hasText(search.getCodeGrpId())
-                ? g.codeGrpId.eq(search.getCodeGrpId()) : null;
+                ? syCodeGrp.codeGrpId.eq(search.getCodeGrpId()) : null;
     }
 
     /* codeGrp 정확 일치 */
     private BooleanExpression baseAndCodeGrp(SyCodeGrpDto.Request search) {
         return search != null && StringUtils.hasText(search.getCodeGrp())
-                ? g.codeGrp.eq(search.getCodeGrp()) : null;
+                ? syCodeGrp.codeGrp.eq(search.getCodeGrp()) : null;
     }
 
     /* useYn 정확 일치 */
     private BooleanExpression baseAndUseYn(SyCodeGrpDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
-                ? g.useYn.eq(search.getUseYn()) : null;
+                ? syCodeGrp.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -175,8 +175,8 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return g.regDate.goe(start).and(g.regDate.lt(endExcl));
-            case "upd_date": return g.updDate.goe(start).and(g.updDate.lt(endExcl));
+            case "reg_date": return syCodeGrp.regDate.goe(start).and(syCodeGrp.regDate.lt(endExcl));
+            case "upd_date": return syCodeGrp.updDate.goe(start).and(syCodeGrp.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -189,13 +189,13 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",codeGrp,", g.codeGrp, pattern);
-        or = orLike(or, all, types, ",codeGrpDesc,", g.codeGrpDesc, pattern);
-        or = orLike(or, all, types, ",codeGrpId,", g.codeGrpId, pattern);
-        or = orLike(or, all, types, ",grpNm,", g.grpNm, pattern);
-        or = orLike(or, all, types, ",pathId,", g.pathId, pattern);
-        or = orLike(or, all, types, ",siteId,", g.siteId, pattern);
-        or = orLike(or, all, types, ",useYn,", g.useYn, pattern);
+        or = orLike(or, all, types, ",codeGrp,", syCodeGrp.codeGrp, pattern);
+        or = orLike(or, all, types, ",codeGrpDesc,", syCodeGrp.codeGrpDesc, pattern);
+        or = orLike(or, all, types, ",codeGrpId,", syCodeGrp.codeGrpId, pattern);
+        or = orLike(or, all, types, ",grpNm,", syCodeGrp.grpNm, pattern);
+        or = orLike(or, all, types, ",pathId,", syCodeGrp.pathId, pattern);
+        or = orLike(or, all, types, ",siteId,", syCodeGrp.siteId, pattern);
+        or = orLike(or, all, types, ",useYn,", syCodeGrp.useYn, pattern);
         return or;
     }
 
@@ -216,8 +216,8 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, g.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, g.codeGrpId));
+            orders.add(new OrderSpecifier(Order.DESC, syCodeGrp.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syCodeGrp.codeGrpId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -228,21 +228,21 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("codeGrpId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, g.codeGrpId));
+                    orders.add(new OrderSpecifier(order, syCodeGrp.codeGrpId));
                 } else if ("grpNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, g.grpNm));
+                    orders.add(new OrderSpecifier(order, syCodeGrp.grpNm));
                 } else if ("codeGrp".equals(field)) {
-                    orders.add(new OrderSpecifier(order, g.codeGrp));
+                    orders.add(new OrderSpecifier(order, syCodeGrp.codeGrp));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, g.regDate));
+                    orders.add(new OrderSpecifier(order, syCodeGrp.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, g.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, g.codeGrpId));
+            orders.add(new OrderSpecifier<>(Order.DESC, syCodeGrp.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syCodeGrp.codeGrpId));
         }
         return orders;
     }
@@ -252,22 +252,22 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
     public int updateSelective(SyCodeGrp entity) {
         if (entity.getCodeGrpId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(g);
+        JPAUpdateClause update = queryFactory.update(syCodeGrp);
         boolean hasAny = false;
 
-        if (entity.getSiteId()      != null) { update.set(g.siteId,      entity.getSiteId());      hasAny = true; }
-        if (entity.getCodeGrp()     != null) { update.set(g.codeGrp,     entity.getCodeGrp());     hasAny = true; }
-        if (entity.getGrpNm()       != null) { update.set(g.grpNm,       entity.getGrpNm());       hasAny = true; }
-        if (entity.getPathId()      != null) { update.set(g.pathId,      entity.getPathId());      hasAny = true; }
-        if (entity.getCodeGrpDesc() != null) { update.set(g.codeGrpDesc, entity.getCodeGrpDesc()); hasAny = true; }
-        if (entity.getUseYn()       != null) { update.set(g.useYn,       entity.getUseYn());       hasAny = true; }
-        if (entity.getUpdBy()       != null) { update.set(g.updBy,       entity.getUpdBy());       hasAny = true; }
+        if (entity.getSiteId()      != null) { update.set(syCodeGrp.siteId,      entity.getSiteId());      hasAny = true; }
+        if (entity.getCodeGrp()     != null) { update.set(syCodeGrp.codeGrp,     entity.getCodeGrp());     hasAny = true; }
+        if (entity.getGrpNm()       != null) { update.set(syCodeGrp.grpNm,       entity.getGrpNm());       hasAny = true; }
+        if (entity.getPathId()      != null) { update.set(syCodeGrp.pathId,      entity.getPathId());      hasAny = true; }
+        if (entity.getCodeGrpDesc() != null) { update.set(syCodeGrp.codeGrpDesc, entity.getCodeGrpDesc()); hasAny = true; }
+        if (entity.getUseYn()       != null) { update.set(syCodeGrp.useYn,       entity.getUseYn());       hasAny = true; }
+        if (entity.getUpdBy()       != null) { update.set(syCodeGrp.updBy,       entity.getUpdBy());       hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(g.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(syCodeGrp.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(g.codeGrpId.eq(entity.getCodeGrpId())).execute();
+        long affected = update.where(syCodeGrp.codeGrpId.eq(entity.getCodeGrpId())).execute();
         return (int) affected;
     }
 

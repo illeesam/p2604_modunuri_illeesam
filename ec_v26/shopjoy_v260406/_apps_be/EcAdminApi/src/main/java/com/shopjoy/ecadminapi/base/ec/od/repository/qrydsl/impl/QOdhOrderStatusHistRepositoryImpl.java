@@ -28,24 +28,24 @@ public class QOdhOrderStatusHistRepositoryImpl implements QOdhOrderStatusHistRep
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdhOrderStatusHistRepositoryImpl";
-    private static final QOdhOrderStatusHist a = QOdhOrderStatusHist.odhOrderStatusHist;
+    private static final QOdhOrderStatusHist odhOrderStatusHist = QOdhOrderStatusHist.odhOrderStatusHist;
 
     /* 주문 상태 이력 baseSelColumnQuery */
     private JPAQuery<OdhOrderStatusHistDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(OdhOrderStatusHistDto.Item.class,
-                        a.orderStatusHistId, a.siteId, a.orderId,
-                        a.orderStatusCdBefore, a.orderStatusCd, a.statusReason,
-                        a.chgUserId, a.chgDate, a.memo,
-                        a.regBy, a.regDate, a.updBy, a.updDate))
-                .from(a);
+                        odhOrderStatusHist.orderStatusHistId, odhOrderStatusHist.siteId, odhOrderStatusHist.orderId,
+                        odhOrderStatusHist.orderStatusCdBefore, odhOrderStatusHist.orderStatusCd, odhOrderStatusHist.statusReason,
+                        odhOrderStatusHist.chgUserId, odhOrderStatusHist.chgDate, odhOrderStatusHist.memo,
+                        odhOrderStatusHist.regBy, odhOrderStatusHist.regDate, odhOrderStatusHist.updBy, odhOrderStatusHist.updDate))
+                .from(odhOrderStatusHist);
     }
 
     /* 주문 상태 이력 키조회 */
     @Override
     public Optional<OdhOrderStatusHistDto.Item> selectById(String id) {
         OdhOrderStatusHistDto.Item dto = baseSelColumnQuery()
-                .where(a.orderStatusHistId.eq(id))
+                .where(odhOrderStatusHist.orderStatusHistId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -91,7 +91,7 @@ public class QOdhOrderStatusHistRepositoryImpl implements QOdhOrderStatusHistRep
         }
         List<OdhOrderStatusHistDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(a.count()).from(a).where(
+        Long total = queryFactory.select(odhOrderStatusHist.count()).from(odhOrderStatusHist).where(
                 baseAndSiteId(search),
                 baseAndOrderStatusHistId(search),
                 baseAndSearchValue(search)
@@ -111,13 +111,13 @@ public class QOdhOrderStatusHistRepositoryImpl implements QOdhOrderStatusHistRep
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(OdhOrderStatusHistDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? odhOrderStatusHist.siteId.eq(search.getSiteId()) : null;
     }
 
     /* orderStatusHistId 정확 일치 */
     private BooleanExpression baseAndOrderStatusHistId(OdhOrderStatusHistDto.Request search) {
         return search != null && StringUtils.hasText(search.getOrderStatusHistId())
-                ? a.orderStatusHistId.eq(search.getOrderStatusHistId()) : null;
+                ? odhOrderStatusHist.orderStatusHistId.eq(search.getOrderStatusHistId()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
@@ -128,14 +128,14 @@ public class QOdhOrderStatusHistRepositoryImpl implements QOdhOrderStatusHistRep
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",chgUserId,", a.chgUserId, pattern);
-        or = orLike(or, all, types, ",memo,", a.memo, pattern);
-        or = orLike(or, all, types, ",orderId,", a.orderId, pattern);
-        or = orLike(or, all, types, ",orderStatusCd,", a.orderStatusCd, pattern);
-        or = orLike(or, all, types, ",orderStatusCdBefore,", a.orderStatusCdBefore, pattern);
-        or = orLike(or, all, types, ",orderStatusHistId,", a.orderStatusHistId, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
-        or = orLike(or, all, types, ",statusReason,", a.statusReason, pattern);
+        or = orLike(or, all, types, ",chgUserId,", odhOrderStatusHist.chgUserId, pattern);
+        or = orLike(or, all, types, ",memo,", odhOrderStatusHist.memo, pattern);
+        or = orLike(or, all, types, ",orderId,", odhOrderStatusHist.orderId, pattern);
+        or = orLike(or, all, types, ",orderStatusCd,", odhOrderStatusHist.orderStatusCd, pattern);
+        or = orLike(or, all, types, ",orderStatusCdBefore,", odhOrderStatusHist.orderStatusCdBefore, pattern);
+        or = orLike(or, all, types, ",orderStatusHistId,", odhOrderStatusHist.orderStatusHistId, pattern);
+        or = orLike(or, all, types, ",siteId,", odhOrderStatusHist.siteId, pattern);
+        or = orLike(or, all, types, ",statusReason,", odhOrderStatusHist.statusReason, pattern);
         return or;
     }
 
@@ -156,8 +156,8 @@ public class QOdhOrderStatusHistRepositoryImpl implements QOdhOrderStatusHistRep
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.orderStatusHistId));
+            orders.add(new OrderSpecifier(Order.DESC, odhOrderStatusHist.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, odhOrderStatusHist.orderStatusHistId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -168,17 +168,17 @@ public class QOdhOrderStatusHistRepositoryImpl implements QOdhOrderStatusHistRep
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("orderStatusHistId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.orderStatusHistId));
+                    orders.add(new OrderSpecifier(order, odhOrderStatusHist.orderStatusHistId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, odhOrderStatusHist.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.orderStatusHistId));
+            orders.add(new OrderSpecifier<>(Order.DESC, odhOrderStatusHist.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, odhOrderStatusHist.orderStatusHistId));
         }
         return orders;
     }
@@ -188,24 +188,24 @@ public class QOdhOrderStatusHistRepositoryImpl implements QOdhOrderStatusHistRep
     public int updateSelective(OdhOrderStatusHist entity) {
         if (entity.getOrderStatusHistId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(odhOrderStatusHist);
         boolean hasAny = false;
 
-        if (entity.getSiteId()              != null) { update.set(a.siteId,              entity.getSiteId());              hasAny = true; }
-        if (entity.getOrderId()             != null) { update.set(a.orderId,             entity.getOrderId());             hasAny = true; }
-        if (entity.getOrderStatusCdBefore() != null) { update.set(a.orderStatusCdBefore, entity.getOrderStatusCdBefore()); hasAny = true; }
-        if (entity.getOrderStatusCd()       != null) { update.set(a.orderStatusCd,       entity.getOrderStatusCd());       hasAny = true; }
-        if (entity.getStatusReason()        != null) { update.set(a.statusReason,        entity.getStatusReason());        hasAny = true; }
-        if (entity.getChgUserId()           != null) { update.set(a.chgUserId,           entity.getChgUserId());           hasAny = true; }
-        if (entity.getChgDate()             != null) { update.set(a.chgDate,             entity.getChgDate());             hasAny = true; }
-        if (entity.getMemo()                != null) { update.set(a.memo,                entity.getMemo());                hasAny = true; }
-        if (entity.getUpdBy()               != null) { update.set(a.updBy,               entity.getUpdBy());               hasAny = true; }
+        if (entity.getSiteId()              != null) { update.set(odhOrderStatusHist.siteId,              entity.getSiteId());              hasAny = true; }
+        if (entity.getOrderId()             != null) { update.set(odhOrderStatusHist.orderId,             entity.getOrderId());             hasAny = true; }
+        if (entity.getOrderStatusCdBefore() != null) { update.set(odhOrderStatusHist.orderStatusCdBefore, entity.getOrderStatusCdBefore()); hasAny = true; }
+        if (entity.getOrderStatusCd()       != null) { update.set(odhOrderStatusHist.orderStatusCd,       entity.getOrderStatusCd());       hasAny = true; }
+        if (entity.getStatusReason()        != null) { update.set(odhOrderStatusHist.statusReason,        entity.getStatusReason());        hasAny = true; }
+        if (entity.getChgUserId()           != null) { update.set(odhOrderStatusHist.chgUserId,           entity.getChgUserId());           hasAny = true; }
+        if (entity.getChgDate()             != null) { update.set(odhOrderStatusHist.chgDate,             entity.getChgDate());             hasAny = true; }
+        if (entity.getMemo()                != null) { update.set(odhOrderStatusHist.memo,                entity.getMemo());                hasAny = true; }
+        if (entity.getUpdBy()               != null) { update.set(odhOrderStatusHist.updBy,               entity.getUpdBy());               hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(odhOrderStatusHist.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.orderStatusHistId.eq(entity.getOrderStatusHistId())).execute();
+        long affected = update.where(odhOrderStatusHist.orderStatusHistId.eq(entity.getOrderStatusHistId())).execute();
         return (int) affected;
     }
 }

@@ -29,26 +29,26 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdTagRepositoryImpl";
-    private static final QPdTag  a   = QPdTag.pdTag;
-    private static final QSySite ste = QSySite.sySite;
+    private static final QPdTag  pdTag   = QPdTag.pdTag;
+    private static final QSySite sySite = QSySite.sySite;
 
     /* 태그 baseSelColumnQuery */
     private JPAQuery<PdTagDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdTagDto.Item.class,
-                        a.tagId, a.siteId, a.tagNm, a.tagDesc,
-                        a.useCount, a.sortOrd, a.useYn,
-                        a.regBy, a.regDate, a.updBy, a.updDate
+                        pdTag.tagId, pdTag.siteId, pdTag.tagNm, pdTag.tagDesc,
+                        pdTag.useCount, pdTag.sortOrd, pdTag.useYn,
+                        pdTag.regBy, pdTag.regDate, pdTag.updBy, pdTag.updDate
                 ))
-                .from(a)
-                .leftJoin(ste).on(ste.siteId.eq(a.siteId));
+                .from(pdTag)
+                .leftJoin(sySite).on(sySite.siteId.eq(pdTag.siteId));
     }
 
     /* 태그 키조회 */
     @Override
     public Optional<PdTagDto.Item> selectById(String tagId) {
         PdTagDto.Item dto = baseSelColumnQuery()
-                .where(a.tagId.eq(tagId))
+                .where(pdTag.tagId.eq(tagId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -96,7 +96,7 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
         }
         List<PdTagDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(a.count()).from(a).where(
+        Long total = queryFactory.select(pdTag.count()).from(pdTag).where(
                 baseAndSiteId(search),
                 baseAndTagId(search),
                 baseAndDateRange(search),
@@ -116,13 +116,13 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(PdTagDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? pdTag.siteId.eq(search.getSiteId()) : null;
     }
 
     /* tagId 정확 일치 */
     private BooleanExpression baseAndTagId(PdTagDto.Request search) {
         return search != null && StringUtils.hasText(search.getTagId())
-                ? a.tagId.eq(search.getTagId()) : null;
+                ? pdTag.tagId.eq(search.getTagId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -135,8 +135,8 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "reg_date": return pdTag.regDate.goe(start).and(pdTag.regDate.lt(endExcl));
+            case "upd_date": return pdTag.updDate.goe(start).and(pdTag.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -149,11 +149,11 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
-        or = orLike(or, all, types, ",tagDesc,", a.tagDesc, pattern);
-        or = orLike(or, all, types, ",tagId,", a.tagId, pattern);
-        or = orLike(or, all, types, ",tagNm,", a.tagNm, pattern);
-        or = orLike(or, all, types, ",useYn,", a.useYn, pattern);
+        or = orLike(or, all, types, ",siteId,", pdTag.siteId, pattern);
+        or = orLike(or, all, types, ",tagDesc,", pdTag.tagDesc, pattern);
+        or = orLike(or, all, types, ",tagId,", pdTag.tagId, pattern);
+        or = orLike(or, all, types, ",tagNm,", pdTag.tagNm, pattern);
+        or = orLike(or, all, types, ",useYn,", pdTag.useYn, pattern);
         return or;
     }
 
@@ -176,9 +176,9 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
         if (!StringUtils.hasText(sort)) {
 
             /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.tagId));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdTag.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdTag.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdTag.tagId));
 
             return orders;
         }
@@ -190,20 +190,20 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("tagId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.tagId));
+                    orders.add(new OrderSpecifier(order, pdTag.tagId));
                 } else if ("tagNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.tagNm));
+                    orders.add(new OrderSpecifier(order, pdTag.tagNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, pdTag.regDate));
                 }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, a.sortOrd)); }
+                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, pdTag.sortOrd)); }
             }
         }
         /* unknown sort → sortOrd ASC + regDate ASC fallback */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.tagId));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdTag.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdTag.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdTag.tagId));
         }
         return orders;
     }
@@ -215,22 +215,22 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
     public int updateSelective(PdTag entity) {
         if (entity.getTagId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(pdTag);
         boolean hasAny = false;
 
-        if (entity.getSiteId()   != null) { update.set(a.siteId,   entity.getSiteId());   hasAny = true; }
-        if (entity.getTagNm()    != null) { update.set(a.tagNm,    entity.getTagNm());    hasAny = true; }
-        if (entity.getTagDesc()  != null) { update.set(a.tagDesc,  entity.getTagDesc());  hasAny = true; }
-        if (entity.getUseCount() != null) { update.set(a.useCount, entity.getUseCount()); hasAny = true; }
-        if (entity.getSortOrd()  != null) { update.set(a.sortOrd,  entity.getSortOrd());  hasAny = true; }
-        if (entity.getUseYn()    != null) { update.set(a.useYn,    entity.getUseYn());    hasAny = true; }
-        if (entity.getUpdBy()    != null) { update.set(a.updBy,    entity.getUpdBy());    hasAny = true; }
+        if (entity.getSiteId()   != null) { update.set(pdTag.siteId,   entity.getSiteId());   hasAny = true; }
+        if (entity.getTagNm()    != null) { update.set(pdTag.tagNm,    entity.getTagNm());    hasAny = true; }
+        if (entity.getTagDesc()  != null) { update.set(pdTag.tagDesc,  entity.getTagDesc());  hasAny = true; }
+        if (entity.getUseCount() != null) { update.set(pdTag.useCount, entity.getUseCount()); hasAny = true; }
+        if (entity.getSortOrd()  != null) { update.set(pdTag.sortOrd,  entity.getSortOrd());  hasAny = true; }
+        if (entity.getUseYn()    != null) { update.set(pdTag.useYn,    entity.getUseYn());    hasAny = true; }
+        if (entity.getUpdBy()    != null) { update.set(pdTag.updBy,    entity.getUpdBy());    hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(pdTag.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.tagId.eq(entity.getTagId())).execute();
+        long affected = update.where(pdTag.tagId.eq(entity.getTagId())).execute();
         return (int) affected;
     }
 }

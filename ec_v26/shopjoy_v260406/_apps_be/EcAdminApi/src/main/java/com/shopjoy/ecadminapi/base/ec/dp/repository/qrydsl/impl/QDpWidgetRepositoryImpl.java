@@ -32,12 +32,12 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
     private final JPAQueryFactory queryFactory;
     private final EntityManager em;
     private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpWidgetRepositoryImpl";
-    private static final QDpWidget w = QDpWidget.dpWidget;
+    private static final QDpWidget dpWidget = QDpWidget.dpWidget;
 
     /* 전시 위젯 키조회 */
     @Override
     public Optional<DpWidgetDto.Item> selectById(String widgetId) {
-        return Optional.ofNullable(baseQuery().where(w.widgetId.eq(widgetId)).fetchOne());
+        return Optional.ofNullable(baseQuery().where(dpWidget.widgetId.eq(widgetId)).fetchOne());
     }
 
     /* 전시 위젯 목록조회 */
@@ -66,7 +66,7 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
         );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<DpWidgetDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
-        Long total = queryFactory.select(w.count()).from(w).where(
+        Long total = queryFactory.select(dpWidget.count()).from(dpWidget).where(
                 baseAndSearchValue(search)
         ).fetchOne();
         DpWidgetDto.PageResponse res = new DpWidgetDto.PageResponse();
@@ -76,12 +76,12 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
     /* 전시 위젯 baseQuery */
     private JPAQuery<DpWidgetDto.Item> baseQuery() {
         return queryFactory.select(Projections.bean(DpWidgetDto.Item.class,
-                w.widgetId, w.widgetLibId, w.siteId, w.widgetNm, w.widgetTypeCd,
-                w.widgetDesc, w.widgetTitle, w.widgetContent, w.titleShowYn,
-                w.widgetLibRefYn, w.widgetConfigJson, w.thumbnailUrl,
-                w.sortOrd, w.useYn, w.dispEnv,
-                w.regBy, w.regDate, w.updBy, w.updDate
-        )).from(w);
+                dpWidget.widgetId, dpWidget.widgetLibId, dpWidget.siteId, dpWidget.widgetNm, dpWidget.widgetTypeCd,
+                dpWidget.widgetDesc, dpWidget.widgetTitle, dpWidget.widgetContent, dpWidget.titleShowYn,
+                dpWidget.widgetLibRefYn, dpWidget.widgetConfigJson, dpWidget.thumbnailUrl,
+                dpWidget.sortOrd, dpWidget.useYn, dpWidget.dispEnv,
+                dpWidget.regBy, dpWidget.regDate, dpWidget.updBy, dpWidget.updDate
+        )).from(dpWidget);
     }
 
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
@@ -99,20 +99,20 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",dispEnv,", w.dispEnv, pattern);
-        or = orLike(or, all, types, ",siteId,", w.siteId, pattern);
-        or = orLike(or, all, types, ",thumbnailUrl,", w.thumbnailUrl, pattern);
-        or = orLike(or, all, types, ",titleShowYn,", w.titleShowYn, pattern);
-        or = orLike(or, all, types, ",useYn,", w.useYn, pattern);
-        or = orLike(or, all, types, ",widgetConfigJson,", w.widgetConfigJson, pattern);
-        or = orLike(or, all, types, ",widgetContent,", w.widgetContent, pattern);
-        or = orLike(or, all, types, ",widgetDesc,", w.widgetDesc, pattern);
-        or = orLike(or, all, types, ",widgetId,", w.widgetId, pattern);
-        or = orLike(or, all, types, ",widgetLibId,", w.widgetLibId, pattern);
-        or = orLike(or, all, types, ",widgetLibRefYn,", w.widgetLibRefYn, pattern);
-        or = orLike(or, all, types, ",widgetNm,", w.widgetNm, pattern);
-        or = orLike(or, all, types, ",widgetTitle,", w.widgetTitle, pattern);
-        or = orLike(or, all, types, ",widgetTypeCd,", w.widgetTypeCd, pattern);
+        or = orLike(or, all, types, ",dispEnv,", dpWidget.dispEnv, pattern);
+        or = orLike(or, all, types, ",siteId,", dpWidget.siteId, pattern);
+        or = orLike(or, all, types, ",thumbnailUrl,", dpWidget.thumbnailUrl, pattern);
+        or = orLike(or, all, types, ",titleShowYn,", dpWidget.titleShowYn, pattern);
+        or = orLike(or, all, types, ",useYn,", dpWidget.useYn, pattern);
+        or = orLike(or, all, types, ",widgetConfigJson,", dpWidget.widgetConfigJson, pattern);
+        or = orLike(or, all, types, ",widgetContent,", dpWidget.widgetContent, pattern);
+        or = orLike(or, all, types, ",widgetDesc,", dpWidget.widgetDesc, pattern);
+        or = orLike(or, all, types, ",widgetId,", dpWidget.widgetId, pattern);
+        or = orLike(or, all, types, ",widgetLibId,", dpWidget.widgetLibId, pattern);
+        or = orLike(or, all, types, ",widgetLibRefYn,", dpWidget.widgetLibRefYn, pattern);
+        or = orLike(or, all, types, ",widgetNm,", dpWidget.widgetNm, pattern);
+        or = orLike(or, all, types, ",widgetTitle,", dpWidget.widgetTitle, pattern);
+        or = orLike(or, all, types, ",widgetTypeCd,", dpWidget.widgetTypeCd, pattern);
         return or;
     }
 
@@ -135,9 +135,9 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
         if (!StringUtils.hasText(sort)) {
 
             /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, w.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, w.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, w.widgetId));
+            orders.add(new OrderSpecifier<>(Order.ASC, dpWidget.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, dpWidget.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, dpWidget.widgetId));
 
             return orders;
         }
@@ -149,20 +149,20 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("widgetId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, w.widgetId));
+                    orders.add(new OrderSpecifier(order, dpWidget.widgetId));
                 } else if ("widgetNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, w.widgetNm));
+                    orders.add(new OrderSpecifier(order, dpWidget.widgetNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, w.regDate));
+                    orders.add(new OrderSpecifier(order, dpWidget.regDate));
                 }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, w.sortOrd)); }
+                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, dpWidget.sortOrd)); }
             }
         }
         /* unknown sort → sortOrd ASC + regDate ASC fallback */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, w.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, w.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, w.widgetId));
+            orders.add(new OrderSpecifier<>(Order.ASC, dpWidget.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, dpWidget.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, dpWidget.widgetId));
         }
         return orders;
     }
@@ -171,27 +171,27 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
     @Override
     public int updateSelective(DpWidget entity) {
         if (entity.getWidgetId() == null) return 0;
-        JPAUpdateClause update = queryFactory.update(w);
+        JPAUpdateClause update = queryFactory.update(dpWidget);
         boolean hasAny = false;
-        if (entity.getWidgetLibId()      != null) { update.set(w.widgetLibId,      entity.getWidgetLibId());      hasAny = true; }
-        if (entity.getSiteId()           != null) { update.set(w.siteId,           entity.getSiteId());           hasAny = true; }
-        if (entity.getWidgetNm()         != null) { update.set(w.widgetNm,         entity.getWidgetNm());         hasAny = true; }
-        if (entity.getWidgetTypeCd()     != null) { update.set(w.widgetTypeCd,     entity.getWidgetTypeCd());     hasAny = true; }
-        if (entity.getWidgetDesc()       != null) { update.set(w.widgetDesc,       entity.getWidgetDesc());       hasAny = true; }
-        if (entity.getWidgetTitle()      != null) { update.set(w.widgetTitle,      entity.getWidgetTitle());      hasAny = true; }
-        if (entity.getWidgetContent()    != null) { update.set(w.widgetContent,    entity.getWidgetContent());    hasAny = true; }
-        if (entity.getTitleShowYn()      != null) { update.set(w.titleShowYn,      entity.getTitleShowYn());      hasAny = true; }
-        if (entity.getWidgetLibRefYn()   != null) { update.set(w.widgetLibRefYn,   entity.getWidgetLibRefYn());   hasAny = true; }
-        if (entity.getWidgetConfigJson() != null) { update.set(w.widgetConfigJson, entity.getWidgetConfigJson()); hasAny = true; }
-        if (entity.getThumbnailUrl()     != null) { update.set(w.thumbnailUrl,     entity.getThumbnailUrl());     hasAny = true; }
-        if (entity.getSortOrd()          != null) { update.set(w.sortOrd,          entity.getSortOrd());          hasAny = true; }
-        if (entity.getUseYn()            != null) { update.set(w.useYn,            entity.getUseYn());            hasAny = true; }
-        if (entity.getDispEnv()          != null) { update.set(w.dispEnv,          entity.getDispEnv());          hasAny = true; }
-        if (entity.getUpdBy()            != null) { update.set(w.updBy,            entity.getUpdBy());            hasAny = true; }
+        if (entity.getWidgetLibId()      != null) { update.set(dpWidget.widgetLibId,      entity.getWidgetLibId());      hasAny = true; }
+        if (entity.getSiteId()           != null) { update.set(dpWidget.siteId,           entity.getSiteId());           hasAny = true; }
+        if (entity.getWidgetNm()         != null) { update.set(dpWidget.widgetNm,         entity.getWidgetNm());         hasAny = true; }
+        if (entity.getWidgetTypeCd()     != null) { update.set(dpWidget.widgetTypeCd,     entity.getWidgetTypeCd());     hasAny = true; }
+        if (entity.getWidgetDesc()       != null) { update.set(dpWidget.widgetDesc,       entity.getWidgetDesc());       hasAny = true; }
+        if (entity.getWidgetTitle()      != null) { update.set(dpWidget.widgetTitle,      entity.getWidgetTitle());      hasAny = true; }
+        if (entity.getWidgetContent()    != null) { update.set(dpWidget.widgetContent,    entity.getWidgetContent());    hasAny = true; }
+        if (entity.getTitleShowYn()      != null) { update.set(dpWidget.titleShowYn,      entity.getTitleShowYn());      hasAny = true; }
+        if (entity.getWidgetLibRefYn()   != null) { update.set(dpWidget.widgetLibRefYn,   entity.getWidgetLibRefYn());   hasAny = true; }
+        if (entity.getWidgetConfigJson() != null) { update.set(dpWidget.widgetConfigJson, entity.getWidgetConfigJson()); hasAny = true; }
+        if (entity.getThumbnailUrl()     != null) { update.set(dpWidget.thumbnailUrl,     entity.getThumbnailUrl());     hasAny = true; }
+        if (entity.getSortOrd()          != null) { update.set(dpWidget.sortOrd,          entity.getSortOrd());          hasAny = true; }
+        if (entity.getUseYn()            != null) { update.set(dpWidget.useYn,            entity.getUseYn());            hasAny = true; }
+        if (entity.getDispEnv()          != null) { update.set(dpWidget.dispEnv,          entity.getDispEnv());          hasAny = true; }
+        if (entity.getUpdBy()            != null) { update.set(dpWidget.updBy,            entity.getUpdBy());            hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(w.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(dpWidget.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
         if (!hasAny) return 0;
-        return (int) update.where(w.widgetId.eq(entity.getWidgetId())).execute();
+        return (int) update.where(dpWidget.widgetId.eq(entity.getWidgetId())).execute();
     }
 
     /* 표시경로 노드별 dp_widget 수 집계 (자손 누적 + 검색조건 필터, native CTE 동적 SQL)

@@ -29,31 +29,31 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.pd.repository.qrydsl.impl.QPdProdSkuRepositoryImpl";
-    private static final QPdProdSku a = QPdProdSku.pdProdSku;
+    private static final QPdProdSku pdProdSku = QPdProdSku.pdProdSku;
 
     private JPAQuery<PdProdSkuDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(PdProdSkuDto.Item.class,
-                        a.skuId,
-                        a.prodId,
-                        a.optItemId1,
-                        a.optItemId2,
-                        a.skuCode,
-                        a.addPrice,
-                        a.useYn,
-                        a.regBy,
-                        a.regDate,
-                        a.updBy,
-                        a.updDate
+                        pdProdSku.skuId,
+                        pdProdSku.prodId,
+                        pdProdSku.optItemId1,
+                        pdProdSku.optItemId2,
+                        pdProdSku.skuCode,
+                        pdProdSku.addPrice,
+                        pdProdSku.useYn,
+                        pdProdSku.regBy,
+                        pdProdSku.regDate,
+                        pdProdSku.updBy,
+                        pdProdSku.updDate
                 ))
-                .from(a);
+                .from(pdProdSku);
     }
 
     /* 상품 SKU 키조회 */
     @Override
     public Optional<PdProdSkuDto.Item> selectById(String skuId) {
         PdProdSkuDto.Item dto = baseSelColumnQuery()
-                .where(a.skuId.eq(skuId))
+                .where(pdProdSku.skuId.eq(skuId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -105,7 +105,7 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
         }
         List<PdProdSkuDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(a.count()).from(a).where(
+        Long total = queryFactory.select(pdProdSku.count()).from(pdProdSku).where(
                 baseAndProdIds(search),
                 baseAndProdId(search),
                 baseAndSiteId(search),
@@ -129,25 +129,25 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
     /* prodId IN */
     private BooleanExpression baseAndProdIds(PdProdSkuDto.Request search) {
         return search != null && !CollectionUtils.isEmpty(search.getProdIds())
-                ? a.prodId.in(search.getProdIds()) : null;
+                ? pdProdSku.prodId.in(search.getProdIds()) : null;
     }
 
     /* prodId 정확 일치 */
     private BooleanExpression baseAndProdId(PdProdSkuDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdId())
-                ? a.prodId.eq(search.getProdId()) : null;
+                ? pdProdSku.prodId.eq(search.getProdId()) : null;
     }
 
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(PdProdSkuDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? pdProdSku.siteId.eq(search.getSiteId()) : null;
     }
 
     /* skuId 정확 일치 */
     private BooleanExpression baseAndSkuId(PdProdSkuDto.Request search) {
         return search != null && StringUtils.hasText(search.getSkuId())
-                ? a.skuId.eq(search.getSkuId()) : null;
+                ? pdProdSku.skuId.eq(search.getSkuId()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -160,8 +160,8 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "reg_date": return pdProdSku.regDate.goe(start).and(pdProdSku.regDate.lt(endExcl));
+            case "upd_date": return pdProdSku.updDate.goe(start).and(pdProdSku.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -174,13 +174,13 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",optItemId1,", a.optItemId1, pattern);
-        or = orLike(or, all, types, ",optItemId2,", a.optItemId2, pattern);
-        or = orLike(or, all, types, ",prodId,", a.prodId, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
-        or = orLike(or, all, types, ",skuCode,", a.skuCode, pattern);
-        or = orLike(or, all, types, ",skuId,", a.skuId, pattern);
-        or = orLike(or, all, types, ",useYn,", a.useYn, pattern);
+        or = orLike(or, all, types, ",optItemId1,", pdProdSku.optItemId1, pattern);
+        or = orLike(or, all, types, ",optItemId2,", pdProdSku.optItemId2, pattern);
+        or = orLike(or, all, types, ",prodId,", pdProdSku.prodId, pattern);
+        or = orLike(or, all, types, ",siteId,", pdProdSku.siteId, pattern);
+        or = orLike(or, all, types, ",skuCode,", pdProdSku.skuCode, pattern);
+        or = orLike(or, all, types, ",skuId,", pdProdSku.skuId, pattern);
+        or = orLike(or, all, types, ",useYn,", pdProdSku.useYn, pattern);
         return or;
     }
 
@@ -201,8 +201,8 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = req == null ? null : req.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.skuId));
+            orders.add(new OrderSpecifier(Order.DESC, pdProdSku.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdProdSku.skuId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -213,17 +213,17 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("skuId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.skuId));
+                    orders.add(new OrderSpecifier(order, pdProdSku.skuId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, pdProdSku.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.skuId));
+            orders.add(new OrderSpecifier<>(Order.DESC, pdProdSku.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, pdProdSku.skuId));
         }
         return orders;
     }
@@ -234,24 +234,24 @@ public class QPdProdSkuRepositoryImpl implements QPdProdSkuRepository {
     public int updateSelective(PdProdSku entity) {
         if (entity.getSkuId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(pdProdSku);
         boolean hasAny = false;
 
-        if (entity.getSiteId()       != null) { update.set(a.siteId,       entity.getSiteId());       hasAny = true; }
-        if (entity.getProdId()       != null) { update.set(a.prodId,       entity.getProdId());       hasAny = true; }
-        if (entity.getOptItemId1()   != null) { update.set(a.optItemId1,   entity.getOptItemId1());   hasAny = true; }
-        if (entity.getOptItemId2()   != null) { update.set(a.optItemId2,   entity.getOptItemId2());   hasAny = true; }
-        if (entity.getSkuCode()      != null) { update.set(a.skuCode,      entity.getSkuCode());      hasAny = true; }
-        if (entity.getAddPrice()     != null) { update.set(a.addPrice,     entity.getAddPrice());     hasAny = true; }
-        if (entity.getProdOptStock() != null) { update.set(a.prodOptStock, entity.getProdOptStock()); hasAny = true; }
-        if (entity.getUseYn()        != null) { update.set(a.useYn,        entity.getUseYn());        hasAny = true; }
-        if (entity.getUpdBy()        != null) { update.set(a.updBy,        entity.getUpdBy());        hasAny = true; }
+        if (entity.getSiteId()       != null) { update.set(pdProdSku.siteId,       entity.getSiteId());       hasAny = true; }
+        if (entity.getProdId()       != null) { update.set(pdProdSku.prodId,       entity.getProdId());       hasAny = true; }
+        if (entity.getOptItemId1()   != null) { update.set(pdProdSku.optItemId1,   entity.getOptItemId1());   hasAny = true; }
+        if (entity.getOptItemId2()   != null) { update.set(pdProdSku.optItemId2,   entity.getOptItemId2());   hasAny = true; }
+        if (entity.getSkuCode()      != null) { update.set(pdProdSku.skuCode,      entity.getSkuCode());      hasAny = true; }
+        if (entity.getAddPrice()     != null) { update.set(pdProdSku.addPrice,     entity.getAddPrice());     hasAny = true; }
+        if (entity.getProdOptStock() != null) { update.set(pdProdSku.prodOptStock, entity.getProdOptStock()); hasAny = true; }
+        if (entity.getUseYn()        != null) { update.set(pdProdSku.useYn,        entity.getUseYn());        hasAny = true; }
+        if (entity.getUpdBy()        != null) { update.set(pdProdSku.updBy,        entity.getUpdBy());        hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(pdProdSku.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.skuId.eq(entity.getSkuId())).execute();
+        long affected = update.where(pdProdSku.skuId.eq(entity.getSkuId())).execute();
         return (int) affected;
     }
 }

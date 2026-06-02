@@ -33,29 +33,29 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
     private final JPAQueryFactory queryFactory;
     private final SyDeptRepository syDeptRepository;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyDeptRepositoryImpl";
-    private static final QSyDept a = QSyDept.syDept;
+    private static final QSyDept syDept = QSyDept.syDept;
 
     public QSyDeptRepositoryImpl(JPAQueryFactory queryFactory, @Lazy SyDeptRepository syDeptRepository) {
         this.queryFactory = queryFactory;
         this.syDeptRepository = syDeptRepository;
     }
-    private static final QSySite ste = QSySite.sySite;
-    private static final QSyUser usr = QSyUser.syUser;
+    private static final QSySite sySite = QSySite.sySite;
+    private static final QSyUser syUser = QSyUser.syUser;
     private static final QSyCode cdDt = new QSyCode("cd_dt");
 
     /* 부서 baseSelColumnQuery */
     private JPAQuery<SyDeptDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyDeptDto.Item.class,
-                        a.deptId, a.siteId, a.deptCode, a.deptNm, a.parentDeptId,
-                        a.deptTypeCd, a.managerId, a.sortOrd, a.useYn, a.deptRemark,
-                        a.regBy, a.regDate, a.updBy, a.updDate,
-                        ste.siteNm.as("siteNm")
+                        syDept.deptId, syDept.siteId, syDept.deptCode, syDept.deptNm, syDept.parentDeptId,
+                        syDept.deptTypeCd, syDept.managerId, syDept.sortOrd, syDept.useYn, syDept.deptRemark,
+                        syDept.regBy, syDept.regDate, syDept.updBy, syDept.updDate,
+                        sySite.siteNm.as("siteNm")
                 ))
-                .from(a)
-                .leftJoin(ste).on(ste.siteId.eq(a.siteId))
-                .leftJoin(usr).on(usr.userId.eq(a.managerId))
-                .leftJoin(cdDt).on(cdDt.codeGrp.eq("DEPT_TYPE").and(cdDt.codeValue.eq(a.deptTypeCd)));
+                .from(syDept)
+                .leftJoin(sySite).on(sySite.siteId.eq(syDept.siteId))
+                .leftJoin(syUser).on(syUser.userId.eq(syDept.managerId))
+                .leftJoin(cdDt).on(cdDt.codeGrp.eq("DEPT_TYPE").and(cdDt.codeValue.eq(syDept.deptTypeCd)));
     }
 
     /* 부서 키조회 */
@@ -63,7 +63,7 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
     public Optional<SyDeptDto.Item> selectById(String deptId) {
         SyDeptDto.Item dto = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
-                .where(a.deptId.eq(deptId))
+                .where(syDept.deptId.eq(deptId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -116,7 +116,7 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
         }
         List<SyDeptDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(a.count()).from(a).where(
+        Long total = queryFactory.select(syDept.count()).from(syDept).where(
                 baseAndSiteId(search),
                 baseAndParentDeptId(search),
                 baseAndTypeCd(search),
@@ -139,26 +139,26 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(SyDeptDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? syDept.siteId.eq(search.getSiteId()) : null;
     }
 
     /* 부서 트리 — 선택 노드 + 모든 자손 부서 포함 (자기참조 재귀 CTE) */
     private BooleanExpression baseAndParentDeptId(SyDeptDto.Request search) {
         return search != null && StringUtils.hasText(search.getParentDeptId())
-                ? a.deptId.in(syDeptRepository.findTreeDeptIds(search.getParentDeptId()))
+                ? syDept.deptId.in(syDeptRepository.findTreeDeptIds(search.getParentDeptId()))
                 : null;
     }
 
     /* deptTypeCd 정확 일치 */
     private BooleanExpression baseAndTypeCd(SyDeptDto.Request search) {
         return search != null && StringUtils.hasText(search.getTypeCd())
-                ? a.deptTypeCd.eq(search.getTypeCd()) : null;
+                ? syDept.deptTypeCd.eq(search.getTypeCd()) : null;
     }
 
     /* useYn 정확 일치 */
     private BooleanExpression baseAndUseYn(SyDeptDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
-                ? a.useYn.eq(search.getUseYn()) : null;
+                ? syDept.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -171,8 +171,8 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return a.regDate.goe(start).and(a.regDate.lt(endExcl));
-            case "upd_date": return a.updDate.goe(start).and(a.updDate.lt(endExcl));
+            case "reg_date": return syDept.regDate.goe(start).and(syDept.regDate.lt(endExcl));
+            case "upd_date": return syDept.updDate.goe(start).and(syDept.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -185,15 +185,15 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",deptCode,", a.deptCode, pattern);
-        or = orLike(or, all, types, ",deptId,", a.deptId, pattern);
-        or = orLike(or, all, types, ",deptNm,", a.deptNm, pattern);
-        or = orLike(or, all, types, ",deptRemark,", a.deptRemark, pattern);
-        or = orLike(or, all, types, ",deptTypeCd,", a.deptTypeCd, pattern);
-        or = orLike(or, all, types, ",managerId,", a.managerId, pattern);
-        or = orLike(or, all, types, ",parentDeptId,", a.parentDeptId, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
-        or = orLike(or, all, types, ",useYn,", a.useYn, pattern);
+        or = orLike(or, all, types, ",deptCode,", syDept.deptCode, pattern);
+        or = orLike(or, all, types, ",deptId,", syDept.deptId, pattern);
+        or = orLike(or, all, types, ",deptNm,", syDept.deptNm, pattern);
+        or = orLike(or, all, types, ",deptRemark,", syDept.deptRemark, pattern);
+        or = orLike(or, all, types, ",deptTypeCd,", syDept.deptTypeCd, pattern);
+        or = orLike(or, all, types, ",managerId,", syDept.managerId, pattern);
+        or = orLike(or, all, types, ",parentDeptId,", syDept.parentDeptId, pattern);
+        or = orLike(or, all, types, ",siteId,", syDept.siteId, pattern);
+        or = orLike(or, all, types, ",useYn,", syDept.useYn, pattern);
         return or;
     }
 
@@ -216,9 +216,9 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
         if (!StringUtils.hasText(sort)) {
 
             /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.deptId));
+            orders.add(new OrderSpecifier<>(Order.ASC, syDept.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, syDept.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syDept.deptId));
 
             return orders;
         }
@@ -230,20 +230,20 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("deptId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.deptId));
+                    orders.add(new OrderSpecifier(order, syDept.deptId));
                 } else if ("deptNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.deptNm));
+                    orders.add(new OrderSpecifier(order, syDept.deptNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, syDept.regDate));
                 }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, a.sortOrd)); }
+                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, syDept.sortOrd)); }
             }
         }
         /* unknown sort → sortOrd ASC + regDate ASC fallback */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, a.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.deptId));
+            orders.add(new OrderSpecifier<>(Order.ASC, syDept.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, syDept.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, syDept.deptId));
         }
         return orders;
     }
@@ -253,25 +253,25 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
     public int updateSelective(SyDept entity) {
         if (entity.getDeptId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(syDept);
         boolean hasAny = false;
 
-        if (entity.getSiteId()       != null) { update.set(a.siteId,       entity.getSiteId());       hasAny = true; }
-        if (entity.getDeptCode()     != null) { update.set(a.deptCode,     entity.getDeptCode());     hasAny = true; }
-        if (entity.getDeptNm()       != null) { update.set(a.deptNm,       entity.getDeptNm());       hasAny = true; }
-        if (entity.getParentDeptId() != null) { update.set(a.parentDeptId, entity.getParentDeptId()); hasAny = true; }
-        if (entity.getDeptTypeCd()   != null) { update.set(a.deptTypeCd,   entity.getDeptTypeCd());   hasAny = true; }
-        if (entity.getManagerId()    != null) { update.set(a.managerId,    entity.getManagerId());    hasAny = true; }
-        if (entity.getSortOrd()      != null) { update.set(a.sortOrd,      entity.getSortOrd());      hasAny = true; }
-        if (entity.getUseYn()        != null) { update.set(a.useYn,        entity.getUseYn());        hasAny = true; }
-        if (entity.getDeptRemark()   != null) { update.set(a.deptRemark,   entity.getDeptRemark());   hasAny = true; }
-        if (entity.getUpdBy()        != null) { update.set(a.updBy,        entity.getUpdBy());        hasAny = true; }
+        if (entity.getSiteId()       != null) { update.set(syDept.siteId,       entity.getSiteId());       hasAny = true; }
+        if (entity.getDeptCode()     != null) { update.set(syDept.deptCode,     entity.getDeptCode());     hasAny = true; }
+        if (entity.getDeptNm()       != null) { update.set(syDept.deptNm,       entity.getDeptNm());       hasAny = true; }
+        if (entity.getParentDeptId() != null) { update.set(syDept.parentDeptId, entity.getParentDeptId()); hasAny = true; }
+        if (entity.getDeptTypeCd()   != null) { update.set(syDept.deptTypeCd,   entity.getDeptTypeCd());   hasAny = true; }
+        if (entity.getManagerId()    != null) { update.set(syDept.managerId,    entity.getManagerId());    hasAny = true; }
+        if (entity.getSortOrd()      != null) { update.set(syDept.sortOrd,      entity.getSortOrd());      hasAny = true; }
+        if (entity.getUseYn()        != null) { update.set(syDept.useYn,        entity.getUseYn());        hasAny = true; }
+        if (entity.getDeptRemark()   != null) { update.set(syDept.deptRemark,   entity.getDeptRemark());   hasAny = true; }
+        if (entity.getUpdBy()        != null) { update.set(syDept.updBy,        entity.getUpdBy());        hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(syDept.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.deptId.eq(entity.getDeptId())).execute();
+        long affected = update.where(syDept.deptId.eq(entity.getDeptId())).execute();
         return (int) affected;
     }
 }

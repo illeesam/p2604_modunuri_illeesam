@@ -28,24 +28,24 @@ public class QOdhClaimChgHistRepositoryImpl implements QOdhClaimChgHistRepositor
 
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdhClaimChgHistRepositoryImpl";
-    private static final QOdhClaimChgHist a = QOdhClaimChgHist.odhClaimChgHist;
+    private static final QOdhClaimChgHist odhClaimChgHist = QOdhClaimChgHist.odhClaimChgHist;
 
     /* 클레임 변경 이력 baseSelColumnQuery */
     private JPAQuery<OdhClaimChgHistDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(OdhClaimChgHistDto.Item.class,
-                        a.claimChgHistId, a.siteId, a.claimId,
-                        a.chgTypeCd, a.chgField, a.beforeVal, a.afterVal,
-                        a.chgReason, a.chgUserId, a.chgDate,
-                        a.regBy, a.regDate, a.updBy, a.updDate))
-                .from(a);
+                        odhClaimChgHist.claimChgHistId, odhClaimChgHist.siteId, odhClaimChgHist.claimId,
+                        odhClaimChgHist.chgTypeCd, odhClaimChgHist.chgField, odhClaimChgHist.beforeVal, odhClaimChgHist.afterVal,
+                        odhClaimChgHist.chgReason, odhClaimChgHist.chgUserId, odhClaimChgHist.chgDate,
+                        odhClaimChgHist.regBy, odhClaimChgHist.regDate, odhClaimChgHist.updBy, odhClaimChgHist.updDate))
+                .from(odhClaimChgHist);
     }
 
     /* 클레임 변경 이력 키조회 */
     @Override
     public Optional<OdhClaimChgHistDto.Item> selectById(String id) {
         OdhClaimChgHistDto.Item dto = baseSelColumnQuery()
-                .where(a.claimChgHistId.eq(id))
+                .where(odhClaimChgHist.claimChgHistId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -91,7 +91,7 @@ public class QOdhClaimChgHistRepositoryImpl implements QOdhClaimChgHistRepositor
         }
         List<OdhClaimChgHistDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(a.count()).from(a).where(
+        Long total = queryFactory.select(odhClaimChgHist.count()).from(odhClaimChgHist).where(
                 baseAndSiteId(search),
                 baseAndClaimChgHistId(search),
                 baseAndSearchValue(search)
@@ -111,13 +111,13 @@ public class QOdhClaimChgHistRepositoryImpl implements QOdhClaimChgHistRepositor
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(OdhClaimChgHistDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? a.siteId.eq(search.getSiteId()) : null;
+                ? odhClaimChgHist.siteId.eq(search.getSiteId()) : null;
     }
 
     /* claimChgHistId 정확 일치 */
     private BooleanExpression baseAndClaimChgHistId(OdhClaimChgHistDto.Request search) {
         return search != null && StringUtils.hasText(search.getClaimChgHistId())
-                ? a.claimChgHistId.eq(search.getClaimChgHistId()) : null;
+                ? odhClaimChgHist.claimChgHistId.eq(search.getClaimChgHistId()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
@@ -128,15 +128,15 @@ public class QOdhClaimChgHistRepositoryImpl implements QOdhClaimChgHistRepositor
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",afterVal,", a.afterVal, pattern);
-        or = orLike(or, all, types, ",beforeVal,", a.beforeVal, pattern);
-        or = orLike(or, all, types, ",chgField,", a.chgField, pattern);
-        or = orLike(or, all, types, ",chgReason,", a.chgReason, pattern);
-        or = orLike(or, all, types, ",chgTypeCd,", a.chgTypeCd, pattern);
-        or = orLike(or, all, types, ",chgUserId,", a.chgUserId, pattern);
-        or = orLike(or, all, types, ",claimChgHistId,", a.claimChgHistId, pattern);
-        or = orLike(or, all, types, ",claimId,", a.claimId, pattern);
-        or = orLike(or, all, types, ",siteId,", a.siteId, pattern);
+        or = orLike(or, all, types, ",afterVal,", odhClaimChgHist.afterVal, pattern);
+        or = orLike(or, all, types, ",beforeVal,", odhClaimChgHist.beforeVal, pattern);
+        or = orLike(or, all, types, ",chgField,", odhClaimChgHist.chgField, pattern);
+        or = orLike(or, all, types, ",chgReason,", odhClaimChgHist.chgReason, pattern);
+        or = orLike(or, all, types, ",chgTypeCd,", odhClaimChgHist.chgTypeCd, pattern);
+        or = orLike(or, all, types, ",chgUserId,", odhClaimChgHist.chgUserId, pattern);
+        or = orLike(or, all, types, ",claimChgHistId,", odhClaimChgHist.claimChgHistId, pattern);
+        or = orLike(or, all, types, ",claimId,", odhClaimChgHist.claimId, pattern);
+        or = orLike(or, all, types, ",siteId,", odhClaimChgHist.siteId, pattern);
         return or;
     }
 
@@ -157,8 +157,8 @@ public class QOdhClaimChgHistRepositoryImpl implements QOdhClaimChgHistRepositor
         List<OrderSpecifier<?>> orders = new ArrayList<>();
         String sort = s == null ? null : s.getSort();
         if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.claimChgHistId));
+            orders.add(new OrderSpecifier(Order.DESC, odhClaimChgHist.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, odhClaimChgHist.claimChgHistId));
             return orders;
         }
         String[] sortParts = sort.split(",");
@@ -169,17 +169,17 @@ public class QOdhClaimChgHistRepositoryImpl implements QOdhClaimChgHistRepositor
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("claimChgHistId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.claimChgHistId));
+                    orders.add(new OrderSpecifier(order, odhClaimChgHist.claimChgHistId));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, a.regDate));
+                    orders.add(new OrderSpecifier(order, odhClaimChgHist.regDate));
                 }
             }
         }
         /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
         /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, a.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, a.claimChgHistId));
+            orders.add(new OrderSpecifier<>(Order.DESC, odhClaimChgHist.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, odhClaimChgHist.claimChgHistId));
         }
         return orders;
     }
@@ -189,25 +189,25 @@ public class QOdhClaimChgHistRepositoryImpl implements QOdhClaimChgHistRepositor
     public int updateSelective(OdhClaimChgHist entity) {
         if (entity.getClaimChgHistId() == null) return 0;
 
-        JPAUpdateClause update = queryFactory.update(a);
+        JPAUpdateClause update = queryFactory.update(odhClaimChgHist);
         boolean hasAny = false;
 
-        if (entity.getSiteId()     != null) { update.set(a.siteId,     entity.getSiteId());     hasAny = true; }
-        if (entity.getClaimId()    != null) { update.set(a.claimId,    entity.getClaimId());    hasAny = true; }
-        if (entity.getChgTypeCd()  != null) { update.set(a.chgTypeCd,  entity.getChgTypeCd());  hasAny = true; }
-        if (entity.getChgField()   != null) { update.set(a.chgField,   entity.getChgField());   hasAny = true; }
-        if (entity.getBeforeVal()  != null) { update.set(a.beforeVal,  entity.getBeforeVal());  hasAny = true; }
-        if (entity.getAfterVal()   != null) { update.set(a.afterVal,   entity.getAfterVal());   hasAny = true; }
-        if (entity.getChgReason()  != null) { update.set(a.chgReason,  entity.getChgReason());  hasAny = true; }
-        if (entity.getChgUserId()  != null) { update.set(a.chgUserId,  entity.getChgUserId());  hasAny = true; }
-        if (entity.getChgDate()    != null) { update.set(a.chgDate,    entity.getChgDate());    hasAny = true; }
-        if (entity.getUpdBy()      != null) { update.set(a.updBy,      entity.getUpdBy());      hasAny = true; }
+        if (entity.getSiteId()     != null) { update.set(odhClaimChgHist.siteId,     entity.getSiteId());     hasAny = true; }
+        if (entity.getClaimId()    != null) { update.set(odhClaimChgHist.claimId,    entity.getClaimId());    hasAny = true; }
+        if (entity.getChgTypeCd()  != null) { update.set(odhClaimChgHist.chgTypeCd,  entity.getChgTypeCd());  hasAny = true; }
+        if (entity.getChgField()   != null) { update.set(odhClaimChgHist.chgField,   entity.getChgField());   hasAny = true; }
+        if (entity.getBeforeVal()  != null) { update.set(odhClaimChgHist.beforeVal,  entity.getBeforeVal());  hasAny = true; }
+        if (entity.getAfterVal()   != null) { update.set(odhClaimChgHist.afterVal,   entity.getAfterVal());   hasAny = true; }
+        if (entity.getChgReason()  != null) { update.set(odhClaimChgHist.chgReason,  entity.getChgReason());  hasAny = true; }
+        if (entity.getChgUserId()  != null) { update.set(odhClaimChgHist.chgUserId,  entity.getChgUserId());  hasAny = true; }
+        if (entity.getChgDate()    != null) { update.set(odhClaimChgHist.chgDate,    entity.getChgDate());    hasAny = true; }
+        if (entity.getUpdBy()      != null) { update.set(odhClaimChgHist.updBy,      entity.getUpdBy());      hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(a.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(odhClaimChgHist.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 
         if (!hasAny) return 0;
 
-        long affected = update.where(a.claimChgHistId.eq(entity.getClaimChgHistId())).execute();
+        long affected = update.where(odhClaimChgHist.claimChgHistId.eq(entity.getClaimChgHistId())).execute();
         return (int) affected;
     }
 }

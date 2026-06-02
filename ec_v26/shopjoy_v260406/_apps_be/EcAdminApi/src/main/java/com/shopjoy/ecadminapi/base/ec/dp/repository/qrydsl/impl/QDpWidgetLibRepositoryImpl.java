@@ -34,12 +34,12 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
     private final EntityManager em;
     private final SyPathRepository syPathRepository;
     private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpWidgetLibRepositoryImpl";
-    private static final QDpWidgetLib l = QDpWidgetLib.dpWidgetLib;
+    private static final QDpWidgetLib dpWidgetLib = QDpWidgetLib.dpWidgetLib;
 
     /* 전시 위젯 라이브러리 키조회 */
     @Override
     public Optional<DpWidgetLibDto.Item> selectById(String widgetLibId) {
-        return Optional.ofNullable(baseQuery().where(l.widgetLibId.eq(widgetLibId)).fetchOne());
+        return Optional.ofNullable(baseQuery().where(dpWidgetLib.widgetLibId.eq(widgetLibId)).fetchOne());
     }
 
     /* 전시 위젯 라이브러리 목록조회 */
@@ -80,7 +80,7 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
         );
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<DpWidgetLibDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
-        Long total = queryFactory.select(l.count()).from(l).where(
+        Long total = queryFactory.select(dpWidgetLib.count()).from(dpWidgetLib).where(
                 baseAndSiteId(search),
                 baseAndPathId(search),
                 baseAndWidgetLibId(search),
@@ -96,11 +96,11 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
     /* 전시 위젯 라이브러리 baseQuery */
     private JPAQuery<DpWidgetLibDto.Item> baseQuery() {
         return queryFactory.select(Projections.bean(DpWidgetLibDto.Item.class,
-                l.widgetLibId, l.siteId, l.widgetCode, l.widgetNm, l.widgetTypeCd,
-                l.widgetLibDesc, l.pathId, l.thumbnailUrl, l.widgetContent,
-                l.widgetConfigJson, l.isSystem, l.sortOrd, l.useYn,
-                l.regBy, l.regDate, l.updBy, l.updDate
-        )).from(l);
+                dpWidgetLib.widgetLibId, dpWidgetLib.siteId, dpWidgetLib.widgetCode, dpWidgetLib.widgetNm, dpWidgetLib.widgetTypeCd,
+                dpWidgetLib.widgetLibDesc, dpWidgetLib.pathId, dpWidgetLib.thumbnailUrl, dpWidgetLib.widgetContent,
+                dpWidgetLib.widgetConfigJson, dpWidgetLib.isSystem, dpWidgetLib.sortOrd, dpWidgetLib.useYn,
+                dpWidgetLib.regBy, dpWidgetLib.regDate, dpWidgetLib.updBy, dpWidgetLib.updDate
+        )).from(dpWidgetLib);
     }
 
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
@@ -113,32 +113,32 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
     /* siteId 정확 일치 */
     private BooleanExpression baseAndSiteId(DpWidgetLibDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
-                ? l.siteId.eq(search.getSiteId()) : null;
+                ? dpWidgetLib.siteId.eq(search.getSiteId()) : null;
     }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
     private BooleanExpression baseAndPathId(DpWidgetLibDto.Request search) {
         return search != null && StringUtils.hasText(search.getPathId())
-                ? l.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "dp_widget_lib"))
+                ? dpWidgetLib.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "dp_widget_lib"))
                 : null;
     }
 
     /* widgetLibId 정확 일치 */
     private BooleanExpression baseAndWidgetLibId(DpWidgetLibDto.Request search) {
         return search != null && StringUtils.hasText(search.getWidgetLibId())
-                ? l.widgetLibId.eq(search.getWidgetLibId()) : null;
+                ? dpWidgetLib.widgetLibId.eq(search.getWidgetLibId()) : null;
     }
 
     /* widgetTypeCd 정확 일치 */
     private BooleanExpression baseAndWidgetTypeCd(DpWidgetLibDto.Request search) {
         return search != null && StringUtils.hasText(search.getWidgetTypeCd())
-                ? l.widgetTypeCd.eq(search.getWidgetTypeCd()) : null;
+                ? dpWidgetLib.widgetTypeCd.eq(search.getWidgetTypeCd()) : null;
     }
 
     /* useYn 정확 일치 */
     private BooleanExpression baseAndUseYn(DpWidgetLibDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
-                ? l.useYn.eq(search.getUseYn()) : null;
+                ? dpWidgetLib.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -151,8 +151,8 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
         LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
         LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
-            case "reg_date": return l.regDate.goe(start).and(l.regDate.lt(endExcl));
-            case "upd_date": return l.updDate.goe(start).and(l.updDate.lt(endExcl));
+            case "reg_date": return dpWidgetLib.regDate.goe(start).and(dpWidgetLib.regDate.lt(endExcl));
+            case "upd_date": return dpWidgetLib.updDate.goe(start).and(dpWidgetLib.updDate.lt(endExcl));
             default: return null;
         }
     }
@@ -165,18 +165,18 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
         boolean all = !StringUtils.hasText(typeRaw);
         String types = all ? "" : ("," + typeRaw.trim() + ",");
         BooleanExpression or = null;
-        or = orLike(or, all, types, ",isSystem,", l.isSystem, pattern);
-        or = orLike(or, all, types, ",pathId,", l.pathId, pattern);
-        or = orLike(or, all, types, ",siteId,", l.siteId, pattern);
-        or = orLike(or, all, types, ",thumbnailUrl,", l.thumbnailUrl, pattern);
-        or = orLike(or, all, types, ",useYn,", l.useYn, pattern);
-        or = orLike(or, all, types, ",widgetCode,", l.widgetCode, pattern);
-        or = orLike(or, all, types, ",widgetConfigJson,", l.widgetConfigJson, pattern);
-        or = orLike(or, all, types, ",widgetContent,", l.widgetContent, pattern);
-        or = orLike(or, all, types, ",widgetLibDesc,", l.widgetLibDesc, pattern);
-        or = orLike(or, all, types, ",widgetLibId,", l.widgetLibId, pattern);
-        or = orLike(or, all, types, ",widgetNm,", l.widgetNm, pattern);
-        or = orLike(or, all, types, ",widgetTypeCd,", l.widgetTypeCd, pattern);
+        or = orLike(or, all, types, ",isSystem,", dpWidgetLib.isSystem, pattern);
+        or = orLike(or, all, types, ",pathId,", dpWidgetLib.pathId, pattern);
+        or = orLike(or, all, types, ",siteId,", dpWidgetLib.siteId, pattern);
+        or = orLike(or, all, types, ",thumbnailUrl,", dpWidgetLib.thumbnailUrl, pattern);
+        or = orLike(or, all, types, ",useYn,", dpWidgetLib.useYn, pattern);
+        or = orLike(or, all, types, ",widgetCode,", dpWidgetLib.widgetCode, pattern);
+        or = orLike(or, all, types, ",widgetConfigJson,", dpWidgetLib.widgetConfigJson, pattern);
+        or = orLike(or, all, types, ",widgetContent,", dpWidgetLib.widgetContent, pattern);
+        or = orLike(or, all, types, ",widgetLibDesc,", dpWidgetLib.widgetLibDesc, pattern);
+        or = orLike(or, all, types, ",widgetLibId,", dpWidgetLib.widgetLibId, pattern);
+        or = orLike(or, all, types, ",widgetNm,", dpWidgetLib.widgetNm, pattern);
+        or = orLike(or, all, types, ",widgetTypeCd,", dpWidgetLib.widgetTypeCd, pattern);
         return or;
     }
 
@@ -199,9 +199,9 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
         if (!StringUtils.hasText(sort)) {
 
             /* sortOrd ASC + regDate ASC (전역 정책) */
-            orders.add(new OrderSpecifier<>(Order.ASC, l.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, l.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, l.widgetLibId));
+            orders.add(new OrderSpecifier<>(Order.ASC, dpWidgetLib.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, dpWidgetLib.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, dpWidgetLib.widgetLibId));
 
             return orders;
         }
@@ -213,20 +213,20 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
                 String field = fieldAndDir[0];
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("widgetLibId".equals(field)) {
-                    orders.add(new OrderSpecifier(order, l.widgetLibId));
+                    orders.add(new OrderSpecifier(order, dpWidgetLib.widgetLibId));
                 } else if ("widgetNm".equals(field)) {
-                    orders.add(new OrderSpecifier(order, l.widgetNm));
+                    orders.add(new OrderSpecifier(order, dpWidgetLib.widgetNm));
                 } else if ("regDate".equals(field)) {
-                    orders.add(new OrderSpecifier(order, l.regDate));
+                    orders.add(new OrderSpecifier(order, dpWidgetLib.regDate));
                 }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, l.sortOrd)); }
+                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, dpWidgetLib.sortOrd)); }
             }
         }
         /* unknown sort → sortOrd ASC + regDate ASC fallback */
         if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.ASC, l.sortOrd));
-            orders.add(new OrderSpecifier<>(Order.ASC, l.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, l.widgetLibId));
+            orders.add(new OrderSpecifier<>(Order.ASC, dpWidgetLib.sortOrd));
+            orders.add(new OrderSpecifier<>(Order.ASC, dpWidgetLib.regDate));
+            orders.add(new OrderSpecifier<>(Order.ASC, dpWidgetLib.widgetLibId));
         }
         return orders;
     }
@@ -235,25 +235,25 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
     @Override
     public int updateSelective(DpWidgetLib entity) {
         if (entity.getWidgetLibId() == null) return 0;
-        JPAUpdateClause update = queryFactory.update(l);
+        JPAUpdateClause update = queryFactory.update(dpWidgetLib);
         boolean hasAny = false;
-        if (entity.getSiteId()           != null) { update.set(l.siteId,           entity.getSiteId());           hasAny = true; }
-        if (entity.getWidgetCode()       != null) { update.set(l.widgetCode,       entity.getWidgetCode());       hasAny = true; }
-        if (entity.getWidgetNm()         != null) { update.set(l.widgetNm,         entity.getWidgetNm());         hasAny = true; }
-        if (entity.getWidgetTypeCd()     != null) { update.set(l.widgetTypeCd,     entity.getWidgetTypeCd());     hasAny = true; }
-        if (entity.getWidgetLibDesc()    != null) { update.set(l.widgetLibDesc,    entity.getWidgetLibDesc());    hasAny = true; }
-        if (entity.getPathId()           != null) { update.set(l.pathId,           entity.getPathId());           hasAny = true; }
-        if (entity.getThumbnailUrl()     != null) { update.set(l.thumbnailUrl,     entity.getThumbnailUrl());     hasAny = true; }
-        if (entity.getWidgetContent()    != null) { update.set(l.widgetContent,    entity.getWidgetContent());    hasAny = true; }
-        if (entity.getWidgetConfigJson() != null) { update.set(l.widgetConfigJson, entity.getWidgetConfigJson()); hasAny = true; }
-        if (entity.getIsSystem()         != null) { update.set(l.isSystem,         entity.getIsSystem());         hasAny = true; }
-        if (entity.getSortOrd()          != null) { update.set(l.sortOrd,          entity.getSortOrd());          hasAny = true; }
-        if (entity.getUseYn()            != null) { update.set(l.useYn,            entity.getUseYn());            hasAny = true; }
-        if (entity.getUpdBy()            != null) { update.set(l.updBy,            entity.getUpdBy());            hasAny = true; }
+        if (entity.getSiteId()           != null) { update.set(dpWidgetLib.siteId,           entity.getSiteId());           hasAny = true; }
+        if (entity.getWidgetCode()       != null) { update.set(dpWidgetLib.widgetCode,       entity.getWidgetCode());       hasAny = true; }
+        if (entity.getWidgetNm()         != null) { update.set(dpWidgetLib.widgetNm,         entity.getWidgetNm());         hasAny = true; }
+        if (entity.getWidgetTypeCd()     != null) { update.set(dpWidgetLib.widgetTypeCd,     entity.getWidgetTypeCd());     hasAny = true; }
+        if (entity.getWidgetLibDesc()    != null) { update.set(dpWidgetLib.widgetLibDesc,    entity.getWidgetLibDesc());    hasAny = true; }
+        if (entity.getPathId()           != null) { update.set(dpWidgetLib.pathId,           entity.getPathId());           hasAny = true; }
+        if (entity.getThumbnailUrl()     != null) { update.set(dpWidgetLib.thumbnailUrl,     entity.getThumbnailUrl());     hasAny = true; }
+        if (entity.getWidgetContent()    != null) { update.set(dpWidgetLib.widgetContent,    entity.getWidgetContent());    hasAny = true; }
+        if (entity.getWidgetConfigJson() != null) { update.set(dpWidgetLib.widgetConfigJson, entity.getWidgetConfigJson()); hasAny = true; }
+        if (entity.getIsSystem()         != null) { update.set(dpWidgetLib.isSystem,         entity.getIsSystem());         hasAny = true; }
+        if (entity.getSortOrd()          != null) { update.set(dpWidgetLib.sortOrd,          entity.getSortOrd());          hasAny = true; }
+        if (entity.getUseYn()            != null) { update.set(dpWidgetLib.useYn,            entity.getUseYn());            hasAny = true; }
+        if (entity.getUpdBy()            != null) { update.set(dpWidgetLib.updBy,            entity.getUpdBy());            hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
-        update.set(l.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
+        update.set(dpWidgetLib.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
         if (!hasAny) return 0;
-        return (int) update.where(l.widgetLibId.eq(entity.getWidgetLibId())).execute();
+        return (int) update.where(dpWidgetLib.widgetLibId.eq(entity.getWidgetLibId())).execute();
     }
 
     /* 표시경로 노드별 dp_widget_lib 수 집계 (자손 누적 + 검색조건 필터, native CTE 동적 SQL)

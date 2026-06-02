@@ -763,12 +763,40 @@ window.BaseHtmlEditor = {
     const { ref, watch, onMounted, onBeforeUnmount, nextTick } = Vue;
 
     const editorEl = ref(null);
-    const mode = ref('wysiwyg');  /* 'wysiwyg' | 'source' | 'preview' */
+    const mode = ref('wysiwyg');  /* 'wysiwyg' | 'source' | 'preview' | 'split'(좌:편집 / 우:미리보기) */
+    const splitPct = ref(50);     /* split 모드 좌측 편집 영역 비율(%) — 중앙 바 드래그로 조절 */
+    const splitRoot = ref(null);  /* split 컨테이너 ref (드래그 좌표 계산용) */
     let inst = null;
     let syncing = false;
     let popupObserver = null;
     let popupMouseHandler = null;
     let popupRoot = null;
+    let splitDragMove = null;
+    let splitDragUp = null;
+
+    /* _startSplitDrag — 중앙 스플리터 바 드래그 시작. 좌/우 폭 비율(splitPct) 조절 */
+    const _startSplitDrag = (e) => {
+      e.preventDefault();
+      const rootEl = splitRoot.value;
+      if (!rootEl) return;
+      splitDragMove = (ev) => {
+        const rect = rootEl.getBoundingClientRect();
+        const x = (ev.touches ? ev.touches[0].clientX : ev.clientX) - rect.left;
+        let pct = (x / rect.width) * 100;
+        pct = Math.max(20, Math.min(80, pct));   // 20~80% 범위 제한
+        splitPct.value = pct;
+      };
+      splitDragUp = () => {
+        document.removeEventListener('mousemove', splitDragMove);
+        document.removeEventListener('mouseup', splitDragUp);
+        document.removeEventListener('touchmove', splitDragMove);
+        document.removeEventListener('touchend', splitDragUp);
+      };
+      document.addEventListener('mousemove', splitDragMove);
+      document.addEventListener('mouseup', splitDragUp);
+      document.addEventListener('touchmove', splitDragMove, { passive: false });
+      document.addEventListener('touchend', splitDragUp);
+    };
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -776,6 +804,8 @@ window.BaseHtmlEditor = {
       if (cmd === 'editor-set-mode') {
         mode.value = param;
         return;
+      } else if (cmd === 'editor-split-drag') {
+        return _startSplitDrag(param);
       } else if (cmd === 'editor-clear') {
         return emit('update:modelValue', '');
       } else {
@@ -950,14 +980,14 @@ window.BaseHtmlEditor = {
 
     onBeforeUnmount(() => { _dispose(); });
 
-    /* prop 변경 시 동기화 */
+    /* prop 변경 시 동기화 (wysiwyg / split 모드는 에디터 인스턴스 사용) */
     watch(() => props.modelValue, () => {
-      if (mode.value === 'wysiwyg' && inst) _syncFromProp();
+      if ((mode.value === 'wysiwyg' || mode.value === 'split') && inst) _syncFromProp();
     });
 
-    /* 모드 토글 시 인스턴스 재정비 */
+    /* 모드 토글 시 인스턴스 재정비 (split 도 wysiwyg 에디터를 좌측에 사용) */
     watch(mode, async (m) => {
-      if (m === 'wysiwyg') {
+      if (m === 'wysiwyg' || m === 'split') {
         await nextTick();
         if (!inst) _init();
         else _syncFromProp();
@@ -997,7 +1027,7 @@ window.BaseHtmlEditor = {
     }));
 
     return {
-      editorEl, mode, cfTextareaStyle, cfPreviewStyle,   // 상태
+      editorEl, mode, splitPct, splitRoot, cfTextareaStyle, cfPreviewStyle,   // 상태
       handleBtnAction, handleSelectAction,               // dispatch
     };
   },
@@ -1015,8 +1045,8 @@ window.BaseHtmlEditor = {
         style="font-size:11px;padding:3px 12px;border:1px solid;border-radius:4px;cursor:pointer;font-family:monospace;transition:all .15s;">
         &lt;/&gt; HTML
       </button>
-      <button type="button" @click="handleBtnAction('editor-set-mode', 'preview')"
-        :style="mode === 'preview' ? 'background:#047857;color:#fff;border-color:#047857;' : 'background:#fff;color:#555;border-color:#d0d0d0;'"
+      <button type="button" @click="handleBtnAction('editor-set-mode', 'split')"
+        :style="mode === 'split' ? 'background:#047857;color:#fff;border-color:#047857;' : 'background:#fff;color:#555;border-color:#d0d0d0;'"
         style="font-size:11px;padding:3px 12px;border:1px solid;border-radius:4px;cursor:pointer;transition:all .15s;">
         👁 미리보기
       </button>
@@ -1026,7 +1056,22 @@ window.BaseHtmlEditor = {
       비우기
     </button>
   </div>
-  <div v-show="mode === 'wysiwyg'" ref="editorEl" style="background:#fff;border-radius:6px;">
+  <!-- 편집/분할 영역: wysiwyg 단독이면 100%, split 이면 좌(편집) | 스플리터 | 우(미리보기) -->
+  <div ref="splitRoot" :style="(mode === 'split') ? 'display:flex;align-items:stretch;gap:0;' : ''">
+    <!-- 좌측 에디터(인스턴스 DOM은 항상 동일). split 일 때 splitPct% 폭 -->
+    <div v-show="mode === 'wysiwyg' || mode === 'split'" ref="editorEl"
+      :style="(mode === 'split') ? ('background:#fff;border-radius:6px 0 0 6px;width:' + splitPct + '%;min-width:0;') : 'background:#fff;border-radius:6px;'">
+    </div>
+    <!-- 중앙 스플리터 바 (드래그로 좌/우 폭 조절) -->
+    <div v-show="mode === 'split'" @mousedown="handleBtnAction('editor-split-drag', $event)" @touchstart="handleBtnAction('editor-split-drag', $event)"
+      title="드래그하여 크기 조절"
+      style="flex:0 0 8px;cursor:col-resize;background:#e5e7eb;border-left:1px solid #d0d0d0;border-right:1px solid #d0d0d0;display:flex;align-items:center;justify-content:center;user-select:none;">
+      <span style="color:#999;font-size:10px;line-height:1;">⋮⋮</span>
+    </div>
+    <!-- 우측 실시간 미리보기 (split 모드) -->
+    <div v-show="mode === 'split'" :style="cfPreviewStyle" style="flex:1;min-width:0;border-radius:0 6px 6px 0;"
+      v-html="modelValue || '<span style=color:#bbb>(내용 없음)</span>'">
+    </div>
   </div>
   <textarea v-show="mode === 'source'" :value="modelValue" @input="handleSelectAction('editor-source-input', $event)"
     spellcheck="false"
