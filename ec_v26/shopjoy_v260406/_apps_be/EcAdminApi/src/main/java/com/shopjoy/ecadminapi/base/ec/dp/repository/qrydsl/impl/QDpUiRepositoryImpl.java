@@ -84,28 +84,22 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<DpUiDto.Item> query = baseQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndPathId(search),
                 baseAndUiId(search),
                 baseAndDeviceTypeCd(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<DpUiDto.Item> query = baseQuery().where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
         List<DpUiDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(dpUi.count()).from(dpUi).where(
-                baseAndSiteId(search),
-                baseAndPathId(search),
-                baseAndUiId(search),
-                baseAndDeviceTypeCd(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        ).fetchOne();
+        Long total = queryFactory.select(dpUi.count()).from(dpUi).where(wheres).fetchOne();
 
         DpUiDto.PageResponse res = new DpUiDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

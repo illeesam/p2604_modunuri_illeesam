@@ -795,10 +795,18 @@ window.DpDispUiSimul = {
     /* closeStructSpanPopup — 닫기 */
     const closeStructSpanPopup = () => { uiState.structSpanPopupIdx = -1; };
 
-        const onStructDragOver  = (e, idx) => { e.preventDefault(); uiState.structDragOverIdx = idx; };
+    const onStructDragOver  = (e, idx) => {
+      e.preventDefault();
+      if (e.dataTransfer) { e.dataTransfer.dropEffect = 'copy'; }
+      if (uiState.structDragOverIdx !== idx) { uiState.structDragOverIdx = idx; }
+    };
 
-    /* onStructDragLeave — 이벤트 */
-    const onStructDragLeave = () => { uiState.structDragOverIdx = -1; };
+    /* onStructDragLeave — 슬롯 밖 이탈 시에만 해제 (깜빡임 방지) */
+    const onStructDragLeave = (e, idx) => {
+      const to = e && e.relatedTarget;
+      if (to && e.currentTarget && e.currentTarget.contains(to)) { return; }
+      if (uiState.structDragOverIdx === idx) { uiState.structDragOverIdx = -1; }
+    };
 
     /* onStructDrop — 이벤트 */
     const onStructDrop = (e, idx) => {
@@ -1524,7 +1532,7 @@ window.DpDispUiSimul = {
                 <div style="font-size:10px;color:#888;padding:6px 10px;border-bottom:1px solid #f0f0f0;margin-bottom:4px;">
                   오픈할 페이지를 선택하세요
                 </div>
-                <button v-for="(u, i) in DISP_UI_OTHER_PAGES" :key="Math.random()"
+                <button v-for="(u, i) in DISP_UI_OTHER_PAGES" :key="i"
               @click="handleSelectAction('simul-pickOtherPage', u)"
               style="display:block;width:100%;text-align:left;padding:7px 10px;font-size:11px;border:none;background:transparent;cursor:pointer;border-radius:6px;font-family:monospace;color:#333;"
               @mouseenter="$event.currentTarget.style.background='#e3f2fd'"
@@ -1880,7 +1888,7 @@ window.DpDispUiSimul = {
                       열수
                     </span>
                     <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;">
-                      <button v-for="n in [1,2,3,4]" :key="Math.random()" @click="handleSelectAction('simul-setStructCols', n)"
+                      <button v-for="n in [1,2,3,4]" :key="n" @click="handleSelectAction('simul-setStructCols', n)"
                 style="font-size:11px;padding:3px 9px;border:none;border-left:1px solid #d1d5db;cursor:pointer;transition:all .15s;"
                 :style="[n===1?'border-left:none;':'', uiState.structColCount===n ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;']">
                         {{ n }}
@@ -1900,7 +1908,7 @@ window.DpDispUiSimul = {
                     <div style="width:1px;height:20px;background:#e5e7eb;">
                     </div>
                     <!-- ===== ■.■.■.■.■.■. 뷰포트 =========================================== -->
-                    <button v-for="(vp, key) in STRUCT_VIEWPORT" :key="Math.random()" @click="handleSelectAction('simul-setStructViewport', key)"
+                    <button v-for="(vp, key) in STRUCT_VIEWPORT" :key="key" @click="handleSelectAction('simul-setStructViewport', key)"
               style="font-size:11px;padding:3px 7px;border-radius:5px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;"
               :style="uiState.structViewport===key ? 'background:#1d4ed8;color:#fff;border-color:#1d4ed8;' : 'background:#fff;color:#6b7280;'">
                       {{ vp.label }}
@@ -1979,8 +1987,8 @@ window.DpDispUiSimul = {
                   </div>
                   <div :style="{ border: STRUCT_VIEWPORT[structViewport].width ? '2px solid #d1d5db' : 'none', borderRadius: STRUCT_VIEWPORT[structViewport].width ? '12px' : '0', padding: STRUCT_VIEWPORT[structViewport].width ? '10px' : '0', background:'#fff', boxShadow: STRUCT_VIEWPORT[structViewport].width ? '0 4px 20px rgba(0,0,0,.12)' : 'none' }">
                     <div :style="{ display:'grid', gridTemplateColumns:cfStructGridColumns, gap:'10px' }">
-                      <template v-for="(slot, idx) in structSlots" :key="Math.random()">
-                        <div v-if="!structShowReal || slot" @dragover="onStructDragOver($event, idx)" @dragleave="onStructDragLeave" @drop="onStructDrop($event, idx)" style="border-radius:8px;transition:all .15s;position:relative;" :style="[ structDragOverIdx===idx ? 'border:2px dashed #1d4ed8;background:#eff6ff;min-height:100px;' : slot ? (uiState.structShowReal ? 'border:none;background:transparent;min-height:0;' : 'border:1px solid #e5e7eb;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.07);min-height:100px;') : 'border:2px dashed #d1d5db;background:#f9fafb;min-height:60px;', slot && (slot.colSpan||1)>1 ? { gridColumn:'span '+slot.colSpan } : {}, slot && (slot.rowSpan||1)>1 ? { gridRow:'span '+slot.rowSpan } : {}, ]">
+                      <template v-for="(slot, idx) in structSlots" :key="idx">
+                        <div v-if="!structShowReal || slot" @dragover="onStructDragOver($event, idx)" @dragleave="onStructDragLeave($event, idx)" @drop="onStructDrop($event, idx)" style="border-radius:8px;transition:all .15s;position:relative;" :style="[ structDragOverIdx===idx ? 'border:2px dashed #1d4ed8;background:#eff6ff;min-height:100px;' : slot ? (uiState.structShowReal ? 'border:none;background:transparent;min-height:0;' : 'border:1px solid #e5e7eb;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.07);min-height:100px;') : 'border:2px dashed #d1d5db;background:#f9fafb;min-height:60px;', slot && (slot.colSpan||1)>1 ? { gridColumn:'span '+slot.colSpan } : {}, slot && (slot.rowSpan||1)>1 ? { gridRow:'span '+slot.rowSpan } : {}, ]">
                         <!-- ===== ■.■.■.■.■.■.■.■.■.■.■. 빈 슬롯 ================================ -->
                         <div v-if="!slot && structDragOverIdx!==idx" style="min-height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#d1d5db;padding:10px;">
                         <span style="font-size:18px;">
@@ -2094,7 +2102,7 @@ window.DpDispUiSimul = {
                       </div>
                       <div v-else-if="slot.widgetType==='product_slider'||slot.widgetType==='product'">
                         <div style="display:flex;gap:5px;overflow:hidden;">
-                          <div v-for="n in 4" :key="Math.random()" style="flex:0 0 60px;border:1px solid #eee;border-radius:6px;overflow:hidden;">
+                          <div v-for="n in 4" :key="n" style="flex:0 0 60px;border:1px solid #eee;border-radius:6px;overflow:hidden;">
                             <div style="height:50px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:18px;">
                               📦
                             </div>
@@ -2228,7 +2236,7 @@ window.DpDispUiSimul = {
         영역 또는 패널 데이터가 없습니다.
       </div>
       <div v-else style="font-family:monospace;font-size:12px;line-height:1.9;">
-        <div v-for="(line, i) in sourceLines" :key="Math.random()"
+        <div v-for="(line, i) in sourceLines" :key="i"
             :style="line.type==='blank'
             ? 'height:0.4em;'
             : 'white-space:nowrap;overflow-x:visible;padding-left:' + (line.level||0)*20 + 'px;'">

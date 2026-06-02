@@ -81,20 +81,17 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<MbMemberRoleDto.Item> query = baseSelColumnQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndMemberRoleId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<MbMemberRoleDto.Item> query = baseSelColumnQuery().where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<MbMemberRoleDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(mbMemberRole.count()).from(mbMemberRole).where(
-                baseAndMemberRoleId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        ).fetchOne();
+        Long total = queryFactory.select(mbMemberRole.count()).from(mbMemberRole).where(wheres).fetchOne();
 
         MbMemberRoleDto.PageResponse res = new MbMemberRoleDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

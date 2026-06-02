@@ -83,24 +83,19 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<SyContactDto.Item> query = baseSelColumnQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndContactId(search),
                 baseAndMemberId(search),
                 baseAndStatus(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<SyContactDto.Item> query = baseSelColumnQuery().where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyContactDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syContact.count()).from(syContact).where(
-                baseAndSiteId(search),
-                baseAndContactId(search),
-                baseAndMemberId(search),
-                baseAndStatus(search),
-                baseAndSearchValue(search)
-        ).fetchOne();
+        Long total = queryFactory.select(syContact.count()).from(syContact).where(wheres).fetchOne();
 
         SyContactDto.PageResponse res = new SyContactDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

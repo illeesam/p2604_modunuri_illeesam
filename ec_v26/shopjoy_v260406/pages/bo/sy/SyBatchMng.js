@@ -450,7 +450,9 @@ window.SyBatchMng = {
         </template>
       </bo-grid-crud>
       <!-- ===== ■.■.■. Cron 편집 모달 (BoCronModal 컴포넌트) ======================= -->
-      <bo-cron-modal :show="cronModal.show" :value="cronModal.value" modal-name="cron" :on-callback="fnCallbackModal" />
+      <bo-cron-modal :show="cronModal.show" :value="cronModal.value"
+        @apply="expr => handleSelectAction('cronModal-apply', expr)"
+        @close="handleBtnAction('cronModal-close')" />
     </div>
     <!-- ===== □.□. 경로 트리 ================================================= -->
   </div>

@@ -77,13 +77,14 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<StErpVoucherDto.Item> query = baseListQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndErpVoucherId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<StErpVoucherDto.Item> query = baseListQuery().where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -92,12 +93,7 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
         Long total = queryFactory
                 .select(stErpVoucher.count())
                 .from(stErpVoucher)
-                .where(
-                baseAndSiteId(search),
-                baseAndErpVoucherId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         StErpVoucherDto.PageResponse res = new StErpVoucherDto.PageResponse();

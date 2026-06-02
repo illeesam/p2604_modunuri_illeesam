@@ -90,24 +90,20 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<PdRestockNotiDto.Item> query = baseSelColumnQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndRestockNotiId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<PdRestockNotiDto.Item> query = baseSelColumnQuery().where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
         List<PdRestockNotiDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(pdRestockNoti.count()).from(pdRestockNoti).where(
-                baseAndSiteId(search),
-                baseAndRestockNotiId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        ).fetchOne();
+        Long total = queryFactory.select(pdRestockNoti.count()).from(pdRestockNoti).where(wheres).fetchOne();
 
         PdRestockNotiDto.PageResponse res = new PdRestockNotiDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

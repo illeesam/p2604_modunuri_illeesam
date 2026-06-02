@@ -97,29 +97,23 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<SyBrandDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndPathId(search),
                 baseAndBrandId(search),
                 baseAndVendorId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<SyBrandDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
         List<SyBrandDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syBrand.count()).from(syBrand).where(
-                baseAndSiteId(search),
-                baseAndPathId(search),
-                baseAndBrandId(search),
-                baseAndVendorId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        ).fetchOne();
+        Long total = queryFactory.select(syBrand.count()).from(syBrand).where(wheres).fetchOne();
 
         SyBrandDto.PageResponse res = new SyBrandDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

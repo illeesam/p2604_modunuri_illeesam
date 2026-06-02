@@ -42,6 +42,7 @@ window.DpDispUiMng = {
         uiState.sortKey = ''; uiState.sortDir = 'asc';
         uiState.selectedPath = null;          // 표시경로 트리 전체로 복귀
         pager.pageNo = 1;
+        resetDetailToNew();
         return handleSearchList('SEARCH');
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {
@@ -168,10 +169,24 @@ window.DpDispUiMng = {
       }
     };
 
+    /* pathNodes — 표시경로(ec_disp_ui) 노드 목록 (select 드롭다운용) */
+    const pathNodes = reactive([]);
+    const pathPickModal = reactive({ show: false });
+
+    /* fnLoadPathNodes — 표시경로 노드 로드 (select 옵션) */
+    const fnLoadPathNodes = async () => {
+      try {
+        const res = await coApiSvc.syPath.getPage({ bizCd: 'ec_disp_ui' }, '전시UI관리', '경로조회');
+        const rows = res.data?.data?.pageList || res.data?.data?.list || [];
+        pathNodes.splice(0, pathNodes.length, ...rows);
+      } catch (e) { console.error('[fnLoadPathNodes]', e); }
+    };
+
     // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) { fnLoadCodes(); }
       handleSearchList('DEFAULT');
+      fnLoadPathNodes();
     });
 
     /* pathLabel — 경로 라벨 */
@@ -179,6 +194,21 @@ window.DpDispUiMng = {
 
     /* selectNode — 노드 선택 */
     const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; resetDetailToNew(); handleSearchList('DEFAULT'); };
+
+    /* onPathSelectChange — select 드롭다운에서 경로 선택 (빈 값=전체) */
+    const onPathSelectChange = (val) => { selectNode(val === '' || val == null ? null : val); };
+
+    /* openPathManage — [항목관리] 모달 열기 */
+    const openPathManage = () => { pathPickModal.show = true; };
+    const onPathManaged = (id) => { pathPickModal.show = false; if (id != null) selectNode(id); fnLoadPathNodes(); };
+
+    /* fnCallbackModal — 모달 통합 콜백 */
+    const fnCallbackModal = (cmd, param, result) => {
+      if (cmd === 'path-pick') {
+        if (result == null) { pathPickModal.show = false; return; }
+        return onPathManaged(result);
+      }
+    };
 
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
@@ -250,10 +280,11 @@ window.DpDispUiMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       uis, uiState, uiCounts, codes, searchParam, pager, detailPanel,                           // 상태 / 데이터
+      pathNodes, pathPickModal,                                                       // 표시경로 select / 모달
       baseSearchColumns, baseGridColumns,                                             // 컬럼 정의
-      handleBtnAction, handleSelectAction,                                            // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, fnCallbackModal,                           // dispatch (모든 이벤트 / 액션 라우팅)
       cfDetailEditId, cfDetailKey,                                                    // computed
-      pathLabel, sortIcon,                                                            // 헬퍼
+      pathLabel, sortIcon, onPathSelectChange, openPathManage,                       // 헬퍼
       inlineNavigate,                                                                 // Dtl 콜백 (closure 필요)
     };
   },
@@ -283,12 +314,26 @@ window.DpDispUiMng = {
           전체보기
         </span>
       </div>
+      <!-- ===== 표시경로 select + [항목관리] ===== -->
+      <div style="display:flex;gap:4px;align-items:center;margin-bottom:8px;">
+        <select class="form-control" style="flex:1;min-width:0;font-size:12px;padding:4px 6px;"
+          :value="uiState.selectedPath == null ? '' : uiState.selectedPath"
+          @change="onPathSelectChange($event.target.value)">
+          <option value="">전체</option>
+          <option v-for="n in pathNodes" :key="n.pathId" :value="n.pathId">
+            {{ n.pathLabel || n.pathNm || ('#' + n.pathId) }}
+          </option>
+        </select>
+        <button class="btn btn-secondary btn-sm" style="flex-shrink:0;white-space:nowrap;" @click="openPathManage">
+          항목관리
+        </button>
+      </div>
       <div style="max-height:65vh;overflow:auto;">
         <bo-path-tree biz-cd="ec_disp_ui" :counts="uiCounts" :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
       </div>
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-grid :columns="baseGridColumns" :rows="uis" row-key="uiId"
+    <bo-grid :columns="baseGridColumns" :rows="uis" row-key="uiId" :pager="pager"
       :sort-state="uiState" list-title="전시 UI 목록"
       :count-text="'총 ' + pager.pageTotalCount + '건'"
       empty-text="조회된 데이터가 없습니다." row-clickable
@@ -313,7 +358,6 @@ window.DpDispUiMng = {
         </button>
       </template>
     </bo-grid>
-        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('uis-pager-setPage', n)" :on-size-change="() => handleSelectAction('uis-pager-sizeChange')" />
   </div>
   <!-- ===== □.□. 목록 영역 ================================================= -->
   <!-- ===== □. 본문 영역 =================================================== -->
@@ -330,6 +374,10 @@ window.DpDispUiMng = {
       />
   </div>
   <!-- ===== □. 상세 패널 =================================================== -->
+  <!-- ===== ■. 표시경로 항목관리 모달 ========================================== -->
+  <path-pick-modal v-if="pathPickModal.show" biz-cd="ec_disp_ui" :value="uiState.selectedPath"
+    title="표시경로 항목관리" modal-name="path-pick" :on-callback="fnCallbackModal" />
+  <!-- ===== □. 표시경로 항목관리 모달 ========================================== -->
 </div>
 `,
 };

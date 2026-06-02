@@ -74,22 +74,18 @@ public class QMbDeviceTokenRepositoryImpl implements QMbDeviceTokenRepository {
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<MbDeviceTokenDto.Item> query = baseSelColumnQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndDeviceTokenId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<MbDeviceTokenDto.Item> query = baseSelColumnQuery().where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<MbDeviceTokenDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(mbDeviceToken.count()).from(mbDeviceToken).where(
-                baseAndSiteId(search),
-                baseAndDeviceTokenId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        ).fetchOne();
+        Long total = queryFactory.select(mbDeviceToken.count()).from(mbDeviceToken).where(wheres).fetchOne();
 
         MbDeviceTokenDto.PageResponse res = new MbDeviceTokenDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

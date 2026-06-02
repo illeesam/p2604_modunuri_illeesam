@@ -80,22 +80,19 @@ public class QOdhOrderItemStatusHistRepositoryImpl implements QOdhOrderItemStatu
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<OdhOrderItemStatusHistDto.Item> query = baseSelColumnQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndOrderItemStatusHistId(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<OdhOrderItemStatusHistDto.Item> query = baseSelColumnQuery().where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
         List<OdhOrderItemStatusHistDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(odhOrderItemStatusHist.count()).from(odhOrderItemStatusHist).where(
-                baseAndSiteId(search),
-                baseAndOrderItemStatusHistId(search),
-                baseAndSearchValue(search)
-        ).fetchOne();
+        Long total = queryFactory.select(odhOrderItemStatusHist.count()).from(odhOrderItemStatusHist).where(wheres).fetchOne();
 
         OdhOrderItemStatusHistDto.PageResponse res = new OdhOrderItemStatusHistDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

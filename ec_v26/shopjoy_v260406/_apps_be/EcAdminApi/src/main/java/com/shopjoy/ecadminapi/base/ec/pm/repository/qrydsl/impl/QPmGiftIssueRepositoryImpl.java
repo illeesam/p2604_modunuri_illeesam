@@ -96,13 +96,14 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<PmGiftIssueDto.Item> query = baseSelColumnQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndGiftIssueId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<PmGiftIssueDto.Item> query = baseSelColumnQuery().where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -111,12 +112,7 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
         Long total = queryFactory
                 .select(pmGiftIssue.count())
                 .from(pmGiftIssue)
-                .where(
-                baseAndSiteId(search),
-                baseAndGiftIssueId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         PmGiftIssueDto.PageResponse res = new PmGiftIssueDto.PageResponse();

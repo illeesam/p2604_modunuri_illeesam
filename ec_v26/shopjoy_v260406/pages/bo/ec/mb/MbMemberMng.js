@@ -34,6 +34,7 @@ window.MbMemberMng = {
         Object.assign(searchParam, _initSearchParam());
         uiState.sortKey = ''; uiState.sortDir = 'asc';
         pager.pageNo = 1;
+        resetDetailToNew();
         return handleSearchList('SEARCH');
       // 회원 신규 등록 (인라인 패널)
       } else if (cmd === 'members-add') {

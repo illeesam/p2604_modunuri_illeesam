@@ -76,22 +76,18 @@ public class QMbMemberGradeRepositoryImpl implements QMbMemberGradeRepository {
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<MbMemberGradeDto.Item> query = baseSelColumnQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndMemberGradeId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<MbMemberGradeDto.Item> query = baseSelColumnQuery().where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<MbMemberGradeDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(mbMemberGrade.count()).from(mbMemberGrade).where(
-                baseAndSiteId(search),
-                baseAndMemberGradeId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        ).fetchOne();
+        Long total = queryFactory.select(mbMemberGrade.count()).from(mbMemberGrade).where(wheres).fetchOne();
 
         MbMemberGradeDto.PageResponse res = new MbMemberGradeDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

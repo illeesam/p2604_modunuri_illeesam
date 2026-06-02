@@ -80,20 +80,17 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<SyI18nDto.Item> query = baseSelColumnQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndI18nId(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<SyI18nDto.Item> query = baseSelColumnQuery().where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyI18nDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syI18n.count()).from(syI18n).where(
-                baseAndSiteId(search),
-                baseAndI18nId(search),
-                baseAndSearchValue(search)
-        ).fetchOne();
+        Long total = queryFactory.select(syI18n.count()).from(syI18n).where(wheres).fetchOne();
 
         SyI18nDto.PageResponse res = new SyI18nDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

@@ -32,6 +32,7 @@ window.DpDispWidgetLibMng = {
         uiState.sortKey = ''; uiState.sortDir = 'asc';
         uiState.selectedPath = null;          // 표시경로 트리 전체로 복귀
         pager.pageNo = 1;
+        resetDetailToNew();
         return handleSearchList('DEFAULT');
       // 위젯Lib 신규 등록 (인라인 패널)
       } else if (cmd === 'widgetLibs-add') {
@@ -362,7 +363,7 @@ window.DpDispWidgetLibMng = {
       </div>
       <div>
         <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-        <bo-grid :columns="listGridColumns" :rows="widgetLibs" row-key="widgetLibId"
+        <bo-grid :columns="listGridColumns" :rows="widgetLibs" row-key="widgetLibId" :pager="pager"
         :sort-state="uiState" list-title="위젯라이브러리"
         :count-text="pager.pageTotalCount + '건'"
         empty-text="데이터가 없습니다." row-clickable
@@ -403,12 +404,11 @@ window.DpDispWidgetLibMng = {
             </div>
           </template>
         </bo-grid>
-        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('widgetLibs-pager-setPage', n)" :on-size-change="() => handleSelectAction('widgetLibs-pager-sizeChange')" />
       </div>
     </div>
     <!-- ===== □. 본문 영역 =================================================== -->
     <!-- ===== ■. 상세 패널 (인라인 임베드 — 항상 표시) ========================================= -->
-    <div style="margin-top:4px;">
+    <div style="margin-top:16px;">
       <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
         <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
           ✕ 닫기

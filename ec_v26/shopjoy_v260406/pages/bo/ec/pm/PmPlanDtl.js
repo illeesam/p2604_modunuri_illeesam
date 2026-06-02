@@ -373,7 +373,7 @@ window.PmPlanDtl = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      vendors, products, uiState, codes, form, errors, VISIBILITY_OPTIONS,           // 상태 / 데이터
+      vendors, products, uiState, codes, form, errors, VISIBILITY_OPTIONS, tabs,     // 상태 / 데이터
       infoFormColumns, vendorFormColumns,                                            // 폼 컬럼 정의
       handleBtnAction, handleSelectAction, fnCallbackModal,                                           // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfHasId, cfSaveDisabled, cfDtlMode, cfFilteredProds, cfSelectedProducts, cfSelectedVendorNm, // computed

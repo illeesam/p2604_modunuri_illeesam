@@ -83,15 +83,16 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<PmEventItemDto.Item> query = baseSelColumnQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndEventIds(search),
                 baseAndEventId(search),
                 baseAndSiteId(search),
                 baseAndEventItemId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<PmEventItemDto.Item> query = baseSelColumnQuery().where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -100,14 +101,7 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
         Long total = queryFactory
                 .select(pmEventItem.count())
                 .from(pmEventItem)
-                .where(
-                baseAndEventIds(search),
-                baseAndEventId(search),
-                baseAndSiteId(search),
-                baseAndEventItemId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         PmEventItemDto.PageResponse res = new PmEventItemDto.PageResponse();

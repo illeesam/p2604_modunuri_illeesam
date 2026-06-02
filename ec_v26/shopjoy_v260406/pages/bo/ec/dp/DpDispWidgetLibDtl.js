@@ -722,7 +722,7 @@ window.DpDispWidgetLibDtl = {
         <!-- ===== ■.■.■.■. Lib코드/라이브러리명/상태/설명/태그 (BoFormArea 자동 렌더) ========== -->
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
         <bo-form-area :columns="baseLibFormColumns" :form="form" :errors="errors"
-          :readonly="false" :cols="3" compact :show-actions="false" />
+          :readonly="false" :cols="2" compact :show-actions="false" />
         <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">
           표시경로
           <span style="font-size:10px;font-weight:400;color:#aaa;">

@@ -87,13 +87,14 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<ZzExam1Dto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
+        BooleanExpression[] wheres = {
                 baseAndExam1Ids(search),
                 baseAndExam1Id(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<ZzExam1Dto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -102,11 +103,7 @@ public class QZzExam1RepositoryImpl implements QZzExam1Repository {
         Long total = queryFactory
                 .select(zzExam1.count())
                 .from(zzExam1)
-                .where(
-                baseAndExam1Ids(search),
-                baseAndExam1Id(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         ZzExam1Dto.PageResponse res = new ZzExam1Dto.PageResponse();

@@ -91,9 +91,7 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<SyCodeDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndCodeId(search),
                 baseAndCodeGrp(search),
@@ -102,22 +100,16 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
                 baseAndUseYn(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<SyCodeDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
         List<SyCodeDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syCode.count()).from(syCode).where(
-                baseAndSiteId(search),
-                baseAndCodeId(search),
-                baseAndCodeGrp(search),
-                baseAndCodeValue(search),
-                baseAndParentCodeValue(search),
-                baseAndUseYn(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        ).fetchOne();
+        Long total = queryFactory.select(syCode.count()).from(syCode).where(wheres).fetchOne();
 
         SyCodeDto.PageResponse res = new SyCodeDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

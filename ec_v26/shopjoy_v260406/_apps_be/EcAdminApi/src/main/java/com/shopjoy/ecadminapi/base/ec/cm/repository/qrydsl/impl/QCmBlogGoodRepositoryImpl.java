@@ -81,13 +81,14 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
         int offset = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<CmBlogGoodDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
+        BooleanExpression[] wheres = {
                 baseAndLikeId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<CmBlogGoodDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -96,11 +97,7 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
         Long total = queryFactory
                 .select(cmBlogGood.count())
                 .from(cmBlogGood)
-                .where(
-                baseAndLikeId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         CmBlogGoodDto.PageResponse res = new CmBlogGoodDto.PageResponse();

@@ -38,6 +38,7 @@ window.PmVoucherMng = {
         Object.assign(searchParam, _initSearchParam());
         uiState.sortKey = ''; uiState.sortDir = 'asc';
         pager.pageNo = 1;
+        resetDetailToNew();
         return handleSearchList('SEARCH');
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {
@@ -401,7 +402,7 @@ window.PmVoucherMng = {
   <!-- ===== □.□. 카드 뷰 ================================================== -->
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 하단 상세: VoucherDtl 임베드 =================================== -->
-  <div style="margin-top:4px;">
+  <div style="margin-top:16px;">
     <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기

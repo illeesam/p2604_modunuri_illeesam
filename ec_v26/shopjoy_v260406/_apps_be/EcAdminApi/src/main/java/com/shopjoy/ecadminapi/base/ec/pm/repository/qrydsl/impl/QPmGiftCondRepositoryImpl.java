@@ -89,13 +89,14 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<PmGiftCondDto.Item> query = baseSelColumnQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndGiftCondId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<PmGiftCondDto.Item> query = baseSelColumnQuery().where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -104,12 +105,7 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
         Long total = queryFactory
                 .select(pmGiftCond.count())
                 .from(pmGiftCond)
-                .where(
-                baseAndSiteId(search),
-                baseAndGiftCondId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         PmGiftCondDto.PageResponse res = new PmGiftCondDto.PageResponse();

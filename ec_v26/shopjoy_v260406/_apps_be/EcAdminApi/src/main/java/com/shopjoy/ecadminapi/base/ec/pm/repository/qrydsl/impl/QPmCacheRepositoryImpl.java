@@ -89,13 +89,14 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<PmCacheDto.Item> query = baseSelColumnQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndCacheId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<PmCacheDto.Item> query = baseSelColumnQuery().where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -104,12 +105,7 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
         Long total = queryFactory
                 .select(pmCache.count())
                 .from(pmCache)
-                .where(
-                baseAndSiteId(search),
-                baseAndCacheId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         PmCacheDto.PageResponse res = new PmCacheDto.PageResponse();

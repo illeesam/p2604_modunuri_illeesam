@@ -36,6 +36,7 @@ window.SyVendorMng = {
         uiState.sortKey = ''; uiState.sortDir = 'asc';
         uiState.selectedPath = null;          // 표시경로 트리 전체로 복귀
         pager.pageNo = 1;
+        resetDetailToNew();
         return handleSearchList('DEFAULT');
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {

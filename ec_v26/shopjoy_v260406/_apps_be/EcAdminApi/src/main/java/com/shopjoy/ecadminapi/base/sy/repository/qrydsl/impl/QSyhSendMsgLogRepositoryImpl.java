@@ -126,9 +126,7 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<SyhSendMsgLogDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndLogId(search),
                 baseAndUserId(search),
@@ -136,7 +134,10 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
                 baseAndTypeCd(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<SyhSendMsgLogDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -145,15 +146,7 @@ public class QSyhSendMsgLogRepositoryImpl implements QSyhSendMsgLogRepository {
         Long total = queryFactory
                 .select(syhSendMsgLog.count())
                 .from(syhSendMsgLog)
-                .where(
-                baseAndSiteId(search),
-                baseAndLogId(search),
-                baseAndUserId(search),
-                baseAndTemplateId(search),
-                baseAndTypeCd(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         SyhSendMsgLogDto.PageResponse res = new SyhSendMsgLogDto.PageResponse();

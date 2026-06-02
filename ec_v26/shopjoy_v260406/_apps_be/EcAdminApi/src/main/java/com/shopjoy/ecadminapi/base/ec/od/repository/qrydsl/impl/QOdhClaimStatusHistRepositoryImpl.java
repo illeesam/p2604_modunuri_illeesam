@@ -80,22 +80,19 @@ public class QOdhClaimStatusHistRepositoryImpl implements QOdhClaimStatusHistRep
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<OdhClaimStatusHistDto.Item> query = baseSelColumnQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndClaimStatusHistId(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<OdhClaimStatusHistDto.Item> query = baseSelColumnQuery().where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
         List<OdhClaimStatusHistDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(odhClaimStatusHist.count()).from(odhClaimStatusHist).where(
-                baseAndSiteId(search),
-                baseAndClaimStatusHistId(search),
-                baseAndSearchValue(search)
-        ).fetchOne();
+        Long total = queryFactory.select(odhClaimStatusHist.count()).from(odhClaimStatusHist).where(wheres).fetchOne();
 
         OdhClaimStatusHistDto.PageResponse res = new OdhClaimStatusHistDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

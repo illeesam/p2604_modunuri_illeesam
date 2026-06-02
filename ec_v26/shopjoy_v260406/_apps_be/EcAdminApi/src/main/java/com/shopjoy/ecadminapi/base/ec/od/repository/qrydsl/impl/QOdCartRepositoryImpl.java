@@ -81,14 +81,15 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<OdCartDto.Item> query = baseListQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndCartId(search),
                 baseAndMemberId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<OdCartDto.Item> query = baseListQuery().where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -99,13 +100,7 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
                 .from(odCart)
                 .leftJoin(mbMember).on(mbMember.memberId.eq(odCart.memberId))
                 .leftJoin(pdProd).on(pdProd.prodId.eq(odCart.prodId))
-                .where(
-                baseAndSiteId(search),
-                baseAndCartId(search),
-                baseAndMemberId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         OdCartDto.PageResponse res = new OdCartDto.PageResponse();

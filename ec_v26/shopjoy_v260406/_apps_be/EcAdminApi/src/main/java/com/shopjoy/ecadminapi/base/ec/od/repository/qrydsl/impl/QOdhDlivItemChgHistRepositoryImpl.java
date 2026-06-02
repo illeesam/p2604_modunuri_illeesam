@@ -80,22 +80,19 @@ public class QOdhDlivItemChgHistRepositoryImpl implements QOdhDlivItemChgHistRep
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<OdhDlivItemChgHistDto.Item> query = baseSelColumnQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndDlivItemChgHistId(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<OdhDlivItemChgHistDto.Item> query = baseSelColumnQuery().where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
         List<OdhDlivItemChgHistDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(odhDlivItemChgHist.count()).from(odhDlivItemChgHist).where(
-                baseAndSiteId(search),
-                baseAndDlivItemChgHistId(search),
-                baseAndSearchValue(search)
-        ).fetchOne();
+        Long total = queryFactory.select(odhDlivItemChgHist.count()).from(odhDlivItemChgHist).where(wheres).fetchOne();
 
         OdhDlivItemChgHistDto.PageResponse res = new OdhDlivItemChgHistDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

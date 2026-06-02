@@ -87,16 +87,17 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
         int offset = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<CmBlogReplyDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
+        BooleanExpression[] wheres = {
                 baseAndBlogIds(search),
                 baseAndBlogId(search),
                 baseAndSiteId(search),
                 baseAndCommentId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<CmBlogReplyDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -105,14 +106,7 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
         Long total = queryFactory
                 .select(cmBlogReply.count())
                 .from(cmBlogReply)
-                .where(
-                baseAndBlogIds(search),
-                baseAndBlogId(search),
-                baseAndSiteId(search),
-                baseAndCommentId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         CmBlogReplyDto.PageResponse res = new CmBlogReplyDto.PageResponse();

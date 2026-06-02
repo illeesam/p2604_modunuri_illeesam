@@ -97,26 +97,21 @@ public class QPdProdOptItemRepositoryImpl implements QPdProdOptItemRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<PdProdOptItemDto.Item> query = baseSelColumnQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndOptId(search),
                 baseAndSiteId(search),
                 baseAndOptItemId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<PdProdOptItemDto.Item> query = baseSelColumnQuery().where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
         List<PdProdOptItemDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(pdProdOptItem.count()).from(pdProdOptItem).where(
-                baseAndOptId(search),
-                baseAndSiteId(search),
-                baseAndOptItemId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        ).fetchOne();
+        Long total = queryFactory.select(pdProdOptItem.count()).from(pdProdOptItem).where(wheres).fetchOne();
 
         PdProdOptItemDto.PageResponse res = new PdProdOptItemDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

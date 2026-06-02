@@ -74,12 +74,13 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<OdPayMethodDto.Item> query = baseListQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndPayMethodId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<OdPayMethodDto.Item> query = baseListQuery().where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -88,11 +89,7 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
         Long total = queryFactory
                 .select(odPayMethod.count())
                 .from(odPayMethod)
-                .where(
-                baseAndPayMethodId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         OdPayMethodDto.PageResponse res = new OdPayMethodDto.PageResponse();

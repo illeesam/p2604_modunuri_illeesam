@@ -77,24 +77,19 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<SyBbmDto.Item> query = baseQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndBbmId(search),
                 baseAndPathId(search),
                 baseAndTypeCd(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<SyBbmDto.Item> query = baseQuery().where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyBbmDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syBbm.count()).from(syBbm).where(
-                baseAndSiteId(search),
-                baseAndBbmId(search),
-                baseAndPathId(search),
-                baseAndTypeCd(search),
-                baseAndSearchValue(search)
-        ).fetchOne();
+        Long total = queryFactory.select(syBbm.count()).from(syBbm).where(wheres).fetchOne();
 
         SyBbmDto.PageResponse res = new SyBbmDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

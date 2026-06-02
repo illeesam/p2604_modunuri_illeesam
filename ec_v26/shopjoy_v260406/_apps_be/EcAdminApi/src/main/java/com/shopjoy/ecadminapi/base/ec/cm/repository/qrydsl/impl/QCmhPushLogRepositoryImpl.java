@@ -85,14 +85,15 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
         int offset = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<CmhPushLogDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndLogId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<CmhPushLogDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -101,12 +102,7 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
         Long total = queryFactory
                 .select(cmhPushLog.count())
                 .from(cmhPushLog)
-                .where(
-                baseAndSiteId(search),
-                baseAndLogId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         CmhPushLogDto.PageResponse res = new CmhPushLogDto.PageResponse();

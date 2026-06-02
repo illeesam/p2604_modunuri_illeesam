@@ -69,7 +69,7 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
         int pageNo = search != null && search.getPageNo() != null && search.getPageNo() > 0 ? search.getPageNo() : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<DpWidgetLibDto.Item> query = baseQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndPathId(search),
                 baseAndWidgetLibId(search),
@@ -77,18 +77,11 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
                 baseAndUseYn(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+        JPAQuery<DpWidgetLibDto.Item> query = baseQuery().where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<DpWidgetLibDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
-        Long total = queryFactory.select(dpWidgetLib.count()).from(dpWidgetLib).where(
-                baseAndSiteId(search),
-                baseAndPathId(search),
-                baseAndWidgetLibId(search),
-                baseAndWidgetTypeCd(search),
-                baseAndUseYn(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        ).fetchOne();
+        Long total = queryFactory.select(dpWidgetLib.count()).from(dpWidgetLib).where(wheres).fetchOne();
         DpWidgetLibDto.PageResponse res = new DpWidgetLibDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }

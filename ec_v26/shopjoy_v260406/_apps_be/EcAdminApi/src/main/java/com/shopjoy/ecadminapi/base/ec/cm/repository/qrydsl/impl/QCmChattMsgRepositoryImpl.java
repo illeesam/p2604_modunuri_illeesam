@@ -82,14 +82,15 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
         int offset = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<CmChattMsgDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndChattMsgId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<CmChattMsgDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -98,12 +99,7 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
         Long total = queryFactory
                 .select(cmChattMsg.count())
                 .from(cmChattMsg)
-                .where(
-                baseAndSiteId(search),
-                baseAndChattMsgId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         CmChattMsgDto.PageResponse res = new CmChattMsgDto.PageResponse();

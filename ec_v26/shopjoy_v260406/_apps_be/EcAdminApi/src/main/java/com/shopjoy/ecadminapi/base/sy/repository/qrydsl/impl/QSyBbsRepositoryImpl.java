@@ -85,22 +85,18 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<SyBbsDto.Item> query = baseSelColumnQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndBbsId(search),
                 baseAndStatus(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<SyBbsDto.Item> query = baseSelColumnQuery().where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyBbsDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syBbs.count()).from(syBbs).where(
-                baseAndSiteId(search),
-                baseAndBbsId(search),
-                baseAndStatus(search),
-                baseAndSearchValue(search)
-        ).fetchOne();
+        Long total = queryFactory.select(syBbs.count()).from(syBbs).where(wheres).fetchOne();
 
         SyBbsDto.PageResponse res = new SyBbsDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

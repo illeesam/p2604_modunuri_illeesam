@@ -75,13 +75,14 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<StSettleEtcAdjDto.Item> query = baseListQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndSettleEtcAdjId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<StSettleEtcAdjDto.Item> query = baseListQuery().where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -90,12 +91,7 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
         Long total = queryFactory
                 .select(stSettleEtcAdj.count())
                 .from(stSettleEtcAdj)
-                .where(
-                baseAndSiteId(search),
-                baseAndSettleEtcAdjId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         StSettleEtcAdjDto.PageResponse res = new StSettleEtcAdjDto.PageResponse();

@@ -93,15 +93,16 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<ZzExam3Dto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
+        BooleanExpression[] wheres = {
                 baseAndExam1Ids(search),
                 baseAndExam1Id(search),
                 baseAndExam2Id(search),
                 baseAndExam3Id(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<ZzExam3Dto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -110,13 +111,7 @@ public class QZzExam3RepositoryImpl implements QZzExam3Repository {
         Long total = queryFactory
                 .select(zzExam3.count())
                 .from(zzExam3)
-                .where(
-                baseAndExam1Ids(search),
-                baseAndExam1Id(search),
-                baseAndExam2Id(search),
-                baseAndExam3Id(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         ZzExam3Dto.PageResponse res = new ZzExam3Dto.PageResponse();

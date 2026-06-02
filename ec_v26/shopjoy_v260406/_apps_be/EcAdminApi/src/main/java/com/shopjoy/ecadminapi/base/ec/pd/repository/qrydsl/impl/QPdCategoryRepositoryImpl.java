@@ -97,26 +97,21 @@ public class QPdCategoryRepositoryImpl implements QPdCategoryRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<PdCategoryDto.Item> query = baseSelColumnQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndCategoryId(search),
                 baseAndParentCategoryId(search),
                 baseAndStatus(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<PdCategoryDto.Item> query = baseSelColumnQuery().where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
         List<PdCategoryDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(pdCategory.count()).from(pdCategory).where(
-                baseAndSiteId(search),
-                baseAndCategoryId(search),
-                baseAndParentCategoryId(search),
-                baseAndStatus(search),
-                baseAndSearchValue(search)
-        ).fetchOne();
+        Long total = queryFactory.select(pdCategory.count()).from(pdCategory).where(wheres).fetchOne();
 
         PdCategoryDto.PageResponse res = new PdCategoryDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

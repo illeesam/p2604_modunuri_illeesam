@@ -86,29 +86,23 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<SyRoleMenuDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndRoleMenuId(search),
                 baseAndRoleId(search),
                 baseAndMenuId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<SyRoleMenuDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
         List<SyRoleMenuDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syRoleMenu.count()).from(syRoleMenu).where(
-                baseAndSiteId(search),
-                baseAndRoleMenuId(search),
-                baseAndRoleId(search),
-                baseAndMenuId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        ).fetchOne();
+        Long total = queryFactory.select(syRoleMenu.count()).from(syRoleMenu).where(wheres).fetchOne();
 
         SyRoleMenuDto.PageResponse res = new SyRoleMenuDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

@@ -99,8 +99,7 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<PdCategoryProdDto.Item> query = baseSelColumnQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndCategoryProdId(search),
                 baseAndCategoryId(search),
@@ -109,22 +108,15 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
                 baseAndTypeCd(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<PdCategoryProdDto.Item> query = baseSelColumnQuery().where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
         List<PdCategoryProdDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(pdCategoryProd.count()).from(pdCategoryProd).where(
-                baseAndSiteId(search),
-                baseAndCategoryProdId(search),
-                baseAndCategoryId(search),
-                baseAndCategoryIdsCsv(search),
-                baseAndProdId(search),
-                baseAndTypeCd(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        ).fetchOne();
+        Long total = queryFactory.select(pdCategoryProd.count()).from(pdCategoryProd).where(wheres).fetchOne();
 
         PdCategoryProdDto.PageResponse res = new PdCategoryProdDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

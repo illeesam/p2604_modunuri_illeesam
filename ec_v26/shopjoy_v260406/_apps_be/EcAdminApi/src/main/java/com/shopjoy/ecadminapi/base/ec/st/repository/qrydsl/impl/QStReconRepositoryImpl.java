@@ -79,13 +79,14 @@ public class QStReconRepositoryImpl implements QStReconRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<StReconDto.Item> query = baseListQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndReconId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<StReconDto.Item> query = baseListQuery().where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -94,12 +95,7 @@ public class QStReconRepositoryImpl implements QStReconRepository {
         Long total = queryFactory
                 .select(stRecon.count())
                 .from(stRecon)
-                .where(
-                baseAndSiteId(search),
-                baseAndReconId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         StReconDto.PageResponse res = new StReconDto.PageResponse();

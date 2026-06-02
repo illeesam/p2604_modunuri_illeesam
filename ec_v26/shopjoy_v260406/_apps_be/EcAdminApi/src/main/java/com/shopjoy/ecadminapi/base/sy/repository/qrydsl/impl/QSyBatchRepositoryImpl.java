@@ -77,24 +77,19 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<SyBatchDto.Item> query = baseQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndPathId(search),
                 baseAndBatchId(search),
                 baseAndStatus(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<SyBatchDto.Item> query = baseQuery().where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyBatchDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syBatch.count()).from(syBatch).where(
-                baseAndSiteId(search),
-                baseAndPathId(search),
-                baseAndBatchId(search),
-                baseAndStatus(search),
-                baseAndSearchValue(search)
-        ).fetchOne();
+        Long total = queryFactory.select(syBatch.count()).from(syBatch).where(wheres).fetchOne();
 
         SyBatchDto.PageResponse res = new SyBatchDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

@@ -72,22 +72,18 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<MbMemberGroupDto.Item> query = baseSelColumnQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndMemberGroupId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<MbMemberGroupDto.Item> query = baseSelColumnQuery().where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<MbMemberGroupDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(mbMemberGroup.count()).from(mbMemberGroup).where(
-                baseAndSiteId(search),
-                baseAndMemberGroupId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        ).fetchOne();
+        Long total = queryFactory.select(mbMemberGroup.count()).from(mbMemberGroup).where(wheres).fetchOne();
 
         MbMemberGroupDto.PageResponse res = new MbMemberGroupDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

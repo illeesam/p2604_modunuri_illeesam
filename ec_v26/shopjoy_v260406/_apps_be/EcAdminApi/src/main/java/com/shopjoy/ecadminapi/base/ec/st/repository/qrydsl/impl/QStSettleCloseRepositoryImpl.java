@@ -73,13 +73,14 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<StSettleCloseDto.Item> query = baseListQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndSettleCloseId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<StSettleCloseDto.Item> query = baseListQuery().where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -88,12 +89,7 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
         Long total = queryFactory
                 .select(stSettleClose.count())
                 .from(stSettleClose)
-                .where(
-                baseAndSiteId(search),
-                baseAndSettleCloseId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         StSettleCloseDto.PageResponse res = new StSettleCloseDto.PageResponse();

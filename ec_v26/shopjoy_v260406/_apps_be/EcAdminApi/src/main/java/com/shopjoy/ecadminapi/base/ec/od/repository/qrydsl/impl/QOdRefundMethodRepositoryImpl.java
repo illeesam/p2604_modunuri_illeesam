@@ -79,13 +79,14 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<OdRefundMethodDto.Item> query = baseListQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndRefundMethodId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<OdRefundMethodDto.Item> query = baseListQuery().where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -94,12 +95,7 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
         Long total = queryFactory
                 .select(odRefundMethod.count())
                 .from(odRefundMethod)
-                .where(
-                baseAndSiteId(search),
-                baseAndRefundMethodId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         OdRefundMethodDto.PageResponse res = new OdRefundMethodDto.PageResponse();

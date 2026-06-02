@@ -101,14 +101,15 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<SyhBatchHistDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndBatchHistId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<SyhBatchHistDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -117,12 +118,7 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
         Long total = queryFactory
                 .select(syhBatchHist.count())
                 .from(syhBatchHist)
-                .where(
-                baseAndSiteId(search),
-                baseAndBatchHistId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         SyhBatchHistDto.PageResponse res = new SyhBatchHistDto.PageResponse();

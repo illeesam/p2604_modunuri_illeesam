@@ -37,6 +37,7 @@ window.SyUserMng = {
         uiState.sortKey = ''; uiState.sortDir = 'asc';
         uiState.selectedDeptId = null;        // 부서 트리 전체로 복귀
         pager.pageNo = 1;
+        resetDetailToNew();                   // 하단 상세 패널도 빈 신규 폼으로 초기화
         return handleSearchList('DEFAULT');
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {
@@ -486,7 +487,7 @@ window.SyUserMng = {
   </div>
   <!-- ===== □. 본문 영역 =================================================== -->
   <!-- ===== ■. 상세 패널 (인라인 임베드, 항상 표시) ================================ -->
-  <div style="margin-top:4px;">
+  <div style="margin-top:16px;">
     <sy-user-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
       :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
       :active="detailPanel.active"

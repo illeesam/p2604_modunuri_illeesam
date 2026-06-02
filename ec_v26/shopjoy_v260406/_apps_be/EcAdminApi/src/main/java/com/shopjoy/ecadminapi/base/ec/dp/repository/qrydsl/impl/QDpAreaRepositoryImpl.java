@@ -71,7 +71,7 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
         int pageNo = search.getPageNo() != null && search.getPageNo() > 0 ? search.getPageNo() : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<DpAreaDto.Item> query = baseQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndUiIds(search),
                 baseAndSiteId(search),
                 baseAndPathId(search),
@@ -80,19 +80,11 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
                 baseAndUiId(search),
                 baseAndAreaTypeCd(search),
                 baseAndSearchValue(search)
-        );
+        };
+        JPAQuery<DpAreaDto.Item> query = baseQuery().where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<DpAreaDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
-        Long total = queryFactory.select(dpArea.count()).from(dpArea).where(
-                baseAndUiIds(search),
-                baseAndSiteId(search),
-                baseAndPathId(search),
-                baseAndUseYn(search),
-                baseAndAreaId(search),
-                baseAndUiId(search),
-                baseAndAreaTypeCd(search),
-                baseAndSearchValue(search)
-        ).fetchOne();
+        Long total = queryFactory.select(dpArea.count()).from(dpArea).where(wheres).fetchOne();
         DpAreaDto.PageResponse res = new DpAreaDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }

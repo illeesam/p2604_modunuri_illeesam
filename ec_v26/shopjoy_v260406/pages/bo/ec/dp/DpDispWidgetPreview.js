@@ -760,11 +760,19 @@ window.DpDispWidgetPreview = {
     /* -- 드래그·드롭 (그리드) -- */
     const dragState = reactive({ dragOverIdx: -1 });
 
-    /* onDragOver — 드래그 오버 */
-    const onDragOver  = (e, idx) => { e.preventDefault(); dragState.dragOverIdx = idx; };
+    /* onDragOver — 드래그 오버 (같은 슬롯이면 재할당 생략 → 불필요한 리렌더/깜빡임 방지) */
+    const onDragOver  = (e, idx) => {
+      e.preventDefault();
+      if (e.dataTransfer) { e.dataTransfer.dropEffect = 'copy'; }
+      if (dragState.dragOverIdx !== idx) { dragState.dragOverIdx = idx; }
+    };
 
-    /* onDragLeave — 이벤트 */
-    const onDragLeave = () => { dragState.dragOverIdx = -1; };
+    /* onDragLeave — 슬롯 밖으로 실제 이탈할 때만 해제 (자식 진입 시 발생하는 깜빡임 방지) */
+    const onDragLeave = (e, idx) => {
+      const to = e.relatedTarget;
+      if (to && e.currentTarget && e.currentTarget.contains(to)) { return; }
+      if (dragState.dragOverIdx === idx) { dragState.dragOverIdx = -1; }
+    };
 
     /* onDrop — 이벤트 */
     const onDrop = (e, idx) => {
@@ -1022,7 +1030,9 @@ window.DpDispWidgetPreview = {
     <!-- ===== ■.■. 왼쪽: 트리 (카드) =========================================== -->
     <div class="card" style="width:340px;flex-shrink:0;display:flex;flex-direction:column;padding:0;overflow:hidden;">
       <div style="padding:7px 12px;border-bottom:1px solid #f0f0f0;font-size:12px;font-weight:700;color:#555;background:#fafafa;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;">
-        <span>표시경로</span>
+        <span>표시경로
+          <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;margin-left:4px;">#ec_disp_widget</span>
+        </span>
         <span style="font-size:10px;color:#aaa;font-weight:400;">⠿ 드래그하여 배치</span>
       </div>
       <!-- ===== ■.■.■. 전체펼치기 / 전체닫기 ======================================== -->
@@ -1122,7 +1132,7 @@ window.DpDispWidgetPreview = {
             {{ gridState.showRealContent ? '✅ 실제컨텐츠' : '👁 실제컨텐츠' }}
           </button>
           <div style="width:1px;height:18px;background:#e5e7eb;margin-right:2px;"></div>
-          <button v-for="(vp, key) in VIEWPORT" :key="Math.random()" @click="handleSelectAction('preview-viewport', key)"
+          <button v-for="(vp, key) in VIEWPORT" :key="key" @click="handleSelectAction('preview-viewport', key)"
             style="font-size:11px;padding:3px 8px;border-radius:6px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;"
             :style="gridState.viewportMode===key
               ? 'background:#1d4ed8;color:#fff;border-color:#1d4ed8;'
@@ -1163,10 +1173,10 @@ window.DpDispWidgetPreview = {
               gridTemplateColumns: cfAutoGridColumns,
               gap: '10px',
             }">
-              <template v-for="(slot, idx) in cfCurrentSlots" :key="Math.random()">
+              <template v-for="(slot, idx) in cfCurrentSlots" :key="idx">
               <div v-if="!gridState.showRealContent || slot"
                 @dragover="onDragOver($event, idx)"
-                @dragleave="onDragLeave"
+                @dragleave="onDragLeave($event, idx)"
                 @drop="onDrop($event, idx)"
                 style="border-radius:8px;transition:all .15s;position:relative;"
                 :style="[

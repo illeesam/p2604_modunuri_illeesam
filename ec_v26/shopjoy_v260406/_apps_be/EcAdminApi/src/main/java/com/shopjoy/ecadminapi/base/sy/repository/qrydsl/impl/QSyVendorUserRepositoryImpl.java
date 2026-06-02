@@ -103,9 +103,7 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<SyVendorUserDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndVendorUserId(search),
                 baseAndUserId(search),
@@ -113,21 +111,16 @@ public class QSyVendorUserRepositoryImpl implements QSyVendorUserRepository {
                 baseAndStatus(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<SyVendorUserDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
         List<SyVendorUserDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syVendorUser.count()).from(syVendorUser).where(
-                baseAndSiteId(search),
-                baseAndVendorUserId(search),
-                baseAndUserId(search),
-                baseAndVendorId(search),
-                baseAndStatus(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        ).fetchOne();
+        Long total = queryFactory.select(syVendorUser.count()).from(syVendorUser).where(wheres).fetchOne();
 
         SyVendorUserDto.PageResponse res = new SyVendorUserDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

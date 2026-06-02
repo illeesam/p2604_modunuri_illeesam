@@ -93,14 +93,15 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<PdhProdChgHistDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndProdChgHistId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<PdhProdChgHistDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -109,12 +110,7 @@ public class QPdhProdChgHistRepositoryImpl implements QPdhProdChgHistRepository 
         Long total = queryFactory
                 .select(pdhProdChgHist.count())
                 .from(pdhProdChgHist)
-                .where(
-                baseAndSiteId(search),
-                baseAndProdChgHistId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         PdhProdChgHistDto.PageResponse res = new PdhProdChgHistDto.PageResponse();

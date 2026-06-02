@@ -122,15 +122,16 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<OdPayDto.Item> query = baseListQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndOrderIds(search),
                 baseAndOrderId(search),
                 baseAndSiteId(search),
                 baseAndPayId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<OdPayDto.Item> query = baseListQuery().where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -141,14 +142,7 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
                 .from(odPay)
                 .leftJoin(odOrder).on(odOrder.orderId.eq(odPay.orderId))
                 .leftJoin(mbMember).on(mbMember.memberId.eq(odOrder.memberId))
-                .where(
-                baseAndOrderIds(search),
-                baseAndOrderId(search),
-                baseAndSiteId(search),
-                baseAndPayId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         OdPayDto.PageResponse res = new OdPayDto.PageResponse();

@@ -84,26 +84,20 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<SyNoticeDto.Item> query = baseSelColumnQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndNoticeId(search),
                 baseAndStatus(search),
                 baseAndNoticeTypeCd(search),
                 baseAndIsFixed(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<SyNoticeDto.Item> query = baseSelColumnQuery().where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyNoticeDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syNotice.count()).from(syNotice).where(
-                baseAndSiteId(search),
-                baseAndNoticeId(search),
-                baseAndStatus(search),
-                baseAndNoticeTypeCd(search),
-                baseAndIsFixed(search),
-                baseAndSearchValue(search)
-        ).fetchOne();
+        Long total = queryFactory.select(syNotice.count()).from(syNotice).where(wheres).fetchOne();
 
         SyNoticeDto.PageResponse res = new SyNoticeDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

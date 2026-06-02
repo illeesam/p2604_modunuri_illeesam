@@ -102,17 +102,18 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
+        BooleanExpression[] wheres = {
+                baseAndSiteId(search),
+                baseAndPathId(search),
+                baseAndStatus(search),
+                baseAndTypeCd(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
+        };
 
         JPAQuery<SySiteDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(
-                        baseAndSiteId(search),
-                        baseAndPathId(search),
-                        baseAndStatus(search),
-                        baseAndTypeCd(search),
-                        baseAndDateRange(search),
-                        baseAndSearchValue(search)
-                );
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -120,14 +121,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
 
         Long total = queryFactory.select(sySite.count()).from(sySite)
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: count")
-                .where(
-                        baseAndSiteId(search),
-                        baseAndPathId(search),
-                        baseAndStatus(search),
-                        baseAndTypeCd(search),
-                        baseAndDateRange(search),
-                        baseAndSearchValue(search)
-                ).fetchOne();
+                .where(wheres).fetchOne();
 
         SySiteDto.PageResponse res = new SySiteDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

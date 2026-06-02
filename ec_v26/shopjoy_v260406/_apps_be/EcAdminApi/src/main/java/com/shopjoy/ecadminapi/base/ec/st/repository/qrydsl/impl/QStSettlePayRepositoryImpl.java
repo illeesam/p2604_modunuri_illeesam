@@ -78,13 +78,14 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<StSettlePayDto.Item> query = baseListQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndSettlePayId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<StSettlePayDto.Item> query = baseListQuery().where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -93,12 +94,7 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
         Long total = queryFactory
                 .select(stSettlePay.count())
                 .from(stSettlePay)
-                .where(
-                baseAndSiteId(search),
-                baseAndSettlePayId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         StSettlePayDto.PageResponse res = new StSettlePayDto.PageResponse();

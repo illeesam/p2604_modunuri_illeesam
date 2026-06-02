@@ -91,14 +91,15 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<PmVoucherDto.Item> query = baseSelColumnQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndVoucherId(search),
                 baseAndUseYn(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<PmVoucherDto.Item> query = baseSelColumnQuery().where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -107,13 +108,7 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
         Long total = queryFactory
                 .select(pmVoucher.count())
                 .from(pmVoucher)
-                .where(
-                baseAndSiteId(search),
-                baseAndVoucherId(search),
-                baseAndUseYn(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         PmVoucherDto.PageResponse res = new PmVoucherDto.PageResponse();

@@ -76,7 +76,7 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
         int pageNo = search != null && search.getPageNo() != null && search.getPageNo() > 0 ? search.getPageNo() : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<DpPanelItemDto.Item> query = baseSelColumnQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndPanelIds(search),
                 baseAndPanelItemId(search),
                 baseAndWidgetTypeCd(search),
@@ -85,19 +85,11 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
                 baseAndUseYn(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+        JPAQuery<DpPanelItemDto.Item> query = baseSelColumnQuery().where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<DpPanelItemDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
-        Long total = queryFactory.select(dpPanelItem.count()).from(dpPanelItem).where(
-                baseAndPanelIds(search),
-                baseAndPanelItemId(search),
-                baseAndWidgetTypeCd(search),
-                baseAndWidgetLibId(search),
-                baseAndPanelId(search),
-                baseAndUseYn(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        ).fetchOne();
+        Long total = queryFactory.select(dpPanelItem.count()).from(dpPanelItem).where(wheres).fetchOne();
         DpPanelItemDto.PageResponse res = new DpPanelItemDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }

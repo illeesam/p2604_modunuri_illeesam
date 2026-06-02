@@ -75,18 +75,16 @@ public class QSyAttachGrpRepositoryImpl implements QSyAttachGrpRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<SyAttachGrpDto.Item> query = baseSelColumnQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndAttachGrpId(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<SyAttachGrpDto.Item> query = baseSelColumnQuery().where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyAttachGrpDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syAttachGrp.count()).from(syAttachGrp).where(
-                baseAndAttachGrpId(search),
-                baseAndSearchValue(search)
-        ).fetchOne();
+        Long total = queryFactory.select(syAttachGrp.count()).from(syAttachGrp).where(wheres).fetchOne();
 
         SyAttachGrpDto.PageResponse res = new SyAttachGrpDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

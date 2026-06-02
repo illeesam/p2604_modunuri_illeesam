@@ -94,13 +94,14 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<PmSaveUsageDto.Item> query = baseSelColumnQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndSaveUsageId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<PmSaveUsageDto.Item> query = baseSelColumnQuery().where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -109,12 +110,7 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
         Long total = queryFactory
                 .select(pmSaveUsage.count())
                 .from(pmSaveUsage)
-                .where(
-                baseAndSiteId(search),
-                baseAndSaveUsageId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         PmSaveUsageDto.PageResponse res = new PmSaveUsageDto.PageResponse();

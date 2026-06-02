@@ -118,15 +118,16 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<OdDlivDto.Item> query = baseSelColumnQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndOrderIds(search),
                 baseAndOrderId(search),
                 baseAndSiteId(search),
                 baseAndDlivId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<OdDlivDto.Item> query = baseSelColumnQuery().where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -136,14 +137,7 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
                 .select(odDliv.count())
                 .from(odDliv)
                 .leftJoin(odOrder).on(odOrder.orderId.eq(odDliv.orderId))
-                .where(
-                baseAndOrderIds(search),
-                baseAndOrderId(search),
-                baseAndSiteId(search),
-                baseAndDlivId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         OdDlivDto.PageResponse res = new OdDlivDto.PageResponse();

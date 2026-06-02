@@ -83,26 +83,20 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<SyAlarmDto.Item> query = baseQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndPathId(search),
                 baseAndAlarmId(search),
                 baseAndStatus(search),
                 baseAndTypeCd(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<SyAlarmDto.Item> query = baseQuery().where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyAlarmDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syAlarm.count()).from(syAlarm).where(
-                baseAndSiteId(search),
-                baseAndPathId(search),
-                baseAndAlarmId(search),
-                baseAndStatus(search),
-                baseAndTypeCd(search),
-                baseAndSearchValue(search)
-        ).fetchOne();
+        Long total = queryFactory.select(syAlarm.count()).from(syAlarm).where(wheres).fetchOne();
 
         SyAlarmDto.PageResponse res = new SyAlarmDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

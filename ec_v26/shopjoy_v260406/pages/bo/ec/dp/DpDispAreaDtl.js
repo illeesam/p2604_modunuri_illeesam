@@ -593,31 +593,6 @@ window.DpDispAreaDtl = {
     </div>
   </div>
   <!-- ===== □. 헤더: 타이틀 + 우측 액션 ========================================= -->
-  <!-- ===== ■. 안내 배너 =================================================== -->
-  <div style="background:linear-gradient(135deg,#e3f2fd 0%,#f3e5f5 100%);border:1px solid #90caf9;border-radius:8px;padding:12px 14px;margin:12px 20px;font-size:11px;color:#444;line-height:1.6;">
-    <div style="font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
-      <span>
-        ℹ️ 여부 및 기간 관리 안내
-      </span>
-    </div>
-    <ul style="margin:0;padding-left:18px;">
-      <li>
-        배치로 매시 55분에
-        <b>
-          전시여부, 사용여부
-        </b>
-        정보가 자동 반영됩니다
-      </li>
-      <li>
-        전시관리정보 수정 후 저장하면
-        <b>
-          전시여부, 사용여부
-        </b>
-        정보가 즉시 반영됩니다
-      </li>
-    </ul>
-  </div>
-  <!-- ===== □. 안내 배너 =================================================== -->
   <!-- ===== ■. 본문: 좌측 탭사이드 + 중앙 폼 + 우측 미리보기 ============================ -->
   <div style="display:flex;min-height:500px;">
     <!-- ===== ■.■. 좌측 탭사이드 =============================================== -->
@@ -688,9 +663,15 @@ window.DpDispAreaDtl = {
     <!-- ===== ■.■. 중앙 폼 ================================================== -->
     <div style="flex:1;padding:20px;min-width:0;overflow-y:auto;">
       <!-- ===== ■.■.■. 기본정보 탭 ============================================== -->
-      <div v-if="activeTab==='base'">
+      <div v-if="activeTab==='base'" class="area-base-tab">
+        <!-- 행간 압축 (이 탭 내부 한정) -->
+        <style>
+          .area-base-tab .form-group { margin-bottom: 6px; }
+          .area-base-tab .form-label { margin-bottom: 2px; font-size: 12px; }
+          .area-base-tab .form-row { gap: 10px; row-gap: 6px; }
+        </style>
         <!-- ===== ■.■.■.■. 설정 ================================================ -->
-        <div style="margin-bottom:14px;padding:14px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;">
+        <div style="margin-bottom:12px;padding:14px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;">
           <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
             <span style="display:inline-block;width:4px;height:16px;background:#1d4ed8;border-radius:2px;">
             </span>
@@ -700,10 +681,10 @@ window.DpDispAreaDtl = {
           <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
           <bo-form-area :columns="baseAreaFormColumns" :form="form" :errors="errors"
             :readonly="false" :cols="3" compact :show-actions="false" />
-          <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">
+          <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin:2px 0 6px;">
             🔲 위젯 레이아웃
           </div>
-          <div class="form-row" style="align-items:flex-end;margin-bottom:8px;">
+          <div class="form-row" style="align-items:flex-end;margin-bottom:8px;gap:10px;row-gap:8px;">
             <div class="form-group" style="flex:0 0 auto;">
               <label class="form-label">
                 표시방식
@@ -791,7 +772,7 @@ window.DpDispAreaDtl = {
               </div>
             </template>
           </bo-form-area>
-          <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">
+          <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin:2px 0 6px;">
             📅 사용기간
           </div>
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
@@ -804,12 +785,12 @@ window.DpDispAreaDtl = {
         </div>
         <!-- ===== /설정 ======================================================== -->
         <!-- ===== ■.■.■.■. 제목 ================================================ -->
-        <div style="margin-bottom:14px;padding:14px;background:#faf8ff;border:1px solid #e9d5ff;border-radius:8px;">
-          <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
-            <span style="display:inline-block;width:4px;height:16px;background:#7c3aed;border-radius:2px;">
+        <div style="margin-bottom:12px;padding:14px;background:#faf8ff;border:1px solid #e9d5ff;border-radius:8px;">
+          <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+            <span style="display:inline-block;width:4px;height:16px;background:#7c3aed;border-radius:2px;flex-shrink:0;">
             </span>
-            제목
-            <span style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+            <span style="white-space:nowrap;">제목</span>
+            <span style="margin-left:auto;display:flex;align-items:center;gap:8px;flex-shrink:0;">
               <span style="font-size:11px;font-weight:600;color:#888;">
                 타이틀 표시
               </span>

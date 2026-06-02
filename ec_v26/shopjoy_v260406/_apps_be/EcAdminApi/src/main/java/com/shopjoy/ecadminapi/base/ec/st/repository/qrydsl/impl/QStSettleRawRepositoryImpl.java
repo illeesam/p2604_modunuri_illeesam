@@ -107,13 +107,14 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<StSettleRawDto.Item> query = baseListQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndSettleRawId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<StSettleRawDto.Item> query = baseListQuery().where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -122,12 +123,7 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
         Long total = queryFactory
                 .select(stSettleRaw.count())
                 .from(stSettleRaw)
-                .where(
-                baseAndSiteId(search),
-                baseAndSettleRawId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         StSettleRawDto.PageResponse res = new StSettleRawDto.PageResponse();

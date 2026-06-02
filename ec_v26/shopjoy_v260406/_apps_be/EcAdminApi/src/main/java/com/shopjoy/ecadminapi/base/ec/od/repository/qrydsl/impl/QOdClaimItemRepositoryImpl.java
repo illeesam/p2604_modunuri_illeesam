@@ -74,15 +74,16 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<OdClaimItemDto.Item> query = baseListQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndClaimIds(search),
                 baseAndClaimId(search),
                 baseAndSiteId(search),
                 baseAndClaimItemId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<OdClaimItemDto.Item> query = baseListQuery().where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -91,14 +92,7 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
         Long total = queryFactory
                 .select(odClaimItem.count())
                 .from(odClaimItem)
-                .where(
-                baseAndClaimIds(search),
-                baseAndClaimId(search),
-                baseAndSiteId(search),
-                baseAndClaimItemId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         OdClaimItemDto.PageResponse res = new OdClaimItemDto.PageResponse();

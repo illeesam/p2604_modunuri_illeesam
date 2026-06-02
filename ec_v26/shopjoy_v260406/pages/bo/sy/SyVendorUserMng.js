@@ -780,11 +780,11 @@ window.SyVendorUserMng = {
       </div>
     </div>
     <!-- ===== ■.■. 미선택 안내 (행 미선택 시) ==================================== -->
-    <div v-if="!uiState.formMode" style="padding:14px 16px;color:#9ca3af;font-size:12.5px;">
-      {{ uiState.searchVendorId ? '사용자 목록에서 행을 선택하거나 [+신규등록]을 누르세요.' : '좌측에서 업체를 먼저 선택하세요.' }}
+    <div v-if="!uiState.formMode" style="text-align:center;color:#bbb;font-size:13px;padding:32px 16px;">
+      사용자 목록에서 행을 선택하거나 [+신규등록]을 누르세요.
     </div>
     <!-- ===== ■.■. 업체사용자 상세 폼 (BoFormArea 자동 렌더) ========================= -->
-    <div style="padding:16px;">
+    <div v-else style="padding:16px;">
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="baseVendorUserFormColumns" :form="formData" :errors="{}"
         :cols="3" compact :show-actions="false" />

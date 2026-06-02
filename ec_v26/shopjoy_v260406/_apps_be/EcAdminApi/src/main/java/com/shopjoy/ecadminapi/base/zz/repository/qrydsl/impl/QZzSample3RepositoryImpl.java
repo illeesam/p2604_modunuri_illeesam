@@ -113,9 +113,7 @@ public class QZzSample3RepositoryImpl implements QZzSample3Repository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<ZzSample3Dto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
+        BooleanExpression[] wheres = {
                 baseAndSample1Ids(search),
                 baseAndSample2Ids(search),
                 baseAndSample3Id(search),
@@ -123,7 +121,10 @@ public class QZzSample3RepositoryImpl implements QZzSample3Repository {
                 baseAndSample2Id(search),
                 baseAndUseYn(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<ZzSample3Dto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -132,15 +133,7 @@ public class QZzSample3RepositoryImpl implements QZzSample3Repository {
         Long total = queryFactory
                 .select(zzSample3.count())
                 .from(zzSample3)
-                .where(
-                baseAndSample1Ids(search),
-                baseAndSample2Ids(search),
-                baseAndSample3Id(search),
-                baseAndSample1Id(search),
-                baseAndSample2Id(search),
-                baseAndUseYn(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         ZzSample3Dto.PageResponse res = new ZzSample3Dto.PageResponse();

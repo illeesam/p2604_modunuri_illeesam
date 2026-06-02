@@ -82,13 +82,14 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<PmCouponUsageDto.Item> query = baseSelColumnQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndUsageId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<PmCouponUsageDto.Item> query = baseSelColumnQuery().where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -97,12 +98,7 @@ public class QPmCouponUsageRepositoryImpl implements QPmCouponUsageRepository {
         Long total = queryFactory
                 .select(pmCouponUsage.count())
                 .from(pmCouponUsage)
-                .where(
-                baseAndSiteId(search),
-                baseAndUsageId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         PmCouponUsageDto.PageResponse res = new PmCouponUsageDto.PageResponse();

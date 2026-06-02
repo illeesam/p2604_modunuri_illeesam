@@ -76,24 +76,19 @@ public class QMbMemberSnsRepositoryImpl implements QMbMemberSnsRepository {
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<MbMemberSnsDto.Item> query = baseSelColumnQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndMemberIds(search),
                 baseAndMemberId(search),
                 baseAndMemberSnsId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<MbMemberSnsDto.Item> query = baseSelColumnQuery().where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<MbMemberSnsDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(mbMemberSns.count()).from(mbMemberSns).where(
-                baseAndMemberIds(search),
-                baseAndMemberId(search),
-                baseAndMemberSnsId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        ).fetchOne();
+        Long total = queryFactory.select(mbMemberSns.count()).from(mbMemberSns).where(wheres).fetchOne();
 
         MbMemberSnsDto.PageResponse res = new MbMemberSnsDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

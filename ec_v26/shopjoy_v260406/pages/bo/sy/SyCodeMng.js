@@ -734,7 +734,7 @@ window.SyCodeMng = {
     <!-- ===== ■.■. CRUD 그리드 ============================================== -->
     <bo-grid-crud
       :columns="grpGridColumns" :rows="uiState.grpRows" row-key="codeGrp"
-      list-title="공통코드그룹관리"
+      list-title="공통코드그룹관리" max-height="392px"
       :show-row-id="false" :show-row-check="false" :draggable="false"
       :show-add="false" :show-save="false"
       :sort-state="{ sortKey: uiState.grpSortKey, sortDir: uiState.grpSortDir }"
@@ -874,26 +874,7 @@ window.SyCodeMng = {
 </div>
 <!-- ===== □.□. 트리 탭 (BoGridCrud 트리 모드) =============================== -->
 <!-- ===== □. 코드 목록 영역 ================================================ -->
-<!-- ===== ■. 코드 상세 패널 (인라인 임베드, 항상 표시) ============================== -->
-<div style="margin-top:20px;padding:20px;background:#fff;border-radius:8px;border:1px solid #e5e7eb;">
-  <div v-if="uiState.detailActive" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #e5e7eb;">
-    <h3 style="margin:0;font-size:16px;font-weight:600;color:#1f2937;">
-      코드 상세
-    </h3>
-    <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
-      ✕ 닫기
-    </button>
-  </div>
-  <sy-code-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast"
-      :show-confirm="showConfirm"
-      :set-api-res="() => {}"
-      :on-list-reload="handleSearchList"
-      :active="uiState.detailActive"
-      :reload-trigger="uiState.codeReloadTrigger"
-      :dtl-id="cfDetailEditId"
-      :dtl-mode="cfDetailEditId ? 'edit' : 'new'" />
+<!-- ※ 공통코드 상세 패널 제거 (코드목록 그리드에서 인라인 편집으로 대체) -->
 </div>
-</div>
-<!-- ===== □. 코드 상세 패널 (인라인 임베드) ====================================== -->
 `,
 };

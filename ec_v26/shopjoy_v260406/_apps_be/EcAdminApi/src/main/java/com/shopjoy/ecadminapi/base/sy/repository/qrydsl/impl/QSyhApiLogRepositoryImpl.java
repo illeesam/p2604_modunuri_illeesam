@@ -106,15 +106,16 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<SyhApiLogDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndLogId(search),
                 baseAndTypeCd(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<SyhApiLogDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -123,13 +124,7 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
         Long total = queryFactory
                 .select(syhApiLog.count())
                 .from(syhApiLog)
-                .where(
-                baseAndSiteId(search),
-                baseAndLogId(search),
-                baseAndTypeCd(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         SyhApiLogDto.PageResponse res = new SyhApiLogDto.PageResponse();

@@ -68,14 +68,15 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<SyhAccessLogDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
+        BooleanExpression[] wheres = {
                 baseAndMethod(search),
                 baseAndAppTypeCd(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<SyhAccessLogDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -84,12 +85,7 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
         Long total = queryFactory
                 .select(syhAccessLog.count())
                 .from(syhAccessLog)
-                .where(
-                baseAndMethod(search),
-                baseAndAppTypeCd(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         SyhAccessLogDto.PageResponse res = new SyhAccessLogDto.PageResponse();

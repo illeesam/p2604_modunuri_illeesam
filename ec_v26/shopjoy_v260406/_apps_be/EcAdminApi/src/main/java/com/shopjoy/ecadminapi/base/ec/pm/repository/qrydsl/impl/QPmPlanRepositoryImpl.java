@@ -91,14 +91,15 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<PmPlanDto.Item> query = baseSelColumnQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndPlanId(search),
                 baseAndUseYn(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<PmPlanDto.Item> query = baseSelColumnQuery().where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -107,13 +108,7 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
         Long total = queryFactory
                 .select(pmPlan.count())
                 .from(pmPlan)
-                .where(
-                baseAndSiteId(search),
-                baseAndPlanId(search),
-                baseAndUseYn(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         PmPlanDto.PageResponse res = new PmPlanDto.PageResponse();

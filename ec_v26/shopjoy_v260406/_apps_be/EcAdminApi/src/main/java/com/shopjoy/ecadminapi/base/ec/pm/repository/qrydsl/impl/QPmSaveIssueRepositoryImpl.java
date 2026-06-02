@@ -102,13 +102,14 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<PmSaveIssueDto.Item> query = baseSelColumnQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndSaveIssueId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<PmSaveIssueDto.Item> query = baseSelColumnQuery().where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -117,12 +118,7 @@ public class QPmSaveIssueRepositoryImpl implements QPmSaveIssueRepository {
         Long total = queryFactory
                 .select(pmSaveIssue.count())
                 .from(pmSaveIssue)
-                .where(
-                baseAndSiteId(search),
-                baseAndSaveIssueId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         PmSaveIssueDto.PageResponse res = new PmSaveIssueDto.PageResponse();

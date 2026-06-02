@@ -74,13 +74,14 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<StSettleAdjDto.Item> query = baseListQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndSettleAdjId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<StSettleAdjDto.Item> query = baseListQuery().where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -89,12 +90,7 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
         Long total = queryFactory
                 .select(stSettleAdj.count())
                 .from(stSettleAdj)
-                .where(
-                baseAndSiteId(search),
-                baseAndSettleAdjId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         StSettleAdjDto.PageResponse res = new StSettleAdjDto.PageResponse();

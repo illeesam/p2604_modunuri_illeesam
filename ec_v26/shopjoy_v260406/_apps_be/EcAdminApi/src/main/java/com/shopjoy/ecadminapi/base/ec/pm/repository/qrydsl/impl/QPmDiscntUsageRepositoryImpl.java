@@ -81,13 +81,14 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<PmDiscntUsageDto.Item> query = baseSelColumnQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndDiscntUsageId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<PmDiscntUsageDto.Item> query = baseSelColumnQuery().where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -96,12 +97,7 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
         Long total = queryFactory
                 .select(pmDiscntUsage.count())
                 .from(pmDiscntUsage)
-                .where(
-                baseAndSiteId(search),
-                baseAndDiscntUsageId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         PmDiscntUsageDto.PageResponse res = new PmDiscntUsageDto.PageResponse();

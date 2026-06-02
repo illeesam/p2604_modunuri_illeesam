@@ -128,8 +128,7 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<PdProdDto.Item> query = baseListQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndProdIds(search),
                 baseAndSiteId(search),
                 baseAndProdId(search),
@@ -139,7 +138,9 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                 baseAndVendorId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<PdProdDto.Item> query = baseListQuery().where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -149,17 +150,7 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                 .select(pdProd.count())
                 .from(pdProd)
                 .leftJoin(syBrand).on(syBrand.brandId.eq(pdProd.brandId))
-                .where(
-                baseAndProdIds(search),
-                baseAndSiteId(search),
-                baseAndProdId(search),
-                baseAndBrandId(search),
-                baseAndMdUserId(search),
-                baseAndProdStatusCd(search),
-                baseAndVendorId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         PdProdDto.PageResponse res = new PdProdDto.PageResponse();

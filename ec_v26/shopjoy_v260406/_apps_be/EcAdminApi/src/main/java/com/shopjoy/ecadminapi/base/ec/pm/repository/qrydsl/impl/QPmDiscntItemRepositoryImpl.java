@@ -80,13 +80,14 @@ public class QPmDiscntItemRepositoryImpl implements QPmDiscntItemRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<PmDiscntItemDto.Item> query = baseSelColumnQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndDiscntItemId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<PmDiscntItemDto.Item> query = baseSelColumnQuery().where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -95,12 +96,7 @@ public class QPmDiscntItemRepositoryImpl implements QPmDiscntItemRepository {
         Long total = queryFactory
                 .select(pmDiscntItem.count())
                 .from(pmDiscntItem)
-                .where(
-                baseAndSiteId(search),
-                baseAndDiscntItemId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         PmDiscntItemDto.PageResponse res = new PmDiscntItemDto.PageResponse();

@@ -115,16 +115,17 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<SyhUserLoginLogDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndLogId(search),
                 baseAndUserId(search),
                 baseAndResultCd(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<SyhUserLoginLogDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -133,14 +134,7 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
         Long total = queryFactory
                 .select(syhUserLoginLog.count())
                 .from(syhUserLoginLog)
-                .where(
-                baseAndSiteId(search),
-                baseAndLogId(search),
-                baseAndUserId(search),
-                baseAndResultCd(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         SyhUserLoginLogDto.PageResponse res = new SyhUserLoginLogDto.PageResponse();

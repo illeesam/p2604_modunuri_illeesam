@@ -102,27 +102,22 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<SyVendorUserRoleDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
+        BooleanExpression[] wheres = {
                 baseAndVendorUserRoleId(search),
                 baseAndVendorId(search),
                 baseAndUserId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<SyVendorUserRoleDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
         List<SyVendorUserRoleDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syVendorUserRole.count()).from(syVendorUserRole).where(
-                baseAndVendorUserRoleId(search),
-                baseAndVendorId(search),
-                baseAndUserId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        ).fetchOne();
+        Long total = queryFactory.select(syVendorUserRole.count()).from(syVendorUserRole).where(wheres).fetchOne();
 
         SyVendorUserRoleDto.PageResponse res = new SyVendorUserRoleDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

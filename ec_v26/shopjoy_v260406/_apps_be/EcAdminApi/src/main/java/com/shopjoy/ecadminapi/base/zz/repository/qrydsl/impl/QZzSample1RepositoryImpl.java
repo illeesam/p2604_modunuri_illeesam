@@ -108,14 +108,15 @@ public class QZzSample1RepositoryImpl implements QZzSample1Repository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<ZzSample1Dto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
+        BooleanExpression[] wheres = {
                 baseAndSample1Ids(search),
                 baseAndSample1Id(search),
                 baseAndUseYn(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<ZzSample1Dto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -124,12 +125,7 @@ public class QZzSample1RepositoryImpl implements QZzSample1Repository {
         Long total = queryFactory
                 .select(zzSample1.count())
                 .from(zzSample1)
-                .where(
-                baseAndSample1Ids(search),
-                baseAndSample1Id(search),
-                baseAndUseYn(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         ZzSample1Dto.PageResponse res = new ZzSample1Dto.PageResponse();

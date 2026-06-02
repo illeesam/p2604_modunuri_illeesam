@@ -384,24 +384,24 @@ window.SyAttachMng = {
     // 파일 폼
     const fileFormColumns = [
       { key: 'attachGrpId',      label: '첨부그룹ID', type: 'text', required: true, placeholder: 'ATG...' },
-      { key: 'fileNm',           label: '파일명', type: 'text', required: true, placeholder: '파일명.jpg', colSpan: 2 },
+      { key: 'fileNm',           label: '파일명', type: 'text', required: true, placeholder: '파일명.jpg' },
       { key: 'mimeTypeCd',       label: 'MIME타입', type: 'text', placeholder: 'image/jpeg' },
       { key: 'fileExt',          label: '확장자', type: 'text', placeholder: 'jpg' },
       { key: 'fileSize',         label: '파일크기(byte)', type: 'number', placeholder: '0' },
       { key: 'refId',            label: '참조ID', type: 'text', placeholder: 'PROD-001' },
       { key: 'sortOrd',          label: '정렬순서', type: 'number' },
       { key: 'storageType',      label: '스토리지타입', type: 'select', options: () => codes.storage_types },
-      { key: 'storagePath',      label: '저장경로', type: 'text', placeholder: '/cdn/{업무명}/YYYY/MM/DD/', colSpan: 3 },
-      { key: 'storedNm',         label: '저장파일명', type: 'text', placeholder: 'YYYYMMDD_hhmmss_seq_random', colSpan: 2 },
-      { key: 'attachUrl',        label: '첨부URL', type: 'text', placeholder: '/uploads/...', colSpan: 2 },
-      { key: 'cdnHost',          label: 'CDN Host', type: 'text', placeholder: 'https://cdn.shopjoy.com', colSpan: 2 },
-      { key: 'cdnImgUrl',        label: 'CDN 이미지URL', type: 'text', colSpan: 2 },
+      { key: 'storagePath',      label: '저장경로', type: 'text', placeholder: '/cdn/{업무명}/YYYY/MM/DD/' },
+      { key: 'storedNm',         label: '저장파일명', type: 'text', placeholder: 'YYYYMMDD_hhmmss_seq_random' },
+      { key: 'attachUrl',        label: '첨부URL', type: 'text', placeholder: '/uploads/...' },
+      { key: 'cdnHost',          label: 'CDN Host', type: 'text', placeholder: 'https://cdn.shopjoy.com' },
+      { key: 'cdnImgUrl',        label: 'CDN 이미지URL', type: 'text' },
       { key: 'thumbGeneratedYn', label: '썸네일생성', type: 'select', options: () => codes.use_yns },
       { key: 'thumbFileNm',      label: '썸네일파일명', type: 'text' },
       { key: 'thumbStoredNm',    label: '썸네일저장명', type: 'text' },
       { key: 'thumbUrl',         label: '썸네일URL', type: 'text' },
       { key: 'thumbCdnUrl',      label: '썸네일CDN URL', type: 'text' },
-      { key: 'attachMemo',       label: '메모', type: 'text', colSpan: 3 },
+      { key: 'attachMemo',       label: '메모', type: 'text' },
     ];
 
     /* grpSearchColumns — 첨부그룹 검색 영역 컬럼 */
@@ -542,34 +542,25 @@ window.SyAttachMng = {
     <!-- ===== □.□. 좌: 첨부그룹관리 (30%) ======================================= -->
     <!-- ===== ■.■. 우: 첨부파일관리 (70%) ======================================= -->
     <div style="flex:1;">
-      <div class="card" style="margin-bottom:0;">
-        <!-- ===== ■.■.■.■. 검색바 =============================================== -->
-        <div style="padding-bottom:8px;border-bottom:1px solid #f0f0f0;margin-bottom:8px;">
-          <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-            <b style="font-size:14px;white-space:nowrap;">
-              첨부파일관리
-              <span v-if="uiState.selectedGrpId" style="font-size:12px;color:#e8587a;margin-left:4px;font-weight:600;">
-                — {{ attachGrps.find(g=>g.attachGrpId===uiState.selectedGrpId)?.attachGrpNm }}
-              </span>
-              <span v-else style="font-size:11px;color:#aaa;font-weight:400;margin-left:4px;">
-                (전체)
-              </span>
-            </b>
-          </div>
-          <bo-search-area :columns="fileSearchColumns" :param="searchParam"
-            @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
-          <button class="btn btn-primary btn-sm" @click="handleBtnAction('searchParam-list')">
-            조회
-          </button>
-          <div style="margin-left:auto;display:flex;gap:6px;">
-            <button class="btn btn-secondary btn-sm" @click="handleBtnAction('searchParam-reset')">
-              초기화
-            </button>
-            <button class="btn btn-primary btn-sm" @click="handleBtnAction('attaches-add')">
-              + 신규
-            </button>
-          </div>
+      <!-- ===== ■.■.■. 조회 영역 (별도 카드) ====================================== -->
+      <div class="card" style="margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+          <b style="font-size:14px;white-space:nowrap;">
+            첨부파일관리
+            <span v-if="uiState.selectedGrpId" style="font-size:12px;color:#e8587a;margin-left:4px;font-weight:600;">
+              — {{ attachGrps.find(g=>g.attachGrpId===uiState.selectedGrpId)?.attachGrpNm }}
+            </span>
+            <span v-else style="font-size:11px;color:#aaa;font-weight:400;margin-left:4px;">
+              (전체)
+            </span>
+          </b>
         </div>
+        <bo-search-area :columns="fileSearchColumns" :param="searchParam"
+          @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
+      </div>
+      <!-- ===== ■.■.■. 목록 영역 (별도 카드) ====================================== -->
+      <div class="card" style="margin-bottom:0;">
+        <div class="toolbar" style="margin-bottom:8px;">
         <span class="list-title">
           <!-- ===== ■.■.■.■.■. 헤더 영역 =========================================== -->
           <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">
@@ -580,6 +571,12 @@ window.SyAttachMng = {
             {{ pager.pageTotalCount }}건
           </span>
         </span>
+          <div style="margin-left:auto;display:flex;gap:6px;">
+            <button class="btn btn-primary btn-sm" @click="handleBtnAction('attaches-add')">
+              + 신규
+            </button>
+          </div>
+        </div>
         <!-- ===== ■.■.■.■. 파일 폼 ============================================== -->
         <div v-if="uiState.fileEditMode" style="background:#fafafa;border:1px solid #e0e0e0;border-radius:6px;padding:10px 14px 12px;margin-bottom:10px;">
           <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:#444;">

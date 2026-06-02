@@ -144,16 +144,17 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
         int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
+        BooleanExpression[] wheres = {
+                baseAndSiteId(search),
+                baseAndDeptId(search),
+                baseAndStatus(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
+        };
 
         var query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(
-                        baseAndSiteId(search),
-                        baseAndDeptId(search),
-                        baseAndStatus(search),
-                        baseAndDateRange(search),
-                        baseAndSearchValue(search)
-                );
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -164,13 +165,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
         Long total = queryFactory
                 .select(syUser.count())
                 .from(syUser)
-                .where(
-                        baseAndSiteId(search),
-                        baseAndDeptId(search),
-                        baseAndStatus(search),
-                        baseAndDateRange(search),
-                        baseAndSearchValue(search)
-                )
+                .where(wheres)
                 .fetchOne();
 
         SyUserDto.PageResponse res = new SyUserDto.PageResponse();

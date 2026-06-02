@@ -84,8 +84,7 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<MbLikeDto.Item> query = baseSelColumnQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndLikeId(search),
                 baseAndMemberId(search),
@@ -93,19 +92,13 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
                 baseAndTargetTypeCd(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<MbLikeDto.Item> query = baseSelColumnQuery().where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<MbLikeDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(mbLike.count()).from(mbLike).where(
-                baseAndSiteId(search),
-                baseAndLikeId(search),
-                baseAndMemberId(search),
-                baseAndTargetId(search),
-                baseAndTargetTypeCd(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        ).fetchOne();
+        Long total = queryFactory.select(mbLike.count()).from(mbLike).where(wheres).fetchOne();
 
         MbLikeDto.PageResponse res = new MbLikeDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

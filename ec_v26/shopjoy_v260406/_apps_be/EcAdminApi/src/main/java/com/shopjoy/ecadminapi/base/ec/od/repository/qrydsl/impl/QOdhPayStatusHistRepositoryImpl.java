@@ -80,22 +80,19 @@ public class QOdhPayStatusHistRepositoryImpl implements QOdhPayStatusHistReposit
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<OdhPayStatusHistDto.Item> query = baseSelColumnQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndPayStatusHistId(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<OdhPayStatusHistDto.Item> query = baseSelColumnQuery().where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
         List<OdhPayStatusHistDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(odhPayStatusHist.count()).from(odhPayStatusHist).where(
-                baseAndSiteId(search),
-                baseAndPayStatusHistId(search),
-                baseAndSearchValue(search)
-        ).fetchOne();
+        Long total = queryFactory.select(odhPayStatusHist.count()).from(odhPayStatusHist).where(wheres).fetchOne();
 
         OdhPayStatusHistDto.PageResponse res = new OdhPayStatusHistDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

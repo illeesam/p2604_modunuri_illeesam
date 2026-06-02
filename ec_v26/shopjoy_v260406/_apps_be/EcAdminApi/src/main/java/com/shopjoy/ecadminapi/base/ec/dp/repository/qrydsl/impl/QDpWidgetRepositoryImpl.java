@@ -61,14 +61,13 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
         int pageNo = search != null && search.getPageNo() != null && search.getPageNo() > 0 ? search.getPageNo() : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<DpWidgetDto.Item> query = baseQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSearchValue(search)
-        );
+        };
+        JPAQuery<DpWidgetDto.Item> query = baseQuery().where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<DpWidgetDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
-        Long total = queryFactory.select(dpWidget.count()).from(dpWidget).where(
-                baseAndSearchValue(search)
-        ).fetchOne();
+        Long total = queryFactory.select(dpWidget.count()).from(dpWidget).where(wheres).fetchOne();
         DpWidgetDto.PageResponse res = new DpWidgetDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }

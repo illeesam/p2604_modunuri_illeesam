@@ -83,15 +83,16 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
         int offset = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<CmBlogFileDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(
+        BooleanExpression[] wheres = {
                 baseAndBlogIds(search),
                 baseAndBlogId(search),
                 baseAndBlogImgId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<CmBlogFileDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -100,13 +101,7 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
         Long total = queryFactory
                 .select(cmBlogFile.count())
                 .from(cmBlogFile)
-                .where(
-                baseAndBlogIds(search),
-                baseAndBlogId(search),
-                baseAndBlogImgId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         CmBlogFileDto.PageResponse res = new CmBlogFileDto.PageResponse();

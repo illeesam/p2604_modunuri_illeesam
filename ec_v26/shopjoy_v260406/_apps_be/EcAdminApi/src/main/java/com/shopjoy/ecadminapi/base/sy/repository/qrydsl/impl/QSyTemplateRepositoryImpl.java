@@ -78,26 +78,20 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<SyTemplateDto.Item> query = baseQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndPathId(search),
                 baseAndTemplateId(search),
                 baseAndTemplateTypeCd(search),
                 baseAndUseYn(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<SyTemplateDto.Item> query = baseQuery().where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyTemplateDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syTemplate.count()).from(syTemplate).where(
-                baseAndSiteId(search),
-                baseAndPathId(search),
-                baseAndTemplateId(search),
-                baseAndTemplateTypeCd(search),
-                baseAndUseYn(search),
-                baseAndSearchValue(search)
-        ).fetchOne();
+        Long total = queryFactory.select(syTemplate.count()).from(syTemplate).where(wheres).fetchOne();
 
         SyTemplateDto.PageResponse res = new SyTemplateDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

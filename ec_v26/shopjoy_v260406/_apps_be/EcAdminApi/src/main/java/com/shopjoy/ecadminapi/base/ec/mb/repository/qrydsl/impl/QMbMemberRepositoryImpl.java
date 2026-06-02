@@ -95,13 +95,14 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<MbMemberDto.Item> query = baseSelColumnQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndMemberId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<MbMemberDto.Item> query = baseSelColumnQuery().where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -110,12 +111,7 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
         Long total = queryFactory
                 .select(mbMember.count())
                 .from(mbMember)
-                .where(
-                baseAndSiteId(search),
-                baseAndMemberId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         MbMemberDto.PageResponse res = new MbMemberDto.PageResponse();

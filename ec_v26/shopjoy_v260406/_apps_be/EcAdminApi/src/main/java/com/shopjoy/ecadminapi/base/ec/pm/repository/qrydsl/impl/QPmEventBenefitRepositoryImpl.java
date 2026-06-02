@@ -85,15 +85,16 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
         int offset   = (pageNo - 1) * pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<PmEventBenefitDto.Item> query = baseSelColumnQuery().where(
+        BooleanExpression[] wheres = {
                 baseAndEventIds(search),
                 baseAndEventId(search),
                 baseAndSiteId(search),
                 baseAndBenefitId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
+        };
+
+        JPAQuery<PmEventBenefitDto.Item> query = baseSelColumnQuery().where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -102,14 +103,7 @@ public class QPmEventBenefitRepositoryImpl implements QPmEventBenefitRepository 
         Long total = queryFactory
                 .select(pmEventBenefit.count())
                 .from(pmEventBenefit)
-                .where(
-                baseAndEventIds(search),
-                baseAndEventId(search),
-                baseAndSiteId(search),
-                baseAndBenefitId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        )
+                .where(wheres)
                 .fetchOne();
 
         PmEventBenefitDto.PageResponse res = new PmEventBenefitDto.PageResponse();
