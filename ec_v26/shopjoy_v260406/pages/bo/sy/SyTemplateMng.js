@@ -427,10 +427,8 @@ window.SyTemplateMng = {
         :columns="columns.baseGrid" :rows="templates" row-key="templateId"
         list-title="템플릿목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
-        @sort="key => handleSelectAction('templates-sort', key)"
-        @set-page="n => handleSelectAction('templates-pager-setPage', n)"
-        @size-change="handleSelectAction('templates-pager-sizeChange')"
-        @row-click="row => handleSelectAction('templates-rowEdit', row.templateId)">
+        @sort="key => handleBtnAction('templates-sort', key)"
+        @cell-click="e => handleSelectAction('templates-rowEdit', e.row.templateId)">
         <template #toolbar-actions>
           <div style="display:flex;gap:6px;">
             <button class="btn btn-green btn-sm" @click="handleBtnAction('templates-excel')">
@@ -465,7 +463,7 @@ window.SyTemplateMng = {
           </td>
         </template>
       </bo-grid>
-        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('templates-pager-setPage', n)" :on-size-change="() => handleSelectAction('templates-pager-sizeChange')" />
+        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('templates-pager-setPage', n)" :on-size-change="() => handleSelectAction('templates-pager-sizeChange')" />
       <!-- ===== ■.■.■. 미리보기/발송 모달 (position:fixed) ========================= -->
       <template-preview-modal v-if="previewModal && previewModal.show" :tmpl="previewModal.template" :sample-params="previewModal.template?.sampleParams || '{}'" modal-name="template-preview" :on-callback="fnCallbackModal" />
       <template-send-modal v-if="sendModal && sendModal.show" :tmpl="sendModal.template" :show-toast="showToast" :show-confirm="showConfirm" modal-name="template-send" :on-callback="fnCallbackModal" />

@@ -208,10 +208,9 @@ window.PdRestockNotiMng = {
       :columns="columns.baseGrid" :rows="restockNotis" row-key="restockNotiId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'"
       selectable checked-key="restockNotiId" :is-checked="fnIsChecked" :all-checked="allChecked"
-      @set-page="n => handleSelectAction('restockNotis-pager-setPage', n)" @size-change="handleSelectAction('restockNotis-pager-sizeChange')"
       @toggle-check="id => handleSelectAction('restockNotis-rowToggle', id)" @toggle-check-all="handleBtnAction('restockNotis-toggleAll')">
     </bo-grid>
-        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('restockNotis-pager-setPage', n)" :on-size-change="() => handleSelectAction('restockNotis-pager-sizeChange')" />
+        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('restockNotis-pager-setPage', n)" :on-size-change="() => handleSelectAction('restockNotis-pager-sizeChange')" />
   </div>
   <!-- ===== □. 목록 그리드 =================================================== -->
 </div>

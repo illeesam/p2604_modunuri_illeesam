@@ -52,22 +52,22 @@ window.CmBlogMng = {
       // 상세 인라인 패널 닫기
       } else if (cmd === 'detailPanel-close') {
         return closeDetail();
+      // 그리드 정렬 헤더 클릭
+      } else if (cmd === 'blogs-sort') {
+        return onSort(param);
+      // 페이지 번호 클릭
+      } else if (cmd === 'blogs-pager-setPage') {
+        return setPage(param);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
     };
 
-    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    /* handleSelectAction — 그리드 행/노드/모달 선택 + <select> 변경 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ CmBlogMng.js : handleSelectAction -> ', cmd, param);
-      // 그리드 정렬 헤더 클릭
-      if (cmd === 'blogs-sort') {
-        return onSort(param);
-      // 페이지 번호 클릭
-      } else if (cmd === 'blogs-pager-setPage') {
-        return setPage(param);
-      // 페이지 크기 변경
-      } else if (cmd === 'blogs-pager-sizeChange') {
+      // 페이지 크기 변경 (<select>)
+      if (cmd === 'blogs-pager-sizeChange') {
         return onSizeChange();
       // 그리드 행 클릭 → 상세 보기 토글
       } else if (cmd === 'blogs-rowView') {
@@ -336,9 +336,7 @@ window.CmBlogMng = {
     :sort-state="uiState" list-title="게시글 목록"
     :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다." row-clickable
-    @sort="key => handleSelectAction('blogs-sort', key)"
-    @set-page="n => handleSelectAction('blogs-pager-setPage', n)"
-    @size-change="handleSelectAction('blogs-pager-sizeChange')"
+    @sort="key => handleBtnAction('blogs-sort', key)"
     @row-click="row => handleSelectAction('blogs-rowView', row)" row-actions>
     <template #toolbar-actions>
       <button class="btn btn-primary btn-sm" @click="handleBtnAction('blogs-add')">
@@ -351,7 +349,7 @@ window.CmBlogMng = {
       </button>
     </template>
   </bo-grid>
-        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('blogs-pager-setPage', n)" :on-size-change="() => handleSelectAction('blogs-pager-sizeChange')" />
+        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('blogs-pager-setPage', n)" :on-size-change="() => handleSelectAction('blogs-pager-sizeChange')" />
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 상세 패널 (항상 표시, active=false 면 안내문구) ===================== -->
   <div class="card">

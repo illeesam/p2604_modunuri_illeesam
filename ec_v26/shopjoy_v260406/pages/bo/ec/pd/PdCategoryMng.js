@@ -757,7 +757,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
     </tbody>
   </table>
   <!-- ===== ■.■.■. 페이지네이션 ============================================== -->
-  <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('categories-pager-setPage', n)" :on-size-change="() => handleBtnAction('categories-pager-sizeChange')" />
+  <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('categories-pager-setPage', n)" :on-size-change="() => handleBtnAction('categories-pager-sizeChange')" />
 </div>
 </div>
 <!-- ===== □.□. 우측: 카테고리 그리드 ========================================== -->

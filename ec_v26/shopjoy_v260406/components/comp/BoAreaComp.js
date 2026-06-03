@@ -34,7 +34,7 @@
  *                    · fmt(v,row)   — 셀 표시값 변환 (AG-Grid valueFormatter)
  *                                     조건부 포맷도 가능: (v)=> v>0?fmtW(v):'-'
  *                    · badge        — true|codeGrp|(row)=>badgeClass → 배지 렌더
- *                    · link         — true → title-link + @row-click emit
+ *                    · link         — true → title-link + @cell-click emit({row,col,colKey,colIndex,rowIndex}) (제목 클릭 판별)
  *                    · refLink      — 'member'|'order'|'claim'|'prod' 등 type 문자열.
  *                                     ref-link 스타일 a 태그 + @ref-click emit({row,col,type})
  *                                     부모에서 `@ref-click="({type,row}) => showRefModal(type, row.xxx)"` 처리
@@ -55,8 +55,10 @@
  *                         rowClickable — true=<tr> 전체 클릭 시 row-click emit (행클릭 통일 패턴)
  *                                        button/input/select/title-link 등은 자동 @click.stop 보호
  *                                        셀 슬롯 내부 인터랙티브 요소는 부모가 @click.stop 책임
- *                  emit:  set-page(n), size-change, sort(key), row-click(row),
+ *                  emit:  sort(key), row-click(row), cell-click({row,col,colKey,colIndex,rowIndex}),
  *                         save, row-remove(row), reorder
+ *                  ※ 페이징은 그리드 외부 <bo-pager> 로만 구현 (내부 페이저 제거됨, set-page/size-change emit 없음)
+ *                  ※ row-click=행 전체(rowClickable) 클릭 / cell-click=col.link 셀(제목) 클릭 — 분리됨
  *                  슬롯: #toolbar-actions, #head, #head-actions, #cell-{key},
  *                        #row-actions, #row-expand,
  *                        #tfoot({rows,colspan}) — 합계행 등. 슬롯 없거나 rows 비면 미렌더
@@ -431,7 +433,7 @@ window.BoGrid = {
     rowClickable: { type: Boolean, default: false },             // true=<tr> 전체 클릭 시 row-click emit (행클릭 통일로 #cell- 슬롯 제거 가능)
                                                                    // 셀 내부 button/select/input/checkbox 등은 @click.stop 자동 보호 — 행이벤트 미전파
   },
-  emits: ['set-page', 'size-change', 'sort', 'row-click', 'save', 'row-remove', 'reorder', 'cell-change',
+  emits: ['sort', 'row-click', 'cell-click', 'save', 'row-remove', 'reorder', 'cell-change',
           'toggle-check', 'toggle-check-all', 'ref-click'],
   setup(props, { emit, slots }) {
     const U = window._boAreaCompUtil;
@@ -452,10 +454,6 @@ window.BoGrid = {
       console.log(' ■■ BoGrid : handleBtnAction -> ', cmd, param);
       if (cmd === 'toolbar-save') {
         return emit('save');
-      } else if (cmd === 'pager-set') {
-        return emit('set-page', param.n);
-      } else if (cmd === 'pager-size-change') {
-        return emit('size-change');
       } else if (cmd === 'grid-toggle-check-all') {
         return emit('toggle-check-all');
       } else {
@@ -470,6 +468,8 @@ window.BoGrid = {
         if (param.col.sortKey) return emit('sort', param.col.sortKey);
       } else if (cmd === 'grid-row-click') {
         return emit('row-click', param.row);
+      } else if (cmd === 'grid-cell-click') {
+        return emit('cell-click', { row: param.row, col: param.col, colKey: param.col?.key, colIndex: param.ci, rowIndex: param.idx });
       } else if (cmd === 'grid-row-ref-click') {
         const id = param.col.refKey ? param.row[param.col.refKey] : param.row[param.col.key];
         return emit('ref-click', { row: param.row, col: param.col, type: param.col.refLink, id });
@@ -589,7 +589,7 @@ window.BoGrid = {
             <td style="text-align:center;font-size:11px;color:#999;">
               {{ rowNo(idx) }}
             </td>
-            <template v-for="col in columns" :key="col.key">
+            <template v-for="(col, ci) in columns" :key="col.key">
               <slot :name="'cell-' + col.key" :row="row" :idx="idx" :no="rowNo(idx)">
                 <td :style="U.tdStyle(col, row)" :class="U.cellClass(col, row)" :title="U.cellTitle(col, row)">
                   <!-- 인라인 편집 셀 (행클릭 통일 시 @click.stop 으로 보호) -->
@@ -673,8 +673,8 @@ window.BoGrid = {
                       🔍
                     </button>
                   </div>
-                  <!-- 표시 셀 (link는 cellInnerStyle/Class 합성 가능) -->
-                  <span v-else-if="col.link" class="title-link" @click.stop="handleSelectAction('grid-row-click', { row })"
+                  <!-- 표시 셀 (link는 cellInnerStyle/Class 합성 가능) — 제목 클릭은 cell-click 으로 분리 -->
+                  <span v-else-if="col.link" class="title-link" @click.stop="handleSelectAction('grid-cell-click', { row, col, ci, idx })"
                   :style="U.cellInnerStyle(col, row)" :class="U.cellInnerClass(col, row)">
                     {{ U.cellText(col, row) }}
                   </span>
@@ -726,11 +726,7 @@ window.BoGrid = {
     </table>
   </div>
   <!-- /그리드 본문 스크롤 컨테이너 -->
-  <!-- ▼ pager 영역: 한 줄 표시 + 카드 하단 깔끔 마감 -->
-  <div v-if="pager && !bare" style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
-  <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('pager-set', { n })" :on-size-change="() => handleBtnAction('pager-size-change')"
-      style="margin-top:0;min-height:34px;" />
-</div>
+  <!-- ▼ pager 는 그리드 외부 <bo-pager> 로만 구현 (내부 페이저 제거됨) -->
 </div>
 `,
 };
@@ -769,7 +765,7 @@ window.BoGridCrud = {
     treeRowKey:  { type: Function, default: null },
   },
   emits: ['add', 'save', 'cancel-checked', 'delete-checked', 'reorder', 'cell-change',
-          'update:checkAll', 'update:focusedIdx', 'export', 'excel-upload', 'sort', 'row-dblclick'],
+          'update:checkAll', 'update:focusedIdx', 'export', 'excel-upload', 'sort', 'row-dblclick', 'cell-click'],
   setup(props, { emit }) {
     const U = window._boAreaCompUtil;
 
@@ -840,6 +836,8 @@ window.BoGridCrud = {
         if (props.focusedIdx !== out) return emit('update:focusedIdx', out);
       } else if (cmd === 'grid-row-dblclick') {
         return emit('row-dblclick', param.row, param.idx);
+      } else if (cmd === 'grid-cell-click') {
+        return emit('cell-click', { row: param.row, col: param.col, colKey: param.col?.key, colIndex: param.ci, rowIndex: param.idx });
       } else if (cmd === 'grid-row-cell-change') {
         const row = param.row;
         if (row._row_status === 'I' || row._row_status === 'D') return emit('cell-change', row);
@@ -977,7 +975,7 @@ window.BoGridCrud = {
         <td v-if="showRowCheck" class="col-check-val">
           <input type="checkbox" v-model="fnRow(item)._row_check" />
         </td>
-        <template v-for="col in columns" :key="col.key">
+        <template v-for="(col, ci) in columns" :key="col.key">
           <slot :name="'cell-' + col.key" :row="fnRow(item)" :idx="idx" :node="item">
             <td :style="U.tdStyle(col, fnRow(item))" :class="U.cellClass(col, fnRow(item))" :title="U.cellTitle(col, fnRow(item))">
               <div v-if="col.edit==='text' && col.treeDepth" style="display:flex;align-items:center;">
@@ -1034,6 +1032,10 @@ window.BoGridCrud = {
                 🔍
               </button>
             </div>
+            <span v-else-if="col.link" class="title-link" @click.stop="handleSelectAction('grid-cell-click', { row: fnRow(item), col, ci, idx })"
+                  :style="U.cellInnerStyle(col, fnRow(item))" :class="U.cellInnerClass(col, fnRow(item))">
+              {{ U.cellText(col, fnRow(item)) }}
+            </span>
             <span v-else-if="col.badge" class="badge" :class="U.badgeClass(col, fnRow(item))">
               {{ U.cellText(col, fnRow(item)) }}
             </span>

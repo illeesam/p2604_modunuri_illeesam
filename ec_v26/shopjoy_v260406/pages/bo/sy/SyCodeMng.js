@@ -740,7 +740,7 @@ window.SyCodeMng = {
       :show-row-id="false" :show-row-check="false" :draggable="false"
       :show-add="false" :show-save="false"
       :sort-state="{ sortKey: uiState.grpSortKey, sortDir: uiState.grpSortDir }"
-      @sort="key => handleSelectAction('codeGroups-sort', key)"
+      @sort="key => handleBtnAction('codeGroups-sort', key)"
       @cell-change="row => handleSelectAction('codeGroups-cellChange', row)">
       <template #toolbar-actions>
         <button class="btn btn-green btn-sm" @click="handleBtnAction('codeGroups-add')">

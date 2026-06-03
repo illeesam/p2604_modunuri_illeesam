@@ -412,17 +412,18 @@ window.PdReviewMng = {
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
-  <bo-grid :columns="columns.listGrid" :rows="reviews" row-key="reviewId"
+  <bo-grid :columns="columns.listGrid" :rows="reviews" :pager="pager" row-key="reviewId"
     :sort-state="uiState" list-title="상품리뷰 목록"
     :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다." row-clickable row-actions
-    @sort="key => handleSelectAction('reviews-sort', key)" @set-page="n => handleSelectAction('reviews-pager-setPage', n)" @size-change="handleBtnAction('reviews-pager-sizeChange')" @row-click="r => handleSelectAction('reviews-rowEdit', r)">
+    @sort="key => handleBtnAction('reviews-sort', key)" @row-click="r => handleSelectAction('reviews-rowEdit', r)">
     <template #row-actions="{ row }">
       <button class="btn btn-xs" style="background:#fff;border:1px solid #d9d9d9;color:#555;font-size:12px;padding:2px 6px;" title="상품 미리보기" @click.stop="handleSelectAction('reviews-rowPreview', row.prodId)">
         👁
       </button>
     </template>
   </bo-grid>
+  <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('reviews-pager-setPage', n)" :on-size-change="() => handleBtnAction('reviews-pager-sizeChange')" />
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 상품ID 클릭 시: 해당 상품의 리뷰 페이징 목록 ============================= -->
   <div class="card" v-if="selectedProdId">
@@ -443,14 +444,14 @@ window.PdReviewMng = {
       <bo-grid bare :columns="columns.prodReviewGrid" :rows="prodReviews" :pager="prodReviewPager"
         row-key="reviewId" :row-class="fnProdReviewRowClass"
         empty-text="해당 상품의 리뷰가 없습니다." row-clickable
-        @set-page="n => handleSelectAction('prodReviews-pager-setPage', n)" @size-change="handleBtnAction('prodReviews-pager-sizeChange')" @row-click="r => handleSelectAction('prodReviews-rowEdit', r)">
+ @row-click="r => handleSelectAction('prodReviews-rowEdit', r)">
       </bo-grid>
     </div>
     <!-- ===== □.□. 그리드 (기본 10개 영역 + 화면 높이 반응형 확장, 초과 시 내부 스크롤) =========== -->
     <!-- ===== ■.■. /그리드 스크롤 컨테이너 ========================================= -->
     <!-- ===== ■.■. 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ============================= -->
     <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
-      <bo-pager :pager="prodReviewPager" :on-set-page="n => handleSelectAction('prodReviews-pager-setPage', n)" :on-size-change="() => handleBtnAction('prodReviews-pager-sizeChange')"
+      <bo-pager :pager="prodReviewPager" :on-set-page="n => handleBtnAction('prodReviews-pager-setPage', n)" :on-size-change="() => handleBtnAction('prodReviews-pager-sizeChange')"
         style="margin-top:0;min-height:34px;" />
     </div>
   </div>

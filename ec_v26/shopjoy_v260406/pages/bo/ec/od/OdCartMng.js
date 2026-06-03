@@ -52,6 +52,10 @@ window.OdCartMng = {
       // 일괄 삭제
       } else if (cmd === 'carts-bulkDelete') {
         return handleBulkDelete();
+      // 페이지 번호 클릭
+      } else if (cmd === 'carts-pager-setPage') {
+        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList(); }
+        return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -60,12 +64,8 @@ window.OdCartMng = {
     /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ OdCartMng.js : handleSelectAction -> ', cmd, param);
-      // 페이지 번호 클릭
-      if (cmd === 'carts-pager-setPage') {
-        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList(); }
-        return;
       // 페이지 크기 변경
-      } else if (cmd === 'carts-pager-sizeChange') {
+      if (cmd === 'carts-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchList();
       // 행 체크 토글
@@ -318,7 +318,7 @@ window.OdCartMng = {
         </button>
       </template>
     </bo-grid>
-    <bo-pager v-if="pager.pageTotalCount > 0" :pager="pager" :on-set-page="n => handleSelectAction('carts-pager-setPage', n)" :on-size-change="() => handleSelectAction('carts-pager-sizeChange')" />
+    <bo-pager v-if="pager.pageTotalCount > 0" :pager="pager" :on-set-page="n => handleBtnAction('carts-pager-setPage', n)" :on-size-change="() => handleSelectAction('carts-pager-sizeChange')" />
   </div>
   <!-- ===== □.□. 목록 영역 ================================================= -->
   <!-- ===== □. 카드 영역 =================================================== -->

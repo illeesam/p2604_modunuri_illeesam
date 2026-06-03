@@ -339,10 +339,8 @@ window.SyVendorMng = {
         :columns="columns.baseGrid" :rows="vendors" row-key="vendorId"
         list-title="거래처목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
-        @sort="key => handleSelectAction('vendors-sort', key)"
-        @set-page="n => handleSelectAction('vendors-pager-setPage', n)"
-        @size-change="handleSelectAction('vendors-pager-sizeChange')"
-        @row-click="row => handleSelectAction('vendors-rowEdit', row.vendorId)">
+        @sort="key => handleBtnAction('vendors-sort', key)"
+        @cell-click="e => handleSelectAction('vendors-rowEdit', e.row.vendorId)">
         <template #toolbar-actions>
           <div style="display:flex;gap:6px;">
             <button class="btn btn-green btn-sm" @click="handleBtnAction('vendors-excel')">
@@ -371,7 +369,7 @@ window.SyVendorMng = {
           </td>
         </template>
       </bo-grid>
-        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('vendors-pager-setPage', n)" :on-size-change="() => handleSelectAction('vendors-pager-sizeChange')" />
+        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('vendors-pager-setPage', n)" :on-size-change="() => handleSelectAction('vendors-pager-sizeChange')" />
     </div>
     <!-- ===== ■.■. 상세 패널 (전체 폭, grid 직접 자식, 항상 표시) ===================== -->
     <div style="grid-column:1/-1;margin-top:4px;">

@@ -49,6 +49,12 @@ window.CmChattMng = {
       // 상세 인라인 패널 닫기
       } else if (cmd === 'detailPanel-close') {
         return closeDetail();
+      // 그리드 정렬 헤더 클릭
+      } else if (cmd === 'chatts-sort') {
+        return onSort(param);
+      // 페이지 번호 클릭
+      } else if (cmd === 'chatts-pager-setPage') {
+        return setPage(param);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -57,14 +63,8 @@ window.CmChattMng = {
     /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ CmChattMng.js : handleSelectAction -> ', cmd, param);
-      // 그리드 정렬 헤더 클릭
-      if (cmd === 'chatts-sort') {
-        return onSort(param);
-      // 페이지 번호 클릭
-      } else if (cmd === 'chatts-pager-setPage') {
-        return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'chatts-pager-sizeChange') {
+      if (cmd === 'chatts-pager-sizeChange') {
         return onSizeChange();
       // 그리드 행 클릭 → 상세 편집 패널 열기
       } else if (cmd === 'chatts-rowEdit') {
@@ -312,11 +312,9 @@ window.CmChattMng = {
     :sort-state="uiState" list-title="채팅목록"
     :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다."
-    @sort="key => handleSelectAction('chatts-sort', key)"
-    @set-page="n => handleSelectAction('chatts-pager-setPage', n)"
-    @size-change="handleSelectAction('chatts-pager-sizeChange')"
+    @sort="key => handleBtnAction('chatts-sort', key)"
     @ref-click="ref => handleSelectAction('chatts-rowRef', ref)"
-    @row-click="row => handleSelectAction('chatts-rowEdit', row.chattRoomId)" row-actions>
+    @cell-click="e => handleSelectAction('chatts-rowEdit', e.row.chattRoomId)" row-actions>
     <template #toolbar-actions>
       <button class="btn btn-green btn-sm" @click="handleBtnAction('chatts-excel')">
         📥 엑셀
@@ -336,7 +334,7 @@ window.CmChattMng = {
       </div>
     </template>
   </bo-grid>
-        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('chatts-pager-setPage', n)" :on-size-change="() => handleSelectAction('chatts-pager-sizeChange')" />
+        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('chatts-pager-setPage', n)" :on-size-change="() => handleSelectAction('chatts-pager-sizeChange')" />
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 하단 상세: ChattDtl 임베드 (항상 표시) ============================ -->
   <div style="margin-top:16px;">

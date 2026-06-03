@@ -446,10 +446,8 @@ window.SySiteMng = {
         :columns="columns.baseGrid" :rows="sites" row-key="siteId"
         list-title="사이트목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
-        @sort="key => handleSelectAction('sites-sort', key)"
-        @set-page="n => handleSelectAction('sites-pager-setPage', n)"
-        @size-change="handleSelectAction('sites-pager-sizeChange')"
-        @row-click="row => handleSelectAction('sites-rowEdit', row.siteId)">
+        @sort="key => handleBtnAction('sites-sort', key)"
+        @cell-click="e => handleSelectAction('sites-rowEdit', e.row.siteId)">
         <template #toolbar-actions>
           <div style="display:flex;gap:6px;">
             <button class="btn btn-green btn-sm" @click="handleBtnAction('sites-excel')">
@@ -478,7 +476,7 @@ window.SySiteMng = {
           </td>
         </template>
       </bo-grid>
-        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('sites-pager-setPage', n)" :on-size-change="() => handleSelectAction('sites-pager-sizeChange')" />
+        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('sites-pager-setPage', n)" :on-size-change="() => handleSelectAction('sites-pager-sizeChange')" />
     </div>
     <!-- ===== □.□. 경로 트리 ================================================= -->
     <!-- ===== ■.■. 상세 인라인 패널 (grid 직접 자식 → 전체 폭, 항상 표시) ===================== -->

@@ -46,6 +46,12 @@ window.DpDispWidgetMng = {
         uiState.selectedPath = null;
         pager.pageNo = 1;
         return handleSearchData('DEFAULT');
+      // 그리드 정렬 헤더 클릭
+      } else if (cmd === 'widgets-sort') {
+        return onSort(param);
+      // 페이지 번호 클릭
+      } else if (cmd === 'widgets-pager-setPage') {
+        return setPage(param);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -54,14 +60,8 @@ window.DpDispWidgetMng = {
     /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ DpDispWidgetMng.js : handleSelectAction -> ', cmd, param);
-      // 그리드 정렬 헤더 클릭
-      if (cmd === 'widgets-sort') {
-        return onSort(param);
-      // 페이지 번호 클릭
-      } else if (cmd === 'widgets-pager-setPage') {
-        return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'widgets-pager-sizeChange') {
+      if (cmd === 'widgets-pager-sizeChange') {
         return onSizeChange();
       // 그리드 행 클릭 → 상세/편집 패널 열기
       } else if (cmd === 'widgets-rowEdit') {
@@ -429,10 +429,8 @@ window.DpDispWidgetMng = {
         :sort-state="uiState" list-title="전시위젯" :row-style="fnRowStyle"
         :count-text="pager.pageTotalCount + '건'"
         empty-text="등록된 위젯이 없습니다."
-        @sort="key => handleSelectAction('widgets-sort', key)"
-        @set-page="n => handleSelectAction('widgets-pager-setPage', n)"
-        @size-change="handleSelectAction('widgets-pager-sizeChange')"
-        @row-click="(r) => handleSelectAction('widgets-rowEdit', r.widgetId)" row-actions>
+        @sort="key => handleBtnAction('widgets-sort', key)"
+        @cell-click="(e) => handleSelectAction('widgets-rowEdit', e.row.widgetId)" row-actions>
         <template #toolbar-actions>
           <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">
             #{{ uiState.selectedPath }}
@@ -541,6 +539,7 @@ window.DpDispWidgetMng = {
           </div>
         </template>
       </bo-grid>
+      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('widgets-pager-setPage', n)" :on-size-change="() => handleSelectAction('widgets-pager-sizeChange')" />
     </div>
     <!-- ===== /우측 목록 ===================================================== -->
   </div>

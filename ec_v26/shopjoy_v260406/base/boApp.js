@@ -123,6 +123,7 @@
       { id: 'syBrandMng', label: '브랜드관리' },
       { id: 'syVendorMng', label: '업체' },
       { id: 'syVendorUserMng', label: '업체사용자' },
+      { id: 'syVendorInfoMng', label: '업체정보' },
       { group: '공통업무' },
       { id: 'cmNoticeMng', label: '공지사항관리' },
       { id: 'syBbmMng', label: '게시판관리' },
@@ -448,6 +449,7 @@
         syVendorDtl: 'sy-vendor-dtl',
         syBizMng: 'sy-biz-mng',
         syVendorUserMng: 'sy-vendor-user-mng',
+        syVendorInfoMng: 'sy-vendor-info-mng',
         pdCategoryMng: 'pd-category-mng',
         pdCategoryDtl: 'pd-category-dtl',
         pdCategoryProdMng: 'pd-category-prod-mng',
@@ -2329,6 +2331,7 @@
             <sy-vendor-mng  v-else-if="page==='syVendorMng'"  :navigate="navigate" />
             <sy-biz-mng  v-else-if="page==='syBizMng'"  :navigate="navigate" />
             <sy-vendor-user-mng v-else-if="page==='syVendorUserMng'" :navigate="navigate" />
+            <sy-vendor-info-mng v-else-if="page==='syVendorInfoMng'" :navigate="navigate" />
             <sy-vendor-dtl  v-else-if="page==='syVendorDtl'"  :navigate="navigate" :dtl-id="dtlId" />
             <pd-category-mng v-else-if="page==='pdCategoryMng'" :navigate="navigate" />
             <pd-category-dtl v-else-if="page==='pdCategoryDtl'" :navigate="navigate" :dtl-id="dtlId" />
@@ -2855,6 +2858,7 @@
     .component('SyTemplateDtl', window.SyTemplateDtl)
     .component('SyVendorMng', window.SyVendorMng)
     .component('SyVendorUserMng', window.SyVendorUserMng)
+    .component('SyVendorInfoMng', window.SyVendorInfoMng)
     .component('SyVendorDtl', window.SyVendorDtl)
     .component('SyAttachMng', window.SyAttachMng)
     /* ── pages/bo/sy/ — 배치 ── */

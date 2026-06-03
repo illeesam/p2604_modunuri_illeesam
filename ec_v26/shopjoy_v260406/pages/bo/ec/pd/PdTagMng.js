@@ -200,7 +200,7 @@ window.PdTagMng = {
   <bo-grid
     :columns="columns.baseGrid" :rows="gridRows" row-key="tagId" row-actions
     list-title="태그 목록" :row-class="(row) => row._row_status==='N' ? 'table-rowNew' : (row._row_status==='U' ? 'table-rowMod' : '')"
-    @set-page="n => handleSelectAction('tags-pager-setPage', n)" @size-change="handleSelectAction('tags-pager-sizeChange')" @cell-change="row => handleSelectAction('tags-rowCellChange', row)">
+ @cell-change="row => handleSelectAction('tags-rowCellChange', row)">
     <template #toolbar-actions>
       <button class="btn btn-primary btn-sm" @click="handleBtnAction('tags-add')">
         + 행추가
@@ -215,7 +215,7 @@ window.PdTagMng = {
       </button>
     </template>
   </bo-grid>
-        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('tags-pager-setPage', n)" :on-size-change="() => handleSelectAction('tags-pager-sizeChange')" />
+        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('tags-pager-setPage', n)" :on-size-change="() => handleSelectAction('tags-pager-sizeChange')" />
   <!-- ===== □. 목록 그리드 =================================================== -->
 </div>
 `

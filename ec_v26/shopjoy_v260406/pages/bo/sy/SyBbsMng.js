@@ -351,10 +351,8 @@ window.SyBbsMng = {
     :columns="columns.baseGrid" :rows="bbsList" row-key="bbsId"
     list-title="게시글목록" :count-text="pager.pageTotalCount + '건'"
     :sort-state="uiState" :row-style="fnRowStyle"
-    @sort="key => handleSelectAction('bbsList-sort', key)"
-    @set-page="n => handleSelectAction('bbsList-pager-setPage', n)"
-    @size-change="handleSelectAction('bbsList-pager-sizeChange')"
-    @row-click="row => handleSelectAction('bbsList-rowEdit', row.bbsId)">
+    @sort="key => handleBtnAction('bbsList-sort', key)"
+    @cell-click="e => handleSelectAction('bbsList-rowEdit', e.row.bbsId)">
     <template #toolbar-actions>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="handleBtnAction('bbsList-excel')">
@@ -383,7 +381,7 @@ window.SyBbsMng = {
       </td>
     </template>
   </bo-grid>
-        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('bbsList-pager-setPage', n)" :on-size-change="() => handleSelectAction('bbsList-pager-sizeChange')" />
+        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('bbsList-pager-setPage', n)" :on-size-change="() => handleSelectAction('bbsList-pager-sizeChange')" />
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 상세 패널 (인라인 임베드, 항상 표시) =================================== -->
   <div style="margin-top:16px;">

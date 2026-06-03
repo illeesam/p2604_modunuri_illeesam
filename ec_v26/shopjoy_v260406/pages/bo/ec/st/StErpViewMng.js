@@ -225,8 +225,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
       :columns="columns.baseGrid" :rows="slips" row-key="slipId"
-      list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
-      @set-page="n => handleSelectAction('slips-pager-setPage', n)" @size-change="handleSelectAction('slips-pager-sizeChange')">
+      list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true">
       <template #head-actions>
         액션
       </template>
@@ -236,7 +235,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         </button>
       </template>
     </bo-grid>
-        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('slips-pager-setPage', n)" :on-size-change="() => handleSelectAction('slips-pager-sizeChange')" />
+        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('slips-pager-setPage', n)" :on-size-change="() => handleSelectAction('slips-pager-sizeChange')" />
   </div>
 </div>
 <!-- ===== □.□. 목록 영역 ================================================= -->

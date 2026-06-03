@@ -316,11 +316,9 @@ window.SyContactMng = {
     :columns="columns.baseGrid" :rows="contacts" row-key="contactId"
     list-title="문의목록" :count-text="pager.pageTotalCount + '건'"
     :sort-state="uiState" :row-style="fnRowStyle"
-    @sort="key => handleSelectAction('contacts-sort', key)"
-    @set-page="n => handleSelectAction('contacts-pager-setPage', n)"
-    @size-change="handleSelectAction('contacts-pager-sizeChange')"
+    @sort="key => handleBtnAction('contacts-sort', key)"
     @ref-click="({type,id}) => handleSelectAction('contacts-rowRef', {type, id})"
-    @row-click="row => handleSelectAction('contacts-rowEdit', row.contactId)">
+    @cell-click="e => handleSelectAction('contacts-rowEdit', e.row.contactId)">
     <template #toolbar-actions>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="handleBtnAction('contacts-excel')">
@@ -349,7 +347,7 @@ window.SyContactMng = {
       </td>
     </template>
   </bo-grid>
-        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('contacts-pager-setPage', n)" :on-size-change="() => handleSelectAction('contacts-pager-sizeChange')" />
+        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('contacts-pager-setPage', n)" :on-size-change="() => handleSelectAction('contacts-pager-sizeChange')" />
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 하단 상세: ContactDtl 임베드 (항상 표시) =========================== -->
   <div style="margin-top:16px;">

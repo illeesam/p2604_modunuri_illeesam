@@ -535,7 +535,7 @@ window.SyAttachMng = {
         <!-- ===== ■.■.■.■. 그룹 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ====================== -->
         <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
           <!-- ===== ■.■.■.■.■. 영역 ============================================== -->
-          <bo-pager :pager="grpPager" :on-set-page="n => handleSelectAction('attachGrps-pager-setPage', n)" :on-size-change="() => handleSelectAction('attachGrps-pager-sizeChange')"
+          <bo-pager :pager="grpPager" :on-set-page="n => handleBtnAction('attachGrps-pager-setPage', n)" :on-size-change="() => handleSelectAction('attachGrps-pager-sizeChange')"
             style="margin-top:0;min-height:34px;" />
         </div>
       </div>
@@ -610,8 +610,7 @@ window.SyAttachMng = {
             row-key="attachId"
             :loading="uiState.loading"
             :empty-text="uiState.loading ? '조회 중...' : '데이터가 없습니다.'"
-            @set-page="n => handleSelectAction('attaches-pager-setPage', n)"
-            @size-change="handleSelectAction('attaches-pager-sizeChange')" row-actions>
+ row-actions>
             <template #row-actions="{ row }">
               <div class="actions">
                 <button class="btn btn-blue btn-xs" @click="handleSelectAction('attaches-rowEdit', row)">
@@ -627,7 +626,7 @@ window.SyAttachMng = {
         <!-- ===== ■.■.■.■. /파일 그리드 스크롤 컨테이너 ================================== -->
         <!-- ===== ■.■.■.■. 페이저: 한 줄 표시 + 좌측 카드처럼 깔끔 마감 (margin-top 좁힘 + nowrap 보장) ===== -->
         <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
-          <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('attaches-pager-setPage', n)" :on-size-change="() => handleSelectAction('attaches-pager-sizeChange')"
+          <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('attaches-pager-setPage', n)" :on-size-change="() => handleSelectAction('attaches-pager-sizeChange')"
             style="margin-top:0;min-height:34px;" />
         </div>
       </div>

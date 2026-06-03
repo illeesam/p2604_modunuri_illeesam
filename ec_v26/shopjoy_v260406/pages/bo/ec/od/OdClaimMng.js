@@ -84,6 +84,13 @@ window.OdClaimMng = {
       } else if (cmd === 'memberPickModal-clear') {
         searchParam.memberId = ''; searchParam.memberNm = '';
         return;
+      // 그리드 정렬 헤더 클릭
+      } else if (cmd === 'claims-sort') {
+        return onSort(param);
+      // 페이지 번호 클릭
+      } else if (cmd === 'claims-pager-setPage') {
+        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchData('PAGE_CLICK'); }
+        return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -92,15 +99,8 @@ window.OdClaimMng = {
     /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ OdClaimMng.js : handleSelectAction -> ', cmd, param);
-      // 그리드 정렬 헤더 클릭
-      if (cmd === 'claims-sort') {
-        return onSort(param);
-      // 페이지 번호 클릭
-      } else if (cmd === 'claims-pager-setPage') {
-        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchData('PAGE_CLICK'); }
-        return;
       // 페이지 크기 변경
-      } else if (cmd === 'claims-pager-sizeChange') {
+      if (cmd === 'claims-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchData('DEFAULT');
       // 그리드 행 수정 → 행 선택(저장/취소 노출)
@@ -654,7 +654,7 @@ window.OdClaimMng = {
       <bo-grid bare selectable :columns="columns.listGrid" :rows="claims" row-key="claimId"
         :sort-state="uiState" :is-checked="isChecked" :all-checked="cfAllChecked"
         :row-style="fnGridRowStyle" empty-text="데이터가 없습니다."
-        @sort="key => handleSelectAction('claims-sort', key)"
+        @sort="key => handleBtnAction('claims-sort', key)"
         @toggle-check="id => handleSelectAction('claims-rowToggleCheck', id)"
         @toggle-check-all="handleSelectAction('claims-rowToggleCheckAll')"
         @ref-click="({type,id}) => handleSelectAction('claims-rowRefClick', {type, id})" row-actions>
@@ -674,7 +674,7 @@ window.OdClaimMng = {
     <!-- ===== ■.■. /그리드 스크롤 컨테이너 ========================================= -->
     <!-- ===== ■.■. 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ============================= -->
     <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
-      <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('claims-pager-setPage', n)"
+      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('claims-pager-setPage', n)"
         :on-size-change="() => handleSelectAction('claims-pager-sizeChange')"
         style="margin-top:0;min-height:34px;" />
     </div>

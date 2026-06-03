@@ -254,10 +254,10 @@ window.PdQnaMng = {
       :loading="uiState.loading"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       empty-text="조회된 데이터가 없습니다."
-      @sort="key => handleSelectAction('qnas-sort', key)" @set-page="n => handleSelectAction('qnas-pager-setPage', n)" @size-change="handleSelectAction('qnas-pager-sizeChange')"
-      @row-click="row => handleSelectAction('qnas-rowClick', { row })">
+      @sort="key => handleBtnAction('qnas-sort', key)"
+      @cell-click="e => handleSelectAction('qnas-rowClick', { row: e.row })">
     </bo-grid>
-        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('qnas-pager-setPage', n)" :on-size-change="() => handleSelectAction('qnas-pager-sizeChange')" />
+        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('qnas-pager-setPage', n)" :on-size-change="() => handleSelectAction('qnas-pager-sizeChange')" />
   </div>
   <!-- ===== □. 목록 그리드 =================================================== -->
   <!-- ===== ■. 상세 패널 (질문/답변) ======================================== -->

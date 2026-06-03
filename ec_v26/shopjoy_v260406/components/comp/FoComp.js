@@ -3,12 +3,75 @@
  *
  * ─────────────────────────────────────────────────────────────────────────
  * 정의된 컴포넌트:
+ *   FoPager  — FO 목록 공통 페이지네이션 (BoPager 의 FO 대응). 그리드 외부에서 사용
  *   FoTabBar — Dtl/My 화면 공통 탭바 + 뷰모드 아이콘 그룹 (BoTabBar 와 동일 마크업)
  *
  * FO 개별 위젯/영역 컴포넌트는 components/comp/FoAreaComp.js 에 정의됨
  *   (FoSearchArea / FoGrid / FoGridCrud / FoModal).
  * FO 전용 단위 컴포넌트가 새로 필요하면 'Fo' prefix / 'fo-' 태그로 이 파일에 추가.
  * ───────────────────────────────────────────────────────────────────────── */
+
+/* ── FoPager ─────────────────────────────────────────────────────────────
+ * FO 목록 공통 페이지네이션. BoPager 의 FO 대응 컴포넌트.
+ * FoGrid 내부 페이저는 제거됨 → 페이징은 그리드 외부에서 이 컴포넌트로만 구현.
+ *
+ * Props:
+ *   pager        (Object)   { pageNo, pageTotalPage, pageSize, pageSizes } reactive
+ *   onSetPage    (Function) (n) => 페이지 이동 콜백
+ *   onSizeChange (Function) () => 페이지 크기 변경 콜백
+ *   pageWindow   (Number)   한 번에 보일 페이지 번호 칸 수 (기본 10)
+ *
+ * 사용:
+ *   <fo-pager :pager="pager"
+ *     :on-set-page="n => handleSelectAction('rows-pager-setPage', n)"
+ *     :on-size-change="() => handleSelectAction('rows-pager-sizeChange')" />
+ * ───────────────────────────────────────────────────────────────────────── */
+window.FoPager = {
+  name: 'FoPager',
+  props: {
+    pager:        { type: Object,   default: () => ({ pageNo: 1, pageTotalPage: 1, pageSize: 20, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500] }) },
+    onSetPage:    { type: Function, default: () => {} },
+    onSizeChange: { type: Function, default: () => {} },
+    pageWindow:   { type: Number,   default: 10 },   // 한 번에 보일 페이지 번호 칸 수
+  },
+  setup(props) {
+    /* cfPageNums — 현재 페이지 기준 최대 pageWindow(기본 10)칸 페이지 번호 윈도우 */
+    const cfPageNums = Vue.computed(() => {
+      const total = Math.max(1, props.pager?.pageTotalPage || 1);
+      const cur   = Math.min(Math.max(1, props.pager?.pageNo || 1), total);
+      const win   = Math.max(1, props.pageWindow);
+      let start = Math.max(1, cur - Math.floor(win / 2));
+      let end   = Math.min(total, start + win - 1);
+      start = Math.max(1, end - win + 1);   // 끝에서 윈도우 채우기
+      return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+    });
+    return { cfPageNums };
+  },
+  template: /* html */`
+<div v-if="pager" class="fo-grid-pager">
+  <button :disabled="pager.pageNo===1" @click="onSetPage(1)" title="처음">
+    «
+  </button>
+  <button :disabled="pager.pageNo===1" @click="onSetPage(pager.pageNo-1)">
+    ‹
+  </button>
+  <button v-for="n in cfPageNums" :key="n" :class="{ on: pager.pageNo===n }" @click="onSetPage(n)">
+    {{ n }}
+  </button>
+  <button :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageNo+1)">
+    ›
+  </button>
+  <button :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageTotalPage)" title="마지막">
+    »
+  </button>
+  <select v-if="(pager.pageSizes||[]).length" class="fo-grid-pager-size" v-model.number="pager.pageSize" @change="onSizeChange">
+    <option v-for="s in (pager.pageSizes||[])" :key="s" :value="s">
+      {{ s }}개
+    </option>
+  </select>
+</div>
+`,
+};
 
 /* ── FoTabBar ────────────────────────────────────────────────────────────
  * FO Dtl/My 화면 공통 탭바 + 뷰모드(📑/1▭/2▭/3▭/4▭) 아이콘 그룹.

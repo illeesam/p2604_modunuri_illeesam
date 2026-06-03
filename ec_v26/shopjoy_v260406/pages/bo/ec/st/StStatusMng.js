@@ -185,8 +185,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       }).filter(r => !applied.vendorSearchValue || r.vendorNm.includes(applied.vendorSearchValue));
     });
     const cfVendorTotal = computed(() => cfVendorRows.value.length);
-    const cfVendorPages = computed(() => Math.max(1, Math.ceil(cfVendorTotal.value / vendorPager.size)));
-    const cfVendorPageList = computed(() => cfVendorRows.value.slice((vendorPager.page - 1) * vendorPager.size, vendorPager.page * vendorPager.size));
+    const cfVendorPages = computed(() => Math.max(1, Math.ceil(cfVendorTotal.value / vendorPager.pageSize)));
+    const cfVendorPageList = computed(() => cfVendorRows.value.slice((vendorPager.pageNo - 1) * vendorPager.pageSize, vendorPager.pageNo * vendorPager.pageSize));
     const cfVendorSummary  = computed(() => cfVendorRows.value.reduce((a, r) => ({ sales: a.sales + r.sales, refund: a.refund + r.refund, comm: a.comm + r.comm, settle: a.settle + r.settle }), { sales: 0, refund: 0, comm: 0, settle: 0 }));
 
     /* ════════════════════════════════════════════════
@@ -213,8 +213,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       });
     });
     const cfOrderTotal = computed(() => cfOrderRows.value.length);
-    const cfOrderPages = computed(() => Math.max(1, Math.ceil(cfOrderTotal.value / orderPager.size)));
-    const cfOrderPageList = computed(() => cfOrderRows.value.slice((orderPager.page - 1) * orderPager.size, orderPager.page * orderPager.size));
+    const cfOrderPages = computed(() => Math.max(1, Math.ceil(cfOrderTotal.value / orderPager.pageSize)));
+    const cfOrderPageList = computed(() => cfOrderRows.value.slice((orderPager.pageNo - 1) * orderPager.pageSize, orderPager.pageNo * orderPager.pageSize));
     const cfOrderSummary  = computed(() => {
       const valid = window.safeArrayUtils.safeFilter(cfOrderRows.value, r => !r.isCancelled);
 
@@ -241,8 +241,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       });
     });
     const cfClaimTotal = computed(() => cfClaimRows.value.length);
-    const cfClaimPages = computed(() => Math.max(1, Math.ceil(cfClaimTotal.value / claimPager.size)));
-    const cfClaimPageList = computed(() => cfClaimRows.value.slice((claimPager.page - 1) * claimPager.size, claimPager.page * claimPager.size));
+    const cfClaimPages = computed(() => Math.max(1, Math.ceil(cfClaimTotal.value / claimPager.pageSize)));
+    const cfClaimPageList = computed(() => cfClaimRows.value.slice((claimPager.pageNo - 1) * claimPager.pageSize, claimPager.pageNo * claimPager.pageSize));
     const cfClaimSummary  = computed(() => ({
       cnt:     cfClaimRows.value.length,
       refund:  cfClaimRows.value.reduce((s, r) => s + (r.refundAmount || 0), 0),
@@ -283,8 +283,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       });
     });
     const cfPromoTotal    = computed(() => cfPromoRows.value.length);
-    const cfPromoPages    = computed(() => Math.max(1, Math.ceil(cfPromoTotal.value / promoPager.size)));
-    const cfPromoPageList = computed(() => cfPromoRows.value.slice((promoPager.page - 1) * promoPager.size, promoPager.page * promoPager.size));
+    const cfPromoPages    = computed(() => Math.max(1, Math.ceil(cfPromoTotal.value / promoPager.pageSize)));
+    const cfPromoPageList = computed(() => cfPromoRows.value.slice((promoPager.pageNo - 1) * promoPager.pageSize, promoPager.pageNo * promoPager.pageSize));
     const cfPromoSummary  = computed(() => ({
       cnt:      cfPromoRows.value.length,
       totalUse: cfPromoRows.value.reduce((s, r) => s + r.useCnt, 0),
@@ -318,8 +318,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       }).filter(r => !applied.settleSearchMonth || r.month.includes(applied.settleSearchMonth));
     });
     const cfSettleTotal    = computed(() => cfSettleRows.value.length);
-    const cfSettlePages    = computed(() => Math.max(1, Math.ceil(cfSettleTotal.value / settlePager.size)));
-    const cfSettlePageList = computed(() => cfSettleRows.value.slice((settlePager.page - 1) * settlePager.size, settlePager.page * settlePager.size));
+    const cfSettlePages    = computed(() => Math.max(1, Math.ceil(cfSettleTotal.value / settlePager.pageSize)));
+    const cfSettlePageList = computed(() => cfSettleRows.value.slice((settlePager.pageNo - 1) * settlePager.pageSize, settlePager.pageNo * settlePager.pageSize));
     const cfSettleSummary  = computed(() => cfSettleRows.value.reduce((a, r) => ({ sales: a.sales + r.sales, refund: a.refund + r.refund, comm: a.comm + r.comm, settle: a.settle + r.settle }), { sales: 0, refund: 0, comm: 0, settle: 0 }));
 
     /* fmt — 포맷 */
@@ -355,7 +355,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     /* onSearch — 조회 */
     const onSearch = async () => {
-      vendorPager.page = 1; orderPager.page = 1; claimPager.page = 1; promoPager.page = 1; settlePager.page = 1;
+      vendorPager.pageNo = 1; orderPager.pageNo = 1; claimPager.pageNo = 1; promoPager.pageNo = 1; settlePager.pageNo = 1;
       fnSyncApplied();
       await handleSearchData('DEFAULT');
     };
@@ -371,34 +371,44 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     const pageNums = (cur, last) => { const s = Math.max(1, cur-2), e = Math.min(last, s+4); return Array.from({length: e-s+1}, (_,i) => s+i); };
 
     /* setVendorPage — 설정 */
-    const setVendorPage = n => { if (n >= 1 && n <= cfVendorPages.value) vendorPager.page = n; };
+    const setVendorPage = n => { if (n >= 1 && n <= cfVendorPages.value) vendorPager.pageNo = n; };
 
     /* onVendorSizeChange — 이벤트 */
-    const onVendorSizeChange = () => { vendorPager.page = 1; };
+    const onVendorSizeChange = () => { vendorPager.pageNo = 1; };
 
     /* setOrderPage — 설정 */
-    const setOrderPage = n => { if (n >= 1 && n <= cfOrderPages.value) orderPager.page = n; };
+    const setOrderPage = n => { if (n >= 1 && n <= cfOrderPages.value) orderPager.pageNo = n; };
 
     /* onOrderSizeChange — 이벤트 */
-    const onOrderSizeChange = () => { orderPager.page = 1; };
+    const onOrderSizeChange = () => { orderPager.pageNo = 1; };
 
     /* setClaimPage — 설정 */
-    const setClaimPage = n => { if (n >= 1 && n <= cfClaimPages.value) claimPager.page = n; };
+    const setClaimPage = n => { if (n >= 1 && n <= cfClaimPages.value) claimPager.pageNo = n; };
 
     /* onClaimSizeChange — 이벤트 */
-    const onClaimSizeChange = () => { claimPager.page = 1; };
+    const onClaimSizeChange = () => { claimPager.pageNo = 1; };
 
     /* setPromoPage — 설정 */
-    const setPromoPage = n => { if (n >= 1 && n <= cfPromoPages.value) promoPager.page = n; };
+    const setPromoPage = n => { if (n >= 1 && n <= cfPromoPages.value) promoPager.pageNo = n; };
 
     /* onPromoSizeChange — 이벤트 */
-    const onPromoSizeChange = () => { promoPager.page = 1; };
+    const onPromoSizeChange = () => { promoPager.pageNo = 1; };
 
     /* setSettlePage — 설정 */
-    const setSettlePage = n => { if (n >= 1 && n <= cfSettlePages.value) settlePager.page = n; };
+    const setSettlePage = n => { if (n >= 1 && n <= cfSettlePages.value) settlePager.pageNo = n; };
 
     /* onSettleSizeChange — 이벤트 */
-    const onSettleSizeChange = () => { settlePager.page = 1; };
+    const onSettleSizeChange = () => { settlePager.pageNo = 1; };
+
+    /* 클라이언트 슬라이스 총량(cfXxxTotal/cfXxxPages) → 각 pager 의 pageTotalCount/pageTotalPage 동기화.
+       BoPager 가 pageTotalPage/pageTotalCount 로 페이지 윈도우·마지막 버튼·건수를 계산하므로 필수. */
+    Vue.watchEffect(() => {
+      vendorPager.pageTotalCount = cfVendorTotal.value; vendorPager.pageTotalPage = cfVendorPages.value;
+      orderPager.pageTotalCount  = cfOrderTotal.value;  orderPager.pageTotalPage  = cfOrderPages.value;
+      claimPager.pageTotalCount  = cfClaimTotal.value;  claimPager.pageTotalPage  = cfClaimPages.value;
+      promoPager.pageTotalCount  = cfPromoTotal.value;  promoPager.pageTotalPage  = cfPromoPages.value;
+      settlePager.pageTotalCount = cfSettleTotal.value; settlePager.pageTotalPage = cfSettlePages.value;
+    });
 
     /* exportTab — 내보내기 */
     const exportTab = () => {
@@ -603,10 +613,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       row-key="vendorId"
       list-title="업체별현황"
       :count-text="'총 ' + cfVendorTotal + '개 업체'"
-      empty-text="데이터가 없습니다."
-      @set-page="n => handleSelectAction('statuses-vendorPagerSetPage', n)"
-      @size-change="handleBtnAction('statuses-vendorPagerSizeChange')">
+      empty-text="데이터가 없습니다.">
     </bo-grid>
+    <bo-pager :pager="vendorPager" :on-set-page="n => handleBtnAction('statuses-vendorPagerSetPage', n)" :on-size-change="() => handleBtnAction('statuses-vendorPagerSizeChange')" />
   </div>
   <!-- ===== □.□. 테이블 =================================================== -->
   <!-- ===== □. ══ 1. 업체별현황 ══ ========================================== -->
@@ -628,10 +637,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       list-title="주문별현황"
       :count-text="'총 ' + cfOrderTotal + '건'"
       :row-style="(r) => r.isCancelled ? 'color:#bbb' : ''"
-      empty-text="데이터가 없습니다."
-      @set-page="n => handleSelectAction('statuses-orderPagerSetPage', n)"
-      @size-change="handleBtnAction('statuses-orderPagerSizeChange')">
+      empty-text="데이터가 없습니다.">
     </bo-grid>
+    <bo-pager :pager="orderPager" :on-set-page="n => handleBtnAction('statuses-orderPagerSetPage', n)" :on-size-change="() => handleBtnAction('statuses-orderPagerSizeChange')" />
   </div>
   <!-- ===== □.□. 목록 영역 ================================================= -->
   <!-- ===== □. ══ 2. 주문별현황 ══ ========================================== -->
@@ -652,10 +660,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       row-key="claimId"
       list-title="클레임별현황"
       :count-text="'총 ' + cfClaimTotal + '건'"
-      empty-text="데이터가 없습니다."
-      @set-page="n => handleSelectAction('statuses-claimPagerSetPage', n)"
-      @size-change="handleBtnAction('statuses-claimPagerSizeChange')">
+      empty-text="데이터가 없습니다.">
     </bo-grid>
+    <bo-pager :pager="claimPager" :on-set-page="n => handleBtnAction('statuses-claimPagerSetPage', n)" :on-size-change="() => handleBtnAction('statuses-claimPagerSizeChange')" />
   </div>
   <!-- ===== □.□. 목록 영역 ================================================= -->
   <!-- ===== □. ══ 3. 클레임별현황 ══ ========================================= -->
@@ -676,10 +683,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       row-key="promoId"
       list-title="프로모션별현황"
       :count-text="'총 ' + cfPromoTotal + '개'"
-      empty-text="데이터가 없습니다."
-      @set-page="n => handleSelectAction('statuses-promoPagerSetPage', n)"
-      @size-change="handleBtnAction('statuses-promoPagerSizeChange')">
+      empty-text="데이터가 없습니다.">
     </bo-grid>
+    <bo-pager :pager="promoPager" :on-set-page="n => handleBtnAction('statuses-promoPagerSetPage', n)" :on-size-change="() => handleBtnAction('statuses-promoPagerSizeChange')" />
   </div>
   <!-- ===== □.□. 목록 영역 ================================================= -->
   <!-- ===== □. ══ 4. 프로모션별현황 ══ ======================================== -->
@@ -700,10 +706,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       row-key="month"
       list-title="정산별현황"
       :count-text="'총 ' + cfSettleTotal + '개월'"
-      empty-text="데이터가 없습니다."
-      @set-page="n => handleSelectAction('statuses-settlePagerSetPage', n)"
-      @size-change="handleBtnAction('statuses-settlePagerSizeChange')">
+      empty-text="데이터가 없습니다.">
     </bo-grid>
+    <bo-pager :pager="settlePager" :on-set-page="n => handleBtnAction('statuses-settlePagerSetPage', n)" :on-size-change="() => handleBtnAction('statuses-settlePagerSizeChange')" />
   </div>
 </div>
 <!-- ===== □.□. 목록 영역 ================================================= -->

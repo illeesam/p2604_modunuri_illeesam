@@ -459,8 +459,6 @@ window.SyApiLogMng = {
     :columns="columns.accessGrid" :rows="cfCurrentList" row-key="logId"
     list-title="API요청로그" :count-text="pager.pageTotalCount + '건'"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
-    @set-page="n => handleSelectAction('apiLogs-pager-setPage', n)"
-    @size-change="handleSelectAction('apiLogs-pager-sizeChange')"
     @row-click="row => handleSelectAction('apiLogs-rowToggle', row.logId)">
     <template #toolbar-actions>
       <div style="display:flex;align-items:center;gap:6px;">
@@ -487,8 +485,6 @@ window.SyApiLogMng = {
     :columns="columns.errorGrid" :rows="cfCurrentList" row-key="logId"
     list-title="API오류로그" :count-text="pager.pageTotalCount + '건'"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
-    @set-page="n => handleSelectAction('apiLogs-pager-setPage', n)"
-    @size-change="handleSelectAction('apiLogs-pager-sizeChange')"
     @row-click="row => handleSelectAction('apiLogs-rowToggle', row.logId)">
     <template #toolbar-actions>
       <div style="display:flex;align-items:center;gap:6px;">
@@ -520,7 +516,7 @@ window.SyApiLogMng = {
       </td>
     </template>
   </bo-grid>
-  <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('apiLogs-pager-setPage', n)" :on-size-change="() => handleSelectAction('apiLogs-pager-sizeChange')" />
+  <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('apiLogs-pager-setPage', n)" :on-size-change="() => handleSelectAction('apiLogs-pager-sizeChange')" />
 </div>
 <!-- ===== □. API오류로그 탭 =============================================== -->
 `,

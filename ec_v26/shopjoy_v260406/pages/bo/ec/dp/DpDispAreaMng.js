@@ -50,6 +50,12 @@ window.DpDispAreaMng = {
         uiState.selectedPath = null;
         pager.pageNo = 1;
         return handleSearchData('DEFAULT');
+      // 그리드 정렬 헤더 클릭
+      } else if (cmd === 'areas-sort') {
+        return onSort(param);
+      // 페이지 번호 클릭
+      } else if (cmd === 'areas-pager-setPage') {
+        return setPage(param);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -58,14 +64,8 @@ window.DpDispAreaMng = {
     /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ DpDispAreaMng.js : handleSelectAction -> ', cmd, param);
-      // 그리드 정렬 헤더 클릭
-      if (cmd === 'areas-sort') {
-        return onSort(param);
-      // 페이지 번호 클릭
-      } else if (cmd === 'areas-pager-setPage') {
-        return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'areas-pager-sizeChange') {
+      if (cmd === 'areas-pager-sizeChange') {
         return onSizeChange();
       // 그리드 행 클릭 → 상세 보기
       } else if (cmd === 'areas-rowView') {
@@ -297,10 +297,9 @@ window.DpDispAreaMng = {
       :sort-state="uiState" list-title="전시 영역 목록"
       :count-text="'총 ' + pager.pageTotalCount + '건'"
       empty-text="조회된 데이터가 없습니다." row-clickable
-      @sort="key => handleSelectAction('areas-sort', key)"
-      @set-page="n => handleSelectAction('areas-pager-setPage', n)"
-      @size-change="handleSelectAction('areas-pager-sizeChange')"
-      @row-click="(r) => handleSelectAction('areas-rowView', r.areaId)" row-actions>
+      @sort="key => handleBtnAction('areas-sort', key)"
+      @row-click="(r) => handleSelectAction('areas-rowView', r.areaId)"
+      @cell-click="e => handleSelectAction('areas-rowView', e.row.areaId)" row-actions>
       <template #toolbar-actions>
         <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">
           #{{ uiState.selectedPath }}
@@ -318,6 +317,7 @@ window.DpDispAreaMng = {
         </button>
       </template>
     </bo-grid>
+    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('areas-pager-setPage', n)" :on-size-change="() => handleSelectAction('areas-pager-sizeChange')" />
   </div>
   <!-- ===== □. 본문 영역 =================================================== -->
   <!-- ===== ■. 상세 패널 (항상 표시, 진입 시 빈 신규 폼) ============================== -->

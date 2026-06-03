@@ -422,10 +422,8 @@ window.PdProdMng = {
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(p) => detailPanel.selectedId===p.prodId ? 'background:#fff8f9;' : ''"
-      @sort="key => handleSelectAction('prods-sort', key)"
-      @set-page="n => handleSelectAction('prods-pager-setPage', n)"
-      @size-change="handleSelectAction('prods-pager-sizeChange')"
-      @row-click="p => handleSelectAction('prods-rowEdit', p.prodId)">
+      @sort="key => handleBtnAction('prods-sort', key)"
+      @cell-click="e => handleSelectAction('prods-rowEdit', e.row.prodId)">
       <template #head-actions>
         관리
       </template>
@@ -444,7 +442,7 @@ window.PdProdMng = {
         </div>
       </template>
     </bo-grid>
-        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('prods-pager-setPage', n)" :on-size-change="() => handleSelectAction('prods-pager-sizeChange')" />
+        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('prods-pager-setPage', n)" :on-size-change="() => handleSelectAction('prods-pager-sizeChange')" />
   </div>
   <!-- ===== □. 목록 ======================================================= -->
   <!-- ===== ■. 카테고리 선택 모달 ============================================== -->

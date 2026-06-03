@@ -435,10 +435,8 @@ window.SyAlarmMng = {
         :columns="columns.baseGrid" :rows="alarms" row-key="alarmId"
         list-title="알림목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
-        @sort="key => handleSelectAction('alarms-sort', key)"
-        @set-page="n => handleSelectAction('alarms-pager-setPage', n)"
-        @size-change="handleSelectAction('alarms-pager-sizeChange')"
-        @row-click="row => handleSelectAction('alarms-rowEdit', row.alarmId)">
+        @sort="key => handleBtnAction('alarms-sort', key)"
+        @cell-click="e => handleSelectAction('alarms-rowEdit', e.row.alarmId)">
         <template #toolbar-actions>
           <div style="display:flex;gap:6px;">
             <button class="btn btn-green btn-sm" @click="handleBtnAction('alarms-excel')">
@@ -467,7 +465,7 @@ window.SyAlarmMng = {
           </td>
         </template>
       </bo-grid>
-        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('alarms-pager-setPage', n)" :on-size-change="() => handleSelectAction('alarms-pager-sizeChange')" />
+        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('alarms-pager-setPage', n)" :on-size-change="() => handleSelectAction('alarms-pager-sizeChange')" />
     </div>
     <!-- ===== □.□. 경로 트리 ================================================= -->
     <!-- ===== ■.■. 상세 인라인 패널 (grid 직접 자식 → 전체 폭, 항상 표시) ===================== -->

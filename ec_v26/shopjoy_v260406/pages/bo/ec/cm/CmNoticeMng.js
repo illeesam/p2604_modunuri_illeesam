@@ -73,7 +73,7 @@ window.CmNoticeMng = {
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
     /* handleBtnAction — 버튼 액션 dispatch */
-    const handleBtnAction = (cmd) => {
+    const handleBtnAction = (cmd, param) => {
       if (cmd === 'searchParam-list')  { baseGrid.pager.pageNo = 1; return handleSearchList(); }
       if (cmd === 'searchParam-reset') { Object.assign(searchParam, _initSearchParam()); baseGrid.reset(); resetDetailToNew();
       return handleSearchList(); }
@@ -92,13 +92,13 @@ window.CmNoticeMng = {
          { label: '상태', key: 'noticeStatusCd' }, { label: '조회수', key: 'viewCount' }, { label: '등록일', key: 'regDate' }],
         '공지목록.csv');
       if (cmd === 'baseDetail-close') return resetDetailToNew();
+      if (cmd === 'notices-sort')             return baseGrid.onSort(param);
+      if (cmd === 'notices-pager-setPage')    return baseGrid.setPage(param);
       console.warn('[handleBtnAction] unknown cmd:', cmd);
     };
 
     /* handleSelectAction — 그리드 행/페이지 선택 액션 dispatch */
     const handleSelectAction = (cmd, param) => {
-      if (cmd === 'notices-sort')             return baseGrid.onSort(param);
-      if (cmd === 'notices-pager-setPage')    return baseGrid.setPage(param);
       if (cmd === 'notices-pager-sizeChange') return baseGrid.onSizeChange();
       if (cmd === 'notices-rowEdit')          return openDetailEdit(param);
       if (cmd === 'notices-rowDelete')        return handleDelete(param);
@@ -224,10 +224,8 @@ window.CmNoticeMng = {
     :sort-state="baseGrid" list-title="공지사항목록"
     :count-text="'총 ' + baseGrid.pager.pageTotalCount + '건'"
     :row-class="row => baseDetail.selectedId === row.noticeId ? 'active' : ''" empty-text="데이터가 없습니다."
-    @sort="key => handleSelectAction('notices-sort', key)"
-    @set-page="n => handleSelectAction('notices-pager-setPage', n)"
-    @size-change="handleSelectAction('notices-pager-sizeChange')"
-    @row-click="row => handleSelectAction('notices-rowEdit', row.noticeId)" row-actions>
+    @sort="key => handleBtnAction('notices-sort', key)"
+    @cell-click="e => handleSelectAction('notices-rowEdit', e.row.noticeId)" row-actions>
     <template #toolbar-actions>
       <button class="btn btn-green btn-sm" @click="handleBtnAction('notices-excel')">📥 엑셀</button>
       <button class="btn btn-primary btn-sm" @click="handleBtnAction('notices-add')">+ 신규</button>
@@ -239,6 +237,7 @@ window.CmNoticeMng = {
       </div>
     </template>
   </bo-grid>
+  <bo-pager :pager="baseGrid.pager" :on-set-page="n => handleBtnAction('notices-pager-setPage', n)" :on-size-change="() => handleSelectAction('notices-pager-sizeChange')" />
   <!-- ===== ■. 상세 패널 (인라인 임베드 — 항상 표시, 진입 시 빈 신규 폼) ============= -->
   <div style="margin-top:16px;">
     <div v-if="baseDetail.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">

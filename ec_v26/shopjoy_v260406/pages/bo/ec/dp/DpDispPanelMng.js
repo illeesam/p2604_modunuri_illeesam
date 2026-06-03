@@ -50,6 +50,12 @@ window.DpDispPanelMng = {
       // 카드 미리보기 닫기
       } else if (cmd === 'cardPreview-close') {
         return closeCardPreview();
+      // 그리드 정렬 헤더 클릭
+      } else if (cmd === 'panels-sort') {
+        return onSort(param);
+      // 페이지 번호 클릭
+      } else if (cmd === 'panels-pager-setPage') {
+        return setPage(param);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -58,14 +64,8 @@ window.DpDispPanelMng = {
     /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ DpDispPanelMng.js : handleSelectAction -> ', cmd, param);
-      // 그리드 정렬 헤더 클릭
-      if (cmd === 'panels-sort') {
-        return onSort(param);
-      // 페이지 번호 클릭
-      } else if (cmd === 'panels-pager-setPage') {
-        return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'panels-pager-sizeChange') {
+      if (cmd === 'panels-pager-sizeChange') {
         return onSizeChange();
       // 그리드 행 클릭 → 상세 보기
       } else if (cmd === 'panels-rowView') {
@@ -950,7 +950,7 @@ window.DpDispPanelMng = {
           </template>
         </tbody>
       </table>
-      <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('panels-pager-setPage', n)" :on-size-change="() => handleSelectAction('panels-pager-sizeChange')" />
+      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('panels-pager-setPage', n)" :on-size-change="() => handleSelectAction('panels-pager-sizeChange')" />
     </div>
   </div>
   <!-- ===== /우측 목록 ===================================================== -->

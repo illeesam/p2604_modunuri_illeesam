@@ -86,6 +86,13 @@ window.OdOrderMng = {
       } else if (cmd === 'memberPickModal-clear') {
         searchParam.memberId = ''; searchParam.memberNm = '';
         return;
+      // 그리드 정렬 헤더 클릭
+      } else if (cmd === 'orders-sort') {
+        return onSort(param);
+      // 페이지 번호 클릭
+      } else if (cmd === 'orders-pager-setPage') {
+        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchData('PAGE_CLICK'); }
+        return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -94,15 +101,8 @@ window.OdOrderMng = {
     /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ OdOrderMng.js : handleSelectAction -> ', cmd, param);
-      // 그리드 정렬 헤더 클릭
-      if (cmd === 'orders-sort') {
-        return onSort(param);
-      // 페이지 번호 클릭
-      } else if (cmd === 'orders-pager-setPage') {
-        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchData('PAGE_CLICK'); }
-        return;
       // 페이지 크기 변경
-      } else if (cmd === 'orders-pager-sizeChange') {
+      if (cmd === 'orders-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchData('DEFAULT');
       // 그리드 행 클릭 → 편집 인라인 패널 열기
@@ -617,10 +617,10 @@ window.OdOrderMng = {
       <bo-grid bare selectable :columns="columns.listGrid" :rows="orders" row-key="orderId"
         :sort-state="uiState" :is-checked="isChecked" :all-checked="cfAllChecked"
         :row-style="fnGridRowStyle" empty-text="데이터가 없습니다."
-        @sort="key => handleSelectAction('orders-sort', key)"
+        @sort="key => handleBtnAction('orders-sort', key)"
         @toggle-check="id => handleSelectAction('orders-rowToggleCheck', id)"
         @toggle-check-all="handleSelectAction('orders-rowToggleCheckAll')"
-        @row-click="row => handleSelectAction('orders-rowEdit', row.orderId)"
+        @cell-click="e => handleSelectAction('orders-rowEdit', e.row.orderId)"
         @ref-click="({type,id}) => handleSelectAction('orders-rowRefClick', {type, id})" row-actions>
         <template #row-actions="{ row }">
           <div class="actions">
@@ -638,7 +638,7 @@ window.OdOrderMng = {
     <!-- ===== ■.■. /그리드 스크롤 컨테이너 ========================================= -->
     <!-- ===== ■.■. 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ============================= -->
     <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
-      <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('orders-pager-setPage', n)"
+      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('orders-pager-setPage', n)"
         :on-size-change="() => handleSelectAction('orders-pager-sizeChange')"
         style="margin-top:0;min-height:34px;" />
     </div>

@@ -346,9 +346,7 @@ window.SyBbmMng = {
         :columns="columns.baseGrid" :rows="bbms" row-key="bbmId"
         list-title="게시판목록" :count-text="pager.pageTotalCount + '건'"
         :row-style="fnRowStyle"
-        @set-page="n => handleSelectAction('bbms-pager-setPage', n)"
-        @size-change="handleSelectAction('bbms-pager-sizeChange')"
-        @row-click="row => handleSelectAction('bbms-rowEdit', row.bbmId)">
+        @cell-click="e => handleSelectAction('bbms-rowEdit', e.row.bbmId)">
         <template #toolbar-actions>
           <div style="display:flex;gap:6px;">
             <button class="btn btn-green btn-sm" @click="handleBtnAction('bbms-excel')">
@@ -377,7 +375,7 @@ window.SyBbmMng = {
           </td>
         </template>
       </bo-grid>
-        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('bbms-pager-setPage', n)" :on-size-change="() => handleSelectAction('bbms-pager-sizeChange')" />
+        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('bbms-pager-setPage', n)" :on-size-change="() => handleSelectAction('bbms-pager-sizeChange')" />
     </div>
     <!-- ===== □.□. 우: 목록 ================================================= -->
   </div>

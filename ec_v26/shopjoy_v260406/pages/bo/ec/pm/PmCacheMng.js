@@ -328,9 +328,9 @@ window.PmCacheMng = {
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(c) => detailPanel.selectedId===c.cacheId ? 'background:#fff8f9;' : ''"
-      @sort="key => handleSelectAction('caches-sort', key)"
+      @sort="key => handleBtnAction('caches-sort', key)"
       @ref-click="({type,id}) => handleSelectAction('caches-ref', {type, id})"
-      @row-click="c => handleSelectAction('caches-rowEdit', c.cacheId)">
+      @cell-click="e => handleSelectAction('caches-rowEdit', e.row.cacheId)">
       <template #head-actions>
         관리
       </template>
@@ -345,7 +345,7 @@ window.PmCacheMng = {
         </div>
       </template>
     </bo-grid>
-    <bo-pager v-if="uiState.tabMode==='list' && pager.pageTotalCount > 0" :pager="pager" :on-set-page="n => handleSelectAction('caches-pager-setPage', n)" :on-size-change="() => handleSelectAction('caches-pager-sizeChange')" />
+    <bo-pager v-if="uiState.tabMode==='list' && pager.pageTotalCount > 0" :pager="pager" :on-set-page="n => handleBtnAction('caches-pager-setPage', n)" :on-size-change="() => handleSelectAction('caches-pager-sizeChange')" />
     <!-- ===== ■.■. 카드 뷰 ================================================== -->
     <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">
       <div v-if="caches.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">
@@ -380,7 +380,7 @@ window.PmCacheMng = {
       </div>
     </div>
     <!-- ===== ■.■. 페이지네이션 ================================================ -->
-    <bo-pager v-if="uiState.tabMode!=='list' && pager.pageTotalCount > 0" :pager="pager" :on-set-page="n => handleSelectAction('caches-pager-setPage', n)" :on-size-change="() => handleSelectAction('caches-pager-sizeChange')" />
+    <bo-pager v-if="uiState.tabMode!=='list' && pager.pageTotalCount > 0" :pager="pager" :on-set-page="n => handleBtnAction('caches-pager-setPage', n)" :on-size-change="() => handleSelectAction('caches-pager-sizeChange')" />
   </div>
   <!-- ===== □. 목록 영역 ================================================== -->
   <!-- ===== ■. 상세 패널 (인라인 임베드, 항상 표시) ================================ -->

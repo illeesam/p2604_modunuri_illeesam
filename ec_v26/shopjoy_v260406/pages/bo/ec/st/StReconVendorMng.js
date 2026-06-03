@@ -201,10 +201,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
       :columns="columns.baseGrid" :rows="rows" row-key="vendorId"
-      list-title="목록" :count-text="pager.pageTotalCount + '개 업체'"
-      @set-page="n => handleSelectAction('reconVendors-pager-setPage', n)" @size-change="handleSelectAction('reconVendors-pager-sizeChange')">
+      list-title="목록" :count-text="pager.pageTotalCount + '개 업체'">
     </bo-grid>
-        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('reconVendors-pager-setPage', n)" :on-size-change="() => handleSelectAction('reconVendors-pager-sizeChange')" />
+        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('reconVendors-pager-setPage', n)" :on-size-change="() => handleSelectAction('reconVendors-pager-sizeChange')" />
   </div>
 </div>
 <!-- ===== □.□. 목록 영역 ================================================= -->

@@ -693,7 +693,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
     <!-- ===== ■.■. /그리드 스크롤 컨테이너 ========================================= -->
     <!-- ===== ■.■. 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ============================= -->
     <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
-      <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('sets-pager-setPage', n)" :on-size-change="() => handleBtnAction('sets-pager-sizeChange')"
+      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('sets-pager-setPage', n)" :on-size-change="() => handleBtnAction('sets-pager-sizeChange')"
         style="margin-top:0;min-height:34px;" />
     </div>
   </div>

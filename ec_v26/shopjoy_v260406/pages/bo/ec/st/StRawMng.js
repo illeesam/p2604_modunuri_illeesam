@@ -382,8 +382,6 @@ const raws = reactive([]);
     list-title="정산수집원장"
     :is-expanded="(r) => isExpanded(r.settleRawId)"
     empty-text="데이터가 없습니다." row-clickable
-    @set-page="n => handleSelectAction('rawData-pager-setPage', n)"
-    @size-change="handleSelectAction('rawData-pager-sizeChange')"
     @row-click="(r) => toggleRow(r.settleRawId)">
     <template #toolbar-actions>
       <button class="btn btn-secondary btn-sm" @click="() => { raws.forEach(r => { if(!isExpanded(r.settleRawId)) toggleRow(r.settleRawId); }) }">
@@ -402,7 +400,7 @@ const raws = reactive([]);
       </td>
     </template>
   </bo-grid>
-        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('rawData-pager-setPage', n)" :on-size-change="() => handleSelectAction('rawData-pager-sizeChange')" />
+        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('rawData-pager-setPage', n)" :on-size-change="() => handleSelectAction('rawData-pager-sizeChange')" />
 </div>
 <!-- ===== □. 목록 카드 =================================================== -->
 `,

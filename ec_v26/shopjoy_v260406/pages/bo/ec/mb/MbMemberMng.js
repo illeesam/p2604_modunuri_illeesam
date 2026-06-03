@@ -48,6 +48,12 @@ window.MbMemberMng = {
       // 상세 인라인 패널 닫기
       } else if (cmd === 'detailPanel-close') {
         return closeDetail();
+      // 그리드 정렬 헤더 클릭
+      } else if (cmd === 'members-sort') {
+        return onSort(param);
+      // 페이지 번호 클릭
+      } else if (cmd === 'members-pager-setPage') {
+        return setPage(param);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -56,14 +62,8 @@ window.MbMemberMng = {
     /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ MbMemberMng.js : handleSelectAction -> ', cmd, param);
-      // 그리드 정렬 헤더 클릭
-      if (cmd === 'members-sort') {
-        return onSort(param);
-      // 페이지 번호 클릭
-      } else if (cmd === 'members-pager-setPage') {
-        return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'members-pager-sizeChange') {
+      if (cmd === 'members-pager-sizeChange') {
         return onSizeChange();
       // 그리드 행 클릭 → 상세 편집 패널 열기
       } else if (cmd === 'members-rowEdit') {
@@ -349,9 +349,7 @@ window.MbMemberMng = {
     :sort-state="uiState" list-title="회원목록" row-clickable
     :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다."
-    @sort="key => handleSelectAction('members-sort', key)"
-    @set-page="n => handleSelectAction('members-pager-setPage', n)"
-    @size-change="handleSelectAction('members-pager-sizeChange')"
+    @sort="key => handleBtnAction('members-sort', key)"
     @row-click="row => handleSelectAction('members-rowEdit', row)" row-actions>
     <template #toolbar-actions>
       <button class="btn btn-primary btn-sm" @click="handleBtnAction('members-add')">
@@ -364,7 +362,7 @@ window.MbMemberMng = {
       </button>
     </template>
   </bo-grid>
-        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('members-pager-setPage', n)" :on-size-change="() => handleSelectAction('members-pager-sizeChange')" />
+        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('members-pager-setPage', n)" :on-size-change="() => handleSelectAction('members-pager-sizeChange')" />
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 상세 패널 (인라인 임베드, 항상 표시) ================================== -->
   <mb-member-dtl :detail-modal="detailPanel" :active="detailPanel.active"

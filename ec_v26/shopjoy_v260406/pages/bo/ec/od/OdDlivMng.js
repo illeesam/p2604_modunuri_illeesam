@@ -86,6 +86,13 @@ window.OdDlivMng = {
       } else if (cmd === 'memberPickModal-clear') {
         searchParam.memberId = ''; searchParam.memberNm = '';
         return;
+      // 그리드 정렬 헤더 클릭
+      } else if (cmd === 'dlivs-sort') {
+        return onSort(param);
+      // 페이지 번호 클릭
+      } else if (cmd === 'dlivs-pager-setPage') {
+        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchData('PAGE_CLICK'); }
+        return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -94,15 +101,8 @@ window.OdDlivMng = {
     /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ OdDlivMng.js : handleSelectAction -> ', cmd, param);
-      // 그리드 정렬 헤더 클릭
-      if (cmd === 'dlivs-sort') {
-        return onSort(param);
-      // 페이지 번호 클릭
-      } else if (cmd === 'dlivs-pager-setPage') {
-        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchData('PAGE_CLICK'); }
-        return;
       // 페이지 크기 변경
-      } else if (cmd === 'dlivs-pager-sizeChange') {
+      if (cmd === 'dlivs-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchData('DEFAULT');
       // 그리드 행 수정 → 해당 행 선택 + 활성(저장/취소 노출)
@@ -624,7 +624,7 @@ window.OdDlivMng = {
       <bo-grid bare selectable :columns="columns.listGrid" :rows="dlivs" row-key="dlivId"
         :sort-state="uiState" :is-checked="isChecked" :all-checked="cfAllChecked"
         :row-style="fnGridRowStyle" empty-text="데이터가 없습니다."
-        @sort="key => handleSelectAction('dlivs-sort', key)"
+        @sort="key => handleBtnAction('dlivs-sort', key)"
         @toggle-check="id => handleSelectAction('dlivs-rowToggleCheck', id)"
         @toggle-check-all="handleSelectAction('dlivs-rowToggleCheckAll')"
         @ref-click="({type,id}) => handleSelectAction('dlivs-rowRefClick', {type, id})" row-actions>
@@ -644,7 +644,7 @@ window.OdDlivMng = {
     <!-- ===== ■.■. /그리드 스크롤 컨테이너 ========================================= -->
     <!-- ===== ■.■. 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ============================= -->
     <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
-      <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('dlivs-pager-setPage', n)"
+      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('dlivs-pager-setPage', n)"
         :on-size-change="() => handleSelectAction('dlivs-pager-sizeChange')"
         style="margin-top:0;min-height:34px;" />
     </div>

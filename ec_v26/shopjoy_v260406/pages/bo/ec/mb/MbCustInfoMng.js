@@ -713,8 +713,7 @@
         </div>
         <div style="overflow:auto;max-height:340px;">
           <bo-grid bare :columns="columns.orderGrid" :rows="orders" :pager="ordersPager" row-key="orderId" empty-text="주문 내역이 없습니다."
-            @ref-click="ref => handleSelectAction('row-ref', ref)"
-            @set-page="n => onSetPage('orders', n)" @size-change="() => onSizeChange('orders')">
+            @ref-click="ref => handleSelectAction('row-ref', ref)">
           </bo-grid>
         </div>
         <bo-pager v-if="ordersPager.pageTotalCount > 0" :pager="ordersPager" :on-set-page="n => onSetPage('orders', n)" :on-size-change="() => onSizeChange('orders')" />
@@ -733,8 +732,7 @@
         </div>
         <div style="overflow:auto;max-height:340px;">
           <bo-grid bare :columns="columns.claimGrid" :rows="claims" :pager="claimsPager" row-key="claimId" empty-text="클레임 내역이 없습니다."
-            @ref-click="ref => handleSelectAction('row-ref', ref)"
-            @set-page="n => onSetPage('claims', n)" @size-change="() => onSizeChange('claims')">
+            @ref-click="ref => handleSelectAction('row-ref', ref)">
           </bo-grid>
         </div>
         <bo-pager v-if="claimsPager.pageTotalCount > 0" :pager="claimsPager" :on-set-page="n => onSetPage('claims', n)" :on-size-change="() => onSizeChange('claims')" />
@@ -752,8 +750,7 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="columns.dlivGrid" :rows="deliveries" :pager="dlivPager" row-key="dlivId" empty-text="배송 내역이 없습니다."
-            @set-page="n => onSetPage('dliv', n)" @size-change="() => onSizeChange('dliv')">
+          <bo-grid bare :columns="columns.dlivGrid" :rows="deliveries" :pager="dlivPager" row-key="dlivId" empty-text="배송 내역이 없습니다.">
           </bo-grid>
         </div>
         <bo-pager v-if="dlivPager.pageTotalCount > 0" :pager="dlivPager" :on-set-page="n => onSetPage('dliv', n)" :on-size-change="() => onSizeChange('dliv')" />
@@ -774,8 +771,7 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="columns.cacheGrid" :rows="caches" :pager="cachePager" row-key="cacheId" empty-text="캐쉬 내역이 없습니다."
-            @set-page="n => onSetPage('cache', n)" @size-change="() => onSizeChange('cache')">
+          <bo-grid bare :columns="columns.cacheGrid" :rows="caches" :pager="cachePager" row-key="cacheId" empty-text="캐쉬 내역이 없습니다.">
           </bo-grid>
         </div>
         <bo-pager v-if="cachePager.pageTotalCount > 0" :pager="cachePager" :on-set-page="n => onSetPage('cache', n)" :on-size-change="() => onSizeChange('cache')" />
@@ -793,8 +789,7 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="columns.contactGrid" :rows="contacts" :pager="contactsPager" row-key="inquiryId" empty-text="문의 내역이 없습니다."
-            @set-page="n => onSetPage('contacts', n)" @size-change="() => onSizeChange('contacts')">
+          <bo-grid bare :columns="columns.contactGrid" :rows="contacts" :pager="contactsPager" row-key="inquiryId" empty-text="문의 내역이 없습니다.">
           </bo-grid>
         </div>
         <bo-pager v-if="contactsPager.pageTotalCount > 0" :pager="contactsPager" :on-set-page="n => onSetPage('contacts', n)" :on-size-change="() => onSizeChange('contacts')" />
@@ -812,8 +807,7 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="columns.chatGrid" :rows="chats" :pager="chatsPager" row-key="chatId" empty-text="채팅 내역이 없습니다."
-            @set-page="n => onSetPage('chats', n)" @size-change="() => onSizeChange('chats')">
+          <bo-grid bare :columns="columns.chatGrid" :rows="chats" :pager="chatsPager" row-key="chatId" empty-text="채팅 내역이 없습니다.">
           </bo-grid>
         </div>
         <bo-pager v-if="chatsPager.pageTotalCount > 0" :pager="chatsPager" :on-set-page="n => onSetPage('chats', n)" :on-size-change="() => onSizeChange('chats')" />
@@ -831,8 +825,7 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="columns.loginGrid" :rows="loginHistories" :pager="loginPager" row-key="loginId" empty-text="로그인 내역이 없습니다."
-            @set-page="n => onSetPage('login', n)" @size-change="() => onSizeChange('login')">
+          <bo-grid bare :columns="columns.loginGrid" :rows="loginHistories" :pager="loginPager" row-key="loginId" empty-text="로그인 내역이 없습니다.">
           </bo-grid>
         </div>
         <bo-pager v-if="loginPager.pageTotalCount > 0" :pager="loginPager" :on-set-page="n => onSetPage('login', n)" :on-size-change="() => onSizeChange('login')" />
@@ -851,8 +844,7 @@
         </div>
         <div style="overflow:auto;max-height:340px;">
           <bo-grid bare :columns="columns.couponGrid" :rows="couponUsages" :pager="couponPager" row-key="usageId" empty-text="쿠폰 사용 내역이 없습니다."
-            @ref-click="ref => handleSelectAction('row-ref', ref)"
-            @set-page="n => onSetPage('coupon', n)" @size-change="() => onSizeChange('coupon')">
+            @ref-click="ref => handleSelectAction('row-ref', ref)">
           </bo-grid>
         </div>
         <bo-pager v-if="couponPager.pageTotalCount > 0" :pager="couponPager" :on-set-page="n => onSetPage('coupon', n)" :on-size-change="() => onSizeChange('coupon')" />
@@ -870,8 +862,7 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="columns.sendGrid" :rows="sendHistories" :pager="sendPager" row-key="sendId" empty-text="발송 내역이 없습니다."
-            @set-page="n => onSetPage('send', n)" @size-change="() => onSizeChange('send')">
+          <bo-grid bare :columns="columns.sendGrid" :rows="sendHistories" :pager="sendPager" row-key="sendId" empty-text="발송 내역이 없습니다.">
           </bo-grid>
         </div>
         <bo-pager v-if="sendPager.pageTotalCount > 0" :pager="sendPager" :on-set-page="n => onSetPage('send', n)" :on-size-change="() => onSizeChange('send')" />
@@ -889,7 +880,7 @@
     <bo-grid bare :columns="columns.memberModalGrid" :rows="cfPageModalList" :pager="modalPager"
       row-key="userId" row-clickable empty-text="검색 결과가 없습니다."
       @row-click="row => handleSelectAction('memberModal-pick', row)"
-      @set-page="n => onSetPage('modal', n)" @size-change="() => onSizeChange('modal')" row-actions>
+ row-actions>
       <template #row-actions="{ row }">
         <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('memberModal-pick', row)">
           선택

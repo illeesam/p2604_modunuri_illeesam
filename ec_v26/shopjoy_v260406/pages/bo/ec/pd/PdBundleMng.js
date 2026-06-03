@@ -658,8 +658,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 목록 ====================================================== -->
   <bo-grid list-title="묶음상품 목록" :columns="columns.bundleGrid" :rows="bundleList" :row-style="fnBundleRowStyle" row-key="bundleProdId"
-    empty-text="데이터가 없습니다." :row-actions="true"
-    @set-page="n => handleSelectAction('bundles-pager-setPage', n)" @size-change="handleBtnAction('bundles-pager-sizeChange')">
+    empty-text="데이터가 없습니다." :row-actions="true">
     <template #toolbar-actions>
       <button class="btn btn-green btn-sm" @click="handleBtnAction('bundles-add')">
         + 신규등록
@@ -699,7 +698,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
     </button>
   </template>
 </bo-grid>
-        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('bundles-pager-setPage', n)" :on-size-change="() => handleSelectAction('bundles-pager-sizeChange')" />
+        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('bundles-pager-setPage', n)" :on-size-change="() => handleSelectAction('bundles-pager-sizeChange')" />
 <!-- ===== □. 목록 ====================================================== -->
 <!-- ===== ■. 신규등록 / 구성관리 (인라인 Dtl, 항상 표시) =================================== -->
 <div class="card"

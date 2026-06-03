@@ -58,6 +58,12 @@ window.DpDispUiMng = {
         uiState.selectedPath = null;
         pager.pageNo = 1;
         return handleSearchList('DEFAULT');
+      // 그리드 정렬 헤더 클릭
+      } else if (cmd === 'uis-sort') {
+        return onSort(param);
+      // 페이지 번호 클릭
+      } else if (cmd === 'uis-pager-setPage') {
+        return setPage(param);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -66,14 +72,8 @@ window.DpDispUiMng = {
     /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ DpDispUiMng.js : handleSelectAction -> ', cmd, param);
-      // 그리드 정렬 헤더 클릭
-      if (cmd === 'uis-sort') {
-        return onSort(param);
-      // 페이지 번호 클릭
-      } else if (cmd === 'uis-pager-setPage') {
-        return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'uis-pager-sizeChange') {
+      if (cmd === 'uis-pager-sizeChange') {
         return onSizeChange();
       // 그리드 행 클릭 → 상세 보기
       } else if (cmd === 'uis-rowView') {
@@ -338,10 +338,9 @@ window.DpDispUiMng = {
       :sort-state="uiState" list-title="전시 UI 목록"
       :count-text="'총 ' + pager.pageTotalCount + '건'"
       empty-text="조회된 데이터가 없습니다." row-clickable
-      @sort="key => handleSelectAction('uis-sort', key)"
-      @set-page="n => handleSelectAction('uis-pager-setPage', n)"
-      @size-change="handleSelectAction('uis-pager-sizeChange')"
-      @row-click="(r) => handleSelectAction('uis-rowView', r.uiId)" row-actions>
+      @sort="key => handleBtnAction('uis-sort', key)"
+      @row-click="(r) => handleSelectAction('uis-rowView', r.uiId)"
+      @cell-click="e => handleSelectAction('uis-rowView', e.row.uiId)" row-actions>
       <template #toolbar-actions>
         <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">
           #{{ uiState.selectedPath }}
@@ -359,6 +358,7 @@ window.DpDispUiMng = {
         </button>
       </template>
     </bo-grid>
+    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('uis-pager-setPage', n)" :on-size-change="() => handleSelectAction('uis-pager-sizeChange')" />
   </div>
   <!-- ===== □.□. 목록 영역 ================================================= -->
   <!-- ===== □. 본문 영역 =================================================== -->

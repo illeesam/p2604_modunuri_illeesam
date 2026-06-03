@@ -91,6 +91,9 @@ window.SyVendorUserMng = {
       // 업체 그리드 페이지 번호 클릭
       } else if (cmd === 'vendors-pager-setPage') {
         return setBizPage(param);
+      // 업체 그리드 페이지 크기 변경
+      } else if (cmd === 'vendors-pager-sizeChange') {
+        bizPager.pageNo = 1; return fnBuildBizPagerNums();
       // 사용자 그리드 행 클릭 → 편집 모드 진입
       } else if (cmd === 'vendorUsers-rowEdit') {
         return openEdit(param);
@@ -709,7 +712,6 @@ window.SyVendorUserMng = {
         :columns="columns.vendorGrid" :rows="bizPager.pageList||[]" :pager="bizPager" row-key="vendorId"
         list-title="업체목록" :count-text="vendors.length + '건'"
         :row-style="fnVendorRowStyle" row-clickable
-        @set-page="n => handleSelectAction('vendors-pager-setPage', n)"
         @row-click="row => handleSelectAction('vendors-rowSelect', row)" row-actions>
         <template #row-actions="{ row }">
           <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('vendors-rowSelect', row)">
@@ -717,6 +719,7 @@ window.SyVendorUserMng = {
           </button>
         </template>
       </bo-grid>
+      <bo-pager :pager="bizPager" :on-set-page="n => handleBtnAction('vendors-pager-setPage', n)" :on-size-change="() => handleSelectAction('vendors-pager-sizeChange')" />
     </div>
     <!-- ===== □.□. 좌: 업체 검색 + 목록 ===================================== -->
     <!-- ===== ■.■. 우: 사용자 검색 + 목록 =================================== -->
@@ -728,11 +731,9 @@ window.SyVendorUserMng = {
       </div>
       <!-- ===== ■.■.■. 사용자 목록 =========================================== -->
       <bo-grid v-if="uiState.searchVendorId != null"
-        :columns="columns.userGrid" :rows="pager.pageList||[]" row-key="vendorUserId"
+        :columns="columns.userGrid" :rows="pager.pageList||[]" :pager="pager" row-key="vendorUserId"
         list-title="사용자목록" :count-text="vendorUsers.length + '건'"
         :row-style="fnUserRowStyle" :loading="uiState.loading" :row-actions="true" row-clickable
-        @set-page="n => handleSelectAction('vendorUsers-pager-setPage', n)"
-        @size-change="handleSelectAction('vendorUsers-pager-sizeChange')"
         @row-click="row => handleSelectAction('vendorUsers-rowEdit', row)">
         <template #toolbar-actions>
           <button class="btn btn-primary btn-sm" @click="handleBtnAction('vendorUsers-add')">
@@ -745,7 +746,7 @@ window.SyVendorUserMng = {
           </button>
         </template>
       </bo-grid>
-      <bo-pager v-if="uiState.searchVendorId != null" :pager="pager" :on-set-page="n => handleSelectAction('vendorUsers-pager-setPage', n)" :on-size-change="() => handleSelectAction('vendorUsers-pager-sizeChange')" />
+      <bo-pager v-if="uiState.searchVendorId != null" :pager="pager" :on-set-page="n => handleBtnAction('vendorUsers-pager-setPage', n)" :on-size-change="() => handleSelectAction('vendorUsers-pager-sizeChange')" />
       <!-- ===== ■.■.■. 카드 영역 (업체 미선택 안내) =========================== -->
       <div v-else class="card" style="text-align:center;padding:30px;color:#aaa;">
         좌측 업체목록에서 업체를 선택하면 사용자 목록이 표시됩니다.

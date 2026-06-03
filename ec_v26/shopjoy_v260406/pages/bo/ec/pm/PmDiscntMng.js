@@ -371,7 +371,7 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(d) => selectedId===d.discntId ? 'background:#fff8f9;' : ''"
-      @sort="onSort" @row-click="d => handleLoadDetail(d.discntId)">
+      @sort="onSort" @cell-click="e => handleLoadDetail(e.row.discntId)">
       <template #head-actions>
         관리
       </template>
@@ -386,7 +386,7 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
         </div>
       </template>
     </bo-grid>
-    <bo-pager v-if="tabMode==='list' && pager.pageTotalCount > 0" :pager="pager" :on-set-page="n => handleSelectAction('discnts-pager-setPage', n)" :on-size-change="() => handleSelectAction('discnts-pager-sizeChange')" />
+    <bo-pager v-if="tabMode==='list' && pager.pageTotalCount > 0" :pager="pager" :on-set-page="n => handleBtnAction('discnts-pager-setPage', n)" :on-size-change="() => handleSelectAction('discnts-pager-sizeChange')" />
     <!-- ===== □.□. 목록 영역 ================================================= -->
     <!-- ===== ■.■. 카드 뷰 ================================================== -->
     <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">

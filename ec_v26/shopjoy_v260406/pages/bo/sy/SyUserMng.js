@@ -448,10 +448,8 @@ window.SyUserMng = {
         :columns="columns.baseGrid" :rows="users" row-key="userId"
         list-title="사용자목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
-        @sort="key => handleSelectAction('users-sort', key)"
-        @set-page="n => handleSelectAction('users-pager-setPage', n)"
-        @size-change="handleSelectAction('users-pager-sizeChange')"
-        @row-click="row => handleSelectAction('users-rowEdit', row.userId)">
+        @sort="key => handleBtnAction('users-sort', key)"
+        @cell-click="e => handleSelectAction('users-rowEdit', e.row.userId)">
         <template #toolbar-actions>
           <div style="display:flex;gap:6px;">
             <button class="btn btn-green btn-sm" @click="handleBtnAction('users-excel')">
@@ -483,7 +481,7 @@ window.SyUserMng = {
           </td>
         </template>
       </bo-grid>
-        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('users-pager-setPage', n)" :on-size-change="() => handleSelectAction('users-pager-sizeChange')" />
+        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('users-pager-setPage', n)" :on-size-change="() => handleSelectAction('users-pager-sizeChange')" />
     </div>
   </div>
   <!-- ===== □. 본문 영역 =================================================== -->

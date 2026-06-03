@@ -380,8 +380,6 @@ window.SyPathMng = {
       list-title="경로 목록" :count-text="pager.pageTotalCount + '건'"
       :row-class="fnRowClass" :show-save="true" :row-actions="true"
       @save="handleBtnAction('paths-save')"
-      @set-page="n => handleSelectAction('paths-pager-setPage', n)"
-      @size-change="handleSelectAction('paths-pager-sizeChange')"
       @cell-change="row => handleSelectAction('paths-cellChange', row)">
       <template #toolbar-actions>
         <button class="btn btn-green btn-sm" @click="handleBtnAction('paths-add')">
@@ -400,7 +398,7 @@ window.SyPathMng = {
         </button>
       </template>
     </bo-grid>
-        <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('paths-pager-setPage', n)" :on-size-change="() => handleSelectAction('paths-pager-sizeChange')" />
+        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('paths-pager-setPage', n)" :on-size-change="() => handleSelectAction('paths-pager-sizeChange')" />
   </div>
   <!-- ===== □.□. 그리드 =================================================== -->
   <!-- ===== □. 좌 트리 + 우 그리드 ============================================ -->

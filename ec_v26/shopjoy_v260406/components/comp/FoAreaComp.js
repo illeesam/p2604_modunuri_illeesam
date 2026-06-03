@@ -27,8 +27,10 @@
  *                         rowStyle, rowClass, countText, isExpanded, draggable,
  *                         showSave, rowActions, bare, selectable, checkedKey,
  *                         isChecked, allChecked, minWidth, emptyText …
- *                  emit:  set-page(n), size-change, sort(key), row-click(row),
+ *                  emit:  sort(key), row-click(row), cell-click({row,col,colKey,colIndex,rowIndex}),
  *                         save, row-remove(row), reorder, toggle-check,
+ *                  ※ 페이징은 그리드 외부 <fo-pager> 로만 구현 (내부 페이저 제거됨, set-page/size-change emit 없음)
+ *                  ※ row-click=행 전체 클릭 / cell-click=col.link 셀(제목) 클릭 — 분리됨
  *                         toggle-check-all
  *                  슬롯: #toolbar-actions, #head, #head-actions, #cell-{key},
  *                        #row-actions, #row-expand, #tfoot({rows,colspan})
@@ -106,6 +108,7 @@
 }
 .fo-grid-pager button.on { background:var(--blue); color:#fff; border-color:var(--blue); font-weight:700; }
 .fo-grid-pager button:disabled { opacity:.4; cursor:not-allowed; }
+.fo-grid-pager-size { padding:6px 10px; border:1px solid var(--border); border-radius:6px; background:var(--bg-card); color:var(--text-secondary); cursor:pointer; font-size:0.82rem; margin-left:6px; }
 .fo-grid-scroll { overflow:auto; }
 .fo-modal-box { display:flex; flex-direction:column; text-align:left; }
 .fo-modal-header { display:flex; align-items:center; justify-content:space-between; flex-shrink:0; margin-bottom:18px; }
@@ -422,7 +425,7 @@ window.FoGrid = {
     isChecked:  { type: Function, default: null },
     allChecked: { type: Boolean, default: false },
   },
-  emits: ['set-page', 'size-change', 'sort', 'row-click', 'save', 'row-remove', 'reorder',
+  emits: ['sort', 'row-click', 'cell-click', 'save', 'row-remove', 'reorder',
           'toggle-check', 'toggle-check-all'],
   setup(props, { emit, slots }) {
     const U = window._foAreaCompUtil;
@@ -430,29 +433,17 @@ window.FoGrid = {
     /* ── ▼ 초기 reactive / 파생 변수 ─────────────────────────────────────── */
     const cfTotal = Vue.computed(() => U.pgTotal(props.pager, props.rows.length));
     const cfShowTfoot = Vue.computed(() => !!slots.tfoot && props.rows.length > 0);
-    const cfPageNos = Vue.computed(() => {
-      if (!props.pager) return [];
-      const sz = U.pgSize(props.pager);
-      const t = Math.max(1, Math.ceil(cfTotal.value / sz));
-      return Array.from({ length: t }, (_, i) => i + 1);
-    });
     const dragSrc = Vue.ref(null);
     const cfColspan = Vue.computed(() => props.columns.length
       + (props.showRowNo ? 1 : 0)
       + (props.selectable ? 1 : 0) + (props.draggable ? 1 : 0) + (props.rowActions ? 1 : 0));
     const cfTableStyle = Vue.computed(() => props.minWidth ? ('min-width:' + props.minWidth + ';') : '');
-    const cfHasPager = Vue.computed(() => !!props.pager && !props.bare && cfPageNos.value.length > 1);
 
     /* ── ▼ dispatch — handleBtnAction / handleSelectAction ───────────────── */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ FoGrid : handleBtnAction -> ', cmd, param);
       if (cmd === 'toolbar-save') {
         return emit('save');
-      } else if (cmd === 'pager-set') {
-        U.pgSetNo(props.pager, param.n);
-        return emit('set-page', param.n);
-      } else if (cmd === 'pager-size-change') {
-        return emit('size-change');
       } else if (cmd === 'grid-toggle-check-all') {
         return emit('toggle-check-all');
       } else {
@@ -467,6 +458,8 @@ window.FoGrid = {
       } else if (cmd === 'grid-row-click') {
         if (typeof props.rowClick === 'function') props.rowClick(param.row);
         return emit('row-click', param.row);
+      } else if (cmd === 'grid-cell-click') {
+        return emit('cell-click', { row: param.row, col: param.col, colKey: param.col?.key, colIndex: param.ci, rowIndex: param.idx });
       } else if (cmd === 'grid-row-tr-click') {
         if (typeof props.rowClick === 'function') return props.rowClick(param.row);
       } else if (cmd === 'grid-row-remove') {
@@ -512,9 +505,9 @@ window.FoGrid = {
     const fnRowChkVal = (row) => row[props.checkedKey || props.rowKey];
     const fnRowChecked = (row) => (typeof props.isChecked === 'function' ? !!props.isChecked(fnRowChkVal(row)) : false);
 
-    return { U, cfTotal, cfShowTfoot, cfPageNos, rowNo, sortIcon, sortActive,
+    return { U, cfTotal, cfShowTfoot, rowNo, sortIcon, sortActive,
              fnRowStyle, fnRowClass, fnIsExpanded, cfColspan,
-             cfTableStyle, cfHasPager, fnRowChecked,
+             cfTableStyle, fnRowChecked,
              handleBtnAction, handleSelectAction };
   },
   template: /* html */`
@@ -583,7 +576,7 @@ window.FoGrid = {
             <td v-if="showRowNo" style="text-align:center;color:var(--text-muted);font-size:0.74rem;">
               {{ rowNo(idx) }}
             </td>
-            <template v-for="col in columns" :key="col.key">
+            <template v-for="(col, ci) in columns" :key="col.key">
               <slot :name="'cell-' + col.key" :row="row" :idx="idx" :no="rowNo(idx)">
                 <td :style="U.tdStyle(col, row)" :class="U.cellClass(col, row)" :title="U.cellTitle(col, row)">
                   <input v-if="col.edit==='text'" class="fo-grid-input" v-model="row[col.key]"
@@ -597,7 +590,7 @@ window.FoGrid = {
                       {{ o.label }}
                     </option>
                   </select>
-                  <span v-else-if="col.link" class="fo-grid-link" @click="handleSelectAction('grid-row-click', { row })">
+                  <span v-else-if="col.link" class="fo-grid-link" @click.stop="handleSelectAction('grid-cell-click', { row, col, ci, idx })">
                     {{ U.cellText(col, row) }}
                   </span>
                   <span v-else-if="col.badge" class="fo-grid-badge" :class="U.badgeClass(col, row)">
@@ -642,18 +635,7 @@ window.FoGrid = {
       </tfoot>
     </table>
   </div>
-  <!-- ▼ pager 영역 -->
-  <div v-if="cfHasPager" class="fo-grid-pager">
-    <button :disabled="U.pgNo(pager)===1" @click="handleBtnAction('pager-set', { n: Math.max(1, U.pgNo(pager)-1) })">
-      ‹
-    </button>
-    <button v-for="p in cfPageNos" :key="p" :class="{ on: U.pgNo(pager)===p }" @click="handleBtnAction('pager-set', { n: p })">
-      {{ p }}
-    </button>
-    <button :disabled="U.pgNo(pager)===cfPageNos.length" @click="handleBtnAction('pager-set', { n: Math.min(cfPageNos.length, U.pgNo(pager)+1) })">
-      ›
-    </button>
-  </div>
+  <!-- ▼ pager 는 그리드 외부 <fo-pager> 로만 구현 (내부 페이저 제거됨) -->
 </div>
 `,
 };
@@ -682,7 +664,7 @@ window.FoGridCrud = {
     emptyText:  { type: String, default: '데이터가 없습니다.' },
   },
   emits: ['add', 'save', 'cancel-checked', 'delete-checked', 'reorder', 'cell-change',
-          'update:checkAll', 'update:focusedIdx', 'sort'],
+          'update:checkAll', 'update:focusedIdx', 'sort', 'cell-click'],
   setup(props, { emit }) {
     const U = window._foAreaCompUtil;
 
@@ -731,6 +713,8 @@ window.FoGridCrud = {
         if (param.col.sortKey) return emit('sort', param.col.sortKey);
       } else if (cmd === 'grid-row-focus') {
         if (props.focusedIdx !== param.idx) return emit('update:focusedIdx', param.idx);
+      } else if (cmd === 'grid-cell-click') {
+        return emit('cell-click', { row: param.row, col: param.col, colKey: param.col?.key, colIndex: param.ci, rowIndex: param.idx });
       } else if (cmd === 'grid-row-cell-change') {
         const row = param.row;
         if (row._row_status === 'I' || row._row_status === 'D') return emit('cell-change', row);
@@ -863,7 +847,7 @@ window.FoGridCrud = {
           <td v-if="showRowCheck" style="text-align:center;" @click.stop>
             <input type="checkbox" v-model="row._row_check" />
           </td>
-          <template v-for="col in columns" :key="col.key">
+          <template v-for="(col, ci) in columns" :key="col.key">
             <slot :name="'cell-' + col.key" :row="row" :idx="idx">
               <td :style="U.tdStyle(col, row)" :class="U.cellClass(col, row)" :title="U.cellTitle(col, row)">
                 <input v-if="col.edit==='text'" class="fo-grid-input" :class="{ 'fo-grid-mono': col.mono }"
@@ -882,6 +866,9 @@ window.FoGridCrud = {
                     {{ o.label }}
                   </option>
                 </select>
+                <span v-else-if="col.link" class="fo-grid-link" @click.stop="handleSelectAction('grid-cell-click', { row, col, ci, idx })">
+                  {{ U.cellText(col, row) }}
+                </span>
                 <span v-else-if="col.badge" class="fo-grid-badge" :class="U.badgeClass(col, row)">
                   {{ U.cellText(col, row) }}
                 </span>
