@@ -52,6 +52,12 @@ window.PmCouponMng = {
       // 상세 인라인 패널 닫기
       } else if (cmd === 'detailPanel-close') {
         return closeDetail();
+      // 그리드 정렬 헤더 클릭
+      } else if (cmd === 'coupons-sort') {
+        return onSort(param);
+      // 페이지 번호 클릭
+      } else if (cmd === 'coupons-pager-setPage') {
+        return setPage(param);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -60,14 +66,8 @@ window.PmCouponMng = {
     /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ PmCouponMng.js : handleSelectAction -> ', cmd, param);
-      // 그리드 정렬 헤더 클릭
-      if (cmd === 'coupons-sort') {
-        return onSort(param);
-      // 페이지 번호 클릭
-      } else if (cmd === 'coupons-pager-setPage') {
-        return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'coupons-pager-sizeChange') {
+      if (cmd === 'coupons-pager-sizeChange') {
         return onSizeChange();
       // 행 클릭 → 상세 편집
       } else if (cmd === 'coupons-rowEdit') {

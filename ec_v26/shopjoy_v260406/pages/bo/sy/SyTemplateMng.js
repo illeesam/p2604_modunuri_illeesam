@@ -60,6 +60,13 @@ window.SyTemplateMng = {
       } else if (cmd === 'sendModal-close') {
         sendModal.show = false;
         return;
+      // 그리드 정렬 헤더 클릭
+      } else if (cmd === 'templates-sort') {
+        return onSort(param);
+      // 페이지 번호 클릭
+      } else if (cmd === 'templates-pager-setPage') {
+        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
+        return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -74,13 +81,6 @@ window.SyTemplateMng = {
         pager.pageNo = 1;
         resetDetailToNew();
         return handleSearchList();
-      // 그리드 정렬 헤더 클릭
-      } else if (cmd === 'templates-sort') {
-        return onSort(param);
-      // 페이지 번호 클릭
-      } else if (cmd === 'templates-pager-setPage') {
-        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
-        return;
       // 페이지 크기 변경
       } else if (cmd === 'templates-pager-sizeChange') {
         pager.pageNo = 1;
@@ -424,7 +424,7 @@ window.SyTemplateMng = {
     <div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid
-        :columns="columns.baseGrid" :rows="templates" row-key="templateId"
+        :columns="columns.baseGrid" :rows="templates" row-key="templateId" :selected-key="detailPanel.selectedId"
         list-title="템플릿목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="key => handleBtnAction('templates-sort', key)"

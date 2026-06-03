@@ -41,6 +41,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       } else if (cmd === 'desc-toggle') {
         uiState.descOpen = !uiState.descOpen;
         return;
+      } else if (cmd === 'settleAdjs-pager-setPage') {
+        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchData('PAGE_CLICK'); }
+        return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -55,9 +58,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         return openEdit(param);
       } else if (cmd === 'settleAdjs-rowDelete') {
         return handleDelete(param);
-      } else if (cmd === 'settleAdjs-pager-setPage') {
-        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchData('PAGE_CLICK'); }
-        return;
       } else if (cmd === 'settleAdjs-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchData('DEFAULT');
@@ -344,7 +344,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
-      :columns="columns.baseGrid" :rows="adjs" row-key="adjId"
+      :columns="columns.baseGrid" :rows="adjs" row-key="adjId" :selected-key="uiState.selectedId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
       :row-class="(r) => uiState.selectedId===r.adjId ? 'selected' : ''">
       <template #head-actions>

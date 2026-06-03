@@ -64,6 +64,12 @@ window.PmCacheMng = {
       // 상세 인라인 패널 닫기
       } else if (cmd === 'detailPanel-close') {
         return closeDetail();
+      // 그리드 정렬 헤더 클릭
+      } else if (cmd === 'caches-sort') {
+        return onSort(param);
+      // 페이지 번호 클릭
+      } else if (cmd === 'caches-pager-setPage') {
+        return setPage(param);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -72,14 +78,8 @@ window.PmCacheMng = {
     /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ PmCacheMng.js : handleSelectAction -> ', cmd, param);
-      // 그리드 정렬 헤더 클릭
-      if (cmd === 'caches-sort') {
-        return onSort(param);
-      // 페이지 번호 클릭
-      } else if (cmd === 'caches-pager-setPage') {
-        return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'caches-pager-sizeChange') {
+      if (cmd === 'caches-pager-sizeChange') {
         return onSizeChange();
       // 그리드 행 클릭 → 상세 편집 패널 열기
       } else if (cmd === 'caches-rowEdit') {
@@ -324,7 +324,7 @@ window.PmCacheMng = {
     </div>
     <!-- ===== ■.■. 리스트 뷰 (BoGrid) ======================================== -->
     <bo-grid v-if="uiState.tabMode==='list'" :bare="true"
-      :columns="columns.baseGrid" :rows="caches" row-key="cacheId"
+      :columns="columns.baseGrid" :rows="caches" row-key="cacheId" :selected-key="detailPanel.selectedId"
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(c) => detailPanel.selectedId===c.cacheId ? 'background:#fff8f9;' : ''"

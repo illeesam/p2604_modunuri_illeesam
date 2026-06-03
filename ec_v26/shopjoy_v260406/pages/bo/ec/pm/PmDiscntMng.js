@@ -39,6 +39,9 @@ window.PmDiscntMng = {
       // 상세 인라인 패널 닫기
       } else if (cmd === 'detailPanel-close') {
         return closeDetail();
+      // 페이지 번호 클릭
+      } else if (cmd === 'discnts-pager-setPage') {
+        return setPage(param);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -50,9 +53,6 @@ window.PmDiscntMng = {
       // 그리드 정렬 헤더 클릭
       if (cmd === 'discnts-sort') {
         return onSort(param);
-      // 페이지 번호 클릭
-      } else if (cmd === 'discnts-pager-setPage') {
-        return setPage(param);
       // 페이지 크기 변경
       } else if (cmd === 'discnts-pager-sizeChange') {
         return onSizeChange();

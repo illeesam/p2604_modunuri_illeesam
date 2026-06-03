@@ -35,6 +35,9 @@ window.StRawMng = {
       } else if (cmd === 'searchParam-moreToggle') {
         searchParam.searchMoreOpen = !searchParam.searchMoreOpen;
         return;
+      } else if (cmd === 'rawData-pager-setPage') {
+        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
+        return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -43,10 +46,7 @@ window.StRawMng = {
     /* handleSelectAction — 행/페이지 선택 액션 dispatch */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ StRawMng.js : handleSelectAction -> ', cmd, param);
-      if (cmd === 'rawData-pager-setPage') {
-        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
-        return;
-      } else if (cmd === 'rawData-pager-sizeChange') {
+      if (cmd === 'rawData-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else {

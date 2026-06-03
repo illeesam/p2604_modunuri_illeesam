@@ -364,7 +364,7 @@ window.DpDispWidgetLibMng = {
       </div>
       <div>
         <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-        <bo-grid :columns="columns.listGrid" :rows="widgetLibs" row-key="widgetLibId" :pager="pager"
+        <bo-grid :columns="columns.listGrid" :rows="widgetLibs" row-key="widgetLibId" :selected-key="detailPanel.selectedId" :pager="pager"
         :sort-state="uiState" list-title="위젯라이브러리"
         :count-text="pager.pageTotalCount + '건'"
         empty-text="데이터가 없습니다." row-clickable

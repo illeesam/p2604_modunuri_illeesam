@@ -62,6 +62,12 @@ window.PmEventMng = {
       // 상세 인라인 패널 닫기
       } else if (cmd === 'detailPanel-close') {
         return closeDetail();
+      // 그리드 정렬
+      } else if (cmd === 'events-sort') {
+        return onSort(param);
+      // 페이지 번호 클릭
+      } else if (cmd === 'events-pager-setPage') {
+        return setPage(param);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -70,14 +76,8 @@ window.PmEventMng = {
     /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ PmEventMng.js : handleSelectAction -> ', cmd, param);
-      // 그리드 정렬
-      if (cmd === 'events-sort') {
-        return onSort(param);
-      // 페이지 번호 클릭
-      } else if (cmd === 'events-pager-setPage') {
-        return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'events-pager-sizeChange') {
+      if (cmd === 'events-pager-sizeChange') {
         return onSizeChange();
       // 행 클릭 → 상세 편집
       } else if (cmd === 'events-rowEdit') {
@@ -322,7 +322,7 @@ window.PmEventMng = {
     </div>
     <!-- ===== ■.■. 리스트 뷰 ================================================= -->
     <bo-grid v-if="tabMode==='list'" :bare="true"
-      :columns="columns.baseGrid" :rows="events" row-key="eventId"
+      :columns="columns.baseGrid" :rows="events" row-key="eventId" :selected-key="detailPanel.selectedId"
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(e) => detailPanel.selectedId===e.eventId ? 'background:#fff8f9;' : ''"

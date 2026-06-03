@@ -308,7 +308,7 @@ window.CmChattMng = {
   </div>
   <!-- ===== □. 검색 ======================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
-  <bo-grid :columns="columns.baseGrid" :rows="chatts" row-key="chattRoomId"
+  <bo-grid :columns="columns.baseGrid" :rows="chatts" row-key="chattRoomId" :selected-key="detailPanel.selectedId"
     :sort-state="uiState" list-title="채팅목록"
     :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다."

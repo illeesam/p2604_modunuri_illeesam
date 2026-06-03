@@ -58,6 +58,9 @@ window.PdCategoryMng = {
       // 페이지 크기 변경
       } else if (cmd === 'categories-pager-sizeChange') {
         return onSizeChange();
+      // 페이지 번호 클릭
+      } else if (cmd === 'categories-pager-setPage') {
+        return setPage(param);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -69,9 +72,6 @@ window.PdCategoryMng = {
       // 좌측 트리 노드 선택
       if (cmd === 'categoryTree-select') {
         return selectNode(param);
-      // 페이지 번호 클릭
-      } else if (cmd === 'categories-pager-setPage') {
-        return setPage(param);
       // 그리드 행 포커스
       } else if (cmd === 'categories-rowFocus') {
         return setFocused(param);

@@ -2137,7 +2137,7 @@ window.PdProdDtl = {
     </span>
   </div>
   <div v-if="images.length===0"
-        style="border:2px dashed #e0e0e0;border-radius:10px;padding:40px;text-align:center;color:#bbb;font-size:13px;cursor:pointer;"
+        style="border:2px dashed #e0e0e0;border-radius:10px;padding:22px;text-align:center;color:#bbb;font-size:13px;cursor:pointer;"
         @click="triggerFileInput">
     클릭하거나 파일을 끌어다 놓으세요
   </div>

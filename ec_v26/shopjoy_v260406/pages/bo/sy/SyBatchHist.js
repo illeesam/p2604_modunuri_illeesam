@@ -35,6 +35,9 @@ window.SyBatchHist = {
       // 모든 행 접기
       } else if (cmd === 'batchLogs-collapseAll') {
         return onCollapseAll();
+      // 페이지 번호 클릭
+      } else if (cmd === 'batchLogs-pager-setPage') {
+        return setPage(param);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -43,11 +46,8 @@ window.SyBatchHist = {
     /* handleSelectAction — 그리드 행/페이지 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ SyBatchHist.js : handleSelectAction -> ', cmd, param);
-      // 페이지 번호 클릭
-      if (cmd === 'batchLogs-pager-setPage') {
-        return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'batchLogs-pager-sizeChange') {
+      if (cmd === 'batchLogs-pager-sizeChange') {
         return onSizeChange();
       // 행 클릭 → 펼침 토글
       } else if (cmd === 'batchLogs-rowToggle') {
@@ -237,14 +237,16 @@ window.SyBatchHist = {
           ▼ 실행 상세
         </div>
         <bo-form-area :columns="columns.histExpand" :form="row" :cols="5" readonly label-left compact :show-actions="false" />
-        <div style="font-size:11px;font-weight:600;color:#888;margin:6px 0 3px;">
-          메시지
-        </div>
-        <div style="font-size:12px;padding:8px 12px;border-radius:5px;line-height:1.7;white-space:pre-wrap;word-break:break-all;"
-          :style="row.runStatus==='실패'
-            ? 'background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;font-family:monospace;'
-            : 'background:#f1f5f9;border:1px solid #e2e8f0;color:#374151;'">
-          {{ row.message }}
+        <div style="display:flex;align-items:flex-start;gap:10px;margin:6px 0 0;">
+          <div style="flex:0 0 70px;font-size:11px;font-weight:600;color:#888;padding-top:7px;">
+            메시지
+          </div>
+          <div style="flex:1;min-width:0;font-size:12px;padding:6px 10px;border-radius:5px;line-height:1.6;white-space:pre-wrap;word-break:break-all;"
+            :style="row.runStatus==='실패'
+              ? 'background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;font-family:monospace;'
+              : 'background:#f1f5f9;border:1px solid #e2e8f0;color:#374151;'">
+            {{ row.message }}
+          </div>
         </div>
         <template v-if="row.detail">
           <div style="font-size:11px;font-weight:600;color:#888;margin:6px 0 3px;">

@@ -56,6 +56,12 @@ window.PmVoucherMng = {
       // 상세 인라인 패널 닫기
       } else if (cmd === 'detailPanel-close') {
         return closeDetail();
+      // 그리드 정렬
+      } else if (cmd === 'vouchers-sort') {
+        return onSort(param);
+      // 페이지 번호 클릭
+      } else if (cmd === 'vouchers-pager-setPage') {
+        return setPage(param);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -64,14 +70,8 @@ window.PmVoucherMng = {
     /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ PmVoucherMng.js : handleSelectAction -> ', cmd, param);
-      // 그리드 정렬
-      if (cmd === 'vouchers-sort') {
-        return onSort(param);
-      // 페이지 번호 클릭
-      } else if (cmd === 'vouchers-pager-setPage') {
-        return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'vouchers-pager-sizeChange') {
+      if (cmd === 'vouchers-pager-sizeChange') {
         return onSizeChange();
       // 행 클릭 → 상세 편집
       } else if (cmd === 'vouchers-rowEdit') {
@@ -329,7 +329,7 @@ window.PmVoucherMng = {
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid v-if="tabMode==='list'" :bare="true"
-      :columns="columns.baseGrid" :rows="vouchers" row-key="voucherId"
+      :columns="columns.baseGrid" :rows="vouchers" row-key="voucherId" :selected-key="detailPanel.selectedId"
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(v) => detailPanel.selectedId===v.voucherId ? 'background:#fff8f9;' : ''"

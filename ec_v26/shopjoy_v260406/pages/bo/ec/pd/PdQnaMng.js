@@ -42,6 +42,13 @@ window.PdQnaMng = {
       // 상세 패널 닫기
       } else if (cmd === 'form-close') {
         return handleClose();
+      // 그리드 정렬 헤더 클릭
+      } else if (cmd === 'qnas-sort') {
+        return onSort(param);
+      // 페이지 번호 변경
+      } else if (cmd === 'qnas-pager-setPage') {
+        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
+        return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -50,15 +57,8 @@ window.PdQnaMng = {
     /* handleSelectAction — 행/정렬/페이지 선택 액션 dispatch */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ PdQnaMng.js : handleSelectAction -> ', cmd, param);
-      // 그리드 정렬 헤더 클릭
-      if (cmd === 'qnas-sort') {
-        return onSort(param);
-      // 페이지 번호 변경
-      } else if (cmd === 'qnas-pager-setPage') {
-        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
-        return;
       // 페이지 크기 변경
-      } else if (cmd === 'qnas-pager-sizeChange') {
+      if (cmd === 'qnas-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 그리드 행 클릭 (제목 link) → 상세 인라인 패널 열기

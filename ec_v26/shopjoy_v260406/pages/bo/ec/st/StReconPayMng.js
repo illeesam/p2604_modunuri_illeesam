@@ -31,6 +31,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       } else if (cmd === 'desc-toggle') {
         uiState.descOpen = !uiState.descOpen;
         return;
+      } else if (cmd === 'reconPays-pager-setPage') {
+        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
+        return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -39,10 +42,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     /* handleSelectAction — 페이지 선택 액션 dispatch */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ StReconPayMng.js : handleSelectAction -> ', cmd, param);
-      if (cmd === 'reconPays-pager-setPage') {
-        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
-        return;
-      } else if (cmd === 'reconPays-pager-sizeChange') {
+      if (cmd === 'reconPays-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else {

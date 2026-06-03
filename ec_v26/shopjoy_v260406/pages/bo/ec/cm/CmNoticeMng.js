@@ -56,9 +56,6 @@ window.CmNoticeMng = {
 
     /* openDetailEdit — 행 선택 → 상세 편집 (저장/취소 노출) */
     const openDetailEdit = (id) => {
-      if (baseDetail.selectedId === id && baseDetail.openMode === 'edit' && baseDetail.active) {
-        resetDetailToNew(); return;  // 같은 행 재클릭 → 신규 폼(비활성)으로 초기화
-      }
       baseDetail.openEdit(id);
       baseDetail.active = true;       // 행 선택 → 저장/취소 노출
     };
@@ -220,7 +217,7 @@ window.CmNoticeMng = {
       @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
   </div>
   <!-- ===== ■. 목록 영역 ===================================================== -->
-  <bo-grid :columns="columns.baseGrid" :rows="notices" :pager="baseGrid.pager" row-key="noticeId"
+  <bo-grid :columns="columns.baseGrid" :rows="notices" :pager="baseGrid.pager" row-key="noticeId" :selected-key="baseDetail.selectedId"
     :sort-state="baseGrid" list-title="공지사항목록"
     :count-text="'총 ' + baseGrid.pager.pageTotalCount + '건'"
     :row-class="row => baseDetail.selectedId === row.noticeId ? 'active' : ''" empty-text="데이터가 없습니다."

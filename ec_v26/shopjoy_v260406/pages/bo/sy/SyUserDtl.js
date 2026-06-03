@@ -288,6 +288,27 @@ window.SyUserDtl = {
           </button>
         </div>
       </template>
+      <!-- ===== ■.■.■. 주소: 우편번호 + 주소검색 + 기본주소 + 상세주소 ============== -->
+      <template #addr>
+        <div v-if="cfDtlMode" class="readonly-field">
+          {{ [form.zipcode ? '('+form.zipcode+')' : '', form.address, form.addressDetail].filter(Boolean).join(' ') || '-' }}
+        </div>
+        <div v-else style="display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input class="form-control" style="width:130px;" :value="form.zipcode" readonly placeholder="우편번호" />
+            <button type="button" class="btn btn-blue btn-sm" @click="handleBtnAction('addr-search')" style="white-space:nowrap;">
+              🔍 주소 검색
+            </button>
+          </div>
+          <input class="form-control" :value="form.address" readonly placeholder="기본주소 (주소 검색 후 자동 입력)" />
+          <input ref="addrDetailRef" class="form-control" v-model="form.addressDetail" placeholder="상세주소 (동/호수 등)" />
+        </div>
+      </template>
+      <!-- ===== ■.■.■. 프로필 이미지: BaseAttachOne (단일 이미지 업로드) ============= -->
+      <template #profile>
+        <base-attach-one v-model="form.profileAttachId" grp-code="USER_PROFILE" grp-nm="프로필 이미지"
+          :max-size-mb="5" allow-ext="jpg,jpeg,png,gif,webp" width="120px" height="120px" :show-toast="showToast" />
+      </template>
     </bo-form-area>
     <!-- ===== □.□. 기본정보 폼 (주소/프로필 포함, 단일 BoFormArea) ================== -->
     <!-- ===== ■.■. 폼 액션 (active 일 때만 노출) ================================ -->

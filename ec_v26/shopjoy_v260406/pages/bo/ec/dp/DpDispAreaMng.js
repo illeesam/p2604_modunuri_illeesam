@@ -293,7 +293,7 @@ window.DpDispAreaMng = {
       </div>
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-grid :columns="columns.listGrid" :rows="areas" row-key="areaId" :pager="pager"
+    <bo-grid :columns="columns.listGrid" :rows="areas" row-key="areaId" :selected-key="detailPanel.selectedId" :pager="pager"
       :sort-state="uiState" list-title="전시 영역 목록"
       :count-text="'총 ' + pager.pageTotalCount + '건'"
       empty-text="조회된 데이터가 없습니다." row-clickable

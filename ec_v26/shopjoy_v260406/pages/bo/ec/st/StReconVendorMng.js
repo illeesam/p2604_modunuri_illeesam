@@ -30,6 +30,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       } else if (cmd === 'desc-toggle') {
         uiState.descOpen = !uiState.descOpen;
         return;
+      } else if (cmd === 'reconVendors-pager-setPage') {
+        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
+        return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -38,10 +41,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     /* handleSelectAction — 페이지 선택 액션 dispatch */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ StReconVendorMng.js : handleSelectAction -> ', cmd, param);
-      if (cmd === 'reconVendors-pager-setPage') {
-        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
-        return;
-      } else if (cmd === 'reconVendors-pager-sizeChange') {
+      if (cmd === 'reconVendors-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else {

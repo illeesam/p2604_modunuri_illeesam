@@ -69,6 +69,9 @@ window.PdSetMng = {
       // 비상품 구성품 추가
       } else if (cmd === 'detailPanel-itemAddBlank') {
         return addItemBlank();
+      // 페이지 번호 클릭
+      } else if (cmd === 'sets-pager-setPage') {
+        return setPage(param);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -83,9 +86,6 @@ window.PdSetMng = {
       // 그리드 행 삭제
       } else if (cmd === 'sets-rowDelete') {
         return handleDelete(param);
-      // 페이지 번호 클릭
-      } else if (cmd === 'sets-pager-setPage') {
-        return setPage(param);
       // 카테고리 행 삭제
       } else if (cmd === 'detailPanel-categoryRemove') {
         return removeCategory(param);

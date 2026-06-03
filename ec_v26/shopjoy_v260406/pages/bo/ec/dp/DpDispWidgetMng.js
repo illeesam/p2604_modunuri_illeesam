@@ -425,7 +425,7 @@ window.DpDispWidgetMng = {
     <!-- ===== ■.■. 우측 목록 ================================================= -->
     <div style="flex:1;min-width:0;width:100%;">
       <!-- ===== ■.■.■. 목록 ================================================== -->
-      <bo-grid :columns="columns.listGrid" :rows="widgets" row-key="widgetId" :pager="pager"
+      <bo-grid :columns="columns.listGrid" :rows="widgets" row-key="widgetId" :selected-key="detailPanel.selectedId" :pager="pager"
         :sort-state="uiState" list-title="전시위젯" :row-style="fnRowStyle"
         :count-text="pager.pageTotalCount + '건'"
         empty-text="등록된 위젯이 없습니다."

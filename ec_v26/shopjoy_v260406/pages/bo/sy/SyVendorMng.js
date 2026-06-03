@@ -53,6 +53,12 @@ window.SyVendorMng = {
       // 상세 인라인 패널 닫기
       } else if (cmd === 'detailPanel-close') {
         return closeDetail();
+      // 그리드 정렬 헤더 클릭
+      } else if (cmd === 'vendors-sort') {
+        return onSort(param);
+      // 페이지 번호 클릭
+      } else if (cmd === 'vendors-pager-setPage') {
+        return setPage(param);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -61,14 +67,8 @@ window.SyVendorMng = {
     /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ SyVendorMng.js : handleSelectAction -> ', cmd, param);
-      // 그리드 정렬 헤더 클릭
-      if (cmd === 'vendors-sort') {
-        return onSort(param);
-      // 페이지 번호 클릭
-      } else if (cmd === 'vendors-pager-setPage') {
-        return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'vendors-pager-sizeChange') {
+      if (cmd === 'vendors-pager-sizeChange') {
         return onSizeChange();
       // 그리드 행 클릭 → 편집 패널 열기
       } else if (cmd === 'vendors-rowEdit') {
@@ -336,7 +336,7 @@ window.SyVendorMng = {
     <div>
       <!-- ===== ■.■.■. 목록 그리드 ============================================ -->
       <bo-grid
-        :columns="columns.baseGrid" :rows="vendors" row-key="vendorId"
+        :columns="columns.baseGrid" :rows="vendors" row-key="vendorId" :selected-key="detailPanel.selectedId"
         list-title="거래처목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="key => handleBtnAction('vendors-sort', key)"

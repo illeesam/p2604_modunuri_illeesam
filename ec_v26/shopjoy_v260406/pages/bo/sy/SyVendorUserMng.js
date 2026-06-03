@@ -77,6 +77,12 @@ window.SyVendorUserMng = {
       // 역할 모달: 확인 (선택된 역할 부여)
       } else if (cmd === 'roleModal-confirm') {
         return confirmRoleModal();
+      // 업체 그리드 페이지 번호 클릭
+      } else if (cmd === 'vendors-pager-setPage') {
+        return setBizPage(param);
+      // 사용자 그리드 페이지 번호 클릭
+      } else if (cmd === 'vendorUsers-pager-setPage') {
+        return setPage(param);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -88,9 +94,6 @@ window.SyVendorUserMng = {
       // 업체 그리드 행 선택 (선택 업체 변경)
       if (cmd === 'vendors-rowSelect') {
         return pickVendorRow(param);
-      // 업체 그리드 페이지 번호 클릭
-      } else if (cmd === 'vendors-pager-setPage') {
-        return setBizPage(param);
       // 업체 그리드 페이지 크기 변경
       } else if (cmd === 'vendors-pager-sizeChange') {
         bizPager.pageNo = 1; return fnBuildBizPagerNums();
@@ -100,9 +103,6 @@ window.SyVendorUserMng = {
       // 사용자 그리드 행 삭제
       } else if (cmd === 'vendorUsers-rowDelete') {
         return handleDeleteRow(param);
-      // 사용자 그리드 페이지 번호 클릭
-      } else if (cmd === 'vendorUsers-pager-setPage') {
-        return setPage(param);
       // 사용자 그리드 페이지 크기 변경
       } else if (cmd === 'vendorUsers-pager-sizeChange') {
         return onSizeChange();

@@ -432,6 +432,7 @@ window.BoGrid = {
     allChecked: { type: Boolean, default: false },               // 헤더 전체선택 체크 상태 (부모 computed 미러)
     rowClickable: { type: Boolean, default: false },             // true=<tr> 전체 클릭 시 row-click emit (행클릭 통일로 #cell- 슬롯 제거 가능)
                                                                    // 셀 내부 button/select/input/checkbox 등은 @click.stop 자동 보호 — 행이벤트 미전파
+    selectedKey: { type: [String, Number], default: null },      // 선택된 행의 rowKey 값. 일치하는 행에 .bo-row-selected (파란 테두리) 자동 부여
   },
   emits: ['sort', 'row-click', 'cell-click', 'save', 'row-remove', 'reorder', 'cell-change',
           'toggle-check', 'toggle-check-all', 'ref-click'],
@@ -509,7 +510,12 @@ window.BoGrid = {
     const sortActive = (col) => props.sortState && props.sortState.sortKey === col.sortKey;
 
     const fnRowStyle = (row, idx) => (typeof props.rowStyle === 'function' ? props.rowStyle(row, idx) : 'cursor:pointer');
-    const fnRowClass = (row, idx) => (typeof props.rowClass === 'function' ? props.rowClass(row, idx) : (row._isNew ? 'status-I' : ''));
+    const fnRowClass = (row, idx) => {
+      const base = (typeof props.rowClass === 'function' ? props.rowClass(row, idx) : (row._isNew ? 'status-I' : '')) || '';
+      // 선택 행(selectedKey 일치) 에 파란 테두리 클래스 자동 부여 (rowKey 필수)
+      const sel = (props.selectedKey != null && props.rowKey && row[props.rowKey] === props.selectedKey) ? ' bo-row-selected' : '';
+      return (base + sel).trim();
+    };
     const fnIsExpanded = (row, idx) => (typeof props.isExpanded === 'function' ? !!props.isExpanded(row, idx) : false);
 
     /* 체크박스 — 부모 Set 기반. checkedKey(없으면 rowKey) 필드값을 식별자로 */
@@ -754,6 +760,7 @@ window.BoGridCrud = {
     cellTitle:  { type: Function, default: null },             // (col)=>title 문자열 (local 모드 컬럼 hint)
     sortState:  { type: Object, default: null },               // { sortKey, sortDir } reactive — 지정 시 col.sortKey 헤더 클릭 정렬
     emptyText:  { type: String, default: '데이터가 없습니다.' },
+    selectedKey: { type: [String, Number], default: null },    // 선택된 행의 rowKey 값. 일치 행에 .bo-row-selected (파란 테두리) 자동 부여
     /* ── 트리 모드 ─ flatRows + rowAccessor 둘 다 주면 트리 분기 ─────────────
      *  flatRows    : 화면이 평탄화한 래퍼 배열 (예: [{node,depth},...])
      *  rowAccessor : (flatItem)=>실제 행객체(_row_status/_row_check 보유)
@@ -957,7 +964,7 @@ window.BoGridCrud = {
             {{ emptyText }}
           </td>
         </tr>
-        <tr v-else v-for="(item, idx) in cfDispRows" :key="fnRowKey(item, idx)" class="crud-row" :class="[ 'status-' + fnRow(item)._row_status, (!cfTreeMode && focusedIdx===idx) ? 'focused' : '' ]" :draggable="cfShowDrag" @click="handleSelectAction('grid-row-focus', { idx })" @dblclick="handleSelectAction('grid-row-dblclick', { row: fnRow(item), idx })" @dragstart="handleSelectAction('grid-row-drag-start', { idx })" @dragover="handleSelectAction('grid-row-drag-over', { idx, event: $event })" @dragend="handleSelectAction('grid-row-drag-end')">
+        <tr v-else v-for="(item, idx) in cfDispRows" :key="fnRowKey(item, idx)" class="crud-row" :class="[ 'status-' + fnRow(item)._row_status, (!cfTreeMode && focusedIdx===idx) ? 'focused' : '', (selectedKey != null && fnRow(item)[rowKey] === selectedKey) ? 'bo-row-selected' : '' ]" :draggable="cfShowDrag" @click="handleSelectAction('grid-row-focus', { idx })" @dblclick="handleSelectAction('grid-row-dblclick', { row: fnRow(item), idx })" @dragstart="handleSelectAction('grid-row-drag-start', { idx })" @dragover="handleSelectAction('grid-row-drag-over', { idx, event: $event })" @dragend="handleSelectAction('grid-row-drag-end')">
         <td v-if="cfShowDrag" class="drag-handle" title="드래그로 순서 변경">
           ⠿
         </td>

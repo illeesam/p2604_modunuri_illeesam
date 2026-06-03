@@ -80,6 +80,9 @@ window.SyCodeMng = {
       // 상세 패널 닫기
       } else if (cmd === 'detailPanel-close') {
         return closeDetail();
+      // 코드그룹 그리드 정렬 헤더 클릭
+      } else if (cmd === 'codeGroups-sort') {
+        return onGrpSort(param);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -91,9 +94,6 @@ window.SyCodeMng = {
       // 좌측 경로 트리 노드 선택 → 그룹 재조회
       if (cmd === 'pathTree-select') {
         return grpSelectNode(param);
-      // 코드그룹 그리드 정렬 헤더 클릭
-      } else if (cmd === 'codeGroups-sort') {
-        return onGrpSort(param);
       // 코드그룹 그리드 셀 값 변경 감지
       } else if (cmd === 'codeGroups-cellChange') {
         return onGrpChange(param);

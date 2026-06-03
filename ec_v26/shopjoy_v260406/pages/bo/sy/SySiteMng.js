@@ -61,6 +61,12 @@ window.SySiteMng = {
       // 표시경로 선택 모달 닫기
       } else if (cmd === 'pathModal-close') {
         return closePathPick();
+      // 그리드 정렬 헤더 클릭
+      } else if (cmd === 'sites-sort') {
+        return onSort(param);
+      // 페이지 번호 클릭
+      } else if (cmd === 'sites-pager-setPage') {
+        return setPage(param);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -69,14 +75,8 @@ window.SySiteMng = {
     /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ SySiteMng.js : handleSelectAction -> ', cmd, param);
-      // 그리드 정렬 헤더 클릭
-      if (cmd === 'sites-sort') {
-        return onSort(param);
-      // 페이지 번호 클릭
-      } else if (cmd === 'sites-pager-setPage') {
-        return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'sites-pager-sizeChange') {
+      if (cmd === 'sites-pager-sizeChange') {
         return onSizeChange();
       // 그리드 행 클릭 → 상세 보기 토글
       } else if (cmd === 'sites-rowView') {
@@ -265,9 +265,6 @@ window.SySiteMng = {
 
     /* handleLoadDetail — 그리드 행 클릭 시 해당 ID 상세 로드 (재클릭 시 신규 폼으로 초기화) */
     const handleLoadDetail = (id) => {
-      if (detailModal.dtlId === id && detailModal.dtlMode === 'edit' && detailModal.active) {
-        resetDetailToNew(); return;  // 같은 행 재클릭 → 신규 폼(비활성)으로 초기화
-      }
       detailModal.dtlId = id;
       detailModal.dtlMode = 'edit';
       detailModal.show = true;

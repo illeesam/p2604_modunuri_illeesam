@@ -34,6 +34,10 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       } else if (cmd === 'desc-toggle') {
         uiState.descOpen = !uiState.descOpen;
         return;
+      // 페이지 번호 변경
+      } else if (cmd === 'reconClaims-pager-setPage') {
+        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
+        return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -42,12 +46,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     /* handleSelectAction — 페이지 선택 액션 dispatch */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ StReconClaimMng.js : handleSelectAction -> ', cmd, param);
-      // 페이지 번호 변경
-      if (cmd === 'reconClaims-pager-setPage') {
-        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
-        return;
       // 페이지 크기 변경
-      } else if (cmd === 'reconClaims-pager-sizeChange') {
+      if (cmd === 'reconClaims-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else {

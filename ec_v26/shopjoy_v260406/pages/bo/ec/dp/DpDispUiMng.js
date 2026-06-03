@@ -334,7 +334,7 @@ window.DpDispUiMng = {
       </div>
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-grid :columns="columns.baseGrid" :rows="uis" row-key="uiId" :pager="pager"
+    <bo-grid :columns="columns.baseGrid" :rows="uis" row-key="uiId" :selected-key="detailPanel.selectedId" :pager="pager"
       :sort-state="uiState" list-title="전시 UI 목록"
       :count-text="'총 ' + pager.pageTotalCount + '건'"
       empty-text="조회된 데이터가 없습니다." row-clickable

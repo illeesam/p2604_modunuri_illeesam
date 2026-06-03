@@ -69,6 +69,9 @@ window.SyMemberLoginHist = {
       // 로그 비우기
       } else if (cmd === 'histList-clearLog') {
         return handleClearLog();
+      // 페이지 번호 클릭
+      } else if (cmd === 'histList-pager-setPage') {
+        return setPage(param);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -83,9 +86,6 @@ window.SyMemberLoginHist = {
         pager.pageNo = 1;
         allExpanded.value = false;
         return handleSearchList();
-      // 페이지 번호 클릭
-      } else if (cmd === 'histList-pager-setPage') {
-        return setPage(param);
       // 페이지 크기 변경
       } else if (cmd === 'histList-pager-sizeChange') {
         return onSizeChange();
@@ -418,8 +418,8 @@ window.SyMemberLoginHist = {
       </div>
     </template>
     <template #row-expand="{ row, colspan }">
-      <td :colspan="colspan" style="background:#f4f6fb;padding:16px 20px;border-top:none">
-        <bo-form-area :columns="columns.logExpand" :form="row" :cols="3" readonly label-left :show-actions="false" />
+      <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
+        <bo-form-area :columns="columns.logExpand" :form="row" :cols="3" readonly label-left compact :show-actions="false" />
       </td>
     </template>
   </bo-grid>
@@ -444,8 +444,8 @@ window.SyMemberLoginHist = {
       </div>
     </template>
     <template #row-expand="{ row, colspan }">
-      <td :colspan="colspan" style="background:#f4f6fb;padding:16px 20px;border-top:none">
-        <bo-form-area :columns="columns.tokenExpand" :form="row" :cols="3" readonly label-left :show-actions="false" />
+      <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
+        <bo-form-area :columns="columns.tokenExpand" :form="row" :cols="3" readonly label-left compact :show-actions="false" />
         <div style="margin-top:6px;padding:5px 8px;background:#fdf8ff;border-radius:4px;font-size:11px;color:#888">
           ℹ SHA-256 해시. 원문 복원 불가
         </div>

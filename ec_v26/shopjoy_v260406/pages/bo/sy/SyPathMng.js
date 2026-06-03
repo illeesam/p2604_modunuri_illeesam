@@ -59,6 +59,10 @@ window.SyPathMng = {
       } else if (cmd === 'parentModal-toggle') {
         if (parentModal.expanded.has(param)) { parentModal.expanded.delete(param); } else { parentModal.expanded.add(param); }
         return;
+      // 페이지 번호 클릭
+      } else if (cmd === 'paths-pager-setPage') {
+        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleGridSearch(); }
+        return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -84,10 +88,6 @@ window.SyPathMng = {
       // 그리드 행 [부모경로] 컬럼 클릭 → 모달 열기
       } else if (cmd === 'parentModal-open') {
         return openParentModal(param);
-      // 페이지 번호 클릭
-      } else if (cmd === 'paths-pager-setPage') {
-        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleGridSearch(); }
-        return;
       // 페이지 크기 변경
       } else if (cmd === 'paths-pager-sizeChange') {
         pager.pageNo = 1;

@@ -48,8 +48,14 @@ body { background: #f0f2f5; color: #222; font-family: 'Noto Sans KR', sans-serif
 .bo-table th { background: #fafafa; padding: 6px 10px; text-align: left; font-size: 12px; font-weight: 600; color: #555; border-bottom: 1px solid #e8e8e8; white-space: nowrap; }
 /* 그리드 내부 스크롤 시 헤더 고정 */
 .bo-table thead th { position: sticky; top: 0; z-index: 2; }
-.bo-table td { padding: 4px 10px; font-size: 13px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+.bo-table td { padding: 7px 10px; font-size: 13px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
 .bo-table tr:hover td { background: #fafbff; }
+/* 선택 행 강조 — 파란 테두리 (전체 공통) */
+.bo-table tr.bo-row-selected td { background:#eff6ff; box-shadow: inset 0 2px 0 #2563eb, inset 0 -2px 0 #2563eb; }
+.bo-table tr.bo-row-selected td:first-child { box-shadow: inset 2px 0 0 #2563eb, inset 0 2px 0 #2563eb, inset 0 -2px 0 #2563eb; }
+.bo-table tr.bo-row-selected td:last-child { box-shadow: inset -2px 0 0 #2563eb, inset 0 2px 0 #2563eb, inset 0 -2px 0 #2563eb; }
+.bo-table tr.bo-row-selected:hover td { background:#e0ecff; }
+
 .bo-table .actions { display: flex; gap: 4px; justify-content: flex-end; }
 .title-link { color: #1677ff; cursor: pointer; font-weight: 500; }
 .title-link:hover { text-decoration: underline; }
@@ -96,7 +102,7 @@ textarea.form-control { resize: vertical; min-height: 80px; font-family: inherit
 .badge-xs { padding: 1px 5px !important; font-size: 10px !important; border-radius: 4px !important; font-weight: 700 !important; }
 
 /* ── CRUD 그리드 ── */
-.crud-grid td { padding: 4px 6px; vertical-align: middle; }
+.crud-grid td { padding: 3px 8px; vertical-align: middle; }
 /* 스크롤 시 헤더 고정 */
 .crud-grid thead th { position: sticky; top: 0; z-index: 2; background: #fafafa; }
 .crud-grid .col-drag  { width: 28px; }

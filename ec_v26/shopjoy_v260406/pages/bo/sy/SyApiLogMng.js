@@ -81,6 +81,9 @@ window.SyApiLogMng = {
       // 활성 탭 로그 전체 삭제
       } else if (cmd === 'apiLogs-clear') {
         return handleClearLog();
+      // 페이지 번호 클릭
+      } else if (cmd === 'apiLogs-pager-setPage') {
+        return setPage(param);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -92,9 +95,6 @@ window.SyApiLogMng = {
       // 탭 전환 (access/error)
       if (cmd === 'tabs-select') {
         return onTabChange(param);
-      // 페이지 번호 클릭
-      } else if (cmd === 'apiLogs-pager-setPage') {
-        return setPage(param);
       // 페이지 크기 변경
       } else if (cmd === 'apiLogs-pager-sizeChange') {
         return onSizeChange();

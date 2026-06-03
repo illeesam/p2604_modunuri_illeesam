@@ -34,6 +34,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       } else if (cmd === 'desc-toggle') {
         uiState.descOpen = !uiState.descOpen;
         return;
+      } else if (cmd === 'settlePays-pager-setPage') {
+        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
+        return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -44,9 +47,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       console.log(' ■■ StSettlePayMng.js : handleSelectAction -> ', cmd, param);
       if (cmd === 'settlePays-rowPay') {
         return doPay(param);
-      } else if (cmd === 'settlePays-pager-setPage') {
-        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
-        return;
       } else if (cmd === 'settlePays-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchList('DEFAULT');

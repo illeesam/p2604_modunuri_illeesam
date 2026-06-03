@@ -71,6 +71,12 @@ window.PdProdMng = {
       // 상세 인라인 패널 닫기
       } else if (cmd === 'detailPanel-close') {
         return closeDetail();
+      // 그리드 정렬 헤더 클릭
+      } else if (cmd === 'prods-sort') {
+        return onSort(param);
+      // 페이지 번호 클릭
+      } else if (cmd === 'prods-pager-setPage') {
+        return setPage(param);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -79,14 +85,8 @@ window.PdProdMng = {
     /* handleSelectAction — 그리드 행/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ PdProdMng.js : handleSelectAction -> ', cmd, param);
-      // 그리드 정렬 헤더 클릭
-      if (cmd === 'prods-sort') {
-        return onSort(param);
-      // 페이지 번호 클릭
-      } else if (cmd === 'prods-pager-setPage') {
-        return setPage(param);
       // 페이지 크기 변경
-      } else if (cmd === 'prods-pager-sizeChange') {
+      if (cmd === 'prods-pager-sizeChange') {
         return onSizeChange();
       // 그리드 행 클릭 → 상세 편집 패널 열기
       } else if (cmd === 'prods-rowEdit') {
@@ -418,7 +418,7 @@ window.PdProdMng = {
     </div>
     <!-- ===== ■.■. 목록 그리드 ================================================ -->
     <bo-grid
-      :columns="columns.baseGrid" :rows="products" row-key="prodId"
+      :columns="columns.baseGrid" :rows="products" row-key="prodId" :selected-key="detailPanel.selectedId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(p) => detailPanel.selectedId===p.prodId ? 'background:#fff8f9;' : ''"

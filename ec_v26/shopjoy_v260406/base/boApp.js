@@ -121,6 +121,7 @@
       { id: 'sySiteMng', label: '사이트관리' },
       { id: 'syCodeMng', label: '공통코드관리' },
       { id: 'syBrandMng', label: '브랜드관리' },
+      { group: '업체' },
       { id: 'syVendorMng', label: '업체' },
       { id: 'syVendorUserMng', label: '업체사용자' },
       { id: 'syVendorInfoMng', label: '업체정보' },

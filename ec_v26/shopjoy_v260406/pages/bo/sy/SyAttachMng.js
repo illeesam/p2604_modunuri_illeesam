@@ -76,6 +76,12 @@ window.SyAttachMng = {
       } else if (cmd === 'attaches-formClose') {
         uiState.fileEditMode = false;
         return;
+      // 첨부그룹 페이지 번호 클릭
+      } else if (cmd === 'attachGrps-pager-setPage') {
+        return setGrpPage(param);
+      // 첨부파일 페이지 번호 클릭
+      } else if (cmd === 'attaches-pager-setPage') {
+        return setPage(param);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -93,9 +99,6 @@ window.SyAttachMng = {
       // 첨부그룹 삭제 버튼
       } else if (cmd === 'attachGrps-rowDelete') {
         return handleDeleteGrp(param);
-      // 첨부그룹 페이지 번호 클릭
-      } else if (cmd === 'attachGrps-pager-setPage') {
-        return setGrpPage(param);
       // 첨부그룹 페이지 크기 변경
       } else if (cmd === 'attachGrps-pager-sizeChange') {
         return onGrpSizeChange();
@@ -105,9 +108,6 @@ window.SyAttachMng = {
       // 첨부파일 삭제 버튼
       } else if (cmd === 'attaches-rowDelete') {
         return handleDeleteFile(param);
-      // 첨부파일 페이지 번호 클릭
-      } else if (cmd === 'attaches-pager-setPage') {
-        return setPage(param);
       // 첨부파일 페이지 크기 변경
       } else if (cmd === 'attaches-pager-sizeChange') {
         return onSizeChange();

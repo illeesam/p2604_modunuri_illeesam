@@ -59,6 +59,13 @@ window.PdDlivTmpltMng = {
       } else if (cmd === 'form-close') {
         uiState.selectedId = null;
         return;
+      // 그리드 정렬 헤더 클릭
+      } else if (cmd === 'dlivTmplts-sort') {
+        return onSort(param);
+      // 페이지 번호 변경
+      } else if (cmd === 'dlivTmplts-pager-setPage') {
+        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
+        return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -70,13 +77,6 @@ window.PdDlivTmpltMng = {
       // 그리드 행 클릭 → 상세 열기
       if (cmd === 'dlivTmplts-rowOpen') {
         return openDetail(param);
-      // 그리드 정렬 헤더 클릭
-      } else if (cmd === 'dlivTmplts-sort') {
-        return onSort(param);
-      // 페이지 번호 변경
-      } else if (cmd === 'dlivTmplts-pager-setPage') {
-        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
-        return;
       // 페이지 크기 변경
       } else if (cmd === 'dlivTmplts-pager-sizeChange') {
         pager.pageNo = 1;
@@ -330,7 +330,7 @@ window.PdDlivTmpltMng = {
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
-      :columns="columns.baseGrid" :rows="dlivTmplts" row-key="dlivTmpltId"
+      :columns="columns.baseGrid" :rows="dlivTmplts" row-key="dlivTmpltId" :selected-key="uiState.selectedId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-class="(row) => uiState.selectedId===row.dlivTmpltId ? 'active' : ''"

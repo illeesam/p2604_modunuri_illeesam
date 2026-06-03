@@ -282,8 +282,11 @@ window.SyContactDtl = {
         <!-- ===== ■.■.■.■.■. 회원ID + 보기 버튼 ==================================== -->
         <template #memberId>
           <div style="display:flex;gap:8px;align-items:center;">
-            <input class="form-control" v-model="form.memberId" placeholder="회원 ID" @change="handleSelectAction('form-memberIdChange')" :readonly="cfDtlMode" />
-            <span v-if="form.memberId" class="ref-link" @click="handleBtnAction('member-ref')">
+            <input class="form-control" v-model="form.memberId" placeholder="회원 ID" @change="handleSelectAction('form-memberIdChange')" :readonly="cfDtlMode" style="flex:1;min-width:0;" />
+            <span v-if="form.memberNm" style="white-space:nowrap;font-size:13px;color:#1a1a2e;font-weight:600;">
+              {{ form.memberNm }}
+            </span>
+            <span v-if="form.memberId" class="ref-link" @click="handleBtnAction('member-ref')" style="white-space:nowrap;">
               보기
             </span>
           </div>

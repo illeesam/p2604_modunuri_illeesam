@@ -716,7 +716,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
   <!-- ===== ■. SNS 전송 모달 =============================================== -->
   <bo-modal :show="snsModal.show"
     :title="(snsModal.channel==='kakao' ? '💬 카카오톡' : '📧 이메일') + ' 전송'"
-    width="500px" modal-name="sns" :on-callback="fnCallbackModal">
+    width="500px" modal-name="sns" :on-callback="fnCallbackModal" @close="snsModal.show = false">
     <div style="margin-bottom:12px;">
       <label class="form-label">
         전송 메시지

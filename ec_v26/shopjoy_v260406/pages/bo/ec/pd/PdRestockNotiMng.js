@@ -44,6 +44,10 @@ window.PdRestockNotiMng = {
         if (allChecked.value) { restockNotis.forEach(r => checkedIds.delete(r.restockNotiId)); }
         else { restockNotis.forEach(r => checkedIds.add(r.restockNotiId)); }
         return;
+      // 페이지 번호 변경
+      } else if (cmd === 'restockNotis-pager-setPage') {
+        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
+        return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -55,10 +59,6 @@ window.PdRestockNotiMng = {
       // 단일 행 체크 토글
       if (cmd === 'restockNotis-rowToggle') {
         if (checkedIds.has(param)) { checkedIds.delete(param); } else { checkedIds.add(param); }
-        return;
-      // 페이지 번호 변경
-      } else if (cmd === 'restockNotis-pager-setPage') {
-        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
         return;
       // 페이지 크기 변경
       } else if (cmd === 'restockNotis-pager-sizeChange') {

@@ -39,6 +39,10 @@ window.PdTagMng = {
       // 태그 그리드 저장
       } else if (cmd === 'tags-save') {
         return handleSave();
+      // 페이지 번호 변경
+      } else if (cmd === 'tags-pager-setPage') {
+        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
+        return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -53,10 +57,6 @@ window.PdTagMng = {
       // 태그 그리드 셀 변경
       } else if (cmd === 'tags-rowCellChange') {
         if (param._row_status !== 'N') { param._row_status = 'U'; }
-        return;
-      // 페이지 번호 변경
-      } else if (cmd === 'tags-pager-setPage') {
-        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
         return;
       // 페이지 크기 변경
       } else if (cmd === 'tags-pager-sizeChange') {

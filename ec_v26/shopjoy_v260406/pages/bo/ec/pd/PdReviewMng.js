@@ -31,9 +31,6 @@ window.PdReviewMng = {
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         return onReset();
-      // 페이지 크기 변경
-      } else if (cmd === 'reviews-pager-sizeChange') {
-        return onSizeChange();
       // 상세 패널 닫기
       } else if (cmd === 'detailPanel-close') {
         selectedId.value = null;
@@ -41,15 +38,21 @@ window.PdReviewMng = {
       // 상품별 리뷰 목록 닫기 (선택 해제)
       } else if (cmd === 'prodReviews-close') {
         return onProdIdClick(selectedProdId.value);
-      // 상품별 리뷰 페이지 크기 변경
-      } else if (cmd === 'prodReviews-pager-sizeChange') {
-        return onProdReviewSizeChange();
       // 상태변경 모달 닫기 (취소)
       } else if (cmd === 'statusModal-close') {
         return closeStatusModal();
       // 상태변경 모달 저장
       } else if (cmd === 'statusModal-confirm') {
         return confirmStatusChange();
+      // 그리드 정렬 헤더 클릭
+      } else if (cmd === 'reviews-sort') {
+        return onSort(param);
+      // 페이지 번호 클릭
+      } else if (cmd === 'reviews-pager-setPage') {
+        return setPage(param);
+      // 상품별 리뷰 페이지 번호 클릭
+      } else if (cmd === 'prodReviews-pager-setPage') {
+        return setProdReviewPage(param);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -58,12 +61,12 @@ window.PdReviewMng = {
     /* handleSelectAction — 그리드 행/노드 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ PdReviewMng.js : handleSelectAction -> ', cmd, param);
-      // 그리드 정렬 헤더 클릭
-      if (cmd === 'reviews-sort') {
-        return onSort(param);
-      // 페이지 번호 클릭
-      } else if (cmd === 'reviews-pager-setPage') {
-        return setPage(param);
+      // 페이지 크기 변경 (<select>)
+      if (cmd === 'reviews-pager-sizeChange') {
+        return onSizeChange();
+      // 상품별 리뷰 페이지 크기 변경 (<select>)
+      } else if (cmd === 'prodReviews-pager-sizeChange') {
+        return onProdReviewSizeChange();
       // 그리드 행 클릭 (상세 토글)
       } else if (cmd === 'reviews-rowEdit') {
         return openDetail(param);
@@ -76,9 +79,6 @@ window.PdReviewMng = {
       // 상품ID 클릭 → 하단 상품별 리뷰 목록 토글
       } else if (cmd === 'reviews-rowProdClick') {
         return onProdIdClick(param);
-      // 상품별 리뷰 페이지 번호 클릭
-      } else if (cmd === 'prodReviews-pager-setPage') {
-        return setProdReviewPage(param);
       // 상품별 리뷰 행 클릭 (상세 토글)
       } else if (cmd === 'prodReviews-rowEdit') {
         return openDetail(param);
@@ -423,13 +423,13 @@ window.PdReviewMng = {
       </button>
     </template>
   </bo-grid>
-  <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('reviews-pager-setPage', n)" :on-size-change="() => handleBtnAction('reviews-pager-sizeChange')" />
+  <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('reviews-pager-setPage', n)" :on-size-change="() => handleSelectAction('reviews-pager-sizeChange')" />
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 상품ID 클릭 시: 해당 상품의 리뷰 페이징 목록 ============================= -->
   <div class="card" v-if="selectedProdId">
     <div class="toolbar">
       <span class="list-title">
-        📦 [{{ selectedProdId }}] 상품의 리뷰 목록
+        📦 상품의 리뷰 목록 [{{ selectedProdId }}]
       </span>
       <span class="list-count">
         총 {{ prodReviewPager.pageTotalCount }}건
@@ -438,8 +438,8 @@ window.PdReviewMng = {
         ✕ 닫기
       </button>
     </div>
-    <!-- ===== ■.■. 그리드 (기본 10개 영역 + 화면 높이 반응형 확장, 초과 시 내부 스크롤) =========== -->
-    <div style="max-height:calc(100vh - 340px);min-height:480px;overflow-y:auto;border:1px solid #eef0f3;border-radius:6px;background:#fff;">
+    <!-- ===== ■.■. 그리드 (약 10행 높이 + 초과 시 내부 스크롤) =========== -->
+    <div style="max-height:360px;overflow-y:auto;border:1px solid #eef0f3;border-radius:6px;background:#fff;">
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid bare :columns="columns.prodReviewGrid" :rows="prodReviews" :pager="prodReviewPager"
         row-key="reviewId" :row-class="fnProdReviewRowClass"
@@ -451,7 +451,7 @@ window.PdReviewMng = {
     <!-- ===== ■.■. /그리드 스크롤 컨테이너 ========================================= -->
     <!-- ===== ■.■. 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ============================= -->
     <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
-      <bo-pager :pager="prodReviewPager" :on-set-page="n => handleBtnAction('prodReviews-pager-setPage', n)" :on-size-change="() => handleBtnAction('prodReviews-pager-sizeChange')"
+      <bo-pager :pager="prodReviewPager" :on-set-page="n => handleBtnAction('prodReviews-pager-setPage', n)" :on-size-change="() => handleSelectAction('prodReviews-pager-sizeChange')"
         style="margin-top:0;min-height:34px;" />
     </div>
   </div>

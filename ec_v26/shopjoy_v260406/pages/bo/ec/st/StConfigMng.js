@@ -270,7 +270,7 @@ window.StConfigMng = {
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
-      :columns="columns.baseGrid" :rows="configs" row-key="settleConfigId"
+      :columns="columns.baseGrid" :rows="configs" row-key="settleConfigId" :selected-key="uiState.selectedId"
       list-title="목록" :count-text="configs.length + '건'" :row-actions="true"
       :row-class="(c) => uiState.selectedId===c.settleConfigId ? 'selected' : ''">
       <template #head-actions>

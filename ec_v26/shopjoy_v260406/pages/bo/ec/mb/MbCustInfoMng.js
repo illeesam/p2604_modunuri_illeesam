@@ -873,7 +873,8 @@
   <!-- ===== □. 고객 정보 영역 ================================================ -->
   <!-- ===== ■. 고객 선택 모달 ================================================ -->
   <bo-modal :show="memberModal.show" title="고객 검색" width="760px" max-width="96vw"
-    max-height="85vh" modal-name="member-pick" :on-callback="fnCallbackModal">
+    max-height="85vh" modal-name="member-pick" :on-callback="fnCallbackModal"
+    @close="handleBtnAction('memberModal-close')">
     <bo-search-area :columns="columns.memberModalSearch" :param="memberModal" :show-reset="false"
       @search="handleBtnAction('memberModal-search')" />
     <!-- ===== ■.■. 목록 영역 ================================================= -->

@@ -67,6 +67,9 @@ window.PdBundleMng = {
       // 구성품 피커 검색
       } else if (cmd === 'prodPickModal-search') {
         return onPickerSearch();
+      // 페이지 번호 클릭
+      } else if (cmd === 'bundles-pager-setPage') {
+        return setPage(param);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -81,9 +84,6 @@ window.PdBundleMng = {
       // 그리드 행 삭제
       } else if (cmd === 'bundles-rowDelete') {
         return handleDelete(param);
-      // 페이지 번호 클릭
-      } else if (cmd === 'bundles-pager-setPage') {
-        return setPage(param);
       // 카테고리 행 삭제
       } else if (cmd === 'detailPanel-categoryRemove') {
         return removeCategory(param);

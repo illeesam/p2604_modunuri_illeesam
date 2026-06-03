@@ -390,7 +390,7 @@ window.SyBbsDtl = {
 <!-- ===== □. 게시판 선택 팝업 =============================================== -->
 <!-- ===== ■. 게시판 상세보기 팝업 ============================================= -->
 <bo-modal :show="coUtil.cofAnd(showBbmDetail, selectedBbm)" title="게시판 상세"
-    width="420px" modal-name="bbm-detail" :on-callback="fnCallbackModal">
+    width="420px" modal-name="bbm-detail" :on-callback="fnCallbackModal" @close="showBbmDetail = false">
     <bo-form-area v-if="selectedBbm" :columns="columns.bbmDetail" :form="selectedBbm" :errors="{}"
       :cols="1" :show-actions="false" />
     <template #footer>

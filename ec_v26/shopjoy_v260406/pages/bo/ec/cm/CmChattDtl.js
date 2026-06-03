@@ -459,7 +459,7 @@ window.CmChattDtl = {
   <!-- ===== □. 신규 채팅 등록 ================================================ -->
   <!-- ===== ■. 메시지 내 참조 모달 (상품/주문/클레임) ================================= -->
   <bo-modal :show="refModal.show"
-    :title="refModal.type==='product'?'상품 상세':refModal.type==='order'?'주문 상세':'클레임 상세'" modal-name="ref" :on-callback="fnCallbackModal">
+    :title="refModal.type==='product'?'상품 상세':refModal.type==='order'?'주문 상세':'클레임 상세'" modal-name="ref" :on-callback="fnCallbackModal" @close="refModal.show = false">
     <div style="text-align:center;color:#aaa;padding:20px;">
       정보를 찾을 수 없습니다.
     </div>

@@ -1511,7 +1511,7 @@ window.BoTabBar = {
         :style="{
           flex: orientation==='vertical' ? 'none' : 1,
           width: orientation==='vertical' ? '100%' : 'auto',
-          padding:'11px 12px', border:'none', cursor: isTabMode() ? 'pointer' : 'default',
+          padding:'7px 12px', border:'none', cursor: isTabMode() ? 'pointer' : 'default',
           fontSize:'12.5px', borderRadius:'9px', transition:'all .18s',
           display:'inline-flex', alignItems:'center',
           justifyContent: orientation==='vertical' ? 'flex-start' : 'center',
