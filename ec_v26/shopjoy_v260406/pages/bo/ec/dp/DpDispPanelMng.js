@@ -959,7 +959,7 @@ window.DpDispPanelMng = {
 <!-- ===== □.□. 우측 목록 ================================================= -->
 <!-- ===== □. 본문: 좌측 트리 + 우측 목록 ======================================= -->
 <!-- ===== ■. 하단 상세: DispDtl 임베드 ====================================== -->
-<div style="margin-top:16px;">
+<div>
   <div v-if="uiStateDetail.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
     <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
       ✕ 닫기

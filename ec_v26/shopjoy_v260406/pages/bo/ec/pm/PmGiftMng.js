@@ -432,7 +432,7 @@ window.PmGiftMng = {
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 하단 상세영역: PmGiftDtl 인라인 임베드 ============================== -->
   <!-- ===== ■. 상세 패널 (인라인 임베드) ========================================= -->
-  <div style="margin-top:16px;">
+  <div>
     <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기

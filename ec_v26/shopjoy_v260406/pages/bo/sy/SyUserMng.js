@@ -488,8 +488,8 @@ window.SyUserMng = {
     </div>
   </div>
   <!-- ===== □. 본문 영역 =================================================== -->
-  <!-- ===== ■. 상세 패널 (인라인 임베드, 항상 표시) ================================ -->
-  <div style="margin-top:16px;">
+  <!-- ===== ■. 상세 패널 (인라인 임베드, 항상 표시) — 영역 간격 12px 통일 (margin-top:16px→0, 위 카드 margin-bottom:12px 만 사용) -->
+  <div>
     <sy-user-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
       :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
       :active="detailPanel.active"
