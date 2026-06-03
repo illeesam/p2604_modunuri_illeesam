@@ -625,10 +625,12 @@ window.BoCategoryTree = {
     </div>
     <!-- 전체 루트 항목 -->
     <div style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:2px;padding:5px 6px;margin-bottom:2px"
-      :style="{ background: selected===null ? '#fce4ec' : 'transparent',
-      color:      selected===null ? '#e8587a' : '#555',
+      :style="{ background: selected===null ? '#eff6ff' : 'transparent',
+      color:      selected===null ? '#1d4ed8' : '#555',
       fontWeight: selected===null ? 700 : 500,
-      borderLeft: selected===null ? '3px solid #e8587a' : '3px solid transparent' }"
+      outline:       selected===null ? '2px solid #2563eb' : 'none',
+      outlineOffset: selected===null ? '-2px' : '0',
+      position:'relative', zIndex: selected===null ? 1 : 'auto' }"
       @click="handleSelectAction('tree-node-select', null)">
       <span style="width:14px;flex-shrink:0">
       </span>
@@ -645,10 +647,12 @@ window.BoCategoryTree = {
     <div v-for="cat in cfTreeFlat" :key="cat.categoryId"
       style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:2px;padding:5px 6px"
       :style="{ paddingLeft:(cat._depth*14+6)+'px',
-      background: selected===cat.categoryId ? '#fce4ec' : 'transparent',
-      color:      selected===cat.categoryId ? '#e8587a' : '#333',
+      background: selected===cat.categoryId ? '#eff6ff' : 'transparent',
+      color:      selected===cat.categoryId ? '#1d4ed8' : '#333',
       fontWeight: selected===cat.categoryId ? 600 : 400,
-      borderLeft: selected===cat.categoryId ? '3px solid #e8587a' : '3px solid transparent' }"
+      outline:       selected===cat.categoryId ? '2px solid #2563eb' : 'none',
+      outlineOffset: selected===cat.categoryId ? '-2px' : '0',
+      position:'relative', zIndex: selected===cat.categoryId ? 1 : 'auto' }"
       @click="handleSelectAction('tree-node-select', cat.categoryId)">
       <span v-if="cat._hasChildren"
         style="width:14px;text-align:center;font-size:9px;color:#aaa;flex-shrink:0"
@@ -704,7 +708,7 @@ window.BoCategoryTree = {
                 ▶ 닫기
               </button>
             </div>
-            <div v-for="cat in cfTreeFlat" :key="cat.categoryId" style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:2px;padding:5px 6px;transition:background .1s;" :style="{ paddingLeft:(cat._depth*14+6)+'px', opacity: excludeIds && excludeIds.has(String(cat.categoryId)) ? 0.35 : 1, pointerEvents: excludeIds && excludeIds.has(String(cat.categoryId)) ? 'none' : 'auto', background: pickerTempCat && pickerTempCat.categoryId === cat.categoryId ? '#fff0f4' : '', borderLeft: pickerTempCat && pickerTempCat.categoryId === cat.categoryId ? '3px solid #e8587a' : '3px solid transparent' }" @click="handleSelectAction('picker-select', cat)">
+            <div v-for="cat in cfTreeFlat" :key="cat.categoryId" style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:2px;padding:5px 6px;transition:background .1s;" :style="{ paddingLeft:(cat._depth*14+6)+'px', opacity: excludeIds && excludeIds.has(String(cat.categoryId)) ? 0.35 : 1, pointerEvents: excludeIds && excludeIds.has(String(cat.categoryId)) ? 'none' : 'auto', background: pickerTempCat && pickerTempCat.categoryId === cat.categoryId ? '#eff6ff' : '', outline: pickerTempCat && pickerTempCat.categoryId === cat.categoryId ? '2px solid #2563eb' : 'none', outlineOffset: pickerTempCat && pickerTempCat.categoryId === cat.categoryId ? '-2px' : '0', position:'relative', zIndex: pickerTempCat && pickerTempCat.categoryId === cat.categoryId ? 1 : 'auto' }" @click="handleSelectAction('picker-select', cat)">
             <span v-if="cat._hasChildren"
                 style="width:14px;text-align:center;font-size:9px;color:#aaa;flex-shrink:0"
                 @click.stop="handleSelectAction('tree-node-toggle', cat.categoryId)">
@@ -732,7 +736,7 @@ window.BoCategoryTree = {
         <div v-if="cfPickerList.length===0" style="text-align:center;color:#aaa;padding:24px;font-size:13px;">
           검색 결과 없음
         </div>
-        <div v-for="cat in cfPickerList" :key="cat.categoryId" @click="handleSelectAction('picker-select', cat)" style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:6px;padding:6px 10px;transition:background .1s;" :style="{ opacity: excludeIds && excludeIds.has(String(cat.categoryId)) ? 0.35 : 1, pointerEvents: excludeIds && excludeIds.has(String(cat.categoryId)) ? 'none' : 'auto', background: pickerTempCat && pickerTempCat.categoryId === cat.categoryId ? '#fff0f4' : '', borderLeft: pickerTempCat && pickerTempCat.categoryId === cat.categoryId ? '3px solid #e8587a' : '3px solid transparent' }">
+        <div v-for="cat in cfPickerList" :key="cat.categoryId" @click="handleSelectAction('picker-select', cat)" style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:6px;padding:6px 10px;transition:background .1s;" :style="{ opacity: excludeIds && excludeIds.has(String(cat.categoryId)) ? 0.35 : 1, pointerEvents: excludeIds && excludeIds.has(String(cat.categoryId)) ? 'none' : 'auto', background: pickerTempCat && pickerTempCat.categoryId === cat.categoryId ? '#eff6ff' : '', outline: pickerTempCat && pickerTempCat.categoryId === cat.categoryId ? '2px solid #2563eb' : 'none', outlineOffset: pickerTempCat && pickerTempCat.categoryId === cat.categoryId ? '-2px' : '0', position:'relative', zIndex: pickerTempCat && pickerTempCat.categoryId === cat.categoryId ? 1 : 'auto' }">
         <span :style="{ fontSize:'11px', fontWeight:700, color:DEPTH_COLOR((cat.categoryDepth||1)-1) }">
           {{ DEPTH_BULLET((cat.categoryDepth||1)-1) }}
         </span>
@@ -1425,9 +1429,12 @@ window.BoDeptTreeNode = {
   <!-- ===== ■. 영역 ====================================================== -->
   <div :style="{ paddingLeft: (depth * 14) + 'px', display:'flex', alignItems:'center',
     cursor:'pointer', padding:'4px 6px 4px ' + (depth*14+6) + 'px',
-    borderRadius:'4px', background: selected === node.deptId ? '#ffeef2' : 'transparent',
+    borderRadius:'4px', background: selected === node.deptId ? '#eff6ff' : 'transparent',
     fontWeight: selected === node.deptId ? '600' : 'normal',
-    color: selected === node.deptId ? '#e8587a' : '#333' }"
+    color: selected === node.deptId ? '#1d4ed8' : '#333',
+    outline:       selected === node.deptId ? '2px solid #2563eb' : 'none',
+    outlineOffset: selected === node.deptId ? '-2px' : '0',
+    position:'relative', zIndex: selected === node.deptId ? 1 : 'auto' }"
     @click.stop="handleSelectAction('node-select', node.deptId)">
     <span v-if="node.children && node.children.length" @click.stop="handleBtnAction('node-toggle', node.deptId)" style="margin-right:4px;font-size:10px;width:14px;text-align:center;flex-shrink:0;">
     {{ expanded.has(node.deptId) ? '▼' : '▶' }}

@@ -4854,10 +4854,12 @@ window.PathPickTreeNode = {
     <div @click="handleSelectAction('pathTree-click', ch)" @dblclick="handleSelectAction('pathTree-dblclick', ch)"
       :style="{position:'relative',display:'flex',alignItems:'center',padding:'4px 8px 4px 0',cursor: editingId===ch.pathId ? 'default' : 'pointer',transition:'background .12s',
       paddingLeft: (depth*20 + 8) + 'px',
-      background: selected===ch.pathId ? '#fef2f4' : (addParent===ch.pathId ? '#ecfdf5' : 'transparent'),
-      color:      selected===ch.pathId ? '#e8587a' : '#374151',
+      background: selected===ch.pathId ? '#eff6ff' : (addParent===ch.pathId ? '#ecfdf5' : 'transparent'),
+      color:      selected===ch.pathId ? '#1d4ed8' : '#374151',
       fontWeight: selected===ch.pathId ? 700 : 500, fontSize:'13px',
-      borderLeft: selected===ch.pathId ? '3px solid #e8587a' : '3px solid transparent'}"
+      outline:       selected===ch.pathId ? '2px solid #2563eb' : 'none',
+      outlineOffset: selected===ch.pathId ? '-2px' : '0',
+      zIndex: selected===ch.pathId ? 1 : 'auto'}"
       @mouseover="onPathNodeHover(ch, $event)"
       @mouseout="onPathNodeLeave(ch, $event)">
       <span :style="{position:'absolute',left:(depth*20 + 11)+'px',top:'50%',width:'10px',height:'1px',borderTop:'1px dotted #cbd5e1',pointerEvents:'none'}">
