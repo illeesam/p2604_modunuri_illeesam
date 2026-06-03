@@ -103,11 +103,22 @@ window.SyPropMng = {
       propRows.splice(0, propRows.length, ..._rawProps.map(makeRow));
     };
 
-    /* handleLoadPathTreeNodeCounts — 좌 트리 노드별 카운트 (검색조건 동기) */
+    /* handleLoadPathTreeNodeCounts — 좌 트리 노드별 카운트 (목록과 동일 검색조건 동기) */
     const handleLoadPathTreeNodeCounts = async () => {
       try {
-        const params = Object.fromEntries(Object.entries(searchParam)
-          .filter(([k, v]) => v !== '' && v !== null && v !== undefined && k !== 'pathId'));
+        const { searchType, searchValue, useFlt, typeFlt } = searchParam;
+        // ⚠️ 목록(getPage)과 동일한 필터를 적용해야 트리 숫자 ↔ 우측 목록 건수가 일치한다.
+        //    pathId 만 제외(트리는 경로별 분해 표시이므로 특정 경로로 고정하지 않음).
+        const params = {
+          ...(cfSiteId.value ? { siteId: cfSiteId.value }     : {}),
+          ...(searchValue    ? { searchValue }                : {}),
+          ...(searchType     ? { searchType }                 : {}),
+          ...(useFlt         ? { useYn: useFlt }               : {}),
+          ...(typeFlt        ? { propTypeCd: typeFlt }         : {}),
+        };
+        if (params.searchValue && !params.searchType) {
+          params.searchType = 'pathId,propKey,propValue,propLabel';
+        }
         const res = await boApiSvc.syProp.getPathTreeNodeCounts(params, '경로별카운트', '조회');
         const rows = res.data?.data || [];
 
@@ -249,9 +260,9 @@ window.SyPropMng = {
       { key: 'propKey',    label: '키',        edit: 'text', mono: true },
       { key: 'propValue',  label: '값',        edit: 'text' },
       { key: 'propLabel',  label: '라벨',      edit: 'text' },
-      { key: 'propTypeCd', label: '타입',      cls: 'col-id', edit: 'select', options: codes.prop_types.map(t => ({ value: t, label: t })) },
+      { key: 'propTypeCd', label: '타입',      cls: 'col-id', edit: 'select', options: () => codes.prop_types.map(t => ({ value: t, label: t })) },
       { key: 'sortOrd',    label: '정렬',      cls: 'col-ord', edit: 'number' },
-      { key: 'useYn',      label: '사용',      cls: 'col-use', edit: 'select', options: codes.use_yn },
+      { key: 'useYn',      label: '사용',      cls: 'col-use', edit: 'select', options: () => codes.use_yn },
       { key: 'propRemark', label: '비고',      edit: 'text' },
     ];
 

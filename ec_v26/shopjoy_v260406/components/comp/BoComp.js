@@ -368,10 +368,10 @@ window.BoPathTreeNode = {
         return props.onSelect(param);
       } else if (cmd === 'node-hover') {
         if (!param || !param.currentTarget) return;
-        param.currentTarget.style.background = (props.selected === props.node.pathId) ? '#fff0f4' : '#f8f9fb';
+        param.currentTarget.style.background = (props.selected === props.node.pathId) ? '#eff6ff' : '#f8f9fb';
       } else if (cmd === 'node-leave') {
         if (!param || !param.currentTarget) return;
-        param.currentTarget.style.background = (props.selected === props.node.pathId) ? '#fff0f4' : 'transparent';
+        param.currentTarget.style.background = (props.selected === props.node.pathId) ? '#eff6ff' : 'transparent';
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
@@ -384,9 +384,12 @@ window.BoPathTreeNode = {
   <div @click="handleSelectAction('node-select', node.pathId)"
     :style="{ display:'flex', alignItems:'center', gap:'4px', padding:'5px 6px', cursor:'pointer', borderRadius:'4px',
     paddingLeft: (8 + depth*14) + 'px',
-    background: selected===node.pathId ? '#fff0f4' : 'transparent',
-    color:      selected===node.pathId ? '#e8587a' : '#444',
-    fontWeight: selected===node.pathId ? 700 : 400 }"
+    background: selected===node.pathId ? '#eff6ff' : 'transparent',
+    color:      selected===node.pathId ? '#1d4ed8' : '#444',
+    fontWeight: selected===node.pathId ? 700 : 400,
+    outline:       selected===node.pathId ? '2px solid #2563eb' : 'none',
+    outlineOffset: selected===node.pathId ? '-2px' : '0',
+    position:'relative', zIndex: selected===node.pathId ? 1 : 'auto' }"
     @mouseover="handleSelectAction('node-hover', $event)"
     @mouseout="handleSelectAction('node-leave', $event)">
     <span v-if="(node.children||[]).length>0" style="width:14px;font-size:10px;color:#999;flex-shrink:0"
@@ -1327,10 +1330,10 @@ window.BoPropTreeNode = {
         return props.onSelect(param);
       } else if (cmd === 'node-hover') {
         if (!param || !param.currentTarget) return;
-        param.currentTarget.style.background = (props.selected === props.node.path) ? '#fff0f4' : '#f8f9fb';
+        param.currentTarget.style.background = (props.selected === props.node.path) ? '#eff6ff' : '#f8f9fb';
       } else if (cmd === 'node-leave') {
         if (!param || !param.currentTarget) return;
-        param.currentTarget.style.background = (props.selected === props.node.path) ? '#fff0f4' : 'transparent';
+        param.currentTarget.style.background = (props.selected === props.node.path) ? '#eff6ff' : 'transparent';
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
@@ -1343,9 +1346,12 @@ window.BoPropTreeNode = {
   <!-- ===== ■. 영역 ====================================================== -->
   <div :style="{display:'flex',alignItems:'center',gap:'4px',padding:'5px 6px',cursor:'pointer',borderRadius:'4px',
     paddingLeft: (8 + depth*14) + 'px',
-    background: selected===node.path ? '#fff0f4' : 'transparent',
-    color:      selected===node.path ? '#e8587a' : '#444',
-    fontWeight: selected===node.path ? 700 : 400}"
+    background: selected===node.path ? '#eff6ff' : 'transparent',
+    color:      selected===node.path ? '#1d4ed8' : '#444',
+    fontWeight: selected===node.path ? 700 : 400,
+    outline:       selected===node.path ? '2px solid #2563eb' : 'none',
+    outlineOffset: selected===node.path ? '-2px' : '0',
+    position:'relative', zIndex: selected===node.path ? 1 : 'auto'}"
     @mouseover="handleSelectAction('node-hover', $event)"
     @mouseout="handleSelectAction('node-leave', $event)">
     <span v-if="node.children && node.children.length>0" style="width:14px;font-size:10px;color:#999;" @click.stop="handleBtnAction('node-toggle', node.path)">

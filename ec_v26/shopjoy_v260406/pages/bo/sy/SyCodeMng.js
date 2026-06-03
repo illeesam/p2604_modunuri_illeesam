@@ -735,7 +735,7 @@ window.SyCodeMng = {
       :selected="uiState.grpSelectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
     <!-- ===== ■.■. CRUD 그리드 ============================================== -->
     <bo-grid-crud
-      :columns="columns.grpGrid" :rows="uiState.grpRows" row-key="codeGrp"
+      :columns="columns.grpGrid" :rows="uiState.grpRows" row-key="codeGrp" :selected-key="uiState.selectedGrp"
       list-title="공통코드그룹관리" max-height="392px"
       :show-row-id="false" :show-row-check="false" :draggable="false"
       :show-add="false" :show-save="false"

@@ -41,27 +41,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       // 엑셀 내보내기
       } else if (cmd === 'statuses-export') {
         return exportTab();
-      // 페이지 크기 변경 — 영역별
-      } else if (cmd === 'statuses-vendorPagerSizeChange') {
-        return onVendorSizeChange();
-      } else if (cmd === 'statuses-orderPagerSizeChange') {
-        return onOrderSizeChange();
-      } else if (cmd === 'statuses-claimPagerSizeChange') {
-        return onClaimSizeChange();
-      } else if (cmd === 'statuses-promoPagerSizeChange') {
-        return onPromoSizeChange();
-      } else if (cmd === 'statuses-settlePagerSizeChange') {
-        return onSettleSizeChange();
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
-    };
-
-    /* handleSelectAction — 그리드 페이지/노드 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ StStatusMng.js : handleSelectAction -> ', cmd, param);
       // 페이지 번호 클릭 — 영역별
-      if (cmd === 'statuses-vendorPagerSetPage') {
+      } else if (cmd === 'statuses-vendorPagerSetPage') {
         return setVendorPage(param);
       } else if (cmd === 'statuses-orderPagerSetPage') {
         return setOrderPage(param);
@@ -71,6 +52,25 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         return setPromoPage(param);
       } else if (cmd === 'statuses-settlePagerSetPage') {
         return setSettlePage(param);
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 그리드 페이지/노드 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ StStatusMng.js : handleSelectAction -> ', cmd, param);
+      // 페이지 크기 변경 — 영역별 (select)
+      if (cmd === 'statuses-vendorPagerSizeChange') {
+        return onVendorSizeChange();
+      } else if (cmd === 'statuses-orderPagerSizeChange') {
+        return onOrderSizeChange();
+      } else if (cmd === 'statuses-claimPagerSizeChange') {
+        return onClaimSizeChange();
+      } else if (cmd === 'statuses-promoPagerSizeChange') {
+        return onPromoSizeChange();
+      } else if (cmd === 'statuses-settlePagerSizeChange') {
+        return onSettleSizeChange();
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
@@ -615,7 +615,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       :count-text="'총 ' + cfVendorTotal + '개 업체'"
       empty-text="데이터가 없습니다.">
     </bo-grid>
-    <bo-pager :pager="vendorPager" :on-set-page="n => handleBtnAction('statuses-vendorPagerSetPage', n)" :on-size-change="() => handleBtnAction('statuses-vendorPagerSizeChange')" />
+    <bo-pager :pager="vendorPager" :on-set-page="n => handleBtnAction('statuses-vendorPagerSetPage', n)" :on-size-change="() => handleSelectAction('statuses-vendorPagerSizeChange')" />
   </div>
   <!-- ===== □.□. 테이블 =================================================== -->
   <!-- ===== □. ══ 1. 업체별현황 ══ ========================================== -->
@@ -639,7 +639,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       :row-style="(r) => r.isCancelled ? 'color:#bbb' : ''"
       empty-text="데이터가 없습니다.">
     </bo-grid>
-    <bo-pager :pager="orderPager" :on-set-page="n => handleBtnAction('statuses-orderPagerSetPage', n)" :on-size-change="() => handleBtnAction('statuses-orderPagerSizeChange')" />
+    <bo-pager :pager="orderPager" :on-set-page="n => handleBtnAction('statuses-orderPagerSetPage', n)" :on-size-change="() => handleSelectAction('statuses-orderPagerSizeChange')" />
   </div>
   <!-- ===== □.□. 목록 영역 ================================================= -->
   <!-- ===== □. ══ 2. 주문별현황 ══ ========================================== -->
@@ -662,7 +662,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       :count-text="'총 ' + cfClaimTotal + '건'"
       empty-text="데이터가 없습니다.">
     </bo-grid>
-    <bo-pager :pager="claimPager" :on-set-page="n => handleBtnAction('statuses-claimPagerSetPage', n)" :on-size-change="() => handleBtnAction('statuses-claimPagerSizeChange')" />
+    <bo-pager :pager="claimPager" :on-set-page="n => handleBtnAction('statuses-claimPagerSetPage', n)" :on-size-change="() => handleSelectAction('statuses-claimPagerSizeChange')" />
   </div>
   <!-- ===== □.□. 목록 영역 ================================================= -->
   <!-- ===== □. ══ 3. 클레임별현황 ══ ========================================= -->
@@ -685,7 +685,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       :count-text="'총 ' + cfPromoTotal + '개'"
       empty-text="데이터가 없습니다.">
     </bo-grid>
-    <bo-pager :pager="promoPager" :on-set-page="n => handleBtnAction('statuses-promoPagerSetPage', n)" :on-size-change="() => handleBtnAction('statuses-promoPagerSizeChange')" />
+    <bo-pager :pager="promoPager" :on-set-page="n => handleBtnAction('statuses-promoPagerSetPage', n)" :on-size-change="() => handleSelectAction('statuses-promoPagerSizeChange')" />
   </div>
   <!-- ===== □.□. 목록 영역 ================================================= -->
   <!-- ===== □. ══ 4. 프로모션별현황 ══ ======================================== -->
@@ -708,7 +708,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       :count-text="'총 ' + cfSettleTotal + '개월'"
       empty-text="데이터가 없습니다.">
     </bo-grid>
-    <bo-pager :pager="settlePager" :on-set-page="n => handleBtnAction('statuses-settlePagerSetPage', n)" :on-size-change="() => handleBtnAction('statuses-settlePagerSizeChange')" />
+    <bo-pager :pager="settlePager" :on-set-page="n => handleBtnAction('statuses-settlePagerSetPage', n)" :on-size-change="() => handleSelectAction('statuses-settlePagerSizeChange')" />
   </div>
 </div>
 <!-- ===== □.□. 목록 영역 ================================================= -->

@@ -160,7 +160,6 @@ window.CmBlogMng = {
 
     /* openDetail — 인라인 패널 열기 (토글) */
     const openDetail = (row) => {
-      if (detailPanel.dtlId === row.blogId && detailPanel.active) { resetDetailToNew(); return; }
       Object.assign(detailPanel.form, _initBlogForm(), { ...row });
       detailPanel.dtlId = row.blogId; detailPanel.isNew = false; detailPanel.show = true; detailPanel.active = true;
     };

@@ -200,10 +200,10 @@ window.SyBbsDtl = {
     });
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
-    // 사이트명 폼 (cols=3 전체 폭)
+    // 사이트명 폼 (cols=3, 1열만 차지 — 다른 필드와 동일 폭)
     const columns = {};
     columns.siteForm = [
-      { key: '_siteNm', label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 3 },
+      { key: '_siteNm', label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value },
     ];
 
     // 기본 폼 (cols=3, 1열씩)
@@ -268,9 +268,9 @@ window.SyBbsDtl = {
   <!-- ===== □. 페이지 타이틀 ================================================= -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
-    <!-- ===== ■.■. 사이트명 (BoFormArea 자동 렌더) =============================== -->
+    <!-- ===== ■.■. 사이트명 (BoFormArea 자동 렌더, 1열 폭) ========================= -->
     <bo-form-area :columns="columns.siteForm" :form="form" :errors="{}"
-      :cols="3" :show-actions="false" />
+      :cols="3" compact :show-actions="false" />
     <!-- ===== ■.■. 게시판 선택 ================================================ -->
     <div class="form-group">
       <label class="form-label">

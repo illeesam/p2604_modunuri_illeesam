@@ -200,8 +200,8 @@ window.SyVendorInfoMng = {
     /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
 
-    /* fnRowStyle — 행 스타일 (선택 업체 강조) */
-    const fnRowStyle = (v) => uiState.selectedVendorId === v.vendorId ? 'background:#fff0f4;cursor:pointer;' : 'cursor:pointer;';
+    /* fnRowStyle — 행 스타일 (선택 강조는 selected-key 의 파란 테두리로 처리) */
+    const fnRowStyle = (v) => 'cursor:pointer;';
 
     /* fnSelectedVendorNm — 선택 업체명 */
     const fnSelectedVendorNm = () => {

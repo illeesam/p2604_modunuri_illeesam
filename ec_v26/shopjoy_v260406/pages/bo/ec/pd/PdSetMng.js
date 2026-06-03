@@ -41,9 +41,6 @@ window.PdSetMng = {
       // 세트상품 Dtl 닫기
       } else if (cmd === 'detailPanel-close') {
         return closeDtl();
-      // 페이지 크기 변경
-      } else if (cmd === 'sets-pager-sizeChange') {
-        return onSizeChange();
       // 설명 토글
       } else if (cmd === 'desc-toggle') {
         uiState.descOpen = !uiState.descOpen;
@@ -80,8 +77,11 @@ window.PdSetMng = {
     /* handleSelectAction — 그리드 행/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ PdSetMng.js : handleSelectAction -> ', cmd, param);
+      // 페이지 크기 변경 (select)
+      if (cmd === 'sets-pager-sizeChange') {
+        return onSizeChange();
       // 그리드 행 클릭 → Dtl 열기
-      if (cmd === 'sets-rowEdit') {
+      } else if (cmd === 'sets-rowEdit') {
         return openDtl(param);
       // 그리드 행 삭제
       } else if (cmd === 'sets-rowDelete') {
@@ -693,7 +693,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
     <!-- ===== ■.■. /그리드 스크롤 컨테이너 ========================================= -->
     <!-- ===== ■.■. 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ============================= -->
     <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
-      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('sets-pager-setPage', n)" :on-size-change="() => handleBtnAction('sets-pager-sizeChange')"
+      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('sets-pager-setPage', n)" :on-size-change="() => handleSelectAction('sets-pager-sizeChange')"
         style="margin-top:0;min-height:34px;" />
     </div>
   </div>

@@ -38,6 +38,7 @@ window.SyBrandMng = {
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
         uiState.selectedPath = null;          // 표시경로 트리 전체로 복귀
+        uiState.focusedIdx = null;            // 선택(포커스) 행 정보 초기화 → 파란 외곽선 해제
         return handleSearchList();
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {
@@ -308,7 +309,7 @@ window.SyBrandMng = {
       { key: 'brandEnNm',   label: '영문명',    style: 'min-width:130px;', edit: 'text', placeholder: 'Brand Name' },
       { key: 'logoUrl',     label: '로고 URL',  style: 'min-width:200px;' },
       { key: 'sortOrd',     label: '순서',      cls: 'col-ord', edit: 'number' },
-      { key: 'useYn',       label: '사용여부',  cls: 'col-use', edit: 'select', options: codes.use_yn },
+      { key: 'useYn',       label: '사용여부',  cls: 'col-use', edit: 'select', options: () => codes.use_yn },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */

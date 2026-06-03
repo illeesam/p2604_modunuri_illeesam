@@ -2,9 +2,11 @@
 window.SyBatchHist = {
   name: 'SyBatchHist',
   props: {
-    navigate:     { type: Function, required: true }, // 페이지 이동
-    boData:       { type: Object, default: () => ({}) }, // BO 공통 데이터
-    batchCode:    { type: String, default: null }, // 대상 코드
+    navigate:      { type: Function, required: true }, // 페이지 이동
+    boData:        { type: Object, default: () => ({}) }, // BO 공통 데이터
+    batchCode:     { type: String, default: null }, // 대상 코드
+    filterBatchId: { type: [String, Number], default: null }, // 외부(상위 Mng) 지정 배치 필터 (null=전체)
+    reloadTrigger: { type: Number, default: 0 }, // 상위에서 ++ 로 증가 시 필터 적용 + 재조회
   },
   setup(props) {
     /* ##### [01] 초기 변수 정의 #################################################### */
@@ -133,6 +135,17 @@ window.SyBatchHist = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) { fnLoadCodes(); }
+      handleSearchData().then(() => { onExpandAll(); });
+    });
+
+    /* 상위(SyBatchMng)에서 reloadTrigger ++ → filterBatchId 적용 후 초기화 재조회.
+     *   - 표시경로 트리 선택/초기화: filterBatchId=null → 배치 전체 이력
+     *   - 배치목록 행 클릭:          filterBatchId=배치ID → 해당 배치 이력만 */
+    watch(() => props.reloadTrigger, (n, o) => {
+      if (n === o) { return; }
+      uiState.searchBatchId = props.filterBatchId != null ? props.filterBatchId : '';
+      uiState.searchStatus  = '';
+      pager.pageNo = 1;
       handleSearchData().then(() => { onExpandAll(); });
     });
 

@@ -656,10 +656,10 @@ window.SyVendorUserMng = {
         fmt: (v, row) => (row.validFrom || row.validTo) ? `${row.validFrom||'∞'} ~ ${row.validTo||'∞'}` : '제한없음',
         cellInnerStyle: (v, row) => (row.validFrom || row.validTo) ? '' : 'color:#d1d5db;' },
     ];
-    /* fnVendorRowStyle — 유틸 */
-    const fnVendorRowStyle = (v) => 'cursor:pointer;' + (uiState.searchVendorId === v.vendorId ? 'background:#fff0f4;' : '');
-    /* fnUserRowStyle — 유틸 */
-    const fnUserRowStyle   = (u) => 'cursor:pointer;' + (formData.vendorUserId === u.vendorUserId ? 'background:#fff0f4;' : '');
+    /* fnVendorRowStyle — 유틸 (선택 강조는 selected-key 의 파란 테두리로 처리) */
+    const fnVendorRowStyle = (v) => 'cursor:pointer;';
+    /* fnUserRowStyle — 유틸 (선택 강조는 selected-key 의 파란 테두리로 처리) */
+    const fnUserRowStyle   = (u) => 'cursor:pointer;';
 
     // 판매업체 사용자 폼
     columns.baseVendorUserForm = [
@@ -709,7 +709,7 @@ window.SyVendorUserMng = {
       </div>
       <!-- ===== ■.■.■. 업체 목록 ============================================= -->
       <bo-grid
-        :columns="columns.vendorGrid" :rows="bizPager.pageList||[]" :pager="bizPager" row-key="vendorId"
+        :columns="columns.vendorGrid" :rows="bizPager.pageList||[]" :pager="bizPager" row-key="vendorId" :selected-key="uiState.searchVendorId"
         list-title="업체목록" :count-text="vendors.length + '건'"
         :row-style="fnVendorRowStyle" row-clickable
         @row-click="row => handleSelectAction('vendors-rowSelect', row)" row-actions>

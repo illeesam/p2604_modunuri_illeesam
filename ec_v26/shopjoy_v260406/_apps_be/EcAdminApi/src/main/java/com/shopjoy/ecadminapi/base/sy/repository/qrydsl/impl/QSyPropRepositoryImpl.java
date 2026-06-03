@@ -281,6 +281,8 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
         params.put("bizCd", "sy_prop");
 
         /* 검색조건 — pathtreeAnd*() 헬퍼로 SQL 조각 + 파라미터 함께 추가 */
+        /* ⚠️ siteId 를 가장 먼저 적용 — 목록(getPage)과 동일 사이트 격리로 트리 숫자 ↔ 목록 건수 일치 */
+        pathtreeAndSiteId(search, sql, params);
         pathtreeAndUseYn(search, sql, params);
         pathtreeAndPropType(search, sql, params);
         pathtreeAndSearchValue(search, sql, params);
@@ -323,6 +325,12 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
     /* ============================================================
      * selectPathTreePropCnts 전용 SQL 조건 헬퍼
      * ============================================================ */
+
+    private void pathtreeAndSiteId(SyPropDto.Request s, StringBuilder sql, Map<String, Object> syProp) {
+        if (s == null || !StringUtils.hasText(s.getSiteId())) return;
+        sql.append("      AND t.site_id = :siteId\n");
+        syProp.put("siteId", s.getSiteId());
+    }
 
     private void pathtreeAndUseYn(SyPropDto.Request s, StringBuilder sql, Map<String, Object> syProp) {
         if (s == null || !StringUtils.hasText(s.getUseYn())) return;

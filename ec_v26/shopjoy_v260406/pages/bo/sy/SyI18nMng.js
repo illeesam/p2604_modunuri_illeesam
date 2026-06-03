@@ -241,7 +241,7 @@ window.SyI18nMng = {
     list-title="다국어 키 목록" :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-style="fnRowStyle" row-clickable
     @row-click="row => handleSelectAction('i18ns-rowOpen', row)" />
-  <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('i18ns-pager-setPage', n)" :on-size-change="() => handleSelectAction('i18ns-pager-sizeChange')" />
+  <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('i18ns-pager-setPage', n)" :on-size-change="() => handleSelectAction('i18ns-pager-sizeChange')" />
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 번역 편집 패널 (항상 표시) ====================================== -->
   <div class="card">

@@ -233,11 +233,13 @@ window.SyAttachMng = {
     /* onSizeChange — 페이지 크기 변경 */
     const onSizeChange = () => { pager.pageNo = 1; handleSearchData(); };
 
-    /* selectGrp — 선택 */
+    /* selectGrp — 선택 (그룹 전환 시 우측 첨부파일 수정폼/선택행 초기화) */
     const selectGrp = (id) => {
       uiState.selectedGrpId = uiState.selectedGrpId === id ? null : id;
       searchParam.attachGrpId = '';
       uiState.grpEditMode = false;
+      uiState.fileEditMode = false;   // 첨부파일 수정 폼 닫기 (수정정보 초기화)
+      uiState.fileEditId = null;      // 첨부파일 선택행(파란 테두리) 해제 (선택정보 초기화)
       pager.pageNo = 1;
       pager.pageTotalCount = 0; pager.pageTotalPage = 1;
       handleSearchData();
@@ -492,7 +494,7 @@ window.SyAttachMng = {
         <div style="border:1px solid #eef0f3;border-radius:6px;background:#fff;">
           <div v-for="g in attachGrps" :key="g.attachGrpId"
             style="padding:10px 12px;border-bottom:1px solid #f0f0f0;cursor:pointer;transition:background .15s;"
-            :style="uiState.selectedGrpId===g.attachGrpId ? 'background:#fff0f4;border-left:3px solid #e8587a;' : ''"
+            :style="uiState.selectedGrpId===g.attachGrpId ? 'background:#eff6ff;outline:2px solid #2563eb;outline-offset:-2px;position:relative;z-index:1;' : ''"
             @click="handleSelectAction('attachGrps-rowSelect', g.attachGrpId)">
             <div style="display:flex;justify-content:space-between;align-items:center;">
               <div>

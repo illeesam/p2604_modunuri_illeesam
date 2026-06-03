@@ -1267,7 +1267,7 @@ window.PdProdDtl = {
       { key: 'roleId', label: '역할', badge: () => 'badge-gray', cellStyle: 'font-size:11px;' },
     ];
     /* fnMdRowStyle — 유틸 */
-    const fnMdRowStyle = (u) => 'cursor:pointer;' + (form.mdUserId === u.userId ? 'background:#fff0f4;font-weight:700;' : '');
+    const fnMdRowStyle = (u) => 'cursor:pointer;' + (form.mdUserId === u.userId ? 'font-weight:700;' : '');
     // 상품 선택 모달 그리드
     columns.prodPickerGrid = [
       { key: 'productId', label: 'ID',       style: 'width:46px;', align: 'center', cellStyle: 'color:#888;' },
@@ -1590,7 +1590,7 @@ window.PdProdDtl = {
             <!-- ===== ■.■.■.■.■.■. 목록 ============================================ -->
             <div style="overflow-y:auto;flex:1;padding:8px 12px;">
               <!-- ===== ■.■.■.■.■.■.■. 목록 영역 ======================================= -->
-              <bo-grid bare :columns="columns.mdUserGrid" :rows="cfMdUserListFiltered" row-key="userId"
+              <bo-grid bare :columns="columns.mdUserGrid" :rows="cfMdUserListFiltered" row-key="userId" :selected-key="form.mdUserId"
                 :row-style="fnMdRowStyle" empty-text="검색 결과가 없습니다." row-clickable @row-click="selectMdUser">
               </bo-grid>
             </div>

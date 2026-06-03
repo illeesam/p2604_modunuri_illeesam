@@ -55,9 +55,6 @@ window.PdCategoryMng = {
       } else if (cmd === 'parentModal-close') {
         catPickerModal.show = false;
         return;
-      // 페이지 크기 변경
-      } else if (cmd === 'categories-pager-sizeChange') {
-        return onSizeChange();
       // 페이지 번호 클릭
       } else if (cmd === 'categories-pager-setPage') {
         return setPage(param);
@@ -69,8 +66,11 @@ window.PdCategoryMng = {
     /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ PdCategoryMng.js : handleSelectAction -> ', cmd, param);
+      // 페이지 크기 변경 (select)
+      if (cmd === 'categories-pager-sizeChange') {
+        return onSizeChange();
       // 좌측 트리 노드 선택
-      if (cmd === 'categoryTree-select') {
+      } else if (cmd === 'categoryTree-select') {
         return selectNode(param);
       // 그리드 행 포커스
       } else if (cmd === 'categories-rowFocus') {
@@ -757,48 +757,36 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
     </tbody>
   </table>
   <!-- ===== ■.■.■. 페이지네이션 ============================================== -->
-  <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('categories-pager-setPage', n)" :on-size-change="() => handleBtnAction('categories-pager-sizeChange')" />
+  <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('categories-pager-setPage', n)" :on-size-change="() => handleSelectAction('categories-pager-sizeChange')" />
 </div>
 </div>
 <!-- ===== □.□. 우측: 카테고리 그리드 ========================================== -->
 <!-- ===== □. 좌 트리 + 우 그리드 ============================================ -->
 <!-- ===== ■. 상위카테고리 선택 모달 ============================================ -->
-<teleport to="body" v-if="catPickerModal.show">
-  <div style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9000;display:flex;align-items:center;justify-content:center"
-      @click.self="handleBtnAction('parentModal-close')">
-    <div style="background:#fff;border-radius:14px;padding:22px;width:460px;max-height:70vh;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,0.22)">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-        <strong style="font-size:15px">
-          상위 카테고리 선택
-        </strong>
-        <button class="btn btn-secondary btn-xs" @click="handleBtnAction('parentModal-close')">
-          닫기
-        </button>
-      </div>
-      <input class="form-control" v-model="catPickerModal.search" placeholder="카테고리명 검색" style="margin-bottom:10px">
-      <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
-        <div style="padding:8px 12px;font-size:12px;border-bottom:1px solid #f0f0f0;cursor:pointer;color:#1677ff"
-            @click="handleSelectAction('parentModal-select', null)">
-          최상위 (상위없음)
-        </div>
-        <div v-for="c in cfCatPickerList" :key="(c && c.categoryId)" style="padding:7px 12px;font-size:13px;border-bottom:1px solid #f9f9f9;cursor:pointer;display:flex;align-items:center;gap:6px" :style="{ paddingLeft: (c.categoryDepth * 14 + 12) + 'px' }" @mouseenter="$event.target.style.background='#f5f5f5'" @mouseleave="$event.target.style.background=''" @click="handleSelectAction('parentModal-select', c)">
-        <span :style="{ fontSize:'11px', fontWeight:700, color:fnDepthColor((c.categoryDepth||1)-1) }">
-          {{ fnDepthBullet((c.categoryDepth||1)-1) }}
-        </span>
-        <span>
-          {{ c.categoryNm }}
-        </span>
-        <span style="font-size:11px;color:#aaa;margin-left:auto">
-          depth {{ c.categoryDepth }}
-        </span>
-      </div>
-      <div v-if="!cfCatPickerList.length" style="text-align:center;padding:20px;color:#aaa">
-        검색 결과 없음
-      </div>
+<bo-modal :show="catPickerModal.show" title="상위 카테고리 선택" width="460px" max-height="70vh"
+    @close="handleBtnAction('parentModal-close')">
+  <input class="form-control" v-model="catPickerModal.search" placeholder="카테고리명 검색" style="margin-bottom:10px">
+  <div style="overflow-y:auto;border:1px solid #eee;border-radius:8px;max-height:48vh">
+    <div style="padding:8px 12px;font-size:12px;border-bottom:1px solid #f0f0f0;cursor:pointer;color:#1677ff"
+        @click="handleSelectAction('parentModal-select', null)">
+      최상위 (상위없음)
+    </div>
+    <div v-for="c in cfCatPickerList" :key="(c && c.categoryId)" style="padding:7px 12px;font-size:13px;border-bottom:1px solid #f9f9f9;cursor:pointer;display:flex;align-items:center;gap:6px" :style="{ paddingLeft: (c.categoryDepth * 14 + 12) + 'px' }" @mouseenter="$event.target.style.background='#f5f5f5'" @mouseleave="$event.target.style.background=''" @click="handleSelectAction('parentModal-select', c)">
+      <span :style="{ fontSize:'11px', fontWeight:700, color:fnDepthColor((c.categoryDepth||1)-1) }">
+        {{ fnDepthBullet((c.categoryDepth||1)-1) }}
+      </span>
+      <span>
+        {{ c.categoryNm }}
+      </span>
+      <span style="font-size:11px;color:#aaa;margin-left:auto">
+        depth {{ c.categoryDepth }}
+      </span>
+    </div>
+    <div v-if="!cfCatPickerList.length" style="text-align:center;padding:20px;color:#aaa">
+      검색 결과 없음
     </div>
   </div>
-</div>
-</teleport>
+</bo-modal>
 </div>
 <!-- ===== □. 상위카테고리 선택 모달 ============================================ -->
 `

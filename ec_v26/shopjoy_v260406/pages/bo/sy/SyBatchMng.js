@@ -19,6 +19,9 @@ window.SyBatchMng = {
     });
     const codes = reactive({ batch_status: [], active_statuses: [], batch_run_statuses: [], date_range_opts: [] });
 
+    const histReloadTrigger = ref(0);              // 배치 실행이력(SyBatchHist) 재조회/초기화 신호 (++ 로 증가)
+    const histFilterBatchId = ref(null);           // 배치 실행이력 필터 배치ID (null=전체, 값=해당 배치만)
+
     /* ===== 검색조건 ===== */
     /* _initSearchParam — 초기화 */
 
@@ -33,6 +36,7 @@ window.SyBatchMng = {
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
         uiState.selectedPath = null;          // 표시경로 트리 전체로 복귀
+        resetSelectionAndHist();              // 선택정보 + 배치 실행이력 초기화
         return handleSearchList('DEFAULT');
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {
@@ -67,8 +71,12 @@ window.SyBatchMng = {
     /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ SyBatchMng.js : handleSelectAction -> ', cmd, param);
+      // 배치 그리드 행 클릭(포커스) → focusedIdx 갱신 + 해당 배치 실행이력 표시
+      if (cmd === 'batches-rowSelect') {
+        uiState.focusedIdx = param;
+        return onBatchRowSelect(param);
       // 배치 그리드 행 삭제 마킹
-      if (cmd === 'batches-rowDelete') {
+      } else if (cmd === 'batches-rowDelete') {
         return deleteRow(param);
       // 배치 그리드 행 변경 취소
       } else if (cmd === 'batches-rowCancel') {
@@ -85,9 +93,10 @@ window.SyBatchMng = {
       // Cron 편집 모달에서 적용
       } else if (cmd === 'cronModal-apply') {
         return onCronApply(param);
-      // 좌측 경로 트리 노드 선택 → 우측 그리드 필터링
+      // 좌측 경로 트리 노드 선택 → 우측 그리드 필터링 + 선택정보/실행이력 초기화
       } else if (cmd === 'pathTree-select') {
         uiState.selectedPath = param;
+        resetSelectionAndHist();              // 선택정보 + 배치 실행이력 초기화
         return handleSearchList();
       // 표시경로 picker 열기 (행 단위)
       } else if (cmd === 'pathModal-open') {
@@ -148,6 +157,23 @@ window.SyBatchMng = {
 
         for (const r of rows) { if (r && r.pathId != null) batchCounts[r.pathId] = r.cnt; }
       } catch (e) { console.error('[handleLoadPathTreeNodeCounts]', e); }
+    };
+
+    /* resetSelectionAndHist — 좌측 트리/초기화 시 배치목록 선택정보 + 배치 실행이력(전체) 초기화 */
+    const resetSelectionAndHist = () => {
+      uiState.focusedIdx = null;             // 배치목록 선택(포커스) 행 해제 → 파란 테두리 제거
+      uiState.checkAll = false;              // 헤더 체크올 해제
+      gridRows.forEach(r => { r._row_check = false; }); // 행 체크 일괄 해제
+      histFilterBatchId.value = null;        // 배치 실행이력 필터 해제 → 전체 이력 표시
+      histReloadTrigger.value++;             // 배치 실행이력 초기화/재조회 신호
+    };
+
+    /* onBatchRowSelect — 배치목록 행 클릭(포커스) → 해당 배치 실행이력만 표시 */
+    const onBatchRowSelect = (idx) => {
+      const row = (idx != null && idx >= 0) ? gridRows[idx] : null;
+      // 신규(미저장, batchId<=0) 행은 이력이 없으므로 전체로 둠
+      histFilterBatchId.value = (row && Number(row.batchId) > 0) ? row.batchId : null;
+      histReloadTrigger.value++;             // 배치 실행이력 재조회 신호
     };
 
     /* handleSearchList — 목록 조회 */
@@ -399,7 +425,7 @@ window.SyBatchMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       columns,
-      batches, uiState, batchCounts, codes, searchParam, gridRows, pathPickModal, cronModal,         // 상태 / 데이터
+      batches, uiState, batchCounts, codes, searchParam, gridRows, pathPickModal, cronModal, histReloadTrigger, histFilterBatchId, // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal,                                               // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfShowRunNow,                                                            // computed / 헬퍼
     };
@@ -426,7 +452,8 @@ window.SyBatchMng = {
       <bo-grid-crud
         :columns="columns.baseGrid" :rows="gridRows" row-key="batchId"
         list-title="배치목록" :show-export="true"
-        v-model:focusedIdx="uiState.focusedIdx"
+        :selected-key="histFilterBatchId"
+        :focusedIdx="uiState.focusedIdx" @update:focusedIdx="idx => handleSelectAction('batches-rowSelect', idx)"
         v-model:checkAll="uiState.checkAll"
         @add="handleBtnAction('batches-add')" @save="handleBtnAction('batches-save')"
         @delete-checked="handleBtnAction('batches-deleteChecked')" @cancel-checked="handleBtnAction('batches-cancelChecked')"
@@ -460,7 +487,7 @@ window.SyBatchMng = {
   <!-- ===== □. 좌 트리 + 우 영역 ============================================= -->
   <!-- ===== ■. 배치 실행이력 (전체 폭) ========================================== -->
   <div class="card" style="margin-top:12px;width:100%;">
-    <sy-batch-hist />
+    <sy-batch-hist :reload-trigger="histReloadTrigger" :filter-batch-id="histFilterBatchId" />
   </div>
   <!-- ===== □. 배치 실행이력 (전체 폭) ========================================== -->
   <!-- ===== ■. 표시경로 선택 모달 ============================================= -->
