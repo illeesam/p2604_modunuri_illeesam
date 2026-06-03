@@ -128,7 +128,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/fo/ec/pm/coupon/**").access(FO_ONLY) // 쿠폰
                 .requestMatchers("/api/fo/**").permitAll()                   // 나머지 FO 전부 공개
                 .requestMatchers("/api/bo/**").access(BO_ONLY)     // BO 전용: 관리자만 (appTypeCd=BO)
-                .requestMatchers("/api/base/**").denyAll()          // 내부 레이어: 완전 차단
+                .requestMatchers("/api/base/**").authenticated()    // 내부 레이어: 로그인(인증)되면 허용
                 .requestMatchers("/api/ext/**").access(EXT_ONLY)   // 외부 시스템만 (appTypeCd=EXT)
 
                 .anyRequest().authenticated()
