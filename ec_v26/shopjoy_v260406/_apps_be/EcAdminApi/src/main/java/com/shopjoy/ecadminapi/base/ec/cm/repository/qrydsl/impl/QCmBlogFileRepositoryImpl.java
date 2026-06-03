@@ -100,7 +100,7 @@ public class QCmBlogFileRepositoryImpl implements QCmBlogFileRepository {
 
         Long total = queryFactory
                 .select(cmBlogFile.count())
-                .from(cmBlogFile)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(cmBlogFile)
                 .where(wheres)
                 .fetchOne();
 

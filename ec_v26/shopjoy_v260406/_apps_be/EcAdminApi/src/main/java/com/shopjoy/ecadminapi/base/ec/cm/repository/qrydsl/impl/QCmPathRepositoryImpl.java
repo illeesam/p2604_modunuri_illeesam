@@ -98,7 +98,7 @@ public class QCmPathRepositoryImpl implements QCmPathRepository {
 
         Long total = queryFactory
                 .select(cmPath.count())
-                .from(cmPath)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(cmPath)
                 .where(wheres)
                 .fetchOne();
 

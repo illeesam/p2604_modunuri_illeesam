@@ -48,7 +48,7 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
     @Override
     public Optional<OdDlivItemDto.Item> selectById(String dlivItemId) {
         OdDlivItemDto.Item dto = baseSelColumnQuery()
-                .where(odDlivItem.dlivItemId.eq(dlivItemId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(odDlivItem.dlivItemId.eq(dlivItemId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -58,14 +58,16 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
     public List<OdDlivItemDto.Item> selectList(OdDlivItemDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<OdDlivItemDto.Item> query = baseSelColumnQuery().where(
-                baseAndDlivIds(search),
-                baseAndDlivId(search),
-                baseAndSiteId(search),
-                baseAndDlivItemId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<OdDlivItemDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndDlivIds(search),
+                    baseAndDlivId(search),
+                    baseAndSiteId(search),
+                    baseAndDlivItemId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -95,7 +97,9 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<OdDlivItemDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<OdDlivItemDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -103,7 +107,7 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
 
         Long total = queryFactory
                 .select(odDlivItem.count())
-                .from(odDlivItem)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(odDlivItem)
                 .where(wheres)
                 .fetchOne();
 

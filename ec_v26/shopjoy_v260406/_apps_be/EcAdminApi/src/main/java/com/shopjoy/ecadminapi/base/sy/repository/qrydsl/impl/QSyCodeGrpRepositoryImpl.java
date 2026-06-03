@@ -114,7 +114,12 @@ public class QSyCodeGrpRepositoryImpl implements QSyCodeGrpRepository {
         }
         List<SyCodeGrpDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syCodeGrp.count()).from(syCodeGrp).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(syCodeGrp.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(syCodeGrp)
+                .where(wheres)
+                .fetchOne();
 
         SyCodeGrpDto.PageResponse res = new SyCodeGrpDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

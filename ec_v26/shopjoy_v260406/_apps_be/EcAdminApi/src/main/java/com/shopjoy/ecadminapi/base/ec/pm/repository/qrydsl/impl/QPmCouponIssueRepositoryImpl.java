@@ -65,7 +65,7 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
     @Override
     public Optional<PmCouponIssueDto.Item> selectById(String issueId) {
         PmCouponIssueDto.Item dto = baseSelColumnQuery()
-                .where(pmCouponIssue.issueId.eq(issueId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmCouponIssue.issueId.eq(issueId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -75,14 +75,16 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
     public List<PmCouponIssueDto.Item> selectList(PmCouponIssueDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PmCouponIssueDto.Item> query = baseSelColumnQuery().where(
-                baseAndSiteId(search),
-                baseAndIssueId(search),
-                baseAndMemberId(search),
-                baseAndUseYn(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<PmCouponIssueDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndIssueId(search),
+                    baseAndMemberId(search),
+                    baseAndUseYn(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -112,7 +114,9 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<PmCouponIssueDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<PmCouponIssueDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -120,7 +124,7 @@ public class QPmCouponIssueRepositoryImpl implements QPmCouponIssueRepository {
 
         Long total = queryFactory
                 .select(pmCouponIssue.count())
-                .from(pmCouponIssue)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(pmCouponIssue)
                 .leftJoin(pmCoupon).on(pmCoupon.couponId.eq(pmCouponIssue.couponId))
                 .leftJoin(mbMember).on(mbMember.memberId.eq(pmCouponIssue.memberId))
                 .where(wheres)

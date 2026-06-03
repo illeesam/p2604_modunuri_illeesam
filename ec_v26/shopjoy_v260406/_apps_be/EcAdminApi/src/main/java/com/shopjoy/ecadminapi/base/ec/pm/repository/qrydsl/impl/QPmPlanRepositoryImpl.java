@@ -54,7 +54,7 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
     @Override
     public Optional<PmPlanDto.Item> selectById(String planId) {
         PmPlanDto.Item dto = baseSelColumnQuery()
-                .where(pmPlan.planId.eq(planId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmPlan.planId.eq(planId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -64,13 +64,15 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
     public List<PmPlanDto.Item> selectList(PmPlanDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PmPlanDto.Item> query = baseSelColumnQuery().where(
-                baseAndSiteId(search),
-                baseAndPlanId(search),
-                baseAndUseYn(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<PmPlanDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndPlanId(search),
+                    baseAndUseYn(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -99,7 +101,9 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<PmPlanDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<PmPlanDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -107,7 +111,7 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
 
         Long total = queryFactory
                 .select(pmPlan.count())
-                .from(pmPlan)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(pmPlan)
                 .where(wheres)
                 .fetchOne();
 

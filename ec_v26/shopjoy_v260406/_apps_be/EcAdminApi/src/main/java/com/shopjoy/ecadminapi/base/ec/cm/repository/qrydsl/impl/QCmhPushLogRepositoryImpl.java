@@ -101,7 +101,7 @@ public class QCmhPushLogRepositoryImpl implements QCmhPushLogRepository {
 
         Long total = queryFactory
                 .select(cmhPushLog.count())
-                .from(cmhPushLog)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(cmhPushLog)
                 .where(wheres)
                 .fetchOne();
 

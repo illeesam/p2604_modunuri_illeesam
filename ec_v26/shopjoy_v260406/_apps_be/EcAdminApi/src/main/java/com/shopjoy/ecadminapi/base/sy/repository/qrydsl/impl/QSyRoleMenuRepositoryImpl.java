@@ -102,7 +102,12 @@ public class QSyRoleMenuRepositoryImpl implements QSyRoleMenuRepository {
         }
         List<SyRoleMenuDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syRoleMenu.count()).from(syRoleMenu).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(syRoleMenu.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(syRoleMenu)
+                .where(wheres)
+                .fetchOne();
 
         SyRoleMenuDto.PageResponse res = new SyRoleMenuDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

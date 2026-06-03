@@ -113,7 +113,7 @@ public class QPdhProdViewLogRepositoryImpl implements QPdhProdViewLogRepository 
 
         Long total = queryFactory
                 .select(pdhProdViewLog.count())
-                .from(pdhProdViewLog)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(pdhProdViewLog)
                 .where(wheres)
                 .fetchOne();
 

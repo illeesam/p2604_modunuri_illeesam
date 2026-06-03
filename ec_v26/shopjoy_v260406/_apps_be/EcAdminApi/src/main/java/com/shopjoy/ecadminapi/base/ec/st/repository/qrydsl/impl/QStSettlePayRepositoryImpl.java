@@ -38,11 +38,31 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
     private static final QSyCode      cdPmc = new QSyCode("cd_pmc");
     private static final QSyCode      cdSps = new QSyCode("cd_sps");
 
+    /* 정산 지급 baseListQuery */
+    private JPAQuery<StSettlePayDto.Item> baseListQuery() {
+        return queryFactory
+                .select(Projections.bean(StSettlePayDto.Item.class,
+                        stSettlePay.settlePayId, stSettlePay.settleId, stSettlePay.siteId, stSettlePay.vendorId,
+                        stSettlePay.payAmt, stSettlePay.payMethodCd, stSettlePay.bankNm, stSettlePay.bankAccount, stSettlePay.bankHolder,
+                        stSettlePay.payStatusCd, stSettlePay.payStatusCdBefore, stSettlePay.payDate, stSettlePay.payBy, stSettlePay.settlePayMemo,
+                        stSettlePay.regBy, stSettlePay.regDate, stSettlePay.updBy, stSettlePay.updDate,
+                        syVendor.vendorNm.as("vendorNm"),
+                        sySite.siteNm.as("siteNm"),
+                        cdPmc.codeLabel.as("payMethodCdNm"),
+                        cdSps.codeLabel.as("payStatusCdNm")
+                ))
+                .from(stSettlePay)
+                .leftJoin(syVendor).on(syVendor.vendorId.eq(stSettlePay.vendorId))
+                .leftJoin(sySite).on(sySite.siteId.eq(stSettlePay.siteId))
+                .leftJoin(cdPmc).on(cdPmc.codeGrp.eq("PAY_METHOD_CD").and(cdPmc.codeValue.eq(stSettlePay.payMethodCd)))
+                .leftJoin(cdSps).on(cdSps.codeGrp.eq("SETTLE_PAY_STATUS").and(cdSps.codeValue.eq(stSettlePay.payStatusCd)));
+    }
+
     /* 정산 지급 키조회 */
     @Override
     public Optional<StSettlePayDto.Item> selectById(String id) {
         StSettlePayDto.Item dto = baseListQuery()
-                .where(stSettlePay.settlePayId.eq(id))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(stSettlePay.settlePayId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -52,12 +72,14 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
     public List<StSettlePayDto.Item> selectList(StSettlePayDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<StSettlePayDto.Item> query = baseListQuery().where(
-                baseAndSiteId(search),
-                baseAndSettlePayId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<StSettlePayDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndSettlePayId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -85,7 +107,9 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<StSettlePayDto.Item> query = baseListQuery().where(wheres);
+        JPAQuery<StSettlePayDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -93,7 +117,7 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
 
         Long total = queryFactory
                 .select(stSettlePay.count())
-                .from(stSettlePay)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(stSettlePay)
                 .where(wheres)
                 .fetchOne();
 
@@ -101,25 +125,7 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /* 정산 지급 baseListQuery */
-    private JPAQuery<StSettlePayDto.Item> baseListQuery() {
-        return queryFactory
-                .select(Projections.bean(StSettlePayDto.Item.class,
-                        stSettlePay.settlePayId, stSettlePay.settleId, stSettlePay.siteId, stSettlePay.vendorId,
-                        stSettlePay.payAmt, stSettlePay.payMethodCd, stSettlePay.bankNm, stSettlePay.bankAccount, stSettlePay.bankHolder,
-                        stSettlePay.payStatusCd, stSettlePay.payStatusCdBefore, stSettlePay.payDate, stSettlePay.payBy, stSettlePay.settlePayMemo,
-                        stSettlePay.regBy, stSettlePay.regDate, stSettlePay.updBy, stSettlePay.updDate,
-                        syVendor.vendorNm.as("vendorNm"),
-                        sySite.siteNm.as("siteNm"),
-                        cdPmc.codeLabel.as("payMethodCdNm"),
-                        cdSps.codeLabel.as("payStatusCdNm")
-                ))
-                .from(stSettlePay)
-                .leftJoin(syVendor).on(syVendor.vendorId.eq(stSettlePay.vendorId))
-                .leftJoin(sySite).on(sySite.siteId.eq(stSettlePay.siteId))
-                .leftJoin(cdPmc).on(cdPmc.codeGrp.eq("PAY_METHOD_CD").and(cdPmc.codeValue.eq(stSettlePay.payMethodCd)))
-                .leftJoin(cdSps).on(cdSps.codeGrp.eq("SETTLE_PAY_STATUS").and(cdSps.codeValue.eq(stSettlePay.payStatusCd)));
-    }
+
 
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================

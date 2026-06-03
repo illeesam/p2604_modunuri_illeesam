@@ -38,11 +38,31 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
     private static final QPdCategory    pdCategory  = QPdCategory.pdCategory;
     private static final QSyCode        cdSc = new QSyCode("cd_sc");
 
+    /* 정산 설정 baseListQuery */
+    private JPAQuery<StSettleConfigDto.Item> baseListQuery() {
+        return queryFactory
+                .select(Projections.bean(StSettleConfigDto.Item.class,
+                        stSettleConfig.settleConfigId, stSettleConfig.siteId, stSettleConfig.vendorId, stSettleConfig.categoryId,
+                        stSettleConfig.settleCycleCd, stSettleConfig.settleDay, stSettleConfig.commissionRate, stSettleConfig.minSettleAmt,
+                        stSettleConfig.settleConfigRemark, stSettleConfig.useYn,
+                        stSettleConfig.regBy, stSettleConfig.regDate, stSettleConfig.updBy, stSettleConfig.updDate,
+                        sySite.siteNm.as("siteNm"),
+                        syVendor.vendorNm.as("vendorNm"),
+                        pdCategory.categoryNm.as("categoryNm"),
+                        cdSc.codeLabel.as("settleCycleCdNm")
+                ))
+                .from(stSettleConfig)
+                .leftJoin(sySite).on(sySite.siteId.eq(stSettleConfig.siteId))
+                .leftJoin(syVendor).on(syVendor.vendorId.eq(stSettleConfig.vendorId))
+                .leftJoin(pdCategory).on(pdCategory.categoryId.eq(stSettleConfig.categoryId))
+                .leftJoin(cdSc).on(cdSc.codeGrp.eq("SETTLE_CYCLE").and(cdSc.codeValue.eq(stSettleConfig.settleCycleCd)));
+    }
+
     /* 정산 설정 키조회 */
     @Override
     public Optional<StSettleConfigDto.Item> selectById(String id) {
         StSettleConfigDto.Item dto = baseListQuery()
-                .where(stSettleConfig.settleConfigId.eq(id))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(stSettleConfig.settleConfigId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -52,12 +72,14 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
     public List<StSettleConfigDto.Item> selectList(StSettleConfigDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<StSettleConfigDto.Item> query = baseListQuery().where(
-                baseAndSiteId(search),
-                baseAndSettleConfigId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<StSettleConfigDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndSettleConfigId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -85,7 +107,9 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<StSettleConfigDto.Item> query = baseListQuery().where(wheres);
+        JPAQuery<StSettleConfigDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -93,7 +117,7 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
 
         Long total = queryFactory
                 .select(stSettleConfig.count())
-                .from(stSettleConfig)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(stSettleConfig)
                 .where(wheres)
                 .fetchOne();
 
@@ -101,25 +125,7 @@ public class QStSettleConfigRepositoryImpl implements QStSettleConfigRepository 
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /* 정산 설정 baseListQuery */
-    private JPAQuery<StSettleConfigDto.Item> baseListQuery() {
-        return queryFactory
-                .select(Projections.bean(StSettleConfigDto.Item.class,
-                        stSettleConfig.settleConfigId, stSettleConfig.siteId, stSettleConfig.vendorId, stSettleConfig.categoryId,
-                        stSettleConfig.settleCycleCd, stSettleConfig.settleDay, stSettleConfig.commissionRate, stSettleConfig.minSettleAmt,
-                        stSettleConfig.settleConfigRemark, stSettleConfig.useYn,
-                        stSettleConfig.regBy, stSettleConfig.regDate, stSettleConfig.updBy, stSettleConfig.updDate,
-                        sySite.siteNm.as("siteNm"),
-                        syVendor.vendorNm.as("vendorNm"),
-                        pdCategory.categoryNm.as("categoryNm"),
-                        cdSc.codeLabel.as("settleCycleCdNm")
-                ))
-                .from(stSettleConfig)
-                .leftJoin(sySite).on(sySite.siteId.eq(stSettleConfig.siteId))
-                .leftJoin(syVendor).on(syVendor.vendorId.eq(stSettleConfig.vendorId))
-                .leftJoin(pdCategory).on(pdCategory.categoryId.eq(stSettleConfig.categoryId))
-                .leftJoin(cdSc).on(cdSc.codeGrp.eq("SETTLE_CYCLE").and(cdSc.codeValue.eq(stSettleConfig.settleCycleCd)));
-    }
+
 
     /* 정산 설정 buildCondition */
     /* ============================================================

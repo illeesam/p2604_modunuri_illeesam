@@ -36,11 +36,32 @@ public class QStSettleRepositoryImpl implements QStSettleRepository {
     private static final QSySite    sySite = QSySite.sySite;
     private static final QSyCode    cdSs = new QSyCode("cd_ss");
 
+    /* 정산 baseListQuery */
+    private JPAQuery<StSettleDto.Item> baseListQuery() {
+        return queryFactory
+                .select(Projections.bean(StSettleDto.Item.class,
+                        stSettle.settleId, stSettle.siteId, stSettle.vendorId, stSettle.settleYm,
+                        stSettle.settleStartDate, stSettle.settleEndDate,
+                        stSettle.totalOrderAmt, stSettle.totalReturnAmt, stSettle.totalClaimCnt, stSettle.totalDiscntAmt,
+                        stSettle.commissionRate, stSettle.commissionAmt, stSettle.settleAmt,
+                        stSettle.adjAmt, stSettle.etcAdjAmt, stSettle.finalSettleAmt,
+                        stSettle.settleStatusCd, stSettle.settleStatusCdBefore, stSettle.settleMemo,
+                        stSettle.regBy, stSettle.regDate, stSettle.updBy, stSettle.updDate,
+                        syVendor.vendorNm.as("vendorNm"),
+                        sySite.siteNm.as("siteNm"),
+                        cdSs.codeLabel.as("settleStatusCdNm")
+                ))
+                .from(stSettle)
+                .leftJoin(syVendor).on(syVendor.vendorId.eq(stSettle.vendorId))
+                .leftJoin(sySite).on(sySite.siteId.eq(stSettle.siteId))
+                .leftJoin(cdSs).on(cdSs.codeGrp.eq("SETTLE_STATUS").and(cdSs.codeValue.eq(stSettle.settleStatusCd)));
+    }
+
     /* 정산 키조회 */
     @Override
     public Optional<StSettleDto.Item> selectById(String id) {
         StSettleDto.Item dto = baseListQuery()
-                .where(stSettle.settleId.eq(id))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(stSettle.settleId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -50,12 +71,14 @@ public class QStSettleRepositoryImpl implements QStSettleRepository {
     public List<StSettleDto.Item> selectList(StSettleDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<StSettleDto.Item> query = baseListQuery().where(
-                baseAndSiteId(search),
-                baseAndSettleId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<StSettleDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndSettleId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -83,7 +106,9 @@ public class QStSettleRepositoryImpl implements QStSettleRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<StSettleDto.Item> query = baseListQuery().where(wheres);
+        JPAQuery<StSettleDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -91,7 +116,7 @@ public class QStSettleRepositoryImpl implements QStSettleRepository {
 
         Long total = queryFactory
                 .select(stSettle.count())
-                .from(stSettle)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(stSettle)
                 .where(wheres)
                 .fetchOne();
 
@@ -99,26 +124,7 @@ public class QStSettleRepositoryImpl implements QStSettleRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /* 정산 baseListQuery */
-    private JPAQuery<StSettleDto.Item> baseListQuery() {
-        return queryFactory
-                .select(Projections.bean(StSettleDto.Item.class,
-                        stSettle.settleId, stSettle.siteId, stSettle.vendorId, stSettle.settleYm,
-                        stSettle.settleStartDate, stSettle.settleEndDate,
-                        stSettle.totalOrderAmt, stSettle.totalReturnAmt, stSettle.totalClaimCnt, stSettle.totalDiscntAmt,
-                        stSettle.commissionRate, stSettle.commissionAmt, stSettle.settleAmt,
-                        stSettle.adjAmt, stSettle.etcAdjAmt, stSettle.finalSettleAmt,
-                        stSettle.settleStatusCd, stSettle.settleStatusCdBefore, stSettle.settleMemo,
-                        stSettle.regBy, stSettle.regDate, stSettle.updBy, stSettle.updDate,
-                        syVendor.vendorNm.as("vendorNm"),
-                        sySite.siteNm.as("siteNm"),
-                        cdSs.codeLabel.as("settleStatusCdNm")
-                ))
-                .from(stSettle)
-                .leftJoin(syVendor).on(syVendor.vendorId.eq(stSettle.vendorId))
-                .leftJoin(sySite).on(sySite.siteId.eq(stSettle.siteId))
-                .leftJoin(cdSs).on(cdSs.codeGrp.eq("SETTLE_STATUS").and(cdSs.codeValue.eq(stSettle.settleStatusCd)));
-    }
+
 
     /* 정산 buildCondition */
     /* ============================================================

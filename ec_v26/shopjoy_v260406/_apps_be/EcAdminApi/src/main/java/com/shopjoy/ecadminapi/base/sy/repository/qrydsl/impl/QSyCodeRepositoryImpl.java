@@ -109,7 +109,12 @@ public class QSyCodeRepositoryImpl implements QSyCodeRepository {
         }
         List<SyCodeDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syCode.count()).from(syCode).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(syCode.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(syCode)
+                .where(wheres)
+                .fetchOne();
 
         SyCodeDto.PageResponse res = new SyCodeDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

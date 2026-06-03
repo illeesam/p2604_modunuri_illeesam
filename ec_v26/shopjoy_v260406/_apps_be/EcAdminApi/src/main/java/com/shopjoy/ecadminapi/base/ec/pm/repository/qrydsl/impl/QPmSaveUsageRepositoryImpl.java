@@ -58,7 +58,7 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
     @Override
     public Optional<PmSaveUsageDto.Item> selectById(String saveUsageId) {
         PmSaveUsageDto.Item dto = baseSelColumnQuery()
-                .where(pmSaveUsage.saveUsageId.eq(saveUsageId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmSaveUsage.saveUsageId.eq(saveUsageId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -68,12 +68,14 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
     public List<PmSaveUsageDto.Item> selectList(PmSaveUsageDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PmSaveUsageDto.Item> query = baseSelColumnQuery().where(
-                baseAndSiteId(search),
-                baseAndSaveUsageId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<PmSaveUsageDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndSaveUsageId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -101,7 +103,9 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<PmSaveUsageDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<PmSaveUsageDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -109,7 +113,7 @@ public class QPmSaveUsageRepositoryImpl implements QPmSaveUsageRepository {
 
         Long total = queryFactory
                 .select(pmSaveUsage.count())
-                .from(pmSaveUsage)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(pmSaveUsage)
                 .where(wheres)
                 .fetchOne();
 

@@ -117,11 +117,11 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
         var query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                        baseAndSiteId(search),
-                        baseAndDeptId(search),
-                        baseAndStatus(search),
-                        baseAndDateRange(search),
-                        baseAndSearchValue(search)
+                    baseAndSiteId(search),
+                    baseAndDeptId(search),
+                    baseAndStatus(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
                 );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -164,7 +164,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
 
         Long total = queryFactory
                 .select(syUser.count())
-                .from(syUser)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(syUser)
                 .where(wheres)
                 .fetchOne();
 
@@ -176,13 +176,13 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
     @Override
     public long selectCount(SyUserDto.Request search) {
         Long total = queryFactory.select(syUser.count())
-                .from(syUser)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectCount()").from(syUser)
                 .where(
-                        baseAndSiteId(search),
-                        baseAndDeptId(search),
-                        baseAndStatus(search),
-                        baseAndDateRange(search),
-                        baseAndSearchValue(search)
+                    baseAndSiteId(search),
+                    baseAndDeptId(search),
+                    baseAndStatus(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
                 )
                 .fetchOne();
         return total == null ? 0L : total;

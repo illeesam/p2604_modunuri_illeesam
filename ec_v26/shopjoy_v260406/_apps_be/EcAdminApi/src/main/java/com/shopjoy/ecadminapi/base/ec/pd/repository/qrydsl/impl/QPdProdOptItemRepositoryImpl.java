@@ -60,7 +60,7 @@ public class QPdProdOptItemRepositoryImpl implements QPdProdOptItemRepository {
     @Override
     public Optional<PdProdOptItemDto.Item> selectById(String optItemId) {
         PdProdOptItemDto.Item dto = baseSelColumnQuery()
-                .where(pdProdOptItem.optItemId.eq(optItemId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pdProdOptItem.optItemId.eq(optItemId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -70,13 +70,15 @@ public class QPdProdOptItemRepositoryImpl implements QPdProdOptItemRepository {
     public List<PdProdOptItemDto.Item> selectList(PdProdOptItemDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdProdOptItemDto.Item> query = baseSelColumnQuery().where(
-                baseAndOptId(search),
-                baseAndSiteId(search),
-                baseAndOptItemId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<PdProdOptItemDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndOptId(search),
+                    baseAndSiteId(search),
+                    baseAndOptItemId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -105,13 +107,20 @@ public class QPdProdOptItemRepositoryImpl implements QPdProdOptItemRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<PdProdOptItemDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<PdProdOptItemDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
         List<PdProdOptItemDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(pdProdOptItem.count()).from(pdProdOptItem).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(pdProdOptItem.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(pdProdOptItem)
+                .where(wheres)
+                .fetchOne();
 
         PdProdOptItemDto.PageResponse res = new PdProdOptItemDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

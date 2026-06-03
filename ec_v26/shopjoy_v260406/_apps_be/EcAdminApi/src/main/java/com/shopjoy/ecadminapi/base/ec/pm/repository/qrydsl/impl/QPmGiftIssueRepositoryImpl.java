@@ -60,7 +60,7 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
     @Override
     public Optional<PmGiftIssueDto.Item> selectById(String giftIssueId) {
         PmGiftIssueDto.Item dto = baseSelColumnQuery()
-                .where(pmGiftIssue.giftIssueId.eq(giftIssueId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmGiftIssue.giftIssueId.eq(giftIssueId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -70,12 +70,14 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
     public List<PmGiftIssueDto.Item> selectList(PmGiftIssueDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PmGiftIssueDto.Item> query = baseSelColumnQuery().where(
-                baseAndSiteId(search),
-                baseAndGiftIssueId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<PmGiftIssueDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndGiftIssueId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -103,7 +105,9 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<PmGiftIssueDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<PmGiftIssueDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -111,7 +115,7 @@ public class QPmGiftIssueRepositoryImpl implements QPmGiftIssueRepository {
 
         Long total = queryFactory
                 .select(pmGiftIssue.count())
-                .from(pmGiftIssue)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(pmGiftIssue)
                 .where(wheres)
                 .fetchOne();
 

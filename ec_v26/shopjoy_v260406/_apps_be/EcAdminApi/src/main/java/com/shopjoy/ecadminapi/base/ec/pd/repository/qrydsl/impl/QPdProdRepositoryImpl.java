@@ -49,114 +49,6 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
     private static final QSyCode     cdPt = new QSyCode("cd_pt");
     private static final QSyCode     cdSz = new QSyCode("cd_sz");
 
-    /** 단건 조회 — selectById 와 동일 컬럼 셋 (size_info_cd_nm 포함) */
-    @Override
-    public Optional<PdProdDto.Item> selectById(String prodId) {
-        PdProdDto.Item dto = queryFactory
-                .select(Projections.bean(PdProdDto.Item.class,
-                        // a.* equivalent
-                        pdProd.prodId, pdProd.siteId, pdProd.categoryId, pdProd.brandId, pdProd.vendorId, pdProd.mdUserId,
-                        pdProd.prodNm, pdProd.prodTypeCd, pdProd.prodCode,
-                        pdProd.listPrice, pdProd.salePrice, pdProd.purchasePrice, pdProd.marginRate,
-                        pdProd.platformFeeRate, pdProd.platformFeeAmount,
-                        pdProd.prodStock, pdProd.prodStatusCd, pdProd.prodStatusCdBefore,
-                        pdProd.thumbnailUrl, pdProd.contentHtml, pdProd.weight, pdProd.sizeInfoCd,
-                        pdProd.isNew, pdProd.isBest, pdProd.viewCount, pdProd.saleCount,
-                        pdProd.saleStartDate, pdProd.saleEndDate,
-                        pdProd.minBuyQty, pdProd.maxBuyQty, pdProd.dayMaxBuyQty, pdProd.idMaxBuyQty,
-                        pdProd.adltYn, pdProd.sameDayDlivYn, pdProd.soldOutYn, pdProd.dlivTmpltId,
-                        pdProd.couponUseYn, pdProd.saveUseYn, pdProd.discntUseYn,
-                        pdProd.advrtStmt, pdProd.advrtStartDate, pdProd.advrtEndDate,
-                        pdProd.regBy, pdProd.regDate, pdProd.updBy, pdProd.updDate,
-                        // joined
-                        pdCategory.categoryNm.as("cateNm"),
-                        pdCategory.parentCategoryId.as("parentCategoryId"),
-                        syBrand.brandNm.as("brandNm"),
-                        syVendor.vendorNm.as("vendorNm"),
-                        syVendor.vendorPhone.as("vendorTel"),
-                        syUser.userNm.as("mdUserNm"),
-                        cdPs.codeLabel.as("prodStatusCdNm"),
-                        cdPt.codeLabel.as("prodTypeCdNm"),
-                        cdSz.codeLabel.as("sizeInfoCdNm")
-                ))
-                .from(pdProd)
-                .leftJoin(pdCategory).on(pdCategory.categoryId.eq(pdProd.categoryId))
-                .leftJoin(syBrand).on(syBrand.brandId.eq(pdProd.brandId))
-                .leftJoin(syVendor).on(syVendor.vendorId.eq(pdProd.vendorId))
-                .leftJoin(syUser).on(syUser.userId.eq(pdProd.mdUserId))
-                .leftJoin(cdPs).on(cdPs.codeGrp.eq("PRODUCT_STATUS").and(cdPs.codeValue.eq(pdProd.prodStatusCd)))
-                .leftJoin(cdPt).on(cdPt.codeGrp.eq("PRODUCT_TYPE").and(cdPt.codeValue.eq(pdProd.prodTypeCd)))
-                .leftJoin(cdSz).on(cdSz.codeGrp.eq("PRODUCT_SIZE").and(cdSz.codeValue.eq(pdProd.sizeInfoCd)))
-                .where(pdProd.prodId.eq(prodId))
-                .fetchOne();
-        return Optional.ofNullable(dto);
-    }
-
-    /** 전체 목록 (page/size 가 양수면 페이징 적용) */
-    @Override
-    public List<PdProdDto.Item> selectList(PdProdDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<PdProdDto.Item> query = baseListQuery().where(
-                baseAndProdIds(search),
-                baseAndSiteId(search),
-                baseAndProdId(search),
-                baseAndBrandId(search),
-                baseAndMdUserId(search),
-                baseAndProdStatusCd(search),
-                baseAndVendorId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
-        if (!orderList.isEmpty()) {
-            query.orderBy(orderList.toArray(OrderSpecifier[]::new));
-        }
-        Integer pageNo   = search.getPageNo();
-        Integer pageSize = search.getPageSize();
-        if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
-            int offset = (pageNo - 1) * pageSize;
-            query.offset(offset).limit(pageSize);
-        }
-        return query.fetch();
-    }
-
-    /** 페이지 목록 */
-    @Override
-    public PdProdDto.PageResponse selectPageData(PdProdDto.Request search) {
-        int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
-        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
-        int offset   = (pageNo - 1) * pageSize;
-
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
-        BooleanExpression[] wheres = {
-                baseAndProdIds(search),
-                baseAndSiteId(search),
-                baseAndProdId(search),
-                baseAndBrandId(search),
-                baseAndMdUserId(search),
-                baseAndProdStatusCd(search),
-                baseAndVendorId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        };
-
-        JPAQuery<PdProdDto.Item> query = baseListQuery().where(wheres);
-        if (!orderList.isEmpty()) {
-            query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
-        }
-        List<PdProdDto.Item> content = query.offset(offset).limit(pageSize).fetch();
-
-        Long total = queryFactory
-                .select(pdProd.count())
-                .from(pdProd)
-                .leftJoin(syBrand).on(syBrand.brandId.eq(pdProd.brandId))
-                .where(wheres)
-                .fetchOne();
-
-        PdProdDto.PageResponse res = new PdProdDto.PageResponse();
-        return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
-    }
-
     /** 목록/페이지 공용 base query — selectList/selectPageData 의 컬럼 셋 (thumbnail COALESCE 포함) */
     private JPAQuery<PdProdDto.Item> baseListQuery() {
         QPdProdImg pi  = new QPdProdImg("pi");
@@ -207,6 +99,120 @@ public class QPdProdRepositoryImpl implements QPdProdRepository {
                 .leftJoin(cdPs).on(cdPs.codeGrp.eq("PRODUCT_STATUS").and(cdPs.codeValue.eq(pdProd.prodStatusCd)))
                 .leftJoin(cdPt).on(cdPt.codeGrp.eq("PRODUCT_TYPE").and(cdPt.codeValue.eq(pdProd.prodTypeCd)));
     }
+
+    /** 단건 조회 — selectById 와 동일 컬럼 셋 (size_info_cd_nm 포함) */
+    @Override
+    public Optional<PdProdDto.Item> selectById(String prodId) {
+        PdProdDto.Item dto = queryFactory
+                .select(Projections.bean(PdProdDto.Item.class,
+                        // a.* equivalent
+                        pdProd.prodId, pdProd.siteId, pdProd.categoryId, pdProd.brandId, pdProd.vendorId, pdProd.mdUserId,
+                        pdProd.prodNm, pdProd.prodTypeCd, pdProd.prodCode,
+                        pdProd.listPrice, pdProd.salePrice, pdProd.purchasePrice, pdProd.marginRate,
+                        pdProd.platformFeeRate, pdProd.platformFeeAmount,
+                        pdProd.prodStock, pdProd.prodStatusCd, pdProd.prodStatusCdBefore,
+                        pdProd.thumbnailUrl, pdProd.contentHtml, pdProd.weight, pdProd.sizeInfoCd,
+                        pdProd.isNew, pdProd.isBest, pdProd.viewCount, pdProd.saleCount,
+                        pdProd.saleStartDate, pdProd.saleEndDate,
+                        pdProd.minBuyQty, pdProd.maxBuyQty, pdProd.dayMaxBuyQty, pdProd.idMaxBuyQty,
+                        pdProd.adltYn, pdProd.sameDayDlivYn, pdProd.soldOutYn, pdProd.dlivTmpltId,
+                        pdProd.couponUseYn, pdProd.saveUseYn, pdProd.discntUseYn,
+                        pdProd.advrtStmt, pdProd.advrtStartDate, pdProd.advrtEndDate,
+                        pdProd.regBy, pdProd.regDate, pdProd.updBy, pdProd.updDate,
+                        // joined
+                        pdCategory.categoryNm.as("cateNm"),
+                        pdCategory.parentCategoryId.as("parentCategoryId"),
+                        syBrand.brandNm.as("brandNm"),
+                        syVendor.vendorNm.as("vendorNm"),
+                        syVendor.vendorPhone.as("vendorTel"),
+                        syUser.userNm.as("mdUserNm"),
+                        cdPs.codeLabel.as("prodStatusCdNm"),
+                        cdPt.codeLabel.as("prodTypeCdNm"),
+                        cdSz.codeLabel.as("sizeInfoCdNm")
+                ))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").from(pdProd)
+                .leftJoin(pdCategory).on(pdCategory.categoryId.eq(pdProd.categoryId))
+                .leftJoin(syBrand).on(syBrand.brandId.eq(pdProd.brandId))
+                .leftJoin(syVendor).on(syVendor.vendorId.eq(pdProd.vendorId))
+                .leftJoin(syUser).on(syUser.userId.eq(pdProd.mdUserId))
+                .leftJoin(cdPs).on(cdPs.codeGrp.eq("PRODUCT_STATUS").and(cdPs.codeValue.eq(pdProd.prodStatusCd)))
+                .leftJoin(cdPt).on(cdPt.codeGrp.eq("PRODUCT_TYPE").and(cdPt.codeValue.eq(pdProd.prodTypeCd)))
+                .leftJoin(cdSz).on(cdSz.codeGrp.eq("PRODUCT_SIZE").and(cdSz.codeValue.eq(pdProd.sizeInfoCd)))
+                .where(pdProd.prodId.eq(prodId))
+                .fetchOne();
+        return Optional.ofNullable(dto);
+    }
+
+    /** 전체 목록 (page/size 가 양수면 페이징 적용) */
+    @Override
+    public List<PdProdDto.Item> selectList(PdProdDto.Request search) {
+        List<OrderSpecifier<?>> orderList = buildOrder(search);
+
+        JPAQuery<PdProdDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndProdIds(search),
+                    baseAndSiteId(search),
+                    baseAndProdId(search),
+                    baseAndBrandId(search),
+                    baseAndMdUserId(search),
+                    baseAndProdStatusCd(search),
+                    baseAndVendorId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
+        if (!orderList.isEmpty()) {
+            query.orderBy(orderList.toArray(OrderSpecifier[]::new));
+        }
+        Integer pageNo   = search.getPageNo();
+        Integer pageSize = search.getPageSize();
+        if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
+            int offset = (pageNo - 1) * pageSize;
+            query.offset(offset).limit(pageSize);
+        }
+        return query.fetch();
+    }
+
+    /** 페이지 목록 */
+    @Override
+    public PdProdDto.PageResponse selectPageData(PdProdDto.Request search) {
+        int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
+        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
+        int offset   = (pageNo - 1) * pageSize;
+
+        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        BooleanExpression[] wheres = {
+                baseAndProdIds(search),
+                baseAndSiteId(search),
+                baseAndProdId(search),
+                baseAndBrandId(search),
+                baseAndMdUserId(search),
+                baseAndProdStatusCd(search),
+                baseAndVendorId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
+        };
+
+        JPAQuery<PdProdDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
+        if (!orderList.isEmpty()) {
+            query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
+        }
+        List<PdProdDto.Item> content = query.offset(offset).limit(pageSize).fetch();
+
+        Long total = queryFactory
+                .select(pdProd.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(pdProd)
+                .leftJoin(syBrand).on(syBrand.brandId.eq(pdProd.brandId))
+                .where(wheres)
+                .fetchOne();
+
+        PdProdDto.PageResponse res = new PdProdDto.PageResponse();
+        return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
+    }
+
+
 
     /** 검색조건 빌드 — Mapper XML pdProdCond 와 동일 동작 */
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */

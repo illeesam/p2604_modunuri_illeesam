@@ -46,6 +46,49 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
     private static final QSyCode   cdAp = new QSyCode("cd_ap");
     private static final QSyCode   cdAt = new QSyCode("cd_at");
 
+    /** 목록/페이지 공용 base query */
+    private JPAQuery<OdClaimDto.Item> baseListQuery() {
+        return queryFactory
+                .select(Projections.bean(OdClaimDto.Item.class,
+                        odClaim.claimId, odClaim.siteId, odClaim.orderId, odClaim.memberId, odClaim.memberNm,
+                        odClaim.claimTypeCd, odClaim.claimStatusCd, odClaim.claimStatusCdBefore,
+                        odClaim.reasonCd, odClaim.reasonDetail, odClaim.prodNm,
+                        odClaim.customerFaultYn,
+                        odClaim.claimCancelYn, odClaim.claimCancelDate, odClaim.claimCancelReasonCd, odClaim.claimCancelReasonDetail,
+                        odClaim.refundMethodCd, odClaim.refundAmt, odClaim.refundProdAmt, odClaim.refundShippingAmt, odClaim.refundSaveAmt,
+                        odClaim.refundBankCd, odClaim.refundAccountNo, odClaim.refundAccountNm,
+                        odClaim.requestDate, odClaim.procDate, odClaim.procUserId, odClaim.memo,
+                        odClaim.addShippingFee, odClaim.addShippingFeeChargeCd, odClaim.addShippingFeeReason,
+                        odClaim.collectNm, odClaim.collectPhone, odClaim.collectZip, odClaim.collectAddr, odClaim.collectAddrDetail, odClaim.collectReqMemo,
+                        odClaim.collectSchdDate, odClaim.returnShippingFee, odClaim.returnCourierCd, odClaim.returnTrackingNo,
+                        odClaim.returnStatusCd, odClaim.returnStatusCdBefore,
+                        odClaim.inboundShippingFee, odClaim.inboundCourierCd, odClaim.inboundTrackingNo, odClaim.inboundDlivId,
+                        odClaim.exchRecvNm, odClaim.exchRecvPhone, odClaim.exchRecvZip, odClaim.exchRecvAddr, odClaim.exchRecvAddrDetail, odClaim.exchRecvReqMemo,
+                        odClaim.exchangeShippingFee, odClaim.exchangeCourierCd, odClaim.exchangeTrackingNo, odClaim.outboundDlivId,
+                        odClaim.totalShippingFee, odClaim.shippingFeePaidYn, odClaim.shippingFeePaidDate, odClaim.shippingFeeMemo,
+                        odClaim.apprStatusCd, odClaim.apprStatusCdBefore, odClaim.apprAmt,
+                        odClaim.apprTargetCd, odClaim.apprTargetNm, odClaim.apprReason,
+                        odClaim.apprReqUserId, odClaim.apprReqDate, odClaim.apprAprvUserId, odClaim.apprAprvDate,
+                        odClaim.regBy, odClaim.regDate, odClaim.updBy, odClaim.updDate,
+                        odOrder.orderDate.as("orderDate"),
+                        odOrder.orderStatusCd.as("orderStatusCd"),
+                        mbMember.loginId.as("memberEmail"),
+                        cdCt.codeLabel.as("claimTypeCdNm"),
+                        cdCs.codeLabel.as("claimStatusCdNm"),
+                        cdRm.codeLabel.as("refundMethodCdNm"),
+                        cdRc.codeLabel.as("returnCourierCdNm"),
+                        cdEc.codeLabel.as("exchangeCourierCdNm")
+                ))
+                .from(odClaim)
+                .leftJoin(odOrder).on(odOrder.orderId.eq(odClaim.orderId))
+                .leftJoin(mbMember).on(mbMember.memberId.eq(odClaim.memberId))
+                .leftJoin(cdCt).on(cdCt.codeGrp.eq("CLAIM_TYPE").and(cdCt.codeValue.eq(odClaim.claimTypeCd)))
+                .leftJoin(cdCs).on(cdCs.codeGrp.eq("CLAIM_STATUS").and(cdCs.codeValue.eq(odClaim.claimStatusCd)))
+                .leftJoin(cdRm).on(cdRm.codeGrp.eq("REFUND_METHOD").and(cdRm.codeValue.eq(odClaim.refundMethodCd)))
+                .leftJoin(cdRc).on(cdRc.codeGrp.eq("COURIER").and(cdRc.codeValue.eq(odClaim.returnCourierCd)))
+                .leftJoin(cdEc).on(cdEc.codeGrp.eq("COURIER").and(cdEc.codeValue.eq(odClaim.exchangeCourierCd)));
+    }
+
     /* 클레임(취소/반품/교환) 키조회 */
     @Override
     public Optional<OdClaimDto.Item> selectById(String claimId) {
@@ -92,6 +135,7 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                         cdAp.codeLabel.as("apprStatusCdNm"),
                         cdAt.codeLabel.as("apprTargetCdNm")
                 ))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
                 .from(odClaim)
                 .leftJoin(odOrder).on(odOrder.orderId.eq(odClaim.orderId))
                 .leftJoin(mbMember).on(mbMember.memberId.eq(odClaim.memberId))
@@ -115,15 +159,17 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
     public List<OdClaimDto.Item> selectList(OdClaimDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<OdClaimDto.Item> query = baseListQuery().where(
-                baseAndSiteId(search),
-                baseAndClaimId(search),
-                baseAndMemberId(search),
-                baseAndClaimStatusCd(search),
-                baseAndClaimTypeCd(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<OdClaimDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndClaimId(search),
+                    baseAndMemberId(search),
+                    baseAndClaimStatusCd(search),
+                    baseAndClaimTypeCd(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -154,7 +200,9 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<OdClaimDto.Item> query = baseListQuery().where(wheres);
+        JPAQuery<OdClaimDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -162,7 +210,7 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
 
         Long total = queryFactory
                 .select(odClaim.count())
-                .from(odClaim)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(odClaim)
                 .leftJoin(mbMember).on(mbMember.memberId.eq(odClaim.memberId))
                 .where(wheres)
                 .fetchOne();
@@ -171,48 +219,7 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /** 목록/페이지 공용 base query */
-    private JPAQuery<OdClaimDto.Item> baseListQuery() {
-        return queryFactory
-                .select(Projections.bean(OdClaimDto.Item.class,
-                        odClaim.claimId, odClaim.siteId, odClaim.orderId, odClaim.memberId, odClaim.memberNm,
-                        odClaim.claimTypeCd, odClaim.claimStatusCd, odClaim.claimStatusCdBefore,
-                        odClaim.reasonCd, odClaim.reasonDetail, odClaim.prodNm,
-                        odClaim.customerFaultYn,
-                        odClaim.claimCancelYn, odClaim.claimCancelDate, odClaim.claimCancelReasonCd, odClaim.claimCancelReasonDetail,
-                        odClaim.refundMethodCd, odClaim.refundAmt, odClaim.refundProdAmt, odClaim.refundShippingAmt, odClaim.refundSaveAmt,
-                        odClaim.refundBankCd, odClaim.refundAccountNo, odClaim.refundAccountNm,
-                        odClaim.requestDate, odClaim.procDate, odClaim.procUserId, odClaim.memo,
-                        odClaim.addShippingFee, odClaim.addShippingFeeChargeCd, odClaim.addShippingFeeReason,
-                        odClaim.collectNm, odClaim.collectPhone, odClaim.collectZip, odClaim.collectAddr, odClaim.collectAddrDetail, odClaim.collectReqMemo,
-                        odClaim.collectSchdDate, odClaim.returnShippingFee, odClaim.returnCourierCd, odClaim.returnTrackingNo,
-                        odClaim.returnStatusCd, odClaim.returnStatusCdBefore,
-                        odClaim.inboundShippingFee, odClaim.inboundCourierCd, odClaim.inboundTrackingNo, odClaim.inboundDlivId,
-                        odClaim.exchRecvNm, odClaim.exchRecvPhone, odClaim.exchRecvZip, odClaim.exchRecvAddr, odClaim.exchRecvAddrDetail, odClaim.exchRecvReqMemo,
-                        odClaim.exchangeShippingFee, odClaim.exchangeCourierCd, odClaim.exchangeTrackingNo, odClaim.outboundDlivId,
-                        odClaim.totalShippingFee, odClaim.shippingFeePaidYn, odClaim.shippingFeePaidDate, odClaim.shippingFeeMemo,
-                        odClaim.apprStatusCd, odClaim.apprStatusCdBefore, odClaim.apprAmt,
-                        odClaim.apprTargetCd, odClaim.apprTargetNm, odClaim.apprReason,
-                        odClaim.apprReqUserId, odClaim.apprReqDate, odClaim.apprAprvUserId, odClaim.apprAprvDate,
-                        odClaim.regBy, odClaim.regDate, odClaim.updBy, odClaim.updDate,
-                        odOrder.orderDate.as("orderDate"),
-                        odOrder.orderStatusCd.as("orderStatusCd"),
-                        mbMember.loginId.as("memberEmail"),
-                        cdCt.codeLabel.as("claimTypeCdNm"),
-                        cdCs.codeLabel.as("claimStatusCdNm"),
-                        cdRm.codeLabel.as("refundMethodCdNm"),
-                        cdRc.codeLabel.as("returnCourierCdNm"),
-                        cdEc.codeLabel.as("exchangeCourierCdNm")
-                ))
-                .from(odClaim)
-                .leftJoin(odOrder).on(odOrder.orderId.eq(odClaim.orderId))
-                .leftJoin(mbMember).on(mbMember.memberId.eq(odClaim.memberId))
-                .leftJoin(cdCt).on(cdCt.codeGrp.eq("CLAIM_TYPE").and(cdCt.codeValue.eq(odClaim.claimTypeCd)))
-                .leftJoin(cdCs).on(cdCs.codeGrp.eq("CLAIM_STATUS").and(cdCs.codeValue.eq(odClaim.claimStatusCd)))
-                .leftJoin(cdRm).on(cdRm.codeGrp.eq("REFUND_METHOD").and(cdRm.codeValue.eq(odClaim.refundMethodCd)))
-                .leftJoin(cdRc).on(cdRc.codeGrp.eq("COURIER").and(cdRc.codeValue.eq(odClaim.returnCourierCd)))
-                .leftJoin(cdEc).on(cdEc.codeGrp.eq("COURIER").and(cdEc.codeValue.eq(odClaim.exchangeCourierCd)));
-    }
+
 
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     /* ============================================================

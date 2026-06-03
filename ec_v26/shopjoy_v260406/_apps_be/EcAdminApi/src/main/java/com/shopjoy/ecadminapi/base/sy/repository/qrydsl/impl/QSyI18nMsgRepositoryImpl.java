@@ -44,7 +44,9 @@ public class QSyI18nMsgRepositoryImpl implements QSyI18nMsgRepository {
     /* 다국어 메시지 키조회 */
     @Override
     public Optional<SyI18nMsgDto.Item> selectById(String i18nMsgId) {
-        SyI18nMsgDto.Item dto = baseSelColumnQuery().where(syI18nMsg.i18nMsgId.eq(i18nMsgId)).fetchOne();
+        SyI18nMsgDto.Item dto = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
+                .where(syI18nMsg.i18nMsgId.eq(i18nMsgId)).fetchOne();
         return Optional.ofNullable(dto);
     }
 
@@ -52,12 +54,14 @@ public class QSyI18nMsgRepositoryImpl implements QSyI18nMsgRepository {
     @Override
     public List<SyI18nMsgDto.Item> selectList(SyI18nMsgDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyI18nMsgDto.Item> query = baseSelColumnQuery().where(
-                baseAndI18nMsgId(search),
-                baseAndI18nId(search),
-                baseAndLangCd(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<SyI18nMsgDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndI18nMsgId(search),
+                    baseAndI18nId(search),
+                    baseAndLangCd(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -83,11 +87,18 @@ public class QSyI18nMsgRepositoryImpl implements QSyI18nMsgRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<SyI18nMsgDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<SyI18nMsgDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyI18nMsgDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syI18nMsg.count()).from(syI18nMsg).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(syI18nMsg.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(syI18nMsg)
+                .where(wheres)
+                .fetchOne();
 
         SyI18nMsgDto.PageResponse res = new SyI18nMsgDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

@@ -53,7 +53,7 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
     @Override
     public Optional<PmCacheDto.Item> selectById(String cacheId) {
         PmCacheDto.Item dto = baseSelColumnQuery()
-                .where(pmCache.cacheId.eq(cacheId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmCache.cacheId.eq(cacheId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -63,12 +63,14 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
     public List<PmCacheDto.Item> selectList(PmCacheDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PmCacheDto.Item> query = baseSelColumnQuery().where(
-                baseAndSiteId(search),
-                baseAndCacheId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<PmCacheDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndCacheId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -96,7 +98,9 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<PmCacheDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<PmCacheDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -104,7 +108,7 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
 
         Long total = queryFactory
                 .select(pmCache.count())
-                .from(pmCache)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(pmCache)
                 .where(wheres)
                 .fetchOne();
 

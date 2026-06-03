@@ -46,10 +46,32 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
 
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+    /* 알람 baseQuery */
+    private JPAQuery<SyAlarmDto.Item> baseQuery() {
+        return queryFactory
+                .select(Projections.bean(SyAlarmDto.Item.class,
+                        syAlarm.alarmId, syAlarm.siteId, syAlarm.alarmTitle, syAlarm.alarmTypeCd, syAlarm.channelCd,
+                        syAlarm.targetTypeCd, syAlarm.targetId, syAlarm.templateId, syAlarm.alarmMsg, syAlarm.alarmSendDate,
+                        syAlarm.alarmStatusCd, syAlarm.alarmSendCount, syAlarm.alarmFailCount, syAlarm.pathId,
+                        syAlarm.regBy, syAlarm.regDate, syAlarm.updBy, syAlarm.updDate,
+                        sySite.siteNm.as("siteNm"),
+                        cdAt.codeLabel.as("alarmTypeCdNm"),
+                        cdAc.codeLabel.as("channelCdNm"),
+                        cdAtt.codeLabel.as("targetTypeCdNm")
+                ))
+                .from(syAlarm)
+                .leftJoin(sySite).on(sySite.siteId.eq(syAlarm.siteId))
+                .leftJoin(cdAt).on(cdAt.codeGrp.eq("ALARM_TYPE").and(cdAt.codeValue.eq(syAlarm.alarmTypeCd)))
+                .leftJoin(cdAc).on(cdAc.codeGrp.eq("ALARM_CHANNEL").and(cdAc.codeValue.eq(syAlarm.channelCd)))
+                .leftJoin(cdAtt).on(cdAtt.codeGrp.eq("ALARM_TARGET_TYPE").and(cdAtt.codeValue.eq(syAlarm.targetTypeCd)));
+    }
+
     /* 알람 키조회 */
     @Override
     public Optional<SyAlarmDto.Item> selectById(String alarmId) {
-        SyAlarmDto.Item dto = baseQuery().where(syAlarm.alarmId.eq(alarmId)).fetchOne();
+        SyAlarmDto.Item dto = baseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
+                .where(syAlarm.alarmId.eq(alarmId)).fetchOne();
         return Optional.ofNullable(dto);
     }
 
@@ -57,14 +79,16 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
     @Override
     public List<SyAlarmDto.Item> selectList(SyAlarmDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyAlarmDto.Item> query = baseQuery().where(
-                baseAndSiteId(search),
-                baseAndPathId(search),
-                baseAndAlarmId(search),
-                baseAndStatus(search),
-                baseAndTypeCd(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<SyAlarmDto.Item> query = baseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndPathId(search),
+                    baseAndAlarmId(search),
+                    baseAndStatus(search),
+                    baseAndTypeCd(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -92,35 +116,24 @@ public class QSyAlarmRepositoryImpl implements QSyAlarmRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<SyAlarmDto.Item> query = baseQuery().where(wheres);
+        JPAQuery<SyAlarmDto.Item> query = baseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyAlarmDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syAlarm.count()).from(syAlarm).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(syAlarm.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(syAlarm)
+                .where(wheres)
+                .fetchOne();
 
         SyAlarmDto.PageResponse res = new SyAlarmDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /* 알람 baseQuery */
-    private JPAQuery<SyAlarmDto.Item> baseQuery() {
-        return queryFactory
-                .select(Projections.bean(SyAlarmDto.Item.class,
-                        syAlarm.alarmId, syAlarm.siteId, syAlarm.alarmTitle, syAlarm.alarmTypeCd, syAlarm.channelCd,
-                        syAlarm.targetTypeCd, syAlarm.targetId, syAlarm.templateId, syAlarm.alarmMsg, syAlarm.alarmSendDate,
-                        syAlarm.alarmStatusCd, syAlarm.alarmSendCount, syAlarm.alarmFailCount, syAlarm.pathId,
-                        syAlarm.regBy, syAlarm.regDate, syAlarm.updBy, syAlarm.updDate,
-                        sySite.siteNm.as("siteNm"),
-                        cdAt.codeLabel.as("alarmTypeCdNm"),
-                        cdAc.codeLabel.as("channelCdNm"),
-                        cdAtt.codeLabel.as("targetTypeCdNm")
-                ))
-                .from(syAlarm)
-                .leftJoin(sySite).on(sySite.siteId.eq(syAlarm.siteId))
-                .leftJoin(cdAt).on(cdAt.codeGrp.eq("ALARM_TYPE").and(cdAt.codeValue.eq(syAlarm.alarmTypeCd)))
-                .leftJoin(cdAc).on(cdAc.codeGrp.eq("ALARM_CHANNEL").and(cdAc.codeValue.eq(syAlarm.channelCd)))
-                .leftJoin(cdAtt).on(cdAtt.codeGrp.eq("ALARM_TARGET_TYPE").and(cdAtt.codeValue.eq(syAlarm.targetTypeCd)));
-    }
+
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================

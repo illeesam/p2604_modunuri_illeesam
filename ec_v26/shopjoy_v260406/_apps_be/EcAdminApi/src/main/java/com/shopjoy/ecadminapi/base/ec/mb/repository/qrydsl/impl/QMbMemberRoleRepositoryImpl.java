@@ -55,18 +55,22 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
     /* 회원 역할 연결 키조회 */
     @Override
     public Optional<MbMemberRoleDto.Item> selectById(String memberRoleId) {
-        return Optional.ofNullable(baseSelColumnQuery().where(mbMemberRole.memberRoleId.eq(memberRoleId)).fetchOne());
+        return Optional.ofNullable(baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
+                .where(mbMemberRole.memberRoleId.eq(memberRoleId)).fetchOne());
     }
 
     /* 회원 역할 연결 목록조회 */
     @Override
     public List<MbMemberRoleDto.Item> selectList(MbMemberRoleDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<MbMemberRoleDto.Item> query = baseSelColumnQuery().where(
-                baseAndMemberRoleId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<MbMemberRoleDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndMemberRoleId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo(), pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0)
@@ -87,11 +91,18 @@ public class QMbMemberRoleRepositoryImpl implements QMbMemberRoleRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<MbMemberRoleDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<MbMemberRoleDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<MbMemberRoleDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(mbMemberRole.count()).from(mbMemberRole).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(mbMemberRole.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(mbMemberRole)
+                .where(wheres)
+                .fetchOne();
 
         MbMemberRoleDto.PageResponse res = new MbMemberRoleDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

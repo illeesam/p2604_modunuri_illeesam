@@ -50,7 +50,9 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
     /* 문의 키조회 */
     @Override
     public Optional<SyContactDto.Item> selectById(String contactId) {
-        SyContactDto.Item dto = baseSelColumnQuery().where(syContact.contactId.eq(contactId)).fetchOne();
+        SyContactDto.Item dto = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
+                .where(syContact.contactId.eq(contactId)).fetchOne();
         return Optional.ofNullable(dto);
     }
 
@@ -58,13 +60,15 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
     @Override
     public List<SyContactDto.Item> selectList(SyContactDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyContactDto.Item> query = baseSelColumnQuery().where(
-                baseAndSiteId(search),
-                baseAndContactId(search),
-                baseAndMemberId(search),
-                baseAndStatus(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<SyContactDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndContactId(search),
+                    baseAndMemberId(search),
+                    baseAndStatus(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -91,11 +95,18 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<SyContactDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<SyContactDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyContactDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syContact.count()).from(syContact).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(syContact.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(syContact)
+                .where(wheres)
+                .fetchOne();
 
         SyContactDto.PageResponse res = new SyContactDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

@@ -49,7 +49,9 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
     /* 다국어 키조회 */
     @Override
     public Optional<SyI18nDto.Item> selectById(String i18nId) {
-        SyI18nDto.Item dto = baseSelColumnQuery().where(syI18n.i18nId.eq(i18nId)).fetchOne();
+        SyI18nDto.Item dto = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
+                .where(syI18n.i18nId.eq(i18nId)).fetchOne();
         return Optional.ofNullable(dto);
     }
 
@@ -57,11 +59,13 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
     @Override
     public List<SyI18nDto.Item> selectList(SyI18nDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyI18nDto.Item> query = baseSelColumnQuery().where(
-                baseAndSiteId(search),
-                baseAndI18nId(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<SyI18nDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndI18nId(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -86,11 +90,18 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<SyI18nDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<SyI18nDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyI18nDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syI18n.count()).from(syI18n).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(syI18n.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(syI18n)
+                .where(wheres)
+                .fetchOne();
 
         SyI18nDto.PageResponse res = new SyI18nDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

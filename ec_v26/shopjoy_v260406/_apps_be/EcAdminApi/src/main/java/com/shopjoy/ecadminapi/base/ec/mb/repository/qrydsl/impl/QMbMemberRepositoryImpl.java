@@ -59,7 +59,7 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
     @Override
     public Optional<MbMemberDto.Item> selectById(String memberId) {
         MbMemberDto.Item dto = baseSelColumnQuery()
-                .where(mbMember.memberId.eq(memberId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(mbMember.memberId.eq(memberId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -69,12 +69,14 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
     public List<MbMemberDto.Item> selectList(MbMemberDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<MbMemberDto.Item> query = baseSelColumnQuery().where(
-                baseAndSiteId(search),
-                baseAndMemberId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<MbMemberDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndMemberId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -102,7 +104,9 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<MbMemberDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<MbMemberDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -110,7 +114,7 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
 
         Long total = queryFactory
                 .select(mbMember.count())
-                .from(mbMember)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(mbMember)
                 .where(wheres)
                 .fetchOne();
 

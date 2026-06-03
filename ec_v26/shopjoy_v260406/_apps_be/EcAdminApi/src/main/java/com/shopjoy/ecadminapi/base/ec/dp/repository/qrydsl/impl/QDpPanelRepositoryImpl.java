@@ -54,23 +54,27 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
     /* 전시 패널 키조회 */
     @Override
     public Optional<DpPanelDto.Item> selectById(String panelId) {
-        return Optional.ofNullable(baseSelColumnQuery().where(dpPanel.panelId.eq(panelId)).fetchOne());
+        return Optional.ofNullable(baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
+                .where(dpPanel.panelId.eq(panelId)).fetchOne());
     }
 
     /* 전시 패널 목록조회 */
     @Override
     public List<DpPanelDto.Item> selectList(DpPanelDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<DpPanelDto.Item> query = baseSelColumnQuery().where(
-                baseAndSiteId(search),
-                baseAndPathId(search),
-                baseAndPanelId(search),
-                baseAndDispPanelStatusCd(search),
-                baseAndPanelTypeCd(search),
-                baseAndUseYn(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<DpPanelDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndPathId(search),
+                    baseAndPanelId(search),
+                    baseAndDispPanelStatusCd(search),
+                    baseAndPanelTypeCd(search),
+                    baseAndUseYn(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search == null ? null : search.getPageNo();
         Integer pageSize = search == null ? null : search.getPageSize();
@@ -95,10 +99,17 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
         };
-        JPAQuery<DpPanelDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<DpPanelDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<DpPanelDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
-        Long total = queryFactory.select(dpPanel.count()).from(dpPanel).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(dpPanel.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(dpPanel)
+                .where(wheres)
+                .fetchOne();
         DpPanelDto.PageResponse res = new DpPanelDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }

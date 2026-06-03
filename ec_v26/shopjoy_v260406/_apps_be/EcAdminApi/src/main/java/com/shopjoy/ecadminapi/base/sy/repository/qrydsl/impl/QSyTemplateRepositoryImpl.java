@@ -41,10 +41,25 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
     private static final QSySite sySite = QSySite.sySite;
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+    /* 템플릿 baseQuery */
+    private JPAQuery<SyTemplateDto.Item> baseQuery() {
+        return queryFactory
+                .select(Projections.bean(SyTemplateDto.Item.class,
+                        syTemplate.templateId, syTemplate.siteId, syTemplate.templateTypeCd, syTemplate.templateCode, syTemplate.templateNm,
+                        syTemplate.templateSubject, syTemplate.templateContent, syTemplate.sampleParams, syTemplate.useYn, syTemplate.pathId,
+                        syTemplate.regBy, syTemplate.regDate, syTemplate.updBy, syTemplate.updDate,
+                        sySite.siteNm.as("siteNm")
+                ))
+                .from(syTemplate)
+                .leftJoin(sySite).on(sySite.siteId.eq(syTemplate.siteId));
+    }
+
     /* 템플릿 키조회 */
     @Override
     public Optional<SyTemplateDto.Item> selectById(String templateId) {
-        SyTemplateDto.Item dto = baseQuery().where(syTemplate.templateId.eq(templateId)).fetchOne();
+        SyTemplateDto.Item dto = baseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
+                .where(syTemplate.templateId.eq(templateId)).fetchOne();
         return Optional.ofNullable(dto);
     }
 
@@ -52,14 +67,16 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
     @Override
     public List<SyTemplateDto.Item> selectList(SyTemplateDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyTemplateDto.Item> query = baseQuery().where(
-                baseAndSiteId(search),
-                baseAndPathId(search),
-                baseAndTemplateId(search),
-                baseAndTemplateTypeCd(search),
-                baseAndUseYn(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<SyTemplateDto.Item> query = baseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndPathId(search),
+                    baseAndTemplateId(search),
+                    baseAndTemplateTypeCd(search),
+                    baseAndUseYn(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -87,28 +104,24 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<SyTemplateDto.Item> query = baseQuery().where(wheres);
+        JPAQuery<SyTemplateDto.Item> query = baseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyTemplateDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syTemplate.count()).from(syTemplate).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(syTemplate.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(syTemplate)
+                .where(wheres)
+                .fetchOne();
 
         SyTemplateDto.PageResponse res = new SyTemplateDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /* 템플릿 baseQuery */
-    private JPAQuery<SyTemplateDto.Item> baseQuery() {
-        return queryFactory
-                .select(Projections.bean(SyTemplateDto.Item.class,
-                        syTemplate.templateId, syTemplate.siteId, syTemplate.templateTypeCd, syTemplate.templateCode, syTemplate.templateNm,
-                        syTemplate.templateSubject, syTemplate.templateContent, syTemplate.sampleParams, syTemplate.useYn, syTemplate.pathId,
-                        syTemplate.regBy, syTemplate.regDate, syTemplate.updBy, syTemplate.updDate,
-                        sySite.siteNm.as("siteNm")
-                ))
-                .from(syTemplate)
-                .leftJoin(sySite).on(sySite.siteId.eq(syTemplate.siteId));
-    }
+
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================

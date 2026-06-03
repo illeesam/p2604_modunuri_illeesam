@@ -38,26 +38,39 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
     private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpAreaRepositoryImpl";
     private static final QDpArea dpArea = QDpArea.dpArea;
 
+    /* 전시 영역 baseQuery */
+    private JPAQuery<DpAreaDto.Item> baseQuery() {
+        return queryFactory.select(Projections.bean(DpAreaDto.Item.class,
+                dpArea.areaId, dpArea.uiId, dpArea.siteId, dpArea.areaCd, dpArea.areaNm, dpArea.areaTypeCd, dpArea.areaDesc,
+                dpArea.pathId, dpArea.useYn, dpArea.useStartDate, dpArea.useEndDate,
+                dpArea.regBy, dpArea.regDate, dpArea.updBy, dpArea.updDate
+        )).from(dpArea);
+    }
+
     /* 전시 영역 키조회 */
     @Override
     public Optional<DpAreaDto.Item> selectById(String areaId) {
-        return Optional.ofNullable(baseQuery().where(dpArea.areaId.eq(areaId)).fetchOne());
+        return Optional.ofNullable(baseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
+                .where(dpArea.areaId.eq(areaId)).fetchOne());
     }
 
     /* 전시 영역 목록조회 */
     @Override
     public List<DpAreaDto.Item> selectList(DpAreaDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<DpAreaDto.Item> query = baseQuery().where(
-                baseAndUiIds(search),
-                baseAndSiteId(search),
-                baseAndPathId(search),
-                baseAndUseYn(search),
-                baseAndAreaId(search),
-                baseAndUiId(search),
-                baseAndAreaTypeCd(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<DpAreaDto.Item> query = baseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndUiIds(search),
+                    baseAndSiteId(search),
+                    baseAndPathId(search),
+                    baseAndUseYn(search),
+                    baseAndAreaId(search),
+                    baseAndUiId(search),
+                    baseAndAreaTypeCd(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo(), pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0)
@@ -81,22 +94,22 @@ public class QDpAreaRepositoryImpl implements QDpAreaRepository {
                 baseAndAreaTypeCd(search),
                 baseAndSearchValue(search)
         };
-        JPAQuery<DpAreaDto.Item> query = baseQuery().where(wheres);
+        JPAQuery<DpAreaDto.Item> query = baseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<DpAreaDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
-        Long total = queryFactory.select(dpArea.count()).from(dpArea).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(dpArea.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(dpArea)
+                .where(wheres)
+                .fetchOne();
         DpAreaDto.PageResponse res = new DpAreaDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /* 전시 영역 baseQuery */
-    private JPAQuery<DpAreaDto.Item> baseQuery() {
-        return queryFactory.select(Projections.bean(DpAreaDto.Item.class,
-                dpArea.areaId, dpArea.uiId, dpArea.siteId, dpArea.areaCd, dpArea.areaNm, dpArea.areaTypeCd, dpArea.areaDesc,
-                dpArea.pathId, dpArea.useYn, dpArea.useStartDate, dpArea.useEndDate,
-                dpArea.regBy, dpArea.regDate, dpArea.updBy, dpArea.updDate
-        )).from(dpArea);
-    }
+
 
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================

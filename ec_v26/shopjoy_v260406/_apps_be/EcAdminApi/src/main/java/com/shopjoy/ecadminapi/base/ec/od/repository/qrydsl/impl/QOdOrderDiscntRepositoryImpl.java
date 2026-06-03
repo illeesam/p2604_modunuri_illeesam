@@ -38,11 +38,28 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
     private static final QPmCoupon      cpn = new QPmCoupon("cpn");
     private static final QSyCode        cdOdt = new QSyCode("cd_odt");
 
+    /** 목록/페이지/단건 공용 base query */
+    private JPAQuery<OdOrderDiscntDto.Item> baseListQuery() {
+        return queryFactory
+                .select(Projections.bean(OdOrderDiscntDto.Item.class,
+                        odOrderDiscnt.orderDiscntId, odOrderDiscnt.siteId, odOrderDiscnt.orderId,
+                        odOrderDiscnt.discntTypeCd, odOrderDiscnt.couponId, odOrderDiscnt.couponIssueId,
+                        odOrderDiscnt.discntRate, odOrderDiscnt.discntAmt, odOrderDiscnt.baseItemAmt,
+                        odOrderDiscnt.restoreYn, odOrderDiscnt.restoreAmt, odOrderDiscnt.restoreDate,
+                        odOrderDiscnt.regBy, odOrderDiscnt.regDate
+                ))
+                .from(odOrderDiscnt)
+                .leftJoin(ste).on(ste.siteId.eq(odOrderDiscnt.siteId))
+                .leftJoin(ord).on(ord.orderId.eq(odOrderDiscnt.orderId))
+                .leftJoin(cpn).on(cpn.couponId.eq(odOrderDiscnt.couponId))
+                .leftJoin(cdOdt).on(cdOdt.codeGrp.eq("ORDER_DISCNT_TYPE").and(cdOdt.codeValue.eq(odOrderDiscnt.discntTypeCd)));
+    }
+
     /* 주문 할인 키조회 */
     @Override
     public Optional<OdOrderDiscntDto.Item> selectById(String orderDiscntId) {
         OdOrderDiscntDto.Item dto = baseListQuery()
-                .where(odOrderDiscnt.orderDiscntId.eq(orderDiscntId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(odOrderDiscnt.orderDiscntId.eq(orderDiscntId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -52,14 +69,16 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
     public List<OdOrderDiscntDto.Item> selectList(OdOrderDiscntDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<OdOrderDiscntDto.Item> query = baseListQuery().where(
-                baseAndOrderIds(search),
-                baseAndOrderId(search),
-                baseAndSiteId(search),
-                baseAndOrderDiscntId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<OdOrderDiscntDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndOrderIds(search),
+                    baseAndOrderId(search),
+                    baseAndSiteId(search),
+                    baseAndOrderDiscntId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -89,7 +108,9 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<OdOrderDiscntDto.Item> query = baseListQuery().where(wheres);
+        JPAQuery<OdOrderDiscntDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -97,7 +118,7 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
 
         Long total = queryFactory
                 .select(odOrderDiscnt.count())
-                .from(odOrderDiscnt)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(odOrderDiscnt)
                 .where(wheres)
                 .fetchOne();
 
@@ -105,22 +126,7 @@ public class QOdOrderDiscntRepositoryImpl implements QOdOrderDiscntRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /** 목록/페이지/단건 공용 base query */
-    private JPAQuery<OdOrderDiscntDto.Item> baseListQuery() {
-        return queryFactory
-                .select(Projections.bean(OdOrderDiscntDto.Item.class,
-                        odOrderDiscnt.orderDiscntId, odOrderDiscnt.siteId, odOrderDiscnt.orderId,
-                        odOrderDiscnt.discntTypeCd, odOrderDiscnt.couponId, odOrderDiscnt.couponIssueId,
-                        odOrderDiscnt.discntRate, odOrderDiscnt.discntAmt, odOrderDiscnt.baseItemAmt,
-                        odOrderDiscnt.restoreYn, odOrderDiscnt.restoreAmt, odOrderDiscnt.restoreDate,
-                        odOrderDiscnt.regBy, odOrderDiscnt.regDate
-                ))
-                .from(odOrderDiscnt)
-                .leftJoin(ste).on(ste.siteId.eq(odOrderDiscnt.siteId))
-                .leftJoin(ord).on(ord.orderId.eq(odOrderDiscnt.orderId))
-                .leftJoin(cpn).on(cpn.couponId.eq(odOrderDiscnt.couponId))
-                .leftJoin(cdOdt).on(cdOdt.codeGrp.eq("ORDER_DISCNT_TYPE").and(cdOdt.codeValue.eq(odOrderDiscnt.discntTypeCd)));
-    }
+
 
     /* 주문 할인 buildCondition */
     /* ============================================================

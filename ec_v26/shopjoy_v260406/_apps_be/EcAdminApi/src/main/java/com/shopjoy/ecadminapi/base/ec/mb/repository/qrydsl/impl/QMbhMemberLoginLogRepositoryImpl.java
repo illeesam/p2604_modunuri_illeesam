@@ -56,19 +56,23 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
     /* 회원 로그인 로그 키조회 */
     @Override
     public Optional<MbhMemberLoginLogDto.Item> selectById(String logId) {
-        return Optional.ofNullable(baseSelColumnQuery().where(mbhMemberLoginLog.logId.eq(logId)).fetchOne());
+        return Optional.ofNullable(baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
+                .where(mbhMemberLoginLog.logId.eq(logId)).fetchOne());
     }
 
     /* 회원 로그인 로그 목록조회 */
     @Override
     public List<MbhMemberLoginLogDto.Item> selectList(MbhMemberLoginLogDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<MbhMemberLoginLogDto.Item> query = baseSelColumnQuery().where(
-                baseAndSiteId(search),
-                baseAndLogId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<MbhMemberLoginLogDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndLogId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo(), pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0)
@@ -90,11 +94,18 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<MbhMemberLoginLogDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<MbhMemberLoginLogDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<MbhMemberLoginLogDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(mbhMemberLoginLog.count()).from(mbhMemberLoginLog).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(mbhMemberLoginLog.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(mbhMemberLoginLog)
+                .where(wheres)
+                .fetchOne();
 
         MbhMemberLoginLogDto.PageResponse res = new MbhMemberLoginLogDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

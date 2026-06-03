@@ -103,7 +103,7 @@ public class QCmBlogTagRepositoryImpl implements QCmBlogTagRepository {
 
         Long total = queryFactory
                 .select(cmBlogTag.count())
-                .from(cmBlogTag)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(cmBlogTag)
                 .where(wheres)
                 .fetchOne();
 

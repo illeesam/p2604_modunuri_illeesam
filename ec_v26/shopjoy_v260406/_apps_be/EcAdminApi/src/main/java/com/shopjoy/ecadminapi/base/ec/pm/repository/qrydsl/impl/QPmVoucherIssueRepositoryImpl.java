@@ -58,7 +58,7 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
     @Override
     public Optional<PmVoucherIssueDto.Item> selectById(String voucherIssueId) {
         PmVoucherIssueDto.Item dto = baseSelColumnQuery()
-                .where(pmVoucherIssue.voucherIssueId.eq(voucherIssueId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmVoucherIssue.voucherIssueId.eq(voucherIssueId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -68,12 +68,14 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
     public List<PmVoucherIssueDto.Item> selectList(PmVoucherIssueDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PmVoucherIssueDto.Item> query = baseSelColumnQuery().where(
-                baseAndSiteId(search),
-                baseAndVoucherIssueId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<PmVoucherIssueDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndVoucherIssueId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -101,7 +103,9 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<PmVoucherIssueDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<PmVoucherIssueDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -109,7 +113,7 @@ public class QPmVoucherIssueRepositoryImpl implements QPmVoucherIssueRepository 
 
         Long total = queryFactory
                 .select(pmVoucherIssue.count())
-                .from(pmVoucherIssue)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(pmVoucherIssue)
                 .where(wheres)
                 .fetchOne();
 

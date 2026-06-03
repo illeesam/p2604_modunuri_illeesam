@@ -133,7 +133,7 @@ public class QSyhUserLoginLogRepositoryImpl implements QSyhUserLoginLogRepositor
 
         Long total = queryFactory
                 .select(syhUserLoginLog.count())
-                .from(syhUserLoginLog)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(syhUserLoginLog)
                 .where(wheres)
                 .fetchOne();
 

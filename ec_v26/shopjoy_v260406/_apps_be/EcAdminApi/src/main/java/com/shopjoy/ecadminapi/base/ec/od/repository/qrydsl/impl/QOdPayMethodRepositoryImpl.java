@@ -35,11 +35,24 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
     private static final QMbMember    mem = new QMbMember("mem");
     private static final QSyCode      cdPm = new QSyCode("cd_pm");
 
+    /** 목록/페이지/단건 공용 base query (DTO Item에 별칭 컬럼 없음 - 기본 필드만 매핑) */
+    private JPAQuery<OdPayMethodDto.Item> baseListQuery() {
+        return queryFactory
+                .select(Projections.bean(OdPayMethodDto.Item.class,
+                        odPayMethod.payMethodId, odPayMethod.memberId, odPayMethod.payMethodTypeCd, odPayMethod.payMethodNm,
+                        odPayMethod.payMethodAlias, odPayMethod.payKeyNo, odPayMethod.mainMethodYn,
+                        odPayMethod.regBy, odPayMethod.regDate, odPayMethod.updBy, odPayMethod.updDate
+                ))
+                .from(odPayMethod)
+                .leftJoin(mem).on(mem.memberId.eq(odPayMethod.memberId))
+                .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odPayMethod.payMethodTypeCd)));
+    }
+
     /* 결제수단 키조회 */
     @Override
     public Optional<OdPayMethodDto.Item> selectById(String payMethodId) {
         OdPayMethodDto.Item dto = baseListQuery()
-                .where(odPayMethod.payMethodId.eq(payMethodId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(odPayMethod.payMethodId.eq(payMethodId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -49,11 +62,13 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
     public List<OdPayMethodDto.Item> selectList(OdPayMethodDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<OdPayMethodDto.Item> query = baseListQuery().where(
-                baseAndPayMethodId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<OdPayMethodDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndPayMethodId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -80,7 +95,9 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<OdPayMethodDto.Item> query = baseListQuery().where(wheres);
+        JPAQuery<OdPayMethodDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -88,7 +105,7 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
 
         Long total = queryFactory
                 .select(odPayMethod.count())
-                .from(odPayMethod)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(odPayMethod)
                 .where(wheres)
                 .fetchOne();
 
@@ -96,18 +113,7 @@ public class QOdPayMethodRepositoryImpl implements QOdPayMethodRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /** 목록/페이지/단건 공용 base query (DTO Item에 별칭 컬럼 없음 - 기본 필드만 매핑) */
-    private JPAQuery<OdPayMethodDto.Item> baseListQuery() {
-        return queryFactory
-                .select(Projections.bean(OdPayMethodDto.Item.class,
-                        odPayMethod.payMethodId, odPayMethod.memberId, odPayMethod.payMethodTypeCd, odPayMethod.payMethodNm,
-                        odPayMethod.payMethodAlias, odPayMethod.payKeyNo, odPayMethod.mainMethodYn,
-                        odPayMethod.regBy, odPayMethod.regDate, odPayMethod.updBy, odPayMethod.updDate
-                ))
-                .from(odPayMethod)
-                .leftJoin(mem).on(mem.memberId.eq(odPayMethod.memberId))
-                .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odPayMethod.payMethodTypeCd)));
-    }
+
 
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     /* ============================================================

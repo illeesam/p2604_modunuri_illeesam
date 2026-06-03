@@ -33,11 +33,22 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
     private static final QPdReviewAttach pdReviewAttach = QPdReviewAttach.pdReviewAttach;
     private static final QPdReview       pdReview = QPdReview.pdReview;
 
+    /** selectById 용 base query — pd_review JOIN 없음 */
+    private JPAQuery<PdReviewAttachDto.Item> baseQuerySingle() {
+        return queryFactory
+                .select(Projections.bean(PdReviewAttachDto.Item.class,
+                        pdReviewAttach.reviewAttachId, pdReviewAttach.siteId, pdReviewAttach.reviewId, pdReviewAttach.attachId,
+                        pdReviewAttach.mediaTypeCd, pdReviewAttach.thumbUrl, pdReviewAttach.sortOrd,
+                        pdReviewAttach.regBy, pdReviewAttach.regDate, pdReviewAttach.updBy, pdReviewAttach.updDate
+                ))
+                .from(pdReviewAttach);
+    }
+
     /** 단건 조회 */
     @Override
     public Optional<PdReviewAttachDto.Item> selectById(String reviewAttachId) {
         PdReviewAttachDto.Item dto = baseQuerySingle()
-                .where(pdReviewAttach.reviewAttachId.eq(reviewAttachId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pdReviewAttach.reviewAttachId.eq(reviewAttachId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -93,7 +104,7 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
         List<PdReviewAttachDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
         Long total = queryFactory.select(pdReviewAttach.count())
-                .from(pdReviewAttach)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(pdReviewAttach)
                 .leftJoin(pdReview).on(pdReview.reviewId.eq(pdReviewAttach.reviewId))
                 .where(wheres)
                 .fetchOne();
@@ -102,16 +113,7 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /** selectById 용 base query — pd_review JOIN 없음 */
-    private JPAQuery<PdReviewAttachDto.Item> baseQuerySingle() {
-        return queryFactory
-                .select(Projections.bean(PdReviewAttachDto.Item.class,
-                        pdReviewAttach.reviewAttachId, pdReviewAttach.siteId, pdReviewAttach.reviewId, pdReviewAttach.attachId,
-                        pdReviewAttach.mediaTypeCd, pdReviewAttach.thumbUrl, pdReviewAttach.sortOrd,
-                        pdReviewAttach.regBy, pdReviewAttach.regDate, pdReviewAttach.updBy, pdReviewAttach.updDate
-                ))
-                .from(pdReviewAttach);
-    }
+
 
     /** 목록/페이지 용 base query — pd_review LEFT JOIN 포함 (prodId 조건 지원) */
     private JPAQuery<PdReviewAttachDto.Item> baseQueryWithJoin() {

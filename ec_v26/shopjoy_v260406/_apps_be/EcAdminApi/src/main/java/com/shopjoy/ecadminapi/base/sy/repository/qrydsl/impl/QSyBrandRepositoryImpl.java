@@ -113,7 +113,12 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
         }
         List<SyBrandDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syBrand.count()).from(syBrand).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(syBrand.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(syBrand)
+                .where(wheres)
+                .fetchOne();
 
         SyBrandDto.PageResponse res = new SyBrandDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

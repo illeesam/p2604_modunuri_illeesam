@@ -34,11 +34,27 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
     private static final QSySite     sySite  = QSySite.sySite;
     private static final QSyCode     cdSat = new QSyCode("cd_sat");
 
+    /* 정산 조정 baseListQuery */
+    private JPAQuery<StSettleAdjDto.Item> baseListQuery() {
+        return queryFactory
+                .select(Projections.bean(StSettleAdjDto.Item.class,
+                        stSettleAdj.settleAdjId, stSettleAdj.settleId, stSettleAdj.siteId,
+                        stSettleAdj.adjTypeCd, stSettleAdj.adjAmt, stSettleAdj.adjReason,
+                        stSettleAdj.settleAdjMemo, stSettleAdj.aprvStatusCd,
+                        stSettleAdj.regBy, stSettleAdj.regDate, stSettleAdj.updBy, stSettleAdj.updDate,
+                        sySite.siteNm.as("siteNm"),
+                        cdSat.codeLabel.as("adjTypeCdNm")
+                ))
+                .from(stSettleAdj)
+                .leftJoin(sySite).on(sySite.siteId.eq(stSettleAdj.siteId))
+                .leftJoin(cdSat).on(cdSat.codeGrp.eq("SETTLE_ADJ_TYPE").and(cdSat.codeValue.eq(stSettleAdj.adjTypeCd)));
+    }
+
     /* 정산 조정 키조회 */
     @Override
     public Optional<StSettleAdjDto.Item> selectById(String id) {
         StSettleAdjDto.Item dto = baseListQuery()
-                .where(stSettleAdj.settleAdjId.eq(id))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(stSettleAdj.settleAdjId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -48,12 +64,14 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
     public List<StSettleAdjDto.Item> selectList(StSettleAdjDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<StSettleAdjDto.Item> query = baseListQuery().where(
-                baseAndSiteId(search),
-                baseAndSettleAdjId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<StSettleAdjDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndSettleAdjId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -81,7 +99,9 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<StSettleAdjDto.Item> query = baseListQuery().where(wheres);
+        JPAQuery<StSettleAdjDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -89,7 +109,7 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
 
         Long total = queryFactory
                 .select(stSettleAdj.count())
-                .from(stSettleAdj)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(stSettleAdj)
                 .where(wheres)
                 .fetchOne();
 
@@ -97,21 +117,7 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /* 정산 조정 baseListQuery */
-    private JPAQuery<StSettleAdjDto.Item> baseListQuery() {
-        return queryFactory
-                .select(Projections.bean(StSettleAdjDto.Item.class,
-                        stSettleAdj.settleAdjId, stSettleAdj.settleId, stSettleAdj.siteId,
-                        stSettleAdj.adjTypeCd, stSettleAdj.adjAmt, stSettleAdj.adjReason,
-                        stSettleAdj.settleAdjMemo, stSettleAdj.aprvStatusCd,
-                        stSettleAdj.regBy, stSettleAdj.regDate, stSettleAdj.updBy, stSettleAdj.updDate,
-                        sySite.siteNm.as("siteNm"),
-                        cdSat.codeLabel.as("adjTypeCdNm")
-                ))
-                .from(stSettleAdj)
-                .leftJoin(sySite).on(sySite.siteId.eq(stSettleAdj.siteId))
-                .leftJoin(cdSat).on(cdSat.codeGrp.eq("SETTLE_ADJ_TYPE").and(cdSat.codeValue.eq(stSettleAdj.adjTypeCd)));
-    }
+
 
     /* 정산 조정 buildCondition */
     /* ============================================================

@@ -53,7 +53,9 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
     /* 게시판 게시물 키조회 */
     @Override
     public Optional<SyBbsDto.Item> selectById(String bbsId) {
-        SyBbsDto.Item dto = baseSelColumnQuery().where(syBbs.bbsId.eq(bbsId)).fetchOne();
+        SyBbsDto.Item dto = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
+                .where(syBbs.bbsId.eq(bbsId)).fetchOne();
         return Optional.ofNullable(dto);
     }
 
@@ -61,12 +63,14 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
     @Override
     public List<SyBbsDto.Item> selectList(SyBbsDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyBbsDto.Item> query = baseSelColumnQuery().where(
-                baseAndSiteId(search),
-                baseAndBbsId(search),
-                baseAndStatus(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<SyBbsDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndBbsId(search),
+                    baseAndStatus(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -92,11 +96,18 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<SyBbsDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<SyBbsDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyBbsDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syBbs.count()).from(syBbs).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(syBbs.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(syBbs)
+                .where(wheres)
+                .fetchOne();
 
         SyBbsDto.PageResponse res = new SyBbsDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

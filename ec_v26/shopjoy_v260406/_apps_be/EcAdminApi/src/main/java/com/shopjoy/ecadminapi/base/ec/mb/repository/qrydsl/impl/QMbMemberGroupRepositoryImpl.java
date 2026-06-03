@@ -45,19 +45,23 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
     /* 회원 그룹 키조회 */
     @Override
     public Optional<MbMemberGroupDto.Item> selectById(String memberGroupId) {
-        return Optional.ofNullable(baseSelColumnQuery().where(mbMemberGroup.memberGroupId.eq(memberGroupId)).fetchOne());
+        return Optional.ofNullable(baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
+                .where(mbMemberGroup.memberGroupId.eq(memberGroupId)).fetchOne());
     }
 
     /* 회원 그룹 목록조회 */
     @Override
     public List<MbMemberGroupDto.Item> selectList(MbMemberGroupDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<MbMemberGroupDto.Item> query = baseSelColumnQuery().where(
-                baseAndSiteId(search),
-                baseAndMemberGroupId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<MbMemberGroupDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndMemberGroupId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo(), pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0)
@@ -79,11 +83,18 @@ public class QMbMemberGroupRepositoryImpl implements QMbMemberGroupRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<MbMemberGroupDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<MbMemberGroupDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<MbMemberGroupDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(mbMemberGroup.count()).from(mbMemberGroup).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(mbMemberGroup.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(mbMemberGroup)
+                .where(wheres)
+                .fetchOne();
 
         MbMemberGroupDto.PageResponse res = new MbMemberGroupDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

@@ -39,11 +39,35 @@ public class QStReconRepositoryImpl implements QStReconRepository {
     private static final QSyCode      cdRt = new QSyCode("cd_rt");
     private static final QSyCode      cdRs = new QSyCode("cd_rs");
 
+    /* 정산 대사(Reconciliation) baseListQuery */
+    private JPAQuery<StReconDto.Item> baseListQuery() {
+        return queryFactory
+                .select(Projections.bean(StReconDto.Item.class,
+                        stRecon.reconId, stRecon.siteId, stRecon.vendorId, stRecon.reconTypeCd,
+                        stRecon.reconStatusCd, stRecon.reconStatusCdBefore, stRecon.settleId, stRecon.settleRawId,
+                        stRecon.refId, stRecon.refNo, stRecon.settlePeriod,
+                        stRecon.expectedAmt, stRecon.actualAmt, stRecon.diffAmt, stRecon.reconNote,
+                        stRecon.resolvedBy, stRecon.resolvedDate,
+                        stRecon.regBy, stRecon.regDate, stRecon.updBy, stRecon.updDate,
+                        sySite.siteNm.as("siteNm"),
+                        syVendor.vendorNm.as("vendorNm"),
+                        stSettleRaw.prodNm.as("settleRawNm"),
+                        cdRt.codeLabel.as("reconTypeCdNm"),
+                        cdRs.codeLabel.as("reconStatusCdNm")
+                ))
+                .from(stRecon)
+                .leftJoin(sySite).on(sySite.siteId.eq(stRecon.siteId))
+                .leftJoin(syVendor).on(syVendor.vendorId.eq(stRecon.vendorId))
+                .leftJoin(stSettleRaw).on(stSettleRaw.settleRawId.eq(stRecon.settleRawId))
+                .leftJoin(cdRt).on(cdRt.codeGrp.eq("RECON_TYPE").and(cdRt.codeValue.eq(stRecon.reconTypeCd)))
+                .leftJoin(cdRs).on(cdRs.codeGrp.eq("RECON_STATUS").and(cdRs.codeValue.eq(stRecon.reconStatusCd)));
+    }
+
     /* 정산 대사(Reconciliation) 키조회 */
     @Override
     public Optional<StReconDto.Item> selectById(String id) {
         StReconDto.Item dto = baseListQuery()
-                .where(stRecon.reconId.eq(id))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(stRecon.reconId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -53,12 +77,14 @@ public class QStReconRepositoryImpl implements QStReconRepository {
     public List<StReconDto.Item> selectList(StReconDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<StReconDto.Item> query = baseListQuery().where(
-                baseAndSiteId(search),
-                baseAndReconId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<StReconDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndReconId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -86,7 +112,9 @@ public class QStReconRepositoryImpl implements QStReconRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<StReconDto.Item> query = baseListQuery().where(wheres);
+        JPAQuery<StReconDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -94,7 +122,7 @@ public class QStReconRepositoryImpl implements QStReconRepository {
 
         Long total = queryFactory
                 .select(stRecon.count())
-                .from(stRecon)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(stRecon)
                 .where(wheres)
                 .fetchOne();
 
@@ -102,29 +130,7 @@ public class QStReconRepositoryImpl implements QStReconRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /* 정산 대사(Reconciliation) baseListQuery */
-    private JPAQuery<StReconDto.Item> baseListQuery() {
-        return queryFactory
-                .select(Projections.bean(StReconDto.Item.class,
-                        stRecon.reconId, stRecon.siteId, stRecon.vendorId, stRecon.reconTypeCd,
-                        stRecon.reconStatusCd, stRecon.reconStatusCdBefore, stRecon.settleId, stRecon.settleRawId,
-                        stRecon.refId, stRecon.refNo, stRecon.settlePeriod,
-                        stRecon.expectedAmt, stRecon.actualAmt, stRecon.diffAmt, stRecon.reconNote,
-                        stRecon.resolvedBy, stRecon.resolvedDate,
-                        stRecon.regBy, stRecon.regDate, stRecon.updBy, stRecon.updDate,
-                        sySite.siteNm.as("siteNm"),
-                        syVendor.vendorNm.as("vendorNm"),
-                        stSettleRaw.prodNm.as("settleRawNm"),
-                        cdRt.codeLabel.as("reconTypeCdNm"),
-                        cdRs.codeLabel.as("reconStatusCdNm")
-                ))
-                .from(stRecon)
-                .leftJoin(sySite).on(sySite.siteId.eq(stRecon.siteId))
-                .leftJoin(syVendor).on(syVendor.vendorId.eq(stRecon.vendorId))
-                .leftJoin(stSettleRaw).on(stSettleRaw.settleRawId.eq(stRecon.settleRawId))
-                .leftJoin(cdRt).on(cdRt.codeGrp.eq("RECON_TYPE").and(cdRt.codeValue.eq(stRecon.reconTypeCd)))
-                .leftJoin(cdRs).on(cdRs.codeGrp.eq("RECON_STATUS").and(cdRs.codeValue.eq(stRecon.reconStatusCd)));
-    }
+
 
     /* 정산 대사(Reconciliation) buildCondition */
     /* ============================================================

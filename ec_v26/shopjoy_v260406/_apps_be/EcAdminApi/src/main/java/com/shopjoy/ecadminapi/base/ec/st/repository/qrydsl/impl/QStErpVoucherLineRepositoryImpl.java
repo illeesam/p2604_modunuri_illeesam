@@ -30,11 +30,24 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
     private static final String QRY_SRC = "base.ec.st.repository.qrydsl.impl.QStErpVoucherLineRepositoryImpl";
     private static final QStErpVoucherLine stErpVoucherLine = QStErpVoucherLine.stErpVoucherLine;
 
+    /* ERP 전표 상세 baseListQuery */
+    private JPAQuery<StErpVoucherLineDto.Item> baseListQuery() {
+        return queryFactory
+                .select(Projections.bean(StErpVoucherLineDto.Item.class,
+                        stErpVoucherLine.erpVoucherLineId, stErpVoucherLine.erpVoucherId, stErpVoucherLine.lineNo,
+                        stErpVoucherLine.accountCd, stErpVoucherLine.accountNm, stErpVoucherLine.costCenterCd, stErpVoucherLine.profitCenterCd,
+                        stErpVoucherLine.debitAmt, stErpVoucherLine.creditAmt,
+                        stErpVoucherLine.refTypeCd, stErpVoucherLine.refId, stErpVoucherLine.lineMemo,
+                        stErpVoucherLine.regBy, stErpVoucherLine.regDate
+                ))
+                .from(stErpVoucherLine);
+    }
+
     /* ERP 전표 상세 키조회 */
     @Override
     public Optional<StErpVoucherLineDto.Item> selectById(String id) {
         StErpVoucherLineDto.Item dto = baseListQuery()
-                .where(stErpVoucherLine.erpVoucherLineId.eq(id))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(stErpVoucherLine.erpVoucherLineId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -44,11 +57,13 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
     public List<StErpVoucherLineDto.Item> selectList(StErpVoucherLineDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<StErpVoucherLineDto.Item> query = baseListQuery().where(
-                baseAndErpVoucherLineId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<StErpVoucherLineDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndErpVoucherLineId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -75,7 +90,9 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<StErpVoucherLineDto.Item> query = baseListQuery().where(wheres);
+        JPAQuery<StErpVoucherLineDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -83,7 +100,7 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
 
         Long total = queryFactory
                 .select(stErpVoucherLine.count())
-                .from(stErpVoucherLine)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(stErpVoucherLine)
                 .where(wheres)
                 .fetchOne();
 
@@ -91,18 +108,7 @@ public class QStErpVoucherLineRepositoryImpl implements QStErpVoucherLineReposit
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /* ERP 전표 상세 baseListQuery */
-    private JPAQuery<StErpVoucherLineDto.Item> baseListQuery() {
-        return queryFactory
-                .select(Projections.bean(StErpVoucherLineDto.Item.class,
-                        stErpVoucherLine.erpVoucherLineId, stErpVoucherLine.erpVoucherId, stErpVoucherLine.lineNo,
-                        stErpVoucherLine.accountCd, stErpVoucherLine.accountNm, stErpVoucherLine.costCenterCd, stErpVoucherLine.profitCenterCd,
-                        stErpVoucherLine.debitAmt, stErpVoucherLine.creditAmt,
-                        stErpVoucherLine.refTypeCd, stErpVoucherLine.refId, stErpVoucherLine.lineMemo,
-                        stErpVoucherLine.regBy, stErpVoucherLine.regDate
-                ))
-                .from(stErpVoucherLine);
-    }
+
 
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================

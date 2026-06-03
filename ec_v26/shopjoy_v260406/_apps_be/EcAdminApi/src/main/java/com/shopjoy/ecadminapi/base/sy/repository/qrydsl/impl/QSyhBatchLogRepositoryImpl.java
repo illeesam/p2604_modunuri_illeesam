@@ -117,7 +117,7 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
 
         Long total = queryFactory
                 .select(syhBatchLog.count())
-                .from(syhBatchLog)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(syhBatchLog)
                 .where(wheres)
                 .fetchOne();
 

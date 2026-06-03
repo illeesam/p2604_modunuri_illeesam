@@ -98,7 +98,7 @@ public class QCmChattMsgRepositoryImpl implements QCmChattMsgRepository {
 
         Long total = queryFactory
                 .select(cmChattMsg.count())
-                .from(cmChattMsg)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(cmChattMsg)
                 .where(wheres)
                 .fetchOne();
 

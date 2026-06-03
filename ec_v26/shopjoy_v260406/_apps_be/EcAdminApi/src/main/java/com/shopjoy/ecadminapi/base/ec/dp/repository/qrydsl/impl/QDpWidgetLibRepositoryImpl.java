@@ -36,25 +36,39 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
     private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpWidgetLibRepositoryImpl";
     private static final QDpWidgetLib dpWidgetLib = QDpWidgetLib.dpWidgetLib;
 
+    /* 전시 위젯 라이브러리 baseQuery */
+    private JPAQuery<DpWidgetLibDto.Item> baseQuery() {
+        return queryFactory.select(Projections.bean(DpWidgetLibDto.Item.class,
+                dpWidgetLib.widgetLibId, dpWidgetLib.siteId, dpWidgetLib.widgetCode, dpWidgetLib.widgetNm, dpWidgetLib.widgetTypeCd,
+                dpWidgetLib.widgetLibDesc, dpWidgetLib.pathId, dpWidgetLib.thumbnailUrl, dpWidgetLib.widgetContent,
+                dpWidgetLib.widgetConfigJson, dpWidgetLib.isSystem, dpWidgetLib.sortOrd, dpWidgetLib.useYn,
+                dpWidgetLib.regBy, dpWidgetLib.regDate, dpWidgetLib.updBy, dpWidgetLib.updDate
+        )).from(dpWidgetLib);
+    }
+
     /* 전시 위젯 라이브러리 키조회 */
     @Override
     public Optional<DpWidgetLibDto.Item> selectById(String widgetLibId) {
-        return Optional.ofNullable(baseQuery().where(dpWidgetLib.widgetLibId.eq(widgetLibId)).fetchOne());
+        return Optional.ofNullable(baseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
+                .where(dpWidgetLib.widgetLibId.eq(widgetLibId)).fetchOne());
     }
 
     /* 전시 위젯 라이브러리 목록조회 */
     @Override
     public List<DpWidgetLibDto.Item> selectList(DpWidgetLibDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<DpWidgetLibDto.Item> query = baseQuery().where(
-                baseAndSiteId(search),
-                baseAndPathId(search),
-                baseAndWidgetLibId(search),
-                baseAndWidgetTypeCd(search),
-                baseAndUseYn(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<DpWidgetLibDto.Item> query = baseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndPathId(search),
+                    baseAndWidgetLibId(search),
+                    baseAndWidgetTypeCd(search),
+                    baseAndUseYn(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search == null ? null : search.getPageNo();
         Integer pageSize = search == null ? null : search.getPageSize();
@@ -78,23 +92,22 @@ public class QDpWidgetLibRepositoryImpl implements QDpWidgetLibRepository {
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
         };
-        JPAQuery<DpWidgetLibDto.Item> query = baseQuery().where(wheres);
+        JPAQuery<DpWidgetLibDto.Item> query = baseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<DpWidgetLibDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
-        Long total = queryFactory.select(dpWidgetLib.count()).from(dpWidgetLib).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(dpWidgetLib.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(dpWidgetLib)
+                .where(wheres)
+                .fetchOne();
         DpWidgetLibDto.PageResponse res = new DpWidgetLibDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /* 전시 위젯 라이브러리 baseQuery */
-    private JPAQuery<DpWidgetLibDto.Item> baseQuery() {
-        return queryFactory.select(Projections.bean(DpWidgetLibDto.Item.class,
-                dpWidgetLib.widgetLibId, dpWidgetLib.siteId, dpWidgetLib.widgetCode, dpWidgetLib.widgetNm, dpWidgetLib.widgetTypeCd,
-                dpWidgetLib.widgetLibDesc, dpWidgetLib.pathId, dpWidgetLib.thumbnailUrl, dpWidgetLib.widgetContent,
-                dpWidgetLib.widgetConfigJson, dpWidgetLib.isSystem, dpWidgetLib.sortOrd, dpWidgetLib.useYn,
-                dpWidgetLib.regBy, dpWidgetLib.regDate, dpWidgetLib.updBy, dpWidgetLib.updDate
-        )).from(dpWidgetLib);
-    }
+
 
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================

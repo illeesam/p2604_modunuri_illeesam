@@ -17,9 +17,7 @@ import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyAttachRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -31,9 +29,9 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyAttachRepositoryImpl";
     private static final QSyAttach syAttach = QSyAttach.syAttach;
     private static final QSySite sySite = QSySite.sySite;
-    private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    /* 첨부파일 baseSelColumnQuery */
+    /* 첨부파일 baseSelColumnQuery — Projections.bean 으로 SyAttachDto.Item 평면 매핑.
+     * 그룹정보(attachGrp)가 필요한 화면은 호출측(서비스)에서 SyAttachGrp 를 별도 조회한다. */
     private JPAQuery<SyAttachDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyAttachDto.Item.class,
@@ -51,7 +49,10 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
     /* 첨부파일 키조회 */
     @Override
     public Optional<SyAttachDto.Item> selectById(String attachId) {
-        SyAttachDto.Item dto = baseSelColumnQuery().where(syAttach.attachId.eq(attachId)).fetchOne();
+        SyAttachDto.Item dto = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
+                .where(syAttach.attachId.eq(attachId))
+                .fetchOne();
         return Optional.ofNullable(dto);
     }
 
@@ -59,13 +60,15 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
     @Override
     public List<SyAttachDto.Item> selectList(SyAttachDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search, false);
-        JPAQuery<SyAttachDto.Item> query = baseSelColumnQuery().where(
-                baseAndSiteId(search),
-                baseAndAttachId(search),
-                baseAndAttachGrpId(search),
-                baseAndMimeTypeCd(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<SyAttachDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndAttachId(search),
+                    baseAndAttachGrpId(search),
+                    baseAndMimeTypeCd(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -92,11 +95,18 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<SyAttachDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<SyAttachDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyAttachDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syAttach.count()).from(syAttach).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(syAttach.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(syAttach)
+                .where(wheres)
+                .fetchOne();
 
         SyAttachDto.PageResponse res = new SyAttachDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
@@ -173,7 +183,8 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
 
     /**
      * 정렬조건 빌드
-     * 예: "userId asc, userNm desc, regDate asc"
+     * sort 미지정 시: 목록(forPage=false)은 sortOrd ASC 우선, 페이지(forPage=true)는 regDate DESC.
+     * 안정 정렬 위해 마지막에 PK(attachId) 동률 키를 항상 추가한다.
      */
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(SyAttachDto.Request s, boolean forPage) {
@@ -186,16 +197,7 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
                 orders.add(new OrderSpecifier(Order.ASC, syAttach.sortOrd));
                 orders.add(new OrderSpecifier(Order.ASC, syAttach.regDate));
             }
-            /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-            /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-            if (orders.isEmpty()) {
-                orders.add(new OrderSpecifier<>(Order.DESC, syAttach.regDate));
-                orders.add(new OrderSpecifier<>(Order.ASC, syAttach.attachId));
-            }
-                orders.add(new OrderSpecifier<>(Order.ASC, syAttach.attachId));
-            return orders;
-        }
-        if ("id_asc".equals(sort)) {
+        } else if ("id_asc".equals(sort)) {
             orders.add(new OrderSpecifier(Order.ASC,  syAttach.attachId));
         } else if ("id_desc".equals(sort)) {
             orders.add(new OrderSpecifier(Order.DESC, syAttach.attachId));
@@ -210,8 +212,8 @@ public class QSyAttachRepositoryImpl implements QSyAttachRepository {
         } else {
             orders.add(new OrderSpecifier(Order.DESC, syAttach.regDate));
         }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        if (orders.isEmpty()) orders.add(new OrderSpecifier<>(Order.DESC, syAttach.regDate));
+        /* 안정 정렬 보장 — PK(attachId) 동률 키를 항상 마지막에 추가 */
+        orders.add(new OrderSpecifier<>(Order.ASC, syAttach.attachId));
         return orders;
     }
 

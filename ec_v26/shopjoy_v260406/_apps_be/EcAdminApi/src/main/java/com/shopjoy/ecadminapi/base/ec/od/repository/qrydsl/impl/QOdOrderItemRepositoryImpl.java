@@ -81,7 +81,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
     @Override
     public Optional<OdOrderItemDto.Item> selectById(String orderItemId) {
         OdOrderItemDto.Item dto = baseSelColumnQuery()
-                .where(odOrderItem.orderItemId.eq(orderItemId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(odOrderItem.orderItemId.eq(orderItemId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -91,14 +91,16 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
     public List<OdOrderItemDto.Item> selectList(OdOrderItemDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<OdOrderItemDto.Item> query = baseSelColumnQuery().where(
-                baseAndOrderIds(search),
-                baseAndOrderId(search),
-                baseAndSiteId(search),
-                baseAndOrderItemId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<OdOrderItemDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndOrderIds(search),
+                    baseAndOrderId(search),
+                    baseAndSiteId(search),
+                    baseAndOrderItemId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -128,7 +130,9 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<OdOrderItemDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<OdOrderItemDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -136,7 +140,7 @@ public class QOdOrderItemRepositoryImpl implements QOdOrderItemRepository {
 
         Long total = queryFactory
                 .select(odOrderItem.count())
-                .from(odOrderItem)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(odOrderItem)
                 .where(wheres)
                 .fetchOne();
 

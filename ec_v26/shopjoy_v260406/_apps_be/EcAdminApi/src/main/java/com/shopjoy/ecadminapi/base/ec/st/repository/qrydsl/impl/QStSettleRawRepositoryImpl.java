@@ -67,69 +67,6 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
     private static final QSyCode      cdVt  = new QSyCode("cd_vt");
     private static final QSyCode      cdPmc = new QSyCode("cd_pmc");
 
-    /* 정산 원천 데이터 키조회 */
-    @Override
-    public Optional<StSettleRawDto.Item> selectById(String id) {
-        StSettleRawDto.Item dto = baseListQuery()
-                .where(stSettleRaw.settleRawId.eq(id))
-                .fetchOne();
-        return Optional.ofNullable(dto);
-    }
-
-    /* 정산 원천 데이터 목록조회 */
-    @Override
-    public List<StSettleRawDto.Item> selectList(StSettleRawDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<StSettleRawDto.Item> query = baseListQuery().where(
-                baseAndSiteId(search),
-                baseAndSettleRawId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
-        if (!orderList.isEmpty()) {
-            query.orderBy(orderList.toArray(OrderSpecifier[]::new));
-        }
-        Integer pageNo   = search.getPageNo();
-        Integer pageSize = search.getPageSize();
-        if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
-            int offset = (pageNo - 1) * pageSize;
-            query.offset(offset).limit(pageSize);
-        }
-        return query.fetch();
-    }
-
-    /* 정산 원천 데이터 페이지조회 */
-    @Override
-    public StSettleRawDto.PageResponse selectPageData(StSettleRawDto.Request search) {
-        int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
-        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
-        int offset   = (pageNo - 1) * pageSize;
-
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
-        BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndSettleRawId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        };
-
-        JPAQuery<StSettleRawDto.Item> query = baseListQuery().where(wheres);
-        if (!orderList.isEmpty()) {
-            query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
-        }
-        List<StSettleRawDto.Item> content = query.offset(offset).limit(pageSize).fetch();
-
-        Long total = queryFactory
-                .select(stSettleRaw.count())
-                .from(stSettleRaw)
-                .where(wheres)
-                .fetchOne();
-
-        StSettleRawDto.PageResponse res = new StSettleRawDto.PageResponse();
-        return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
-    }
-
     /* 정산 원천 데이터 baseListQuery */
     private JPAQuery<StSettleRawDto.Item> baseListQuery() {
         return queryFactory
@@ -192,6 +129,75 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
                 .leftJoin(cdVt).on(cdVt.codeGrp.eq("VENDOR_TYPE").and(cdVt.codeValue.eq(stSettleRaw.vendorTypeCd)))
                 .leftJoin(cdPmc).on(cdPmc.codeGrp.eq("PAY_METHOD_CD").and(cdPmc.codeValue.eq(stSettleRaw.payMethodCd)));
     }
+
+    /* 정산 원천 데이터 키조회 */
+    @Override
+    public Optional<StSettleRawDto.Item> selectById(String id) {
+        StSettleRawDto.Item dto = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(stSettleRaw.settleRawId.eq(id))
+                .fetchOne();
+        return Optional.ofNullable(dto);
+    }
+
+    /* 정산 원천 데이터 목록조회 */
+    @Override
+    public List<StSettleRawDto.Item> selectList(StSettleRawDto.Request search) {
+        List<OrderSpecifier<?>> orderList = buildOrder(search);
+
+        JPAQuery<StSettleRawDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndSettleRawId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
+        if (!orderList.isEmpty()) {
+            query.orderBy(orderList.toArray(OrderSpecifier[]::new));
+        }
+        Integer pageNo   = search.getPageNo();
+        Integer pageSize = search.getPageSize();
+        if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
+            int offset = (pageNo - 1) * pageSize;
+            query.offset(offset).limit(pageSize);
+        }
+        return query.fetch();
+    }
+
+    /* 정산 원천 데이터 페이지조회 */
+    @Override
+    public StSettleRawDto.PageResponse selectPageData(StSettleRawDto.Request search) {
+        int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
+        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
+        int offset   = (pageNo - 1) * pageSize;
+
+        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        BooleanExpression[] wheres = {
+                baseAndSiteId(search),
+                baseAndSettleRawId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
+        };
+
+        JPAQuery<StSettleRawDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
+        if (!orderList.isEmpty()) {
+            query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
+        }
+        List<StSettleRawDto.Item> content = query.offset(offset).limit(pageSize).fetch();
+
+        Long total = queryFactory
+                .select(stSettleRaw.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(stSettleRaw)
+                .where(wheres)
+                .fetchOne();
+
+        StSettleRawDto.PageResponse res = new StSettleRawDto.PageResponse();
+        return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
+    }
+
+
 
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================

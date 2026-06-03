@@ -115,7 +115,7 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
 
         Long total = queryFactory
                 .select(syhAlarmSendHist.count())
-                .from(syhAlarmSendHist)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(syhAlarmSendHist)
                 .where(wheres)
                 .fetchOne();
 

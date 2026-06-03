@@ -45,113 +45,6 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
     private static final QSyCode   cdAt = new QSyCode("cd_at");
     private static final QSyCode   cdAc = new QSyCode("cd_ac");
 
-    /* 주문 키조회 */
-    @Override
-    public Optional<OdOrderDto.Item> selectById(String orderId) {
-        OdOrderDto.Item dto = queryFactory
-                .select(Projections.bean(OdOrderDto.Item.class,
-                        // a.* equivalent (DTO Item 에 존재하는 필드만)
-                        odOrder.orderId, odOrder.siteId, odOrder.memberId, odOrder.memberNm, odOrder.ordererEmail,
-                        odOrder.totalAmt, odOrder.payAmt,
-                        odOrder.orderStatusCd, odOrder.orderStatusCdBefore,
-                        odOrder.payMethodCd, odOrder.dlivStatusCd, odOrder.couponId,
-                        odOrder.recvNm, odOrder.recvPhone, odOrder.recvZip, odOrder.recvAddr, odOrder.recvAddrDetail, odOrder.recvMemo,
-                        odOrder.refundBankCd, odOrder.refundAccountNo, odOrder.refundAccountNm,
-                        odOrder.accessChannelCd,
-                        odOrder.apprStatusCd, odOrder.apprStatusCdBefore, odOrder.apprAmt,
-                        odOrder.apprTargetCd, odOrder.apprTargetNm, odOrder.apprReason,
-                        odOrder.apprReqUserId, odOrder.apprReqDate, odOrder.apprAprvUserId, odOrder.apprAprvDate,
-                        odOrder.memo, odOrder.orderDate,
-                        odOrder.regBy, odOrder.regDate, odOrder.updBy, odOrder.updDate,
-                        // joined
-                        mbMember.loginId.as("memberEmail"),
-                        mbMember.memberPhone.as("memberPhoneOrigin"),
-                        mbMember.gradeCd.as("gradeCd"),
-                        mbMember.totalPurchaseAmt.as("totalPurchaseAmt"),
-                        sySite.siteNm.as("siteNm"),
-                        pmCoupon.couponNm.as("couponNm"),
-                        pmCoupon.couponTypeCd.as("couponTypeCd"),
-                        cdOs.codeLabel.as("orderStatusCdNm"),
-                        cdPm.codeLabel.as("payMethodCdNm"),
-                        cdDs.codeLabel.as("dlivStatusCdNm"),
-                        cdRb.codeLabel.as("refundBankCdNm"),
-                        cdAp.codeLabel.as("apprStatusCdNm"),
-                        cdAt.codeLabel.as("apprTargetCdNm")
-                ))
-                .from(odOrder)
-                .leftJoin(mbMember).on(mbMember.memberId.eq(odOrder.memberId))
-                .leftJoin(sySite).on(sySite.siteId.eq(odOrder.siteId))
-                .leftJoin(pmCoupon).on(pmCoupon.couponId.eq(odOrder.couponId))
-                .leftJoin(cdOs).on(cdOs.codeGrp.eq("ORDER_STATUS").and(cdOs.codeValue.eq(odOrder.orderStatusCd)))
-                .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odOrder.payMethodCd)))
-                .leftJoin(cdDs).on(cdDs.codeGrp.eq("DLIV_STATUS").and(cdDs.codeValue.eq(odOrder.dlivStatusCd)))
-                .leftJoin(cdRb).on(cdRb.codeGrp.eq("BANK_CODE").and(cdRb.codeValue.eq(odOrder.refundBankCd)))
-                .leftJoin(cdAp).on(cdAp.codeGrp.eq("APPROVAL_STATUS").and(cdAp.codeValue.eq(odOrder.apprStatusCd)))
-                .leftJoin(cdAt).on(cdAt.codeGrp.eq("APPROVAL_TARGET").and(cdAt.codeValue.eq(odOrder.apprTargetCd)))
-                .where(odOrder.orderId.eq(orderId))
-                .fetchOne();
-        return Optional.ofNullable(dto);
-    }
-
-    /* 주문 목록조회 */
-    @Override
-    public List<OdOrderDto.Item> selectList(OdOrderDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<OdOrderDto.Item> query = baseListQuery().where(
-                baseAndSiteId(search),
-                baseAndOrderId(search),
-                baseAndMemberId(search),
-                baseAndOrderStatusCd(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
-        if (!orderList.isEmpty()) {
-            query.orderBy(orderList.toArray(OrderSpecifier[]::new));
-        }
-        Integer pageNo   = search.getPageNo();
-        Integer pageSize = search.getPageSize();
-        if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
-            int offset = (pageNo - 1) * pageSize;
-            query.offset(offset).limit(pageSize);
-        }
-        return query.fetch();
-    }
-
-    /* 주문 페이지조회 */
-    @Override
-    public OdOrderDto.PageResponse selectPageData(OdOrderDto.Request search) {
-        int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
-        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
-        int offset   = (pageNo - 1) * pageSize;
-
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
-        BooleanExpression[] wheres = {
-                baseAndSiteId(search),
-                baseAndOrderId(search),
-                baseAndMemberId(search),
-                baseAndOrderStatusCd(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        };
-
-        JPAQuery<OdOrderDto.Item> query = baseListQuery().where(wheres);
-        if (!orderList.isEmpty()) {
-            query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
-        }
-        List<OdOrderDto.Item> content = query.offset(offset).limit(pageSize).fetch();
-
-        Long total = queryFactory
-                .select(odOrder.count())
-                .from(odOrder)
-                .leftJoin(mbMember).on(mbMember.memberId.eq(odOrder.memberId))
-                .where(wheres)
-                .fetchOne();
-
-        OdOrderDto.PageResponse res = new OdOrderDto.PageResponse();
-        return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
-    }
-
     /** 목록/페이지 공용 base query */
     private JPAQuery<OdOrderDto.Item> baseListQuery() {
         return queryFactory
@@ -187,6 +80,119 @@ public class QOdOrderRepositoryImpl implements QOdOrderRepository {
                 .leftJoin(cdAc).on(cdAc.codeGrp.eq("ACCESS_CHANNEL").and(cdAc.codeValue.eq(odOrder.accessChannelCd)))
                 .leftJoin(cdAp).on(cdAp.codeGrp.eq("APPROVAL_STATUS").and(cdAp.codeValue.eq(odOrder.apprStatusCd)));
     }
+
+    /* 주문 키조회 */
+    @Override
+    public Optional<OdOrderDto.Item> selectById(String orderId) {
+        OdOrderDto.Item dto = queryFactory
+                .select(Projections.bean(OdOrderDto.Item.class,
+                        // a.* equivalent (DTO Item 에 존재하는 필드만)
+                        odOrder.orderId, odOrder.siteId, odOrder.memberId, odOrder.memberNm, odOrder.ordererEmail,
+                        odOrder.totalAmt, odOrder.payAmt,
+                        odOrder.orderStatusCd, odOrder.orderStatusCdBefore,
+                        odOrder.payMethodCd, odOrder.dlivStatusCd, odOrder.couponId,
+                        odOrder.recvNm, odOrder.recvPhone, odOrder.recvZip, odOrder.recvAddr, odOrder.recvAddrDetail, odOrder.recvMemo,
+                        odOrder.refundBankCd, odOrder.refundAccountNo, odOrder.refundAccountNm,
+                        odOrder.accessChannelCd,
+                        odOrder.apprStatusCd, odOrder.apprStatusCdBefore, odOrder.apprAmt,
+                        odOrder.apprTargetCd, odOrder.apprTargetNm, odOrder.apprReason,
+                        odOrder.apprReqUserId, odOrder.apprReqDate, odOrder.apprAprvUserId, odOrder.apprAprvDate,
+                        odOrder.memo, odOrder.orderDate,
+                        odOrder.regBy, odOrder.regDate, odOrder.updBy, odOrder.updDate,
+                        // joined
+                        mbMember.loginId.as("memberEmail"),
+                        mbMember.memberPhone.as("memberPhoneOrigin"),
+                        mbMember.gradeCd.as("gradeCd"),
+                        mbMember.totalPurchaseAmt.as("totalPurchaseAmt"),
+                        sySite.siteNm.as("siteNm"),
+                        pmCoupon.couponNm.as("couponNm"),
+                        pmCoupon.couponTypeCd.as("couponTypeCd"),
+                        cdOs.codeLabel.as("orderStatusCdNm"),
+                        cdPm.codeLabel.as("payMethodCdNm"),
+                        cdDs.codeLabel.as("dlivStatusCdNm"),
+                        cdRb.codeLabel.as("refundBankCdNm"),
+                        cdAp.codeLabel.as("apprStatusCdNm"),
+                        cdAt.codeLabel.as("apprTargetCdNm")
+                ))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").from(odOrder)
+                .leftJoin(mbMember).on(mbMember.memberId.eq(odOrder.memberId))
+                .leftJoin(sySite).on(sySite.siteId.eq(odOrder.siteId))
+                .leftJoin(pmCoupon).on(pmCoupon.couponId.eq(odOrder.couponId))
+                .leftJoin(cdOs).on(cdOs.codeGrp.eq("ORDER_STATUS").and(cdOs.codeValue.eq(odOrder.orderStatusCd)))
+                .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odOrder.payMethodCd)))
+                .leftJoin(cdDs).on(cdDs.codeGrp.eq("DLIV_STATUS").and(cdDs.codeValue.eq(odOrder.dlivStatusCd)))
+                .leftJoin(cdRb).on(cdRb.codeGrp.eq("BANK_CODE").and(cdRb.codeValue.eq(odOrder.refundBankCd)))
+                .leftJoin(cdAp).on(cdAp.codeGrp.eq("APPROVAL_STATUS").and(cdAp.codeValue.eq(odOrder.apprStatusCd)))
+                .leftJoin(cdAt).on(cdAt.codeGrp.eq("APPROVAL_TARGET").and(cdAt.codeValue.eq(odOrder.apprTargetCd)))
+                .where(odOrder.orderId.eq(orderId))
+                .fetchOne();
+        return Optional.ofNullable(dto);
+    }
+
+    /* 주문 목록조회 */
+    @Override
+    public List<OdOrderDto.Item> selectList(OdOrderDto.Request search) {
+        List<OrderSpecifier<?>> orderList = buildOrder(search);
+
+        JPAQuery<OdOrderDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndOrderId(search),
+                    baseAndMemberId(search),
+                    baseAndOrderStatusCd(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
+        if (!orderList.isEmpty()) {
+            query.orderBy(orderList.toArray(OrderSpecifier[]::new));
+        }
+        Integer pageNo   = search.getPageNo();
+        Integer pageSize = search.getPageSize();
+        if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
+            int offset = (pageNo - 1) * pageSize;
+            query.offset(offset).limit(pageSize);
+        }
+        return query.fetch();
+    }
+
+    /* 주문 페이지조회 */
+    @Override
+    public OdOrderDto.PageResponse selectPageData(OdOrderDto.Request search) {
+        int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
+        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
+        int offset   = (pageNo - 1) * pageSize;
+
+        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        BooleanExpression[] wheres = {
+                baseAndSiteId(search),
+                baseAndOrderId(search),
+                baseAndMemberId(search),
+                baseAndOrderStatusCd(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
+        };
+
+        JPAQuery<OdOrderDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
+        if (!orderList.isEmpty()) {
+            query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
+        }
+        List<OdOrderDto.Item> content = query.offset(offset).limit(pageSize).fetch();
+
+        Long total = queryFactory
+                .select(odOrder.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(odOrder)
+                .leftJoin(mbMember).on(mbMember.memberId.eq(odOrder.memberId))
+                .where(wheres)
+                .fetchOne();
+
+        OdOrderDto.PageResponse res = new OdOrderDto.PageResponse();
+        return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
+    }
+
+
 
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     /* ============================================================

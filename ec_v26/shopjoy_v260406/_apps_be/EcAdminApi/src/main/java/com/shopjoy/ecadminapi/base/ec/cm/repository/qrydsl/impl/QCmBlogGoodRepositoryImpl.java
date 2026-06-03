@@ -96,7 +96,7 @@ public class QCmBlogGoodRepositoryImpl implements QCmBlogGoodRepository {
 
         Long total = queryFactory
                 .select(cmBlogGood.count())
-                .from(cmBlogGood)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(cmBlogGood)
                 .where(wheres)
                 .fetchOne();
 

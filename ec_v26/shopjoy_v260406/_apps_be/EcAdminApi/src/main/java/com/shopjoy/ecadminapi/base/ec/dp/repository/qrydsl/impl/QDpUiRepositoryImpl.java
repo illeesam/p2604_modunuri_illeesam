@@ -42,11 +42,23 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
     private static final String QRY_SRC = "base.ec.dp.repository.qrydsl.impl.QDpUiRepositoryImpl";
     private static final QDpUi dpUi = QDpUi.dpUi;
 
+    /* 전시 UI baseQuery */
+    private JPAQuery<DpUiDto.Item> baseQuery() {
+        return queryFactory
+                .select(Projections.bean(DpUiDto.Item.class,
+                        dpUi.uiId, dpUi.siteId, dpUi.uiCd, dpUi.uiNm, dpUi.uiDesc,
+                        dpUi.deviceTypeCd, dpUi.pathId, dpUi.sortOrd, dpUi.useYn,
+                        dpUi.useStartDate, dpUi.useEndDate,
+                        dpUi.regBy, dpUi.regDate, dpUi.updBy, dpUi.updDate
+                ))
+                .from(dpUi);
+    }
+
     /* 전시 UI 키조회 */
     @Override
     public Optional<DpUiDto.Item> selectById(String uiId) {
         DpUiDto.Item dto = baseQuery()
-                .where(dpUi.uiId.eq(uiId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(dpUi.uiId.eq(uiId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -56,14 +68,16 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
     public List<DpUiDto.Item> selectList(DpUiDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<DpUiDto.Item> query = baseQuery().where(
-                baseAndSiteId(search),
-                baseAndPathId(search),
-                baseAndUiId(search),
-                baseAndDeviceTypeCd(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<DpUiDto.Item> query = baseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndPathId(search),
+                    baseAndUiId(search),
+                    baseAndDeviceTypeCd(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -93,29 +107,26 @@ public class QDpUiRepositoryImpl implements QDpUiRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<DpUiDto.Item> query = baseQuery().where(wheres);
+        JPAQuery<DpUiDto.Item> query = baseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
         List<DpUiDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(dpUi.count()).from(dpUi).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(dpUi.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(dpUi)
+                .where(wheres)
+                .fetchOne();
 
         DpUiDto.PageResponse res = new DpUiDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /* 전시 UI baseQuery */
-    private JPAQuery<DpUiDto.Item> baseQuery() {
-        return queryFactory
-                .select(Projections.bean(DpUiDto.Item.class,
-                        dpUi.uiId, dpUi.siteId, dpUi.uiCd, dpUi.uiNm, dpUi.uiDesc,
-                        dpUi.deviceTypeCd, dpUi.pathId, dpUi.sortOrd, dpUi.useYn,
-                        dpUi.useStartDate, dpUi.useEndDate,
-                        dpUi.regBy, dpUi.regDate, dpUi.updBy, dpUi.updDate
-                ))
-                .from(dpUi);
-    }
+
 
     /* searchType 사용 예  searchType = "blogTitle,blogAuthor" */
     /* ============================================================

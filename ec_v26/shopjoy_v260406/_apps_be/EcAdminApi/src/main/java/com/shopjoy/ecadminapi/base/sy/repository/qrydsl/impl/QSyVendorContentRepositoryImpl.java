@@ -120,7 +120,12 @@ public class QSyVendorContentRepositoryImpl implements QSyVendorContentRepositor
         }
         List<SyVendorContentDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syVendorContent.count()).from(syVendorContent).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(syVendorContent.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(syVendorContent)
+                .where(wheres)
+                .fetchOne();
 
         SyVendorContentDto.PageResponse res = new SyVendorContentDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

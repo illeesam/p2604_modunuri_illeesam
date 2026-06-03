@@ -109,7 +109,7 @@ public class QZzSample0RepositoryImpl implements QZzSample0Repository {
 
         Long total = queryFactory
                 .select(zzSample0.count())
-                .from(zzSample0)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(zzSample0)
                 .where(wheres)
                 .fetchOne();
 

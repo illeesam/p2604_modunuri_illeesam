@@ -45,7 +45,9 @@ public class QSyAttachGrpRepositoryImpl implements QSyAttachGrpRepository {
     /* 첨부파일 그룹 키조회 */
     @Override
     public Optional<SyAttachGrpDto.Item> selectById(String attachGrpId) {
-        SyAttachGrpDto.Item dto = baseSelColumnQuery().where(syAttachGrp.attachGrpId.eq(attachGrpId)).fetchOne();
+        SyAttachGrpDto.Item dto = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
+                .where(syAttachGrp.attachGrpId.eq(attachGrpId)).fetchOne();
         return Optional.ofNullable(dto);
     }
 
@@ -53,10 +55,12 @@ public class QSyAttachGrpRepositoryImpl implements QSyAttachGrpRepository {
     @Override
     public List<SyAttachGrpDto.Item> selectList(SyAttachGrpDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyAttachGrpDto.Item> query = baseSelColumnQuery().where(
-                baseAndAttachGrpId(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<SyAttachGrpDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndAttachGrpId(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -80,11 +84,18 @@ public class QSyAttachGrpRepositoryImpl implements QSyAttachGrpRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<SyAttachGrpDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<SyAttachGrpDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyAttachGrpDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syAttachGrp.count()).from(syAttachGrp).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(syAttachGrp.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(syAttachGrp)
+                .where(wheres)
+                .fetchOne();
 
         SyAttachGrpDto.PageResponse res = new SyAttachGrpDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

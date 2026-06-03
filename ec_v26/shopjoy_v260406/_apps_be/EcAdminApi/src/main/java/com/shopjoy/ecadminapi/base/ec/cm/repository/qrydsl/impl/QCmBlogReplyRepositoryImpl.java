@@ -105,7 +105,7 @@ public class QCmBlogReplyRepositoryImpl implements QCmBlogReplyRepository {
 
         Long total = queryFactory
                 .select(cmBlogReply.count())
-                .from(cmBlogReply)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(cmBlogReply)
                 .where(wheres)
                 .fetchOne();
 

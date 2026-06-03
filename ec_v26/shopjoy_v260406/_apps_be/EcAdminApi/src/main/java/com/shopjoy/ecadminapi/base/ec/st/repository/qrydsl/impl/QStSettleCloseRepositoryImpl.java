@@ -33,11 +33,26 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
     private static final QSySite        sySite = QSySite.sySite;
     private static final QSyCode        cdScs = new QSyCode("cd_scs");
 
+    /* 정산 마감 baseListQuery */
+    private JPAQuery<StSettleCloseDto.Item> baseListQuery() {
+        return queryFactory
+                .select(Projections.bean(StSettleCloseDto.Item.class,
+                        stSettleClose.settleCloseId, stSettleClose.settleId, stSettleClose.siteId, stSettleClose.closeStatusCd,
+                        stSettleClose.closeReason, stSettleClose.finalSettleAmt, stSettleClose.closeBy, stSettleClose.closeDate,
+                        stSettleClose.regBy, stSettleClose.regDate,
+                        sySite.siteNm.as("siteNm"),
+                        cdScs.codeLabel.as("closeStatusCdNm")
+                ))
+                .from(stSettleClose)
+                .leftJoin(sySite).on(sySite.siteId.eq(stSettleClose.siteId))
+                .leftJoin(cdScs).on(cdScs.codeGrp.eq("SETTLE_CLOSE_STATUS").and(cdScs.codeValue.eq(stSettleClose.closeStatusCd)));
+    }
+
     /* 정산 마감 키조회 */
     @Override
     public Optional<StSettleCloseDto.Item> selectById(String id) {
         StSettleCloseDto.Item dto = baseListQuery()
-                .where(stSettleClose.settleCloseId.eq(id))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(stSettleClose.settleCloseId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -47,12 +62,14 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
     public List<StSettleCloseDto.Item> selectList(StSettleCloseDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<StSettleCloseDto.Item> query = baseListQuery().where(
-                baseAndSiteId(search),
-                baseAndSettleCloseId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<StSettleCloseDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndSettleCloseId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -80,7 +97,9 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<StSettleCloseDto.Item> query = baseListQuery().where(wheres);
+        JPAQuery<StSettleCloseDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -88,7 +107,7 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
 
         Long total = queryFactory
                 .select(stSettleClose.count())
-                .from(stSettleClose)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(stSettleClose)
                 .where(wheres)
                 .fetchOne();
 
@@ -96,20 +115,7 @@ public class QStSettleCloseRepositoryImpl implements QStSettleCloseRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /* 정산 마감 baseListQuery */
-    private JPAQuery<StSettleCloseDto.Item> baseListQuery() {
-        return queryFactory
-                .select(Projections.bean(StSettleCloseDto.Item.class,
-                        stSettleClose.settleCloseId, stSettleClose.settleId, stSettleClose.siteId, stSettleClose.closeStatusCd,
-                        stSettleClose.closeReason, stSettleClose.finalSettleAmt, stSettleClose.closeBy, stSettleClose.closeDate,
-                        stSettleClose.regBy, stSettleClose.regDate,
-                        sySite.siteNm.as("siteNm"),
-                        cdScs.codeLabel.as("closeStatusCdNm")
-                ))
-                .from(stSettleClose)
-                .leftJoin(sySite).on(sySite.siteId.eq(stSettleClose.siteId))
-                .leftJoin(cdScs).on(cdScs.codeGrp.eq("SETTLE_CLOSE_STATUS").and(cdScs.codeValue.eq(stSettleClose.closeStatusCd)));
-    }
+
 
     /* 정산 마감 buildCondition */
     /* ============================================================

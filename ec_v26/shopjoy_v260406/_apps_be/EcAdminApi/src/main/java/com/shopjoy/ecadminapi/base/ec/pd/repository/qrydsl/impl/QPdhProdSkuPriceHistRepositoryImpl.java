@@ -110,7 +110,7 @@ public class QPdhProdSkuPriceHistRepositoryImpl implements QPdhProdSkuPriceHistR
 
         Long total = queryFactory
                 .select(pdhProdSkuPriceHist.count())
-                .from(pdhProdSkuPriceHist)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(pdhProdSkuPriceHist)
                 .where(wheres)
                 .fetchOne();
 

@@ -124,7 +124,12 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
         }
         List<SyRoleDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syRole.count()).from(syRole).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(syRole.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(syRole)
+                .where(wheres)
+                .fetchOne();
 
         SyRoleDto.PageResponse res = new SyRoleDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
@@ -133,7 +138,7 @@ public class QSyRoleRepositoryImpl implements QSyRoleRepository {
     /* 검색조건 기준 전체 카운트 (대량 export 안전 상한 검증용) */
     @Override
     public long selectCount(SyRoleDto.Request search) {
-        Long total = queryFactory.select(syRole.count()).from(syRole).where(
+        Long total = queryFactory.select(syRole.count()).setHint("org.hibernate.comment", QRY_SRC + " :: selectCount()").from(syRole).where(
                 baseAndSiteId(search),
                 baseAndRoleId(search),
                 baseAndParentRoleId(search),

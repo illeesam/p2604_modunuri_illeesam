@@ -54,7 +54,7 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
     @Override
     public Optional<PmSaveItemDto.Item> selectById(String saveItemId) {
         PmSaveItemDto.Item dto = baseSelColumnQuery()
-                .where(pmSaveItem.saveItemId.eq(saveItemId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmSaveItem.saveItemId.eq(saveItemId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -64,12 +64,14 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
     public List<PmSaveItemDto.Item> selectList(PmSaveItemDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PmSaveItemDto.Item> query = baseSelColumnQuery().where(
-                baseAndSiteId(search),
-                baseAndSaveItemId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<PmSaveItemDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndSaveItemId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -97,7 +99,9 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<PmSaveItemDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<PmSaveItemDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -105,7 +109,7 @@ public class QPmSaveItemRepositoryImpl implements QPmSaveItemRepository {
 
         Long total = queryFactory
                 .select(pmSaveItem.count())
-                .from(pmSaveItem)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(pmSaveItem)
                 .where(wheres)
                 .fetchOne();
 

@@ -32,36 +32,44 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
 
     /* 전시 패널 아이템 baseSelColumnQuery */
     private JPAQuery<DpPanelItemDto.Item> baseSelColumnQuery() {
-        return queryFactory.select(Projections.bean(DpPanelItemDto.Item.class,
-                dpPanelItem.panelItemId, dpPanelItem.panelId, dpPanelItem.widgetLibId, dpPanelItem.widgetTypeCd,
-                dpPanelItem.widgetTitle, dpPanelItem.widgetContent, dpPanelItem.titleShowYn, dpPanelItem.widgetLibRefYn,
-                dpPanelItem.contentTypeCd, dpPanelItem.sortOrd, dpPanelItem.widgetConfigJson,
-                dpPanelItem.visibilityTargets, dpPanelItem.dispYn, dpPanelItem.dispStartDt, dpPanelItem.dispEndDt,
-                dpPanelItem.dispEnv, dpPanelItem.useYn,
-                dpPanelItem.regBy, dpPanelItem.regDate, dpPanelItem.updBy, dpPanelItem.updDate
-        )).from(dpPanelItem);
+        return queryFactory
+                .select(Projections.bean(DpPanelItemDto.Item.class,
+                        dpPanelItem.panelItemId, dpPanelItem.panelId, dpPanelItem.widgetLibId, dpPanelItem.widgetTypeCd,
+                        dpPanelItem.widgetTitle, dpPanelItem.widgetContent, dpPanelItem.titleShowYn, dpPanelItem.widgetLibRefYn,
+                        dpPanelItem.contentTypeCd, dpPanelItem.sortOrd, dpPanelItem.widgetConfigJson,
+                        dpPanelItem.visibilityTargets, dpPanelItem.dispYn, dpPanelItem.dispStartDt, dpPanelItem.dispEndDt,
+                        dpPanelItem.dispEnv, dpPanelItem.useYn,
+                        dpPanelItem.regBy, dpPanelItem.regDate, dpPanelItem.updBy, dpPanelItem.updDate
+                ))
+                .from(dpPanelItem);
     }
 
     /* 전시 패널 아이템 키조회 */
     @Override
     public Optional<DpPanelItemDto.Item> selectById(String panelItemId) {
-        return Optional.ofNullable(baseSelColumnQuery().where(dpPanelItem.panelItemId.eq(panelItemId)).fetchOne());
+        DpPanelItemDto.Item dto = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
+                .where(dpPanelItem.panelItemId.eq(panelItemId))
+                .fetchOne();
+        return Optional.ofNullable(dto);
     }
 
     /* 전시 패널 아이템 목록조회 */
     @Override
     public List<DpPanelItemDto.Item> selectList(DpPanelItemDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<DpPanelItemDto.Item> query = baseSelColumnQuery().where(
-                baseAndPanelIds(search),
-                baseAndPanelItemId(search),
-                baseAndWidgetTypeCd(search),
-                baseAndWidgetLibId(search),
-                baseAndPanelId(search),
-                baseAndUseYn(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<DpPanelItemDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndPanelIds(search),
+                    baseAndPanelItemId(search),
+                    baseAndWidgetTypeCd(search),
+                    baseAndWidgetLibId(search),
+                    baseAndPanelId(search),
+                    baseAndUseYn(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search == null ? null : search.getPageNo();
         Integer pageSize = search == null ? null : search.getPageSize();
@@ -86,10 +94,19 @@ public class QDpPanelItemRepositoryImpl implements QDpPanelItemRepository {
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
         };
-        JPAQuery<DpPanelItemDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<DpPanelItemDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<DpPanelItemDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
-        Long total = queryFactory.select(dpPanelItem.count()).from(dpPanelItem).where(wheres).fetchOne();
+
+        Long total = queryFactory
+                .select(dpPanelItem.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(dpPanelItem)
+                .where(wheres)
+                .fetchOne();
+
         DpPanelItemDto.PageResponse res = new DpPanelItemDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }

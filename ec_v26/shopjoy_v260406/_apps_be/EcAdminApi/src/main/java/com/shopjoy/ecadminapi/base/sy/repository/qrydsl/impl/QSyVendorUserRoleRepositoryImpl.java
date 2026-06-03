@@ -117,7 +117,12 @@ public class QSyVendorUserRoleRepositoryImpl implements QSyVendorUserRoleReposit
         }
         List<SyVendorUserRoleDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syVendorUserRole.count()).from(syVendorUserRole).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(syVendorUserRole.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(syVendorUserRole)
+                .where(wheres)
+                .fetchOne();
 
         SyVendorUserRoleDto.PageResponse res = new SyVendorUserRoleDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

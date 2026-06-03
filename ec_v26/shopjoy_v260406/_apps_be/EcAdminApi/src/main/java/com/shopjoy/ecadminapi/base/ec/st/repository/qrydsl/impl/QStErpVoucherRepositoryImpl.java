@@ -37,11 +37,33 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
     private static final QSyCode       cdEvt = new QSyCode("cd_evt");
     private static final QSyCode       cdEvs = new QSyCode("cd_evs");
 
+    /* ERP 전표 baseListQuery */
+    private JPAQuery<StErpVoucherDto.Item> baseListQuery() {
+        return queryFactory
+                .select(Projections.bean(StErpVoucherDto.Item.class,
+                        stErpVoucher.erpVoucherId, stErpVoucher.siteId, stErpVoucher.vendorId, stErpVoucher.settleId, stErpVoucher.settleYm,
+                        stErpVoucher.erpVoucherTypeCd, stErpVoucher.erpVoucherStatusCd, stErpVoucher.erpVoucherStatusCdBefore,
+                        stErpVoucher.voucherDate, stErpVoucher.erpVoucherDesc,
+                        stErpVoucher.totalDebitAmt, stErpVoucher.totalCreditAmt,
+                        stErpVoucher.erpSendDate, stErpVoucher.erpVoucherNo, stErpVoucher.erpResMsg,
+                        stErpVoucher.regBy, stErpVoucher.regDate, stErpVoucher.updBy, stErpVoucher.updDate,
+                        sySite.siteNm.as("siteNm"),
+                        syVendor.vendorNm.as("vendorNm"),
+                        cdEvt.codeLabel.as("erpVoucherTypeCdNm"),
+                        cdEvs.codeLabel.as("erpVoucherStatusCdNm")
+                ))
+                .from(stErpVoucher)
+                .leftJoin(sySite).on(sySite.siteId.eq(stErpVoucher.siteId))
+                .leftJoin(syVendor).on(syVendor.vendorId.eq(stErpVoucher.vendorId))
+                .leftJoin(cdEvt).on(cdEvt.codeGrp.eq("ERP_VOUCHER_TYPE").and(cdEvt.codeValue.eq(stErpVoucher.erpVoucherTypeCd)))
+                .leftJoin(cdEvs).on(cdEvs.codeGrp.eq("ERP_VOUCHER_STATUS").and(cdEvs.codeValue.eq(stErpVoucher.erpVoucherStatusCd)));
+    }
+
     /* ERP 전표 키조회 */
     @Override
     public Optional<StErpVoucherDto.Item> selectById(String id) {
         StErpVoucherDto.Item dto = baseListQuery()
-                .where(stErpVoucher.erpVoucherId.eq(id))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(stErpVoucher.erpVoucherId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -51,12 +73,14 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
     public List<StErpVoucherDto.Item> selectList(StErpVoucherDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<StErpVoucherDto.Item> query = baseListQuery().where(
-                baseAndSiteId(search),
-                baseAndErpVoucherId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<StErpVoucherDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndErpVoucherId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -84,7 +108,9 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<StErpVoucherDto.Item> query = baseListQuery().where(wheres);
+        JPAQuery<StErpVoucherDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -92,7 +118,7 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
 
         Long total = queryFactory
                 .select(stErpVoucher.count())
-                .from(stErpVoucher)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(stErpVoucher)
                 .where(wheres)
                 .fetchOne();
 
@@ -100,27 +126,7 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /* ERP 전표 baseListQuery */
-    private JPAQuery<StErpVoucherDto.Item> baseListQuery() {
-        return queryFactory
-                .select(Projections.bean(StErpVoucherDto.Item.class,
-                        stErpVoucher.erpVoucherId, stErpVoucher.siteId, stErpVoucher.vendorId, stErpVoucher.settleId, stErpVoucher.settleYm,
-                        stErpVoucher.erpVoucherTypeCd, stErpVoucher.erpVoucherStatusCd, stErpVoucher.erpVoucherStatusCdBefore,
-                        stErpVoucher.voucherDate, stErpVoucher.erpVoucherDesc,
-                        stErpVoucher.totalDebitAmt, stErpVoucher.totalCreditAmt,
-                        stErpVoucher.erpSendDate, stErpVoucher.erpVoucherNo, stErpVoucher.erpResMsg,
-                        stErpVoucher.regBy, stErpVoucher.regDate, stErpVoucher.updBy, stErpVoucher.updDate,
-                        sySite.siteNm.as("siteNm"),
-                        syVendor.vendorNm.as("vendorNm"),
-                        cdEvt.codeLabel.as("erpVoucherTypeCdNm"),
-                        cdEvs.codeLabel.as("erpVoucherStatusCdNm")
-                ))
-                .from(stErpVoucher)
-                .leftJoin(sySite).on(sySite.siteId.eq(stErpVoucher.siteId))
-                .leftJoin(syVendor).on(syVendor.vendorId.eq(stErpVoucher.vendorId))
-                .leftJoin(cdEvt).on(cdEvt.codeGrp.eq("ERP_VOUCHER_TYPE").and(cdEvt.codeValue.eq(stErpVoucher.erpVoucherTypeCd)))
-                .leftJoin(cdEvs).on(cdEvs.codeGrp.eq("ERP_VOUCHER_STATUS").and(cdEvs.codeValue.eq(stErpVoucher.erpVoucherStatusCd)));
-    }
+
 
     /* ERP 전표 buildCondition */
     /* ============================================================

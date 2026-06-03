@@ -50,7 +50,9 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
     /* 공지사항 키조회 */
     @Override
     public Optional<SyNoticeDto.Item> selectById(String noticeId) {
-        SyNoticeDto.Item dto = baseSelColumnQuery().where(syNotice.noticeId.eq(noticeId)).fetchOne();
+        SyNoticeDto.Item dto = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
+                .where(syNotice.noticeId.eq(noticeId)).fetchOne();
         return Optional.ofNullable(dto);
     }
 
@@ -58,14 +60,16 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
     @Override
     public List<SyNoticeDto.Item> selectList(SyNoticeDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyNoticeDto.Item> query = baseSelColumnQuery().where(
-                baseAndSiteId(search),
-                baseAndNoticeId(search),
-                baseAndStatus(search),
-                baseAndNoticeTypeCd(search),
-                baseAndIsFixed(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<SyNoticeDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndNoticeId(search),
+                    baseAndStatus(search),
+                    baseAndNoticeTypeCd(search),
+                    baseAndIsFixed(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -93,11 +97,18 @@ public class QSyNoticeRepositoryImpl implements QSyNoticeRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<SyNoticeDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<SyNoticeDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyNoticeDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syNotice.count()).from(syNotice).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(syNotice.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(syNotice)
+                .where(wheres)
+                .fetchOne();
 
         SyNoticeDto.PageResponse res = new SyNoticeDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

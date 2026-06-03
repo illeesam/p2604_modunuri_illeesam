@@ -54,22 +54,26 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
     /* 좋아요(찜) 키조회 */
     @Override
     public Optional<MbLikeDto.Item> selectById(String likeId) {
-        return Optional.ofNullable(baseSelColumnQuery().where(mbLike.likeId.eq(likeId)).fetchOne());
+        return Optional.ofNullable(baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
+                .where(mbLike.likeId.eq(likeId)).fetchOne());
     }
 
     /* 좋아요(찜) 목록조회 */
     @Override
     public List<MbLikeDto.Item> selectList(MbLikeDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<MbLikeDto.Item> query = baseSelColumnQuery().where(
-                baseAndSiteId(search),
-                baseAndLikeId(search),
-                baseAndMemberId(search),
-                baseAndTargetId(search),
-                baseAndTargetTypeCd(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<MbLikeDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndLikeId(search),
+                    baseAndMemberId(search),
+                    baseAndTargetId(search),
+                    baseAndTargetTypeCd(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo(), pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0)
@@ -94,11 +98,21 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<MbLikeDto.Item> query = baseSelColumnQuery().where(wheres);
+        // base: 조인 + where 를 한 번만 정의 (list/count 가 동일한 from·join·where 를 공유)
+        JPAQuery<MbLikeDto.Item> base = baseSelColumnQuery()
+                .where(wheres);
+
+        // list: base 복제 + 정렬 + 페이징
+        JPAQuery<MbLikeDto.Item> query = base.clone()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list");
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<MbLikeDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(mbLike.count()).from(mbLike).where(wheres).fetchOne();
+        // count: base 복제 + select 를 count 로 교체 (조인·where 자동 동일)
+        Long total = base.clone()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .select(mbLike.count())
+                .fetchOne();
 
         MbLikeDto.PageResponse res = new MbLikeDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

@@ -140,7 +140,7 @@ public class QSyhSendEmailLogRepositoryImpl implements QSyhSendEmailLogRepositor
 
         Long total = queryFactory
                 .select(syhSendEmailLog.count())
-                .from(syhSendEmailLog)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(syhSendEmailLog)
                 .where(wheres)
                 .fetchOne();
 

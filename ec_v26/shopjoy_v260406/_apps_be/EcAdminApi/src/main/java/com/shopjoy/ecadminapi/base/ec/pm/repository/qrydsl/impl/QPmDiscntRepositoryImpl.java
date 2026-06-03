@@ -51,7 +51,7 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
     @Override
     public Optional<PmDiscntDto.Item> selectById(String discntId) {
         PmDiscntDto.Item dto = baseSelColumnQuery()
-                .where(pmDiscnt.discntId.eq(discntId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmDiscnt.discntId.eq(discntId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -61,13 +61,15 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
     public List<PmDiscntDto.Item> selectList(PmDiscntDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PmDiscntDto.Item> query = baseSelColumnQuery().where(
-                baseAndSiteId(search),
-                baseAndDiscntId(search),
-                baseAndUseYn(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<PmDiscntDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndDiscntId(search),
+                    baseAndUseYn(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -96,7 +98,9 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<PmDiscntDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<PmDiscntDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -104,7 +108,7 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
 
         Long total = queryFactory
                 .select(pmDiscnt.count())
-                .from(pmDiscnt)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(pmDiscnt)
                 .where(wheres)
                 .fetchOne();
 

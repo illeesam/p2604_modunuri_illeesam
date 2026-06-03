@@ -46,7 +46,7 @@ public class QDpUiAreaRepositoryImpl implements QDpUiAreaRepository {
     @Override
     public Optional<DpUiAreaDto.Item> selectById(String uiAreaId) {
         DpUiAreaDto.Item dto = baseSelColumnQuery()
-                .where(dpUiArea.uiAreaId.eq(uiAreaId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(dpUiArea.uiAreaId.eq(uiAreaId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -56,12 +56,14 @@ public class QDpUiAreaRepositoryImpl implements QDpUiAreaRepository {
     public List<DpUiAreaDto.Item> selectList(DpUiAreaDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<DpUiAreaDto.Item> query = baseSelColumnQuery().where(
-                baseAndUiAreaId(search),
-                baseAndUseYn(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<DpUiAreaDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndUiAreaId(search),
+                    baseAndUseYn(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -89,13 +91,20 @@ public class QDpUiAreaRepositoryImpl implements QDpUiAreaRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<DpUiAreaDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<DpUiAreaDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
         List<DpUiAreaDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(dpUiArea.count()).from(dpUiArea).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(dpUiArea.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(dpUiArea)
+                .where(wheres)
+                .fetchOne();
 
         DpUiAreaDto.PageResponse res = new DpUiAreaDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

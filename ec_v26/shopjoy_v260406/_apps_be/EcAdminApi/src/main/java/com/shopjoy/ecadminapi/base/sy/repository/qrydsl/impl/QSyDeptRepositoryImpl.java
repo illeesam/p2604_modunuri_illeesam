@@ -117,7 +117,12 @@ public class QSyDeptRepositoryImpl implements QSyDeptRepository {
         }
         List<SyDeptDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syDept.count()).from(syDept).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(syDept.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(syDept)
+                .where(wheres)
+                .fetchOne();
 
         SyDeptDto.PageResponse res = new SyDeptDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

@@ -45,7 +45,7 @@ public class QOdhClaimItemChgHistRepositoryImpl implements QOdhClaimItemChgHistR
     @Override
     public Optional<OdhClaimItemChgHistDto.Item> selectById(String id) {
         OdhClaimItemChgHistDto.Item dto = baseSelColumnQuery()
-                .where(odhClaimItemChgHist.claimItemChgHistId.eq(id))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(odhClaimItemChgHist.claimItemChgHistId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -55,11 +55,13 @@ public class QOdhClaimItemChgHistRepositoryImpl implements QOdhClaimItemChgHistR
     public List<OdhClaimItemChgHistDto.Item> selectList(OdhClaimItemChgHistDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<OdhClaimItemChgHistDto.Item> query = baseSelColumnQuery().where(
-                baseAndSiteId(search),
-                baseAndClaimItemChgHistId(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<OdhClaimItemChgHistDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndClaimItemChgHistId(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -86,13 +88,20 @@ public class QOdhClaimItemChgHistRepositoryImpl implements QOdhClaimItemChgHistR
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<OdhClaimItemChgHistDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<OdhClaimItemChgHistDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
         List<OdhClaimItemChgHistDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(odhClaimItemChgHist.count()).from(odhClaimItemChgHist).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(odhClaimItemChgHist.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(odhClaimItemChgHist)
+                .where(wheres)
+                .fetchOne();
 
         OdhClaimItemChgHistDto.PageResponse res = new OdhClaimItemChgHistDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

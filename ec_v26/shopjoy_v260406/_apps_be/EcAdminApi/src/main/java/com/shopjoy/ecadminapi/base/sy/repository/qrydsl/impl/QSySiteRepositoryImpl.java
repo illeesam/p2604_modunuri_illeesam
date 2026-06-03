@@ -75,12 +75,12 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
         JPAQuery<SySiteDto.Item> query = baseSelColumnQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
-                        baseAndSiteId(search),
-                        baseAndPathId(search),
-                        baseAndStatus(search),
-                        baseAndTypeCd(search),
-                        baseAndDateRange(search),
-                        baseAndSearchValue(search)
+                    baseAndSiteId(search),
+                    baseAndPathId(search),
+                    baseAndStatus(search),
+                    baseAndTypeCd(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
                 );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -119,8 +119,7 @@ public class QSySiteRepositoryImpl implements QSySiteRepository {
         }
         List<SySiteDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(sySite.count()).from(sySite)
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: count")
+        Long total = queryFactory.select(sySite.count()).setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(sySite)
                 .where(wheres).fetchOne();
 
         SySiteDto.PageResponse res = new SySiteDto.PageResponse();

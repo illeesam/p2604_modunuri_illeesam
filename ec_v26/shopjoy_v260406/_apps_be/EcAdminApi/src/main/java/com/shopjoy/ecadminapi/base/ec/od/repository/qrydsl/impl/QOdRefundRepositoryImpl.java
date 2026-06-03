@@ -40,11 +40,33 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
     private static final QSyCode   cdRs = new QSyCode("cd_rs");
     private static final QSyCode   cdCf = new QSyCode("cd_cf");
 
+    /** 목록/페이지/단건 공용 base query */
+    private JPAQuery<OdRefundDto.Item> baseListQuery() {
+        return queryFactory
+                .select(Projections.bean(OdRefundDto.Item.class,
+                        odRefund.refundId, odRefund.siteId, odRefund.orderId, odRefund.claimId,
+                        odRefund.refundTypeCd,
+                        odRefund.refundProdAmt, odRefund.refundCouponAmt, odRefund.refundShipAmt,
+                        odRefund.refundSaveAmt, odRefund.refundCacheAmt, odRefund.totalRefundAmt,
+                        odRefund.refundStatusCd, odRefund.refundStatusCdBefore,
+                        odRefund.refundReqDate, odRefund.refundCompltDate,
+                        odRefund.faultTypeCd, odRefund.refundReason, odRefund.memo,
+                        odRefund.regBy, odRefund.regDate, odRefund.updBy, odRefund.updDate
+                ))
+                .from(odRefund)
+                .leftJoin(ste).on(ste.siteId.eq(odRefund.siteId))
+                .leftJoin(ord).on(ord.orderId.eq(odRefund.orderId))
+                .leftJoin(cla).on(cla.claimId.eq(odRefund.claimId))
+                .leftJoin(cdRt).on(cdRt.codeGrp.eq("REFUND_TYPE").and(cdRt.codeValue.eq(odRefund.refundTypeCd)))
+                .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS").and(cdRs.codeValue.eq(odRefund.refundStatusCd)))
+                .leftJoin(cdCf).on(cdCf.codeGrp.eq("CLAIM_FAULT").and(cdCf.codeValue.eq(odRefund.faultTypeCd)));
+    }
+
     /* 환불 키조회 */
     @Override
     public Optional<OdRefundDto.Item> selectById(String refundId) {
         OdRefundDto.Item dto = baseListQuery()
-                .where(odRefund.refundId.eq(refundId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(odRefund.refundId.eq(refundId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -54,12 +76,14 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
     public List<OdRefundDto.Item> selectList(OdRefundDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<OdRefundDto.Item> query = baseListQuery().where(
-                baseAndSiteId(search),
-                baseAndRefundId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<OdRefundDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndRefundId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -87,7 +111,9 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<OdRefundDto.Item> query = baseListQuery().where(wheres);
+        JPAQuery<OdRefundDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -95,7 +121,7 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
 
         Long total = queryFactory
                 .select(odRefund.count())
-                .from(odRefund)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(odRefund)
                 .where(wheres)
                 .fetchOne();
 
@@ -103,27 +129,7 @@ public class QOdRefundRepositoryImpl implements QOdRefundRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /** 목록/페이지/단건 공용 base query */
-    private JPAQuery<OdRefundDto.Item> baseListQuery() {
-        return queryFactory
-                .select(Projections.bean(OdRefundDto.Item.class,
-                        odRefund.refundId, odRefund.siteId, odRefund.orderId, odRefund.claimId,
-                        odRefund.refundTypeCd,
-                        odRefund.refundProdAmt, odRefund.refundCouponAmt, odRefund.refundShipAmt,
-                        odRefund.refundSaveAmt, odRefund.refundCacheAmt, odRefund.totalRefundAmt,
-                        odRefund.refundStatusCd, odRefund.refundStatusCdBefore,
-                        odRefund.refundReqDate, odRefund.refundCompltDate,
-                        odRefund.faultTypeCd, odRefund.refundReason, odRefund.memo,
-                        odRefund.regBy, odRefund.regDate, odRefund.updBy, odRefund.updDate
-                ))
-                .from(odRefund)
-                .leftJoin(ste).on(ste.siteId.eq(odRefund.siteId))
-                .leftJoin(ord).on(ord.orderId.eq(odRefund.orderId))
-                .leftJoin(cla).on(cla.claimId.eq(odRefund.claimId))
-                .leftJoin(cdRt).on(cdRt.codeGrp.eq("REFUND_TYPE").and(cdRt.codeValue.eq(odRefund.refundTypeCd)))
-                .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS").and(cdRs.codeValue.eq(odRefund.refundStatusCd)))
-                .leftJoin(cdCf).on(cdCf.codeGrp.eq("CLAIM_FAULT").and(cdCf.codeValue.eq(odRefund.faultTypeCd)));
-    }
+
 
     /* 환불 buildCondition */
     /* ============================================================

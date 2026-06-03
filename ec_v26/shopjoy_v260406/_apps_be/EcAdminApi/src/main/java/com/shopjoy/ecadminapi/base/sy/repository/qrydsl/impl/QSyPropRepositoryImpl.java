@@ -40,10 +40,25 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
     private static final QSySite sySite = QSySite.sySite;
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+    /* 시스템 속성 baseQuery */
+    private JPAQuery<SyPropDto.Item> baseQuery() {
+        return queryFactory
+                .select(Projections.bean(SyPropDto.Item.class,
+                        syProp.propId, syProp.siteId, syProp.pathId, syProp.propKey, syProp.propValue, syProp.propLabel,
+                        syProp.propTypeCd, syProp.sortOrd, syProp.useYn, syProp.propRemark,
+                        syProp.regBy, syProp.regDate, syProp.updBy, syProp.updDate,
+                        sySite.siteNm.as("siteNm")
+                ))
+                .from(syProp)
+                .leftJoin(sySite).on(sySite.siteId.eq(syProp.siteId));
+    }
+
     /* 시스템 속성 키조회 */
     @Override
     public Optional<SyPropDto.Item> selectById(String propId) {
-        SyPropDto.Item dto = baseQuery().where(syProp.propId.eq(propId)).fetchOne();
+        SyPropDto.Item dto = baseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
+                .where(syProp.propId.eq(propId)).fetchOne();
         return Optional.ofNullable(dto);
     }
 
@@ -51,13 +66,15 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
     @Override
     public List<SyPropDto.Item> selectList(SyPropDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyPropDto.Item> query = baseQuery().where(
-                baseAndSiteId(search),
-                baseAndPathId(search),
-                baseAndPropTypeCd(search),
-                baseAndUseYn(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<SyPropDto.Item> query = baseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndPathId(search),
+                    baseAndPropTypeCd(search),
+                    baseAndUseYn(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -84,28 +101,24 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<SyPropDto.Item> query = baseQuery().where(wheres);
+        JPAQuery<SyPropDto.Item> query = baseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyPropDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syProp.count()).from(syProp).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(syProp.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(syProp)
+                .where(wheres)
+                .fetchOne();
 
         SyPropDto.PageResponse res = new SyPropDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /* 시스템 속성 baseQuery */
-    private JPAQuery<SyPropDto.Item> baseQuery() {
-        return queryFactory
-                .select(Projections.bean(SyPropDto.Item.class,
-                        syProp.propId, syProp.siteId, syProp.pathId, syProp.propKey, syProp.propValue, syProp.propLabel,
-                        syProp.propTypeCd, syProp.sortOrd, syProp.useYn, syProp.propRemark,
-                        syProp.regBy, syProp.regDate, syProp.updBy, syProp.updDate,
-                        sySite.siteNm.as("siteNm")
-                ))
-                .from(syProp)
-                .leftJoin(sySite).on(sySite.siteId.eq(syProp.siteId));
-    }
+
 
     /* 시스템 속성 buildCondition */
     /* ============================================================

@@ -60,7 +60,7 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
     @Override
     public Optional<PdDlivTmpltDto.Item> selectById(String dlivTmpltId) {
         PdDlivTmpltDto.Item dto = baseSelColumnQuery()
-                .where(pdDlivTmplt.dlivTmpltId.eq(dlivTmpltId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pdDlivTmplt.dlivTmpltId.eq(dlivTmpltId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -70,12 +70,14 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
     public List<PdDlivTmpltDto.Item> selectList(PdDlivTmpltDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdDlivTmpltDto.Item> query = baseSelColumnQuery().where(
-                baseAndSiteId(search),
-                baseAndDlivTmpltId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<PdDlivTmpltDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndDlivTmpltId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -103,13 +105,20 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<PdDlivTmpltDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<PdDlivTmpltDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
         List<PdDlivTmpltDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(pdDlivTmplt.count()).from(pdDlivTmplt).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(pdDlivTmplt.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(pdDlivTmplt)
+                .where(wheres)
+                .fetchOne();
 
         PdDlivTmpltDto.PageResponse res = new PdDlivTmpltDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

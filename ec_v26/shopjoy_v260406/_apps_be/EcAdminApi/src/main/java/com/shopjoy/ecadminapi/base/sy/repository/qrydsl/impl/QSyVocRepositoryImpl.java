@@ -48,7 +48,9 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
     /* 고객의 소리(VOC) 키조회 */
     @Override
     public Optional<SyVocDto.Item> selectById(String vocId) {
-        SyVocDto.Item dto = baseSelColumnQuery().where(syVoc.vocId.eq(vocId)).fetchOne();
+        SyVocDto.Item dto = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
+                .where(syVoc.vocId.eq(vocId)).fetchOne();
         return Optional.ofNullable(dto);
     }
 
@@ -56,14 +58,16 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
     @Override
     public List<SyVocDto.Item> selectList(SyVocDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyVocDto.Item> query = baseSelColumnQuery().where(
-                baseAndSiteId(search),
-                baseAndVocId(search),
-                baseAndVocMasterCd(search),
-                baseAndVocDetailCd(search),
-                baseAndUseYn(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<SyVocDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndVocId(search),
+                    baseAndVocMasterCd(search),
+                    baseAndVocDetailCd(search),
+                    baseAndUseYn(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -91,11 +95,18 @@ public class QSyVocRepositoryImpl implements QSyVocRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<SyVocDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<SyVocDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyVocDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syVoc.count()).from(syVoc).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(syVoc.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(syVoc)
+                .where(wheres)
+                .fetchOne();
 
         SyVocDto.PageResponse res = new SyVocDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

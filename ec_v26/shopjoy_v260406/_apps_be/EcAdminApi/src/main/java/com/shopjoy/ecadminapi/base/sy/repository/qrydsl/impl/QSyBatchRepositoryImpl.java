@@ -41,10 +41,26 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
     private static final QSySite sySite = QSySite.sySite;
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+    /* 배치 baseQuery */
+    private JPAQuery<SyBatchDto.Item> baseQuery() {
+        return queryFactory
+                .select(Projections.bean(SyBatchDto.Item.class,
+                        syBatch.batchId, syBatch.siteId, syBatch.batchCode, syBatch.batchNm, syBatch.batchDesc, syBatch.cronExpr,
+                        syBatch.batchCycleCd, syBatch.batchLastRun, syBatch.batchNextRun, syBatch.batchRunCount,
+                        syBatch.batchStatusCd, syBatch.batchRunStatus, syBatch.batchTimeoutSec, syBatch.batchMemo,
+                        syBatch.regBy, syBatch.regDate, syBatch.updBy, syBatch.updDate, syBatch.pathId,
+                        sySite.siteNm.as("siteNm")
+                ))
+                .from(syBatch)
+                .leftJoin(sySite).on(sySite.siteId.eq(syBatch.siteId));
+    }
+
     /* 배치 키조회 */
     @Override
     public Optional<SyBatchDto.Item> selectById(String batchId) {
-        SyBatchDto.Item dto = baseQuery().where(syBatch.batchId.eq(batchId)).fetchOne();
+        SyBatchDto.Item dto = baseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
+                .where(syBatch.batchId.eq(batchId)).fetchOne();
         return Optional.ofNullable(dto);
     }
 
@@ -52,13 +68,15 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
     @Override
     public List<SyBatchDto.Item> selectList(SyBatchDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyBatchDto.Item> query = baseQuery().where(
-                baseAndSiteId(search),
-                baseAndPathId(search),
-                baseAndBatchId(search),
-                baseAndStatus(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<SyBatchDto.Item> query = baseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndPathId(search),
+                    baseAndBatchId(search),
+                    baseAndStatus(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -85,29 +103,24 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<SyBatchDto.Item> query = baseQuery().where(wheres);
+        JPAQuery<SyBatchDto.Item> query = baseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyBatchDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syBatch.count()).from(syBatch).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(syBatch.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(syBatch)
+                .where(wheres)
+                .fetchOne();
 
         SyBatchDto.PageResponse res = new SyBatchDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /* 배치 baseQuery */
-    private JPAQuery<SyBatchDto.Item> baseQuery() {
-        return queryFactory
-                .select(Projections.bean(SyBatchDto.Item.class,
-                        syBatch.batchId, syBatch.siteId, syBatch.batchCode, syBatch.batchNm, syBatch.batchDesc, syBatch.cronExpr,
-                        syBatch.batchCycleCd, syBatch.batchLastRun, syBatch.batchNextRun, syBatch.batchRunCount,
-                        syBatch.batchStatusCd, syBatch.batchRunStatus, syBatch.batchTimeoutSec, syBatch.batchMemo,
-                        syBatch.regBy, syBatch.regDate, syBatch.updBy, syBatch.updDate, syBatch.pathId,
-                        sySite.siteNm.as("siteNm")
-                ))
-                .from(syBatch)
-                .leftJoin(sySite).on(sySite.siteId.eq(syBatch.siteId));
-    }
+
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================

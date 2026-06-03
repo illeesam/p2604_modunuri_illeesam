@@ -59,7 +59,7 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
     @Override
     public Optional<PdCategoryProdDto.Item> selectById(String categoryProdId) {
         PdCategoryProdDto.Item dto = baseSelColumnQuery()
-                .where(pdCategoryProd.categoryProdId.eq(categoryProdId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pdCategoryProd.categoryProdId.eq(categoryProdId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -69,16 +69,18 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
     public List<PdCategoryProdDto.Item> selectList(PdCategoryProdDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdCategoryProdDto.Item> query = baseSelColumnQuery().where(
-                baseAndSiteId(search),
-                baseAndCategoryProdId(search),
-                baseAndCategoryId(search),
-                baseAndCategoryIdsCsv(search),
-                baseAndProdId(search),
-                baseAndTypeCd(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<PdCategoryProdDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndCategoryProdId(search),
+                    baseAndCategoryId(search),
+                    baseAndCategoryIdsCsv(search),
+                    baseAndProdId(search),
+                    baseAndTypeCd(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -110,13 +112,20 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<PdCategoryProdDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<PdCategoryProdDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
         List<PdCategoryProdDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(pdCategoryProd.count()).from(pdCategoryProd).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(pdCategoryProd.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(pdCategoryProd)
+                .where(wheres)
+                .fetchOne();
 
         PdCategoryProdDto.PageResponse res = new PdCategoryProdDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

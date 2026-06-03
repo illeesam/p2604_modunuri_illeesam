@@ -44,111 +44,6 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
     private static final QSyCode   cdVb = new QSyCode("cd_vb");
     private static final QSyCode   cdCt = new QSyCode("cd_ct");
 
-    /* 결제 키조회 */
-    @Override
-    public Optional<OdPayDto.Item> selectById(String payId) {
-        OdPayDto.Item dto = queryFactory
-                .select(Projections.bean(OdPayDto.Item.class,
-                        odPay.payId, odPay.siteId, odPay.orderId,
-                        odPay.payStatusCd, odPay.payStatusCdBefore,
-                        odPay.payMethodCd, odPay.payDirCd, odPay.payChannelCd,
-                        odPay.payAmt, odPay.refundAmt, odPay.refundStatusCd, odPay.refundDate,
-                        odPay.pgTransactionId, odPay.payDate,
-                        odPay.cardNo, odPay.cardTypeCd,
-                        odPay.installmentMonth.as("cardInstallMonth"),
-                        odPay.vbankBankCode,
-                        odPay.vbankAccount.as("vbankAccountNo"),
-                        odPay.vbankHolderNm.as("vbankAccountNm"),
-                        odPay.vbankDepositDate.as("vbankExpireDate"),
-                        odPay.memo, odPay.regBy, odPay.regDate, odPay.updBy, odPay.updDate,
-                        // joined
-                        odOrder.memberNm.as("memberNm"),
-                        odOrder.orderDate.as("orderDate"),
-                        odOrder.orderStatusCd.as("orderStatusCd"),
-                        mbMember.loginId.as("memberEmail"),
-                        cdPs.codeLabel.as("payStatusCdNm"),
-                        cdPm.codeLabel.as("payMethodCdNm"),
-                        cdPd.codeLabel.as("payDirCdNm"),
-                        cdPc.codeLabel.as("payChannelCdNm"),
-                        cdRs.codeLabel.as("refundStatusCdNm"),
-                        cdVb.codeLabel.as("vbankBankCodeNm"),
-                        cdCt.codeLabel.as("cardTypeCdNm")
-                ))
-                .from(odPay)
-                .leftJoin(odOrder).on(odOrder.orderId.eq(odPay.orderId))
-                .leftJoin(mbMember).on(mbMember.memberId.eq(odOrder.memberId))
-                .leftJoin(cdPs).on(cdPs.codeGrp.eq("PAY_STATUS").and(cdPs.codeValue.eq(odPay.payStatusCd)))
-                .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odPay.payMethodCd)))
-                .leftJoin(cdPd).on(cdPd.codeGrp.eq("PAY_DIR").and(cdPd.codeValue.eq(odPay.payDirCd)))
-                .leftJoin(cdPc).on(cdPc.codeGrp.eq("PAY_CHANNEL").and(cdPc.codeValue.eq(odPay.payChannelCd)))
-                .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS").and(cdRs.codeValue.eq(odPay.refundStatusCd)))
-                .leftJoin(cdVb).on(cdVb.codeGrp.eq("BANK_CODE").and(cdVb.codeValue.eq(odPay.vbankBankCode)))
-                .leftJoin(cdCt).on(cdCt.codeGrp.eq("CARD_TYPE").and(cdCt.codeValue.eq(odPay.cardTypeCd)))
-                .where(odPay.payId.eq(payId))
-                .fetchOne();
-        return Optional.ofNullable(dto);
-    }
-
-    /* 결제 목록조회 */
-    @Override
-    public List<OdPayDto.Item> selectList(OdPayDto.Request search) {
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
-
-        JPAQuery<OdPayDto.Item> query = baseListQuery().where(
-                baseAndOrderIds(search),
-                baseAndOrderId(search),
-                baseAndSiteId(search),
-                baseAndPayId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
-        if (!orderList.isEmpty()) {
-            query.orderBy(orderList.toArray(OrderSpecifier[]::new));
-        }
-        Integer pageNo   = search.getPageNo();
-        Integer pageSize = search.getPageSize();
-        if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
-            int offset = (pageNo - 1) * pageSize;
-            query.offset(offset).limit(pageSize);
-        }
-        return query.fetch();
-    }
-
-    /* 결제 페이지조회 */
-    @Override
-    public OdPayDto.PageResponse selectPageData(OdPayDto.Request search) {
-        int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
-        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
-        int offset   = (pageNo - 1) * pageSize;
-
-        List<OrderSpecifier<?>> orderList = buildOrder(search);
-        BooleanExpression[] wheres = {
-                baseAndOrderIds(search),
-                baseAndOrderId(search),
-                baseAndSiteId(search),
-                baseAndPayId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        };
-
-        JPAQuery<OdPayDto.Item> query = baseListQuery().where(wheres);
-        if (!orderList.isEmpty()) {
-            query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
-        }
-        List<OdPayDto.Item> content = query.offset(offset).limit(pageSize).fetch();
-
-        Long total = queryFactory
-                .select(odPay.count())
-                .from(odPay)
-                .leftJoin(odOrder).on(odOrder.orderId.eq(odPay.orderId))
-                .leftJoin(mbMember).on(mbMember.memberId.eq(odOrder.memberId))
-                .where(wheres)
-                .fetchOne();
-
-        OdPayDto.PageResponse res = new OdPayDto.PageResponse();
-        return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
-    }
-
     /** 목록/페이지 공용 base query */
     private JPAQuery<OdPayDto.Item> baseListQuery() {
         return queryFactory
@@ -181,6 +76,117 @@ public class QOdPayRepositoryImpl implements QOdPayRepository {
                 .leftJoin(cdPd).on(cdPd.codeGrp.eq("PAY_DIR").and(cdPd.codeValue.eq(odPay.payDirCd)))
                 .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS").and(cdRs.codeValue.eq(odPay.refundStatusCd)));
     }
+
+    /* 결제 키조회 */
+    @Override
+    public Optional<OdPayDto.Item> selectById(String payId) {
+        OdPayDto.Item dto = queryFactory
+                .select(Projections.bean(OdPayDto.Item.class,
+                        odPay.payId, odPay.siteId, odPay.orderId,
+                        odPay.payStatusCd, odPay.payStatusCdBefore,
+                        odPay.payMethodCd, odPay.payDirCd, odPay.payChannelCd,
+                        odPay.payAmt, odPay.refundAmt, odPay.refundStatusCd, odPay.refundDate,
+                        odPay.pgTransactionId, odPay.payDate,
+                        odPay.cardNo, odPay.cardTypeCd,
+                        odPay.installmentMonth.as("cardInstallMonth"),
+                        odPay.vbankBankCode,
+                        odPay.vbankAccount.as("vbankAccountNo"),
+                        odPay.vbankHolderNm.as("vbankAccountNm"),
+                        odPay.vbankDepositDate.as("vbankExpireDate"),
+                        odPay.memo, odPay.regBy, odPay.regDate, odPay.updBy, odPay.updDate,
+                        // joined
+                        odOrder.memberNm.as("memberNm"),
+                        odOrder.orderDate.as("orderDate"),
+                        odOrder.orderStatusCd.as("orderStatusCd"),
+                        mbMember.loginId.as("memberEmail"),
+                        cdPs.codeLabel.as("payStatusCdNm"),
+                        cdPm.codeLabel.as("payMethodCdNm"),
+                        cdPd.codeLabel.as("payDirCdNm"),
+                        cdPc.codeLabel.as("payChannelCdNm"),
+                        cdRs.codeLabel.as("refundStatusCdNm"),
+                        cdVb.codeLabel.as("vbankBankCodeNm"),
+                        cdCt.codeLabel.as("cardTypeCdNm")
+                ))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").from(odPay)
+                .leftJoin(odOrder).on(odOrder.orderId.eq(odPay.orderId))
+                .leftJoin(mbMember).on(mbMember.memberId.eq(odOrder.memberId))
+                .leftJoin(cdPs).on(cdPs.codeGrp.eq("PAY_STATUS").and(cdPs.codeValue.eq(odPay.payStatusCd)))
+                .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odPay.payMethodCd)))
+                .leftJoin(cdPd).on(cdPd.codeGrp.eq("PAY_DIR").and(cdPd.codeValue.eq(odPay.payDirCd)))
+                .leftJoin(cdPc).on(cdPc.codeGrp.eq("PAY_CHANNEL").and(cdPc.codeValue.eq(odPay.payChannelCd)))
+                .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS").and(cdRs.codeValue.eq(odPay.refundStatusCd)))
+                .leftJoin(cdVb).on(cdVb.codeGrp.eq("BANK_CODE").and(cdVb.codeValue.eq(odPay.vbankBankCode)))
+                .leftJoin(cdCt).on(cdCt.codeGrp.eq("CARD_TYPE").and(cdCt.codeValue.eq(odPay.cardTypeCd)))
+                .where(odPay.payId.eq(payId))
+                .fetchOne();
+        return Optional.ofNullable(dto);
+    }
+
+    /* 결제 목록조회 */
+    @Override
+    public List<OdPayDto.Item> selectList(OdPayDto.Request search) {
+        List<OrderSpecifier<?>> orderList = buildOrder(search);
+
+        JPAQuery<OdPayDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndOrderIds(search),
+                    baseAndOrderId(search),
+                    baseAndSiteId(search),
+                    baseAndPayId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
+        if (!orderList.isEmpty()) {
+            query.orderBy(orderList.toArray(OrderSpecifier[]::new));
+        }
+        Integer pageNo   = search.getPageNo();
+        Integer pageSize = search.getPageSize();
+        if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
+            int offset = (pageNo - 1) * pageSize;
+            query.offset(offset).limit(pageSize);
+        }
+        return query.fetch();
+    }
+
+    /* 결제 페이지조회 */
+    @Override
+    public OdPayDto.PageResponse selectPageData(OdPayDto.Request search) {
+        int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
+        int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
+        int offset   = (pageNo - 1) * pageSize;
+
+        List<OrderSpecifier<?>> orderList = buildOrder(search);
+        BooleanExpression[] wheres = {
+                baseAndOrderIds(search),
+                baseAndOrderId(search),
+                baseAndSiteId(search),
+                baseAndPayId(search),
+                baseAndDateRange(search),
+                baseAndSearchValue(search)
+        };
+
+        JPAQuery<OdPayDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
+        if (!orderList.isEmpty()) {
+            query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
+        }
+        List<OdPayDto.Item> content = query.offset(offset).limit(pageSize).fetch();
+
+        Long total = queryFactory
+                .select(odPay.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(odPay)
+                .leftJoin(odOrder).on(odOrder.orderId.eq(odPay.orderId))
+                .leftJoin(mbMember).on(mbMember.memberId.eq(odOrder.memberId))
+                .where(wheres)
+                .fetchOne();
+
+        OdPayDto.PageResponse res = new OdPayDto.PageResponse();
+        return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
+    }
+
+
 
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     /* ============================================================

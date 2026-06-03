@@ -32,11 +32,25 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
     private static final String QRY_SRC = "base.ec.od.repository.qrydsl.impl.QOdClaimItemRepositoryImpl";
     private static final QOdClaimItem odClaimItem = QOdClaimItem.odClaimItem;
 
+    /* 클레임 아이템 baseListQuery */
+    private JPAQuery<OdClaimItemDto.Item> baseListQuery() {
+        return queryFactory
+                .select(Projections.bean(OdClaimItemDto.Item.class,
+                        odClaimItem.claimItemId, odClaimItem.siteId, odClaimItem.claimId, odClaimItem.orderItemId,
+                        odClaimItem.prodId, odClaimItem.prodNm, odClaimItem.prodOption,
+                        odClaimItem.unitPrice, odClaimItem.claimQty, odClaimItem.itemAmt, odClaimItem.refundAmt,
+                        odClaimItem.claimItemStatusCd, odClaimItem.claimItemStatusCdBefore,
+                        odClaimItem.returnShippingFee, odClaimItem.inboundShippingFee, odClaimItem.exchangeShippingFee,
+                        odClaimItem.regBy, odClaimItem.regDate, odClaimItem.updBy, odClaimItem.updDate
+                ))
+                .from(odClaimItem);
+    }
+
     /* 클레임 아이템 키조회 */
     @Override
     public Optional<OdClaimItemDto.Item> selectById(String claimItemId) {
         OdClaimItemDto.Item dto = baseListQuery()
-                .where(odClaimItem.claimItemId.eq(claimItemId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(odClaimItem.claimItemId.eq(claimItemId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -46,14 +60,16 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
     public List<OdClaimItemDto.Item> selectList(OdClaimItemDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<OdClaimItemDto.Item> query = baseListQuery().where(
-                baseAndClaimIds(search),
-                baseAndClaimId(search),
-                baseAndSiteId(search),
-                baseAndClaimItemId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<OdClaimItemDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndClaimIds(search),
+                    baseAndClaimId(search),
+                    baseAndSiteId(search),
+                    baseAndClaimItemId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -83,7 +99,9 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<OdClaimItemDto.Item> query = baseListQuery().where(wheres);
+        JPAQuery<OdClaimItemDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -91,7 +109,7 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
 
         Long total = queryFactory
                 .select(odClaimItem.count())
-                .from(odClaimItem)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(odClaimItem)
                 .where(wheres)
                 .fetchOne();
 
@@ -99,19 +117,7 @@ public class QOdClaimItemRepositoryImpl implements QOdClaimItemRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /* 클레임 아이템 baseListQuery */
-    private JPAQuery<OdClaimItemDto.Item> baseListQuery() {
-        return queryFactory
-                .select(Projections.bean(OdClaimItemDto.Item.class,
-                        odClaimItem.claimItemId, odClaimItem.siteId, odClaimItem.claimId, odClaimItem.orderItemId,
-                        odClaimItem.prodId, odClaimItem.prodNm, odClaimItem.prodOption,
-                        odClaimItem.unitPrice, odClaimItem.claimQty, odClaimItem.itemAmt, odClaimItem.refundAmt,
-                        odClaimItem.claimItemStatusCd, odClaimItem.claimItemStatusCdBefore,
-                        odClaimItem.returnShippingFee, odClaimItem.inboundShippingFee, odClaimItem.exchangeShippingFee,
-                        odClaimItem.regBy, odClaimItem.regDate, odClaimItem.updBy, odClaimItem.updDate
-                ))
-                .from(odClaimItem);
-    }
+
 
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     /* ============================================================

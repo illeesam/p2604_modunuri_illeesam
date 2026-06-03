@@ -48,7 +48,7 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
     @Override
     public Optional<PdTagDto.Item> selectById(String tagId) {
         PdTagDto.Item dto = baseSelColumnQuery()
-                .where(pdTag.tagId.eq(tagId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pdTag.tagId.eq(tagId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -58,12 +58,14 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
     public List<PdTagDto.Item> selectList(PdTagDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdTagDto.Item> query = baseSelColumnQuery().where(
-                baseAndSiteId(search),
-                baseAndTagId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<PdTagDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndTagId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -91,13 +93,20 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<PdTagDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<PdTagDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
         List<PdTagDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(pdTag.count()).from(pdTag).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(pdTag.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(pdTag)
+                .where(wheres)
+                .fetchOne();
 
         PdTagDto.PageResponse res = new PdTagDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

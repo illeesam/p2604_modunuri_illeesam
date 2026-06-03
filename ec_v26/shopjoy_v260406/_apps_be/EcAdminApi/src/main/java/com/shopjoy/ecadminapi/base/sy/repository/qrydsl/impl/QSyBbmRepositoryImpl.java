@@ -41,10 +41,26 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
     private static final QSySite sySite = QSySite.sySite;
     private static final DateTimeFormatter DF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
+    /* 게시판 마스터 baseQuery */
+    private JPAQuery<SyBbmDto.Item> baseQuery() {
+        return queryFactory
+                .select(Projections.bean(SyBbmDto.Item.class,
+                        syBbm.bbmId, syBbm.siteId, syBbm.bbmCode, syBbm.bbmNm, syBbm.pathId, syBbm.bbmTypeCd,
+                        syBbm.allowComment, syBbm.allowAttach, syBbm.allowLike, syBbm.contentTypeCd,
+                        syBbm.scopeTypeCd, syBbm.sortOrd, syBbm.useYn, syBbm.bbmRemark,
+                        syBbm.regBy, syBbm.regDate, syBbm.updBy, syBbm.updDate,
+                        sySite.siteNm.as("siteNm")
+                ))
+                .from(syBbm)
+                .leftJoin(sySite).on(sySite.siteId.eq(syBbm.siteId));
+    }
+
     /* 게시판 마스터 키조회 */
     @Override
     public Optional<SyBbmDto.Item> selectById(String bbmId) {
-        SyBbmDto.Item dto = baseQuery().where(syBbm.bbmId.eq(bbmId)).fetchOne();
+        SyBbmDto.Item dto = baseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
+                .where(syBbm.bbmId.eq(bbmId)).fetchOne();
         return Optional.ofNullable(dto);
     }
 
@@ -52,13 +68,15 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
     @Override
     public List<SyBbmDto.Item> selectList(SyBbmDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
-        JPAQuery<SyBbmDto.Item> query = baseQuery().where(
-                baseAndSiteId(search),
-                baseAndBbmId(search),
-                baseAndPathId(search),
-                baseAndTypeCd(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<SyBbmDto.Item> query = baseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndBbmId(search),
+                    baseAndPathId(search),
+                    baseAndTypeCd(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
@@ -85,29 +103,24 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<SyBbmDto.Item> query = baseQuery().where(wheres);
+        JPAQuery<SyBbmDto.Item> query = baseQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         List<SyBbmDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syBbm.count()).from(syBbm).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(syBbm.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(syBbm)
+                .where(wheres)
+                .fetchOne();
 
         SyBbmDto.PageResponse res = new SyBbmDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /* 게시판 마스터 baseQuery */
-    private JPAQuery<SyBbmDto.Item> baseQuery() {
-        return queryFactory
-                .select(Projections.bean(SyBbmDto.Item.class,
-                        syBbm.bbmId, syBbm.siteId, syBbm.bbmCode, syBbm.bbmNm, syBbm.pathId, syBbm.bbmTypeCd,
-                        syBbm.allowComment, syBbm.allowAttach, syBbm.allowLike, syBbm.contentTypeCd,
-                        syBbm.scopeTypeCd, syBbm.sortOrd, syBbm.useYn, syBbm.bbmRemark,
-                        syBbm.regBy, syBbm.regDate, syBbm.updBy, syBbm.updDate,
-                        sySite.siteNm.as("siteNm")
-                ))
-                .from(syBbm)
-                .leftJoin(sySite).on(sySite.siteId.eq(syBbm.siteId));
-    }
+
 
     /* searchType 사용 예  searchType = "fieldA,fieldB" */
     /* ============================================================

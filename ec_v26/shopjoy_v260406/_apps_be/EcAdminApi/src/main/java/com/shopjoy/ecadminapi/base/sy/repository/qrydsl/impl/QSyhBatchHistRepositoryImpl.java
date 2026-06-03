@@ -117,7 +117,7 @@ public class QSyhBatchHistRepositoryImpl implements QSyhBatchHistRepository {
 
         Long total = queryFactory
                 .select(syhBatchHist.count())
-                .from(syhBatchHist)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(syhBatchHist)
                 .where(wheres)
                 .fetchOne();
 

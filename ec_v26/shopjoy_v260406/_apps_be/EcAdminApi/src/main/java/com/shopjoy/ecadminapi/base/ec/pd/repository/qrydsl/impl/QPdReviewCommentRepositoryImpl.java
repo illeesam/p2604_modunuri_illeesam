@@ -47,7 +47,7 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
     @Override
     public Optional<PdReviewCommentDto.Item> selectById(String reviewCommentId) {
         PdReviewCommentDto.Item dto = baseSelColumnQuery()
-                .where(pdReviewComment.reviewCommentId.eq(reviewCommentId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pdReviewComment.reviewCommentId.eq(reviewCommentId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -57,14 +57,16 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
     public List<PdReviewCommentDto.Item> selectList(PdReviewCommentDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdReviewCommentDto.Item> query = baseSelColumnQuery().where(
-                baseAndReviewIds(search),
-                baseAndReviewId(search),
-                baseAndSiteId(search),
-                baseAndReviewCommentId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<PdReviewCommentDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndReviewIds(search),
+                    baseAndReviewId(search),
+                    baseAndSiteId(search),
+                    baseAndReviewCommentId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -94,13 +96,20 @@ public class QPdReviewCommentRepositoryImpl implements QPdReviewCommentRepositor
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<PdReviewCommentDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<PdReviewCommentDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
         List<PdReviewCommentDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(pdReviewComment.count()).from(pdReviewComment).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(pdReviewComment.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(pdReviewComment)
+                .where(wheres)
+                .fetchOne();
 
         PdReviewCommentDto.PageResponse res = new PdReviewCommentDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

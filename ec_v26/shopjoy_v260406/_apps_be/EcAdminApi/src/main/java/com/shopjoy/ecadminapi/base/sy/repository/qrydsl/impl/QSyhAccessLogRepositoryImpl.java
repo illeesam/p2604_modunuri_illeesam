@@ -84,7 +84,7 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
 
         Long total = queryFactory
                 .select(syhAccessLog.count())
-                .from(syhAccessLog)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(syhAccessLog)
                 .where(wheres)
                 .fetchOne();
 

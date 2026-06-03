@@ -49,7 +49,7 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
     @Override
     public Optional<PmEventDto.Item> selectById(String eventId) {
         PmEventDto.Item dto = baseSelColumnQuery()
-                .where(pmEvent.eventId.eq(eventId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmEvent.eventId.eq(eventId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -59,13 +59,15 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
     public List<PmEventDto.Item> selectList(PmEventDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PmEventDto.Item> query = baseSelColumnQuery().where(
-                baseAndSiteId(search),
-                baseAndEventId(search),
-                baseAndUseYn(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<PmEventDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndEventId(search),
+                    baseAndUseYn(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -94,7 +96,9 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<PmEventDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<PmEventDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -102,7 +106,7 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
 
         Long total = queryFactory
                 .select(pmEvent.count())
-                .from(pmEvent)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(pmEvent)
                 .where(wheres)
                 .fetchOne();
 

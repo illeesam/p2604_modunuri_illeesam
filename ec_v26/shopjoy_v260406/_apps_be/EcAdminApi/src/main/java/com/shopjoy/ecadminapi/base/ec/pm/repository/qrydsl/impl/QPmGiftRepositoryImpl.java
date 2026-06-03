@@ -61,7 +61,7 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
     @Override
     public Optional<PmGiftDto.Item> selectById(String giftId) {
         PmGiftDto.Item dto = baseSelColumnQuery()
-                .where(pmGift.giftId.eq(giftId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmGift.giftId.eq(giftId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -71,13 +71,15 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
     public List<PmGiftDto.Item> selectList(PmGiftDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PmGiftDto.Item> query = baseSelColumnQuery().where(
-                baseAndSiteId(search),
-                baseAndGiftId(search),
-                baseAndUseYn(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<PmGiftDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndGiftId(search),
+                    baseAndUseYn(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -106,7 +108,9 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<PmGiftDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<PmGiftDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -114,7 +118,7 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
 
         Long total = queryFactory
                 .select(pmGift.count())
-                .from(pmGift)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(pmGift)
                 .where(wheres)
                 .fetchOne();
 

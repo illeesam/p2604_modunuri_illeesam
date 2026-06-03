@@ -45,7 +45,7 @@ public class QOdhDlivChgHistRepositoryImpl implements QOdhDlivChgHistRepository 
     @Override
     public Optional<OdhDlivChgHistDto.Item> selectById(String id) {
         OdhDlivChgHistDto.Item dto = baseSelColumnQuery()
-                .where(odhDlivChgHist.dlivChgHistId.eq(id))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(odhDlivChgHist.dlivChgHistId.eq(id))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -55,11 +55,13 @@ public class QOdhDlivChgHistRepositoryImpl implements QOdhDlivChgHistRepository 
     public List<OdhDlivChgHistDto.Item> selectList(OdhDlivChgHistDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<OdhDlivChgHistDto.Item> query = baseSelColumnQuery().where(
-                baseAndSiteId(search),
-                baseAndDlivChgHistId(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<OdhDlivChgHistDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndDlivChgHistId(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -86,13 +88,20 @@ public class QOdhDlivChgHistRepositoryImpl implements QOdhDlivChgHistRepository 
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<OdhDlivChgHistDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<OdhDlivChgHistDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
         List<OdhDlivChgHistDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(odhDlivChgHist.count()).from(odhDlivChgHist).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(odhDlivChgHist.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(odhDlivChgHist)
+                .where(wheres)
+                .fetchOne();
 
         OdhDlivChgHistDto.PageResponse res = new OdhDlivChgHistDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

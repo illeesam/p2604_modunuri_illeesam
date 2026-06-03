@@ -121,7 +121,12 @@ public class QSyMenuRepositoryImpl implements QSyMenuRepository {
         }
         List<SyMenuDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syMenu.count()).from(syMenu).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(syMenu.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(syMenu)
+                .where(wheres)
+                .fetchOne();
 
         SyMenuDto.PageResponse res = new SyMenuDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

@@ -45,7 +45,7 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
     @Override
     public Optional<PmDiscntUsageDto.Item> selectById(String discntUsageId) {
         PmDiscntUsageDto.Item dto = baseSelColumnQuery()
-                .where(pmDiscntUsage.discntUsageId.eq(discntUsageId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmDiscntUsage.discntUsageId.eq(discntUsageId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -55,12 +55,14 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
     public List<PmDiscntUsageDto.Item> selectList(PmDiscntUsageDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PmDiscntUsageDto.Item> query = baseSelColumnQuery().where(
-                baseAndSiteId(search),
-                baseAndDiscntUsageId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<PmDiscntUsageDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndDiscntUsageId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -88,7 +90,9 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<PmDiscntUsageDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<PmDiscntUsageDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -96,7 +100,7 @@ public class QPmDiscntUsageRepositoryImpl implements QPmDiscntUsageRepository {
 
         Long total = queryFactory
                 .select(pmDiscntUsage.count())
-                .from(pmDiscntUsage)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(pmDiscntUsage)
                 .where(wheres)
                 .fetchOne();
 

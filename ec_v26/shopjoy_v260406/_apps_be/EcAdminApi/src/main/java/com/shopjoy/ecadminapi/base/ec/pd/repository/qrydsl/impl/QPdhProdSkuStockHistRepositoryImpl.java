@@ -116,7 +116,7 @@ public class QPdhProdSkuStockHistRepositoryImpl implements QPdhProdSkuStockHistR
 
         Long total = queryFactory
                 .select(pdhProdSkuStockHist.count())
-                .from(pdhProdSkuStockHist)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(pdhProdSkuStockHist)
                 .where(wheres)
                 .fetchOne();
 

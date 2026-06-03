@@ -123,7 +123,7 @@ public class QSyhApiLogRepositoryImpl implements QSyhApiLogRepository {
 
         Long total = queryFactory
                 .select(syhApiLog.count())
-                .from(syhApiLog)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(syhApiLog)
                 .where(wheres)
                 .fetchOne();
 

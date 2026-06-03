@@ -53,7 +53,7 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
     @Override
     public Optional<PmGiftCondDto.Item> selectById(String giftCondId) {
         PmGiftCondDto.Item dto = baseSelColumnQuery()
-                .where(pmGiftCond.giftCondId.eq(giftCondId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmGiftCond.giftCondId.eq(giftCondId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -63,12 +63,14 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
     public List<PmGiftCondDto.Item> selectList(PmGiftCondDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PmGiftCondDto.Item> query = baseSelColumnQuery().where(
-                baseAndSiteId(search),
-                baseAndGiftCondId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<PmGiftCondDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndGiftCondId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -96,7 +98,9 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<PmGiftCondDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<PmGiftCondDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -104,7 +108,7 @@ public class QPmGiftCondRepositoryImpl implements QPmGiftCondRepository {
 
         Long total = queryFactory
                 .select(pmGiftCond.count())
-                .from(pmGiftCond)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(pmGiftCond)
                 .where(wheres)
                 .fetchOne();
 

@@ -54,7 +54,7 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
     @Override
     public Optional<PdRestockNotiDto.Item> selectById(String restockNotiId) {
         PdRestockNotiDto.Item dto = baseSelColumnQuery()
-                .where(pdRestockNoti.restockNotiId.eq(restockNotiId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pdRestockNoti.restockNotiId.eq(restockNotiId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -64,12 +64,14 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
     public List<PdRestockNotiDto.Item> selectList(PdRestockNotiDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PdRestockNotiDto.Item> query = baseSelColumnQuery().where(
-                baseAndSiteId(search),
-                baseAndRestockNotiId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<PdRestockNotiDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndRestockNotiId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -97,13 +99,20 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<PdRestockNotiDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<PdRestockNotiDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
         List<PdRestockNotiDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(pdRestockNoti.count()).from(pdRestockNoti).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(pdRestockNoti.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(pdRestockNoti)
+                .where(wheres)
+                .fetchOne();
 
         PdRestockNotiDto.PageResponse res = new PdRestockNotiDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

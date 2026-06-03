@@ -103,7 +103,7 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
 
         Long total = queryFactory
                 .select(cmChattRoom.count())
-                .from(cmChattRoom)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(cmChattRoom)
                 .where(wheres)
                 .fetchOne();
 

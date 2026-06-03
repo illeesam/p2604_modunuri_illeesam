@@ -45,7 +45,7 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
     @Override
     public Optional<PmEventItemDto.Item> selectById(String eventItemId) {
         PmEventItemDto.Item dto = baseSelColumnQuery()
-                .where(pmEventItem.eventItemId.eq(eventItemId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmEventItem.eventItemId.eq(eventItemId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -55,14 +55,16 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
     public List<PmEventItemDto.Item> selectList(PmEventItemDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PmEventItemDto.Item> query = baseSelColumnQuery().where(
-                baseAndEventIds(search),
-                baseAndEventId(search),
-                baseAndSiteId(search),
-                baseAndEventItemId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<PmEventItemDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndEventIds(search),
+                    baseAndEventId(search),
+                    baseAndSiteId(search),
+                    baseAndEventItemId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -92,7 +94,9 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<PmEventItemDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<PmEventItemDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -100,7 +104,7 @@ public class QPmEventItemRepositoryImpl implements QPmEventItemRepository {
 
         Long total = queryFactory
                 .select(pmEventItem.count())
-                .from(pmEventItem)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(pmEventItem)
                 .where(wheres)
                 .fetchOne();
 

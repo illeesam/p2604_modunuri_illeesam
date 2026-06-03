@@ -40,11 +40,32 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
     private static final QPdProdOptItem oi1 = new QPdProdOptItem("oi1");
     private static final QPdProdOptItem oi2 = new QPdProdOptItem("oi2");
 
+    /* 장바구니 baseListQuery */
+    private JPAQuery<OdCartDto.Item> baseListQuery() {
+        return queryFactory
+                .select(Projections.bean(OdCartDto.Item.class,
+                        odCart.cartId, odCart.siteId, odCart.memberId, odCart.sessionKey, odCart.prodId, odCart.skuId,
+                        odCart.optItemId1, odCart.optItemId2, odCart.unitPrice, odCart.orderQty, odCart.itemPrice, odCart.isChecked,
+                        odCart.regBy, odCart.regDate, odCart.updBy, odCart.updDate,
+                        sySite.siteNm.as("siteNm"),
+                        mbMember.memberNm.as("memberNm"),
+                        pdProd.prodNm.as("prodNm"),
+                        oi1.optNm.as("optNm1"),
+                        oi2.optNm.as("optNm2")
+                ))
+                .from(odCart)
+                .leftJoin(sySite).on(sySite.siteId.eq(odCart.siteId))
+                .leftJoin(mbMember).on(mbMember.memberId.eq(odCart.memberId))
+                .leftJoin(pdProd).on(pdProd.prodId.eq(odCart.prodId))
+                .leftJoin(oi1).on(oi1.optItemId.eq(odCart.optItemId1))
+                .leftJoin(oi2).on(oi2.optItemId.eq(odCart.optItemId2));
+    }
+
     /* 장바구니 키조회 */
     @Override
     public Optional<OdCartDto.Item> selectById(String cartId) {
         OdCartDto.Item dto = baseListQuery()
-                .where(odCart.cartId.eq(cartId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(odCart.cartId.eq(cartId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -54,13 +75,15 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
     public List<OdCartDto.Item> selectList(OdCartDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<OdCartDto.Item> query = baseListQuery().where(
-                baseAndSiteId(search),
-                baseAndCartId(search),
-                baseAndMemberId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<OdCartDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndCartId(search),
+                    baseAndMemberId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -89,7 +112,9 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<OdCartDto.Item> query = baseListQuery().where(wheres);
+        JPAQuery<OdCartDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -97,7 +122,7 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
 
         Long total = queryFactory
                 .select(odCart.count())
-                .from(odCart)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(odCart)
                 .leftJoin(mbMember).on(mbMember.memberId.eq(odCart.memberId))
                 .leftJoin(pdProd).on(pdProd.prodId.eq(odCart.prodId))
                 .where(wheres)
@@ -107,26 +132,7 @@ public class QOdCartRepositoryImpl implements QOdCartRepository {
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /* 장바구니 baseListQuery */
-    private JPAQuery<OdCartDto.Item> baseListQuery() {
-        return queryFactory
-                .select(Projections.bean(OdCartDto.Item.class,
-                        odCart.cartId, odCart.siteId, odCart.memberId, odCart.sessionKey, odCart.prodId, odCart.skuId,
-                        odCart.optItemId1, odCart.optItemId2, odCart.unitPrice, odCart.orderQty, odCart.itemPrice, odCart.isChecked,
-                        odCart.regBy, odCart.regDate, odCart.updBy, odCart.updDate,
-                        sySite.siteNm.as("siteNm"),
-                        mbMember.memberNm.as("memberNm"),
-                        pdProd.prodNm.as("prodNm"),
-                        oi1.optNm.as("optNm1"),
-                        oi2.optNm.as("optNm2")
-                ))
-                .from(odCart)
-                .leftJoin(sySite).on(sySite.siteId.eq(odCart.siteId))
-                .leftJoin(mbMember).on(mbMember.memberId.eq(odCart.memberId))
-                .leftJoin(pdProd).on(pdProd.prodId.eq(odCart.prodId))
-                .leftJoin(oi1).on(oi1.optItemId.eq(odCart.optItemId1))
-                .leftJoin(oi2).on(oi2.optItemId.eq(odCart.optItemId2));
-    }
+
 
     /* searchType 사용 예  searchType = "<Entity 필드명 콤마구분>" */
     /* ============================================================

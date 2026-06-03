@@ -53,7 +53,7 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
     @Override
     public Optional<PmSaveDto.Item> selectById(String saveId) {
         PmSaveDto.Item dto = baseSelColumnQuery()
-                .where(pmSave.saveId.eq(saveId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmSave.saveId.eq(saveId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -63,12 +63,14 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
     public List<PmSaveDto.Item> selectList(PmSaveDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PmSaveDto.Item> query = baseSelColumnQuery().where(
-                baseAndSiteId(search),
-                baseAndSaveId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<PmSaveDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndSaveId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -96,7 +98,9 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<PmSaveDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<PmSaveDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -104,7 +108,7 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
 
         Long total = queryFactory
                 .select(pmSave.count())
-                .from(pmSave)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(pmSave)
                 .where(wheres)
                 .fetchOne();
 

@@ -44,7 +44,7 @@ public class QPmCouponItemRepositoryImpl implements QPmCouponItemRepository {
     @Override
     public Optional<PmCouponItemDto.Item> selectById(String couponItemId) {
         PmCouponItemDto.Item dto = baseSelColumnQuery()
-                .where(pmCouponItem.couponItemId.eq(couponItemId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(pmCouponItem.couponItemId.eq(couponItemId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -54,12 +54,14 @@ public class QPmCouponItemRepositoryImpl implements QPmCouponItemRepository {
     public List<PmCouponItemDto.Item> selectList(PmCouponItemDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<PmCouponItemDto.Item> query = baseSelColumnQuery().where(
-                baseAndSiteId(search),
-                baseAndCouponItemId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<PmCouponItemDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndCouponItemId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -87,7 +89,9 @@ public class QPmCouponItemRepositoryImpl implements QPmCouponItemRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<PmCouponItemDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<PmCouponItemDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -95,7 +99,7 @@ public class QPmCouponItemRepositoryImpl implements QPmCouponItemRepository {
 
         Long total = queryFactory
                 .select(pmCouponItem.count())
-                .from(pmCouponItem)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(pmCouponItem)
                 .where(wheres)
                 .fetchOne();
 

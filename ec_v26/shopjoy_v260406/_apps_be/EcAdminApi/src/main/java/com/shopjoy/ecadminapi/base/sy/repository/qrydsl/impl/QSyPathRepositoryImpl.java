@@ -43,18 +43,22 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
     /* 키조회 */
     @Override
     public Optional<SyPathDto.Item> selectById(String pathId) {
-        SyPathDto.Item dto = baseSelColumnQuery().where(syPath.pathId.eq(pathId)).fetchOne();
+        SyPathDto.Item dto = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
+                .where(syPath.pathId.eq(pathId)).fetchOne();
         return Optional.ofNullable(dto);
     }
 
     /* 목록조회 */
     @Override
     public List<SyPathDto.Item> selectList(SyPathDto.Request search) {
-        JPAQuery<SyPathDto.Item> query = baseSelColumnQuery().where(
-                baseAndBizCd(search),
-                baseAndUseYn(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<SyPathDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndBizCd(search),
+                    baseAndUseYn(search),
+                    baseAndSearchValue(search)
+                );
         // default order: sort_ord ASC, path_id ASC
         query.orderBy(buildOrder().toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
@@ -79,11 +83,18 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<SyPathDto.Item> query = baseSelColumnQuery().where(wheres);
+        JPAQuery<SyPathDto.Item> query = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         query = query.orderBy(buildOrder().toArray(OrderSpecifier[]::new));
         List<SyPathDto.Item> content = query.offset(offset).limit(pageSize).fetch();
 
-        Long total = queryFactory.select(syPath.count()).from(syPath).where(wheres).fetchOne();
+        Long total = queryFactory
+                .select(syPath.count())
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .from(syPath)
+                .where(wheres)
+                .fetchOne();
 
         SyPathDto.PageResponse res = new SyPathDto.PageResponse();
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);

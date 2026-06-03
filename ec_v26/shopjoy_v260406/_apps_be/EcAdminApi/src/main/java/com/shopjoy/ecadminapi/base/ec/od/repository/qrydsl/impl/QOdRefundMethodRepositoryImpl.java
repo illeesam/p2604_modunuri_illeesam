@@ -39,11 +39,29 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
     private static final QSyCode         cdPm = new QSyCode("cd_pm");
     private static final QSyCode         cdRs = new QSyCode("cd_rs");
 
+    /** 목록/페이지/단건 공용 base query */
+    private JPAQuery<OdRefundMethodDto.Item> baseListQuery() {
+        return queryFactory
+                .select(Projections.bean(OdRefundMethodDto.Item.class,
+                        odRefundMethod.refundMethodId, odRefundMethod.siteId, odRefundMethod.refundId, odRefundMethod.orderId,
+                        odRefundMethod.payMethodCd, odRefundMethod.refundPriority, odRefundMethod.refundAmt, odRefundMethod.refundAvailAmt,
+                        odRefundMethod.refundStatusCd, odRefundMethod.refundStatusCdBefore, odRefundMethod.refundDate,
+                        odRefundMethod.payId, odRefundMethod.pgRefundId, odRefundMethod.pgResponse,
+                        odRefundMethod.regBy, odRefundMethod.regDate, odRefundMethod.updBy, odRefundMethod.updDate
+                ))
+                .from(odRefundMethod)
+                .leftJoin(ste).on(ste.siteId.eq(odRefundMethod.siteId))
+                .leftJoin(ord).on(ord.orderId.eq(odRefundMethod.orderId))
+                .leftJoin(pay).on(pay.payId.eq(odRefundMethod.payId))
+                .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odRefundMethod.payMethodCd)))
+                .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS").and(cdRs.codeValue.eq(odRefundMethod.refundStatusCd)));
+    }
+
     /* 환불수단 키조회 */
     @Override
     public Optional<OdRefundMethodDto.Item> selectById(String refundMethodId) {
         OdRefundMethodDto.Item dto = baseListQuery()
-                .where(odRefundMethod.refundMethodId.eq(refundMethodId))
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()").where(odRefundMethod.refundMethodId.eq(refundMethodId))
                 .fetchOne();
         return Optional.ofNullable(dto);
     }
@@ -53,12 +71,14 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
     public List<OdRefundMethodDto.Item> selectList(OdRefundMethodDto.Request search) {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
 
-        JPAQuery<OdRefundMethodDto.Item> query = baseListQuery().where(
-                baseAndSiteId(search),
-                baseAndRefundMethodId(search),
-                baseAndDateRange(search),
-                baseAndSearchValue(search)
-        );
+        JPAQuery<OdRefundMethodDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
+                .where(
+                    baseAndSiteId(search),
+                    baseAndRefundMethodId(search),
+                    baseAndDateRange(search),
+                    baseAndSearchValue(search)
+                );
         if (!orderList.isEmpty()) {
             query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -86,7 +106,9 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<OdRefundMethodDto.Item> query = baseListQuery().where(wheres);
+        JPAQuery<OdRefundMethodDto.Item> query = baseListQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres);
         if (!orderList.isEmpty()) {
             query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
         }
@@ -94,7 +116,7 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
 
         Long total = queryFactory
                 .select(odRefundMethod.count())
-                .from(odRefundMethod)
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(odRefundMethod)
                 .where(wheres)
                 .fetchOne();
 
@@ -102,23 +124,7 @@ public class QOdRefundMethodRepositoryImpl implements QOdRefundMethodRepository 
         return res.setPageInfo(content, total == null ? 0L : total, pageNo, pageSize, search);
     }
 
-    /** 목록/페이지/단건 공용 base query */
-    private JPAQuery<OdRefundMethodDto.Item> baseListQuery() {
-        return queryFactory
-                .select(Projections.bean(OdRefundMethodDto.Item.class,
-                        odRefundMethod.refundMethodId, odRefundMethod.siteId, odRefundMethod.refundId, odRefundMethod.orderId,
-                        odRefundMethod.payMethodCd, odRefundMethod.refundPriority, odRefundMethod.refundAmt, odRefundMethod.refundAvailAmt,
-                        odRefundMethod.refundStatusCd, odRefundMethod.refundStatusCdBefore, odRefundMethod.refundDate,
-                        odRefundMethod.payId, odRefundMethod.pgRefundId, odRefundMethod.pgResponse,
-                        odRefundMethod.regBy, odRefundMethod.regDate, odRefundMethod.updBy, odRefundMethod.updDate
-                ))
-                .from(odRefundMethod)
-                .leftJoin(ste).on(ste.siteId.eq(odRefundMethod.siteId))
-                .leftJoin(ord).on(ord.orderId.eq(odRefundMethod.orderId))
-                .leftJoin(pay).on(pay.payId.eq(odRefundMethod.payId))
-                .leftJoin(cdPm).on(cdPm.codeGrp.eq("PAY_METHOD").and(cdPm.codeValue.eq(odRefundMethod.payMethodCd)))
-                .leftJoin(cdRs).on(cdRs.codeGrp.eq("REFUND_STATUS").and(cdRs.codeValue.eq(odRefundMethod.refundStatusCd)));
-    }
+
 
     /* 환불수단 buildCondition */
     /* ============================================================
