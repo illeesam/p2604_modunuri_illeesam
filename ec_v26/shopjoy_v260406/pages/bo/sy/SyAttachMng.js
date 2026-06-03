@@ -545,19 +545,8 @@ window.SyAttachMng = {
     <!-- ===== □.□. 좌: 첨부그룹관리 (30%) ======================================= -->
     <!-- ===== ■.■. 우: 첨부파일관리 (70%) ======================================= -->
     <div style="flex:1;">
-      <!-- ===== ■.■.■. 조회 영역 (별도 카드) ====================================== -->
+      <!-- ===== ■.■.■. 조회 영역 (별도 카드, 제목 제거) ============================== -->
       <div class="card" style="margin-bottom:12px;">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
-          <b style="font-size:14px;white-space:nowrap;">
-            첨부파일관리
-            <span v-if="uiState.selectedGrpId" style="font-size:12px;color:#e8587a;margin-left:4px;font-weight:600;">
-              — {{ attachGrps.find(g=>g.attachGrpId===uiState.selectedGrpId)?.attachGrpNm }}
-            </span>
-            <span v-else style="font-size:11px;color:#aaa;font-weight:400;margin-left:4px;">
-              (전체)
-            </span>
-          </b>
-        </div>
         <bo-search-area :columns="columns.fileSearch" :param="searchParam"
           @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
       </div>
