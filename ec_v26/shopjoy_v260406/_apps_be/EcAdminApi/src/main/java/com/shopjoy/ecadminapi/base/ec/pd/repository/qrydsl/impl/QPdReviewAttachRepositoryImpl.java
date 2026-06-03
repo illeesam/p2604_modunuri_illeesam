@@ -66,15 +66,14 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
                 baseAndProdId(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
-        );
-        if (!orderList.isEmpty()) {
-            query.orderBy(orderList.toArray(OrderSpecifier[]::new));
-        }
+        )
+        .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search == null ? null : search.getPageNo();
         Integer pageSize = search == null ? null : search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             int offset = (pageNo - 1) * pageSize;
-            query.offset(offset).limit(pageSize);
+            int limit  = pageSize;
+            query.offset(offset).limit(limit);
         }
         return query.fetch();
     }
@@ -85,6 +84,7 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
         int pageNo   = search != null && search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
+        int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search, false);
         BooleanExpression[] wheres = {
@@ -97,15 +97,21 @@ public class QPdReviewAttachRepositoryImpl implements QPdReviewAttachRepository 
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<PdReviewAttachDto.Item> query = baseQueryWithJoin().where(wheres);
-        if (!orderList.isEmpty()) {
-            query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
-        }
-        List<PdReviewAttachDto.Item> content = query.offset(offset).limit(pageSize).fetch();
+        // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
+        JPAQuery<PdReviewAttachDto.Item> query = baseQueryWithJoin();
 
-        Long total = queryFactory.select(pdReviewAttach.count())
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(pdReviewAttach)
-                .leftJoin(pdReview).on(pdReview.reviewId.eq(pdReviewAttach.reviewId))
+        // list: base 복제 + where + 정렬 + 페이징
+        List<PdReviewAttachDto.Item> content = query.clone()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres)
+                .orderBy(orderList.toArray(OrderSpecifier[]::new))
+                .offset(offset).limit(limit)
+                .fetch();
+
+        // count: base 복제 + select 를 count 로 교체 + 동일 where
+        Long total = query.clone()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
+                .select(pdReviewAttach.count())
                 .where(wheres)
                 .fetchOne();
 

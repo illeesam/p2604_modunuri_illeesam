@@ -67,15 +67,14 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
                     baseAndDlivItemId(search),
                     baseAndDateRange(search),
                     baseAndSearchValue(search)
-                );
-        if (!orderList.isEmpty()) {
-            query.orderBy(orderList.toArray(OrderSpecifier[]::new));
-        }
+                )
+                .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo   = search.getPageNo();
         Integer pageSize = search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             int offset = (pageNo - 1) * pageSize;
-            query.offset(offset).limit(pageSize);
+            int limit  = pageSize;
+            query.offset(offset).limit(limit);
         }
         return query.fetch();
     }
@@ -86,6 +85,7 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
+        int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
@@ -97,17 +97,21 @@ public class QOdDlivItemRepositoryImpl implements QOdDlivItemRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<OdDlivItemDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres);
-        if (!orderList.isEmpty()) {
-            query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
-        }
-        List<OdDlivItemDto.Item> content = query.offset(offset).limit(pageSize).fetch();
+        // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
+        JPAQuery<OdDlivItemDto.Item> query = baseSelColumnQuery();
 
-        Long total = queryFactory
+        // list: base 복제 + where + 정렬 + 페이징
+        List<OdDlivItemDto.Item> content = query.clone()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres)
+                .orderBy(orderList.toArray(OrderSpecifier[]::new))
+                .offset(offset).limit(limit)
+                .fetch();
+
+        // count: base 복제 + select 를 count 로 교체 + 동일 where
+        Long total = query.clone()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(odDlivItem.count())
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(odDlivItem)
                 .where(wheres)
                 .fetchOne();
 

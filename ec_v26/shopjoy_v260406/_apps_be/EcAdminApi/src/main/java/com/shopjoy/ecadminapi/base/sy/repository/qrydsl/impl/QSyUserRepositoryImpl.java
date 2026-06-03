@@ -122,15 +122,14 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
                     baseAndStatus(search),
                     baseAndDateRange(search),
                     baseAndSearchValue(search)
-                );
-        if (!orderList.isEmpty()) {
-            query.orderBy(orderList.toArray(OrderSpecifier[]::new));
-        }
+                )
+                .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search == null ? null : search.getPageNo();
         Integer pageSize = search == null ? null : search.getPageSize();
         if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
             int offset = (pageNo - 1) * pageSize;
-            query.offset(offset).limit(pageSize);
+            int limit  = pageSize;
+            query.offset(offset).limit(limit);
         }
         return query.fetch();
     }
@@ -152,19 +151,21 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
                 baseAndSearchValue(search)
         };
 
-        var query = baseSelColumnQuery()
+        // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
+        var query = baseSelColumnQuery();
+
+        // list: base 복제 + where + 정렬 + 페이징
+        List<SyUserDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres);
-        if (!orderList.isEmpty()) {
-            query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
-        }
-        List<SyUserDto.Item> content = query.offset(offset)
-                .limit(limit)
+                .where(wheres)
+                .orderBy(orderList.toArray(OrderSpecifier[]::new))
+                .offset(offset).limit(limit)
                 .fetch();
 
-        Long total = queryFactory
+        // count: base 복제 + select 를 count 로 교체 + 동일 where
+        Long total = query.clone()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syUser.count())
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(syUser)
                 .where(wheres)
                 .fetchOne();
 

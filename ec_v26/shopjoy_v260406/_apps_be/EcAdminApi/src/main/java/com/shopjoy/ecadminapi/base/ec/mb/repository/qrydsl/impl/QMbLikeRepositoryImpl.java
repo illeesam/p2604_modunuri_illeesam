@@ -73,11 +73,14 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
                     baseAndTargetTypeCd(search),
                     baseAndDateRange(search),
                     baseAndSearchValue(search)
-                );
-        if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
+                )
+                .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search.getPageNo(), pageSize = search.getPageSize();
-        if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0)
-            query.offset((long)(pageNo - 1) * pageSize).limit(pageSize);
+        if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
+            int offset = (pageNo - 1) * pageSize;
+            int limit  = pageSize;
+            query.offset(offset).limit(limit);
+        }
         return query.fetch();
     }
 
@@ -86,6 +89,8 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
     public MbLikeDto.PageResponse selectPageData(MbLikeDto.Request search) {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
+        int offset   = (pageNo - 1) * pageSize;
+        int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
@@ -98,20 +103,22 @@ public class QMbLikeRepositoryImpl implements QMbLikeRepository {
                 baseAndSearchValue(search)
         };
 
-        // base: 조인 + where 를 한 번만 정의 (list/count 가 동일한 from·join·where 를 공유)
-        JPAQuery<MbLikeDto.Item> base = baseSelColumnQuery()
-                .where(wheres);
+        // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
+        JPAQuery<MbLikeDto.Item> query = baseSelColumnQuery();
 
-        // list: base 복제 + 정렬 + 페이징
-        JPAQuery<MbLikeDto.Item> query = base.clone()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list");
-        if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
-        List<MbLikeDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
+        // list: base 복제 + where + 정렬 + 페이징
+        List<MbLikeDto.Item> content = query.clone()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres)
+                .orderBy(orderList.toArray(OrderSpecifier[]::new))
+                .offset(offset).limit(limit)
+                .fetch();
 
-        // count: base 복제 + select 를 count 로 교체 (조인·where 자동 동일)
-        Long total = base.clone()
+        // count: base 복제 + select 를 count 로 교체 + 동일 where
+        Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(mbLike.count())
+                .where(wheres)
                 .fetchOne();
 
         MbLikeDto.PageResponse res = new MbLikeDto.PageResponse();

@@ -66,6 +66,7 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
         int pageNo   = search.getPageNo()   != null && search.getPageNo()   > 0 ? search.getPageNo()   : 1;
         int pageSize = search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
         int offset   = (pageNo - 1) * pageSize;
+        int limit    = pageSize;
 
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
@@ -75,16 +76,21 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
                 baseAndSearchValue(search)
         };
 
-        JPAQuery<SyhAccessLogDto.Item> query = baseSelColumnQuery()
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list").where(wheres);
-        if (!orderList.isEmpty()) {
-            query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
-        }
-        List<SyhAccessLogDto.Item> content = query.offset(offset).limit(pageSize).fetch();
+        // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
+        JPAQuery<SyhAccessLogDto.Item> query = baseSelColumnQuery();
 
-        Long total = queryFactory
+        // list: base 복제 + where + 정렬 + 페이징
+        List<SyhAccessLogDto.Item> content = query.clone()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
+                .where(wheres)
+                .orderBy(orderList.toArray(OrderSpecifier[]::new))
+                .offset(offset).limit(limit)
+                .fetch();
+
+        // count: base 복제 + select 를 count 로 교체 + 동일 where
+        Long total = query.clone()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
                 .select(syhAccessLog.count())
-                .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt").from(syhAccessLog)
                 .where(wheres)
                 .fetchOne();
 

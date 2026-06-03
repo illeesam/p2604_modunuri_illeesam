@@ -74,12 +74,15 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
                     baseAndUseYn(search),
                     baseAndDateRange(search),
                     baseAndSearchValue(search)
-                );
-        if (!orderList.isEmpty()) query.orderBy(orderList.toArray(OrderSpecifier[]::new));
+                )
+                .orderBy(orderList.toArray(OrderSpecifier[]::new));
         Integer pageNo = search == null ? null : search.getPageNo();
         Integer pageSize = search == null ? null : search.getPageSize();
-        if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0)
-            query.offset((long)(pageNo - 1) * pageSize).limit(pageSize);
+        if (pageSize != null && pageSize > 0 && pageNo != null && pageNo > 0) {
+            int offset = (pageNo - 1) * pageSize;
+            int limit  = pageSize;
+            query.offset(offset).limit(limit);
+        }
         return query.fetch();
     }
 
@@ -88,6 +91,8 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
     public DpPanelDto.PageResponse selectPageData(DpPanelDto.Request search) {
         int pageNo = search != null && search.getPageNo() != null && search.getPageNo() > 0 ? search.getPageNo() : 1;
         int pageSize = search != null && search.getPageSize() != null && search.getPageSize() > 0 ? search.getPageSize() : 10;
+        int offset   = (pageNo - 1) * pageSize;
+        int limit    = pageSize;
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
                 baseAndSiteId(search),
@@ -99,15 +104,20 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
         };
-        JPAQuery<DpPanelDto.Item> query = baseSelColumnQuery()
+        // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
+        JPAQuery<DpPanelDto.Item> query = baseSelColumnQuery();
+
+        // list: base 복제 + where + 정렬 + 페이징
+        List<DpPanelDto.Item> content = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: list")
-                .where(wheres);
-        if (!orderList.isEmpty()) query = query.orderBy(orderList.toArray(OrderSpecifier[]::new));
-        List<DpPanelDto.Item> content = query.offset((long)(pageNo - 1) * pageSize).limit(pageSize).fetch();
-        Long total = queryFactory
-                .select(dpPanel.count())
+                .where(wheres)
+                .orderBy(orderList.toArray(OrderSpecifier[]::new))
+                .offset(offset).limit(limit)
+                .fetch();
+        // count: base 복제 + select 를 count 로 교체 + 동일 where
+        Long total = query.clone()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectPageData() :: cnt")
-                .from(dpPanel)
+                .select(dpPanel.count())
                 .where(wheres)
                 .fetchOne();
         DpPanelDto.PageResponse res = new DpPanelDto.PageResponse();
