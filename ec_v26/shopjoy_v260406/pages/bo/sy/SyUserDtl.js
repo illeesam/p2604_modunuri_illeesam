@@ -249,19 +249,20 @@ window.SyUserDtl = {
   },
   template: /* html */`
 <div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    {{ !active ? '사용자 상세' : (cfIsNew ? '사용자 등록' : (cfDtlMode ? '사용자 상세' : '사용자 수정')) }}
-    <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
-      #{{ form.userId }}
-    </span>
-    <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-      목록에서 행을 선택하거나 [+신규]를 누르세요
-    </span>
-  </div>
-  <!-- ===== □. 페이지 타이틀 ================================================= -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
+    <!-- ===== ■.■. 카드 헤더 (제목 = list-title, 페이지 타이틀 아님 → 폰트 축소) ========= -->
+    <div class="toolbar">
+      <span class="list-title">
+        {{ !active ? '사용자 상세' : (cfIsNew ? '사용자 등록' : (cfDtlMode ? '사용자 상세' : '사용자 수정')) }}
+        <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+          #{{ form.userId }}
+        </span>
+        <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+          목록에서 행을 선택하거나 [+신규]를 누르세요
+        </span>
+      </span>
+    </div>
     <!-- ===== ■.■. 기본정보 폼 ============================================== -->
     <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="3" compact :show-actions="false">

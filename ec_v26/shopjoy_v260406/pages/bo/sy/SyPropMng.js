@@ -286,7 +286,7 @@ window.SyPropMng = {
   </div>
   <!-- ===== □. 검색 바 ==================================================== -->
   <!-- ===== ■. 좌 트리 + 우 그리드 ============================================ -->
-  <div style="display:grid;grid-template-columns:280px 1fr;gap:16px;align-items:flex-start;">
+  <div style="display:grid;grid-template-columns:280px 1fr;gap:0 12px;align-items:flex-start;">
     <!-- ===== ■.■. 트리 ==================================================== -->
     <bo-path-tree-card biz-cd="sy_prop" title="표시경로" :show-biz-cd="false" :counts="propCounts"
       :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />

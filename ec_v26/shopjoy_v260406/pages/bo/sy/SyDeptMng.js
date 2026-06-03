@@ -446,7 +446,7 @@ window.SyDeptMng = {
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
-  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;align-items:flex-start;">
+  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:0 12px;align-items:flex-start;">
     <!-- ===== ■.■. 부서 트리 ================================================= -->
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:8px;">

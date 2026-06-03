@@ -68,9 +68,10 @@ window.SyMenuMng = {
       // 메뉴 그리드 행 변경 취소
       } else if (cmd === 'menus-rowCancel') {
         return cancelRow(param);
-      // 좌측 경로 트리 노드 선택 → 우측 그리드 필터링
+      // 좌측 경로 트리 노드 선택 → 우측 그리드 필터링 (선택행 강조 해제 후 재조회)
       } else if (cmd === 'pathTree-select') {
         uiState.selectedTreeId = param;
+        uiState.focusedIdx = null;        // 트리 변경 시 선택행 강조 해제 (재조회로 행 인덱스 무효화 방지)
         return handleSearchList();
       // 상위메뉴 선택 모달 열기 (parentPick 컬럼)
       } else if (cmd === 'parentModal-open') {
@@ -374,7 +375,7 @@ window.SyMenuMng = {
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
-  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;align-items:flex-start;">
+  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:0 12px;align-items:flex-start;">
     <!-- ===== ■.■. 메뉴 트리 (sy_menu 자기참조) ============================== -->
     <bo-menu-tree-card title="메뉴" :counts="menuCounts"
       :selected="uiState.selectedTreeId"

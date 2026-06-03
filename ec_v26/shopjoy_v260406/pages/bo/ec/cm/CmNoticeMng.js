@@ -233,8 +233,11 @@ window.CmNoticeMng = {
         <button class="btn btn-danger btn-xs" style="white-space:nowrap;" @click="handleSelectAction('notices-rowDelete', row)">삭제</button>
       </div>
     </template>
+    <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
+    <template #footer>
+      <bo-pager :pager="baseGrid.pager" :on-set-page="n => handleBtnAction('notices-pager-setPage', n)" :on-size-change="() => handleSelectAction('notices-pager-sizeChange')" />
+    </template>
   </bo-grid>
-  <bo-pager :pager="baseGrid.pager" :on-set-page="n => handleBtnAction('notices-pager-setPage', n)" :on-size-change="() => handleSelectAction('notices-pager-sizeChange')" />
   <!-- ===== ■. 상세 패널 (인라인 임베드 — 항상 표시, 진입 시 빈 신규 폼) ============= -->
   <div style="margin-top:16px;">
     <div v-if="baseDetail.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">

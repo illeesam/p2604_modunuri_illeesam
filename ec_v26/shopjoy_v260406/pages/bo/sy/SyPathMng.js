@@ -367,7 +367,7 @@ window.SyPathMng = {
   </div>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 좌 트리 + 우 그리드 ============================================ -->
-  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;align-items:flex-start;">
+  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:0 12px;align-items:flex-start;">
     <!-- ===== ■.■. 트리 ==================================================== -->
     <bo-local-tree-card title="경로 트리" biz-cd="sy_path" :sticky="true"
       :node="cfTree" :expanded="expanded" :selected="uiState.selectedPathId"
@@ -397,8 +397,11 @@ window.SyPathMng = {
           삭제
         </button>
       </template>
+      <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 경로 목록 영역 안에 보이도록 -->
+      <template #footer>
+        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('paths-pager-setPage', n)" :on-size-change="() => handleSelectAction('paths-pager-sizeChange')" />
+      </template>
     </bo-grid>
-      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('paths-pager-setPage', n)" :on-size-change="() => handleSelectAction('paths-pager-sizeChange')" />
     </div>
   <!-- ===== □.□. 그리드 =================================================== -->
   <!-- ===== □. 좌 트리 + 우 그리드 ============================================ -->

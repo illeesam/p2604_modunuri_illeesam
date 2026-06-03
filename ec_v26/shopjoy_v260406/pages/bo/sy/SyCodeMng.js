@@ -480,6 +480,7 @@ window.SyCodeMng = {
       uiState.isTreeType = false;
       uiState.focusedIdx = null;
       uiState.activeCodeTab = '일반';
+      resetDetailToNew();          // 상세영역 초기화 + 선택행 강조(selectedCodeId) 해제
       rebuildTree();
       handleLoadAllGroups();
     };
@@ -729,7 +730,7 @@ window.SyCodeMng = {
   </div>
   <!-- ===== □. 검색 영역 =================================================== -->
   <!-- ===== ■. 표시경로 트리 + 코드그룹 CRUD ===================================== -->
-  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;margin-bottom:16px;align-items:flex-start;">
+  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:0 12px;margin-bottom:16px;align-items:flex-start;">
     <!-- ===== ■.■. 경로 트리 ================================================= -->
     <bo-path-tree-card biz-cd="sy_code_grp" title="표시경로" :show-biz-cd="false" :counts="codeGrpCounts"
       :selected="uiState.grpSelectedPath" @select="path => handleSelectAction('pathTree-select', path)" />

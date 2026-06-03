@@ -614,8 +614,11 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       list-title="업체별현황"
       :count-text="'총 ' + cfVendorTotal + '개 업체'"
       empty-text="데이터가 없습니다.">
+      <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
+      <template #footer>
+        <bo-pager :pager="vendorPager" :on-set-page="n => handleBtnAction('statuses-vendorPagerSetPage', n)" :on-size-change="() => handleSelectAction('statuses-vendorPagerSizeChange')" />
+      </template>
     </bo-grid>
-    <bo-pager :pager="vendorPager" :on-set-page="n => handleBtnAction('statuses-vendorPagerSetPage', n)" :on-size-change="() => handleSelectAction('statuses-vendorPagerSizeChange')" />
   </div>
   <!-- ===== □.□. 테이블 =================================================== -->
   <!-- ===== □. ══ 1. 업체별현황 ══ ========================================== -->
@@ -638,8 +641,11 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       :count-text="'총 ' + cfOrderTotal + '건'"
       :row-style="(r) => r.isCancelled ? 'color:#bbb' : ''"
       empty-text="데이터가 없습니다.">
+      <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
+      <template #footer>
+        <bo-pager :pager="orderPager" :on-set-page="n => handleBtnAction('statuses-orderPagerSetPage', n)" :on-size-change="() => handleSelectAction('statuses-orderPagerSizeChange')" />
+      </template>
     </bo-grid>
-    <bo-pager :pager="orderPager" :on-set-page="n => handleBtnAction('statuses-orderPagerSetPage', n)" :on-size-change="() => handleSelectAction('statuses-orderPagerSizeChange')" />
   </div>
   <!-- ===== □.□. 목록 영역 ================================================= -->
   <!-- ===== □. ══ 2. 주문별현황 ══ ========================================== -->
@@ -661,8 +667,11 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       list-title="클레임별현황"
       :count-text="'총 ' + cfClaimTotal + '건'"
       empty-text="데이터가 없습니다.">
+      <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
+      <template #footer>
+        <bo-pager :pager="claimPager" :on-set-page="n => handleBtnAction('statuses-claimPagerSetPage', n)" :on-size-change="() => handleSelectAction('statuses-claimPagerSizeChange')" />
+      </template>
     </bo-grid>
-    <bo-pager :pager="claimPager" :on-set-page="n => handleBtnAction('statuses-claimPagerSetPage', n)" :on-size-change="() => handleSelectAction('statuses-claimPagerSizeChange')" />
   </div>
   <!-- ===== □.□. 목록 영역 ================================================= -->
   <!-- ===== □. ══ 3. 클레임별현황 ══ ========================================= -->
@@ -684,8 +693,11 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       list-title="프로모션별현황"
       :count-text="'총 ' + cfPromoTotal + '개'"
       empty-text="데이터가 없습니다.">
+      <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
+      <template #footer>
+        <bo-pager :pager="promoPager" :on-set-page="n => handleBtnAction('statuses-promoPagerSetPage', n)" :on-size-change="() => handleSelectAction('statuses-promoPagerSizeChange')" />
+      </template>
     </bo-grid>
-    <bo-pager :pager="promoPager" :on-set-page="n => handleBtnAction('statuses-promoPagerSetPage', n)" :on-size-change="() => handleSelectAction('statuses-promoPagerSizeChange')" />
   </div>
   <!-- ===== □.□. 목록 영역 ================================================= -->
   <!-- ===== □. ══ 4. 프로모션별현황 ══ ======================================== -->
@@ -707,8 +719,11 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       list-title="정산별현황"
       :count-text="'총 ' + cfSettleTotal + '개월'"
       empty-text="데이터가 없습니다.">
+      <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
+      <template #footer>
+        <bo-pager :pager="settlePager" :on-set-page="n => handleBtnAction('statuses-settlePagerSetPage', n)" :on-size-change="() => handleSelectAction('statuses-settlePagerSizeChange')" />
+      </template>
     </bo-grid>
-    <bo-pager :pager="settlePager" :on-set-page="n => handleBtnAction('statuses-settlePagerSetPage', n)" :on-size-change="() => handleSelectAction('statuses-settlePagerSizeChange')" />
   </div>
 </div>
 <!-- ===== □.□. 목록 영역 ================================================= -->

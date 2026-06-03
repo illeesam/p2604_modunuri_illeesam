@@ -374,8 +374,11 @@ window.SyBbsMng = {
         </div>
       </td>
     </template>
+    <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
+    <template #footer>
+      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('bbsList-pager-setPage', n)" :on-size-change="() => handleSelectAction('bbsList-pager-sizeChange')" />
+    </template>
   </bo-grid>
-        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('bbsList-pager-setPage', n)" :on-size-change="() => handleSelectAction('bbsList-pager-sizeChange')" />
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 상세 패널 (인라인 임베드, 항상 표시) =================================== -->
   <div style="margin-top:16px;">

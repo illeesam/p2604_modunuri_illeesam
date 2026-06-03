@@ -50,11 +50,12 @@ window.SySiteMng = {
       // 사이트 목록 재조회
       } else if (cmd === 'sites-reload') {
         return handleSearchList('RELOAD');
-      // 좌측 경로 트리 노드 선택 → 우측 그리드 필터링
+      // 좌측 경로 트리 노드 선택 → 우측 목록/상세 초기화 후 경로 기준 재조회
       } else if (cmd === 'pathTree-select') {
         uiState.selectedPath = param;
         pager.pageNo = 1;
-        return handleSearchList();
+        resetDetailToNew();                  // 사이트 상세 패널 초기화(빈 신규 폼 + 선택 해제)
+        return handleSearchList();           // 사이트목록을 선택 경로 기준으로 재조회
       // 상세 인라인 패널 닫기
       } else if (cmd === 'detailPanel-close') {
         return closeDetail();
@@ -348,8 +349,8 @@ window.SySiteMng = {
       '가격비교': 'badge-blue', '시각화': 'badge-purple', '홈페이지': 'badge-gray',
     }[t] || 'badge-gray');
 
-    /* fnRowStyle — 행 스타일 (선택 행 강조) */
-    const fnRowStyle = (s) => detailModal.dtlId === s.siteId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
+    /* fnRowStyle — 행 스타일 (선택 강조는 selected-key 의 파란 테두리로 처리) */
+    const fnRowStyle = (s) => 'cursor:pointer;';
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -399,7 +400,7 @@ window.SySiteMng = {
         cellInnerStyle: 'background:#f0f4ff;padding:2px 6px;border-radius:3px;color:#2563eb;font-weight:600;font-size:11px;font-family:monospace;' },
       { key: 'siteTypeCd',    label: '유형', badge: (row) => fnTypeBadge(row.siteTypeCd) },
       { key: 'siteNm',        label: '사이트명', sortKey: 'nm', link: true, style: 'width:140px;max-width:140px;',
-        cellInnerStyle: (v) => detailModal.dtlId === v ? 'color:#e8587a;font-weight:700;' : '' },
+        cellInnerStyle: (v, row) => detailModal.dtlId === row.siteId ? 'color:#1d4ed8;font-weight:700;' : '' },
       { key: 'siteDomain',    label: '도메인', cellStyle: 'color:#2563eb' },
       { key: 'siteEmail',     label: '대표이메일' },
       { key: 'sitePhone',     label: '대표전화' },
@@ -432,7 +433,7 @@ window.SySiteMng = {
   </div>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 좌 트리 + 우 영역 ============================================= -->
-  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;align-items:flex-start;">
+  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:0 12px;align-items:flex-start;">
     <!-- ===== ■.■. 경로 트리 ================================================= -->
     <bo-path-tree-card biz-cd="sy_site" title="표시경로" :show-biz-cd="false"
       :counts="siteCounts"
@@ -472,12 +473,16 @@ window.SySiteMng = {
             </div>
           </td>
         </template>
+        <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 사이트목록 영역 안에 보이도록 -->
+        <template #footer>
+          <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('sites-pager-setPage', n)" :on-size-change="() => handleSelectAction('sites-pager-sizeChange')" />
+        </template>
       </bo-grid>
-        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('sites-pager-setPage', n)" :on-size-change="() => handleSelectAction('sites-pager-sizeChange')" />
     </div>
     <!-- ===== □.□. 경로 트리 ================================================= -->
     <!-- ===== ■.■. 상세 인라인 패널 (grid 직접 자식 → 전체 폭, 항상 표시) ===================== -->
-    <div style="grid-column:1/-1;margin-top:4px;">
+    <!-- margin-top 제거: 위 목록 카드의 margin-bottom(12px)만으로 4개 영역 간격을 12px 로 통일 -->
+    <div style="grid-column:1/-1;">
       <sy-site-dtl :key="cfDetailKey" :navigate="inlineNavigate" :dtl-id="cfDetailEditId"
         :dtl-mode="detailModal.dtlMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
         :active="detailModal.active"

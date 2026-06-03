@@ -443,7 +443,7 @@ window.SyBatchMng = {
   </div>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 좌 트리 + 우 영역 ============================================= -->
-  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;align-items:flex-start;">
+  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:0 12px;align-items:flex-start;">
     <!-- ===== ■.■. 경로 트리 ================================================= -->
     <bo-path-tree-card biz-cd="sy_batch" title="표시경로" :show-biz-cd="false" :counts="batchCounts"
       :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />

@@ -209,8 +209,11 @@ window.PdRestockNotiMng = {
       list-title="목록" :count-text="pager.pageTotalCount + '건'"
       selectable checked-key="restockNotiId" :is-checked="fnIsChecked" :all-checked="allChecked"
       @toggle-check="id => handleSelectAction('restockNotis-rowToggle', id)" @toggle-check-all="handleBtnAction('restockNotis-toggleAll')">
-    </bo-grid>
+      <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
+      <template #footer>
         <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('restockNotis-pager-setPage', n)" :on-size-change="() => handleSelectAction('restockNotis-pager-sizeChange')" />
+      </template>
+    </bo-grid>
   </div>
   <!-- ===== □. 목록 그리드 =================================================== -->
 </div>

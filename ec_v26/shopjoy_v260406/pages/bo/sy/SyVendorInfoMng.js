@@ -296,8 +296,11 @@ window.SyVendorInfoMng = {
         {{ uiState.selectedVendorId===row.vendorId ? '선택됨' : '선택' }}
       </button>
     </template>
+    <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
+    <template #footer>
+      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('vendors-pager-setPage', n)" :on-size-change="() => handleSelectAction('vendors-pager-sizeChange')" />
+    </template>
   </bo-grid>
-  <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('vendors-pager-setPage', n)" :on-size-change="() => handleSelectAction('vendors-pager-sizeChange')" />
   <!-- ===== □. 2단: 업체목록 =============================================== -->
   <!-- ===== ■. 3단: 탭 영역 (브랜드 | 가격정책 | 배송템플릿 | 부가서비스) ============ -->
   <div class="card" style="margin-top:16px;">

@@ -328,7 +328,7 @@ window.SyVendorMng = {
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 좌 트리 + 우 영역 ============================================= -->
-  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;align-items:flex-start;">
+  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:0 12px;align-items:flex-start;">
     <!-- ===== ■.■. 경로 트리 ================================================= -->
     <bo-path-tree-card biz-cd="sy_vendor" title="표시경로" :show-biz-cd="false" :counts="vendorCounts"
       :selected="uiState.selectedPath"
@@ -368,11 +368,15 @@ window.SyVendorMng = {
             </div>
           </td>
         </template>
+        <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 거래처목록 영역 안에 보이도록 -->
+        <template #footer>
+          <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('vendors-pager-setPage', n)" :on-size-change="() => handleSelectAction('vendors-pager-sizeChange')" />
+        </template>
       </bo-grid>
-        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('vendors-pager-setPage', n)" :on-size-change="() => handleSelectAction('vendors-pager-sizeChange')" />
     </div>
     <!-- ===== ■.■. 상세 패널 (전체 폭, grid 직접 자식, 항상 표시) ===================== -->
-    <div style="grid-column:1/-1;margin-top:4px;">
+    <!-- margin-top 제거: 위 목록 카드의 margin-bottom만으로 영역 간격을 12px 로 통일 -->
+    <div style="grid-column:1/-1;">
       <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
         <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
           ✕ 닫기

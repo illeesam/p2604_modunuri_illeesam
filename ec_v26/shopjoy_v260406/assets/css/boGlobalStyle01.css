@@ -9,7 +9,7 @@ body { background: #f0f2f5; color: #222; font-family: 'Noto Sans KR', sans-serif
 .page-desc-toggle { margin-left: 6px; font-size: 11px; color: #e91e8c; background: none; border: none; cursor: pointer; padding: 0; vertical-align: middle; }
 .page-desc-detail { margin-top: 6px; padding: 10px 14px; background: #fafafa; border-left: 3px solid #f0b8d0; border-radius: 0 6px 6px 0; color: #444; white-space: pre-line; }
 
-.card { background: #fff; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,.08); padding: 20px; margin-bottom: 16px; }
+.card { background: #fff; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,.08); padding: 12px; margin-bottom: 12px; }
 
 .search-bar { display: flex; gap: 8px 8px; align-items: center; flex-wrap: wrap; }
 /* 검색 필드는 그리드 행 높이에 맞춰 슬림 (Dtl 폼 .form-control 은 유지) */

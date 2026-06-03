@@ -5,7 +5,7 @@ body { background: #f0f2f5; color: #222; font-family: 'Noto Sans KR', sans-serif
 .bo-wrap { padding: 20px; max-width: 1550px; margin: 0 auto; }
 .page-title { font-size: 20px; font-weight: 700; margin-bottom: 18px; color: #1a1a2e; }
 
-.card { background: #fff; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,.08); padding: 20px; margin-bottom: 16px; }
+.card { background: #fff; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,.08); padding: 12px; margin-bottom: 12px; }
 
 .search-bar { display: flex; gap: 8px 8px; align-items: center; flex-wrap: wrap; }
 /* 검색 필드는 그리드 행 높이에 맞춰 슬림 (Dtl 폼 .form-control 은 유지) */

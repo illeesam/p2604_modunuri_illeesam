@@ -419,7 +419,7 @@ window.SyUserMng = {
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
-  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;align-items:flex-start;">
+  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:0 12px;align-items:flex-start;">
     <!-- ===== ■.■. 부서 트리 ================================================= -->
     <div class="card" style="padding:12px;">
       <div class="toolbar" style="margin-bottom:8px;">
@@ -480,8 +480,11 @@ window.SyUserMng = {
             </div>
           </td>
         </template>
+        <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 사용자목록 영역 안에 보이도록 -->
+        <template #footer>
+          <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('users-pager-setPage', n)" :on-size-change="() => handleSelectAction('users-pager-sizeChange')" />
+        </template>
       </bo-grid>
-        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('users-pager-setPage', n)" :on-size-change="() => handleSelectAction('users-pager-sizeChange')" />
     </div>
   </div>
   <!-- ===== □. 본문 영역 =================================================== -->

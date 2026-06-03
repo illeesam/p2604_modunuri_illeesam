@@ -240,8 +240,12 @@ window.SyI18nMng = {
     :columns="columns.baseGrid" :rows="i18ns" row-key="i18nId" :selected-key="uiState.selectedId"
     list-title="다국어 키 목록" :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-style="fnRowStyle" row-clickable
-    @row-click="row => handleSelectAction('i18ns-rowOpen', row)" />
-  <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('i18ns-pager-setPage', n)" :on-size-change="() => handleSelectAction('i18ns-pager-sizeChange')" />
+    @row-click="row => handleSelectAction('i18ns-rowOpen', row)">
+    <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
+    <template #footer>
+      <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('i18ns-pager-setPage', n)" :on-size-change="() => handleSelectAction('i18ns-pager-sizeChange')" />
+    </template>
+  </bo-grid>
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 번역 편집 패널 (항상 표시) ====================================== -->
   <div class="card">

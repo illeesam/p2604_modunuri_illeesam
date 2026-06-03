@@ -399,8 +399,11 @@ const raws = reactive([]);
         <bo-form-area :columns="columns.rawExpand" :form="r" :cols="3" readonly label-left compact :show-actions="false" />
       </td>
     </template>
+    <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
+    <template #footer>
+      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('rawData-pager-setPage', n)" :on-size-change="() => handleSelectAction('rawData-pager-sizeChange')" />
+    </template>
   </bo-grid>
-        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('rawData-pager-setPage', n)" :on-size-change="() => handleSelectAction('rawData-pager-sizeChange')" />
 </div>
 <!-- ===== □. 목록 카드 =================================================== -->
 `,

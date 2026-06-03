@@ -202,8 +202,11 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <bo-grid
       :columns="columns.baseGrid" :rows="rows" row-key="vendorId"
       list-title="목록" :count-text="pager.pageTotalCount + '개 업체'">
-    </bo-grid>
+      <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
+      <template #footer>
         <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('reconVendors-pager-setPage', n)" :on-size-change="() => handleSelectAction('reconVendors-pager-sizeChange')" />
+      </template>
+    </bo-grid>
   </div>
 </div>
 <!-- ===== □.□. 목록 영역 ================================================= -->

@@ -65,10 +65,11 @@ window.SyBbmMng = {
       // 그리드 행 삭제
       } else if (cmd === 'bbms-rowDelete') {
         return handleDelete(param);
-      // 좌측 경로 트리 노드 선택 → 우측 그리드 필터링
+      // 좌측 경로 트리 노드 선택 → 우측 목록/상세 초기화 후 경로 기준 재조회
       } else if (cmd === 'pathTree-select') {
         uiState.selectedPath = param;
         pager.pageNo = 1;
+        resetDetailToNew();                  // 게시판 상세 패널 초기화(빈 신규 폼 + 선택 해제)
         return handleSearchList();
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -332,7 +333,7 @@ window.SyBbmMng = {
   </div>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
-  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;align-items:flex-start;">
+  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:0 12px;align-items:flex-start;">
     <!-- ===== ■.■. 좌: 표시경로 트리 ============================================ -->
     <bo-path-tree-card biz-cd="sy_bbm" title="표시경로" :show-biz-cd="false" :counts="bbmCounts"
       :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
@@ -371,8 +372,11 @@ window.SyBbmMng = {
             </div>
           </td>
         </template>
+        <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 게시판목록 영역 안에 보이도록 -->
+        <template #footer>
+          <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('bbms-pager-setPage', n)" :on-size-change="() => handleSelectAction('bbms-pager-sizeChange')" />
+        </template>
       </bo-grid>
-        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('bbms-pager-setPage', n)" :on-size-change="() => handleSelectAction('bbms-pager-sizeChange')" />
     </div>
     <!-- ===== □.□. 우: 목록 ================================================= -->
   </div>

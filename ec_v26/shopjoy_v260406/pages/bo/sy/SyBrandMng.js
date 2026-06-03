@@ -71,9 +71,10 @@ window.SyBrandMng = {
     /* handleSelectAction — 그리드 행/노드 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ SyBrandMng.js : handleSelectAction -> ', cmd, param);
-      // 좌측 경로 트리 노드 선택 → 그리드 재조회
+      // 좌측 경로 트리 노드 선택 → 선택행 강조 해제 후 그리드 재조회
       if (cmd === 'pathTree-select') {
         uiState.selectedPath = param;
+        uiState.focusedIdx = null;            // 선택(포커스) 행 정보 초기화 → 파란 외곽선 해제
         return handleSearchList();
       // 그리드 셀 변경 감지
       } else if (cmd === 'brands-cellChange') {
@@ -334,7 +335,7 @@ window.SyBrandMng = {
   </div>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 좌 트리 + 우 그리드 ============================================ -->
-  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;align-items:flex-start;">
+  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:0 12px;align-items:flex-start;">
     <!-- ===== ■.■. 경로 트리 ================================================= -->
     <bo-path-tree-card biz-cd="sy_brand" title="표시경로" :show-biz-cd="false" :counts="brandCounts"
       :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />

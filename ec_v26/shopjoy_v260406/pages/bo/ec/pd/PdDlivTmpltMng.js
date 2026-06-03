@@ -335,8 +335,11 @@ window.PdDlivTmpltMng = {
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-class="(row) => uiState.selectedId===row.dlivTmpltId ? 'active' : ''"
       @sort="key => handleBtnAction('dlivTmplts-sort', key)" @cell-click="e => handleSelectAction('dlivTmplts-rowOpen', e.row)">
-    </bo-grid>
+      <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
+      <template #footer>
         <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('dlivTmplts-pager-setPage', n)" :on-size-change="() => handleSelectAction('dlivTmplts-pager-sizeChange')" />
+      </template>
+    </bo-grid>
   </div>
   <!-- ===== □. 목록 그리드 =================================================== -->
   <!-- ===== ■. 상세 패널 (신규/수정 폼) ====================================== -->

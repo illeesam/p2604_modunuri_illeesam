@@ -214,8 +214,11 @@ window.PdTagMng = {
         삭제
       </button>
     </template>
+    <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
+    <template #footer>
+      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('tags-pager-setPage', n)" :on-size-change="() => handleSelectAction('tags-pager-sizeChange')" />
+    </template>
   </bo-grid>
-        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('tags-pager-setPage', n)" :on-size-change="() => handleSelectAction('tags-pager-sizeChange')" />
   <!-- ===== □. 목록 그리드 =================================================== -->
 </div>
 `

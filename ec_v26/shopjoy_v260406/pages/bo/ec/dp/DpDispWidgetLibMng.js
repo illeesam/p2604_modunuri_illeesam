@@ -402,8 +402,11 @@ window.DpDispWidgetLibMng = {
               </button>
             </div>
           </template>
+          <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
+          <template #footer>
+            <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('widgetLibs-pager-setPage', n)" :on-size-change="() => handleSelectAction('widgetLibs-pager-sizeChange')" />
+          </template>
         </bo-grid>
-        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('widgetLibs-pager-setPage', n)" :on-size-change="() => handleSelectAction('widgetLibs-pager-sizeChange')" />
       </div>
     </div>
     <!-- ===== □. 본문 영역 =================================================== -->

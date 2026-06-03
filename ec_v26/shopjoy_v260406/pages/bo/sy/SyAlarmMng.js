@@ -77,10 +77,11 @@ window.SyAlarmMng = {
       // 그리드 행 삭제
       } else if (cmd === 'alarms-rowDelete') {
         return handleDelete(param);
-      // 좌측 경로 트리 노드 선택 → 우측 그리드 필터링
+      // 좌측 경로 트리 노드 선택 → 우측 목록/상세 초기화 후 경로 기준 재조회
       } else if (cmd === 'pathTree-select') {
         uiState.selectedPath = param;
         pager.pageNo = 1;
+        resetDetailToNew();                  // 알림 상세 패널 초기화(빈 신규 폼 + 선택 해제)
         return handleSearchList();
       // 표시경로 picker 열기 (행 단위)
       } else if (cmd === 'pathModal-open') {
@@ -422,7 +423,7 @@ window.SyAlarmMng = {
   </div>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 좌 트리 + 우 영역 ============================================= -->
-  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;align-items:flex-start;">
+  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:0 12px;align-items:flex-start;">
     <!-- ===== ■.■. 경로 트리 ================================================= -->
     <bo-path-tree-card biz-cd="sy_alarm" title="표시경로" :show-biz-cd="false" :counts="alarmCounts"
       :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
@@ -461,12 +462,15 @@ window.SyAlarmMng = {
             </div>
           </td>
         </template>
+        <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 알림목록 영역 안에 보이도록 -->
+        <template #footer>
+          <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('alarms-pager-setPage', n)" :on-size-change="() => handleSelectAction('alarms-pager-sizeChange')" />
+        </template>
       </bo-grid>
-        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('alarms-pager-setPage', n)" :on-size-change="() => handleSelectAction('alarms-pager-sizeChange')" />
     </div>
     <!-- ===== □.□. 경로 트리 ================================================= -->
     <!-- ===== ■.■. 상세 인라인 패널 (grid 직접 자식 → 전체 폭, 항상 표시) ===================== -->
-    <div style="grid-column:1/-1;margin-top:12px;">
+    <div style="grid-column:1/-1;">
       <sy-alarm-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
         :dtl-mode="detailModal.dtlMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
         :active="detailModal.active"

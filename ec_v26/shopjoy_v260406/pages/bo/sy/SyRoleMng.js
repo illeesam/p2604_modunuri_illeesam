@@ -904,7 +904,7 @@ window.SyRoleMng = {
   </div>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 좌 트리 + 우 영역 ============================================= -->
-  <div style="display:grid;grid-template-columns:minmax(220px,20fr) minmax(0,80fr);gap:16px;align-items:flex-start;">
+  <div style="display:grid;grid-template-columns:minmax(220px,20fr) minmax(0,80fr);gap:0 12px;align-items:flex-start;">
     <bo-local-tree-card title="역할"
       :node="cfTree" :expanded="expanded" :selected="uiState.selectedPath"
       :on-toggle="path => handleBtnAction('pathTree-toggle', path)"

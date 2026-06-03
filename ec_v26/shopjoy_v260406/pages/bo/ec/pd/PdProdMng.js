@@ -441,8 +441,11 @@ window.PdProdMng = {
           </button>
         </div>
       </template>
-    </bo-grid>
+      <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
+      <template #footer>
         <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('prods-pager-setPage', n)" :on-size-change="() => handleSelectAction('prods-pager-sizeChange')" />
+      </template>
+    </bo-grid>
   </div>
   <!-- ===== □. 목록 ======================================================= -->
   <!-- ===== ■. 카테고리 선택 모달 ============================================== -->

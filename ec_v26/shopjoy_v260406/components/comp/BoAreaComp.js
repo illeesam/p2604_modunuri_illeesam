@@ -732,7 +732,8 @@ window.BoGrid = {
     </table>
   </div>
   <!-- /그리드 본문 스크롤 컨테이너 -->
-  <!-- ▼ pager 는 그리드 외부 <bo-pager> 로만 구현 (내부 페이저 제거됨) -->
+  <!-- ▼ #footer 슬롯 — <bo-pager> 등을 카드 내부 하단에 배치 (페이저는 외부 컴포넌트지만 카드 안에 렌더). bare 모드는 미노출 -->
+  <slot v-if="!bare" name="footer"></slot>
 </div>
 `,
 };

@@ -218,19 +218,20 @@ window.SySiteDtl = {
   },
   template: /* html */`
 <div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    {{ !active ? '사이트 상세' : (cfIsNew ? '사이트 등록' : (cfDtlMode ? '사이트 상세' : '사이트 수정')) }}
-    <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
-      #{{ form.siteId }}
-    </span>
-    <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-      목록에서 행을 선택하거나 [+신규]를 누르세요
-    </span>
-  </div>
-  <!-- ===== □. 페이지 타이틀 ================================================= -->
-  <!-- ===== ■. 폼 영역 (BoFormArea 자동 렌더) ================================= -->
+  <!-- ===== ■. 상세 카드 (제목/라벨/폼 모두 카드 안에) ============================= -->
   <div class="card">
+    <!-- ===== ■.■. 카드 헤더 (제목 = list-title, 페이지 타이틀 아님 → 폰트 축소) ========= -->
+    <div class="toolbar">
+      <span class="list-title">
+        {{ !active ? '사이트 상세' : (cfIsNew ? '사이트 등록' : (cfDtlMode ? '사이트 상세' : '사이트 수정')) }}
+        <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+          #{{ form.siteId }}
+        </span>
+        <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+          목록에서 행을 선택하거나 [+신규]를 누르세요
+        </span>
+      </span>
+    </div>
     <!-- ===== ■.■. 폼 영역 ================================================== -->
     <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="3" compact :show-actions="active"

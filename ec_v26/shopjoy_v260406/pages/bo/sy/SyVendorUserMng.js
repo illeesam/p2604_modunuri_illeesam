@@ -718,8 +718,11 @@ window.SyVendorUserMng = {
             {{ uiState.searchVendorId===row.vendorId ? '선택됨' : '선택' }}
           </button>
         </template>
+        <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
+        <template #footer>
+          <bo-pager :pager="bizPager" :on-set-page="n => handleBtnAction('vendors-pager-setPage', n)" :on-size-change="() => handleSelectAction('vendors-pager-sizeChange')" />
+        </template>
       </bo-grid>
-      <bo-pager :pager="bizPager" :on-set-page="n => handleBtnAction('vendors-pager-setPage', n)" :on-size-change="() => handleSelectAction('vendors-pager-sizeChange')" />
     </div>
     <!-- ===== □.□. 좌: 업체 검색 + 목록 ===================================== -->
     <!-- ===== ■.■. 우: 사용자 검색 + 목록 =================================== -->
@@ -745,8 +748,11 @@ window.SyVendorUserMng = {
             삭제
           </button>
         </template>
+        <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
+        <template #footer>
+          <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('vendorUsers-pager-setPage', n)" :on-size-change="() => handleSelectAction('vendorUsers-pager-sizeChange')" />
+        </template>
       </bo-grid>
-      <bo-pager v-if="uiState.searchVendorId != null" :pager="pager" :on-set-page="n => handleBtnAction('vendorUsers-pager-setPage', n)" :on-size-change="() => handleSelectAction('vendorUsers-pager-sizeChange')" />
       <!-- ===== ■.■.■. 카드 영역 (업체 미선택 안내) =========================== -->
       <div v-else class="card" style="text-align:center;padding:30px;color:#aaa;">
         좌측 업체목록에서 업체를 선택하면 사용자 목록이 표시됩니다.

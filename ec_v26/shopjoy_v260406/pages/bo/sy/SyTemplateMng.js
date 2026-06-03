@@ -417,7 +417,7 @@ window.SyTemplateMng = {
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 좌 트리 + 우 영역 ============================================= -->
-  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:16px;align-items:flex-start;">
+  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:0 12px;align-items:flex-start;">
     <!-- ===== ■.■. 경로 트리 ================================================= -->
     <bo-path-tree-card biz-cd="sy_template" title="표시경로" :show-biz-cd="false" :counts="templateCounts"
       :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
@@ -462,15 +462,18 @@ window.SyTemplateMng = {
             </div>
           </td>
         </template>
+        <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 템플릿목록 영역 안에 보이도록 -->
+        <template #footer>
+          <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('templates-pager-setPage', n)" :on-size-change="() => handleSelectAction('templates-pager-sizeChange')" />
+        </template>
       </bo-grid>
-        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('templates-pager-setPage', n)" :on-size-change="() => handleSelectAction('templates-pager-sizeChange')" />
       <!-- ===== ■.■.■. 미리보기/발송 모달 (position:fixed) ========================= -->
       <template-preview-modal v-if="previewModal && previewModal.show" :tmpl="previewModal.template" :sample-params="previewModal.template?.sampleParams || '{}'" modal-name="template-preview" :on-callback="fnCallbackModal" />
       <template-send-modal v-if="sendModal && sendModal.show" :tmpl="sendModal.template" :show-toast="showToast" :show-confirm="showConfirm" modal-name="template-send" :on-callback="fnCallbackModal" />
     </div>
     <!-- ===== □.□. 경로 트리 ================================================= -->
     <!-- ===== ■.■. 수정 패널 (grid 직접 자식 → 전체 폭, 항상 표시) ============================= -->
-    <div style="grid-column:1/-1;margin-top:4px;">
+    <div style="grid-column:1/-1;">
       <sy-template-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
         :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
         :active="detailPanel.active"

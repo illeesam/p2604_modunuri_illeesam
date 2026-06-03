@@ -361,8 +361,11 @@ window.MbMemberMng = {
         수정
       </button>
     </template>
+    <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
+    <template #footer>
+      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('members-pager-setPage', n)" :on-size-change="() => handleSelectAction('members-pager-sizeChange')" />
+    </template>
   </bo-grid>
-        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('members-pager-setPage', n)" :on-size-change="() => handleSelectAction('members-pager-sizeChange')" />
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 상세 패널 (인라인 임베드, 항상 표시) ================================== -->
   <mb-member-dtl :detail-modal="detailPanel" :active="detailPanel.active"

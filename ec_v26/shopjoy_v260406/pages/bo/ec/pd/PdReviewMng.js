@@ -422,8 +422,11 @@ window.PdReviewMng = {
         👁
       </button>
     </template>
+    <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
+    <template #footer>
+      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('reviews-pager-setPage', n)" :on-size-change="() => handleSelectAction('reviews-pager-sizeChange')" />
+    </template>
   </bo-grid>
-  <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('reviews-pager-setPage', n)" :on-size-change="() => handleSelectAction('reviews-pager-sizeChange')" />
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 상품ID 클릭 시: 해당 상품의 리뷰 페이징 목록 ============================= -->
   <div class="card" v-if="selectedProdId">

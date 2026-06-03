@@ -316,8 +316,11 @@ window.DpDispAreaMng = {
           수정
         </button>
       </template>
+      <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
+      <template #footer>
+        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('areas-pager-setPage', n)" :on-size-change="() => handleSelectAction('areas-pager-sizeChange')" />
+      </template>
     </bo-grid>
-    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('areas-pager-setPage', n)" :on-size-change="() => handleSelectAction('areas-pager-sizeChange')" />
   </div>
   <!-- ===== □. 본문 영역 =================================================== -->
   <!-- ===== ■. 상세 패널 (항상 표시, 진입 시 빈 신규 폼) ============================== -->
