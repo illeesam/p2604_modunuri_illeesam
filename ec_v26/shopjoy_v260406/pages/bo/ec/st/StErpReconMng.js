@@ -163,7 +163,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
         // --- [컬럼 정의] ---
 
-        const baseSearchColumns = [
+        const columns = {};
+        columns.baseSearch = [
       { key: 'dateRange', label: '대사일', type: 'dateRange', paramObj: uiState,
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
@@ -174,7 +175,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     ];
 
     // 기본 그리드
-    const baseGridColumns = [
+    columns.baseGrid = [
       { key: 'reconId',    label: '대사ID' },
       { key: 'reconDate',  label: '대사일자',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
       { key: 'slipId',     label: '전표ID', cellStyle: 'font-size:11px' },
@@ -189,7 +190,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     ];
 
     /* summaryFormColumns — 집계 카드 (BoFormArea, cols=4, labelLeft) */
-    const summaryFormColumns = [
+    columns.summaryForm = [
       { key: '_match',     label: '일치',          type: 'readonly', html: true, fmt: () => `<b style="color:#27ae60;font-size:16px;">${cfSummary.value.match}건</b>` },
       { key: '_diff',      label: '금액 차이',     type: 'readonly', html: true, fmt: () => `<b style="color:#e67e22;font-size:16px;">${cfSummary.value.diff}건</b>` },
       { key: '_noReflect', label: '미반영',        type: 'readonly', html: true, fmt: () => `<b style="color:#e74c3c;font-size:16px;">${cfSummary.value.noReflect}건</b>` },
@@ -198,8 +199,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, codes, pager, recons, searchParam,                                  // 상태 / 데이터
-      baseSearchColumns, baseGridColumns, summaryFormColumns,                          // 컬럼 정의
       handleBtnAction, handleSelectAction,                                             // dispatch
       cfSummary,                                                                       // computed
       fnDiffBadge, fnTypeBadge, fmtW,                                                  // 헬퍼
@@ -227,16 +228,16 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card" style="margin-top:12px">
-    <bo-form-area :columns="summaryFormColumns" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
+    <bo-form-area :columns="columns.summaryForm" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
     <div style="height:12px"></div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
-      :columns="baseGridColumns" :rows="recons" row-key="reconId"
+      :columns="columns.baseGrid" :rows="recons" row-key="reconId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
       @set-page="n => handleSelectAction('recons-pager-setPage', n)" @size-change="handleSelectAction('recons-pager-sizeChange')">
       <template #head-actions>

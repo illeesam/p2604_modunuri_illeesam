@@ -277,7 +277,8 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
 
     // ===== 검색영역 컬럼 정의 (BoSearchArea :columns) ======================
         // --- [컬럼 정의] ---
-        const baseSearchColumns = [
+        const columns = {};
+        columns.baseSearch = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'discntNm', label: '할인명' },
@@ -295,7 +296,7 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 기본 그리드
-    const baseGridColumns = [
+    columns.baseGrid = [
       { key: 'discntNm',       label: '할인명', sortKey: 'nm', link: true,
         cellInnerStyle: (v) => uiStateDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'discntTypeCd',   label: '유형', badge: (row) => fnTypeBadge(row.discntTypeCd) },
@@ -311,7 +312,8 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
-    return { uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), discounts, uiState, codes, searchParam, baseSearchColumns, baseGridColumns, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
+    return {
+      columns, uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), discounts, uiState, codes, searchParam, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
       get tabMode() { return uiState.tabMode; }, set tabMode(v) { uiState.tabMode = v; } };
   },
   // ===== 템플릿 ===========================================================
@@ -325,7 +327,7 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" @search="onSearch" @reset="onReset" :columns="columns.baseSearch" :param="searchParam" />
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 목록영역 (리스트/카드 토글) ======================================== -->
@@ -365,7 +367,7 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
     <!-- ===== ■.■. 리스트 뷰 (BoGrid) ======================================== -->
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid v-if="tabMode==='list'" :bare="true"
-      :columns="baseGridColumns" :rows="discounts" row-key="discntId"
+      :columns="columns.baseGrid" :rows="discounts" row-key="discntId"
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(d) => selectedId===d.discntId ? 'background:#fff8f9;' : ''"

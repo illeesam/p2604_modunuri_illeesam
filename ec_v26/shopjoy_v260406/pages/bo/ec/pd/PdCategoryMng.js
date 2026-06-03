@@ -501,7 +501,8 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // --- [컬럼 정의] ---
 
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'siteId', label: '사이트 *', type: 'select', nullable: false,
         options: () => sites.map(s => ({ value: s.siteId, label: s.siteId + ' ' + s.siteNm })),
         onChange: () => handleSelectAction('searchParam-siteChange') },
@@ -512,8 +513,8 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       codes, uiState, sites, searchParam, gridRows, pager, catPickerModal,           // 상태 / 데이터
-      baseSearchColumns,                                                             // 컬럼 정의
       handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
       cfCatPickerList,                                                               // computed
       fnDepthColor, fnDepthBullet, parentNm, fnStatusClass, getRealIdx, fnCategoryDescCount,  // 헬퍼
@@ -554,7 +555,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
   <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" :columns="baseSearchColumns" :param="searchParam" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
+    <bo-search-area :loading="uiState.loading" :columns="columns.baseSearch" :param="searchParam" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
   </div>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 좌 트리 + 우 그리드 ============================================ -->

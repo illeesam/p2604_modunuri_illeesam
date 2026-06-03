@@ -597,7 +597,8 @@ window.SyVendorUserMng = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 업체 검색 (좌측 업체목록 상단)
-    const vendorSearchColumns = [
+    const columns = {};
+    columns.vendorSearch = [
       { key: 'bizSearchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'vendorNm', label: '업체명' },
@@ -612,7 +613,7 @@ window.SyVendorUserMng = {
     ];
 
     // 사용자 검색 (우측 사용자목록 상단)
-    const userSearchColumns = [
+    columns.userSearch = [
       { key: 'userSearchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'memberNm',          label: '이름' },
@@ -627,7 +628,7 @@ window.SyVendorUserMng = {
     ];
 
     // 판매업체 그리드
-    const vendorGridColumns = [
+    columns.vendorGrid = [
       { key: 'vendorTypeCd', label: '업체유형', align: 'center', badge: (row) => fnVendorTypeBadge(row.vendorTypeCd), fmt: (v) => fnVendorTypeLabel(v) },
       { key: 'vendorNm',     label: '업체명', cellStyle: 'font-weight:600' },
       { key: 'bizNo',        label: '사업자번호',
@@ -636,7 +637,7 @@ window.SyVendorUserMng = {
       { key: 'phone',        label: '전화', cellStyle: 'font-size:11.5px' },
     ];
     // 사용자 그리드
-    const userGridColumns = [
+    columns.userGrid = [
       { key: 'memberNm',           label: '이름', cellStyle: 'font-weight:600' },
       { key: 'positionCd',         label: '직위', cellStyle: 'color:#666' },
       { key: 'vendorUserDeptNm',   label: '부서', cellStyle: 'color:#666' },
@@ -645,7 +646,7 @@ window.SyVendorUserMng = {
       { key: 'vendorUserStatusCd', label: '상태', style: 'width:80px;text-align:center;', align: 'center', badge: (row) => fnStatusBadge(row.vendorUserStatusCd), fmt: (v) => fnStatusLabel(v) },
     ];
     /* BoGrid(bare) 컬럼 정의 — 부여된 역할 목록 */
-    const userRoleGridColumns = [
+    columns.userRoleGrid = [
       { key: 'roleNm',    label: '역할명', cellStyle: 'font-weight:600', fmt: (v, row) => row.roleNm || roleNmByCode(row.roleId) },
       { key: 'grantDate', label: '부여일시', cellStyle: 'color:#6b7280', fmt: (v) => v ? String(v).slice(0, 16) : '-' },
       { key: 'validTerm', label: '유효기간', cellStyle: 'color:#6b7280;',
@@ -658,7 +659,7 @@ window.SyVendorUserMng = {
     const fnUserRowStyle   = (u) => 'cursor:pointer;' + (formData.vendorUserId === u.vendorUserId ? 'background:#fff0f4;' : '');
 
     // 판매업체 사용자 폼
-    const baseVendorUserFormColumns = [
+    columns.baseVendorUserForm = [
       { key: 'vendorId',          label: '업체', type: 'readonly',
         fmt: (v) => fnVendorSummary(v) },
       { key: 'memberNm',          label: '이름', type: 'text', required: true },
@@ -679,8 +680,8 @@ window.SyVendorUserMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, codes, vendorUsers, vendors, bizPager, pager, formData, userRoles, roleTreeExpanded,            // 상태 / 데이터
-      vendorSearchColumns, userSearchColumns, vendorGridColumns, userGridColumns, userRoleGridColumns, baseVendorUserFormColumns, // 컬럼 정의
       handleBtnAction, handleSelectAction, fnCallbackModal,                                                                     // dispatch (모든 이벤트 / 액션 라우팅)
       cfVendorMap, cfFormRoleTree, cfFormAllowedRootCode, cfSelectedModalRole, cfModalMenuList,                // computed
       fnVendorNm, fnVendorTypeCd, fnVendorSummary, fnVendorStatusBadge, fnVendorStatusLabel,                   // 헬퍼
@@ -700,12 +701,12 @@ window.SyVendorUserMng = {
     <div>
       <!-- ===== ■.■.■. 업체 검색 영역 ========================================= -->
       <div class="card" style="margin-bottom:12px;">
-        <bo-search-area :columns="vendorSearchColumns" :param="uiState" :loading="uiState.loading"
+        <bo-search-area :columns="columns.vendorSearch" :param="uiState" :loading="uiState.loading"
           @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
       </div>
       <!-- ===== ■.■.■. 업체 목록 ============================================= -->
       <bo-grid
-        :columns="vendorGridColumns" :rows="bizPager.pageList||[]" :pager="bizPager" row-key="vendorId"
+        :columns="columns.vendorGrid" :rows="bizPager.pageList||[]" :pager="bizPager" row-key="vendorId"
         list-title="업체목록" :count-text="vendors.length + '건'"
         :row-style="fnVendorRowStyle" row-clickable
         @set-page="n => handleSelectAction('vendors-pager-setPage', n)"
@@ -722,12 +723,12 @@ window.SyVendorUserMng = {
     <div>
       <!-- ===== ■.■.■. 사용자 검색 영역 ======================================= -->
       <div class="card" style="margin-bottom:12px;">
-        <bo-search-area :columns="userSearchColumns" :param="uiState" :loading="uiState.loading"
+        <bo-search-area :columns="columns.userSearch" :param="uiState" :loading="uiState.loading"
           @search="handleBtnAction('userSearchParam-list')" @reset="handleBtnAction('userSearchParam-reset')" />
       </div>
       <!-- ===== ■.■.■. 사용자 목록 =========================================== -->
       <bo-grid v-if="uiState.searchVendorId != null"
-        :columns="userGridColumns" :rows="pager.pageList||[]" row-key="vendorUserId"
+        :columns="columns.userGrid" :rows="pager.pageList||[]" row-key="vendorUserId"
         list-title="사용자목록" :count-text="vendorUsers.length + '건'"
         :row-style="fnUserRowStyle" :loading="uiState.loading" :row-actions="true" row-clickable
         @set-page="n => handleSelectAction('vendorUsers-pager-setPage', n)"
@@ -786,7 +787,7 @@ window.SyVendorUserMng = {
     <!-- ===== ■.■. 업체사용자 상세 폼 (BoFormArea 자동 렌더) ========================= -->
     <div v-else style="padding:16px;">
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="baseVendorUserFormColumns" :form="formData" :errors="{}"
+      <bo-form-area :columns="columns.baseVendorUserForm" :form="formData" :errors="{}"
         :cols="3" compact :show-actions="false" />
     </div>
     <!-- ===== □.□. 업체사용자 상세 폼 (BoFormArea 자동 렌더) ========================= -->
@@ -807,7 +808,7 @@ window.SyVendorUserMng = {
         로딩 중...
       </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid v-else bare :columns="userRoleGridColumns" :rows="userRoles" row-key="vendorUserRoleId"
+      <bo-grid v-else bare :columns="columns.userRoleGrid" :rows="userRoles" row-key="vendorUserRoleId"
         empty-text="부여된 역할이 없습니다." row-actions>
         <template #row-actions="{ row }">
           <button class="btn btn-danger btn-xs" @click="handleSelectAction('userRoles-rowDelete', row)">

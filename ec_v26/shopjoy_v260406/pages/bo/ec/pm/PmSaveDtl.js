@@ -272,7 +272,8 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - info 탭 ======================
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // --- [컬럼 정의] ---
-    const infoFormColumns = [
+    const columns = {};
+    columns.infoForm = [
       { key: 'saveNm',      label: '마일리지명', type: 'text', required: true,
         placeholder: '마일리지명 입력' },
       { key: 'saveType',    label: '적립유형', type: 'select', options: () => codes.save_issue_types },
@@ -290,8 +291,8 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       vendors, showVendorModal, uiState, codes, form, errors,                       // 상태 / 데이터
-      infoFormColumns,                                                              // 컬럼 정의
       handleBtnAction, handleSelectAction, fnCallbackModal,                                          // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfHasId, cfSaveDisabled, cfDtlMode, cfVisibilityOptions, cfSelectedVendorNm, // computed
       tab, tabMode2,                                                                // toRef
@@ -325,7 +326,7 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
         📋 기본정보
       </div>
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
+      <bo-form-area :columns="columns.infoForm" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
         <!-- ===== ■.■.■.■. 판매업체 picker ======================================= -->
         <template #vendor>

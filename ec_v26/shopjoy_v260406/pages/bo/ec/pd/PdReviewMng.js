@@ -334,14 +334,15 @@ window.PdReviewMng = {
     const starStr  = r => '★'.repeat(Math.floor(r)) + (r % 1 >= 0.5 ? '½' : '') + '☆'.repeat(5 - Math.ceil(r));
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'reg' 와 sortKey 일치) */
         // --- [컬럼 정의] ---
-        const baseSearchColumns = [
+        const columns = {};
+        columns.baseSearch = [
       { key: 'searchValue', label: '리뷰제목', type: 'text', placeholder: '리뷰 제목 검색' },
       { key: 'status', label: '상태', type: 'select', options: () => codes.review_status_list, nullLabel: '전체' },
       { key: 'rating', label: '평점', type: 'select', options: () => codes.review_rating_opts, nullLabel: '전체' },
     ];
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 목록 그리드
-    const listGridColumns = [
+    columns.listGrid = [
       { key: 'reviewTitle',     label: '리뷰 제목', cellInnerClass: 'title-link' },
       { key: 'prodId',          label: '상품ID',   style: 'width:110px', cellStyle: 'font-size:12px;',
         linkToggle: {
@@ -369,7 +370,7 @@ window.PdReviewMng = {
     const fnGridRowClass = (row) => (selectedId.value === row.reviewId ? 'active' : '');
 
     /* 상품별 리뷰 목록 BoGrid 컬럼 */
-    const prodReviewGridColumns = [
+    columns.prodReviewGrid = [
       { key: 'reviewTitle',    label: '리뷰 제목', cellInnerClass: 'title-link' },
       { key: 'memberId',       label: '작성자',   style: 'width:80px', fmt: (v, row) => getMemNm(row.memberId) },
       { key: 'rating',         label: '평점',     style: 'width:90px;text-align:center', align: 'center',
@@ -388,9 +389,9 @@ window.PdReviewMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       reviews, uiState, searchParam, pager, codes,                                            // 상태 / 데이터
       prodReviews, prodReviewPager, statusModal,                                              // 상태 / 데이터
-      baseSearchColumns, listGridColumns, prodReviewGridColumns,                              // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                    // dispatch (모든 이벤트 / 액션 라우팅)
       cfSelectedRow, cfStatusModalRowTitle, cfStatusModalCurrentCd,                           // computed
       fnStatusBadge, STATUS_LABEL, getProdNm, getMemNm, starStr, sortIcon,                    // 헬퍼
@@ -407,11 +408,11 @@ window.PdReviewMng = {
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
-  <bo-grid :columns="listGridColumns" :rows="reviews" row-key="reviewId"
+  <bo-grid :columns="columns.listGrid" :rows="reviews" row-key="reviewId"
     :sort-state="uiState" list-title="상품리뷰 목록"
     :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다." row-clickable row-actions
@@ -439,7 +440,7 @@ window.PdReviewMng = {
     <!-- ===== ■.■. 그리드 (기본 10개 영역 + 화면 높이 반응형 확장, 초과 시 내부 스크롤) =========== -->
     <div style="max-height:calc(100vh - 340px);min-height:480px;overflow-y:auto;border:1px solid #eef0f3;border-radius:6px;background:#fff;">
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="prodReviewGridColumns" :rows="prodReviews" :pager="prodReviewPager"
+      <bo-grid bare :columns="columns.prodReviewGrid" :rows="prodReviews" :pager="prodReviewPager"
         row-key="reviewId" :row-class="fnProdReviewRowClass"
         empty-text="해당 상품의 리뷰가 없습니다." row-clickable
         @set-page="n => handleSelectAction('prodReviews-pager-setPage', n)" @size-change="handleBtnAction('prodReviews-pager-sizeChange')" @row-click="r => handleSelectAction('prodReviews-rowEdit', r)">

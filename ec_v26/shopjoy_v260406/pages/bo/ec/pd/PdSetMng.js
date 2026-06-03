@@ -517,12 +517,13 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
     /* BoGrid 컬럼 — 세트상품 목록 (client-side slice 페이징) */
     const cfSetPageRows = computed(() => setList.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
         // --- [컬럼 정의] ---
-        const baseSearchColumns = [
+        const columns = {};
+        columns.baseSearch = [
       { key: 'nm', label: '세트상품명', type: 'text', placeholder: '세트상품명 검색', width: '320px' },
     ];
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 세트 그리드
-    const setGridColumns = [
+    columns.setGrid = [
       { key: 'prodNm',    label: '세트상품' },
       { key: 'itemCount', label: '구성품수', style: 'width:70px;text-align:center', fmt: v => (v || 0) + '개' },
       { key: '_price',    label: '판매가',   style: 'width:110px;text-align:right', align: 'right',
@@ -537,7 +538,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
     const fnSetRowStyle = (g) => (uiState.dtlMode === 'edit' && uiState.editSetId === g.setProdId) ? 'background:#e6f4ff' : '';
 
     /* BoGrid 컬럼 — 구성품 목록 (인라인 편집 + 드래그) */
-    const setItemGridColumns = [
+    columns.setItemGrid = [
       { key: 'itemNm',     label: '표시명 (item_nm) *',       style: 'width:180px', edit: 'text', placeholder: '표시명 입력' },
       { key: 'itemProdId', label: '연결상품 (item_prod_id)' },
       { key: 'itemQty',    label: '수량',        style: 'width:80px;text-align:center', edit: 'number', align: 'center' },
@@ -548,7 +549,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
     const fnSetItemRowStyle = (item, idx) => uiState.dragoverIdx === idx ? 'background:#e6f4ff' : (item.useYn === 'N' ? 'opacity:0.55' : '');
 
     /* BoGrid 컬럼 — 구성품 상품 피커 */
-    const pickerGridColumns = [
+    columns.pickerGrid = [
       { key: 'productId', label: 'ID',       style: 'width:44px', cellStyle: 'color:#aaa;' },
       { key: 'prodNm',    label: '상품명', fmt: (v, row) => (row.prodNm || row.productName) },
       { key: 'category',  label: '카테고리', style: 'width:70px;text-align:center', align: 'center',
@@ -558,7 +559,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
     ];
 
     // 신규 세트 폼
-    const newSetFormColumns = [
+    columns.newSetForm = [
       { key: 'prodNm',       label: '세트상품명', type: 'text', required: true,
         placeholder: '세트상품명 입력', colSpan: 2 },
       { key: 'prodStatusCd', label: '상태', type: 'select', options: () => codes.bundle_statuses },
@@ -573,9 +574,9 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       codes, uiState, setList, searchParam, pager,                                          // 상태 / 데이터
       dtlCategories, dtlItems, newForm, newErrors, pickerResults,                           // 상태 / 데이터
-      baseSearchColumns, setGridColumns, setItemGridColumns, pickerGridColumns, newSetFormColumns, // 컬럼 정의
       handleBtnAction, handleSelectAction, fnCallbackModal,                                                  // dispatch (모든 이벤트 / 액션 라우팅)
       cfCatExcludeSet, cfDtlProdNm, cfSetPageRows, cfPickerList,                            // computed
       fnSetRowStyle, fnSetItemRowStyle,                                                     // 헬퍼
@@ -629,7 +630,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
   <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </div>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 목록 ====================================================== -->
@@ -650,7 +651,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
     <!-- ===== ■.■. 그리드 (기본 10개 영역 + 화면 높이 반응형 확장, 초과 시 내부 스크롤) =========== -->
     <div style="max-height:calc(100vh - 340px);min-height:480px;overflow-y:auto;border:1px solid #eef0f3;border-radius:6px;background:#fff;">
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="setGridColumns" :rows="cfSetPageRows"
+      <bo-grid bare :columns="columns.setGrid" :rows="cfSetPageRows"
         row-key="setProdId" :row-style="fnSetRowStyle" empty-text="데이터가 없습니다." row-actions>
         <template #cell-prodNm="{ row }">
           <td>
@@ -745,7 +746,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
         세트상품 기본정보 (pd_prod)
       </div>
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="newSetFormColumns" :form="newForm" :errors="newErrors"
+      <bo-form-area :columns="columns.newSetForm" :form="newForm" :errors="newErrors"
         :cols="3" compact :show-actions="false">
         <template #brand>
           <select class="form-control" v-model="newForm.brandId">
@@ -819,7 +820,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
 </div>
 <!-- ===== □.□. ③ 구성품 목록 ============================================== -->
 <!-- ===== ■.■. 목록 영역 ================================================= -->
-<bo-grid bare :columns="setItemGridColumns" :rows="dtlItems" row-key="_id"
+<bo-grid bare :columns="columns.setItemGrid" :rows="dtlItems" row-key="_id"
       draggable row-actions :row-style="fnSetItemRowStyle"
       empty-text="구성품이 없습니다. 아래 버튼으로 추가하세요."
       @reorder="onItemReorder">
@@ -905,7 +906,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
       </div>
       <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
         <!-- ===== ■.■.■.■.■. 목록 영역 =========================================== -->
-        <bo-grid bare :columns="pickerGridColumns" :rows="cfPickerList" row-key="productId"
+        <bo-grid bare :columns="columns.pickerGrid" :rows="cfPickerList" row-key="productId"
             empty-text="검색 결과가 없습니다." row-actions>
           <template #row-actions="{ row }">
             <button class="btn btn-blue btn-xs" @click="handleSelectAction('prodPickModal-add', row)">

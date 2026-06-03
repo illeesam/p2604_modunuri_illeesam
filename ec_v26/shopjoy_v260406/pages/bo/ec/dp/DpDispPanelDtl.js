@@ -867,7 +867,8 @@ window.DpDispPanelDtl = {
 
     /* BoGrid 컬럼 — 파일목록 (#/파일명/URL) 인라인 편집 */
     /* file_list 위젯용 (cfFileListItems) — updateFileItem(idx, field, value) */
-    const fileListGridColumns = [
+    const columns = {};
+    columns.fileListGrid = [
       { key: 'name', label: '파일명',     style: 'width:200px;',
         editIntercept: { placeholder: '파일명.pdf',
           onInput: (row, val, idx) => updateFileItem(idx, 'name', val) } },
@@ -887,26 +888,26 @@ window.DpDispPanelDtl = {
 
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - 패널코드/패널명/상태 ==========
     // 기본 패널 폼
-    const basePanelFormColumns = [
+    columns.basePanelForm = [
       { key: 'dispCode', label: '패널코드', type: 'text', required: true,
         placeholder: 'DP_YYMMDD_HHMMSS', mono: true },
       { key: 'name',     label: '패널명', type: 'text', required: true, placeholder: '패널 이름' },
       { key: 'status',   label: '상태', type: 'select', options: () => codes.active_statuses },
     ];
     // 표시경로 (picker) / 포함된 화면영역 (readonly 표시)
-    const pathAreaFormColumns = [
+    columns.pathAreaForm = [
       { key: 'pathId', label: '표시경로', type: 'slot', name: 'pathPick', colSpan: 3,
         hint: '예: FO.모바일메인' },
       { key: 'area',   label: '포함된 화면영역', type: 'slot', name: 'areaDisp', colSpan: 3,
         hint: '전시영역관리에서 편집' },
     ];
     // 위젯 행: 위젯 유형/노출 순서 (각 row 객체에 바인딩)
-    const widgetRowFormColumns = [
+    columns.widgetRowForm = [
       { key: 'widgetType', label: '위젯 유형', type: 'select', options: () => codes.disp_widget_types },
       { key: 'sortOrder',  label: '노출 순서', type: 'number', min: 1 },
     ];
     // 섹션 콘텐츠 - 패널정보 4컬럼 (코드/이름/경로/영역)
-    const sectionInfoFormColumns = [
+    columns.sectionInfoForm = [
       { key: 'dispCode', label: '패널코드', type: 'text', required: true,
         placeholder: 'DP_YYMMDD_HHMMSS', mono: true },
       { key: 'name',     label: '패널명', type: 'text', required: true, placeholder: '패널 이름' },
@@ -918,9 +919,8 @@ window.DpDispPanelDtl = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, pathPickModal, form, rows, codes, preview, cardPreview,              // 상태 / 데이터
-      basePanelFormColumns, pathAreaFormColumns, widgetRowFormColumns,                // 컬럼 정의
-      sectionInfoFormColumns, fileListGridColumns,                                    // 컬럼 정의
       handleBtnAction, handleSelectAction, fnCallbackModal,                             // dispatch + 모달 통합 콜백
       cfIsNew, cfAreas, cfTabLabels, cfTabRowMap, cfActiveRowIdx, cfActiveRow,        // computed
       cfDisplayRows, cfRelatedEvent, cfFileListItems, cfPreviewWidget,                // computed
@@ -1069,11 +1069,11 @@ window.DpDispPanelDtl = {
             </div>
             <!-- ===== ■.■.■.■.■.■.■.■. 패널코드/패널명/상태 (BoFormArea 자동 렌더) ============ -->
             <!-- ===== ■.■.■.■.■.■.■.■. 폼 영역 ====================================== -->
-            <bo-form-area :columns="basePanelFormColumns" :form="form" :errors="{}"
+            <bo-form-area :columns="columns.basePanelForm" :form="form" :errors="{}"
                   :readonly="cfDtlMode" :cols="3" compact :show-actions="false" />
             <!-- ===== ■.■.■.■.■.■.■.■. 표시경로 + 포함된 화면영역 (BoFormArea 자동 렌더) ======== -->
             <!-- ===== ■.■.■.■.■.■.■.■. 폼 영역 ====================================== -->
-            <bo-form-area :columns="pathAreaFormColumns" :form="form" :errors="{}"
+            <bo-form-area :columns="columns.pathAreaForm" :form="form" :errors="{}"
                   :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
               <template #pathPick>
                 <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
@@ -1477,7 +1477,7 @@ window.DpDispPanelDtl = {
                     </div>
                     <div v-else>
                       <!-- ===== ■.■.■.■.■.■.■.■.■.■. 목록 영역 ================================= -->
-                      <bo-grid bare :columns="fileListGridColumns" :rows="cfFileListItems" row-actions
+                      <bo-grid bare :columns="columns.fileListGrid" :rows="cfFileListItems" row-actions
                       empty-text="첨부파일이 없습니다. 아래 [+ 파일 추가] 버튼을 클릭하세요."
                       style="margin-bottom:8px;">
                         <template #row-actions="{ idx }">
@@ -1798,7 +1798,7 @@ window.DpDispPanelDtl = {
                     <div v-if="t.key === 'info'">
                       <!-- ===== ■.■.■.■.■.■. 패널코드/패널명/표시경로/포함영역 (BoFormArea 자동 렌더) ========= -->
                       <!-- ===== ■.■.■.■.■.■. 폼 영역 ========================================== -->
-                      <bo-form-area :columns="sectionInfoFormColumns" :form="form" :errors="{}"
+                      <bo-form-area :columns="columns.sectionInfoForm" :form="form" :errors="{}"
               :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
                         <template #pathPick2>
                           <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
@@ -1897,7 +1897,7 @@ window.DpDispPanelDtl = {
                         </div>
                         <!-- ===== ■.■.■.■.■.■. 위젯 유형/노출 순서 (BoFormArea 자동 렌더, r 로컬 변수에 바인딩) ===== -->
                         <!-- ===== ■.■.■.■.■.■. 폼 영역 ========================================== -->
-                        <bo-form-area :columns="widgetRowFormColumns" :form="r" :errors="{}"
+                        <bo-form-area :columns="columns.widgetRowForm" :form="r" :errors="{}"
               :readonly="cfDtlMode" :cols="3" compact :show-actions="false" />
                         <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
                           <label style="font-size:12px;font-weight:600;color:#555;width:90px;flex-shrink:0;">

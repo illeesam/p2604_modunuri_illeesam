@@ -140,7 +140,8 @@ window.SyBatchDtl = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 기본 폼
-    const baseFormColumns = [
+    const columns = {};
+    columns.baseForm = [
       { key: '_siteNm',       label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 2 },
       { key: 'batchNm',       label: '배치명', type: 'text', required: true, placeholder: '배치 이름' },
       { key: 'batchCode',     label: '배치코드', type: 'text', required: true,
@@ -155,8 +156,8 @@ window.SyBatchDtl = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, codes, form, errors, CRON_PRESETS,           // 상태 / 데이터
-      baseFormColumns,                                       // 컬럼 정의
       handleBtnAction,                                       // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfSiteNm, cfDtlMode,                          // computed
     };
@@ -174,7 +175,7 @@ window.SyBatchDtl = {
   <!-- ===== ■. 폼 영역 (BoFormArea 자동 렌더) ================================= -->
   <div class="card">
     <!-- ===== ■.■. 폼 영역 ================================================== -->
-    <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+    <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="3" compact
       @save="handleBtnAction('form-save')"
       @cancel="handleBtnAction('form-cancel')"

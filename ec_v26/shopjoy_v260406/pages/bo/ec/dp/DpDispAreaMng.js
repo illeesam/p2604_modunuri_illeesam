@@ -228,7 +228,8 @@ window.DpDispAreaMng = {
     const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}_${detailPanel.resetSeq}`);
 
     // 기본 검색
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'areaCd', label: '영역코드' },
@@ -240,7 +241,7 @@ window.DpDispAreaMng = {
     ];
 
     // 목록 그리드
-    const listGridColumns = [
+    columns.listGrid = [
       { key: 'areaCd',     label: '영역코드', cellInnerStyle: 'font-size:11px;font-family:monospace;' },
       { key: 'areaNm',     label: '영역명',   sortKey: 'nm', link: true },
       { key: 'areaTypeCd', label: '유형' },
@@ -253,8 +254,8 @@ window.DpDispAreaMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       areas, uiState, areaCounts, codes, searchParam, pager, detailPanel,                       // 상태 / 데이터
-      baseSearchColumns, listGridColumns,                                           // 컬럼 정의
       handleBtnAction, handleSelectAction,                                          // dispatch (모든 이벤트 / 액션 라우팅)
       cfDetailEditId, cfDetailKey,                                                  // computed
       fnPathLabel, sortIcon,                                                        // 헬퍼
@@ -270,7 +271,7 @@ window.DpDispAreaMng = {
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" search-label="🔍 조회" reset-label="↺ 초기화" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" search-label="🔍 조회" reset-label="↺ 초기화" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
@@ -292,7 +293,7 @@ window.DpDispAreaMng = {
       </div>
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-grid :columns="listGridColumns" :rows="areas" row-key="areaId" :pager="pager"
+    <bo-grid :columns="columns.listGrid" :rows="areas" row-key="areaId" :pager="pager"
       :sort-state="uiState" list-title="전시 영역 목록"
       :count-text="'총 ' + pager.pageTotalCount + '건'"
       empty-text="조회된 데이터가 없습니다." row-clickable

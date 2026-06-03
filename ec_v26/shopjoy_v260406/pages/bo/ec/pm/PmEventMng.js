@@ -240,7 +240,8 @@ window.PmEventMng = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // --- [컬럼 정의] ---
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'searchValue', type: 'text', label: '이벤트 제목', placeholder: '이벤트 제목 검색' },
       { key: 'status', type: 'select', label: '상태', options: () => codes.event_statuses, nullLabel: '상태 전체' },
       { key: 'dateRange', type: 'dateRange', label: '등록일',
@@ -250,7 +251,7 @@ window.PmEventMng = {
     ];
 
     // 기본 그리드
-    const baseGridColumns = [
+    columns.baseGrid = [
       { key: 'eventTitle',     label: '이벤트 제목', sortKey: 'nm', link: true,
         cellInnerStyle: (v) => detailPanel.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'targetProducts', label: '대상상품',
@@ -267,8 +268,8 @@ window.PmEventMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       events, uiState, codes, searchParam, pager, detailPanel,                       // 상태 / 데이터
-      baseSearchColumns, baseGridColumns,                                            // 컬럼 정의
       handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                           // computed
       tabMode,                                                                       // toRef
@@ -285,7 +286,7 @@ window.PmEventMng = {
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
@@ -321,7 +322,7 @@ window.PmEventMng = {
     </div>
     <!-- ===== ■.■. 리스트 뷰 ================================================= -->
     <bo-grid v-if="tabMode==='list'" :bare="true"
-      :columns="baseGridColumns" :rows="events" row-key="eventId"
+      :columns="columns.baseGrid" :rows="events" row-key="eventId"
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(e) => detailPanel.selectedId===e.eventId ? 'background:#fff8f9;' : ''"

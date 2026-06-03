@@ -294,7 +294,8 @@ window.Order = {
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     /* FoFormArea columns 정의 — 배송 주소는 slot 탈출구 사용(카카오 우편번호 버튼+3 input) */
     // --- [컬럼 정의] ---
-    const baseFormColumns = [
+    const columns = {};
+    columns.baseForm = [
       { key: 'name',  label: '이름',   type: 'text', required: true, placeholder: '홍길동' },
       { key: 'tel',   label: '연락처', type: 'tel',  required: true, placeholder: '010-1234-5678' },
       { type: 'rowBreak' },
@@ -309,9 +310,10 @@ window.Order = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, codes,                                                          // 상태
       handleBtnAction, handleSelectAction,                                     // dispatch
-      form, errors, clearErr, baseFormColumns,                                 // 폼
+      form, errors, clearErr, // 폼
       cfOrderItems, cfCartTotal, cfTotalCouponDiscount,                        // computed - 주문
       cfAppliedCash, cfFinalPrice, cfShippingCoupons,                          // computed - 금액/쿠폰
       parsePrice, fmt,                                                         // 헬퍼
@@ -660,7 +662,7 @@ window.Order = {
           👤 주문자 정보
         </h2>
         <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
-        <fo-form-area :columns="baseFormColumns" :form="form" :errors="errors" :cols="2" min-col-width="160px">
+        <fo-form-area :columns="columns.baseForm" :form="form" :errors="errors" :cols="2" min-col-width="160px">
           <template #address>
             <div style="display:flex;gap:8px;margin-bottom:8px;">
               <input v-model="form.postcode" class="form-input" placeholder="우편번호" readonly

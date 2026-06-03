@@ -618,7 +618,8 @@ window.SyCodeMng = {
     );
 
     // 기본 검색
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'codeGrp',   label: '코드그룹' },
@@ -669,7 +670,7 @@ window.SyCodeMng = {
     };
 
     // 트리 그리드
-    const treeGridColumns = [
+    columns.treeGrid = [
       { key: 'codeLabel',       label: '코드라벨',          style: 'min-width:220px;' },
       { key: 'codeValue',       label: '코드값',            edit: 'text', mono: true },
       { key: 'parentCodeValue', label: '상위코드값',        style: 'width:140px;',
@@ -689,7 +690,7 @@ window.SyCodeMng = {
     const treeRowKeyFn    = (it) => it.node.value;
 
     // 그룹 그리드
-    const grpGridColumns = [
+    columns.grpGrid = [
       { key: 'pathId',      label: '표시경로 (예: aa.bb.cc)', style: 'width:170px;max-width:170px;', pathPick: 'sy_code_grp' },
       { key: 'codeGrp',     label: '코드그룹', sortKey: 'codeGrp', edit: 'text', mono: true },
       { key: 'grpNm',       label: '그룹명',   sortKey: 'grpNm' },
@@ -703,8 +704,9 @@ window.SyCodeMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, codeGrpCounts, pageCodes, searchParam, treeExpanded, flatTree,                  // 상태 / 데이터
-      baseSearchColumns, fnCodeGridColumns, grpGridColumns, treeGridColumns,    // 컬럼 정의
+      fnCodeGridColumns, // 컬럼 정의
       treeRowAccessor, treeRowKeyFn,                                            // 컬럼 부속
       handleBtnAction, handleSelectAction,                                      // dispatch (모든 이벤트 / 액션 라우팅)
       fnCodeListTitle,                                                          // 헬퍼
@@ -723,7 +725,7 @@ window.SyCodeMng = {
   <!-- ===== ■. 검색 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </div>
   <!-- ===== □. 검색 영역 =================================================== -->
   <!-- ===== ■. 표시경로 트리 + 코드그룹 CRUD ===================================== -->
@@ -733,7 +735,7 @@ window.SyCodeMng = {
       :selected="uiState.grpSelectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
     <!-- ===== ■.■. CRUD 그리드 ============================================== -->
     <bo-grid-crud
-      :columns="grpGridColumns" :rows="uiState.grpRows" row-key="codeGrp"
+      :columns="columns.grpGrid" :rows="uiState.grpRows" row-key="codeGrp"
       list-title="공통코드그룹관리" max-height="392px"
       :show-row-id="false" :show-row-check="false" :draggable="false"
       :show-add="false" :show-save="false"
@@ -814,7 +816,7 @@ window.SyCodeMng = {
     <div v-if="uiState.activeCodeTab==='트리' && uiState.selectedGrp">
     <!-- ===== ■.■.■. CRUD 그리드 ============================================ -->
     <bo-grid-crud
-        :columns="treeGridColumns"
+        :columns="columns.treeGrid"
         :rows="uiState.gridRows" row-key="codeId"
         :flat-rows="flatTree" :row-accessor="treeRowAccessor" :tree-row-key="treeRowKeyFn"
         list-title="트리 형식 편집" max-height="400px"

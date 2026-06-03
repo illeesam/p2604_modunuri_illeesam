@@ -370,7 +370,8 @@ window.SyAlarmMng = {
     const cfDetailKey = computed(() => `${detailModal.dtlId}_${detailModal.dtlMode}_${detailModal.resetSeq}`);
 
     // 기본 검색
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'alarmTitle', label: '제목' },
@@ -387,7 +388,7 @@ window.SyAlarmMng = {
     ];
 
     // 기본 그리드
-    const baseGridColumns = [
+    columns.baseGrid = [
       { key: 'pathId',        label: '표시경로', style: 'width:170px;max-width:170px;',
         pathLabelOpen: { label: pathLabel, open: (row) => handleSelectAction('pathModal-open', row), placeholder: '경로 선택...' } },
       { key: 'alarmTypeCd',   label: '유형', badge: (row) => fnTypeBadge(row.alarmTypeCd) },
@@ -403,8 +404,8 @@ window.SyAlarmMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       alarms, uiState, alarmCounts, codes, searchParam, pager, detailModal, pathPickModal,         // 상태 / 데이터
-      baseSearchColumns, baseGridColumns,                                              // 컬럼 정의
       handleBtnAction, handleSelectAction, fnCallbackModal,                                             // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                             // computed
       fnRowStyle,                                                                      // 헬퍼
@@ -420,7 +421,7 @@ window.SyAlarmMng = {
   <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </div>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 좌 트리 + 우 영역 ============================================= -->
@@ -431,7 +432,7 @@ window.SyAlarmMng = {
     <div>
       <!-- ===== ■.■.■. 목록 그리드 ============================================ -->
       <bo-grid
-        :columns="baseGridColumns" :rows="alarms" row-key="alarmId"
+        :columns="columns.baseGrid" :rows="alarms" row-key="alarmId"
         list-title="알림목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="key => handleSelectAction('alarms-sort', key)"

@@ -305,7 +305,8 @@ window.DpDispWidgetMng = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'reg' 와 sortKey 일치) */
-    const listGridColumns = [
+    const columns = {};
+    columns.listGrid = [
       { key: 'widgetId',   label: 'ID',       style: 'width:56px;', link: true,
         cellStyle: 'color:#aaa;font-size:11px;vertical-align:top;padding-top:12px;font-family:monospace;',
         fmt: (v) => v ? '#' + String(v).slice(-6) : '-' },
@@ -314,8 +315,8 @@ window.DpDispWidgetMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       widgets, widgetLibs, uiState, widgetCounts, codes, searchParam, applied, pager, detailPanel, // 상태 / 데이터
-      listGridColumns,                                                                // 컬럼 정의
       handleBtnAction, handleSelectAction,                                            // dispatch (모든 이벤트 / 액션 라우팅)
       cfFilterDirty, cfSiteNm, cfDetailEditId, cfDetailKey, cfNoFilter,               // computed
       selectedId: computed(() => detailPanel.selectedId),                             // computed
@@ -424,7 +425,7 @@ window.DpDispWidgetMng = {
     <!-- ===== ■.■. 우측 목록 ================================================= -->
     <div style="flex:1;min-width:0;width:100%;">
       <!-- ===== ■.■.■. 목록 ================================================== -->
-      <bo-grid :columns="listGridColumns" :rows="widgets" row-key="widgetId" :pager="pager"
+      <bo-grid :columns="columns.listGrid" :rows="widgets" row-key="widgetId" :pager="pager"
         :sort-state="uiState" list-title="전시위젯" :row-style="fnRowStyle"
         :count-text="pager.pageTotalCount + '건'"
         empty-text="등록된 위젯이 없습니다."

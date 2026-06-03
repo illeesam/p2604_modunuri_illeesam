@@ -298,17 +298,19 @@ window.Prod01List = {
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     /* FoSearchArea :columns 자동 렌더 정의 — 단일 검색어 input 만 자동, 필터/조회는 default slot */
     // --- [컬럼 정의] ---
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'searchText', type: 'text', label: '상품명', placeholder: '상품명, 태그 검색...' },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+       columns,
        uiState, codes, allProds,                                     // 상태 / 데이터
       selColors, selSizes, selCats,                                        // 필터 상태
       handleBtnAction, handleSelectAction,                                 // dispatch
       cfAllColors, cfAllSizes, cfAllCats, cfHasFilter,                     // computed
-      fnCategoryLabel, isLiked, baseSearchColumns,                         // 헬퍼 / 컬럼
+      fnCategoryLabel, isLiked, // 헬퍼 / 컬럼
       onSearch, clearFilters,                                              // FoSearchArea @search 직결용 + 폴백
     };
   },
@@ -367,7 +369,7 @@ window.Prod01List = {
   <!-- ===== □. 카테고리 탭 (최상위 독립 배치) ====================================== -->
   <!-- ===== ■. 검색 바 ==================================================== -->
   <fo-search-area :show-actions="false" bar-style="margin-bottom:12px;"
-    :columns="baseSearchColumns" :param="uiState"
+    :columns="columns.baseSearch" :param="uiState"
     @search="onSearch">
     <button @click="handleBtnAction('filter-toggle')"
       style="display:flex;align-items:center;gap:6px;padding:10px 16px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg-card);cursor:pointer;font-size:0.85rem;font-weight:600;white-space:nowrap;transition:all 0.2s;"

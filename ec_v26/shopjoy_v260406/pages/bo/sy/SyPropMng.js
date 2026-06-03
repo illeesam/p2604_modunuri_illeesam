@@ -228,7 +228,8 @@ window.SyPropMng = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 기본 검색
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'pathId',    label: '표시경로' },
@@ -243,7 +244,7 @@ window.SyPropMng = {
     ];
 
     // 기본 그리드
-    const baseGridColumns = [
+    columns.baseGrid = [
       { key: 'pathId',     label: '표시경로',  style: 'width:170px;max-width:170px;', pathPick: 'sy_prop' },
       { key: 'propKey',    label: '키',        edit: 'text', mono: true },
       { key: 'propValue',  label: '값',        edit: 'text' },
@@ -256,8 +257,8 @@ window.SyPropMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, propCounts, codes, searchParam, propRows,                        // 상태 / 데이터
-      baseSearchColumns, baseGridColumns,                           // 컬럼 정의
       handleBtnAction, handleSelectAction,                          // dispatch (모든 이벤트 / 액션 라우팅)
     };
   },
@@ -270,7 +271,7 @@ window.SyPropMng = {
   <!-- ===== ■. 검색 바 ==================================================== -->
   <div class="card" style="padding:12px;margin-bottom:12px;">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </div>
   <!-- ===== □. 검색 바 ==================================================== -->
   <!-- ===== ■. 좌 트리 + 우 그리드 ============================================ -->
@@ -280,7 +281,7 @@ window.SyPropMng = {
       :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
     <!-- ===== ■.■. 그리드 (BoGridCrud) ====================================== -->
     <bo-grid-crud
-      :columns="baseGridColumns" :rows="propRows" row-key="propId"
+      :columns="columns.baseGrid" :rows="propRows" row-key="propId"
       list-title="프로퍼티목록" :draggable="false"
       @add="handleBtnAction('props-add')" @save="handleBtnAction('props-save')"
       @delete-checked="handleBtnAction('props-deleteChecked')" @cancel-checked="handleBtnAction('props-cancelChecked')"

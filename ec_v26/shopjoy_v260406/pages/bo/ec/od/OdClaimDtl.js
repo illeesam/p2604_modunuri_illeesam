@@ -274,7 +274,8 @@ window.OdClaimDtl = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     /* 결제정보 탭 그리드 컬럼 */
-    const paymentGridColumns = [
+    const columns = {};
+    columns.paymentGrid = [
       { key: 'method',  label: '환불수단' },
       { key: 'status',  label: '환불상태', badge: () => 'badge-orange' },
       { key: 'amount',  label: '환불금액', style: 'text-align:right;', fmt: (v) => fmt(v),
@@ -285,7 +286,7 @@ window.OdClaimDtl = {
     ];
 
     /* 정보수정이력 탭 그리드 컬럼 */
-    const editHistGridColumns = [
+    columns.editHistGrid = [
       { key: 'date',   label: '수정일시', style: 'width:140px;' },
       { key: 'user',   label: '수정자',   style: 'width:100px;' },
       { key: 'field',  label: '항목',     style: 'width:120px;' },
@@ -294,7 +295,7 @@ window.OdClaimDtl = {
     ];
 
     /* 클레임항목 그리드 컬럼 (번호 컬럼은 bo-grid 자동) */
-    const claimItemGridColumns = [
+    columns.claimItemGrid = [
       { key: 'prodNm',      label: '상품명' },
       { key: 'color',       label: '색상',       style: 'width:60px;',                fmt: v => v || '-' },
       { key: 'size',        label: '사이즈',     style: 'width:50px;',                fmt: v => v || '-' },
@@ -328,7 +329,7 @@ window.OdClaimDtl = {
     ];
 
     // 기본 폼 (cols=3 한 줄 3필드 + 상세 사유는 한 줄 전체)
-    const baseFormColumns = [
+    columns.baseForm = [
       // 1행: 클레임ID / 주문ID / 회원ID
       { key: 'claimId',      label: '클레임ID', type: 'text', required: true,
         placeholder: 'CLM-2026-XXX', readonly: !cfIsNew.value },
@@ -349,7 +350,7 @@ window.OdClaimDtl = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     /* itemExpandColumns — 클레임항목 행 펼침 BoFormArea 컬럼 (교환품 정보) */
-    const itemExpandColumns = [
+    columns.itemExpand = [
       { key: '_exchLabel', label: '교환품',  type: 'readonly', html: true, fmt: () => `<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:#3b82f6;color:#fff;font-weight:800;">↔ 교환</span>` },
       { key: '_exchProd',  label: '상품명',  type: 'readonly', html: true, fmt: (v, row) => `<b style="color:#1e40af;">${getExchangedItem(row).prodNm || '-'}</b>` },
       { key: '_exchColor', label: '색상',    type: 'readonly', html: true, fmt: (v, row) => `<b>${row.color || '-'}</b> → <b style="color:#1e40af;">${getExchangedItem(row).color || '-'}</b>` },
@@ -359,8 +360,8 @@ window.OdClaimDtl = {
     ];
 
     return {
+      columns,
       form, errors, codes, claimItems, expandedItems, activeTab, tabMode2,                                // 상태 / 데이터
-      baseFormColumns, paymentGridColumns, editHistGridColumns, claimItemGridColumns, itemExpandColumns,  // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                                // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfDtlMode, cfStatusOptions, cfClaimSteps, cfCurrentStepIdx, tabs, cfEditHistList,        // computed
       cfPaymentList, cfStatusHistList, cfAllExpanded,                                                     // computed
@@ -446,7 +447,7 @@ window.OdClaimDtl = {
 </div>
 <!-- ===== ■.■.■. 기본정보 폼 (BoFormArea 자동 렌더) =========================== -->
 <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-<bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+<bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="3" compact :show-actions="active"
         @save="handleBtnAction('form-save')"
         @cancel="handleBtnAction('form-cancel')"
@@ -489,7 +490,7 @@ window.OdClaimDtl = {
   </button>
 </div>
 <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-<bo-grid bare :columns="claimItemGridColumns" :rows="claimItems"
+<bo-grid bare :columns="columns.claimItemGrid" :rows="claimItems"
         :is-expanded="fnItemExpanded"
         empty-text="클레임 항목 정보가 없습니다.">
   <template #cell-prodNm="{ row, idx }">
@@ -502,7 +503,7 @@ window.OdClaimDtl = {
   </template>
   <template #row-expand="{ row, colspan }">
     <td :colspan="colspan" style="padding:10px 14px;background:#f0f7ff;">
-      <bo-form-area :columns="itemExpandColumns" :form="row" :cols="3" compact readonly label-left :show-actions="false">
+      <bo-form-area :columns="columns.itemExpand" :form="row" :cols="3" compact readonly label-left :show-actions="false">
         <template #tracking>
           <div class="readonly-field" @click="handleBtnAction('tracking-open', { courier: getExchangedItem(row).courier, trackingNo: getExchangedItem(row).trackingNo })" style="cursor:pointer;padding:2px 8px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-size:11px;font-weight:700;display:inline-block;">
             {{ getExchangedItem(row).courier }} · {{ getExchangedItem(row).trackingNo || '-' }} 🔍
@@ -545,7 +546,7 @@ window.OdClaimDtl = {
   </span>
 </div>
 <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-<bo-grid bare :columns="paymentGridColumns" :rows="cfPaymentList" empty-text="결제·환불 정보가 없습니다.">
+<bo-grid bare :columns="columns.paymentGrid" :rows="cfPaymentList" empty-text="결제·환불 정보가 없습니다.">
 </bo-grid>
 </div>
 <!-- ===== □.□. 결제정보 탭 ================================================ -->
@@ -569,7 +570,7 @@ window.OdClaimDtl = {
   </span>
 </div>
 <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-<bo-grid bare :columns="editHistGridColumns" :rows="cfEditHistList" empty-text="정보 수정 이력이 없습니다.">
+<bo-grid bare :columns="columns.editHistGrid" :rows="cfEditHistList" empty-text="정보 수정 이력이 없습니다.">
 </bo-grid>
 </div>
 </div>

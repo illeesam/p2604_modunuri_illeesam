@@ -304,14 +304,15 @@ window.XsSample06 = {
     }[s] || '');
 
     /* FoSearchArea :columns 자동 렌더 정의 */
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'searchValue',  type: 'text',   label: '쿠폰명', placeholder: '쿠폰명 검색', width: '180px' },
       { key: 'discountType', type: 'select', label: '할인유형', options: () => codes.discnt_type_opts, nullLabel: '할인유형 전체' },
       { key: 'useYn',        type: 'select', label: '사용여부', options: () => codes.use_yn_opts,      nullLabel: '사용여부 전체' },
     ];
 
     // 기본 그리드
-    const baseGridColumns = [
+    columns.baseGrid = [
       { key: 'couponNm',     label: '쿠폰명', edit: 'text' },
       { key: 'discountType', label: '할인유형', edit: 'select', width: '80px', align: 'center',
         options: codes.discnt_type_opts },
@@ -324,8 +325,8 @@ window.XsSample06 = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, codes, toast, searchParam, gridRows,     // 상태 / 데이터
-      baseSearchColumns, baseGridColumns,                     // 컬럼 정의
       handleBtnAction, handleSelectAction,                    // dispatch
     };
   },
@@ -348,7 +349,7 @@ window.XsSample06 = {
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;margin-bottom:8px;">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <fo-search-area :columns="baseSearchColumns" :param="searchParam"
+    <fo-search-area :columns="columns.baseSearch" :param="searchParam"
       @search="handleBtnAction('search-search')" @reset="handleBtnAction('search-reset')" />
   </div>
   <!-- ===== □.□. 검색 영역 ================================================= -->
@@ -356,7 +357,7 @@ window.XsSample06 = {
   <!-- ===== ■. 목록 영역 =================================================== -->
   <fo-grid-crud
     list-title="쿠폰 목록" row-key="couponId"
-    :columns="baseGridColumns" :rows="gridRows"
+    :columns="columns.baseGrid" :rows="gridRows"
     v-model:checkAll="uiState.checkAll"
     v-model:focusedIdx="uiState.focusedIdx"
     @add="handleBtnAction('coupons-add')" @save="handleBtnAction('coupons-save')"

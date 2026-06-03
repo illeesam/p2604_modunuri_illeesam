@@ -1258,7 +1258,8 @@ window.PdProdDtl = {
     const fnNoCursor = () => '';
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 담당 MD 그리드
-    const mdUserGridColumns = [
+    const columns = {};
+    columns.mdUserGrid = [
       { key: 'userNm', label: '이름',
         fmt: (v, row) => form.mdUserId === row.userId ? `✔ ${row.userNm || ''}` : (row.userNm || ''),
         cellStyle: (v, row) => form.mdUserId === row.userId ? 'color:#e8587a;' : '' },
@@ -1268,7 +1269,7 @@ window.PdProdDtl = {
     /* fnMdRowStyle — 유틸 */
     const fnMdRowStyle = (u) => 'cursor:pointer;' + (form.mdUserId === u.userId ? 'background:#fff0f4;font-weight:700;' : '');
     // 상품 선택 모달 그리드
-    const prodPickerGridColumns = [
+    columns.prodPickerGrid = [
       { key: 'productId', label: 'ID',       style: 'width:46px;', align: 'center', cellStyle: 'color:#888;' },
       { key: 'prodNm',    label: '상품명',   cellStyle: 'font-weight:600;' },
       { key: 'category',  label: '카테고리', style: 'width:80px;' },
@@ -1279,7 +1280,7 @@ window.PdProdDtl = {
       { key: 'status',    label: '상태',     style: 'width:60px;', badge: row => row.status==='판매중' ? 'badge-green' : 'badge-gray', cellStyle: 'font-size:10px;' },
     ];
     // 잔여 SKU 그리드
-    const remainSkuGridColumns = [
+    columns.remainSkuGrid = [
       { key: '_nm1',     label: '1단 옵션', badge: () => 'badge-gray', fmt: (v, row) => (row._nm1 || '-') },
       { key: '_nm2',     label: '2단 옵션', badge: () => 'badge-blue', fmt: (v, row) => (row._nm2 || '-') },
       { key: 'skuCode',  label: 'SKU코드',  style: 'color:#888;' },
@@ -1298,14 +1299,14 @@ window.PdProdDtl = {
     const fnRemainSkuRowStyle = () => 'opacity:0.6;background:#f9f9f9;';
 
     /* BoGrid 컬럼 — 연관상품 (pd_prod_rel · REL_PROD) */
-    const relProdGridColumns = [
+    columns.relProdGrid = [
       { key: '_id2',     label: 'ID',     style: 'width:46px;text-align:center;', align: 'center',
         cellStyle: 'color:#888;', fmt: (v, row) => (row.relProdId || row.prodId) },
       { key: 'prodNm',   label: '상품명', refLink: 'prod', refKey: 'relProdId' },
       { key: '_relType', label: '유형',   style: 'width:80px;', fmt: (v, row) => (row.prodRelTypeCdNm || row.prodRelTypeCd) },
     ];
     /* BoGrid 컬럼 — 코디상품 (pd_prod_rel · CODY_PROD) */
-    const codeProdGridColumns = [
+    columns.codeProdGrid = [
       { key: 'productId', label: 'ID',     style: 'width:46px;text-align:center;', align: 'center', cellStyle: 'color:#888;' },
       { key: 'prodNm',    label: '상품명', refLink: 'prod', refKey: 'productId' },
       { key: 'category',  label: '카테고리', style: 'width:80px;' },
@@ -1321,7 +1322,7 @@ window.PdProdDtl = {
      * _start/_end: bo-date-time-picker 커스텀 컴포넌트 슬롯 KEEP
      * planStatus/listPrice/salePrice/purchasePrice: BoGrid edit 자동 렌더 (@cell-change 미사용, change 시 onPlanChange 호출 위해 슬롯 유지)
      */
-    const planGridColumns = [
+    columns.planGrid = [
       { key: '_start',       label: '시작일시', style: 'width:140px;',
         dateTimePick: { dateKey: 'startDate', timeKey: 'startTime', showNow: false, showClear: false } },
       { key: '_end',         label: '종료일시', style: 'width:140px;',
@@ -1348,7 +1349,7 @@ window.PdProdDtl = {
     const fnPlanRowStyle2 = (row) => planRowStyle(row._row_status);
 
     // 기본정보 통합 폼 (cols=3 한 줄에 3필드씩 배치)
-    const infoFormColumns = [
+    columns.infoForm = [
       // 1행: 상품명 / 상품코드(SKU) / 상품유형
       { key: 'prodNm',       label: '상품명', type: 'text', required: true, placeholder: '상품명' },
       { key: 'prodCode',     label: '상품코드 (SKU)', type: 'text', placeholder: '예: SKU-20260419-001' },
@@ -1376,7 +1377,7 @@ window.PdProdDtl = {
         hint: 'NULL=무기한' },
     ];
     // 상세설정 통합 (광고 노출 기간 + 구매 제한) — cols=3 한 행 3필드 채움
-    const detailFormColumns = [
+    columns.detailForm = [
       // 1행: 광고 시작 / 광고 종료 / 최소구매수량
       { key: 'advrtStartDate', label: '광고 노출 시작', type: 'slot', name: 'advrtStart' },
       { key: 'advrtEndDate',   label: '광고 노출 종료', type: 'slot', name: 'advrtEnd' },
@@ -1387,7 +1388,7 @@ window.PdProdDtl = {
       { key: 'idMaxBuyQty',    label: 'ID당 누적 최대 (id_max_buy_qty)', type: 'number', min: 1, placeholder: '무제한' },
     ];
     // 기본 가격 (3 rows: 정가/판매가, 매입가/마진율, 플랫폼수수료율/금액)
-    const basePriceFormColumns = [
+    columns.basePriceForm = [
       { key: 'listPrice',         label: '정가 (list_price)', type: 'number', required: true, min: 0, placeholder: '0' },
       { key: 'salePrice',         label: '판매가 (sale_price)', type: 'number', required: true, min: 0, placeholder: '0' },
       { key: 'purchasePrice',     label: '매입가 / 원가 (purchase_price)', type: 'number', placeholder: '(선택)',
@@ -1400,13 +1401,14 @@ window.PdProdDtl = {
     ];
     // (광고 노출 기간 / 구매 제한은 detailFormColumns 로 통합됨 — 위 정의 참조)
     // 단일 재고 (옵션 미사용)
-    const singleStockFormColumns = [
+    columns.singleStockForm = [
       { key: 'prodStock', label: '재고수량 (prod_stock)', type: 'number',
         placeholder: '0', min: 0, width: '160px' },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
-    return { handleBtnAction, handleSelectAction, fnCallbackModal,                   // dispatch + 모달 통합 콜백
+    return {
+      columns, handleBtnAction, handleSelectAction, fnCallbackModal,                   // dispatch + 모달 통합 콜백
       cfIsNew, cfHasProdId, cfSaveDisabled, showTab, topTab, cfDtlMode, tabMode2, tabs, form, errors, handleSave, onPreview, codeGrpModal, openCodeGrpModal,
       tabPage, tabData, cfTabPageList, onTabPageChange, cfTabTotalPages, fnTabPageNos,
       uiState, cfMdUserList, cfMdUserListFiltered, cfMdSelectedNm, openMdModal, selectMdUser, mdSearchTypeRef, prodPickerSearchType,
@@ -1431,13 +1433,10 @@ window.PdProdDtl = {
       prodOptCategoryTypeCd, openHelp,
       safeFirst, safeGet, safeFind, safeFilter,
       grpCodes,
-      fnNoCursor, mdUserGridColumns, fnMdRowStyle, prodPickerGridColumns, remainSkuGridColumns, fnRemainSkuRowStyle,
-      relProdGridColumns, codeProdGridColumns, planGridColumns,
+      fnNoCursor, fnMdRowStyle, fnRemainSkuRowStyle,
       fnPlanRowChecked, onPlanToggleCheck, onPlanToggleCheckAll, fnPlanRowStyle2,
       dtlId: Vue.computed(() => props.dtlId),
-      infoFormColumns, detailFormColumns, basePriceFormColumns,
-      singleStockFormColumns,
-    };
+      };
   },
   template: /* html */`
 <div>
@@ -1473,7 +1472,7 @@ window.PdProdDtl = {
         📋 기본정보
       </div>
       <!-- ===== ■.■.■. 기본정보 통합 폼 (BoFormArea 자동 렌더, cols=3 한 줄 3필드) ======== -->
-      <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
+      <bo-form-area :columns="columns.infoForm" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
         <template #categories>
           <div style="border:1px solid #e2e8f0;border-radius:6px;background:#fff;min-height:38px;padding:4px 6px;">
@@ -1591,7 +1590,7 @@ window.PdProdDtl = {
             <!-- ===== ■.■.■.■.■.■. 목록 ============================================ -->
             <div style="overflow-y:auto;flex:1;padding:8px 12px;">
               <!-- ===== ■.■.■.■.■.■.■. 목록 영역 ======================================= -->
-              <bo-grid bare :columns="mdUserGridColumns" :rows="cfMdUserListFiltered" row-key="userId"
+              <bo-grid bare :columns="columns.mdUserGrid" :rows="cfMdUserListFiltered" row-key="userId"
                 :row-style="fnMdRowStyle" empty-text="검색 결과가 없습니다." row-clickable @row-click="selectMdUser">
               </bo-grid>
             </div>
@@ -2082,7 +2081,7 @@ window.PdProdDtl = {
     </div>
   </div>
   <!-- ===== ■.■.■. 상세설정 통합 폼 (광고 노출 + 구매 제한, cols=3 한 줄 3필드) ===== -->
-  <bo-form-area :columns="detailFormColumns" :form="form" :errors="errors"
+  <bo-form-area :columns="columns.detailForm" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
     <template #advrtStart>
       <bo-date-time-picker v-model="form.advrtStartDate" />
@@ -2265,7 +2264,7 @@ window.PdProdDtl = {
       </button>
     </div>
     <!-- ===== ■.■.■.■. 목록 영역 ============================================= -->
-    <bo-grid bare :columns="relProdGridColumns" :rows="relProds" row-key="_id"
+    <bo-grid bare :columns="columns.relProdGrid" :rows="relProds" row-key="_id"
           draggable row-actions empty-text="+ 추가 버튼으로 연관상품을 등록하세요."
           @reorder="onRelDrop"
           @ref-click="({id}) => navigate('pdProdDtl', { id })">
@@ -2298,7 +2297,7 @@ window.PdProdDtl = {
       </button>
     </div>
     <!-- ===== ■.■.■.■. 목록 영역 ============================================= -->
-    <bo-grid bare :columns="codeProdGridColumns" :rows="codeProds" row-key="_id"
+    <bo-grid bare :columns="columns.codeProdGrid" :rows="codeProds" row-key="_id"
           draggable row-actions empty-text="+ 추가 버튼으로 코디상품을 등록하세요."
           @reorder="onCodeDrop"
           @ref-click="({id}) => navigate('pdProdDtl', { id })">
@@ -2341,7 +2340,7 @@ window.PdProdDtl = {
     </span>
   </div>
   <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-  <bo-form-area :columns="basePriceFormColumns" :form="form" :errors="errors"
+  <bo-form-area :columns="columns.basePriceForm" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
     <!-- ===== ■.■.■.■. 마진율 (purchasePrice 입력 시 자동 계산) ==================== -->
     <template #marginRate>
@@ -2423,7 +2422,7 @@ window.PdProdDtl = {
     </div>
     <div style="overflow-x:auto;">
       <!-- ===== ■.■.■.■.■. 목록 영역 =========================================== -->
-      <bo-grid bare :columns="planGridColumns" :rows="cfPlanVisible" row-key="_id"
+      <bo-grid bare :columns="columns.planGrid" :rows="cfPlanVisible" row-key="_id"
             selectable checked-key="_id"
             :all-checked="cfPlanAllChecked" :is-checked="fnPlanRowChecked"
             :row-style="fnPlanRowStyle2"
@@ -2680,7 +2679,7 @@ window.PdProdDtl = {
     </div>
     <!-- ===== ■.■.■.■. 재고수량 (BoFormArea 자동 렌더) =========================== -->
     <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
-    <bo-form-area :columns="singleStockFormColumns" :form="form" :errors="errors"
+    <bo-form-area :columns="columns.singleStockForm" :form="form" :errors="errors"
           :readonly="cfDtlMode" :cols="3" compact :show-actions="false" />
     <template v-if="tabData.skus.length">
       <div style="font-size:12px;font-weight:600;color:#888;margin-bottom:8px;">
@@ -2694,7 +2693,7 @@ window.PdProdDtl = {
       </div>
       <div style="overflow-x:auto;margin-bottom:16px;">
         <!-- ===== ■.■.■.■.■.■. 목록 영역 ========================================= -->
-        <bo-grid bare :columns="remainSkuGridColumns"
+        <bo-grid bare :columns="columns.remainSkuGrid"
               :rows="tabData.skus.slice((tabPage.skus.pageNo-1)*tabPage.skus.pageSize, tabPage.skus.pageNo*tabPage.skus.pageSize)"
               row-key="skuId" :row-style="fnRemainSkuRowStyle" empty-text="잔존 SKU 데이터가 없습니다.">
         </bo-grid>

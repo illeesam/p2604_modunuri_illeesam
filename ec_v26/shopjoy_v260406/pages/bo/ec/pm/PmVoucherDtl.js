@@ -351,7 +351,8 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
     // dtlMode: 'view'이면 읽기전용, 'new'/'edit'이면 편집
     const cfDtlMode = computed(() => props.dtlMode === 'view');
     /* BoGrid(bare) 컬럼 정의 — 발급내역 / 사용내역 */
-    const issueGridColumns = [
+    const columns = {};
+    columns.issueGrid = [
       { key: 'issueNo',     label: '발급번호' },
       { key: 'memberNm',    label: '회원명' },
       { key: 'issueDate',   label: '발급일', fmt: (v) => v ? String(v).slice(0, 10) : '-' },
@@ -361,7 +362,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
         badge: row => row.status === '정상' ? 'badge-green' : row.status === '사용완료' ? 'badge-blue' : row.status === '만료됨' ? 'badge-gray' : 'badge-gray' },
     ];
     // 사용 그리드
-    const usageGridColumns = [
+    columns.usageGrid = [
       { key: 'usageNo',    label: '사용번호' },
       { key: 'issueNo',    label: '발급번호' },
       { key: 'memberNm',   label: '회원명' },
@@ -373,7 +374,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - info 탭 ======================
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // --- [컬럼 정의] ---
-    const infoFormColumns = [
+    columns.infoForm = [
       { key: 'voucherNm',     label: '상품권명', type: 'text', required: true,
         placeholder: '예: ShopJoy 10,000원 상품권' },
       { key: 'voucherAmt',    label: '액면가 (원)', type: 'number', required: true, placeholder: '0' },
@@ -391,8 +392,8 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       vendors, showVendorModal, uiState, codes, form, errors, snsModal, snsMsg,        // 상태 / 데이터
-      infoFormColumns, issueGridColumns, usageGridColumns,                             // 컬럼 정의
       handleBtnAction, handleSelectAction, fnCallbackModal,                                             // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfHasId, cfSaveDisabled, cfDtlMode, cfIssuedList, cfUsedList, cfSelectedVendorNm, tabs, // computed / reactive(tabs)
       tab, tabMode2, previewTab, barcodeContainer, qrcodeContainer,                    // toRef
@@ -424,7 +425,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       기본정보
     </div>
     <!-- ===== ■.■. 폼 영역 ================================================== -->
-    <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
+    <bo-form-area :columns="columns.infoForm" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
       <!-- ===== ■.■.■. 판매업체 picker ========================================= -->
       <template #vendor>
@@ -669,7 +670,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       발급내역
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-grid bare :columns="issueGridColumns" :rows="cfIssuedList" row-key="issueNo"
+    <bo-grid bare :columns="columns.issueGrid" :rows="cfIssuedList" row-key="issueNo"
       empty-text="발급내역이 없습니다.">
     </bo-grid>
   </div>
@@ -681,7 +682,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       사용내역
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-grid bare :columns="usageGridColumns" :rows="cfUsedList" row-key="usageNo"
+    <bo-grid bare :columns="columns.usageGrid" :rows="cfUsedList" row-key="usageNo"
       empty-text="사용내역이 없습니다.">
     </bo-grid>
   </div>

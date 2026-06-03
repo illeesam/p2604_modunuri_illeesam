@@ -647,7 +647,8 @@ window.DpDispWidgetLibDtl = {
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - Lib코드/라이브러리명/상태 =====
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 기본 위젯 라이브러리 폼
-    const baseLibFormColumns = [
+    const columns = {};
+    columns.baseLibForm = [
       { key: 'libCode', label: 'Lib코드', type: 'text', required: true,
         placeholder: '비워두면 자동 생성 (예: DL_260508_191415)', mono: true },
       { key: 'name',    label: '라이브러리명', type: 'text', required: true,
@@ -658,15 +659,15 @@ window.DpDispWidgetLibDtl = {
         hint: '쉼표 구분', colSpan: 3 },
     ];
     // 클릭 액션
-    const clickActionFormColumns = [
+    columns.clickActionForm = [
       { key: 'clickAction', label: '클릭 동작', type: 'select', options: () => codes.click_action_opts },
       { key: 'clickTarget', label: '클릭 대상', type: 'text', placeholder: '/products 또는 이벤트명' },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       pathPickModal, uiState, codes, form, errors,                                   // 상태 / 데이터
-      baseLibFormColumns, clickActionFormColumns,                                    // 컬럼 정의
       handleBtnAction, handleSelectAction, fnCallbackModal,                            // dispatch + 모달 통합 콜백
       cfDtlMode, cfIsNew, cfDisplayRows, cfFileListItems,                            // computed
       cfPreviewWidget, cfSampleJson, cfPreviewFrameWidth,                            // computed
@@ -721,7 +722,7 @@ window.DpDispWidgetLibDtl = {
         </div>
         <!-- ===== ■.■.■.■. Lib코드/라이브러리명/상태/설명/태그 (BoFormArea 자동 렌더) ========== -->
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
-        <bo-form-area :columns="baseLibFormColumns" :form="form" :errors="errors"
+        <bo-form-area :columns="columns.baseLibForm" :form="form" :errors="errors"
           :readonly="false" :cols="2" compact :show-actions="false" />
         <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">
           표시경로
@@ -806,7 +807,7 @@ window.DpDispWidgetLibDtl = {
           👆 클릭동작
         </div>
         <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
-        <bo-form-area :columns="clickActionFormColumns" :form="form" :errors="errors"
+        <bo-form-area :columns="columns.clickActionForm" :form="form" :errors="errors"
             :readonly="false" :cols="3" compact :show-actions="false" />
       </div>
       <!-- ===== ■.■.■.■. 공통 동적 행 =========================================== -->

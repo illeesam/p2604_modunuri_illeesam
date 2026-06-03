@@ -135,7 +135,8 @@ window.OdClaimHist = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 처리 폼
-    const processFormColumns = [
+    const columns = {};
+    columns.processForm = [
       { key: 'refundAmount',   label: '환불금액', type: 'number' },
       { key: 'refundMethodCd', label: '환불방법', type: 'select', options: () => codes.refund_methods },
       { type: 'rowBreak' },
@@ -144,8 +145,8 @@ window.OdClaimHist = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       claimItems, processForm, codes, botTab, tabMode2, relatedOrder, relatedDliv, tabs,                   // 상태 / 데이터 / reactive(tabs)
-      processFormColumns,                                                                                  // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                                 // dispatch (모든 이벤트 / 액션 라우팅)
       cfStatusOptions,                                                                                     // computed
       showTab,                                                                                             // 헬퍼
@@ -303,7 +304,7 @@ window.OdClaimHist = {
         ⚙ 처리 정보
       </div>
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="processFormColumns" :form="processForm" :errors="{}"
+      <bo-form-area :columns="columns.processForm" :form="processForm" :errors="{}"
         :cols="3" :show-actions="false" />
       <div class="form-actions">
         <button class="btn btn-primary" @click="handleBtnAction('processForm-save')">

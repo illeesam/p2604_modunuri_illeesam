@@ -94,7 +94,8 @@ window.Contact = {
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     /* FoFormArea columns 정의 */
     // --- [컬럼 정의] ---
-    const baseFormColumns = [
+    const columns = {};
+    columns.baseForm = [
       { key: 'name',        label: '이름',     type: 'text',  required: true, placeholder: '홍길동' },
       { key: 'email',       label: '이메일',   type: 'email', required: true, placeholder: 'hello@example.com' },
       { key: 'tel',         label: '연락처',   type: 'tel',   placeholder: '010-1234-5678' },
@@ -109,9 +110,10 @@ window.Contact = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, codes, showToast,                       // 상태
       handleBtnAction, handleSelectAction,             // dispatch
-      form, errors, baseFormColumns,                   // 폼
+      form, errors, // 폼
       cfInquiryCodes,                                  // computed
       handleSubmit,                                    // 이벤트 (호환)
     };
@@ -153,7 +155,7 @@ window.Contact = {
         ✉️ 문의 양식
       </h2>
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <fo-form-area :columns="baseFormColumns" :form="form" :errors="errors" :cols="2" />
+      <fo-form-area :columns="columns.baseForm" :form="form" :errors="errors" :cols="2" />
       <div style="margin-bottom:22px;">
         <label class="form-label">
           첨부파일

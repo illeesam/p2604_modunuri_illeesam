@@ -319,14 +319,15 @@ window.XsSample02 = {
     const cfCategoryOpts = computed(() => codes.category_opts.map(c => ({ value: c, label: c })));
 
     /* FoSearchArea :columns 자동 렌더 정의 */
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'searchValue', type: 'text',   label: '상품명', placeholder: '상품명 검색', width: '180px' },
       { key: 'category',    type: 'select', label: '카테고리', options: () => cfCategoryOpts.value,   nullLabel: '카테고리 전체' },
       { key: 'status',      type: 'select', label: '상태', options: () => codes.prod_status_opts, nullLabel: '상태 전체' },
     ];
 
     // 기본 그리드
-    const baseGridColumns = [
+    columns.baseGrid = [
       { key: 'productNm', label: '상품명', edit: 'text' },
       { key: 'category',  label: '카테고리', edit: 'select', width: '100px', align: 'center',
         options: cfCategoryOpts.value },
@@ -339,9 +340,9 @@ window.XsSample02 = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, codes, toast, searchParam, gridRows, pager,    // 상태 / 데이터
       cfVisibleRows, cfHasMore, sentinelEl,                   // 무한스크롤
-      baseSearchColumns, baseGridColumns,                     // 컬럼 정의
       handleBtnAction, handleSelectAction,                    // dispatch
     };
   },
@@ -364,7 +365,7 @@ window.XsSample02 = {
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;margin-bottom:8px;">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <fo-search-area :columns="baseSearchColumns" :param="searchParam"
+    <fo-search-area :columns="columns.baseSearch" :param="searchParam"
       @search="handleBtnAction('search-search')" @reset="handleBtnAction('search-reset')" />
   </div>
   <!-- ===== □.□. 검색 영역 ================================================= -->
@@ -372,7 +373,7 @@ window.XsSample02 = {
   <!-- ===== ■. 목록 영역 =================================================== -->
   <fo-grid-crud
     list-title="상품 목록" row-key="productId"
-    :columns="baseGridColumns" :rows="gridRows" max-height="60vh"
+    :columns="columns.baseGrid" :rows="gridRows" max-height="60vh"
     v-model:checkAll="uiState.checkAll"
     v-model:focusedIdx="uiState.focusedIdx"
     @add="handleBtnAction('products-add')" @save="handleBtnAction('products-save')"

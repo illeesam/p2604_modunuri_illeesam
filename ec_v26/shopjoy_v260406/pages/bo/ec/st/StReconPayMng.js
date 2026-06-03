@@ -138,7 +138,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
         // --- [컬럼 정의] ---
 
-        const baseSearchColumns = [
+        const columns = {};
+        columns.baseSearch = [
       { key: 'dateRange', label: '거래일', type: 'dateRange', paramObj: uiState,
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
@@ -148,7 +149,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     ];
 
     // 기본 그리드
-    const baseGridColumns = [
+    columns.baseGrid = [
       { key: 'orderId',    label: '주문ID' },
       { key: 'txDate',     label: '거래일',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
       { key: 'payMethod',  label: '결제수단', badge: (row) => fnPayBadge(row.payMethod) },
@@ -163,7 +164,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     /* summaryFormColumns — 집계 카드 (BoFormArea, cols=4, labelLeft) */
-    const summaryFormColumns = [
+    columns.summaryForm = [
       { key: '_match',   label: '일치',         type: 'readonly', html: true, fmt: () => `<b style="color:#27ae60;font-size:16px;">${cfSummary.value.match}건</b>` },
       { key: '_over',    label: '결제과다',     type: 'readonly', html: true, fmt: () => `<b style="color:#e74c3c;font-size:16px;">${cfSummary.value.over}건</b>` },
       { key: '_under',   label: '결제부족',     type: 'readonly', html: true, fmt: () => `<b style="color:#e67e22;font-size:16px;">${cfSummary.value.under}건</b>` },
@@ -171,8 +172,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     ];
 
     return {
+      columns,
       uiState, codes, pager, rows, searchParam,
-      baseSearchColumns, baseGridColumns, summaryFormColumns,
       handleBtnAction, handleSelectAction,
       cfSummary,
       fnDiffBadge, fnPayBadge, fmtW,
@@ -200,16 +201,16 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card" style="margin-top:12px">
-    <bo-form-area :columns="summaryFormColumns" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
+    <bo-form-area :columns="columns.summaryForm" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
     <div style="height:12px"></div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
-      :columns="baseGridColumns" :rows="rows" row-key="orderId"
+      :columns="columns.baseGrid" :rows="rows" row-key="orderId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'"
       @set-page="n => handleSelectAction('reconPays-pager-setPage', n)" @size-change="handleSelectAction('reconPays-pager-sizeChange')">
     </bo-grid>

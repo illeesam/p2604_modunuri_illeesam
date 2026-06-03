@@ -446,7 +446,8 @@ window.DpDispUiDtl = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 폼 컬럼 정의 (BoFormArea :columns) - UI코드/UI명/UI유형
-    const baseUiFormColumns = [
+    const columns = {};
+    columns.baseUiForm = [
       { key: 'codeValue', label: 'UI코드', type: 'text', required: true,
         placeholder: 'FRONT_MAIN', mono: true,
         onChange: (v, f) => { f.codeValue = (f.codeValue || '').toUpperCase(); } },
@@ -455,21 +456,21 @@ window.DpDispUiDtl = {
         options: () => codes.disp_ui_types },
     ];
     // 정렬/사용여부/설명
-    const settingUiFormColumns = [
+    columns.settingUiForm = [
       { key: 'sortOrd',  label: '정렬 순서', type: 'number' },
       { key: 'useYn',    label: '사용 여부', type: 'select', options: () => codes.use_yn },
       { key: 'remark',   label: '설명', type: 'text', placeholder: 'UI 설명', colSpan: 2 },
     ];
     // 표시경로 picker
-    const pathPickFormColumns = [
+    columns.pathPickForm = [
       { key: 'pathId', label: '표시경로', type: 'slot', name: 'pathPick', colSpan: 3,
         hint: 'UI가 노출되는 경로 (예: FO.모바일메인)' },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       codes, uis, areas, uiState, pathPickModal, form, errors,                       // 상태 / 데이터
-      baseUiFormColumns, settingUiFormColumns, pathPickFormColumns,                  // 컬럼 정의
       handleBtnAction, handleSelectAction, fnCallbackModal,                            // dispatch + 모달 통합 콜백
       cfIsNew, cfRelatedAreas, cfActiveArea, cfPreviewFrameWidth,                    // computed
       cfAvailableAreas, cfVisibilityOptions,                                         // computed
@@ -601,10 +602,10 @@ window.DpDispUiDtl = {
             설정
           </div>
           <!-- ===== ■.■.■.■.■. UI코드/UI명/UI유형 (BoFormArea 자동 렌더) ================ -->
-          <bo-form-area :columns="baseUiFormColumns" :form="form" :errors="errors"
+          <bo-form-area :columns="columns.baseUiForm" :form="form" :errors="errors"
             :readonly="false" :cols="3" compact :show-actions="false" />
           <!-- ===== ■.■.■.■.■. 표시경로 (BoFormArea 자동 렌더) ========================= -->
-          <bo-form-area :columns="pathPickFormColumns" :form="form" :errors="{}"
+          <bo-form-area :columns="columns.pathPickForm" :form="form" :errors="{}"
             :cols="3" compact :show-actions="false">
             <template #pathPick>
               <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
@@ -621,7 +622,7 @@ window.DpDispUiDtl = {
             </template>
           </bo-form-area>
           <!-- ===== ■.■.■.■.■. 정렬순서/사용여부/설명 (BoFormArea 자동 렌더) ================= -->
-          <bo-form-area :columns="settingUiFormColumns" :form="form" :errors="errors"
+          <bo-form-area :columns="columns.settingUiForm" :form="form" :errors="errors"
             :readonly="false" :cols="3" compact :show-actions="false" />
           <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">
             📅 사용기간

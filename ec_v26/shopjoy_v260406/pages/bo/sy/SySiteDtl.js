@@ -180,7 +180,8 @@ window.SySiteDtl = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 기본 폼 (cols=3 — 빈 칸 없이 3열을 모두 채우도록 colSpan 배치)
-    const baseFormColumns = [
+    const columns = {};
+    columns.baseForm = [
       // 1행: 사이트코드 / 사이트유형 / 사이트명
       { key: 'siteCode',       label: '사이트코드', type: 'text', required: true,
         placeholder: 'ST0001', mono: true },
@@ -209,8 +210,8 @@ window.SySiteDtl = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, codes, form, errors, addrDetailRef, pathPickModal,   // 상태 / 데이터
-      baseFormColumns,                                              // 컬럼 정의
       handleBtnAction, fnCallbackModal,                             // dispatch + 모달 통합 콜백
       cfIsNew, cfDtlMode,                                           // computed
     };
@@ -231,7 +232,7 @@ window.SySiteDtl = {
   <!-- ===== ■. 폼 영역 (BoFormArea 자동 렌더) ================================= -->
   <div class="card">
     <!-- ===== ■.■. 폼 영역 ================================================== -->
-    <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+    <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="3" compact :show-actions="active"
       @save="handleBtnAction('form-save')"
       @cancel="handleBtnAction('form-cancel')"

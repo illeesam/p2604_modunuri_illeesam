@@ -307,7 +307,8 @@ window.XsSample08 = {
     }[s] || '');
 
     /* FoSearchArea :columns 자동 렌더 정의 */
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'categoryNm', label: '카테고리명' },
@@ -319,7 +320,7 @@ window.XsSample08 = {
     ];
 
     // 기본 그리드
-    const baseGridColumns = [
+    columns.baseGrid = [
       { key: 'categoryNm', label: '카테고리명', edit: 'text' },
       { key: 'parentNm',   label: '상위카테고리', edit: 'text', width: '120px' },
       { key: 'depth',      label: '뎁스',   edit: 'number', width: '60px', align: 'center' },
@@ -331,8 +332,8 @@ window.XsSample08 = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, codes, toast, searchParam, gridRows,     // 상태 / 데이터
-      baseSearchColumns, baseGridColumns,                     // 컬럼 정의
       handleBtnAction, handleSelectAction,                    // dispatch
     };
   },
@@ -355,7 +356,7 @@ window.XsSample08 = {
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;margin-bottom:8px;">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <fo-search-area :columns="baseSearchColumns" :param="searchParam"
+    <fo-search-area :columns="columns.baseSearch" :param="searchParam"
       @search="handleBtnAction('search-search')" @reset="handleBtnAction('search-reset')" />
   </div>
   <!-- ===== □.□. 검색 영역 ================================================= -->
@@ -363,7 +364,7 @@ window.XsSample08 = {
   <!-- ===== ■. 목록 영역 =================================================== -->
   <fo-grid-crud
     list-title="카테고리 목록" row-key="categoryId"
-    :columns="baseGridColumns" :rows="gridRows"
+    :columns="columns.baseGrid" :rows="gridRows"
     v-model:checkAll="uiState.checkAll"
     v-model:focusedIdx="uiState.focusedIdx"
     @add="handleBtnAction('categories-add')" @save="handleBtnAction('categories-save')"

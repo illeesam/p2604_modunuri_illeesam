@@ -62,7 +62,8 @@ window.BlogEdit = {
     /* FoFormArea columns 정의 */
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // --- [컬럼 정의] ---
-    const baseFormColumns = [
+    const columns = {};
+    columns.baseForm = [
       { key: 'title',    label: '제목',     type: 'text',     required: true, colSpan: 2,
         placeholder: '제목을 입력하세요' },
       { type: 'rowBreak' },
@@ -135,9 +136,10 @@ window.BlogEdit = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, codes,                                                  // 상태
       handleBtnAction, handleSelectAction,                             // dispatch
-      cfIsEdit, form, errors, baseFormColumns,                         // 폼
+      cfIsEdit, form, errors, // 폼
       categories, images,                                              // 데이터
       handleSave, cancel, addImage, removeImage,                       // 이벤트 (호환)
     };
@@ -158,7 +160,7 @@ window.BlogEdit = {
   <!-- ===== ■. 폼 ======================================================= -->
   <div class="card" style="padding:clamp(16px,3vw,28px);">
     <!-- ===== ■.■. 제목 / 카테고리 / 요약 / 본문 =================================== -->
-    <fo-form-area :columns="baseFormColumns" :form="form" :errors="errors" :cols="2" />
+    <fo-form-area :columns="columns.baseForm" :form="form" :errors="errors" :cols="2" />
     <!-- ===== ■.■. 이미지 첨부 ================================================ -->
     <div style="margin-bottom:20px;">
       <label style="font-size:0.82rem;font-weight:600;color:var(--text-secondary);display:block;margin-bottom:8px;">

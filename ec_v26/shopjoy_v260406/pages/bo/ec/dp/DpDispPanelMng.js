@@ -356,7 +356,8 @@ window.DpDispPanelMng = {
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     /* 1행: 일반 검색 :columns */
     // --- [컬럼 정의] ---
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'panelNm', label: '패널명' },
@@ -372,7 +373,7 @@ window.DpDispPanelMng = {
         onRangeChange: () => handleDateRangeChange() },
     ];
     /* 2행: 전시일·노출조건·인증 :columns ('전시일시' 는 bo-date-time-picker 라 slot 탈출구) */
-    const moreSearchColumns = [
+    columns.moreSearch = [
       { type: 'label', label: '전시일시' },
       { type: 'slot', name: 'dispDate' },
       { key: 'visibility', type: 'select', label: '공개대상', options: () => codes.visibility_opts, nullable: false, minWidth: '100px' },
@@ -611,8 +612,8 @@ window.DpDispPanelMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiStateDetail, panels, uiState, panelCounts, displays, codes, searchParam, pager,            // 상태 / 데이터
-      baseSearchColumns, moreSearchColumns,                                            // 컬럼 정의
       handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
       cfFiltered, cfAreas, cfAreaSelectOptions, cfDetailEditId, cfIsViewMode,          // computed
       cfDetailKey, cfSiteNm, cfPanelTree, selectedId: computed(() => uiStateDetail.selectedId), // computed
@@ -637,13 +638,13 @@ window.DpDispPanelMng = {
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading"
-      :columns="baseSearchColumns" :param="searchParam"
+      :columns="columns.baseSearch" :param="searchParam"
       @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
     <!-- ===== □.□. 검색 영역 ================================================= -->
     <!-- ===== ■.■. 2행: 전시일·노출조건·인증 (별도 BoSearchArea, actions 없음) ========= -->
     <bo-search-area :show-actions="false"
       bar-style="margin-top:8px;padding-top:8px;border-top:1px dashed #eee;"
-      :columns="moreSearchColumns" :param="searchParam"
+      :columns="columns.moreSearch" :param="searchParam"
       @search="handleBtnAction('searchParam-list')">
       <template #dispDate>
         <bo-date-time-picker v-model:date="searchParam.dispDate" v-model:time="searchParam.dispTime"

@@ -210,13 +210,14 @@ window.MbMemGroupMng = {
     const cfVisibleCount = computed(() => groups.filter(r => r._row_status !== 'D').length);
 
     // 기본 검색
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'searchValue', type: 'text', label: '그룹명', placeholder: '그룹명 검색' },
       { key: 'use', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '전체' },
     ];
 
     // 기본 그리드
-    const baseGridColumns = [
+    columns.baseGrid = [
       { key: 'groupNm',   label: '그룹명',   style: 'min-width:180px;',
         edit: 'text', placeholder: '그룹명' },
       { key: 'groupMemo', label: '메모',     style: 'min-width:260px;',
@@ -229,8 +230,8 @@ window.MbMemGroupMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, codes, searchParam, groups,                                             // 상태 / 데이터
-      baseSearchColumns, baseGridColumns,                                              // 컬럼 정의
       handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
       cfVisibleCount,                                                                  // computed
       fnStatusClass,                                                                   // 헬퍼
@@ -245,12 +246,12 @@ window.MbMemGroupMng = {
   <!-- ===== ■. 검색 ======================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </div>
   <!-- ===== □. 검색 ======================================================== -->
   <!-- ===== ■. CRUD 그리드 ================================================ -->
   <bo-grid-crud
-    :columns="baseGridColumns" :rows="groups" row-key="memberGroupId"
+    :columns="columns.baseGrid" :rows="groups" row-key="memberGroupId"
     list-title="회원그룹 목록"
     :empty-text="uiState.loading ? '로딩중...' : '데이터가 없습니다.'"
     v-model:focusedIdx="uiState.focusedIdx"

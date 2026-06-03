@@ -358,7 +358,8 @@ window.SyUserMng = {
     const fnRowStyle = (u) => detailPanel.selectedId === u.userId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
 
     // 기본 검색
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'userId',    label: '사용자ID' },
@@ -378,7 +379,7 @@ window.SyUserMng = {
     ];
 
     // 기본 그리드
-    const baseGridColumns = [
+    columns.baseGrid = [
       { key: 'loginId',      label: '로그인ID',
         cellInnerStyle: 'background:#f5f5f5;padding:1px 5px;border-radius:3px;font-size:12px;font-family:monospace;' },
       { key: 'userNm',       label: '이름', sortKey: 'nm', link: true,
@@ -395,9 +396,9 @@ window.SyUserMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       users, uiState, codes, searchParam, pager, detailPanel, expanded, deptCounts,  // 상태 / 데이터
       excelUploadModal,                                                  // 엑셀 업로드 모달
-      baseSearchColumns, baseGridColumns,                                // 컬럼 정의
       handleBtnAction, handleSelectAction, fnCallbackModal,                // dispatch + 모달 통합 콜백
       cfTree, cfDetailEditId, cfIsViewMode, cfDetailKey,                 // computed
       fnRowStyle,                                                        // 헬퍼
@@ -414,7 +415,7 @@ window.SyUserMng = {
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" :columns="baseSearchColumns" :param="searchParam" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
+    <bo-search-area :loading="uiState.loading" :columns="columns.baseSearch" :param="searchParam" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
@@ -444,7 +445,7 @@ window.SyUserMng = {
     <div>
       <!-- ===== ■.■.■. 목록 그리드 ============================================ -->
       <bo-grid
-        :columns="baseGridColumns" :rows="users" row-key="userId"
+        :columns="columns.baseGrid" :rows="users" row-key="userId"
         list-title="사용자목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="key => handleSelectAction('users-sort', key)"

@@ -167,7 +167,8 @@ window.SyTemplateDtl = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 기본 폼
-    const baseFormColumns = [
+    const columns = {};
+    columns.baseForm = [
       { key: '_siteNm',        label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 3 },
       { key: 'templateTypeCd', label: '템플릿유형', type: 'select', nullable: false, required: true,
         options: () => codes.template_types },
@@ -187,8 +188,8 @@ window.SyTemplateDtl = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, codes, form, errors,                                     // 상태 / 데이터
-      baseFormColumns,                                                  // 컬럼 정의
       handleBtnAction, fnCallbackModal,                                   // dispatch + 모달 통합 콜백
       cfIsNew, cfDtlMode, cfUseHtmlEditor, cfIsLongContent,             // computed
       showToast, showConfirm,                                           // 모달 props
@@ -210,7 +211,7 @@ window.SyTemplateDtl = {
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 폼 영역 ================================================== -->
-    <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+    <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
       <!-- ===== ■.■.■. 내용 (Quill 에디터 또는 textarea, view 모드는 HTML) =========== -->
       <template #content>

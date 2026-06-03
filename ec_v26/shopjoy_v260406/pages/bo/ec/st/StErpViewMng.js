@@ -154,7 +154,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
         // --- [컬럼 정의] ---
 
-        const baseSearchColumns = [
+        const columns = {};
+        columns.baseSearch = [
       { key: 'dateRange', label: '전표일', type: 'dateRange', paramObj: uiState,
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
@@ -172,7 +173,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     ];
 
     // 기본 그리드
-    const baseGridColumns = [
+    columns.baseGrid = [
       { key: 'slipId',     label: '전표ID', cellStyle: 'font-size:11px' },
       { key: 'slipDate',   label: '전표일자',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
       { key: 'slipType',   label: '유형', badge: (row) => fnTypeBadge(row.slipType) },
@@ -188,8 +189,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, codes, pager, slips, searchParam,                                     // 상태 / 데이터
-      baseSearchColumns, baseGridColumns,                                             // 컬럼 정의
       handleBtnAction, handleSelectAction,                                            // dispatch
       fnStatusBadge, fnTypeBadge, fmtW,                                               // 헬퍼
     };
@@ -216,14 +217,14 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card" style="margin-top:12px">
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
-      :columns="baseGridColumns" :rows="slips" row-key="slipId"
+      :columns="columns.baseGrid" :rows="slips" row-key="slipId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
       @set-page="n => handleSelectAction('slips-pager-setPage', n)" @size-change="handleSelectAction('slips-pager-sizeChange')">
       <template #head-actions>

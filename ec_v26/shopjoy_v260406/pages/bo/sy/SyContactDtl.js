@@ -225,11 +225,12 @@ window.SyContactDtl = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 사이트명 영역
-    const siteFormColumns = [
+    const columns = {};
+    columns.siteForm = [
       { key: '_siteNm', label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 4 },
     ];
     // content 탭 영역
-    const contentFormColumns = [
+    columns.contentForm = [
       { key: 'memberId',        label: '회원ID', type: 'slot', name: 'memberId' },
       { key: 'memberNm',        label: '회원명', type: 'readonly' },
       { key: 'categoryCd',      label: '카테고리', type: 'select', options: () => codes.contact_categories },
@@ -240,8 +241,8 @@ window.SyContactDtl = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, codes, form, errors, tab, tabMode2,                  // 상태 / 데이터
-      contentFormColumns, siteFormColumns,                          // 컬럼 정의
       handleBtnAction, handleSelectAction,                          // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfHasId, cfSaveDisabled, cfSiteNm, cfDtlMode, tabs,  // computed / reactive(tabs)
       showTab, fnStatusBadge,                                       // 헬퍼
@@ -264,7 +265,7 @@ window.SyContactDtl = {
   <div class="card">
     <!-- ===== ■.■. 사이트명 (BoFormArea 자동 렌더) =============================== -->
     <!-- ===== ■.■. 폼 영역 ================================================== -->
-    <bo-form-area :columns="siteFormColumns" :form="form" :errors="{}"
+    <bo-form-area :columns="columns.siteForm" :form="form" :errors="{}"
       :cols="3" :show-actions="false" />
     <bo-tab-bar :tabs="tabs" :tab="tab" :tab-mode="tabMode2"
       @tab-select="id => handleSelectAction('tabs-select', id)"
@@ -276,7 +277,7 @@ window.SyContactDtl = {
         📋 문의 내용
       </div>
       <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
-      <bo-form-area :columns="contentFormColumns" :form="form" :errors="errors"
+      <bo-form-area :columns="columns.contentForm" :form="form" :errors="errors"
           :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
         <!-- ===== ■.■.■.■.■. 회원ID + 보기 버튼 ==================================== -->
         <template #memberId>

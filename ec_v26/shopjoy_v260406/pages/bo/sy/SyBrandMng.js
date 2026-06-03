@@ -282,7 +282,8 @@ window.SyBrandMng = {
     const fnColTitle = (col) => cfIsLocalMode.value ? col.label : '';
 
     // 기본 검색
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'bizCd', type: 'text', label: '업무코드', placeholder: 'biz_cd 검색', width: '160px' },
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
@@ -300,7 +301,7 @@ window.SyBrandMng = {
     ];
 
     // 기본 그리드
-    const baseGridColumns = [
+    columns.baseGrid = [
       { key: 'pathId',      label: '표시경로 (예: aa.bb.cc)', style: 'width:200px;max-width:200px;', pathPick: 'sy_brand' },
       { key: 'brandCode',   label: '브랜드코드', style: 'min-width:110px;', edit: 'text', mono: true, placeholder: 'BRAND_CODE' },
       { key: 'brandNm',     label: '브랜드명',  style: 'min-width:130px;', edit: 'text', placeholder: '브랜드명' },
@@ -312,8 +313,8 @@ window.SyBrandMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       brands, uiState, brandCounts, codes, searchParam, gridRows,                  // 상태 / 데이터
-      baseSearchColumns, baseGridColumns,                             // 컬럼 정의
       handleBtnAction, handleSelectAction,                            // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsLocalMode,                                                  // computed
       fnColTitle,                                                     // 헬퍼
@@ -328,7 +329,7 @@ window.SyBrandMng = {
   <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </div>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 좌 트리 + 우 그리드 ============================================ -->
@@ -338,7 +339,7 @@ window.SyBrandMng = {
       :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
     <!-- ===== ■.■. CRUD 그리드 ============================================== -->
     <bo-grid-crud
-      :columns="baseGridColumns" :rows="gridRows" row-key="brandId"
+      :columns="columns.baseGrid" :rows="gridRows" row-key="brandId"
       list-title="브랜드목록" :show-export="true"
       v-model:focusedIdx="uiState.focusedIdx"
       v-model:checkAll="uiState.checkAll"

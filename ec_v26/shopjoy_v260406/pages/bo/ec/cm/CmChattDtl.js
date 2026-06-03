@@ -260,7 +260,8 @@ window.CmChattDtl = {
     ]);
 
     // 회원 채팅 그리드
-    const memberChatGridColumns = [
+    const columns = {};
+    columns.memberChatGrid = [
       { key: 'subject', label: '제목' },
       { key: '_status', label: '상태',
         badge: (row) => row.chattStatusCd === '진행중' ? 'badge-green' : 'badge-gray',
@@ -270,7 +271,7 @@ window.CmChattDtl = {
     ];
 
     // 사용자 채팅 그리드
-    const userChatGridColumns = [
+    columns.userChatGrid = [
       { key: 'subject', label: '제목' },
       { key: '_status', label: '상태',
         badge: (row) => row.chattStatusCd === '진행중' ? 'badge-green' : 'badge-gray',
@@ -280,7 +281,7 @@ window.CmChattDtl = {
     ];
 
     // 신규 폼
-    const newFormColumns = [
+    columns.newForm = [
       { key: 'memberId',      label: '회원ID', type: 'slot', name: 'memberId', required: true },
       { key: 'memberNm',      label: '회원명', type: 'text', placeholder: '회원명' },
       { key: 'subject',       label: '제목', type: 'text', required: true,
@@ -291,8 +292,8 @@ window.CmChattDtl = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, codes, form, errors, refModal, msgBoxRef, cfUserChats,                  // 상태 / 데이터
-      memberChatGridColumns, userChatGridColumns, newFormColumns,                      // 컬럼 정의
       handleBtnAction, handleSelectAction, fnCallbackModal,                              // dispatch + 모달 통합 콜백
       cfIsNew, cfDtlMode, cfMemberChats, tabs, newTabs,                                // computed / reactive(tabs)
       showTab, hasRef, refLabel,                                                       // 헬퍼
@@ -399,7 +400,7 @@ window.CmChattDtl = {
           </span>
         </div>
         <!-- ===== ■.■.■.■. 목록 영역 ============================================= -->
-        <bo-grid bare :columns="memberChatGridColumns" :rows="cfMemberChats" row-key="chattRoomId" empty-text="다른 채팅 이력이 없습니다." row-actions>
+        <bo-grid bare :columns="columns.memberChatGrid" :rows="cfMemberChats" row-key="chattRoomId" empty-text="다른 채팅 이력이 없습니다." row-actions>
           <template #row-actions="{ row }">
             <button class="btn btn-blue btn-xs" @click="handleSelectAction('memberChats-rowView', row.chattRoomId)">
               상세
@@ -418,7 +419,7 @@ window.CmChattDtl = {
       <!-- ===== ■.■.■. 신규 등록 탭 (BoFormArea 자동 렌더) ========================== -->
       <div v-show="uiState.tab==='new'">
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
-        <bo-form-area :columns="newFormColumns" :form="form" :errors="errors"
+        <bo-form-area :columns="columns.newForm" :form="form" :errors="errors"
           :readonly="false" :cols="3" compact :show-actions="false">
           <!-- ===== ■.■.■.■.■. 회원ID + 보기 ======================================= -->
           <template #memberId>
@@ -445,7 +446,7 @@ window.CmChattDtl = {
           <input class="form-control" style="max-width:200px;" v-model="uiState.searchUserId" placeholder="회원 ID 입력" />
         </div>
         <!-- ===== ■.■.■.■. 목록 영역 ============================================= -->
-        <bo-grid bare :columns="userChatGridColumns" :rows="cfUserChats" row-key="chattRoomId" :empty-text="uiState.searchUserId ? '해당 회원을 찾을 수 없습니다.' : '회원 ID를 입력하세요.'" row-actions>
+        <bo-grid bare :columns="columns.userChatGrid" :rows="cfUserChats" row-key="chattRoomId" :empty-text="uiState.searchUserId ? '해당 회원을 찾을 수 없습니다.' : '회원 ID를 입력하세요.'" row-actions>
           <template #row-actions="{ row }">
             <button class="btn btn-blue btn-xs" @click="handleSelectAction('userChats-rowView', row.chattRoomId)">
               보기

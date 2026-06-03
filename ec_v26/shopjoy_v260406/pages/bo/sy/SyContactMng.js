@@ -260,7 +260,8 @@ window.SyContactMng = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 기본 검색
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'contactTitle', label: '제목' },
@@ -277,7 +278,7 @@ window.SyContactMng = {
     ];
 
     // 기본 그리드
-    const baseGridColumns = [
+    columns.baseGrid = [
       { key: 'memberNm',        label: '회원', refLink: 'member', refKey: 'memberId' },
       { key: 'categoryCd',      label: '카테고리', cellInnerClass: 'tag' },
       { key: 'contactTitle',    label: '제목', link: true,
@@ -291,8 +292,8 @@ window.SyContactMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       contacts, uiState, codes, searchParam, pager, detailModal,         // 상태 / 데이터
-      baseSearchColumns, baseGridColumns,                                // 컬럼 정의
       handleBtnAction, handleSelectAction,                               // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,               // computed
       fnStatusBadge, fnRowStyle, sortIcon, showToast, showConfirm, setApiRes, showRefModal, inlineNavigate, handleSearchList, // 헬퍼 / closure
@@ -307,12 +308,12 @@ window.SyContactMng = {
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
   <bo-grid
-    :columns="baseGridColumns" :rows="contacts" row-key="contactId"
+    :columns="columns.baseGrid" :rows="contacts" row-key="contactId"
     list-title="문의목록" :count-text="pager.pageTotalCount + '건'"
     :sort-state="uiState" :row-style="fnRowStyle"
     @sort="key => handleSelectAction('contacts-sort', key)"

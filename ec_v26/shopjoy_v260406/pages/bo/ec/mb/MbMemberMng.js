@@ -296,7 +296,8 @@ window.MbMemberMng = {
     const fnGridRowClass = (row) => (detailPanel.dtlId === row.memberId ? 'active' : '');
 
     // 기본 검색
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'memberNm', label: '이름' },
@@ -309,7 +310,7 @@ window.MbMemberMng = {
     ];
 
     // 기본 그리드
-    const baseGridColumns = [
+    columns.baseGrid = [
       { key: 'memberNm',         label: '이름',     sortKey: 'nm',
         fmt: (v, row) => `${row.memberNm || '-'}  #${row.memberId || row.sessionKey || '-'}` },
       { key: 'loginId',          label: '이메일' },
@@ -323,8 +324,8 @@ window.MbMemberMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       members, uiState, codes, searchParam, pager, detailPanel,                        // 상태 / 데이터
-      baseSearchColumns, baseGridColumns,                                              // 컬럼 정의
       handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
       cfSelectedRow,                                                                   // computed
       sortIcon, fnGradeBadge, fnStatusBadge, fnFmtDate, fnGridRowClass,                // 헬퍼
@@ -340,11 +341,11 @@ window.MbMemberMng = {
   <!-- ===== ■. 검색 ======================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </div>
   <!-- ===== □. 검색 ======================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
-  <bo-grid :columns="baseGridColumns" :rows="members" row-key="memberId"
+  <bo-grid :columns="columns.baseGrid" :rows="members" row-key="memberId"
     :sort-state="uiState" list-title="회원목록" row-clickable
     :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다."

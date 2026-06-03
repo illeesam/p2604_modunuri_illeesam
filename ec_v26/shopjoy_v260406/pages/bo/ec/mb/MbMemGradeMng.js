@@ -218,7 +218,8 @@ window.MbMemGradeMng = {
     const cfVisibleCount = computed(() => grades.filter(r => r._row_status !== 'D').length);
 
     // 기본 검색
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'gradeNm', label: '등급명' },
@@ -230,7 +231,7 @@ window.MbMemGradeMng = {
     ];
 
     // 기본 그리드
-    const baseGridColumns = [
+    columns.baseGrid = [
       { key: 'gradeCd',        label: '등급코드',     style: 'width:130px;',
         edit: 'select', options: () => codes.member_grades },
       { key: 'gradeNm',        label: '등급명',       style: 'min-width:150px;',
@@ -247,8 +248,8 @@ window.MbMemGradeMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, codes, searchParam, grades,                                             // 상태 / 데이터
-      baseSearchColumns, baseGridColumns,                                              // 컬럼 정의
       handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
       cfVisibleCount,                                                                  // computed
       fnStatusClass,                                                                   // 헬퍼
@@ -263,12 +264,12 @@ window.MbMemGradeMng = {
   <!-- ===== ■. 검색 ======================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </div>
   <!-- ===== □. 검색 ======================================================== -->
   <!-- ===== ■. CRUD 그리드 ================================================ -->
   <bo-grid-crud
-    :columns="baseGridColumns" :rows="grades" row-key="memberGradeId"
+    :columns="columns.baseGrid" :rows="grades" row-key="memberGradeId"
     list-title="회원등급 목록"
     :empty-text="uiState.loading ? '로딩중...' : '데이터가 없습니다.'"
     v-model:focusedIdx="uiState.focusedIdx"

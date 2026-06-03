@@ -278,7 +278,8 @@ window.DpDispWidgetLibMng = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     /* 검색바 :columns 자동 렌더 정의 */
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'widgetNm',      label: '이름' },
@@ -292,7 +293,7 @@ window.DpDispWidgetLibMng = {
     ];
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm' 와 sortKey 일치) */
-    const listGridColumns = [
+    columns.listGrid = [
       { key: 'widgetNm',    label: '이름', sortKey: 'nm', cellInnerClass: 'title-link',
         fmt: (v, row) => `${wIcon(row.widgetTypeCd)} ${row.widgetNm || ''}` },
       { key: 'widgetTypeCd', label: '타입',
@@ -304,8 +305,8 @@ window.DpDispWidgetLibMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       widgetLibs, uiState, widgetLibCounts, codes, searchParam, applied, pager, detailPanel,           // 상태 / 데이터
-      baseSearchColumns, listGridColumns,                                              // 컬럼 정의
       handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
       cfFilterDirty, cfDetailEditId, cfDetailKey, cfNoFilter,                          // computed
       pathLabel, wIcon, wTypeLabel, sortIcon, fnStatusCls, fnStatusLabel,              // 헬퍼
@@ -325,7 +326,7 @@ window.DpDispWidgetLibMng = {
     <div class="card">
       <!-- ===== ■.■. 검색 영역 ================================================= -->
       <bo-search-area :loading="uiState.loading" :show-actions="false"
-      :columns="baseSearchColumns" :param="searchParam"
+      :columns="columns.baseSearch" :param="searchParam"
       @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')">
         <div class="search-actions" style="display:flex;align-items:center;gap:6px;">
           <span v-if="cfFilterDirty" style="font-size:11px;color:#e8587a;font-weight:600;animation:pulse 1.2s ease-in-out infinite;">
@@ -363,7 +364,7 @@ window.DpDispWidgetLibMng = {
       </div>
       <div>
         <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-        <bo-grid :columns="listGridColumns" :rows="widgetLibs" row-key="widgetLibId" :pager="pager"
+        <bo-grid :columns="columns.listGrid" :rows="widgetLibs" row-key="widgetLibId" :pager="pager"
         :sort-state="uiState" list-title="위젯라이브러리"
         :count-text="pager.pageTotalCount + '건'"
         empty-text="데이터가 없습니다." row-clickable

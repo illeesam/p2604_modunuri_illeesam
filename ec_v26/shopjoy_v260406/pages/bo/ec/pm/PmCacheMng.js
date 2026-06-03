@@ -241,7 +241,8 @@ window.PmCacheMng = {
     const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}_${detailPanel.resetSeq}`);
 
     // 기본 검색
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'memberNm', label: '회원명' },
@@ -258,7 +259,7 @@ window.PmCacheMng = {
     ];
 
     // 기본 그리드
-    const baseGridColumns = [
+    columns.baseGrid = [
       { key: 'memberNm',    label: '회원', refLink: 'member', refKey: 'memberId' },
       { key: 'cacheDate',   label: '일시', sortKey: 'reg',  fmt: (v) => v ? String(v).slice(0, 16) : '-' },
       { key: 'cacheTypeCd', label: '유형', badge: (row) => fnTypeBadge(row.cacheTypeCd) },
@@ -273,8 +274,8 @@ window.PmCacheMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       caches, uiState, codes, searchParam, pager, detailPanel,                       // 상태 / 데이터
-      baseSearchColumns, baseGridColumns,                                            // 컬럼 정의
       handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                           // computed
       fnTypeBadge, sortIcon,                                                         // 헬퍼
@@ -290,7 +291,7 @@ window.PmCacheMng = {
   <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </div>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 목록 영역 ================================================== -->
@@ -323,7 +324,7 @@ window.PmCacheMng = {
     </div>
     <!-- ===== ■.■. 리스트 뷰 (BoGrid) ======================================== -->
     <bo-grid v-if="uiState.tabMode==='list'" :bare="true"
-      :columns="baseGridColumns" :rows="caches" row-key="cacheId"
+      :columns="columns.baseGrid" :rows="caches" row-key="cacheId"
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(c) => detailPanel.selectedId===c.cacheId ? 'background:#fff8f9;' : ''"

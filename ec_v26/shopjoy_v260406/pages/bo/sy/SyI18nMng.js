@@ -180,7 +180,8 @@ window.SyI18nMng = {
     const fnRowStyle = (row) => uiState.selectedId === row.i18nId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
 
     // 기본 검색
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'i18nKey',  label: '키' },
@@ -193,7 +194,7 @@ window.SyI18nMng = {
     ];
 
     // 기본 그리드
-    const baseGridColumns = [
+    columns.baseGrid = [
       { key: 'i18nKey',     label: '키 (i18n_key)',
         cellInnerStyle: 'font-size:12px;color:#7c3aed;font-family:monospace;' },
       { key: 'i18nDesc',    label: '설명', cellStyle: 'color:#666;font-size:12px' },
@@ -214,8 +215,9 @@ window.SyI18nMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, codes, searchParam, pager, i18ns, msgForm,                         // 상태 / 데이터
-      baseSearchColumns, baseGridColumns, msgFormColumns,                        // 컬럼 정의
+      msgFormColumns,                        // 컬럼 정의
       handleBtnAction, handleSelectAction,                                       // dispatch (모든 이벤트 / 액션 라우팅)
       cfSelectedKey,                                                             // computed
       fnRowStyle,                                                                // 헬퍼
@@ -230,12 +232,12 @@ window.SyI18nMng = {
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
   <bo-grid
-    :columns="baseGridColumns" :rows="i18ns" row-key="i18nId"
+    :columns="columns.baseGrid" :rows="i18ns" row-key="i18nId"
     list-title="다국어 키 목록" :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-style="fnRowStyle" row-clickable
     @set-page="n => handleSelectAction('i18ns-pager-setPage', n)"

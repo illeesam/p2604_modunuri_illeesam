@@ -362,7 +362,8 @@ window.PmCouponDtl = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     /* BoGrid(bare) 컬럼 정의 — 발급목록 / 사용목록 (최대 10건 미리보기) */
-    const issuedGridColumns = [
+    const columns = {};
+    columns.issuedGrid = [
       { key: 'code',       label: '쿠폰코드', fmt: v => v || '-' },
       { key: 'target',     label: '발급대상', fmt: v => v || '-' },
       { key: 'issuedDate', label: '발급일시', fmt: v => v || '-' },
@@ -372,7 +373,7 @@ window.PmCouponDtl = {
         fmt: v => v || '미사용' },
     ];
     // 사용 그리드
-    const usedGridColumns = [
+    columns.usedGrid = [
       { key: 'code',        label: '쿠폰코드', fmt: v => v || '-' },
       { key: 'userId',      label: '사용자', fmt: v => v || '-' },
       { key: 'orderId',     label: '주문ID', fmt: v => v || '-' },
@@ -387,7 +388,7 @@ window.PmCouponDtl = {
 
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - info 탭 ======================
     // 정보 영역 폼
-    const infoFormColumns = [
+    columns.infoForm = [
       { key: 'couponTypeCd',   label: '쿠폰 타입', type: 'select', nullable: false,
         options: () => codes.coupon_types },
       { key: 'couponNm',       label: '쿠폰명', type: 'text', required: true, placeholder: '쿠폰명 입력' },
@@ -410,14 +411,14 @@ window.PmCouponDtl = {
 
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - detail 탭 일부 =================
     // 발행 상세 폼
-    const detailIssueFormColumns = [
+    columns.detailIssueForm = [
       { key: 'issueMethods',   label: '지급 방법', type: 'select', nullable: false,
         options: () => codes.coupon_issue_type_opts },
       { key: 'issueCondition', label: '지급 조건', type: 'select', nullable: false,
         options: () => codes.coupon_target_opts },
     ];
     // 사용 상세 폼
-    const detailUseFormColumns = [
+    columns.detailUseForm = [
       { key: 'useScope',   label: '사용 범위', type: 'select', nullable: false, colSpan: 2,
         options: () => codes.coupon_apply_opts },
       { key: 'useExclude', label: '제외 상품/카테고리', type: 'textarea', rows: 3, colSpan: 2,
@@ -428,9 +429,8 @@ window.PmCouponDtl = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, codes, form, errors, vendors,                                          // 상태 / 데이터
-      infoFormColumns, detailIssueFormColumns, detailUseFormColumns,                  // 폼 컬럼 정의
-      issuedGridColumns, usedGridColumns,                                             // 그리드 컬럼 정의
       handleBtnAction, handleSelectAction, fnCallbackModal,                                            // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfHasId, cfSaveDisabled, cfIssuedList, cfUsedList, cfIssuedTop, cfUsedTop, cfSelectedVendorNm, tabs, // computed / reactive(tabs)
       tab, tabMode2, previewTab, barcodeContainer, qrcodeContainer, showVendorModal,  // toRef
@@ -463,7 +463,7 @@ window.PmCouponDtl = {
         📋 기본정보
       </div>
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
+      <bo-form-area :columns="columns.infoForm" :form="form" :errors="errors"
         :readonly="false" :cols="3" compact :show-actions="false">
         <!-- ===== ■.■.■.■. 메모: Quill 에디터 ===================================== -->
         <template #memo>
@@ -752,7 +752,7 @@ window.PmCouponDtl = {
           📤 지급방법/조건
         </h3>
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
-        <bo-form-area :columns="detailIssueFormColumns" :form="form" :errors="errors"
+        <bo-form-area :columns="columns.detailIssueForm" :form="form" :errors="errors"
           :cols="3" compact :show-actions="false" />
         <!-- ===== ■.■.■.■. 적용 회원 등급 (체크박스 그룹, KEEP) ========================== -->
         <div class="form-group" style="margin-top:12px;">
@@ -776,7 +776,7 @@ window.PmCouponDtl = {
           🔍 사용방법
         </h3>
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
-        <bo-form-area :columns="detailUseFormColumns" :form="form" :errors="errors"
+        <bo-form-area :columns="columns.detailUseForm" :form="form" :errors="errors"
           :cols="3" compact :show-actions="false" />
       </div>
     </div>
@@ -793,7 +793,7 @@ window.PmCouponDtl = {
         발급된 쿠폰이 없습니다.
       </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid v-else bare :columns="issuedGridColumns" :rows="cfIssuedTop">
+      <bo-grid v-else bare :columns="columns.issuedGrid" :rows="cfIssuedTop">
       </bo-grid>
     </div>
     <!-- ===== □.□. 발급목록 ================================================== -->
@@ -809,7 +809,7 @@ window.PmCouponDtl = {
         사용된 쿠폰이 없습니다.
       </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid v-else bare :columns="usedGridColumns" :rows="cfUsedTop">
+      <bo-grid v-else bare :columns="columns.usedGrid" :rows="cfUsedTop">
       </bo-grid>
     </div>
   </div>

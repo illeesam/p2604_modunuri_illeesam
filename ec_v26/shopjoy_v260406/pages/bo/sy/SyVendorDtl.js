@@ -149,7 +149,8 @@ window.SyVendorDtl = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 기본 폼 (cols=3 빈칸 최소화 + 메모는 한 줄 전체 폭)
-    const baseFormColumns = [
+    const columns = {};
+    columns.baseForm = [
       // 1행: 사이트명(2) + 업체유형(1)
       { key: '_siteNm',        label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 2 },
       { key: 'vendorType',     label: '업체유형', type: 'select', nullable: false, required: true,
@@ -171,8 +172,8 @@ window.SyVendorDtl = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, codes, form, errors, addrDetailRef,           // 상태 / 데이터
-      baseFormColumns,                                       // 컬럼 정의
       handleBtnAction,                                       // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfDtlMode,                                    // computed
     };
@@ -193,7 +194,7 @@ window.SyVendorDtl = {
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 폼 영역 ================================================== -->
-    <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+    <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="3" compact :show-actions="active"
       @save="handleBtnAction('form-save')"
       @cancel="handleBtnAction('form-cancel')"

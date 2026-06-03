@@ -356,7 +356,8 @@ window.PmEventDtl = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     /* BoGrid(bare) 컬럼 정의 — 대상 상품 */
-    const productGridColumns = [
+    const columns = {};
+    columns.productGrid = [
       { key: 'productId', label: 'ID' },
       { key: 'prodNm',    label: '상품명', refLink: 'product', refKey: 'productId' },
       { key: 'category',  label: '카테고리' },
@@ -367,7 +368,7 @@ window.PmEventDtl = {
 
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - info 탭 (이벤트 제목/기간/상태) ==
     // 정보 영역 폼
-    const infoFormColumns = [
+    columns.infoForm = [
       { key: 'eventTitle',   label: '이벤트 제목', type: 'text', required: true,
         placeholder: '이벤트 제목을 입력하세요' },
       { key: 'startDate',    label: '시작일', type: 'date' },
@@ -378,15 +379,15 @@ window.PmEventDtl = {
         checkedValue: true, uncheckedValue: false },
     ];
     // 판매업체/판매담당자
-    const vendorFormColumns = [
+    columns.vendorForm = [
       { key: 'vendorId',    label: '판매업체', type: 'slot', name: 'vendor' },
       { key: 'chargeStaff', label: '판매담당자', type: 'text', placeholder: '담당자명 입력' },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       vendors, products, uiState, codes, form, errors, tabs,                        // 상태 / 데이터
-      infoFormColumns, vendorFormColumns, productGridColumns,                       // 폼/그리드 컬럼 정의
       handleBtnAction, handleSelectAction, fnCallbackModal,                                          // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfHasId, cfSaveDisabled, cfDtlMode, cfFilteredProds, cfSelectedProducts, cfVisibilityOptions, cfSelectedVendorNm, // computed
       tab, tabMode2, activeContentTab, prodSearch, showProdPopup, showVendorModal,  // toRef
@@ -451,7 +452,7 @@ window.PmEventDtl = {
       </div>
       <!-- ===== ■.■.■. 이벤트 제목/기간/상태 (BoFormArea 자동 렌더) ===================== -->
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
+      <bo-form-area :columns="columns.infoForm" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="3" compact :show-actions="false" />
       <div v-if="form.authRequired" style="padding:10px 14px;background:#fff7e6;border-radius:6px;border:1px solid #ffd591;font-size:12px;color:#d46b08;">
         ⚠️ 인증 필요 설정 시, 이벤트 내용 3~5는 로그인 회원에게만 표시됩니다.
@@ -479,7 +480,7 @@ window.PmEventDtl = {
       <!-- ===== ■.■.■. 판매업체/판매담당자 (BoFormArea 자동 렌더) ======================= -->
       <div style="margin-top:20px;padding-top:20px;border-top:1px solid #e8e8e8;">
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
-        <bo-form-area :columns="vendorFormColumns" :form="form" :errors="errors"
+        <bo-form-area :columns="columns.vendorForm" :form="form" :errors="errors"
           :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
           <template #vendor>
             <div style="display:flex;gap:8px;align-items:center;">
@@ -585,7 +586,7 @@ window.PmEventDtl = {
     </span>
   </div>
   <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-  <bo-grid bare :columns="productGridColumns" :rows="cfSelectedProducts" row-key="productId"
+  <bo-grid bare :columns="columns.productGrid" :rows="cfSelectedProducts" row-key="productId"
         empty-text="선택된 상품이 없습니다." @ref-click="({type,id}) => handleSelectAction('items-ref', {type, id})" row-actions>
     <template #row-actions="{ row }">
       <button class="btn btn-danger btn-xs" @click="handleSelectAction('items-rowDelete', row.productId)">

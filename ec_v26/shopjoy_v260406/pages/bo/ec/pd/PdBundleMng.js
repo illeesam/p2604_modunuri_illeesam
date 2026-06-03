@@ -555,12 +555,13 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
     };
     /* 묶음상품 목록 그리드 컬럼 (모든 셀 커스텀 → #cell 슬롯, 헤더만 정의) */
         // --- [컬럼 정의] ---
-        const baseSearchColumns = [
+        const columns = {};
+        columns.baseSearch = [
       { key: 'nm', label: '묶음상품명', type: 'text', placeholder: '묶음상품명 검색', width: '320px' },
     ];
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 번들 그리드
-    const bundleGridColumns = [
+    columns.bundleGrid = [
       { key: 'prodNm',    label: '묶음상품' },
       { key: 'itemCount', label: '구성품수',   style: 'width:70px;text-align:center;', align: 'center', fmt: (v) => (v + '개') },
       { key: 'rateSum',   label: '안분율 합계', style: 'width:130px;text-align:center;', align: 'center',
@@ -586,7 +587,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
       g.prod ? (g.prod.prodStatusCd || g.prod.status || '-') : '-';
 
     // 신규 번들 폼
-    const newBundleFormColumns = [
+    columns.newBundleForm = [
       { key: 'prodNm',       label: '묶음상품명', type: 'text', required: true,
         placeholder: '묶음상품명 입력', colSpan: 2 },
       { key: 'prodStatusCd', label: '상태', type: 'select', options: () => codes.bundle_statuses },
@@ -600,10 +601,10 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       codes, uiState, bundles, bundleList, searchParam, pager,                                   // 상태 / 데이터
       categories, products, brands, categoryProds, dtlCategories, dtlItems, newForm, newErrors,  // 상태 / 데이터
       pickerResults,                                                                             // 상태 / 데이터
-      baseSearchColumns, bundleGridColumns, newBundleFormColumns,                                // 컬럼 정의
       handleBtnAction, handleSelectAction, fnCallbackModal,                                                       // dispatch (모든 이벤트 / 액션 라우팅)
       cfCatExcludeSet, cfDtlRateSum, cfDtlRateOk, cfDtlRateDiff, cfDtlProdNm, cfDtlBundleId, cfPickerList, // computed
       fnBundleRowStyle, fnBundleStatusBadge, fnBundleStatusText, rateSum, fnRateSumBadge,        // 헬퍼
@@ -652,11 +653,11 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
   <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </div>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 목록 ====================================================== -->
-  <bo-grid list-title="묶음상품 목록" :columns="bundleGridColumns" :rows="bundleList" :row-style="fnBundleRowStyle" row-key="bundleProdId"
+  <bo-grid list-title="묶음상품 목록" :columns="columns.bundleGrid" :rows="bundleList" :row-style="fnBundleRowStyle" row-key="bundleProdId"
     empty-text="데이터가 없습니다." :row-actions="true"
     @set-page="n => handleSelectAction('bundles-pager-setPage', n)" @size-change="handleBtnAction('bundles-pager-sizeChange')">
     <template #toolbar-actions>
@@ -748,7 +749,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
       묶음상품 기본정보 (pd_prod)
     </div>
     <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-    <bo-form-area :columns="newBundleFormColumns" :form="newForm" :errors="newErrors"
+    <bo-form-area :columns="columns.newBundleForm" :form="newForm" :errors="newErrors"
         :cols="3" compact :show-actions="false">
       <!-- ===== ■.■.■.■. 브랜드/판매업체는 빈 옵션 선택 (실데이터 미반영) — 슬롯 처리 ============== -->
       <template #brand>

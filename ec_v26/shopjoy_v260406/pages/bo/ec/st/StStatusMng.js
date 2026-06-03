@@ -208,7 +208,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         const comm   = isCancelled ? 0 : Math.round((o.totalPrice || 0) * COMM_RATE);
         const settle = isCancelled ? 0 : (o.totalPrice || 0) - comm;
 
-        return { ...o, vendorNm: vendor ? vendor.vendorNm : '-', comm, settle, isCancelled };
+        return {
+          ...o, vendorNm: vendor ? vendor.vendorNm : '-', comm, settle, isCancelled };
       });
     });
     const cfOrderTotal = computed(() => cfOrderRows.value.length);
@@ -406,7 +407,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     };
 
     /* BoGrid 컬럼 정의 — 특수셀은 #cell- 슬롯 override */
-    const vendorGridColumns = [
+    const columns = {};
+    columns.vendorGrid = [
       { key: 'vendorNm',  label: '업체명', cellStyle: 'font-weight:700' },
       { key: 'orderCnt',  label: '주문건수', fmt: (v) => v + '건' },
       { key: 'sales',     label: '매출액', fmt: fmtW },
@@ -417,7 +419,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       { key: 'settle',    label: '정산예정액', fmt: fmtW, cellStyle: 'color:#27ae60;font-weight:700' },
     ];
     // 주문 그리드
-    const orderGridColumns = [
+    columns.orderGrid = [
       { key: 'orderId',    label: '주문ID' },
       { key: 'orderDate',  label: '주문일시',  fmt: (v) => v ? String(v).slice(0, 16) : '-' },
       { key: 'userNm',     label: '고객명' },
@@ -432,7 +434,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       { key: 'status',     label: '상태', badge: (row) => fnStatusBadge(row.status) },
     ];
     // 클레임 그리드
-    const claimGridColumns = [
+    columns.claimGrid = [
       { key: 'claimId',      label: '클레임ID' },
       { key: 'requestDate',  label: '요청일시',  fmt: (v) => v ? String(v).slice(0, 16) : '-' },
       { key: 'userNm',       label: '고객명' },
@@ -446,7 +448,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       { key: 'status',       label: '상태', badge: (row) => fnStatusBadge(row.status) },
     ];
     // 프로모션 그리드
-    const promoGridColumns = [
+    columns.promoGrid = [
       { key: 'promoId',     label: 'ID' },
       { key: 'promoType',   label: '유형', badge: () => 'badge-blue' },
       { key: 'promoNm',     label: '프로모션명' },
@@ -457,7 +459,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       { key: 'status',      label: '상태', badge: (row) => fnStatusBadge(row.status) },
     ];
     // 정산 그리드
-    const settleGridColumns = [
+    columns.settleGrid = [
       { key: 'month',     label: '정산월', cellStyle: 'font-weight:700' },
       { key: 'orderCnt',  label: '주문건수', fmt: (v) => v + '건' },
       { key: 'sales',     label: '매출액', fmt: fmtW },
@@ -471,7 +473,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       { key: 'statusCd',  label: '상태', badge: (row) => fnStatusBadge(row.statusCd) },
     ];
     /* 검색바 :columns 자동 렌더 정의 — 모두 uiState 공유 */
-    const dateSearchColumns = [
+    columns.dateSearch = [
       { key: 'dateRange', label: '기간', type: 'select', options: () => codes.date_range_opts,
         nullLabel: '기간 선택', onChange: () => handleBtnAction('searchParam-dateRange') },
       { key: 'dateStart', type: 'date' },
@@ -479,57 +481,57 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       { key: 'dateEnd',   type: 'date' },
     ];
     // 판매업체 검색
-    const vendorSearchColumns = [
+    columns.vendorSearch = [
       { key: 'vendorSearchValue', label: '업체', type: 'text', placeholder: '업체명 검색', width: '200px' },
     ];
     // 상단 공통 검색바 컬럼 — 기간 + (업체별현황 탭이면 업체명 검색 추가)
     const cfTopSearchColumns = computed(() =>
-      uiState.activeTab === 'vendor' ? [...dateSearchColumns, ...vendorSearchColumns] : dateSearchColumns);
+      uiState.activeTab === 'vendor' ? [...columns.dateSearch, ...columns.vendorSearch] : columns.dateSearch);
     // 주문 검색
-    const orderSearchColumns = [
+    columns.orderSearch = [
       { key: 'orderSearchValue',  label: '검색어', type: 'text',   placeholder: '주문ID / 고객명 / 상품명', width: '220px' },
       { key: 'orderSearchStatus', label: '상태', type: 'select', options: () => codes.st_order_statuses,  nullLabel: '상태 전체' },
     ];
     // 클레임 검색
-    const claimSearchColumns = [
+    columns.claimSearch = [
       { key: 'claimSearchType',   label: '유형', type: 'select', options: () => codes.claim_types_kr,    nullLabel: '유형 전체' },
       { key: 'claimSearchStatus', label: '상태', type: 'select', options: () => codes.claim_statuses_kr, nullLabel: '상태 전체' },
     ];
     // 프로모션 검색
-    const promoSearchColumns = [
+    columns.promoSearch = [
       { key: 'promoSearchType',  label: '유형', type: 'select', options: () => codes.promo_types_kr, nullLabel: '유형 전체' },
       { key: 'promoSearchValue', label: '검색어', type: 'text',   placeholder: '프로모션명 검색', width: '180px' },
     ];
     // 정산 검색
-    const settleSearchColumns = [
+    columns.settleSearch = [
       { key: 'settleSearchMonth', label: '정산월', type: 'text', placeholder: '월 검색 (예: 2026-04)', width: '180px' },
     ];
 
     /* 탭별 요약 카드 BoFormArea 컬럼 */
-    const vendorSummaryColumns = [
+    columns.vendorSummary = [
       { key: '_sales',  label: '총 매출',     type: 'readonly', html: true, fmt: () => `<b style="color:#333;font-size:15px;">${fmtW(cfVendorSummary.value.sales)}</b>` },
       { key: '_refund', label: '환불액',      type: 'readonly', html: true, fmt: () => `<b style="color:#e74c3c;font-size:15px;">${fmtW(cfVendorSummary.value.refund)}</b>` },
       { key: '_comm',   label: '수수료(10%)', type: 'readonly', html: true, fmt: () => `<b style="color:#e67e22;font-size:15px;">${fmtW(cfVendorSummary.value.comm)}</b>` },
       { key: '_settle', label: '정산예정액',  type: 'readonly', html: true, fmt: () => `<b style="color:#27ae60;font-size:15px;">${fmtW(cfVendorSummary.value.settle)}</b>` },
     ];
-    const orderSummaryColumns = [
+    columns.orderSummary = [
       { key: '_cnt',    label: '주문건수',    type: 'readonly', html: true, fmt: () => `<b style="color:#333;font-size:16px;">${cfOrderSummary.value.cnt}건</b>` },
       { key: '_sales',  label: '매출액',      type: 'readonly', html: true, fmt: () => `<b style="color:#3498db;font-size:15px;">${fmtW(cfOrderSummary.value.sales)}</b>` },
       { key: '_comm',   label: '수수료',      type: 'readonly', html: true, fmt: () => `<b style="color:#e67e22;font-size:15px;">${fmtW(cfOrderSummary.value.comm)}</b>` },
       { key: '_settle', label: '정산예정',    type: 'readonly', html: true, fmt: () => `<b style="color:#27ae60;font-size:15px;">${fmtW(cfOrderSummary.value.settle)}</b>` },
     ];
-    const claimSummaryColumns = [
+    columns.claimSummary = [
       { key: '_cnt',     label: '클레임건수',   type: 'readonly', html: true, fmt: () => `<b style="color:#333;font-size:16px;">${cfClaimSummary.value.cnt}건</b><div style="font-size:10px;color:#888;">취소 ${cfClaimSummary.value.cancel} / 반품 ${cfClaimSummary.value.return_} / 교환 ${cfClaimSummary.value.exchange}</div>` },
       { key: '_refund',  label: '환불액',       type: 'readonly', html: true, fmt: () => `<b style="color:#e74c3c;font-size:15px;">${fmtW(cfClaimSummary.value.refund)}</b>` },
       { key: '_impact',  label: '정산영향액',   type: 'readonly', html: true, fmt: () => `<b style="color:#9b59b6;font-size:15px;">${fmtW(Math.abs(cfClaimSummary.value.impact))}</b>` },
       { key: '_pct',     label: '완료율',       type: 'readonly', html: true, fmt: () => { const c = cfClaimSummary.value.cnt; const pct = c > 0 ? Math.round(cfClaimRows.value.filter(r=>r.isCompleted).length / c * 100) : 0; return `<b style="color:#27ae60;font-size:16px;">${pct}%</b>`; } },
     ];
-    const promoSummaryColumns = [
+    columns.promoSummary = [
       { key: '_cnt',       label: '진행 프로모션', type: 'readonly', html: true, fmt: () => `<b style="color:#333;font-size:16px;">${cfPromoSummary.value.cnt}개</b>` },
       { key: '_totalUse',  label: '총 사용건수',  type: 'readonly', html: true, fmt: () => `<b style="color:#3498db;font-size:16px;">${cfPromoSummary.value.totalUse}건</b>` },
       { key: '_totalDisc', label: '총 할인액',    type: 'readonly', html: true, fmt: () => `<b style="color:#e74c3c;font-size:15px;">${fmtW(cfPromoSummary.value.totalDiscount)}</b>` },
     ];
-    const settleSummaryColumns = [
+    columns.settleSummary = [
       { key: '_sales',  label: '총 매출',     type: 'readonly', html: true, fmt: () => `<b style="color:#333;font-size:15px;">${fmtW(cfSettleSummary.value.sales)}</b>` },
       { key: '_refund', label: '환불액',      type: 'readonly', html: true, fmt: () => `<b style="color:#e74c3c;font-size:15px;">${fmtW(cfSettleSummary.value.refund)}</b>` },
       { key: '_comm',   label: '수수료',      type: 'readonly', html: true, fmt: () => `<b style="color:#e67e22;font-size:15px;">${fmtW(cfSettleSummary.value.comm)}</b>` },
@@ -538,9 +540,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     return {
       uiState, codes, TABS,                                                         // 상태 / 데이터
-      vendorGridColumns, orderGridColumns, claimGridColumns, promoGridColumns, settleGridColumns,             // 컬럼 정의
-      dateSearchColumns, vendorSearchColumns, orderSearchColumns, claimSearchColumns, promoSearchColumns, settleSearchColumns, cfTopSearchColumns, // 검색 컬럼 정의
-      vendorSummaryColumns, orderSummaryColumns, claimSummaryColumns, promoSummaryColumns, settleSummaryColumns,               // 요약 카드 컬럼 정의
+      columns, cfTopSearchColumns,                                                  // 컬럼 정의 모음 + 상단 검색 computed
       handleBtnAction, handleSelectAction,                                          // dispatch (모든 이벤트 / 액션 라우팅)
       vendorPager, cfVendorTotal, cfVendorPageList, cfVendorSummary,                // vendor
       orderPager, cfOrderTotal, cfOrderPageList, cfOrderSummary,                    // order
@@ -591,13 +591,13 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <!-- ===== ■. ══ 1. 업체별현황 ══ ========================================== -->
   <div v-if="uiState.activeTab==='vendor'" class="card" style="border-radius:0 8px 8px 8px">
     <!-- ===== ■.■. 요약 카드 ================================================= -->
-    <bo-form-area :columns="vendorSummaryColumns" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
+    <bo-form-area :columns="columns.vendorSummary" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
     <div style="height:12px"></div>
     <!-- ===== □.□. 요약 카드 ================================================= -->
     <!-- 업체명 검색은 상단 공통 검색바(cfTopSearchColumns)로 이동 (2026-06-02) -->
     <!-- ===== ■.■. 테이블 =================================================== -->
     <bo-grid
-      :columns="vendorGridColumns"
+      :columns="columns.vendorGrid"
       :rows="cfVendorPageList"
       :pager="vendorPager"
       row-key="vendorId"
@@ -612,16 +612,16 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <!-- ===== □. ══ 1. 업체별현황 ══ ========================================== -->
   <!-- ===== ■. ══ 2. 주문별현황 ══ ========================================== -->
   <div v-if="uiState.activeTab==='order'" class="card" style="border-radius:0 8px 8px 8px">
-    <bo-form-area :columns="orderSummaryColumns" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
+    <bo-form-area :columns="columns.orderSummary" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
     <div style="height:12px"></div>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'"
-      :columns="orderSearchColumns" :param="uiState"
+      :columns="columns.orderSearch" :param="uiState"
       @search="handleBtnAction('searchParam-list')" />
     <!-- ===== □.□. 검색 영역 ================================================= -->
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
-      :columns="orderGridColumns"
+      :columns="columns.orderGrid"
       :rows="cfOrderPageList"
       :pager="orderPager"
       row-key="orderId"
@@ -637,16 +637,16 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <!-- ===== □. ══ 2. 주문별현황 ══ ========================================== -->
   <!-- ===== ■. ══ 3. 클레임별현황 ══ ========================================= -->
   <div v-if="uiState.activeTab==='claim'" class="card" style="border-radius:0 8px 8px 8px">
-    <bo-form-area :columns="claimSummaryColumns" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
+    <bo-form-area :columns="columns.claimSummary" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
     <div style="height:12px"></div>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'"
-      :columns="claimSearchColumns" :param="uiState"
+      :columns="columns.claimSearch" :param="uiState"
       @search="handleBtnAction('searchParam-list')" />
     <!-- ===== □.□. 검색 영역 ================================================= -->
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
-      :columns="claimGridColumns"
+      :columns="columns.claimGrid"
       :rows="cfClaimPageList"
       :pager="claimPager"
       row-key="claimId"
@@ -661,16 +661,16 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <!-- ===== □. ══ 3. 클레임별현황 ══ ========================================= -->
   <!-- ===== ■. ══ 4. 프로모션별현황 ══ ======================================== -->
   <div v-if="uiState.activeTab==='promo'" class="card" style="border-radius:0 8px 8px 8px">
-    <bo-form-area :columns="promoSummaryColumns" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
+    <bo-form-area :columns="columns.promoSummary" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
     <div style="height:12px"></div>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'"
-      :columns="promoSearchColumns" :param="uiState"
+      :columns="columns.promoSearch" :param="uiState"
       @search="handleBtnAction('searchParam-list')" />
     <!-- ===== □.□. 검색 영역 ================================================= -->
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
-      :columns="promoGridColumns"
+      :columns="columns.promoGrid"
       :rows="cfPromoPageList"
       :pager="promoPager"
       row-key="promoId"
@@ -685,16 +685,16 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <!-- ===== □. ══ 4. 프로모션별현황 ══ ======================================== -->
   <!-- ===== ■. ══ 5. 정산별현황 ══ ========================================== -->
   <div v-if="uiState.activeTab==='settle'" class="card" style="border-radius:0 8px 8px 8px">
-    <bo-form-area :columns="settleSummaryColumns" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
+    <bo-form-area :columns="columns.settleSummary" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
     <div style="height:12px"></div>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'"
-      :columns="settleSearchColumns" :param="uiState"
+      :columns="columns.settleSearch" :param="uiState"
       @search="handleBtnAction('searchParam-list')" />
     <!-- ===== □.□. 검색 영역 ================================================= -->
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
-      :columns="settleGridColumns"
+      :columns="columns.settleGrid"
       :rows="cfSettlePageList"
       :pager="settlePager"
       row-key="month"

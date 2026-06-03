@@ -240,7 +240,8 @@ window.OdDlivDtl = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     /* 결제정보 컬럼 */
-    const paymentGridColumns = [
+    const columns = {};
+    columns.paymentGrid = [
       { key: 'orderId',   label: '주문ID', refLink: 'order' },
       { key: 'dlivFee',   label: '배송비',   style: 'text-align:right;',
         align: 'right', cellStyle: 'font-weight:700', fmt: (v) => fmt(v) },
@@ -250,7 +251,7 @@ window.OdDlivDtl = {
     ];
 
     /* 정보수정이력 컬럼 */
-    const editHistGridColumns = [
+    columns.editHistGrid = [
       { key: 'date',   label: '수정일시', style: 'width:140px;' },
       { key: 'user',   label: '수정자',   style: 'width:100px;' },
       { key: 'field',  label: '항목',     style: 'width:120px;' },
@@ -259,7 +260,7 @@ window.OdDlivDtl = {
     ];
 
     /* 배송항목 그리드 컬럼 (번호 컬럼은 bo-grid 자동) */
-    const dlivItemGridColumns = [
+    columns.dlivItemGrid = [
       { key: 'prodNm',      label: '상품명', cellStyle: 'font-size:12px;',
         fmt: (v, row) => `${row.emoji || '🛍'} ${row.prodNm || ''}` },
       { key: 'color',       label: '색상',       style: 'width:60px;',                fmt: v => v || '-' },
@@ -302,7 +303,7 @@ window.OdDlivDtl = {
     ];
 
     // 기본 폼
-    const baseFormColumns = [
+    columns.baseForm = [
       { key: 'dlivId',       label: '배송ID', type: 'text', required: true,
         placeholder: 'DLIV-XXX', readonly: !cfIsNew.value },
       { key: 'orderId',      label: '주문ID', type: 'slot', name: 'orderId', required: true },
@@ -316,8 +317,8 @@ window.OdDlivDtl = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       form, errors, codes, dlivItems, relatedClaims, tab, tabMode2,                                                       // 상태 / 데이터
-      baseFormColumns, paymentGridColumns, editHistGridColumns, dlivItemGridColumns,                                      // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                                                // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfDtlMode, cfCurrentStepIdx, tabs, cfEditHistList, cfPaymentList, cfStatusHistList, cfFirstClaim,        // computed
       DLIV_STEPS, CLAIM_TYPE_COLOR,                                                                                       // 상수
@@ -399,7 +400,7 @@ window.OdDlivDtl = {
 </div>
 <!-- ===== ■.■.■. 기본정보 폼 (BoFormArea 자동 렌더) =========================== -->
 <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-<bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+<bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="3" compact :show-actions="active"
         @save="handleBtnAction('form-save')"
         @cancel="handleBtnAction('form-cancel')"
@@ -466,7 +467,7 @@ window.OdDlivDtl = {
 </a>
 </div>
 <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-<bo-grid bare :columns="dlivItemGridColumns" :rows="dlivItems"
+<bo-grid bare :columns="columns.dlivItemGrid" :rows="dlivItems"
         empty-text="배송 항목 정보가 없습니다.">
   <template #tfoot>
     <tr style="background:#fafafa;font-weight:700;">
@@ -502,7 +503,7 @@ window.OdDlivDtl = {
   </span>
 </div>
 <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-<bo-grid bare :columns="paymentGridColumns" :rows="cfPaymentList" empty-text="결제정보가 없습니다." @ref-click="({type,id}) => handleBtnAction('payment-refClick', {type, id})">
+<bo-grid bare :columns="columns.paymentGrid" :rows="cfPaymentList" empty-text="결제정보가 없습니다." @ref-click="({type,id}) => handleBtnAction('payment-refClick', {type, id})">
 </bo-grid>
 </div>
 <!-- ===== □.□. 결제정보 탭 ================================================ -->
@@ -526,7 +527,7 @@ window.OdDlivDtl = {
   </span>
 </div>
 <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-<bo-grid bare :columns="editHistGridColumns" :rows="cfEditHistList" empty-text="정보 수정 이력이 없습니다.">
+<bo-grid bare :columns="columns.editHistGrid" :rows="cfEditHistList" empty-text="정보 수정 이력이 없습니다.">
 </bo-grid>
 </div>
 </div>

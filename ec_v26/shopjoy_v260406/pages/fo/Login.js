@@ -157,7 +157,8 @@ window.Login = {
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     /* fo-grid 컬럼 — 특수 셀(이름/등급/상태/선택)은 #cell 슬롯으로 override */
     // --- [컬럼 정의] ---
-    const memberPickGridColumns = [
+    const columns = {};
+    columns.memberPickGrid = [
       { key: 'memberNm', label: '이름',
         fmt: (v, row) => `${(row.memberNm || '?').charAt(0)} ${row.memberNm || '-'}`,
         cellInnerStyle: 'font-weight:700;color:var(--text-primary);white-space:nowrap;' },
@@ -416,13 +417,14 @@ window.Login = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, codes,                                                          // 상태
       handleBtnAction, handleSelectAction,                                     // dispatch
       form, sf, snsSf, snsPhone, terms,                                        // 폼/약관
       IS,                                                                      // 스타일
       providerLabel, providerColor, providerTextColor,                         // 헬퍼
       foAuth: window.foAuth,                                                   // 인증 상태
-      memberPick, memberPickGridColumns,                                       // 회원선택 모달
+      memberPick, // 회원선택 모달
     };
   },
   template: /* html */ `
@@ -581,7 +583,7 @@ window.Login = {
           <!-- ===== ■.■.■.■.■. 테이블 ============================================= -->
           <div style="border-radius:8px;border:1px solid #f0e0e8;overflow:hidden;">
             <!-- ===== ■.■.■.■.■.■. 목록 영역 ========================================= -->
-            <fo-grid bare :columns="memberPickGridColumns" :rows="memberPick.rows" :pager="memberPick"
+            <fo-grid bare :columns="columns.memberPickGrid" :rows="memberPick.rows" :pager="memberPick"
               row-key="memberId" row-actions
               :empty-text="memberPick.loading ? '⏳ 조회 중...' : '🔍 조회 결과 없음'"
               :row-click="(row) => handleSelectAction('members-rowPick', row)">

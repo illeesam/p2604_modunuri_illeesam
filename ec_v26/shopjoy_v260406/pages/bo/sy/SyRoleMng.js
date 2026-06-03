@@ -835,7 +835,8 @@ window.SyRoleMng = {
 
         // --- [컬럼 정의] ---
 
-        const baseSearchColumns = [
+        const columns = {};
+        columns.baseSearch = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'roleCode', label: '역할코드' },
@@ -849,7 +850,7 @@ window.SyRoleMng = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 기본 그리드
-    const baseGridColumns = [
+    columns.baseGrid = [
       { key: 'roleCode',     label: '역할코드', style: 'width:120px;',    edit: 'text', mono: true },
       { key: 'roleNm',       label: '역할명',   style: 'min-width:150px;', edit: 'text',
         treeDepth: true, treeBullet: depthBullet, treeColor: depthColor },
@@ -879,9 +880,9 @@ window.SyRoleMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, codes, searchParam, gridRows, expanded,                                                       // 상태 / 데이터
       excelUploadModal,                                                                                      // 엑셀 업로드 모달
-      baseSearchColumns, baseGridColumns,                                                                    // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                                   // dispatch (모든 이벤트 / 액션 라우팅)
       cfTree, cfShowRoleSetting, cfSelectedRoleNm, cfMenuTree, cfMenuAllChecked,                            // computed
       fnRoleUsersList, fnCallbackModal,                                                                       // 함수 / 모달 콜백 dispatch
@@ -899,7 +900,7 @@ window.SyRoleMng = {
   <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </div>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 좌 트리 + 우 영역 ============================================= -->
@@ -922,7 +923,7 @@ window.SyRoleMng = {
     <div>
       <!-- ===== ■.■.■. CRUD 그리드 ============================================ -->
       <bo-grid-crud
-        :columns="baseGridColumns" :rows="gridRows" row-key="roleId"
+        :columns="columns.baseGrid" :rows="gridRows" row-key="roleId"
         list-title="역할목록" :show-export="true" :show-excel-upload="true" :draggable="false"
         v-model:focusedIdx="uiState.focusedIdx"
         v-model:checkAll="uiState.checkAll"

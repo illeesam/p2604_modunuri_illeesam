@@ -95,7 +95,8 @@ window.OdDlivHist = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     /* BoGrid(bare) 컬럼 — 연관 클레임 */
-    const claimGridColumns = [
+    const columns = {};
+    columns.claimGrid = [
       { key: 'claimId',     label: '클레임ID', style: 'width:120px;', refLink: 'claim' },
       { key: 'type',        label: '유형',   style: 'width:70px;' },
       { key: 'statusCd',    label: '상태',   style: 'width:90px;' },
@@ -105,8 +106,8 @@ window.OdDlivHist = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, botTab, tabMode2,                                                                                          // 상태 / 데이터
-      claimGridColumns,                                                                                                   // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                                                // dispatch (모든 이벤트 / 액션 라우팅)
       cfRelatedOrder, cfRelatedClaims, tabs,                                                                              // computed / reactive(tabs)
       showTab,                                                                                                            // 헬퍼
@@ -200,7 +201,7 @@ window.OdDlivHist = {
         </span>
       </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="claimGridColumns" :rows="cfRelatedClaims" row-key="claimId"
+      <bo-grid bare :columns="columns.claimGrid" :rows="cfRelatedClaims" row-key="claimId"
         empty-text="연관 클레임이 없습니다." @ref-click="({type,id}) => handleSelectAction('histList-rowRefClick', {type, id})" row-actions>
         <template #row-actions="{ row }">
           <button class="btn btn-blue btn-xs" @click="handleSelectAction('histList-rowClaimEdit', row.claimId)">

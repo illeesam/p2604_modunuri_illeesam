@@ -194,7 +194,8 @@ window.StConfigMng = {
     // --- [컬럼 정의] ---
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 기본 그리드
-    const baseGridColumns = [
+    const columns = {};
+    columns.baseGrid = [
       { key: 'siteNm',             label: '사이트' },
       { key: 'categoryNm',         label: '카테고리', cellStyle: 'font-weight:700',
         fmt: (v, row) => row.categoryNm || row.vendorNm || '-' },
@@ -212,7 +213,7 @@ window.StConfigMng = {
     ];
 
     // 기본 폼
-    const baseFormColumns = [
+    columns.baseForm = [
       { key: 'categoryNm',     label: '카테고리', type: 'text', placeholder: '카테고리명' },
       { key: 'commissionRate', label: '수수료율(%)', type: 'number', required: true, min: 0, max: 100 },
       { key: 'settleCycleCd',  label: '정산주기', type: 'select', required: true, nullLabel: '선택',
@@ -227,8 +228,8 @@ window.StConfigMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, codes, configs, form, errors,
-      baseGridColumns, baseFormColumns,
       handleBtnAction, handleSelectAction,
       fnCycleBadge, fnCycleCdToLabel,
     };
@@ -269,7 +270,7 @@ window.StConfigMng = {
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
-      :columns="baseGridColumns" :rows="configs" row-key="settleConfigId"
+      :columns="columns.baseGrid" :rows="configs" row-key="settleConfigId"
       list-title="목록" :count-text="configs.length + '건'" :row-actions="true"
       :row-class="(c) => uiState.selectedId===c.settleConfigId ? 'selected' : ''">
       <template #head-actions>
@@ -294,7 +295,7 @@ window.StConfigMng = {
       {{ uiState.isNew ? '정산기준 추가' : '정산기준 수정' }}
     </div>
     <!-- ===== ■.■. 폼 영역 ================================================== -->
-    <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+    <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
       :cols="3"
       @save="handleBtnAction('form-save')" @cancel="handleBtnAction('form-cancel')" />
   </div>

@@ -159,13 +159,14 @@ window.PdTagMng = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 기본 검색
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'searchValue', label: '태그명', type: 'text', placeholder: '태그명 검색' },
       { key: 'use', label: '사용여부', type: 'select', options: () => codes.use_yn, nullLabel: '전체' },
     ];
 
     // 기본 그리드
-    const baseGridColumns = [
+    columns.baseGrid = [
       { key: 'tagNm',    label: '태그명', edit: 'text', placeholder: '태그명' },
       { key: 'tagDesc',  label: '설명',   edit: 'text', placeholder: '설명',
         cellStyle: 'color:#888;font-size:12px;' },
@@ -177,8 +178,8 @@ window.PdTagMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, codes, searchParam, pager, gridRows,                                  // 상태 / 데이터
-      baseSearchColumns, baseGridColumns,                                            // 컬럼 정의
       handleBtnAction, handleSelectAction,                                           // dispatch
       fnYnBadge,                                                                     // 헬퍼
     };
@@ -192,12 +193,12 @@ window.PdTagMng = {
   <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" :columns="baseSearchColumns" :param="searchParam" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
+    <bo-search-area :loading="uiState.loading" :columns="columns.baseSearch" :param="searchParam" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
   </div>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 목록 그리드 =================================================== -->
   <bo-grid
-    :columns="baseGridColumns" :rows="gridRows" row-key="tagId" row-actions
+    :columns="columns.baseGrid" :rows="gridRows" row-key="tagId" row-actions
     list-title="태그 목록" :row-class="(row) => row._row_status==='N' ? 'table-rowNew' : (row._row_status==='U' ? 'table-rowMod' : '')"
     @set-page="n => handleSelectAction('tags-pager-setPage', n)" @size-change="handleSelectAction('tags-pager-sizeChange')" @cell-change="row => handleSelectAction('tags-rowCellChange', row)">
     <template #toolbar-actions>

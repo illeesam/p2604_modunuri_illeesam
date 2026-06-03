@@ -361,7 +361,8 @@ window.SyBatchMng = {
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
     // 기본 검색
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'batchNm',   label: '배치명' },
@@ -378,7 +379,7 @@ window.SyBatchMng = {
     ];
 
     // 기본 그리드
-    const baseGridColumns = [
+    columns.baseGrid = [
       { key: 'pathId',        label: '표시경로',     style: 'width:170px;max-width:170px;',
         pathLabelOpen: { label: pathLabel, open: (row) => handleSelectAction('pathModal-open', row), placeholder: '경로 선택...' } },
       { key: 'batchNm',       label: '배치명',       style: 'min-width:120px;', edit: 'text', placeholder: '배치명' },
@@ -397,8 +398,8 @@ window.SyBatchMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       batches, uiState, batchCounts, codes, searchParam, gridRows, pathPickModal, cronModal,         // 상태 / 데이터
-      baseSearchColumns, baseGridColumns,                                                // 컬럼 정의
       handleBtnAction, handleSelectAction, fnCallbackModal,                                               // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfShowRunNow,                                                            // computed / 헬퍼
     };
@@ -412,7 +413,7 @@ window.SyBatchMng = {
   <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </div>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 좌 트리 + 우 영역 ============================================= -->
@@ -423,7 +424,7 @@ window.SyBatchMng = {
     <div>
       <!-- ===== ■.■.■. CRUD 그리드 ============================================ -->
       <bo-grid-crud
-        :columns="baseGridColumns" :rows="gridRows" row-key="batchId"
+        :columns="columns.baseGrid" :rows="gridRows" row-key="batchId"
         list-title="배치목록" :show-export="true"
         v-model:focusedIdx="uiState.focusedIdx"
         v-model:checkAll="uiState.checkAll"

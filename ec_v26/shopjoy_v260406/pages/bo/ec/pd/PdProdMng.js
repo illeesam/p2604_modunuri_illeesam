@@ -314,7 +314,8 @@ window.PdProdMng = {
     const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}_${detailPanel.resetSeq}`);
 
     // 기본 검색
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'searchType', label: '검색대상', type: 'multiCheck',
         options: [
           { value: 'prodId',   label: '상품ID' },
@@ -336,7 +337,7 @@ window.PdProdMng = {
     ];
 
     // 기본 그리드
-    const baseGridColumns = [
+    columns.baseGrid = [
       { key: 'prodNm',       label: '상품명', sortKey: 'nm', link: true,
         cellInnerStyle: (v) => detailPanel.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'cateNm',       label: '카테고리' },
@@ -350,8 +351,8 @@ window.PdProdMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       products, uiState, codes, searchParam, pager, detailPanel, catModal,        // 상태 / 데이터
-      baseSearchColumns, baseGridColumns,                                          // 컬럼 정의
       handleBtnAction, handleSelectAction, fnCallbackModal,                                         // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                         // computed
       fnStatusBadge, sortIcon,                                                     // 헬퍼
@@ -392,7 +393,7 @@ window.PdProdMng = {
   <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" :columns="baseSearchColumns" :param="searchParam"
+    <bo-search-area :loading="uiState.loading" :columns="columns.baseSearch" :param="searchParam"
       @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
   </div>
   <!-- ===== □. 검색 ====================================================== -->
@@ -417,7 +418,7 @@ window.PdProdMng = {
     </div>
     <!-- ===== ■.■. 목록 그리드 ================================================ -->
     <bo-grid
-      :columns="baseGridColumns" :rows="products" row-key="prodId"
+      :columns="columns.baseGrid" :rows="products" row-key="prodId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(p) => detailPanel.selectedId===p.prodId ? 'background:#fff8f9;' : ''"

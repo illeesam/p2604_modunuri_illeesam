@@ -293,7 +293,8 @@ window.SyBbsMng = {
     const cfDetailKey = computed(() => `${detailModal.dtlId}_${detailModal.dtlMode}_${detailModal.resetSeq}`);
 
     // 기본 검색
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'bbsTitle', label: '제목' },
@@ -310,7 +311,7 @@ window.SyBbsMng = {
     ];
 
     // 기본 그리드
-    const baseGridColumns = [
+    columns.baseGrid = [
       { key: 'bbmId',        label: '게시판', badge: () => 'badge-gray', fmt: (v) => bbmNm(v) },
       { key: 'bbsTitle',     label: '제목', sortKey: 'nm', link: true,
         cellInnerStyle: (v) => detailModal.dtlId === v ? 'color:#e8587a;font-weight:700;' : '' },
@@ -325,8 +326,8 @@ window.SyBbsMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       bbsList, uiState, codes, searchParam, pager, detailModal,                          // 상태 / 데이터
-      baseSearchColumns, baseGridColumns,                                                // 컬럼 정의
       handleBtnAction, handleSelectAction,                                               // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                               // computed
       fnRowStyle,                                                                        // 헬퍼
@@ -342,12 +343,12 @@ window.SyBbsMng = {
   <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </div>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
   <bo-grid
-    :columns="baseGridColumns" :rows="bbsList" row-key="bbsId"
+    :columns="columns.baseGrid" :rows="bbsList" row-key="bbsId"
     list-title="게시글목록" :count-text="pager.pageTotalCount + '건'"
     :sort-state="uiState" :row-style="fnRowStyle"
     @sort="key => handleSelectAction('bbsList-sort', key)"

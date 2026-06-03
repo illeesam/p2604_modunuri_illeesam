@@ -272,7 +272,8 @@ window.PmDiscntDtl = {
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - info 탭 ======================
     // 정보 영역 폼
-    const infoFormColumns = [
+    const columns = {};
+    columns.infoForm = [
       { key: 'discntNm',     label: '할인명', type: 'text', required: true,
         placeholder: '할인명 입력' },
       { key: 'discntTypeCd', label: '할인유형', type: 'select', options: () => codes.discnt_types },
@@ -283,25 +284,25 @@ window.PmDiscntDtl = {
 
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - detail 탭 할인적용/기간설정 ===
     // 할인 적용 폼
-    const discntApplyFormColumns = [
+    columns.discntApplyForm = [
       { key: 'minOrderAmt',  label: '최소주문금액 (원)', type: 'number', placeholder: '0' },
       { key: 'maxDiscntAmt', label: '최대할인금액 (원)', type: 'number', placeholder: '0 = 무제한' },
     ];
     // 할인 기간 폼
-    const discntPeriodFormColumns = [
+    columns.discntPeriodForm = [
       { key: 'startDate', label: '시작일', type: 'date' },
       { key: 'endDate',   label: '종료일', type: 'date' },
     ];
     // 상태/비고
-    const discntStatusFormColumns = [
+    columns.discntStatusForm = [
       { key: 'discntStatusCd', label: '상태', type: 'select', options: () => codes.promo_statuses },
       { key: 'discntDesc',     label: '비고', type: 'textarea', rows: 2, placeholder: '비고 입력' },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       vendors, uiState, codes, form, errors,                                          // 상태 / 데이터
-      infoFormColumns, discntApplyFormColumns, discntPeriodFormColumns, discntStatusFormColumns, // 폼 컬럼 정의
       handleBtnAction, handleSelectAction, fnCallbackModal,                                            // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfHasId, cfSaveDisabled, cfDtlMode, cfVisibilityOptions, cfSelectedVendorNm, // computed
       tab, tabMode2, showVendorModal,                                                 // toRef
@@ -334,7 +335,7 @@ window.PmDiscntDtl = {
         📋 기본정보
       </div>
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
+      <bo-form-area :columns="columns.infoForm" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
         <!-- ===== ■.■.■.■. 판매업체 picker ======================================= -->
         <template #vendor>
@@ -392,7 +393,7 @@ window.PmDiscntDtl = {
           💰 할인적용
         </h3>
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
-        <bo-form-area :columns="discntApplyFormColumns" :form="form" :errors="errors"
+        <bo-form-area :columns="columns.discntApplyForm" :form="form" :errors="errors"
           :cols="3" compact :show-actions="false" />
       </div>
       <!-- ===== ■.■.■. 기간설정 (BoFormArea 자동 렌더) ============================= -->
@@ -401,7 +402,7 @@ window.PmDiscntDtl = {
           📅 기간설정
         </h3>
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
-        <bo-form-area :columns="discntPeriodFormColumns" :form="form" :errors="errors"
+        <bo-form-area :columns="columns.discntPeriodForm" :form="form" :errors="errors"
           :cols="3" compact :show-actions="false" />
       </div>
       <!-- ===== ■.■.■. 상태 및 비고 (BoFormArea 자동 렌더) ========================== -->
@@ -410,7 +411,7 @@ window.PmDiscntDtl = {
           ⚙️ 상태 및 비고
         </h3>
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
-        <bo-form-area :columns="discntStatusFormColumns" :form="form" :errors="errors"
+        <bo-form-area :columns="columns.discntStatusForm" :form="form" :errors="errors"
           :cols="3" compact :show-actions="false" />
       </div>
       <div class="form-actions" v-if="active && !cfDtlMode">

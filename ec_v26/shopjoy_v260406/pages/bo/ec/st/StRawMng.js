@@ -180,7 +180,8 @@ const raws = reactive([]);
     const fmtPct = n => Number(n || 0).toLocaleString() + '%';
 
     /* rawGridColumns — BoGrid 컬럼 정의 (특수셀은 #cell- 슬롯 override) */
-    const rawGridColumns = [
+    const columns = {};
+    columns.rawGrid = [
       { key: 'expand',         label: '',         style: 'width:30px',
         align: 'center',
         cellStyle: 'color:#aaa;font-size:11px;user-select:none;',
@@ -232,7 +233,7 @@ const raws = reactive([]);
     };
 
     /* summaryFormColumns — 집계 카드 (BoFormArea readonly, cols=7, labelLeft) */
-    const summaryFormColumns = [
+    columns.summaryForm = [
       { key: '_totalCnt',  label: '수집건수',    type: 'readonly', html: true, fmt: () => `<b style="color:#3498db;font-size:15px;">${pager.pageTotalCount.toLocaleString()}건</b>` },
       { key: '_collectCnt',label: '정산대상',    type: 'readonly', html: true, fmt: () => `<b style="color:#27ae60;font-size:15px;">${cfSummary.value.collectCnt.toLocaleString()}건</b>` },
       { key: '_confirmCnt',label: '구매확정',    type: 'readonly', html: true, fmt: () => `<b style="color:#e67e22;font-size:15px;">${cfSummary.value.confirmCnt.toLocaleString()}건</b>` },
@@ -243,7 +244,7 @@ const raws = reactive([]);
     ];
 
     /* baseSearchColumns — 검색 영역 컬럼 (1+2행 평면화) */
-    const baseSearchColumns = [
+    columns.baseSearch = [
       { key: 'dateRange', type: 'dateRange', label: '기간',
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
@@ -277,7 +278,7 @@ const raws = reactive([]);
     ];
 
     /* moreSearchColumns — 펼침 영역(searchMoreOpen=true) 두번째 검색바 */
-    const moreSearchColumns = [
+    columns.moreSearch = [
       { key: 'orderStatus', type: 'select', label: '주문상태',
         options: () => codes.order_statuses_kr, nullLabel: '주문상태 전체', width: '120px' },
       { key: 'amtFrom',     type: 'text',   label: '수집금액(최소)', placeholder: '최솟값(원)', width: '120px' },
@@ -285,7 +286,7 @@ const raws = reactive([]);
     ];
 
     /* rawExpandColumns — 정산원장 행 펼침 BoFormArea 컬럼 (cols=4, labelLeft) */
-    const rawExpandColumns = [
+    columns.rawExpand = [
       { key: '_orderId',      label: '주문ID',     type: 'readonly', fmt: (v, row) => row.orderId || '-' },
       { key: '_orderDate',    label: '거래일자',   type: 'readonly', fmt: (v, row) => row.orderDate || '-' },
       { key: '_orderStatus',  label: '주문상태',   type: 'readonly', fmt: (v, row) => orderStatusLabel(row.orderItemStatusCd) },
@@ -321,14 +322,14 @@ const raws = reactive([]);
 
   /* ##### [06] return (템플릿 노출) ############################################## */
   return {
+      columns,
       uiState, handleDateRangeChange,
       searchParam,
       pager, raws, cfSummary,
       handleBtnAction, handleSelectAction,
       expandedRows, toggleRow, isExpanded,
       fnStatusBadge, rawStatusLabel, fnRawStatusBadge, vendorTypeLabel, orderStatusLabel,
-      fmtW, fmtPct, doCollect, codes, rawGridColumns, rawExpandColumns, baseSearchColumns, moreSearchColumns, summaryFormColumns,
-    };
+      fmtW, fmtPct, doCollect, codes, };
   },
   template: /* html */`
 <div>
@@ -352,7 +353,7 @@ const raws = reactive([]);
   <!-- ===== ■. 검색 카드 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :columns="baseSearchColumns" :param="searchParam"
+    <bo-search-area :columns="columns.baseSearch" :param="searchParam"
       @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')">
       <template #actions-after>
         <button class="btn btn-secondary btn-sm" @click="handleBtnAction('searchParam-moreToggle')" style="min-width:70px">
@@ -363,19 +364,19 @@ const raws = reactive([]);
     <!-- ===== ■.■. 검색 영역 (펼침) ============================================ -->
     <bo-search-area v-if="searchParam.searchMoreOpen" :show-actions="false"
       bar-style="margin-top:8px;padding-top:8px;border-top:1px solid #f0e0e8;"
-      :columns="moreSearchColumns" :param="searchParam"
+      :columns="columns.moreSearch" :param="searchParam"
       @search="handleBtnAction('searchParam-list')" />
   </div>
   <!-- ===== □.□. 검색 영역 ================================================= -->
   <!-- ===== □. 검색 카드 =================================================== -->
   <!-- ===== ■. 집계 카드 =================================================== -->
   <div class="card" style="margin-bottom:12px;">
-    <bo-form-area :columns="summaryFormColumns" :form="{}" :cols="7" readonly label-left compact :show-actions="false" label-width="100px" />
+    <bo-form-area :columns="columns.summaryForm" :form="{}" :cols="7" readonly label-left compact :show-actions="false" label-width="100px" />
   </div>
   <!-- ===== □. 집계 카드 =================================================== -->
   <!-- ===== ■. 목록 카드 =================================================== -->
   <bo-grid
-    :columns="rawGridColumns"
+    :columns="columns.rawGrid"
     :rows="raws"
     row-key="settleRawId"
     list-title="정산수집원장"
@@ -397,7 +398,7 @@ const raws = reactive([]);
     </template>
     <template #row-expand="{ row: r, colspan }">
       <td :colspan="colspan" style="background:#f4f6fb;padding:12px 20px;border-top:none">
-        <bo-form-area :columns="rawExpandColumns" :form="r" :cols="3" readonly label-left compact :show-actions="false" />
+        <bo-form-area :columns="columns.rawExpand" :form="r" :cols="3" readonly label-left compact :show-actions="false" />
       </td>
     </template>
   </bo-grid>

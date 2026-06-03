@@ -95,7 +95,8 @@ window.MbMemberHist = {
     ]);
 
     // 주문 그리드
-    const orderGridColumns = [
+    const columns = {};
+    columns.orderGrid = [
       { key: 'orderId', label: '주문ID', refLink: 'order' },
       { key: 'orderDate', label: '주문일',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
       { key: 'prodNm', label: '상품' },
@@ -103,7 +104,7 @@ window.MbMemberHist = {
       { key: 'statusCd', label: '상태' },
     ];
     // 클레임 그리드
-    const claimGridColumns = [
+    columns.claimGrid = [
       { key: 'claimId', label: '클레임ID', refLink: 'claim' },
       { key: 'orderId', label: '주문ID', refLink: 'order' },
       { key: 'type', label: '유형' },
@@ -114,8 +115,8 @@ window.MbMemberHist = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState,                                                                         // 상태 / 데이터
-      orderGridColumns, claimGridColumns,                                              // 컬럼 정의
       handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
       cfMemberOrders, cfMemberClaims, tabs,                                            // computed / reactive(tabs)
       showTab,                                                                         // 헬퍼
@@ -147,7 +148,7 @@ window.MbMemberHist = {
         </span>
       </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="orderGridColumns" :rows="cfMemberOrders" row-key="orderId" empty-text="주문 내역이 없습니다." @ref-click="ref => handleSelectAction('row-ref', ref)" row-actions>
+      <bo-grid bare :columns="columns.orderGrid" :rows="cfMemberOrders" row-key="orderId" empty-text="주문 내역이 없습니다." @ref-click="ref => handleSelectAction('row-ref', ref)" row-actions>
         <template #row-actions="{ row }">
           <button class="btn btn-blue btn-xs" @click="handleSelectAction('orders-rowView', row.orderId)">
             상세
@@ -165,7 +166,7 @@ window.MbMemberHist = {
         </span>
       </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="claimGridColumns" :rows="cfMemberClaims" row-key="claimId" empty-text="클레임 내역이 없습니다." @ref-click="ref => handleSelectAction('row-ref', ref)" row-actions>
+      <bo-grid bare :columns="columns.claimGrid" :rows="cfMemberClaims" row-key="claimId" empty-text="클레임 내역이 없습니다." @ref-click="ref => handleSelectAction('row-ref', ref)" row-actions>
         <template #row-actions="{ row }">
           <button class="btn btn-blue btn-xs" @click="handleSelectAction('claims-rowView', row.claimId)">
             상세

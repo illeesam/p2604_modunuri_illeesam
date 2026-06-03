@@ -287,7 +287,8 @@ window.PmGiftDtl = {
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - info 탭 ======================
     // 정보 영역 폼
-    const infoFormColumns = [
+    const columns = {};
+    columns.infoForm = [
       { key: 'giftNm',       label: '사은품명', type: 'text', required: true,
         placeholder: '사은품명 입력' },
       { key: 'giftTypeCd',   label: '조건유형', type: 'select', options: () => codes.gift_cond_types },
@@ -305,8 +306,8 @@ window.PmGiftDtl = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       vendors, uiState, codes, form, errors,                                          // 상태 / 데이터
-      infoFormColumns,                                                                // 폼 컬럼 정의
       handleBtnAction, handleSelectAction, fnCallbackModal,                                            // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfHasId, cfSaveDisabled, cfIsView, cfVisibilityOptions, cfCondValLabel, cfSelectedVendorNm, // computed
       tab, tabMode2, showVendorModal,                                                 // toRef
@@ -339,7 +340,7 @@ window.PmGiftDtl = {
         📋 기본정보
       </div>
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
+      <bo-form-area :columns="columns.infoForm" :form="form" :errors="errors"
         :readonly="cfIsView" :cols="3" compact :show-actions="false">
         <!-- ===== ■.■.■.■. 판매업체 picker ======================================= -->
         <template #vendor>

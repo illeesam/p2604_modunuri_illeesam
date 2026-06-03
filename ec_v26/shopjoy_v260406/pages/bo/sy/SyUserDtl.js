@@ -195,7 +195,8 @@ window.SyUserDtl = {
     const cfUserRoles = [];
 
     /* userRoleGridColumns — 적용 역할 목록 컬럼 */
-    const userRoleGridColumns = [
+    const columns = {};
+    columns.userRoleGrid = [
       { key: 'roleId',       label: 'ID',     style: 'width:50px;text-align:center;', align: 'center',
         cellStyle: 'color:#888;' },
       { key: 'roleCode',     label: '역할코드', style: 'width:130px;', mono: true,
@@ -211,7 +212,7 @@ window.SyUserDtl = {
     ];
 
     // 기본 폼 (cols=3, 1열 위주 + 주소/프로필은 한 줄 전체 폭)
-    const baseFormColumns = [
+    columns.baseForm = [
       // 1행: 사이트명(2) + 로그인ID(1)
       { key: '_siteNm',      label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 2 },
       { key: 'loginId',      label: '로그인ID', type: 'text', required: true,
@@ -238,9 +239,9 @@ window.SyUserDtl = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, codes, form, errors, addrDetailRef, deptModal,             // 상태 / 데이터
-      baseFormColumns,                                                    // 컬럼 정의
-      userRoleGridColumns, cfUserRoles,                                   // 역할 목록 (하단)
+      cfUserRoles,                                   // 역할 목록 (하단)
       handleBtnAction, handleSelectAction, fnCallbackModal,                                // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfDtlMode,                                                 // computed
       showToast,                                                          // BaseAttachOne 콜백
@@ -262,7 +263,7 @@ window.SyUserDtl = {
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 기본정보 폼 ============================================== -->
-    <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+    <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
       <!-- ===== ■.■.■. 부서: picker ========================================== -->
       <template #dept>
@@ -325,7 +326,7 @@ window.SyUserDtl = {
       </span>
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-grid bare :columns="userRoleGridColumns" :rows="cfUserRoles" row-key="roleId"
+    <bo-grid bare :columns="columns.userRoleGrid" :rows="cfUserRoles" row-key="roleId"
       empty-text="배정된 역할이 없습니다." />
     <!-- ===== □.□. 목록 영역 ================================================= -->
   </div>

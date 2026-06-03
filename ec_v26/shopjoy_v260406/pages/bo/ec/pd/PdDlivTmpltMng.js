@@ -209,14 +209,15 @@ window.PdDlivTmpltMng = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 기본 검색
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'searchValue', label: '템플릿명', type: 'text', placeholder: '템플릿명 검색' },
       { key: 'method', label: '배송방법', type: 'select', options: () => codes.dliv_methods, nullLabel: '전체' },
       { key: 'use', label: '사용여부', type: 'select', options: () => codes.use_yn, nullLabel: '전체' },
     ];
 
     // 기본 그리드
-    const baseGridColumns = [
+    columns.baseGrid = [
       { key: 'dlivTmpltNm',   label: '템플릿명', sortKey: 'nm', link: true },
       { key: 'dlivMethodCd',  label: '배송방법',   style: 'width:90px;', badge: (row) => fnMethodBadge(row.dlivMethodCd) },
       { key: 'dlivPayTypeCd', label: '결제유형',   style: 'width:80px;', badge: () => 'badge-gray' },
@@ -233,7 +234,7 @@ window.PdDlivTmpltMng = {
     ];
 
     // 기본 폼 — cols=3 기준 자연 배치
-    const baseFormColumns = [
+    columns.baseForm = [
       /* 1행: 템플릿명(2) + 배송방법(1) */
       { key: 'dlivTmpltNm',      label: '템플릿명', type: 'text', required: true, colSpan: 2 },
       { key: 'dlivMethodCd',     label: '배송방법', type: 'select', nullable: false,
@@ -264,8 +265,8 @@ window.PdDlivTmpltMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, codes, searchParam, pager, dlivTmplts, form,                            // 상태 / 데이터
-      baseSearchColumns, baseGridColumns, baseFormColumns,                              // 컬럼 정의
       handleBtnAction, handleSelectAction,                                              // dispatch
       fnYnBadge, fnMethodBadge, METHOD_LABELS, PAY_LABELS,                              // 헬퍼
     };
@@ -311,7 +312,7 @@ window.PdDlivTmpltMng = {
   <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </div>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 목록 그리드 =================================================== -->
@@ -329,7 +330,7 @@ window.PdDlivTmpltMng = {
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
-      :columns="baseGridColumns" :rows="dlivTmplts" row-key="dlivTmpltId"
+      :columns="columns.baseGrid" :rows="dlivTmplts" row-key="dlivTmpltId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-class="(row) => uiState.selectedId===row.dlivTmpltId ? 'active' : ''"
@@ -353,7 +354,7 @@ window.PdDlivTmpltMng = {
     <!-- ===== ■.■. 상세 입력폼 (BoFormArea 자동 렌더) ======================== -->
     <div style="padding:12px">
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="baseFormColumns" :form="form" :errors="{}"
+      <bo-form-area :columns="columns.baseForm" :form="form" :errors="{}"
         :cols="3" :show-actions="false" />
       <!-- ===== ■.■.■. 하단 액션 (저장/삭제/닫기) — .form-actions 가 중앙 정렬 ===== -->
       <div class="form-actions">

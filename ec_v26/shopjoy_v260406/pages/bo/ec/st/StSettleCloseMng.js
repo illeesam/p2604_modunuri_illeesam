@@ -112,7 +112,8 @@ window.StSettleCloseMng = {
     /* 검색바 :columns 자동 렌더 정의 */
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // --- [컬럼 정의] ---
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'searchType', label: '검색대상', type: 'multiCheck',
         options: [
           { value: 'closeMon',  label: '정산월' },
@@ -196,7 +197,7 @@ window.StSettleCloseMng = {
     }));
 
     /* thisMonthFormColumns — 이번달 마감 대상 6 카드 (BoFormArea readonly, cols=6, labelLeft) */
-    const thisMonthFormColumns = [
+    columns.thisMonthForm = [
       { key: '_sales',  label: '매출액',     type: 'readonly', html: true, fmt: () => `<b style="color:#3498db;font-size:15px;">${fmtW(cfThisMonthSales.value)}</b>` },
       { key: '_refund', label: '환불액',     type: 'readonly', html: true, fmt: () => `<b style="color:#e74c3c;font-size:15px;">${fmtW(cfThisMonthRefund.value)}</b>` },
       { key: '_net',    label: '순매출',     type: 'readonly', html: true, fmt: () => `<b style="color:#333;font-size:15px;">${fmtW(cfThisMonthNet.value)}</b>` },
@@ -206,7 +207,7 @@ window.StSettleCloseMng = {
     ];
 
     // 기본 그리드
-    const baseGridColumns = [
+    columns.baseGrid = [
       { key: 'closeMon',  label: '정산월', cellStyle: 'font-weight:700' },
       { key: 'sales',     label: '매출액', fmt: fmtW },
       { key: 'refund',    label: '환불액', fmt: fmtW, cellStyle: 'color:#e74c3c' },
@@ -221,8 +222,8 @@ window.StSettleCloseMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, codes, closes, searchParam, thisMonth,
-      baseGridColumns, baseSearchColumns, thisMonthFormColumns,
       handleBtnAction, handleSelectAction,
       cfFilteredClose, cfThisMonthSales, cfThisMonthRefund, cfThisMonthNet, cfThisMonthComm, cfThisMonthPromo, cfThisMonthSettle, cfAlreadyClosed,
       fnStatusBadge, fmtW,
@@ -252,7 +253,7 @@ window.StSettleCloseMng = {
     <div style="font-weight:700;font-size:15px;margin-bottom:12px">
       {{ thisMonth }} 정산마감 대상
     </div>
-    <bo-form-area :columns="thisMonthFormColumns" :form="{}" :cols="6" readonly label-left compact :show-actions="false" label-width="100px" />
+    <bo-form-area :columns="columns.thisMonthForm" :form="{}" :cols="6" readonly label-left compact :show-actions="false" label-width="100px" />
     <div style="text-align:right">
       <button v-if="!cfAlreadyClosed" class="btn btn-primary" @click="handleBtnAction('settleCloses-doClose')">
         📋 {{ thisMonth }} 정산마감 실행
@@ -267,12 +268,12 @@ window.StSettleCloseMng = {
   <div class="card" style="margin-top:12px">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" bar-style="margin-bottom:12px"
-      :columns="baseSearchColumns" :param="searchParam"
+      :columns="columns.baseSearch" :param="searchParam"
       @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
     <!-- ===== □.□. 검색 영역 ================================================= -->
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
-      :columns="baseGridColumns" :rows="cfFilteredClose" row-key="closeId"
+      :columns="columns.baseGrid" :rows="cfFilteredClose" row-key="closeId"
       list-title="정산마감 이력" :count-text="cfFilteredClose.length + '건'" :row-actions="true">
       <template #head-actions>
         액션

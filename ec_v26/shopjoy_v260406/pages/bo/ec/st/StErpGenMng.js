@@ -123,7 +123,8 @@ window.StErpGenMng = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 미리보기 그리드
-    const previewGridColumns = [
+    const columns = {};
+    columns.previewGrid = [
       { key: 'debit',       label: '차변계정' },
       { key: 'credit',      label: '대변계정' },
       { key: 'debitAmt',    label: '차변금액', fmt: fmtW, cellStyle: 'font-weight:700;color:#3498db' },
@@ -131,7 +132,7 @@ window.StErpGenMng = {
       { key: 'description', label: '적요', cellStyle: 'color:#666' },
     ];
     // --- [컬럼 정의] ---
-    const histGridColumns = [
+    columns.histGrid = [
       { key: 'genMon',    label: '정산월', cellStyle: 'font-weight:700' },
       { key: 'slipType',  label: '전표유형', badge: () => 'badge-blue' },
       { key: 'slipCnt',   label: '전표수', fmt: (v) => v + '건' },
@@ -143,7 +144,7 @@ window.StErpGenMng = {
 
     // ===== 생성 설정 폼 (BoFormArea) =======================================
     // input[type=month]는 BoFormArea가 미지원 → slot 으로 처리
-    const baseFormColumns = [
+    columns.baseForm = [
       { key: 'targetMon', label: '정산월', type: 'slot', name: 'targetMon' },
       { key: 'slipType',  label: '전표유형', type: 'select', width: '160px',
         options: () => codes.erp_voucher_types },
@@ -153,8 +154,8 @@ window.StErpGenMng = {
     watch(() => settingForm.slipType, (v) => { slipType.value = v; });
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, codes, targetMon, slipType, genHistories, settingForm,                  // 상태 / 데이터
-      previewGridColumns, histGridColumns, baseFormColumns,                           // 컬럼 정의
       handleBtnAction,                                                                // dispatch
       cfPreviewRows,                                                                  // computed
       fnStatusBadge, fmtW,                                                            // 헬퍼
@@ -185,7 +186,7 @@ window.StErpGenMng = {
       전표 생성 설정
     </div>
     <!-- ===== ■.■. 폼 영역 ================================================== -->
-    <bo-form-area :columns="baseFormColumns" :form="settingForm" :cols="3" :show-actions="false">
+    <bo-form-area :columns="columns.baseForm" :form="settingForm" :cols="3" :show-actions="false">
       <template #targetMon>
         <input class="form-control" v-model="targetMon" type="month" style="width:160px" />
       </template>
@@ -205,7 +206,7 @@ window.StErpGenMng = {
     <div v-if="cfPreviewRows.length" style="margin-top:16px">
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid
-        :columns="previewGridColumns" :rows="cfPreviewRows"
+        :columns="columns.previewGrid" :rows="cfPreviewRows"
         :list-title="'전표 미리보기'" :count-text="cfPreviewRows.length + '건'">
       </bo-grid>
     </div>
@@ -219,7 +220,7 @@ window.StErpGenMng = {
   <div class="card" style="margin-top:12px">
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
-      :columns="histGridColumns" :rows="genHistories" row-key="genId"
+      :columns="columns.histGrid" :rows="genHistories" row-key="genId"
       list-title="전표생성 이력" :count-text="genHistories.length + '건'">
     </bo-grid>
   </div>

@@ -256,7 +256,8 @@ window.PmCouponMng = {
 
         // --- [컬럼 정의] ---
 
-        const baseSearchColumns = [
+        const columns = {};
+        columns.baseSearch = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'couponNm',   label: '쿠폰명' },
@@ -272,7 +273,7 @@ window.PmCouponMng = {
     ];
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 기본 그리드
-    const baseGridColumns = [
+    columns.baseGrid = [
       { key: 'couponNm',       label: '쿠폰명', sortKey: 'nm', link: true,
         cellInnerStyle: (v) => uiStateDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'couponCd',       label: '코드',
@@ -291,8 +292,8 @@ window.PmCouponMng = {
     ];
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       coupons, uiState, codes, searchParam, pager, uiStateDetail,                  // 상태 / 데이터
-      baseSearchColumns, baseGridColumns,                                          // 컬럼 정의
       handleBtnAction, handleSelectAction,                                         // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                         // computed
       discountLabel, fnStatusBadge, sortIcon,                                      // 헬퍼
@@ -310,7 +311,7 @@ window.PmCouponMng = {
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
@@ -346,7 +347,7 @@ window.PmCouponMng = {
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid v-if="tabMode==='list'" :bare="true"
-      :columns="baseGridColumns" :rows="coupons" row-key="couponId"
+      :columns="columns.baseGrid" :rows="coupons" row-key="couponId"
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(c) => selectedId===c.couponId ? 'background:#fff8f9;' : ''"

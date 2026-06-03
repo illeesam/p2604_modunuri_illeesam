@@ -127,7 +127,8 @@ window.SyCodeDtl = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 기본 폼
-    const baseFormColumns = [
+    const columns = {};
+    columns.baseForm = [
       { key: '_siteNm',   label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 2 },
       { key: 'codeGrp',   label: '코드그룹 (code_grp)',  type: 'text', required: true,
         placeholder: '예: ORDER_STATUS', mono: true },
@@ -142,8 +143,8 @@ window.SyCodeDtl = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, pageCodes, form, errors,                      // 상태 / 데이터
-      baseFormColumns,                                       // 컬럼 정의
       handleBtnAction,                                       // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfDtlMode,                                    // computed
     };
@@ -164,7 +165,7 @@ window.SyCodeDtl = {
   <!-- ===== ■. 폼 영역 (BoFormArea 자동 렌더) ================================= -->
   <div class="card">
     <!-- ===== ■.■. 폼 영역 ================================================== -->
-    <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+    <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="3" compact :show-actions="active"
       @save="handleBtnAction('form-save')"
       @cancel="handleBtnAction('form-cancel')"

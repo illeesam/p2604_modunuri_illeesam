@@ -517,7 +517,8 @@ window.DpDispAreaDtl = {
 
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - 영역코드/영역명/영역유형 ======
     // 기본 영역 폼
-    const baseAreaFormColumns = [
+    const columns = {};
+    columns.baseAreaForm = [
       { key: 'codeValue',  label: '영역코드', type: 'text', required: true,
         placeholder: 'HOME_BANNER', mono: true,
         onChange: (v, f) => { f.codeValue = (f.codeValue || '').toUpperCase(); } },
@@ -526,15 +527,15 @@ window.DpDispAreaDtl = {
         options: () => codes.disp_areas },
     ];
     // 표시경로 picker
-    const pathPickFormColumns = [
+    columns.pathPickForm = [
       { key: 'pathId', label: '표시경로', type: 'slot', name: 'pathPick', colSpan: 3,
         hint: '영역이 노출되는 경로 (예: FO.모바일메인)' },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       codes, areas, panels, uiState, pathPickModal, form, errors,                  // 상태 / 데이터
-      baseAreaFormColumns, pathPickFormColumns,                                    // 컬럼 정의
       handleBtnAction, handleSelectAction, fnCallbackModal,                          // dispatch + 모달 통합 콜백
       cfIsNew, cfRelatedPanels, cfActivePanel, cfPreviewFrameWidth,                // computed
       cfVisibilityOptions,                                                         // computed
@@ -679,7 +680,7 @@ window.DpDispAreaDtl = {
           </div>
           <!-- ===== ■.■.■.■.■. 영역코드/영역명/영역유형 (BoFormArea 자동 렌더) ================ -->
           <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
-          <bo-form-area :columns="baseAreaFormColumns" :form="form" :errors="errors"
+          <bo-form-area :columns="columns.baseAreaForm" :form="form" :errors="errors"
             :readonly="false" :cols="3" compact :show-actions="false" />
           <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin:2px 0 6px;">
             🔲 위젯 레이아웃
@@ -756,7 +757,7 @@ window.DpDispAreaDtl = {
           </div>
           <!-- ===== ■.■.■.■.■. 표시경로 (BoFormArea 자동 렌더) ========================= -->
           <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
-          <bo-form-area :columns="pathPickFormColumns" :form="form" :errors="{}"
+          <bo-form-area :columns="columns.pathPickForm" :form="form" :errors="{}"
             :cols="3" compact :show-actions="false">
             <template #pathPick>
               <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">

@@ -3,8 +3,8 @@
  *   - coUtil.cofGrid(baseGrid) / coUtil.cofDetail(baseDetail) 캡슐 사용
  *   - setup() 6섹션 [01]~[06] 마커 (dispatch=[02] / init=[03] / 핸들러=[04] / 헬퍼·컬럼=[05])
  *   - cmd 라우팅: '{영역명}-{기능명}' (baseDetail-close, baseGrid-sort, notices-rowEdit)
- *   - 검색: <bo-search-area :columns="baseSearchColumns">
- *   - 목록: <bo-grid :columns="baseGridColumns" :pager="baseGrid.pager" :sort-state="baseGrid">
+ *   - 검색: <bo-search-area :columns="columns.baseSearch">
+ *   - 목록: <bo-grid :columns="columns.baseGrid" :pager="baseGrid.pager" :sort-state="baseGrid">
  *   - 인라인 Dtl: baseDetail.panelKey / editId / dtlMode 바인딩
  *   - 정책: _doc/정책서/sy/sy.51.프로그램설계정책.md §4.8, sy.54.네이밍규칙.md §coUtil 표준 캡슐 변수 명명
  */
@@ -25,7 +25,8 @@ window.CmNoticeMng = {
 
     const _initSearchParam = () => {
       const y = new Date().getFullYear();
-      return { searchValue: '', type: '', status: '', dateRange: '', dateStart: `${y - 3}-01-01`, dateEnd: `${y}-12-31` };
+      return {
+        searchValue: '', type: '', status: '', dateRange: '', dateStart: `${y - 3}-01-01`, dateEnd: `${y}-12-31` };
     };
     const searchParam = reactive(_initSearchParam());
 
@@ -170,7 +171,8 @@ window.CmNoticeMng = {
     const _STATUS_FB = { '게시': 'badge-green', '예약': 'badge-blue', '종료': 'badge-gray', '임시': 'badge-orange' };
     const _TYPE_FB   = { '일반': 'badge-gray', '긴급': 'badge-red', '이벤트': 'badge-blue', '시스템': 'badge-orange' };
 
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'searchValue', label: '제목', type: 'text', placeholder: '제목 검색' },
       { key: 'type',        label: '유형', type: 'select', options: () => codes.noticeTypes,    nullLabel: '유형 전체' },
       { key: 'status',      label: '상태', type: 'select', options: () => codes.noticeStatuses, nullLabel: '상태 전체' },
@@ -179,7 +181,7 @@ window.CmNoticeMng = {
         onRangeChange: () => handleBtnAction('searchParam-dateRange') },
     ];
 
-    const baseGridColumns = [
+    columns.baseGrid = [
       { key: 'noticeTypeCd',   label: '유형',     style: 'width:80px;',
         badge: (row) => coUtil.cofCodeBadge('NOTICE_TYPE', row.noticeTypeCd, _TYPE_FB[row.noticeTypeCd] || 'badge-gray') },
       { key: 'noticeTitle',    label: '제목',     sortKey: 'nm', link: true,
@@ -201,7 +203,7 @@ window.CmNoticeMng = {
 
     return {
       notices, uiState, codes, searchParam, baseGrid, baseDetail,
-      baseSearchColumns, baseGridColumns,
+      columns,
       handleBtnAction, handleSelectAction,
       inlineNavigate,
     };
@@ -214,11 +216,11 @@ window.CmNoticeMng = {
   </div>
   <!-- ===== ■. 검색 영역 =================================================== -->
   <div class="card">
-    <bo-search-area :loading="uiState.loading" :columns="baseSearchColumns" :param="searchParam"
+    <bo-search-area :loading="uiState.loading" :columns="columns.baseSearch" :param="searchParam"
       @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
   </div>
   <!-- ===== ■. 목록 영역 ===================================================== -->
-  <bo-grid :columns="baseGridColumns" :rows="notices" :pager="baseGrid.pager" row-key="noticeId"
+  <bo-grid :columns="columns.baseGrid" :rows="notices" :pager="baseGrid.pager" row-key="noticeId"
     :sort-state="baseGrid" list-title="공지사항목록"
     :count-text="'총 ' + baseGrid.pager.pageTotalCount + '건'"
     :row-class="row => baseDetail.selectedId === row.noticeId ? 'active' : ''" empty-text="데이터가 없습니다."

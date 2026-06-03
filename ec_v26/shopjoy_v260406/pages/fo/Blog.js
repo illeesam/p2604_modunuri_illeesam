@@ -119,16 +119,18 @@ window.Blog = {
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     /* FoSearchArea :columns 자동 렌더 정의 — 단일 검색어 입력 */
     // --- [컬럼 정의] ---
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'searchValue', type: 'text', label: '검색', placeholder: '검색어를 입력하세요...' },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, codes,                                  // 상태
       handleBtnAction, handleSelectAction,             // dispatch
       pager, setPage, onSizeChange,                    // 페이징
-      searchParam, baseSearchColumns,                  // 검색
+      searchParam, // 검색
       categories, posts,                               // 데이터
       cfLatestPosts,                                   // computed
       postBg, onSearch, onReset,                       // 헬퍼/이벤트
@@ -167,7 +169,7 @@ window.Blog = {
   <div style="display:flex;justify-content:center;margin-bottom:32px;">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <fo-search-area bar-style="max-width:640px;width:100%;justify-content:center;"
-      :columns="baseSearchColumns" :param="searchParam"
+      :columns="columns.baseSearch" :param="searchParam"
       @search="onSearch" @reset="onReset" />
   </div>
   <!-- ===== □.□. 검색 영역 ================================================= -->

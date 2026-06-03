@@ -40,6 +40,9 @@ window.SyApiLogMng = {
     const errorLogs  = reactive([]);
     const tabCounts  = reactive({ access: 0, error: 0 });
 
+    // 컬럼 정의 모음 (정적 — reactive 불필요). template: columns.baseSearch 등으로 접근
+    const columns = {};
+
     // 펼쳐진 행 ID 집합
     const expandedRows  = reactive(new Set());
     const allExpanded   = reactive({ value: false });
@@ -279,7 +282,7 @@ window.SyApiLogMng = {
     const fnDecode = s => { try { return s ? decodeURIComponent(s) : ''; } catch { return s || ''; } };
 
     // 기본 검색
-    const baseSearchColumns = [
+    columns.baseSearch = [
       { key: 'dateRange', type: 'dateRange', label: '등록기간',
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
@@ -297,7 +300,7 @@ window.SyApiLogMng = {
     ];
 
     /* 펼침 영역(srchOpen=true) 두번째 BoSearchArea 용 columns */
-    const moreSearchColumns = [
+    columns.moreSearch = [
       { key: 'searchStatus',    type: 'text',   label: '상태코드', placeholder: '상태코드 (예: 500)', width: '150px' },
       { key: 'searchAppTypeCd', type: 'select', label: '앱유형', options: () => codes.app_types, nullLabel: '앱유형 전체' },
       { key: 'searchUiNm',      type: 'text',   label: 'x-헤더 화면명', placeholder: '화면명 (x-ui-nm)', width: '170px' },
@@ -305,7 +308,7 @@ window.SyApiLogMng = {
     ];
 
     // 접근 로그 그리드
-    const accessGridColumns = [
+    columns.accessGrid = [
       { key: '_exp',       label: '',          style: 'width:20px', align: 'center', cellStyle: 'color:#bbb;font-size:11px;user-select:none', fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
       { key: 'reqMethod',  label: '메서드', badge: (row) => fnMethodBadge(row.reqMethod), fmt: (v) => v || '-' },
       { key: 'reqPath',    label: 'API 경로', mono: true, cellStyle: 'max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', fmt: (v) => v || '-' },
@@ -318,7 +321,7 @@ window.SyApiLogMng = {
       { key: 'regDate',    label: '등록일시', cellStyle: 'white-space:nowrap', fmt: (v) => String(v || '').slice(0, 19) },
     ];
     // 오류 로그 그리드
-    const errorGridColumns = [
+    columns.errorGrid = [
       { key: '_exp',       label: '',          style: 'width:20px', align: 'center', cellStyle: 'color:#bbb;font-size:11px;user-select:none', fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
       { key: 'reqMethod',  label: '메서드', badge: (row) => fnMethodBadge(row.reqMethod), fmt: (v) => v || '-' },
       { key: 'reqPath',    label: 'API 경로', mono: true, cellStyle: 'max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', fmt: (v) => v || '-' },
@@ -339,8 +342,8 @@ window.SyApiLogMng = {
       return 'cursor:pointer;' + (exp ? ('background:' + bg + ';') : '');
     };
 
-    /* accessExpandColumns — API요청로그 행 펼침 BoFormArea 컬럼 (cols=4, labelLeft) */
-    const accessExpandColumns = [
+    /* accessExpand — API요청로그 행 펼침 BoFormArea 컬럼 (cols=4, labelLeft) */
+    columns.accessExpand = [
       { key: '_path',     label: '경로',     type: 'readonly', mono: true, colSpan: 4, fmt: (v, row) => (row.reqPath || '') + (row.reqQuery ? '?' + row.reqQuery : '') },
       { key: '_method',   label: '메서드',   type: 'readonly', html: true, fmt: (v, row) => `<span class="badge ${fnMethodBadge(row.reqMethod)}">${row.reqMethod || '-'}</span>` },
       { key: '_status',   label: '상태코드', type: 'readonly', html: true, fmt: (v, row) => `<span class="badge ${fnStatusBadge(row.respStatus)}">${row.respStatus || '-'}</span>` },
@@ -365,8 +368,8 @@ window.SyApiLogMng = {
       { key: '_regDate',  label: '등록일시', type: 'readonly', fmt: (v, row) => String(row.regDate || '').slice(0, 19) || '-' },
     ];
 
-    /* errorExpandColumns — API오류로그 행 펼침 BoFormArea 컬럼 (cols=4, labelLeft) */
-    const errorExpandColumns = [
+    /* errorExpand — API오류로그 행 펼침 BoFormArea 컬럼 (cols=4, labelLeft) */
+    columns.errorExpand = [
       { key: '_path',     label: '경로',       type: 'readonly', mono: true, colSpan: 4, fmt: (v, row) => (row.reqPath || '') + (row.reqQuery ? '?' + row.reqQuery : '') },
       { key: '_method',   label: '메서드',     type: 'readonly', html: true, fmt: (v, row) => `<span class="badge ${fnMethodBadge(row.reqMethod)}">${row.reqMethod || '-'}</span>` },
       { key: '_respTime', label: '처리시간',   type: 'readonly', fmt: (v, row) => row.respTimeMs != null ? row.respTimeMs + 'ms' : '-' },
@@ -391,8 +394,7 @@ window.SyApiLogMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       uiState, codes, pager, tabCounts, expandedRows, allExpanded,                          // 상태 / 데이터
-      baseSearchColumns, moreSearchColumns, accessGridColumns, errorGridColumns,            // 컬럼 정의
-      accessExpandColumns, errorExpandColumns,                                              // 행 펼침 폼 컬럼 정의
+      columns,                                                                              // 컬럼 정의 모음 (baseSearch/moreSearch/accessGrid/errorGrid/accessExpand/errorExpand)
       handleBtnAction, handleSelectAction,                                                  // dispatch (모든 이벤트 / 액션 라우팅)
       cfCurrentList,                                                                        // computed
       fnMethodBadge, fnStatusBadge, fnDecode, fnRowExpanded, fnRowClickStyle, showRefModal, // 헬퍼
@@ -420,7 +422,7 @@ window.SyApiLogMng = {
   <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :columns="baseSearchColumns" :param="uiState" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')">
+    <bo-search-area :columns="columns.baseSearch" :param="uiState" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')">
       <template #actions-after>
         <button class="btn btn-secondary btn-sm" @click="handleBtnAction('searchParam-toggleMore')" style="padding:0 8px;" :title="uiState.srchOpen?'조건닫기':'조건더보기'">
           {{ uiState.srchOpen?'▲':'▼' }}
@@ -431,7 +433,7 @@ window.SyApiLogMng = {
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area v-if="uiState.srchOpen" :show-actions="false"
       bar-style="margin-top:8px;padding-top:8px;border-top:1px solid #f0e0e8;"
-      :columns="moreSearchColumns" :param="uiState"
+      :columns="columns.moreSearch" :param="uiState"
       @search="handleBtnAction('searchParam-list')" />
   </div>
   <!-- ===== □.□. 검색 영역 ================================================= -->
@@ -454,7 +456,7 @@ window.SyApiLogMng = {
   <!-- ===== □. 탭 + 목록 ================================================== -->
   <!-- ===== ■. API요청로그 탭 =============================================== -->
   <bo-grid v-if="uiState.activeTab==='access'"
-    :columns="accessGridColumns" :rows="cfCurrentList" row-key="logId"
+    :columns="columns.accessGrid" :rows="cfCurrentList" row-key="logId"
     list-title="API요청로그" :count-text="pager.pageTotalCount + '건'"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
     @set-page="n => handleSelectAction('apiLogs-pager-setPage', n)"
@@ -475,14 +477,14 @@ window.SyApiLogMng = {
     </template>
     <template #row-expand="{ row, colspan }">
       <td :colspan="colspan" style="background:#f4f6fb;padding:16px 20px;border-top:none;">
-        <bo-form-area :columns="accessExpandColumns" :form="row" :cols="3" readonly label-left :show-actions="false" />
+        <bo-form-area :columns="columns.accessExpand" :form="row" :cols="3" readonly label-left :show-actions="false" />
       </td>
     </template>
   </bo-grid>
   <!-- ===== □. API요청로그 탭 =============================================== -->
   <!-- ===== ■. API오류로그 탭 =============================================== -->
   <bo-grid v-if="uiState.activeTab==='error'"
-    :columns="errorGridColumns" :rows="cfCurrentList" row-key="logId"
+    :columns="columns.errorGrid" :rows="cfCurrentList" row-key="logId"
     list-title="API오류로그" :count-text="pager.pageTotalCount + '건'"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
     @set-page="n => handleSelectAction('apiLogs-pager-setPage', n)"
@@ -503,7 +505,7 @@ window.SyApiLogMng = {
     </template>
     <template #row-expand="{ row, colspan }">
       <td :colspan="colspan" style="background:#fff8f8;padding:16px 20px;border-top:none;">
-        <bo-form-area :columns="errorExpandColumns" :form="row" :cols="3" readonly label-left :show-actions="false" />
+        <bo-form-area :columns="columns.errorExpand" :form="row" :cols="3" readonly label-left :show-actions="false" />
         <div style="margin-top:12px;">
           <div style="font-weight:700;color:#c0392b;margin-bottom:6px;border-bottom:1px solid #fcc;padding-bottom:4px;font-size:12px;">
             📋 스택트레이스

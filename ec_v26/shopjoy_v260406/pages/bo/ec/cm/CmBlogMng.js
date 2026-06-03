@@ -268,7 +268,8 @@ window.CmBlogMng = {
     const fnGridRowClass = (row) => (detailPanel.dtlId === row.blogId ? 'active' : '');
 
     // 기본 검색
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'blogTitle',  label: '제목' },
@@ -281,7 +282,7 @@ window.CmBlogMng = {
     ];
 
     // 기본 그리드
-    const baseGridColumns = [
+    columns.baseGrid = [
       { key: 'blogTitle',  label: '제목',     sortKey: 'nm', cellInnerClass: 'title-link',
         fmt: (v, row) => {
           const prefix = row.isNotice === 'Y' ? '[공지] ' : '';
@@ -296,7 +297,7 @@ window.CmBlogMng = {
     ];
 
     // 블로그 폼
-    const blogFormColumns = [
+    columns.blogForm = [
       { key: 'blogTitle',   label: '제목', type: 'text', required: true, colSpan: 2 },
       { key: 'blogAuthor',  label: '작성자', type: 'text' },
       { key: 'isNotice',    label: '공지여부', type: 'select',
@@ -311,8 +312,8 @@ window.CmBlogMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       blogs, uiState, codes, searchParam, pager, detailPanel,                          // 상태 / 데이터
-      baseSearchColumns, baseGridColumns, blogFormColumns,                             // 컬럼 정의
       handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
       cfSelectedRow,                                                                   // computed
       sortIcon, fnYnBadge, fnGridRowClass,                                             // 헬퍼
@@ -327,11 +328,11 @@ window.CmBlogMng = {
   <!-- ===== ■. 검색 ======================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </div>
   <!-- ===== □. 검색 ======================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
-  <bo-grid :columns="baseGridColumns" :rows="blogs" row-key="blogId"
+  <bo-grid :columns="columns.baseGrid" :rows="blogs" row-key="blogId"
     :sort-state="uiState" list-title="게시글 목록"
     :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다." row-clickable
@@ -369,7 +370,7 @@ window.CmBlogMng = {
     <!-- ===== ■.■. 블로그 detail 폼 (BoFormArea 자동 렌더) ======================= -->
     <div v-else style="padding:12px">
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="blogFormColumns" :form="detailPanel.form" :errors="{}"
+      <bo-form-area :columns="columns.blogForm" :form="detailPanel.form" :errors="{}"
         :cols="3" compact :show-actions="false">
         <template #blogContent>
           <base-html-editor v-model="detailPanel.form.blogContent" height="320px" />

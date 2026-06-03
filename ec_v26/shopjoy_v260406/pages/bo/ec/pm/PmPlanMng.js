@@ -243,7 +243,8 @@ window.PmPlanMng = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 기본 검색
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'searchValue', type: 'text', label: '기획전명', placeholder: '기획전명 검색' },
       { key: 'category', type: 'select', label: '카테고리', options: () => CATEGORIES.slice(1), nullLabel: '카테고리 전체' },
       { key: 'status',   type: 'select', label: '상태', options: () => codes.plan_statuses, nullLabel: '상태 전체' },
@@ -254,7 +255,7 @@ window.PmPlanMng = {
     ];
 
     // 기본 그리드
-    const baseGridColumns = [
+    columns.baseGrid = [
       { key: 'planNm',       label: '기획전명', sortKey: 'nm', link: true,
         cellInnerStyle: (v) => detailPanel.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'category',     label: '카테고리',
@@ -272,8 +273,8 @@ window.PmPlanMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       plans, uiState, codes, searchParam, pager, detailPanel, CATEGORIES,            // 상태 / 데이터
-      baseSearchColumns, baseGridColumns,                                            // 컬럼 정의
       handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                           // computed
       tabMode,                                                                       // toRef
@@ -290,7 +291,7 @@ window.PmPlanMng = {
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" :columns="baseSearchColumns" :param="searchParam" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
+    <bo-search-area :loading="uiState.loading" :columns="columns.baseSearch" :param="searchParam" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
@@ -326,7 +327,7 @@ window.PmPlanMng = {
     </div>
     <!-- ===== ■.■. 리스트 뷰 ================================================= -->
     <bo-grid v-if="tabMode==='list'" :bare="true"
-      :columns="baseGridColumns" :rows="plans" row-key="planId"
+      :columns="columns.baseGrid" :rows="plans" row-key="planId"
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(p) => detailPanel.selectedId===p.planId ? 'background:#fff8f9;' : ''"

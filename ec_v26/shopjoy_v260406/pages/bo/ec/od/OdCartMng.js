@@ -211,7 +211,8 @@ window.OdCartMng = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 기본 검색
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'siteId', type: 'select', label: '사이트',
         options: () => codes.sites.map(s => ({ value: s.siteId, label: s.siteNm })),
         nullLabel: '전체' },
@@ -235,7 +236,7 @@ window.OdCartMng = {
     ];
 
     /* ── BoGrid 컬럼 정의 ── */
-    const listGridColumns = [
+    columns.listGrid = [
       { key: 'memberNm', label: '회원',   style: 'min-width:130px;',
         fmt: (v, row) => `${row.memberNm || '-'}  #${row.memberId || row.sessionKey || '-'}` },
       { key: 'prodNm',   label: '상품',   style: 'min-width:180px;',
@@ -260,8 +261,8 @@ window.OdCartMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       carts, pager, searchParam, uiState, codes, memberPick,                   // 상태 / 데이터
-      baseSearchColumns, listGridColumns,                                      // 컬럼 정의
       handleBtnAction, handleSelectAction, fnCallbackModal,                      // dispatch + 모달 통합 콜백
       cfAllChecked,                                                            // computed
       isChecked, fnGridRowStyle,                                               // 헬퍼
@@ -278,7 +279,7 @@ window.OdCartMng = {
   <div class="card" style="margin-bottom:14px;">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px 16px;"
-      :columns="baseSearchColumns" :param="searchParam"
+      :columns="columns.baseSearch" :param="searchParam"
       @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
   </div>
   <!-- ===== □.□. 검색 영역 ================================================= -->
@@ -306,7 +307,7 @@ window.OdCartMng = {
       조회 중...
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-grid v-else bare selectable :columns="listGridColumns" :rows="carts" row-key="cartId"
+    <bo-grid v-else bare selectable :columns="columns.listGrid" :rows="carts" row-key="cartId"
       :is-checked="isChecked" :all-checked="cfAllChecked" :row-style="fnGridRowStyle"
       empty-text="조회 결과가 없습니다."
       @toggle-check="id => handleSelectAction('carts-rowToggleCheck', id)"

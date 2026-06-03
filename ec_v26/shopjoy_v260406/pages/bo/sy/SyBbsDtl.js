@@ -201,12 +201,13 @@ window.SyBbsDtl = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 사이트명 폼 (cols=3 전체 폭)
-    const siteFormColumns = [
+    const columns = {};
+    columns.siteForm = [
       { key: '_siteNm', label: '사이트명', type: 'readonly', fmt: () => cfSiteNm.value, colSpan: 3 },
     ];
 
     // 기본 폼 (cols=3, 1열씩)
-    const baseFormColumns = [
+    columns.baseForm = [
       { key: 'bbsTitle',    label: '제목', type: 'text', required: true,
         placeholder: '게시글 제목' },
       { key: 'authorNm',    label: '작성자', type: 'text', placeholder: '작성자명' },
@@ -214,7 +215,7 @@ window.SyBbsDtl = {
     ];
 
     // 내용 입력 폼 (한 줄 전체 폭, colSpan=3)
-    const contentFormColumns = [
+    columns.contentForm = [
       { key: '_noBbm', label: '내용', type: 'slot', name: 'contentNoBbm', colSpan: 3,
         visible: () => !uiState.selectedBbm },
       { key: '_notAllow', label: '내용', type: 'slot', name: 'contentNotAllow', colSpan: 3,
@@ -227,7 +228,7 @@ window.SyBbsDtl = {
     ];
 
     // 게시판 상세보기 모달
-    const bbmDetailColumns = [
+    columns.bbmDetail = [
       { key: 'bbmId',         label: '게시판ID',   type: 'readonly' },
       { key: 'bbmCode',       label: '게시판코드', type: 'readonly', mono: true },
       { key: 'bbmNm',         label: '게시판명',   type: 'readonly' },
@@ -244,8 +245,8 @@ window.SyBbsDtl = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, codes, form, errors, showBbmModal, dtlId,                            // 상태 / 데이터
-      baseFormColumns, siteFormColumns, bbmDetailColumns, contentFormColumns,        // 컬럼 정의
       handleBtnAction, handleSelectAction, fnCallbackModal,                                           // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfSiteNm, cfDtlMode, cfContentType, cfAllowAttach, cfAttachMaxCount,  // computed
       selectedBbm, showBbmDetail,                                                    // computed (ref)
@@ -268,7 +269,7 @@ window.SyBbsDtl = {
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 사이트명 (BoFormArea 자동 렌더) =============================== -->
-    <bo-form-area :columns="siteFormColumns" :form="form" :errors="{}"
+    <bo-form-area :columns="columns.siteForm" :form="form" :errors="{}"
       :cols="3" :show-actions="false" />
     <!-- ===== ■.■. 게시판 선택 ================================================ -->
     <div class="form-group">
@@ -319,10 +320,10 @@ window.SyBbsDtl = {
     </div>
     <!-- ===== □.□. 게시판 선택 ================================================ -->
     <!-- ===== ■.■. 기본 정보 (BoFormArea 자동 렌더) ============================== -->
-    <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+    <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="3" compact :show-actions="false" />
     <!-- ===== ■.■. 내용 입력 (contentType 에 따라 렌더링) ========================== -->
-    <bo-form-area :columns="contentFormColumns" :form="form" :errors="errors"
+    <bo-form-area :columns="columns.contentForm" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
       <template #contentNoBbm>
         <div style="color:#bbb;font-size:13px;padding:12px 0;">
@@ -390,7 +391,7 @@ window.SyBbsDtl = {
 <!-- ===== ■. 게시판 상세보기 팝업 ============================================= -->
 <bo-modal :show="coUtil.cofAnd(showBbmDetail, selectedBbm)" title="게시판 상세"
     width="420px" modal-name="bbm-detail" :on-callback="fnCallbackModal">
-    <bo-form-area v-if="selectedBbm" :columns="bbmDetailColumns" :form="selectedBbm" :errors="{}"
+    <bo-form-area v-if="selectedBbm" :columns="columns.bbmDetail" :form="selectedBbm" :errors="{}"
       :cols="1" :show-actions="false" />
     <template #footer>
       <button class="btn btn-secondary" @click="handleBtnAction('bbmDetail-close')">

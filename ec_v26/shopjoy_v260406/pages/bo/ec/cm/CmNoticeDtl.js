@@ -3,7 +3,7 @@
  *   - 폼 reactive: `const baseForm = reactive({...})` (변수명 `form` 단독 금지)
  *   - setup() 6섹션 [01]~[06] 마커 (dispatch=[02] / init=[03] / 핸들러=[04] / 헬퍼·컬럼=[05])
  *   - cmd 라우팅: 'baseForm-save' / 'baseForm-cancel' / 'baseForm-edit' / 'baseForm-close'
- *   - 폼: <bo-form-area :columns="baseFormColumns" :form="baseForm" :readonly="cfReadonly" :cols="3">
+ *   - 폼: <bo-form-area :columns="columns.baseForm" :form="baseForm" :readonly="cfReadonly" :cols="3">
  *     (※ bo-form-area 의 prop명 `form` 은 컴포넌트 표준이라 그대로 유지)
  *   - readonly 판정: `const cfReadonly = computed(() => props.dtlMode === 'view')`
  *   - 신규 판정:    `const cfIsNew    = computed(() => props.dtlId == null)`
@@ -117,7 +117,8 @@ window.CmNoticeDtl = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 컬럼정의) #################################### */
 
-    const baseFormColumns = [
+    const columns = {};
+    columns.baseForm = [
       { key: 'noticeTitle',    label: '제목',    type: 'text',   required: true, placeholder: '공지 제목' },
       { key: 'noticeTypeCd',   label: '유형',    type: 'select', options: () => codes.noticeTypes,    nullLabel: '선택' },
       { key: 'noticeStatusCd', label: '상태',    type: 'select', options: () => codes.noticeStatuses, nullLabel: '선택' },
@@ -132,8 +133,8 @@ window.CmNoticeDtl = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
+      columns,
       uiState, codes, baseForm, errors,
-      baseFormColumns,
       handleBtnAction,
       cfIsNew, cfReadonly, cfAttachRefId,
       showToast,
@@ -153,7 +154,7 @@ window.CmNoticeDtl = {
   </div>
   <!-- ===== ■. 폼 영역 ===================================================== -->
   <div class="card">
-    <bo-form-area :columns="baseFormColumns" :form="baseForm" :errors="errors"
+    <bo-form-area :columns="columns.baseForm" :form="baseForm" :errors="errors"
       :readonly="cfReadonly" :cols="3" compact :show-actions="false">
       <!-- 내용 (HtmlEditor 또는 view 모드 HTML) -->
       <template #content>

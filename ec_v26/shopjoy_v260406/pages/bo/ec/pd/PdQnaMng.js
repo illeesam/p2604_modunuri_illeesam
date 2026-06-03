@@ -190,13 +190,14 @@ window.PdQnaMng = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 기본 검색
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'searchValue', label: '키워드', type: 'text', placeholder: '제목 검색' },
       { key: 'status', label: '상태', type: 'select', options: () => codes.qna_statuses, nullLabel: '전체' },
     ];
 
     // 기본 그리드
-    const baseGridColumns = [
+    columns.baseGrid = [
       { key: 'siteNm',   label: '사이트', fmt: () => cfSiteNm.value },
       { key: 'prodId',   label: '상품명', fmt: (v) => getProdNm(v) },
       { key: 'qnaTitle', label: '제목', link: true },
@@ -207,8 +208,8 @@ window.PdQnaMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       qnas, uiState, codes, pager, searchParam, form,                                  // 상태 / 데이터
-      baseSearchColumns, baseGridColumns,                                              // 컬럼 정의
       handleBtnAction, handleSelectAction,                                             // dispatch
       cfSiteNm,                                                                        // computed
       sortIcon, fnStatusBadge, fnAnswLabel, fnProdNm, fnMemNm,                         // 헬퍼
@@ -223,7 +224,7 @@ window.PdQnaMng = {
   <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" search-label="🔍 조회" reset-label="↺ 초기화" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" search-label="🔍 조회" reset-label="↺ 초기화" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </div>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 목록 그리드 =================================================== -->
@@ -248,7 +249,7 @@ window.PdQnaMng = {
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
-      :columns="baseGridColumns" :rows="qnas" row-key="qnaId"
+      :columns="columns.baseGrid" :rows="qnas" row-key="qnaId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'"
       :loading="uiState.loading"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"

@@ -352,7 +352,8 @@ window.PmPlanDtl = {
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - info 탭 (기획전 단순 필드만) ===
     // 정보 영역 폼
-    const infoFormColumns = [
+    const columns = {};
+    columns.infoForm = [
       { key: 'planNm',    label: '기획전명', type: 'text', required: true,
         placeholder: '기획전명을 입력하세요', colSpan: 2 },
       { key: 'category',  label: '카테고리', type: 'select', required: true,
@@ -366,15 +367,15 @@ window.PmPlanDtl = {
     ];
 
     // 판매업체/판매담당자
-    const vendorFormColumns = [
+    columns.vendorForm = [
       { key: 'vendorId',    label: '판매업체', type: 'slot', name: 'vendor' },
       { key: 'chargeStaff', label: '판매담당자', type: 'text', placeholder: '담당자명 입력' },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       vendors, products, uiState, codes, form, errors, VISIBILITY_OPTIONS, tabs,     // 상태 / 데이터
-      infoFormColumns, vendorFormColumns,                                            // 폼 컬럼 정의
       handleBtnAction, handleSelectAction, fnCallbackModal,                                           // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfHasId, cfSaveDisabled, cfDtlMode, cfFilteredProds, cfSelectedProducts, cfSelectedVendorNm, // computed
       tab, tabMode2, activeContentTab, prodSearch, showProdPopup, showVendorModal,   // toRef
@@ -429,7 +430,7 @@ window.PmPlanDtl = {
       </div>
       <!-- ===== ■.■.■. 기본정보 폼 (BoFormArea 자동 렌더) =========================== -->
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="infoFormColumns" :form="form" :errors="errors"
+      <bo-form-area :columns="columns.infoForm" :form="form" :errors="errors"
         :readonly="false" :cols="3" compact :show-actions="false">
         <!-- ===== ■.■.■.■. 공개대상 체크박스 그리드 ===================================== -->
         <template #visibility>
@@ -446,7 +447,7 @@ window.PmPlanDtl = {
       <!-- ===== ■.■.■. 판매업체/판매담당자 (BoFormArea 자동 렌더) ======================= -->
       <div style="margin-top:20px;padding-top:20px;border-top:1px solid #e8e8e8;">
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
-        <bo-form-area :columns="vendorFormColumns" :form="form" :errors="errors"
+        <bo-form-area :columns="columns.vendorForm" :form="form" :errors="errors"
           :cols="3" compact :show-actions="false">
           <template #vendor>
             <div style="display:flex;gap:8px;align-items:center;">

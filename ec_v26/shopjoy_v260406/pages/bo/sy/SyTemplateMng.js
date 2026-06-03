@@ -360,7 +360,8 @@ window.SyTemplateMng = {
     const fnRowStyle = (t) => detailPanel.selectedId === t.templateId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
 
     // 기본 검색
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'templateNm',      label: '템플릿명' },
@@ -377,7 +378,7 @@ window.SyTemplateMng = {
     ];
 
     // 기본 그리드
-    const baseGridColumns = [
+    columns.baseGrid = [
       { key: 'pathId',         label: '표시경로', style: 'width:170px;max-width:170px;',
         pathLabelOpen: { label: pathLabel, open: (row) => handleSelectAction('pathModal-open', row), placeholder: '경로 선택...' } },
       { key: 'templateId',     label: 'ID' },
@@ -394,8 +395,8 @@ window.SyTemplateMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       templates, uiState, templateCounts, codes, searchParam, pager, detailPanel, pathPickModal, previewModal, sendModal, // 상태 / 데이터
-      baseSearchColumns, baseGridColumns,                                                                  // 컬럼 정의
       handleBtnAction, handleSelectAction, fnCallbackModal,                                                                 // dispatch (모든 이벤트 / 액션 라우팅)
       cfDetailEditId, cfIsViewMode, cfDetailKey,                                                           // computed
       fnRowStyle,                                                                                          // 헬퍼
@@ -412,7 +413,7 @@ window.SyTemplateMng = {
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 좌 트리 + 우 영역 ============================================= -->
@@ -423,7 +424,7 @@ window.SyTemplateMng = {
     <div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid
-        :columns="baseGridColumns" :rows="templates" row-key="templateId"
+        :columns="columns.baseGrid" :rows="templates" row-key="templateId"
         list-title="템플릿목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="key => handleSelectAction('templates-sort', key)"

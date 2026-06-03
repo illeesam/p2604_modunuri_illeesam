@@ -239,7 +239,8 @@ window.SyUserLoginHist = {
     const fnRowClickStyle = (r, idx) => 'cursor:pointer;' + (isExpanded(r.logId || idx) ? 'background:#fafbff;' : '');
 
     // 기본 검색
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'dateRange', type: 'dateRange', label: '등록기간',
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
@@ -255,13 +256,13 @@ window.SyUserLoginHist = {
     ];
 
     /* moreSearchColumns — 펼침 영역(srchOpen=true) 두번째 검색바 */
-    const moreSearchColumns = [
+    columns.moreSearch = [
       { key: 'searchUiNm',    type: 'text', label: 'x-헤더 화면명', placeholder: '화면명 (x-ui-nm)', width: '170px' },
       { key: 'searchTraceId', type: 'text', label: 'Trace ID',  placeholder: 'Trace ID',         width: '200px' },
     ];
 
     // 로그 그리드
-    const logGridColumns = [
+    columns.logGrid = [
       { key: '_exp',     label: '',          style: 'width:20px', align: 'center', cellStyle: 'color:#bbb;font-size:11px;user-select:none', fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
       { key: 'logId',    label: '로그ID',     mono: true, cellStyle: 'font-size:11px;color:#888', fmt: (v) => v || '-' },
       { key: 'loginDate',label: '로그인일시', cellStyle: 'white-space:nowrap', fmt: (v, row) => String(row.loginDate || row.regDate || '').slice(0, 19) },
@@ -278,7 +279,7 @@ window.SyUserLoginHist = {
     ];
 
     // 토큰 그리드
-    const tokenGridColumns = [
+    columns.tokenGrid = [
       { key: '_exp',          label: '',          style: 'width:20px', align: 'center', cellStyle: 'color:#bbb;font-size:11px;user-select:none', fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
       { key: 'logId',         label: '토큰로그ID', mono: true, cellStyle: 'font-size:11px;color:#888', fmt: (v) => v || '-' },
       { key: 'regDate',       label: '일시', cellStyle: 'white-space:nowrap', fmt: (v) => String(v || '').slice(0, 19) },
@@ -295,7 +296,7 @@ window.SyUserLoginHist = {
     ];
 
     /* logExpandColumns — 로그인 로그 행 펼침 BoFormArea 컬럼 (cols=4, labelLeft) */
-    const logExpandColumns = [
+    columns.logExpand = [
       { key: '_loginDate',  label: '로그인일시', type: 'readonly', fmt: (v, row) => String(row.loginDate || row.regDate || '').slice(0, 19) || '-' },
       { key: '_ip',         label: 'IP',         type: 'readonly', mono: true, fmt: (v, row) => row.ip || '-' },
       { key: '_os',         label: 'OS',         type: 'readonly', fmt: (v, row) => row.os || '-' },
@@ -316,7 +317,7 @@ window.SyUserLoginHist = {
     ];
 
     /* tokenExpandColumns — 토큰 이력 행 펼침 BoFormArea 컬럼 (cols=4, labelLeft) */
-    const tokenExpandColumns = [
+    columns.tokenExpand = [
       { key: '_action',      label: '액션',     type: 'readonly', html: true, fmt: (v, row) => `<span class="badge ${fnActionBadge(row.actionCd)}">${fnActionLabel(row.actionCd)}</span>` },
       { key: '_tokenType',   label: '토큰유형', type: 'readonly', html: true, fmt: (v, row) => `<span class="badge ${fnTypeBadge(row.tokenTypeCd)}">${row.tokenTypeCd || '-'}</span>` },
       { key: '_atExp',       label: 'AT만료',   type: 'readonly', fmt: (v, row) => String(row.accessTokenExp || '').slice(0, 19) || '-' },
@@ -336,9 +337,8 @@ window.SyUserLoginHist = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       searchParam, codes, pager, tabCounts, cfCurrentList, allExpanded,                                // 상태 / 데이터
-      baseSearchColumns, moreSearchColumns, logGridColumns, tokenGridColumns,                          // 컬럼 정의
-      logExpandColumns, tokenExpandColumns,                                                             // 행 펼침 폼 컬럼 정의
       handleBtnAction, handleSelectAction,                                                              // dispatch (모든 이벤트 / 액션 라우팅)
       fnResultBadge, fnResultLabel, fnActionBadge, fnActionLabel, fnTypeBadge, fnDecode,                // template 표현식에서 사용
       fnRowExpanded, fnRowClickStyle,                                                                   // 행 표시
@@ -366,7 +366,7 @@ window.SyUserLoginHist = {
   <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :columns="baseSearchColumns" :param="searchParam" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')">
+    <bo-search-area :columns="columns.baseSearch" :param="searchParam" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')">
       <template #actions-after>
         <button class="btn btn-secondary btn-sm" @click="handleBtnAction('searchParam-toggleMore')" style="padding:0 8px;" :title="searchParam.srchOpen?'조건닫기':'조건더보기'">
           {{ searchParam.srchOpen?'▲':'▼' }}
@@ -377,7 +377,7 @@ window.SyUserLoginHist = {
     <!-- ===== ■.■. 검색 영역 (펼침) ============================================ -->
     <bo-search-area v-if="searchParam.srchOpen" :show-actions="false"
       bar-style="margin-top:8px;padding-top:8px;border-top:1px solid #f0e0e8;"
-      :columns="moreSearchColumns" :param="searchParam"
+      :columns="columns.moreSearch" :param="searchParam"
       @search="handleBtnAction('searchParam-list')" />
     <!-- ===== □.□. 검색 영역 (펼침) ============================================ -->
   </div>
@@ -400,7 +400,7 @@ window.SyUserLoginHist = {
   <!-- ===== □. 탭 ======================================================== -->
   <!-- ===== ■. 로그인 로그 탭 ================================================ -->
   <bo-grid v-if="searchParam.activeTab==='log'"
-    :columns="logGridColumns" :rows="cfCurrentList" row-key="logId"
+    :columns="columns.logGrid" :rows="cfCurrentList" row-key="logId"
     list-title="로그인 로그" :count-text="pager.pageTotalCount + '건'"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
     @set-page="n => handleSelectAction('histList-pager-setPage', n)"
@@ -421,14 +421,14 @@ window.SyUserLoginHist = {
     </template>
     <template #row-expand="{ row, colspan }">
       <td :colspan="colspan" style="background:#f4f6fb;padding:16px 20px;border-top:none">
-        <bo-form-area :columns="logExpandColumns" :form="row" :cols="3" readonly label-left :show-actions="false" />
+        <bo-form-area :columns="columns.logExpand" :form="row" :cols="3" readonly label-left :show-actions="false" />
       </td>
     </template>
   </bo-grid>
   <!-- ===== □. 로그인 로그 탭 ================================================ -->
   <!-- ===== ■. 토큰 이력 탭 ================================================= -->
   <bo-grid v-if="searchParam.activeTab==='token'"
-    :columns="tokenGridColumns" :rows="cfCurrentList" row-key="logId"
+    :columns="columns.tokenGrid" :rows="cfCurrentList" row-key="logId"
     list-title="토큰 이력" :count-text="pager.pageTotalCount + '건'"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
     @set-page="n => handleSelectAction('histList-pager-setPage', n)"
@@ -449,7 +449,7 @@ window.SyUserLoginHist = {
     </template>
     <template #row-expand="{ row, colspan }">
       <td :colspan="colspan" style="background:#f4f6fb;padding:16px 20px;border-top:none">
-        <bo-form-area :columns="tokenExpandColumns" :form="row" :cols="3" readonly label-left :show-actions="false" />
+        <bo-form-area :columns="columns.tokenExpand" :form="row" :cols="3" readonly label-left :show-actions="false" />
         <div style="margin-top:6px;padding:5px 8px;background:#fdf8ff;border-radius:4px;font-size:11px;color:#888">
           ℹ SHA-256 해시. 원문 복원 불가 — syh_user_token_log
         </div>

@@ -459,7 +459,8 @@ window.PdCategoryProdMng = {
     /* BoGrid 컬럼 — 카테고리-상품 매핑 (전시기간/전시 컬럼은 NORMAL 외 타입만) */
         /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
         // --- [컬럼 정의] ---
-        const baseSearchColumns = [
+        const columns = {};
+        columns.baseSearch = [
       { key: 'prodNm', label: '상품명', type: 'text', placeholder: '상품명 검색', width: '280px' },
     ];
 
@@ -494,7 +495,7 @@ window.PdCategoryProdMng = {
     };
 
     /* BoGrid 컬럼 — 상품 추가 피커 */
-    const catProdPickerGridColumns = [
+    columns.catProdPickerGrid = [
       { key: 'prodId',    label: 'ID',       style: 'width:44px', cellStyle: 'color:#aaa;' },
       { key: 'prodNm',    label: '상품명' },
       { key: 'cateNm',    label: '카테고리', style: 'width:80px;text-align:center', align: 'center',
@@ -506,8 +507,9 @@ window.PdCategoryProdMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       codes, uiState, categories, categoryProds, cfVisibleCategoryProds, searchParam, pager, pickerResults, // 상태 / 데이터
-      baseSearchColumns, cfCatProdGridColumns, catProdPickerGridColumns,                    // 컬럼 정의
+      cfCatProdGridColumns, // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                  // dispatch (모든 이벤트 / 액션 라우팅)
       cfSelectedCatId, cfSelectedCat, cfIsLeafCat, cfTypeCountMap, tabs,                    // computed / reactive(tabs)
       fnCatProdRowStyle, fnDepthColor, fnDepthBullet, totalProdCount,                       // 헬퍼
@@ -525,7 +527,7 @@ window.PdCategoryProdMng = {
   <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </div>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 좌 트리 + 우 상품목록 =========================================== -->
@@ -744,7 +746,7 @@ window.PdCategoryProdMng = {
       </div>
       <div style="overflow-y:auto;flex:1;border:1px solid #eee;border-radius:8px">
         <!-- ===== ■.■.■.■.■. 목록 영역 =========================================== -->
-        <bo-grid bare :columns="catProdPickerGridColumns" :rows="pickerResults" row-key="prodId"
+        <bo-grid bare :columns="columns.catProdPickerGrid" :rows="pickerResults" row-key="prodId"
             empty-text="검색 결과가 없습니다." row-actions>
           <template #row-actions="{ row }">
             <button class="btn btn-blue btn-xs" @click="handleSelectAction('prodPickModal-add', row)">

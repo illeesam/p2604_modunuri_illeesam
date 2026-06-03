@@ -410,7 +410,8 @@
       const _ellipsis = (maxw, extra) => 'max-width:' + maxw + 'px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;' + (extra || '');
 
       // 주문 그리드
-      const orderGridColumns = [
+      const columns = {};
+      columns.orderGrid = [
         { key: 'orderId', label: '주문번호', refLink: 'order' },
         { key: 'orderDate', label: '일시', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;',  fmt: (v) => v ? String(v).slice(0, 16) : '-' },
         { key: 'prodNm', label: '상품명', cellStyle: _ellipsis(150), cellTitle: true },
@@ -418,7 +419,7 @@
         { key: 'status', label: '상태', badge: (row) => fnBadgeCls(row.status) },
       ];
       // 클레임 그리드
-      const claimGridColumns = [
+      columns.claimGrid = [
         { key: 'claimId', label: '클레임번호', refLink: 'claim' },
         { key: 'type', label: '유형' },
         { key: 'prodNm', label: '상품명', cellStyle: _ellipsis(130), cellTitle: true },
@@ -426,7 +427,7 @@
         { key: 'requestDate', label: '신청일', style: 'white-space:nowrap;', fmt: (v) => (v ? v.slice(0, 10) : '') },
       ];
       // 배송 그리드
-      const dlivGridColumns = [
+      columns.dlivGrid = [
         { key: 'dlivId', label: '배송번호', cellStyle: 'font-weight:500;' },
         { key: 'orderId', label: '주문번호' },
         { key: 'courier', label: '택배사', fmt: (v) => v || '-' },
@@ -434,7 +435,7 @@
         { key: 'status', label: '상태', badge: (row) => fnBadgeCls(row.status) },
       ];
       // 캐쉬 그리드
-      const cacheGridColumns = [
+      columns.cacheGrid = [
         { key: 'date', label: '일시', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;' },
         { key: 'type', label: '구분', badge: (row) => (row.type === '충전' ? 'badge-blue' : 'badge-orange') },
         { key: 'amount', label: '금액', style: 'text-align:right;', align: 'right', cellStyle: (v, row) => 'font-weight:600;' + (row.amount > 0 ? 'color:#1565c0;' : 'color:#c62828;'), fmt: (v, row) => (row.amount > 0 ? '+' : '') + row.amount.toLocaleString() + '원' },
@@ -442,28 +443,28 @@
         { key: 'desc', label: '사유', cellStyle: _ellipsis(150, 'color:#666;'), cellTitle: true },
       ];
       // 문의 그리드
-      const contactGridColumns = [
+      columns.contactGrid = [
         { key: 'date', label: '접수일', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;', fmt: (v) => (v ? v.slice(0, 10) : '') },
         { key: 'category', label: '분류', cellStyle: 'white-space:nowrap;' },
         { key: 'title', label: '제목', cellStyle: _ellipsis(200), cellTitle: true },
         { key: 'status', label: '상태', badge: (row) => fnBadgeCls(row.status) },
       ];
       // 채팅 그리드
-      const chatGridColumns = [
+      columns.chatGrid = [
         { key: 'date', label: '일시', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;', fmt: (v) => (v ? v.slice(0, 10) : '') },
         { key: 'subject', label: '제목', cellStyle: _ellipsis(130), cellTitle: true },
         { key: 'lastMsg', label: '마지막 메시지', cellStyle: _ellipsis(180, 'color:#666;'), cellTitle: true },
         { key: 'status', label: '상태', badge: (row) => fnBadgeCls(row.status) },
       ];
       // 로그인 그리드
-      const loginGridColumns = [
+      columns.loginGrid = [
         { key: 'loginDate', label: '일시', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;',  fmt: (v) => v ? String(v).slice(0, 16) : '-' },
         { key: 'ip', label: 'IP', cellStyle: 'color:#666;font-family:monospace;' },
         { key: 'device', label: '기기/브라우저', cellStyle: 'color:#555;' },
         { key: 'result', label: '결과', badge: (row) => fnBadgeCls(row.result) },
       ];
       // 쿠폰 그리드
-      const couponGridColumns = [
+      columns.couponGrid = [
         { key: 'usedDate', label: '사용일', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
         { key: 'couponNm', label: '쿠폰명', cellStyle: _ellipsis(150), cellTitle: true },
         { key: 'couponCode', label: '코드', cellStyle: 'font-family:monospace;color:#666;' },
@@ -471,14 +472,14 @@
         { key: 'discountAmt', label: '할인금액', style: 'text-align:right;', align: 'right', cellStyle: 'font-weight:600;color:#e91e63;', fmt: (v, row) => '-' + (row.discountAmt || 0).toLocaleString() + '원' },
       ];
       // 발송 그리드
-      const sendGridColumns = [
+      columns.sendGrid = [
         { key: 'sendDate', label: '발송일시', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;',  fmt: (v) => v ? String(v).slice(0, 16) : '-' },
         { key: 'channelCd', label: '채널', badge: (row) => fnChannelCls(row.channelCd) },
         { key: 'title', label: '제목/내용', cellStyle: _ellipsis(220, 'color:#333;'), cellTitle: true },
         { key: 'statusCd', label: '결과', badge: (row) => fnBadgeCls(row.statusCd) },
       ];
       // 회원 선택 모달 그리드
-      const memberModalGridColumns = [
+      columns.memberModalGrid = [
         { key: 'userId', label: 'ID', style: 'width:50px;text-align:center;', align: 'center', cellStyle: 'color:#aaa;' },
         { key: 'memberNm', label: '이름', style: 'width:90px;', cellStyle: 'font-weight:600;color:#1a1a2e;' },
         { key: 'email', label: '이메일', cellStyle: 'color:#555;' },
@@ -488,14 +489,14 @@
       ];
 
       /* periodSearchColumns — 기간 필터 BoSearchArea 컬럼 */
-      const periodSearchColumns = [
+      columns.periodSearch = [
         { key: 'period',     type: 'slot', name: 'period', label: '조회기간' },
         { key: 'customFrom', type: 'date', label: '시작일', visible: (p) => p.period === 'custom' },
         { key: 'customTo',   type: 'date', label: '종료일', visible: (p) => p.period === 'custom' },
       ];
 
       /* memberModalSearchColumns — 고객 검색 모달 BoSearchArea 컬럼 */
-      const memberModalSearchColumns = [
+      columns.memberModalSearch = [
         { key: 'searchType', type: 'multiCheck',
           options: [
             { value: 'memberNm', label: '이름' },
@@ -508,12 +509,11 @@
 
       /* ##### [06] return (템플릿 노출) ############################################## */
       return {
+        columns,
         uiState, codes, searchParam, memberModal,                                                                                   // 상태 / 데이터
         orders, claims, deliveries, caches, contacts, chats, loginHistories, couponUsages, sendHistories,                           // 9개 이력 데이터 (서버사이드 페이지별)
         SEARCH_MODES, PERIOD_OPTS,                                                                                                  // 정적 옵션
-        orderGridColumns, claimGridColumns, dlivGridColumns, cacheGridColumns, contactGridColumns, chatGridColumns,                 // 컬럼 정의
-        loginGridColumns, couponGridColumns, sendGridColumns, memberModalGridColumns,
-        periodSearchColumns, memberModalSearchColumns,                                                                              // BoSearchArea 컬럼
+        // BoSearchArea 컬럼
         ordersPager, claimsPager, dlivPager, cachePager, contactsPager, chatsPager, loginPager, couponPager, sendPager, modalPager, // 페이저
         cfPageModalList,                                                                                                            // 모달용 클라이언트 슬라이스 (picker)
         onSetPage, onSizeChange,                                                                                                    // BoGrid pager 콜백
@@ -580,7 +580,7 @@
   <!-- ===== □. 검색 바 ==================================================== -->
   <!-- ===== ■. 기간 필터 바 (BoSearchArea) =================================== -->
   <div style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;padding:10px 20px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.05);">
-    <bo-search-area :columns="periodSearchColumns" :param="searchParam"
+    <bo-search-area :columns="columns.periodSearch" :param="searchParam"
       @search="handleBtnAction('searchParam-list')" :show-reset="false">
       <template #period>
         <div style="display:flex;background:#f0f2f5;border-radius:8px;padding:3px;gap:2px;">
@@ -712,7 +712,7 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="orderGridColumns" :rows="orders" :pager="ordersPager" row-key="orderId" empty-text="주문 내역이 없습니다."
+          <bo-grid bare :columns="columns.orderGrid" :rows="orders" :pager="ordersPager" row-key="orderId" empty-text="주문 내역이 없습니다."
             @ref-click="ref => handleSelectAction('row-ref', ref)"
             @set-page="n => onSetPage('orders', n)" @size-change="() => onSizeChange('orders')">
           </bo-grid>
@@ -732,7 +732,7 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="claimGridColumns" :rows="claims" :pager="claimsPager" row-key="claimId" empty-text="클레임 내역이 없습니다."
+          <bo-grid bare :columns="columns.claimGrid" :rows="claims" :pager="claimsPager" row-key="claimId" empty-text="클레임 내역이 없습니다."
             @ref-click="ref => handleSelectAction('row-ref', ref)"
             @set-page="n => onSetPage('claims', n)" @size-change="() => onSizeChange('claims')">
           </bo-grid>
@@ -752,7 +752,7 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="dlivGridColumns" :rows="deliveries" :pager="dlivPager" row-key="dlivId" empty-text="배송 내역이 없습니다."
+          <bo-grid bare :columns="columns.dlivGrid" :rows="deliveries" :pager="dlivPager" row-key="dlivId" empty-text="배송 내역이 없습니다."
             @set-page="n => onSetPage('dliv', n)" @size-change="() => onSizeChange('dliv')">
           </bo-grid>
         </div>
@@ -774,7 +774,7 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="cacheGridColumns" :rows="caches" :pager="cachePager" row-key="cacheId" empty-text="캐쉬 내역이 없습니다."
+          <bo-grid bare :columns="columns.cacheGrid" :rows="caches" :pager="cachePager" row-key="cacheId" empty-text="캐쉬 내역이 없습니다."
             @set-page="n => onSetPage('cache', n)" @size-change="() => onSizeChange('cache')">
           </bo-grid>
         </div>
@@ -793,7 +793,7 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="contactGridColumns" :rows="contacts" :pager="contactsPager" row-key="inquiryId" empty-text="문의 내역이 없습니다."
+          <bo-grid bare :columns="columns.contactGrid" :rows="contacts" :pager="contactsPager" row-key="inquiryId" empty-text="문의 내역이 없습니다."
             @set-page="n => onSetPage('contacts', n)" @size-change="() => onSizeChange('contacts')">
           </bo-grid>
         </div>
@@ -812,7 +812,7 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="chatGridColumns" :rows="chats" :pager="chatsPager" row-key="chatId" empty-text="채팅 내역이 없습니다."
+          <bo-grid bare :columns="columns.chatGrid" :rows="chats" :pager="chatsPager" row-key="chatId" empty-text="채팅 내역이 없습니다."
             @set-page="n => onSetPage('chats', n)" @size-change="() => onSizeChange('chats')">
           </bo-grid>
         </div>
@@ -831,7 +831,7 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="loginGridColumns" :rows="loginHistories" :pager="loginPager" row-key="loginId" empty-text="로그인 내역이 없습니다."
+          <bo-grid bare :columns="columns.loginGrid" :rows="loginHistories" :pager="loginPager" row-key="loginId" empty-text="로그인 내역이 없습니다."
             @set-page="n => onSetPage('login', n)" @size-change="() => onSizeChange('login')">
           </bo-grid>
         </div>
@@ -850,7 +850,7 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="couponGridColumns" :rows="couponUsages" :pager="couponPager" row-key="usageId" empty-text="쿠폰 사용 내역이 없습니다."
+          <bo-grid bare :columns="columns.couponGrid" :rows="couponUsages" :pager="couponPager" row-key="usageId" empty-text="쿠폰 사용 내역이 없습니다."
             @ref-click="ref => handleSelectAction('row-ref', ref)"
             @set-page="n => onSetPage('coupon', n)" @size-change="() => onSizeChange('coupon')">
           </bo-grid>
@@ -870,7 +870,7 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="sendGridColumns" :rows="sendHistories" :pager="sendPager" row-key="sendId" empty-text="발송 내역이 없습니다."
+          <bo-grid bare :columns="columns.sendGrid" :rows="sendHistories" :pager="sendPager" row-key="sendId" empty-text="발송 내역이 없습니다."
             @set-page="n => onSetPage('send', n)" @size-change="() => onSizeChange('send')">
           </bo-grid>
         </div>
@@ -883,10 +883,10 @@
   <!-- ===== ■. 고객 선택 모달 ================================================ -->
   <bo-modal :show="memberModal.show" title="고객 검색" width="760px" max-width="96vw"
     max-height="85vh" modal-name="member-pick" :on-callback="fnCallbackModal">
-    <bo-search-area :columns="memberModalSearchColumns" :param="memberModal" :show-reset="false"
+    <bo-search-area :columns="columns.memberModalSearch" :param="memberModal" :show-reset="false"
       @search="handleBtnAction('memberModal-search')" />
     <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-grid bare :columns="memberModalGridColumns" :rows="cfPageModalList" :pager="modalPager"
+    <bo-grid bare :columns="columns.memberModalGrid" :rows="cfPageModalList" :pager="modalPager"
       row-key="userId" row-clickable empty-text="검색 결과가 없습니다."
       @row-click="row => handleSelectAction('memberModal-pick', row)"
       @set-page="n => onSetPage('modal', n)" @size-change="() => onSizeChange('modal')" row-actions>

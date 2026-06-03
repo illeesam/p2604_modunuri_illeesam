@@ -325,7 +325,8 @@ window.SyMenuMng = {
     };
 
     // 기본 검색
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'menuCode', label: '메뉴코드' },
@@ -338,7 +339,7 @@ window.SyMenuMng = {
     ];
 
     // 기본 그리드
-    const baseGridColumns = [
+    columns.baseGrid = [
       { key: 'menuCode',   label: '메뉴코드', style: 'width:110px;',    edit: 'text', mono: true },
       { key: 'menuNm',     label: '메뉴명',   style: 'min-width:180px;', edit: 'text',
         treeDepth: true, treeBullet: depthBullet, treeColor: depthColor },
@@ -355,8 +356,8 @@ window.SyMenuMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       menus, uiState, menuCounts, codes, searchParam, gridRows, parentModal,         // 상태 / 데이터
-      baseSearchColumns, baseGridColumns,                                // 컬럼 정의
       handleBtnAction, handleSelectAction, fnCallbackModal,                               // dispatch (모든 이벤트 / 액션 라우팅)
     };
   },
@@ -369,7 +370,7 @@ window.SyMenuMng = {
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
@@ -381,7 +382,7 @@ window.SyMenuMng = {
     <div>
       <!-- ===== ■.■.■. CRUD 그리드 ============================================ -->
       <bo-grid-crud
-        :columns="baseGridColumns" :rows="gridRows" row-key="menuId"
+        :columns="columns.baseGrid" :rows="gridRows" row-key="menuId"
         list-title="메뉴목록" :show-export="true" :draggable="false"
         v-model:focusedIdx="uiState.focusedIdx"
         v-model:checkAll="uiState.checkAll"

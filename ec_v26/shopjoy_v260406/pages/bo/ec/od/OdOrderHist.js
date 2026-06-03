@@ -117,7 +117,8 @@ window.OdOrderHist = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     /* BoGrid(bare) 컬럼 정의 — 탭별 보조 테이블 */
-    const itemGridColumns = [
+    const columns = {};
+    columns.itemGrid = [
       { key: 'no',         label: 'No',     style: 'width:40px;text-align:center;' },
       { key: 'prodNm',     label: '상품명' },
       { key: 'optionNm',   label: '옵션' },
@@ -128,14 +129,14 @@ window.OdOrderHist = {
       { key: 'statusCd',   label: '상태',   style: 'width:90px;' },
     ];
     // 배송 이력 그리드
-    const dlivHistGridColumns = [
+    columns.dlivHistGrid = [
       { key: 'date',     label: '일시',  style: 'width:120px;' },
       { key: 'status',   label: '상태',  style: 'width:90px;', badge: () => 'badge-blue' },
       { key: 'location', label: '위치' },
       { key: 'memo',     label: '메모' },
     ];
     // 클레임 그리드
-    const claimGridColumns = [
+    columns.claimGrid = [
       { key: 'claimId',       label: '클레임ID', style: 'width:120px;', refLink: 'claim' },
       { key: 'memberNm',      label: '회원', refLink: 'member', refKey: 'memberId' },
       { key: 'claimTypeCd',   label: '유형',   fmt: (v, r) => r.claimTypeCdNm || r.claimTypeCd },
@@ -146,8 +147,8 @@ window.OdOrderHist = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, orderItems, botTab, tabMode2,                                                              // 상태 / 데이터
-      itemGridColumns, dlivHistGridColumns, claimGridColumns,                                             // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                                // dispatch (모든 이벤트 / 액션 라우팅)
       cfRelatedDliv, cfRelatedClaims, cfDlivHistory, tabs,                                                // computed / reactive(tabs)
       showTab,                                                                                            // 헬퍼
@@ -179,7 +180,7 @@ window.OdOrderHist = {
         </span>
       </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="itemGridColumns" :rows="orderItems" row-key="no"
+      <bo-grid bare :columns="columns.itemGrid" :rows="orderItems" row-key="no"
         empty-text="구성 상품 정보가 없습니다." row-actions>
         <template #row-actions="{ row }">
           <button class="btn btn-secondary btn-xs" @click="handleBtnAction('histList-orderRef')">
@@ -226,7 +227,7 @@ window.OdOrderHist = {
           </button>
         </div>
         <!-- ===== ■.■.■.■. 목록 영역 ============================================= -->
-        <bo-grid bare :columns="dlivHistGridColumns" :rows="cfDlivHistory"
+        <bo-grid bare :columns="columns.dlivHistGrid" :rows="cfDlivHistory"
           empty-text="배송 이력이 없습니다.">
         </bo-grid>
       </template>
@@ -244,7 +245,7 @@ window.OdOrderHist = {
         </span>
       </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="claimGridColumns" :rows="cfRelatedClaims" row-key="claimId"
+      <bo-grid bare :columns="columns.claimGrid" :rows="cfRelatedClaims" row-key="claimId"
         empty-text="연관 클레임이 없습니다." @ref-click="({type,id}) => handleSelectAction('histList-rowRefClick', {type, id})" row-actions>
         <template #row-actions="{ row }">
           <button class="btn btn-blue btn-xs" @click="handleSelectAction('histList-rowClaimEdit', row.claimId)">

@@ -386,7 +386,8 @@ window.Prod01View = {
     ];
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     /* fo-grid 컬럼 — sizeGuideRows 는 위치배열 → fmt 로 인덱스 접근 */
-    const sizeGuideGridColumns = [
+    const columns = {};
+    columns.sizeGuideGrid = [
       { key: 's0', label: '사이즈',  align: 'center', fmt: (v, r) => r[0] },
       { key: 's1', label: '어깨 (cm)', align: 'center', fmt: (v, r) => r[1] },
       { key: 's2', label: '가슴 (cm)', align: 'center', fmt: (v, r) => r[2] },
@@ -978,12 +979,13 @@ window.Prod01View = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, codes, prod: svProduct,                                                                          // 상태 / 데이터
       svContents, svRels, svReviews, svReviewSummary, svReviewImages, svQnas, svPromotions,                      // 데이터 (lazy)
       handleBtnAction, handleSelectAction, fnCallbackModal,                                                                      // dispatch
       cfMockImages, cfMockReviews, cfReviewsWithPhoto, cfFilteredReviews, cfAvgRating, cfRatingDist,            // computed - 리뷰/갤러리
       cfQuickBuyTotal, cfDisplayPrice, cfVisibleSizes, cfPhotoNavIdx, cfPhotoGridPageCount, cfPhotoGridItems,   // computed - 가격/사이즈/포토
-      sizeGuideRows, sizeGuideGridColumns, sizeGuideColsShort, styleItems, TABS,                                // 데이터 (정적)
+      sizeGuideRows, sizeGuideColsShort, styleItems, TABS,                                // 데이터 (정적)
       tabBarRef, sizeSecRef, reviewSecRef, qnaSecRef, styleSecRef, buyBtnRef,                                   // ref
       getSizeDelta, fnCategoryLabel, stars, colorStatus, sizeStatus, isLiked, toggleLike,                       // 헬퍼
     };
@@ -1469,7 +1471,7 @@ window.Prod01View = {
         📏 사이즈 가이드
       </div>
       <!-- ===== ■.■.■.■.■. 목록 영역 =========================================== -->
-      <fo-grid bare :columns="sizeGuideGridColumns" :rows="sizeGuideRows"
+      <fo-grid bare :columns="columns.sizeGuideGrid" :rows="sizeGuideRows"
             :show-row-no="false" min-width="320px" />
       <p style="margin-top:12px;font-size:0.75rem;color:var(--text-muted);">
         * 측정 방법에 따라 1~2cm 오차가 있을 수 있습니다.

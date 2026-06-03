@@ -351,7 +351,8 @@ window.SyAttachMng = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 파일 그리드
-    const fileGridColumns = [
+    const columns = {};
+    columns.fileGrid = [
       { key: 'attachGrpId', label: '그룹', cellStyle: 'color:#666;',
         fmt: (v, row) => {
           const nm = row.attachGrpNm || attachGrps.find(g => g.attachGrpId === v)?.attachGrpNm || '';
@@ -369,7 +370,7 @@ window.SyAttachMng = {
     ];
 
     // 그룹 폼
-    const grpFormColumns = [
+    columns.grpForm = [
       { key: 'attachGrpNm',   label: '그룹명',   type: 'text', required: true, placeholder: '그룹명', colSpan: 2 },
       { type: 'rowBreak' },
       { key: 'attachGrpCode', label: '그룹코드', type: 'text', required: true, placeholder: 'PRODUCT_IMG', mono: true, colSpan: 2 },
@@ -382,7 +383,7 @@ window.SyAttachMng = {
       { key: 'useYn',         label: '상태', type: 'select', options: () => codes.use_yns, colSpan: 2 },
     ];
     // 파일 폼
-    const fileFormColumns = [
+    columns.fileForm = [
       { key: 'attachGrpId',      label: '첨부그룹ID', type: 'text', required: true, placeholder: 'ATG...' },
       { key: 'fileNm',           label: '파일명', type: 'text', required: true, placeholder: '파일명.jpg' },
       { key: 'mimeTypeCd',       label: 'MIME타입', type: 'text', placeholder: 'image/jpeg' },
@@ -405,7 +406,7 @@ window.SyAttachMng = {
     ];
 
     /* grpSearchColumns — 첨부그룹 검색 영역 컬럼 */
-    const grpSearchColumns = [
+    columns.grpSearch = [
       { key: 'searchType', type: 'multiCheck',
         options: [
           { value: 'attachGrpNm',   label: '그룹명' },
@@ -416,7 +417,7 @@ window.SyAttachMng = {
     ];
 
     /* fileSearchColumns — 첨부파일 검색 영역 컬럼 */
-    const fileSearchColumns = [
+    columns.fileSearch = [
       { key: 'attachGrpId', type: 'text', placeholder: '첨부그룹ID', width: '130px' },
       { key: 'searchType', type: 'multiCheck',
         options: [
@@ -434,8 +435,8 @@ window.SyAttachMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       attaches, attachGrps, uiState, codes, searchParam, pager, grpPager, grpSearchParam, grpForm, fileForm, // 상태 / 데이터
-      fileGridColumns, grpFormColumns, fileFormColumns, grpSearchColumns, fileSearchColumns,                                  // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                                                  // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm,                                                                                                             // computed
       fnFmtSize, fnStatusBadge,                                                                                             // 헬퍼
@@ -464,7 +465,7 @@ window.SyAttachMng = {
           </button>
         </div>
         <div style="padding:0 0 10px 0;">
-          <bo-search-area :columns="grpSearchColumns" :param="grpSearchParam" :show-reset="false"
+          <bo-search-area :columns="columns.grpSearch" :param="grpSearchParam" :show-reset="false"
             @search="handleBtnAction('attachGrps-search')" />
         </div>
         <!-- ===== ■.■.■.■. 그룹 폼 (BoFormArea 자동 렌더) =========================== -->
@@ -476,7 +477,7 @@ window.SyAttachMng = {
             </span>
           </div>
           <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
-          <bo-form-area :columns="grpFormColumns" :form="grpForm" :errors="{}"
+          <bo-form-area :columns="columns.grpForm" :form="grpForm" :errors="{}"
             :cols="2" :show-actions="false" />
           <div style="display:flex;gap:6px;margin-top:8px;">
             <button class="btn btn-primary btn-sm" style="flex:1;" @click="handleBtnAction('attachGrps-save')">
@@ -555,7 +556,7 @@ window.SyAttachMng = {
             </span>
           </b>
         </div>
-        <bo-search-area :columns="fileSearchColumns" :param="searchParam"
+        <bo-search-area :columns="columns.fileSearch" :param="searchParam"
           @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
       </div>
       <!-- ===== ■.■.■. 목록 영역 (별도 카드) ====================================== -->
@@ -587,7 +588,7 @@ window.SyAttachMng = {
           </div>
           <!-- ===== ■.■.■.■.■. 파일 폼 (BoFormArea 자동 렌더, 4컬럼) ==================== -->
           <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
-          <bo-form-area :columns="fileFormColumns" :form="fileForm" :errors="{}"
+          <bo-form-area :columns="columns.fileForm" :form="fileForm" :errors="{}"
             :cols="3" :show-actions="false" />
           <!-- ===== ■.■.■.■.■. 저장/취소 가운데 정렬 ==================================== -->
           <div style="display:flex;gap:8px;justify-content:center;">
@@ -604,7 +605,7 @@ window.SyAttachMng = {
           <!-- ===== ■.■.■.■.■. 목록 영역 =========================================== -->
           <bo-grid
             bare
-            :columns="fileGridColumns"
+            :columns="columns.fileGrid"
             :rows="attaches"
             row-key="attachId"
             :loading="uiState.loading"

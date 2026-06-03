@@ -311,7 +311,8 @@ window.SyPathMng = {
     };
 
     // 기본 검색
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'bizCd', type: 'text', label: '업무코드', placeholder: 'biz_cd 검색', width: '180px' },
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
@@ -324,7 +325,7 @@ window.SyPathMng = {
     ];
 
     // 기본 그리드
-    const baseGridColumns = [
+    columns.baseGrid = [
       { key: 'rowStatus',    label: '상태',     style: 'width:60px;text-align:center;', align: 'center',
         badge: (row) => 'badge-xs ' + (row._status === 'N' ? 'badge-green' : row._status === 'U' ? 'badge-orange' : 'badge-gray'),
         fmt: (v, row) => row._status || 'N' },
@@ -346,8 +347,8 @@ window.SyPathMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, searchParam, codes, expanded, gridRows, pager, parentModal,         // 상태 / 데이터
-      baseSearchColumns, baseGridColumns,                                          // 컬럼 정의
       handleBtnAction, handleSelectAction, fnCallbackModal,                                         // dispatch (모든 이벤트 / 액션 라우팅)
       cfTree, cfParentTree, cfDirtyRows,                                           // computed
       fnRowClass,                                                                  // 헬퍼
@@ -362,7 +363,7 @@ window.SyPathMng = {
   <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </div>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 좌 트리 + 우 그리드 ============================================ -->
@@ -375,7 +376,7 @@ window.SyPathMng = {
     <!-- ===== □.□. 트리 ==================================================== -->
     <!-- ===== ■.■. 그리드 =================================================== -->
     <bo-grid
-      :columns="baseGridColumns" :rows="gridRows" row-key="pathId"
+      :columns="columns.baseGrid" :rows="gridRows" row-key="pathId"
       list-title="경로 목록" :count-text="pager.pageTotalCount + '건'"
       :row-class="fnRowClass" :show-save="true" :row-actions="true"
       @save="handleBtnAction('paths-save')"

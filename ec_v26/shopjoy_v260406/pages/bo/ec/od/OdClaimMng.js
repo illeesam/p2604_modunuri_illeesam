@@ -520,7 +520,8 @@ window.OdClaimMng = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 기본 검색
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'claimId',  label: '클레임ID' },
@@ -545,7 +546,7 @@ window.OdClaimMng = {
     ];
 
     // 목록 그리드
-    const listGridColumns = [
+    columns.listGrid = [
       { key: 'claimId',       label: '클레임ID', link: true,
         cellInnerStyle: (v) => detailPanel.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'memberNm',      label: '회원', refLink: 'member', refKey: 'memberId',
@@ -568,18 +569,18 @@ window.OdClaimMng = {
       + (isChecked(c.claimId) ? 'background:#eef6fd;' : '');
 
     // 결재 문의 폼
-    const apprContactFormColumns = [
+    columns.apprContactForm = [
       { key: 'apprToPhone', label: '전화번호', type: 'text', readonly: true },
       { key: 'apprToEmail', label: '이메일',   type: 'text', readonly: true },
     ];
     // 결재 대상 폼
-    const apprTargetFormColumns = [
+    columns.apprTargetForm = [
       { key: 'reqTarget',   label: '요청대상', type: 'select', nullable: false,
         options: () => codes.req_targets, onChange: () => handleBtnAction('actionsModal-reqTargetChange') },
       { key: 'reqTargetNm', label: '요청대상명', type: 'text', placeholder: '수정 가능' },
     ];
     // 요청금액 / 요청사유 / 전송 템플릿 (3 fields)
-    const apprDetailFormColumns = [
+    columns.apprDetailForm = [
       { key: 'reqAmount', label: '요청금액', type: 'number', colSpan: 2 },
       { type: 'rowBreak' },
       { key: 'reqReason', label: '요청사유', type: 'textarea', rows: 2, placeholder: '(선택)', colSpan: 2 },
@@ -588,7 +589,7 @@ window.OdClaimMng = {
         hint: '치환: {target} {targetNm} {amount} {reason}' },
     ];
     // 결재처리구분/결재코멘트 (approval 탭)
-    const bulkApprovalFormColumns = [
+    columns.bulkApprovalForm = [
       { key: 'apprAction',  label: '결재처리 구분', type: 'select', nullLabel: '선택하세요',
         options: () => codes.approval_actions, colSpan: 2 },
       { type: 'rowBreak' },
@@ -598,9 +599,8 @@ window.OdClaimMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       claims, members, uiState, codes, searchParam, pager, detailPanel, checked, bulkForm, bulkOpen, memberPick,         // 상태 / 데이터
-      baseSearchColumns, listGridColumns, apprContactFormColumns, apprTargetFormColumns, apprDetailFormColumns,           // 컬럼 정의
-      bulkApprovalFormColumns,                                                                                            // 컬럼 정의
       handleBtnAction, handleSelectAction, fnCallbackModal,                                                                 // dispatch + 모달 통합 콜백
       cfDetailEditId, cfIsViewMode, cfDetailKey, cfAllChecked, cfBuildTmplMsg, cfBulkPreview, cfSiteNm, cfCheckedByType,   // computed
       selectedId: computed(() => detailPanel.selectedId),                                                                 // template 직접 참조
@@ -618,7 +618,7 @@ window.OdClaimMng = {
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
@@ -651,7 +651,7 @@ window.OdClaimMng = {
     <!-- ===== ■.■. 그리드 (기본 10개 영역 + 화면 높이 반응형 확장, 초과 시 내부 스크롤) =========== -->
     <div style="max-height:calc(100vh - 340px);min-height:480px;overflow-y:auto;border:1px solid #eef0f3;border-radius:6px;background:#fff;">
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare selectable :columns="listGridColumns" :rows="claims" row-key="claimId"
+      <bo-grid bare selectable :columns="columns.listGrid" :rows="claims" row-key="claimId"
         :sort-state="uiState" :is-checked="isChecked" :all-checked="cfAllChecked"
         :row-style="fnGridRowStyle" empty-text="데이터가 없습니다."
         @sort="key => handleSelectAction('claims-sort', key)"
@@ -757,7 +757,7 @@ window.OdClaimMng = {
         <!-- ===== ■.■.■.■. 결재처리 (BoFormArea 자동 렌더) =========================== -->
         <div v-if="uiState.bulkTab==='approval'">
           <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
-          <bo-form-area :columns="bulkApprovalFormColumns" :form="bulkForm" :errors="{}"
+          <bo-form-area :columns="columns.bulkApprovalForm" :form="bulkForm" :errors="{}"
             :cols="2" :show-actions="false" />
         </div>
         <div v-if="uiState.bulkTab==='approvalReq'">
@@ -776,15 +776,15 @@ window.OdClaimMng = {
           </div>
           <!-- ===== ■.■.■.■.■. 전화번호/이메일 (BoFormArea 자동 렌더, readonly) =========== -->
           <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
-          <bo-form-area :columns="apprContactFormColumns" :form="bulkForm" :errors="{}"
+          <bo-form-area :columns="columns.apprContactForm" :form="bulkForm" :errors="{}"
             :cols="2" :show-actions="false" />
           <!-- ===== ■.■.■.■.■. 요청대상/요청대상명 (BoFormArea 자동 렌더) =================== -->
           <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
-          <bo-form-area :columns="apprTargetFormColumns" :form="bulkForm" :errors="{}"
+          <bo-form-area :columns="columns.apprTargetForm" :form="bulkForm" :errors="{}"
             :cols="2" :show-actions="false" />
           <!-- ===== ■.■.■.■.■. 요청금액/요청사유/전송템플릿 (BoFormArea 자동 렌더) ============== -->
           <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
-          <bo-form-area :columns="apprDetailFormColumns" :form="bulkForm" :errors="{}"
+          <bo-form-area :columns="columns.apprDetailForm" :form="bulkForm" :errors="{}"
             :cols="2" :show-actions="false">
             <template #tmplMsg>
               <textarea class="form-control" v-model="bulkForm.tmplMsg" rows="4" style="font-family:monospace;font-size:11.5px;"></textarea>

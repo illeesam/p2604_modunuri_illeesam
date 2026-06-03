@@ -167,13 +167,14 @@ window.DpDispRelationMng = {
     // --- [컬럼 정의] ---
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 기본 검색
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'dateStart_range', type: 'dateRange', label: '등록기간', startKey: 'dateStart', endKey: 'dateEnd' },
     ];
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       codes, searchParam, uiState, expandedNodes,                                   // 상태 / 데이터
-      baseSearchColumns,                                                            // 컬럼 정의
       handleBtnAction, handleSelectAction,                                          // dispatch (모든 이벤트 / 액션 라우팅)
       cfTreeData,                                                                   // computed
       fnGetVisibilityBadges, fnGetBadgeColor, fnGetUseYnBadge, isNodeExpanded,      // 헬퍼
@@ -191,7 +192,7 @@ window.DpDispRelationMng = {
   <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" :columns="baseSearchColumns" :param="searchParam" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
+    <bo-search-area :loading="uiState.loading" :columns="columns.baseSearch" :param="searchParam" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
   </div>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 내용 ====================================================== -->

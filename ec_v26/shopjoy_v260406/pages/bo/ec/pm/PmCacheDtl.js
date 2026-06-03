@@ -244,7 +244,8 @@ window.PmCacheDtl = {
 
     // ===== 그리드 컬럼 정의 (회원 캐쉬 내역) ===============================
     /* BoGrid(bare) 컬럼 정의 — 회원 캐쉬 내역 */
-    const cacheHistGridColumns = [
+    const columns = {};
+    columns.cacheHistGrid = [
       { key: 'cacheDate',  label: '일시', fmt: (v) => v ? String(v).slice(0, 16) : '-' },
       { key: 'cacheTypeCd', label: '유형', badge: row => fnTypeBadge(row.cacheTypeCd) },
       { key: 'cacheAmt',   label: '금액',
@@ -257,7 +258,7 @@ window.PmCacheDtl = {
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - 기본정보 영역 ================
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // --- [컬럼 정의] ---
-    const baseFormColumns = [
+    columns.baseForm = [
       { key: 'memberId',    label: '회원ID', type: 'slot', name: 'memberId', required: true },
       { key: 'memberNm',    label: '회원명', type: 'readonly' },
       { key: 'cacheTypeCd', label: '유형', type: 'select', options: () => codes.cache_trans_types },
@@ -274,8 +275,8 @@ window.PmCacheDtl = {
     // ===== setup() return =================================================
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       vendors, uiState, codes, form, errors,                                        // 상태 / 데이터
-      baseFormColumns, cacheHistGridColumns,                                         // 컬럼 정의
       handleBtnAction, handleSelectAction, fnCallbackModal,                                           // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfDtlMode, cfMemberCacheHistory, cfTotalBalance, cfSelectedVendorNm, // computed
       tab, tabMode2, showVendorModal,                                                // toRef
@@ -309,7 +310,7 @@ window.PmCacheDtl = {
         📋 기본정보
       </div>
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+      <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
         <!-- ===== ■.■.■.■. 회원ID + 보기 ========================================= -->
         <template #memberId>
@@ -381,7 +382,7 @@ window.PmCacheDtl = {
         </span>
       </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="cacheHistGridColumns" :rows="cfMemberCacheHistory" row-key="cacheId"
+      <bo-grid bare :columns="columns.cacheHistGrid" :rows="cfMemberCacheHistory" row-key="cacheId"
         empty-text="캐쉬 내역이 없습니다.">
       </bo-grid>
     </div>

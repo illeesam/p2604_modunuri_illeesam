@@ -588,7 +588,8 @@ window.XsSample07 = {
       cfResGridColumns.value.map(c => ({ key: c, label: c, mono: false })));
 
     /* 전송이력 fo-grid 컬럼 (특수셀은 #cell 슬롯) */
-    const historyGridColumns = [
+    const columns = {};
+    columns.historyGrid = [
       { key: '_seq',    label: '#',     width: '32px', align: 'center' },
       { key: 'method',  label: '메서드', width: '68px', align: 'center',
         cellInnerStyle: (v) => 'font-size:9px;padding:1px 5px;border-radius:2px;font-weight:700;' + fnMethodStyle(v) },
@@ -652,6 +653,7 @@ window.XsSample07 = {
       treeRoot.push(buildAutoCrudRestNodes());
     });
     return {
+      columns,
       uiState, codes,                                                        // 상태 / 데이터
       handleBtnAction, handleSelectAction,                                   // dispatch
       // ===== tree / tabs 영역 =================================================
@@ -666,7 +668,7 @@ window.XsSample07 = {
       histResJson, histResStatus, histResTime, histResTs, histResProgress,
       selectHistory, closeHistModal, resendHist,
       cfResGridColumns, cfResGridRows, cfResColDefs,
-      historyGridColumns, onHistClick, fnHistRowStyle,
+      onHistClick, fnHistRowStyle,
       // ===== shared (헬퍼) ====================================================
       addRow, removeRow, fnMethodStyle, fnStatusStyle, fnMethodDot, quickRun,
       // ===== auto-run 영역 ====================================================
@@ -1140,7 +1142,7 @@ window.XsSample07 = {
         </div>
         <div style="max-height:228px;overflow-y:auto;">
           <!-- ===== ■.■.■.■. 목록 영역 ============================================= -->
-          <fo-grid bare :columns="historyGridColumns" :rows="history" row-key="id"
+          <fo-grid bare :columns="columns.historyGrid" :rows="history" row-key="id"
           :show-row-no="false" empty-text="전송 이력이 없습니다"
           :row-click="onHistClick" :row-style="fnHistRowStyle">
             <template #cell-_seq="{ row, idx }">

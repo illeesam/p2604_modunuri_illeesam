@@ -225,7 +225,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
         // --- [컬럼 정의] ---
 
-        const baseSearchColumns = [
+        const columns = {};
+        columns.baseSearch = [
       { key: 'dateRange', label: '정산일', type: 'dateRange', paramObj: uiState,
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
@@ -244,7 +245,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     ];
 
     // 기본 그리드
-    const baseGridColumns = [
+    columns.baseGrid = [
       { key: 'adjId',        label: '조정ID' },
       { key: 'adjDate',      label: '조정일자',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
       { key: 'vendorNm',     label: '업체명' },
@@ -260,7 +261,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - 기타조정 추가/수정 ============
     // 기본 폼
-    const baseFormColumns = [
+    columns.baseForm = [
       { key: 'vendorId', label: '업체', type: 'select', required: true, nullLabel: '선택',
         options: () => (cfVendors.value || []).map(v => ({ value: v.vendorId, label: v.vendorNm })) },
       { key: 'adjType',  label: '조정유형', type: 'select', required: true, nullable: false,
@@ -274,8 +275,8 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       uiState, codes, pager, etcAdjs, searchParam, form, errors,
-      baseSearchColumns, baseGridColumns, baseFormColumns,
       handleBtnAction, handleSelectAction,
       cfVendors,
       fnAprvBadge, fnTypeBadge, fmtW,
@@ -303,7 +304,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
@@ -320,7 +321,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
-      :columns="baseGridColumns" :rows="etcAdjs" row-key="adjId"
+      :columns="columns.baseGrid" :rows="etcAdjs" row-key="adjId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
       :row-class="(r) => uiState.selectedId===r.adjId ? 'selected' : ''"
       @set-page="n => handleSelectAction('etcAdjs-pager-setPage', n)" @size-change="handleSelectAction('etcAdjs-pager-sizeChange')">
@@ -347,7 +348,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       {{ uiState.isNew ? '기타조정 추가' : '기타조정 수정' }}
     </div>
     <!-- ===== ■.■. 폼 영역 ================================================== -->
-    <bo-form-area :columns="baseFormColumns" :form="form" :errors="errors"
+    <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
       :cols="3"
       @save="handleBtnAction('form-save')" @cancel="handleBtnAction('form-cancel')" />
   </div>

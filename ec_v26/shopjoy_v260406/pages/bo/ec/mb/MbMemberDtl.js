@@ -63,7 +63,8 @@ window.MbMemberDtl = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 기본 폼
-    const baseFormColumns = [
+    const columns = {};
+    columns.baseForm = [
       { key: 'loginId',        label: '이메일',    type: 'text', required: true, placeholder: '이메일 주소' },
       { key: 'memberNm',       label: '이름',      type: 'text', required: true, placeholder: '이름' },
       { key: 'memberPhone',    label: '연락처',    type: 'text', placeholder: '010-0000-0000' },
@@ -76,8 +77,8 @@ window.MbMemberDtl = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       currentId, codes,                                                                // 상태 / 데이터
-      baseFormColumns,                                                                 // 컬럼 정의
       handleBtnAction,                                                                 // dispatch (모든 이벤트 / 액션 라우팅)
     };
   },
@@ -112,7 +113,7 @@ window.MbMemberDtl = {
     <!-- ===== ■.■. 폼 영역 (BoFormArea 자동 렌더) ============================== -->
     <div style="padding:12px;">
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="baseFormColumns" :form="detailModal.form" :errors="{}"
+      <bo-form-area :columns="columns.baseForm" :form="detailModal.form" :errors="{}"
         :readonly="!active" :cols="3" compact :show-actions="false" />
     </div>
     <!-- ===== □.■. 폼 영역 ================================================== -->

@@ -161,7 +161,8 @@ window.SyBatchHist = {
     );
 
     // 이력 그리드
-    const histGridColumns = [
+    const columns = {};
+    columns.histGrid = [
       { key: 'batchLogId', label: '로그ID',  style: 'width:46px;', cellStyle: 'color:#aaa' },
       { key: 'batchNm',    label: '배치명',  style: 'min-width:120px;', cellStyle: 'font-weight:500' },
       { key: '_batchCode', label: '배치코드', style: 'min-width:150px;',
@@ -173,7 +174,7 @@ window.SyBatchHist = {
     ];
 
     /* histExpandColumns — 실행이력 행 펼침 BoFormArea 컬럼 (cols=5, labelLeft) */
-    const histExpandColumns = [
+    columns.histExpand = [
       { key: '_batchNm',   label: '배치명',   type: 'readonly', fmt: (v, row) => row.batchNm || '-' },
       { key: '_batchCode', label: '배치코드', type: 'readonly', mono: true, fmt: (v, row) => row.batchCode || '-' },
       { key: '_runAt',     label: '실행일시', type: 'readonly', mono: true, fmt: (v, row) => row.runAt || '-' },
@@ -183,8 +184,8 @@ window.SyBatchHist = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       batches, batchLogs, uiState, codes, pager,                        // 상태 / 데이터
-      histGridColumns, histExpandColumns,                                // 컬럼 정의
       handleBtnAction, handleSelectAction,                               // dispatch (모든 이벤트 / 액션 라우팅)
       cfBatchOptions,                                                    // computed
       fnRunBadge, fnFmtDuration, fnRowExpanded, fnHistRowStyle,          // 헬퍼
@@ -194,7 +195,7 @@ window.SyBatchHist = {
 <div>
   <!-- ===== ■. 목록 영역 =================================================== -->
   <bo-grid
-    :columns="histGridColumns" :rows="batchLogs" row-key="batchLogId"
+    :columns="columns.histGrid" :rows="batchLogs" row-key="batchLogId"
     list-title="배치 실행이력" :count-text="pager.pageTotalCount + '건'"
     :row-style="fnHistRowStyle" :is-expanded="fnRowExpanded" row-clickable
     empty-text="실행이력이 없습니다."
@@ -237,7 +238,7 @@ window.SyBatchHist = {
         <div style="font-size:11px;font-weight:700;letter-spacing:.3px;margin-bottom:8px;" :style="row.runStatus==='실패' ? 'color:#b91c1c;' : 'color:#1d4ed8;'">
           ▼ 실행 상세
         </div>
-        <bo-form-area :columns="histExpandColumns" :form="row" :cols="5" readonly label-left compact :show-actions="false" />
+        <bo-form-area :columns="columns.histExpand" :form="row" :cols="5" readonly label-left compact :show-actions="false" />
         <div style="font-size:11px;font-weight:600;color:#888;margin:6px 0 3px;">
           메시지
         </div>

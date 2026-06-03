@@ -260,7 +260,8 @@ window.PmSaveMng = {
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // ===== 검색영역 컬럼 정의 (BoSearchArea :columns) ======================
     // 기본 검색
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'saveNm', label: '마일리지명' },
@@ -277,7 +278,7 @@ window.PmSaveMng = {
     ];
 
     // 기본 그리드
-    const baseGridColumns = [
+    columns.baseGrid = [
       { key: 'saveNm',     label: '마일리지명', sortKey: 'nm', link: true,
         cellInnerStyle: (v) => detailPanel.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'saveType',   label: '유형', badge: (row) => fnTypeBadge(row.saveType) },
@@ -293,8 +294,8 @@ window.PmSaveMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       saves, uiState, codes, searchParam, pager, detailPanel,                        // 상태 / 데이터
-      baseSearchColumns, baseGridColumns,                                            // 컬럼 정의
       handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                           // computed
       tabMode,                                                                       // toRef
@@ -313,7 +314,7 @@ window.PmSaveMng = {
   <!-- ===== ■. 카드 영역 =================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 목록영역 (리스트/카드 토글) ======================================== -->
@@ -353,7 +354,7 @@ window.PmSaveMng = {
     <!-- ===== ■.■. 리스트 뷰 (BoGrid) ======================================== -->
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid v-if="tabMode==='list'" :bare="true"
-      :columns="baseGridColumns" :rows="saves" row-key="saveId"
+      :columns="columns.baseGrid" :rows="saves" row-key="saveId"
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(s) => detailPanel.selectedId===s.saveId ? 'background:#fff8f9;' : ''"

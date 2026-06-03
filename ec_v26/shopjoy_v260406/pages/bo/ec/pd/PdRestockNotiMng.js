@@ -152,13 +152,14 @@ window.PdRestockNotiMng = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 기본 검색
-    const baseSearchColumns = [
+    const columns = {};
+    columns.baseSearch = [
       { key: 'prod', label: '상품명', type: 'text', placeholder: '상품명 검색' },
       { key: 'noti', label: '알림발송', type: 'select', options: () => codes.send_yn_opts, nullLabel: '전체' },
     ];
 
     // 기본 그리드
-    const baseGridColumns = [
+    columns.baseGrid = [
       { key: 'prodId',   label: '상품명', fmt: (v, row) => getProdNm(row.prodId) },
       { key: 'skuId',    label: 'SKU',    style: 'width:100px', cellStyle: 'color:#888', fmt: (v) => v || '-' },
       { key: 'memberId', label: '신청회원', style: 'width:100px', fmt: (v, row) => getMemNm(row.memberId) },
@@ -170,8 +171,8 @@ window.PdRestockNotiMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      columns,
       restockNotis, uiState, codes, searchParam, pager,                                 // 상태 / 데이터
-      baseSearchColumns, baseGridColumns,                                                // 컬럼 정의
       handleBtnAction, handleSelectAction,                                               // dispatch
       checkedCount, allChecked,                                                          // computed
       fnIsChecked, fnYnBadge,                                                            // 헬퍼
@@ -186,7 +187,7 @@ window.PdRestockNotiMng = {
   <!-- ===== ■. 검색 ====================================================== -->
   <div class="card">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="baseSearchColumns" :param="searchParam" />
+    <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </div>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 목록 그리드 =================================================== -->
@@ -204,7 +205,7 @@ window.PdRestockNotiMng = {
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
-      :columns="baseGridColumns" :rows="restockNotis" row-key="restockNotiId"
+      :columns="columns.baseGrid" :rows="restockNotis" row-key="restockNotiId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'"
       selectable checked-key="restockNotiId" :is-checked="fnIsChecked" :all-checked="allChecked"
       @set-page="n => handleSelectAction('restockNotis-pager-setPage', n)" @size-change="handleSelectAction('restockNotis-pager-sizeChange')"
