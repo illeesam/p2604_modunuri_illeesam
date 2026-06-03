@@ -221,24 +221,12 @@ public class SyTemplateService {
         em.flush();
         em.clear();
         return;
-
     }
-        /** getPathTreeNodeCounts — 표시경로 노드별 SyTemplate 수 (검색조건 + 자손 누적, 트리 우측 뱃지용).
+
+    /** getPathTreeNodeCounts — 표시경로 노드별 SyTemplate 수 (검색조건 + 자손 누적, 트리 우측 뱃지용).
      *   검색조건이 있으면 그 조건에 부합하는 row 만 카운트.
      *   결과: { pathId: cnt, '__total__': 전체, '__orphan__': path 없음 } */
     public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(SyTemplateDto.Request req) {
         return syTemplateRepository.selectPathTreeTemplateCnts(req);
-    }
-
-    private static String nullIfBlank(String s) {
-        return (s == null || s.isBlank()) ? null : s;
-    }
-
-
-
-    /** searchType csv 를 ',a,b,' 형태로 감싸 SQL `LIKE '%,a,%'` 매칭 가능하게 변환 */
-    private static String wrapCsv(String s) {
-        if (s == null || s.isBlank()) return null;
-        return "," + s.trim().replaceAll("\\s*,\\s*", ",") + ",";
     }
 }

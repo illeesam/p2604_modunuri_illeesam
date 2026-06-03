@@ -229,15 +229,4 @@ public class SyBrandService {
     public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(SyBrandDto.Request req) {
         return syBrandRepository.selectPathTreeBrandCnts(req);
     }
-
-    private static String nullIfBlank(String s) {
-        return (s == null || s.isBlank()) ? null : s;
-    }
-
-    /** searchType csv 를 ',a,b,' 형태로 감싸 SQL `LIKE '%,a,%'` 매칭 가능하게 변환 */
-    private static String wrapCsv(String s) {
-        if (s == null || s.isBlank()) return null;
-        return "," + s.trim().replaceAll("\\s*,\\s*", ",") + ",";
-    }
-
 }

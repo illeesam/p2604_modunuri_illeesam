@@ -440,10 +440,11 @@ window.OdClaimMng = {
         window.safeArrayUtils.safeForEach(changes, ch => {
           window.safeArrayUtils.safeForEach(claims, c => { if (ch.ids.includes(c.claimId)) c.claimStatusCd = ch.status; });
         });
+        const rows = changes.flatMap(ch => ch.ids.map(id => ({ claimId: id, claimStatusCd: ch.status })));
         checked.clear();
         uiState.bulkOpen = false;
         try {
-          const res = await boApiSvc.odClaim.bulkStatus({ changes }, '클레임관리', '일괄처리');
+          const res = await boApiSvc.odClaim.saveList('status', rows, '클레임관리', '일괄처리');
           if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
           if (showToast) { showToast(`${totalCnt}건 변경되었습니다.`, 'success'); }
         } catch (err) {
@@ -459,10 +460,11 @@ window.OdClaimMng = {
         const ok = await showConfirm('일괄 클레임유형 변경', `선택한 ${ids.length}건의 클레임유형을 [${val}](으)로 변경하시겠습니까?`);
         if (!ok) { return; }
         window.safeArrayUtils.safeForEach(claims, c => { if (ids.includes(c.claimId)) c.claimTypeCd = val; });
+        const rows = ids.map(id => ({ claimId: id, claimTypeCd: val }));
         checked.clear();
         uiState.bulkOpen = false;
         try {
-          const res = await boApiSvc.odClaim.bulkType({ ids, type: val }, '클레임관리', '일괄처리');
+          const res = await boApiSvc.odClaim.saveList('type', rows, '클레임관리', '일괄처리');
           if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
           if (showToast) { showToast(`${ids.length}건 변경되었습니다.`, 'success'); }
         } catch (err) {
@@ -477,9 +479,10 @@ window.OdClaimMng = {
         const ok = await showConfirm('일괄 결재처리', `선택한 ${ids.length}건을 [${bulkForm.apprAction}] 처리하시겠습니까?`);
         if (!ok) { return; }
         window.safeArrayUtils.safeForEach(claims, c => { if (ids.includes(c.claimId)) { c.apprStatus = bulkForm.apprAction; c.apprComment = bulkForm.apprComment; } });
+        const rows = ids.map(id => ({ claimId: id }));
         checked.clear(); uiState.bulkOpen = false;
         try {
-          const res = await boApiSvc.odClaim.bulkApproval({ ids, action: bulkForm.apprAction, comment: bulkForm.apprComment }, '클레임관리', '결재처리');
+          const res = await boApiSvc.odClaim.saveList('approval', rows, '클레임관리', '결재처리');
           if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
           if (showToast) { showToast(`${ids.length}건 처리되었습니다.`, 'success'); }
         } catch (err) {
@@ -498,9 +501,10 @@ window.OdClaimMng = {
           c.reqTarget = bulkForm.reqTarget; c.reqTargetNm = bulkForm.reqTargetNm;
           c.reqAmount = Number(bulkForm.reqAmount||0); c.reqReason = bulkForm.reqReason;
         } });
+        const rows = ids.map(id => ({ claimId: id }));
         checked.clear(); uiState.bulkOpen = false;
         try {
-          const res = await boApiSvc.odClaim.bulkApprovalReq({ ids, ...bulkForm, tmplMsgRendered: cfBuildTmplMsg.value }, '클레임관리', '추가결재요청');
+          const res = await boApiSvc.odClaim.saveList('approvalReq', rows, '클레임관리', '추가결재요청');
           if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
           if (showToast) { showToast(`${ids.length}건 요청되었습니다.`, 'success'); }
         } catch (err) {

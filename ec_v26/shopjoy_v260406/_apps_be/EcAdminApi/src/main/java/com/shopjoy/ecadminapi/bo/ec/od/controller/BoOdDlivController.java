@@ -1,7 +1,5 @@
 package com.shopjoy.ecadminapi.bo.ec.od.controller;
 
-import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdDlivBulkDto;
-import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdDlivChangeStatusDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdDlivDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdDliv;
 import com.shopjoy.ecadminapi.bo.ec.od.service.BoOdDlivService;
@@ -79,46 +77,27 @@ public class BoOdDlivController {
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
-    /** changeStatus */
-    @PatchMapping("/{id}/status")
-    public ResponseEntity<ApiResponse<OdDlivDto.Item>> changeStatus(
-            @PathVariable("id") String id, @RequestBody OdDlivChangeStatusDto.Request req) {
-        return ResponseEntity.ok(ApiResponse.ok(boOdDlivService.changeStatus(id, req.getStatusCd())));
+    /** save -- 단건 저장 (cmd 변형: status 등) */
+    @PostMapping("/save/{cmd}")
+    public ResponseEntity<ApiResponse<OdDlivDto.Item>> saveOneCmd(
+            @PathVariable("cmd") String cmd, @RequestBody OdDliv entity) {
+        OdDlivDto.Item result = switch (cmd) {
+            case "status" -> boOdDlivService.saveOneStatus(entity);
+            default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
+        };
+        return ResponseEntity.ok(ApiResponse.ok(result, "저장되었습니다."));
     }
 
-    /** bulkStatus */
-    @PutMapping("/bulk-status")
-    public ResponseEntity<ApiResponse<Void>> bulkStatus(@RequestBody OdDlivBulkDto.Request req) {
-        boOdDlivService.bulkStatus(req);
-        return ResponseEntity.ok(ApiResponse.ok(null, "상태가 변경되었습니다."));
-    }
-
-    /** bulkCourier */
-    @PutMapping("/bulk-courier")
-    public ResponseEntity<ApiResponse<Void>> bulkCourier(@RequestBody OdDlivBulkDto.Request req) {
-        boOdDlivService.bulkCourier(req);
-        return ResponseEntity.ok(ApiResponse.ok(null, "택배정보가 변경되었습니다."));
-    }
-
-    /** bulkApproval */
-    @PutMapping("/bulk-approval")
-    public ResponseEntity<ApiResponse<Void>> bulkApproval(@RequestBody OdDlivBulkDto.Request req) {
-        boOdDlivService.bulkApproval(req);
-        return ResponseEntity.ok(ApiResponse.ok(null, "결재 처리되었습니다."));
-    }
-
-    /** bulkApprovalReq */
-    @PutMapping("/bulk-approvalReq")
-    public ResponseEntity<ApiResponse<Void>> bulkApprovalReq(@RequestBody OdDlivBulkDto.Request req) {
-        boOdDlivService.bulkApprovalReq(req);
-        return ResponseEntity.ok(ApiResponse.ok(null, "추가결재가 요청되었습니다."));
-    }
-    /** saveList -- 일괄 저장 (cmd 변형: order 등) */
+    /** saveList -- 일괄 저장 (cmd 변형: status/courier/approval/approvalReq 등) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
             @PathVariable("cmd") String cmd, @RequestBody List<OdDliv> rows) {
         switch (cmd) {
             case "base" -> boOdDlivService.saveListBase(rows);
+            case "status" -> boOdDlivService.saveListStatus(rows);
+            case "courier" -> boOdDlivService.saveListCourier(rows);
+            case "approval" -> boOdDlivService.saveListApproval(rows);
+            case "approvalReq" -> boOdDlivService.saveListApprovalReq(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);
         }
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));

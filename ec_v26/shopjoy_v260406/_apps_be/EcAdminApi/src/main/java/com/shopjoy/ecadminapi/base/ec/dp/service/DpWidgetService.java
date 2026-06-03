@@ -221,24 +221,12 @@ public class DpWidgetService {
         em.flush();
         em.clear();
         return;
-
     }
-        /** getPathTreeNodeCounts — 표시경로 노드별 DpWidget 수 (검색조건 + 자손 누적, 트리 우측 뱃지용).
+
+    /** getPathTreeNodeCounts — 표시경로 노드별 DpWidget 수 (검색조건 + 자손 누적, 트리 우측 뱃지용).
      *   dp_widget 은 widget_lib_id → dp_widget_lib.path_id 로 간접 연결되어 카운트.
      *   결과: { pathId: cnt, '__total__': 전체, '__orphan__': lib path 없음 } */
     public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(DpWidgetDto.Request req) {
         return dpWidgetRepository.selectPathTreeWidgetCnts(req);
-    }
-
-    private static String nullIfBlank(String s) {
-        return (s == null || s.isBlank()) ? null : s;
-    }
-
-
-
-    /** searchType csv 를 ',a,b,' 형태로 감싸 SQL `LIKE '%,a,%'` 매칭 가능하게 변환 */
-    private static String wrapCsv(String s) {
-        if (s == null || s.isBlank()) return null;
-        return "," + s.trim().replaceAll("\\s*,\\s*", ",") + ",";
     }
 }

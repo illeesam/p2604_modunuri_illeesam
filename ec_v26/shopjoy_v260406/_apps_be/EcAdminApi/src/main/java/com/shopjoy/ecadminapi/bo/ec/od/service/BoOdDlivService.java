@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.bo.ec.od.service;
 
-import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdDlivBulkDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdDlivDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdDlivItemDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdDliv;
@@ -102,31 +101,32 @@ public class BoOdDlivService {
     @Transactional public void delete(String id) { odDlivService.delete(id); }
     @Transactional public void saveListBase(List<OdDliv> rows) { odDlivService.saveListBase(rows); }
 
-    /** changeStatus — dlivStatusCd 변경 (이력 보존) */
+    /** saveOneStatus — 단건 dlivStatusCd 변경 (이력 보존). row: dlivId + dlivStatusCd */
     @Transactional
-    public OdDlivDto.Item changeStatus(String id, String statusCd) {
-        OdDliv entity = odDlivRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    public OdDlivDto.Item saveOneStatus(OdDliv row) {
+        CmUtil.requireId(row == null ? null : row.getDlivId(), "dlivId", this);
+        OdDliv entity = odDlivRepository.findById(row.getDlivId())
+            .orElseThrow(() -> new CmBizException("존재하지 않습니다: " + row.getDlivId() + "::" + CmUtil.svcCallerInfo(this)));
         entity.setDlivStatusCdBefore(entity.getDlivStatusCd());
-        entity.setDlivStatusCd(statusCd);
+        entity.setDlivStatusCd(row.getDlivStatusCd());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         OdDliv saved = odDlivRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
-        return odDlivService.getById(id);
+        return odDlivService.getById(row.getDlivId());
     }
 
-    /** bulkStatus — 다건 상태 변경 */
+    /** saveListStatus — 다건 상태 변경 (행별 dlivStatusCd, 이력 보존) */
     @Transactional
-    public void bulkStatus(OdDlivBulkDto.Request req) {
-        if (req == null || req.getIds() == null || req.getStatus() == null) return;
-        String status = req.getStatus();
+    public void saveListStatus(List<OdDliv> rows) {
+        if (rows == null) return;
+        CmUtil.requireRowIds(rows, OdDliv::getDlivId, "U", "dlivId", this);
         String updBy = SecurityUtil.getAuthUser().authId();
-        for (String id : req.getIds()) {
-            odDlivRepository.findById(id).ifPresent(e -> {
+        for (OdDliv row : rows) {
+            odDlivRepository.findById(row.getDlivId()).ifPresent(e -> {
                 e.setDlivStatusCdBefore(e.getDlivStatusCd());
-                e.setDlivStatusCd(status);
+                e.setDlivStatusCd(row.getDlivStatusCd());
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
                 OdDliv saved = odDlivRepository.save(e);
@@ -135,17 +135,16 @@ public class BoOdDlivService {
         }
     }
 
-    /** bulkCourier — 다건 택배사/송장 변경 */
+    /** saveListCourier — 다건 택배사/송장 변경 (행별 outboundCourierCd/outboundTrackingNo) */
     @Transactional
-    public void bulkCourier(OdDlivBulkDto.Request req) {
-        if (req == null || req.getIds() == null) return;
-        String courier = req.getCourier();
-        String trackingNo = req.getTrackingNo();
+    public void saveListCourier(List<OdDliv> rows) {
+        if (rows == null) return;
+        CmUtil.requireRowIds(rows, OdDliv::getDlivId, "U", "dlivId", this);
         String updBy = SecurityUtil.getAuthUser().authId();
-        for (String id : req.getIds()) {
-            odDlivRepository.findById(id).ifPresent(e -> {
-                if (courier != null) e.setOutboundCourierCd(courier);
-                if (trackingNo != null) e.setOutboundTrackingNo(trackingNo);
+        for (OdDliv row : rows) {
+            odDlivRepository.findById(row.getDlivId()).ifPresent(e -> {
+                if (row.getOutboundCourierCd() != null) e.setOutboundCourierCd(row.getOutboundCourierCd());
+                if (row.getOutboundTrackingNo() != null) e.setOutboundTrackingNo(row.getOutboundTrackingNo());
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
                 OdDliv saved = odDlivRepository.save(e);
@@ -154,13 +153,14 @@ public class BoOdDlivService {
         }
     }
 
-    /** bulkApproval — 다건 결재 처리 */
+    /** saveListApproval — 다건 결재 처리 (updBy/updDate 갱신) */
     @Transactional
-    public void bulkApproval(OdDlivBulkDto.Request req) {
-        if (req == null || req.getIds() == null) return;
+    public void saveListApproval(List<OdDliv> rows) {
+        if (rows == null) return;
+        CmUtil.requireRowIds(rows, OdDliv::getDlivId, "U", "dlivId", this);
         String updBy = SecurityUtil.getAuthUser().authId();
-        for (String id : req.getIds()) {
-            odDlivRepository.findById(id).ifPresent(e -> {
+        for (OdDliv row : rows) {
+            odDlivRepository.findById(row.getDlivId()).ifPresent(e -> {
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
                 OdDliv saved = odDlivRepository.save(e);
@@ -169,13 +169,14 @@ public class BoOdDlivService {
         }
     }
 
-    /** bulkApprovalReq — 다건 결재 요청 */
+    /** saveListApprovalReq — 다건 결재 요청 (updBy/updDate 갱신) */
     @Transactional
-    public void bulkApprovalReq(OdDlivBulkDto.Request req) {
-        if (req == null || req.getIds() == null) return;
+    public void saveListApprovalReq(List<OdDliv> rows) {
+        if (rows == null) return;
+        CmUtil.requireRowIds(rows, OdDliv::getDlivId, "U", "dlivId", this);
         String updBy = SecurityUtil.getAuthUser().authId();
-        for (String id : req.getIds()) {
-            odDlivRepository.findById(id).ifPresent(e -> {
+        for (OdDliv row : rows) {
+            odDlivRepository.findById(row.getDlivId()).ifPresent(e -> {
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
                 OdDliv saved = odDlivRepository.save(e);

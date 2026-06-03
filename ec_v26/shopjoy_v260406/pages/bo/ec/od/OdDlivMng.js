@@ -396,9 +396,10 @@ window.OdDlivMng = {
         const ok = await showConfirm('일괄 배송상태 변경', `선택한 ${ids.length}건을 [${bulkForm.status}] 상태로 변경하시겠습니까?`);
         if (!ok) { return; }
         window.safeArrayUtils.safeForEach(dlivs, d => { if (ids.includes(d.dlivId)) d.dlivStatusCd = bulkForm.status; });
+        const rows = ids.map(id => ({ dlivId: id, dlivStatusCd: bulkForm.status }));
         checked.clear(); uiState.bulkOpen = false;
         try {
-          const res = await boApiSvc.odDliv.bulkStatus({ ids, status: bulkForm.status }, '배송관리', '일괄처리');
+          const res = await boApiSvc.odDliv.saveList('status', rows, '배송관리', '일괄처리');
           if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
           if (showToast) { showToast(`${ids.length}건 변경되었습니다.`, 'success'); }
         } catch (err) {
@@ -417,9 +418,10 @@ window.OdDlivMng = {
             if (bulkForm.trackingNo) { d.outboundTrackingNo = bulkForm.trackingNo; }
           }
         });
+        const rows = ids.map(id => ({ dlivId: id, outboundCourierCd: bulkForm.courier || null, outboundTrackingNo: bulkForm.trackingNo || null }));
         checked.clear(); uiState.bulkOpen = false;
         try {
-          const res = await boApiSvc.odDliv.bulkCourier({ ids, courier: bulkForm.courier, trackingNo: bulkForm.trackingNo }, '배송관리', '택배정보');
+          const res = await boApiSvc.odDliv.saveList('courier', rows, '배송관리', '택배정보');
           if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
           if (showToast) { showToast(`${ids.length}건 변경되었습니다.`, 'success'); }
         } catch (err) {
@@ -433,9 +435,10 @@ window.OdDlivMng = {
         const ok = await showConfirm('일괄 결재처리', `선택한 ${ids.length}건을 [${bulkForm.apprAction}] 처리하시겠습니까?`);
         if (!ok) { return; }
         window.safeArrayUtils.safeForEach(dlivs, d => { if (ids.includes(d.dlivId)) { d.apprStatus = bulkForm.apprAction; d.apprComment = bulkForm.apprComment; } });
+        const rows = ids.map(id => ({ dlivId: id }));
         checked.clear(); uiState.bulkOpen = false;
         try {
-          const res = await boApiSvc.odDliv.bulkApproval({ ids, action: bulkForm.apprAction, comment: bulkForm.apprComment }, '배송관리', '결재처리');
+          const res = await boApiSvc.odDliv.saveList('approval', rows, '배송관리', '결재처리');
           if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
           if (showToast) { showToast(`${ids.length}건 처리되었습니다.`, 'success'); }
         } catch (err) {
@@ -453,9 +456,10 @@ window.OdDlivMng = {
           d.reqTarget = bulkForm.reqTarget; d.reqTargetNm = bulkForm.reqTargetNm;
           d.reqAmount = Number(bulkForm.reqAmount||0); d.reqReason = bulkForm.reqReason;
         } });
+        const rows = ids.map(id => ({ dlivId: id }));
         checked.clear(); uiState.bulkOpen = false;
         try {
-          const res = await boApiSvc.odDliv.bulkApprovalReq({ ids, ...bulkForm, tmplMsgRendered: cfBuildTmplMsg.value }, '배송관리', '추가결재요청');
+          const res = await boApiSvc.odDliv.saveList('approvalReq', rows, '배송관리', '추가결재요청');
           if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
           if (showToast) { showToast(`${ids.length}건 요청되었습니다.`, 'success'); }
         } catch (err) {

@@ -162,10 +162,10 @@
     create(body, uiNm, cmdNm)          { return global.boApi.post(  '/bo/ec/od/claim', body, hdr(uiNm, cmdNm)); },
     update(_id, body, uiNm, cmdNm)     { return chkId(_id, uiNm, cmdNm) || global.boApi.put(   `/bo/ec/od/claim/${_id}`, body, hdr(uiNm, cmdNm)); },
     remove(_id, uiNm, cmdNm)           { return chkId(_id, uiNm, cmdNm) || global.boApi.delete(`/bo/ec/od/claim/${_id}`, hdr(uiNm, cmdNm)); },
-    bulkStatus(body, uiNm, cmdNm)      { return global.boApi.put(   '/bo/ec/od/claim/bulk-status', body, hdr(uiNm, cmdNm)); },
-    bulkType(body, uiNm, cmdNm)        { return global.boApi.put(   '/bo/ec/od/claim/bulk-type', body, hdr(uiNm, cmdNm)); },
-    bulkApproval(body, uiNm, cmdNm)    { return global.boApi.put(   '/bo/ec/od/claim/bulk-approval', body, hdr(uiNm, cmdNm)); },
-    bulkApprovalReq(body, uiNm, cmdNm) { return global.boApi.put(   '/bo/ec/od/claim/bulk-approvalReq', body, hdr(uiNm, cmdNm)); },
+    /* 단건저장 — cmd: status 등. entity 단건 */
+    saveOne(cmd, entity, uiNm, cmdNm)  { return global.boApi.post('/bo/ec/od/claim/save/' + cmd, entity, hdr(uiNm, cmdNm)); },
+    /* 일괄저장 — cmd: status/type/approval/approvalReq. rows = List<OdClaim> */
+    saveList(cmd, rows, uiNm, cmdNm)   { return global.boApi.post('/bo/ec/od/claim/save-list/' + cmd, rows, hdr(uiNm, cmdNm)); },
   };
 
   /* ── od: 배송 ───────────────────────────────────────────────── */
@@ -175,10 +175,10 @@
     create(body, uiNm, cmdNm)          { return global.boApi.post(  '/bo/ec/od/dliv', body, hdr(uiNm, cmdNm)); },
     update(_id, body, uiNm, cmdNm)     { return chkId(_id, uiNm, cmdNm) || global.boApi.put(   `/bo/ec/od/dliv/${_id}`, body, hdr(uiNm, cmdNm)); },
     remove(_id, uiNm, cmdNm)           { return chkId(_id, uiNm, cmdNm) || global.boApi.delete(`/bo/ec/od/dliv/${_id}`, hdr(uiNm, cmdNm)); },
-    bulkStatus(body, uiNm, cmdNm)      { return global.boApi.put(   '/bo/ec/od/dliv/bulk-status', body, hdr(uiNm, cmdNm)); },
-    bulkCourier(body, uiNm, cmdNm)     { return global.boApi.put(   '/bo/ec/od/dliv/bulk-courier', body, hdr(uiNm, cmdNm)); },
-    bulkApproval(body, uiNm, cmdNm)    { return global.boApi.put(   '/bo/ec/od/dliv/bulk-approval', body, hdr(uiNm, cmdNm)); },
-    bulkApprovalReq(body, uiNm, cmdNm) { return global.boApi.put(   '/bo/ec/od/dliv/bulk-approvalReq', body, hdr(uiNm, cmdNm)); },
+    /* 단건저장 — cmd: status 등. entity 단건 */
+    saveOne(cmd, entity, uiNm, cmdNm)  { return global.boApi.post('/bo/ec/od/dliv/save/' + cmd, entity, hdr(uiNm, cmdNm)); },
+    /* 일괄저장 — cmd: status/courier/approval/approvalReq. rows = List<OdDliv> */
+    saveList(cmd, rows, uiNm, cmdNm)   { return global.boApi.post('/bo/ec/od/dliv/save-list/' + cmd, rows, hdr(uiNm, cmdNm)); },
   };
 
   /* ── od: 주문 ───────────────────────────────────────────────── */
@@ -188,7 +188,10 @@
     create(body, uiNm, cmdNm)           { return global.boApi.post(  '/bo/ec/od/order', body, hdr(uiNm, cmdNm)); },
     update(_id, body, uiNm, cmdNm)      { return chkId(_id, uiNm, cmdNm) || global.boApi.put(   `/bo/ec/od/order/${_id}`, body, hdr(uiNm, cmdNm)); },
     remove(_id, uiNm, cmdNm)            { return chkId(_id, uiNm, cmdNm) || global.boApi.delete(`/bo/ec/od/order/${_id}`, hdr(uiNm, cmdNm)); },
-    bulkAction(path, body, uiNm, cmdNm) { return global.boApi.put(   path, body, hdr(uiNm, cmdNm)); },
+    /* 단건저장 — cmd: status 등. entity 단건 */
+    saveOne(cmd, entity, uiNm, cmdNm)   { return global.boApi.post('/bo/ec/od/order/save/' + cmd, entity, hdr(uiNm, cmdNm)); },
+    /* 일괄저장 — cmd: status/payMethod/approval/approvalReq. rows = List<OdOrder> */
+    saveList(cmd, rows, uiNm, cmdNm)    { return global.boApi.post('/bo/ec/od/order/save-list/' + cmd, rows, hdr(uiNm, cmdNm)); },
   };
 
   /* ── pd: 묶음상품 ───────────────────────────────────────────── */

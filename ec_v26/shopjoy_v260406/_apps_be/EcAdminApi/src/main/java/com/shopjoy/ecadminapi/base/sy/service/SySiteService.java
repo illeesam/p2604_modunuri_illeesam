@@ -80,15 +80,6 @@ public class SySiteService {
     }
 
     /* 공백·null 정규화 — '' 도 null 로 취급해 SQL 의 :param IS NULL 분기 활성화 */
-    private static String nullIfBlank(String s) {
-        return (s == null || s.isBlank()) ? null : s;
-    }
-
-    /** searchType csv 를 ',a,b,' 형태로 감싸 SQL `LIKE '%,a,%'` 매칭 가능하게 변환 */
-    private static String wrapCsv(String s) {
-        if (s == null || s.isBlank()) return null;
-        return "," + s.trim().replaceAll("\\s*,\\s*", ",") + ",";
-    }
 
     // ── 변경 ────────────────────────────────────────────────────
 

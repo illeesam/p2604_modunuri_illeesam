@@ -427,18 +427,31 @@ window.OdOrderMng = {
       if (!val) { showToast(`${cfg.label} 입력값을 확인하세요.`, 'error'); return; }
       const ok = await showConfirm(`일괄 ${cfg.label}`, `선택한 ${ids.length}건에 대해 ${cfg.label} 작업을 진행하시겠습니까?`);
       if (!ok) { return; }
-      if (uiState.bulkTab === 'status') { window.safeArrayUtils.safeForEach(orders, o => { if (ids.includes(o.orderId)) o.orderStatusCd = bulkForm.status; }); }
-      if (uiState.bulkTab === 'payMethod') { window.safeArrayUtils.safeForEach(orders, o => { if (ids.includes(o.orderId)) o.payMethodCd = bulkForm.payMethod; }); }
-      if (uiState.bulkTab === 'approval') { window.safeArrayUtils.safeForEach(orders, o => { if (ids.includes(o.orderId)) { o.apprStatus = bulkForm.apprAction; o.apprComment = bulkForm.apprComment; } }); }
-      if (uiState.bulkTab === 'approvalReq') window.safeArrayUtils.safeForEach(orders, o => { if (ids.includes(o.orderId)) {
-        o.apprToUserId = bulkForm.apprToUserId; o.apprToNm = bulkForm.apprToNm;
-        o.reqTarget = bulkForm.reqTarget; o.reqTargetNm = bulkForm.reqTargetNm;
-        o.reqAmount = Number(bulkForm.reqAmount||0); o.reqReason = bulkForm.reqReason;
-      } });
+      let rows = [];
+      if (uiState.bulkTab === 'status') {
+        window.safeArrayUtils.safeForEach(orders, o => { if (ids.includes(o.orderId)) o.orderStatusCd = bulkForm.status; });
+        rows = ids.map(id => ({ orderId: id, orderStatusCd: bulkForm.status }));
+      }
+      if (uiState.bulkTab === 'payMethod') {
+        window.safeArrayUtils.safeForEach(orders, o => { if (ids.includes(o.orderId)) o.payMethodCd = bulkForm.payMethod; });
+        rows = ids.map(id => ({ orderId: id, payMethodCd: bulkForm.payMethod }));
+      }
+      if (uiState.bulkTab === 'approval') {
+        window.safeArrayUtils.safeForEach(orders, o => { if (ids.includes(o.orderId)) { o.apprStatus = bulkForm.apprAction; o.apprComment = bulkForm.apprComment; } });
+        rows = ids.map(id => ({ orderId: id }));
+      }
+      if (uiState.bulkTab === 'approvalReq') {
+        window.safeArrayUtils.safeForEach(orders, o => { if (ids.includes(o.orderId)) {
+          o.apprToUserId = bulkForm.apprToUserId; o.apprToNm = bulkForm.apprToNm;
+          o.reqTarget = bulkForm.reqTarget; o.reqTargetNm = bulkForm.reqTargetNm;
+          o.reqAmount = Number(bulkForm.reqAmount||0); o.reqReason = bulkForm.reqReason;
+        } });
+        rows = ids.map(id => ({ orderId: id }));
+      }
       checked.clear();
       uiState.bulkOpen = false;
       try {
-        const res = await boApiSvc.odOrder.bulkAction(cfg.path, { ids, ...bulkForm, tmplMsgRendered: cfBuildTmplMsg.value }, '주문관리', '목록조회');
+        const res = await boApiSvc.odOrder.saveList(uiState.bulkTab, rows, '주문관리', '목록조회');
         if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast(`${ids.length}건 처리되었습니다.`, 'success'); }
       } catch (err) {

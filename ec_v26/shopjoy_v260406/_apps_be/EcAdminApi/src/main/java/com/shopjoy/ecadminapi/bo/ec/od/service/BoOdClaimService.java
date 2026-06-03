@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.bo.ec.od.service;
 
-import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimBulkDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimItemDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdClaim;
@@ -99,30 +98,32 @@ public class BoOdClaimService {
     @Transactional public void delete(String id) { odClaimService.delete(id); }
     @Transactional public void saveListBase(List<OdClaim> rows) { odClaimService.saveListBase(rows); }
 
-    /** changeStatus — claimStatusCd 변경 (이력 보존) */
+    /** saveOneStatus — 단건 claimStatusCd 변경 (이력 보존). row: claimId + claimStatusCd */
     @Transactional
-    public OdClaimDto.Item changeStatus(String id, String statusCd) {
-        OdClaim entity = odClaimRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    public OdClaimDto.Item saveOneStatus(OdClaim row) {
+        CmUtil.requireId(row == null ? null : row.getClaimId(), "claimId", this);
+        OdClaim entity = odClaimRepository.findById(row.getClaimId())
+            .orElseThrow(() -> new CmBizException("존재하지 않습니다: " + row.getClaimId() + "::" + CmUtil.svcCallerInfo(this)));
         entity.setClaimStatusCdBefore(entity.getClaimStatusCd());
-        entity.setClaimStatusCd(statusCd);
+        entity.setClaimStatusCd(row.getClaimStatusCd());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         OdClaim saved = odClaimRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
-        return odClaimService.getById(id);
+        return odClaimService.getById(row.getClaimId());
     }
 
-    /** bulkStatus — 다건 상태 변경 (행별로 다른 statusCd 적용) */
+    /** saveListStatus — 다건 상태 변경 (행별 claimStatusCd 적용, 이력 보존) */
     @Transactional
-    public void bulkStatus(OdClaimBulkDto.Request req) {
-        if (req == null || req.getChanges() == null) return;
+    public void saveListStatus(List<OdClaim> rows) {
+        if (rows == null) return;
+        CmUtil.requireRowIds(rows, OdClaim::getClaimId, "U", "claimId", this);
         String updBy = SecurityUtil.getAuthUser().authId();
-        for (OdClaimBulkDto.Change c : req.getChanges()) {
-            odClaimRepository.findById(c.getId()).ifPresent(e -> {
+        for (OdClaim row : rows) {
+            odClaimRepository.findById(row.getClaimId()).ifPresent(e -> {
                 e.setClaimStatusCdBefore(e.getClaimStatusCd());
-                e.setClaimStatusCd(c.getStatusCd());
+                e.setClaimStatusCd(row.getClaimStatusCd());
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
                 OdClaim saved = odClaimRepository.save(e);
@@ -131,14 +132,16 @@ public class BoOdClaimService {
         }
     }
 
-    /** bulkType — 다건 유형 변경 */
+    /** saveListType — 다건 유형 변경 (행별 claimTypeCd 적용) */
     @Transactional
-    public void bulkType(OdClaimBulkDto.Request req) {
-        if (req == null || req.getIds() == null || req.getType() == null) return;
+    public void saveListType(List<OdClaim> rows) {
+        if (rows == null) return;
+        CmUtil.requireRowIds(rows, OdClaim::getClaimId, "U", "claimId", this);
         String updBy = SecurityUtil.getAuthUser().authId();
-        for (String id : req.getIds()) {
-            odClaimRepository.findById(id).ifPresent(e -> {
-                e.setClaimTypeCd(req.getType());
+        for (OdClaim row : rows) {
+            if (row.getClaimTypeCd() == null) continue;
+            odClaimRepository.findById(row.getClaimId()).ifPresent(e -> {
+                e.setClaimTypeCd(row.getClaimTypeCd());
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
                 OdClaim saved = odClaimRepository.save(e);
@@ -147,13 +150,14 @@ public class BoOdClaimService {
         }
     }
 
-    /** bulkApproval — 다건 결재 처리 */
+    /** saveListApproval — 다건 결재 처리 (updBy/updDate 갱신) */
     @Transactional
-    public void bulkApproval(OdClaimBulkDto.Request req) {
-        if (req == null || req.getIds() == null) return;
+    public void saveListApproval(List<OdClaim> rows) {
+        if (rows == null) return;
+        CmUtil.requireRowIds(rows, OdClaim::getClaimId, "U", "claimId", this);
         String updBy = SecurityUtil.getAuthUser().authId();
-        for (String id : req.getIds()) {
-            odClaimRepository.findById(id).ifPresent(e -> {
+        for (OdClaim row : rows) {
+            odClaimRepository.findById(row.getClaimId()).ifPresent(e -> {
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
                 OdClaim saved = odClaimRepository.save(e);
@@ -162,13 +166,14 @@ public class BoOdClaimService {
         }
     }
 
-    /** bulkApprovalReq — 다건 결재 요청 */
+    /** saveListApprovalReq — 다건 결재 요청 (updBy/updDate 갱신) */
     @Transactional
-    public void bulkApprovalReq(OdClaimBulkDto.Request req) {
-        if (req == null || req.getIds() == null) return;
+    public void saveListApprovalReq(List<OdClaim> rows) {
+        if (rows == null) return;
+        CmUtil.requireRowIds(rows, OdClaim::getClaimId, "U", "claimId", this);
         String updBy = SecurityUtil.getAuthUser().authId();
-        for (String id : req.getIds()) {
-            odClaimRepository.findById(id).ifPresent(e -> {
+        for (OdClaim row : rows) {
+            odClaimRepository.findById(row.getClaimId()).ifPresent(e -> {
                 e.setUpdBy(updBy);
                 e.setUpdDate(LocalDateTime.now());
                 OdClaim saved = odClaimRepository.save(e);

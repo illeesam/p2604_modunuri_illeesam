@@ -147,18 +147,87 @@ public class BoOdOrderService {
     @Transactional public void delete(String id) { odOrderService.delete(id); }
     @Transactional public void saveListBase(List<OdOrder> rows) { odOrderService.saveListBase(rows); }
 
-    /** changeStatus — orderStatusCd 변경 (이력 보존) */
+    /** saveOneStatus — 단건 orderStatusCd 변경 (이력 보존). row: orderId + orderStatusCd */
     @Transactional
-    public OdOrderDto.Item changeStatus(String id, String statusCd) {
-        OdOrder entity = odOrderRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
+    public OdOrderDto.Item saveOneStatus(OdOrder row) {
+        CmUtil.requireId(row == null ? null : row.getOrderId(), "orderId", this);
+        OdOrder entity = odOrderRepository.findById(row.getOrderId())
+            .orElseThrow(() -> new CmBizException("존재하지 않습니다: " + row.getOrderId() + "::" + CmUtil.svcCallerInfo(this)));
         entity.setOrderStatusCdBefore(entity.getOrderStatusCd());
-        entity.setOrderStatusCd(statusCd);
+        entity.setOrderStatusCd(row.getOrderStatusCd());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         OdOrder saved = odOrderRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
-        return odOrderService.getById(id);
+        return odOrderService.getById(row.getOrderId());
+    }
+
+    /** saveListStatus — 다건 주문상태 변경 (행별 orderStatusCd, 이력 보존) */
+    @Transactional
+    public void saveListStatus(List<OdOrder> rows) {
+        if (rows == null) return;
+        CmUtil.requireRowIds(rows, OdOrder::getOrderId, "U", "orderId", this);
+        String updBy = SecurityUtil.getAuthUser().authId();
+        for (OdOrder row : rows) {
+            odOrderRepository.findById(row.getOrderId()).ifPresent(e -> {
+                e.setOrderStatusCdBefore(e.getOrderStatusCd());
+                e.setOrderStatusCd(row.getOrderStatusCd());
+                e.setUpdBy(updBy);
+                e.setUpdDate(LocalDateTime.now());
+                OdOrder saved = odOrderRepository.save(e);
+                if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
+            });
+        }
+    }
+
+    /** saveListPayMethod — 다건 결제수단 변경 (행별 payMethodCd) */
+    @Transactional
+    public void saveListPayMethod(List<OdOrder> rows) {
+        if (rows == null) return;
+        CmUtil.requireRowIds(rows, OdOrder::getOrderId, "U", "orderId", this);
+        String updBy = SecurityUtil.getAuthUser().authId();
+        for (OdOrder row : rows) {
+            if (row.getPayMethodCd() == null) continue;
+            odOrderRepository.findById(row.getOrderId()).ifPresent(e -> {
+                e.setPayMethodCd(row.getPayMethodCd());
+                e.setUpdBy(updBy);
+                e.setUpdDate(LocalDateTime.now());
+                OdOrder saved = odOrderRepository.save(e);
+                if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
+            });
+        }
+    }
+
+    /** saveListApproval — 다건 결재 처리 (updBy/updDate 갱신) */
+    @Transactional
+    public void saveListApproval(List<OdOrder> rows) {
+        if (rows == null) return;
+        CmUtil.requireRowIds(rows, OdOrder::getOrderId, "U", "orderId", this);
+        String updBy = SecurityUtil.getAuthUser().authId();
+        for (OdOrder row : rows) {
+            odOrderRepository.findById(row.getOrderId()).ifPresent(e -> {
+                e.setUpdBy(updBy);
+                e.setUpdDate(LocalDateTime.now());
+                OdOrder saved = odOrderRepository.save(e);
+                if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
+            });
+        }
+    }
+
+    /** saveListApprovalReq — 다건 결재 요청 (updBy/updDate 갱신) */
+    @Transactional
+    public void saveListApprovalReq(List<OdOrder> rows) {
+        if (rows == null) return;
+        CmUtil.requireRowIds(rows, OdOrder::getOrderId, "U", "orderId", this);
+        String updBy = SecurityUtil.getAuthUser().authId();
+        for (OdOrder row : rows) {
+            odOrderRepository.findById(row.getOrderId()).ifPresent(e -> {
+                e.setUpdBy(updBy);
+                e.setUpdDate(LocalDateTime.now());
+                OdOrder saved = odOrderRepository.save(e);
+                if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
+            });
+        }
     }
 }

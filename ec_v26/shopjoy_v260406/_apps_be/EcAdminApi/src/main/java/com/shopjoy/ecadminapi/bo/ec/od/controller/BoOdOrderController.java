@@ -1,7 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.od.controller;
 
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto;
-import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderChangeStatusDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdOrder;
 import com.shopjoy.ecadminapi.bo.ec.od.service.BoOdOrderService;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
@@ -78,18 +77,27 @@ public class BoOdOrderController {
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
-    /** changeStatus */
-    @PatchMapping("/{id}/status")
-    public ResponseEntity<ApiResponse<OdOrderDto.Item>> changeStatus(
-            @PathVariable("id") String id, @RequestBody OdOrderChangeStatusDto.Request req) {
-        return ResponseEntity.ok(ApiResponse.ok(boOdOrderService.changeStatus(id, req.getStatusCd())));
+    /** save -- 단건 저장 (cmd 변형: status 등) */
+    @PostMapping("/save/{cmd}")
+    public ResponseEntity<ApiResponse<OdOrderDto.Item>> saveOneCmd(
+            @PathVariable("cmd") String cmd, @RequestBody OdOrder entity) {
+        OdOrderDto.Item result = switch (cmd) {
+            case "status" -> boOdOrderService.saveOneStatus(entity);
+            default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
+        };
+        return ResponseEntity.ok(ApiResponse.ok(result, "저장되었습니다."));
     }
-    /** saveList -- 일괄 저장 (cmd 변형: order 등) */
+
+    /** saveList -- 일괄 저장 (cmd 변형: status/payMethod/approval/approvalReq 등) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
             @PathVariable("cmd") String cmd, @RequestBody List<OdOrder> rows) {
         switch (cmd) {
             case "base" -> boOdOrderService.saveListBase(rows);
+            case "status" -> boOdOrderService.saveListStatus(rows);
+            case "payMethod" -> boOdOrderService.saveListPayMethod(rows);
+            case "approval" -> boOdOrderService.saveListApproval(rows);
+            case "approvalReq" -> boOdOrderService.saveListApprovalReq(rows);
             default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);
         }
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));

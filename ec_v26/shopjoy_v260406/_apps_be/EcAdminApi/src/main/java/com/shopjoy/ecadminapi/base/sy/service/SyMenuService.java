@@ -221,24 +221,12 @@ public class SyMenuService {
         em.flush();
         em.clear();
         return;
-
     }
-        /** getPathTreeNodeCounts — 표시경로 노드별 SyMenu 수 (검색조건 + 자손 누적, 트리 우측 뱃지용).
+
+    /** getPathTreeNodeCounts — 표시경로 노드별 SyMenu 수 (검색조건 + 자손 누적, 트리 우측 뱃지용).
      *   sy_menu 는 path_id 컬럼 대신 menu_code 가 sy_path.path_id 와 일치하는 관례를 따른다.
      *   결과: { pathId: cnt, '__total__': 전체 } */
     public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(SyMenuDto.Request req) {
         return syMenuRepository.selectMenuTreeCnts(req);
-    }
-
-    private static String nullIfBlank(String s) {
-        return (s == null || s.isBlank()) ? null : s;
-    }
-
-
-
-    /** searchType csv 를 ',a,b,' 형태로 감싸 SQL `LIKE '%,a,%'` 매칭 가능하게 변환 */
-    private static String wrapCsv(String s) {
-        if (s == null || s.isBlank()) return null;
-        return "," + s.trim().replaceAll("\\s*,\\s*", ",") + ",";
     }
 }
