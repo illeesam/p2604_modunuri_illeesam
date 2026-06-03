@@ -383,7 +383,7 @@ window.SyMemberLoginHist = {
   </div>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 탭 ======================================================== -->
-  <div class="tab-nav" style="margin-bottom:16px">
+  <div class="tab-nav" style="margin-bottom:6px">
     <button class="tab-btn" :class="{active:searchParam.activeTab==='log'}" @click="handleSelectAction('searchParam-tabChange', 'log')">
       로그인 로그
       <span class="tab-count">

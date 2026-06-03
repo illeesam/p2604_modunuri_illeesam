@@ -762,11 +762,12 @@ window.SyVendorUserMng = {
   <div class="card" style="margin-top:12px;">
     <div class="toolbar">
       <span class="list-title">
-        <span style="color:#e8587a;">
-          {{ uiState.formMode==='new' ? '+ 신규 업체사용자' : uiState.formMode==='edit' ? '✏ 업체사용자 수정' : '업체사용자 상세' }}
-        </span>
-        <span v-if="uiState.formMode==='edit'" style="margin-left:8px;font-size:11px;color:#888;">
+        {{ uiState.formMode==='new' ? '신규 업체사용자' : uiState.formMode==='edit' ? '업체사용자 수정' : '업체사용자 상세' }}
+        <span v-if="uiState.formMode==='edit'" style="margin-left:8px;font-size:11px;color:#888;font-weight:400;">
           #{{ formData.vendorUserId }}
+        </span>
+        <span v-if="!uiState.formMode" style="margin-left:8px;font-size:12px;color:#bbb;font-weight:400;">
+          사용자 목록에서 행을 선택하거나 [+신규등록]을 누르세요
         </span>
       </span>
       <div v-if="uiState.formMode" style="display:flex;gap:6px;flex-wrap:wrap;">
@@ -784,12 +785,8 @@ window.SyVendorUserMng = {
         </button>
       </div>
     </div>
-    <!-- ===== ■.■. 미선택 안내 (행 미선택 시) ==================================== -->
-    <div v-if="!uiState.formMode" style="text-align:center;color:#bbb;font-size:13px;padding:32px 16px;">
-      사용자 목록에서 행을 선택하거나 [+신규등록]을 누르세요.
-    </div>
-    <!-- ===== ■.■. 업체사용자 상세 폼 (BoFormArea 자동 렌더) ========================= -->
-    <div v-else style="padding:16px;">
+    <!-- ===== ■.■. 업체사용자 상세 폼 (항상 표시 — 미선택 시 빈 폼 구조 노출) =============== -->
+    <div style="padding:16px;">
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="columns.baseVendorUserForm" :form="formData" :errors="{}"
         :cols="3" compact :show-actions="false" />

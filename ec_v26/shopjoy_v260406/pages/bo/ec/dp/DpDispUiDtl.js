@@ -485,7 +485,7 @@ window.DpDispUiDtl = {
 <div class="card" style="padding:0;overflow:hidden;">
   <!-- ===== ■. 헤더 ====================================================== -->
   <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #eee;background:#fafafa;">
-    <div style="font-size:16px;font-weight:700;color:#222;">
+    <span class="list-title" style="font-size:14px;">
       전시
       <span style="color:#e8587a;">
         UI
@@ -497,7 +497,7 @@ window.DpDispUiDtl = {
       <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
         목록에서 행을 선택하거나 [✚ 신규등록]을 누르세요
       </span>
-    </div>
+    </span>
     <div v-if="active" style="display:flex;gap:8px;align-items:center;">
       <button class="btn btn-sm" :disabled="cfIsNew"
         :style="cfIsNew ? 'background:#f5f5f5;border:1px solid #ddd;color:#bbb;cursor:not-allowed;' : 'background:#e3f2fd;border:1px solid #90caf9;color:#1565c0;font-weight:600;'"
