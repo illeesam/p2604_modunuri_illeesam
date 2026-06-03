@@ -345,7 +345,7 @@ window.MbMemberMng = {
   </div>
   <!-- ===== □. 검색 ======================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
-  <bo-grid :columns="columns.baseGrid" :rows="members" row-key="memberId"
+  <bo-grid :columns="columns.baseGrid" :rows="members" row-key="memberId" :selected-key="detailPanel.dtlId"
     :sort-state="uiState" list-title="회원목록" row-clickable
     :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다."

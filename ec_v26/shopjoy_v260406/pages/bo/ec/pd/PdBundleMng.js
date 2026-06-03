@@ -657,7 +657,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
   </div>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 목록 ====================================================== -->
-  <bo-grid list-title="묶음상품 목록" :columns="columns.bundleGrid" :rows="bundleList" :row-style="fnBundleRowStyle" row-key="bundleProdId"
+  <bo-grid list-title="묶음상품 목록" :columns="columns.bundleGrid" :rows="bundleList" :row-style="fnBundleRowStyle" row-key="bundleProdId" :selected-key="uiState.editBundleId"
     empty-text="데이터가 없습니다." :row-actions="true">
     <template #toolbar-actions>
       <button class="btn btn-green btn-sm" @click="handleBtnAction('bundles-add')">

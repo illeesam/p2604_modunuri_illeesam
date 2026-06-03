@@ -249,7 +249,7 @@ window.PdQnaMng = {
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
-      :columns="columns.baseGrid" :rows="qnas" row-key="qnaId"
+      :columns="columns.baseGrid" :rows="qnas" row-key="qnaId" :selected-key="uiState.selectedId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'"
       :loading="uiState.loading"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"

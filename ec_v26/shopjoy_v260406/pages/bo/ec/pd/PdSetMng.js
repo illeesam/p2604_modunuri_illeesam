@@ -652,7 +652,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
     <div style="max-height:calc(100vh - 340px);min-height:480px;overflow-y:auto;border:1px solid #eef0f3;border-radius:6px;background:#fff;">
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid bare :columns="columns.setGrid" :rows="cfSetPageRows"
-        row-key="setProdId" :row-style="fnSetRowStyle" empty-text="데이터가 없습니다." row-actions>
+        row-key="setProdId" :selected-key="uiState.editSetId" :row-style="fnSetRowStyle" empty-text="데이터가 없습니다." row-actions>
         <template #cell-prodNm="{ row }">
           <td>
             <div style="display:flex;align-items:flex-start;gap:6px">

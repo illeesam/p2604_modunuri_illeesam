@@ -89,7 +89,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(CmAuthException.class)
     public ResponseEntity<ApiResponse<Void>> handleAuth(CmAuthException ex, HttpServletRequest req) {
-        log.warn("CmAuthException: {}", ex.getMessage());
+        log.error("CmAuthException: {}", ex.getMessage(), ex);
         return ResponseEntity.status(ex.getHttpStatus())
             .body(ApiResponse.<Void>error(ex.getHttpStatus().value(), ex.getMessage())
                 .withDebug(buildStack(ex), buildUserInfo(req)));
@@ -107,7 +107,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(CmBizException.class)
     public ResponseEntity<ApiResponse<Void>> handleBusiness(CmBizException ex, HttpServletRequest req) {
-        log.warn("CmBizException: {}", ex.getMessage());
+        log.error("CmBizException: {}", ex.getMessage(), ex);
         return ResponseEntity.status(ex.getHttpStatus())
             .body(ApiResponse.<Void>error(ex.getHttpStatus().value(), ex.getMessage())
                 .withDebug(buildStack(ex), buildUserInfo(req)));
@@ -185,7 +185,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiResponse<Void>> handleIllegalArg(IllegalArgumentException ex, HttpServletRequest req) {
-        log.warn("IllegalArgumentException: {}", ex.getMessage());
+        log.error("IllegalArgumentException: {}", ex.getMessage(), ex);
         return ResponseEntity.badRequest()
             .body(ApiResponse.<Void>error(400, ex.getMessage())
                 .withDebug(buildStack(ex), buildUserInfo(req)));
@@ -206,7 +206,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<ApiResponse<Void>> handleNoResource(NoResourceFoundException ex, HttpServletRequest req) {
         String msg = "API 경로를 찾을 수 없습니다: " + req.getMethod() + " " + req.getRequestURI();
-        log.warn("NoResourceFoundException: {}", msg);
+        log.error("NoResourceFoundException: {}", msg, ex);
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
             .body(ApiResponse.<Void>error(404, msg)
                 .withDebug(ex.getMessage(), buildUserInfo(req)));

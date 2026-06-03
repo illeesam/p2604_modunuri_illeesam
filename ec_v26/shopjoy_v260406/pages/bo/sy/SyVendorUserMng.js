@@ -731,7 +731,7 @@ window.SyVendorUserMng = {
       </div>
       <!-- ===== ■.■.■. 사용자 목록 =========================================== -->
       <bo-grid v-if="uiState.searchVendorId != null"
-        :columns="columns.userGrid" :rows="pager.pageList||[]" :pager="pager" row-key="vendorUserId"
+        :columns="columns.userGrid" :rows="pager.pageList||[]" :pager="pager" row-key="vendorUserId" :selected-key="formData.vendorUserId"
         list-title="사용자목록" :count-text="vendorUsers.length + '건'"
         :row-style="fnUserRowStyle" :loading="uiState.loading" :row-actions="true" row-clickable
         @row-click="row => handleSelectAction('vendorUsers-rowEdit', row)">
@@ -756,7 +756,7 @@ window.SyVendorUserMng = {
   </div>
   <!-- ===== □. 업체 목록 (좌) + 사용자 목록 (우) =================================== -->
   <!-- ===== ■. 인라인 폼 (항상 표시 — 미선택 시 빈 폼 + 버튼 숨김 + 안내) ============ -->
-  <div class="card" style="margin-top:16px;border:2px solid #e8587a;">
+  <div class="card" style="margin-top:16px;">
     <div class="toolbar">
       <span class="list-title">
         <span style="color:#e8587a;">

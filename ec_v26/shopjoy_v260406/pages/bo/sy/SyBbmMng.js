@@ -340,7 +340,7 @@ window.SyBbmMng = {
     <div>
       <!-- ===== ■.■.■. 목록 그리드 ============================================ -->
       <bo-grid
-        :columns="columns.baseGrid" :rows="bbms" row-key="bbmId"
+        :columns="columns.baseGrid" :rows="bbms" row-key="bbmId" :selected-key="detailModal.dtlId"
         list-title="게시판목록" :count-text="pager.pageTotalCount + '건'"
         :row-style="fnRowStyle"
         @cell-click="e => handleSelectAction('bbms-rowEdit', e.row.bbmId)">

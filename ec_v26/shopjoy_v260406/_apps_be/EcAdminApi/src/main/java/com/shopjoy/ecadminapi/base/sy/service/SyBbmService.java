@@ -94,6 +94,8 @@ public class SyBbmService {
         CmUtil.requireId(id, "id", this);
         SyBbm entity = findById(id);
         VoUtil.voCopyExclude(body, entity, "bbmId^regBy^regDate");
+        // 표시경로(pathId)는 nullable FK — 사용자가 의도적으로 비울 수 있어 selective-update(null 무시) 를 우회해 항상 반영
+        entity.setPathId(body.getPathId());
         entity.setUpdBy(SecurityUtil.getAuthUser().authId());
         entity.setUpdDate(LocalDateTime.now());
         SyBbm saved = syBbmRepository.save(entity);

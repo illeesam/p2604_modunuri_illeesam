@@ -1271,7 +1271,7 @@ window.BoPathPickField = {
   },
   template: /* html */`
 <component :is="bare ? 'div' : 'td'">
-  <div :style="{padding:'0 6px 0 8px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'20px',
+  <div :style="{padding:'0 5px 0 7px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'18px',lineHeight:'18px',
     background:'#f5f5f7',
     color: cfHasVal ? '#374151' : '#9ca3af',
     fontWeight: cfHasVal ? 600 : 400,
@@ -1282,7 +1282,7 @@ window.BoPathPickField = {
     <button type="button" :disabled="disabled"
       @click.stop="handleBtnAction('pathPick-open')" @dblclick.stop="handleBtnAction('pathPick-open')"
       :title="modalTitle"
-      :style="{cursor: disabled ? 'not-allowed' : 'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'18px',height:'18px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0',opacity: disabled ? 0.4 : 1}"
+      :style="{cursor: disabled ? 'not-allowed' : 'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'16px',height:'16px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0',opacity: disabled ? 0.4 : 1}"
       @mouseover="handleSelectAction('pathPick-hover', $event)" @mouseout="handleSelectAction('pathPick-leave', $event)">
       🔍
     </button>

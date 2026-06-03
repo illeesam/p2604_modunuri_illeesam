@@ -237,7 +237,7 @@ window.SyI18nMng = {
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
   <bo-grid
-    :columns="columns.baseGrid" :rows="i18ns" row-key="i18nId"
+    :columns="columns.baseGrid" :rows="i18ns" row-key="i18nId" :selected-key="uiState.selectedId"
     list-title="다국어 키 목록" :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-style="fnRowStyle" row-clickable
     @row-click="row => handleSelectAction('i18ns-rowOpen', row)" />

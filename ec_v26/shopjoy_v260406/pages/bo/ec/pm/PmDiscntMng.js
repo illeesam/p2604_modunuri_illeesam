@@ -367,7 +367,7 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
     <!-- ===== ■.■. 리스트 뷰 (BoGrid) ======================================== -->
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid v-if="tabMode==='list'" :bare="true"
-      :columns="columns.baseGrid" :rows="discounts" row-key="discntId"
+      :columns="columns.baseGrid" :rows="discounts" row-key="discntId" :selected-key="selectedId"
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(d) => selectedId===d.discntId ? 'background:#fff8f9;' : ''"

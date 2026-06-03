@@ -342,7 +342,7 @@ window.SyBbsMng = {
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
   <bo-grid
-    :columns="columns.baseGrid" :rows="bbsList" row-key="bbsId"
+    :columns="columns.baseGrid" :rows="bbsList" row-key="bbsId" :selected-key="detailModal.dtlId"
     list-title="게시글목록" :count-text="pager.pageTotalCount + '건'"
     :sort-state="uiState" :row-style="fnRowStyle"
     @sort="key => handleBtnAction('bbsList-sort', key)"

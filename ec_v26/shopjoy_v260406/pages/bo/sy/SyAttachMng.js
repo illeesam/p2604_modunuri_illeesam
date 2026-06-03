@@ -478,7 +478,7 @@ window.SyAttachMng = {
           </div>
           <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
           <bo-form-area :columns="columns.grpForm" :form="grpForm" :errors="{}"
-            :cols="2" :show-actions="false" />
+            :cols="2" compact :show-actions="false" />
           <div style="display:flex;gap:6px;margin-top:8px;">
             <button class="btn btn-primary btn-sm" style="flex:1;" @click="handleBtnAction('attachGrps-save')">
               저장
@@ -589,7 +589,7 @@ window.SyAttachMng = {
           <!-- ===== ■.■.■.■.■. 파일 폼 (BoFormArea 자동 렌더, 4컬럼) ==================== -->
           <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
           <bo-form-area :columns="columns.fileForm" :form="fileForm" :errors="{}"
-            :cols="3" :show-actions="false" />
+            :cols="3" compact :show-actions="false" />
           <!-- ===== ■.■.■.■.■. 저장/취소 가운데 정렬 ==================================== -->
           <div style="display:flex;gap:8px;justify-content:center;">
             <button class="btn btn-primary btn-sm" style="min-width:60px;" @click="handleBtnAction('attaches-save')">
@@ -608,6 +608,7 @@ window.SyAttachMng = {
             :columns="columns.fileGrid"
             :rows="attaches"
             row-key="attachId"
+            :selected-key="uiState.fileEditId"
             :loading="uiState.loading"
             :empty-text="uiState.loading ? '조회 중...' : '데이터가 없습니다.'"
  row-actions>

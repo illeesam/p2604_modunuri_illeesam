@@ -440,7 +440,7 @@ window.SySiteMng = {
     <div>
       <!-- ===== ■.■.■. 목록 그리드 ============================================ -->
       <bo-grid
-        :columns="columns.baseGrid" :rows="sites" row-key="siteId"
+        :columns="columns.baseGrid" :rows="sites" row-key="siteId" :selected-key="detailModal.dtlId"
         list-title="사이트목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="key => handleBtnAction('sites-sort', key)"

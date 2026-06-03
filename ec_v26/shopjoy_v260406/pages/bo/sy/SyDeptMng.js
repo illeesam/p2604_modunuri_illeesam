@@ -472,7 +472,7 @@ window.SyDeptMng = {
     <div>
       <!-- ===== ■.■.■. CRUD 그리드 ============================================ -->
       <bo-grid-crud
-        :columns="columns.baseGrid" :rows="gridRows" row-key="deptId"
+        :columns="columns.baseGrid" :rows="gridRows" row-key="deptId" :selected-key="uiState.selectedTreeId"
         list-title="부서목록" :show-export="true" :draggable="false"
         v-model:focusedIdx="uiState.focusedIdx"
         v-model:checkAll="uiState.checkAll"

@@ -795,7 +795,7 @@ window.SyCodeMng = {
     <div v-if="uiState.activeCodeTab==='일반'">
       <!-- ===== ■.■.■. CRUD 그리드 ============================================ -->
       <bo-grid-crud
-        :columns="fnCodeGridColumns()" :rows="uiState.gridRows" row-key="codeId"
+        :columns="fnCodeGridColumns()" :rows="uiState.gridRows" row-key="codeId" :selected-key="uiState.selectedCodeId"
         :list-title="fnCodeListTitle()" :show-export="true" :draggable="true"
         max-height="400px"
         :empty-text="uiState.selectedGrp ? '데이터가 없습니다.' : '그룹을 선택해주세요.'"

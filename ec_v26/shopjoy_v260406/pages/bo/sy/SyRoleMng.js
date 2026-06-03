@@ -923,7 +923,7 @@ window.SyRoleMng = {
     <div>
       <!-- ===== ■.■.■. CRUD 그리드 ============================================ -->
       <bo-grid-crud
-        :columns="columns.baseGrid" :rows="gridRows" row-key="roleId"
+        :columns="columns.baseGrid" :rows="gridRows" row-key="roleId" :selected-key="uiState.selectedRoleId"
         list-title="역할목록" :show-export="true" :show-excel-upload="true" :draggable="false"
         v-model:focusedIdx="uiState.focusedIdx"
         v-model:checkAll="uiState.checkAll"

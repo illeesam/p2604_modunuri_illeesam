@@ -310,7 +310,7 @@ window.SyContactMng = {
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
   <bo-grid
-    :columns="columns.baseGrid" :rows="contacts" row-key="contactId"
+    :columns="columns.baseGrid" :rows="contacts" row-key="contactId" :selected-key="detailModal.dtlId"
     list-title="문의목록" :count-text="pager.pageTotalCount + '건'"
     :sort-state="uiState" :row-style="fnRowStyle"
     @sort="key => handleBtnAction('contacts-sort', key)"

@@ -347,7 +347,7 @@ window.PmCouponMng = {
     </div>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid v-if="tabMode==='list'" :bare="true"
-      :columns="columns.baseGrid" :rows="coupons" row-key="couponId"
+      :columns="columns.baseGrid" :rows="coupons" row-key="couponId" :selected-key="selectedId"
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(c) => selectedId===c.couponId ? 'background:#fff8f9;' : ''"

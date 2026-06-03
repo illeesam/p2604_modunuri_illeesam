@@ -429,7 +429,7 @@ window.SyAlarmMng = {
     <div>
       <!-- ===== ■.■.■. 목록 그리드 ============================================ -->
       <bo-grid
-        :columns="columns.baseGrid" :rows="alarms" row-key="alarmId"
+        :columns="columns.baseGrid" :rows="alarms" row-key="alarmId" :selected-key="detailModal.dtlId"
         list-title="알림목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="key => handleBtnAction('alarms-sort', key)"
