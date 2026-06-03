@@ -303,7 +303,7 @@ window.SyVendorInfoMng = {
   </bo-grid>
   <!-- ===== □. 2단: 업체목록 =============================================== -->
   <!-- ===== ■. 3단: 탭 영역 (브랜드 | 가격정책 | 배송템플릿 | 부가서비스) ============ -->
-  <div class="card" style="margin-top:16px;">
+  <div class="card" style="margin-top:12px;">
     <!-- ===== ■.■. 탭 헤더 + 선택 업체 표시 ===================================== -->
     <div class="toolbar" style="margin-bottom:10px;">
       <span class="list-title">

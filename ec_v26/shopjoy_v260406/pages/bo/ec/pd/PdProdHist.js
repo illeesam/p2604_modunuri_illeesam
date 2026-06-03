@@ -265,26 +265,29 @@ window.PdProdHist = {
   },
   template: /* html */`
 <div>
-  <!-- ===== ■. 이력 화면 =================================================== -->
-  <div style="font-size:13px;font-weight:700;color:#555;padding:0 0 12px;">
-    <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">
-      ●
-    </span>
-    이력정보
-    <span v-if="uiState.loading" style="margin-left:8px;font-size:11px;color:#aaa;">
-      조회 중...
-    </span>
-  </div>
-  <!-- ===== □. 이력 화면 =================================================== -->
-  <!-- ===== ■. 탭 영역 ==================================================== -->
-  <bo-tab-bar :tabs="tabs" :tab="botTab" :tab-mode="tabMode2"
-    @tab-select="id => handleBtnAction('tab-change', id)"
-    @mode-select="m => handleBtnAction('tabMode-change', m)" />
-  <!-- ===== □. 탭 영역 ==================================================== -->
-  <!-- ===== ■. 탭 컨텐츠 =================================================== -->
+  <!-- ===== ■. 이력 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
+  <div class="card">
+    <!-- ===== ■.■. 카드 헤더 (이력정보 제목 = list-title) ========================= -->
+    <div class="toolbar">
+      <span class="list-title">
+        이력정보
+        <span v-if="prodId" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+          #{{ prodId }}
+        </span>
+        <span v-if="uiState.loading" style="margin-left:8px;font-size:11px;color:#aaa;font-weight:400;">
+          조회 중...
+        </span>
+      </span>
+    </div>
+    <!-- ===== ■.■. 탭 영역 ================================================== -->
+    <bo-tab-bar :tabs="tabs" :tab="botTab" :tab-mode="tabMode2"
+      @tab-select="id => handleBtnAction('tab-change', id)"
+      @mode-select="m => handleBtnAction('tabMode-change', m)" />
+    <!-- ===== □. 탭 영역 ==================================================== -->
+    <!-- ===== ■. 탭 컨텐츠 =================================================== -->
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
     <!-- ===== ■.■. 상품 Q&A ================================================ -->
-    <div class="card" v-show="showTab('qna')" style="margin:0;">
+    <div class="dtl-pane" v-show="showTab('qna')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
         💬 상품 Q&amp;A
         <span class="tab-count">
@@ -297,7 +300,7 @@ window.PdProdHist = {
     </div>
     <!-- ===== □.□. 상품 Q&A ================================================ -->
     <!-- ===== ■.■. 리뷰 ==================================================== -->
-    <div class="card" v-show="showTab('review')" style="margin:0;">
+    <div class="dtl-pane" v-show="showTab('review')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
         ⭐ 리뷰
         <span class="tab-count">
@@ -310,7 +313,7 @@ window.PdProdHist = {
     </div>
     <!-- ===== □.□. 리뷰 ==================================================== -->
     <!-- ===== ■.■. 연관 주문 ================================================= -->
-    <div class="card" v-show="showTab('orders')" style="margin:0;">
+    <div class="dtl-pane" v-show="showTab('orders')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
         🛒 연관 주문
         <span class="tab-count">
@@ -328,7 +331,7 @@ window.PdProdHist = {
     </div>
     <!-- ===== □.□. 연관 주문 ================================================= -->
     <!-- ===== ■.■. 재고 이력 ================================================= -->
-    <div class="card" v-show="showTab('stock')" style="margin:0;">
+    <div class="dtl-pane" v-show="showTab('stock')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
         📦 재고 이력
         <span class="tab-count">
@@ -341,7 +344,7 @@ window.PdProdHist = {
     </div>
     <!-- ===== □.□. 재고 이력 ================================================= -->
     <!-- ===== ■.■. 가격변경이력 ================================================ -->
-    <div class="card" v-show="showTab('price')" style="margin:0;">
+    <div class="dtl-pane" v-show="showTab('price')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
         💰 가격변경이력
         <span class="tab-count">
@@ -354,7 +357,7 @@ window.PdProdHist = {
     </div>
     <!-- ===== □.□. 가격변경이력 ================================================ -->
     <!-- ===== ■.■. 상품상태 이력 =============================================== -->
-    <div class="card" v-show="showTab('status')" style="margin:0;">
+    <div class="dtl-pane" v-show="showTab('status')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
         🏷 상품상태 이력
         <span class="tab-count">
@@ -367,7 +370,7 @@ window.PdProdHist = {
     </div>
     <!-- ===== □.□. 상품상태 이력 =============================================== -->
     <!-- ===== ■.■. 상품정보 변경이력 ============================================= -->
-    <div class="card" v-show="showTab('changes')" style="margin:0;">
+    <div class="dtl-pane" v-show="showTab('changes')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
         📝 상품정보 변경이력
         <span class="tab-count">
@@ -379,8 +382,10 @@ window.PdProdHist = {
       </bo-grid>
     </div>
   </div>
+  <!-- ===== □. 탭 컨텐츠 =================================================== -->
+  </div>
+  <!-- ===== □. 이력 카드 (제목 + 탭바 + 탭컨텐츠) =============================== -->
 </div>
 <!-- ===== □.□. 상품정보 변경이력 ============================================= -->
-<!-- ===== □. 탭 컨텐츠 =================================================== -->
 `,
 };

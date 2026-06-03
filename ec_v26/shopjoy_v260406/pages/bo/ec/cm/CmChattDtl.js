@@ -303,16 +303,19 @@ window.CmChattDtl = {
   },
   template: /* html */`
 <div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    {{ !active ? '채팅 상세' : (cfIsNew ? '채팅 등록' : '채팅 상세') }}
-    <span v-if="active && !cfIsNew && uiState.chat" style="font-size:12px;color:#999;margin-left:8px;">
-      #{{ uiState.chat.chattRoomId }}
-    </span>
-    <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-      목록에서 행을 선택하거나 [+신규]를 누르세요
-    </span>
-  </div>
+  <!-- ===== ■. 상세 카드 (제목 = list-title, 항상 표시) ============================= -->
+  <div class="card">
+    <div class="toolbar">
+      <span class="list-title">
+        {{ !active ? '채팅 상세' : (cfIsNew ? '채팅 등록' : '채팅 상세') }}
+        <span v-if="active && !cfIsNew && uiState.chat" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+          #{{ uiState.chat.chattRoomId }}
+        </span>
+        <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+          목록에서 행을 선택하거나 [+신규]를 누르세요
+        </span>
+      </span>
+    </div>
 <!-- ===== □. 페이지 타이틀 ================================================= -->
 <!-- ===== ■. 채팅 상세 =================================================== -->
 <div v-if="!cfIsNew">

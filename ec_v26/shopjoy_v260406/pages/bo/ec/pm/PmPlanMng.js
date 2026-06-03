@@ -298,9 +298,6 @@ window.PmPlanMng = {
   <div class="card">
     <div class="toolbar">
       <span class="list-title">
-        <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">
-          ●
-        </span>
         기획전목록
         <span class="list-count">
           {{ pager.pageTotalCount }}건

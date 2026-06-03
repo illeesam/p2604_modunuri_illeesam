@@ -190,31 +190,23 @@ window.PdRestockNotiMng = {
     <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </div>
   <!-- ===== □. 검색 ====================================================== -->
-  <!-- ===== ■. 목록 그리드 =================================================== -->
-  <div class="card">
-    <div class="toolbar">
-      <span class="list-title">
-        재입고알림 목록
-      </span>
-      <span class="list-count">
-        총 {{ pager.pageTotalCount }}건
-      </span>
-      <button v-if="checkedCount > 0" class="btn btn-blue btn-sm" style="margin-left:auto" @click="handleBtnAction('restockNotis-send')">
-        📣 알림발송 ({{ checkedCount }}건)
-      </button>
-    </div>
+  <!-- ===== ■. 목록 (bo-grid 단일 카드 — 제목/건수/버튼 모두 그리드가 렌더, 중복 제거) ===== -->
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
       :columns="columns.baseGrid" :rows="restockNotis" row-key="restockNotiId"
-      list-title="목록" :count-text="pager.pageTotalCount + '건'"
+      list-title="재입고알림 목록" :count-text="'총 ' + pager.pageTotalCount + '건'"
       selectable checked-key="restockNotiId" :is-checked="fnIsChecked" :all-checked="allChecked"
       @toggle-check="id => handleSelectAction('restockNotis-rowToggle', id)" @toggle-check-all="handleBtnAction('restockNotis-toggleAll')">
+      <template #toolbar-actions>
+        <button v-if="checkedCount > 0" class="btn btn-blue btn-sm" @click="handleBtnAction('restockNotis-send')">
+          📣 알림발송 ({{ checkedCount }}건)
+        </button>
+      </template>
       <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
       <template #footer>
         <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('restockNotis-pager-setPage', n)" :on-size-change="() => handleSelectAction('restockNotis-pager-sizeChange')" />
       </template>
     </bo-grid>
-  </div>
   <!-- ===== □. 목록 그리드 =================================================== -->
 </div>
 `

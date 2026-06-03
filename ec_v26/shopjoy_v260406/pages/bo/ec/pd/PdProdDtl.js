@@ -1440,34 +1440,35 @@ window.PdProdDtl = {
   },
   template: /* html */`
 <div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title" style="display:flex;align-items:center;justify-content:space-between;">
-    <span>
-      {{ !active ? '상품 상세' : (cfIsNew ? '상품 등록' : '상품 수정') }}
-      <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
-        #{{ form.prodId }}
+  <!-- ===== ■. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
+  <div class="card">
+    <!-- ===== ■.■. 카드 헤더 (제목 = list-title, page-title 아님 → 폰트 축소) ========= -->
+    <div class="toolbar">
+      <span class="list-title">
+        {{ !active ? '상품 상세' : (cfIsNew ? '상품 등록' : '상품 수정') }}
+        <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+          #{{ form.prodId }}
+        </span>
+        <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+          목록에서 행을 선택하거나 [+신규]를 누르세요
+        </span>
       </span>
-      <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-        목록에서 행을 선택하거나 [+신규]를 누르세요
-      </span>
-    </span>
-    <button v-if="active && !cfIsNew" class="btn btn-sm" style="background:#fff;border:1px solid #d9d9d9;color:#555;font-weight:500;"
-      title="사용자 페이스에서 상품 상세 미리보기" @click="handleBtnAction('form-preview')">
-      👁 미리보기
-    </button>
-  </div>
-  <!-- ===== □. 페이지 타이틀 ================================================= -->
-  <!-- ===== ■. 탭바 ====================================================== -->
-  <bo-tab-bar :tabs="tabs" :tab="topTab" :tab-mode="tabMode2"
-    @tab-select="id => handleBtnAction('tab-select', id)"
-    @mode-select="m => handleBtnAction('tab-mode', m)" />
-  <!-- ===== □. 탭바 ====================================================== -->
-  <!-- ===== ■. 탭 컨텐츠 =================================================== -->
+      <button v-if="active && !cfIsNew" class="btn btn-sm" style="background:#fff;border:1px solid #d9d9d9;color:#555;font-weight:500;"
+        title="사용자 페이스에서 상품 상세 미리보기" @click="handleBtnAction('form-preview')">
+        👁 미리보기
+      </button>
+    </div>
+    <!-- ===== ■.■. 탭바 ==================================================== -->
+    <bo-tab-bar :tabs="tabs" :tab="topTab" :tab-mode="tabMode2"
+      @tab-select="id => handleBtnAction('tab-select', id)"
+      @mode-select="m => handleBtnAction('tab-mode', m)" />
+    <!-- ===== □. 탭바 ====================================================== -->
+    <!-- ===== ■. 탭 컨텐츠 =================================================== -->
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
     <!-- ══════════════════════════════════════
        📋 기본정보  (pd_prod 주요 필드)
   ══════════════════════════════════════ -->
-    <div class="card" v-show="showTab('info')" style="margin:0;">
+    <div class="dtl-pane" v-show="showTab('info')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
         📋 기본정보
       </div>
@@ -1603,8 +1604,8 @@ window.PdProdDtl = {
           </div>
         </div>
       </teleport>
-      <!-- ===== ■.■.■. 체크박스 그룹 ============================================= -->
-      <div style="display:flex;flex-wrap:wrap;gap:20px;padding:14px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;margin-bottom:16px;">
+      <!-- ===== ■.■.■. 체크박스 그룹 (세로 슬림) ===================================== -->
+      <div style="display:flex;flex-wrap:wrap;gap:16px;padding:7px 12px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;margin-bottom:10px;">
         <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
           <input type="checkbox" :checked="form.isNew==='Y'" @change="form.isNew=$event.target.checked?'Y':'N'" />
           신상품
@@ -1640,7 +1641,7 @@ window.PdProdDtl = {
     <!-- ══════════════════════════════════════
        ⚙ 옵션설정  (pd_prod_opt / pd_prod_opt_item / pd_prod_sku)
   ══════════════════════════════════════ -->
-    <div class="card" v-show="showTab('option')" style="margin:0;">
+    <div class="dtl-pane" v-show="showTab('option')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
         ⚙ 옵션설정
       </div>
@@ -1922,7 +1923,7 @@ window.PdProdDtl = {
 <!-- ══════════════════════════════════════
        📄 상품설명  (contentBlocks — 첨부/URL/HTML 블록)
   ══════════════════════════════════════ -->
-<div class="card" v-show="showTab('content')" style="margin:0;padding:0;overflow:hidden;">
+<div class="dtl-pane" v-show="showTab('content')" style="margin:0;padding:0;overflow:hidden;">
   <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title" style="padding:14px 20px;">
     📄 상품설명
   </div>
@@ -2066,7 +2067,7 @@ window.PdProdDtl = {
 <!-- ══════════════════════════════════════
        📝 상세설정  (advrt / 구매제한 / 혜택)
   ══════════════════════════════════════ -->
-<div class="card" v-show="showTab('detail')" style="margin:0;">
+<div class="dtl-pane" v-show="showTab('detail')" style="margin:0;">
   <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
     📝 상세설정
   </div>
@@ -2120,7 +2121,7 @@ window.PdProdDtl = {
 <!-- ══════════════════════════════════════
        🖼 이미지  (pd_prod_img)
   ══════════════════════════════════════ -->
-<div class="card" v-show="showTab('image')" style="margin:0;">
+<div class="dtl-pane" v-show="showTab('image')" style="margin:0;">
   <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
     🖼 이미지
   </div>
@@ -2239,7 +2240,7 @@ window.PdProdDtl = {
 <!-- ══════════════════════════════════════
        🔗 연관상품
   ══════════════════════════════════════ -->
-<div class="card" v-show="showTab('related')" style="margin:0;">
+<div class="dtl-pane" v-show="showTab('related')" style="margin:0;">
   <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
     🔗 연관상품
   </div>
@@ -2328,7 +2329,7 @@ window.PdProdDtl = {
 <!-- ══════════════════════════════════════
        💰 옵션(가격/재고)  (SKU 가격/재고 + 기본가격 + 판매계획)
   ══════════════════════════════════════ -->
-<div class="card" v-show="showTab('price')" style="margin:0;">
+<div class="dtl-pane" v-show="showTab('price')" style="margin:0;">
   <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
     💰 옵션(가격/재고)
   </div>
@@ -2733,8 +2734,10 @@ window.PdProdDtl = {
 </div>
 <!-- ===== /dtl-tab-grid ============================================== -->
 <!-- ===== □. 탭 컨텐츠 =================================================== -->
+  </div>
+  <!-- ===== □. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
 <!-- ===== ■. 이력 ====================================================== -->
-<div v-if="!cfIsNew" style="margin-top:20px;">
+<div v-if="!cfIsNew" style="margin-top:12px;">
   <pd-prod-hist :prod-id="dtlId" :navigate="navigate" :show-ref-modal="showRefModal" />
 </div>
 <!-- ===== □. 이력 ====================================================== -->

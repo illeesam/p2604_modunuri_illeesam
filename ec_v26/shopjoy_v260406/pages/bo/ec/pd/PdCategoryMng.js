@@ -601,7 +601,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
         </div>
       </div>
       <!-- ===== ■.■.■. 테이블 ================================================= -->
-      <table class="bo-table" style="table-layout:fixed">
+      <table class="bo-table crud-grid" style="table-layout:fixed">
         <colgroup>
           <col style="width:36px">
           <!-- ===== ■.■.■.■.■. 번호 ============================================== -->

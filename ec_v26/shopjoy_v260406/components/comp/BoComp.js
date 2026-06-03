@@ -1514,17 +1514,17 @@ window.BoTabBar = {
   },
   template: /* html */`
 <div :style="orientation==='vertical'
-  ? 'display:flex;gap:8px;margin-bottom:14px;align-items:flex-start;flex-direction:column;width:max-content;'
-  : 'display:flex;gap:8px;margin-bottom:14px;align-items:stretch;'">
+  ? 'display:flex;gap:8px;margin-bottom:10px;align-items:flex-start;flex-direction:column;width:max-content;'
+  : 'display:flex;gap:8px;margin-bottom:10px;align-items:stretch;'">
   <div :style="orientation==='vertical'
-    ? 'display:flex;flex-direction:column;gap:4px;background:#fff;padding:5px;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);min-width:160px;'
-    : 'flex:1;display:flex;gap:4px;background:#fff;padding:5px;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);'">
+    ? 'display:flex;flex-direction:column;gap:4px;background:#fff;padding:4px;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);min-width:160px;'
+    : 'flex:1;display:flex;gap:4px;background:#fff;padding:4px;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);'">
     <template v-for="t in tabs" :key="t?.id">
       <button v-if="t.visible===undefined || t.visible" @click="onTab(t.id)" :disabled="!isTabMode()"
         :style="{
           flex: orientation==='vertical' ? 'none' : 1,
           width: orientation==='vertical' ? '100%' : 'auto',
-          padding:'7px 12px', border:'none', cursor: isTabMode() ? 'pointer' : 'default',
+          padding:'5px 12px', border:'none', cursor: isTabMode() ? 'pointer' : 'default',
           fontSize:'12.5px', borderRadius:'9px', transition:'all .18s',
           display:'inline-flex', alignItems:'center',
           justifyContent: orientation==='vertical' ? 'flex-start' : 'center',
@@ -1542,21 +1542,22 @@ window.BoTabBar = {
           fontSize:'10.5px', fontWeight:800, padding:'1px 7px', borderRadius:'10px',
           background: (isTabMode() && tab===t.id) ? '#e8587a' : '#e5e7eb',
           color:      (isTabMode() && tab===t.id) ? '#fff' : '#666',
-          minWidth:'18px', textAlign:'center', marginLeft:'auto'
+          minWidth:'18px', textAlign:'center',
+          marginLeft: orientation==='vertical' ? 'auto' : '0'
         }">{{ t.count }}</span>
       </button>
     </template>
   </div>
-  <div v-if="showModes" style="display:flex;gap:3px;background:#fff;padding:5px;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+  <div v-if="showModes" style="display:flex;gap:2px;background:#fff;padding:4px;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);flex-shrink:0;">
     <button v-for="v in VIEW_MODES" :key="v?.id" @click="onMode(v.id)" :title="v.label+'로 보기'"
       :style="{
-        padding:'8px 12px', border:'none', cursor:'pointer', fontSize:'13px', borderRadius:'8px',
+        padding:'3px 6px', border:'none', cursor:'pointer', fontSize:'11px', borderRadius:'7px', lineHeight:'1',
         fontWeight:  tabMode===v.id ? 800 : 600,
         background:  tabMode===v.id ? 'linear-gradient(135deg,#fff0f4,#ffe4ec)' : 'transparent',
         color:       tabMode===v.id ? '#e8587a' : '#888',
         boxShadow:   tabMode===v.id ? '0 2px 6px rgba(232,88,122,0.18)' : 'none'
       }">
-      <span style="font-size:15px;">{{ v.icon }}</span>
+      <span style="font-size:12px;">{{ v.icon }}</span>
     </button>
   </div>
 </div>

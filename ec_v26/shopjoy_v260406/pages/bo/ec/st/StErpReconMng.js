@@ -240,7 +240,7 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       :columns="columns.baseGrid" :rows="recons" row-key="reconId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true">
       <template #head-actions>
-        액션
+        <th style="text-align:right">액션</th>
       </template>
       <template #row-actions="{ row: r }">
         <button v-if="r.diffStatus!=='일치'" class="btn btn-xs btn-primary" @click="handleSelectAction('recons-rowFix', r)">

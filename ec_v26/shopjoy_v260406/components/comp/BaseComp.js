@@ -747,6 +747,16 @@ window.BaseAttachOne = {
       bottom: 0;
       background: #fff;
     }
+
+    /* 툴바 한 줄 고정 — 줄바꿈(2줄) 방지. 좁으면 가로 스크롤 */
+    .toastui-editor-toolbar { overflow-x: auto; overflow-y: visible; }
+    .toastui-editor-defaultUI-toolbar {
+      flex-wrap: nowrap !important;
+      white-space: nowrap;
+      overflow-x: auto;
+      overflow-y: visible;
+    }
+    .toastui-editor-toolbar-group { flex-wrap: nowrap !important; flex-shrink: 0; }
   `;
   document.head.appendChild(style);
 })();

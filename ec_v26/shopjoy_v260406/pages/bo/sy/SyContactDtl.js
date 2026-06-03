@@ -250,19 +250,20 @@ window.SyContactDtl = {
   },
   template: /* html */`
 <div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    {{ !active ? '문의 상세' : (cfIsNew ? '문의 등록' : (cfDtlMode ? '문의 상세' : '문의 수정')) }}
-    <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
-      #{{ form.contactId }}
-    </span>
-    <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-      목록에서 행을 선택하거나 [+신규]를 누르세요
-    </span>
-  </div>
-  <!-- ===== □. 페이지 타이틀 ================================================= -->
-  <!-- ===== ■. 카드 영역 =================================================== -->
+  <!-- ===== ■. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
   <div class="card">
+    <!-- ===== ■.■. 카드 헤더 (제목 = list-title, page-title 아님 → 폰트 축소) ========= -->
+    <div class="toolbar">
+      <span class="list-title">
+        {{ !active ? '문의 상세' : (cfIsNew ? '문의 등록' : (cfDtlMode ? '문의 상세' : '문의 수정')) }}
+        <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+          #{{ form.contactId }}
+        </span>
+        <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+          목록에서 행을 선택하거나 [+신규]를 누르세요
+        </span>
+      </span>
+    </div>
     <!-- ===== ■.■. 사이트명 (BoFormArea 자동 렌더) =============================== -->
     <!-- ===== ■.■. 폼 영역 ================================================== -->
     <bo-form-area :columns="columns.siteForm" :form="form" :errors="{}"
@@ -272,7 +273,7 @@ window.SyContactDtl = {
       @mode-select="m => handleSelectAction('tabMode-select', m)" />
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
     <!-- ===== ■.■.■. 문의 내용 탭 (BoFormArea 자동 렌더) ========================== -->
-    <div class="card" v-show="showTab('content')" style="margin:0;">
+    <div class="dtl-pane" v-show="showTab('content')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
         📋 문의 내용
       </div>
@@ -336,7 +337,7 @@ window.SyContactDtl = {
       </div>
     </div>
     <!-- ===== ■.■.■. 답변 ================================================== -->
-    <div class="card" v-show="showTab('answer')" style="margin:0;">
+    <div class="dtl-pane" v-show="showTab('answer')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
         💬 답변
       </div>

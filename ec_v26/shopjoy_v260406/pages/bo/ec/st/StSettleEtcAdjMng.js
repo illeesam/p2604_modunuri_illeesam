@@ -307,40 +307,35 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card" style="margin-top:12px">
-    <div class="toolbar">
-      <span class="list-count">
-        총 {{ pager.pageTotalCount }}건
-      </span>
-      <div style="margin-left:auto">
-        <button class="btn btn-primary" @click="handleBtnAction('etcAdjs-add')">
-          + 기타조정 추가
-        </button>
-      </div>
-    </div>
+  <!-- ===== ■. 목록 (bo-grid 단일 카드 — 제목/건수/버튼 모두 그리드가 렌더, 중복 제거) ===== -->
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
       :columns="columns.baseGrid" :rows="etcAdjs" row-key="adjId" :selected-key="uiState.selectedId"
-      list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
+      list-title="정산기타조정 목록" :count-text="'총 ' + pager.pageTotalCount + '건'" :row-actions="true"
       :row-class="(r) => uiState.selectedId===r.adjId ? 'selected' : ''">
+      <template #toolbar-actions>
+        <button class="btn btn-primary btn-sm" @click="handleBtnAction('etcAdjs-add')">
+          + 기타조정 추가
+        </button>
+      </template>
       <template #head-actions>
-        액션
+        <th style="text-align:right">액션</th>
       </template>
       <template #row-actions="{ row: r }">
-        <button class="btn btn-xs btn-primary" @click="handleSelectAction('etcAdjs-rowEdit', r)">
-          수정
-        </button>
-        <button class="btn btn-xs btn-danger"  @click="handleSelectAction('etcAdjs-rowDelete', r)">
-          삭제
-        </button>
+        <div class="actions">
+          <button class="btn btn-xs btn-primary" @click="handleSelectAction('etcAdjs-rowEdit', r)">
+            수정
+          </button>
+          <button class="btn btn-xs btn-danger"  @click="handleSelectAction('etcAdjs-rowDelete', r)">
+            삭제
+          </button>
+        </div>
       </template>
       <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
       <template #footer>
         <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('etcAdjs-pager-setPage', n)" :on-size-change="() => handleSelectAction('etcAdjs-pager-sizeChange')" />
       </template>
     </bo-grid>
-  </div>
   <!-- ===== □.□. 목록 영역 ================================================= -->
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 편집 폼 (BoFormArea 자동 렌더) ================================= -->

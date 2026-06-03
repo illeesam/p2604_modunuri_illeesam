@@ -955,9 +955,9 @@ window.SyRoleMng = {
           <div class="card" style="margin-bottom:0;">
             <div class="toolbar" style="flex-wrap:wrap;gap:6px;">
               <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-                <b style="font-size:13px;">
+                <span class="list-title" style="font-size:13px;">
                   메뉴 접근권한
-                </b>
+                </span>
                 <span v-if="cfSelectedRoleNm" style="font-size:12px;color:#e8587a;">
                   #{{ cfSelectedRoleNm }}
                 </span>
@@ -1037,9 +1037,9 @@ window.SyRoleMng = {
             <div class="card" style="margin-bottom:0;">
               <div class="toolbar">
                 <div>
-                  <b style="font-size:13px;">
+                  <span class="list-title" style="font-size:13px;">
                     대상사용자
-                  </b>
+                  </span>
                   <span v-if="cfSelectedRoleNm" style="font-size:12px;color:#e8587a;margin-left:8px;">
                     #{{ cfSelectedRoleNm }}
                   </span>

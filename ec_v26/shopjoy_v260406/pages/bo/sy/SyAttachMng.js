@@ -566,9 +566,6 @@ window.SyAttachMng = {
         <div class="toolbar" style="margin-bottom:8px;">
         <span class="list-title">
           <!-- ===== ■.■.■.■.■. 헤더 영역 =========================================== -->
-          <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">
-            ●
-          </span>
           첨부파일목록
           <span class="list-count">
             {{ pager.pageTotalCount }}건

@@ -402,25 +402,30 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
   },
   template: /* html */`
 <div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    {{ !active ? '상품권 상세' : (cfIsNew ? '상품권 등록' : '상품권 수정') }}
-    <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
-      #{{ form.voucherId }}
-    </span>
-    <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-      목록에서 행을 선택하거나 [+신규]를 누르세요
-    </span>
-  </div>
-  <!-- ===== □. 페이지 타이틀 ================================================= -->
-  <!-- ===== ■. 탭 + 뷰모드 ================================================= -->
-  <bo-tab-bar :tabs="tabs" :tab="tab" :tab-mode="tabMode2"
-    @tab-select="id => handleBtnAction('tab-select', id)"
-    @mode-select="m => handleBtnAction('tab-mode', m)" />
-  <!-- ===== □. 탭 + 뷰모드 ================================================= -->
+  <!-- ===== ■. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
+  <div class="card">
+    <!-- ===== ■.■. 카드 헤더 (제목 = list-title, page-title 아님 → 폰트 축소) ========= -->
+    <div class="toolbar">
+      <span class="list-title">
+        {{ !active ? '상품권 상세' : (cfIsNew ? '상품권 등록' : '상품권 수정') }}
+        <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+          #{{ form.voucherId }}
+        </span>
+        <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+          목록에서 행을 선택하거나 [+신규]를 누르세요
+        </span>
+      </span>
+    </div>
+    <!-- ===== ■.■. 탭바 ==================================================== -->
+    <bo-tab-bar :tabs="tabs" :tab="tab" :tab-mode="tabMode2"
+      @tab-select="id => handleBtnAction('tab-select', id)"
+      @mode-select="m => handleBtnAction('tab-mode', m)" />
+    <!-- ===== □.■. 탭바 ==================================================== -->
+    <!-- ===== ■.■. 탭 컨텐츠 =================================================== -->
+    <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
   <!-- ===== ■. 기본정보 탭 (BoFormArea 자동 렌더) =============================== -->
   <!-- ===== ■. 조건부 영역 ================================================== -->
-  <div v-if="showTab('info')" :class="['card', 'dtl-tab-grid', {'cols-1':tabMode2==='1col','cols-2':tabMode2==='2col'}]" style="margin-top:8px;">
+  <div class="dtl-pane" v-if="showTab('info')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
       기본정보
     </div>
@@ -459,7 +464,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
   <!-- ===== □.□. 판매업체 선택 모달 ============================================ -->
   <!-- ===== □. 조건부 영역 ================================================== -->
   <!-- ===== ■. 미리보기 탭 ================================================== -->
-  <div v-if="showTab('preview')" :class="['card', 'dtl-tab-grid', {'cols-1':tabMode2==='1col','cols-2':tabMode2==='2col'}]" style="margin-top:8px;">
+  <div class="dtl-pane" v-if="showTab('preview')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
       미리보기
     </div>
@@ -665,7 +670,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
   </div>
   <!-- ===== □. 미리보기 탭 ================================================== -->
   <!-- ===== ■. 발급내역 탭 ================================================== -->
-  <div v-if="showTab('issueHist')" :class="['card', 'dtl-tab-grid', {'cols-1':tabMode2==='1col','cols-2':tabMode2==='2col'}]" style="margin-top:8px;">
+  <div class="dtl-pane" v-if="showTab('issueHist')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
       발급내역
     </div>
@@ -677,7 +682,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
   <!-- ===== □.□. 목록 영역 ================================================= -->
   <!-- ===== □. 발급내역 탭 ================================================== -->
   <!-- ===== ■. 사용내역 탭 ================================================== -->
-  <div v-if="showTab('useHist')" :class="['card', 'dtl-tab-grid', {'cols-1':tabMode2==='1col','cols-2':tabMode2==='2col'}]" style="margin-top:8px;">
+  <div class="dtl-pane" v-if="showTab('useHist')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
       사용내역
     </div>
@@ -689,7 +694,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
   <!-- ===== □.□. 목록 영역 ================================================= -->
   <!-- ===== □. 사용내역 탭 ================================================== -->
   <!-- ===== ■. 상세정보 탭 ================================================== -->
-  <div v-if="showTab('detail')" :class="['card', 'dtl-tab-grid', {'cols-1':tabMode2==='1col','cols-2':tabMode2==='2col'}]" style="margin-top:8px;">
+  <div class="dtl-pane" v-if="showTab('detail')" style="margin:0;">
     <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
       📋 상세정보
     </div>
@@ -713,6 +718,10 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
     </div>
   </div>
   <!-- ===== □. 상세정보 탭 ================================================== -->
+    </div>
+    <!-- ===== □.■. 탭 컨텐츠 =================================================== -->
+  </div>
+  <!-- ===== □. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
   <!-- ===== ■. SNS 전송 모달 =============================================== -->
   <bo-modal :show="snsModal.show"
     :title="(snsModal.channel==='kakao' ? '💬 카카오톡' : '📧 이메일') + ' 전송'"

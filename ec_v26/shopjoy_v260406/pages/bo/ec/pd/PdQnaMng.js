@@ -227,30 +227,11 @@ window.PdQnaMng = {
     <bo-search-area :loading="uiState.loading" search-label="🔍 조회" reset-label="↺ 초기화" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </div>
   <!-- ===== □. 검색 ====================================================== -->
-  <!-- ===== ■. 목록 그리드 =================================================== -->
-  <div class="card">
-    <div class="toolbar">
-      <span class="list-title">
-        <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">
-          ●
-        </span>
-        Q&A 목록
-        <span class="list-count">
-          {{ pager.pageTotalCount }}건
-        </span>
-      </span>
-      <div class="pager-right">
-        <select class="size-select" v-model.number="pager.pageSize" @change="handleSelectAction('qnas-pager-sizeChange')">
-          <option v-for="s in pager.pageSizes" :key="s" :value="s">
-            {{ s }}개
-          </option>
-        </select>
-      </div>
-    </div>
+  <!-- ===== ■. 목록 그리드 (bo-grid 단일 카드 — 제목/건수 모두 그리드가 렌더, 중복 제거) ===== -->
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
       :columns="columns.baseGrid" :rows="qnas" row-key="qnaId" :selected-key="uiState.selectedId"
-      list-title="목록" :count-text="pager.pageTotalCount + '건'"
+      list-title="Q&amp;A 목록" :count-text="pager.pageTotalCount + '건'"
       :loading="uiState.loading"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       empty-text="조회된 데이터가 없습니다."
@@ -261,7 +242,6 @@ window.PdQnaMng = {
         <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('qnas-pager-setPage', n)" :on-size-change="() => handleSelectAction('qnas-pager-sizeChange')" />
       </template>
     </bo-grid>
-  </div>
   <!-- ===== □. 목록 그리드 =================================================== -->
   <!-- ===== ■. 상세 패널 (질문/답변) ======================================== -->
   <div class="card" v-if="uiState.selectedId" style="margin-top:14px;">

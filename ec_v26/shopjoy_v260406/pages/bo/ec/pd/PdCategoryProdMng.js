@@ -547,8 +547,8 @@ window.PdCategoryProdMng = {
     <!-- ===== □.□. 좌측 카테고리 트리 ============================================ -->
     <!-- ===== ■.■. 우측 상품 목록 ============================================== -->
     <div class="card">
-        <!-- ===== ■.■.■.■. 카테고리명 + 저장/추가 버튼 ================================== -->
-        <div class="toolbar" style="margin-bottom:0">
+        <!-- ===== ■.■.■.■. 카테고리명 + 저장/추가 버튼 (탭바와 간격 확보) ================== -->
+        <div class="toolbar" style="margin-bottom:10px">
           <span class="list-title">
             <span v-if="cfSelectedCatId" :style="{ color: fnDepthColor((cfSelectedCat?.categoryDepth||1)-1), fontWeight:700, marginRight:'4px' }">
               {{ fnDepthBullet((cfSelectedCat?.categoryDepth||1)-1) }}

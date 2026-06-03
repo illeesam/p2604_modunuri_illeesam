@@ -286,26 +286,26 @@ window.PmCacheDtl = {
   // ===== 템플릿 ===========================================================
   template: /* html */`
 <div>
-  <!-- ===== ■. 페이지 타이틀 + ID 표시 ========================================= -->
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    {{ cfIsNew ? '캐쉬 등록' : (cfDtlMode ? '캐쉬 상세' : '캐쉬 수정') }}
-    <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
-      #{{ form.cacheId }}
-    </span>
-  </div>
-  <!-- ===== □. 페이지 타이틀 ================================================= -->
-  <!-- ===== ■. 탭바 + 뷰모드 아이콘 ============================================ -->
-  <!-- ===== ■. 탭 영역 ==================================================== -->
-  <bo-tab-bar :tabs="tabs" :tab="tab" :tab-mode="tabMode2"
-    @tab-select="id => handleBtnAction('tab-select', id)"
-    @mode-select="m => handleBtnAction('tab-mode', m)" />
-  <!-- ===== □. 탭 영역 ==================================================== -->
-  <!-- ===== ■. 탭 콘텐츠 컨테이너 (1/2/3/4열 그리드 자동 적용) ========================= -->
-  <!-- ===== ■. 탭 컨텐츠 =================================================== -->
+  <!-- ===== ■. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
+  <div class="card">
+    <!-- ===== ■.■. 카드 헤더 (제목 = list-title, page-title 아님 → 폰트 축소) ========= -->
+    <div class="toolbar">
+      <span class="list-title">
+        {{ cfIsNew ? '캐쉬 등록' : (cfDtlMode ? '캐쉬 상세' : '캐쉬 수정') }}
+        <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+          #{{ form.cacheId }}
+        </span>
+      </span>
+    </div>
+    <!-- ===== ■.■. 탭바 ==================================================== -->
+    <bo-tab-bar :tabs="tabs" :tab="tab" :tab-mode="tabMode2"
+      @tab-select="id => handleBtnAction('tab-select', id)"
+      @mode-select="m => handleBtnAction('tab-mode', m)" />
+    <!-- ===== □. 탭바 ====================================================== -->
+    <!-- ===== ■. 탭 컨텐츠 =================================================== -->
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
     <!-- ===== ■.■. 기본정보 탭 (BoFormArea 자동 렌더) ============================= -->
-    <div class="card" v-show="showTab('info')" style="margin:0;">
+    <div class="dtl-pane" v-show="showTab('info')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
         📋 기본정보
       </div>
@@ -338,8 +338,6 @@ window.PmCacheDtl = {
           </div>
         </template>
       </bo-form-area>
-      <!-- ===== ■.■.■. 판매업체 선택 모달 ========================================== -->
-      <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId" modal-name="vendor-pick" :on-callback="fnCallbackModal" />
       <!-- ===== ■.■.■. 폼 액션 버튼 (수정/저장/취소/닫기) =============================== -->
       <div class="form-actions" v-if="!cfDtlMode">
         <template v-if="cfDtlMode">
@@ -362,7 +360,7 @@ window.PmCacheDtl = {
     </div>
     <!-- ===== □.□. 기본정보 탭 (BoFormArea 자동 렌더) ============================= -->
     <!-- ===== ■.■. 회원 캐쉬 내역 탭 ============================================ -->
-    <div class="card" v-show="showTab('history')" style="margin:0;">
+    <div class="dtl-pane" v-show="showTab('history')" style="margin:0;">
       <!-- ===== ■.■.■. 조건부 영역 ============================================== -->
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
         🕒 회원 캐쉬 내역
@@ -387,8 +385,11 @@ window.PmCacheDtl = {
       </bo-grid>
     </div>
   </div>
+  <!-- ===== □. 탭 컨텐츠 =================================================== -->
+  </div>
+  <!-- ===== □. 상세 카드 (제목 + 탭바 + 탭컨텐츠) =============================== -->
+  <!-- ===== ■. 판매업체 선택 모달 (카드 밖) ====================================== -->
+  <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId" modal-name="vendor-pick" :on-callback="fnCallbackModal" />
 </div>
-<!-- ===== □.□. 회원 캐쉬 내역 탭 ============================================ -->
-<!-- ===== □. 탭 컨텐츠 =================================================== -->
 `
 };

@@ -287,7 +287,18 @@ Dtl 탭 뷰모드 중 **3열(`cols-3`) 또는 4열(`cols-4`)** 선택 시 max-wi
 - ❌ 금지: grid `gap:16px`(가로·세로 동일) + 상세 wrapper `margin-top:4px` → 세로 간격이 ~32px 로 과대.
 - ✅ `gap:0 12px`(세로 0/가로 12) + 상세 `margin-top` 제거 → 카드 기본 여백(12px)만으로 4영역 균일.
 
-> 코드: [pages/bo/sy/SySiteMng.js](../../../pages/bo/sy/SySiteMng.js) (트리+목록+상세 3영역 표준 레이아웃),
+**상세 패널이 grid 밖 형제일 때도 `margin-top` 두지 말 것** ⭐ (2026-06-04): 상세를 grid 안
+(`grid-column:1/-1`)에 두지 않고 **grid 컨테이너 다음 형제 `<div>`** 로 두는 화면이 있다. 이때도
+그 wrapper 에 `margin-top:16px` 같은 값을 주면 (목록 카드 `margin-bottom:12px` 과 합쳐져) 간격이
+**28px+** 로 과대해진다. → **`<div style="margin-top:16px;">` → `<div>`** (margin-top 제거).
+목록 카드의 `margin-bottom:12px` 만으로 12px 간격이 된다(grid item 이 자식 카드 mb 를 포함).
+- 2단/3단 화면처럼 **두 번째 `.card`** 가 이어지는 경우(업체선택→탭영역 등)는 그 카드의
+  `style="margin-top:16px"` → `margin-top:12px` 로 (카드 자체는 margin-bottom 이 위에서 안 옴).
+- ✅ 예외(건드리지 말 것): `.form-actions`(버튼행)·Dtl **내부** 섹션 간격의 `margin-top:16px` 는
+  영역 간 간격이 아니라 컴포넌트 내부 간격이므로 유지.
+
+> 코드: [pages/bo/sy/SySiteMng.js](../../../pages/bo/sy/SySiteMng.js) (트리+목록+상세, 상세=grid 자식),
+> [pages/bo/sy/SyUserMng.js](../../../pages/bo/sy/SyUserMng.js) (상세=grid 밖 형제 → margin-top 제거),
 > CSS: [assets/css/boGlobalStyle01/02/03.css](../../../assets/css/) `.card`.
 > 연관: §10.12(트리 선택 시 목록·상세 초기화), §11.2(페이저 카드 내부), §12.1(임베드 Dtl 제목 list-title).
 
@@ -882,6 +893,27 @@ pager.total = d?.totalCount ?? d?.total ?? 0;   // ❌ totalCount, total 없음
 
 > 코드: [pages/bo/sy/SySiteDtl.js](../../../pages/bo/sy/SySiteDtl.js) — 제목을 카드 안 toolbar `list-title` 로,
 > 폼은 `compact`. 페이저는 §11.2 처럼 목록 그리드 `#footer` 슬롯에.
+
+**탭형 Dtl(제목+탭바+탭컨텐츠)도 한 카드로 묶기** ⭐ (2026-06-04): `<bo-tab-bar>` 를 쓰는
+Dtl/Hist 도 **제목·탭바·탭컨텐츠가 따로 떠 보이면 안 된다** → **바깥 `<div class="card">` 하나**로 감싼다.
+- 제목은 카드 첫 줄 `toolbar`/`list-title` (page-title 금지).
+- 탭별 컨텐츠 블록의 `class="card"` → **`class="dtl-pane"`** 로 바꿔 **카드 안 카드(이중 테두리) 제거**.
+  탭 모드: borderless 로 바깥 카드에 녹임. 멀티열 모드(`dtl-tab-grid`): grid 셀에 테두리 부여.
+  ```css
+  .dtl-pane { background:transparent; border:none; box-shadow:none; padding:4px 0 0; margin:0; }
+  .dtl-tab-grid > .dtl-pane { background:#fff; border:1px solid #eee; border-radius:8px; padding:12px; margin-bottom:0; }
+  ```
+- 코드: [pages/bo/ec/pd/PdProdDtl.js](../../../pages/bo/ec/pd/PdProdDtl.js)(상품 수정), [PdProdHist.js](../../../pages/bo/ec/pd/PdProdHist.js)(이력정보).
+  Dtl↔Hist 같은 인접 영역 간격은 §6.6 대로 `margin-top:12px`.
+
+**BoTabBar 탭 버튼 표준** ⭐ (2026-06-04): 공통 컴포넌트 [BoTabBar](../../../components/comp/BoComp.js).
+- 탭 버튼 세로 패딩 **`7px→5px`** (세로 ~30% 슬림). 컨테이너 padding `5px→4px`, 탭바 `margin-bottom 14px→10px`.
+- **가로 탭**: 탭명+카운트를 버튼 가운데 정렬(`justify-content:center` + 카운트 뱃지 `marginLeft:0`).
+  세로 탭(`orientation="vertical"`)만 카운트를 우측 끝(`marginLeft:auto`)으로.
+- **우측 뷰모드 버튼군(📑/1▭~4▭)은 최소 공간**: 버튼 `padding:3px 6px`/`font 11px`/icon `12px`,
+  컨테이너 `gap:2px`+`flex-shrink:0` → 탭 영역이 가로폭을 최대한 차지하고 뷰모드는 작게.
+- 탭바 위에 툴바(버튼)가 있으면 그 사이 간격 확보(예: toolbar `margin-bottom:10px`).
+- 임베드 Dtl/Hist 카드 헤더에는 **`#{{ id }}`** 를 list-title 옆에 표시(상품 수정/이력정보 동일).
 
 ### 12.2 Dtl 탭 + 뷰모드
 

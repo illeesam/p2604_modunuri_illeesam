@@ -413,7 +413,7 @@ window.BoGrid = {
     rows:       { type: Array,  default: () => [] },             // 목록(서버 페이징 결과)
     pager:      { type: Object, default: null },                 // BoPager 호환 reactive
     sortState:  { type: Object, default: null },                 // { sortKey, sortDir } reactive (지정 시 정렬 활성)
-    listTitle:  { type: String, default: '목록' },               // toolbar 좌측 제목
+    listTitle:  { type: String, default: '목록' },               // toolbar 좌측 제목 (좌측 ● 아이콘은 .list-title::before CSS 전역 처리)
     rowKey:     { type: String, default: null },                 // :key 필드 (없으면 idx)
     rowStyle:   { type: Function, default: null },               // (row,idx)=>style (행 강조 등 고유 UX 보존)
     rowClass:   { type: Function, default: null },               // (row,idx)=>class (행 상태 강조)

@@ -316,26 +316,29 @@ window.PmGiftDtl = {
   },
   template: /* html */`
 <div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    {{ !active ? '사은품 상세' : (cfIsNew ? '사은품 등록' : '사은품 수정') }}
-    <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
-      #{{ form.giftId }}
-    </span>
-    <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-      목록에서 행을 선택하거나 [+신규]를 누르세요
-    </span>
-  </div>
-  <!-- ===== □. 페이지 타이틀 ================================================= -->
-  <!-- ===== ■. 탭 영역 ==================================================== -->
-  <bo-tab-bar :tabs="tabs" :tab="tab" :tab-mode="tabMode2"
-    @tab-select="id => handleBtnAction('tab-select', id)"
-    @mode-select="m => handleBtnAction('tab-mode', m)" />
-  <!-- ===== □. 탭 영역 ==================================================== -->
-  <!-- ===== ■. 탭 컨텐츠 =================================================== -->
-  <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
+  <!-- ===== ■. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
+  <div class="card">
+    <!-- ===== ■.■. 카드 헤더 (제목 = list-title, page-title 아님 → 폰트 축소) ========= -->
+    <div class="toolbar">
+      <span class="list-title">
+        {{ !active ? '사은품 상세' : (cfIsNew ? '사은품 등록' : '사은품 수정') }}
+        <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+          #{{ form.giftId }}
+        </span>
+        <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+          목록에서 행을 선택하거나 [+신규]를 누르세요
+        </span>
+      </span>
+    </div>
+    <!-- ===== ■.■. 탭바 ==================================================== -->
+    <bo-tab-bar :tabs="tabs" :tab="tab" :tab-mode="tabMode2"
+      @tab-select="id => handleBtnAction('tab-select', id)"
+      @mode-select="m => handleBtnAction('tab-mode', m)" />
+    <!-- ===== □. 탭바 ====================================================== -->
+    <!-- ===== ■. 탭 컨텐츠 =================================================== -->
+    <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
     <!-- ===== ■.■. 기본정보 탭 (BoFormArea 자동 렌더) ============================= -->
-    <div class="card" v-show="showTab('info')" style="margin:0;">
+    <div class="dtl-pane" v-show="showTab('info')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
         📋 기본정보
       </div>
@@ -372,7 +375,7 @@ window.PmGiftDtl = {
     </div>
     <!-- ===== □.□. 기본정보 탭 (BoFormArea 자동 렌더) ============================= -->
     <!-- ===== ■.■. 공개대상 ================================================== -->
-    <div class="card" v-show="showTab('visibility')" style="margin:0;">
+    <div class="dtl-pane" v-show="showTab('visibility')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
         🔒 공개대상
       </div>
@@ -397,7 +400,7 @@ window.PmGiftDtl = {
     </div>
     <!-- ===== □.□. 공개대상 ================================================== -->
     <!-- ===== ■.■. 미리보기 ================================================== -->
-    <div class="card" v-show="showTab('preview')" style="margin:0;">
+    <div class="dtl-pane" v-show="showTab('preview')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
         👁 미리보기
       </div>
@@ -439,9 +442,11 @@ window.PmGiftDtl = {
         </button>
       </div>
     </div>
+    <!-- ===== □.□. 미리보기 ================================================== -->
+    </div>
+    <!-- ===== □. 탭 컨텐츠 =================================================== -->
   </div>
+  <!-- ===== □. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
 </div>
-<!-- ===== □.□. 미리보기 ================================================== -->
-<!-- ===== □. 탭 컨텐츠 =================================================== -->
 `
 };

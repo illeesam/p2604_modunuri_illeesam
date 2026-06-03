@@ -276,7 +276,7 @@ window.StSettleCloseMng = {
       :columns="columns.baseGrid" :rows="cfFilteredClose" row-key="closeId"
       list-title="정산마감 이력" :count-text="cfFilteredClose.length + '건'" :row-actions="true">
       <template #head-actions>
-        액션
+        <th style="text-align:right">액션</th>
       </template>
       <template #row-actions="{ row: r }">
         <button v-if="r.status==='마감완료'" class="btn btn-xs btn-secondary" @click="handleSelectAction('settleCloses-rowReopen', r)">

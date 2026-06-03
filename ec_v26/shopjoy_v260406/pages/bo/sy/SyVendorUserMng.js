@@ -732,14 +732,15 @@ window.SyVendorUserMng = {
         <bo-search-area :columns="columns.userSearch" :param="uiState" :loading="uiState.loading"
           @search="handleBtnAction('userSearchParam-list')" @reset="handleBtnAction('userSearchParam-reset')" />
       </div>
-      <!-- ===== ■.■.■. 사용자 목록 =========================================== -->
-      <bo-grid v-if="uiState.searchVendorId != null"
+      <!-- ===== ■.■.■. 사용자 목록 (항상 표시 — 업체 미선택 시 안내 empty-text) ======== -->
+      <bo-grid
         :columns="columns.userGrid" :rows="pager.pageList||[]" :pager="pager" row-key="vendorUserId" :selected-key="formData.vendorUserId"
         list-title="사용자목록" :count-text="vendorUsers.length + '건'"
         :row-style="fnUserRowStyle" :loading="uiState.loading" :row-actions="true" row-clickable
+        :empty-text="uiState.searchVendorId != null ? '사용자가 없습니다.' : '좌측 업체목록에서 업체를 선택하면 사용자 목록이 표시됩니다.'"
         @row-click="row => handleSelectAction('vendorUsers-rowEdit', row)">
         <template #toolbar-actions>
-          <button class="btn btn-primary btn-sm" @click="handleBtnAction('vendorUsers-add')">
+          <button class="btn btn-primary btn-sm" :disabled="uiState.searchVendorId == null" @click="handleBtnAction('vendorUsers-add')">
             + 신규등록
           </button>
         </template>
@@ -750,19 +751,15 @@ window.SyVendorUserMng = {
         </template>
         <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
         <template #footer>
-          <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('vendorUsers-pager-setPage', n)" :on-size-change="() => handleSelectAction('vendorUsers-pager-sizeChange')" />
+          <bo-pager v-if="uiState.searchVendorId != null" :pager="pager" :on-set-page="n => handleBtnAction('vendorUsers-pager-setPage', n)" :on-size-change="() => handleSelectAction('vendorUsers-pager-sizeChange')" />
         </template>
       </bo-grid>
-      <!-- ===== ■.■.■. 카드 영역 (업체 미선택 안내) =========================== -->
-      <div v-else class="card" style="text-align:center;padding:30px;color:#aaa;">
-        좌측 업체목록에서 업체를 선택하면 사용자 목록이 표시됩니다.
-      </div>
     </div>
     <!-- ===== □.□. 우: 사용자 검색 + 목록 =================================== -->
   </div>
   <!-- ===== □. 업체 목록 (좌) + 사용자 목록 (우) =================================== -->
   <!-- ===== ■. 인라인 폼 (항상 표시 — 미선택 시 빈 폼 + 버튼 숨김 + 안내) ============ -->
-  <div class="card" style="margin-top:16px;">
+  <div class="card" style="margin-top:12px;">
     <div class="toolbar">
       <span class="list-title">
         <span style="color:#e8587a;">

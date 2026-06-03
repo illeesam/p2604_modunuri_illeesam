@@ -253,39 +253,31 @@ window.StConfigMng = {
     </div>
   </div>
   <!-- ===== □. 영역 ====================================================== -->
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card">
-    <div class="toolbar">
-      <span class="list-title">
-        정산기준 목록
-      </span>
-      <span class="list-count">
-        총 {{ configs.length }}건
-      </span>
-      <div style="margin-left:auto">
-        <button class="btn btn-primary" @click="handleBtnAction('configs-add')">
-          + 기준 추가
-        </button>
-      </div>
-    </div>
+  <!-- ===== ■. 목록 (bo-grid 단일 카드 — 제목/건수/버튼 모두 그리드가 렌더, 중복 제거) ===== -->
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid
       :columns="columns.baseGrid" :rows="configs" row-key="settleConfigId" :selected-key="uiState.selectedId"
-      list-title="목록" :count-text="configs.length + '건'" :row-actions="true"
+      list-title="정산기준 목록" :count-text="'총 ' + configs.length + '건'" :row-actions="true"
       :row-class="(c) => uiState.selectedId===c.settleConfigId ? 'selected' : ''">
+      <template #toolbar-actions>
+        <button class="btn btn-primary btn-sm" @click="handleBtnAction('configs-add')">
+          + 기준 추가
+        </button>
+      </template>
       <template #head-actions>
-        액션
+        <th style="text-align:right">액션</th>
       </template>
       <template #row-actions="{ row: c }">
-        <button class="btn btn-xs btn-primary" @click="handleSelectAction('configs-rowEdit', c)">
-          수정
-        </button>
-        <button class="btn btn-xs btn-danger"  @click="handleSelectAction('configs-rowDelete', c)">
-          삭제
-        </button>
+        <div class="actions">
+          <button class="btn btn-xs btn-primary" @click="handleSelectAction('configs-rowEdit', c)">
+            수정
+          </button>
+          <button class="btn btn-xs btn-danger"  @click="handleSelectAction('configs-rowDelete', c)">
+            삭제
+          </button>
+        </div>
       </template>
     </bo-grid>
-  </div>
   <!-- ===== □.□. 목록 영역 ================================================= -->
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 편집 폼 (BoFormArea 자동 렌더) ================================= -->

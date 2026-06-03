@@ -397,33 +397,23 @@ window.PdProdMng = {
       @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
   </div>
   <!-- ===== □. 검색 ====================================================== -->
-  <!-- ===== ■. 목록 ======================================================= -->
-  <div class="card">
-    <div class="toolbar">
-      <span class="list-title">
-        <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">●</span>
-        상품목록
-        <span class="list-count">
-          {{ pager.pageTotalCount }}건
-        </span>
-      </span>
-      <div style="display:flex;gap:6px;">
+  <!-- ===== ■. 목록 (bo-grid 단일 카드 — 제목/건수/페이저 모두 그리드가 렌더, 중복 제거) ===== -->
+    <!-- ===== ■.■. 목록 그리드 ================================================ -->
+    <bo-grid
+      :columns="columns.baseGrid" :rows="products" row-key="prodId" :selected-key="detailPanel.selectedId"
+      list-title="상품목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
+      :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
+      :row-style="(p) => detailPanel.selectedId===p.prodId ? 'background:#fff8f9;' : ''"
+      @sort="key => handleBtnAction('prods-sort', key)"
+      @cell-click="e => handleSelectAction('prods-rowEdit', e.row.prodId)">
+      <template #toolbar-actions>
         <button class="btn btn-green btn-sm" @click="handleBtnAction('prods-excel')">
           📥 엑셀
         </button>
         <button class="btn btn-primary btn-sm" @click="handleBtnAction('prods-add')">
           + 신규
         </button>
-      </div>
-    </div>
-    <!-- ===== ■.■. 목록 그리드 ================================================ -->
-    <bo-grid
-      :columns="columns.baseGrid" :rows="products" row-key="prodId" :selected-key="detailPanel.selectedId"
-      list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
-      :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
-      :row-style="(p) => detailPanel.selectedId===p.prodId ? 'background:#fff8f9;' : ''"
-      @sort="key => handleBtnAction('prods-sort', key)"
-      @cell-click="e => handleSelectAction('prods-rowEdit', e.row.prodId)">
+      </template>
       <template #head-actions>
         관리
       </template>
@@ -446,7 +436,6 @@ window.PdProdMng = {
         <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('prods-pager-setPage', n)" :on-size-change="() => handleSelectAction('prods-pager-sizeChange')" />
       </template>
     </bo-grid>
-  </div>
   <!-- ===== □. 목록 ======================================================= -->
   <!-- ===== ■. 카테고리 선택 모달 ============================================== -->
   <bo-category-tree-modal

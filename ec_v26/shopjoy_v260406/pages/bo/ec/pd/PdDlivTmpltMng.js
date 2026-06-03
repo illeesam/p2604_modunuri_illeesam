@@ -342,23 +342,30 @@ window.PdDlivTmpltMng = {
     </bo-grid>
   </div>
   <!-- ===== □. 목록 그리드 =================================================== -->
-  <!-- ===== ■. 상세 패널 (신규/수정 폼) ====================================== -->
-  <div class="card" v-if="uiState.selectedId">
+  <!-- ===== ■. 상세 패널 (항상 표시 — 미선택 시 안내, 선택/신규 시 폼) ============== -->
+  <div class="card">
     <!-- ===== ■.■. 상세 툴바: 제목만 (저장/삭제/닫기는 하단 form-actions) ======== -->
     <div class="toolbar">
       <span class="list-title">
-        {{ uiState.isNew ? '배송템플릿 신규 등록' : '배송템플릿 상세 / 수정' }}
-        <span v-if="!uiState.isNew && form.dlivTmpltId" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+        {{ !uiState.selectedId ? '배송템플릿 상세' : (uiState.isNew ? '배송템플릿 신규 등록' : '배송템플릿 상세 / 수정') }}
+        <span v-if="uiState.selectedId && !uiState.isNew && form.dlivTmpltId" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
           #{{ form.dlivTmpltId }}
+        </span>
+        <span v-if="!uiState.selectedId" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+          목록에서 행을 선택하거나 [+신규]를 누르세요
         </span>
       </span>
     </div>
     <!-- ===== □.□. 상세 툴바 ================================================ -->
+    <!-- ===== ■.■. 미선택 안내 (행 미선택 시) ==================================== -->
+    <div v-if="!uiState.selectedId" style="text-align:center;color:#bbb;font-size:13px;padding:32px 16px;">
+      목록에서 행을 선택하거나 [+신규]를 누르세요.
+    </div>
     <!-- ===== ■.■. 상세 입력폼 (BoFormArea 자동 렌더) ======================== -->
-    <div style="padding:12px">
+    <div v-else style="padding:12px">
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="columns.baseForm" :form="form" :errors="{}"
-        :cols="3" :show-actions="false" />
+        :cols="3" compact :show-actions="false" />
       <!-- ===== ■.■.■. 하단 액션 (저장/삭제/닫기) — .form-actions 가 중앙 정렬 ===== -->
       <div class="form-actions">
         <button class="btn btn-blue" @click="handleBtnAction('form-save')">

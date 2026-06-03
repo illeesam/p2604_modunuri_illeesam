@@ -227,12 +227,14 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       :columns="columns.baseGrid" :rows="slips" row-key="slipId"
       list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true">
       <template #head-actions>
-        액션
+        <th style="text-align:right">액션</th>
       </template>
       <template #row-actions="{ row: r }">
-        <button v-if="r.sendStatus!=='전송완료'" class="btn btn-xs btn-blue" @click="handleSelectAction('slips-rowResend', r)">
-          재전송
-        </button>
+        <div class="actions">
+          <button v-if="r.sendStatus!=='전송완료'" class="btn btn-xs btn-blue" @click="handleSelectAction('slips-rowResend', r)">
+            재전송
+          </button>
+        </div>
       </template>
       <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
       <template #footer>

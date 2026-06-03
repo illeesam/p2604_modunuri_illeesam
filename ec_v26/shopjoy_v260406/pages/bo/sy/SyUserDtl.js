@@ -272,7 +272,7 @@ window.SyUserDtl = {
           {{ form.deptNm || '-' }}
         </div>
         <div v-else style="display:flex;gap:8px;align-items:center;">
-          <div class="form-control" style="flex:1;cursor:pointer;background:#fafafa;display:flex;align-items:center;min-height:36px;"
+          <div class="form-control" style="flex:1;cursor:pointer;background:#fafafa;display:flex;align-items:center;min-height:28px;padding:4px 10px;font-size:13px;"
             @click="handleBtnAction('deptModal-open')">
             <span v-if="form.deptNm" style="color:#1a1a2e;">
               {{ form.deptNm }}
@@ -338,9 +338,6 @@ window.SyUserDtl = {
   <div v-if="!cfIsNew" class="card">
     <div class="toolbar" style="margin-bottom:12px;">
       <span class="list-title">
-        <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">
-          ●
-        </span>
         적용 역할 목록
         <span class="list-count">
           {{ cfUserRoles.length }}건

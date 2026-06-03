@@ -384,26 +384,29 @@ window.PmPlanDtl = {
   },
   template: /* html */`
 <div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    {{ !active ? '기획전 상세' : (cfIsNew ? '기획전 등록' : '기획전 상세') }}
-    <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
-      #{{ form.planId }}
-    </span>
-    <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-      목록에서 행을 선택하거나 [+신규]를 누르세요
-    </span>
-  </div>
-  <!-- ===== □. 페이지 타이틀 ================================================= -->
-  <!-- ===== ■. 탭 영역 ==================================================== -->
-  <bo-tab-bar :tabs="tabs" :tab="tab" :tab-mode="tabMode2"
-    @tab-select="id => handleBtnAction('tab-select', id)"
-    @mode-select="m => handleBtnAction('tab-mode', m)" />
-  <!-- ===== □. 탭 영역 ==================================================== -->
-  <!-- ===== ■. 탭 컨텐츠 =================================================== -->
+  <!-- ===== ■. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
+  <div class="card">
+    <!-- ===== ■.■. 카드 헤더 (제목 = list-title, page-title 아님 → 폰트 축소) ========= -->
+    <div class="toolbar">
+      <span class="list-title">
+        {{ !active ? '기획전 상세' : (cfIsNew ? '기획전 등록' : '기획전 상세') }}
+        <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+          #{{ form.planId }}
+        </span>
+        <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+          목록에서 행을 선택하거나 [+신규]를 누르세요
+        </span>
+      </span>
+    </div>
+    <!-- ===== ■.■. 탭바 ==================================================== -->
+    <bo-tab-bar :tabs="tabs" :tab="tab" :tab-mode="tabMode2"
+      @tab-select="id => handleBtnAction('tab-select', id)"
+      @mode-select="m => handleBtnAction('tab-mode', m)" />
+    <!-- ===== □. 탭바 ====================================================== -->
+    <!-- ===== ■. 탭 컨텐츠 =================================================== -->
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
     <!-- ===== ■.■. 배너이미지 ================================================= -->
-    <div class="card" v-show="showTab('banner')" style="margin:0;">
+    <div class="dtl-pane" v-show="showTab('banner')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
         🎨 배너이미지
       </div>
@@ -424,7 +427,7 @@ window.PmPlanDtl = {
     </div>
     <!-- ===== □.□. 배너이미지 ================================================= -->
     <!-- ===== ■.■. 기본정보 ================================================== -->
-    <div class="card" v-show="showTab('info')" style="margin:0;">
+    <div class="dtl-pane" v-show="showTab('info')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
         📋 기본정보
       </div>
@@ -479,7 +482,7 @@ window.PmPlanDtl = {
     </div>
     <!-- ===== □.□. 기본정보 ================================================== -->
     <!-- ===== ■.■. 내용입력 (HTML 에디터) ======================================= -->
-    <div class="card" v-show="showTab('content')" style="margin:0;">
+    <div class="dtl-pane" v-show="showTab('content')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
         📝 내용입력
       </div>
@@ -512,7 +515,7 @@ window.PmPlanDtl = {
     </div>
     <!-- ===== □.□. 내용입력 (HTML 에디터) ======================================= -->
     <!-- ===== ■.■. 대상상품 ================================================== -->
-    <div class="card" v-show="showTab('products')" style="margin:0;">
+    <div class="dtl-pane" v-show="showTab('products')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
         🛍 대상 상품
       </div>
@@ -555,7 +558,7 @@ window.PmPlanDtl = {
     </div>
     <!-- ===== □.□. 대상상품 ================================================== -->
     <!-- ===== ■.■. 미리보기 ================================================== -->
-    <div class="card" v-show="showTab('preview')" style="margin:0;">
+    <div class="dtl-pane" v-show="showTab('preview')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
         👁 미리보기
       </div>
@@ -643,9 +646,11 @@ window.PmPlanDtl = {
       </div>
     </div>
   </div>
+  <!-- ===== □. 탭 컨텐츠 =================================================== -->
+  </div>
+  <!-- ===== □. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
 </div>
 <!-- ===== □.□. 미리보기 ================================================== -->
-<!-- ===== □. 탭 컨텐츠 =================================================== -->
 <!-- ===== ■. 상품선택 모달 ================================================= -->
 <simple-prod-pick-modal :show="showProdPopup" :prods="products" :selected-ids="form.productIds"
   title="상품선택" modal-name="prod-pick" :on-callback="fnCallbackModal" />
