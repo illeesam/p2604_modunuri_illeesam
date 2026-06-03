@@ -12,7 +12,6 @@ import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdOptRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.service.*;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -256,24 +255,6 @@ public class BoPdProdTabController {
     /** nullIfEmpty — 빈 문자열을 null로 정규화 */
     private static String nullIfEmpty(String s) {
         return (s == null || s.isEmpty()) ? null : s;
-    }
-
-    /** strOrNull */
-    private static String strOrNull(Object o) {
-        if (o == null) return null;
-        String s = String.valueOf(o);
-        return s.isEmpty() ? null : s;
-    }
-    /** strOrEmpty */
-    private static String strOrEmpty(Object o, String dflt) {
-        if (o == null) return dflt;
-        String s = String.valueOf(o);
-        return s.isEmpty() ? dflt : s;
-    }
-    /** toInt — 변환 */
-    private static Integer toInt(Object o, int dflt) {
-        if (o == null) return dflt;
-        try { return Integer.parseInt(String.valueOf(o)); } catch (Exception e) { return dflt; }
     }
 
     /** contents */

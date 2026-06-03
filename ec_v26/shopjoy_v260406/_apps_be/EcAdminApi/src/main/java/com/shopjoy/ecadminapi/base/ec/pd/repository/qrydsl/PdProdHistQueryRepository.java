@@ -2,7 +2,6 @@ package com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl;
 
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.QOdOrder;

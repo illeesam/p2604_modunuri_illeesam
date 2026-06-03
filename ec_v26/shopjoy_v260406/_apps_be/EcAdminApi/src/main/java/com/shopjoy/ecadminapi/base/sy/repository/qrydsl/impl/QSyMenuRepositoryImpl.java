@@ -18,7 +18,6 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyMenu;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyMenuRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.util.StringUtils;
 

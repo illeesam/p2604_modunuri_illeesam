@@ -10,7 +10,6 @@ import lombok.experimental.SuperBuilder;
 import java.math.BigDecimal;
 
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
-import org.hibernate.annotations.Comment;
 
 @Entity
 @Table(name = "zz_sample3", schema = "shopjoy_2604")

@@ -468,22 +468,6 @@ public class RepositoryResultLogAspect {
     }
 
     /**
-     * 인자 배열을 {@code [v1, v2, ...]} 형태 문자열로 포맷한다.
-     *
-     * @param args 인자 배열(널/빈 배열이면 빈 문자열)
-     * @return 각 인자를 {@link #formatParameterValue} 로 변환해 쉼표 결합한 대괄호 표현
-     */
-    private String formatParameters(Object[] args) {
-        if (args == null || args.length == 0) return "";
-        StringBuilder sb = new StringBuilder("[");
-        for (int i = 0; i < args.length; i++) {
-            if (i > 0) sb.append(", ");
-            sb.append(formatParameterValue(args[i]));
-        }
-        return sb.append("]").toString();
-    }
-
-    /**
      * 파라미터를 {@code [name1=v1, name2=v2, ...]} 형태로 포맷한다.
      *
      * <p>paramNames 가 비어있거나 일부가 누락되면 인덱스(arg0/arg1...)로 대체.

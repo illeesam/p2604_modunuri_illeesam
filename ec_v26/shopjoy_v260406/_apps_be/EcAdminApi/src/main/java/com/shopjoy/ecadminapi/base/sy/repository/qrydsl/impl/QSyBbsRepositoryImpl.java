@@ -19,7 +19,6 @@ import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyBbsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;

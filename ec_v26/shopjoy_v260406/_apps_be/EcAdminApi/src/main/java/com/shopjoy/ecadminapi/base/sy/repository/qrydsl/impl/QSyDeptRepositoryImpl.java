@@ -17,7 +17,6 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyDept;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyDeptRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.util.StringUtils;
 

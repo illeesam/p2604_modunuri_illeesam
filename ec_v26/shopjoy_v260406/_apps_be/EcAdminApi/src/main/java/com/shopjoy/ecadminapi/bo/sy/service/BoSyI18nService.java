@@ -1,6 +1,5 @@
 package com.shopjoy.ecadminapi.bo.sy.service;
 
-import com.shopjoy.ecadminapi.common.util.VoUtil;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyI18nDto;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyI18nMsgDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyI18n;

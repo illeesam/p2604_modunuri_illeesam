@@ -8,7 +8,6 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
 import org.hibernate.annotations.Comment;
 

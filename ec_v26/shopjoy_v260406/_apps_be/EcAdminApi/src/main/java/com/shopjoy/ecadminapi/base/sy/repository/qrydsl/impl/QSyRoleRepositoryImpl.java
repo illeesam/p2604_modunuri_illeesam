@@ -20,7 +20,6 @@ import com.shopjoy.ecadminapi.base.sy.data.entity.SyRole;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyRoleRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.util.StringUtils;
 

@@ -15,7 +15,6 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdCategory;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.QPdCategory;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdCategoryRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.util.StringUtils;
 
