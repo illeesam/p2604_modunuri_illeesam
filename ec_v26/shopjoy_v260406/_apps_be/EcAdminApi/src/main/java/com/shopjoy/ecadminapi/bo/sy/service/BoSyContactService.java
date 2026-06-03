@@ -29,5 +29,5 @@ public class BoSyContactService {
     @Transactional public SyContact create(SyContact body) { return syContactService.create(body); }
     @Transactional public SyContact update(String id, SyContact body) { return syContactService.update(id, body); }
     @Transactional public void delete(String id) { syContactService.delete(id); }
-    @Transactional public void saveList(String cmd, List<SyContact> rows) { syContactService.saveList(cmd, rows); }
+    @Transactional public void saveListBase(List<SyContact> rows) { syContactService.saveListBase(rows); }
 }

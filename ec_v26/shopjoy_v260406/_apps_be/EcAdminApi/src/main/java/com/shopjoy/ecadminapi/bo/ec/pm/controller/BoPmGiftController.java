@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmGiftDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmGiftChangeStatusDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmGift;
 import com.shopjoy.ecadminapi.bo.ec.pm.service.BoPmGiftService;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -79,7 +80,10 @@ public class BoPmGiftController {
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
             @PathVariable("cmd") String cmd, @RequestBody List<PmGift> rows) {
-        boPmGiftService.saveList(cmd, rows);
+        switch (cmd) {
+            case "base" -> boPmGiftService.saveListBase(rows);
+            default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);
+        }
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

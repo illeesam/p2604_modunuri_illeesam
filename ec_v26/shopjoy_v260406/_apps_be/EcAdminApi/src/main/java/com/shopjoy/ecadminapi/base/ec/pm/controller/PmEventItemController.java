@@ -3,6 +3,7 @@ package com.shopjoy.ecadminapi.base.ec.pm.controller;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmEventItemDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmEventItem;
 import com.shopjoy.ecadminapi.base.ec.pm.service.PmEventItemService;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +47,7 @@ public class PmEventItemController {
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<PmEventItem>> save(@PathVariable("id") String id, @RequestBody PmEventItem entity) {
         entity.setEventItemId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.save("base", entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 이벤트 대상 상품 수정 */
@@ -65,16 +66,23 @@ public class PmEventItemController {
 
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
-    public ResponseEntity<ApiResponse<PmEventItem>> saveCmd(
+    public ResponseEntity<ApiResponse<PmEventItem>> saveOneCmd(
             @PathVariable("cmd") String cmd, @RequestBody PmEventItem entity) {
-        return ResponseEntity.ok(ApiResponse.ok(service.save(cmd, entity), "저장되었습니다."));
+        PmEventItem result = switch (cmd) {
+            case "base" -> service.saveOneBase(entity);
+            default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
+        };
+        return ResponseEntity.ok(ApiResponse.ok(result, "저장되었습니다."));
     }
 
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
             @PathVariable("cmd") String cmd, @RequestBody List<PmEventItem> rows) {
-        service.saveList(cmd, rows);
+        switch (cmd) {
+            case "base" -> service.saveListBase(rows);
+            default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);
+        }
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

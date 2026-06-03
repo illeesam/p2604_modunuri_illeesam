@@ -3,6 +3,7 @@ package com.shopjoy.ecadminapi.bo.sy.controller;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyPropDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyProp;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyPropService;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -68,7 +69,10 @@ public class BoSyPropController {
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
             @PathVariable("cmd") String cmd, @RequestBody List<SyProp> rows) {
-        boSyPropService.saveList(cmd, rows);
+        switch (cmd) {
+            case "base" -> boSyPropService.saveListBase(rows);
+            default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);
+        }
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
     /** pathCounts — 표시경로 노드별 SyProp 수 (검색조건 + 자손 누적, 트리 우측 뱃지용) */

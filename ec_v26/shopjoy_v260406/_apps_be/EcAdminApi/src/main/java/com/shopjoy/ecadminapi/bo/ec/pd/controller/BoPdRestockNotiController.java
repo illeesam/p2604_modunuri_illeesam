@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdRestockNotiDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.dto.PdRestockNotiSendDto;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdRestockNoti;
 import com.shopjoy.ecadminapi.bo.ec.pd.service.BoPdRestockNotiService;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -76,7 +77,10 @@ public class BoPdRestockNotiController {
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
             @PathVariable("cmd") String cmd, @RequestBody List<PdRestockNoti> rows) {
-        boPdRestockNotiService.saveList(cmd, rows);
+        switch (cmd) {
+            case "base" -> boPdRestockNotiService.saveListBase(rows);
+            default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);
+        }
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

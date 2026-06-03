@@ -29,5 +29,5 @@ public class BoSyPathService {
     @Transactional public SyPath create(SyPath body) { return syPathService.create(body); }
     @Transactional public SyPath update(String id, SyPath body) { return syPathService.update(id, body); }
     @Transactional public void delete(String id) { syPathService.delete(id); }
-    @Transactional public void saveList(String cmd, List<SyPath> rows) { syPathService.saveList(cmd, rows); }
+    @Transactional public void saveListBase(List<SyPath> rows) { syPathService.saveListBase(rows); }
 }

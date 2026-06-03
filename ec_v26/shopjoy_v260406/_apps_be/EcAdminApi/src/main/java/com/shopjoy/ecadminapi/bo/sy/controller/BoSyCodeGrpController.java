@@ -3,6 +3,7 @@ package com.shopjoy.ecadminapi.bo.sy.controller;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyCodeGrpDto;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyCodeGrp;
 import com.shopjoy.ecadminapi.bo.sy.service.BoSyCodeGrpService;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -68,7 +69,10 @@ public class BoSyCodeGrpController {
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
             @PathVariable("cmd") String cmd, @RequestBody List<SyCodeGrp> rows) {
-        boSyCodeGrpService.saveList(cmd, rows);
+        switch (cmd) {
+            case "base" -> boSyCodeGrpService.saveListBase(rows);
+            default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);
+        }
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
     /** pathCounts — 표시경로 노드별 SyCodeGrp 수 (자손 누적, 트리 우측 뱃지용) */

@@ -131,100 +131,96 @@ public class MbMemberGradeService {
     /** save -- rowStatus(I/U/D/M) 단건 분기 처리. saveList의 단건 버전.
      *  cmd: "base"=기본 흐름. 그 외는 같은 메서드 안에서 if/else if 로 분기. */
     @Transactional
-    public MbMemberGrade save(String cmd, MbMemberGrade entity) {
-        if ("base".equals(cmd)) {
-            String rowStatus  = entity.getRowStatus();
-            String authId     = SecurityUtil.getAuthUser().authId();
-            LocalDateTime now = LocalDateTime.now();
+    public MbMemberGrade saveOneBase(MbMemberGrade entity) {
+        String rowStatus  = entity.getRowStatus();
+        String authId     = SecurityUtil.getAuthUser().authId();
+        LocalDateTime now = LocalDateTime.now();
 
-            /* M(merge) / null / blank -- userId 유무로 I/U 정규화 */
-            if ("M".equals(rowStatus) || rowStatus == null || rowStatus.isBlank()) {
-                rowStatus = (entity.getMemberGradeId() == null || entity.getMemberGradeId().isBlank()) ? "I" : "U";
-            }
-
-            if ("D".equals(rowStatus)) {
-                if (entity.getMemberGradeId() == null)
-                    throw new CmBizException("삭제 대상 memberGradeId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
-                if (!mbMemberGradeRepository.existsById(entity.getMemberGradeId()))
-                    throw new CmBizException("존재하지 않는 MbMemberGrade입니다: " + entity.getMemberGradeId() + "::" + CmUtil.svcCallerInfo(this));
-                mbMemberGradeRepository.deleteById(entity.getMemberGradeId());
-                return null;
-            } else if ("I".equals(rowStatus)) {
-                entity.setMemberGradeId(CmUtil.generateId("mb_member_grade"));
-                entity.setRegBy(authId); entity.setRegDate(now);
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                MbMemberGrade saved = mbMemberGradeRepository.save(entity);
-                if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
-                return saved;
-            } else if ("U".equals(rowStatus)) {
-                if (entity.getMemberGradeId() == null)
-                    throw new CmBizException("수정 대상 memberGradeId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
-                entity.setUpdBy(authId);
-                int affected = mbMemberGradeRepository.updateSelective(entity);
-                if (affected == 0)
-                    throw new CmBizException("존재하지 않는 MbMemberGrade입니다: " + entity.getMemberGradeId() + "::" + CmUtil.svcCallerInfo(this));
-                em.clear();
-                return findById(entity.getMemberGradeId());
-            }
-            throw new CmBizException("알 수 없는 rowStatus: " + rowStatus + "::" + CmUtil.svcCallerInfo(this));
+        /* M(merge) / null / blank -- userId 유무로 I/U 정규화 */
+        if ("M".equals(rowStatus) || rowStatus == null || rowStatus.isBlank()) {
+            rowStatus = (entity.getMemberGradeId() == null || entity.getMemberGradeId().isBlank()) ? "I" : "U";
         }
-        throw new CmBizException("알 수 없는 save cmd: " + cmd + "::" + CmUtil.svcCallerInfo(this));
+
+        if ("D".equals(rowStatus)) {
+            if (entity.getMemberGradeId() == null)
+                throw new CmBizException("삭제 대상 memberGradeId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            if (!mbMemberGradeRepository.existsById(entity.getMemberGradeId()))
+                throw new CmBizException("존재하지 않는 MbMemberGrade입니다: " + entity.getMemberGradeId() + "::" + CmUtil.svcCallerInfo(this));
+            mbMemberGradeRepository.deleteById(entity.getMemberGradeId());
+            return null;
+        } else if ("I".equals(rowStatus)) {
+            entity.setMemberGradeId(CmUtil.generateId("mb_member_grade"));
+            entity.setRegBy(authId); entity.setRegDate(now);
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            MbMemberGrade saved = mbMemberGradeRepository.save(entity);
+            if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
+            return saved;
+        } else if ("U".equals(rowStatus)) {
+            if (entity.getMemberGradeId() == null)
+                throw new CmBizException("수정 대상 memberGradeId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            entity.setUpdBy(authId);
+            int affected = mbMemberGradeRepository.updateSelective(entity);
+            if (affected == 0)
+                throw new CmBizException("존재하지 않는 MbMemberGrade입니다: " + entity.getMemberGradeId() + "::" + CmUtil.svcCallerInfo(this));
+            em.clear();
+            return findById(entity.getMemberGradeId());
+        }
+        throw new CmBizException("알 수 없는 rowStatus: " + rowStatus + "::" + CmUtil.svcCallerInfo(this));
+
     }
 
     /** saveList -- 일괄 저장 (DELETE/UPDATE/INSERT 단계별).
      *  cmd: "base"=기본 흐름. */
     @Transactional
-    public void saveList(String cmd, List<MbMemberGrade> rows) {
-        if ("base".equals(cmd)) {
-            /* 0단계: rowStatus 정규화 */
-            for (MbMemberGrade row : rows) {
-                String rs = row.getRowStatus();
-                if ("M".equals(rs) || rs == null || rs.isBlank()) {
-                    row.setRowStatus((row.getMemberGradeId() == null || row.getMemberGradeId().isBlank()) ? "I" : "U");
-                } else if (!"I".equals(rs) && !"U".equals(rs) && !"D".equals(rs)) {
-                    throw new CmBizException("알 수 없는 rowStatus: " + rs + "::" + CmUtil.svcCallerInfo(this));
-                }
+    public void saveListBase(List<MbMemberGrade> rows) {
+        /* 0단계: rowStatus 정규화 */
+        for (MbMemberGrade row : rows) {
+            String rs = row.getRowStatus();
+            if ("M".equals(rs) || rs == null || rs.isBlank()) {
+                row.setRowStatus((row.getMemberGradeId() == null || row.getMemberGradeId().isBlank()) ? "I" : "U");
+            } else if (!"I".equals(rs) && !"U".equals(rs) && !"D".equals(rs)) {
+                throw new CmBizException("알 수 없는 rowStatus: " + rs + "::" + CmUtil.svcCallerInfo(this));
             }
-            CmUtil.requireRowIds(rows, MbMemberGrade::getMemberGradeId, "U", "memberGradeId", this);
-            CmUtil.requireRowIds(rows, MbMemberGrade::getMemberGradeId, "D", "memberGradeId", this);
-            String authId = SecurityUtil.getAuthUser().authId();
-            LocalDateTime now = LocalDateTime.now();
-
-            // 1단계: DELETE 일괄
-            List<String> deleteIds = rows.stream()
-                .filter(r -> "D".equals(r.getRowStatus()))
-                .map(MbMemberGrade::getMemberGradeId)
-                .toList();
-            if (!deleteIds.isEmpty()) {
-                mbMemberGradeRepository.deleteAllById(deleteIds);
-            }
-
-            // 2단계: UPDATE - updateSelective
-            List<MbMemberGrade> updateRows = rows.stream()
-                .filter(r -> "U".equals(r.getRowStatus()))
-                .toList();
-            for (MbMemberGrade row : updateRows) {
-                row.setUpdBy(authId);
-                int affected = mbMemberGradeRepository.updateSelective(row);
-                if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getMemberGradeId() + "::" + CmUtil.svcCallerInfo(this));
-            }
-
-            // 3단계: INSERT
-            List<MbMemberGrade> insertRows = rows.stream()
-                .filter(r -> "I".equals(r.getRowStatus()))
-                .toList();
-            for (MbMemberGrade row : insertRows) {
-                row.setMemberGradeId(CmUtil.generateId("mb_member_grade"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                mbMemberGradeRepository.save(row);
-            }
-
-            // 4단계: 영속성 컨텍스트 동기화
-            em.flush();
-            em.clear();
-            return;
         }
-        throw new CmBizException("알 수 없는 saveList cmd: " + cmd + "::" + CmUtil.svcCallerInfo(this));
+        CmUtil.requireRowIds(rows, MbMemberGrade::getMemberGradeId, "U", "memberGradeId", this);
+        CmUtil.requireRowIds(rows, MbMemberGrade::getMemberGradeId, "D", "memberGradeId", this);
+        String authId = SecurityUtil.getAuthUser().authId();
+        LocalDateTime now = LocalDateTime.now();
+
+        // 1단계: DELETE 일괄
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()))
+            .map(MbMemberGrade::getMemberGradeId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            mbMemberGradeRepository.deleteAllById(deleteIds);
+        }
+
+        // 2단계: UPDATE - updateSelective
+        List<MbMemberGrade> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()))
+            .toList();
+        for (MbMemberGrade row : updateRows) {
+            row.setUpdBy(authId);
+            int affected = mbMemberGradeRepository.updateSelective(row);
+            if (affected == 0) throw new CmBizException("존재하지 않는 데이터입니다: " + row.getMemberGradeId() + "::" + CmUtil.svcCallerInfo(this));
+        }
+
+        // 3단계: INSERT
+        List<MbMemberGrade> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (MbMemberGrade row : insertRows) {
+            row.setMemberGradeId(CmUtil.generateId("mb_member_grade"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            mbMemberGradeRepository.save(row);
+        }
+
+        // 4단계: 영속성 컨텍스트 동기화
+        em.flush();
+        em.clear();
+        return;
+
     }
 }

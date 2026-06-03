@@ -29,7 +29,7 @@ public class BoSyTemplateService {
     @Transactional public SyTemplate create(SyTemplate body) { return syTemplateService.create(body); }
     @Transactional public SyTemplate update(String id, SyTemplate body) { return syTemplateService.update(id, body); }
     @Transactional public void delete(String id) { syTemplateService.delete(id); }
-    @Transactional public void saveList(String cmd, List<SyTemplate> rows) { syTemplateService.saveList(cmd, rows); }
+    @Transactional public void saveListBase(List<SyTemplate> rows) { syTemplateService.saveListBase(rows); }
     /** getPathTreeNodeCounts — 표시경로 노드별 SyTemplate 수 (자손 누적) */
     public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(SyTemplateDto.Request req) {
         return syTemplateService.getPathTreeNodeCounts(req);

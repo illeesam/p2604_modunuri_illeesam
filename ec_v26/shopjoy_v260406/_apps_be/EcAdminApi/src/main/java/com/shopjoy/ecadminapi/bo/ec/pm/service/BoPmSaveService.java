@@ -29,5 +29,5 @@ public class BoPmSaveService {
     @Transactional public PmSave create(PmSave body) { return pmSaveService.create(body); }
     @Transactional public PmSave update(String id, PmSave body) { return pmSaveService.update(id, body); }
     @Transactional public void delete(String id) { pmSaveService.delete(id); }
-    @Transactional public void saveList(String cmd, List<PmSave> rows) { pmSaveService.saveList(cmd, rows); }
+    @Transactional public void saveListBase(List<PmSave> rows) { pmSaveService.saveListBase(rows); }
 }

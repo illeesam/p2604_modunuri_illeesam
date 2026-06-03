@@ -29,5 +29,5 @@ public class BoStSettleEtcAdjService {
     @Transactional public StSettleEtcAdj create(StSettleEtcAdj body) { return stSettleEtcAdjService.create(body); }
     @Transactional public StSettleEtcAdj update(String id, StSettleEtcAdj body) { return stSettleEtcAdjService.update(id, body); }
     @Transactional public void delete(String id) { stSettleEtcAdjService.delete(id); }
-    @Transactional public void saveList(String cmd, List<StSettleEtcAdj> rows) { stSettleEtcAdjService.saveList(cmd, rows); }
+    @Transactional public void saveListBase(List<StSettleEtcAdj> rows) { stSettleEtcAdjService.saveListBase(rows); }
 }

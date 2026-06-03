@@ -38,9 +38,9 @@ public class BoSyAlarmService {
     @Transactional public SyAlarm update(String id, SyAlarm body) { return syAlarmService.update(id, body); }
     @Transactional public void delete(String id) { syAlarmService.delete(id); }
 
-    /** saveList — DELETE / UPDATE / INSERT 단계별 일괄 저장 */
+    /** saveListBase — DELETE / UPDATE / INSERT 단계별 일괄 저장 */
     @Transactional
-    public void saveList(String cmd, List<SyAlarm> rows) {
+    public void saveListBase(List<SyAlarm> rows) {
         String authId = SecurityUtil.getAuthUser().authId();
         LocalDateTime now = LocalDateTime.now();
 

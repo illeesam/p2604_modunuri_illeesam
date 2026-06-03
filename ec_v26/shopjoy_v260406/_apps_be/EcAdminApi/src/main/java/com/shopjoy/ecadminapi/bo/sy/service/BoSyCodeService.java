@@ -51,18 +51,25 @@ public class BoSyCodeService {
         codeCache.evictAll();
     }
 
-    /* 단건저장 — rowStatus 단건 분기 (cmd) */
+    /* 단건저장 — rowStatus 단건 분기 */
     @Transactional
-    public SyCode save(String cmd, SyCode entity) {
-        SyCode saved = syCodeService.save(cmd, entity);
+    public SyCode saveOneBase(SyCode entity) {
+        SyCode saved = syCodeService.saveOneBase(entity);
         codeCache.evictAll();
         return saved;
     }
 
     /* 목록저장 */
     @Transactional
-    public void saveList(String cmd, List<SyCode> rows) {
-        syCodeService.saveList(cmd, rows);
+    public void saveListBase(List<SyCode> rows) {
+        syCodeService.saveListBase(rows);
+        codeCache.evictAll();
+    }
+
+    /* 목록저장 — 정렬(sortOrd) 일괄 변경 */
+    @Transactional
+    public void saveListOrder(List<SyCode> rows) {
+        syCodeService.saveListOrder(rows);
         codeCache.evictAll();
     }
 }

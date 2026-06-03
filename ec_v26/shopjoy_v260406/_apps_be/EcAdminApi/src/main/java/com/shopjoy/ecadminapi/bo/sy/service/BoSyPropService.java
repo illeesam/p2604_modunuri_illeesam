@@ -53,8 +53,8 @@ public class BoSyPropService {
 
     /* 목록저장 */
     @Transactional
-    public void saveList(String cmd, List<SyProp> rows) {
-        syPropService.saveList(cmd, rows);
+    public void saveListBase(List<SyProp> rows) {
+        syPropService.saveListBase(rows);
         propCache.evictAll();
     }
     /** getPathTreeNodeCounts — 표시경로 노드별 SyProp 수 (검색조건 + 자손 누적) */

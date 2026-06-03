@@ -128,44 +128,42 @@ public class SyAlarmService {
     /** save -- rowStatus(I/U/D/M) 단건 분기 처리. saveList의 단건 버전.
      *  cmd: "base"=기본 흐름. 그 외는 같은 메서드 안에서 if/else if 로 분기. */
     @Transactional
-    public SyAlarm save(String cmd, SyAlarm entity) {
-        if ("base".equals(cmd)) {
-            String rowStatus  = entity.getRowStatus();
-            String authId     = SecurityUtil.getAuthUser().authId();
-            LocalDateTime now = LocalDateTime.now();
+    public SyAlarm saveOneBase(SyAlarm entity) {
+        String rowStatus  = entity.getRowStatus();
+        String authId     = SecurityUtil.getAuthUser().authId();
+        LocalDateTime now = LocalDateTime.now();
 
-            /* M(merge) / null / blank -- userId 유무로 I/U 정규화 */
-            if ("M".equals(rowStatus) || rowStatus == null || rowStatus.isBlank()) {
-                rowStatus = (entity.getAlarmId() == null || entity.getAlarmId().isBlank()) ? "I" : "U";
-            }
-
-            if ("D".equals(rowStatus)) {
-                if (entity.getAlarmId() == null)
-                    throw new CmBizException("삭제 대상 alarmId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
-                if (!syAlarmRepository.existsById(entity.getAlarmId()))
-                    throw new CmBizException("존재하지 않는 SyAlarm입니다: " + entity.getAlarmId() + "::" + CmUtil.svcCallerInfo(this));
-                syAlarmRepository.deleteById(entity.getAlarmId());
-                return null;
-            } else if ("I".equals(rowStatus)) {
-                entity.setAlarmId(CmUtil.generateId("sy_alarm"));
-                entity.setRegBy(authId); entity.setRegDate(now);
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                SyAlarm saved = syAlarmRepository.save(entity);
-                if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
-                return saved;
-            } else if ("U".equals(rowStatus)) {
-                if (entity.getAlarmId() == null)
-                    throw new CmBizException("수정 대상 alarmId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
-                entity.setUpdBy(authId);
-                int affected = syAlarmRepository.updateSelective(entity);
-                if (affected == 0)
-                    throw new CmBizException("존재하지 않는 SyAlarm입니다: " + entity.getAlarmId() + "::" + CmUtil.svcCallerInfo(this));
-                em.clear();
-                return findById(entity.getAlarmId());
-            }
-            throw new CmBizException("알 수 없는 rowStatus: " + rowStatus + "::" + CmUtil.svcCallerInfo(this));
+        /* M(merge) / null / blank -- userId 유무로 I/U 정규화 */
+        if ("M".equals(rowStatus) || rowStatus == null || rowStatus.isBlank()) {
+            rowStatus = (entity.getAlarmId() == null || entity.getAlarmId().isBlank()) ? "I" : "U";
         }
-        throw new CmBizException("알 수 없는 save cmd: " + cmd + "::" + CmUtil.svcCallerInfo(this));
+
+        if ("D".equals(rowStatus)) {
+            if (entity.getAlarmId() == null)
+                throw new CmBizException("삭제 대상 alarmId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            if (!syAlarmRepository.existsById(entity.getAlarmId()))
+                throw new CmBizException("존재하지 않는 SyAlarm입니다: " + entity.getAlarmId() + "::" + CmUtil.svcCallerInfo(this));
+            syAlarmRepository.deleteById(entity.getAlarmId());
+            return null;
+        } else if ("I".equals(rowStatus)) {
+            entity.setAlarmId(CmUtil.generateId("sy_alarm"));
+            entity.setRegBy(authId); entity.setRegDate(now);
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            SyAlarm saved = syAlarmRepository.save(entity);
+            if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
+            return saved;
+        } else if ("U".equals(rowStatus)) {
+            if (entity.getAlarmId() == null)
+                throw new CmBizException("수정 대상 alarmId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            entity.setUpdBy(authId);
+            int affected = syAlarmRepository.updateSelective(entity);
+            if (affected == 0)
+                throw new CmBizException("존재하지 않는 SyAlarm입니다: " + entity.getAlarmId() + "::" + CmUtil.svcCallerInfo(this));
+            em.clear();
+            return findById(entity.getAlarmId());
+        }
+        throw new CmBizException("알 수 없는 rowStatus: " + rowStatus + "::" + CmUtil.svcCallerInfo(this));
+
     }
         /** getPathTreeNodeCounts — 표시경로 노드별 SyAlarm 수 (검색조건 + 자손 누적, 트리 우측 뱃지용).
      *   검색조건이 있으면 그 조건에 부합하는 row 만 카운트.

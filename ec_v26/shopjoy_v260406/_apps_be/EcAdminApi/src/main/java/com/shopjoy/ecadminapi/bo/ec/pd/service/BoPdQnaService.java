@@ -41,7 +41,7 @@ public class BoPdQnaService {
     @Transactional public PdProdQna create(PdProdQna body) { return pdProdQnaService.create(body); }
     @Transactional public PdProdQna update(String id, PdProdQna body) { return pdProdQnaService.update(id, body); }
     @Transactional public void delete(String id) { pdProdQnaService.delete(id); }
-    @Transactional public void saveList(String cmd, List<PdProdQna> rows) { pdProdQnaService.saveList(cmd, rows); }
+    @Transactional public void saveListBase(List<PdProdQna> rows) { pdProdQnaService.saveListBase(rows); }
 
     /** saveAnswer — Q&A 답변 저장 */
     @Transactional

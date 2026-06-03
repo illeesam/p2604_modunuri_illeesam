@@ -53,8 +53,8 @@ public class BoSyMenuService {
 
     /* 목록저장 */
     @Transactional
-    public void saveList(String cmd, List<SyMenu> rows) {
-        syMenuService.saveList(cmd, rows);
+    public void saveListBase(List<SyMenu> rows) {
+        syMenuService.saveListBase(rows);
         menuCache.evictAll();
     }
     /** getPathTreeNodeCounts — 표시경로 노드별 SyMenu 수 (자손 누적) */

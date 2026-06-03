@@ -53,16 +53,16 @@ public class BoSyUserService {
         syUserService.delete(id);
     }
 
-    /** save — rowStatus 단건 분기 저장. cmd 는 API 마지막 path 세그먼트(null=기본). */
+    /** saveOneBase — rowStatus 단건 분기 저장. */
     @Transactional
-    public SyUser save(String cmd, SyUser entity) {
-        return syUserService.save(cmd, entity);
+    public SyUser saveOneBase(SyUser entity) {
+        return syUserService.saveOneBase(entity);
     }
 
-    /** saveList — 일괄 저장. cmd 는 API 마지막 path 세그먼트(null=기본). */
+    /** saveListBase — 일괄 저장. */
     @Transactional
-    public void saveList(String cmd, List<SyUser> rows) {
-        syUserService.saveList(cmd, rows);
+    public void saveListBase(List<SyUser> rows) {
+        syUserService.saveListBase(rows);
     }
 
     /** getDeptTreeNodeCounts — 부서 트리 노드별 사용자수 (검색조건 + 자손 누적) */

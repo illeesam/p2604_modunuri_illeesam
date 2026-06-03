@@ -191,52 +191,46 @@ public class SyUserService {
      *  @param cmd    API 마지막 path 세그먼트. "base"=기본(/save), "pwd"=비밀번호 저장 등 변형
      *  @param entity 저장 대상 */
     @Transactional
-    public SyUser save(String cmd, SyUser entity) {
-        if ("base".equals(cmd)) {
-            String rowStatus  = entity.getRowStatus();
-            String authId     = SecurityUtil.getAuthUser().authId();
-            LocalDateTime now = LocalDateTime.now();
+    public SyUser saveOneBase(SyUser entity) {
+        String rowStatus  = entity.getRowStatus();
+        String authId     = SecurityUtil.getAuthUser().authId();
+        LocalDateTime now = LocalDateTime.now();
 
-            /* M(merge) / null / blank — userId 유무로 I/U 분기 후 그 분기 흐름 재사용 */
-            if ("M".equals(rowStatus) || rowStatus == null || rowStatus.isBlank()) {
-                rowStatus = (entity.getUserId() == null || entity.getUserId().isBlank()) ? "I" : "U";
-            }
-
-            if ("D".equals(rowStatus)) {
-                if (entity.getUserId() == null)
-                    throw new CmBizException("삭제 대상 userId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
-                if (!syUserRepository.existsById(entity.getUserId()))
-                    throw new CmBizException("존재하지 않는 SyUser입니다: " + entity.getUserId() + "::" + CmUtil.svcCallerInfo(this));
-                syUserRepository.deleteById(entity.getUserId());
-                return null;
-            } else if ("I".equals(rowStatus)) {
-                entity.setUserId(CmUtil.generateId("sy_user"));
-                entity.setRegBy(authId); entity.setRegDate(now);
-                entity.setUpdBy(authId); entity.setUpdDate(now);
-                SyUser saved = syUserRepository.save(entity);
-                if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
-                return saved;
-            } else if ("U".equals(rowStatus)) {
-                /* U — QueryDSL updateSelective (SELECT 없이 UPDATE 만, 1차 캐시 우회).
-                 *     updDate 는 Repository 가 DB CURRENT_TIMESTAMP 로 자동 채움. */
-                if (entity.getUserId() == null)
-                    throw new CmBizException("수정 대상 userId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
-                entity.setUpdBy(authId);
-                int affected = syUserRepository.updateSelective(entity);
-                if (affected == 0)
-                    throw new CmBizException("존재하지 않는 SyUser입니다: " + entity.getUserId() + "::" + CmUtil.svcCallerInfo(this));
-                /* 벌크 UPDATE 후 직후 findById 가 stale 1차 캐시를 보지 않도록 clear 필수 */
-                em.clear();
-                return findById(entity.getUserId());
-            }
-            /* 안전망 — 정규화에서 모두 I/U/D 로 매핑되므로 도달 불가. 알 수 없는 값이 새어 들어오면 즉시 차단. */
-            throw new CmBizException("알 수 없는 rowStatus: " + rowStatus + "::" + CmUtil.svcCallerInfo(this));
+        /* M(merge) / null / blank — userId 유무로 I/U 분기 후 그 분기 흐름 재사용 */
+        if ("M".equals(rowStatus) || rowStatus == null || rowStatus.isBlank()) {
+            rowStatus = (entity.getUserId() == null || entity.getUserId().isBlank()) ? "I" : "U";
         }
-        // else if ("pwd".equals(cmd)) {
-        //     // 비밀번호 저장 전용 흐름
-        //     ...
-        // }
-        throw new CmBizException("알 수 없는 save cmd: " + cmd + "::" + CmUtil.svcCallerInfo(this));
+
+        if ("D".equals(rowStatus)) {
+            if (entity.getUserId() == null)
+                throw new CmBizException("삭제 대상 userId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            if (!syUserRepository.existsById(entity.getUserId()))
+                throw new CmBizException("존재하지 않는 SyUser입니다: " + entity.getUserId() + "::" + CmUtil.svcCallerInfo(this));
+            syUserRepository.deleteById(entity.getUserId());
+            return null;
+        } else if ("I".equals(rowStatus)) {
+            entity.setUserId(CmUtil.generateId("sy_user"));
+            entity.setRegBy(authId); entity.setRegDate(now);
+            entity.setUpdBy(authId); entity.setUpdDate(now);
+            SyUser saved = syUserRepository.save(entity);
+            if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
+            return saved;
+        } else if ("U".equals(rowStatus)) {
+            /* U — QueryDSL updateSelective (SELECT 없이 UPDATE 만, 1차 캐시 우회).
+             *     updDate 는 Repository 가 DB CURRENT_TIMESTAMP 로 자동 채움. */
+            if (entity.getUserId() == null)
+                throw new CmBizException("수정 대상 userId 가 없습니다.::" + CmUtil.svcCallerInfo(this));
+            entity.setUpdBy(authId);
+            int affected = syUserRepository.updateSelective(entity);
+            if (affected == 0)
+                throw new CmBizException("존재하지 않는 SyUser입니다: " + entity.getUserId() + "::" + CmUtil.svcCallerInfo(this));
+            /* 벌크 UPDATE 후 직후 findById 가 stale 1차 캐시를 보지 않도록 clear 필수 */
+            em.clear();
+            return findById(entity.getUserId());
+        }
+        /* 안전망 — 정규화에서 모두 I/U/D 로 매핑되므로 도달 불가. 알 수 없는 값이 새어 들어오면 즉시 차단. */
+        throw new CmBizException("알 수 없는 rowStatus: " + rowStatus + "::" + CmUtil.svcCallerInfo(this));
+
     }
 
     /** saveList — 일괄 저장 (DELETE/UPDATE/INSERT 단계별 처리).
@@ -246,68 +240,61 @@ public class SyUserService {
      *  @param cmd  API 마지막 path 세그먼트. "base"=기본(/save-list), "order"=정렬 변경 등 변형
      *  @param rows 저장 대상 목록 */
     @Transactional
-    public void saveList(String cmd, List<SyUser> rows) {
-        if ("base".equals(cmd)) {
-            /* 0단계: rowStatus 정규화
-             *  - M(merge) / null / blank → userId 유무로 I/U
-             *  - I/U/D 외 알 수 없는 값 → 예외 (조용히 무시 금지) */
-            for (SyUser row : rows) {
-                String rs = row.getRowStatus();
-                if ("M".equals(rs) || rs == null || rs.isBlank()) {
-                    row.setRowStatus((row.getUserId() == null || row.getUserId().isBlank()) ? "I" : "U");
-                } else if (!"I".equals(rs) && !"U".equals(rs) && !"D".equals(rs)) {
-                    throw new CmBizException("알 수 없는 rowStatus: " + rs + "::" + CmUtil.svcCallerInfo(this));
-                }
+    public void saveListBase(List<SyUser> rows) {
+        /* 0단계: rowStatus 정규화
+         *  - M(merge) / null / blank → userId 유무로 I/U
+         *  - I/U/D 외 알 수 없는 값 → 예외 (조용히 무시 금지) */
+        for (SyUser row : rows) {
+            String rs = row.getRowStatus();
+            if ("M".equals(rs) || rs == null || rs.isBlank()) {
+                row.setRowStatus((row.getUserId() == null || row.getUserId().isBlank()) ? "I" : "U");
+            } else if (!"I".equals(rs) && !"U".equals(rs) && !"D".equals(rs)) {
+                throw new CmBizException("알 수 없는 rowStatus: " + rs + "::" + CmUtil.svcCallerInfo(this));
             }
-            CmUtil.requireRowIds(rows, SyUser::getUserId, "U", "userId", this);
-            CmUtil.requireRowIds(rows, SyUser::getUserId, "D", "userId", this);
-            String authId = SecurityUtil.getAuthUser().authId();
-            LocalDateTime now = LocalDateTime.now();
-
-            // 1단계: DELETE 일괄 처리
-            List<String> deleteIds = rows.stream()
-                .filter(r -> "D".equals(r.getRowStatus()))
-                .map(SyUser::getUserId)
-                .toList();
-            if (!deleteIds.isEmpty()) {
-                syUserRepository.deleteAllById(deleteIds);
-            }
-
-            // 2단계: UPDATE 처리 — QueryDSL updateSelective (SELECT 없이 UPDATE 만, 1차 캐시 우회)
-            List<SyUser> updateRows = rows.stream()
-                .filter(r -> "U".equals(r.getRowStatus()))
-                .toList();
-            for (SyUser row : updateRows) {
-                row.setUpdBy(authId);
-                int affected = syUserRepository.updateSelective(row);
-                if (affected == 0) {
-                    throw new CmBizException("존재하지 않는 데이터입니다: " + row.getUserId() + "::" + CmUtil.svcCallerInfo(this));
-                }
-            }
-
-            // 3단계: INSERT 처리 + 처리된 ID 수집
-            List<SyUser> insertRows = rows.stream()
-                .filter(r -> "I".equals(r.getRowStatus()))
-                .toList();
-            for (SyUser row : insertRows) {
-                row.setUserId(CmUtil.generateId("sy_user"));
-                row.setRegBy(authId); row.setRegDate(now);
-                row.setUpdBy(authId); row.setUpdDate(now);
-                syUserRepository.save(row);
-            }
-
-            /* 4단계: 영속성 컨텍스트 동기화 — DELETE/벌크 UPDATE/INSERT 가 섞여 있어 호출자가 같은 트랜잭션 내에서
-             *        결과를 다시 조회할 때 stale 1차 캐시를 안 보도록 한 번에 flush+clear. */
-            em.flush();
-            em.clear();
-            return;
         }
-        // else if ("order".equals(cmd)) {
-        //     // 정렬 순서 일괄 변경 전용 흐름
-        //     ...
-        //     return;
-        // }
-        throw new CmBizException("알 수 없는 saveList cmd: " + cmd + "::" + CmUtil.svcCallerInfo(this));
+        CmUtil.requireRowIds(rows, SyUser::getUserId, "U", "userId", this);
+        CmUtil.requireRowIds(rows, SyUser::getUserId, "D", "userId", this);
+        String authId = SecurityUtil.getAuthUser().authId();
+        LocalDateTime now = LocalDateTime.now();
+
+        // 1단계: DELETE 일괄 처리
+        List<String> deleteIds = rows.stream()
+            .filter(r -> "D".equals(r.getRowStatus()))
+            .map(SyUser::getUserId)
+            .toList();
+        if (!deleteIds.isEmpty()) {
+            syUserRepository.deleteAllById(deleteIds);
+        }
+
+        // 2단계: UPDATE 처리 — QueryDSL updateSelective (SELECT 없이 UPDATE 만, 1차 캐시 우회)
+        List<SyUser> updateRows = rows.stream()
+            .filter(r -> "U".equals(r.getRowStatus()))
+            .toList();
+        for (SyUser row : updateRows) {
+            row.setUpdBy(authId);
+            int affected = syUserRepository.updateSelective(row);
+            if (affected == 0) {
+                throw new CmBizException("존재하지 않는 데이터입니다: " + row.getUserId() + "::" + CmUtil.svcCallerInfo(this));
+            }
+        }
+
+        // 3단계: INSERT 처리 + 처리된 ID 수집
+        List<SyUser> insertRows = rows.stream()
+            .filter(r -> "I".equals(r.getRowStatus()))
+            .toList();
+        for (SyUser row : insertRows) {
+            row.setUserId(CmUtil.generateId("sy_user"));
+            row.setRegBy(authId); row.setRegDate(now);
+            row.setUpdBy(authId); row.setUpdDate(now);
+            syUserRepository.save(row);
+        }
+
+        /* 4단계: 영속성 컨텍스트 동기화 — DELETE/벌크 UPDATE/INSERT 가 섞여 있어 호출자가 같은 트랜잭션 내에서
+         *        결과를 다시 조회할 때 stale 1차 캐시를 안 보도록 한 번에 flush+clear. */
+        em.flush();
+        em.clear();
+        return;
+
     }
 
     /** getDeptTreeNodeCounts — 부서 트리 노드별 사용자수 (검색조건 + 자손 누적, 트리 우측 뱃지용).

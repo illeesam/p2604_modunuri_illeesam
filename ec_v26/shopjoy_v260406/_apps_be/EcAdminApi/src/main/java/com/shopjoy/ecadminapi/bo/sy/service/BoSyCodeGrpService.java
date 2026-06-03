@@ -29,7 +29,7 @@ public class BoSyCodeGrpService {
     @Transactional public SyCodeGrp create(SyCodeGrp body) { return syCodeGrpService.create(body); }
     @Transactional public SyCodeGrp update(String id, SyCodeGrp body) { return syCodeGrpService.update(id, body); }
     @Transactional public void delete(String id) { syCodeGrpService.delete(id); }
-    @Transactional public void saveList(String cmd, List<SyCodeGrp> rows) { syCodeGrpService.saveList(cmd, rows); }
+    @Transactional public void saveListBase(List<SyCodeGrp> rows) { syCodeGrpService.saveListBase(rows); }
     /** getPathTreeNodeCounts — 표시경로 노드별 SyCodeGrp 수 (자손 누적) */
     public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(SyCodeGrpDto.Request req) {
         return syCodeGrpService.getPathTreeNodeCounts(req);

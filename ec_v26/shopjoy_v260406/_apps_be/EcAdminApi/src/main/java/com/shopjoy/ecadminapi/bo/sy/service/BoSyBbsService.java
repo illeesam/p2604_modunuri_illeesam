@@ -29,5 +29,5 @@ public class BoSyBbsService {
     @Transactional public SyBbs create(SyBbs body) { return syBbsService.create(body); }
     @Transactional public SyBbs update(String id, SyBbs body) { return syBbsService.update(id, body); }
     @Transactional public void delete(String id) { syBbsService.delete(id); }
-    @Transactional public void saveList(String cmd, List<SyBbs> rows) { syBbsService.saveList(cmd, rows); }
+    @Transactional public void saveListBase(List<SyBbs> rows) { syBbsService.saveListBase(rows); }
 }

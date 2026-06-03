@@ -40,7 +40,7 @@ public class BoStSettleCloseService {
     @Transactional public StSettleClose create(StSettleClose body) { return stSettleCloseService.create(body); }
     @Transactional public StSettleClose update(String id, StSettleClose body) { return stSettleCloseService.update(id, body); }
     @Transactional public void delete(String id) { stSettleCloseService.delete(id); }
-    @Transactional public void saveList(String cmd, List<StSettleClose> rows) { stSettleCloseService.saveList(cmd, rows); }
+    @Transactional public void saveListBase(List<StSettleClose> rows) { stSettleCloseService.saveListBase(rows); }
 
     /** reopen — 마감 재오픈 */
     @Transactional

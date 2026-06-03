@@ -29,7 +29,7 @@ public class BoDpWidgetService {
     @Transactional public DpWidget create(DpWidget body) { return dpWidgetService.create(body); }
     @Transactional public DpWidget update(String id, DpWidget body) { return dpWidgetService.update(id, body); }
     @Transactional public void delete(String id) { dpWidgetService.delete(id); }
-    @Transactional public void saveList(String cmd, List<DpWidget> rows) { dpWidgetService.saveList(cmd, rows); }
+    @Transactional public void saveListBase(List<DpWidget> rows) { dpWidgetService.saveListBase(rows); }
     /** getPathTreeNodeCounts — 표시경로 노드별 DpWidget 수 (자손 누적) */
     public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(DpWidgetDto.Request req) {
         return dpWidgetService.getPathTreeNodeCounts(req);

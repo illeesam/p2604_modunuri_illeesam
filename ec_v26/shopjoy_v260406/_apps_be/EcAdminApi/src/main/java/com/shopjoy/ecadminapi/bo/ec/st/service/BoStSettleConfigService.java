@@ -29,5 +29,5 @@ public class BoStSettleConfigService {
     @Transactional public StSettleConfig create(StSettleConfig body) { return stSettleConfigService.create(body); }
     @Transactional public StSettleConfig update(String id, StSettleConfig body) { return stSettleConfigService.update(id, body); }
     @Transactional public void delete(String id) { stSettleConfigService.delete(id); }
-    @Transactional public void saveList(String cmd, List<StSettleConfig> rows) { stSettleConfigService.saveList(cmd, rows); }
+    @Transactional public void saveListBase(List<StSettleConfig> rows) { stSettleConfigService.saveListBase(rows); }
 }

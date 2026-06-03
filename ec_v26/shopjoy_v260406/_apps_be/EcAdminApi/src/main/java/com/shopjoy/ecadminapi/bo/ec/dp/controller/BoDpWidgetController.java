@@ -3,6 +3,7 @@ package com.shopjoy.ecadminapi.bo.ec.dp.controller;
 import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpWidgetDto;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpWidget;
 import com.shopjoy.ecadminapi.bo.ec.dp.service.BoDpWidgetService;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -69,7 +70,10 @@ public class BoDpWidgetController {
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
             @PathVariable("cmd") String cmd, @RequestBody List<DpWidget> rows) {
-        boDpWidgetService.saveList(cmd, rows);
+        switch (cmd) {
+            case "base" -> boDpWidgetService.saveListBase(rows);
+            default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);
+        }
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
     /** pathCounts — 표시경로 노드별 DpWidget 수 (자손 누적, 트리 우측 뱃지용) */

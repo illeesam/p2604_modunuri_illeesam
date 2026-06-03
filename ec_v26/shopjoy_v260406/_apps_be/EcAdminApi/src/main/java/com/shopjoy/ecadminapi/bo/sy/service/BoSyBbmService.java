@@ -29,7 +29,7 @@ public class BoSyBbmService {
     @Transactional public SyBbm create(SyBbm body) { return syBbmService.create(body); }
     @Transactional public SyBbm update(String id, SyBbm body) { return syBbmService.update(id, body); }
     @Transactional public void delete(String id) { syBbmService.delete(id); }
-    @Transactional public void saveList(String cmd, List<SyBbm> rows) { syBbmService.saveList(cmd, rows); }
+    @Transactional public void saveListBase(List<SyBbm> rows) { syBbmService.saveListBase(rows); }
     /** getPathTreeNodeCounts — 표시경로 노드별 SyBbm 수 (자손 누적) */
     public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(SyBbmDto.Request req) {
         return syBbmService.getPathTreeNodeCounts(req);

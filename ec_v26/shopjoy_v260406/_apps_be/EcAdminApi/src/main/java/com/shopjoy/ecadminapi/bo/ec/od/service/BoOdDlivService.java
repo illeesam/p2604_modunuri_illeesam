@@ -100,7 +100,7 @@ public class BoOdDlivService {
     }
     @Transactional public OdDliv update(String id, OdDliv body) { return odDlivService.update(id, body); }
     @Transactional public void delete(String id) { odDlivService.delete(id); }
-    @Transactional public void saveList(String cmd, List<OdDliv> rows) { odDlivService.saveList(cmd, rows); }
+    @Transactional public void saveListBase(List<OdDliv> rows) { odDlivService.saveListBase(rows); }
 
     /** changeStatus — dlivStatusCd 변경 (이력 보존) */
     @Transactional

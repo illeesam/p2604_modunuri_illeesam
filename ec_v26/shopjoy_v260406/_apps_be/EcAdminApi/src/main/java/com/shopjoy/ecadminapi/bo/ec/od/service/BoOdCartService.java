@@ -105,5 +105,5 @@ public class BoOdCartService {
     @Transactional public OdCart create(OdCart body) { return odCartService.create(body); }
     @Transactional public OdCart update(String id, OdCart body) { return odCartService.update(id, body); }
     @Transactional public void delete(String id) { odCartService.delete(id); }
-    @Transactional public void saveList(String cmd, List<OdCart> rows) { odCartService.saveList(cmd, rows); }
+    @Transactional public void saveListBase(List<OdCart> rows) { odCartService.saveListBase(rows); }
 }

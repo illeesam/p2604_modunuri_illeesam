@@ -44,7 +44,7 @@ public class BoPmEventService {
     }
     @Transactional public PmEvent update(String id, PmEvent body) { return pmEventService.update(id, body); }
     @Transactional public void delete(String id) { pmEventService.delete(id); }
-    @Transactional public void saveList(String cmd, List<PmEvent> rows) { pmEventService.saveList(cmd, rows); }
+    @Transactional public void saveListBase(List<PmEvent> rows) { pmEventService.saveListBase(rows); }
 
     /** changeStatus — eventStatusCd 변경 (이력 보존) */
     @Transactional

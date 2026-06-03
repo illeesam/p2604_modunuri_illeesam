@@ -84,7 +84,7 @@ public class BoDpPanelService {
     @Transactional public DpPanel create(DpPanel body) { return dpPanelService.create(body); }
     @Transactional public DpPanel update(String id, DpPanel body) { return dpPanelService.update(id, body); }
     @Transactional public void delete(String id) { dpPanelService.delete(id); }
-    @Transactional public void saveList(String cmd, List<DpPanel> rows) { dpPanelService.saveList(cmd, rows); }
+    @Transactional public void saveListBase(List<DpPanel> rows) { dpPanelService.saveListBase(rows); }
     /** getPathTreeNodeCounts — 표시경로 노드별 DpPanel 수 (자손 누적) */
     public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(DpPanelDto.Request req) {
         return dpPanelService.getPathTreeNodeCounts(req);

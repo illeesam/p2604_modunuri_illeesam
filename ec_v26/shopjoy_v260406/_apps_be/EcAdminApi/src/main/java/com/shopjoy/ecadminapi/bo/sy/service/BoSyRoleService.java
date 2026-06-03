@@ -65,8 +65,8 @@ public class BoSyRoleService {
 
     /* 목록저장 */
     @Transactional
-    public void saveList(String cmd, List<SyRole> rows) {
-        syRoleService.saveList(cmd, rows);
+    public void saveListBase(List<SyRole> rows) {
+        syRoleService.saveListBase(rows);
         roleCache.evictAll();
     }
 
@@ -116,7 +116,7 @@ public class BoSyRoleService {
         }
 
         /* 4) D + I 한 번에 처리 (saveList 가 단계별 DELETE → INSERT 처리하여 unique 충돌 회피) */
-        syRoleMenuService.saveList("base", rows);
+        syRoleMenuService.saveListBase(rows);
         roleMenuCache.evict(roleId);  /* 캐시 무효화 */
     }
 
@@ -149,6 +149,6 @@ public class BoSyRoleService {
         }
 
         /* 4) D + I 한 번에 처리 (saveList 가 단계별 DELETE → INSERT 처리하여 unique(user_id, role_id) 충돌 회피) */
-        syUserRoleService.saveList("base", rows);
+        syUserRoleService.saveListBase(rows);
     }
 }

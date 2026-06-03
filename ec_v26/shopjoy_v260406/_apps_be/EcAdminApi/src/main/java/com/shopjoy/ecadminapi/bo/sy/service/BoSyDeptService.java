@@ -42,5 +42,5 @@ public class BoSyDeptService {
 
     /* 목록저장 */
     @Transactional
-    public void saveList(String cmd, List<SyDept> rows) { syDeptService.saveList(cmd, rows); }
+    public void saveListBase(List<SyDept> rows) { syDeptService.saveListBase(rows); }
 }

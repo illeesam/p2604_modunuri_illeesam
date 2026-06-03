@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmPlanDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmPlanChangeStatusDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.entity.PmPlan;
 import com.shopjoy.ecadminapi.bo.ec.pm.service.BoPmPlanService;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -79,7 +80,10 @@ public class BoPmPlanController {
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
             @PathVariable("cmd") String cmd, @RequestBody List<PmPlan> rows) {
-        boPmPlanService.saveList(cmd, rows);
+        switch (cmd) {
+            case "base" -> boPmPlanService.saveListBase(rows);
+            default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);
+        }
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

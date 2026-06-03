@@ -29,7 +29,7 @@ public class BoSyBrandService {
     @Transactional public SyBrand create(SyBrand body) { return syBrandService.create(body); }
     @Transactional public SyBrand update(String id, SyBrand body) { return syBrandService.update(id, body); }
     @Transactional public void delete(String id) { syBrandService.delete(id); }
-    @Transactional public void saveList(String cmd, List<SyBrand> rows) { syBrandService.saveList(cmd, rows); }
+    @Transactional public void saveListBase(List<SyBrand> rows) { syBrandService.saveListBase(rows); }
     /** getPathTreeNodeCounts — 표시경로 노드별 SyBrand 수 (검색조건 + 자손 누적) */
     public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(SyBrandDto.Request req) {
         return syBrandService.getPathTreeNodeCounts(req);

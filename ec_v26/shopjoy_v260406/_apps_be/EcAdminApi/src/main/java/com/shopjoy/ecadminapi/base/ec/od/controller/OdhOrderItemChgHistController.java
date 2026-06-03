@@ -3,6 +3,7 @@ package com.shopjoy.ecadminapi.base.ec.od.controller;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhOrderItemChgHistDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdhOrderItemChgHist;
 import com.shopjoy.ecadminapi.base.ec.od.service.OdhOrderItemChgHistService;
+import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +47,7 @@ public class OdhOrderItemChgHistController {
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<OdhOrderItemChgHist>> save(@PathVariable("id") String id, @RequestBody OdhOrderItemChgHist entity) {
         entity.setOrderItemChgHistId(id);
-        return ResponseEntity.ok(ApiResponse.ok(service.save("base", entity)));
+        return ResponseEntity.ok(ApiResponse.ok(service.saveOneBase(entity)));
     }
 
     /* 주문 아이템 변경 이력 수정 */
@@ -65,16 +66,23 @@ public class OdhOrderItemChgHistController {
 
     /** save -- rowStatus 단건 분기 저장 (cmd 변형) */
     @PostMapping("/save/{cmd}")
-    public ResponseEntity<ApiResponse<OdhOrderItemChgHist>> saveCmd(
+    public ResponseEntity<ApiResponse<OdhOrderItemChgHist>> saveOneCmd(
             @PathVariable("cmd") String cmd, @RequestBody OdhOrderItemChgHist entity) {
-        return ResponseEntity.ok(ApiResponse.ok(service.save(cmd, entity), "저장되었습니다."));
+        OdhOrderItemChgHist result = switch (cmd) {
+            case "base" -> service.saveOneBase(entity);
+            default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
+        };
+        return ResponseEntity.ok(ApiResponse.ok(result, "저장되었습니다."));
     }
 
     /** saveList -- 일괄 저장 (cmd 변형) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(
             @PathVariable("cmd") String cmd, @RequestBody List<OdhOrderItemChgHist> rows) {
-        service.saveList(cmd, rows);
+        switch (cmd) {
+            case "base" -> service.saveListBase(rows);
+            default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);
+        }
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 }

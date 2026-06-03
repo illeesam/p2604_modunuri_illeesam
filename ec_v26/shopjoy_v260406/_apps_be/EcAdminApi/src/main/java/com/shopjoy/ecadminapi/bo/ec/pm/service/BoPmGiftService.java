@@ -40,7 +40,7 @@ public class BoPmGiftService {
     @Transactional public PmGift create(PmGift body) { return pmGiftService.create(body); }
     @Transactional public PmGift update(String id, PmGift body) { return pmGiftService.update(id, body); }
     @Transactional public void delete(String id) { pmGiftService.delete(id); }
-    @Transactional public void saveList(String cmd, List<PmGift> rows) { pmGiftService.saveList(cmd, rows); }
+    @Transactional public void saveListBase(List<PmGift> rows) { pmGiftService.saveListBase(rows); }
 
     /** changeStatus — giftStatusCd 변경 (이력 보존) */
     @Transactional
