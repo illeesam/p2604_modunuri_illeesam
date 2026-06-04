@@ -54,6 +54,9 @@ window.CmChattDtl = {
       // 폼 닫기 → 상세영역 유지 + 빈 신규 폼으로 초기화
       } else if (cmd === 'form-close') {
         return props.navigate('__cancelEdit__');
+      // 보기모드 → 수정모드 전환
+      } else if (cmd === 'form-edit') {
+        return props.navigate('__switchToEdit__');
       // 채팅 답변 전송
       } else if (cmd === 'chat-sendReply') {
         return sendReply();
@@ -375,6 +378,14 @@ window.CmChattDtl = {
           </div>
           <div v-else style="margin-top:12px;text-align:center;color:#aaa;font-size:13px;padding:10px;background:#fafafa;border-radius:6px;">
             종료된 채팅입니다.
+          </div>
+          <div class="form-actions" v-if="cofAnd(active, cfDtlMode)">
+            <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
+              수정
+            </button>
+            <button class="btn btn-secondary" @click="handleBtnAction('chat-back')">
+              목록으로
+            </button>
           </div>
           <div class="form-actions" v-if="cofAnd(active, !cfDtlMode)">
             <button class="btn btn-secondary" @click="handleBtnAction('chat-back')">

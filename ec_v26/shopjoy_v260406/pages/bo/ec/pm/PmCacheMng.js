@@ -81,7 +81,10 @@ window.PmCacheMng = {
       // 페이지 크기 변경
       if (cmd === 'caches-pager-sizeChange') {
         return onSizeChange();
-      // 그리드 행 클릭 → 상세 편집 패널 열기
+      // 그리드 셀/행 클릭 → 상세 보기 패널 열기
+      } else if (cmd === 'caches-rowView') {
+        return loadView(param);
+      // 그리드 행 [수정] 버튼 → 상세 편집 패널 열기
       } else if (cmd === 'caches-rowEdit') {
         return handleLoadDetail(param);
       // 그리드 행 삭제
@@ -329,7 +332,7 @@ window.PmCacheMng = {
       :row-style="(c) => detailPanel.selectedId===c.cacheId ? 'background:#fff8f9;' : ''"
       @sort="key => handleBtnAction('caches-sort', key)"
       @ref-click="({type,id}) => handleSelectAction('caches-ref', {type, id})"
-      @cell-click="e => handleSelectAction('caches-rowEdit', e.row.cacheId)">
+      @cell-click="e => handleSelectAction('caches-rowView', e.row.cacheId)">
       <template #head-actions>
         관리
       </template>
@@ -352,10 +355,10 @@ window.PmCacheMng = {
       </div>
       <div v-for="(c, idx) in caches" :key="c?.cacheId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
         :style="detailPanel.selectedId===c.cacheId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
-        @click="handleSelectAction('caches-rowEdit', c.cacheId)">
+        @click="handleSelectAction('caches-rowView', c.cacheId)">
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
           <div style="font-size:12px;color:#999;margin-bottom:6px;"><span style="display:inline-block;min-width:20px;font-weight:700;color:#e8587a;">{{ (pager.pageNo-1)*pager.pageSize + idx + 1 }}</span> 캐시 #{{ c.cacheId }}</div>
-          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleSelectAction('caches-rowEdit', c.cacheId)" :style="detailPanel.selectedId===c.cacheId?{color:'#e8587a'}:{}">
+          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleSelectAction('caches-rowView', c.cacheId)" :style="detailPanel.selectedId===c.cacheId?{color:'#e8587a'}:{}">
             {{ c.cacheDesc }}
             <span v-if="detailPanel.selectedId===c.cacheId" style="font-size:10px;margin-left:4px;">▼</span>
           </div>

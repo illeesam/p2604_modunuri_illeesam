@@ -302,6 +302,60 @@ Dtl 탭 뷰모드 중 **3열(`cols-3`) 또는 4열(`cols-4`)** 선택 시 max-wi
 > CSS: [assets/css/boGlobalStyle01/02/03.css](../../../assets/css/) `.card`.
 > 연관: §10.12(트리 선택 시 목록·상세 초기화), §11.2(페이저 카드 내부), §12.1(임베드 Dtl 제목 list-title).
 
+### 6.7 제목 ● 아이콘 / 슬림화 / 트리 루트 강조 표준 ⭐ (2026-06-04)
+
+**모든 제목 좌측 ● 아이콘 (전역 CSS, 수동 ● span 금지)**:
+```css
+.page-title::before { content: "●"; color:#e8587a; font-size:11px; margin-right:8px; vertical-align:middle; }
+.page-title[style*="flex"]::before { content: none; }   /* inline flex 제목(DP 미리보기 등) 레이아웃 보호 — 제외 */
+.list-title::before { content: "●"; color:#e8587a; font-size:8px; margin-right:5px; vertical-align:middle; }
+```
+- 화면 제목=`page-title`, 영역 제목=`list-title` 만 쓰면 ● 자동. **개별 화면에서 수동 `<span>●</span>` 추가 금지**(이중 아이콘). 기존 수동 ● 13개 제거 완료.
+- 영역 제목이 `<b>`/커스텀 div 면 → `class="list-title"` 로 바꿔 폰트·아이콘 통일(역할관리 메뉴접근권한/대상사용자, DP Dtl 헤더 등).
+- ⚠️ CSS `content` 에 ● 넣을 때 **유니코드 escape(`\25CF`) 쓰지 말고 리터럴 ●** — 도구가 octal 로 오인해 제어문자(0x15) 주입 사고 발생함. 반드시 raw 바이트(0x25cf) 확인.
+
+**슬림화 (전역)**: `.pagination` padding `3px 10px`+`margin-top 2px`(목록에 붙임), `.pager button` `24px`, `.left-nav-item`(좌측메뉴) padding `7px 16px`, `.bo-tab-bar` 탭버튼 padding `5px 12px`+뷰모드버튼 `3px 6px`(우측 최소공간), HTML 에디터(`.toastui-editor-defaultUI-toolbar`) `flex-wrap:nowrap`(툴바 한 줄).
+
+**트리 루트('전체') 최상위 레벨 강조**: BoPathTreeNode/BoDeptTreeNode 의 `depth===0` 노드는 `fontWeight:700`+`fontSize:13px`+하단 `border-bottom:1px #f0f0f0` 로 자식(12px/400)과 구분.
+
+> 코드: CSS 3테마, [components/comp/BoComp.js](../../../components/comp/BoComp.js)(트리/탭바), [BaseComp.js](../../../components/comp/BaseComp.js)(에디터 툴바).
+
+### 6.8 탭 바 표준화 / Hist 탭-라벨 한 카드 / 위젯 Dtl 열수 ⭐ (2026-06-04)
+
+**커스텀 탭 버튼 금지 → `<bo-tab-bar>` 통일**:
+- 화면 안의 탭 전환 UI(예: 전시UI시뮬레이션 `영역미리보기/구조/소스`, Hist `로그인로그/토큰`)는 **수기 `<button>` + 핑크 인라인 스타일**(`color:#e8587a;border-bottom:3px solid #e8587a`) 작성 금지.
+- 반드시 `reactive([{id,label,icon?,count?}])` + `<bo-tab-bar :tabs :tab :show-modes="false" @tab-select="id => ...">` 로 통일 → 모든 탭 버튼 스타일·간격 일관.
+- 탭 정의는 `computed` 금지, `reactive([...])`. 동적 카운트는 `get count(){ return ... }` getter.
+
+**Hist 탭은 "라벨 → 탭바 → 목록"을 한 카드에**:
+- 이력 화면(로그인/토큰처럼 탭으로 데이터셋 전환)은 **떠 있는 `class="tab-nav"` 금지**. `<div class="card">` 안에 `① <div class="list-title">…이력</div>` → `② <bo-tab-bar :show-modes="false">` → `③ <bo-grid bare>`(활성 탭) → `④ <bo-pager>` 순서로 한 카드에 묶는다.
+- 그리드는 `bare`(자체 카드/타이틀 제거) — 탭명이 곧 목록 제목이라 `list-title` 중복 금지.
+- 적용: [SyUserLoginHist](../../../pages/bo/sy/SyUserLoginHist.js), [SyMemberLoginHist](../../../pages/bo/sy/SyMemberLoginHist.js). (Od/Pd/Mb Hist 는 이미 `bo-tab-bar` 사용 — 점검 완료.)
+
+**임베드 위젯/관계 트리 행 슬림**: 다단 관계 트리(전시관계도 UI→영역→패널)의 각 행 세로 padding 을 `5px/4px/3px`(상→하위) 로 축소, 인터-루트 `margin-bottom:8px`. 가로 들여쓰기(40px/68px)는 유지.
+
+**Dtl 폼 열수는 화면 의도 우선**: 표준은 cols=3 이나, 필드가 적고 입력폭이 필요한 위젯류 Dtl(DpDispWidgetDtl/DpDispWidgetLibDtl)은 `:cols="2"` + 각 필드 `colSpan` 미지정(1열씩) 으로 "2열·각 1칸" 레이아웃 허용.
+
+> 코드: [DpDispUiSimul.js](../../../pages/bo/ec/dp/DpDispUiSimul.js)(mainTabs), [DpDispRelationMng.js](../../../pages/bo/ec/dp/DpDispRelationMng.js)(행 슬림), [BoComp.js](../../../components/comp/BoComp.js) `BoTabBar`.
+
+### 6.9 행 클릭=보기 / [수정]=수정 / 보기모드 수정버튼 항상 ⭐ (2026-06-04, 전체공통)
+
+인라인 상세 패널(`dtlMode: 'view' | 'edit'`)을 쓰는 Mng/Dtl 의 **상호작용 표준**:
+
+| 동작 | 결과 | 구현 |
+|---|---|---|
+| 그리드 **행번호/제목(셀) 클릭** | 상세 **보기모드** | `@cell-click → '{area}-rowView' → loadView(id)` (`dtlMode='view'`) |
+| 행 액션 **[수정]** 버튼 | 상세 **수정모드** | `'{area}-rowEdit' → handleLoadDetail(id)` (`dtlMode='edit'`) |
+| 보기모드 하단 **[수정]** 버튼(항상 표시) | 보기→수정 전환 | Dtl `'form-edit' → navigate('__switchToEdit__')`, Mng `inlineNavigate` 가 `dtlMode='edit'` |
+
+- ❌ 금지: 행 클릭이 바로 수정모드로 진입(`@cell-click → rowEdit`). 보기 먼저, 수정은 의도적 액션.
+- Dtl 하단 액션: **보기모드 = [수정][닫기]**, **수정모드 = [저장][취소]**. `bo-form-area` 의 `:show-actions="active" @edit @save` 자동 렌더 또는 수동 `form-actions v-if` 2분기(`cfDtlMode`).
+- 제목도 모드 반영: `cfDtlMode ? '…상세' : '…수정'`.
+- `cfDetailKey` 에 `dtlMode` 포함 → 모드 전환 시 `:key` 변경으로 폼 재마운트(보기 데이터 → 편집 가능).
+- 적용(2026-06-04): SyBbsMng/Dtl(기준 모델), SyAlarm·SyBbm·SyContact·SySite Mng/Dtl. 동일 상태머신(`loadView`+`handleLoadDetail`+`dtlMode`) 보유 화면에 점진 확대.
+
+> 코드 기준 모델: [SyBbsMng.js](../../../pages/bo/sy/SyBbsMng.js) · [SyBbsDtl.js](../../../pages/bo/sy/SyBbsDtl.js).
+
 ---
 
 ## 7. 그리드 헤더 열 설정 아이콘 (⚙)

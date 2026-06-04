@@ -251,6 +251,12 @@ window.DpDispUiSimul = {
       showDesc: true, isPageCodeLoad: false,
       showAreaDrop: false, sourceCopied: false, structLayoutType: 'grid', structColCount: 1, structViewport: 'desktop', structShowReal: false, structDashDragOver: false, structSpanPopupIdx: -1, structDragOverIdx: -1, dispUiLayerOpen: true, dispUiModalOpen: false, dispUiAreaErr: false, dispUiSiteModalOpen: false, dispUiSiteSearch: '', dispUiMemberModalOpen: false, dispUiMemberSearch: '', dispUiAreaDrop: false, otherMenuOpen: false});
     const tab = Vue.toRef(uiState, 'tab');
+    // 메인 탭 정의 (표준 bo-tab-bar)
+    const mainTabs = reactive([
+      { id: 'preview', label: '영역미리보기', icon: '🖼' },
+      { id: 'struct',  label: '영역-위젯 구조 보기', icon: '🌲' },
+      { id: 'source',  label: '영역-위젯 소스보기', icon: '</>' },
+    ]);
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
     /* fnLoadCodes — 공통코드 로드 */
@@ -1101,7 +1107,7 @@ window.DpDispUiSimul = {
     return {
       handleBtnAction, handleSelectAction, fnCallbackModal,                           // dispatch + 모달 통합 콜백
       today, cfSiteNm, codes,
-      uiState, switchTab,
+      uiState, switchTab, mainTabs,
       searchParam,
       selectedAreas, cfAllAreaListRaw, cfAreaList,
       onReset,
@@ -1667,24 +1673,9 @@ window.DpDispUiSimul = {
         </div>
       </div>
       <!-- ===== □. DispUi 회원 선택 모달 ========================================= -->
-      <!-- ===== ■. 탭 헤더 ==================================================== -->
-      <div style="display:flex;border:1px solid #e0e0e0;border-top:none;background:#f5f5f5;">
-        <button @click="handleSelectAction('tab-select', 'preview')"
-      style="flex:1;padding:10px 0;font-size:13px;font-weight:600;border:none;border-right:1px solid #e0e0e0;cursor:pointer;transition:all .15s;"
-      :style="uiState.mainTab==='preview' ? 'background:#fff;color:#e8587a;border-bottom:3px solid #e8587a;' : 'background:transparent;color:#888;border-bottom:3px solid transparent;'">
-          🖼 영역미리보기
-        </button>
-        <button @click="handleSelectAction('tab-select', 'struct')"
-      style="flex:1;padding:10px 0;font-size:13px;font-weight:600;border:none;border-right:1px solid #e0e0e0;cursor:pointer;transition:all .15s;"
-      :style="uiState.mainTab==='struct' ? 'background:#fff;color:#e8587a;border-bottom:3px solid #e8587a;' : 'background:transparent;color:#888;border-bottom:3px solid transparent;'">
-          🌲 영역-위젯 구조 보기
-        </button>
-        <button @click="handleSelectAction('tab-select', 'source')"
-      style="flex:1;padding:10px 0;font-size:13px;font-weight:600;border:none;cursor:pointer;transition:all .15s;"
-      :style="uiState.mainTab==='source' ? 'background:#fff;color:#e8587a;border-bottom:3px solid #e8587a;' : 'background:transparent;color:#888;border-bottom:3px solid transparent;'">
-          &lt;/&gt; 영역-위젯 소스보기
-        </button>
-      </div>
+      <!-- ===== ■. 탭 헤더 (표준 bo-tab-bar) ================================= -->
+      <bo-tab-bar :tabs="mainTabs" :tab="uiState.mainTab" :show-modes="false"
+        @tab-select="id => handleSelectAction('tab-select', id)" />
       <!-- ═══════════════════════════════════════
        Tab1: 영역미리보기
   ═══════════════════════════════════════ -->

@@ -83,6 +83,9 @@ window.SyUserMng = {
       // 페이지 크기 변경
       if (cmd === 'users-pager-sizeChange') {
         return onSizeChange();
+      // 그리드 행번호/셀 클릭 → 상세 보기모드로 열기
+      } else if (cmd === 'users-rowView') {
+        return loadView(param);
       // 그리드 행 클릭 → 편집 패널 열기
       } else if (cmd === 'users-rowEdit') {
         return handleLoadDetail(param);
@@ -449,7 +452,7 @@ window.SyUserMng = {
         list-title="사용자목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="key => handleBtnAction('users-sort', key)"
-        @cell-click="e => handleSelectAction('users-rowEdit', e.row.userId)">
+        @cell-click="e => handleSelectAction('users-rowView', e.row.userId)">
         <template #toolbar-actions>
           <div style="display:flex;gap:6px;">
             <button class="btn btn-green btn-sm" @click="handleBtnAction('users-excel')">

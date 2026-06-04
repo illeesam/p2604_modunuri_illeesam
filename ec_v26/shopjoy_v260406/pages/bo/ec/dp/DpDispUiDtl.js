@@ -50,6 +50,7 @@ window.DpDispUiDtl = {
     });
 
     const cfIsNew = computed(() => !props.dtlId);
+    const cfDtlMode = computed(() => props.dtlMode === 'view'); // 보기모드 여부
 
     /* 디바이스 모드 + 스플리터 */
     const PREVIEW_MODES = [
@@ -79,6 +80,9 @@ window.DpDispUiDtl = {
       // 폼 닫기 → 상세영역 유지 + 빈 신규 폼으로 초기화
       } else if (cmd === 'form-close') {
         return props.navigate('__cancelEdit__');
+      // 보기모드 → 수정모드 전환
+      } else if (cmd === 'form-edit') {
+        return props.navigate('__switchToEdit__');
       // 헤더 영역 펼치기/접기 토글
       } else if (cmd === 'form-toggleExpand') {
         uiState.expanded = !uiState.expanded;
@@ -472,7 +476,7 @@ window.DpDispUiDtl = {
       columns,
       codes, uis, areas, uiState, pathPickModal, form, errors,                       // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal,                            // dispatch + 모달 통합 콜백
-      cfIsNew, cfRelatedAreas, cfActiveArea, cfPreviewFrameWidth,                    // computed
+      cfIsNew, cfDtlMode, cfRelatedAreas, cfActiveArea, cfPreviewFrameWidth,          // computed
       cfAvailableAreas, cfVisibilityOptions,                                         // computed
       activeTab, previewMode, expanded, pickOpen, previewPaneWidth,                  // toRef
       showComponentTooltip,                                                          // toRef
@@ -523,8 +527,17 @@ window.DpDispUiDtl = {
       <button class="btn btn-secondary btn-sm" @click="handleBtnAction('form-toggleExpand')">
         {{ expanded ? '📥 접기' : '📤 펼치기' }}
       </button>
-      <button class="btn btn-primary btn-sm" @click="handleBtnAction('form-save')" style="font-weight:700;">
+      <button v-if="cfDtlMode" class="btn btn-primary btn-sm" @click="handleBtnAction('form-edit')" style="font-weight:700;">
+        ✏ 수정
+      </button>
+      <button v-if="cfDtlMode" class="btn btn-secondary btn-sm" @click="handleBtnAction('form-close')">
+        닫기
+      </button>
+      <button v-if="!cfDtlMode" class="btn btn-primary btn-sm" @click="handleBtnAction('form-save')" style="font-weight:700;">
         💾 저장
+      </button>
+      <button v-if="!cfDtlMode" class="btn btn-secondary btn-sm" @click="handleBtnAction('form-cancel')">
+        취소
       </button>
     </div>
   </div>

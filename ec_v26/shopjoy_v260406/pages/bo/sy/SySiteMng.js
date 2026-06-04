@@ -445,7 +445,7 @@ window.SySiteMng = {
         list-title="사이트목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="key => handleBtnAction('sites-sort', key)"
-        @cell-click="e => handleSelectAction('sites-rowEdit', e.row.siteId)">
+        @cell-click="e => handleSelectAction('sites-rowView', e.row.siteId)">
         <template #toolbar-actions>
           <div style="display:flex;gap:6px;">
             <button class="btn btn-green btn-sm" @click="handleBtnAction('sites-excel')">

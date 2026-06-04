@@ -31,6 +31,9 @@ window.DpDispAreaDtl = {
       // 폼 편집 취소 → 상세영역 유지 + 빈 신규 폼으로 초기화 (영역 사라지지 않음)
       } else if (cmd === 'form-cancel') {
         return props.navigate('__cancelEdit__');
+      // 보기모드 → 수정모드 전환
+      } else if (cmd === 'form-edit') {
+        return props.navigate('__switchToEdit__');
       // 우측 미리보기 영역 펼치기/접기 토글
       } else if (cmd === 'form-toggleExpand') {
         expanded.value = !expanded.value;
@@ -176,6 +179,7 @@ window.DpDispAreaDtl = {
     const fnPathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
 
     const cfIsNew = computed(() => !props.dtlId);
+    const cfDtlMode = computed(() => props.dtlMode === 'view');
 
     /* fnAreaTypeLabel — 유틸 */
     const fnAreaTypeLabel = (v) => codes.disp_areas.find(c => c.codeValue === v)?.codeLabel || '-';
@@ -537,7 +541,7 @@ window.DpDispAreaDtl = {
       columns,
       codes, areas, panels, uiState, pathPickModal, form, errors,                  // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal,                          // dispatch + 모달 통합 콜백
-      cfIsNew, cfRelatedPanels, cfActivePanel, cfPreviewFrameWidth,                // computed
+      cfIsNew, cfDtlMode, cfRelatedPanels, cfActivePanel, cfPreviewFrameWidth,                // computed
       cfVisibilityOptions,                                                         // computed
       activeTab, previewMode, expanded, pickOpen, previewPaneWidth,                // toRef
       showComponentTooltip,                                                        // toRef
@@ -588,7 +592,10 @@ window.DpDispAreaDtl = {
       <button class="btn btn-secondary btn-sm" @click="handleBtnAction('form-toggleExpand')">
         {{ expanded ? '📥 접기' : '📤 펼치기' }}
       </button>
-      <button class="btn btn-primary btn-sm" @click="handleBtnAction('form-save')" style="font-weight:700;">
+      <button v-if="cfDtlMode" class="btn btn-blue btn-sm" @click="handleBtnAction('form-edit')" style="font-weight:700;">
+        ✎ 수정
+      </button>
+      <button v-if="!cfDtlMode" class="btn btn-primary btn-sm" @click="handleBtnAction('form-save')" style="font-weight:700;">
         💾 저장
       </button>
     </div>

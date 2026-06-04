@@ -56,6 +56,9 @@ window.PmGiftMng = {
       // 페이지 크기 변경
       if (cmd === 'gifts-pager-sizeChange') {
         return onSizeChange();
+      // 셀/카드 본문 클릭 → 상세 보기모드로 열기
+      } else if (cmd === 'gifts-rowView') {
+        return loadView(param);
       // 행 클릭 → 상세 편집
       } else if (cmd === 'gifts-rowEdit') {
         return handleLoadDetail(param);
@@ -353,7 +356,7 @@ window.PmGiftMng = {
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(g) => detailPanel.selectedId===g.giftId ? 'background:#fff8f9;' : ''"
-      @sort="key => handleBtnAction('gifts-sort', key)" @cell-click="e => handleSelectAction('gifts-rowEdit', e.row.giftId)">
+      @sort="key => handleBtnAction('gifts-sort', key)" @cell-click="e => handleSelectAction('gifts-rowView', e.row.giftId)">
       <template #head-actions>
         관리
       </template>
@@ -377,12 +380,12 @@ window.PmGiftMng = {
       </div>
       <div v-for="(g, idx) in gifts" :key="g?.giftId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
         :style="detailPanel.selectedId===g.giftId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
-        @click="handleSelectAction('gifts-rowEdit', g.giftId)">
+        @click="handleSelectAction('gifts-rowView', g.giftId)">
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
           <div style="font-size:12px;color:#999;margin-bottom:6px;">
             <span style="display:inline-block;min-width:20px;font-weight:700;color:#e8587a;">{{ (pager.pageNo-1)*pager.pageSize + idx + 1 }}</span> 사은품 #{{ g.giftId }}
           </div>
-          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleSelectAction('gifts-rowEdit', g.giftId)" :style="detailPanel.selectedId===g.giftId?{color:'#e8587a'}:{}">
+          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleSelectAction('gifts-rowView', g.giftId)" :style="detailPanel.selectedId===g.giftId?{color:'#e8587a'}:{}">
             {{ g.giftNm }}
             <span v-if="detailPanel.selectedId===g.giftId" style="font-size:10px;margin-left:4px;">
               ▼

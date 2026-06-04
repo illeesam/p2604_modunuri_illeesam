@@ -8,6 +8,7 @@ window.PmCacheDtl = {
     navigate:     { type: Function, required: true }, // 페이지 이동
     dtlId:        { type: String, default: null }, // 수정 대상 ID
     dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit),
+    active:       { type: Boolean, default: true }, // 행 선택/신규 시 true → 액션 버튼 노출
     reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
@@ -281,6 +282,7 @@ window.PmCacheDtl = {
       cfIsNew, cfDtlMode, cfMemberCacheHistory, cfTotalBalance, cfSelectedVendorNm, // computed
       tab, tabMode2, showVendorModal,                                                // toRef
       showTab, fnTypeBadge,                                                          // 헬퍼
+      coUtil,                                                                        // 템플릿 내 cofAnd 사용
     };
   },
   // ===== 템플릿 ===========================================================
@@ -338,24 +340,23 @@ window.PmCacheDtl = {
           </div>
         </template>
       </bo-form-area>
-      <!-- ===== ■.■.■. 폼 액션 버튼 (수정/저장/취소/닫기) =============================== -->
-      <div class="form-actions" v-if="!cfDtlMode">
-        <template v-if="cfDtlMode">
-          <button class="btn btn-primary" @click="handleBtnAction('form-edit')">
-            수정
-          </button>
-          <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
-            닫기
-          </button>
-        </template>
-        <template v-else>
-          <button class="btn btn-primary" @click="handleBtnAction('form-save')">
-            저장
-          </button>
-          <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
-            취소
-          </button>
-        </template>
+      <!-- ===== ■.■.■. 폼 액션 버튼 (보기모드: 수정/닫기) =============================== -->
+      <div class="form-actions" v-if="coUtil.cofAnd(active, cfDtlMode)">
+        <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
+          수정
+        </button>
+        <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
+          닫기
+        </button>
+      </div>
+      <!-- ===== ■.■.■. 폼 액션 버튼 (편집모드: 저장/취소) =============================== -->
+      <div class="form-actions" v-if="coUtil.cofAnd(active, !cfDtlMode)">
+        <button class="btn btn-primary" @click="handleBtnAction('form-save')">
+          저장
+        </button>
+        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+          취소
+        </button>
       </div>
     </div>
     <!-- ===== □.□. 기본정보 탭 (BoFormArea 자동 렌더) ============================= -->

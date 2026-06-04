@@ -59,6 +59,9 @@ window.SyBbsDtl = {
       // 폼 닫기 → 상세영역 유지 + 빈 신규 폼으로 초기화
       } else if (cmd === 'form-close') {
         return props.navigate('__cancelEdit__');
+      // 보기모드 → 수정모드 전환 (수정 버튼)
+      } else if (cmd === 'form-edit') {
+        return props.navigate('__switchToEdit__');
       // 게시판 선택 모달 열기
       } else if (cmd === 'bbmModal-open') {
         showBbmModal.value = true;
@@ -374,7 +377,15 @@ window.SyBbsDtl = {
     </div>
   </div>
   <!-- ===== □.□. 첨부파일 ================================================== -->
-  <!-- ===== ■.■. 폼 액션 ================================================== -->
+  <!-- ===== ■.■. 폼 액션 (보기모드: 수정/닫기 · 수정모드: 저장/취소) ================== -->
+  <div class="form-actions" v-if="active && cfDtlMode">
+    <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
+      수정
+    </button>
+    <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
+      닫기
+    </button>
+  </div>
   <div class="form-actions" v-if="active && !cfDtlMode">
     <button class="btn btn-primary" @click="handleBtnAction('form-save')">
       저장

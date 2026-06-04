@@ -79,6 +79,9 @@ window.PmEventMng = {
       // 페이지 크기 변경
       if (cmd === 'events-pager-sizeChange') {
         return onSizeChange();
+      // 그리드 행/제목 클릭 → 상세 보기모드
+      } else if (cmd === 'events-rowView') {
+        return loadView(param);
       // 행 클릭 → 상세 편집
       } else if (cmd === 'events-rowEdit') {
         return handleLoadDetail(param);
@@ -323,7 +326,7 @@ window.PmEventMng = {
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(e) => detailPanel.selectedId===e.eventId ? 'background:#fff8f9;' : ''"
-      @sort="key => handleBtnAction('events-sort', key)" @cell-click="e => handleSelectAction('events-rowEdit', e.row.eventId)">
+      @sort="key => handleBtnAction('events-sort', key)" @cell-click="e => handleSelectAction('events-rowView', e.row.eventId)">
       <template #head-actions>
         관리
       </template>
@@ -350,7 +353,7 @@ window.PmEventMng = {
       </div>
       <div v-for="(e, idx) in events" :key="e?.eventId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
         :style="detailPanel.selectedId===e.eventId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
-        @click="handleSelectAction('events-rowEdit', e.eventId)">
+        @click="handleSelectAction('events-rowView', e.eventId)">
         <!-- ===== ■.■.■.■. 배너 이미지 ============================================ -->
         <div v-if="e.bannerImage" style="padding:12px;background:#f5f5f5;border-bottom:1px solid #e8e8e8;" v-html="e.bannerImage">
         </div>
@@ -358,7 +361,7 @@ window.PmEventMng = {
           <div style="font-size:12px;color:#999;margin-bottom:6px;">
             <span style="display:inline-block;min-width:20px;font-weight:700;color:#e8587a;">{{ (pager.pageNo-1)*pager.pageSize + idx + 1 }}</span> 이벤트 #{{ e.eventId }}
           </div>
-          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleSelectAction('events-rowEdit', e.eventId)" :style="detailPanel.selectedId===e.eventId?{color:'#e8587a'}:{}">
+          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleSelectAction('events-rowView', e.eventId)" :style="detailPanel.selectedId===e.eventId?{color:'#e8587a'}:{}">
             {{ e.eventTitle }}
             <span v-if="detailPanel.selectedId===e.eventId" style="font-size:10px;margin-left:4px;">
               ▼

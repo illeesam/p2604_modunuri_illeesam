@@ -73,6 +73,12 @@ window.PmPlanDtl = {
       // 폼 취소 → 상세영역 유지 + 빈 신규 폼으로 초기화 (영역 사라지지 않음)
       } else if (cmd === 'form-cancel') {
         return props.navigate('__cancelEdit__');
+      // 보기모드 닫기
+      } else if (cmd === 'form-close') {
+        return props.navigate('__cancelEdit__');
+      // 보기모드 → 수정모드 전환
+      } else if (cmd === 'form-edit') {
+        return props.navigate('__switchToEdit__');
       // 탭 전환
       } else if (cmd === 'tab-select') {
         return onTabChange(param);
@@ -389,7 +395,7 @@ window.PmPlanDtl = {
     <!-- ===== ■.■. 카드 헤더 (제목 = list-title, page-title 아님 → 폰트 축소) ========= -->
     <div class="toolbar">
       <span class="list-title">
-        {{ !active ? '기획전 상세' : (cfIsNew ? '기획전 등록' : '기획전 상세') }}
+        {{ !active ? '기획전 상세' : (cfIsNew ? '기획전 등록' : (cfDtlMode ? '기획전 상세' : '기획전 수정')) }}
         <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
           #{{ form.planId }}
         </span>
@@ -416,6 +422,14 @@ window.PmPlanDtl = {
         </div>
         <base-html-editor v-model="form.bannerImage" height="320px" />
       </div>
+      <div class="form-actions" v-if="active && cfDtlMode">
+        <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
+          수정
+        </button>
+        <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
+          닫기
+        </button>
+      </div>
       <div class="form-actions" v-if="active && !cfDtlMode">
         <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           💾 저장
@@ -434,12 +448,12 @@ window.PmPlanDtl = {
       <!-- ===== ■.■.■. 기본정보 폼 (BoFormArea 자동 렌더) =========================== -->
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="columns.infoForm" :form="form" :errors="errors"
-        :readonly="false" :cols="3" compact :show-actions="false">
+        :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
         <!-- ===== ■.■.■.■. 공개대상 체크박스 그리드 ===================================== -->
         <template #visibility>
           <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:8px 0;">
             <label v-for="opt in VISIBILITY_OPTIONS" :key="opt?.value" style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;">
-              <input type="checkbox" :checked="hasVisibility(opt.value)" @change="handleBtnAction('form-visibilityToggle', opt.value)" />
+              <input type="checkbox" :disabled="cfDtlMode" :checked="hasVisibility(opt.value)" @change="handleBtnAction('form-visibilityToggle', opt.value)" />
               <span>
                 {{ opt.label }}
               </span>
@@ -451,10 +465,10 @@ window.PmPlanDtl = {
       <div style="margin-top:20px;padding-top:20px;border-top:1px solid #e8e8e8;">
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
         <bo-form-area :columns="columns.vendorForm" :form="form" :errors="errors"
-          :cols="3" compact :show-actions="false">
+          :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
           <template #vendor>
             <div style="display:flex;gap:8px;align-items:center;">
-              <div class="form-control" style="background:#f9f9f9;cursor:pointer;padding:0;display:flex;align-items:center;" @click="handleBtnAction('vendorModal-open')">
+              <div class="form-control" style="background:#f9f9f9;cursor:pointer;padding:0;display:flex;align-items:center;" @click="cfDtlMode ? null : handleBtnAction('vendorModal-open')">
                 <span style="padding:4px 10px;flex:1;">
                   {{ cfSelectedVendorNm }}
                 </span>
@@ -462,7 +476,7 @@ window.PmPlanDtl = {
                   ▼
                 </span>
               </div>
-              <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendorClear')">
+              <button v-if="form.vendorId" :disabled="cfDtlMode" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendorClear')">
                 초기화
               </button>
             </div>
@@ -471,6 +485,14 @@ window.PmPlanDtl = {
       </div>
       <!-- ===== ■.■.■. 판매업체 선택 모달 ========================================== -->
       <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId" modal-name="vendor-pick" :on-callback="fnCallbackModal" />
+      <div class="form-actions" v-if="active && cfDtlMode">
+        <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
+          수정
+        </button>
+        <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
+          닫기
+        </button>
+      </div>
       <div class="form-actions" v-if="active && !cfDtlMode">
         <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           💾 저장
@@ -504,6 +526,14 @@ window.PmPlanDtl = {
       <template v-if="activeContentTab===3">
         <base-html-editor v-model="form.content3" height="420px" />
       </template>
+      <div class="form-actions" v-if="active && cfDtlMode" style="margin-top:12px;">
+        <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
+          수정
+        </button>
+        <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
+          닫기
+        </button>
+      </div>
       <div class="form-actions" v-if="active && !cfDtlMode" style="margin-top:12px;">
         <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           💾 저장
@@ -546,6 +576,14 @@ window.PmPlanDtl = {
       </div>
       <div v-else style="text-align:center;color:#999;padding:40px;background:#f9f9f9;border-radius:6px;">
         선택된 상품이 없습니다.
+      </div>
+      <div class="form-actions" v-if="active && cfDtlMode">
+        <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
+          수정
+        </button>
+        <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
+          닫기
+        </button>
       </div>
       <div class="form-actions" v-if="active && !cfDtlMode">
         <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
@@ -635,6 +673,14 @@ window.PmPlanDtl = {
             </div>
           </div>
         </div>
+      </div>
+      <div class="form-actions" v-if="active && cfDtlMode">
+        <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
+          수정
+        </button>
+        <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
+          닫기
+        </button>
       </div>
       <div class="form-actions" v-if="active && !cfDtlMode">
         <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">

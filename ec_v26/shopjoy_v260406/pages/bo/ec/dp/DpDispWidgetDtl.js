@@ -35,6 +35,9 @@ window.DpDispWidgetDtl = {
       // 패널 닫기 → 상세영역 유지 + 빈 신규 폼으로 초기화
       } else if (cmd === 'form-close') {
         return props.navigate('__cancelEdit__');
+      // 보기모드 → 수정모드 전환
+      } else if (cmd === 'form-edit') {
+        return props.navigate('__switchToEdit__');
       // 위젯Lib 선택 팝업 열기 (param: 'copy' 또는 'ref')
       } else if (cmd === 'libPickModal-open') {
         return openLibPick(param);
@@ -708,7 +711,7 @@ window.DpDispWidgetDtl = {
   <!-- ===== ■. 헤더 ====================================================== -->
   <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #f0f0f0;background:#fafafa;border-radius:8px 8px 0 0;">
     <div style="display:flex;align-items:center;gap:10px;">
-      <span style="font-size:15px;font-weight:700;color:#222;">
+      <span class="list-title" style="font-size:14px;">
         {{ !active ? '위젯 상세' : (cfIsNew ? '위젯 신규등록' : '위젯 수정') }}
       </span>
       <span v-if="active && !cfIsNew" style="font-size:11px;background:#eee;color:#666;border-radius:4px;padding:1px 7px;">
@@ -730,6 +733,14 @@ window.DpDispWidgetDtl = {
       </button>
       <button v-if="!cfIsNew" @click="handleBtnAction('form-delete')" class="btn btn-outline" style="font-size:13px;color:#e8587a;border-color:#e8587a;">
         삭제
+      </button>
+      <button @click="handleBtnAction('form-close')" class="btn btn-outline" style="font-size:13px;">
+        닫기
+      </button>
+    </div>
+    <div class="form-actions" v-if="active && cfDtlMode" style="margin:0;gap:8px;">
+      <button @click="handleBtnAction('form-edit')" class="btn btn-blue" style="font-size:13px;">
+        수정
       </button>
       <button @click="handleBtnAction('form-close')" class="btn btn-outline" style="font-size:13px;">
         닫기
@@ -809,7 +820,7 @@ window.DpDispWidgetDtl = {
             <!-- ===== ■.■.■.■. 위젯코드/라이브러리명/상태/설명/태그 (BoFormArea 자동 렌더) =========== -->
             <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
             <bo-form-area :columns="columns.baseWidgetForm" :form="form" :errors="errors"
-          :readonly="cfDtlMode" :cols="3" compact :show-actions="false" />
+          :readonly="cfDtlMode" :cols="2" compact :show-actions="false" />
             <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin:10px 0 6px;">
               🌍 전시환경
             </div>

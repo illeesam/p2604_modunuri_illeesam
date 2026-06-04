@@ -66,7 +66,10 @@ window.CmChattMng = {
       // 페이지 크기 변경
       if (cmd === 'chatts-pager-sizeChange') {
         return onSizeChange();
-      // 그리드 행 클릭 → 상세 편집 패널 열기
+      // 그리드 행/셀 클릭 → 상세 보기모드로 열기
+      } else if (cmd === 'chatts-rowView') {
+        return loadView(param);
+      // [수정] 버튼 → 상세 편집 패널 열기
       } else if (cmd === 'chatts-rowEdit') {
         return handleLoadDetail(param);
       // 그리드 행 삭제
@@ -314,7 +317,7 @@ window.CmChattMng = {
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다."
     @sort="key => handleBtnAction('chatts-sort', key)"
     @ref-click="ref => handleSelectAction('chatts-rowRef', ref)"
-    @cell-click="e => handleSelectAction('chatts-rowEdit', e.row.chattRoomId)" row-actions>
+    @cell-click="e => handleSelectAction('chatts-rowView', e.row.chattRoomId)" row-actions>
     <template #toolbar-actions>
       <button class="btn btn-green btn-sm" @click="handleBtnAction('chatts-excel')">
         📥 엑셀
@@ -326,7 +329,7 @@ window.CmChattMng = {
     <template #row-actions="{ row }">
       <div class="actions">
         <button class="btn btn-blue btn-xs" @click="handleSelectAction('chatts-rowEdit', row.chattRoomId)">
-          보기
+          수정
         </button>
         <button class="btn btn-danger btn-xs" @click="handleSelectAction('chatts-rowDelete', row)">
           삭제

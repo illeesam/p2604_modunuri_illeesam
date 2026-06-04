@@ -60,6 +60,12 @@ window.CmNoticeMng = {
       baseDetail.active = true;       // 행 선택 → 저장/취소 노출
     };
 
+    /* openDetailView — 셀 클릭 → 상세 보기모드 (수정/닫기 노출) */
+    const openDetailView = (id) => {
+      baseDetail.openView(id);
+      baseDetail.active = true;       // 행 선택 → 수정/닫기 노출
+    };
+
     /* openDetailNew — 신규 등록 (빈 폼 + 활성 → 저장/취소 노출) */
     const openDetailNew = () => {
       baseDetail.openNew();
@@ -97,6 +103,7 @@ window.CmNoticeMng = {
     /* handleSelectAction — 그리드 행/페이지 선택 액션 dispatch */
     const handleSelectAction = (cmd, param) => {
       if (cmd === 'notices-pager-sizeChange') return baseGrid.onSizeChange();
+      if (cmd === 'notices-rowView')          return openDetailView(param);
       if (cmd === 'notices-rowEdit')          return openDetailEdit(param);
       if (cmd === 'notices-rowDelete')        return handleDelete(param);
       console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -222,7 +229,7 @@ window.CmNoticeMng = {
     :count-text="'총 ' + baseGrid.pager.pageTotalCount + '건'"
     :row-class="row => baseDetail.selectedId === row.noticeId ? 'active' : ''" empty-text="데이터가 없습니다."
     @sort="key => handleBtnAction('notices-sort', key)"
-    @cell-click="e => handleSelectAction('notices-rowEdit', e.row.noticeId)" row-actions>
+    @cell-click="e => handleSelectAction('notices-rowView', e.row.noticeId)" row-actions>
     <template #toolbar-actions>
       <button class="btn btn-green btn-sm" @click="handleBtnAction('notices-excel')">📥 엑셀</button>
       <button class="btn btn-primary btn-sm" @click="handleBtnAction('notices-add')">+ 신규</button>

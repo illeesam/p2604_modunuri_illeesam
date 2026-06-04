@@ -63,7 +63,10 @@ window.DpDispWidgetMng = {
       // 페이지 크기 변경
       if (cmd === 'widgets-pager-sizeChange') {
         return onSizeChange();
-      // 그리드 행 클릭 → 상세/편집 패널 열기
+      // 그리드 행 클릭 → 보기모드
+      } else if (cmd === 'widgets-rowView') {
+        return loadView(param);
+      // 행 [수정] 버튼 → 상세/편집 패널 열기
       } else if (cmd === 'widgets-rowEdit') {
         return handleLoadDetail(param);
       // 그리드 행 삭제
@@ -224,6 +227,14 @@ window.DpDispWidgetMng = {
       detailPanel.openMode = 'edit';
       detailPanel.active = false;    // 버튼 숨김
       detailPanel.resetSeq++;        // :key 재마운트 → 폼 초기화
+    };
+
+    /* loadView — 보기모드 진입 (그리드 셀/제목 클릭 → 보기모드로 상세 열기) */
+    const loadView = (id) => {
+      detailPanel.selectedId = id;
+      detailPanel.openMode = 'view';
+      detailPanel.active = true;
+      detailPanel.reloadTrigger++;
     };
 
     /* handleLoadDetail — 상세 조회 (행 선택 → 활성) */
@@ -430,7 +441,7 @@ window.DpDispWidgetMng = {
         :count-text="pager.pageTotalCount + '건'"
         empty-text="등록된 위젯이 없습니다."
         @sort="key => handleBtnAction('widgets-sort', key)"
-        @cell-click="(e) => handleSelectAction('widgets-rowEdit', e.row.widgetId)" row-actions>
+        @cell-click="(e) => handleSelectAction('widgets-rowView', e.row.widgetId)" row-actions>
         <template #toolbar-actions>
           <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">
             #{{ uiState.selectedPath }}
@@ -462,7 +473,7 @@ window.DpDispWidgetMng = {
               <span style="background:#f5f5f5;border:1px solid #e8e8e8;border-radius:6px;padding:1px 7px;font-size:11px;color:#555;">
                 {{ wTypeLabel(row.widgetTypeCd) }}
               </span>
-              <span class="title-link" @click="handleSelectAction('widgets-rowEdit', row.widgetId)"
+              <span class="title-link" @click="handleSelectAction('widgets-rowView', row.widgetId)"
                 :style="'font-size:14px;font-weight:700;margin-left:8px;'+(selectedId===row.widgetId?'color:#e8587a;':'color:#222;')">
                 {{ row.widgetNm }}
               </span>

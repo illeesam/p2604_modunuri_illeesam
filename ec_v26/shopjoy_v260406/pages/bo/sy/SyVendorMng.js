@@ -70,7 +70,10 @@ window.SyVendorMng = {
       // 페이지 크기 변경
       if (cmd === 'vendors-pager-sizeChange') {
         return onSizeChange();
-      // 그리드 행 클릭 → 편집 패널 열기
+      // 그리드 행/셀 클릭 → 상세 보기모드로 열기
+      } else if (cmd === 'vendors-rowView') {
+        return loadView(param);
+      // 그리드 행 [수정] 버튼 → 편집 패널 열기(수정모드)
       } else if (cmd === 'vendors-rowEdit') {
         return handleLoadDetail(param);
       // 그리드 행 삭제
@@ -340,7 +343,7 @@ window.SyVendorMng = {
         list-title="거래처목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="key => handleBtnAction('vendors-sort', key)"
-        @cell-click="e => handleSelectAction('vendors-rowEdit', e.row.vendorId)">
+        @cell-click="e => handleSelectAction('vendors-rowView', e.row.vendorId)">
         <template #toolbar-actions>
           <div style="display:flex;gap:6px;">
             <button class="btn btn-green btn-sm" @click="handleBtnAction('vendors-excel')">

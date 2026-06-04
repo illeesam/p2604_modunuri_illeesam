@@ -33,6 +33,11 @@ window.SyMemberLoginHist = {
     const logs   = reactive([]);                  // 로그인 로그
     const tokens = reactive([]);                  // 토큰 이력
     const tabCounts = reactive({ log:0, token:0 });  // 탭별 카운트
+    // Hist 탭 정의 (표준 bo-tab-bar, 뷰모드 없음)
+    const histTabs = reactive([
+      { id: 'log',   label: '로그인 로그', get count() { return tabCounts.log; } },
+      { id: 'token', label: '토큰 이력',   get count() { return tabCounts.token; } },
+    ]);
 
     /* ===== 행 펼치기 상태 ===== */
     const expandedRows    = reactive(new Set());
@@ -338,7 +343,7 @@ window.SyMemberLoginHist = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       columns,
-      searchParam, codes, pager, tabCounts, cfCurrentList, allExpanded,                                // 상태 / 데이터
+      searchParam, codes, pager, tabCounts, histTabs, cfCurrentList, allExpanded,                       // 상태 / 데이터
       handleBtnAction, handleSelectAction,                                                              // dispatch (모든 이벤트 / 액션 라우팅)
       fnResultBadge, fnResultLabel, fnActionBadge, fnActionLabel, fnTypeBadge, fnDecode,                // template 표현식에서 사용
       fnRowExpanded, fnRowClickStyle,                                                                   // 행 표시
@@ -382,26 +387,15 @@ window.SyMemberLoginHist = {
     <!-- ===== □.□. 검색 영역 (펼침) ============================================ -->
   </div>
   <!-- ===== □. 검색 ====================================================== -->
-  <!-- ===== ■. 탭 ======================================================== -->
-  <div class="tab-nav" style="margin-bottom:6px">
-    <button class="tab-btn" :class="{active:searchParam.activeTab==='log'}" @click="handleSelectAction('searchParam-tabChange', 'log')">
-      로그인 로그
-      <span class="tab-count">
-        {{ tabCounts.log }}
-      </span>
-    </button>
-    <button class="tab-btn" :class="{active:searchParam.activeTab==='token'}" @click="handleSelectAction('searchParam-tabChange', 'token')">
-      토큰 이력
-      <span class="tab-count">
-        {{ tabCounts.token }}
-      </span>
-    </button>
-  </div>
-  <!-- ===== □. 탭 ======================================================== -->
+  <!-- ===== ■. 탭 + 목록 (한 카드) ========================================= -->
+  <div class="card">
+    <div class="list-title" style="margin-bottom:6px;">로그인/토큰 이력</div>
+    <bo-tab-bar :tabs="histTabs" :tab="searchParam.activeTab" :show-modes="false"
+      @tab-select="id => handleSelectAction('searchParam-tabChange', id)" />
   <!-- ===== ■. 로그인 로그 탭 ================================================ -->
-  <bo-grid v-if="searchParam.activeTab==='log'"
+  <bo-grid v-if="searchParam.activeTab==='log'" bare
     :columns="columns.logGrid" :rows="cfCurrentList" row-key="logId"
-    list-title="로그인 로그" :count-text="pager.pageTotalCount + '건'"
+    :count-text="pager.pageTotalCount + '건'"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
     @row-click="row => handleSelectAction('histList-rowToggle', row.logId)">
     <template #toolbar-actions>
@@ -425,9 +419,9 @@ window.SyMemberLoginHist = {
   </bo-grid>
   <!-- ===== □. 로그인 로그 탭 ================================================ -->
   <!-- ===== ■. 토큰 이력 탭 ================================================= -->
-  <bo-grid v-if="searchParam.activeTab==='token'"
+  <bo-grid v-if="searchParam.activeTab==='token'" bare
     :columns="columns.tokenGrid" :rows="cfCurrentList" row-key="logId"
-    list-title="토큰 이력" :count-text="pager.pageTotalCount + '건'"
+    :count-text="pager.pageTotalCount + '건'"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
     @row-click="row => handleSelectAction('histList-rowToggle', row.logId)">
     <template #toolbar-actions>
@@ -454,6 +448,7 @@ window.SyMemberLoginHist = {
   </bo-grid>
   <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('histList-pager-setPage', n)" :on-size-change="() => handleSelectAction('histList-pager-sizeChange')" />
   <!-- ===== □. 토큰 이력 탭 ================================================= -->
+  </div>
 </div>
 `,
 };

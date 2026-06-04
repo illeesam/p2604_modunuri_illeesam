@@ -369,11 +369,19 @@ const raws = reactive([]);
   </div>
   <!-- ===== □.□. 검색 영역 ================================================= -->
   <!-- ===== □. 검색 카드 =================================================== -->
-  <!-- ===== ■. 집계 카드 =================================================== -->
-  <div class="card" style="margin-bottom:12px;">
-    <bo-form-area :columns="columns.summaryForm" :form="{}" :cols="7" readonly label-left compact :show-actions="false" label-width="100px" />
+  <!-- ===== ■. 집계 (라벨:건수/금액 인라인 스트립 — 공간 최소) ======================== -->
+  <div class="card" style="margin-bottom:12px;padding:7px 12px;">
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:4px 16px;font-size:12px;color:#666;">
+      <span>수집건수:<b style="color:#3498db;margin-left:3px;">{{ pager.pageTotalCount.toLocaleString() }}건</b></span>
+      <span>정산대상:<b style="color:#27ae60;margin-left:3px;">{{ cfSummary.collectCnt.toLocaleString() }}건</b></span>
+      <span>구매확정:<b style="color:#e67e22;margin-left:3px;">{{ cfSummary.confirmCnt.toLocaleString() }}건</b></span>
+      <span>마감완료:<b style="color:#8e44ad;margin-left:3px;">{{ cfSummary.closeCnt.toLocaleString() }}건</b></span>
+      <span>수집금액:<b :style="{color: cfSummary.totalAmt>=0?'#333':'#e74c3c', marginLeft:'3px'}">{{ cfSummary.totalAmt.toLocaleString() }}원</b></span>
+      <span>수수료:<b style="color:#e74c3c;margin-left:3px;">{{ cfSummary.feeAmt.toLocaleString() }}원</b></span>
+      <span>정산금액:<b style="color:#2980b9;margin-left:3px;">{{ cfSummary.settleAmt.toLocaleString() }}원</b></span>
+    </div>
   </div>
-  <!-- ===== □. 집계 카드 =================================================== -->
+  <!-- ===== □. 집계 =================================================== -->
   <!-- ===== ■. 목록 카드 =================================================== -->
   <bo-grid
     :columns="columns.rawGrid"

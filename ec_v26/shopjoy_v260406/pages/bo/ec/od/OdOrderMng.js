@@ -617,7 +617,7 @@ window.OdOrderMng = {
         @sort="key => handleBtnAction('orders-sort', key)"
         @toggle-check="id => handleSelectAction('orders-rowToggleCheck', id)"
         @toggle-check-all="handleSelectAction('orders-rowToggleCheckAll')"
-        @cell-click="e => handleSelectAction('orders-rowEdit', e.row.orderId)"
+        @cell-click="e => handleSelectAction('orders-rowView', e.row.orderId)"
         @ref-click="({type,id}) => handleSelectAction('orders-rowRefClick', {type, id})" row-actions>
         <template #row-actions="{ row }">
           <div class="actions">
@@ -746,7 +746,6 @@ window.OdOrderMng = {
                 </div>
               </template>
             </bo-form-area>
-          </div>
         </div>
       </div>
       <!-- 탭 본문 끝 (위 div는 padding:20px 18px;flex:1;overflow-y:auto;) -->

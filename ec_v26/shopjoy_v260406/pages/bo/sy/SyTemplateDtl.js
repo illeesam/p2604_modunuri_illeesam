@@ -50,6 +50,12 @@ window.SyTemplateDtl = {
       // 폼 취소 → 상세영역 유지 + 빈 신규 폼으로 초기화 (영역 사라지지 않음)
       } else if (cmd === 'form-cancel') {
         return props.navigate('__cancelEdit__');
+      // 보기모드 → 수정모드 전환
+      } else if (cmd === 'form-edit') {
+        return props.navigate('__switchToEdit__');
+      // 보기모드 닫기 → 빈 신규 폼으로 초기화
+      } else if (cmd === 'form-close') {
+        return props.navigate('__cancelEdit__');
       // 미리보기 모달 열기
       } else if (cmd === 'previewModal-open') {
         uiState.previewOpen = true;
@@ -233,6 +239,14 @@ window.SyTemplateDtl = {
       </bo-form-area>
       <!-- ===== □.□. 폼 영역 ================================================== -->
       <!-- ===== ■.■. 폼 액션 버튼 (미리보기/발송하기 포함 커스텀) ============================ -->
+      <div class="form-actions" v-if="active && cfDtlMode">
+        <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
+          수정
+        </button>
+        <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
+          닫기
+        </button>
+      </div>
       <div class="form-actions" v-if="active && !cfDtlMode">
         <button class="btn btn-secondary" @click="handleBtnAction('previewModal-open')">
           📄 미리보기

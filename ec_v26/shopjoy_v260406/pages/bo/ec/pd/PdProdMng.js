@@ -88,6 +88,9 @@ window.PdProdMng = {
       // 페이지 크기 변경
       if (cmd === 'prods-pager-sizeChange') {
         return onSizeChange();
+      // 그리드 셀/행 클릭 → 상세 보기모드로 열기
+      } else if (cmd === 'prods-rowView') {
+        return loadView(param);
       // 그리드 행 클릭 → 상세 편집 패널 열기
       } else if (cmd === 'prods-rowEdit') {
         return handleLoadDetail(param);
@@ -405,7 +408,7 @@ window.PdProdMng = {
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(p) => detailPanel.selectedId===p.prodId ? 'background:#fff8f9;' : ''"
       @sort="key => handleBtnAction('prods-sort', key)"
-      @cell-click="e => handleSelectAction('prods-rowEdit', e.row.prodId)">
+      @cell-click="e => handleSelectAction('prods-rowView', e.row.prodId)">
       <template #toolbar-actions>
         <button class="btn btn-green btn-sm" @click="handleBtnAction('prods-excel')">
           📥 엑셀

@@ -64,7 +64,10 @@ window.SyContactMng = {
       // 페이지 크기 변경
       if (cmd === 'contacts-pager-sizeChange') {
         return onSizeChange();
-      // 그리드 행 클릭 → 상세 보기/편집 토글
+      // 그리드 행번호/제목 클릭 → 상세 보기모드로 열기
+      } else if (cmd === 'contacts-rowView') {
+        return loadView(param);
+      // 그리드 행 수정 버튼 → 편집 패널 열기 (수정모드)
       } else if (cmd === 'contacts-rowEdit') {
         return handleLoadDetail(param);
       // 그리드 행 삭제
@@ -315,7 +318,7 @@ window.SyContactMng = {
     :sort-state="uiState" :row-style="fnRowStyle"
     @sort="key => handleBtnAction('contacts-sort', key)"
     @ref-click="({type,id}) => handleSelectAction('contacts-rowRef', {type, id})"
-    @cell-click="e => handleSelectAction('contacts-rowEdit', e.row.contactId)">
+    @cell-click="e => handleSelectAction('contacts-rowView', e.row.contactId)">
     <template #toolbar-actions>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="handleBtnAction('contacts-excel')">

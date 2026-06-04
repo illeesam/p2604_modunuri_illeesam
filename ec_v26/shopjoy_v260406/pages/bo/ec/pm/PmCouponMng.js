@@ -69,6 +69,9 @@ window.PmCouponMng = {
       // 페이지 크기 변경
       if (cmd === 'coupons-pager-sizeChange') {
         return onSizeChange();
+      // 행 클릭 → 상세 보기
+      } else if (cmd === 'coupons-rowView') {
+        return loadView(param);
       // 행 클릭 → 상세 편집
       } else if (cmd === 'coupons-rowEdit') {
         return handleLoadDetail(param);
@@ -348,7 +351,7 @@ window.PmCouponMng = {
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(c) => selectedId===c.couponId ? 'background:#fff8f9;' : ''"
-      @sort="key => handleBtnAction('coupons-sort', key)" @cell-click="e => handleSelectAction('coupons-rowEdit', e.row.couponId)">
+      @sort="key => handleBtnAction('coupons-sort', key)" @cell-click="e => handleSelectAction('coupons-rowView', e.row.couponId)">
       <template #head-actions>
         관리
       </template>
@@ -372,13 +375,13 @@ window.PmCouponMng = {
       </div>
       <div v-for="(c, idx) in coupons" :key="c?.couponId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
         :style="selectedId===c.couponId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
-        @click="handleSelectAction('coupons-rowEdit', c.couponId)">
+        @click="handleSelectAction('coupons-rowView', c.couponId)">
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
           <div style="font-size:12px;color:#999;margin-bottom:6px;">
             <span style="display:inline-block;min-width:20px;font-weight:700;color:#e8587a;">{{ (pager.pageNo-1)*pager.pageSize + idx + 1 }}</span>
             쿠폰 #{{ c.couponId }}
           </div>
-          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleSelectAction('coupons-rowEdit', c.couponId)" :style="selectedId===c.couponId?{color:'#e8587a'}:{}">
+          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleSelectAction('coupons-rowView', c.couponId)" :style="selectedId===c.couponId?{color:'#e8587a'}:{}">
             {{ c.couponNm }}
             <span v-if="selectedId===c.couponId" style="font-size:10px;margin-left:4px;">
               ▼

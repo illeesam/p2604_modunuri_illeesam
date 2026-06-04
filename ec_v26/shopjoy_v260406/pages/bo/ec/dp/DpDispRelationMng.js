@@ -200,10 +200,10 @@ window.DpDispRelationMng = {
     <div v-if="!cfTreeData.length" style="text-align:center;color:#999;padding:30px;">
       데이터가 없습니다.
     </div>
-    <div v-for="ui in cfTreeData" :key="ui?.id" style="margin-bottom:12px;border:1px solid #f0f0f0;border-radius:6px;overflow:hidden;">
+    <div v-for="ui in cfTreeData" :key="ui?.id" style="margin-bottom:8px;border:1px solid #f0f0f0;border-radius:6px;overflow:hidden;">
       <!-- ===== ■.■.■. UI 행 ================================================ -->
       <div @click="handleSelectAction('relations-toggleNode', 'ui_'+ui.id)"
-        style="display:flex;align-items:center;gap:8px;padding:10px;background:#f9f9fb;cursor:pointer;user-select:none;">
+        style="display:flex;align-items:center;gap:8px;padding:5px 10px;background:#f9f9fb;cursor:pointer;user-select:none;">
         <span style="font-size:12px;color:#999;width:20px;text-align:center;">
           {{ isNodeExpanded('ui_'+ui.id) ? '▼' : '▶' }}
         </span>
@@ -229,7 +229,7 @@ window.DpDispRelationMng = {
       <div v-if="isNodeExpanded('ui_'+ui.id)" style="background:#fafafa;">
         <div v-for="area in ui.children" :key="area?.id" style="border-top:1px solid #f0f0f0;">
           <div @click="handleSelectAction('relations-toggleNode', 'area_'+area.id)"
-            style="display:flex;align-items:center;gap:8px;padding:8px 12px 8px 40px;cursor:pointer;user-select:none;background:#fff;">
+            style="display:flex;align-items:center;gap:8px;padding:4px 12px 4px 40px;cursor:pointer;user-select:none;background:#fff;">
             <span style="font-size:12px;color:#999;width:20px;text-align:center;">
               {{ isNodeExpanded('area_'+area.id) ? '▼' : '▶' }}
             </span>
@@ -254,7 +254,7 @@ window.DpDispRelationMng = {
           <!-- ===== ■.■.■.■.■. 패널들 ============================================= -->
           <div v-if="isNodeExpanded('area_'+area.id)" style="background:#fff;">
             <div v-for="panel in area.children" :key="panel?.id"
-              style="display:flex;align-items:center;gap:8px;padding:6px 12px 6px 68px;border-top:1px solid #f5f5f5;font-size:11px;">
+              style="display:flex;align-items:center;gap:8px;padding:3px 12px 3px 68px;border-top:1px solid #f5f5f5;font-size:11px;">
               <span :style="{background: fnGetBadgeColor('panel').bg, color: fnGetBadgeColor('panel').color, fontSize:'9px', borderRadius:'6px', padding:'2px 8px', fontWeight:600, flexShrink:0}">
                 패널
               </span>

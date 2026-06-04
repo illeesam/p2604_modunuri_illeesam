@@ -83,6 +83,9 @@ window.PmPlanMng = {
       // 페이지 크기 변경
       if (cmd === 'plans-pager-sizeChange') {
         return onSizeChange();
+      // 행/셀 클릭 → 상세 보기
+      } else if (cmd === 'plans-rowView') {
+        return loadView(param);
       // 행 클릭 → 상세 편집
       } else if (cmd === 'plans-rowEdit') {
         return handleLoadDetail(param);
@@ -328,7 +331,7 @@ window.PmPlanMng = {
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(p) => detailPanel.selectedId===p.planId ? 'background:#fff8f9;' : ''"
-      @sort="key => handleBtnAction('plans-sort', key)" @cell-click="e => handleSelectAction('plans-rowEdit', e.row.planId)">
+      @sort="key => handleBtnAction('plans-sort', key)" @cell-click="e => handleSelectAction('plans-rowView', e.row.planId)">
       <template #head-actions>
         관리
       </template>
@@ -355,7 +358,7 @@ window.PmPlanMng = {
       </div>
       <div v-for="(p, idx) in plans" :key="p?.planId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
         :style="detailPanel.selectedId===p.planId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
-        @click="handleSelectAction('plans-rowEdit', p.planId)">
+        @click="handleSelectAction('plans-rowView', p.planId)">
         <!-- ===== ■.■.■.■. 배너 이미지 ============================================ -->
         <div v-if="p.bannerImage" style="padding:12px;background:#f5f5f5;border-bottom:1px solid #e8e8e8;" v-html="p.bannerImage">
         </div>
@@ -363,7 +366,7 @@ window.PmPlanMng = {
           <div style="font-size:12px;color:#999;margin-bottom:6px;">
             기획전 #{{ p.planId }}
           </div>
-          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleSelectAction('plans-rowEdit', p.planId)" :style="detailPanel.selectedId===p.planId?{color:'#e8587a'}:{}">
+          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleSelectAction('plans-rowView', p.planId)" :style="detailPanel.selectedId===p.planId?{color:'#e8587a'}:{}">
             {{ p.planNm }}
             <span v-if="detailPanel.selectedId===p.planId" style="font-size:10px;margin-left:4px;">
               ▼

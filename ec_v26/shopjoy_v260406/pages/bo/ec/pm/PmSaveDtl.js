@@ -34,6 +34,9 @@ window.PmSaveDtl = {
       // 폼 취소 → 상세영역 유지 + 빈 신규 폼으로 초기화 (영역 사라지지 않음)
       } else if (cmd === 'form-cancel') {
         return props.navigate('__cancelEdit__');
+      // 보기모드 → 수정모드 전환
+      } else if (cmd === 'form-edit') {
+        return props.navigate('__switchToEdit__');
       // 탭 전환
       } else if (cmd === 'tab-select') {
         uiState.tab = param;
@@ -307,7 +310,7 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
     <!-- ===== ■.■. 카드 헤더 (제목 = list-title, page-title 아님 → 폰트 축소) ========= -->
     <div class="toolbar">
       <span class="list-title">
-        {{ !active ? '마일리지 상세' : (cfIsNew ? '마일리지 등록' : '마일리지 수정') }}
+        {{ !active ? '마일리지 상세' : (cfIsNew ? '마일리지 등록' : (cfDtlMode ? '마일리지 상세' : '마일리지 수정')) }}
         <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
           #{{ form.saveId }}
         </span>
@@ -350,6 +353,14 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
       </bo-form-area>
       <!-- ===== ■.■.■. 판매업체 선택 모달 ========================================== -->
       <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId" modal-name="vendor-pick" :on-callback="fnCallbackModal" />
+      <div class="form-actions" v-if="coUtil.cofAnd(active, cfDtlMode)">
+        <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
+          수정
+        </button>
+        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+          닫기
+        </button>
+      </div>
       <div class="form-actions" v-if="coUtil.cofAnd(active, !cfDtlMode)">
         <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           저장
@@ -374,6 +385,14 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
           <input type="checkbox" :checked="hasVisibility(opt.codeValue)" @change="handleBtnAction('form-visibilityToggle', opt.codeValue)" style="accent-color:#1565c0;" />
           {{ opt.codeLabel }}
         </label>
+      </div>
+      <div class="form-actions" v-if="coUtil.cofAnd(active, cfDtlMode)">
+        <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
+          수정
+        </button>
+        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+          닫기
+        </button>
       </div>
       <div class="form-actions" v-if="coUtil.cofAnd(active, !cfDtlMode)">
         <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">

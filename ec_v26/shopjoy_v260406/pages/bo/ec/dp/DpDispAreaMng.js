@@ -209,6 +209,8 @@ window.DpDispAreaMng = {
         resetDetailToNew();
         return;
       }
+      /* 보기 → 수정 전환: 패널 유지, openMode 만 edit 으로 전환하여 Dtl 재마운트 */
+      if (pg === '__switchToEdit__') { detailPanel.openMode = 'edit'; return; }
       /* 취소: 패널은 그대로 두고 상세영역만 빈 신규 폼으로 초기화 */
       if (pg === '__cancelEdit__') { resetDetailToNew(); return; }
       props.navigate(pg, opts);

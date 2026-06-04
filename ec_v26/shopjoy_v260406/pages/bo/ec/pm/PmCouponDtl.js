@@ -57,6 +57,7 @@ window.PmCouponDtl = {
     });
 
     const cfIsNew = computed(() => !props.dtlId);
+    const cfDtlMode = computed(() => props.dtlMode === 'view'); // view 모드 = 읽기전용 플래그
     const cfCurId       = computed(() => props.dtlId || form.couponId || null);
     const cfHasId       = computed(() => !!cfCurId.value);
     /* 신규: info 탭만 활성. 수정: info/detail 만 저장 의미 있음 (issued/used/preview 는 조회전용 → 비활성) */
@@ -81,6 +82,9 @@ window.PmCouponDtl = {
       // 폼 닫기 → 상세영역 유지 + 빈 신규 폼으로 초기화
       } else if (cmd === 'form-close') {
         return props.navigate('__cancelEdit__');
+      // 보기모드 → 수정모드 전환
+      } else if (cmd === 'form-edit') {
+        return props.navigate('__switchToEdit__');
       // 탭 전환 (info/detail/issued/used/preview)
       } else if (cmd === 'tab-select') {
         return onTabChange(param);
@@ -432,16 +436,16 @@ window.PmCouponDtl = {
       columns,
       uiState, codes, form, errors, vendors,                                          // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal,                                            // dispatch (모든 이벤트 / 액션 라우팅)
-      cfIsNew, cfHasId, cfSaveDisabled, cfIssuedList, cfUsedList, cfIssuedTop, cfUsedTop, cfSelectedVendorNm, tabs, // computed / reactive(tabs)
+      cfIsNew, cfDtlMode, cfHasId, cfSaveDisabled, cfIssuedList, cfUsedList, cfIssuedTop, cfUsedTop, cfSelectedVendorNm, tabs, // computed / reactive(tabs)
       tab, tabMode2, previewTab, barcodeContainer, qrcodeContainer, showVendorModal,  // toRef
-      showTab,                                                                        // 헬퍼
+      showTab, coUtil,                                                                // 헬퍼 / 전역
     };
   },
   template: /* html */`
 <div>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
   <div class="page-title">
-    {{ !active ? '쿠폰 상세' : (cfIsNew ? '쿠폰 등록' : '쿠폰 수정') }}
+    {{ !active ? '쿠폰 상세' : (cfIsNew ? '쿠폰 등록' : (cfDtlMode ? '쿠폰 상세' : '쿠폰 수정')) }}
     <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
       #{{ form.couponId }}
     </span>
@@ -464,7 +468,7 @@ window.PmCouponDtl = {
       </div>
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="columns.infoForm" :form="form" :errors="errors"
-        :readonly="false" :cols="3" compact :show-actions="false">
+        :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
         <!-- ===== ■.■.■.■. 메모: Quill 에디터 ===================================== -->
         <template #memo>
           <base-html-editor v-model="form.memo" height="200px" />
@@ -753,7 +757,7 @@ window.PmCouponDtl = {
         </h3>
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
         <bo-form-area :columns="columns.detailIssueForm" :form="form" :errors="errors"
-          :cols="3" compact :show-actions="false" />
+          :readonly="cfDtlMode" :cols="3" compact :show-actions="false" />
         <!-- ===== ■.■.■.■. 적용 회원 등급 (체크박스 그룹, KEEP) ========================== -->
         <div class="form-group" style="margin-top:12px;">
           <label class="form-label">
@@ -777,7 +781,7 @@ window.PmCouponDtl = {
         </h3>
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
         <bo-form-area :columns="columns.detailUseForm" :form="form" :errors="errors"
-          :cols="3" compact :show-actions="false" />
+          :readonly="cfDtlMode" :cols="3" compact :show-actions="false" />
       </div>
     </div>
     <!-- ===== □.□. 상세정보 ================================================== -->
@@ -816,7 +820,17 @@ window.PmCouponDtl = {
   <!-- ===== □.□. 사용목록 ================================================== -->
   <!-- ===== □. 탭 컨텐츠 =================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
-  <div v-if="active" style="margin-top:16px;text-align:center;gap:8px;display:flex;justify-content:center;">
+  <!-- 보기모드: [수정][닫기] -->
+  <div class="form-actions" v-if="coUtil.cofAnd(active, cfDtlMode)">
+    <button class="btn btn-primary" @click="handleBtnAction('form-edit')" style="min-width:120px;">
+      수정
+    </button>
+    <button class="btn btn-secondary" @click="handleBtnAction('form-close')" style="min-width:120px;">
+      닫기
+    </button>
+  </div>
+  <!-- 수정모드: [저장][취소] -->
+  <div v-if="coUtil.cofAnd(active, !cfDtlMode)" style="margin-top:16px;text-align:center;gap:8px;display:flex;justify-content:center;">
     <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요. (발급/사용/미리보기 탭은 조회 전용)' : ''" @click="handleBtnAction('form-save')" style="min-width:120px;">
       저장
     </button>

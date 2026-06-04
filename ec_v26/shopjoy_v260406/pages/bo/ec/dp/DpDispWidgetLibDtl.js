@@ -654,9 +654,9 @@ window.DpDispWidgetLibDtl = {
       { key: 'name',    label: '라이브러리명', type: 'text', required: true,
         placeholder: '위젯 Lib 이름' },
       { key: 'status',  label: '상태', type: 'select', options: () => codes.active_statuses },
-      { key: 'desc',    label: '설명', type: 'text', placeholder: '위젯 용도·설명 메모', colSpan: 3 },
+      { key: 'desc',    label: '설명', type: 'text', placeholder: '위젯 용도·설명 메모' },
       { key: 'tags',    label: '태그', type: 'text', placeholder: '봄,배너,시즌',
-        hint: '쉼표 구분', colSpan: 3 },
+        hint: '쉼표 구분' },
     ];
     // 클릭 액션
     columns.clickActionForm = [
@@ -684,7 +684,7 @@ window.DpDispWidgetLibDtl = {
   <!-- ===== ■. 헤더 ====================================================== -->
   <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #f0f0f0;background:#fafafa;border-radius:8px 8px 0 0;">
     <div style="display:flex;align-items:center;gap:10px;">
-      <span style="font-size:15px;font-weight:700;color:#222;">
+      <span class="list-title" style="font-size:14px;">
         {{ cfIsNew ? '위젯 Lib 신규등록' : '위젯 Lib 수정' }}
       </span>
       <span v-if="!cfIsNew" style="font-size:11px;background:#eee;color:#666;border-radius:4px;padding:1px 7px;">

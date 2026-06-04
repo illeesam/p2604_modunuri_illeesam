@@ -59,7 +59,10 @@ window.SyBbmMng = {
       // 페이지 크기 변경
       if (cmd === 'bbms-pager-sizeChange') {
         return onSizeChange();
-      // 그리드 행 수정 버튼 → 편집 패널 열기
+      // 그리드 행번호/제목 클릭 → 상세 보기모드로 열기
+      } else if (cmd === 'bbms-rowView') {
+        return loadView(param);
+      // 그리드 행 수정 버튼 → 편집 패널 열기 (수정모드)
       } else if (cmd === 'bbms-rowEdit') {
         return handleLoadDetail(param);
       // 그리드 행 삭제
@@ -344,7 +347,7 @@ window.SyBbmMng = {
         :columns="columns.baseGrid" :rows="bbms" row-key="bbmId" :selected-key="detailModal.dtlId"
         list-title="게시판목록" :count-text="pager.pageTotalCount + '건'"
         :row-style="fnRowStyle"
-        @cell-click="e => handleSelectAction('bbms-rowEdit', e.row.bbmId)">
+        @cell-click="e => handleSelectAction('bbms-rowView', e.row.bbmId)">
         <template #toolbar-actions>
           <div style="display:flex;gap:6px;">
             <button class="btn btn-green btn-sm" @click="handleBtnAction('bbms-excel')">

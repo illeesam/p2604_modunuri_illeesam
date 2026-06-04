@@ -34,6 +34,9 @@ window.PmVoucherDtl = {
       // 폼 취소 → 상세영역 유지 + 빈 신규 폼으로 초기화 (영역 사라지지 않음)
       } else if (cmd === 'form-cancel') {
         return props.navigate('__cancelEdit__');
+      // 보기모드 → 수정모드 전환 (수정 버튼)
+      } else if (cmd === 'form-edit') {
+        return props.navigate('__switchToEdit__');
       // 탭 전환
       } else if (cmd === 'tab-select') {
         return onTabChange(param);
@@ -452,6 +455,14 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
     <!-- ===== □.□. 폼 영역 ================================================== -->
     <!-- ===== ■.■. 판매업체 선택 모달 ============================================ -->
     <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId" modal-name="vendor-pick" :on-callback="fnCallbackModal" />
+    <div class="form-actions" v-if="active && cfDtlMode">
+      <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
+        수정
+      </button>
+      <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+        닫기
+      </button>
+    </div>
     <div class="form-actions" v-if="active && !cfDtlMode">
       <button @click="handleBtnAction('form-save')" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요. (발급/사용/미리보기 탭은 조회 전용)' : ''" class="btn btn-primary">
         {{ cfIsNew ? '등록' : '저장' }}

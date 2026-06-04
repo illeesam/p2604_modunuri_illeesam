@@ -57,6 +57,9 @@ window.PmDiscntDtl = {
       // 폼 취소 → 상세영역 유지 + 빈 신규 폼으로 초기화 (영역 사라지지 않음)
       } else if (cmd === 'form-cancel') {
         return props.navigate('__cancelEdit__');
+      // 보기모드 → 수정모드 전환
+      } else if (cmd === 'form-edit') {
+        return props.navigate('__switchToEdit__');
       // 탭 전환
       } else if (cmd === 'tab-select') {
         uiState.tab = param;
@@ -306,7 +309,7 @@ window.PmDiscntDtl = {
       handleBtnAction, handleSelectAction, fnCallbackModal,                                            // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfHasId, cfSaveDisabled, cfDtlMode, cfVisibilityOptions, cfSelectedVendorNm, // computed
       tab, tabMode2, showVendorModal,                                                 // toRef
-      showTab, hasVisibility,                                                          // 헬퍼
+      showTab, hasVisibility, coUtil,                                                 // 헬퍼
     };
   },
   template: /* html */`
@@ -316,7 +319,7 @@ window.PmDiscntDtl = {
     <!-- ===== ■.■. 카드 헤더 (제목 = list-title) ================================= -->
     <div class="toolbar">
       <span class="list-title">
-        {{ !active ? '할인 상세' : (cfIsNew ? '할인 등록' : '할인 수정') }}
+        {{ !active ? '할인 상세' : (cfIsNew ? '할인 등록' : (cfDtlMode ? '할인 상세' : '할인 수정')) }}
         <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
           #{{ form.discntId }}
         </span>
@@ -359,6 +362,14 @@ window.PmDiscntDtl = {
       </bo-form-area>
       <!-- ===== ■.■.■. 판매업체 선택 모달 ========================================== -->
       <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId" modal-name="vendor-pick" :on-callback="fnCallbackModal" />
+      <div class="form-actions" v-if="coUtil.cofAnd(active, cfDtlMode)">
+        <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
+          수정
+        </button>
+        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+          닫기
+        </button>
+      </div>
       <div class="form-actions" v-if="active && !cfDtlMode">
         <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           저장
@@ -416,6 +427,14 @@ window.PmDiscntDtl = {
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
         <bo-form-area :columns="columns.discntStatusForm" :form="form" :errors="errors"
           :cols="3" compact :show-actions="false" />
+      </div>
+      <div class="form-actions" v-if="coUtil.cofAnd(active, cfDtlMode)">
+        <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
+          수정
+        </button>
+        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+          닫기
+        </button>
       </div>
       <div class="form-actions" v-if="active && !cfDtlMode">
         <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
@@ -481,6 +500,14 @@ window.PmDiscntDtl = {
           </div>
         </div>
       </div>
+      <div class="form-actions" v-if="coUtil.cofAnd(active, cfDtlMode)">
+        <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
+          수정
+        </button>
+        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+          닫기
+        </button>
+      </div>
       <div class="form-actions" v-if="active && !cfDtlMode">
         <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           저장
@@ -528,6 +555,14 @@ window.PmDiscntDtl = {
         </div>
         <button class="btn btn-primary" @click="handleBtnAction('preview-confirm')">
           할인 확인
+        </button>
+      </div>
+      <div class="form-actions" v-if="coUtil.cofAnd(active, cfDtlMode)">
+        <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
+          수정
+        </button>
+        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+          닫기
         </button>
       </div>
     </div>
