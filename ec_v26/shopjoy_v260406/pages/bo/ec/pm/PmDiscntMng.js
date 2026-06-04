@@ -56,23 +56,23 @@ window.PmDiscntMng = {
       // 페이지 크기 변경
       } else if (cmd === 'discnts-pager-sizeChange') {
         return onSizeChange();
-      // 행 클릭 → 상세 편집
-      } else if (cmd === 'discnts-rowEdit') {
-        return handleLoadDetail(param);
-      // 행 삭제
-      } else if (cmd === 'discnts-rowDelete') {
-        return handleDelete(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
     };
 
     /* handleGridCellAction — 그리드 셀 클릭 라우터 (cmd: '{영역명}-cellClick'). e.colKey 로 컬럼별 분기 가능 */
-    const handleGridCellAction = (cmd, e = {}) => {
-      console.log(' ■■ PmDiscntMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      console.log(' ■■ PmDiscntMng.js : handleGridCellAction -> ', cmd, colKey, row);
       if (cmd === 'discnts-cellClick') {
-        // 컬럼별 분기 필요 시 e.colKey 사용. 일반 셀 → 상세 보기모드
-        return loadView(e.row.discntId);
+        // 행 액션 버튼 (colKey='btn_*') — [수정]/[삭제] 등
+        if (colKey === 'btn_edit')   { return handleLoadDetail(row.discntId); }
+        if (colKey === 'btn_delete') { return handleDelete(row); }
+        // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
+        const VIEW_COLS = ['__no__'];
+        if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
+          return loadView(row.discntId);
+        }
       } else {
         console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
@@ -380,17 +380,16 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(d) => selectedId===d.discntId ? 'background:#fff8f9;' : ''"
       @sort="onSort"
-      @row-click="r => handleGridCellAction('discnts-cellClick', { row: r })"
-      @cell-click="e => handleGridCellAction('discnts-cellClick', e)">
+      grid-id="discnts-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
       <template #head-actions>
         관리
       </template>
       <template #row-actions="{ row: d }">
         <div class="actions">
-          <button class="btn btn-blue btn-xs" @click="handleLoadDetail(d.discntId)">
+          <button class="btn btn-blue btn-xs" @click.stop="handleLoadDetail(d.discntId)">
             수정
           </button>
-          <button class="btn btn-danger btn-xs" @click="handleDelete(d)">
+          <button class="btn btn-danger btn-xs" @click.stop="handleDelete(d)">
             삭제
           </button>
         </div>

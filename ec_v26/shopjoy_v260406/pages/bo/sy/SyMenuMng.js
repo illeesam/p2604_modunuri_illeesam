@@ -59,11 +59,8 @@ window.SyMenuMng = {
     /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ SyMenuMng.js : handleSelectAction -> ', cmd, param);
-      // 메뉴 그리드 셀 값 변경 감지
-      if (cmd === 'menus-rowCellChange') {
-        return onCellChange(param);
       // 메뉴 그리드 행 삭제 마킹
-      } else if (cmd === 'menus-rowDelete') {
+      if (cmd === 'menus-rowDelete') {
         return deleteRow(param);
       // 메뉴 그리드 행 변경 취소
       } else if (cmd === 'menus-rowCancel') {
@@ -87,6 +84,15 @@ window.SyMenuMng = {
         return;
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 변경/클릭 라우터. colKey 기준 분기 (CRUD 셀 변경) */
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      if (cmd === 'menus-cellChange') {
+        return onCellChange(row);
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
     };
 
@@ -359,7 +365,7 @@ window.SyMenuMng = {
     return {
       columns,
       menus, uiState, menuCounts, codes, searchParam, gridRows, parentModal,         // 상태 / 데이터
-      handleBtnAction, handleSelectAction, fnCallbackModal,                               // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                               // dispatch (모든 이벤트 / 액션 라우팅)
     };
   },
   template: /* html */`
@@ -389,7 +395,7 @@ window.SyMenuMng = {
         v-model:checkAll="uiState.checkAll"
         @add="handleBtnAction('menus-add')" @save="handleBtnAction('menus-save')"
         @delete-checked="handleBtnAction('menus-deleteChecked')" @cancel-checked="handleBtnAction('menus-cancelChecked')"
-        @cell-change="row => handleSelectAction('menus-rowCellChange', row)"
+        grid-id="menus-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)"
         @export="handleBtnAction('menus-excel')">
         <template #row-actions="{ row, idx }">
           <bo-row-cancel-delete :row="row"

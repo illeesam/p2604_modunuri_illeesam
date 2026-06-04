@@ -103,17 +103,21 @@ window.CmNoticeMng = {
     /* handleSelectAction — 그리드 행/페이지 선택 액션 dispatch */
     const handleSelectAction = (cmd, param) => {
       if (cmd === 'notices-pager-sizeChange') return baseGrid.onSizeChange();
-      if (cmd === 'notices-rowEdit')          return openDetailEdit(param);
-      if (cmd === 'notices-rowDelete')        return handleDelete(param);
       console.warn('[handleSelectAction] unknown cmd:', cmd);
     };
 
     /* handleGridCellAction — 그리드 셀 클릭 라우터 (e.colKey 기준 분기 가능) */
-    const handleGridCellAction = (cmd, e = {}) => {
-      console.log(' ■■ CmNoticeMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      console.log(' ■■ CmNoticeMng.js : handleGridCellAction -> ', cmd, colKey, row);
       if (cmd === 'notices-cellClick') {
-        // 컬럼별 분기 필요 시 e.colKey 사용. 일반 셀 → 상세 보기모드
-        return openDetailView(e.row.noticeId);
+        // 행 액션 버튼 (colKey='btn_*') — [수정]/[삭제] 등
+        if (colKey === 'btn_edit')   { return openDetailEdit(row.noticeId); }
+        if (colKey === 'btn_delete') { return handleDelete(row); }
+        // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
+        const VIEW_COLS = ['__no__'];
+        if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
+          return openDetailView(row.noticeId);
+        }
       } else {
         console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
@@ -239,15 +243,15 @@ window.CmNoticeMng = {
     :count-text="'총 ' + baseGrid.pager.pageTotalCount + '건'"
     :row-class="row => baseDetail.selectedId === row.noticeId ? 'active' : ''" empty-text="데이터가 없습니다."
     @sort="key => handleBtnAction('notices-sort', key)"
-    @cell-click="e => handleGridCellAction('notices-cellClick', e)" row-actions>
+    grid-id="notices-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
     <template #toolbar-actions>
       <button class="btn btn-green btn-sm" @click="handleBtnAction('notices-excel')">📥 엑셀</button>
       <button class="btn btn-primary btn-sm" @click="handleBtnAction('notices-add')">+ 신규</button>
     </template>
-    <template #row-actions="{ row }">
+    <template #row-actions="{ row, gridId }">
       <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
-        <button class="btn btn-blue btn-xs" style="white-space:nowrap;" @click="handleSelectAction('notices-rowEdit', row.noticeId)">수정</button>
-        <button class="btn btn-danger btn-xs" style="white-space:nowrap;" @click="handleSelectAction('notices-rowDelete', row)">삭제</button>
+        <button class="btn btn-blue btn-xs" style="white-space:nowrap;" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">수정</button>
+        <button class="btn btn-danger btn-xs" style="white-space:nowrap;" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">삭제</button>
       </div>
     </template>
     <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->

@@ -83,12 +83,6 @@ window.SyUserMng = {
       // 페이지 크기 변경
       if (cmd === 'users-pager-sizeChange') {
         return onSizeChange();
-      // 그리드 행 클릭 → 편집 패널 열기
-      } else if (cmd === 'users-rowEdit') {
-        return handleLoadDetail(param);
-      // 그리드 행 삭제
-      } else if (cmd === 'users-rowDelete') {
-        return handleDelete(param);
       // 부서 트리 노드 선택 → 우측 그리드 필터링 + 상세 패널 빈 신규 폼으로 초기화
       } else if (cmd === 'deptTree-select') {
         uiState.selectedDeptId = param;
@@ -101,11 +95,17 @@ window.SyUserMng = {
     };
 
     /* handleGridCellAction — 그리드 셀 클릭 라우터 (cmd: '{영역명}-cellClick'). e.colKey 로 컬럼별 분기 가능 */
-    const handleGridCellAction = (cmd, e = {}) => {
-      console.log(' ■■ SyUserMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      console.log(' ■■ SyUserMng.js : handleGridCellAction -> ', cmd, colKey, row);
       if (cmd === 'users-cellClick') {
-        // 컬럼별 분기 필요 시 e.colKey 사용. 일반 셀 → 상세 보기모드로 열기
-        return loadView(e.row.userId);
+        // 행 액션 버튼 (colKey='btn_*') — [수정]/[삭제] 등
+        if (colKey === 'btn_edit')   { return handleLoadDetail(row.userId); }
+        if (colKey === 'btn_delete') { return handleDelete(row); }
+        // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
+        const VIEW_COLS = ['__no__'];
+        if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
+          return loadView(row.userId);
+        }
       } else {
         console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
@@ -460,8 +460,7 @@ window.SyUserMng = {
         list-title="사용자목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle" row-clickable
         @sort="key => handleBtnAction('users-sort', key)"
-        @row-click="r => handleGridCellAction('users-cellClick', { row: r })"
-        @cell-click="e => handleGridCellAction('users-cellClick', e)">
+        grid-id="users-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
         <template #toolbar-actions>
           <div style="display:flex;gap:6px;">
             <button class="btn btn-green btn-sm" @click="handleBtnAction('users-excel')">
@@ -480,13 +479,13 @@ window.SyUserMng = {
             관리
           </th>
         </template>
-        <template #row-actions="{ row }">
-          <td style="white-space:nowrap;" @click.stop>
+        <template #row-actions="{ row, gridId }">
+          <td style="white-space:nowrap;">
             <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
-              <button class="btn btn-blue btn-xs" @click.stop="handleSelectAction('users-rowEdit', row.userId)">
+              <button class="btn btn-blue btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
                 수정
               </button>
-              <button class="btn btn-danger btn-xs" @click.stop="handleSelectAction('users-rowDelete', row)">
+              <button class="btn btn-danger btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">
                 삭제
               </button>
             </div>

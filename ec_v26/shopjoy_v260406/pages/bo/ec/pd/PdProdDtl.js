@@ -1595,7 +1595,7 @@ window.PdProdDtl = {
             <div style="overflow-y:auto;flex:1;padding:8px 12px;">
               <!-- ===== ■.■.■.■.■.■.■. 목록 영역 ======================================= -->
               <bo-grid bare :columns="columns.mdUserGrid" :rows="cfMdUserListFiltered" row-key="userId" :selected-key="form.mdUserId"
-                :row-style="fnMdRowStyle" empty-text="검색 결과가 없습니다." row-clickable @row-click="selectMdUser">
+                :row-style="fnMdRowStyle" empty-text="검색 결과가 없습니다." row-clickable @cell-click="e => selectMdUser(e.row)">
               </bo-grid>
             </div>
             <!-- ===== ■.■.■.■.■.■. 푸터 ============================================ -->
@@ -2456,7 +2456,7 @@ window.PdProdDtl = {
             :row-style="fnPlanRowStyle2"
             empty-text="[행추가]로 판매계획을 추가하세요."
             @toggle-check="onPlanToggleCheck" @toggle-check-all="onPlanToggleCheckAll"
-            @cell-change="row => onPlanChange(row)">
+            @cell-change="e => onPlanChange(e.row)">
       </bo-grid>
     </div>
     <div style="margin-top:8px;display:flex;gap:8px;font-size:11px;color:#aaa;align-items:center;">

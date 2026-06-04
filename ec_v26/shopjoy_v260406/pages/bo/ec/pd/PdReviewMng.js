@@ -67,9 +67,6 @@ window.PdReviewMng = {
       // 상품별 리뷰 페이지 크기 변경 (<select>)
       } else if (cmd === 'prodReviews-pager-sizeChange') {
         return onProdReviewSizeChange();
-      // 그리드 행 클릭 (상세 토글)
-      } else if (cmd === 'reviews-rowEdit') {
-        return openDetail(param);
       // 그리드 행 미리보기 (새창)
       } else if (cmd === 'reviews-rowPreview') {
         return previewProduct(param);
@@ -79,11 +76,22 @@ window.PdReviewMng = {
       // 상품ID 클릭 → 하단 상품별 리뷰 목록 토글
       } else if (cmd === 'reviews-rowProdClick') {
         return onProdIdClick(param);
-      // 상품별 리뷰 행 클릭 (상세 토글)
-      } else if (cmd === 'prodReviews-rowEdit') {
-        return openDetail(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 클릭 라우터. colKey 기준 분기 (리뷰목록 / 상품별리뷰 공통) */
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      console.log(' ■■ PdReviewMng.js : handleGridCellAction -> ', cmd, colKey, row);
+      if (cmd === 'reviews-cellClick' || cmd === 'prodReviews-cellClick') {
+        // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
+        const VIEW_COLS = ['__no__'];
+        if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
+          return openDetail(row);
+        }
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
     };
 
@@ -392,7 +400,7 @@ window.PdReviewMng = {
       columns,
       reviews, uiState, searchParam, pager, codes,                                            // 상태 / 데이터
       prodReviews, prodReviewPager, statusModal,                                              // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                                                    // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, handleGridCellAction,                              // dispatch (모든 이벤트 / 액션 라우팅)
       cfSelectedRow, cfStatusModalRowTitle, cfStatusModalCurrentCd,                           // computed
       fnStatusBadge, STATUS_LABEL, getProdNm, getMemNm, starStr, sortIcon,                    // 헬퍼
       fnGridRowClass, fnProdReviewRowClass,                                                   // 그리드 row 헬퍼
@@ -416,7 +424,7 @@ window.PdReviewMng = {
     :sort-state="uiState" list-title="상품리뷰 목록"
     :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다." row-clickable row-actions
-    @sort="key => handleBtnAction('reviews-sort', key)" @row-click="r => handleSelectAction('reviews-rowEdit', r)">
+    @sort="key => handleBtnAction('reviews-sort', key)" grid-id="reviews-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
     <template #row-actions="{ row }">
       <button class="btn btn-xs" style="background:#fff;border:1px solid #d9d9d9;color:#555;font-size:12px;padding:2px 6px;" title="상품 미리보기" @click.stop="handleSelectAction('reviews-rowPreview', row.prodId)">
         👁
@@ -447,7 +455,7 @@ window.PdReviewMng = {
       <bo-grid bare :columns="columns.prodReviewGrid" :rows="prodReviews" :pager="prodReviewPager"
         row-key="reviewId" :row-class="fnProdReviewRowClass"
         empty-text="해당 상품의 리뷰가 없습니다." row-clickable
- @row-click="r => handleSelectAction('prodReviews-rowEdit', r)">
+ grid-id="prodReviews-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
       </bo-grid>
     </div>
     <!-- ===== □.□. 그리드 (기본 10개 영역 + 화면 높이 반응형 확장, 초과 시 내부 스크롤) =========== -->

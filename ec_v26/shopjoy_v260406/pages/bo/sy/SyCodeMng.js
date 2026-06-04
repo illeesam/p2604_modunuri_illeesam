@@ -94,9 +94,6 @@ window.SyCodeMng = {
       // 좌측 경로 트리 노드 선택 → 그룹 재조회
       if (cmd === 'pathTree-select') {
         return grpSelectNode(param);
-      // 코드그룹 그리드 셀 값 변경 감지
-      } else if (cmd === 'codeGroups-cellChange') {
-        return onGrpChange(param);
       // 코드그룹 그리드 행 [코드관리] → 코드목록 진입
       } else if (cmd === 'codeGroups-rowOpen') {
         return openGrpSetting(param.row, param.event);
@@ -106,9 +103,6 @@ window.SyCodeMng = {
       // 코드그룹 그리드 행 삭제 마킹
       } else if (cmd === 'codeGroups-rowDelete') {
         return handleDeleteGrp(param);
-      // 코드 그리드 셀 값 변경 감지
-      } else if (cmd === 'codes-cellChange') {
-        return onCellChange(param);
       // 코드 그리드 드래그앤드롭 정렬 종료
       } else if (cmd === 'codes-reorder') {
         return onDragEnd();
@@ -126,6 +120,17 @@ window.SyCodeMng = {
         return codeToggleNode(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 변경/클릭 라우터. colKey 기준 분기 (코드그룹/코드 CRUD 셀 변경) */
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      if (cmd === 'codeGroups-cellChange') {
+        return onGrpChange(row);
+      } else if (cmd === 'codes-cellChange') {
+        return onCellChange(row);
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
     };
 
@@ -709,7 +714,7 @@ window.SyCodeMng = {
       uiState, codeGrpCounts, pageCodes, searchParam, treeExpanded, flatTree,                  // 상태 / 데이터
       fnCodeGridColumns, // 컬럼 정의
       treeRowAccessor, treeRowKeyFn,                                            // 컬럼 부속
-      handleBtnAction, handleSelectAction,                                      // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, handleGridCellAction,                                      // dispatch (모든 이벤트 / 액션 라우팅)
       fnCodeListTitle,                                                          // 헬퍼
       cfDetailEditId, cfDetailKey,                                              // computed (상세 패널)
       openNew, inlineNavigate,                                                  // 상세 패널 제어 / Dtl 콜백 (closure 필요)
@@ -742,7 +747,7 @@ window.SyCodeMng = {
       :show-add="false" :show-save="false"
       :sort-state="{ sortKey: uiState.grpSortKey, sortDir: uiState.grpSortDir }"
       @sort="key => handleBtnAction('codeGroups-sort', key)"
-      @cell-change="row => handleSelectAction('codeGroups-cellChange', row)">
+      grid-id="codeGroups-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
       <template #toolbar-actions>
         <button class="btn btn-green btn-sm" @click="handleBtnAction('codeGroups-add')">
           + 행추가
@@ -757,7 +762,7 @@ window.SyCodeMng = {
       <template #cell-grpNm="{ row: g }">
         <td>
           <div style="display:flex;gap:8px;align-items:center;">
-            <input class="grid-input" v-model="g.grpNm" :disabled="g._row_status==='D'" @input="handleSelectAction('codeGroups-cellChange', g)" style="flex:1;" />
+            <input class="grid-input" v-model="g.grpNm" :disabled="g._row_status==='D'" @input="handleGridCellAction('codeGroups-cellChange', null, g)" style="flex:1;" />
             <span v-if="g._row_status !== 'D'" style="font-size:11px;color:#666;font-weight:500;white-space:nowrap;padding:4px 8px;background:#f3f4f6;border-radius:4px;">
               {{ g.codeCount != null ? g.codeCount : '-' }}개
             </span>
@@ -804,7 +809,7 @@ window.SyCodeMng = {
         v-model:checkAll="uiState.checkAll"
         @add="handleBtnAction('codes-add')" @save="handleBtnAction('codes-save')"
         @delete-checked="handleBtnAction('codes-deleteChecked')" @cancel-checked="handleBtnAction('codes-cancelChecked')"
-        @cell-change="row => handleSelectAction('codes-cellChange', row)" @export="handleBtnAction('codes-excel')"
+        grid-id="codes-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" @export="handleBtnAction('codes-excel')"
         @reorder="handleSelectAction('codes-reorder')"
         @row-dblclick="row => handleSelectAction('codes-rowEdit', row.codeId)">
         <template #row-actions="{ row, idx }">
@@ -824,7 +829,7 @@ window.SyCodeMng = {
         @add="handleBtnAction('codes-add')" @save="handleBtnAction('codes-save')"
         @delete-checked="handleBtnAction('codes-deleteChecked')" @cancel-checked="handleBtnAction('codes-cancelChecked')"
         v-model:checkAll="uiState.checkAll" v-model:focusedIdx="uiState.focusedIdx"
-        @cell-change="row => handleSelectAction('codes-cellChange', row)">
+        grid-id="codes-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
       <template #toolbar-actions>
         <div style="display:inline-flex;border:1px solid #d1d5db;border-radius:4px;overflow:hidden;align-self:center;">
           <button type="button" @click="handleBtnAction('codeTree-expandAll')"
@@ -859,7 +864,7 @@ window.SyCodeMng = {
                 :title="'레벨 ' + (node.depth+1)">
               L{{ node.depth+1 }}
             </span>
-            <input class="grid-input" style="flex:1;" v-model="row.codeLabel" :disabled="row._row_status==='D'" @input="handleSelectAction('codes-cellChange', row)" />
+            <input class="grid-input" style="flex:1;" v-model="row.codeLabel" :disabled="row._row_status==='D'" @input="handleGridCellAction('codes-cellChange', null, row)" />
             <span v-if="node.node.children.length > 0" style="flex-shrink:0;font-size:10px;color:#6b7280;background:#f3f4f6;padding:1px 5px;border-radius:3px;"
                 :title="'직속 자식 ' + node.node.children.length + '개'">
               ↳ {{ node.node.children.length }}

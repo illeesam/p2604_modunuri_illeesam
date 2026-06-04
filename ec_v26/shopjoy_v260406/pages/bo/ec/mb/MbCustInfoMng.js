@@ -163,14 +163,22 @@
         } else if (cmd === 'tab-mode') {
           uiState.tabMode2 = param;
           return;
-        // 고객 모달에서 회원 선택
-        } else if (cmd === 'memberModal-pick') {
-          return selectMember(param);
         // ref-link 클릭 (주문/클레임/쿠폰)
         } else if (cmd === 'row-ref') {
           return showRefModal(param.type, param.id);
         } else {
           console.warn('[handleSelectAction] unknown cmd:', cmd);
+        }
+      };
+
+      /* handleGridCellAction — 그리드 셀 클릭 라우터. colKey 기준 분기 (회원 모달 picker) */
+      const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+        console.log(' ■■ MbCustInfoMng : handleGridCellAction -> ', cmd, colKey, row);
+        if (cmd === 'memberModal-cellClick') {
+          // 회원 picker — 행 아무 셀이나 클릭 시 선택
+          return selectMember(row);
+        } else {
+          console.warn('[handleGridCellAction] unknown cmd:', cmd);
         }
       };
 
@@ -517,7 +525,7 @@
         ordersPager, claimsPager, dlivPager, cachePager, contactsPager, chatsPager, loginPager, couponPager, sendPager, modalPager, // 페이저
         cfPageModalList,                                                                                                            // 모달용 클라이언트 슬라이스 (picker)
         onSetPage, onSizeChange,                                                                                                    // BoGrid pager 콜백
-        handleBtnAction, handleSelectAction, fnCallbackModal,                                                                         // dispatch + 모달 통합 콜백
+        handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                                   // dispatch + 모달 통합 콜백
         cfDateFrom, cfDateTo, cfCustCacheBalance, tabs,                                                                             // computed
         showTab, fnFmtPrice,                                                                                                        // 헬퍼
       };
@@ -878,12 +886,12 @@
     <bo-search-area :columns="columns.memberModalSearch" :param="memberModal" :show-reset="false"
       @search="handleBtnAction('memberModal-search')" />
     <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-grid bare :columns="columns.memberModalGrid" :rows="cfPageModalList" :pager="modalPager"
+    <bo-grid bare grid-id="memberModal-cellClick" :columns="columns.memberModalGrid" :rows="cfPageModalList" :pager="modalPager"
       row-key="userId" row-clickable empty-text="검색 결과가 없습니다."
-      @row-click="row => handleSelectAction('memberModal-pick', row)"
+      @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)"
  row-actions>
-      <template #row-actions="{ row }">
-        <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('memberModal-pick', row)">
+      <template #row-actions="{ row, gridId }">
+        <button class="btn btn-primary btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_pick_modal', row)">
           선택
         </button>
       </template>

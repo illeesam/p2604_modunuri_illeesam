@@ -84,11 +84,14 @@ window.PdDlivTmpltMng = {
     };
 
     /* handleGridCellAction — 그리드 셀 클릭 라우터 (e.colKey 기준 분기 가능) */
-    const handleGridCellAction = (cmd, e = {}) => {
-      console.log(' ■■ PdDlivTmpltMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      console.log(' ■■ PdDlivTmpltMng.js : handleGridCellAction -> ', cmd, colKey, row);
       if (cmd === 'dlivTmplts-cellClick') {
-        // 컬럼별 분기 필요 시 e.colKey 사용. 일반 셀 → 상세 열기
-        return openDetail(e.row);
+        // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
+        const VIEW_COLS = ['__no__'];
+        if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
+          return openDetail(row);
+        }
       } else {
         console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
@@ -342,7 +345,7 @@ window.PdDlivTmpltMng = {
       list-title="목록" :count-text="pager.pageTotalCount + '건'"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-class="(row) => uiState.selectedId===row.dlivTmpltId ? 'active' : ''"
-      @sort="key => handleBtnAction('dlivTmplts-sort', key)" @cell-click="e => handleGridCellAction('dlivTmplts-cellClick', e)">
+      @sort="key => handleBtnAction('dlivTmplts-sort', key)" grid-id="dlivTmplts-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
       <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
       <template #footer>
         <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('dlivTmplts-pager-setPage', n)" :on-size-change="() => handleSelectAction('dlivTmplts-pager-sizeChange')" />

@@ -459,9 +459,9 @@ window.FoGrid = {
         if (typeof props.rowClick === 'function') props.rowClick(param.row);
         return emit('row-click', param.row);
       } else if (cmd === 'grid-cell-click') {
+        // picker(rowClick prop) 는 셀 클릭으로 호출 — 행 아무 셀이나 선택
+        if (typeof props.rowClick === 'function') props.rowClick(param.row);
         return emit('cell-click', { row: param.row, col: param.col, colKey: param.col?.key, colIndex: param.ci, rowIndex: param.idx });
-      } else if (cmd === 'grid-row-tr-click') {
-        if (typeof props.rowClick === 'function') return props.rowClick(param.row);
       } else if (cmd === 'grid-row-remove') {
         return emit('row-remove', param.row);
       } else if (cmd === 'grid-row-toggle-check') {
@@ -563,7 +563,7 @@ window.FoGrid = {
         <!-- ▼ grid-row 영역 -->
         <template v-for="(row, idx) in rows" :key="rowKey ? row[rowKey] : idx">
           <tr :style="fnRowStyle(row, idx)" :class="fnRowClass(row, idx)"
-            :draggable="draggable" @click="handleSelectAction('grid-row-tr-click', { row })"
+            :draggable="draggable"
             @dragstart="handleSelectAction('grid-row-drag-start', { idx })"
             @dragover="handleSelectAction('grid-row-drag-over', { idx, event: $event })"
             @dragend="handleSelectAction('grid-row-drag-end')">
@@ -573,12 +573,14 @@ window.FoGrid = {
             <td v-if="draggable" class="fo-grid-drag">
               ≡
             </td>
-            <td v-if="showRowNo" style="text-align:center;color:var(--text-muted);font-size:0.74rem;">
+            <td v-if="showRowNo" style="text-align:center;color:var(--text-muted);font-size:0.74rem;"
+              @click="handleSelectAction('grid-cell-click', { row, col: { key: '__no__' }, ci: -1, idx })">
               {{ rowNo(idx) }}
             </td>
             <template v-for="(col, ci) in columns" :key="col.key">
               <slot :name="'cell-' + col.key" :row="row" :idx="idx" :no="rowNo(idx)">
-                <td :style="U.tdStyle(col, row)" :class="U.cellClass(col, row)" :title="U.cellTitle(col, row)">
+                <td :style="U.tdStyle(col, row)" :class="U.cellClass(col, row)" :title="U.cellTitle(col, row)"
+                  @click="handleSelectAction('grid-cell-click', { row, col, ci, idx })">
                   <input v-if="col.edit==='text'" class="fo-grid-input" v-model="row[col.key]"
                     :placeholder="col.placeholder" />
                   <input v-else-if="col.edit==='number'" type="number" class="fo-grid-input fo-grid-num"

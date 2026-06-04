@@ -64,12 +64,6 @@ window.SyContactMng = {
       // 페이지 크기 변경
       if (cmd === 'contacts-pager-sizeChange') {
         return onSizeChange();
-      // 그리드 행 수정 버튼 → 편집 패널 열기 (수정모드)
-      } else if (cmd === 'contacts-rowEdit') {
-        return handleLoadDetail(param);
-      // 그리드 행 삭제
-      } else if (cmd === 'contacts-rowDelete') {
-        return handleDelete(param);
       // 참조 모달 열기 (회원 등)
       } else if (cmd === 'contacts-rowRef') {
         return showRefModal(param.type, param.id);
@@ -80,11 +74,17 @@ window.SyContactMng = {
 
     /* handleGridCellAction — 그리드 셀 클릭 dispatch. cmd='{영역}-cellClick', e={row,col,colKey,colIndex,rowIndex}.
        e.colKey(클릭 컬럼명) 기준으로 셀별 동작 분기, e.row 행 객체 활용 */
-    const handleGridCellAction = (cmd, e = {}) => {
-      console.log(' ■■ SyContactMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      console.log(' ■■ SyContactMng.js : handleGridCellAction -> ', cmd, colKey, row);
       if (cmd === 'contacts-cellClick') {
-        // 일반 셀 클릭 → 상세 보기모드. (컬럼별 분기 필요 시 e.colKey 로 추가)
-        return loadView(e.row.contactId);
+        // 행 액션 버튼 (colKey='btn_*') — [수정]/[삭제] 등
+        if (colKey === 'btn_edit')   { return handleLoadDetail(row.contactId); }
+        if (colKey === 'btn_delete') { return handleDelete(row); }
+        // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
+        const VIEW_COLS = ['__no__'];
+        if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
+          return loadView(row.contactId);
+        }
       } else {
         console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
@@ -327,7 +327,7 @@ window.SyContactMng = {
     :sort-state="uiState" :row-style="fnRowStyle"
     @sort="key => handleBtnAction('contacts-sort', key)"
     @ref-click="({type,id}) => handleSelectAction('contacts-rowRef', {type, id})"
-    @cell-click="e => handleGridCellAction('contacts-cellClick', e)">
+    grid-id="contacts-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
     <template #toolbar-actions>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="handleBtnAction('contacts-excel')">
@@ -343,13 +343,13 @@ window.SyContactMng = {
         관리
       </th>
     </template>
-    <template #row-actions="{ row }">
+    <template #row-actions="{ row, gridId }">
       <td style="white-space:nowrap;">
         <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
-          <button class="btn btn-blue btn-xs" @click="handleSelectAction('contacts-rowEdit', row.contactId)">
+          <button class="btn btn-blue btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
             수정
           </button>
-          <button class="btn btn-danger btn-xs" @click="handleSelectAction('contacts-rowDelete', row)">
+          <button class="btn btn-danger btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">
             삭제
           </button>
         </div>

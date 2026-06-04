@@ -54,6 +54,17 @@ window.StRawMng = {
       }
     };
 
+    /* handleGridCellAction — 그리드 셀 클릭/액션 라우터. colKey 기준 분기 (행 액션 버튼·토글 등) */
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      console.log(' ■■ StRawMng.js : handleGridCellAction -> ', cmd, colKey, row);
+      if (cmd === 'rawData-cellClick') {
+        // 펼침 토글 아이콘 (_exp / colKey='btn_row_expand')
+        if (colKey === 'btn_row_expand') { return toggleRow(row.settleRawId); }
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
+      }
+    };
+
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -182,9 +193,10 @@ const raws = reactive([]);
     /* rawGridColumns — BoGrid 컬럼 정의 (특수셀은 #cell- 슬롯 override) */
     const columns = {};
     columns.rawGrid = [
-      { key: 'expand',         label: '',         style: 'width:30px',
+      { key: '_exp',           label: '',         style: 'width:24px',
         align: 'center',
-        cellStyle: 'color:#aaa;font-size:11px;user-select:none;',
+        linkToggle: { active: (row) => isExpanded(row.settleRawId), title: '펼치기/닫기', onClick: (row) => handleGridCellAction('rawData-cellClick', 'btn_row_expand', row),
+          activeStyle: 'color:#666;font-size:11px;cursor:pointer;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;cursor:pointer;user-select:none;' },
         fmt: (v, row) => isExpanded(row.settleRawId) ? '▲' : '▼' },
       { key: 'settleRawId',    label: '원장ID',
         cellStyle: 'font-size:12px;color:#555;' },
@@ -326,7 +338,7 @@ const raws = reactive([]);
       uiState, handleDateRangeChange,
       searchParam,
       pager, raws, cfSummary,
-      handleBtnAction, handleSelectAction,
+      handleBtnAction, handleSelectAction, handleGridCellAction,
       expandedRows, toggleRow, isExpanded,
       fnStatusBadge, rawStatusLabel, fnRawStatusBadge, vendorTypeLabel, orderStatusLabel,
       fmtW, fmtPct, doCollect, codes, };
@@ -389,8 +401,7 @@ const raws = reactive([]);
     row-key="settleRawId"
     list-title="정산수집원장"
     :is-expanded="(r) => isExpanded(r.settleRawId)"
-    empty-text="데이터가 없습니다." row-clickable
-    @row-click="(r) => toggleRow(r.settleRawId)">
+    empty-text="데이터가 없습니다.">
     <template #toolbar-actions>
       <button class="btn btn-secondary btn-sm" @click="() => { raws.forEach(r => { if(!isExpanded(r.settleRawId)) toggleRow(r.settleRawId); }) }">
         ▼ 전체펼치기

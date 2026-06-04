@@ -76,10 +76,6 @@ window.SyPathMng = {
         uiState.selectedPathId = (uiState.selectedPathId === param) ? null : param;
         pager.pageNo = 1;
         return handleGridSearch();
-      // 그리드 셀 변경 감지
-      } else if (cmd === 'paths-cellChange') {
-        return onCellChange(param);
-      // 그리드 행 취소
       } else if (cmd === 'paths-rowCancel') {
         return cancelRow(param);
       // 그리드 행 삭제 (서버 호출)
@@ -97,6 +93,16 @@ window.SyPathMng = {
         return selectParent(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 변경/클릭 라우터. colKey 기준 분기 (CRUD 셀 변경 등) */
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      if (cmd === 'paths-cellChange') {
+        return onCellChange(row);
+      // 그리드 행 취소
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
     };
 
@@ -349,7 +355,7 @@ window.SyPathMng = {
     return {
       columns,
       uiState, searchParam, codes, expanded, gridRows, pager, parentModal,         // 상태 / 데이터
-      handleBtnAction, handleSelectAction, fnCallbackModal,                                         // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                         // dispatch (모든 이벤트 / 액션 라우팅)
       cfTree, cfParentTree, cfDirtyRows,                                           // computed
       fnRowClass,                                                                  // 헬퍼
     };
@@ -380,7 +386,7 @@ window.SyPathMng = {
       list-title="경로 목록" :count-text="pager.pageTotalCount + '건'"
       :row-class="fnRowClass" :show-save="true" :row-actions="true"
       @save="handleBtnAction('paths-save')"
-      @cell-change="row => handleSelectAction('paths-cellChange', row)">
+      grid-id="paths-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
       <template #toolbar-actions>
         <button class="btn btn-green btn-sm" @click="handleBtnAction('paths-add')">
           + 행추가

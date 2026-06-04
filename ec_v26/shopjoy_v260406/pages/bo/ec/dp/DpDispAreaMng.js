@@ -67,12 +67,6 @@ window.DpDispAreaMng = {
       // 페이지 크기 변경
       if (cmd === 'areas-pager-sizeChange') {
         return onSizeChange();
-      // 그리드 행 클릭 → 상세 보기
-      } else if (cmd === 'areas-rowView') {
-        return loadView(param);
-      // 그리드 행 수정 버튼 → 편집 패널 열기
-      } else if (cmd === 'areas-rowEdit') {
-        return handleLoadDetail(param);
       // 좌측 표시경로 트리 노드 선택
       } else if (cmd === 'pathTree-select') {
         return selectNode(param);
@@ -82,11 +76,17 @@ window.DpDispAreaMng = {
     };
 
     /* handleGridCellAction — 그리드 셀 클릭 라우터 (cmd: '{영역명}-cellClick', e: { row, colKey, ... }) */
-    const handleGridCellAction = (cmd, e = {}) => {
-      console.log(' ■■ DpDispAreaMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      console.log(' ■■ DpDispAreaMng.js : handleGridCellAction -> ', cmd, colKey, row);
       if (cmd === 'areas-cellClick') {
-        // 컬럼별 분기 필요 시 e.colKey 사용. 일반 셀 → 상세 보기
-        return loadView(e.row.areaId);
+        // 행 액션 버튼 (colKey='btn_*') — [상세]/[수정] 등
+        if (colKey === 'btn_view') { return loadView(row.areaId); }
+        if (colKey === 'btn_edit') { return handleLoadDetail(row.areaId); }
+        // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
+        const VIEW_COLS = ['__no__'];
+        if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
+          return loadView(row.areaId);
+        }
       } else {
         console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
@@ -311,8 +311,7 @@ window.DpDispAreaMng = {
       :count-text="'총 ' + pager.pageTotalCount + '건'"
       empty-text="조회된 데이터가 없습니다." row-clickable
       @sort="key => handleBtnAction('areas-sort', key)"
-      @row-click="(r) => handleSelectAction('areas-rowView', r.areaId)"
-      @cell-click="e => handleGridCellAction('areas-cellClick', e)" row-actions>
+      grid-id="areas-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
       <template #toolbar-actions>
         <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">
           #{{ uiState.selectedPath }}
@@ -321,11 +320,11 @@ window.DpDispAreaMng = {
           ✚ 신규등록
         </button>
       </template>
-      <template #row-actions="{ row }">
-        <button class="btn btn-xs btn-secondary" @click="handleSelectAction('areas-rowView', row.areaId)">
+      <template #row-actions="{ row, gridId }">
+        <button class="btn btn-xs btn-secondary" @click.stop="handleGridCellAction(gridId, 'btn_view', row)">
           상세
         </button>
-        <button class="btn btn-xs btn-primary" @click="handleSelectAction('areas-rowEdit', row.areaId)">
+        <button class="btn btn-xs btn-primary" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
           수정
         </button>
       </template>

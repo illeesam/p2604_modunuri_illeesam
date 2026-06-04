@@ -81,10 +81,6 @@ window.SyBatchMng = {
       // 배치 그리드 행 변경 취소
       } else if (cmd === 'batches-rowCancel') {
         return cancelRow(param);
-      // 배치 그리드 셀 값 변경 감지
-      } else if (cmd === 'batches-rowCellChange') {
-        return onCellChange(param);
-      // 배치 즉시 실행
       } else if (cmd === 'batches-rowRunNow') {
         return runNow(param);
       // Cron 편집 모달 열기
@@ -106,6 +102,16 @@ window.SyBatchMng = {
         return onPathPicked(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 변경/클릭 라우터. colKey 기준 분기 (CRUD 셀 변경 등) */
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      if (cmd === 'batches-cellChange') {
+        return onCellChange(row);
+      // 배치 즉시 실행
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
     };
 
@@ -426,7 +432,7 @@ window.SyBatchMng = {
     return {
       columns,
       batches, uiState, batchCounts, codes, searchParam, gridRows, pathPickModal, cronModal, histReloadTrigger, histFilterBatchId, // 상태 / 데이터
-      handleBtnAction, handleSelectAction, fnCallbackModal,                                               // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                               // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfShowRunNow,                                                            // computed / 헬퍼
     };
   },
@@ -457,11 +463,11 @@ window.SyBatchMng = {
         v-model:checkAll="uiState.checkAll"
         @add="handleBtnAction('batches-add')" @save="handleBtnAction('batches-save')"
         @delete-checked="handleBtnAction('batches-deleteChecked')" @cancel-checked="handleBtnAction('batches-cancelChecked')"
-        @cell-change="row => handleSelectAction('batches-rowCellChange', row)" @export="handleBtnAction('batches-excel')">
+        grid-id="batches-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" @export="handleBtnAction('batches-excel')">
         <template #cell-cronExpr="{ row, idx }">
           <td>
             <div style="display:flex;align-items:center;gap:3px;">
-              <input class="grid-input grid-mono" v-model="row.cronExpr" :disabled="row._row_status==='D'" @input="handleSelectAction('batches-rowCellChange', row)" placeholder="0 0 * * *" style="flex:1;color:#2563eb;min-width:0;" />
+              <input class="grid-input grid-mono" v-model="row.cronExpr" :disabled="row._row_status==='D'" @input="handleGridCellAction('batches-cellChange', null, row)" placeholder="0 0 * * *" style="flex:1;color:#2563eb;min-width:0;" />
               <button v-if="row._row_status!=='D'" class="btn btn-secondary btn-xs" style="flex-shrink:0;padding:2px 5px;font-size:11px;" title="Cron 편집" @click.stop="handleSelectAction('cronModal-open', idx)">
                 🕐
               </button>

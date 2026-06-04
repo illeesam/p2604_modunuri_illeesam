@@ -98,11 +98,23 @@ window.SyApiLogMng = {
       // 페이지 크기 변경
       } else if (cmd === 'apiLogs-pager-sizeChange') {
         return onSizeChange();
-      // 행 클릭 → 상세정보 펼침 토글
-      } else if (cmd === 'apiLogs-rowToggle') {
-        return toggleRow(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 클릭/액션 라우터. colKey 기준 분기 (행 액션 버튼·토글 등) */
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      // 조회형 (렌더 prop) — 매 행 렌더마다 호출되므로 로그 없이 값 반환. colKey 자리에 idx 전달
+      if (cmd === 'apiLogs-isExpanded') { return fnRowExpanded(row, colKey); }
+      if (cmd === 'apiLogs-rowStyle')   { return fnRowClickStyle(row, colKey); }
+      // 액션형 (클릭)
+      console.log(' ■■ SyApiLogMng.js : handleGridCellAction -> ', cmd, colKey, row);
+      if (cmd === 'apiLogs-cellClick') {
+        // 펼침 토글 아이콘 (_exp / colKey='btn_row_expand')
+        if (colKey === 'btn_row_expand') { return toggleRow(row.logId); }
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
     };
 
@@ -309,7 +321,10 @@ window.SyApiLogMng = {
 
     // 접근 로그 그리드
     columns.accessGrid = [
-      { key: '_exp',       label: '',          style: 'width:20px', align: 'center', cellStyle: 'color:#bbb;font-size:11px;user-select:none', fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
+      { key: '_exp', label: '', style: 'width:24px', align: 'center',
+        linkToggle: { active: (row) => isExpanded(row.logId), title: '펼치기/닫기', onClick: (row) => handleGridCellAction('apiLogs-cellClick', 'btn_row_expand', row),
+          activeStyle: 'color:#666;font-size:11px;cursor:pointer;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;cursor:pointer;user-select:none;' },
+        fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
       { key: 'reqMethod',  label: '메서드', badge: (row) => fnMethodBadge(row.reqMethod), fmt: (v) => v || '-' },
       { key: 'reqPath',    label: 'API 경로', mono: true, cellStyle: 'max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', fmt: (v) => v || '-' },
       { key: 'respStatus', label: '상태',      style: 'text-align:center;', align: 'center', badge: (row) => fnStatusBadge(row.respStatus), fmt: (v) => v || '-' },
@@ -322,7 +337,10 @@ window.SyApiLogMng = {
     ];
     // 오류 로그 그리드
     columns.errorGrid = [
-      { key: '_exp',       label: '',          style: 'width:20px', align: 'center', cellStyle: 'color:#bbb;font-size:11px;user-select:none', fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
+      { key: '_exp', label: '', style: 'width:24px', align: 'center',
+        linkToggle: { active: (row) => isExpanded(row.logId), title: '펼치기/닫기', onClick: (row) => handleGridCellAction('apiLogs-cellClick', 'btn_row_expand', row),
+          activeStyle: 'color:#666;font-size:11px;cursor:pointer;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;cursor:pointer;user-select:none;' },
+        fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
       { key: 'reqMethod',  label: '메서드', badge: (row) => fnMethodBadge(row.reqMethod), fmt: (v) => v || '-' },
       { key: 'reqPath',    label: 'API 경로', mono: true, cellStyle: 'max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', fmt: (v) => v || '-' },
       { key: '_errorType', label: '오류유형', cellStyle: 'color:#e74c3c;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', cellTitle: (v, row) => row.errorType, fmt: (v, row) => row.errorType || '-' },
@@ -335,11 +353,11 @@ window.SyApiLogMng = {
     ];
     /* fnRowExpanded — 행 펼침 여부 */
     const fnRowExpanded = (r, idx) => isExpanded(r.logId || idx);
-    /* fnRowClickStyle — 행 클릭 스타일 */
+    /* fnRowClickStyle — 펼친 행 배경 강조 (펼침은 _exp 아이콘 클릭으로만) */
     const fnRowClickStyle = (r, idx) => {
       const exp = isExpanded(r.logId || idx);
       const bg = uiState.activeTab === 'access' ? '#fafbff' : '#fff8f8';
-      return 'cursor:pointer;' + (exp ? ('background:' + bg + ';') : '');
+      return exp ? ('background:' + bg + ';') : '';
     };
 
     /* accessExpand — API요청로그 행 펼침 BoFormArea 컬럼 (cols=4, labelLeft) */
@@ -395,7 +413,7 @@ window.SyApiLogMng = {
     return {
       uiState, codes, pager, tabCounts, expandedRows, allExpanded,                          // 상태 / 데이터
       columns,                                                                              // 컬럼 정의 모음 (baseSearch/moreSearch/accessGrid/errorGrid/accessExpand/errorExpand)
-      handleBtnAction, handleSelectAction,                                                  // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, handleGridCellAction,                                                  // dispatch (모든 이벤트 / 액션 라우팅)
       cfCurrentList,                                                                        // computed
       fnMethodBadge, fnStatusBadge, fnDecode, fnRowExpanded, fnRowClickStyle, showRefModal, // 헬퍼
     };
@@ -458,8 +476,7 @@ window.SyApiLogMng = {
   <bo-grid v-if="uiState.activeTab==='access'"
     :columns="columns.accessGrid" :rows="cfCurrentList" row-key="logId"
     list-title="API요청로그" :count-text="pager.pageTotalCount + '건'"
-    :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
-    @row-click="row => handleSelectAction('apiLogs-rowToggle', row.logId)">
+    :row-style="(r, idx) => handleGridCellAction('apiLogs-rowStyle', idx, r)" :is-expanded="(r, idx) => handleGridCellAction('apiLogs-isExpanded', idx, r)">
     <template #toolbar-actions>
       <div style="display:flex;align-items:center;gap:6px;">
         <span style="font-size:11px;color:#aaa;">
@@ -488,8 +505,7 @@ window.SyApiLogMng = {
   <bo-grid v-if="uiState.activeTab==='error'"
     :columns="columns.errorGrid" :rows="cfCurrentList" row-key="logId"
     list-title="API오류로그" :count-text="pager.pageTotalCount + '건'"
-    :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
-    @row-click="row => handleSelectAction('apiLogs-rowToggle', row.logId)">
+    :row-style="(r, idx) => handleGridCellAction('apiLogs-rowStyle', idx, r)" :is-expanded="(r, idx) => handleGridCellAction('apiLogs-isExpanded', idx, r)">
     <template #toolbar-actions>
       <div style="display:flex;align-items:center;gap:6px;">
         <span style="font-size:11px;color:#aaa;">

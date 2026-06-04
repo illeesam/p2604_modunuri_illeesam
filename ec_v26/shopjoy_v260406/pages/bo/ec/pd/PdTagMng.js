@@ -54,16 +54,23 @@ window.PdTagMng = {
       // 태그 그리드 행 삭제
       if (cmd === 'tags-rowDelete') {
         return handleDelete(param);
-      // 태그 그리드 셀 변경
-      } else if (cmd === 'tags-rowCellChange') {
-        if (param._row_status !== 'N') { param._row_status = 'U'; }
-        return;
       // 페이지 크기 변경
       } else if (cmd === 'tags-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 변경/클릭 라우터. colKey 기준 분기 (CRUD 셀 변경) */
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      if (cmd === 'tags-cellChange') {
+        // 셀 변경 → 수정 마킹
+        if (row._row_status !== 'N') { row._row_status = 'U'; }
+        return;
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
     };
 
@@ -180,7 +187,7 @@ window.PdTagMng = {
     return {
       columns,
       uiState, codes, searchParam, pager, gridRows,                                  // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                                           // dispatch
+      handleBtnAction, handleSelectAction, handleGridCellAction,                                           // dispatch
       fnYnBadge,                                                                     // 헬퍼
     };
   },
@@ -200,7 +207,7 @@ window.PdTagMng = {
   <bo-grid
     :columns="columns.baseGrid" :rows="gridRows" row-key="tagId" row-actions
     list-title="태그 목록" :row-class="(row) => row._row_status==='N' ? 'table-rowNew' : (row._row_status==='U' ? 'table-rowMod' : '')"
- @cell-change="row => handleSelectAction('tags-rowCellChange', row)">
+ grid-id="tags-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
     <template #toolbar-actions>
       <button class="btn btn-primary btn-sm" @click="handleBtnAction('tags-add')">
         + 행추가

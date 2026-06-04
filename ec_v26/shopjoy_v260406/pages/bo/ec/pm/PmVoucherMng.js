@@ -73,23 +73,23 @@ window.PmVoucherMng = {
       // 페이지 크기 변경
       if (cmd === 'vouchers-pager-sizeChange') {
         return onSizeChange();
-      // 행 클릭 → 상세 편집
-      } else if (cmd === 'vouchers-rowEdit') {
-        return handleLoadDetail(param);
-      // 행 삭제
-      } else if (cmd === 'vouchers-rowDelete') {
-        return handleDelete(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
     };
 
     /* handleGridCellAction — 그리드 셀 클릭 라우터 (cmd: '{영역명}-cellClick'). e.colKey 로 컬럼별 분기 */
-    const handleGridCellAction = (cmd, e = {}) => {
-      console.log(' ■■ PmVoucherMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      console.log(' ■■ PmVoucherMng.js : handleGridCellAction -> ', cmd, colKey, row);
       if (cmd === 'vouchers-cellClick') {
-        // 컬럼별 분기 필요 시 e.colKey 사용. 일반 셀 → 상세 보기모드로 열기
-        return loadView(e.row.voucherId);
+        // 행 액션 버튼 (colKey='btn_*') — [수정]/[삭제] 등
+        if (colKey === 'btn_edit')   { return handleLoadDetail(row.voucherId); }
+        if (colKey === 'btn_delete') { return handleDelete(row); }
+        // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
+        const VIEW_COLS = ['__no__'];
+        if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
+          return loadView(row.voucherId);
+        }
       } else {
         console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
@@ -341,16 +341,16 @@ window.PmVoucherMng = {
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(v) => detailPanel.selectedId===v.voucherId ? 'background:#fff8f9;' : ''"
-      @sort="key => handleBtnAction('vouchers-sort', key)" @cell-click="e => handleGridCellAction('vouchers-cellClick', e)">
+      row-clickable @sort="key => handleBtnAction('vouchers-sort', key)" grid-id="vouchers-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
       <template #head-actions>
         관리
       </template>
-      <template #row-actions="{ row: v }">
+      <template #row-actions="{ row: v, gridId }">
         <div class="actions">
-          <button class="btn btn-blue btn-xs" @click="handleSelectAction('vouchers-rowEdit', v.voucherId)">
+          <button class="btn btn-blue btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
             수정
           </button>
-          <button class="btn btn-danger btn-xs" @click="handleSelectAction('vouchers-rowDelete', v)">
+          <button class="btn btn-danger btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">
             삭제
           </button>
         </div>
@@ -394,10 +394,10 @@ window.PmVoucherMng = {
           </div>
         </div>
         <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:center;align-items:center;">
-          <button class="btn btn-blue btn-sm" @click="handleSelectAction('vouchers-rowEdit', v.voucherId)" style="font-size:11px;padding:4px 12px;">
+          <button class="btn btn-blue btn-sm" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)" style="font-size:11px;padding:4px 12px;">
             수정
           </button>
-          <button class="btn btn-danger btn-sm" @click="handleSelectAction('vouchers-rowDelete', v)" style="font-size:11px;padding:4px 12px;">
+          <button class="btn btn-danger btn-sm" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)" style="font-size:11px;padding:4px 12px;">
             삭제
           </button>
           <span style="font-size:11px;color:#999;margin-left:auto;">

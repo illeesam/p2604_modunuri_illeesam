@@ -63,12 +63,6 @@ window.DpDispWidgetMng = {
       // 페이지 크기 변경
       if (cmd === 'widgets-pager-sizeChange') {
         return onSizeChange();
-      // 행 [수정] 버튼 → 상세/편집 패널 열기
-      } else if (cmd === 'widgets-rowEdit') {
-        return handleLoadDetail(param);
-      // 그리드 행 삭제
-      } else if (cmd === 'widgets-rowDelete') {
-        return handleDelete(param);
       // 좌측 표시경로 트리 노드 선택
       } else if (cmd === 'pathTree-select') {
         return selectNode(param);
@@ -78,11 +72,17 @@ window.DpDispWidgetMng = {
     };
 
     /* handleGridCellAction — 그리드 셀 클릭 라우터 (cmd: '{영역명}-cellClick'). e.colKey 로 컬럼별 분기 가능 */
-    const handleGridCellAction = (cmd, e = {}) => {
-      console.log(' ■■ DpDispWidgetMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      console.log(' ■■ DpDispWidgetMng.js : handleGridCellAction -> ', cmd, colKey, row);
       if (cmd === 'widgets-cellClick') {
-        // 컬럼별 분기 필요 시 e.colKey 사용. 일반 셀 → 보기모드 진입
-        return loadView(e.row.widgetId);
+        // 행 액션 버튼 (colKey='btn_*') — [수정]/[삭제] 등
+        if (colKey === 'btn_edit')   { return handleLoadDetail(row.widgetId); }
+        if (colKey === 'btn_delete') { return handleDelete(row); }
+        // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
+        const VIEW_COLS = ['__no__'];
+        if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
+          return loadView(row.widgetId);
+        }
       } else {
         console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
@@ -449,8 +449,7 @@ window.DpDispWidgetMng = {
         :count-text="pager.pageTotalCount + '건'"
         empty-text="등록된 위젯이 없습니다." row-clickable
         @sort="key => handleBtnAction('widgets-sort', key)"
-        @row-click="r => handleGridCellAction('widgets-cellClick', { row: r })"
-        @cell-click="(e) => handleGridCellAction('widgets-cellClick', e)" row-actions>
+        grid-id="widgets-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
         <template #toolbar-actions>
           <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">
             #{{ uiState.selectedPath }}
@@ -548,12 +547,12 @@ window.DpDispWidgetMng = {
             </div>
           </td>
         </template>
-        <template #row-actions="{ row }">
+        <template #row-actions="{ row, gridId }">
           <div class="actions" style="justify-content:flex-end;">
-            <button @click.stop="handleSelectAction('widgets-rowEdit', row.widgetId)" class="btn btn-blue btn-xs">
+            <button @click.stop="handleGridCellAction(gridId, 'btn_edit', row)" class="btn btn-blue btn-xs">
               수정
             </button>
-            <button @click.stop="handleSelectAction('widgets-rowDelete', row)" class="btn btn-danger btn-xs">
+            <button @click.stop="handleGridCellAction(gridId, 'btn_delete', row)" class="btn btn-danger btn-xs">
               삭제
             </button>
           </div>

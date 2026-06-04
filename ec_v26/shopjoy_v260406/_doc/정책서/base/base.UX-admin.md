@@ -359,27 +359,36 @@ Dtl 탭 뷰모드 중 **3열(`cols-3`) 또는 4열(`cols-4`)** 선택 시 max-wi
 
 > 코드 기준 모델: [SyBbsMng.js](../../../pages/bo/sy/SyBbsMng.js) · [SyBbsDtl.js](../../../pages/bo/sy/SyBbsDtl.js). 행 전체 클릭 모델: [SyUserMng.js](../../../pages/bo/sy/SyUserMng.js).
 
-### 6.10 그리드 셀 클릭 라우터 `handleGridCellAction(cmd, e)` ⭐ (2026-06-04, 전체공통)
+### 6.10 그리드 셀 클릭 라우터 `handleGridCellAction(cmd, colKey, row, e)` ⭐ (2026-06-04, 전체공통 · 4-인자 개정)
 
-그리드 `@cell-click` 을 **특정 액션에 직결하지 말고**, 전용 셀 라우터를 거쳐 **클릭된 컬럼(`e.colKey`) 기준으로 분기**한다. `handleBtnAction`/`handleSelectAction` 과 형제인 **세 번째 dispatch** 함수.
+그리드 클릭을 **`@row-click` 없이 `@cell-click` 단일화**하고, 전용 셀 라우터에서 **클릭 컬럼(`colKey`) 기준 분기**한다. `handleBtnAction`/`handleSelectAction` 과 형제인 **세 번째 dispatch** 함수.
+
+**시그니처는 4-인자** `(cmd, colKey, row, e = {})` — 호출부에서 `e.colKey`/`e.row` 를 풀어서 전달(본문 가독성).
 
 ```js
-// ❌ 금지 — 셀 클릭이 단일 액션에 직결 (컬럼 구분 불가, 확장 시 분산)
+// ❌ 금지 — 셀 클릭 단일 액션 직결 / @row-click 사용
 @cell-click="e => handleSelectAction('sites-rowView', e.row.siteId)"
+@row-click="row => handleSelectAction('sites-rowView', row)"
 
-// ✅ 표준 — 셀 라우터로 위임, colKey 기준 분기
-@cell-click="e => handleGridCellAction('sites-cellClick', e)"
+// ✅ 표준 — 셀 라우터 위임 (4-인자 풀어서 전달). @row-click 미사용
+@cell-click="e => handleGridCellAction('sites-cellClick', e.colKey, e.row, e)"
 ```
 
 ```js
-/* handleGridCellAction — 그리드 셀 클릭 dispatch. cmd='{영역}-cellClick',
-   e={row, col, colKey, colIndex, rowIndex}. e.colKey(클릭 컬럼명) 기준 분기, e.row 활용 */
-const handleGridCellAction = (cmd, e = {}) => {
-  console.log(' ■■ XxxMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+/* handleGridCellAction — 그리드 셀 클릭 dispatch. cmd='{영역}-cellClick'.
+   colKey=클릭 컬럼명, row=행 객체, e={row,col,colKey,colIndex,rowIndex} (e.col.link 판별용) */
+const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+  console.log(' ■■ XxxMng.js : handleGridCellAction -> ', cmd, colKey, row);
   if (cmd === 'sites-cellClick') {
-    // 컬럼별 동작이 필요하면 e.colKey 로 분기 (예: 상태 셀 → 빠른 토글, 첨부 셀 → 미리보기)
-    // if (e.colKey === 'statusCd') { return quickToggleStatus(e.row); }
-    return loadView(e.row.siteId);   // 일반 셀 → 상세 보기모드
+    // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
+    const VIEW_COLS = ['__no__'];                 // 화면별 추가 헤더명 (예: ['__no__','siteCode'])
+    if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
+      return loadView(row.siteId);                // 일반 셀(상태/날짜 등) 클릭은 무반응
+    }
+    // 컬럼별 다른 동작이 필요하면 여기서 colKey 분기 — 보기모드 외에 모달/토글/복사 등 단일 진입점
+    // if (colKey === 'statusCd')  { return quickToggleStatus(row); }   // 상태 셀 → 빠른 토글
+    // if (colKey === 'memberNm')  { return openMemberModal(row); }     // 특정 셀 → 모달 열기
+    // if (colKey === 'attachCnt') { return openAttachModal(row); }     // 첨부 셀 → 미리보기 모달
   } else {
     console.warn('[handleGridCellAction] unknown cmd:', cmd);
   }
@@ -387,14 +396,19 @@ const handleGridCellAction = (cmd, e = {}) => {
 ```
 
 **규칙**:
-- `@cell-click` 핸들러 인자는 **이벤트 객체 `e` 통째**(`e => handleGridCellAction('{area}-cellClick', e)`). `e.row.id` 만 떼어 넘기지 말 것 — 라우터가 `e.colKey`/`e.row`/`e.colIndex` 모두 활용.
-- `cmd` 는 `'{영역}-cellClick'` 규칙(예: `sites-cellClick`, `bbsList-cellClick`).
-- BoGrid emit payload: `{ row, col, colKey, colIndex, rowIndex }` ([BoAreaComp.js](../../../components/comp/BoAreaComp.js) `grid-cell-click`). `e.colKey` = 클릭된 컬럼 `key`.
-- `handleGridCellAction` 는 **반드시 setup `return` 에 포함**(누락 시 template "not defined" 크래시).
-- 셀 라우터는 `loadView`(보기모드) 같은 행 동작 외에도, 컬럼별 인라인 액션(상태 빠른 변경·미리보기·복사 등)을 `e.colKey` 로 확장하는 단일 진입점.
-- ❌ 금지: `@cell-click` 에서 `handleSelectAction('{area}-rowView', ...)` 직결(구식). 셀 라우터로 위임.
-- dead 분기 제거 조건: 위임 후 기존 `-rowView` 분기는 **다른 호출처가 없을 때만** 제거. **카드뷰 카드 `@click` / 그리드 `@row-click` / `[상세]` 버튼**이 같은 `-rowView` cmd 를 **문자열 id**로 호출하면(이벤트 객체 `e` 없음) 위임 불가 → 분기 보존이 정답(제거 시 회귀).
-- 적용(2026-06-04): **BO 전체 `@cell-click` 25개 100% 위임 완료**(직결 0). SyBbs(기준)·SyAlarm·SyBbm·SyContact·SySite + Cm/Dp/Od/Pd/Pm/Sy 20파일.
+- **`@row-click` 전면 폐기** → `@cell-click` 단일화. BoGrid 가 일반 td·행번호 td 클릭 시 `cell-click` 을 발화(공통 컴포넌트 수정). **행 빈 영역 클릭은 무반응**(`<tr> @click` 제거됨).
+- **호출부 4-인자**: `e => handleGridCellAction('{area}-cellClick', e.colKey, e.row, e)`. `e` 는 `e.col.link` 판별용으로 마지막에 전달.
+- **보기모드 트리거 = 제목(link) 셀 + 행번호(`__no__`) + `VIEW_COLS`**. 그 외 셀(상태/날짜/뱃지 등) 클릭은 **무반응**. `e.col.link` 는 BoGrid 제목 셀(`title-link`) 표시자(외부링크는 `col.refLink` 로 분리). 화면별로 특정 헤더명을 추가하려면 `VIEW_COLS` 배열에 `colKey` 를 넣는다(유연 구조).
+- `cmd` 는 `'{영역}-cellClick'` 규칙. `handleGridCellAction` 은 **반드시 setup `return` 에 포함**(누락 시 "not defined" 크래시).
+- BoGrid emit payload: `{ row, col, colKey, colIndex, rowIndex }`. 행번호 셀은 `col: { key: '__no__' }` 전달.
+- **행 액션 버튼([수정]/[삭제]/[상세] 등)도 같은 라우터로** ⭐ — `handleSelectAction('{area}-rowEdit')` 직결 대신 **colKey 자리에 `'btn_*'` 식별자**를 넣어 라우터로: `@click.stop="handleGridCellAction('{area}-cellClick', 'btn_edit', row)"`. 라우터는 `if (colKey === 'btn_edit') return handleLoadDetail(row.id);` / `'btn_delete'` / `'btn_view'` 로 분기. 버튼은 셀(td)이 아니라 row 만 있으면 되므로 **3-인자 호출**(e 생략). dead 가 된 `-rowEdit`/`-rowDelete` 분기는 제거(카드뷰 등 다른 호출처 있으면 보존).
+- **#row-actions 버튼에 `@click.stop` 필수**(셀 클릭 전파 방지). 컨테이너 div 불필요.
+- **펼침 토글도 같은 라우터로** ⭐ — `_exp` 토글 아이콘의 `linkToggle.onClick` 을 `(row) => handleGridCellAction('{area}-cellClick', 'btn_expand', row)` 로, 라우터는 `if (colKey === 'btn_expand') return toggleRow(row.id);`. 펼침 전용 화면도 이 라우터 1개로 통일.
+- **셀 클릭으로 모달 열기도 같은 라우터에서** — 보기모드(VIEW_COLS) 가드 이후 `colKey` 분기로 모달/토글/복사 호출(`if (colKey === 'memberNm') return openMemberModal(row);`). 셀·버튼·토글·모달 **모두 `handleGridCellAction` 단일 진입점**. 기존 `@ref-click`(refLink 참조 모달)은 유지.
+- **FoGrid 도 BoGrid 와 동일** ⭐ — FO 그리드도 td/행번호 클릭 시 cell-click 발화 + tr row-click 제거. `:row-click`(rowClick prop, picker 용)은 cell-click 시 자동 호출되어 호환(Login/Sample picker 유지). FoGridCrud/BoGridCrud 는 인라인 편집 전용이라 행클릭 개념 없음(변경 없음).
+- **(선택) 조회형 렌더 prop 도 라우터 단일화** — `:is-expanded`/`:row-style` 같은 **값 반환 prop**도 라우터로 통합 가능: `:is-expanded="(r, idx) => handleGridCellAction('{area}-isExpanded', idx, r)"`. 단 **매 행 렌더마다 호출**되므로 라우터 상단에서 **로그 없이 즉시 return** 하는 조회형 분기로 분리(액션형 로그와 구분). 클릭 액션이 아니므로 필수는 아님 — 단일 진입점 선호 시 적용. 시험 적용: [SyApiLogMng.js](../../../pages/bo/sy/SyApiLogMng.js).
+- **펼침(expand) 화면**은 행 클릭으로 펼치지 말고 **전용 `_exp` 토글 아이콘 열**(BoGrid `linkToggle`)로: `{ key:'_exp', linkToggle:{ active:r=>isExpanded(r.id), onClick:r=>toggleRow(r.id) }, fmt:(v,r)=>isExpanded(r.id)?'▲':'▼' }`. 행 전체 `@row-click` 토글 금지. 기준: [SyUserLoginHist.js](../../../pages/bo/sy/SyUserLoginHist.js).
+- 적용(2026-06-04): **BO 전체 `@cell-click` 25개 100% 4-인자 위임 + colKey VIEW_COLS 가드**. `@row-click` 잔존 0(픽커/펼침 포함 모두 전환). 펼침 토글 아이콘 5화면(SyUser/Member LoginHist, SyApiLog, SyBatchHist, StRaw).
 
 > 코드 기준 모델: [SyBbsMng.js](../../../pages/bo/sy/SyBbsMng.js) `handleGridCellAction`. 점검: `grep -rn "@cell-click=.*handleSelectAction" pages/bo` → 0.
 

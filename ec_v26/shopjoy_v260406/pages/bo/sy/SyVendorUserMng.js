@@ -91,15 +91,9 @@ window.SyVendorUserMng = {
     /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ SyVendorUserMng.js : handleSelectAction -> ', cmd, param);
-      // 업체 그리드 행 선택 (선택 업체 변경)
-      if (cmd === 'vendors-rowSelect') {
-        return pickVendorRow(param);
       // 업체 그리드 페이지 크기 변경
-      } else if (cmd === 'vendors-pager-sizeChange') {
+      if (cmd === 'vendors-pager-sizeChange') {
         bizPager.pageNo = 1; return fnBuildBizPagerNums();
-      // 사용자 그리드 행 클릭 → 편집 모드 진입
-      } else if (cmd === 'vendorUsers-rowEdit') {
-        return openEdit(param);
       // 사용자 그리드 행 삭제
       } else if (cmd === 'vendorUsers-rowDelete') {
         return handleDeleteRow(param);
@@ -120,6 +114,23 @@ window.SyVendorUserMng = {
         return onVendorPicked(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 클릭 라우터. colKey 기준 분기 (업체 picker / 사용자 수정) */
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      console.log(' ■■ SyVendorUserMng.js : handleGridCellAction -> ', cmd, colKey, row);
+      if (cmd === 'vendors-cellClick') {
+        // 업체 picker — 행 아무 셀이나 클릭 시 선택
+        return pickVendorRow(row);
+      } else if (cmd === 'vendorUsers-cellClick') {
+        // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
+        const VIEW_COLS = ['__no__'];
+        if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
+          return openEdit(row);
+        }
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
     };
 
@@ -685,7 +696,7 @@ window.SyVendorUserMng = {
     return {
       columns,
       uiState, codes, vendorUsers, vendors, bizPager, pager, formData, userRoles, roleTreeExpanded,            // 상태 / 데이터
-      handleBtnAction, handleSelectAction, fnCallbackModal,                                                                     // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                               // dispatch (모든 이벤트 / 액션 라우팅)
       cfVendorMap, cfFormRoleTree, cfFormAllowedRootCode, cfSelectedModalRole, cfModalMenuList,                // computed
       fnVendorNm, fnVendorTypeCd, fnVendorSummary, fnVendorStatusBadge, fnVendorStatusLabel,                   // 헬퍼
       fnVendorTypeBadge, fnVendorTypeLabel, fnStatusBadge, fnStatusLabel, fnVendorRowStyle, fnUserRowStyle,    // 헬퍼
@@ -712,7 +723,7 @@ window.SyVendorUserMng = {
         :columns="columns.vendorGrid" :rows="bizPager.pageList||[]" :pager="bizPager" row-key="vendorId" :selected-key="uiState.searchVendorId"
         list-title="업체목록" :count-text="vendors.length + '건'"
         :row-style="fnVendorRowStyle" row-clickable
-        @row-click="row => handleSelectAction('vendors-rowSelect', row)" row-actions>
+        grid-id="vendors-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
         <template #row-actions="{ row }">
           <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('vendors-rowSelect', row)">
             {{ uiState.searchVendorId===row.vendorId ? '선택됨' : '선택' }}
@@ -738,7 +749,7 @@ window.SyVendorUserMng = {
         list-title="사용자목록" :count-text="vendorUsers.length + '건'"
         :row-style="fnUserRowStyle" :loading="uiState.loading" :row-actions="true" row-clickable
         :empty-text="uiState.searchVendorId != null ? '사용자가 없습니다.' : '좌측 업체목록에서 업체를 선택하면 사용자 목록이 표시됩니다.'"
-        @row-click="row => handleSelectAction('vendorUsers-rowEdit', row)">
+        grid-id="vendorUsers-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
         <template #toolbar-actions>
           <button class="btn btn-primary btn-sm" :disabled="uiState.searchVendorId == null" @click="handleBtnAction('vendorUsers-add')">
             + 신규등록

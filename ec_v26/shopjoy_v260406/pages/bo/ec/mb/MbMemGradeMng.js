@@ -55,11 +55,17 @@ window.MbMemGradeMng = {
       // 회원등급 그리드 행 변경 취소
       } else if (cmd === 'grades-rowCancel') {
         return cancelRow(param);
-      // 회원등급 그리드 셀 값 변경 감지
-      } else if (cmd === 'grades-rowCellChange') {
-        return onCellChange(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 변경/클릭 라우터. colKey 기준 분기 (CRUD 셀 변경 등) */
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      if (cmd === 'grades-cellChange') {
+        return onCellChange(row);
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
     };
 
@@ -250,7 +256,7 @@ window.MbMemGradeMng = {
     return {
       columns,
       uiState, codes, searchParam, grades,                                             // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, handleGridCellAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
       cfVisibleCount,                                                                  // computed
       fnStatusClass,                                                                   // 헬퍼
     };
@@ -276,7 +282,7 @@ window.MbMemGradeMng = {
     v-model:checkAll="uiState.checkAll"
     @add="handleBtnAction('grades-add')" @save="handleBtnAction('grades-save')"
     @delete-checked="handleBtnAction('grades-deleteChecked')" @cancel-checked="handleBtnAction('grades-cancelChecked')"
-    @cell-change="row => handleSelectAction('grades-rowCellChange', row)">
+    grid-id="grades-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
     <template #row-actions="{ row, idx }">
       <bo-row-cancel-delete :row="row" @cancel="handleSelectAction('grades-rowCancel', idx)" @delete="handleSelectAction('grades-rowDelete', idx)" />
     </template>

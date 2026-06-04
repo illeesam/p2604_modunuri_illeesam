@@ -84,12 +84,6 @@ window.PmCacheMng = {
       // 그리드 셀/행 클릭 → 상세 보기 패널 열기
       } else if (cmd === 'caches-rowView') {
         return loadView(param);
-      // 그리드 행 [수정] 버튼 → 상세 편집 패널 열기
-      } else if (cmd === 'caches-rowEdit') {
-        return handleLoadDetail(param);
-      // 그리드 행 삭제
-      } else if (cmd === 'caches-rowDelete') {
-        return handleDelete(param);
       // 참조 모달 열기 (회원 등)
       } else if (cmd === 'caches-ref') {
         return showRefModal(param.type, param.id);
@@ -100,11 +94,17 @@ window.PmCacheMng = {
 
     /* handleGridCellAction — 그리드 셀 클릭 dispatch. cmd='{영역}-cellClick', e={row,col,colKey,colIndex,rowIndex}.
        e.colKey(클릭 컬럼명) 기준으로 셀별 동작 분기, e.row 행 객체 활용 */
-    const handleGridCellAction = (cmd, e = {}) => {
-      console.log(' ■■ PmCacheMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      console.log(' ■■ PmCacheMng.js : handleGridCellAction -> ', cmd, colKey, row);
       if (cmd === 'caches-cellClick') {
-        // 일반 셀 클릭 → 상세 보기모드. (컬럼별 분기가 필요하면 e.colKey 로 추가)
-        return loadView(e.row.cacheId);
+        // 행 액션 버튼 (colKey='btn_*') — [수정]/[삭제] 등
+        if (colKey === 'btn_edit')   { return handleLoadDetail(row.cacheId); }
+        if (colKey === 'btn_delete') { return handleDelete(row); }
+        // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
+        const VIEW_COLS = ['__no__'];
+        if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
+          return loadView(row.cacheId);
+        }
       } else {
         console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
@@ -344,17 +344,16 @@ window.PmCacheMng = {
       :row-style="(c) => detailPanel.selectedId===c.cacheId ? 'background:#fff8f9;' : ''"
       @sort="key => handleBtnAction('caches-sort', key)"
       @ref-click="({type,id}) => handleSelectAction('caches-ref', {type, id})"
-      @row-click="r => handleGridCellAction('caches-cellClick', { row: r })"
-      @cell-click="e => handleGridCellAction('caches-cellClick', e)">
+      grid-id="caches-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
       <template #head-actions>
         관리
       </template>
-      <template #row-actions="{ row: c }">
-        <div class="actions" @click.stop>
-          <button class="btn btn-blue btn-xs" @click.stop="handleSelectAction('caches-rowEdit', c.cacheId)">
+      <template #row-actions="{ row: c, gridId }">
+        <div class="actions">
+          <button class="btn btn-blue btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
             수정
           </button>
-          <button class="btn btn-danger btn-xs" @click.stop="handleSelectAction('caches-rowDelete', c)">
+          <button class="btn btn-danger btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">
             삭제
           </button>
         </div>
@@ -385,10 +384,10 @@ window.PmCacheMng = {
           </div>
         </div>
         <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:center;align-items:center;">
-          <button class="btn btn-blue btn-sm" @click="handleSelectAction('caches-rowEdit', c.cacheId)" style="font-size:11px;padding:4px 12px;">
+          <button class="btn btn-blue btn-sm" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)" style="font-size:11px;padding:4px 12px;">
             수정
           </button>
-          <button class="btn btn-danger btn-sm" @click="handleSelectAction('caches-rowDelete', c)" style="font-size:11px;padding:4px 12px;">
+          <button class="btn btn-danger btn-sm" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)" style="font-size:11px;padding:4px 12px;">
             삭제
           </button>
         </div>

@@ -85,12 +85,6 @@ window.SyTemplateMng = {
       } else if (cmd === 'templates-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchList('DEFAULT');
-      // 그리드 행 클릭 / 수정 버튼 → 편집 패널 열기
-      } else if (cmd === 'templates-rowEdit') {
-        return handleLoadDetail(param);
-      // 그리드 행 삭제
-      } else if (cmd === 'templates-rowDelete') {
-        return handleDelete(param);
       // 그리드 행 미리보기
       } else if (cmd === 'templates-rowPreview') {
         return showPreview(param);
@@ -109,11 +103,17 @@ window.SyTemplateMng = {
     };
 
     /* handleGridCellAction — 그리드 셀 클릭 라우터 (cmd: '{영역명}-cellClick'). e.colKey 기준 컬럼별 분기 가능 */
-    const handleGridCellAction = (cmd, e = {}) => {
-      console.log(' ■■ SyTemplateMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      console.log(' ■■ SyTemplateMng.js : handleGridCellAction -> ', cmd, colKey, row);
       if (cmd === 'templates-cellClick') {
-        // 컬럼별 분기 필요 시 e.colKey 사용. 일반 셀 → 상세 보기모드로 열기
-        return loadView(e.row.templateId);
+        // 행 액션 버튼 (colKey='btn_*') — [수정]/[삭제] 등
+        if (colKey === 'btn_edit')   { return handleLoadDetail(row.templateId); }
+        if (colKey === 'btn_delete') { return handleDelete(row); }
+        // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
+        const VIEW_COLS = ['__no__'];
+        if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
+          return loadView(row.templateId);
+        }
       } else {
         console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
@@ -439,7 +439,7 @@ window.SyTemplateMng = {
         list-title="템플릿목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="key => handleBtnAction('templates-sort', key)"
-        @cell-click="e => handleGridCellAction('templates-cellClick', e)">
+        grid-id="templates-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
         <template #toolbar-actions>
           <div style="display:flex;gap:6px;">
             <button class="btn btn-green btn-sm" @click="handleBtnAction('templates-excel')">
@@ -455,7 +455,7 @@ window.SyTemplateMng = {
             관리
           </th>
         </template>
-        <template #row-actions="{ row }">
+        <template #row-actions="{ row, gridId }">
           <td style="white-space:nowrap;">
             <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
               <button class="btn btn-secondary btn-xs" @click="handleSelectAction('templates-rowPreview', row)">
@@ -464,10 +464,10 @@ window.SyTemplateMng = {
               <button class="btn btn-xs" style="background:#52c41a;color:#fff;border-color:#52c41a;" @click="handleSelectAction('templates-rowSend', row)">
                 발송
               </button>
-              <button class="btn btn-blue btn-xs" @click="handleSelectAction('templates-rowEdit', row.templateId)">
+              <button class="btn btn-blue btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
                 수정
               </button>
-              <button class="btn btn-danger btn-xs" @click="handleSelectAction('templates-rowDelete', row)">
+              <button class="btn btn-danger btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">
                 삭제
               </button>
             </div>

@@ -86,23 +86,23 @@ window.PmPlanMng = {
       // 행/셀 클릭 → 상세 보기
       } else if (cmd === 'plans-rowView') {
         return loadView(param);
-      // 행 클릭 → 상세 편집
-      } else if (cmd === 'plans-rowEdit') {
-        return handleLoadDetail(param);
-      // 행 삭제
-      } else if (cmd === 'plans-rowDelete') {
-        return handleDelete(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
     };
 
     /* handleGridCellAction — 그리드 셀 클릭 라우터 (cmd: '{영역명}-cellClick'). e.colKey 기준 컬럼별 분기 */
-    const handleGridCellAction = (cmd, e = {}) => {
-      console.log(' ■■ PmPlanMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      console.log(' ■■ PmPlanMng.js : handleGridCellAction -> ', cmd, colKey, row);
       if (cmd === 'plans-cellClick') {
-        // 컬럼별 분기 필요 시 e.colKey 사용. 일반 셀 → 상세 보기
-        return loadView(e.row.planId);
+        // 행 액션 버튼 (colKey='btn_*') — [수정]/[삭제] 등
+        if (colKey === 'btn_edit')   { return handleLoadDetail(row.planId); }
+        if (colKey === 'btn_delete') { return handleDelete(row); }
+        // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
+        const VIEW_COLS = ['__no__'];
+        if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
+          return loadView(row.planId);
+        }
       } else {
         console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
@@ -342,16 +342,16 @@ window.PmPlanMng = {
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(p) => detailPanel.selectedId===p.planId ? 'background:#fff8f9;' : ''"
-      @sort="key => handleBtnAction('plans-sort', key)" @cell-click="e => handleGridCellAction('plans-cellClick', e)">
+      row-clickable @sort="key => handleBtnAction('plans-sort', key)" grid-id="plans-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
       <template #head-actions>
         관리
       </template>
-      <template #row-actions="{ row: p }">
+      <template #row-actions="{ row: p, gridId }">
         <div class="actions" style="display:flex;gap:6px;align-items:center;">
-          <button class="btn btn-blue btn-xs" @click="handleSelectAction('plans-rowEdit', p.planId)">
+          <button class="btn btn-blue btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
             수정
           </button>
-          <button class="btn btn-danger btn-xs" @click="handleSelectAction('plans-rowDelete', p)">
+          <button class="btn btn-danger btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">
             삭제
           </button>
           <span style="font-size:11px;color:#999;margin-left:auto;">
@@ -407,10 +407,10 @@ window.PmPlanMng = {
           </div>
         </div>
         <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:center;align-items:center;">
-          <button class="btn btn-blue btn-sm" @click="handleSelectAction('plans-rowEdit', p.planId)" style="font-size:11px;padding:4px 12px;">
+          <button class="btn btn-blue btn-sm" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)" style="font-size:11px;padding:4px 12px;">
             수정
           </button>
-          <button class="btn btn-danger btn-sm" @click="handleSelectAction('plans-rowDelete', p)" style="font-size:11px;padding:4px 12px;">
+          <button class="btn btn-danger btn-sm" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)" style="font-size:11px;padding:4px 12px;">
             삭제
           </button>
           <span style="font-size:11px;color:#999;margin-left:auto;">

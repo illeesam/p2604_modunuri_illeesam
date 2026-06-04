@@ -55,11 +55,17 @@ window.MbMemGroupMng = {
       // 회원그룹 그리드 행 변경 취소
       } else if (cmd === 'groups-rowCancel') {
         return cancelRow(param);
-      // 회원그룹 그리드 셀 값 변경 감지
-      } else if (cmd === 'groups-rowCellChange') {
-        return onCellChange(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 변경/클릭 라우터. colKey 기준 분기 (CRUD 셀 변경 등) */
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      if (cmd === 'groups-cellChange') {
+        return onCellChange(row);
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
     };
 
@@ -232,7 +238,7 @@ window.MbMemGroupMng = {
     return {
       columns,
       uiState, codes, searchParam, groups,                                             // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, handleGridCellAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
       cfVisibleCount,                                                                  // computed
       fnStatusClass,                                                                   // 헬퍼
     };
@@ -258,7 +264,7 @@ window.MbMemGroupMng = {
     v-model:checkAll="uiState.checkAll"
     @add="handleBtnAction('groups-add')" @save="handleBtnAction('groups-save')"
     @delete-checked="handleBtnAction('groups-deleteChecked')" @cancel-checked="handleBtnAction('groups-cancelChecked')"
-    @cell-change="row => handleSelectAction('groups-rowCellChange', row)">
+    grid-id="groups-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
     <template #row-actions="{ row, idx }">
       <bo-row-cancel-delete :row="row" @cancel="handleSelectAction('groups-rowCancel', idx)" @delete="handleSelectAction('groups-rowDelete', idx)" />
     </template>

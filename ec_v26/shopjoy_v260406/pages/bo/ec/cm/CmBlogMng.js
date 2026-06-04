@@ -69,14 +69,25 @@ window.CmBlogMng = {
       // 페이지 크기 변경 (<select>)
       if (cmd === 'blogs-pager-sizeChange') {
         return onSizeChange();
-      // 그리드 행 클릭 → 상세 보기 토글
-      } else if (cmd === 'blogs-rowView') {
-        return openDetail(param);
       // 그리드 행 공개/비공개 토글
       } else if (cmd === 'blogs-rowToggleUse') {
         return toggleUse(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 클릭 라우터. colKey 기준 분기 */
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      console.log(' ■■ CmBlogMng.js : handleGridCellAction -> ', cmd, colKey, row);
+      if (cmd === 'blogs-cellClick') {
+        // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
+        const VIEW_COLS = ['__no__'];
+        if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
+          return openDetail(row);
+        }
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
     };
 
@@ -313,7 +324,7 @@ window.CmBlogMng = {
     return {
       columns,
       blogs, uiState, codes, searchParam, pager, detailPanel,                          // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, handleGridCellAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
       cfSelectedRow,                                                                   // computed
       sortIcon, fnYnBadge, fnGridRowClass,                                             // 헬퍼
     };
@@ -336,7 +347,7 @@ window.CmBlogMng = {
     :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다." row-clickable
     @sort="key => handleBtnAction('blogs-sort', key)"
-    @row-click="row => handleSelectAction('blogs-rowView', row)" row-actions>
+    grid-id="blogs-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
     <template #toolbar-actions>
       <button class="btn btn-primary btn-sm" @click="handleBtnAction('blogs-add')">
         + 신규

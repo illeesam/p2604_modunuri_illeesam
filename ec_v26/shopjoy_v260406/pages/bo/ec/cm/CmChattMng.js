@@ -66,12 +66,6 @@ window.CmChattMng = {
       // 페이지 크기 변경
       if (cmd === 'chatts-pager-sizeChange') {
         return onSizeChange();
-      // [수정] 버튼 → 상세 편집 패널 열기
-      } else if (cmd === 'chatts-rowEdit') {
-        return handleLoadDetail(param);
-      // 그리드 행 삭제
-      } else if (cmd === 'chatts-rowDelete') {
-        return handleDelete(param);
       // ref-link 클릭 (회원 등)
       } else if (cmd === 'chatts-rowRef') {
         return showRefModal(param.type, param.id);
@@ -81,11 +75,17 @@ window.CmChattMng = {
     };
 
     /* handleGridCellAction — 그리드 셀 클릭 라우터 (cmd: '{영역명}-cellClick'). e.colKey 로 컬럼별 분기 가능 */
-    const handleGridCellAction = (cmd, e = {}) => {
-      console.log(' ■■ CmChattMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      console.log(' ■■ CmChattMng.js : handleGridCellAction -> ', cmd, colKey, row);
       if (cmd === 'chatts-cellClick') {
-        // 컬럼별 분기 필요 시 e.colKey 사용. 일반 셀 → 상세 보기모드로 열기
-        return loadView(e.row.chattRoomId);
+        // 행 액션 버튼 (colKey='btn_*') — [수정]/[삭제] 등
+        if (colKey === 'btn_edit')   { return handleLoadDetail(row.chattRoomId); }
+        if (colKey === 'btn_delete') { return handleDelete(row); }
+        // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
+        const VIEW_COLS = ['__no__'];
+        if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
+          return loadView(row.chattRoomId);
+        }
       } else {
         console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
@@ -325,8 +325,7 @@ window.CmChattMng = {
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다." row-clickable
     @sort="key => handleBtnAction('chatts-sort', key)"
     @ref-click="ref => handleSelectAction('chatts-rowRef', ref)"
-    @row-click="r => handleGridCellAction('chatts-cellClick', { row: r })"
-    @cell-click="e => handleGridCellAction('chatts-cellClick', e)" row-actions>
+    grid-id="chatts-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
     <template #toolbar-actions>
       <button class="btn btn-green btn-sm" @click="handleBtnAction('chatts-excel')">
         📥 엑셀
@@ -335,12 +334,12 @@ window.CmChattMng = {
         + 신규
       </button>
     </template>
-    <template #row-actions="{ row }">
-      <div class="actions" @click.stop>
-        <button class="btn btn-blue btn-xs" @click.stop="handleSelectAction('chatts-rowEdit', row.chattRoomId)">
+    <template #row-actions="{ row, gridId }">
+      <div class="actions">
+        <button class="btn btn-blue btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
           수정
         </button>
-        <button class="btn btn-danger btn-xs" @click.stop="handleSelectAction('chatts-rowDelete', row)">
+        <button class="btn btn-danger btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">
           삭제
         </button>
       </div>

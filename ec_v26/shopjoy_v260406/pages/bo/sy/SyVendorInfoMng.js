@@ -68,11 +68,8 @@ window.SyVendorInfoMng = {
     /* handleSelectAction — 그리드 행/탭/select 선택 액션 dispatch. 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ SyVendorInfoMng.js : handleSelectAction -> ', cmd, param);
-      // 업체 그리드 행 선택 → 탭 영역 데이터 로드
-      if (cmd === 'vendors-rowSelect') {
-        return pickVendorRow(param);
       // 업체목록 페이지 크기 변경 (<select>)
-      } else if (cmd === 'vendors-pager-sizeChange') {
+      if (cmd === 'vendors-pager-sizeChange') {
         return onSizeChange();
       // 3단 탭 전환
       } else if (cmd === 'tab-select') {
@@ -82,6 +79,17 @@ window.SyVendorInfoMng = {
         return onTabSizeChange(param.tab);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 클릭 라우터. colKey 기준 분기 */
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      console.log(' ■■ SyVendorInfoMng.js : handleGridCellAction -> ', cmd, colKey, row);
+      if (cmd === 'vendors-cellClick') {
+        // picker — 행 아무 셀이나 클릭 시 선택
+        return pickVendorRow(row);
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
     };
 
@@ -270,7 +278,7 @@ window.SyVendorInfoMng = {
       vendors, uiState, codes, searchParam, pager,                                    // 상태 / 데이터
       brands, discnts, dlivTmplts, extras, tabLoading,                                // 탭 영역 데이터
       brandPager, pricePager, dlivPager,                                              // 탭별 페이저
-      handleBtnAction, handleSelectAction,                                            // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, handleGridCellAction,                                            // dispatch (모든 이벤트 / 액션 라우팅)
       fnRowStyle, fnSelectedVendorNm,                                                 // 헬퍼
     };
   },
@@ -290,7 +298,7 @@ window.SyVendorInfoMng = {
     :columns="columns.baseGrid" :rows="vendors" row-key="vendorId"
     list-title="업체목록" :count-text="pager.pageTotalCount + '건'"
     :loading="uiState.loading" :row-style="fnRowStyle" :selected-key="uiState.selectedVendorId" row-clickable row-actions
-    @row-click="row => handleSelectAction('vendors-rowSelect', row)">
+    grid-id="vendors-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
     <template #row-actions="{ row }">
       <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('vendors-rowSelect', row)">
         {{ uiState.selectedVendorId===row.vendorId ? '선택됨' : '선택' }}

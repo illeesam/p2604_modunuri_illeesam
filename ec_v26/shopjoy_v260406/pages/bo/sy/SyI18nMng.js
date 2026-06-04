@@ -46,11 +46,8 @@ window.SyI18nMng = {
     /* handleSelectAction — 그리드 행/노드 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ SyI18nMng.js : handleSelectAction -> ', cmd, param);
-      // 다국어 키 그리드 행 클릭 → 번역 편집 패널 열기
-      if (cmd === 'i18ns-rowOpen') {
-        return openDetail(param);
       // 페이지 번호 클릭
-      } else if (cmd === 'i18ns-pager-setPage') {
+      if (cmd === 'i18ns-pager-setPage') {
         if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchData(); }
         return;
       // 페이지 크기 변경
@@ -59,6 +56,20 @@ window.SyI18nMng = {
         return handleSearchData();
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 클릭 라우터. colKey 기준 분기 (행 액션 버튼·셀 클릭) */
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      console.log(' ■■ SyI18nMng.js : handleGridCellAction -> ', cmd, colKey, row);
+      if (cmd === 'i18ns-cellClick') {
+        // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
+        const VIEW_COLS = ['__no__'];
+        if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
+          return openDetail(row);
+        }
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
     };
 
@@ -218,7 +229,7 @@ window.SyI18nMng = {
       columns,
       uiState, codes, searchParam, pager, i18ns, msgForm,                         // 상태 / 데이터
       msgFormColumns,                        // 컬럼 정의
-      handleBtnAction, handleSelectAction,                                       // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, handleGridCellAction,                 // dispatch (모든 이벤트 / 액션 라우팅)
       cfSelectedKey,                                                             // computed
       fnRowStyle,                                                                // 헬퍼
     };
@@ -240,7 +251,7 @@ window.SyI18nMng = {
     :columns="columns.baseGrid" :rows="i18ns" row-key="i18nId" :selected-key="uiState.selectedId"
     list-title="다국어 키 목록" :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-style="fnRowStyle" row-clickable
-    @row-click="row => handleSelectAction('i18ns-rowOpen', row)">
+    grid-id="i18ns-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
     <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
     <template #footer>
       <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('i18ns-pager-setPage', n)" :on-size-change="() => handleSelectAction('i18ns-pager-sizeChange')" />

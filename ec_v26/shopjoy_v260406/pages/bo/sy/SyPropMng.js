@@ -65,10 +65,6 @@ window.SyPropMng = {
       if (cmd === 'pathTree-select') {
         uiState.selectedPath = param;
         return fetchData();
-      // 그리드 셀 변경 감지
-      } else if (cmd === 'props-cellChange') {
-        return onCellChange(param);
-      // 그리드 행 삭제 마킹
       } else if (cmd === 'props-rowDelete') {
         param._row_status = 'D';
         return;
@@ -78,6 +74,15 @@ window.SyPropMng = {
         return;
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 변경/클릭 라우터. colKey 기준 분기 (CRUD 셀 변경 등) */
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      if (cmd === 'props-cellChange') {
+        return onCellChange(row);
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
     };
 
@@ -270,7 +275,7 @@ window.SyPropMng = {
     return {
       columns,
       uiState, propCounts, codes, searchParam, propRows,                        // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                          // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, handleGridCellAction,                          // dispatch (모든 이벤트 / 액션 라우팅)
     };
   },
   template: /* html */`
@@ -296,7 +301,7 @@ window.SyPropMng = {
       list-title="프로퍼티목록" :draggable="false"
       @add="handleBtnAction('props-add')" @save="handleBtnAction('props-save')"
       @delete-checked="handleBtnAction('props-deleteChecked')" @cancel-checked="handleBtnAction('props-cancelChecked')"
-      @cell-change="row => handleSelectAction('props-cellChange', row)">
+      grid-id="props-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
       <template #row-actions="{ row }">
         <button v-if="['N','U'].includes(row._row_status)" class="btn btn-xs btn-danger" @click.stop="handleSelectAction('props-rowDelete', row)">
           삭제

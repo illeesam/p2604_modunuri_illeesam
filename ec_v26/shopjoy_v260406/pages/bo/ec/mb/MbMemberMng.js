@@ -65,11 +65,22 @@ window.MbMemberMng = {
       // 페이지 크기 변경
       if (cmd === 'members-pager-sizeChange') {
         return onSizeChange();
-      // 그리드 행 클릭 → 상세 편집 패널 열기
-      } else if (cmd === 'members-rowEdit') {
-        return openDetail(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 클릭 라우터. colKey 기준 분기 */
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      console.log(' ■■ MbMemberMng.js : handleGridCellAction -> ', cmd, colKey, row);
+      if (cmd === 'members-cellClick') {
+        // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
+        const VIEW_COLS = ['__no__'];
+        if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
+          return openDetail(row);
+        }
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
     };
 
@@ -326,7 +337,7 @@ window.MbMemberMng = {
     return {
       columns,
       members, uiState, codes, searchParam, pager, detailPanel,                        // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, handleGridCellAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
       cfSelectedRow,                                                                   // computed
       sortIcon, fnGradeBadge, fnStatusBadge, fnFmtDate, fnGridRowClass,                // 헬퍼
       handleSave, handleDelete, closeDetail, handleSearchList,                         // Dtl 콜백 (자식 컴포넌트로 전달)
@@ -350,14 +361,14 @@ window.MbMemberMng = {
     :count-text="'총 ' + pager.pageTotalCount + '건'"
     :row-class="fnGridRowClass" empty-text="데이터가 없습니다."
     @sort="key => handleBtnAction('members-sort', key)"
-    @row-click="row => handleSelectAction('members-rowEdit', row)" row-actions>
+    grid-id="members-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
     <template #toolbar-actions>
       <button class="btn btn-primary btn-sm" @click="handleBtnAction('members-add')">
         + 신규
       </button>
     </template>
     <template #row-actions="{ row }">
-      <button class="btn btn-blue btn-xs" @click="handleSelectAction('members-rowEdit', row)">
+      <button class="btn btn-blue btn-xs" @click.stop="handleSelectAction('members-rowEdit', row)">
         수정
       </button>
     </template>

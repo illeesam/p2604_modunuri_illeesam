@@ -133,10 +133,6 @@ window.SyRoleMng = {
       // 역할 그리드 행 변경 취소
       } else if (cmd === 'roles-rowCancel') {
         return cancelRow(param);
-      // 역할 그리드 셀 값 변경 감지
-      } else if (cmd === 'roles-rowCellChange') {
-        return onCellChange(param);
-      // 역할 그리드 전체 체크/해제 토글
       } else if (cmd === 'roles-rowCheckAll') {
         gridRows.forEach(r => { r._row_check = uiState.checkAll; });
         return;
@@ -179,6 +175,16 @@ window.SyRoleMng = {
         return onPathPicked(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 변경/클릭 라우터. colKey 기준 분기 (CRUD 셀 변경 등) */
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      if (cmd === 'roles-cellChange') {
+        return onCellChange(row);
+      // 역할 그리드 전체 체크/해제 토글
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
     };
 
@@ -883,7 +889,7 @@ window.SyRoleMng = {
       columns,
       uiState, codes, searchParam, gridRows, expanded,                                                       // 상태 / 데이터
       excelUploadModal,                                                                                      // 엑셀 업로드 모달
-      handleBtnAction, handleSelectAction,                                                                   // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, handleGridCellAction,                                                                   // dispatch (모든 이벤트 / 액션 라우팅)
       cfTree, cfShowRoleSetting, cfSelectedRoleNm, cfMenuTree, cfMenuAllChecked,                            // computed
       fnRoleUsersList, fnCallbackModal,                                                                       // 함수 / 모달 콜백 dispatch
       fnPermColor, getMenuPerm, isMenuChecked,                                                               // 헬퍼
@@ -929,7 +935,7 @@ window.SyRoleMng = {
         v-model:checkAll="uiState.checkAll"
         @add="handleBtnAction('roles-add')" @save="handleBtnAction('roles-save')"
         @delete-checked="handleBtnAction('roles-deleteChecked')" @cancel-checked="handleBtnAction('roles-cancelChecked')"
-        @cell-change="row => handleSelectAction('roles-rowCellChange', row)"
+        grid-id="roles-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)"
         @export="handleBtnAction('roles-excel')"
         @excel-upload="handleBtnAction('roles-excel-upload')">
         <template #row-actions="{ row, idx }">

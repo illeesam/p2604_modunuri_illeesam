@@ -86,12 +86,6 @@ window.SyBbsMng = {
       // 페이지 크기 변경
       if (cmd === 'bbsList-pager-sizeChange') {
         return onSizeChange();
-      // 그리드 행 수정 버튼 → 편집 패널 열기 (수정모드)
-      } else if (cmd === 'bbsList-rowEdit') {
-        return handleLoadDetail(param);
-      // 그리드 행 삭제
-      } else if (cmd === 'bbsList-rowDelete') {
-        return handleDelete(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
@@ -99,12 +93,17 @@ window.SyBbsMng = {
 
     /* handleGridCellAction — 그리드 셀 클릭 dispatch. cmd='{영역}-cellClick', e={row,col,colKey,colIndex,rowIndex}.
        e.colKey(클릭 컬럼명) 기준으로 셀별 동작 분기, e.row 행 객체 활용 */
-    const handleGridCellAction = (cmd, e = {}) => {
-      console.log(' ■■ SyBbsMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      console.log(' ■■ SyBbsMng.js : handleGridCellAction -> ', cmd, colKey, row);
       if (cmd === 'bbsList-cellClick') {
-        // 제목 등 일반 셀 클릭 → 상세 보기모드. (컬럼별 분기가 필요하면 e.colKey 로 추가)
-        // if (e.colKey === 'someCol') { return ...; }
-        return loadView(e.row.bbsId);
+        // 행 액션 버튼 (colKey='btn_*') — [수정]/[삭제] 등
+        if (colKey === 'btn_edit')   { return handleLoadDetail(row.bbsId); }
+        if (colKey === 'btn_delete') { return handleDelete(row); }
+        // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
+        const VIEW_COLS = ['__no__'];
+        if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
+          return loadView(row.bbsId);
+        }
       } else {
         console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
@@ -359,7 +358,7 @@ window.SyBbsMng = {
     list-title="게시글목록" :count-text="pager.pageTotalCount + '건'"
     :sort-state="uiState" :row-style="fnRowStyle"
     @sort="key => handleBtnAction('bbsList-sort', key)"
-    @cell-click="e => handleGridCellAction('bbsList-cellClick', e)">
+    grid-id="bbsList-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
     <template #toolbar-actions>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="handleBtnAction('bbsList-excel')">
@@ -375,13 +374,13 @@ window.SyBbsMng = {
         관리
       </th>
     </template>
-    <template #row-actions="{ row }">
+    <template #row-actions="{ row, gridId }">
       <td style="white-space:nowrap;">
         <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
-          <button class="btn btn-blue btn-xs" @click="handleSelectAction('bbsList-rowEdit', row.bbsId)">
+          <button class="btn btn-blue btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
             수정
           </button>
-          <button class="btn btn-danger btn-xs" @click="handleSelectAction('bbsList-rowDelete', row)">
+          <button class="btn btn-danger btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">
             삭제
           </button>
         </div>

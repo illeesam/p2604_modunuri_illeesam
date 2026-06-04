@@ -432,6 +432,7 @@ window.BoGrid = {
     allChecked: { type: Boolean, default: false },               // 헤더 전체선택 체크 상태 (부모 computed 미러)
     rowClickable: { type: Boolean, default: false },             // true=<tr> 전체 클릭 시 row-click emit (행클릭 통일로 #cell- 슬롯 제거 가능)
                                                                    // 셀 내부 button/select/input/checkbox 등은 @click.stop 자동 보호 — 행이벤트 미전파
+    gridId:       { type: String,  default: '' },                // 그리드 식별자(=셀 클릭 라우터 cmd, 예: 'members-cellClick'). @cell-click emit 의 e.cmd + #row-actions 슬롯 gridId 로 전달 → cmd 한 곳 정의
     selectedKey: { type: [String, Number], default: null },      // 선택된 행의 rowKey 값. 일치하는 행에 .bo-row-selected (파란 테두리) 자동 부여
   },
   emits: ['sort', 'row-click', 'cell-click', 'save', 'row-remove', 'reorder', 'cell-change',
@@ -470,7 +471,7 @@ window.BoGrid = {
       } else if (cmd === 'grid-row-click') {
         return emit('row-click', param.row);
       } else if (cmd === 'grid-cell-click') {
-        return emit('cell-click', { row: param.row, col: param.col, colKey: param.col?.key, colIndex: param.ci, rowIndex: param.idx });
+        return emit('cell-click', { cmd: props.gridId, row: param.row, col: param.col, colKey: param.col?.key, colIndex: param.ci, rowIndex: param.idx });
       } else if (cmd === 'grid-row-ref-click') {
         const id = param.col.refKey ? param.row[param.col.refKey] : param.row[param.col.key];
         return emit('ref-click', { row: param.row, col: param.col, type: param.col.refLink, id });
@@ -480,7 +481,7 @@ window.BoGrid = {
         const val = param.row[props.checkedKey || props.rowKey];
         return emit('toggle-check', val);
       } else if (cmd === 'grid-row-cell-change') {
-        return emit('cell-change', param.row, param.col);
+        return emit('cell-change', { cmd: props.gridId, row: param.row, col: param.col, colKey: param.col?.key });
       } else if (cmd === 'grid-row-drag-start') {
         if (props.draggable) dragSrc.value = param.idx;
       } else if (cmd === 'grid-row-drag-over') {
@@ -584,20 +585,21 @@ window.BoGrid = {
           :draggable="draggable"
           @dragstart="handleSelectAction('grid-row-drag-start', { idx })"
           @dragover="handleSelectAction('grid-row-drag-over', { idx, event: $event })"
-          @dragend="handleSelectAction('grid-row-drag-end')"
-          @click="rowClickable ? handleSelectAction('grid-row-click', { row }) : null">
+          @dragend="handleSelectAction('grid-row-drag-end')">
             <td v-if="selectable" style="text-align:center;" @click.stop>
               <input type="checkbox" :checked="fnRowChecked(row)" @change="handleSelectAction('grid-row-toggle-check', { row })" />
             </td>
             <td v-if="draggable" style="text-align:center;cursor:grab;color:#bbb;font-size:17px;user-select:none">
               ≡
             </td>
-            <td style="text-align:center;font-size:11px;color:#999;">
+            <td style="text-align:center;font-size:11px;color:#999;"
+            @click="rowClickable ? handleSelectAction('grid-cell-click', { row, col: { key: '__no__' }, ci: -1, idx }) : null">
               {{ rowNo(idx) }}
             </td>
             <template v-for="(col, ci) in columns" :key="col.key">
               <slot :name="'cell-' + col.key" :row="row" :idx="idx" :no="rowNo(idx)">
-                <td :style="U.tdStyle(col, row)" :class="U.cellClass(col, row)" :title="U.cellTitle(col, row)">
+                <td :style="U.tdStyle(col, row)" :class="U.cellClass(col, row)" :title="U.cellTitle(col, row)"
+                @click="rowClickable ? handleSelectAction('grid-cell-click', { row, col, ci, idx, event: $event }) : null">
                   <!-- 인라인 편집 셀 (행클릭 통일 시 @click.stop 으로 보호) -->
                   <input v-if="col.edit==='text'" class="form-control" v-model="row[col.key]"
                   :placeholder="col.placeholder" style="padding:2px 6px;font-size:12px;"
@@ -702,13 +704,13 @@ window.BoGrid = {
               </slot>
             </template>
             <td v-if="rowActions" style="text-align:center;white-space:nowrap;">
-              <slot name="row-actions" :row="row" :idx="idx">
+              <slot name="row-actions" :row="row" :idx="idx" :grid-id="gridId">
                 <button class="btn btn-danger btn-xs" @click="handleSelectAction('grid-row-remove', { row })">
                   ✕
                 </button>
               </slot>
             </td>
-            <slot v-else name="row-actions" :row="row" :idx="idx">
+            <slot v-else name="row-actions" :row="row" :idx="idx" :grid-id="gridId">
             </slot>
           </tr>
           <tr v-if="fnIsExpanded(row, idx)" class="bo-grid-expand-row">
@@ -745,6 +747,8 @@ window.BoGridCrud = {
     columns:    { type: Array,  required: true },              // edit 셀 정의 포함
     rows:       { type: Array,  required: true },              // gridRows (_row_status/_row_check/_row_org)
     rowKey:     { type: String, required: true },              // PK 필드명 (예: 'brandId')
+    actionHeader:{ type: String, default: '관리' },            // 우측 행액션(col-act) 컬럼 헤더명. #head-actions 슬롯으로 오버라이드 가능
+    gridId:     { type: String, default: '' },                // 그리드 식별자(=셀 라우터 cmd). #row-actions 슬롯 gridId 로 전달
     listTitle:  { type: String, default: '목록' },
     maxHeight:  { type: String, default: '480px' },            // 스크롤 컨테이너 높이
     draggable:  { type: Boolean, default: true },              // 행 드래그 정렬 컬럼(⠿) 표시 + 드래그 동작
@@ -845,15 +849,15 @@ window.BoGridCrud = {
       } else if (cmd === 'grid-row-dblclick') {
         return emit('row-dblclick', param.row, param.idx);
       } else if (cmd === 'grid-cell-click') {
-        return emit('cell-click', { row: param.row, col: param.col, colKey: param.col?.key, colIndex: param.ci, rowIndex: param.idx });
+        return emit('cell-click', { cmd: props.gridId, row: param.row, col: param.col, colKey: param.col?.key, colIndex: param.ci, rowIndex: param.idx });
       } else if (cmd === 'grid-row-cell-change') {
         const row = param.row;
-        if (row._row_status === 'I' || row._row_status === 'D') return emit('cell-change', row);
+        if (row._row_status === 'I' || row._row_status === 'D') return emit('cell-change', { cmd: props.gridId, row, col: param.col, colKey: param.col?.key });
         if (row._row_org) {
           const changed = Object.keys(row._row_org).some(f => String(row[f]) !== String(row._row_org[f]));
           row._row_status = changed ? 'U' : 'N';
         }
-        return emit('cell-change', row);
+        return emit('cell-change', { cmd: props.gridId, row, col: param.col, colKey: param.col?.key });
       } else if (cmd === 'grid-row-drag-start') {
         if (props.draggable) { dragSrc.value = param.idx; dragMoved.value = false; }
       } else if (cmd === 'grid-row-drag-over') {
@@ -954,7 +958,8 @@ window.BoGridCrud = {
               </span>
             </th>
           </slot>
-          <th class="col-act">
+          <th class="col-act" style="text-align:center;">
+            <slot name="head-actions">{{ actionHeader }}</slot>
           </th>
         </tr>
       </thead>
@@ -1059,7 +1064,7 @@ window.BoGridCrud = {
       </template>
       <td class="col-act-val">
         <div class="col-act-box">
-          <slot name="row-actions" :row="fnRow(item)" :idx="idx" :node="item">
+          <slot name="row-actions" :row="fnRow(item)" :idx="idx" :node="item" :grid-id="gridId">
           </slot>
         </div>
       </td>

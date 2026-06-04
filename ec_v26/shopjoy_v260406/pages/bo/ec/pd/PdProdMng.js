@@ -88,15 +88,9 @@ window.PdProdMng = {
       // 페이지 크기 변경
       if (cmd === 'prods-pager-sizeChange') {
         return onSizeChange();
-      // 그리드 행 클릭 → 상세 편집 패널 열기
-      } else if (cmd === 'prods-rowEdit') {
-        return handleLoadDetail(param);
       // 그리드 행 미리보기 (새창)
       } else if (cmd === 'prods-rowPreview') {
         return previewProduct(param);
-      // 그리드 행 삭제
-      } else if (cmd === 'prods-rowDelete') {
-        return handleDelete(param);
       // 카테고리 모달에서 카테고리 선택
       } else if (cmd === 'catModal-select') {
         return onCatSelect(param);
@@ -106,11 +100,17 @@ window.PdProdMng = {
     };
 
     /* handleGridCellAction — 그리드 셀 클릭 라우터 (cmd: '{영역명}-cellClick'). e.colKey 로 컬럼별 분기 가능 */
-    const handleGridCellAction = (cmd, e = {}) => {
-      console.log(' ■■ PdProdMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      console.log(' ■■ PdProdMng.js : handleGridCellAction -> ', cmd, colKey, row);
       if (cmd === 'prods-cellClick') {
-        // 컬럼별 분기 필요 시 e.colKey 사용. 일반 셀 → 상세 보기모드로 열기
-        return loadView(e.row.prodId);
+        // 행 액션 버튼 (colKey='btn_*') — [수정]/[삭제] 등
+        if (colKey === 'btn_edit')   { return handleLoadDetail(row.prodId); }
+        if (colKey === 'btn_delete') { return handleDelete(row); }
+        // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
+        const VIEW_COLS = ['__no__'];
+        if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
+          return loadView(row.prodId);
+        }
       } else {
         console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
@@ -416,8 +416,7 @@ window.PdProdMng = {
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(p) => detailPanel.selectedId===p.prodId ? 'background:#fff8f9;' : ''" row-clickable
       @sort="key => handleBtnAction('prods-sort', key)"
-      @row-click="r => handleGridCellAction('prods-cellClick', { row: r })"
-      @cell-click="e => handleGridCellAction('prods-cellClick', e)">
+      grid-id="prods-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
       <template #toolbar-actions>
         <button class="btn btn-green btn-sm" @click="handleBtnAction('prods-excel')">
           📥 엑셀
@@ -429,16 +428,16 @@ window.PdProdMng = {
       <template #head-actions>
         관리
       </template>
-      <template #row-actions="{ row: p }">
-        <div class="actions" @click.stop>
+      <template #row-actions="{ row: p, gridId }">
+        <div class="actions">
           <button class="btn btn-xs" style="background:#fff;border:1px solid #d9d9d9;color:#555;" title="미리보기"
             @click.stop="handleSelectAction('prods-rowPreview', p.prodId)">
             👁
           </button>
-          <button class="btn btn-blue btn-xs" @click.stop="handleSelectAction('prods-rowEdit', p.prodId)">
+          <button class="btn btn-blue btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
             수정
           </button>
-          <button class="btn btn-danger btn-xs" @click.stop="handleSelectAction('prods-rowDelete', p)">
+          <button class="btn btn-danger btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">
             삭제
           </button>
         </div>

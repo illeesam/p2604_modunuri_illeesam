@@ -51,11 +51,19 @@ window.SyBatchHist = {
       // 페이지 크기 변경
       if (cmd === 'batchLogs-pager-sizeChange') {
         return onSizeChange();
-      // 행 클릭 → 펼침 토글
-      } else if (cmd === 'batchLogs-rowToggle') {
-        return toggleExpand(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 클릭/액션 라우터. colKey 기준 분기 (행 액션 버튼·토글 등) */
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      console.log(' ■■ SyBatchHist.js : handleGridCellAction -> ', cmd, colKey, row);
+      if (cmd === 'batchLogs-cellClick') {
+        // 펼침 토글 아이콘 (_exp / colKey='btn_row_expand')
+        if (colKey === 'btn_row_expand') { return toggleExpand(row.batchLogId); }
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
     };
 
@@ -176,6 +184,10 @@ window.SyBatchHist = {
     // 이력 그리드
     const columns = {};
     columns.histGrid = [
+      { key: '_exp', label: '', style: 'width:24px', align: 'center',
+        linkToggle: { active: (row) => isExpanded(row.batchLogId), title: '펼치기/닫기', onClick: (row) => handleGridCellAction('batchLogs-cellClick', 'btn_row_expand', row),
+          activeStyle: 'color:#666;font-size:11px;cursor:pointer;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;cursor:pointer;user-select:none;' },
+        fmt: (v, row) => isExpanded(row.batchLogId) ? '▲' : '▼' },
       { key: 'batchLogId', label: '로그ID',  style: 'width:46px;', cellStyle: 'color:#aaa' },
       { key: 'batchNm',    label: '배치명',  style: 'min-width:120px;', cellStyle: 'font-weight:500' },
       { key: '_batchCode', label: '배치코드', style: 'min-width:150px;',
@@ -199,7 +211,7 @@ window.SyBatchHist = {
     return {
       columns,
       batches, batchLogs, uiState, codes, pager,                        // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                               // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, handleGridCellAction,                               // dispatch (모든 이벤트 / 액션 라우팅)
       cfBatchOptions,                                                    // computed
       fnRunBadge, fnFmtDuration, fnRowExpanded, fnHistRowStyle,          // 헬퍼
     };
@@ -210,9 +222,8 @@ window.SyBatchHist = {
   <bo-grid
     :columns="columns.histGrid" :rows="batchLogs" row-key="batchLogId"
     list-title="배치 실행이력" :count-text="pager.pageTotalCount + '건'"
-    :row-style="fnHistRowStyle" :is-expanded="fnRowExpanded" row-clickable
-    empty-text="실행이력이 없습니다."
-    @row-click="row => handleSelectAction('batchLogs-rowToggle', row.batchLogId)">
+    :row-style="fnHistRowStyle" :is-expanded="fnRowExpanded"
+    empty-text="실행이력이 없습니다.">
     <template #toolbar-actions>
       <div style="display:flex;gap:6px;align-items:center;">
         <button class="btn btn-secondary btn-sm" @click="handleBtnAction('batchLogs-expandAll')" style="height:30px;font-size:11px;padding:2px 8px;" title="전체 펼치기">

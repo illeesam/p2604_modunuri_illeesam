@@ -94,11 +94,19 @@ window.SyMemberLoginHist = {
       // 페이지 크기 변경
       } else if (cmd === 'histList-pager-sizeChange') {
         return onSizeChange();
-      // 행 클릭 → 펼침 토글
-      } else if (cmd === 'histList-rowToggle') {
-        return toggleRow(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 클릭/액션 라우터. colKey 기준 분기 (행 액션 버튼·토글 등) */
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      console.log(' ■■ SyMemberLoginHist.js : handleGridCellAction -> ', cmd, colKey, row);
+      if (cmd === 'histList-cellClick') {
+        // 펼침 토글 아이콘 (_exp / colKey='btn_row_expand')
+        if (colKey === 'btn_row_expand') { return toggleRow(row.logId); }
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
     };
 
@@ -239,8 +247,8 @@ window.SyMemberLoginHist = {
     /* fnRowExpanded — 행 펼침 여부 */
     const fnRowExpanded = (r, idx) => isExpanded(r.logId || idx);
 
-    /* fnRowClickStyle — 행 클릭 스타일 */
-    const fnRowClickStyle = (r, idx) => 'cursor:pointer;' + (isExpanded(r.logId || idx) ? 'background:#fafbff;' : '');
+    /* fnRowClickStyle — 펼친 행 배경 강조 (펼침은 _exp 아이콘 클릭으로만) */
+    const fnRowClickStyle = (r, idx) => isExpanded(r.logId || idx) ? 'background:#fafbff;' : '';
 
     // 기본 검색
     const columns = {};
@@ -267,7 +275,10 @@ window.SyMemberLoginHist = {
 
     // 로그 그리드
     columns.logGrid = [
-      { key: '_exp',     label: '',          style: 'width:20px', align: 'center', cellStyle: 'color:#bbb;font-size:11px;user-select:none', fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
+      { key: '_exp', label: '', style: 'width:24px', align: 'center',
+        linkToggle: { active: (row) => isExpanded(row.logId), title: '펼치기/닫기', onClick: (row) => handleGridCellAction('histList-cellClick', 'btn_row_expand', row),
+          activeStyle: 'color:#666;font-size:11px;cursor:pointer;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;cursor:pointer;user-select:none;' },
+        fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
       { key: 'logId',    label: '로그ID',     mono: true, cellStyle: 'font-size:11px;color:#888', fmt: (v) => v || '-' },
       { key: 'loginDate',label: '로그인일시', cellStyle: 'white-space:nowrap', fmt: (v, row) => String(row.loginDate || row.regDate || '').slice(0, 19) },
       { key: '_member',  label: '회원',
@@ -284,7 +295,10 @@ window.SyMemberLoginHist = {
 
     // 토큰 그리드
     columns.tokenGrid = [
-      { key: '_exp',          label: '',          style: 'width:20px', align: 'center', cellStyle: 'color:#bbb;font-size:11px;user-select:none', fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
+      { key: '_exp', label: '', style: 'width:24px', align: 'center',
+        linkToggle: { active: (row) => isExpanded(row.logId), title: '펼치기/닫기', onClick: (row) => handleGridCellAction('histList-cellClick', 'btn_row_expand', row),
+          activeStyle: 'color:#666;font-size:11px;cursor:pointer;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;cursor:pointer;user-select:none;' },
+        fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
       { key: 'logId',         label: '토큰로그ID', mono: true, cellStyle: 'font-size:11px;color:#888', fmt: (v) => v || '-' },
       { key: 'regDate',       label: '일시', cellStyle: 'white-space:nowrap', fmt: (v) => String(v || '').slice(0, 19) },
       { key: '_member',       label: '회원',
@@ -344,7 +358,7 @@ window.SyMemberLoginHist = {
     return {
       columns,
       searchParam, codes, pager, tabCounts, histTabs, cfCurrentList, allExpanded,                       // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                                                              // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, handleGridCellAction,                                                              // dispatch (모든 이벤트 / 액션 라우팅)
       fnResultBadge, fnResultLabel, fnActionBadge, fnActionLabel, fnTypeBadge, fnDecode,                // template 표현식에서 사용
       fnRowExpanded, fnRowClickStyle,                                                                   // 행 표시
     };
@@ -396,8 +410,7 @@ window.SyMemberLoginHist = {
   <bo-grid v-if="searchParam.activeTab==='log'" bare
     :columns="columns.logGrid" :rows="cfCurrentList" row-key="logId"
     :count-text="pager.pageTotalCount + '건'"
-    :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
-    @row-click="row => handleSelectAction('histList-rowToggle', row.logId)">
+    :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded">
     <template #toolbar-actions>
       <div style="display:flex;align-items:center;gap:6px;">
         <span style="font-size:11px;color:#aaa;">
@@ -422,8 +435,7 @@ window.SyMemberLoginHist = {
   <bo-grid v-if="searchParam.activeTab==='token'" bare
     :columns="columns.tokenGrid" :rows="cfCurrentList" row-key="logId"
     :count-text="pager.pageTotalCount + '건'"
-    :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded" row-clickable
-    @row-click="row => handleSelectAction('histList-rowToggle', row.logId)">
+    :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded">
     <template #toolbar-actions>
       <div style="display:flex;align-items:center;gap:6px;">
         <span style="font-size:11px;color:#aaa;">

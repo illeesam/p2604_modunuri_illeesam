@@ -68,11 +68,8 @@ window.SyDeptMng = {
     /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ SyDeptMng.js : handleSelectAction -> ', cmd, param);
-      // 부서 그리드 셀 값 변경 감지
-      if (cmd === 'depts-rowCellChange') {
-        return onCellChange(param);
       // 부서 그리드 행 삭제 마킹
-      } else if (cmd === 'depts-rowDelete') {
+      if (cmd === 'depts-rowDelete') {
         return deleteRow(param);
       // 부서 그리드 행 변경 취소
       } else if (cmd === 'depts-rowCancel') {
@@ -95,6 +92,15 @@ window.SyDeptMng = {
         return;
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 변경/클릭 라우터. colKey 기준 분기 (CRUD 셀 변경) */
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      if (cmd === 'depts-cellChange') {
+        return onCellChange(row);
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
     };
 
@@ -429,7 +435,7 @@ window.SyDeptMng = {
     return {
       columns,
       depts, uiState, codes, searchParam, gridRows, expanded, parentModal,                                   // 상태 / 데이터
-      handleBtnAction, handleSelectAction, fnCallbackModal,                                                                   // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                                                   // dispatch (모든 이벤트 / 액션 라우팅)
       cfTree, cfDeptCounts,                                                                                  // computed
     };
   },
@@ -478,7 +484,7 @@ window.SyDeptMng = {
         v-model:checkAll="uiState.checkAll"
         @add="handleBtnAction('depts-add')" @save="handleBtnAction('depts-save')"
         @delete-checked="handleBtnAction('depts-deleteChecked')" @cancel-checked="handleBtnAction('depts-cancelChecked')"
-        @cell-change="row => handleSelectAction('depts-rowCellChange', row)"
+        grid-id="depts-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)"
         @export="handleBtnAction('depts-excel')">
         <template #row-actions="{ row, idx }">
           <bo-row-cancel-delete :row="row" :allow-delete-null="true"

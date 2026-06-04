@@ -105,13 +105,6 @@ window.OdOrderMng = {
       if (cmd === 'orders-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchData('DEFAULT');
-      // 그리드 행 클릭 → 편집 인라인 패널 열기
-      } else if (cmd === 'orders-rowEdit') {
-        detailPanel.selectedId = param; detailPanel.openMode = 'edit'; detailPanel.active = true; detailPanel.reloadTrigger++;
-        return;
-      // 그리드 행 삭제
-      } else if (cmd === 'orders-rowDelete') {
-        return handleDelete(param);
       // 그리드 행 참조 모달 열기
       } else if (cmd === 'orders-rowRefClick') {
         return showRefModal(param.type, param.id);
@@ -136,12 +129,21 @@ window.OdOrderMng = {
     };
 
     /* handleGridCellAction — 그리드 셀 클릭 라우터 (cmd: '{영역명}-cellClick'). e.colKey 로 컬럼별 분기 가능 */
-    const handleGridCellAction = (cmd, e = {}) => {
-      console.log(' ■■ OdOrderMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      console.log(' ■■ OdOrderMng.js : handleGridCellAction -> ', cmd, colKey, row);
       if (cmd === 'orders-cellClick') {
-        // 컬럼별 분기 필요 시 e.colKey 사용. 일반 셀 → 보기 인라인 패널 열기
-        detailPanel.selectedId = e.row.orderId; detailPanel.openMode = 'view'; detailPanel.active = true; detailPanel.reloadTrigger++;
-        return;
+        // 행 액션 버튼 (colKey='btn_*') — [수정]/[삭제] 등
+        if (colKey === 'btn_edit') {
+          detailPanel.selectedId = row.orderId; detailPanel.openMode = 'edit'; detailPanel.active = true; detailPanel.reloadTrigger++;
+          return;
+        }
+        if (colKey === 'btn_delete') { return handleDelete(row); }
+        // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
+        const VIEW_COLS = ['__no__'];
+        if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
+          detailPanel.selectedId = row.orderId; detailPanel.openMode = 'view'; detailPanel.active = true; detailPanel.reloadTrigger++;
+          return;
+        }
       } else {
         console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
@@ -625,14 +627,14 @@ window.OdOrderMng = {
         @sort="key => handleBtnAction('orders-sort', key)"
         @toggle-check="id => handleSelectAction('orders-rowToggleCheck', id)"
         @toggle-check-all="handleSelectAction('orders-rowToggleCheckAll')"
-        @cell-click="e => handleGridCellAction('orders-cellClick', e)"
+        grid-id="orders-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)"
         @ref-click="({type,id}) => handleSelectAction('orders-rowRefClick', {type, id})" row-actions>
-        <template #row-actions="{ row }">
+        <template #row-actions="{ row, gridId }">
           <div class="actions">
-            <button class="btn btn-blue btn-xs" @click="handleSelectAction('orders-rowEdit', row.orderId)">
+            <button class="btn btn-blue btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
               수정
             </button>
-            <button class="btn btn-danger btn-xs" @click="handleSelectAction('orders-rowDelete', row)">
+            <button class="btn btn-danger btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">
               삭제
             </button>
           </div>

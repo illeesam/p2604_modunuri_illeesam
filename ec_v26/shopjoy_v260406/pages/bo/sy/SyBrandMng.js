@@ -76,10 +76,6 @@ window.SyBrandMng = {
         uiState.selectedPath = param;
         uiState.focusedIdx = null;            // 선택(포커스) 행 정보 초기화 → 파란 외곽선 해제
         return handleSearchList();
-      // 그리드 셀 변경 감지
-      } else if (cmd === 'brands-cellChange') {
-        return onCellChange(param);
-      // 그리드 행 취소
       } else if (cmd === 'brands-rowCancel') {
         return cancelRow(param);
       // 그리드 행 삭제 마킹
@@ -87,6 +83,16 @@ window.SyBrandMng = {
         return deleteRow(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 변경/클릭 라우터. colKey 기준 분기 (CRUD 셀 변경 등) */
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      if (cmd === 'brands-cellChange') {
+        return onCellChange(row);
+      // 그리드 행 취소
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
     };
 
@@ -317,7 +323,7 @@ window.SyBrandMng = {
     return {
       columns,
       brands, uiState, brandCounts, codes, searchParam, gridRows,                  // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                            // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, handleGridCellAction,                            // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsLocalMode,                                                  // computed
       fnColTitle,                                                     // 헬퍼
     };
@@ -348,12 +354,12 @@ window.SyBrandMng = {
       :cell-title="fnColTitle"
       @add="handleBtnAction('brands-add')" @save="handleBtnAction('brands-save')"
       @delete-checked="handleBtnAction('brands-deleteChecked')" @cancel-checked="handleBtnAction('brands-cancelChecked')"
-      @cell-change="row => handleSelectAction('brands-cellChange', row)" @export="handleBtnAction('brands-excel')">
+      grid-id="brands-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" @export="handleBtnAction('brands-excel')">
       <template #cell-logoUrl="{ row }">
         <td>
           <div style="display:flex;align-items:center;gap:4px;">
             <input class="grid-input grid-mono" v-model="row.logoUrl"
-              :disabled="row._row_status==='D'" @input="handleSelectAction('brands-cellChange', row)"
+              :disabled="row._row_status==='D'" @input="handleGridCellAction('brands-cellChange', null, row)"
               placeholder="/images/brand/logo.png" style="flex:1;" :title="fnColTitle({label:'로고 URL'})" />
             <img v-if="row.logoUrl"
               :src="row.logoUrl"

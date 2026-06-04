@@ -62,9 +62,6 @@ window.DpDispWidgetLibMng = {
       // 페이지 크기 변경
       if (cmd === 'widgetLibs-pager-sizeChange') {
         return onSizeChange();
-      // 그리드 행 클릭 → 편집 패널 열기
-      } else if (cmd === 'widgetLibs-rowEdit') {
-        return handleLoadDetail(param);
       // 그리드 행 삭제
       } else if (cmd === 'widgetLibs-rowDelete') {
         return handleDelete(param);
@@ -73,6 +70,20 @@ window.DpDispWidgetLibMng = {
         return selectNode(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 클릭 라우터. colKey 기준 분기 */
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      console.log(' ■■ DpDispWidgetLibMng.js : handleGridCellAction -> ', cmd, colKey, row);
+      if (cmd === 'widgetLibs-cellClick') {
+        // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
+        const VIEW_COLS = ['__no__'];
+        if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
+          return handleLoadDetail(row.widgetLibId);
+        }
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
     };
 
@@ -307,7 +318,7 @@ window.DpDispWidgetLibMng = {
     return {
       columns,
       widgetLibs, uiState, widgetLibCounts, codes, searchParam, applied, pager, detailPanel,           // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, handleGridCellAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
       cfFilterDirty, cfDetailEditId, cfDetailKey, cfNoFilter,                          // computed
       pathLabel, wIcon, wTypeLabel, sortIcon, fnStatusCls, fnStatusLabel,              // 헬퍼
       inlineNavigate,                                                                   // Dtl 콜백 (closure 필요)
@@ -369,7 +380,7 @@ window.DpDispWidgetLibMng = {
         :count-text="pager.pageTotalCount + '건'"
         empty-text="데이터가 없습니다." row-clickable
         @sort="key => handleBtnAction('widgetLibs-sort', key)"
-        @row-click="(r) => handleSelectAction('widgetLibs-rowEdit', r.widgetLibId)" row-actions>
+        grid-id="widgetLibs-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
           <template #toolbar-actions>
             <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">
               #{{ uiState.selectedPath }}
@@ -394,10 +405,10 @@ window.DpDispWidgetLibMng = {
           </template>
           <template #row-actions="{ row }">
             <div class="actions">
-              <button class="btn btn-blue btn-xs" @click="handleSelectAction('widgetLibs-rowEdit', row.widgetLibId)">
+              <button class="btn btn-blue btn-xs" @click.stop="handleSelectAction('widgetLibs-rowEdit', row.widgetLibId)">
                 수정
               </button>
-              <button class="btn btn-danger btn-xs" @click="handleSelectAction('widgetLibs-rowDelete', row)">
+              <button class="btn btn-danger btn-xs" @click.stop="handleSelectAction('widgetLibs-rowDelete', row)">
                 삭제
               </button>
             </div>
