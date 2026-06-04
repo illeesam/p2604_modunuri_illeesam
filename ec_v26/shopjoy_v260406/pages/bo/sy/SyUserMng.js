@@ -83,9 +83,6 @@ window.SyUserMng = {
       // 페이지 크기 변경
       if (cmd === 'users-pager-sizeChange') {
         return onSizeChange();
-      // 그리드 행번호/셀 클릭 → 상세 보기모드로 열기
-      } else if (cmd === 'users-rowView') {
-        return loadView(param);
       // 그리드 행 클릭 → 편집 패널 열기
       } else if (cmd === 'users-rowEdit') {
         return handleLoadDetail(param);
@@ -100,6 +97,17 @@ window.SyUserMng = {
         return handleSearchList();
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 클릭 라우터 (cmd: '{영역명}-cellClick'). e.colKey 로 컬럼별 분기 가능 */
+    const handleGridCellAction = (cmd, e = {}) => {
+      console.log(' ■■ SyUserMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+      if (cmd === 'users-cellClick') {
+        // 컬럼별 분기 필요 시 e.colKey 사용. 일반 셀 → 상세 보기모드로 열기
+        return loadView(e.row.userId);
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
     };
 
@@ -402,7 +410,7 @@ window.SyUserMng = {
       columns,
       users, uiState, codes, searchParam, pager, detailPanel, expanded, deptCounts,  // 상태 / 데이터
       excelUploadModal,                                                  // 엑셀 업로드 모달
-      handleBtnAction, handleSelectAction, fnCallbackModal,                // dispatch + 모달 통합 콜백
+      handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                // dispatch + 모달 통합 콜백
       cfTree, cfDetailEditId, cfIsViewMode, cfDetailKey,                 // computed
       fnRowStyle,                                                        // 헬퍼
       inlineNavigate, showToast, showConfirm, setApiRes,                 // Dtl 콜백 (closure 필요)
@@ -450,9 +458,10 @@ window.SyUserMng = {
       <bo-grid
         :columns="columns.baseGrid" :rows="users" row-key="userId" :selected-key="detailPanel.selectedId"
         list-title="사용자목록" :count-text="pager.pageTotalCount + '건'"
-        :sort-state="uiState" :row-style="fnRowStyle"
+        :sort-state="uiState" :row-style="fnRowStyle" row-clickable
         @sort="key => handleBtnAction('users-sort', key)"
-        @cell-click="e => handleSelectAction('users-rowView', e.row.userId)">
+        @row-click="r => handleGridCellAction('users-cellClick', { row: r })"
+        @cell-click="e => handleGridCellAction('users-cellClick', e)">
         <template #toolbar-actions>
           <div style="display:flex;gap:6px;">
             <button class="btn btn-green btn-sm" @click="handleBtnAction('users-excel')">
@@ -472,12 +481,12 @@ window.SyUserMng = {
           </th>
         </template>
         <template #row-actions="{ row }">
-          <td style="white-space:nowrap;">
+          <td style="white-space:nowrap;" @click.stop>
             <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
-              <button class="btn btn-blue btn-xs" @click="handleSelectAction('users-rowEdit', row.userId)">
+              <button class="btn btn-blue btn-xs" @click.stop="handleSelectAction('users-rowEdit', row.userId)">
                 수정
               </button>
-              <button class="btn btn-danger btn-xs" @click="handleSelectAction('users-rowDelete', row)">
+              <button class="btn btn-danger btn-xs" @click.stop="handleSelectAction('users-rowDelete', row)">
                 삭제
               </button>
             </div>

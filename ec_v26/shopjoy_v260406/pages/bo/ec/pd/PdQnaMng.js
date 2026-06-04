@@ -61,11 +61,19 @@ window.PdQnaMng = {
       if (cmd === 'qnas-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchList('DEFAULT');
-      // 그리드 행 클릭 (제목 link) → 상세 인라인 패널 열기
-      } else if (cmd === 'qnas-rowClick') {
-        return handleLoadDetail(param?.row || param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 클릭 라우터 (cmd: '{영역명}-cellClick', e.colKey 기준 분기) */
+    const handleGridCellAction = (cmd, e = {}) => {
+      console.log(' ■■ PdQnaMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+      if (cmd === 'qnas-cellClick') {
+        // 컬럼별 분기 필요 시 e.colKey 사용. 일반 셀 → 상세 인라인 패널 열기
+        return handleLoadDetail(e.row);
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
     };
 
@@ -210,7 +218,7 @@ window.PdQnaMng = {
     return {
       columns,
       qnas, uiState, codes, pager, searchParam, form,                                  // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                                             // dispatch
+      handleBtnAction, handleSelectAction, handleGridCellAction,                       // dispatch
       cfSiteNm,                                                                        // computed
       sortIcon, fnStatusBadge, fnAnswLabel, fnProdNm, fnMemNm,                         // 헬퍼
     };
@@ -236,7 +244,7 @@ window.PdQnaMng = {
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       empty-text="조회된 데이터가 없습니다."
       @sort="key => handleBtnAction('qnas-sort', key)"
-      @cell-click="e => handleSelectAction('qnas-rowClick', { row: e.row })">
+      @cell-click="e => handleGridCellAction('qnas-cellClick', e)">
       <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
       <template #footer>
         <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('qnas-pager-setPage', n)" :on-size-change="() => handleSelectAction('qnas-pager-sizeChange')" />

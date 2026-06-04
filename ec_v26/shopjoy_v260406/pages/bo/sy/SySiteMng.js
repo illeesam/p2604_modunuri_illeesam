@@ -79,9 +79,6 @@ window.SySiteMng = {
       // 페이지 크기 변경
       if (cmd === 'sites-pager-sizeChange') {
         return onSizeChange();
-      // 그리드 행 클릭 → 상세 보기 토글
-      } else if (cmd === 'sites-rowView') {
-        return loadView(param);
       // 그리드 행 수정 버튼 → 편집 패널 열기
       } else if (cmd === 'sites-rowEdit') {
         return handleLoadDetail(param);
@@ -96,6 +93,18 @@ window.SySiteMng = {
         return onPathPicked(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 클릭 dispatch. cmd='{영역}-cellClick', e={row,col,colKey,colIndex,rowIndex}.
+       e.colKey(클릭 컬럼명) 기준으로 셀별 동작 분기, e.row 행 객체 활용 */
+    const handleGridCellAction = (cmd, e = {}) => {
+      console.log(' ■■ SySiteMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+      if (cmd === 'sites-cellClick') {
+        // 일반 셀 클릭 → 상세 보기모드. (컬럼별 분기 필요 시 e.colKey 로 추가)
+        return loadView(e.row.siteId);
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
     };
 
@@ -414,7 +423,7 @@ window.SySiteMng = {
     return {
       columns,
       sites, siteCounts, uiState, codes, searchParam, pager, detailModal, pathPickModal,  // 상태 / 데이터
-      handleBtnAction, handleSelectAction, fnCallbackModal,                                           // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                     // dispatch (모든 이벤트 / 액션 라우팅)
       cfTypeOptions, cfDetailEditId, cfIsViewMode, cfDetailKey,                      // computed
       sortIcon, fnRowStyle, fnStatusBadge, fnTypeBadge,                              // 헬퍼
       inlineNavigate,                                                                // Dtl 콜백 (closure 필요)
@@ -445,7 +454,7 @@ window.SySiteMng = {
         list-title="사이트목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="key => handleBtnAction('sites-sort', key)"
-        @cell-click="e => handleSelectAction('sites-rowView', e.row.siteId)">
+        @cell-click="e => handleGridCellAction('sites-cellClick', e)">
         <template #toolbar-actions>
           <div style="display:flex;gap:6px;">
             <button class="btn btn-green btn-sm" @click="handleBtnAction('sites-excel')">

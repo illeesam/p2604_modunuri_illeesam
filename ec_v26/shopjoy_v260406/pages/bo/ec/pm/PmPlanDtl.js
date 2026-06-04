@@ -420,7 +420,8 @@ window.PmPlanDtl = {
         <div style="font-size:12px;color:#888;margin-bottom:6px;">
           💡 팁: 이미지 삽입 후 크기 조절 및 배치를 자유롭게 설정할 수 있습니다.
         </div>
-        <base-html-editor v-model="form.bannerImage" height="320px" />
+        <div v-if="cfDtlMode" class="form-control" style="min-height:300px;line-height:1.6;" v-html="form.bannerImage || '<span style=color:#bbb>-</span>'"></div>
+        <base-html-editor v-else v-model="form.bannerImage" height="320px" />
       </div>
       <div class="form-actions" v-if="active && cfDtlMode">
         <button class="btn btn-blue" @click="handleBtnAction('form-edit')">

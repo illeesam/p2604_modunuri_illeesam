@@ -97,6 +97,17 @@ window.PmPlanMng = {
       }
     };
 
+    /* handleGridCellAction — 그리드 셀 클릭 라우터 (cmd: '{영역명}-cellClick'). e.colKey 기준 컬럼별 분기 */
+    const handleGridCellAction = (cmd, e = {}) => {
+      console.log(' ■■ PmPlanMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+      if (cmd === 'plans-cellClick') {
+        // 컬럼별 분기 필요 시 e.colKey 사용. 일반 셀 → 상세 보기
+        return loadView(e.row.planId);
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
+      }
+    };
+
     const _initSearchParam = () => {
       const today = new Date(); const thisYear = today.getFullYear();
       return { searchValue: '', category: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, status: '' };
@@ -278,7 +289,7 @@ window.PmPlanMng = {
     return {
       columns,
       plans, uiState, codes, searchParam, pager, detailPanel, CATEGORIES,            // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, handleGridCellAction,                     // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                           // computed
       tabMode,                                                                       // toRef
       fnStatusBadge, sortIcon,                                                       // 헬퍼
@@ -331,7 +342,7 @@ window.PmPlanMng = {
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(p) => detailPanel.selectedId===p.planId ? 'background:#fff8f9;' : ''"
-      @sort="key => handleBtnAction('plans-sort', key)" @cell-click="e => handleSelectAction('plans-rowView', e.row.planId)">
+      @sort="key => handleBtnAction('plans-sort', key)" @cell-click="e => handleGridCellAction('plans-cellClick', e)">
       <template #head-actions>
         관리
       </template>

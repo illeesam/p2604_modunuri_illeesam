@@ -73,9 +73,6 @@ window.PmVoucherMng = {
       // 페이지 크기 변경
       if (cmd === 'vouchers-pager-sizeChange') {
         return onSizeChange();
-      // 행/셀/카드 클릭 → 상세 보기모드로 열기
-      } else if (cmd === 'vouchers-rowView') {
-        return loadView(param);
       // 행 클릭 → 상세 편집
       } else if (cmd === 'vouchers-rowEdit') {
         return handleLoadDetail(param);
@@ -84,6 +81,17 @@ window.PmVoucherMng = {
         return handleDelete(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 클릭 라우터 (cmd: '{영역명}-cellClick'). e.colKey 로 컬럼별 분기 */
+    const handleGridCellAction = (cmd, e = {}) => {
+      console.log(' ■■ PmVoucherMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+      if (cmd === 'vouchers-cellClick') {
+        // 컬럼별 분기 필요 시 e.colKey 사용. 일반 셀 → 상세 보기모드로 열기
+        return loadView(e.row.voucherId);
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
     };
 
@@ -280,7 +288,7 @@ window.PmVoucherMng = {
     return {
       columns,
       vouchers, uiState, codes, searchParam, pager, detailPanel,                     // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, handleGridCellAction,                     // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                           // computed
       tabMode,                                                                       // toRef
       fnStatusBadge, sortIcon,                                                       // 헬퍼
@@ -333,7 +341,7 @@ window.PmVoucherMng = {
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(v) => detailPanel.selectedId===v.voucherId ? 'background:#fff8f9;' : ''"
-      @sort="key => handleBtnAction('vouchers-sort', key)" @cell-click="e => handleSelectAction('vouchers-rowView', e.row.voucherId)">
+      @sort="key => handleBtnAction('vouchers-sort', key)" @cell-click="e => handleGridCellAction('vouchers-cellClick', e)">
       <template #head-actions>
         관리
       </template>
@@ -357,12 +365,12 @@ window.PmVoucherMng = {
       </div>
       <div v-for="(v, idx) in vouchers" :key="v?.voucherId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
         :style="detailPanel.selectedId===v.voucherId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
-        @click="handleSelectAction('vouchers-rowView', v.voucherId)">
+        @click="handleGridCellAction('vouchers-cellClick', { row: v })">
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
           <div style="font-size:12px;color:#999;margin-bottom:6px;">
             상품권 #{{ v.voucherId }}
           </div>
-          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleSelectAction('vouchers-rowView', v.voucherId)" :style="detailPanel.selectedId===v.voucherId?{color:'#e8587a'}:{}">
+          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleGridCellAction('vouchers-cellClick', { row: v })" :style="detailPanel.selectedId===v.voucherId?{color:'#e8587a'}:{}">
             {{ v.voucherNm }}
             <span v-if="detailPanel.selectedId===v.voucherId" style="font-size:10px;margin-left:4px;">
               ▼

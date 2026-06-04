@@ -83,6 +83,17 @@ window.PmCouponMng = {
       }
     };
 
+    /* handleGridCellAction — 그리드 셀 클릭 라우터 (cmd: '{영역명}-cellClick'). e.colKey 로 컬럼별 분기 가능 */
+    const handleGridCellAction = (cmd, e = {}) => {
+      console.log(' ■■ PmCouponMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+      if (cmd === 'coupons-cellClick') {
+        // 컬럼별 분기 필요 시 e.colKey 사용. 일반 셀 → 상세 보기
+        return loadView(e.row.couponId);
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
+      }
+    };
+
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -297,7 +308,7 @@ window.PmCouponMng = {
     return {
       columns,
       coupons, uiState, codes, searchParam, pager, uiStateDetail,                  // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                                         // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, handleGridCellAction,                   // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                         // computed
       discountLabel, fnStatusBadge, sortIcon,                                      // 헬퍼
       inlineNavigate, showToast, showConfirm, showRefModal, setApiRes,             // 콜백 / 전역
@@ -348,10 +359,12 @@ window.PmCouponMng = {
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid v-if="tabMode==='list'" :bare="true"
       :columns="columns.baseGrid" :rows="coupons" row-key="couponId" :selected-key="selectedId"
-      :row-actions="true"
+      :row-actions="true" row-clickable
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
-      :row-style="(c) => selectedId===c.couponId ? 'background:#fff8f9;' : ''"
-      @sort="key => handleBtnAction('coupons-sort', key)" @cell-click="e => handleSelectAction('coupons-rowView', e.row.couponId)">
+      :row-style="(c) => selectedId===c.couponId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;'"
+      @sort="key => handleBtnAction('coupons-sort', key)"
+      @row-click="r => handleGridCellAction('coupons-cellClick', { row: r })"
+      @cell-click="e => handleGridCellAction('coupons-cellClick', e)">
       <template #head-actions>
         관리
       </template>

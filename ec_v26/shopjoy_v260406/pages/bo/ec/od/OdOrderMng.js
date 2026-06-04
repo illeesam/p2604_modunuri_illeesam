@@ -109,10 +109,6 @@ window.OdOrderMng = {
       } else if (cmd === 'orders-rowEdit') {
         detailPanel.selectedId = param; detailPanel.openMode = 'edit'; detailPanel.active = true; detailPanel.reloadTrigger++;
         return;
-      // 그리드 행 보기
-      } else if (cmd === 'orders-rowView') {
-        detailPanel.selectedId = param; detailPanel.openMode = 'view'; detailPanel.active = true; detailPanel.reloadTrigger++;
-        return;
       // 그리드 행 삭제
       } else if (cmd === 'orders-rowDelete') {
         return handleDelete(param);
@@ -136,6 +132,18 @@ window.OdOrderMng = {
         return;
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 클릭 라우터 (cmd: '{영역명}-cellClick'). e.colKey 로 컬럼별 분기 가능 */
+    const handleGridCellAction = (cmd, e = {}) => {
+      console.log(' ■■ OdOrderMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+      if (cmd === 'orders-cellClick') {
+        // 컬럼별 분기 필요 시 e.colKey 사용. 일반 셀 → 보기 인라인 패널 열기
+        detailPanel.selectedId = e.row.orderId; detailPanel.openMode = 'view'; detailPanel.active = true; detailPanel.reloadTrigger++;
+        return;
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
     };
 
@@ -564,7 +572,7 @@ window.OdOrderMng = {
     return {
       columns,
       orders, members, claims, uiState, codes, searchParam, pager, detailPanel, checked, bulkForm, bulkOpen, memberPick,  // 상태 / 데이터
-      handleBtnAction, handleSelectAction, fnCallbackModal,                                                                 // dispatch (모든 이벤트 / 액션 라우팅) + 모달 통합 콜백
+      handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                           // dispatch (모든 이벤트 / 액션 라우팅) + 모달 통합 콜백
       cfDetailEditId, cfIsViewMode, cfDetailKey, cfAllChecked, cfBuildTmplMsg, cfBulkPreview, cfSiteNm,                    // computed
       selectedId: computed(() => detailPanel.selectedId),                                                                  // template 직접 참조
       isChecked, fnGridRowStyle, sortIcon, fnStatusBadge, fnPayStatusBadge,                                                // 헬퍼
@@ -617,7 +625,7 @@ window.OdOrderMng = {
         @sort="key => handleBtnAction('orders-sort', key)"
         @toggle-check="id => handleSelectAction('orders-rowToggleCheck', id)"
         @toggle-check-all="handleSelectAction('orders-rowToggleCheckAll')"
-        @cell-click="e => handleSelectAction('orders-rowView', e.row.orderId)"
+        @cell-click="e => handleGridCellAction('orders-cellClick', e)"
         @ref-click="({type,id}) => handleSelectAction('orders-rowRefClick', {type, id})" row-actions>
         <template #row-actions="{ row }">
           <div class="actions">

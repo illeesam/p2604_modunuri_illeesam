@@ -93,6 +93,17 @@ window.PmEventMng = {
       }
     };
 
+    /* handleGridCellAction — 그리드 셀 클릭 라우터 (cmd: '{영역명}-cellClick'). e.colKey 기준 분기 */
+    const handleGridCellAction = (cmd, e = {}) => {
+      console.log(' ■■ PmEventMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+      if (cmd === 'events-cellClick') {
+        // 컬럼별 분기 필요 시 e.colKey 사용. 일반 셀 → 보기모드
+        return loadView(e.row.eventId);
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
+      }
+    };
+
     const _initSearchParam = () => {
       const today = new Date(); const thisYear = today.getFullYear();
       return { searchValue: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, status: '' };
@@ -273,7 +284,7 @@ window.PmEventMng = {
     return {
       columns,
       events, uiState, codes, searchParam, pager, detailPanel,                       // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, handleGridCellAction,                     // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                           // computed
       tabMode,                                                                       // toRef
       fnStatusBadge, sortIcon,                                                       // 헬퍼
@@ -326,7 +337,7 @@ window.PmEventMng = {
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(e) => detailPanel.selectedId===e.eventId ? 'background:#fff8f9;' : ''"
-      @sort="key => handleBtnAction('events-sort', key)" @cell-click="e => handleSelectAction('events-rowView', e.row.eventId)">
+      @sort="key => handleBtnAction('events-sort', key)" @cell-click="e => handleGridCellAction('events-cellClick', e)">
       <template #head-actions>
         관리
       </template>

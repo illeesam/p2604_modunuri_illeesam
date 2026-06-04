@@ -86,9 +86,6 @@ window.SyBbsMng = {
       // 페이지 크기 변경
       if (cmd === 'bbsList-pager-sizeChange') {
         return onSizeChange();
-      // 그리드 행번호/제목 클릭 → 상세 보기모드로 열기
-      } else if (cmd === 'bbsList-rowView') {
-        return loadView(param);
       // 그리드 행 수정 버튼 → 편집 패널 열기 (수정모드)
       } else if (cmd === 'bbsList-rowEdit') {
         return handleLoadDetail(param);
@@ -97,6 +94,19 @@ window.SyBbsMng = {
         return handleDelete(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 클릭 dispatch. cmd='{영역}-cellClick', e={row,col,colKey,colIndex,rowIndex}.
+       e.colKey(클릭 컬럼명) 기준으로 셀별 동작 분기, e.row 행 객체 활용 */
+    const handleGridCellAction = (cmd, e = {}) => {
+      console.log(' ■■ SyBbsMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+      if (cmd === 'bbsList-cellClick') {
+        // 제목 등 일반 셀 클릭 → 상세 보기모드. (컬럼별 분기가 필요하면 e.colKey 로 추가)
+        // if (e.colKey === 'someCol') { return ...; }
+        return loadView(e.row.bbsId);
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
     };
 
@@ -325,7 +335,7 @@ window.SyBbsMng = {
     return {
       columns,
       bbsList, uiState, codes, searchParam, pager, detailModal,                          // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                                               // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, handleGridCellAction,                         // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                               // computed
       fnRowStyle,                                                                        // 헬퍼
       inlineNavigate, showToast, showConfirm, setApiRes, handleSearchBbs,                // Dtl props (closure 필요)
@@ -349,7 +359,7 @@ window.SyBbsMng = {
     list-title="게시글목록" :count-text="pager.pageTotalCount + '건'"
     :sort-state="uiState" :row-style="fnRowStyle"
     @sort="key => handleBtnAction('bbsList-sort', key)"
-    @cell-click="e => handleSelectAction('bbsList-rowView', e.row.bbsId)">
+    @cell-click="e => handleGridCellAction('bbsList-cellClick', e)">
     <template #toolbar-actions>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="handleBtnAction('bbsList-excel')">

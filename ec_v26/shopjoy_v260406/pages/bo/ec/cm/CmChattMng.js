@@ -66,9 +66,6 @@ window.CmChattMng = {
       // 페이지 크기 변경
       if (cmd === 'chatts-pager-sizeChange') {
         return onSizeChange();
-      // 그리드 행/셀 클릭 → 상세 보기모드로 열기
-      } else if (cmd === 'chatts-rowView') {
-        return loadView(param);
       // [수정] 버튼 → 상세 편집 패널 열기
       } else if (cmd === 'chatts-rowEdit') {
         return handleLoadDetail(param);
@@ -80,6 +77,17 @@ window.CmChattMng = {
         return showRefModal(param.type, param.id);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 클릭 라우터 (cmd: '{영역명}-cellClick'). e.colKey 로 컬럼별 분기 가능 */
+    const handleGridCellAction = (cmd, e = {}) => {
+      console.log(' ■■ CmChattMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+      if (cmd === 'chatts-cellClick') {
+        // 컬럼별 분기 필요 시 e.colKey 사용. 일반 셀 → 상세 보기모드로 열기
+        return loadView(e.row.chattRoomId);
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
     };
 
@@ -292,7 +300,7 @@ window.CmChattMng = {
     return {
       columns,
       chatts, uiState, codes, searchParam, pager, detailPanel,                         // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, handleGridCellAction,                       // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                             // computed
       sortIcon, fnStatusBadge, fnGridRowClass,                                         // 헬퍼
       inlineNavigate, showToast, showConfirm, setApiRes, showRefModal, handleSearchList, // Dtl 콜백 / 모달 함수
@@ -314,10 +322,11 @@ window.CmChattMng = {
   <bo-grid :columns="columns.baseGrid" :rows="chatts" row-key="chattRoomId" :selected-key="detailPanel.selectedId"
     :sort-state="uiState" list-title="채팅목록"
     :count-text="'총 ' + pager.pageTotalCount + '건'"
-    :row-class="fnGridRowClass" empty-text="데이터가 없습니다."
+    :row-class="fnGridRowClass" empty-text="데이터가 없습니다." row-clickable
     @sort="key => handleBtnAction('chatts-sort', key)"
     @ref-click="ref => handleSelectAction('chatts-rowRef', ref)"
-    @cell-click="e => handleSelectAction('chatts-rowView', e.row.chattRoomId)" row-actions>
+    @row-click="r => handleGridCellAction('chatts-cellClick', { row: r })"
+    @cell-click="e => handleGridCellAction('chatts-cellClick', e)" row-actions>
     <template #toolbar-actions>
       <button class="btn btn-green btn-sm" @click="handleBtnAction('chatts-excel')">
         📥 엑셀
@@ -327,11 +336,11 @@ window.CmChattMng = {
       </button>
     </template>
     <template #row-actions="{ row }">
-      <div class="actions">
-        <button class="btn btn-blue btn-xs" @click="handleSelectAction('chatts-rowEdit', row.chattRoomId)">
+      <div class="actions" @click.stop>
+        <button class="btn btn-blue btn-xs" @click.stop="handleSelectAction('chatts-rowEdit', row.chattRoomId)">
           수정
         </button>
-        <button class="btn btn-danger btn-xs" @click="handleSelectAction('chatts-rowDelete', row)">
+        <button class="btn btn-danger btn-xs" @click.stop="handleSelectAction('chatts-rowDelete', row)">
           삭제
         </button>
       </div>

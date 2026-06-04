@@ -98,6 +98,18 @@ window.PmCacheMng = {
       }
     };
 
+    /* handleGridCellAction — 그리드 셀 클릭 dispatch. cmd='{영역}-cellClick', e={row,col,colKey,colIndex,rowIndex}.
+       e.colKey(클릭 컬럼명) 기준으로 셀별 동작 분기, e.row 행 객체 활용 */
+    const handleGridCellAction = (cmd, e = {}) => {
+      console.log(' ■■ PmCacheMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+      if (cmd === 'caches-cellClick') {
+        // 일반 셀 클릭 → 상세 보기모드. (컬럼별 분기가 필요하면 e.colKey 로 추가)
+        return loadView(e.row.cacheId);
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
+      }
+    };
+
     const _initSearchParam = () => {
       const today = new Date(); const thisYear = today.getFullYear();
       return { searchType: '', searchValue: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, type: '' };
@@ -279,7 +291,7 @@ window.PmCacheMng = {
     return {
       columns,
       caches, uiState, codes, searchParam, pager, detailPanel,                       // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, handleGridCellAction,                     // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                           // computed
       fnTypeBadge, sortIcon,                                                         // 헬퍼
       inlineNavigate,                                                                // Dtl 콜백 (closure 필요)
@@ -327,21 +339,22 @@ window.PmCacheMng = {
     <!-- ===== ■.■. 리스트 뷰 (BoGrid) ======================================== -->
     <bo-grid v-if="uiState.tabMode==='list'" :bare="true"
       :columns="columns.baseGrid" :rows="caches" row-key="cacheId" :selected-key="detailPanel.selectedId"
-      :row-actions="true"
+      :row-actions="true" row-clickable
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(c) => detailPanel.selectedId===c.cacheId ? 'background:#fff8f9;' : ''"
       @sort="key => handleBtnAction('caches-sort', key)"
       @ref-click="({type,id}) => handleSelectAction('caches-ref', {type, id})"
-      @cell-click="e => handleSelectAction('caches-rowView', e.row.cacheId)">
+      @row-click="r => handleGridCellAction('caches-cellClick', { row: r })"
+      @cell-click="e => handleGridCellAction('caches-cellClick', e)">
       <template #head-actions>
         관리
       </template>
       <template #row-actions="{ row: c }">
-        <div class="actions">
-          <button class="btn btn-blue btn-xs" @click="handleSelectAction('caches-rowEdit', c.cacheId)">
+        <div class="actions" @click.stop>
+          <button class="btn btn-blue btn-xs" @click.stop="handleSelectAction('caches-rowEdit', c.cacheId)">
             수정
           </button>
-          <button class="btn btn-danger btn-xs" @click="handleSelectAction('caches-rowDelete', c)">
+          <button class="btn btn-danger btn-xs" @click.stop="handleSelectAction('caches-rowDelete', c)">
             삭제
           </button>
         </div>

@@ -63,9 +63,6 @@ window.DpDispWidgetMng = {
       // 페이지 크기 변경
       if (cmd === 'widgets-pager-sizeChange') {
         return onSizeChange();
-      // 그리드 행 클릭 → 보기모드
-      } else if (cmd === 'widgets-rowView') {
-        return loadView(param);
       // 행 [수정] 버튼 → 상세/편집 패널 열기
       } else if (cmd === 'widgets-rowEdit') {
         return handleLoadDetail(param);
@@ -77,6 +74,17 @@ window.DpDispWidgetMng = {
         return selectNode(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 클릭 라우터 (cmd: '{영역명}-cellClick'). e.colKey 로 컬럼별 분기 가능 */
+    const handleGridCellAction = (cmd, e = {}) => {
+      console.log(' ■■ DpDispWidgetMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+      if (cmd === 'widgets-cellClick') {
+        // 컬럼별 분기 필요 시 e.colKey 사용. 일반 셀 → 보기모드 진입
+        return loadView(e.row.widgetId);
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
     };
 
@@ -328,7 +336,7 @@ window.DpDispWidgetMng = {
     return {
       columns,
       widgets, widgetLibs, uiState, widgetCounts, codes, searchParam, applied, pager, detailPanel, // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                                            // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, handleGridCellAction,                      // dispatch (모든 이벤트 / 액션 라우팅)
       cfFilterDirty, cfSiteNm, cfDetailEditId, cfDetailKey, cfNoFilter,               // computed
       selectedId: computed(() => detailPanel.selectedId),                             // computed
       pathLabel, wTypeLabel, wIcon, sortIcon,                                         // 헬퍼
@@ -439,9 +447,10 @@ window.DpDispWidgetMng = {
       <bo-grid :columns="columns.listGrid" :rows="widgets" row-key="widgetId" :selected-key="detailPanel.selectedId" :pager="pager"
         :sort-state="uiState" list-title="전시위젯" :row-style="fnRowStyle"
         :count-text="pager.pageTotalCount + '건'"
-        empty-text="등록된 위젯이 없습니다."
+        empty-text="등록된 위젯이 없습니다." row-clickable
         @sort="key => handleBtnAction('widgets-sort', key)"
-        @cell-click="(e) => handleSelectAction('widgets-rowView', e.row.widgetId)" row-actions>
+        @row-click="r => handleGridCellAction('widgets-cellClick', { row: r })"
+        @cell-click="(e) => handleGridCellAction('widgets-cellClick', e)" row-actions>
         <template #toolbar-actions>
           <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">
             #{{ uiState.selectedPath }}
@@ -473,7 +482,7 @@ window.DpDispWidgetMng = {
               <span style="background:#f5f5f5;border:1px solid #e8e8e8;border-radius:6px;padding:1px 7px;font-size:11px;color:#555;">
                 {{ wTypeLabel(row.widgetTypeCd) }}
               </span>
-              <span class="title-link" @click="handleSelectAction('widgets-rowView', row.widgetId)"
+              <span class="title-link" @click="handleGridCellAction('widgets-cellClick', { row, colKey: 'widgetInfo' })"
                 :style="'font-size:14px;font-weight:700;margin-left:8px;'+(selectedId===row.widgetId?'color:#e8587a;':'color:#222;')">
                 {{ row.widgetNm }}
               </span>

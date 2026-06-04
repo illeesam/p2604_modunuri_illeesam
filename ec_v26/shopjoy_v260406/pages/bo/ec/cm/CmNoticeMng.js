@@ -103,10 +103,20 @@ window.CmNoticeMng = {
     /* handleSelectAction — 그리드 행/페이지 선택 액션 dispatch */
     const handleSelectAction = (cmd, param) => {
       if (cmd === 'notices-pager-sizeChange') return baseGrid.onSizeChange();
-      if (cmd === 'notices-rowView')          return openDetailView(param);
       if (cmd === 'notices-rowEdit')          return openDetailEdit(param);
       if (cmd === 'notices-rowDelete')        return handleDelete(param);
       console.warn('[handleSelectAction] unknown cmd:', cmd);
+    };
+
+    /* handleGridCellAction — 그리드 셀 클릭 라우터 (e.colKey 기준 분기 가능) */
+    const handleGridCellAction = (cmd, e = {}) => {
+      console.log(' ■■ CmNoticeMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+      if (cmd === 'notices-cellClick') {
+        // 컬럼별 분기 필요 시 e.colKey 사용. 일반 셀 → 상세 보기모드
+        return openDetailView(e.row.noticeId);
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
+      }
     };
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
@@ -208,7 +218,7 @@ window.CmNoticeMng = {
     return {
       notices, uiState, codes, searchParam, baseGrid, baseDetail,
       columns,
-      handleBtnAction, handleSelectAction,
+      handleBtnAction, handleSelectAction, handleGridCellAction,
       inlineNavigate,
     };
   },
@@ -229,7 +239,7 @@ window.CmNoticeMng = {
     :count-text="'총 ' + baseGrid.pager.pageTotalCount + '건'"
     :row-class="row => baseDetail.selectedId === row.noticeId ? 'active' : ''" empty-text="데이터가 없습니다."
     @sort="key => handleBtnAction('notices-sort', key)"
-    @cell-click="e => handleSelectAction('notices-rowView', e.row.noticeId)" row-actions>
+    @cell-click="e => handleGridCellAction('notices-cellClick', e)" row-actions>
     <template #toolbar-actions>
       <button class="btn btn-green btn-sm" @click="handleBtnAction('notices-excel')">📥 엑셀</button>
       <button class="btn btn-primary btn-sm" @click="handleBtnAction('notices-add')">+ 신규</button>

@@ -344,17 +344,59 @@ Dtl 탭 뷰모드 중 **3열(`cols-3`) 또는 4열(`cols-4`)** 선택 시 max-wi
 
 | 동작 | 결과 | 구현 |
 |---|---|---|
-| 그리드 **행번호/제목(셀) 클릭** | 상세 **보기모드** | `@cell-click → '{area}-rowView' → loadView(id)` (`dtlMode='view'`) |
-| 행 액션 **[수정]** 버튼 | 상세 **수정모드** | `'{area}-rowEdit' → handleLoadDetail(id)` (`dtlMode='edit'`) |
+| 그리드 **행 전체(행번호·제목·임의 셀) 클릭** | 상세 **보기모드** | `row-clickable` + `@row-click="r => handleGridCellAction('{area}-cellClick', { row: r })"` + `@cell-click → handleGridCellAction('{area}-cellClick', e)` → `loadView(e.row.id)` (`dtlMode='view'`) — §6.10 |
+| 행 액션 **[수정]** 버튼 | 상세 **수정모드** | `@click.stop="handleSelectAction('{area}-rowEdit', id)"` → `handleLoadDetail(id)` (`dtlMode='edit'`) |
 | 보기모드 하단 **[수정]** 버튼(항상 표시) | 보기→수정 전환 | Dtl `'form-edit' → navigate('__switchToEdit__')`, Mng `inlineNavigate` 가 `dtlMode='edit'` |
 
-- ❌ 금지: 행 클릭이 바로 수정모드로 진입(`@cell-click → rowEdit`). 보기 먼저, 수정은 의도적 액션.
-- Dtl 하단 액션: **보기모드 = [수정][닫기]**, **수정모드 = [저장][취소]**. `bo-form-area` 의 `:show-actions="active" @edit @save` 자동 렌더 또는 수동 `form-actions v-if` 2분기(`cfDtlMode`).
+- **행번호 포함 행 전체가 클릭 대상** ⭐: `col.link`(제목 셀)만으로는 행번호·다른 셀 클릭이 무반응 → `row-clickable` + `@row-click` 추가로 **행 어디를 클릭해도 보기모드**. `@row-click` 은 row 객체를 주므로 `{ row: r }` 로 감싸 셀 라우터에 위임(라우터가 `e.row.id` 사용).
+- ⛔ **#row-actions(관리) 슬롯의 [수정]/[삭제] 버튼 + `<td>` 에 `@click.stop` 필수**: `row-clickable` 이면 버튼 클릭이 행클릭으로 전파되어 보기모드가 같이 열림. 슬롯 내부 커스텀 버튼은 BoGrid 자동보호 대상이 아니므로 **부모가 `.stop` 책임**(BoAreaComp §주석).
+- ⭐ **보기모드에서 [저장] 버튼 노출 금지**: 보기모드 액션은 `[수정][닫기]` 만. `form-actions v-if="active && cfDtlMode"` 와 `v-if="active && !cfDtlMode"`(저장/취소) 를 명확히 분리하거나 `bo-form-area :show-actions="active"` 자동 렌더 사용. `[저장]` 이 보이면 보기모드가 깨진 것.
+- ❌ 금지: 행 클릭이 바로 수정모드로 진입. 보기 먼저, 수정은 의도적 액션([수정] 버튼 또는 보기모드 하단 [수정]).
+- Dtl 하단 액션: **보기모드 = [수정][닫기]**, **수정모드 = [저장][취소]**.
 - 제목도 모드 반영: `cfDtlMode ? '…상세' : '…수정'`.
-- `cfDetailKey` 에 `dtlMode` 포함 → 모드 전환 시 `:key` 변경으로 폼 재마운트(보기 데이터 → 편집 가능).
-- 적용(2026-06-04): SyBbsMng/Dtl(기준 모델), SyAlarm·SyBbm·SyContact·SySite Mng/Dtl. 동일 상태머신(`loadView`+`handleLoadDetail`+`dtlMode`) 보유 화면에 점진 확대.
+- `cfDetailKey`(또는 Dtl `:key`)에 `dtlMode`/`openMode` 포함 → 모드 전환 시 재마운트(보기 데이터 → 편집 가능).
+- 적용(2026-06-04): SyBbs(기준)·SyAlarm·SyBbm·SyContact·SySite·**SyUser**(행 전체 클릭 표준 추가). 동일 상태머신(`loadView`+`handleLoadDetail`+`dtlMode`) 보유 화면에 점진 확대.
 
-> 코드 기준 모델: [SyBbsMng.js](../../../pages/bo/sy/SyBbsMng.js) · [SyBbsDtl.js](../../../pages/bo/sy/SyBbsDtl.js).
+> 코드 기준 모델: [SyBbsMng.js](../../../pages/bo/sy/SyBbsMng.js) · [SyBbsDtl.js](../../../pages/bo/sy/SyBbsDtl.js). 행 전체 클릭 모델: [SyUserMng.js](../../../pages/bo/sy/SyUserMng.js).
+
+### 6.10 그리드 셀 클릭 라우터 `handleGridCellAction(cmd, e)` ⭐ (2026-06-04, 전체공통)
+
+그리드 `@cell-click` 을 **특정 액션에 직결하지 말고**, 전용 셀 라우터를 거쳐 **클릭된 컬럼(`e.colKey`) 기준으로 분기**한다. `handleBtnAction`/`handleSelectAction` 과 형제인 **세 번째 dispatch** 함수.
+
+```js
+// ❌ 금지 — 셀 클릭이 단일 액션에 직결 (컬럼 구분 불가, 확장 시 분산)
+@cell-click="e => handleSelectAction('sites-rowView', e.row.siteId)"
+
+// ✅ 표준 — 셀 라우터로 위임, colKey 기준 분기
+@cell-click="e => handleGridCellAction('sites-cellClick', e)"
+```
+
+```js
+/* handleGridCellAction — 그리드 셀 클릭 dispatch. cmd='{영역}-cellClick',
+   e={row, col, colKey, colIndex, rowIndex}. e.colKey(클릭 컬럼명) 기준 분기, e.row 활용 */
+const handleGridCellAction = (cmd, e = {}) => {
+  console.log(' ■■ XxxMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+  if (cmd === 'sites-cellClick') {
+    // 컬럼별 동작이 필요하면 e.colKey 로 분기 (예: 상태 셀 → 빠른 토글, 첨부 셀 → 미리보기)
+    // if (e.colKey === 'statusCd') { return quickToggleStatus(e.row); }
+    return loadView(e.row.siteId);   // 일반 셀 → 상세 보기모드
+  } else {
+    console.warn('[handleGridCellAction] unknown cmd:', cmd);
+  }
+};
+```
+
+**규칙**:
+- `@cell-click` 핸들러 인자는 **이벤트 객체 `e` 통째**(`e => handleGridCellAction('{area}-cellClick', e)`). `e.row.id` 만 떼어 넘기지 말 것 — 라우터가 `e.colKey`/`e.row`/`e.colIndex` 모두 활용.
+- `cmd` 는 `'{영역}-cellClick'` 규칙(예: `sites-cellClick`, `bbsList-cellClick`).
+- BoGrid emit payload: `{ row, col, colKey, colIndex, rowIndex }` ([BoAreaComp.js](../../../components/comp/BoAreaComp.js) `grid-cell-click`). `e.colKey` = 클릭된 컬럼 `key`.
+- `handleGridCellAction` 는 **반드시 setup `return` 에 포함**(누락 시 template "not defined" 크래시).
+- 셀 라우터는 `loadView`(보기모드) 같은 행 동작 외에도, 컬럼별 인라인 액션(상태 빠른 변경·미리보기·복사 등)을 `e.colKey` 로 확장하는 단일 진입점.
+- ❌ 금지: `@cell-click` 에서 `handleSelectAction('{area}-rowView', ...)` 직결(구식). 셀 라우터로 위임.
+- dead 분기 제거 조건: 위임 후 기존 `-rowView` 분기는 **다른 호출처가 없을 때만** 제거. **카드뷰 카드 `@click` / 그리드 `@row-click` / `[상세]` 버튼**이 같은 `-rowView` cmd 를 **문자열 id**로 호출하면(이벤트 객체 `e` 없음) 위임 불가 → 분기 보존이 정답(제거 시 회귀).
+- 적용(2026-06-04): **BO 전체 `@cell-click` 25개 100% 위임 완료**(직결 0). SyBbs(기준)·SyAlarm·SyBbm·SyContact·SySite + Cm/Dp/Od/Pd/Pm/Sy 20파일.
+
+> 코드 기준 모델: [SyBbsMng.js](../../../pages/bo/sy/SyBbsMng.js) `handleGridCellAction`. 점검: `grep -rn "@cell-click=.*handleSelectAction" pages/bo` → 0.
 
 ---
 

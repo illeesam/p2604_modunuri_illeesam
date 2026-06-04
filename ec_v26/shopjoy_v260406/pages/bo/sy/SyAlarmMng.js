@@ -71,9 +71,6 @@ window.SyAlarmMng = {
       // 페이지 크기 변경
       if (cmd === 'alarms-pager-sizeChange') {
         return onSizeChange();
-      // 그리드 행번호/제목 클릭 → 상세 보기모드로 열기
-      } else if (cmd === 'alarms-rowView') {
-        return loadView(param);
       // 그리드 행 수정 버튼 → 편집 패널 열기 (수정모드)
       } else if (cmd === 'alarms-rowEdit') {
         return handleLoadDetail(param);
@@ -94,6 +91,18 @@ window.SyAlarmMng = {
         return onPathPicked(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 클릭 dispatch. cmd='{영역}-cellClick', e={row,col,colKey,colIndex,rowIndex}.
+       e.colKey(클릭 컬럼명) 기준으로 셀별 동작 분기, e.row 행 객체 활용 */
+    const handleGridCellAction = (cmd, e = {}) => {
+      console.log(' ■■ SyAlarmMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+      if (cmd === 'alarms-cellClick') {
+        // 일반 셀 클릭 → 상세 보기모드. (컬럼별 분기 필요 시 e.colKey 로 추가)
+        return loadView(e.row.alarmId);
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
     };
 
@@ -407,7 +416,7 @@ window.SyAlarmMng = {
     return {
       columns,
       alarms, uiState, alarmCounts, codes, searchParam, pager, detailModal, pathPickModal,         // 상태 / 데이터
-      handleBtnAction, handleSelectAction, fnCallbackModal,                                             // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                       // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                             // computed
       fnRowStyle,                                                                      // 헬퍼
       inlineNavigate, showToast, showConfirm, setApiRes,                               // Dtl props (closure 필요)
@@ -437,7 +446,7 @@ window.SyAlarmMng = {
         list-title="알림목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="key => handleBtnAction('alarms-sort', key)"
-        @cell-click="e => handleSelectAction('alarms-rowView', e.row.alarmId)">
+        @cell-click="e => handleGridCellAction('alarms-cellClick', e)">
         <template #toolbar-actions>
           <div style="display:flex;gap:6px;">
             <button class="btn btn-green btn-sm" @click="handleBtnAction('alarms-excel')">

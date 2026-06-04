@@ -89,6 +89,17 @@ window.DpDispUiMng = {
       }
     };
 
+    /* handleGridCellAction — 그리드 셀 클릭 라우터 (cmd: '{영역명}-cellClick'). e.colKey 기준 컬럼별 분기 가능 */
+    const handleGridCellAction = (cmd, e = {}) => {
+      console.log(' ■■ DpDispUiMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+      if (cmd === 'uis-cellClick') {
+        // 컬럼별 분기 필요 시 e.colKey 사용. 일반 셀 → 행 상세 보기
+        return loadView(e.row.uiId);
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
+      }
+    };
+
     const _initSearchParam = () => {
       const today = new Date(); const thisYear = today.getFullYear();
       return { type: '', useYn: 'Y', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, dateRange: '' };
@@ -283,7 +294,7 @@ window.DpDispUiMng = {
       columns,
       uis, uiState, uiCounts, codes, searchParam, pager, detailPanel,                           // 상태 / 데이터
       pathNodes, pathPickModal,                                                       // 표시경로 select / 모달
-      handleBtnAction, handleSelectAction, fnCallbackModal,                           // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,     // dispatch (모든 이벤트 / 액션 라우팅)
       cfDetailEditId, cfDetailKey,                                                    // computed
       pathLabel, sortIcon, onPathSelectChange, openPathManage,                       // 헬퍼
       inlineNavigate,                                                                 // Dtl 콜백 (closure 필요)
@@ -340,7 +351,7 @@ window.DpDispUiMng = {
       empty-text="조회된 데이터가 없습니다." row-clickable
       @sort="key => handleBtnAction('uis-sort', key)"
       @row-click="(r) => handleSelectAction('uis-rowView', r.uiId)"
-      @cell-click="e => handleSelectAction('uis-rowView', e.row.uiId)" row-actions>
+      @cell-click="e => handleGridCellAction('uis-cellClick', e)" row-actions>
       <template #toolbar-actions>
         <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">
           #{{ uiState.selectedPath }}

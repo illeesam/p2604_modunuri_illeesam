@@ -81,6 +81,17 @@ window.DpDispAreaMng = {
       }
     };
 
+    /* handleGridCellAction — 그리드 셀 클릭 라우터 (cmd: '{영역명}-cellClick', e: { row, colKey, ... }) */
+    const handleGridCellAction = (cmd, e = {}) => {
+      console.log(' ■■ DpDispAreaMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+      if (cmd === 'areas-cellClick') {
+        // 컬럼별 분기 필요 시 e.colKey 사용. 일반 셀 → 상세 보기
+        return loadView(e.row.areaId);
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
+      }
+    };
+
     const _initSearchParam = () => {
       const today = new Date(); const thisYear = today.getFullYear();
       return { searchType: '', searchValue: '', areaType: '', useYn: 'Y', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, dateRange: '' };
@@ -258,7 +269,7 @@ window.DpDispAreaMng = {
     return {
       columns,
       areas, uiState, areaCounts, codes, searchParam, pager, detailPanel,                       // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                                          // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, handleGridCellAction,                    // dispatch (모든 이벤트 / 액션 라우팅)
       cfDetailEditId, cfDetailKey,                                                  // computed
       fnPathLabel, sortIcon,                                                        // 헬퍼
       inlineNavigate, handleSearchData,                                             // Dtl 콜백 (closure 필요)
@@ -301,7 +312,7 @@ window.DpDispAreaMng = {
       empty-text="조회된 데이터가 없습니다." row-clickable
       @sort="key => handleBtnAction('areas-sort', key)"
       @row-click="(r) => handleSelectAction('areas-rowView', r.areaId)"
-      @cell-click="e => handleSelectAction('areas-rowView', e.row.areaId)" row-actions>
+      @cell-click="e => handleGridCellAction('areas-cellClick', e)" row-actions>
       <template #toolbar-actions>
         <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">
           #{{ uiState.selectedPath }}

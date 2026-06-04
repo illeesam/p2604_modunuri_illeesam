@@ -85,9 +85,6 @@ window.SyTemplateMng = {
       } else if (cmd === 'templates-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchList('DEFAULT');
-      // 그리드 셀/행 클릭 → 상세 보기모드로 열기
-      } else if (cmd === 'templates-rowView') {
-        return loadView(param);
       // 그리드 행 클릭 / 수정 버튼 → 편집 패널 열기
       } else if (cmd === 'templates-rowEdit') {
         return handleLoadDetail(param);
@@ -108,6 +105,17 @@ window.SyTemplateMng = {
         return onPathPicked(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 클릭 라우터 (cmd: '{영역명}-cellClick'). e.colKey 기준 컬럼별 분기 가능 */
+    const handleGridCellAction = (cmd, e = {}) => {
+      console.log(' ■■ SyTemplateMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+      if (cmd === 'templates-cellClick') {
+        // 컬럼별 분기 필요 시 e.colKey 사용. 일반 셀 → 상세 보기모드로 열기
+        return loadView(e.row.templateId);
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
     };
 
@@ -400,7 +408,7 @@ window.SyTemplateMng = {
     return {
       columns,
       templates, uiState, templateCounts, codes, searchParam, pager, detailPanel, pathPickModal, previewModal, sendModal, // 상태 / 데이터
-      handleBtnAction, handleSelectAction, fnCallbackModal,                                                                 // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                            // dispatch (모든 이벤트 / 액션 라우팅)
       cfDetailEditId, cfIsViewMode, cfDetailKey,                                                           // computed
       fnRowStyle,                                                                                          // 헬퍼
       inlineNavigate, handleSearchList,                                                                    // Dtl 콜백 (closure 필요)
@@ -431,7 +439,7 @@ window.SyTemplateMng = {
         list-title="템플릿목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="key => handleBtnAction('templates-sort', key)"
-        @cell-click="e => handleSelectAction('templates-rowView', e.row.templateId)">
+        @cell-click="e => handleGridCellAction('templates-cellClick', e)">
         <template #toolbar-actions>
           <div style="display:flex;gap:6px;">
             <button class="btn btn-green btn-sm" @click="handleBtnAction('templates-excel')">

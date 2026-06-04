@@ -56,9 +56,6 @@ window.PmDiscntMng = {
       // 페이지 크기 변경
       } else if (cmd === 'discnts-pager-sizeChange') {
         return onSizeChange();
-      // 행/셀 클릭 → 상세 보기모드
-      } else if (cmd === 'discnts-rowView') {
-        return loadView(param);
       // 행 클릭 → 상세 편집
       } else if (cmd === 'discnts-rowEdit') {
         return handleLoadDetail(param);
@@ -67,6 +64,17 @@ window.PmDiscntMng = {
         return handleDelete(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 클릭 라우터 (cmd: '{영역명}-cellClick'). e.colKey 로 컬럼별 분기 가능 */
+    const handleGridCellAction = (cmd, e = {}) => {
+      console.log(' ■■ PmDiscntMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+      if (cmd === 'discnts-cellClick') {
+        // 컬럼별 분기 필요 시 e.colKey 사용. 일반 셀 → 상세 보기모드
+        return loadView(e.row.discntId);
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
     };
 
@@ -316,7 +324,7 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      columns, uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), discounts, uiState, codes, searchParam, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon,
+      columns, uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), discounts, uiState, codes, searchParam, onDateRangeChange: handleDateRangeChange, cfSiteNm, pager, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon, handleBtnAction, handleSelectAction, handleGridCellAction,
       get tabMode() { return uiState.tabMode; }, set tabMode(v) { uiState.tabMode = v; } };
   },
   // ===== 템플릿 ===========================================================
@@ -368,10 +376,12 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid v-if="tabMode==='list'" :bare="true"
       :columns="columns.baseGrid" :rows="discounts" row-key="discntId" :selected-key="selectedId"
-      :row-actions="true"
+      :row-actions="true" row-clickable
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(d) => selectedId===d.discntId ? 'background:#fff8f9;' : ''"
-      @sort="onSort" @cell-click="e => handleSelectAction('discnts-rowView', e.row.discntId)">
+      @sort="onSort"
+      @row-click="r => handleGridCellAction('discnts-cellClick', { row: r })"
+      @cell-click="e => handleGridCellAction('discnts-cellClick', e)">
       <template #head-actions>
         관리
       </template>

@@ -70,6 +70,17 @@ window.PmGiftMng = {
       }
     };
 
+    /* handleGridCellAction — 그리드 셀 클릭 라우터 (cmd: '{영역명}-cellClick'). e.colKey 로 컬럼별 분기 */
+    const handleGridCellAction = (cmd, e = {}) => {
+      console.log(' ■■ PmGiftMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+      if (cmd === 'gifts-cellClick') {
+        // 컬럼별 분기 필요 시 e.colKey 사용. 일반 셀 → 상세 보기모드로 열기
+        return loadView(e.row.giftId);
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
+      }
+    };
+
     // ===== Vue Composition API / boApp 전역 의존 ===========================
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
@@ -297,7 +308,7 @@ window.PmGiftMng = {
     return {
       columns,
       gifts, uiState, codes, searchParam, pager, detailPanel,                        // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, handleGridCellAction,                     // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                           // computed
       tabMode,                                                                       // toRef
       fnTypeBadge, fnStatusBadge, sortIcon,                                          // 헬퍼
@@ -356,7 +367,7 @@ window.PmGiftMng = {
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-style="(g) => detailPanel.selectedId===g.giftId ? 'background:#fff8f9;' : ''"
-      @sort="key => handleBtnAction('gifts-sort', key)" @cell-click="e => handleSelectAction('gifts-rowView', e.row.giftId)">
+      @sort="key => handleBtnAction('gifts-sort', key)" @cell-click="e => handleGridCellAction('gifts-cellClick', e)">
       <template #head-actions>
         관리
       </template>

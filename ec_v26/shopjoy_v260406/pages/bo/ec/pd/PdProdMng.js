@@ -88,9 +88,6 @@ window.PdProdMng = {
       // 페이지 크기 변경
       if (cmd === 'prods-pager-sizeChange') {
         return onSizeChange();
-      // 그리드 셀/행 클릭 → 상세 보기모드로 열기
-      } else if (cmd === 'prods-rowView') {
-        return loadView(param);
       // 그리드 행 클릭 → 상세 편집 패널 열기
       } else if (cmd === 'prods-rowEdit') {
         return handleLoadDetail(param);
@@ -105,6 +102,17 @@ window.PdProdMng = {
         return onCatSelect(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 클릭 라우터 (cmd: '{영역명}-cellClick'). e.colKey 로 컬럼별 분기 가능 */
+    const handleGridCellAction = (cmd, e = {}) => {
+      console.log(' ■■ PdProdMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+      if (cmd === 'prods-cellClick') {
+        // 컬럼별 분기 필요 시 e.colKey 사용. 일반 셀 → 상세 보기모드로 열기
+        return loadView(e.row.prodId);
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
     };
 
@@ -356,7 +364,7 @@ window.PdProdMng = {
     return {
       columns,
       products, uiState, codes, searchParam, pager, detailPanel, catModal,        // 상태 / 데이터
-      handleBtnAction, handleSelectAction, fnCallbackModal,                                         // dispatch (모든 이벤트 / 액션 라우팅)
+      handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                         // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                         // computed
       fnStatusBadge, sortIcon,                                                     // 헬퍼
       inlineNavigate,                                                              // Dtl 콜백 (closure 필요)
@@ -406,9 +414,10 @@ window.PdProdMng = {
       :columns="columns.baseGrid" :rows="products" row-key="prodId" :selected-key="detailPanel.selectedId"
       list-title="상품목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
-      :row-style="(p) => detailPanel.selectedId===p.prodId ? 'background:#fff8f9;' : ''"
+      :row-style="(p) => detailPanel.selectedId===p.prodId ? 'background:#fff8f9;' : ''" row-clickable
       @sort="key => handleBtnAction('prods-sort', key)"
-      @cell-click="e => handleSelectAction('prods-rowView', e.row.prodId)">
+      @row-click="r => handleGridCellAction('prods-cellClick', { row: r })"
+      @cell-click="e => handleGridCellAction('prods-cellClick', e)">
       <template #toolbar-actions>
         <button class="btn btn-green btn-sm" @click="handleBtnAction('prods-excel')">
           📥 엑셀
@@ -421,15 +430,15 @@ window.PdProdMng = {
         관리
       </template>
       <template #row-actions="{ row: p }">
-        <div class="actions">
+        <div class="actions" @click.stop>
           <button class="btn btn-xs" style="background:#fff;border:1px solid #d9d9d9;color:#555;" title="미리보기"
-            @click="handleSelectAction('prods-rowPreview', p.prodId)">
+            @click.stop="handleSelectAction('prods-rowPreview', p.prodId)">
             👁
           </button>
-          <button class="btn btn-blue btn-xs" @click="handleSelectAction('prods-rowEdit', p.prodId)">
+          <button class="btn btn-blue btn-xs" @click.stop="handleSelectAction('prods-rowEdit', p.prodId)">
             수정
           </button>
-          <button class="btn btn-danger btn-xs" @click="handleSelectAction('prods-rowDelete', p)">
+          <button class="btn btn-danger btn-xs" @click.stop="handleSelectAction('prods-rowDelete', p)">
             삭제
           </button>
         </div>

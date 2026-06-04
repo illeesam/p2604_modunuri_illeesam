@@ -74,15 +74,23 @@ window.PdDlivTmpltMng = {
     /* handleSelectAction — 행/정렬/페이지 선택 액션 dispatch */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ PdDlivTmpltMng.js : handleSelectAction -> ', cmd, param);
-      // 그리드 행 클릭 → 상세 열기
-      if (cmd === 'dlivTmplts-rowOpen') {
-        return openDetail(param);
       // 페이지 크기 변경
-      } else if (cmd === 'dlivTmplts-pager-sizeChange') {
+      if (cmd === 'dlivTmplts-pager-sizeChange') {
         pager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleGridCellAction — 그리드 셀 클릭 라우터 (e.colKey 기준 분기 가능) */
+    const handleGridCellAction = (cmd, e = {}) => {
+      console.log(' ■■ PdDlivTmpltMng.js : handleGridCellAction -> ', cmd, e.colKey, e.row);
+      if (cmd === 'dlivTmplts-cellClick') {
+        // 컬럼별 분기 필요 시 e.colKey 사용. 일반 셀 → 상세 열기
+        return openDetail(e.row);
+      } else {
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
     };
 
@@ -267,7 +275,7 @@ window.PdDlivTmpltMng = {
     return {
       columns,
       uiState, codes, searchParam, pager, dlivTmplts, form,                            // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                                              // dispatch
+      handleBtnAction, handleSelectAction, handleGridCellAction,                        // dispatch
       fnYnBadge, fnMethodBadge, METHOD_LABELS, PAY_LABELS,                              // 헬퍼
     };
   },
@@ -334,7 +342,7 @@ window.PdDlivTmpltMng = {
       list-title="목록" :count-text="pager.pageTotalCount + '건'"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-class="(row) => uiState.selectedId===row.dlivTmpltId ? 'active' : ''"
-      @sort="key => handleBtnAction('dlivTmplts-sort', key)" @cell-click="e => handleSelectAction('dlivTmplts-rowOpen', e.row)">
+      @sort="key => handleBtnAction('dlivTmplts-sort', key)" @cell-click="e => handleGridCellAction('dlivTmplts-cellClick', e)">
       <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
       <template #footer>
         <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('dlivTmplts-pager-setPage', n)" :on-size-change="() => handleSelectAction('dlivTmplts-pager-sizeChange')" />
