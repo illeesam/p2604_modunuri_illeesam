@@ -103,15 +103,14 @@ window.SyApiLogMng = {
       }
     };
 
-    /* handleGridCellAction — 그리드 셀 클릭/액션 라우터. colKey 기준 분기 (행 액션 버튼·토글 등) */
+    /* handleGridCellAction — 그리드 셀 라우터. cmd 1개(apiLogs-cellClick)에 colKey(2번째 인자)로 동작 구분 */
     const handleGridCellAction = (cmd, colKey, row, e = {}) => {
-      // 조회형 (렌더 prop) — 매 행 렌더마다 호출되므로 로그 없이 값 반환. colKey 자리에 idx 전달
-      if (cmd === 'apiLogs-isExpanded') { return fnRowExpanded(row, colKey); }
-      if (cmd === 'apiLogs-rowStyle')   { return fnRowClickStyle(row, colKey); }
-      // 액션형 (클릭)
-      console.log(' ■■ SyApiLogMng.js : handleGridCellAction -> ', cmd, colKey, row);
       if (cmd === 'apiLogs-cellClick') {
-        // 펼침 토글 아이콘 (_exp / colKey='btn_row_expand')
+        // 조회형 (렌더 prop) — 매 행 렌더마다 호출되므로 로그 없이 값 반환. colKey 자리에 idx 전달
+        if (colKey === 'isExpanded') { return fnRowExpanded(row, e); }
+        if (colKey === 'rowStyle')   { return fnRowClickStyle(row, e); }
+        // 액션형 (클릭/토글)
+        console.log(' ■■ SyApiLogMng.js : handleGridCellAction -> ', cmd, colKey, row);
         if (colKey === 'btn_row_expand') { return toggleRow(row.logId); }
       } else {
         console.warn('[handleGridCellAction] unknown cmd:', cmd);
@@ -476,7 +475,7 @@ window.SyApiLogMng = {
   <bo-grid v-if="uiState.activeTab==='access'"
     :columns="columns.accessGrid" :rows="cfCurrentList" row-key="logId"
     list-title="API요청로그" :count-text="pager.pageTotalCount + '건'"
-    :row-style="(r, idx) => handleGridCellAction('apiLogs-rowStyle', idx, r)" :is-expanded="(r, idx) => handleGridCellAction('apiLogs-isExpanded', idx, r)">
+    :row-style="(r, idx) => handleGridCellAction('apiLogs-cellClick', 'rowStyle', r, idx)" :is-expanded="(r, idx) => handleGridCellAction('apiLogs-cellClick', 'isExpanded', r, idx)">
     <template #toolbar-actions>
       <div style="display:flex;align-items:center;gap:6px;">
         <span style="font-size:11px;color:#aaa;">
@@ -505,7 +504,7 @@ window.SyApiLogMng = {
   <bo-grid v-if="uiState.activeTab==='error'"
     :columns="columns.errorGrid" :rows="cfCurrentList" row-key="logId"
     list-title="API오류로그" :count-text="pager.pageTotalCount + '건'"
-    :row-style="(r, idx) => handleGridCellAction('apiLogs-rowStyle', idx, r)" :is-expanded="(r, idx) => handleGridCellAction('apiLogs-isExpanded', idx, r)">
+    :row-style="(r, idx) => handleGridCellAction('apiLogs-cellClick', 'rowStyle', r, idx)" :is-expanded="(r, idx) => handleGridCellAction('apiLogs-cellClick', 'isExpanded', r, idx)">
     <template #toolbar-actions>
       <div style="display:flex;align-items:center;gap:6px;">
         <span style="font-size:11px;color:#aaa;">

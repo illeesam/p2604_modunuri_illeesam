@@ -412,6 +412,48 @@ const handleGridCellAction = (cmd, colKey, row, e = {}) => {
 
 > 코드 기준 모델: [SyBbsMng.js](../../../pages/bo/sy/SyBbsMng.js) `handleGridCellAction`. 점검: `grep -rn "@cell-click=.*handleSelectAction" pages/bo` → 0.
 
+### 6.11 grid-id 속성 · cmd 1개+colKey 동작구분 · 관리헤더 ⭐ (2026-06-04 확장, 전체공통)
+
+§6.10 의 셀 라우터를 더 통일: **cmd 문자열을 그리드 속성 `grid-id` 한 곳에만 정의**하고, 동작 종류는 **colKey(2번째 인자)로 구분**한다.
+
+**1) `grid-id` 속성으로 cmd 한 곳 정의** — BoGrid/BoGridCrud 의 `grid-id` prop:
+```html
+<bo-grid grid-id="members-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+  <template #row-actions="{ row, gridId }">
+    <button @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">수정</button>
+  </template>
+</bo-grid>
+```
+- BoGrid `cell-click`/`cell-change` emit payload 에 `cmd: gridId` 포함 → `@cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)"` (cmd 하드코딩 제거).
+- `#row-actions` 슬롯이 `gridId` 를 slot prop 으로 받음 → 버튼도 `handleGridCellAction(gridId, 'btn_*', row)`. cmd 가 그리드 속성 1곳에만 존재.
+- **slot prop 이름은 `gridId`** (값은 `xxx-cellClick` cmd 문자열). prop 명 `cell-cmd` 아님(폐기).
+
+**2) cmd 1개 + colKey 로 모든 동작 구분** — 한 그리드의 셀클릭·버튼·펼침토글·조회형 prop 을 **cmd 1개**(`{area}-cellClick`)로 받고 colKey(2번째 인자)로 분기:
+```js
+const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+  if (cmd === 'apiLogs-cellClick') {
+    if (colKey === 'isExpanded')     return fnRowExpanded(row, e);   // 조회형(렌더 prop) — 로그 전에 즉시 return
+    if (colKey === 'rowStyle')       return fnRowClickStyle(row, e);
+    console.log('...', cmd, colKey, row);                            // 액션형만 로그
+    if (colKey === 'btn_row_expand') return toggleRow(row.id);       // 펼침 토글
+    if (colKey === 'btn_edit')       return handleLoadDetail(row.id);
+    // 일반 셀(VIEW_COLS) → 보기모드 ...
+  }
+};
+```
+- 조회형 prop 호출: `:is-expanded="(r, idx) => handleGridCellAction('{area}-cellClick', 'isExpanded', r, idx)"` (cmd 통일, 동작은 colKey).
+
+**3) 식별자(colKey) 네이밍 규칙**:
+- 행 액션 버튼: `btn_edit` / `btn_delete` / `btn_view` (상세화면), 모달 picker 선택은 `btn_pick_modal`.
+- 펼침 토글: `btn_row_expand`.
+- 조회형: `isExpanded` / `rowStyle`.
+
+**4) CRUD 그리드 `@cell-change` 도 동일** — `@cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)"` + `grid-id="{area}-cellChange"`. BoGridCrud `cell-change` emit 도 객체(`{cmd,row,col,colKey}`)화 + `_row_status` I/U/D/N 자동 마킹. CRUD 그리드는 셀클릭 보기모드가 없어 grid-id 를 `-cellChange` 로 둬도 충돌 없음. ⚠️ 라우터 본문은 `row` 사용(`param` 금지 — undefined 버그).
+
+**5) BoGridCrud 행액션 컬럼 헤더 = "관리"** — `actionHeader` prop(기본 `'관리'`)로 `col-act` th 에 자동 표시. `#head-actions` 슬롯으로 오버라이드.
+
+> 코드: [BoAreaComp.js](../../../components/comp/BoAreaComp.js)(grid-id/actionHeader/emit), [SyApiLogMng.js](../../../pages/bo/sy/SyApiLogMng.js)(cmd 1개+colKey), [MbCustInfoMng.js](../../../pages/bo/ec/mb/MbCustInfoMng.js)(grid-id 슬롯). 점검: `grep -rn "@cell-click=.*handleGridCellAction('" pages/bo` → 0(전부 e.cmd).
+
 ---
 
 ## 7. 그리드 헤더 열 설정 아이콘 (⚙)
