@@ -188,7 +188,7 @@ window.SyI18nMng = {
     };
 
     /* fnRowStyle — 행 스타일 (선택 행 강조) */
-    const fnRowStyle = (row) => uiState.selectedId === row.i18nId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
+    const fnRowStyle = (row) => uiState.selectedId === row.i18nId ? 'background:#fff8f9;' : '';
 
     // 기본 검색
     const columns = {};
@@ -235,31 +235,22 @@ window.SyI18nMng = {
     };
   },
   template: `
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    다국어관리
-  </div>
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card">
-    <!-- ===== ■.■. 검색 영역 ================================================= -->
+<bo-page title="다국어관리">
+  <!-- ===== ■. 검색 영역 =================================================== -->
+  <bo-container>
     <bo-search-area @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
-  </div>
-  <!-- ===== □. 카드 영역 =================================================== -->
+  </bo-container>
   <!-- ===== ■. 목록 영역 =================================================== -->
-  <bo-grid
-    :columns="columns.baseGrid" :rows="i18ns" row-key="i18nId" :selected-key="uiState.selectedId"
-    list-title="다국어 키 목록" :count-text="'총 ' + pager.pageTotalCount + '건'"
-    :row-style="fnRowStyle" row-clickable
-    grid-id="i18ns-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
-    <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
-    <template #footer>
-      <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('i18ns-pager-setPage', n)" :on-size-change="() => handleSelectAction('i18ns-pager-sizeChange')" />
-    </template>
-  </bo-grid>
-  <!-- ===== □. 목록 영역 =================================================== -->
+  <bo-container title="다국어 키 목록" :count-text="'총 ' + pager.pageTotalCount + '건'">
+    <bo-grid bare
+      :columns="columns.baseGrid" :rows="i18ns" row-key="i18nId" :selected-key="uiState.selectedId"
+      :row-style="fnRowStyle"
+      grid-id="i18ns-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+    </bo-grid>
+    <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('i18ns-pager-setPage', n)" :on-size-change="() => handleSelectAction('i18ns-pager-sizeChange')" />
+  </bo-container>
   <!-- ===== ■. 번역 편집 패널 (항상 표시) ====================================== -->
-  <div class="card">
+  <bo-container bare>
     <div class="toolbar">
       <span class="list-title">
         번역 편집
@@ -270,27 +261,25 @@ window.SyI18nMng = {
           목록에서 다국어 키를 선택하세요
         </span>
       </span>
-        <div v-if="cfSelectedKey" style="margin-left:auto;display:flex;gap:6px;">
-          <button class="btn btn-blue btn-sm" @click="handleBtnAction('msgForm-save')">
-            저장
-          </button>
-          <button class="btn btn-secondary btn-sm" @click="handleBtnAction('msgForm-close')">
-            닫기
-          </button>
-        </div>
-      </div>
-      <!-- ===== ■.■. 언어별 번역 입력 (BoFormArea 자동 렌더) ========================== -->
-      <div style="padding:12px">
-        <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-        <bo-form-area v-if="cfSelectedKey" :columns="msgFormColumns" :form="msgForm" :errors="{}"
-        :cols="3" :show-actions="false" />
-        <div v-else style="text-align:center;color:#bbb;padding:28px 12px;font-size:13px;">
-          목록에서 다국어 키를 선택하면 언어별 번역을 편집할 수 있습니다.
-        </div>
+      <div v-if="cfSelectedKey" style="margin-left:auto;display:flex;gap:6px;">
+        <button class="btn btn-blue btn-sm" @click="handleBtnAction('msgForm-save')">
+          저장
+        </button>
+        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('msgForm-close')">
+          닫기
+        </button>
       </div>
     </div>
-    <!-- ===== □.□. 언어별 번역 입력 (BoFormArea 자동 렌더) ========================== -->
-    <!-- ===== □. 번역 편집 패널 ================================================ -->
-  </div>
+    <!-- ===== ■.■. 언어별 번역 입력 (BoFormArea 자동 렌더) ========================== -->
+    <div style="padding:12px">
+      <!-- ===== ■.■.■. 폼 영역 ================================================ -->
+      <bo-form-area v-if="cfSelectedKey" :columns="msgFormColumns" :form="msgForm" :errors="{}"
+        :cols="3" :show-actions="false" />
+      <div v-else style="text-align:center;color:#bbb;padding:28px 12px;font-size:13px;">
+        목록에서 다국어 키를 선택하면 언어별 번역을 편집할 수 있습니다.
+      </div>
+    </div>
+  </bo-container>
+</bo-page>
 `,
 };

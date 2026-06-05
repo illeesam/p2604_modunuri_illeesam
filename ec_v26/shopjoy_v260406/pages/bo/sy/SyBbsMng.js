@@ -290,7 +290,7 @@ window.SyBbsMng = {
     const bbmNm = (bbmId) => { const b = bbms.find(x => x.bbmId === bbmId); return b ? b.bbmNm : bbmId; };
 
     /* fnRowStyle — 행 스타일 (선택 행 강조) */
-    const fnRowStyle = (b) => detailModal.dtlId === b.bbsId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
+    const fnRowStyle = (b) => detailModal.dtlId === b.bbsId ? 'background:#fff8f9;' : '';
 
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const cfBbmOptions = computed(() => bbms.map(b => ({ value: b.bbmId, label: b.bbmNm })));
@@ -341,24 +341,15 @@ window.SyBbsMng = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    게시글관리
-  </div>
+<bo-page title="게시글관리">
   <!-- ===== ■. 검색 ====================================================== -->
-  <div class="card">
+  <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
-  </div>
+  </bo-container>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
-  <bo-grid
-    :columns="columns.baseGrid" :rows="bbsList" row-key="bbsId" :selected-key="detailModal.dtlId"
-    list-title="게시글목록" :count-text="pager.pageTotalCount + '건'"
-    :sort-state="uiState" :row-style="fnRowStyle"
-    @sort="key => handleBtnAction('bbsList-sort', key)"
-    grid-id="bbsList-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+  <bo-container title="게시글목록" :count-text="pager.pageTotalCount + '건'">
     <template #toolbar-actions>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="handleBtnAction('bbsList-excel')">
@@ -369,31 +360,35 @@ window.SyBbsMng = {
         </button>
       </div>
     </template>
-    <template #head-actions>
-      <th style="text-align:right">
-        관리
-      </th>
-    </template>
-    <template #row-actions="{ row, gridId }">
-      <td style="white-space:nowrap;">
-        <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
-          <button class="btn btn-blue btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
-            수정
-          </button>
-          <button class="btn btn-danger btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">
-            삭제
-          </button>
-        </div>
-      </td>
-    </template>
-    <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
-    <template #footer>
-      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('bbsList-pager-setPage', n)" :on-size-change="() => handleSelectAction('bbsList-pager-sizeChange')" />
-    </template>
-  </bo-grid>
+    <bo-grid
+      bare
+      :columns="columns.baseGrid" :rows="bbsList" row-key="bbsId" :selected-key="detailModal.dtlId"
+      :sort-state="uiState" :row-style="fnRowStyle"
+      @sort="key => handleBtnAction('bbsList-sort', key)"
+      grid-id="bbsList-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+      <template #head-actions>
+        <th style="text-align:right">
+          관리
+        </th>
+      </template>
+      <template #row-actions="{ row, gridId }">
+        <td style="white-space:nowrap;">
+          <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
+            <button class="btn btn-blue btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
+              수정
+            </button>
+            <button class="btn btn-danger btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">
+              삭제
+            </button>
+          </div>
+        </td>
+      </template>
+    </bo-grid>
+    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('bbsList-pager-setPage', n)" :on-size-change="() => handleSelectAction('bbsList-pager-sizeChange')" />
+  </bo-container>
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 상세 패널 (인라인 임베드, 항상 표시) =================================== -->
-  <div>
+  <bo-container bare>
     <div v-if="detailModal.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기
@@ -404,8 +399,8 @@ window.SyBbsMng = {
       :active="detailModal.active"
       :reload-trigger="detailModal.reloadTrigger"
       :on-list-reload="handleSearchBbs" />
-  </div>
+  </bo-container>
   <!-- ===== □. 상세 패널 (인라인 임베드, 항상 표시) =================================== -->
-</div>
+</bo-page>
 `,
 };

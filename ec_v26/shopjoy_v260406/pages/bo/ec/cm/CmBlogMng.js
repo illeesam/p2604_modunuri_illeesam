@@ -330,79 +330,75 @@ window.CmBlogMng = {
     };
   },
   template: `
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    게시판(블로그)관리
-  </div>
+<bo-page title="게시판(블로그)관리">
   <!-- ===== ■. 검색 ======================================================== -->
-  <div class="card">
+  <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
-  </div>
+  </bo-container>
   <!-- ===== □. 검색 ======================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
-  <bo-grid :columns="columns.baseGrid" :rows="blogs" row-key="blogId" :selected-key="detailPanel.dtlId"
-    :sort-state="uiState" list-title="게시글 목록"
-    :count-text="'총 ' + pager.pageTotalCount + '건'"
-    :row-class="fnGridRowClass" empty-text="데이터가 없습니다." row-clickable
-    @sort="key => handleBtnAction('blogs-sort', key)"
-    grid-id="blogs-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
+  <bo-container title="게시글 목록" :count-text="'총 ' + pager.pageTotalCount + '건'">
     <template #toolbar-actions>
       <button class="btn btn-primary btn-sm" @click="handleBtnAction('blogs-add')">
         + 신규
       </button>
     </template>
-    <template #row-actions="{ row }">
-      <button :class="['btn','btn-xs',row.useYn==='Y'?'btn-secondary':'btn-green']" @click.stop="handleSelectAction('blogs-rowToggleUse', row)">
-        {{ row.useYn==='Y'?'비공개':'공개' }}
-      </button>
-    </template>
-    <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
-    <template #footer>
-      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('blogs-pager-setPage', n)" :on-size-change="() => handleSelectAction('blogs-pager-sizeChange')" />
-    </template>
-  </bo-grid>
+    <bo-grid bare :columns="columns.baseGrid" :rows="blogs" row-key="blogId" :selected-key="detailPanel.dtlId"
+      :sort-state="uiState"
+      :row-class="fnGridRowClass" empty-text="데이터가 없습니다."
+      @sort="key => handleBtnAction('blogs-sort', key)"
+      grid-id="blogs-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
+      <template #row-actions="{ row }">
+        <button :class="['btn','btn-xs',row.useYn==='Y'?'btn-secondary':'btn-green']" @click.stop="handleSelectAction('blogs-rowToggleUse', row)">
+          {{ row.useYn==='Y'?'비공개':'공개' }}
+        </button>
+      </template>
+    </bo-grid>
+    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('blogs-pager-setPage', n)" :on-size-change="() => handleSelectAction('blogs-pager-sizeChange')" />
+  </bo-container>
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 상세 패널 (항상 표시, active=false 면 안내문구) ===================== -->
-  <div class="card">
-    <div class="toolbar">
-      <span class="list-title">
-        {{ !detailPanel.active ? '상세 / 등록' : (detailPanel.isNew ? '신규 등록' : '상세 / 수정') }}
-        <span v-if="detailPanel.active && !detailPanel.isNew && detailPanel.form.blogId" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
-          #{{ detailPanel.form.blogId }}
+  <bo-container bare>
+    <div class="card">
+      <div class="toolbar">
+        <span class="list-title">
+          {{ !detailPanel.active ? '상세 / 등록' : (detailPanel.isNew ? '신규 등록' : '상세 / 수정') }}
+          <span v-if="detailPanel.active && !detailPanel.isNew && detailPanel.form.blogId" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+            #{{ detailPanel.form.blogId }}
+          </span>
         </span>
-      </span>
-    </div>
-    <!-- ===== ■.■. 행 미선택 안내 (active=false) ============================== -->
-    <div v-if="!detailPanel.active" style="padding:40px 12px;text-align:center;color:#999;">
-      목록에서 행을 선택하거나 [+신규]를 누르세요
-    </div>
-    <!-- ===== ■.■. 블로그 detail 폼 (BoFormArea 자동 렌더) ======================= -->
-    <div v-else style="padding:12px">
-      <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="columns.blogForm" :form="detailPanel.form" :errors="{}"
-        :cols="3" compact :show-actions="false">
-        <template #blogContent>
-          <base-html-editor v-model="detailPanel.form.blogContent" height="320px" />
-        </template>
-      </bo-form-area>
-      <!-- ===== ■.■.■. 하단 액션 (저장/삭제/닫기) — .form-actions 가 중앙 정렬 ===== -->
-      <div class="form-actions">
-        <button class="btn btn-blue" @click="handleBtnAction('detailPanel-save')">
-          저장
-        </button>
-        <button v-if="!detailPanel.isNew" class="btn btn-danger" @click="handleBtnAction('detailPanel-delete')">
-          삭제
-        </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('detailPanel-close')">
-          닫기
-        </button>
       </div>
+      <!-- ===== ■.■. 행 미선택 안내 (active=false) ============================== -->
+      <div v-if="!detailPanel.active" style="padding:40px 12px;text-align:center;color:#999;">
+        목록에서 행을 선택하거나 [+신규]를 누르세요
+      </div>
+      <!-- ===== ■.■. 블로그 detail 폼 (BoFormArea 자동 렌더) ======================= -->
+      <div v-else style="padding:12px">
+        <!-- ===== ■.■.■. 폼 영역 ================================================ -->
+        <bo-form-area :columns="columns.blogForm" :form="detailPanel.form" :errors="{}"
+          :cols="3" compact :show-actions="false">
+          <template #blogContent>
+            <base-html-editor v-model="detailPanel.form.blogContent" height="320px" />
+          </template>
+        </bo-form-area>
+        <!-- ===== ■.■.■. 하단 액션 (저장/삭제/닫기) — .form-actions 가 중앙 정렬 ===== -->
+        <div class="form-actions">
+          <button class="btn btn-blue" @click="handleBtnAction('detailPanel-save')">
+            저장
+          </button>
+          <button v-if="!detailPanel.isNew" class="btn btn-danger" @click="handleBtnAction('detailPanel-delete')">
+            삭제
+          </button>
+          <button class="btn btn-secondary" @click="handleBtnAction('detailPanel-close')">
+            닫기
+          </button>
+        </div>
+      </div>
+      <!-- ===== □.■. 블로그 detail 폼 ========================================== -->
     </div>
-    <!-- ===== □.■. 블로그 detail 폼 ========================================== -->
-  </div>
+  </bo-container>
   <!-- ===== □. 상세 패널 =================================================== -->
-</div>
+</bo-page>
 `,
 };

@@ -261,6 +261,9 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
     /* selectVendor — 선택 */
     const selectVendor = (vendorId, vendorNm) => {
       form.vendorId = vendorId;
+      // 판매업체 선택 시 판매담당자(대표자명) 자동 적용
+      const v = vendors.find(x => x.vendorId === vendorId);
+      if (v) { form.chargeStaff = v.chargeStaff || v.ceoNm || v.vendorNm || ''; }
       uiState.showVendorModal = false;
     };
 
@@ -388,7 +391,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       { key: 'startDate',     label: '판매 시작일', type: 'date' },
       { key: 'endDate',       label: '판매 종료일', type: 'date' },
       { key: 'remark',        label: '비고', type: 'textarea', rows: 4,
-        placeholder: '상품권 설명 또는 특이사항 입력', colSpan: 2 },
+        placeholder: '상품권 설명 또는 특이사항 입력' },
       { key: 'vendorId',      label: '판매업체', type: 'slot', name: 'vendor' },
       { key: 'chargeStaff',   label: '판매담당자', type: 'text', placeholder: '담당자명 입력' },
     ];
@@ -405,20 +408,18 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
   },
   template: /* html */`
 <div>
-  <!-- ===== ■. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
-  <div class="card">
-    <!-- ===== ■.■. 카드 헤더 (제목 = list-title, page-title 아님 → 폰트 축소) ========= -->
-    <div class="toolbar">
-      <span class="list-title">
-        {{ !active ? '상품권 상세' : (cfIsNew ? '상품권 등록' : '상품권 수정') }}
-        <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
-          #{{ form.voucherId }}
-        </span>
-        <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-          목록에서 행을 선택하거나 [+신규]를 누르세요
-        </span>
+  <!-- ===== ■. 상세 영역 (제목 + 탭바 + 탭컨텐츠를 한 컨테이너로) ===================== -->
+  <bo-container>
+    <!-- ===== ■.■. 컨테이너 헤더 (제목 = list-title, page-title 아님 → 폰트 축소) ===== -->
+    <template #title>
+      {{ !active ? '상품권 상세' : (cfIsNew ? '상품권 등록' : '상품권 수정') }}
+      <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+        #{{ form.voucherId }}
       </span>
-    </div>
+      <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+        목록에서 행을 선택하거나 [+신규]를 누르세요
+      </span>
+    </template>
     <!-- ===== ■.■. 탭바 ==================================================== -->
     <bo-tab-bar :tabs="tabs" :tab="tab" :tab-mode="tabMode2"
       @tab-select="id => handleBtnAction('tab-select', id)"
@@ -438,7 +439,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       <!-- ===== ■.■.■. 판매업체 picker ========================================= -->
       <template #vendor>
         <div style="display:flex;gap:8px;align-items:center;">
-          <div class="form-control" style="background:#f9f9f9;cursor:pointer;padding:0;display:flex;align-items:center;" @click="handleBtnAction('vendorModal-open')">
+          <div class="form-control" :style="'background:#f9f9f9;padding:0;display:flex;align-items:center;cursor:' + (cfDtlMode ? 'default' : 'pointer')" @click="cfDtlMode ? null : handleBtnAction('vendorModal-open')">
             <span style="padding:4px 10px;flex:1;">
               {{ cfSelectedVendorNm }}
             </span>
@@ -446,7 +447,7 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
               ▼
             </span>
           </div>
-          <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendorClear')">
+          <button v-if="coUtil.cofAnd(form.vendorId, !cfDtlMode)" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendorClear')">
             초기화
           </button>
         </div>
@@ -731,8 +732,8 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
   <!-- ===== □. 상세정보 탭 ================================================== -->
     </div>
     <!-- ===== □.■. 탭 컨텐츠 =================================================== -->
-  </div>
-  <!-- ===== □. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
+  </bo-container>
+  <!-- ===== □. 상세 영역 (제목 + 탭바 + 탭컨텐츠를 한 컨테이너로) ===================== -->
   <!-- ===== ■. SNS 전송 모달 =============================================== -->
   <bo-modal :show="snsModal.show"
     :title="(snsModal.channel==='kakao' ? '💬 카카오톡' : '📧 이메일') + ' 전송'"

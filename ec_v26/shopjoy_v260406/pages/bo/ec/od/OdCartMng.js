@@ -269,37 +269,20 @@ window.OdCartMng = {
     };
   },
   template: `
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    장바구니관리
-  </div>
+<bo-page title="장바구니관리">
   <!-- ===== ■. 검색 ====================================================== -->
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card" style="margin-bottom:14px;">
-    <!-- ===== ■.■. 검색 영역 ================================================= -->
+  <bo-container>
     <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px 16px;"
       :columns="columns.baseSearch" :param="searchParam"
       @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
-  </div>
-  <!-- ===== □.□. 검색 영역 ================================================= -->
-  <!-- ===== □. 카드 영역 =================================================== -->
+  </bo-container>
   <!-- ===== ■. 목록 ====================================================== -->
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card">
-    <div class="toolbar">
-      <span class="list-title">
-        장바구니 목록
-      </span>
-      <span class="list-count">
-        총 {{ pager.pageTotalCount.toLocaleString() }}건
-      </span>
-      <div style="margin-left:auto;">
-        <button v-if="uiState.selectedIds.length" class="btn btn-danger btn-sm" @click="handleBtnAction('carts-bulkDelete')">
-          🗑 선택삭제 ({{ uiState.selectedIds.length }})
-        </button>
-      </div>
-    </div>
+  <bo-container title="장바구니 목록" :count-text="'총 ' + pager.pageTotalCount.toLocaleString() + '건'">
+    <template #toolbar-actions>
+      <button v-if="uiState.selectedIds.length" class="btn btn-danger btn-sm" @click="handleBtnAction('carts-bulkDelete')">
+        🗑 선택삭제 ({{ uiState.selectedIds.length }})
+      </button>
+    </template>
     <div v-if="uiState.loading" style="text-align:center;padding:48px;color:#bbb;">
       <div style="font-size:28px;margin-bottom:8px;">
         ⏳
@@ -317,18 +300,12 @@ window.OdCartMng = {
           삭제
         </button>
       </template>
-      <template #footer>
-        <bo-pager v-if="pager.pageTotalCount > 0" :pager="pager" :on-set-page="n => handleBtnAction('carts-pager-setPage', n)" :on-size-change="() => handleSelectAction('carts-pager-sizeChange')" />
-      </template>
     </bo-grid>
-  </div>
-  <!-- ===== □.□. 목록 영역 ================================================= -->
-  <!-- ===== □. 카드 영역 =================================================== -->
+    <bo-pager v-if="pager.pageTotalCount > 0" :pager="pager" :on-set-page="n => handleBtnAction('carts-pager-setPage', n)" :on-size-change="() => handleSelectAction('carts-pager-sizeChange')" />
+  </bo-container>
   <!-- ===== ■. 회원 선택 팝업 ================================================ -->
-  <!-- ===== ■. 영역 ====================================================== -->
   <od-member-pick-modal :show="memberPick.open" ui-nm="장바구니관리"
     subtitle="장바구니를 조회할 회원을 선택해주세요" modal-name="member-pick" :on-callback="fnCallbackModal" />
-</div>
-<!-- ===== □. 영역 ====================================================== -->
+</bo-page>
 `
 };

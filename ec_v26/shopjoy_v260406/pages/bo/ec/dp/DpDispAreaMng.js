@@ -276,42 +276,29 @@ window.DpDispAreaMng = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    전시 영역 관리
-  </div>
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card">
-    <!-- ===== ■.■. 검색 영역 ================================================= -->
+<bo-page title="전시 영역 관리">
+  <!-- ===== ■. 검색 영역 =================================================== -->
+  <bo-container>
     <bo-search-area :loading="uiState.loading" search-label="🔍 조회" reset-label="↺ 초기화" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
-  </div>
-  <!-- ===== □. 카드 영역 =================================================== -->
-  <!-- ===== ■. 본문 영역 =================================================== -->
-  <div style="display:grid;grid-template-columns:minmax(180px,22fr) 78fr;gap:16px;align-items:flex-start;">
-    <div class="card" style="padding:12px;min-width:180px;">
-      <div class="toolbar" style="margin-bottom:6px;">
-        <span class="list-title" style="font-size:13px;">
-          📂 표시경로
-          <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">
-            #ec_disp_area
-          </span>
+  </bo-container>
+  <!-- ===== ■. 본문 영역 (트리 + 목록) ===================================== -->
+  <div class="bo-2col">
+    <!-- ===== ■.■. 표시경로 트리 ============================================= -->
+    <bo-container title="📂 표시경로">
+      <template #toolbar-actions>
+        <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">
+          #ec_disp_area
         </span>
-        <span v-if="uiState.selectedPath != null" @click="handleBtnAction('pathTree-all')" style="font-size:11px;color:#1677ff;cursor:pointer;">
+        <span v-if="uiState.selectedPath != null" @click="handleBtnAction('pathTree-all')" style="font-size:11px;color:#1677ff;">
           전체보기
         </span>
-      </div>
+      </template>
       <div style="max-height:65vh;overflow:auto;">
         <bo-path-tree biz-cd="ec_disp_area" :counts="areaCounts" :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
       </div>
-    </div>
+    </bo-container>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-grid :columns="columns.listGrid" :rows="areas" row-key="areaId" :selected-key="detailPanel.selectedId" :pager="pager"
-      :sort-state="uiState" list-title="전시 영역 목록"
-      :count-text="'총 ' + pager.pageTotalCount + '건'"
-      empty-text="조회된 데이터가 없습니다." row-clickable
-      @sort="key => handleBtnAction('areas-sort', key)"
-      grid-id="areas-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
+    <bo-container title="전시 영역 목록" :count-text="'총 ' + pager.pageTotalCount + '건'" bare>
       <template #toolbar-actions>
         <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">
           #{{ uiState.selectedPath }}
@@ -320,23 +307,25 @@ window.DpDispAreaMng = {
           ✚ 신규등록
         </button>
       </template>
-      <template #row-actions="{ row, gridId }">
-        <button class="btn btn-xs btn-secondary" @click.stop="handleGridCellAction(gridId, 'btn_view', row)">
-          상세
-        </button>
-        <button class="btn btn-xs btn-primary" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
-          수정
-        </button>
-      </template>
-      <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
-      <template #footer>
-        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('areas-pager-setPage', n)" :on-size-change="() => handleSelectAction('areas-pager-sizeChange')" />
-      </template>
-    </bo-grid>
+      <bo-grid bare :columns="columns.listGrid" :rows="areas" row-key="areaId" :selected-key="detailPanel.selectedId" :pager="pager"
+        :sort-state="uiState"
+        empty-text="조회된 데이터가 없습니다."
+        @sort="key => handleBtnAction('areas-sort', key)"
+        grid-id="areas-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
+        <template #row-actions="{ row, gridId }">
+          <button class="btn btn-xs btn-secondary" @click.stop="handleGridCellAction(gridId, 'btn_view', row)">
+            상세
+          </button>
+          <button class="btn btn-xs btn-primary" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
+            수정
+          </button>
+        </template>
+      </bo-grid>
+      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('areas-pager-setPage', n)" :on-size-change="() => handleSelectAction('areas-pager-sizeChange')" />
+    </bo-container>
   </div>
-  <!-- ===== □. 본문 영역 =================================================== -->
   <!-- ===== ■. 상세 패널 (항상 표시, 진입 시 빈 신규 폼) ============================== -->
-  <div class="card" style="margin-top:10px;">
+  <bo-container bare>
     <dp-disp-area-dtl :key="cfDetailKey"
       :navigate="inlineNavigate"
       :dtl-id="cfDetailEditId"
@@ -347,8 +336,7 @@ window.DpDispAreaMng = {
       :on-list-reload="handleSearchData"
       @close="handleBtnAction('detailPanel-close')"
       />
-  </div>
-  <!-- ===== □. 상세 패널 =================================================== -->
-</div>
+  </bo-container>
+</bo-page>
 `,
 };

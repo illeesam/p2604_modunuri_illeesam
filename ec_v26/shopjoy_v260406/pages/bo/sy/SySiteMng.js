@@ -359,7 +359,7 @@ window.SySiteMng = {
     }[t] || 'badge-gray');
 
     /* fnRowStyle — 행 스타일 (선택 강조는 selected-key 의 파란 테두리로 처리) */
-    const fnRowStyle = (s) => 'cursor:pointer;';
+    const fnRowStyle = (s) => '';
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -430,41 +430,37 @@ window.SySiteMng = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    사이트관리
-  </div>
+<bo-page title="사이트관리">
   <!-- ===== ■. 검색 ====================================================== -->
-  <div class="card">
+  <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
-  </div>
+  </bo-container>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 좌 트리 + 우 영역 ============================================= -->
-  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:0 12px;align-items:flex-start;">
-    <!-- ===== ■.■. 경로 트리 ================================================= -->
-    <bo-path-tree-card biz-cd="sy_site" title="표시경로" :show-biz-cd="false"
-      :counts="siteCounts"
-      :selected="uiState.selectedPath" @select="path => handleBtnAction('pathTree-select', path)" />
-    <div>
+  <div class="bo-2col">
+    <!-- ===== ■.■. 경로 트리 (bo-container bare → 자체 카드 유지) ==================== -->
+    <bo-container bare>
+      <bo-path-tree-card biz-cd="sy_site" title="표시경로" :show-biz-cd="false"
+        :counts="siteCounts"
+        :selected="uiState.selectedPath" @select="path => handleBtnAction('pathTree-select', path)" />
+    </bo-container>
+    <!-- ===== ■.■. 목록 영역 (bo-container 카드+제목, bo-grid bare, pager 바깥) ======== -->
+    <bo-container title="사이트목록" :count-text="pager.pageTotalCount + '건'">
+      <template #toolbar-actions>
+        <button class="btn btn-green btn-sm" @click="handleBtnAction('sites-excel')">
+          📥 엑셀
+        </button>
+        <button class="btn btn-primary btn-sm" @click="handleBtnAction('sites-add')">
+          + 신규
+        </button>
+      </template>
       <!-- ===== ■.■.■. 목록 그리드 ============================================ -->
-      <bo-grid
+      <bo-grid bare
         :columns="columns.baseGrid" :rows="sites" row-key="siteId" :selected-key="detailModal.dtlId"
-        list-title="사이트목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="key => handleBtnAction('sites-sort', key)"
         grid-id="sites-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
-        <template #toolbar-actions>
-          <div style="display:flex;gap:6px;">
-            <button class="btn btn-green btn-sm" @click="handleBtnAction('sites-excel')">
-              📥 엑셀
-            </button>
-            <button class="btn btn-primary btn-sm" @click="handleBtnAction('sites-add')">
-              + 신규
-            </button>
-          </div>
-        </template>
         <template #head-actions>
           <th style="text-align:right">
             관리
@@ -482,25 +478,22 @@ window.SySiteMng = {
             </div>
           </td>
         </template>
-        <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 사이트목록 영역 안에 보이도록 -->
-        <template #footer>
-          <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('sites-pager-setPage', n)" :on-size-change="() => handleSelectAction('sites-pager-sizeChange')" />
-        </template>
       </bo-grid>
-    </div>
+      <!-- 페이저: 그리드 바깥, 영역(bo-container) 안 하단 -->
+      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('sites-pager-setPage', n)" :on-size-change="() => handleSelectAction('sites-pager-sizeChange')" />
+    </bo-container>
     <!-- ===== □.□. 경로 트리 ================================================= -->
-    <!-- ===== ■.■. 상세 인라인 패널 (grid 직접 자식 → 전체 폭, 항상 표시) ===================== -->
-    <!-- margin-top 제거: 위 목록 카드의 margin-bottom(12px)만으로 4개 영역 간격을 12px 로 통일 -->
-    <div style="grid-column:1/-1;">
-      <sy-site-dtl :key="cfDetailKey" :navigate="inlineNavigate" :dtl-id="cfDetailEditId"
-        :dtl-mode="detailModal.dtlMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-        :active="detailModal.active"
-        :reload-trigger="detailModal.reloadTrigger" />
-    </div>
-    <!-- ===== ■.■. 표시경로 선택 모달 ========================================== -->
-    <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_site" :value="pathPickModal.row ? pathPickModal.row.pathId : null" modal-name="path-pick" :on-callback="fnCallbackModal" />
   </div>
-  <!-- ===== □. 좌 트리 + 우 영역 ============================================= -->
-</div>
+  <!-- ===== □. 좌 트리 + 우 영역 (트리 | 목록 2열) ============================== -->
+  <!-- ===== ■. 상세 영역 (bo-2col 바깥 → 자연스러운 전체 폭) ================= -->
+  <bo-container bare>
+    <sy-site-dtl :key="cfDetailKey" :navigate="inlineNavigate" :dtl-id="cfDetailEditId"
+      :dtl-mode="detailModal.dtlMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+      :active="detailModal.active"
+      :reload-trigger="detailModal.reloadTrigger" />
+  </bo-container>
+  <!-- ===== ■. 표시경로 선택 모달 ============================================ -->
+  <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_site" :value="pathPickModal.row ? pathPickModal.row.pathId : null" modal-name="path-pick" :on-callback="fnCallbackModal" />
+</bo-page>
 `,
 };

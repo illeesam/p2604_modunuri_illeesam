@@ -713,14 +713,14 @@ window.SyPostman = {
           API Endpoints
         </span>
         <button @click="handleBtnAction('settings-toggle')" title="공통 설정"
-          style="border:none;background:none;cursor:pointer;font-size:15px;padding:0;line-height:1;"
+          style="border:none;background:none;font-size:15px;padding:0;line-height:1;"
           :style="uiState.settingsOpen?'color:#e8587a;':'color:#999;'">
           ⚙
         </button>
       </div>
       <div style="display:flex;gap:3px;margin-bottom:6px;flex-wrap:wrap;">
         <label v-for="(meta,key) in APP_META" :key="key"
-          style="font-size:10px;font-weight:700;cursor:pointer;padding:2px 7px;border-radius:10px;border:1px solid #ddd;background:#fff;transition:all .12s;user-select:none;"
+          style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;border:1px solid #ddd;background:#fff;transition:all .12s;user-select:none;"
           :style="appFilter[key]?'background:'+meta.color+';color:#fff;border-color:'+meta.color+';':''">
           <input type="checkbox" v-model="appFilter[key]" style="display:none;" />
           {{ meta.label }}
@@ -745,7 +745,7 @@ window.SyPostman = {
       </div>
       <div v-for="item in cfFlatTree" :key="item.n.id"
         @click="handleSelectAction('tree-nodeClick', item.n)"
-        style="display:flex;align-items:center;gap:3px;padding:3px 6px;cursor:pointer;white-space:nowrap;overflow:hidden;transition:background .1s;user-select:none;"
+        style="display:flex;align-items:center;gap:3px;padding:3px 6px;white-space:nowrap;overflow:hidden;transition:background .1s;user-select:none;"
         :style="'padding-left:'+(6+item.depth*11)+'px;'+(openTabs.some(t=>t.nodeId===item.n.id)?'color:#e8587a;':'')"
         @mouseenter="e=>{ e.currentTarget.style.background='#eef2ff'; const b=e.currentTarget.querySelector('.tree-run-btn'); if(b) b.style.opacity='1'; }"
         @mouseleave="e=>{ e.currentTarget.style.background=''; const b=e.currentTarget.querySelector('.tree-run-btn'); if(b) b.style.opacity='0'; }">
@@ -778,7 +778,7 @@ window.SyPostman = {
             {{ item.n.label }}
           </span>
           <button @click.stop="handleSelectAction('tree-quickRun', { node: item.n, evt: $event })" title="바로 실행"
-            style="flex-shrink:0;border:none;background:none;cursor:pointer;font-size:10px;color:#bbb;padding:1px 3px;border-radius:3px;line-height:1;opacity:0;transition:opacity .1s;"
+            style="flex-shrink:0;border:none;background:none;font-size:10px;color:#bbb;padding:1px 3px;border-radius:3px;line-height:1;opacity:0;transition:opacity .1s;"
             class="tree-run-btn">
             ▶
           </button>
@@ -798,7 +798,7 @@ window.SyPostman = {
         </span>
       </span>
       <button v-if="openTabs.length" @click="handleBtnAction('openTabs-closeAll')" title="전체 닫기"
-        style="border:none;background:none;cursor:pointer;font-size:10px;color:#aaa;padding:0;">
+        style="border:none;background:none;font-size:10px;color:#aaa;padding:0;">
         ✕ 전체
       </button>
     </div>
@@ -815,7 +815,7 @@ window.SyPostman = {
     <div style="flex:1;overflow-y:auto;">
       <div v-for="tab in openTabs" :key="tab.tabId"
         @click="handleSelectAction('openTabs-select', tab.tabId)"
-        style="position:relative;padding:6px 6px 6px 6px;cursor:pointer;border-bottom:1px solid #e8e9ec;transition:background .1s;"
+        style="position:relative;padding:6px 6px 6px 6px;border-bottom:1px solid #e8e9ec;transition:background .1s;"
         :style="uiState.activeTabId===tab.tabId
         ? 'background:#fff;border-left:3px solid #e8587a;'
         : 'background:transparent;border-left:3px solid transparent;'"
@@ -827,13 +827,13 @@ window.SyPostman = {
           </span>
           <div style="display:flex;align-items:center;gap:1px;">
             <button @click.stop="handleSelectAction('autoPopup-open', { tab: tab, evt: $event })"
-              style="border:none;background:none;cursor:pointer;font-size:12px;padding:1px 2px;border-radius:3px;line-height:1;transition:all .15s;"
+              style="border:none;background:none;font-size:12px;padding:1px 2px;border-radius:3px;line-height:1;transition:all .15s;"
               :style="tab.autoMs ? 'opacity:1;color:#22a84a;text-shadow:0 0 4px #86efac;' : 'opacity:0.55;color:#777;'"
               :title="tab.autoMs ? '자동실행 중: '+tab.autoLabel : '자동실행 설정'">
               ⏱
             </button>
             <button class="tab-btn" @click.stop="handleSelectAction('openTabs-rowClose', { tabId: tab.tabId })"
-              style="border:none;background:none;cursor:pointer;font-size:11px;color:#aaa;padding:1px 3px;border-radius:3px;opacity:0;transition:opacity .15s;line-height:1;"
+              style="border:none;background:none;font-size:11px;color:#aaa;padding:1px 3px;border-radius:3px;opacity:0;transition:opacity .15s;line-height:1;"
               title="탭 닫기">
               ✕
             </button>
@@ -868,7 +868,7 @@ window.SyPostman = {
     <div style="position:fixed;z-index:8001;background:#fff;border:1px solid #ddd;border-radius:8px;box-shadow:0 6px 24px rgba(0,0,0,.18);min-width:230px;overflow:hidden;"
       :style="'top:'+autoPopupPos.top+'px;left:'+autoPopupPos.left+'px;'">
       <div @click="handleSelectAction('autoPopup-select', { tab: openTabs.find(t=>t.tabId===uiState.autoPopupTabId), ms: 0, label: '' })"
-        style="padding:8px 14px;font-size:11px;font-weight:700;color:#555;border-bottom:1px solid #eee;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:background .1s;"
+        style="padding:8px 14px;font-size:11px;font-weight:700;color:#555;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:space-between;transition:background .1s;"
         @mouseenter="e=>e.currentTarget.style.background='#f5f5f5'"
         @mouseleave="e=>e.currentTarget.style.background=''">
         <span>
@@ -898,7 +898,7 @@ window.SyPostman = {
             <tr v-for="(row,ri) in POPUP_ROWS" :key="ri">
               <td style="padding:1px 4px;text-align:center;">
                 <button v-if="row.s!=null" @click="handleSelectAction('autoPopup-select', { tab: openTabs.find(t=>t.tabId===uiState.autoPopupTabId), ms: row.s*1000, label: row.s+'초' })"
-                  style="width:100%;padding:3px 4px;font-size:11px;border:1px solid #e0e0e0;border-radius:4px;cursor:pointer;transition:all .1s;background:#f9f9f9;"
+                  style="width:100%;padding:3px 4px;font-size:11px;border:1px solid #e0e0e0;border-radius:4px;transition:all .1s;background:#f9f9f9;"
                   :style="openTabs.find(t=>t.tabId===autoPopupTabId)?.autoMs===row.s*1000?'background:#e8f4fd;border-color:#1a73e8;color:#1a73e8;font-weight:700;':''"
                   @mouseenter="e=>{ if(openTabs.find(t=>t.tabId===autoPopupTabId)?.autoMs!==row.s*1000) e.currentTarget.style.background='#eef2ff'; }"
                   @mouseleave="e=>{ if(openTabs.find(t=>t.tabId===autoPopupTabId)?.autoMs!==row.s*1000) e.currentTarget.style.background='#f9f9f9'; }">
@@ -907,7 +907,7 @@ window.SyPostman = {
               </td>
               <td style="padding:1px 4px;text-align:center;">
                 <button v-if="row.m!=null" @click="handleSelectAction('autoPopup-select', { tab: openTabs.find(t=>t.tabId===uiState.autoPopupTabId), ms: row.m*60000, label: row.m+'분' })"
-                  style="width:100%;padding:3px 4px;font-size:11px;border:1px solid #e0e0e0;border-radius:4px;cursor:pointer;transition:all .1s;background:#f9f9f9;"
+                  style="width:100%;padding:3px 4px;font-size:11px;border:1px solid #e0e0e0;border-radius:4px;transition:all .1s;background:#f9f9f9;"
                   :style="openTabs.find(t=>t.tabId===autoPopupTabId)?.autoMs===row.m*60000?'background:#e8f4fd;border-color:#1a73e8;color:#1a73e8;font-weight:700;':''"
                   @mouseenter="e=>{ if(openTabs.find(t=>t.tabId===autoPopupTabId)?.autoMs!==row.m*60000) e.currentTarget.style.background='#eef2ff'; }"
                   @mouseleave="e=>{ if(openTabs.find(t=>t.tabId===autoPopupTabId)?.autoMs!==row.m*60000) e.currentTarget.style.background='#f9f9f9'; }">
@@ -917,7 +917,7 @@ window.SyPostman = {
               <!-- ===== ■.■.■.■.■.■.■. 영역 ========================================== -->
               <td style="padding:1px 4px;text-align:center;">
                 <button v-if="row.h!=null" @click="handleSelectAction('autoPopup-select', { tab: openTabs.find(t=>t.tabId===uiState.autoPopupTabId), ms: row.h*3600000, label: row.h+'시간' })"
-                  style="width:100%;padding:3px 4px;font-size:11px;border:1px solid #e0e0e0;border-radius:4px;cursor:pointer;transition:all .1s;background:#f9f9f9;"
+                  style="width:100%;padding:3px 4px;font-size:11px;border:1px solid #e0e0e0;border-radius:4px;transition:all .1s;background:#f9f9f9;"
                   :style="openTabs.find(t=>t.tabId===autoPopupTabId)?.autoMs===row.h*3600000?'background:#e8f4fd;border-color:#1a73e8;color:#1a73e8;font-weight:700;':''"
                   @mouseenter="e=>{ if(openTabs.find(t=>t.tabId===autoPopupTabId)?.autoMs!==row.h*3600000) e.currentTarget.style.background='#eef2ff'; }"
                   @mouseleave="e=>{ if(openTabs.find(t=>t.tabId===autoPopupTabId)?.autoMs!==row.h*3600000) e.currentTarget.style.background='#f9f9f9'; }">
@@ -966,11 +966,11 @@ window.SyPostman = {
           <div v-for="(h,i) in defHeaders" :key="i" style="display:flex;gap:3px;margin-bottom:3px;">
             <input v-model="h.k" placeholder="Key"   style="flex:1;min-width:0;font-size:11px;padding:3px 5px;border:1px solid #ddd;border-radius:3px;outline:none;" />
             <input v-model="h.v" placeholder="Value" style="flex:1;min-width:0;font-size:11px;padding:3px 5px;border:1px solid #ddd;border-radius:3px;outline:none;" />
-            <button @click="handleSelectAction('defHeaders-rowRemove', i)" style="font-size:10px;padding:2px 5px;border:1px solid #fca5a5;border-radius:3px;background:#fee2e2;color:#991b1b;cursor:pointer;flex-shrink:0;">
+            <button @click="handleSelectAction('defHeaders-rowRemove', i)" style="font-size:10px;padding:2px 5px;border:1px solid #fca5a5;border-radius:3px;background:#fee2e2;color:#991b1b;flex-shrink:0;">
               ✕
             </button>
           </div>
-          <button @click="handleBtnAction('defHeaders-add')" style="font-size:10px;padding:2px 8px;border:1px dashed #ccc;border-radius:3px;background:#f0f0f0;color:#666;cursor:pointer;">
+          <button @click="handleBtnAction('defHeaders-add')" style="font-size:10px;padding:2px 8px;border:1px dashed #ccc;border-radius:3px;background:#f0f0f0;color:#666;">
             + 추가
           </button>
         </div>
@@ -979,7 +979,7 @@ window.SyPostman = {
             <span style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;">
               LocalStorage
             </span>
-            <button @click="handleBtnAction('lsItems-refresh')" style="font-size:10px;padding:1px 5px;border:1px solid #ddd;border-radius:3px;background:#f0f0f0;cursor:pointer;color:#666;">
+            <button @click="handleBtnAction('lsItems-refresh')" style="font-size:10px;padding:1px 5px;border:1px solid #ddd;border-radius:3px;background:#f0f0f0;color:#666;">
               ↻
             </button>
           </div>
@@ -1025,7 +1025,7 @@ window.SyPostman = {
         </div>
         <div style="display:flex;gap:6px;align-items:center;">
           <select v-model="cfActiveTab.reqMethod"
-            style="font-size:12px;padding:5px 6px;border:1px solid #ddd;border-radius:5px;font-weight:700;width:90px;cursor:pointer;"
+            style="font-size:12px;padding:5px 6px;border:1px solid #ddd;border-radius:5px;font-weight:700;width:90px;"
             :style="methodStyle(cfActiveTab.reqMethod)">
             <option v-for="m in codes.http_method_opts" :key="m">
               {{ m }}
@@ -1034,7 +1034,7 @@ window.SyPostman = {
           <input v-model="cfActiveTab.reqUrl" placeholder="URL" @keyup.enter="handleBtnAction('request-send')"
             style="flex:1;font-size:12px;padding:5px 10px;border:1px solid #ddd;border-radius:5px;outline:none;font-family:monospace;min-width:0;" />
           <button @click="handleBtnAction('request-send')" :disabled="cfActiveTab.sending"
-            style="font-size:12px;padding:5px 20px;border:none;border-radius:5px;background:#e8587a;color:#fff;cursor:pointer;font-weight:700;white-space:nowrap;flex-shrink:0;"
+            style="font-size:12px;padding:5px 20px;border:none;border-radius:5px;background:#e8587a;color:#fff;font-weight:700;white-space:nowrap;flex-shrink:0;"
             :style="cfActiveTab.sending?'opacity:.55;cursor:not-allowed;':''">
             {{ cfActiveTab.sending ? '전송 중…' : '▶ 전송' }}
           </button>
@@ -1054,7 +1054,7 @@ window.SyPostman = {
           <div style="display:flex;border-bottom:1px solid #e0e0e0;background:#f8f8f8;flex-shrink:0;">
             <button v-for="t in [{id:'params',nm:'Params'},{id:'headers',nm:'Headers'},{id:'body',nm:'Body'}]" :key="t.id"
               @click="handleSelectAction('request-tabSelect', t.id)"
-              style="padding:5px 13px;font-size:11px;border:none;cursor:pointer;font-weight:600;border-bottom:2px solid transparent;transition:all .12s;"
+              style="padding:5px 13px;font-size:11px;border:none;font-weight:600;border-bottom:2px solid transparent;transition:all .12s;"
               :style="cfActiveTab.reqTab===t.id?'background:#fff;border-bottom-color:#e8587a;color:#e8587a;':'background:transparent;color:#999;'">
               {{ t.nm }}
             </button>
@@ -1064,11 +1064,11 @@ window.SyPostman = {
               <div v-for="(p,i) in cfActiveTab.reqParams" :key="i" style="display:flex;gap:4px;margin-bottom:4px;align-items:center;">
                 <input v-model="p.k" placeholder="Key"   style="flex:1;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #ddd;border-radius:3px;outline:none;" />
                 <input v-model="p.v" placeholder="Value" style="flex:1;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #ddd;border-radius:3px;outline:none;" />
-                <button @click="handleSelectAction('reqParams-rowRemove', i)" style="font-size:10px;padding:3px 6px;border:1px solid #fca5a5;border-radius:3px;background:#fee2e2;color:#991b1b;cursor:pointer;flex-shrink:0;">
+                <button @click="handleSelectAction('reqParams-rowRemove', i)" style="font-size:10px;padding:3px 6px;border:1px solid #fca5a5;border-radius:3px;background:#fee2e2;color:#991b1b;flex-shrink:0;">
                   ✕
                 </button>
               </div>
-              <button @click="handleSelectAction('reqParams-add')" style="font-size:10px;padding:3px 10px;border:1px dashed #ccc;border-radius:3px;background:#f9f9f9;color:#666;cursor:pointer;">
+              <button @click="handleSelectAction('reqParams-add')" style="font-size:10px;padding:3px 10px;border:1px dashed #ccc;border-radius:3px;background:#f9f9f9;color:#666;">
                 + 추가
               </button>
             </template>
@@ -1076,11 +1076,11 @@ window.SyPostman = {
               <div v-for="(h,i) in cfActiveTab.reqHeaders" :key="i" style="display:flex;gap:4px;margin-bottom:4px;align-items:center;">
                 <input v-model="h.k" placeholder="Key"   style="flex:1;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #ddd;border-radius:3px;outline:none;" />
                 <input v-model="h.v" placeholder="Value" style="flex:1;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #ddd;border-radius:3px;outline:none;" />
-                <button @click="handleSelectAction('reqHeaders-rowRemove', i)" style="font-size:10px;padding:3px 6px;border:1px solid #fca5a5;border-radius:3px;background:#fee2e2;color:#991b1b;cursor:pointer;flex-shrink:0;">
+                <button @click="handleSelectAction('reqHeaders-rowRemove', i)" style="font-size:10px;padding:3px 6px;border:1px solid #fca5a5;border-radius:3px;background:#fee2e2;color:#991b1b;flex-shrink:0;">
                   ✕
                 </button>
               </div>
-              <button @click="handleSelectAction('reqHeaders-add')" style="font-size:10px;padding:3px 10px;border:1px dashed #ccc;border-radius:3px;background:#f9f9f9;color:#666;cursor:pointer;">
+              <button @click="handleSelectAction('reqHeaders-add')" style="font-size:10px;padding:3px 10px;border:1px dashed #ccc;border-radius:3px;background:#f9f9f9;color:#666;">
                 + 추가
               </button>
             </template>
@@ -1095,7 +1095,7 @@ window.SyPostman = {
             <div style="display:flex;border-bottom:1px solid #e0e0e0;background:#f8f8f8;flex-shrink:0;align-items:center;">
               <button v-for="t in [{id:'json',nm:'응답 JSON'},{id:'grid',nm:'Grid'}]" :key="t.id"
               @click="handleSelectAction('response-tabSelect', t.id)"
-              style="padding:5px 13px;font-size:11px;border:none;cursor:pointer;font-weight:600;border-bottom:2px solid transparent;transition:all .12s;"
+              style="padding:5px 13px;font-size:11px;border:none;font-weight:600;border-bottom:2px solid transparent;transition:all .12s;"
               :style="cfActiveTab.resTab===t.id?'background:#fff;border-bottom-color:#1a73e8;color:#1a73e8;':'background:transparent;color:#999;'">
                 {{ t.nm }}
                 <span v-if="t.id==='grid'&&cfResGridRows.length" style="font-size:9px;background:#e8f0fe;color:#1a73e8;padding:1px 5px;border-radius:8px;margin-left:3px;">
@@ -1170,7 +1170,7 @@ window.SyPostman = {
               {{ history.length }}
             </span>
           </span>
-          <button @click="handleBtnAction('history-clear')" style="font-size:10px;padding:2px 8px;border:1px solid #ddd;border-radius:3px;background:#f0f0f0;cursor:pointer;color:#888;">
+          <button @click="handleBtnAction('history-clear')" style="font-size:10px;padding:2px 8px;border:1px solid #ddd;border-radius:3px;background:#f0f0f0;color:#888;">
             전체 삭제
           </button>
         </div>
@@ -1210,7 +1210,7 @@ window.SyPostman = {
               </tr>
               <tr v-for="(h,i) in history" :key="h.id"
               @click="handleSelectAction('history-rowSelect', { h: h, i: i })"
-              style="cursor:pointer;border-bottom:1px solid #f5f5f5;transition:background .1s;"
+              style="border-bottom:1px solid #f5f5f5;transition:background .1s;"
               :style="histSelIdx===i?'background:#e8f0fe;':''"
               @mouseenter="e=>{ if(histSelIdx!==i) e.currentTarget.style.background='#f5f5f5'; }"
               @mouseleave="e=>{ e.currentTarget.style.background=histSelIdx===i?'#e8f0fe':''; }">
@@ -1271,7 +1271,7 @@ window.SyPostman = {
     <span style="font-size:11px;font-family:monospace;color:#555;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="histModal.url">
       {{ histModal.url }}
     </span>
-    <button @click="handleBtnAction('histModal-close')" style="border:none;background:none;cursor:pointer;font-size:16px;color:#aaa;padding:0;line-height:1;flex-shrink:0;">
+    <button @click="handleBtnAction('histModal-close')" style="border:none;background:none;font-size:16px;color:#aaa;padding:0;line-height:1;flex-shrink:0;">
       ✕
     </button>
   </div>
@@ -1293,7 +1293,7 @@ window.SyPostman = {
         <span style="flex:1;">
         </span>
         <button @click="handleBtnAction('histModal-resend')" :disabled="uiState.histResSending"
-                style="font-size:11px;font-weight:700;padding:4px 14px;border:none;border-radius:5px;background:#e8587a;color:#fff;cursor:pointer;white-space:nowrap;"
+                style="font-size:11px;font-weight:700;padding:4px 14px;border:none;border-radius:5px;background:#e8587a;color:#fff;white-space:nowrap;"
                 :style="uiState.histResSending?'opacity:.55;cursor:not-allowed;':''">
           {{ uiState.histResSending ? '전송 중…' : '▶ 재전송' }}
         </button>
@@ -1303,7 +1303,7 @@ window.SyPostman = {
           메서드
         </div>
         <select v-model="editReq.method"
-                style="width:100%;box-sizing:border-box;font-size:11px;padding:5px 8px;border:1px solid #c8d6f0;border-radius:4px;background:#fff;font-family:monospace;font-weight:700;color:#333;outline:none;cursor:pointer;">
+                style="width:100%;box-sizing:border-box;font-size:11px;padding:5px 8px;border:1px solid #c8d6f0;border-radius:4px;background:#fff;font-family:monospace;font-weight:700;color:#333;outline:none;">
           <option v-for="m in codes.http_method_opts" :key="m">
             {{ m }}
           </option>
@@ -1339,7 +1339,7 @@ window.SyPostman = {
             </span>
           </span>
           <button @click="handleBtnAction('editReq-headerAdd')"
-                  style="font-size:10px;padding:1px 7px;border:1px dashed #aad;border-radius:3px;background:#f0f4ff;color:#555;cursor:pointer;">
+                  style="font-size:10px;padding:1px 7px;border:1px dashed #aad;border-radius:3px;background:#f0f4ff;color:#555;">
             + 추가
           </button>
         </div>
@@ -1350,7 +1350,7 @@ window.SyPostman = {
           <div v-for="(h,i) in editReq.headers" :key="i" style="display:flex;border-bottom:1px solid #f0f0f0;align-items:center;gap:4px;padding:3px 6px;">
             <input v-model="h.k" placeholder="Key"   style="flex:2;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #dde3f0;border-radius:3px;background:#f8f9fc;font-family:monospace;color:#555;outline:none;" />
             <input v-model="h.v" placeholder="Value" style="flex:3;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #dde3f0;border-radius:3px;background:#f8f9fc;font-family:monospace;color:#333;outline:none;" />
-            <button @click="handleSelectAction('editReq-headerRowRemove', i)" style="border:none;background:none;cursor:pointer;color:#ccc;font-size:12px;padding:0 2px;flex-shrink:0;line-height:1;">
+            <button @click="handleSelectAction('editReq-headerRowRemove', i)" style="border:none;background:none;color:#ccc;font-size:12px;padding:0 2px;flex-shrink:0;line-height:1;">
               ✕
             </button>
           </div>
@@ -1365,7 +1365,7 @@ window.SyPostman = {
             </span>
           </span>
           <button @click="handleBtnAction('editReq-paramAdd')"
-                  style="font-size:10px;padding:1px 7px;border:1px dashed #aad;border-radius:3px;background:#f0f4ff;color:#555;cursor:pointer;">
+                  style="font-size:10px;padding:1px 7px;border:1px dashed #aad;border-radius:3px;background:#f0f4ff;color:#555;">
             + 추가
           </button>
         </div>
@@ -1376,7 +1376,7 @@ window.SyPostman = {
           <div v-for="(p,i) in editReq.params" :key="i" style="display:flex;border-bottom:1px solid #f0f0f0;align-items:center;gap:4px;padding:3px 6px;">
             <input v-model="p.k" placeholder="Key"   style="flex:2;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #dde3f0;border-radius:3px;background:#f8f9fc;font-family:monospace;color:#555;outline:none;" />
             <input v-model="p.v" placeholder="Value" style="flex:3;min-width:0;font-size:11px;padding:4px 6px;border:1px solid #dde3f0;border-radius:3px;background:#f8f9fc;font-family:monospace;color:#333;outline:none;" />
-            <button @click="handleSelectAction('editReq-paramRowRemove', i)" style="border:none;background:none;cursor:pointer;color:#ccc;font-size:12px;padding:0 2px;flex-shrink:0;line-height:1;">
+            <button @click="handleSelectAction('editReq-paramRowRemove', i)" style="border:none;background:none;color:#ccc;font-size:12px;padding:0 2px;flex-shrink:0;line-height:1;">
               ✕
             </button>
           </div>
@@ -1475,7 +1475,7 @@ window.SyPostman = {
         {{ t.tabLabel }}
       </span>
       <button @click="handleSelectAction('toasts-rowClose', t.id)"
-          style="border:none;background:none;cursor:pointer;font-size:13px;color:#888;padding:0;line-height:1;flex-shrink:0;">
+          style="border:none;background:none;font-size:13px;color:#888;padding:0;line-height:1;flex-shrink:0;">
         ✕
       </button>
     </div>
@@ -1500,7 +1500,7 @@ window.SyPostman = {
     </div>
     <div style="background:#f9f9f9;">
       <div @click="handleSelectAction('toasts-rowToggleJson', t)"
-          style="padding:4px 10px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none;color:#888;font-size:10px;">
+          style="padding:4px 10px;display:flex;align-items:center;justify-content:space-between;user-select:none;color:#888;font-size:10px;">
         <span>
           응답 JSON
         </span>

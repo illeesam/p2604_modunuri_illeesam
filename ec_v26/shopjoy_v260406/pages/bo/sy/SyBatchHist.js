@@ -186,7 +186,7 @@ window.SyBatchHist = {
     columns.histGrid = [
       { key: '_exp', label: '', style: 'width:24px', align: 'center',
         linkToggle: { active: (row) => isExpanded(row.batchLogId), title: '펼치기/닫기', onClick: (row) => handleGridCellAction('batchLogs-cellClick', 'btn_row_expand', row),
-          activeStyle: 'color:#666;font-size:11px;cursor:pointer;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;cursor:pointer;user-select:none;' },
+          activeStyle: 'color:#666;font-size:11px;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;user-select:none;' },
         fmt: (v, row) => isExpanded(row.batchLogId) ? '▲' : '▼' },
       { key: 'batchLogId', label: '로그ID',  style: 'width:46px;', cellStyle: 'color:#aaa' },
       { key: 'batchNm',    label: '배치명',  style: 'min-width:120px;', cellStyle: 'font-weight:500' },
@@ -219,41 +219,39 @@ window.SyBatchHist = {
   template: /* html */`
 <div>
   <!-- ===== ■. 목록 영역 =================================================== -->
-  <bo-grid
-    :columns="columns.histGrid" :rows="batchLogs" row-key="batchLogId"
-    list-title="배치 실행이력" :count-text="pager.pageTotalCount + '건'"
-    :row-style="fnHistRowStyle" :is-expanded="fnRowExpanded"
-    empty-text="실행이력이 없습니다.">
+  <bo-container title="배치 실행이력" :count-text="pager.pageTotalCount + '건'">
     <template #toolbar-actions>
-      <div style="display:flex;gap:6px;align-items:center;">
-        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('batchLogs-expandAll')" style="height:30px;font-size:11px;padding:2px 8px;" title="전체 펼치기">
-          ▼ 전체펼치기
-        </button>
-        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('batchLogs-collapseAll')" style="height:30px;font-size:11px;padding:2px 8px;" title="전체 접기">
-          ▲ 전체접기
-        </button>
-        <select class="form-control" style="height:30px;font-size:12px;padding:2px 6px;width:160px;" v-model="uiState.searchBatchId">
-          <option value="">
-            배치 전체
-          </option>
-          <option v-for="b in cfBatchOptions" :key="b.batchId" :value="b.batchId">
-            {{ b.label }}
-          </option>
-        </select>
-        <select class="form-control" style="height:30px;font-size:12px;padding:2px 6px;width:90px;" v-model="uiState.searchStatus">
-          <option value="">
-            상태 전체
-          </option>
-          <option v-for="c in codes.batch_run_statuses" :key="c.codeValue" :value="c.codeValue">
-            {{ c.codeLabel }}
-          </option>
-        </select>
-        <button class="btn btn-primary btn-sm" @click="handleBtnAction('searchParam-list')" style="height:30px;font-size:12px;padding:2px 12px;">
-          조회
-        </button>
-      </div>
+      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('batchLogs-expandAll')" style="height:30px;font-size:11px;padding:2px 8px;" title="전체 펼치기">
+        ▼ 전체펼치기
+      </button>
+      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('batchLogs-collapseAll')" style="height:30px;font-size:11px;padding:2px 8px;" title="전체 접기">
+        ▲ 전체접기
+      </button>
+      <select class="form-control" style="height:30px;font-size:12px;padding:2px 6px;width:160px;" v-model="uiState.searchBatchId">
+        <option value="">
+          배치 전체
+        </option>
+        <option v-for="b in cfBatchOptions" :key="b.batchId" :value="b.batchId">
+          {{ b.label }}
+        </option>
+      </select>
+      <select class="form-control" style="height:30px;font-size:12px;padding:2px 6px;width:90px;" v-model="uiState.searchStatus">
+        <option value="">
+          상태 전체
+        </option>
+        <option v-for="c in codes.batch_run_statuses" :key="c.codeValue" :value="c.codeValue">
+          {{ c.codeLabel }}
+        </option>
+      </select>
+      <button class="btn btn-primary btn-sm" @click="handleBtnAction('searchParam-list')" style="height:30px;font-size:12px;padding:2px 12px;">
+        조회
+      </button>
     </template>
-    <template #row-expand="{ row, colspan }">
+    <bo-grid bare
+      :columns="columns.histGrid" :rows="batchLogs" row-key="batchLogId"
+      :row-style="fnHistRowStyle" :is-expanded="fnRowExpanded"
+      empty-text="실행이력이 없습니다.">
+      <template #row-expand="{ row, colspan }">
       <td :colspan="colspan"
         :style="(row.runStatus==='실패' ? 'background:#fff5f5;' : 'background:#eef3fb;') + 'padding:0;border-top:2px solid ' + (row.runStatus==='실패' ? '#f3b4b4' : '#bcd0ee') + ';'">
         <div :style="'margin:10px 14px 12px;padding:12px 14px;background:#fff;border-radius:8px;border:1px solid ' + (row.runStatus==='실패' ? '#f0c4c4' : '#d4e0f2') + ';box-shadow:inset 3px 0 0 ' + (row.runStatus==='실패' ? '#ef4444' : '#3b82f6') + ';'">
@@ -283,13 +281,11 @@ window.SyBatchHist = {
         </template>
         </div>
       </td>
-    </template>
-    <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
-    <template #footer>
-      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('batchLogs-pager-setPage', n)" :on-size-change="() => handleSelectAction('batchLogs-pager-sizeChange')" />
-    </template>
-      </bo-grid>
-      <!-- ===== □. 목록 영역 =================================================== -->
-    </div>
+      </template>
+    </bo-grid>
+    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('batchLogs-pager-setPage', n)" :on-size-change="() => handleSelectAction('batchLogs-pager-sizeChange')" />
+  </bo-container>
+  <!-- ===== □. 목록 영역 =================================================== -->
+</div>
 `,
 };

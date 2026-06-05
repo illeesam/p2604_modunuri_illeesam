@@ -139,6 +139,80 @@
  *  옵션 함수형(`options: () => codes.x`) 지원 — 코드 지연 로드 대응.
  *
  *  columns 없으면 기본 default 슬롯 사용 (기존 화면 호환). */
+/* ============================================================================
+ * BoContainer — 업무화면 영역 표준 래퍼 (검색/목록/상세/이력 등 각 영역 1개)
+ *   · .card 패딩·margin(§6.6) + 제목(list-title ● 자동) + 우측 액션 슬롯 표준화
+ *   · 자체 카드 가진 자식(bo-grid/bo-path-tree-card)은 bare 로 두고 이 컨테이너가 카드 담당(이중카드 방지)
+ *   props: title(영역 제목, 없으면 헤더 미표시), countText(제목 우측 건수), bare(카드 없이 슬롯만),
+ *          bodyStyle(본문 인라인 style), cardStyle(.card 인라인 style)
+ *   slots: default(영역 내용), toolbar-actions(제목 우측 버튼: 엑셀/신규 등), title(제목 커스텀)
+ * ========================================================================== */
+window.BoContainer = {
+  name: 'BoContainer',
+  props: {
+    title:      { type: String, default: '' },   // 영역 제목(list-title). 비우면 헤더 영역 미표시
+    countText:  { type: String, default: '' },   // 제목 우측 건수 텍스트(예: '20건')
+    bare:       { type: Boolean, default: false },// true=카드 없이 슬롯만(다른 래퍼가 카드 담당)
+    bodyStyle:  { type: String, default: '' },    // 본문 인라인 style
+    cardStyle:  { type: String, default: '' },    // .card 인라인 style(grid-column 등)
+  },
+  template: `
+<div :class="bare ? '' : 'card'" :style="cardStyle">
+  <slot name="top"></slot>
+  <div v-if="title || $slots['toolbar-actions'] || $slots.title" class="toolbar">
+    <span class="list-title">
+      <slot name="title">{{ title }}</slot>
+      <span v-if="countText" class="list-count">{{ countText }}</span>
+    </span>
+    <div v-if="$slots['toolbar-actions']" style="display:flex;gap:6px;align-items:center;">
+      <slot name="toolbar-actions"></slot>
+    </div>
+  </div>
+  <div :style="bodyStyle">
+    <slot></slot>
+  </div>
+</div>`,
+};
+
+/* ============================================================================
+ * BoPage — 화면 최상단 타이틀(+선택 설명바) 표준 헤더
+ *   · <div class="page-title">화면명</div> 반복(83화면) 통일
+ *   · descSummary/descDetail 주면 page-desc-bar(요약 + ▼더보기 + 펼침 상세) 자동 렌더
+ *     → 화면의 descOpen 상태 + 토글 핸들러 보일러플레이트 제거(내부 상태로 처리)
+ *   props: title(화면명, page-title ● 자동), descSummary(설명 요약), descDetail(펼침 상세, 줄바꿈 \n 지원)
+ *   slots: title(제목 커스텀), actions(제목 우측 버튼)
+ * ========================================================================== */
+window.BoPage = {
+  name: 'BoPage',
+  props: {
+    title:       { type: String, default: '' },   // 화면 제목(page-title). ● 아이콘 CSS 자동
+    descSummary: { type: String, default: '' },   // 설명 요약(한 줄). 있으면 page-desc-bar 렌더
+    descDetail:  { type: String, default: '' },   // 펼침 상세(▼더보기 시 노출). \n 줄바꿈 지원
+  },
+  setup() {
+    const descOpen = Vue.ref(false);
+    return { descOpen };
+  },
+  template: `
+<div>
+  <div class="page-title" :style="$slots.actions ? 'display:flex;align-items:center;justify-content:space-between;' : ''">
+    <span><slot name="title">{{ title }}</slot></span>
+    <span v-if="$slots.actions" style="display:flex;gap:6px;align-items:center;font-size:13px;font-weight:400;">
+      <slot name="actions"></slot>
+    </span>
+  </div>
+  <div v-if="descSummary" class="page-desc-bar">
+    <span class="page-desc-summary">{{ descSummary }}</span>
+    <button v-if="descDetail" class="page-desc-toggle" @click="descOpen = !descOpen">
+      {{ descOpen ? '▲ 접기' : '▼ 더보기' }}
+    </button>
+    <div v-if="descOpen && descDetail" class="page-desc-detail">{{ descDetail }}</div>
+  </div>
+  <!-- 화면 본문 (검색/목록/상세 등 모든 영역) -->
+  <slot></slot>
+</div>`,
+};
+
 window.BoSearchArea = {
   name: 'BoSearchArea',
   props: {
@@ -328,18 +402,40 @@ window._boAreaCompUtil = {
     }
     return 'badge-gray';
   },
-  /* th style 문자열 */
+  /* autoAlign — align 미지정 컬럼 자동 정렬(전체공통): 돈=우측, 코드성=가운데, 그 외 좌측('')
+     명시 col.align 우선. 편집/슬롯 셀은 적용 제외(편집 UI 정렬 깨짐 방지). */
+  autoAlign(col) {
+    if (col.align) return col.align;
+    if (col.edit || col.type === 'slot') return '';
+    const k = String(col.key || '').toLowerCase();
+    const l = String(col.label || '');
+    // 돈/수량/율 → 우측
+    if (/amt|price|balance|fee|qty|cnt|count|rate|cost|stock|point|sum|total/.test(k)
+      || /금액|가격|잔액|배송비|할인값|할인가|수량|개수|건수|단가|합계|총액|포인트|적립|충전|재고|\(원\)|원\)$|율$/.test(l)) {
+      return 'right';
+    }
+    // 코드성(상태/유형/구분/여부/코드/등급) → 가운데
+    if (/(^|_)(cd|code|status|type|yn|flag|state)$/.test(k) || /cd$|status$|yn$|typecd|statuscd/.test(k)
+      || /date$|regdate|moddate|period|viewcnt|hitcnt/.test(k)
+      || /^상태$|^유형$|^구분$|여부|^코드$|^등급$|^타입$|^단계$|일$|일시$|기간|조회수|등록일|수정일|작성일|시작일|종료일/.test(l)) {
+      return 'center';
+    }
+    return '';
+  },
+  /* th style 문자열 — 헤더는 전체공통 가운데 정렬(셀 정렬과 무관). 구분선은 CSS(.bo-table th) */
   thStyle(col) {
     if (col.style) return col.style;            // 원본 인라인 스타일 직접 지정 시 우선
-    let s = '';
+    let s = 'text-align:center;';
     if (col.width) s += 'width:' + col.width + ';';
-    if (col.align) s += 'text-align:' + col.align + ';';
     return s;
   },
   tdStyle(col, row) {
     let s = 'font-size:12px;';
-    if (col.align) s += 'text-align:' + col.align + ';';
+    const al = this.autoAlign(col);
+    if (al) s += 'text-align:' + al + ';';
     if (col.mono)  s += 'font-family:monospace;';
+    // 링크 셀(col.link)만 손가락 커서 — 행 전체 cursor:pointer 폐지(링크 있는 셀만 클릭 가능 표시)
+    if (col.link) s += 'cursor:pointer;';
     // 모든 셀 기본 한 줄 말줄임(...). 편집/슬롯 셀은 col.noEllipsis 로 끌 수 있음.
     // col.style/cellStyle 의 width(또는 max-width) 가 있으면 그 폭에서 잘리고,
     // 폭 미지정이면 한 줄 유지(nowrap)만 — 줄바꿈으로 인한 행 높이 증가 방지.
@@ -510,7 +606,7 @@ window.BoGrid = {
     };
     const sortActive = (col) => props.sortState && props.sortState.sortKey === col.sortKey;
 
-    const fnRowStyle = (row, idx) => (typeof props.rowStyle === 'function' ? props.rowStyle(row, idx) : 'cursor:pointer');
+    const fnRowStyle = (row, idx) => (typeof props.rowStyle === 'function' ? props.rowStyle(row, idx) : '');
     const fnRowClass = (row, idx) => {
       const base = (typeof props.rowClass === 'function' ? props.rowClass(row, idx) : (row._isNew ? 'status-I' : '')) || '';
       // 선택 행(selectedKey 일치) 에 파란 테두리 클래스 자동 부여 (rowKey 필수)
@@ -546,7 +642,7 @@ window.BoGrid = {
   </div>
   <!-- 그리드 본문 — non-bare 모드에서는 max-height 로 감싸 내부 스크롤 + 페이저 하단 고정.
        min-height 미지정: 행 수가 적으면 내용 높이만큼만 차지(하단 빈 공백 제거). max-height 로만 상한 제한. -->
-  <div :style="bare ? '' : 'max-height:calc(100vh - 380px);overflow:auto;'">
+  <div :style="bare ? 'overflow-x:auto;' : 'max-height:calc(100vh - 380px);overflow:auto;'">
     <table class="bo-table" :class="{ 'crud-grid': draggable || showSave }">
       <thead>
         <tr>
@@ -592,8 +688,8 @@ window.BoGrid = {
             <td v-if="draggable" style="text-align:center;cursor:grab;color:#bbb;font-size:17px;user-select:none">
               ≡
             </td>
-            <td style="text-align:center;font-size:11px;color:#999;"
-            @click="rowClickable ? handleSelectAction('grid-cell-click', { row, col: { key: '__no__' }, ci: -1, idx }) : null">
+            <td style="text-align:center;font-size:11px;color:#999;cursor:pointer;" title="보기"
+            @click="handleSelectAction('grid-cell-click', { row, col: { key: '__no__', link: true }, ci: -1, idx })">
               {{ rowNo(idx) }}
             </td>
             <template v-for="(col, ci) in columns" :key="col.key">
@@ -1142,7 +1238,7 @@ window.BoPathTreeCard = {
       {{ allLabel }}
     </span>
   </div>
-  <div :style="'max-height:' + maxHeight + ';overflow:auto;'">
+  <div :style="'max-height:' + maxHeight + ';overflow:auto;border-bottom:1px solid #ececec;'">
     <bo-path-tree :biz-cd="bizCd" :show-biz-cd="showBizCd" :selected="selected" :counts="counts" @select="id => handleSelectAction('node-select', { id })" />
   </div>
 </div>
@@ -1895,8 +1991,8 @@ window.BoFormArea = {
     /* ── ▼ 초기 reactive / 파생 변수 ─────────────────────────────────────── */
     /* fnEffSpan — 유효 colSpan 산출.
      *   내용/긴 입력 영역(textarea·htmlEditor)은 colSpan 미지정 시 항상 한 줄 전체 폭(cols).
-     *   다른 필드가 같은 줄에 끼지 않게 한다. (정책: CLAUDE.md "큰 영역은 한 줄 전체 폭")
-     *   colSpan 이 명시돼 있으면 그 값을 우선 존중한다. */
+     *   다른 필드가 같은 줄에 끼지 않게 한다. (정책: §4.7 / CLAUDE.md "큰 영역은 한 줄 전체 폭")
+     *   colSpan 이 명시돼 있으면 그 값을 우선 존중한다. → 화면에서 textarea 는 colSpan:3(=cols) 명시 권장. */
     const FULL_WIDTH_TYPES = ['textarea', 'htmlEditor'];
     const fnEffSpan = (col) => {
       if (col.colSpan != null) return Math.min(col.colSpan, props.cols);

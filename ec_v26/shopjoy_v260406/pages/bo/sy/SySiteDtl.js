@@ -248,6 +248,10 @@ window.SySiteDtl = {
             style="white-space:nowrap;">
             🔍 주소 검색
           </button>
+          <button v-if="!cfDtlMode && (form.siteZipCode || form.siteAddress)" type="button" class="btn btn-danger btn-sm"
+            title="주소 초기화" @click="form.siteZipCode=''; form.siteAddress='';" style="white-space:nowrap;flex-shrink:0;">
+            ✕
+          </button>
         </div>
         <input class="form-control" v-model="form.siteAddress"
           placeholder="기본주소 (주소 검색 후 자동 입력)" readonly />

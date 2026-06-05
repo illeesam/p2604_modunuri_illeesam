@@ -121,6 +121,7 @@ window.MyCache = {
     };
   },
   template: /* html */ `
+<fo-page bare>
 <fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myCache">
   <!-- ===== ■. 영역 ====================================================== -->
   <MyDateFilter @search="onSearch" />
@@ -290,6 +291,7 @@ window.MyCache = {
     <OrderDetailModal :show="myStore.orderDetailModal.show" :order="myStore.orderDetailModal.order" modal-name="order-detail" :on-callback="fnCallbackModal" />
   </teleport>
 </fo-my-layout>
+</fo-page>
 <!-- ===== □. 영역 ====================================================== -->
 `,
   components: {

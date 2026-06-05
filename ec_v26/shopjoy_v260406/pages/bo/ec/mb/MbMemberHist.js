@@ -140,13 +140,15 @@ window.MbMemberHist = {
   <!-- ===== ■. 탭 컨텐츠 =================================================== -->
   <div :class="uiState.tabMode2!=='tab' ? 'dtl-tab-grid cols-'+uiState.tabMode2.charAt(0) : ''">
     <!-- ===== ■.■. 연관 주문 ================================================= -->
-    <div class="card" v-show="showTab('orders')" style="margin:0;">
-      <div v-if="uiState.tabMode2!=='tab'" class="dtl-tab-card-title">
-        🛒 연관 주문
-        <span class="tab-count">
-          {{ cfMemberOrders.length }}
-        </span>
-      </div>
+    <bo-container v-show="showTab('orders')" card-style="margin:0;">
+      <template #top>
+        <div v-if="uiState.tabMode2!=='tab'" class="dtl-tab-card-title">
+          🛒 연관 주문
+          <span class="tab-count">
+            {{ cfMemberOrders.length }}
+          </span>
+        </div>
+      </template>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid bare :columns="columns.orderGrid" :rows="cfMemberOrders" row-key="orderId" empty-text="주문 내역이 없습니다." @ref-click="ref => handleSelectAction('row-ref', ref)" row-actions>
         <template #row-actions="{ row }">
@@ -155,16 +157,18 @@ window.MbMemberHist = {
           </button>
         </template>
       </bo-grid>
-    </div>
+    </bo-container>
     <!-- ===== □.■. 연관 주문 ================================================= -->
     <!-- ===== ■.■. 연관 클레임 ================================================ -->
-    <div class="card" v-show="showTab('claims')" style="margin:0;">
-      <div v-if="uiState.tabMode2!=='tab'" class="dtl-tab-card-title">
-        ↩ 연관 클레임
-        <span class="tab-count">
-          {{ cfMemberClaims.length }}
-        </span>
-      </div>
+    <bo-container v-show="showTab('claims')" card-style="margin:0;">
+      <template #top>
+        <div v-if="uiState.tabMode2!=='tab'" class="dtl-tab-card-title">
+          ↩ 연관 클레임
+          <span class="tab-count">
+            {{ cfMemberClaims.length }}
+          </span>
+        </div>
+      </template>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid bare :columns="columns.claimGrid" :rows="cfMemberClaims" row-key="claimId" empty-text="클레임 내역이 없습니다." @ref-click="ref => handleSelectAction('row-ref', ref)" row-actions>
         <template #row-actions="{ row }">
@@ -173,7 +177,7 @@ window.MbMemberHist = {
           </button>
         </template>
       </bo-grid>
-    </div>
+    </bo-container>
     <!-- ===== □.■. 연관 클레임 ================================================ -->
   </div>
   <!-- ===== □. 탭 컨텐츠 =================================================== -->

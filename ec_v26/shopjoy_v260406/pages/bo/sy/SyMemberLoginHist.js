@@ -14,7 +14,7 @@ window.SyMemberLoginHist = {
 
     /* ===== 검색조건 + UI 상태 (searchParam 이 검색 + 탭 상태 겸함) ===== */
     const searchParam = reactive({
-      descOpen: false, isPageCodeLoad: false, srchOpen: false,
+      isPageCodeLoad: false, srchOpen: false,
       activeTab: 'log',
       dateRange: '1week', dateStart: '', dateEnd: '',
       searchType: '', searchValue: '', searchResultCd: '', searchIp: '',
@@ -63,10 +63,6 @@ window.SyMemberLoginHist = {
       // 펼침 검색조건 토글
       } else if (cmd === 'searchParam-toggleMore') {
         searchParam.srchOpen = !searchParam.srchOpen;
-        return;
-      // 페이지 설명 토글
-      } else if (cmd === 'searchParam-toggleDesc') {
-        searchParam.descOpen = !searchParam.descOpen;
         return;
       // 행 펼침 전체 토글
       } else if (cmd === 'histList-toggleExpandAll') {
@@ -277,7 +273,7 @@ window.SyMemberLoginHist = {
     columns.logGrid = [
       { key: '_exp', label: '', style: 'width:24px', align: 'center',
         linkToggle: { active: (row) => isExpanded(row.logId), title: '펼치기/닫기', onClick: (row) => handleGridCellAction('histList-cellClick', 'btn_row_expand', row),
-          activeStyle: 'color:#666;font-size:11px;cursor:pointer;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;cursor:pointer;user-select:none;' },
+          activeStyle: 'color:#666;font-size:11px;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;user-select:none;' },
         fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
       { key: 'logId',    label: '로그ID',     mono: true, cellStyle: 'font-size:11px;color:#888', fmt: (v) => v || '-' },
       { key: 'loginDate',label: '로그인일시', cellStyle: 'white-space:nowrap', fmt: (v, row) => String(row.loginDate || row.regDate || '').slice(0, 19) },
@@ -297,7 +293,7 @@ window.SyMemberLoginHist = {
     columns.tokenGrid = [
       { key: '_exp', label: '', style: 'width:24px', align: 'center',
         linkToggle: { active: (row) => isExpanded(row.logId), title: '펼치기/닫기', onClick: (row) => handleGridCellAction('histList-cellClick', 'btn_row_expand', row),
-          activeStyle: 'color:#666;font-size:11px;cursor:pointer;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;cursor:pointer;user-select:none;' },
+          activeStyle: 'color:#666;font-size:11px;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;user-select:none;' },
         fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
       { key: 'logId',         label: '토큰로그ID', mono: true, cellStyle: 'font-size:11px;color:#888', fmt: (v) => v || '-' },
       { key: 'regDate',       label: '일시', cellStyle: 'white-space:nowrap', fmt: (v) => String(v || '').slice(0, 19) },
@@ -364,26 +360,11 @@ window.SyMemberLoginHist = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    회원로그인이력
-  </div>
-  <!-- ===== ■. 페이지 설명 ================================================== -->
-  <div class="page-desc-bar">
-    <span class="page-desc-summary">
-      회원의 로그인 로그·토큰 생애주기(발급·갱신·폐기·만료)를 조회합니다.
-    </span>
-    <button class="page-desc-toggle" @click="handleBtnAction('searchParam-toggleDesc')">
-      {{ searchParam.descOpen?'▲ 접기':'▼ 더보기' }}
-    </button>
-    <div v-if="searchParam.descOpen" class="page-desc-detail">
-      • 로그인 로그: mbh_member_login_log — 로그인 시도·결과·IP·디바이스·x-헤더 • 토큰 이력: mbh_member_token_log — 토큰 액션 (ISSUE발급/REFRESH갱신/REVOKE폐기/EXPIRE만료) • 행 클릭 → 상세정보 펼치기 (x-헤더 포함)
-    </div>
-  </div>
-  <!-- ===== □. 페이지 설명 ================================================== -->
+<bo-page title="회원로그인이력"
+  desc-summary="회원의 로그인 로그·토큰 생애주기(발급·갱신·폐기·만료)를 조회합니다."
+  desc-detail="• 로그인 로그: mbh_member_login_log — 로그인 시도·결과·IP·디바이스·x-헤더 • 토큰 이력: mbh_member_token_log — 토큰 액션 (ISSUE발급/REFRESH갱신/REVOKE폐기/EXPIRE만료) • 행 클릭 → 상세정보 펼치기 (x-헤더 포함)">
   <!-- ===== ■. 검색 ====================================================== -->
-  <div class="card">
+  <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :columns="columns.baseSearch" :param="searchParam" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')">
       <template #actions-after>
@@ -399,31 +380,27 @@ window.SyMemberLoginHist = {
       :columns="columns.moreSearch" :param="searchParam"
       @search="handleBtnAction('searchParam-list')" />
     <!-- ===== □.□. 검색 영역 (펼침) ============================================ -->
-  </div>
+  </bo-container>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 탭 + 목록 (한 카드) ========================================= -->
-  <div class="card">
-    <div class="list-title" style="margin-bottom:6px;">로그인/토큰 이력</div>
+  <bo-container title="로그인/토큰 이력" :count-text="pager.pageTotalCount + '건'">
+    <template #toolbar-actions>
+      <span style="font-size:11px;color:#aaa;">
+        행 클릭 시 상세정보 펼침
+      </span>
+      <button class="btn btn-secondary btn-xs" @click="handleBtnAction('histList-toggleExpandAll')">
+        {{ allExpanded.value ? '전체닫기' : '전체펼치기' }}
+      </button>
+      <button class="btn btn-danger btn-xs" @click="handleBtnAction('histList-clearLog')">
+        로그비우기
+      </button>
+    </template>
     <bo-tab-bar :tabs="histTabs" :tab="searchParam.activeTab" :show-modes="false"
       @tab-select="id => handleSelectAction('searchParam-tabChange', id)" />
   <!-- ===== ■. 로그인 로그 탭 ================================================ -->
   <bo-grid v-if="searchParam.activeTab==='log'" bare
     :columns="columns.logGrid" :rows="cfCurrentList" row-key="logId"
-    :count-text="pager.pageTotalCount + '건'"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded">
-    <template #toolbar-actions>
-      <div style="display:flex;align-items:center;gap:6px;">
-        <span style="font-size:11px;color:#aaa;">
-          행 클릭 시 상세정보 펼침
-        </span>
-        <button class="btn btn-secondary btn-xs" @click="handleBtnAction('histList-toggleExpandAll')">
-          {{ allExpanded.value ? '전체닫기' : '전체펼치기' }}
-        </button>
-        <button class="btn btn-danger btn-xs" @click="handleBtnAction('histList-clearLog')">
-          로그비우기
-        </button>
-      </div>
-    </template>
     <template #row-expand="{ row, colspan }">
       <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
         <bo-form-area :columns="columns.logExpand" :form="row" :cols="3" readonly label-left compact :show-actions="false" />
@@ -434,21 +411,7 @@ window.SyMemberLoginHist = {
   <!-- ===== ■. 토큰 이력 탭 ================================================= -->
   <bo-grid v-if="searchParam.activeTab==='token'" bare
     :columns="columns.tokenGrid" :rows="cfCurrentList" row-key="logId"
-    :count-text="pager.pageTotalCount + '건'"
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded">
-    <template #toolbar-actions>
-      <div style="display:flex;align-items:center;gap:6px;">
-        <span style="font-size:11px;color:#aaa;">
-          행 클릭 시 상세정보 펼침
-        </span>
-        <button class="btn btn-secondary btn-xs" @click="handleBtnAction('histList-toggleExpandAll')">
-          {{ allExpanded.value ? '전체닫기' : '전체펼치기' }}
-        </button>
-        <button class="btn btn-danger btn-xs" @click="handleBtnAction('histList-clearLog')">
-          로그비우기
-        </button>
-      </div>
-    </template>
     <template #row-expand="{ row, colspan }">
       <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
         <bo-form-area :columns="columns.tokenExpand" :form="row" :cols="3" readonly label-left compact :show-actions="false" />
@@ -460,7 +423,7 @@ window.SyMemberLoginHist = {
   </bo-grid>
   <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('histList-pager-setPage', n)" :on-size-change="() => handleSelectAction('histList-pager-sizeChange')" />
   <!-- ===== □. 토큰 이력 탭 ================================================= -->
-  </div>
-</div>
+  </bo-container>
+</bo-page>
 `,
 };

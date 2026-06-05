@@ -297,7 +297,7 @@ window.SyContactMng = {
       { key: 'siteNm',          label: '사이트명', cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
     ];
     /* fnRowStyle — 행 스타일 */
-    const fnRowStyle = (c) => detailModal.dtlId === c.contactId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
+    const fnRowStyle = (c) => detailModal.dtlId === c.contactId ? 'background:#fff8f9;' : '';
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
@@ -309,25 +309,13 @@ window.SyContactMng = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    문의관리
-  </div>
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card">
-    <!-- ===== ■.■. 검색 영역 ================================================= -->
+<bo-page title="문의관리">
+  <!-- ===== ■. 검색 영역 =================================================== -->
+  <bo-container>
     <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
-  </div>
-  <!-- ===== □. 카드 영역 =================================================== -->
+  </bo-container>
   <!-- ===== ■. 목록 영역 =================================================== -->
-  <bo-grid
-    :columns="columns.baseGrid" :rows="contacts" row-key="contactId" :selected-key="detailModal.dtlId"
-    list-title="문의목록" :count-text="pager.pageTotalCount + '건'"
-    :sort-state="uiState" :row-style="fnRowStyle"
-    @sort="key => handleBtnAction('contacts-sort', key)"
-    @ref-click="({type,id}) => handleSelectAction('contacts-rowRef', {type, id})"
-    grid-id="contacts-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+  <bo-container title="문의목록" :count-text="pager.pageTotalCount + '건'">
     <template #toolbar-actions>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="handleBtnAction('contacts-excel')">
@@ -338,31 +326,35 @@ window.SyContactMng = {
         </button>
       </div>
     </template>
-    <template #head-actions>
-      <th style="text-align:right">
-        관리
-      </th>
-    </template>
-    <template #row-actions="{ row, gridId }">
-      <td style="white-space:nowrap;">
-        <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
-          <button class="btn btn-blue btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
-            수정
-          </button>
-          <button class="btn btn-danger btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">
-            삭제
-          </button>
-        </div>
-      </td>
-    </template>
-    <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
-    <template #footer>
-      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('contacts-pager-setPage', n)" :on-size-change="() => handleSelectAction('contacts-pager-sizeChange')" />
-    </template>
-  </bo-grid>
-  <!-- ===== □. 목록 영역 =================================================== -->
+    <bo-grid
+      bare
+      :columns="columns.baseGrid" :rows="contacts" row-key="contactId" :selected-key="detailModal.dtlId"
+      :sort-state="uiState" :row-style="fnRowStyle"
+      @sort="key => handleBtnAction('contacts-sort', key)"
+      @ref-click="({type,id}) => handleSelectAction('contacts-rowRef', {type, id})"
+      grid-id="contacts-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+      <template #head-actions>
+        <th style="text-align:right">
+          관리
+        </th>
+      </template>
+      <template #row-actions="{ row, gridId }">
+        <td style="white-space:nowrap;">
+          <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
+            <button class="btn btn-blue btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
+              수정
+            </button>
+            <button class="btn btn-danger btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">
+              삭제
+            </button>
+          </div>
+        </td>
+      </template>
+    </bo-grid>
+    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('contacts-pager-setPage', n)" :on-size-change="() => handleSelectAction('contacts-pager-sizeChange')" />
+  </bo-container>
   <!-- ===== ■. 하단 상세: ContactDtl 임베드 (항상 표시) =========================== -->
-  <div>
+  <bo-container bare>
     <div v-if="detailModal.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기
@@ -380,8 +372,7 @@ window.SyContactMng = {
       :reload-trigger="detailModal.reloadTrigger"
       :on-list-reload="handleSearchList"
       />
-  </div>
-</div>
-<!-- ===== □. 하단 상세: ContactDtl 임베드 =================================== -->
+  </bo-container>
+</bo-page>
 `
 };

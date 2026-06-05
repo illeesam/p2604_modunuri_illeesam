@@ -181,29 +181,22 @@ window.DpDispRelationMng = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    전시관계도
-    <span style="font-size:13px;font-weight:400;color:#888;">
-      UI · 영역 · 패널 계층 구조
-    </span>
-  </div>
+<bo-page title="전시관계도" desc-summary="UI · 영역 · 패널 계층 구조">
   <!-- ===== ■. 검색 ====================================================== -->
-  <div class="card">
+  <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" :columns="columns.baseSearch" :param="searchParam" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
-  </div>
+  </bo-container>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 내용 ====================================================== -->
-  <div class="card" style="padding:12px;">
+  <bo-container title="전시 계층 구조">
     <div v-if="!cfTreeData.length" style="text-align:center;color:#999;padding:30px;">
       데이터가 없습니다.
     </div>
     <div v-for="ui in cfTreeData" :key="ui?.id" style="margin-bottom:8px;border:1px solid #f0f0f0;border-radius:6px;overflow:hidden;">
       <!-- ===== ■.■.■. UI 행 ================================================ -->
       <div @click="handleSelectAction('relations-toggleNode', 'ui_'+ui.id)"
-        style="display:flex;align-items:center;gap:8px;padding:5px 10px;background:#f9f9fb;cursor:pointer;user-select:none;">
+        style="display:flex;align-items:center;gap:8px;padding:5px 10px;background:#f9f9fb;user-select:none;">
         <span style="font-size:12px;color:#999;width:20px;text-align:center;">
           {{ isNodeExpanded('ui_'+ui.id) ? '▼' : '▶' }}
         </span>
@@ -229,7 +222,7 @@ window.DpDispRelationMng = {
       <div v-if="isNodeExpanded('ui_'+ui.id)" style="background:#fafafa;">
         <div v-for="area in ui.children" :key="area?.id" style="border-top:1px solid #f0f0f0;">
           <div @click="handleSelectAction('relations-toggleNode', 'area_'+area.id)"
-            style="display:flex;align-items:center;gap:8px;padding:4px 12px 4px 40px;cursor:pointer;user-select:none;background:#fff;">
+            style="display:flex;align-items:center;gap:8px;padding:4px 12px 4px 40px;user-select:none;background:#fff;">
             <span style="font-size:12px;color:#999;width:20px;text-align:center;">
               {{ isNodeExpanded('area_'+area.id) ? '▼' : '▶' }}
             </span>
@@ -283,8 +276,8 @@ window.DpDispRelationMng = {
         </div>
       </div>
     </div>
-  </div>
-</div>
-<!-- ===== □. 내용 ====================================================== -->
+  </bo-container>
+  <!-- ===== □. 내용 ====================================================== -->
+</bo-page>
 `
 };

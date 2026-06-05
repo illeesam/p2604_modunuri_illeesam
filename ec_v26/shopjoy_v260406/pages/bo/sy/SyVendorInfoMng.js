@@ -209,7 +209,7 @@ window.SyVendorInfoMng = {
     const fnStatusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
 
     /* fnRowStyle — 행 스타일 (선택 강조는 selected-key 의 파란 테두리로 처리) */
-    const fnRowStyle = (v) => 'cursor:pointer;';
+    const fnRowStyle = (v) => '';
 
     /* fnSelectedVendorNm — 선택 업체명 */
     const fnSelectedVendorNm = () => {
@@ -283,44 +283,36 @@ window.SyVendorInfoMng = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    업체정보
-  </div>
+<bo-page title="업체정보">
   <!-- ===== ■. 1단: 조회 영역 =============================================== -->
-  <div class="card">
+  <bo-container>
     <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
-  </div>
+  </bo-container>
   <!-- ===== □. 1단: 조회 영역 =============================================== -->
   <!-- ===== ■. 2단: 업체목록 =============================================== -->
-  <bo-grid
-    :columns="columns.baseGrid" :rows="vendors" row-key="vendorId"
-    list-title="업체목록" :count-text="pager.pageTotalCount + '건'"
-    :loading="uiState.loading" :row-style="fnRowStyle" :selected-key="uiState.selectedVendorId" row-clickable row-actions
-    grid-id="vendors-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
-    <template #row-actions="{ row }">
-      <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('vendors-rowSelect', row)">
-        {{ uiState.selectedVendorId===row.vendorId ? '선택됨' : '선택' }}
-      </button>
-    </template>
-    <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
-    <template #footer>
-      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('vendors-pager-setPage', n)" :on-size-change="() => handleSelectAction('vendors-pager-sizeChange')" />
-    </template>
-  </bo-grid>
+  <bo-container title="업체목록" :count-text="pager.pageTotalCount + '건'">
+    <bo-grid bare
+      :columns="columns.baseGrid" :rows="vendors" row-key="vendorId"
+      :loading="uiState.loading" :row-style="fnRowStyle" :selected-key="uiState.selectedVendorId" row-actions
+      grid-id="vendors-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+      <template #row-actions="{ row }">
+        <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('vendors-rowSelect', row)">
+          {{ uiState.selectedVendorId===row.vendorId ? '선택됨' : '선택' }}
+        </button>
+      </template>
+    </bo-grid>
+    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('vendors-pager-setPage', n)" :on-size-change="() => handleSelectAction('vendors-pager-sizeChange')" />
+  </bo-container>
   <!-- ===== □. 2단: 업체목록 =============================================== -->
   <!-- ===== ■. 3단: 탭 영역 (브랜드 | 가격정책 | 배송템플릿 | 부가서비스) ============ -->
-  <div class="card" style="margin-top:12px;">
+  <bo-container>
     <!-- ===== ■.■. 탭 헤더 + 선택 업체 표시 ===================================== -->
-    <div class="toolbar" style="margin-bottom:10px;">
-      <span class="list-title">
-        업체정보 상세
-        <span v-if="uiState.selectedVendorId != null" style="margin-left:8px;font-size:12px;color:#e8587a;font-weight:600;">
-          {{ fnSelectedVendorNm() }}
-        </span>
+    <template #title>
+      업체정보 상세
+      <span v-if="uiState.selectedVendorId != null" style="margin-left:8px;font-size:12px;color:#e8587a;font-weight:600;">
+        {{ fnSelectedVendorNm() }}
       </span>
-    </div>
+    </template>
     <bo-tab-bar :tabs="tabs" :tab="uiState.tab" :show-modes="false"
       @tab-select="id => handleSelectAction('tab-select', id)" />
     <!-- ===== ■.■. 업체 미선택 안내 ============================================ -->
@@ -353,8 +345,8 @@ window.SyVendorInfoMng = {
       </div>
     </div>
     <!-- ===== □.□. 탭 컨텐츠 ================================================= -->
-  </div>
+  </bo-container>
   <!-- ===== □. 3단: 탭 영역 =============================================== -->
-</div>
+</bo-page>
 `,
 };

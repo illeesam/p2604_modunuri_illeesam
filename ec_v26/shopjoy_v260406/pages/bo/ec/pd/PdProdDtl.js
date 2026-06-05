@@ -1270,7 +1270,7 @@ window.PdProdDtl = {
       { key: 'roleId', label: '역할', badge: () => 'badge-gray', cellStyle: 'font-size:11px;' },
     ];
     /* fnMdRowStyle — 유틸 */
-    const fnMdRowStyle = (u) => 'cursor:pointer;' + (form.mdUserId === u.userId ? 'font-weight:700;' : '');
+    const fnMdRowStyle = (u) => '' + (form.mdUserId === u.userId ? 'font-weight:700;' : '');
     // 상품 선택 모달 그리드
     columns.prodPickerGrid = [
       { key: 'productId', label: 'ID',       style: 'width:46px;', align: 'center', cellStyle: 'color:#888;' },
@@ -1424,7 +1424,7 @@ window.PdProdDtl = {
       onImgDragStart, onImgDragOver, onImgDrop,
       prodCategories, cfCatExcludeSet, catPickerOpen, addCategory, removeCategory,
       onCatDragStart, onCatDragOver, onCatDrop,
-      relProds, codeProds, cfProdPickerList, openProdPicker, selectProdItem, fnProdPickerCallback,
+      relProds, codeProds, cfProdPickerList, prodPickerOpen, openProdPicker, selectProdItem, fnProdPickerCallback,
       removeRelProd, removeCodeProd,
       onRelDragStart, onRelDragOver, onRelDrop,
       onCodeDragStart, onCodeDragOver, onCodeDrop,
@@ -1444,23 +1444,23 @@ window.PdProdDtl = {
   template: /* html */`
 <div>
   <!-- ===== ■. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
-  <div class="card">
+  <bo-container>
     <!-- ===== ■.■. 카드 헤더 (제목 = list-title, page-title 아님 → 폰트 축소) ========= -->
-    <div class="toolbar">
-      <span class="list-title">
-        {{ !active ? '상품 상세' : (cfIsNew ? '상품 등록' : (cfDtlMode ? '상품 상세' : '상품 수정')) }}
-        <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
-          #{{ form.prodId }}
-        </span>
-        <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-          목록에서 행을 선택하거나 [+신규]를 누르세요
-        </span>
+    <template #title>
+      {{ !active ? '상품 상세' : (cfIsNew ? '상품 등록' : (cfDtlMode ? '상품 상세' : '상품 수정')) }}
+      <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+        #{{ form.prodId }}
       </span>
+      <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+        목록에서 행을 선택하거나 [+신규]를 누르세요
+      </span>
+    </template>
+    <template #toolbar-actions>
       <button v-if="active && !cfIsNew" class="btn btn-sm" style="background:#fff;border:1px solid #d9d9d9;color:#555;font-weight:500;"
         title="사용자 페이스에서 상품 상세 미리보기" @click="handleBtnAction('form-preview')">
         👁 미리보기
       </button>
-    </div>
+    </template>
     <!-- ===== ■.■. 탭바 ==================================================== -->
     <bo-tab-bar :tabs="tabs" :tab="topTab" :tab-mode="tabMode2"
       @tab-select="id => handleBtnAction('tab-select', id)"
@@ -1501,12 +1501,12 @@ window.PdProdDtl = {
               <span style="font-size:13px;flex:1;">
                 {{ cat.categoryNm }}
               </span>
-              <button type="button" @click="removeCategory(idx)" style="border:none;background:none;color:#f87171;cursor:pointer;font-size:13px;padding:0 2px;flex-shrink:0;">
+              <button type="button" @click="removeCategory(idx)" style="border:none;background:none;color:#f87171;font-size:13px;padding:0 2px;flex-shrink:0;">
                 ✕
               </button>
             </div>
             <button type="button" @click="catPickerOpen=true"
-              style="margin-top:4px;font-size:12px;color:#6366f1;border:1px dashed #a5b4fc;background:none;border-radius:4px;padding:2px 8px;cursor:pointer;width:100%;">
+              style="margin-top:4px;font-size:12px;color:#6366f1;border:1px dashed #a5b4fc;background:none;border-radius:4px;padding:2px 8px;width:100%;">
               + 카테고리 추가
             </button>
           </div>
@@ -1534,7 +1534,7 @@ window.PdProdDtl = {
         <template #mdUser>
           <div style="display:flex;gap:6px;align-items:center;">
             <input class="form-control" :value="cfMdSelectedNm||''" readonly placeholder="담당MD를 선택해주세요"
-              style="flex:1;background:#fafafa;cursor:pointer;" @click="openMdModal" />
+              style="flex:1;background:#fafafa;" @click="openMdModal" />
             <button class="btn btn-secondary btn-sm" type="button" @click="openMdModal" style="flex-shrink:0;">
               선택
             </button>
@@ -1573,7 +1573,7 @@ window.PdProdDtl = {
               <span style="font-size:15px;font-weight:700;">
                 담당MD 선택
               </span>
-              <button @click="mdModalOpen=false" style="background:none;border:none;font-size:20px;cursor:pointer;color:#888;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;" class="modal-close-btn">
+              <button @click="mdModalOpen=false" style="background:none;border:none;font-size:20px;color:#888;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;" class="modal-close-btn">
                 ✕
               </button>
             </div>
@@ -1595,7 +1595,7 @@ window.PdProdDtl = {
             <div style="overflow-y:auto;flex:1;padding:8px 12px;">
               <!-- ===== ■.■.■.■.■.■.■. 목록 영역 ======================================= -->
               <bo-grid bare :columns="columns.mdUserGrid" :rows="cfMdUserListFiltered" row-key="userId" :selected-key="form.mdUserId"
-                :row-style="fnMdRowStyle" empty-text="검색 결과가 없습니다." row-clickable @cell-click="e => selectMdUser(e.row)">
+                :row-style="fnMdRowStyle" empty-text="검색 결과가 없습니다." @cell-click="e => selectMdUser(e.row)">
               </bo-grid>
             </div>
             <!-- ===== ■.■.■.■.■.■. 푸터 ============================================ -->
@@ -1609,23 +1609,23 @@ window.PdProdDtl = {
       </teleport>
       <!-- ===== ■.■.■. 체크박스 그룹 (세로 슬림) ===================================== -->
       <div style="display:flex;flex-wrap:wrap;gap:16px;padding:7px 12px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;margin-bottom:10px;">
-        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;">
           <input type="checkbox" :checked="form.isNew==='Y'" @change="form.isNew=$event.target.checked?'Y':'N'" />
           신상품
         </label>
-        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;">
           <input type="checkbox" :checked="form.isBest==='Y'" @change="form.isBest=$event.target.checked?'Y':'N'" />
           베스트
         </label>
-        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;">
           <input type="checkbox" :checked="form.adltYn==='Y'" @change="form.adltYn=$event.target.checked?'Y':'N'" />
           성인상품
         </label>
-        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;">
           <input type="checkbox" :checked="form.sameDayDlivYn==='Y'" @change="form.sameDayDlivYn=$event.target.checked?'Y':'N'" />
           당일배송
         </label>
-        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;">
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;">
           <input type="checkbox" :checked="form.soldOutYn==='Y'" @change="form.soldOutYn=$event.target.checked?'Y':'N'" style="accent-color:#e8587a;" />
           <span style="color:#e8587a;">
             강제품절
@@ -1661,7 +1661,7 @@ window.PdProdDtl = {
         </label>
         <!-- ===== ■.■.■.■. 도움말 아이콘 =========================================== -->
         <span @click="openHelp('prodOpt')"
-          style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#1677ff;color:#fff;font-size:11px;font-weight:700;cursor:pointer;user-select:none;flex-shrink:0;"
+          style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#1677ff;color:#fff;font-size:11px;font-weight:700;user-select:none;flex-shrink:0;"
           title="옵션설정 도움말">
           ?
         </span>
@@ -1894,7 +1894,7 @@ window.PdProdDtl = {
                       style="width:14px;height:14px;" />
             </td>
             <td style="padding:2px 4px;text-align:center;">
-              <button style="background:#ff4d4f;color:#fff;border:none;border-radius:3px;width:20px;height:20px;cursor:pointer;font-size:11px;line-height:1;padding:0;"
+              <button style="background:#ff4d4f;color:#fff;border:none;border-radius:3px;width:20px;height:20px;font-size:11px;line-height:1;padding:0;"
                       @click="removeOptItem(grp, ii)">
                 ✕
               </button>
@@ -1990,7 +1990,7 @@ window.PdProdDtl = {
             {{ block.fileName }}
           </div>
         </div>
-        <label class="btn btn-secondary btn-sm" style="cursor:pointer;display:inline-block;">
+        <label class="btn btn-secondary btn-sm" style="display:inline-block;">
           📎 파일 선택
           <input type="file" accept="image/*" style="display:none;" @change="onBlockFileChange(block, $event)" />
         </label>
@@ -2111,15 +2111,15 @@ window.PdProdDtl = {
     혜택 적용 여부
   </div>
   <div style="display:flex;gap:24px;padding:14px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;flex-wrap:wrap;">
-    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
+    <label style="display:flex;align-items:center;gap:8px;font-size:13px;">
       <input type="checkbox" :checked="form.couponUseYn==='Y'" @change="form.couponUseYn=$event.target.checked?'Y':'N'" />
       쿠폰 사용 가능 (coupon_use_yn)
     </label>
-    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
+    <label style="display:flex;align-items:center;gap:8px;font-size:13px;">
       <input type="checkbox" :checked="form.saveUseYn==='Y'" @change="form.saveUseYn=$event.target.checked?'Y':'N'" />
       적립금 사용 가능 (save_use_yn)
     </label>
-    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
+    <label style="display:flex;align-items:center;gap:8px;font-size:13px;">
       <input type="checkbox" :checked="form.discntUseYn==='Y'" @change="form.discntUseYn=$event.target.checked?'Y':'N'" />
       할인 적용 가능 (discnt_use_yn)
     </label>
@@ -2157,7 +2157,7 @@ window.PdProdDtl = {
     </span>
   </div>
   <div v-if="images.length===0"
-        style="border:2px dashed #e0e0e0;border-radius:10px;padding:22px;text-align:center;color:#bbb;font-size:13px;cursor:pointer;"
+        style="border:2px dashed #e0e0e0;border-radius:10px;padding:22px;text-align:center;color:#bbb;font-size:13px;"
         @click="triggerFileInput">
     클릭하거나 파일을 끌어다 놓으세요
   </div>
@@ -2601,12 +2601,12 @@ window.PdProdDtl = {
             </td>
             <td style="padding:2px 2px;text-align:center;white-space:nowrap;">
               <button type="button" @click="moveSku(sku,'up')"   :disabled="ii===0"
-                    style="border:1px solid #ddd;background:#fff;border-radius:3px;width:18px;height:18px;font-size:10px;line-height:1;padding:0;cursor:pointer;color:#666;margin-right:1px;"
+                    style="border:1px solid #ddd;background:#fff;border-radius:3px;width:18px;height:18px;font-size:10px;line-height:1;padding:0;color:#666;margin-right:1px;"
                     title="위로">
                 ▲
               </button>
               <button type="button" @click="moveSku(sku,'down')" :disabled="ii===cfSkusFiltered.length-1"
-                    style="border:1px solid #ddd;background:#fff;border-radius:3px;width:18px;height:18px;font-size:10px;line-height:1;padding:0;cursor:pointer;color:#666;"
+                    style="border:1px solid #ddd;background:#fff;border-radius:3px;width:18px;height:18px;font-size:10px;line-height:1;padding:0;color:#666;"
                     title="아래로">
                 ▼
               </button>
@@ -2765,7 +2765,7 @@ window.PdProdDtl = {
 </div>
 <!-- ===== /dtl-tab-grid ============================================== -->
 <!-- ===== □. 탭 컨텐츠 =================================================== -->
-  </div>
+  </bo-container>
   <!-- ===== □. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
 <!-- ===== ■. 이력 ====================================================== -->
 <div v-if="!cfIsNew" style="margin-top:12px;">

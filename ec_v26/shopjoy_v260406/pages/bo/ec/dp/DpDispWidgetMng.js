@@ -297,7 +297,7 @@ window.DpDispWidgetMng = {
     const cfNoFilter = computed(() => !applied.searchValue && !applied.type && !applied.status);
 
     /* fnRowStyle — 행 스타일 */
-    const fnRowStyle = (row) => (detailPanel.selectedId === row.widgetId ? 'background:#fff8f8;' : '') + 'height:74px;cursor:pointer;';
+    const fnRowStyle = (row) => (detailPanel.selectedId === row.widgetId ? 'background:#fff8f8;' : '') + 'height:74px;';
 
     /* setPage — 설정 */
     const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData(); } };
@@ -346,9 +346,9 @@ window.DpDispWidgetMng = {
     };
   },
   template: /* html */`
-<div>
+<bo-page>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
+  <template #title>
     <span style="font-size:14px;font-weight:600;color:#333;">
       전시위젯관리
     </span>
@@ -361,10 +361,10 @@ window.DpDispWidgetMng = {
     <span style="font-size:13px;font-weight:400;color:#888;display:block;margin-top:4px;">
       위젯 유형별 리소스 등록·재활용
     </span>
-  </div>
+  </template>
   <!-- ===== □. 페이지 타이틀 ================================================= -->
   <!-- ===== ■. 검색 필터 =================================================== -->
-  <div class="card" style="padding:14px 18px;margin-bottom:14px;">
+  <bo-container>
     <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
       <div class="form-group" style="margin:0;min-width:180px;flex:1;">
         <label class="form-label">
@@ -419,59 +419,55 @@ window.DpDispWidgetMng = {
         초기화
       </button>
     </div>
-  </div>
+  </bo-container>
   <!-- ===== □. 검색 필터 =================================================== -->
   <!-- ===== ■. 본문: 좌측 트리 + 우측 목록 ======================================= -->
-  <div style="display:flex;gap:12px;align-items:flex-start;">
+  <div class="bo-2col">
     <!-- ===== ■.■. 좌측 표시경로 =============================================== -->
-    <div class="card" style="width:240px;min-width:180px;flex-shrink:0;padding:12px;max-height:calc(100vh - 260px);overflow-y:auto;">
-      <div class="toolbar" style="margin-bottom:6px;">
-        <span class="list-title" style="font-size:13px;">
-          📂 표시경로
-          <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">
-            #ec_disp_widget
-          </span>
+    <bo-container title="📂 표시경로">
+      <template #toolbar-actions>
+        <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">
+          #ec_disp_widget
         </span>
-        <span v-if="uiState.selectedPath != null" @click="handleBtnAction('pathTree-all')" style="font-size:11px;color:#1677ff;cursor:pointer;">
+        <span v-if="uiState.selectedPath != null" @click="handleBtnAction('pathTree-all')" style="font-size:11px;color:#1677ff;">
           전체보기
         </span>
-      </div>
+      </template>
       <div style="max-height:65vh;overflow:auto;">
         <bo-path-tree biz-cd="ec_disp_widget" :counts="widgetCounts" :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
       </div>
-    </div>
+    </bo-container>
     <!-- ===== □.□. 좌측 표시경로 =============================================== -->
     <!-- ===== ■.■. 우측 목록 ================================================= -->
-    <div style="flex:1;min-width:0;width:100%;">
+    <bo-container title="전시위젯" :count-text="pager.pageTotalCount + '건'">
+      <template #toolbar-actions>
+        <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">
+          #{{ uiState.selectedPath }}
+        </span>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;font-size:11px;">
+          <span v-if="cfNoFilter" style="color:#bbb;">
+            필터 없음
+          </span>
+          <span v-if="applied.searchValue" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;border-radius:10px;padding:1px 8px;">
+            검색: {{ applied.searchValue }}
+          </span>
+          <span v-if="applied.type" style="background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:10px;padding:1px 8px;">
+            유형: {{ wTypeLabel(applied.type) }}
+          </span>
+          <span v-if="applied.status" style="background:#dcfce7;color:#166534;border:1px solid #bbf7d0;border-radius:10px;padding:1px 8px;">
+            상태: {{ applied.status === 'Y' ? '활성' : '비활성' }}
+          </span>
+        </div>
+        <button @click="handleBtnAction('widgets-add')" class="btn btn-primary btn-sm" style="height:30px;padding:0 14px;">
+          + 신규등록
+        </button>
+      </template>
       <!-- ===== ■.■.■. 목록 ================================================== -->
-      <bo-grid :columns="columns.listGrid" :rows="widgets" row-key="widgetId" :selected-key="detailPanel.selectedId" :pager="pager"
-        :sort-state="uiState" list-title="전시위젯" :row-style="fnRowStyle"
-        :count-text="pager.pageTotalCount + '건'"
-        empty-text="등록된 위젯이 없습니다." row-clickable
+      <bo-grid bare :columns="columns.listGrid" :rows="widgets" row-key="widgetId" :selected-key="detailPanel.selectedId" :pager="pager"
+        :sort-state="uiState" :row-style="fnRowStyle"
+        empty-text="등록된 위젯이 없습니다."
         @sort="key => handleBtnAction('widgets-sort', key)"
         grid-id="widgets-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
-        <template #toolbar-actions>
-          <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">
-            #{{ uiState.selectedPath }}
-          </span>
-          <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;font-size:11px;">
-            <span v-if="cfNoFilter" style="color:#bbb;">
-              필터 없음
-            </span>
-            <span v-if="applied.searchValue" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;border-radius:10px;padding:1px 8px;">
-              검색: {{ applied.searchValue }}
-            </span>
-            <span v-if="applied.type" style="background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:10px;padding:1px 8px;">
-              유형: {{ wTypeLabel(applied.type) }}
-            </span>
-            <span v-if="applied.status" style="background:#dcfce7;color:#166534;border:1px solid #bbf7d0;border-radius:10px;padding:1px 8px;">
-              상태: {{ applied.status === 'Y' ? '활성' : '비활성' }}
-            </span>
-          </div>
-          <button @click="handleBtnAction('widgets-add')" class="btn btn-primary btn-sm" style="height:30px;padding:0 14px;">
-            + 신규등록
-          </button>
-        </template>
         <template #cell-widgetInfo="{ row }">
           <td style="padding:10px 12px;vertical-align:top;">
             <div style="margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
@@ -557,19 +553,14 @@ window.DpDispWidgetMng = {
             </button>
           </div>
         </template>
-        <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
-        <template #footer>
-          <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('widgets-pager-setPage', n)" :on-size-change="() => handleSelectAction('widgets-pager-sizeChange')" />
-        </template>
       </bo-grid>
-    </div>
+      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('widgets-pager-setPage', n)" :on-size-change="() => handleSelectAction('widgets-pager-sizeChange')" />
+    </bo-container>
     <!-- ===== /우측 목록 ===================================================== -->
   </div>
-  <!-- ===== /본문 flex =================================================== -->
-  <!-- ===== □.□. 우측 목록 ================================================= -->
   <!-- ===== □. 본문: 좌측 트리 + 우측 목록 ======================================= -->
-  <!-- ===== ■. 인라인 상세 (항상 표시 / 진입 시 빈 신규 폼) ================================================== -->
-  <div>
+  <!-- ===== ■. 인라인 상세 (항상 표시 / 진입 시 빈 신규 폼, 전체 폭) ============== -->
+  <bo-container bare>
     <dp-disp-widget-dtl
       :key="cfDetailKey"
       :navigate="inlineNavigate"
@@ -583,8 +574,8 @@ window.DpDispWidgetMng = {
       :reload-trigger="detailPanel.reloadTrigger"
       @close="handleBtnAction('detailPanel-close')"
       />
-  </div>
-</div>
+  </bo-container>
+</bo-page>
 <!-- ===== □. 인라인 상세 ================================================== -->
 `
 };

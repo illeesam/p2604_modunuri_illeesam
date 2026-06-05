@@ -137,34 +137,11 @@ window.Blog = {
     };
   },
   template: /* html */ `
-<div class="page-wrap">
-  <!-- ===== ■. 페이지 타이틀 배너 ============================================== -->
-  <div class="page-banner-full" style="position:relative;overflow:hidden;height:220px;margin-bottom:36px;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;width:100vw;display:flex;align-items:center;justify-content:center;">
-    <img src="assets/cdn/prod/img/page-title/page-title-2.jpg" alt="블로그"
-      style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%;" />
-    <div style="position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,0.72) 0%,rgba(240,245,255,0.55) 45%,rgba(220,232,255,0.38) 100%);">
-    </div>
-    <div style="position:relative;z-index:1;text-align:center;">
-      <div style="font-size:0.75rem;color:rgba(0,0,0,0.55);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">
-        ShopJoy
-      </div>
-      <h1 style="font-size:2.2rem;font-weight:700;color:#111;letter-spacing:-0.5px;margin-bottom:8px;">
-        News & Blog
-      </h1>
-      <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:0.8rem;color:rgba(0,0,0,0.55);">
-        <span style="cursor:pointer;" @click="handleBtnAction('page-goHome')">
-          홈
-        </span>
-        <span>
-          /
-        </span>
-        <span style="color:#333;">
-          Blog
-        </span>
-      </div>
-    </div>
-  </div>
-  <!-- ===== □. 페이지 타이틀 배너 ============================================== -->
+<fo-page title="News &amp; Blog" eyebrow="ShopJoy"
+  banner-img="assets/cdn/prod/img/page-title/page-title-2.jpg"
+  banner-align="center 40%"
+  :crumbs="[{ label:'홈', page:'home' }, { label:'Blog' }]"
+  @nav="() => handleBtnAction('page-goHome')">
   <!-- ===== ■. 검색 ====================================================== -->
   <div style="display:flex;justify-content:center;margin-bottom:32px;">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
@@ -276,7 +253,7 @@ window.Blog = {
       </div>
     </div>
   </div>
-</div>
+</fo-page>
 <!-- ===== □.□. 포스트 목록 ================================================ -->
 <!-- ===== □. 레이아웃: 사이드바 + 본문 ========================================= -->
 `

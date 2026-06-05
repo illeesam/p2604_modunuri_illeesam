@@ -68,34 +68,11 @@ window.About = {
     };
   },
   template: /* html */ `
-<div class="page-wrap">
-  <!-- ===== ■. 페이지 타이틀 배너 ============================================== -->
-  <div class="page-banner-full" style="position:relative;overflow:hidden;height:220px;margin-bottom:36px;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;width:100vw;display:flex;align-items:center;justify-content:center;">
-    <img src="assets/cdn/prod/img/page-title/page-title-2.jpg" alt="회사소개"
-      style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%;" />
-    <div style="position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,0.72) 0%,rgba(240,245,255,0.55) 45%,rgba(220,232,255,0.38) 100%);">
-    </div>
-    <div style="position:relative;z-index:1;text-align:center;">
-      <div style="font-size:0.75rem;color:rgba(0,0,0,0.55);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">
-        About
-      </div>
-      <h1 style="font-size:2.2rem;font-weight:700;color:#111;letter-spacing:-0.5px;margin-bottom:8px;">
-        회사소개
-      </h1>
-      <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:0.8rem;color:rgba(0,0,0,0.55);">
-        <span style="cursor:pointer;" @click="handleBtnAction('page-goHome')">
-          홈
-        </span>
-        <span>
-          /
-        </span>
-        <span style="color:#333;">
-          회사소개
-        </span>
-      </div>
-    </div>
-  </div>
-  <!-- ===== □. 페이지 타이틀 배너 ============================================== -->
+<fo-page title="회사소개" eyebrow="About"
+  banner-img="assets/cdn/prod/img/page-title/page-title-2.jpg"
+  banner-align="center 40%"
+  :crumbs="[{ label:'홈', page:'home' }, { label:'회사소개' }]"
+  @nav="() => handleBtnAction('page-goHome')">
   <!-- ===== ■. 브랜드 히어로 ================================================= -->
   <div style="background:linear-gradient(135deg,#bfdbfe,#c7d2fe);border-radius:16px;padding:20px 32px;margin-bottom:32px;color:#1e3a8a;text-align:center;position:relative;overflow:hidden;">
     <div style="position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,0.3);">
@@ -247,7 +224,7 @@ window.About = {
       통신판매업자는 거래에 관한 약관, 청약철회 가능여부, 배송비, 교환·환불·보증 조건 및 품질보증기준에 따라 상거래를 운영합니다.
     </div>
   </div>
-</div>
+</fo-page>
 <!-- ===== □. 사업자 정보 ================================================== -->
 `
 };

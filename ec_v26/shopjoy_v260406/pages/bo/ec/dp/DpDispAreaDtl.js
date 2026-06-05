@@ -466,6 +466,9 @@ window.DpDispAreaDtl = {
       { code: 'TEST', label: 'TEST' },
     ];
 
+    /* BoMultiCheckSelect 용 {value,label} 매핑 (areaDispEnvOptions 는 {code} 형식이라 불인식) */
+    const cfAreaDispEnvMcsOptions = computed(() => areaDispEnvOptions.map(o => ({ value: o.code, label: o.label })));
+
     /* hasAreaDispEnv — 여부 확인 */
     const hasAreaDispEnv = (code) => {
       if (!cfActivePanel.value) { return false; }
@@ -542,7 +545,7 @@ window.DpDispAreaDtl = {
       codes, areas, panels, uiState, pathPickModal, form, errors,                  // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal,                          // dispatch + 모달 통합 콜백
       cfIsNew, cfDtlMode, cfRelatedPanels, cfActivePanel, cfPreviewFrameWidth,                // computed
-      cfVisibilityOptions,                                                         // computed
+      cfVisibilityOptions, cfAreaDispEnvMcsOptions,                                // computed
       activeTab, previewMode, expanded, pickOpen, previewPaneWidth,                // toRef
       showComponentTooltip,                                                        // toRef
       PREVIEW_MODES, areaDispEnvOptions, areaBaseDispEnvOptions,                   // 상수
@@ -641,12 +644,12 @@ window.DpDispAreaDtl = {
           </span>
           <template v-if="activeTab==='panel_'+p.dispId">
             <button @click.stop="handleSelectAction('areaPanels-move', { idx: i, dir: -1 })" :disabled="i===0" title="위로"
-              style="font-size:9px;border:1px solid #e0e0e0;border-radius:3px;background:#fff;cursor:pointer;padding:1px 4px;line-height:1.2;color:#888;"
+              style="font-size:9px;border:1px solid #e0e0e0;border-radius:3px;background:#fff;padding:1px 4px;line-height:1.2;color:#888;"
               :style="i===0?'opacity:0.3;cursor:default;':''">
               ▲
             </button>
             <button @click.stop="handleSelectAction('areaPanels-move', { idx: i, dir: 1 })" :disabled="i===cfRelatedPanels.length-1" title="아래로"
-              style="font-size:9px;border:1px solid #e0e0e0;border-radius:3px;background:#fff;cursor:pointer;padding:1px 4px;line-height:1.2;color:#888;"
+              style="font-size:9px;border:1px solid #e0e0e0;border-radius:3px;background:#fff;padding:1px 4px;line-height:1.2;color:#888;"
               :style="i===cfRelatedPanels.length-1?'opacity:0.3;cursor:default;':''">
               ▼
             </button>
@@ -657,12 +660,12 @@ window.DpDispAreaDtl = {
       <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">
         <button @click="handleBtnAction('pickModal-open')" :disabled="cfIsNew"
           :title="cfIsNew ? '저장 후 패널을 추가할 수 있습니다.' : ''"
-          :style="cfIsNew ? 'padding:7px;border:1px solid #e0e0e0;background:#f5f5f5;color:#bbb;border-radius:8px;font-size:11px;font-weight:600;cursor:not-allowed;' : 'padding:7px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;'">
+          :style="cfIsNew ? 'padding:7px;border:1px solid #e0e0e0;background:#f5f5f5;color:#bbb;border-radius:8px;font-size:11px;font-weight:600;cursor:not-allowed;' : 'padding:7px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;border-radius:8px;font-size:11px;font-weight:600;'">
           ✚ 기존 패널 추가
         </button>
         <button @click="handleBtnAction('pickModal-newPanel')" :disabled="cfIsNew"
           :title="cfIsNew ? '저장 후 신규 패널을 추가할 수 있습니다.' : ''"
-          :style="cfIsNew ? 'padding:7px;border:1px dashed #e0e0e0;background:#f5f5f5;color:#bbb;border-radius:8px;font-size:11px;cursor:not-allowed;' : 'padding:7px;border:1px dashed #ccc;background:#fff;color:#888;border-radius:8px;font-size:11px;cursor:pointer;'">
+          :style="cfIsNew ? 'padding:7px;border:1px dashed #e0e0e0;background:#f5f5f5;color:#bbb;border-radius:8px;font-size:11px;cursor:not-allowed;' : 'padding:7px;border:1px dashed #ccc;background:#fff;color:#888;border-radius:8px;font-size:11px;'">
           + 신규 패널
         </button>
       </div>
@@ -701,7 +704,7 @@ window.DpDispAreaDtl = {
                 <button v-for="o in codes.layout_types" :key="o?.codeValue"
                   @click="form.layoutType = o.codeValue"
                   type="button"
-                  style="flex:1;padding:6px 0;font-size:12px;border:none;border-left:1px solid #d1d5db;cursor:pointer;transition:all .15s;"
+                  style="flex:1;padding:6px 0;font-size:12px;border:none;border-left:1px solid #d1d5db;transition:all .15s;"
                   :style="[o.codeValue==='grid'?'border-left:none;':'', form.layoutType===o.codeValue ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;']">
                   {{ o.codeValue==='grid' ? '🔲 ' : '🧩 ' }}{{ o.codeLabel }}
                 </button>
@@ -718,7 +721,7 @@ window.DpDispAreaDtl = {
                 <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;">
                   <button v-for="n in [1,2,3,4]" :key="Math.random()" type="button"
                     @click="form.gridCols = n"
-                    style="padding:6px 12px;font-size:12px;border:none;border-left:1px solid #d1d5db;cursor:pointer;transition:all .15s;"
+                    style="padding:6px 12px;font-size:12px;border:none;border-left:1px solid #d1d5db;transition:all .15s;"
                     :style="[n===1?'border-left:none;':'', form.gridCols===n ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;']">
                     {{ n }}
                   </button>
@@ -802,11 +805,11 @@ window.DpDispAreaDtl = {
               <span style="font-size:11px;font-weight:600;color:#888;">
                 타이틀 표시
               </span>
-              <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;font-weight:500;color:#444;">
+              <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:500;color:#444;">
                 <input type="radio" v-model="form.titleYn" value="Y" />
                 표시
               </label>
-              <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;font-weight:500;color:#444;">
+              <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:500;color:#444;">
                 <input type="radio" v-model="form.titleYn" value="N" />
                 미표시
               </label>
@@ -890,7 +893,7 @@ window.DpDispAreaDtl = {
             설정
           </div>
           <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;">
-            <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#555;padding:5px 10px;background:#f0f0f0;border-radius:6px;cursor:pointer;">
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#555;padding:5px 10px;background:#f0f0f0;border-radius:6px;">
               <span>
                 전시여부
               </span>
@@ -926,41 +929,19 @@ window.DpDispAreaDtl = {
           <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin:10px 0 6px;">
             🌍 전시환경
           </div>
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
-            <label v-for="opt in areaDispEnvOptions" :key="opt?.code"
-              :style="{
-              display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 12px',borderRadius:'6px',
-              border:'1px solid '+(hasAreaDispEnv(opt.code)?'#7c3aed':'#ddd'),
-              background:hasAreaDispEnv(opt.code)?'#f3e8ff':'#fafafa',
-              color:hasAreaDispEnv(opt.code)?'#7c3aed':'#666',
-              fontSize:'12px',fontWeight:hasAreaDispEnv(opt.code)?700:500,
-              cursor:'pointer',
-              }">
-              <input type="checkbox" :checked="hasAreaDispEnv(opt.code)"
-                @change="handleSelectAction('areaDispEnv-toggle', opt.code)"
-                style="accent-color:#7c3aed;" />
-              {{ opt.label }}
-            </label>
+          <div style="margin-bottom:12px;">
+            <bo-multi-check-select v-model="cfActivePanel.areaDispEnv" :options="cfAreaDispEnvMcsOptions"
+              separator="^" wrap empty-value="^NONE^" placeholder="전체 환경" all-label="전체 환경"
+              :disabled="cfDtlMode" min-width="280px" />
           </div>
           <!-- ===== ■.■.■.■.■. 헤더 영역 =========================================== -->
           <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin:10px 0 6px;">
             🔒 공개대상 (하나라도 해당하면 노출)
           </div>
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px;">
-            <label v-for="opt in cfVisibilityOptions" :key="opt?.codeValue"
-              :style="{
-              display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 12px',borderRadius:'16px',
-              border:'1px solid '+(hasPanelVisibility(opt.codeValue)?'#1565c0':'#ddd'),
-              background:hasPanelVisibility(opt.codeValue)?'#e3f2fd':'#fafafa',
-              color:hasPanelVisibility(opt.codeValue)?'#1565c0':'#666',
-              fontSize:'12px',fontWeight:hasPanelVisibility(opt.codeValue)?700:500,
-              cursor:'pointer',
-              }">
-              <input type="checkbox" :checked="hasPanelVisibility(opt.codeValue)"
-                @change="handleSelectAction('panelVisibility-toggle', opt.codeValue)"
-                style="accent-color:#1565c0;" />
-              {{ opt.codeLabel }}
-            </label>
+          <div style="margin-bottom:4px;">
+            <bo-multi-check-select v-model="cfActivePanel.visibilityTargets" :options="cfVisibilityOptions"
+              separator="^" wrap empty-value="^NONE^" placeholder="전체 공개" all-label="전체 공개"
+              :disabled="cfDtlMode" min-width="320px" />
           </div>
           <div v-if="!cfActivePanel.visibilityTargets" style="font-size:11px;color:#d32f2f;">
             ⚠ 선택 없음 — 아무에게도 노출되지 않습니다.

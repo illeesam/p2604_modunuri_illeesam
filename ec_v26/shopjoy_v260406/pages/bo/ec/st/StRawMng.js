@@ -29,9 +29,6 @@ window.StRawMng = {
         return handleSearchList('DEFAULT');
       } else if (cmd === 'searchParam-dateRange') {
         return handleDateRangeChange();
-      } else if (cmd === 'desc-toggle') {
-        uiState.descOpen = !uiState.descOpen;
-        return;
       } else if (cmd === 'searchParam-moreToggle') {
         searchParam.searchMoreOpen = !searchParam.searchMoreOpen;
         return;
@@ -196,7 +193,7 @@ const raws = reactive([]);
       { key: '_exp',           label: '',         style: 'width:24px',
         align: 'center',
         linkToggle: { active: (row) => isExpanded(row.settleRawId), title: '펼치기/닫기', onClick: (row) => handleGridCellAction('rawData-cellClick', 'btn_row_expand', row),
-          activeStyle: 'color:#666;font-size:11px;cursor:pointer;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;cursor:pointer;user-select:none;' },
+          activeStyle: 'color:#666;font-size:11px;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;user-select:none;' },
         fmt: (v, row) => isExpanded(row.settleRawId) ? '▲' : '▼' },
       { key: 'settleRawId',    label: '원장ID',
         cellStyle: 'font-size:12px;color:#555;' },
@@ -344,27 +341,11 @@ const raws = reactive([]);
       fmtW, fmtPct, doCollect, codes, };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    정산수집원장
-  </div>
-  <!-- ===== ■. 영역 ====================================================== -->
-  <div class="page-desc-bar">
-    <span class="page-desc-summary">
-      주문·클레임·결제 데이터를 일별로 수집한 원시 정산 데이터를 조회하고 수동 수집을 실행합니다.
-    </span>
-    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">
-      {{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}
-    </button>
-    <div v-if="uiState.descOpen" class="page-desc-detail">
-      • 정산 조정·마감 전 기초 데이터로, 수정 불가 원장입니다. • 수집 단위: od_order_item / od_claim_item (상품 행 단위) • [재수집] 버튼으로 해당 기간의 데이터를 수동 재수집할 수 있습니다. • 수집 상태: COLLECTED(수집완료) / EXCLUDED(제외) / SETTLED(정산완료)
-    </div>
-  </div>
-  <!-- ===== □. 영역 ====================================================== -->
-  <!-- ===== ■. 검색 카드 =================================================== -->
-  <div class="card">
-    <!-- ===== ■.■. 검색 영역 ================================================= -->
+<bo-page title="정산수집원장"
+  desc-summary="주문·클레임·결제 데이터를 일별로 수집한 원시 정산 데이터를 조회하고 수동 수집을 실행합니다."
+  desc-detail="• 정산 조정·마감 전 기초 데이터로, 수정 불가 원장입니다.&#10;• 수집 단위: od_order_item / od_claim_item (상품 행 단위)&#10;• [재수집] 버튼으로 해당 기간의 데이터를 수동 재수집할 수 있습니다.&#10;• 수집 상태: COLLECTED(수집완료) / EXCLUDED(제외) / SETTLED(정산완료)">
+  <!-- ===== ■. 검색 영역 =================================================== -->
+  <bo-container>
     <bo-search-area :columns="columns.baseSearch" :param="searchParam"
       @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')">
       <template #actions-after>
@@ -373,16 +354,13 @@ const raws = reactive([]);
         </button>
       </template>
     </bo-search-area>
-    <!-- ===== ■.■. 검색 영역 (펼침) ============================================ -->
     <bo-search-area v-if="searchParam.searchMoreOpen" :show-actions="false"
       bar-style="margin-top:8px;padding-top:8px;border-top:1px solid #f0e0e8;"
       :columns="columns.moreSearch" :param="searchParam"
       @search="handleBtnAction('searchParam-list')" />
-  </div>
-  <!-- ===== □.□. 검색 영역 ================================================= -->
-  <!-- ===== □. 검색 카드 =================================================== -->
-  <!-- ===== ■. 집계 (라벨:건수/금액 인라인 스트립 — 공간 최소) ======================== -->
-  <div class="card" style="margin-bottom:12px;padding:7px 12px;">
+  </bo-container>
+  <!-- ===== ■. 집계 (라벨:건수/금액 인라인 스트립) ============================== -->
+  <bo-container body-style="padding:7px 12px;">
     <div style="display:flex;flex-wrap:wrap;align-items:center;gap:4px 16px;font-size:12px;color:#666;">
       <span>수집건수:<b style="color:#3498db;margin-left:3px;">{{ pager.pageTotalCount.toLocaleString() }}건</b></span>
       <span>정산대상:<b style="color:#27ae60;margin-left:3px;">{{ cfSummary.collectCnt.toLocaleString() }}건</b></span>
@@ -392,16 +370,9 @@ const raws = reactive([]);
       <span>수수료:<b style="color:#e74c3c;margin-left:3px;">{{ cfSummary.feeAmt.toLocaleString() }}원</b></span>
       <span>정산금액:<b style="color:#2980b9;margin-left:3px;">{{ cfSummary.settleAmt.toLocaleString() }}원</b></span>
     </div>
-  </div>
-  <!-- ===== □. 집계 =================================================== -->
-  <!-- ===== ■. 목록 카드 =================================================== -->
-  <bo-grid
-    :columns="columns.rawGrid"
-    :rows="raws"
-    row-key="settleRawId"
-    list-title="정산수집원장"
-    :is-expanded="(r) => isExpanded(r.settleRawId)"
-    empty-text="데이터가 없습니다.">
+  </bo-container>
+  <!-- ===== ■. 목록 영역 =================================================== -->
+  <bo-container title="정산수집원장" :count-text="pager.pageTotalCount + '건'">
     <template #toolbar-actions>
       <button class="btn btn-secondary btn-sm" @click="() => { raws.forEach(r => { if(!isExpanded(r.settleRawId)) toggleRow(r.settleRawId); }) }">
         ▼ 전체펼치기
@@ -413,17 +384,20 @@ const raws = reactive([]);
         🔄 재수집
       </button>
     </template>
-    <template #row-expand="{ row: r, colspan }">
-      <td :colspan="colspan" style="background:#f4f6fb;padding:12px 20px;border-top:none">
-        <bo-form-area :columns="columns.rawExpand" :form="r" :cols="3" readonly label-left compact :show-actions="false" />
-      </td>
-    </template>
-    <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
-    <template #footer>
-      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('rawData-pager-setPage', n)" :on-size-change="() => handleSelectAction('rawData-pager-sizeChange')" />
-    </template>
-  </bo-grid>
-</div>
-<!-- ===== □. 목록 카드 =================================================== -->
+    <bo-grid bare
+      :columns="columns.rawGrid"
+      :rows="raws"
+      row-key="settleRawId"
+      :is-expanded="(r) => isExpanded(r.settleRawId)"
+      empty-text="데이터가 없습니다.">
+      <template #row-expand="{ row: r, colspan }">
+        <td :colspan="colspan" style="background:#f4f6fb;padding:12px 20px;border-top:none">
+          <bo-form-area :columns="columns.rawExpand" :form="r" :cols="3" readonly label-left compact :show-actions="false" />
+        </td>
+      </template>
+    </bo-grid>
+    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('rawData-pager-setPage', n)" :on-size-change="() => handleSelectAction('rawData-pager-sizeChange')" />
+  </bo-container>
+</bo-page>
 `,
 };

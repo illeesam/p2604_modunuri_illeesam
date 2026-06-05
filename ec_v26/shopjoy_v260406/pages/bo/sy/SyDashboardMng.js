@@ -99,11 +99,7 @@ window.SyDashboardMng = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    대시보드
-  </div>
+<bo-page title="대시보드">
   <!-- ===== ■. 통계 카드 =================================================== -->
   <!-- ===== ■. 대시보드 영역 ================================================= -->
   <div class="dash-stats">
@@ -126,11 +122,7 @@ window.SyDashboardMng = {
   </div>
   <!-- ===== □. 대시보드 영역 ================================================= -->
   <!-- ===== ■. 바로가기 ==================================================== -->
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card">
-    <div class="section-title">
-      바로가기
-    </div>
+  <bo-container title="바로가기">
     <div class="dash-shortcuts">
       <div v-for="m in shortcuts" :key="m.id" class="dash-shortcut" @click="handleSelectAction('shortcuts-select', m.id)">
         <span class="dash-sc-icon" :style="{background: m.color}">
@@ -144,8 +136,7 @@ window.SyDashboardMng = {
         </span>
       </div>
     </div>
-  </div>
-</div>
-<!-- ===== □. 카드 영역 =================================================== -->
+  </bo-container>
+</bo-page>
 `,
 };

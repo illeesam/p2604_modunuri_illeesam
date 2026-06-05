@@ -281,7 +281,7 @@ window.SyBbmMng = {
     const fnScopeBadge   = v => ({ '공개': 'badge-green', '개인': 'badge-orange', '회사': 'badge-blue' }[v] || 'badge-gray');
 
     /* fnRowStyle — 행 스타일 (선택 행 강조) */
-    const fnRowStyle = (b) => detailModal.dtlId === b.bbmId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
+    const fnRowStyle = (b) => detailModal.dtlId === b.bbmId ? 'background:#fff8f9;' : '';
 
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const cfDetailEditId = computed(() => detailModal.dtlId === '__new__' ? null : detailModal.dtlId);
@@ -333,40 +333,32 @@ window.SyBbmMng = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    게시판관리
-  </div>
+<bo-page title="게시판관리">
   <!-- ===== ■. 검색 ====================================================== -->
-  <div class="card">
-    <!-- ===== ■.■. 검색 영역 ================================================= -->
+  <bo-container>
     <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
-  </div>
-  <!-- ===== □. 검색 ====================================================== -->
-  <!-- ===== ■. 본문 영역 =================================================== -->
-  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:0 12px;align-items:flex-start;">
+  </bo-container>
+  <!-- ===== ■. 본문 영역 (트리 + 목록) ===================================== -->
+  <div class="bo-2col">
     <!-- ===== ■.■. 좌: 표시경로 트리 ============================================ -->
-    <bo-path-tree-card biz-cd="sy_bbm" title="표시경로" :show-biz-cd="false" :counts="bbmCounts"
-      :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
-    <!-- ===== ■.■. 우: 목록 + 상세 ============================================ -->
-    <div>
-      <!-- ===== ■.■.■. 목록 그리드 ============================================ -->
-      <bo-grid
+    <bo-container bare>
+      <bo-path-tree-card biz-cd="sy_bbm" title="표시경로" :show-biz-cd="false" :counts="bbmCounts"
+        :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
+    </bo-container>
+    <!-- ===== ■.■. 우: 목록 ================================================== -->
+    <bo-container title="게시판목록" :count-text="pager.pageTotalCount + '건'">
+      <template #toolbar-actions>
+        <button class="btn btn-green btn-sm" @click="handleBtnAction('bbms-excel')">
+          📥 엑셀
+        </button>
+        <button class="btn btn-primary btn-sm" @click="handleBtnAction('bbms-add')">
+          + 신규
+        </button>
+      </template>
+      <bo-grid bare
         :columns="columns.baseGrid" :rows="bbms" row-key="bbmId" :selected-key="detailModal.dtlId"
-        list-title="게시판목록" :count-text="pager.pageTotalCount + '건'"
         :row-style="fnRowStyle"
         grid-id="bbms-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
-        <template #toolbar-actions>
-          <div style="display:flex;gap:6px;">
-            <button class="btn btn-green btn-sm" @click="handleBtnAction('bbms-excel')">
-              📥 엑셀
-            </button>
-            <button class="btn btn-primary btn-sm" @click="handleBtnAction('bbms-add')">
-              + 신규
-            </button>
-          </div>
-        </template>
         <template #head-actions>
           <th style="text-align:right">
             관리
@@ -384,17 +376,13 @@ window.SyBbmMng = {
             </div>
           </td>
         </template>
-        <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 게시판목록 영역 안에 보이도록 -->
-        <template #footer>
-          <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('bbms-pager-setPage', n)" :on-size-change="() => handleSelectAction('bbms-pager-sizeChange')" />
-        </template>
       </bo-grid>
-    </div>
-    <!-- ===== □.□. 우: 목록 ================================================= -->
+      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('bbms-pager-setPage', n)" :on-size-change="() => handleSelectAction('bbms-pager-sizeChange')" />
+    </bo-container>
   </div>
   <!-- ===== □. 본문 영역 =================================================== -->
   <!-- ===== ■. 상세 인라인 패널 (전체 폭, 항상 표시) ============================ -->
-  <div>
+  <bo-container bare>
     <div v-if="detailModal.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기
@@ -405,8 +393,8 @@ window.SyBbmMng = {
       :active="detailModal.active"
       :reload-trigger="detailModal.reloadTrigger"
       :on-list-reload="handleSearchList" />
-  </div>
+  </bo-container>
   <!-- ===== □. 상세 인라인 패널 ============================================= -->
-</div>
+</bo-page>
 `,
 };

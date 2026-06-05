@@ -116,14 +116,8 @@ window.OdDlivHist = {
   },
   template: /* html */`
 <div>
-  <!-- ===== ■. 이력 화면 =================================================== -->
-  <div style="font-size:13px;font-weight:700;color:#555;padding:0 0 12px;">
-    <span style="color:#e8587a;font-size:8px;margin-right:5px;vertical-align:middle;">
-      ●
-    </span>
-    이력정보
-  </div>
-  <!-- ===== □. 이력 화면 =================================================== -->
+  <!-- ===== ■. 이력 영역 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
+  <bo-container title="이력정보">
   <!-- ===== ■. 탭 영역 ==================================================== -->
   <bo-tab-bar :tabs="tabs" :tab="botTab" :tab-mode="tabMode2" :show-modes="false"
     @tab-select="id => handleBtnAction('tab-change', id)" />
@@ -131,7 +125,7 @@ window.OdDlivHist = {
   <!-- ===== ■. 탭 컨텐츠 =================================================== -->
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
     <!-- ===== ■.■. 연관 주문 ================================================= -->
-    <div class="card" v-show="showTab('order')" style="margin:0;">
+    <div class="dtl-pane" v-show="showTab('order')">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
         🛒 연관 주문
         <span class="tab-count">
@@ -193,7 +187,7 @@ window.OdDlivHist = {
     </div>
     <!-- ===== □.□. 연관 주문 ================================================= -->
     <!-- ===== ■.■. 연관 클레임 ================================================ -->
-    <div class="card" v-show="showTab('claims')" style="margin:0;">
+    <div class="dtl-pane" v-show="showTab('claims')">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
         ↩ 연관 클레임
         <span class="tab-count">
@@ -210,9 +204,11 @@ window.OdDlivHist = {
         </template>
       </bo-grid>
     </div>
+    <!-- ===== □.□. 연관 클레임 ================================================ -->
   </div>
+  <!-- ===== □. 탭 컨텐츠 =================================================== -->
+  </bo-container>
+  <!-- ===== □. 이력 영역 ================================================== -->
 </div>
-<!-- ===== □.□. 연관 클레임 ================================================ -->
-<!-- ===== □. 탭 컨텐츠 =================================================== -->
 `,
 };

@@ -364,6 +364,7 @@ window.MyOrder = {
     };
   },
   template: /* html */ `
+<fo-page bare>
 <fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myOrder">
   <!-- ===== ■. 영역 ====================================================== -->
   <MyDateFilter @search="onSearch" @reset="handleBtnAction('orders-flowReset')" />
@@ -1229,6 +1230,7 @@ window.MyOrder = {
 <CustomerModal :show="myStore.customerModal.show" :user="myStore.customerModal.user" :order="myStore.customerModal.order" modal-name="customer" :on-callback="fnCallbackModal" />
 </teleport>
 </fo-my-layout>
+</fo-page>
 <!-- ===== □.□. 주문자 모달 ================================================ -->
 <!-- ===== □. Teleport 모달들 ============================================ -->
 `,

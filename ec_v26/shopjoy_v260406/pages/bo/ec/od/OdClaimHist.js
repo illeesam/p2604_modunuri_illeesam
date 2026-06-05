@@ -140,7 +140,7 @@ window.OdClaimHist = {
       { key: 'refundAmount',   label: '환불금액', type: 'number' },
       { key: 'refundMethodCd', label: '환불방법', type: 'select', options: () => codes.refund_methods },
       { type: 'rowBreak' },
-      { key: 'memo',           label: '처리 메모', type: 'textarea', rows: 4, colSpan: 2 },
+      { key: 'memo',           label: '처리 메모', type: 'textarea', rows: 4 },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */

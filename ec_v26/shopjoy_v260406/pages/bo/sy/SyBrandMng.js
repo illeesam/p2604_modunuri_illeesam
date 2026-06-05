@@ -329,54 +329,52 @@ window.SyBrandMng = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    브랜드관리
-  </div>
+<bo-page title="브랜드관리">
   <!-- ===== ■. 검색 ====================================================== -->
-  <div class="card">
+  <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
-  </div>
+  </bo-container>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 좌 트리 + 우 그리드 ============================================ -->
-  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:0 12px;align-items:flex-start;">
+  <div class="bo-2col">
     <!-- ===== ■.■. 경로 트리 ================================================= -->
     <bo-path-tree-card biz-cd="sy_brand" title="표시경로" :show-biz-cd="false" :counts="brandCounts"
       :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
     <!-- ===== ■.■. CRUD 그리드 ============================================== -->
-    <bo-grid-crud
-      :columns="columns.baseGrid" :rows="gridRows" row-key="brandId"
-      list-title="브랜드목록" :show-export="true"
-      v-model:focusedIdx="uiState.focusedIdx"
-      v-model:checkAll="uiState.checkAll"
-      :cell-title="fnColTitle"
-      @add="handleBtnAction('brands-add')" @save="handleBtnAction('brands-save')"
-      @delete-checked="handleBtnAction('brands-deleteChecked')" @cancel-checked="handleBtnAction('brands-cancelChecked')"
-      grid-id="brands-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" @export="handleBtnAction('brands-excel')">
-      <template #cell-logoUrl="{ row }">
-        <td>
-          <div style="display:flex;align-items:center;gap:4px;">
-            <input class="grid-input grid-mono" v-model="row.logoUrl"
-              :disabled="row._row_status==='D'" @input="handleGridCellAction('brands-cellChange', null, row)"
-              placeholder="/images/brand/logo.png" style="flex:1;" :title="fnColTitle({label:'로고 URL'})" />
-            <img v-if="row.logoUrl"
-              :src="row.logoUrl"
-              style="height:22px;max-width:44px;object-fit:contain;border-radius:3px;border:1px solid #e8e8e8;"
-              @error="$event.target.style.display='none'"
-              @load="$event.target.style.display=''" />
-          </div>
-        </td>
-      </template>
-      <template #row-actions="{ row, idx }">
-        <bo-row-cancel-delete :row="row" @cancel="handleSelectAction('brands-rowCancel', idx)" @delete="handleSelectAction('brands-rowDelete', idx)" />
-      </template>
-    </bo-grid-crud>
+    <bo-container bare>
+      <bo-grid-crud
+        :columns="columns.baseGrid" :rows="gridRows" row-key="brandId"
+        list-title="브랜드목록" :show-export="true"
+        v-model:focusedIdx="uiState.focusedIdx"
+        v-model:checkAll="uiState.checkAll"
+        :cell-title="fnColTitle"
+        @add="handleBtnAction('brands-add')" @save="handleBtnAction('brands-save')"
+        @delete-checked="handleBtnAction('brands-deleteChecked')" @cancel-checked="handleBtnAction('brands-cancelChecked')"
+        grid-id="brands-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" @export="handleBtnAction('brands-excel')">
+        <template #cell-logoUrl="{ row }">
+          <td>
+            <div style="display:flex;align-items:center;gap:4px;">
+              <input class="grid-input grid-mono" v-model="row.logoUrl"
+                :disabled="row._row_status==='D'" @input="handleGridCellAction('brands-cellChange', null, row)"
+                placeholder="/images/brand/logo.png" style="flex:1;" :title="fnColTitle({label:'로고 URL'})" />
+              <img v-if="row.logoUrl"
+                :src="row.logoUrl"
+                style="height:22px;max-width:44px;object-fit:contain;border-radius:3px;border:1px solid #e8e8e8;"
+                @error="$event.target.style.display='none'"
+                @load="$event.target.style.display=''" />
+            </div>
+          </td>
+        </template>
+        <template #row-actions="{ row, idx }">
+          <bo-row-cancel-delete :row="row" @cancel="handleSelectAction('brands-rowCancel', idx)" @delete="handleSelectAction('brands-rowDelete', idx)" />
+        </template>
+      </bo-grid-crud>
+    </bo-container>
   </div>
   <!-- ===== □.□. CRUD 그리드 ============================================== -->
   <!-- ===== □. 좌 트리 + 우 그리드 ============================================ -->
-</div>
+</bo-page>
 `,
 };
 

@@ -896,7 +896,13 @@ window.Prod02View = {
   },
 
   template: /* html */ `
-<div class="page-wrap" style="padding-bottom:72px;">
+<fo-page wrap-class="page-wrap" title="상품 상세" eyebrow="Prod"
+  banner-img="assets/cdn/prod/img/page-title/page-title-2.jpg"
+  banner-align="center 40%"
+  :crumbs="[{ label:'홈', page:'home' }, { label:'상품목록', page:'prodList' }, { label:'상품 상세' }]"
+  @nav="p => p === 'home' ? handleBtnAction('page-goHome') : handleBtnAction('page-goProdList')">
+  <!-- ===== ■. 배너(리본+타이틀) 슬롯 — Site 02 리본을 배너 위에 유지 ============= -->
+  <template #banner>
   <!-- ===== ■. Site 02 Edition Ribbon ================================== -->
   <div style="background:linear-gradient(135deg,#2e7d6b 0%,#4a9b7e 50%,#5b9279 100%);color:#fff;padding:10px 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:12px;">
     <span style="letter-spacing:2.5px;padding:2px 8px;border:1px solid rgba(255,255,255,0.4);">
@@ -943,6 +949,7 @@ window.Prod02View = {
     </div>
   </div>
   <!-- ===== □. 페이지 타이틀 배너 ============================================== -->
+  </template>
   <!-- ===== ■. 조건부 영역 ================================================== -->
   <template v-if="prod">
     <!-- ===== ■.■. ══ 상단: 갤러리 + 구매 옵션 ══ ================================= -->
@@ -1019,7 +1026,7 @@ window.Prod02View = {
         <!-- ===== /gallery =================================================== -->
         <!-- ===== ■.■.■.■. 우: 구매 옵션 ========================================== -->
         <div>
-          <div class="card" style="padding:clamp(16px,3vw,28px);position:sticky;top:20px;">
+          <fo-container card-style="padding:clamp(16px,3vw,28px);position:sticky;top:20px;">
             <!-- ===== ■.■.■.■.■.■. 상품명 + 카테고리 ==================================== -->
             <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:4px;flex-wrap:wrap;">
               <h1 style="font-size:1.25rem;font-weight:800;color:var(--text-primary);flex:1;min-width:0;line-height:1.3;">
@@ -1229,7 +1236,7 @@ window.Prod02View = {
     </span>
   </div>
 </div>
-</div>
+</fo-container>
 </div>
 <!-- ===== /purchase ================================================== -->
 </div>
@@ -1285,7 +1292,7 @@ window.Prod02View = {
     <div style="font-size:1rem;font-weight:800;color:var(--text-primary);margin-bottom:20px;padding-bottom:12px;border-bottom:1.5px solid var(--border);">
       상세정보
     </div>
-    <div class="card" style="padding:clamp(16px,3vw,28px);margin-bottom:14px;">
+    <fo-container card-style="padding:clamp(16px,3vw,28px);margin-bottom:14px;">
       <h2 style="font-size:0.95rem;font-weight:700;margin-bottom:14px;color:var(--text-primary);">
         📋 상품 설명
       </h2>
@@ -1298,9 +1305,9 @@ window.Prod02View = {
           # {{ t }}
         </span>
       </div>
-    </div>
+    </fo-container>
     <!-- ===== ■.■.■.■. BO 등록 상품설명 블록 ===================================== -->
-    <div v-if="svContents.length" class="card" style="padding:clamp(16px,3vw,28px);margin-bottom:14px;">
+    <fo-container v-if="svContents.length" card-style="padding:clamp(16px,3vw,28px);margin-bottom:14px;">
       <h2 style="font-size:0.95rem;font-weight:700;margin-bottom:14px;color:var(--text-primary);">
         📝 상세 설명
       </h2>
@@ -1326,8 +1333,8 @@ window.Prod02View = {
           </div>
         </div>
       </div>
-    </div>
-    <div class="card" style="padding:28px;">
+    </fo-container>
+    <fo-container card-style="padding:28px;">
       <h2 style="font-size:0.95rem;font-weight:700;margin-bottom:14px;color:var(--text-primary);">
         🧺 세탁 및 관리
       </h2>
@@ -1351,14 +1358,14 @@ window.Prod02View = {
           </div>
         </div>
       </div>
-    </div>
+    </fo-container>
   </div>
   <!-- ===== ■.■.■. 사이즈 ================================================= -->
   <div ref="sizeSecRef" style="padding-top:40px;">
     <div style="font-size:1rem;font-weight:800;color:var(--text-primary);margin-bottom:20px;padding-bottom:12px;border-bottom:1.5px solid var(--border);">
       사이즈
     </div>
-    <div class="card" style="padding:28px;">
+    <fo-container card-style="padding:28px;">
       <div style="font-size:0.9rem;font-weight:700;color:var(--text-primary);margin-bottom:16px;">
         📏 사이즈 가이드
       </div>
@@ -1368,7 +1375,7 @@ window.Prod02View = {
       <p style="margin-top:12px;font-size:0.75rem;color:var(--text-muted);">
         * 측정 방법에 따라 1~2cm 오차가 있을 수 있습니다.
       </p>
-    </div>
+    </fo-container>
   </div>
   <!-- ===== ■.■.■. 상품평 ================================================= -->
   <div ref="reviewSecRef" style="padding-top:40px;">
@@ -1381,7 +1388,7 @@ window.Prod02View = {
       </span>
     </div>
     <!-- ===== ■.■.■.■. 평점 요약 ============================================= -->
-    <div class="card" style="padding:24px;margin-bottom:14px;display:flex;gap:32px;align-items:center;flex-wrap:wrap;">
+    <fo-container card-style="padding:24px;margin-bottom:14px;display:flex;gap:32px;align-items:center;flex-wrap:wrap;">
       <div style="text-align:center;flex-shrink:0;min-width:90px;">
         <div style="font-size:3.2rem;font-weight:900;color:var(--text-primary);line-height:1;">
           {{ cfAvgRating }}
@@ -1409,9 +1416,9 @@ window.Prod02View = {
           </span>
         </div>
       </div>
-    </div>
+    </fo-container>
     <!-- ===== ■.■.■.■. 포토 리뷰 목록 ========================================== -->
-    <div v-if="cfReviewsWithPhoto.length" class="card" style="padding:20px;margin-bottom:14px;">
+    <fo-container v-if="cfReviewsWithPhoto.length" card-style="padding:20px;margin-bottom:14px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
         <span style="font-size:0.88rem;font-weight:700;color:var(--text-primary);">
           포토&동영상 상품평
@@ -1433,7 +1440,7 @@ window.Prod02View = {
           <img :src="r.photoImg" style="width:100%;height:100%;object-fit:cover;" />
         </div>
       </div>
-    </div>
+    </fo-container>
     <!-- ===== ■.■.■.■. 정렬 ================================================ -->
     <div style="display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap;">
       <button v-for="f in ['최신순','별점높은순','별점낮은순','도움순']" :key="f"
@@ -1496,12 +1503,12 @@ window.Prod02View = {
         ({{ svQnas.length }})
       </span>
     </div>
-    <div v-if="!svQnas.length" class="card" style="padding:40px;text-align:center;color:var(--text-muted);">
+    <fo-container v-if="!svQnas.length" card-style="padding:40px;text-align:center;color:var(--text-muted);">
       등록된 Q&A가 없습니다.
-    </div>
+    </fo-container>
     <div v-else style="display:flex;flex-direction:column;gap:12px;">
-      <div v-for="q in svQnas" :key="q.qnaId"
-            class="card" style="padding:20px;">
+      <fo-container v-for="q in svQnas" :key="q.qnaId"
+            card-style="padding:20px;">
         <div style="display:flex;align-items:flex-start;gap:12px;">
           <div style="min-width:32px;height:32px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;color:#fff;flex-shrink:0;">
             Q
@@ -1533,7 +1540,7 @@ window.Prod02View = {
           </div>
         </div>
       </div>
-    </div>
+    </fo-container>
   </div>
 </div>
 <!-- ===== ■.■.■. 스타일 ================================================= -->
@@ -1541,7 +1548,7 @@ window.Prod02View = {
   <div style="font-size:1rem;font-weight:800;color:var(--text-primary);margin-bottom:20px;padding-bottom:12px;border-bottom:1.5px solid var(--border);">
     스타일
   </div>
-  <div class="card" style="padding:28px;">
+  <fo-container card-style="padding:28px;">
     <div style="font-size:0.9rem;font-weight:700;color:var(--text-primary);margin-bottom:16px;">
       🎨 이런 코디 어때요?
     </div>
@@ -1559,7 +1566,7 @@ window.Prod02View = {
         </div>
       </div>
     </div>
-  </div>
+  </fo-container>
 </div>
 </div>
 <!-- ===== /page-wrap sections ======================================== -->
@@ -1915,7 +1922,7 @@ window.Prod02View = {
 </div>
 </div>
 </template>
-</div>
+</fo-page>
 <!-- ===== □.□. 드로어 패널 ================================================ -->
 <!-- ===== □. ══ 바로구매 드로어 (우측) ══ ===================================== -->
 `,

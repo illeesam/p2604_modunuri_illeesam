@@ -244,32 +244,30 @@ window.MbMemGroupMng = {
     };
   },
   template: `
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    회원그룹관리
-  </div>
+<bo-page title="회원그룹관리">
   <!-- ===== ■. 검색 ======================================================== -->
-  <div class="card">
+  <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
-  </div>
+  </bo-container>
   <!-- ===== □. 검색 ======================================================== -->
   <!-- ===== ■. CRUD 그리드 ================================================ -->
-  <bo-grid-crud
-    :columns="columns.baseGrid" :rows="groups" row-key="memberGroupId"
-    list-title="회원그룹 목록"
-    :empty-text="uiState.loading ? '로딩중...' : '데이터가 없습니다.'"
-    v-model:focusedIdx="uiState.focusedIdx"
-    v-model:checkAll="uiState.checkAll"
-    @add="handleBtnAction('groups-add')" @save="handleBtnAction('groups-save')"
-    @delete-checked="handleBtnAction('groups-deleteChecked')" @cancel-checked="handleBtnAction('groups-cancelChecked')"
-    grid-id="groups-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
-    <template #row-actions="{ row, idx }">
-      <bo-row-cancel-delete :row="row" @cancel="handleSelectAction('groups-rowCancel', idx)" @delete="handleSelectAction('groups-rowDelete', idx)" />
-    </template>
-  </bo-grid-crud>
+  <bo-container bare>
+    <bo-grid-crud
+      :columns="columns.baseGrid" :rows="groups" row-key="memberGroupId"
+      list-title="회원그룹 목록"
+      :empty-text="uiState.loading ? '로딩중...' : '데이터가 없습니다.'"
+      v-model:focusedIdx="uiState.focusedIdx"
+      v-model:checkAll="uiState.checkAll"
+      @add="handleBtnAction('groups-add')" @save="handleBtnAction('groups-save')"
+      @delete-checked="handleBtnAction('groups-deleteChecked')" @cancel-checked="handleBtnAction('groups-cancelChecked')"
+      grid-id="groups-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+      <template #row-actions="{ row, idx }">
+        <bo-row-cancel-delete :row="row" @cancel="handleSelectAction('groups-rowCancel', idx)" @delete="handleSelectAction('groups-rowDelete', idx)" />
+      </template>
+    </bo-grid-crud>
+  </bo-container>
   <!-- ===== □. CRUD 그리드 ================================================ -->
-</div>
+</bo-page>
 `,
 };

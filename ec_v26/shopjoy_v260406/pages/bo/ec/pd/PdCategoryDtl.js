@@ -175,26 +175,23 @@ window.PdCategoryDtl = {
   },
   template: /* html */`
 <div>
-  <!-- ===== ■. 상세 카드 (제목/폼 모두 카드 안에) ============================= -->
-  <div class="card">
-    <!-- ===== ■.■. 카드 헤더 (제목 = list-title, 페이지 타이틀 아님 → 폰트 축소) ========= -->
-    <div class="toolbar">
-      <span class="list-title">
-        {{ cfIsNew ? '카테고리 등록' : '카테고리 수정' }}
-        <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
-          #{{ form.categoryId }}
-        </span>
+  <!-- ===== ■. 상세 영역 (제목/폼 모두 컨테이너 안에) ======================== -->
+  <bo-container>
+    <!-- ===== ■.■. 영역 헤더 (제목 = list-title, 페이지 타이틀 아님 → 폰트 축소) ========= -->
+    <template #title>
+      {{ cfIsNew ? '카테고리 등록' : '카테고리 수정' }}
+      <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+        #{{ form.categoryId }}
       </span>
-    </div>
-    <!-- ===== ■.■. 폼 영역 ================================================== -->
+    </template>
+    <!-- ===== ■.■. 폼 영역 (BoFormArea 자동 렌더) ========================== -->
     <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="3" compact
       @save="handleBtnAction('form-save')"
       @cancel="handleBtnAction('form-cancel')"
       @edit="handleBtnAction('form-edit')"
       @close="handleBtnAction('form-close')" />
-  </div>
-  <!-- ===== □. 폼 영역 (BoFormArea 자동 렌더) ================================= -->
+  </bo-container>
 </div>
 `
 };

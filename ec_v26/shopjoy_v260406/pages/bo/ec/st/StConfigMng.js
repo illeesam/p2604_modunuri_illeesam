@@ -10,7 +10,7 @@ window.StConfigMng = {
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
-    const uiState = reactive({ descOpen: false, isNew: false, error: null, loading: false, selectedId: null });
+    const uiState = reactive({ isNew: false, error: null, loading: false, selectedId: null });
     const configs = reactive([]);
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
@@ -23,9 +23,6 @@ window.StConfigMng = {
         return handleSave();
       } else if (cmd === 'form-cancel') {
         return closeForm();
-      } else if (cmd === 'desc-toggle') {
-        uiState.descOpen = !uiState.descOpen;
-        return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -235,35 +232,20 @@ window.StConfigMng = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    정산기준관리
-  </div>
-  <!-- ===== ■. 영역 ====================================================== -->
-  <div class="page-desc-bar">
-    <span class="page-desc-summary">
-      사이트·업체 유형별 정산 수수료율, 지급 주기, 최소 정산금액 등 정산 기준을 설정합니다.
-    </span>
-    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">
-      {{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}
-    </button>
-    <div v-if="uiState.descOpen" class="page-desc-detail">
-      • 정산 주기: 월정산 / 주정산 / 건별정산 • 수수료율(%)은 매출 기준으로 적용되며, 클레임 환불 시 차감됩니다. • 자동마감(autoCloseYn=Y) 설정 시 지급일에 자동으로 정산이 마감됩니다. • 설정 변경은 변경 이후 수집분부터 적용됩니다.
-    </div>
-  </div>
-  <!-- ===== □. 영역 ====================================================== -->
-  <!-- ===== ■. 목록 (bo-grid 단일 카드 — 제목/건수/버튼 모두 그리드가 렌더, 중복 제거) ===== -->
-    <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-grid
+<bo-page title="정산기준관리"
+  desc-summary="사이트·업체 유형별 정산 수수료율, 지급 주기, 최소 정산금액 등 정산 기준을 설정합니다."
+  desc-detail="• 정산 주기: 월정산 / 주정산 / 건별정산&#10;• 수수료율(%)은 매출 기준으로 적용되며, 클레임 환불 시 차감됩니다.&#10;• 자동마감(autoCloseYn=Y) 설정 시 지급일에 자동으로 정산이 마감됩니다.&#10;• 설정 변경은 변경 이후 수집분부터 적용됩니다.">
+  <!-- ===== ■. 목록 영역 ================================================= -->
+  <bo-container title="정산기준 목록" :count-text="'총 ' + configs.length + '건'">
+    <template #toolbar-actions>
+      <button class="btn btn-primary btn-sm" @click="handleBtnAction('configs-add')">
+        + 기준 추가
+      </button>
+    </template>
+    <bo-grid bare
       :columns="columns.baseGrid" :rows="configs" row-key="settleConfigId" :selected-key="uiState.selectedId"
-      list-title="정산기준 목록" :count-text="'총 ' + configs.length + '건'" :row-actions="true"
+      :row-actions="true"
       :row-class="(c) => uiState.selectedId===c.settleConfigId ? 'selected' : ''">
-      <template #toolbar-actions>
-        <button class="btn btn-primary btn-sm" @click="handleBtnAction('configs-add')">
-          + 기준 추가
-        </button>
-      </template>
       <template #head-actions>
         <th style="text-align:right">액션</th>
       </template>
@@ -278,21 +260,18 @@ window.StConfigMng = {
         </div>
       </template>
     </bo-grid>
-  <!-- ===== □.□. 목록 영역 ================================================= -->
-  <!-- ===== □. 카드 영역 =================================================== -->
-  <!-- ===== ■. 편집 폼 (BoFormArea 자동 렌더) ================================= -->
+  </bo-container>
   <!-- ===== ■. 상세 패널 =================================================== -->
-  <div v-if="uiState.selectedId" class="card" style="margin-top:12px">
-    <div class="card-title" style="font-weight:700;margin-bottom:16px">
-      {{ uiState.isNew ? '정산기준 추가' : '정산기준 수정' }}
+  <bo-container bare v-if="uiState.selectedId">
+    <div class="card" style="margin-top:12px">
+      <div class="card-title" style="font-weight:700;margin-bottom:16px">
+        {{ uiState.isNew ? '정산기준 추가' : '정산기준 수정' }}
+      </div>
+      <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
+        :cols="3"
+        @save="handleBtnAction('form-save')" @cancel="handleBtnAction('form-cancel')" />
     </div>
-    <!-- ===== ■.■. 폼 영역 ================================================== -->
-    <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
-      :cols="3"
-      @save="handleBtnAction('form-save')" @cancel="handleBtnAction('form-cancel')" />
-  </div>
-</div>
-<!-- ===== □.□. 폼 영역 ================================================== -->
-<!-- ===== □. 상세 패널 =================================================== -->
+  </bo-container>
+</bo-page>
 `,
 };

@@ -250,19 +250,17 @@ window.SyUserDtl = {
   template: /* html */`
 <div>
   <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card">
+  <bo-container>
     <!-- ===== ■.■. 카드 헤더 (제목 = list-title, 페이지 타이틀 아님 → 폰트 축소) ========= -->
-    <div class="toolbar">
-      <span class="list-title">
-        {{ !active ? '사용자 상세' : (cfIsNew ? '사용자 등록' : (cfDtlMode ? '사용자 상세' : '사용자 수정')) }}
-        <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
-          #{{ form.userId }}
-        </span>
-        <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-          목록에서 행을 선택하거나 [+신규]를 누르세요
-        </span>
+    <template #title>
+      {{ !active ? '사용자 상세' : (cfIsNew ? '사용자 등록' : (cfDtlMode ? '사용자 상세' : '사용자 수정')) }}
+      <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+        #{{ form.userId }}
       </span>
-    </div>
+      <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+        목록에서 행을 선택하거나 [+신규]를 누르세요
+      </span>
+    </template>
     <!-- ===== ■.■. 기본정보 폼 ============================================== -->
     <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
@@ -272,7 +270,7 @@ window.SyUserDtl = {
           {{ form.deptNm || '-' }}
         </div>
         <div v-else style="display:flex;gap:8px;align-items:center;">
-          <div class="form-control" style="flex:1;cursor:pointer;background:#fafafa;display:flex;align-items:center;min-height:28px;padding:4px 10px;font-size:13px;"
+          <div class="form-control" style="flex:1;background:#fafafa;display:flex;align-items:center;min-height:28px;padding:4px 10px;font-size:13px;"
             @click="handleBtnAction('deptModal-open')">
             <span v-if="form.deptNm" style="color:#1a1a2e;">
               {{ form.deptNm }}
@@ -332,23 +330,15 @@ window.SyUserDtl = {
       </template>
     </div>
     <!-- ===== □.□. 폼 액션 ================================================== -->
-  </div>
+  </bo-container>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 적용 역할 목록 ================================================ -->
-  <div v-if="!cfIsNew" class="card">
-    <div class="toolbar" style="margin-bottom:12px;">
-      <span class="list-title">
-        적용 역할 목록
-        <span class="list-count">
-          {{ cfUserRoles.length }}건
-        </span>
-      </span>
-    </div>
+  <bo-container v-if="!cfIsNew" title="적용 역할 목록" :count-text="cfUserRoles.length + '건'">
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid bare :columns="columns.userRoleGrid" :rows="cfUserRoles" row-key="roleId"
       empty-text="배정된 역할이 없습니다." />
     <!-- ===== □.□. 목록 영역 ================================================= -->
-  </div>
+  </bo-container>
   <!-- ===== □. 적용 역할 목록 ================================================ -->
   <!-- ===== ■. 부서 선택 팝업 ================================================ -->
   <dept-tree-modal v-if="deptModal && deptModal.show" :exclude-id="null" modal-name="dept-pick" :on-callback="fnCallbackModal" />

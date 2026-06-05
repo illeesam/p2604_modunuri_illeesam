@@ -65,6 +65,9 @@ window.DpDispWidgetLibMng = {
       // 그리드 행 삭제
       } else if (cmd === 'widgetLibs-rowDelete') {
         return handleDelete(param);
+      // 행 수정 버튼 → 상세 편집 모드
+      } else if (cmd === 'widgetLibs-rowEdit') {
+        return handleLoadDetail(param);
       // 좌측 표시경로 트리 노드 선택
       } else if (cmd === 'pathTree-select') {
         return selectNode(param);
@@ -326,120 +329,103 @@ window.DpDispWidgetLibMng = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 영역 ====================================================== -->
+<bo-page title="위젯라이브러리관리">
   <style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}</style>
-    <!-- ===== ■. 페이지 타이틀 ================================================= -->
-    <div class="page-title">
-      위젯라이브러리관리
-    </div>
-    <!-- ===== ■. 카드 영역 =================================================== -->
-    <div class="card">
-      <!-- ===== ■.■. 검색 영역 ================================================= -->
-      <bo-search-area :loading="uiState.loading" :show-actions="false"
-      :columns="columns.baseSearch" :param="searchParam"
-      @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')">
-        <div class="search-actions" style="display:flex;align-items:center;gap:6px;">
-          <span v-if="cfFilterDirty" style="font-size:11px;color:#e8587a;font-weight:600;animation:pulse 1.2s ease-in-out infinite;">
-            변경됨 →
-          </span>
-          <button class="btn btn-primary btn-sm" @click="handleBtnAction('searchParam-list')"
-          :style="cfFilterDirty ? 'box-shadow:0 0 0 3px rgba(232,88,122,0.35);animation:pulse 1.2s ease-in-out infinite;' : ''">
-            조회
-          </button>
-          <button class="btn btn-secondary btn-sm" @click="handleBtnAction('searchParam-reset')">
-            초기화
-          </button>
-        </div>
-      </bo-search-area>
-    </div>
-    <!-- ===== □.□. 검색 영역 ================================================= -->
-    <!-- ===== □. 카드 영역 =================================================== -->
-    <!-- ===== ■. 본문 영역 =================================================== -->
-    <div style="display:grid;grid-template-columns:minmax(180px,22fr) 78fr;gap:16px;align-items:flex-start;">
-      <div class="card" style="padding:12px;min-width:180px;">
-        <div class="toolbar" style="margin-bottom:6px;">
-          <span class="list-title" style="font-size:13px;">
-            📂 표시경로
-            <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">
-              #ec_disp_widget_lib
-            </span>
-          </span>
-          <span v-if="uiState.selectedPath != null" @click="handleBtnAction('pathTree-all')" style="font-size:11px;color:#1677ff;cursor:pointer;">
-            전체보기
-          </span>
-        </div>
-        <div style="max-height:65vh;overflow:auto;">
-          <bo-path-tree biz-cd="ec_disp_widget_lib" :counts="widgetLibCounts" :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
-        </div>
-      </div>
-      <div>
-        <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-        <bo-grid :columns="columns.listGrid" :rows="widgetLibs" row-key="widgetLibId" :selected-key="detailPanel.selectedId" :pager="pager"
-        :sort-state="uiState" list-title="위젯라이브러리"
-        :count-text="pager.pageTotalCount + '건'"
-        empty-text="데이터가 없습니다." row-clickable
-        @sort="key => handleBtnAction('widgetLibs-sort', key)"
-        grid-id="widgetLibs-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
-          <template #toolbar-actions>
-            <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">
-              #{{ uiState.selectedPath }}
-            </span>
-            <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;font-size:11px;">
-              <span v-if="cfNoFilter" style="color:#999;">
-                필터 없음
-              </span>
-              <span v-if="applied.searchValue" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;border-radius:10px;padding:1px 8px;">
-                검색: {{ applied.searchValue }}
-              </span>
-              <span v-if="applied.type" style="background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:10px;padding:1px 8px;">
-                유형: {{ wTypeLabel(applied.type) }}
-              </span>
-              <span v-if="applied.status" style="background:#dcfce7;color:#166534;border:1px solid #bbf7d0;border-radius:10px;padding:1px 8px;">
-                상태: {{ applied.status === 'Y' ? '활성' : '비활성' }}
-              </span>
-            </div>
-            <button class="btn btn-primary btn-sm" @click="handleBtnAction('widgetLibs-add')">
-              + 신규
-            </button>
-          </template>
-          <template #row-actions="{ row }">
-            <div class="actions">
-              <button class="btn btn-blue btn-xs" @click.stop="handleSelectAction('widgetLibs-rowEdit', row.widgetLibId)">
-                수정
-              </button>
-              <button class="btn btn-danger btn-xs" @click.stop="handleSelectAction('widgetLibs-rowDelete', row)">
-                삭제
-              </button>
-            </div>
-          </template>
-          <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
-          <template #footer>
-            <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('widgetLibs-pager-setPage', n)" :on-size-change="() => handleSelectAction('widgetLibs-pager-sizeChange')" />
-          </template>
-        </bo-grid>
-      </div>
-    </div>
-    <!-- ===== □. 본문 영역 =================================================== -->
-    <!-- ===== ■. 상세 패널 (인라인 임베드 — 항상 표시) ========================================= -->
-    <div>
-      <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-        <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
-          ✕ 닫기
+  <!-- ===== ■. 검색 영역 =================================================== -->
+  <bo-container>
+    <bo-search-area :loading="uiState.loading" :show-actions="false"
+    :columns="columns.baseSearch" :param="searchParam"
+    @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')">
+      <div class="search-actions" style="display:flex;align-items:center;gap:6px;">
+        <span v-if="cfFilterDirty" style="font-size:11px;color:#e8587a;font-weight:600;animation:pulse 1.2s ease-in-out infinite;">
+          변경됨 →
+        </span>
+        <button class="btn btn-primary btn-sm" @click="handleBtnAction('searchParam-list')"
+        :style="cfFilterDirty ? 'box-shadow:0 0 0 3px rgba(232,88,122,0.35);animation:pulse 1.2s ease-in-out infinite;' : ''">
+          조회
+        </button>
+        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('searchParam-reset')">
+          초기화
         </button>
       </div>
-      <dp-disp-widget-lib-dtl
-      :key="cfDetailKey"
-      :navigate="inlineNavigate" :show-ref-modal="showRefModal"
-      :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes"
-      :dtl-id="cfDetailEditId"
-      :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-      :active="detailPanel.active"
-      :reload-trigger="detailPanel.reloadTrigger"
-      :on-list-reload="handleSearchList"
-      />
-    </div>
+    </bo-search-area>
+  </bo-container>
+  <!-- ===== ■. 본문 영역 (트리 + 목록) ===================================== -->
+  <div class="bo-2col">
+    <bo-container title="📂 표시경로">
+      <template #toolbar-actions>
+        <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">
+          #ec_disp_widget_lib
+        </span>
+        <span v-if="uiState.selectedPath != null" @click="handleBtnAction('pathTree-all')" style="font-size:11px;color:#1677ff;">
+          전체보기
+        </span>
+      </template>
+      <div style="max-height:65vh;overflow:auto;">
+        <bo-path-tree biz-cd="ec_disp_widget_lib" :counts="widgetLibCounts" :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
+      </div>
+    </bo-container>
+    <bo-container title="위젯라이브러리" :count-text="pager.pageTotalCount + '건'">
+      <template #toolbar-actions>
+        <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">
+          #{{ uiState.selectedPath }}
+        </span>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;font-size:11px;">
+          <span v-if="cfNoFilter" style="color:#999;">
+            필터 없음
+          </span>
+          <span v-if="applied.searchValue" style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;border-radius:10px;padding:1px 8px;">
+            검색: {{ applied.searchValue }}
+          </span>
+          <span v-if="applied.type" style="background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:10px;padding:1px 8px;">
+            유형: {{ wTypeLabel(applied.type) }}
+          </span>
+          <span v-if="applied.status" style="background:#dcfce7;color:#166534;border:1px solid #bbf7d0;border-radius:10px;padding:1px 8px;">
+            상태: {{ applied.status === 'Y' ? '활성' : '비활성' }}
+          </span>
+        </div>
+        <button class="btn btn-primary btn-sm" @click="handleBtnAction('widgetLibs-add')">
+          + 신규
+        </button>
+      </template>
+      <!-- ===== ■.■. 목록 영역 ================================================ -->
+      <bo-grid bare :columns="columns.listGrid" :rows="widgetLibs" row-key="widgetLibId" :selected-key="detailPanel.selectedId" :pager="pager"
+      :sort-state="uiState"
+      empty-text="데이터가 없습니다."
+      @sort="key => handleBtnAction('widgetLibs-sort', key)"
+      grid-id="widgetLibs-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
+        <template #row-actions="{ row }">
+          <div class="actions">
+            <button class="btn btn-blue btn-xs" @click.stop="handleSelectAction('widgetLibs-rowEdit', row.widgetLibId)">
+              수정
+            </button>
+            <button class="btn btn-danger btn-xs" @click.stop="handleSelectAction('widgetLibs-rowDelete', row)">
+              삭제
+            </button>
+          </div>
+        </template>
+      </bo-grid>
+      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('widgetLibs-pager-setPage', n)" :on-size-change="() => handleSelectAction('widgetLibs-pager-sizeChange')" />
+    </bo-container>
   </div>
-  <!-- ===== □. 상세 패널 (인라인 임베드) ========================================= -->
+  <!-- ===== ■. 상세 패널 (인라인 임베드 — 항상 표시, 전체 폭) ============== -->
+  <bo-container bare>
+    <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
+      <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+        ✕ 닫기
+      </button>
+    </div>
+    <dp-disp-widget-lib-dtl
+    :key="cfDetailKey"
+    :navigate="inlineNavigate" :show-ref-modal="showRefModal"
+    :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes"
+    :dtl-id="cfDetailEditId"
+    :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+    :active="detailPanel.active"
+    :reload-trigger="detailPanel.reloadTrigger"
+    :on-list-reload="handleSearchList"
+    />
+  </bo-container>
+</bo-page>
 `
 };

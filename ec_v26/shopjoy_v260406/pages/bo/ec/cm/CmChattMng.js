@@ -307,25 +307,15 @@ window.CmChattMng = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    채팅관리
-  </div>
+<bo-page title="채팅관리">
   <!-- ===== ■. 검색 ======================================================== -->
-  <div class="card">
+  <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
-  </div>
+  </bo-container>
   <!-- ===== □. 검색 ======================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
-  <bo-grid :columns="columns.baseGrid" :rows="chatts" row-key="chattRoomId" :selected-key="detailPanel.selectedId"
-    :sort-state="uiState" list-title="채팅목록"
-    :count-text="'총 ' + pager.pageTotalCount + '건'"
-    :row-class="fnGridRowClass" empty-text="데이터가 없습니다." row-clickable
-    @sort="key => handleBtnAction('chatts-sort', key)"
-    @ref-click="ref => handleSelectAction('chatts-rowRef', ref)"
-    grid-id="chatts-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
+  <bo-container title="채팅목록" :count-text="'총 ' + pager.pageTotalCount + '건'">
     <template #toolbar-actions>
       <button class="btn btn-green btn-sm" @click="handleBtnAction('chatts-excel')">
         📥 엑셀
@@ -334,24 +324,28 @@ window.CmChattMng = {
         + 신규
       </button>
     </template>
-    <template #row-actions="{ row, gridId }">
-      <div class="actions">
-        <button class="btn btn-blue btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
-          수정
-        </button>
-        <button class="btn btn-danger btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">
-          삭제
-        </button>
-      </div>
-    </template>
-    <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
-    <template #footer>
-      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('chatts-pager-setPage', n)" :on-size-change="() => handleSelectAction('chatts-pager-sizeChange')" />
-    </template>
-  </bo-grid>
+    <bo-grid bare :columns="columns.baseGrid" :rows="chatts" row-key="chattRoomId" :selected-key="detailPanel.selectedId"
+      :sort-state="uiState"
+      :row-class="fnGridRowClass" empty-text="데이터가 없습니다."
+      @sort="key => handleBtnAction('chatts-sort', key)"
+      @ref-click="ref => handleSelectAction('chatts-rowRef', ref)"
+      grid-id="chatts-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
+      <template #row-actions="{ row, gridId }">
+        <div class="actions">
+          <button class="btn btn-blue btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
+            수정
+          </button>
+          <button class="btn btn-danger btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">
+            삭제
+          </button>
+        </div>
+      </template>
+    </bo-grid>
+    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('chatts-pager-setPage', n)" :on-size-change="() => handleSelectAction('chatts-pager-sizeChange')" />
+  </bo-container>
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 하단 상세: ChattDtl 임베드 (항상 표시) ============================ -->
-  <div>
+  <bo-container bare>
     <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기
@@ -369,8 +363,8 @@ window.CmChattMng = {
       :reload-trigger="detailPanel.reloadTrigger"
       :on-list-reload="handleSearchList"
       />
-  </div>
+  </bo-container>
   <!-- ===== □. 하단 상세: ChattDtl 임베드 ===================================== -->
-</div>
+</bo-page>
 `,
 };

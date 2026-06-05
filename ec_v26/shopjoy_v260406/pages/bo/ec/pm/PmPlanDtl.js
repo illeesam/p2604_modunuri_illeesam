@@ -282,6 +282,9 @@ window.PmPlanDtl = {
     /* selectVendor — 선택 */
     const selectVendor = (vendorId, vendorNm) => {
       form.vendorId = vendorId;
+      // 판매업체 선택 시 판매담당자(대표자명) 자동 적용
+      const v = vendors.find(x => x.vendorId === vendorId);
+      if (v) { form.chargeStaff = v.chargeStaff || v.ceoNm || v.vendorNm || ''; }
       uiState.showVendorModal = false;
     };
 
@@ -369,7 +372,7 @@ window.PmPlanDtl = {
       { key: '_visibility', label: '공개대상', type: 'slot', name: 'visibility' },
       { key: 'startDate', label: '시작일', type: 'date' },
       { key: 'endDate',   label: '종료일', type: 'date' },
-      { key: 'desc',      label: '간단설명', type: 'textarea', rows: 3, placeholder: '기획전 설명', colSpan: 2 },
+      { key: 'desc',      label: '간단설명', type: 'textarea', rows: 3, placeholder: '기획전 설명' },
     ];
 
     // 판매업체/판매담당자
@@ -391,19 +394,17 @@ window.PmPlanDtl = {
   template: /* html */`
 <div>
   <!-- ===== ■. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
-  <div class="card">
+  <bo-container>
     <!-- ===== ■.■. 카드 헤더 (제목 = list-title, page-title 아님 → 폰트 축소) ========= -->
-    <div class="toolbar">
-      <span class="list-title">
-        {{ !active ? '기획전 상세' : (cfIsNew ? '기획전 등록' : (cfDtlMode ? '기획전 상세' : '기획전 수정')) }}
-        <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
-          #{{ form.planId }}
-        </span>
-        <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-          목록에서 행을 선택하거나 [+신규]를 누르세요
-        </span>
+    <template #title>
+      {{ !active ? '기획전 상세' : (cfIsNew ? '기획전 등록' : (cfDtlMode ? '기획전 상세' : '기획전 수정')) }}
+      <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+        #{{ form.planId }}
       </span>
-    </div>
+      <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+        목록에서 행을 선택하거나 [+신규]를 누르세요
+      </span>
+    </template>
     <!-- ===== ■.■. 탭바 ==================================================== -->
     <bo-tab-bar :tabs="tabs" :tab="tab" :tab-mode="tabMode2"
       @tab-select="id => handleBtnAction('tab-select', id)"
@@ -452,14 +453,9 @@ window.PmPlanDtl = {
         :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
         <!-- ===== ■.■.■.■. 공개대상 체크박스 그리드 ===================================== -->
         <template #visibility>
-          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:8px 0;">
-            <label v-for="opt in VISIBILITY_OPTIONS" :key="opt?.value" style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;">
-              <input type="checkbox" :disabled="cfDtlMode" :checked="hasVisibility(opt.value)" @change="handleBtnAction('form-visibilityToggle', opt.value)" />
-              <span>
-                {{ opt.label }}
-              </span>
-            </label>
-          </div>
+          <bo-multi-check-select v-model="form.visibilityTargets" :options="VISIBILITY_OPTIONS"
+            separator="^" wrap empty-value="^NONE^" placeholder="전체 공개" all-label="전체 공개"
+            :disabled="cfDtlMode" min-width="320px" />
         </template>
       </bo-form-area>
       <!-- ===== ■.■.■. 판매업체/판매담당자 (BoFormArea 자동 렌더) ======================= -->
@@ -469,7 +465,7 @@ window.PmPlanDtl = {
           :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
           <template #vendor>
             <div style="display:flex;gap:8px;align-items:center;">
-              <div class="form-control" style="background:#f9f9f9;cursor:pointer;padding:0;display:flex;align-items:center;" @click="cfDtlMode ? null : handleBtnAction('vendorModal-open')">
+              <div class="form-control" style="background:#f9f9f9;padding:0;display:flex;align-items:center;" @click="cfDtlMode ? null : handleBtnAction('vendorModal-open')">
                 <span style="padding:4px 10px;flex:1;">
                   {{ cfSelectedVendorNm }}
                 </span>
@@ -569,7 +565,7 @@ window.PmPlanDtl = {
             <div style="color:#e8587a;font-weight:700;margin-bottom:6px;">
               {{ (p.price||0).toLocaleString() }}원
             </div>
-            <button style="width:100%;padding:4px;background:#fff;border:1px solid #ddd;border-radius:4px;font-size:10px;cursor:pointer;color:#666;" @click="handleSelectAction('items-rowDelete', p.productId)">
+            <button style="width:100%;padding:4px;background:#fff;border:1px solid #ddd;border-radius:4px;font-size:10px;color:#666;" @click="handleSelectAction('items-rowDelete', p.productId)">
               제거
             </button>
           </div>
@@ -694,7 +690,7 @@ window.PmPlanDtl = {
     </div>
   </div>
   <!-- ===== □. 탭 컨텐츠 =================================================== -->
-  </div>
+  </bo-container>
   <!-- ===== □. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
 </div>
 <!-- ===== □.□. 미리보기 ================================================== -->

@@ -289,6 +289,7 @@ window.XsSample13 = {
     };
   },
   template: /* html */`
+<fo-page bare>
 <div style="padding:clamp(12px,3vw,24px);">
   <!-- ===== ■. 제목 ====================================================== -->
   <div style="display:flex;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
@@ -812,5 +813,6 @@ window.XsSample13 = {
   :selected-ids="[...selectedCatIds]" modal-name="category-pick" :on-callback="fnCallbackModal" />
     <!-- ===== □.□. 패널별 카드 (좌: 패널정보 | 중앙: 위젯 콘텐츠 | 우: 소스) ================= -->
     <!-- ===== □. 영역 ====================================================== -->
+</fo-page>
 `,
 };

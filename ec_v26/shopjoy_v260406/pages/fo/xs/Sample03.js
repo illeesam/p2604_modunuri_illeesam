@@ -43,8 +43,10 @@ window.XsSample03 = {
     return { uiState, codes, handleBtnAction, handleSelectAction };
   },
   template: `
-<div style="padding:40px;">
-  pages/fo/xs/Sample03.js
-</div>
+<fo-page bare>
+  <div style="padding:40px;">
+    pages/fo/xs/Sample03.js
+  </div>
+</fo-page>
 `,
 };

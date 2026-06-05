@@ -297,33 +297,21 @@ window.PmPlanMng = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    기획전관리
-  </div>
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card">
-    <!-- ===== ■.■. 검색 영역 ================================================= -->
+<bo-page title="기획전관리">
+  <!-- ===== ■. 검색 영역 =================================================== -->
+  <bo-container>
     <bo-search-area :loading="uiState.loading" :columns="columns.baseSearch" :param="searchParam" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
-  </div>
-  <!-- ===== □. 카드 영역 =================================================== -->
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card">
-    <div class="toolbar">
-      <span class="list-title">
-        기획전목록
-        <span class="list-count">
-          {{ pager.pageTotalCount }}건
-        </span>
-      </span>
+  </bo-container>
+  <!-- ===== ■. 목록 영역 =================================================== -->
+  <bo-container title="기획전목록" :count-text="pager.pageTotalCount + '건'">
+    <template #toolbar-actions>
       <div style="display:flex;gap:6px;align-items:center;">
         <div style="display:flex;border:1px solid #ddd;border-radius:6px;overflow:hidden;">
-          <button @click="handleBtnAction('tab-mode', 'list')" style="font-size:11px;padding:4px 10px;border:none;cursor:pointer;transition:all .15s;"
+          <button @click="handleBtnAction('tab-mode', 'list')" style="font-size:11px;padding:4px 10px;border:none;transition:all .15s;"
             :style="tabMode==='list' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">
             ☰ 리스트
           </button>
-          <button @click="handleBtnAction('tab-mode', 'card')" style="font-size:11px;padding:4px 10px;border:none;border-left:1px solid #ddd;cursor:pointer;transition:all .15s;"
+          <button @click="handleBtnAction('tab-mode', 'card')" style="font-size:11px;padding:4px 10px;border:none;border-left:1px solid #ddd;transition:all .15s;"
             :style="tabMode==='card' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">
             ⊞ 카드
           </button>
@@ -335,49 +323,43 @@ window.PmPlanMng = {
           + 신규
         </button>
       </div>
-    </div>
+    </template>
     <!-- ===== ■.■. 리스트 뷰 ================================================= -->
     <bo-grid v-if="tabMode==='list'" :bare="true"
       :columns="columns.baseGrid" :rows="plans" row-key="planId" :selected-key="detailPanel.selectedId"
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
-      :row-style="(p) => detailPanel.selectedId===p.planId ? 'background:#fff8f9;' : ''"
-      row-clickable @sort="key => handleBtnAction('plans-sort', key)" grid-id="plans-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+      :row-style="(p) => detailPanel.selectedId===p.planId ? 'background:#fff8f9;' : ''" @sort="key => handleBtnAction('plans-sort', key)" grid-id="plans-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
       <template #head-actions>
         관리
       </template>
       <template #row-actions="{ row: p, gridId }">
-        <div class="actions" style="display:flex;gap:6px;align-items:center;">
-          <button class="btn btn-blue btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
+        <div class="actions">
+          <button class="btn btn-blue btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_edit', p)">
             수정
           </button>
-          <button class="btn btn-danger btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">
+          <button class="btn btn-danger btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_delete', p)">
             삭제
           </button>
-          <span style="font-size:11px;color:#999;margin-left:auto;">
-            #{{ p.planId }}
-          </span>
         </div>
       </template>
     </bo-grid>
-    <bo-pager v-if="tabMode==='list' && pager.pageTotalCount > 0" :pager="pager" :on-set-page="n => handleBtnAction('plans-pager-setPage', n)" :on-size-change="() => handleSelectAction('plans-pager-sizeChange')" />
-    <!-- ===== □.□. 리스트 뷰 ================================================= -->
     <!-- ===== ■.■. 카드 뷰 ================================================== -->
     <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">
       <div v-if="plans.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">
         데이터가 없습니다.
       </div>
-      <div v-for="(p, idx) in plans" :key="p?.planId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
+      <div v-for="(p, idx) in plans" :key="p?.planId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;"
         :style="detailPanel.selectedId===p.planId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
         @click="handleSelectAction('plans-rowView', p.planId)">
-        <!-- ===== ■.■.■.■. 배너 이미지 ============================================ -->
+        <!-- ===== ■.■.■. 배너 이미지 ============================================== -->
         <div v-if="p.bannerImage" style="padding:12px;background:#f5f5f5;border-bottom:1px solid #e8e8e8;" v-html="p.bannerImage">
         </div>
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
           <div style="font-size:12px;color:#999;margin-bottom:6px;">
             기획전 #{{ p.planId }}
           </div>
-          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleSelectAction('plans-rowView', p.planId)" :style="detailPanel.selectedId===p.planId?{color:'#e8587a'}:{}">
+          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;" @click="handleSelectAction('plans-rowView', p.planId)" :style="detailPanel.selectedId===p.planId?{color:'#e8587a'}:{}">
             {{ p.planNm }}
             <span v-if="detailPanel.selectedId===p.planId" style="font-size:10px;margin-left:4px;">
               ▼
@@ -419,12 +401,11 @@ window.PmPlanMng = {
         </div>
       </div>
     </div>
-    <bo-pager v-if="tabMode!=='list' && pager.pageTotalCount > 0" :pager="pager" :on-set-page="n => handleBtnAction('plans-pager-setPage', n)" :on-size-change="() => handleSelectAction('plans-pager-sizeChange')" />
-  </div>
-  <!-- ===== □.□. 카드 뷰 ================================================== -->
-  <!-- ===== □. 카드 영역 =================================================== -->
+    <!-- ===== ■.■. 페이저 ==================================================== -->
+    <bo-pager v-if="pager.pageTotalCount > 0" :pager="pager" :on-set-page="n => handleBtnAction('plans-pager-setPage', n)" :on-size-change="() => handleSelectAction('plans-pager-sizeChange')" />
+  </bo-container>
   <!-- ===== ■. 하단 상세: PlanDtl 임베드 (항상 표시, 진입 시 빈 신규 폼) ============= -->
-  <div>
+  <bo-container bare>
     <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기
@@ -442,8 +423,7 @@ window.PmPlanMng = {
       :reload-trigger="detailPanel.reloadTrigger"
       :on-list-reload="handleBtnAction"
       />
-  </div>
-</div>
-<!-- ===== □. 하단 상세: PlanDtl 임베드 ====================================== -->
+  </bo-container>
+</bo-page>
 `
 };

@@ -296,52 +296,38 @@ window.PmVoucherMng = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    상품권관리
-  </div>
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card">
+<bo-page title="상품권관리">
+  <!-- ===== ■. 검색 영역 =================================================== -->
+  <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
-  </div>
-  <!-- ===== □. 카드 영역 =================================================== -->
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card">
-    <div class="toolbar">
-      <span class="list-title">
-        상품권목록
-        <span class="list-count">
-          {{ pager.pageTotalCount }}건
-        </span>
-      </span>
-      <div style="display:flex;gap:6px;align-items:center;">
-        <div style="display:flex;border:1px solid #ddd;border-radius:6px;overflow:hidden;">
-          <button @click="handleBtnAction('tab-mode', 'list')" style="font-size:11px;padding:4px 10px;border:none;cursor:pointer;transition:all .15s;"
-            :style="tabMode==='list' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">
-            ☰ 리스트
-          </button>
-          <button @click="handleBtnAction('tab-mode', 'card')" style="font-size:11px;padding:4px 10px;border:none;border-left:1px solid #ddd;cursor:pointer;transition:all .15s;"
-            :style="tabMode==='card' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">
-            ⊞ 카드
-          </button>
-        </div>
-        <button class="btn btn-green btn-sm" @click="handleBtnAction('vouchers-excel')">
-          📥 엑셀
+  </bo-container>
+  <!-- ===== ■. 목록 영역 =================================================== -->
+  <bo-container title="상품권목록" :count-text="pager.pageTotalCount + '건'">
+    <template #toolbar-actions>
+      <div style="display:flex;border:1px solid #ddd;border-radius:6px;overflow:hidden;">
+        <button @click="handleBtnAction('tab-mode', 'list')" style="font-size:11px;padding:4px 10px;border:none;transition:all .15s;"
+          :style="tabMode==='list' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">
+          ☰ 리스트
         </button>
-        <button class="btn btn-primary btn-sm" @click="handleBtnAction('vouchers-add')">
-          + 신규
+        <button @click="handleBtnAction('tab-mode', 'card')" style="font-size:11px;padding:4px 10px;border:none;border-left:1px solid #ddd;transition:all .15s;"
+          :style="tabMode==='card' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">
+          ⊞ 카드
         </button>
       </div>
-    </div>
+      <button class="btn btn-green btn-sm" @click="handleBtnAction('vouchers-excel')">
+        📥 엑셀
+      </button>
+      <button class="btn btn-primary btn-sm" @click="handleBtnAction('vouchers-add')">
+        + 신규
+      </button>
+    </template>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid v-if="tabMode==='list'" :bare="true"
       :columns="columns.baseGrid" :rows="vouchers" row-key="voucherId" :selected-key="detailPanel.selectedId"
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
-      :row-style="(v) => detailPanel.selectedId===v.voucherId ? 'background:#fff8f9;' : ''"
-      row-clickable @sort="key => handleBtnAction('vouchers-sort', key)" grid-id="vouchers-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+      :row-style="(v) => detailPanel.selectedId===v.voucherId ? 'background:#fff8f9;' : ''" @sort="key => handleBtnAction('vouchers-sort', key)" grid-id="vouchers-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
       <template #head-actions>
         관리
       </template>
@@ -363,14 +349,14 @@ window.PmVoucherMng = {
       <div v-if="vouchers.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">
         데이터가 없습니다.
       </div>
-      <div v-for="(v, idx) in vouchers" :key="v?.voucherId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
+      <div v-for="(v, idx) in vouchers" :key="v?.voucherId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;"
         :style="detailPanel.selectedId===v.voucherId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
         @click="handleGridCellAction('vouchers-cellClick', { row: v })">
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
           <div style="font-size:12px;color:#999;margin-bottom:6px;">
             상품권 #{{ v.voucherId }}
           </div>
-          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleGridCellAction('vouchers-cellClick', { row: v })" :style="detailPanel.selectedId===v.voucherId?{color:'#e8587a'}:{}">
+          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;" @click="handleGridCellAction('vouchers-cellClick', { row: v })" :style="detailPanel.selectedId===v.voucherId?{color:'#e8587a'}:{}">
             {{ v.voucherNm }}
             <span v-if="detailPanel.selectedId===v.voucherId" style="font-size:10px;margin-left:4px;">
               ▼
@@ -407,11 +393,10 @@ window.PmVoucherMng = {
       </div>
     </div>
     <bo-pager v-if="tabMode!=='list' && pager.pageTotalCount > 0" :pager="pager" :on-set-page="n => handleBtnAction('vouchers-pager-setPage', n)" :on-size-change="() => handleSelectAction('vouchers-pager-sizeChange')" />
-  </div>
-  <!-- ===== □.□. 카드 뷰 ================================================== -->
-  <!-- ===== □. 카드 영역 =================================================== -->
-  <!-- ===== ■. 하단 상세: VoucherDtl 임베드 =================================== -->
-  <div>
+    <!-- ===== □.□. 카드 뷰 ================================================== -->
+  </bo-container>
+  <!-- ===== ■. 하단 상세: VoucherDtl 임베드 (항상 표시, 진입 시 빈 신규 폼) ============= -->
+  <bo-container bare>
     <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기
@@ -429,8 +414,7 @@ window.PmVoucherMng = {
       :reload-trigger="detailPanel.reloadTrigger"
       :on-list-reload="handleBtnAction"
       />
-  </div>
-</div>
-<!-- ===== □. 하단 상세: VoucherDtl 임베드 =================================== -->
+  </bo-container>
+</bo-page>
 `
 };

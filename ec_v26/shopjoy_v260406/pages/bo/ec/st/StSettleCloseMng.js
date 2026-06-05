@@ -10,7 +10,7 @@ window.StSettleCloseMng = {
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
-    const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ error: null, isPageCodeLoad: false });
     const codes = reactive({
       settle_statuses: [],
       settle_close_statuses: [],
@@ -28,9 +28,6 @@ window.StSettleCloseMng = {
         return onReset();
       } else if (cmd === 'settleCloses-doClose') {
         return doClose();
-      } else if (cmd === 'desc-toggle') {
-        uiState.descOpen = !uiState.descOpen;
-        return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -230,26 +227,11 @@ window.StSettleCloseMng = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    정산마감
-  </div>
-  <!-- ===== ■. 영역 ====================================================== -->
-  <div class="page-desc-bar">
-    <span class="page-desc-summary">
-      월별 업체 정산을 확정하는 마감 처리를 수행합니다. 마감 후 원장·조정 데이터 수정이 불가합니다.
-    </span>
-    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">
-      {{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}
-    </button>
-    <div v-if="uiState.descOpen" class="page-desc-detail">
-      • 마감 처리 시 해당 월의 수집원장 + 조정 + 기타조정 금액을 최종 집계합니다. • 마감 상태: 미마감 / 마감완료 / 지급완료 • [재오픈] 기능으로 마감을 취소하고 수정 후 재마감할 수 있습니다. • 자동마감 설정(StConfigMng) 시 지급일에 자동 마감됩니다.
-    </div>
-  </div>
-  <!-- ===== □. 영역 ====================================================== -->
+<bo-page title="정산마감"
+  desc-summary="월별 업체 정산을 확정하는 마감 처리를 수행합니다. 마감 후 원장·조정 데이터 수정이 불가합니다."
+  desc-detail="• 마감 처리 시 해당 월의 수집원장 + 조정 + 기타조정 금액을 최종 집계합니다.&#10;• 마감 상태: 미마감 / 마감완료 / 지급완료&#10;• [재오픈] 기능으로 마감을 취소하고 수정 후 재마감할 수 있습니다.&#10;• 자동마감 설정(StConfigMng) 시 지급일에 자동 마감됩니다.">
   <!-- ===== ■. 이번달 마감 대상 =============================================== -->
-  <div class="card">
+  <bo-container>
     <div style="font-weight:700;font-size:15px;margin-bottom:12px">
       {{ thisMonth }} 정산마감 대상
     </div>
@@ -262,19 +244,20 @@ window.StSettleCloseMng = {
         ✓ 마감완료
       </span>
     </div>
-  </div>
+  </bo-container>
   <!-- ===== □. 이번달 마감 대상 =============================================== -->
-  <!-- ===== ■. 마감 이력 =================================================== -->
-  <div class="card" style="margin-top:12px">
-    <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading" bar-style="margin-bottom:12px"
+  <!-- ===== ■. 검색 영역 ================================================= -->
+  <bo-container>
+    <bo-search-area :loading="uiState.loading"
       :columns="columns.baseSearch" :param="searchParam"
       @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
-    <!-- ===== □.□. 검색 영역 ================================================= -->
-    <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-grid
+  </bo-container>
+  <!-- ===== □. 검색 영역 ================================================= -->
+  <!-- ===== ■. 목록 영역 ================================================= -->
+  <bo-container title="정산마감 이력" :count-text="cfFilteredClose.length + '건'">
+    <bo-grid bare
       :columns="columns.baseGrid" :rows="cfFilteredClose" row-key="closeId"
-      list-title="정산마감 이력" :count-text="cfFilteredClose.length + '건'" :row-actions="true">
+      :row-actions="true">
       <template #head-actions>
         <th style="text-align:right">액션</th>
       </template>
@@ -284,9 +267,8 @@ window.StSettleCloseMng = {
         </button>
       </template>
     </bo-grid>
-  </div>
-</div>
-<!-- ===== □.□. 목록 영역 ================================================= -->
-<!-- ===== □. 마감 이력 =================================================== -->
+  </bo-container>
+  <!-- ===== □. 목록 영역 ================================================= -->
+</bo-page>
 `,
 };

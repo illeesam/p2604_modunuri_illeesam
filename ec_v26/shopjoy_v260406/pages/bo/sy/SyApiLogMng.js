@@ -14,7 +14,7 @@ window.SyApiLogMng = {
     // --- 화면 상태 / 코드 / 페이저 / 행 펼침 ---
     const uiState = reactive({
       activeTab: 'access',
-      descOpen: false, srchOpen: false,
+      srchOpen: false,
       isPageCodeLoad: false,
       dateRange: '1week',
       dateStart: '',
@@ -70,10 +70,6 @@ window.SyApiLogMng = {
       // 펼침/접기 토글 (more search)
       } else if (cmd === 'searchParam-toggleMore') {
         uiState.srchOpen = !uiState.srchOpen;
-        return;
-      // 페이지 설명 토글
-      } else if (cmd === 'desc-toggle') {
-        uiState.descOpen = !uiState.descOpen;
         return;
       // 활성 탭(요청로그/오류로그) 전체 행 펼침 토글
       } else if (cmd === 'apiLogs-toggleExpandAll') {
@@ -322,7 +318,7 @@ window.SyApiLogMng = {
     columns.accessGrid = [
       { key: '_exp', label: '', style: 'width:24px', align: 'center',
         linkToggle: { active: (row) => isExpanded(row.logId), title: '펼치기/닫기', onClick: (row) => handleGridCellAction('apiLogs-cellClick', 'btn_row_expand', row),
-          activeStyle: 'color:#666;font-size:11px;cursor:pointer;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;cursor:pointer;user-select:none;' },
+          activeStyle: 'color:#666;font-size:11px;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;user-select:none;' },
         fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
       { key: 'reqMethod',  label: '메서드', badge: (row) => fnMethodBadge(row.reqMethod), fmt: (v) => v || '-' },
       { key: 'reqPath',    label: 'API 경로', mono: true, cellStyle: 'max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', fmt: (v) => v || '-' },
@@ -338,7 +334,7 @@ window.SyApiLogMng = {
     columns.errorGrid = [
       { key: '_exp', label: '', style: 'width:24px', align: 'center',
         linkToggle: { active: (row) => isExpanded(row.logId), title: '펼치기/닫기', onClick: (row) => handleGridCellAction('apiLogs-cellClick', 'btn_row_expand', row),
-          activeStyle: 'color:#666;font-size:11px;cursor:pointer;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;cursor:pointer;user-select:none;' },
+          activeStyle: 'color:#666;font-size:11px;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;user-select:none;' },
         fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
       { key: 'reqMethod',  label: '메서드', badge: (row) => fnMethodBadge(row.reqMethod), fmt: (v) => v || '-' },
       { key: 'reqPath',    label: 'API 경로', mono: true, cellStyle: 'max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', fmt: (v) => v || '-' },
@@ -418,26 +414,12 @@ window.SyApiLogMng = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    API로그조회
-  </div>
-  <!-- ===== ■. 영역 ====================================================== -->
-  <div class="page-desc-bar">
-    <span class="page-desc-summary">
-      syh_access_log(API요청로그)와 syh_access_error_log(API오류로그)를 조회합니다.
-    </span>
-    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">
-      {{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}
-    </button>
-    <div v-if="uiState.descOpen" class="page-desc-detail">
-      • API요청로그(syh_access_log): 모든 API 요청/응답 기록 — 메서드, 경로, 상태코드, 처리시간, IP, x-헤더 포함 • API오류로그(syh_access_error_log): HTTP 4xx/5xx 오류 및 예외 상세 — 에러메시지, 스택트레이스 포함 • 행 클릭 → 상세정보 펼치기 (x-헤더, 쿼리, UA, 서버환경 등) • 기본 조회기간: 최근 1주일.
-    </div>
-  </div>
-  <!-- ===== □. 영역 ====================================================== -->
+<bo-page title="API로그조회"
+  desc-summary="syh_access_log(API요청로그)와 syh_access_error_log(API오류로그)를 조회합니다."
+  desc-detail="• API요청로그(syh_access_log): 모든 API 요청/응답 기록 — 메서드, 경로, 상태코드, 처리시간, IP, x-헤더 포함 • API오류로그(syh_access_error_log): HTTP 4xx/5xx 오류 및 예외 상세 — 에러메시지, 스택트레이스 포함 • 행 클릭 → 상세정보 펼치기 (x-헤더, 쿼리, UA, 서버환경 등) • 기본 조회기간: 최근 1주일.">
+  <!-- ===== □. 페이지 타이틀 ================================================== -->
   <!-- ===== ■. 검색 ====================================================== -->
-  <div class="card">
+  <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :columns="columns.baseSearch" :param="uiState" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')">
       <template #actions-after>
@@ -452,94 +434,73 @@ window.SyApiLogMng = {
       bar-style="margin-top:8px;padding-top:8px;border-top:1px solid #f0e0e8;"
       :columns="columns.moreSearch" :param="uiState"
       @search="handleBtnAction('searchParam-list')" />
-  </div>
+  </bo-container>
   <!-- ===== □.□. 검색 영역 ================================================= -->
   <!-- ===== □. 검색 ====================================================== -->
-  <!-- ===== ■. 탭 + 목록 ================================================== -->
-  <div class="tab-nav" style="margin-bottom:16px">
-    <button class="tab-btn" :class="{active:uiState.activeTab==='access'}" @click="handleSelectAction('tabs-select', 'access')">
-      📋 API요청로그
-      <span class="tab-count">
-        {{ tabCounts.access }}
-      </span>
-    </button>
-    <button class="tab-btn" :class="{active:uiState.activeTab==='error'}"  @click="handleSelectAction('tabs-select', 'error')">
-      🚨 API오류로그
-      <span class="tab-count">
-        {{ tabCounts.error }}
-      </span>
-    </button>
-  </div>
-  <!-- ===== □. 탭 + 목록 ================================================== -->
-  <!-- ===== ■. API요청로그 탭 =============================================== -->
-  <bo-grid v-if="uiState.activeTab==='access'"
-    :columns="columns.accessGrid" :rows="cfCurrentList" row-key="logId"
-    list-title="API요청로그" :count-text="pager.pageTotalCount + '건'"
-    :row-style="(r, idx) => handleGridCellAction('apiLogs-cellClick', 'rowStyle', r, idx)" :is-expanded="(r, idx) => handleGridCellAction('apiLogs-cellClick', 'isExpanded', r, idx)">
-    <template #toolbar-actions>
-      <div style="display:flex;align-items:center;gap:6px;">
-        <span style="font-size:11px;color:#aaa;">
-          행 클릭 시 상세정보 펼침
-        </span>
-        <button class="btn btn-secondary btn-xs" @click="handleBtnAction('apiLogs-toggleExpandAll')">
-          {{ allExpanded.value ? '전체닫기' : '전체펼치기' }}
+  <!-- ===== ■. 목록 영역 (bo-container 1개: 탭 + 제목 + 두 그리드 + pager) ============ -->
+  <bo-container :title="uiState.activeTab==='access' ? 'API요청로그' : 'API오류로그'" :count-text="pager.pageTotalCount + '건'">
+    <!-- 탭 버튼 (영역 안 상단) -->
+    <template #top>
+      <div class="tab-nav" style="margin-bottom:12px">
+        <button class="tab-btn" :class="{active:uiState.activeTab==='access'}" @click="handleSelectAction('tabs-select', 'access')">
+          📋 API요청로그
+          <span class="tab-count">
+            {{ tabCounts.access }}
+          </span>
         </button>
-        <button class="btn btn-danger btn-xs" @click="handleBtnAction('apiLogs-clear')">
-          로그비우기
+        <button class="tab-btn" :class="{active:uiState.activeTab==='error'}"  @click="handleSelectAction('tabs-select', 'error')">
+          🚨 API오류로그
+          <span class="tab-count">
+            {{ tabCounts.error }}
+          </span>
         </button>
       </div>
     </template>
-    <template #row-expand="{ row, colspan }">
-      <td :colspan="colspan" style="background:#f4f6fb;padding:16px 20px;border-top:none;">
-        <bo-form-area :columns="columns.accessExpand" :form="row" :cols="3" readonly label-left :show-actions="false" />
-      </td>
-    </template>
-    <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
-    <template #footer>
-      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('apiLogs-pager-setPage', n)" :on-size-change="() => handleSelectAction('apiLogs-pager-sizeChange')" />
-    </template>
-  </bo-grid>
-  <!-- ===== □. API요청로그 탭 =============================================== -->
-  <!-- ===== ■. API오류로그 탭 =============================================== -->
-  <bo-grid v-if="uiState.activeTab==='error'"
-    :columns="columns.errorGrid" :rows="cfCurrentList" row-key="logId"
-    list-title="API오류로그" :count-text="pager.pageTotalCount + '건'"
-    :row-style="(r, idx) => handleGridCellAction('apiLogs-cellClick', 'rowStyle', r, idx)" :is-expanded="(r, idx) => handleGridCellAction('apiLogs-cellClick', 'isExpanded', r, idx)">
     <template #toolbar-actions>
-      <div style="display:flex;align-items:center;gap:6px;">
-        <span style="font-size:11px;color:#aaa;">
-          행 클릭 시 상세정보 펼침
-        </span>
-        <button class="btn btn-secondary btn-xs" @click="handleBtnAction('apiLogs-toggleExpandAll')">
-          {{ allExpanded.value ? '전체닫기' : '전체펼치기' }}
-        </button>
-        <button class="btn btn-danger btn-xs" @click="handleBtnAction('apiLogs-clear')">
-          로그비우기
-        </button>
-      </div>
+      <span style="font-size:11px;color:#aaa;">
+        행 클릭 시 상세정보 펼침
+      </span>
+      <button class="btn btn-secondary btn-xs" @click="handleBtnAction('apiLogs-toggleExpandAll')">
+        {{ allExpanded.value ? '전체닫기' : '전체펼치기' }}
+      </button>
+      <button class="btn btn-danger btn-xs" @click="handleBtnAction('apiLogs-clear')">
+        로그비우기
+      </button>
     </template>
-    <template #row-expand="{ row, colspan }">
-      <td :colspan="colspan" style="background:#fff8f8;padding:16px 20px;border-top:none;">
-        <bo-form-area :columns="columns.errorExpand" :form="row" :cols="3" readonly label-left :show-actions="false" />
-        <div style="margin-top:12px;">
-          <div style="font-weight:700;color:#c0392b;margin-bottom:6px;border-bottom:1px solid #fcc;padding-bottom:4px;font-size:12px;">
-            📋 스택트레이스
+    <!-- ===== ■.■. API요청로그 탭 =========================================== -->
+    <bo-grid v-if="uiState.activeTab==='access'" bare
+      :columns="columns.accessGrid" :rows="cfCurrentList" row-key="logId"
+      :row-style="(r, idx) => handleGridCellAction('apiLogs-cellClick', 'rowStyle', r, idx)" :is-expanded="(r, idx) => handleGridCellAction('apiLogs-cellClick', 'isExpanded', r, idx)">
+      <template #row-expand="{ row, colspan }">
+        <td :colspan="colspan" style="background:#f4f6fb;padding:16px 20px;border-top:none;">
+          <bo-form-area :columns="columns.accessExpand" :form="row" :cols="3" readonly label-left :show-actions="false" />
+        </td>
+      </template>
+    </bo-grid>
+    <!-- ===== ■.■. API오류로그 탭 =========================================== -->
+    <bo-grid v-if="uiState.activeTab==='error'" bare
+      :columns="columns.errorGrid" :rows="cfCurrentList" row-key="logId"
+      :row-style="(r, idx) => handleGridCellAction('apiLogs-cellClick', 'rowStyle', r, idx)" :is-expanded="(r, idx) => handleGridCellAction('apiLogs-cellClick', 'isExpanded', r, idx)">
+      <template #row-expand="{ row, colspan }">
+        <td :colspan="colspan" style="background:#fff8f8;padding:16px 20px;border-top:none;">
+          <bo-form-area :columns="columns.errorExpand" :form="row" :cols="3" readonly label-left :show-actions="false" />
+          <div style="margin-top:12px;">
+            <div style="font-weight:700;color:#c0392b;margin-bottom:6px;border-bottom:1px solid #fcc;padding-bottom:4px;font-size:12px;">
+              📋 스택트레이스
+            </div>
+            <div v-if="row.stackTrace" style="font-family:monospace;font-size:11px;color:#555;white-space:pre-wrap;word-break:break-all;max-height:300px;overflow-y:auto;background:#fdf8ff;padding:10px;border-radius:6px;border:1px solid #e8d8f0;">
+              {{ row.stackTrace }}
+            </div>
+            <div v-else style="color:#bbb;font-size:12px;padding:10px 0;">
+              스택트레이스 없음
+            </div>
           </div>
-          <div v-if="row.stackTrace" style="font-family:monospace;font-size:11px;color:#555;white-space:pre-wrap;word-break:break-all;max-height:300px;overflow-y:auto;background:#fdf8ff;padding:10px;border-radius:6px;border:1px solid #e8d8f0;">
-            {{ row.stackTrace }}
-          </div>
-          <div v-else style="color:#bbb;font-size:12px;padding:10px 0;">
-            스택트레이스 없음
-          </div>
-        </div>
-      </td>
-    </template>
-    <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
-    <template #footer>
-      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('apiLogs-pager-setPage', n)" :on-size-change="() => handleSelectAction('apiLogs-pager-sizeChange')" />
-    </template>
-  </bo-grid>
-</div>
-<!-- ===== □. API오류로그 탭 =============================================== -->
+        </td>
+      </template>
+    </bo-grid>
+    <!-- ===== ■.■. 페이저 (두 탭 공통 1개, 그리드 바깥) ========================== -->
+    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('apiLogs-pager-setPage', n)" :on-size-change="() => handleSelectAction('apiLogs-pager-sizeChange')" />
+  </bo-container>
+</bo-page>
 `,
 };

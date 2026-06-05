@@ -108,34 +108,11 @@ window.EventPage = {
     };
   },
   template: /* html */ `
-<div class="page-wrap">
-  <!-- ===== ■. 페이지 타이틀 배너 ============================================== -->
-  <div class="page-banner-full" style="position:relative;overflow:hidden;height:220px;margin-bottom:36px;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;width:100vw;display:flex;align-items:center;justify-content:center;">
-    <img src="assets/cdn/prod/img/page-title/page-title-1.jpg" alt="이벤트"
-      style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%;" />
-    <div style="position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,0.72) 0%,rgba(240,245,255,0.55) 45%,rgba(220,232,255,0.38) 100%);">
-    </div>
-    <div style="position:relative;z-index:1;text-align:center;">
-      <div style="font-size:0.75rem;color:rgba(0,0,0,0.55);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">
-        Promotion
-      </div>
-      <h1 style="font-size:2.2rem;font-weight:700;color:#111;letter-spacing:-0.5px;margin-bottom:8px;">
-        이벤트
-      </h1>
-      <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:0.8rem;color:rgba(0,0,0,0.55);">
-        <span style="cursor:pointer;" @click="handleBtnAction('page-goHome')">
-          홈
-        </span>
-        <span>
-          /
-        </span>
-        <span style="color:#333;">
-          이벤트
-        </span>
-      </div>
-    </div>
-  </div>
-  <!-- ===== □. 페이지 타이틀 배너 ============================================== -->
+<fo-page title="이벤트" eyebrow="Promotion"
+  banner-img="assets/cdn/prod/img/page-title/page-title-1.jpg"
+  banner-align="center 40%"
+  :crumbs="[{ label:'홈', page:'home' }, { label:'이벤트' }]"
+  @nav="() => handleBtnAction('page-goHome')">
   <!-- ===== ■. 탭 + 정렬 ================================================== -->
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;border-bottom:1px solid var(--border);margin-bottom:28px;">
     <!-- ===== ■.■. 탭 ===================================================== -->
@@ -243,7 +220,7 @@ window.EventPage = {
       {{ uiState.activeTab === 'ongoing' ? '진행 중인 이벤트가 없습니다.' : '종료된 이벤트가 없습니다.' }}
     </div>
   </div>
-</div>
-<!-- ===== □. 빈 상태 ==================================================== -->
+  <!-- ===== □. 빈 상태 ==================================================== -->
+</fo-page>
 `
 };

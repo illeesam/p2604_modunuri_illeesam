@@ -145,20 +145,15 @@ window.BlogEdit = {
     };
   },
   template: /* html */ `
-<div class="page-wrap" style="max-width:760px;">
-  <!-- ===== ■. 헤더 ====================================================== -->
-  <div style="margin-bottom:28px;">
-    <button @click="handleBtnAction('form-cancel')"
-      style="display:flex;align-items:center;gap:6px;background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:0.825rem;margin-bottom:16px;padding:0;">
-      ← 블로그 목록으로
-    </button>
-    <h1 style="font-size:1.4rem;font-weight:800;color:var(--text-primary);">
-      {{ cfIsEdit ? '글 수정' : '새 글 작성' }}
-    </h1>
-  </div>
-  <!-- ===== □. 헤더 ====================================================== -->
+<fo-page eyebrow="ShopJoy"
+  banner-img="assets/cdn/prod/img/page-title/page-title-2.jpg"
+  banner-align="center 40%"
+  :crumbs="[{ label:'홈', page:'home' }, { label:'Blog', page:'blog' }, { label: cfIsEdit ? '글 수정' : '새 글 작성' }]"
+  @nav="p => navigate(p)">
+  <template #title>{{ cfIsEdit ? '글 수정' : '새 글 작성' }}</template>
+  <div style="max-width:760px;margin:0 auto;">
   <!-- ===== ■. 폼 ======================================================= -->
-  <div class="card" style="padding:clamp(16px,3vw,28px);">
+  <fo-container card-style="padding:clamp(16px,3vw,28px);">
     <!-- ===== ■.■. 제목 / 카테고리 / 요약 / 본문 =================================== -->
     <fo-form-area :columns="columns.baseForm" :form="form" :errors="errors" :cols="2" />
     <!-- ===== ■.■. 이미지 첨부 ================================================ -->
@@ -205,9 +200,9 @@ window.BlogEdit = {
         {{ cfIsEdit ? '수정' : '등록' }}
       </button>
     </div>
+  </fo-container>
+  <!-- ===== □. 폼 ======================================================= -->
   </div>
-</div>
-<!-- ===== □.□. 버튼 ==================================================== -->
-<!-- ===== □. 폼 ======================================================= -->
+</fo-page>
 `
 };

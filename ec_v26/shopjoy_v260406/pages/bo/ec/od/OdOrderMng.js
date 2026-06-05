@@ -556,7 +556,7 @@ window.OdOrderMng = {
     columns.apprDetailForm = [
       { key: 'reqAmount', label: '요청금액', type: 'number', colSpan: 2 },
       { type: 'rowBreak' },
-      { key: 'reqReason', label: '요청사유', type: 'textarea', rows: 2, placeholder: '(선택)', colSpan: 2 },
+      { key: 'reqReason', label: '요청사유', type: 'textarea', rows: 2, placeholder: '(선택)' },
       { type: 'rowBreak' },
       { key: 'tmplMsg',   label: '전송 템플릿', type: 'slot', name: 'tmplMsg', colSpan: 2,
         hint: '치환: {target} {targetNm} {amount} {reason}' },
@@ -567,7 +567,7 @@ window.OdOrderMng = {
         options: () => codes.approval_actions, colSpan: 2 },
       { type: 'rowBreak' },
       { key: 'apprComment', label: '결재 코멘트', type: 'textarea', rows: 2,
-        placeholder: '(선택)', colSpan: 2 },
+        placeholder: '(선택)' },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
@@ -582,42 +582,28 @@ window.OdOrderMng = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    주문관리
-  </div>
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card">
-    <!-- ===== ■.■. 검색 영역 ================================================= -->
+<bo-page title="주문관리">
+  <!-- ===== ■. 검색 영역 =================================================== -->
+  <bo-container>
     <bo-search-area :loading="uiState.loading" :columns="columns.baseSearch" :param="searchParam"
       @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
-  </div>
-  <!-- ===== □. 카드 영역 =================================================== -->
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card">
-    <div class="toolbar">
-      <span class="list-title">
-        주문목록
-        <span class="list-count">
-          {{ pager.pageTotalCount }}건
-        </span>
-        <span v-if="checked.size" style="margin-left:10px;font-size:12px;color:#1565c0;font-weight:700;">
-          선택 {{ checked.size }}건
-        </span>
+  </bo-container>
+  <!-- ===== ■. 목록 영역 =================================================== -->
+  <bo-container title="주문목록" :count-text="pager.pageTotalCount + '건'">
+    <template #toolbar-actions>
+      <span v-if="checked.size" style="margin-right:10px;font-size:12px;color:#1565c0;font-weight:700;">
+        선택 {{ checked.size }}건
       </span>
-      <div style="display:flex;gap:6px;align-items:center;">
-        <button class="btn btn-blue btn-sm" :disabled="!checked.size" @click="handleBtnAction('actionsModal-open')">
-          📝 변경작업 선택
-        </button>
-        <button class="btn btn-green btn-sm" @click="handleBtnAction('orders-excel')">
-          📥 엑셀
-        </button>
-        <button class="btn btn-primary btn-sm" @click="handleBtnAction('orders-add')">
-          + 신규
-        </button>
-      </div>
-    </div>
+      <button class="btn btn-blue btn-sm" :disabled="!checked.size" @click="handleBtnAction('actionsModal-open')">
+        📝 변경작업 선택
+      </button>
+      <button class="btn btn-green btn-sm" @click="handleBtnAction('orders-excel')">
+        📥 엑셀
+      </button>
+      <button class="btn btn-primary btn-sm" @click="handleBtnAction('orders-add')">
+        + 신규
+      </button>
+    </template>
     <!-- ===== ■.■. 그리드 (기본 10개 영역 + 화면 높이 반응형 확장, 초과 시 내부 스크롤) =========== -->
     <div style="max-height:calc(100vh - 340px);min-height:480px;overflow-y:auto;border:1px solid #eef0f3;border-radius:6px;background:#fff;">
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
@@ -641,19 +627,15 @@ window.OdOrderMng = {
         </template>
       </bo-grid>
     </div>
-    <!-- ===== □.□. 그리드 (기본 10개 영역 + 화면 높이 반응형 확장, 초과 시 내부 스크롤) =========== -->
-    <!-- ===== ■.■. /그리드 스크롤 컨테이너 ========================================= -->
     <!-- ===== ■.■. 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ============================= -->
     <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
       <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('orders-pager-setPage', n)"
         :on-size-change="() => handleSelectAction('orders-pager-sizeChange')"
         style="margin-top:0;min-height:34px;" />
     </div>
-  </div>
-  <!-- ===== □.□. 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ============================= -->
-  <!-- ===== □. 카드 영역 =================================================== -->
+  </bo-container>
   <!-- ===== ■. 하단 상세: OrderDtl 임베드 (항상 표시, 진입 시 빈 신규 폼) ===================== -->
-  <div>
+  <bo-container bare>
     <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기
@@ -667,7 +649,7 @@ window.OdOrderMng = {
       :active="detailPanel.active"
       :reload-trigger="detailPanel.reloadTrigger"
       />
-  </div>
+  </bo-container>
   <!-- ===== □. 하단 상세: OrderDtl 임베드 ===================================== -->
   <!-- ===== ■. 변경작업 모달 (actionsModal) ===================================== -->
   <div v-if="bulkOpen" style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9999;display:flex;align-items:center;justify-content:center;" @click.self="handleBtnAction('actionsModal-close')">
@@ -777,11 +759,10 @@ window.OdOrderMng = {
     </div>
   </div>
   <!-- ===== □. 변경작업 모달 ================================================= -->
-      <!-- ===== ■. 회원 선택 팝업 ================================================ -->
-      <!-- ===== ■. 영역 ====================================================== -->
-      <od-member-pick-modal :show="memberPick.open" ui-nm="주문관리"
+  <!-- ===== ■. 회원 선택 팝업 ================================================ -->
+  <od-member-pick-modal :show="memberPick.open" ui-nm="주문관리"
     subtitle="주문 조회 기준 회원을 선택해주세요" modal-name="member-pick" :on-callback="fnCallbackModal" />
-    </div>
-    <!-- ===== □. 영역 ====================================================== -->
+  <!-- ===== □. 회원 선택 팝업 ================================================ -->
+</bo-page>
 `
 };

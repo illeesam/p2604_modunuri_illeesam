@@ -329,19 +329,17 @@ window.OdDlivDtl = {
   template: /* html */`
 <div>
   <!-- ===== ■. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
-  <div class="card">
+  <bo-container>
     <!-- ===== ■.■. 카드 헤더 (제목 = list-title, page-title 아님 → 폰트 축소) ========= -->
-    <div class="toolbar">
-      <span class="list-title">
-        {{ !active ? '배송 상세' : (cfIsNew ? '배송 등록' : (cfDtlMode ? '배송 상세' : '배송 수정')) }}
-        <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
-          #{{ form.dlivId }}
-        </span>
-        <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-          목록에서 행을 선택하거나 [+신규]를 누르세요
-        </span>
+    <template #title>
+      {{ !active ? '배송 상세' : (cfIsNew ? '배송 등록' : (cfDtlMode ? '배송 상세' : '배송 수정')) }}
+      <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+        #{{ form.dlivId }}
       </span>
-    </div>
+      <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+        목록에서 행을 선택하거나 [+신규]를 누르세요
+      </span>
+    </template>
     <!-- ===== ■.■. 탭바 ==================================================== -->
     <bo-tab-bar v-if="!cfIsNew" :tabs="tabs" :tab="tab" :tab-mode="tabMode2"
       @tab-select="id => handleBtnAction('tab-change', id)"
@@ -387,10 +385,10 @@ window.OdDlivDtl = {
                 }">
             {{ step }}
           </div>
-          <span v-if="step==='배송완료' && form.outboundTrackingNo" @click="handleBtnAction('tracking-open', { courier: form.outboundCourierCd, trackingNo: form.outboundTrackingNo })" title="배송조회 창 열기" style="margin-top:4px;padding:1px 7px;border:1px solid #86efac;background:#dcfce7;color:#15803d;border-radius:4px;font-size:0.7rem;font-weight:700;cursor:pointer;user-select:none;">
+          <span v-if="step==='배송완료' && form.outboundTrackingNo" @click="handleBtnAction('tracking-open', { courier: form.outboundCourierCd, trackingNo: form.outboundTrackingNo })" title="배송조회 창 열기" style="margin-top:4px;padding:1px 7px;border:1px solid #86efac;background:#dcfce7;color:#15803d;border-radius:4px;font-size:0.7rem;font-weight:700;user-select:none;">
           {{ (form.outboundCourierCd||'').replace('대한통운','').replace('택배','') || 'CJ' }}배송 🔍
         </span>
-        <span v-else-if="step==='배송중' && form.outboundTrackingNo && cfCurrentStepIdx < 2" @click="handleBtnAction('tracking-open', { courier: form.outboundCourierCd, trackingNo: form.outboundTrackingNo })" title="배송조회 창 열기" style="margin-top:4px;padding:1px 7px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;border-radius:4px;font-size:0.7rem;font-weight:700;cursor:pointer;user-select:none;">
+        <span v-else-if="step==='배송중' && form.outboundTrackingNo && cfCurrentStepIdx < 2" @click="handleBtnAction('tracking-open', { courier: form.outboundCourierCd, trackingNo: form.outboundTrackingNo })" title="배송조회 창 열기" style="margin-top:4px;padding:1px 7px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;border-radius:4px;font-size:0.7rem;font-weight:700;user-select:none;">
         {{ (form.outboundCourierCd||'').replace('대한통운','').replace('택배','') || 'CJ' }}배송중 🔍
       </span>
     </div>
@@ -536,7 +534,7 @@ window.OdDlivDtl = {
 <!-- ===== □.□. 정보수정이력 탭 ============================================== -->
 </div>
 <!-- ===== □. 탭 컨텐츠 =================================================== -->
-  </div>
+  </bo-container>
   <!-- ===== □. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
 </div>
 `

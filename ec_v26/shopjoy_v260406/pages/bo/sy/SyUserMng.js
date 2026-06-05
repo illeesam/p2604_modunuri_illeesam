@@ -366,7 +366,7 @@ window.SyUserMng = {
     const fnStatusBadge = s => coUtil.cofCodeBadge('USER_STATUS', s, _USER_STATUS_FB[s] || 'badge-gray');
 
     /* fnRowStyle — 행 스타일 */
-    const fnRowStyle = (u) => detailPanel.selectedId === u.userId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
+    const fnRowStyle = (u) => detailPanel.selectedId === u.userId ? 'background:#fff8f9;' : '';
 
     // 기본 검색
     const columns = {};
@@ -418,62 +418,52 @@ window.SyUserMng = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    사용자관리
-  </div>
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card">
-    <!-- ===== ■.■. 검색 영역 ================================================= -->
+<bo-page title="사용자관리">
+  <!-- ===== ■. 검색 영역 =================================================== -->
+  <bo-container>
     <bo-search-area :loading="uiState.loading" :columns="columns.baseSearch" :param="searchParam" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
-  </div>
-  <!-- ===== □. 카드 영역 =================================================== -->
-  <!-- ===== ■. 본문 영역 =================================================== -->
-  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:0 12px;align-items:flex-start;">
+  </bo-container>
+  <!-- ===== ■. 본문 영역 (트리 + 목록) ===================================== -->
+  <div class="bo-2col">
     <!-- ===== ■.■. 부서 트리 ================================================= -->
-    <div class="card" style="padding:12px;">
-      <div class="toolbar" style="margin-bottom:8px;">
-        <span class="list-title" style="font-size:13px;">
-          📂 부서
-        </span>
-      </div>
-      <div style="display:flex;gap:4px;margin-bottom:8px;">
-        <button class="btn btn-sm" @click="handleBtnAction('deptTree-expandAll')" style="flex:1;font-size:11px;">
-          ▼ 전체펼치기
-        </button>
-        <button class="btn btn-sm" @click="handleBtnAction('deptTree-collapseAll')" style="flex:1;font-size:11px;">
-          ▶ 전체닫기
-        </button>
-      </div>
+    <bo-container title="📂 부서">
+      <template #toolbar-actions>
+        <div style="display:flex;gap:4px;">
+          <button class="btn btn-sm" @click="handleBtnAction('deptTree-expandAll')" style="font-size:11px;">
+            ▼ 전체펼치기
+          </button>
+          <button class="btn btn-sm" @click="handleBtnAction('deptTree-collapseAll')" style="font-size:11px;">
+            ▶ 전체닫기
+          </button>
+        </div>
+      </template>
       <div style="max-height:65vh;overflow:auto;">
         <bo-dept-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedDeptId"
           :on-toggle="id => handleBtnAction('deptTree-toggle', id)"
           :on-select="id => handleSelectAction('deptTree-select', id)"
           :depth="0" :counts="deptCounts" />
       </div>
-    </div>
-    <div>
-      <!-- ===== ■.■.■. 목록 그리드 ============================================ -->
-      <bo-grid
+    </bo-container>
+    <!-- ===== ■.■. 목록 그리드 ============================================== -->
+    <bo-container bare title="사용자목록" :count-text="pager.pageTotalCount + '건'">
+      <template #toolbar-actions>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-green btn-sm" @click="handleBtnAction('users-excel')">
+            📥 엑셀
+          </button>
+          <button class="btn btn-blue btn-sm" @click="handleBtnAction('users-excel-upload')">
+            📤 엑셀업로드
+          </button>
+          <button class="btn btn-primary btn-sm" @click="handleBtnAction('users-add')">
+            + 신규
+          </button>
+        </div>
+      </template>
+      <bo-grid bare
         :columns="columns.baseGrid" :rows="users" row-key="userId" :selected-key="detailPanel.selectedId"
-        list-title="사용자목록" :count-text="pager.pageTotalCount + '건'"
-        :sort-state="uiState" :row-style="fnRowStyle" row-clickable
+        :sort-state="uiState" :row-style="fnRowStyle"
         @sort="key => handleBtnAction('users-sort', key)"
         grid-id="users-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
-        <template #toolbar-actions>
-          <div style="display:flex;gap:6px;">
-            <button class="btn btn-green btn-sm" @click="handleBtnAction('users-excel')">
-              📥 엑셀
-            </button>
-            <button class="btn btn-blue btn-sm" @click="handleBtnAction('users-excel-upload')">
-              📤 엑셀업로드
-            </button>
-            <button class="btn btn-primary btn-sm" @click="handleBtnAction('users-add')">
-              + 신규
-            </button>
-          </div>
-        </template>
         <template #head-actions>
           <th style="text-align:right">
             관리
@@ -491,27 +481,22 @@ window.SyUserMng = {
             </div>
           </td>
         </template>
-        <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 사용자목록 영역 안에 보이도록 -->
-        <template #footer>
-          <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('users-pager-setPage', n)" :on-size-change="() => handleSelectAction('users-pager-sizeChange')" />
-        </template>
       </bo-grid>
-    </div>
+      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('users-pager-setPage', n)" :on-size-change="() => handleSelectAction('users-pager-sizeChange')" />
+    </bo-container>
   </div>
-  <!-- ===== □. 본문 영역 =================================================== -->
-  <!-- ===== ■. 상세 패널 (인라인 임베드, 항상 표시) — 영역 간격 12px 통일 (margin-top:16px→0, 위 카드 margin-bottom:12px 만 사용) -->
-  <div>
+  <!-- ===== ■. 상세 패널 (인라인 임베드, 항상 표시, 전체 폭) ================ -->
+  <bo-container bare>
     <sy-user-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
       :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
       :active="detailPanel.active"
       :reload-trigger="detailPanel.reloadTrigger"
       :on-list-reload="handleSearchList" />
-  </div>
-  <!-- ===== □. 상세 패널 (인라인 임베드, 항상 표시) ================================ -->
+  </bo-container>
 
   <!-- ===== ■. 엑셀 업로드 모달 (도메인은 모달 안의 select 로 전환 가능) ===== -->
   <bo-excel-upload-modal v-if="excelUploadModal.show"
     default-domain="user" modal-name="excel-upload" :on-callback="fnCallbackModal" />
-</div>
+</bo-page>
 `,
 };

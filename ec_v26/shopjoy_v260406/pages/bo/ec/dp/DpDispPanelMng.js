@@ -626,16 +626,15 @@ window.DpDispPanelMng = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
+<bo-page>
+  <template #title>
     전시패널관리
     <span style="font-size:13px;font-weight:400;color:#888;">
       화면 영역별 전시패널 관리
     </span>
-  </div>
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card">
+  </template>
+  <!-- ===== ■. 검색 영역 =================================================== -->
+  <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading"
       :columns="columns.baseSearch" :param="searchParam"
@@ -651,51 +650,38 @@ window.DpDispPanelMng = {
           :show-clear="false" input-class="date-range-input" date-width="145px" time-width="145px" />
       </template>
     </bo-search-area>
-  </div>
-  <!-- ===== □.□. 2행: 전시일·노출조건·인증 (별도 BoSearchArea, actions 없음) ========= -->
-  <!-- ===== □. 카드 영역 =================================================== -->
+  </bo-container>
+  <!-- ===== □. 검색 영역 =================================================== -->
   <!-- ===== ■. 본문: 좌측 트리 + 우측 목록 ======================================= -->
-  <div style="display:flex;gap:12px;align-items:flex-start;">
+  <div class="bo-2col">
     <!-- ===== ■.■. 좌측 표시경로 =============================================== -->
-    <div class="card" style="width:240px;flex-shrink:0;padding:12px;max-height:calc(100vh - 260px);overflow-y:auto;">
-      <div class="toolbar" style="margin-bottom:6px;">
-        <span class="list-title" style="font-size:13px;">
-          📂 표시경로
-          <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">
-            #ec_disp_panel
-          </span>
+    <bo-container title="📂 표시경로">
+      <template #toolbar-actions>
+        <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">
+          #ec_disp_panel
         </span>
-        <span v-if="uiState.selectedPath != null" @click="handleBtnAction('pathTree-all')" style="font-size:11px;color:#1677ff;cursor:pointer;">
+        <span v-if="uiState.selectedPath != null" @click="handleBtnAction('pathTree-all')" style="font-size:11px;color:#1677ff;margin-left:6px;">
           전체보기
         </span>
-      </div>
+      </template>
       <div style="max-height:55vh;overflow:auto;">
         <bo-path-tree biz-cd="ec_disp_panel" :counts="panelCounts" :selected="uiState.selectedPath" @select="p => handleSelectAction('pathTree-select', p)" />
       </div>
-    </div>
+    </bo-container>
     <!-- ===== □.□. 좌측 표시경로 =============================================== -->
     <!-- ===== ■.■. 우측 목록 ================================================= -->
-    <div style="flex:1;min-width:0;">
-      <div class="card">
-        <div class="toolbar">
-          <span class="list-title">
-            전시패널 목록
-            <span class="list-count">
-              {{ cfFiltered.length }}건
-            </span>
-            <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">
-              #{{ uiState.selectedPath }}
-            </span>
-          </span>
-          <div style="display:flex;gap:6px;">
-            <button class="btn btn-green btn-sm" @click="handleBtnAction('panels-export')">
-              📥 엑셀
-            </button>
-            <button class="btn btn-primary btn-sm" @click="handleBtnAction('panels-add')">
-              + 신규
-            </button>
-          </div>
-        </div>
+    <bo-container title="전시패널 목록" :count-text="cfFiltered.length + '건'">
+      <template #toolbar-actions>
+        <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">
+          #{{ uiState.selectedPath }}
+        </span>
+        <button class="btn btn-green btn-sm" @click="handleBtnAction('panels-export')">
+          📥 엑셀
+        </button>
+        <button class="btn btn-primary btn-sm" @click="handleBtnAction('panels-add')">
+          + 신규
+        </button>
+      </template>
         <!-- ===== ■.■.■.■. 테이블 =============================================== -->
         <table class="bo-table">
           <thead>
@@ -710,7 +696,7 @@ window.DpDispPanelMng = {
               <th style="width:44px;">
                 ID
               </th>
-              <th @click="handleSelectAction('panels-sort', 'nm')" style="cursor:pointer;user-select:none;white-space:nowrap;">
+              <th @click="handleSelectAction('panels-sort', 'nm')" style="user-select:none;white-space:nowrap;">
                 패널 정보
                 <span :style="uiState.sortKey==='nm'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">
                   {{ sortIcon('nm') }}
@@ -743,7 +729,7 @@ window.DpDispPanelMng = {
                 </td>
                 <td style="text-align:center;padding:0;">
                   <button @click="handleSelectAction('panels-toggleExpand', d.dispId)"
-                    style="background:none;border:none;cursor:pointer;font-size:11px;color:#999;width:28px;height:28px;display:flex;align-items:center;justify-content:center;">
+                    style="background:none;border:none;font-size:11px;color:#999;width:28px;height:28px;display:flex;align-items:center;justify-content:center;">
                     {{ isExpanded(d.dispId) ? '▼' : '▶' }}
                   </button>
                 </td>
@@ -951,35 +937,33 @@ window.DpDispPanelMng = {
         </tbody>
       </table>
       <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('panels-pager-setPage', n)" :on-size-change="() => handleSelectAction('panels-pager-sizeChange')" />
+    </bo-container>
+    <!-- ===== /우측 목록 ===================================================== -->
+  </div>
+  <!-- ===== /본문 bo-2col =================================================== -->
+  <!-- ===== □. 본문: 좌측 트리 + 우측 목록 ======================================= -->
+  <!-- ===== ■. 하단 상세: DispDtl 임베드 ====================================== -->
+  <bo-container bare>
+    <div v-if="uiStateDetail.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
+      <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+        ✕ 닫기
+      </button>
     </div>
-  </div>
-  <!-- ===== /우측 목록 ===================================================== -->
-</div>
-<!-- ===== /본문 flex =================================================== -->
-<!-- ===== □.□. 우측 목록 ================================================= -->
-<!-- ===== □. 본문: 좌측 트리 + 우측 목록 ======================================= -->
-<!-- ===== ■. 하단 상세: DispDtl 임베드 ====================================== -->
-<div>
-  <div v-if="uiStateDetail.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-    <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
-      ✕ 닫기
-    </button>
-  </div>
-  <dp-disp-panel-dtl
-      :key="cfDetailKey"
-      :navigate="inlineNavigate"
-      :show-ref-modal="showRefModal"
-      :show-toast="showToast"
-      :show-confirm="showConfirm"
-      :set-api-res="setApiRes"
-      :dtl-id="cfDetailEditId"
-      :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-      :active="uiStateDetail.active"
-      :reload-trigger="uiStateDetail.reloadTrigger"
-      :on-list-reload="handleSearchData"
-      />
-</div>
-<!-- ===== □. 하단 상세: DispDtl 임베드 ====================================== -->
+    <dp-disp-panel-dtl
+        :key="cfDetailKey"
+        :navigate="inlineNavigate"
+        :show-ref-modal="showRefModal"
+        :show-toast="showToast"
+        :show-confirm="showConfirm"
+        :set-api-res="setApiRes"
+        :dtl-id="cfDetailEditId"
+        :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+        :active="uiStateDetail.active"
+        :reload-trigger="uiStateDetail.reloadTrigger"
+        :on-list-reload="handleSearchData"
+        />
+  </bo-container>
+  <!-- ===== □. 하단 상세: DispDtl 임베드 ====================================== -->
 <!-- ===== ■. 패널미리보기 오버레이 ============================================= -->
 <div v-if="uiState.cardPreviewItem"
     @click.self="handleBtnAction('cardPreview-close')"
@@ -990,7 +974,7 @@ window.DpDispPanelMng = {
       <span style="font-size:14px;font-weight:700;">
         🖼 패널미리보기
       </span>
-      <button @click="handleBtnAction('cardPreview-close')" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;opacity:0.85;line-height:1;padding:0;">
+      <button @click="handleBtnAction('cardPreview-close')" style="background:none;border:none;color:#fff;font-size:22px;opacity:0.85;line-height:1;padding:0;">
         ×
       </button>
     </div>
@@ -1083,7 +1067,7 @@ window.DpDispPanelMng = {
 </div>
 </div>
 </div>
-</div>
 <!-- ===== □. 패널미리보기 오버레이 ============================================= -->
+</bo-page>
 `
 };

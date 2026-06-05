@@ -10,7 +10,7 @@ window.StErpViewMng = {
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
-const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: ''});
+const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: ''});
     const codes = reactive({
       erp_statuses: [],
       erp_voucher_types: [],
@@ -34,10 +34,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {
         return handleDateRangeChange();
-      // 안내 설명 토글
-      } else if (cmd === 'desc-toggle') {
-        uiState.descOpen = !uiState.descOpen;
-        return;
       // 페이지 번호 변경
       } else if (cmd === 'slips-pager-setPage') {
         if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
@@ -196,36 +192,18 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    ERP 전표조회
-  </div>
-  <!-- ===== ■. 영역 ====================================================== -->
-  <div class="page-desc-bar">
-    <span class="page-desc-summary">
-      생성된 ERP 전표 목록을 조회하고 전송 상태 및 처리 이력을 확인합니다.
-    </span>
-    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">
-      {{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}
-    </button>
-    <div v-if="uiState.descOpen" class="page-desc-detail">
-      • 전표 유형: 정산지급 / 수수료 / 조정 / 기타 • 전송 상태: 미전송 / 전송완료 / 오류 • [재전송] 버튼으로 오류 건을 ERP에 재전송할 수 있습니다. • 전표 대사 확인은 ERP 전표대사(StErpReconMng)에서 합니다.
-    </div>
-  </div>
-  <!-- ===== □. 영역 ====================================================== -->
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card">
-    <!-- ===== ■.■. 검색 영역 ================================================= -->
+<bo-page title="ERP 전표조회"
+  desc-summary="생성된 ERP 전표 목록을 조회하고 전송 상태 및 처리 이력을 확인합니다."
+  desc-detail="• 전표 유형: 정산지급 / 수수료 / 조정 / 기타&#10;• 전송 상태: 미전송 / 전송완료 / 오류&#10;• [재전송] 버튼으로 오류 건을 ERP에 재전송할 수 있습니다.&#10;• 전표 대사 확인은 ERP 전표대사(StErpReconMng)에서 합니다.">
+  <!-- ===== ■. 검색 영역 =================================================== -->
+  <bo-container>
     <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
-  </div>
-  <!-- ===== □. 카드 영역 =================================================== -->
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card" style="margin-top:12px">
-    <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-grid
+  </bo-container>
+  <!-- ===== ■. 목록 영역 =================================================== -->
+  <bo-container title="목록" :count-text="pager.pageTotalCount + '건'">
+    <bo-grid bare
       :columns="columns.baseGrid" :rows="slips" row-key="slipId"
-      list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true">
+      :row-actions="true">
       <template #head-actions>
         <th style="text-align:right">액션</th>
       </template>
@@ -236,14 +214,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
           </button>
         </div>
       </template>
-      <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
-      <template #footer>
-        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('slips-pager-setPage', n)" :on-size-change="() => handleSelectAction('slips-pager-sizeChange')" />
-      </template>
     </bo-grid>
-  </div>
-</div>
-<!-- ===== □.□. 목록 영역 ================================================= -->
-<!-- ===== □. 카드 영역 =================================================== -->
+    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('slips-pager-setPage', n)" :on-size-change="() => handleSelectAction('slips-pager-sizeChange')" />
+  </bo-container>
+</bo-page>
 `,
 };

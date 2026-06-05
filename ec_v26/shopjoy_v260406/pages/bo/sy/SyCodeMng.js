@@ -723,23 +723,22 @@ window.SyCodeMng = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    공통코드관리
-  </div>
+<bo-page title="공통코드관리">
   <!-- ===== ■. 검색 영역 =================================================== -->
-  <div class="card">
+  <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
-  </div>
+  </bo-container>
   <!-- ===== □. 검색 영역 =================================================== -->
   <!-- ===== ■. 표시경로 트리 + 코드그룹 CRUD ===================================== -->
-  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:0 12px;margin-bottom:16px;align-items:flex-start;">
-    <!-- ===== ■.■. 경로 트리 ================================================= -->
-    <bo-path-tree-card biz-cd="sy_code_grp" title="표시경로" :show-biz-cd="false" :counts="codeGrpCounts"
-      :selected="uiState.grpSelectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
-    <!-- ===== ■.■. CRUD 그리드 ============================================== -->
+  <div class="bo-2col" style="margin-bottom:16px;">
+    <!-- ===== ■.■. 경로 트리 (bo-container bare → 자체 카드) ====================== -->
+    <bo-container bare>
+      <bo-path-tree-card biz-cd="sy_code_grp" title="표시경로" :show-biz-cd="false" :counts="codeGrpCounts"
+        :selected="uiState.grpSelectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
+    </bo-container>
+    <!-- ===== ■.■. CRUD 그리드 (bo-container bare → 자체 카드) ==================== -->
+    <bo-container bare>
     <bo-grid-crud
       :columns="columns.grpGrid" :rows="uiState.grpRows" row-key="codeGrp" :selected-key="uiState.selectedGrp"
       list-title="공통코드그룹관리" max-height="392px"
@@ -778,20 +777,21 @@ window.SyCodeMng = {
         <bo-row-cancel-delete :row="g" @cancel="handleSelectAction('codeGroups-rowCancel', idx)" @delete="handleSelectAction('codeGroups-rowDelete', idx)" />
       </template>
     </bo-grid-crud>
+    </bo-container>
   </div>
   <!-- ===== □.□. CRUD 그리드 ============================================== -->
   <!-- ===== □. 표시경로 트리 + 코드그룹 CRUD ===================================== -->
-  <!-- ===== ■. 코드 목록 영역 ================================================ -->
-  <div class="card">
+  <!-- ===== ■. 코드 목록 영역 (bo-container: 탭 + 그리드) ========================= -->
+  <bo-container>
     <!-- ===== ■.■. 일반/트리 탭 (슬림) ====================================== -->
     <div style="display:flex;gap:8px;padding:0 12px;border-bottom:1px solid #e5e7eb;background:#f9fafb;">
       <button @click="handleBtnAction('tab-change', '일반')"
-        style="padding:4px 14px;border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;color:#6b7280;font-weight:500;font-size:13px;line-height:1.5;transition:all 0.2s;"
+        style="padding:4px 14px;border:none;background:transparent;border-bottom:2px solid transparent;color:#6b7280;font-weight:500;font-size:13px;line-height:1.5;transition:all 0.2s;"
         :style="uiState.activeCodeTab==='일반' ? {borderBottomColor:'#e8587a',color:'#e8587a'} : {}">
         일반
       </button>
       <button @click="handleBtnAction('tab-change', '트리')" :disabled="!uiState.selectedGrp"
-        style="padding:4px 14px;border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;color:#6b7280;font-weight:500;font-size:13px;line-height:1.5;transition:all 0.2s;"
+        style="padding:4px 14px;border:none;background:transparent;border-bottom:2px solid transparent;color:#6b7280;font-weight:500;font-size:13px;line-height:1.5;transition:all 0.2s;"
         :style="uiState.activeCodeTab==='트리' ? {borderBottomColor:'#e8587a',color:'#e8587a'} : {}">
         트리
       </button>
@@ -833,12 +833,12 @@ window.SyCodeMng = {
       <template #toolbar-actions>
         <div style="display:inline-flex;border:1px solid #d1d5db;border-radius:4px;overflow:hidden;align-self:center;">
           <button type="button" @click="handleBtnAction('codeTree-expandAll')"
-              style="border:none;background:#fff;color:#374151;font-size:11px;padding:4px 10px;cursor:pointer;border-right:1px solid #d1d5db;"
+              style="border:none;background:#fff;color:#374151;font-size:11px;padding:4px 10px;border-right:1px solid #d1d5db;"
               title="모든 노드 펼치기">
             ▼ 전체펼치기
           </button>
           <button type="button" @click="handleBtnAction('codeTree-collapseAll')"
-              style="border:none;background:#fff;color:#374151;font-size:11px;padding:4px 10px;cursor:pointer;"
+              style="border:none;background:#fff;color:#374151;font-size:11px;padding:4px 10px;"
               title="모든 노드 접기">
             ▶ 전체접기
           </button>
@@ -851,7 +851,7 @@ window.SyCodeMng = {
             </span>
             <span v-if="node.node.children.length > 0"
                 @click.stop="handleSelectAction('codeTree-toggle', node.node.value)"
-                style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;color:#6b7280;font-size:12px;flex-shrink:0;">
+                style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;color:#6b7280;font-size:12px;flex-shrink:0;">
               {{ treeExpanded.has(node.node.value) ? '▼' : '▶' }}
             </span>
             <span v-else style="width:20px;flex-shrink:0;">
@@ -879,10 +879,10 @@ window.SyCodeMng = {
       </template>
     </bo-grid-crud>
   </div>
-</div>
+</bo-container>
 <!-- ===== □.□. 트리 탭 (BoGridCrud 트리 모드) =============================== -->
 <!-- ===== □. 코드 목록 영역 ================================================ -->
 <!-- ※ 공통코드 상세 패널 제거 (코드목록 그리드에서 인라인 편집으로 대체) -->
-</div>
+</bo-page>
 `,
 };

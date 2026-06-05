@@ -279,42 +279,42 @@ window.SyPropMng = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    프로퍼티관리
-  </div>
+<bo-page title="프로퍼티관리">
   <!-- ===== ■. 검색 바 ==================================================== -->
-  <div class="card" style="padding:12px;margin-bottom:12px;">
+  <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
-  </div>
+  </bo-container>
   <!-- ===== □. 검색 바 ==================================================== -->
   <!-- ===== ■. 좌 트리 + 우 그리드 ============================================ -->
-  <div style="display:grid;grid-template-columns:280px 1fr;gap:0 12px;align-items:flex-start;">
+  <div class="bo-2col">
     <!-- ===== ■.■. 트리 ==================================================== -->
-    <bo-path-tree-card biz-cd="sy_prop" title="표시경로" :show-biz-cd="false" :counts="propCounts"
-      :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
+    <bo-container bare>
+      <bo-path-tree-card biz-cd="sy_prop" title="표시경로" :show-biz-cd="false" :counts="propCounts"
+        :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
+    </bo-container>
     <!-- ===== ■.■. 그리드 (BoGridCrud) ====================================== -->
-    <bo-grid-crud
-      :columns="columns.baseGrid" :rows="propRows" row-key="propId"
-      list-title="프로퍼티목록" :draggable="false"
-      @add="handleBtnAction('props-add')" @save="handleBtnAction('props-save')"
-      @delete-checked="handleBtnAction('props-deleteChecked')" @cancel-checked="handleBtnAction('props-cancelChecked')"
-      grid-id="props-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
-      <template #row-actions="{ row }">
-        <button v-if="['N','U'].includes(row._row_status)" class="btn btn-xs btn-danger" @click.stop="handleSelectAction('props-rowDelete', row)">
-          삭제
-        </button>
-        <button v-else-if="row._row_status==='D'" class="btn btn-xs btn-secondary" @click.stop="handleSelectAction('props-rowRestore', row)">
-          복원
-        </button>
-      </template>
-    </bo-grid-crud>
+    <bo-container bare>
+      <bo-grid-crud
+        :columns="columns.baseGrid" :rows="propRows" row-key="propId"
+        list-title="프로퍼티목록" :draggable="false"
+        @add="handleBtnAction('props-add')" @save="handleBtnAction('props-save')"
+        @delete-checked="handleBtnAction('props-deleteChecked')" @cancel-checked="handleBtnAction('props-cancelChecked')"
+        grid-id="props-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+        <template #row-actions="{ row }">
+          <button v-if="['N','U'].includes(row._row_status)" class="btn btn-xs btn-danger" @click.stop="handleSelectAction('props-rowDelete', row)">
+            삭제
+          </button>
+          <button v-else-if="row._row_status==='D'" class="btn btn-xs btn-secondary" @click.stop="handleSelectAction('props-rowRestore', row)">
+            복원
+          </button>
+        </template>
+      </bo-grid-crud>
+    </bo-container>
   </div>
   <!-- ===== □.□. 그리드 (BoGridCrud) ====================================== -->
   <!-- ===== □. 좌 트리 + 우 그리드 ============================================ -->
-</div>
+</bo-page>
 `,
 };
 

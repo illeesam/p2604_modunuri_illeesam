@@ -227,78 +227,73 @@ window.PdQnaMng = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    상품 Q&A 관리
-  </div>
+<bo-page title="상품 Q&A 관리">
   <!-- ===== ■. 검색 ====================================================== -->
-  <div class="card">
+  <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" search-label="🔍 조회" reset-label="↺ 초기화" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
-  </div>
+  </bo-container>
   <!-- ===== □. 검색 ====================================================== -->
-  <!-- ===== ■. 목록 그리드 (bo-grid 단일 카드 — 제목/건수 모두 그리드가 렌더, 중복 제거) ===== -->
+  <!-- ===== ■. 목록 그리드 =================================================== -->
+  <bo-container title="Q&amp;A 목록" :count-text="pager.pageTotalCount + '건'">
     <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-grid
+    <bo-grid bare
       :columns="columns.baseGrid" :rows="qnas" row-key="qnaId" :selected-key="uiState.selectedId"
-      list-title="Q&amp;A 목록" :count-text="pager.pageTotalCount + '건'"
       :loading="uiState.loading"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       empty-text="조회된 데이터가 없습니다."
       @sort="key => handleBtnAction('qnas-sort', key)"
-      grid-id="qnas-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
-      <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
-      <template #footer>
-        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('qnas-pager-setPage', n)" :on-size-change="() => handleSelectAction('qnas-pager-sizeChange')" />
-      </template>
-    </bo-grid>
+      grid-id="qnas-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" />
+    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('qnas-pager-setPage', n)" :on-size-change="() => handleSelectAction('qnas-pager-sizeChange')" />
+  </bo-container>
   <!-- ===== □. 목록 그리드 =================================================== -->
   <!-- ===== ■. 상세 패널 (질문/답변) ======================================== -->
-  <div class="card" v-if="uiState.selectedId" style="margin-top:14px;">
-    <div class="toolbar">
-      <span class="list-title">
-        상품 Q&A 상세 / 답변
-        <span v-if="form.qnaId" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
-          #{{ form.qnaId }}
+  <bo-container bare v-if="uiState.selectedId">
+    <div class="card" style="margin-top:14px;">
+      <div class="toolbar">
+        <span class="list-title">
+          상품 Q&A 상세 / 답변
+          <span v-if="form.qnaId" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+            #{{ form.qnaId }}
+          </span>
         </span>
-      </span>
-    </div>
-    <div style="padding:12px;">
-      <!-- 메타정보 (읽기 전용) -->
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px 16px;font-size:13px;margin-bottom:14px;">
-        <div><span style="color:#999;">상품: </span><b>{{ fnProdNm(form.prodId) }}</b></div>
-        <div><span style="color:#999;">작성자: </span><b>{{ fnMemNm(form.memberId) }}</b></div>
-        <div><span style="color:#999;">상태: </span>
-          <span class="badge" :class="fnStatusBadge(form.answYn)">{{ fnAnswLabel(form.answYn) }}</span>
+      </div>
+      <div style="padding:12px;">
+        <!-- 메타정보 (읽기 전용) -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px 16px;font-size:13px;margin-bottom:14px;">
+          <div><span style="color:#999;">상품: </span><b>{{ fnProdNm(form.prodId) }}</b></div>
+          <div><span style="color:#999;">작성자: </span><b>{{ fnMemNm(form.memberId) }}</b></div>
+          <div><span style="color:#999;">상태: </span>
+            <span class="badge" :class="fnStatusBadge(form.answYn)">{{ fnAnswLabel(form.answYn) }}</span>
+          </div>
+          <div style="grid-column:1/-1;"><span style="color:#999;">제목: </span><b>{{ form.qnaTitle }}</b></div>
         </div>
-        <div style="grid-column:1/-1;"><span style="color:#999;">제목: </span><b>{{ form.qnaTitle }}</b></div>
-      </div>
-      <!-- 질문 본문 -->
-      <div class="form-group">
-        <label class="form-label">질문 내용</label>
-        <div style="padding:12px;background:#fafafa;border:1px solid #e5e7eb;border-radius:6px;min-height:80px;white-space:pre-wrap;">
-          {{ form.qnaContent || '(내용 없음)' }}
+        <!-- 질문 본문 -->
+        <div class="form-group">
+          <label class="form-label">질문 내용</label>
+          <div style="padding:12px;background:#fafafa;border:1px solid #e5e7eb;border-radius:6px;min-height:80px;white-space:pre-wrap;">
+            {{ form.qnaContent || '(내용 없음)' }}
+          </div>
+        </div>
+        <!-- 답변 입력 -->
+        <div class="form-group" style="margin-top:14px;">
+          <label class="form-label">답변</label>
+          <textarea v-model="form.answContent" class="form-control" rows="6"
+            placeholder="답변을 입력하세요"></textarea>
+        </div>
+        <!-- 하단 액션 -->
+        <div class="form-actions">
+          <button class="btn btn-blue" @click="handleBtnAction('form-save')">
+            답변 저장
+          </button>
+          <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
+            닫기
+          </button>
         </div>
       </div>
-      <!-- 답변 입력 -->
-      <div class="form-group" style="margin-top:14px;">
-        <label class="form-label">답변</label>
-        <textarea v-model="form.answContent" class="form-control" rows="6"
-          placeholder="답변을 입력하세요"></textarea>
-      </div>
-      <!-- 하단 액션 -->
-      <div class="form-actions">
-        <button class="btn btn-blue" @click="handleBtnAction('form-save')">
-          답변 저장
-        </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
-          닫기
-        </button>
-      </div>
     </div>
-  </div>
+  </bo-container>
   <!-- ===== □. 상세 패널 =================================================== -->
-</div>
+</bo-page>
 `
 };

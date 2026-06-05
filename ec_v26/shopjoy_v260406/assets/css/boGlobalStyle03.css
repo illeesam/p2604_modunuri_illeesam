@@ -9,6 +9,8 @@ body { background: #f0f2f5; color: #222; font-family: 'Noto Sans KR', sans-serif
 .page-title[style*="flex"]::before { content: none; }
 
 .card { background: #fff; border-radius: 10px; box-shadow: 0 1px 4px rgba(0,0,0,.08); padding: 12px; margin-bottom: 12px; }
+/* 좌측 트리 + 우측 영역 2열 레이아웃 (트리 220px~17fr + 콘텐츠 83fr). 화면 인라인 grid 스타일 대체 */
+.bo-2col { display: grid; grid-template-columns: minmax(220px,17fr) minmax(0,83fr); gap: 0 12px; align-items: flex-start; }
 
 .search-bar { display: flex; gap: 8px 8px; align-items: center; flex-wrap: wrap; }
 /* 검색 필드는 그리드 행 높이에 맞춰 슬림 (Dtl 폼 .form-control 은 유지) */
@@ -20,8 +22,8 @@ body { background: #f0f2f5; color: #222; font-family: 'Noto Sans KR', sans-serif
 .search-field { display: inline-flex; align-items: center; gap: 6px; }
 .search-actions { margin-left: auto; display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
 
-.toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-.list-title { font-size: 14px; font-weight: 700; color: #1a1a2e; }
+.toolbar { display: flex; justify-content: space-between; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.list-title { font-size: 14px; font-weight: 700; color: #1a1a2e; white-space: nowrap; }
 /* 영역 제목 좌측 ● 아이콘 (전체 공통). 개별 화면에서 수동 ● span 금지 */
 .list-title::before { content: "●"; color: #e8587a; font-size: 8px; margin-right: 5px; vertical-align: middle; }
 .list-title .list-count { font-size: 12px; font-weight: 400; color: #999; margin-left: 6px; }
@@ -44,9 +46,10 @@ body { background: #f0f2f5; color: #222; font-family: 'Noto Sans KR', sans-serif
 .btn-sm        { padding: 4px 10px; font-size: 12px; border-radius: 6px; }
 .btn-xs        { padding: 2px 7px; font-size: 11px; border-radius: 5px; font-weight: 500; }
 
-.bo-table { width: 100%; border-collapse: collapse; }
+.bo-table { width: 100%; min-width: 720px; border-collapse: collapse; }
 /* 표준 행 높이: 세로 패딩 6px(th)/4px(td) — 위젯 셀(표시경로 picker 등) 포함 일관 유지 */
-.bo-table th { background: #fafafa; padding: 6px 10px; text-align: left; font-size: 12px; font-weight: 600; color: #555; border-bottom: 1px solid #e8e8e8; white-space: nowrap; }
+.bo-table th { background: #fafafa; padding: 6px 10px; text-align: center; font-size: 12px; font-weight: 600; color: #555; border-bottom: 1px solid #e8e8e8; border-right: 1px solid #ececec; white-space: nowrap; }
+.bo-table th:last-child { border-right: none; }
 /* 그리드 내부 스크롤 시 헤더 고정 */
 .bo-table thead th { position: sticky; top: 0; z-index: 2; }
 .bo-table td { padding: 7px 10px; font-size: 13px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
@@ -56,7 +59,7 @@ body { background: #f0f2f5; color: #222; font-family: 'Noto Sans KR', sans-serif
 .bo-table tr.bo-row-selected { outline: 2px solid #2563eb; outline-offset: -2px; }
 .bo-table tr.bo-row-selected:hover td { background:#e0ecff; }
 
-.bo-table .actions { display: flex; gap: 4px; justify-content: flex-end; }
+.bo-table .actions { display: flex; gap: 4px; justify-content: center; }
 .title-link { color: #1677ff; cursor: pointer; font-weight: 500; }
 .title-link:hover { text-decoration: underline; }
 
@@ -275,7 +278,7 @@ textarea.form-control { resize: vertical; min-height: 80px; font-family: inherit
 
 /* ── Tab ── */
 .tab-nav { display: flex; gap: 4px; margin-bottom: 10px; background:#fff; padding:4px; border-radius:12px; border:1px solid #e5e7eb; box-shadow:0 1px 3px rgba(0,0,0,0.04); }
-.tab-btn { flex:1; padding: 5px 16px; border: none; background: transparent; cursor: pointer; font-size: 12.5px; font-weight: 600; color: #666; border-radius:9px; border-bottom: 2px solid transparent; white-space: nowrap; transition: all .18s; display:inline-flex; align-items:center; justify-content:center; gap:6px; }
+.tab-btn { flex:1; padding: 5px 16px; border: 1px solid #ececf0; background: #f5f6f8; cursor: pointer; font-size: 12.5px; font-weight: 600; color: #666; border-radius:9px; border-bottom: 2px solid transparent; white-space: nowrap; transition: all .18s; display:inline-flex; align-items:center; justify-content:center; gap:6px; }
 .tab-btn:hover { color: #9f2946; background:rgba(156,39,176,0.06); }
 .tab-btn.active { color: #9c27b0; font-weight: 800; background: linear-gradient(135deg,#fff0f4,#ffe4ec); box-shadow:0 2px 8px rgba(156,39,176,0.18); border-bottom:2px solid #9c27b0; }
 .tab-btn:disabled, .tab-btn[disabled] {

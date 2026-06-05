@@ -279,7 +279,7 @@ window.SyVendorMng = {
     const fnStatusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
 
     /* fnRowStyle — 행 스타일 */
-    const fnRowStyle = (v) => detailPanel.selectedId === v.vendorId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
+    const fnRowStyle = (v) => detailPanel.selectedId === v.vendorId ? 'background:#fff8f9;' : '';
 
     // 기본 검색
     const columns = {};
@@ -328,41 +328,36 @@ window.SyVendorMng = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    업체정보
-  </div>
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card">
-    <!-- ===== ■.■. 검색 영역 ================================================= -->
+<bo-page title="업체정보">
+  <!-- ===== ■. 검색 영역 =================================================== -->
+  <bo-container>
     <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
-  </div>
-  <!-- ===== □. 카드 영역 =================================================== -->
+  </bo-container>
   <!-- ===== ■. 좌 트리 + 우 영역 ============================================= -->
-  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:0 12px;align-items:flex-start;">
+  <div class="bo-2col">
     <!-- ===== ■.■. 경로 트리 ================================================= -->
-    <bo-path-tree-card biz-cd="sy_vendor" title="표시경로" :show-biz-cd="false" :counts="vendorCounts"
-      :selected="uiState.selectedPath"
-      @select="path => handleSelectAction('pathTree-select', path)" />
-    <div>
-      <!-- ===== ■.■.■. 목록 그리드 ============================================ -->
-      <bo-grid
+    <bo-container bare>
+      <bo-path-tree-card biz-cd="sy_vendor" title="표시경로" :show-biz-cd="false" :counts="vendorCounts"
+        :selected="uiState.selectedPath"
+        @select="path => handleSelectAction('pathTree-select', path)" />
+    </bo-container>
+    <!-- ===== ■.■. 목록 그리드 ============================================== -->
+    <bo-container title="거래처목록" :count-text="pager.pageTotalCount + '건'">
+      <template #toolbar-actions>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-green btn-sm" @click="handleBtnAction('vendors-excel')">
+            📥 엑셀
+          </button>
+          <button class="btn btn-primary btn-sm" @click="handleBtnAction('vendors-add')">
+            + 신규
+          </button>
+        </div>
+      </template>
+      <bo-grid bare
         :columns="columns.baseGrid" :rows="vendors" row-key="vendorId" :selected-key="detailPanel.selectedId"
-        list-title="거래처목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="key => handleBtnAction('vendors-sort', key)"
         grid-id="vendors-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
-        <template #toolbar-actions>
-          <div style="display:flex;gap:6px;">
-            <button class="btn btn-green btn-sm" @click="handleBtnAction('vendors-excel')">
-              📥 엑셀
-            </button>
-            <button class="btn btn-primary btn-sm" @click="handleBtnAction('vendors-add')">
-              + 신규
-            </button>
-          </div>
-        </template>
         <template #head-actions>
           <th style="text-align:right">
             관리
@@ -380,28 +375,23 @@ window.SyVendorMng = {
             </div>
           </td>
         </template>
-        <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 거래처목록 영역 안에 보이도록 -->
-        <template #footer>
-          <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('vendors-pager-setPage', n)" :on-size-change="() => handleSelectAction('vendors-pager-sizeChange')" />
-        </template>
       </bo-grid>
-    </div>
-    <!-- ===== ■.■. 상세 패널 (전체 폭, grid 직접 자식, 항상 표시) ===================== -->
-    <!-- margin-top 제거: 위 목록 카드의 margin-bottom만으로 영역 간격을 12px 로 통일 -->
-    <div style="grid-column:1/-1;">
-      <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-        <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
-          ✕ 닫기
-        </button>
-      </div>
-      <sy-vendor-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
-        :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-        :active="detailPanel.active"
-        :reload-trigger="detailPanel.reloadTrigger"
-        :on-list-reload="handleSearchList" />
-    </div>
+      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('vendors-pager-setPage', n)" :on-size-change="() => handleSelectAction('vendors-pager-sizeChange')" />
+    </bo-container>
   </div>
-  <!-- ===== □. 좌 트리 + 우 영역 ============================================= -->
-</div>
+  <!-- ===== ■. 상세 패널 (전체 폭, .bo-2col 바깥, 항상 표시) ====================== -->
+  <bo-container bare>
+    <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
+      <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+        ✕ 닫기
+      </button>
+    </div>
+    <sy-vendor-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
+      :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+      :active="detailPanel.active"
+      :reload-trigger="detailPanel.reloadTrigger"
+      :on-list-reload="handleSearchList" />
+  </bo-container>
+</bo-page>
 `,
 };

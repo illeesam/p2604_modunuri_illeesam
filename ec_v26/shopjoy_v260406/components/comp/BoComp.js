@@ -110,6 +110,13 @@ window.BoPathTree = {
       /* recur */
       const recur = (n) => { n.count = (n.children || []).reduce((s, c) => s + recur(c) + 1, 0); return n.count; };
       recur(root);
+
+      /* (미등록) 노드: counts['__none__'] (백엔드가 경로 미지정 항목 수 제공) 가 0 초과면
+         루트 직속 마지막에 추가. pathId='__none__' 클릭 시 미등록 항목 필터(화면 dispatch). */
+      const noneCnt = props.counts ? (props.counts['__none__'] || 0) : 0;
+      if (noneCnt > 0) {
+        root.children.push({ pathId: '__none__', pathLabel: '(미등록)', bizCd: '', children: [], count: 0, isNone: true });
+      }
       return root;
     };
 
@@ -895,6 +902,9 @@ window.BoMultiCheckSelect = {
     showAll:     { type: Boolean, default: true },
     minWidth:    { type: String,  default: '160px' },
     disabled:    { type: Boolean, default: false },
+    separator:   { type: String,  default: ',' },     // 값 구분자(공개대상/전시환경은 '^')
+    wrap:        { type: Boolean, default: false },    // true=값을 앞뒤 separator 로 감쌈(^A^B^ 형식). 폼 입력용
+    emptyValue:  { type: String,  default: '' },       // 전부 해제 시 emit 값(예: '^NONE^'). 기본 ''
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
@@ -942,8 +952,11 @@ window.BoMultiCheckSelect = {
     const cfSelected = computed(() => {
       if (noneMode.value) return new Set();
       const raw = (props.modelValue || '').toString().trim();
-      if (!raw) return new Set(cfNorm.value.map(o => o.value));
-      return new Set(raw.split(',').map(s => s.trim()).filter(Boolean));
+      // wrap 모드(폼): 빈값/emptyValue 면 선택 없음. 검색 모드: 빈값이면 전체.
+      if (!raw || raw === props.emptyValue) {
+        return props.wrap ? new Set() : new Set(cfNorm.value.map(o => o.value));
+      }
+      return new Set(raw.split(props.separator).map(s => s.trim()).filter(Boolean));
     });
 
     const cfIsAll = computed(() => {
@@ -962,11 +975,22 @@ window.BoMultiCheckSelect = {
       return labels.slice(0, 2).join(', ') + ' (' + labels.length + ')...';
     });
 
+    /* serializeSet — 선택 Set → 문자열. wrap 이면 앞뒤 separator 로 감쌈(^A^B^). */
+    const serializeSet = (set) => {
+      const vals = cfNorm.value.filter(o => set.has(o.value)).map(o => o.value);
+      if (vals.length === 0) return props.emptyValue;
+      const joined = vals.join(props.separator);
+      return props.wrap ? props.separator + joined + props.separator : joined;
+    };
     /* emitFromSet
-       - 전부 선택 → '' (전체)  ※ noneMode 해제
-       - 전부 해제 → noneMode (선택 안 함). emit 값은 '' 이지만 표시상 빈 체크 유지
-       - 일부 선택 → 콤마문자열 */
+       검색 모드(wrap=false): 전부 선택 → ''(전체), 전부 해제 → noneMode, 일부 → 구분문자열
+       폼 모드(wrap=true): 항상 명시적 값(전부 선택도 전체 값 저장). 전부 해제 → emptyValue */
     const emitFromSet = (set) => {
+      if (props.wrap) {
+        noneMode.value = false;
+        emit('update:modelValue', serializeSet(set));
+        return;
+      }
       if (set.size === 0) {
         noneMode.value = true;            // 전부 해제 = 선택 안 함 (전체로 되돌아가지 않음)
         emit('update:modelValue', '');
@@ -975,7 +999,7 @@ window.BoMultiCheckSelect = {
         emit('update:modelValue', '');
       } else {
         noneMode.value = false;
-        emit('update:modelValue', cfNorm.value.filter(o => set.has(o.value)).map(o => o.value).join(','));
+        emit('update:modelValue', serializeSet(set));
       }
     };
 
@@ -998,8 +1022,14 @@ window.BoMultiCheckSelect = {
       emitFromSet(set);
     };
 
-    /* onClickAll — 전체이면 모두 해제(noneMode), 아니면 전체 선택 */
+    /* onClickAll — 전체이면 모두 해제, 아니면 전체 선택 */
     const onClickAll = () => {
+      if (props.wrap) {
+        // 폼 모드: 전체↔비움을 명시적 값으로 emit
+        noneMode.value = false;
+        emitFromSet(cfIsAll.value ? new Set() : new Set(cfNorm.value.map(o => o.value)));
+        return;
+      }
       if (cfIsAll.value) noneMode.value = true;   // 모두 해제 (체크 전부 꺼짐)
       else noneMode.value = false;                 // 전체 선택
       emit('update:modelValue', '');               // 외부 계약은 항상 빈값(=전체 검색)

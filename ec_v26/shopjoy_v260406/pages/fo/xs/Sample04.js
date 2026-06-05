@@ -298,6 +298,7 @@ window.XsSample04 = {
   },
 
   template: /* html */`
+<fo-page bare>
 <div style="padding:16px;">
   <!-- ===== ■. 제목 ====================================================== -->
   <div style="font-size:16px;font-weight:700;margin-bottom:16px;">
@@ -1131,6 +1132,7 @@ window.XsSample04 = {
     .badge-xs      { padding:1px 5px !important;font-size:10px !important;border-radius:4px !important;font-weight:700 !important; }
   </style>
 </div>
+</fo-page>
 <!-- ===== □. 영역 ====================================================== -->
 `,
 };

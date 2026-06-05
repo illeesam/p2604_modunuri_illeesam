@@ -10,7 +10,7 @@ window.StSettleEtcAdjMng = {
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
-const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: '', selectedId: null, isNew: false});
+const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: '', selectedId: null, isNew: false});
     const codes = reactive({
       settle_etc_adj_types: [],
       settle_adj_statuses: [],
@@ -38,9 +38,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         return handleSave();
       } else if (cmd === 'form-cancel') {
         return closeForm();
-      } else if (cmd === 'desc-toggle') {
-        uiState.descOpen = !uiState.descOpen;
-        return;
       } else if (cmd === 'etcAdjs-pager-setPage') {
         if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchData('PAGE_CLICK'); }
         return;
@@ -283,41 +280,24 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    정산기타조정
-  </div>
-  <!-- ===== ■. 영역 ====================================================== -->
-  <div class="page-desc-bar">
-    <span class="page-desc-summary">
-      판촉비·위약금·보증금 등 정산조정 외 기타 항목을 별도 관리합니다.
-    </span>
-    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">
-      {{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}
-    </button>
-    <div v-if="uiState.descOpen" class="page-desc-detail">
-      • 정산조정(StSettleAdjMng)에서 처리하기 어려운 비정형 항목을 등록합니다. • 항목 유형: 판촉비 / 위약금 / 보증금 / 기타 차감 등 • 승인 후 정산마감 집계에 포함됩니다. • 승인 상태: 대기 / 승인 / 반려
-    </div>
-  </div>
-  <!-- ===== □. 영역 ====================================================== -->
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card">
-    <!-- ===== ■.■. 검색 영역 ================================================= -->
+<bo-page title="정산기타조정"
+  desc-summary="판촉비·위약금·보증금 등 정산조정 외 기타 항목을 별도 관리합니다."
+  desc-detail="• 정산조정(StSettleAdjMng)에서 처리하기 어려운 비정형 항목을 등록합니다.&#10;• 항목 유형: 판촉비 / 위약금 / 보증금 / 기타 차감 등&#10;• 승인 후 정산마감 집계에 포함됩니다.&#10;• 승인 상태: 대기 / 승인 / 반려">
+  <!-- ===== ■. 검색 영역 ================================================= -->
+  <bo-container>
     <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
-  </div>
-  <!-- ===== □. 카드 영역 =================================================== -->
-  <!-- ===== ■. 목록 (bo-grid 단일 카드 — 제목/건수/버튼 모두 그리드가 렌더, 중복 제거) ===== -->
-    <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-grid
+  </bo-container>
+  <!-- ===== ■. 목록 영역 ================================================= -->
+  <bo-container title="정산기타조정 목록" :count-text="'총 ' + pager.pageTotalCount + '건'">
+    <template #toolbar-actions>
+      <button class="btn btn-primary btn-sm" @click="handleBtnAction('etcAdjs-add')">
+        + 기타조정 추가
+      </button>
+    </template>
+    <bo-grid bare
       :columns="columns.baseGrid" :rows="etcAdjs" row-key="adjId" :selected-key="uiState.selectedId"
-      list-title="정산기타조정 목록" :count-text="'총 ' + pager.pageTotalCount + '건'" :row-actions="true"
+      :row-actions="true"
       :row-class="(r) => uiState.selectedId===r.adjId ? 'selected' : ''">
-      <template #toolbar-actions>
-        <button class="btn btn-primary btn-sm" @click="handleBtnAction('etcAdjs-add')">
-          + 기타조정 추가
-        </button>
-      </template>
       <template #head-actions>
         <th style="text-align:right">액션</th>
       </template>
@@ -331,26 +311,20 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
           </button>
         </div>
       </template>
-      <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
-      <template #footer>
-        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('etcAdjs-pager-setPage', n)" :on-size-change="() => handleSelectAction('etcAdjs-pager-sizeChange')" />
-      </template>
     </bo-grid>
-  <!-- ===== □.□. 목록 영역 ================================================= -->
-  <!-- ===== □. 카드 영역 =================================================== -->
-  <!-- ===== ■. 편집 폼 (BoFormArea 자동 렌더) ================================= -->
-  <!-- ===== ■. 상세 패널 =================================================== -->
-  <div v-if="uiState.selectedId" class="card" style="margin-top:12px">
-    <div style="font-weight:700;margin-bottom:16px">
-      {{ uiState.isNew ? '기타조정 추가' : '기타조정 수정' }}
+    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('etcAdjs-pager-setPage', n)" :on-size-change="() => handleSelectAction('etcAdjs-pager-sizeChange')" />
+  </bo-container>
+  <!-- ===== ■. 상세 패널 (전체 폭) ========================================= -->
+  <bo-container bare>
+    <div v-if="uiState.selectedId" class="card" style="margin-top:12px">
+      <div style="font-weight:700;margin-bottom:16px">
+        {{ uiState.isNew ? '기타조정 추가' : '기타조정 수정' }}
+      </div>
+      <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
+        :cols="3"
+        @save="handleBtnAction('form-save')" @cancel="handleBtnAction('form-cancel')" />
     </div>
-    <!-- ===== ■.■. 폼 영역 ================================================== -->
-    <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
-      :cols="3"
-      @save="handleBtnAction('form-save')" @cancel="handleBtnAction('form-cancel')" />
-  </div>
-</div>
-<!-- ===== □.□. 폼 영역 ================================================== -->
-<!-- ===== □. 상세 패널 =================================================== -->
+  </bo-container>
+</bo-page>
 `,
 };

@@ -292,77 +292,57 @@ window.PmEventMng = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    이벤트관리
-  </div>
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card">
-    <!-- ===== ■.■. 검색 영역 ================================================= -->
+<bo-page title="이벤트관리">
+  <!-- ===== ■. 검색 영역 =================================================== -->
+  <bo-container>
     <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
-  </div>
-  <!-- ===== □. 카드 영역 =================================================== -->
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card">
-    <div class="toolbar">
-      <span class="list-title">
-        이벤트목록
-        <span class="list-count">
-          {{ pager.pageTotalCount }}건
-        </span>
-      </span>
-      <div style="display:flex;gap:6px;align-items:center;">
-        <div style="display:flex;border:1px solid #ddd;border-radius:6px;overflow:hidden;">
-          <button @click="handleBtnAction('tab-mode', 'list')" style="font-size:11px;padding:4px 10px;border:none;cursor:pointer;transition:all .15s;"
-            :style="tabMode==='list' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">
-            ☰ 리스트
-          </button>
-          <button @click="handleBtnAction('tab-mode', 'card')" style="font-size:11px;padding:4px 10px;border:none;border-left:1px solid #ddd;cursor:pointer;transition:all .15s;"
-            :style="tabMode==='card' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">
-            ⊞ 카드
-          </button>
-        </div>
-        <button class="btn btn-green btn-sm" @click="handleBtnAction('events-excel')">
-          📥 엑셀
+  </bo-container>
+  <!-- ===== ■. 목록 영역 =================================================== -->
+  <bo-container title="이벤트목록" :count-text="pager.pageTotalCount + '건'">
+    <template #toolbar-actions>
+      <div style="display:flex;border:1px solid #ddd;border-radius:6px;overflow:hidden;">
+        <button @click="handleBtnAction('tab-mode', 'list')" style="font-size:11px;padding:4px 10px;border:none;transition:all .15s;"
+          :style="tabMode==='list' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">
+          ☰ 리스트
         </button>
-        <button class="btn btn-primary btn-sm" @click="handleBtnAction('events-add')">
-          + 신규
+        <button @click="handleBtnAction('tab-mode', 'card')" style="font-size:11px;padding:4px 10px;border:none;border-left:1px solid #ddd;transition:all .15s;"
+          :style="tabMode==='card' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">
+          ⊞ 카드
         </button>
       </div>
-    </div>
+      <button class="btn btn-green btn-sm" @click="handleBtnAction('events-excel')">
+        📥 엑셀
+      </button>
+      <button class="btn btn-primary btn-sm" @click="handleBtnAction('events-add')">
+        + 신규
+      </button>
+    </template>
     <!-- ===== ■.■. 리스트 뷰 ================================================= -->
     <bo-grid v-if="tabMode==='list'" :bare="true"
       :columns="columns.baseGrid" :rows="events" row-key="eventId" :selected-key="detailPanel.selectedId"
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
-      :row-style="(e) => detailPanel.selectedId===e.eventId ? 'background:#fff8f9;' : ''"
-      row-clickable @sort="key => handleBtnAction('events-sort', key)" grid-id="events-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+      :row-style="(e) => detailPanel.selectedId===e.eventId ? 'background:#fff8f9;' : ''" @sort="key => handleBtnAction('events-sort', key)" grid-id="events-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
       <template #head-actions>
         관리
       </template>
       <template #row-actions="{ row: e, gridId }">
-        <div class="actions" style="display:flex;gap:6px;align-items:center;">
-          <button class="btn btn-blue btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
+        <div class="actions" style="display:flex;gap:6px;align-items:center;justify-content:center;">
+          <button class="btn btn-blue btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_edit', e)">
             수정
           </button>
-          <button class="btn btn-danger btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">
+          <button class="btn btn-danger btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_delete', e)">
             삭제
           </button>
-          <span style="font-size:11px;color:#999;margin-left:auto;">
-            #{{ e.eventId }}
-          </span>
         </div>
       </template>
     </bo-grid>
-    <bo-pager v-if="tabMode==='list' && pager.pageTotalCount > 0" :pager="pager" :on-set-page="n => handleBtnAction('events-pager-setPage', n)" :on-size-change="() => handleSelectAction('events-pager-sizeChange')" />
-    <!-- ===== □.□. 리스트 뷰 ================================================= -->
     <!-- ===== ■.■. 카드 뷰 ================================================== -->
     <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">
       <div v-if="events.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">
         데이터가 없습니다.
       </div>
-      <div v-for="(e, idx) in events" :key="e?.eventId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
+      <div v-for="(e, idx) in events" :key="e?.eventId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;"
         :style="detailPanel.selectedId===e.eventId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
         @click="handleSelectAction('events-rowView', e.eventId)">
         <!-- ===== ■.■.■.■. 배너 이미지 ============================================ -->
@@ -372,7 +352,7 @@ window.PmEventMng = {
           <div style="font-size:12px;color:#999;margin-bottom:6px;">
             <span style="display:inline-block;min-width:20px;font-weight:700;color:#e8587a;">{{ (pager.pageNo-1)*pager.pageSize + idx + 1 }}</span> 이벤트 #{{ e.eventId }}
           </div>
-          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleSelectAction('events-rowView', e.eventId)" :style="detailPanel.selectedId===e.eventId?{color:'#e8587a'}:{}">
+          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;" @click="handleSelectAction('events-rowView', e.eventId)" :style="detailPanel.selectedId===e.eventId?{color:'#e8587a'}:{}">
             {{ e.eventTitle }}
             <span v-if="detailPanel.selectedId===e.eventId" style="font-size:10px;margin-left:4px;">
               ▼
@@ -411,12 +391,11 @@ window.PmEventMng = {
         </div>
       </div>
     </div>
-    <bo-pager v-if="tabMode!=='list' && pager.pageTotalCount > 0" :pager="pager" :on-set-page="n => handleBtnAction('events-pager-setPage', n)" :on-size-change="() => handleSelectAction('events-pager-sizeChange')" />
-  </div>
-  <!-- ===== □.□. 카드 뷰 ================================================== -->
-  <!-- ===== □. 카드 영역 =================================================== -->
+    <!-- ===== ■.■. 페이저 ================================================== -->
+    <bo-pager v-if="pager.pageTotalCount > 0" :pager="pager" :on-set-page="n => handleBtnAction('events-pager-setPage', n)" :on-size-change="() => handleSelectAction('events-pager-sizeChange')" />
+  </bo-container>
   <!-- ===== ■. 하단 상세: EventDtl 임베드 ===================================== -->
-  <div>
+  <bo-container bare>
     <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기
@@ -434,8 +413,7 @@ window.PmEventMng = {
       :reload-trigger="detailPanel.reloadTrigger"
       :on-list-reload="handleBtnAction"
       />
-  </div>
-</div>
-<!-- ===== □. 하단 상세: EventDtl 임베드 ===================================== -->
+  </bo-container>
+</bo-page>
 `
 };

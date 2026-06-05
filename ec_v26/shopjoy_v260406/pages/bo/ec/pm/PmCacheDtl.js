@@ -228,6 +228,9 @@ window.PmCacheDtl = {
     /* selectVendor — 선택 */
     const selectVendor = (vendorId, vendorNm) => {
       form.vendorId = vendorId;
+      // 판매업체 선택 시 판매담당자(대표자명) 자동 적용
+      const v = vendors.find(x => x.vendorId === vendorId);
+      if (v) { form.chargeStaff = v.chargeStaff || v.ceoNm || v.vendorNm || ''; }
       uiState.showVendorModal = false;
     };
 
@@ -280,7 +283,7 @@ window.PmCacheDtl = {
       vendors, uiState, codes, form, errors,                                        // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal,                                           // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfDtlMode, cfMemberCacheHistory, cfTotalBalance, cfSelectedVendorNm, // computed
-      tab, tabMode2, showVendorModal,                                                // toRef
+      tabs, tab, tabMode2, showVendorModal,                                                // toRef
       showTab, fnTypeBadge,                                                          // 헬퍼
       coUtil,                                                                        // 템플릿 내 cofAnd 사용
     };
@@ -289,16 +292,14 @@ window.PmCacheDtl = {
   template: /* html */`
 <div>
   <!-- ===== ■. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
-  <div class="card">
+  <bo-container>
     <!-- ===== ■.■. 카드 헤더 (제목 = list-title, page-title 아님 → 폰트 축소) ========= -->
-    <div class="toolbar">
-      <span class="list-title">
-        {{ cfIsNew ? '캐쉬 등록' : (cfDtlMode ? '캐쉬 상세' : '캐쉬 수정') }}
-        <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
-          #{{ form.cacheId }}
-        </span>
+    <template #title>
+      {{ cfIsNew ? '캐쉬 등록' : (cfDtlMode ? '캐쉬 상세' : '캐쉬 수정') }}
+      <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+        #{{ form.cacheId }}
       </span>
-    </div>
+    </template>
     <!-- ===== ■.■. 탭바 ==================================================== -->
     <bo-tab-bar :tabs="tabs" :tab="tab" :tab-mode="tabMode2"
       @tab-select="id => handleBtnAction('tab-select', id)"
@@ -326,7 +327,7 @@ window.PmCacheDtl = {
         <!-- ===== ■.■.■.■. 판매업체 picker ======================================= -->
         <template #vendor>
           <div style="display:flex;gap:8px;align-items:center;">
-            <div class="form-control" style="background:#f9f9f9;cursor:pointer;padding:0;display:flex;align-items:center;" @click="handleBtnAction('vendorModal-open')">
+            <div class="form-control" :style="'background:#f9f9f9;padding:0;display:flex;align-items:center;cursor:' + (cfDtlMode ? 'default' : 'pointer')" @click="cfDtlMode ? null : handleBtnAction('vendorModal-open')">
               <span style="padding:4px 10px;flex:1;">
                 {{ cfSelectedVendorNm }}
               </span>
@@ -334,7 +335,7 @@ window.PmCacheDtl = {
                 ▼
               </span>
             </div>
-            <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendorClear')">
+            <button v-if="coUtil.cofAnd(form.vendorId, !cfDtlMode)" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendorClear')">
               초기화
             </button>
           </div>
@@ -387,7 +388,7 @@ window.PmCacheDtl = {
     </div>
   </div>
   <!-- ===== □. 탭 컨텐츠 =================================================== -->
-  </div>
+  </bo-container>
   <!-- ===== □. 상세 카드 (제목 + 탭바 + 탭컨텐츠) =============================== -->
   <!-- ===== ■. 판매업체 선택 모달 (카드 밖) ====================================== -->
   <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId" modal-name="vendor-pick" :on-callback="fnCallbackModal" />

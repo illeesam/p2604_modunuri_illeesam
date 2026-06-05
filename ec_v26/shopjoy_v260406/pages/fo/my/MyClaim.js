@@ -190,6 +190,7 @@ window.MyClaim = {
     };
   },
   template: /* html */ `
+<fo-page bare>
 <fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myClaim">
   <!-- ===== ■. 영역 ====================================================== -->
   <MyDateFilter @search="onSearch" @reset="handleBtnAction('claims-statusReset')" />
@@ -458,6 +459,7 @@ window.MyClaim = {
   <CustomerModal :show="myStore.customerModal.show" :user="myStore.customerModal.user" :order="myStore.customerModal.order" modal-name="customer" :on-callback="fnCallbackModal" />
 </teleport>
 </fo-my-layout>
+</fo-page>
 <!-- ===== □. 영역 ====================================================== -->
 `,
   components: {

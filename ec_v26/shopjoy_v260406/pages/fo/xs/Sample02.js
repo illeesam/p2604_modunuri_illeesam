@@ -347,7 +347,7 @@ window.XsSample02 = {
     };
   },
   template: /* html */`
-<div style="padding:clamp(12px,3vw,24px);">
+<fo-page bare style="padding:clamp(12px,3vw,24px);">
   <!-- ===== ■. 조건부 영역 ================================================== -->
   <div v-if="toast.show" style="position:fixed;top:20px;right:20px;z-index:9999;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.15);pointer-events:none;"
     :style="toast.type==='error'?'background:#fee2e2;color:#991b1b;':toast.type==='info'?'background:#dbeafe;color:#1e40af;':'background:#d1fae5;color:#065f46;'">
@@ -387,6 +387,6 @@ window.XsSample02 = {
   <style>
     @keyframes spin { to { transform: rotate(360deg); } }
   </style>
-  </div>
+</fo-page>
 `,
 };

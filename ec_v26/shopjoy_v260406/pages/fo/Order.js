@@ -324,7 +324,11 @@ window.Order = {
   },
 
   template: /* html */ `
-<div class="page-wrap">
+<fo-page eyebrow="Shopping" title="주문 · 결제"
+  :banner-img="uiState.view==='result' ? '' : 'assets/cdn/prod/img/page-title/page-title-1.jpg'"
+  banner-align="center 40%"
+  :crumbs="[{ label:'홈', page:'home' }, { label:'주문하기' }]"
+  @nav="() => handleBtnAction('page-goHome')">
   <!-- ===== ■. ══ 주문 결과 화면 ══ ========================================== -->
   <template v-if="uiState.view==='result' && uiState.resultData">
   <div style="max-width:600px;margin:0 auto;padding:40px 20px;text-align:center;">
@@ -343,7 +347,7 @@ window.Order = {
     <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:32px;">
       입금 확인 후 1~2 영업일 이내 발송됩니다.
     </p>
-    <div class="card" style="padding:20px;text-align:left;margin-bottom:20px;">
+    <fo-container card-style="padding:20px;text-align:left;margin-bottom:20px;">
       <div style="font-size:0.88rem;font-weight:700;color:var(--text-primary);margin-bottom:14px;">
         📦 주문 상품
       </div>
@@ -417,9 +421,9 @@ window.Order = {
           </span>
         </div>
       </div>
-    </div>
+    </fo-container>
     <!-- ===== ■.■.■. 카드 영역 =============================================== -->
-    <div class="card" style="padding:18px;text-align:left;margin-bottom:28px;background:var(--blue-dim);">
+    <fo-container card-style="padding:18px;text-align:left;margin-bottom:28px;background:var(--blue-dim);">
       <div style="font-size:0.85rem;font-weight:700;color:var(--blue);margin-bottom:10px;">
         💳 입금 안내
       </div>
@@ -434,7 +438,7 @@ window.Order = {
         <br>
         입금자명: {{ uiState.resultData.form.name }}
       </div>
-    </div>
+    </fo-container>
     <div style="display:flex;flex-direction:column;gap:12px;">
       <button @click="handleBtnAction('page-goMyOrder')"
           style="padding:14px;font-size:1rem;font-weight:700;border:none;border-radius:10px;background:linear-gradient(135deg,#1a1a1a,#404040);color:#fff;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.15);transition:all .15s;"
@@ -454,32 +458,6 @@ window.Order = {
 <!-- ===== □. ══ 주문 결과 화면 ══ ========================================== -->
 <!-- ===== ■. ══ 주문 입력 화면 ══ ========================================== -->
 <template v-else>
-  <!-- ===== ■.■. 페이지 타이틀 배너 ============================================ -->
-  <div class="page-banner-full" style="position:relative;overflow:hidden;height:220px;margin-bottom:36px;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;width:100vw;display:flex;align-items:center;justify-content:center;">
-    <img src="assets/cdn/prod/img/page-title/page-title-1.jpg" alt="주문결제"
-        style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%;" />
-    <div style="position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,0.72) 0%,rgba(240,245,255,0.55) 45%,rgba(220,232,255,0.38) 100%);">
-    </div>
-    <div style="position:relative;z-index:1;text-align:center;">
-      <div style="font-size:0.75rem;color:rgba(0,0,0,0.55);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">
-        Shopping
-      </div>
-      <h1 style="font-size:2.2rem;font-weight:700;color:#111;letter-spacing:-0.5px;margin-bottom:8px;">
-        주문 · 결제
-      </h1>
-      <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:0.8rem;color:rgba(0,0,0,0.55);">
-        <span style="cursor:pointer;" @click="handleBtnAction('page-goHome')">
-          홈
-        </span>
-        <span>
-          /
-        </span>
-        <span style="color:#333;">
-          주문하기
-        </span>
-      </div>
-    </div>
-  </div>
   <div v-if="cfOrderItems.length===0" style="text-align:center;padding:80px 20px;">
     <div style="font-size:4rem;margin-bottom:20px;">
       📦
@@ -493,7 +471,7 @@ window.Order = {
   </div>
   <template v-else>
     <!-- ===== ■.■.■. 주문 상품 + 쿠폰 ========================================== -->
-    <div class="card" style="padding:20px;margin-bottom:20px;">
+    <fo-container card-style="padding:20px;margin-bottom:20px;">
       <h2 style="font-size:0.95rem;font-weight:700;margin-bottom:14px;color:var(--text-primary);">
         🛍️ 주문 상품 ({{ cfOrderItems.length }})
       </h2>
@@ -653,11 +631,11 @@ window.Order = {
           </span>
         </div>
       </div>
-    </div>
+    </fo-container>
     <!-- ===== ■.■.■. 주문자 정보 + 결제 안내 ====================================== -->
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(12px,2vw,20px);align-items:start;" class="order-grid">
       <!-- ===== ■.■.■.■. 주문자 정보 ============================================ -->
-      <div class="card" style="padding:clamp(16px,3vw,28px);">
+      <fo-container card-style="padding:clamp(16px,3vw,28px);">
         <h2 style="font-size:1rem;font-weight:700;margin-bottom:18px;color:var(--text-primary);">
           👤 주문자 정보
         </h2>
@@ -696,9 +674,9 @@ window.Order = {
             @mouseleave="$event.currentTarget.style.transform='', $event.currentTarget.style.boxShadow=uiState.submitting?'none':'0 2px 8px rgba(0,0,0,0.15)'">
           {{ uiState.submitting ? '처리 중...' : '🛒 주문 완료' }}
         </button>
-      </div>
+      </fo-container>
       <!-- ===== ■.■.■.■. 결제 안내 ============================================= -->
-      <div class="card" style="padding:clamp(16px,3vw,28px);">
+      <fo-container card-style="padding:clamp(16px,3vw,28px);">
         <h2 style="font-size:1rem;font-weight:700;margin-bottom:18px;color:var(--text-primary);">
           💳 결제 안내 (계좌이체)
         </h2>
@@ -830,7 +808,7 @@ window.Order = {
           💬 문의·상담하기
         </button>
       </div>
-    </div>
+    </fo-container>
   </div>
 </template>
 </template>
@@ -972,7 +950,7 @@ window.Order = {
     </div>
   </div>
 </div>
-</div>
+</fo-page>
 <!-- ===== □. ══ 배송비 쿠폰 팝업 ══ ========================================= -->
 `
 };

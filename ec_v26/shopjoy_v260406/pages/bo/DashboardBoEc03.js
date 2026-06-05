@@ -351,7 +351,7 @@ window.DashboardBoEc03 = {
   <!-- ===== □. 본문 영역 =================================================== -->
   <!-- ===== ■. 필터 바: 조회기간 + 상세필터 토글 ==================================== -->
   <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card" style="padding:12px 14px;margin-bottom:14px;display:flex;flex-direction:column;gap:8px;">
+  <bo-container card-style="padding:12px 14px;margin-bottom:14px;display:flex;flex-direction:column;gap:8px;">
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
       <span style="font-size:11px;font-weight:700;color:#666;width:74px;">
         조회기간
@@ -362,7 +362,7 @@ window.DashboardBoEc03 = {
       </span>
       <input type="date" v-model="filters.endDt" class="form-control" style="width:150px;height:30px;font-size:12px;">
       <button @click="handleBtnAction('filters-toggleExpand')"
-        style="font-size:11px;padding:4px 12px;border-radius:6px;border:1px solid #e5e7eb;background:#fafbfc;color:#555;cursor:pointer;">
+        style="font-size:11px;padding:4px 12px;border-radius:6px;border:1px solid #e5e7eb;background:#fafbfc;color:#555;">
         {{ uiState.filterExpand ? '▲ 상세필터 접기' : '▼ 상세필터 펼치기' }}
       </button>
       <span style="flex:1;">
@@ -405,7 +405,7 @@ window.DashboardBoEc03 = {
         </button>
       </div>
     </div>
-  </div>
+  </bo-container>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 탭 바 + 뷰모드 =============================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
@@ -434,7 +434,7 @@ window.DashboardBoEc03 = {
 <!-- ===== ■. 영역 ====================================================== -->
 <div :style="{display:'grid',gridTemplateColumns:cfBaseGridColumns,gap:'12px'}">
   <!-- ===== ■.■. 1) 월별 매출현황 ============================================ -->
-  <div v-show="showPanel('sales')" class="card" style="padding:14px;">
+  <bo-container v-show="showPanel('sales')" card-style="padding:14px;">
     <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
       💰
       <span>
@@ -464,10 +464,10 @@ window.DashboardBoEc03 = {
         {{ m.slice(2) }}
       </span>
     </div>
-  </div>
+  </bo-container>
   <!-- ===== □.□. 1) 월별 매출현황 ============================================ -->
   <!-- ===== ■.■. 2) 월별 고객 가입/탈퇴 현황 ===================================== -->
-  <div v-show="showPanel('member')" class="card" style="padding:14px;">
+  <bo-container v-show="showPanel('member')" card-style="padding:14px;">
     <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
       👥
       <!-- ===== ■.■.■.■. 영역 ================================================ -->
@@ -502,11 +502,11 @@ window.DashboardBoEc03 = {
         {{ m.slice(2) }}
       </span>
     </div>
-  </div>
+  </bo-container>
   <!-- ===== □.□. 2) 월별 고객 가입/탈퇴 현황 ===================================== -->
   <!-- ===== ■.■. 3) 월별 상품상세 클릭 현황 ====================================== -->
   <!-- ===== ■.■. 조건부 카드 ================================================ -->
-  <div v-show="showPanel('click')" class="card" style="padding:14px;">
+  <bo-container v-show="showPanel('click')" card-style="padding:14px;">
     <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
       🖱
       <span>
@@ -536,10 +536,10 @@ window.DashboardBoEc03 = {
         {{ m.slice(2) }}
       </span>
     </div>
-  </div>
+  </bo-container>
   <!-- ===== □.□. 조건부 카드 ================================================ -->
   <!-- ===== ■.■. 4) 월별 주문완료 현황 ========================================= -->
-  <div v-show="showPanel('order')" class="card" style="padding:14px;">
+  <bo-container v-show="showPanel('order')" card-style="padding:14px;">
     <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
       📋
       <span>
@@ -570,11 +570,11 @@ window.DashboardBoEc03 = {
         {{ m.slice(2) }}
       </span>
     </div>
-  </div>
+  </bo-container>
   <!-- ===== □.□. 4) 월별 주문완료 현황 ========================================= -->
   <!-- ===== ■.■. 5) 월별 판매채널별 매출 ======================================== -->
   <!-- ===== ■.■. 조건부 카드 ================================================ -->
-  <div v-show="showPanel('channel')" class="card" style="padding:14px;">
+  <bo-container v-show="showPanel('channel')" card-style="padding:14px;">
     <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
       📺
       <span>
@@ -605,10 +605,10 @@ window.DashboardBoEc03 = {
         </span>
       </span>
     </div>
-  </div>
+  </bo-container>
   <!-- ===== □.□. 조건부 카드 ================================================ -->
   <!-- ===== ■.■. 6) 핵심지표 KPI =========================================== -->
-  <div v-show="showPanel('kpi')" class="card" style="padding:14px;">
+  <bo-container v-show="showPanel('kpi')" card-style="padding:14px;">
     <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;">
       🎯 핵심지표
     </div>
@@ -636,11 +636,11 @@ window.DashboardBoEc03 = {
         </div>
       </div>
     </div>
-  </div>
+  </bo-container>
   <!-- ===== □.□. 6) 핵심지표 KPI =========================================== -->
   <!-- ===== ■.■. 7) 상품 TOP 7 =========================================== -->
   <!-- ===== ■.■. 조건부 카드 ================================================ -->
-  <div v-show="showPanel('topProducts')" class="card" style="padding:14px;">
+  <bo-container v-show="showPanel('topProducts')" card-style="padding:14px;">
     <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;">
       📦 상품별 매출 TOP 7
     </div>
@@ -658,14 +658,14 @@ window.DashboardBoEc03 = {
         </span>
       </div>
     </div>
-  </div>
+  </bo-container>
   <!-- ===== □.□. 조건부 카드 ================================================ -->
   <!-- ===== ■.■. 8~10) 도넛 3개 (채널/디바이스/시간대) ============================= -->
-  <div v-for="d in [
+  <bo-container v-for="d in [
       {key:'channelMix', title:'📱 판매 채널별',  data:salesByChannel},
       {key:'deviceMix',  title:'💻 디바이스별',   data:salesByDevice},
       {key:'timeMix',    title:'⏰ 시간대별',     data:salesByTime},
-      ]" :key="d.key" v-show="showPanel(d.key)" class="card" style="padding:14px;">
+      ]" :key="d.key" v-show="showPanel(d.key)" card-style="padding:14px;">
     <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;">
       {{ d.title }}
     </div>
@@ -693,10 +693,10 @@ window.DashboardBoEc03 = {
         </div>
       </div>
     </div>
-  </div>
+  </bo-container>
   <!-- ===== □.□. 8~10) 도넛 3개 (채널/디바이스/시간대) ============================= -->
   <!-- ===== ■.■. 11) 지역별 =============================================== -->
-  <div v-show="showPanel('region')" class="card" style="padding:14px;">
+  <bo-container v-show="showPanel('region')" card-style="padding:14px;">
     <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;">
       🗺 지역별 매출현황
     </div>
@@ -714,11 +714,11 @@ window.DashboardBoEc03 = {
         </span>
       </div>
     </div>
-  </div>
+  </bo-container>
   <!-- ===== □.□. 11) 지역별 =============================================== -->
   <!-- ===== ■.■. 12) 시간대 추이 ============================================ -->
   <!-- ===== ■.■. 조건부 카드 ================================================ -->
-  <div v-show="showPanel('hourly')" class="card" style="padding:14px;">
+  <bo-container v-show="showPanel('hourly')" card-style="padding:14px;">
     <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;">
       ⏱ 시간대별 주문 추이 (24H)
     </div>
@@ -745,10 +745,10 @@ window.DashboardBoEc03 = {
         23
       </span>
     </div>
-  </div>
+  </bo-container>
   <!-- ===== □.□. 조건부 카드 ================================================ -->
   <!-- ===== ■.■. 13) 영업지표 레이더 ========================================== -->
-  <div v-show="showPanel('radar')" class="card" style="padding:14px;">
+  <bo-container v-show="showPanel('radar')" card-style="padding:14px;">
     <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;">
       ⚡ 영업 지표 비교
     </div>
@@ -762,11 +762,11 @@ window.DashboardBoEc03 = {
         {{ a.label }}
       </text>
     </svg>
-  </div>
+  </bo-container>
   <!-- ===== □.□. 13) 영업지표 레이더 ========================================== -->
   <!-- ===== ■.■. 14) 경제 수준별 ============================================ -->
   <!-- ===== ■.■. 조건부 카드 ================================================ -->
-  <div v-show="showPanel('economy')" class="card" style="padding:14px;">
+  <bo-container v-show="showPanel('economy')" card-style="padding:14px;">
     <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;">
       💼 경제 수준별 매출현황
     </div>
@@ -797,11 +797,11 @@ window.DashboardBoEc03 = {
         하위
       </span>
     </div>
-  </div>
+  </bo-container>
   <!-- ===== □.□. 조건부 카드 ================================================ -->
   <!-- ===== ■.■. 15) 배송 조건별 ============================================ -->
   <!-- ===== ■.■. 조건부 카드 ================================================ -->
-  <div v-show="showPanel('shipping')" class="card" style="padding:14px;">
+  <bo-container v-show="showPanel('shipping')" card-style="padding:14px;">
     <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;">
       🚚 배송 조건별 매출현황
     </div>
@@ -828,7 +828,7 @@ window.DashboardBoEc03 = {
         </div>
       </div>
     </div>
-  </div>
+  </bo-container>
 </div>
 <!-- ===== □.□. 조건부 카드 ================================================ -->
 <!-- ===== □. 영역 ====================================================== -->

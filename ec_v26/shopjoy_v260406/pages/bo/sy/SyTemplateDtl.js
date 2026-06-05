@@ -203,20 +203,18 @@ window.SyTemplateDtl = {
   },
   template: /* html */`
 <div>
-  <!-- ===== ■. 카드 영역 (제목/라벨/폼 모두 카드 안에) =============================== -->
-  <div class="card">
+  <!-- ===== ■. 카드 영역 (제목/라벨/폼 모두 컨테이너 안에) =============================== -->
+  <bo-container>
     <!-- ===== ■.■. 카드 헤더 (제목 = list-title, 페이지 타이틀 아님 → 폰트 축소) ========= -->
-    <div class="toolbar">
-      <span class="list-title">
-        {{ !active ? '템플릿 상세' : (cfIsNew ? '템플릿 등록' : (cfDtlMode ? '템플릿 상세' : '템플릿 수정')) }}
-        <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
-          #{{ form.templateId }}
-        </span>
-        <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-          목록에서 행을 선택하거나 [+신규]를 누르세요
-        </span>
+    <template #title>
+      {{ !active ? '템플릿 상세' : (cfIsNew ? '템플릿 등록' : (cfDtlMode ? '템플릿 상세' : '템플릿 수정')) }}
+      <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+        #{{ form.templateId }}
       </span>
-    </div>
+      <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+        목록에서 행을 선택하거나 [+신규]를 누르세요
+      </span>
+    </template>
     <!-- ===== ■.■. 폼 영역 ================================================== -->
     <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
@@ -261,7 +259,6 @@ window.SyTemplateDtl = {
           취소
         </button>
       </div>
-    </div>
     <!-- ===== □.□. 폼 액션 버튼 (미리보기/발송하기 포함 커스텀) ============================ -->
     <!-- ===== □. 카드 영역 =================================================== -->
     <!-- ===== ■. 미리보기 모달 ================================================= -->
@@ -272,6 +269,7 @@ window.SyTemplateDtl = {
     <template-send-modal v-if="uiState.sendOpen"
     :tmpl="form" :show-toast="showToast" :show-confirm="showConfirm" modal-name="template-send" :on-callback="fnCallbackModal" />
     <!-- ===== □. 발송하기 모달 ================================================= -->
-  </div>
+  </bo-container>
+</div>
 `,
 };

@@ -361,55 +361,53 @@ window.SyPathMng = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    표시경로
-  </div>
+<bo-page title="표시경로">
   <!-- ===== ■. 검색 ====================================================== -->
-  <div class="card">
+  <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
-  </div>
+  </bo-container>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 좌 트리 + 우 그리드 ============================================ -->
-  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:0 12px;align-items:flex-start;">
+  <div class="bo-2col">
     <!-- ===== ■.■. 트리 ==================================================== -->
-    <bo-local-tree-card title="경로 트리" biz-cd="sy_path" :sticky="true"
-      :node="cfTree" :expanded="expanded" :selected="uiState.selectedPathId"
-      :on-toggle="id => handleBtnAction('pathTree-toggle', id)"
-      @select="id => handleSelectAction('pathTree-select', id)" @expand-all="handleBtnAction('pathTree-expandAll')" @collapse-all="handleBtnAction('pathTree-collapseAll')" />
+    <bo-container bare>
+      <bo-local-tree-card title="경로 트리" biz-cd="sy_path" :sticky="true"
+        :node="cfTree" :expanded="expanded" :selected="uiState.selectedPathId"
+        :on-toggle="id => handleBtnAction('pathTree-toggle', id)"
+        @select="id => handleSelectAction('pathTree-select', id)" @expand-all="handleBtnAction('pathTree-expandAll')" @collapse-all="handleBtnAction('pathTree-collapseAll')" />
+    </bo-container>
     <!-- ===== □.□. 트리 ==================================================== -->
     <!-- ===== ■.■. 그리드 =================================================== -->
-    <bo-grid
-      :columns="columns.baseGrid" :rows="gridRows" row-key="pathId"
-      list-title="경로 목록" :count-text="pager.pageTotalCount + '건'"
-      :row-class="fnRowClass" :show-save="true" :row-actions="true"
-      @save="handleBtnAction('paths-save')"
-      grid-id="paths-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+    <bo-container title="경로 목록" :count-text="pager.pageTotalCount + '건'">
       <template #toolbar-actions>
         <button class="btn btn-green btn-sm" @click="handleBtnAction('paths-add')">
           + 행추가
         </button>
-      </template>
-      <template #head-actions>
-        관리
-      </template>
-      <template #row-actions="{ row }">
-        <button v-if="row._status==='N'" class="btn btn-secondary btn-xs" @click.stop="handleSelectAction('paths-rowCancel', row)">
-          취소
-        </button>
-        <button v-else class="btn btn-danger btn-xs" @click.stop="handleSelectAction('paths-rowDelete', row)">
-          삭제
+        <button class="btn btn-primary btn-sm" @click="handleBtnAction('paths-save')">
+          저장
         </button>
       </template>
-      <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 경로 목록 영역 안에 보이도록 -->
-      <template #footer>
-        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('paths-pager-setPage', n)" :on-size-change="() => handleSelectAction('paths-pager-sizeChange')" />
-      </template>
-    </bo-grid>
-    </div>
-  <!-- ===== □.□. 그리드 =================================================== -->
+      <bo-grid bare
+        :columns="columns.baseGrid" :rows="gridRows" row-key="pathId"
+        :row-class="fnRowClass" :row-actions="true"
+        grid-id="paths-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+        <template #head-actions>
+          관리
+        </template>
+        <template #row-actions="{ row }">
+          <button v-if="row._status==='N'" class="btn btn-secondary btn-xs" @click.stop="handleSelectAction('paths-rowCancel', row)">
+            취소
+          </button>
+          <button v-else class="btn btn-danger btn-xs" @click.stop="handleSelectAction('paths-rowDelete', row)">
+            삭제
+          </button>
+        </template>
+      </bo-grid>
+      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('paths-pager-setPage', n)" :on-size-change="() => handleSelectAction('paths-pager-sizeChange')" />
+    </bo-container>
+    <!-- ===== □.□. 그리드 =================================================== -->
+  </div>
   <!-- ===== □. 좌 트리 + 우 그리드 ============================================ -->
   <!-- ===== ■. 부모경로 선택 모달 (BoTreeSelectorModal) ======================== -->
   <bo-tree-selector-modal :show="parentModal.show" title="부모경로 선택"
@@ -417,6 +415,6 @@ window.SyPathMng = {
     :on-toggle="id => handleBtnAction('parentModal-toggle', id)"
     root-label="(루트 — 상위없음)" modal-name="parent-path" :on-callback="fnCallbackModal" />
   <!-- ===== □. 부모경로 선택 모달 (BoTreeSelectorModal) ======================== -->
-</div>
+</bo-page>
 `,
 };

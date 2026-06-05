@@ -13,7 +13,7 @@ window.PdProdMng = {
     const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
     const products = reactive([]);                 // 상품 목록 (메인 그리드 데이터)
     const uiState = reactive({                     // UI 상태
-      descOpen: false, loading: false, error: null, isPageCodeLoad: false,
+      loading: false, error: null, isPageCodeLoad: false,
       sortKey: '', sortDir: 'asc',
     });
     const codes = reactive({ product_statuses: [], option_types: [], category_depths: [], prod_date_types: [], date_range_opts: [] });
@@ -64,10 +64,6 @@ window.PdProdMng = {
       // 상품 목록 재조회
       } else if (cmd === 'prods-reload') {
         return handleSearchList('RELOAD');
-      // 설명 토글
-      } else if (cmd === 'desc-toggle') {
-        uiState.descOpen = !uiState.descOpen;
-        return;
       // 상세 인라인 패널 닫기
       } else if (cmd === 'detailPanel-close') {
         return closeDetail();
@@ -372,59 +368,31 @@ window.PdProdMng = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    상품관리
-  </div>
-  <!-- ===== ■. 본문 영역 =================================================== -->
-  <div style="margin:-8px 0 16px;padding:10px 14px;background:#f0faf4;border-left:3px solid #3ba87a;border-radius:0 6px 6px 0;font-size:13px;color:#444;line-height:1.7">
-    <span>
-      <strong style="color:#1a7a52">
-        상품관리
-      </strong>
-      는 판매 상품의 기본정보·가격·재고·옵션을 등록하고 관리합니다.
-    </span>
-    <button @click="handleBtnAction('desc-toggle')" style="margin-left:8px;font-size:12px;color:#3ba87a;background:none;border:none;cursor:pointer;padding:0">
-      {{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}
-    </button>
-    <div v-if="uiState.descOpen" style="margin-top:6px">
-      ✔ 단품/묶음/세트 상품 유형별 등록·수정·삭제를 처리합니다.
-      <br>
-      ✔ 옵션(1단/2단) 및 SKU별 가격·재고를 설정합니다.
-      <br>
-      ✔ 상품 상태(임시저장→검수→판매중→품절·중단)를 관리합니다.
-      <br>
-      <span style="color:#888;font-size:12px">
-        예) 단품 의류 등록, 옵션(색상·사이즈) 설정, 재고 이력 확인
-      </span>
-    </div>
-  </div>
-  <!-- ===== □. 본문 영역 =================================================== -->
+<bo-page title="상품관리"
+  desc-summary="상품관리 는 판매 상품의 기본정보·가격·재고·옵션을 등록하고 관리합니다."
+  desc-detail="✔ 단품/묶음/세트 상품 유형별 등록·수정·삭제를 처리합니다.&#10;✔ 옵션(1단/2단) 및 SKU별 가격·재고를 설정합니다.&#10;✔ 상품 상태(임시저장→검수→판매중→품절·중단)를 관리합니다.&#10;예) 단품 의류 등록, 옵션(색상·사이즈) 설정, 재고 이력 확인">
   <!-- ===== ■. 검색 ====================================================== -->
-  <div class="card">
-    <!-- ===== ■.■. 검색 영역 ================================================= -->
+  <bo-container>
     <bo-search-area :loading="uiState.loading" :columns="columns.baseSearch" :param="searchParam"
       @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
-  </div>
-  <!-- ===== □. 검색 ====================================================== -->
-  <!-- ===== ■. 목록 (bo-grid 단일 카드 — 제목/건수/페이저 모두 그리드가 렌더, 중복 제거) ===== -->
-    <!-- ===== ■.■. 목록 그리드 ================================================ -->
-    <bo-grid
+  </bo-container>
+  <!-- ===== ■. 목록 ====================================================== -->
+  <bo-container title="상품목록" :count-text="pager.pageTotalCount + '건'">
+    <template #toolbar-actions>
+      <button class="btn btn-green btn-sm" @click="handleBtnAction('prods-excel')">
+        📥 엑셀
+      </button>
+      <button class="btn btn-primary btn-sm" @click="handleBtnAction('prods-add')">
+        + 신규
+      </button>
+    </template>
+    <bo-grid bare
       :columns="columns.baseGrid" :rows="products" row-key="prodId" :selected-key="detailPanel.selectedId"
-      list-title="상품목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true"
+      :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
-      :row-style="(p) => detailPanel.selectedId===p.prodId ? 'background:#fff8f9;' : ''" row-clickable
+      :row-style="(p) => detailPanel.selectedId===p.prodId ? 'background:#fff8f9;' : ''"
       @sort="key => handleBtnAction('prods-sort', key)"
       grid-id="prods-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
-      <template #toolbar-actions>
-        <button class="btn btn-green btn-sm" @click="handleBtnAction('prods-excel')">
-          📥 엑셀
-        </button>
-        <button class="btn btn-primary btn-sm" @click="handleBtnAction('prods-add')">
-          + 신규
-        </button>
-      </template>
       <template #head-actions>
         관리
       </template>
@@ -442,11 +410,9 @@ window.PdProdMng = {
           </button>
         </div>
       </template>
-      <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
-      <template #footer>
-        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('prods-pager-setPage', n)" :on-size-change="() => handleSelectAction('prods-pager-sizeChange')" />
-      </template>
     </bo-grid>
+    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('prods-pager-setPage', n)" :on-size-change="() => handleSelectAction('prods-pager-sizeChange')" />
+  </bo-container>
   <!-- ===== □. 목록 ======================================================= -->
   <!-- ===== ■. 카테고리 선택 모달 ============================================== -->
   <bo-category-tree-modal
@@ -454,7 +420,7 @@ window.PdProdMng = {
     :exclude-id="null" modal-name="category-pick" :on-callback="fnCallbackModal" />
   <!-- ===== □. 카테고리 선택 모달 ============================================== -->
   <!-- ===== ■. 하단 상세: ProdDtl 임베드 (항상 표시, 진입 시 빈 신규 폼) ============== -->
-  <div>
+  <bo-container bare>
     <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기
@@ -473,8 +439,8 @@ window.PdProdMng = {
       :reload-trigger="detailPanel.reloadTrigger"
       :on-list-reload="handleSearchList"
       />
-  </div>
+  </bo-container>
   <!-- ===== □. 하단 상세: ProdDtl 임베드 ====================================== -->
-</div>
+</bo-page>
 `,
 };

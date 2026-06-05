@@ -372,7 +372,7 @@ window.SyAlarmMng = {
     const fnTargetBadge = t => coUtil.cofCodeBadge('ALARM_TARGET_TYPE', t, _ALARM_TARGET_TYPE_FB[t] || 'badge-gray');
 
     /* fnRowStyle — 행 스타일 (선택 행 강조) */
-    const fnRowStyle = (a) => detailModal.dtlId === a.alarmId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
+    const fnRowStyle = (a) => detailModal.dtlId === a.alarmId ? 'background:#fff8f9;' : '';
 
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const cfDetailEditId = computed(() => detailModal.dtlId === '__new__' ? null : detailModal.dtlId);
@@ -423,40 +423,37 @@ window.SyAlarmMng = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    알림관리
-  </div>
+<bo-page title="알림관리">
   <!-- ===== ■. 검색 ====================================================== -->
-  <div class="card">
+  <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
-  </div>
+  </bo-container>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 좌 트리 + 우 영역 ============================================= -->
-  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:0 12px;align-items:flex-start;">
+  <div class="bo-2col">
     <!-- ===== ■.■. 경로 트리 ================================================= -->
-    <bo-path-tree-card biz-cd="sy_alarm" title="표시경로" :show-biz-cd="false" :counts="alarmCounts"
-      :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
-    <div>
-      <!-- ===== ■.■.■. 목록 그리드 ============================================ -->
-      <bo-grid
+    <bo-container bare>
+      <bo-path-tree-card biz-cd="sy_alarm" title="표시경로" :show-biz-cd="false" :counts="alarmCounts"
+        :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
+    </bo-container>
+    <!-- ===== ■.■.■. 목록 그리드 ============================================ -->
+    <bo-container title="알림목록" :count-text="pager.pageTotalCount + '건'">
+      <template #toolbar-actions>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-green btn-sm" @click="handleBtnAction('alarms-excel')">
+            📥 엑셀
+          </button>
+          <button class="btn btn-primary btn-sm" @click="handleBtnAction('alarms-add')">
+            + 신규
+          </button>
+        </div>
+      </template>
+      <bo-grid bare
         :columns="columns.baseGrid" :rows="alarms" row-key="alarmId" :selected-key="detailModal.dtlId"
-        list-title="알림목록" :count-text="pager.pageTotalCount + '건'"
-        :sort-state="uiState" :row-style="fnRowStyle" row-clickable
+        :sort-state="uiState" :row-style="fnRowStyle"
         @sort="key => handleBtnAction('alarms-sort', key)"
         grid-id="alarms-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
-        <template #toolbar-actions>
-          <div style="display:flex;gap:6px;">
-            <button class="btn btn-green btn-sm" @click="handleBtnAction('alarms-excel')">
-              📥 엑셀
-            </button>
-            <button class="btn btn-primary btn-sm" @click="handleBtnAction('alarms-add')">
-              + 신규
-            </button>
-          </div>
-        </template>
         <template #head-actions>
           <th style="text-align:right">
             관리
@@ -474,24 +471,20 @@ window.SyAlarmMng = {
             </div>
           </td>
         </template>
-        <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 알림목록 영역 안에 보이도록 -->
-        <template #footer>
-          <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('alarms-pager-setPage', n)" :on-size-change="() => handleSelectAction('alarms-pager-sizeChange')" />
-        </template>
       </bo-grid>
-    </div>
-    <!-- ===== □.□. 경로 트리 ================================================= -->
-    <!-- ===== ■.■. 상세 인라인 패널 (grid 직접 자식 → 전체 폭, 항상 표시) ===================== -->
-    <div style="grid-column:1/-1;">
-      <sy-alarm-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
-        :dtl-mode="detailModal.dtlMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-        :active="detailModal.active"
-        :reload-trigger="detailModal.reloadTrigger" />
-    </div>
-    <!-- ===== ■.■. 표시경로 선택 모달 ========================================== -->
-    <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_alarm" :value="pathPickModal.row ? pathPickModal.row.pathId : null" modal-name="path-pick" :on-callback="fnCallbackModal" />
+      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('alarms-pager-setPage', n)" :on-size-change="() => handleSelectAction('alarms-pager-sizeChange')" />
+    </bo-container>
   </div>
   <!-- ===== □. 좌 트리 + 우 영역 ============================================= -->
-</div>
+  <!-- ===== ■. 상세 인라인 패널 (.bo-2col 바깥 → 전체 폭, 항상 표시) ===================== -->
+  <bo-container bare>
+    <sy-alarm-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
+      :dtl-mode="detailModal.dtlMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+      :active="detailModal.active"
+      :reload-trigger="detailModal.reloadTrigger" />
+  </bo-container>
+  <!-- ===== ■. 표시경로 선택 모달 ========================================== -->
+  <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_alarm" :value="pathPickModal.row ? pathPickModal.row.pathId : null" modal-name="path-pick" :on-callback="fnCallbackModal" />
+</bo-page>
 `,
 };

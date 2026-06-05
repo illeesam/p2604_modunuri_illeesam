@@ -540,7 +540,7 @@ window.OdDlivMng = {
     columns.apprDetailForm = [
       { key: 'reqAmount', label: '요청금액', type: 'number', colSpan: 2 },
       { type: 'rowBreak' },
-      { key: 'reqReason', label: '요청사유', type: 'textarea', rows: 2, placeholder: '(선택)', colSpan: 2 },
+      { key: 'reqReason', label: '요청사유', type: 'textarea', rows: 2, placeholder: '(선택)' },
       { type: 'rowBreak' },
       { key: 'tmplMsg',   label: '전송 템플릿', type: 'slot', name: 'tmplMsg', colSpan: 2,
         hint: '치환: {target} {targetNm} {amount} {reason}' },
@@ -565,7 +565,7 @@ window.OdDlivMng = {
         options: () => codes.approval_actions, colSpan: 2 },
       { type: 'rowBreak' },
       { key: 'apprComment', label: '결재 코멘트', type: 'textarea', rows: 2,
-        placeholder: '(선택)', colSpan: 2 },
+        placeholder: '(선택)' },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
@@ -580,41 +580,27 @@ window.OdDlivMng = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    배송관리
-  </div>
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card">
-    <!-- ===== ■.■. 검색 영역 ================================================= -->
+<bo-page title="배송관리">
+  <!-- ===== ■. 검색 영역 =================================================== -->
+  <bo-container>
     <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
-  </div>
-  <!-- ===== □. 카드 영역 =================================================== -->
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card">
-    <div class="toolbar">
-      <span class="list-title">
-        배송목록
-        <span class="list-count">
-          {{ pager.pageTotalCount }}건
-        </span>
-        <span v-if="checked.size" style="margin-left:10px;font-size:12px;color:#1565c0;font-weight:700;">
-          선택 {{ checked.size }}건
-        </span>
+  </bo-container>
+  <!-- ===== ■. 목록 영역 =================================================== -->
+  <bo-container bare title="배송목록" :count-text="pager.pageTotalCount + '건'">
+    <template #toolbar-actions>
+      <span v-if="checked.size" style="margin-right:10px;font-size:12px;color:#1565c0;font-weight:700;">
+        선택 {{ checked.size }}건
       </span>
-      <div style="display:flex;gap:6px;align-items:center;">
-        <button class="btn btn-blue btn-sm" :disabled="!checked.size" @click="handleBtnAction('actionsModal-open')">
-          📝 변경작업 선택
-        </button>
-        <button class="btn btn-green btn-sm" @click="handleBtnAction('dlivs-excel')">
-          📥 엑셀
-        </button>
-        <button class="btn btn-primary btn-sm" @click="handleBtnAction('dlivs-add')">
-          + 신규
-        </button>
-      </div>
-    </div>
+      <button class="btn btn-blue btn-sm" :disabled="!checked.size" @click="handleBtnAction('actionsModal-open')">
+        📝 변경작업 선택
+      </button>
+      <button class="btn btn-green btn-sm" @click="handleBtnAction('dlivs-excel')">
+        📥 엑셀
+      </button>
+      <button class="btn btn-primary btn-sm" @click="handleBtnAction('dlivs-add')">
+        + 신규
+      </button>
+    </template>
     <!-- ===== ■.■. 그리드 (기본 10개 영역 + 화면 높이 반응형 확장, 초과 시 내부 스크롤) =========== -->
     <div style="max-height:calc(100vh - 340px);min-height:480px;overflow-y:auto;border:1px solid #eef0f3;border-radius:6px;background:#fff;">
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
@@ -622,6 +608,7 @@ window.OdDlivMng = {
         :sort-state="uiState" :is-checked="isChecked" :all-checked="cfAllChecked"
         :row-style="fnGridRowStyle" empty-text="데이터가 없습니다."
         @sort="key => handleBtnAction('dlivs-sort', key)"
+        grid-id="dlivs-cellClick" @cell-click="e => { if (e.col && e.col.link) handleSelectAction('dlivs-rowEdit', e.row.dlivId); }"
         @toggle-check="id => handleSelectAction('dlivs-rowToggleCheck', id)"
         @toggle-check-all="handleSelectAction('dlivs-rowToggleCheckAll')"
         @ref-click="({type,id}) => handleSelectAction('dlivs-rowRefClick', {type, id})" row-actions>
@@ -637,19 +624,15 @@ window.OdDlivMng = {
         </template>
       </bo-grid>
     </div>
-    <!-- ===== □.□. 그리드 (기본 10개 영역 + 화면 높이 반응형 확장, 초과 시 내부 스크롤) =========== -->
-    <!-- ===== ■.■. /그리드 스크롤 컨테이너 ========================================= -->
     <!-- ===== ■.■. 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ============================= -->
     <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
       <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('dlivs-pager-setPage', n)"
         :on-size-change="() => handleSelectAction('dlivs-pager-sizeChange')"
         style="margin-top:0;min-height:34px;" />
     </div>
-  </div>
-  <!-- ===== □.□. 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ============================= -->
-  <!-- ===== □. 카드 영역 =================================================== -->
-  <!-- ===== ■. 하단 상세: DlivDtl 컴포넌트 임베드 (항상 표시) ====================== -->
-  <div>
+  </bo-container>
+  <!-- ===== ■. 하단 상세: DlivDtl 컴포넌트 임베드 (항상 표시, 전체 폭) ================= -->
+  <bo-container bare>
     <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기
@@ -663,8 +646,7 @@ window.OdDlivMng = {
       :active="detailPanel.active"
       :reload-trigger="detailPanel.reloadTrigger"
       />
-  </div>
-  <!-- ===== □. 하단 상세: DlivDtl 컴포넌트 임베드 ================================= -->
+  </bo-container>
   <!-- ===== ■. 변경작업 모달 (actionsModal) ===================================== -->
   <div v-if="bulkOpen" style="position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9999;display:flex;align-items:center;justify-content:center;" @click.self="handleBtnAction('actionsModal-close')">
     <div style="background:#fff;border-radius:12px;width:480px;max-width:92vw;box-shadow:0 20px 50px rgba(0,0,0,0.3);overflow:hidden;">
@@ -745,7 +727,6 @@ window.OdDlivMng = {
                 </div>
               </template>
             </bo-form-area>
-          </div>
         </div>
       </div>
       <!-- 탭 본문 끝 (위 div는 padding:20px 18px;flex:1;overflow-y:auto;) -->
@@ -767,11 +748,9 @@ window.OdDlivMng = {
     </div>
   </div>
   <!-- ===== □. 변경작업 모달 ================================================= -->
-      <!-- ===== ■. 회원 선택 팝업 ================================================ -->
-      <!-- ===== ■. 영역 ====================================================== -->
-      <od-member-pick-modal :show="memberPick.open" ui-nm="배송관리"
+  <!-- ===== ■. 회원 선택 팝업 ================================================ -->
+  <od-member-pick-modal :show="memberPick.open" ui-nm="배송관리"
     subtitle="배송 조회 기준 회원을 선택해주세요" modal-name="member-pick" :on-callback="fnCallbackModal" />
-    </div>
-    <!-- ===== □. 영역 ====================================================== -->
+</bo-page>
 `
 };

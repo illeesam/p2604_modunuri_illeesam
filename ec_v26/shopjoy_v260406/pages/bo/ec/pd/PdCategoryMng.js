@@ -12,7 +12,7 @@ window.PdCategoryMng = {
     const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const categories = reactive([]);
     const sites = computed(() => window._boCmSites || []);
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedCatId: null, focusedIdx: null, descOpen: false});
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedCatId: null, focusedIdx: null });
     const codes = reactive({
       category_depths: [],
       product_statuses: [],
@@ -46,10 +46,6 @@ window.PdCategoryMng = {
       // 좌측 트리 전체 보기 (선택 해제)
       } else if (cmd === 'categoryTree-clear') {
         uiState.selectedCatId = null;
-        return;
-      // 설명 토글
-      } else if (cmd === 'desc-toggle') {
-        uiState.descOpen = !uiState.descOpen;
         return;
       // 상위카테고리 모달 닫기
       } else if (cmd === 'parentModal-close') {
@@ -523,83 +519,52 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
   },
 
   template: `
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    카테고리관리
-  </div>
-  <!-- ===== ■. 본문 영역 =================================================== -->
-  <div style="margin:-8px 0 16px;padding:10px 14px;background:#f0faf4;border-left:3px solid #3ba87a;border-radius:0 6px 6px 0;font-size:13px;color:#444;line-height:1.7">
-    <span>
-      <strong style="color:#1a7a52">
-        카테고리관리
-      </strong>
-      는 상품 분류를 위한 3단계 계층(대/중/소) 카테고리를 관리합니다.
-    </span>
-    <button @click="handleBtnAction('desc-toggle')" style="margin-left:8px;font-size:12px;color:#3ba87a;background:none;border:none;cursor:pointer;padding:0">
-      {{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}
-    </button>
-    <div v-if="uiState.descOpen" style="margin-top:6px">
-      ✔ 대·중·소 3단계로 카테고리 트리를 구성합니다.
-      <br>
-      ✔ 정렬순서·표시여부를 설정하고 상품과 연결합니다.
-      <br>
-      ✔ 카테고리 삭제 시 하위 카테고리와 연결 상품을 함께 확인합니다.
-      <br>
-      <span style="color:#888;font-size:12px">
-        예) 의류 &gt; 상의 &gt; 티셔츠, 전자기기 &gt; 스마트폰
-      </span>
-    </div>
-  </div>
-  <!-- ===== □. 본문 영역 =================================================== -->
+<bo-page title="카테고리관리"
+    desc-summary="카테고리관리는 상품 분류를 위한 3단계 계층(대/중/소) 카테고리를 관리합니다."
+    desc-detail="✔ 대·중·소 3단계로 카테고리 트리를 구성합니다.&#10;✔ 정렬순서·표시여부를 설정하고 상품과 연결합니다.&#10;✔ 카테고리 삭제 시 하위 카테고리와 연결 상품을 함께 확인합니다.&#10;예) 의류 > 상의 > 티셔츠, 전자기기 > 스마트폰">
   <!-- ===== ■. 검색 ====================================================== -->
-  <div class="card">
+  <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" :columns="columns.baseSearch" :param="searchParam" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
-  </div>
+  </bo-container>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 좌 트리 + 우 그리드 ============================================ -->
-  <div style="display:grid;grid-template-columns:220px 1fr;gap:16px;align-items:flex-start">
+  <div class="bo-2col">
     <!-- ===== ■.■. 좌측: 카테고리 트리 =========================================== -->
-    <div class="card" style="padding:12px;position:sticky;top:0">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span style="font-size:13px;font-weight:600;color:#555">
-          📁 카테고리
-        </span>
+    <bo-container title="📁 카테고리">
+      <template #toolbar-actions>
         <div v-if="uiState.selectedCatId" style="font-size:11px;color:#1677ff;cursor:pointer" @click="handleBtnAction('categoryTree-clear')">
           전체보기
         </div>
-      </div>
+      </template>
       <bo-category-tree mode="tree" :site-id="searchParam.siteId" :selected="uiState.selectedCatId" :show-count="fnCategoryDescCount" @select="id => handleSelectAction('categoryTree-select', id)" />
-    </div>
+    </bo-container>
     <!-- ===== □.□. 좌측: 카테고리 트리 =========================================== -->
     <!-- ===== ■.■. 우측: 카테고리 그리드 ========================================== -->
-    <div class="card">
-      <div class="toolbar">
-        <span class="list-title">
-          카테고리 목록
-          <span v-if="uiState.selectedCatId" style="font-size:12px;color:#1677ff;margin-left:6px">
-            — {{ [].find(c=>c.categoryId===uiState.selectedCatId)&&[].find(c=>c.categoryId===uiState.selectedCatId).categoryNm }} 하위
-          </span>
-          <span class="list-count">
-            {{ gridRows.filter(r => r._row_status !== 'D').length }}건
-          </span>
+    <bo-container>
+      <template #title>
+        카테고리 목록
+        <span v-if="uiState.selectedCatId" style="font-size:12px;color:#1677ff;margin-left:6px">
+          — {{ parentNm(uiState.selectedCatId) }} 하위
         </span>
-        <div style="display:flex;gap:6px">
-          <button class="btn btn-green btn-sm" @click="handleBtnAction('categories-add')">
-            + 행추가
-          </button>
-          <button class="btn btn-danger btn-sm" @click="handleBtnAction('categories-deleteChecked')">
-            행삭제
-          </button>
-          <button class="btn btn-secondary btn-sm" @click="handleBtnAction('categories-cancelChecked')">
-            취소
-          </button>
-          <button class="btn btn-primary btn-sm" @click="handleBtnAction('categories-save')">
-            저장
-          </button>
-        </div>
-      </div>
+        <span class="list-count">
+          {{ gridRows.filter(r => r._row_status !== 'D').length }}건
+        </span>
+      </template>
+      <template #toolbar-actions>
+        <button class="btn btn-green btn-sm" @click="handleBtnAction('categories-add')">
+          + 행추가
+        </button>
+        <button class="btn btn-danger btn-sm" @click="handleBtnAction('categories-deleteChecked')">
+          행삭제
+        </button>
+        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('categories-cancelChecked')">
+          취소
+        </button>
+        <button class="btn btn-primary btn-sm" @click="handleBtnAction('categories-save')">
+          저장
+        </button>
+      </template>
       <!-- ===== ■.■.■. 테이블 ================================================= -->
       <table class="bo-table crud-grid" style="table-layout:fixed">
         <colgroup>
@@ -756,10 +721,10 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       </tr>
     </tbody>
   </table>
-  <!-- ===== ■.■.■. 페이지네이션 ============================================== -->
-  <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('categories-pager-setPage', n)" :on-size-change="() => handleSelectAction('categories-pager-sizeChange')" />
-</div>
-</div>
+      <!-- ===== ■.■.■. 페이지네이션 ============================================== -->
+      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('categories-pager-setPage', n)" :on-size-change="() => handleSelectAction('categories-pager-sizeChange')" />
+    </bo-container>
+  </div>
 <!-- ===== □.□. 우측: 카테고리 그리드 ========================================== -->
 <!-- ===== □. 좌 트리 + 우 그리드 ============================================ -->
 <!-- ===== ■. 상위카테고리 선택 모달 ============================================ -->
@@ -767,11 +732,11 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
     @close="handleBtnAction('parentModal-close')">
   <input class="form-control" v-model="catPickerModal.search" placeholder="카테고리명 검색" style="margin-bottom:10px">
   <div style="overflow-y:auto;border:1px solid #eee;border-radius:8px;max-height:48vh">
-    <div style="padding:8px 12px;font-size:12px;border-bottom:1px solid #f0f0f0;cursor:pointer;color:#1677ff"
+    <div style="padding:8px 12px;font-size:12px;border-bottom:1px solid #f0f0f0;color:#1677ff"
         @click="handleSelectAction('parentModal-select', null)">
       최상위 (상위없음)
     </div>
-    <div v-for="c in cfCatPickerList" :key="(c && c.categoryId)" style="padding:7px 12px;font-size:13px;border-bottom:1px solid #f9f9f9;cursor:pointer;display:flex;align-items:center;gap:6px" :style="{ paddingLeft: (c.categoryDepth * 14 + 12) + 'px' }" @mouseenter="$event.target.style.background='#f5f5f5'" @mouseleave="$event.target.style.background=''" @click="handleSelectAction('parentModal-select', c)">
+    <div v-for="c in cfCatPickerList" :key="(c && c.categoryId)" style="padding:7px 12px;font-size:13px;border-bottom:1px solid #f9f9f9;display:flex;align-items:center;gap:6px" :style="{ paddingLeft: (c.categoryDepth * 14 + 12) + 'px' }" @mouseenter="$event.target.style.background='#f5f5f5'" @mouseleave="$event.target.style.background=''" @click="handleSelectAction('parentModal-select', c)">
       <span :style="{ fontSize:'11px', fontWeight:700, color:fnDepthColor((c.categoryDepth||1)-1) }">
         {{ fnDepthBullet((c.categoryDepth||1)-1) }}
       </span>
@@ -787,7 +752,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
     </div>
   </div>
 </bo-modal>
-</div>
+</bo-page>
 <!-- ===== □. 상위카테고리 선택 모달 ============================================ -->
 `
 };

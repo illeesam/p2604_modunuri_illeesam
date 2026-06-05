@@ -209,6 +209,9 @@ window.PmGiftDtl = {
     /* selectVendor — 선택 */
     const selectVendor = (vendorId, vendorNm) => {
       form.vendorId = vendorId;
+      // 판매업체 선택 시 판매담당자(대표자명) 자동 적용
+      const v = vendors.find(x => x.vendorId === vendorId);
+      if (v) { form.chargeStaff = v.chargeStaff || v.ceoNm || v.vendorNm || ''; }
       uiState.showVendorModal = false;
     };
 
@@ -302,7 +305,7 @@ window.PmGiftDtl = {
       { key: 'giftStatusCd', label: '상태', type: 'select', options: () => codes.gift_statuses },
       { key: 'startDate',    label: '시작일', type: 'date' },
       { key: 'endDate',      label: '종료일', type: 'date' },
-      { key: 'giftDesc',     label: '비고', type: 'textarea', rows: 2, placeholder: '비고 입력', colSpan: 2 },
+      { key: 'giftDesc',     label: '비고', type: 'textarea', rows: 2, placeholder: '비고 입력' },
       { key: 'vendorId',     label: '판매업체', type: 'slot', name: 'vendor' },
       { key: 'chargeStaff',  label: '판매담당자', type: 'text', placeholder: '담당자명 입력' },
     ];
@@ -313,26 +316,24 @@ window.PmGiftDtl = {
       vendors, uiState, codes, form, errors,                                          // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal,                                            // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfHasId, cfSaveDisabled, cfIsView, cfVisibilityOptions, cfCondValLabel, cfSelectedVendorNm, // computed
-      tab, tabMode2, showVendorModal,                                                 // toRef
+      tabs, tab, tabMode2, showVendorModal,                                                 // toRef
       showTab, hasVisibility,                                                          // 헬퍼
     };
   },
   template: /* html */`
 <div>
   <!-- ===== ■. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
-  <div class="card">
+  <bo-container>
     <!-- ===== ■.■. 카드 헤더 (제목 = list-title, page-title 아님 → 폰트 축소) ========= -->
-    <div class="toolbar">
-      <span class="list-title">
-        {{ !active ? '사은품 상세' : (cfIsNew ? '사은품 등록' : '사은품 수정') }}
-        <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
-          #{{ form.giftId }}
-        </span>
-        <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-          목록에서 행을 선택하거나 [+신규]를 누르세요
-        </span>
+    <template #title>
+      {{ !active ? '사은품 상세' : (cfIsNew ? '사은품 등록' : '사은품 수정') }}
+      <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+        #{{ form.giftId }}
       </span>
-    </div>
+      <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+        목록에서 행을 선택하거나 [+신규]를 누르세요
+      </span>
+    </template>
     <!-- ===== ■.■. 탭바 ==================================================== -->
     <bo-tab-bar :tabs="tabs" :tab="tab" :tab-mode="tabMode2"
       @tab-select="id => handleBtnAction('tab-select', id)"
@@ -351,7 +352,7 @@ window.PmGiftDtl = {
         <!-- ===== ■.■.■.■. 판매업체 picker ======================================= -->
         <template #vendor>
           <div style="display:flex;gap:8px;align-items:center;">
-            <div class="form-control" style="background:#f9f9f9;cursor:pointer;padding:0;display:flex;align-items:center;" @click="handleBtnAction('vendorModal-open')">
+            <div class="form-control" :style="'background:#f9f9f9;padding:0;display:flex;align-items:center;cursor:' + (cfDtlMode ? 'default' : 'pointer')" @click="cfDtlMode ? null : handleBtnAction('vendorModal-open')">
               <span style="padding:4px 10px;flex:1;">
                 {{ cfSelectedVendorNm }}
               </span>
@@ -359,7 +360,7 @@ window.PmGiftDtl = {
                 ▼
               </span>
             </div>
-            <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendorClear')">
+            <button v-if="coUtil.cofAnd(form.vendorId, !cfDtlMode)" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendorClear')">
               초기화
             </button>
           </div>
@@ -393,13 +394,9 @@ window.PmGiftDtl = {
       <div style="font-size:12px;font-weight:700;color:#888;margin-bottom:8px;">
         하나라도 해당하면 노출
       </div>
-      <div style="display:flex;flex-wrap:wrap;gap:6px;">
-        <label v-for="opt in cfVisibilityOptions" :key="opt?.codeValue"
-          :style="{display:'inline-flex',alignItems:'center',gap:'6px',padding:'5px 10px',borderRadius:'14px',border:'1px solid '+(hasVisibility(opt.codeValue)?'#1565c0':'#ddd'),background:hasVisibility(opt.codeValue)?'#e3f2fd':'#fafafa',color:hasVisibility(opt.codeValue)?'#1565c0':'#666',fontSize:'12px',fontWeight:hasVisibility(opt.codeValue)?700:500,cursor:'pointer'}">
-          <input type="checkbox" :checked="hasVisibility(opt.codeValue)" @change="handleBtnAction('form-visibilityToggle', opt.codeValue)" style="accent-color:#1565c0;" />
-          {{ opt.codeLabel }}
-        </label>
-      </div>
+      <bo-multi-check-select v-model="form.visibilityTargets" :options="cfVisibilityOptions"
+        separator="^" wrap empty-value="^NONE^" placeholder="전체 공개" all-label="전체 공개"
+        :disabled="cfIsView" min-width="320px" />
       <div class="form-actions" v-if="active && cfIsView">
         <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
           수정
@@ -464,7 +461,7 @@ window.PmGiftDtl = {
     <!-- ===== □.□. 미리보기 ================================================== -->
     </div>
     <!-- ===== □. 탭 컨텐츠 =================================================== -->
-  </div>
+  </bo-container>
   <!-- ===== □. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
 </div>
 `

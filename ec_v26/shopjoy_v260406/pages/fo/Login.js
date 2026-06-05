@@ -428,6 +428,7 @@ window.Login = {
     };
   },
   template: /* html */ `
+<fo-page bare>
 <div class="modal-overlay" @click.self="handleBtnAction('page-close')" style="z-index:200;">
   <!-- ===== ■. 로그인 화면 ================================================== -->
   <div class="modal-box" style="max-width:460px;width:92%;padding:clamp(16px,4vw,32px) clamp(14px,3vw,28px);position:relative;max-height:92vh;overflow-y:auto;">
@@ -897,5 +898,6 @@ window.Login = {
 </div>
 <!-- ===== □.□. ════ SNS 회원가입 추가 정보 ════ ============================== -->
 <!-- ===== □. 로그인 화면 ================================================== -->
+</fo-page>
 `
 };

@@ -150,6 +150,26 @@ body {
   box-shadow: var(--shadow);
   transition: var(--transition);
 }
+/* ===== FO 영역 표준 (FoPage / FoContainer / .fo-2col) ===== */
+.fo-2col { display: grid; grid-template-columns: minmax(220px,17fr) minmax(0,83fr); gap: 0 16px; align-items: flex-start; margin-bottom: 16px; }
+.fo-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px 20px; margin-bottom: 16px; }
+/* FO 그리드 헤더 — 가운데 정렬(인라인 thStyle) + 항목 간 구분선 */
+.fo-grid-table th { border-right: 1px solid var(--border); }
+.fo-grid-table th:last-child { border-right: none; }
+.fo-area-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.fo-area-title { font-size: 1.05rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
+.fo-area-count { font-size: 0.8rem; font-weight: 500; color: var(--text-muted); }
+.fo-page-banner { position: relative; overflow: hidden; height: 220px; margin-bottom: 36px; left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw; width: 100vw; display: flex; align-items: center; justify-content: center; }
+.fo-page-banner-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.fo-page-banner-dim { position: absolute; inset: 0; background: linear-gradient(120deg, rgba(255,255,255,0.72) 0%, rgba(240,245,255,0.55) 45%, rgba(220,232,255,0.38) 100%); }
+.fo-page-banner-body { position: relative; z-index: 1; text-align: center; }
+.fo-page-eyebrow { font-size: 0.75rem; color: rgba(0,0,0,0.55); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 10px; }
+.fo-page-h1 { font-size: 2.2rem; font-weight: 700; color: #111; letter-spacing: -0.5px; margin-bottom: 8px; }
+.fo-page-crumbs { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.8rem; color: rgba(0,0,0,0.55); }
+.fo-page-crumb-link { cursor: pointer; }
+.fo-page-crumb-link:hover { color: var(--accent); }
+.fo-page-crumb-cur { color: #333; }
+.fo-page-crumb-sep { color: rgba(0,0,0,0.35); }
 .card:hover {
   border-color: rgba(0,0,0,0.15);
   transform: translateY(-2px);

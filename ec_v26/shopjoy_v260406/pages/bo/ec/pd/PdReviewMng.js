@@ -355,8 +355,8 @@ window.PdReviewMng = {
       { key: 'prodId',          label: '상품ID',   style: 'width:110px', cellStyle: 'font-size:12px;',
         linkToggle: {
           active: (row) => selectedProdId.value === row.prodId,
-          activeStyle: 'color:#e8587a;font-weight:700;cursor:pointer;',
-          baseStyle: 'color:#1e88e5;font-weight:500;cursor:pointer;',
+          activeStyle: 'color:#e8587a;font-weight:700;',
+          baseStyle: 'color:#1e88e5;font-weight:500;',
           title: '해당 상품의 리뷰만 하단에 표시',
           onClick: (row) => handleSelectAction('reviews-rowProdClick', row.prodId),
         } },
@@ -408,68 +408,49 @@ window.PdReviewMng = {
     };
   },
   template: `
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    상품리뷰관리
-  </div>
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card">
-    <!-- ===== ■.■. 검색 영역 ================================================= -->
+<bo-page title="상품리뷰관리">
+  <!-- ===== ■. 검색 영역 =================================================== -->
+  <bo-container>
     <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
-  </div>
-  <!-- ===== □. 카드 영역 =================================================== -->
+  </bo-container>
+  <!-- ===== □. 검색 영역 =================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
-  <bo-grid :columns="columns.listGrid" :rows="reviews" :pager="pager" row-key="reviewId" :selected-key="selectedId"
-    :sort-state="uiState" list-title="상품리뷰 목록"
-    :count-text="'총 ' + pager.pageTotalCount + '건'"
-    :row-class="fnGridRowClass" empty-text="데이터가 없습니다." row-clickable row-actions
-    @sort="key => handleBtnAction('reviews-sort', key)" grid-id="reviews-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
-    <template #row-actions="{ row }">
-      <button class="btn btn-xs" style="background:#fff;border:1px solid #d9d9d9;color:#555;font-size:12px;padding:2px 6px;" title="상품 미리보기" @click.stop="handleSelectAction('reviews-rowPreview', row.prodId)">
-        👁
-      </button>
-    </template>
-    <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
-    <template #footer>
-      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('reviews-pager-setPage', n)" :on-size-change="() => handleSelectAction('reviews-pager-sizeChange')" />
-    </template>
-  </bo-grid>
+  <bo-container title="상품리뷰 목록" :count-text="'총 ' + pager.pageTotalCount + '건'">
+    <bo-grid bare :columns="columns.listGrid" :rows="reviews" :pager="pager" row-key="reviewId" :selected-key="selectedId"
+      :sort-state="uiState"
+      :row-class="fnGridRowClass" empty-text="데이터가 없습니다." row-actions
+      @sort="key => handleBtnAction('reviews-sort', key)" grid-id="reviews-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+      <template #row-actions="{ row }">
+        <button class="btn btn-xs" style="background:#fff;border:1px solid #d9d9d9;color:#555;font-size:12px;padding:2px 6px;" title="상품 미리보기" @click.stop="handleSelectAction('reviews-rowPreview', row.prodId)">
+          👁
+        </button>
+      </template>
+    </bo-grid>
+    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('reviews-pager-setPage', n)" :on-size-change="() => handleSelectAction('reviews-pager-sizeChange')" />
+  </bo-container>
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 상품ID 클릭 시: 해당 상품의 리뷰 페이징 목록 ============================= -->
-  <div class="card" v-if="selectedProdId">
-    <div class="toolbar">
-      <span class="list-title">
-        📦 상품의 리뷰 목록 [{{ selectedProdId }}]
-      </span>
-      <span class="list-count">
-        총 {{ prodReviewPager.pageTotalCount }}건
-      </span>
-      <button data-hide-close style="display:none;" class="btn btn-xs" style="margin-left:auto;background:#f5f5f5;border:1px solid #ddd;color:#666;font-size:11px;padding:2px 8px;" @click="handleBtnAction('prodReviews-close')">
-        ✕ 닫기
-      </button>
-    </div>
+  <bo-container v-if="selectedProdId" :title="'📦 상품의 리뷰 목록 [' + selectedProdId + ']'" :count-text="'총 ' + prodReviewPager.pageTotalCount + '건'">
     <!-- ===== ■.■. 그리드 (약 10행 높이 + 초과 시 내부 스크롤) =========== -->
     <div style="max-height:360px;overflow-y:auto;border:1px solid #eef0f3;border-radius:6px;background:#fff;">
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid bare :columns="columns.prodReviewGrid" :rows="prodReviews" :pager="prodReviewPager"
         row-key="reviewId" :row-class="fnProdReviewRowClass"
-        empty-text="해당 상품의 리뷰가 없습니다." row-clickable
- grid-id="prodReviews-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+        empty-text="해당 상품의 리뷰가 없습니다."
+        grid-id="prodReviews-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
       </bo-grid>
     </div>
     <!-- ===== □.□. 그리드 (기본 10개 영역 + 화면 높이 반응형 확장, 초과 시 내부 스크롤) =========== -->
-    <!-- ===== ■.■. /그리드 스크롤 컨테이너 ========================================= -->
     <!-- ===== ■.■. 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ============================= -->
     <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
       <bo-pager :pager="prodReviewPager" :on-set-page="n => handleBtnAction('prodReviews-pager-setPage', n)" :on-size-change="() => handleSelectAction('prodReviews-pager-sizeChange')"
         style="margin-top:0;min-height:34px;" />
     </div>
-  </div>
-  <!-- ===== □.□. 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ============================= -->
+  </bo-container>
   <!-- ===== □. 상품ID 클릭 시: 해당 상품의 리뷰 페이징 목록 ============================= -->
   <!-- ===== ■. 상세 패널 (항상 표시, 리뷰 선택 시에만 액션 노출) ============================ -->
-  <div class="card">
+  <bo-container bare>
+    <div class="card">
     <div class="toolbar">
       <span class="list-title">
         리뷰 내용
@@ -538,7 +519,8 @@ window.PdReviewMng = {
         </div>
       </template>
     </div>
-  </div>
+    </div>
+  </bo-container>
   <!-- ===== □. 상세 패널 =================================================== -->
   <!-- ===== ■. 상태변경 사유 입력 모달 =========================================== -->
   <div v-if="statusModal.show"
@@ -549,7 +531,7 @@ window.PdReviewMng = {
         <div style="font-size:14px;font-weight:700;color:#222;">
           리뷰 상태 변경
         </div>
-        <button @click="handleBtnAction('statusModal-close')" style="border:none;background:transparent;color:#888;font-size:18px;cursor:pointer;">
+        <button @click="handleBtnAction('statusModal-close')" style="border:none;background:transparent;color:#888;font-size:18px;">
           ✕
         </button>
       </div>
@@ -597,7 +579,7 @@ window.PdReviewMng = {
         </div>
       </div>
     </div>
-  </div>
   <!-- ===== □. 상태변경 사유 입력 모달 =========================================== -->
+</bo-page>
 `
 };

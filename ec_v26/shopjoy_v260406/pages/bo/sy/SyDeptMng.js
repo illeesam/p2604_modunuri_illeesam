@@ -440,43 +440,32 @@ window.SyDeptMng = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    부서관리
-  </div>
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card">
-    <!-- ===== ■.■. 검색 영역 ================================================= -->
+<bo-page title="부서관리">
+  <!-- ===== ■. 검색 ====================================================== -->
+  <bo-container>
     <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
-  </div>
-  <!-- ===== □. 카드 영역 =================================================== -->
-  <!-- ===== ■. 본문 영역 =================================================== -->
-  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:0 12px;align-items:flex-start;">
+  </bo-container>
+  <!-- ===== ■. 본문 영역 (트리 + 목록) ===================================== -->
+  <div class="bo-2col">
     <!-- ===== ■.■. 부서 트리 ================================================= -->
-    <div class="card" style="padding:12px;">
-      <div class="toolbar" style="margin-bottom:8px;">
-        <span class="list-title" style="font-size:13px;">
-          📂 부서
-        </span>
-      </div>
-      <div style="display:flex;gap:4px;margin-bottom:8px;">
-        <button class="btn btn-sm" @click="handleBtnAction('deptTree-expandAll')" style="flex:1;font-size:11px;">
+    <bo-container title="📂 부서">
+      <template #toolbar-actions>
+        <button class="btn btn-sm" @click="handleBtnAction('deptTree-expandAll')" style="font-size:11px;">
           ▼ 전체펼치기
         </button>
-        <button class="btn btn-sm" @click="handleBtnAction('deptTree-collapseAll')" style="flex:1;font-size:11px;">
+        <button class="btn btn-sm" @click="handleBtnAction('deptTree-collapseAll')" style="font-size:11px;">
           ▶ 전체닫기
         </button>
-      </div>
+      </template>
       <div style="max-height:65vh;overflow:auto;">
         <bo-dept-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedTreeId"
           :on-toggle="id => handleBtnAction('deptTree-toggle', id)"
           :on-select="id => handleSelectAction('deptTree-select', id)"
           :depth="0" :counts="cfDeptCounts" />
       </div>
-    </div>
-    <div>
-      <!-- ===== ■.■.■. CRUD 그리드 ============================================ -->
+    </bo-container>
+    <!-- ===== ■.■. 부서목록 CRUD 그리드 ====================================== -->
+    <bo-container bare>
       <bo-grid-crud
         :columns="columns.baseGrid" :rows="gridRows" row-key="deptId" :selected-key="uiState.selectedTreeId"
         list-title="부서목록" :show-export="true" :draggable="false"
@@ -494,10 +483,10 @@ window.SyDeptMng = {
       </bo-grid-crud>
       <!-- ===== ■.■.■. 상위부서 선택 모달 ========================================= -->
       <dept-tree-modal v-if="parentModal && parentModal.show" :exclude-id="parentModal.targetRow && parentModal.targetRow.deptId > 0 ? parentModal.targetRow.deptId : null" modal-name="parent-dept" :on-callback="fnCallbackModal" />
-    </div>
+    </bo-container>
   </div>
   <!-- ===== □. 본문 영역 =================================================== -->
-</div>
+</bo-page>
 `,
 };
 

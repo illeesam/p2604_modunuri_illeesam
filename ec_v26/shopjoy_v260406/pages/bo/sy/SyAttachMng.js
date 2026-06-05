@@ -445,127 +445,105 @@ window.SyAttachMng = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    첨부관리
-  </div>
-  <!-- ===== ■. 본문 영역 =================================================== -->
-  <div style="display:flex;gap:16px;align-items:flex-start;">
+<bo-page title="첨부관리">
+  <!-- ===== ■. 본문 영역 (트리없는 2열: 좌 그룹 30% + 우 파일 70%) ============== -->
+  <div class="bo-2col" style="grid-template-columns:minmax(260px,30%) 1fr;">
     <!-- ===== ■.■. 좌: 첨부그룹관리 (30%) ======================================= -->
-    <div style="flex:0 0 30%;min-width:260px;">
-      <div class="card" style="margin-bottom:0;">
-        <div class="toolbar">
-          <b style="font-size:14px;">
-            첨부그룹관리
-            <span class="list-count">
-              {{ grpPager.pageTotalCount }}건
-            </span>
-          </b>
-          <button class="btn btn-primary btn-sm" @click="handleBtnAction('attachGrps-add')">
-            + 신규
+    <bo-container title="첨부그룹관리" :count-text="grpPager.pageTotalCount + '건'">
+      <template #toolbar-actions>
+        <button class="btn btn-primary btn-sm" @click="handleBtnAction('attachGrps-add')">
+          + 신규
+        </button>
+      </template>
+      <div style="padding:0 0 10px 0;">
+        <bo-search-area :columns="columns.grpSearch" :param="grpSearchParam" :show-reset="false"
+          @search="handleBtnAction('attachGrps-search')" />
+      </div>
+      <!-- ===== ■.■.■. 그룹 폼 (BoFormArea 자동 렌더) =========================== -->
+      <div v-if="uiState.grpEditMode" style="background:#fafafa;border:1px solid #e0e0e0;border-radius:6px;padding:12px;margin-bottom:12px;">
+        <div style="font-size:13px;font-weight:600;margin-bottom:8px;">
+          {{ uiState.grpEditId===null ? '그룹 등록' : '그룹 수정' }}
+          <span v-if="uiState.grpEditId" style="font-size:11px;color:#999;font-weight:400;margin-left:6px;">
+            #{{ uiState.grpEditId }}
+          </span>
+        </div>
+        <!-- ===== ■.■.■.■. 폼 영역 ============================================ -->
+        <bo-form-area :columns="columns.grpForm" :form="grpForm" :errors="{}"
+          :cols="2" compact :show-actions="false" />
+        <div style="display:flex;gap:6px;margin-top:8px;">
+          <button class="btn btn-primary btn-sm" style="flex:1;" @click="handleBtnAction('attachGrps-save')">
+            저장
+          </button>
+          <button class="btn btn-secondary btn-sm" style="flex:1;" @click="handleBtnAction('attachGrps-formClose')">
+            취소
           </button>
         </div>
-        <div style="padding:0 0 10px 0;">
-          <bo-search-area :columns="columns.grpSearch" :param="grpSearchParam" :show-reset="false"
-            @search="handleBtnAction('attachGrps-search')" />
-        </div>
-        <!-- ===== ■.■.■.■. 그룹 폼 (BoFormArea 자동 렌더) =========================== -->
-        <div v-if="uiState.grpEditMode" style="background:#fafafa;border:1px solid #e0e0e0;border-radius:6px;padding:12px;margin-bottom:12px;">
-          <div style="font-size:13px;font-weight:600;margin-bottom:8px;">
-            {{ uiState.grpEditId===null ? '그룹 등록' : '그룹 수정' }}
-            <span v-if="uiState.grpEditId" style="font-size:11px;color:#999;font-weight:400;margin-left:6px;">
-              #{{ uiState.grpEditId }}
+      </div>
+      <!-- ===== ■.■.■. 그룹 목록 (서버 페이징 — grpPager.pageSize 만큼 1페이지에 표시) ===== -->
+      <div style="border:1px solid #eef0f3;border-radius:6px;background:#fff;">
+        <div v-for="g in attachGrps" :key="g.attachGrpId"
+          style="padding:10px 12px;border-bottom:1px solid #f0f0f0;transition:background .15s;"
+          :style="uiState.selectedGrpId===g.attachGrpId ? 'background:#eff6ff;outline:2px solid #2563eb;outline-offset:-2px;position:relative;z-index:1;' : ''"
+          @click="handleSelectAction('attachGrps-rowSelect', g.attachGrpId)">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-size:13px;font-weight:600;color:#333;">
+                {{ g.attachGrpNm }}
+              </div>
+              <div style="font-size:11px;color:#888;margin-top:2px;">
+                {{ g.attachGrpCode }} | 최대 {{ g.maxFileCount }}개 / {{ g.maxFileSize }}MB
+              </div>
+              <div style="font-size:10px;color:#bbb;margin-top:1px;">
+                #{{ g.attachGrpId }}
+              </div>
+            </div>
+            <div style="display:flex;gap:4px;" @click.stop>
+              <button class="btn btn-blue btn-sm" style="font-size:11px;padding:2px 6px;" @click="handleSelectAction('attachGrps-rowEdit', g)">
+                수정
+              </button>
+              <button class="btn btn-danger btn-sm" style="font-size:11px;padding:2px 6px;" @click="handleSelectAction('attachGrps-rowDelete', g)">
+                삭제
+              </button>
+            </div>
+          </div>
+          <div style="margin-top:4px;">
+            <span class="badge" :class="g.useYn==='Y' ? 'badge-green' : 'badge-gray'" style="font-size:10px;">
+              {{ g.useYn==='Y' ? '사용' : '미사용' }}
+            </span>
+            <span style="font-size:11px;color:#aaa;margin-left:6px;">
+              {{ g.fileExtAllow }}
+            </span>
+            <span style="font-size:11px;color:#2563eb;margin-left:8px;font-weight:500;">
+              {{ cfSiteNm }}
             </span>
           </div>
-          <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
-          <bo-form-area :columns="columns.grpForm" :form="grpForm" :errors="{}"
-            :cols="2" compact :show-actions="false" />
-          <div style="display:flex;gap:6px;margin-top:8px;">
-            <button class="btn btn-primary btn-sm" style="flex:1;" @click="handleBtnAction('attachGrps-save')">
-              저장
-            </button>
-            <button class="btn btn-secondary btn-sm" style="flex:1;" @click="handleBtnAction('attachGrps-formClose')">
-              취소
-            </button>
-          </div>
         </div>
-        <!-- ===== ■.■.■.■. 그룹 목록 (서버 페이징 — grpPager.pageSize 만큼 1페이지에 표시) ===== -->
-        <div style="border:1px solid #eef0f3;border-radius:6px;background:#fff;">
-          <div v-for="g in attachGrps" :key="g.attachGrpId"
-            style="padding:10px 12px;border-bottom:1px solid #f0f0f0;cursor:pointer;transition:background .15s;"
-            :style="uiState.selectedGrpId===g.attachGrpId ? 'background:#eff6ff;outline:2px solid #2563eb;outline-offset:-2px;position:relative;z-index:1;' : ''"
-            @click="handleSelectAction('attachGrps-rowSelect', g.attachGrpId)">
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-              <div>
-                <div style="font-size:13px;font-weight:600;color:#333;">
-                  {{ g.attachGrpNm }}
-                </div>
-                <div style="font-size:11px;color:#888;margin-top:2px;">
-                  {{ g.attachGrpCode }} | 최대 {{ g.maxFileCount }}개 / {{ g.maxFileSize }}MB
-                </div>
-                <div style="font-size:10px;color:#bbb;margin-top:1px;">
-                  #{{ g.attachGrpId }}
-                </div>
-              </div>
-              <div style="display:flex;gap:4px;" @click.stop>
-                <button class="btn btn-blue btn-sm" style="font-size:11px;padding:2px 6px;" @click="handleSelectAction('attachGrps-rowEdit', g)">
-                  수정
-                </button>
-                <button class="btn btn-danger btn-sm" style="font-size:11px;padding:2px 6px;" @click="handleSelectAction('attachGrps-rowDelete', g)">
-                  삭제
-                </button>
-              </div>
-            </div>
-            <div style="margin-top:4px;">
-              <span class="badge" :class="g.useYn==='Y' ? 'badge-green' : 'badge-gray'" style="font-size:10px;">
-                {{ g.useYn==='Y' ? '사용' : '미사용' }}
-              </span>
-              <span style="font-size:11px;color:#aaa;margin-left:6px;">
-                {{ g.fileExtAllow }}
-              </span>
-              <span style="font-size:11px;color:#2563eb;margin-left:8px;font-weight:500;">
-                {{ cfSiteNm }}
-              </span>
-            </div>
-          </div>
-          <div v-if="!attachGrps.length" style="text-align:center;color:#999;padding:20px;font-size:13px;">
-            {{ grpSearchParam.searchValue ? '검색 결과가 없습니다.' : '그룹이 없습니다.' }}
-          </div>
-        </div>
-        <!-- ===== ■.■.■.■. /그룹 목록 박스 ========================================= -->
-        <!-- ===== ■.■.■.■. 그룹 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ====================== -->
-        <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
-          <!-- ===== ■.■.■.■.■. 영역 ============================================== -->
-          <bo-pager :pager="grpPager" :on-set-page="n => handleBtnAction('attachGrps-pager-setPage', n)" :on-size-change="() => handleSelectAction('attachGrps-pager-sizeChange')"
-            style="margin-top:0;min-height:34px;" />
+        <div v-if="!attachGrps.length" style="text-align:center;color:#999;padding:20px;font-size:13px;">
+          {{ grpSearchParam.searchValue ? '검색 결과가 없습니다.' : '그룹이 없습니다.' }}
         </div>
       </div>
-    </div>
+      <!-- ===== ■.■.■. /그룹 목록 박스 ========================================= -->
+      <!-- ===== ■.■.■. 그룹 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ====================== -->
+      <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
+        <bo-pager :pager="grpPager" :on-set-page="n => handleBtnAction('attachGrps-pager-setPage', n)" :on-size-change="() => handleSelectAction('attachGrps-pager-sizeChange')"
+          style="margin-top:0;min-height:34px;" />
+      </div>
+    </bo-container>
     <!-- ===== □.□. 좌: 첨부그룹관리 (30%) ======================================= -->
     <!-- ===== ■.■. 우: 첨부파일관리 (70%) ======================================= -->
-    <div style="flex:1;">
-      <!-- ===== ■.■.■. 조회 영역 (별도 카드, 제목 제거) ============================== -->
-      <div class="card" style="margin-bottom:12px;">
+    <div>
+      <!-- ===== ■.■.■. 조회 영역 (별도 컨테이너) ================================= -->
+      <bo-container>
         <bo-search-area :columns="columns.fileSearch" :param="searchParam"
           @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
-      </div>
-      <!-- ===== ■.■.■. 목록 영역 (별도 카드) ====================================== -->
-      <div class="card" style="margin-bottom:0;">
-        <div class="toolbar" style="margin-bottom:8px;">
-        <span class="list-title">
-          <!-- ===== ■.■.■.■.■. 헤더 영역 =========================================== -->
-          첨부파일목록
-          <span class="list-count">
-            {{ pager.pageTotalCount }}건
-          </span>
-        </span>
-          <div style="margin-left:auto;display:flex;gap:6px;">
-            <button class="btn btn-primary btn-sm" @click="handleBtnAction('attaches-add')">
-              + 신규
-            </button>
-          </div>
-        </div>
+      </bo-container>
+      <!-- ===== ■.■.■. 목록 영역 (별도 컨테이너) ================================= -->
+      <bo-container title="첨부파일목록" :count-text="pager.pageTotalCount + '건'">
+        <template #toolbar-actions>
+          <button class="btn btn-primary btn-sm" @click="handleBtnAction('attaches-add')">
+            + 신규
+          </button>
+        </template>
         <!-- ===== ■.■.■.■. 파일 폼 ============================================== -->
         <div v-if="uiState.fileEditMode" style="background:#fafafa;border:1px solid #e0e0e0;border-radius:6px;padding:10px 14px 12px;margin-bottom:10px;">
           <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:#444;">
@@ -618,11 +596,11 @@ window.SyAttachMng = {
           <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('attaches-pager-setPage', n)" :on-size-change="() => handleSelectAction('attaches-pager-sizeChange')"
             style="margin-top:0;min-height:34px;" />
         </div>
-      </div>
+      </bo-container>
     </div>
   </div>
-</div>
-<!-- ===== □.□. 우: 첨부파일관리 (70%) ======================================= -->
-<!-- ===== □. 본문 영역 =================================================== -->
+  <!-- ===== □.□. 우: 첨부파일관리 (70%) ======================================= -->
+  <!-- ===== □. 본문 영역 =================================================== -->
+</bo-page>
 `
 };

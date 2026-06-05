@@ -351,6 +351,9 @@ window.DpDispUiDtl = {
     /* -- 공개 대상 (UI-Area 매핑) -- */
     const cfVisibilityOptions = computed(() => window.visibilityUtil.allOptions());
 
+    /* cfUiDispEnvMcsOptions — 전시환경 옵션 {code,label} → {value,label} (BoMultiCheckSelect 인식용) */
+    const cfUiDispEnvMcsOptions = computed(() => uiDispEnvOptions.map(o => ({ value: o.code, label: o.label })));
+
     /* hasAreaVisibility — 공개대상 포함 여부 */
     const hasAreaVisibility = (code) => {
       if (!cfActiveArea.value) { return false; }
@@ -477,7 +480,7 @@ window.DpDispUiDtl = {
       codes, uis, areas, uiState, pathPickModal, form, errors,                       // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal,                            // dispatch + 모달 통합 콜백
       cfIsNew, cfDtlMode, cfRelatedAreas, cfActiveArea, cfPreviewFrameWidth,          // computed
-      cfAvailableAreas, cfVisibilityOptions,                                         // computed
+      cfAvailableAreas, cfVisibilityOptions, cfUiDispEnvMcsOptions,                  // computed
       activeTab, previewMode, expanded, pickOpen, previewPaneWidth,                  // toRef
       showComponentTooltip,                                                          // toRef
       PREVIEW_MODES, uiDispEnvOptions,                                               // 상수
@@ -577,12 +580,12 @@ window.DpDispUiDtl = {
         </span>
         <span v-if="activeTab==='area_'+a.codeId" style="display:flex;gap:2px;">
           <button @click.stop="handleSelectAction('areas-move', { idx: i, dir: -1 })" :disabled="i===0" title="위로"
-            style="font-size:9px;border:1px solid #e0e0e0;border-radius:3px;background:#fff;cursor:pointer;padding:1px 4px;line-height:1.2;color:#888;"
+            style="font-size:9px;border:1px solid #e0e0e0;border-radius:3px;background:#fff;padding:1px 4px;line-height:1.2;color:#888;"
             :style="i===0?'opacity:0.3;cursor:default;':''">
             ▲
           </button>
           <button @click.stop="handleSelectAction('areas-move', { idx: i, dir: 1 })" :disabled="i===cfRelatedAreas.length-1" title="아래로"
-            style="font-size:9px;border:1px solid #e0e0e0;border-radius:3px;background:#fff;cursor:pointer;padding:1px 4px;line-height:1.2;color:#888;"
+            style="font-size:9px;border:1px solid #e0e0e0;border-radius:3px;background:#fff;padding:1px 4px;line-height:1.2;color:#888;"
             :style="i===cfRelatedAreas.length-1?'opacity:0.3;cursor:default;':''">
             ▼
           </button>
@@ -591,7 +594,7 @@ window.DpDispUiDtl = {
       <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">
         <button @click="handleBtnAction('pickModal-open')" :disabled="cfIsNew"
           :title="cfIsNew ? '저장 후 영역을 추가할 수 있습니다.' : ''"
-          :style="cfIsNew ? 'padding:7px;border:1px solid #e0e0e0;background:#f5f5f5;color:#bbb;border-radius:8px;font-size:11px;font-weight:600;cursor:not-allowed;' : 'padding:7px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;border-radius:8px;font-size:11px;font-weight:600;cursor:pointer;'">
+          :style="cfIsNew ? 'padding:7px;border:1px solid #e0e0e0;background:#f5f5f5;color:#bbb;border-radius:8px;font-size:11px;font-weight:600;cursor:not-allowed;' : 'padding:7px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;border-radius:8px;font-size:11px;font-weight:600;'">
           ✚ 기존 영역 추가
         </button>
       </div>
@@ -658,11 +661,11 @@ window.DpDispUiDtl = {
               <span style="font-size:11px;font-weight:600;color:#888;">
                 타이틀 표시
               </span>
-              <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;font-weight:500;color:#444;">
+              <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:500;color:#444;">
                 <input type="radio" v-model="form.titleYn" value="Y" />
                 표시
               </label>
-              <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;font-weight:500;color:#444;">
+              <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:500;color:#444;">
                 <input type="radio" v-model="form.titleYn" value="N" />
                 미표시
               </label>
@@ -748,7 +751,7 @@ window.DpDispUiDtl = {
               설정
             </div>
             <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;">
-              <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#555;padding:5px 10px;background:#f0f0f0;border-radius:6px;cursor:pointer;">
+              <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#555;padding:5px 10px;background:#f0f0f0;border-radius:6px;">
                 <span>
                   전시여부
                 </span>
@@ -784,41 +787,19 @@ window.DpDispUiDtl = {
             <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin:10px 0 6px;">
               🌍 전시환경
             </div>
-            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
-              <label v-for="opt in uiDispEnvOptions" :key="opt?.code"
-              :style="{
-              display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 12px',borderRadius:'6px',
-              border:'1px solid '+(hasUiDispEnv(opt.code)?'#7c3aed':'#ddd'),
-              background:hasUiDispEnv(opt.code)?'#f3e8ff':'#fafafa',
-              color:hasUiDispEnv(opt.code)?'#7c3aed':'#666',
-              fontSize:'12px',fontWeight:hasUiDispEnv(opt.code)?700:500,
-              cursor:'pointer',
-              }">
-                <input type="checkbox" :checked="hasUiDispEnv(opt.code)"
-                @change="handleSelectAction('uiDispEnv-toggle', opt.code)"
-                style="accent-color:#7c3aed;" />
-                {{ opt.label }}
-              </label>
+            <div style="margin-bottom:12px;">
+              <bo-multi-check-select v-model="cfActiveArea.uiDispEnv" :options="cfUiDispEnvMcsOptions"
+                separator="^" wrap empty-value="^NONE^" placeholder="전체 환경" all-label="전체 환경"
+                :disabled="cfDtlMode" min-width="280px" />
             </div>
             <!-- ===== ■.■.■.■.■.■. 헤더 영역 =========================================== -->
             <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin:10px 0 6px;">
               🔒 공개대상 (하나라도 해당하면 노출)
             </div>
-            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px;">
-              <label v-for="opt in cfVisibilityOptions" :key="opt?.codeValue"
-              :style="{
-              display:'inline-flex',alignItems:'center',gap:'6px',padding:'6px 12px',borderRadius:'16px',
-              border:'1px solid '+(hasAreaVisibility(opt.codeValue)?'#1565c0':'#ddd'),
-              background:hasAreaVisibility(opt.codeValue)?'#e3f2fd':'#fafafa',
-              color:hasAreaVisibility(opt.codeValue)?'#1565c0':'#666',
-              fontSize:'12px',fontWeight:hasAreaVisibility(opt.codeValue)?700:500,
-              cursor:'pointer',
-              }">
-                <input type="checkbox" :checked="hasAreaVisibility(opt.codeValue)"
-                @change="handleSelectAction('areaVisibility-toggle', opt.codeValue)"
-                style="accent-color:#1565c0;" />
-                {{ opt.codeLabel }}
-              </label>
+            <div style="margin-bottom:4px;">
+              <bo-multi-check-select v-model="cfActiveArea.visibilityTargets" :options="cfVisibilityOptions"
+                separator="^" wrap empty-value="^NONE^" placeholder="전체 공개" all-label="전체 공개"
+                :disabled="cfDtlMode" min-width="320px" />
             </div>
             <div v-if="!cfActiveArea.visibilityTargets" style="font-size:11px;color:#d32f2f;">
               ⚠ 선택 없음 — 아무에게도 노출되지 않습니다.

@@ -437,23 +437,21 @@ window.SyBatchMng = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    배치스케즐관리
-  </div>
+<bo-page title="배치스케즐관리">
   <!-- ===== ■. 검색 ====================================================== -->
-  <div class="card">
+  <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
-  </div>
+  </bo-container>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 좌 트리 + 우 영역 ============================================= -->
-  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:0 12px;align-items:flex-start;">
+  <div class="bo-2col">
     <!-- ===== ■.■. 경로 트리 ================================================= -->
-    <bo-path-tree-card biz-cd="sy_batch" title="표시경로" :show-biz-cd="false" :counts="batchCounts"
-      :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
-    <div>
+    <bo-container bare>
+      <bo-path-tree-card biz-cd="sy_batch" title="표시경로" :show-biz-cd="false" :counts="batchCounts"
+        :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
+    </bo-container>
+    <bo-container bare>
       <!-- ===== ■.■.■. CRUD 그리드 ============================================ -->
       <bo-grid-crud
         :columns="columns.baseGrid" :rows="gridRows" row-key="batchId"
@@ -487,18 +485,20 @@ window.SyBatchMng = {
       <bo-cron-modal :show="cronModal.show" :value="cronModal.value"
         @apply="expr => handleSelectAction('cronModal-apply', expr)"
         @close="handleBtnAction('cronModal-close')" />
-    </div>
+    </bo-container>
     <!-- ===== □.□. 경로 트리 ================================================= -->
   </div>
   <!-- ===== □. 좌 트리 + 우 영역 ============================================= -->
   <!-- ===== ■. 배치 실행이력 (전체 폭) ========================================== -->
-  <div class="card" style="margin-top:12px;width:100%;">
-    <sy-batch-hist :reload-trigger="histReloadTrigger" :filter-batch-id="histFilterBatchId" />
-  </div>
+  <bo-container bare>
+    <div class="card" style="margin-top:12px;width:100%;">
+      <sy-batch-hist :reload-trigger="histReloadTrigger" :filter-batch-id="histFilterBatchId" />
+    </div>
+  </bo-container>
   <!-- ===== □. 배치 실행이력 (전체 폭) ========================================== -->
   <!-- ===== ■. 표시경로 선택 모달 ============================================= -->
   <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_batch" :value="pathPickModal.row ? pathPickModal.row.pathId : null" modal-name="path-pick" :on-callback="fnCallbackModal" />
   <!-- ===== □. 표시경로 선택 모달 ============================================= -->
-</div>
+</bo-page>
 `,
 };

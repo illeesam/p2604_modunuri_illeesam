@@ -369,25 +369,21 @@ window.SyMenuMng = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    메뉴관리
-  </div>
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card">
-    <!-- ===== ■.■. 검색 영역 ================================================= -->
+<bo-page title="메뉴관리">
+  <!-- ===== ■. 검색 영역 =================================================== -->
+  <bo-container>
     <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
-  </div>
-  <!-- ===== □. 카드 영역 =================================================== -->
-  <!-- ===== ■. 본문 영역 =================================================== -->
-  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:0 12px;align-items:flex-start;">
+  </bo-container>
+  <!-- ===== ■. 본문 영역 (트리 + 그리드) ================================== -->
+  <div class="bo-2col">
     <!-- ===== ■.■. 메뉴 트리 (sy_menu 자기참조) ============================== -->
-    <bo-menu-tree-card title="메뉴" :counts="menuCounts"
-      :selected="uiState.selectedTreeId"
-      @select="path => handleSelectAction('pathTree-select', path)" />
-    <div>
-      <!-- ===== ■.■.■. CRUD 그리드 ============================================ -->
+    <bo-container bare>
+      <bo-menu-tree-card title="메뉴" :counts="menuCounts"
+        :selected="uiState.selectedTreeId"
+        @select="path => handleSelectAction('pathTree-select', path)" />
+    </bo-container>
+    <!-- ===== ■.■. CRUD 그리드 ============================================== -->
+    <bo-container bare>
       <bo-grid-crud
         :columns="columns.baseGrid" :rows="gridRows" row-key="menuId"
         list-title="메뉴목록" :show-export="true" :draggable="false"
@@ -405,9 +401,8 @@ window.SyMenuMng = {
       </bo-grid-crud>
       <!-- ===== ■.■.■. 상위메뉴 선택 모달 ========================================= -->
       <menu-tree-modal v-if="parentModal && parentModal.show" :exclude-id="parentModal.targetRow && parentModal.targetRow.menuId > 0 ? parentModal.targetRow.menuId : null" modal-name="parent-menu" :on-callback="fnCallbackModal" />
-    </div>
+    </bo-container>
   </div>
-  <!-- ===== □. 본문 영역 =================================================== -->
-</div>
+</bo-page>
 `,
 };

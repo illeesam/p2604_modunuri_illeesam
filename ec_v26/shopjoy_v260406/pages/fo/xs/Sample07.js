@@ -678,6 +678,7 @@ window.XsSample07 = {
   },
 
   template: /* html */`
+<fo-page bare>
 <div style="display:flex;height:calc(100vh - 56px);overflow:hidden;font-size:12px;background:#fff;">
   <!-- ===== ■. ━━━ 1. Tree Panel (좌측) ━━━ ============================== -->
   <div style="width:220px;flex-shrink:0;border-right:1px solid #e0e0e0;display:flex;flex-direction:column;background:#f7f8fa;overflow:hidden;">
@@ -1445,5 +1446,6 @@ window.XsSample07 = {
   </div>
 </div>
 <!-- ===== □. ━━━ Toast 알림 (우측 하단) ━━━ ================================ -->
+</fo-page>
 `,
 };

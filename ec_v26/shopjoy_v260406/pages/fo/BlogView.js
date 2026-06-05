@@ -154,7 +154,7 @@ window.BlogView = {
     };
   },
   template: /* html */ `
-<div class="page-wrap" style="max-width:1100px;">
+<fo-page>
   <!-- ===== ■. ══ 2컬럼 레이아웃 ══ ========================================== -->
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(20px,4vw,48px);align-items:start;">
     <!-- ===== ■.■. 좌: 본문 영역 ============================================== -->
@@ -429,7 +429,7 @@ window.BlogView = {
     </div>
   </div>
 </div>
-</div>
+</fo-page>
 <!-- ===== □. ══ 하단: You Might Also Like ══ =========================== -->
 `
 };

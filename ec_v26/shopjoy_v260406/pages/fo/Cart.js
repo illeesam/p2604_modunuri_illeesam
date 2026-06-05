@@ -200,34 +200,11 @@ window.Cart = {
     };
   },
   template: /* html */ `
-<div class="page-wrap">
-  <!-- ===== ■. 페이지 타이틀 배너 ============================================== -->
-  <div class="page-banner-full" style="position:relative;overflow:hidden;height:220px;margin-bottom:36px;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;width:100vw;display:flex;align-items:center;justify-content:center;">
-    <img src="assets/cdn/prod/img/page-title/page-title-1.jpg" alt="장바구니"
-      style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 60%;" />
-    <div style="position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,0.72) 0%,rgba(240,245,255,0.55) 45%,rgba(220,232,255,0.38) 100%);">
-    </div>
-    <div style="position:relative;z-index:1;text-align:center;">
-      <div style="font-size:0.75rem;color:rgba(0,0,0,0.55);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">
-        Shopping
-      </div>
-      <h1 style="font-size:2.2rem;font-weight:700;color:#111;letter-spacing:-0.5px;margin-bottom:8px;">
-        Cart
-      </h1>
-      <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:0.8rem;color:rgba(0,0,0,0.55);">
-        <span style="cursor:pointer;" @click="handleBtnAction('page-goHome')">
-          홈
-        </span>
-        <span>
-          /
-        </span>
-        <span style="color:#333;">
-          장바구니
-        </span>
-      </div>
-    </div>
-  </div>
-  <!-- ===== □. 페이지 타이틀 배너 ============================================== -->
+<fo-page title="Cart" eyebrow="Shopping"
+  banner-img="assets/cdn/prod/img/page-title/page-title-1.jpg"
+  banner-align="center 60%"
+  :crumbs="[{ label: '홈', page: 'home' }, { label: '장바구니' }]"
+  @nav="() => handleBtnAction('page-goHome')">
   <!-- ===== ■. 빈 장바구니 ================================================== -->
   <div v-if="cart.length===0" style="text-align:center;padding:80px 20px;">
     <div style="font-size:4rem;margin-bottom:20px;">
@@ -246,7 +223,7 @@ window.Cart = {
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(12px,2vw,24px);align-items:start;" class="order-grid">
       <!-- ===== ■.■.■. 왼쪽: 상품 목록 =========================================== -->
       <div>
-        <div class="card" style="padding:0;overflow:hidden;margin-bottom:16px;">
+        <fo-container card-style="padding:0;overflow:hidden;margin-bottom:16px;">
           <!-- ===== ■.■.■.■.■. 전체 선택/삭제 + 정렬 헤더 ================================ -->
           <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
             <label style="display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;">
@@ -336,17 +313,14 @@ window.Cart = {
               ✕
             </button>
           </div>
-        </div>
+        </fo-container>
         <button class="btn-outline" @click="handleBtnAction('page-goProdList')" style="padding:10px 20px;">
           ← 계속 쇼핑하기
         </button>
       </div>
       <!-- ===== ■.■.■. 오른쪽: 주문 요약 ========================================== -->
       <div>
-        <div class="card" style="padding:clamp(12px,3vw,24px);position:sticky;top:76px;">
-          <h2 style="font-size:1rem;font-weight:700;margin-bottom:18px;color:var(--text-primary);">
-            📋 주문 요약
-          </h2>
+        <fo-container title="📋 주문 요약" card-style="padding:clamp(12px,3vw,24px);position:sticky;top:76px;">
           <div v-if="uiState.checkedIdxs.size>0" style="margin-bottom:8px;padding:6px 10px;border-radius:6px;background:var(--blue-dim);color:var(--blue);font-size:0.78rem;font-weight:600;">
             ✔ 선택 {{ uiState.checkedIdxs.size }}개 상품만 주문합니다
           </div>
@@ -393,11 +367,11 @@ window.Cart = {
           <p style="text-align:center;font-size:0.75rem;color:var(--text-muted);margin-top:10px;">
             계좌이체로 안전하게 결제
           </p>
-        </div>
+        </fo-container>
       </div>
     </div>
   </template>
   <!-- ===== □. 장바구니 목록 ================================================= -->
-</div>
+</fo-page>
 `,
 };

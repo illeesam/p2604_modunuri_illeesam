@@ -307,47 +307,54 @@ window.Prod03List = {
     };
   },
   template: /* html */ `
-<div class="page-wrap">
-  <!-- ===== ■. Site 03 Edition Ribbon ================================== -->
-  <div style="background:linear-gradient(135deg,#4a148c 0%,#7b1fa2 50%,#9c27b0 100%);color:#fff;padding:10px 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:12px;box-shadow:0 2px 8px rgba(80,30,130,0.15);">
-    <span style="letter-spacing:2.5px;padding:2px 8px;border:1px solid rgba(255,255,255,0.5);">
-      👑 LUXE
-    </span>
-    <span>
-      ✨ 프리미엄 큐레이션 — 장인의 손길
-    </span>
-    <span style="margin-left:auto;opacity:0.9;">
-      SITE 03
-    </span>
-  </div>
-  <!-- ===== □. Site 03 Edition Ribbon ================================== -->
-  <!-- ===== ■. 페이지 타이틀 배너 ============================================== -->
-  <div class="page-banner-full" style="position:relative;overflow:hidden;height:220px;margin-bottom:36px;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;width:100vw;display:flex;align-items:center;justify-content:center;">
-    <img src="assets/cdn/prod/img/page-title/page-title-2.jpg" alt="상품목록"
-      style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%;" />
-    <div style="position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,0.72) 0%,rgba(240,245,255,0.55) 45%,rgba(220,232,255,0.38) 100%);">
+<fo-page title="상품 목록" eyebrow="Shopping"
+  banner-img="assets/cdn/prod/img/page-title/page-title-2.jpg"
+  banner-align="center 40%"
+  :crumbs="[{ label:'홈', page:'home' }, { label:'상품목록' }]"
+  @nav="() => handleBtnAction('page-goHome')">
+  <!-- ===== ■. 배너 슬롯 (Site 03 Edition Ribbon + 풀블리드 배너 유지) ============ -->
+  <template #banner>
+    <!-- ===== ■. Site 03 Edition Ribbon ================================== -->
+    <div style="background:linear-gradient(135deg,#4a148c 0%,#7b1fa2 50%,#9c27b0 100%);color:#fff;padding:10px 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:12px;box-shadow:0 2px 8px rgba(80,30,130,0.15);">
+      <span style="letter-spacing:2.5px;padding:2px 8px;border:1px solid rgba(255,255,255,0.5);">
+        👑 LUXE
+      </span>
+      <span>
+        ✨ 프리미엄 큐레이션 — 장인의 손길
+      </span>
+      <span style="margin-left:auto;opacity:0.9;">
+        SITE 03
+      </span>
     </div>
-    <div style="position:relative;z-index:1;text-align:center;">
-      <div style="font-size:0.75rem;color:rgba(0,0,0,0.55);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">
-        Shopping
+    <!-- ===== □. Site 03 Edition Ribbon ================================== -->
+    <!-- ===== ■. 페이지 타이틀 배너 ============================================== -->
+    <div class="page-banner-full" style="position:relative;overflow:hidden;height:220px;margin-bottom:36px;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;width:100vw;display:flex;align-items:center;justify-content:center;">
+      <img src="assets/cdn/prod/img/page-title/page-title-2.jpg" alt="상품목록"
+        style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%;" />
+      <div style="position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,0.72) 0%,rgba(240,245,255,0.55) 45%,rgba(220,232,255,0.38) 100%);">
       </div>
-      <h1 style="font-size:2.2rem;font-weight:700;color:#111;letter-spacing:-0.5px;margin-bottom:8px;">
-        상품 목록
-      </h1>
-      <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:0.8rem;color:rgba(0,0,0,0.55);">
-        <span style="cursor:pointer;" @click="handleBtnAction('page-goHome')">
-          홈
-        </span>
-        <span>
-          /
-        </span>
-        <span style="color:#333;">
-          상품목록
-        </span>
+      <div style="position:relative;z-index:1;text-align:center;">
+        <div style="font-size:0.75rem;color:rgba(0,0,0,0.55);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">
+          Shopping
+        </div>
+        <h1 style="font-size:2.2rem;font-weight:700;color:#111;letter-spacing:-0.5px;margin-bottom:8px;">
+          상품 목록
+        </h1>
+        <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:0.8rem;color:rgba(0,0,0,0.55);">
+          <span style="cursor:pointer;" @click="handleBtnAction('page-goHome')">
+            홈
+          </span>
+          <span>
+            /
+          </span>
+          <span style="color:#333;">
+            상품목록
+          </span>
+        </div>
       </div>
     </div>
-  </div>
-  <!-- ===== □. 페이지 타이틀 배너 ============================================== -->
+    <!-- ===== □. 페이지 타이틀 배너 ============================================== -->
+  </template>
   <!-- ===== ■. 카테고리 탭 (최상위 독립 배치) ====================================== -->
   <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
     <button
@@ -662,7 +669,7 @@ window.Prod03List = {
 <div v-if="!uiState.loading && uiState.isMobile && baseGrid.pager.pageNo < baseGrid.pager.pageTotalPage" style="text-align:center;padding:16px;color:var(--text-muted);font-size:0.85rem;">
 스크롤하면 더 불러옵니다…
 </div>
-</div>
+</fo-page>
 <!-- ===== □. 조건부 영역 ================================================== -->
 `,
 };

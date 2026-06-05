@@ -10,7 +10,7 @@ window.StErpReconMng = {
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
-const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: ''});
+const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: ''});
     const codes = reactive({
       erp_recon_statuses: [],
       erp_voucher_types: [],
@@ -34,10 +34,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {
         return handleDateRangeChange();
-      // 안내 설명 토글
-      } else if (cmd === 'desc-toggle') {
-        uiState.descOpen = !uiState.descOpen;
-        return;
       // 페이지 번호 변경
       } else if (cmd === 'recons-pager-setPage') {
         if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
@@ -207,38 +203,22 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    ERP 전표대사
-  </div>
-  <!-- ===== ■. 영역 ====================================================== -->
-  <div class="page-desc-bar">
-    <span class="page-desc-summary">
-      ERP로 전송된 전표와 ERP 처리 결과를 대사하여 불일치 전표를 수정합니다.
-    </span>
-    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">
-      {{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}
-    </button>
-    <div v-if="uiState.descOpen" class="page-desc-detail">
-      • ShopJoy 전표금액 vs ERP 처리금액 차이를 자동 비교합니다. • 차이 상태: 일치 / 차이발생 / 오류 • [오류수정] 버튼으로 전표 재생성 또는 ERP 수동 반영을 처리합니다. • 유형 필터: 정산지급 / 수수료 / 조정 / 기타
-    </div>
-  </div>
-  <!-- ===== □. 영역 ====================================================== -->
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card">
-    <!-- ===== ■.■. 검색 영역 ================================================= -->
+<bo-page title="ERP 전표대사"
+  desc-summary="ERP로 전송된 전표와 ERP 처리 결과를 대사하여 불일치 전표를 수정합니다."
+  desc-detail="• ShopJoy 전표금액 vs ERP 처리금액 차이를 자동 비교합니다.&#10;• 차이 상태: 일치 / 차이발생 / 오류&#10;• [오류수정] 버튼으로 전표 재생성 또는 ERP 수동 반영을 처리합니다.&#10;• 유형 필터: 정산지급 / 수수료 / 조정 / 기타">
+  <!-- ===== ■. 검색 영역 ================================================= -->
+  <bo-container>
     <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
-  </div>
-  <!-- ===== □. 카드 영역 =================================================== -->
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card" style="margin-top:12px">
+  </bo-container>
+  <!-- ===== ■. 집계 영역 =================================================== -->
+  <bo-container>
     <bo-form-area :columns="columns.summaryForm" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
-    <div style="height:12px"></div>
-    <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-grid
+  </bo-container>
+  <!-- ===== ■. 목록 영역 =================================================== -->
+  <bo-container title="목록" :count-text="pager.pageTotalCount + '건'">
+    <bo-grid bare
       :columns="columns.baseGrid" :rows="recons" row-key="reconId"
-      list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true">
+      :row-actions="true">
       <template #head-actions>
         <th style="text-align:right">액션</th>
       </template>
@@ -247,14 +227,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
           조정
         </button>
       </template>
-      <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
-      <template #footer>
-        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('recons-pager-setPage', n)" :on-size-change="() => handleSelectAction('recons-pager-sizeChange')" />
-      </template>
     </bo-grid>
-  </div>
-</div>
-<!-- ===== □.□. 목록 영역 ================================================= -->
-<!-- ===== □. 카드 영역 =================================================== -->
+    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('recons-pager-setPage', n)" :on-size-change="() => handleSelectAction('recons-pager-sizeChange')" />
+  </bo-container>
+</bo-page>
 `,
 };

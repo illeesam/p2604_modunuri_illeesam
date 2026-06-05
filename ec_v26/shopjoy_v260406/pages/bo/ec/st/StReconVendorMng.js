@@ -7,7 +7,7 @@ window.StReconVendorMng = {
   setup(props) {
     /* ##### [01] 초기 변수 정의 ################################################## */
     const { ref, reactive, computed, watch, onMounted } = Vue;
-const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: ''});
+const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: ''});
     const codes = reactive({
       vendor_settle_statuses: [],
       recon_results: [],
@@ -27,9 +27,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         return handleSearchList('DEFAULT');
       } else if (cmd === 'searchParam-dateRange') {
         return handleDateRangeChange();
-      } else if (cmd === 'desc-toggle') {
-        uiState.descOpen = !uiState.descOpen;
-        return;
       } else if (cmd === 'reconVendors-pager-setPage') {
         if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
         return;
@@ -170,46 +167,20 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    업체-정산 대사
-  </div>
-  <!-- ===== ■. 영역 ====================================================== -->
-  <div class="page-desc-bar">
-    <span class="page-desc-summary">
-      업체가 제출한 정산 내역과 시스템 정산 데이터 간 불일치를 검출하고 대사 처리합니다.
-    </span>
-    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">
-      {{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}
-    </button>
-    <div v-if="uiState.descOpen" class="page-desc-detail">
-      • 시스템 집계금액(sys_amt) vs 업체 제출금액(vendor_amt) 차이를 자동 비교합니다. • 업체별 정산 명세서와 대조하여 불일치 원인을 파악합니다. • 차이 발생 시 상호 확인 후 조정(StSettleAdjMng)으로 처리합니다.
-    </div>
-  </div>
-  <!-- ===== □. 영역 ====================================================== -->
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card">
-    <!-- ===== ■.■. 검색 영역 ================================================= -->
+<bo-page title="업체-정산 대사" desc-summary="업체가 제출한 정산 내역과 시스템 정산 데이터 간 불일치를 검출하고 대사 처리합니다." desc-detail="• 시스템 집계금액(sys_amt) vs 업체 제출금액(vendor_amt) 차이를 자동 비교합니다.&#10;• 업체별 정산 명세서와 대조하여 불일치 원인을 파악합니다.&#10;• 차이 발생 시 상호 확인 후 조정(StSettleAdjMng)으로 처리합니다.">
+  <!-- ===== ■. 검색 영역 ================================================= -->
+  <bo-container>
     <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
-  </div>
-  <!-- ===== □. 카드 영역 =================================================== -->
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card" style="margin-top:12px">
+  </bo-container>
+  <!-- ===== ■. 집계 영역 =================================================== -->
+  <bo-container>
     <bo-form-area :columns="columns.summaryForm" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
-    <div style="height:12px"></div>
-    <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-grid
-      :columns="columns.baseGrid" :rows="rows" row-key="vendorId"
-      list-title="목록" :count-text="pager.pageTotalCount + '개 업체'">
-      <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
-      <template #footer>
-        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('reconVendors-pager-setPage', n)" :on-size-change="() => handleSelectAction('reconVendors-pager-sizeChange')" />
-      </template>
-    </bo-grid>
-  </div>
-</div>
-<!-- ===== □.□. 목록 영역 ================================================= -->
-<!-- ===== □. 카드 영역 =================================================== -->
+  </bo-container>
+  <!-- ===== ■. 목록 영역 ================================================= -->
+  <bo-container title="목록" :count-text="pager.pageTotalCount + '개 업체'">
+    <bo-grid bare :columns="columns.baseGrid" :rows="rows" row-key="vendorId" />
+    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('reconVendors-pager-setPage', n)" :on-size-change="() => handleSelectAction('reconVendors-pager-sizeChange')" />
+  </bo-container>
+</bo-page>
 `,
 };

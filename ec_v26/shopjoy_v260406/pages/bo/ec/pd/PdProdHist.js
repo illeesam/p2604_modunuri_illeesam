@@ -266,19 +266,17 @@ window.PdProdHist = {
   template: /* html */`
 <div>
   <!-- ===== ■. 이력 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
-  <div class="card">
+  <bo-container>
     <!-- ===== ■.■. 카드 헤더 (이력정보 제목 = list-title) ========================= -->
-    <div class="toolbar">
-      <span class="list-title">
-        이력정보
-        <span v-if="prodId" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
-          #{{ prodId }}
-        </span>
-        <span v-if="uiState.loading" style="margin-left:8px;font-size:11px;color:#aaa;font-weight:400;">
-          조회 중...
-        </span>
+    <template #title>
+      이력정보
+      <span v-if="prodId" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+        #{{ prodId }}
       </span>
-    </div>
+      <span v-if="uiState.loading" style="margin-left:8px;font-size:11px;color:#aaa;font-weight:400;">
+        조회 중...
+      </span>
+    </template>
     <!-- ===== ■.■. 탭 영역 ================================================== -->
     <bo-tab-bar :tabs="tabs" :tab="botTab" :tab-mode="tabMode2"
       @tab-select="id => handleBtnAction('tab-change', id)"
@@ -383,7 +381,7 @@ window.PdProdHist = {
     </div>
   </div>
   <!-- ===== □. 탭 컨텐츠 =================================================== -->
-  </div>
+  </bo-container>
   <!-- ===== □. 이력 카드 (제목 + 탭바 + 탭컨텐츠) =============================== -->
 </div>
 <!-- ===== □.□. 상품정보 변경이력 ============================================= -->

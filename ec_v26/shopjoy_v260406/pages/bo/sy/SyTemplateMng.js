@@ -368,7 +368,7 @@ window.SyTemplateMng = {
     const fnUseYnBadge = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
     /* fnRowStyle — 행 스타일 (선택 행 강조) */
-    const fnRowStyle = (t) => detailPanel.selectedId === t.templateId ? 'background:#fff8f9;cursor:pointer;' : 'cursor:pointer;';
+    const fnRowStyle = (t) => detailPanel.selectedId === t.templateId ? 'background:#fff8f9;' : '';
 
     // 기본 검색
     const columns = {};
@@ -416,40 +416,35 @@ window.SyTemplateMng = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    템플릿관리
-  </div>
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card">
-    <!-- ===== ■.■. 검색 영역 ================================================= -->
+<bo-page title="템플릿관리">
+  <!-- ===== ■. 검색 영역 =================================================== -->
+  <bo-container>
     <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
-  </div>
-  <!-- ===== □. 카드 영역 =================================================== -->
+  </bo-container>
   <!-- ===== ■. 좌 트리 + 우 영역 ============================================= -->
-  <div style="display:grid;grid-template-columns:minmax(220px,17fr) minmax(0,83fr);gap:0 12px;align-items:flex-start;">
+  <div class="bo-2col">
     <!-- ===== ■.■. 경로 트리 ================================================= -->
-    <bo-path-tree-card biz-cd="sy_template" title="표시경로" :show-biz-cd="false" :counts="templateCounts"
-      :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
-    <div>
-      <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid
+    <bo-container bare>
+      <bo-path-tree-card biz-cd="sy_template" title="표시경로" :show-biz-cd="false" :counts="templateCounts"
+        :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
+    </bo-container>
+    <!-- ===== ■.■. 목록 영역 =============================================== -->
+    <bo-container title="템플릿목록" :count-text="pager.pageTotalCount + '건'">
+      <template #toolbar-actions>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-green btn-sm" @click="handleBtnAction('templates-excel')">
+            📥 엑셀
+          </button>
+          <button class="btn btn-primary btn-sm" @click="handleBtnAction('templates-add')">
+            + 신규
+          </button>
+        </div>
+      </template>
+      <bo-grid bare
         :columns="columns.baseGrid" :rows="templates" row-key="templateId" :selected-key="detailPanel.selectedId"
-        list-title="템플릿목록" :count-text="pager.pageTotalCount + '건'"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="key => handleBtnAction('templates-sort', key)"
         grid-id="templates-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
-        <template #toolbar-actions>
-          <div style="display:flex;gap:6px;">
-            <button class="btn btn-green btn-sm" @click="handleBtnAction('templates-excel')">
-              📥 엑셀
-            </button>
-            <button class="btn btn-primary btn-sm" @click="handleBtnAction('templates-add')">
-              + 신규
-            </button>
-          </div>
-        </template>
         <template #head-actions>
           <th style="text-align:right">
             관리
@@ -473,28 +468,23 @@ window.SyTemplateMng = {
             </div>
           </td>
         </template>
-        <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 템플릿목록 영역 안에 보이도록 -->
-        <template #footer>
-          <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('templates-pager-setPage', n)" :on-size-change="() => handleSelectAction('templates-pager-sizeChange')" />
-        </template>
       </bo-grid>
-      <!-- ===== ■.■.■. 미리보기/발송 모달 (position:fixed) ========================= -->
-      <template-preview-modal v-if="previewModal && previewModal.show" :tmpl="previewModal.template" :sample-params="previewModal.template?.sampleParams || '{}'" modal-name="template-preview" :on-callback="fnCallbackModal" />
-      <template-send-modal v-if="sendModal && sendModal.show" :tmpl="sendModal.template" :show-toast="showToast" :show-confirm="showConfirm" modal-name="template-send" :on-callback="fnCallbackModal" />
-    </div>
-    <!-- ===== □.□. 경로 트리 ================================================= -->
-    <!-- ===== ■.■. 수정 패널 (grid 직접 자식 → 전체 폭, 항상 표시) ============================= -->
-    <div style="grid-column:1/-1;">
-      <sy-template-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
-        :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-        :active="detailPanel.active"
-        :reload-trigger="detailPanel.reloadTrigger"
-        :on-list-reload="handleSearchList" />
-    </div>
-    <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_template" :value="pathPickModal.row ? pathPickModal.row.pathId : null" modal-name="path-pick" :on-callback="fnCallbackModal" />
+      <!-- 페이저는 그리드 밖, 컨테이너 안 -->
+      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('templates-pager-setPage', n)" :on-size-change="() => handleSelectAction('templates-pager-sizeChange')" />
+    </bo-container>
   </div>
-  <!-- ===== □.□. 수정 패널 (grid 직접 자식 → 전체 폭) ============================= -->
-  <!-- ===== □. 좌 트리 + 우 영역 ============================================= -->
-</div>
+  <!-- ===== ■. 수정 패널 (전체 폭, 항상 표시) ============================= -->
+  <bo-container bare>
+    <sy-template-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
+      :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+      :active="detailPanel.active"
+      :reload-trigger="detailPanel.reloadTrigger"
+      :on-list-reload="handleSearchList" />
+  </bo-container>
+  <!-- ===== ■. 미리보기 / 발송 / 경로 선택 모달 =============================== -->
+  <template-preview-modal v-if="previewModal && previewModal.show" :tmpl="previewModal.template" :sample-params="previewModal.template?.sampleParams || '{}'" modal-name="template-preview" :on-callback="fnCallbackModal" />
+  <template-send-modal v-if="sendModal && sendModal.show" :tmpl="sendModal.template" :show-toast="showToast" :show-confirm="showConfirm" modal-name="template-send" :on-callback="fnCallbackModal" />
+  <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_template" :value="pathPickModal.row ? pathPickModal.row.pathId : null" modal-name="path-pick" :on-callback="fnCallbackModal" />
+</bo-page>
 `,
 };

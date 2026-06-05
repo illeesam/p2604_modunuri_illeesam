@@ -318,6 +318,7 @@ window.XsSample12 = {
     };
   },
   template: /* html */`
+<fo-page bare>
 <div style="padding:clamp(12px,3vw,24px);">
   <!-- ===== ■. 제목 ====================================================== -->
   <div style="font-size:16px;font-weight:700;margin-bottom:12px;">
@@ -914,5 +915,6 @@ window.XsSample12 = {
       <category-select-modal :show="uiState.showCatModal" :selected-ids="[...selectedCatIds]" modal-name="category-pick" :on-callback="fnCallbackModal" />
     </div>
     <!-- ===== □. 카테고리 선택 모달 ============================================== -->
+</fo-page>
 `,
 };

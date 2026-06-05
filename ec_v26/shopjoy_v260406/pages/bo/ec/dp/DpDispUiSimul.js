@@ -1147,19 +1147,19 @@ window.DpDispUiSimul = {
     };
   },
   template: /* html */`
-<div>
+<bo-page title="전시UI시뮬레이션">
   <!-- ===== ■. 페이지 제목 ================================================== -->
-  <div class="page-title" style="display:flex;align-items:center;justify-content:space-between;">
-    <div>
-      전시UI시뮬레이션
-      <span style="font-size:13px;font-weight:400;color:#888;">
-        화면영역별 전시패널 분석 및 영역미리보기
-      </span>
-    </div>
+  <template #title>
+    전시UI시뮬레이션
+    <span style="font-size:13px;font-weight:400;color:#888;">
+      화면영역별 전시패널 분석 및 영역미리보기
+    </span>
+  </template>
+  <template #actions>
     <span style="font-size:12px;background:#e8f0fe;color:#1565c0;border:1px solid #bbdefb;border-radius:10px;padding:3px 12px;font-weight:600;">
       🌐 {{ cfSiteNm }}
     </span>
-  </div>
+  </template>
   <!-- ===== □. 페이지 제목 ================================================== -->
   <!-- ===== ■. 공통 필터 바 ================================================= -->
   <div class="card" style="padding:14px 18px;margin-bottom:0;border-radius:8px 8px 0 0;border-bottom:none;">
@@ -1207,19 +1207,19 @@ window.DpDispUiSimul = {
           보기
         </span>
         <div style="display:flex;border:1px solid #ddd;border-radius:8px;overflow:hidden;">
-          <button @click="handleSelectAction('simul-tabmodeSet', 'list')" style="font-size:11px;padding:4px 11px;border:none;cursor:pointer;transition:all .15s;"
+          <button @click="handleSelectAction('simul-tabmodeSet', 'list')" style="font-size:11px;padding:4px 11px;border:none;transition:all .15s;"
             :style="tabMode==='list' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">
             ☰ 패널리스트목록형식
           </button>
-          <button @click="handleSelectAction('simul-tabmodeSet', 'card')" style="font-size:11px;padding:4px 11px;border:none;border-left:1px solid #ddd;cursor:pointer;transition:all .15s;"
+          <button @click="handleSelectAction('simul-tabmodeSet', 'card')" style="font-size:11px;padding:4px 11px;border:none;border-left:1px solid #ddd;transition:all .15s;"
             :style="tabMode==='card' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">
             🖼 패널목록카드형식
           </button>
-          <button @click="handleSelectAction('simul-tabmodeSet', 'expand')" style="font-size:11px;padding:4px 11px;border:none;border-left:1px solid #ddd;cursor:pointer;transition:all .15s;"
+          <button @click="handleSelectAction('simul-tabmodeSet', 'expand')" style="font-size:11px;padding:4px 11px;border:none;border-left:1px solid #ddd;transition:all .15s;"
             :style="tabMode==='expand' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">
             ⊞ 패널-위젯 상세보기
           </button>
-          <button @click="handleSelectAction('simul-tabmodeSet', 'area_detail')" style="font-size:11px;padding:4px 11px;border:none;border-left:1px solid #ddd;cursor:pointer;transition:all .15s;"
+          <button @click="handleSelectAction('simul-tabmodeSet', 'area_detail')" style="font-size:11px;padding:4px 11px;border:none;border-left:1px solid #ddd;transition:all .15s;"
             :style="tabMode==='area_detail' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">
             ⊟ 영역-위젯 상세보기
           </button>
@@ -1229,14 +1229,14 @@ window.DpDispUiSimul = {
       </div>
       <!-- ===== ■.■.■. 설명보기 (Tab1에서만) ====================================== -->
       <button v-if="uiState.mainTab==='preview'" @click="handleSelectAction('simul-toggleShowDesc')"
-        style="font-size:11px;padding:4px 12px;border-radius:10px;border:1px solid #ddd;cursor:pointer;transition:all .15s;"
+        style="font-size:11px;padding:4px 12px;border-radius:10px;border:1px solid #ddd;transition:all .15s;"
         :style="showDesc ? 'background:#e3f2fd;border-color:#90caf9;color:#1565c0;' : 'background:#fff;color:#999;'">
         {{ showDesc ? '📋 설명 숨기기' : '📋 설명 보기' }}
       </button>
       <!-- ===== ■.■.■. 화면 영역 멀티선택 (오른쪽) ==================================== -->
       <div style="margin-left:auto;position:relative;">
         <button @click="handleSelectAction('simul-toggleAreaDrop')"
-          style="font-size:12px;padding:5px 14px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;color:#333;min-width:140px;justify-content:space-between;"
+          style="font-size:12px;padding:5px 14px;border:1px solid #ddd;border-radius:8px;background:#fff;display:flex;align-items:center;gap:6px;color:#333;min-width:140px;justify-content:space-between;"
           :style="selectedAreas.size>0 ? 'border-color:#e8587a;color:#e8587a;font-weight:600;' : ''">
           <span>
             🗂 {{ cfAreaBtnLabel }}
@@ -1249,10 +1249,10 @@ window.DpDispUiSimul = {
         </div>
         <div v-if="showAreaDrop" style="position:absolute;right:0;top:calc(100% + 6px);z-index:100;background:#fff;border:1px solid #e0e0e0;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.12);min-width:240px;max-height:320px;overflow-y:auto;padding:10px 0;">
           <div style="display:flex;gap:8px;padding:8px 14px 6px;border-bottom:1px solid #f0f0f0;">
-            <button @click.stop="handleBtnAction('selectedAreas-all')" style="font-size:11px;padding:3px 10px;border:1px solid #1565c0;border-radius:8px;background:#e3f2fd;color:#1565c0;cursor:pointer;">
+            <button @click.stop="handleBtnAction('selectedAreas-all')" style="font-size:11px;padding:3px 10px;border:1px solid #1565c0;border-radius:8px;background:#e3f2fd;color:#1565c0;">
               전체선택
             </button>
-            <button @click.stop="handleBtnAction('selectedAreas-clear')" style="font-size:11px;padding:3px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#888;cursor:pointer;">
+            <button @click.stop="handleBtnAction('selectedAreas-clear')" style="font-size:11px;padding:3px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#888;">
               전체해제
             </button>
             <span style="font-size:10px;color:#aaa;margin-left:auto;align-self:center;">
@@ -1260,7 +1260,7 @@ window.DpDispUiSimul = {
             </span>
           </div>
           <div v-for="area in cfAllAreaListRaw" :key="area?.codeValue" @click.stop="handleSelectAction('selectedAreas-toggle', area.codeValue)"
-            style="display:flex;align-items:center;gap:8px;padding:7px 14px;cursor:pointer;"
+            style="display:flex;align-items:center;gap:8px;padding:7px 14px;"
             :style="selectedAreas.has(area.codeValue) ? 'background:#fff8f8;' : ''">
             <div style="width:16px;height:16px;border-radius:4px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
               :style="selectedAreas.has(area.codeValue) ? 'border-color:#e8587a;background:#e8587a;' : 'border-color:#ccc;background:#fff;'">
@@ -1274,7 +1274,7 @@ window.DpDispUiSimul = {
               </span>
             </div>
             <div style="border-top:1px solid #f0f0f0;padding:8px 14px;">
-              <button @click.stop="showAreaDrop=false" style="font-size:11px;width:100%;padding:5px;border:1px solid #e0e0e0;border-radius:6px;background:#f8f8f8;color:#666;cursor:pointer;">
+              <button @click.stop="showAreaDrop=false" style="font-size:11px;width:100%;padding:5px;border:1px solid #e0e0e0;border-radius:6px;background:#f8f8f8;color:#666;">
                 닫기
               </button>
             </div>
@@ -1289,7 +1289,7 @@ window.DpDispUiSimul = {
         <span v-for="code in [...selectedAreas]" :key="code"
         style="font-size:11px;background:#fce4ec;color:#c62828;border-radius:10px;padding:2px 8px;display:flex;align-items:center;gap:4px;">
           {{ code }}
-          <span @click="handleSelectAction('selectedAreas-toggle', code)" style="cursor:pointer;font-weight:700;">
+          <span @click="handleSelectAction('selectedAreas-toggle', code)" style="font-weight:700;">
             ×
           </span>
         </span>
@@ -1311,7 +1311,7 @@ window.DpDispUiSimul = {
         </span>
         <div style="margin-left:auto;display:flex;gap:6px;align-items:center;">
           <button @click="handleBtnAction('simul-openDispUiLayer')"
-          style="font-size:11px;padding:3px 10px;border-radius:10px;cursor:pointer;font-weight:600;border:1px solid #b39ddb;white-space:nowrap;transition:all .15s;"
+          style="font-size:11px;padding:3px 10px;border-radius:10px;font-weight:600;border:1px solid #b39ddb;white-space:nowrap;transition:all .15s;"
           :style="uiState.dispUiLayerOpen?'background:#ede7f6;color:#4a148c;':'background:#f3e5f5;color:#6a1b9a;'">
             🖥 DispUi미리보기
           </button>
@@ -1327,7 +1327,7 @@ window.DpDispUiSimul = {
         <div style="font-size:12px;font-weight:700;color:#4a148c;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
           🖥 DispUi미리보기 조회조건
           <button @click="handleBtnAction('simul-resetDispUiForm')"
-          style="font-size:11px;padding:2px 10px;border-radius:6px;border:1px solid #ce93d8;background:#f3e5f5;color:#7b1fa2;cursor:pointer;font-weight:500;margin-left:4px;">
+          style="font-size:11px;padding:2px 10px;border-radius:6px;border:1px solid #ce93d8;background:#f3e5f5;color:#7b1fa2;font-weight:500;margin-left:4px;">
             초기화
           </button>
         </div>
@@ -1342,7 +1342,7 @@ window.DpDispUiSimul = {
           <!-- ===== ■.■.■.■. 드롭다운 버튼 =========================================== -->
           <div style="position:relative;">
             <button @click="handleSelectAction('simul-toggleDispUiAreaDrop')"
-            style="font-size:12px;padding:5px 14px;border:1px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;color:#333;min-width:140px;justify-content:space-between;"
+            style="font-size:12px;padding:5px 14px;border:1px solid #ddd;border-radius:8px;background:#fff;display:flex;align-items:center;gap:6px;color:#333;min-width:140px;justify-content:space-between;"
             :style="dispUiForm.areas.length>0 ? 'border-color:#e8587a;color:#e8587a;font-weight:600;' : ''">
               <span>
                 🗂 {{ cfDispUiAreaBtnLabel }}
@@ -1355,10 +1355,10 @@ window.DpDispUiSimul = {
             </div>
             <div v-if="dispUiAreaDrop" style="position:absolute;left:0;top:calc(100% + 6px);z-index:100;background:#fff;border:1px solid #e0e0e0;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.12);min-width:240px;max-height:280px;overflow-y:auto;padding:10px 0;">
               <div style="display:flex;gap:8px;padding:8px 14px 6px;border-bottom:1px solid #f0f0f0;">
-                <button @click.stop="handleSelectAction('simul-dispUiSelectAllAreas')" style="font-size:11px;padding:3px 10px;border:1px solid #1565c0;border-radius:8px;background:#e3f2fd;color:#1565c0;cursor:pointer;">
+                <button @click.stop="handleSelectAction('simul-dispUiSelectAllAreas')" style="font-size:11px;padding:3px 10px;border:1px solid #1565c0;border-radius:8px;background:#e3f2fd;color:#1565c0;">
                   전체선택
                 </button>
-                <button @click.stop="handleSelectAction('simul-dispUiClearAllAreas')" style="font-size:11px;padding:3px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#888;cursor:pointer;">
+                <button @click.stop="handleSelectAction('simul-dispUiClearAllAreas')" style="font-size:11px;padding:3px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#888;">
                   전체해제
                 </button>
                 <span style="font-size:10px;color:#aaa;margin-left:auto;align-self:center;">
@@ -1366,7 +1366,7 @@ window.DpDispUiSimul = {
                 </span>
               </div>
               <div v-for="area in cfAllAreaListRaw" :key="area?.codeValue" @click.stop="handleSelectAction('simul-dispUiToggleArea', area.codeValue)"
-              style="display:flex;align-items:center;gap:8px;padding:7px 14px;cursor:pointer;"
+              style="display:flex;align-items:center;gap:8px;padding:7px 14px;"
               :style="dispUiForm.areas.includes(area.codeValue) ? 'background:#fff8f8;' : ''">
                 <div style="width:16px;height:16px;border-radius:4px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
                 :style="dispUiForm.areas.includes(area.codeValue) ? 'border-color:#e8587a;background:#e8587a;' : 'border-color:#ccc;background:#fff;'">
@@ -1380,7 +1380,7 @@ window.DpDispUiSimul = {
                   </span>
                 </div>
                 <div style="border-top:1px solid #f0f0f0;padding:8px 14px;">
-                  <button @click.stop="dispUiAreaDrop=false" style="font-size:11px;width:100%;padding:5px;border:1px solid #e0e0e0;border-radius:6px;background:#f8f8f8;color:#666;cursor:pointer;">
+                  <button @click.stop="dispUiAreaDrop=false" style="font-size:11px;width:100%;padding:5px;border:1px solid #e0e0e0;border-radius:6px;background:#f8f8f8;color:#666;">
                     닫기
                   </button>
                 </div>
@@ -1390,7 +1390,7 @@ window.DpDispUiSimul = {
             <span v-for="code in dispUiForm.areas" :key="code"
           style="font-size:11px;background:#fce4ec;color:#c62828;border-radius:10px;padding:2px 8px;display:flex;align-items:center;gap:4px;">
               {{ code }}
-              <span @click="handleSelectAction('simul-dispUiToggleArea', code)" style="cursor:pointer;font-weight:700;">
+              <span @click="handleSelectAction('simul-dispUiToggleArea', code)" style="font-weight:700;">
                 ×
               </span>
             </span>
@@ -1446,11 +1446,11 @@ window.DpDispUiSimul = {
                 미선택
               </span>
               <button @click="handleBtnAction('simul-openSiteModal')"
-            style="font-size:10px;padding:2px 8px;border-radius:6px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;cursor:pointer;">
+            style="font-size:10px;padding:2px 8px;border-radius:6px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;">
                 📋 선택
               </button>
               <button v-if="dispUiForm.siteId" @click="handleBtnAction('simul-clearSite')"
-            style="font-size:10px;padding:2px 6px;border-radius:6px;border:1px solid #ddd;background:#fff;color:#999;cursor:pointer;">
+            style="font-size:10px;padding:2px 6px;border-radius:6px;border:1px solid #ddd;background:#fff;color:#999;">
                 ×
               </button>
             </div>
@@ -1469,11 +1469,11 @@ window.DpDispUiSimul = {
                 미선택 (비로그인)
               </span>
               <button @click="handleBtnAction('simul-openMemberModal')"
-            style="font-size:10px;padding:2px 8px;border-radius:6px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;cursor:pointer;">
+            style="font-size:10px;padding:2px 8px;border-radius:6px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;">
                 👤 선택
               </button>
               <button v-if="dispUiForm.memberId" @click="handleBtnAction('simul-clearMember')"
-            style="font-size:10px;padding:2px 6px;border-radius:6px;border:1px solid #ddd;background:#fff;color:#999;cursor:pointer;">
+            style="font-size:10px;padding:2px 6px;border-radius:6px;border:1px solid #ddd;background:#fff;color:#999;">
                 ×
               </button>
             </div>
@@ -1487,17 +1487,17 @@ window.DpDispUiSimul = {
               </span>
             </div>
             <div style="display:flex;gap:10px;flex-wrap:wrap;">
-              <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:4px 10px;border-radius:8px;background:#fff;border:1px solid #e0e0e0;"
+              <label style="display:flex;align-items:center;gap:5px;font-size:12px;padding:4px 10px;border-radius:8px;background:#fff;border:1px solid #e0e0e0;"
             :style="dispUiViewOpts.content?'border-color:#90caf9;background:#e3f2fd;color:#1565c0;':''">
                 <input type="checkbox" v-model="dispUiViewOpts.content" />
                 내용보기
               </label>
-              <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:4px 10px;border-radius:8px;background:#fff;border:1px solid #e0e0e0;"
+              <label style="display:flex;align-items:center;gap:5px;font-size:12px;padding:4px 10px;border-radius:8px;background:#fff;border:1px solid #e0e0e0;"
             :style="dispUiViewOpts.struct?'border-color:#a5d6a7;background:#e8f5e9;color:#2e7d32;':''">
                 <input type="checkbox" v-model="dispUiViewOpts.struct" />
                 구조보기
               </label>
-              <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:4px 10px;border-radius:8px;background:#fff;border:1px solid #e0e0e0;"
+              <label style="display:flex;align-items:center;gap:5px;font-size:12px;padding:4px 10px;border-radius:8px;background:#fff;border:1px solid #e0e0e0;"
             :style="dispUiViewOpts.source?'border-color:#b39ddb;background:#ede7f6;color:#4a148c;':''">
                 <input type="checkbox" v-model="dispUiViewOpts.source" />
                 소스보기
@@ -1507,24 +1507,24 @@ window.DpDispUiSimul = {
           <!-- ===== ■.■.■. 실행 버튼 =============================================== -->
           <div style="display:flex;gap:8px;justify-content:flex-end;padding-top:8px;border-top:1px solid #e8e0f8;">
             <button @click="handleBtnAction('simul-closeDispUiLayer')"
-          style="font-size:12px;padding:5px 14px;border-radius:8px;border:1px solid #ddd;background:#fff;cursor:pointer;color:#888;">
+          style="font-size:12px;padding:5px 14px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#888;">
               닫기
             </button>
             <button @click="handleBtnAction('simul-openDispUiModal')"
-          style="font-size:12px;padding:5px 16px;border-radius:8px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;cursor:pointer;font-weight:600;">
+          style="font-size:12px;padding:5px 16px;border-radius:8px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;font-weight:600;">
               🗔 모달오픈
             </button>
             <button @click="handleBtnAction('simul-openDispUiPopup', 'fo')"
-          style="font-size:12px;padding:5px 16px;border-radius:8px;border:1px solid #bae6fd;background:#e0f2fe;color:#0369a1;cursor:pointer;font-weight:600;">
+          style="font-size:12px;padding:5px 16px;border-radius:8px;border:1px solid #bae6fd;background:#e0f2fe;color:#0369a1;font-weight:600;">
               🔗 사용자 팝업
             </button>
             <button @click="handleBtnAction('simul-openDispUiPopup', 'bo')"
-          style="font-size:12px;padding:5px 16px;border-radius:8px;border:1px solid #f5e8de;background:#fef3eb;color:#c2410c;cursor:pointer;font-weight:600;">
+          style="font-size:12px;padding:5px 16px;border-radius:8px;border:1px solid #f5e8de;background:#fef3eb;color:#c2410c;font-weight:600;">
               🔗 관리자 팝업
             </button>
             <div style="position:relative;">
               <button @click="handleBtnAction('simul-openDispUiOther')"
-            style="font-size:12px;padding:5px 16px;border-radius:8px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;cursor:pointer;font-weight:600;">
+            style="font-size:12px;padding:5px 16px;border-radius:8px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;font-weight:600;">
                 🌐 기타오픈
                 <span style="font-size:10px;margin-left:2px;">
                   ▾
@@ -1540,7 +1540,7 @@ window.DpDispUiSimul = {
                 </div>
                 <button v-for="(u, i) in DISP_UI_OTHER_PAGES" :key="i"
               @click="handleSelectAction('simul-pickOtherPage', u)"
-              style="display:block;width:100%;text-align:left;padding:7px 10px;font-size:11px;border:none;background:transparent;cursor:pointer;border-radius:6px;font-family:monospace;color:#333;"
+              style="display:block;width:100%;text-align:left;padding:7px 10px;font-size:11px;border:none;background:transparent;border-radius:6px;font-family:monospace;color:#333;"
               @mouseenter="$event.currentTarget.style.background='#e3f2fd'"
               @mouseleave="$event.currentTarget.style.background='transparent'">
                   <span style="color:#1565c0;font-weight:700;margin-right:6px;">
@@ -1571,7 +1571,7 @@ window.DpDispUiSimul = {
             <span style="font-size:14px;font-weight:700;color:#1565c0;">
               🌐 사이트 선택
             </span>
-            <button @click="handleBtnAction('simul-closeSiteModal')" style="background:none;border:none;font-size:20px;cursor:pointer;color:#aaa;line-height:1;padding:0;">
+            <button @click="handleBtnAction('simul-closeSiteModal')" style="background:none;border:none;font-size:20px;color:#aaa;line-height:1;padding:0;">
               ×
             </button>
           </div>
@@ -1587,7 +1587,7 @@ window.DpDispUiSimul = {
             </div>
             <div v-for="site in cfDispUiSiteList" :key="site?.siteId"
           @click="handleSelectAction('simul-selectSite', site)"
-          style="display:flex;align-items:center;gap:10px;padding:9px 18px;cursor:pointer;border-bottom:1px solid #fafafa;"
+          style="display:flex;align-items:center;gap:10px;padding:9px 18px;border-bottom:1px solid #fafafa;"
           onmouseover="this.style.background='#e3f2fd'" onmouseout="this.style.background=''">
               <div style="flex:1;min-width:0;">
                 <div style="font-size:13px;font-weight:600;color:#1565c0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
@@ -1624,7 +1624,7 @@ window.DpDispUiSimul = {
             <span style="font-size:14px;font-weight:700;color:#1565c0;">
               👤 회원 선택
             </span>
-            <button @click="handleBtnAction('simul-closeMemberModal')" style="background:none;border:none;font-size:20px;cursor:pointer;color:#aaa;line-height:1;padding:0;">
+            <button @click="handleBtnAction('simul-closeMemberModal')" style="background:none;border:none;font-size:20px;color:#aaa;line-height:1;padding:0;">
               ×
             </button>
           </div>
@@ -1640,7 +1640,7 @@ window.DpDispUiSimul = {
             </div>
             <div v-for="m in cfDispUiMemberList" :key="m?.userId"
           @click="handleSelectAction('simul-selectMember', m)"
-          style="display:flex;align-items:center;gap:10px;padding:9px 18px;cursor:pointer;border-bottom:1px solid #fafafa;"
+          style="display:flex;align-items:center;gap:10px;padding:9px 18px;border-bottom:1px solid #fafafa;"
           onmouseover="this.style.background='#e3f2fd'" onmouseout="this.style.background=''">
               <div style="flex:1;min-width:0;">
                 <div style="font-size:13px;font-weight:600;color:#1565c0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
@@ -1661,7 +1661,7 @@ window.DpDispUiSimul = {
           <!-- ===== ■.■.■. 푸터 ================================================== -->
           <div style="padding:10px 18px;border-top:1px solid #eee;display:flex;justify-content:space-between;align-items:center;">
             <button v-if="dispUiForm.memberId" @click="handleBtnAction('simul-clearMember')"
-          style="font-size:11px;padding:4px 12px;border:1px solid #ddd;border-radius:7px;background:#fff;color:#888;cursor:pointer;">
+          style="font-size:11px;padding:4px 12px;border:1px solid #ddd;border-radius:7px;background:#fff;color:#888;">
               비로그인으로 초기화
             </button>
             <span v-else>
@@ -1712,10 +1712,10 @@ window.DpDispUiSimul = {
               <span style="font-size:12px;font-weight:600;color:#555;">
                 패널 선택
               </span>
-              <button @click="handleBtnAction('simul-checkAllPanels')" style="font-size:11px;padding:3px 10px;border:1px solid #1565c0;border-radius:8px;background:#e3f2fd;color:#1565c0;cursor:pointer;">
+              <button @click="handleBtnAction('simul-checkAllPanels')" style="font-size:11px;padding:3px 10px;border:1px solid #1565c0;border-radius:8px;background:#e3f2fd;color:#1565c0;">
                 전체선택
               </button>
-              <button @click="handleBtnAction('simul-clearCheckedPanels')" style="font-size:11px;padding:3px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#888;cursor:pointer;">
+              <button @click="handleBtnAction('simul-clearCheckedPanels')" style="font-size:11px;padding:3px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#888;">
                 전체해제
               </button>
               <span style="font-size:11px;color:#aaa;">
@@ -1726,10 +1726,10 @@ window.DpDispUiSimul = {
               <span style="font-size:12px;font-weight:600;color:#555;">
                 위젯 선택
               </span>
-              <button @click="handleBtnAction('simul-checkAllWidgets')" style="font-size:11px;padding:3px 10px;border:1px solid #e65100;border-radius:8px;background:#fff3e0;color:#e65100;cursor:pointer;">
+              <button @click="handleBtnAction('simul-checkAllWidgets')" style="font-size:11px;padding:3px 10px;border:1px solid #e65100;border-radius:8px;background:#fff3e0;color:#e65100;">
                 전체선택
               </button>
-              <button @click="handleBtnAction('simul-clearCheckedWidgets')" style="font-size:11px;padding:3px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#888;cursor:pointer;">
+              <button @click="handleBtnAction('simul-clearCheckedWidgets')" style="font-size:11px;padding:3px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#888;">
                 전체해제
               </button>
               <span style="font-size:11px;color:#aaa;">
@@ -1748,7 +1748,7 @@ window.DpDispUiSimul = {
             @dragend="onAreaDragEnd"
             @click="handleSelectAction('simul-expandArea', area.codeValue)">
                 <!-- ===== ■.■.■.■.■.■. 영역 전체 체크 ====================================== -->
-                <div @click.stop="handleSelectAction('simul-checkAreaPanels', area)" style="width:16px;height:16px;border-radius:4px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;"
+                <div @click.stop="handleSelectAction('simul-checkAreaPanels', area)" style="width:16px;height:16px;border-radius:4px;border:2px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
               :style="isAreaAllChecked(area) ? 'border-color:#f6ad55;background:#f6ad55;' : 'border-color:rgba(255,255,255,.5);background:transparent;'">
                   <span v-if="isAreaAllChecked(area)" style="color:#333;font-size:11px;line-height:1;">
                     ✓
@@ -1771,7 +1771,7 @@ window.DpDispUiSimul = {
                   <!-- ===== ■.■.■.■.■.■. 캔버스 적용 버튼 ===================================== -->
                   <button @click.stop="applyAreaLayout(area)"
               title="이 영역의 레이아웃을 캔버스에 적용"
-              style="font-size:11px;padding:2px 7px;border-radius:5px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.15);color:#e2e8f0;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s;"
+              style="font-size:11px;padding:2px 7px;border-radius:5px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.15);color:#e2e8f0;white-space:nowrap;flex-shrink:0;transition:all .15s;"
               onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">
                     ⚡ 적용
                   </button>
@@ -1824,7 +1824,7 @@ window.DpDispUiSimul = {
                         <div style="display:flex;flex-direction:column;gap:2px;padding-left:2px;">
                           <div v-for="(w, wi) in (p.rows || [])" :key="wi"
                     @click.stop="handleSelectAction('simul-toggleWidgetCheck', { dispId: p.dispId, wi, event: $event })"
-                    style="display:flex;align-items:center;gap:5px;padding:2px 5px;border-radius:4px;cursor:pointer;transition:background .1s;"
+                    style="display:flex;align-items:center;gap:5px;padding:2px 5px;border-radius:4px;transition:background .1s;"
                     :style="checkedWidgetKeys.has(p.dispId + '_' + wi) ? 'background:#fff3e0;' : 'background:transparent;'">
                             <div style="width:13px;height:13px;border-radius:3px;border:1.5px solid;flex-shrink:0;display:flex;align-items:center;justify-content:center;"
                       :style="checkedWidgetKeys.has(p.dispId + '_' + wi) ? 'border-color:#f59e0b;background:#f59e0b;' : 'border-color:#ccc;background:#fff;'">
@@ -1861,12 +1861,12 @@ window.DpDispUiSimul = {
                   <!-- ===== ■.■.■.■.■. 표시방식 토글 ========================================= -->
                   <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;">
                     <button @click="handleSelectAction('simul-setStructLayout', 'grid')"
-              style="font-size:11px;padding:3px 10px;border:none;cursor:pointer;transition:all .15s;"
+              style="font-size:11px;padding:3px 10px;border:none;transition:all .15s;"
               :style="uiState.structLayoutType==='grid' ? 'background:#1d4ed8;color:#fff;font-weight:600;' : 'background:#fff;color:#6b7280;'">
                       🔲 그리드
                     </button>
                     <button @click="handleSelectAction('simul-setStructLayout', 'dashboard')"
-              style="font-size:11px;padding:3px 10px;border:none;border-left:1px solid #d1d5db;cursor:pointer;transition:all .15s;"
+              style="font-size:11px;padding:3px 10px;border:none;border-left:1px solid #d1d5db;transition:all .15s;"
               :style="uiState.structLayoutType==='dashboard' ? 'background:#1d4ed8;color:#fff;font-weight:600;' : 'background:#fff;color:#6b7280;'">
                       🧩 대시보드
                     </button>
@@ -1880,7 +1880,7 @@ window.DpDispUiSimul = {
                     </span>
                     <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;">
                       <button v-for="n in [1,2,3,4]" :key="n" @click="handleSelectAction('simul-setStructCols', n)"
-                style="font-size:11px;padding:3px 9px;border:none;border-left:1px solid #d1d5db;cursor:pointer;transition:all .15s;"
+                style="font-size:11px;padding:3px 9px;border:none;border-left:1px solid #d1d5db;transition:all .15s;"
                 :style="[n===1?'border-left:none;':'', uiState.structColCount===n ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;']">
                         {{ n }}
                       </button>
@@ -1892,7 +1892,7 @@ window.DpDispUiSimul = {
                     </div>
                     <!-- ===== ■.■.■.■.■.■. 실제컨텐츠 ========================================= -->
                     <button @click="handleSelectAction('simul-toggleStructReal')"
-              style="font-size:11px;padding:3px 9px;border-radius:5px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;"
+              style="font-size:11px;padding:3px 9px;border-radius:5px;border:1px solid #d1d5db;white-space:nowrap;transition:all .15s;"
               :style="uiState.structShowReal ? 'background:#059669;color:#fff;border-color:#059669;' : 'background:#fff;color:#6b7280;'">
                       {{ uiState.structShowReal ? '✅ 실제컨텐츠' : '👁 실제컨텐츠' }}
                     </button>
@@ -1900,7 +1900,7 @@ window.DpDispUiSimul = {
                     </div>
                     <!-- ===== ■.■.■.■.■.■. 뷰포트 =========================================== -->
                     <button v-for="(vp, key) in STRUCT_VIEWPORT" :key="key" @click="handleSelectAction('simul-setStructViewport', key)"
-              style="font-size:11px;padding:3px 7px;border-radius:5px;border:1px solid #d1d5db;cursor:pointer;white-space:nowrap;transition:all .15s;"
+              style="font-size:11px;padding:3px 7px;border-radius:5px;border:1px solid #d1d5db;white-space:nowrap;transition:all .15s;"
               :style="uiState.structViewport===key ? 'background:#1d4ed8;color:#fff;border-color:#1d4ed8;' : 'background:#fff;color:#6b7280;'">
                       {{ vp.label }}
                     </button>
@@ -1911,7 +1911,7 @@ window.DpDispUiSimul = {
                       {{ uiState.structLayoutType==='dashboard' ? structDashItems.length : cfStructPlacedCount }}개
                     </span>
                     <button @click="handleBtnAction('simul-resetStructGrid')"
-              style="font-size:11px;padding:3px 8px;border:1px solid #d0d0d0;border-radius:5px;background:#fff;cursor:pointer;color:#666;">
+              style="font-size:11px;padding:3px 8px;border:1px solid #d0d0d0;border-radius:5px;background:#fff;color:#666;">
                       초기화
                     </button>
                   </div>
@@ -1954,7 +1954,7 @@ window.DpDispUiSimul = {
                         {{ item.slot.widgetNm }}
                       </span>
                       <button @click="handleSelectAction('simul-removeStructDash', item.id)"
-                    style="flex-shrink:0;width:15px;height:15px;border-radius:50%;border:none;background:#e5e7eb;color:#6b7280;cursor:pointer;font-size:9px;display:flex;align-items:center;justify-content:center;padding:0;">
+                    style="flex-shrink:0;width:15px;height:15px;border-radius:50%;border:none;background:#e5e7eb;color:#6b7280;font-size:9px;display:flex;align-items:center;justify-content:center;padding:0;">
                         ✕
                       </button>
                     </div>
@@ -1997,7 +1997,7 @@ window.DpDispUiSimul = {
                       <!-- ===== ■.■.■.■.■.■.■.■.■.■.■.■. 실제컨텐츠 ON: ×만 ====================== -->
                       <div v-if="structShowReal" style="position:relative;">
                         <button @click="handleSelectAction('simul-removeStructSlot', idx)"
-                            style="position:absolute;top:4px;right:4px;z-index:5;width:18px;height:18px;border-radius:50%;border:none;background:rgba(0,0,0,.3);color:#fff;cursor:pointer;font-size:11px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;">
+                            style="position:absolute;top:4px;right:4px;z-index:5;width:18px;height:18px;border-radius:50%;border:none;background:rgba(0,0,0,.3);color:#fff;font-size:11px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;">
                           ✕
                         </button>
                       </div>
@@ -2015,12 +2015,12 @@ window.DpDispUiSimul = {
                         <!-- ===== ■.■.■.■.■.■.■.■.■.■.■.■.■. ⚙ 설정 아이콘 ======================== -->
                         <button @click="handleSelectAction('simul-toggleStructSpanPopup', { e: $event, idx })"
                             :title="'열 ' + (slot.colSpan||1) + ' × 행 ' + (slot.rowSpan||1)"
-                            style="flex-shrink:0;width:20px;height:20px;border-radius:4px;border:1px solid #e5e7eb;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;padding:0;transition:all .15s;"
+                            style="flex-shrink:0;width:20px;height:20px;border-radius:4px;border:1px solid #e5e7eb;font-size:12px;display:flex;align-items:center;justify-content:center;padding:0;transition:all .15s;"
                             :style="structSpanPopupIdx===idx ? 'background:#1d4ed8;color:#fff;border-color:#1d4ed8;' : 'background:#f9fafb;color:#6b7280;'">
                           ⚙
                         </button>
                         <button @click="handleSelectAction('simul-removeStructSlot', idx)"
-                            style="flex-shrink:0;width:16px;height:16px;border-radius:50%;border:none;background:#e5e7eb;color:#6b7280;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;padding:0;">
+                            style="flex-shrink:0;width:16px;height:16px;border-radius:50%;border:none;background:#e5e7eb;color:#6b7280;font-size:10px;display:flex;align-items:center;justify-content:center;padding:0;">
                           ✕
                         </button>
                       </div>
@@ -2030,7 +2030,7 @@ window.DpDispUiSimul = {
                         <span style="font-size:11px;font-weight:700;color:#374151;">
                           그리드 스팬 설정
                         </span>
-                        <button @click="handleBtnAction('simul-closeSpanPopup')" style="border:none;background:none;cursor:pointer;font-size:13px;color:#9ca3af;padding:0;line-height:1;">
+                        <button @click="handleBtnAction('simul-closeSpanPopup')" style="border:none;background:none;font-size:13px;color:#9ca3af;padding:0;line-height:1;">
                           ✕
                         </button>
                       </div>
@@ -2039,7 +2039,7 @@ window.DpDispUiSimul = {
                           열 span
                         </span>
                         <button @click="handleSelectAction('simul-setStructSpan', { idx, axis: 'col', delta: -1 })" :disabled="(slot.colSpan||1)<=1"
-                              style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
+                              style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                               :style="(slot.colSpan||1)<=1?'opacity:.3;cursor:default;':''">
                           −
                         </button>
@@ -2047,7 +2047,7 @@ window.DpDispUiSimul = {
                           {{ slot.colSpan||1 }}
                         </span>
                         <button @click="handleSelectAction('simul-setStructSpan', { idx, axis: 'col', delta: +1 })" :disabled="(slot.colSpan||1)>=(STRUCT_GRID_COLS[structGrid]||1)"
-                              style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
+                              style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                               :style="(slot.colSpan||1)>=(STRUCT_GRID_COLS[structGrid]||1)?'opacity:.3;cursor:default;':''">
                           +
                         </button>
@@ -2060,7 +2060,7 @@ window.DpDispUiSimul = {
                           행 span
                         </span>
                         <button @click="handleSelectAction('simul-setStructSpan', { idx, axis: 'row', delta: -1 })" :disabled="(slot.rowSpan||1)<=1"
-                              style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
+                              style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                               :style="(slot.rowSpan||1)<=1?'opacity:.3;cursor:default;':''">
                           −
                         </button>
@@ -2068,7 +2068,7 @@ window.DpDispUiSimul = {
                           {{ slot.rowSpan||1 }}
                         </span>
                         <button @click="handleSelectAction('simul-setStructSpan', { idx, axis: 'row', delta: +1 })" :disabled="(slot.rowSpan||1)>=4"
-                              style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
+                              style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
                               :style="(slot.rowSpan||1)>=4?'opacity:.3;cursor:default;':''">
                           +
                         </button>
@@ -2216,7 +2216,7 @@ window.DpDispUiSimul = {
         </span>
       </div>
       <button @click="handleBtnAction('simul-copySource')"
-          style="font-size:11px;padding:4px 12px;border-radius:8px;cursor:pointer;transition:all .15s;"
+          style="font-size:11px;padding:4px 12px;border-radius:8px;transition:all .15s;"
           :style="uiState.sourceCopied ? 'background:#276749;color:#9ae6b4;border:1px solid #276749;' : 'background:#2d2d4e;color:#a0aec0;border:1px solid #3a3a5c;'">
         {{ uiState.sourceCopied ? '✓ 복사됨' : '📋 전체 복사' }}
       </button>
@@ -2530,7 +2530,7 @@ window.DpDispUiSimul = {
     </div>
   </div>
 </div>
-</div>
+</bo-page>
 <!-- ===== □. 영역 ====================================================== -->
 `
 };

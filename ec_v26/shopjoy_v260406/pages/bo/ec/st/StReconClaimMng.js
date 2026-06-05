@@ -7,7 +7,7 @@ window.StReconClaimMng = {
   setup(props) {
     /* ##### [01] 초기 변수 정의 ################################################## */
     const { ref, reactive, computed, watch, onMounted } = Vue;
-const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: ''});
+const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: ''});
     const codes = reactive({
       claim_statuses: [],
       recon_results: [],
@@ -30,10 +30,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {
         return handleDateRangeChange();
-      // 안내 설명 토글
-      } else if (cmd === 'desc-toggle') {
-        uiState.descOpen = !uiState.descOpen;
-        return;
       // 페이지 번호 변경
       } else if (cmd === 'reconClaims-pager-setPage') {
         if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
@@ -190,46 +186,23 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    클레임-정산 대사
-  </div>
-  <!-- ===== ■. 영역 ====================================================== -->
-  <div class="page-desc-bar">
-    <span class="page-desc-summary">
-      클레임(취소·반품·교환) 환불 데이터와 정산 조정액 간 불일치를 검출하고 대사 처리합니다.
-    </span>
-    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">
-      {{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}
-    </button>
-    <div v-if="uiState.descOpen" class="page-desc-detail">
-      • 클레임 환불금액(refund_amt) vs 정산 차감 조정액(settle_adj) 차이를 자동 비교합니다. • 클레임 유형: 취소 / 반품 / 교환 • 차이 발생 건은 조정(StSettleAdjMng) 또는 기타조정(StSettleEtcAdjMng)으로 보정합니다.
-    </div>
-  </div>
-  <!-- ===== □. 영역 ====================================================== -->
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card">
-    <!-- ===== ■.■. 검색 영역 ================================================= -->
+<bo-page title="클레임-정산 대사"
+  desc-summary="클레임(취소·반품·교환) 환불 데이터와 정산 조정액 간 불일치를 검출하고 대사 처리합니다."
+  desc-detail="• 클레임 환불금액(refund_amt) vs 정산 차감 조정액(settle_adj) 차이를 자동 비교합니다.&#10;• 클레임 유형: 취소 / 반품 / 교환&#10;• 차이 발생 건은 조정(StSettleAdjMng) 또는 기타조정(StSettleEtcAdjMng)으로 보정합니다.">
+  <!-- ===== ■. 검색 영역 =================================================== -->
+  <bo-container>
     <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
-  </div>
-  <!-- ===== □. 카드 영역 =================================================== -->
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card" style="margin-top:12px">
+  </bo-container>
+  <!-- ===== ■. 집계 영역 =================================================== -->
+  <bo-container bare>
     <bo-form-area :columns="columns.summaryForm" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
-    <div style="height:12px"></div>
-    <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-grid
-      :columns="columns.baseGrid" :rows="rows" row-key="claimId"
-      list-title="목록" :count-text="pager.pageTotalCount + '건'">
-      <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
-      <template #footer>
-        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('reconClaims-pager-setPage', n)" :on-size-change="() => handleSelectAction('reconClaims-pager-sizeChange')" />
-      </template>
-    </bo-grid>
-  </div>
-</div>
-<!-- ===== □.□. 목록 영역 ================================================= -->
-<!-- ===== □. 카드 영역 =================================================== -->
+  </bo-container>
+  <!-- ===== ■. 목록 영역 =================================================== -->
+  <bo-container title="목록" :count-text="pager.pageTotalCount + '건'">
+    <bo-grid bare
+      :columns="columns.baseGrid" :rows="rows" row-key="claimId" />
+    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('reconClaims-pager-setPage', n)" :on-size-change="() => handleSelectAction('reconClaims-pager-sizeChange')" />
+  </bo-container>
+</bo-page>
 `,
 };

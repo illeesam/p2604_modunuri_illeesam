@@ -342,6 +342,7 @@ window.XsSample05 = {
     };
   },
   template: /* html */`
+<fo-page bare>
 <div style="padding:clamp(12px,3vw,24px);">
   <!-- ===== ■. 조건부 영역 ================================================== -->
   <div v-if="toast.show" style="position:fixed;top:20px;right:20px;z-index:9999;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.15);pointer-events:none;"
@@ -379,6 +380,7 @@ window.XsSample05 = {
     </template>
   </fo-grid-crud>
 </div>
+</fo-page>
 <!-- ===== □. 목록 영역 =================================================== -->
 `,
 };

@@ -10,7 +10,7 @@ window.StErpGenMng = {
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
-    const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false });
+    const uiState = reactive({ error: null, isPageCodeLoad: false });
     const codes = reactive({
       erp_statuses: [],
       erp_voucher_types: [],
@@ -26,10 +26,6 @@ window.StErpGenMng = {
       // ERP 전표 생성 실행
       } else if (cmd === 'preview-generate') {
         return doGenerate();
-      // 안내 설명 토글
-      } else if (cmd === 'desc-toggle') {
-        uiState.descOpen = !uiState.descOpen;
-        return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -162,29 +158,11 @@ window.StErpGenMng = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    ERP 전표생성
-  </div>
-  <!-- ===== ■. 영역 ====================================================== -->
-  <div class="page-desc-bar">
-    <span class="page-desc-summary">
-      마감된 정산 데이터를 ERP 연동용 분개 전표 형식으로 변환·생성합니다.
-    </span>
-    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">
-      {{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}
-    </button>
-    <div v-if="uiState.descOpen" class="page-desc-detail">
-      • 대상 월과 전표 유형(정산지급/수수료 등)을 선택 후 [전표생성]을 실행합니다. • 생성된 전표는 차변(미지급금) / 대변(현금) 구조로 자동 분개됩니다. • 생성 이력은 하단 목록에서 확인하며, ERP 전송 상태를 추적합니다. • 전표 내용 확인은 ERP 전표조회(StErpViewMng)에서 합니다.
-    </div>
-  </div>
-  <!-- ===== □. 영역 ====================================================== -->
+<bo-page title="ERP 전표생성"
+  desc-summary="마감된 정산 데이터를 ERP 연동용 분개 전표 형식으로 변환·생성합니다."
+  desc-detail="• 대상 월과 전표 유형(정산지급/수수료 등)을 선택 후 [전표생성]을 실행합니다.&#10;• 생성된 전표는 차변(미지급금) / 대변(현금) 구조로 자동 분개됩니다.&#10;• 생성 이력은 하단 목록에서 확인하며, ERP 전송 상태를 추적합니다.&#10;• 전표 내용 확인은 ERP 전표조회(StErpViewMng)에서 합니다.">
   <!-- ===== ■. 생성 설정 =================================================== -->
-  <div class="card">
-    <div style="font-weight:700;margin-bottom:12px">
-      전표 생성 설정
-    </div>
+  <bo-container title="전표 생성 설정">
     <!-- ===== ■.■. 폼 영역 ================================================== -->
     <bo-form-area :columns="columns.baseForm" :form="settingForm" :cols="3" :show-actions="false">
       <template #targetMon>
@@ -213,19 +191,16 @@ window.StErpGenMng = {
     <div v-else style="color:#999;margin-top:12px">
       해당 월의 생성 대상 전표가 없습니다.
     </div>
-  </div>
-  <!-- ===== □.□. 미리보기 ================================================== -->
+  </bo-container>
   <!-- ===== □. 생성 설정 =================================================== -->
   <!-- ===== ■. 생성 이력 =================================================== -->
-  <div class="card" style="margin-top:12px">
+  <bo-container title="전표생성 이력" :count-text="genHistories.length + '건'">
     <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-grid
-      :columns="columns.histGrid" :rows="genHistories" row-key="genId"
-      list-title="전표생성 이력" :count-text="genHistories.length + '건'">
+    <bo-grid bare
+      :columns="columns.histGrid" :rows="genHistories" row-key="genId">
     </bo-grid>
-  </div>
-</div>
-<!-- ===== □.□. 목록 영역 ================================================= -->
-<!-- ===== □. 생성 이력 =================================================== -->
+  </bo-container>
+  <!-- ===== □. 생성 이력 =================================================== -->
+</bo-page>
 `,
 };

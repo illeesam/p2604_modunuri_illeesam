@@ -373,19 +373,17 @@ window.OdClaimDtl = {
   template: /* html */`
 <div>
   <!-- ===== ■. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
-  <div class="card">
+  <bo-container>
     <!-- ===== ■.■. 카드 헤더 (제목 = list-title) =================================== -->
-    <div class="toolbar">
-      <span class="list-title">
-        {{ !active ? '클레임 상세' : (cfIsNew ? '클레임 등록' : (cfDtlMode ? '클레임 상세' : '클레임 수정')) }}
-        <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
-          #{{ form.claimId }}
-        </span>
-        <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-          목록에서 행을 선택하거나 [+신규]를 누르세요
-        </span>
+    <template #title>
+      {{ !active ? '클레임 상세' : (cfIsNew ? '클레임 등록' : (cfDtlMode ? '클레임 상세' : '클레임 수정')) }}
+      <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+        #{{ form.claimId }}
       </span>
-    </div>
+      <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+        목록에서 행을 선택하거나 [+신규]를 누르세요
+      </span>
+    </template>
     <!-- ===== ■.■. 탭바 ==================================================== -->
     <bo-tab-bar v-if="!cfIsNew" :tabs="tabs" :tab="activeTab" :tab-mode="tabMode2"
       @tab-select="id => handleBtnAction('tab-change', id)"
@@ -434,10 +432,10 @@ window.OdClaimDtl = {
                 }">
               {{ step }}
             </div>
-            <span v-if="step==='수거중' && form.returnTrackingNo" @click="handleBtnAction('tracking-open', { courier: form.returnCourierCd, trackingNo: form.returnTrackingNo })" title="수거 배송조회" style="margin-top:4px;padding:1px 7px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;border-radius:4px;font-size:0.7rem;font-weight:700;cursor:pointer;user-select:none;">
+            <span v-if="step==='수거중' && form.returnTrackingNo" @click="handleBtnAction('tracking-open', { courier: form.returnCourierCd, trackingNo: form.returnTrackingNo })" title="수거 배송조회" style="margin-top:4px;padding:1px 7px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;border-radius:4px;font-size:0.7rem;font-weight:700;user-select:none;">
             {{ (form.returnCourierCd||'').replace('대한통운','').replace('택배','') || 'CJ' }}수거 🔍
           </span>
-          <span v-if="step==='완료' && form.exchangeTrackingNo" @click="handleBtnAction('tracking-open', { courier: form.exchangeCourierCd, trackingNo: form.exchangeTrackingNo })" title="발송 배송조회" style="margin-top:4px;padding:1px 7px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-size:0.7rem;font-weight:700;cursor:pointer;user-select:none;">
+          <span v-if="step==='완료' && form.exchangeTrackingNo" @click="handleBtnAction('tracking-open', { courier: form.exchangeCourierCd, trackingNo: form.exchangeTrackingNo })" title="발송 배송조회" style="margin-top:4px;padding:1px 7px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-size:0.7rem;font-weight:700;user-select:none;">
           {{ (form.exchangeCourierCd||'').replace('대한통운','').replace('택배','') || 'CJ' }}발송 🔍
         </span>
       </div>
@@ -498,7 +496,7 @@ window.OdClaimDtl = {
         empty-text="클레임 항목 정보가 없습니다.">
   <template #cell-prodNm="{ row, idx }">
     <td style="font-size:12px;">
-      <span v-if="form.claimTypeCd==='교환'" @click="handleSelectAction('claimItems-rowToggleExpand', idx)" style="cursor:pointer;font-size:11px;color:#3b82f6;font-weight:800;user-select:none;margin-right:6px;" :title="isExpanded(idx)?'교환품 숨기기':'교환품 보기'">
+      <span v-if="form.claimTypeCd==='교환'" @click="handleSelectAction('claimItems-rowToggleExpand', idx)" style="font-size:11px;color:#3b82f6;font-weight:800;user-select:none;margin-right:6px;" :title="isExpanded(idx)?'교환품 숨기기':'교환품 보기'">
         {{ isExpanded(idx) ? '▼' : '▶' }}
       </span>
       {{ row.prodNm }}
@@ -508,7 +506,7 @@ window.OdClaimDtl = {
     <td :colspan="colspan" style="padding:10px 14px;background:#f0f7ff;">
       <bo-form-area :columns="columns.itemExpand" :form="row" :cols="3" compact readonly label-left :show-actions="false">
         <template #tracking>
-          <div class="readonly-field" @click="handleBtnAction('tracking-open', { courier: getExchangedItem(row).courier, trackingNo: getExchangedItem(row).trackingNo })" style="cursor:pointer;padding:2px 8px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-size:11px;font-weight:700;display:inline-block;">
+          <div class="readonly-field" @click="handleBtnAction('tracking-open', { courier: getExchangedItem(row).courier, trackingNo: getExchangedItem(row).trackingNo })" style="padding:2px 8px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-size:11px;font-weight:700;display:inline-block;">
             {{ getExchangedItem(row).courier }} · {{ getExchangedItem(row).trackingNo || '-' }} 🔍
           </div>
         </template>
@@ -578,7 +576,7 @@ window.OdClaimDtl = {
 </div>
 </div>
 <!-- ===== □. 탭 컨텐츠 =================================================== -->
-  </div>
+  </bo-container>
   <!-- ===== □. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
 </div>
 <!-- ===== □.□. 정보수정이력 탭 ============================================== -->

@@ -307,18 +307,16 @@ window.CmChattDtl = {
   template: /* html */`
 <div>
   <!-- ===== ■. 상세 카드 (제목 = list-title, 항상 표시) ============================= -->
-  <div class="card">
-    <div class="toolbar">
-      <span class="list-title">
-        {{ !active ? '채팅 상세' : (cfIsNew ? '채팅 등록' : '채팅 상세') }}
-        <span v-if="active && !cfIsNew && uiState.chat" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
-          #{{ uiState.chat.chattRoomId }}
-        </span>
-        <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-          목록에서 행을 선택하거나 [+신규]를 누르세요
-        </span>
+  <bo-container>
+    <template #title>
+      {{ !active ? '채팅 상세' : (cfIsNew ? '채팅 등록' : '채팅 상세') }}
+      <span v-if="active && !cfIsNew && uiState.chat" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+        #{{ uiState.chat.chattRoomId }}
       </span>
-    </div>
+      <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+        목록에서 행을 선택하거나 [+신규]를 누르세요
+      </span>
+    </template>
 <!-- ===== □. 페이지 타이틀 ================================================= -->
 <!-- ===== ■. 채팅 상세 =================================================== -->
 <div v-if="!cfIsNew">
@@ -424,12 +422,9 @@ window.CmChattDtl = {
       </div>
     </div>
   </div>
-  </div>
-  <!-- ===== □. 상세 카드 (제목 + 탭) ========================================= -->
-  <!-- ===== □. 채팅 상세 =================================================== -->
-  <!-- ===== ■. 신규 채팅 등록 ================================================ -->
+  <!-- ===== □. 상세 카드 (수정 시 탭) ======================================= -->
+  <!-- ===== ■. 신규 채팅 등록 (제목 컨테이너와 한 카드) ============================= -->
   <template v-if="cofAnd(cfIsNew, active)">
-    <div class="card">
       <bo-tab-bar :tabs="newTabs" :tab="uiState.tab" :show-modes="false"
         @tab-select="id => handleSelectAction('tab-select', id)" />
       <!-- ===== ■.■.■. 신규 등록 탭 (BoFormArea 자동 렌더) ========================== -->
@@ -470,9 +465,9 @@ window.CmChattDtl = {
           </template>
         </bo-grid>
       </div>
-    </div>
   </template>
-  <!-- ===== □. 신규 채팅 등록 ================================================ -->
+  </bo-container>
+  <!-- ===== □. 신규 채팅 등록 (제목 컨테이너 닫기) ============================= -->
   <!-- ===== ■. 메시지 내 참조 모달 (상품/주문/클레임) ================================= -->
   <bo-modal :show="refModal.show"
     :title="refModal.type==='product'?'상품 상세':refModal.type==='order'?'주문 상세':'클레임 상세'" modal-name="ref" :on-callback="fnCallbackModal" @close="refModal.show = false">

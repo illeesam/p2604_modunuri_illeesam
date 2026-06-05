@@ -228,6 +228,9 @@ window.PmCouponDtl = {
     /* selectVendor — 선택 */
     const selectVendor = (vendorId, vendorNm) => {
       form.vendorId = vendorId;
+      // 판매업체 선택 시 판매담당자(대표자명) 자동 적용
+      const v = vendors.find(x => x.vendorId === vendorId);
+      if (v) { form.chargeStaff = v.chargeStaff || v.ceoNm || v.vendorNm || ''; }
       uiState.showVendorModal = false;
     };
 
@@ -425,9 +428,9 @@ window.PmCouponDtl = {
     columns.detailUseForm = [
       { key: 'useScope',   label: '사용 범위', type: 'select', nullable: false, colSpan: 2,
         options: () => codes.coupon_apply_opts },
-      { key: 'useExclude', label: '제외 상품/카테고리', type: 'textarea', rows: 3, colSpan: 2,
+      { key: 'useExclude', label: '제외 상품/카테고리', type: 'textarea', rows: 3,
         placeholder: '쉼표로 구분하여 입력 (예: 상품ID1, 상품ID2, 카테고리ID3)' },
-      { key: 'useRemark',  label: '사용 제약사항', type: 'textarea', rows: 3, colSpan: 2,
+      { key: 'useRemark',  label: '사용 제약사항', type: 'textarea', rows: 3,
         placeholder: '예: 다른 쿠폰과 중복 사용 불가, 배송료 할인 쿠폰은 특정 배송사만 적용 등' },
     ];
 
@@ -442,9 +445,9 @@ window.PmCouponDtl = {
     };
   },
   template: /* html */`
-<div>
+<bo-page>
   <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
+  <template #title>
     {{ !active ? '쿠폰 상세' : (cfIsNew ? '쿠폰 등록' : (cfDtlMode ? '쿠폰 상세' : '쿠폰 수정')) }}
     <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
       #{{ form.couponId }}
@@ -452,7 +455,7 @@ window.PmCouponDtl = {
     <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
       목록에서 행을 선택하거나 [+신규]를 누르세요
     </span>
-  </div>
+  </template>
   <!-- ===== □. 페이지 타이틀 ================================================= -->
   <!-- ===== ■. 탭 영역 ==================================================== -->
   <bo-tab-bar :tabs="tabs" :tab="tab" :tab-mode="tabMode2"
@@ -476,7 +479,7 @@ window.PmCouponDtl = {
         <!-- ===== ■.■.■.■. 판매업체 picker ======================================= -->
         <template #vendor>
           <div style="display:flex;gap:8px;align-items:center;">
-            <div class="form-control" style="background:#f9f9f9;cursor:pointer;padding:0;display:flex;align-items:center;" @click="handleBtnAction('vendorModal-open')">
+            <div class="form-control" :style="'background:#f9f9f9;padding:0;display:flex;align-items:center;cursor:' + (cfDtlMode ? 'default' : 'pointer')" @click="cfDtlMode ? null : handleBtnAction('vendorModal-open')">
               <span style="padding:4px 10px;flex:1;">
                 {{ cfSelectedVendorNm }}
               </span>
@@ -484,7 +487,7 @@ window.PmCouponDtl = {
                 ▼
               </span>
             </div>
-            <button v-if="form.vendorId" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendorClear')">
+            <button v-if="coUtil.cofAnd(form.vendorId, !cfDtlMode)" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendorClear')">
               초기화
             </button>
           </div>
@@ -721,7 +724,7 @@ window.PmCouponDtl = {
             발급 대상 종류
           </label>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <label v-for="t in codes.issue_targets" :key="Math.random()" style="display:flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid #ddd;border-radius:6px;cursor:pointer;background:form.targetTypeCd===t?'#e3f2fd':'#fff';">
+            <label v-for="t in codes.issue_targets" :key="Math.random()" style="display:flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid #ddd;border-radius:6px;background:form.targetTypeCd===t?'#e3f2fd':'#fff';">
               <input type="radio" :value="t" v-model="form.targetTypeCd" />
               {{ t }}
             </label>
@@ -764,7 +767,7 @@ window.PmCouponDtl = {
             적용 회원 등급
           </label>
           <div style="display:flex;flex-wrap:wrap;gap:6px;">
-            <label v-for="g in ['전체', '일반', '실버', '골드', 'VIP']" :key="Math.random()" style="display:flex;align-items:center;gap:4px;padding:4px 10px;border:1px solid #ddd;border-radius:14px;cursor:pointer;">
+            <label v-for="g in ['전체', '일반', '실버', '골드', 'VIP']" :key="Math.random()" style="display:flex;align-items:center;gap:4px;padding:4px 10px;border:1px solid #ddd;border-radius:14px;">
               <input type="checkbox" :value="g" v-model="form.issueGrades" />
               {{ g }}
             </label>
@@ -838,7 +841,7 @@ window.PmCouponDtl = {
       취소
     </button>
   </div>
-</div>
+</bo-page>
 <!-- ===== □. 본문 영역 =================================================== -->
 `
 };

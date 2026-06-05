@@ -65,6 +65,9 @@ window.MbMemberMng = {
       // 페이지 크기 변경
       if (cmd === 'members-pager-sizeChange') {
         return onSizeChange();
+      // 행 수정 버튼 → 인라인 상세 편집 모드
+      } else if (cmd === 'members-rowEdit') {
+        return openDetail(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
@@ -344,47 +347,43 @@ window.MbMemberMng = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    회원관리
-  </div>
+<bo-page title="회원관리">
   <!-- ===== ■. 검색 ======================================================== -->
-  <div class="card">
+  <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
-  </div>
+  </bo-container>
   <!-- ===== □. 검색 ======================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
-  <bo-grid :columns="columns.baseGrid" :rows="members" row-key="memberId" :selected-key="detailPanel.dtlId"
-    :sort-state="uiState" list-title="회원목록" row-clickable
-    :count-text="'총 ' + pager.pageTotalCount + '건'"
-    :row-class="fnGridRowClass" empty-text="데이터가 없습니다."
-    @sort="key => handleBtnAction('members-sort', key)"
-    grid-id="members-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
+  <bo-container title="회원목록" :count-text="'총 ' + pager.pageTotalCount + '건'">
     <template #toolbar-actions>
       <button class="btn btn-primary btn-sm" @click="handleBtnAction('members-add')">
         + 신규
       </button>
     </template>
-    <template #row-actions="{ row }">
-      <button class="btn btn-blue btn-xs" @click.stop="handleSelectAction('members-rowEdit', row)">
-        수정
-      </button>
-    </template>
-    <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
-    <template #footer>
-      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('members-pager-setPage', n)" :on-size-change="() => handleSelectAction('members-pager-sizeChange')" />
-    </template>
-  </bo-grid>
+    <bo-grid bare :columns="columns.baseGrid" :rows="members" row-key="memberId" :selected-key="detailPanel.dtlId"
+      :sort-state="uiState"
+      :row-class="fnGridRowClass" empty-text="데이터가 없습니다."
+      @sort="key => handleBtnAction('members-sort', key)"
+      grid-id="members-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
+      <template #row-actions="{ row }">
+        <button class="btn btn-blue btn-xs" @click.stop="handleSelectAction('members-rowEdit', row)">
+          수정
+        </button>
+      </template>
+    </bo-grid>
+    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('members-pager-setPage', n)" :on-size-change="() => handleSelectAction('members-pager-sizeChange')" />
+  </bo-container>
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 상세 패널 (인라인 임베드, 항상 표시) ================================== -->
-  <mb-member-dtl :detail-modal="detailPanel" :active="detailPanel.active"
-    :handle-save="handleSave" :handle-delete="handleDelete" :close-detail="closeDetail"
-    :reload-trigger="detailPanel.reloadTrigger"
-    :on-list-reload="handleSearchList"
-    />
+  <bo-container bare>
+    <mb-member-dtl :detail-modal="detailPanel" :active="detailPanel.active"
+      :handle-save="handleSave" :handle-delete="handleDelete" :close-detail="closeDetail"
+      :reload-trigger="detailPanel.reloadTrigger"
+      :on-list-reload="handleSearchList"
+      />
+  </bo-container>
   <!-- ===== □. 상세 패널 (인라인 임베드) ========================================= -->
-</div>
+</bo-page>
 `,
 };

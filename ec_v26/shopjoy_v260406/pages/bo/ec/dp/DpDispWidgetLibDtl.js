@@ -680,17 +680,17 @@ window.DpDispWidgetLibDtl = {
     };
   },
   template: /* html */`
-<div class="card" style="padding:0;">
-  <!-- ===== ■. 헤더 ====================================================== -->
-  <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #f0f0f0;background:#fafafa;border-radius:8px 8px 0 0;">
-    <div style="display:flex;align-items:center;gap:10px;">
-      <span class="list-title" style="font-size:14px;">
-        {{ cfIsNew ? '위젯 Lib 신규등록' : '위젯 Lib 수정' }}
-      </span>
-      <span v-if="!cfIsNew" style="font-size:11px;background:#eee;color:#666;border-radius:4px;padding:1px 7px;">
-        #{{ String(form.libId).padStart(4,'0') }}
-      </span>
-    </div>
+<bo-container card-style="padding:0;">
+  <!-- ===== ■. 헤더 (bo-container title + toolbar-actions) ================= -->
+  <template #title>
+    <span style="font-size:14px;">
+      {{ cfIsNew ? '위젯 Lib 신규등록' : '위젯 Lib 수정' }}
+    </span>
+    <span v-if="!cfIsNew" style="font-size:11px;background:#eee;color:#666;border-radius:4px;padding:1px 7px;margin-left:8px;font-weight:400;">
+      #{{ String(form.libId).padStart(4,'0') }}
+    </span>
+  </template>
+  <template #toolbar-actions>
     <div class="form-actions" v-if="active" style="margin:0;gap:8px;">
       <button @click="handleBtnAction('libPickModal-open')" class="btn btn-outline" style="font-size:12px;background:#e3f2fd;color:#1565c0;border-color:#90caf9;">
         📋 전시위젯Lib 내용복사
@@ -707,7 +707,7 @@ window.DpDispWidgetLibDtl = {
     </div>
     <widget-lib-pick-modal v-if="libPickOpen" mode="copy"
       :widget-libs="[] || []" modal-name="widget-lib-pick" :on-callback="fnCallbackModal" />
-  </div>
+  </template>
   <!-- ===== □. 헤더 ====================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:flex;gap:0;">
@@ -742,12 +742,12 @@ window.DpDispWidgetLibDtl = {
             </button>
           </div>
           <button @click="handleBtnAction('usedPaths-remove', pi)"
-            style="padding:4px 8px;border:1px solid #fca5a5;background:#fff0f0;color:#dc2626;border-radius:4px;cursor:pointer;font-size:12px;flex-shrink:0;">
+            style="padding:4px 8px;border:1px solid #fca5a5;background:#fff0f0;color:#dc2626;border-radius:4px;font-size:12px;flex-shrink:0;">
             ✕
           </button>
         </div>
         <button @click="handleBtnAction('usedPaths-add')"
-          style="padding:4px 12px;border:1px solid #d1d5db;background:#fff;color:#555;border-radius:4px;cursor:pointer;font-size:12px;">
+          style="padding:4px 12px;border:1px solid #d1d5db;background:#fff;color:#555;border-radius:4px;font-size:12px;">
           + 경로 추가
         </button>
       </div>
@@ -762,11 +762,11 @@ window.DpDispWidgetLibDtl = {
             <span style="font-size:11px;font-weight:600;color:#888;">
               타이틀 표시
             </span>
-            <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;font-weight:500;color:#444;">
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:500;color:#444;">
               <input type="radio" v-model="form.titleYn" value="Y" />
               표시
             </label>
-            <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;font-weight:500;color:#444;">
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:500;color:#444;">
               <input type="radio" v-model="form.titleYn" value="N" />
               미표시
             </label>
@@ -840,7 +840,7 @@ window.DpDispWidgetLibDtl = {
               class="form-control" placeholder="파일명" style="margin:0;flex:1;" />
               <input :value="item.url" @input="updateFileItem(idx,'url',$event.target.value)"
               class="form-control" placeholder="파일 URL" style="margin:0;flex:2;" />
-              <button @click="handleBtnAction('fileList-remove', idx)" style="flex-shrink:0;background:none;border:none;color:#e8587a;cursor:pointer;font-size:16px;">
+              <button @click="handleBtnAction('fileList-remove', idx)" style="flex-shrink:0;background:none;border:none;color:#e8587a;font-size:16px;">
                 ×
               </button>
             </div>
@@ -915,7 +915,7 @@ window.DpDispWidgetLibDtl = {
               📋 샘플 JSON
             </span>
             <button @click="handleBtnAction('jsonView-copy')"
-            style="font-size:10px;padding:2px 8px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;cursor:pointer;color:#666;transition:all .15s;"
+            style="font-size:10px;padding:2px 8px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;color:#666;transition:all .15s;"
             :style="jsonCopied ? 'background:#e8f5e9;color:#2e7d32;border-color:#a5d6a7;' : ''">
               {{ jsonCopied ? '✓ 복사됨' : '복사' }}
             </button>
@@ -928,7 +928,7 @@ window.DpDispWidgetLibDtl = {
       <!-- ===== □. 본문 영역 =================================================== -->
       <!-- ===== ■. 조건부 영역 ================================================== -->
       <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="ec_disp_widget_lib" :value="form.pathId" title="위젯 표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
-    </div>
-    <!-- ===== □. 조건부 영역 ================================================== -->
+  <!-- ===== □. 조건부 영역 ================================================== -->
+</bo-container>
 `
 };

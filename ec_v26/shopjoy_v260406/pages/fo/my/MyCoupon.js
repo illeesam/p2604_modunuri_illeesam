@@ -108,6 +108,7 @@ window.MyCoupon = {
     };
   },
   template: /* html */ `
+<fo-page bare>
 <fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myCoupon">
   <!-- ===== ■. 영역 ====================================================== -->
   <MyDateFilter @search="onSearch" />
@@ -273,6 +274,7 @@ window.MyCoupon = {
 <!-- ===== ■. 영역 ====================================================== -->
 <Pagination :total="cfDateFilteredCoupons.length" :pager="pager" />
 </fo-my-layout>
+</fo-page>
 <!-- ===== □. 영역 ====================================================== -->
 `,
   components: {

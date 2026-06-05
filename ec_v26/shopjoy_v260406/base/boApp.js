@@ -91,8 +91,6 @@
       { group: '고객센터' },
       { id: 'syContactMng', label: '문의관리' },
       { id: 'cmChattMng', label: '채팅관리' },
-      { group: '커뮤니티' },
-      { id: 'syBbmMng', label: '게시판관리' },
     ],
     settle: [
       { group: '기준정보' },
@@ -2879,6 +2877,8 @@
     .component('BoCategoryTree', window.BoCategoryTree)
     .component('BoMultiCheckSelect', window.BoMultiCheckSelect)
     .component('BoDateTimePicker', window.BoDateTimePicker)
+    .component('BoPage', window.BoPage)
+    .component('BoContainer', window.BoContainer)
     .component('BoSearchArea', window.BoSearchArea)
     .component('BoFormArea', window.BoFormArea)
     .component('BoGrid', window.BoGrid)
@@ -2924,6 +2924,7 @@
     .component('OrderSelectModal', window.OrderSelectModal)
     .component('SiteSelectModal', window.SiteSelectModal)
     .component('VendorSelectModal', window.VendorSelectModal)
+    .component('BrandSelectModal', window.BrandSelectModal)
     /* ── components/modals/ — 트리 모달 ── */
     .component('CategoryTreeModal', window.CategoryTreeModal)
     .component('DeptTreeModal', window.DeptTreeModal)

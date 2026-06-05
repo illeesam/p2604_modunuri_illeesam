@@ -317,57 +317,39 @@ window.PmGiftMng = {
   },
   // ===== 템플릿 ===========================================================
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    사은품관리
-  </div>
+<bo-page title="사은품관리">
   <!-- ===== ■. 검색영역 ==================================================== -->
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card">
+  <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
-  </div>
-  <!-- ===== □. 카드 영역 =================================================== -->
+  </bo-container>
   <!-- ===== ■. 목록영역 (리스트/카드 토글) ======================================== -->
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card">
-    <!-- ===== ■.■. 목록 툴바: 제목 + 탭모드 토글 + 엑셀/신규 ============================ -->
-    <div class="toolbar">
-      <span class="list-title">
-        사은품목록
-        <span class="list-count">
-          {{ pager.pageTotalCount }}건
-        </span>
-      </span>
-      <div style="display:flex;gap:6px;align-items:center;">
-        <div style="display:flex;border:1px solid #ddd;border-radius:6px;overflow:hidden;">
-          <button @click="handleBtnAction('tab-mode', 'list')" style="font-size:11px;padding:4px 10px;border:none;cursor:pointer;transition:all .15s;"
-            :style="tabMode==='list' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">
-            ☰ 리스트
-          </button>
-          <button @click="handleBtnAction('tab-mode', 'card')" style="font-size:11px;padding:4px 10px;border:none;border-left:1px solid #ddd;cursor:pointer;transition:all .15s;"
-            :style="tabMode==='card' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">
-            ⊞ 카드
-          </button>
-        </div>
-        <button class="btn btn-green btn-sm" @click="handleBtnAction('gifts-excel')">
-          📥 엑셀
+  <bo-container title="사은품목록" :count-text="pager.pageTotalCount + '건'">
+    <!-- ===== ■.■. 목록 툴바: 탭모드 토글 + 엑셀/신규 ============================ -->
+    <template #toolbar-actions>
+      <div style="display:flex;border:1px solid #ddd;border-radius:6px;overflow:hidden;">
+        <button @click="handleBtnAction('tab-mode', 'list')" style="font-size:11px;padding:4px 10px;border:none;transition:all .15s;"
+          :style="tabMode==='list' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">
+          ☰ 리스트
         </button>
-        <button class="btn btn-primary btn-sm" @click="handleBtnAction('gifts-add')">
-          + 신규
+        <button @click="handleBtnAction('tab-mode', 'card')" style="font-size:11px;padding:4px 10px;border:none;border-left:1px solid #ddd;transition:all .15s;"
+          :style="tabMode==='card' ? 'background:#333;color:#fff;font-weight:600;' : 'background:#fff;color:#666;'">
+          ⊞ 카드
         </button>
       </div>
-    </div>
-    <!-- ===== □.□. 목록 툴바: 제목 + 탭모드 토글 + 엑셀/신규 ============================ -->
+      <button class="btn btn-green btn-sm" @click="handleBtnAction('gifts-excel')">
+        📥 엑셀
+      </button>
+      <button class="btn btn-primary btn-sm" @click="handleBtnAction('gifts-add')">
+        + 신규
+      </button>
+    </template>
     <!-- ===== ■.■. 리스트 뷰 (BoGrid) ======================================== -->
-    <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid v-if="tabMode==='list'" :bare="true"
       :columns="columns.baseGrid" :rows="gifts" row-key="giftId" :selected-key="detailPanel.selectedId"
       :row-actions="true"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
-      :row-style="(g) => detailPanel.selectedId===g.giftId ? 'background:#fff8f9;' : ''"
-      row-clickable @sort="key => handleBtnAction('gifts-sort', key)" grid-id="gifts-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+      :row-style="(g) => detailPanel.selectedId===g.giftId ? 'background:#fff8f9;' : ''" @sort="key => handleBtnAction('gifts-sort', key)" grid-id="gifts-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
       <template #head-actions>
         관리
       </template>
@@ -383,20 +365,19 @@ window.PmGiftMng = {
       </template>
     </bo-grid>
     <bo-pager v-if="tabMode==='list' && pager.pageTotalCount > 0" :pager="pager" :on-set-page="n => handleBtnAction('gifts-pager-setPage', n)" :on-size-change="() => handleSelectAction('gifts-pager-sizeChange')" />
-    <!-- ===== □.□. 목록 영역 ================================================= -->
     <!-- ===== ■.■. 카드 뷰 ================================================== -->
     <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">
       <div v-if="gifts.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">
         데이터가 없습니다.
       </div>
-      <div v-for="(g, idx) in gifts" :key="g?.giftId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;cursor:pointer;"
+      <div v-for="(g, idx) in gifts" :key="g?.giftId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;"
         :style="detailPanel.selectedId===g.giftId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
         @click="handleSelectAction('gifts-rowView', g.giftId)">
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
           <div style="font-size:12px;color:#999;margin-bottom:6px;">
             <span style="display:inline-block;min-width:20px;font-weight:700;color:#e8587a;">{{ (pager.pageNo-1)*pager.pageSize + idx + 1 }}</span> 사은품 #{{ g.giftId }}
           </div>
-          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;cursor:pointer;" @click="handleSelectAction('gifts-rowView', g.giftId)" :style="detailPanel.selectedId===g.giftId?{color:'#e8587a'}:{}">
+          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;" @click="handleSelectAction('gifts-rowView', g.giftId)" :style="detailPanel.selectedId===g.giftId?{color:'#e8587a'}:{}">
             {{ g.giftNm }}
             <span v-if="detailPanel.selectedId===g.giftId" style="font-size:10px;margin-left:4px;">
               ▼
@@ -436,14 +417,11 @@ window.PmGiftMng = {
         </div>
       </div>
     </div>
-    <!-- ===== □.□. 카드 뷰 ================================================== -->
     <!-- ===== ■.■. 페이지네이션 ================================================ -->
     <bo-pager v-if="tabMode!=='list' && pager.pageTotalCount > 0" :pager="pager" :on-set-page="n => handleBtnAction('gifts-pager-setPage', n)" :on-size-change="() => handleSelectAction('gifts-pager-sizeChange')" />
-  </div>
-  <!-- ===== □. 카드 영역 =================================================== -->
+  </bo-container>
   <!-- ===== ■. 하단 상세영역: PmGiftDtl 인라인 임베드 ============================== -->
-  <!-- ===== ■. 상세 패널 (인라인 임베드) ========================================= -->
-  <div>
+  <bo-container bare>
     <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기
@@ -461,8 +439,7 @@ window.PmGiftMng = {
       :reload-trigger="detailPanel.reloadTrigger"
       :on-list-reload="handleBtnAction"
       />
-  </div>
-</div>
-<!-- ===== □. 상세 패널 (인라인 임베드) ========================================= -->
+  </bo-container>
+</bo-page>
 `
 };

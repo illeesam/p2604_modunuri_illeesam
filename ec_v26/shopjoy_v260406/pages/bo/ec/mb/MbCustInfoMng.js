@@ -532,23 +532,17 @@
     },
 
     template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-header">
-    <h2 class="page-title">
-      고객종합정보
-    </h2>
-  </div>
-  <!-- ===== □. 페이지 타이틀 ================================================= -->
+<bo-page title="고객종합정보">
   <!-- ===== ■. 검색 바 ==================================================== -->
-  <div style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;padding:14px 20px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.05);display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+  <bo-container>
+   <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
     <!-- ===== ■.■. 모드 세그먼트 =============================================== -->
     <div style="display:flex;background:#f0f2f5;border-radius:8px;padding:3px;gap:2px;flex-shrink:0;">
       <button v-for="m in SEARCH_MODES" :key="m?.id"
         @click="handleBtnAction('searchParam-mode', m.id)"
         :style="uiState.searchMode===m.id
-        ? 'background:#1976d2;color:#fff;border:none;border-radius:6px;padding:6px 16px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;'
-        : 'background:transparent;color:#666;border:none;border-radius:6px;padding:6px 16px;font-size:13px;cursor:pointer;transition:all .15s;'">
+        ? 'background:#1976d2;color:#fff;border:none;border-radius:6px;padding:6px 16px;font-size:13px;font-weight:600;transition:all .15s;'
+        : 'background:transparent;color:#666;border:none;border-radius:6px;padding:6px 16px;font-size:13px;transition:all .15s;'">
         {{ m.label }}
       </button>
     </div>
@@ -556,7 +550,7 @@
     <!-- ===== ■.■. 고객 선택 ================================================= -->
     <template v-if="uiState.searchMode==='member'">
       <button @click="handleBtnAction('memberModal-open')"
-        style="display:flex;align-items:center;gap:6px;background:#fff;border:1.5px solid #1976d2;color:#1976d2;border-radius:8px;padding:7px 18px;font-size:13px;font-weight:600;cursor:pointer;">
+        style="display:flex;align-items:center;gap:6px;background:#fff;border:1.5px solid #1976d2;color:#1976d2;border-radius:8px;padding:7px 18px;font-size:13px;font-weight:600;">
         🔍 고객 선택
       </button>
       <span style="font-size:12px;color:#aaa;">
@@ -572,7 +566,7 @@
           style="border:none;background:transparent;padding:8px 14px;font-size:13px;outline:none;flex:1;min-width:0;"
           @keyup.enter="handleBtnAction('searchParam-list')" />
         <button @click="handleBtnAction('searchParam-list')"
-          style="background:#1976d2;color:#fff;border:none;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;">
+          style="background:#1976d2;color:#fff;border:none;padding:9px 18px;font-size:13px;font-weight:600;white-space:nowrap;">
           조회
         </button>
       </div>
@@ -580,14 +574,15 @@
     <span style="flex:1;">
     </span>
     <button v-if="uiState.customer" @click="handleBtnAction('searchParam-clearCustomer')"
-      style="background:#f5f5f5;border:1px solid #ddd;color:#666;border-radius:8px;padding:7px 16px;font-size:12px;cursor:pointer;">
+      style="background:#f5f5f5;border:1px solid #ddd;color:#666;border-radius:8px;padding:7px 16px;font-size:12px;">
       ✕ 초기화
     </button>
     <!-- ===== □.■. 번호 입력 ================================================= -->
-  </div>
+   </div>
+  </bo-container>
   <!-- ===== □. 검색 바 ==================================================== -->
   <!-- ===== ■. 기간 필터 바 (BoSearchArea) =================================== -->
-  <div style="background:#fff;border:1px solid #e5e8ed;border-radius:10px;padding:10px 20px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.05);">
+  <bo-container>
     <bo-search-area :columns="columns.periodSearch" :param="searchParam"
       @search="handleBtnAction('searchParam-list')" :show-reset="false">
       <template #period>
@@ -595,8 +590,8 @@
           <button v-for="p in PERIOD_OPTS" :key="p?.id"
             @click="handleBtnAction('searchParam-period', p.id)"
             :style="searchParam.period===p.id
-            ? 'background:#1976d2;color:#fff;border:none;border-radius:6px;padding:4px 13px;font-size:12px;font-weight:600;cursor:pointer;'
-            : 'background:transparent;color:#666;border:none;border-radius:6px;padding:4px 13px;font-size:12px;cursor:pointer;'">
+            ? 'background:#1976d2;color:#fff;border:none;border-radius:6px;padding:4px 13px;font-size:12px;font-weight:600;'
+            : 'background:transparent;color:#666;border:none;border-radius:6px;padding:4px 13px;font-size:12px;'">
             {{ p.label }}
           </button>
         </div>
@@ -605,7 +600,7 @@
     <span v-if="searchParam.period!=='custom'" style="font-size:12px;color:#aaa;display:block;margin-top:4px;">
       {{ cfDateFrom ? cfDateFrom + ' ~ ' + cfDateTo : '전체 기간' }}
     </span>
-  </div>
+  </bo-container>
   <!-- ===== □. 기간 필터 바 ================================================= -->
   <!-- ===== ■. 고객 없음 안내 ================================================ -->
   <div v-if="!uiState.customer"
@@ -887,7 +882,7 @@
       @search="handleBtnAction('memberModal-search')" />
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid bare grid-id="memberModal-cellClick" :columns="columns.memberModalGrid" :rows="cfPageModalList" :pager="modalPager"
-      row-key="userId" row-clickable empty-text="검색 결과가 없습니다."
+      row-key="userId" empty-text="검색 결과가 없습니다."
       @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)"
  row-actions>
       <template #row-actions="{ row, gridId }">
@@ -900,7 +895,7 @@
     <!-- ===== □.■. 목록 영역 ================================================= -->
   </bo-modal>
   <!-- ===== □. 고객 선택 모달 ================================================ -->
-</div>
+</bo-page>
 `,
   };
 })();

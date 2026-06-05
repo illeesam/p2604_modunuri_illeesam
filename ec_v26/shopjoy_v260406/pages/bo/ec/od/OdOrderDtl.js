@@ -450,19 +450,17 @@ window.OdOrderDtl = {
   template: /* html */`
 <div>
   <!-- ===== ■. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
-  <div class="card">
+  <bo-container>
     <!-- ===== ■.■. 카드 헤더 (제목 = list-title) ================================ -->
-    <div class="toolbar">
-      <span class="list-title">
-        {{ !active ? '주문 상세' : (cfIsNew ? '주문 등록' : (cfDtlMode ? '주문 상세' : '주문 수정')) }}
-        <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
-          #{{ form.orderId }}
-        </span>
-        <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-          목록에서 행을 선택하거나 [+신규]를 누르세요
-        </span>
+    <template #title>
+      {{ !active ? '주문 상세' : (cfIsNew ? '주문 등록' : (cfDtlMode ? '주문 상세' : '주문 수정')) }}
+      <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+        #{{ form.orderId }}
       </span>
-    </div>
+      <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+        목록에서 행을 선택하거나 [+신규]를 누르세요
+      </span>
+    </template>
     <!-- ===== ■.■. 탭바 ==================================================== -->
     <bo-tab-bar v-if="!cfIsNew" :tabs="tabs" :tab="activeTab" :tab-mode="tabMode2"
       @tab-select="id => handleBtnAction('tab-change', id)"
@@ -510,7 +508,7 @@ window.OdOrderDtl = {
                 }">
               {{ step==='완료' ? '구매확정' : step }}
             </div>
-            <span v-if="step==='배송완료' && cfRelatedDelivery && cfRelatedDelivery.trackingNo" @click="handleBtnAction('tracking-open', { courier: cfRelatedDelivery.courier, trackingNo: cfRelatedDelivery.trackingNo })" title="배송조회 창 열기" style="margin-top:4px;padding:1px 7px;border:1px solid #86efac;background:#dcfce7;color:#15803d;border-radius:4px;font-size:0.7rem;font-weight:700;cursor:pointer;user-select:none;">
+            <span v-if="step==='배송완료' && cfRelatedDelivery && cfRelatedDelivery.trackingNo" @click="handleBtnAction('tracking-open', { courier: cfRelatedDelivery.courier, trackingNo: cfRelatedDelivery.trackingNo })" title="배송조회 창 열기" style="margin-top:4px;padding:1px 7px;border:1px solid #86efac;background:#dcfce7;color:#15803d;border-radius:4px;font-size:0.7rem;font-weight:700;user-select:none;">
             {{ (cfRelatedDelivery.courier||'').replace('대한통운','').replace('택배','') || 'CJ' }}배송 🔍
           </span>
         </div>
@@ -558,10 +556,10 @@ window.OdOrderDtl = {
                 }">
           {{ step }}
         </div>
-        <span v-if="step==='수거중' && cfRelatedClaim.trackingNo" @click="handleBtnAction('tracking-open', { courier: cfRelatedClaim.courier, trackingNo: cfRelatedClaim.trackingNo })" title="수거 배송조회" style="margin-top:4px;padding:1px 7px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;border-radius:4px;font-size:0.7rem;font-weight:700;cursor:pointer;user-select:none;">
+        <span v-if="step==='수거중' && cfRelatedClaim.trackingNo" @click="handleBtnAction('tracking-open', { courier: cfRelatedClaim.courier, trackingNo: cfRelatedClaim.trackingNo })" title="수거 배송조회" style="margin-top:4px;padding:1px 7px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;border-radius:4px;font-size:0.7rem;font-weight:700;user-select:none;">
         {{ (cfRelatedClaim.courier||'').replace('대한통운','').replace('택배','') || 'CJ' }}수거 🔍
       </span>
-      <span v-if="step==='완료' && cfRelatedClaim.exchangeTrackingNo" @click="handleBtnAction('tracking-open', { courier: cfRelatedClaim.exchangeCourier, trackingNo: cfRelatedClaim.exchangeTrackingNo })" title="발송 배송조회" style="margin-top:4px;padding:1px 7px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-size:0.7rem;font-weight:700;cursor:pointer;user-select:none;">
+      <span v-if="step==='완료' && cfRelatedClaim.exchangeTrackingNo" @click="handleBtnAction('tracking-open', { courier: cfRelatedClaim.exchangeCourier, trackingNo: cfRelatedClaim.exchangeTrackingNo })" title="발송 배송조회" style="margin-top:4px;padding:1px 7px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-size:0.7rem;font-weight:700;user-select:none;">
       {{ (cfRelatedClaim.exchangeCourier||'').replace('대한통운','').replace('택배','') || 'CJ' }}발송 🔍
     </span>
   </div>
@@ -638,7 +636,7 @@ window.OdOrderDtl = {
         empty-text="주문 항목 정보가 없습니다.">
   <template #cell-prodNm="{ row, idx }">
     <td style="font-size:12px;">
-      <span v-if="cfRelatedClaim && cfRelatedClaim.type==='교환'" @click="handleSelectAction('orderItems-rowToggleExpand', idx)" style="cursor:pointer;font-size:11px;color:#3b82f6;font-weight:800;user-select:none;margin-right:6px;" :title="isExpanded(idx)?'교환품 숨기기':'교환품 보기'">
+      <span v-if="cfRelatedClaim && cfRelatedClaim.type==='교환'" @click="handleSelectAction('orderItems-rowToggleExpand', idx)" style="font-size:11px;color:#3b82f6;font-weight:800;user-select:none;margin-right:6px;" :title="isExpanded(idx)?'교환품 숨기기':'교환품 보기'">
       {{ isExpanded(idx) ? '▼' : '▶' }}
     </span>
     <span style="font-size:18px;margin-right:6px;">
@@ -651,7 +649,7 @@ window.OdOrderDtl = {
   <td :colspan="colspan" style="padding:10px 14px;background:#f0f7ff;">
     <bo-form-area :columns="columns.itemExpand" :form="row" :cols="3" compact readonly label-left :show-actions="false">
       <template #tracking>
-        <div class="readonly-field" @click="handleBtnAction('tracking-open', { courier: getExchangedItem(row).courier, trackingNo: getExchangedItem(row).trackingNo })" style="cursor:pointer;padding:2px 8px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-size:11px;font-weight:700;display:inline-block;">
+        <div class="readonly-field" @click="handleBtnAction('tracking-open', { courier: getExchangedItem(row).courier, trackingNo: getExchangedItem(row).trackingNo })" style="padding:2px 8px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-size:11px;font-weight:700;display:inline-block;">
           {{ getExchangedItem(row).courier }} · {{ getExchangedItem(row).trackingNo || '-' }} 🔍
         </div>
       </template>
@@ -722,7 +720,7 @@ window.OdOrderDtl = {
 <!-- ===== □.□. 정보수정이력 탭 ============================================== -->
 </div>
 <!-- ===== □. 탭 컨텐츠 =================================================== -->
-  </div>
+  </bo-container>
   <!-- ===== □. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
 </div>
 `

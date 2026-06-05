@@ -10,7 +10,7 @@ window.StSettlePayMng = {
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
-const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: ''});
+const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: ''});
     const codes = reactive({
       settle_pay_statuses: [],
       date_range_opts: [],
@@ -31,9 +31,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         return handleSearchList('DEFAULT');
       } else if (cmd === 'searchParam-dateRange') {
         return handleDateRangeChange();
-      } else if (cmd === 'desc-toggle') {
-        uiState.descOpen = !uiState.descOpen;
-        return;
       } else if (cmd === 'settlePays-pager-setPage') {
         if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
         return;
@@ -211,38 +208,22 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    정산지급관리
-  </div>
-  <!-- ===== ■. 영역 ====================================================== -->
-  <div class="page-desc-bar">
-    <span class="page-desc-summary">
-      마감된 정산액의 업체별 지급 요청·확인·완료 처리 및 이의신청을 관리합니다.
-    </span>
-    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">
-      {{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}
-    </button>
-    <div v-if="uiState.descOpen" class="page-desc-detail">
-      • 지급 상태: 지급대기 / 지급요청 / 지급완료 / 이의신청 • [지급처리] 버튼으로 업체 계좌로 정산액 지급 완료 처리합니다. • 이의신청 접수 시 관련 마감을 재오픈하여 재정산할 수 있습니다. • 업체 계좌 정보는 업체관리(SyVendorMng)에서 관리합니다.
-    </div>
-  </div>
-  <!-- ===== □. 영역 ====================================================== -->
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card">
-    <!-- ===== ■.■. 검색 영역 ================================================= -->
+<bo-page title="정산지급관리"
+  desc-summary="마감된 정산액의 업체별 지급 요청·확인·완료 처리 및 이의신청을 관리합니다."
+  desc-detail="• 지급 상태: 지급대기 / 지급요청 / 지급완료 / 이의신청&#10;• [지급처리] 버튼으로 업체 계좌로 정산액 지급 완료 처리합니다.&#10;• 이의신청 접수 시 관련 마감을 재오픈하여 재정산할 수 있습니다.&#10;• 업체 계좌 정보는 업체관리(SyVendorMng)에서 관리합니다.">
+  <!-- ===== ■. 검색 영역 ================================================= -->
+  <bo-container>
     <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
-  </div>
-  <!-- ===== □. 카드 영역 =================================================== -->
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card" style="margin-top:12px">
+  </bo-container>
+  <!-- ===== ■. 집계 영역 ================================================= -->
+  <bo-container>
     <bo-form-area :columns="columns.summaryForm" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
-    <div style="height:12px"></div>
-    <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-grid
+  </bo-container>
+  <!-- ===== ■. 목록 영역 ================================================= -->
+  <bo-container title="목록" :count-text="pager.pageTotalCount + '건'">
+    <bo-grid bare
       :columns="columns.baseGrid" :rows="pays" row-key="payId"
-      list-title="목록" :count-text="pager.pageTotalCount + '건'" :row-actions="true">
+      :row-actions="true">
       <template #head-actions>
         <th style="text-align:right">액션</th>
       </template>
@@ -251,14 +232,9 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
           지급처리
         </button>
       </template>
-      <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
-      <template #footer>
-        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('settlePays-pager-setPage', n)" :on-size-change="() => handleSelectAction('settlePays-pager-sizeChange')" />
-      </template>
     </bo-grid>
-  </div>
-</div>
-<!-- ===== □.□. 목록 영역 ================================================= -->
-<!-- ===== □. 카드 영역 =================================================== -->
+    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('settlePays-pager-setPage', n)" :on-size-change="() => handleSelectAction('settlePays-pager-sizeChange')" />
+  </bo-container>
+</bo-page>
 `,
 };

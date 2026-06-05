@@ -898,35 +898,35 @@ window.SyRoleMng = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    역할관리
-  </div>
+<bo-page title="역할관리">
   <!-- ===== ■. 검색 ====================================================== -->
-  <div class="card">
+  <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
-  </div>
+  </bo-container>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 좌 트리 + 우 영역 ============================================= -->
-  <div style="display:grid;grid-template-columns:minmax(220px,20fr) minmax(0,80fr);gap:0 12px;align-items:flex-start;">
-    <bo-local-tree-card title="역할"
-      :node="cfTree" :expanded="expanded" :selected="uiState.selectedPath"
-      :on-toggle="path => handleBtnAction('pathTree-toggle', path)"
-      @select="path => handleSelectAction('pathTree-select', path)" @expand-all="handleBtnAction('pathTree-expandAll')" @collapse-all="handleBtnAction('pathTree-collapseAll')">
-      <template #filter>
-        <select v-model="searchParam.treeCatFilter" @change="handleBtnAction('pathTree-catChange')" style="width:100%;padding:4px 6px;font-size:11px;border:1px solid #d1d5db;border-radius:5px;margin-bottom:8px;">
-          <option value="">
-            역할구분 전체
-          </option>
-          <option v-for="c in codes.role_cats" :key="c[0]" :value="c[0]">
-            {{ c[1] }}
-          </option>
-        </select>
-      </template>
-    </bo-local-tree-card>
-    <div>
+  <div class="bo-2col" style="grid-template-columns:minmax(220px,20fr) minmax(0,80fr);">
+    <!-- ===== ■.■. 트리 ==================================================== -->
+    <bo-container bare>
+      <bo-local-tree-card title="역할"
+        :node="cfTree" :expanded="expanded" :selected="uiState.selectedPath"
+        :on-toggle="path => handleBtnAction('pathTree-toggle', path)"
+        @select="path => handleSelectAction('pathTree-select', path)" @expand-all="handleBtnAction('pathTree-expandAll')" @collapse-all="handleBtnAction('pathTree-collapseAll')">
+        <template #filter>
+          <select v-model="searchParam.treeCatFilter" @change="handleBtnAction('pathTree-catChange')" style="width:100%;padding:4px 6px;font-size:11px;border:1px solid #d1d5db;border-radius:5px;margin-bottom:8px;">
+            <option value="">
+              역할구분 전체
+            </option>
+            <option v-for="c in codes.role_cats" :key="c[0]" :value="c[0]">
+              {{ c[1] }}
+            </option>
+          </select>
+        </template>
+      </bo-local-tree-card>
+    </bo-container>
+    <!-- ===== ■.■. CRUD 그리드 ============================================ -->
+    <bo-container bare>
       <!-- ===== ■.■.■. CRUD 그리드 ============================================ -->
       <bo-grid-crud
         :columns="columns.baseGrid" :rows="gridRows" row-key="roleId" :selected-key="uiState.selectedRoleId"
@@ -954,7 +954,11 @@ window.SyRoleMng = {
           </span>
         </template>
       </bo-grid-crud>
-      <!-- ===== ■.■.■. 하단: 메뉴 배분 + 사용자 배분 ================================== -->
+    </bo-container>
+  </div>
+  <!-- ===== □. 좌 트리 + 우 영역 ============================================= -->
+  <!-- ===== ■. 하단: 메뉴 배분 + 사용자 배분 (전체 폭) ============================ -->
+  <bo-container bare>
       <div id="role-config-panel" style="display:flex;gap:16px;align-items:flex-start;">
         <!-- ===== ■.■.■.■. 좌: 메뉴목록 =========================================== -->
         <div style="flex:1;">
@@ -972,7 +976,7 @@ window.SyRoleMng = {
                 </span>
               </div>
               <div v-if="uiState.selectedRoleId" style="display:flex;gap:4px;align-items:center;flex-wrap:wrap;">
-                <label style="font-size:12px;color:#555;cursor:pointer;display:flex;align-items:center;gap:4px;margin-right:4px;white-space:nowrap;">
+                <label style="font-size:12px;color:#555;display:flex;align-items:center;gap:4px;margin-right:4px;white-space:nowrap;">
                   <input type="checkbox" :checked="cfMenuAllChecked"
                     @change="e => handleBtnAction('roleMenus-toggleAll', e.target.checked)" />
                   전체선택
@@ -1007,7 +1011,7 @@ window.SyRoleMng = {
                 <!-- ===== ■.■.■.■.■.■.■.■. 행 체크박스 (권한값과 분리, 일괄적용 대상 선택) ===== -->
                 <input type="checkbox" :checked="isMenuChecked(m.menuId)"
                   @change="handleSelectAction('roleMenus-toggleCheck', m.menuId)"
-                  style="margin-right:8px;cursor:pointer;flex-shrink:0;" />
+                  style="margin-right:8px;flex-shrink:0;" />
                 <!-- ===== ■.■.■.■.■.■.■.■. 블릿 트리 들여쓰기 ================================ -->
                 <span :style="{ marginLeft:(m._depth*14)+'px', marginRight:'5px', fontWeight:'700',
                   fontSize: m._depth===0?'7px':'11px', flexShrink:0,
@@ -1023,7 +1027,7 @@ window.SyRoleMng = {
                   <!-- ===== ■.■.■.■.■.■.■.■. 권한 레벨 토글 버튼 =============================== -->
                   <div style="display:flex;gap:2px;flex-shrink:0;">
                     <button v-for="p in codes.perm_levels" :key="p"
-                    style="font-size:10px;padding:2px 7px;border-radius:4px;border:1px solid;cursor:pointer;font-weight:600;transition:all .1s;"
+                    style="font-size:10px;padding:2px 7px;border-radius:4px;border:1px solid;font-weight:600;transition:all .1s;"
                     :style="getMenuPerm(m.menuId)===p
                     ? { background: fnPermColor(p), borderColor: fnPermColor(p), color:'#fff' }
                     : { background:'#f5f5f5', borderColor:'#e0e0e0', color:'#999' }"
@@ -1105,22 +1109,21 @@ window.SyRoleMng = {
             </div>
           </div>
         </div>
-        <!-- ===== ■.■.■. 사용자 선택 모달 =========================================== -->
-        <bo-user-select-modal v-if="uiState.userSelectOpen" modal-name="user-select" :on-callback="fnCallbackModal" />
-        <!-- ===== ■.■.■. 상위역할 선택 모달 ========================================== -->
-        <role-tree-modal v-if="roleTreeModal && roleTreeModal.show"
-          :exclude-id="roleTreeModal.targetRow && roleTreeModal.targetRow.roleId > 0 ? roleTreeModal.targetRow.roleId : null" modal-name="parent-pick" :on-callback="fnCallbackModal" />
-      </div>
-    </div>
-    <!-- ===== □. 좌 트리 + 우 영역 ============================================= -->
-    <!-- ===== ■. 조건부 영역 ================================================== -->
-    <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_role"
-      :value="pathPickModal.row ? pathPickModal.row.pathId : null" modal-name="path-pick" :on-callback="fnCallbackModal" />
-
-    <!-- ===== ■. 엑셀 업로드 모달 (도메인은 모달 안의 select 로 전환 가능) ===== -->
-    <bo-excel-upload-modal v-if="excelUploadModal.show"
-      default-domain="role" modal-name="excel-upload" :on-callback="fnCallbackModal" />
-  </div>
-  <!-- ===== □. 조건부 영역 ================================================== -->
+    </bo-container>
+  <!-- ===== □. 하단: 메뉴 배분 + 사용자 배분 (전체 폭) ============================ -->
+  <!-- ===== ■. 조건부 영역 (모달) ============================================ -->
+  <!-- ===== ■.■. 사용자 선택 모달 =========================================== -->
+  <bo-user-select-modal v-if="uiState.userSelectOpen" modal-name="user-select" :on-callback="fnCallbackModal" />
+  <!-- ===== ■.■. 상위역할 선택 모달 ========================================== -->
+  <role-tree-modal v-if="roleTreeModal && roleTreeModal.show"
+    :exclude-id="roleTreeModal.targetRow && roleTreeModal.targetRow.roleId > 0 ? roleTreeModal.targetRow.roleId : null" modal-name="parent-pick" :on-callback="fnCallbackModal" />
+  <!-- ===== ■.■. 표시경로 선택 모달 ========================================== -->
+  <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_role"
+    :value="pathPickModal.row ? pathPickModal.row.pathId : null" modal-name="path-pick" :on-callback="fnCallbackModal" />
+  <!-- ===== ■.■. 엑셀 업로드 모달 (도메인은 모달 안의 select 로 전환 가능) ===== -->
+  <bo-excel-upload-modal v-if="excelUploadModal.show"
+    default-domain="role" modal-name="excel-upload" :on-callback="fnCallbackModal" />
+  <!-- ===== □. 조건부 영역 (모달) ============================================ -->
+</bo-page>
 `,
 };

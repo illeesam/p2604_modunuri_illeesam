@@ -13,7 +13,7 @@ window.StStatusMng = {
       claimSearchType: '', claimSearchStatus: '', promoSearchValue: '', promoSearchType: '', settleSearchMonth: '',
     });
     const showToast    = window.boApp.showToast;  // 토스트 알림
-const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, activeTab: 'vendor', dateRange: '이번달', dateStart: '', dateEnd: '', vendorSearchValue: '', orderSearchValue: '', orderSearchStatus: '', claimSearchType: '', claimSearchStatus: '', promoSearchValue: '', promoSearchType: '', settleSearchMonth: ''});;
+const uiState = reactive({ error: null, isPageCodeLoad: false, activeTab: 'vendor', dateRange: '이번달', dateStart: '', dateEnd: '', vendorSearchValue: '', orderSearchValue: '', orderSearchStatus: '', claimSearchType: '', claimSearchStatus: '', promoSearchValue: '', promoSearchType: '', settleSearchMonth: ''});;
     const activeTab = Vue.toRef(uiState, 'activeTab');
     const codes = reactive({ st_order_statuses: [], claim_types_kr: [], claim_statuses_kr: [], promo_types_kr: [], date_range_opts: [] });
 
@@ -33,10 +33,6 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
       // 탭 전환
       } else if (cmd === 'tab-select') {
         uiState.activeTab = param;
-        return;
-      // 설명 토글
-      } else if (cmd === 'desc-toggle') {
-        uiState.descOpen = !uiState.descOpen;
         return;
       // 엑셀 내보내기
       } else if (cmd === 'statuses-export') {
@@ -561,27 +557,11 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    정산현황
-  </div>
-  <!-- ===== ■. 영역 ====================================================== -->
-  <div class="page-desc-bar">
-    <span class="page-desc-summary">
-      업체별·기간별 정산 진행 현황을 집계 탭으로 조회합니다. 수집~지급 전 단계 금액과 건수를 확인할 수 있습니다.
-    </span>
-    <button class="page-desc-toggle" @click="handleBtnAction('desc-toggle')">
-      {{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}
-    </button>
-    <div v-if="uiState.descOpen" class="page-desc-detail">
-      • 탭 구성: 업체별 / 주문별 / 클레임별 / 프로모션별 / 정산집계 • 업체별 탭: 매출·환불·순매출·수수료·정산예정액 집계 • 정산집계 탭: 마감 기준 월별 최종 정산액 목록 • CSV 내보내기를 지원합니다.
-    </div>
-  </div>
-  <!-- ===== □. 영역 ====================================================== -->
+<bo-page title="정산현황"
+  desc-summary="업체별·기간별 정산 진행 현황을 집계 탭으로 조회합니다. 수집~지급 전 단계 금액과 건수를 확인할 수 있습니다."
+  desc-detail="• 탭 구성: 업체별 / 주문별 / 클레임별 / 프로모션별 / 정산집계&#10;• 업체별 탭: 매출·환불·순매출·수수료·정산예정액 집계&#10;• 정산집계 탭: 마감 기준 월별 최종 정산액 목록&#10;• CSV 내보내기를 지원합니다.">
   <!-- ===== ■. 공통 날짜 필터 ================================================ -->
-  <div class="card" style="margin-bottom:12px">
-    <!-- ===== ■.■. 검색 영역 ================================================= -->
+  <bo-container>
     <bo-search-area :bar-style="'flex-wrap:wrap;gap:8px'"
       :columns="cfTopSearchColumns" :param="uiState"
       @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')">
@@ -591,142 +571,95 @@ const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, 
         </button>
       </template>
     </bo-search-area>
-  </div>
-  <!-- ===== □.□. 검색 영역 ================================================= -->
+  </bo-container>
   <!-- ===== □. 공통 날짜 필터 ================================================ -->
   <!-- ===== ■. 탭 ======================================================= -->
   <bo-tab-bar :tabs="TABS" :tab="uiState.activeTab" :show-modes="false"
     @tab-select="id => handleBtnAction('tab-select', id)" />
   <!-- ===== □. 탭 ======================================================= -->
   <!-- ===== ■. ══ 1. 업체별현황 ══ ========================================== -->
-  <div v-if="uiState.activeTab==='vendor'" class="card" style="border-radius:0 8px 8px 8px">
-    <!-- ===== ■.■. 요약 카드 ================================================= -->
+  <bo-container v-if="uiState.activeTab==='vendor'" title="업체별현황"
+    :count-text="'총 ' + cfVendorTotal + '개 업체'" card-style="border-radius:0 8px 8px 8px">
     <bo-form-area :columns="columns.vendorSummary" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
     <div style="height:12px"></div>
-    <!-- ===== □.□. 요약 카드 ================================================= -->
-    <!-- 업체명 검색은 상단 공통 검색바(cfTopSearchColumns)로 이동 (2026-06-02) -->
-    <!-- ===== ■.■. 테이블 =================================================== -->
-    <bo-grid
+    <bo-grid bare
       :columns="columns.vendorGrid"
       :rows="cfVendorPageList"
       :pager="vendorPager"
       row-key="vendorId"
-      list-title="업체별현황"
-      :count-text="'총 ' + cfVendorTotal + '개 업체'"
-      empty-text="데이터가 없습니다.">
-      <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
-      <template #footer>
-        <bo-pager :pager="vendorPager" :on-set-page="n => handleBtnAction('statuses-vendorPagerSetPage', n)" :on-size-change="() => handleSelectAction('statuses-vendorPagerSizeChange')" />
-      </template>
-    </bo-grid>
-  </div>
-  <!-- ===== □.□. 테이블 =================================================== -->
+      empty-text="데이터가 없습니다." />
+    <bo-pager :pager="vendorPager" :on-set-page="n => handleBtnAction('statuses-vendorPagerSetPage', n)" :on-size-change="() => handleSelectAction('statuses-vendorPagerSizeChange')" />
+  </bo-container>
   <!-- ===== □. ══ 1. 업체별현황 ══ ========================================== -->
   <!-- ===== ■. ══ 2. 주문별현황 ══ ========================================== -->
-  <div v-if="uiState.activeTab==='order'" class="card" style="border-radius:0 8px 8px 8px">
+  <bo-container v-if="uiState.activeTab==='order'" title="주문별현황"
+    :count-text="'총 ' + cfOrderTotal + '건'" card-style="border-radius:0 8px 8px 8px">
     <bo-form-area :columns="columns.orderSummary" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
     <div style="height:12px"></div>
-    <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'"
       :columns="columns.orderSearch" :param="uiState"
       @search="handleBtnAction('searchParam-list')" />
-    <!-- ===== □.□. 검색 영역 ================================================= -->
-    <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-grid
+    <bo-grid bare
       :columns="columns.orderGrid"
       :rows="cfOrderPageList"
       :pager="orderPager"
       row-key="orderId"
-      list-title="주문별현황"
-      :count-text="'총 ' + cfOrderTotal + '건'"
       :row-style="(r) => r.isCancelled ? 'color:#bbb' : ''"
-      empty-text="데이터가 없습니다.">
-      <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
-      <template #footer>
-        <bo-pager :pager="orderPager" :on-set-page="n => handleBtnAction('statuses-orderPagerSetPage', n)" :on-size-change="() => handleSelectAction('statuses-orderPagerSizeChange')" />
-      </template>
-    </bo-grid>
-  </div>
-  <!-- ===== □.□. 목록 영역 ================================================= -->
+      empty-text="데이터가 없습니다." />
+    <bo-pager :pager="orderPager" :on-set-page="n => handleBtnAction('statuses-orderPagerSetPage', n)" :on-size-change="() => handleSelectAction('statuses-orderPagerSizeChange')" />
+  </bo-container>
   <!-- ===== □. ══ 2. 주문별현황 ══ ========================================== -->
   <!-- ===== ■. ══ 3. 클레임별현황 ══ ========================================= -->
-  <div v-if="uiState.activeTab==='claim'" class="card" style="border-radius:0 8px 8px 8px">
+  <bo-container v-if="uiState.activeTab==='claim'" title="클레임별현황"
+    :count-text="'총 ' + cfClaimTotal + '건'" card-style="border-radius:0 8px 8px 8px">
     <bo-form-area :columns="columns.claimSummary" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
     <div style="height:12px"></div>
-    <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'"
       :columns="columns.claimSearch" :param="uiState"
       @search="handleBtnAction('searchParam-list')" />
-    <!-- ===== □.□. 검색 영역 ================================================= -->
-    <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-grid
+    <bo-grid bare
       :columns="columns.claimGrid"
       :rows="cfClaimPageList"
       :pager="claimPager"
       row-key="claimId"
-      list-title="클레임별현황"
-      :count-text="'총 ' + cfClaimTotal + '건'"
-      empty-text="데이터가 없습니다.">
-      <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
-      <template #footer>
-        <bo-pager :pager="claimPager" :on-set-page="n => handleBtnAction('statuses-claimPagerSetPage', n)" :on-size-change="() => handleSelectAction('statuses-claimPagerSizeChange')" />
-      </template>
-    </bo-grid>
-  </div>
-  <!-- ===== □.□. 목록 영역 ================================================= -->
+      empty-text="데이터가 없습니다." />
+    <bo-pager :pager="claimPager" :on-set-page="n => handleBtnAction('statuses-claimPagerSetPage', n)" :on-size-change="() => handleSelectAction('statuses-claimPagerSizeChange')" />
+  </bo-container>
   <!-- ===== □. ══ 3. 클레임별현황 ══ ========================================= -->
   <!-- ===== ■. ══ 4. 프로모션별현황 ══ ======================================== -->
-  <div v-if="uiState.activeTab==='promo'" class="card" style="border-radius:0 8px 8px 8px">
+  <bo-container v-if="uiState.activeTab==='promo'" title="프로모션별현황"
+    :count-text="'총 ' + cfPromoTotal + '개'" card-style="border-radius:0 8px 8px 8px">
     <bo-form-area :columns="columns.promoSummary" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
     <div style="height:12px"></div>
-    <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'"
       :columns="columns.promoSearch" :param="uiState"
       @search="handleBtnAction('searchParam-list')" />
-    <!-- ===== □.□. 검색 영역 ================================================= -->
-    <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-grid
+    <bo-grid bare
       :columns="columns.promoGrid"
       :rows="cfPromoPageList"
       :pager="promoPager"
       row-key="promoId"
-      list-title="프로모션별현황"
-      :count-text="'총 ' + cfPromoTotal + '개'"
-      empty-text="데이터가 없습니다.">
-      <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
-      <template #footer>
-        <bo-pager :pager="promoPager" :on-set-page="n => handleBtnAction('statuses-promoPagerSetPage', n)" :on-size-change="() => handleSelectAction('statuses-promoPagerSizeChange')" />
-      </template>
-    </bo-grid>
-  </div>
-  <!-- ===== □.□. 목록 영역 ================================================= -->
+      empty-text="데이터가 없습니다." />
+    <bo-pager :pager="promoPager" :on-set-page="n => handleBtnAction('statuses-promoPagerSetPage', n)" :on-size-change="() => handleSelectAction('statuses-promoPagerSizeChange')" />
+  </bo-container>
   <!-- ===== □. ══ 4. 프로모션별현황 ══ ======================================== -->
   <!-- ===== ■. ══ 5. 정산별현황 ══ ========================================== -->
-  <div v-if="uiState.activeTab==='settle'" class="card" style="border-radius:0 8px 8px 8px">
+  <bo-container v-if="uiState.activeTab==='settle'" title="정산별현황"
+    :count-text="'총 ' + cfSettleTotal + '개월'" card-style="border-radius:0 8px 8px 8px">
     <bo-form-area :columns="columns.settleSummary" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
     <div style="height:12px"></div>
-    <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :show-actions="false" :bar-style="'margin-bottom:12px'"
       :columns="columns.settleSearch" :param="uiState"
       @search="handleBtnAction('searchParam-list')" />
-    <!-- ===== □.□. 검색 영역 ================================================= -->
-    <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-grid
+    <bo-grid bare
       :columns="columns.settleGrid"
       :rows="cfSettlePageList"
       :pager="settlePager"
       row-key="month"
-      list-title="정산별현황"
-      :count-text="'총 ' + cfSettleTotal + '개월'"
-      empty-text="데이터가 없습니다.">
-      <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
-      <template #footer>
-        <bo-pager :pager="settlePager" :on-set-page="n => handleBtnAction('statuses-settlePagerSetPage', n)" :on-size-change="() => handleSelectAction('statuses-settlePagerSizeChange')" />
-      </template>
-    </bo-grid>
-  </div>
-</div>
-<!-- ===== □.□. 목록 영역 ================================================= -->
-<!-- ===== □. ══ 5. 정산별현황 ══ ========================================== -->
+      empty-text="데이터가 없습니다." />
+    <bo-pager :pager="settlePager" :on-set-page="n => handleBtnAction('statuses-settlePagerSetPage', n)" :on-size-change="() => handleSelectAction('statuses-settlePagerSizeChange')" />
+  </bo-container>
+  <!-- ===== □. ══ 5. 정산별현황 ══ ========================================== -->
+</bo-page>
 `,
 };

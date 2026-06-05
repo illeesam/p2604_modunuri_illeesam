@@ -1156,7 +1156,9 @@
   .component('CoBarcodeWidget',  window.CoBarcodeWidget  || { template: '<div/>' })
   .component('CoCountdownWidget', window.CoCountdownWidget || { template: '<div/>' })
   .component('BaseAttachGrp', window.BaseAttachGrp)
-  /* ── components/comp/FoAreaComp.js — 공통 영역(검색/그리드/폼/모달) ── */
+  /* ── components/comp/FoAreaComp.js — 공통 영역(페이지/컨테이너/검색/그리드/폼/모달) ── */
+  .component('FoPage',       window.FoPage)
+  .component('FoContainer',  window.FoContainer)
   .component('FoSearchArea', window.FoSearchArea)
   .component('FoFormArea',   window.FoFormArea)
   .component('FoGrid',       window.FoGrid)

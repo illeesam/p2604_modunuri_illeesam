@@ -192,22 +192,15 @@ window.PdTagMng = {
     };
   },
   template: `
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    태그관리
-  </div>
+<bo-page title="태그관리">
   <!-- ===== ■. 검색 ====================================================== -->
-  <div class="card">
+  <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" :columns="columns.baseSearch" :param="searchParam" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
-  </div>
+  </bo-container>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 목록 그리드 =================================================== -->
-  <bo-grid
-    :columns="columns.baseGrid" :rows="gridRows" row-key="tagId" row-actions
-    list-title="태그 목록" :row-class="(row) => row._row_status==='N' ? 'table-rowNew' : (row._row_status==='U' ? 'table-rowMod' : '')"
- grid-id="tags-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+  <bo-container title="태그 목록" :count-text="pager.pageTotalCount + '건'">
     <template #toolbar-actions>
       <button class="btn btn-primary btn-sm" @click="handleBtnAction('tags-add')">
         + 행추가
@@ -216,17 +209,21 @@ window.PdTagMng = {
         저장
       </button>
     </template>
-    <template #row-actions="{ idx }">
-      <button class="btn btn-danger btn-xs" @click="handleSelectAction('tags-rowDelete', idx)">
-        삭제
-      </button>
-    </template>
-    <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
-    <template #footer>
-      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('tags-pager-setPage', n)" :on-size-change="() => handleSelectAction('tags-pager-sizeChange')" />
-    </template>
-  </bo-grid>
+    <bo-grid
+      bare
+      :columns="columns.baseGrid" :rows="gridRows" row-key="tagId" row-actions
+      :row-class="(row) => row._row_status==='N' ? 'table-rowNew' : (row._row_status==='U' ? 'table-rowMod' : '')"
+      grid-id="tags-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+      <template #row-actions="{ idx }">
+        <button class="btn btn-danger btn-xs" @click="handleSelectAction('tags-rowDelete', idx)">
+          삭제
+        </button>
+      </template>
+    </bo-grid>
+    <!-- 페이저는 그리드 밖(컨테이너 안)에 배치 -->
+    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('tags-pager-setPage', n)" :on-size-change="() => handleSelectAction('tags-pager-sizeChange')" />
+  </bo-container>
   <!-- ===== □. 목록 그리드 =================================================== -->
-</div>
+</bo-page>
 `
 };

@@ -519,34 +519,27 @@ window.PdCategoryProdMng = {
   },
 
   template: `
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    카테고리상품관리
-  </div>
+<bo-page title="카테고리상품관리">
   <!-- ===== ■. 검색 ====================================================== -->
-  <div class="card">
+  <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
-  </div>
+  </bo-container>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 좌 트리 + 우 상품목록 =========================================== -->
-  <div style="display:grid;grid-template-columns:220px 1fr;gap:16px;align-items:flex-start">
+  <div class="bo-2col">
     <!-- ===== ■.■. 좌측 카테고리 트리 ============================================ -->
-    <div class="card" style="padding:12px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span style="font-size:13px;font-weight:600;color:#555">
-          📁 카테고리
-        </span>
+    <bo-container title="📁 카테고리">
+      <template #toolbar-actions>
         <div v-if="cfSelectedCatId" style="font-size:11px;color:#1677ff;cursor:pointer" @click="handleBtnAction('categoryTree-clear')">
           전체
         </div>
-      </div>
+      </template>
       <bo-category-tree mode="tree" :selected="cfSelectedCatId" :show-count="totalProdCount" @select="id => handleSelectAction('categoryTree-select', id)" />
-    </div>
+    </bo-container>
     <!-- ===== □.□. 좌측 카테고리 트리 ============================================ -->
     <!-- ===== ■.■. 우측 상품 목록 ============================================== -->
-    <div class="card">
+    <bo-container bare>
         <!-- ===== ■.■.■.■. 카테고리명 + 저장/추가 버튼 (탭바와 간격 확보) ================== -->
         <div class="toolbar" style="margin-bottom:10px">
           <span class="list-title">
@@ -597,7 +590,7 @@ window.PdCategoryProdMng = {
               </span>
             </div>
             <div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:4px">
-              <button v-for="opt in EMPHASIS_OPTS" :key="(opt && opt.cd)" @click="handleSelectAction('categoryProds-rowEmphasisToggle', { row, cd: opt.cd })" style="padding:1px 5px;border-radius:4px;font-size:10px;cursor:pointer;border:1px solid;line-height:1.5" :style="hasEmphasis(row.emphasisCd, opt.cd) ? 'background:#fce4ec;border-color:#e8587a;color:#e8587a;font-weight:700' : 'background:#f5f5f5;border-color:#ddd;color:#bbb'">
+              <button v-for="opt in EMPHASIS_OPTS" :key="(opt && opt.cd)" @click="handleSelectAction('categoryProds-rowEmphasisToggle', { row, cd: opt.cd })" style="padding:1px 5px;border-radius:4px;font-size:10px;border:1px solid;line-height:1.5" :style="hasEmphasis(row.emphasisCd, opt.cd) ? 'background:#fce4ec;border-color:#e8587a;color:#e8587a;font-weight:700' : 'background:#f5f5f5;border-color:#ddd;color:#bbb'">
               {{ opt.icon }} {{ opt.nm }}
             </button>
           </div>
@@ -674,7 +667,7 @@ window.PdCategoryProdMng = {
       </div>
       <!-- ===== ■.■.■.■.■.■. 강조옵션 chips ==================================== -->
       <div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:7px">
-        <button v-for="opt in EMPHASIS_OPTS" :key="(opt && opt.cd)" @click="handleSelectAction('categoryProds-rowEmphasisToggle', { row, cd: opt.cd })" style="padding:1px 5px;border-radius:4px;font-size:10px;cursor:pointer;border:1px solid;line-height:1.5" :style="hasEmphasis(row.emphasisCd, opt.cd) ? 'background:#fce4ec;border-color:#e8587a;color:#e8587a;font-weight:700' : 'background:#f5f5f5;border-color:#ddd;color:#bbb'">
+        <button v-for="opt in EMPHASIS_OPTS" :key="(opt && opt.cd)" @click="handleSelectAction('categoryProds-rowEmphasisToggle', { row, cd: opt.cd })" style="padding:1px 5px;border-radius:4px;font-size:10px;border:1px solid;line-height:1.5" :style="hasEmphasis(row.emphasisCd, opt.cd) ? 'background:#fce4ec;border-color:#e8587a;color:#e8587a;font-weight:700' : 'background:#f5f5f5;border-color:#ddd;color:#bbb'">
         {{ opt.icon }} {{ opt.nm }}
       </button>
     </div>
@@ -704,8 +697,8 @@ window.PdCategoryProdMng = {
     등록된 상품이 없습니다. [+ 상품추가] 버튼으로 추가하세요.
   </div>
 </div>
-</div>
-</div>
+    </bo-container>
+  </div>
 <!-- ===== □.□. 우측 상품 목록 ============================================== -->
 <!-- ===== □. 좌 트리 + 우 상품목록 =========================================== -->
 <!-- ===== ■. 상품 추가 피커 모달 ============================================= -->
@@ -758,7 +751,7 @@ window.PdCategoryProdMng = {
     </div>
   </div>
 </teleport>
-</div>
+</bo-page>
 <!-- ===== □. 상품 추가 피커 모달 ============================================= -->
 `
 };

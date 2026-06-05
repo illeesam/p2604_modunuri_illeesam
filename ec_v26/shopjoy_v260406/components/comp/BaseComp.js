@@ -1080,9 +1080,9 @@ window.BaseHtmlEditor = {
   <div ref="splitRoot" :style="previewOn ? 'display:flex;align-items:stretch;gap:0;' : ''">
     <!-- 좌측 편집 영역: 디자인(에디터 인스턴스) 또는 HTML(textarea). previewOn 일 때 splitPct% 폭 -->
     <div :style="previewOn ? ('width:' + splitPct + '%;min-width:0;') : 'width:100%;'">
-      <!-- 디자인 에디터(인스턴스 DOM 항상 동일) -->
+      <!-- 디자인 에디터(인스턴스 DOM 항상 동일). border 명시 — 미리보기↔디자인 전환 시 테두리 유지 -->
       <div v-show="mode === 'wysiwyg'" ref="editorEl"
-        :style="previewOn ? 'background:#fff;border-radius:6px 0 0 6px;' : 'background:#fff;border-radius:6px;'">
+        :style="previewOn ? 'background:#fff;border:1px solid #d0d0d0;border-radius:6px 0 0 6px;' : 'background:#fff;border:1px solid #d0d0d0;border-radius:6px;'">
       </div>
       <!-- HTML 소스 textarea -->
       <textarea v-show="mode === 'source'" :value="modelValue" @input="handleSelectAction('editor-source-input', $event)"

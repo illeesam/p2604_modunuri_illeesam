@@ -143,6 +143,93 @@
  *  옵션 함수형(`options: () => codes.x`) 지원 — 코드 지연 로드 대응.
  *
  *  columns 없으면 기본 default 슬롯 사용 (기존 화면 호환). */
+/* ============================================================================
+ * FoContainer — FO 화면 영역 표준 래퍼 (BoContainer 의 FO 버전)
+ *   · 한 영역(검색/목록/상세/카드)을 .fo-card 로 감싸고 제목(+건수) 헤더 표준화
+ *   · bare=true 면 카드 없이 슬롯만 (다른 래퍼가 카드 담당 — fo-2col 자식 등)
+ *   props: title(영역 제목), countText(우측 건수), bare, bodyStyle, cardStyle
+ *   slots: default(본문), title(제목 커스텀), top(헤더 위), toolbar-actions(제목 우측 버튼)
+ * ========================================================================== */
+window.FoContainer = {
+  name: 'FoContainer',
+  props: {
+    title:      { type: String, default: '' },   // 영역 제목. 비우면 헤더 영역 미표시
+    countText:  { type: String, default: '' },   // 제목 우측 건수 텍스트(예: '20건')
+    bare:       { type: Boolean, default: false },// true=카드 없이 슬롯만(다른 래퍼가 카드 담당)
+    bodyStyle:  { type: String, default: '' },    // 본문 인라인 style
+    cardStyle:  { type: String, default: '' },    // .fo-card 인라인 style(grid-column 등)
+  },
+  template: `
+<div :class="bare ? '' : 'fo-card'" :style="cardStyle">
+  <slot name="top"></slot>
+  <div v-if="title || $slots['toolbar-actions'] || $slots.title" class="fo-area-head">
+    <span class="fo-area-title">
+      <slot name="title">{{ title }}</slot>
+      <span v-if="countText" class="fo-area-count">{{ countText }}</span>
+    </span>
+    <div v-if="$slots['toolbar-actions']" style="display:flex;gap:6px;align-items:center;">
+      <slot name="toolbar-actions"></slot>
+    </div>
+  </div>
+  <div :style="bodyStyle">
+    <slot></slot>
+  </div>
+</div>`,
+};
+
+/* ============================================================================
+ * FoPage — FO 화면 최상단 래퍼 (BoPage 의 FO 버전)
+ *   · <div class="page-wrap"> + 풀블리드 배너(page-banner-full) 반복 통일
+ *   · bannerImg 주면 이미지 배너 자동 렌더(eyebrow/title/breadcrumb)
+ *   · 화면 본문 전체를 default 슬롯으로 감쌈(종료 태그는 화면 맨 아래)
+ *   props:
+ *     title       화면 제목(배너 큰 글씨)
+ *     eyebrow     배너 상단 작은 영문 라벨(예: 'Shopping')
+ *     bannerImg   배너 배경 이미지 경로. 없으면 배너 미표시(page-wrap 만)
+ *     bannerAlign 이미지 object-position(기본 'center 50%')
+ *     crumbs      브레드크럼 배열 [{label, page?}] — page 있으면 클릭 이동
+ *     wrapClass   page-wrap 대체/추가 클래스(기본 'page-wrap')
+ *     bare        true=page-wrap 없이 슬롯만(레이아웃 자체 관리 화면)
+ *   slots: default(본문), banner(배너 통째 커스텀), title(제목 커스텀)
+ *   emits: nav(crumb page 클릭 시 page 전달) — 화면에서 navigate 연결
+ * ========================================================================== */
+window.FoPage = {
+  name: 'FoPage',
+  props: {
+    title:       { type: String, default: '' },    // 화면 제목(배너 큰 글씨)
+    eyebrow:     { type: String, default: '' },     // 배너 상단 작은 영문 라벨
+    bannerImg:   { type: String, default: '' },     // 배너 배경 이미지(없으면 배너 미표시)
+    bannerAlign: { type: String, default: 'center 50%' }, // 이미지 object-position
+    crumbs:      { type: Array,  default: () => [] },// 브레드크럼 [{label, page?}]
+    wrapClass:   { type: String, default: 'page-wrap' },  // 래퍼 클래스
+    bare:        { type: Boolean, default: false }, // true=page-wrap 없이 슬롯만
+  },
+  emits: ['nav'],
+  template: `
+<div :class="bare ? '' : wrapClass">
+  <!-- ===== 페이지 타이틀 배너 ===== -->
+  <slot name="banner">
+    <div v-if="bannerImg" class="fo-page-banner">
+      <img :src="bannerImg" :alt="title" class="fo-page-banner-img" :style="'object-position:' + bannerAlign + ';'" />
+      <div class="fo-page-banner-dim"></div>
+      <div class="fo-page-banner-body">
+        <div v-if="eyebrow" class="fo-page-eyebrow">{{ eyebrow }}</div>
+        <h1 class="fo-page-h1"><slot name="title">{{ title }}</slot></h1>
+        <div v-if="crumbs.length" class="fo-page-crumbs">
+          <template v-for="(c, i) in crumbs" :key="i">
+            <span v-if="i > 0" class="fo-page-crumb-sep">/</span>
+            <span :class="c.page ? 'fo-page-crumb-link' : 'fo-page-crumb-cur'"
+              @click="c.page ? $emit('nav', c.page) : null">{{ c.label }}</span>
+          </template>
+        </div>
+      </div>
+    </div>
+  </slot>
+  <!-- 화면 본문 -->
+  <slot></slot>
+</div>`,
+};
+
 window.FoSearchArea = {
   name: 'FoSearchArea',
   props: {
@@ -324,17 +411,37 @@ window._foAreaCompUtil = {
     }
     return 'b-gray';
   },
+  /* autoAlign — align 미지정 컬럼 자동 정렬(전체공통): 돈=우측, 코드성=가운데, 그 외 좌측('')
+     명시 col.align 우선. 편집/슬롯 셀은 적용 제외. */
+  autoAlign(col) {
+    if (col.align) return col.align;
+    if (col.edit || col.type === 'slot') return '';
+    const k = String(col.key || '').toLowerCase();
+    const l = String(col.label || '');
+    if (/amt|price|balance|fee|qty|cnt|count|rate|cost|stock|point|sum|total/.test(k)
+      || /금액|가격|잔액|배송비|할인값|할인가|수량|개수|건수|단가|합계|총액|포인트|적립|충전|재고|\(원\)|원\)$|율$/.test(l)) {
+      return 'right';
+    }
+    if (/(^|_)(cd|code|status|type|yn|flag|state)$/.test(k) || /cd$|status$|yn$|typecd|statuscd/.test(k)
+      || /date$|regdate|moddate|period|viewcnt|hitcnt/.test(k)
+      || /^상태$|^유형$|^구분$|여부|^코드$|^등급$|^타입$|^단계$|일$|일시$|기간|조회수|등록일|수정일|작성일|시작일|종료일/.test(l)) {
+      return 'center';
+    }
+    return '';
+  },
   thStyle(col) {
     if (col.style) return col.style;            // 원본 인라인 스타일 우선
-    let s = '';
+    let s = 'text-align:center;';
     if (col.width) s += 'width:' + col.width + ';';
-    if (col.align) s += 'text-align:' + col.align + ';';
     return s;
   },
   tdStyle(col, row) {
     let s = '';
-    if (col.align) s += 'text-align:' + col.align + ';';
+    const al = this.autoAlign(col);
+    if (al) s += 'text-align:' + al + ';';
     if (col.mono)  s += 'font-family:monospace;';
+    // 링크 셀(col.link)만 손가락 커서 — 행 전체 cursor:pointer 폐지(링크 있는 셀만 클릭 가능 표시)
+    if (col.link) s += 'cursor:pointer;';
     // 모든 셀 기본 한 줄 말줄임(...). 편집/슬롯 셀은 col.noEllipsis 로 끌 수 있음.
     if (!col.noEllipsis && !col.edit) {
       s += 'overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';

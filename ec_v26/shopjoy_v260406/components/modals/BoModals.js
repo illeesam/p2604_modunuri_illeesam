@@ -384,6 +384,139 @@ window.VendorSelectModal = {
 `,
 };
 
+/* ── 브랜드 선택 모달 (단건 선택, VendorSelectModal 패턴) ── */
+window.BrandSelectModal = {
+  name: 'BrandSelectModal',
+  inheritAttrs: false,
+  props: {
+    dispDataset:   { type: Object,    default: () => ({}) },              // 디스플레이 데이터셋
+    reloadTrigger: { type: Number,    default: 0 },                       // 재조회 트리거
+    modalName:  { type: String,   default: '' },                       // 모달 식별자
+    onCallback: { type: Function, default: null },                     // 통합 콜백
+  },
+  emits: ['select', 'close'],
+  setup(props, { emit }) {
+    const { ref, reactive, computed, watch, onMounted } = Vue;
+    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
+    const pageSize = 8;
+    const pager = reactive({ pageNo: 1, pageSize, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [5, 10, 20, 30, 50]});
+    const searchParam = reactive({ searchType: '', searchValue: '' });
+    const list = reactive([]);
+    const loading = ref(false);
+
+    /* handleBtnAction — 버튼 액션 dispatch */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ BrandSelectModal : handleBtnAction -> ', cmd, param);
+      // 모달 닫기
+      if (cmd === 'modal-close') {
+        emit('close');
+        if (props.onCallback) props.onCallback(props.modalName, null, null);
+        return;
+      // 페이지 이동
+      } else if (cmd === 'pager-set') {
+        return onSetPage(param);
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ BrandSelectModal : handleSelectAction -> ', cmd, param);
+      // 브랜드 선택
+      if (cmd === 'list-select') {
+        emit('select', param);
+        if (props.onCallback) props.onCallback(props.modalName, null, param);
+        return;
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* 목록조회 */
+    const handleSearchList = async () => {
+      loading.value = true;
+      try {
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, searchValue: searchParam.searchValue || undefined, searchType: searchParam.searchType || undefined };
+        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
+        if (params.searchValue && !params.searchType) {
+          params.searchType = 'brandCode,brandNm,brandEnNm';
+        }
+        const res = await boApiSvc.syBrand.getPage(params, '브랜드관리', '목록조회');
+        const data = res.data?.data;
+        list.splice(0, list.length, ...(data?.pageList || data?.list || []));
+        pager.pageTotalCount = data?.pageTotalCount || 0;
+        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+      } catch (e) { list.splice(0, list.length); } finally { loading.value = false; }
+    };
+
+    /* fnBuildPagerNums */
+    const fnBuildPagerNums = () => { const s=Math.max(1,pager.pageNo-2),e=Math.min(pager.pageTotalPage,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
+
+    /* handleSearchListWrap */
+    const handleSearchListWrap = async () => { await handleSearchList(); fnBuildPagerNums(); };
+    onMounted(() => { handleSearchListWrap(); });
+    watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchListWrap(); });
+
+    /* onSetPage */
+    const onSetPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchListWrap(); } };
+
+    /* baseSearchColumns — 검색 영역 컬럼 */
+    const baseSearchColumns = [
+      { key: 'searchType', type: 'multiCheck',
+        options: [
+          { value: 'brandNm',   label: '브랜드명' },
+          { value: 'brandCode', label: '브랜드코드' },
+          { value: 'brandEnNm', label: '영문명' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
+      { key: 'searchValue', type: 'text', placeholder: '검색어 입력' },
+    ];
+
+    /* listGridColumns — BoGrid 컬럼 정의 */
+    const listGridColumns = [
+      { key: 'brandNm',   label: '브랜드명', cellStyle: 'font-weight:600;color:#1a1a2e;', fmt: (v) => v || '-' },
+      { key: 'brandCode', label: '코드', mono: true, cellStyle: 'color:#888;font-size:11px;', fmt: (v) => v || '-' },
+      { key: 'brandId',   label: 'ID', mono: true, cellStyle: 'color:#aaa;font-size:11px;', fmt: (v) => v || '-' },
+    ];
+
+    return {
+      cfSiteNm, searchParam, list, loading, pager,                          // 데이터
+      baseSearchColumns, listGridColumns,                                    // 컬럼 정의
+      onSetPage,                                                             // BoGrid pager 콜백
+      handleBtnAction, handleSelectAction,                                  // dispatch
+    };
+  },
+  template: /* html */`
+<bo-modal :show="true" @close="handleBtnAction('modal-close')">
+  <div class="modal-header" style="margin:-20px -20px 14px -20px;">
+    <span class="modal-title">
+      브랜드 선택
+      <span style="font-size:11px;color:#2563eb;font-weight:500;margin-left:8px;">
+        {{ cfSiteNm }}
+      </span>
+    </span>
+    <span class="modal-close" @click="handleBtnAction('modal-close')">
+      ✕
+    </span>
+  </div>
+  <bo-search-area :columns="baseSearchColumns" :param="searchParam"
+    @search="handleBtnAction('pager-set', 1)" />
+  <bo-grid :columns="listGridColumns" :rows="list" :pager="pager" row-key="brandId"
+    :list-title="'총 ' + pager.pageTotalCount + '건'" row-clickable :row-actions="true"
+    :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
+    @row-click="row => handleSelectAction('list-select', row)">
+    <template #row-actions="{ row }">
+      <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('list-select', row)">
+        선택
+      </button>
+    </template>
+  </bo-grid>
+  <bo-pager :pager="pager" :on-set-page="onSetPage" :on-size-change="() => onSetPage(1)" />
+</bo-modal>
+`,
+};
+
 /* ── 사용자 선택 모달 (부서트리 + 멀티) ── */
 window.BoUserSelectModal = {
   name: 'BoUserSelectModal',

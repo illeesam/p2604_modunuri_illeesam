@@ -15,7 +15,7 @@ window.PdSetMng = {
     const brands = reactive([]);
     const sets = reactive([]);
     const categoryProds = reactive([]);
-    const uiState = reactive({ descOpen: false, loading: false, error: null, isPageCodeLoad: false, dtlMode: 'new', detailActive: false, editSetId: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, dragIdx: null, dragoverIdx: null, pickerOpen: false, pickerSearchType: '', pickerSearch: '' });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, dtlMode: 'new', detailActive: false, editSetId: null, catPickerOpen: false, catPickerSearch: '', catDragIdx: null, catDragoverIdx: null, dragIdx: null, dragoverIdx: null, pickerOpen: false, pickerSearchType: '', pickerSearch: '', brandModalOpen: false, vendorModalOpen: false });
     const codes = reactive({
       product_statuses: [],
       bundle_statuses: [],
@@ -41,9 +41,13 @@ window.PdSetMng = {
       // 세트상품 Dtl 닫기
       } else if (cmd === 'detailPanel-close') {
         return closeDtl();
-      // 설명 토글
-      } else if (cmd === 'desc-toggle') {
-        uiState.descOpen = !uiState.descOpen;
+      // 브랜드 선택 모달 열기
+      } else if (cmd === 'brandModal-open') {
+        uiState.brandModalOpen = true;
+        return;
+      // 판매업체 선택 모달 열기
+      } else if (cmd === 'vendorModal-open') {
+        uiState.vendorModalOpen = true;
         return;
       // 카테고리 피커 모달 열기
       } else if (cmd === 'categoryModal-open') {
@@ -124,6 +128,16 @@ window.PdSetMng = {
             return;
         }
           return addCategory(result);
+      // 브랜드 선택 모달 콜백
+      } else if (cmd === 'brand-select') {
+        uiState.brandModalOpen = false;
+        if (result) { newForm.brandId = result.brandId; newForm._brandNm = result.brandNm || result.brandName || ''; }
+        return;
+      // 판매업체 선택 모달 콜백
+      } else if (cmd === 'vendor-select') {
+        uiState.vendorModalOpen = false;
+        if (result) { newForm.vendorId = result.vendorId; newForm._vendorNm = result.vendorNm || result.vendorName || ''; }
+        return;
       } else {
         console.warn('[fnCallbackModal] unknown cmd:', cmd);
       }
@@ -292,8 +306,11 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
     /* getProdNm — 조회 */
     const getProdNm = id => { const p = getProd(id); return p ? (p.prodNm || p.productName || '상품#' + id) : id ? '상품#' + id : ''; };
 
-    /* getBrandNm — 조회 */
-    const getBrandNm = id => { const b = (brands||[]).find(b=>b.brandId==id); return b ? (b.brandNm||id) : id; };
+    /* getBrandNm — 조회 (모달 선택 시 보관한 이름 우선) */
+    const getBrandNm = id => { if (newForm._brandNm) { return newForm._brandNm; } const b = (brands||[]).find(b=>b.brandId==id); return b ? (b.brandNm||id) : id; };
+
+    /* getVendorNm — 조회 (모달 선택 시 보관한 이름 우선) */
+    const getVendorNm = id => newForm._vendorNm || id;
 
     /* -- 세트상품 목록 -- */
     const setList = reactive([]);
@@ -580,74 +597,28 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
       handleBtnAction, handleSelectAction, fnCallbackModal,                                                  // dispatch (모든 이벤트 / 액션 라우팅)
       cfCatExcludeSet, cfDtlProdNm, cfSetPageRows, cfPickerList,                            // computed
       fnSetRowStyle, fnSetItemRowStyle,                                                     // 헬퍼
-      getProdNm, getProd, getBrandNm, getCategoryNm, getCategoryDepth,                      // 헬퍼
+      getProdNm, getProd, getBrandNm, getVendorNm, getCategoryNm, getCategoryDepth,          // 헬퍼
       onItemReorder,                                                                        // BoGrid 콜백 (closure 필요)
     };
   },
 
   template: `
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    세트상품관리
-  </div>
-  <!-- ===== ■. 본문 영역 =================================================== -->
-  <div style="margin:-8px 0 16px;padding:10px 14px;background:#fff4ec;border-left:3px solid #e3803b;border-radius:0 6px 6px 0;font-size:13px;color:#444;line-height:1.7">
-    <span>
-      <strong style="color:#bf5a1a">
-        세트상품
-      </strong>
-      은 여러 구성품을 하나의 세트로 판매하는 방식입니다.
-    </span>
-    <button @click="handleBtnAction('desc-toggle')" style="margin-left:8px;font-size:12px;color:#e3803b;background:none;border:none;cursor:pointer;padding:0">
-      {{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}
-    </button>
-    <div v-if="uiState.descOpen" style="margin-top:6px">
-      ✔ 안분율 없이
-      <strong>
-        세트 전체 단일 가격
-      </strong>
-      으로 판매·정산합니다.
-      <br>
-      ✔ 클레임은
-      <strong>
-        세트 전체 단위
-      </strong>
-      로만 가능합니다 (부분 취소·교환·반품 불가).
-      <br>
-      ✔ 구성품은 등록 상품 연결 없이
-      <strong>
-        비상품 항목
-      </strong>
-      도 추가할 수 있습니다.
-      <br>
-      <span style="color:#888;font-size:12px">
-        예) 선물세트, 패키지 구성품, 사은품 포함 세트
-      </span>
-    </div>
-  </div>
-  <!-- ===== □. 본문 영역 =================================================== -->
+<bo-page title="세트상품관리"
+    desc-summary="세트상품은 여러 구성품을 하나의 세트로 판매하는 방식입니다."
+    desc-detail="✔ 안분율 없이 세트 전체 단일 가격으로 판매·정산합니다.&#10;✔ 클레임은 세트 전체 단위로만 가능합니다 (부분 취소·교환·반품 불가).&#10;✔ 구성품은 등록 상품 연결 없이 비상품 항목도 추가할 수 있습니다.&#10;예) 선물세트, 패키지 구성품, 사은품 포함 세트">
   <!-- ===== ■. 검색 ====================================================== -->
-  <div class="card">
+  <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
-  </div>
+  </bo-container>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 목록 ====================================================== -->
-  <div class="card">
-    <div class="toolbar">
-      <span class="list-title">
-        세트상품 목록
-      </span>
-      <span class="list-count">
-        총 {{ pager.pageTotalCount }}건
-      </span>
-      <div class="pager-right">
-        <button class="btn btn-green btn-sm" @click="handleBtnAction('sets-add')">
-          + 신규등록
-        </button>
-      </div>
-    </div>
+  <bo-container title="세트상품 목록" :count-text="pager.pageTotalCount + '건'">
+    <template #toolbar-actions>
+      <button class="btn btn-green btn-sm" @click="handleBtnAction('sets-add')">
+        + 신규등록
+      </button>
+    </template>
     <!-- ===== ■.■. 그리드 (기본 10개 영역 + 화면 높이 반응형 확장, 초과 시 내부 스크롤) =========== -->
     <div style="max-height:calc(100vh - 340px);min-height:480px;overflow-y:auto;border:1px solid #eef0f3;border-radius:6px;background:#fff;">
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
@@ -696,12 +667,12 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
       <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('sets-pager-setPage', n)" :on-size-change="() => handleSelectAction('sets-pager-sizeChange')"
         style="margin-top:0;min-height:34px;" />
     </div>
-  </div>
+  </bo-container>
   <!-- ===== □.□. 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ============================= -->
   <!-- ===== □. 목록 ====================================================== -->
   <!-- ===== ■. 신규등록 / 구성관리 (인라인 Dtl, 항상 표시) =========================== -->
-  <div class="card"
-    :style="!uiState.detailActive ? '' : (uiState.dtlMode==='new' ? 'border-top:3px solid #52c41a' : 'border-top:3px solid #f59e0b')">
+  <bo-container
+    :card-style="!uiState.detailActive ? '' : (uiState.dtlMode==='new' ? 'border-top:3px solid #52c41a' : 'border-top:3px solid #f59e0b')">
     <!-- ===== ■.■. Dtl 헤더 ================================================ -->
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #f0f0f0">
       <div style="display:flex;align-items:center;gap:10px">
@@ -729,12 +700,6 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
         <span style="font-size:12px;color:#888;background:#fff7ed;border:1px solid #fed7aa;border-radius:6px;padding:3px 10px">
           🔒 세트 전체 단위로만 클레임 가능
         </span>
-        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
-          닫기
-        </button>
-        <button class="btn btn-primary btn-sm" @click="handleBtnAction('detailPanel-save')">
-          {{ uiState.dtlMode==='new' ? '등록' : '저장' }}
-        </button>
       </div>
     </div>
     <!-- ===== □.□. Dtl 헤더 ================================================ -->
@@ -749,25 +714,31 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
       <bo-form-area :columns="columns.newSetForm" :form="newForm" :errors="newErrors"
         :cols="3" compact :show-actions="false">
         <template #brand>
-          <select class="form-control" v-model="newForm.brandId">
-            <option value="">
+          <div style="display:flex;gap:6px;align-items:center">
+            <input class="form-control" :value="newForm.brandId ? getBrandNm(newForm.brandId) : ''" readonly
+              placeholder="브랜드를 선택해주세요" style="flex:1;background:#fafafa;cursor:pointer"
+              @click="handleBtnAction('brandModal-open')" />
+            <button class="btn btn-secondary btn-sm" type="button" style="flex-shrink:0" @click="handleBtnAction('brandModal-open')">
               선택
-            </option>
-            <option v-for="b in ([]||[])" :key="(b && b.brandId)" :value="b.brandId">
-            {{ b.brandNm || b.brandName }}
-          </option>
-        </select>
-      </template>
-      <template #vendor>
-        <select class="form-control" v-model="newForm.vendorId">
-          <option value="">
-            선택
-          </option>
-          <option v-for="v in ([]||[])" :key="(v && v.vendorId)" :value="v.vendorId">
-          {{ v.vendorNm || v.vendorName }}
-        </option>
-      </select>
-    </template>
+            </button>
+            <button v-if="newForm.brandId" class="btn btn-danger btn-sm" type="button" style="flex-shrink:0" @click="newForm.brandId=''">
+              ✕
+            </button>
+          </div>
+        </template>
+        <template #vendor>
+          <div style="display:flex;gap:6px;align-items:center">
+            <input class="form-control" :value="newForm.vendorId ? getVendorNm(newForm.vendorId) : ''" readonly
+              placeholder="판매업체를 선택해주세요" style="flex:1;background:#fafafa;cursor:pointer"
+              @click="handleBtnAction('vendorModal-open')" />
+            <button class="btn btn-secondary btn-sm" type="button" style="flex-shrink:0" @click="handleBtnAction('vendorModal-open')">
+              선택
+            </button>
+            <button v-if="newForm.vendorId" class="btn btn-danger btn-sm" type="button" style="flex-shrink:0" @click="newForm.vendorId=''">
+              ✕
+            </button>
+          </div>
+        </template>
   </bo-form-area>
 </div>
 <!-- ===== □.□. 신규 세트상품 기본정보 (BoFormArea 자동 렌더, 신규 시만 표시) ============= -->
@@ -797,32 +768,45 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
       <span style="font-size:13px;flex:1">
         {{ cat.categoryNm }}
       </span>
-      <button type="button" @click="handleSelectAction('detailPanel-categoryRemove', idx)" style="border:none;background:none;color:#f87171;cursor:pointer;font-size:13px;padding:0 2px;flex-shrink:0">
+      <button type="button" @click="handleSelectAction('detailPanel-categoryRemove', idx)" style="border:none;background:none;color:#f87171;font-size:13px;padding:0 2px;flex-shrink:0">
         ✕
       </button>
     </div>
     <button type="button" @click="handleBtnAction('categoryModal-open')"
-            style="margin-top:4px;font-size:12px;color:#6366f1;border:1px dashed #a5b4fc;background:none;border-radius:4px;padding:2px 8px;cursor:pointer;width:100%">
+            style="margin-top:4px;font-size:12px;color:#6366f1;border:1px dashed #a5b4fc;background:none;border-radius:4px;padding:2px 8px;width:100%">
       + 카테고리 추가
     </button>
   </div>
 </div>
 </div>
 <!-- ===== □.□. ② 카테고리 ================================================ -->
-<!-- ===== ■.■. ③ 구성품 목록 ============================================== -->
-<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-  <span style="font-size:13px;font-weight:600;color:#555">
-    구성품 목록 (pd_prod_set_item)
+<!-- ===== ■.■. ③ 구성품 목록 (제목 좌 + 추가 버튼 그리드 상단 우측) ============= -->
+<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+  <span style="display:flex;align-items:center;gap:10px">
+    <span style="font-size:13px;font-weight:600;color:#555">
+      구성품 목록 (pd_prod_set_item)
+    </span>
+    <span style="font-size:11px;color:#888;background:#fff7ed;border:1px solid #fed7aa;border-radius:4px;padding:1px 8px">
+      표시 목적 · 재고 개별 차감 없음 · 안분율 없음
+    </span>
   </span>
-  <span style="font-size:11px;color:#888;background:#fff7ed;border:1px solid #fed7aa;border-radius:4px;padding:1px 8px">
-    표시 목적 · 재고 개별 차감 없음 · 안분율 없음
+  <span style="display:flex;gap:8px">
+    <button class="btn btn-secondary btn-sm" @click="handleBtnAction('prodPickModal-open')">
+      + 상품 구성품 추가
+    </button>
+    <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-itemAddBlank')">
+      + 비상품 구성품 추가
+      <span style="font-size:11px;color:#aaa">
+        (박스·엽서 등)
+      </span>
+    </button>
   </span>
 </div>
 <!-- ===== □.□. ③ 구성품 목록 ============================================== -->
 <!-- ===== ■.■. 목록 영역 ================================================= -->
 <bo-grid bare :columns="columns.setItemGrid" :rows="dtlItems" row-key="_id"
       draggable row-actions :row-style="fnSetItemRowStyle"
-      empty-text="구성품이 없습니다. 아래 버튼으로 추가하세요."
+      empty-text="구성품이 없습니다. 위 [+ 구성품 추가] 버튼으로 추가하세요."
       @reorder="onItemReorder">
   <template #cell-itemProdId="{ row }">
     <td>
@@ -834,7 +818,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
           {{ getProdNm(row.itemProdId) }}
         </span>
         <button type="button" @click="handleSelectAction('detailPanel-itemUnlink', row)"
-              style="border:none;background:none;color:#f87171;cursor:pointer;font-size:12px;padding:0 2px">
+              style="border:none;background:none;color:#f87171;font-size:12px;padding:0 2px">
           ✕ 연결해제
         </button>
       </div>
@@ -857,21 +841,18 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
   </template>
 </bo-grid>
 <!-- ===== □.□. 목록 영역 ================================================= -->
-<!-- ===== ■.■. 구성품 추가 버튼 ============================================= -->
-<div style="margin-top:12px;display:flex;gap:8px">
-  <button class="btn btn-secondary btn-sm" @click="handleBtnAction('prodPickModal-open')">
-    + 상품 구성품 추가
+<!-- ===== ■.■. 하단 액션 (저장/닫기 중앙 정렬) ================================ -->
+<div class="form-actions">
+  <button class="btn btn-blue" @click="handleBtnAction('detailPanel-save')">
+    {{ uiState.dtlMode==='new' ? '등록' : '저장' }}
   </button>
-  <button class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-itemAddBlank')">
-    + 비상품 구성품 추가
-    <span style="font-size:11px;color:#aaa">
-      (박스·엽서 등)
-    </span>
+  <button class="btn btn-secondary" @click="handleBtnAction('detailPanel-close')">
+    닫기
   </button>
 </div>
 </template>
 <!-- ===== □.□. Dtl 본문 (활성 시에만 표시) ====================================== -->
-</div>
+</bo-container>
 <!-- ===== □.□. 구성품 추가 버튼 ============================================= -->
 <!-- ===== □. 신규등록 / 구성관리 (인라인 Dtl) =================================== -->
 <!-- ===== ■. 상품 피커 모달 ================================================ -->
@@ -921,7 +902,11 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
 <!-- ===== □. 상품 피커 모달 ================================================ -->
 <!-- ===== ■. 카테고리 피커 모달 ============================================== -->
 <bo-category-tree mode="picker" :show="uiState.catPickerOpen" :exclude-ids="cfCatExcludeSet" modal-name="category-pick" :on-callback="fnCallbackModal" />
-</div>
+<!-- ===== ■. 브랜드 / 판매업체 선택 모달 ===================================== -->
+<brand-select-modal v-if="uiState.brandModalOpen" modal-name="brand-select" :on-callback="fnCallbackModal" />
+<vendor-select-modal v-if="uiState.vendorModalOpen" modal-name="vendor-select" :on-callback="fnCallbackModal" />
+<!-- ===== □. 브랜드 / 판매업체 선택 모달 ===================================== -->
+</bo-page>
 <!-- ===== □. 카테고리 피커 모달 ============================================== -->
 `
 };

@@ -96,6 +96,7 @@ window.MyContact = {
     };
   },
   template: /* html */ `
+<fo-page bare>
 <fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myContact">
   <MyDateFilter @search="handleBtnAction('searchParam-dateSearch', $event)" />
   <!-- ===== ■. 영역 ====================================================== -->
@@ -165,8 +166,10 @@ window.MyContact = {
   <Pagination :total="inquiries.length" :pager="inquiryPager" />
 </fo-my-layout>
 <!-- ===== □. 영역 ====================================================== -->
+</fo-page>
 `,
   components: {
+    FoPage:      window.FoPage,
     FoMyLayout:    window.foMyLayout,
     PagerHeader: window.PagerHeader,
     Pagination:  window.Pagination,

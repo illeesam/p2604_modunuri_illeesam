@@ -59,36 +59,13 @@ window.Faq = {
     };
   },
   template: /* html */ `
-<div class="page-wrap">
-  <!-- ===== ■. 페이지 타이틀 배너 ============================================== -->
-  <div class="page-banner-full" style="position:relative;overflow:hidden;height:220px;margin-bottom:36px;left:50%;right:50%;margin-left:-50vw;margin-right:-50vw;width:100vw;display:flex;align-items:center;justify-content:center;">
-    <img src="assets/cdn/prod/img/page-title/page-title-1.jpg" alt="FAQ"
-      style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 40%;" />
-    <div style="position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,0.72) 0%,rgba(240,245,255,0.55) 45%,rgba(220,232,255,0.38) 100%);">
-    </div>
-    <div style="position:relative;z-index:1;text-align:center;">
-      <div style="font-size:0.75rem;color:rgba(0,0,0,0.55);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">
-        Support
-      </div>
-      <h1 style="font-size:2.2rem;font-weight:700;color:#111;letter-spacing:-0.5px;margin-bottom:8px;">
-        FAQ
-      </h1>
-      <div style="display:flex;align-items:center;justify-content:center;gap:6px;font-size:0.8rem;color:rgba(0,0,0,0.55);">
-        <span style="cursor:pointer;" @click="handleBtnAction('page-goHome')">
-          홈
-        </span>
-        <span>
-          /
-        </span>
-        <span style="color:#333;">
-          FAQ
-        </span>
-      </div>
-    </div>
-  </div>
-  <!-- ===== □. 페이지 타이틀 배너 ============================================== -->
+<fo-page title="FAQ" eyebrow="Support"
+  banner-img="assets/cdn/prod/img/page-title/page-title-1.jpg"
+  banner-align="center 40%"
+  :crumbs="[{ label:'홈', page:'home' }, { label:'FAQ' }]"
+  @nav="() => handleBtnAction('page-goHome')">
   <!-- ===== ■. 카드 영역 =================================================== -->
-  <div class="card" style="padding:8px clamp(14px,3vw,28px);margin-bottom:24px;">
+  <fo-container card-style="padding:8px clamp(14px,3vw,28px);margin-bottom:24px;">
     <div v-for="(faq, idx) in config.faqs" :key="idx" class="faq-item">
       <button class="faq-question" @click="handleSelectAction('faqs-rowToggle', idx)">
         <span style="flex:1;">
@@ -102,7 +79,7 @@ window.Faq = {
         {{ faq.a }}
       </div>
     </div>
-  </div>
+  </fo-container>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="text-align:center;padding:clamp(12px,3vw,24px) 0;">
@@ -113,7 +90,7 @@ window.Faq = {
       1:1 문의하기
     </button>
   </div>
-</div>
-<!-- ===== □. 본문 영역 =================================================== -->
+  <!-- ===== □. 본문 영역 =================================================== -->
+</fo-page>
 `
 };

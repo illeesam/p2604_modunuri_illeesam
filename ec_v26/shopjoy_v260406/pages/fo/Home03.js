@@ -167,7 +167,7 @@ window.Home03 = {
     };
   },
   template: /* html */ `
-<div>
+<fo-page bare>
   <!-- ===== ■. ══ Site 03 Edition Ribbon ══ ============================ -->
   <div style="background:linear-gradient(135deg,#4a148c 0%,#7b1fa2 50%,#9c27b0 100%);color:#fff;padding:14px 24px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;box-shadow:0 2px 8px rgba(80,30,130,0.15);">
     <span style="font-size:10px;letter-spacing:3px;padding:3px 10px;border:1px solid rgba(255,255,255,0.5);border-radius:2px;">
@@ -471,7 +471,7 @@ window.Home03 = {
 <!-- ===== □. ══ 블로그 포스트 ══ =========================================== -->
 <!-- ===== ■. ══ 빠른보기 모달 (ProductModal 컴포넌트) ══ ======================= -->
 <prod-modal :show="!!uiState.quickViewProduct" :prod="uiState.quickViewProduct" :cart-mode="uiState.cartModalMode" :navigate="(page, opts) => { if(opts&&opts.instantOrder){ navigate('order',opts); uiState.quickViewProduct=null; } else { selectProd(uiState.quickViewProduct); uiState.quickViewProduct=null; } }" :toggle-like="toggleLike" :is-liked="isLiked" modal-name="quick-view" :on-callback="fnCallbackModal" />
-</div>
+</fo-page>
 <!-- ===== □. ══ 빠른보기 모달 (ProductModal 컴포넌트) ══ ======================= -->
 `
 };

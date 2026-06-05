@@ -227,40 +227,34 @@ window.CmNoticeMng = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    공지사항관리
-  </div>
+<bo-page title="공지사항관리">
   <!-- ===== ■. 검색 영역 =================================================== -->
-  <div class="card">
+  <bo-container>
     <bo-search-area :loading="uiState.loading" :columns="columns.baseSearch" :param="searchParam"
       @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
-  </div>
+  </bo-container>
   <!-- ===== ■. 목록 영역 ===================================================== -->
-  <bo-grid :columns="columns.baseGrid" :rows="notices" :pager="baseGrid.pager" row-key="noticeId" :selected-key="baseDetail.selectedId"
-    :sort-state="baseGrid" list-title="공지사항목록"
-    :count-text="'총 ' + baseGrid.pager.pageTotalCount + '건'"
-    :row-class="row => baseDetail.selectedId === row.noticeId ? 'active' : ''" empty-text="데이터가 없습니다."
-    @sort="key => handleBtnAction('notices-sort', key)"
-    grid-id="notices-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
+  <bo-container title="공지사항목록" :count-text="'총 ' + baseGrid.pager.pageTotalCount + '건'">
     <template #toolbar-actions>
       <button class="btn btn-green btn-sm" @click="handleBtnAction('notices-excel')">📥 엑셀</button>
       <button class="btn btn-primary btn-sm" @click="handleBtnAction('notices-add')">+ 신규</button>
     </template>
-    <template #row-actions="{ row, gridId }">
-      <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
-        <button class="btn btn-blue btn-xs" style="white-space:nowrap;" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">수정</button>
-        <button class="btn btn-danger btn-xs" style="white-space:nowrap;" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">삭제</button>
-      </div>
-    </template>
-    <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
-    <template #footer>
-      <bo-pager :pager="baseGrid.pager" :on-set-page="n => handleBtnAction('notices-pager-setPage', n)" :on-size-change="() => handleSelectAction('notices-pager-sizeChange')" />
-    </template>
-  </bo-grid>
+    <bo-grid bare :columns="columns.baseGrid" :rows="notices" :pager="baseGrid.pager" row-key="noticeId" :selected-key="baseDetail.selectedId"
+      :sort-state="baseGrid"
+      :row-class="row => baseDetail.selectedId === row.noticeId ? 'active' : ''" empty-text="데이터가 없습니다."
+      @sort="key => handleBtnAction('notices-sort', key)"
+      grid-id="notices-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
+      <template #row-actions="{ row, gridId }">
+        <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
+          <button class="btn btn-blue btn-xs" style="white-space:nowrap;" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">수정</button>
+          <button class="btn btn-danger btn-xs" style="white-space:nowrap;" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">삭제</button>
+        </div>
+      </template>
+    </bo-grid>
+    <bo-pager :pager="baseGrid.pager" :on-set-page="n => handleBtnAction('notices-pager-setPage', n)" :on-size-change="() => handleSelectAction('notices-pager-sizeChange')" />
+  </bo-container>
   <!-- ===== ■. 상세 패널 (인라인 임베드 — 항상 표시, 진입 시 빈 신규 폼) ============= -->
-  <div>
+  <bo-container bare>
     <div v-if="baseDetail.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
       <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('baseDetail-close')">✕ 닫기</button>
     </div>
@@ -268,7 +262,7 @@ window.CmNoticeMng = {
       :dtl-id="baseDetail.editId" :dtl-mode="baseDetail.dtlMode"
       :active="baseDetail.active"
       :reload-trigger="baseDetail.reloadTrigger" />
-  </div>
-</div>
+  </bo-container>
+</bo-page>
 `,
 };

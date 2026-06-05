@@ -9,7 +9,8 @@ window.foError401 = {
     },
   },
   template: /* html */`
-<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;text-align:center;min-height:60vh;">
+<fo-page bare>
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;text-align:center;min-height:60vh;">
   <div style="font-size:80px;margin-bottom:16px;">
     🔒
   </div>
@@ -32,6 +33,7 @@ window.foError401 = {
       홈으로
     </button>
   </div>
-</div>
+  </div>
+</fo-page>
 `,
 };

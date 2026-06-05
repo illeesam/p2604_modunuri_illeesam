@@ -3,6 +3,7 @@ window.foError500 = {
   name: 'FoError500',
   props: ['navigate', 'message'],
   template: /* html */`
+<fo-page bare>
 <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;text-align:center;min-height:60vh;">
   <div style="font-size:80px;margin-bottom:16px;">
     💥
@@ -30,5 +31,6 @@ window.foError500 = {
     </button>
   </div>
 </div>
+</fo-page>
 `,
 };

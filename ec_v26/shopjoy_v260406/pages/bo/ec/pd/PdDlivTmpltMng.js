@@ -12,7 +12,7 @@ window.PdDlivTmpltMng = {
     const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
 
     const dlivTmplts = reactive([]);              // 배송템플릿 목록 (메인 그리드)
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedId: null, descOpen: false, sortKey: '', sortDir: 'asc', isNew: false });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedId: null, sortKey: '', sortDir: 'asc', isNew: false });
     const codes = reactive({
       dliv_template_types: [],
       use_yn: [],
@@ -45,10 +45,6 @@ window.PdDlivTmpltMng = {
       // 신규 등록 패널 열기
       } else if (cmd === 'dlivTmplts-add') {
         return openNew();
-      // 안내 설명 토글
-      } else if (cmd === 'desc-toggle') {
-        uiState.descOpen = !uiState.descOpen;
-        return;
       // 상세 폼 저장
       } else if (cmd === 'form-save') {
         return handleSave();
@@ -283,78 +279,35 @@ window.PdDlivTmpltMng = {
     };
   },
   template: `
-<div>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <div class="page-title">
-    배송템플릿관리
-  </div>
-  <!-- ===== ■. 안내 설명 박스 (접기/펼치기) ================================== -->
-  <div style="margin:-8px 0 16px;padding:10px 14px;background:#f0faf4;border-left:3px solid #3ba87a;border-radius:0 6px 6px 0;font-size:13px;color:#444;line-height:1.7">
-    <span>
-      <strong style="color:#1a7a52">
-        배송템플릿
-      </strong>
-      은 상품에 공통 적용할 배송비 조건을 미리 정의해두는 설정입니다.
-    </span>
-    <button @click="handleBtnAction('desc-toggle')" style="margin-left:8px;font-size:12px;color:#3ba87a;background:none;border:none;cursor:pointer;padding:0">
-      {{ uiState.descOpen ? '▲ 접기' : '▼ 더보기' }}
-    </button>
-    <div v-if="uiState.descOpen" style="margin-top:6px">
-      ✔ 무료·고정·조건부(금액/수량) 배송비 방식을 선택하고
-      <strong>
-        상품 등록 시 템플릿을 연결
-      </strong>
-      해 재사용합니다.
-      <br>
-      ✔ 도서·산간 지역 추가 배송비,
-      <strong>
-        반품지 주소
-      </strong>
-      를 함께 관리합니다.
-      <br>
-      ✔ 업체(벤더)별로 독립 설정이 가능하며, 여러 상품이 동일 템플릿을 공유할 수 있습니다.
-      <br>
-      <span style="color:#888;font-size:12px">
-        예) 3만원 이상 무료배송, 제주·도서 추가 3,000원
-      </span>
-    </div>
-  </div>
-  <!-- ===== □. 안내 설명 박스 ================================================ -->
+<bo-page title="배송템플릿관리"
+    desc-summary="배송템플릿은 상품에 공통 적용할 배송비 조건을 미리 정의해두는 설정입니다."
+    desc-detail="✔ 무료·고정·조건부(금액/수량) 배송비 방식을 선택하고 상품 등록 시 템플릿을 연결해 재사용합니다.&#10;✔ 도서·산간 지역 추가 배송비, 반품지 주소를 함께 관리합니다.&#10;✔ 업체(벤더)별로 독립 설정이 가능하며, 여러 상품이 동일 템플릿을 공유할 수 있습니다.&#10;예) 3만원 이상 무료배송, 제주·도서 추가 3,000원">
   <!-- ===== ■. 검색 ====================================================== -->
-  <div class="card">
+  <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
-  </div>
+  </bo-container>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 목록 그리드 =================================================== -->
-  <div class="card">
-    <div class="toolbar">
-      <span class="list-title">
-        배송템플릿 목록
-      </span>
-      <span class="list-count">
-        총 {{ pager.pageTotalCount }}건
-      </span>
-      <button class="btn btn-primary btn-sm" style="margin-left:auto" @click="handleBtnAction('dlivTmplts-add')">
+  <bo-container title="배송템플릿 목록" :count-text="pager.pageTotalCount + '건'">
+    <template #toolbar-actions>
+      <button class="btn btn-primary btn-sm" @click="handleBtnAction('dlivTmplts-add')">
         + 신규
       </button>
-    </div>
+    </template>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-grid
+    <bo-grid bare
       :columns="columns.baseGrid" :rows="dlivTmplts" row-key="dlivTmpltId" :selected-key="uiState.selectedId"
-      list-title="목록" :count-text="pager.pageTotalCount + '건'"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-class="(row) => uiState.selectedId===row.dlivTmpltId ? 'active' : ''"
       @sort="key => handleBtnAction('dlivTmplts-sort', key)" grid-id="dlivTmplts-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
-      <!-- 페이저를 그리드 카드 내부 하단(#footer)에 배치 → 목록 영역 안에 보이도록 -->
-      <template #footer>
-        <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('dlivTmplts-pager-setPage', n)" :on-size-change="() => handleSelectAction('dlivTmplts-pager-sizeChange')" />
-      </template>
     </bo-grid>
-  </div>
+    <!-- 페이저는 그리드 밖, 컨테이너 안에 배치 -->
+    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('dlivTmplts-pager-setPage', n)" :on-size-change="() => handleSelectAction('dlivTmplts-pager-sizeChange')" />
+  </bo-container>
   <!-- ===== □. 목록 그리드 =================================================== -->
   <!-- ===== ■. 상세 패널 (항상 표시 — 미선택 시 안내, 선택/신규 시 폼) ============== -->
-  <div class="card">
+  <bo-container bare>
     <!-- ===== ■.■. 상세 툴바: 제목만 (저장/삭제/닫기는 하단 form-actions) ======== -->
     <div class="toolbar">
       <span class="list-title">
@@ -390,8 +343,8 @@ window.PdDlivTmpltMng = {
         </button>
       </div>
     </div>
-  </div>
+  </bo-container>
   <!-- ===== □. 상세 패널 =================================================== -->
-</div>
+</bo-page>
 `
 };
