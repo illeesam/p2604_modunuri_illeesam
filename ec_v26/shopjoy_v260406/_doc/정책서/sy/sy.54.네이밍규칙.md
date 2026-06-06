@@ -845,7 +845,7 @@ if (cmd === 'form-save')          return handleSave();
 | 패턴 | 사유 |
 |---|---|
 | `detailPanel` / `panel` | 의미는 같지만 명명 표준에서 벗어남. `baseDetail` 사용 |
-| `gridState` / `pager` 단독 | `cofGrid` 캡슐은 pager 외 정렬·setPage 도 포함 → `baseGrid` 로 통합 표현 |
+| `pager` 단독 | 메인 그리드명 유추 → `baseGridPager` / `listGridPager` 등. (단, picker 등 메인그리드 무관 페이저는 `pager` 유지 허용) |
 | `treeState` / `tree` 단독 | `baseTree` (선택/펼침/루트 컴퓨티드 모두 포함) |
 | `form` 단독 | Dtl 폼 reactive 는 `baseForm` 사용. 다중 폼은 `addrForm` 등 도메인 prefix |
 

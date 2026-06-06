@@ -853,30 +853,39 @@ select `options` 는 함수형 + 다양한 배열 형식 지원:
 
 ---
 
-### 4.8 coUtil 표준 캡슐 — cofGrid / cofDetail / cofTree (2026-05-28 ⭐)
+### 4.8 coUtil 표준 캡슐 — cofDetail / cofTree (+ 수동 pager) (2026-05-28 ⭐ / 2026-06-07 갱신)
 
-**목적**: Mng 화면의 반복되는 보일러플레이트(pager/정렬/페이지 액션, 인라인 Dtl 패널, 좌측 트리 선택/펼침)를 `coUtil` 캡슐로 통합. setup() 50~80줄 감소 + 화면 간 일관성 보장.
+**목적**: Mng 화면의 반복 보일러플레이트(인라인 Dtl 패널, 좌측 트리 선택/펼침)를 `coUtil` 캡슐로 통합. setup() 감소 + 화면 간 일관성 보장.
 
-#### 4.8.1 cofGrid — pager + 정렬 + 페이지 액션
+> ⚠️ **`cofGrid` 폐기 (2026-06-07)** — pager+정렬+setPage 를 묶던 `coUtil.cofGrid()` 는 제거됨. 페이저는 화면 안에 **수동 `reactive` 객체**로 직접 선언한다. `cofDetail`/`cofTree` 는 유지.
+
+#### 4.8.1 페이저 — 수동 reactive ( {그리드명}Pager )
 
 ```js
-const baseGrid = coUtil.cofGrid(() => handleSearchList(), {
-  sortMap: { nm:  { asc: 'noticeTitle asc', desc: 'noticeTitle desc' },
-             reg: { asc: 'regDate asc',     desc: 'regDate desc' } },
-  pageSize: 5,
+// 메인 그리드(columns.baseGrid) → 페이저명 baseGridPager
+const baseGridPager = reactive({
+  pageType: 'PAGE', pageNo: 1, pageSize: 5,
+  pageTotalCount: 0, pageTotalPage: 1,
+  pageSizes: [5, 10, 20, 30, 50, 100, 200, 500],
+  pageNums: [], pageCond: {},
 });
+// 페이지 액션은 인라인 정의
+const setPage      = (n) => { if (n >= 1 && n <= baseGridPager.pageTotalPage) { baseGridPager.pageNo = n; handleSearchList(); } };
+const onSizeChange = ()  => { baseGridPager.pageNo = 1; handleSearchList(); };
 ```
 
-**제공 멤버**: `pager`(reactive: pageNo/pageSize/pageTotalCount/pageTotalPage/pageSizes/pageNums/pageCond), `sortKey`/`sortDir`, `sortIcon(k)`, `sortParam()`, `onSort(k)`, `setPage(n)`, `onSizeChange()`, `buildPagerNums()`, `applyPage(d)`, `reset()`.
-
-**API 응답 적용**:
+**API 응답 적용** — `coUtil.cofBuildPagerNums(pager)` 로 pageNums 빌드:
 ```js
 const d = (await boApiSvc.cmNotice.getPage(params, '공지사항관리', '조회')).data?.data;
-const list = baseGrid.applyPage(d);          // pager 자동 갱신 + pageList 반환
-notices.splice(0, notices.length, ...list);
+baseGridPager.pageTotalCount = d?.pageTotalCount || 0;
+baseGridPager.pageTotalPage  = d?.pageTotalPage  || Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize) || 1;
+coUtil.cofBuildPagerNums(baseGridPager);
+notices.splice(0, notices.length, ...(d?.pageList || []));
 ```
 
-**BoGrid 바인딩**: `<bo-grid :pager="baseGrid.pager" :sort-state="baseGrid" @sort="baseGrid.onSort" @set-page="baseGrid.setPage" @size-change="baseGrid.onSizeChange" />` — `baseGrid` 가 `sortKey`/`sortDir` 필드를 그대로 노출하므로 `sort-state` 에 캡슐 자체를 전달.
+**BoGrid/페이저 바인딩**: `<bo-grid :columns="columns.baseGrid" :pager="baseGridPager" />` + 그리드 밖에 `<bo-pager :pager="baseGridPager" :on-set-page="..." :on-size-change="..." />`. 정렬이 필요하면 `sortKey`/`sortDir` 를 `uiState` 또는 별도 reactive 로 두고 `:sort-state` 에 전달.
+
+> **페이저 변수 명명**: 메인 그리드 컬럼명(`columns.XXX`) 유추 → `XXXPager` (예: `baseGridPager`, `listGridPager`, `userGridPager`). 상세 → [`sy.54.네이밍규칙.md`](sy.54.네이밍규칙.md) §페이저 변수 명명.
 
 #### 4.8.2 cofDetail — 인라인 Dtl 패널
 
@@ -901,7 +910,7 @@ const baseDetail = coUtil.cofDetail();
 const allCats = reactive([]);
 const baseTree = coUtil.cofTree(allCats, {
   idKey: 'catId', parentKey: 'parentCatId', labelKey: 'catNm', sortKey: 'sortOrd',
-  onSelect: (id) => { baseGrid.pager.pageNo = 1; handleSearchList(); },
+  onSelect: (id) => { baseGridPager.pageNo = 1; handleSearchList(); },
 });
 ```
 
@@ -909,10 +918,10 @@ const baseTree = coUtil.cofTree(allCats, {
 
 #### 4.8.4 변수 명명 표준
 
-- **첫 번째는 `base*`** (`baseGrid` / `baseDetail` / `baseTree`)
-- **두 번째부터 도메인 prefix** (`noticeGrid`, `claimGrid`, `catTree` 등)
-- cmd 라우팅 키도 일치 (`baseDetail-close`, `noticeGrid-sort`)
-- 상세: [`sy.54.네이밍규칙.md`](sy.54.네이밍규칙.md) §coUtil 표준 캡슐 변수 명명
+- **페이저**: 메인 그리드명 유추 → `baseGridPager` / `listGridPager` / `userGridPager` 등 (picker 등 메인그리드 무관 페이저는 `pager` 허용)
+- **캡슐 첫 번째는 `base*`** (`baseDetail` / `baseTree`), **두 번째부터 도메인 prefix** (`noticeDetail`, `catTree` 등)
+- **cmd 라우팅 문자열은 도메인명 유지** — `'baseDetail-close'`, `'notices-pager-setPage'`(페이저 cmd 는 영역 도메인명, 변수명 `baseGridPager` 와 별개). `<bo-pager>` 태그·`:pager` prop명 보존
+- 상세: [`sy.54.네이밍규칙.md`](sy.54.네이밍규칙.md) §coUtil 표준 캡슐 변수 명명 / §페이저 변수 명명
 
 #### 4.8.5-1 전수 적용 진행 현황 (2026-05-28)
 
@@ -926,14 +935,15 @@ const baseTree = coUtil.cofTree(allCats, {
 
 **Phase E — [03] 초기 함수 섹션 분리**: `fnLoadCodes`/`isAppReady`/`onMounted`/`watch(reloadTrigger)` 블록을 [04] 안에서 분리하여 [03] 마커 신설. **63개 BO 파일 자동 이동** (이미 [03] 있던 46개 + 이번 63개 = 109개 모두 표준 6섹션 구조 완성)
 
-**Phase C — cofGrid 캡슐화 (자동 도구 v3-v6 + 수동 8개)**:
+**Phase C — cofGrid 캡슐화 (자동 도구 v3-v6 + 수동 8개) — ⚠️ 2026-06-07 cofGrid 폐기로 역전됨 (이력 보존용)**:
+> 아래 내용은 2026-05-28~29 cofGrid 도입 이력. **2026-06-07 `cofGrid` 가 제거**되어 BO Mng 전 화면이 다시 수동 `reactive` 페이저(`baseGridPager` 등)로 환원됨. §4.8.1 참조. 아래 변환 패턴(2~7)은 **역방향(되돌림)이 현재 표준**.
 - **2026-05-28~29 최종 결과**: BO Mng **56개 적용 완료** + 1개 보류 (PdCategoryMng — 클라이언트 페이징 사용)
 - 추가 수동 적용 3개: SyBbsMng, SyPathMng, PdCategoryProdMng (자동 도구 SYNTAX FAIL 또는 콜백 탐지 실패)
 - 자동 도구 진화: v3(표준) → v4(no-sort) → v5(flex) → v6(매우 유연한 pager 정규식 + cb 옵션)
 - 각 화면 변환 후 `node --check` + 실패 시 자동 롤백 → **회귀 0건, 문법 0 실패**
 - 평균 감소율: 100-200줄 (사이즈에 따라 -20%~-50%)
 - 보류 4개는 구조 특이 (PdCategoryMng/PdCategoryProdMng: 트리, SyBbsMng: dispatch cmd 영역명 비표준, SyPathMng: 콜백 함수 분리)
-- 신규 화면은 처음부터 `coUtil.cofGrid()` 사용 (CmNoticeMng 참조)
+- ~~신규 화면은 처음부터 `coUtil.cofGrid()` 사용~~ → **폐기**. 신규 화면은 수동 `reactive` 페이저(`baseGridPager`) 사용 (§4.8.1)
 - 사용 도구: `c:/tmp/phase_c_v3.js` (표준 17개), `c:/tmp/phase_c_v4_noSort.js` (12개), `c:/tmp/phase_c_v5_flex.js` (16개), `c:/tmp/phase_c_v6.js` (3개), 수동 (5개)
 - 수동 변환 패턴 (CmNoticeMng → SyContactMng → PmCacheMng 검증됨):
   1. `uiState`에서 `sortKey/sortDir` 제거
@@ -951,10 +961,10 @@ const baseTree = coUtil.cofTree(allCats, {
 
 **표준 참조 모델 (신규 화면 작성 시 그대로 따를 것)**:
 - [`pages/bo/ec/cm/CmNoticeMng.js`](../../../pages/bo/ec/cm/CmNoticeMng.js) — **BO Mng 표준 모델**
-  - `baseGrid` (cofGrid) + `baseDetail` (cofDetail) 캡슐 사용
+  - 수동 `baseGridPager` (reactive 페이저) + `baseDetail` (cofDetail) 캡슐 사용
   - 6섹션 [01]~[06] 마커 + dispatch=[02] / init=[03]
-  - cmd 라우팅: `baseDetail-close` / `baseGrid-sort` / `notices-rowEdit` 등
-  - `<bo-search-area :columns="baseSearchColumns">` + `<bo-grid :columns="baseGridColumns">`
+  - cmd 라우팅: `baseDetail-close` / `notices-sort` / `notices-pager-setPage` / `notices-rowEdit` 등
+  - `<bo-search-area :columns="columns.baseSearch">` + `<bo-grid :columns="columns.baseGrid" :pager="baseGridPager">`
 - [`pages/bo/ec/cm/CmNoticeDtl.js`](../../../pages/bo/ec/cm/CmNoticeDtl.js) — **BO Dtl 표준 모델**
   - 폼 reactive 변수명 `baseForm` (변수명 `form` 단독 금지)
   - cmd 라우팅: `baseForm-save` / `baseForm-cancel` / `baseForm-edit` / `baseForm-close`
@@ -967,10 +977,10 @@ const baseTree = coUtil.cofTree(allCats, {
 
 #### 4.8.6 적용 대상 / 적용 제외
 
-**적용 대상**:
-- 단일 Mng (검색 + 목록 + 인라인 Dtl) — cofGrid + cofDetail
-- 트리 + 그리드 (`SyPathMng`, `PdCategoryMng` 등) — cofTree + cofGrid + cofDetail
-- 다중 그리드 화면 (`MbCustInfoMng`) — `baseGrid` + `claimGrid` + `dlivGrid` ... 다수 cofGrid 인스턴스
+**적용 대상** (캡슐 = cofDetail/cofTree, 페이저 = 수동 reactive):
+- 단일 Mng (검색 + 목록 + 인라인 Dtl) — `baseGridPager`(수동) + `baseDetail`(cofDetail)
+- 트리 + 그리드 (`SyPathMng`, `PdCategoryMng` 등) — `baseTree`(cofTree) + `baseGridPager` + `baseDetail`
+- 다중 그리드 화면 (`MbCustInfoMng`) — 그리드별 페이저 (`userGridPager` + `vendorGridPager` ...) 다수
 
 **적용 제외**:
 - Hist 전용 화면 (Mng/Dtl 임베드형) — 자체 pager 보유
