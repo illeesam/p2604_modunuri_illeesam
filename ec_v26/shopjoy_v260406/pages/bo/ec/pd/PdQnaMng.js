@@ -247,18 +247,26 @@ window.PdQnaMng = {
     <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('qnas-pager-setPage', n)" :on-size-change="() => handleSelectAction('qnas-pager-sizeChange')" />
   </bo-container>
   <!-- ===== □. 목록 그리드 =================================================== -->
-  <!-- ===== ■. 상세 패널 (질문/답변) ======================================== -->
-  <bo-container bare v-if="uiState.selectedId">
+  <!-- ===== ■. 상세 패널 (질문/답변 — 항상 표시, 미선택 시 안내) ==================== -->
+  <bo-container bare>
     <div class="card" style="margin-top:14px;">
       <div class="toolbar">
         <span class="list-title">
           상품 Q&A 상세 / 답변
-          <span v-if="form.qnaId" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+          <span v-if="uiState.selectedId && form.qnaId" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
             #{{ form.qnaId }}
+          </span>
+          <span v-if="!uiState.selectedId" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+            목록에서 행을 선택하세요
           </span>
         </span>
       </div>
-      <div style="padding:12px;">
+      <!-- ===== ■.■. 미선택 안내 (영역은 항상 표시) ================================= -->
+      <div v-if="!uiState.selectedId" style="text-align:center;color:#bbb;font-size:13px;padding:32px 16px;">
+        목록에서 Q&A 행을 선택하면 상세/답변을 입력할 수 있습니다.
+      </div>
+      <!-- ===== ■.■. 상세/답변 입력 (행 선택 시) ================================= -->
+      <div v-else style="padding:12px;">
         <!-- 메타정보 (읽기 전용) -->
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px 16px;font-size:13px;margin-bottom:14px;">
           <div><span style="color:#999;">상품: </span><b>{{ fnProdNm(form.prodId) }}</b></div>

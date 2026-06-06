@@ -161,11 +161,18 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     const form = reactive({
-      voucherId: null, voucherNm: '', voucherAmt: 0, salePrice: 0,
-      issueQty: 0, soldQty: 0, voucherStatus: '활성', startDate: '', endDate: '',
+      voucherId: null, voucherNm: '', voucherAmt: '', salePrice: '',
+      issueQty: '', soldQty: '', voucherStatus: '', startDate: '', endDate: '',
       remark: '',
       vendorId: '', chargeStaff: '',
     });
+    /* _applyNewDefaults — 신규 등록 진입 시 기본값 채움 (미선택/초기화 시 빈 폼 유지) */
+    const _applyNewDefaults = () => {
+      Object.assign(form, {
+        voucherAmt: 0, salePrice: 0, issueQty: 0, soldQty: 0, voucherStatus: '활성',
+        startDate: DEFAULT_START, endDate: DEFAULT_END,
+      });
+    };
     const errors = reactive({});
 
     const _today = new Date();
@@ -185,10 +192,8 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
     // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) { fnLoadCodes(); }
-      if (cfIsNew.value) {
-      if (!form.startDate) { form.startDate = DEFAULT_START; }
-      if (!form.endDate) { form.endDate = DEFAULT_END; }
-      }
+      // [+신규] 진입(활성 + 신규)일 때만 기본값 채움. 미선택/초기화(비활성)면 빈 폼 유지.
+      if (props.active && cfIsNew.value) { _applyNewDefaults(); }
     });
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
     watch(() => props.reloadTrigger, async (n, o) => {
@@ -446,8 +451,9 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
             ▼
           </span>
         </div>
-        <button v-if="coUtil.cofAnd(form.vendorId, !cfDtlMode)" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendorClear')">
-          초기화
+        <button v-if="coUtil.cofAnd(form.vendorId, !cfDtlMode)" type="button" title="선택 해제" @click="handleBtnAction('form-vendorClear')"
+          style="background:none;border:none;padding:0 2px 2px;margin-left:-4px;color:#999;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0;align-self:flex-end;">
+          x
         </button>
       </div>
     </template>

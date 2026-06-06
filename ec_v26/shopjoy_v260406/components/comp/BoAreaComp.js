@@ -716,8 +716,8 @@ window.BoGrid = {
                       {{ o.label }}
                     </option>
                   </select>
-                  <!-- 표시경로 picker (bo-path-pick-field 자동 임베드) -->
-                  <bo-path-pick-field v-else-if="col.pathPick" :biz-cd="col.pathPick" :row="row" :disabled="row._row_status==='D'" @change="handleSelectAction('grid-row-cell-change', { row, col })" />
+                  <!-- 표시경로 picker (bo-path-pick-field 자동 임베드) — bare: 셀 td 안에 div 로(중첩 td 방지, 폭 통일) -->
+                  <bo-path-pick-field v-else-if="col.pathPick" bare :biz-cd="col.pathPick" :row="row" :disabled="row._row_status==='D'" @change="handleSelectAction('grid-row-cell-change', { row, col })" />
                   <!-- 모달 인터셉트 select (col.selectIntercept: { valueKey | value:fn(row), options, onChange:fn(row,newVal,$event), nullable, nullLabel, disabled:fn(row) }) — v-model 미사용 -->
                   <select v-else-if="col.selectIntercept" class="form-control grid-select" style="font-size:11px;padding:2px 4px;"
                   :value="typeof col.selectIntercept.value==='function' ? col.selectIntercept.value(row) : row[col.selectIntercept.valueKey]"
@@ -767,13 +767,18 @@ window.BoGrid = {
                   @update:time="v => { row[col.dateTimePick.timeKey] = v; handleSelectAction('grid-row-cell-change', { row, col }); }"
                   :show-now="col.dateTimePick.showNow !== false" :show-clear="col.dateTimePick.showClear !== false"
                   :date-width="col.dateTimePick.dateWidth || '104px'" :time-width="col.dateTimePick.timeWidth || '64px'" />
-                  <!-- 인라인 path-button (라벨 + 🔍 버튼 + onOpen 콜백) -->
-                  <div v-else-if="col.pathLabelOpen" :style="{padding:'1px 6px 1px 8px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'22px',background:'#f5f5f7',color:row[col.key]!=null?'#374151':'#9ca3af',fontWeight:row[col.key]!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}">
+                  <!-- 인라인 path-button (라벨 + ✕ 비우기 + 🔍 버튼 + onOpen 콜백) -->
+                  <div v-else-if="col.pathLabelOpen" :style="{padding:'1px 4px 1px 8px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'22px',background:'#f5f5f7',color:row[col.key]!=null?'#374151':'#9ca3af',fontWeight:row[col.key]!=null?600:400,display:'flex',alignItems:'center',gap:'4px'}">
                     <span style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
                       :title="(typeof col.pathLabelOpen.label==='function' ? col.pathLabelOpen.label(row[col.key]) : '') || ''">
                       {{ (typeof col.pathLabelOpen.label==='function' ? col.pathLabelOpen.label(row[col.key]) : '') || (col.pathLabelOpen.placeholder || '경로 선택...') }}
                     </span>
-                    <button type="button" @click.stop="col.pathLabelOpen.open(row)" title="표시경로 선택" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:#fff;border:1px solid #d1d5db;border-radius:4px;font-size:11px;color:#6b7280;flex-shrink:0;padding:0;">
+                    <span v-if="row[col.key] != null" title="비우기"
+                      style="cursor:pointer;color:#9ca3af;font-size:9px;flex-shrink:0;line-height:1;padding:0;margin-right:-1px;align-self:flex-end;margin-bottom:2px;"
+                      @click.stop="col.pathLabelOpen.clear ? col.pathLabelOpen.clear(row) : (row[col.key] = null)">
+                      ✕
+                    </span>
+                    <button type="button" @click.stop="col.pathLabelOpen.open(row)" title="표시경로 선택" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;background:#fff;border:1px solid #d1d5db;border-radius:4px;font-size:11px;color:#2563eb;flex-shrink:0;padding:0;">
                       🔍
                     </button>
                   </div>
@@ -873,7 +878,7 @@ window.BoGridCrud = {
     treeRowKey:  { type: Function, default: null },
   },
   emits: ['add', 'save', 'cancel-checked', 'delete-checked', 'reorder', 'cell-change',
-          'update:checkAll', 'update:focusedIdx', 'export', 'excel-upload', 'sort', 'row-dblclick', 'cell-click'],
+          'update:checkAll', 'update:focusedIdx', 'export', 'excel-upload', 'sort', 'row-dblclick', 'cell-click', 'row-click'],
   setup(props, { emit }) {
     const U = window._boAreaCompUtil;
 
@@ -941,7 +946,10 @@ window.BoGridCrud = {
         const out = cfTreeMode.value
           ? props.rows.indexOf(props.rowAccessor(props.flatRows[param.idx]))
           : param.idx;
-        if (props.focusedIdx !== out) return emit('update:focusedIdx', out);
+        if (props.focusedIdx !== out) emit('update:focusedIdx', out);
+        /* 한번 클릭 = 즉시 행 선택(파란선) 동기화. 부모가 selectedKey 를 바로 갱신하도록 row 전달.
+         *   (focusedIdx 와 selectedKey 가 따로 놀아 예전 선택행 파란선이 남는 '지연' 현상 제거) */
+        return emit('row-click', param.row, out);
       } else if (cmd === 'grid-row-dblclick') {
         return emit('row-dblclick', param.row, param.idx);
       } else if (cmd === 'grid-cell-click') {
@@ -981,6 +989,18 @@ window.BoGridCrud = {
     const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
     const fnColTitle = (col) => (typeof props.cellTitle === 'function' ? props.cellTitle(col) : '');
 
+    /* fnRowCls — <tr> 행 클래스 배열 (template 의 && 금지 정책 회피용 JS 헬퍼)
+     *   행상태색(status-) + focusedIdx(.focused) + selectedKey 일치(.bo-row-selected).
+     *   ※ 화면마다 focused/selected 의미가 달라(삽입기준 vs 이력필터 vs 트리선택) 둘 다 유지.
+     *     단일 행만 파란선이 되도록 하려면 화면에서 selectedKey 를 focus 와 동기화할 것(예: SyCode addRow/rowSelect). */
+    const fnRowCls = (item, idx) => {
+      const row = fnRow(item);
+      const cls = ['status-' + row._row_status];
+      if (!cfTreeMode.value && props.focusedIdx === idx) cls.push('focused');
+      if (props.selectedKey != null && row[props.rowKey] === props.selectedKey) cls.push('bo-row-selected');
+      return cls;
+    };
+
     const sortIcon = (col) => {
       const st = props.sortState;
       if (!col.sortKey || !st) return '';
@@ -990,7 +1010,7 @@ window.BoGridCrud = {
     const sortActive = (col) => props.sortState && props.sortState.sortKey === col.sortKey;
 
     return { U, cfVisibleCount, fnStatusClass, allChecked, fnColTitle, cfEmptyColspan,
-             sortIcon, sortActive, cfTreeMode, cfDispRows, fnRow, fnRowKey,
+             sortIcon, sortActive, cfTreeMode, cfDispRows, fnRow, fnRowKey, fnRowCls,
              cfShowDrag, cfShowNo, cfShowId, handleBtnAction, handleSelectAction };
   },
   template: /* html */`
@@ -1066,7 +1086,7 @@ window.BoGridCrud = {
             {{ emptyText }}
           </td>
         </tr>
-        <tr v-else v-for="(item, idx) in cfDispRows" :key="fnRowKey(item, idx)" class="crud-row" :class="[ 'status-' + fnRow(item)._row_status, (!cfTreeMode && focusedIdx===idx) ? 'focused' : '', (selectedKey != null && fnRow(item)[rowKey] === selectedKey) ? 'bo-row-selected' : '' ]" :draggable="cfShowDrag" @click="handleSelectAction('grid-row-focus', { idx })" @dblclick="handleSelectAction('grid-row-dblclick', { row: fnRow(item), idx })" @dragstart="handleSelectAction('grid-row-drag-start', { idx })" @dragover="handleSelectAction('grid-row-drag-over', { idx, event: $event })" @dragend="handleSelectAction('grid-row-drag-end')">
+        <tr v-else v-for="(item, idx) in cfDispRows" :key="fnRowKey(item, idx)" class="crud-row" :class="fnRowCls(item, idx)" :draggable="cfShowDrag" @click="handleSelectAction('grid-row-focus', { idx, row: fnRow(item) })" @dblclick="handleSelectAction('grid-row-dblclick', { row: fnRow(item), idx })" @dragstart="handleSelectAction('grid-row-drag-start', { idx })" @dragover="handleSelectAction('grid-row-drag-over', { idx, event: $event })" @dragend="handleSelectAction('grid-row-drag-end')">
         <td v-if="cfShowDrag" class="drag-handle" title="드래그로 순서 변경">
           ⠿
         </td>
@@ -1116,17 +1136,22 @@ window.BoGridCrud = {
                 {{ o.label }}
               </option>
             </select>
-            <bo-path-pick-field v-else-if="col.pathPick" :biz-cd="col.pathPick" :row="fnRow(item)" :disabled="fnRow(item)._row_status==='D'" @change="handleSelectAction('grid-row-cell-change', { row: fnRow(item), col })" />
-            <div v-else-if="col.pathLabelOpen" :style="{padding:'1px 6px 1px 8px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'22px',background:'#f5f5f7',color:fnRow(item)[col.key]!=null?'#374151':'#9ca3af',fontWeight:fnRow(item)[col.key]!=null?600:400,display:'flex',alignItems:'center',gap:'6px'}">
+            <bo-path-pick-field v-else-if="col.pathPick" bare :biz-cd="col.pathPick" :row="fnRow(item)" :disabled="fnRow(item)._row_status==='D'" @change="handleSelectAction('grid-row-cell-change', { row: fnRow(item), col })" />
+            <div v-else-if="col.pathLabelOpen" :style="{padding:'1px 4px 1px 8px',border:'1px solid #e5e7eb',borderRadius:'5px',fontSize:'12px',minHeight:'22px',background:'#f5f5f7',color:fnRow(item)[col.key]!=null?'#374151':'#9ca3af',fontWeight:fnRow(item)[col.key]!=null?600:400,display:'flex',alignItems:'center',gap:'4px'}">
               <span style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
                 :title="(typeof col.pathLabelOpen.label==='function' ? col.pathLabelOpen.label(fnRow(item)[col.key]) : '') || ''">
                 {{ (typeof col.pathLabelOpen.label==='function' ? col.pathLabelOpen.label(fnRow(item)[col.key]) : '') || (col.pathLabelOpen.placeholder || '경로 선택...') }}
               </span>
-              <button type="button" @click.stop="col.pathLabelOpen.open(fnRow(item))" title="표시경로 선택" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:#fff;border:1px solid #d1d5db;border-radius:4px;font-size:11px;color:#6b7280;flex-shrink:0;padding:0;">
+              <span v-if="fnRow(item)[col.key] != null" title="비우기"
+                style="cursor:pointer;color:#9ca3af;font-size:9px;flex-shrink:0;line-height:1;padding:0;margin-right:-1px;align-self:flex-end;margin-bottom:2px;"
+                @click.stop="col.pathLabelOpen.clear ? col.pathLabelOpen.clear(fnRow(item)) : (fnRow(item)[col.key] = null)">
+                ✕
+              </span>
+              <button type="button" @click.stop="col.pathLabelOpen.open(fnRow(item))" title="표시경로 선택" style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;background:#fff;border:1px solid #d1d5db;border-radius:4px;font-size:11px;color:#2563eb;flex-shrink:0;padding:0;">
                 🔍
               </button>
             </div>
-            <div v-else-if="col.parentPick" style="display:flex;align-items:center;gap:5px;">
+            <div v-else-if="col.parentPick" style="display:flex;align-items:flex-end;gap:4px;">
               <span v-if="fnRow(item)[col.key]"
                     style="flex:1;font-size:12px;color:#444;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
                     :title="col.parentPick.label(fnRow(item)[col.key])">
@@ -1134,6 +1159,11 @@ window.BoGridCrud = {
               </span>
               <span v-else style="flex:1;font-size:11px;color:#bbb;font-style:italic;">
                 {{ col.parentPick.placeholder || '최상위' }}
+              </span>
+              <span v-if="fnRow(item)[col.key] != null" title="비우기"
+                    style="cursor:pointer;color:#9ca3af;font-size:9px;flex-shrink:0;line-height:1;padding:0;margin-right:-1px;align-self:flex-end;margin-bottom:2px;"
+                    @click.stop="col.parentPick.clear ? col.parentPick.clear(fnRow(item)) : (fnRow(item)[col.key] = null)">
+                ✕
               </span>
               <button v-if="fnRow(item)._row_status!=='D'" class="btn btn-secondary btn-xs"
                     style="flex-shrink:0;padding:2px 7px;font-size:12px;line-height:1.4;color:#e8587a;" :title="col.parentPick.title || '상위 선택'"

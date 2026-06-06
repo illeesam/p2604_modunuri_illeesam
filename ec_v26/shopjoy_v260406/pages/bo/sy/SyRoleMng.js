@@ -145,6 +145,8 @@ window.SyRoleMng = {
       // 좌측 경로 트리 노드 선택 → 우측 그리드 필터링
       } else if (cmd === 'pathTree-select') {
         uiState.selectedPath = param;
+        uiState.focusedIdx = null;        // 트리(부모) 변경 시 자식 역할그리드 포커스행 해제
+        uiState.selectedRoleId = null;    // 자식 선택역할(→메뉴권한 손자) 해제 (부모 변경 시 정책)
         return handleSearchList();
       // 메뉴 권한 단일 설정 (특정 메뉴 + 특정 권한)
       } else if (cmd === 'roleMenus-set') {
@@ -861,7 +863,8 @@ window.SyRoleMng = {
       { key: 'roleNm',       label: '역할명',   style: 'min-width:150px;', edit: 'text',
         treeDepth: true, treeBullet: depthBullet, treeColor: depthColor },
       { key: 'parentRoleId', label: '상위역할', style: 'min-width:120px;',
-        parentPick: { label: parentNm, open: (row) => handleSelectAction('parentModal-open', row), title: '상위역할 선택' } },
+        parentPick: { label: parentNm, open: (row) => handleSelectAction('parentModal-open', row),
+          clear: (row) => { row.parentRoleId = null; onCellChange(row); }, title: '상위역할 선택' } },
       { key: 'sortOrd',      label: '순서',     cls: 'col-ord',  edit: 'number' },
       { key: 'useYn',        label: '사용여부', cls: 'col-use',  edit: 'select', options: () => codes.use_yn },
       { key: 'roleCat',      label: '역할구분', style: 'width:100px;',
@@ -909,7 +912,7 @@ window.SyRoleMng = {
   <div class="bo-2col" style="grid-template-columns:minmax(220px,20fr) minmax(0,80fr);">
     <!-- ===== ■.■. 트리 ==================================================== -->
     <bo-container bare>
-      <bo-local-tree-card title="역할"
+      <bo-local-tree-card title="역할" max-height="420px"
         :node="cfTree" :expanded="expanded" :selected="uiState.selectedPath"
         :on-toggle="path => handleBtnAction('pathTree-toggle', path)"
         @select="path => handleSelectAction('pathTree-select', path)" @expand-all="handleBtnAction('pathTree-expandAll')" @collapse-all="handleBtnAction('pathTree-collapseAll')">

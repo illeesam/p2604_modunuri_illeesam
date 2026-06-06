@@ -473,7 +473,7 @@ window.SyApiLogMng = {
       :row-style="(r, idx) => handleGridCellAction('apiLogs-cellClick', 'rowStyle', r, idx)" :is-expanded="(r, idx) => handleGridCellAction('apiLogs-cellClick', 'isExpanded', r, idx)">
       <template #row-expand="{ row, colspan }">
         <td :colspan="colspan" style="background:#f4f6fb;padding:16px 20px;border-top:none;">
-          <bo-form-area :columns="columns.accessExpand" :form="row" :cols="3" readonly label-left :show-actions="false" />
+          <bo-form-area :columns="columns.accessExpand" :form="row" :cols="3" readonly label-left compact :show-actions="false" />
         </td>
       </template>
     </bo-grid>
@@ -483,7 +483,7 @@ window.SyApiLogMng = {
       :row-style="(r, idx) => handleGridCellAction('apiLogs-cellClick', 'rowStyle', r, idx)" :is-expanded="(r, idx) => handleGridCellAction('apiLogs-cellClick', 'isExpanded', r, idx)">
       <template #row-expand="{ row, colspan }">
         <td :colspan="colspan" style="background:#fff8f8;padding:16px 20px;border-top:none;">
-          <bo-form-area :columns="columns.errorExpand" :form="row" :cols="3" readonly label-left :show-actions="false" />
+          <bo-form-area :columns="columns.errorExpand" :form="row" :cols="3" readonly label-left compact :show-actions="false" />
           <div style="margin-top:12px;">
             <div style="font-weight:700;color:#c0392b;margin-bottom:6px;border-bottom:1px solid #fcc;padding-bottom:4px;font-size:12px;">
               📋 스택트레이스

@@ -31,15 +31,24 @@ window.PmCouponDtl = {
     });
 
     const form = reactive({
-      couponId: null, couponTypeCd: '상품할인쿠폰', couponCd: '', couponNm: '',
-      discountType: 'amount', discountVal: 0, discountRate: null, discountAmt: null, minOrderAmt: 0, maxDiscountAmt: 0,
-      couponStatusCd: '활성', validFrom: '', validTo: '', issueLimit: 0, useLimit: 'unlimited',
-      targetTypeCd: '상품', issueTargets: [],
-      issueMethods: 'auto', issueCondition: 'all', memGradeCd: '', issueGrades: [],
-      useScope: 'all', useExclude: '', useRemark: '',
+      couponId: null, couponTypeCd: '', couponCd: '', couponNm: '',
+      discountType: '', discountVal: '', discountRate: null, discountAmt: null, minOrderAmt: '', maxDiscountAmt: '',
+      couponStatusCd: '', validFrom: '', validTo: '', issueLimit: '', useLimit: '',
+      targetTypeCd: '', issueTargets: [],
+      issueMethods: '', issueCondition: '', memGradeCd: '', issueGrades: [],
+      useScope: '', useExclude: '', useRemark: '',
       memo: '',
       vendorId: '', chargeStaff: '',
     });
+    /* _applyNewDefaults — 신규 등록 진입 시 기본값 채움 (미선택/초기화 시엔 빈 폼 유지) */
+    const _applyNewDefaults = () => {
+      Object.assign(form, {
+        couponTypeCd: '상품할인쿠폰', discountType: 'amount', discountVal: 0,
+        minOrderAmt: 0, maxDiscountAmt: 0, couponStatusCd: '활성',
+        validFrom: DEFAULT_START, validTo: DEFAULT_END, issueLimit: 0, useLimit: 'unlimited',
+        targetTypeCd: '상품', issueMethods: 'auto', issueCondition: 'all', useScope: 'all',
+      });
+    };
     const errors = reactive({});
 
     const _today = new Date();
@@ -199,7 +208,7 @@ window.PmCouponDtl = {
 
     /* handleInitForm — 처리 */
     const handleInitForm = () => {
-      if (cfIsNew.value) {
+      if (props.active && cfIsNew.value) {
         if (!form.validFrom) { form.validFrom = DEFAULT_START; }
         if (!form.validTo) { form.validTo = DEFAULT_END; }
       }
@@ -209,6 +218,8 @@ window.PmCouponDtl = {
     onMounted(async () => {
       if (isAppReady.value) { fnLoadCodes(); }
       await handleSearchDetail();
+      // [+신규] 진입(활성 + 신규)일 때만 기본값 채움. 미선택/초기화(비활성)면 빈 폼 유지.
+      if (props.active && cfIsNew.value) { _applyNewDefaults(); }
       handleInitForm();
     });
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
@@ -487,8 +498,9 @@ window.PmCouponDtl = {
                 ▼
               </span>
             </div>
-            <button v-if="coUtil.cofAnd(form.vendorId, !cfDtlMode)" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendorClear')">
-              초기화
+            <button v-if="coUtil.cofAnd(form.vendorId, !cfDtlMode)" type="button" title="선택 해제" @click="handleBtnAction('form-vendorClear')"
+              style="background:none;border:none;padding:0 2px 2px;margin-left:-4px;color:#999;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0;align-self:flex-end;">
+              x
             </button>
           </div>
         </template>

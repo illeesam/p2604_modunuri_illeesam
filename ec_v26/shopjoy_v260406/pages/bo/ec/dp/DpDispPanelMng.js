@@ -546,8 +546,8 @@ window.DpDispPanelMng = {
     /* onWidgetDragEnd — 이벤트 */
     const onWidgetDragEnd = () => { uiState.widgetDragPanel = null; uiState.widgetDragSrcWi = null; uiState.widgetDragOverWi = null; };
 
-    /* selectPathNode — 선택 */
-    const selectPathNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; handleSearchData(buildSearchParams()); };
+    /* selectPathNode — 선택 ([정책] 부모 트리 변경 시 자식 상세영역 선택 초기화) */
+    const selectPathNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; resetDetailToNew(); handleSearchData(buildSearchParams()); };
 
     /* _initSearchParam — 초기화 */
     const _initSearchParam = () => {

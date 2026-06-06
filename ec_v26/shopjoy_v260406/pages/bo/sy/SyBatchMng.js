@@ -413,7 +413,8 @@ window.SyBatchMng = {
     // 기본 그리드
     columns.baseGrid = [
       { key: 'pathId',        label: '표시경로',     style: 'width:170px;max-width:170px;',
-        pathLabelOpen: { label: pathLabel, open: (row) => handleSelectAction('pathModal-open', row), placeholder: '경로 선택...' } },
+        pathLabelOpen: { label: pathLabel, open: (row) => handleSelectAction('pathModal-open', row),
+          clear: (row) => { row.pathId = null; onCellChange(row); }, placeholder: '경로 선택...' } },
       { key: 'batchNm',       label: '배치명',       style: 'min-width:120px;', edit: 'text', placeholder: '배치명' },
       { key: 'batchCode',     label: '배치코드',     style: 'min-width:160px;', edit: 'text', mono: true, placeholder: 'BATCH_CODE' },
       { key: 'cronExpr',      label: 'Cron 표현식',  style: 'min-width:170px;' },

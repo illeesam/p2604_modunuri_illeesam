@@ -32,11 +32,15 @@ window.PmEventDtl = {
     const DEFAULT_END   = `${_today.getFullYear()+3}-12-31`;
 
     const form = reactive({
-      eventTitle: '', eventStatusCd: '진행중', startDate: DEFAULT_START, endDate: DEFAULT_END,
+      eventTitle: '', eventStatusCd: '', startDate: '', endDate: '',
       authRequired: false, targetProducts: [], visibilityTargets: '^PUBLIC^',
       bannerImage: '', content1: '', content2: '', content3: '', content4: '', content5: '',
       vendorId: '', chargeStaff: '',
     });
+    /* _applyNewDefaults — 신규 진입 시에만 비어있지 않던 기본값 채움 (inactive/초기화 상태에선 빈 폼 유지) */
+    const _applyNewDefaults = () => {
+      Object.assign(form, { eventStatusCd: '진행중', startDate: DEFAULT_START, endDate: DEFAULT_END });
+    };
     const errors = reactive({});
 
     const schema = yup.object({
@@ -221,6 +225,7 @@ window.PmEventDtl = {
     // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) { fnLoadCodes(); }
+      if (props.active && cfIsNew.value) { _applyNewDefaults(); }
     });
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
     watch(() => props.reloadTrigger, async (n, o) => {
@@ -481,8 +486,9 @@ window.PmEventDtl = {
                 ▼
               </span>
             </div>
-            <button v-if="coUtil.cofAnd(form.vendorId, !cfDtlMode)" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendorClear')">
-              초기화
+            <button v-if="coUtil.cofAnd(form.vendorId, !cfDtlMode)" type="button" title="선택 해제" @click="handleBtnAction('form-vendorClear')"
+              style="background:none;border:none;padding:0 2px 2px;margin-left:-4px;color:#999;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0;align-self:flex-end;">
+              x
             </button>
           </div>
         </template>

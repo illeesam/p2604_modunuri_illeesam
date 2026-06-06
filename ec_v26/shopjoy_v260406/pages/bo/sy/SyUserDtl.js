@@ -248,101 +248,104 @@ window.SyUserDtl = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 카드 영역 =================================================== -->
-  <bo-container>
-    <!-- ===== ■.■. 카드 헤더 (제목 = list-title, 페이지 타이틀 아님 → 폰트 축소) ========= -->
-    <template #title>
-      {{ !active ? '사용자 상세' : (cfIsNew ? '사용자 등록' : (cfDtlMode ? '사용자 상세' : '사용자 수정')) }}
-      <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
-        #{{ form.userId }}
-      </span>
-      <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-        목록에서 행을 선택하거나 [+신규]를 누르세요
-      </span>
+<!-- ===== ■. 카드 영역 =================================================== -->
+<bo-container>
+  <!-- ===== ■.■. 카드 헤더 (제목 = list-title, 페이지 타이틀 아님 → 폰트 축소) ========= -->
+  <template #title>
+    {{ !active ? '사용자 상세' : (cfIsNew ? '사용자 등록' : (cfDtlMode ? '사용자 상세' : '사용자 수정')) }}
+    <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+      #{{ form.userId }}
+    </span>
+    <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+      목록에서 행을 선택하거나 [+신규]를 누르세요
+    </span>
+  </template>
+  <!-- ===== ■.■. 기본정보 폼 ============================================== -->
+  <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
+    :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
+    <!-- ===== ■.■.■. 부서: picker ========================================== -->
+    <template #dept>
+      <div v-if="cfDtlMode" class="readonly-field">
+        {{ form.deptNm || '-' }}
+      </div>
+      <div v-else style="display:flex;gap:8px;align-items:flex-end;">
+        <div class="form-control" style="flex:1;background:#fafafa;display:flex;align-items:center;min-height:28px;padding:4px 10px;font-size:13px;"
+          @click="handleBtnAction('deptModal-open')">
+          <span v-if="form.deptNm" style="color:#1a1a2e;">
+            {{ form.deptNm }}
+          </span>
+          <span v-else style="color:#bbb;font-size:12px;">
+            부서를 선택하세요
+          </span>
+        </div>
+        <button type="button" class="btn btn-blue btn-sm" @click="handleBtnAction('deptModal-open')" style="white-space:nowrap;">
+          🏢 선택
+        </button>
+        <button v-if="form.deptId" type="button" title="선택 해제" @click="handleBtnAction('deptModal-clear')"
+          style="background:none;border:none;padding:0 2px 2px;margin-left:-4px;color:#999;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0;align-self:flex-end;">
+          x
+        </button>
+      </div>
     </template>
-    <!-- ===== ■.■. 기본정보 폼 ============================================== -->
-    <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
-      :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
-      <!-- ===== ■.■.■. 부서: picker ========================================== -->
-      <template #dept>
-        <div v-if="cfDtlMode" class="readonly-field">
-          {{ form.deptNm || '-' }}
-        </div>
-        <div v-else style="display:flex;gap:8px;align-items:center;">
-          <div class="form-control" style="flex:1;background:#fafafa;display:flex;align-items:center;min-height:28px;padding:4px 10px;font-size:13px;"
-            @click="handleBtnAction('deptModal-open')">
-            <span v-if="form.deptNm" style="color:#1a1a2e;">
-              {{ form.deptNm }}
-            </span>
-            <span v-else style="color:#bbb;font-size:12px;">
-              부서를 선택하세요
-            </span>
-          </div>
-          <button type="button" class="btn btn-blue btn-sm" @click="handleBtnAction('deptModal-open')" style="white-space:nowrap;">
-            🏢 선택
+    <!-- ===== ■.■.■. 주소: 우편번호 + 주소검색 + 기본주소 + 상세주소 ============== -->
+    <template #addr>
+      <div v-if="cfDtlMode" class="readonly-field">
+        {{ [form.zipcode ? '('+form.zipcode+')' : '', form.address, form.addressDetail].filter(Boolean).join(' ') || '-' }}
+      </div>
+      <div v-else style="display:flex;flex-direction:column;gap:6px;">
+        <div style="display:flex;gap:8px;align-items:flex-end;">
+          <input class="form-control" style="width:130px;" :value="form.zipcode" readonly placeholder="우편번호" />
+          <button type="button" class="btn btn-blue btn-sm" @click="handleBtnAction('addr-search')" style="white-space:nowrap;">
+            🔍 주소 검색
           </button>
-          <button v-if="form.deptId" type="button" class="btn btn-secondary btn-sm" @click="handleBtnAction('deptModal-clear')">
-            ✕
+          <button v-if="form.zipcode || form.address" type="button" title="주소 초기화" @click="form.zipcode=''; form.address='';"
+            style="background:none;border:none;padding:0 2px 2px;margin-left:-4px;color:#999;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0;">
+            x
           </button>
         </div>
-      </template>
-      <!-- ===== ■.■.■. 주소: 우편번호 + 주소검색 + 기본주소 + 상세주소 ============== -->
-      <template #addr>
-        <div v-if="cfDtlMode" class="readonly-field">
-          {{ [form.zipcode ? '('+form.zipcode+')' : '', form.address, form.addressDetail].filter(Boolean).join(' ') || '-' }}
-        </div>
-        <div v-else style="display:flex;flex-direction:column;gap:6px;">
-          <div style="display:flex;gap:8px;align-items:center;">
-            <input class="form-control" style="width:130px;" :value="form.zipcode" readonly placeholder="우편번호" />
-            <button type="button" class="btn btn-blue btn-sm" @click="handleBtnAction('addr-search')" style="white-space:nowrap;">
-              🔍 주소 검색
-            </button>
-          </div>
-          <input class="form-control" :value="form.address" readonly placeholder="기본주소 (주소 검색 후 자동 입력)" />
-          <input ref="addrDetailRef" class="form-control" v-model="form.addressDetail" placeholder="상세주소 (동/호수 등)" />
-        </div>
-      </template>
-      <!-- ===== ■.■.■. 프로필 이미지: BaseAttachOne (단일 이미지 업로드) ============= -->
-      <template #profile>
-        <base-attach-one v-model="form.profileAttachId" grp-code="USER_PROFILE" grp-nm="프로필 이미지"
-          :max-size-mb="5" allow-ext="jpg,jpeg,png,gif,webp" width="120px" height="120px" :show-toast="showToast" />
-      </template>
-    </bo-form-area>
-    <!-- ===== □.□. 기본정보 폼 (주소/프로필 포함, 단일 BoFormArea) ================== -->
-    <!-- ===== ■.■. 폼 액션 (active 일 때만 노출) ================================ -->
-    <div class="form-actions" v-if="active">
-      <template v-if="cfDtlMode">
-        <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
-          수정
-        </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
-          닫기
-        </button>
-      </template>
-      <template v-else>
-        <button class="btn btn-primary" @click="handleBtnAction('form-save')">
-          저장
-        </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
-          취소
-        </button>
-      </template>
-    </div>
-    <!-- ===== □.□. 폼 액션 ================================================== -->
-  </bo-container>
-  <!-- ===== □. 카드 영역 =================================================== -->
-  <!-- ===== ■. 적용 역할 목록 ================================================ -->
-  <bo-container v-if="!cfIsNew" title="적용 역할 목록" :count-text="cfUserRoles.length + '건'">
-    <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-grid bare :columns="columns.userRoleGrid" :rows="cfUserRoles" row-key="roleId"
-      empty-text="배정된 역할이 없습니다." />
-    <!-- ===== □.□. 목록 영역 ================================================= -->
-  </bo-container>
-  <!-- ===== □. 적용 역할 목록 ================================================ -->
-  <!-- ===== ■. 부서 선택 팝업 ================================================ -->
-  <dept-tree-modal v-if="deptModal && deptModal.show" :exclude-id="null" modal-name="dept-pick" :on-callback="fnCallbackModal" />
-  <!-- ===== □. 부서 선택 팝업 ================================================ -->
-</div>
+        <input class="form-control" :value="form.address" readonly placeholder="기본주소 (주소 검색 후 자동 입력)" />
+        <input ref="addrDetailRef" class="form-control" v-model="form.addressDetail" placeholder="상세주소 (동/호수 등)" />
+      </div>
+    </template>
+    <!-- ===== ■.■.■. 프로필 이미지: BaseAttachOne (단일 이미지 업로드) ============= -->
+    <template #profile>
+      <base-attach-one v-model="form.profileAttachId" grp-code="USER_PROFILE" grp-nm="프로필 이미지"
+        :max-size-mb="5" allow-ext="jpg,jpeg,png,gif,webp" width="120px" height="120px" :show-toast="showToast" />
+    </template>
+  </bo-form-area>
+  <!-- ===== □.□. 기본정보 폼 (주소/프로필 포함, 단일 BoFormArea) ================== -->
+  <!-- ===== ■.■. 폼 액션 (active 일 때만 노출) ================================ -->
+  <div class="form-actions" v-if="active">
+    <template v-if="cfDtlMode">
+      <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
+        수정
+      </button>
+      <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
+        닫기
+      </button>
+    </template>
+    <template v-else>
+      <button class="btn btn-primary" @click="handleBtnAction('form-save')">
+        저장
+      </button>
+      <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+        취소
+      </button>
+    </template>
+  </div>
+  <!-- ===== □.□. 폼 액션 ================================================== -->
+</bo-container>
+<!-- ===== □. 카드 영역 =================================================== -->
+<!-- ===== ■. 적용 역할 목록 ================================================ -->
+<bo-container v-if="!cfIsNew" title="적용 역할 목록" :count-text="cfUserRoles.length + '건'">
+  <!-- ===== ■.■. 목록 영역 ================================================= -->
+  <bo-grid bare :columns="columns.userRoleGrid" :rows="cfUserRoles" row-key="roleId"
+    empty-text="배정된 역할이 없습니다." />
+  <!-- ===== □.□. 목록 영역 ================================================= -->
+</bo-container>
+<!-- ===== □. 적용 역할 목록 ================================================ -->
+<!-- ===== ■. 부서 선택 팝업 ================================================ -->
+<dept-tree-modal v-if="deptModal && deptModal.show" :exclude-id="null" modal-name="dept-pick" :on-callback="fnCallbackModal" />
+<!-- ===== □. 부서 선택 팝업 ================================================ -->
 `,
 };

@@ -200,12 +200,17 @@ window.SyVendorDtl = {
     @close="handleBtnAction('form-close')">
     <!-- ===== ■.■.■. 주소: 우편번호+검색버튼+기본주소+상세주소 ============================= -->
     <template #addr>
-      <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
+      <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:6px;">
         <input class="form-control" v-model="form.vendorZipCode" placeholder="우편번호"
           style="width:110px;flex-shrink:0;" readonly />
         <button v-if="!cfDtlMode" type="button" class="btn btn-blue btn-sm" @click="handleBtnAction('addr-search')"
           style="white-space:nowrap;">
           🔍 주소 검색
+        </button>
+        <button v-if="!cfDtlMode && (form.vendorZipCode || form.vendorAddr)" type="button" title="주소 초기화"
+          @click="form.vendorZipCode=''; form.vendorAddr='';"
+          style="background:none;border:none;padding:0 2px 2px;margin-left:-4px;color:#999;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0;">
+          x
         </button>
       </div>
       <input class="form-control" v-model="form.vendorAddr" placeholder="기본주소 (주소 검색 후 자동 입력)"

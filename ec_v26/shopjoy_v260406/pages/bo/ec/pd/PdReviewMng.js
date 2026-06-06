@@ -220,9 +220,11 @@ window.PdReviewMng = {
       }
     };
 
-    /* onProdIdClick — 이벤트 */
+    /* onProdIdClick — 상품ID 클릭 → 해당 상품 리뷰목록(자식 그리드) 로드
+     *   [정책] 부모(상품) 변경 시 자식(상품리뷰목록) 선택/상세는 초기화. */
     const onProdIdClick = async (prodId) => {
       if (!prodId) { return; }
+      selectedId.value = null;          // 자식 선택행 강조 + 상세패널 초기화 (부모 변경 시 정책)
       if (selectedProdId.value === prodId) {
         selectedProdId.value = null;
         prodReviews.splice(0);

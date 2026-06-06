@@ -714,28 +714,30 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
       <bo-form-area :columns="columns.newSetForm" :form="newForm" :errors="newErrors"
         :cols="3" compact :show-actions="false">
         <template #brand>
-          <div style="display:flex;gap:6px;align-items:center">
+          <div style="display:flex;gap:6px;align-items:flex-end">
             <input class="form-control" :value="newForm.brandId ? getBrandNm(newForm.brandId) : ''" readonly
               placeholder="브랜드를 선택해주세요" style="flex:1;background:#fafafa;cursor:pointer"
               @click="handleBtnAction('brandModal-open')" />
             <button class="btn btn-secondary btn-sm" type="button" style="flex-shrink:0" @click="handleBtnAction('brandModal-open')">
               선택
             </button>
-            <button v-if="newForm.brandId" class="btn btn-danger btn-sm" type="button" style="flex-shrink:0" @click="newForm.brandId=''">
-              ✕
+            <button v-if="newForm.brandId" type="button" title="선택 해제" @click="newForm.brandId=''"
+              style="background:none;border:none;padding:0 2px 2px;margin-left:-4px;color:#999;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0;">
+              x
             </button>
           </div>
         </template>
         <template #vendor>
-          <div style="display:flex;gap:6px;align-items:center">
+          <div style="display:flex;gap:6px;align-items:flex-end">
             <input class="form-control" :value="newForm.vendorId ? getVendorNm(newForm.vendorId) : ''" readonly
               placeholder="판매업체를 선택해주세요" style="flex:1;background:#fafafa;cursor:pointer"
               @click="handleBtnAction('vendorModal-open')" />
             <button class="btn btn-secondary btn-sm" type="button" style="flex-shrink:0" @click="handleBtnAction('vendorModal-open')">
               선택
             </button>
-            <button v-if="newForm.vendorId" class="btn btn-danger btn-sm" type="button" style="flex-shrink:0" @click="newForm.vendorId=''">
-              ✕
+            <button v-if="newForm.vendorId" type="button" title="선택 해제" @click="newForm.vendorId=''"
+              style="background:none;border:none;padding:0 2px 2px;margin-left:-4px;color:#999;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0;">
+              x
             </button>
           </div>
         </template>

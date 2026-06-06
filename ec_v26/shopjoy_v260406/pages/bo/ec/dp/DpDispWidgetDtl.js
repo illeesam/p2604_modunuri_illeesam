@@ -834,19 +834,19 @@ window.DpDispWidgetDtl = {
                 이 위젯이 노출되는 경로
               </span>
             </div>
-            <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'center',gap:'8px',fontFamily:'monospace'}">
+            <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'flex-end',gap:'6px',fontFamily:'monospace'}">
               <span style="flex:1;">
                 {{ pathLabel(form.pathId) || '경로 선택...' }}
               </span>
+              <button v-if="form.pathId != null" type="button" title="선택 해제" @click="handleBtnAction('form-pathClear')"
+            style="background:none;border:none;padding:0 2px 2px;color:#999;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0;">
+                x
+              </button>
               <button type="button" @click="handleBtnAction('pathModal-open')" title="표시경로 선택"
             :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'24px',height:'24px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'12px',color:'#6b7280',padding:'0'}"
             @mouseover="$event.currentTarget.style.background='#eef2ff'"
             @mouseout="$event.currentTarget.style.background='#fff'">
                 🔍
-              </button>
-              <button v-if="form.pathId != null" type="button" @click="handleBtnAction('form-pathClear')"
-            style="padding:4px 8px;border:1px solid #fca5a5;background:#fff0f0;color:#dc2626;border-radius:4px;font-size:11px;">
-                ✕
               </button>
             </div>
           </div>

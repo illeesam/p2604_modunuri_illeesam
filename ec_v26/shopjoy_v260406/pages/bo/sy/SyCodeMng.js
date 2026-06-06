@@ -106,6 +106,10 @@ window.SyCodeMng = {
       // 코드 그리드 드래그앤드롭 정렬 종료
       } else if (cmd === 'codes-reorder') {
         return onDragEnd();
+      // 코드 그리드 행 한번클릭 → 선택행 파란선 즉시 이동 (상세는 미오픈)
+      } else if (cmd === 'codes-rowSelect') {
+        uiState.selectedCodeId = param;
+        return;
       // 코드 그리드 행 더블클릭 → 상세 패널 열기
       } else if (cmd === 'codes-rowEdit') {
         return handleLoadDetail(param);
@@ -346,6 +350,8 @@ window.SyCodeMng = {
       };
       uiState.gridRows.splice(insertAt, 0, newRow);
       uiState.focusedIdx = insertAt;
+      /* 파란선 동기화 — 신규행을 선택행으로(selectedKey) 지정해 예전 선택행의 파란선 잔존(2개 선택 보임) 제거 */
+      uiState.selectedCodeId = newRow.codeId;
     };
 
     /* deleteRow — 코드 행 삭제 마킹 */
@@ -470,10 +476,15 @@ window.SyCodeMng = {
       }
     };
 
-    /* openGrpSetting — 그룹 [코드관리] 클릭 → 코드목록 진입 */
+    /* openGrpSetting — 그룹 [코드관리] 클릭 → 코드목록 진입
+     *   [정책] 부모(코드그룹) 행을 바꾸면 자식(코드목록) 선택/포커스/체크/상세는 전부 초기화. */
     const openGrpSetting = (g, e) => {
       if (e) { e.stopPropagation(); }
       uiState.selectedGrp = g.codeGrp;
+      /* ── 자식 그리드 선택 초기화 (부모 변경 시 정책) ── */
+      uiState.focusedIdx = null;       // 자식 포커스행 해제
+      uiState.checkAll = false;        // 자식 전체체크 해제
+      resetDetailToNew();              // 자식 선택행 강조(selectedCodeId) + 상세영역 초기화
       handleSearchList();
     };
 
@@ -646,8 +657,10 @@ window.SyCodeMng = {
         } },
     ];
 
-    /* fnCodeGridColumns — 코드 그리드 컬럼 (트리 모드는 parentCodeValue 추가) */
-    const fnCodeGridColumns = () => {
+    /* cfCodeGridColumns — 코드 그리드 컬럼 (트리 모드는 parentCodeValue 추가)
+     *   computed 로 캐싱 → 매 렌더마다 컬럼 배열 재생성 방지(행 클릭 시 전체 셀 재렌더 지연 제거).
+     *   isTreeType 변경 시에만 재계산. */
+    const cfCodeGridColumns = computed(() => {
       const cols = [
         { key: 'codeGrp',    label: '코드그룹',          edit: 'text' },
         { key: 'type',       label: '유형',             style: 'width:60px;', align: 'center',
@@ -673,7 +686,7 @@ window.SyCodeMng = {
           cellStyle: 'font-size:11px;color:#2563eb;', fmt: () => siteNm },
       );
       return cols;
-    };
+    });
 
     // 트리 그리드
     columns.treeGrid = [
@@ -712,7 +725,7 @@ window.SyCodeMng = {
     return {
       columns,
       uiState, codeGrpCounts, pageCodes, searchParam, treeExpanded, flatTree,                  // 상태 / 데이터
-      fnCodeGridColumns, // 컬럼 정의
+      cfCodeGridColumns, // 컬럼 정의 (computed 캐싱)
       treeRowAccessor, treeRowKeyFn,                                            // 컬럼 부속
       handleBtnAction, handleSelectAction, handleGridCellAction,                                      // dispatch (모든 이벤트 / 액션 라우팅)
       fnCodeListTitle,                                                          // 헬퍼
@@ -801,7 +814,7 @@ window.SyCodeMng = {
     <div v-if="uiState.activeCodeTab==='일반'">
       <!-- ===== ■.■.■. CRUD 그리드 ============================================ -->
       <bo-grid-crud
-        :columns="fnCodeGridColumns()" :rows="uiState.gridRows" row-key="codeId" :selected-key="uiState.selectedCodeId"
+        :columns="cfCodeGridColumns" :rows="uiState.gridRows" row-key="codeId" :selected-key="uiState.selectedCodeId"
         :list-title="fnCodeListTitle()" :show-export="true" :draggable="true"
         max-height="400px"
         :empty-text="uiState.selectedGrp ? '데이터가 없습니다.' : '그룹을 선택해주세요.'"
@@ -811,6 +824,7 @@ window.SyCodeMng = {
         @delete-checked="handleBtnAction('codes-deleteChecked')" @cancel-checked="handleBtnAction('codes-cancelChecked')"
         grid-id="codes-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" @export="handleBtnAction('codes-excel')"
         @reorder="handleSelectAction('codes-reorder')"
+        @row-click="row => handleSelectAction('codes-rowSelect', row.codeId)"
         @row-dblclick="row => handleSelectAction('codes-rowEdit', row.codeId)">
         <template #row-actions="{ row, idx }">
           <bo-row-cancel-delete :row="row" @cancel="handleSelectAction('codes-rowCancel', idx)" @delete="handleSelectAction('codes-rowDelete', idx)" />

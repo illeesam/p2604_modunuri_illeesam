@@ -848,7 +848,7 @@ window.BoPathParentSelector = {
   template: /* html */`
 <div>
   <div @click="onSelect(node.pathId)"
-    :style="{ display:'flex', alignItems:'center', gap:'4px', padding:'6px 8px', cursor:'pointer', borderRadius:'4px',
+    :style="{ display:'flex', alignItems:'center', gap:'4px', padding:'3px 8px', cursor:'pointer', borderRadius:'4px',
     paddingLeft: (12 + depth*14) + 'px' }"
     @mouseover="$event.currentTarget.style.background='#f0f2f5'"
     @mouseout="$event.currentTarget.style.background='transparent'">
@@ -1276,6 +1276,12 @@ window.BoPathPickField = {
       show.value = false;
       emit('change', pathId);
     };
+    /* onClear — 값 비우기 (null) + change emit (부모 dirty 감지 자동) */
+    const onClear = () => {
+      if (props.disabled) return;
+      if (props.row) props.row[props.pathField] = null;
+      emit('change', null);
+    };
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
@@ -1284,6 +1290,8 @@ window.BoPathPickField = {
         return onOpen();
       } else if (cmd === 'pathPick-close') {
         return onClose();
+      } else if (cmd === 'pathPick-clear') {
+        return onClear();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -1319,10 +1327,15 @@ window.BoPathPickField = {
     <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="cfLabel || ''">
       {{ cfLabel || placeholder }}
     </span>
+    <span v-if="cfHasVal && !disabled" title="비우기"
+      style="cursor:pointer;color:#9ca3af;font-size:9px;flex-shrink:0;line-height:1;padding:0;margin-right:-1px;align-self:flex-end;margin-bottom:2px;"
+      @click.stop="handleBtnAction('pathPick-clear')">
+      ✕
+    </span>
     <button type="button" :disabled="disabled"
       @click.stop="handleBtnAction('pathPick-open')" @dblclick.stop="handleBtnAction('pathPick-open')"
       :title="modalTitle"
-      :style="{cursor: disabled ? 'not-allowed' : 'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'16px',height:'16px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#6b7280',flexShrink:0,padding:'0',opacity: disabled ? 0.4 : 1}"
+      :style="{cursor: disabled ? 'not-allowed' : 'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'18px',height:'18px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'11px',color:'#2563eb',flexShrink:0,padding:'0',opacity: disabled ? 0.4 : 1}"
       @mouseover="handleSelectAction('pathPick-hover', $event)" @mouseout="handleSelectAction('pathPick-leave', $event)">
       🔍
     </button>

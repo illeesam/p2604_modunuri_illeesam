@@ -391,7 +391,8 @@ window.SyTemplateMng = {
     // 기본 그리드
     columns.baseGrid = [
       { key: 'pathId',         label: '표시경로', style: 'width:170px;max-width:170px;',
-        pathLabelOpen: { label: pathLabel, open: (row) => handleSelectAction('pathModal-open', row), placeholder: '경로 선택...' } },
+        pathLabelOpen: { label: pathLabel, open: (row) => handleSelectAction('pathModal-open', row),
+          clear: (row) => { pathPickModal.row = row; onPathPicked(null); }, placeholder: '경로 선택...' } },
       { key: 'templateId',     label: 'ID' },
       { key: 'templateTypeCd', label: '템플릿유형', badge: (row) => fnTypeBadge(row.templateTypeCd) },
       { key: 'templateCode',   label: '템플릿코드',

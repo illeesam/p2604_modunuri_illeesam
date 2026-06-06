@@ -404,7 +404,8 @@ window.SySiteMng = {
     // 기본 그리드
     columns.baseGrid = [
       { key: 'pathId',        label: '표시경로', style: 'width:170px;max-width:170px;',
-        pathLabelOpen: { label: pathLabel, open: (row) => handleSelectAction('pathModal-open', row), placeholder: '미설정' } },
+        pathLabelOpen: { label: pathLabel, open: (row) => handleSelectAction('pathModal-open', row),
+          clear: (row) => { pathPickModal.row = row; onPathPicked(null); }, placeholder: '미설정' } },
       { key: 'siteCode',      label: '사이트코드',
         cellInnerStyle: 'background:#f0f4ff;padding:2px 6px;border-radius:3px;color:#2563eb;font-weight:600;font-size:11px;font-family:monospace;' },
       { key: 'siteTypeCd',    label: '유형', badge: (row) => fnTypeBadge(row.siteTypeCd) },

@@ -472,8 +472,9 @@ window.PmPlanDtl = {
                 ▼
               </span>
             </div>
-            <button v-if="form.vendorId" :disabled="cfDtlMode" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendorClear')">
-              초기화
+            <button v-if="form.vendorId" :disabled="cfDtlMode" type="button" title="선택 해제" @click="handleBtnAction('form-vendorClear')"
+              style="background:none;border:none;padding:0 2px 2px;margin-left:-4px;color:#999;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0;align-self:flex-end;">
+              x
             </button>
           </div>
         </template>

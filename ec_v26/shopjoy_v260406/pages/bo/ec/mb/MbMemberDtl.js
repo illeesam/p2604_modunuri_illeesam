@@ -83,42 +83,40 @@ window.MbMemberDtl = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 상세/수정 카드 (항상 표시) ====================================== -->
-  <bo-container body-style="padding:12px;">
-    <!-- ===== ■.■. 상세 툴바: 제목 + 저장/삭제/닫기 (active 시에만 버튼 노출) ============ -->
-    <template #title>
-      {{ !active ? '회원 상세' : (detailModal.isNew ? '신규 등록' : '상세 / 수정') }}
-      <span v-if="active && !detailModal.isNew && detailModal.form && detailModal.form.memberId" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
-        #{{ detailModal.form.memberId }}
-      </span>
-      <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-        목록에서 행을 선택하거나 [+신규]를 누르세요
-      </span>
-    </template>
-    <template v-if="active" #toolbar-actions>
-      <button class="btn btn-primary btn-sm" @click="handleBtnAction('form-save')">
-        저장
-      </button>
-      <button v-if="!detailModal.isNew" class="btn btn-danger btn-sm" @click="handleBtnAction('form-delete')">
-        삭제
-      </button>
-      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('form-close')">
-        닫기
-      </button>
-    </template>
-    <!-- ===== □.■. 상세 툴바 ================================================ -->
-    <!-- ===== ■.■. 폼 영역 (BoFormArea 자동 렌더) ============================== -->
-    <bo-form-area :columns="columns.baseForm" :form="detailModal.form" :errors="{}"
-      :readonly="!active" :cols="3" compact :show-actions="false" />
-    <!-- ===== □.■. 폼 영역 ================================================== -->
-  </bo-container>
-  <!-- ===== □. 상세/수정 카드 ================================================ -->
-  <!-- ===== ■. 이력정보 카드 (행 선택 + 기존 회원일 때만) ============================= -->
-  <bo-container v-if="active && !detailModal.isNew">
-    <mb-member-hist :member-id="currentId" :key="currentId" />
-  </bo-container>
-  <!-- ===== □. 이력정보 카드 ================================================= -->
-</div>
+<!-- ===== ■. 상세/수정 카드 (항상 표시) ====================================== -->
+<bo-container body-style="padding:12px;">
+  <!-- ===== ■.■. 상세 툴바: 제목 + 저장/삭제/닫기 (active 시에만 버튼 노출) ============ -->
+  <template #title>
+    {{ !active ? '회원 상세' : (detailModal.isNew ? '신규 등록' : '상세 / 수정') }}
+    <span v-if="active && !detailModal.isNew && detailModal.form && detailModal.form.memberId" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+      #{{ detailModal.form.memberId }}
+    </span>
+    <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+      목록에서 행을 선택하거나 [+신규]를 누르세요
+    </span>
+  </template>
+  <template v-if="active" #toolbar-actions>
+    <button class="btn btn-primary btn-sm" @click="handleBtnAction('form-save')">
+      저장
+    </button>
+    <button v-if="!detailModal.isNew" class="btn btn-danger btn-sm" @click="handleBtnAction('form-delete')">
+      삭제
+    </button>
+    <button class="btn btn-secondary btn-sm" @click="handleBtnAction('form-close')">
+      닫기
+    </button>
+  </template>
+  <!-- ===== □.■. 상세 툴바 ================================================ -->
+  <!-- ===== ■.■. 폼 영역 (BoFormArea 자동 렌더) ============================== -->
+  <bo-form-area :columns="columns.baseForm" :form="detailModal.form" :errors="{}"
+    :readonly="!active" :cols="3" compact :show-actions="false" />
+  <!-- ===== □.■. 폼 영역 ================================================== -->
+</bo-container>
+<!-- ===== □. 상세/수정 카드 ================================================ -->
+<!-- ===== ■. 이력정보 카드 (행 선택 + 기존 회원일 때만) ============================= -->
+<bo-container v-if="active && !detailModal.isNew">
+  <mb-member-hist :member-id="currentId" :key="currentId" />
+</bo-container>
+<!-- ===== □. 이력정보 카드 ================================================= -->
 `,
 };

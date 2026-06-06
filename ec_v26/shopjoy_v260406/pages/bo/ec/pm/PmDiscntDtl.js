@@ -28,13 +28,23 @@ window.PmDiscntDtl = {
     const DEFAULT_START = `${_today.getFullYear()}-${_pad(_today.getMonth()+1)}-${_pad(_today.getDate())}`;
     const DEFAULT_END   = `${_today.getFullYear()+1}-12-31`;
 
+    /* 폼 초기값 = 빈 폼 (미선택/초기화 상태에서는 모든 필드 비움).
+     *   신규 등록 기본값(정률/활성/전체상품/날짜)은 [+신규] 진입 시에만 _applyNewDefaults() 로 채움. */
     const form = reactive({
-      discntId: null, discntNm: '', discntTypeCd: '정률', discntValue: 0,
-      discntStatusCd: '활성', startDate: DEFAULT_START, endDate: DEFAULT_END,
-      discntTargetCd: '전체상품', minOrderAmt: 0, maxDiscntAmt: 0, discntDesc: '',
+      discntId: null, discntNm: '', discntTypeCd: '', discntValue: '',
+      discntStatusCd: '', startDate: '', endDate: '',
+      discntTargetCd: '', minOrderAmt: '', maxDiscntAmt: '', discntDesc: '',
       visibilityTargets: '^PUBLIC^',
       vendorId: '', chargeStaff: '',
     });
+    /* _applyNewDefaults — 신규 등록 진입 시 기본값 채움 */
+    const _applyNewDefaults = () => {
+      Object.assign(form, {
+        discntTypeCd: '정률', discntValue: 0, discntStatusCd: '활성',
+        startDate: DEFAULT_START, endDate: DEFAULT_END,
+        discntTargetCd: '전체상품', minOrderAmt: 0, maxDiscntAmt: 0,
+      });
+    };
     const errors = reactive({});
 
     const schema = yup.object({
@@ -174,6 +184,8 @@ window.PmDiscntDtl = {
     // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) { fnLoadCodes(); }
+      // [+신규] 진입(활성 + 신규)일 때만 기본값 채움. 미선택/초기화(비활성)면 빈 폼 유지.
+      if (props.active && cfIsNew.value) { _applyNewDefaults(); }
     });
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
     watch(() => props.reloadTrigger, async (n, o) => {
@@ -354,8 +366,9 @@ window.PmDiscntDtl = {
               ▼
             </span>
           </div>
-          <button v-if="coUtil.cofAnd(form.vendorId, !cfDtlMode)" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendorClear')">
-            초기화
+          <button v-if="coUtil.cofAnd(form.vendorId, !cfDtlMode)" type="button" title="선택 해제" @click="handleBtnAction('form-vendorClear')"
+            style="background:none;border:none;padding:0 2px 2px;margin-left:-4px;color:#999;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0;align-self:flex-end;">
+            x
           </button>
         </div>
       </template>

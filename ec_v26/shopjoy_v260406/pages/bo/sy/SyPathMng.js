@@ -81,9 +81,6 @@ window.SyPathMng = {
       // 그리드 행 삭제 (서버 호출)
       } else if (cmd === 'paths-rowDelete') {
         return deleteRow(param);
-      // 그리드 행 [부모경로] 컬럼 클릭 → 모달 열기
-      } else if (cmd === 'parentModal-open') {
-        return openParentModal(param);
       // 페이지 크기 변경
       } else if (cmd === 'paths-pager-sizeChange') {
         pager.pageNo = 1;
@@ -96,11 +93,14 @@ window.SyPathMng = {
       }
     };
 
-    /* handleGridCellAction — 그리드 셀 변경/클릭 라우터. colKey 기준 분기 (CRUD 셀 변경 등) */
+    /* handleGridCellAction — 그리드 셀 변경/클릭 라우터. colKey 기준 분기 (CRUD 셀 변경 / 셀 내 버튼 btn_*) */
     const handleGridCellAction = (cmd, colKey, row, e = {}) => {
       if (cmd === 'paths-cellChange') {
+        // 부모경로 셀: 🔍 돋보기 → 모달 열기 / ✕ → 비우기
+        if (colKey === 'btn_parent_open')  { return openParentModal(row); }
+        if (colKey === 'btn_parent_clear') { return clearParent(row); }
+        // 그 외 = edit 셀 값 변경 감지
         return onCellChange(row);
-      // 그리드 행 취소
       } else {
         console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
@@ -164,7 +164,7 @@ window.SyPathMng = {
       return { pathId: null, pathLabel: '전체', children: roots.sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0)) };
     });
 
-    const cfDirtyRows = computed(() => gridRows.filter(r => r._status === 'N' || r._status === 'U'));
+    const cfDirtyRows = computed(() => gridRows.filter(r => r._status === 'N' || r._status === 'U' || r._status === 'D'));
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -239,44 +239,44 @@ window.SyPathMng = {
       });
     };
 
-    /* cancelRow — 행 취소 */
+    /* cancelRow — 행 취소 (신규=행 제거 / 수정·삭제=원본 복원)
+     *   서버 호출 없음. 저장 전 로컬 되돌리기. */
     const cancelRow = (row) => {
       if (row._status === 'N') {
         const idx = gridRows.findIndex(r => r.pathId === row.pathId);
         if (idx !== -1) { gridRows.splice(idx, 1); }
       } else if (row._row_org) {
         Object.assign(row, row._row_org, { _status: null });
+      } else {
+        row._status = null;
       }
     };
 
-    /* deleteRow — 행 삭제 (서버 호출) */
-    const deleteRow = async (row) => {
+    /* deleteRow — 행 삭제 마킹 (_status='D'). 신규행은 즉시 제거.
+     *   실제 DB 삭제는 [저장] 클릭 시 saveList 에 'D' 로 전송되어 처리됨. */
+    const deleteRow = (row) => {
       if (row._status === 'N') { cancelRow(row); return; }
-      const ok = await showConfirm?.('삭제', `[${row.pathLabel}] 경로를 삭제하시겠습니까?`);
-      if (!ok) { return; }
-      try {
-        const res = await boApiSvc.syPath.remove(row.pathId, '경로관리', '삭제');
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
-        showToast?.('삭제되었습니다.', 'success');
-        await handleSearchTree();
-        await handleGridSearch();
-      } catch (err) {
-        const msg = err.response?.data?.message || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
-        showToast?.(msg, 'error', 0);
-      }
+      row._status = 'D';
     };
 
     /* handleSave — 저장 */
     const handleSave = async () => {
       const changed = cfDirtyRows.value;
       if (!changed.length) { showToast?.('변경된 내용이 없습니다.', 'info'); return; }
+      // 삭제(D) 행은 라벨 검증 제외, 신규(N)/수정(U) 행만 필수값 확인
       for (const row of changed) {
-        if (!row.pathLabel) { showToast?.('경로 라벨은 필수입니다.', 'error'); return; }
+        if (row._status !== 'D' && !row.pathLabel) { showToast?.('경로 라벨은 필수입니다.', 'error'); return; }
       }
-      const ok = await showConfirm?.('저장', `${changed.length}건을 저장하시겠습니까?`);
+      const cntDel = changed.filter(r => r._status === 'D').length;
+      const cntUpd = changed.length - cntDel;
+      const msg = cntDel
+        ? `변경 ${cntUpd}건, 삭제 ${cntDel}건을 저장하시겠습니까?`
+        : `${changed.length}건을 저장하시겠습니까?`;
+      const ok = await showConfirm?.('저장', msg);
       if (!ok) { return; }
-      const saveRows = changed.map(r => ({ ...r, rowStatus: r._row_status || r._status }));
+      // rowStatus 매핑: N→I(insert) / U→U(update) / D→D(delete)
+      const _RS = { N: 'I', U: 'U', D: 'D' };
+      const saveRows = changed.map(r => ({ ...r, rowStatus: _RS[r._status] || r._row_status || r._status }));
       try {
         await boApiSvc.syPath.saveList('base', saveRows, '경로관리', '저장');
         showToast?.('저장되었습니다.', 'success');
@@ -309,6 +309,12 @@ window.SyPathMng = {
       closeParentModal();
     };
 
+    /* clearParent — 부모경로 비우기 (루트로) */
+    const clearParent = (row) => {
+      row.parentPathId = null;
+      onCellChange(row);
+    };
+
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     /* getParentLabel — 부모경로 라벨 조회 */
     const getParentLabel = (pathId) => {
@@ -333,14 +339,13 @@ window.SyPathMng = {
     // 기본 그리드
     columns.baseGrid = [
       { key: 'rowStatus',    label: '상태',     style: 'width:60px;text-align:center;', align: 'center',
-        badge: (row) => 'badge-xs ' + (row._status === 'N' ? 'badge-green' : row._status === 'U' ? 'badge-orange' : 'badge-gray'),
+        badge: (row) => 'badge-xs ' + (row._status === 'N' ? 'badge-green' : row._status === 'U' ? 'badge-orange' : row._status === 'D' ? 'badge-red' : 'badge-gray'),
         fmt: (v, row) => row._status || 'N' },
       { key: 'pathId',       label: 'ID',       style: 'width:60px;text-align:center;', align: 'center',
         cellStyle: 'font-size:11px;color:#999;',
         fmt: (v, row) => row.pathId > 0 ? row.pathId : 'NEW' },
       { key: 'bizCd',        label: '업무코드', style: 'width:120px;', edit: 'text', placeholder: 'biz_cd' },
-      { key: 'parentPathId', label: '부모경로', style: 'width:160px;',
-        linkButton: { label: (row) => getParentLabel(row.parentPathId), onClick: (row) => handleSelectAction('parentModal-open', row) } },
+      { key: 'parentPathId', label: '부모경로', style: 'width:180px;', noEllipsis: true },
       { key: 'pathLabel',    label: '경로 라벨', edit: 'text', placeholder: '경로 라벨' },
       { key: 'sortOrd',      label: '정렬',     style: 'width:60px;text-align:center;', edit: 'number', align: 'center' },
       { key: 'useYn',        label: '사용',     style: 'width:70px;text-align:center;',
@@ -348,8 +353,18 @@ window.SyPathMng = {
       { key: 'pathRemark',   label: '비고',     style: 'width:160px;', edit: 'text', placeholder: '비고' },
     ];
 
-    /* fnRowClass — 행 클래스 */
-    const fnRowClass = (r) => 'status-' + (r._status || '');
+    /* fnRowClass — 행 클래스 (crud-row 베이스 + 행상태 색상)
+     *   CSS 규칙은 `.crud-row.status-{I|U|D}` 두 클래스 동시 매칭 필요.
+     *   _status: 'N'(신규)→status-I(녹색), 'U'(수정)→status-U(노랑), 'D'(삭제)→status-D(빨강) */
+    const _STATUS_CLS = { N: 'status-I', U: 'status-U', D: 'status-D' };
+    const fnRowClass = (r) => 'crud-row ' + (_STATUS_CLS[r._status] || '');
+
+    /* fnShowCancel/fnShowDelete — 관리열 [취소]/[삭제] 표시조건 (BoRowCancelDelete 표준 동일)
+     *   _status: null(저장됨) / 'N'(신규) / 'U'(수정) / 'D'(삭제마킹)
+     *   취소: 'N'·'U'·'D' (변경된 모든 상태에서 되돌리기)  ← U(수정) 행도 취소 노출
+     *   삭제: null(저장됨)·'U'(수정) (정상/수정 행만 삭제 마킹. 신규·이미삭제 행은 미노출) */
+    const fnShowCancel = (r) => ['N', 'U', 'D'].includes(r._status);
+    const fnShowDelete = (r) => r._status == null || r._status === 'U';
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
@@ -357,7 +372,7 @@ window.SyPathMng = {
       uiState, searchParam, codes, expanded, gridRows, pager, parentModal,         // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                         // dispatch (모든 이벤트 / 액션 라우팅)
       cfTree, cfParentTree, cfDirtyRows,                                           // computed
-      fnRowClass,                                                                  // 헬퍼
+      fnRowClass, getParentLabel, fnShowCancel, fnShowDelete,                      // 헬퍼
     };
   },
   template: /* html */`
@@ -392,16 +407,43 @@ window.SyPathMng = {
         :columns="columns.baseGrid" :rows="gridRows" row-key="pathId"
         :row-class="fnRowClass" :row-actions="true"
         grid-id="paths-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
+        <!-- ===== ■.■.■. 부모경로 셀: 값 박스 + 🔍 돋보기(모달 열기) + x(비우기) ============
+             BoPathPickField 와 동일한 룩앤필 (값 박스 + 돋보기 버튼 + 우측 x). 모달은 부모트리(cfParentTree) 전용 -->
+        <template #cell-parentPathId="{ row }">
+          <td style="width:180px;">
+            <div style="display:flex;align-items:center;gap:4px;padding:0 4px 0 7px;border:1px solid #e5e7eb;border-radius:5px;background:#f5f5f7;min-height:24px;">
+              <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;"
+                :style="{ color: row.parentPathId != null ? '#374151' : '#9ca3af', fontWeight: row.parentPathId != null ? 600 : 400 }"
+                :title="getParentLabel(row.parentPathId)">
+                {{ getParentLabel(row.parentPathId) }}
+              </span>
+              <span v-if="row.parentPathId != null" title="부모경로 비우기"
+                style="cursor:pointer;color:#9ca3af;font-size:9px;flex-shrink:0;line-height:1;padding:0;margin-right:-1px;align-self:flex-end;margin-bottom:2px;"
+                @click.stop="handleGridCellAction('paths-cellChange', 'btn_parent_clear', row)">
+                ✕
+              </span>
+              <button type="button" title="부모경로 선택"
+                style="cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;background:#fff;border:1px solid #d1d5db;border-radius:4px;font-size:11px;color:#2563eb;flex-shrink:0;padding:0;"
+                @click.stop="handleGridCellAction('paths-cellChange', 'btn_parent_open', row)">
+                🔍
+              </button>
+            </div>
+          </td>
+        </template>
         <template #head-actions>
           관리
         </template>
+        <!-- ===== ■.■.■. 관리: 행상태별 [취소]/[삭제] (취소=왼쪽, 삭제=오른쪽) ============
+             N(신규): [취소](행제거) / D(삭제마킹): [취소](복원)+[삭제] / 그외: [삭제](D마킹). 실제 반영은 상단 [저장] -->
         <template #row-actions="{ row }">
-          <button v-if="row._status==='N'" class="btn btn-secondary btn-xs" @click.stop="handleSelectAction('paths-rowCancel', row)">
-            취소
-          </button>
-          <button v-else class="btn btn-danger btn-xs" @click.stop="handleSelectAction('paths-rowDelete', row)">
-            삭제
-          </button>
+          <div style="display:inline-flex;gap:4px;flex-wrap:nowrap;">
+            <button v-if="fnShowCancel(row)" class="btn btn-secondary btn-xs" @click.stop="handleSelectAction('paths-rowCancel', row)">
+              취소
+            </button>
+            <button v-if="fnShowDelete(row)" class="btn btn-danger btn-xs" @click.stop="handleSelectAction('paths-rowDelete', row)">
+              삭제
+            </button>
+          </div>
         </template>
       </bo-grid>
       <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('paths-pager-setPage', n)" :on-size-change="() => handleSelectAction('paths-pager-sizeChange')" />
@@ -413,7 +455,9 @@ window.SyPathMng = {
   <bo-tree-selector-modal :show="parentModal.show" title="부모경로 선택"
     :node="cfParentTree" :expanded="parentModal.expanded"
     :on-toggle="id => handleBtnAction('parentModal-toggle', id)"
-    root-label="(루트 — 상위없음)" modal-name="parent-path" :on-callback="fnCallbackModal" />
+    root-label="(루트 — 상위없음)"
+    @select="id => handleSelectAction('parentModal-select', id)"
+    @close="handleBtnAction('parentModal-close')" />
   <!-- ===== □. 부모경로 선택 모달 (BoTreeSelectorModal) ======================== -->
 </bo-page>
 `,

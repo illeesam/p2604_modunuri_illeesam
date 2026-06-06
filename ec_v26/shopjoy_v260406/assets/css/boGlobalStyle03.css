@@ -28,7 +28,7 @@ body { background: #f0f2f5; color: #222; font-family: 'Noto Sans KR', sans-serif
 .list-title::before { content: "●"; color: #e8587a; font-size: 8px; margin-right: 5px; vertical-align: middle; }
 .list-title .list-count { font-size: 12px; font-weight: 400; color: #999; margin-left: 6px; }
 
-.btn { display: inline-flex; align-items: center; gap: 4px; padding: 7px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; transition: transform .15s, box-shadow .15s, background .15s; letter-spacing: .2px; }
+.btn { display: inline-flex; align-items: center; gap: 4px; padding: 7px 14px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; transition: transform .15s, box-shadow .15s, background .15s; letter-spacing: .2px; white-space: nowrap; }
 .btn:hover:not(:disabled) { transform: translateY(-1px); }
 .btn:disabled { cursor: not-allowed; opacity: .55; }
 .btn-primary   { background: linear-gradient(135deg, #9c27b0, #6a1b9a); color: #fff; box-shadow: 0 2px 6px rgba(156,39,176,.22); }
@@ -47,19 +47,19 @@ body { background: #f0f2f5; color: #222; font-family: 'Noto Sans KR', sans-serif
 .btn-xs        { padding: 2px 7px; font-size: 11px; border-radius: 5px; font-weight: 500; }
 
 .bo-table { width: 100%; min-width: 720px; border-collapse: collapse; }
-/* 표준 행 높이: 세로 패딩 6px(th)/4px(td) — 위젯 셀(표시경로 picker 등) 포함 일관 유지 */
+/* 표준 행 높이: 세로 패딩 6px(th)/3px(td) — 코드목록(crud-grid) 행높이 기준으로 전 BO 그리드 통일 */
 .bo-table th { background: #fafafa; padding: 6px 10px; text-align: center; font-size: 12px; font-weight: 600; color: #555; border-bottom: 1px solid #e8e8e8; border-right: 1px solid #ececec; white-space: nowrap; }
 .bo-table th:last-child { border-right: none; }
 /* 그리드 내부 스크롤 시 헤더 고정 */
 .bo-table thead th { position: sticky; top: 0; z-index: 2; }
-.bo-table td { padding: 7px 10px; font-size: 13px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+.bo-table td { padding: 3px 8px; font-size: 12px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
 .bo-table tr:hover td { background: #fafbff; }
 /* 선택 행 강조 — 파란 외곽선 (tr 단일 outline. 셀별 box-shadow 이중겹침 제거) */
 .bo-table tr.bo-row-selected td { background:#eff6ff; }
 .bo-table tr.bo-row-selected { outline: 2px solid #2563eb; outline-offset: -2px; }
 .bo-table tr.bo-row-selected:hover td { background:#e0ecff; }
 
-.bo-table .actions { display: flex; gap: 4px; justify-content: center; }
+.bo-table .actions { display: inline-flex; flex-wrap: nowrap; gap: 4px; justify-content: center; white-space: nowrap; }
 .title-link { color: #1677ff; cursor: pointer; font-weight: 500; }
 .title-link:hover { text-decoration: underline; }
 
@@ -140,9 +140,10 @@ textarea.form-control { resize: vertical; min-height: 80px; font-family: inherit
 .col-row-actions { width: 80px; }
 .col-act-cancel, .col-act-cancel-val { width: 46px; text-align: center; white-space: nowrap; }
 .col-act-delete, .col-act-delete-val { width: 46px; text-align: center; white-space: nowrap; }
-.col-act { width: 130px; }
-.col-act-val { width: 130px; text-align: center; }
-.col-act-box { display: flex; flex-wrap: wrap; gap: 3px; justify-content: center; align-items: center; }
+/* 관리(actions) 열: 버튼 항상 한 줄 — 내용폭에 맞춰 자동(고정폭 클립 금지), nowrap 강제 */
+.col-act { white-space: nowrap; }
+.col-act-val { width: 1%; text-align: center; white-space: nowrap; }
+.col-act-box { display: inline-flex; flex-wrap: nowrap; gap: 3px; justify-content: center; align-items: center; white-space: nowrap; }
 .row-actions { display: flex; gap: 3px; justify-content: flex-end; white-space: nowrap; }
 .btn-xs { padding: 2px 7px !important; font-size: 11px !important; }
 

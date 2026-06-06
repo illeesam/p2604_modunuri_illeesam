@@ -155,10 +155,18 @@ window.PmCacheDtl = {
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // ===== 폼 / 에러 / Yup 스키마 ==========================================
+    /* 폼 초기값 = 빈 폼 (미선택/초기화 상태에서는 모든 필드 비움).
+     *   신규 등록 기본값(유형/금액/잔액)은 [+신규] 진입 시에만 _applyNewDefaults() 로 채움. */
     const form = reactive({
-      cacheId: null, memberId: '', memberNm: '', cacheDate: '', cacheTypeCd: '충전', cacheAmt: 0, balanceAmt: 0, cacheDesc: '',
+      cacheId: null, memberId: '', memberNm: '', cacheDate: '', cacheTypeCd: '', cacheAmt: '', balanceAmt: '', cacheDesc: '',
       refId: '', procUserId: '',
     });
+    /* _applyNewDefaults — 신규 등록 진입 시 기본값 채움 */
+    const _applyNewDefaults = () => {
+      Object.assign(form, {
+        cacheTypeCd: '충전', cacheAmt: 0, balanceAmt: 0,
+      });
+    };
     const errors = reactive({});
 
     const schema = yup.object({
@@ -169,6 +177,8 @@ window.PmCacheDtl = {
     // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) { fnLoadCodes(); }
+      // [+신규] 진입(활성 + 신규)일 때만 기본값 채움. 미선택/초기화(비활성)면 빈 폼 유지.
+      if (props.active && cfIsNew.value) { _applyNewDefaults(); }
     });
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
     watch(() => props.reloadTrigger, async (n, o) => {
@@ -334,8 +344,9 @@ window.PmCacheDtl = {
               ▼
             </span>
           </div>
-          <button v-if="coUtil.cofAnd(form.vendorId, !cfDtlMode)" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendorClear')">
-            초기화
+          <button v-if="coUtil.cofAnd(form.vendorId, !cfDtlMode)" type="button" title="선택 해제" @click="handleBtnAction('form-vendorClear')"
+            style="background:none;border:none;padding:0 2px 2px;margin-left:-4px;color:#999;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0;align-self:flex-end;">
+            x
           </button>
         </div>
       </template>

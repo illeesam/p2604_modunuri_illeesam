@@ -77,6 +77,8 @@ window.SyDeptMng = {
       // 좌측 트리 노드 선택 → 우측 그리드 필터링
       } else if (cmd === 'deptTree-select') {
         uiState.selectedTreeId = param;
+        uiState.focusedIdx = null;        // 트리(부모) 변경 시 자식 포커스행 해제
+        uiState.checkAll = false;         // 자식 전체체크 해제 (부모 변경 시 정책)
         return handleGridSearch();
       // 상위부서 선택 모달 열기 (parentPick 컬럼)
       } else if (cmd === 'parentModal-open') {
@@ -422,7 +424,8 @@ window.SyDeptMng = {
       { key: 'deptNm',       label: '부서명',   style: 'min-width:190px;', edit: 'text',
         treeDepth: true, treeBullet: depthBullet, treeColor: depthColor },
       { key: 'parentDeptId', label: '상위부서', style: 'min-width:150px;',
-        parentPick: { label: parentNm, open: (row) => handleSelectAction('parentModal-open', row), title: '상위부서 선택' } },
+        parentPick: { label: parentNm, open: (row) => handleSelectAction('parentModal-open', row),
+          clear: (row) => { row.parentDeptId = null; onCellChange(row); }, title: '상위부서 선택' } },
       { key: 'deptTypeCd',   label: '유형',     style: 'width:90px;',     edit: 'select', options: () => codes.dept_types.map(t => ({ value: t, label: t })) },
       { key: 'sortOrd',      label: '순서',     cls: 'col-ord',  edit: 'number' },
       { key: 'useYn',        label: '사용여부', cls: 'col-use',  edit: 'select', options: () => codes.use_yn },

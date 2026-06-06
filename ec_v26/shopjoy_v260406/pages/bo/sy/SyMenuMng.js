@@ -68,7 +68,8 @@ window.SyMenuMng = {
       // 좌측 경로 트리 노드 선택 → 우측 그리드 필터링 (선택행 강조 해제 후 재조회)
       } else if (cmd === 'pathTree-select') {
         uiState.selectedTreeId = param;
-        uiState.focusedIdx = null;        // 트리 변경 시 선택행 강조 해제 (재조회로 행 인덱스 무효화 방지)
+        uiState.focusedIdx = null;        // 트리(부모) 변경 시 자식 선택행 강조 해제 (재조회로 행 인덱스 무효화 방지)
+        uiState.checkAll = false;         // 자식 전체체크 해제 (부모 변경 시 정책)
         return handleSearchList();
       // 상위메뉴 선택 모달 열기 (parentPick 컬럼)
       } else if (cmd === 'parentModal-open') {
@@ -351,7 +352,8 @@ window.SyMenuMng = {
       { key: 'menuNm',     label: '메뉴명',   style: 'min-width:180px;', edit: 'text',
         treeDepth: true, treeBullet: depthBullet, treeColor: depthColor },
       { key: 'parentMenuId', label: '상위메뉴', style: 'min-width:140px;',
-        parentPick: { label: parentNm, open: (row) => handleSelectAction('parentModal-open', row), title: '상위메뉴 선택' } },
+        parentPick: { label: parentNm, open: (row) => handleSelectAction('parentModal-open', row),
+          clear: (row) => { row.parentMenuId = null; row._depth = 0; onCellChange(row); }, title: '상위메뉴 선택' } },
       { key: 'menuUrl',    label: '메뉴URL',  style: 'min-width:160px;', edit: 'text', placeholder: '/path' },
       { key: 'menuTypeCd', label: '유형',     style: 'width:80px;',     edit: 'select', options: () => codes.menu_types.map(t => ({ value: t, label: t })) },
       { key: 'sortOrd',    label: '순서',     cls: 'col-ord',  edit: 'number' },

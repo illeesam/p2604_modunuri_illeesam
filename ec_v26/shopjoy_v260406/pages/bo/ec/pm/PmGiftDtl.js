@@ -29,12 +29,19 @@ window.PmGiftDtl = {
     const DEFAULT_END   = `${_today.getFullYear()+1}-12-31`;
 
     const form = reactive({
-      giftId: null, giftNm: '', giftTypeCd: '구매조건', condVal: 0,
-      giftStatusCd: '활성', giftStock: 0, startDate: DEFAULT_START, endDate: DEFAULT_END,
-      prodId: null, giftDesc: '', minOrderAmt: 0, minOrderQty: 0,
+      giftId: null, giftNm: '', giftTypeCd: '', condVal: '',
+      giftStatusCd: '', giftStock: '', startDate: '', endDate: '',
+      prodId: null, giftDesc: '', minOrderAmt: '', minOrderQty: '',
       visibilityTargets: '^PUBLIC^',
       vendorId: '', chargeStaff: '',
     });
+    /* _applyNewDefaults — 신규 등록 진입 시 기본값 채움 */
+    const _applyNewDefaults = () => {
+      Object.assign(form, {
+        giftTypeCd: '구매조건', condVal: 0, giftStatusCd: '활성', giftStock: 0,
+        startDate: DEFAULT_START, endDate: DEFAULT_END, minOrderAmt: 0, minOrderQty: 0,
+      });
+    };
     const errors = reactive({});
 
     const schema = yup.object({
@@ -179,6 +186,8 @@ window.PmGiftDtl = {
     // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) { fnLoadCodes(); }
+      // [+신규] 진입(활성 + 신규)일 때만 기본값 채움. 미선택/초기화(비활성)면 빈 폼 유지.
+      if (props.active && cfIsNew.value) { _applyNewDefaults(); }
     });
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
     watch(() => props.reloadTrigger, async (n, o) => {
@@ -359,8 +368,9 @@ window.PmGiftDtl = {
               ▼
             </span>
           </div>
-          <button v-if="coUtil.cofAnd(form.vendorId, !cfDtlMode)" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendorClear')">
-            초기화
+          <button v-if="coUtil.cofAnd(form.vendorId, !cfDtlMode)" type="button" title="선택 해제" @click="handleBtnAction('form-vendorClear')"
+            style="background:none;border:none;padding:0 2px 2px;margin-left:-4px;color:#999;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0;align-self:flex-end;">
+            x
           </button>
         </div>
       </template>
