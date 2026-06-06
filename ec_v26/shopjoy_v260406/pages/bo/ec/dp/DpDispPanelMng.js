@@ -145,7 +145,7 @@ window.DpDispPanelMng = {
         if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
+      panelsGridPager.pageNo = 1;
       handleSearchData(buildSearchParams?.() || {});
     };
 
@@ -204,11 +204,11 @@ window.DpDispPanelMng = {
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
       boUtil.bofApplyDateRange(searchParam);
-      pager.pageNo = 1;
+      panelsGridPager.pageNo = 1;
     };
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const panelsGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 /* 하단 상세
  * 정책: 행상세/행수정 클릭 시 항상 상세 API 재조회. 같은 id 재클릭이어도 닫지 않고 reloadTrigger 만 ++ */
     const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reloadTrigger: 0, resetSeq: 0, active: false });
@@ -314,11 +314,11 @@ window.DpDispPanelMng = {
 
     /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => {
-      pager.pageTotalCount = cfFiltered.value.length;
-      pager.pageTotalPage  = Math.max(1, Math.ceil(cfFiltered.value.length / pager.pageSize));
-      const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4);
-      pager.pageNums = Array.from({length:e-s+1},(_,i)=>s+i);
-      pager.pageList = cfFiltered.value.slice((pager.pageNo-1)*pager.pageSize, pager.pageNo*pager.pageSize);
+      panelsGridPager.pageTotalCount = cfFiltered.value.length;
+      panelsGridPager.pageTotalPage  = Math.max(1, Math.ceil(cfFiltered.value.length / panelsGridPager.pageSize));
+      const c=panelsGridPager.pageNo,l=panelsGridPager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4);
+      panelsGridPager.pageNums = Array.from({length:e-s+1},(_,i)=>s+i);
+      panelsGridPager.pageList = cfFiltered.value.slice((panelsGridPager.pageNo-1)*panelsGridPager.pageSize, panelsGridPager.pageNo*panelsGridPager.pageSize);
     };
     watch(cfFiltered, () => { fnBuildPagerNums(); });
 
@@ -394,22 +394,22 @@ window.DpDispPanelMng = {
     });
 
     /* onSearch — 조회 */
-    const onSearch = async () => { pager.pageNo = 1; await handleSearchData(buildSearchParams()); };
+    const onSearch = async () => { panelsGridPager.pageNo = 1; await handleSearchData(buildSearchParams()); };
 
     /* onReset — 초기화 */
     const onReset = () => {
       Object.assign(searchParam, _initSearchParam());
       uiState.sortKey = ''; uiState.sortDir = 'asc';
       uiState.selectedPath = null;   // 표시경로 트리 전체로 복귀
-      pager.pageNo = 1;
+      panelsGridPager.pageNo = 1;
       handleSearchData(buildSearchParams());
     };
 
     /* setPage — 설정 */
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; fnBuildPagerNums(); } };
+    const setPage = n => { if (n >= 1 && n <= panelsGridPager.pageTotalPage) { panelsGridPager.pageNo = n; fnBuildPagerNums(); } };
 
     /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; fnBuildPagerNums(); };
+    const onSizeChange = () => { panelsGridPager.pageNo = 1; fnBuildPagerNums(); };
 
     /* handleDelete — 삭제 */
     const handleDelete = async (d) => {
@@ -494,8 +494,8 @@ window.DpDispPanelMng = {
       e.preventDefault(); uiState.panelDragOverIdx = -1;
       const src = uiState.panelDragSrc;
       if (src === null || src === pageIdx) { uiState.panelDragSrc = null; return; }
-      const srcId = pager.pageList?.[src]?.dispId;
-      const tgtId = pager.pageList?.[pageIdx]?.dispId;
+      const srcId = panelsGridPager.pageList?.[src]?.dispId;
+      const tgtId = panelsGridPager.pageList?.[pageIdx]?.dispId;
       if (!srcId || !tgtId) { uiState.panelDragSrc = null; return; }
       const arr = displays;
       const si = arr.findIndex(x => x.dispId === srcId);
@@ -547,7 +547,7 @@ window.DpDispPanelMng = {
     const onWidgetDragEnd = () => { uiState.widgetDragPanel = null; uiState.widgetDragSrcWi = null; uiState.widgetDragOverWi = null; };
 
     /* selectPathNode — 선택 ([정책] 부모 트리 변경 시 자식 상세영역 선택 초기화) */
-    const selectPathNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; resetDetailToNew(); handleSearchData(buildSearchParams()); };
+    const selectPathNode = (id) => { uiState.selectedPath = id; panelsGridPager.pageNo = 1; resetDetailToNew(); handleSearchData(buildSearchParams()); };
 
     /* _initSearchParam — 초기화 */
     const _initSearchParam = () => {
@@ -565,7 +565,7 @@ window.DpDispPanelMng = {
     const isTreeOpen = (k) => treeOpen.has(k);
 
     /* selectTree — 선택 */
-    const selectTree = (k) => { uiState.selectedTreeKey = uiState.selectedTreeKey === k ? '' : k; pager.pageNo = 1; };
+    const selectTree = (k) => { uiState.selectedTreeKey = uiState.selectedTreeKey === k ? '' : k; panelsGridPager.pageNo = 1; };
 
     /* expandAll — 펼치기 전체 */
     const expandAll  = () => {
@@ -613,7 +613,7 @@ window.DpDispPanelMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       columns,
-      uiStateDetail, panels, uiState, panelCounts, displays, codes, searchParam, pager,            // 상태 / 데이터
+      uiStateDetail, panels, uiState, panelCounts, displays, codes, searchParam, panelsGridPager,            // 상태 / 데이터
       handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
       cfFiltered, cfAreas, cfAreaSelectOptions, cfDetailEditId, cfIsViewMode,          // computed
       cfDetailKey, cfSiteNm, cfPanelTree, selectedId: computed(() => uiStateDetail.selectedId), // computed
@@ -708,12 +708,12 @@ window.DpDispPanelMng = {
             </tr>
           </thead>
           <tbody>
-            <tr v-if="!pager.pageList?.length">
+            <tr v-if="!panelsGridPager.pageList?.length">
               <td colspan="6" style="text-align:center;color:#999;padding:30px;">
                 데이터가 없습니다.
               </td>
             </tr>
-            <template v-else v-for="(d, pageIdx) in pager.pageList" :key="d?.dispId">
+            <template v-else v-for="(d, pageIdx) in panelsGridPager.pageList" :key="d?.dispId">
               <tr draggable="true"
                 @dragstart="onPanelDragStart($event, pageIdx)"
                 @dragover="onPanelDragOver($event, pageIdx)"
@@ -722,7 +722,7 @@ window.DpDispPanelMng = {
                 @dragend="onPanelDragEnd"
                 :style="(uiStateDetail.selectedId===d.dispId?'background:#fff8f9;':'') + (uiState.panelDragOverIdx===pageIdx?'outline:2px solid #1d4ed8;background:#e3f2fd;':'')">
                 <td style="text-align:center;font-size:11px;color:#999;">
-                  {{ (pager.pageNo - 1) * pager.pageSize + pageIdx + 1 }}
+                  {{ (panelsGridPager.pageNo - 1) * panelsGridPager.pageSize + pageIdx + 1 }}
                 </td>
                 <td style="text-align:center;padding:0;cursor:grab;color:#bbb;font-size:16px;user-select:none;">
                   ⠿
@@ -936,7 +936,7 @@ window.DpDispPanelMng = {
           </template>
         </tbody>
       </table>
-      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('panels-pager-setPage', n)" :on-size-change="() => handleSelectAction('panels-pager-sizeChange')" />
+      <bo-pager :pager="panelsGridPager" :on-set-page="n => handleBtnAction('panels-pager-setPage', n)" :on-size-change="() => handleSelectAction('panels-pager-sizeChange')" />
     </bo-container>
     <!-- ===== /우측 목록 ===================================================== -->
   </div>

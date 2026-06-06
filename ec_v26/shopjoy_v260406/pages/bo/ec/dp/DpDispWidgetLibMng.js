@@ -24,14 +24,14 @@ window.DpDispWidgetLibMng = {
       console.log(' ■■ DpDispWidgetLibMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        listGridPager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
         uiState.sortKey = ''; uiState.sortDir = 'asc';
         uiState.selectedPath = null;          // 표시경로 트리 전체로 복귀
-        pager.pageNo = 1;
+        listGridPager.pageNo = 1;
         resetDetailToNew();
         return handleSearchList('DEFAULT');
       // 위젯Lib 신규 등록 (인라인 패널)
@@ -43,7 +43,7 @@ window.DpDispWidgetLibMng = {
       // 좌측 표시경로 트리 전체 보기
       } else if (cmd === 'pathTree-all') {
         uiState.selectedPath = null;
-        pager.pageNo = 1;
+        listGridPager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 그리드 정렬 헤더 클릭
       } else if (cmd === 'widgetLibs-sort') {
@@ -102,7 +102,7 @@ window.DpDispWidgetLibMng = {
 
     const SORT_MAP = { nm: { asc: 'widgetNm asc', desc: 'widgetNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
 
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const listGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* ===== 상세 인라인 패널 (항상 표시, 진입 시 빈 신규 폼) ===== */
     const detailPanel = reactive({
@@ -135,7 +135,7 @@ window.DpDispWidgetLibMng = {
         if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
+      listGridPager.pageNo = 1;
       handleSearchList();
     };
 
@@ -162,7 +162,7 @@ window.DpDispWidgetLibMng = {
       try {
         const { type, status, searchType, searchValue, ...restParam } = searchParam;
         const params = {
-          pageNo: pager.pageNo, pageSize: pager.pageSize,
+          pageNo: listGridPager.pageNo, pageSize: listGridPager.pageSize,
           ...getSortParam(),
           ...Object.fromEntries(Object.entries(restParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
           ...(searchValue ? { searchValue: searchValue.trim() } : {}),
@@ -178,9 +178,9 @@ window.DpDispWidgetLibMng = {
         const res = await boApiSvc.dpWidgetLib.getPage(params, '전시위젯라이브러리', '조회');
         const d = res.data?.data;
         widgetLibs.splice(0, widgetLibs.length, ...(d?.pageList || d?.list || []));
-        pager.pageTotalCount = d?.pageTotalCount || 0;
-        pager.pageTotalPage  = d?.pageTotalPage  || 1;
-        coUtil.cofBuildPagerNums(pager);
+        listGridPager.pageTotalCount = d?.pageTotalCount || 0;
+        listGridPager.pageTotalPage  = d?.pageTotalPage  || 1;
+        coUtil.cofBuildPagerNums(listGridPager);
         /* 결과에 반영된 조건 기록 */
         applied.searchValue     = searchParam.searchValue;
         applied.type   = searchParam.type;
@@ -224,7 +224,7 @@ window.DpDispWidgetLibMng = {
     const wIcon      = (v) => WIDGET_ICONS[v] || '▪';
 
     /* selectNode — 노드 선택 (트리 필터 변경 → 상세영역은 빈 신규 폼으로 초기화) */
-    const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; resetDetailToNew(); handleSearchList('DEFAULT'); };
+    const selectNode = (id) => { uiState.selectedPath = id; listGridPager.pageNo = 1; resetDetailToNew(); handleSearchList('DEFAULT'); };
 
 
     /* resetDetailToNew — 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역은 항상 표시 유지)
@@ -257,10 +257,10 @@ window.DpDispWidgetLibMng = {
     const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}_${detailPanel.resetSeq}`);
 
     /* setPage — 설정 */
-    const setPage = (n) => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList(); } };
+    const setPage = (n) => { if (n >= 1 && n <= listGridPager.pageTotalPage) { listGridPager.pageNo = n; handleSearchList(); } };
 
     /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList(); };
+    const onSizeChange = () => { listGridPager.pageNo = 1; handleSearchList(); };
 
     /* fnStatusCls — 유틸 */
     const fnStatusCls   = (v) => v === 'Y' ? 'badge-green' : 'badge-gray';
@@ -318,7 +318,7 @@ window.DpDispWidgetLibMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       columns,
-      widgetLibs, uiState, widgetLibCounts, codes, searchParam, applied, pager, detailPanel,           // 상태 / 데이터
+      widgetLibs, uiState, widgetLibCounts, codes, searchParam, applied, listGridPager, detailPanel,           // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
       cfFilterDirty, cfDetailEditId, cfDetailKey, cfNoFilter,                          // computed
       pathLabel, wIcon, wTypeLabel, sortIcon, fnStatusCls, fnStatusLabel,              // 헬퍼
@@ -363,7 +363,7 @@ window.DpDispWidgetLibMng = {
         <bo-path-tree biz-cd="ec_disp_widget_lib" :counts="widgetLibCounts" :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
       </div>
     </bo-container>
-    <bo-container title="위젯라이브러리" :count-text="pager.pageTotalCount + '건'">
+    <bo-container title="위젯라이브러리" :count-text="listGridPager.pageTotalCount + '건'">
       <template #toolbar-actions>
         <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">
           #{{ uiState.selectedPath }}
@@ -387,7 +387,7 @@ window.DpDispWidgetLibMng = {
         </button>
       </template>
       <!-- ===== ■.■. 목록 영역 ================================================ -->
-      <bo-grid bare :columns="columns.listGrid" :rows="widgetLibs" row-key="widgetLibId" :selected-key="detailPanel.selectedId" :pager="pager"
+      <bo-grid bare :columns="columns.listGrid" :rows="widgetLibs" row-key="widgetLibId" :selected-key="detailPanel.selectedId" :pager="listGridPager"
       :sort-state="uiState"
       empty-text="데이터가 없습니다."
       @sort="key => handleBtnAction('widgetLibs-sort', key)"
@@ -403,7 +403,7 @@ window.DpDispWidgetLibMng = {
           </div>
         </template>
       </bo-grid>
-      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('widgetLibs-pager-setPage', n)" :on-size-change="() => handleSelectAction('widgetLibs-pager-sizeChange')" />
+      <bo-pager :pager="listGridPager" :on-set-page="n => handleBtnAction('widgetLibs-pager-setPage', n)" :on-size-change="() => handleSelectAction('widgetLibs-pager-sizeChange')" />
     </bo-container>
   </div>
   <!-- ===== ■. 상세 패널 (인라인 임베드 — 항상 표시, 전체 폭) ============== -->

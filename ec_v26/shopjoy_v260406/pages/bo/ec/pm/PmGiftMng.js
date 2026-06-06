@@ -14,13 +14,13 @@ window.PmGiftMng = {
       console.log(' ■■ PmGiftMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchList('SEARCH');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
         uiState.sortKey = ''; uiState.sortDir = 'asc';
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         resetDetailToNew();
         return handleSearchList('SEARCH');
       // 기간 옵션 변경
@@ -97,7 +97,7 @@ window.PmGiftMng = {
       date_range_opts: [],
     });
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const detailPanel = reactive({ selectedId: '__new__', openMode: 'edit', reloadTrigger: 0, resetSeq: 0, active: false }); // 상세영역 항상 표시 (진입 시 빈 신규 폼, active=false → 버튼 숨김)
 
     /* _initSearchParam — 초기화 */
@@ -141,7 +141,7 @@ window.PmGiftMng = {
         if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
+      baseGridPager.pageNo = 1;
       handleSearchList();
     };
 
@@ -153,17 +153,17 @@ window.PmGiftMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) };
+        const params = { pageNo: baseGridPager.pageNo, pageSize: baseGridPager.pageSize, ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) };
         if (params.searchValue && !params.searchType) {
           params.searchType = 'giftNm,giftId';
         }
         const res = await boApiSvc.pmGift.getPage(params, '선물관리', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         gifts.splice(0, gifts.length, ...list);
-        pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
-        pager.pageTotalPage = res.data?.data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        coUtil.cofBuildPagerNums(pager);
-        Object.assign(pager.pageCond, res.data?.data?.pageCond || pager.pageCond);
+        baseGridPager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
+        baseGridPager.pageTotalPage = res.data?.data?.pageTotalPage || Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize) || 1;
+        coUtil.cofBuildPagerNums(baseGridPager);
+        Object.assign(baseGridPager.pageCond, res.data?.data?.pageCond || baseGridPager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -184,7 +184,7 @@ window.PmGiftMng = {
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
       boUtil.bofApplyDateRange(searchParam);
-      pager.pageNo = 1;
+      baseGridPager.pageNo = 1;
     };
 
     // ===== 상세 임베드: 보기/수정/신규/닫기/인라인 이동 ====================
@@ -234,10 +234,10 @@ window.PmGiftMng = {
     const fnStatusBadge = s => coUtil.cofCodeBadge('PROMO_STATUS', s, _GIFT_STATUS_FB[s] || 'badge-gray');
 
     /* setPage — 설정 */
-    const setPage = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
+    const setPage = async n => { if (n >= 1 && n <= baseGridPager.pageTotalPage) { baseGridPager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
 
     /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+    const onSizeChange = () => { baseGridPager.pageNo = 1; handleSearchList('DEFAULT'); };
 
     // ===== 삭제 / 엑셀 다운로드 ============================================
     /* handleDelete — 삭제 */
@@ -305,7 +305,7 @@ window.PmGiftMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       columns,
-      gifts, uiState, codes, searchParam, pager, detailPanel,                        // 상태 / 데이터
+      gifts, uiState, codes, searchParam, baseGridPager, detailPanel,                        // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                     // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                           // computed
       tabMode,                                                                       // toRef
@@ -322,7 +322,7 @@ window.PmGiftMng = {
     <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </bo-container>
   <!-- ===== ■. 목록영역 (리스트/카드 토글) ======================================== -->
-  <bo-container title="사은품목록" :count-text="pager.pageTotalCount + '건'">
+  <bo-container title="사은품목록" :count-text="baseGridPager.pageTotalCount + '건'">
     <!-- ===== ■.■. 목록 툴바: 탭모드 토글 + 엑셀/신규 ============================ -->
     <template #toolbar-actions>
       <div style="display:flex;border:1px solid #ddd;border-radius:6px;overflow:hidden;">
@@ -362,7 +362,7 @@ window.PmGiftMng = {
         </div>
       </template>
     </bo-grid>
-    <bo-pager v-if="tabMode==='list' && pager.pageTotalCount > 0" :pager="pager" :on-set-page="n => handleBtnAction('gifts-pager-setPage', n)" :on-size-change="() => handleSelectAction('gifts-pager-sizeChange')" />
+    <bo-pager v-if="tabMode==='list' && baseGridPager.pageTotalCount > 0" :pager="baseGridPager" :on-set-page="n => handleBtnAction('gifts-pager-setPage', n)" :on-size-change="() => handleSelectAction('gifts-pager-sizeChange')" />
     <!-- ===== ■.■. 카드 뷰 ================================================== -->
     <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">
       <div v-if="gifts.length===0" style="grid-column:1/-1;text-align:center;color:#999;padding:60px 20px;">
@@ -373,7 +373,7 @@ window.PmGiftMng = {
         @click="handleSelectAction('gifts-rowView', g.giftId)">
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
           <div style="font-size:12px;color:#999;margin-bottom:6px;">
-            <span style="display:inline-block;min-width:20px;font-weight:700;color:#e8587a;">{{ (pager.pageNo-1)*pager.pageSize + idx + 1 }}</span> 사은품 #{{ g.giftId }}
+            <span style="display:inline-block;min-width:20px;font-weight:700;color:#e8587a;">{{ (baseGridPager.pageNo-1)*baseGridPager.pageSize + idx + 1 }}</span> 사은품 #{{ g.giftId }}
           </div>
           <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;" @click="handleSelectAction('gifts-rowView', g.giftId)" :style="detailPanel.selectedId===g.giftId?{color:'#e8587a'}:{}">
             {{ g.giftNm }}
@@ -416,7 +416,7 @@ window.PmGiftMng = {
       </div>
     </div>
     <!-- ===== ■.■. 페이지네이션 ================================================ -->
-    <bo-pager v-if="tabMode!=='list' && pager.pageTotalCount > 0" :pager="pager" :on-set-page="n => handleBtnAction('gifts-pager-setPage', n)" :on-size-change="() => handleSelectAction('gifts-pager-sizeChange')" />
+    <bo-pager v-if="tabMode!=='list' && baseGridPager.pageTotalCount > 0" :pager="baseGridPager" :on-set-page="n => handleBtnAction('gifts-pager-setPage', n)" :on-size-change="() => handleSelectAction('gifts-pager-sizeChange')" />
   </bo-container>
   <!-- ===== ■. 하단 상세영역: PmGiftDtl 인라인 임베드 ============================== -->
   <bo-container bare>

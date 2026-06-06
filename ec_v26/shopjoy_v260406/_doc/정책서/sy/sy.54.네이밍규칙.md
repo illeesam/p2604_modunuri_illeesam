@@ -767,37 +767,52 @@ grep -r "const selected\w* = ref(" pages/bo/**/*.js
 
 ---
 
-## coUtil 표준 캡슐 변수 명명 (2026-05-28 ⭐)
+## coUtil 표준 캡슐 변수 명명 (2026-05-28 ⭐ / 2026-06-07 갱신)
 
-`coUtil.cofGrid()` / `coUtil.cofDetail()` / `coUtil.cofTree()` 로 생성한 표준 캡슐 객체는 한 파일 안에서 여러 개를 둘 수 있으므로 **첫 번째는 `base*`, 두 번째부터는 도메인 prefix** 로 명명.
+`coUtil.cofDetail()` / `coUtil.cofTree()` 로 생성한 표준 캡슐 객체와 페이저(`pager`)·Dtl 폼은 한 파일 안에서 여러 개를 둘 수 있으므로 **첫 번째는 `base*`, 두 번째부터는 도메인 prefix** 로 명명.
 
 **표준 참조 모델**: [`pages/bo/ec/cm/CmNoticeMng.js`](../../../pages/bo/ec/cm/CmNoticeMng.js) (BO Mng), [`pages/bo/ec/cm/CmNoticeDtl.js`](../../../pages/bo/ec/cm/CmNoticeDtl.js) (BO Dtl) — 신규 화면 작성 시 이 두 파일 구조를 따른다.
 
+> ⚠️ **`coUtil.cofGrid()` 제거됨 (2026-06-07)** — pager+정렬+setPage 를 한 캡슐로 묶던 `cofGrid` 는 폐기. 이제 페이저는 화면 안에 **수동 `reactive` 객체**로 직접 선언한다. 정렬·페이지 액션 메서드가 필요하면 각 화면에서 인라인 정의(또는 `coUtil.cofBuildPagerNums(pager)` 사용). `cofDetail`/`cofTree` 캡슐은 그대로 유지.
+
 ### 표준 형식
 
-| 캡슐/폼 종류 | 첫 번째 (1개만 있을 때) | 두 번째부터 (도메인 prefix) |
+| 종류 | 첫 번째 (1개만 있을 때) | 두 번째부터 (도메인 prefix) |
 |---|---|---|
-| `coUtil.cofGrid()`   | `baseGrid`   | `noticeGrid`, `userGrid`, `claimGrid`, `histGrid` 등 |
+| **페이저 `reactive({ pageType, pageNo, … })`** | **메인 그리드명 + `Pager`** (예: `baseGridPager`) | `listGridPager`, `userGridPager`, `vendorGridPager` 등 (각 그리드명 + `Pager`) |
 | `coUtil.cofDetail()` | `baseDetail` | `noticeDetail`, `userDetail`, `orderDetail` 등 |
 | `coUtil.cofTree()`   | `baseTree`   | `catTree`, `deptTree`, `pathTree`, `menuTree` 등 |
 | Dtl 폼 `reactive({...})` | `baseForm`   | `noticeForm`, `addrForm`, `optionForm` 등 |
 
+### 페이저 변수 명명 — `{메인그리드명}Pager` (2026-06-07 ⭐)
+
+페이저 `reactive` 변수는 **그 페이저가 페이징하는 그리드의 컬럼 변수명(`columns.XXX`)을 유추**해 `XXXPager` 로 명명한다. (이전의 `pager` 단독 명명 폐기)
+
+| 메인 그리드 컬럼명 | 페이저 변수명 |
+|---|---|
+| `columns.baseGrid` | `baseGridPager` (대부분의 단일 그리드 화면) |
+| `columns.listGrid` | `listGridPager` |
+| `columns.fileGrid` / `histGrid` / `rawGrid` / `bundleGrid` / `setGrid` | `fileGridPager` / `histGridPager` / … |
+| 다중 그리드 화면 | 각 그리드별로 `userGridPager` + `vendorGridPager` 등 |
+| 메인 그리드가 없는 화면 (트리 / raw `<table>` / 탭 공유) | cmd 도메인 유추 (예: `panelsGridPager`, `categoriesGridPager`) 또는 주 탭 그리드명 |
+
+**예외**: picker(모달) 검색 전용 페이저처럼 화면 메인 그리드와 무관한 경우는 `pager` 유지 가능 (예: `PdCategoryProdMng`).
+
 ### 사용 예시
 
 ```js
-// 단일 그리드/Dtl 화면 (대부분)
-const baseGrid   = coUtil.cofGrid(() => handleSearchList(), { sortMap, pageSize: 5 });
-const baseDetail = coUtil.cofDetail();
+// 단일 그리드/Dtl 화면 (대부분) — 페이저는 수동 reactive, 메인그리드(baseGrid)명 유추 → baseGridPager
+const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+const baseDetail    = coUtil.cofDetail();
 
-// 다중 그리드 화면 (예: 회원종합정보 — 주문/클레임/배송 영역)
-const baseGrid   = coUtil.cofGrid(() => fnLoadOrders(),  { sortMap: ORDER_SORT_MAP });
-const claimGrid  = coUtil.cofGrid(() => fnLoadClaims(),  { sortMap: CLAIM_SORT_MAP });
-const dlivGrid   = coUtil.cofGrid(() => fnLoadDlivs(),   { sortMap: DLIV_SORT_MAP });
+// 다중 그리드 화면 — 각 그리드별 페이저 (그리드명 유추)
+const userGridPager   = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, /* … */ });
+const vendorGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5,  /* … */ });
 
 // 트리 + 그리드 (예: 카테고리관리)
-const catTree    = coUtil.cofTree(allCats, { idKey: 'catId', parentKey: 'parentCatId', onSelect: () => baseGrid.setPage(1) });
-const baseGrid   = coUtil.cofGrid(() => handleSearchList());
-const baseDetail = coUtil.cofDetail();
+const catTree       = coUtil.cofTree(allCats, { idKey: 'catId', parentKey: 'parentCatId', onSelect: () => { baseGridPager.pageNo = 1; handleSearchList(); } });
+const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, /* … */ });
+const baseDetail    = coUtil.cofDetail();
 
 // Dtl 폼 (단일 폼 → baseForm)
 const baseForm = reactive({ noticeTitle: '', noticeTypeCd: '', ... });
@@ -822,6 +837,8 @@ if (cmd === 'addrForm-save')      return handleSaveAddr();
 if (cmd === 'detailPanel-close')  return detailPanel.close();
 if (cmd === 'form-save')          return handleSave();
 ```
+
+> ⚠️ **페이저 cmd 라우팅 문자열은 도메인명 유지** — 페이저 변수는 `baseGridPager` 로 명명하되, cmd 라우팅 문자열은 영역 도메인명(`'notices-pager-setPage'`, `'users-pager-setPage'`)을 그대로 쓴다. 즉 **변수명(`baseGridPager`)과 cmd 문자열의 `-pager-` 토큰은 별개**다. 일괄 rename 시 cmd 문자열 안의 `-pager-` 를 변수명으로 바꾸지 말 것(라우팅 깨짐). `<bo-pager>` 컴포넌트 태그와 `:pager` prop명도 보존(값만 변수명).
 
 ### 금지 형식
 

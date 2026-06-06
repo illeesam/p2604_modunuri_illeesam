@@ -27,13 +27,13 @@ window.MbMemberMng = {
       console.log(' ■■ MbMemberMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchList('SEARCH');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
         uiState.sortKey = ''; uiState.sortDir = 'asc';
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         resetDetailToNew();
         return handleSearchList('SEARCH');
       // 회원 신규 등록 (인라인 패널)
@@ -91,7 +91,7 @@ window.MbMemberMng = {
     const searchParam = reactive(_initSearchParam());
 
     /* ===== 페이지네이션 ===== */
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* ===== 상세 인라인 패널 ===== */
     /* _emptyForm — 빈(신규) 폼 기본값 */
@@ -116,7 +116,7 @@ window.MbMemberMng = {
         if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
+      baseGridPager.pageNo = 1;
       handleSearchList();
     };
 
@@ -128,7 +128,7 @@ window.MbMemberMng = {
       uiState.loading = true;
       try {
         const params = {
-          pageNo: pager.pageNo, pageSize: pager.pageSize,
+          pageNo: baseGridPager.pageNo, pageSize: baseGridPager.pageSize,
           ...getSortParam(),
           ...coUtil.cofOmitEmpty(searchParam)
         };
@@ -139,10 +139,10 @@ window.MbMemberMng = {
         const res = await boApiSvc.mbMember.getPage(params, '회원관리', '목록조회');
         const data = res.data?.data;
         members.splice(0, members.length, ...(data?.pageList || []));
-        pager.pageTotalCount = data?.pageTotalCount || 0;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        coUtil.cofBuildPagerNums(pager);
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        baseGridPager.pageTotalCount = data?.pageTotalCount || 0;
+        baseGridPager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize) || 1;
+        coUtil.cofBuildPagerNums(baseGridPager);
+        Object.assign(baseGridPager.pageCond, data?.pageCond || baseGridPager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -271,10 +271,10 @@ window.MbMemberMng = {
     };
 
     /* setPage — 페이지 번호 변경 */
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
+    const setPage = n => { if (n >= 1 && n <= baseGridPager.pageTotalPage) { baseGridPager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
 
     /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+    const onSizeChange = () => { baseGridPager.pageNo = 1; handleSearchList('DEFAULT'); };
 
 
     /* fnLoadCodes — 공통코드 로드 */
@@ -337,7 +337,7 @@ window.MbMemberMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       columns,
-      members, uiState, codes, searchParam, pager, detailPanel,                        // 상태 / 데이터
+      members, uiState, codes, searchParam, baseGridPager, detailPanel,                        // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
       cfSelectedRow,                                                                   // computed
       sortIcon, fnGradeBadge, fnStatusBadge, fnFmtDate, fnGridRowClass,                // 헬퍼
@@ -353,7 +353,7 @@ window.MbMemberMng = {
   </bo-container>
   <!-- ===== □. 검색 ======================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
-  <bo-container title="회원목록" :count-text="'총 ' + pager.pageTotalCount + '건'">
+  <bo-container title="회원목록" :count-text="'총 ' + baseGridPager.pageTotalCount + '건'">
     <template #toolbar-actions>
       <button class="btn btn-primary btn-sm" @click="handleBtnAction('members-add')">
         + 신규
@@ -370,7 +370,7 @@ window.MbMemberMng = {
         </button>
       </template>
     </bo-grid>
-    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('members-pager-setPage', n)" :on-size-change="() => handleSelectAction('members-pager-sizeChange')" />
+    <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('members-pager-setPage', n)" :on-size-change="() => handleSelectAction('members-pager-sizeChange')" />
   </bo-container>
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 상세 패널 (인라인 임베드, 항상 표시) ================================== -->

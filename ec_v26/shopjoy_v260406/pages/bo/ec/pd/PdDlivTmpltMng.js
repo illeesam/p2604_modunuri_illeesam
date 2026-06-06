@@ -34,13 +34,13 @@ window.PdDlivTmpltMng = {
       console.log(' ■■ PdDlivTmpltMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
         uiState.sortKey = ''; uiState.sortDir = 'asc';
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchList();
       // 신규 등록 패널 열기
       } else if (cmd === 'dlivTmplts-add') {
@@ -60,7 +60,7 @@ window.PdDlivTmpltMng = {
         return onSort(param);
       // 페이지 번호 변경
       } else if (cmd === 'dlivTmplts-pager-setPage') {
-        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
+        if (param >= 1 && param <= baseGridPager.pageTotalPage) { baseGridPager.pageNo = param; handleSearchList('PAGE_CLICK'); }
         return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -72,7 +72,7 @@ window.PdDlivTmpltMng = {
       console.log(' ■■ PdDlivTmpltMng.js : handleSelectAction -> ', cmd, param);
       // 페이지 크기 변경
       if (cmd === 'dlivTmplts-pager-sizeChange') {
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -97,7 +97,7 @@ window.PdDlivTmpltMng = {
     const searchParam = reactive(_initSearchParam());
 
     /* ===== 페이지네이션 ===== */
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* getSortParam — 정렬 파라미터 */
     const getSortParam = () => {
@@ -112,20 +112,20 @@ window.PdDlivTmpltMng = {
         if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
+      baseGridPager.pageNo = 1;
       handleSearchList();
     };
 
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
-        const res = await boApiSvc.pdDlivTmplt.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) }, '배송템플릿관리', '목록조회');
+        const res = await boApiSvc.pdDlivTmplt.getPage({ pageNo: baseGridPager.pageNo, pageSize: baseGridPager.pageSize, ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) }, '배송템플릿관리', '목록조회');
         const data = res.data?.data;
         dlivTmplts.splice(0, dlivTmplts.length, ...(data?.pageList || []));
-        pager.pageTotalCount = data?.pageTotalCount || 0;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        coUtil.cofBuildPagerNums(pager);
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        baseGridPager.pageTotalCount = data?.pageTotalCount || 0;
+        baseGridPager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize) || 1;
+        coUtil.cofBuildPagerNums(baseGridPager);
+        Object.assign(baseGridPager.pageCond, data?.pageCond || baseGridPager.pageCond);
       } catch (_) {
         console.error('[catch-info]', _);
       }
@@ -271,7 +271,7 @@ window.PdDlivTmpltMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       columns,
-      uiState, codes, searchParam, pager, dlivTmplts, form,                            // 상태 / 데이터
+      uiState, codes, searchParam, baseGridPager, dlivTmplts, form,                            // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                        // dispatch
       fnYnBadge, fnMethodBadge, METHOD_LABELS, PAY_LABELS,                              // 헬퍼
     };
@@ -287,7 +287,7 @@ window.PdDlivTmpltMng = {
   </bo-container>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 목록 그리드 =================================================== -->
-  <bo-container title="배송템플릿 목록" :count-text="pager.pageTotalCount + '건'">
+  <bo-container title="배송템플릿 목록" :count-text="baseGridPager.pageTotalCount + '건'">
     <template #toolbar-actions>
       <button class="btn btn-primary btn-sm" @click="handleBtnAction('dlivTmplts-add')">+ 신규</button>
     </template>
@@ -298,7 +298,7 @@ window.PdDlivTmpltMng = {
       :row-class="(row) => uiState.selectedId===row.dlivTmpltId ? 'active' : ''"
       @sort="key => handleBtnAction('dlivTmplts-sort', key)" grid-id="dlivTmplts-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)"></bo-grid>
     <!-- 페이저는 그리드 밖, 컨테이너 안에 배치 -->
-    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('dlivTmplts-pager-setPage', n)" :on-size-change="() => handleSelectAction('dlivTmplts-pager-sizeChange')" />
+    <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('dlivTmplts-pager-setPage', n)" :on-size-change="() => handleSelectAction('dlivTmplts-pager-sizeChange')" />
   </bo-container>
   <!-- ===== □. 목록 그리드 =================================================== -->
   <!-- ===== ■. 상세 패널 (항상 표시 — 미선택 시 안내, 선택/신규 시 폼) ============== -->

@@ -31,13 +31,13 @@ window.CmBlogMng = {
       console.log(' ■■ CmBlogMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchList('SEARCH');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
         uiState.sortKey = ''; uiState.sortDir = 'asc';
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         resetDetailToNew();
         return handleSearchList('SEARCH');
       // 블로그 신규 등록 (인라인 패널)
@@ -97,7 +97,7 @@ window.CmBlogMng = {
     const searchParam = reactive(_initSearchParam());
 
     /* ===== 페이지네이션 ===== */
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* ===== 상세 인라인 패널 ===== */
     /* _initBlogForm — 빈(신규) 블로그 폼 기본값 */
@@ -117,7 +117,7 @@ window.CmBlogMng = {
         if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
+      baseGridPager.pageNo = 1;
       handleSearchList();
     };
 
@@ -129,7 +129,7 @@ window.CmBlogMng = {
       uiState.loading = true;
       try {
         const params = {
-          pageNo: pager.pageNo, pageSize: pager.pageSize,
+          pageNo: baseGridPager.pageNo, pageSize: baseGridPager.pageSize,
           ...getSortParam(),
           ...coUtil.cofOmitEmpty(searchParam)
         };
@@ -140,10 +140,10 @@ window.CmBlogMng = {
         const res = await boApiSvc.cmBlog.getPage(params, '블로그관리', '목록조회');
         const data = res.data?.data;
         blogs.splice(0, blogs.length, ...(data?.pageList || []));
-        pager.pageTotalCount = data?.pageTotalCount || 0;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        coUtil.cofBuildPagerNums(pager);
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        baseGridPager.pageTotalCount = data?.pageTotalCount || 0;
+        baseGridPager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize) || 1;
+        coUtil.cofBuildPagerNums(baseGridPager);
+        Object.assign(baseGridPager.pageCond, data?.pageCond || baseGridPager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -154,10 +154,10 @@ window.CmBlogMng = {
     };
 
     /* setPage — 페이지 번호 변경 */
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
+    const setPage = n => { if (n >= 1 && n <= baseGridPager.pageTotalPage) { baseGridPager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
 
     /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+    const onSizeChange = () => { baseGridPager.pageNo = 1; handleSearchList('DEFAULT'); };
 
 
     /* resetDetailToNew — 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역은 항상 표시 유지)
@@ -321,7 +321,7 @@ window.CmBlogMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       columns,
-      blogs, uiState, codes, searchParam, pager, detailPanel,                          // 상태 / 데이터
+      blogs, uiState, codes, searchParam, baseGridPager, detailPanel,                          // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
       cfSelectedRow,                                                                   // computed
       sortIcon, fnYnBadge, fnGridRowClass,                                             // 헬퍼
@@ -336,7 +336,7 @@ window.CmBlogMng = {
   </bo-container>
   <!-- ===== □. 검색 ======================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
-  <bo-container title="게시글 목록" :count-text="'총 ' + pager.pageTotalCount + '건'">
+  <bo-container title="게시글 목록" :count-text="'총 ' + baseGridPager.pageTotalCount + '건'">
     <template #toolbar-actions>
       <button class="btn btn-primary btn-sm" @click="handleBtnAction('blogs-add')">
         + 신규
@@ -353,7 +353,7 @@ window.CmBlogMng = {
         </button>
       </template>
     </bo-grid>
-    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('blogs-pager-setPage', n)" :on-size-change="() => handleSelectAction('blogs-pager-sizeChange')" />
+    <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('blogs-pager-setPage', n)" :on-size-change="() => handleSelectAction('blogs-pager-sizeChange')" />
   </bo-container>
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 상세 패널 (항상 표시, active=false 면 안내문구) ===================== -->

@@ -32,13 +32,13 @@ window.PdProdMng = {
           showToast('기간 검색 시 기간유형을 선택해주세요.', 'error');
           return;
         }
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
         uiState.sortKey = ''; uiState.sortDir = 'asc';
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         resetDetailToNew();
         return handleSearchList();
       // 기간 옵션 변경
@@ -134,7 +134,7 @@ window.PdProdMng = {
     const searchParam = reactive(_initSearchParam());
 
     /* ===== 페이지네이션 ===== */
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* ===== 카테고리 선택 모달 ===== */
     const catModal = reactive({ show: false });    // 카테고리 선택 모달 상태
@@ -161,7 +161,7 @@ window.PdProdMng = {
         if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
+      baseGridPager.pageNo = 1;
       handleSearchList();
     };
 
@@ -172,7 +172,7 @@ window.PdProdMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) };
+        const params = { pageNo: baseGridPager.pageNo, pageSize: baseGridPager.pageSize, ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
           params.searchType = 'prodId,prodNm,prodCode';
@@ -180,10 +180,10 @@ window.PdProdMng = {
         const res = await boApiSvc.pdProd.getPage(params, '상품관리', '목록조회');
         const data = res.data?.data;
         products.splice(0, products.length, ...(data?.pageList || []));
-        pager.pageTotalCount = data?.pageTotalCount || 0;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        coUtil.cofBuildPagerNums(pager);
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        baseGridPager.pageTotalCount = data?.pageTotalCount || 0;
+        baseGridPager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize) || 1;
+        coUtil.cofBuildPagerNums(baseGridPager);
+        Object.assign(baseGridPager.pageCond, data?.pageCond || baseGridPager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -196,7 +196,7 @@ window.PdProdMng = {
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
       boUtil.bofApplyDateRange(searchParam);
-      pager.pageNo = 1;
+      baseGridPager.pageNo = 1;
     };
 
     /* resetDetailToNew — 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역은 항상 표시 유지)
@@ -235,10 +235,10 @@ window.PdProdMng = {
     };
 
     /* setPage — 페이지 번호 변경 */
-    const setPage = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
+    const setPage = async n => { if (n >= 1 && n <= baseGridPager.pageTotalPage) { baseGridPager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
 
     /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+    const onSizeChange = () => { baseGridPager.pageNo = 1; handleSearchList('DEFAULT'); };
 
     /* handleDelete — 삭제 */
     const handleDelete = async (p) => {
@@ -350,7 +350,7 @@ window.PdProdMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       columns,
-      products, uiState, codes, searchParam, pager, detailPanel, catModal,        // 상태 / 데이터
+      products, uiState, codes, searchParam, baseGridPager, detailPanel, catModal,        // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                         // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                         // computed
       fnStatusBadge, sortIcon,                                                     // 헬퍼
@@ -368,7 +368,7 @@ window.PdProdMng = {
       @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
   </bo-container>
   <!-- ===== ■. 목록 ====================================================== -->
-  <bo-container title="상품목록" :count-text="pager.pageTotalCount + '건'">
+  <bo-container title="상품목록" :count-text="baseGridPager.pageTotalCount + '건'">
     <template #toolbar-actions>
       <button class="btn btn-green btn-sm" @click="handleBtnAction('prods-excel')">
         📥 엑셀
@@ -402,7 +402,7 @@ window.PdProdMng = {
         </div>
       </template>
     </bo-grid>
-    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('prods-pager-setPage', n)" :on-size-change="() => handleSelectAction('prods-pager-sizeChange')" />
+    <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('prods-pager-setPage', n)" :on-size-change="() => handleSelectAction('prods-pager-sizeChange')" />
   </bo-container>
   <!-- ===== □. 목록 ======================================================= -->
   <!-- ===== ■. 카테고리 선택 모달 ============================================== -->

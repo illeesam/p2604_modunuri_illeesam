@@ -27,7 +27,7 @@ window.SyUserLoginHist = {
     const codes = reactive({ login_results: [], token_actions: [], date_range_opts: [] });
 
     /* ===== 페이지네이션 ===== */
-    const pager = reactive({ pageType:'PAGE', pageNo:1, pageSize:20, pageTotalCount:0, pageTotalPage:1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond:{} });
+    const logGridPager = reactive({ pageType:'PAGE', pageNo:1, pageSize:20, pageTotalCount:0, pageTotalPage:1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond:{} });
 
     /* ===== 목록 데이터 ===== */
     const logs   = reactive([]);                  // 로그인 로그
@@ -49,13 +49,13 @@ window.SyUserLoginHist = {
       console.log(' ■■ SyUserLoginHist.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        logGridPager.pageNo = 1;
         return handleSearchList();
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, { searchType:'', searchValue:'', searchResultCd:'', searchIp:'', searchUiNm:'', searchTraceId:'', dateRange:'1week', srchOpen:false });
         onDateRangeChange();
-        pager.pageNo = 1;
+        logGridPager.pageNo = 1;
         return handleSearchList();
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {
@@ -84,7 +84,7 @@ window.SyUserLoginHist = {
       // 탭 변경 (log / token)
       if (cmd === 'searchParam-tabChange') {
         searchParam.activeTab = param;
-        pager.pageNo = 1;
+        logGridPager.pageNo = 1;
         allExpanded.value = false;
         return handleSearchList();
       // 페이지 크기 변경
@@ -124,9 +124,9 @@ window.SyUserLoginHist = {
 
     /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
     const fnBuildPagerNums = () => {
-      pager.pageTotalPage = Math.max(1, Math.ceil(pager.pageTotalCount / pager.pageSize));
-      const c = pager.pageNo, l = pager.pageTotalPage, s = Math.max(1,c-2), e = Math.min(l,s+4);
-      pager.pageNums = Array.from({length:e-s+1},(_,i)=>s+i);
+      logGridPager.pageTotalPage = Math.max(1, Math.ceil(logGridPager.pageTotalCount / logGridPager.pageSize));
+      const c = logGridPager.pageNo, l = logGridPager.pageTotalPage, s = Math.max(1,c-2), e = Math.min(l,s+4);
+      logGridPager.pageNums = Array.from({length:e-s+1},(_,i)=>s+i);
     };
 
     /* toggleRow — 행 펼침 토글 */
@@ -145,7 +145,7 @@ window.SyUserLoginHist = {
     /* buildParams — 검색 파라미터 빌드 */
     const buildParams = () => {
       const p = {
-        pageNo: pager.pageNo, pageSize: pager.pageSize,
+        pageNo: logGridPager.pageNo, pageSize: logGridPager.pageSize,
         dateStart:  searchParam.dateStart    || undefined,
         dateEnd:    searchParam.dateEnd      || undefined,
         resultCd:   searchParam.searchResultCd || undefined,
@@ -167,8 +167,8 @@ window.SyUserLoginHist = {
         const res = await boApiSvc.syUserLoginLog.getPage(buildParams(), '사용자로그인이력', '로그인로그조회');
         const d = res.data?.data;
         logs.splice(0, logs.length, ...(d?.pageList || []));
-        pager.pageTotalCount = d?.pageTotalCount || 0;
-        tabCounts.log = pager.pageTotalCount;
+        logGridPager.pageTotalCount = d?.pageTotalCount || 0;
+        tabCounts.log = logGridPager.pageTotalCount;
         fnBuildPagerNums(); expandedRows.clear();
       } catch (err) {
         props.showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0);
@@ -181,8 +181,8 @@ window.SyUserLoginHist = {
         const res = await boApiSvc.syUserTokenLog.getPage(buildParams(), '사용자로그인이력', '토큰이력조회');
         const d = res.data?.data;
         tokens.splice(0, tokens.length, ...(d?.pageList || []));
-        pager.pageTotalCount = d?.pageTotalCount || 0;
-        tabCounts.token = pager.pageTotalCount;
+        logGridPager.pageTotalCount = d?.pageTotalCount || 0;
+        tabCounts.token = logGridPager.pageTotalCount;
         fnBuildPagerNums(); expandedRows.clear();
       } catch (err) {
         props.showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0);
@@ -198,10 +198,10 @@ window.SyUserLoginHist = {
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); handleSearchList(); });
 
     /* setPage — 페이지 번호 변경 */
-    const setPage      = n => { if (n>=1 && n<=pager.pageTotalPage) { pager.pageNo=n; handleSearchList(); } };
+    const setPage      = n => { if (n>=1 && n<=logGridPager.pageTotalPage) { logGridPager.pageNo=n; handleSearchList(); } };
 
     /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo=1; handleSearchList(); };
+    const onSizeChange = () => { logGridPager.pageNo=1; handleSearchList(); };
 
     /* handleClearLog — 로그 전체 삭제 */
     const handleClearLog = async () => {
@@ -214,7 +214,7 @@ window.SyUserLoginHist = {
         props.showToast(`${tabNm} 전체 삭제 완료`, 'success');
         if (searchParam.activeTab==='log') { logs.splice(0); tabCounts.log=0; }
         else                           { tokens.splice(0); tabCounts.token=0; }
-        pager.pageTotalCount=0; pager.pageTotalPage=1; expandedRows.clear(); allExpanded.value=false;
+        logGridPager.pageTotalCount=0; logGridPager.pageTotalPage=1; expandedRows.clear(); allExpanded.value=false;
       } catch (err) {
         props.showToast(err.response?.data?.message || err.message || '삭제 오류', 'error', 0);
       }
@@ -353,7 +353,7 @@ window.SyUserLoginHist = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       columns,
-      searchParam, codes, pager, tabCounts, histTabs, cfCurrentList, allExpanded,                       // 상태 / 데이터
+      searchParam, codes, logGridPager, tabCounts, histTabs, cfCurrentList, allExpanded,                       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                                                              // dispatch (모든 이벤트 / 액션 라우팅)
       fnResultBadge, fnResultLabel, fnActionBadge, fnActionLabel, fnTypeBadge, fnDecode,                // template 표현식에서 사용
       fnRowExpanded, fnRowClickStyle,                                                                   // 행 표시
@@ -383,7 +383,7 @@ window.SyUserLoginHist = {
   </bo-container>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 탭 + 목록 (한 카드) ========================================= -->
-  <bo-container title="로그인/토큰 이력" :count-text="pager.pageTotalCount + '건'">
+  <bo-container title="로그인/토큰 이력" :count-text="logGridPager.pageTotalCount + '건'">
     <template #toolbar-actions>
       <span style="font-size:11px;color:#aaa;">
         행 클릭 시 상세정보 펼침
@@ -421,7 +421,7 @@ window.SyUserLoginHist = {
       </td>
     </template>
   </bo-grid>
-  <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('histList-pager-setPage', n)" :on-size-change="() => handleSelectAction('histList-pager-sizeChange')" />
+  <bo-pager :pager="logGridPager" :on-set-page="n => handleBtnAction('histList-pager-setPage', n)" :on-size-change="() => handleSelectAction('histList-pager-sizeChange')" />
   <!-- ===== □. 토큰 이력 탭 ================================================= -->
   </bo-container>
 </bo-page>

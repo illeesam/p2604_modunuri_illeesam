@@ -28,13 +28,13 @@ window.CmChattMng = {
       console.log(' ■■ CmChattMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchList('SEARCH');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
         uiState.sortKey = ''; uiState.sortDir = 'asc';
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         resetDetailToNew();
         return handleSearchList('SEARCH');
       // 기간 옵션 변경
@@ -99,7 +99,7 @@ window.CmChattMng = {
     const searchParam = reactive(_initSearchParam());
 
     /* ===== 페이지네이션 ===== */
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* ===== 상세 인라인 패널 ===== */
     const detailPanel = reactive({   // 인라인 Dtl 패널 상태 (항상 표시, 진입 시 빈 신규 폼)
@@ -113,7 +113,7 @@ window.CmChattMng = {
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
       boUtil.bofApplyDateRange(searchParam);
-      pager.pageNo = 1;
+      baseGridPager.pageNo = 1;
     };
 
     /* getSortParam — 정렬 파라미터 */
@@ -129,7 +129,7 @@ window.CmChattMng = {
         if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
+      baseGridPager.pageNo = 1;
       handleSearchList();
     };
 
@@ -141,7 +141,7 @@ window.CmChattMng = {
       uiState.loading = true;
       try {
         const params = {
-          pageNo: pager.pageNo, pageSize: pager.pageSize,
+          pageNo: baseGridPager.pageNo, pageSize: baseGridPager.pageSize,
           ...getSortParam(),
           ...coUtil.cofOmitEmpty(searchParam)
         };
@@ -152,10 +152,10 @@ window.CmChattMng = {
         const res = await boApiSvc.cmChatt.getPage(params, '채팅관리', '목록조회');
         const data = res.data?.data;
         chatts.splice(0, chatts.length, ...(data?.pageList || []));
-        pager.pageTotalCount = data?.pageTotalCount || 0;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        coUtil.cofBuildPagerNums(pager);
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        baseGridPager.pageTotalCount = data?.pageTotalCount || 0;
+        baseGridPager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize) || 1;
+        coUtil.cofBuildPagerNums(baseGridPager);
+        Object.assign(baseGridPager.pageCond, data?.pageCond || baseGridPager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -201,10 +201,10 @@ window.CmChattMng = {
     };
 
     /* setPage — 페이지 번호 변경 */
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
+    const setPage = n => { if (n >= 1 && n <= baseGridPager.pageTotalPage) { baseGridPager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
 
     /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+    const onSizeChange = () => { baseGridPager.pageNo = 1; handleSearchList('DEFAULT'); };
 
     /* handleDelete — 삭제 */
     const handleDelete = async (c) => {
@@ -297,7 +297,7 @@ window.CmChattMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       columns,
-      chatts, uiState, codes, searchParam, pager, detailPanel,                         // 상태 / 데이터
+      chatts, uiState, codes, searchParam, baseGridPager, detailPanel,                         // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                       // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                             // computed
       sortIcon, fnStatusBadge, fnGridRowClass,                                         // 헬퍼
@@ -313,7 +313,7 @@ window.CmChattMng = {
   </bo-container>
   <!-- ===== □. 검색 ======================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
-  <bo-container title="채팅목록" :count-text="'총 ' + pager.pageTotalCount + '건'">
+  <bo-container title="채팅목록" :count-text="'총 ' + baseGridPager.pageTotalCount + '건'">
     <template #toolbar-actions>
       <button class="btn btn-green btn-sm" @click="handleBtnAction('chatts-excel')">
         📥 엑셀
@@ -339,7 +339,7 @@ window.CmChattMng = {
         </div>
       </template>
     </bo-grid>
-    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('chatts-pager-setPage', n)" :on-size-change="() => handleSelectAction('chatts-pager-sizeChange')" />
+    <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('chatts-pager-setPage', n)" :on-size-change="() => handleSelectAction('chatts-pager-sizeChange')" />
   </bo-container>
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 하단 상세: ChattDtl 임베드 (항상 표시) ============================ -->

@@ -23,16 +23,16 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ StSettlePayMng.js : handleBtnAction -> ', cmd, param);
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else if (cmd === 'searchParam-dateRange') {
         return handleDateRangeChange();
       } else if (cmd === 'settlePays-pager-setPage') {
-        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
+        if (param >= 1 && param <= baseGridPager.pageTotalPage) { baseGridPager.pageNo = param; handleSearchList('PAGE_CLICK'); }
         return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -45,7 +45,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
       if (cmd === 'settlePays-rowPay') {
         return doPay(param);
       } else if (cmd === 'settlePays-pager-sizeChange') {
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -71,7 +71,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const params = {
-          pageNo: pager.pageNo, pageSize: pager.pageSize,
+          pageNo: baseGridPager.pageNo, pageSize: baseGridPager.pageSize,
           ...coUtil.cofOmitEmpty(searchParam)
         };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
@@ -81,10 +81,10 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
         const res = await boApiSvc.stSettlePay.getPage(params, '정산지급관리', '목록조회');
         const data = res.data?.data;
         pays.splice(0, pays.length, ...(data?.pageList || data?.list || []));
-        pager.pageTotalCount = data?.pageTotalCount || pays.length;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        coUtil.cofBuildPagerNums(pager);
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        baseGridPager.pageTotalCount = data?.pageTotalCount || pays.length;
+        baseGridPager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize) || 1;
+        coUtil.cofBuildPagerNums(baseGridPager);
+        Object.assign(baseGridPager.pageCond, data?.pageCond || baseGridPager.pageCond);
       } catch (_) {
         console.error('[catch-info]', _);
       }
@@ -107,7 +107,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
   /* 정산 지급 _initSearchParam */
   const _initSearchParam = () => ({ searchType: '', searchValue: '', status: '' });
   const searchParam = reactive(_initSearchParam());
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
 
     const cfSummary = computed(() => ({
@@ -186,7 +186,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       columns,
-      uiState, codes, pager, pays, searchParam,
+      uiState, codes, baseGridPager, pays, searchParam,
       handleBtnAction, handleSelectAction,
       cfSummary, fnStatusBadge, fmtW,
     };
@@ -204,7 +204,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     <bo-form-area :columns="columns.summaryForm" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
   </bo-container>
   <!-- ===== ■. 목록 영역 ================================================= -->
-  <bo-container title="목록" :count-text="pager.pageTotalCount + '건'">
+  <bo-container title="목록" :count-text="baseGridPager.pageTotalCount + '건'">
     <bo-grid bare
       :columns="columns.baseGrid" :rows="pays" row-key="payId"
       :row-actions="true">
@@ -217,7 +217,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
         </button>
       </template>
     </bo-grid>
-    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('settlePays-pager-setPage', n)" :on-size-change="() => handleSelectAction('settlePays-pager-sizeChange')" />
+    <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('settlePays-pager-setPage', n)" :on-size-change="() => handleSelectAction('settlePays-pager-sizeChange')" />
   </bo-container>
 </bo-page>
 `,

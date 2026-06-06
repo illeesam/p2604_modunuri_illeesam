@@ -31,13 +31,13 @@ window.OdDlivMng = {
           showToast('기간 검색 시 기간유형을 선택해주세요.', 'error');
           return;
         }
-        pager.pageNo = 1;
+        listGridPager.pageNo = 1;
         return handleSearchData('DEFAULT');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
         uiState.sortKey = ''; uiState.sortDir = 'asc';
-        pager.pageNo = 1;
+        listGridPager.pageNo = 1;
         resetDetailToNew();
         return handleSearchData();
       // 기간 옵션 변경
@@ -91,7 +91,7 @@ window.OdDlivMng = {
         return onSort(param);
       // 페이지 번호 클릭
       } else if (cmd === 'dlivs-pager-setPage') {
-        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchData('PAGE_CLICK'); }
+        if (param >= 1 && param <= listGridPager.pageTotalPage) { listGridPager.pageNo = param; handleSearchData('PAGE_CLICK'); }
         return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -103,7 +103,7 @@ window.OdDlivMng = {
       console.log(' ■■ OdDlivMng.js : handleSelectAction -> ', cmd, param);
       // 페이지 크기 변경
       if (cmd === 'dlivs-pager-sizeChange') {
-        pager.pageNo = 1;
+        listGridPager.pageNo = 1;
         return handleSearchData('DEFAULT');
       // 그리드 행 수정 → 해당 행 선택 + 활성(저장/취소 노출)
       } else if (cmd === 'dlivs-rowEdit') {
@@ -156,7 +156,7 @@ window.OdDlivMng = {
     };
     const searchParam = reactive(_initSearchParam());
 
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const listGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* 하단 상세 (인라인 Dtl) — 진입 시 빈 신규 폼(비활성), 항상 표시 */
     const detailPanel = reactive({ selectedId: '__new__', openMode: 'edit', reloadTrigger: 0, active: false, resetSeq: 0 });
@@ -190,7 +190,7 @@ window.OdDlivMng = {
         if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
+      listGridPager.pageNo = 1;
       handleSearchData();
     };
 
@@ -201,7 +201,7 @@ window.OdDlivMng = {
     const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) };
+        const params = { pageNo: listGridPager.pageNo, pageSize: listGridPager.pageSize, ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
           params.searchType = 'dlivId,orderId,memberNm,recvNm,outboundTrackingNo';
@@ -212,10 +212,10 @@ window.OdDlivMng = {
         ]);
         dlivs.splice(0, dlivs.length, ...(delivRes.data?.data?.pageList || delivRes.data?.data?.list || []));
         members.splice(0, members.length, ...(membersRes.data?.data?.pageList || membersRes.data?.data?.list || []));
-        pager.pageTotalCount = delivRes.data?.data?.pageTotalCount || 0;
-        pager.pageTotalPage = delivRes.data?.data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        coUtil.cofBuildPagerNums(pager);
-        Object.assign(pager.pageCond, delivRes.data?.data?.pageCond || pager.pageCond);
+        listGridPager.pageTotalCount = delivRes.data?.data?.pageTotalCount || 0;
+        listGridPager.pageTotalPage = delivRes.data?.data?.pageTotalPage || Math.ceil(listGridPager.pageTotalCount / listGridPager.pageSize) || 1;
+        coUtil.cofBuildPagerNums(listGridPager);
+        Object.assign(listGridPager.pageCond, delivRes.data?.data?.pageCond || listGridPager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -228,7 +228,7 @@ window.OdDlivMng = {
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
       boUtil.bofApplyDateRange(searchParam);
-      pager.pageNo = 1;
+      listGridPager.pageNo = 1;
     };
 
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
@@ -565,7 +565,7 @@ window.OdDlivMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       columns,
-      dlivs, members, uiState, codes, searchParam, pager, detailPanel, checked, bulkForm, bulkOpen, memberPick,           // 상태 / 데이터
+      dlivs, members, uiState, codes, searchParam, listGridPager, detailPanel, checked, bulkForm, bulkOpen, memberPick,           // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal,                                                                 // dispatch + 모달 통합 콜백
       cfDetailEditId, cfIsViewMode, cfDetailKey, cfAllChecked, cfBuildTmplMsg, cfBulkPreview, cfSiteNm,                    // computed
       selectedId: computed(() => detailPanel.selectedId),                                                                 // template 직접 참조
@@ -580,7 +580,7 @@ window.OdDlivMng = {
     <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </bo-container>
   <!-- ===== ■. 목록 영역 =================================================== -->
-  <bo-container bare title="배송목록" :count-text="pager.pageTotalCount + '건'">
+  <bo-container bare title="배송목록" :count-text="listGridPager.pageTotalCount + '건'">
     <template #toolbar-actions>
       <span v-if="checked.size" style="margin-right:10px;font-size:12px;color:#1565c0;font-weight:700;">
         선택 {{ checked.size }}건
@@ -620,7 +620,7 @@ window.OdDlivMng = {
     </div>
     <!-- ===== ■.■. 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ============================= -->
     <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
-      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('dlivs-pager-setPage', n)"
+      <bo-pager :pager="listGridPager" :on-set-page="n => handleBtnAction('dlivs-pager-setPage', n)"
         :on-size-change="() => handleSelectAction('dlivs-pager-sizeChange')"
         style="margin-top:0;min-height:34px;" />
     </div>

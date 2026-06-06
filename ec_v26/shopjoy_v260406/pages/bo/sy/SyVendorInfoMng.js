@@ -24,7 +24,7 @@ window.SyVendorInfoMng = {
     const searchParam = reactive(_initSearchParam());
 
     /* ===== 페이지네이션 (2단 업체목록) ===== */
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* ===== 3단 탭 영역 데이터 + 탭별 서버 페이저 ===== */
     const brands    = reactive([]);   // 브랜드
@@ -39,9 +39,9 @@ window.SyVendorInfoMng = {
 
     /* 탭별 메타 (api / 데이터배열 / 페이저 / 로딩키) */
     const TAB_META = {
-      brand: { api: () => boApiSvc.syBrand,     rows: brands,     pager: brandPager, loadKey: 'brand', cmdNm: '브랜드조회' },
-      price: { api: () => boApiSvc.pmDiscnt,    rows: discnts,    pager: pricePager, loadKey: 'price', cmdNm: '가격정책조회' },
-      dliv:  { api: () => boApiSvc.pdDlivTmplt, rows: dlivTmplts, pager: dlivPager,  loadKey: 'dliv',  cmdNm: '배송템플릿조회' },
+      brand: { api: () => boApiSvc.syBrand,     rows: brands,     baseGridPager: brandPager, loadKey: 'brand', cmdNm: '브랜드조회' },
+      price: { api: () => boApiSvc.pmDiscnt,    rows: discnts,    baseGridPager: pricePager, loadKey: 'price', cmdNm: '가격정책조회' },
+      dliv:  { api: () => boApiSvc.pdDlivTmplt, rows: dlivTmplts, baseGridPager: dlivPager,  loadKey: 'dliv',  cmdNm: '배송템플릿조회' },
     };
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
@@ -101,16 +101,16 @@ window.SyVendorInfoMng = {
     const handleSearchList = async () => {
       uiState.loading = true;
       try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...coUtil.cofOmitEmpty(searchParam) };
+        const params = { pageNo: baseGridPager.pageNo, pageSize: baseGridPager.pageSize, ...coUtil.cofOmitEmpty(searchParam) };
         if (params.searchValue && !params.searchType) {
           params.searchType = 'vendorNm,corpNo,vendorId';
         }
         const res = await boApiSvc.syVendor.getPage(params, '업체정보', '목록조회');
         const data = res.data?.data;
         vendors.splice(0, vendors.length, ...(data?.pageList || []));
-        pager.pageTotalCount = data?.pageTotalCount || vendors.length;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        fnBuildPagerNums(pager);
+        baseGridPager.pageTotalCount = data?.pageTotalCount || vendors.length;
+        baseGridPager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize) || 1;
+        fnBuildPagerNums(baseGridPager);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -121,20 +121,20 @@ window.SyVendorInfoMng = {
     };
 
     /* onSearch — 조회 */
-    const onSearch = () => { pager.pageNo = 1; handleSearchList(); };
+    const onSearch = () => { baseGridPager.pageNo = 1; handleSearchList(); };
 
     /* onReset — 초기화 + 재조회 */
     const onReset = () => {
       Object.assign(searchParam, _initSearchParam());
-      pager.pageNo = 1;
+      baseGridPager.pageNo = 1;
       handleSearchList();
     };
 
     /* setPage — 업체목록 페이지 번호 변경 */
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList(); } };
+    const setPage = n => { if (n >= 1 && n <= baseGridPager.pageTotalPage) { baseGridPager.pageNo = n; handleSearchList(); } };
 
     /* onSizeChange — 업체목록 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList(); };
+    const onSizeChange = () => { baseGridPager.pageNo = 1; handleSearchList(); };
 
     /* fnBuildPagerNums — 페이지 번호 배열 빌드 (공용) */
     const fnBuildPagerNums = (pg) => { const c=pg.pageNo,l=pg.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pg.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
@@ -278,7 +278,7 @@ window.SyVendorInfoMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       columns, tabs,
-      vendors, uiState, codes, searchParam, pager,                                    // 상태 / 데이터
+      vendors, uiState, codes, searchParam, baseGridPager,                                    // 상태 / 데이터
       brands, discnts, dlivTmplts, extras, tabLoading,                                // 탭 영역 데이터
       brandPager, pricePager, dlivPager,                                              // 탭별 페이저
       handleBtnAction, handleSelectAction, handleGridCellAction,                                            // dispatch (모든 이벤트 / 액션 라우팅)
@@ -293,7 +293,7 @@ window.SyVendorInfoMng = {
   </bo-container>
   <!-- ===== □. 1단: 조회 영역 =============================================== -->
   <!-- ===== ■. 2단: 업체목록 =============================================== -->
-  <bo-container title="업체목록" :count-text="pager.pageTotalCount + '건'">
+  <bo-container title="업체목록" :count-text="baseGridPager.pageTotalCount + '건'">
     <bo-grid bare
       :columns="columns.baseGrid" :rows="vendors" row-key="vendorId"
       :loading="uiState.loading" :row-style="fnRowStyle" :selected-key="uiState.selectedVendorId" row-actions
@@ -304,7 +304,7 @@ window.SyVendorInfoMng = {
         </button>
       </template>
     </bo-grid>
-    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('vendors-pager-setPage', n)" :on-size-change="() => handleSelectAction('vendors-pager-sizeChange')" />
+    <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('vendors-pager-setPage', n)" :on-size-change="() => handleSelectAction('vendors-pager-sizeChange')" />
   </bo-container>
   <!-- ===== □. 2단: 업체목록 =============================================== -->
   <!-- ===== ■. 3단: 탭 영역 (브랜드 | 가격정책 | 배송템플릿 | 부가서비스) ============ -->

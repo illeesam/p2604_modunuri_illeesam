@@ -19,7 +19,7 @@ window.PmEventMng = {
     });
 
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     /* 하단 상세 */
     const detailPanel = reactive({
       selectedId: '__new__',  // 진입 시 빈 신규 폼 (자동 첫 행 오픈 안 함)
@@ -37,13 +37,13 @@ window.PmEventMng = {
       console.log(' ■■ PmEventMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchList('SEARCH');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
         uiState.sortKey = ''; uiState.sortDir = 'asc';
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         resetDetailToNew();
         return handleSearchList('SEARCH');
       // 기간 옵션 변경
@@ -142,7 +142,7 @@ window.PmEventMng = {
         if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
+      baseGridPager.pageNo = 1;
       handleSearchList();
     };
 
@@ -153,13 +153,13 @@ window.PmEventMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.pmEvent.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) }, '이벤트관리', '목록조회');
+        const res = await boApiSvc.pmEvent.getPage({ pageNo: baseGridPager.pageNo, pageSize: baseGridPager.pageSize, ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) }, '이벤트관리', '목록조회');
         const data = res.data?.data;
         events.splice(0, events.length, ...(data?.pageList || []));
-        pager.pageTotalCount = data?.pageTotalCount || 0;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        coUtil.cofBuildPagerNums(pager);
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        baseGridPager.pageTotalCount = data?.pageTotalCount || 0;
+        baseGridPager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize) || 1;
+        coUtil.cofBuildPagerNums(baseGridPager);
+        Object.assign(baseGridPager.pageCond, data?.pageCond || baseGridPager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -178,7 +178,7 @@ window.PmEventMng = {
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
       boUtil.bofApplyDateRange(searchParam);
-      pager.pageNo = 1;
+      baseGridPager.pageNo = 1;
     };
 
     /* loadView — 뷰 로드 */
@@ -220,10 +220,10 @@ window.PmEventMng = {
     const fnStatusBadge = s => coUtil.cofCodeBadge('EVENT_STATUS_KR', s, _EVENT_STATUS_FB[s] || 'badge-gray');
 
     /* setPage — 설정 */
-    const setPage = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
+    const setPage = async n => { if (n >= 1 && n <= baseGridPager.pageTotalPage) { baseGridPager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
 
     /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+    const onSizeChange = () => { baseGridPager.pageNo = 1; handleSearchList('DEFAULT'); };
 
     /* handleDelete — 삭제 */
     const handleDelete = async (e) => {
@@ -281,7 +281,7 @@ window.PmEventMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       columns,
-      events, uiState, codes, searchParam, pager, detailPanel,                       // 상태 / 데이터
+      events, uiState, codes, searchParam, baseGridPager, detailPanel,                       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                     // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                           // computed
       tabMode,                                                                       // toRef
@@ -296,7 +296,7 @@ window.PmEventMng = {
     <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </bo-container>
   <!-- ===== ■. 목록 영역 =================================================== -->
-  <bo-container title="이벤트목록" :count-text="pager.pageTotalCount + '건'">
+  <bo-container title="이벤트목록" :count-text="baseGridPager.pageTotalCount + '건'">
     <template #toolbar-actions>
       <div style="display:flex;border:1px solid #ddd;border-radius:6px;overflow:hidden;">
         <button @click="handleBtnAction('tab-mode', 'list')" style="font-size:11px;padding:4px 10px;border:none;transition:all .15s;"
@@ -348,7 +348,7 @@ window.PmEventMng = {
         </div>
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
           <div style="font-size:12px;color:#999;margin-bottom:6px;">
-            <span style="display:inline-block;min-width:20px;font-weight:700;color:#e8587a;">{{ (pager.pageNo-1)*pager.pageSize + idx + 1 }}</span> 이벤트 #{{ e.eventId }}
+            <span style="display:inline-block;min-width:20px;font-weight:700;color:#e8587a;">{{ (baseGridPager.pageNo-1)*baseGridPager.pageSize + idx + 1 }}</span> 이벤트 #{{ e.eventId }}
           </div>
           <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;" @click="handleSelectAction('events-rowView', e.eventId)" :style="detailPanel.selectedId===e.eventId?{color:'#e8587a'}:{}">
             {{ e.eventTitle }}
@@ -390,7 +390,7 @@ window.PmEventMng = {
       </div>
     </div>
     <!-- ===== ■.■. 페이저 ================================================== -->
-    <bo-pager v-if="pager.pageTotalCount > 0" :pager="pager" :on-set-page="n => handleBtnAction('events-pager-setPage', n)" :on-size-change="() => handleSelectAction('events-pager-sizeChange')" />
+    <bo-pager v-if="baseGridPager.pageTotalCount > 0" :pager="baseGridPager" :on-set-page="n => handleBtnAction('events-pager-setPage', n)" :on-size-change="() => handleSelectAction('events-pager-sizeChange')" />
   </bo-container>
   <!-- ===== ■. 하단 상세: EventDtl 임베드 ===================================== -->
   <bo-container bare>

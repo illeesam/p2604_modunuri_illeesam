@@ -16,7 +16,7 @@ window.PmCacheMng = {
     const codes = reactive({ cache_statuses: [], cache_trans_types: [], date_range_opts: [] });
     const SORT_MAP = { reg: { asc: 'regDate asc', desc: 'regDate desc' } };
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* ===== 상세 인라인 패널 ===== */
     const detailPanel = reactive({   // 인라인 Dtl 패널 상태 (항상 표시, 진입 시 빈 신규 폼)
@@ -36,13 +36,13 @@ window.PmCacheMng = {
       console.log(' ■■ PmCacheMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchList('SEARCH');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
         uiState.sortKey = ''; uiState.sortDir = 'asc';
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         resetDetailToNew();
         return handleSearchList('SEARCH');
       // 기간 옵션 변경
@@ -133,7 +133,7 @@ window.PmCacheMng = {
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
       boUtil.bofApplyDateRange(searchParam);
-      pager.pageNo = 1;
+      baseGridPager.pageNo = 1;
     };
 
     /* getSortParam — 정렬 파라미터 */
@@ -149,7 +149,7 @@ window.PmCacheMng = {
         if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
+      baseGridPager.pageNo = 1;
       handleSearchList();
     };
 
@@ -160,17 +160,17 @@ window.PmCacheMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) };
+        const params = { pageNo: baseGridPager.pageNo, pageSize: baseGridPager.pageSize, ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) };
         if (params.searchValue && !params.searchType) {
           params.searchType = 'memberNm,memberId,cacheDesc';
         }
         const res = await boApiSvc.pmCache.getPage(params, '캐시관리', '목록조회');
         const data = res.data?.data;
         caches.splice(0, caches.length, ...(data?.pageList || []));
-        pager.pageTotalCount = data?.pageTotalCount || 0;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        coUtil.cofBuildPagerNums(pager);
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        baseGridPager.pageTotalCount = data?.pageTotalCount || 0;
+        baseGridPager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize) || 1;
+        coUtil.cofBuildPagerNums(baseGridPager);
+        Object.assign(baseGridPager.pageCond, data?.pageCond || baseGridPager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -221,10 +221,10 @@ window.PmCacheMng = {
     const fnTypeBadge = t => coUtil.cofCodeBadge('CACHE_TYPE_KR', t, _CACHE_TYPE_FB[t] || 'badge-gray');
 
     /* setPage — 페이지 번호 변경 */
-    const setPage = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
+    const setPage = async n => { if (n >= 1 && n <= baseGridPager.pageTotalPage) { baseGridPager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
 
     /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+    const onSizeChange = () => { baseGridPager.pageNo = 1; handleSearchList('DEFAULT'); };
 
     /* handleDelete — 삭제 */
     const handleDelete = async (c) => {
@@ -288,7 +288,7 @@ window.PmCacheMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       columns,
-      caches, uiState, codes, searchParam, pager, detailPanel,                       // 상태 / 데이터
+      caches, uiState, codes, searchParam, baseGridPager, detailPanel,                       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                     // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                           // computed
       fnTypeBadge, sortIcon,                                                         // 헬퍼
@@ -304,7 +304,7 @@ window.PmCacheMng = {
   </bo-container>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 목록 영역 ================================================== -->
-  <bo-container title="캐시목록" :count-text="pager.pageTotalCount + '건'">
+  <bo-container title="캐시목록" :count-text="baseGridPager.pageTotalCount + '건'">
     <!-- ===== ■.■. 목록 툴바: 탭모드 토글 + 엑셀/신규 ============================ -->
     <template #toolbar-actions>
       <div style="display:flex;border:1px solid #ddd;border-radius:6px;overflow:hidden;">
@@ -356,7 +356,7 @@ window.PmCacheMng = {
         :style="detailPanel.selectedId===c.cacheId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
         @click="handleSelectAction('caches-rowView', c.cacheId)">
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
-          <div style="font-size:12px;color:#999;margin-bottom:6px;"><span style="display:inline-block;min-width:20px;font-weight:700;color:#e8587a;">{{ (pager.pageNo-1)*pager.pageSize + idx + 1 }}</span> 캐시 #{{ c.cacheId }}</div>
+          <div style="font-size:12px;color:#999;margin-bottom:6px;"><span style="display:inline-block;min-width:20px;font-weight:700;color:#e8587a;">{{ (baseGridPager.pageNo-1)*baseGridPager.pageSize + idx + 1 }}</span> 캐시 #{{ c.cacheId }}</div>
           <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;" @click="handleSelectAction('caches-rowView', c.cacheId)" :style="detailPanel.selectedId===c.cacheId?{color:'#e8587a'}:{}">
             {{ c.cacheDesc }}
             <span v-if="detailPanel.selectedId===c.cacheId" style="font-size:10px;margin-left:4px;">▼</span>
@@ -381,7 +381,7 @@ window.PmCacheMng = {
       </div>
     </div>
     <!-- ===== ■.■. 페이지네이션 ================================================ -->
-    <bo-pager v-if="pager.pageTotalCount > 0" :pager="pager" :on-set-page="n => handleBtnAction('caches-pager-setPage', n)" :on-size-change="() => handleSelectAction('caches-pager-sizeChange')" />
+    <bo-pager v-if="baseGridPager.pageTotalCount > 0" :pager="baseGridPager" :on-set-page="n => handleBtnAction('caches-pager-setPage', n)" :on-size-change="() => handleSelectAction('caches-pager-sizeChange')" />
   </bo-container>
   <!-- ===== □. 목록 영역 ================================================== -->
   <!-- ===== ■. 상세 패널 (인라인 임베드, 항상 표시) ================================ -->

@@ -25,14 +25,14 @@ window.DpDispWidgetMng = {
       console.log(' ■■ DpDispWidgetMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        listGridPager.pageNo = 1;
         return handleSearchData('DEFAULT');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
         uiState.sortKey = ''; uiState.sortDir = 'asc';
         uiState.selectedPath = null;          // 표시경로 트리 전체로 복귀
-        pager.pageNo = 1;
+        listGridPager.pageNo = 1;
         resetDetailToNew();
         return handleSearchData('DEFAULT');
       // 위젯 신규 등록 (인라인 패널)
@@ -44,7 +44,7 @@ window.DpDispWidgetMng = {
       // 좌측 표시경로 트리 전체 보기
       } else if (cmd === 'pathTree-all') {
         uiState.selectedPath = null;
-        pager.pageNo = 1;
+        listGridPager.pageNo = 1;
         return handleSearchData('DEFAULT');
       // 그리드 정렬 헤더 클릭
       } else if (cmd === 'widgets-sort') {
@@ -100,7 +100,7 @@ window.DpDispWidgetMng = {
 
     const SORT_MAP = { reg: { asc: 'regDate asc', desc: 'regDate desc' } };
 
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const listGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* ===== 상세 인라인 패널 (항상 표시. 진입 시 빈 신규 폼) ===== */
     const detailPanel = reactive({
@@ -133,7 +133,7 @@ window.DpDispWidgetMng = {
         if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
+      listGridPager.pageNo = 1;
       handleSearchData('DEFAULT');
     };
 
@@ -161,7 +161,7 @@ window.DpDispWidgetMng = {
         const { type, status, searchType, searchValue } = searchParam;
         /* dp_widget (실제 배치된 위젯 인스턴스) — 메인 데이터 */
         const widgetParams = {
-          pageNo: pager.pageNo, pageSize: pager.pageSize,
+          pageNo: listGridPager.pageNo, pageSize: listGridPager.pageSize,
           ...getSortParam(),
           ...(searchValue ? { searchValue: searchValue.trim() } : {}),
           ...(searchType ? { searchType }                     : {}),
@@ -181,9 +181,9 @@ window.DpDispWidgetMng = {
         widgets.splice(0, widgets.length, ...(dW?.pageList || dW?.list || []));
         const dLibs = resLibs.data?.data;
         widgetLibs.splice(0, widgetLibs.length, ...(dLibs?.pageList || dLibs?.list || []));
-        pager.pageTotalCount = dW?.pageTotalCount || 0;
-        pager.pageTotalPage  = dW?.pageTotalPage  || 1;
-        coUtil.cofBuildPagerNums(pager);
+        listGridPager.pageTotalCount = dW?.pageTotalCount || 0;
+        listGridPager.pageTotalPage  = dW?.pageTotalPage  || 1;
+        coUtil.cofBuildPagerNums(listGridPager);
         /* 결과에 반영된 조건 기록 */
         applied.searchValue     = searchParam.searchValue;
         applied.type   = searchParam.type;
@@ -298,13 +298,13 @@ window.DpDispWidgetMng = {
     const fnRowStyle = (row) => (detailPanel.selectedId === row.widgetId ? 'background:#fff8f8;' : '') + 'height:74px;';
 
     /* setPage — 설정 */
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData(); } };
+    const setPage = n => { if (n >= 1 && n <= listGridPager.pageTotalPage) { listGridPager.pageNo = n; handleSearchData(); } };
 
     /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchData(); };
+    const onSizeChange = () => { listGridPager.pageNo = 1; handleSearchData(); };
 
     /* selectNode — 노드 선택 (트리 필터 변경 → 선택 행이 목록에서 사라질 수 있으므로 상세 빈 신규 폼으로 초기화) */
-    const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; resetDetailToNew(); handleSearchData(); };
+    const selectNode = (id) => { uiState.selectedPath = id; listGridPager.pageNo = 1; resetDetailToNew(); handleSearchData(); };
 
     /* handleDelete — 삭제 */
     const handleDelete = async (d) => {
@@ -333,7 +333,7 @@ window.DpDispWidgetMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       columns,
-      widgets, widgetLibs, uiState, widgetCounts, codes, searchParam, applied, pager, detailPanel, // 상태 / 데이터
+      widgets, widgetLibs, uiState, widgetCounts, codes, searchParam, applied, listGridPager, detailPanel, // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                      // dispatch (모든 이벤트 / 액션 라우팅)
       cfFilterDirty, cfSiteNm, cfDetailEditId, cfDetailKey, cfNoFilter,               // computed
       selectedId: computed(() => detailPanel.selectedId),                             // computed
@@ -437,7 +437,7 @@ window.DpDispWidgetMng = {
     </bo-container>
     <!-- ===== □.□. 좌측 표시경로 =============================================== -->
     <!-- ===== ■.■. 우측 목록 ================================================= -->
-    <bo-container title="전시위젯" :count-text="pager.pageTotalCount + '건'">
+    <bo-container title="전시위젯" :count-text="listGridPager.pageTotalCount + '건'">
       <template #toolbar-actions>
         <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">
           #{{ uiState.selectedPath }}
@@ -461,7 +461,7 @@ window.DpDispWidgetMng = {
         </button>
       </template>
       <!-- ===== ■.■.■. 목록 ================================================== -->
-      <bo-grid bare :columns="columns.listGrid" :rows="widgets" row-key="widgetId" :selected-key="detailPanel.selectedId" :pager="pager"
+      <bo-grid bare :columns="columns.listGrid" :rows="widgets" row-key="widgetId" :selected-key="detailPanel.selectedId" :pager="listGridPager"
         :sort-state="uiState" :row-style="fnRowStyle"
         empty-text="등록된 위젯이 없습니다."
         @sort="key => handleBtnAction('widgets-sort', key)"
@@ -552,7 +552,7 @@ window.DpDispWidgetMng = {
           </div>
         </template>
       </bo-grid>
-      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('widgets-pager-setPage', n)" :on-size-change="() => handleSelectAction('widgets-pager-sizeChange')" />
+      <bo-pager :pager="listGridPager" :on-set-page="n => handleBtnAction('widgets-pager-setPage', n)" :on-size-change="() => handleSelectAction('widgets-pager-sizeChange')" />
     </bo-container>
     <!-- ===== /우측 목록 ===================================================== -->
   </div>

@@ -28,13 +28,13 @@ window.PdQnaMng = {
       console.log(' ■■ PdQnaMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
         uiState.sortKey = ''; uiState.sortDir = 'asc';
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchList();
       // 답변 저장
       } else if (cmd === 'form-save') {
@@ -47,7 +47,7 @@ window.PdQnaMng = {
         return onSort(param);
       // 페이지 번호 변경
       } else if (cmd === 'qnas-pager-setPage') {
-        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
+        if (param >= 1 && param <= baseGridPager.pageTotalPage) { baseGridPager.pageNo = param; handleSearchList('PAGE_CLICK'); }
         return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -59,7 +59,7 @@ window.PdQnaMng = {
       console.log(' ■■ PdQnaMng.js : handleSelectAction -> ', cmd, param);
       // 페이지 크기 변경
       if (cmd === 'qnas-pager-sizeChange') {
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -120,7 +120,7 @@ window.PdQnaMng = {
     const searchParam = reactive(_initSearchParam());
 
     /* ===== 페이지네이션 ===== */
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* getSortParam — 정렬 파라미터 */
     const getSortParam = () => {
@@ -135,7 +135,7 @@ window.PdQnaMng = {
         if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
+      baseGridPager.pageNo = 1;
       handleSearchList();
     };
 
@@ -146,13 +146,13 @@ window.PdQnaMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.pdQna.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) }, '상품Q&A관리', '목록조회');
+        const res = await boApiSvc.pdQna.getPage({ pageNo: baseGridPager.pageNo, pageSize: baseGridPager.pageSize, ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) }, '상품Q&A관리', '목록조회');
         const data = res.data?.data;
         qnas.splice(0, qnas.length, ...(data?.pageList || []));
-        pager.pageTotalCount = data?.pageTotalCount || 0;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        coUtil.cofBuildPagerNums(pager);
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        baseGridPager.pageTotalCount = data?.pageTotalCount || 0;
+        baseGridPager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize) || 1;
+        coUtil.cofBuildPagerNums(baseGridPager);
+        Object.assign(baseGridPager.pageCond, data?.pageCond || baseGridPager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -218,7 +218,7 @@ window.PdQnaMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       columns,
-      qnas, uiState, codes, pager, searchParam, form,                                  // 상태 / 데이터
+      qnas, uiState, codes, baseGridPager, searchParam, form,                                  // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                       // dispatch
       cfSiteNm,                                                                        // computed
       sortIcon, fnStatusBadge, fnAnswLabel, fnProdNm, fnMemNm,                         // 헬퍼
@@ -233,7 +233,7 @@ window.PdQnaMng = {
   </bo-container>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 목록 그리드 =================================================== -->
-  <bo-container title="Q&amp;A 목록" :count-text="pager.pageTotalCount + '건'">
+  <bo-container title="Q&amp;A 목록" :count-text="baseGridPager.pageTotalCount + '건'">
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid bare
       :columns="columns.baseGrid" :rows="qnas" row-key="qnaId" :selected-key="uiState.selectedId"
@@ -242,7 +242,7 @@ window.PdQnaMng = {
       empty-text="조회된 데이터가 없습니다."
       @sort="key => handleBtnAction('qnas-sort', key)"
       grid-id="qnas-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" />
-    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('qnas-pager-setPage', n)" :on-size-change="() => handleSelectAction('qnas-pager-sizeChange')" />
+    <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('qnas-pager-setPage', n)" :on-size-change="() => handleSelectAction('qnas-pager-sizeChange')" />
   </bo-container>
   <!-- ===== □. 목록 그리드 =================================================== -->
   <!-- ===== ■. 상세 패널 (질문/답변 — 항상 표시, 미선택 시 안내) ==================== -->

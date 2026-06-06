@@ -19,7 +19,7 @@ window.PmPlanMng = {
       date_range_opts: [],
     });
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const CATEGORIES = [
       { value: '', label: '전체' },
       { value: '패션', label: '패션' },
@@ -40,14 +40,14 @@ window.PmPlanMng = {
       console.log(' ■■ PmPlanMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
-        Object.assign(pager.pageCond, searchParam);
+        baseGridPager.pageNo = 1;
+        Object.assign(baseGridPager.pageCond, searchParam);
         return handleSearchList('SEARCH');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
         uiState.sortKey = ''; uiState.sortDir = 'asc';
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         resetDetailToNew();
         return handleSearchList('SEARCH');
       // 기간 옵션 변경
@@ -147,7 +147,7 @@ window.PmPlanMng = {
         if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
+      baseGridPager.pageNo = 1;
       handleSearchList();
     };
 
@@ -158,13 +158,13 @@ window.PmPlanMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.pmPlan.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...(searchType === 'PAGE_CLICK' ? pager.pageCond : searchParam) }, '요금제관리', '목록조회');
+        const res = await boApiSvc.pmPlan.getPage({ pageNo: baseGridPager.pageNo, pageSize: baseGridPager.pageSize, ...getSortParam(), ...(searchType === 'PAGE_CLICK' ? baseGridPager.pageCond : searchParam) }, '요금제관리', '목록조회');
         const data = res.data?.data;
         plans.splice(0, plans.length, ...(data?.pageList || []));
-        pager.pageTotalCount = data?.pageTotalCount || 0;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        coUtil.cofBuildPagerNums(pager);
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        baseGridPager.pageTotalCount = data?.pageTotalCount || 0;
+        baseGridPager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize) || 1;
+        coUtil.cofBuildPagerNums(baseGridPager);
+        Object.assign(baseGridPager.pageCond, data?.pageCond || baseGridPager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -183,7 +183,7 @@ window.PmPlanMng = {
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
       boUtil.bofApplyDateRange(searchParam);
-      pager.pageNo = 1;
+      baseGridPager.pageNo = 1;
     };
 
     /* loadView — 뷰 로드 */
@@ -224,10 +224,10 @@ window.PmPlanMng = {
     const fnStatusBadge = s => coUtil.cofCodeBadge('PLAN_STATUS_KR', s, _PLAN_STATUS_FB[s] || 'badge-gray');
 
     /* setPage — 설정 */
-    const setPage = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
+    const setPage = async n => { if (n >= 1 && n <= baseGridPager.pageTotalPage) { baseGridPager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
 
     /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+    const onSizeChange = () => { baseGridPager.pageNo = 1; handleSearchList('DEFAULT'); };
 
     /* handleDelete — 삭제 */
     const handleDelete = async (p) => {
@@ -286,7 +286,7 @@ window.PmPlanMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       columns,
-      plans, uiState, codes, searchParam, pager, detailPanel, CATEGORIES,            // 상태 / 데이터
+      plans, uiState, codes, searchParam, baseGridPager, detailPanel, CATEGORIES,            // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                     // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                           // computed
       tabMode,                                                                       // toRef
@@ -301,7 +301,7 @@ window.PmPlanMng = {
     <bo-search-area :loading="uiState.loading" :columns="columns.baseSearch" :param="searchParam" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
   </bo-container>
   <!-- ===== ■. 목록 영역 =================================================== -->
-  <bo-container title="기획전목록" :count-text="pager.pageTotalCount + '건'">
+  <bo-container title="기획전목록" :count-text="baseGridPager.pageTotalCount + '건'">
     <template #toolbar-actions>
       <div style="display:flex;gap:6px;align-items:center;">
         <div style="display:flex;border:1px solid #ddd;border-radius:6px;overflow:hidden;">
@@ -400,7 +400,7 @@ window.PmPlanMng = {
       </div>
     </div>
     <!-- ===== ■.■. 페이저 ==================================================== -->
-    <bo-pager v-if="pager.pageTotalCount > 0" :pager="pager" :on-set-page="n => handleBtnAction('plans-pager-setPage', n)" :on-size-change="() => handleSelectAction('plans-pager-sizeChange')" />
+    <bo-pager v-if="baseGridPager.pageTotalCount > 0" :pager="baseGridPager" :on-set-page="n => handleBtnAction('plans-pager-setPage', n)" :on-size-change="() => handleSelectAction('plans-pager-sizeChange')" />
   </bo-container>
   <!-- ===== ■. 하단 상세: PlanDtl 임베드 (항상 표시, 진입 시 빈 신규 폼) ============= -->
   <bo-container bare>

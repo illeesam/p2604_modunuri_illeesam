@@ -26,13 +26,13 @@ window.SyContactMng = {
       console.log(' ■■ SyContactMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
         uiState.sortKey = ''; uiState.sortDir = 'asc';
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         resetDetailToNew();
         return handleSearchList('DEFAULT');
       // 기간 옵션 변경
@@ -98,7 +98,7 @@ window.SyContactMng = {
     const searchParam = reactive(_initSearchParam());
 
     /* ===== 페이지네이션 ===== */
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* ===== 상세 인라인 패널 ===== */
     const detailModal = reactive({   // 인라인 Dtl 패널 상태 (modal_reload_trigger 표준)
@@ -129,7 +129,7 @@ window.SyContactMng = {
         if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
+      baseGridPager.pageNo = 1;
       handleSearchList();
     };
 
@@ -140,7 +140,7 @@ window.SyContactMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) };
+        const params = { pageNo: baseGridPager.pageNo, pageSize: baseGridPager.pageSize, ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
           params.searchType = 'contactTitle,memberNm';
@@ -148,10 +148,10 @@ window.SyContactMng = {
         const res = await boApiSvc.syContact.getPage(params, '문의관리', '목록조회');
         const data = res.data?.data;
         contacts.splice(0, contacts.length, ...(data?.pageList || []));
-        pager.pageTotalCount = data?.pageTotalCount || contacts.length;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        coUtil.cofBuildPagerNums(pager);
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        baseGridPager.pageTotalCount = data?.pageTotalCount || contacts.length;
+        baseGridPager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize) || 1;
+        coUtil.cofBuildPagerNums(baseGridPager);
+        Object.assign(baseGridPager.pageCond, data?.pageCond || baseGridPager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -180,7 +180,7 @@ window.SyContactMng = {
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
       boUtil.bofApplyDateRange(searchParam);
-      pager.pageNo = 1;
+      baseGridPager.pageNo = 1;
     };
 
     /* loadView — 뷰 로드 */
@@ -238,10 +238,10 @@ window.SyContactMng = {
     const fnStatusBadge = s => coUtil.cofCodeBadge('CONTACT_STATUS_KR', s, _CONTACT_STATUS_KR_FB[s] || 'badge-gray');
 
     /* setPage — 설정 */
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
+    const setPage = n => { if (n >= 1 && n <= baseGridPager.pageTotalPage) { baseGridPager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
 
     /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+    const onSizeChange = () => { baseGridPager.pageNo = 1; handleSearchList('DEFAULT'); };
 
     /* handleDelete — 삭제 */
     const handleDelete = async (c) => {
@@ -300,7 +300,7 @@ window.SyContactMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       columns,
-      contacts, uiState, codes, searchParam, pager, detailModal,         // 상태 / 데이터
+      contacts, uiState, codes, searchParam, baseGridPager, detailModal,         // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,         // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,               // computed
       fnStatusBadge, fnRowStyle, sortIcon, showToast, showConfirm, setApiRes, showRefModal, inlineNavigate, handleSearchList, // 헬퍼 / closure
@@ -313,7 +313,7 @@ window.SyContactMng = {
     <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </bo-container>
   <!-- ===== ■. 목록 영역 =================================================== -->
-  <bo-container title="문의목록" :count-text="pager.pageTotalCount + '건'">
+  <bo-container title="문의목록" :count-text="baseGridPager.pageTotalCount + '건'">
     <template #toolbar-actions>
       <div style="display:flex;gap:6px;">
         <button class="btn btn-green btn-sm" @click="handleBtnAction('contacts-excel')">
@@ -349,7 +349,7 @@ window.SyContactMng = {
         </td>
       </template>
     </bo-grid>
-    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('contacts-pager-setPage', n)" :on-size-change="() => handleSelectAction('contacts-pager-sizeChange')" />
+    <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('contacts-pager-setPage', n)" :on-size-change="() => handleSelectAction('contacts-pager-sizeChange')" />
   </bo-container>
   <!-- ===== ■. 하단 상세: ContactDtl 임베드 (항상 표시) =========================== -->
   <bo-container bare>

@@ -12,7 +12,7 @@ window.DpDispAreaMng = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null, sortKey: '', sortDir: 'asc' });
     const codes = reactive({ layout_types: [], use_yn: [], date_range_opts: [] });
     const SORT_MAP = { nm: { asc: 'areaNm asc', desc: 'areaNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const listGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* ===== 상세 인라인 패널 ===== */
     const detailPanel = reactive({ selectedId: '__new__', openMode: 'edit', reloadTrigger: 0, resetSeq: 0, active: false }); // 진입 시 빈 신규 폼(비활성). active=true 시 저장/취소 노출
@@ -26,14 +26,14 @@ window.DpDispAreaMng = {
       console.log(' ■■ DpDispAreaMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        listGridPager.pageNo = 1;
         return handleSearchData('SEARCH');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
         uiState.sortKey = ''; uiState.sortDir = 'asc';
         uiState.selectedPath = null;          // 표시경로 트리 전체로 복귀
-        pager.pageNo = 1;
+        listGridPager.pageNo = 1;
         resetDetailToNew();
         return handleSearchData('SEARCH');
       // 기간 옵션 변경
@@ -48,7 +48,7 @@ window.DpDispAreaMng = {
       // 좌측 표시경로 트리 전체 보기
       } else if (cmd === 'pathTree-all') {
         uiState.selectedPath = null;
-        pager.pageNo = 1;
+        listGridPager.pageNo = 1;
         return handleSearchData('DEFAULT');
       // 그리드 정렬 헤더 클릭
       } else if (cmd === 'areas-sort') {
@@ -121,7 +121,7 @@ window.DpDispAreaMng = {
         if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
+      listGridPager.pageNo = 1;
       handleSearchData();
     };
 
@@ -147,7 +147,7 @@ window.DpDispAreaMng = {
       uiState.loading = true;
       try {
         const params = {
-          pageNo: pager.pageNo, pageSize: pager.pageSize,
+          pageNo: listGridPager.pageNo, pageSize: listGridPager.pageSize,
           ...getSortParam(),
           ...coUtil.cofOmitEmpty(searchParam),
           ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
@@ -156,9 +156,9 @@ window.DpDispAreaMng = {
         const res = await boApiSvc.dpArea.getPage(params, '전시영역관리', '목록조회');
         const d = res.data?.data;
         areas.splice(0, areas.length, ...(d?.pageList || d?.list || []));
-        pager.pageTotalCount = d?.pageTotalCount || 0;
-        pager.pageTotalPage  = d?.pageTotalPage  || 1;
-        coUtil.cofBuildPagerNums(pager);
+        listGridPager.pageTotalCount = d?.pageTotalCount || 0;
+        listGridPager.pageTotalPage  = d?.pageTotalPage  || 1;
+        coUtil.cofBuildPagerNums(listGridPager);
         uiState.error = null;
         /* 좌 트리 카운트 동기 갱신 */
         handleLoadPathTreeNodeCounts();
@@ -180,7 +180,7 @@ window.DpDispAreaMng = {
     const fnPathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
 
     /* selectNode — 노드 선택 (상세영역 빈 신규 폼으로 초기화) */
-    const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; resetDetailToNew(); handleSearchData('DEFAULT'); };
+    const selectNode = (id) => { uiState.selectedPath = id; listGridPager.pageNo = 1; resetDetailToNew(); handleSearchData('DEFAULT'); };
 
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
@@ -225,10 +225,10 @@ window.DpDispAreaMng = {
 
 
     /* setPage — 페이지 번호 변경 */
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData(); } };
+    const setPage = n => { if (n >= 1 && n <= listGridPager.pageTotalPage) { listGridPager.pageNo = n; handleSearchData(); } };
 
     /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchData(); };
+    const onSizeChange = () => { listGridPager.pageNo = 1; handleSearchData(); };
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
@@ -262,7 +262,7 @@ window.DpDispAreaMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       columns,
-      areas, uiState, areaCounts, codes, searchParam, pager, detailPanel,                       // 상태 / 데이터
+      areas, uiState, areaCounts, codes, searchParam, listGridPager, detailPanel,                       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                    // dispatch (모든 이벤트 / 액션 라우팅)
       cfDetailEditId, cfDetailKey,                                                  // computed
       fnPathLabel, sortIcon,                                                        // 헬퍼
@@ -292,7 +292,7 @@ window.DpDispAreaMng = {
       </div>
     </bo-container>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-container title="전시 영역 목록" :count-text="'총 ' + pager.pageTotalCount + '건'" bare>
+    <bo-container title="전시 영역 목록" :count-text="'총 ' + listGridPager.pageTotalCount + '건'" bare>
       <template #toolbar-actions>
         <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">
           #{{ uiState.selectedPath }}
@@ -301,7 +301,7 @@ window.DpDispAreaMng = {
           ✚ 신규등록
         </button>
       </template>
-      <bo-grid bare :columns="columns.listGrid" :rows="areas" row-key="areaId" :selected-key="detailPanel.selectedId" :pager="pager"
+      <bo-grid bare :columns="columns.listGrid" :rows="areas" row-key="areaId" :selected-key="detailPanel.selectedId" :pager="listGridPager"
         :sort-state="uiState"
         empty-text="조회된 데이터가 없습니다."
         @sort="key => handleBtnAction('areas-sort', key)"
@@ -315,7 +315,7 @@ window.DpDispAreaMng = {
           </button>
         </template>
       </bo-grid>
-      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('areas-pager-setPage', n)" :on-size-change="() => handleSelectAction('areas-pager-sizeChange')" />
+      <bo-pager :pager="listGridPager" :on-set-page="n => handleBtnAction('areas-pager-setPage', n)" :on-size-change="() => handleSelectAction('areas-pager-sizeChange')" />
     </bo-container>
   </div>
   <!-- ===== ■. 상세 패널 (항상 표시, 진입 시 빈 신규 폼) ============================== -->

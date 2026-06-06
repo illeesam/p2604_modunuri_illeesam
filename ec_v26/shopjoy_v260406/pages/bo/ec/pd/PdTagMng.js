@@ -25,12 +25,12 @@ window.PdTagMng = {
       console.log(' ■■ PdTagMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchList();
       // 태그 그리드 행 추가
       } else if (cmd === 'tags-add') {
@@ -41,7 +41,7 @@ window.PdTagMng = {
         return handleSave();
       // 페이지 번호 변경
       } else if (cmd === 'tags-pager-setPage') {
-        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
+        if (param >= 1 && param <= baseGridPager.pageTotalPage) { baseGridPager.pageNo = param; handleSearchList('PAGE_CLICK'); }
         return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -56,7 +56,7 @@ window.PdTagMng = {
         return handleDelete(param);
       // 페이지 크기 변경
       } else if (cmd === 'tags-pager-sizeChange') {
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -78,19 +78,19 @@ window.PdTagMng = {
     const searchParam = reactive(_initSearchParam());
 
     /* ===== 페이지네이션 ===== */
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.pdTag.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...coUtil.cofOmitEmpty(searchParam) }, '태그관리', '목록조회');
+        const res = await boApiSvc.pdTag.getPage({ pageNo: baseGridPager.pageNo, pageSize: baseGridPager.pageSize, ...coUtil.cofOmitEmpty(searchParam) }, '태그관리', '목록조회');
         const data = res.data?.data;
         tags.splice(0, tags.length, ...(data?.pageList || []));
-        pager.pageTotalCount = data?.pageTotalCount || 0;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        coUtil.cofBuildPagerNums(pager);
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        baseGridPager.pageTotalCount = data?.pageTotalCount || 0;
+        baseGridPager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize) || 1;
+        coUtil.cofBuildPagerNums(baseGridPager);
+        Object.assign(baseGridPager.pageCond, data?.pageCond || baseGridPager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -184,7 +184,7 @@ window.PdTagMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       columns,
-      uiState, codes, searchParam, pager, gridRows,                                  // 상태 / 데이터
+      uiState, codes, searchParam, baseGridPager, gridRows,                                  // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                                           // dispatch
       fnYnBadge,                                                                     // 헬퍼
     };
@@ -198,7 +198,7 @@ window.PdTagMng = {
   </bo-container>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 목록 그리드 =================================================== -->
-  <bo-container title="태그 목록" :count-text="pager.pageTotalCount + '건'">
+  <bo-container title="태그 목록" :count-text="baseGridPager.pageTotalCount + '건'">
     <template #toolbar-actions>
       <button class="btn btn-primary btn-sm" @click="handleBtnAction('tags-add')">
         + 행추가
@@ -219,7 +219,7 @@ window.PdTagMng = {
       </template>
     </bo-grid>
     <!-- 페이저는 그리드 밖(컨테이너 안)에 배치 -->
-    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('tags-pager-setPage', n)" :on-size-change="() => handleSelectAction('tags-pager-sizeChange')" />
+    <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('tags-pager-setPage', n)" :on-size-change="() => handleSelectAction('tags-pager-sizeChange')" />
   </bo-container>
   <!-- ===== □. 목록 그리드 =================================================== -->
 </bo-page>

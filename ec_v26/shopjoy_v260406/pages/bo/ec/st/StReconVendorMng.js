@@ -19,16 +19,16 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ StReconVendorMng.js : handleBtnAction -> ', cmd, param);
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else if (cmd === 'searchParam-dateRange') {
         return handleDateRangeChange();
       } else if (cmd === 'reconVendors-pager-setPage') {
-        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
+        if (param >= 1 && param <= baseGridPager.pageTotalPage) { baseGridPager.pageNo = param; handleSearchList('PAGE_CLICK'); }
         return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -39,7 +39,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ StReconVendorMng.js : handleSelectAction -> ', cmd, param);
       if (cmd === 'reconVendors-pager-sizeChange') {
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -72,7 +72,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     /* _initSearchParam — 초기화 */
     const _initSearchParam = () => ({ diff: '' });
     const searchParam = reactive(_initSearchParam());
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const cfSummary = computed(() => ({
       match: rows.filter(r=>r.diffStatus==='일치').length,
@@ -85,15 +85,15 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const res = await boApiSvc.stRecon.getPage({
-            pageNo: pager.pageNo, pageSize: pager.pageSize, typeCd: 'VENDOR',
+            pageNo: baseGridPager.pageNo, pageSize: baseGridPager.pageSize, typeCd: 'VENDOR',
             ...coUtil.cofOmitEmpty(searchParam)
           }, '업체-정산 대사', '목록조회');
         const data = res.data?.data;
         rows.splice(0, rows.length, ...(data?.pageList || data?.list || rows));
-        pager.pageTotalCount = data?.pageTotalCount || rows.length;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        coUtil.cofBuildPagerNums(pager);
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        baseGridPager.pageTotalCount = data?.pageTotalCount || rows.length;
+        baseGridPager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize) || 1;
+        coUtil.cofBuildPagerNums(baseGridPager);
+        Object.assign(baseGridPager.pageCond, data?.pageCond || baseGridPager.pageCond);
       } catch (_) {
         console.error('[catch-info]', _);
       }
@@ -112,16 +112,16 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     const fmtW = coUtil.cofWon;
 
     /* onSearch — 조회 */
-    const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+    const onSearch = () => { baseGridPager.pageNo = 1; handleSearchList('DEFAULT'); };
 
     /* onReset — 초기화 */
     const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
 
     /* setPage — 설정 */
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
+    const setPage = n => { if (n >= 1 && n <= baseGridPager.pageTotalPage) { baseGridPager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
 
     /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+    const onSizeChange = () => { baseGridPager.pageNo = 1; handleSearchList('DEFAULT'); };
 
         /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
         // --- [컬럼 정의] ---
@@ -158,7 +158,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       columns,
-      uiState, codes, pager, rows, searchParam,
+      uiState, codes, baseGridPager, rows, searchParam,
       handleBtnAction, handleSelectAction,
       cfSummary, fnDiffBadge, fmtW,
     };
@@ -174,9 +174,9 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     <bo-form-area :columns="columns.summaryForm" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
   </bo-container>
   <!-- ===== ■. 목록 영역 ================================================= -->
-  <bo-container title="목록" :count-text="pager.pageTotalCount + '개 업체'">
+  <bo-container title="목록" :count-text="baseGridPager.pageTotalCount + '개 업체'">
     <bo-grid bare :columns="columns.baseGrid" :rows="rows" row-key="vendorId" />
-    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('reconVendors-pager-setPage', n)" :on-size-change="() => handleSelectAction('reconVendors-pager-sizeChange')" />
+    <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('reconVendors-pager-setPage', n)" :on-size-change="() => handleSelectAction('reconVendors-pager-sizeChange')" />
   </bo-container>
 </bo-page>
 `,

@@ -32,13 +32,13 @@ window.OdOrderMng = {
           showToast('기간 검색 시 기간유형을 선택해주세요.', 'error');
           return;
         }
-        pager.pageNo = 1;
+        listGridPager.pageNo = 1;
         return handleSearchData('DEFAULT');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
         uiState.sortKey = ''; uiState.sortDir = 'asc';
-        pager.pageNo = 1;
+        listGridPager.pageNo = 1;
         resetDetailToNew();
         return handleSearchData();
       // 기간 옵션 변경
@@ -91,7 +91,7 @@ window.OdOrderMng = {
         return onSort(param);
       // 페이지 번호 클릭
       } else if (cmd === 'orders-pager-setPage') {
-        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchData('PAGE_CLICK'); }
+        if (param >= 1 && param <= listGridPager.pageTotalPage) { listGridPager.pageNo = param; handleSearchData('PAGE_CLICK'); }
         return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -103,7 +103,7 @@ window.OdOrderMng = {
       console.log(' ■■ OdOrderMng.js : handleSelectAction -> ', cmd, param);
       // 페이지 크기 변경
       if (cmd === 'orders-pager-sizeChange') {
-        pager.pageNo = 1;
+        listGridPager.pageNo = 1;
         return handleSearchData('DEFAULT');
       // 그리드 행 참조 모달 열기
       } else if (cmd === 'orders-rowRefClick') {
@@ -169,7 +169,7 @@ window.OdOrderMng = {
     };
     const searchParam = reactive(_initSearchParam());
 
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const listGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* 하단 상세 (인라인 Dtl) — 항상 표시. 진입 시 빈 신규 폼(비활성) */
     const detailPanel = reactive({ selectedId: '__new__', openMode: 'edit', reloadTrigger: 0, active: false, resetSeq: 0 });
@@ -202,7 +202,7 @@ window.OdOrderMng = {
         if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
+      listGridPager.pageNo = 1;
       handleSearchData();
     };
 
@@ -213,7 +213,7 @@ window.OdOrderMng = {
     const handleSearchData = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) };
+        const params = { pageNo: listGridPager.pageNo, pageSize: listGridPager.pageSize, ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
           params.searchType = 'orderId,memberNm,loginId,recvNm,recvPhone';
@@ -225,10 +225,10 @@ window.OdOrderMng = {
         orders.splice(0, orders.length, ...(ordersRes.data?.data?.pageList || ordersRes.data?.data?.list || []));
         members.splice(0, members.length, ...(membersRes.data?.data?.pageList || membersRes.data?.data?.list || []));
         claims.splice(0, claims.length);
-        pager.pageTotalCount = ordersRes.data?.data?.pageTotalCount || 0;
-        pager.pageTotalPage = ordersRes.data?.data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        coUtil.cofBuildPagerNums(pager);
-        Object.assign(pager.pageCond, ordersRes.data?.data?.pageCond || pager.pageCond);
+        listGridPager.pageTotalCount = ordersRes.data?.data?.pageTotalCount || 0;
+        listGridPager.pageTotalPage = ordersRes.data?.data?.pageTotalPage || Math.ceil(listGridPager.pageTotalCount / listGridPager.pageSize) || 1;
+        coUtil.cofBuildPagerNums(listGridPager);
+        Object.assign(listGridPager.pageCond, ordersRes.data?.data?.pageCond || listGridPager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -244,7 +244,7 @@ window.OdOrderMng = {
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
       boUtil.bofApplyDateRange(searchParam);
-      pager.pageNo = 1;
+      listGridPager.pageNo = 1;
     };
 
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
@@ -567,7 +567,7 @@ window.OdOrderMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       columns,
-      orders, members, claims, uiState, codes, searchParam, pager, detailPanel, checked, bulkForm, bulkOpen, memberPick,  // 상태 / 데이터
+      orders, members, claims, uiState, codes, searchParam, listGridPager, detailPanel, checked, bulkForm, bulkOpen, memberPick,  // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                           // dispatch (모든 이벤트 / 액션 라우팅) + 모달 통합 콜백
       cfDetailEditId, cfIsViewMode, cfDetailKey, cfAllChecked, cfBuildTmplMsg, cfBulkPreview, cfSiteNm,                    // computed
       selectedId: computed(() => detailPanel.selectedId),                                                                  // template 직접 참조
@@ -583,7 +583,7 @@ window.OdOrderMng = {
       @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
   </bo-container>
   <!-- ===== ■. 목록 영역 =================================================== -->
-  <bo-container title="주문목록" :count-text="pager.pageTotalCount + '건'">
+  <bo-container title="주문목록" :count-text="listGridPager.pageTotalCount + '건'">
     <template #toolbar-actions>
       <span v-if="checked.size" style="margin-right:10px;font-size:12px;color:#1565c0;font-weight:700;">
         선택 {{ checked.size }}건
@@ -623,7 +623,7 @@ window.OdOrderMng = {
     </div>
     <!-- ===== ■.■. 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ============================= -->
     <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
-      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('orders-pager-setPage', n)"
+      <bo-pager :pager="listGridPager" :on-set-page="n => handleBtnAction('orders-pager-setPage', n)"
         :on-size-change="() => handleSelectAction('orders-pager-sizeChange')"
         style="margin-top:0;min-height:34px;" />
     </div>

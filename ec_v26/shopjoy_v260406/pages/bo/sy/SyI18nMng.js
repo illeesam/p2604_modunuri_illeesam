@@ -24,12 +24,12 @@ window.SyI18nMng = {
       console.log(' ■■ SyI18nMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchData();
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchData();
       // 번역 메시지 저장
       } else if (cmd === 'msgForm-save') {
@@ -48,11 +48,11 @@ window.SyI18nMng = {
       console.log(' ■■ SyI18nMng.js : handleSelectAction -> ', cmd, param);
       // 페이지 번호 클릭
       if (cmd === 'i18ns-pager-setPage') {
-        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchData(); }
+        if (param >= 1 && param <= baseGridPager.pageTotalPage) { baseGridPager.pageNo = param; handleSearchData(); }
         return;
       // 페이지 크기 변경
       } else if (cmd === 'i18ns-pager-sizeChange') {
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchData();
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -77,7 +77,7 @@ window.SyI18nMng = {
       return { searchType: '', searchValue: '', scope: '', use: '' };
     };
     const searchParam = reactive(_initSearchParam()); // 검색조건
-    const pager       = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const baseGridPager       = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     const LANGS       = ['ko','en','ja','in']; // 지원 언어
     const LANG_LABELS = { ko:'한국어', en:'English', ja:'日本語', in:'Indonesia' };
@@ -99,7 +99,7 @@ window.SyI18nMng = {
       try {
         const { searchType, searchValue, scope, use } = searchParam;
         const params = {
-          pageNo: pager.pageNo, pageSize: pager.pageSize,
+          pageNo: baseGridPager.pageNo, pageSize: baseGridPager.pageSize,
           ...(searchValue ? { searchValue: searchValue.trim() } : {}),
           ...(searchType ? { searchType }      : {}),
           ...(scope ? { i18nScopeCd: scope }     : {}),
@@ -111,9 +111,9 @@ window.SyI18nMng = {
         const res = await boApiSvc.syI18n.getPage(params, '다국어관리', '조회');
         const d = res.data?.data;
         i18ns.splice(0, i18ns.length, ...(d?.pageList || []));
-        pager.pageTotalCount = d?.pageTotalCount || 0;
-        pager.pageTotalPage  = d?.pageTotalPage  || 1;
-        coUtil.cofBuildPagerNums(pager);
+        baseGridPager.pageTotalCount = d?.pageTotalCount || 0;
+        baseGridPager.pageTotalPage  = d?.pageTotalPage  || 1;
+        coUtil.cofBuildPagerNums(baseGridPager);
       } catch (err) {
         console.error('[handleSearchData]', err);
         i18ns.splice(0, i18ns.length);
@@ -221,7 +221,7 @@ window.SyI18nMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       columns,
-      uiState, codes, searchParam, pager, i18ns, msgForm,                         // 상태 / 데이터
+      uiState, codes, searchParam, baseGridPager, i18ns, msgForm,                         // 상태 / 데이터
       msgFormColumns,                        // 컬럼 정의
       handleBtnAction, handleSelectAction, handleGridCellAction,                 // dispatch (모든 이벤트 / 액션 라우팅)
       cfSelectedKey,                                                             // computed
@@ -235,13 +235,13 @@ window.SyI18nMng = {
     <bo-search-area @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </bo-container>
   <!-- ===== ■. 목록 영역 =================================================== -->
-  <bo-container title="다국어 키 목록" :count-text="'총 ' + pager.pageTotalCount + '건'">
+  <bo-container title="다국어 키 목록" :count-text="'총 ' + baseGridPager.pageTotalCount + '건'">
     <bo-grid bare
       :columns="columns.baseGrid" :rows="i18ns" row-key="i18nId" :selected-key="uiState.selectedId"
       :row-style="fnRowStyle"
       grid-id="i18ns-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
     </bo-grid>
-    <bo-pager :pager="pager" :on-set-page="n => handleSelectAction('i18ns-pager-setPage', n)" :on-size-change="() => handleSelectAction('i18ns-pager-sizeChange')" />
+    <bo-pager :pager="baseGridPager" :on-set-page="n => handleSelectAction('i18ns-pager-setPage', n)" :on-size-change="() => handleSelectAction('i18ns-pager-sizeChange')" />
   </bo-container>
   <!-- ===== ■. 번역 편집 패널 (항상 표시) ====================================== -->
   <bo-container bare>

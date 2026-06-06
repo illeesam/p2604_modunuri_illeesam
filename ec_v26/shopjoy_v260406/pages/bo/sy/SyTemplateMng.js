@@ -26,7 +26,7 @@ window.SyTemplateMng = {
       console.log(' ■■ SyTemplateMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
@@ -34,7 +34,7 @@ window.SyTemplateMng = {
         uiState.sortKey = '';
         uiState.sortDir = 'asc';
         uiState.selectedPath = null;          // 표시경로 트리 전체로 복귀
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         resetDetailToNew();
         return handleSearchList('DEFAULT');
       // 기간 옵션 변경
@@ -65,7 +65,7 @@ window.SyTemplateMng = {
         return onSort(param);
       // 페이지 번호 클릭
       } else if (cmd === 'templates-pager-setPage') {
-        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
+        if (param >= 1 && param <= baseGridPager.pageTotalPage) { baseGridPager.pageNo = param; handleSearchList('PAGE_CLICK'); }
         return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -78,12 +78,12 @@ window.SyTemplateMng = {
       // 좌측 경로 트리 노드 선택 → 그리드 필터링 + 상세 패널 닫기
       if (cmd === 'pathTree-select') {
         uiState.selectedPath = param;
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         resetDetailToNew();
         return handleSearchList();
       // 페이지 크기 변경
       } else if (cmd === 'templates-pager-sizeChange') {
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 그리드 행 미리보기
       } else if (cmd === 'templates-rowPreview') {
@@ -143,7 +143,7 @@ window.SyTemplateMng = {
     };
     const searchParam = reactive(_initSearchParam()); // 검색조건
 
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* -- 표시경로 선택 모달 (sy_path) -- */
     const pathPickModal = reactive({ show: false, row: null }); // 표시경로 선택 모달 상태
@@ -179,7 +179,7 @@ window.SyTemplateMng = {
         if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
+      baseGridPager.pageNo = 1;
       handleSearchList();
     };
     /* handleLoadPathTreeNodeCounts — 좌 트리 노드별 카운트 (검색조건 동기, 백엔드 재귀 CTE) */
@@ -201,7 +201,7 @@ window.SyTemplateMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(),
+        const params = { pageNo: baseGridPager.pageNo, pageSize: baseGridPager.pageSize, ...getSortParam(),
           ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
           ...coUtil.cofOmitEmpty(searchParam) };
         if (params.searchValue && !params.searchType) {
@@ -210,10 +210,10 @@ window.SyTemplateMng = {
         const res = await boApiSvc.syTemplate.getPage(params, '템플릿관리', '목록조회');
         const data = res.data?.data;
         templates.splice(0, templates.length, ...(data?.pageList || []));
-        pager.pageTotalCount = data?.pageTotalCount || templates.length;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        coUtil.cofBuildPagerNums(pager);
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        baseGridPager.pageTotalCount = data?.pageTotalCount || templates.length;
+        baseGridPager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize) || 1;
+        coUtil.cofBuildPagerNums(baseGridPager);
+        Object.assign(baseGridPager.pageCond, data?.pageCond || baseGridPager.pageCond);
         uiState.error = null;
         /* 좌 트리 카운트 동기 갱신 */
         handleLoadPathTreeNodeCounts();
@@ -273,7 +273,7 @@ window.SyTemplateMng = {
     /* onDateRangeChange — 기간 변경 */
     const onDateRangeChange = () => {
       boUtil.bofApplyDateRange(searchParam);
-      pager.pageNo = 1;
+      baseGridPager.pageNo = 1;
     };
 
     /* loadView — 인라인 패널 뷰 모드로 열기 */
@@ -398,7 +398,7 @@ window.SyTemplateMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       columns,
-      templates, uiState, templateCounts, codes, searchParam, pager, detailPanel, pathPickModal, previewModal, sendModal, // 상태 / 데이터
+      templates, uiState, templateCounts, codes, searchParam, baseGridPager, detailPanel, pathPickModal, previewModal, sendModal, // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                            // dispatch (모든 이벤트 / 액션 라우팅)
       cfDetailEditId, cfIsViewMode, cfDetailKey,                                                           // computed
       fnRowStyle,                                                                                          // 헬퍼
@@ -420,7 +420,7 @@ window.SyTemplateMng = {
         :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
     </bo-container>
     <!-- ===== ■.■. 목록 영역 =============================================== -->
-    <bo-container title="템플릿목록" :count-text="pager.pageTotalCount + '건'">
+    <bo-container title="템플릿목록" :count-text="baseGridPager.pageTotalCount + '건'">
       <template #toolbar-actions>
         <div style="display:flex;gap:6px;">
           <button class="btn btn-green btn-sm" @click="handleBtnAction('templates-excel')">
@@ -461,7 +461,7 @@ window.SyTemplateMng = {
         </template>
       </bo-grid>
       <!-- 페이저는 그리드 밖, 컨테이너 안 -->
-      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('templates-pager-setPage', n)" :on-size-change="() => handleSelectAction('templates-pager-sizeChange')" />
+      <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('templates-pager-setPage', n)" :on-size-change="() => handleSelectAction('templates-pager-sizeChange')" />
     </bo-container>
   </div>
   <!-- ===== ■. 수정 패널 (전체 폭, 항상 표시) ============================= -->

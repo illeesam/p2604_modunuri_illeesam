@@ -24,11 +24,11 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ StSettleEtcAdjMng.js : handleBtnAction -> ', cmd, param);
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchData('DEFAULT');
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchData('DEFAULT');
       } else if (cmd === 'searchParam-dateRange') {
         return handleDateRangeChange();
@@ -39,7 +39,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
       } else if (cmd === 'form-cancel') {
         return closeForm();
       } else if (cmd === 'etcAdjs-pager-setPage') {
-        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchData('PAGE_CLICK'); }
+        if (param >= 1 && param <= baseGridPager.pageTotalPage) { baseGridPager.pageNo = param; handleSearchData('PAGE_CLICK'); }
         return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -56,7 +56,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
       } else if (cmd === 'etcAdjs-rowDelete') {
         return handleDelete(param);
       } else if (cmd === 'etcAdjs-pager-sizeChange') {
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchData('DEFAULT');
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -94,7 +94,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
           boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 10000 }, '정산기타조정', '목록조회'),
           (() => {
             const params = {
-              pageNo: pager.pageNo, pageSize: pager.pageSize,
+              pageNo: baseGridPager.pageNo, pageSize: baseGridPager.pageSize,
               ...coUtil.cofOmitEmpty(searchParam)
             };
             // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
@@ -107,10 +107,10 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
         vendors.splice(0, vendors.length, ...(resV.data?.data?.pageList || resV.data?.data?.list || []));
         const data = resA.data?.data;
         etcAdjs.splice(0, etcAdjs.length, ...(data?.pageList || data?.list || []));
-        pager.pageTotalCount = data?.pageTotalCount || etcAdjs.length;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        coUtil.cofBuildPagerNums(pager);
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        baseGridPager.pageTotalCount = data?.pageTotalCount || etcAdjs.length;
+        baseGridPager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize) || 1;
+        coUtil.cofBuildPagerNums(baseGridPager);
+        Object.assign(baseGridPager.pageCond, data?.pageCond || baseGridPager.pageCond);
       } catch (_) {
         console.error('[catch-info]', _);
       }
@@ -124,7 +124,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
 
     const etcAdjs = reactive([]);
 
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
 
     const form = reactive({});
@@ -204,16 +204,16 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     const fmtW = n => coUtil.cofWon(n, true);
 
     /* onSearch — 조회 */
-    const onSearch = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
+    const onSearch = () => { baseGridPager.pageNo = 1; handleSearchData('DEFAULT'); };
 
     /* onReset — 초기화 */
     const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
 
     /* setPage — 설정 */
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData('PAGE_CLICK'); } };
+    const setPage = n => { if (n >= 1 && n <= baseGridPager.pageTotalPage) { baseGridPager.pageNo = n; handleSearchData('PAGE_CLICK'); } };
 
     /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
+    const onSizeChange = () => { baseGridPager.pageNo = 1; handleSearchData('DEFAULT'); };
 
         /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
         // --- [컬럼 정의] ---
@@ -269,7 +269,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       columns,
-      uiState, codes, pager, etcAdjs, searchParam, form, errors,
+      uiState, codes, baseGridPager, etcAdjs, searchParam, form, errors,
       handleBtnAction, handleSelectAction,
       cfVendors,
       fnAprvBadge, fnTypeBadge, fmtW,
@@ -284,7 +284,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </bo-container>
   <!-- ===== ■. 목록 영역 ================================================= -->
-  <bo-container title="정산기타조정 목록" :count-text="'총 ' + pager.pageTotalCount + '건'">
+  <bo-container title="정산기타조정 목록" :count-text="'총 ' + baseGridPager.pageTotalCount + '건'">
     <template #toolbar-actions>
       <button class="btn btn-primary btn-sm" @click="handleBtnAction('etcAdjs-add')">+ 기타조정 추가</button>
     </template>
@@ -302,7 +302,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
         </div>
       </template>
     </bo-grid>
-    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('etcAdjs-pager-setPage', n)" :on-size-change="() => handleSelectAction('etcAdjs-pager-sizeChange')" />
+    <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('etcAdjs-pager-setPage', n)" :on-size-change="() => handleSelectAction('etcAdjs-pager-sizeChange')" />
   </bo-container>
   <!-- ===== ■. 상세 패널 (전체 폭 — 항상 표시, 미선택 시 안내) ===================== -->
   <bo-container card-style="margin-top:12px"

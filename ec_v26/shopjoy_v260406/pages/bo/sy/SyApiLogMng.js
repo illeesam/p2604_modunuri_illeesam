@@ -31,7 +31,7 @@ window.SyApiLogMng = {
 
     const codes = reactive({ date_range_opts: [], http_methods: [], app_types: [] });
 
-    const pager = reactive({
+    const accessGridPager = reactive({
       pageType: 'PAGE', pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1,
       pageSizes: [10, 20, 30, 50, 100], pageCond: {},
     });
@@ -123,7 +123,7 @@ window.SyApiLogMng = {
     /* onDateRangeChange — 기간 변경 */
     const onDateRangeChange = () => {
       boUtil.bofApplyDateRange(uiState);
-      pager.pageNo = 1;
+      accessGridPager.pageNo = 1;
     };
 
     /* toggleRow — 토글 */
@@ -143,8 +143,8 @@ window.SyApiLogMng = {
     /* buildSearchParams — 빌드 */
     const buildSearchParams = () => {
       const p = {
-        pageNo:      pager.pageNo,
-        pageSize:    pager.pageSize,
+        pageNo:      accessGridPager.pageNo,
+        pageSize:    accessGridPager.pageSize,
         dateStart:   uiState.dateStart       || undefined,
         dateEnd:     uiState.dateEnd         || undefined,
         searchType: uiState.searchType      || undefined,
@@ -169,10 +169,10 @@ window.SyApiLogMng = {
         const res = await boApiSvc.syAccessLog.getPage(buildSearchParams(), 'API로그조회', '요청로그조회');
         const data = res.data?.data;
         accessLogs.splice(0, accessLogs.length, ...(data?.pageList || []));
-        pager.pageTotalCount = data?.pageTotalCount || 0;
-        pager.pageTotalPage  = data?.pageTotalPage  || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        tabCounts.access = pager.pageTotalCount;
-        coUtil.cofBuildPagerNums(pager);
+        accessGridPager.pageTotalCount = data?.pageTotalCount || 0;
+        accessGridPager.pageTotalPage  = data?.pageTotalPage  || Math.ceil(accessGridPager.pageTotalCount / accessGridPager.pageSize) || 1;
+        tabCounts.access = accessGridPager.pageTotalCount;
+        coUtil.cofBuildPagerNums(accessGridPager);
         expandedRows.clear();
       } catch (err) {
         console.error('[handleSearchAccessLog]', err);
@@ -186,10 +186,10 @@ window.SyApiLogMng = {
         const res = await boApiSvc.syAccessErrorLog.getPage(buildSearchParams(), 'API로그조회', '오류로그조회');
         const data = res.data?.data;
         errorLogs.splice(0, errorLogs.length, ...(data?.pageList || []));
-        pager.pageTotalCount = data?.pageTotalCount || 0;
-        pager.pageTotalPage  = data?.pageTotalPage  || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        tabCounts.error = pager.pageTotalCount;
-        coUtil.cofBuildPagerNums(pager);
+        accessGridPager.pageTotalCount = data?.pageTotalCount || 0;
+        accessGridPager.pageTotalPage  = data?.pageTotalPage  || Math.ceil(accessGridPager.pageTotalCount / accessGridPager.pageSize) || 1;
+        tabCounts.error = accessGridPager.pageTotalCount;
+        coUtil.cofBuildPagerNums(accessGridPager);
         expandedRows.clear();
       } catch (err) {
         console.error('[handleSearchErrorLog]', err);
@@ -210,7 +210,7 @@ window.SyApiLogMng = {
     });
 
     /* onTabChange — 탭 변경 */
-    const onTabChange   = (tab) => { uiState.activeTab = tab; pager.pageNo = 1; allExpanded.value = false; handleSearchList(); };
+    const onTabChange   = (tab) => { uiState.activeTab = tab; accessGridPager.pageNo = 1; allExpanded.value = false; handleSearchList(); };
 
     /* handleClearLog — 로그 비우기 */
     const handleClearLog = async () => {
@@ -223,7 +223,7 @@ window.SyApiLogMng = {
         if (showToast) { showToast(`${tabNm} 전체 삭제 완료`, 'success'); }
         if (uiState.activeTab === 'access') { accessLogs.splice(0); tabCounts.access = 0; }
         else                                { errorLogs.splice(0);  tabCounts.error  = 0; }
-        pager.pageTotalCount = 0; pager.pageTotalPage = 1;
+        accessGridPager.pageTotalCount = 0; accessGridPager.pageTotalPage = 1;
         expandedRows.clear(); allExpanded.value = false;
       } catch (err) {
         if (showToast) { showToast(err.response?.data?.message || err.message || '삭제 오류', 'error', 0); }
@@ -231,7 +231,7 @@ window.SyApiLogMng = {
     };
 
     /* onSearch — 조회 */
-    const onSearch     = () => { pager.pageNo = 1; handleSearchList(); };
+    const onSearch     = () => { accessGridPager.pageNo = 1; handleSearchList(); };
 
     /* onReset — 초기화 */
     const onReset      = () => {
@@ -241,15 +241,15 @@ window.SyApiLogMng = {
         dateRange:'1week', srchOpen:false,
       });
       boUtil.bofApplyDateRange(uiState, '1week');
-      pager.pageNo = 1;
+      accessGridPager.pageNo = 1;
       handleSearchList();
     };
 
     /* setPage — 설정 */
-    const setPage      = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList(); } };
+    const setPage      = n => { if (n >= 1 && n <= accessGridPager.pageTotalPage) { accessGridPager.pageNo = n; handleSearchList(); } };
 
     /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList(); };
+    const onSizeChange = () => { accessGridPager.pageNo = 1; handleSearchList(); };
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     /* fnMethodBadge — sy_code HTTP_METHOD code_opt1 우선, 없으면 FB */
@@ -391,7 +391,7 @@ window.SyApiLogMng = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-      uiState, codes, pager, tabCounts, expandedRows, allExpanded,                          // 상태 / 데이터
+      uiState, codes, accessGridPager, tabCounts, expandedRows, allExpanded,                          // 상태 / 데이터
       columns,                                                                              // 컬럼 정의 모음 (baseSearch/moreSearch/accessGrid/errorGrid/accessExpand/errorExpand)
       handleBtnAction, handleSelectAction, handleGridCellAction,                                                  // dispatch (모든 이벤트 / 액션 라우팅)
       cfCurrentList,                                                                        // computed
@@ -422,8 +422,8 @@ window.SyApiLogMng = {
   </bo-container>
   <!-- ===== □.□. 검색 영역 ================================================= -->
   <!-- ===== □. 검색 ====================================================== -->
-  <!-- ===== ■. 목록 영역 (bo-container 1개: 탭 + 제목 + 두 그리드 + pager) ============ -->
-  <bo-container :title="uiState.activeTab==='access' ? 'API요청로그' : 'API오류로그'" :count-text="pager.pageTotalCount + '건'">
+  <!-- ===== ■. 목록 영역 (bo-container 1개: 탭 + 제목 + 두 그리드 + accessGridPager) ============ -->
+  <bo-container :title="uiState.activeTab==='access' ? 'API요청로그' : 'API오류로그'" :count-text="accessGridPager.pageTotalCount + '건'">
     <!-- 탭 버튼 (영역 안 상단) -->
     <template #top>
       <div class="tab-nav" style="margin-bottom:12px">
@@ -484,7 +484,7 @@ window.SyApiLogMng = {
       </template>
     </bo-grid>
     <!-- ===== ■.■. 페이저 (두 탭 공통 1개, 그리드 바깥) ========================== -->
-    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('apiLogs-pager-setPage', n)" :on-size-change="() => handleSelectAction('apiLogs-pager-sizeChange')" />
+    <bo-pager :pager="accessGridPager" :on-set-page="n => handleBtnAction('apiLogs-pager-setPage', n)" :on-size-change="() => handleSelectAction('apiLogs-pager-sizeChange')" />
   </bo-container>
 </bo-page>
 `,

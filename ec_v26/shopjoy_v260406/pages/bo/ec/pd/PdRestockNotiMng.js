@@ -29,12 +29,12 @@ window.PdRestockNotiMng = {
       console.log(' ■■ PdRestockNotiMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchList();
       // 선택된 항목 알림 발송
       } else if (cmd === 'restockNotis-send') {
@@ -46,7 +46,7 @@ window.PdRestockNotiMng = {
         return;
       // 페이지 번호 변경
       } else if (cmd === 'restockNotis-pager-setPage') {
-        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
+        if (param >= 1 && param <= baseGridPager.pageTotalPage) { baseGridPager.pageNo = param; handleSearchList('PAGE_CLICK'); }
         return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -62,7 +62,7 @@ window.PdRestockNotiMng = {
         return;
       // 페이지 크기 변경
       } else if (cmd === 'restockNotis-pager-sizeChange') {
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -73,19 +73,19 @@ window.PdRestockNotiMng = {
     const searchParam = reactive(_initSearchParam());
 
     /* ===== 페이지네이션 ===== */
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.pdRestockNoti.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...coUtil.cofOmitEmpty(searchParam) }, '재입고알림관리', '목록조회');
+        const res = await boApiSvc.pdRestockNoti.getPage({ pageNo: baseGridPager.pageNo, pageSize: baseGridPager.pageSize, ...coUtil.cofOmitEmpty(searchParam) }, '재입고알림관리', '목록조회');
         const data = res.data?.data;
         restockNotis.splice(0, restockNotis.length, ...(data?.pageList || []));
-        pager.pageTotalCount = data?.pageTotalCount || 0;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        coUtil.cofBuildPagerNums(pager);
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        baseGridPager.pageTotalCount = data?.pageTotalCount || 0;
+        baseGridPager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize) || 1;
+        coUtil.cofBuildPagerNums(baseGridPager);
+        Object.assign(baseGridPager.pageCond, data?.pageCond || baseGridPager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -170,7 +170,7 @@ window.PdRestockNotiMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       columns,
-      restockNotis, uiState, codes, searchParam, pager,                                 // 상태 / 데이터
+      restockNotis, uiState, codes, searchParam, baseGridPager,                                 // 상태 / 데이터
       handleBtnAction, handleSelectAction,                                               // dispatch
       checkedCount, allChecked,                                                          // computed
       fnIsChecked, fnYnBadge,                                                            // 헬퍼
@@ -183,7 +183,7 @@ window.PdRestockNotiMng = {
     <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </bo-container>
   <!-- ===== ■. 목록 영역 ===================================================== -->
-  <bo-container title="재입고알림 목록" :count-text="'총 ' + pager.pageTotalCount + '건'">
+  <bo-container title="재입고알림 목록" :count-text="'총 ' + baseGridPager.pageTotalCount + '건'">
     <template #toolbar-actions>
       <button v-if="checkedCount > 0" class="btn btn-blue btn-sm" @click="handleBtnAction('restockNotis-send')">
         📣 알림발송 ({{ checkedCount }}건)
@@ -194,7 +194,7 @@ window.PdRestockNotiMng = {
       selectable checked-key="restockNotiId" :is-checked="fnIsChecked" :all-checked="allChecked"
       @toggle-check="id => handleSelectAction('restockNotis-rowToggle', id)" @toggle-check-all="handleBtnAction('restockNotis-toggleAll')">
     </bo-grid>
-    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('restockNotis-pager-setPage', n)" :on-size-change="() => handleSelectAction('restockNotis-pager-sizeChange')" />
+    <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('restockNotis-pager-setPage', n)" :on-size-change="() => handleSelectAction('restockNotis-pager-sizeChange')" />
   </bo-container>
 </bo-page>
 `

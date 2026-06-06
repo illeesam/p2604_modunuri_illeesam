@@ -27,13 +27,13 @@ window.PmCouponMng = {
       console.log(' ■■ PmCouponMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchList('SEARCH');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
         uiState.sortKey = ''; uiState.sortDir = 'asc';
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         resetDetailToNew();
         return handleSearchList('SEARCH');
       // 기간 옵션 변경
@@ -110,7 +110,7 @@ window.PmCouponMng = {
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 /* 하단 상세 */
     const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reloadTrigger: 0, resetSeq: 0, active: false }); // 진입 시 빈 신규 폼(비활성). 행 선택/신규 시 active=true
 
@@ -125,7 +125,7 @@ window.PmCouponMng = {
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
       boUtil.bofApplyDateRange(searchParam);
-      pager.pageNo = 1;
+      baseGridPager.pageNo = 1;
     };
 
     // onMounted에서 API 로드
@@ -144,7 +144,7 @@ window.PmCouponMng = {
         if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
+      baseGridPager.pageNo = 1;
       handleSearchList();
     };
 
@@ -155,7 +155,7 @@ window.PmCouponMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) };
+        const params = { pageNo: baseGridPager.pageNo, pageSize: baseGridPager.pageSize, ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
           params.searchType = 'couponNm,couponCd';
@@ -163,10 +163,10 @@ window.PmCouponMng = {
         const res = await boApiSvc.pmCoupon.getPage(params, '쿠폰관리', '목록조회');
         const data = res.data?.data;
         coupons.splice(0, coupons.length, ...(data?.pageList || []));
-        pager.pageTotalCount = data?.pageTotalCount || 0;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        coUtil.cofBuildPagerNums(pager);
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        baseGridPager.pageTotalCount = data?.pageTotalCount || 0;
+        baseGridPager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize) || 1;
+        coUtil.cofBuildPagerNums(baseGridPager);
+        Object.assign(baseGridPager.pageCond, data?.pageCond || baseGridPager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -223,7 +223,7 @@ window.PmCouponMng = {
 
     /* onSearch — 조회 */
     const onSearch = async () => {
-      pager.pageNo = 1;
+      baseGridPager.pageNo = 1;
       await handleSearchList('DEFAULT');
     };
 
@@ -231,15 +231,15 @@ window.PmCouponMng = {
     const onReset = async () => {
       Object.assign(searchParam, _initSearchParam());
       uiState.sortKey = ''; uiState.sortDir = 'asc';
-      pager.pageNo = 1;
+      baseGridPager.pageNo = 1;
       await handleSearchList();
     };
 
     /* setPage — 설정 */
-    const setPage = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
+    const setPage = async n => { if (n >= 1 && n <= baseGridPager.pageTotalPage) { baseGridPager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
 
     /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+    const onSizeChange = () => { baseGridPager.pageNo = 1; handleSearchList('DEFAULT'); };
 
     /* handleDelete — 삭제 */
     const handleDelete = async (c) => {
@@ -305,7 +305,7 @@ window.PmCouponMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       columns,
-      coupons, uiState, codes, searchParam, pager, uiStateDetail,                  // 상태 / 데이터
+      coupons, uiState, codes, searchParam, baseGridPager, uiStateDetail,                  // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                   // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                         // computed
       discountLabel, fnStatusBadge, sortIcon,                                      // 헬퍼
@@ -321,7 +321,7 @@ window.PmCouponMng = {
     <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </bo-container>
   <!-- ===== ■. 목록 영역 =================================================== -->
-  <bo-container title="쿠폰목록" :count-text="pager.pageTotalCount + '건'">
+  <bo-container title="쿠폰목록" :count-text="baseGridPager.pageTotalCount + '건'">
     <template #toolbar-actions>
       <div style="display:flex;border:1px solid #ddd;border-radius:6px;overflow:hidden;">
         <button @click="handleBtnAction('tab-mode', 'list')" style="font-size:11px;padding:4px 10px;border:none;transition:all .15s;"
@@ -362,7 +362,7 @@ window.PmCouponMng = {
         </div>
       </template>
     </bo-grid>
-    <bo-pager v-if="tabMode==='list' && pager.pageTotalCount > 0" :pager="pager" :on-set-page="n => handleBtnAction('coupons-pager-setPage', n)" :on-size-change="() => handleSelectAction('coupons-pager-sizeChange')" />
+    <bo-pager v-if="tabMode==='list' && baseGridPager.pageTotalCount > 0" :pager="baseGridPager" :on-set-page="n => handleBtnAction('coupons-pager-setPage', n)" :on-size-change="() => handleSelectAction('coupons-pager-sizeChange')" />
     <!-- ===== □.□. 목록 영역 ================================================= -->
     <!-- ===== ■.■. 카드 뷰 ================================================== -->
     <div v-else style="display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:14px;margin-bottom:16px;">
@@ -374,7 +374,7 @@ window.PmCouponMng = {
         @click="handleSelectAction('coupons-rowView', c.couponId)">
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
           <div style="font-size:12px;color:#999;margin-bottom:6px;">
-            <span style="display:inline-block;min-width:20px;font-weight:700;color:#e8587a;">{{ (pager.pageNo-1)*pager.pageSize + idx + 1 }}</span>
+            <span style="display:inline-block;min-width:20px;font-weight:700;color:#e8587a;">{{ (baseGridPager.pageNo-1)*baseGridPager.pageSize + idx + 1 }}</span>
             쿠폰 #{{ c.couponId }}
           </div>
           <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;" @click="handleSelectAction('coupons-rowView', c.couponId)" :style="selectedId===c.couponId?{color:'#e8587a'}:{}">
@@ -410,7 +410,7 @@ window.PmCouponMng = {
         </div>
       </div>
     </div>
-    <bo-pager v-if="tabMode!=='list' && pager.pageTotalCount > 0" :pager="pager" :on-set-page="n => handleBtnAction('coupons-pager-setPage', n)" :on-size-change="() => handleSelectAction('coupons-pager-sizeChange')" />
+    <bo-pager v-if="tabMode!=='list' && baseGridPager.pageTotalCount > 0" :pager="baseGridPager" :on-set-page="n => handleBtnAction('coupons-pager-setPage', n)" :on-size-change="() => handleSelectAction('coupons-pager-sizeChange')" />
     <!-- ===== □.□. 카드 뷰 ================================================== -->
   </bo-container>
   <!-- ===== ■. 하단 상세: CouponDtl 임베드 (항상 표시, 진입 시 빈 신규 폼) ============= -->

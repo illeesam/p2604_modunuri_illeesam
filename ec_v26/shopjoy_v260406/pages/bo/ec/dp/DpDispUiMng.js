@@ -14,7 +14,7 @@ window.DpDispUiMng = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedPath: null, sortKey: '', sortDir: 'asc' });
     const codes = reactive({ disp_ui_types: [], use_yn: [], date_range_opts: [] });
     const SORT_MAP = { nm: { asc: 'uiNm asc', desc: 'uiNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* ===== 상세 인라인 패널 ===== */
     const detailPanel = reactive({   // 인라인 Dtl 패널 상태 (항상 표시, 진입 시 빈 신규 폼)
@@ -34,14 +34,14 @@ window.DpDispUiMng = {
       console.log(' ■■ DpDispUiMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchList('SEARCH');
       // 검색조건 초기화 + 재조회 (표시경로 트리도 전체로)
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
         uiState.sortKey = ''; uiState.sortDir = 'asc';
         uiState.selectedPath = null;          // 표시경로 트리 전체로 복귀
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         resetDetailToNew();
         return handleSearchList('SEARCH');
       // 기간 옵션 변경
@@ -56,7 +56,7 @@ window.DpDispUiMng = {
       // 좌측 표시경로 트리 전체 보기
       } else if (cmd === 'pathTree-all') {
         uiState.selectedPath = null;
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 그리드 정렬 헤더 클릭
       } else if (cmd === 'uis-sort') {
@@ -129,7 +129,7 @@ window.DpDispUiMng = {
         if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
+      baseGridPager.pageNo = 1;
       handleSearchList();
     };
 
@@ -156,7 +156,7 @@ window.DpDispUiMng = {
       try {
         const { type, searchValue, ...restParam } = searchParam;
         const params = {
-          pageNo: pager.pageNo, pageSize: pager.pageSize,
+          pageNo: baseGridPager.pageNo, pageSize: baseGridPager.pageSize,
           ...getSortParam(),
           ...Object.fromEntries(Object.entries(restParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
           ...(searchValue ? { searchValue: searchValue.trim() } : {}),
@@ -166,9 +166,9 @@ window.DpDispUiMng = {
         const res = await boApiSvc.dpUi.getPage(params, '전시UI관리', '조회');
         const d = res.data?.data;
         uis.splice(0, uis.length, ...(d?.pageList || d?.list || []));
-        pager.pageTotalCount = d?.pageTotalCount || 0;
-        pager.pageTotalPage  = d?.pageTotalPage  || 1;
-        coUtil.cofBuildPagerNums(pager);
+        baseGridPager.pageTotalCount = d?.pageTotalCount || 0;
+        baseGridPager.pageTotalPage  = d?.pageTotalPage  || 1;
+        coUtil.cofBuildPagerNums(baseGridPager);
         uiState.error = null;
         /* 좌 트리 카운트 동기 갱신 */
         handleLoadPathTreeNodeCounts();
@@ -204,7 +204,7 @@ window.DpDispUiMng = {
     const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
 
     /* selectNode — 노드 선택 */
-    const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; resetDetailToNew(); handleSearchList('DEFAULT'); };
+    const selectNode = (id) => { uiState.selectedPath = id; baseGridPager.pageNo = 1; resetDetailToNew(); handleSearchList('DEFAULT'); };
 
     /* onPathSelectChange — select 드롭다운에서 경로 선택 (빈 값=전체) */
     const onPathSelectChange = (val) => { selectNode(val === '' || val == null ? null : val); };
@@ -256,10 +256,10 @@ window.DpDispUiMng = {
 
 
     /* setPage — 페이지 번호 변경 */
-    const setPage  = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList(); } };
+    const setPage  = n => { if (n >= 1 && n <= baseGridPager.pageTotalPage) { baseGridPager.pageNo = n; handleSearchList(); } };
 
     /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList(); };
+    const onSizeChange = () => { baseGridPager.pageNo = 1; handleSearchList(); };
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
@@ -286,7 +286,7 @@ window.DpDispUiMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       columns,
-      uis, uiState, uiCounts, codes, searchParam, pager, detailPanel,                           // 상태 / 데이터
+      uis, uiState, uiCounts, codes, searchParam, baseGridPager, detailPanel,                           // 상태 / 데이터
       pathNodes, pathPickModal,                                                       // 표시경로 select / 모달
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,     // dispatch (모든 이벤트 / 액션 라우팅)
       cfDetailEditId, cfDetailKey,                                                    // computed
@@ -333,7 +333,7 @@ window.DpDispUiMng = {
       </div>
     </bo-container>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-container bare title="전시 UI 목록" :count-text="'총 ' + pager.pageTotalCount + '건'">
+    <bo-container bare title="전시 UI 목록" :count-text="'총 ' + baseGridPager.pageTotalCount + '건'">
       <template #toolbar-actions>
         <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">
           #{{ uiState.selectedPath }}
@@ -342,7 +342,7 @@ window.DpDispUiMng = {
           ✚ 신규등록
         </button>
       </template>
-      <bo-grid bare :columns="columns.baseGrid" :rows="uis" row-key="uiId" :selected-key="detailPanel.selectedId" :pager="pager"
+      <bo-grid bare :columns="columns.baseGrid" :rows="uis" row-key="uiId" :selected-key="detailPanel.selectedId" :pager="baseGridPager"
         :sort-state="uiState"
         empty-text="조회된 데이터가 없습니다."
         @sort="key => handleBtnAction('uis-sort', key)"
@@ -356,7 +356,7 @@ window.DpDispUiMng = {
           </button>
         </template>
       </bo-grid>
-      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('uis-pager-setPage', n)" :on-size-change="() => handleSelectAction('uis-pager-sizeChange')" />
+      <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('uis-pager-setPage', n)" :on-size-change="() => handleSelectAction('uis-pager-sizeChange')" />
     </bo-container>
   </div>
   <!-- ===== □.□. 목록 영역 ================================================= -->

@@ -166,7 +166,7 @@ window.PdBundleMng = {
       uiState.loading = true;
       try {
         const bundleParams = {
-          pageNo: pager.pageNo, pageSize: pager.pageSize,
+          pageNo: bundleGridPager.pageNo, pageSize: bundleGridPager.pageSize,
           ...(searchParam.nm ? { nm: searchParam.nm.trim() } : {}),
         };
         const [bundlesRes, prodsRes, catsRes] = await Promise.all([
@@ -176,9 +176,9 @@ window.PdBundleMng = {
         ]);
         const dBundles = bundlesRes.data?.data;
         bundles.splice(0, bundles.length, ...(dBundles?.pageList || dBundles?.list || []));
-        pager.pageTotalCount = dBundles?.pageTotalCount || 0;
-        pager.pageTotalPage  = dBundles?.pageTotalPage  || 1;
-        coUtil.cofBuildPagerNums(pager);
+        bundleGridPager.pageTotalCount = dBundles?.pageTotalCount || 0;
+        bundleGridPager.pageTotalPage  = dBundles?.pageTotalPage  || 1;
+        coUtil.cofBuildPagerNums(bundleGridPager);
         products.splice(0, products.length, ...(prodsRes.data?.data?.pageList || prodsRes.data?.data?.list || []));
         categories.splice(0, categories.length, ...(catsRes.data?.data?.pageList || catsRes.data?.data?.list || []));
         uiState.error = null;
@@ -200,7 +200,7 @@ window.PdBundleMng = {
       handleSearchData('DEFAULT');
     });
 
-const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+const bundleGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     // 'edit' 시 bundleId는 uiState.editBundleId 사용
 
@@ -328,22 +328,22 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
 
     /* onSearch — 조회 */
     const onSearch = async () => {
-      pager.pageNo = 1;
+      bundleGridPager.pageNo = 1;
       await handleSearchData('DEFAULT');
     };
 
     /* onReset — 초기화 */
     const onReset = async () => {
       Object.assign(searchParam, _initSearchParam());
-      pager.pageNo = 1;
+      bundleGridPager.pageNo = 1;
       await handleSearchData();
     };
 
     /* setPage — 설정 */
-    const setPage  = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchData(); } };
+    const setPage  = async n => { if (n >= 1 && n <= bundleGridPager.pageTotalPage) { bundleGridPager.pageNo = n; await handleSearchData(); } };
 
     /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchData(); };
+    const onSizeChange = () => { bundleGridPager.pageNo = 1; handleSearchData(); };
 
     /* resetDetailToNew — 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역은 항상 표시 유지)
      *   detailActive=false → 저장/취소 등 버튼 숨김 (행 미선택 안내 상태) */
@@ -618,7 +618,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       columns,
-      codes, uiState, bundles, bundleList, searchParam, pager,                                   // 상태 / 데이터
+      codes, uiState, bundles, bundleList, searchParam, bundleGridPager,                                   // 상태 / 데이터
       categories, products, brands, categoryProds, dtlCategories, dtlItems, newForm, newErrors,  // 상태 / 데이터
       pickerResults,                                                                             // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal,                                                       // dispatch (모든 이벤트 / 액션 라우팅)
@@ -639,7 +639,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
   </bo-container>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 목록 ====================================================== -->
-  <bo-container title="묶음상품 목록" :count-text="pager.pageTotalCount + '건'">
+  <bo-container title="묶음상품 목록" :count-text="bundleGridPager.pageTotalCount + '건'">
     <template #toolbar-actions>
       <button class="btn btn-green btn-sm" @click="handleBtnAction('bundles-add')">
         + 신규등록
@@ -682,7 +682,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
   </template>
     </bo-grid>
     <!-- 페이저는 그리드 밖, 컨테이너 안에 배치 -->
-    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('bundles-pager-setPage', n)" :on-size-change="() => handleBtnAction('bundles-pager-sizeChange')" />
+    <bo-pager :pager="bundleGridPager" :on-set-page="n => handleBtnAction('bundles-pager-setPage', n)" :on-size-change="() => handleBtnAction('bundles-pager-sizeChange')" />
   </bo-container>
   <!-- ===== □. 목록 ====================================================== -->
   <!-- ===== ■. 신규등록 / 구성관리 (인라인 Dtl, 항상 표시) =================================== -->

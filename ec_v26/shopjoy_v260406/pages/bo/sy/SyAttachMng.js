@@ -15,7 +15,7 @@ window.SyAttachMng = {
     const codes = reactive({ attach_type: [], active_statuses: [], use_yns: [], storage_types: [], date_range_opts: [] });
     const grpSearchParam = reactive({ searchType: '', searchValue: '' });
 
-    const pager = reactive({
+    const fileGridPager = reactive({
       pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1,
       pageNums: [], pageSizes: [5, 10, 20, 30, 50, 100, 200, 500],
     });
@@ -119,9 +119,9 @@ window.SyAttachMng = {
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* fnBuildPageNums — 유틸 */
     const fnBuildPageNums = () => {
-      const c = pager.pageNo, l = pager.pageTotalPage;
+      const c = fileGridPager.pageNo, l = fileGridPager.pageTotalPage;
       const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
-      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
+      fileGridPager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
     };
     /* fnBuildGrpPageNums — 유틸 */
     const fnBuildGrpPageNums = () => {
@@ -171,8 +171,8 @@ window.SyAttachMng = {
       uiState.loading = true;
       try {
         const p = {
-          pageNo: pager.pageNo,
-          pageSize: pager.pageSize,
+          pageNo: fileGridPager.pageNo,
+          pageSize: fileGridPager.pageSize,
           ...coUtil.cofOmitEmpty(searchParam),
         };
         // 좌측 그룹 클릭 선택이 우선, 없으면 검색 조건 attachGrpId 사용
@@ -185,8 +185,8 @@ window.SyAttachMng = {
         const data = attachRes.data?.data;
         const list = data?.pageList || data?.list || [];
         attaches.splice(0, attaches.length, ...list);
-        pager.pageTotalCount = data?.pageTotalCount ?? data?.totalCount ?? data?.total ?? list.length ?? 0;
-        pager.pageTotalPage  = data?.pageTotalPage  || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
+        fileGridPager.pageTotalCount = data?.pageTotalCount ?? data?.totalCount ?? data?.total ?? list.length ?? 0;
+        fileGridPager.pageTotalPage  = data?.pageTotalPage  || Math.ceil(fileGridPager.pageTotalCount / fileGridPager.pageSize) || 1;
         fnBuildPageNums();
         uiState.error = null;
       } catch (err) {
@@ -217,21 +217,21 @@ window.SyAttachMng = {
     });
 
     /* onSearch — 조회 */
-    const onSearch = async () => { pager.pageNo = 1; await handleSearchData(); };
+    const onSearch = async () => { fileGridPager.pageNo = 1; await handleSearchData(); };
 
     /* onReset — 초기화 */
     const onReset = () => {
       Object.assign(searchParam, { attachGrpId: '', dateStart: '', dateEnd: '', dateRange: '' });
       uiState.selectedGrpId = null;
-      pager.pageNo = 1;
+      fileGridPager.pageNo = 1;
       handleSearchData();
     };
 
     /* setPage — 설정 */
-    const setPage      = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchData(); } };
+    const setPage      = n => { if (n >= 1 && n <= fileGridPager.pageTotalPage) { fileGridPager.pageNo = n; handleSearchData(); } };
 
     /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchData(); };
+    const onSizeChange = () => { fileGridPager.pageNo = 1; handleSearchData(); };
 
     /* selectGrp — 선택 (그룹 전환 시 우측 첨부파일 수정폼/선택행 초기화) */
     const selectGrp = (id) => {
@@ -240,8 +240,8 @@ window.SyAttachMng = {
       uiState.grpEditMode = false;
       uiState.fileEditMode = false;   // 첨부파일 수정 폼 닫기 (수정정보 초기화)
       uiState.fileEditId = null;      // 첨부파일 선택행(파란 테두리) 해제 (선택정보 초기화)
-      pager.pageNo = 1;
-      pager.pageTotalCount = 0; pager.pageTotalPage = 1;
+      fileGridPager.pageNo = 1;
+      fileGridPager.pageTotalCount = 0; fileGridPager.pageTotalPage = 1;
       handleSearchData();
     };
 
@@ -281,7 +281,7 @@ window.SyAttachMng = {
       if (!ok) { return; }
       try {
         await boApi.delete(`/bo/sy/attach-grp/${g.attachGrpId}`, coUtil.cofApiHdr('첨부파일관리', '그룹삭제'));
-        if (uiState.selectedGrpId === g.attachGrpId) { uiState.selectedGrpId = null; attaches.splice(0, attaches.length); pager.totalCount = 0; }
+        if (uiState.selectedGrpId === g.attachGrpId) { uiState.selectedGrpId = null; attaches.splice(0, attaches.length); fileGridPager.totalCount = 0; }
         showToast('삭제되었습니다.', 'success');
         await handleLoadGrps();
       } catch (err) {
@@ -318,7 +318,7 @@ window.SyAttachMng = {
           showToast('저장되었습니다.', 'success');
         }
         uiState.fileEditMode = false;
-        pager.pageNo = 1;
+        fileGridPager.pageNo = 1;
         await handleSearchData();
       } catch (err) {
         showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
@@ -438,7 +438,7 @@ window.SyAttachMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       columns,
-      attaches, attachGrps, uiState, codes, searchParam, pager, grpPager, grpSearchParam, grpForm, fileForm, // 상태 / 데이터
+      attaches, attachGrps, uiState, codes, searchParam, fileGridPager, grpPager, grpSearchParam, grpForm, fileForm, // 상태 / 데이터
       handleBtnAction, handleSelectAction,                                                                                  // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm,                                                                                                             // computed
       fnFmtSize, fnStatusBadge,                                                                                             // 헬퍼
@@ -538,7 +538,7 @@ window.SyAttachMng = {
           @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
       </bo-container>
       <!-- ===== ■.■.■. 목록 영역 (별도 컨테이너) ================================= -->
-      <bo-container title="첨부파일목록" :count-text="pager.pageTotalCount + '건'">
+      <bo-container title="첨부파일목록" :count-text="fileGridPager.pageTotalCount + '건'">
         <template #toolbar-actions>
           <button class="btn btn-primary btn-sm" @click="handleBtnAction('attaches-add')">
             + 신규
@@ -593,7 +593,7 @@ window.SyAttachMng = {
         <!-- ===== ■.■.■.■. /파일 그리드 스크롤 컨테이너 ================================== -->
         <!-- ===== ■.■.■.■. 페이저: 한 줄 표시 + 좌측 카드처럼 깔끔 마감 (margin-top 좁힘 + nowrap 보장) ===== -->
         <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
-          <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('attaches-pager-setPage', n)" :on-size-change="() => handleSelectAction('attaches-pager-sizeChange')"
+          <bo-pager :pager="fileGridPager" :on-set-page="n => handleBtnAction('attaches-pager-setPage', n)" :on-size-change="() => handleSelectAction('attaches-pager-sizeChange')"
             style="margin-top:0;min-height:34px;" />
         </div>
       </bo-container>

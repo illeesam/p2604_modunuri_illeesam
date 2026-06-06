@@ -126,7 +126,7 @@ window.PdReviewMng = {
         if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
+      listGridPager.pageNo = 1;
       handleSearchList();
     };
 
@@ -137,13 +137,13 @@ window.PdReviewMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.pdReview.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) }, '상품리뷰관리', '목록조회');
+        const res = await boApiSvc.pdReview.getPage({ pageNo: listGridPager.pageNo, pageSize: listGridPager.pageSize, ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) }, '상품리뷰관리', '목록조회');
         const data = res.data?.data;
         reviews.splice(0, reviews.length, ...(data?.pageList || []));
-        pager.pageTotalCount = data?.pageTotalCount || 0;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        coUtil.cofBuildPagerNums(pager);
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        listGridPager.pageTotalCount = data?.pageTotalCount || 0;
+        listGridPager.pageTotalPage = data?.pageTotalPage || Math.ceil(listGridPager.pageTotalCount / listGridPager.pageSize) || 1;
+        coUtil.cofBuildPagerNums(listGridPager);
+        Object.assign(listGridPager.pageCond, data?.pageCond || listGridPager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -158,7 +158,7 @@ window.PdReviewMng = {
       if (isAppReady.value) { fnLoadCodes(); }
       handleSearchList('DEFAULT');
     });
-    const pager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const listGridPager        = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const selectedId   = ref(null);
 
     /* _initSearchParam — 초기화 */
@@ -317,7 +317,7 @@ window.PdReviewMng = {
 
     /* onSearch — 조회 */
     const onSearch = async () => {
-      pager.pageNo = 1;
+      listGridPager.pageNo = 1;
       await handleSearchList('DEFAULT');
     };
 
@@ -325,7 +325,7 @@ window.PdReviewMng = {
     const onReset = async () => {
       Object.assign(searchParam, _initSearchParam());
       uiState.sortKey = ''; uiState.sortDir = 'asc';
-      pager.pageNo = 1;
+      listGridPager.pageNo = 1;
       selectedId.value = null;            // 상세 패널 빈(안내) 상태로
       selectedProdId.value = null;        // 상품별 리뷰 드릴다운 전체로
       prodReviews.splice(0);
@@ -333,10 +333,10 @@ window.PdReviewMng = {
     };
 
     /* setPage — 설정 */
-    const setPage  = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
+    const setPage  = async n => { if (n >= 1 && n <= listGridPager.pageTotalPage) { listGridPager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
 
     /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+    const onSizeChange = () => { listGridPager.pageNo = 1; handleSearchList('DEFAULT'); };
 
     /* starStr — 별점 문자열 */
     const starStr  = r => '★'.repeat(Math.floor(r)) + (r % 1 >= 0.5 ? '½' : '') + '☆'.repeat(5 - Math.ceil(r));
@@ -398,7 +398,7 @@ window.PdReviewMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       columns,
-      reviews, uiState, searchParam, pager, codes,                                            // 상태 / 데이터
+      reviews, uiState, searchParam, listGridPager, codes,                                            // 상태 / 데이터
       prodReviews, prodReviewPager, statusModal,                                              // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                              // dispatch (모든 이벤트 / 액션 라우팅)
       cfSelectedRow, cfStatusModalRowTitle, cfStatusModalCurrentCd,                           // computed
@@ -415,8 +415,8 @@ window.PdReviewMng = {
   </bo-container>
   <!-- ===== □. 검색 영역 =================================================== -->
   <!-- ===== ■. 목록 영역 =================================================== -->
-  <bo-container title="상품리뷰 목록" :count-text="'총 ' + pager.pageTotalCount + '건'">
-    <bo-grid bare :columns="columns.listGrid" :rows="reviews" :pager="pager" row-key="reviewId" :selected-key="selectedId"
+  <bo-container title="상품리뷰 목록" :count-text="'총 ' + listGridPager.pageTotalCount + '건'">
+    <bo-grid bare :columns="columns.listGrid" :rows="reviews" :pager="listGridPager" row-key="reviewId" :selected-key="selectedId"
       :sort-state="uiState"
       :row-class="fnGridRowClass" empty-text="데이터가 없습니다." row-actions
       @sort="key => handleBtnAction('reviews-sort', key)" grid-id="reviews-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
@@ -426,7 +426,7 @@ window.PdReviewMng = {
         </button>
       </template>
     </bo-grid>
-    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('reviews-pager-setPage', n)" :on-size-change="() => handleSelectAction('reviews-pager-sizeChange')" />
+    <bo-pager :pager="listGridPager" :on-set-page="n => handleBtnAction('reviews-pager-setPage', n)" :on-size-change="() => handleSelectAction('reviews-pager-sizeChange')" />
   </bo-container>
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 상품ID 클릭 시: 해당 상품의 리뷰 페이징 목록 ============================= -->

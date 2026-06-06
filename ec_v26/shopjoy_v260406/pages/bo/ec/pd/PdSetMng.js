@@ -191,7 +191,7 @@ window.PdSetMng = {
       handleSearchData('DEFAULT');
     });
 
-const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+const setGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* -- 신규등록 폼 -- */
     const newForm = reactive({
@@ -328,30 +328,30 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
         })
         .filter(g => !searchVal || g.prodNm.toLowerCase().includes(searchVal));
       setList.splice(0, setList.length, ...result);
-      pager.pageTotalCount = setList.length;
-      pager.pageTotalPage  = Math.max(1, Math.ceil(setList.length / pager.pageSize));
-      coUtil.cofBuildPagerNums(pager);
+      setGridPager.pageTotalCount = setList.length;
+      setGridPager.pageTotalPage  = Math.max(1, Math.ceil(setList.length / setGridPager.pageSize));
+      coUtil.cofBuildPagerNums(setGridPager);
     };
 
 
     /* onSearch — 조회 */
     const onSearch = async () => {
-      pager.pageNo = 1;
+      setGridPager.pageNo = 1;
       await handleSearchData('DEFAULT');
     };
 
     /* onReset — 초기화 */
     const onReset = async () => {
       Object.assign(searchParam, _initSearchParam());
-      pager.pageNo = 1;
+      setGridPager.pageNo = 1;
       await handleSearchData();
     };
 
     /* setPage — 설정 */
-    const setPage  = n => { if (n >= 1 && n <= pager.pageTotalPage) pager.pageNo = n; };
+    const setPage  = n => { if (n >= 1 && n <= setGridPager.pageTotalPage) setGridPager.pageNo = n; };
 
     /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; };
+    const onSizeChange = () => { setGridPager.pageNo = 1; };
 
     /* resetDetailToNew — 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역은 항상 표시 유지)
      *   detailActive=false → 저장/닫기 등 버튼 숨김 (행 미선택 안내 상태) */
@@ -530,7 +530,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
       }
     };
     /* BoGrid 컬럼 — 세트상품 목록 (client-side slice 페이징) */
-    const cfSetPageRows = computed(() => setList.slice((pager.pageNo - 1) * pager.pageSize, pager.pageNo * pager.pageSize));
+    const cfSetPageRows = computed(() => setList.slice((setGridPager.pageNo - 1) * setGridPager.pageSize, setGridPager.pageNo * setGridPager.pageSize));
         // --- [컬럼 정의] ---
         const columns = {};
         columns.baseSearch = [
@@ -590,7 +590,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       columns,
-      codes, uiState, setList, searchParam, pager,                                          // 상태 / 데이터
+      codes, uiState, setList, searchParam, setGridPager,                                          // 상태 / 데이터
       dtlCategories, dtlItems, newForm, newErrors, pickerResults,                           // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal,                                                  // dispatch (모든 이벤트 / 액션 라우팅)
       cfCatExcludeSet, cfDtlProdNm, cfSetPageRows, cfPickerList,                            // computed
@@ -611,7 +611,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
   </bo-container>
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 목록 ====================================================== -->
-  <bo-container title="세트상품 목록" :count-text="pager.pageTotalCount + '건'">
+  <bo-container title="세트상품 목록" :count-text="setGridPager.pageTotalCount + '건'">
     <template #toolbar-actions>
       <button class="btn btn-green btn-sm" @click="handleBtnAction('sets-add')">+ 신규등록</button>
     </template>
@@ -650,7 +650,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
     <!-- ===== ■.■. /그리드 스크롤 컨테이너 ========================================= -->
     <!-- ===== ■.■. 페이저: 한 줄 표시 + 카드 하단 깔끔 마감 ============================= -->
     <div style="margin-top:6px;white-space:nowrap;overflow-x:auto;">
-      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('sets-pager-setPage', n)" :on-size-change="() => handleSelectAction('sets-pager-sizeChange')"
+      <bo-pager :pager="setGridPager" :on-set-page="n => handleBtnAction('sets-pager-setPage', n)" :on-size-change="() => handleSelectAction('sets-pager-sizeChange')"
         style="margin-top:0;min-height:34px;" />
     </div>
   </bo-container>

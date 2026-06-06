@@ -21,11 +21,11 @@ window.StRawMng = {
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ StRawMng.js : handleBtnAction -> ', cmd, param);
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        rawGridPager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
-        pager.pageNo = 1;
+        rawGridPager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else if (cmd === 'searchParam-dateRange') {
         return handleDateRangeChange();
@@ -33,7 +33,7 @@ window.StRawMng = {
         searchParam.searchMoreOpen = !searchParam.searchMoreOpen;
         return;
       } else if (cmd === 'rawData-pager-setPage') {
-        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; handleSearchList('PAGE_CLICK'); }
+        if (param >= 1 && param <= rawGridPager.pageTotalPage) { rawGridPager.pageNo = param; handleSearchList('PAGE_CLICK'); }
         return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -44,7 +44,7 @@ window.StRawMng = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ StRawMng.js : handleSelectAction -> ', cmd, param);
       if (cmd === 'rawData-pager-sizeChange') {
-        pager.pageNo = 1;
+        rawGridPager.pageNo = 1;
         return handleSearchList('DEFAULT');
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -93,7 +93,7 @@ window.StRawMng = {
   const searchParam = reactive(_initSearchParam());
   boUtil.bofApplyDateRange(searchParam, '이번달');
 
-    const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const rawGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const raws = reactive([]);
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
@@ -102,7 +102,7 @@ const raws = reactive([]);
       try {
         uiState.loading = true;
         const params = {
-          pageNo: pager.pageNo, pageSize: pager.pageSize,
+          pageNo: rawGridPager.pageNo, pageSize: rawGridPager.pageSize,
           ...Object.fromEntries(Object.entries(searchParam).filter(([k, v]) => k !== 'searchMoreOpen' && v !== '' && v !== null && v !== undefined))
         };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
@@ -112,10 +112,10 @@ const raws = reactive([]);
         const res = await boApiSvc.stSettleRaw.getPage(params, '정산데이터관리', '목록조회');
         const data = res.data?.data;
         raws.splice(0, raws.length, ...(data?.pageList || data?.list || []));
-        pager.pageTotalCount = data?.pageTotalCount || raws.length;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        coUtil.cofBuildPagerNums(pager);
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        rawGridPager.pageTotalCount = data?.pageTotalCount || raws.length;
+        rawGridPager.pageTotalPage = data?.pageTotalPage || Math.ceil(rawGridPager.pageTotalCount / rawGridPager.pageSize) || 1;
+        coUtil.cofBuildPagerNums(rawGridPager);
+        Object.assign(rawGridPager.pageCond, data?.pageCond || rawGridPager.pageCond);
       } catch (err) {
         console.error('[handleSearchList]', err);
         uiState.error = err.message;
@@ -144,13 +144,13 @@ const raws = reactive([]);
     }));
 
     /* setPage — 설정 */
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
+    const setPage = n => { if (n >= 1 && n <= rawGridPager.pageTotalPage) { rawGridPager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
 
     /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+    const onSizeChange = () => { rawGridPager.pageNo = 1; handleSearchList('DEFAULT'); };
 
     /* onSearch — 조회 */
-    const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+    const onSearch = () => { rawGridPager.pageNo = 1; handleSearchList('DEFAULT'); };
 
     /* onReset — 초기화 */
     const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
@@ -240,7 +240,7 @@ const raws = reactive([]);
 
     /* summaryFormColumns — 집계 카드 (BoFormArea readonly, cols=7, labelLeft) */
     columns.summaryForm = [
-      { key: '_totalCnt',  label: '수집건수',    type: 'readonly', html: true, fmt: () => `<b style="color:#3498db;font-size:15px;">${pager.pageTotalCount.toLocaleString()}건</b>` },
+      { key: '_totalCnt',  label: '수집건수',    type: 'readonly', html: true, fmt: () => `<b style="color:#3498db;font-size:15px;">${rawGridPager.pageTotalCount.toLocaleString()}건</b>` },
       { key: '_collectCnt',label: '정산대상',    type: 'readonly', html: true, fmt: () => `<b style="color:#27ae60;font-size:15px;">${cfSummary.value.collectCnt.toLocaleString()}건</b>` },
       { key: '_confirmCnt',label: '구매확정',    type: 'readonly', html: true, fmt: () => `<b style="color:#e67e22;font-size:15px;">${cfSummary.value.confirmCnt.toLocaleString()}건</b>` },
       { key: '_closeCnt',  label: '마감완료',    type: 'readonly', html: true, fmt: () => `<b style="color:#8e44ad;font-size:15px;">${cfSummary.value.closeCnt.toLocaleString()}건</b>` },
@@ -331,7 +331,7 @@ const raws = reactive([]);
       columns,
       uiState, handleDateRangeChange,
       searchParam,
-      pager, raws, cfSummary,
+      rawGridPager, raws, cfSummary,
       handleBtnAction, handleSelectAction, handleGridCellAction,
       expandedRows, toggleRow, isExpanded,
       fnStatusBadge, rawStatusLabel, fnRawStatusBadge, vendorTypeLabel, orderStatusLabel,
@@ -359,7 +359,7 @@ const raws = reactive([]);
   <!-- ===== ■. 집계 (라벨:건수/금액 인라인 스트립) ============================== -->
   <bo-container body-style="padding:7px 12px;">
     <div style="display:flex;flex-wrap:wrap;align-items:center;gap:4px 16px;font-size:12px;color:#666;">
-      <span>수집건수:<b style="color:#3498db;margin-left:3px;">{{ pager.pageTotalCount.toLocaleString() }}건</b></span>
+      <span>수집건수:<b style="color:#3498db;margin-left:3px;">{{ rawGridPager.pageTotalCount.toLocaleString() }}건</b></span>
       <span>정산대상:<b style="color:#27ae60;margin-left:3px;">{{ cfSummary.collectCnt.toLocaleString() }}건</b></span>
       <span>구매확정:<b style="color:#e67e22;margin-left:3px;">{{ cfSummary.confirmCnt.toLocaleString() }}건</b></span>
       <span>마감완료:<b style="color:#8e44ad;margin-left:3px;">{{ cfSummary.closeCnt.toLocaleString() }}건</b></span>
@@ -369,7 +369,7 @@ const raws = reactive([]);
     </div>
   </bo-container>
   <!-- ===== ■. 목록 영역 =================================================== -->
-  <bo-container title="정산수집원장" :count-text="pager.pageTotalCount + '건'">
+  <bo-container title="정산수집원장" :count-text="rawGridPager.pageTotalCount + '건'">
     <template #toolbar-actions>
       <button class="btn btn-secondary btn-sm" @click="() => { raws.forEach(r => { if(!isExpanded(r.settleRawId)) toggleRow(r.settleRawId); }) }">
         ▼ 전체펼치기
@@ -393,7 +393,7 @@ const raws = reactive([]);
         </td>
       </template>
     </bo-grid>
-    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('rawData-pager-setPage', n)" :on-size-change="() => handleSelectAction('rawData-pager-sizeChange')" />
+    <bo-pager :pager="rawGridPager" :on-set-page="n => handleBtnAction('rawData-pager-setPage', n)" :on-size-change="() => handleSelectAction('rawData-pager-sizeChange')" />
   </bo-container>
 </bo-page>
 `,

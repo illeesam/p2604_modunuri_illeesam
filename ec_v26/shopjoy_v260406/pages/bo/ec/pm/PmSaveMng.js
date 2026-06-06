@@ -14,13 +14,13 @@ window.PmSaveMng = {
       console.log(' ■■ PmSaveMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchList('SEARCH');
       // 검색조건 초기화 + 재조회
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
         uiState.sortKey = ''; uiState.sortDir = 'asc';
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         resetDetailToNew();
         return handleSearchList('SEARCH');
       // 기간 옵션 변경
@@ -98,7 +98,7 @@ window.PmSaveMng = {
       date_range_opts: [],
     });
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
     const detailPanel = reactive({ selectedId: '__new__', openMode: 'edit', reloadTrigger: 0, resetSeq: 0, active: false });
 
     /* _initSearchParam — 초기화 */
@@ -143,7 +143,7 @@ window.PmSaveMng = {
         if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
+      baseGridPager.pageNo = 1;
       handleSearchList();
     };
 
@@ -155,17 +155,17 @@ window.PmSaveMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) };
+        const params = { pageNo: baseGridPager.pageNo, pageSize: baseGridPager.pageSize, ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) };
         if (params.searchValue && !params.searchType) {
           params.searchType = 'saveNm,saveId';
         }
         const res = await boApiSvc.pmSave.getPage(params, '적립금관리', '조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];
         saves.splice(0, saves.length, ...list);
-        pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
-        pager.pageTotalPage = res.data?.data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        coUtil.cofBuildPagerNums(pager);
-        Object.assign(pager.pageCond, res.data?.data?.pageCond || pager.pageCond);
+        baseGridPager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
+        baseGridPager.pageTotalPage = res.data?.data?.pageTotalPage || Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize) || 1;
+        coUtil.cofBuildPagerNums(baseGridPager);
+        Object.assign(baseGridPager.pageCond, res.data?.data?.pageCond || baseGridPager.pageCond);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -186,7 +186,7 @@ window.PmSaveMng = {
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
       boUtil.bofApplyDateRange(searchParam);
-      pager.pageNo = 1;
+      baseGridPager.pageNo = 1;
     };
 
     // ===== 상세 임베드: 보기/수정/신규/닫기/인라인 이동 ====================
@@ -236,10 +236,10 @@ window.PmSaveMng = {
     const fnStatusBadge = s => coUtil.cofCodeBadge('PROMO_STATUS', s, _SAVE_STATUS_FB[s] || 'badge-gray');
 
     /* setPage — 설정 */
-    const setPage = async n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
+    const setPage = async n => { if (n >= 1 && n <= baseGridPager.pageTotalPage) { baseGridPager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
 
     /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+    const onSizeChange = () => { baseGridPager.pageNo = 1; handleSearchList('DEFAULT'); };
 
     // ===== 삭제 / 엑셀 다운로드 ============================================
     /* handleDelete — 삭제 */
@@ -307,7 +307,7 @@ window.PmSaveMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       columns,
-      saves, uiState, codes, searchParam, pager, detailPanel,                        // 상태 / 데이터
+      saves, uiState, codes, searchParam, baseGridPager, detailPanel,                        // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                     // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                           // computed
       tabMode,                                                                       // toRef
@@ -323,7 +323,7 @@ window.PmSaveMng = {
     <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </bo-container>
   <!-- ===== ■. 목록영역 (리스트/카드 토글) ======================================== -->
-  <bo-container title="마일리지목록" :count-text="pager.pageTotalCount + '건'">
+  <bo-container title="마일리지목록" :count-text="baseGridPager.pageTotalCount + '건'">
     <!-- ===== ■.■. 툴바 액션: 탭모드 토글 + 엑셀/신규 =================================== -->
     <template #toolbar-actions>
       <div style="display:flex;gap:6px;align-items:center;">
@@ -375,7 +375,7 @@ window.PmSaveMng = {
         @click="handleSelectAction('saves-rowView', s.saveId)">
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
           <div style="font-size:12px;color:#999;margin-bottom:6px;">
-            <span style="display:inline-block;min-width:20px;font-weight:700;color:#e8587a;">{{ (pager.pageNo-1)*pager.pageSize + idx + 1 }}</span> 마일리지 #{{ s.saveId }}
+            <span style="display:inline-block;min-width:20px;font-weight:700;color:#e8587a;">{{ (baseGridPager.pageNo-1)*baseGridPager.pageSize + idx + 1 }}</span> 마일리지 #{{ s.saveId }}
           </div>
           <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;" @click="handleSelectAction('saves-rowView', s.saveId)" :style="detailPanel.selectedId===s.saveId?{color:'#e8587a'}:{}">
             {{ s.saveNm }}
@@ -417,7 +417,7 @@ window.PmSaveMng = {
       </div>
     </div>
     <!-- ===== ■.■. 페이지네이션 ================================================ -->
-    <bo-pager v-if="pager.pageTotalCount > 0" :pager="pager" :on-set-page="n => handleBtnAction('saves-pager-setPage', n)" :on-size-change="() => handleSelectAction('saves-pager-sizeChange')" />
+    <bo-pager v-if="baseGridPager.pageTotalCount > 0" :pager="baseGridPager" :on-set-page="n => handleBtnAction('saves-pager-setPage', n)" :on-size-change="() => handleSelectAction('saves-pager-sizeChange')" />
   </bo-container>
   <!-- ===== ■. 하단 상세영역: PmSaveDtl 인라인 임베드 ============================== -->
   <bo-container bare>

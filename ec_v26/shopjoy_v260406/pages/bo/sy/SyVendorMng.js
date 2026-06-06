@@ -28,14 +28,14 @@ window.SyVendorMng = {
       console.log(' ■■ SyVendorMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 검색조건 초기화 + 재조회 (표시경로 트리도 전체로)
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
         uiState.sortKey = ''; uiState.sortDir = 'asc';
         uiState.selectedPath = null;          // 표시경로 트리 전체로 복귀
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         resetDetailToNew();
         return handleSearchList('DEFAULT');
       // 기간 옵션 변경
@@ -73,7 +73,7 @@ window.SyVendorMng = {
       // 좌측 경로 트리 노드 선택 → 우측 그리드 필터링 + 상세 패널 초기화
       } else if (cmd === 'pathTree-select') {
         uiState.selectedPath = param;
-        pager.pageNo = 1;
+        baseGridPager.pageNo = 1;
         resetDetailToNew();
         return handleSearchList();
       } else {
@@ -107,7 +107,7 @@ window.SyVendorMng = {
     const searchParam = reactive(_initSearchParam());
 
     /* ===== 페이지네이션 ===== */
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* ===== 상세 인라인 패널 ===== */
     const detailPanel = reactive({   // 인라인 Dtl 패널 상태
@@ -131,7 +131,7 @@ window.SyVendorMng = {
         if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
+      baseGridPager.pageNo = 1;
       handleSearchList();
     };
 
@@ -156,17 +156,17 @@ window.SyVendorMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}), ...coUtil.cofOmitEmpty(searchParam) };
+        const params = { pageNo: baseGridPager.pageNo, pageSize: baseGridPager.pageSize, ...getSortParam(), ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}), ...coUtil.cofOmitEmpty(searchParam) };
         if (params.searchValue && !params.searchType) {
           params.searchType = 'vendorNm,corpNo,vendorId';
         }
         const res = await boApiSvc.syVendor.getPage(params, '판매자관리', '목록조회');
         const data = res.data?.data;
         vendors.splice(0, vendors.length, ...(data?.pageList || []));
-        pager.pageTotalCount = data?.pageTotalCount || vendors.length;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        coUtil.cofBuildPagerNums(pager);
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        baseGridPager.pageTotalCount = data?.pageTotalCount || vendors.length;
+        baseGridPager.pageTotalPage = data?.pageTotalPage || Math.ceil(baseGridPager.pageTotalCount / baseGridPager.pageSize) || 1;
+        coUtil.cofBuildPagerNums(baseGridPager);
+        Object.assign(baseGridPager.pageCond, data?.pageCond || baseGridPager.pageCond);
         uiState.error = null;
         /* 좌 트리 카운트 동기 갱신 */
         handleLoadPathTreeNodeCounts();
@@ -181,7 +181,7 @@ window.SyVendorMng = {
     /* onDateRangeChange — 기간 옵션 변경 */
     const onDateRangeChange = () => {
       boUtil.bofApplyDateRange(searchParam);
-      pager.pageNo = 1;
+      baseGridPager.pageNo = 1;
     };
 
     /* loadView — 인라인 패널 뷰 모드로 열기 */
@@ -220,10 +220,10 @@ window.SyVendorMng = {
     };
 
     /* setPage — 페이지 번호 변경 */
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
+    const setPage = n => { if (n >= 1 && n <= baseGridPager.pageTotalPage) { baseGridPager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
 
     /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+    const onSizeChange = () => { baseGridPager.pageNo = 1; handleSearchList('DEFAULT'); };
 
     /* handleDelete — 삭제 */
     const handleDelete = async (v) => {
@@ -317,7 +317,7 @@ window.SyVendorMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       columns,
-      vendors, uiState, vendorCounts, codes, searchParam, pager, detailPanel,                       // 상태 / 데이터
+      vendors, uiState, vendorCounts, codes, searchParam, baseGridPager, detailPanel,                       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                      // dispatch (모든 이벤트 / 액션 라우팅)
       cfDetailEditId, cfIsViewMode, cfDetailKey,                                      // computed
       fnRowStyle,                                                                     // 헬퍼
@@ -340,7 +340,7 @@ window.SyVendorMng = {
         @select="path => handleSelectAction('pathTree-select', path)" />
     </bo-container>
     <!-- ===== ■.■. 목록 그리드 ============================================== -->
-    <bo-container title="거래처목록" :count-text="pager.pageTotalCount + '건'">
+    <bo-container title="거래처목록" :count-text="baseGridPager.pageTotalCount + '건'">
       <template #toolbar-actions>
         <div style="display:flex;gap:6px;">
           <button class="btn btn-green btn-sm" @click="handleBtnAction('vendors-excel')">
@@ -374,7 +374,7 @@ window.SyVendorMng = {
           </td>
         </template>
       </bo-grid>
-      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('vendors-pager-setPage', n)" :on-size-change="() => handleSelectAction('vendors-pager-sizeChange')" />
+      <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('vendors-pager-setPage', n)" :on-size-change="() => handleSelectAction('vendors-pager-sizeChange')" />
     </bo-container>
   </div>
   <!-- ===== ■. 상세 패널 (전체 폭, .bo-2col 바깥, 항상 표시) ====================== -->
