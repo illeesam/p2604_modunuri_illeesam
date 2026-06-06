@@ -10,7 +10,7 @@ window.StErpReconMng = {
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
-const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: ''});
+const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: ''});
     const codes = reactive({
       erp_recon_statuses: [],
       erp_voucher_types: [],
@@ -73,7 +73,6 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
       }
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-            const dateEnd   = ref('');
 
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {

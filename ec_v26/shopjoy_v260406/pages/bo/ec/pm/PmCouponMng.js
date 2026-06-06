@@ -281,7 +281,7 @@ window.PmCouponMng = {
       { key: 'dateRange', type: 'dateRange', label: '등록일',
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
-        onRangeChange: () => onDateRangeChange() },
+        onRangeChange: () => handleDateRangeChange() },
     ];
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
     // 기본 그리드

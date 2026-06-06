@@ -290,6 +290,7 @@ window.PmVoucherMng = {
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                           // computed
       tabMode,                                                                       // toRef
       fnStatusBadge, sortIcon,                                                       // 헬퍼
+      loadView,                                                                      // 카드뷰 @click 직접 호출
       inlineNavigate, showToast, showConfirm, showRefModal, setApiRes,               // 콜백 / 전역
     };
   },

@@ -99,7 +99,6 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, activeTab: 'vendo
     ];
 
     /* -- 공통 날짜 필터 -- */
-            const dateEnd   = ref('');
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* onDateRangeChange — 기간 변경 */

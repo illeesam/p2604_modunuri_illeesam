@@ -82,7 +82,6 @@ window.StRawMng = {
       }
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-            const dateEnd   = ref('');
 
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {

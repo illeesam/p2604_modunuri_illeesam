@@ -29,14 +29,14 @@ window.SyUserMng = {
       console.log(' ■■ SyUserMng.js : handleBtnAction -> ', cmd, param);
       // 검색조건으로 목록 조회
       if (cmd === 'searchParam-list') {
-        pager.pageNo = 1;
+        basePager.pageNo = 1;
         return handleSearchList('DEFAULT');
       // 검색조건 초기화 + 재조회 (부서 트리도 전체로)
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
         uiState.sortKey = ''; uiState.sortDir = 'asc';
         uiState.selectedDeptId = null;        // 부서 트리 전체로 복귀
-        pager.pageNo = 1;
+        basePager.pageNo = 1;
         resetDetailToNew();                   // 하단 상세 패널도 빈 신규 폼으로 초기화
         return handleSearchList('DEFAULT');
       // 기간 옵션 변경
@@ -86,7 +86,7 @@ window.SyUserMng = {
       // 부서 트리 노드 선택 → 우측 그리드 필터링 + 상세 패널 빈 신규 폼으로 초기화
       } else if (cmd === 'deptTree-select') {
         uiState.selectedDeptId = param;
-        pager.pageNo = 1;
+        basePager.pageNo = 1;
         resetDetailToNew();
         return handleSearchList();
       } else {
@@ -131,7 +131,7 @@ window.SyUserMng = {
     const searchParam = reactive(_initSearchParam());
 
     /* ===== 페이지네이션 ===== */
-    const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const basePager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* ===== 좌측 부서 트리 ===== */
     const expanded = reactive(new Set([null]));
@@ -161,7 +161,7 @@ window.SyUserMng = {
         if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
         else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
       } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      pager.pageNo = 1;
+      basePager.pageNo = 1;
       handleSearchList('DEFAULT');
     };
 
@@ -189,7 +189,7 @@ window.SyUserMng = {
       uiState.loading = true;
       try {
         const params = {
-          pageNo: pager.pageNo, pageSize: pager.pageSize,
+          pageNo: basePager.pageNo, pageSize: basePager.pageSize,
           ...getSortParam(),
           ...coUtil.cofOmitEmpty(searchParam),
         };
@@ -201,10 +201,10 @@ window.SyUserMng = {
         const res = await boApiSvc.syUser.getPage(params, '사용자관리', '목록조회');
         const data = res.data?.data;
         users.splice(0, users.length, ...(data?.pageList || []));
-        pager.pageTotalCount = data?.pageTotalCount || users.length;
-        pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        coUtil.cofBuildPagerNums(pager);
-        Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
+        basePager.pageTotalCount = data?.pageTotalCount || users.length;
+        basePager.pageTotalPage = data?.pageTotalPage || Math.ceil(basePager.pageTotalCount / basePager.pageSize) || 1;
+        coUtil.cofBuildPagerNums(basePager);
+        Object.assign(basePager.pageCond, data?.pageCond || basePager.pageCond);
         uiState.error = null;
         /* 좌 부서 트리 카운트 동기 갱신 */
         handleLoadDeptTreeNodeCounts();
@@ -252,7 +252,7 @@ window.SyUserMng = {
     /* handleDateRangeChange — 기간 옵션 변경 */
     const handleDateRangeChange = () => {
       boUtil.bofApplyDateRange(searchParam);
-      pager.pageNo = 1;
+      basePager.pageNo = 1;
     };
 
     /* loadView — 인라인 패널 뷰 모드로 열기 */
@@ -291,10 +291,10 @@ window.SyUserMng = {
     };
 
     /* setPage — 페이지 번호 변경 */
-    const setPage = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
+    const setPage = n => { if (n >= 1 && n <= basePager.pageTotalPage) { basePager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
 
     /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+    const onSizeChange = () => { basePager.pageNo = 1; handleSearchList('DEFAULT'); };
 
     /* handleDelete — 삭제 */
     const handleDelete = async (u) => {
@@ -402,7 +402,7 @@ window.SyUserMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
       columns,
-      users, uiState, codes, searchParam, pager, detailPanel, expanded, deptCounts,  // 상태 / 데이터
+      users, uiState, codes, searchParam, basePager, detailPanel, expanded, deptCounts,  // 상태 / 데이터
       excelUploadModal,                                                  // 엑셀 업로드 모달
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                // dispatch + 모달 통합 콜백
       cfTree, cfDetailEditId, cfIsViewMode, cfDetailKey,                 // computed
@@ -439,7 +439,7 @@ window.SyUserMng = {
       </div>
     </bo-container>
     <!-- ===== ■.■. 목록 그리드 ============================================== -->
-    <bo-container bare title="사용자목록" :count-text="pager.pageTotalCount + '건'">
+    <bo-container bare title="사용자목록" :count-text="basePager.pageTotalCount + '건'">
       <template #toolbar-actions>
         <div style="display:flex;gap:6px;">
           <button class="btn btn-green btn-sm" @click="handleBtnAction('users-excel')">
@@ -476,7 +476,7 @@ window.SyUserMng = {
           </td>
         </template>
       </bo-grid>
-      <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('users-pager-setPage', n)" :on-size-change="() => handleSelectAction('users-pager-sizeChange')" />
+      <bo-basePager :basePager="basePager" :on-set-page="n => handleBtnAction('users-pager-setPage', n)" :on-size-change="() => handleSelectAction('users-pager-sizeChange')" />
     </bo-container>
   </div>
   <!-- ===== ■. 상세 패널 (인라인 임베드, 항상 표시, 전체 폭) ================ -->

@@ -300,7 +300,7 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
       { key: 'dateRange', type: 'dateRange', label: '시작일',
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
-        onRangeChange: () => onDateRangeChange() },
+        onRangeChange: () => handleDateRangeChange() },
     ];
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
