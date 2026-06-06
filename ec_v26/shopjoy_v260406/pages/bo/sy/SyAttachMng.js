@@ -173,7 +173,7 @@ window.SyAttachMng = {
         const p = {
           pageNo: pager.pageNo,
           pageSize: pager.pageSize,
-          ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
+          ...coUtil.cofOmitEmpty(searchParam),
         };
         // 좌측 그룹 클릭 선택이 우선, 없으면 검색 조건 attachGrpId 사용
         if (uiState.selectedGrpId) { p.attachGrpId = uiState.selectedGrpId; }

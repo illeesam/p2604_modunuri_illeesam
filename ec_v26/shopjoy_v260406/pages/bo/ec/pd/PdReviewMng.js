@@ -137,12 +137,12 @@ window.PdReviewMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.pdReview.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) }, '상품리뷰관리', '목록조회');
+        const res = await boApiSvc.pdReview.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) }, '상품리뷰관리', '목록조회');
         const data = res.data?.data;
         reviews.splice(0, reviews.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        fnBuildPagerNums();
+        coUtil.cofBuildPagerNums(pager);
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
       } catch (err) {
@@ -178,8 +178,6 @@ window.PdReviewMng = {
     /* getMemNm — 조회 */
     const getMemNm  = id => { const m = (members||[]).find(m => m.userId === id || m.memberId === id); return m ? (m.memberNm || m.name) : id; };
 
-    /* fnBuildPagerNums — 유틸 */
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     /* 상단/하단 리뷰 목록 모두에서 선택된 리뷰를 찾는다 */
     const cfSelectedRow = computed(() =>

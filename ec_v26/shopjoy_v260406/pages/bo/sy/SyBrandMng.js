@@ -128,7 +128,7 @@ window.SyBrandMng = {
         const params = {
           pageNo: 1, pageSize: 10000,
           ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
-          ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
+          ...coUtil.cofOmitEmpty(searchParam),
         };
         if (params.searchValue && !params.searchType) {
           params.searchType = 'brandCode,brandNm,brandEnNm';

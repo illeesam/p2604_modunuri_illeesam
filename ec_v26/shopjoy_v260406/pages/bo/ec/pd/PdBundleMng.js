@@ -178,7 +178,7 @@ window.PdBundleMng = {
         bundles.splice(0, bundles.length, ...(dBundles?.pageList || dBundles?.list || []));
         pager.pageTotalCount = dBundles?.pageTotalCount || 0;
         pager.pageTotalPage  = dBundles?.pageTotalPage  || 1;
-        fnBuildPagerNums();
+        coUtil.cofBuildPagerNums(pager);
         products.splice(0, products.length, ...(prodsRes.data?.data?.pageList || prodsRes.data?.data?.list || []));
         categories.splice(0, categories.length, ...(catsRes.data?.data?.pageList || catsRes.data?.data?.list || []));
         uiState.error = null;
@@ -325,8 +325,6 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
 
     watch(bundles, updateBundleList);
 
-    /* fnBuildPagerNums — 유틸 */
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     /* onSearch — 조회 */
     const onSearch = async () => {

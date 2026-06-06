@@ -330,11 +330,9 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
       setList.splice(0, setList.length, ...result);
       pager.pageTotalCount = setList.length;
       pager.pageTotalPage  = Math.max(1, Math.ceil(setList.length / pager.pageSize));
-      fnBuildPagerNums();
+      coUtil.cofBuildPagerNums(pager);
     };
 
-    /* fnBuildPagerNums — 유틸 */
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     /* onSearch — 조회 */
     const onSearch = async () => {

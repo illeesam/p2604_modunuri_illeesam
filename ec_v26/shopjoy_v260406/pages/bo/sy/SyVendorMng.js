@@ -156,7 +156,7 @@ window.SyVendorMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}), ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) };
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}), ...coUtil.cofOmitEmpty(searchParam) };
         if (params.searchValue && !params.searchType) {
           params.searchType = 'vendorNm,corpNo,vendorId';
         }
@@ -165,7 +165,7 @@ window.SyVendorMng = {
         vendors.splice(0, vendors.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || vendors.length;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        fnBuildPagerNums();
+        coUtil.cofBuildPagerNums(pager);
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
         /* 좌 트리 카운트 동기 갱신 */
@@ -247,8 +247,6 @@ window.SyVendorMng = {
     /* exportExcel — 엑셀 내보내기 */
     const exportExcel = () => coUtil.cofExportCsv(vendors, [{label:'ID',key:'vendorId'},{label:'유형',key:'vendorType'},{label:'업체명',key:'vendorNm'},{label:'대표자',key:'ceoNm'},{label:'사업자번호',key:'vendorNo'},{label:'전화',key:'vendorPhone'},{label:'상태',key:'vendorStatusCd'},{label:'계약일',key:'contractDate'}], '업체목록.csv');
 
-    /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {

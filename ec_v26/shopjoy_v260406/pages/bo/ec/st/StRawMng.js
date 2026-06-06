@@ -115,7 +115,7 @@ const raws = reactive([]);
         raws.splice(0, raws.length, ...(data?.pageList || data?.list || []));
         pager.pageTotalCount = data?.pageTotalCount || raws.length;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        fnBuildPagerNums();
+        coUtil.cofBuildPagerNums(pager);
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
       } catch (err) {
         console.error('[handleSearchList]', err);
@@ -133,8 +133,6 @@ const raws = reactive([]);
       }
     });
 
-    /* fnBuildPagerNums — 유틸 */
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     const cfSummary = computed(() => ({
       totalAmt:   raws.reduce((s, r) => s + (r.settleTargetAmt || 0), 0),

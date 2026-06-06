@@ -156,7 +156,7 @@ window.PdCategoryMng = {
       try {
         const params = {
           pageNo: 1, pageSize: 10000,
-          ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
+          ...coUtil.cofOmitEmpty(searchParam),
           ...(uiState.selectedCatId ? { parentCategoryId: uiState.selectedCatId } : {}),
         };
         const res = await boApiSvc.pdCategory.getPage(params, '카테고리관리', '목록조회');

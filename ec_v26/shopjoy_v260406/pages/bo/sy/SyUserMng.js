@@ -191,7 +191,7 @@ window.SyUserMng = {
         const params = {
           pageNo: pager.pageNo, pageSize: pager.pageSize,
           ...getSortParam(),
-          ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
+          ...coUtil.cofOmitEmpty(searchParam),
         };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
@@ -203,7 +203,7 @@ window.SyUserMng = {
         users.splice(0, users.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || users.length;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        fnBuildPagerNums();
+        coUtil.cofBuildPagerNums(pager);
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
         /* 좌 부서 트리 카운트 동기 갱신 */
@@ -323,14 +323,12 @@ window.SyUserMng = {
     const exportExcel = () => {
       const params = {
         ...getSortParam(),
-        ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
+        ...coUtil.cofOmitEmpty(searchParam),
       };
       if (uiState.selectedDeptId != null) { params.deptId = uiState.selectedDeptId; }
       return coUtil.cofDownloadExcel('/bo/sy/user/excel', params, '사용자목록', '사용자관리', '엑셀다운로드');
     };
 
-    /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {

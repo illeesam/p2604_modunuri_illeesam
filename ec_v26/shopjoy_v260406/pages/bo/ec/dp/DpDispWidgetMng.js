@@ -183,7 +183,7 @@ window.DpDispWidgetMng = {
         widgetLibs.splice(0, widgetLibs.length, ...(dLibs?.pageList || dLibs?.list || []));
         pager.pageTotalCount = dW?.pageTotalCount || 0;
         pager.pageTotalPage  = dW?.pageTotalPage  || 1;
-        fnBuildPagerNums();
+        coUtil.cofBuildPagerNums(pager);
         /* 결과에 반영된 조건 기록 */
         applied.searchValue     = searchParam.searchValue;
         applied.type   = searchParam.type;
@@ -281,8 +281,6 @@ window.DpDispWidgetMng = {
     /* key 에 resetSeq 포함 — 취소/닫기 시 ++ 하면 remount 되어 폼 초기화. 그 외 id 변경은 props.dtlId / reloadTrigger watch 로 내용만 교체 */
     const cfDetailKey = computed(() => `open_${detailPanel.resetSeq}`);
 
-    /* fnBuildPagerNums — 유틸 */
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     /* fnStatusCls — 유틸 */
     const fnStatusCls = (v) => v === 'Y' ? 'badge-green' : 'badge-gray';

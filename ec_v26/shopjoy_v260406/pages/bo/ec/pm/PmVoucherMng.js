@@ -145,7 +145,7 @@ window.PmVoucherMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) };
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) };
         if (params.searchValue && !params.searchType) {
           params.searchType = 'voucherNm,voucherId';
         }
@@ -154,7 +154,7 @@ window.PmVoucherMng = {
         vouchers.splice(0, vouchers.length, ...list);
         pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
         pager.pageTotalPage = res.data?.data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        fnBuildPagerNums();
+        coUtil.cofBuildPagerNums(pager);
         Object.assign(pager.pageCond, res.data?.data?.pageCond || pager.pageCond);
         uiState.error = null;
       } catch (err) {
@@ -208,8 +208,6 @@ window.PmVoucherMng = {
     const cfIsViewMode = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
     const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}_${detailPanel.resetSeq}`);
 
-    /* fnBuildPagerNums — 유틸 */
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     /* 바우처(상품권) fnStatusBadge */
     const _VOUCHER_STATUS_FB = { '활성': 'badge-green', '비활성': 'badge-gray', '종료': 'badge-red' };

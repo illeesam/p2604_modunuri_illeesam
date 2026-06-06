@@ -143,7 +143,7 @@ window.CmChattMng = {
         const params = {
           pageNo: pager.pageNo, pageSize: pager.pageSize,
           ...getSortParam(),
-          ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
+          ...coUtil.cofOmitEmpty(searchParam)
         };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
@@ -154,7 +154,7 @@ window.CmChattMng = {
         chatts.splice(0, chatts.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        fnBuildPagerNums();
+        coUtil.cofBuildPagerNums(pager);
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
       } catch (err) {
@@ -228,8 +228,6 @@ window.CmChattMng = {
     /* exportExcel — 엑셀 내보내기 */
     const exportExcel = () => coUtil.cofExportCsv(chatts, [{label:'채팅ID',key:'chattRoomId'},{label:'회원명',key:'memberNm'},{label:'상태',key:'chattStatusCd'},{label:'마지막메시지일시',key:'lastMsgDate'},{label:'등록일',key:'regDate'}], '채팅목록.csv');
 
-    /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {

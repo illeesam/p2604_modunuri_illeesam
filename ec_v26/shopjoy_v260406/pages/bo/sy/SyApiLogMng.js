@@ -147,12 +147,6 @@ window.SyApiLogMng = {
       else { list.forEach((r, i) => expandedRows.add(r.logId || i)); allExpanded.value = true; }
     };
 
-    /* fnBuildPagerNums — 유틸 */
-    const fnBuildPagerNums = () => {
-      const c = pager.pageNo, l = pager.pageTotalPage;
-      const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
-      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
-    };
 
     /* buildSearchParams — 빌드 */
     const buildSearchParams = () => {
@@ -186,7 +180,7 @@ window.SyApiLogMng = {
         pager.pageTotalCount = data?.pageTotalCount || 0;
         pager.pageTotalPage  = data?.pageTotalPage  || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         tabCounts.access = pager.pageTotalCount;
-        fnBuildPagerNums();
+        coUtil.cofBuildPagerNums(pager);
         expandedRows.clear();
       } catch (err) {
         console.error('[handleSearchAccessLog]', err);
@@ -203,7 +197,7 @@ window.SyApiLogMng = {
         pager.pageTotalCount = data?.pageTotalCount || 0;
         pager.pageTotalPage  = data?.pageTotalPage  || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
         tabCounts.error = pager.pageTotalCount;
-        fnBuildPagerNums();
+        coUtil.cofBuildPagerNums(pager);
         expandedRows.clear();
       } catch (err) {
         console.error('[handleSearchErrorLog]', err);

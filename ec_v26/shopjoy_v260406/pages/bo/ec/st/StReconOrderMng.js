@@ -75,8 +75,6 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     const searchParam = reactive(_initSearchParam());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
-    /* fnBuildPagerNums — 유틸 */
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     const cfSummary = computed(() => ({
       match:   rows.filter(r => r.diffStatus==='일치').length,
@@ -91,7 +89,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
       try {
         const params = {
           pageNo: pager.pageNo, pageSize: pager.pageSize, typeCd: 'ORDER',
-          ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
+          ...coUtil.cofOmitEmpty(searchParam)
         };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
@@ -102,7 +100,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
         rows.splice(0, rows.length, ...(data?.pageList || data?.list || rows));
         pager.pageTotalCount = data?.pageTotalCount || rows.length;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        fnBuildPagerNums();
+        coUtil.cofBuildPagerNums(pager);
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
       } catch (_) {
         console.error('[catch-info]', _);

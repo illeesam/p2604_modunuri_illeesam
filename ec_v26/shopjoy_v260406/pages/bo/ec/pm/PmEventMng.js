@@ -153,12 +153,12 @@ window.PmEventMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const res = await boApiSvc.pmEvent.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([,v]) => v !== '' && v !== null && v !== undefined)) }, '이벤트관리', '목록조회');
+        const res = await boApiSvc.pmEvent.getPage({ pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) }, '이벤트관리', '목록조회');
         const data = res.data?.data;
         events.splice(0, events.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        fnBuildPagerNums();
+        coUtil.cofBuildPagerNums(pager);
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
       } catch (err) {
@@ -213,8 +213,6 @@ window.PmEventMng = {
     const cfIsViewMode = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
     const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}_${detailPanel.resetSeq}`);
 
-    /* fnBuildPagerNums — 유틸 */
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     /* 이벤트 fnStatusBadge */
     const _EVENT_STATUS_FB = { '진행중': 'badge-green', '예정': 'badge-blue', '종료': 'badge-gray' };

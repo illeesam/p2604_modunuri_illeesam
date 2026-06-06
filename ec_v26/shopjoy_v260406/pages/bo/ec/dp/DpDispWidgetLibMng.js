@@ -180,7 +180,7 @@ window.DpDispWidgetLibMng = {
         widgetLibs.splice(0, widgetLibs.length, ...(d?.pageList || d?.list || []));
         pager.pageTotalCount = d?.pageTotalCount || 0;
         pager.pageTotalPage  = d?.pageTotalPage  || 1;
-        fnBuildPagerNums();
+        coUtil.cofBuildPagerNums(pager);
         /* 결과에 반영된 조건 기록 */
         applied.searchValue     = searchParam.searchValue;
         applied.type   = searchParam.type;
@@ -226,8 +226,6 @@ window.DpDispWidgetLibMng = {
     /* selectNode — 노드 선택 (트리 필터 변경 → 상세영역은 빈 신규 폼으로 초기화) */
     const selectNode = (id) => { uiState.selectedPath = id; pager.pageNo = 1; resetDetailToNew(); handleSearchList('DEFAULT'); };
 
-    /* fnBuildPagerNums — 유틸 */
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     /* resetDetailToNew — 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역은 항상 표시 유지)
      *   active=false → 저장/취소 등 버튼 숨김 (행 미선택 안내 상태) */

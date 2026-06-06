@@ -88,8 +88,6 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     const searchParam = reactive(_initSearchParam());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
-    /* fnBuildPagerNums — 유틸 */
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* handleSearchList — 목록 조회 */
@@ -98,7 +96,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
         slips.splice(0, slips.length);
         pager.pageTotalCount = 0;
         pager.pageTotalPage = 1;
-        fnBuildPagerNums();
+        coUtil.cofBuildPagerNums(pager);
       } catch (_) { console.error('[catch-info]', _); }
     };
 

@@ -190,7 +190,7 @@ window.SySiteMng = {
       try {
         const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(),
           ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
-          ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) };
+          ...coUtil.cofOmitEmpty(searchParam) };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
           params.searchType = 'siteCode,siteNm,siteDomain';
@@ -200,7 +200,7 @@ window.SySiteMng = {
         sites.splice(0, sites.length, ...(data?.pageList || []));
         pager.pageTotalCount = data?.pageTotalCount || sites.length;
         pager.pageTotalPage = data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        fnBuildPagerNums();
+        coUtil.cofBuildPagerNums(pager);
         Object.assign(pager.pageCond, data?.pageCond || pager.pageCond);
         uiState.error = null;
         /* 좌 트리 카운트 동기 갱신 — 검색조건이 바뀔 때마다 함께 호출 */
@@ -340,12 +340,6 @@ window.SySiteMng = {
       { label: '상태', key: 'statusCd' }, { label: '등록일', key: 'regDate' },
     ], '사이트목록.csv');
 
-    /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
-    const fnBuildPagerNums = () => {
-      const c = pager.pageNo, l = pager.pageTotalPage;
-      const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
-      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
-    };
 
     /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = s => ({ '운영중': 'badge-green', '점검중': 'badge-orange', '비활성': 'badge-gray' }[s] || 'badge-gray');

@@ -101,7 +101,7 @@ window.SyVendorInfoMng = {
     const handleSearchList = async () => {
       uiState.loading = true;
       try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) };
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...coUtil.cofOmitEmpty(searchParam) };
         if (params.searchValue && !params.searchType) {
           params.searchType = 'vendorNm,corpNo,vendorId';
         }

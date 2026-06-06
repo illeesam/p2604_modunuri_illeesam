@@ -821,6 +821,21 @@
     return t;
   }
 
+  /* cofBuildPagerNums — pager.pageNo 기준 ±2 범위 페이지 번호 배열을 pager.pageNums 에 채움
+   *   사용: const res = await api.getPage(...); pager.pageTotalPage = ...; coUtil.cofBuildPagerNums(pager);
+   *   기존 각 화면의 fnBuildPagerNums() 복붙 대체 */
+  function cofBuildPagerNums(pager) {
+    const c = pager.pageNo, l = pager.pageTotalPage;
+    const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
+    pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
+  }
+
+  /* cofOmitEmpty — 객체에서 '' / null / undefined 값 키를 제거한 새 객체 반환
+   *   사용: const params = { pageNo, pageSize, ...coUtil.cofOmitEmpty(searchParam) }; */
+  function cofOmitEmpty(obj) {
+    return Object.fromEntries(Object.entries(obj || {}).filter(([, v]) => v !== '' && v !== null && v !== undefined));
+  }
+
   // 공개 API: window.coUtil 에 등록
   global.coUtil = global.coUtil || {};
   global.coUtil.cofApiHdr = global.coUtil.cofApiHdr || cofApiHdr;
@@ -858,6 +873,8 @@
   global.coUtil.cofEndOfMonth = global.coUtil.cofEndOfMonth || cofEndOfMonth;
   // SVG 차트 헬퍼
   global.coUtil.cofMaxOf = global.coUtil.cofMaxOf || cofMaxOf;
+  global.coUtil.cofBuildPagerNums = global.coUtil.cofBuildPagerNums || cofBuildPagerNums;
+  global.coUtil.cofOmitEmpty = global.coUtil.cofOmitEmpty || cofOmitEmpty;
   global.coUtil.cofLinePoints = global.coUtil.cofLinePoints || cofLinePoints;
   global.coUtil.cofAreaPath = global.coUtil.cofAreaPath || cofAreaPath;
   // Mng 표준 캡슐 (그리드/상세패널/트리)

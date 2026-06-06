@@ -168,7 +168,7 @@ window.DpDispUiMng = {
         uis.splice(0, uis.length, ...(d?.pageList || d?.list || []));
         pager.pageTotalCount = d?.pageTotalCount || 0;
         pager.pageTotalPage  = d?.pageTotalPage  || 1;
-        fnBuildPagerNums();
+        coUtil.cofBuildPagerNums(pager);
         uiState.error = null;
         /* 좌 트리 카운트 동기 갱신 */
         handleLoadPathTreeNodeCounts();
@@ -258,8 +258,6 @@ window.DpDispUiMng = {
       props.navigate(pg, opts);
     };
 
-    /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     /* setPage — 페이지 번호 변경 */
     const setPage  = n => { if (n >= 1 && n <= pager.pageTotalPage) { pager.pageNo = n; handleSearchList(); } };

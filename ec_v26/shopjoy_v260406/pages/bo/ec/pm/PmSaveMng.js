@@ -155,7 +155,7 @@ window.PmSaveMng = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       uiState.loading = true;
       try {
-        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)) };
+        const params = { pageNo: pager.pageNo, pageSize: pager.pageSize, ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) };
         if (params.searchValue && !params.searchType) {
           params.searchType = 'saveNm,saveId';
         }
@@ -164,7 +164,7 @@ window.PmSaveMng = {
         saves.splice(0, saves.length, ...list);
         pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
         pager.pageTotalPage = res.data?.data?.pageTotalPage || Math.ceil(pager.pageTotalCount / pager.pageSize) || 1;
-        fnBuildPagerNums();
+        coUtil.cofBuildPagerNums(pager);
         Object.assign(pager.pageCond, res.data?.data?.pageCond || pager.pageCond);
         uiState.error = null;
       } catch (err) {
@@ -223,8 +223,6 @@ window.PmSaveMng = {
     const cfDetailKey    = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}_${detailPanel.resetSeq}`);
 
     // ===== 페이저 번호 빌더 ================================================
-    /* fnBuildPagerNums — 유틸 */
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
     // ===== 배지(badge) 헬퍼 ================================================
     /* 적립금 fnTypeBadge — sy_code SAVE_TYPE_KR code_opt1 우선, 없으면 FB */

@@ -93,12 +93,6 @@ window.SyI18nMng = {
       return msgs;
     });
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
-    /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
-    const fnBuildPagerNums = () => {
-      const c = pager.pageNo, l = pager.pageTotalPage;
-      const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
-      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
-    };
 
     /* handleSearchData — 목록 조회 */
     const handleSearchData = async () => {
@@ -119,7 +113,7 @@ window.SyI18nMng = {
         i18ns.splice(0, i18ns.length, ...(d?.pageList || []));
         pager.pageTotalCount = d?.pageTotalCount || 0;
         pager.pageTotalPage  = d?.pageTotalPage  || 1;
-        fnBuildPagerNums();
+        coUtil.cofBuildPagerNums(pager);
       } catch (err) {
         console.error('[handleSearchData]', err);
         i18ns.splice(0, i18ns.length);

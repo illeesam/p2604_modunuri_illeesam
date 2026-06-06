@@ -91,7 +91,7 @@ window.MbMemGradeMng = {
       try {
         const params = {
           pageNo: 1, pageSize: 10000,
-          ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
+          ...coUtil.cofOmitEmpty(searchParam),
         };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {

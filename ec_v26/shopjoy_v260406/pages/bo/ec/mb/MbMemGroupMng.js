@@ -91,7 +91,7 @@ window.MbMemGroupMng = {
       try {
         const params = {
           pageNo: 1, pageSize: 10000,
-          ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
+          ...coUtil.cofOmitEmpty(searchParam),
         };
         const res = await boApiSvc.mbMemGroup.getPage(params, '회원그룹관리', '목록조회');
         const list = res.data?.data?.pageList || res.data?.data?.list || [];

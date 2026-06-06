@@ -177,12 +177,6 @@ window.SyPathMng = {
       }
     };
 
-    /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
-    const fnBuildPagerNums = () => {
-      const c = pager.pageNo, l = pager.pageTotalPage;
-      const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
-      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
-    };
 
     /* handleSearchTree — 트리 조회 */
     const handleSearchTree = async () => {
@@ -209,7 +203,7 @@ window.SyPathMng = {
         gridRows.splice(0, gridRows.length, ...list.map(r => ({ ...r, _status: null, _row_org: { ...r } })));
         pager.pageTotalCount = data.pageTotalCount ?? data.totalCount ?? list.length;
         pager.pageTotalPage  = data.pageTotalPage  ?? Math.max(1, Math.ceil(pager.pageTotalCount / pager.pageSize));
-        fnBuildPagerNums();
+        coUtil.cofBuildPagerNums(pager);
       } catch (e) { console.error('[handleGridSearch]', e); }
     };
 

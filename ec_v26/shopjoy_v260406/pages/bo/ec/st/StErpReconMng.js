@@ -88,8 +88,6 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     const searchParam = reactive(_initSearchParam());
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
-    /* fnBuildPagerNums — 유틸 */
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
     const cfSummary = computed(() => ({
       match:     recons.filter(r=>r.diffStatus==='일치').length,
       diff:      recons.filter(r=>r.diffStatus==='차이').length,
@@ -104,13 +102,13 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
         const res = await boApiSvc.stErp.getReconPage({
           pageNo: pager.pageNo, pageSize: pager.pageSize,
           dateStart: uiState.dateStart, dateEnd: uiState.dateEnd,
-          ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v !== '' && v !== null && v !== undefined))
+          ...coUtil.cofOmitEmpty(searchParam)
         }, 'ERP전표대사', '목록조회');
         const data = res.data?.data;
         recons.splice(0, recons.length, ...(data?.pageList || data?.list || []));
         pager.pageTotalCount = data?.pageTotalCount || 0;
         pager.pageTotalPage = data?.pageTotalPage || 1;
-        fnBuildPagerNums();
+        coUtil.cofBuildPagerNums(pager);
         Object.assign(pager.pageCond, data?.pageCond || {});
       } catch (_) { console.error('[catch-info]', _); }
     };

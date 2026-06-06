@@ -87,7 +87,7 @@ window.SyBatchHist = {
         batchLogs.splice(0, batchLogs.length, ...(d?.pageList || d?.list || []));
         pager.pageTotalCount = d?.pageTotalCount || 0;
         pager.pageTotalPage  = d?.pageTotalPage  || 1;
-        fnBuildPagerNums();
+        coUtil.cofBuildPagerNums(pager);
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -121,12 +121,6 @@ window.SyBatchHist = {
     /* onCollapseAll — 전체 접기 */
     const onCollapseAll = () => { uiState.expandedSet.clear(); };
 
-    /* fnBuildPagerNums — 페이지 번호 배열 빌드 */
-    const fnBuildPagerNums = () => {
-      const c = pager.pageNo, l = pager.pageTotalPage;
-      const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
-      pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
-    };
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
