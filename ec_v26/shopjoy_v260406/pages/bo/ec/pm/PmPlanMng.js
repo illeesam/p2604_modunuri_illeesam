@@ -389,10 +389,10 @@ window.PmPlanMng = {
           </div>
         </div>
         <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:center;align-items:center;">
-          <button class="btn btn-blue btn-sm" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)" style="font-size:11px;padding:4px 12px;">
+          <button class="btn btn-blue btn-sm" @click.stop="handleGridCellAction('plans-cellClick', 'btn_edit', p)" style="font-size:11px;padding:4px 12px;">
             수정
           </button>
-          <button class="btn btn-danger btn-sm" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)" style="font-size:11px;padding:4px 12px;">
+          <button class="btn btn-danger btn-sm" @click.stop="handleGridCellAction('plans-cellClick', 'btn_delete', p)" style="font-size:11px;padding:4px 12px;">
             삭제
           </button>
           <span style="font-size:11px;color:#999;margin-left:auto;">

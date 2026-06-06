@@ -317,7 +317,7 @@ window.SyContactDtl = {
       </div>
       <div class="form-actions" v-if="active">
         <template v-if="cfDtlMode">
-          <button class="btn btn-primary" @click="handleBtnAction('form-edit')">
+          <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
             수정
           </button>
           <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
@@ -378,7 +378,7 @@ window.SyContactDtl = {
       </div>
       <div class="form-actions" v-if="active">
         <template v-if="cfDtlMode">
-          <button class="btn btn-primary" @click="handleBtnAction('form-edit')">
+          <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
             수정
           </button>
           <button class="btn btn-secondary" @click="handleBtnAction('form-close')">

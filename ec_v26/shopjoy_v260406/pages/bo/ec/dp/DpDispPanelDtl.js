@@ -1223,7 +1223,7 @@ window.DpDispPanelDtl = {
             <!-- ===== /내용 ======================================================== -->
             <div class="form-actions" v-if="active && !cfDtlMode">
               <template v-if="cfDtlMode">
-                <button class="btn btn-primary" @click="handleBtnAction('form-edit')">
+                <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
                   수정
                 </button>
                 <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
@@ -1636,7 +1636,7 @@ window.DpDispPanelDtl = {
                           <!-- ===== /내용 영역 ===================================================== -->
                           <div class="form-actions" v-if="active && !cfDtlMode">
                             <template v-if="cfDtlMode">
-                              <button class="btn btn-primary" @click="handleBtnAction('form-edit')">
+                              <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
                                 수정
                               </button>
                               <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
@@ -1856,7 +1856,7 @@ window.DpDispPanelDtl = {
                         </div>
                         <div class="form-actions" v-if="active && !cfDtlMode">
                           <template v-if="cfDtlMode">
-                            <button class="btn btn-primary" @click="handleBtnAction('form-edit')">
+                            <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
                               수정
                             </button>
                             <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
@@ -2104,7 +2104,7 @@ window.DpDispPanelDtl = {
                                   </table>
                                   <div class="form-actions" v-if="active && !cfDtlMode">
                                     <template v-if="cfDtlMode">
-                                      <button class="btn btn-primary" @click="handleBtnAction('form-edit')">
+                                      <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
                                         수정
                                       </button>
                                       <button class="btn btn-secondary" @click="handleBtnAction('form-close')">

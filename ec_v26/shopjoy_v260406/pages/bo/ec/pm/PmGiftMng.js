@@ -355,10 +355,10 @@ window.PmGiftMng = {
       </template>
       <template #row-actions="{ row: g, gridId }">
         <div class="actions">
-          <button class="btn btn-blue btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
+          <button class="btn btn-blue btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_edit', g)">
             수정
           </button>
-          <button class="btn btn-danger btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">
+          <button class="btn btn-danger btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_delete', g)">
             삭제
           </button>
         </div>
@@ -405,10 +405,10 @@ window.PmGiftMng = {
           </div>
         </div>
         <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:center;align-items:center;">
-          <button class="btn btn-blue btn-sm" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)" style="font-size:11px;padding:4px 12px;">
+          <button class="btn btn-blue btn-sm" @click.stop="handleGridCellAction('gifts-cellClick', 'btn_edit', g)" style="font-size:11px;padding:4px 12px;">
             수정
           </button>
-          <button class="btn btn-danger btn-sm" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)" style="font-size:11px;padding:4px 12px;">
+          <button class="btn btn-danger btn-sm" @click.stop="handleGridCellAction('gifts-cellClick', 'btn_delete', g)" style="font-size:11px;padding:4px 12px;">
             삭제
           </button>
           <span style="font-size:11px;color:#999;margin-left:auto;">

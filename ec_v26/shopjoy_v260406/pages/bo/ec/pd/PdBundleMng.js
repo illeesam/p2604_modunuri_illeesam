@@ -684,7 +684,7 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
   </template>
     </bo-grid>
     <!-- 페이저는 그리드 밖, 컨테이너 안에 배치 -->
-    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('bundles-pager-setPage', n)" :on-size-change="() => handleSelectAction('bundles-pager-sizeChange')" />
+    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('bundles-pager-setPage', n)" :on-size-change="() => handleBtnAction('bundles-pager-sizeChange')" />
   </bo-container>
   <!-- ===== □. 목록 ====================================================== -->
   <!-- ===== ■. 신규등록 / 구성관리 (인라인 Dtl, 항상 표시) =================================== -->

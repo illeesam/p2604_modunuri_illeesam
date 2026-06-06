@@ -97,7 +97,7 @@ window.MbMemberDtl = {
       </span>
     </template>
     <template v-if="active" #toolbar-actions>
-      <button class="btn btn-blue btn-sm" @click="handleBtnAction('form-save')">
+      <button class="btn btn-primary btn-sm" @click="handleBtnAction('form-save')">
         저장
       </button>
       <button v-if="!detailModal.isNew" class="btn btn-danger btn-sm" @click="handleBtnAction('form-delete')">

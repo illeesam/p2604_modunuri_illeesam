@@ -357,7 +357,7 @@ window.DpDispUiMng = {
           <button class="btn btn-xs btn-secondary" @click.stop="handleGridCellAction(gridId, 'btn_view', row)">
             상세
           </button>
-          <button class="btn btn-xs btn-primary" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
+          <button class="btn btn-xs btn-blue" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
             수정
           </button>
         </template>

@@ -308,7 +308,7 @@ window.DpDispWidgetLibMng = {
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm' 와 sortKey 일치) */
     columns.listGrid = [
-      { key: 'widgetNm',    label: '이름', sortKey: 'nm', cellInnerClass: 'title-link',
+      { key: 'widgetNm',    label: '이름', sortKey: 'nm', link: true, cellInnerClass: 'title-link',
         fmt: (v, row) => `${wIcon(row.widgetTypeCd)} ${row.widgetNm || ''}` },
       { key: 'widgetTypeCd', label: '타입',
         fmt: v => wTypeLabel(v) },

@@ -332,7 +332,7 @@ window.PdDlivTmpltMng = {
         :cols="3" compact :show-actions="false" />
       <!-- ===== ■.■.■. 하단 액션 (저장/삭제/닫기) — .form-actions 가 중앙 정렬 ===== -->
       <div class="form-actions">
-        <button class="btn btn-blue" @click="handleBtnAction('form-save')">
+        <button class="btn btn-primary" @click="handleBtnAction('form-save')">
           저장
         </button>
         <button v-if="!uiState.isNew" class="btn btn-danger" @click="handleBtnAction('form-delete')">

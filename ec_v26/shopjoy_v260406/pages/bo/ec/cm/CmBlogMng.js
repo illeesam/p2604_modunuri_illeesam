@@ -293,7 +293,7 @@ window.CmBlogMng = {
 
     // 기본 그리드
     columns.baseGrid = [
-      { key: 'blogTitle',  label: '제목',     sortKey: 'nm', cellInnerClass: 'title-link',
+      { key: 'blogTitle',  label: '제목',     sortKey: 'nm', link: true, cellInnerClass: 'title-link',
         fmt: (v, row) => {
           const prefix = row.isNotice === 'Y' ? '[공지] ' : '';
           const summary = row.blogSummary ? ` / ${row.blogSummary}` : '';
@@ -384,7 +384,7 @@ window.CmBlogMng = {
         </bo-form-area>
         <!-- ===== ■.■.■. 하단 액션 (저장/삭제/닫기) — .form-actions 가 중앙 정렬 ===== -->
         <div class="form-actions">
-          <button class="btn btn-blue" @click="handleBtnAction('detailPanel-save')">
+          <button class="btn btn-primary" @click="handleBtnAction('detailPanel-save')">
             저장
           </button>
           <button v-if="!detailPanel.isNew" class="btn btn-danger" @click="handleBtnAction('detailPanel-delete')">

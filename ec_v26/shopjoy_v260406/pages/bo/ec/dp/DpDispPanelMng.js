@@ -696,7 +696,7 @@ window.DpDispPanelMng = {
               <th style="width:44px;">
                 ID
               </th>
-              <th @click="handleSelectAction('panels-sort', 'nm')" style="user-select:none;white-space:nowrap;">
+              <th @click="handleBtnAction('panels-sort', 'nm')" style="user-select:none;white-space:nowrap;">
                 패널 정보
                 <span :style="uiState.sortKey==='nm'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">
                   {{ sortIcon('nm') }}

@@ -111,11 +111,11 @@ window.BoPathTree = {
       const recur = (n) => { n.count = (n.children || []).reduce((s, c) => s + recur(c) + 1, 0); return n.count; };
       recur(root);
 
-      /* (미등록) 노드: counts['__none__'] (백엔드가 경로 미지정 항목 수 제공) 가 0 초과면
-         루트 직속 마지막에 추가. pathId='__none__' 클릭 시 미등록 항목 필터(화면 dispatch). */
-      const noneCnt = props.counts ? (props.counts['__none__'] || 0) : 0;
+      /* (미등록) 노드: counts['__orphan__'] (백엔드가 path_id IS NULL 항목 수 제공) 가 0 초과면
+         루트 직속 마지막에 추가. pathId='__orphan__' 클릭 시 미등록 항목 필터(화면 dispatch). */
+      const noneCnt = props.counts ? (props.counts['__orphan__'] || 0) : 0;
       if (noneCnt > 0) {
-        root.children.push({ pathId: '__none__', pathLabel: '(미등록)', bizCd: '', children: [], count: 0, isNone: true });
+        root.children.push({ pathId: '__orphan__', pathLabel: '(미등록)', bizCd: '', children: [], count: 0, isNone: true });
       }
       return root;
     };

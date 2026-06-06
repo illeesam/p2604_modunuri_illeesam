@@ -523,7 +523,7 @@ window.PmPlanDtl = {
       <template v-if="activeContentTab===3">
         <base-html-editor v-model="form.content3" height="420px" />
       </template>
-      <div class="form-actions" v-if="active && cfDtlMode" style="margin-top:12px;">
+      <div class="form-actions" v-if="active && cfDtlMode">
         <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
           수정
         </button>
@@ -531,7 +531,7 @@ window.PmPlanDtl = {
           닫기
         </button>
       </div>
-      <div class="form-actions" v-if="active && !cfDtlMode" style="margin-top:12px;">
+      <div class="form-actions" v-if="active && !cfDtlMode">
         <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           💾 저장
         </button>

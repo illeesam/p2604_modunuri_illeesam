@@ -81,7 +81,9 @@ body { background: #f0f2f5; color: #222; font-family: 'Noto Sans KR', sans-serif
 textarea.form-control { resize: vertical; min-height: 80px; font-family: inherit; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .form-row.col3 { grid-template-columns: 1fr 1fr 1fr; }
-.form-actions { display: flex; gap: 8px; margin-top: 20px; justify-content: center; }
+.form-actions { display: flex; gap: 8px; margin-top: 10px; justify-content: center; }
+/* 상세/인라인 폼 하단 액션 버튼은 그리드 버튼과 시각적 무게 맞춰 슬림화 (저장/취소/수정/삭제/닫기) */
+.form-actions .btn { padding: 4px 16px; font-size: 12px; border-radius: 6px; min-width: 60px; justify-content: center; }
 .form-control.is-invalid { border-color: #cf1322 !important; }
 .field-error { font-size: 11px; color: #cf1322; margin-top: 3px; display: block; }
 .section-title { font-size: 13px; font-weight: 700; color: #444; margin: 18px 0 10px; padding-bottom: 6px; border-bottom: 2px solid #4a9b7e; }
@@ -91,7 +93,7 @@ textarea.form-control { resize: vertical; min-height: 80px; font-family: inherit
 .bo-form-compact .form-control { padding: 4px 10px; font-size: 13px; min-height: 28px; }
 .bo-form-compact .form-label { font-size: 12px; margin-bottom: 2px; }
 .bo-form-compact .form-group { margin-bottom: 6px; }
-.bo-form-compact .form-actions { margin-top: 12px; }
+.bo-form-compact .form-actions { margin-top: 8px; }
 
 .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; white-space: nowrap; }
 .badge-blue   { background: #e6f4ff; color: #1677ff; }

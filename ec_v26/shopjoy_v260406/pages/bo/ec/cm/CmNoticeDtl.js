@@ -176,7 +176,7 @@ window.CmNoticeDtl = {
     <!-- 폼 액션 (행 선택/신규 시에만 노출) -->
     <div class="form-actions" v-if="active">
       <template v-if="cfReadonly">
-        <button class="btn btn-primary"   @click="handleBtnAction('baseForm-edit')">수정</button>
+        <button class="btn btn-blue"      @click="handleBtnAction('baseForm-edit')">수정</button>
         <button class="btn btn-secondary" @click="handleBtnAction('baseForm-close')">닫기</button>
       </template>
       <template v-else>

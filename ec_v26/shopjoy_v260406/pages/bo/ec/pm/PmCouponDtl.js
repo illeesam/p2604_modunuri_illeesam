@@ -825,7 +825,7 @@ window.PmCouponDtl = {
   <!-- ===== ■. 본문 영역 =================================================== -->
   <!-- 보기모드: [수정][닫기] -->
   <div class="form-actions" v-if="coUtil.cofAnd(active, cfDtlMode)">
-    <button class="btn btn-primary" @click="handleBtnAction('form-edit')" style="min-width:120px;">
+    <button class="btn btn-blue" @click="handleBtnAction('form-edit')" style="min-width:120px;">
       수정
     </button>
     <button class="btn btn-secondary" @click="handleBtnAction('form-close')" style="min-width:120px;">

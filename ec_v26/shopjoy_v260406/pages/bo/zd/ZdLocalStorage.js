@@ -253,7 +253,7 @@ window.ZdLocalStorage = {
                   style="width: 100%; height: 80px; padding: 8px; border: 1px solid #0066cc; border-radius: 4px; font-family: monospace; font-size: 12px; resize: vertical;">
                 </textarea>
                   <div style="display: flex; gap: 6px; margin-top: 8px;">
-                    <button @click="handleBtnAction('lsItems-rowSave', item.key)" class="btn btn-blue" style="padding: 4px 12px; font-size: 12px;">
+                    <button @click="handleBtnAction('lsItems-rowSave', item.key)" class="btn btn-primary" style="padding: 4px 12px; font-size: 12px;">
                       저장
                     </button>
                     <button @click="handleBtnAction('lsItems-rowCancel')" class="btn btn-secondary" style="padding: 4px 12px; font-size: 12px;">

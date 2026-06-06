@@ -68,8 +68,11 @@ window.SyVendorInfoMng = {
     /* handleSelectAction — 그리드 행/탭/select 선택 액션 dispatch. 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ SyVendorInfoMng.js : handleSelectAction -> ', cmd, param);
+      // 업체목록 [선택] 버튼 클릭 → 선택 업체 변경 + 탭 데이터 로드
+      if (cmd === 'vendors-rowSelect') {
+        return pickVendorRow(param);
       // 업체목록 페이지 크기 변경 (<select>)
-      if (cmd === 'vendors-pager-sizeChange') {
+      } else if (cmd === 'vendors-pager-sizeChange') {
         return onSizeChange();
       // 3단 탭 전환
       } else if (cmd === 'tab-select') {

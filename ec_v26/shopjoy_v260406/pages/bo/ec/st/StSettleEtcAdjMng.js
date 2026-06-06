@@ -303,7 +303,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
       </template>
       <template #row-actions="{ row: r }">
         <div class="actions">
-          <button class="btn btn-xs btn-primary" @click="handleSelectAction('etcAdjs-rowEdit', r)">
+          <button class="btn btn-xs btn-blue" @click="handleSelectAction('etcAdjs-rowEdit', r)">
             수정
           </button>
           <button class="btn btn-xs btn-danger"  @click="handleSelectAction('etcAdjs-rowDelete', r)">

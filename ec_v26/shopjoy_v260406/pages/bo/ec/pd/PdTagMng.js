@@ -205,7 +205,7 @@ window.PdTagMng = {
       <button class="btn btn-primary btn-sm" @click="handleBtnAction('tags-add')">
         + 행추가
       </button>
-      <button class="btn btn-blue btn-sm" @click="handleBtnAction('tags-save')">
+      <button class="btn btn-primary btn-sm" @click="handleBtnAction('tags-save')">
         저장
       </button>
     </template>

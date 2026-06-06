@@ -333,10 +333,10 @@ window.PmVoucherMng = {
       </template>
       <template #row-actions="{ row: v, gridId }">
         <div class="actions">
-          <button class="btn btn-blue btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
+          <button class="btn btn-blue btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_edit', v)">
             수정
           </button>
-          <button class="btn btn-danger btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">
+          <button class="btn btn-danger btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_delete', v)">
             삭제
           </button>
         </div>
@@ -351,12 +351,12 @@ window.PmVoucherMng = {
       </div>
       <div v-for="(v, idx) in vouchers" :key="v?.voucherId" style="border:1px solid #e8e8e8;border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.05);transition:all .15s;"
         :style="detailPanel.selectedId===v.voucherId?{borderColor:'#e8587a',boxShadow:'0 2px 8px rgba(232,88,122,0.15)'}:{}"
-        @click="handleGridCellAction('vouchers-cellClick', { row: v })">
+        @click="loadView(v.voucherId)">
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
           <div style="font-size:12px;color:#999;margin-bottom:6px;">
             상품권 #{{ v.voucherId }}
           </div>
-          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;" @click="handleGridCellAction('vouchers-cellClick', { row: v })" :style="detailPanel.selectedId===v.voucherId?{color:'#e8587a'}:{}">
+          <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;" @click="loadView(v.voucherId)" :style="detailPanel.selectedId===v.voucherId?{color:'#e8587a'}:{}">
             {{ v.voucherNm }}
             <span v-if="detailPanel.selectedId===v.voucherId" style="font-size:10px;margin-left:4px;">
               ▼
@@ -380,10 +380,10 @@ window.PmVoucherMng = {
           </div>
         </div>
         <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:center;align-items:center;">
-          <button class="btn btn-blue btn-sm" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)" style="font-size:11px;padding:4px 12px;">
+          <button class="btn btn-blue btn-sm" @click.stop="handleGridCellAction('vouchers-cellClick', 'btn_edit', v)" style="font-size:11px;padding:4px 12px;">
             수정
           </button>
-          <button class="btn btn-danger btn-sm" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)" style="font-size:11px;padding:4px 12px;">
+          <button class="btn btn-danger btn-sm" @click.stop="handleGridCellAction('vouchers-cellClick', 'btn_delete', v)" style="font-size:11px;padding:4px 12px;">
             삭제
           </button>
           <span style="font-size:11px;color:#999;margin-left:auto;">

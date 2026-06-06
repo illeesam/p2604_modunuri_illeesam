@@ -537,7 +537,7 @@ window.PmEventDtl = {
     </div>
     <base-html-editor v-else :model-value="form['content'+n]" @update:model-value="v => form['content'+n] = v" height="220px" />
   </div>
-  <div class="form-actions" v-if="active && cfDtlMode" style="margin-top:16px;">
+  <div class="form-actions" v-if="active && cfDtlMode">
     <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
       수정
     </button>
@@ -545,7 +545,7 @@ window.PmEventDtl = {
       닫기
     </button>
   </div>
-  <div class="form-actions" v-if="active && !cfDtlMode" style="margin-top:16px;">
+  <div class="form-actions" v-if="active && !cfDtlMode">
     <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
       저장
     </button>

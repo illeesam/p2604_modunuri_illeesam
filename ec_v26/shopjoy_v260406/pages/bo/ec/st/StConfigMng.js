@@ -251,7 +251,7 @@ window.StConfigMng = {
       </template>
       <template #row-actions="{ row: c }">
         <div class="actions">
-          <button class="btn btn-xs btn-primary" @click="handleSelectAction('configs-rowEdit', c)">
+          <button class="btn btn-xs btn-blue" @click="handleSelectAction('configs-rowEdit', c)">
             수정
           </button>
           <button class="btn btn-xs btn-danger"  @click="handleSelectAction('configs-rowDelete', c)">

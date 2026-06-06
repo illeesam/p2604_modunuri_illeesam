@@ -91,8 +91,11 @@ window.SyVendorUserMng = {
     /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ SyVendorUserMng.js : handleSelectAction -> ', cmd, param);
+      // 업체 그리드 [선택] 버튼 클릭 → 선택 업체 변경
+      if (cmd === 'vendors-rowSelect') {
+        return pickVendorRow(param);
       // 업체 그리드 페이지 크기 변경
-      if (cmd === 'vendors-pager-sizeChange') {
+      } else if (cmd === 'vendors-pager-sizeChange') {
         bizPager.pageNo = 1; return fnBuildBizPagerNums();
       // 사용자 그리드 행 삭제
       } else if (cmd === 'vendorUsers-rowDelete') {

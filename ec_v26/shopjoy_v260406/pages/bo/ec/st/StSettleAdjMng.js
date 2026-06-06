@@ -329,7 +329,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
           <button v-if="r.aprvStatusCd==='대기'" class="btn btn-xs btn-green" @click="handleSelectAction('settleAdjs-rowApprove', r)">
             승인
           </button>
-          <button class="btn btn-xs btn-primary" @click="handleSelectAction('settleAdjs-rowEdit', r)">
+          <button class="btn btn-xs btn-blue" @click="handleSelectAction('settleAdjs-rowEdit', r)">
             수정
           </button>
           <button class="btn btn-xs btn-danger"  @click="handleSelectAction('settleAdjs-rowDelete', r)">
