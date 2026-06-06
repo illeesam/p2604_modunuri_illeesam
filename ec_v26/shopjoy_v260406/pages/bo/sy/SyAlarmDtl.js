@@ -21,9 +21,13 @@ window.SyAlarmDtl = {
     });
 
     const form = reactive({                        // 알림 폼 데이터
-      alarmId: null, alarmTitle: '', alarmTypeCd: '푸시', targetTypeCd: '전체', targetId: '',
-      alarmMsg: '', alarmSendDate: '', alarmStatusCd: '임시', pathId: null,
+      alarmId: null, alarmTitle: '', alarmTypeCd: '', targetTypeCd: '', targetId: '',
+      alarmMsg: '', alarmSendDate: '', alarmStatusCd: '', pathId: null,
     });
+    // 신규 진입 시에만 기본값 채움 (미선택/초기화 상태에서는 빈 폼 유지)
+    const _applyNewDefaults = () => {
+      Object.assign(form, { alarmTypeCd: '푸시', targetTypeCd: '전체', alarmStatusCd: '임시' });
+    };
     const errors = reactive({});                   // 폼 검증 에러
     const pathPickModal = reactive({ show: false }); // 표시경로 선택 모달
 
@@ -161,6 +165,7 @@ window.SyAlarmDtl = {
     onMounted(async () => {
       if (isAppReady.value) { fnLoadCodes(); }
       if (!cfIsNew.value) { await handleLoadDetail(); }
+      if (props.active && cfIsNew.value) { _applyNewDefaults(); }
     });
 
     /* policy: 상위 Mng 이 reloadTrigger 증가시키면 상세 API 재조회 */

@@ -33,10 +33,17 @@ window.OdOrderDtl = {
 
     const form = reactive({
       orderId: '', memberId: '', memberNm: '', orderDate: '', prodNm: '',
-      totalAmt: 0, payMethodCd: '무통장입금', orderStatusCd: '입금대기',
-      payStatusCd: '결제완료', payDate: '', apprNo: '', payIssuer: '',
+      totalAmt: '', payMethodCd: '', orderStatusCd: '',
+      payStatusCd: '', payDate: '', apprNo: '', payIssuer: '',
       memo: '',
     });
+    /* _applyNewDefaults — 신규 진입 시에만 비어있지 않던 기본값 채움 (미선택 시 빈 폼 유지) */
+    const _applyNewDefaults = () => {
+      Object.assign(form, {
+        totalAmt: 0, payMethodCd: '무통장입금', orderStatusCd: '입금대기',
+        payStatusCd: '결제완료',
+      });
+    };
     const errors = reactive({});
 
     const schema = yup.object({
@@ -222,6 +229,7 @@ window.OdOrderDtl = {
     onMounted(async () => {
       if (isAppReady.value) { fnLoadCodes(); }
       await handleSearchDetail();
+      if (props.active && cfIsNew.value) { _applyNewDefaults(); }
     });
 
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */

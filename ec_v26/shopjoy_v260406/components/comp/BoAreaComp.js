@@ -409,16 +409,29 @@ window._boAreaCompUtil = {
     if (col.edit || col.type === 'slot') return '';
     const k = String(col.key || '').toLowerCase();
     const l = String(col.label || '');
-    // 돈/수량/율 → 우측
-    if (/amt|price|balance|fee|qty|cnt|count|rate|cost|stock|point|sum|total/.test(k)
-      || /금액|가격|잔액|배송비|할인값|할인가|수량|개수|건수|단가|합계|총액|포인트|적립|충전|재고|\(원\)|원\)$|율$/.test(l)) {
+    // 조회수/히트수 등 '집계 카운트'는 코드성보다 먼저 가운데로(돈 cnt 오탐 회피). 조회수=가운데 정책.
+    if (/viewcnt|hitcnt|viewcount|readcnt/.test(k) || /조회수|방문수|클릭수/.test(l)) {
+      return 'center';
+    }
+    // 돈/수량/율 → 우측.
+    //  ⚠️ 토큰을 단어경계(접미/세그먼트)로 매칭 — 부분일치 오탐 방지.
+    //     예) 'discnt'(할인) 의 'cnt' 가 count 로 오탐 → 할인명/유형/상태가 우측정렬되던 버그(2026-06-06 수정).
+    //     key 는 camelCase→lowercase 라 경계 소실 → 접미(`...token$`) 또는 세그먼트(`_token`) 기준으로 제한.
+    const MONEY = ['amt', 'price', 'balance', 'fee', 'qty', 'cnt', 'count', 'rate', 'cost', 'stock', 'point', 'sum', 'total', 'value'];
+    const moneyKey = MONEY.some(t => new RegExp('(^|_)' + t + '(_|$)|' + t + '$').test(k));
+    if (moneyKey
+      || /금액|가격|잔액|배송비|할인값|할인가|수량|개수|건수|단가|합계|총액|포인트|적립금|충전금|재고|\(원\)|원\)$|율$/.test(l)) {
       return 'right';
     }
-    // 코드성(상태/유형/구분/여부/코드/등급) → 가운데
-    if (/(^|_)(cd|code|status|type|yn|flag|state)$/.test(k) || /cd$|status$|yn$|typecd|statuscd/.test(k)
-      || /date$|regdate|moddate|period|viewcnt|hitcnt/.test(k)
-      || /^상태$|^유형$|^구분$|여부|^코드$|^등급$|^타입$|^단계$|일$|일시$|기간|조회수|등록일|수정일|작성일|시작일|종료일/.test(l)) {
+    // 코드성(상태/유형/구분/여부/코드/등급/대상/방식) → 가운데
+    if (/(^|_)(cd|code|status|type|yn|flag|state|target)$/.test(k) || /cd$|status$|yn$|type$|typecd|statuscd|targetcd|target$/.test(k)
+      || /date$|regdate|moddate|period/.test(k)
+      || /^상태$|^유형$|^구분$|여부|^코드$|^등급$|^타입$|^단계$|일$|일시$|기간|등록일|수정일|작성일|시작일|종료일|^대상$|적용대상|대상$|^방식$|^방법$|^분류$|^레벨$|유형$/.test(l)) {
       return 'center';
+    }
+    // 이름/제목성(명/제목/title/name) → 좌측 (가독성). default 도 '' 이지만 의도 명시.
+    if (/(nm|name|title|label)$/.test(k) || /명$|제목|이름|타이틀/.test(l)) {
+      return '';
     }
     return '';
   },

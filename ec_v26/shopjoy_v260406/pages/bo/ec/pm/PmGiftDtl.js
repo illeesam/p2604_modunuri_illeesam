@@ -184,10 +184,12 @@ window.PmGiftDtl = {
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // ★ onMounted
-    onMounted(() => {
+    onMounted(async () => {
       if (isAppReady.value) { fnLoadCodes(); }
       // [+신규] 진입(활성 + 신규)일 때만 기본값 채움. 미선택/초기화(비활성)면 빈 폼 유지.
       if (props.active && cfIsNew.value) { _applyNewDefaults(); }
+      // 마운트 시 상세 조회 — 행 클릭으로 key 변경 시 재마운트되므로 watch(reloadTrigger)만으론 최초 로드 누락됨
+      await handleSearchDetail();
     });
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
     watch(() => props.reloadTrigger, async (n, o) => {
@@ -326,7 +328,7 @@ window.PmGiftDtl = {
       handleBtnAction, handleSelectAction, fnCallbackModal,                                            // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfHasId, cfSaveDisabled, cfIsView, cfVisibilityOptions, cfCondValLabel, cfSelectedVendorNm, // computed
       tabs, tab, tabMode2, showVendorModal,                                                 // toRef
-      showTab, hasVisibility,                                                          // 헬퍼
+      showTab, hasVisibility, coUtil,                                                  // 헬퍼 (coUtil: 템플릿 cofAnd 접근용)
     };
   },
   template: /* html */`

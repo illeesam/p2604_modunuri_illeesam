@@ -31,11 +31,19 @@ window.CmNoticeDtl = {
 
     const _today = (offset = 0) => { const d = new Date(); d.setDate(d.getDate() + offset); return d.toISOString().slice(0, 10); };
 
+    /* 폼 초기값 = 빈 폼 (미선택/초기화 상태에서는 모든 필드 비움).
+     *   신규 등록 기본값(상단고정 N / 시작·종료일)은 [+신규] 진입 시에만 _applyNewDefaults() 로 채움. */
     const baseForm = reactive({
-      noticeId: null, noticeTitle: '', noticeTypeCd: '', isFixed: 'N',
-      startDate: _today(), endDate: _today(7), noticeStatusCd: '', contentHtml: '',
+      noticeId: null, noticeTitle: '', noticeTypeCd: '', isFixed: '',
+      startDate: '', endDate: '', noticeStatusCd: '', contentHtml: '',
       attachGrpId: null,
     });
+    /* _applyNewDefaults — 신규 등록 진입 시 기본값 채움 */
+    const _applyNewDefaults = () => {
+      Object.assign(baseForm, {
+        isFixed: 'N', startDate: _today(), endDate: _today(7),
+      });
+    };
     const errors = reactive({});
     const schema = yup.object({ noticeTitle: yup.string().required('제목을 입력해주세요.') });
 
@@ -67,6 +75,8 @@ window.CmNoticeDtl = {
 
     onMounted(async () => {
       if (isAppReady.value) fnLoadCodes();
+      // [+신규] 진입(활성 + 신규)일 때만 기본값 채움. 미선택/초기화(비활성)면 빈 폼 유지.
+      if (props.active && cfIsNew.value) _applyNewDefaults();
       await handleSearchDetail();
     });
 

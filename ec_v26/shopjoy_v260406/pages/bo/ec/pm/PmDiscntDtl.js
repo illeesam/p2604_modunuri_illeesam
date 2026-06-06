@@ -182,10 +182,12 @@ window.PmDiscntDtl = {
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     // ★ onMounted
-    onMounted(() => {
+    onMounted(async () => {
       if (isAppReady.value) { fnLoadCodes(); }
       // [+신규] 진입(활성 + 신규)일 때만 기본값 채움. 미선택/초기화(비활성)면 빈 폼 유지.
       if (props.active && cfIsNew.value) { _applyNewDefaults(); }
+      // 마운트 시 상세 조회 — 행 클릭으로 key 변경 시 재마운트되므로 watch(reloadTrigger)만으론 최초 로드 누락됨
+      await handleSearchDetail();
     });
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
     watch(() => props.reloadTrigger, async (n, o) => {
@@ -319,6 +321,7 @@ window.PmDiscntDtl = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
+      coUtil,  // 템플릿 cofAnd 접근용
       columns,
       vendors, uiState, codes, form, errors,                                          // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal,                                            // dispatch (모든 이벤트 / 액션 라우팅)

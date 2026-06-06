@@ -28,8 +28,14 @@ window.OdDlivDtl = {
 
     const form = reactive({
       dlivId: '', orderId: '', memberId: '', memberNm: '', recvNm: '',
-      recvAddr: '', recvPhone: '', outboundCourierCd: '', outboundTrackingNo: '', dlivStatusCd: '준비중', regDate: '', dlivMemo: '',
+      recvAddr: '', recvPhone: '', outboundCourierCd: '', outboundTrackingNo: '', dlivStatusCd: '', regDate: '', dlivMemo: '',
     });
+    /* _applyNewDefaults — 신규 등록 진입 시 기본값 채움 */
+    const _applyNewDefaults = () => {
+      Object.assign(form, {
+        dlivStatusCd: '준비중',
+      });
+    };
     const errors = reactive({});
 
     const schema = yup.object({
@@ -175,6 +181,8 @@ window.OdDlivDtl = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(async () => {
       if (isAppReady.value) { fnLoadCodes(); }
+      // [+신규] 진입(활성 + 신규)일 때만 기본값 채움. 미선택/초기화(비활성)면 빈 폼 유지.
+      if (props.active && cfIsNew.value) { _applyNewDefaults(); }
       await handleSearchDetail();
     });
 

@@ -858,17 +858,22 @@ const onSearch = async () => { pager.pageNo = 1; await handleSearchList(); };
 
 | 데이터 타입 | 정렬 | CSS |
 |---|---|---|
-| 텍스트·이름·설명 | 좌측 | 기본값('') |
-| **코드성**(상태·유형·구분·여부·코드·등급) | 가운데 | `text-align:center` |
-| **돈·수량·율**(금액·가격·잔액·배송비·수량·건수·재고·포인트·율) | 우측 | `text-align:right` |
+| **텍스트·이름·제목·설명**(~명·제목·이름·nm·name·title) | **좌측** | 기본값('') |
+| **코드성**(상태·유형·구분·여부·코드·등급·**적용대상·대상·방식·방법·분류·레벨**) | **가운데** | `text-align:center` |
+| **돈·수량·율**(금액·가격·잔액·배송비·수량·건수·재고·포인트·율) | **우측** | `text-align:right` |
+
+> 예) 할인관리: **할인명=좌측**, **유형·적용대상·상태=가운데**, 할인값=우측. (2026-06-06 적용대상/대상/방식/분류 가운데 + 명/제목 좌측 명시 보강)
 
 **BoGrid/FoGrid `autoAlign` 자동 적용**: `col.align` 미지정 컬럼은 `key`/`label` 패턴으로 **자동 정렬**(thStyle/tdStyle 공통). 개별 화면에서 `align` 일일이 안 줘도 됨.
 - 돈: key `amt|price|balance|fee|qty|cnt|rate|stock|point` / label `금액·가격·잔액·수량·재고…` → 우측
-- 코드성+날짜+조회수+기간: key `*cd|*code|*status|*yn|*type|*date|regdate|period|viewcnt` / label `상태·유형·구분·여부·코드·등급·등록일·수정일·작성일·시작일·종료일·기간·조회수·~일·~일시` → 가운데
+- 코드성+날짜+조회수+기간+대상: key `*cd|*code|*status|*yn|*type|*target|*date|regdate|period|viewcnt` / label `상태·유형·구분·여부·코드·등급·적용대상·대상·방식·방법·분류·레벨·등록일·수정일·작성일·시작일·종료일·기간·조회수·~일·~일시` → 가운데
+- 이름/제목: key `*nm|*name|*title|*label` / label `~명·제목·이름·타이틀` → 좌측(기본값이지만 의도 명시)
 - **관리(action) 컬럼 버튼은 가운데 정렬**: `.bo-table .actions { justify-content:center }`(전역). 인라인 `display:flex;justify-content:flex-end` 금지.
 - ⛔ **관리란에 ID 표시 금지**: `#row-actions` 슬롯에 `#{{ row.xxxId }}` 같은 ID span 금지(목록 ID 노출 규칙 §10). ID는 Dtl 제목 우측에만.
 - **편집(`edit`)·슬롯(`type:'slot'`) 셀은 자동 정렬 제외**(편집 UI 깨짐 방지). 명시 `col.align` 이 있으면 그게 우선.
 - 자동 판별이 틀린 경우만 컬럼에 `align:'left'|'center'|'right'` 명시로 오버라이드.
+- ⚠️ **돈 토큰 단어경계 매칭**(2026-06-06 버그수정): money 토큰(`cnt|count|qty|...`)은 `(^|_)token(_|$)` 또는 `token$` 로만 매칭. 이전 부분일치 정규식이 `dis**cnt**`(할인) 의 `cnt` 를 count 로 오탐 → 할인명/유형/상태 컬럼이 잘못 우측정렬되던 버그. 신규 토큰 추가 시 부분일치 금지.
+- **조회수(viewCnt/hitCnt)는 가운데**(돈 cnt 보다 먼저 판정). 집계 카운트와 금액성 카운트 구분.
 - **헤더(`<th>`)는 셀 정렬과 무관하게 전체공통 가운데 정렬** + **헤더 항목 간 구분선**(`border-right`). thStyle 인라인 `text-align:center` + CSS `.bo-table th`/`.fo-grid-table th` `border-right`(마지막 th 제외).
 - 코드: [BoAreaComp.js](../../../components/comp/BoAreaComp.js) / [FoAreaComp.js](../../../components/comp/FoAreaComp.js) `U.autoAlign(col)` + `U.thStyle(col)`(center 고정), CSS `.bo-table th`(boGlobalStyle0N) / `.fo-grid-table th`(foGlobalStyle0N).
 

@@ -23,8 +23,12 @@ window.SyCodeDtl = {
     const cfDtlMode = computed(() => props.dtlMode === 'view'); // dtlMode: 'view' 이면 읽기전용
 
     const form = reactive({                        // 코드 폼 데이터
-      codeId: null, codeGrp: '', codeLabel: '', codeValue: '', sortOrd: 1, useYn: 'Y', codeRemark: '',
+      codeId: null, codeGrp: '', codeLabel: '', codeValue: '', sortOrd: '', useYn: '', codeRemark: '',
     });
+    // 신규 진입 시에만 채울 기본값 (미선택 inactive 상태에서는 빈 폼 유지)
+    const _applyNewDefaults = () => {
+      Object.assign(form, { sortOrd: 1, useYn: 'Y' });
+    };
     const errors = reactive({});                   // 폼 검증 에러
 
     const schema = yup.object({                    // 폼 검증 스키마
@@ -116,6 +120,7 @@ window.SyCodeDtl = {
     onMounted(async () => {
       if (isAppReady.value) { fnLoadCodes(); }
       if (!cfIsNew.value) { await handleLoadDetail(); }
+      if (props.active && cfIsNew.value) { _applyNewDefaults(); }
     });
 
     /* policy: 상위 Mng 이 reloadTrigger 증가시키면 상세 API 재조회 */

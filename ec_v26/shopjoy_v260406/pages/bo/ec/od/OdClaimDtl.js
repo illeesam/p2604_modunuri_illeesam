@@ -28,9 +28,16 @@ window.OdClaimDtl = {
 
     const form = reactive({
       claimId: '', memberId: '', memberNm: '', orderId: '', prodNm: '',
-      claimTypeCd: '취소', claimStatusCd: '신청', reasonCd: '', reasonDetail: '',
-      refundAmt: 0, refundMethodCd: '계좌환불', requestDate: '', memo: '',
+      claimTypeCd: '', claimStatusCd: '', reasonCd: '', reasonDetail: '',
+      refundAmt: '', refundMethodCd: '', requestDate: '', memo: '',
     });
+    /* _applyNewDefaults — 신규 진입 시에만 비어있지 않던 기본값 채움 (inactive/초기화 시 빈 폼 유지) */
+    const _applyNewDefaults = () => {
+      Object.assign(form, {
+        claimTypeCd: '취소', claimStatusCd: '신청',
+        refundAmt: 0, refundMethodCd: '계좌환불',
+      });
+    };
     const errors = reactive({});
 
     const schema = yup.object({
@@ -154,6 +161,7 @@ window.OdClaimDtl = {
     onMounted(async () => {
       if (isAppReady.value) { fnLoadCodes(); }
       await handleSearchDetail();
+      if (props.active && cfIsNew.value) { _applyNewDefaults(); }
     });
 
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */

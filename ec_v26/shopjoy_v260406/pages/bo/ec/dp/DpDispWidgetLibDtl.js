@@ -146,14 +146,14 @@ window.DpDispWidgetLibDtl = {
     const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
     const cfIsNew = computed(() => !props.dtlId);
 
-    /* makeForm — 생성 */
+    /* makeForm — 생성 (미선택/inactive 시 완전 빈 폼: 비어있지 않은 기본값은 _applyNewDefaults 로 분리) */
     const makeForm = () => ({
-      libId: null, libCode: '', name: '', widgetType: 'image_banner', desc: '', tags: '', status: '활성',
-      titleYn: 'N', title: '',
+      libId: null, libCode: '', name: '', widgetType: '', desc: '', tags: '', status: '',
+      titleYn: '', title: '',
       pathId: null,
-      regDate: new Date().toISOString().slice(0, 10),
+      regDate: '',
       /* 위젯 공통 */
-      clickAction: 'none', clickTarget: '',
+      clickAction: '', clickTarget: '',
       /* 이미지 배너 / 팝업 */
       imageUrl: '', altText: '', linkUrl: '',
       /* 상품 */
@@ -161,11 +161,11 @@ window.DpDispWidgetLibDtl = {
       /* 차트 */
       chartTitle: '', chartLabels: '', chartValues: '',
       /* 텍스트 배너 */
-      textContent: '', bgColor: '#ffffff', textColor: '#222222',
+      textContent: '', bgColor: '', textColor: '',
       /* 정보 카드 */
       infoTitle: '', infoBody: '',
       /* 팝업 */
-      popupWidth: 600, popupHeight: 400,
+      popupWidth: '', popupHeight: '',
       /* 파일 */
       fileUrl: '', fileLabel: '',
       /* 파일목록 */
@@ -179,32 +179,55 @@ window.DpDispWidgetLibDtl = {
       /* Markdown */
       markdownContent: '',
       /* 바코드 / QR */
-      codeValue: '', codeFormat: 'CODE128', codeWidth: 2, codeHeight: 60,
-      showCodeLabel: true, qrSize: 120, qrErrorLevel: 'M',
+      codeValue: '', codeFormat: '', codeWidth: '', codeHeight: '',
+      showCodeLabel: '', qrSize: '', qrErrorLevel: '',
       /* 동영상 */
-      videoUrl: '', videoType: 'youtube', videoAutoplay: false, videoControls: true,
+      videoUrl: '', videoType: '', videoAutoplay: false, videoControls: '',
       /* 카운트다운 */
-      countdownTarget: '', countdownTitle: '이벤트 종료까지', countdownExpiredMsg: '이벤트가 종료되었습니다.',
-      countdownBgColor: '#1a237e', countdownTextColor: '#ffffff',
+      countdownTarget: '', countdownTitle: '', countdownExpiredMsg: '',
+      countdownBgColor: '', countdownTextColor: '',
       /* 결제위젯 */
-      payAmount: 0, payCurrency: 'KRW', payMethods: 'card,kakao,naver,toss',
-      payButtonLabel: '결제하기', payButtonColor: '#1677ff',
+      payAmount: '', payCurrency: '', payMethods: '',
+      payButtonLabel: '', payButtonColor: '',
       /* 전자결재 */
-      approvalDocType: '구매승인', approvalTitle: '', approvalLine: '[{"role":"담당자","name":""},{"role":"팀장","name":""},{"role":"부서장","name":""}]',
+      approvalDocType: '', approvalTitle: '', approvalLine: '',
       /* 지도맵 */
-      mapType: 'google', mapAddress: '', mapLat: '', mapLng: '', mapZoom: 14, mapMarkerLabel: '',
+      mapType: '', mapAddress: '', mapLat: '', mapLng: '', mapZoom: '', mapMarkerLabel: '',
       /* 이벤트 */
       eventId: '',
       /* 캐시 */
-      cacheDesc: '', cacheAmount: 0,
+      cacheDesc: '', cacheAmount: '',
       /* 위젯임베드 */
       embedCode: '',
       /* 조건상품 */
-      condSite: '', condUser: '', condCategory: '', condBrand: '', condSort: 'newest', condLimit: 8,
+      condSite: '', condUser: '', condCategory: '', condBrand: '', condSort: '', condLimit: '',
     });
 
     const form   = reactive(makeForm());
     const errors = reactive({});
+
+    /* _applyNewDefaults — 신규 진입(active && cfIsNew) 시에만 채우는 비-빈 기본값. inactive/초기화 상태에서는 빈 폼 유지 */
+    const _applyNewDefaults = () => {
+      Object.assign(form, {
+        widgetType: 'image_banner', status: '활성', titleYn: 'N',
+        regDate: new Date().toISOString().slice(0, 10),
+        clickAction: 'none',
+        bgColor: '#ffffff', textColor: '#222222',
+        popupWidth: 600, popupHeight: 400,
+        codeFormat: 'CODE128', codeWidth: 2, codeHeight: 60,
+        showCodeLabel: true, qrSize: 120, qrErrorLevel: 'M',
+        videoType: 'youtube', videoControls: true,
+        countdownTitle: '이벤트 종료까지', countdownExpiredMsg: '이벤트가 종료되었습니다.',
+        countdownBgColor: '#1a237e', countdownTextColor: '#ffffff',
+        payAmount: 0, payCurrency: 'KRW', payMethods: 'card,kakao,naver,toss',
+        payButtonLabel: '결제하기', payButtonColor: '#1677ff',
+        approvalDocType: '구매승인',
+        approvalLine: '[{"role":"담당자","name":""},{"role":"팀장","name":""},{"role":"부서장","name":""}]',
+        mapType: 'google', mapZoom: 14,
+        cacheAmount: 0,
+        condSort: 'newest', condLimit: 8,
+      });
+    };
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* handleLoadDetail — 상세 조회 */
@@ -296,6 +319,8 @@ window.DpDispWidgetLibDtl = {
       if (isAppReady.value) { fnLoadCodes(); }
       await handleLoadDetail();
       handleInitNewForm();
+      /* 신규 진입(active && 신규) 시에만 비-빈 기본값 채움. 미선택/초기화 상태에서는 빈 폼 유지 */
+      if (props.active && cfIsNew.value) { _applyNewDefaults(); }
     });
 
     /* 정책: 부모 Mng 의 reloadTrigger 가 변할 때마다 (행상세/행수정 클릭) 상세 API 재호출 */
@@ -305,6 +330,8 @@ window.DpDispWidgetLibDtl = {
       Object.assign(form, makeForm());
       await handleLoadDetail();
       handleInitNewForm();
+      /* 신규 진입(active && 신규) 시에만 비-빈 기본값 채움. 미선택/초기화 상태에서는 빈 폼 유지 */
+      if (props.active && cfIsNew.value) { _applyNewDefaults(); }
     });
 
     /* -- 위젯 유형별 표시 여부 -- */

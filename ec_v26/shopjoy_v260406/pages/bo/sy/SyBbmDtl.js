@@ -25,11 +25,20 @@ window.SyBbmDtl = {
     const cfDtlMode = computed(() => props.dtlMode === 'view'); // dtlMode: 'view'이면 읽기전용
 
     const form = reactive({
-      bbmId: null, bbmCode: '', bbmNm: '', bbmTypeCd: '일반',
-      allowComment: '불가', allowAttach: '불가', allowLike: 'N',
-      contentTypeCd: 'textarea', scopeTypeCd: '공개',
-      sortOrd: 1, useYn: 'Y', bbmRemark: '', pathId: null,
+      bbmId: null, bbmCode: '', bbmNm: '', bbmTypeCd: '',
+      allowComment: '', allowAttach: '', allowLike: '',
+      contentTypeCd: '', scopeTypeCd: '',
+      sortOrd: '', useYn: '', bbmRemark: '', pathId: null,
     });
+    // 신규 진입 시에만 채울 기본값 (미선택/검색초기화 inactive 상태에서는 빈 폼 유지)
+    const _applyNewDefaults = () => {
+      Object.assign(form, {
+        bbmTypeCd: '일반',
+        allowComment: '불가', allowAttach: '불가', allowLike: 'N',
+        contentTypeCd: 'textarea', scopeTypeCd: '공개',
+        sortOrd: 1, useYn: 'Y',
+      });
+    };
     const errors = reactive({});
 
     /* ── 표시경로 모달 ── */
@@ -141,6 +150,7 @@ window.SyBbmDtl = {
     onMounted(async () => {
       if (isAppReady.value) { fnLoadCodes(); }
       if (!cfIsNew.value) { await handleLoadDetail(); }
+      if (props.active && cfIsNew.value) { _applyNewDefaults(); }
     });
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
     watch(() => props.reloadTrigger, async (n, o) => {
