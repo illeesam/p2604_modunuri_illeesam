@@ -773,9 +773,6 @@ window.SyVendorUserMng = {
         <span v-if="uiState.formMode==='edit'" style="margin-left:8px;font-size:11px;color:#888;font-weight:400;">
           #{{ formData.vendorUserId }}
         </span>
-        <span v-if="!uiState.formMode" style="margin-left:8px;font-size:12px;color:#bbb;font-weight:400;">
-          사용자 목록에서 행을 선택하거나 [+신규등록]을 누르세요
-        </span>
       </span>
       <div v-if="uiState.formMode" style="display:flex;gap:6px;flex-wrap:wrap;">
         <button class="btn btn-blue btn-sm" @click="handleBtnAction('vendorUsers-sendJoinMail')">

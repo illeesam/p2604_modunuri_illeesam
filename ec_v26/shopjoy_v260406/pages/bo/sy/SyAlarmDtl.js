@@ -203,17 +203,9 @@ window.SyAlarmDtl = {
   },
   template: /* html */`
 <!-- ===== ■. 상세 영역 (제목/폼 모두 컨테이너 안에) ========================= -->
-<bo-container>
+<bo-container :title="!active ? '알림 상세' : (cfIsNew ? '알림 등록' : (cfDtlMode ? '알림 상세' : '알림 수정'))"
+  :title-id="!active ? '' : (cfIsNew ? '' : form.alarmId)">
   <!-- ===== ■.■. 영역 헤더 (제목 = list-title, 페이지 타이틀 아님 → 폰트 축소) ========= -->
-  <template #title>
-    {{ !active ? '알림 상세' : (cfIsNew ? '알림 등록' : (cfDtlMode ? '알림 상세' : '알림 수정')) }}
-    <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
-      #{{ form.alarmId }}
-    </span>
-    <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-      목록에서 행을 선택하거나 [+신규]를 누르세요
-    </span>
-  </template>
   <!-- ===== ■.■. 폼 영역 ================================================== -->
   <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
     :readonly="cfDtlMode" :cols="3" compact :show-actions="active"

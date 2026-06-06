@@ -262,14 +262,8 @@ window.StConfigMng = {
     </bo-grid>
   </bo-container>
   <!-- ===== ■. 상세 패널 (항상 표시 — 미선택 시 안내, 선택/신규 시 폼) ============== -->
-  <bo-container bare>
-    <div class="card" style="margin-top:12px">
-      <div class="card-title" style="font-weight:700;margin-bottom:16px">
-        {{ !uiState.selectedId ? '정산기준 상세' : (uiState.isNew ? '정산기준 추가' : '정산기준 수정') }}
-        <span v-if="!uiState.selectedId" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-          목록에서 행을 선택하거나 [+신규]를 누르세요
-        </span>
-      </div>
+  <bo-container card-style="margin-top:12px"
+    :title="!uiState.selectedId ? '정산기준 상세' : (uiState.isNew ? '정산기준 추가' : '정산기준 수정')">
       <!-- ===== ■.■. 미선택 안내 (영역은 항상 표시) ================================= -->
       <div v-if="!uiState.selectedId" style="text-align:center;color:#bbb;font-size:13px;padding:32px 16px;">
         목록에서 정산기준 행을 선택하거나 [+신규]를 누르면 입력할 수 있습니다.

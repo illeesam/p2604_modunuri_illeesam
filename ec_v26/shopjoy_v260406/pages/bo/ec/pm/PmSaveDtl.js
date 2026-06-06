@@ -322,17 +322,8 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
   },
   template: /* html */`
 <!-- ===== ■. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
-<bo-container>
-  <!-- ===== ■.■. 카드 헤더 (제목 = list-title, page-title 아님 → 폰트 축소) ========= -->
-  <template #title>
-    {{ !active ? '마일리지 상세' : (cfIsNew ? '마일리지 등록' : (cfDtlMode ? '마일리지 상세' : '마일리지 수정')) }}
-    <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
-      #{{ form.saveId }}
-    </span>
-    <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-      목록에서 행을 선택하거나 [+신규]를 누르세요
-    </span>
-  </template>
+<bo-container :title="!active ? '마일리지 상세' : (cfIsNew ? '마일리지 등록' : (cfDtlMode ? '마일리지 상세' : '마일리지 수정'))"
+  :title-id="!active ? '' : (cfIsNew ? '' : form.saveId)">
   <!-- ===== ■.■. 탭바 ==================================================== -->
   <bo-tab-bar :tabs="tabs" :tab="tab" :tab-mode="tabMode2"
     @tab-select="id => handleBtnAction('tab-select', id)"

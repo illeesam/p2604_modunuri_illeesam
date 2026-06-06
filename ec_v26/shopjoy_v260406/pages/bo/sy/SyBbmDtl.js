@@ -215,29 +215,15 @@ window.SyBbmDtl = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 상세 카드 (제목/폼 모두 카드 안에) ============================= -->
-  <div class="card">
-    <!-- ===== ■.■. 카드 헤더 (제목 = list-title, 페이지 타이틀 아님 → 폰트 축소) ========= -->
-    <div class="toolbar">
-      <span class="list-title">
-        {{ !active ? '게시판 상세' : (cfIsNew ? '게시판 등록' : (cfDtlMode ? '게시판 상세' : '게시판 수정')) }}
-        <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
-          #{{ form.bbmId }}
-        </span>
-        <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-          목록에서 행을 선택하거나 [+신규]를 누르세요
-        </span>
-      </span>
-    </div>
-    <!-- ===== ■.■. 폼 영역 ================================================== -->
+<bo-container :title="!active ? '게시판 상세' : (cfIsNew ? '게시판 등록' : (cfDtlMode ? '게시판 상세' : '게시판 수정'))"
+  :title-id="!active ? '' : (cfIsNew ? '' : form.bbmId)">
+  <!-- ===== ■.■. 폼 영역 ================================================== -->
     <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="3" compact :show-actions="active"
       @save="handleBtnAction('form-save')"
       @cancel="handleBtnAction('form-cancel')"
       @edit="handleBtnAction('form-edit')"
       @close="handleBtnAction('form-close')" />
-  </div>
   <!-- ===== □.□. 폼 영역 ================================================== -->
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 표시경로 선택 모달 ============================================== -->
@@ -245,7 +231,7 @@ window.SyBbmDtl = {
   <path-pick-modal v-if="pathPickModal.show" biz-cd="sy_bbm"
     :value="form.pathId"
     title="게시판 표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
-</div>
+</bo-container>
 <!-- ===== □. 조건부 영역 ================================================== -->
 `
 };

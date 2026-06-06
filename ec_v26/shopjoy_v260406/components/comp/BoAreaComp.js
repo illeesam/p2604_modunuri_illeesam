@@ -151,6 +151,8 @@ window.BoContainer = {
   name: 'BoContainer',
   props: {
     title:      { type: String, default: '' },   // 영역 제목(list-title). 비우면 헤더 영역 미표시
+    titleId:    { type: [String, Number], default: '' }, // 제목 우측 회색 #ID 배지(Dtl 상세 ID). 비우면 미표시
+    titleHint:  { type: String, default: '' },   // 제목 우측 옅은 회색 안내문구(행 미선택 안내 등). 비우면 미표시
     countText:  { type: String, default: '' },   // 제목 우측 건수 텍스트(예: '20건')
     bare:       { type: Boolean, default: false },// true=카드 없이 슬롯만(다른 래퍼가 카드 담당)
     bodyStyle:  { type: String, default: '' },    // 본문 인라인 style
@@ -159,9 +161,11 @@ window.BoContainer = {
   template: `
 <div :class="bare ? '' : 'card'" :style="cardStyle">
   <slot name="top"></slot>
-  <div v-if="title || $slots['toolbar-actions'] || $slots.title" class="toolbar">
+  <div v-if="title || titleId || titleHint || $slots['toolbar-actions'] || $slots.title" class="toolbar">
     <span class="list-title">
       <slot name="title">{{ title }}</slot>
+      <span v-if="titleId" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">#{{ titleId }}</span>
+      <span v-if="titleHint" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">{{ titleHint }}</span>
       <span v-if="countText" class="list-count">{{ countText }}</span>
     </span>
     <div v-if="$slots['toolbar-actions']" style="display:flex;gap:6px;align-items:center;">

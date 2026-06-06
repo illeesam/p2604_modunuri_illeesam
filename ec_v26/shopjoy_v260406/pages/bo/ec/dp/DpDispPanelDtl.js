@@ -948,20 +948,10 @@ window.DpDispPanelDtl = {
     };
   },
   template: /* html */`
-<bo-page title="전시패널 상세">
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <template #title>
-    <span>
-      {{ !active ? '전시패널 상세' : (cfIsNew ? '전시패널 등록' : (cfDtlMode ? '전시패널 상세' : '전시패널 수정')) }}
-      <span v-if="active && !cfIsNew" style="font-size:13px;color:#888;font-weight:400;margin-left:6px;">
-        #{{ form.dispId }}
-      </span>
-      <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-        목록에서 행을 선택하거나 [+신규]를 누르세요
-      </span>
-    </span>
-  </template>
-  <template #actions>
+<bo-container :title="!active ? '전시패널 상세' : (cfIsNew ? '전시패널 등록' : (cfDtlMode ? '전시패널 상세' : '전시패널 수정'))"
+  :title-id="!active ? '' : (cfIsNew ? '' : form.dispId)">
+  <!-- ===== ■. 영역 타이틀 (list-title) ====================================== -->
+  <template #toolbar-actions>
     <div style="display:flex;align-items:center;gap:6px;">
       <button @click="handleBtnAction('form-toggleViewAll')"
         style="font-size:11px;padding:4px 12px;border:1px solid #d0d0d0;border-radius:14px;background:#fff;color:#666;display:flex;align-items:center;gap:5px;transition:all .15s;"
@@ -2222,6 +2212,6 @@ window.DpDispPanelDtl = {
                     <!-- ===== ■. 조건부 영역 ================================================== -->
                     <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="ec_disp_panel" :value="form.pathId" title="표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
                   <!-- ===== □. 조건부 영역 ================================================== -->
-</bo-page>
+</bo-container>
 `,
 };

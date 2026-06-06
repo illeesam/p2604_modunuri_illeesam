@@ -554,7 +554,7 @@ window.DpDispAreaDtl = {
     };
   },
   template: /* html */`
-<div class="card" style="padding:0;overflow:hidden;">
+<bo-container card-style="padding:0;overflow:hidden;">
   <!-- ===== ■. 헤더: 타이틀 + 우측 액션 ========================================= -->
   <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #eee;background:#fafafa;">
     <span class="list-title" style="font-size:14px;">
@@ -565,9 +565,6 @@ window.DpDispAreaDtl = {
       {{ !active ? '상세' : (cfIsNew ? '등록' : '수정') }}
       <span v-if="active && !cfIsNew" style="font-size:12px;color:#888;font-weight:400;margin-left:6px;">
         #{{ form.codeId }}
-      </span>
-      <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-        목록에서 행을 선택하거나 [✚ 신규등록]을 누르세요
       </span>
     </span>
     <div v-if="active" style="display:flex;gap:8px;align-items:center;">
@@ -1071,7 +1068,7 @@ window.DpDispAreaDtl = {
 <!-- ===== □. 패널 선택 팝업 ================================================ -->
 <!-- ===== ■. 조건부 영역 ================================================== -->
 <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="ec_disp_area" :value="form.pathId" title="영역 표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
-</div>
+</bo-container>
 <!-- ===== □. 조건부 영역 ================================================== -->
 `,
 };

@@ -163,19 +163,9 @@ window.SyBatchDtl = {
     };
   },
   template: /* html */`
-<div>
+<bo-container :title="cfIsNew ? '배치 등록' : (cfDtlMode ? '배치 상세' : '배치 수정')"
+  :title-id="cfIsNew ? '' : form.batchId">
   <!-- ===== ■. 폼 영역 (BoFormArea 자동 렌더) ================================= -->
-  <div class="card">
-    <!-- ===== ■.■. 카드 헤더 (제목 = list-title, 페이지 타이틀 아님 → 폰트 축소) ========= -->
-    <div class="toolbar">
-      <span class="list-title">
-        {{ cfIsNew ? '배치 등록' : (cfDtlMode ? '배치 상세' : '배치 수정') }}
-        <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
-          #{{ form.batchId }}
-        </span>
-      </span>
-    </div>
-    <!-- ===== ■.■. 폼 영역 ================================================== -->
     <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
       :readonly="cfDtlMode" :cols="3" compact
       @save="handleBtnAction('form-save')"
@@ -196,8 +186,7 @@ window.SyBatchDtl = {
         </div>
       </template>
     </bo-form-area>
-  </div>
   <!-- ===== □. 폼 영역 ==================================================== -->
-</div>
+</bo-container>
 `,
 };

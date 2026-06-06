@@ -84,17 +84,10 @@ window.MbMemberDtl = {
   },
   template: /* html */`
 <!-- ===== ■. 상세/수정 카드 (항상 표시) ====================================== -->
-<bo-container body-style="padding:12px;">
-  <!-- ===== ■.■. 상세 툴바: 제목 + 저장/삭제/닫기 (active 시에만 버튼 노출) ============ -->
-  <template #title>
-    {{ !active ? '회원 상세' : (detailModal.isNew ? '신규 등록' : '상세 / 수정') }}
-    <span v-if="active && !detailModal.isNew && detailModal.form && detailModal.form.memberId" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
-      #{{ detailModal.form.memberId }}
-    </span>
-    <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-      목록에서 행을 선택하거나 [+신규]를 누르세요
-    </span>
-  </template>
+<bo-container body-style="padding:12px;"
+  :title="!active ? '회원 상세' : (detailModal.isNew ? '신규 등록' : '상세 / 수정')"
+  :title-id="!active ? '' : (detailModal.isNew ? '' : (detailModal.form?.memberId || ''))">
+  <!-- ===== ■.■. 상세 툴바: 저장/삭제/닫기 (active 시에만 버튼 노출) ============ -->
   <template v-if="active" #toolbar-actions>
     <button class="btn btn-primary btn-sm" @click="handleBtnAction('form-save')">
       저장

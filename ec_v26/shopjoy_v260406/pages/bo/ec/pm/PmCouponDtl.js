@@ -457,17 +457,9 @@ window.PmCouponDtl = {
     };
   },
   template: /* html */`
-<bo-page>
-  <!-- ===== ■. 페이지 타이틀 ================================================= -->
-  <template #title>
-    {{ !active ? '쿠폰 상세' : (cfIsNew ? '쿠폰 등록' : (cfDtlMode ? '쿠폰 상세' : '쿠폰 수정')) }}
-    <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;">
-      #{{ form.couponId }}
-    </span>
-    <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-      목록에서 행을 선택하거나 [+신규]를 누르세요
-    </span>
-  </template>
+<bo-container :title="!active ? '쿠폰 상세' : (cfIsNew ? '쿠폰 등록' : (cfDtlMode ? '쿠폰 상세' : '쿠폰 수정'))"
+  :title-id="!active ? '' : (cfIsNew ? '' : form.couponId)">
+  <!-- ===== ■. 영역 타이틀 (list-title) ====================================== -->
   <!-- ===== □. 페이지 타이틀 ================================================= -->
   <!-- ===== ■. 탭 영역 ==================================================== -->
   <bo-tab-bar :tabs="tabs" :tab="tab" :tab-mode="tabMode2"
@@ -854,7 +846,7 @@ window.PmCouponDtl = {
       취소
     </button>
   </div>
-</bo-page>
+</bo-container>
 <!-- ===== □. 본문 영역 =================================================== -->
 `
 };

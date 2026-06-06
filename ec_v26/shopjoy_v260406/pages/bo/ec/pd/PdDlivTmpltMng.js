@@ -315,9 +315,6 @@ window.PdDlivTmpltMng = {
         <span v-if="uiState.selectedId && !uiState.isNew && form.dlivTmpltId" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
           #{{ form.dlivTmpltId }}
         </span>
-        <span v-if="!uiState.selectedId" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-          목록에서 행을 선택하거나 [+신규]를 누르세요
-        </span>
       </span>
     </div>
     <!-- ===== □.□. 상세 툴바 ================================================ -->

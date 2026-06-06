@@ -716,9 +716,6 @@ window.DpDispWidgetDtl = {
     <span v-if="active && !cfIsNew" style="font-size:11px;background:#eee;color:#666;border-radius:4px;padding:1px 7px;margin-left:6px;">
       #{{ String(form.widgetLibId).padStart(4,'0') }}
     </span>
-    <span v-if="!active" style="font-size:12px;color:#bbb;font-weight:400;margin-left:6px;">
-      목록에서 행을 선택하거나 [+신규등록]을 누르세요
-    </span>
   </template>
   <template #toolbar-actions>
     <template v-if="cfShowActions">

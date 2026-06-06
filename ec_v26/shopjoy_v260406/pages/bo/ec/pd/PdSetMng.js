@@ -691,9 +691,6 @@ const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalC
           <strong style="font-size:15px">
             세트상품 상세
           </strong>
-          <span style="font-size:12px;color:#bbb;font-weight:400">
-            목록에서 행을 선택하거나 [+신규등록]을 누르세요
-          </span>
         </template>
       </div>
       <div v-if="uiState.detailActive" style="display:flex;align-items:center;gap:8px">

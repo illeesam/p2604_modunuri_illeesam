@@ -457,17 +457,8 @@ window.OdOrderDtl = {
   },
   template: /* html */`
 <!-- ===== ■. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
-<bo-container>
-  <!-- ===== ■.■. 카드 헤더 (제목 = list-title) ================================ -->
-  <template #title>
-    {{ !active ? '주문 상세' : (cfIsNew ? '주문 등록' : (cfDtlMode ? '주문 상세' : '주문 수정')) }}
-    <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
-      #{{ form.orderId }}
-    </span>
-    <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-      목록에서 행을 선택하거나 [+신규]를 누르세요
-    </span>
-  </template>
+<bo-container :title="!active ? '주문 상세' : (cfIsNew ? '주문 등록' : (cfDtlMode ? '주문 상세' : '주문 수정'))"
+  :title-id="!active ? '' : (cfIsNew ? '' : form.orderId)">
   <!-- ===== ■.■. 탭바 ==================================================== -->
   <bo-tab-bar v-if="!cfIsNew" :tabs="tabs" :tab="activeTab" :tab-mode="tabMode2"
     @tab-select="id => handleBtnAction('tab-change', id)"

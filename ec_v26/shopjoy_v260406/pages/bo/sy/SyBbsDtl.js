@@ -262,22 +262,9 @@ window.SyBbsDtl = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 카드 영역 (제목 + 폼을 한 영역으로) ================================ -->
-  <div class="card">
-    <!-- ===== ■.■. 카드 헤더 (제목 = list-title, page-title 아님 → 폰트 축소·카드 안) ===== -->
-    <div class="toolbar">
-      <span class="list-title">
-        {{ !active ? '게시글 상세' : (cfIsNew ? '게시글 등록' : (cfDtlMode ? '게시글 상세' : '게시글 수정')) }}
-        <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
-          #{{ form.bbsId }}
-        </span>
-        <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-          목록에서 행을 선택하거나 [+신규]를 누르세요
-        </span>
-      </span>
-    </div>
-    <!-- ===== ■.■. 사이트명 (BoFormArea 자동 렌더, 1열 폭) ========================= -->
+<bo-container :title="!active ? '게시글 상세' : (cfIsNew ? '게시글 등록' : (cfDtlMode ? '게시글 상세' : '게시글 수정'))"
+  :title-id="!active ? '' : (cfIsNew ? '' : form.bbsId)">
+  <!-- ===== ■.■. 사이트명 (BoFormArea 자동 렌더, 1열 폭) ========================= -->
     <bo-form-area :columns="columns.siteForm" :form="form" :errors="{}"
       :cols="3" compact :show-actions="false" />
     <!-- ===== ■.■. 게시판 선택 ================================================ -->
@@ -399,7 +386,6 @@ window.SyBbsDtl = {
       취소
     </button>
   </div>
-</div>
 <!-- ===== □. 카드 영역 =================================================== -->
 <!-- ===== ■. 게시판 선택 팝업 =============================================== -->
 <bbm-select-modal
@@ -417,6 +403,6 @@ window.SyBbsDtl = {
     </template>
   </bo-modal>
   <!-- ===== □. 게시판 상세보기 팝업 ============================================= -->
-</div>
+</bo-container>
 `,
 };
