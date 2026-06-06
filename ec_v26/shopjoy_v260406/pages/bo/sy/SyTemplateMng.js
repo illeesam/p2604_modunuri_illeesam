@@ -475,11 +475,11 @@ window.SyTemplateMng = {
     </bo-container>
   </div>
   <!-- ===== ■. 수정 패널 (전체 폭, 항상 표시) ============================= -->
-  <sy-template-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
+  <sy-template-dtl :key="cfDetailKey" :navigate="inlineNavigate" :dtl-id="cfDetailEditId"
     :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
     :active="detailPanel.active"
     :reload-trigger="detailPanel.reloadTrigger"
-    :on-list-reload="handleSearchList" />
+ />
   <!-- ===== ■. 미리보기 / 발송 / 경로 선택 모달 =============================== -->
   <template-preview-modal v-if="previewModal && previewModal.show" :tmpl="previewModal.template" :sample-params="previewModal.template?.sampleParams || '{}'" modal-name="template-preview" :on-callback="fnCallbackModal" />
   <template-send-modal v-if="sendModal && sendModal.show" :tmpl="sendModal.template" :show-toast="showToast" :show-confirm="showConfirm" modal-name="template-send" :on-callback="fnCallbackModal" />

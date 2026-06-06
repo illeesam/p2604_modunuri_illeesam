@@ -447,15 +447,11 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
     </div>
     <pm-discnt-dtl
       :key="cfDetailKey"
-      :navigate="inlineNavigate" :show-ref-modal="showRefModal"
-      :show-toast="showToast"
-      :show-confirm="showConfirm"
-      :set-api-res="setApiRes"
+      :navigate="inlineNavigate"
       :dtl-id="cfDetailEditId"
       :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
       :active="uiStateDetail.active"
       :reload-trigger="uiStateDetail.reloadTrigger"
-      :on-list-reload="handleSearchList"
       />
   </bo-container>
 </bo-page>

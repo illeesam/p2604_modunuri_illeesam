@@ -362,15 +362,11 @@ window.SyContactMng = {
     </div>
     <sy-contact-dtl
       :key="cfDetailKey"
-      :navigate="inlineNavigate" :show-ref-modal="showRefModal"
-      :show-toast="showToast"
-      :show-confirm="showConfirm"
-      :set-api-res="setApiRes"
+      :navigate="inlineNavigate"
       :dtl-id="cfDetailEditId"
       :dtl-mode="detailModal.dtlMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
       :active="detailModal.active"
       :reload-trigger="detailModal.reloadTrigger"
-      :on-list-reload="handleSearchList"
       />
   </bo-container>
 </bo-page>

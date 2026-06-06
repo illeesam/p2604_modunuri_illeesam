@@ -388,11 +388,11 @@ window.SyBbmMng = {
         ✕ 닫기
       </button>
     </div>
-    <sy-bbm-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId" :tab-mode="cfIsViewMode"
+    <sy-bbm-dtl :key="cfDetailKey" :navigate="inlineNavigate" :dtl-id="cfDetailEditId" :tab-mode="cfIsViewMode"
       :dtl-mode="detailModal.dtlMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
       :active="detailModal.active"
       :reload-trigger="detailModal.reloadTrigger"
-      :on-list-reload="handleSearchList" />
+ />
   </bo-container>
   <!-- ===== □. 상세 인라인 패널 ============================================= -->
 </bo-page>

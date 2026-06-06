@@ -2769,7 +2769,7 @@ window.PdProdDtl = {
 <!-- ===== □. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
 <!-- ===== ■. 이력 ====================================================== -->
 <div v-if="!cfIsNew" style="margin-top:12px;">
-<pd-prod-hist :prod-id="dtlId" :navigate="navigate" :show-ref-modal="showRefModal" />
+<pd-prod-hist :prod-id="dtlId" :navigate="navigate" />
 </div>
 <!-- ===== □. 이력 ====================================================== -->
 <!-- ===== ■. 공통코드 그룹 미리보기 모달 (BoModals.js / window.BoCodeGrpModal) ===== -->

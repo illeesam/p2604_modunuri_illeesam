@@ -478,7 +478,7 @@ window.SyAlarmMng = {
   </div>
   <!-- ===== □. 좌 트리 + 우 영역 ============================================= -->
   <!-- ===== ■. 상세 인라인 패널 (.bo-2col 바깥 → 전체 폭, 항상 표시) ===================== -->
-  <sy-alarm-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
+  <sy-alarm-dtl :key="cfDetailKey" :navigate="inlineNavigate" :dtl-id="cfDetailEditId"
     :dtl-mode="detailModal.dtlMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
     :active="detailModal.active"
     :reload-trigger="detailModal.reloadTrigger" />

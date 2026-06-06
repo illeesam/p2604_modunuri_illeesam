@@ -332,7 +332,6 @@ window.DpDispAreaMng = {
     :tab-mode="detailPanel.openMode"
     :active="detailPanel.active"
     :reload-trigger="detailPanel.reloadTrigger"
-    :on-list-reload="handleSearchData"
     @close="handleBtnAction('detailPanel-close')"
     />
 </bo-page>

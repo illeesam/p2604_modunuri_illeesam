@@ -386,11 +386,11 @@ window.SyVendorMng = {
         ✕ 닫기
       </button>
     </div>
-    <sy-vendor-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
+    <sy-vendor-dtl :key="cfDetailKey" :navigate="inlineNavigate" :dtl-id="cfDetailEditId"
       :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
       :active="detailPanel.active"
       :reload-trigger="detailPanel.reloadTrigger"
-      :on-list-reload="handleSearchList" />
+ />
   </bo-container>
 </bo-page>
 `,

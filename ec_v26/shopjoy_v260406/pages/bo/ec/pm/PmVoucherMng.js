@@ -404,15 +404,11 @@ window.PmVoucherMng = {
     </div>
     <pm-voucher-dtl
       :key="cfDetailKey"
-      :navigate="inlineNavigate" :show-ref-modal="showRefModal"
-      :show-toast="showToast"
-      :show-confirm="showConfirm"
-      :set-api-res="setApiRes"
+      :navigate="inlineNavigate"
       :dtl-id="cfDetailEditId"
       :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
       :active="detailPanel.active"
       :reload-trigger="detailPanel.reloadTrigger"
-      :on-list-reload="handleBtnAction"
       />
   </bo-container>
 </bo-page>

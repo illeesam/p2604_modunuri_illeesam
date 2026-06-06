@@ -353,15 +353,11 @@ window.CmChattMng = {
     </div>
     <cm-chatt-dtl
       :key="cfDetailKey"
-      :navigate="inlineNavigate" :show-ref-modal="showRefModal"
-      :show-toast="showToast"
-      :show-confirm="showConfirm"
-      :set-api-res="setApiRes"
+      :navigate="inlineNavigate"
       :dtl-id="cfDetailEditId"
       :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
       :active="detailPanel.active"
       :reload-trigger="detailPanel.reloadTrigger"
-      :on-list-reload="handleSearchList"
       />
   </bo-container>
   <!-- ===== □. 하단 상세: ChattDtl 임베드 ===================================== -->

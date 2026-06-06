@@ -380,7 +380,6 @@ window.MbMemberMng = {
     <mb-member-dtl :detail-modal="detailPanel" :active="detailPanel.active"
       :handle-save="handleSave" :handle-delete="handleDelete" :close-detail="closeDetail"
       :reload-trigger="detailPanel.reloadTrigger"
-      :on-list-reload="handleSearchList"
       />
   </bo-container>
   <!-- ===== □. 상세 패널 (인라인 임베드) ========================================= -->

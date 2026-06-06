@@ -952,15 +952,10 @@ window.DpDispPanelMng = {
     <dp-disp-panel-dtl
         :key="cfDetailKey"
         :navigate="inlineNavigate"
-        :show-ref-modal="showRefModal"
-        :show-toast="showToast"
-        :show-confirm="showConfirm"
-        :set-api-res="setApiRes"
         :dtl-id="cfDetailEditId"
         :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
         :active="uiStateDetail.active"
         :reload-trigger="uiStateDetail.reloadTrigger"
-        :on-list-reload="handleSearchData"
         />
   </bo-container>
   <!-- ===== □. 하단 상세: DispDtl 임베드 ====================================== -->

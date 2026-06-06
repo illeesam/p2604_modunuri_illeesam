@@ -394,11 +394,11 @@ window.SyBbsMng = {
         ✕ 닫기
       </button>
     </div>
-    <sy-bbs-dtl :key="cfDetailKey" :navigate="inlineNavigate" :show-toast="showToast" :show-confirm="showConfirm" :set-api-res="setApiRes" :dtl-id="cfDetailEditId"
+    <sy-bbs-dtl :key="cfDetailKey" :navigate="inlineNavigate" :dtl-id="cfDetailEditId"
       :dtl-mode="detailModal.dtlMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
       :active="detailModal.active"
       :reload-trigger="detailModal.reloadTrigger"
-      :on-list-reload="handleSearchBbs" />
+ />
   </bo-container>
   <!-- ===== □. 상세 패널 (인라인 임베드, 항상 표시) =================================== -->
 </bo-page>
