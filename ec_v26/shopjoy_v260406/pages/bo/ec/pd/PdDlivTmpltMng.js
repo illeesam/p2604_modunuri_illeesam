@@ -280,8 +280,8 @@ window.PdDlivTmpltMng = {
   },
   template: `
 <bo-page title="배송템플릿관리"
-    desc-summary="배송템플릿은 상품에 공통 적용할 배송비 조건을 미리 정의해두는 설정입니다."
-    desc-detail="✔ 무료·고정·조건부(금액/수량) 배송비 방식을 선택하고 상품 등록 시 템플릿을 연결해 재사용합니다.&#10;✔ 도서·산간 지역 추가 배송비, 반품지 주소를 함께 관리합니다.&#10;✔ 업체(벤더)별로 독립 설정이 가능하며, 여러 상품이 동일 템플릿을 공유할 수 있습니다.&#10;예) 3만원 이상 무료배송, 제주·도서 추가 3,000원">
+  desc-summary="배송템플릿은 상품에 공통 적용할 배송비 조건을 미리 정의해두는 설정입니다."
+  desc-detail="✔ 무료·고정·조건부(금액/수량) 배송비 방식을 선택하고 상품 등록 시 템플릿을 연결해 재사용합니다.&#10;✔ 도서·산간 지역 추가 배송비, 반품지 주소를 함께 관리합니다.&#10;✔ 업체(벤더)별로 독립 설정이 가능하며, 여러 상품이 동일 템플릿을 공유할 수 있습니다.&#10;예) 3만원 이상 무료배송, 제주·도서 추가 3,000원">
   <!-- ===== ■. 검색 ====================================================== -->
   <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
@@ -291,17 +291,14 @@ window.PdDlivTmpltMng = {
   <!-- ===== ■. 목록 그리드 =================================================== -->
   <bo-container title="배송템플릿 목록" :count-text="pager.pageTotalCount + '건'">
     <template #toolbar-actions>
-      <button class="btn btn-primary btn-sm" @click="handleBtnAction('dlivTmplts-add')">
-        + 신규
-      </button>
+      <button class="btn btn-primary btn-sm" @click="handleBtnAction('dlivTmplts-add')">+ 신규</button>
     </template>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid bare
       :columns="columns.baseGrid" :rows="dlivTmplts" row-key="dlivTmpltId" :selected-key="uiState.selectedId"
       :sort-state="{ sortKey: uiState.sortKey, sortDir: uiState.sortDir }"
       :row-class="(row) => uiState.selectedId===row.dlivTmpltId ? 'active' : ''"
-      @sort="key => handleBtnAction('dlivTmplts-sort', key)" grid-id="dlivTmplts-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
-    </bo-grid>
+      @sort="key => handleBtnAction('dlivTmplts-sort', key)" grid-id="dlivTmplts-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)"></bo-grid>
     <!-- 페이저는 그리드 밖, 컨테이너 안에 배치 -->
     <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('dlivTmplts-pager-setPage', n)" :on-size-change="() => handleSelectAction('dlivTmplts-pager-sizeChange')" />
   </bo-container>
@@ -319,9 +316,7 @@ window.PdDlivTmpltMng = {
     </div>
     <!-- ===== □.□. 상세 툴바 ================================================ -->
     <!-- ===== ■.■. 미선택 안내 (행 미선택 시) ==================================== -->
-    <div v-if="!uiState.selectedId" style="text-align:center;color:#bbb;font-size:13px;padding:32px 16px;">
-      목록에서 행을 선택하거나 [+신규]를 누르세요.
-    </div>
+    <div v-if="!uiState.selectedId" style="text-align:center;color:#bbb;font-size:13px;padding:32px 16px;">목록에서 행을 선택하거나 [+신규]를 누르세요.</div>
     <!-- ===== ■.■. 상세 입력폼 (BoFormArea 자동 렌더) ======================== -->
     <div v-else style="padding:12px">
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
@@ -329,15 +324,9 @@ window.PdDlivTmpltMng = {
         :cols="3" compact :show-actions="false" />
       <!-- ===== ■.■.■. 하단 액션 (저장/삭제/닫기) — .form-actions 가 중앙 정렬 ===== -->
       <div class="form-actions">
-        <button class="btn btn-primary" @click="handleBtnAction('form-save')">
-          저장
-        </button>
-        <button v-if="!uiState.isNew" class="btn btn-danger" @click="handleBtnAction('form-delete')">
-          삭제
-        </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
-          닫기
-        </button>
+        <button class="btn btn-primary" @click="handleBtnAction('form-save')">저장</button>
+        <button v-if="!uiState.isNew" class="btn btn-danger" @click="handleBtnAction('form-delete')">삭제</button>
+        <button class="btn btn-secondary" @click="handleBtnAction('form-close')">닫기</button>
       </div>
     </div>
   </bo-container>

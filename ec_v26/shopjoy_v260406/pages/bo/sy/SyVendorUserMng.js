@@ -753,9 +753,7 @@ window.SyVendorUserMng = {
           :empty-text="uiState.searchVendorId != null ? '사용자가 없습니다.' : '좌측 업체목록에서 업체를 선택하면 사용자 목록이 표시됩니다.'"
           grid-id="vendorUsers-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
           <template #row-actions="{ row }">
-            <button class="btn btn-danger btn-xs" @click.stop="handleSelectAction('vendorUsers-rowDelete', row)">
-              삭제
-            </button>
+            <button class="btn btn-danger btn-xs" @click.stop="handleSelectAction('vendorUsers-rowDelete', row)">삭제</button>
           </template>
         </bo-grid>
         <bo-pager v-if="uiState.searchVendorId != null" :pager="pager" :on-set-page="n => handleBtnAction('vendorUsers-pager-setPage', n)" :on-size-change="() => handleSelectAction('vendorUsers-pager-sizeChange')" />
@@ -766,185 +764,135 @@ window.SyVendorUserMng = {
   <!-- ===== □. 업체 목록 (좌) + 사용자 목록 (우) =================================== -->
   <!-- ===== ■. 인라인 폼 (항상 표시 — 미선택 시 빈 폼 + 버튼 숨김 + 안내) ============ -->
   <bo-container bare>
-   <div class="card" style="margin-top:12px;">
-    <div class="toolbar">
-      <span class="list-title">
-        {{ uiState.formMode==='new' ? '신규 업체사용자' : uiState.formMode==='edit' ? '업체사용자 수정' : '업체사용자 상세' }}
-        <span v-if="uiState.formMode==='edit'" style="margin-left:8px;font-size:11px;color:#888;font-weight:400;">
-          #{{ formData.vendorUserId }}
-        </span>
-      </span>
-      <div v-if="uiState.formMode" style="display:flex;gap:6px;flex-wrap:wrap;">
-        <button class="btn btn-blue btn-sm" @click="handleBtnAction('vendorUsers-sendJoinMail')">
-          ✉ 회원가입메일
-        </button>
-        <button class="btn btn-blue btn-sm" @click="handleBtnAction('vendorUsers-sendPwresetMail')">
-          🔑 비밀번호초기화
-        </button>
-        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('vendorUsers-close')">
-          취소
-        </button>
-        <button class="btn btn-primary btn-sm" @click="handleBtnAction('vendorUsers-save')">
-          저장
-        </button>
-      </div>
-    </div>
-    <!-- ===== ■.■. 업체사용자 상세 폼 (항상 표시 — 미선택 시 빈 폼 구조 노출) =============== -->
-    <div style="padding:16px;">
-      <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="columns.baseVendorUserForm" :form="formData" :errors="{}"
-        :cols="3" compact :show-actions="false" />
-    </div>
-    <!-- ===== □.□. 업체사용자 상세 폼 (BoFormArea 자동 렌더) ========================= -->
-    <!-- ===== ■.■. 역할 목록 (수정 모드에서만) ====================================== -->
-    <div v-if="uiState.formMode==='edit'" style="padding:0 16px 16px;">
-      <div class="toolbar" style="margin-bottom:8px;">
-        <span class="list-title" style="font-size:13px;">
-          🎭 부여된 역할
-          <span class="list-count">
-            {{ userRoles.length }}개
+    <div class="card" style="margin-top:12px;">
+      <div class="toolbar">
+        <span class="list-title">
+          {{ uiState.formMode==='new' ? '신규 업체사용자' : uiState.formMode==='edit' ? '업체사용자 수정' : '업체사용자 상세' }}
+          <span v-if="uiState.formMode==='edit'" style="margin-left:8px;font-size:11px;color:#888;font-weight:400;">
+            #{{ formData.vendorUserId }}
           </span>
         </span>
-        <button class="btn btn-blue btn-sm" @click="handleBtnAction('roleModal-open')">
-          + 역할 추가
-        </button>
+        <div v-if="uiState.formMode" style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="btn btn-blue btn-sm" @click="handleBtnAction('vendorUsers-sendJoinMail')">✉ 회원가입메일</button>
+          <button class="btn btn-blue btn-sm" @click="handleBtnAction('vendorUsers-sendPwresetMail')">🔑 비밀번호초기화</button>
+          <button class="btn btn-secondary btn-sm" @click="handleBtnAction('vendorUsers-close')">취소</button>
+          <button class="btn btn-primary btn-sm" @click="handleBtnAction('vendorUsers-save')">저장</button>
+        </div>
       </div>
-      <div v-if="uiState.roleLoading" style="text-align:center;padding:12px;color:#9ca3af;font-size:12px;">
-        로딩 중...
+      <!-- ===== ■.■. 업체사용자 상세 폼 (항상 표시 — 미선택 시 빈 폼 구조 노출) =============== -->
+      <div style="padding:16px;">
+        <!-- ===== ■.■.■. 폼 영역 ================================================ -->
+        <bo-form-area :columns="columns.baseVendorUserForm" :form="formData" :errors="{}"
+          :cols="3" compact :show-actions="false" />
       </div>
-      <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid v-else bare :columns="columns.userRoleGrid" :rows="userRoles" row-key="vendorUserRoleId"
-        empty-text="부여된 역할이 없습니다." row-actions>
-        <template #row-actions="{ row }">
-          <button class="btn btn-danger btn-xs" @click="handleSelectAction('userRoles-rowDelete', row)">
-            삭제
-          </button>
-        </template>
-      </bo-grid>
+      <!-- ===== □.□. 업체사용자 상세 폼 (BoFormArea 자동 렌더) ========================= -->
+      <!-- ===== ■.■. 역할 목록 (수정 모드에서만) ====================================== -->
+      <div v-if="uiState.formMode==='edit'" style="padding:0 16px 16px;">
+        <div class="toolbar" style="margin-bottom:8px;">
+          <span class="list-title" style="font-size:13px;">🎭 부여된 역할 <span class="list-count"> {{ userRoles.length }}개 </span></span>
+          <button class="btn btn-blue btn-sm" @click="handleBtnAction('roleModal-open')">+ 역할 추가</button>
+        </div>
+        <div v-if="uiState.roleLoading" style="text-align:center;padding:12px;color:#9ca3af;font-size:12px;">로딩 중...</div>
+        <!-- ===== ■.■.■. 목록 영역 =============================================== -->
+        <bo-grid v-else bare :columns="columns.userRoleGrid" :rows="userRoles" row-key="vendorUserRoleId"
+          empty-text="부여된 역할이 없습니다." row-actions>
+          <template #row-actions="{ row }">
+            <button class="btn btn-danger btn-xs" @click="handleSelectAction('userRoles-rowDelete', row)">삭제</button>
+          </template>
+        </bo-grid>
+      </div>
     </div>
-   </div>
   </bo-container>
   <!-- ===== □.□. 역할 목록 (수정 모드에서만) ====================================== -->
   <!-- ===== □. 인라인 폼 =================================================== -->
   <!-- ===== ■. 역할 선택 모달 (BoRoleSelectModal) ============================ -->
   <bo-role-select-modal :show="uiState.roleModalOpen" title="🎭 역할 선택"
-  :confirm-disabled="!uiState.roleModalTemp" modal-name="role-select" :on-callback="fnCallbackModal">
-  <!-- ===== □. 역할 선택 모달 (BoRoleSelectModal) ============================ -->
-  <!-- ===== ■. 영역 ====================================================== -->
-  <template #header-extra>
-    <span v-if="cfFormAllowedRootCode"
-      :style="{display:'inline-flex',alignItems:'center',padding:'3px 10px',borderRadius:'10px',background:'#fff',border:'1px solid #93c5fd',fontWeight:700,fontSize:'11px',color:cfFormAllowedRootCode==='SITE_MGR_ROOT'?'#16a34a':'#d97706'}">
-      {{ cfFormAllowedRootCode==='SITE_MGR_ROOT' ? '판매업체역할' : '배송업체역할' }}
-    </span>
-  </template>
-  <!-- ===== □. 영역 ====================================================== -->
-  <!-- ===== ■. 영역 ====================================================== -->
-  <template #tree>
-    <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:8px;">
-      📂 역할 트리
-    </div>
-    <div v-if="!cfFormAllowedRootCode" style="padding:10px;font-size:11px;color:#dc2626;background:#fef2f2;border-radius:6px;">
-      선택한 업체의 업체유형이 없어 역할을 선택할 수 없습니다.
-    </div>
-    <template v-for="root in cfFormRoleTree" :key="root.roleId">
-      <div :style="{padding:'7px 8px',fontWeight:700,fontSize:'12.5px',display:'flex',alignItems:'center',gap:'6px',cursor:'pointer',borderRadius:'6px',marginBottom:'2px',
-        color:root.roleCode===cfFormAllowedRootCode?'#1e40af':'#cbd5e1'}"
-        @click="handleSelectAction('roleModal-treeToggle', root.roleId)"
-        @mouseover="onRoleRootHover(root, $event)"
-        @mouseout="$event.currentTarget.style.background='transparent'">
-        <span style="width:12px;font-size:10px;color:#9ca3af;">
-          {{ roleTreeExpanded.has(root.roleId)?'▾':'▸' }}
-        </span>
-        <span>
-          📁 {{ root.roleNm }}
-        </span>
-      </div>
-      <div v-if="roleTreeExpanded.has(root.roleId)" style="padding-left:14px;margin-bottom:6px;">
-        <div v-for="ch in root.children" :key="ch.roleId"
-          @click="handleSelectAction('roleModal-treePick', ch)"
-          :style="{padding:'7px 10px',fontSize:'12.5px',cursor:ch.allowed?'pointer':'not-allowed',
-          color:ch.allowed?(uiState.roleModalTemp===ch.roleCode?'#fff':'#374151'):'#d1d5db',
-          background:uiState.roleModalTemp===ch.roleCode?'linear-gradient(135deg,#3b82f6,#2563eb)':'transparent',
-          borderRadius:'6px',fontWeight:uiState.roleModalTemp===ch.roleCode?700:500,marginBottom:'2px',
-          display:'flex',alignItems:'center',gap:'6px',transition:'all .1s'}"
-          @mouseover="onRoleChildHover(ch, $event)"
-          @mouseout="onRoleChildLeave(ch, $event)">
-          <span style="font-size:9px;">
-            ●
-          </span>
-          <span>
-            {{ ch.roleNm }}
-          </span>
-        </div>
-      </div>
+    :confirm-disabled="!uiState.roleModalTemp" modal-name="role-select" :on-callback="fnCallbackModal">
+    <!-- ===== □. 역할 선택 모달 (BoRoleSelectModal) ============================ -->
+    <!-- ===== ■. 영역 ====================================================== -->
+    <template #header-extra>
+      <span v-if="cfFormAllowedRootCode"
+        :style="{display:'inline-flex',alignItems:'center',padding:'3px 10px',borderRadius:'10px',background:'#fff',border:'1px solid #93c5fd',fontWeight:700,fontSize:'11px',color:cfFormAllowedRootCode==='SITE_MGR_ROOT'?'#16a34a':'#d97706'}">
+        {{ cfFormAllowedRootCode==='SITE_MGR_ROOT' ? '판매업체역할' : '배송업체역할' }}
+      </span>
     </template>
-  </template>
-  <!-- ===== □. 영역 ====================================================== -->
-  <!-- ===== ■. 영역 ====================================================== -->
-  <template #perm>
-    <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:8px;">
-      🔐 메뉴 접근권한
-      <span v-if="cfSelectedModalRole" style="color:#2563eb;margin-left:8px;">
-        — {{ cfSelectedModalRole.roleNm }}
-      </span>
-    </div>
-    <div v-if="!cfSelectedModalRole" style="padding:60px 20px;text-align:center;font-size:13px;color:#9ca3af;">
-      <div style="font-size:28px;margin-bottom:8px;">
-        👈
+    <!-- ===== □. 영역 ====================================================== -->
+    <!-- ===== ■. 영역 ====================================================== -->
+    <template #tree>
+      <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:8px;">📂 역할 트리</div>
+      <div v-if="!cfFormAllowedRootCode" style="padding:10px;font-size:11px;color:#dc2626;background:#fef2f2;border-radius:6px;">
+        선택한 업체의 업체유형이 없어 역할을 선택할 수 없습니다.
       </div>
-      좌측에서 역할을 선택하세요
-    </div>
-    <!-- ===== ■.■. 테이블 =================================================== -->
-    <table v-else style="width:100%;border-collapse:collapse;font-size:12px;">
-      <thead>
-        <tr style="background:#f9fafb;">
-          <th style="text-align:left;padding:8px 12px;font-weight:700;color:#6b7280;border-bottom:1px solid #e5e7eb;">
-            메뉴
-          </th>
-          <th style="text-align:center;padding:8px 12px;font-weight:700;color:#6b7280;border-bottom:1px solid #e5e7eb;width:80px;">
-            권한
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(m,i) in cfModalMenuList" :key="m.menuId" :style="{background:i%2===0?'#fff':'#fafbfc'}">
-          <td :style="{padding:'6px 12px 6px '+(12+m._depth*16)+'px',fontWeight:m.menuType==='폴더'?700:400,borderBottom:'1px solid #f3f4f6'}">
-            <span v-if="m.menuType==='폴더'" style="color:#f59e0b;margin-right:4px;">
-              📁
-            </span>
-            <span v-else style="color:#9ca3af;margin-right:4px;font-size:10px;">
-              ·
-            </span>
-            {{ m.menuNm }}
-          </td>
-          <td style="text-align:center;padding:6px 12px;border-bottom:1px solid #f3f4f6;">
-            <span v-if="m._perm!=='없음'" :style="{background:fnPermBadgeColor(m._perm),color:'#fff',fontSize:'10px',padding:'2px 8px',borderRadius:'9px',fontWeight:700}">
-              {{ m._perm }}
-            </span>
-            <span v-else style="color:#d1d5db;font-size:11px;">
-              —
-            </span>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </template>
-  <!-- ===== □.□. 테이블 =================================================== -->
-  <!-- ===== □. 영역 ====================================================== -->
-  <!-- ===== ■. 영역 ====================================================== -->
-  <template #footer-extra>
-    <span style="font-size:11px;color:#6b7280;">
-      <span v-if="uiState.roleModalTemp">
-        선택:
-        <b style="color:#2563eb;">
-          {{ roleNmByCode(uiState.roleModalTemp) }}
-        </b>
+      <template v-for="root in cfFormRoleTree" :key="root.roleId">
+        <div :style="{padding:'7px 8px',fontWeight:700,fontSize:'12.5px',display:'flex',alignItems:'center',gap:'6px',cursor:'pointer',borderRadius:'6px',marginBottom:'2px',
+          color:root.roleCode===cfFormAllowedRootCode?'#1e40af':'#cbd5e1'}"
+          @click="handleSelectAction('roleModal-treeToggle', root.roleId)"
+          @mouseover="onRoleRootHover(root, $event)"
+          @mouseout="$event.currentTarget.style.background='transparent'">
+          <span style="width:12px;font-size:10px;color:#9ca3af;">{{ roleTreeExpanded.has(root.roleId)?'▾':'▸' }}</span>
+          <span>📁 {{ root.roleNm }}</span>
+        </div>
+        <div v-if="roleTreeExpanded.has(root.roleId)" style="padding-left:14px;margin-bottom:6px;">
+          <div v-for="ch in root.children" :key="ch.roleId"
+            @click="handleSelectAction('roleModal-treePick', ch)"
+            :style="{padding:'7px 10px',fontSize:'12.5px',cursor:ch.allowed?'pointer':'not-allowed',
+            color:ch.allowed?(uiState.roleModalTemp===ch.roleCode?'#fff':'#374151'):'#d1d5db',
+            background:uiState.roleModalTemp===ch.roleCode?'linear-gradient(135deg,#3b82f6,#2563eb)':'transparent',
+            borderRadius:'6px',fontWeight:uiState.roleModalTemp===ch.roleCode?700:500,marginBottom:'2px',
+            display:'flex',alignItems:'center',gap:'6px',transition:'all .1s'}"
+            @mouseover="onRoleChildHover(ch, $event)"
+            @mouseout="onRoleChildLeave(ch, $event)">
+            <span style="font-size:9px;">●</span>
+            <span>{{ ch.roleNm }}</span>
+          </div>
+        </div>
+      </template>
+    </template>
+    <!-- ===== □. 영역 ====================================================== -->
+    <!-- ===== ■. 영역 ====================================================== -->
+    <template #perm>
+      <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:8px;">
+        🔐 메뉴 접근권한
+        <span v-if="cfSelectedModalRole" style="color:#2563eb;margin-left:8px;">— {{ cfSelectedModalRole.roleNm }}</span>
+      </div>
+      <div v-if="!cfSelectedModalRole" style="padding:60px 20px;text-align:center;font-size:13px;color:#9ca3af;">
+        <div style="font-size:28px;margin-bottom:8px;">👈</div>
+        좌측에서 역할을 선택하세요
+      </div>
+      <!-- ===== ■.■. 테이블 =================================================== -->
+      <table v-else style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead>
+          <tr style="background:#f9fafb;">
+            <th style="text-align:left;padding:8px 12px;font-weight:700;color:#6b7280;border-bottom:1px solid #e5e7eb;">메뉴</th>
+            <th style="text-align:center;padding:8px 12px;font-weight:700;color:#6b7280;border-bottom:1px solid #e5e7eb;width:80px;">권한</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(m,i) in cfModalMenuList" :key="m.menuId" :style="{background:i%2===0?'#fff':'#fafbfc'}">
+            <td :style="{padding:'6px 12px 6px '+(12+m._depth*16)+'px',fontWeight:m.menuType==='폴더'?700:400,borderBottom:'1px solid #f3f4f6'}">
+              <span v-if="m.menuType==='폴더'" style="color:#f59e0b;margin-right:4px;">📁</span>
+              <span v-else style="color:#9ca3af;margin-right:4px;font-size:10px;">·</span>
+              {{ m.menuNm }}
+            </td>
+            <td style="text-align:center;padding:6px 12px;border-bottom:1px solid #f3f4f6;">
+              <span v-if="m._perm!=='없음'" :style="{background:fnPermBadgeColor(m._perm),color:'#fff',fontSize:'10px',padding:'2px 8px',borderRadius:'9px',fontWeight:700}">
+                {{ m._perm }}
+              </span>
+              <span v-else style="color:#d1d5db;font-size:11px;">—</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </template>
+    <!-- ===== □.□. 테이블 =================================================== -->
+    <!-- ===== □. 영역 ====================================================== -->
+    <!-- ===== ■. 영역 ====================================================== -->
+    <template #footer-extra>
+      <span style="font-size:11px;color:#6b7280;">
+        <span v-if="uiState.roleModalTemp">선택: <b style="color:#2563eb;"> {{ roleNmByCode(uiState.roleModalTemp) }} </b></span>
+        <span v-else style="color:#9ca3af;">역할을 선택해주세요</span>
       </span>
-      <span v-else style="color:#9ca3af;">
-        역할을 선택해주세요
-      </span>
-    </span>
-  </template>
+    </template>
   </bo-role-select-modal>
   <!-- ===== □. 영역 ====================================================== -->
 </bo-page>

@@ -238,9 +238,7 @@ window.StConfigMng = {
   <!-- ===== ■. 목록 영역 ================================================= -->
   <bo-container title="정산기준 목록" :count-text="'총 ' + configs.length + '건'">
     <template #toolbar-actions>
-      <button class="btn btn-primary btn-sm" @click="handleBtnAction('configs-add')">
-        + 기준 추가
-      </button>
+      <button class="btn btn-primary btn-sm" @click="handleBtnAction('configs-add')">+ 기준 추가</button>
     </template>
     <bo-grid bare
       :columns="columns.baseGrid" :rows="configs" row-key="settleConfigId" :selected-key="uiState.selectedId"
@@ -251,12 +249,8 @@ window.StConfigMng = {
       </template>
       <template #row-actions="{ row: c }">
         <div class="actions">
-          <button class="btn btn-xs btn-blue" @click="handleSelectAction('configs-rowEdit', c)">
-            수정
-          </button>
-          <button class="btn btn-xs btn-danger"  @click="handleSelectAction('configs-rowDelete', c)">
-            삭제
-          </button>
+          <button class="btn btn-xs btn-blue" @click="handleSelectAction('configs-rowEdit', c)">수정</button>
+          <button class="btn btn-xs btn-danger"  @click="handleSelectAction('configs-rowDelete', c)">삭제</button>
         </div>
       </template>
     </bo-grid>
@@ -264,14 +258,14 @@ window.StConfigMng = {
   <!-- ===== ■. 상세 패널 (항상 표시 — 미선택 시 안내, 선택/신규 시 폼) ============== -->
   <bo-container card-style="margin-top:12px"
     :title="!uiState.selectedId ? '정산기준 상세' : (uiState.isNew ? '정산기준 추가' : '정산기준 수정')">
-      <!-- ===== ■.■. 미선택 안내 (영역은 항상 표시) ================================= -->
-      <div v-if="!uiState.selectedId" style="text-align:center;color:#bbb;font-size:13px;padding:32px 16px;">
-        목록에서 정산기준 행을 선택하거나 [+신규]를 누르면 입력할 수 있습니다.
-      </div>
-      <!-- ===== ■.■. 상세 입력폼 (행 선택 / 신규 시) ============================= -->
-      <bo-form-area v-else :columns="columns.baseForm" :form="form" :errors="errors"
-        :cols="3"
-        @save="handleBtnAction('form-save')" @cancel="handleBtnAction('form-cancel')" />
+    <!-- ===== ■.■. 미선택 안내 (영역은 항상 표시) ================================= -->
+    <div v-if="!uiState.selectedId" style="text-align:center;color:#bbb;font-size:13px;padding:32px 16px;">
+      목록에서 정산기준 행을 선택하거나 [+신규]를 누르면 입력할 수 있습니다.
+    </div>
+    <!-- ===== ■.■. 상세 입력폼 (행 선택 / 신규 시) ============================= -->
+    <bo-form-area v-else :columns="columns.baseForm" :form="form" :errors="errors"
+      :cols="3"
+      @save="handleBtnAction('form-save')" @cancel="handleBtnAction('form-cancel')" />
   </bo-container>
 </bo-page>
 `,

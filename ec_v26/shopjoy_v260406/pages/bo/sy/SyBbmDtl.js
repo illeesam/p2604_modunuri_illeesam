@@ -218,12 +218,12 @@ window.SyBbmDtl = {
 <bo-container :title="!active ? '게시판 상세' : (cfIsNew ? '게시판 등록' : (cfDtlMode ? '게시판 상세' : '게시판 수정'))"
   :title-id="!active ? '' : (cfIsNew ? '' : form.bbmId)">
   <!-- ===== ■.■. 폼 영역 ================================================== -->
-    <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
-      :readonly="cfDtlMode" :cols="3" compact :show-actions="active"
-      @save="handleBtnAction('form-save')"
-      @cancel="handleBtnAction('form-cancel')"
-      @edit="handleBtnAction('form-edit')"
-      @close="handleBtnAction('form-close')" />
+  <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
+    :readonly="cfDtlMode" :cols="3" compact :show-actions="active"
+    @save="handleBtnAction('form-save')"
+    @cancel="handleBtnAction('form-cancel')"
+    @edit="handleBtnAction('form-edit')"
+    @close="handleBtnAction('form-close')" />
   <!-- ===== □.□. 폼 영역 ================================================== -->
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 표시경로 선택 모달 ============================================== -->

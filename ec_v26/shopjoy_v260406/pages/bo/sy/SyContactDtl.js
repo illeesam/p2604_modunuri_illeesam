@@ -259,133 +259,97 @@ window.SyContactDtl = {
   <bo-tab-bar :tabs="tabs" :tab="tab" :tab-mode="tabMode2"
     @tab-select="id => handleSelectAction('tabs-select', id)"
     @mode-select="m => handleSelectAction('tabMode-select', m)" />
-<div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
-  <!-- ===== ■.■.■. 문의 내용 탭 (BoFormArea 자동 렌더) ========================== -->
-  <div class="dtl-pane" v-show="showTab('content')" style="margin:0;">
-    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
-      📋 문의 내용
-    </div>
-    <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
-    <bo-form-area :columns="columns.contentForm" :form="form" :errors="errors"
+  <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
+    <!-- ===== ■.■.■. 문의 내용 탭 (BoFormArea 자동 렌더) ========================== -->
+    <div class="dtl-pane" v-show="showTab('content')" style="margin:0;">
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 문의 내용</div>
+      <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
+      <bo-form-area :columns="columns.contentForm" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
-      <!-- ===== ■.■.■.■.■. 회원ID + 보기 버튼 ==================================== -->
-      <template #memberId>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <input class="form-control" v-model="form.memberId" placeholder="회원 ID" @change="handleSelectAction('form-memberIdChange')" :readonly="cfDtlMode" style="flex:1;min-width:0;" />
-          <span v-if="form.memberNm" style="white-space:nowrap;font-size:13px;color:#1a1a2e;font-weight:600;">
-            {{ form.memberNm }}
-          </span>
-          <span v-if="form.memberId" class="ref-link" @click="handleBtnAction('member-ref')" style="white-space:nowrap;">
-            보기
-          </span>
-        </div>
-      </template>
-      <!-- ===== ■.■.■.■.■. 문의 내용: Quill 또는 view 모드 HTML ==================== -->
-      <template #contactContent>
-        <div v-if="cfDtlMode" class="form-control" style="min-height:150px;line-height:1.6;" v-html="form.contactContent || '<span style=color:#bbb>-</span>'">
-        </div>
-        <base-html-editor v-else v-model="form.contactContent" height="220px" />
-        <span v-if="errors.contactContent" class="field-error">
-          {{ errors.contactContent }}
-        </span>
-      </template>
-    </bo-form-area>
-    <!-- ===== ■.■.■.■. 문의 내용 첨부 ======================================== -->
-    <div v-if="!cfIsNew" class="form-group" style="margin-top:12px;">
-      <label class="form-label">
-        첨부파일
-      </label>
-      <base-attach-grp :model-value="form.contentAttachGrpId"
-        @update:model-value="form.contentAttachGrpId = $event"
-        :ref-id="cfContentAttachRefId"
-        :show-toast="showToast"
-        grp-code="CONTACT_CONTENT_ATTACH"
-        grp-nm="문의 내용 첨부파일"
-        :max-count="5"
-        :max-size-mb="10"
-        allow-ext="jpg,jpeg,png,gif,pdf,xlsx,docx,zip" />
+        <!-- ===== ■.■.■.■.■. 회원ID + 보기 버튼 ==================================== -->
+        <template #memberId>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input class="form-control" v-model="form.memberId" placeholder="회원 ID" @change="handleSelectAction('form-memberIdChange')" :readonly="cfDtlMode" style="flex:1;min-width:0;" />
+            <span v-if="form.memberNm" style="white-space:nowrap;font-size:13px;color:#1a1a2e;font-weight:600;">{{ form.memberNm }}</span>
+            <span v-if="form.memberId" class="ref-link" @click="handleBtnAction('member-ref')" style="white-space:nowrap;">보기</span>
+          </div>
+        </template>
+        <!-- ===== ■.■.■.■.■. 문의 내용: Quill 또는 view 모드 HTML ==================== -->
+        <template #contactContent>
+          <div v-if="cfDtlMode" class="form-control" style="min-height:150px;line-height:1.6;" v-html="form.contactContent || '<span style=color:#bbb>-</span>'"></div>
+          <base-html-editor v-else v-model="form.contactContent" height="220px" />
+          <span v-if="errors.contactContent" class="field-error">{{ errors.contactContent }}</span>
+        </template>
+      </bo-form-area>
+      <!-- ===== ■.■.■.■. 문의 내용 첨부 ======================================== -->
+      <div v-if="!cfIsNew" class="form-group" style="margin-top:12px;">
+        <label class="form-label">첨부파일</label>
+        <base-attach-grp :model-value="form.contentAttachGrpId"
+          @update:model-value="form.contentAttachGrpId = $event"
+          :ref-id="cfContentAttachRefId"
+          :show-toast="showToast"
+          grp-code="CONTACT_CONTENT_ATTACH"
+          grp-nm="문의 내용 첨부파일"
+          :max-count="5"
+          :max-size-mb="10"
+          allow-ext="jpg,jpeg,png,gif,pdf,xlsx,docx,zip" />
+      </div>
+      <div class="form-actions" v-if="active">
+        <template v-if="cfDtlMode">
+          <button class="btn btn-blue" @click="handleBtnAction('form-edit')">수정</button>
+          <button class="btn btn-secondary" @click="handleBtnAction('form-close')">닫기</button>
+        </template>
+        <template v-else>
+          <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 문의 내용 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
+            저장
+          </button>
+          <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">취소</button>
+        </template>
+      </div>
     </div>
-    <div class="form-actions" v-if="active">
-      <template v-if="cfDtlMode">
-        <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
-          수정
-        </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
-          닫기
-        </button>
-      </template>
-      <template v-else>
-        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 문의 내용 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
-          저장
-        </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
-          취소
-        </button>
-      </template>
+    <!-- ===== ■.■.■. 답변 ================================================== -->
+    <div class="dtl-pane" v-show="showTab('answer')" style="margin:0;">
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">💬 답변</div>
+      <div v-if="!cfIsNew" style="margin-bottom:16px;padding:14px;background:#f9f9f9;border-radius:8px;border:1px solid #e8e8e8;">
+        <div style="font-size:12px;color:#888;margin-bottom:6px;">{{ form.categoryCd }} · {{ form.contactDate }}</div>
+        <div style="font-size:14px;font-weight:600;margin-bottom:8px;">{{ form.contactTitle }}</div>
+        <div style="font-size:13px;color:#555;white-space:pre-line;">{{ form.contactContent }}</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">
+          답변 내용
+          <span v-if="!form.contactAnswer" class="badge badge-orange" style="margin-left:4px;">미답변</span>
+        </label>
+        <div v-if="cfDtlMode" class="form-control" style="min-height:180px;line-height:1.6;" v-html="form.contactAnswer || '<span style=color:#bbb>-</span>'"></div>
+        <base-html-editor v-else v-model="form.contactAnswer" height="240px" />
+      </div>
+      <!-- ===== ■.■.■.■. 답변 첨부 ========================================== -->
+      <div v-if="!cfIsNew" class="form-group" style="margin-top:12px;">
+        <label class="form-label">첨부파일</label>
+        <base-attach-grp :model-value="form.answerAttachGrpId"
+          @update:model-value="form.answerAttachGrpId = $event"
+          :ref-id="cfAnswerAttachRefId"
+          :show-toast="showToast"
+          grp-code="CONTACT_ANSWER_ATTACH"
+          grp-nm="문의 답변 첨부파일"
+          :max-count="5"
+          :max-size-mb="10"
+          allow-ext="jpg,jpeg,png,gif,pdf,xlsx,docx,zip" />
+      </div>
+      <div class="form-actions" v-if="active">
+        <template v-if="cfDtlMode">
+          <button class="btn btn-blue" @click="handleBtnAction('form-edit')">수정</button>
+          <button class="btn btn-secondary" @click="handleBtnAction('form-close')">닫기</button>
+        </template>
+        <template v-else>
+          <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 문의 내용 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-saveAnswer')">
+            답변 저장
+          </button>
+          <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">취소</button>
+        </template>
+      </div>
     </div>
   </div>
-  <!-- ===== ■.■.■. 답변 ================================================== -->
-  <div class="dtl-pane" v-show="showTab('answer')" style="margin:0;">
-    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
-      💬 답변
-    </div>
-    <div v-if="!cfIsNew" style="margin-bottom:16px;padding:14px;background:#f9f9f9;border-radius:8px;border:1px solid #e8e8e8;">
-      <div style="font-size:12px;color:#888;margin-bottom:6px;">
-        {{ form.categoryCd }} · {{ form.contactDate }}
-      </div>
-      <div style="font-size:14px;font-weight:600;margin-bottom:8px;">
-        {{ form.contactTitle }}
-      </div>
-      <div style="font-size:13px;color:#555;white-space:pre-line;">
-        {{ form.contactContent }}
-      </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">
-        답변 내용
-        <span v-if="!form.contactAnswer" class="badge badge-orange" style="margin-left:4px;">
-          미답변
-        </span>
-      </label>
-      <div v-if="cfDtlMode" class="form-control" style="min-height:180px;line-height:1.6;" v-html="form.contactAnswer || '<span style=color:#bbb>-</span>'">
-      </div>
-      <base-html-editor v-else v-model="form.contactAnswer" height="240px" />
-    </div>
-    <!-- ===== ■.■.■.■. 답변 첨부 ========================================== -->
-    <div v-if="!cfIsNew" class="form-group" style="margin-top:12px;">
-      <label class="form-label">
-        첨부파일
-      </label>
-      <base-attach-grp :model-value="form.answerAttachGrpId"
-        @update:model-value="form.answerAttachGrpId = $event"
-        :ref-id="cfAnswerAttachRefId"
-        :show-toast="showToast"
-        grp-code="CONTACT_ANSWER_ATTACH"
-        grp-nm="문의 답변 첨부파일"
-        :max-count="5"
-        :max-size-mb="10"
-        allow-ext="jpg,jpeg,png,gif,pdf,xlsx,docx,zip" />
-    </div>
-    <div class="form-actions" v-if="active">
-      <template v-if="cfDtlMode">
-        <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
-          수정
-        </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
-          닫기
-        </button>
-      </template>
-      <template v-else>
-        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 문의 내용 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-saveAnswer')">
-          답변 저장
-        </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
-          취소
-        </button>
-      </template>
-    </div>
-  </div>
-</div>
 </bo-container>
 <!-- ===== □.□. 폼 영역 ================================================== -->
 <!-- ===== □. 카드 영역 =================================================== -->

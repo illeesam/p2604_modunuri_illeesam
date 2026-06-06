@@ -470,9 +470,7 @@ window.PmCouponDtl = {
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
     <!-- ===== ■.■. 기본정보 탭 (BoFormArea 자동 렌더) ============================= -->
     <div class="card" v-show="showTab('info')" style="margin:0;">
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
-        📋 기본정보
-      </div>
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="columns.infoForm" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
@@ -484,12 +482,8 @@ window.PmCouponDtl = {
         <template #vendor>
           <div style="display:flex;gap:8px;align-items:center;">
             <div class="form-control" :style="'background:#f9f9f9;padding:0;display:flex;align-items:center;cursor:' + (cfDtlMode ? 'default' : 'pointer')" @click="cfDtlMode ? null : handleBtnAction('vendorModal-open')">
-              <span style="padding:4px 10px;flex:1;">
-                {{ cfSelectedVendorNm }}
-              </span>
-              <span style="padding:4px 10px;color:#999;font-size:12px;">
-                ▼
-              </span>
+              <span style="padding:4px 10px;flex:1;">{{ cfSelectedVendorNm }}</span>
+              <span style="padding:4px 10px;color:#999;font-size:12px;">▼</span>
             </div>
             <button v-if="coUtil.cofAnd(form.vendorId, !cfDtlMode)" type="button" title="선택 해제" @click="handleBtnAction('form-vendorClear')"
               style="background:none;border:none;padding:0 2px 2px;margin-left:-4px;color:#999;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0;align-self:flex-end;">
@@ -504,9 +498,7 @@ window.PmCouponDtl = {
     <!-- ===== □.□. 기본정보 탭 (BoFormArea 자동 렌더) ============================= -->
     <!-- ===== ■.■. 미리보기 ================================================== -->
     <div class="card" v-show="showTab('preview')" style="margin:0;">
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
-        👁 미리보기
-      </div>
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">👁 미리보기</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:20px;">
         <!-- ===== ■.■.■.■. 좌측 컬럼 ============================================= -->
         <div style="display:flex;flex-direction:column;gap:16px;">
@@ -522,21 +514,13 @@ window.PmCouponDtl = {
               📊 바코드
             </div>
             <div style="text-align:center;font-size:10px;color:#666;line-height:1.5;width:100%;position:relative;z-index:1;">
-              <div style="font-weight:600;margin-bottom:4px;color:#222;">
-                {{ form.couponNm }}
-              </div>
-              <div style="font-size:9px;">
-                🏷️ {{ form.couponCd || 'SAMPLE' }}
-              </div>
+              <div style="font-weight:600;margin-bottom:4px;color:#222;">{{ form.couponNm }}</div>
+              <div style="font-size:9px;">🏷️ {{ form.couponCd || 'SAMPLE' }}</div>
               <div style="font-weight:600;color:#e8587a;margin:4px 0;">
                 {{ form.discountType==='amount' ? (form.discountVal||0).toLocaleString()+'원' : (form.discountVal||0)+'%' }}
               </div>
-              <div style="font-size:9px;color:#999;">
-                📅 {{ form.validFrom }} ~ {{ form.validTo }}
-              </div>
-              <div style="font-size:9px;color:#999;">
-                💳 최소주문: {{ (form.minOrderAmt||0).toLocaleString() }}원
-              </div>
+              <div style="font-size:9px;color:#999;">📅 {{ form.validFrom }} ~ {{ form.validTo }}</div>
+              <div style="font-size:9px;color:#999;">💳 최소주문: {{ (form.minOrderAmt||0).toLocaleString() }}원</div>
             </div>
             <div ref="barcodeContainer" style="display:flex;align-items:center;justify-content:center;background:#fff;padding:8px;border:1px solid #ddd;border-radius:4px;width:100%;position:relative;z-index:1;">
               <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:45px;font-weight:900;color:#e8587a;opacity:0.05;pointer-events:none;white-space:nowrap;letter-spacing:3px;">
@@ -556,24 +540,14 @@ window.PmCouponDtl = {
               <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:40px;font-weight:900;color:#e8587a;opacity:0.05;pointer-events:none;white-space:nowrap;letter-spacing:3px;">
                 ShopJoy
               </div>
-              <div style="font-weight:600;margin-bottom:6px;">
-                🎁 {{ form.couponNm }}
-              </div>
-              <div style="color:#666;margin:3px 0;">
-                쿠폰번호: {{ form.couponCd || 'SAMPLE' }}
-              </div>
+              <div style="font-weight:600;margin-bottom:6px;">🎁 {{ form.couponNm }}</div>
+              <div style="color:#666;margin:3px 0;">쿠폰번호: {{ form.couponCd || 'SAMPLE' }}</div>
               <div style="color:#666;margin:3px 0;">
                 할인: {{ form.discountType==='amount' ? (form.discountVal||0).toLocaleString()+'원' : (form.discountVal||0)+'%' }}
               </div>
-              <div style="color:#666;margin:3px 0;">
-                유효기간: {{ form.validFrom }} ~ {{ form.validTo }}
-              </div>
-              <div style="color:#666;margin:3px 0;">
-                최소주문: {{ (form.minOrderAmt||0).toLocaleString() }}원
-              </div>
-              <div style="color:#999;font-size:9px;margin-top:6px;">
-                ShopJoy에서 확인하기 &gt;
-              </div>
+              <div style="color:#666;margin:3px 0;">유효기간: {{ form.validFrom }} ~ {{ form.validTo }}</div>
+              <div style="color:#666;margin:3px 0;">최소주문: {{ (form.minOrderAmt||0).toLocaleString() }}원</div>
+              <div style="color:#999;font-size:9px;margin-top:6px;">ShopJoy에서 확인하기 &gt;</div>
             </div>
           </div>
           <!-- ===== ■.■.■.■.■. 이메일 내용 ========================================== -->
@@ -585,53 +559,29 @@ window.PmCouponDtl = {
               <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-25deg);font-size:70px;font-weight:900;color:#e8587a;opacity:0.07;pointer-events:none;white-space:nowrap;letter-spacing:6px;">
                 ShopJoy
               </div>
-              <div style="position:absolute;top:-10px;right:-10px;font-size:50px;opacity:0.03;transform:rotate(20deg);">
-                📧
-              </div>
+              <div style="position:absolute;top:-10px;right:-10px;font-size:50px;opacity:0.03;transform:rotate(20deg);">📧</div>
               <div style="background:linear-gradient(135deg, #e8587a 0%, #ff7a9a 100%);color:#fff;padding:8px;border-radius:4px;margin:-12px -12px 8px -12px;text-align:center;position:relative;z-index:1;">
-                <div style="font-weight:600;font-size:10px;">
-                  🛍️ ShopJoy 쿠폰 알림
-                </div>
+                <div style="font-weight:600;font-size:10px;">🛍️ ShopJoy 쿠폰 알림</div>
               </div>
               <div style="position:relative;z-index:1;">
                 <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:40px;font-weight:900;color:#e8587a;opacity:0.05;pointer-events:none;white-space:nowrap;letter-spacing:3px;">
                   ShopJoy
                 </div>
-                <div style="font-weight:600;margin-bottom:8px;">
-                  제목: {{ form.couponNm }}
-                </div>
-                <div style="color:#666;margin:4px 0;">
-                  보낸 사람: ShopJoy (noreply@shopjoy.com)
-                </div>
-                <div style="color:#666;margin:6px 0;">
-                  안녕하세요, 송지선 회원님!
-                </div>
-                <div style="color:#666;margin:6px 0;">
-                  ShopJoy에서 특별한 쿠폰을 준비했습니다.
-                </div>
+                <div style="font-weight:600;margin-bottom:8px;">제목: {{ form.couponNm }}</div>
+                <div style="color:#666;margin:4px 0;">보낸 사람: ShopJoy (noreply@shopjoy.com)</div>
+                <div style="color:#666;margin:6px 0;">안녕하세요, 송지선 회원님!</div>
+                <div style="color:#666;margin:6px 0;">ShopJoy에서 특별한 쿠폰을 준비했습니다.</div>
                 <div style="background:#fff;padding:8px;border:2px solid #e8587a;border-radius:4px;margin:8px 0;">
-                  <div style="font-weight:600;color:#e8587a;margin-bottom:4px;">
-                    🎁 {{ form.couponNm }}
-                  </div>
-                  <div style="color:#666;font-size:8px;margin:3px 0;">
-                    쿠폰번호: {{ form.couponCd || 'SAMPLE' }}
-                  </div>
+                  <div style="font-weight:600;color:#e8587a;margin-bottom:4px;">🎁 {{ form.couponNm }}</div>
+                  <div style="color:#666;font-size:8px;margin:3px 0;">쿠폰번호: {{ form.couponCd || 'SAMPLE' }}</div>
                   <div style="color:#666;font-size:8px;margin:3px 0;">
                     할인: {{ form.discountType==='amount' ? (form.discountVal||0).toLocaleString()+'원' : (form.discountVal||0)+'%' }}
                   </div>
-                  <div style="color:#666;font-size:8px;margin:3px 0;">
-                    유효기간: {{ form.validFrom }} ~ {{ form.validTo }}
-                  </div>
-                  <div style="color:#666;font-size:8px;margin:3px 0;">
-                    최소주문: {{ (form.minOrderAmt||0).toLocaleString() }}원
-                  </div>
-                  <div style="color:#666;font-size:8px;margin:3px 0;">
-                    쿠폰타입: {{ form.couponTypeCd }}
-                  </div>
+                  <div style="color:#666;font-size:8px;margin:3px 0;">유효기간: {{ form.validFrom }} ~ {{ form.validTo }}</div>
+                  <div style="color:#666;font-size:8px;margin:3px 0;">최소주문: {{ (form.minOrderAmt||0).toLocaleString() }}원</div>
+                  <div style="color:#666;font-size:8px;margin:3px 0;">쿠폰타입: {{ form.couponTypeCd }}</div>
                 </div>
-                <div style="color:#666;margin:6px 0;">
-                  지금 바로 ShopJoy에서 확인하세요!
-                </div>
+                <div style="color:#666;margin:6px 0;">지금 바로 ShopJoy에서 확인하세요!</div>
                 <div style="color:#999;font-size:8px;margin-top:8px;text-align:center;padding-top:8px;border-top:1px solid #e8e8e8;">
                   © 2026 ShopJoy | 문의: 010-1234-5678 | demo@mail.com
                 </div>
@@ -643,25 +593,17 @@ window.PmCouponDtl = {
         <div style="display:flex;flex-direction:column;gap:16px;">
           <!-- ===== ■.■.■.■.■. QR코드 ============================================ -->
           <div style="border:1px solid #e8e8e8;border-radius:8px;padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px;position:relative;background:linear-gradient(135deg, #fff 0%, rgba(232,88,122,0.01) 100%);">
-            <div style="position:absolute;bottom:-15px;left:-15px;font-size:50px;opacity:0.05;transform:rotate(-20deg);">
-              📱
-            </div>
+            <div style="position:absolute;bottom:-15px;left:-15px;font-size:50px;opacity:0.05;transform:rotate(-20deg);">📱</div>
             <div style="font-size:12px;font-weight:600;color:#333;background:#f5f5f5;padding:8px;border-radius:4px;width:100%;text-align:center;position:relative;z-index:1;">
               📱 QR코드
             </div>
             <div style="text-align:center;font-size:10px;color:#666;line-height:1.5;width:100%;position:relative;z-index:1;">
-              <div style="font-weight:600;margin-bottom:4px;color:#222;">
-                {{ form.couponNm }}
-              </div>
+              <div style="font-weight:600;margin-bottom:4px;color:#222;">{{ form.couponNm }}</div>
               <div style="font-family:monospace;font-size:9px;background:#f5f5f5;padding:4px;border-radius:3px;margin:4px 0;">
                 {{ form.couponCd || '---' }}
               </div>
-              <div style="font-size:9px;">
-                🏷️ {{ form.couponTypeCd }}
-              </div>
-              <div style="font-size:9px;color:#999;">
-                ⏱️ {{ form.useLimit }}
-              </div>
+              <div style="font-size:9px;">🏷️ {{ form.couponTypeCd }}</div>
+              <div style="font-size:9px;color:#999;">⏱️ {{ form.useLimit }}</div>
             </div>
             <div ref="qrcodeContainer" style="display:flex;align-items:center;justify-content:center;background:#fff;padding:8px;border:2px solid #e8587a;border-radius:4px;position:relative;z-index:1;">
               <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:40px;font-weight:900;color:#e8587a;opacity:0.05;pointer-events:none;white-space:nowrap;letter-spacing:3px;">
@@ -682,23 +624,15 @@ window.PmCouponDtl = {
                 COUPON
               </div>
               <div>
-                <div style="font-size:9px;color:#999;">
-                  🛍️ ShopJoy
-                </div>
-                <div style="font-size:11px;font-weight:700;color:#e8587a;margin:2px 0;">
-                  {{ form.couponNm }}
-                </div>
+                <div style="font-size:9px;color:#999;">🛍️ ShopJoy</div>
+                <div style="font-size:11px;font-weight:700;color:#e8587a;margin:2px 0;">{{ form.couponNm }}</div>
               </div>
               <div style="text-align:center;background:rgba(255,255,255,0.5);padding:4px;border-radius:4px;">
                 <div style="font-size:13px;color:#333;font-weight:700;">
                   {{ form.discountType==='amount' ? (form.discountVal||0).toLocaleString()+'원' : (form.discountVal||0)+'%' }}
                 </div>
-                <div style="font-size:8px;color:#666;">
-                  {{ form.validFrom }} ~ {{ form.validTo }}
-                </div>
-                <div style="font-size:7px;color:#999;margin-top:2px;">
-                  쿠폰번호: {{ form.couponCd || 'SAMPLE' }}
-                </div>
+                <div style="font-size:8px;color:#666;">{{ form.validFrom }} ~ {{ form.validTo }}</div>
+                <div style="font-size:7px;color:#999;margin-top:2px;">쿠폰번호: {{ form.couponCd || 'SAMPLE' }}</div>
               </div>
               <div style="display:flex;gap:6px;font-size:7px;color:#999;">
                 <div style="flex:1;height:20px;background:#fff;border:1px solid #ddd;border-radius:2px;display:flex;align-items:center;justify-content:center;">
@@ -716,18 +650,12 @@ window.PmCouponDtl = {
     <!-- ===== □.□. 미리보기 ================================================== -->
     <!-- ===== ■.■. 상세정보 ================================================== -->
     <div class="card" v-show="showTab('detail')" style="margin:0;">
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
-        📋 상세정보
-      </div>
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 상세정보</div>
       <!-- ===== ■.■.■. 발급대상 ================================================ -->
       <div style="margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid #e8e8e8;">
-        <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:16px;">
-          🎁 발급대상
-        </h3>
+        <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:16px;">🎁 발급대상</h3>
         <div class="form-group">
-          <label class="form-label">
-            발급 대상 종류
-          </label>
+          <label class="form-label">발급 대상 종류</label>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <label v-for="t in codes.issue_targets" :key="Math.random()" style="display:flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid #ddd;border-radius:6px;background:form.targetTypeCd===t?'#e3f2fd':'#fff';">
               <input type="radio" :value="t" v-model="form.targetTypeCd" />
@@ -738,55 +666,37 @@ window.PmCouponDtl = {
         <div style="margin-top:16px;padding:12px;background:#f9f9f9;border-radius:6px;border:1px solid #e0e0e0;">
           <div style="font-size:12px;font-weight:700;color:#666;margin-bottom:8px;">
             선택된 대상:
-            <span style="color:#e8587a;">
-              {{ form.targetTypeCd }}
-            </span>
+            <span style="color:#e8587a;">{{ form.targetTypeCd }}</span>
           </div>
           <div style="font-size:13px;color:#888;">
-            <template v-if="form.targetTypeCd==='상품'">
-              선택한 상품에만 쿠폰을 발급합니다. 상품 추가 버튼으로 대상 상품을 선택하세요.
-            </template>
-            <template v-else-if="form.targetTypeCd==='판매업체'">
-              선택한 판매업체의 상품에만 적용되는 쿠폰입니다.
-            </template>
-            <template v-else-if="form.targetTypeCd==='브랜드'">
-              선택한 브랜드의 상품에만 적용되는 쿠폰입니다.
-            </template>
-            <template v-else-if="form.targetTypeCd==='카테고리'">
-              선택한 카테고리의 상품에만 적용되는 쿠폰입니다.
-            </template>
+            <template v-if="form.targetTypeCd==='상품'">선택한 상품에만 쿠폰을 발급합니다. 상품 추가 버튼으로 대상 상품을 선택하세요.</template>
+            <template v-else-if="form.targetTypeCd==='판매업체'">선택한 판매업체의 상품에만 적용되는 쿠폰입니다.</template>
+            <template v-else-if="form.targetTypeCd==='브랜드'">선택한 브랜드의 상품에만 적용되는 쿠폰입니다.</template>
+            <template v-else-if="form.targetTypeCd==='카테고리'">선택한 카테고리의 상품에만 적용되는 쿠폰입니다.</template>
           </div>
         </div>
       </div>
       <!-- ===== ■.■.■. 지급방법/조건 (BoFormArea 자동 렌더) ========================== -->
       <div style="margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid #e8e8e8;">
-        <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:16px;">
-          📤 지급방법/조건
-        </h3>
+        <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:16px;">📤 지급방법/조건</h3>
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
         <bo-form-area :columns="columns.detailIssueForm" :form="form" :errors="errors"
           :readonly="cfDtlMode" :cols="3" compact :show-actions="false" />
         <!-- ===== ■.■.■.■. 적용 회원 등급 (체크박스 그룹, KEEP) ========================== -->
         <div class="form-group" style="margin-top:12px;">
-          <label class="form-label">
-            적용 회원 등급
-          </label>
+          <label class="form-label">적용 회원 등급</label>
           <div style="display:flex;flex-wrap:wrap;gap:6px;">
             <label v-for="g in ['전체', '일반', '실버', '골드', 'VIP']" :key="Math.random()" style="display:flex;align-items:center;gap:4px;padding:4px 10px;border:1px solid #ddd;border-radius:14px;">
               <input type="checkbox" :value="g" v-model="form.issueGrades" />
               {{ g }}
             </label>
           </div>
-          <span v-if="form.issueGrades.length===0" style="font-size:12px;color:#aaa;">
-            선택하지 않으면 전체 등급에 적용
-          </span>
+          <span v-if="form.issueGrades.length===0" style="font-size:12px;color:#aaa;">선택하지 않으면 전체 등급에 적용</span>
         </div>
       </div>
       <!-- ===== ■.■.■. 사용방법 (BoFormArea 자동 렌더) ============================= -->
       <div>
-        <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:16px;">
-          🔍 사용방법
-        </h3>
+        <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:16px;">🔍 사용방법</h3>
         <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
         <bo-form-area :columns="columns.detailUseForm" :form="form" :errors="errors"
           :readonly="cfDtlMode" :cols="3" compact :show-actions="false" />
@@ -795,34 +705,18 @@ window.PmCouponDtl = {
     <!-- ===== □.□. 상세정보 ================================================== -->
     <!-- ===== ■.■. 발급목록 ================================================== -->
     <div class="card" v-show="showTab('issued')" style="margin:0;">
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
-        📊 발급목록
-        <span class="tab-count">
-          {{ cfIssuedList.length }}
-        </span>
-      </div>
-      <div v-if="cfIssuedList.length === 0" style="text-align:center;color:#aaa;padding:30px;font-size:13px;">
-        발급된 쿠폰이 없습니다.
-      </div>
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📊 발급목록 <span class="tab-count"> {{ cfIssuedList.length }} </span></div>
+      <div v-if="cfIssuedList.length === 0" style="text-align:center;color:#aaa;padding:30px;font-size:13px;">발급된 쿠폰이 없습니다.</div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid v-else bare :columns="columns.issuedGrid" :rows="cfIssuedTop">
-      </bo-grid>
+      <bo-grid v-else bare :columns="columns.issuedGrid" :rows="cfIssuedTop"></bo-grid>
     </div>
     <!-- ===== □.□. 발급목록 ================================================== -->
     <!-- ===== ■.■. 사용목록 ================================================== -->
     <div class="card" v-show="showTab('used')" style="margin:0;">
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
-        ✅ 사용목록
-        <span class="tab-count">
-          {{ cfUsedList.length }}
-        </span>
-      </div>
-      <div v-if="cfUsedList.length === 0" style="text-align:center;color:#aaa;padding:30px;font-size:13px;">
-        사용된 쿠폰이 없습니다.
-      </div>
+      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">✅ 사용목록 <span class="tab-count"> {{ cfUsedList.length }} </span></div>
+      <div v-if="cfUsedList.length === 0" style="text-align:center;color:#aaa;padding:30px;font-size:13px;">사용된 쿠폰이 없습니다.</div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid v-else bare :columns="columns.usedGrid" :rows="cfUsedTop">
-      </bo-grid>
+      <bo-grid v-else bare :columns="columns.usedGrid" :rows="cfUsedTop"></bo-grid>
     </div>
   </div>
   <!-- ===== □.□. 사용목록 ================================================== -->
@@ -830,21 +724,15 @@ window.PmCouponDtl = {
   <!-- ===== ■. 본문 영역 =================================================== -->
   <!-- 보기모드: [수정][닫기] -->
   <div class="form-actions" v-if="coUtil.cofAnd(active, cfDtlMode)">
-    <button class="btn btn-blue" @click="handleBtnAction('form-edit')" style="min-width:120px;">
-      수정
-    </button>
-    <button class="btn btn-secondary" @click="handleBtnAction('form-close')" style="min-width:120px;">
-      닫기
-    </button>
+    <button class="btn btn-blue" @click="handleBtnAction('form-edit')" style="min-width:120px;">수정</button>
+    <button class="btn btn-secondary" @click="handleBtnAction('form-close')" style="min-width:120px;">닫기</button>
   </div>
   <!-- 수정모드: [저장][취소] -->
   <div v-if="coUtil.cofAnd(active, !cfDtlMode)" style="margin-top:16px;text-align:center;gap:8px;display:flex;justify-content:center;">
     <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요. (발급/사용/미리보기 탭은 조회 전용)' : ''" @click="handleBtnAction('form-save')" style="min-width:120px;">
       저장
     </button>
-    <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')" style="min-width:120px;">
-      취소
-    </button>
+    <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')" style="min-width:120px;">취소</button>
   </div>
 </bo-container>
 <!-- ===== □. 본문 영역 =================================================== -->

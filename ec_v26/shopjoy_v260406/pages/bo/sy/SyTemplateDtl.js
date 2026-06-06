@@ -219,8 +219,7 @@ window.SyTemplateDtl = {
     <!-- ===== ■.■.■. 내용 (Quill 에디터 또는 textarea, view 모드는 HTML) =========== -->
     <template #content>
       <template v-if="cfUseHtmlEditor">
-        <div v-if="cfDtlMode" class="form-control" style="height:260px;line-height:1.6;overflow:auto;" v-html="form.templateContent || '<span style=color:#bbb>-</span>'">
-        </div>
+        <div v-if="cfDtlMode" class="form-control" style="height:260px;line-height:1.6;overflow:auto;" v-html="form.templateContent || '<span style=color:#bbb>-</span>'"></div>
         <base-html-editor v-else v-model="form.templateContent" height="320px" />
       </template>
       <textarea v-else class="form-control" v-model="form.templateContent"
@@ -228,44 +227,32 @@ window.SyTemplateDtl = {
         placeholder="템플릿 내용 입력"
         :readonly="cfDtlMode"
         :class="errors.templateContent ? 'is-invalid' : ''"></textarea>
-        <span v-if="errors.templateContent" class="field-error">
-          {{ errors.templateContent }}
-        </span>
-      </template>
-    </bo-form-area>
-    <!-- ===== □.□. 폼 영역 ================================================== -->
-    <!-- ===== ■.■. 폼 액션 버튼 (미리보기/발송하기 포함 커스텀) ============================ -->
-    <div class="form-actions" v-if="active && cfDtlMode">
-      <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
-        수정
-      </button>
-      <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
-        닫기
-      </button>
-    </div>
-    <div class="form-actions" v-if="active && !cfDtlMode">
-      <button class="btn btn-secondary" @click="handleBtnAction('previewModal-open')">
-        📄 미리보기
-      </button>
-      <button class="btn btn-primary" style="background:#52c41a;border-color:#52c41a;" @click="handleBtnAction('sendModal-open')">
-        📨 발송하기
-      </button>
-      <button class="btn btn-primary" @click="handleBtnAction('form-save')">
-        저장
-      </button>
-      <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
-        취소
-      </button>
-    </div>
+      <span v-if="errors.templateContent" class="field-error">{{ errors.templateContent }}</span>
+    </template>
+  </bo-form-area>
+  <!-- ===== □.□. 폼 영역 ================================================== -->
+  <!-- ===== ■.■. 폼 액션 버튼 (미리보기/발송하기 포함 커스텀) ============================ -->
+  <div class="form-actions" v-if="active && cfDtlMode">
+    <button class="btn btn-blue" @click="handleBtnAction('form-edit')">수정</button>
+    <button class="btn btn-secondary" @click="handleBtnAction('form-close')">닫기</button>
+  </div>
+  <div class="form-actions" v-if="active && !cfDtlMode">
+    <button class="btn btn-secondary" @click="handleBtnAction('previewModal-open')">📄 미리보기</button>
+    <button class="btn btn-primary" style="background:#52c41a;border-color:#52c41a;" @click="handleBtnAction('sendModal-open')">
+      📨 발송하기
+    </button>
+    <button class="btn btn-primary" @click="handleBtnAction('form-save')">저장</button>
+    <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">취소</button>
+  </div>
   <!-- ===== □.□. 폼 액션 버튼 (미리보기/발송하기 포함 커스텀) ============================ -->
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 미리보기 모달 ================================================= -->
   <template-preview-modal v-if="uiState.previewOpen"
-  :tmpl="form" :sample-params="form.sampleParams" modal-name="template-preview" :on-callback="fnCallbackModal" />
+    :tmpl="form" :sample-params="form.sampleParams" modal-name="template-preview" :on-callback="fnCallbackModal" />
   <!-- ===== □. 미리보기 모달 ================================================= -->
   <!-- ===== ■. 발송하기 모달 ================================================= -->
   <template-send-modal v-if="uiState.sendOpen"
-  :tmpl="form" :show-toast="showToast" :show-confirm="showConfirm" modal-name="template-send" :on-callback="fnCallbackModal" />
+    :tmpl="form" :show-toast="showToast" :show-confirm="showConfirm" modal-name="template-send" :on-callback="fnCallbackModal" />
   <!-- ===== □. 발송하기 모달 ================================================= -->
 </bo-container>
 `,

@@ -166,26 +166,26 @@ window.SyBatchDtl = {
 <bo-container :title="cfIsNew ? '배치 등록' : (cfDtlMode ? '배치 상세' : '배치 수정')"
   :title-id="cfIsNew ? '' : form.batchId">
   <!-- ===== ■. 폼 영역 (BoFormArea 자동 렌더) ================================= -->
-    <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
-      :readonly="cfDtlMode" :cols="3" compact
-      @save="handleBtnAction('form-save')"
-      @cancel="handleBtnAction('form-cancel')"
-      @edit="handleBtnAction('form-edit')"
-      @close="handleBtnAction('form-close')">
-      <!-- ===== ■.■.■. Cron 프리셋 버튼 그룹 (편집 모드에서만 노출) =================== -->
-      <template #cronPreset>
-        <div style="padding:10px 12px;background:#f8f9fa;border-radius:6px;">
-          <div style="display:flex;flex-wrap:wrap;gap:6px;">
-            <button v-for="p in CRON_PRESETS" :key="p.value"
-              class="btn btn-secondary btn-sm"
-              style="font-size:11px;"
-              @click="handleBtnAction('cronPreset-apply', p.value)">
-              {{ p.label }}
-            </button>
-          </div>
+  <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
+    :readonly="cfDtlMode" :cols="3" compact
+    @save="handleBtnAction('form-save')"
+    @cancel="handleBtnAction('form-cancel')"
+    @edit="handleBtnAction('form-edit')"
+    @close="handleBtnAction('form-close')">
+    <!-- ===== ■.■.■. Cron 프리셋 버튼 그룹 (편집 모드에서만 노출) =================== -->
+    <template #cronPreset>
+      <div style="padding:10px 12px;background:#f8f9fa;border-radius:6px;">
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          <button v-for="p in CRON_PRESETS" :key="p.value"
+            class="btn btn-secondary btn-sm"
+            style="font-size:11px;"
+            @click="handleBtnAction('cronPreset-apply', p.value)">
+            {{ p.label }}
+          </button>
         </div>
-      </template>
-    </bo-form-area>
+      </div>
+    </template>
+  </bo-form-area>
   <!-- ===== □. 폼 영역 ==================================================== -->
 </bo-container>
 `,

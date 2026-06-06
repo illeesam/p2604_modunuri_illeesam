@@ -725,23 +725,15 @@ window.DpDispWidgetDtl = {
       <button @click="handleBtnAction('libPickModal-open', 'ref')"  class="btn btn-outline" style="font-size:12px;background:#f3e5f5;color:#6a1b9a;border-color:#ce93d8;">
         🔗 전시위젯Lib 참조
       </button>
-      <button @click="handleBtnAction('form-save')"   class="btn btn-primary" style="font-size:13px;">
-        저장
-      </button>
+      <button @click="handleBtnAction('form-save')"   class="btn btn-primary" style="font-size:13px;">저장</button>
       <button v-if="!cfIsNew" @click="handleBtnAction('form-delete')" class="btn btn-outline" style="font-size:13px;color:#e8587a;border-color:#e8587a;">
         삭제
       </button>
-      <button @click="handleBtnAction('form-close')" class="btn btn-outline" style="font-size:13px;">
-        닫기
-      </button>
+      <button @click="handleBtnAction('form-close')" class="btn btn-outline" style="font-size:13px;">닫기</button>
     </template>
     <template v-if="active && cfDtlMode">
-      <button @click="handleBtnAction('form-edit')" class="btn btn-blue" style="font-size:13px;">
-        수정
-      </button>
-      <button @click="handleBtnAction('form-close')" class="btn btn-outline" style="font-size:13px;">
-        닫기
-      </button>
+      <button @click="handleBtnAction('form-edit')" class="btn btn-blue" style="font-size:13px;">수정</button>
+      <button @click="handleBtnAction('form-close')" class="btn btn-outline" style="font-size:13px;">닫기</button>
     </template>
   </template>
   <!-- ===== ■.■. 위젯Lib 선택 팝업 =========================================== -->
@@ -756,9 +748,7 @@ window.DpDispWidgetDtl = {
       <div v-if="form.refLibId"
         style="background:linear-gradient(135deg,#f3e5f5 0%,#fff 100%);border:1px dashed #ce93d8;border-radius:10px;padding:12px 14px;margin-bottom:16px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-          <span style="font-size:12px;font-weight:700;color:#6a1b9a;">
-            🔗 전시위젯Lib 참조 중
-          </span>
+          <span style="font-size:12px;font-weight:700;color:#6a1b9a;">🔗 전시위젯Lib 참조 중</span>
           <button @click="handleBtnAction('form-refClear')"
             style="font-size:10px;padding:2px 8px;border:1px solid #ce93d8;background:#fff;color:#6a1b9a;border-radius:4px;">
             참조 해제
@@ -766,211 +756,166 @@ window.DpDispWidgetDtl = {
         </div>
         <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;color:#555;line-height:1.6;margin-bottom:10px;">
           <span>
-            <b style="color:#888;">
-              참조구분:
-            </b>
-            <span style="background:#f3e5f5;color:#6a1b9a;border-radius:8px;padding:1px 7px;margin-left:3px;font-weight:700;">
-              위젯Lib
-            </span>
+            <b style="color:#888;">참조구분:</b>
+            <span style="background:#f3e5f5;color:#6a1b9a;border-radius:8px;padding:1px 7px;margin-left:3px;font-weight:700;">위젯Lib</span>
           </span>
           <span v-if="form.refLibCode">
-            <b style="color:#888;">
-              참조항목Code:
-            </b>
+            <b style="color:#888;">참조항목Code:</b>
             <code style="background:#fff;color:#6a1b9a;padding:1px 6px;border-radius:3px;margin-left:3px;border:1px solid #e1bee7;">
               {{ form.refLibCode }}
             </code>
-            </span>
-            <span>
-              <b style="color:#888;">
-                참조항목ID:
-              </b>
-              <code style="background:#fff;color:#6a1b9a;padding:1px 6px;border-radius:3px;margin-left:3px;border:1px solid #e1bee7;">
+          </span>
+          <span>
+            <b style="color:#888;">참조항목ID:</b>
+            <code style="background:#fff;color:#6a1b9a;padding:1px 6px;border-radius:3px;margin-left:3px;border:1px solid #e1bee7;">
               #{{ String(form.refLibId).padStart(4,'0') }}
             </code>
-              </span>
-              <span v-if="form.refLibName">
-                <b style="color:#888;">
-                  참조명:
-                </b>
-                {{ form.refLibName }}
-              </span>
-            </div>
-            <div style="background:#fff;border:1px solid #e1bee7;border-radius:8px;padding:10px;">
-              <div style="font-size:10px;color:#888;font-weight:600;margin-bottom:6px;letter-spacing:.3px;">
-                ▸ 참조 내용 미리보기
-              </div>
-              <disp-x04-widget
+          </span>
+          <span v-if="form.refLibName"><b style="color:#888;"> 참조명: </b> {{ form.refLibName }}</span>
+        </div>
+        <div style="background:#fff;border:1px solid #e1bee7;border-radius:8px;padding:10px;">
+          <div style="font-size:10px;color:#888;font-weight:600;margin-bottom:6px;letter-spacing:.3px;">▸ 참조 내용 미리보기</div>
+          <disp-x04-widget
             :params="{ }"
             :disp-opt="{ showBadges: true }"
             :widget-item="([]||[]).find(l => l.libId===form.refLibId) || {}" />
-            </div>
-          </div>
-          <!-- ===== ■.■.■. 설정 ================================================== -->
-          <div style="margin-bottom:14px;padding:14px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;">
-            <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
-              <span style="display:inline-block;width:4px;height:16px;background:#1d4ed8;border-radius:2px;">
-              </span>
-              설정
-            </div>
-            <!-- ===== ■.■.■.■. 위젯코드/라이브러리명/상태/설명/태그 (BoFormArea 자동 렌더) =========== -->
-            <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
-            <bo-form-area :columns="columns.baseWidgetForm" :form="form" :errors="errors"
+        </div>
+      </div>
+      <!-- ===== ■.■.■. 설정 ================================================== -->
+      <div style="margin-bottom:14px;padding:14px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;">
+        <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+          <span style="display:inline-block;width:4px;height:16px;background:#1d4ed8;border-radius:2px;"></span>
+          설정
+        </div>
+        <!-- ===== ■.■.■.■. 위젯코드/라이브러리명/상태/설명/태그 (BoFormArea 자동 렌더) =========== -->
+        <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
+        <bo-form-area :columns="columns.baseWidgetForm" :form="form" :errors="errors"
           :readonly="cfDtlMode" :cols="2" compact :show-actions="false" />
-            <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin:10px 0 6px;">
-              🌍 전시환경
-            </div>
-            <div style="margin-bottom:12px;">
-              <bo-multi-check-select v-model="form.dispEnv" :options="cfDispEnvMcsOptions"
-                separator="^" wrap empty-value="^NONE^" placeholder="전체 환경" all-label="전체 환경"
-                :disabled="cfDtlMode" min-width="280px" />
-            </div>
-            <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">
-              표시경로
-              <span style="font-size:10px;font-weight:400;color:#aaa;">
-                이 위젯이 노출되는 경로
-              </span>
-            </div>
-            <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'flex-end',gap:'6px',fontFamily:'monospace'}">
-              <span style="flex:1;">
-                {{ pathLabel(form.pathId) || '경로 선택...' }}
-              </span>
-              <button v-if="form.pathId != null" type="button" title="선택 해제" @click="handleBtnAction('form-pathClear')"
+        <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin:10px 0 6px;">🌍 전시환경</div>
+        <div style="margin-bottom:12px;">
+          <bo-multi-check-select v-model="form.dispEnv" :options="cfDispEnvMcsOptions"
+            separator="^" wrap empty-value="^NONE^" placeholder="전체 환경" all-label="전체 환경"
+            :disabled="cfDtlMode" min-width="280px" />
+        </div>
+        <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">
+          표시경로
+          <span style="font-size:10px;font-weight:400;color:#aaa;">이 위젯이 노출되는 경로</span>
+        </div>
+        <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'flex-end',gap:'6px',fontFamily:'monospace'}">
+          <span style="flex:1;">{{ pathLabel(form.pathId) || '경로 선택...' }}</span>
+          <button v-if="form.pathId != null" type="button" title="선택 해제" @click="handleBtnAction('form-pathClear')"
             style="background:none;border:none;padding:0 2px 2px;color:#999;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0;">
-                x
-              </button>
-              <button type="button" @click="handleBtnAction('pathModal-open')" title="표시경로 선택"
+            x
+          </button>
+          <button type="button" @click="handleBtnAction('pathModal-open')" title="표시경로 선택"
             :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'24px',height:'24px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'12px',color:'#6b7280',padding:'0'}"
             @mouseover="$event.currentTarget.style.background='#eef2ff'"
             @mouseout="$event.currentTarget.style.background='#fff'">
-                🔍
-              </button>
-            </div>
-          </div>
-          <!-- ===== /설정 ======================================================== -->
-          <!-- ===== ■.■.■. 제목 ================================================== -->
-          <div style="margin-bottom:14px;padding:14px;background:#faf8ff;border:1px solid #e9d5ff;border-radius:8px;">
-            <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
-              <span style="display:inline-block;width:4px;height:16px;background:#7c3aed;border-radius:2px;">
-              </span>
-              제목
-              <span style="margin-left:auto;display:flex;align-items:center;gap:8px;">
-                <span style="font-size:11px;font-weight:600;color:#888;">
-                  타이틀 표시
-                </span>
-                <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:500;color:#444;">
-                  <input type="radio" v-model="form.titleYn" value="Y" />
-                  표시
-                </label>
-                <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:500;color:#444;">
-                  <input type="radio" v-model="form.titleYn" value="N" />
-                  미표시
-                </label>
-              </span>
-            </div>
-            <div v-if="form.titleYn==='Y'" style="display:flex;align-items:center;gap:10px;">
-              <label style="font-size:12px;font-weight:600;color:#555;width:50px;flex-shrink:0;">
-                타이틀
-              </label>
-              <input v-model="form.title" type="text" placeholder="타이틀 텍스트 입력" class="form-control" style="margin:0;flex:1;" />
-            </div>
-          </div>
-          <!-- ===== /제목 ======================================================== -->
-          <!-- ===== ■.■.■. 내용 ================================================== -->
-          <div style="margin-bottom:14px;padding:14px;background:#fff8fa;border:1px solid #fce4ec;border-radius:8px;">
-            <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
-              <span style="display:inline-block;width:4px;height:16px;background:#e8587a;border-radius:2px;flex-shrink:0;">
-              </span>
-              내용
-              <span style="margin-left:auto;display:inline-flex;align-items:center;gap:6px;flex-shrink:0;">
-                <span style="font-size:11px;font-weight:600;color:#888;white-space:nowrap;">
-                  위젯유형
-                </span>
-                <select v-model="form.widgetType" class="form-control" :class="{'is-invalid':errors.widgetType}"
+            🔍
+          </button>
+        </div>
+      </div>
+      <!-- ===== /설정 ======================================================== -->
+      <!-- ===== ■.■.■. 제목 ================================================== -->
+      <div style="margin-bottom:14px;padding:14px;background:#faf8ff;border:1px solid #e9d5ff;border-radius:8px;">
+        <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+          <span style="display:inline-block;width:4px;height:16px;background:#7c3aed;border-radius:2px;"></span>
+          제목
+          <span style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+            <span style="font-size:11px;font-weight:600;color:#888;">타이틀 표시</span>
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:500;color:#444;">
+              <input type="radio" v-model="form.titleYn" value="Y" />
+              표시
+            </label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:500;color:#444;">
+              <input type="radio" v-model="form.titleYn" value="N" />
+              미표시
+            </label>
+          </span>
+        </div>
+        <div v-if="form.titleYn==='Y'" style="display:flex;align-items:center;gap:10px;">
+          <label style="font-size:12px;font-weight:600;color:#555;width:50px;flex-shrink:0;">타이틀</label>
+          <input v-model="form.title" type="text" placeholder="타이틀 텍스트 입력" class="form-control" style="margin:0;flex:1;" />
+        </div>
+      </div>
+      <!-- ===== /제목 ======================================================== -->
+      <!-- ===== ■.■.■. 내용 ================================================== -->
+      <div style="margin-bottom:14px;padding:14px;background:#fff8fa;border:1px solid #fce4ec;border-radius:8px;">
+        <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+          <span style="display:inline-block;width:4px;height:16px;background:#e8587a;border-radius:2px;flex-shrink:0;"></span>
+          내용
+          <span style="margin-left:auto;display:inline-flex;align-items:center;gap:6px;flex-shrink:0;">
+            <span style="font-size:11px;font-weight:600;color:#888;white-space:nowrap;">위젯유형</span>
+            <select v-model="form.widgetType" class="form-control" :class="{'is-invalid':errors.widgetType}"
               style="margin:0;font-size:12px;padding:3px 8px;height:28px;border-radius:5px;min-width:160px;">
-                  <option v-for="t in codes.disp_widget_types" :key="t?.codeValue" :value="t.codeValue">
-                    {{ t.codeLabel }}
-                  </option>
-                </select>
-              </span>
-            </div>
-            <div v-if="errors.widgetType" class="field-error" style="margin-bottom:8px;">
-              {{ errors.widgetType }}
-            </div>
-            <!-- ===== ■.■.■.■. 클릭 액션 (html_editor·file_list·embed 제외) - BoFormArea 자동 렌더 ===== -->
-            <div v-if="!cfIsHtmlEditor && !cfIsFileList && !cfIsEmbed" style="margin-bottom:12px;">
-            <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:8px;">
-              👆 클릭동작
-            </div>
-            <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
-            <bo-form-area :columns="columns.clickActionForm" :form="form" :errors="errors"
+              <option v-for="t in codes.disp_widget_types" :key="t?.codeValue" :value="t.codeValue">{{ t.codeLabel }}</option>
+            </select>
+          </span>
+        </div>
+        <div v-if="errors.widgetType" class="field-error" style="margin-bottom:8px;">{{ errors.widgetType }}</div>
+        <!-- ===== ■.■.■.■. 클릭 액션 (html_editor·file_list·embed 제외) - BoFormArea 자동 렌더 ===== -->
+        <div v-if="!cfIsHtmlEditor && !cfIsFileList && !cfIsEmbed" style="margin-bottom:12px;">
+          <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:8px;">👆 클릭동작</div>
+          <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
+          <bo-form-area :columns="columns.clickActionForm" :form="form" :errors="errors"
             :readonly="cfDtlMode" :cols="3" compact :show-actions="false" />
+        </div>
+        <!-- ===== ■.■.■.■. 공통 동적 행 =========================================== -->
+        <div v-if="cfDisplayRows.length" style="display:flex;flex-direction:column;gap:10px;">
+          <div v-for="row in cfDisplayRows" :key="row?.key" class="form-group" style="margin:0;">
+            <label class="form-label">{{ row.label }}</label>
+            <input  v-if="row.type==='input'"    v-model="form[row.key]" class="form-control" :placeholder="row.ph||''" style="margin:0;" />
+            <input  v-else-if="row.type==='number'"  v-model.number="form[row.key]" type="number" class="form-control" :placeholder="row.ph||''" style="margin:0;" />
+            <input  v-else-if="row.type==='color'"   v-model="form[row.key]" type="color" class="form-control" style="margin:0;height:36px;padding:2px 6px;" />
+            <textarea v-else-if="row.type==='textarea'" v-model="form[row.key]" class="form-control" :placeholder="row.ph||''" rows="3" style="margin:0;"></textarea>
+            <textarea v-else-if="row.type==='code'" v-model="form[row.key]" class="form-control" :placeholder="row.ph||''" rows="6" style="margin:0;font-family:monospace;font-size:12px;background:#1e1e2e;color:#cdd3de;border-color:#444;line-height:1.6;"></textarea>
+            <select v-else-if="row.type==='select'" v-model="form[row.key]" class="form-control" style="margin:0;">
+              <option v-for="o in row.options" :key="o?.v" :value="o.v">{{ o.l }}</option>
+            </select>
           </div>
-          <!-- ===== ■.■.■.■. 공통 동적 행 =========================================== -->
-          <div v-if="cfDisplayRows.length" style="display:flex;flex-direction:column;gap:10px;">
-            <div v-for="row in cfDisplayRows" :key="row?.key" class="form-group" style="margin:0;">
-              <label class="form-label">
-                {{ row.label }}
-              </label>
-              <input  v-if="row.type==='input'"    v-model="form[row.key]" class="form-control" :placeholder="row.ph||''" style="margin:0;" />
-              <input  v-else-if="row.type==='number'"  v-model.number="form[row.key]" type="number" class="form-control" :placeholder="row.ph||''" style="margin:0;" />
-              <input  v-else-if="row.type==='color'"   v-model="form[row.key]" type="color" class="form-control" style="margin:0;height:36px;padding:2px 6px;" />
-              <textarea v-else-if="row.type==='textarea'" v-model="form[row.key]" class="form-control" :placeholder="row.ph||''" rows="3" style="margin:0;"></textarea>
-                <textarea v-else-if="row.type==='code'" v-model="form[row.key]" class="form-control" :placeholder="row.ph||''" rows="6" style="margin:0;font-family:monospace;font-size:12px;background:#1e1e2e;color:#cdd3de;border-color:#444;line-height:1.6;"></textarea>
-                  <select v-else-if="row.type==='select'" v-model="form[row.key]" class="form-control" style="margin:0;">
-                    <option v-for="o in row.options" :key="o?.v" :value="o.v">
-                      {{ o.l }}
-                    </option>
-                  </select>
-                </div>
-              </div>
-              <!-- ===== ■.■.■.■. HTML 에디터 (공통 BaseHtmlEditor — Toast UI Editor) ===== -->
-              <div v-else-if="cfIsHtmlEditor" class="form-group" style="margin:0;">
-                <base-html-editor v-model="form.htmlContent" height="320px" />
-              </div>
-              <!-- ===== ■.■.■.■. 파일목록 ============================================== -->
-              <div v-else-if="cfIsFileList">
-                <div v-for="(item, idx) in cfFileListItems" :key="Math.random()"
+        </div>
+        <!-- ===== ■.■.■.■. HTML 에디터 (공통 BaseHtmlEditor — Toast UI Editor) ===== -->
+        <div v-else-if="cfIsHtmlEditor" class="form-group" style="margin:0;">
+          <base-html-editor v-model="form.htmlContent" height="320px" />
+        </div>
+        <!-- ===== ■.■.■.■. 파일목록 ============================================== -->
+        <div v-else-if="cfIsFileList">
+          <div v-for="(item, idx) in cfFileListItems" :key="Math.random()"
             style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
-                  <input :value="item.name" @input="updateFileItem(idx,'name',$event.target.value)"
+            <input :value="item.name" @input="updateFileItem(idx,'name',$event.target.value)"
               class="form-control" placeholder="파일명" style="margin:0;flex:1;" />
-                  <input :value="item.url" @input="updateFileItem(idx,'url',$event.target.value)"
+            <input :value="item.url" @input="updateFileItem(idx,'url',$event.target.value)"
               class="form-control" placeholder="파일 URL" style="margin:0;flex:2;" />
-                  <button @click="handleBtnAction('fileList-remove', idx)" style="flex-shrink:0;background:none;border:none;color:#e8587a;font-size:16px;">
-                    ×
-                  </button>
-                </div>
-                <button @click="handleBtnAction('fileList-add')" class="btn btn-outline" style="font-size:12px;padding:4px 14px;">
-                  + 파일 추가
-                </button>
-              </div>
-              <div v-else style="font-size:12px;color:#aaa;text-align:center;padding:10px;">
-                위젯 유형을 선택하면 입력 필드가 표시됩니다.
-              </div>
-            </div>
-            <!-- ===== /내용 ======================================================== -->
+            <button @click="handleBtnAction('fileList-remove', idx)" style="flex-shrink:0;background:none;border:none;color:#e8587a;font-size:16px;">
+              ×
+            </button>
           </div>
-          <!-- ===== □.□. 왼쪽: 폼 ================================================= -->
-          <!-- ===== ■.■. 스플리터 ================================================== -->
-          <div @mousedown="e => handleSelectAction('preview-split', e)"
+          <button @click="handleBtnAction('fileList-add')" class="btn btn-outline" style="font-size:12px;padding:4px 14px;">+ 파일 추가</button>
+        </div>
+        <div v-else style="font-size:12px;color:#aaa;text-align:center;padding:10px;">위젯 유형을 선택하면 입력 필드가 표시됩니다.</div>
+      </div>
+      <!-- ===== /내용 ======================================================== -->
+    </div>
+    <!-- ===== □.□. 왼쪽: 폼 ================================================= -->
+    <!-- ===== ■.■. 스플리터 ================================================== -->
+    <div @mousedown="e => handleSelectAction('preview-split', e)"
       style="width:6px;cursor:col-resize;background:#e8e8e8;flex-shrink:0;position:relative;"
       title="드래그로 폭 조절">
-            <div style="position:absolute;top:50%;left:1px;transform:translateY(-50%);width:4px;height:32px;background:#bbb;border-radius:2px;">
-            </div>
-          </div>
-          <!-- ===== □.□. 스플리터 ================================================== -->
-          <!-- ===== ■.■. 오른쪽: 위젯미리보기 =========================================== -->
-          <div :style="{ width: previewPaneWidth + 'px', flexShrink:0, padding:'20px', background:'#f8f8f8', overflowX:'auto', transition:'width .2s' }">
-            <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:10px;cursor:help;position:relative;"
+      <div style="position:absolute;top:50%;left:1px;transform:translateY(-50%);width:4px;height:32px;background:#bbb;border-radius:2px;"></div>
+    </div>
+    <!-- ===== □.□. 스플리터 ================================================== -->
+    <!-- ===== ■.■. 오른쪽: 위젯미리보기 =========================================== -->
+    <div :style="{ width: previewPaneWidth + 'px', flexShrink:0, padding:'20px', background:'#f8f8f8', overflowX:'auto', transition:'width .2s' }">
+      <div style="font-size:12px;font-weight:700;color:#555;margin-bottom:10px;cursor:help;position:relative;"
         @mouseenter="showComponentTooltip=true" @mouseleave="showComponentTooltip=false">
-              👁 위젯미리보기
-              <span style="position:absolute;bottom:-28px;left:0;background:#333;color:#fff;padding:4px 8px;border-radius:4px;font-size:9px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s;z-index:1000;" :style="{opacity: showComponentTooltip ? 1 : 0}">
-                &lt;disp-x04-widget /&gt;
-              </span>
-            </div>
-            <!-- ===== ■.■.■. 디바이스 모드 버튼 ========================================== -->
-            <div style="display:flex;gap:4px;margin-bottom:10px;padding:3px;background:#eef0f3;border-radius:6px;">
-              <button v-for="m in PREVIEW_MODES" :key="m?.value"
+        👁 위젯미리보기
+        <span style="position:absolute;bottom:-28px;left:0;background:#333;color:#fff;padding:4px 8px;border-radius:4px;font-size:9px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s;z-index:1000;" :style="{opacity: showComponentTooltip ? 1 : 0}">
+          &lt;disp-x04-widget /&gt;
+        </span>
+      </div>
+      <!-- ===== ■.■.■. 디바이스 모드 버튼 ========================================== -->
+      <div style="display:flex;gap:4px;margin-bottom:10px;padding:3px;background:#eef0f3;border-radius:6px;">
+        <button v-for="m in PREVIEW_MODES" :key="m?.value"
           @click="handleSelectAction('preview-mode', m.value)"
           :style="{
           flex:'1',padding:'5px 0',fontSize:'11px',border:'none',borderRadius:'4px',cursor:'pointer',
@@ -979,52 +924,41 @@ window.DpDispWidgetDtl = {
           fontWeight: previewMode===m.value ? 700 : 500,
           boxShadow: previewMode===m.value ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
           }">
-                {{ m.label }}
-              </button>
-            </div>
-            <!-- ===== ■.■.■. 디바이스 프레임 ============================================ -->
-            <div :style="{ width: cfPreviewFrameWidth, margin:'0 auto', background:'#fff', border:'1px solid #e4e4e4', borderRadius:'8px', padding:'12px', minHeight:'100px', transition:'width .2s' }">
-              <disp-x04-widget
+          {{ m.label }}
+        </button>
+      </div>
+      <!-- ===== ■.■.■. 디바이스 프레임 ============================================ -->
+      <div :style="{ width: cfPreviewFrameWidth, margin:'0 auto', background:'#fff', border:'1px solid #e4e4e4', borderRadius:'8px', padding:'12px', minHeight:'100px', transition:'width .2s' }">
+        <disp-x04-widget
           :params="{ }"
           :disp-opt="{ showBadges: true }"
           :widget-item="cfPreviewWidget"
           />
-            </div>
-            <div style="margin-top:12px;font-size:11px;color:#aaa;line-height:1.6;">
-              <div>
-                유형:
-                <b>
-                  {{ form.widgetType }}
-                </b>
-              </div>
-              <div v-if="form.tags">
-                태그: {{ form.tags }}
-              </div>
-              <div v-if="!cfIsNew">
-                ID: #{{ String(form.widgetLibId).padStart(4,'0') }}
-              </div>
-            </div>
-            <!-- ===== ■.■.■. 샘플 JSON ============================================= -->
-            <div style="margin-top:16px;">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-                <span style="font-size:12px;font-weight:700;color:#555;">
-                  📋 샘플 JSON
-                </span>
-                <button @click="handleBtnAction('jsonView-copy')"
+      </div>
+      <div style="margin-top:12px;font-size:11px;color:#aaa;line-height:1.6;">
+        <div>유형: <b> {{ form.widgetType }} </b></div>
+        <div v-if="form.tags">태그: {{ form.tags }}</div>
+        <div v-if="!cfIsNew">ID: #{{ String(form.widgetLibId).padStart(4,'0') }}</div>
+      </div>
+      <!-- ===== ■.■.■. 샘플 JSON ============================================= -->
+      <div style="margin-top:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <span style="font-size:12px;font-weight:700;color:#555;">📋 샘플 JSON</span>
+          <button @click="handleBtnAction('jsonView-copy')"
             style="font-size:10px;padding:2px 8px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;color:#666;transition:all .15s;"
             :style="jsonCopied ? 'background:#e8f5e9;color:#2e7d32;border-color:#a5d6a7;' : ''">
-                  {{ jsonCopied ? '✓ 복사됨' : '복사' }}
-                </button>
-              </div>
-              <pre style="background:#1e1e2e;color:#cdd9e5;border-radius:8px;padding:10px 12px;font-size:10px;line-height:1.55;overflow:auto;max-height:320px;margin:0;white-space:pre-wrap;word-break:break-all;">{{ cfSampleJson }}</pre>
-              </div>
-            </div>
-          </div>
-          <!-- ===== □.□. 오른쪽: 위젯미리보기 =========================================== -->
-          <!-- ===== □. 본문 영역 =================================================== -->
-          <!-- ===== ■. 조건부 영역 ================================================== -->
-          <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="ec_disp_widget" :value="form.pathId" title="위젯 표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
-        <!-- ===== □. 조건부 영역 ================================================== -->
+            {{ jsonCopied ? '✓ 복사됨' : '복사' }}
+          </button>
+        </div>
+        <pre style="background:#1e1e2e;color:#cdd9e5;border-radius:8px;padding:10px 12px;font-size:10px;line-height:1.55;overflow:auto;max-height:320px;margin:0;white-space:pre-wrap;word-break:break-all;">{{ cfSampleJson }}</pre>
+      </div>
+    </div>
+  </div>
+  <!-- ===== □.□. 오른쪽: 위젯미리보기 =========================================== -->
+  <!-- ===== □. 본문 영역 =================================================== -->
+  <!-- ===== ■. 조건부 영역 ================================================== -->
+  <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="ec_disp_widget" :value="form.pathId" title="위젯 표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
+  <!-- ===== □. 조건부 영역 ================================================== -->
 </bo-container>
 `
 };

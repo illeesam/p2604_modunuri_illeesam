@@ -256,18 +256,12 @@ window.SyUserDtl = {
     :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
     <!-- ===== ■.■.■. 부서: picker ========================================== -->
     <template #dept>
-      <div v-if="cfDtlMode" class="readonly-field">
-        {{ form.deptNm || '-' }}
-      </div>
+      <div v-if="cfDtlMode" class="readonly-field">{{ form.deptNm || '-' }}</div>
       <div v-else style="display:flex;gap:8px;align-items:flex-end;">
         <div class="form-control" style="flex:1;background:#fafafa;display:flex;align-items:center;min-height:28px;padding:4px 10px;font-size:13px;"
           @click="handleBtnAction('deptModal-open')">
-          <span v-if="form.deptNm" style="color:#1a1a2e;">
-            {{ form.deptNm }}
-          </span>
-          <span v-else style="color:#bbb;font-size:12px;">
-            부서를 선택하세요
-          </span>
+          <span v-if="form.deptNm" style="color:#1a1a2e;">{{ form.deptNm }}</span>
+          <span v-else style="color:#bbb;font-size:12px;">부서를 선택하세요</span>
         </div>
         <button type="button" class="btn btn-blue btn-sm" @click="handleBtnAction('deptModal-open')" style="white-space:nowrap;">
           🏢 선택
@@ -308,20 +302,12 @@ window.SyUserDtl = {
   <!-- ===== ■.■. 폼 액션 (active 일 때만 노출) ================================ -->
   <div class="form-actions" v-if="active">
     <template v-if="cfDtlMode">
-      <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
-        수정
-      </button>
-      <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
-        닫기
-      </button>
+      <button class="btn btn-blue" @click="handleBtnAction('form-edit')">수정</button>
+      <button class="btn btn-secondary" @click="handleBtnAction('form-close')">닫기</button>
     </template>
     <template v-else>
-      <button class="btn btn-primary" @click="handleBtnAction('form-save')">
-        저장
-      </button>
-      <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
-        취소
-      </button>
+      <button class="btn btn-primary" @click="handleBtnAction('form-save')">저장</button>
+      <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">취소</button>
     </template>
   </div>
   <!-- ===== □.□. 폼 액션 ================================================== -->

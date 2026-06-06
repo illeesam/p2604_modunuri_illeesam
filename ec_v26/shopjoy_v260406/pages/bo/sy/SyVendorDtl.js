@@ -212,8 +212,7 @@ window.SyVendorDtl = {
     </template>
     <!-- ===== ■.■.■. 메모: Quill 또는 view 모드 HTML =========================== -->
     <template #remark>
-      <div v-if="cfDtlMode" class="form-control" style="min-height:90px;line-height:1.6;" v-html="form.vendorRemark || '<span style=color:#bbb>-</span>'">
-      </div>
+      <div v-if="cfDtlMode" class="form-control" style="min-height:90px;line-height:1.6;" v-html="form.vendorRemark || '<span style=color:#bbb>-</span>'"></div>
       <base-html-editor v-else v-model="form.vendorRemark" height="180px" />
     </template>
   </bo-form-area>

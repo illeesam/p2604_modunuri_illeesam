@@ -77,7 +77,6 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
       }
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
-            const dateEnd   = ref('');
 
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
@@ -130,13 +129,12 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
-        const form = reactive({});
+    const form = reactive({});
     const errors = reactive({});
-    const isNew  = ref(false);
 
-  /* 정산 조정 _initSearchParam */
-  const _initSearchParam = () => ({ searchType: '', searchValue: '', type: '', status: '' });
-  const searchParam = reactive(_initSearchParam());
+    /* 정산 조정 _initSearchParam */
+    const _initSearchParam = () => ({ searchType: '', searchValue: '', type: '', status: '' });
+    const searchParam = reactive(_initSearchParam());
 
     const schema = window.yup.object({
       vendorId: window.yup.number().required('업체를 선택하세요.').min(1, '업체를 선택하세요.'),
@@ -313,9 +311,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
   <!-- ===== ■. 목록 영역 =================================================== -->
   <bo-container title="정산조정 목록" :count-text="'총 ' + pager.pageTotalCount + '건'">
     <template #toolbar-actions>
-      <button class="btn btn-primary btn-sm" @click="handleBtnAction('settleAdjs-add')">
-        + 조정 추가
-      </button>
+      <button class="btn btn-primary btn-sm" @click="handleBtnAction('settleAdjs-add')">+ 조정 추가</button>
     </template>
     <bo-grid bare
       :columns="columns.baseGrid" :rows="adjs" row-key="adjId" :selected-key="uiState.selectedId"
@@ -329,12 +325,8 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
           <button v-if="r.aprvStatusCd==='대기'" class="btn btn-xs btn-green" @click="handleSelectAction('settleAdjs-rowApprove', r)">
             승인
           </button>
-          <button class="btn btn-xs btn-blue" @click="handleSelectAction('settleAdjs-rowEdit', r)">
-            수정
-          </button>
-          <button class="btn btn-xs btn-danger"  @click="handleSelectAction('settleAdjs-rowDelete', r)">
-            삭제
-          </button>
+          <button class="btn btn-xs btn-blue" @click="handleSelectAction('settleAdjs-rowEdit', r)">수정</button>
+          <button class="btn btn-xs btn-danger"  @click="handleSelectAction('settleAdjs-rowDelete', r)">삭제</button>
         </div>
       </template>
     </bo-grid>
@@ -343,14 +335,14 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
   <!-- ===== ■. 상세 패널 (항상 표시 — 미선택 시 안내, 선택/신규 시 폼) ============== -->
   <bo-container card-style="margin-top:12px"
     :title="!uiState.selectedId ? '조정 상세' : (uiState.isNew ? '조정 추가' : '조정 수정')">
-      <!-- ===== ■.■. 미선택 안내 (영역은 항상 표시) ================================= -->
-      <div v-if="!uiState.selectedId" style="text-align:center;color:#bbb;font-size:13px;padding:32px 16px;">
-        목록에서 조정 행을 선택하거나 [+신규]를 누르면 입력할 수 있습니다.
-      </div>
-      <!-- ===== ■.■. 상세 입력폼 (행 선택 / 신규 시) ============================= -->
-      <bo-form-area v-else :columns="columns.baseForm" :form="form" :errors="errors"
-        :cols="3"
-        @save="handleBtnAction('form-save')" @cancel="handleBtnAction('form-cancel')" />
+    <!-- ===== ■.■. 미선택 안내 (영역은 항상 표시) ================================= -->
+    <div v-if="!uiState.selectedId" style="text-align:center;color:#bbb;font-size:13px;padding:32px 16px;">
+      목록에서 조정 행을 선택하거나 [+신규]를 누르면 입력할 수 있습니다.
+    </div>
+    <!-- ===== ■.■. 상세 입력폼 (행 선택 / 신규 시) ============================= -->
+    <bo-form-area v-else :columns="columns.baseForm" :form="form" :errors="errors"
+      :cols="3"
+      @save="handleBtnAction('form-save')" @cancel="handleBtnAction('form-cancel')" />
   </bo-container>
 </bo-page>
 `,
