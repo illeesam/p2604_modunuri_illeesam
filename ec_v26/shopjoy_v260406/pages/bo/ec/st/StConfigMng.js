@@ -272,7 +272,6 @@ window.StConfigMng = {
       <bo-form-area v-else :columns="columns.baseForm" :form="form" :errors="errors"
         :cols="3"
         @save="handleBtnAction('form-save')" @cancel="handleBtnAction('form-cancel')" />
-    </div>
   </bo-container>
 </bo-page>
 `,
