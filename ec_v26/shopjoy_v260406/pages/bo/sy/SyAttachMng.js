@@ -132,7 +132,7 @@ window.SyAttachMng = {
 
     /* onDateRangeChange — 기간 변경 */
     const onDateRangeChange = () => {
-      if (searchParam.dateRange) { const r = boUtil.bofGetDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
+      boUtil.bofApplyDateRange(searchParam);
     };
 
     // 그룹 목록 로드 (서버사이드 페이징 — grpPager 사용)
@@ -366,7 +366,7 @@ window.SyAttachMng = {
         cellInnerStyle: 'background:#f0f0f0;padding:1px 5px;border-radius:3px;font-size:11px;' },
       { key: 'refId', label: '참조ID', style: 'width:100px;', cellStyle: 'color:#666;' },
       { key: 'memo', label: '메모', cellStyle: 'color:#888;' },
-      { key: 'regDate', label: '등록일', style: 'width:145px;', fmt: v => String(v || '').slice(0, 19) },
+      { key: 'regDate', label: '등록일', style: 'width:145px;', fmt: v => coUtil.cofYmdHms(v || '') },
       { key: 'siteNm', label: '사이트명', style: 'width:70px;',
         cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
     ];

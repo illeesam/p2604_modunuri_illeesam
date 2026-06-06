@@ -173,7 +173,7 @@ window.PmVoucherMng = {
 
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
-      if (searchParam.dateRange) { const r = boUtil.bofGetDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
+      boUtil.bofApplyDateRange(searchParam);
       pager.pageNo = 1;
     };
 
@@ -276,8 +276,8 @@ window.PmVoucherMng = {
         fmt: (v) => (v || 0).toLocaleString() + '개' },
       { key: 'remain',          label: '잔여', align: 'center',
         fmt: (v, row) => ((row.issueQty || 0) - (row.soldQty || 0)).toLocaleString() + '개' },
-      { key: 'startDate',       label: '시작일', sortKey: 'reg',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
-      { key: 'endDate',         label: '종료일',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
+      { key: 'startDate',       label: '시작일', sortKey: 'reg',  fmt: (v) => coUtil.cofYmd(v) || '-' },
+      { key: 'endDate',         label: '종료일',  fmt: (v) => coUtil.cofYmd(v) || '-' },
       { key: 'voucherStatusCd', label: '상태', badge: (row) => fnStatusBadge(row.voucherStatusCd) },
       { key: 'siteNm',          label: '사이트', cellStyle: 'color:#2563eb', fmt: () => cfSiteNm.value },
     ];

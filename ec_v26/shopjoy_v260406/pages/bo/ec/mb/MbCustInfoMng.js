@@ -473,7 +473,7 @@
       ];
       // 쿠폰 그리드
       columns.couponGrid = [
-        { key: 'usedDate', label: '사용일', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
+        { key: 'usedDate', label: '사용일', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;',  fmt: (v) => coUtil.cofYmd(v) || '-' },
         { key: 'couponNm', label: '쿠폰명', cellStyle: _ellipsis(150), cellTitle: true },
         { key: 'couponCode', label: '코드', cellStyle: 'font-family:monospace;color:#666;' },
         { key: 'orderId', label: '주문번호', refLink: 'order' },

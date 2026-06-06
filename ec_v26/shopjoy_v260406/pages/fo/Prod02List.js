@@ -12,8 +12,8 @@ window.Prod02List = {
     const toggleLike        = (id) => window.foApp.toggleLike(id);
     const isLiked           = (id) => window.foApp.isLiked?.(id) ?? false;
 
-    /* baseGrid — FO 무한스크롤 페이저 (cofGrid 사용) */
-    const baseGrid = coUtil.cofGrid(() => handleSearchList(), { pageType: 'INFINITE_SCROLL', pageSize: 12, pageSizes: [12, 24, 48] });
+    /* pager — FO 무한스크롤 페이저 (PC 페이지네이션 + 모바일 무한스크롤) */
+    const pager = reactive({ pageType: 'INFINITE_SCROLL', pageNo: 1, pageSize: 12, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [12, 24, 48], pageNums: [], pageCond: {} });
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, searchText: '', priceMin: '', priceMax: '', isMobile: window.innerWidth < 768, filterOpen: false });
     const codes = reactive({});
 
@@ -52,11 +52,11 @@ window.Prod02List = {
         return;
       // 페이지네이션: 이전
       } else if (cmd === 'pager-prev') {
-        baseGrid.pager.pageNo = Math.max(1, baseGrid.pager.pageNo - 1); fnBuildPagerNums();
+        pager.pageNo = Math.max(1, pager.pageNo - 1); fnBuildPagerNums();
         return;
       // 페이지네이션: 다음
       } else if (cmd === 'pager-next') {
-        baseGrid.pager.pageNo = Math.min(baseGrid.pager.pageTotalPage, baseGrid.pager.pageNo + 1); fnBuildPagerNums();
+        pager.pageNo = Math.min(pager.pageTotalPage, pager.pageNo + 1); fnBuildPagerNums();
         return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -83,7 +83,7 @@ window.Prod02List = {
         return toggleLike(param);
       // 페이지 번호 클릭
       } else if (cmd === 'pager-rowGo') {
-        baseGrid.pager.pageNo = param; fnBuildPagerNums();
+        pager.pageNo = param; fnBuildPagerNums();
         return;
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -128,14 +128,14 @@ window.Prod02List = {
 
     /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => {
-      const t = Math.max(1, Math.ceil(allProds.length / baseGrid.pager.pageSize));
-      baseGrid.pager.pageTotalPage = t;
-      baseGrid.pager.pageTotalCount = allProds.length;
-      const c = baseGrid.pager.pageNo;
-      baseGrid.pager.pageList = uiState.isMobile
-        ? allProds.slice(0, c * baseGrid.pager.pageSize)
-        : allProds.slice((c - 1) * baseGrid.pager.pageSize, c * baseGrid.pager.pageSize);
-      if (t <= 7) { baseGrid.pager.pageNums = Array.from({ length: t }, (_, i) => i + 1); return; }
+      const t = Math.max(1, Math.ceil(allProds.length / pager.pageSize));
+      pager.pageTotalPage = t;
+      pager.pageTotalCount = allProds.length;
+      const c = pager.pageNo;
+      pager.pageList = uiState.isMobile
+        ? allProds.slice(0, c * pager.pageSize)
+        : allProds.slice((c - 1) * pager.pageSize, c * pager.pageSize);
+      if (t <= 7) { pager.pageNums = Array.from({ length: t }, (_, i) => i + 1); return; }
       const set = new Set([1, t, c-2, c-1, c, c+1, c+2].filter(n => n >= 1 && n <= t));
       const sorted = [...set].sort((a, b) => a - b);
       const result = [];
@@ -143,7 +143,7 @@ window.Prod02List = {
         if (i > 0 && sorted[i] - sorted[i-1] > 1) { result.push('…'); }
         result.push(sorted[i]);
       }
-      baseGrid.pager.pageNums = result;
+      pager.pageNums = result;
     };
 
     /* handleLoadProds — 처리 */
@@ -151,7 +151,7 @@ window.Prod02List = {
       uiState.loading = true;
       try {
         const params = {
-          pageNo: baseGrid.pager.pageNo, pageSize: baseGrid.pager.pageSize,
+          pageNo: pager.pageNo, pageSize: pager.pageSize,
           ...(uiState.searchText   ? { searchValue: uiState.searchText }                : {}),
           ...(uiState.priceMin     ? { priceMin: uiState.priceMin }            : {}),
           ...(uiState.priceMax     ? { priceMax: uiState.priceMax }            : {}),
@@ -160,8 +160,8 @@ window.Prod02List = {
           ...(selSizes.size  > 0   ? { sizes: [...selSizes].join(',') }        : {}),
         };
         const res = await foApiSvc.pdProd.getPage(params, '상품목록', '목록조회');
-        baseGrid.pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
-        baseGrid.pager.pageTotalPage = res.data?.data?.pageTotalPage || 1;
+        pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
+        pager.pageTotalPage = res.data?.data?.pageTotalPage || 1;
         allProds.splice(0, allProds.length, ...(res.data?.data?.pageList || []).map(p => assignImage({
           ...p,
           priceNum: p.price,
@@ -241,7 +241,7 @@ window.Prod02List = {
       selSizes,
       selCats
     ], () => {
-      baseGrid.pager.pageNo = 1;
+      pager.pageNo = 1;
       handleLoadProds();
     });
 
@@ -254,8 +254,8 @@ window.Prod02List = {
       const el = document.getElementById('sj-sentinel');
       if (!el || !('IntersectionObserver' in window)) { return; }
       observer = new IntersectionObserver(entries => {
-        if (entries[0].isIntersecting && uiState.isMobile && baseGrid.pager.pageNo < baseGrid.pager.pageTotalPage) {
-          baseGrid.pager.pageNo++;
+        if (entries[0].isIntersecting && uiState.isMobile && pager.pageNo < pager.pageTotalPage) {
+          pager.pageNo++;
           fnBuildPagerNums();
         }
       }, { rootMargin: '300px' });
@@ -265,7 +265,7 @@ window.Prod02List = {
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* onSearch — 조회 */
     const onSearch = async () => {
-      baseGrid.pager.pageNo = 1;
+      pager.pageNo = 1;
       await handleLoadProds();
       setupObserver();
     };
@@ -297,7 +297,7 @@ window.Prod02List = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
     return {
-       columns,
+       columns, pager,                                                      // 컬럼 / 페이저
        uiState, codes, allProds,                                     // 상태 / 데이터
       selColors, selSizes, selCats,                                        // 필터 상태
       handleBtnAction, handleSelectAction,                                 // dispatch
@@ -533,7 +533,7 @@ window.Prod02List = {
 <!-- ===== □. 스켈레톤 ==================================================== -->
 <!-- ===== ■. 상품 그리드 ================================================== -->
 <div v-else class="grid-3">
-  <div v-for="p in baseGrid.pager.pageList" :key="p.prodId"
+  <div v-for="p in pager.pageList" :key="p.prodId"
       class="prod-card" style="cursor:pointer;" @click="handleSelectAction('prods-rowSelect', p)">
     <!-- ===== ■.■.■. 썸네일 ================================================= -->
     <div style="height:220px;overflow:hidden;background:#f5f0eb;position:relative;display:flex;align-items:center;justify-content:center;">
@@ -634,31 +634,31 @@ window.Prod02List = {
 </div>
 <!-- ===== □. 결과 없음 =================================================== -->
 <!-- ===== ■. PC 페이지네이션 =============================================== -->
-<div v-if="!uiState.loading && !uiState.isMobile && baseGrid.pager.pageTotalPage > 1" style="display:flex;align-items:center;justify-content:center;gap:4px;margin-top:32px;flex-wrap:wrap;">
-<button @click="handleBtnAction('pager-prev')" :disabled="baseGrid.pager.pageNo===1"
+<div v-if="!uiState.loading && !uiState.isMobile && pager.pageTotalPage > 1" style="display:flex;align-items:center;justify-content:center;gap:4px;margin-top:32px;flex-wrap:wrap;">
+<button @click="handleBtnAction('pager-prev')" :disabled="pager.pageNo===1"
       style="padding:8px 14px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);cursor:pointer;color:var(--text-secondary);font-size:0.85rem;"
-      :style="baseGrid.pager.pageNo===1?'opacity:0.4;cursor:not-allowed;':''">
+      :style="pager.pageNo===1?'opacity:0.4;cursor:not-allowed;':''">
   ‹
 </button>
-<template v-for="n in baseGrid.pager.pageNums" :key="n">
+<template v-for="n in pager.pageNums" :key="n">
   <span v-if="n==='…'" style="padding:8px 4px;color:var(--text-muted);font-size:0.85rem;">
     …
   </span>
   <button v-else @click="handleSelectAction('pager-rowGo', n)"
         style="min-width:38px;padding:8px 12px;border-radius:8px;cursor:pointer;font-size:0.85rem;font-weight:600;transition:all 0.15s;"
-        :style="baseGrid.pager.pageNo===n
+        :style="pager.pageNo===n
         ? 'background:var(--blue);color:#fff;border:1px solid var(--blue);'
         : 'background:var(--bg-card);color:var(--text-secondary);border:1px solid var(--border);'">
     {{ n }}
   </button>
 </template>
-<button @click="handleBtnAction('pager-next')" :disabled="baseGrid.pager.pageNo===baseGrid.pager.pageTotalPage"
+<button @click="handleBtnAction('pager-next')" :disabled="pager.pageNo===pager.pageTotalPage"
       style="padding:8px 14px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);cursor:pointer;color:var(--text-secondary);font-size:0.85rem;"
-      :style="baseGrid.pager.pageNo===baseGrid.pager.pageTotalPage?'opacity:0.4;cursor:not-allowed;':''">
+      :style="pager.pageNo===pager.pageTotalPage?'opacity:0.4;cursor:not-allowed;':''">
   ›
 </button>
 <span style="font-size:0.78rem;color:var(--text-muted);margin-left:8px;">
-  {{ baseGrid.pager.pageNo }} / {{ baseGrid.pager.pageTotalPage }}
+  {{ pager.pageNo }} / {{ pager.pageTotalPage }}
 </span>
 </div>
 <!-- ===== □. PC 페이지네이션 =============================================== -->
@@ -666,7 +666,7 @@ window.Prod02List = {
 <div v-if="!uiState.loading && uiState.isMobile" id="sj-sentinel" style="height:1px;">
 </div>
 <!-- ===== ■. 조건부 영역 ================================================== -->
-<div v-if="!uiState.loading && uiState.isMobile && baseGrid.pager.pageNo < baseGrid.pager.pageTotalPage" style="text-align:center;padding:16px;color:var(--text-muted);font-size:0.85rem;">
+<div v-if="!uiState.loading && uiState.isMobile && pager.pageNo < pager.pageTotalPage" style="text-align:center;padding:16px;color:var(--text-muted);font-size:0.85rem;">
 스크롤하면 더 불러옵니다…
 </div>
 </fo-page>

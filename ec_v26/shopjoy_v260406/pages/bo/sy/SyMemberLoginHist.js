@@ -22,7 +22,7 @@ window.SyMemberLoginHist = {
     });
 
     /* 초기 1주일 범위 설정 */
-    (() => { const r = boUtil.bofGetDateRange('1week'); if (r) { searchParam.dateStart = r.from; searchParam.dateEnd = r.to; } })();
+    boUtil.bofApplyDateRange(searchParam, '1week');
 
     const codes = reactive({ login_results: [], date_range_opts: [] });
 
@@ -109,7 +109,7 @@ window.SyMemberLoginHist = {
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* onDateRangeChange — 기간 옵션 변경 */
     const onDateRangeChange = () => {
-      if (searchParam.dateRange) { const r = boUtil.bofGetDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
+      boUtil.bofApplyDateRange(searchParam);
     };
 
     /* fnLoadCodes — 공통코드 로드 */
@@ -229,16 +229,16 @@ window.SyMemberLoginHist = {
     const fnResultLabel = cd => ({'SUCCESS':'성공','LOGOUT':'로그아웃','FAIL_PW':'비밀번호오류','FAIL_LOCKED':'계정잠금','FAIL_NOT_FOUND':'없는계정','FAIL_DORMANT':'휴면계정'}[cd]||cd||'-');
 
     /* fnActionBadge — 토큰액션 배지 */
-    const fnActionBadge = cd => ({'ISSUE':'badge-blue','REFRESH':'badge-green','REVOKE':'badge-red','EXPIRE':'badge-orange','LOGOUT':'badge-gray'}[cd]||'badge-gray');
+    const fnActionBadge = boUtil.bofTokenActionBadge;
 
     /* fnActionLabel — 토큰액션 라벨 */
-    const fnActionLabel = cd => ({'ISSUE':'발급','REFRESH':'갱신','REVOKE':'폐기','EXPIRE':'만료','LOGOUT':'로그아웃'}[cd]||cd||'-');
+    const fnActionLabel = boUtil.bofTokenActionLabel;
 
     /* fnTypeBadge — 토큰유형 배지 */
-    const fnTypeBadge   = cd => ({'ACCESS':'badge-purple','REFRESH':'badge-blue'}[cd]||'badge-gray');
+    const fnTypeBadge   = boUtil.bofTokenTypeBadge;
 
     /* fnDecode — URI 디코드 */
-    const fnDecode = s => { try { return s ? decodeURIComponent(s) : ''; } catch { return s || ''; } };
+    const fnDecode = coUtil.cofDecodeUri;
 
     /* fnRowExpanded — 행 펼침 여부 */
     const fnRowExpanded = (r, idx) => isExpanded(r.logId || idx);
@@ -276,7 +276,7 @@ window.SyMemberLoginHist = {
           activeStyle: 'color:#666;font-size:11px;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;user-select:none;' },
         fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
       { key: 'logId',    label: '로그ID',     mono: true, cellStyle: 'font-size:11px;color:#888', fmt: (v) => v || '-' },
-      { key: 'loginDate',label: '로그인일시', cellStyle: 'white-space:nowrap', fmt: (v, row) => String(row.loginDate || row.regDate || '').slice(0, 19) },
+      { key: 'loginDate',label: '로그인일시', cellStyle: 'white-space:nowrap', fmt: (v, row) => coUtil.cofYmdHms(row.loginDate || row.regDate || '') },
       { key: '_member',  label: '회원',
         fmt: (v, row) => `${row.memberNm || row.memberId || '-'}  #${row.memberId}` },
       { key: 'loginId',  label: '로그인ID', cellStyle: 'color:#555', fmt: (v) => v || '-' },
@@ -284,9 +284,9 @@ window.SyMemberLoginHist = {
       { key: 'failCnt',  label: '실패',      style: 'text-align:center;', align: 'center', cellStyle: (v, row) => row.failCnt > 0 ? 'color:#e74c3c;font-weight:700' : '', fmt: (v) => v > 0 ? v + '회' : '-' },
       { key: 'ip',       label: 'IP', mono: true, fmt: (v) => v || '-' },
       { key: '_browser', label: 'OS/브라우저', cellStyle: 'font-size:11px;color:#666;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', cellTitle: (v, row) => row.browser + ' / ' + row.os, fmt: (v, row) => row.browser || row.device || '-' },
-      { key: '_uiNm', label: '화면 > 기능', cellStyle: 'color:#555;font-size:12px;', fmt: (v, row) => { const u = row.uiNm?fnDecode(row.uiNm):''; const m = row.cmdNm?fnDecode(row.cmdNm):''; return u && m ? `${u} > ${m}` : (u || m || '-'); } },
+      { key: '_uiNm', label: '화면 > 기능', cellStyle: 'color:#555;font-size:12px;', fmt: (v, row) => coUtil.cofUiNmCmdNm(row.uiNm, row.cmdNm) },
       { key: 'traceId',  label: 'Trace ID', mono: true, cellStyle: 'font-size:11px;color:#888;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', fmt: (v) => v || '-' },
-      { key: 'regDate',  label: '등록일시', cellStyle: 'white-space:nowrap', fmt: (v) => String(v || '').slice(0, 19) },
+      { key: 'regDate',  label: '등록일시', cellStyle: 'white-space:nowrap', fmt: (v) => coUtil.cofYmdHms(v || '') },
     ];
 
     // 토큰 그리드
@@ -296,22 +296,22 @@ window.SyMemberLoginHist = {
           activeStyle: 'color:#666;font-size:11px;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;user-select:none;' },
         fmt: (v, row) => isExpanded(row.logId) ? '▲' : '▼' },
       { key: 'logId',         label: '토큰로그ID', mono: true, cellStyle: 'font-size:11px;color:#888', fmt: (v) => v || '-' },
-      { key: 'regDate',       label: '일시', cellStyle: 'white-space:nowrap', fmt: (v) => String(v || '').slice(0, 19) },
+      { key: 'regDate',       label: '일시', cellStyle: 'white-space:nowrap', fmt: (v) => coUtil.cofYmdHms(v || '') },
       { key: '_member',       label: '회원',
         fmt: (v, row) => `${row.memberNm || row.memberId || '-'}  #${row.memberId}` },
       { key: 'actionCd',      label: '액션', badge: (row) => fnActionBadge(row.actionCd), fmt: (v) => fnActionLabel(v) },
       { key: 'tokenTypeCd',   label: '토큰유형', badge: (row) => fnTypeBadge(row.tokenTypeCd), cellStyle: 'font-size:11px', fmt: (v) => v || '-' },
-      { key: 'accessTokenExp',label: 'AT만료', cellStyle: 'color:#8e44ad', fmt: (v) => String(v || '').slice(0, 19) || '-' },
-      { key: 'tokenExp',      label: 'RT만료', cellStyle: (v, row) => (row.actionCd === 'EXPIRE' || row.actionCd === 'REVOKE') ? 'color:#e74c3c' : '', fmt: (v) => String(v || '').slice(0, 19) || '-' },
+      { key: 'accessTokenExp',label: 'AT만료', cellStyle: 'color:#8e44ad', fmt: (v) => coUtil.cofYmdHms(v || '') || '-' },
+      { key: 'tokenExp',      label: 'RT만료', cellStyle: (v, row) => (row.actionCd === 'EXPIRE' || row.actionCd === 'REVOKE') ? 'color:#e74c3c' : '', fmt: (v) => coUtil.cofYmdHms(v || '') || '-' },
       { key: 'ip',            label: 'IP', mono: true, fmt: (v) => v || '-' },
-      { key: '_uiNm', label: '화면 > 기능', cellStyle: 'color:#555;font-size:12px;', fmt: (v, row) => { const u = row.uiNm?fnDecode(row.uiNm):''; const m = row.cmdNm?fnDecode(row.cmdNm):''; return u && m ? `${u} > ${m}` : (u || m || '-'); } },
+      { key: '_uiNm', label: '화면 > 기능', cellStyle: 'color:#555;font-size:12px;', fmt: (v, row) => coUtil.cofUiNmCmdNm(row.uiNm, row.cmdNm) },
       { key: 'traceId',       label: 'Trace ID', mono: true, cellStyle: 'font-size:11px;color:#888;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', fmt: (v) => v || '-' },
       { key: 'revokeReason',  label: '폐기사유', cellStyle: 'color:#e74c3c', fmt: (v) => v || '-' },
     ];
 
     /* logExpandColumns — 로그인 로그 행 펼침 BoFormArea 컬럼 (cols=6, 라벨+값 그대로) */
     columns.logExpand = [
-      { key: '_loginDate',  label: '로그인일시', type: 'readonly', fmt: (v, row) => String(row.loginDate || row.regDate || '').slice(0, 19) || '-' },
+      { key: '_loginDate',  label: '로그인일시', type: 'readonly', fmt: (v, row) => coUtil.cofYmdHms(row.loginDate || row.regDate || '') || '-' },
       { key: '_ip',         label: 'IP',         type: 'readonly', mono: true, fmt: (v, row) => row.ip || '-' },
       { key: '_os',         label: 'OS',         type: 'readonly', fmt: (v, row) => row.os || '-' },
       { key: '_browser',    label: '브라우저',    type: 'readonly', fmt: (v, row) => row.browser || '-' },
@@ -335,8 +335,8 @@ window.SyMemberLoginHist = {
     columns.tokenExpand = [
       { key: '_action',      label: '액션',     type: 'readonly', html: true, fmt: (v, row) => `<span class="badge ${fnActionBadge(row.actionCd)}">${fnActionLabel(row.actionCd)}</span>` },
       { key: '_tokenType',   label: '토큰유형', type: 'readonly', html: true, fmt: (v, row) => `<span class="badge ${fnTypeBadge(row.tokenTypeCd)}">${row.tokenTypeCd || '-'}</span>` },
-      { key: '_atExp',       label: 'AT만료',   type: 'readonly', fmt: (v, row) => String(row.accessTokenExp || '').slice(0, 19) || '-' },
-      { key: '_rtExp',       label: 'RT만료',   type: 'readonly', fmt: (v, row) => String(row.tokenExp || '').slice(0, 19) || '-' },
+      { key: '_atExp',       label: 'AT만료',   type: 'readonly', fmt: (v, row) => coUtil.cofYmdHms(row.accessTokenExp || '') || '-' },
+      { key: '_rtExp',       label: 'RT만료',   type: 'readonly', fmt: (v, row) => coUtil.cofYmdHms(row.tokenExp || '') || '-' },
       { key: '_ip',          label: 'IP',       type: 'readonly', mono: true, fmt: (v, row) => row.ip || '-' },
       { key: '_memberId',    label: '회원ID',   type: 'readonly', fmt: (v, row) => row.memberId || '-' },
       { key: '_revokeReason',label: '폐기사유', type: 'readonly', visible: (row) => !!row.revokeReason, fmt: (v, row) => row.revokeReason || '-' },

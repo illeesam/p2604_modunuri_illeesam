@@ -244,11 +244,7 @@ window.SySiteMng = {
 
     /* onDateRangeChange — 기간 옵션 변경 */
     const onDateRangeChange = () => {
-      if (searchParam.dateRange) {
-        const r = boUtil.bofGetDateRange(searchParam.dateRange);
-        searchParam.dateStart = r ? r.from : '';
-        searchParam.dateEnd = r ? r.to : '';
-      }
+      boUtil.bofApplyDateRange(searchParam);
       pager.pageNo = 1;
     };
 
@@ -410,7 +406,7 @@ window.SySiteMng = {
       { key: 'sitePhone',     label: '대표전화' },
       { key: 'siteCeo',       label: '대표자' },
       { key: 'regDate',       label: '등록일', sortKey: 'reg', style: 'width:110px;',
-        fmt: (v) => v ? String(v).slice(0, 10) : '-' },
+        fmt: (v) => coUtil.cofYmd(v) || '-' },
       { key: 'siteStatusCd',  label: '상태', badge: (row) => fnStatusBadge(row.siteStatusCd) },
     ];
 

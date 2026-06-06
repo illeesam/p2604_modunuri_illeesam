@@ -86,13 +86,13 @@ window.StRawMng = {
 
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
-      if (searchParam.dateRange) { const r = boUtil.bofGetDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
+      boUtil.bofApplyDateRange(searchParam);
     };
 
     // 검색 필드
   const _initSearchParam = () => ({ dateRange: '이번달', dateStart: '', dateEnd: '', searchMoreOpen: false, searchType: '', searchValue: '', type: '', status: '', vendorType: '', payMethod: '', buyConfirm: '', closeYn: '', erpSend: '', period: '', orderStatus: '', amtFrom: '', amtTo: '' });
   const searchParam = reactive(_initSearchParam());
-  (() => { const r = boUtil.bofGetDateRange('이번달'); if (r) { searchParam.dateStart = r.from; searchParam.dateEnd = r.to; } })();
+  boUtil.bofApplyDateRange(searchParam, '이번달');
 
     const pager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 const raws = reactive([]);
@@ -180,7 +180,7 @@ const raws = reactive([]);
     const orderStatusLabel = s => ({ 'ORDERED':'주문완료', 'PAID':'결제완료', 'PREPARING':'준비중', 'SHIPPING':'배송중', 'DELIVERED':'배송완료', 'CONFIRMED':'구매확정', 'CANCELLED':'취소' }[s] || s || '-');
 
     /* fmtW — 포맷 W */
-    const fmtW = n => (Number(n || 0) >= 0 ? '' : '-') + Math.abs(Number(n || 0)).toLocaleString() + '원';
+    const fmtW = n => coUtil.cofWon(n, true);
 
     /* fmtPct — 포맷 퍼센트 */
     const fmtPct = n => Number(n || 0).toLocaleString() + '%';
@@ -195,7 +195,7 @@ const raws = reactive([]);
         fmt: (v, row) => isExpanded(row.settleRawId) ? '▲' : '▼' },
       { key: 'settleRawId',    label: '원장ID',
         cellStyle: 'font-size:12px;color:#555;' },
-      { key: 'orderDate',      label: '거래일자',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
+      { key: 'orderDate',      label: '거래일자',  fmt: (v) => coUtil.cofYmd(v) || '-' },
       { key: 'rawTypeCd',      label: '유형',
         badge: (row) => row.rawTypeCd === 'ORDER' ? 'badge-blue' : 'badge-orange' },
       { key: 'orderId',        label: '소스ID', cellStyle: 'color:#555' },

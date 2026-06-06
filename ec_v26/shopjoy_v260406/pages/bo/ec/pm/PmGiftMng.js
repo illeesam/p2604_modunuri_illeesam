@@ -183,7 +183,7 @@ window.PmGiftMng = {
     // ===== 날짜 범위 변경 / 사이트명 / 페이저 / 하단 상세 상태 ===============
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
-      if (searchParam.dateRange) { const r = boUtil.bofGetDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
+      boUtil.bofApplyDateRange(searchParam);
       pager.pageNo = 1;
     };
 
@@ -296,8 +296,8 @@ window.PmGiftMng = {
         fmt: (v, row) => row.giftTypeCd === '금액조건' ? (row.minOrderAmt || 0).toLocaleString() + '원↑'
           : row.giftTypeCd === '수량조건' ? (row.minOrderQty || 0) + '개↑' : '-' },
       { key: 'giftStock',    label: '재고', fmt: (v) => (v || 0).toLocaleString() + '개' },
-      { key: 'startDate',    label: '시작일', sortKey: 'reg',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
-      { key: 'endDate',      label: '종료일',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
+      { key: 'startDate',    label: '시작일', sortKey: 'reg',  fmt: (v) => coUtil.cofYmd(v) || '-' },
+      { key: 'endDate',      label: '종료일',  fmt: (v) => coUtil.cofYmd(v) || '-' },
       { key: 'giftStatusCd', label: '상태', badge: (row) => fnStatusBadge(row.giftStatusCd) },
       { key: 'siteNm',       label: '사이트', cellStyle: 'color:#2563eb', fmt: () => cfSiteNm.value },
     ];

@@ -182,7 +182,7 @@ window.PmPlanMng = {
 
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
-      if (searchParam.dateRange) { const r = boUtil.bofGetDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
+      boUtil.bofApplyDateRange(searchParam);
       pager.pageNo = 1;
     };
 
@@ -279,7 +279,7 @@ window.PmPlanMng = {
       { key: 'viewCount',    label: '조회수', fmt: (v) => (v || 0).toLocaleString() },
       { key: 'period',       label: '기간', cellStyle: 'font-size:11px;color:#666',
         fmt: (v, row) => row.startDate + ' ~ ' + row.endDate },
-      { key: 'regDate',      label: '등록일', sortKey: 'reg',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
+      { key: 'regDate',      label: '등록일', sortKey: 'reg',  fmt: (v) => coUtil.cofYmd(v) || '-' },
       { key: 'siteNm',       label: '사이트명', cellStyle: 'color:#2563eb', fmt: () => cfSiteNm.value },
     ];
 

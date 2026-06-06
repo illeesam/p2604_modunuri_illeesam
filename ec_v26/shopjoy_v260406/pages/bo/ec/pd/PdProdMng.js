@@ -195,11 +195,7 @@ window.PdProdMng = {
 
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
-      if (searchParam.dateRange) {
-        const r = boUtil.bofGetDateRange(searchParam.dateRange);
-        searchParam.dateStart = r ? r.from : '';
-        searchParam.dateEnd = r ? r.to : '';
-      }
+      boUtil.bofApplyDateRange(searchParam);
       pager.pageNo = 1;
     };
 
@@ -347,7 +343,7 @@ window.PdProdMng = {
       { key: 'prodStock',    label: '재고', fmt: (v) => (v + '개') },
       { key: 'brandNm',      label: '브랜드' },
       { key: 'prodStatusCd', label: '상태', badge: (p) => fnStatusBadge(p.prodStatusCd), fmt: (v, p) => (p.prodStatusCdNm || p.prodStatusCd) },
-      { key: 'regDate',      label: '등록일', sortKey: 'reg',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
+      { key: 'regDate',      label: '등록일', sortKey: 'reg',  fmt: (v) => coUtil.cofYmd(v) || '-' },
       { key: 'siteNm',       label: '사이트명', cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
     ];
 

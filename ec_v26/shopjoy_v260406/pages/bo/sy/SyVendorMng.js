@@ -180,7 +180,7 @@ window.SyVendorMng = {
 
     /* onDateRangeChange — 기간 옵션 변경 */
     const onDateRangeChange = () => {
-      if (searchParam.dateRange) { const r = boUtil.bofGetDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
+      boUtil.bofApplyDateRange(searchParam);
       pager.pageNo = 1;
     };
 
@@ -271,10 +271,10 @@ window.SyVendorMng = {
     const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}_${detailPanel.resetSeq}`);
 
     /* fnTypeBadge — 유형 배지 */
-    const fnTypeBadge = t => ({ '판매업체': 'badge-blue', '배송업체': 'badge-orange' }[t] || 'badge-gray');
+    const fnTypeBadge = boUtil.bofVendorTypeBadge;
 
     /* fnStatusBadge — 상태 배지 */
-    const fnStatusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
+    const fnStatusBadge = boUtil.bofVendorStatusBadge;
 
     /* fnRowStyle — 행 스타일 */
     const fnRowStyle = (v) => detailPanel.selectedId === v.vendorId ? 'background:#fff8f9;' : '';
@@ -309,7 +309,7 @@ window.SyVendorMng = {
       { key: 'vendorNo',      label: '사업자번호' },
       { key: 'vendorPhone',   label: '전화번호' },
       { key: 'vendorEmail',   label: '이메일' },
-      { key: 'contractDate',  label: '계약일', sortKey: 'reg',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
+      { key: 'contractDate',  label: '계약일', sortKey: 'reg',  fmt: (v) => coUtil.cofYmd(v) || '-' },
       { key: 'vendorStatusCd', label: '상태', badge: (row) => fnStatusBadge(row.vendorStatusCd) },
       { key: 'siteNm',        label: '사이트명', cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
     ];

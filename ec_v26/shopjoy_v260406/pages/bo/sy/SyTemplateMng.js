@@ -272,11 +272,7 @@ window.SyTemplateMng = {
 
     /* onDateRangeChange — 기간 변경 */
     const onDateRangeChange = () => {
-      if (searchParam.dateRange) {
-        const r = boUtil.bofGetDateRange(searchParam.dateRange);
-        searchParam.dateStart = r ? r.from : '';
-        searchParam.dateEnd = r ? r.to : '';
-      }
+      boUtil.bofApplyDateRange(searchParam);
       pager.pageNo = 1;
     };
 
@@ -395,7 +391,7 @@ window.SyTemplateMng = {
         cellInnerStyle: (v) => detailPanel.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'templateSubject', label: '제목(Subject)', cellStyle: 'color:#555', fmt: (v) => v || '-' },
       { key: 'useYn',          label: '사용여부', badge: (row) => fnUseYnBadge(row.useYn), fmt: (v) => v === 'Y' ? '사용' : '미사용' },
-      { key: 'regDate',        label: '등록일', sortKey: 'reg',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
+      { key: 'regDate',        label: '등록일', sortKey: 'reg',  fmt: (v) => coUtil.cofYmd(v) || '-' },
       { key: 'siteNm',         label: '사이트명', cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
     ];
 

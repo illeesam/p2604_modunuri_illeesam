@@ -368,9 +368,9 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
     columns.issueGrid = [
       { key: 'issueNo',     label: '발급번호' },
       { key: 'memberNm',    label: '회원명' },
-      { key: 'issueDate',   label: '발급일', fmt: (v) => v ? String(v).slice(0, 10) : '-' },
+      { key: 'issueDate',   label: '발급일', fmt: (v) => coUtil.cofYmd(v) || '-' },
       { key: 'issuePrice',  label: '발급가격', style: 'text-align:right;', fmt: v => (v||0).toLocaleString() + '원' },
-      { key: 'expiryDate',  label: '만료일', fmt: (v) => v ? String(v).slice(0, 10) : '-' },
+      { key: 'expiryDate',  label: '만료일', fmt: (v) => coUtil.cofYmd(v) || '-' },
       { key: 'status',      label: '상태',
         badge: row => row.status === '정상' ? 'badge-green' : row.status === '사용완료' ? 'badge-blue' : row.status === '만료됨' ? 'badge-gray' : 'badge-gray' },
     ];

@@ -617,6 +617,35 @@
   /* cofFmt — 숫자에 천단위 콤마 (ko-KR) */
   function cofFmt(n) { return Number(n || 0).toLocaleString('ko-KR'); }
 
+  /* cofWon — 숫자 → '1,234원' (천단위 콤마 + 원). 각 화면의 fmtW 복붙 대체.
+   *   signed=true 면 음수 부호 보존 (정산조정 등): -1,234원 */
+  function cofWon(n, signed) {
+    const v = Number(n) || 0;
+    if (signed) return (v < 0 ? '-' : '') + Math.abs(v).toLocaleString() + '원';
+    return v.toLocaleString() + '원';
+  }
+
+  /* cofYmdHms — 날짜/일시 문자열을 'YYYY-MM-DD HH:MM:SS'(앞 19자)로 자르기.
+   *   String(v||'').slice(0,19) 복붙 대체. null/undefined/숫자 안전. 빈값이면 ''.
+   *   끝에 '-' fallback 이 필요하면 호출부에서 `coUtil.cofYmdHms(v) || '-'` */
+  function cofYmdHms(v) { return String(v || '').slice(0, 19); }
+
+  /* cofYmd — 날짜 문자열을 'YYYY-MM-DD'(앞 10자)로 자르기. String(v||'').slice(0,10) 대체. */
+  function cofYmd(v) { return String(v || '').slice(0, 10); }
+
+  /* cofDecodeUri — 안전한 decodeURIComponent. 디코드 실패(malformed %)시 원문 반환, 빈값이면 ''.
+   *   각 로그/이력 화면의 fnDecode 복붙 대체. */
+  function cofDecodeUri(s) { try { return s ? decodeURIComponent(s) : ''; } catch (_) { return s || ''; } }
+
+  /* cofUiNmCmdNm — x-헤더 화면명/기능명을 디코드해 '화면 > 기능' 으로 결합. 둘 중 하나만 있으면 그것만, 둘 다 없으면 '-'.
+   *   로그/이력 화면 _uiNm 컬럼 fmt 복붙(12곳) 대체.
+   *   사용: { key:'_uiNm', fmt: (v, row) => coUtil.cofUiNmCmdNm(row.uiNm, row.cmdNm) } */
+  function cofUiNmCmdNm(uiNm, cmdNm) {
+    const u = uiNm ? cofDecodeUri(uiNm) : '';
+    const m = cmdNm ? cofDecodeUri(cmdNm) : '';
+    return u && m ? `${u} > ${m}` : (u || m || '-');
+  }
+
   /* cofPad — 1자리 숫자 → '0N' */
   function cofPad(n) { return String(n).padStart(2, '0'); }
 
@@ -651,72 +680,6 @@
     const first = pts.split(' ')[0].split(',');
     const last = pts.split(' ').slice(-1)[0].split(',');
     return `M${first[0]},${h - pad} L${pts.replace(/ /g, ' L')} L${last[0]},${h - pad} Z`;
-  }
-
-  /* ─────────────────────────────────────────────────────────────────────
-   * cofGrid — BoGrid/FoGrid 표준 reactive 그리드 캡슐 (FO/BO 공통)
-   *  - pager + 정렬 + setPage/onSizeChange/onSort/sortIcon 일괄 제공
-   *  - onSearch(): 화면의 목록 조회 함수. setPage/onSizeChange/onSort 시 자동 호출
-   *  - opts.sortMap: { 정렬키: { asc:'col asc', desc:'col desc' } }
-   *  - opts.pageSize / opts.pageSizes / opts.pageType
-   *
-   * 사용법:
-   *   const baseGrid = coUtil.cofGrid(() => handleSearchList(), {
-   *     sortMap: { nm: { asc: 'noticeTitle asc', desc: 'noticeTitle desc' } },
-   *     pageSize: 5,
-   *   });
-   *   // 사용: baseGrid.pager / baseGrid.setPage / baseGrid.onSizeChange
-   *   //       baseGrid.sortIcon('nm') / baseGrid.onSort('nm') / baseGrid.sortParam()
-   *   //       baseGrid.applyPage(res.data?.data)  ← API 응답으로 pager 채우기
-   * ─────────────────────────────────────────────────────────────────── */
-  function cofGrid(onSearch, opts = {}) {
-    const { reactive } = Vue;
-    const sortMap = opts.sortMap || {};
-    const g = reactive({
-      pager: {
-        pageType: opts.pageType || 'PAGE',
-        pageNo: 1,
-        pageSize: opts.pageSize || 10,
-        pageTotalCount: 0, pageTotalPage: 1,
-        pageSizes: opts.pageSizes || [5, 10, 20, 30, 50, 100, 200, 500],
-        pageNums: [], pageCond: {},
-      },
-      sortKey: '', sortDir: 'asc',
-      sortIcon: (k) => g.sortKey !== k ? '⇅' : g.sortDir === 'asc' ? '↑' : '↓',
-      sortParam: () => {
-        const m = sortMap[g.sortKey];
-        return m ? { sort: m[g.sortDir] } : {};
-      },
-      onSort: (k) => {
-        if (g.sortKey === k) {
-          if (g.sortDir === 'asc') g.sortDir = 'desc';
-          else { g.sortKey = ''; g.sortDir = 'asc'; }
-        } else { g.sortKey = k; g.sortDir = 'asc'; }
-        g.pager.pageNo = 1;
-        onSearch && onSearch();
-      },
-      setPage: (n) => {
-        if (n >= 1 && n <= g.pager.pageTotalPage) { g.pager.pageNo = n; onSearch && onSearch(); }
-      },
-      onSizeChange: () => { g.pager.pageNo = 1; onSearch && onSearch(); },
-      buildPagerNums: () => {
-        const c = g.pager.pageNo, l = g.pager.pageTotalPage;
-        const s = Math.max(1, c - 2), e = Math.min(l, s + 4);
-        g.pager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
-      },
-      /* applyPage — API 응답 PageResult.data 를 받아 pager 갱신 + pageNums 빌드 */
-      applyPage: (d) => {
-        d = d || {};
-        g.pager.pageTotalCount = d.pageTotalCount || 0;
-        g.pager.pageTotalPage  = d.pageTotalPage  || Math.ceil(g.pager.pageTotalCount / g.pager.pageSize) || 1;
-        g.buildPagerNums();
-        Object.assign(g.pager.pageCond, d.pageCond || {});
-        return d.pageList || [];
-      },
-      /* reset — 검색 초기화 시 sort/page 리셋 */
-      reset: () => { g.sortKey = ''; g.sortDir = 'asc'; g.pager.pageNo = 1; },
-    });
-    return g;
   }
 
   /* ─────────────────────────────────────────────────────────────────────
@@ -866,7 +829,12 @@
   global.coUtil.cofCollectExpandedToDepth = global.coUtil.cofCollectExpandedToDepth || cofCollectExpandedToDepth;
   // 숫자/날짜 포맷 헬퍼
   global.coUtil.cofFmt = global.coUtil.cofFmt || cofFmt;
+  global.coUtil.cofWon = global.coUtil.cofWon || cofWon;
   global.coUtil.cofPad = global.coUtil.cofPad || cofPad;
+  global.coUtil.cofYmdHms = global.coUtil.cofYmdHms || cofYmdHms;
+  global.coUtil.cofYmd = global.coUtil.cofYmd || cofYmd;
+  global.coUtil.cofDecodeUri = global.coUtil.cofDecodeUri || cofDecodeUri;
+  global.coUtil.cofUiNmCmdNm = global.coUtil.cofUiNmCmdNm || cofUiNmCmdNm;
   global.coUtil.cofToYmd = global.coUtil.cofToYmd || cofToYmd;
   global.coUtil.cofToYm = global.coUtil.cofToYm || cofToYm;
   global.coUtil.cofAddMonths = global.coUtil.cofAddMonths || cofAddMonths;
@@ -877,8 +845,7 @@
   global.coUtil.cofOmitEmpty = global.coUtil.cofOmitEmpty || cofOmitEmpty;
   global.coUtil.cofLinePoints = global.coUtil.cofLinePoints || cofLinePoints;
   global.coUtil.cofAreaPath = global.coUtil.cofAreaPath || cofAreaPath;
-  // Mng 표준 캡슐 (그리드/상세패널/트리)
-  global.coUtil.cofGrid = global.coUtil.cofGrid || cofGrid;
+  // Mng 표준 캡슐 (상세패널/트리)
   global.coUtil.cofDetail = global.coUtil.cofDetail || cofDetail;
   global.coUtil.cofTree = global.coUtil.cofTree || cofTree;
 })(typeof window !== 'undefined' ? window : this);

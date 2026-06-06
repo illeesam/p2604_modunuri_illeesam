@@ -104,14 +104,10 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, activeTab: 'vendo
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
     /* onDateRangeChange — 기간 변경 */
     const onDateRangeChange = () => {
-      if (uiState.dateRange) {
-        const r = boUtil.bofGetDateRange(uiState.dateRange);
-        uiState.dateStart = r ? r.from : '';
-        uiState.dateEnd   = r ? r.to   : '';
-      }
+      boUtil.bofApplyDateRange(uiState);
     };
     /* 초기 날짜 설정 */
-    (() => { const r = boUtil.bofGetDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
+    boUtil.bofApplyDateRange(uiState, '이번달');
 
     /* -- 원본 데이터 -- */
     const orders = reactive([]);
@@ -322,7 +318,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, activeTab: 'vendo
     const fmt  = n => Number(n || 0).toLocaleString();
 
     /* fmtW — 포맷 W */
-    const fmtW = n => Number(n || 0).toLocaleString() + '원';
+    const fmtW = coUtil.cofWon;
 
     /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = s => ({

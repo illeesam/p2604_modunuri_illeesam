@@ -206,10 +206,10 @@ window.SyVendorInfoMng = {
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
     /* fnTypeBadge — 유형 배지 */
-    const fnTypeBadge = t => ({ '판매업체': 'badge-blue', '배송업체': 'badge-orange' }[t] || 'badge-gray');
+    const fnTypeBadge = boUtil.bofVendorTypeBadge;
 
     /* fnStatusBadge — 상태 배지 */
-    const fnStatusBadge = s => ({ '활성': 'badge-green', '비활성': 'badge-gray' }[s] || 'badge-gray');
+    const fnStatusBadge = boUtil.bofVendorStatusBadge;
 
     /* fnRowStyle — 행 스타일 (선택 강조는 selected-key 의 파란 테두리로 처리) */
     const fnRowStyle = (v) => '';

@@ -313,7 +313,7 @@ window.SyBbmMng = {
       { key: 'sortOrd',       label: '정렬순서', align: 'center' },
       { key: 'useYn',         label: '사용여부', badge: (row) => fnYnBadge(row.useYn), fmt: (v) => v === 'Y' ? '사용' : '미사용' },
       { key: 'siteNm',        label: '사이트명', cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
-      { key: 'regDate',       label: '등록일',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
+      { key: 'regDate',       label: '등록일',  fmt: (v) => coUtil.cofYmd(v) || '-' },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */

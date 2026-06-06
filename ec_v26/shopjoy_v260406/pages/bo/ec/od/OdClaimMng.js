@@ -225,11 +225,7 @@ window.OdClaimMng = {
 
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
-      if (searchParam.dateRange) {
-        const r = boUtil.bofGetDateRange(searchParam.dateRange);
-        searchParam.dateStart = r ? r.from : '';
-        searchParam.dateEnd = r ? r.to : '';
-      }
+      boUtil.bofApplyDateRange(searchParam);
       pager.pageNo = 1;
     };
 

@@ -234,11 +234,7 @@ window.SyAlarmMng = {
 
     /* handleDateRangeChange — 기간 옵션 변경 */
     const handleDateRangeChange = () => {
-      if (searchParam.dateRange) {
-        const r = boUtil.bofGetDateRange(searchParam.dateRange);
-        searchParam.dateStart = r ? r.from : '';
-        searchParam.dateEnd = r ? r.to : '';
-      }
+      boUtil.bofApplyDateRange(searchParam);
       pager.pageNo = 1;
     };
 
@@ -404,7 +400,7 @@ window.SyAlarmMng = {
       { key: 'alarmSendDate', label: '발송일', fmt: (v) => v || '-' },
       { key: 'alarmStatusCd', label: '상태', badge: (row) => fnStatusBadge(row.alarmStatusCd) },
       { key: 'siteNm',        label: '사이트명', cellStyle: 'color:#2563eb;', fmt: () => cfSiteNm.value },
-      { key: 'regDate',       label: '등록일', sortKey: 'reg',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
+      { key: 'regDate',       label: '등록일', sortKey: 'reg',  fmt: (v) => coUtil.cofYmd(v) || '-' },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */

@@ -80,9 +80,9 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
 
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
-      if (uiState.dateRange) { const r = boUtil.bofGetDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
+      boUtil.bofApplyDateRange(uiState);
     };
-    (() => { const r = boUtil.bofGetDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
+    boUtil.bofApplyDateRange(uiState, '이번달');
 
     const vendors = reactive([]);
     const cfVendors = computed(() => vendors.filter(v => v.vendorType === '판매업체'));
@@ -201,7 +201,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     const fnTypeBadge = t => ({ '위약금':'badge-red', '인센티브':'badge-green', '세금조정':'badge-orange', '기타':'badge-gray' }[t] || 'badge-gray');
 
     /* fmtW — 포맷 W */
-    const fmtW = n => (n >= 0 ? '' : '-') + Math.abs(Number(n)).toLocaleString() + '원';
+    const fmtW = n => coUtil.cofWon(n, true);
 
     /* onSearch — 조회 */
     const onSearch = () => { pager.pageNo = 1; handleSearchData('DEFAULT'); };
@@ -240,7 +240,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     // 기본 그리드
     columns.baseGrid = [
       { key: 'adjId',        label: '조정ID' },
-      { key: 'adjDate',      label: '조정일자',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
+      { key: 'adjDate',      label: '조정일자',  fmt: (v) => coUtil.cofYmd(v) || '-' },
       { key: 'vendorNm',     label: '업체명' },
       { key: 'adjType',      label: '유형', badge: (row) => fnTypeBadge(row.adjType) },
       { key: 'adjAmt',       label: '조정금액', fmt: fmtW,

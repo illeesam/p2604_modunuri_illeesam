@@ -48,11 +48,7 @@ window.SyApiLogMng = {
     const allExpanded   = reactive({ value: false });
 
     // 기본 기간: 최근 1주일
-    (() => {
-      const r = boUtil.bofGetDateRange('1week');
-      uiState.dateStart = r.from;
-      uiState.dateEnd   = r.to;
-    })();
+    boUtil.bofApplyDateRange(uiState, '1week');
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
@@ -126,11 +122,7 @@ window.SyApiLogMng = {
 
     /* onDateRangeChange — 기간 변경 */
     const onDateRangeChange = () => {
-      if (uiState.dateRange) {
-        const r = boUtil.bofGetDateRange(uiState.dateRange);
-        uiState.dateStart = r ? r.from : '';
-        uiState.dateEnd   = r ? r.to   : '';
-      }
+      boUtil.bofApplyDateRange(uiState);
       pager.pageNo = 1;
     };
 
@@ -248,8 +240,7 @@ window.SyApiLogMng = {
         searchAppTypeCd:'', searchUiNm:'', searchTraceId:'',
         dateRange:'1week', srchOpen:false,
       });
-      const r = boUtil.bofGetDateRange('1week');
-      uiState.dateStart = r.from; uiState.dateEnd = r.to;
+      boUtil.bofApplyDateRange(uiState, '1week');
       pager.pageNo = 1;
       handleSearchList();
     };
@@ -280,7 +271,7 @@ window.SyApiLogMng = {
     const cfCurrentList = computed(() => uiState.activeTab === 'access' ? accessLogs : errorLogs);
 
     /* fnDecode — 유틸 */
-    const fnDecode = s => { try { return s ? decodeURIComponent(s) : ''; } catch { return s || ''; } };
+    const fnDecode = coUtil.cofDecodeUri;
 
     // 기본 검색
     columns.baseSearch = [
@@ -320,9 +311,9 @@ window.SyApiLogMng = {
       { key: 'respTimeMs', label: 'ms',        style: 'text-align:right;', align: 'right', mono: true, cellStyle: (v, row) => row.respTimeMs > 1000 ? 'color:#e74c3c;font-weight:700' : '', fmt: (v) => v != null ? v : '-' },
       { key: 'reqIp',      label: 'IP', mono: true, fmt: (v) => v || '-' },
       { key: 'userId',     label: '사용자ID', cellStyle: 'color:#555', fmt: (v) => v || '-' },
-      { key: '_uiNm', label: '화면 > 기능', cellStyle: 'color:#555;font-size:12px;', fmt: (v, row) => { const u = row.uiNm?fnDecode(row.uiNm):''; const m = row.cmdNm?fnDecode(row.cmdNm):''; return u && m ? `${u} > ${m}` : (u || m || '-'); } },
+      { key: '_uiNm', label: '화면 > 기능', cellStyle: 'color:#555;font-size:12px;', fmt: (v, row) => coUtil.cofUiNmCmdNm(row.uiNm, row.cmdNm) },
       { key: 'traceId',    label: 'Trace ID', mono: true, cellStyle: 'font-size:11px;color:#888;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', fmt: (v) => v || '-' },
-      { key: 'regDate',    label: '등록일시', cellStyle: 'white-space:nowrap', fmt: (v) => String(v || '').slice(0, 19) },
+      { key: 'regDate',    label: '등록일시', cellStyle: 'white-space:nowrap', fmt: (v) => coUtil.cofYmdHms(v || '') },
     ];
     // 오류 로그 그리드
     columns.errorGrid = [
@@ -336,9 +327,9 @@ window.SyApiLogMng = {
       { key: '_errorMsg',  label: '오류메시지', cellStyle: 'color:#555;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', cellTitle: (v, row) => row.errorMsg, fmt: (v, row) => row.errorMsg || '-' },
       { key: 'reqIp',      label: 'IP', mono: true, fmt: (v) => v || '-' },
       { key: 'userId',     label: '사용자ID', cellStyle: 'color:#555', fmt: (v) => v || '-' },
-      { key: '_uiNm', label: '화면 > 기능', cellStyle: 'color:#555;font-size:12px;', fmt: (v, row) => { const u = row.uiNm?fnDecode(row.uiNm):''; const m = row.cmdNm?fnDecode(row.cmdNm):''; return u && m ? `${u} > ${m}` : (u || m || '-'); } },
+      { key: '_uiNm', label: '화면 > 기능', cellStyle: 'color:#555;font-size:12px;', fmt: (v, row) => coUtil.cofUiNmCmdNm(row.uiNm, row.cmdNm) },
       { key: 'traceId',    label: 'Trace ID', mono: true, cellStyle: 'font-size:11px;color:#888;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', fmt: (v) => v || '-' },
-      { key: 'regDate',    label: '등록일시', cellStyle: 'white-space:nowrap', fmt: (v) => String(v || '').slice(0, 19) },
+      { key: 'regDate',    label: '등록일시', cellStyle: 'white-space:nowrap', fmt: (v) => coUtil.cofYmdHms(v || '') },
     ];
     /* fnRowExpanded — 행 펼침 여부 */
     const fnRowExpanded = (r, idx) => isExpanded(r.logId || idx);
@@ -372,7 +363,7 @@ window.SyApiLogMng = {
       { key: '_server',   label: '서버',     type: 'readonly', mono: true, fmt: (v, row) => row.serverNm || '-' },
       { key: '_profile',  label: '프로파일', type: 'readonly', html: true, fmt: (v, row) => row.profile ? `<span class="badge badge-blue" style="font-size:10px;">${row.profile}</span>` : '-' },
       { key: '_thread',   label: '스레드',   type: 'readonly', mono: true, colSpan: 3, fmt: (v, row) => row.threadNm || '-' },
-      { key: '_regDate',  label: '등록일시', type: 'readonly', fmt: (v, row) => String(row.regDate || '').slice(0, 19) || '-' },
+      { key: '_regDate',  label: '등록일시', type: 'readonly', fmt: (v, row) => coUtil.cofYmdHms(row.regDate || '') || '-' },
     ];
 
     /* errorExpand — API오류로그 행 펼침 BoFormArea 컬럼 (cols=4, labelLeft) */
@@ -395,7 +386,7 @@ window.SyApiLogMng = {
       { key: '_traceId',  label: 'x-trace-id', type: 'readonly', mono: true, fmt: (v, row) => row.traceId || '-' },
       { key: '_logger',   label: '로거',       type: 'readonly', colSpan: 2, fmt: (v, row) => row.loggerNm || '-' },
       { key: '_thread',   label: '스레드',     type: 'readonly', mono: true, colSpan: 2, fmt: (v, row) => row.threadNm || '-' },
-      { key: '_regDate',  label: '등록일시',   type: 'readonly', fmt: (v, row) => String(row.regDate || '').slice(0, 19) || '-' },
+      { key: '_regDate',  label: '등록일시',   type: 'readonly', fmt: (v, row) => coUtil.cofYmdHms(row.regDate || '') || '-' },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */

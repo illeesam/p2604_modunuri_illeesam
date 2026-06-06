@@ -66,9 +66,9 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
 
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
-      if (uiState.dateRange) { const r = boUtil.bofGetDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
+      boUtil.bofApplyDateRange(uiState);
     };
-    (() => { const r = boUtil.bofGetDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
+    boUtil.bofApplyDateRange(uiState, '이번달');
 
     const rows = reactive([]);
 
@@ -116,7 +116,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     const fnPayBadge  = m => ({ '카드결제':'badge-blue', '계좌이체':'badge-green', '캐쉬':'badge-orange', '혼합결제':'badge-purple' }[m] || 'badge-gray');
 
     /* fmtW — 포맷 W */
-    const fmtW = n => Number(n||0).toLocaleString() + '원';
+    const fmtW = coUtil.cofWon;
 
     /* onSearch — 조회 */
     const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
@@ -146,7 +146,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     // 기본 그리드
     columns.baseGrid = [
       { key: 'orderId',    label: '주문ID' },
-      { key: 'txDate',     label: '거래일',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
+      { key: 'txDate',     label: '거래일',  fmt: (v) => coUtil.cofYmd(v) || '-' },
       { key: 'payMethod',  label: '결제수단', badge: (row) => fnPayBadge(row.payMethod) },
       { key: 'payAmt',     label: '주문금액', fmt: fmtW },
       { key: 'pgAmt',      label: 'PG정산액', fmt: fmtW },

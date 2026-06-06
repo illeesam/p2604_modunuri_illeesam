@@ -112,7 +112,7 @@ window.StErpGenMng = {
     const fnStatusBadge = s => coUtil.cofCodeBadge('ERP_STATUS', s, _ERP_STATUS_FB[s] || 'badge-gray');
 
     /* fmtW — 포맷 W */
-    const fmtW = n => Number(n||0).toLocaleString() + '원';
+    const fmtW = coUtil.cofWon;
 
     /* onSearch — 조회 */
     const onSearch = async () => { await handleSearchData('DEFAULT'); };
@@ -133,7 +133,7 @@ window.StErpGenMng = {
       { key: 'slipType',  label: '전표유형', badge: () => 'badge-blue' },
       { key: 'slipCnt',   label: '전표수', fmt: (v) => v + '건' },
       { key: 'totalAmt',  label: '총금액', fmt: fmtW, cellStyle: 'font-weight:700' },
-      { key: 'genDate',   label: '생성일',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
+      { key: 'genDate',   label: '생성일',  fmt: (v) => coUtil.cofYmd(v) || '-' },
       { key: 'status',    label: '상태', badge: (row) => fnStatusBadge(row.status) },
       { key: 'regUserNm', label: '담당자' },
     ];

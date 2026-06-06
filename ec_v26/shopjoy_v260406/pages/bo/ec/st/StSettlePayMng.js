@@ -98,9 +98,9 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
 
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
-      if (uiState.dateRange) { const r = boUtil.bofGetDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
+      boUtil.bofApplyDateRange(uiState);
     };
-    (() => { const r = boUtil.bofGetDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
+    boUtil.bofApplyDateRange(uiState, '이번달');
 
     const pays = reactive([]);
 
@@ -137,7 +137,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     const fnStatusBadge = s => ({ '지급완료':'badge-green', '지급대기':'badge-blue', '지급보류':'badge-orange', '지급오류':'badge-red' }[s] || 'badge-gray');
 
     /* fmtW — 포맷 W */
-    const fmtW = n => Number(n || 0).toLocaleString() + '원';
+    const fmtW = coUtil.cofWon;
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
         // --- [컬럼 정의] ---
@@ -162,7 +162,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     // 기본 그리드
     columns.baseGrid = [
       { key: 'payId',      label: '지급ID' },
-      { key: 'payDate',    label: '지급일',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
+      { key: 'payDate',    label: '지급일',  fmt: (v) => coUtil.cofYmd(v) || '-' },
       { key: 'vendorNm',   label: '업체명', cellStyle: 'font-weight:700' },
       { key: 'closeMon',   label: '정산월' },
       { key: 'settleAmt',  label: '정산액', fmt: fmtW, cellStyle: 'font-weight:700' },

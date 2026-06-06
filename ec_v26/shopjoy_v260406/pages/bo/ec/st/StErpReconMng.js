@@ -77,9 +77,9 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
 
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
-      if (uiState.dateRange) { const r = boUtil.bofGetDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
+      boUtil.bofApplyDateRange(uiState);
     };
-    (() => { const r = boUtil.bofGetDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
+    boUtil.bofApplyDateRange(uiState, '이번달');
 
     const recons = reactive([]);
 
@@ -140,7 +140,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     const fnTypeBadge = t => ({ '정산':'badge-blue', '수수료':'badge-orange', '반품조정':'badge-red' }[t] || 'badge-gray');
 
     /* fmtW — 포맷 W */
-    const fmtW = n => Number(n||0).toLocaleString() + '원';
+    const fmtW = coUtil.cofWon;
 
     /* onSearch — 조회 */
     const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
@@ -171,7 +171,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     // 기본 그리드
     columns.baseGrid = [
       { key: 'reconId',    label: '대사ID' },
-      { key: 'reconDate',  label: '대사일자',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
+      { key: 'reconDate',  label: '대사일자',  fmt: (v) => coUtil.cofYmd(v) || '-' },
       { key: 'slipId',     label: '전표ID', cellStyle: 'font-size:11px' },
       { key: 'slipType',   label: '유형', badge: (row) => fnTypeBadge(row.slipType) },
       { key: 'sysAmt',     label: '시스템금액', fmt: fmtW, cellStyle: 'font-weight:700' },

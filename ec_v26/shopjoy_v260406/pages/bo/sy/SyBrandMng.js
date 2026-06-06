@@ -42,11 +42,7 @@ window.SyBrandMng = {
         return handleSearchList();
       // 기간 옵션 변경
       } else if (cmd === 'searchParam-dateRange') {
-        if (searchParam.dateRange) {
-          const r = boUtil.bofGetDateRange(searchParam.dateRange);
-          searchParam.dateStart = r ? r.from : '';
-          searchParam.dateEnd = r ? r.to : '';
-        }
+        boUtil.bofApplyDateRange(searchParam);
         return;
       // 브랜드 그리드 행 추가
       } else if (cmd === 'brands-add') {

@@ -177,7 +177,7 @@ window.PmEventMng = {
 
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
-      if (searchParam.dateRange) { const r = boUtil.bofGetDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
+      boUtil.bofApplyDateRange(searchParam);
       pager.pageNo = 1;
     };
 
@@ -271,10 +271,10 @@ window.PmEventMng = {
       { key: 'authRequired',   label: '인증필요',
         badge: (row) => row.authRequired ? 'badge-orange' : 'badge-gray',
         fmt: (v) => v ? '필요' : '불필요' },
-      { key: 'startDate',      label: '시작일',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
-      { key: 'endDate',        label: '종료일',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
+      { key: 'startDate',      label: '시작일',  fmt: (v) => coUtil.cofYmd(v) || '-' },
+      { key: 'endDate',        label: '종료일',  fmt: (v) => coUtil.cofYmd(v) || '-' },
       { key: 'eventStatusCd',  label: '상태', badge: (row) => fnStatusBadge(row.eventStatusCd) },
-      { key: 'regDate',        label: '등록일', sortKey: 'reg',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
+      { key: 'regDate',        label: '등록일', sortKey: 'reg',  fmt: (v) => coUtil.cofYmd(v) || '-' },
       { key: 'siteNm',         label: '사이트명', cellStyle: 'color:#2563eb', fmt: () => cfSiteNm.value },
     ];
 
@@ -377,10 +377,10 @@ window.PmEventMng = {
           </div>
         </div>
         <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:center;align-items:center;">
-          <button class="btn btn-blue btn-sm" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)" style="font-size:11px;padding:4px 12px;">
+          <button class="btn btn-blue btn-sm" @click.stop="handleGridCellAction('events-cellClick', 'btn_edit', e)" style="font-size:11px;padding:4px 12px;">
             수정
           </button>
-          <button class="btn btn-danger btn-sm" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)" style="font-size:11px;padding:4px 12px;">
+          <button class="btn btn-danger btn-sm" @click.stop="handleGridCellAction('events-cellClick', 'btn_delete', e)" style="font-size:11px;padding:4px 12px;">
             삭제
           </button>
           <span style="font-size:11px;color:#999;margin-left:auto;">

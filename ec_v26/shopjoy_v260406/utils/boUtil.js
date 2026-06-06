@@ -56,6 +56,23 @@
     }
   }
 
+  /* bofApplyDateRange — range 옵션(예: '1month','이번달')을 obj 의 시작/종료 키에 적용.
+   *   각 화면의 `if(p.dateRange){const r=bofGetDateRange(...);p.dateStart=r?r.from:'';...}` 복붙 대체.
+   *   range 인자 생략 시 obj[rangeKey](기본 'dateRange') 값을 사용.
+   *   range 가 빈값이면 시작/종료를 비우지 않고 그대로 둔다(직접 입력 보존).
+   *   사용:
+   *     boUtil.bofApplyDateRange(searchParam);                       // obj.dateRange → dateStart/dateEnd
+   *     boUtil.bofApplyDateRange(uiState, '이번달', 'dateStart', 'dateEnd'); */
+  function bofApplyDateRange(obj, range, startKey, endKey, rangeKey) {
+    if (!obj) return;
+    const sk = startKey || 'dateStart', ek = endKey || 'dateEnd';
+    const rg = range !== undefined ? range : obj[rangeKey || 'dateRange'];
+    if (!rg) return;
+    const r = bofGetDateRange(rg);
+    obj[sk] = r ? r.from : '';
+    obj[ek] = r ? r.to : '';
+  }
+
   /* dateStr 이 range 범위 내에 있으면 true. dateStr 없으면 항상 true */
   function bofIsInRange(dateStr, range) {
     if (!dateStr) return true;
@@ -73,7 +90,7 @@
     return max + 1;
   }
 
-  const boUtil = { bofDateRangeOptions, bofGetDateRange, bofIsInRange, bofNextId: nextIdFn };
+  const boUtil = { bofDateRangeOptions, bofGetDateRange, bofApplyDateRange, bofIsInRange, bofNextId: nextIdFn };
 
   /* ── 공개 대상(Visibility) 유틸 ──
    * 저장 포맷: '^MEMBER^VIP^' (양끝 ^ 래핑). 공개 안 함=''.
@@ -135,6 +152,15 @@
     const site = sites.find(s => s.siteId === boCommonFilter.siteId);
     return site?.siteNm || 'ShopJoy';
   };
+
+  /* ── 업체/토큰 배지·라벨 (여러 화면 중복 맵 통합) ──
+   * 주의: sy_code.code_opt1 이 채워지면 coUtil.cofCodeBadge 로 이관 권장(현재 미채움이라 하드맵 유지).
+   * 사용: 화면에서 `const fnTypeBadge = boUtil.bofVendorTypeBadge;` 별칭으로 두면 기존 badge: 컬럼 참조 무수정. */
+  boUtil.bofVendorTypeBadge   = (t) => ({ '판매업체': 'badge-blue', '배송업체': 'badge-orange' })[t] || 'badge-gray';   // SyVendorMng/SyVendorInfoMng 공통
+  boUtil.bofVendorStatusBadge = (s) => ({ '활성': 'badge-green', '비활성': 'badge-gray' })[s] || 'badge-gray';          // SyVendorMng/SyVendorInfoMng 공통
+  boUtil.bofTokenActionBadge  = (a) => ({ 'ISSUE': 'badge-blue', 'REFRESH': 'badge-green', 'REVOKE': 'badge-red', 'EXPIRE': 'badge-orange', 'LOGOUT': 'badge-gray' })[a] || 'badge-gray'; // SyMemberLoginHist/SyUserLoginHist 공통
+  boUtil.bofTokenActionLabel  = (a) => ({ 'ISSUE': '발급', 'REFRESH': '갱신', 'REVOKE': '폐기', 'EXPIRE': '만료', 'LOGOUT': '로그아웃' })[a] || (a || '-');                              // SyMemberLoginHist/SyUserLoginHist 공통
+  boUtil.bofTokenTypeBadge    = (t) => ({ 'ACCESS': 'badge-purple', 'REFRESH': 'badge-blue' })[t] || 'badge-gray';     // SyMemberLoginHist/SyUserLoginHist 공통
 
   /* exportCsv → coUtil.cofExportCsv 로 통합. 호출처에서 coUtil.cofExportCsv 사용. */
 

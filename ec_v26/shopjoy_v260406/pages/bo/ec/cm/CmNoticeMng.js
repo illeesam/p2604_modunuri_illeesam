@@ -1,6 +1,6 @@
 /* ShopJoy Admin - 공지사항관리
  * ★ BO Mng 표준 참조 모델 (2026-05-28) — 신규 Mng 작성 시 이 파일 구조를 따른다.
- *   - coUtil.cofGrid(baseGrid) / coUtil.cofDetail(baseDetail) 캡슐 사용
+ *   - 수동 baseGrid(pager+정렬 캡슐) / coUtil.cofDetail(baseDetail) 캡슐 사용
  *   - setup() 6섹션 [01]~[06] 마커 (dispatch=[02] / init=[03] / 핸들러=[04] / 헬퍼·컬럼=[05])
  *   - cmd 라우팅: '{영역명}-{기능명}' (baseDetail-close, baseGrid-sort, notices-rowEdit)
  *   - 검색: <bo-search-area :columns="columns.baseSearch">
@@ -30,11 +30,34 @@ window.CmNoticeMng = {
     };
     const searchParam = reactive(_initSearchParam());
 
-    /* baseGrid — pager + 정렬 + 페이지 액션 (coUtil.cofGrid) */
-    const baseGrid = coUtil.cofGrid(() => handleSearchList(), {
-      pageSize: 5,
-      sortMap: { nm: { asc: 'noticeTitle asc', desc: 'noticeTitle desc' },
-                 reg: { asc: 'regDate asc',    desc: 'regDate desc' } },
+    /* baseGrid — pager + 정렬 + 페이지 액션 캡슐 (수동) */
+    const _sortMap = { nm: { asc: 'noticeTitle asc', desc: 'noticeTitle desc' },
+                       reg: { asc: 'regDate asc',    desc: 'regDate desc' } };
+    const baseGrid = reactive({
+      pager: { pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1,
+               pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageNums: [], pageCond: {} },
+      sortKey: '', sortDir: 'asc',
+      sortIcon: (k) => baseGrid.sortKey !== k ? '⇅' : baseGrid.sortDir === 'asc' ? '↑' : '↓',
+      sortParam: () => { const m = _sortMap[baseGrid.sortKey]; return m ? { sort: m[baseGrid.sortDir] } : {}; },
+      onSort: (k) => {
+        if (baseGrid.sortKey === k) {
+          if (baseGrid.sortDir === 'asc') baseGrid.sortDir = 'desc';
+          else { baseGrid.sortKey = ''; baseGrid.sortDir = 'asc'; }
+        } else { baseGrid.sortKey = k; baseGrid.sortDir = 'asc'; }
+        baseGrid.pager.pageNo = 1;
+        handleSearchList();
+      },
+      setPage: (n) => { if (n >= 1 && n <= baseGrid.pager.pageTotalPage) { baseGrid.pager.pageNo = n; handleSearchList(); } },
+      onSizeChange: () => { baseGrid.pager.pageNo = 1; handleSearchList(); },
+      reset: () => { baseGrid.sortKey = ''; baseGrid.sortDir = 'asc'; baseGrid.pager.pageNo = 1; },
+      applyPage: (d) => {
+        d = d || {};
+        baseGrid.pager.pageTotalCount = d.pageTotalCount || 0;
+        baseGrid.pager.pageTotalPage  = d.pageTotalPage  || Math.ceil(baseGrid.pager.pageTotalCount / baseGrid.pager.pageSize) || 1;
+        coUtil.cofBuildPagerNums(baseGrid.pager);
+        Object.assign(baseGrid.pager.pageCond, d.pageCond || {});
+        return d.pageList || [];
+      },
     });
 
     /* baseDetail — 인라인 Dtl 패널 (coUtil.cofDetail)
@@ -81,11 +104,7 @@ window.CmNoticeMng = {
       if (cmd === 'searchParam-reset') { Object.assign(searchParam, _initSearchParam()); baseGrid.reset(); resetDetailToNew();
       return handleSearchList(); }
       if (cmd === 'searchParam-dateRange') {
-        if (searchParam.dateRange) {
-          const r = boUtil.bofGetDateRange(searchParam.dateRange);
-          searchParam.dateStart = r ? r.from : '';
-          searchParam.dateEnd   = r ? r.to   : '';
-        }
+        boUtil.bofApplyDateRange(searchParam);
         baseGrid.pager.pageNo = 1;
         return;
       }
@@ -214,7 +233,7 @@ window.CmNoticeMng = {
         badge: (row) => coUtil.cofCodeBadge('NOTICE_STATUS', row.noticeStatusCd, _STATUS_FB[row.noticeStatusCd] || 'badge-gray') },
       { key: 'siteNm',         label: '사이트명', style: 'width:110px;', cellStyle: 'color:#2563eb;', fmt: () => boUtil.bofGetSiteNm() },
       { key: 'regDate',        label: '등록일',   style: 'width:110px;', sortKey: 'reg',
-        fmt: (v) => v ? String(v).slice(0, 10) : '-' },
+        fmt: (v) => coUtil.cofYmd(v) || '-' },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */

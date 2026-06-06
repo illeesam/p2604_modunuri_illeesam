@@ -650,10 +650,7 @@ window.SyCodeMng = {
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => pageCodes.date_range_opts,
         onRangeChange: () => {
-          if (searchParam.dateRange) {
-            const r = boUtil.bofGetDateRange(searchParam.dateRange);
-            searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : '';
-          }
+          boUtil.bofApplyDateRange(searchParam);
         } },
     ];
 

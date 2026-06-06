@@ -64,9 +64,9 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
 
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
-      if (uiState.dateRange) { const r = boUtil.bofGetDateRange(uiState.dateRange); uiState.dateStart = r ? r.from : ''; uiState.dateEnd = r ? r.to : ''; }
+      boUtil.bofApplyDateRange(uiState);
     };
-    (() => { const r = boUtil.bofGetDateRange('이번달'); if (r) { uiState.dateStart = r.from; uiState.dateEnd = r.to; } })();
+    boUtil.bofApplyDateRange(uiState, '이번달');
 
     const rows = reactive([]);
 
@@ -110,7 +110,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     const fnDiffBadge = s => ({ '일치':'badge-green','시스템과다':'badge-red','업체과다':'badge-orange' }[s] || 'badge-gray');
 
     /* fmtW — 포맷 W */
-    const fmtW = n => Number(n||0).toLocaleString() + '원';
+    const fmtW = coUtil.cofWon;
 
     /* onSearch — 조회 */
     const onSearch = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };

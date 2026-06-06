@@ -180,7 +180,7 @@ window.PmDiscntMng = {
     // ===== 날짜 범위 변경 / 사이트명 / 페이저 / 하단 상세 상태 ===============
     /* handleDateRangeChange — 기간 변경 */
     const handleDateRangeChange = () => {
-      if (searchParam.dateRange) { const r = boUtil.bofGetDateRange(searchParam.dateRange); searchParam.dateStart = r ? r.from : ''; searchParam.dateEnd = r ? r.to : ''; }
+      boUtil.bofApplyDateRange(searchParam);
       pager.pageNo = 1;
     };
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
@@ -314,8 +314,8 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
           : (row.discntValue || 0).toLocaleString() + '원' },
       { key: 'discntTargetCd', label: '적용대상', cellStyle: 'color:#555',
         fmt: (v) => v || '전체상품' },
-      { key: 'startDate',      label: '시작일', sortKey: 'reg',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
-      { key: 'endDate',        label: '종료일',  fmt: (v) => v ? String(v).slice(0, 10) : '-' },
+      { key: 'startDate',      label: '시작일', sortKey: 'reg',  fmt: (v) => coUtil.cofYmd(v) || '-' },
+      { key: 'endDate',        label: '종료일',  fmt: (v) => coUtil.cofYmd(v) || '-' },
       { key: 'discntStatusCd', label: '상태', badge: (row) => fnStatusBadge(row.discntStatusCd) },
       { key: 'siteNm',         label: '사이트', cellStyle: 'color:#2563eb', fmt: () => cfSiteNm.value },
     ];
