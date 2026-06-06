@@ -217,75 +217,73 @@ window.SyBatchHist = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 목록 영역 =================================================== -->
-  <bo-container title="배치 실행이력" :count-text="pager.pageTotalCount + '건'">
-    <template #toolbar-actions>
-      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('batchLogs-expandAll')" style="height:30px;font-size:11px;padding:2px 8px;" title="전체 펼치기">
-        ▼ 전체펼치기
-      </button>
-      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('batchLogs-collapseAll')" style="height:30px;font-size:11px;padding:2px 8px;" title="전체 접기">
-        ▲ 전체접기
-      </button>
-      <select class="form-control" style="height:30px;font-size:12px;padding:2px 6px;width:160px;" v-model="uiState.searchBatchId">
-        <option value="">
-          배치 전체
-        </option>
-        <option v-for="b in cfBatchOptions" :key="b.batchId" :value="b.batchId">
-          {{ b.label }}
-        </option>
-      </select>
-      <select class="form-control" style="height:30px;font-size:12px;padding:2px 6px;width:90px;" v-model="uiState.searchStatus">
-        <option value="">
-          상태 전체
-        </option>
-        <option v-for="c in codes.batch_run_statuses" :key="c.codeValue" :value="c.codeValue">
-          {{ c.codeLabel }}
-        </option>
-      </select>
-      <button class="btn btn-primary btn-sm" @click="handleBtnAction('searchParam-list')" style="height:30px;font-size:12px;padding:2px 12px;">
-        조회
-      </button>
-    </template>
-    <bo-grid bare
-      :columns="columns.histGrid" :rows="batchLogs" row-key="batchLogId"
-      :row-style="fnHistRowStyle" :is-expanded="fnRowExpanded"
-      empty-text="실행이력이 없습니다.">
-      <template #row-expand="{ row, colspan }">
-      <td :colspan="colspan"
-        :style="(row.runStatus==='실패' ? 'background:#fff5f5;' : 'background:#eef3fb;') + 'padding:0;border-top:2px solid ' + (row.runStatus==='실패' ? '#f3b4b4' : '#bcd0ee') + ';'">
-        <div :style="'margin:10px 14px 12px;padding:12px 14px;background:#fff;border-radius:8px;border:1px solid ' + (row.runStatus==='실패' ? '#f0c4c4' : '#d4e0f2') + ';box-shadow:inset 3px 0 0 ' + (row.runStatus==='실패' ? '#ef4444' : '#3b82f6') + ';'">
-        <div style="font-size:11px;font-weight:700;letter-spacing:.3px;margin-bottom:8px;" :style="row.runStatus==='실패' ? 'color:#b91c1c;' : 'color:#1d4ed8;'">
-          ▼ 실행 상세
+<!-- ===== ■. 목록 영역 =================================================== -->
+<bo-container title="배치 실행이력" :count-text="pager.pageTotalCount + '건'">
+  <template #toolbar-actions>
+    <button class="btn btn-secondary btn-sm" @click="handleBtnAction('batchLogs-expandAll')" style="height:30px;font-size:11px;padding:2px 8px;" title="전체 펼치기">
+      ▼ 전체펼치기
+    </button>
+    <button class="btn btn-secondary btn-sm" @click="handleBtnAction('batchLogs-collapseAll')" style="height:30px;font-size:11px;padding:2px 8px;" title="전체 접기">
+      ▲ 전체접기
+    </button>
+    <select class="form-control" style="height:30px;font-size:12px;padding:2px 6px;width:160px;" v-model="uiState.searchBatchId">
+      <option value="">
+        배치 전체
+      </option>
+      <option v-for="b in cfBatchOptions" :key="b.batchId" :value="b.batchId">
+        {{ b.label }}
+      </option>
+    </select>
+    <select class="form-control" style="height:30px;font-size:12px;padding:2px 6px;width:90px;" v-model="uiState.searchStatus">
+      <option value="">
+        상태 전체
+      </option>
+      <option v-for="c in codes.batch_run_statuses" :key="c.codeValue" :value="c.codeValue">
+        {{ c.codeLabel }}
+      </option>
+    </select>
+    <button class="btn btn-primary btn-sm" @click="handleBtnAction('searchParam-list')" style="height:30px;font-size:12px;padding:2px 12px;">
+      조회
+    </button>
+  </template>
+  <bo-grid bare
+    :columns="columns.histGrid" :rows="batchLogs" row-key="batchLogId"
+    :row-style="fnHistRowStyle" :is-expanded="fnRowExpanded"
+    empty-text="실행이력이 없습니다.">
+    <template #row-expand="{ row, colspan }">
+    <td :colspan="colspan"
+      :style="(row.runStatus==='실패' ? 'background:#fff5f5;' : 'background:#eef3fb;') + 'padding:0;border-top:2px solid ' + (row.runStatus==='실패' ? '#f3b4b4' : '#bcd0ee') + ';'">
+      <div :style="'margin:10px 14px 12px;padding:12px 14px;background:#fff;border-radius:8px;border:1px solid ' + (row.runStatus==='실패' ? '#f0c4c4' : '#d4e0f2') + ';box-shadow:inset 3px 0 0 ' + (row.runStatus==='실패' ? '#ef4444' : '#3b82f6') + ';'">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.3px;margin-bottom:8px;" :style="row.runStatus==='실패' ? 'color:#b91c1c;' : 'color:#1d4ed8;'">
+        ▼ 실행 상세
+      </div>
+      <bo-form-area :columns="columns.histExpand" :form="row" :cols="5" readonly label-left compact :show-actions="false" />
+      <div style="display:flex;align-items:flex-start;gap:10px;margin:6px 0 0;">
+        <div style="flex:0 0 70px;font-size:11px;font-weight:600;color:#888;padding-top:7px;">
+          메시지
         </div>
-        <bo-form-area :columns="columns.histExpand" :form="row" :cols="5" readonly label-left compact :show-actions="false" />
-        <div style="display:flex;align-items:flex-start;gap:10px;margin:6px 0 0;">
-          <div style="flex:0 0 70px;font-size:11px;font-weight:600;color:#888;padding-top:7px;">
-            메시지
-          </div>
-          <div style="flex:1;min-width:0;font-size:12px;padding:6px 10px;border-radius:5px;line-height:1.6;white-space:pre-wrap;word-break:break-all;"
-            :style="row.runStatus==='실패'
-              ? 'background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;font-family:monospace;'
-              : 'background:#f1f5f9;border:1px solid #e2e8f0;color:#374151;'">
-            {{ row.message }}
-          </div>
+        <div style="flex:1;min-width:0;font-size:12px;padding:6px 10px;border-radius:5px;line-height:1.6;white-space:pre-wrap;word-break:break-all;"
+          :style="row.runStatus==='실패'
+            ? 'background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;font-family:monospace;'
+            : 'background:#f1f5f9;border:1px solid #e2e8f0;color:#374151;'">
+          {{ row.message }}
         </div>
-        <template v-if="row.detail">
-          <div style="font-size:11px;font-weight:600;color:#888;margin:6px 0 3px;">
-            상세 내용
-          </div>
-          <pre style="margin:0;font-size:11px;padding:10px 12px;border-radius:5px;white-space:pre-wrap;word-break:break-all;line-height:1.65;font-family:monospace;"
-            :style="row.runStatus==='실패'
-              ? 'background:#1e1e1e;color:#f87171;border:1px solid #7f1d1d;'
-              : 'background:#1e1e1e;color:#86efac;border:1px solid #14532d;'">{{ row.detail }}</pre>
-        </template>
+      </div>
+      <template v-if="row.detail">
+        <div style="font-size:11px;font-weight:600;color:#888;margin:6px 0 3px;">
+          상세 내용
         </div>
-      </td>
+        <pre style="margin:0;font-size:11px;padding:10px 12px;border-radius:5px;white-space:pre-wrap;word-break:break-all;line-height:1.65;font-family:monospace;"
+          :style="row.runStatus==='실패'
+            ? 'background:#1e1e1e;color:#f87171;border:1px solid #7f1d1d;'
+            : 'background:#1e1e1e;color:#86efac;border:1px solid #14532d;'">{{ row.detail }}</pre>
       </template>
-    </bo-grid>
-    <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('batchLogs-pager-setPage', n)" :on-size-change="() => handleSelectAction('batchLogs-pager-sizeChange')" />
-  </bo-container>
-  <!-- ===== □. 목록 영역 =================================================== -->
-</div>
+      </div>
+    </td>
+    </template>
+  </bo-grid>
+  <bo-pager :pager="pager" :on-set-page="n => handleBtnAction('batchLogs-pager-setPage', n)" :on-size-change="() => handleSelectAction('batchLogs-pager-sizeChange')" />
+</bo-container>
+<!-- ===== □. 목록 영역 =================================================== -->
 `,
 };

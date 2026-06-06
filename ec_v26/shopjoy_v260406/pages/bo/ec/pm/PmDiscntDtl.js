@@ -316,258 +316,256 @@ window.PmDiscntDtl = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
-  <bo-container>
-    <!-- ===== ■.■. 컨테이너 헤더 (제목 = list-title) ============================= -->
-    <template #title>
-      {{ !active ? '할인 상세' : (cfIsNew ? '할인 등록' : (cfDtlMode ? '할인 상세' : '할인 수정')) }}
-      <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
-        #{{ form.discntId }}
-      </span>
-      <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-        목록에서 행을 선택하거나 [+신규]를 누르세요
-      </span>
-    </template>
-    <!-- ===== ■.■. 탭 영역 ==================================================== -->
-    <bo-tab-bar :tabs="tabs" :tab="tab" :tab-mode="tabMode2"
-      @tab-select="id => handleBtnAction('tab-select', id)"
-      @mode-select="m => handleBtnAction('tab-mode', m)" />
-    <!-- ===== □.■. 탭 영역 ==================================================== -->
-    <!-- ===== ■.■. 탭 컨텐츠 =================================================== -->
-    <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
-    <!-- ===== ■.■. 기본정보 탭 (BoFormArea 자동 렌더) ============================= -->
-    <div class="dtl-pane" v-show="showTab('info')" style="margin:0;">
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
-        📋 기본정보
-      </div>
-      <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="columns.infoForm" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
-        <!-- ===== ■.■.■.■. 판매업체 picker ======================================= -->
-        <template #vendor>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <div class="form-control" :style="'background:#f9f9f9;padding:0;display:flex;align-items:center;cursor:' + (cfDtlMode ? 'default' : 'pointer')" @click="cfDtlMode ? null : handleBtnAction('vendorModal-open')">
-              <span style="padding:4px 10px;flex:1;">
-                {{ cfSelectedVendorNm }}
-              </span>
-              <span style="padding:4px 10px;color:#999;font-size:12px;">
-                ▼
-              </span>
-            </div>
-            <button v-if="coUtil.cofAnd(form.vendorId, !cfDtlMode)" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendorClear')">
-              초기화
-            </button>
+<!-- ===== ■. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
+<bo-container>
+  <!-- ===== ■.■. 컨테이너 헤더 (제목 = list-title) ============================= -->
+  <template #title>
+    {{ !active ? '할인 상세' : (cfIsNew ? '할인 등록' : (cfDtlMode ? '할인 상세' : '할인 수정')) }}
+    <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+      #{{ form.discntId }}
+    </span>
+    <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+      목록에서 행을 선택하거나 [+신규]를 누르세요
+    </span>
+  </template>
+  <!-- ===== ■.■. 탭 영역 ==================================================== -->
+  <bo-tab-bar :tabs="tabs" :tab="tab" :tab-mode="tabMode2"
+    @tab-select="id => handleBtnAction('tab-select', id)"
+    @mode-select="m => handleBtnAction('tab-mode', m)" />
+  <!-- ===== □.■. 탭 영역 ==================================================== -->
+  <!-- ===== ■.■. 탭 컨텐츠 =================================================== -->
+  <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
+  <!-- ===== ■.■. 기본정보 탭 (BoFormArea 자동 렌더) ============================= -->
+  <div class="dtl-pane" v-show="showTab('info')" style="margin:0;">
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
+      📋 기본정보
+    </div>
+    <!-- ===== ■.■.■. 폼 영역 ================================================ -->
+    <bo-form-area :columns="columns.infoForm" :form="form" :errors="errors"
+      :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
+      <!-- ===== ■.■.■.■. 판매업체 picker ======================================= -->
+      <template #vendor>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <div class="form-control" :style="'background:#f9f9f9;padding:0;display:flex;align-items:center;cursor:' + (cfDtlMode ? 'default' : 'pointer')" @click="cfDtlMode ? null : handleBtnAction('vendorModal-open')">
+            <span style="padding:4px 10px;flex:1;">
+              {{ cfSelectedVendorNm }}
+            </span>
+            <span style="padding:4px 10px;color:#999;font-size:12px;">
+              ▼
+            </span>
           </div>
-        </template>
-      </bo-form-area>
-      <!-- ===== ■.■.■. 판매업체 선택 모달 ========================================== -->
-      <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId" modal-name="vendor-pick" :on-callback="fnCallbackModal" />
-      <div class="form-actions" v-if="coUtil.cofAnd(active, cfDtlMode)">
-        <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
-          수정
-        </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
-          닫기
-        </button>
-      </div>
-      <div class="form-actions" v-if="active && !cfDtlMode">
-        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
-          저장
-        </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
-          취소
-        </button>
-      </div>
-    </div>
-    <!-- ===== □.□. 기본정보 탭 (BoFormArea 자동 렌더) ============================= -->
-    <!-- ===== ■.■. 상세정보 ================================================== -->
-    <div class="dtl-pane" v-show="showTab('detail')" style="margin:0;">
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
-        📋 상세정보
-      </div>
-      <!-- ===== ■.■.■. 공개대상 ================================================ -->
-      <div style="margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid #e8e8e8;">
-        <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;">
-          🔒 공개대상
-        </h3>
-        <div style="font-size:12px;font-weight:700;color:#888;margin-bottom:8px;">
-          하나라도 해당하면 노출
+          <button v-if="coUtil.cofAnd(form.vendorId, !cfDtlMode)" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendorClear')">
+            초기화
+          </button>
         </div>
-        <bo-multi-check-select v-model="form.visibilityTargets" :options="cfVisibilityOptions"
-          separator="^" wrap empty-value="^NONE^" placeholder="전체 공개" all-label="전체 공개"
-          :disabled="cfDtlMode" min-width="320px" />
+      </template>
+    </bo-form-area>
+    <!-- ===== ■.■.■. 판매업체 선택 모달 ========================================== -->
+    <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId" modal-name="vendor-pick" :on-callback="fnCallbackModal" />
+    <div class="form-actions" v-if="coUtil.cofAnd(active, cfDtlMode)">
+      <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
+        수정
+      </button>
+      <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+        닫기
+      </button>
+    </div>
+    <div class="form-actions" v-if="active && !cfDtlMode">
+      <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
+        저장
+      </button>
+      <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+        취소
+      </button>
+    </div>
+  </div>
+  <!-- ===== □.□. 기본정보 탭 (BoFormArea 자동 렌더) ============================= -->
+  <!-- ===== ■.■. 상세정보 ================================================== -->
+  <div class="dtl-pane" v-show="showTab('detail')" style="margin:0;">
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
+      📋 상세정보
+    </div>
+    <!-- ===== ■.■.■. 공개대상 ================================================ -->
+    <div style="margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid #e8e8e8;">
+      <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;">
+        🔒 공개대상
+      </h3>
+      <div style="font-size:12px;font-weight:700;color:#888;margin-bottom:8px;">
+        하나라도 해당하면 노출
       </div>
-      <!-- ===== ■.■.■. 할인적용 (BoFormArea 자동 렌더) ============================= -->
-      <div style="margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid #e8e8e8;">
-        <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;">
-          💰 할인적용
-        </h3>
-        <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
-        <bo-form-area :columns="columns.discntApplyForm" :form="form" :errors="errors"
-          :cols="3" compact :show-actions="false" />
+      <bo-multi-check-select v-model="form.visibilityTargets" :options="cfVisibilityOptions"
+        separator="^" wrap empty-value="^NONE^" placeholder="전체 공개" all-label="전체 공개"
+        :disabled="cfDtlMode" min-width="320px" />
+    </div>
+    <!-- ===== ■.■.■. 할인적용 (BoFormArea 자동 렌더) ============================= -->
+    <div style="margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid #e8e8e8;">
+      <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;">
+        💰 할인적용
+      </h3>
+      <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
+      <bo-form-area :columns="columns.discntApplyForm" :form="form" :errors="errors"
+        :cols="3" compact :show-actions="false" />
+    </div>
+    <!-- ===== ■.■.■. 기간설정 (BoFormArea 자동 렌더) ============================= -->
+    <div style="margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid #e8e8e8;">
+      <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;">
+        📅 기간설정
+      </h3>
+      <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
+      <bo-form-area :columns="columns.discntPeriodForm" :form="form" :errors="errors"
+        :cols="3" compact :show-actions="false" />
+    </div>
+    <!-- ===== ■.■.■. 상태 및 비고 (BoFormArea 자동 렌더) ========================== -->
+    <div>
+      <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;">
+        ⚙️ 상태 및 비고
+      </h3>
+      <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
+      <bo-form-area :columns="columns.discntStatusForm" :form="form" :errors="errors"
+        :cols="3" compact :show-actions="false" />
+    </div>
+    <div class="form-actions" v-if="coUtil.cofAnd(active, cfDtlMode)">
+      <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
+        수정
+      </button>
+      <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+        닫기
+      </button>
+    </div>
+    <div class="form-actions" v-if="active && !cfDtlMode">
+      <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
+        저장
+      </button>
+      <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+        취소
+      </button>
+    </div>
+  </div>
+  <!-- ===== □.□. 상세정보 ================================================== -->
+  <!-- ===== ■.■. 적용대상 ================================================== -->
+  <div class="dtl-pane" v-show="showTab('target')" style="margin:0;">
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
+      🎯 적용대상
+    </div>
+    <div class="form-group">
+      <label class="form-label">
+        적용 대상 선택
+      </label>
+      <select class="form-control" v-model="form.discntTargetCd">
+        <option v-for="c in codes.discnt_apply_targets" :key="c.codeValue" :value="c.codeValue">
+          {{ c.codeLabel }}
+        </option>
+      </select>
+    </div>
+    <div style="margin-top:16px;padding:12px;background:#f9f9f9;border-radius:6px;border:1px solid #e0e0e0;margin-bottom:20px;">
+      <div style="font-size:12px;font-weight:700;color:#666;margin-bottom:8px;">
+        선택된 대상:
+        <span style="color:#e8587a;">
+          {{ form.discntTargetCd }}
+        </span>
       </div>
-      <!-- ===== ■.■.■. 기간설정 (BoFormArea 자동 렌더) ============================= -->
-      <div style="margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid #e8e8e8;">
-        <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;">
-          📅 기간설정
-        </h3>
-        <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
-        <bo-form-area :columns="columns.discntPeriodForm" :form="form" :errors="errors"
-          :cols="3" compact :show-actions="false" />
-      </div>
-      <!-- ===== ■.■.■. 상태 및 비고 (BoFormArea 자동 렌더) ========================== -->
-      <div>
-        <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;">
-          ⚙️ 상태 및 비고
-        </h3>
-        <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
-        <bo-form-area :columns="columns.discntStatusForm" :form="form" :errors="errors"
-          :cols="3" compact :show-actions="false" />
-      </div>
-      <div class="form-actions" v-if="coUtil.cofAnd(active, cfDtlMode)">
-        <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
-          수정
-        </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
-          닫기
-        </button>
-      </div>
-      <div class="form-actions" v-if="active && !cfDtlMode">
-        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
-          저장
-        </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
-          취소
-        </button>
+      <div style="font-size:13px;color:#888;">
+        <template v-if="form.discntTargetCd==='전체상품'">
+          모든 상품에 이 할인을 적용합니다.
+        </template>
+        <template v-else-if="form.discntTargetCd==='선택상품'">
+          선택한 상품에만 이 할인을 적용합니다. 아래에서 상품을 추가하세요.
+        </template>
+        <template v-else-if="form.discntTargetCd==='카테고리'">
+          선택한 카테고리의 상품에만 이 할인을 적용합니다. 아래에서 카테고리를 선택하세요.
+        </template>
       </div>
     </div>
-    <!-- ===== □.□. 상세정보 ================================================== -->
-    <!-- ===== ■.■. 적용대상 ================================================== -->
-    <div class="dtl-pane" v-show="showTab('target')" style="margin:0;">
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
-        🎯 적용대상
+    <div style="margin-top:20px;padding-top:20px;border-top:1px solid #e8e8e8;">
+      <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;">
+        📦 상품목록
+      </h3>
+      <div v-if="form.discntTargetCd==='선택상품'" style="border:1px solid #ddd;border-radius:6px;padding:12px;background:#fafafa;min-height:200px;">
+        <div style="text-align:center;color:#999;padding:30px;font-size:13px;">
+          선택된 상품이 없습니다. 상품 추가 버튼을 클릭하여 상품을 선택하세요.
+        </div>
       </div>
-      <div class="form-group">
-        <label class="form-label">
-          적용 대상 선택
-        </label>
-        <select class="form-control" v-model="form.discntTargetCd">
-          <option v-for="c in codes.discnt_apply_targets" :key="c.codeValue" :value="c.codeValue">
-            {{ c.codeLabel }}
-          </option>
-        </select>
+      <div v-else-if="form.discntTargetCd==='카테고리'" style="border:1px solid #ddd;border-radius:6px;padding:12px;background:#fafafa;min-height:200px;">
+        <div style="text-align:center;color:#999;padding:30px;font-size:13px;">
+          선택된 카테고리가 없습니다. 카테고리 선택 버튼을 클릭하여 카테고리를 선택하세요.
+        </div>
       </div>
-      <div style="margin-top:16px;padding:12px;background:#f9f9f9;border-radius:6px;border:1px solid #e0e0e0;margin-bottom:20px;">
-        <div style="font-size:12px;font-weight:700;color:#666;margin-bottom:8px;">
-          선택된 대상:
-          <span style="color:#e8587a;">
-            {{ form.discntTargetCd }}
+      <div v-else style="border:1px solid #ddd;border-radius:6px;padding:12px;background:#f0f7ff;min-height:200px;">
+        <div style="text-align:center;color:#1565c0;padding:30px;font-size:13px;">
+          ✓ 전체 상품이 선택되었습니다.
+        </div>
+      </div>
+    </div>
+    <div class="form-actions" v-if="coUtil.cofAnd(active, cfDtlMode)">
+      <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
+        수정
+      </button>
+      <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+        닫기
+      </button>
+    </div>
+    <div class="form-actions" v-if="active && !cfDtlMode">
+      <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
+        저장
+      </button>
+      <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+        취소
+      </button>
+    </div>
+  </div>
+  <!-- ===== □.□. 적용대상 ================================================== -->
+  <!-- ===== ■.■. 미리보기 ================================================== -->
+  <div class="dtl-pane" v-show="showTab('preview')" style="margin:0;">
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
+      👁 미리보기
+    </div>
+    <div style="background:#f9f9f9;border-radius:10px;padding:20px;border:1px solid #e8e8e8;max-width:600px;">
+      <div style="font-size:18px;font-weight:700;margin-bottom:12px;color:#1a1a2e;">
+        {{ form.discntNm || '할인명' }}
+      </div>
+      <div style="font-size:12px;color:#aaa;margin-bottom:16px;">
+        {{ form.startDate }} ~ {{ form.endDate }}
+      </div>
+      <div style="background:#fff;padding:12px;border-radius:6px;margin-bottom:12px;border-left:4px solid #e8587a;">
+        <div style="font-size:13px;color:#666;margin-bottom:4px;">
+          할인유형:
+          <span style="font-weight:700;color:#e8587a;">
+            {{ form.discntTypeCd }}
           </span>
         </div>
-        <div style="font-size:13px;color:#888;">
-          <template v-if="form.discntTargetCd==='전체상품'">
-            모든 상품에 이 할인을 적용합니다.
-          </template>
-          <template v-else-if="form.discntTargetCd==='선택상품'">
-            선택한 상품에만 이 할인을 적용합니다. 아래에서 상품을 추가하세요.
-          </template>
-          <template v-else-if="form.discntTargetCd==='카테고리'">
-            선택한 카테고리의 상품에만 이 할인을 적용합니다. 아래에서 카테고리를 선택하세요.
-          </template>
+        <div style="font-size:13px;color:#666;margin-bottom:4px;">
+          할인값:
+          <span style="font-weight:700;color:#e8587a;">
+            {{ form.discntTypeCd === '정률' ? (form.discntValue + '%') : (form.discntValue||0).toLocaleString() + '원' }}
+          </span>
+        </div>
+        <div style="font-size:13px;color:#666;">
+          최소주문금액:
+          <span style="font-weight:700;">
+            {{ (form.minOrderAmt||0).toLocaleString() }}원
+          </span>
         </div>
       </div>
-      <div style="margin-top:20px;padding-top:20px;border-top:1px solid #e8e8e8;">
-        <h3 style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;">
-          📦 상품목록
-        </h3>
-        <div v-if="form.discntTargetCd==='선택상품'" style="border:1px solid #ddd;border-radius:6px;padding:12px;background:#fafafa;min-height:200px;">
-          <div style="text-align:center;color:#999;padding:30px;font-size:13px;">
-            선택된 상품이 없습니다. 상품 추가 버튼을 클릭하여 상품을 선택하세요.
-          </div>
-        </div>
-        <div v-else-if="form.discntTargetCd==='카테고리'" style="border:1px solid #ddd;border-radius:6px;padding:12px;background:#fafafa;min-height:200px;">
-          <div style="text-align:center;color:#999;padding:30px;font-size:13px;">
-            선택된 카테고리가 없습니다. 카테고리 선택 버튼을 클릭하여 카테고리를 선택하세요.
-          </div>
-        </div>
-        <div v-else style="border:1px solid #ddd;border-radius:6px;padding:12px;background:#f0f7ff;min-height:200px;">
-          <div style="text-align:center;color:#1565c0;padding:30px;font-size:13px;">
-            ✓ 전체 상품이 선택되었습니다.
-          </div>
-        </div>
+      <div v-if="form.maxDiscntAmt > 0" style="font-size:12px;color:#888;padding:8px;background:#fff7e6;border-radius:6px;margin-bottom:12px;">
+        ⚠️ 최대할인금액: {{ (form.maxDiscntAmt||0).toLocaleString() }}원
       </div>
-      <div class="form-actions" v-if="coUtil.cofAnd(active, cfDtlMode)">
-        <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
-          수정
-        </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
-          닫기
-        </button>
-      </div>
-      <div class="form-actions" v-if="active && !cfDtlMode">
-        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
-          저장
-        </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
-          취소
-        </button>
-      </div>
+      <button class="btn btn-primary" @click="handleBtnAction('preview-confirm')">
+        할인 확인
+      </button>
     </div>
-    <!-- ===== □.□. 적용대상 ================================================== -->
-    <!-- ===== ■.■. 미리보기 ================================================== -->
-    <div class="dtl-pane" v-show="showTab('preview')" style="margin:0;">
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
-        👁 미리보기
-      </div>
-      <div style="background:#f9f9f9;border-radius:10px;padding:20px;border:1px solid #e8e8e8;max-width:600px;">
-        <div style="font-size:18px;font-weight:700;margin-bottom:12px;color:#1a1a2e;">
-          {{ form.discntNm || '할인명' }}
-        </div>
-        <div style="font-size:12px;color:#aaa;margin-bottom:16px;">
-          {{ form.startDate }} ~ {{ form.endDate }}
-        </div>
-        <div style="background:#fff;padding:12px;border-radius:6px;margin-bottom:12px;border-left:4px solid #e8587a;">
-          <div style="font-size:13px;color:#666;margin-bottom:4px;">
-            할인유형:
-            <span style="font-weight:700;color:#e8587a;">
-              {{ form.discntTypeCd }}
-            </span>
-          </div>
-          <div style="font-size:13px;color:#666;margin-bottom:4px;">
-            할인값:
-            <span style="font-weight:700;color:#e8587a;">
-              {{ form.discntTypeCd === '정률' ? (form.discntValue + '%') : (form.discntValue||0).toLocaleString() + '원' }}
-            </span>
-          </div>
-          <div style="font-size:13px;color:#666;">
-            최소주문금액:
-            <span style="font-weight:700;">
-              {{ (form.minOrderAmt||0).toLocaleString() }}원
-            </span>
-          </div>
-        </div>
-        <div v-if="form.maxDiscntAmt > 0" style="font-size:12px;color:#888;padding:8px;background:#fff7e6;border-radius:6px;margin-bottom:12px;">
-          ⚠️ 최대할인금액: {{ (form.maxDiscntAmt||0).toLocaleString() }}원
-        </div>
-        <button class="btn btn-primary" @click="handleBtnAction('preview-confirm')">
-          할인 확인
-        </button>
-      </div>
-      <div class="form-actions" v-if="coUtil.cofAnd(active, cfDtlMode)">
-        <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
-          수정
-        </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
-          닫기
-        </button>
-      </div>
+    <div class="form-actions" v-if="coUtil.cofAnd(active, cfDtlMode)">
+      <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
+        수정
+      </button>
+      <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+        닫기
+      </button>
     </div>
-    <!-- ===== □.□. 미리보기 ================================================== -->
-    </div>
-    <!-- ===== □.■. 탭 컨텐츠 =================================================== -->
-  </bo-container>
-  <!-- ===== □. 상세 카드 (제목 + 탭바 + 탭컨텐츠) =============================== -->
-</div>
+  </div>
+  <!-- ===== □.□. 미리보기 ================================================== -->
+  </div>
+  <!-- ===== □.■. 탭 컨텐츠 =================================================== -->
+</bo-container>
+<!-- ===== □. 상세 카드 (제목 + 탭바 + 탭컨텐츠) =============================== -->
 `
 };

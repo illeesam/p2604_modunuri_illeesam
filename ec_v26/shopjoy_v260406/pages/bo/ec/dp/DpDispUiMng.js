@@ -368,17 +368,15 @@ window.DpDispUiMng = {
   <!-- ===== □.□. 목록 영역 ================================================= -->
   <!-- ===== □. 본문 영역 =================================================== -->
   <!-- ===== ■. 상세 패널 (항상 표시, 진입 시 빈 신규 폼) =========================== -->
-  <bo-container bare>
-    <dp-disp-ui-dtl
-      :key="cfDetailKey"
-      :navigate="inlineNavigate"
-      :dtl-id="cfDetailEditId"
-      :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-      :tab-mode="detailPanel.openMode"
-      :active="detailPanel.active"
-      :reload-trigger="detailPanel.reloadTrigger"
-      />
-  </bo-container>
+  <dp-disp-ui-dtl
+    :key="cfDetailKey"
+    :navigate="inlineNavigate"
+    :dtl-id="cfDetailEditId"
+    :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+    :tab-mode="detailPanel.openMode"
+    :active="detailPanel.active"
+    :reload-trigger="detailPanel.reloadTrigger"
+    />
   <!-- ===== □. 상세 패널 =================================================== -->
   <!-- ===== ■. 표시경로 항목관리 모달 ========================================== -->
   <path-pick-modal v-if="pathPickModal.show" biz-cd="ec_disp_ui" :value="uiState.selectedPath"

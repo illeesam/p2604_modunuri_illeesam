@@ -560,21 +560,19 @@ window.DpDispWidgetMng = {
   </div>
   <!-- ===== □. 본문: 좌측 트리 + 우측 목록 ======================================= -->
   <!-- ===== ■. 인라인 상세 (항상 표시 / 진입 시 빈 신규 폼, 전체 폭) ============== -->
-  <bo-container bare>
-    <dp-disp-widget-dtl
-      :key="cfDetailKey"
-      :navigate="inlineNavigate"
-      :show-ref-modal="showRefModal"
-      :show-toast="showToast"
-      :show-confirm="showConfirm"
-      :set-api-res="setApiRes"
-      :dtl-id="cfDetailEditId"
-      :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-      :active="detailPanel.active"
-      :reload-trigger="detailPanel.reloadTrigger"
-      @close="handleBtnAction('detailPanel-close')"
-      />
-  </bo-container>
+  <dp-disp-widget-dtl
+    :key="cfDetailKey"
+    :navigate="inlineNavigate"
+    :show-ref-modal="showRefModal"
+    :show-toast="showToast"
+    :show-confirm="showConfirm"
+    :set-api-res="setApiRes"
+    :dtl-id="cfDetailEditId"
+    :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+    :active="detailPanel.active"
+    :reload-trigger="detailPanel.reloadTrigger"
+    @close="handleBtnAction('detailPanel-close')"
+    />
 </bo-page>
 <!-- ===== □. 인라인 상세 ================================================== -->
 `

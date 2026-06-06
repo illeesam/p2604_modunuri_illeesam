@@ -141,50 +141,48 @@ window.CmNoticeDtl = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 폼 영역 (제목/폼 모두 컨테이너 안에) ============================= -->
-  <bo-container>
-    <!-- ===== ■.■. 컨테이너 헤더 (제목 = list-title, 페이지 타이틀 아님) ========= -->
-    <template #title>
-      {{ !active ? '공지사항 상세' : (cfIsNew ? '공지사항 등록' : (cfReadonly ? '공지사항 상세' : '공지사항 수정')) }}
-      <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
-        #{{ baseForm.noticeId }}
-      </span>
-      <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-        목록에서 행을 선택하거나 [+신규]를 누르세요
-      </span>
+<!-- ===== ■. 폼 영역 (제목/폼 모두 컨테이너 안에) ============================= -->
+<bo-container>
+  <!-- ===== ■.■. 컨테이너 헤더 (제목 = list-title, 페이지 타이틀 아님) ========= -->
+  <template #title>
+    {{ !active ? '공지사항 상세' : (cfIsNew ? '공지사항 등록' : (cfReadonly ? '공지사항 상세' : '공지사항 수정')) }}
+    <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+      #{{ baseForm.noticeId }}
+    </span>
+    <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+      목록에서 행을 선택하거나 [+신규]를 누르세요
+    </span>
+  </template>
+  <bo-form-area :columns="columns.baseForm" :form="baseForm" :errors="errors"
+    :readonly="cfReadonly" :cols="3" compact :show-actions="false">
+    <!-- 내용 (HtmlEditor 또는 view 모드 HTML) -->
+    <template #content>
+      <div v-if="cfReadonly" class="form-control" style="min-height:200px;line-height:1.6;overflow:auto;">
+        <div v-if="baseForm.contentHtml" v-html="baseForm.contentHtml"></div>
+        <span v-else style="color:#bbb;">-</span>
+      </div>
+      <base-html-editor v-else v-model="baseForm.contentHtml" height="280px" />
     </template>
-    <bo-form-area :columns="columns.baseForm" :form="baseForm" :errors="errors"
-      :readonly="cfReadonly" :cols="3" compact :show-actions="false">
-      <!-- 내용 (HtmlEditor 또는 view 모드 HTML) -->
-      <template #content>
-        <div v-if="cfReadonly" class="form-control" style="min-height:200px;line-height:1.6;overflow:auto;">
-          <div v-if="baseForm.contentHtml" v-html="baseForm.contentHtml"></div>
-          <span v-else style="color:#bbb;">-</span>
-        </div>
-        <base-html-editor v-else v-model="baseForm.contentHtml" height="280px" />
-      </template>
-    </bo-form-area>
-    <!-- 첨부파일 -->
-    <div class="form-group" style="margin-top:12px;">
-      <label class="form-label">첨부파일</label>
-      <base-attach-grp :model-value="baseForm.attachGrpId" @update:model-value="baseForm.attachGrpId = $event"
-        :ref-id="cfAttachRefId" :show-toast="showToast"
-        grp-code="NOTICE_ATTACH" grp-nm="공지 첨부파일"
-        :max-count="5" :max-size-mb="10" allow-ext="jpg,png,gif,pdf,xlsx,docx" />
-    </div>
-    <!-- 폼 액션 (행 선택/신규 시에만 노출) -->
-    <div class="form-actions" v-if="active">
-      <template v-if="cfReadonly">
-        <button class="btn btn-blue"      @click="handleBtnAction('baseForm-edit')">수정</button>
-        <button class="btn btn-secondary" @click="handleBtnAction('baseForm-close')">닫기</button>
-      </template>
-      <template v-else>
-        <button class="btn btn-primary"   @click="handleBtnAction('baseForm-save')">저장</button>
-        <button class="btn btn-secondary" @click="handleBtnAction('baseForm-cancel')">취소</button>
-      </template>
-    </div>
-  </bo-container>
-</div>
+  </bo-form-area>
+  <!-- 첨부파일 -->
+  <div class="form-group" style="margin-top:12px;">
+    <label class="form-label">첨부파일</label>
+    <base-attach-grp :model-value="baseForm.attachGrpId" @update:model-value="baseForm.attachGrpId = $event"
+      :ref-id="cfAttachRefId" :show-toast="showToast"
+      grp-code="NOTICE_ATTACH" grp-nm="공지 첨부파일"
+      :max-count="5" :max-size-mb="10" allow-ext="jpg,png,gif,pdf,xlsx,docx" />
+  </div>
+  <!-- 폼 액션 (행 선택/신규 시에만 노출) -->
+  <div class="form-actions" v-if="active">
+    <template v-if="cfReadonly">
+      <button class="btn btn-blue"      @click="handleBtnAction('baseForm-edit')">수정</button>
+      <button class="btn btn-secondary" @click="handleBtnAction('baseForm-close')">닫기</button>
+    </template>
+    <template v-else>
+      <button class="btn btn-primary"   @click="handleBtnAction('baseForm-save')">저장</button>
+      <button class="btn btn-secondary" @click="handleBtnAction('baseForm-cancel')">취소</button>
+    </template>
+  </div>
+</bo-container>
 `,
 };

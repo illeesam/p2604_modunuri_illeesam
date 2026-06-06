@@ -290,108 +290,106 @@ window.PmCacheDtl = {
   },
   // ===== 템플릿 ===========================================================
   template: /* html */`
-<div>
-  <!-- ===== ■. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
-  <bo-container>
-    <!-- ===== ■.■. 카드 헤더 (제목 = list-title, page-title 아님 → 폰트 축소) ========= -->
-    <template #title>
-      {{ cfIsNew ? '캐쉬 등록' : (cfDtlMode ? '캐쉬 상세' : '캐쉬 수정') }}
-      <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
-        #{{ form.cacheId }}
-      </span>
-    </template>
-    <!-- ===== ■.■. 탭바 ==================================================== -->
-    <bo-tab-bar :tabs="tabs" :tab="tab" :tab-mode="tabMode2"
-      @tab-select="id => handleBtnAction('tab-select', id)"
-      @mode-select="m => handleBtnAction('tab-mode', m)" />
-    <!-- ===== □. 탭바 ====================================================== -->
-    <!-- ===== ■. 탭 컨텐츠 =================================================== -->
-  <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
-    <!-- ===== ■.■. 기본정보 탭 (BoFormArea 자동 렌더) ============================= -->
-    <div class="dtl-pane" v-show="showTab('info')" style="margin:0;">
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
-        📋 기본정보
-      </div>
-      <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
-        <!-- ===== ■.■.■.■. 회원ID + 보기 ========================================= -->
-        <template #memberId>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <input class="form-control" v-model="form.memberId" placeholder="회원 ID" @change="handleBtnAction('form-memberChange')" :readonly="cfDtlMode" :class="errors.memberId ? 'is-invalid' : ''" />
-            <span v-if="form.memberId" class="ref-link" @click="handleBtnAction('form-memberRef')">
-              보기
+<!-- ===== ■. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
+<bo-container>
+  <!-- ===== ■.■. 카드 헤더 (제목 = list-title, page-title 아님 → 폰트 축소) ========= -->
+  <template #title>
+    {{ cfIsNew ? '캐쉬 등록' : (cfDtlMode ? '캐쉬 상세' : '캐쉬 수정') }}
+    <span v-if="!cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+      #{{ form.cacheId }}
+    </span>
+  </template>
+  <!-- ===== ■.■. 탭바 ==================================================== -->
+  <bo-tab-bar :tabs="tabs" :tab="tab" :tab-mode="tabMode2"
+    @tab-select="id => handleBtnAction('tab-select', id)"
+    @mode-select="m => handleBtnAction('tab-mode', m)" />
+  <!-- ===== □. 탭바 ====================================================== -->
+  <!-- ===== ■. 탭 컨텐츠 =================================================== -->
+<div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
+  <!-- ===== ■.■. 기본정보 탭 (BoFormArea 자동 렌더) ============================= -->
+  <div class="dtl-pane" v-show="showTab('info')" style="margin:0;">
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
+      📋 기본정보
+    </div>
+    <!-- ===== ■.■.■. 폼 영역 ================================================ -->
+    <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
+      :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
+      <!-- ===== ■.■.■.■. 회원ID + 보기 ========================================= -->
+      <template #memberId>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input class="form-control" v-model="form.memberId" placeholder="회원 ID" @change="handleBtnAction('form-memberChange')" :readonly="cfDtlMode" :class="errors.memberId ? 'is-invalid' : ''" />
+          <span v-if="form.memberId" class="ref-link" @click="handleBtnAction('form-memberRef')">
+            보기
+          </span>
+        </div>
+      </template>
+      <!-- ===== ■.■.■.■. 판매업체 picker ======================================= -->
+      <template #vendor>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <div class="form-control" :style="'background:#f9f9f9;padding:0;display:flex;align-items:center;cursor:' + (cfDtlMode ? 'default' : 'pointer')" @click="cfDtlMode ? null : handleBtnAction('vendorModal-open')">
+            <span style="padding:4px 10px;flex:1;">
+              {{ cfSelectedVendorNm }}
+            </span>
+            <span style="padding:4px 10px;color:#999;font-size:12px;">
+              ▼
             </span>
           </div>
-        </template>
-        <!-- ===== ■.■.■.■. 판매업체 picker ======================================= -->
-        <template #vendor>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <div class="form-control" :style="'background:#f9f9f9;padding:0;display:flex;align-items:center;cursor:' + (cfDtlMode ? 'default' : 'pointer')" @click="cfDtlMode ? null : handleBtnAction('vendorModal-open')">
-              <span style="padding:4px 10px;flex:1;">
-                {{ cfSelectedVendorNm }}
-              </span>
-              <span style="padding:4px 10px;color:#999;font-size:12px;">
-                ▼
-              </span>
-            </div>
-            <button v-if="coUtil.cofAnd(form.vendorId, !cfDtlMode)" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendorClear')">
-              초기화
-            </button>
-          </div>
-        </template>
-      </bo-form-area>
-      <!-- ===== ■.■.■. 폼 액션 버튼 (보기모드: 수정/닫기) =============================== -->
-      <div class="form-actions" v-if="coUtil.cofAnd(active, cfDtlMode)">
-        <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
-          수정
-        </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
-          닫기
-        </button>
-      </div>
-      <!-- ===== ■.■.■. 폼 액션 버튼 (편집모드: 저장/취소) =============================== -->
-      <div class="form-actions" v-if="coUtil.cofAnd(active, !cfDtlMode)">
-        <button class="btn btn-primary" @click="handleBtnAction('form-save')">
-          저장
-        </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
-          취소
-        </button>
-      </div>
+          <button v-if="coUtil.cofAnd(form.vendorId, !cfDtlMode)" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendorClear')">
+            초기화
+          </button>
+        </div>
+      </template>
+    </bo-form-area>
+    <!-- ===== ■.■.■. 폼 액션 버튼 (보기모드: 수정/닫기) =============================== -->
+    <div class="form-actions" v-if="coUtil.cofAnd(active, cfDtlMode)">
+      <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
+        수정
+      </button>
+      <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
+        닫기
+      </button>
     </div>
-    <!-- ===== □.□. 기본정보 탭 (BoFormArea 자동 렌더) ============================= -->
-    <!-- ===== ■.■. 회원 캐쉬 내역 탭 ============================================ -->
-    <div class="dtl-pane" v-show="showTab('history')" style="margin:0;">
-      <!-- ===== ■.■.■. 조건부 영역 ============================================== -->
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
-        🕒 회원 캐쉬 내역
-        <span class="tab-count">
-          {{ cfMemberCacheHistory.length }}
-        </span>
-      </div>
-      <div style="margin-bottom:12px;padding:12px;background:#f9f9f9;border-radius:8px;display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:13px;color:#555;">
-          <span class="ref-link" @click="handleBtnAction('form-memberRef')">
-            {{ form.memberNm }}
-          </span>
-          현재 잔액
-        </span>
-        <span style="font-size:20px;font-weight:700;color:#e8587a;">
-          {{ cfTotalBalance.toLocaleString() }}원
-        </span>
-      </div>
-      <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="columns.cacheHistGrid" :rows="cfMemberCacheHistory" row-key="cacheId"
-        empty-text="캐쉬 내역이 없습니다.">
-      </bo-grid>
+    <!-- ===== ■.■.■. 폼 액션 버튼 (편집모드: 저장/취소) =============================== -->
+    <div class="form-actions" v-if="coUtil.cofAnd(active, !cfDtlMode)">
+      <button class="btn btn-primary" @click="handleBtnAction('form-save')">
+        저장
+      </button>
+      <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+        취소
+      </button>
     </div>
   </div>
-  <!-- ===== □. 탭 컨텐츠 =================================================== -->
-  </bo-container>
-  <!-- ===== □. 상세 카드 (제목 + 탭바 + 탭컨텐츠) =============================== -->
-  <!-- ===== ■. 판매업체 선택 모달 (카드 밖) ====================================== -->
-  <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId" modal-name="vendor-pick" :on-callback="fnCallbackModal" />
+  <!-- ===== □.□. 기본정보 탭 (BoFormArea 자동 렌더) ============================= -->
+  <!-- ===== ■.■. 회원 캐쉬 내역 탭 ============================================ -->
+  <div class="dtl-pane" v-show="showTab('history')" style="margin:0;">
+    <!-- ===== ■.■.■. 조건부 영역 ============================================== -->
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
+      🕒 회원 캐쉬 내역
+      <span class="tab-count">
+        {{ cfMemberCacheHistory.length }}
+      </span>
+    </div>
+    <div style="margin-bottom:12px;padding:12px;background:#f9f9f9;border-radius:8px;display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-size:13px;color:#555;">
+        <span class="ref-link" @click="handleBtnAction('form-memberRef')">
+          {{ form.memberNm }}
+        </span>
+        현재 잔액
+      </span>
+      <span style="font-size:20px;font-weight:700;color:#e8587a;">
+        {{ cfTotalBalance.toLocaleString() }}원
+      </span>
+    </div>
+    <!-- ===== ■.■.■. 목록 영역 =============================================== -->
+    <bo-grid bare :columns="columns.cacheHistGrid" :rows="cfMemberCacheHistory" row-key="cacheId"
+      empty-text="캐쉬 내역이 없습니다.">
+    </bo-grid>
+  </div>
 </div>
+<!-- ===== □. 탭 컨텐츠 =================================================== -->
+</bo-container>
+<!-- ===== □. 상세 카드 (제목 + 탭바 + 탭컨텐츠) =============================== -->
+<!-- ===== ■. 판매업체 선택 모달 (카드 밖) ====================================== -->
+<simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId" modal-name="vendor-pick" :on-callback="fnCallbackModal" />
 `
 };

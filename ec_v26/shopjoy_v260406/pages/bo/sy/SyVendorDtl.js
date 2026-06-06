@@ -179,51 +179,49 @@ window.SyVendorDtl = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 상세 영역 (제목/라벨/폼 모두 컨테이너 안에) ============================= -->
-  <bo-container>
-    <!-- ===== ■.■. 헤더 (제목 = list-title, 페이지 타이틀 아님 → 폰트 축소) ========= -->
-    <template #title>
-      {{ !active ? '업체 상세' : (cfIsNew ? '업체 등록' : (cfDtlMode ? '업체 상세' : '업체 수정')) }}
-      <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
-        #{{ form.vendorId }}
-      </span>
-      <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-        목록에서 행을 선택하거나 [+신규]를 누르세요
-      </span>
+<!-- ===== ■. 상세 영역 (제목/라벨/폼 모두 컨테이너 안에) ============================= -->
+<bo-container>
+  <!-- ===== ■.■. 헤더 (제목 = list-title, 페이지 타이틀 아님 → 폰트 축소) ========= -->
+  <template #title>
+    {{ !active ? '업체 상세' : (cfIsNew ? '업체 등록' : (cfDtlMode ? '업체 상세' : '업체 수정')) }}
+    <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+      #{{ form.vendorId }}
+    </span>
+    <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+      목록에서 행을 선택하거나 [+신규]를 누르세요
+    </span>
+  </template>
+  <!-- ===== ■.■. 폼 영역 ================================================== -->
+  <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
+    :readonly="cfDtlMode" :cols="3" compact :show-actions="active"
+    @save="handleBtnAction('form-save')"
+    @cancel="handleBtnAction('form-cancel')"
+    @edit="handleBtnAction('form-edit')"
+    @close="handleBtnAction('form-close')">
+    <!-- ===== ■.■.■. 주소: 우편번호+검색버튼+기본주소+상세주소 ============================= -->
+    <template #addr>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
+        <input class="form-control" v-model="form.vendorZipCode" placeholder="우편번호"
+          style="width:110px;flex-shrink:0;" readonly />
+        <button v-if="!cfDtlMode" type="button" class="btn btn-blue btn-sm" @click="handleBtnAction('addr-search')"
+          style="white-space:nowrap;">
+          🔍 주소 검색
+        </button>
+      </div>
+      <input class="form-control" v-model="form.vendorAddr" placeholder="기본주소 (주소 검색 후 자동 입력)"
+        style="margin-bottom:6px;" readonly />
+      <input class="form-control" v-model="form.vendorAddrDetail" ref="addrDetailRef"
+        placeholder="상세주소 (동/호수 등)" :readonly="cfDtlMode" />
     </template>
-    <!-- ===== ■.■. 폼 영역 ================================================== -->
-    <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
-      :readonly="cfDtlMode" :cols="3" compact :show-actions="active"
-      @save="handleBtnAction('form-save')"
-      @cancel="handleBtnAction('form-cancel')"
-      @edit="handleBtnAction('form-edit')"
-      @close="handleBtnAction('form-close')">
-      <!-- ===== ■.■.■. 주소: 우편번호+검색버튼+기본주소+상세주소 ============================= -->
-      <template #addr>
-        <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
-          <input class="form-control" v-model="form.vendorZipCode" placeholder="우편번호"
-            style="width:110px;flex-shrink:0;" readonly />
-          <button v-if="!cfDtlMode" type="button" class="btn btn-blue btn-sm" @click="handleBtnAction('addr-search')"
-            style="white-space:nowrap;">
-            🔍 주소 검색
-          </button>
-        </div>
-        <input class="form-control" v-model="form.vendorAddr" placeholder="기본주소 (주소 검색 후 자동 입력)"
-          style="margin-bottom:6px;" readonly />
-        <input class="form-control" v-model="form.vendorAddrDetail" ref="addrDetailRef"
-          placeholder="상세주소 (동/호수 등)" :readonly="cfDtlMode" />
-      </template>
-      <!-- ===== ■.■.■. 메모: Quill 또는 view 모드 HTML =========================== -->
-      <template #remark>
-        <div v-if="cfDtlMode" class="form-control" style="min-height:90px;line-height:1.6;" v-html="form.vendorRemark || '<span style=color:#bbb>-</span>'">
-        </div>
-        <base-html-editor v-else v-model="form.vendorRemark" height="180px" />
-      </template>
-    </bo-form-area>
-    <!-- ===== □.□. 폼 영역 ================================================== -->
-  </bo-container>
-  <!-- ===== □. 컨테이너 영역 =================================================== -->
-</div>
+    <!-- ===== ■.■.■. 메모: Quill 또는 view 모드 HTML =========================== -->
+    <template #remark>
+      <div v-if="cfDtlMode" class="form-control" style="min-height:90px;line-height:1.6;" v-html="form.vendorRemark || '<span style=color:#bbb>-</span>'">
+      </div>
+      <base-html-editor v-else v-model="form.vendorRemark" height="180px" />
+    </template>
+  </bo-form-area>
+  <!-- ===== □.□. 폼 영역 ================================================== -->
+</bo-container>
+<!-- ===== □. 컨테이너 영역 =================================================== -->
 `,
 };

@@ -371,180 +371,179 @@ window.OdClaimDtl = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
-  <bo-container>
-    <!-- ===== ■.■. 카드 헤더 (제목 = list-title) =================================== -->
-    <template #title>
-      {{ !active ? '클레임 상세' : (cfIsNew ? '클레임 등록' : (cfDtlMode ? '클레임 상세' : '클레임 수정')) }}
-      <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
-        #{{ form.claimId }}
-      </span>
-      <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-        목록에서 행을 선택하거나 [+신규]를 누르세요
-      </span>
-    </template>
-    <!-- ===== ■.■. 탭바 ==================================================== -->
-    <bo-tab-bar v-if="!cfIsNew" :tabs="tabs" :tab="activeTab" :tab-mode="tabMode2"
-      @tab-select="id => handleBtnAction('tab-change', id)"
-      @mode-select="m => handleBtnAction('viewMode-change', m)" />
-    <!-- ===== □. 탭바 ====================================================== -->
+<!-- ===== ■. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
+<bo-container>
+  <!-- ===== ■.■. 카드 헤더 (제목 = list-title) =================================== -->
+  <template #title>
+    {{ !active ? '클레임 상세' : (cfIsNew ? '클레임 등록' : (cfDtlMode ? '클레임 상세' : '클레임 수정')) }}
+    <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+      #{{ form.claimId }}
+    </span>
+    <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+      목록에서 행을 선택하거나 [+신규]를 누르세요
+    </span>
+  </template>
+  <!-- ===== ■.■. 탭바 ==================================================== -->
+  <bo-tab-bar v-if="!cfIsNew" :tabs="tabs" :tab="activeTab" :tab-mode="tabMode2"
+    @tab-select="id => handleBtnAction('tab-change', id)"
+    @mode-select="m => handleBtnAction('viewMode-change', m)" />
+  <!-- ===== □. 탭바 ====================================================== -->
 <!-- ===== ■. 탭 컨텐츠 =================================================== -->
 <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
-  <div v-if="cfIsNew || showTab('info')" class="dtl-pane">
-    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
-      📋 상세정보
-    </div>
-    <!-- ===== ■.■.■. 클레임 진행 상태 흐름 ======================================== -->
-    <div v-if="!cfIsNew" style="margin-bottom:20px;padding:16px 18px;background:#f6f6f6;border-radius:10px;">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
-        <span :style="{
-            fontSize:'11px',padding:'3px 10px',borderRadius:'10px',color:'#fff',fontWeight:800,
-            background: CLAIM_TYPE_COLOR[form.claimTypeCd] || '#9ca3af',
-            }">
-          ↩ {{ form.claimTypeCd }}
-        </span>
-        <span style="font-size:13px;font-weight:700;color:#222;">
-          {{ form.claimId }}
-        </span>
-        <span v-if="form.requestDate" style="font-size:11px;color:#888;">
-          신청일: {{ form.requestDate }}
-        </span>
-        <span v-if="form.reasonDetail" style="font-size:11px;color:#888;margin-left:auto;">
-          사유: {{ form.reasonDetail }}
-        </span>
-      </div>
-      <div style="display:flex;align-items:flex-start;overflow-x:auto;">
-        <template v-for="(step, idx) in cfClaimSteps" :key="step">
-          <div style="display:flex;flex-direction:column;align-items:center;min-width:80px;flex:1;">
-            <div :style="{
-                width: idx === cfCurrentStepIdx ? '14px' : '10px',
-                height: idx === cfCurrentStepIdx ? '14px' : '10px',
-                borderRadius:'50%', marginBottom:'6px', flexShrink:0, transition:'all .15s',
-                boxShadow: idx === cfCurrentStepIdx ? '0 0 0 3px '+(CLAIM_TYPE_COLOR[form.claimTypeCd]||'#9ca3af')+'40' : 'none',
-                background: idx <= cfCurrentStepIdx ? (CLAIM_TYPE_COLOR[form.claimTypeCd]||'#9ca3af') : '#bbb',
-                }">
-            </div>
-            <div :style="{
-                fontSize:'11.5px', fontWeight: idx === cfCurrentStepIdx ? 800 : 600,
-                color: idx === cfCurrentStepIdx ? (CLAIM_TYPE_COLOR[form.claimTypeCd]||'#9ca3af') : (idx < cfCurrentStepIdx ? '#444' : '#bbb'),
-                whiteSpace:'nowrap', textAlign:'center',
-                }">
-              {{ step }}
-            </div>
-            <span v-if="step==='수거중' && form.returnTrackingNo" @click="handleBtnAction('tracking-open', { courier: form.returnCourierCd, trackingNo: form.returnTrackingNo })" title="수거 배송조회" style="margin-top:4px;padding:1px 7px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;border-radius:4px;font-size:0.7rem;font-weight:700;user-select:none;">
-            {{ (form.returnCourierCd||'').replace('대한통운','').replace('택배','') || 'CJ' }}수거 🔍
-          </span>
-          <span v-if="step==='완료' && form.exchangeTrackingNo" @click="handleBtnAction('tracking-open', { courier: form.exchangeCourierCd, trackingNo: form.exchangeTrackingNo })" title="발송 배송조회" style="margin-top:4px;padding:1px 7px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-size:0.7rem;font-weight:700;user-select:none;">
-          {{ (form.exchangeCourierCd||'').replace('대한통운','').replace('택배','') || 'CJ' }}발송 🔍
-        </span>
-      </div>
-      <div v-if="idx < cfClaimSteps.length - 1"
-              :style="{flex:'1', height:'2px', minWidth:'12px', marginTop:'6px',
-              background: idx < cfCurrentStepIdx ? (CLAIM_TYPE_COLOR[form.claimTypeCd]||'#9ca3af') : '#bbb'}">
-      </div>
-    </template>
+<div v-if="cfIsNew || showTab('info')" class="dtl-pane">
+  <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
+    📋 상세정보
   </div>
+  <!-- ===== ■.■.■. 클레임 진행 상태 흐름 ======================================== -->
+  <div v-if="!cfIsNew" style="margin-bottom:20px;padding:16px 18px;background:#f6f6f6;border-radius:10px;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+      <span :style="{
+          fontSize:'11px',padding:'3px 10px',borderRadius:'10px',color:'#fff',fontWeight:800,
+          background: CLAIM_TYPE_COLOR[form.claimTypeCd] || '#9ca3af',
+          }">
+        ↩ {{ form.claimTypeCd }}
+      </span>
+      <span style="font-size:13px;font-weight:700;color:#222;">
+        {{ form.claimId }}
+      </span>
+      <span v-if="form.requestDate" style="font-size:11px;color:#888;">
+        신청일: {{ form.requestDate }}
+      </span>
+      <span v-if="form.reasonDetail" style="font-size:11px;color:#888;margin-left:auto;">
+        사유: {{ form.reasonDetail }}
+      </span>
+    </div>
+    <div style="display:flex;align-items:flex-start;overflow-x:auto;">
+      <template v-for="(step, idx) in cfClaimSteps" :key="step">
+        <div style="display:flex;flex-direction:column;align-items:center;min-width:80px;flex:1;">
+          <div :style="{
+              width: idx === cfCurrentStepIdx ? '14px' : '10px',
+              height: idx === cfCurrentStepIdx ? '14px' : '10px',
+              borderRadius:'50%', marginBottom:'6px', flexShrink:0, transition:'all .15s',
+              boxShadow: idx === cfCurrentStepIdx ? '0 0 0 3px '+(CLAIM_TYPE_COLOR[form.claimTypeCd]||'#9ca3af')+'40' : 'none',
+              background: idx <= cfCurrentStepIdx ? (CLAIM_TYPE_COLOR[form.claimTypeCd]||'#9ca3af') : '#bbb',
+              }">
+          </div>
+          <div :style="{
+              fontSize:'11.5px', fontWeight: idx === cfCurrentStepIdx ? 800 : 600,
+              color: idx === cfCurrentStepIdx ? (CLAIM_TYPE_COLOR[form.claimTypeCd]||'#9ca3af') : (idx < cfCurrentStepIdx ? '#444' : '#bbb'),
+              whiteSpace:'nowrap', textAlign:'center',
+              }">
+            {{ step }}
+          </div>
+          <span v-if="step==='수거중' && form.returnTrackingNo" @click="handleBtnAction('tracking-open', { courier: form.returnCourierCd, trackingNo: form.returnTrackingNo })" title="수거 배송조회" style="margin-top:4px;padding:1px 7px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;border-radius:4px;font-size:0.7rem;font-weight:700;user-select:none;">
+          {{ (form.returnCourierCd||'').replace('대한통운','').replace('택배','') || 'CJ' }}수거 🔍
+        </span>
+        <span v-if="step==='완료' && form.exchangeTrackingNo" @click="handleBtnAction('tracking-open', { courier: form.exchangeCourierCd, trackingNo: form.exchangeTrackingNo })" title="발송 배송조회" style="margin-top:4px;padding:1px 7px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-size:0.7rem;font-weight:700;user-select:none;">
+        {{ (form.exchangeCourierCd||'').replace('대한통운','').replace('택배','') || 'CJ' }}발송 🔍
+      </span>
+    </div>
+    <div v-if="idx < cfClaimSteps.length - 1"
+            :style="{flex:'1', height:'2px', minWidth:'12px', marginTop:'6px',
+            background: idx < cfCurrentStepIdx ? (CLAIM_TYPE_COLOR[form.claimTypeCd]||'#9ca3af') : '#bbb'}">
+    </div>
+  </template>
+</div>
 </div>
 <!-- ===== ■.■.■. 기본정보 폼 (BoFormArea 자동 렌더) =========================== -->
 <!-- ===== ■.■.■. 폼 영역 ================================================ -->
 <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="3" compact :show-actions="active"
-        @save="handleBtnAction('form-save')"
-        @cancel="handleBtnAction('form-cancel')"
-        @edit="handleBtnAction('form-edit')"
-        @close="handleBtnAction('form-close')">
-  <!-- ===== ■.■.■.■. 주문ID + 보기 버튼 ====================================== -->
-  <template #orderId>
-    <div style="display:flex;gap:8px;align-items:center;">
-      <input class="form-control" v-model="form.orderId" placeholder="ORD-2026-XXX" :readonly="cfDtlMode" :class="errors.orderId ? 'is-invalid' : ''" />
-      <span v-if="form.orderId" class="ref-link" @click="handleBtnAction('form-orderRef')">
-        보기
-      </span>
-    </div>
-    <span v-if="errors.orderId" class="field-error">
-      {{ errors.orderId }}
+      :readonly="cfDtlMode" :cols="3" compact :show-actions="active"
+      @save="handleBtnAction('form-save')"
+      @cancel="handleBtnAction('form-cancel')"
+      @edit="handleBtnAction('form-edit')"
+      @close="handleBtnAction('form-close')">
+<!-- ===== ■.■.■.■. 주문ID + 보기 버튼 ====================================== -->
+<template #orderId>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <input class="form-control" v-model="form.orderId" placeholder="ORD-2026-XXX" :readonly="cfDtlMode" :class="errors.orderId ? 'is-invalid' : ''" />
+    <span v-if="form.orderId" class="ref-link" @click="handleBtnAction('form-orderRef')">
+      보기
     </span>
-  </template>
-  <!-- ===== ■.■.■.■. 회원ID + 보기 버튼 ====================================== -->
-  <template #memberId>
-    <div style="display:flex;gap:8px;align-items:center;">
-      <input class="form-control" v-model="form.memberId" placeholder="회원 ID" :readonly="cfDtlMode" />
-      <span v-if="form.memberId" class="ref-link" @click="handleBtnAction('form-memberRef')">
-        보기
-      </span>
-    </div>
-  </template>
+  </div>
+  <span v-if="errors.orderId" class="field-error">
+    {{ errors.orderId }}
+  </span>
+</template>
+<!-- ===== ■.■.■.■. 회원ID + 보기 버튼 ====================================== -->
+<template #memberId>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <input class="form-control" v-model="form.memberId" placeholder="회원 ID" :readonly="cfDtlMode" />
+    <span v-if="form.memberId" class="ref-link" @click="handleBtnAction('form-memberRef')">
+      보기
+    </span>
+  </div>
+</template>
 </bo-form-area>
 </div>
 <!-- ===== ■.■. 클레임항목목록 탭 ============================================= -->
 <div v-if="!cfIsNew && showTab('items')" class="dtl-pane" style="padding:20px;">
 <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
-  ↩ 클레임항목
-  <span class="tab-count">
-    {{ claimItems.length }}
-  </span>
+↩ 클레임항목
+<span class="tab-count">
+  {{ claimItems.length }}
+</span>
 </div>
 <div v-if="form.claimTypeCd==='교환'" style="display:flex;justify-content:flex-end;margin-bottom:10px;">
-  <button class="btn btn-secondary btn-sm" @click="handleBtnAction('claimItems-toggleExpandAll')">
-    {{ cfAllExpanded ? '▲ 교환품 모두접기' : '▼ 교환품 모두펼치기' }}
-  </button>
+<button class="btn btn-secondary btn-sm" @click="handleBtnAction('claimItems-toggleExpandAll')">
+  {{ cfAllExpanded ? '▲ 교환품 모두접기' : '▼ 교환품 모두펼치기' }}
+</button>
 </div>
 <!-- ===== ■.■.■. 목록 영역 =============================================== -->
 <bo-grid bare :columns="columns.claimItemGrid" :rows="claimItems"
-        :is-expanded="fnItemExpanded"
-        empty-text="클레임 항목 정보가 없습니다.">
-  <template #cell-prodNm="{ row, idx }">
-    <td style="font-size:12px;">
-      <span v-if="form.claimTypeCd==='교환'" @click="handleSelectAction('claimItems-rowToggleExpand', idx)" style="font-size:11px;color:#3b82f6;font-weight:800;user-select:none;margin-right:6px;" :title="isExpanded(idx)?'교환품 숨기기':'교환품 보기'">
-        {{ isExpanded(idx) ? '▼' : '▶' }}
-      </span>
-      {{ row.prodNm }}
+      :is-expanded="fnItemExpanded"
+      empty-text="클레임 항목 정보가 없습니다.">
+<template #cell-prodNm="{ row, idx }">
+  <td style="font-size:12px;">
+    <span v-if="form.claimTypeCd==='교환'" @click="handleSelectAction('claimItems-rowToggleExpand', idx)" style="font-size:11px;color:#3b82f6;font-weight:800;user-select:none;margin-right:6px;" :title="isExpanded(idx)?'교환품 숨기기':'교환품 보기'">
+      {{ isExpanded(idx) ? '▼' : '▶' }}
+    </span>
+    {{ row.prodNm }}
+  </td>
+</template>
+<template #row-expand="{ row, colspan }">
+  <td :colspan="colspan" style="padding:10px 14px;background:#f0f7ff;">
+    <bo-form-area :columns="columns.itemExpand" :form="row" :cols="3" compact readonly label-left :show-actions="false">
+      <template #tracking>
+        <div class="readonly-field" @click="handleBtnAction('tracking-open', { courier: getExchangedItem(row).courier, trackingNo: getExchangedItem(row).trackingNo })" style="padding:2px 8px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-size:11px;font-weight:700;display:inline-block;">
+          {{ getExchangedItem(row).courier }} · {{ getExchangedItem(row).trackingNo || '-' }} 🔍
+        </div>
+      </template>
+    </bo-form-area>
+  </td>
+</template>
+<template #tfoot>
+  <tr style="background:#fafafa;font-weight:700;">
+    <td style="width:36px;">
     </td>
-  </template>
-  <template #row-expand="{ row, colspan }">
-    <td :colspan="colspan" style="padding:10px 14px;background:#f0f7ff;">
-      <bo-form-area :columns="columns.itemExpand" :form="row" :cols="3" compact readonly label-left :show-actions="false">
-        <template #tracking>
-          <div class="readonly-field" @click="handleBtnAction('tracking-open', { courier: getExchangedItem(row).courier, trackingNo: getExchangedItem(row).trackingNo })" style="padding:2px 8px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-size:11px;font-weight:700;display:inline-block;">
-            {{ getExchangedItem(row).courier }} · {{ getExchangedItem(row).trackingNo || '-' }} 🔍
-          </div>
-        </template>
-      </bo-form-area>
+    <td colspan="4" style="text-align:right;color:#555;">
+      합계
     </td>
-  </template>
-  <template #tfoot>
-    <tr style="background:#fafafa;font-weight:700;">
-      <td style="width:36px;">
-      </td>
-      <td colspan="4" style="text-align:right;color:#555;">
-        합계
-      </td>
-      <td style="width:90px;text-align:right;color:#666;">
-        {{ fmt(claimItems.reduce((s,x)=>s+(x.salePrice||x.price||0),0)) }}
-      </td>
-      <td style="width:80px;">
-      </td>
-      <td style="width:90px;text-align:right;color:#d84315;">
-        -{{ fmt(claimItems.reduce((s,x)=>s+(x.discAmount||0),0)) }}
-      </td>
-      <td style="width:100px;text-align:right;color:#1a1a1a;">
-        {{ fmt(claimItems.reduce((s,x)=>s+(x.price||0),0)) }}
-      </td>
-      <td colspan="3">
-      </td>
-    </tr>
-  </template>
+    <td style="width:90px;text-align:right;color:#666;">
+      {{ fmt(claimItems.reduce((s,x)=>s+(x.salePrice||x.price||0),0)) }}
+    </td>
+    <td style="width:80px;">
+    </td>
+    <td style="width:90px;text-align:right;color:#d84315;">
+      -{{ fmt(claimItems.reduce((s,x)=>s+(x.discAmount||0),0)) }}
+    </td>
+    <td style="width:100px;text-align:right;color:#1a1a1a;">
+      {{ fmt(claimItems.reduce((s,x)=>s+(x.price||0),0)) }}
+    </td>
+    <td colspan="3">
+    </td>
+  </tr>
+</template>
 </bo-grid>
 </div>
 <!-- ===== □.□. 클레임항목목록 탭 ============================================= -->
 <!-- ===== ■.■. 결제정보 탭 ================================================ -->
 <div v-if="!cfIsNew && showTab('payment')" class="dtl-pane" style="padding:20px;">
 <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
-  💳 결제정보
-  <span class="tab-count">
-    {{ cfPaymentList.length }}
-  </span>
+💳 결제정보
+<span class="tab-count">
+  {{ cfPaymentList.length }}
+</span>
 </div>
 <!-- ===== ■.■.■. 목록 영역 =============================================== -->
 <bo-grid bare :columns="columns.paymentGrid" :rows="cfPaymentList" empty-text="결제·환불 정보가 없습니다.">
@@ -554,10 +553,10 @@ window.OdClaimDtl = {
 <!-- ===== ■.■. 상태변경이력 탭 ============================================== -->
 <div v-if="!cfIsNew && showTab('hist')" class="dtl-pane">
 <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title" style="margin-bottom:10px;padding:0 0 10px 0;">
-  🕒 상태변경이력
-  <span class="tab-count">
-    {{ cfStatusHistList.length }}
-  </span>
+🕒 상태변경이력
+<span class="tab-count">
+  {{ cfStatusHistList.length }}
+</span>
 </div>
 <od-claim-hist :claim-id="form.claimId" :navigate="navigate" />
 </div>
@@ -565,10 +564,10 @@ window.OdClaimDtl = {
 <!-- ===== ■.■. 정보수정이력 탭 ============================================== -->
 <div v-if="!cfIsNew && showTab('editHist')" class="dtl-pane" style="padding:20px;">
 <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
-  📝 정보수정이력
-  <span class="tab-count">
-    {{ cfEditHistList.length }}
-  </span>
+📝 정보수정이력
+<span class="tab-count">
+  {{ cfEditHistList.length }}
+</span>
 </div>
 <!-- ===== ■.■.■. 목록 영역 =============================================== -->
 <bo-grid bare :columns="columns.editHistGrid" :rows="cfEditHistList" empty-text="정보 수정 이력이 없습니다.">
@@ -576,9 +575,8 @@ window.OdClaimDtl = {
 </div>
 </div>
 <!-- ===== □. 탭 컨텐츠 =================================================== -->
-  </bo-container>
-  <!-- ===== □. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
-</div>
+</bo-container>
+<!-- ===== □. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
 <!-- ===== □.□. 정보수정이력 탭 ============================================== -->
 `
 };

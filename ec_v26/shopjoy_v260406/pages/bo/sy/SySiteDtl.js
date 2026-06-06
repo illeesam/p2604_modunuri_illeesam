@@ -217,52 +217,47 @@ window.SySiteDtl = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 상세 카드 (제목/라벨/폼 모두 카드 안에) ============================= -->
-  <div class="card">
-    <!-- ===== ■.■. 카드 헤더 (제목 = list-title, 페이지 타이틀 아님 → 폰트 축소) ========= -->
-    <div class="toolbar">
-      <span class="list-title">
-        {{ !active ? '사이트 상세' : (cfIsNew ? '사이트 등록' : (cfDtlMode ? '사이트 상세' : '사이트 수정')) }}
-        <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
-          #{{ form.siteId }}
-        </span>
-        <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-          목록에서 행을 선택하거나 [+신규]를 누르세요
-        </span>
-      </span>
-    </div>
-    <!-- ===== ■.■. 폼 영역 ================================================== -->
-    <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
-      :readonly="cfDtlMode" :cols="3" compact :show-actions="active"
-      @save="handleBtnAction('form-save')"
-      @cancel="handleBtnAction('form-cancel')"
-      @edit="handleBtnAction('form-edit')"
-      @close="handleBtnAction('form-close')">
-      <!-- ===== ■.■.■. 주소: 우편번호+검색버튼+기본주소 (카카오 우편번호 연동) ============= -->
-      <template #addr>
-        <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
-          <input class="form-control" v-model="form.siteZipCode" placeholder="우편번호"
-            style="width:110px;flex-shrink:0;" readonly />
-          <button v-if="!cfDtlMode" type="button" class="btn btn-blue btn-sm" @click="handleBtnAction('addr-search')"
-            style="white-space:nowrap;">
-            🔍 주소 검색
-          </button>
-          <button v-if="!cfDtlMode && (form.siteZipCode || form.siteAddress)" type="button" class="btn btn-danger btn-sm"
-            title="주소 초기화" @click="form.siteZipCode=''; form.siteAddress='';" style="white-space:nowrap;flex-shrink:0;">
-            ✕
-          </button>
-        </div>
-        <input class="form-control" v-model="form.siteAddress"
-          placeholder="기본주소 (주소 검색 후 자동 입력)" readonly />
-      </template>
-    </bo-form-area>
-  </div>
-  <!-- ===== □. 폼 영역 ==================================================== -->
-  <!-- ===== ■. 표시경로 선택 모달 ============================================== -->
-  <path-pick-modal v-if="pathPickModal.show" biz-cd="sy_site"
-    :value="form.pathId"
-    title="사이트 표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
-</div>
+<!-- ===== ■. 상세 카드 (bo-container 가 카드 담당 = template 루트, 모달은 형제 루트) ============= -->
+<bo-container>
+  <!-- ===== ■.■. 카드 헤더 (제목 = list-title, 페이지 타이틀 아님 → 폰트 축소) ========= -->
+  <template #title>
+    {{ !active ? '사이트 상세' : (cfIsNew ? '사이트 등록' : (cfDtlMode ? '사이트 상세' : '사이트 수정')) }}
+    <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+      #{{ form.siteId }}
+    </span>
+    <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+      목록에서 행을 선택하거나 [+신규]를 누르세요
+    </span>
+  </template>
+  <!-- ===== ■.■. 폼 영역 ================================================== -->
+  <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
+    :readonly="cfDtlMode" :cols="3" compact :show-actions="active"
+    @save="handleBtnAction('form-save')"
+    @cancel="handleBtnAction('form-cancel')"
+    @edit="handleBtnAction('form-edit')"
+    @close="handleBtnAction('form-close')">
+    <!-- ===== ■.■.■. 주소: 우편번호+검색버튼+기본주소 (카카오 우편번호 연동) ============= -->
+    <template #addr>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
+        <input class="form-control" v-model="form.siteZipCode" placeholder="우편번호"
+          style="width:110px;flex-shrink:0;" readonly />
+        <button v-if="!cfDtlMode" type="button" class="btn btn-blue btn-sm" @click="handleBtnAction('addr-search')"
+          style="white-space:nowrap;">
+          🔍 주소 검색
+        </button>
+        <button v-if="!cfDtlMode && (form.siteZipCode || form.siteAddress)" type="button" class="btn btn-danger btn-sm"
+          title="주소 초기화" @click="form.siteZipCode=''; form.siteAddress='';" style="white-space:nowrap;flex-shrink:0;">
+          ✕
+        </button>
+      </div>
+      <input class="form-control" v-model="form.siteAddress"
+        placeholder="기본주소 (주소 검색 후 자동 입력)" readonly />
+    </template>
+  </bo-form-area>
+</bo-container>
+<!-- ===== ■. 표시경로 선택 모달 (형제 루트 — Vue3 fragment) ============================ -->
+<path-pick-modal v-if="pathPickModal.show" biz-cd="sy_site"
+  :value="form.pathId"
+  title="사이트 표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
 `,
 };

@@ -325,18 +325,16 @@ window.DpDispAreaMng = {
     </bo-container>
   </div>
   <!-- ===== ■. 상세 패널 (항상 표시, 진입 시 빈 신규 폼) ============================== -->
-  <bo-container bare>
-    <dp-disp-area-dtl :key="cfDetailKey"
-      :navigate="inlineNavigate"
-      :dtl-id="cfDetailEditId"
-      :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-      :tab-mode="detailPanel.openMode"
-      :active="detailPanel.active"
-      :reload-trigger="detailPanel.reloadTrigger"
-      :on-list-reload="handleSearchData"
-      @close="handleBtnAction('detailPanel-close')"
-      />
-  </bo-container>
+  <dp-disp-area-dtl :key="cfDetailKey"
+    :navigate="inlineNavigate"
+    :dtl-id="cfDetailEditId"
+    :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+    :tab-mode="detailPanel.openMode"
+    :active="detailPanel.active"
+    :reload-trigger="detailPanel.reloadTrigger"
+    :on-list-reload="handleSearchData"
+    @close="handleBtnAction('detailPanel-close')"
+    />
 </bo-page>
 `,
 };

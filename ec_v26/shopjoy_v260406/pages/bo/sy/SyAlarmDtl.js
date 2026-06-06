@@ -197,37 +197,35 @@ window.SyAlarmDtl = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 상세 영역 (제목/폼 모두 컨테이너 안에) ========================= -->
-  <bo-container>
-    <!-- ===== ■.■. 영역 헤더 (제목 = list-title, 페이지 타이틀 아님 → 폰트 축소) ========= -->
-    <template #title>
-      {{ !active ? '알림 상세' : (cfIsNew ? '알림 등록' : (cfDtlMode ? '알림 상세' : '알림 수정')) }}
-      <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
-        #{{ form.alarmId }}
-      </span>
-      <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-        목록에서 행을 선택하거나 [+신규]를 누르세요
-      </span>
+<!-- ===== ■. 상세 영역 (제목/폼 모두 컨테이너 안에) ========================= -->
+<bo-container>
+  <!-- ===== ■.■. 영역 헤더 (제목 = list-title, 페이지 타이틀 아님 → 폰트 축소) ========= -->
+  <template #title>
+    {{ !active ? '알림 상세' : (cfIsNew ? '알림 등록' : (cfDtlMode ? '알림 상세' : '알림 수정')) }}
+    <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+      #{{ form.alarmId }}
+    </span>
+    <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+      목록에서 행을 선택하거나 [+신규]를 누르세요
+    </span>
+  </template>
+  <!-- ===== ■.■. 폼 영역 ================================================== -->
+  <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
+    :readonly="cfDtlMode" :cols="3" compact :show-actions="active"
+    @save="handleBtnAction('form-save')"
+    @cancel="handleBtnAction('form-cancel')"
+    @edit="handleBtnAction('form-edit')"
+    @close="handleBtnAction('form-close')">
+    <!-- ===== ■.■.■. 발송일시 (DateTimePicker) ================================= -->
+    <template #sendDate>
+      <bo-date-time-picker v-model="form.alarmSendDate" :readonly="cfDtlMode" />
     </template>
-    <!-- ===== ■.■. 폼 영역 ================================================== -->
-    <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
-      :readonly="cfDtlMode" :cols="3" compact :show-actions="active"
-      @save="handleBtnAction('form-save')"
-      @cancel="handleBtnAction('form-cancel')"
-      @edit="handleBtnAction('form-edit')"
-      @close="handleBtnAction('form-close')">
-      <!-- ===== ■.■.■. 발송일시 (DateTimePicker) ================================= -->
-      <template #sendDate>
-        <bo-date-time-picker v-model="form.alarmSendDate" :readonly="cfDtlMode" />
-      </template>
-    </bo-form-area>
-  </bo-container>
-  <!-- ===== □. 폼 영역 ==================================================== -->
-  <!-- ===== ■. 표시경로 선택 모달 ============================================= -->
-  <path-pick-modal v-if="pathPickModal.show" biz-cd="sy_alarm"
-    :value="form.pathId"
-    title="알림 표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
-</div>
+  </bo-form-area>
+</bo-container>
+<!-- ===== □. 폼 영역 ==================================================== -->
+<!-- ===== ■. 표시경로 선택 모달 ============================================= -->
+<path-pick-modal v-if="pathPickModal.show" biz-cd="sy_alarm"
+  :value="form.pathId"
+  title="알림 표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
 `,
 };

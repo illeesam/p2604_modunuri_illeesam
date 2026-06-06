@@ -398,270 +398,268 @@ window.PmEventDtl = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
-  <bo-container>
-    <!-- ===== ■.■. 카드 헤더 (제목 = list-title, page-title 아님 → 폰트 축소) ========= -->
-    <template #title>
-      {{ !active ? '이벤트 상세' : (cfIsNew ? '이벤트 등록' : (cfDtlMode ? '이벤트 상세' : '이벤트 수정')) }}
-      <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
-        #{{ form.eventId }}
-      </span>
-      <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
-        목록에서 행을 선택하거나 [+신규]를 누르세요
-      </span>
-    </template>
-    <!-- ===== ■.■. 탭바 ==================================================== -->
-    <bo-tab-bar :tabs="tabs" :tab="tab" :tab-mode="tabMode2"
-      @tab-select="id => handleBtnAction('tab-select', id)"
-      @mode-select="m => handleBtnAction('tab-mode', m)" />
-    <!-- ===== □.■. 탭바 ==================================================== -->
-    <!-- ===== ■. 탭 컨텐츠 =================================================== -->
-  <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
-    <!-- ===== ■.■. 배너이미지 ================================================= -->
-    <div class="dtl-pane" v-show="showTab('banner')" style="margin:0;">
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
-        🎨 배너이미지
-      </div>
-      <div style="margin-bottom:12px;">
-        <div style="font-size:12px;color:#888;margin-bottom:6px;">
-          💡 팁: 이미지 삽입 후 크기 조절 및 배치를 자유롭게 설정할 수 있습니다.
-        </div>
-        <base-html-editor v-model="form.bannerImage" height="320px" />
-      </div>
-      <div class="form-actions" v-if="active && cfDtlMode">
-        <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
-          수정
-        </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
-          닫기
-        </button>
-      </div>
-      <div class="form-actions" v-if="active && !cfDtlMode">
-        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
-          저장
-        </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
-          취소
-        </button>
-      </div>
+<!-- ===== ■. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
+<bo-container>
+  <!-- ===== ■.■. 카드 헤더 (제목 = list-title, page-title 아님 → 폰트 축소) ========= -->
+  <template #title>
+    {{ !active ? '이벤트 상세' : (cfIsNew ? '이벤트 등록' : (cfDtlMode ? '이벤트 상세' : '이벤트 수정')) }}
+    <span v-if="active && !cfIsNew" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+      #{{ form.eventId }}
+    </span>
+    <span v-if="!active" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">
+      목록에서 행을 선택하거나 [+신규]를 누르세요
+    </span>
+  </template>
+  <!-- ===== ■.■. 탭바 ==================================================== -->
+  <bo-tab-bar :tabs="tabs" :tab="tab" :tab-mode="tabMode2"
+    @tab-select="id => handleBtnAction('tab-select', id)"
+    @mode-select="m => handleBtnAction('tab-mode', m)" />
+  <!-- ===== □.■. 탭바 ==================================================== -->
+  <!-- ===== ■. 탭 컨텐츠 =================================================== -->
+<div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
+  <!-- ===== ■.■. 배너이미지 ================================================= -->
+  <div class="dtl-pane" v-show="showTab('banner')" style="margin:0;">
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
+      🎨 배너이미지
     </div>
-    <!-- ===== □.□. 배너이미지 ================================================= -->
-    <!-- ===== ■.■. 기본정보 ================================================== -->
-    <div class="dtl-pane" v-show="showTab('info')" style="margin:0;">
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
-        📋 기본정보
+    <div style="margin-bottom:12px;">
+      <div style="font-size:12px;color:#888;margin-bottom:6px;">
+        💡 팁: 이미지 삽입 후 크기 조절 및 배치를 자유롭게 설정할 수 있습니다.
       </div>
-      <!-- ===== ■.■.■. 이벤트 제목/기간/상태 (BoFormArea 자동 렌더) ===================== -->
-      <!-- ===== ■.■.■. 폼 영역 ================================================ -->
-      <bo-form-area :columns="columns.infoForm" :form="form" :errors="errors"
-        :readonly="cfDtlMode" :cols="3" compact :show-actions="false" />
-      <div v-if="form.authRequired" style="padding:10px 14px;background:#fff7e6;border-radius:6px;border:1px solid #ffd591;font-size:12px;color:#d46b08;">
-        ⚠️ 인증 필요 설정 시, 이벤트 내용 3~5는 로그인 회원에게만 표시됩니다.
-      </div>
-      <div style="margin-top:14px;">
-        <div style="font-size:12px;font-weight:700;color:#888;margin-bottom:8px;">
-          🔒 공개 대상 (하나라도 해당하면 노출)
-        </div>
-        <bo-multi-check-select v-model="form.visibilityTargets" :options="cfVisibilityOptions"
-          separator="^" wrap empty-value="^NONE^" placeholder="전체 공개" all-label="전체 공개"
-          :disabled="cfDtlMode" min-width="320px" />
-      </div>
-      <!-- ===== ■.■.■. 판매업체/판매담당자 (BoFormArea 자동 렌더) ======================= -->
-      <div style="margin-top:20px;padding-top:20px;border-top:1px solid #e8e8e8;">
-        <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
-        <bo-form-area :columns="columns.vendorForm" :form="form" :errors="errors"
-          :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
-          <template #vendor>
-            <div style="display:flex;gap:8px;align-items:center;">
-              <div class="form-control" :style="'background:#f9f9f9;padding:0;display:flex;align-items:center;cursor:' + (cfDtlMode ? 'default' : 'pointer')" @click="cfDtlMode ? null : handleBtnAction('vendorModal-open')">
-                <span style="padding:4px 10px;flex:1;">
-                  {{ cfSelectedVendorNm }}
-                </span>
-                <span style="padding:4px 10px;color:#999;font-size:12px;">
-                  ▼
-                </span>
-              </div>
-              <button v-if="coUtil.cofAnd(form.vendorId, !cfDtlMode)" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendorClear')">
-                초기화
-              </button>
-            </div>
-          </template>
-        </bo-form-area>
-      </div>
-      <!-- ===== ■.■.■. 판매업체 선택 모달 ========================================== -->
-      <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId" modal-name="vendor-pick" :on-callback="fnCallbackModal" />
-      <div class="form-actions" v-if="active && cfDtlMode">
-        <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
-          수정
-        </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
-          닫기
-        </button>
-      </div>
-      <div class="form-actions" v-if="active && !cfDtlMode">
-        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
-          저장
-        </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
-          취소
-        </button>
-      </div>
+      <base-html-editor v-model="form.bannerImage" height="320px" />
     </div>
-    <!-- ===== □.□. 기본정보 ================================================== -->
-    <!-- ===== ■.■. 이벤트 내용 (HTML 에디터) ===================================== -->
-    <div class="dtl-pane" v-show="showTab('content')" style="margin:0;">
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
-        📝 이벤트 내용
-      </div>
-      <div style="display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;">
-        <button v-for="n in 5" :key="Math.random()" class="btn btn-sm"
-          :class="activeContentTab===n ? 'btn-primary' : 'btn-secondary'"
-          @click="handleBtnAction('content-tab', n)">
-          내용 {{ n }}
-          <span v-if="form.authRequired && n >= 3" class="tab-count" style="background:#fde8ee;color:#e8587a;">
-          인증
-        </span>
+    <div class="form-actions" v-if="active && cfDtlMode">
+      <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
+        수정
+      </button>
+      <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
+        닫기
       </button>
     </div>
-    <div v-for="n in 5" :key="Math.random()" v-show="activeContentTab===n">
-      <div v-if="form.authRequired && n >= 3" style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:8px 12px;background:#fff7e6;border-radius:6px;border:1px solid #ffd591;">
-      <span class="badge badge-orange">
-        인증 후 표시
-      </span>
-      <span style="font-size:12px;color:#888;">
-        로그인 회원에게만 표시됩니다
-      </span>
+    <div class="form-actions" v-if="active && !cfDtlMode">
+      <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
+        저장
+      </button>
+      <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+        취소
+      </button>
     </div>
-    <div v-if="cfDtlMode" class="form-control" style="min-height:160px;line-height:1.6;" v-html="form['content'+n] || '<span style=color:#bbb>-</span>'">
+  </div>
+  <!-- ===== □.□. 배너이미지 ================================================= -->
+  <!-- ===== ■.■. 기본정보 ================================================== -->
+  <div class="dtl-pane" v-show="showTab('info')" style="margin:0;">
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
+      📋 기본정보
     </div>
-    <base-html-editor v-else :model-value="form['content'+n]" @update:model-value="v => form['content'+n] = v" height="220px" />
+    <!-- ===== ■.■.■. 이벤트 제목/기간/상태 (BoFormArea 자동 렌더) ===================== -->
+    <!-- ===== ■.■.■. 폼 영역 ================================================ -->
+    <bo-form-area :columns="columns.infoForm" :form="form" :errors="errors"
+      :readonly="cfDtlMode" :cols="3" compact :show-actions="false" />
+    <div v-if="form.authRequired" style="padding:10px 14px;background:#fff7e6;border-radius:6px;border:1px solid #ffd591;font-size:12px;color:#d46b08;">
+      ⚠️ 인증 필요 설정 시, 이벤트 내용 3~5는 로그인 회원에게만 표시됩니다.
+    </div>
+    <div style="margin-top:14px;">
+      <div style="font-size:12px;font-weight:700;color:#888;margin-bottom:8px;">
+        🔒 공개 대상 (하나라도 해당하면 노출)
+      </div>
+      <bo-multi-check-select v-model="form.visibilityTargets" :options="cfVisibilityOptions"
+        separator="^" wrap empty-value="^NONE^" placeholder="전체 공개" all-label="전체 공개"
+        :disabled="cfDtlMode" min-width="320px" />
+    </div>
+    <!-- ===== ■.■.■. 판매업체/판매담당자 (BoFormArea 자동 렌더) ======================= -->
+    <div style="margin-top:20px;padding-top:20px;border-top:1px solid #e8e8e8;">
+      <!-- ===== ■.■.■.■. 폼 영역 ============================================== -->
+      <bo-form-area :columns="columns.vendorForm" :form="form" :errors="errors"
+        :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
+        <template #vendor>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <div class="form-control" :style="'background:#f9f9f9;padding:0;display:flex;align-items:center;cursor:' + (cfDtlMode ? 'default' : 'pointer')" @click="cfDtlMode ? null : handleBtnAction('vendorModal-open')">
+              <span style="padding:4px 10px;flex:1;">
+                {{ cfSelectedVendorNm }}
+              </span>
+              <span style="padding:4px 10px;color:#999;font-size:12px;">
+                ▼
+              </span>
+            </div>
+            <button v-if="coUtil.cofAnd(form.vendorId, !cfDtlMode)" class="btn btn-sm" style="padding:0 12px;color:#666;" @click="handleBtnAction('form-vendorClear')">
+              초기화
+            </button>
+          </div>
+        </template>
+      </bo-form-area>
+    </div>
+    <!-- ===== ■.■.■. 판매업체 선택 모달 ========================================== -->
+    <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId" modal-name="vendor-pick" :on-callback="fnCallbackModal" />
+    <div class="form-actions" v-if="active && cfDtlMode">
+      <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
+        수정
+      </button>
+      <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
+        닫기
+      </button>
+    </div>
+    <div class="form-actions" v-if="active && !cfDtlMode">
+      <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
+        저장
+      </button>
+      <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+        취소
+      </button>
+    </div>
   </div>
-  <div class="form-actions" v-if="active && cfDtlMode">
-    <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
-      수정
-    </button>
-    <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
-      닫기
+  <!-- ===== □.□. 기본정보 ================================================== -->
+  <!-- ===== ■.■. 이벤트 내용 (HTML 에디터) ===================================== -->
+  <div class="dtl-pane" v-show="showTab('content')" style="margin:0;">
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
+      📝 이벤트 내용
+    </div>
+    <div style="display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;">
+      <button v-for="n in 5" :key="Math.random()" class="btn btn-sm"
+        :class="activeContentTab===n ? 'btn-primary' : 'btn-secondary'"
+        @click="handleBtnAction('content-tab', n)">
+        내용 {{ n }}
+        <span v-if="form.authRequired && n >= 3" class="tab-count" style="background:#fde8ee;color:#e8587a;">
+        인증
+      </span>
     </button>
   </div>
-  <div class="form-actions" v-if="active && !cfDtlMode">
-    <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
-      저장
-    </button>
-    <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
-      취소
-    </button>
+  <div v-for="n in 5" :key="Math.random()" v-show="activeContentTab===n">
+    <div v-if="form.authRequired && n >= 3" style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:8px 12px;background:#fff7e6;border-radius:6px;border:1px solid #ffd591;">
+    <span class="badge badge-orange">
+      인증 후 표시
+    </span>
+    <span style="font-size:12px;color:#888;">
+      로그인 회원에게만 표시됩니다
+    </span>
   </div>
+  <div v-if="cfDtlMode" class="form-control" style="min-height:160px;line-height:1.6;" v-html="form['content'+n] || '<span style=color:#bbb>-</span>'">
+  </div>
+  <base-html-editor v-else :model-value="form['content'+n]" @update:model-value="v => form['content'+n] = v" height="220px" />
+</div>
+<div class="form-actions" v-if="active && cfDtlMode">
+  <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
+    수정
+  </button>
+  <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
+    닫기
+  </button>
+</div>
+<div class="form-actions" v-if="active && !cfDtlMode">
+  <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
+    저장
+  </button>
+  <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+    취소
+  </button>
+</div>
 </div>
 <!-- ===== □.□. 이벤트 내용 (HTML 에디터) ===================================== -->
 <!-- ===== ■.■. 대상 상품 ================================================= -->
 <div class="dtl-pane" v-show="showTab('products')" style="margin:0;">
-  <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
-    🛍 대상 상품
-    <span class="tab-count">
-      {{ form.targetProducts.length }}
-    </span>
-  </div>
-  <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;">
-    <button v-if="!cfDtlMode" class="btn btn-secondary" @click="handleBtnAction('prodPickModal-open')">
-      + 상품 추가
+<div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
+  🛍 대상 상품
+  <span class="tab-count">
+    {{ form.targetProducts.length }}
+  </span>
+</div>
+<div style="display:flex;gap:8px;align-items:center;margin-bottom:14px;">
+  <button v-if="!cfDtlMode" class="btn btn-secondary" @click="handleBtnAction('prodPickModal-open')">
+    + 상품 추가
+  </button>
+  <span style="font-size:13px;color:#888;">
+    {{ form.targetProducts.length }}개 선택됨
+  </span>
+</div>
+<!-- ===== ■.■.■. 목록 영역 =============================================== -->
+<bo-grid bare :columns="columns.productGrid" :rows="cfSelectedProducts" row-key="productId"
+      empty-text="선택된 상품이 없습니다." @ref-click="({type,id}) => handleSelectAction('items-ref', {type, id})" row-actions>
+  <template #row-actions="{ row }">
+    <button class="btn btn-danger btn-xs" @click="handleSelectAction('items-rowDelete', row.productId)">
+      제거
     </button>
-    <span style="font-size:13px;color:#888;">
-      {{ form.targetProducts.length }}개 선택됨
-    </span>
-  </div>
-  <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-  <bo-grid bare :columns="columns.productGrid" :rows="cfSelectedProducts" row-key="productId"
-        empty-text="선택된 상품이 없습니다." @ref-click="({type,id}) => handleSelectAction('items-ref', {type, id})" row-actions>
-    <template #row-actions="{ row }">
-      <button class="btn btn-danger btn-xs" @click="handleSelectAction('items-rowDelete', row.productId)">
-        제거
-      </button>
-    </template>
-  </bo-grid>
-  <div class="form-actions" v-if="active && cfDtlMode">
-    <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
-      수정
-    </button>
-    <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
-      닫기
-    </button>
-  </div>
-  <div class="form-actions" v-if="active && !cfDtlMode">
-    <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
-      저장
-    </button>
-    <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
-      취소
-    </button>
-  </div>
+  </template>
+</bo-grid>
+<div class="form-actions" v-if="active && cfDtlMode">
+  <button class="btn btn-blue" @click="handleBtnAction('form-edit')">
+    수정
+  </button>
+  <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
+    닫기
+  </button>
+</div>
+<div class="form-actions" v-if="active && !cfDtlMode">
+  <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
+    저장
+  </button>
+  <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">
+    취소
+  </button>
+</div>
 </div>
 <!-- ===== □.□. 대상 상품 ================================================= -->
 <!-- ===== ■.■. 미리보기 ================================================== -->
 <div class="dtl-pane" v-show="showTab('preview')" style="margin:0;">
-  <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
-    👁 미리보기
+<div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
+  👁 미리보기
+</div>
+<div style="background:#f9f9f9;border-radius:10px;padding:20px;border:1px solid #e8e8e8;max-width:600px;">
+  <!-- ===== ■.■.■.■. 배너 미리보기 =========================================== -->
+  <div v-if="form.bannerImage" style="margin-bottom:20px;padding:12px;background:#fff;border-radius:6px;border:1px solid #e0e0e0;overflow:hidden;" v-html="form.bannerImage">
   </div>
-  <div style="background:#f9f9f9;border-radius:10px;padding:20px;border:1px solid #e8e8e8;max-width:600px;">
-    <!-- ===== ■.■.■.■. 배너 미리보기 =========================================== -->
-    <div v-if="form.bannerImage" style="margin-bottom:20px;padding:12px;background:#fff;border-radius:6px;border:1px solid #e0e0e0;overflow:hidden;" v-html="form.bannerImage">
+  <div style="font-size:18px;font-weight:700;margin-bottom:12px;color:#1a1a2e;">
+    {{ form.eventTitle || '이벤트 제목' }}
+  </div>
+  <div style="font-size:12px;color:#aaa;margin-bottom:16px;">
+    {{ form.startDate }} ~ {{ form.endDate }}
+  </div>
+  <div style="font-size:13px;color:#444;margin-bottom:12px;" v-html="form.content1 || '<p style=color:#aaa>이벤트 내용 1이 여기에 표시됩니다.</p>'">
+  </div>
+  <div style="font-size:13px;color:#444;margin-bottom:12px;" v-html="form.content2">
+  </div>
+  <template v-if="!form.authRequired">
+    <div style="font-size:13px;color:#444;margin-bottom:12px;" v-html="form.content3">
     </div>
-    <div style="font-size:18px;font-weight:700;margin-bottom:12px;color:#1a1a2e;">
-      {{ form.eventTitle || '이벤트 제목' }}
+    <div style="font-size:13px;color:#444;margin-bottom:12px;" v-html="form.content4">
     </div>
-    <div style="font-size:12px;color:#aaa;margin-bottom:16px;">
-      {{ form.startDate }} ~ {{ form.endDate }}
+    <div style="font-size:13px;color:#444;margin-bottom:16px;" v-html="form.content5">
     </div>
-    <div style="font-size:13px;color:#444;margin-bottom:12px;" v-html="form.content1 || '<p style=color:#aaa>이벤트 내용 1이 여기에 표시됩니다.</p>'">
+  </template>
+  <div v-else style="padding:12px;background:#f0f0f0;border-radius:6px;font-size:12px;color:#888;margin-bottom:16px;">
+    🔒 내용 3~5는 로그인 후 확인 가능합니다.
+  </div>
+  <div v-if="cfSelectedProducts.length > 0" style="margin-top:20px;padding-top:20px;border-top:1px solid #e0e0e0;">
+    <div style="font-size:14px;font-weight:700;color:#333;margin-bottom:12px;">
+      🎯 대상 상품 ({{ cfSelectedProducts.length }}개)
     </div>
-    <div style="font-size:13px;color:#444;margin-bottom:12px;" v-html="form.content2">
-    </div>
-    <template v-if="!form.authRequired">
-      <div style="font-size:13px;color:#444;margin-bottom:12px;" v-html="form.content3">
-      </div>
-      <div style="font-size:13px;color:#444;margin-bottom:12px;" v-html="form.content4">
-      </div>
-      <div style="font-size:13px;color:#444;margin-bottom:16px;" v-html="form.content5">
-      </div>
-    </template>
-    <div v-else style="padding:12px;background:#f0f0f0;border-radius:6px;font-size:12px;color:#888;margin-bottom:16px;">
-      🔒 내용 3~5는 로그인 후 확인 가능합니다.
-    </div>
-    <div v-if="cfSelectedProducts.length > 0" style="margin-top:20px;padding-top:20px;border-top:1px solid #e0e0e0;">
-      <div style="font-size:14px;font-weight:700;color:#333;margin-bottom:12px;">
-        🎯 대상 상품 ({{ cfSelectedProducts.length }}개)
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;">
-        <div v-for="p in cfSelectedProducts" :key="p?.productId" style="border:1px solid #e0e0e0;border-radius:6px;overflow:hidden;background:#fff;">
-          <div style="height:100px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;font-size:32px;border-bottom:1px solid #e8e8e8;">
-            📦
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;">
+      <div v-for="p in cfSelectedProducts" :key="p?.productId" style="border:1px solid #e0e0e0;border-radius:6px;overflow:hidden;background:#fff;">
+        <div style="height:100px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;font-size:32px;border-bottom:1px solid #e8e8e8;">
+          📦
+        </div>
+        <div style="padding:8px;font-size:11px;">
+          <div style="font-weight:600;color:#222;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+            {{ p.prodNm }}
           </div>
-          <div style="padding:8px;font-size:11px;">
-            <div style="font-weight:600;color:#222;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-              {{ p.prodNm }}
-            </div>
-            <div style="color:#e8587a;font-weight:700;">
-              {{ (p.price||0).toLocaleString() }}원
-            </div>
+          <div style="color:#e8587a;font-weight:700;">
+            {{ (p.price||0).toLocaleString() }}원
           </div>
         </div>
       </div>
     </div>
-    <button class="btn btn-primary" @click="handleBtnAction('preview-eventConfirm')" style="margin-top:16px;">
-      이벤트 확인
-    </button>
   </div>
+  <button class="btn btn-primary" @click="handleBtnAction('preview-eventConfirm')" style="margin-top:16px;">
+    이벤트 확인
+  </button>
+</div>
 </div>
 <!-- ===== □.□. 미리보기 ================================================== -->
 <!-- ===== □. 탭 컨텐츠 =================================================== -->
-  </div>
-  </bo-container>
-  <!-- ===== □. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
+</div>
+</bo-container>
+<!-- ===== □. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
 <!-- ===== ■. 상품 선택 팝업 ================================================ -->
 <simple-prod-pick-modal :show="showProdPopup" :prods="products" :selected-ids="form.targetProducts"
-    title="대상 상품 선택" modal-name="prod-pick" :on-callback="fnCallbackModal" />
+  title="대상 상품 선택" modal-name="prod-pick" :on-callback="fnCallbackModal" />
 <!-- ===== □. 상품 선택 팝업 ================================================ -->
-</div>
 `
 };

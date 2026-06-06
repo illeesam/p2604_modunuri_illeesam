@@ -115,100 +115,98 @@ window.OdDlivHist = {
     };
   },
   template: /* html */`
-<div>
-  <!-- ===== ■. 이력 영역 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
-  <bo-container title="이력정보">
-  <!-- ===== ■. 탭 영역 ==================================================== -->
-  <bo-tab-bar :tabs="tabs" :tab="botTab" :tab-mode="tabMode2" :show-modes="false"
-    @tab-select="id => handleBtnAction('tab-change', id)" />
-  <!-- ===== □. 탭 영역 ==================================================== -->
-  <!-- ===== ■. 탭 컨텐츠 =================================================== -->
-  <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
-    <!-- ===== ■.■. 연관 주문 ================================================= -->
-    <div class="dtl-pane" v-show="showTab('order')">
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
-        🛒 연관 주문
-        <span class="tab-count">
-          {{ cfRelatedOrder ? 1 : 0 }}
+<!-- ===== ■. 이력 영역 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
+<bo-container title="이력정보">
+<!-- ===== ■. 탭 영역 ==================================================== -->
+<bo-tab-bar :tabs="tabs" :tab="botTab" :tab-mode="tabMode2" :show-modes="false"
+  @tab-select="id => handleBtnAction('tab-change', id)" />
+<!-- ===== □. 탭 영역 ==================================================== -->
+<!-- ===== ■. 탭 컨텐츠 =================================================== -->
+<div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
+  <!-- ===== ■.■. 연관 주문 ================================================= -->
+  <div class="dtl-pane" v-show="showTab('order')">
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
+      🛒 연관 주문
+      <span class="tab-count">
+        {{ cfRelatedOrder ? 1 : 0 }}
+      </span>
+    </div>
+    <template v-if="cfRelatedOrder">
+      <div class="detail-row">
+        <span class="detail-label">
+          주문ID
+        </span>
+        <span class="detail-value">
+          {{ cfRelatedOrder.orderId }}
         </span>
       </div>
-      <template v-if="cfRelatedOrder">
-        <div class="detail-row">
-          <span class="detail-label">
-            주문ID
+      <div class="detail-row">
+        <span class="detail-label">
+          회원
+        </span>
+        <span class="detail-value">
+          <span class="ref-link" @click="handleBtnAction('histList-memberRef', cfRelatedOrder.userId)">
+            {{ cfRelatedOrder.userNm }}
           </span>
-          <span class="detail-value">
-            {{ cfRelatedOrder.orderId }}
-          </span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">
-            회원
-          </span>
-          <span class="detail-value">
-            <span class="ref-link" @click="handleBtnAction('histList-memberRef', cfRelatedOrder.userId)">
-              {{ cfRelatedOrder.userNm }}
-            </span>
-          </span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">
-            상품
-          </span>
-          <span class="detail-value">
-            {{ cfRelatedOrder.prodNm }}
-          </span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">
-            금액
-          </span>
-          <span class="detail-value">
-            {{ (cfRelatedOrder.totalPrice||0).toLocaleString() }}원
-          </span>
-        </div>
-        <div class="detail-row">
-          <span class="detail-label">
-            상태
-          </span>
-          <span class="detail-value">
-            {{ cfRelatedOrder.statusCd }}
-          </span>
-        </div>
-        <div style="margin-top:14px;">
-          <button class="btn btn-blue btn-sm" @click="handleBtnAction('histList-orderEdit', cfRelatedOrder.orderId)">
-            주문 상세 수정
-          </button>
-        </div>
-      </template>
-      <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">
-        연관 주문 정보가 없습니다.
-      </div>
-    </div>
-    <!-- ===== □.□. 연관 주문 ================================================= -->
-    <!-- ===== ■.■. 연관 클레임 ================================================ -->
-    <div class="dtl-pane" v-show="showTab('claims')">
-      <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
-        ↩ 연관 클레임
-        <span class="tab-count">
-          {{ cfRelatedClaims.length }}
         </span>
       </div>
-      <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-      <bo-grid bare :columns="columns.claimGrid" :rows="cfRelatedClaims" row-key="claimId"
-        empty-text="연관 클레임이 없습니다." @ref-click="({type,id}) => handleSelectAction('histList-rowRefClick', {type, id})" row-actions>
-        <template #row-actions="{ row }">
-          <button class="btn btn-blue btn-xs" @click="handleSelectAction('histList-rowClaimEdit', row.claimId)">
-            상세
-          </button>
-        </template>
-      </bo-grid>
+      <div class="detail-row">
+        <span class="detail-label">
+          상품
+        </span>
+        <span class="detail-value">
+          {{ cfRelatedOrder.prodNm }}
+        </span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">
+          금액
+        </span>
+        <span class="detail-value">
+          {{ (cfRelatedOrder.totalPrice||0).toLocaleString() }}원
+        </span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">
+          상태
+        </span>
+        <span class="detail-value">
+          {{ cfRelatedOrder.statusCd }}
+        </span>
+      </div>
+      <div style="margin-top:14px;">
+        <button class="btn btn-blue btn-sm" @click="handleBtnAction('histList-orderEdit', cfRelatedOrder.orderId)">
+          주문 상세 수정
+        </button>
+      </div>
+    </template>
+    <div v-else style="text-align:center;color:#aaa;padding:30px;font-size:13px;">
+      연관 주문 정보가 없습니다.
     </div>
-    <!-- ===== □.□. 연관 클레임 ================================================ -->
   </div>
-  <!-- ===== □. 탭 컨텐츠 =================================================== -->
-  </bo-container>
-  <!-- ===== □. 이력 영역 ================================================== -->
+  <!-- ===== □.□. 연관 주문 ================================================= -->
+  <!-- ===== ■.■. 연관 클레임 ================================================ -->
+  <div class="dtl-pane" v-show="showTab('claims')">
+    <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">
+      ↩ 연관 클레임
+      <span class="tab-count">
+        {{ cfRelatedClaims.length }}
+      </span>
+    </div>
+    <!-- ===== ■.■.■. 목록 영역 =============================================== -->
+    <bo-grid bare :columns="columns.claimGrid" :rows="cfRelatedClaims" row-key="claimId"
+      empty-text="연관 클레임이 없습니다." @ref-click="({type,id}) => handleSelectAction('histList-rowRefClick', {type, id})" row-actions>
+      <template #row-actions="{ row }">
+        <button class="btn btn-blue btn-xs" @click="handleSelectAction('histList-rowClaimEdit', row.claimId)">
+          상세
+        </button>
+      </template>
+    </bo-grid>
+  </div>
+  <!-- ===== □.□. 연관 클레임 ================================================ -->
 </div>
+<!-- ===== □. 탭 컨텐츠 =================================================== -->
+</bo-container>
+<!-- ===== □. 이력 영역 ================================================== -->
 `,
 };
