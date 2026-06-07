@@ -399,21 +399,14 @@ window.PmEventMng = {
     <bo-pager v-if="baseGridPager.pageTotalCount > 0" :pager="baseGridPager" :on-set-page="n => handleBtnAction('events-pager-setPage', n)" :on-size-change="() => handleSelectAction('events-pager-sizeChange')" />
   </bo-container>
   <!-- ===== ■. 하단 상세: EventDtl 임베드 ===================================== -->
-  <bo-container bare>
-    <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button data-hide-close style="display:none;" class="btn btn_close" @click="handleBtnAction('detailPanel-close')">
-        ✕ 닫기
-      </button>
-    </div>
-    <pm-event-dtl
-      :key="cfDetailKey"
-      :navigate="inlineNavigate"
-      :dtl-id="cfDetailEditId"
-      :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-      :active="detailPanel.active"
-      :reload-trigger="detailPanel.reloadTrigger"
-      />
-  </bo-container>
+  <pm-event-dtl
+    :key="cfDetailKey"
+    :navigate="inlineNavigate"
+    :dtl-id="cfDetailEditId"
+    :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+    :active="detailPanel.active"
+    :reload-trigger="detailPanel.reloadTrigger"
+    />
 </bo-page>
 `
 };

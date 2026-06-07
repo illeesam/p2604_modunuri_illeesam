@@ -421,21 +421,14 @@ window.PmCouponMng = {
     <!-- ===== □.□. 카드 뷰 ================================================== -->
   </bo-container>
   <!-- ===== ■. 하단 상세: CouponDtl 임베드 (항상 표시, 진입 시 빈 신규 폼) ============= -->
-  <bo-container bare>
-    <div v-if="uiStateDetail.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button data-hide-close style="display:none;" class="btn btn_close" @click="handleBtnAction('detailPanel-close')">
-        ✕ 닫기
-      </button>
-    </div>
-    <pm-coupon-dtl
-      :key="cfDetailKey"
-      :navigate="inlineNavigate"
-      :dtl-id="cfDetailEditId"
-      :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-      :active="uiStateDetail.active"
-      :reload-trigger="uiStateDetail.reloadTrigger"
-      />
-  </bo-container>
+  <pm-coupon-dtl
+    :key="cfDetailKey"
+    :navigate="inlineNavigate"
+    :dtl-id="cfDetailEditId"
+    :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+    :active="uiStateDetail.active"
+    :reload-trigger="uiStateDetail.reloadTrigger"
+    />
   <!-- ===== □. 하단 상세: CouponDtl 임베드 ==================================== -->
 </bo-page>
 `

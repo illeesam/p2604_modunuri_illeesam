@@ -380,18 +380,11 @@ window.SyBbmMng = {
   </div>
   <!-- ===== □. 본문 영역 =================================================== -->
   <!-- ===== ■. 상세 인라인 패널 (전체 폭, 항상 표시) ============================ -->
-  <bo-container bare>
-    <div v-if="detailModal.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button data-hide-close style="display:none;" class="btn btn_close" @click="handleBtnAction('detailPanel-close')">
-        ✕ 닫기
-      </button>
-    </div>
-    <sy-bbm-dtl :key="cfDetailKey" :navigate="inlineNavigate" :dtl-id="cfDetailEditId" :tab-mode="cfIsViewMode"
-      :dtl-mode="detailModal.dtlMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-      :active="detailModal.active"
-      :reload-trigger="detailModal.reloadTrigger"
- />
-  </bo-container>
+  <sy-bbm-dtl :key="cfDetailKey" :navigate="inlineNavigate" :dtl-id="cfDetailEditId" :tab-mode="cfIsViewMode"
+    :dtl-mode="detailModal.dtlMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+    :active="detailModal.active"
+    :reload-trigger="detailModal.reloadTrigger"
+  />
   <!-- ===== □. 상세 인라인 패널 ============================================= -->
 </bo-page>
 `,

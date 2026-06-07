@@ -947,21 +947,14 @@ window.DpDispPanelMng = {
   <!-- ===== /본문 bo-2col =================================================== -->
   <!-- ===== □. 본문: 좌측 트리 + 우측 목록 ======================================= -->
   <!-- ===== ■. 하단 상세: DispDtl 임베드 ====================================== -->
-  <bo-container bare>
-    <div v-if="uiStateDetail.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button data-hide-close style="display:none;" class="btn btn_close" @click="handleBtnAction('detailPanel-close')">
-        ✕ 닫기
-      </button>
-    </div>
-    <dp-disp-panel-dtl
-        :key="cfDetailKey"
-        :navigate="inlineNavigate"
-        :dtl-id="cfDetailEditId"
-        :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-        :active="uiStateDetail.active"
-        :reload-trigger="uiStateDetail.reloadTrigger"
-        />
-  </bo-container>
+  <dp-disp-panel-dtl
+      :key="cfDetailKey"
+      :navigate="inlineNavigate"
+      :dtl-id="cfDetailEditId"
+      :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+      :active="uiStateDetail.active"
+      :reload-trigger="uiStateDetail.reloadTrigger"
+      />
   <!-- ===== □. 하단 상세: DispDtl 임베드 ====================================== -->
 <!-- ===== ■. 패널미리보기 오버레이 ============================================= -->
 <div v-if="uiState.cardPreviewItem"

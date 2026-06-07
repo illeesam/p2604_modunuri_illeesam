@@ -424,21 +424,14 @@ window.PmGiftMng = {
     <bo-pager v-if="tabMode!=='list' && baseGridPager.pageTotalCount > 0" :pager="baseGridPager" :on-set-page="n => handleBtnAction('gifts-pager-setPage', n)" :on-size-change="() => handleSelectAction('gifts-pager-sizeChange')" />
   </bo-container>
   <!-- ===== ■. 하단 상세영역: PmGiftDtl 인라인 임베드 ============================== -->
-  <bo-container bare>
-    <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button data-hide-close style="display:none;" class="btn btn_close" @click="handleBtnAction('detailPanel-close')">
-        ✕ 닫기
-      </button>
-    </div>
-    <pm-gift-dtl
-      :key="cfDetailKey"
-      :navigate="inlineNavigate"
-      :dtl-id="cfDetailEditId"
-      :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-      :active="detailPanel.active"
-      :reload-trigger="detailPanel.reloadTrigger"
-      />
-  </bo-container>
+  <pm-gift-dtl
+    :key="cfDetailKey"
+    :navigate="inlineNavigate"
+    :dtl-id="cfDetailEditId"
+    :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+    :active="detailPanel.active"
+    :reload-trigger="detailPanel.reloadTrigger"
+    />
 </bo-page>
 `
 };

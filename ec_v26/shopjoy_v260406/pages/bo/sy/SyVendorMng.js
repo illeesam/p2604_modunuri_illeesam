@@ -382,18 +382,11 @@ window.SyVendorMng = {
     </bo-container>
   </div>
   <!-- ===== ■. 상세 패널 (전체 폭, .bo-2col 바깥, 항상 표시) ====================== -->
-  <bo-container bare>
-    <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button data-hide-close style="display:none;" class="btn btn_close" @click="handleBtnAction('detailPanel-close')">
-        ✕ 닫기
-      </button>
-    </div>
-    <sy-vendor-dtl :key="cfDetailKey" :navigate="inlineNavigate" :dtl-id="cfDetailEditId"
-      :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-      :active="detailPanel.active"
-      :reload-trigger="detailPanel.reloadTrigger"
- />
-  </bo-container>
+  <sy-vendor-dtl :key="cfDetailKey" :navigate="inlineNavigate" :dtl-id="cfDetailEditId"
+    :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+    :active="detailPanel.active"
+    :reload-trigger="detailPanel.reloadTrigger"
+  />
 </bo-page>
 `,
 };

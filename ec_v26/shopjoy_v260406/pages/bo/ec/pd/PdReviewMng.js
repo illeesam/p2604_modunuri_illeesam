@@ -481,9 +481,6 @@ window.PdReviewMng = {
             {{ s.label }}
           </option>
         </select>
-        <button data-hide-close style="display:none;" class="btn btn_close" style="margin-left:6px;background:#f5f5f5;border:1px solid #ddd;color:#666;font-size:11px;padding:3px 10px;" @click="handleBtnAction('detailPanel-close')">
-          ✕ 닫기
-        </button>
       </span>
     </div>
     <div style="padding:16px">

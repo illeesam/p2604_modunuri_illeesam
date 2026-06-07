@@ -401,21 +401,14 @@ window.PmVoucherMng = {
     <!-- ===== □.□. 카드 뷰 ================================================== -->
   </bo-container>
   <!-- ===== ■. 하단 상세: VoucherDtl 임베드 (항상 표시, 진입 시 빈 신규 폼) ============= -->
-  <bo-container bare>
-    <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button data-hide-close style="display:none;" class="btn btn_close" @click="handleBtnAction('detailPanel-close')">
-        ✕ 닫기
-      </button>
-    </div>
-    <pm-voucher-dtl
-      :key="cfDetailKey"
-      :navigate="inlineNavigate"
-      :dtl-id="cfDetailEditId"
-      :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-      :active="detailPanel.active"
-      :reload-trigger="detailPanel.reloadTrigger"
-      />
-  </bo-container>
+  <pm-voucher-dtl
+    :key="cfDetailKey"
+    :navigate="inlineNavigate"
+    :dtl-id="cfDetailEditId"
+    :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+    :active="detailPanel.active"
+    :reload-trigger="detailPanel.reloadTrigger"
+    />
 </bo-page>
 `
 };

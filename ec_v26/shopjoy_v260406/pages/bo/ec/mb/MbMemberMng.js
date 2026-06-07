@@ -376,12 +376,10 @@ window.MbMemberMng = {
   </bo-container>
   <!-- ===== □. 목록 영역 =================================================== -->
   <!-- ===== ■. 상세 패널 (인라인 임베드, 항상 표시) ================================== -->
-  <bo-container bare>
-    <mb-member-dtl :detail-modal="detailPanel" :active="detailPanel.active"
-      :handle-save="handleSave" :handle-delete="handleDelete" :close-detail="closeDetail"
-      :reload-trigger="detailPanel.reloadTrigger"
-      />
-  </bo-container>
+  <mb-member-dtl :detail-modal="detailPanel" :active="detailPanel.active"
+    :handle-save="handleSave" :handle-delete="handleDelete" :close-detail="closeDetail"
+    :reload-trigger="detailPanel.reloadTrigger"
+    />
   <!-- ===== □. 상세 패널 (인라인 임베드) ========================================= -->
 </bo-page>
 `,

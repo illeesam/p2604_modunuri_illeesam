@@ -356,21 +356,14 @@ window.SyContactMng = {
     <bo-pager :pager="baseGridPager" :on-set-page="n => handleBtnAction('contacts-pager-setPage', n)" :on-size-change="() => handleSelectAction('contacts-pager-sizeChange')" />
   </bo-container>
   <!-- ===== ■. 하단 상세: ContactDtl 임베드 (항상 표시) =========================== -->
-  <bo-container bare>
-    <div v-if="detailModal.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button data-hide-close style="display:none;" class="btn btn_close" @click="handleBtnAction('detailPanel-close')">
-        ✕ 닫기
-      </button>
-    </div>
-    <sy-contact-dtl
-      :key="cfDetailKey"
-      :navigate="inlineNavigate"
-      :dtl-id="cfDetailEditId"
-      :dtl-mode="detailModal.dtlMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-      :active="detailModal.active"
-      :reload-trigger="detailModal.reloadTrigger"
-      />
-  </bo-container>
+  <sy-contact-dtl
+    :key="cfDetailKey"
+    :navigate="inlineNavigate"
+    :dtl-id="cfDetailEditId"
+    :dtl-mode="detailModal.dtlMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+    :active="detailModal.active"
+    :reload-trigger="detailModal.reloadTrigger"
+    />
 </bo-page>
 `
 };

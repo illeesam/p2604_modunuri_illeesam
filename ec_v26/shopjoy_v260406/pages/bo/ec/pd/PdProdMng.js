@@ -415,22 +415,15 @@ window.PdProdMng = {
     :exclude-id="null" modal-name="category-pick" :on-callback="fnCallbackModal" />
   <!-- ===== □. 카테고리 선택 모달 ============================================== -->
   <!-- ===== ■. 하단 상세: ProdDtl 임베드 (항상 표시, 진입 시 빈 신규 폼) ============== -->
-  <bo-container bare>
-    <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button data-hide-close style="display:none;" class="btn btn_close" @click="handleBtnAction('detailPanel-close')">
-        ✕ 닫기
-      </button>
-    </div>
-    <pd-prod-dtl
-      :key="cfDetailKey"
-      :navigate="inlineNavigate"
-      :dtl-id="cfDetailEditId"
-      :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-      :active="detailPanel.active"
-      :reload-trigger="detailPanel.reloadTrigger"
-      :on-list-reload="handleSearchList"
-      />
-  </bo-container>
+  <pd-prod-dtl
+    :key="cfDetailKey"
+    :navigate="inlineNavigate"
+    :dtl-id="cfDetailEditId"
+    :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+    :active="detailPanel.active"
+    :reload-trigger="detailPanel.reloadTrigger"
+    :on-list-reload="handleSearchList"
+    />
   <!-- ===== □. 하단 상세: ProdDtl 임베드 ====================================== -->
 </bo-page>
 `,

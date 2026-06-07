@@ -484,13 +484,11 @@ window.SyUserMng = {
     </bo-container>
   </div>
   <!-- ===== ■. 상세 패널 (인라인 임베드, 항상 표시, 전체 폭) ================ -->
-  <bo-container bare>
-    <sy-user-dtl :key="cfDetailKey" :navigate="inlineNavigate" :dtl-id="cfDetailEditId"
-      :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-      :active="detailPanel.active"
-      :reload-trigger="detailPanel.reloadTrigger"
- />
-  </bo-container>
+  <sy-user-dtl :key="cfDetailKey" :navigate="inlineNavigate" :dtl-id="cfDetailEditId"
+    :dtl-mode="detailPanel.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+    :active="detailPanel.active"
+    :reload-trigger="detailPanel.reloadTrigger"
+    />
 
   <!-- ===== ■. 엑셀 업로드 모달 (도메인은 모달 안의 select 로 전환 가능) ===== -->
   <bo-excel-upload-modal v-if="excelUploadModal.show"

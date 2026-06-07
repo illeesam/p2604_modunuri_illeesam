@@ -496,10 +496,8 @@ const handleGridCellAction = (cmd, colKey, row, e = {}) => {
       <bo-pager ... />                            <!-- 페이저는 그리드 밖, 컨테이너 안 -->
     </bo-container>
   </div>
-  <!-- 상세 인라인 패널: bo-2col 바깥 = 전체 폭 -->
-  <bo-container bare>
-    <xxx-dtl ... />
-  </bo-container>
+  <!-- 상세 인라인 패널: bo-2col 바깥 = 전체 폭. Dtl 컴포넌트를 직접 렌더(래퍼 없음) -->
+  <xxx-dtl ... />
 </bo-page>                                         <!-- 종료 태그는 화면 맨 아래 -->
 ```
 
@@ -514,7 +512,11 @@ const handleGridCellAction = (cmd, colKey, row, e = {}) => {
 #### 핵심 규칙
 
 1. **`<bo-page>` 종료 태그는 화면 맨 아래** — 헤더만이 아니라 화면 본문 전체를 감싼다(default 슬롯). `descSummary`/`descDetail` 주면 화면의 `descOpen` 상태·토글 핸들러 **보일러플레이트 제거**(내부 상태로 처리).
-2. **`bare` 사용 기준** — 자기 카드를 이미 가진 컴포넌트(`<bo-grid>`, `<bo-path-tree-card>`, `<xxx-dtl>`)를 감쌀 땐 `<bo-container bare>`. 이중 카드 방지.
+2. **`bare` 사용 기준** — `.bo-2col` 안에서 자기 카드를 이미 가진 컴포넌트(`<bo-grid>`, `<bo-path-tree-card>`)를 2열 그리드 셀에 배치할 때만 `<bo-container bare>` 로 감싼다(그리드 셀 자리 확보용). **자체 루트가 `<bo-container>` 인 임베드 컴포넌트(`<xxx-dtl>` / `<xxx-hist>` 등)는 래퍼 없이 직접 렌더**한다 ⭐ (2026-06-08, [[mng_dtl_embed_direct_render]]).
+   - ❌ 금지: `<bo-container bare><xxx-dtl/></bo-container>` (의미 없는 빈 div) · `<bo-container bare><div class="card"><xxx-hist/></div></bo-container>` (이중 카드 — Hist 가 이미 `<bo-container>` 카드를 가짐)
+   - ❌ 금지: `display:none` 죽은 `data-hide-close` [✕ 닫기] 버튼 div (어디서도 참조 안 됨)
+   - ✅ 표준: `<!-- 영역 주석 -->` + `<xxx-dtl ... />` / `<xxx-hist ... />` 직접 (prop 전부 보존)
+   - 예외: 별도 컴포넌트가 아니라 인라인 `<div class="card">` 로 상세를 **직접 렌더**하는 화면(PdReviewMng)은 카드 구조 유지, 죽은 닫기 버튼만 제거.
 3. **페이저는 그리드 밖, 컨테이너 안** — `<bo-grid bare>` 뒤 `<bo-pager>`를 형제로 둠. `#footer` 슬롯 페이저 폐기.
 4. **상세 패널은 `.bo-2col` 바깥** — 전체 폭 사용(좌측 트리 영역까지). `.bo-2col` 안에 두면 우측 영역 폭만큼 잘림([[dtl_inline_panel_full_width]]).
 5. **검색은 단독 `<bo-container>`**(트리 위, `.bo-2col` 바깥). 목록·트리는 `.bo-2col` 안.
@@ -553,7 +555,7 @@ FO도 동일 구조를 `fo-*` 로 둔다. 단 FO는 **풀블리드 이미지 배
 Mng 안에 임베드되는 **Dtl/Hist 컴포넌트는 독립 페이지가 아니므로 `<bo-page>`/`page-title` 사용 금지**(§6.2). 루트 `<div>`를 유지하고, **내부 영역의 `<div class="card">`만 `<bo-container>`로 교체**한다.
 
 - 그리드 영역: `<bo-grid bare>` + `<bo-container title=... :count-text=...>` 로 감싸고 `#footer` 페이저는 컨테이너 안 그리드 밖으로.
-- 부모 Mng 가 이 Dtl 을 `<bo-container bare>` 로 감싸므로, Dtl 자신은 **non-bare `<bo-container>`** 로 카드를 담당(이중 카드 방지).
+- Dtl 자신이 **non-bare `<bo-container>`** 로 카드를 담당한다. 부모 Mng 는 이 Dtl 을 **래퍼 없이 직접 렌더**(2026-06-08 변경 — 과거엔 `<bo-container bare>` 로 감쌌으나 의미 없는 빈 div 라 폐기, [[mng_dtl_embed_direct_render]]).
 - BoFormArea 위주 / 커스텀 분할 레이아웃(좌탭+폼+미리보기) Dtl 은 감쌀 list/grid 영역이 없으면 **스킵**(억지로 감싸지 말 것 — 예: DpDispAreaDtl/DpDispUiDtl).
 
 #### 특수 레이아웃 화면은 `<bo-page>` 예외 ⭐ (2026-06-06)

@@ -494,11 +494,7 @@ window.SyBatchMng = {
   </div>
   <!-- ===== □. 좌 트리 + 우 영역 ============================================= -->
   <!-- ===== ■. 배치 실행이력 (전체 폭) ========================================== -->
-  <bo-container bare>
-    <div class="card" style="margin-top:12px;width:100%;">
-      <sy-batch-hist :reload-trigger="histReloadTrigger" :filter-batch-id="histFilterBatchId" />
-    </div>
-  </bo-container>
+  <sy-batch-hist :reload-trigger="histReloadTrigger" :filter-batch-id="histFilterBatchId" />
   <!-- ===== □. 배치 실행이력 (전체 폭) ========================================== -->
   <!-- ===== ■. 표시경로 선택 모달 ============================================= -->
   <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_batch" :value="pathPickModal.row ? pathPickModal.row.pathId : null" modal-name="path-pick" :on-callback="fnCallbackModal" />

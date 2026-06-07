@@ -271,15 +271,10 @@ window.CmNoticeMng = {
     <bo-pager :pager="baseGrid.pager" :on-set-page="n => handleBtnAction('notices-pager-setPage', n)" :on-size-change="() => handleSelectAction('notices-pager-sizeChange')" />
   </bo-container>
   <!-- ===== ■. 상세 패널 (인라인 임베드 — 항상 표시, 진입 시 빈 신규 폼) ============= -->
-  <bo-container bare>
-    <div v-if="baseDetail.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button data-hide-close style="display:none;" class="btn btn_close" @click="handleBtnAction('baseDetail-close')">✕ 닫기</button>
-    </div>
-    <cm-notice-dtl :key="baseDetail.panelKey + '_' + baseDetail.resetSeq" :navigate="inlineNavigate"
-      :dtl-id="baseDetail.editId" :dtl-mode="baseDetail.dtlMode"
-      :active="baseDetail.active"
-      :reload-trigger="baseDetail.reloadTrigger" />
-  </bo-container>
+  <cm-notice-dtl :key="baseDetail.panelKey + '_' + baseDetail.resetSeq" :navigate="inlineNavigate"
+    :dtl-id="baseDetail.editId" :dtl-mode="baseDetail.dtlMode"
+    :active="baseDetail.active"
+    :reload-trigger="baseDetail.reloadTrigger" />
 </bo-page>
 `,
 };

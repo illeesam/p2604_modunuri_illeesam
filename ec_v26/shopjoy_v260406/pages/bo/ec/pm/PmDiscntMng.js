@@ -442,21 +442,14 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 하단 상세영역: PmDiscntDtl 인라인 임베드 ============================ -->
   <!-- ===== ■. 상세 패널 (인라인 임베드) ========================================= -->
-  <bo-container bare>
-    <div v-if="uiStateDetail.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button data-hide-close style="display:none;" class="btn btn_close" @click="closeDetail">
-        ✕ 닫기
-      </button>
-    </div>
-    <pm-discnt-dtl
-      :key="cfDetailKey"
-      :navigate="inlineNavigate"
-      :dtl-id="cfDetailEditId"
-      :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-      :active="uiStateDetail.active"
-      :reload-trigger="uiStateDetail.reloadTrigger"
-      />
-  </bo-container>
+  <pm-discnt-dtl
+    :key="cfDetailKey"
+    :navigate="inlineNavigate"
+    :dtl-id="cfDetailEditId"
+    :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
+    :active="uiStateDetail.active"
+    :reload-trigger="uiStateDetail.reloadTrigger"
+    />
 </bo-page>
 <!-- ===== □. 상세 패널 (인라인 임베드) ========================================= -->
 `
