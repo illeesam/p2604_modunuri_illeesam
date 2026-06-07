@@ -1469,6 +1469,8 @@ window.PdProdDtl = {
 ══════════════════════════════════════ -->
     <div class="dtl-pane" v-show="showTab('info')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 기본정보</div>
+      <!-- 보기모드: fieldset disabled 로 슬롯(카테고리/MD/날짜픽커/select)·체크박스 자동 비활성. 모달은 teleport 로 fieldset 밖이라 영향 없음 -->
+      <fieldset :disabled="cfDtlMode" style="border:none;padding:0;margin:0;min-width:0;">
       <!-- ===== ■.■.■. 기본정보 통합 폼 (BoFormArea 자동 렌더, cols=3 한 줄 3필드) ======== -->
       <bo-form-area :columns="columns.infoForm" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
@@ -1598,6 +1600,7 @@ window.PdProdDtl = {
           <span style="color:#e8587a;">강제품절</span>
         </label>
       </div>
+      </fieldset>
       <div class="form-actions" v-if="cfDtlMode && active">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
         <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
@@ -1614,6 +1617,8 @@ window.PdProdDtl = {
 ══════════════════════════════════════ -->
     <div class="dtl-pane" v-show="showTab('option')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">⚙ 옵션설정</div>
+      <!-- 보기모드: fieldset disabled 로 모든 입력/버튼/select 자동 비활성 (편집 잠금) -->
+      <fieldset :disabled="cfDtlMode" style="border:none;padding:0;margin:0;min-width:0;">
       <!-- ===== ■.■.■. 옵션 사용 토글 + PROD_OPT_CATEGORY 3단 트리 선택 =============== -->
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;padding:12px 14px;background:#f9f9f9;border-radius:8px;border:1px solid #eee;">
         <!-- ===== ■.■.■.■. 옵션 사용 체크박스 (disabled — 옵션 카테고리 선택 시 자동 체크) ======== -->
@@ -1819,6 +1824,7 @@ window.PdProdDtl = {
         <strong>💰 옵션(가격/재고)</strong>
         탭에서 관리합니다.
       </div>
+      </fieldset>
       <div class="form-actions" v-if="cfDtlMode && active">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
         <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
@@ -1835,13 +1841,13 @@ window.PdProdDtl = {
 ══════════════════════════════════════ -->
     <div class="dtl-pane" v-show="showTab('content')" style="margin:0;padding:0;overflow:hidden;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title" style="padding:14px 20px;">📄 상품설명</div>
-      <!-- ===== ■.■.■. 상단 툴바: 블록 추가 버튼 ===================================== -->
+      <!-- ===== ■.■.■. 상단 툴바: 블록 추가 버튼 (수정모드 전용) ========================= -->
       <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#fafafa;flex-wrap:wrap;">
         <span style="font-size:13px;font-weight:700;color:#333;margin-right:4px;">상품설명 블록</span>
-        <button class="btn btn-secondary btn-sm" @click="addContentBlock('file')">+ 첨부 이미지</button>
-        <button class="btn btn-secondary btn-sm" @click="addContentBlock('url')">+ URL 이미지</button>
-        <button class="btn btn-secondary btn-sm" @click="addContentBlock('html')">+ HTML 에디터</button>
-        <span style="font-size:12px;color:#aaa;margin-left:4px;">{{ contentBlocks.length }}개 블록 · 좌측 ≡ 드래그로 순서 변경</span>
+        <button v-if="!cfDtlMode" class="btn btn-secondary btn-sm" @click="addContentBlock('file')">+ 첨부 이미지</button>
+        <button v-if="!cfDtlMode" class="btn btn-secondary btn-sm" @click="addContentBlock('url')">+ URL 이미지</button>
+        <button v-if="!cfDtlMode" class="btn btn-secondary btn-sm" @click="addContentBlock('html')">+ HTML 에디터</button>
+        <span style="font-size:12px;color:#aaa;margin-left:4px;">{{ contentBlocks.length }}개 블록<span v-if="!cfDtlMode"> · 좌측 ≡ 드래그로 순서 변경</span></span>
       </div>
       <!-- ===== ■.■.■. 스플릿 패널 (편집 좌 + 미리보기 우) ============================== -->
       <div ref="contentSplitRef" style="display:flex;height:520px;overflow:hidden;">
@@ -1852,18 +1858,18 @@ window.PdProdDtl = {
             위 버튼으로 블록을 추가해주세요.
           </div>
           <!-- ===== ■.■.■.■.■. 블록 리스트 ========================================== -->
-          <div v-for="(block, bi) in contentBlocks" :key="block?._id" draggable="true" @dragstart="onBlockDragStart(bi)" @dragover.prevent="onBlockDragOver(bi)" @drop.prevent="onBlockDrop()" @dragend="dragBlockIdx=null;dragoverBlockIdx=null" style="border:1px solid #e8e8e8;border-radius:10px;margin-bottom:10px;background:#fff;transition:border-color 0.15s,background 0.15s;overflow:hidden;" :style="dragoverBlockIdx===bi && dragBlockIdx!==bi ? 'border-color:#1677ff;background:#e6f4ff;' : ''">
+          <div v-for="(block, bi) in contentBlocks" :key="block?._id" :draggable="!cfDtlMode" @dragstart="cfDtlMode ? null : onBlockDragStart(bi)" @dragover.prevent="cfDtlMode ? null : onBlockDragOver(bi)" @drop.prevent="cfDtlMode ? null : onBlockDrop()" @dragend="dragBlockIdx=null;dragoverBlockIdx=null" style="border:1px solid #e8e8e8;border-radius:10px;margin-bottom:10px;background:#fff;transition:border-color 0.15s,background 0.15s;overflow:hidden;" :style="dragoverBlockIdx===bi && dragBlockIdx!==bi ? 'border-color:#1677ff;background:#e6f4ff;' : ''">
             <!-- ===== ■.■.■.■.■.■. 블록 헤더 ========================================= -->
             <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f9f9f9;border-bottom:1px solid #f0f0f0;">
-              <!-- ===== ■.■.■.■.■.■.■. 햄버거 핸들 ====================================== -->
-              <span style="cursor:grab;color:#ccc;font-size:16px;user-select:none;letter-spacing:-2px;flex-shrink:0;" title="드래그로 순서 변경">
+              <!-- ===== ■.■.■.■.■.■.■. 햄버거 핸들 (수정모드 전용) ========================= -->
+              <span v-if="!cfDtlMode" style="cursor:grab;color:#ccc;font-size:16px;user-select:none;letter-spacing:-2px;flex-shrink:0;" title="드래그로 순서 변경">
                 ≡
               </span>
               <span class="badge" :class="block.type==='file'?'badge-green':block.type==='url'?'badge-blue':'badge-orange'" style="font-size:11px;flex-shrink:0;">
                 {{ block.type==='file' ? '📎 첨부' : block.type==='url' ? '🔗 URL' : '✏ HTML' }}
               </span>
               <span style="font-size:12px;color:#888;flex:1;">블록 {{ bi+1 }}</span>
-              <button class="btn btn-xs btn-danger" @click="removeContentBlock(bi)" title="삭제">✕</button>
+              <button v-if="!cfDtlMode" class="btn btn-xs btn-danger" @click="removeContentBlock(bi)" title="삭제">✕</button>
             </div>
             <!-- ===== ■.■.■.■.■.■. 첨부 방식 ========================================= -->
             <div v-if="block.type==='file'" style="padding:12px;">
@@ -1871,25 +1877,28 @@ window.PdProdDtl = {
                 <img :src="block.content" style="max-width:100%;max-height:200px;border-radius:6px;border:1px solid #e0e0e0;" />
                 <div style="font-size:11px;color:#888;margin-top:4px;">{{ block.fileName }}</div>
               </div>
-              <label class="btn btn-secondary btn-sm" style="display:inline-block;">
+              <label v-if="!cfDtlMode" class="btn btn-secondary btn-sm" style="display:inline-block;">
                 📎 파일 선택
                 <input type="file" accept="image/*" style="display:none;" @change="onBlockFileChange(block, $event)" />
               </label>
-              <button v-if="block.content" class="btn btn-xs btn-danger" @click="block.content='';block.fileName=''" style="margin-left:6px;">
+              <button v-if="!cfDtlMode && block.content" class="btn btn-xs btn-danger" @click="block.content='';block.fileName=''" style="margin-left:6px;">
                 삭제
               </button>
+              <span v-if="cfDtlMode && !block.content" style="font-size:12px;color:#bbb;">이미지 없음</span>
             </div>
             <!-- ===== ■.■.■.■.■.■. URL 방식 ======================================== -->
             <div v-else-if="block.type==='url'" style="padding:12px;">
-              <input class="form-control" v-model="block.content" placeholder="이미지 URL (https://...)" style="font-size:13px;margin-bottom:8px;" />
+              <input v-if="!cfDtlMode" class="form-control" v-model="block.content" placeholder="이미지 URL (https://...)" style="font-size:13px;margin-bottom:8px;" />
               <div v-if="block.content" style="margin-top:4px;">
                 <img :src="block.content" style="max-width:100%;max-height:200px;border-radius:6px;border:1px solid #e0e0e0;"
                   @error="$event.target.style.display='none'" @load="$event.target.style.display=''" />
               </div>
+              <span v-else-if="cfDtlMode" style="font-size:12px;color:#bbb;">이미지 없음</span>
             </div>
-            <!-- ===== ■.■.■.■.■.■. HTML 에디터 방식 (Toast UI) ======================== -->
+            <!-- ===== ■.■.■.■.■.■. HTML 에디터 방식 (Toast UI) — 보기모드는 렌더만 ========= -->
             <div v-else-if="block.type==='html'" style="padding:12px;">
-              <base-html-editor v-model="block.content" height="240px" />
+              <div v-if="cfDtlMode" class="form-control" style="min-height:120px;line-height:1.6;overflow:auto;" v-html="block.content || '<span style=color:#bbb>-</span>'"></div>
+              <base-html-editor v-else v-model="block.content" height="240px" />
             </div>
           </div>
         </div>
@@ -1960,6 +1969,8 @@ window.PdProdDtl = {
 ══════════════════════════════════════ -->
     <div class="dtl-pane" v-show="showTab('detail')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📝 상세설정</div>
+      <!-- 보기모드: fieldset disabled 로 홍보문구·날짜픽커·혜택 체크박스 자동 비활성 (편집 잠금) -->
+      <fieldset :disabled="cfDtlMode" style="border:none;padding:0;margin:0;min-width:0;">
       <!-- ===== ■.■.■. 홍보문구 ================================================ -->
       <div style="font-size:13px;font-weight:700;color:#333;margin:24px 0 8px;">홍보문구 (advrt_stmt)</div>
       <div class="form-group">
@@ -1992,6 +2003,7 @@ window.PdProdDtl = {
           할인 적용 가능 (discnt_use_yn)
         </label>
       </div>
+      </fieldset>
       <div class="form-actions" v-if="cfDtlMode && active">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
         <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
@@ -2010,20 +2022,20 @@ window.PdProdDtl = {
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🖼 이미지</div>
       <input type="file" ref="fileInputRef" multiple accept="image/*" style="display:none" @change="onFileChange" />
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px;">
-        <button class="btn btn-secondary" @click="triggerFileInput">+ 파일 선택</button>
-        <button class="btn btn-secondary" @click="addImageByUrl">+ URL 입력</button>
+        <button v-if="!cfDtlMode" class="btn btn-secondary" @click="triggerFileInput">+ 파일 선택</button>
+        <button v-if="!cfDtlMode" class="btn btn-secondary" @click="addImageByUrl">+ URL 입력</button>
         <span style="font-size:12px;color:#aaa;">{{ images.length }}개</span>
       </div>
       <div v-if="images.length===0"
-        style="border:2px dashed #e0e0e0;border-radius:10px;padding:22px;text-align:center;color:#bbb;font-size:13px;"
-        @click="triggerFileInput">
-        클릭하거나 파일을 끌어다 놓으세요
+        :style="'border:2px dashed #e0e0e0;border-radius:10px;padding:22px;text-align:center;color:#bbb;font-size:13px;' + (cfDtlMode ? '' : 'cursor:pointer;')"
+        @click="cfDtlMode ? null : triggerFileInput()">
+        {{ cfDtlMode ? '등록된 이미지가 없습니다.' : '클릭하거나 파일을 끌어다 놓으세요' }}
       </div>
       <!-- ===== ■.■.■. 이미지 5행 보이는 스크롤 컨테이너 (행 ≈ 116px × 5 + 여유 → 620px) ===== -->
       <div v-if="images.length>0" style="max-height:620px;overflow-y:auto;border:1px solid #f0f0f0;border-radius:10px;padding:8px;background:#fafafa;">
-        <div v-for="(img, idx) in images" :key="img?.id" draggable="true" @dragstart="onImgDragStart(idx)" @dragover.prevent="onImgDragOver(idx)" @drop.prevent="onImgDrop()" @dragend="dragImgIdx=null;dragoverImgIdx=null" style="display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid #e8e8e8;border-radius:10px;margin-bottom:10px;background:#fff;transition:border-color 0.15s,background 0.15s;" :style="img.isMain ? 'border-color:#e8587a;background:#fff8f9;' : (dragoverImgIdx===idx && dragImgIdx!==idx ? 'border-color:#1677ff;background:#e6f4ff;' : '')">
-          <!-- ===== ■.■.■.■.■. 드래그 핸들 ========================================== -->
-          <div style="flex-shrink:0;display:flex;align-items:center;justify-content:center;width:20px;height:90px;cursor:grab;color:#ccc;font-size:15px;user-select:none;letter-spacing:-2px;" title="드래그로 순서 변경">
+        <div v-for="(img, idx) in images" :key="img?.id" :draggable="!cfDtlMode" @dragstart="cfDtlMode ? null : onImgDragStart(idx)" @dragover.prevent="cfDtlMode ? null : onImgDragOver(idx)" @drop.prevent="cfDtlMode ? null : onImgDrop()" @dragend="dragImgIdx=null;dragoverImgIdx=null" style="display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid #e8e8e8;border-radius:10px;margin-bottom:10px;background:#fff;transition:border-color 0.15s,background 0.15s;" :style="img.isMain ? 'border-color:#e8587a;background:#fff8f9;' : (dragoverImgIdx===idx && dragImgIdx!==idx ? 'border-color:#1677ff;background:#e6f4ff;' : '')">
+          <!-- ===== ■.■.■.■.■. 드래그 핸들 (수정모드 전용) ============================= -->
+          <div v-if="!cfDtlMode" style="flex-shrink:0;display:flex;align-items:center;justify-content:center;width:20px;height:90px;cursor:grab;color:#ccc;font-size:15px;user-select:none;letter-spacing:-2px;" title="드래그로 순서 변경">
             ⋮⋮
           </div>
           <!-- ===== ■.■.■.■.■. 썸네일 ============================================= -->
@@ -2035,7 +2047,7 @@ window.PdProdDtl = {
           <div style="flex:1;min-width:0;">
             <div v-if="!img.previewUrl||img.previewUrl.startsWith('http')" class="form-group" style="margin-bottom:4px;">
               <label class="form-label" style="font-size:11px;">이미지 URL</label>
-              <input class="form-control" v-model="img.previewUrl" placeholder="https://..." style="font-size:12px;" />
+              <input class="form-control" v-model="img.previewUrl" placeholder="https://..." style="font-size:12px;" :readonly="cfDtlMode" />
             </div>
             <div v-if="img.previewUrl" style="font-size:9px;color:#bbb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:6px;" :title="img.previewUrl">
               {{ img.previewUrl }}
@@ -2044,7 +2056,7 @@ window.PdProdDtl = {
               <!-- ===== ■.■.■.■.■.■.■. opt_item_id_1: 옵션 1단 select ================= -->
               <div class="form-group" style="flex:1;min-width:140px;margin-bottom:4px;">
                 <label class="form-label" style="font-size:11px;">opt_item_id_1 <span style="color:#aaa;"> (NULL=공통) </span></label>
-                <select class="form-control" v-model="img.optItemId1" style="font-size:12px;" @change="img.optItemId2=''">
+                <select class="form-control" v-model="img.optItemId1" style="font-size:12px;" @change="img.optItemId2=''" :disabled="cfDtlMode">
                   <option value="">-- 공통 (NULL) --</option>
                   <option v-if="!safeFirst(optGroups)||safeFirst(optGroups).items.length===0" disabled value="">
                     옵션설정 탭에서 1단 옵션을 먼저 추가하세요
@@ -2057,7 +2069,7 @@ window.PdProdDtl = {
               <!-- ===== ■.■.■.■.■.■.■. opt_item_id_2: 옵션 2단 select (1단 선택 후 연동) ===== -->
               <div class="form-group" style="flex:1;min-width:140px;margin-bottom:4px;">
                 <label class="form-label" style="font-size:11px;">opt_item_id_2 <span style="color:#aaa;"> (NULL=옵션1 공통) </span></label>
-                <select class="form-control" v-model="img.optItemId2" style="font-size:12px;" :disabled="!img.optItemId1&&optGroups.length<2">
+                <select class="form-control" v-model="img.optItemId2" style="font-size:12px;" :disabled="cfDtlMode || (!img.optItemId1 && optGroups.length<2)">
                   <option value="">-- 공통 (NULL) --</option>
                   <option v-if="!optGroups[1]||optGroups[1].items.length===0" disabled value="">2단 옵션 없음</option>
                   <option v-for="item in (optGroups[1]?.items||[])" :key="item?._id" :value="item.val||String(item._id)">
@@ -2069,11 +2081,11 @@ window.PdProdDtl = {
           </div>
           <!-- ===== ■.■.■.■.■. 우측 버튼 =========================================== -->
           <div style="flex-shrink:0;display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
-            <button v-if="!img.isMain" class="btn btn-sm btn-secondary" @click="setMain(img.id)" style="font-size:11px;">대표 설정</button>
-            <span v-else style="font-size:11px;font-weight:700;color:#e8587a;padding:4px 8px;background:#fde8ee;border-radius:4px;">
+            <button v-if="!cfDtlMode && !img.isMain" class="btn btn-sm btn-secondary" @click="setMain(img.id)" style="font-size:11px;">대표 설정</button>
+            <span v-if="img.isMain" style="font-size:11px;font-weight:700;color:#e8587a;padding:4px 8px;background:#fde8ee;border-radius:4px;">
               ★ 대표
             </span>
-            <button class="btn btn-sm btn-danger" @click="removeImage(img.id)" style="font-size:11px;">삭제</button>
+            <button v-if="!cfDtlMode" class="btn btn-sm btn-danger" @click="removeImage(img.id)" style="font-size:11px;">삭제</button>
             <span style="font-size:11px;color:#bbb;">{{ idx+1 }}/{{ images.length }}</span>
           </div>
         </div>
@@ -2095,6 +2107,8 @@ window.PdProdDtl = {
 ══════════════════════════════════════ -->
     <div class="dtl-pane" v-show="showTab('related')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">🔗 연관상품</div>
+      <!-- 보기모드: fieldset disabled 로 추가/삭제/선택 버튼·input 자동 비활성 (편집 잠금) -->
+      <fieldset :disabled="cfDtlMode" style="border:none;padding:0;margin:0;min-width:0;">
       <!-- ===== ■.■.■. 섹션1: 연관상품 =========================================== -->
       <div style="margin-bottom:28px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
@@ -2146,6 +2160,7 @@ window.PdProdDtl = {
           </template>
         </bo-grid>
       </div>
+      </fieldset>
       <div class="form-actions" v-if="cfDtlMode && active">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
         <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
@@ -2168,6 +2183,8 @@ window.PdProdDtl = {
 ══════════════════════════════════════ -->
     <div class="dtl-pane" v-show="showTab('price')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">💰 옵션(가격/재고)</div>
+      <!-- 보기모드: fieldset disabled 로 SKU 재생성·인라인 입력·페이저 자동 비활성 (편집 잠금) -->
+      <fieldset :disabled="cfDtlMode" style="border:none;padding:0;margin:0;min-width:0;">
       <!-- ===== ■.■.■. 기본 가격 (BoFormArea 자동 렌더) ============================ -->
       <div style="font-size:13px;font-weight:700;color:#333;margin-bottom:12px;">
         기본 가격
@@ -2430,6 +2447,7 @@ window.PdProdDtl = {
           </div>
         </template>
       </template>
+      </fieldset>
       <!-- ===== ■.■.■. 저장/취소 버튼 (맨 아래) ===================================== -->
       <div class="form-actions" v-if="cfDtlMode && active">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>

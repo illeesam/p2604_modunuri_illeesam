@@ -480,9 +480,10 @@ window.PmCouponDtl = {
       <!-- ===== ■.■.■. 폼 영역 ================================================ -->
       <bo-form-area :columns="columns.infoForm" :form="form" :errors="errors"
         :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
-        <!-- ===== ■.■.■.■. 메모: Quill 에디터 ===================================== -->
+        <!-- ===== ■.■.■.■. 메모: Quill 에디터 (보기모드는 렌더만) ==================== -->
         <template #memo>
-          <base-html-editor v-model="form.memo" height="200px" />
+          <div v-if="cfDtlMode" class="form-control" style="min-height:180px;line-height:1.6;overflow:auto;" v-html="form.memo || '<span style=color:#bbb>-</span>'"></div>
+          <base-html-editor v-else v-model="form.memo" height="200px" />
         </template>
         <!-- ===== ■.■.■.■. 판매업체 picker ======================================= -->
         <template #vendor>

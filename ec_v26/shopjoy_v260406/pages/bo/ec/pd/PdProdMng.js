@@ -397,10 +397,10 @@ window.PdProdMng = {
             @click.stop="handleSelectAction('prods-rowPreview', p.prodId)">
             👁
           </button>
-          <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
+          <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_edit', p)">
             수정
           </button>
-          <button class="btn btn_row_delete" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">
+          <button class="btn btn_row_delete" @click.stop="handleGridCellAction(gridId, 'btn_delete', p)">
             삭제
           </button>
         </div>

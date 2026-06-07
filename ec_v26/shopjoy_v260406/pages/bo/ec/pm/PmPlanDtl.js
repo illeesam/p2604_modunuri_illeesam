@@ -491,13 +491,16 @@ window.PmPlanDtl = {
         </div>
       </div>
       <template v-if="activeContentTab===1">
-        <base-html-editor v-model="form.content1" height="420px" />
+        <div v-if="cfDtlMode" class="form-control" style="min-height:300px;line-height:1.6;overflow:auto;" v-html="form.content1 || '<span style=color:#bbb>-</span>'"></div>
+        <base-html-editor v-else v-model="form.content1" height="420px" />
       </template>
       <template v-if="activeContentTab===2">
-        <base-html-editor v-model="form.content2" height="420px" />
+        <div v-if="cfDtlMode" class="form-control" style="min-height:300px;line-height:1.6;overflow:auto;" v-html="form.content2 || '<span style=color:#bbb>-</span>'"></div>
+        <base-html-editor v-else v-model="form.content2" height="420px" />
       </template>
       <template v-if="activeContentTab===3">
-        <base-html-editor v-model="form.content3" height="420px" />
+        <div v-if="cfDtlMode" class="form-control" style="min-height:300px;line-height:1.6;overflow:auto;" v-html="form.content3 || '<span style=color:#bbb>-</span>'"></div>
+        <base-html-editor v-else v-model="form.content3" height="420px" />
       </template>
       <div class="form-actions" v-if="active && cfDtlMode">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>

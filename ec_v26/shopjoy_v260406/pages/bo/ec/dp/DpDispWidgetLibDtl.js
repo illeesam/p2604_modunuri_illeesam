@@ -832,7 +832,8 @@ window.DpDispWidgetLibDtl = {
         </div>
         <!-- ===== ■.■.■.■. HTML 에디터 (공통 BaseHtmlEditor — Toast UI Editor) ===== -->
         <div v-else-if="cfIsHtmlEditor" class="form-group" style="margin:0;">
-          <base-html-editor v-model="form.htmlContent" height="320px" />
+          <div v-if="cfDtlMode" class="form-control" style="min-height:300px;line-height:1.6;overflow:auto;" v-html="form.htmlContent || '<span style=color:#bbb>-</span>'"></div>
+          <base-html-editor v-else v-model="form.htmlContent" height="320px" />
         </div>
         <!-- ===== ■.■.■.■. 파일목록 ============================================== -->
         <div v-else-if="cfIsFileList">

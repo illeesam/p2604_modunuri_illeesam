@@ -353,6 +353,7 @@ Dtl 탭 뷰모드 중 **3열(`cols-3`) 또는 4열(`cols-4`)** 선택 시 max-wi
 
 - **행번호 포함 행 전체가 클릭 대상** ⭐: `col.link`(제목 셀)만으로는 행번호·다른 셀 클릭이 무반응 → `row-clickable` + `@row-click` 추가로 **행 어디를 클릭해도 보기모드**. `@row-click` 은 row 객체를 주므로 `{ row: r }` 로 감싸 셀 라우터에 위임(라우터가 `e.row.id` 사용).
 - ⛔ **#row-actions(관리) 슬롯의 [수정]/[삭제] 버튼 + `<td>` 에 `@click.stop` 필수**: `row-clickable` 이면 버튼 클릭이 행클릭으로 전파되어 보기모드가 같이 열림. 슬롯 내부 커스텀 버튼은 BoGrid 자동보호 대상이 아니므로 **부모가 `.stop` 책임**(BoAreaComp §주석).
+- ⛔ **#row-actions 슬롯 row 별칭(`{ row: p }`)과 버튼 인자 변수명 일치** ⭐ (2026-06-08): 슬롯을 `#row-actions="{ row: p }"` 로 별칭 분해했으면 버튼 핸들러도 **그 별칭**을 넘겨야 한다 — `handleGridCellAction(gridId, 'btn_edit', p)`. 별칭을 줘 놓고 `…, row)` 로 넘기면 `row` 가 `undefined` → **[수정]/[삭제] 클릭이 조용히 무반응**(에러도 안 남, `row.id` 접근 실패). 점검: `#row-actions="{ row: X }"` 슬롯 본문에 bare `row` 토큰이 있으면 버그. 사례: PdProdMng(`p`).
 - ⭐ **보기모드에서 [저장] 버튼 노출 금지**: 보기모드 액션은 `[수정][닫기]` 만. `form-actions v-if="active && cfDtlMode"` 와 `v-if="active && !cfDtlMode"`(저장/취소) 를 명확히 분리하거나 `bo-form-area :show-actions="active"` 자동 렌더 사용. `[저장]` 이 보이면 보기모드가 깨진 것.
 - ❌ 금지: 행 클릭이 바로 수정모드로 진입. 보기 먼저, 수정은 의도적 액션([수정] 버튼 또는 보기모드 하단 [수정]).
 - Dtl 하단 액션: **보기모드 = [수정][닫기]**, **수정모드 = [저장][취소]**.
@@ -373,6 +374,30 @@ Dtl 탭 뷰모드 중 **3열(`cols-3`) 또는 4열(`cols-4`)** 선택 시 max-wi
 - 적용(2026-06-08): CmNoticeDtl(`cfReadonly`)·SyBbsDtl·SyContactDtl(내용·답변)·SyUserDtl(`cfDtlMode`)·MyContact(FO, `true`). `BaseAttachGrp`/`BaseAttachOne` 쓰는 신규 Dtl 은 동일 적용.
 
 > 컴포넌트 props 상세 → [sy.14.파일첨부.md](../sy/sy.14.파일첨부.md).
+
+#### ⭐⭐ Dtl 의 모든 편집 컨트롤은 보기모드에서 잠금 (2026-06-08, 전체공통 · 최상위 원칙)
+
+상세(Dtl)는 **행 [수정] 또는 보기모드 하단 [수정] 으로 수정모드(`dtlMode='edit'`/`'new'`)로 진입했을 때만 편집 가능**하다. 행 클릭(보기모드)으로 연 상태에서는 **모든 탭의 모든 편집 컨트롤이 비활성/숨김**이어야 한다. `bo-form-area :readonly="cfDtlMode"` 가 폼 필드를 잠그는 것과 **동일 기준**을 폼 바깥의 모든 편집 UI(에디터·이미지/옵션/SKU/블록 그리드·동적 리스트 add/remove·첨부)에 확장한다.
+
+**판정 기준 (전 Dtl 공통)**: `cfDtlMode`(또는 `cfReadonly`) = `props.dtlMode === 'view'`. 보기모드 = `true`.
+
+**보기모드에서 잠가야 하는 것** (탭 불문):
+- **추가 버튼**: `+ 첨부 이미지`/`+ URL 이미지`/`+ HTML 에디터`/`+ 파일 선택`/`+ URL 입력`/`+ 행 추가`/`+ 옵션`/`+ SKU`/`+ 상품` 등 → `v-if="!cfDtlMode"`
+- **행/블록 삭제(`✕`/`삭제`)·대표 설정·비우기·순서 드래그(`draggable`/핸들)** → `v-if="!cfDtlMode"` (드래그는 `:draggable="!cfDtlMode"`)
+- **인라인 input/select/textarea** → `:readonly="cfDtlMode"` (select/checkbox 는 `:disabled="cfDtlMode"`)
+- **리치 에디터(base-html-editor 등)** → 보기모드는 `v-html` 렌더 div, 수정모드만 에디터 (메인 폼 contentHtml 패턴과 동일)
+- **첨부(base-attach-grp/one)** → `:readonly="cfDtlMode"` (위 첨부 정책)
+
+**보기모드에서도 유지(노출)**: 렌더된 내용·이미지 썸네일·미리보기 패널·다운로드 등 **읽기 표현**. 하단 액션은 `[수정][닫기]`.
+
+**구현 패턴**:
+- 편집 토글 영역을 통째로 `<div v-if="!cfDtlMode"> …편집 툴바… </div>` 로 감싸고, 보기모드 표시는 별도 `<div v-else>` 또는 항상 보이는 렌더 영역으로 둔다.
+- ❌ 금지: 탭/카드 컨테이너 자체를 `v-if="!cfDtlMode"` 로 숨김 → 보기모드에서 **내용까지 사라짐**(영역 항상표시 위배). 컨트롤만 숨기고 내용·미리보기는 유지.
+- ❌ 금지: 보기모드인데 추가/삭제/드래그/에디터가 동작 → 보기모드가 깨진 것(§6.9 [저장] 노출 금지와 동일 취지).
+- 셀 단위 편집 그리드(BoGridCrud 인라인 input)는 `dtlMode` 를 받아 `edit` 컬럼을 `:disabled` 하거나, 보기모드 컬럼셋으로 분기.
+- **복잡 탭은 `<fieldset :disabled="cfDtlMode" style="border:none;padding:0;margin:0;min-width:0;">` 래퍼 권장** ⭐ — 네이티브 input/select/textarea/button 을 한 줄로 전부 비활성. 단 ① `form-actions`([수정][닫기])는 **fieldset 밖**에 둬야 [수정] 클릭 가능, ② `base-html-editor`(contenteditable)·드래그(`draggable`)는 네이티브 폼요소가 아니라 fieldset 으로 안 잠기므로 **개별 `v-if`/`v-else`(에디터)·`:draggable="!cfDtlMode"` 병행**, ③ 모달은 `teleport` 로 fieldset 밖이라 영향 없음.
+- 기준 모델: [PdProdDtl.js](../../../pages/bo/ec/pd/PdProdDtl.js) — 기본정보/상세설정/옵션설정/옵션(가격재고)/연관상품 탭은 **fieldset 래퍼**, 상품설명/이미지 탭은 **개별 `v-if`**(에디터·드래그·미리보기 때문).
+- 적용(2026-06-08): PdProdDtl(7탭) · PmCouponDtl(memo) · PmEventDtl(banner) · PmPlanDtl(content1·2·3) · DpDispAreaDtl·DpDispUiDtl·DpDispWidgetDtl·DpDispWidgetLibDtl(htmlDesc/htmlContent). DpDispPanelDtl 은 이미 적용 상태(파일목록·에디터 `cfDtlMode` 분기).
 
 #### ⭐⭐ 행 전체 클릭 폐기 → 번호·첫 보이는 셀(link)만 보기 (2026-06-06, 전체공통 개정)
 
