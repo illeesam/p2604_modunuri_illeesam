@@ -5,7 +5,9 @@ window.PdReviewMng = {
     navigate:    { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+
     /* ##### [01] 초기 변수 정의 ################################################## */
+
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const products = reactive([]);
@@ -21,6 +23,7 @@ window.PdReviewMng = {
     /* 상품 리뷰 fnLoadCodes */
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ PdReviewMng.js : handleBtnAction -> ', cmd, param);
@@ -95,6 +98,7 @@ window.PdReviewMng = {
     };
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -118,7 +122,9 @@ window.PdReviewMng = {
     };
 
     /* 상품 리뷰 onSort */
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+
     /* onSort — 정렬 */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
@@ -345,7 +351,9 @@ window.PdReviewMng = {
       { key: 'status', label: '상태', type: 'select', options: () => codes.review_status_list, nullLabel: '전체' },
       { key: 'rating', label: '평점', type: 'select', options: () => codes.review_rating_opts, nullLabel: '전체' },
     ];
+
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+
     // 목록 그리드
     columns.listGrid = [
       { key: 'reviewTitle',     label: '리뷰 제목', link: true, cellInnerClass: 'title-link' },
@@ -393,6 +401,7 @@ window.PdReviewMng = {
     const fnProdReviewRowClass = (row) => (selectedId.value === row.reviewId ? 'active' : '');
 
     /* ##### [06] return (템플릿 노출) ############################################## */
+
     return {
       columns,
       reviews, uiState, searchParam, listGridPager, codes,                                            // 상태 / 데이터

@@ -5,7 +5,9 @@ window.SyVendorUserMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+
     /* ##### [01] 초기 변수 정의 #################################################### */
+
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -35,6 +37,7 @@ window.SyVendorUserMng = {
     const roleTreeExpanded = reactive(new Set());
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ SyVendorUserMng.js : handleBtnAction -> ', cmd, param);
@@ -149,7 +152,9 @@ window.SyVendorUserMng = {
         console.warn('[fnCallbackModal] unknown cmd:', cmd);
       }
     };
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+
     /* handleLoadData — 처리 */
     const handleLoadData = async () => {
       try {
@@ -606,6 +611,7 @@ window.SyVendorUserMng = {
     };
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+
     // 업체 검색 (좌측 업체목록 상단)
     const columns = {};
     columns.vendorSearch = [
@@ -689,6 +695,7 @@ window.SyVendorUserMng = {
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
+
     return {
       columns,
       uiState, codes, vendorUsers, vendors, vendorGridPager, userGridPager, formData, userRoles, roleTreeExpanded,            // 상태 / 데이터

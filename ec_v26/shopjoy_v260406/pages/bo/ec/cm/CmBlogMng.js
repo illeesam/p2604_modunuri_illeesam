@@ -5,7 +5,9 @@ window.CmBlogMng = {
     navigate:    { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+
     /* ##### [01] 초기 변수 정의 #################################################### */
+
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
@@ -25,6 +27,7 @@ window.CmBlogMng = {
     /* _initSearchParam — 초기화 */
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ CmBlogMng.js : handleBtnAction -> ', cmd, param);
@@ -102,7 +105,9 @@ window.CmBlogMng = {
     /* _initBlogForm — 빈(신규) 블로그 폼 기본값 */
     const _initBlogForm = () => ({ blogId: null, siteId: 1, blogCateId: null, blogTitle: '', blogSummary: '', blogContent: '', blogAuthor: '', viewCount: 0, useYn: 'Y', isNotice: 'N' });
     const detailPanel = reactive({ show: true, active: false, isNew: false, dtlId: null, form: _initBlogForm() }); // 인라인 Dtl 패널 상태 (항상 표시, active=false 면 버튼 숨김)
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
+
     /* getSortParam — 정렬 파라미터 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
@@ -260,6 +265,7 @@ window.CmBlogMng = {
     });
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+
     const cfSelectedRow = computed(() => blogs.find(p => p.blogId === detailPanel.dtlId) || null);
 
     /* fnYnBadge — Y/N 배지 클래스 */
@@ -312,6 +318,7 @@ window.CmBlogMng = {
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
+
     return {
       columns,
       blogs, uiState, codes, searchParam, baseGridPager, detailPanel,                          // 상태 / 데이터

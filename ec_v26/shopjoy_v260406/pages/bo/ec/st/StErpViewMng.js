@@ -5,7 +5,9 @@ window.StErpViewMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+
     /* ##### [01] 초기 변수 정의 ################################################## */
+
     const { reactive, onMounted } = Vue;
     const { showToast, showConfirm } = window.boApp;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: '' });
@@ -34,6 +36,7 @@ window.StErpViewMng = {
     });
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
     /* handleBtnAction — 버튼 액션 dispatch */
     const handleBtnAction = (cmd, param) => {
       if (cmd === 'searchParam-list')      { baseGrid.pager.pageNo = 1; return handleSearchList(); }
@@ -51,6 +54,7 @@ window.StErpViewMng = {
     };
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const s = window.sfGetBoCodeStore();
@@ -68,6 +72,7 @@ window.StErpViewMng = {
     });
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async () => {
       try {
@@ -89,6 +94,7 @@ window.StErpViewMng = {
     };
 
     /* ##### [05] 사용자 함수 (헬퍼 / 컬럼정의) #################################### */
+
     const _STATUS_FB = { '전송완료': 'badge-green', '전송대기': 'badge-blue', '오류': 'badge-red' };
     const _TYPE_FB   = { '정산': 'badge-blue', '수수료': 'badge-orange', '반품조정': 'badge-red' };
 
@@ -124,6 +130,7 @@ window.StErpViewMng = {
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
+
     return {
       columns,
       uiState, codes, slips, searchParam, baseGrid,

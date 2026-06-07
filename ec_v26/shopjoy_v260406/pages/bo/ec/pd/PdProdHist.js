@@ -7,7 +7,9 @@ window.PdProdHist = {
     prodId:       { type: String, default: null }, // 대상 ID
   },
   setup(props) {
+
     /* ##### [01] 초기 변수 정의 ################################################## */
+
     const { computed, onMounted, reactive, watch } = Vue;
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
     const uiState = reactive({
@@ -21,6 +23,7 @@ window.PdProdHist = {
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ PdProdHist.js : handleBtnAction -> ', cmd, param);
@@ -52,6 +55,7 @@ window.PdProdHist = {
     };
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
     watch(botTab, v => {
       window._ecProdHistState.tab = v;
       handleLoadTab(v);
@@ -63,7 +67,9 @@ window.PdProdHist = {
     const fnLoadCodes = () => { uiState.isPageCodeLoad = true; };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
     /* 상품 showTab */
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+
     /* showTab — 표시 */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.botTab === id;
 
@@ -151,7 +157,9 @@ window.PdProdHist = {
     const fnNoCursor = () => '';
 
     /* bo-grid 컬럼 정의 (특수 셀은 #cell- 슬롯) */
+
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+
     // 문의 그리드
     const columns = {};
     columns.qnaGrid = [
@@ -255,6 +263,7 @@ window.PdProdHist = {
     });
 
     /* ##### [06] return (템플릿 노출) ############################################## */
+
     return {
       columns,
       uiState, botTab, tabMode2, tabs,                                                      // 상태 / reactive(tabs)

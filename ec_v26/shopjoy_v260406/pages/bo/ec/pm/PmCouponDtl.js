@@ -10,7 +10,9 @@ window.PmCouponDtl = {
     reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
+
     /* ##### [01] 초기 변수 정의 #################################################### */
+
     const { ref, reactive, computed, onMounted, watch, onBeforeUnmount, nextTick } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -78,6 +80,7 @@ window.PmCouponDtl = {
     });
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ PmCouponDtl.js : handleBtnAction -> ', cmd, param);
@@ -196,7 +199,9 @@ window.PmCouponDtl = {
     ]);
 
     /* 쿠폰 fnLoadCodes */
+
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ################################# */
+
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -312,7 +317,9 @@ window.PmCouponDtl = {
     };
 
     /* 쿠폰 onTabChange */
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
+
     /* onTabChange — 탭 변경 */
     const onTabChange = (newTab) => {
       uiState.tab = newTab;
@@ -376,6 +383,7 @@ window.PmCouponDtl = {
     const showVendorModal = Vue.toRef(uiState, 'showVendorModal');
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+
     /* BoGrid(bare) 컬럼 정의 — 발급목록 / 사용목록 (최대 10건 미리보기) */
     const columns = {};
     columns.issuedGrid = [
@@ -443,6 +451,7 @@ window.PmCouponDtl = {
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
+
     return {
       coUtil,  // 템플릿 cofAnd 접근용
       columns,

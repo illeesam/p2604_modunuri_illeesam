@@ -3,8 +3,8 @@ window.foAppHeader = {
   name: 'FoAppHeader',
   props: ['page', 'theme', 'appSidebarOpen', 'appMobileOpen', 'config', 'navigate',
           'toggleTheme', 'appCartCount', 'appLikeCount', 'appAuth', 'onAppShowLogin', 'onAppLogout',
-          'appShowSettings', 'appShowApiLog', 'appApiLogs'],
-  emits: ['app-toggle-sidebar', 'app-toggle-mobile', 'app-toggle-settings', 'app-toggle-api-log'],
+          'appShowSettings', 'appShowApiLog', 'appApiLogs', 'appApiToast'],
+  emits: ['modu-fo-toggle-sidebar', 'modu-fo-toggle-mobile', 'modu-fo-toggle-settings', 'modu-fo-toggle-api-log', 'modu-fo-toggle-api-toast'],
   setup(props, { emit }) {
     // ===== [01] 초기 변수 정의 ====================================================
     const { ref, reactive, computed, watch, onUnmounted, nextTick } = Vue;
@@ -28,16 +28,19 @@ window.foAppHeader = {
       console.log(' ■■ foAppHeader.js : handleBtnAction -> ', cmd, param);
       // 모바일 사이드바 토글
       if (cmd === 'sidebar-toggle-mobile') {
-        return emit('app-toggle-mobile');
+        return emit('modu-fo-toggle-mobile');
       // 데스크탑 사이드바 토글
       } else if (cmd === 'sidebar-toggle-desktop') {
-        return emit('app-toggle-sidebar');
+        return emit('modu-fo-toggle-sidebar');
       // 설정 드롭다운 토글
       } else if (cmd === 'settings-toggle') {
-        return emit('app-toggle-settings');
+        return emit('modu-fo-toggle-settings');
       // API 로그 패널 토글
       } else if (cmd === 'settings-toggle-api-log') {
-        return emit('app-toggle-api-log');
+        return emit('modu-fo-toggle-api-log');
+      // API 응답 toast 출력 토글
+      } else if (cmd === 'settings-toggle-api-toast') {
+        return emit('modu-fo-toggle-api-toast');
       // 사용자 메뉴 드롭다운 토글
       } else if (cmd === 'userMenu-toggle') {
         return toggleUserMenu();
@@ -455,15 +458,24 @@ window.foAppHeader = {
         title="설정">⚙</button>
       <!-- ===== ■.■.■. 설정 드롭다운 ============================================= -->
       <div v-if="appShowSettings"
-        style="position:absolute;right:0;top:calc(100% + 8px);width:148px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.13);z-index:200;overflow:hidden;padding:4px 0;">
+        style="position:absolute;right:0;top:calc(100% + 8px);width:180px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.13);z-index:200;overflow:hidden;padding:4px 0;">
         <button @click="handleBtnAction('settings-toggle-api-log')"
           style="width:100%;padding:10px 14px;border:none;background:none;cursor:pointer;text-align:left;font-size:13px;display:flex;align-items:center;gap:8px;color:var(--text-primary);transition:background 0.15s;"
           :style="appShowApiLog?'background:var(--accent-dim,#fdf8f1);color:var(--accent,#c9a96e);font-weight:700;':''"
           @mouseenter="$event.currentTarget.style.background='var(--blue-dim,#f0f4ff)'"
           @mouseleave="$event.currentTarget.style.background=appShowApiLog?'var(--accent-dim,#fdf8f1)':'transparent'">
           <span style="font-size:13px;">🌐</span>
-          <span>API 보기</span>
+          <span>API 로그 보기</span>
           <span v-if="appApiLogs && appApiLogs.length" style="margin-left:auto;font-size:10px;background:#e8e8e8;border-radius:8px;padding:1px 5px;color:#666;">{{ appApiLogs.length }}</span>
+        </button>
+        <button @click="handleBtnAction('settings-toggle-api-toast')"
+          style="width:100%;padding:10px 14px;border:none;background:none;cursor:pointer;text-align:left;font-size:13px;display:flex;align-items:center;gap:8px;color:var(--text-primary);transition:background 0.15s;"
+          :style="appApiToast?'background:var(--accent-dim,#fdf8f1);color:var(--accent,#c9a96e);font-weight:700;':''"
+          @mouseenter="$event.currentTarget.style.background='var(--blue-dim,#f0f4ff)'"
+          @mouseleave="$event.currentTarget.style.background=appApiToast?'var(--accent-dim,#fdf8f1)':'transparent'">
+          <span style="font-size:13px;">🔔</span>
+          <span>API 토스트 출력</span>
+          <span style="margin-left:auto;font-size:10px;border-radius:8px;padding:1px 6px;font-weight:700;" :style="appApiToast?'background:var(--accent,#c9a96e);color:#fff;':'background:#e8e8e8;color:#888;'">{{ appApiToast ? 'ON' : 'OFF' }}</span>
         </button>
       </div>
     </div>

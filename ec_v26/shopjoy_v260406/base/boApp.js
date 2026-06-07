@@ -260,8 +260,12 @@
         return lines.join('\n');
       };
 
-      /* API 성공 → 로그만 기록 (toast 미출력) */
-      window.addEventListener('api-response-success', () => {});
+      /* API 성공 → 설정에서 API toast 출력 ON 일 때만 info toast (기본 미출력) */
+      window.addEventListener('api-response-success', (ev) => {
+        if (!apiToastEnabled.value) { return; }
+        const d = ev.detail || {};
+        showToast(`${d.method} ${d.url} ${d.status}`, 'info', 10000);
+      });
 
       /* API 에러 (boAxios 의 window.dispatchEvent('api-response-error')) — status 로 분기:
          · 401 → error401 페이지 전환 / 500·네트워크 → error500 페이지 전환
@@ -647,6 +651,13 @@
 
       /* ── Toast (누적 스택) ── */
       const toasts = reactive([]);
+      /* ── 설정(우측 상단 ⚙) ── */
+      const boSettingShow = Vue.ref(false);   // 설정 드롭다운 표시
+      const BO_API_TOAST_KEY = 'modu-bo-setting-apiToastOpen';   // API 응답 toast 출력 ON/OFF (F5 후 유지)
+      const apiToastEnabled = Vue.ref(localStorage.getItem(BO_API_TOAST_KEY) === 'true');   // 기본 OFF(미저장 시)
+      Vue.watch(apiToastEnabled, (v) => { try { localStorage.setItem(BO_API_TOAST_KEY, v ? 'true' : 'false'); } catch (e) {} });
+      const onToggleApiToast = () => { apiToastEnabled.value = !apiToastEnabled.value; };
+      const onToggleBoSetting = () => { boSettingShow.value = !boSettingShow.value; };
       /* ── API Progress Overlay ── */
       const isApiLoading = Vue.ref(false);
       let _apiLoadingCount = 0;
@@ -1875,6 +1886,7 @@
       const onRootClick = () => {
         closeCtxMenu();
         uiState.userMenuShow = false;
+        boSettingShow.value = false;
       };
 
       return {
@@ -2002,6 +2014,7 @@
         apiResPanel,
         setApiRes,
         closeApiResPanel,
+        boSettingShow, apiToastEnabled, onToggleApiToast, onToggleBoSetting,
         onRootClick,
         toggleRelatedSite,
         openRelatedLink,
@@ -2045,6 +2058,25 @@
       <span v-for="tm in TOP_MENUS" :key="tm.id"
         class="top-nav-item" :class="{active: activeTop===tm.id}"
         @click="setTopMenu(tm.id)">{{ tm.label }}</span>
+    </div>
+
+    <!-- 설정(개발) 드롭다운 -->
+    <div style="position:relative;flex-shrink:0;" @click.stop>
+      <button @click="onToggleBoSetting" title="설정"
+        style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:14px;transition:all .15s;"
+        :style="boSettingShow ? 'background:rgba(232,88,122,0.18);border:1px solid rgba(232,88,122,0.45);color:#e8587a;' : 'background:rgba(232,88,122,0.08);border:1px solid rgba(232,88,122,0.25);color:#e8587a;'">⚙</button>
+      <div v-if="boSettingShow"
+        style="position:absolute;right:0;top:calc(100% + 8px);width:190px;background:#fff;border:1px solid #e5e7eb;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.14);z-index:9000;overflow:hidden;padding:4px 0;">
+        <button @click="onToggleApiToast"
+          style="width:100%;padding:10px 14px;border:none;background:none;cursor:pointer;text-align:left;font-size:13px;display:flex;align-items:center;gap:8px;color:#374151;transition:background .15s;"
+          :style="apiToastEnabled ? 'background:rgba(232,88,122,0.08);color:#e8587a;font-weight:700;' : ''"
+          @mouseenter="$event.currentTarget.style.background='#f5f5f5'"
+          @mouseleave="$event.currentTarget.style.background=apiToastEnabled?'rgba(232,88,122,0.08)':'transparent'">
+          <span style="font-size:13px;">🔔</span>
+          <span>API 토스트 출력</span>
+          <span style="margin-left:auto;font-size:10px;border-radius:8px;padding:1px 6px;font-weight:700;" :style="apiToastEnabled?'background:#e8587a;color:#fff;':'background:#e8e8e8;color:#888;'">{{ apiToastEnabled ? 'ON' : 'OFF' }}</span>
+        </button>
+      </div>
     </div>
 
     <!-- 도움말 버튼 -->
@@ -2618,7 +2650,7 @@
       class="toast-item" :class="['toast-'+t.type, { 'toast-expanded': t.expanded }]">
       <!-- 헤더 행: 제목 + ▼/▲ + ✕ -->
       <div class="toast-header-row">
-        <div class="toast-msg-title">{{ (t.msgTitle || t.msg).split(String.fromCharCode(10))[0] }}</div>
+        <div class="toast-msg-title"><span style="color:#aaa;font-weight:700;margin-right:4px;">#{{ t.id }}</span>{{ (t.msgTitle || t.msg).split(String.fromCharCode(10))[0] }}</div>
         <span v-if="t.type === 'error'" class="toast-expand-icon"
           @click.stop="t.expanded = !t.expanded" :title="t.expanded ? '접기' : '더보기'">{{ t.expanded ? '▲' : '▼' }}</span>
         <span class="toast-close-x" @click.stop="closeToast(t.id)">✕</span>

@@ -5,7 +5,9 @@ window.SyMenuMng = {
     navigate:    { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+
     /* ##### [01] 초기 변수 정의 #################################################### */
+
     const nextId = window.nextId || { value: (arr, key) => ((arr || []).reduce((mm, x) => Math.max(mm, Number(x?.[key]) || 0), 0) || 0) + 1 };
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;   // 토스트 알림
@@ -22,6 +24,7 @@ window.SyMenuMng = {
     /* _initSearchParam — 초기화 */
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ SyMenuMng.js : handleBtnAction -> ', cmd, param);
@@ -139,7 +142,9 @@ window.SyMenuMng = {
 
     /* ===== 상위메뉴 선택 모달 ===== */
     const parentModal = reactive({ show: false, targetRow: null });
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
+
     /* handleLoadPathTreeNodeCounts — 좌 트리 노드별 카운트 (검색조건 동기, 백엔드 재귀 CTE) */
     const handleLoadPathTreeNodeCounts = async () => {
       try {
@@ -323,6 +328,7 @@ window.SyMenuMng = {
     );
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
     /* parentNm — 상위 메뉴명 */
@@ -364,6 +370,7 @@ window.SyMenuMng = {
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
+
     return {
       columns,
       menus, uiState, menuCounts, codes, searchParam, gridRows, parentModal,         // 상태 / 데이터

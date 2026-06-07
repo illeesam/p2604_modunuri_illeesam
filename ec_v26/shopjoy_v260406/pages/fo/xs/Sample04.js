@@ -2,7 +2,9 @@
 window.XsSample04 = {
   name: 'XsSample04',
   setup() {
+
     /* ##### [01] 초기 변수 정의 ################################################## */
+
     const { ref, reactive, onMounted, watch } = Vue;
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, modalType: null, modalVariant: 'info', modalData: null, nested2: false });
@@ -115,6 +117,7 @@ window.XsSample04 = {
     ];
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ Sample04.js : handleBtnAction -> ', cmd, param);
@@ -163,6 +166,7 @@ window.XsSample04 = {
     };
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
@@ -177,6 +181,7 @@ window.XsSample04 = {
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+
     /* openModal — 열기 */
     const openModal = (type, opts = {}) => {
       uiState.modalType     = type;
@@ -225,6 +230,7 @@ window.XsSample04 = {
     };
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+
     /* fnGradeBadge — 유틸 */
     const fnGradeBadge = g => ({
       'VVIP': 'background:#fce7f3;color:#9d174d;border:1px solid #fbcfe8;',
@@ -280,6 +286,7 @@ window.XsSample04 = {
     const bShowConfirm  = (title, msg) => Promise.resolve(window.confirm(`${title}\n\n${msg}`));
 
     /* ##### [06] return (템플릿 노출) ############################################## */
+
     return {
       columns,
       uiState, codes,                                                        // 상태 / 데이터

@@ -5,7 +5,9 @@ window.StSettleEtcAdjMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+
     /* ##### [01] 초기 변수 정의 ################################################## */
+
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -19,6 +21,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     /* 정산 기타 조정 fnLoadCodes */
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
     /* handleBtnAction — 버튼 액션 dispatch */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ StSettleEtcAdjMng.js : handleBtnAction -> ', cmd, param);
@@ -63,6 +66,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     };
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -147,7 +151,9 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     const closeForm = () => { uiState.selectedId = null; };
 
     /* 정산 기타 조정 저장 */
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+
     /* handleSave — 저장 */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
@@ -211,6 +217,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     const onSizeChange = () => { baseGridPager.pageNo = 1; handleSearchData('DEFAULT'); };
 
         /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+
         // --- [컬럼 정의] ---
 
         const columns = {};
@@ -262,6 +269,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
+
     return {
       columns,
       uiState, codes, baseGridPager, etcAdjs, searchParam, form, errors,

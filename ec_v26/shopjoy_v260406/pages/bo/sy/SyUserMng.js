@@ -5,7 +5,9 @@ window.SyUserMng = {
     navigate:    { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+
     /* ##### [01] 초기 변수 정의 #################################################### */
+
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
@@ -23,6 +25,7 @@ window.SyUserMng = {
     /* _initSearchParam — 초기화 */
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ SyUserMng.js : handleBtnAction -> ', cmd, param);
@@ -146,7 +149,9 @@ window.SyUserMng = {
 
     /* ===== 엑셀 업로드 모달 (컬럼은 다운로드 파일의 3행 헤더에서 자동 추출) ===== */
     const excelUploadModal = reactive({ show: false, reloadTrigger: 0 });
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
+
     /* getSortParam — 정렬 파라미터 */
     const getSortParam = () => {
       const { sortKey, sortDir } = uiState;
@@ -343,6 +348,7 @@ window.SyUserMng = {
     });
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
     const cfIsViewMode = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
@@ -397,6 +403,7 @@ window.SyUserMng = {
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
+
     return {
       columns,
       users, uiState, codes, searchParam, baseGridPager, detailPanel, expanded, deptCounts,  // 상태 / 데이터

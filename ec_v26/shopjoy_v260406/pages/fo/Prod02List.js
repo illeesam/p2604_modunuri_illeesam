@@ -5,7 +5,9 @@ window.Prod02List = {
     navigate:      { type: Function, required: true },        // 페이지 이동
   },
   setup(props) {
+
     /* ##### [01] 초기 변수 정의 #################################################### */
+
     const { ref, reactive, computed, watch, onMounted, onBeforeUnmount } = Vue;
     const prods             = window.foApp.prods;  // 상품 목록
     const selectProd        = (p) => window.foApp.selectProd(p);
@@ -26,6 +28,7 @@ window.Prod02List = {
     const selCats       = reactive(new Set());
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ Prod02List.js : handleBtnAction -> ', cmd, param);
@@ -91,6 +94,7 @@ window.Prod02List = {
     };
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
@@ -263,6 +267,7 @@ window.Prod02List = {
     };
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+
     /* onSearch — 조회 */
     const onSearch = async () => {
       pager.pageNo = 1;
@@ -288,6 +293,7 @@ window.Prod02List = {
     });
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+
     /* FoSearchArea :columns 자동 렌더 정의 — 단일 검색어 input 만 자동, 필터/조회는 default slot */
     // --- [컬럼 정의] ---
     const columns = {};
@@ -296,6 +302,7 @@ window.Prod02List = {
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
+
     return {
        columns, pager,                                                      // 컬럼 / 페이저
        uiState, codes, allProds,                                     // 상태 / 데이터

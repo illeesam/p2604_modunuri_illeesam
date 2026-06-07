@@ -10,7 +10,9 @@ window.DpDispWidgetDtl = {
   },
   emits: ['close'],
   setup(props, { emit }) {
+
     /* ##### [01] 초기 변수 정의 ################################################## */
+
     const { reactive, computed, ref, onMounted, watch, nextTick } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -19,6 +21,7 @@ window.DpDispWidgetDtl = {
     const previewMode = Vue.toRef(uiState, 'previewMode');
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ DpDispWidgetDtl.js : handleBtnAction -> ', cmd, param);
@@ -115,7 +118,9 @@ window.DpDispWidgetDtl = {
         console.warn('[fnCallbackModal] unknown cmd:', cmd);
       }
     };
+
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -209,6 +214,7 @@ window.DpDispWidgetDtl = {
     const errors = reactive({});
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+
     /* handleLoadDetail — 상세 조회 */
     const handleLoadDetail = async () => {
       if (cfIsNew.value) { return; }
@@ -669,7 +675,9 @@ window.DpDispWidgetDtl = {
     const cfShowActions = computed(() => props.active && !cfDtlMode.value);
 
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - 위젯 기본 설정 ================
+
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+
     // 기본 위젯 폼
     const columns = {};
     columns.baseWidgetForm = [
@@ -688,6 +696,7 @@ window.DpDispWidgetDtl = {
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
+
     return {
       columns,
       pathPickModal, uiState, codes, form, errors,                                   // 상태 / 데이터

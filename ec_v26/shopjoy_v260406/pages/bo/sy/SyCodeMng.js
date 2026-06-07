@@ -5,7 +5,9 @@ window.SyCodeMng = {
     navigate:    { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+
     /* ##### [01] 초기 변수 정의 #################################################### */
+
     const { reactive, computed, watch, onMounted, nextTick } = Vue;
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
@@ -29,6 +31,7 @@ window.SyCodeMng = {
     /* _initSearchParam — 초기화 */
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ SyCodeMng.js : handleBtnAction -> ', cmd, param);
@@ -168,7 +171,9 @@ window.SyCodeMng = {
       codeGrp: { asc: 'codeGrp asc', desc: 'codeGrp desc' },
       grpNm:   { asc: 'grpNm asc',   desc: 'grpNm desc'   },
     };
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
+
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -568,6 +573,7 @@ window.SyCodeMng = {
     };
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+
     const cfDetailEditId = computed(() => uiState.selectedCodeId === '__new__' ? null : uiState.selectedCodeId);
     const cfDetailKey = computed(() => `${uiState.selectedCodeId}_${uiState.detailResetSeq}`);
 
@@ -719,6 +725,7 @@ window.SyCodeMng = {
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
+
     return {
       columns,
       uiState, codeGrpCounts, pageCodes, searchParam, treeExpanded, flatTree,                  // 상태 / 데이터

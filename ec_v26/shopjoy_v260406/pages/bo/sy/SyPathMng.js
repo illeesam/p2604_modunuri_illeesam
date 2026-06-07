@@ -5,7 +5,9 @@ window.SyPathMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+
     /* ##### [01] 초기 변수 정의 #################################################### */
+
     const { reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
@@ -16,6 +18,7 @@ window.SyPathMng = {
     /* _initSearchParam — 초기화 */
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ SyPathMng.js : handleBtnAction -> ', cmd, param);
@@ -164,7 +167,9 @@ window.SyPathMng = {
     });
 
     const cfDirtyRows = computed(() => gridRows.filter(r => r._status === 'N' || r._status === 'U' || r._status === 'D'));
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
+
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
@@ -309,6 +314,7 @@ window.SyPathMng = {
     };
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+
     /* getParentLabel — 부모경로 라벨 조회 */
     const getParentLabel = (pathId) => {
       if (pathId == null) { return '(루트)'; }
@@ -360,6 +366,7 @@ window.SyPathMng = {
     const fnShowDelete = (r) => r._status == null || r._status === 'U';
 
     /* ##### [06] return (템플릿 노출) ############################################## */
+
     return {
       columns,
       uiState, searchParam, codes, expanded, gridRows, baseGridPager, parentModal,         // 상태 / 데이터

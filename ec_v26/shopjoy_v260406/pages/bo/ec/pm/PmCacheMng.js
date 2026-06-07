@@ -5,7 +5,9 @@ window.PmCacheMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+
     /* ##### [01] 초기 변수 정의 #################################################### */
+
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
@@ -30,6 +32,7 @@ window.PmCacheMng = {
     /* _initSearchParam — 초기화 */
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ PmCacheMng.js : handleBtnAction -> ', cmd, param);
@@ -114,7 +117,9 @@ window.PmCacheMng = {
       return { searchType: '', searchValue: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, type: '' };
     };
     const searchParam = reactive(_initSearchParam());
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
+
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -246,6 +251,7 @@ window.PmCacheMng = {
     const exportExcel = () => coUtil.cofExportCsv(caches, [{label:'ID',key:'cacheId'},{label:'회원명',key:'memberNm'},{label:'유형',key:'cacheTypeCd'},{label:'금액',key:'cacheAmt'},{label:'잔액',key:'balanceAmt'},{label:'설명',key:'cacheDesc'},{label:'등록일',key:'regDate'}], '캐시목록.csv');
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+
     const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
     const cfIsViewMode = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
     const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}_${detailPanel.resetSeq}`);
@@ -283,6 +289,7 @@ window.PmCacheMng = {
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
+
     return {
       columns,
       caches, uiState, codes, searchParam, baseGridPager, detailPanel,                       // 상태 / 데이터

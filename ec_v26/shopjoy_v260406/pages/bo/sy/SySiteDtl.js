@@ -9,7 +9,9 @@ window.SySiteDtl = {
     reloadTrigger: { type: Number, default: 0 },              // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
+
     /* ##### [01] 초기 변수 정의 #################################################### */
+
     const { reactive, computed, watch, onMounted, ref } = Vue;
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
@@ -42,6 +44,7 @@ window.SySiteDtl = {
     const cfDtlMode = computed(() => props.dtlMode === 'view'); // dtlMode: 'view' 이면 읽기전용, 'new'/'edit' 이면 편집
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ SySiteDtl.js : handleBtnAction -> ', cmd, param);
@@ -86,6 +89,7 @@ window.SySiteDtl = {
     const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+
     /* handleLoadDetail — 상세 조회 */
     const handleLoadDetail = async () => {
       if (cfIsNew.value) { return; }
@@ -176,6 +180,7 @@ window.SySiteDtl = {
     });
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+
     // 기본 폼 (cols=3 — 빈 칸 없이 3열을 모두 채우도록 colSpan 배치)
     const columns = {};
     columns.baseForm = [
@@ -206,6 +211,7 @@ window.SySiteDtl = {
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
+
     return {
       columns,
       uiState, codes, form, errors, addrDetailRef, pathPickModal,   // 상태 / 데이터

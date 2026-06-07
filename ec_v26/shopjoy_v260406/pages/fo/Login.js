@@ -6,7 +6,9 @@ window.Login = {
   },
   emits: ['close'],
   setup(props, { emit }) {
+
     /* ##### [01] 초기 변수 정의 ################################################## */
+
     const { ref, reactive, watch, onMounted } = Vue;
 
     /* -- UI 상태 -- */
@@ -14,6 +16,7 @@ window.Login = {
     const codes = reactive({});
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ Login.js : handleBtnAction -> ', cmd, param);
@@ -109,6 +112,7 @@ window.Login = {
     };
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
@@ -128,6 +132,7 @@ window.Login = {
     const form     = reactive({ email: 'user1@demo.com', password: 'demo1234' });
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+
     /* doLogin — 실행 */
     const doLogin = async () => {
       uiState.loginErr = '';
@@ -154,7 +159,9 @@ window.Login = {
     /* -- 회원선택 모달 (개발용) -- */
     const memberPick = reactive({ show: false, searchType: '', searchValue: '', loading: false, rows: [], total: 0, pageNo: 1, pageSize: 20, totalPage: 1 });
     const PICK_SIZE = 20;
+
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+
     /* fo-grid 컬럼 — 특수 셀(이름/등급/상태/선택)은 #cell 슬롯으로 override */
     // --- [컬럼 정의] ---
     const columns = {};
@@ -416,6 +423,7 @@ window.Login = {
     const IS = 'width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.9rem;outline:none;';
 
     /* ##### [06] return (템플릿 노출) ############################################## */
+
     return {
       columns,
       uiState, codes,                                                          // 상태

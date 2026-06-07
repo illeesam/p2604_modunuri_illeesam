@@ -8,7 +8,9 @@ window.PmGiftMng = {
   setup(props) {
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
     /* ##### [01] 초기 변수 정의 #################################################### */
+
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ PmGiftMng.js : handleBtnAction -> ', cmd, param);
@@ -107,7 +109,9 @@ window.PmGiftMng = {
     const searchParam = reactive(_initSearchParam());
     // ===== 공통코드 로딩 ===================================================
     /* 사은품 fnLoadCodes */
+
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ################################# */
+
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -133,7 +137,9 @@ window.PmGiftMng = {
     };
 
     /* 사은품 onSort */
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
+
     /* onSort — 정렬 */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
@@ -265,6 +271,7 @@ window.PmGiftMng = {
     const tabMode = Vue.toRef(uiState, 'tabMode');
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+
     // ===== 검색영역 컬럼 정의 (BoSearchArea :columns) ======================
     // 기본 검색
     const columns = {};
@@ -300,6 +307,7 @@ window.PmGiftMng = {
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
+
     return {
       columns,
       gifts, uiState, codes, searchParam, baseGridPager, detailPanel,                        // 상태 / 데이터

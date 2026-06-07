@@ -136,10 +136,11 @@
       return lines.join('\n');
     };
 
-    /* API 성공 → toast info 출력 (foAxios 에서 window.dispatchEvent('api-response-success')) */
+    /* API 성공 → toast info 출력 (설정에서 API toast 출력 ON 일 때만) */
     window.addEventListener('api-response-success', (ev) => {
+      if (!apiToastEnabled.value) { return; }
       const d = ev.detail || {};
-      showToast(`${d.method} ${d.url} ${d.status}`, 'info', 3000, d.detail || '');
+      showToast(`${d.method} ${d.url} ${d.status}`, 'info', 10000, d.detail || '');
     });
 
     /* API 에러 (foAxios 의 window.dispatchEvent('api-response-error')) — status 로 분기:
@@ -251,11 +252,14 @@
 
     /* ── FO API Log ── */
     const FO_API_LOG_KEY = 'modu-fo-apiLog';
-    const FO_API_LOG_OPEN_KEY = 'modu-fo-apiLogOpen';   // API 로그 패널 열림 상태 (F5 후 유지)
+    const FO_API_LOG_OPEN_KEY = 'modu-fo-setting-rigthtDevPanal';   // 우측 개발 패널(API 로그) 열림 상태 (F5 후 유지)
     const MAX_FO_API_LOGS = 15;
     const foApiLogs = reactive(JSON.parse(localStorage.getItem(FO_API_LOG_KEY) || '[]'));
     const showApiLog = ref(localStorage.getItem(FO_API_LOG_OPEN_KEY) === 'true');   // 저장된 열림 상태 복원
     watch(showApiLog, (v) => { try { localStorage.setItem(FO_API_LOG_OPEN_KEY, v ? 'true' : 'false'); } catch (e) {} });
+    const FO_API_TOAST_KEY = 'modu-fo-setting-apiToastOpen';   // API 응답 toast 출력 ON/OFF (F5 후 유지)
+    const apiToastEnabled = ref(localStorage.getItem(FO_API_TOAST_KEY) === 'true');   // 기본 OFF(미저장 시)
+    watch(apiToastEnabled, (v) => { try { localStorage.setItem(FO_API_TOAST_KEY, v ? 'true' : 'false'); } catch (e) {} });
     const showSettings = ref(false);
     const apiLogHoverDetail  = ref(null);
     const apiLogDock = ref(localStorage.getItem('modu-fo-apiLogDock') === 'true');   // 영역차지(📌): ON 이면 패널이 본문을 밀어내 영역 차지(가리지 않음)
@@ -826,6 +830,8 @@
       clearFoApiLogs, foApiLogStatusClass, foApiLogMethodStyle,
       onFoApiLogEnter, onFoApiLogLeave, onFoApiLogDetailEnter, formatJsonData, fnFoApiLogIndex, fnFoApiLogBadgeStyle, fnFoApiLogRecent,
       apiLogDock, onFoApiLogToggleDock, cfApiLogDockPad,
+      apiToastEnabled,
+      onToggleApiToast: () => { apiToastEnabled.value = !apiToastEnabled.value; },
       cfShowSidebar,
       onToggleApiLog: () => { showApiLog.value = !showApiLog.value; showSettings.value = false; },
       notFoundPageId: computed(() => {
@@ -863,10 +869,11 @@
     :config="config" :navigate="navigate" :toggle-theme="toggleTheme" :app-cart-count="cfCartCount" :app-like-count="cfLikeCount"
     :app-auth="auth" :on-app-show-login="onShowLogin" :on-app-logout="onLogout"
     :app-show-settings="showSettings" :app-show-api-log="showApiLog"
-    :app-api-logs="foApiLogs"
-    @app-toggle-sidebar="sidebarOpen=!sidebarOpen" @app-toggle-mobile="toggleMobileMenu"
-    @app-toggle-settings="showSettings=!showSettings"
-    @app-toggle-api-log="onToggleApiLog"
+    :app-api-logs="foApiLogs" :app-api-toast="apiToastEnabled"
+    @modu-fo-toggle-sidebar="sidebarOpen=!sidebarOpen" @modu-fo-toggle-mobile="toggleMobileMenu"
+    @modu-fo-toggle-settings="showSettings=!showSettings"
+    @modu-fo-toggle-api-log="onToggleApiLog"
+    @modu-fo-toggle-api-toast="onToggleApiToast"
   />
 
   <div style="flex:1;display:flex;overflow:hidden;position:relative;">
@@ -874,7 +881,7 @@
       v-show="cfShowSidebar"
       :page="page" :app-sidebar-open="sidebarOpen" :app-mobile-open="uiState.mobileOpen"
       :config="config" :navigate="navigate" :app-cart-count="cfCartCount" :app-auth="auth"
-      @app-toggle-sidebar="sidebarOpen=!sidebarOpen" @app-close-mobile="closeMobileMenu"
+      @modu-fo-toggle-sidebar="sidebarOpen=!sidebarOpen" @modu-fo-close-mobile="closeMobileMenu"
     />
     <div class="sidebar-overlay" :class="{show: uiState.mobileOpen}" @click="closeMobileMenu"></div>
 
@@ -1024,7 +1031,7 @@
         <div style="flex:1;min-width:0;">
           <div style="font-size:13px;font-weight:600;line-height:1.4;word-break:break-all;"
             :style="t.type==='error'?'color:#c0392b;':t.type==='info'?'color:#1a5276;':'color:#222;'">
-            {{ t.msgTitle || t.msg }}
+            <span style="color:#aaa;font-weight:700;margin-right:4px;">#{{ t.id }}</span>{{ t.msgTitle || t.msg }}
           </div>
           <div v-if="t.msgDetail" style="font-size:11px;color:#666;margin-top:2px;font-family:monospace;">{{ t.msgDetail }}</div>
           <!-- 상세 펼치기 영역 -->

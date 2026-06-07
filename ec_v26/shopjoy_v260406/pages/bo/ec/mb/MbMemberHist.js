@@ -7,7 +7,9 @@ window.MbMemberHist = {
     memberId:  { type: String, default: null },       // 대상 회원 ID
   },
   setup(props) {
+
     /* ##### [01] 초기 변수 정의 #################################################### */
+
     const { computed, reactive, watch, onMounted } = Vue;
     const showRefModal = window.boApp.showRefModal; // 참조 모달
     const uiState = reactive({                     // UI 상태 (탭/뷰모드 영속화)
@@ -17,6 +19,7 @@ window.MbMemberHist = {
     });
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ MbMemberHist.js : handleBtnAction -> ', cmd, param);
@@ -50,6 +53,7 @@ window.MbMemberHist = {
     };
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+
     /* watch — memberId 변경 (computed 자동 갱신 - 별도 로드 불필요) */
     watch(() => props.memberId, () => {
       // 회원ID 변경시 자동으로 computed 값 갱신 (별도 로드 불필요 - 목업 데이터)
@@ -69,6 +73,7 @@ window.MbMemberHist = {
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+
     /* showTab — 탭 표시 여부 */
     const showTab = (id) => uiState.tabMode2 !== 'tab' || uiState.tab === id;
 
@@ -114,6 +119,7 @@ window.MbMemberHist = {
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
+
     return {
       columns,
       uiState,                                                                         // 상태 / 데이터

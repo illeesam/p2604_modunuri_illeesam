@@ -5,7 +5,9 @@ window.SyDashboardMng = {
     navigate:  { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+
     /* ##### [01] 초기 변수 정의 #################################################### */
+
     const { computed, reactive, watch, onMounted } = Vue;
 
     const uiState = reactive({ isPageCodeLoad: false });
@@ -25,6 +27,7 @@ window.SyDashboardMng = {
     ];
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ SyDashboardMng.js : handleBtnAction -> ', cmd, param);
@@ -48,6 +51,7 @@ window.SyDashboardMng = {
     };
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
@@ -64,6 +68,7 @@ window.SyDashboardMng = {
     });
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+
     const cfStats = computed(() => [
       { label: '전체 회원',   value: members.value?.length || 0,
         color: '#e8587a', icon: '👥',
@@ -92,6 +97,7 @@ window.SyDashboardMng = {
     ]);
 
     /* ##### [06] return (템플릿 노출) ############################################## */
+
     return {
       uiState, codes, shortcuts,                          // 상태 / 데이터
       handleBtnAction, handleSelectAction,                // dispatch (모든 이벤트 / 액션 라우팅)

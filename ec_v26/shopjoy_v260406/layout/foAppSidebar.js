@@ -2,7 +2,7 @@
 window.foAppSidebar = {
   name: 'FoAppSidebar',
   props: ['page', 'appSidebarOpen', 'appMobileOpen', 'config', 'navigate', 'appCartCount', 'appAuth'],
-  emits: ['app-toggle-sidebar', 'app-close-mobile'],
+  emits: ['modu-fo-toggle-sidebar', 'modu-fo-close-mobile'],
   setup(props, { emit }) {
 
     // ===== [01] 초기 변수 정의 ==================================================
@@ -61,7 +61,7 @@ window.foAppSidebar = {
       console.log(' ■■ foAppSidebar.js : handleBtnAction -> ', cmd, param);
       // 사이드바 펼침/접힘 토글
       if (cmd === 'sidebar-toggle') {
-        return emit('app-toggle-sidebar');
+        return emit('modu-fo-toggle-sidebar');
       // 개발도구 섹션 토글
       } else if (cmd === 'nav-toggle-devTools') {
         uiState.devToolsOpen = !uiState.devToolsOpen;
@@ -123,7 +123,7 @@ window.foAppSidebar = {
     /* navTo — 이동 */
     const navTo = (menuId) => {
       props.navigate(menuId, { replace: true });
-      emit('app-close-mobile');
+      emit('modu-fo-close-mobile');
     };
 
     // ===== [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) ====================

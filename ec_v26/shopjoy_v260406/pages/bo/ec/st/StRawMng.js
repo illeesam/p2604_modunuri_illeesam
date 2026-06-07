@@ -5,7 +5,9 @@ window.StRawMng = {
     navigate:     { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
+
     /* ##### [01] 초기 변수 정의 ################################################## */
+
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
@@ -16,6 +18,7 @@ window.StRawMng = {
     });
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
     /* handleBtnAction — 버튼 액션 dispatch */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ StRawMng.js : handleBtnAction -> ', cmd, param);
@@ -62,6 +65,7 @@ window.StRawMng = {
     };
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -96,6 +100,7 @@ window.StRawMng = {
 const raws = reactive([]);
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
@@ -325,6 +330,7 @@ const raws = reactive([]);
     ];
 
   /* ##### [06] return (템플릿 노출) ############################################## */
+
   return {
       columns,
       uiState, handleDateRangeChange,

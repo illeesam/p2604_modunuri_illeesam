@@ -9,7 +9,9 @@ window.SyUserDtl = {
     reloadTrigger: { type: Number, default: 0 },              // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
+
     /* ##### [01] 초기 변수 정의 #################################################### */
+
     const { reactive, computed, watch, onMounted, ref } = Vue;
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
@@ -41,6 +43,7 @@ window.SyUserDtl = {
     const deptModal = reactive({ show: false });
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ SyUserDtl.js : handleBtnAction -> ', cmd, param);
@@ -92,7 +95,9 @@ window.SyUserDtl = {
         console.warn('[fnCallbackModal] unknown cmd:', cmd);
       }
     };
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+
     /* handleLoadDetail — 상세 조회 */
     const handleLoadDetail = async () => {
       if (cfIsNew.value) { return; }
@@ -183,6 +188,7 @@ window.SyUserDtl = {
     });
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+
     /* fnRoleTypeBadge — 역할 유형 배지 */
     const fnRoleTypeBadge = (t) => ({
       '시스템': 'badge-purple', '업무': 'badge-blue', '기타': 'badge-gray',
@@ -235,6 +241,7 @@ window.SyUserDtl = {
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
+
     return {
       columns,
       uiState, codes, form, errors, addrDetailRef, deptModal,             // 상태 / 데이터

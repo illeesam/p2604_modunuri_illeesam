@@ -14,7 +14,9 @@ window.PmCacheDtl = {
   setup(props) {
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
     /* ##### [01] 초기 변수 정의 ################################################## */
+
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ PmCacheDtl.js : handleBtnAction -> ', cmd, param);
@@ -144,7 +146,9 @@ window.PmCacheDtl = {
     ]);
     // ===== 공통코드 로딩 ===================================================
     /* 캐시(충전금) fnLoadCodes */
+
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -196,7 +200,9 @@ window.PmCacheDtl = {
 
     // ===== 저장 (등록/수정) ================================================
     /* 캐시(충전금) 저장 */
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+
     /* handleSave — 저장 */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
@@ -269,7 +275,9 @@ window.PmCacheDtl = {
     ];
 
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - 기본정보 영역 ================
+
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+
     // --- [컬럼 정의] ---
     columns.baseForm = [
       { key: 'memberId',    label: '회원ID', type: 'slot', name: 'memberId', required: true },
@@ -286,7 +294,9 @@ window.PmCacheDtl = {
     ];
 
     // ===== setup() return =================================================
+
     /* ##### [06] return (템플릿 노출) ############################################## */
+
     return {
       coUtil,  // 템플릿 cofAnd 접근용
       columns,

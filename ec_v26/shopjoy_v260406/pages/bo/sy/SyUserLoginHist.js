@@ -8,7 +8,9 @@ window.SyUserLoginHist = {
     showConfirm:  { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
   },
   setup(props) {
+
     /* ##### [01] 초기 변수 정의 #################################################### */
+
     const { reactive, computed, onMounted } = Vue;
 
     /* ===== 검색조건 + UI 상태 (uiState 가 검색 파라미터 역할까지 겸함) ===== */
@@ -43,6 +45,7 @@ window.SyUserLoginHist = {
     const allExpanded     = reactive({ value: false });
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ SyUserLoginHist.js : handleBtnAction -> ', cmd, param);
@@ -106,6 +109,7 @@ window.SyUserLoginHist = {
     };
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+
     /* onDateRangeChange — 기간 옵션 변경 */
     const onDateRangeChange = () => {
       boUtil.bofApplyDateRange(searchParam);
@@ -220,6 +224,7 @@ window.SyUserLoginHist = {
     };
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+
     const cfCurrentList = computed(() => searchParam.activeTab==='log' ? logs : tokens);
 
     /* fnResultBadge — 로그인결과 배지 */
@@ -350,6 +355,7 @@ window.SyUserLoginHist = {
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
+
     return {
       columns,
       searchParam, codes, logGridPager, tabCounts, histTabs, cfCurrentList, allExpanded,                       // 상태 / 데이터

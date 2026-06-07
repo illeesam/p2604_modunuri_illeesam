@@ -6,7 +6,9 @@ window.BlogEdit = {
     dtlId:    { type: String,   default: null },          // 대상 ID
   },
   setup(props) {
+
     /* ##### [01] 초기 변수 정의 ################################################## */
+
     const { ref, computed, reactive, onMounted, watch } = Vue;
     const showToast            = window.foApp.showToast;  // 토스트 알림
 
@@ -24,6 +26,7 @@ window.BlogEdit = {
     const errors = reactive({});
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ BlogEdit.js : handleBtnAction -> ', cmd, param);
@@ -60,7 +63,9 @@ window.BlogEdit = {
     ];
 
     /* FoFormArea columns 정의 */
+
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+
     // --- [컬럼 정의] ---
     const columns = {};
     columns.baseForm = [
@@ -135,6 +140,7 @@ window.BlogEdit = {
     });
 
     /* ##### [06] return (템플릿 노출) ############################################## */
+
     return {
       columns,
       uiState, codes,                                                  // 상태

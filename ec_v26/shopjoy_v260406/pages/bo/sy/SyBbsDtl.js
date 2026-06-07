@@ -9,7 +9,9 @@ window.SyBbsDtl = {
     reloadTrigger: { type: Number, default: 0 },              // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
   },
   setup(props) {
+
     /* ##### [01] 초기 변수 정의 #################################################### */
+
     const { reactive, computed, onMounted, ref, watch } = Vue;
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
@@ -50,6 +52,7 @@ window.SyBbsDtl = {
     const showBbmModal = ref(false);
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ SyBbsDtl.js : handleBtnAction -> ', cmd, param);
@@ -117,7 +120,9 @@ window.SyBbsDtl = {
         console.warn('[fnCallbackModal] unknown cmd:', cmd);
       }
     };
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+
     /* onBbmSelect — 게시판 선택 결과 적용 */
     const onBbmSelect = (b) => {
       showBbmModal.value = false;
@@ -205,6 +210,7 @@ window.SyBbsDtl = {
     });
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+
     // 사이트명 폼 (cols=3, 1열만 차지 — 다른 필드와 동일 폭)
     const columns = {};
     columns.siteForm = [
@@ -249,6 +255,7 @@ window.SyBbsDtl = {
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
+
     return {
       columns,
       uiState, codes, form, errors, showBbmModal, dtlId,                            // 상태 / 데이터

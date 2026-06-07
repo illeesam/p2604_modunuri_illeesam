@@ -533,6 +533,7 @@ window.BoUserSelectModal = {
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
     /* ##### [01] 초기 변수 정의 #################################################### */
+
     const depts = reactive([]);                          // 부서 전체
     const deptCounts = reactive({});                     // 부서별 사용자 카운트
     const expanded = reactive(new Set());                // 트리 펼침 상태
@@ -546,6 +547,7 @@ window.BoUserSelectModal = {
     const userList = reactive([]);                       // 현재 페이지 사용자 목록
 
     /* ##### [02] 부서 트리 (재귀 빌드) ############################################## */
+
     /* cfTree — BoDeptTreeNode 가 받는 단일 루트 노드 ("전체") */
     const cfTree = computed(() => {
       const searchVal = uiState.deptSearchValue.trim().toLowerCase();
@@ -562,6 +564,7 @@ window.BoUserSelectModal = {
     });
 
     /* ##### [03] 데이터 조회 ######################################################## */
+
     /* fnBuildPagerNums — 페이지 번호 배열 생성 */
     const fnBuildPagerNums = () => {
       const c = pager.pageNo, l = pager.pageTotalPage, s = Math.max(1, c - 2), e = Math.min(l, s + 4);
@@ -623,6 +626,7 @@ window.BoUserSelectModal = {
     watch(() => props.reloadTrigger, () => { if (props.reloadTrigger) handleSearchList(); });
 
     /* ##### [04] 선택 처리 ######################################################### */
+
     /* handlePickUser — 단건 선택 → 즉시 emit + 모달 닫기 */
     const handlePickUser = (u) => {
       emit('select', [u]);
@@ -653,6 +657,7 @@ window.BoUserSelectModal = {
     const onSizeChange = () => { pager.pageNo = 1; handleSearchUsers(); };
 
     /* ##### [05] dispatch ########################################################## */
+
     /* handleBtnAction — 버튼 액션 dispatch */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ BoUserSelectModal : handleBtnAction -> ', cmd, param);
@@ -693,6 +698,7 @@ window.BoUserSelectModal = {
     };
 
     /* ##### [06] 컬럼 정의 ######################################################### */
+
     /* baseSearchColumns — 검색 영역 컬럼 */
     const baseSearchColumns = [
       { key: 'searchValue', label: '검색어', type: 'text', placeholder: '이름 / 로그인ID / 이메일 검색' },
@@ -6928,6 +6934,7 @@ window.BoExcelUploadModal = {
     const { ref, reactive, computed } = Vue;
 
     /* ##### [01] 초기 변수 정의 #################################################### */
+
     const tab = ref('upload');               // 'upload' | 'desc'
     const rows = ref([]);                    // 미리보기 행 [{ ...col, _exists, _err }]
     const fileName = ref('');                // 선택된 파일명
@@ -7090,6 +7097,7 @@ window.BoExcelUploadModal = {
     fnLoadSearchCodes();
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
     /* handleBtnAction — 버튼/액션 dispatch (cmd: '{영역}-{기능}'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = async (cmd, param = {}) => {
       console.log(' ■■ BoExcelUploadModal : handleBtnAction -> ', cmd, param);
@@ -7347,6 +7355,7 @@ window.BoExcelUploadModal = {
     };
 
     /* ##### [03] 내장 사용 함수 (다운로드 / 업로드 / 점검 핸들러) ##################### */
+
     /* onDownloadSample — 빈 헤더 템플릿 csv 생성 (클라이언트 사이드, 파일에서 메타 추출 후 사용 가능) */
     const onDownloadSample = () => {
       if (!cfCols.value.length) {
@@ -7691,6 +7700,7 @@ window.BoExcelUploadModal = {
     };
 
     /* ##### [04] 라이프사이클 ##################################################### */
+
     Vue.onMounted(() => {
       fnLoadCodes();
       fnLoadDomainMeta(); // 마운트 시 기본 도메인 메타 로드
@@ -7710,6 +7720,7 @@ window.BoExcelUploadModal = {
     });
 
     /* ##### [06] return (템플릿 노출) ############################################## */
+
     return {
       tab, rows, fileName, loading, codesMap, summary, inspect,            // 상태 / 데이터
       cfCols, cfKeyField, cfHasRows, cfValidRows, cfTitle, cfLabel,        // computed

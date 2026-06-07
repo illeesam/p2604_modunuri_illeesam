@@ -8,7 +8,9 @@ window.PmDiscntMng = {
   setup(props) {
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
     /* ##### [01] 초기 변수 정의 ################################################## */
+
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ PmDiscntMng.js : handleBtnAction -> ', cmd, param);
@@ -97,7 +99,9 @@ window.PmDiscntMng = {
 
     // ===== 공통코드 로딩 ===================================================
     /* 할인 fnLoadCodes */
+
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
@@ -125,7 +129,9 @@ window.PmDiscntMng = {
     };
 
     /* 할인 onSort */
+
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
+
     /* onSort — 정렬 */
     const onSort = (key) => {
       if (uiState.sortKey === key) {
@@ -301,6 +307,7 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
     ];
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+
     // 기본 그리드
     columns.baseGrid = [
       { key: 'discntNm',       label: '할인명', sortKey: 'nm', link: true,
@@ -318,6 +325,7 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
+
     return {
       columns, uiStateDetail, selectedId: computed(() => uiStateDetail.selectedId), discounts, uiState, codes, searchParam, onDateRangeChange: handleDateRangeChange, cfSiteNm, baseGridPager, fnTypeBadge, fnStatusBadge, onSearch, onReset, setPage, onSizeChange, handleDelete, cfDetailEditId, loadView, handleLoadDetail, openNew, closeDetail, inlineNavigate, cfIsViewMode, cfDetailKey, exportExcel, onSort, sortIcon, handleBtnAction, handleSelectAction, handleGridCellAction,
       get tabMode() { return uiState.tabMode; }, set tabMode(v) { uiState.tabMode = v; } };
