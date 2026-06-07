@@ -219,6 +219,41 @@ PK: attach_grp_id (ATG + timestamp + random)
 - 파일 업로드는 비동기 처리 권장 (대용량 동영상)
 - 동영상 변환은 배경 작업 스케줄러에서 처리 (장시간 소요)
 
+## 9. 프론트엔드 공통 컴포넌트 (BaseAttachGrp / BaseAttachOne)
+
+첨부파일 UI 는 공용 컴포넌트 두 개로 통일한다 — [components/comp/BaseComp.js](../../../components/comp/BaseComp.js).
+
+| 컴포넌트 | 태그 | 용도 |
+|---|---|---|
+| `BaseAttachGrp` | `<base-attach-grp>` | 다중 첨부(목록형) — `attachGrpId` v-model, 업로드/삭제/드래그정렬/썸네일 |
+| `BaseAttachOne` | `<base-attach-one>` | 단일 이미지(프로필 등) — 박스형 미리보기 + 변경/삭제 |
+
+### 9.1 주요 props
+
+| prop | 타입 | 기본 | 설명 |
+|---|---|---|---|
+| `modelValue` | String\|null | null | attachGrpId(grp) / attachGrpId(one) — v-model |
+| `refId` | String | '' | 참조 ID 표시(예: `NOTICE-1`) — grp 전용 |
+| `showToast` | Function | noop | 토스트 함수 |
+| `grpCode` | String | 'common' | 업무 코드(businessCode) |
+| `grpNm` | String | '첨부파일' | 그룹 이름 |
+| `maxCount` | Number | 10 | 최대 첨부 개수 — grp 전용 |
+| `maxSizeMb` | Number | 10(grp)/5(one) | 파일당 최대 MB |
+| `allowExt` | String | '*'(grp) | 허용 확장자(쉼표 구분) |
+| `readonly` | Boolean | false | **보기(view) 모드 — 업로드/삭제/정렬 컨트롤 숨김** ⭐ |
+| `displayMode` | String | 'list' | grp: 'list'\|'image' |
+
+### 9.2 `readonly` (보기/수정 모드 분리) ⭐ (2026-06-08)
+
+상세(Dtl)의 보기/수정 모드(`dtlMode`/`cfReadonly`/`cfDtlMode`)를 첨부 영역에도 그대로 전달한다.
+
+- **보기모드(`readonly=true`) 숨김**: `📎 파일첨부` 버튼·하단 안내, 행별 `✕` 삭제, 드래그 핸들(`⠿`)·`draggable`·정렬, 이미지 모드 `📷 변경`/`✕ 삭제`·박스 클릭 업로드.
+- **보기모드 유지(노출)**: 파일 목록 + 다운로드(⬇)·팝업보기(↗)·썸네일 미리보기.
+- **이중 방어**: 템플릿 `v-if="!readonly"` + setup 의 `openPicker`/`removeFile`/`onDrop` 첫 줄 `if (props.readonly) return;` 가드.
+- **사용처**: `:readonly="cfReadonly"`(또는 `cfDtlMode`). 항상-보기 FO 화면은 `:readonly="true"`, FO 작성 폼은 미지정(편집).
+- ❌ 첨부 컴포넌트를 `v-if="!cfDtlMode"` 로 통째 숨기면 보기모드에서 목록까지 사라짐 → **`:readonly` 로 컨트롤만 숨기고 목록은 유지**.
+- 적용: CmNoticeDtl·SyBbsDtl·SyContactDtl(내용·답변)·SyUserDtl·MyContact(FO). UX 정책 → [base/base.UX-admin.md](../base/base.UX-admin.md) §6.9.
+
 ## 구현 참조
 
 | 항목 | 클래스 |
@@ -243,3 +278,4 @@ PK: attach_grp_id (ATG + timestamp + random)
 | | - 파일 검증, 저장 정책 |
 | | - 동영상 자동 변환 & 썸네일 생성 |
 | | - HTTP Range 요청 스트리밍 지원 |
+| 2026-06-08 | §9 프론트 공통 컴포넌트(BaseAttachGrp/One) props + `readonly` 보기/수정 모드 분리 추가 |

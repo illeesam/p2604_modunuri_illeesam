@@ -23,6 +23,7 @@
      maxCount    : 최대 첨부 개수 (기본 10)
      maxSizeMb   : 파일당 최대 크기 MB (기본 10)
      allowExt    : 허용 확장자 문자열, 쉼표 구분 (기본 '*' = 전체)
+     readonly    : 보기(view) 모드 (Boolean, 기본 false) — 파일첨부/삭제(✕)/드래그정렬 숨김, 다운로드·미리보기 보기 액션만 노출
    Emits:
      update:modelValue : 최초 첨부 시 생성된 attachGrpId 반환
  ─────────────────────────────────────────── */
@@ -30,7 +31,6 @@ window.BaseAttachGrp = {
   name: 'BaseAttachGrp',
   props: {
     modelValue: { default: null },
-    boData:     { default: null },   // 하위호환용 (미사용)
     refId:      { default: '' },
     showToast:  { type: Function, default: () => {} },
     grpCode:    { default: 'common' },
@@ -38,6 +38,7 @@ window.BaseAttachGrp = {
     maxCount:   { default: 10 },
     maxSizeMb:  { default: 10 },
     allowExt:   { default: '*' },
+    readonly:   { type: Boolean, default: false },  // 보기(view) 모드: 업로드/삭제/정렬 숨김, 보기 액션만 노출
     displayMode: { default: 'list' },  // 'list' | 'image' (image: 단일 프로필 이미지 박스 UI)
     width:      { default: '120px' },  // displayMode='image' 일 때 박스 폭
     height:     { default: '120px' },  // displayMode='image' 일 때 박스 높이
@@ -123,6 +124,7 @@ window.BaseAttachGrp = {
 
     /* openPicker */
     const openPicker = () => {
+      if (props.readonly) return;
       if (files.length >= props.maxCount) {
         props.showToast(`최대 ${props.maxCount}개까지 첨부 가능합니다.`, 'warning');
         return;
@@ -217,6 +219,7 @@ window.BaseAttachGrp = {
 
     /* removeFile */
     const removeFile = async (attachId) => {
+      if (props.readonly) return;
       try {
         await window.coApiSvc.cmAttach.deleteFile(attachId);
       } catch (err) {
@@ -286,6 +289,7 @@ window.BaseAttachGrp = {
     const onDrop = async (toIdx) => {
       const from = dragState.fromIdx;
       dragState.fromIdx = null;
+      if (props.readonly) return;
       if (from === null || from === toIdx) return;
       const moved = files.splice(from, 1)[0];
       files.splice(toIdx, 0, moved);
@@ -315,12 +319,12 @@ window.BaseAttachGrp = {
   <input ref="fileInputRef" type="file" :accept="cfAcceptAttr" :multiple="displayMode!=='image' && maxCount>1" style="display:none;" @change="onFileChange" @click.stop />
   <!-- ============= [image 모드] 단일 프로필 이미지 박스 UI ============= -->
   <template v-if="displayMode==='image'">
-    <!-- 이미지 미리보기 박스 -->
-    <div @click.prevent.stop="handleBtnAction('attach-open-picker')"
-      :style="{width:width,height:height,border:'2px dashed #e0e0e0',borderRadius:'10px',overflow:'hidden',cursor:'pointer',background:'#fafafa',display:'flex',alignItems:'center',justifyContent:'center',position:'relative',transition:'border-color .15s'}"
-      @mouseenter="e=>e.currentTarget.style.borderColor='#e8587a'"
+    <!-- 이미지 미리보기 박스 (보기 모드에서는 클릭 비활성) -->
+    <div @click.prevent.stop="readonly ? null : handleBtnAction('attach-open-picker')"
+      :style="{width:width,height:height,border:'2px dashed #e0e0e0',borderRadius:'10px',overflow:'hidden',cursor:readonly?'default':'pointer',background:'#fafafa',display:'flex',alignItems:'center',justifyContent:'center',position:'relative',transition:'border-color .15s'}"
+      @mouseenter="e=>{ if(!readonly) e.currentTarget.style.borderColor='#e8587a'; }"
       @mouseleave="e=>e.currentTarget.style.borderColor='#e0e0e0'"
-      :title="(files[0] && files[0].fileNm) || '클릭하여 이미지 선택'">
+      :title="(files[0] && files[0].fileNm) || (readonly ? '' : '클릭하여 이미지 선택')">
       <span v-if="uiState.loading || uiState.uploading" style="font-size:22px;">
         ⏳
       </span>
@@ -331,8 +335,8 @@ window.BaseAttachGrp = {
         👤
       </span>
     </div>
-    <!-- 버튼 -->
-    <div style="display:flex;gap:6px;">
+    <!-- 버튼 (보기 모드에서는 숨김) -->
+    <div v-if="!readonly" style="display:flex;gap:6px;">
       <button type="button" @click.prevent.stop="handleBtnAction('attach-open-picker')" :disabled="uiState.uploading"
         style="font-size:11px;padding:3px 10px;border:1px solid #d9d9d9;border-radius:5px;background:#fff;cursor:pointer;color:#555;transition:all .15s;"
         @mouseenter="e=>{e.currentTarget.style.borderColor='#e8587a';e.currentTarget.style.color='#e8587a';}"
@@ -346,7 +350,7 @@ window.BaseAttachGrp = {
         ✕ 삭제
       </button>
     </div>
-    <span style="font-size:10px;color:#bbb;">
+    <span v-if="!readonly" style="font-size:10px;color:#bbb;">
       {{ allowExt }} / 최대 {{ maxSizeMb }}MB
     </span>
     <!-- 저장 기준정보 (이미지 모드: 박스 아래 세로 배치) -->
@@ -387,19 +391,19 @@ window.BaseAttachGrp = {
   <!-- 파일 목록 -->
   <div v-if="files.length" style="display:flex;flex-direction:column;gap:5px;margin-bottom:10px;">
     <div v-for="(f, idx) in files" :key="f.attachId"
-      draggable="true"
-      @dragstart="onDragStart(idx)"
-      @dragover.prevent="onDragOver"
-      @drop.prevent="onDrop(idx)"
-      style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:#fff;border:1px solid #f0f0f0;border-radius:6px;transition:background .1s;cursor:grab;"
+      :draggable="!readonly"
+      @dragstart="readonly ? null : onDragStart(idx)"
+      @dragover.prevent="readonly ? null : onDragOver"
+      @drop.prevent="readonly ? null : onDrop(idx)"
+      :style="'display:flex;align-items:center;gap:8px;padding:7px 10px;background:#fff;border:1px solid #f0f0f0;border-radius:6px;transition:background .1s;cursor:' + (readonly ? 'default' : 'grab') + ';'"
       @mouseenter="e=>e.currentTarget.style.background='#fff8f9'"
       @mouseleave="e=>e.currentTarget.style.background='#fff'">
       <!-- 순서 번호 -->
       <span style="flex-shrink:0;width:16px;font-size:10px;color:#ccc;text-align:center;line-height:1;">
         {{ idx+1 }}
       </span>
-      <!-- 드래그 핸들 -->
-      <span style="flex-shrink:0;font-size:12px;color:#ccc;cursor:grab;line-height:1;" title="드래그하여 순서 변경">
+      <!-- 드래그 핸들 (보기 모드에서는 숨김) -->
+      <span v-if="!readonly" style="flex-shrink:0;font-size:12px;color:#ccc;cursor:grab;line-height:1;" title="드래그하여 순서 변경">
         ⠿
       </span>
       <span style="font-size:15px;flex-shrink:0;line-height:1;">
@@ -446,7 +450,7 @@ window.BaseAttachGrp = {
       <span style="font-size:11px;color:#bbb;flex-shrink:0;white-space:nowrap;">
         {{ fnFmtSize(f.fileSize) }}
       </span>
-      <button @click.stop="handleSelectAction('attach-row-remove', f.attachId)" title="삭제"
+      <button v-if="!readonly" @click.stop="handleSelectAction('attach-row-remove', f.attachId)" title="삭제"
         style="flex-shrink:0;width:18px;height:18px;border:none;background:#f0f0f0;border-radius:50%;cursor:pointer;font-size:10px;color:#888;display:inline-flex;align-items:center;justify-content:center;padding:0;line-height:1;transition:background .1s;"
         @mouseenter="e=>e.currentTarget.style.background='#fde8e8'"
         @mouseleave="e=>e.currentTarget.style.background='#f0f0f0'">
@@ -466,8 +470,8 @@ window.BaseAttachGrp = {
     </span>
     첨부된 파일이 없습니다.
   </div>
-  <!-- 하단 버튼 + 안내 -->
-  <div style="display:flex;align-items:center;gap:10px;">
+  <!-- 하단 버튼 + 안내 (보기 모드에서는 숨김) -->
+  <div v-if="!readonly" style="display:flex;align-items:center;gap:10px;">
     <button @click="handleBtnAction('attach-open-picker')" :disabled="uiState.uploading" type="button"
       style="display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border:1px solid #d9d9d9;border-radius:6px;background:#fff;cursor:pointer;font-size:12px;color:#555;font-weight:500;transition:all .15s;white-space:nowrap;"
       @mouseenter="e=>{if(!uiState.uploading){e.currentTarget.style.borderColor='#e8587a';e.currentTarget.style.color='#e8587a';}}"
@@ -531,6 +535,7 @@ window.BaseAttachOne = {
     grpNm:       { default: '첨부파일' },
     maxSizeMb:   { default: 5 },
     allowExt:    { default: 'jpg,jpeg,png,gif,webp' },
+    readonly:    { type: Boolean, default: false },  // 보기(view) 모드: 변경/삭제 숨김, 미리보기만 노출
     width:       { default: '120px' },
     height:      { default: '120px' },
   },
@@ -577,7 +582,7 @@ window.BaseAttachOne = {
     watch(() => props.modelValue, v => { if (v) loadFile(v); });
 
     /* openPicker */
-    const openPicker = () => { if (!uiState.uploading) inputRef.value?.click(); };
+    const openPicker = () => { if (props.readonly) return; if (!uiState.uploading) inputRef.value?.click(); };
 
     /* onFileChange */
     const onFileChange = async (e) => {
@@ -622,6 +627,7 @@ window.BaseAttachOne = {
 
     /* removeFile */
     const removeFile = async () => {
+      if (props.readonly) return;
       if (!file.attachId) return;
       try {
         await window.coApiSvc.cmAttach.deleteFile(file.attachId);
@@ -640,12 +646,12 @@ window.BaseAttachOne = {
   template: /* html */`
 <div style="display:inline-flex;flex-direction:column;align-items:center;gap:8px;">
   <input ref="inputRef" type="file" style="display:none;" :accept="allowExt.split(',').map(e=>'.'+e.trim()).join(',')" @change="onFileChange" @click.stop />
-  <!-- 이미지 미리보기 박스 -->
-  <div @click.prevent.stop="handleBtnAction('attach-open-picker')"
-    :style="{width:width,height:height,border:'2px dashed #e0e0e0',borderRadius:'10px',overflow:'hidden',cursor:'pointer',background:'#fafafa',display:'flex',alignItems:'center',justifyContent:'center',position:'relative',transition:'border-color .15s'}"
-    @mouseenter="e=>e.currentTarget.style.borderColor='#e8587a'"
+  <!-- 이미지 미리보기 박스 (보기 모드에서는 클릭 비활성) -->
+  <div @click.prevent.stop="readonly ? null : handleBtnAction('attach-open-picker')"
+    :style="{width:width,height:height,border:'2px dashed #e0e0e0',borderRadius:'10px',overflow:'hidden',cursor:readonly?'default':'pointer',background:'#fafafa',display:'flex',alignItems:'center',justifyContent:'center',position:'relative',transition:'border-color .15s'}"
+    @mouseenter="e=>{ if(!readonly) e.currentTarget.style.borderColor='#e8587a'; }"
     @mouseleave="e=>e.currentTarget.style.borderColor='#e0e0e0'"
-    :title="file.fileNm || '클릭하여 이미지 선택'">
+    :title="file.fileNm || (readonly ? '' : '클릭하여 이미지 선택')">
     <span v-if="uiState.loading || uiState.uploading" style="font-size:22px;">
       ⏳
     </span>
@@ -656,8 +662,8 @@ window.BaseAttachOne = {
       👤
     </span>
   </div>
-  <!-- 버튼 -->
-  <div style="display:flex;gap:6px;">
+  <!-- 버튼 (보기 모드에서는 숨김) -->
+  <div v-if="!readonly" style="display:flex;gap:6px;">
     <button type="button" @click.prevent.stop="handleBtnAction('attach-open-picker')" :disabled="uiState.uploading"
       style="font-size:11px;padding:3px 10px;border:1px solid #d9d9d9;border-radius:5px;background:#fff;cursor:pointer;color:#555;transition:all .15s;"
       @mouseenter="e=>{e.currentTarget.style.borderColor='#e8587a';e.currentTarget.style.color='#e8587a';}"
@@ -671,7 +677,7 @@ window.BaseAttachOne = {
       ✕ 삭제
     </button>
   </div>
-  <span style="font-size:10px;color:#bbb;">
+  <span v-if="!readonly" style="font-size:10px;color:#bbb;">
     {{ allowExt }} / 최대 {{ maxSizeMb }}MB
   </span>
   <!-- 저장 기준정보 (그룹명/businessCode/attachGrpId) -->

@@ -532,7 +532,7 @@ window.FoGrid = {
     showSave:   { type: Boolean, default: false },
     saveLabel:  { type: String,  default: '저장' },
     rowActions: { type: Boolean, default: false },
-    loading:    { type: Boolean, default: false },
+    loading:    { type: Boolean, default: false },   // 조회 중: 툴바 '⏳ 조회 중…' + 기존 행 위 오버레이 + 빈 목록 문구 전환
     emptyText:  { type: String, default: '데이터가 없습니다.' },
     bare:       { type: Boolean, default: false },   // true=card/toolbar/pager 없이 <table>만
     minWidth:   { type: String,  default: '' },      // 가로 스크롤용 table min-width
@@ -636,6 +636,7 @@ window.FoGrid = {
       <span class="fo-grid-count">
         {{ countText != null ? countText : ('총 ' + cfTotal + '건') }}
       </span>
+      <span v-if="loading" style="margin-left:8px;font-size:12px;color:var(--accent);font-weight:400;">⏳ 조회 중…</span>
     </span>
     <div style="margin-left:auto;display:flex;gap:6px;">
       <slot name="toolbar-actions">
@@ -645,7 +646,11 @@ window.FoGrid = {
       </button>
     </div>
   </div>
-  <div class="fo-grid-scroll">
+  <div class="fo-grid-scroll" style="position:relative;">
+    <!-- 조회 중 오버레이 (기존 행 위에 표시 — 재조회/페이지 이동 피드백). 행이 없을 땐 빈행 문구로 안내 -->
+    <div v-if="loading && rows.length" style="position:absolute;inset:0;z-index:5;background:rgba(255,255,255,.55);display:flex;align-items:flex-start;justify-content:center;padding-top:40px;pointer-events:none;">
+      <span style="font-size:13px;color:var(--accent);background:#fff;border:1px solid var(--border);border-radius:14px;padding:4px 14px;box-shadow:0 2px 8px rgba(0,0,0,.08);">⏳ 조회 중…</span>
+    </div>
     <table class="fo-grid-table" :style="cfTableStyle">
       <thead>
         <tr>
@@ -745,7 +750,8 @@ window.FoGrid = {
         </template>
         <tr v-if="!rows.length">
           <td :colspan="cfColspan" class="fo-grid-empty">
-            {{ emptyText }}
+            <span v-if="loading">⏳ 조회 중…</span>
+            <span v-else>{{ emptyText }}</span>
           </td>
         </tr>
       </tbody>

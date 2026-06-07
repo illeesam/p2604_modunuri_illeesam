@@ -360,6 +360,20 @@ Dtl 탭 뷰모드 중 **3열(`cols-3`) 또는 4열(`cols-4`)** 선택 시 max-wi
 - `cfDetailKey`(또는 Dtl `:key`)에 `dtlMode`/`openMode` 포함 → 모드 전환 시 재마운트(보기 데이터 → 편집 가능).
 - 적용(2026-06-04): SyBbs(기준)·SyAlarm·SyBbm·SyContact·SySite·**SyUser**. 동일 상태머신(`loadView`+`handleLoadDetail`+`dtlMode`) 보유 화면에 점진 확대.
 
+#### ⭐⭐ 첨부파일(BaseAttachGrp/BaseAttachOne) 보기/수정 모드 분리 (2026-06-08, 전체공통)
+
+상세(Dtl)의 **첨부파일 영역도 폼·내용과 동일하게 보기/수정 모드를 따른다.** 보기모드에서 업로드·삭제 컨트롤이 노출되면 보기모드가 깨진 것(§6.9 [저장] 노출 금지와 동일 취지).
+
+- **공통 컴포넌트가 `readonly` prop 으로 제어** — [components/comp/BaseComp.js](../../../components/comp/BaseComp.js) `BaseAttachGrp`·`BaseAttachOne` 에 `readonly: { type: Boolean, default: false }` 선언.
+- **보기모드(`readonly=true`)에서 숨기는 컨트롤**: `📎 파일첨부` 버튼 + 하단 `N/M개·최대MB` 안내, 행별 `✕` 삭제 버튼, 드래그 핸들(`⠿`)·`draggable`·정렬 드롭, 이미지 모드 `📷 변경`/`✕ 삭제` 버튼·박스 클릭 업로드.
+- **보기모드에서도 유지(노출)**: 파일 목록, 다운로드(⬇)·팝업보기(↗)·썸네일 미리보기 — **읽기 액션은 그대로**.
+- **이중 방어**: 템플릿 `v-if="!readonly"` 로 컨트롤을 숨기는 것에 더해 `openPicker`/`removeFile`/`onDrop` setup 함수 첫 줄에 `if (props.readonly) return;` 가드. (프로그램적 호출도 차단)
+- **사용처는 모드 computed 를 그대로 전달**: `:readonly="cfReadonly"`(또는 `cfDtlMode`). FO 의 항상-보기 화면(예: MyContact)은 `:readonly="true"`, FO 등록(작성) 폼(예: Contact)은 미지정(항상 편집).
+- ❌ 금지: `<base-attach-grp>` 를 `v-if="!cfDtlMode"` 로 통째 숨김 → 보기모드에서 첨부 **목록 자체가 사라짐**(영역 항상표시 원칙 위배). 반드시 `:readonly` 로 컨트롤만 숨기고 목록은 유지.
+- 적용(2026-06-08): CmNoticeDtl(`cfReadonly`)·SyBbsDtl·SyContactDtl(내용·답변)·SyUserDtl(`cfDtlMode`)·MyContact(FO, `true`). `BaseAttachGrp`/`BaseAttachOne` 쓰는 신규 Dtl 은 동일 적용.
+
+> 컴포넌트 props 상세 → [sy.14.파일첨부.md](../sy/sy.14.파일첨부.md).
+
 #### ⭐⭐ 행 전체 클릭 폐기 → 번호·첫 보이는 셀(link)만 보기 (2026-06-06, 전체공통 개정)
 
 **이전 "행 전체 클릭=보기" 정책을 폐기**한다. 행 어디나 클릭되면 손가락 커서가 행 전체에 떠 오인되고, 권한별 노출(보기/수정 분리)을 못 한다.

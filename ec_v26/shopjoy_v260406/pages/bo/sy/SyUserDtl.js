@@ -299,7 +299,8 @@ window.SyUserDtl = {
     <!-- ===== ■.■.■. 프로필 이미지: BaseAttachOne (단일 이미지 업로드) ============= -->
     <template #profile>
       <base-attach-one v-model="form.profileAttachId" grp-code="USER_PROFILE" grp-nm="프로필 이미지"
-        :max-size-mb="5" allow-ext="jpg,jpeg,png,gif,webp" width="120px" height="120px" :show-toast="showToast" />
+        :max-size-mb="5" allow-ext="jpg,jpeg,png,gif,webp" width="120px" height="120px" :show-toast="showToast"
+        :readonly="cfDtlMode" />
     </template>
   </bo-form-area>
   <!-- ===== □.□. 기본정보 폼 (주소/프로필 포함, 단일 BoFormArea) ================== -->

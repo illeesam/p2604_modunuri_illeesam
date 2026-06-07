@@ -887,6 +887,8 @@ notices.splice(0, notices.length, ...(d?.pageList || []));
 
 > **페이저 변수 명명**: 메인 그리드 컬럼명(`columns.XXX`) 유추 → `XXXPager` (예: `baseGridPager`, `listGridPager`, `userGridPager`). 상세 → [`sy.54.네이밍규칙.md`](sy.54.네이밍규칙.md) §페이저 변수 명명.
 
+> **`:loading` 조회 중 표시** ⭐ (2026-06-08): `<bo-grid :loading="uiState.loading">` 로 조회 상태 전달 시 — 툴바 `⏳ 조회 중…` + 기존 행 위 오버레이(재조회/페이지이동 피드백) + 빈 목록일 땐 `데이터가 없습니다.` 대신 `⏳ 조회 중…` 자동 전환. FoGrid 동일. `BoSearchArea` 의 `:loading`(조회 버튼 비활성)과 별개 — 조회 시작 시 둘 다 `true` 로 두면 자연스럽다. 컴포넌트 내부 구현이므로 화면은 `loading` reactive 만 토글.
+
 #### 4.8.2 cofDetail — 인라인 Dtl 패널
 
 ```js

@@ -168,7 +168,7 @@ window.CmNoticeDtl = {
   <div class="form-group" style="margin-top:12px;">
     <label class="form-label">첨부파일</label>
     <base-attach-grp :model-value="baseForm.attachGrpId" @update:model-value="baseForm.attachGrpId = $event"
-      :ref-id="cfAttachRefId" :show-toast="showToast"
+      :ref-id="cfAttachRefId" :show-toast="showToast" :readonly="cfReadonly"
       grp-code="NOTICE_ATTACH" grp-nm="공지 첨부파일"
       :max-count="5" :max-size-mb="10" allow-ext="jpg,png,gif,pdf,xlsx,docx" />
   </div>
