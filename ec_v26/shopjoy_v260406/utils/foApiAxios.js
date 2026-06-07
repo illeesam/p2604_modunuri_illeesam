@@ -40,6 +40,7 @@
   /* ── Request: 토큰 주입 + 기본 헤더 설정 + 로그 ── */
   inst.interceptors.request.use(function (cfg) {
     try { if (typeof global._showProgress === 'function') global._showProgress(true); } catch (_) {}
+    try { cfg._startAt = Date.now(); } catch (_) {}  /* 소요시간(duration) 계산용 시작시각 */
     try {
       cfg.headers = cfg.headers || {};
       /* Content-Type 기본값 설정 (이미 설정되어 있으면 유지) */
@@ -207,8 +208,10 @@
         }
       });
 
-      global.dispatchEvent(new CustomEvent('api-success', {
-        detail: { scope: 'fo', method: method, url: displayUrl, status: res.status, detail: detail, uiLabel: uiLabel, reqHeaders: reqHeaderInfo, resHeaders: resHeaderInfo },
+      var sDuration = resCfg._startAt ? (Date.now() - resCfg._startAt) : null;       /* 소요시간(ms) */
+      var sReqData = (resCfg.data != null ? resCfg.data : (resCfg.params != null ? resCfg.params : null)); /* 요청 본문/파라미터 */
+      global.dispatchEvent(new CustomEvent('api-response-success', {
+        detail: { scope: 'fo', method: method, url: displayUrl, status: res.status, data: res.data, reqData: sReqData, duration: sDuration, detail: detail, uiLabel: uiLabel, reqHeaders: reqHeaderInfo, resHeaders: resHeaderInfo },
       }));
     } catch (_) {}
     return res;
@@ -280,54 +283,10 @@
           });
         }
 
-        global.dispatchEvent(new CustomEvent('api-validation-error', {
-          detail: { scope: 'fo', method: (cfg.method || 'get').toUpperCase(), url: displayUrl, status: status || 0, message: errMsg, errorDetails: errorDetails, uiLabel: uiLabel, reqHeaders: errReqHeaderInfo, resHeaders: errResHeaderInfo },
-        }));
-      } catch (_) {}
-    }
-
-    /* 5xx / 네트워크 오류는 즉시 오류 페이지 알림 (401 은 refresh 시도 후 실패 시 onLogout 에서 처리) */
-    if ((status === 0 || !status || status >= 500) && !cfg._notified) {
-      cfg._notified = true;
-      try {
-        var errorUrl = cfg.url;
-        if (errorUrl && (errorUrl.includes('localhost') || errorUrl.includes('127'))) {
-          var errorPathMatch = errorUrl.match(/\/api(\/.*)?$/);
-          if (errorPathMatch) {
-            errorUrl = errorPathMatch[0];
-          }
-        }
-        var uiLabelE = getHdr(cfg.headers, 'x-ui-nm') + (getHdr(cfg.headers, 'x-cmd-nm') ? ' > ' + getHdr(cfg.headers, 'x-cmd-nm') : '');
-
-        // 요청 헤더에서 X- 정보 수집
-        var errReqHeadersE = cfg.headers || {};
-        var errReqHeaderInfoE = [];
-        (function collectReqHeaders(h) {
-          var keys = [];
-          try { keys = Object.keys(h); } catch (_) {}
-          keys.forEach(function (k) {
-            if (k.toLowerCase().startsWith('x-')) {
-              var v = getHdr(h, k);
-              if (v) errReqHeaderInfoE.push(k.toLowerCase() + ': ' + v);
-            }
-          });
-          var auth = getHdr(h, 'Authorization') || getHdr(h, 'authorization');
-          if (auth) errReqHeaderInfoE.push('authorization: ' + auth.slice(0, 7) + auth.slice(7, 12) + '...(' + auth.length + ')');
-        })(errReqHeadersE);
-
-        // 응답 헤더에서 X- 정보 수집
-        var errResHeadersE = (res && res.headers) || {};
-        var errResHeaderInfoE = [];
-        if (errResHeadersE && typeof errResHeadersE.forEach === 'function') {
-          errResHeadersE.forEach(function (val, key) {
-            if (key.toLowerCase().startsWith('x-')) {
-              errResHeaderInfoE.push(key + ': ' + val);
-            }
-          });
-        }
-
-        global.dispatchEvent(new CustomEvent('api-error', {
-          detail: { scope: 'fo', status: status || 0, url: errorUrl, message: err.message, method: (cfg.method || 'get').toUpperCase(), uiLabel: uiLabelE, reqHeaders: errReqHeaderInfoE, resHeaders: errResHeaderInfoE },
+        var eDuration = cfg._startAt ? (Date.now() - cfg._startAt) : null;            /* 소요시간(ms) */
+        var eReqData = (cfg.data != null ? cfg.data : (cfg.params != null ? cfg.params : null)); /* 요청 본문/파라미터 */
+        global.dispatchEvent(new CustomEvent('api-response-error', {
+          detail: { scope: 'fo', method: (cfg.method || 'get').toUpperCase(), url: displayUrl, status: status || 0, message: errMsg, data: res && res.data, reqData: eReqData, duration: eDuration, errorDetails: errorDetails, uiLabel: uiLabel, reqHeaders: errReqHeaderInfo, resHeaders: errResHeaderInfo },
         }));
       } catch (_) {}
     }
@@ -372,7 +331,7 @@
             try { global.foAuth.logout(); } catch (_) {}
           }
           try {
-            global.dispatchEvent(new CustomEvent('api-error', {
+            global.dispatchEvent(new CustomEvent('api-response-error', {
               detail: { scope: 'fo', status: 401, url: cfg.url, message: 'session expired' },
             }));
           } catch (_) {}

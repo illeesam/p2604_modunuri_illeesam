@@ -136,36 +136,16 @@
       return lines.join('\n');
     };
 
-    /* API Validation 에러 → toast 출력 (foAxios 에서 window.dispatchEvent('api-validation-error')) */
-    window.addEventListener('api-validation-error', (ev) => {
-      const d = ev.detail || {};
-      let msg = d.message || '오류가 발생했습니다.';
-      if (d.method && d.url && d.status) {
-        let title = `${d.method} ${d.url} ${d.status}`;
-        if (d.uiLabel) title += ` :: ${d.uiLabel}`;
-        msg = `${title}\n${msg}`;
-      }
-      let details = d.errorDetails || '';
-      const reqFmt = _fmtXHeaders(d.reqHeaders);
-      const resFmt = _fmtXHeaders(d.resHeaders);
-      if (reqFmt || resFmt) {
-        let headerInfo = '';
-        const _nd = new Date(); const _nts = _nd.getFullYear()+'-'+String(_nd.getMonth()+1).padStart(2,'0')+'-'+String(_nd.getDate()).padStart(2,'0')+' '+String(_nd.getHours()).padStart(2,'0')+':'+String(_nd.getMinutes()).padStart(2,'0')+':'+String(_nd.getSeconds()).padStart(2,'0');
-        if (reqFmt) headerInfo += '━━ 요청 헤더 ━━  ' + _nts + '\n' + reqFmt;
-        if (resFmt) headerInfo += (headerInfo ? '\n\n' : '') + '━━ 응답 헤더 ━━\n' + resFmt;
-        details = details ? headerInfo + '\n\n' + details : headerInfo;
-      }
-      showToast(msg, 'error', 0, details);
-    });
-
-    /* API 성공 → toast info 출력 (foAxios 에서 window.dispatchEvent('api-success')) */
-    window.addEventListener('api-success', (ev) => {
+    /* API 성공 → toast info 출력 (foAxios 에서 window.dispatchEvent('api-response-success')) */
+    window.addEventListener('api-response-success', (ev) => {
       const d = ev.detail || {};
       showToast(`${d.method} ${d.url} ${d.status}`, 'info', 3000, d.detail || '');
     });
 
-    /* API 에러 → 오류 페이지 이동 (baseAxios 계열에서 window dispatchEvent 호출) */
-    window.addEventListener('api-error', (ev) => {
+    /* API 에러 (foAxios 의 window.dispatchEvent('api-response-error')) — status 로 분기:
+       · 401 → error401 페이지 전환 / 500·네트워크 → error500 페이지 전환
+       · 그 외 4xx(검증 등) → toast 출력 (화면 유지) */
+    window.addEventListener('api-response-error', (ev) => {
       const d = ev.detail || {};
       const st = d.status;
       let label = '';
@@ -316,9 +296,49 @@
       return 'background:#f5f5f5;color:#555;';
     };
 
-    window.addEventListener('api-success', (ev) => { addFoApiLog(ev.detail || {}); });
-    window.addEventListener('api-validation-error', (ev) => { addFoApiLog({ ...(ev.detail || {}), _isErr: true }); });
-    window.addEventListener('api-error', (ev) => { addFoApiLog({ ...(ev.detail || {}), _isErr: true }); });
+    /* ── API 로그 hover 상세창 (행→상세창 사이 빈 공간 통과 허용: 지연 닫기) ── */
+    let _foApiLogCloseTimer = null;
+    /* onFoApiLogEnter — 행 hover 진입. 닫기 예약 취소 후 표시 */
+    const onFoApiLogEnter = (log) => {
+      if (_foApiLogCloseTimer) { clearTimeout(_foApiLogCloseTimer); _foApiLogCloseTimer = null; }
+      apiLogHoverDetail.value = log;
+    };
+    /* onFoApiLogLeave — 행/상세창 이탈. 즉시 닫지 않고 지연 → 빈 공간 통과 허용 */
+    const onFoApiLogLeave = () => {
+      if (_foApiLogCloseTimer) { clearTimeout(_foApiLogCloseTimer); }
+      _foApiLogCloseTimer = setTimeout(() => {
+        apiLogHoverDetail.value = null;
+        _foApiLogCloseTimer = null;
+      }, 200);
+    };
+    /* onFoApiLogDetailEnter — 상세창 hover 진입. 닫기 예약 취소(창 위에서는 유지) */
+    const onFoApiLogDetailEnter = () => {
+      if (_foApiLogCloseTimer) { clearTimeout(_foApiLogCloseTimer); _foApiLogCloseTimer = null; }
+    };
+    /* formatJsonData — 요청/응답 데이터를 보기 좋은 JSON 문자열로 (BO 동일) */
+    const formatJsonData = (data) => {
+      try {
+        if (data == null) return 'N/A';
+        if (typeof data === 'string') { return JSON.stringify(JSON.parse(data), null, 2); }
+        if (typeof data === 'object') { return JSON.stringify(data, null, 2); }
+        return String(data);
+      } catch (e) { return String(data); }
+    };
+    /* fnFoApiLogIndex — 상세창 #번호 (목록 맨 위가 최신 = 큰 번호) */
+    const fnFoApiLogIndex = (log) => {
+      const i = foApiLogs.findIndex(l => l === log);
+      return i >= 0 ? (foApiLogs.length - i) : '-';
+    };
+    /* fnFoApiLogBadgeStyle — 상태코드 배지 스타일(2xx 초록 / 그외 빨강). 속성값 && 회피용으로 setup 내 분리 */
+    const fnFoApiLogBadgeStyle = (status) => {
+      const ok = status >= 200 && status < 300;
+      const c = ok ? '#10b981' : '#ef4444';
+      const bg = ok ? '#ecfdf5' : '#fef2f2';
+      return `display:inline-block;padding:4px 8px;border-radius:2px;font-weight:700;font-size:11px;margin-left:4px;border:1px solid ${c};background:${bg};color:${c};`;
+    };
+
+    window.addEventListener('api-response-success', (ev) => { addFoApiLog(ev.detail || {}); });
+    window.addEventListener('api-response-error', (ev) => { addFoApiLog({ ...(ev.detail || {}), _isErr: true }); });
     /* 설정 드롭다운 바깥 클릭 시 닫기 */
     document.addEventListener('pointerdown', (e) => {
       if (!showSettings.value) return;
@@ -785,6 +805,7 @@
       foHomeComp, foProdListComp, foProdViewComp,
       foApiLogs, showApiLog, showSettings, apiLogLockedDetail, apiLogHoverDetail,
       clearFoApiLogs, foApiLogStatusClass, foApiLogMethodStyle,
+      onFoApiLogEnter, onFoApiLogLeave, onFoApiLogDetailEnter, formatJsonData, fnFoApiLogIndex, fnFoApiLogBadgeStyle,
       cfShowSidebar,
       onToggleApiLog: () => { showApiLog.value = !showApiLog.value; showSettings.value = false; },
       notFoundPageId: computed(() => {
@@ -1081,7 +1102,7 @@
       <div v-if="!foApiLogs.length" style="padding:24px;text-align:center;color:#ccc;font-size:13px;">API 호출 기록이 없습니다</div>
       <div v-for="log in foApiLogs" :key="log._seq"
         @click="apiLogLockedDetail = apiLogLockedDetail && apiLogLockedDetail._seq===log._seq ? null : log"
-        @mouseenter="apiLogHoverDetail=log" @mouseleave="apiLogHoverDetail=null"
+        @mouseenter="onFoApiLogEnter(log)" @mouseleave="onFoApiLogLeave()"
         style="padding:7px 12px;border-bottom:1px solid #f5f5f5;cursor:pointer;transition:background .12s;"
         :style="(apiLogLockedDetail && apiLogLockedDetail._seq===log._seq)?'background:#fffbf0;':log._isErr?'background:#fff5f5;':'background:#fff;'">
         <div style="display:flex;align-items:center;gap:5px;margin-bottom:2px;">
@@ -1095,6 +1116,57 @@
           <span v-if="log.duration" style="font-size:10px;color:#aaa;flex-shrink:0;">{{ log.duration }}ms</span>
           <span style="font-size:10px;color:#ccc;flex-shrink:0;">{{ log.ts ? log.ts.slice(11,19) : '' }}</span>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FO API LOG HOVER 상세창 (행 hover 시 패널 왼쪽에 표시. 클릭 펼침 없이 hover 전용 / BO 동일 3섹션 구조) -->
+  <div v-if="showApiLog && apiLogHoverDetail" @mouseenter="onFoApiLogDetailEnter" @mouseleave="onFoApiLogLeave()"
+    style="position:fixed;top:80px;right:440px;width:600px;max-height:80vh;background:#fff;border:2px solid #8b5cf6;border-radius:4px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:9991;font-size:11px;font-family:monospace;overflow:hidden;display:flex;flex-direction:column;">
+    <!-- 헤더 -->
+    <div style="padding:12px;background:linear-gradient(135deg,#f3f4f6 0%,#e5e7eb 100%);border-bottom:1px solid #d1d5db;flex-shrink:0;">
+      <div style="font-weight:700;color:#374151;font-size:12px;margin-bottom:6px;">📡 API 요청/응답 상세 <span style="color:#ef4444;margin-left:4px;">#{{ fnFoApiLogIndex(apiLogHoverDetail) }}</span></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+        <div style="flex:1;overflow:hidden;">
+          <div style="color:#374151;font-size:11px;word-break:break-all;line-height:1.5;">
+            <span style="color:#6b7280;font-weight:600;">{{ apiLogHoverDetail.method }}</span>
+            <span style="color:#6b7280;margin:0 4px;">:</span>
+            <span style="color:#374151;">{{ apiLogHoverDetail.url }}</span>
+          </div>
+        </div>
+        <span style="color:#6b7280;font-size:10px;white-space:nowrap;flex-shrink:0;">{{ apiLogHoverDetail.ts ? apiLogHoverDetail.ts.slice(11,19) : '' }}</span>
+      </div>
+    </div>
+    <!-- 상태 정보 -->
+    <div style="padding:8px 12px;background:#fafbfc;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;gap:16px;flex-shrink:0;">
+      <div>
+        <span style="color:#6b7280;font-size:10px;font-weight:600;">상태:</span>
+        <span :style="fnFoApiLogBadgeStyle(apiLogHoverDetail.status)">{{ apiLogHoverDetail.status }}</span>
+      </div>
+      <div v-if="apiLogHoverDetail.duration != null">
+        <span style="color:#6b7280;font-size:10px;font-weight:600;">소요시간:</span>
+        <span style="color:#374151;font-size:10px;margin-left:4px;">{{ apiLogHoverDetail.duration }}ms</span>
+      </div>
+    </div>
+    <!-- 요청/응답 데이터 -->
+    <div style="flex:1;overflow:hidden;display:grid;grid-template-rows:130px 1fr 2fr;gap:8px;padding:8px;background:#fff;">
+      <!-- Headers -->
+      <div style="display:flex;flex-direction:column;overflow:hidden;border:1px solid #8b5cf6;border-radius:2px;">
+        <div style="padding:4px 6px;background:#ede9fe;border-bottom:1px solid #8b5cf6;font-weight:600;color:#5b21b6;font-size:10px;display:flex;align-items:center;justify-content:space-between;">
+          <span>📋 Headers</span>
+          <span v-if="apiLogHoverDetail.uiLabel" style="color:#7c3aed;font-size:11px;font-weight:700;">{{ apiLogHoverDetail.uiLabel }}</span>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:6px 8px;background:#fafbfc;color:#374151;white-space:pre-wrap;word-break:break-word;line-height:1.8;font-size:10px;font-family:'Courier New',monospace;">{{ [].concat(apiLogHoverDetail.reqHeaders||[], apiLogHoverDetail.resHeaders||[]).join(String.fromCharCode(10)) || '-' }}</div>
+      </div>
+      <!-- Request -->
+      <div style="display:flex;flex-direction:column;overflow:hidden;border:1px solid #e5e7eb;border-radius:2px;">
+        <div style="padding:4px 6px;background:#f9fafb;border-bottom:1px solid #e5e7eb;font-weight:600;color:#6b7280;font-size:10px;">📤 Request</div>
+        <div style="flex:1;overflow-y:auto;padding:6px;background:#fafbfc;color:#374151;white-space:pre-wrap;word-break:break-word;line-height:1.4;font-size:10px;">{{ formatJsonData(apiLogHoverDetail.reqData) }}</div>
+      </div>
+      <!-- Response -->
+      <div style="display:flex;flex-direction:column;overflow:hidden;border:1px solid #e5e7eb;border-radius:2px;">
+        <div style="padding:4px 6px;background:#f9fafb;border-bottom:1px solid #e5e7eb;font-weight:600;color:#6b7280;font-size:10px;">📥 Response</div>
+        <div style="flex:1;overflow-y:auto;padding:6px;background:#fafbfc;color:#374151;white-space:pre-wrap;word-break:break-word;line-height:1.4;font-size:10px;">{{ formatJsonData(apiLogHoverDetail.data) }}</div>
       </div>
     </div>
   </div>

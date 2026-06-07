@@ -81,7 +81,7 @@ API 요청
           → 실패했던 원 요청 자동 재시도
   → 실패: modu-fo-accessToken / modu-fo-authUser 삭제
           → foAuth.logout() 호출
-          → CustomEvent('api-error', { scope:'fo', status:401 }) 발행
+          → CustomEvent('api-response-error', { scope:'fo', status:401 }) 발행
           → UI에서 로그인 화면으로 리다이렉트
 ```
 

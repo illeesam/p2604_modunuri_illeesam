@@ -77,7 +77,7 @@ API 요청
   → 성공: 신규 accessToken → localStorage modu-bo-accessToken 갱신
           → 실패했던 원 요청 자동 재시도
   → 실패: modu-bo-accessToken / modu-bo-authUser 삭제
-          → CustomEvent('api-error', { scope:'bo', status:401 }) 발행
+          → CustomEvent('api-response-error', { scope:'bo', status:401 }) 발행
           → UI에서 로그인 화면으로 리다이렉트
 ```
 

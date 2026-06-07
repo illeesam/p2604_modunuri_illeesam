@@ -9,7 +9,6 @@ window.SyUserMng = {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
-    const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
     const users = reactive([]);                    // 사용자 목록 (메인 그리드 데이터)
     const depts = reactive([]);                    // 부서 트리 (좌측 트리)
     const deptCounts = reactive({});               // 좌 부서 트리 노드별 사용자수 (검색조건 동기)
@@ -304,13 +303,11 @@ window.SyUserMng = {
       if (idx !== -1) { users.splice(idx, 1); }
       if (detailPanel.selectedId === u.userId) { resetDetailToNew(); }
       try {
-        const res = await boApiSvc.syUser.remove(u.userId, '사용자관리', '삭제');
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        await boApiSvc.syUser.remove(u.userId, '사용자관리', '삭제');
         if (showToast) { showToast('삭제되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
         if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
@@ -407,7 +404,7 @@ window.SyUserMng = {
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                // dispatch + 모달 통합 콜백
       cfTree, cfDetailEditId, cfIsViewMode, cfDetailKey,                 // computed
       fnRowStyle,                                                        // 헬퍼
-      inlineNavigate, showToast, showConfirm, setApiRes,                 // Dtl 콜백 (closure 필요)
+      inlineNavigate, showToast, showConfirm,                            // Dtl 콜백 (closure 필요)
       handleSearchList,                                                  // Dtl 의 onListReload 콜백
     };
   },

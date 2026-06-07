@@ -260,46 +260,13 @@
         return lines.join('\n');
       };
 
-      /* API Validation 에러 → toast 출력 (boAxios 에서 window.dispatchEvent('api-validation-error')) */
-      window.addEventListener('api-validation-error', (ev) => {
-        const d = ev.detail || {};
-        let msg = d.message || '오류가 발생했습니다.';
-        if (d.method && d.url && d.status) {
-          let title = `${d.method} ${d.url} ${d.status}`;
-          if (d.uiLabel) title += `  [${d.uiLabel}]`;
-          msg = `${title}\n${msg}`;
-        }
-        // X- 헤더 정보를 errorDetails(펼침 영역)에 추가
-        let details = d.errorDetails || '';
-        const reqFmt = _fmtXHeaders(d.reqHeaders);
-        const resFmt = _fmtXHeaders(d.resHeaders);
-        if (reqFmt || resFmt) {
-          let headerInfo = '';
-          const _nd = new Date();
-          const _nts =
-            _nd.getFullYear() +
-            '-' +
-            String(_nd.getMonth() + 1).padStart(2, '0') +
-            '-' +
-            String(_nd.getDate()).padStart(2, '0') +
-            ' ' +
-            String(_nd.getHours()).padStart(2, '0') +
-            ':' +
-            String(_nd.getMinutes()).padStart(2, '0') +
-            ':' +
-            String(_nd.getSeconds()).padStart(2, '0');
-          if (reqFmt) headerInfo += '━━ 요청 헤더 ━━  ' + _nts + '\n' + reqFmt;
-          if (resFmt) headerInfo += (headerInfo ? '\n\n' : '') + '━━ 응답 헤더 ━━\n' + resFmt;
-          details = details ? headerInfo + '\n\n' + details : headerInfo;
-        }
-        showToast(msg, 'error', 0, details);
-      });
-
       /* API 성공 → 로그만 기록 (toast 미출력) */
-      window.addEventListener('api-success', () => {});
+      window.addEventListener('api-response-success', () => {});
 
-      /* API 에러 → 오류 페이지 전환 (boAxios 에서 window.dispatchEvent('api-error')) */
-      window.addEventListener('api-error', (ev) => {
+      /* API 에러 (boAxios 의 window.dispatchEvent('api-response-error')) — status 로 분기:
+         · 401 → error401 페이지 전환 / 500·네트워크 → error500 페이지 전환
+         · 그 외 4xx(검증 등) → toast 출력 (화면 유지) */
+      window.addEventListener('api-response-error', (ev) => {
         const d = ev.detail || {};
         const st = d.status;
         let label = '';
@@ -308,7 +275,7 @@
           if (d.uiLabel) label += `  [${d.uiLabel}]`;
         }
         let msg = label ? `${label}\n${d.message || ''}` : d.message || '';
-        // 비 401/500 에러는 toast로 X- 헤더 정보 표시
+        // 비 401/500 에러는 toast로 X- 헤더 정보 표시 (화면 유지)
         if (st !== 401 && !(st >= 500 || st === 0)) {
           let details = d.errorDetails || '';
           const reqFmt = _fmtXHeaders(d.reqHeaders);
@@ -791,6 +758,17 @@
         apiResPanel.res = res; /* apiResPanel.show = true; */
       };
 
+      /* API 응답 → 응답 패널 자동 반영 (화면에서 setApiRes 직접 호출 불필요).
+         boApiAxios 인터셉터가 쏘는 api-response-success / api-response-error 를 받아 setApiRes 호출. */
+      window.addEventListener('api-response-success', (ev) => {
+        const d = ev.detail || {};
+        setApiRes({ ok: true, status: d.status, data: d.data, url: d.url, method: d.method });
+      });
+      window.addEventListener('api-response-error', (ev) => {
+        const d = ev.detail || {};
+        setApiRes({ ok: false, status: d.status, message: d.message, data: d.data, url: d.url, method: d.method });
+      });
+
       /* closeApiResPanel */
       const closeApiResPanel = () => {
         apiResPanel.show = false;
@@ -961,8 +939,8 @@
         } catch (_) {}
       };
 
-      /* addApiLog */
-      const addApiLog = (
+      /* addBoApiLog */
+      const addBoApiLog = (
         method,
         url,
         status,
@@ -1070,14 +1048,30 @@
         }
       };
 
-      /* onApiLogEnter */
+      /* onApiLogEnter — 행 hover 진입. 닫기 예약 취소 후 해당 로그 표시 */
+      let _apiLogCloseTimer = null;
       const onApiLogEnter = (log) => {
+        if (_apiLogCloseTimer) { clearTimeout(_apiLogCloseTimer); _apiLogCloseTimer = null; }
         apiLogHoverDetail.value = log;
       };
 
-      /* onApiLogLeave */
+      /* onApiLogLeave — 행/상세창 hover 이탈. 즉시 닫지 않고 지연 → 행↔상세창 사이 빈 공간 통과 허용 */
       const onApiLogLeave = (log) => {
-        if (apiLogLockedDetail.value !== log) apiLogHoverDetail.value = null;
+        if (_apiLogCloseTimer) { clearTimeout(_apiLogCloseTimer); }
+        _apiLogCloseTimer = setTimeout(() => {
+          if (apiLogLockedDetail.value !== apiLogHoverDetail.value) apiLogHoverDetail.value = null;
+          _apiLogCloseTimer = null;
+        }, 200);
+      };
+
+      /* onApiLogDetailEnter — 상세창 hover 진입. 닫기 예약 취소(창 위에서는 유지) */
+      const onApiLogDetailEnter = () => {
+        if (_apiLogCloseTimer) { clearTimeout(_apiLogCloseTimer); _apiLogCloseTimer = null; }
+      };
+
+      /* onApiLogDetailLeave — 상세창 hover 이탈 → 지연 닫기 */
+      const onApiLogDetailLeave = () => {
+        onApiLogLeave(apiLogHoverDetail.value);
       };
 
       /* formatJsonData */
@@ -1342,7 +1336,7 @@
               (res) => {
                 const key = res.config.url + res.config.method;
                 const duration = Date.now() - (startTime[key] || 0);
-                addApiLog(
+                addBoApiLog(
                   res.config.method.toUpperCase(),
                   res.config.url,
                   res.status,
@@ -1361,7 +1355,7 @@
                 const cfg = err.config || {};
                 const key = cfg.url + cfg.method;
                 const duration = Date.now() - (startTime[key] || 0);
-                addApiLog(
+                addBoApiLog(
                   cfg.method.toUpperCase(),
                   cfg.url,
                   err.response?.status || 0,
@@ -1950,6 +1944,8 @@
         toggleApiLogLock,
         onApiLogEnter,
         onApiLogLeave,
+        onApiLogDetailEnter,
+        onApiLogDetailLeave,
         getApiStatusColor,
         formatJsonData,
         isWithin60Seconds,
@@ -2506,7 +2502,7 @@
         </div>
 
         <!-- API 로그 호버 상세 레이어 -->
-        <div v-if="apiLogHoverDetail || apiLogLockedDetail" style="position: fixed; top: 200px; right: 220px; width: 650px; max-height: 858px; background: white; border: 2px solid #8b5cf6; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1001; font-size: 11px; font-family: monospace; overflow: hidden; display: flex; flex-direction: column;">
+        <div v-if="apiLogHoverDetail || apiLogLockedDetail" @mouseenter="onApiLogDetailEnter" @mouseleave="onApiLogDetailLeave" style="position: fixed; top: 200px; right: 220px; width: 650px; max-height: 858px; background: white; border: 2px solid #8b5cf6; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 1001; font-size: 11px; font-family: monospace; overflow: hidden; display: flex; flex-direction: column;">
           <!-- 헤더 -->
           <div style="padding: 12px; background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); border-bottom: 1px solid #d1d5db; flex-shrink: 0;">
             <div style="font-weight: 700; color: #374151; font-size: 12px; margin-bottom: 6px;">📡 API 요청/응답 상세 <span style="color: #ef4444; margin-left: 4px;">#{{ apiLogs.findIndex(l => l === (apiLogLockedDetail || apiLogHoverDetail)) >= 0 ? apiLogs.length - apiLogs.findIndex(l => l === (apiLogLockedDetail || apiLogHoverDetail)) : '-' }}</span></div>

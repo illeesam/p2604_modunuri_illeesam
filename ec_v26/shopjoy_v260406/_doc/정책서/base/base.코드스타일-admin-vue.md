@@ -153,7 +153,7 @@ VS Code **Live Server** 확장의 chokidar watcher 가 워크스페이스 안의
 1. **VS Code 하단 "Port: 5501" 클릭해서 Live Server 끄기**
 2. 브라우저 주소창에 직접 워크스페이스의 `bo.html` 을 `file://` 또는 다른 정적 서버로 열기
 3. 같은 시나리오 재현 시 리프레시가 **없으면 → Live Server 가 원인**
-4. 리프레시가 **여전히 발생하면** → 다른 원인(`<form>` submit, `api-error` 핸들러, location 조작 등)
+4. 리프레시가 **여전히 발생하면** → 다른 원인(`<form>` submit, `api-response-error` 핸들러, location 조작 등)
 
 ### 운영 가이드
 

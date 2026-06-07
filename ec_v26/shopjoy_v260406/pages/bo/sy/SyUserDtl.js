@@ -13,7 +13,6 @@ window.SyUserDtl = {
     const { reactive, computed, watch, onMounted, ref } = Vue;
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
-    const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false }); // UI 상태
     const codes = reactive({ active_statuses: [], user_roles: [] });                  // 공통코드
@@ -147,14 +146,12 @@ window.SyUserDtl = {
         const { password, ...rest } = form;
         const body = { ...rest };
         if (password) { body.loginPwdHash = password; }
-        const res = await (cfIsNew.value ? boApiSvc.syUser.create(body, '사용자관리', '등록') : boApiSvc.syUser.update(form.userId, body, '사용자관리', '저장'));
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
+        await (cfIsNew.value ? boApiSvc.syUser.create(body, '사용자관리', '등록') : boApiSvc.syUser.update(form.userId, body, '사용자관리', '저장'));
         if (showToast) { showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
         if (props.navigate) { props.navigate('syUserMng', { reload: true }); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
         if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };

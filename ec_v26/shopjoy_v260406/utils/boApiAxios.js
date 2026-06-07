@@ -208,8 +208,8 @@
         }
       });
 
-      global.dispatchEvent(new CustomEvent('api-success', {
-        detail: { scope: 'bo', method: method, url: displayUrl, status: res.status, detail: detail, uiLabel: uiLabel, reqHeaders: reqHeaderInfo, resHeaders: resHeaderInfo },
+      global.dispatchEvent(new CustomEvent('api-response-success', {
+        detail: { scope: 'bo', method: method, url: displayUrl, status: res.status, data: res.data, detail: detail, uiLabel: uiLabel, reqHeaders: reqHeaderInfo, resHeaders: resHeaderInfo },
       }));
     } catch (_) {}
     return res;
@@ -284,54 +284,8 @@
           });
         }
 
-        global.dispatchEvent(new CustomEvent('api-validation-error', {
-          detail: { scope: 'bo', method: (cfg.method || 'get').toUpperCase(), url: displayUrl, status: status || 0, message: errMsg, errorDetails: errorDetails, uiLabel: uiLabel, reqHeaders: errReqHeaderInfo, resHeaders: errResHeaderInfo },
-        }));
-      } catch (_) {}
-    }
-
-    if (!skipToast && (status === 0 || !status || status >= 500) && !cfg._notified) {
-      cfg._notified = true;
-      try {
-        // URL 정리 (localhost/127로 시작하면 /api/... 형태로 표시)
-        var errorUrl = cfg.url;
-        if (errorUrl && (errorUrl.includes('localhost') || errorUrl.includes('127'))) {
-          var errorPathMatch = errorUrl.match(/\/api(\/.*)?$/);
-          if (errorPathMatch) {
-            errorUrl = errorPathMatch[0];
-          }
-        }
-        var uiLabelE = getHdr(cfg.headers, 'x-ui-nm') + (getHdr(cfg.headers, 'x-cmd-nm') ? ' > ' + getHdr(cfg.headers, 'x-cmd-nm') : '');
-
-        // 요청 헤더에서 X- 정보 수집
-        var errReqHeadersE = cfg.headers || {};
-        var errReqHeaderInfoE = [];
-        (function collectReqHeaders(h) {
-          var keys = [];
-          try { keys = Object.keys(h); } catch (_) {}
-          keys.forEach(function (k) {
-            if (k.toLowerCase().startsWith('x-')) {
-              var v = getHdr(h, k);
-              if (v) errReqHeaderInfoE.push(k.toLowerCase() + ': ' + v);
-            }
-          });
-          var auth = getHdr(h, 'Authorization') || getHdr(h, 'authorization');
-          if (auth) errReqHeaderInfoE.push('authorization: ' + auth.slice(0, 7) + auth.slice(7, 12) + '...(' + auth.length + ')');
-        })(errReqHeadersE);
-
-        // 응답 헤더에서 X- 정보 수집
-        var errResHeadersE = (res && res.headers) || {};
-        var errResHeaderInfoE = [];
-        if (errResHeadersE && typeof errResHeadersE.forEach === 'function') {
-          errResHeadersE.forEach(function (val, key) {
-            if (key.toLowerCase().startsWith('x-')) {
-              errResHeaderInfoE.push(key + ': ' + val);
-            }
-          });
-        }
-
-        global.dispatchEvent(new CustomEvent('api-error', {
-          detail: { scope: 'bo', status: status || 0, url: errorUrl, message: err.message, method: (cfg.method || 'get').toUpperCase(), uiLabel: uiLabelE, reqHeaders: errReqHeaderInfoE, resHeaders: errResHeaderInfoE },
+        global.dispatchEvent(new CustomEvent('api-response-error', {
+          detail: { scope: 'bo', method: (cfg.method || 'get').toUpperCase(), url: displayUrl, status: status || 0, message: errMsg, data: res && res.data, errorDetails: errorDetails, uiLabel: uiLabel, reqHeaders: errReqHeaderInfo, resHeaders: errResHeaderInfo },
         }));
       } catch (_) {}
     }
@@ -373,7 +327,7 @@
             localStorage.removeItem('modu-bo-authUser');
           } catch (_) {}
           try {
-            global.dispatchEvent(new CustomEvent('api-error', {
+            global.dispatchEvent(new CustomEvent('api-response-error', {
               detail: { scope: 'bo', status: 401, url: cfg.url, message: 'session expired' },
             }));
           } catch (_) {}
