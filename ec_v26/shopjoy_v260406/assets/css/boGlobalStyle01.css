@@ -305,7 +305,7 @@ textarea.form-control { resize: vertical; min-height: 80px; font-family: inherit
 .bo-body { display: flex; align-items: flex-start; min-height: calc(100vh - 94px); }
 
 /* ── Left Sidebar ── */
-.bo-left-nav { width: 190px; flex-shrink: 0; background: #fff; border-right: 1px solid #eaeaea; height: calc(100vh - 94px); position: sticky; top: 94px; overflow: hidden; transition: width .2s ease; align-self: flex-start; display: flex; flex-direction: column; box-shadow: 2px 0 8px rgba(0,0,0,.04); }
+.bo-left-nav { width: 190px; flex-shrink: 0; background: #eef0f4; border-right: 1px solid #d8dae0; height: calc(100vh - 94px); position: sticky; top: 94px; overflow: hidden; transition: width .2s ease; align-self: flex-start; display: flex; flex-direction: column; box-shadow: 2px 0 8px rgba(0,0,0,.04); }
 .bo-left-nav.closed { width: 0; }
 .left-nav-top { flex: 1; overflow-y: auto; }
 .left-nav-group-title { padding: 13px 16px 10px; font-size: 10px; font-weight: 800; color: #e8587a; letter-spacing: 1px; text-transform: uppercase; background: linear-gradient(135deg, #fff5f7 0%, #fff 100%); border-bottom: 2px solid #fde8ee; white-space: nowrap; }
@@ -390,7 +390,7 @@ textarea.form-control { resize: vertical; min-height: 80px; font-family: inherit
 .left-nav-open-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* ── 관리자 우측 공통필터 패널 ── */
-.bo-right-panel { width: 220px; flex-shrink: 0; background: #fff; border-left: 2px solid #eaeaea; min-height: calc(100vh - 94px); position: sticky; top: 94px; align-self: flex-start; transition: width .2s ease; overflow: hidden; box-shadow: -2px 0 8px rgba(0,0,0,.04); }
+.bo-right-panel { width: 220px; flex-shrink: 0; background: #eef0f4; border-left: 2px solid #d8dae0; min-height: calc(100vh - 94px); position: sticky; top: 94px; align-self: flex-start; transition: width .2s ease; overflow: hidden; box-shadow: -2px 0 8px rgba(0,0,0,.04); }
 .right-panel-header { display: flex; justify-content: space-between; align-items: center; padding: 11px 14px; border-bottom: 2px solid #fde8ee; cursor: pointer; background: linear-gradient(135deg, #fff5f7 0%, #fff 100%); user-select: none; }
 .right-panel-header:hover { background: linear-gradient(135deg, #fde8ee 0%, #fff5f7 100%); }
 .right-panel-title { font-size: 10px; font-weight: 800; color: #e8587a; letter-spacing: 1px; text-transform: uppercase; }
