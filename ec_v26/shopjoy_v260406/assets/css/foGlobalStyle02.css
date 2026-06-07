@@ -322,6 +322,53 @@ body {
   border-radius: 8px;
 }
 
+/* ── 표준 의미 버튼 (전체공통 클래스명 고정) ───────────────────────────────────
+ *   조회=btn_search / 초기화=btn_reset / 수정=btn_edit / 삭제=btn_delete / 신규=btn_new
+ *   행수정=btn_row_edit / 행삭제=btn_row_delete (작은 크기 내장)
+ *   FO 버튼 톤(검정 그라데이션 primary / 아웃라인 / 레드)에 맞춰 정의. */
+.btn_search, .btn_edit, .btn_new, .btn_save {
+  background: linear-gradient(135deg, #1a1a1a, #404040); color: #fff; font-weight: 600; border-radius: 10px;
+  padding: 10px 24px; border: none; cursor: pointer; font-size: 0.875rem; letter-spacing: 0.3px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12); transition: transform .15s, box-shadow .15s, background .15s;
+}
+[data-theme="dark"] .btn_search, [data-theme="dark"] .btn_edit, [data-theme="dark"] .btn_new, [data-theme="dark"] .btn_save { background: linear-gradient(135deg, #e0e0e0, #b8b8b8); color: #1a1a1a; }
+.btn_search:hover:not(:disabled), .btn_edit:hover:not(:disabled), .btn_new:hover:not(:disabled), .btn_save:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+.btn_reset, .btn_cancel, .btn_close {
+  background: #fff; color: #1a1a1a; border: 1.5px solid #e4e7ec; border-radius: 10px;
+  padding: 9px 22px; font-weight: 600; cursor: pointer; font-size: 0.8rem; transition: all .15s;
+}
+[data-theme="dark"] .btn_reset, [data-theme="dark"] .btn_cancel, [data-theme="dark"] .btn_close { background: transparent; color: #e0e0e0; border-color: #4a4a4a; }
+.btn_reset:hover:not(:disabled), .btn_cancel:hover:not(:disabled), .btn_close:hover:not(:disabled) { background: #f8f9fb; border-color: #d0d7de; transform: translateY(-1px); }
+[data-theme="dark"] .btn_reset:hover:not(:disabled), [data-theme="dark"] .btn_cancel:hover:not(:disabled), [data-theme="dark"] .btn_close:hover:not(:disabled) { background: #2a2a2a; border-color: #666; }
+.btn_delete, .btn_row_delete {
+  background: linear-gradient(135deg, #ff4d4f, #d9363e); color: #fff; font-weight: 600; border-radius: 10px;
+  border: none; cursor: pointer; box-shadow: 0 2px 6px rgba(255,77,79,.18); transition: transform .15s, box-shadow .15s;
+}
+.btn_delete:hover:not(:disabled), .btn_row_delete:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(255,77,79,.3); }
+.btn_delete { padding: 10px 24px; font-size: 0.875rem; }
+.btn_excel { background: linear-gradient(135deg, #52c41a, #389e0d); color: #fff; font-weight: 600; border: none; cursor: pointer; padding: 9px 20px; font-size: 0.8rem; border-radius: 10px; box-shadow: 0 2px 6px rgba(82,196,26,.18); transition: transform .15s, box-shadow .15s; }
+.btn_excel:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(82,196,26,.3); }
+/* ── 확장 의미 버튼 (2026-06-07) — 확정형(select/confirm/apply/send/preview/buy/cart/list/detail)=검정 그라데이션, 유틸(expand/collapse/check/copy/excel_upload)=아웃라인 ── */
+.btn_select, .btn_confirm, .btn_apply, .btn_send, .btn_preview, .btn_buy, .btn_cart, .btn_list, .btn_detail {
+  background: linear-gradient(135deg, #1a1a1a, #404040); color: #fff; font-weight: 600; border-radius: 10px;
+  padding: 10px 24px; border: none; cursor: pointer; font-size: 0.875rem; letter-spacing: 0.3px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12); transition: transform .15s, box-shadow .15s, background .15s;
+}
+[data-theme="dark"] .btn_select, [data-theme="dark"] .btn_confirm, [data-theme="dark"] .btn_apply, [data-theme="dark"] .btn_send, [data-theme="dark"] .btn_preview, [data-theme="dark"] .btn_buy, [data-theme="dark"] .btn_cart, [data-theme="dark"] .btn_list, [data-theme="dark"] .btn_detail { background: linear-gradient(135deg, #e0e0e0, #b8b8b8); color: #1a1a1a; }
+.btn_select:hover:not(:disabled), .btn_confirm:hover:not(:disabled), .btn_apply:hover:not(:disabled), .btn_send:hover:not(:disabled), .btn_preview:hover:not(:disabled), .btn_buy:hover:not(:disabled), .btn_cart:hover:not(:disabled), .btn_list:hover:not(:disabled), .btn_detail:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+.btn_expand_all, .btn_collapse_all, .btn_check_all, .btn_uncheck_all, .btn_copy, .btn_excel_upload {
+  background: #fff; color: #1a1a1a; border: 1.5px solid #e4e7ec; border-radius: 10px;
+  padding: 8px 16px; font-weight: 600; cursor: pointer; font-size: 0.8rem; transition: all .15s;
+}
+[data-theme="dark"] .btn_expand_all, [data-theme="dark"] .btn_collapse_all, [data-theme="dark"] .btn_check_all, [data-theme="dark"] .btn_uncheck_all, [data-theme="dark"] .btn_copy, [data-theme="dark"] .btn_excel_upload { background: transparent; color: #e0e0e0; border-color: #4a4a4a; }
+.btn_expand_all:hover:not(:disabled), .btn_collapse_all:hover:not(:disabled), .btn_check_all:hover:not(:disabled), .btn_uncheck_all:hover:not(:disabled), .btn_copy:hover:not(:disabled), .btn_excel_upload:hover:not(:disabled) { background: #f8f9fb; border-color: #d0d7de; transform: translateY(-1px); }
+.btn_filter_toggle { background:#fff; color:#1a1a1a; border:1.5px solid #e4e7ec; border-radius:8px; padding:6px 14px; font-size:0.78rem; font-weight:600; cursor:pointer; transition:all .15s; }
+[data-theme="dark"] .btn_filter_toggle { background:transparent; color:#e0e0e0; border-color:#4a4a4a; }
+.btn_filter_toggle:hover:not(:disabled) { background:#f8f9fb; border-color:#d0d7de; }
+.btn_row_edit { background: linear-gradient(135deg, #1a1a1a, #404040); color: #fff; font-weight: 600; border: none; cursor: pointer; padding: 6px 14px; font-size: 0.8rem; border-radius: 8px; transition: transform .15s, box-shadow .15s; }
+.btn_row_edit:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+.btn_row_delete { padding: 6px 14px; font-size: 0.8rem; border-radius: 8px; }
+
 /* ── Product Card ── */
 .product-card {
   background: var(--bg-card);

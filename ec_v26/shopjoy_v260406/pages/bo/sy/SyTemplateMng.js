@@ -427,10 +427,10 @@ window.SyTemplateMng = {
     <bo-container title="템플릿목록" :count-text="baseGridPager.pageTotalCount + '건'">
       <template #toolbar-actions>
         <div style="display:flex;gap:6px;">
-          <button class="btn btn-green btn-sm" @click="handleBtnAction('templates-excel')">
+          <button class="btn btn_excel" @click="handleBtnAction('templates-excel')">
             📥 엑셀
           </button>
-          <button class="btn btn-primary btn-sm" @click="handleBtnAction('templates-add')">
+          <button class="btn btn_new" @click="handleBtnAction('templates-add')">
             + 신규
           </button>
         </div>
@@ -451,13 +451,13 @@ window.SyTemplateMng = {
               <button class="btn btn-secondary btn-xs" @click="handleSelectAction('templates-rowPreview', row)">
                 미리보기
               </button>
-              <button class="btn btn-xs" style="background:#52c41a;color:#fff;border-color:#52c41a;" @click="handleSelectAction('templates-rowSend', row)">
+              <button class="btn btn_send" style="background:#52c41a;color:#fff;border-color:#52c41a;" @click="handleSelectAction('templates-rowSend', row)">
                 발송
               </button>
-              <button class="btn btn-blue btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
+              <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
                 수정
               </button>
-              <button class="btn btn-danger btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">
+              <button class="btn btn_row_delete" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">
                 삭제
               </button>
             </div>

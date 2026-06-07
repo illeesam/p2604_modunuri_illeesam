@@ -369,19 +369,19 @@ window.DashboardBoEc02 = {
         ~
       </span>
       <input type="date" v-model="filters.endDt" class="form-control" style="width:150px;height:30px;font-size:12px;">
-      <button @click="handleBtnAction('filters-toggleExpand')"
+      <button class="btn_filter_toggle" @click="handleBtnAction('filters-toggleExpand')"
         style="font-size:11px;padding:4px 12px;border-radius:6px;border:1px solid #e5e7eb;background:#fafbfc;color:#555;">
         {{ uiState.filterExpand ? '▲ 상세필터 접기' : '▼ 상세필터 펼치기' }}
       </button>
       <span style="flex:1;">
       </span>
-      <button class="btn btn-sm btn-primary" @click="handleBtnAction('filters-search')" style="font-size:11px;">
+      <button class="btn btn_search" @click="handleBtnAction('filters-search')" style="font-size:11px;">
         🔍 검색
       </button>
-      <button class="btn btn-sm" @click="handleBtnAction('stats-excel')" style="font-size:11px;background:#e8f5e9;color:#2e7d32;border-color:#a5d6a7;">
+      <button class="btn btn_excel" @click="handleBtnAction('stats-excel')" style="font-size:11px;background:#e8f5e9;color:#2e7d32;border-color:#a5d6a7;">
         📥 엑셀다운로드
       </button>
-      <button class="btn btn-sm" @click="handleBtnAction('filters-reset')" style="font-size:11px;">
+      <button class="btn btn_reset" @click="handleBtnAction('filters-reset')" style="font-size:11px;">
         🔄 초기화
       </button>
     </div>

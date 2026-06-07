@@ -679,10 +679,10 @@ window.DpDispPanelMng = {
         <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">
           #{{ uiState.selectedPath }}
         </span>
-        <button class="btn btn-green btn-sm" @click="handleBtnAction('panels-export')">
+        <button class="btn btn_excel" @click="handleBtnAction('panels-export')">
           📥 엑셀
         </button>
-        <button class="btn btn-primary btn-sm" @click="handleBtnAction('panels-add')">
+        <button class="btn btn_new" @click="handleBtnAction('panels-add')">
           + 신규
         </button>
       </template>
@@ -854,10 +854,10 @@ window.DpDispPanelMng = {
                   </td>
                   <td style="vertical-align:top;padding-top:10px;">
                     <div class="actions" style="justify-content:flex-end;">
-                      <button class="btn btn-blue btn-sm" @click="handleSelectAction('panels-rowEdit', d.dispId)">
+                      <button class="btn btn_row_edit" @click="handleSelectAction('panels-rowEdit', d.dispId)">
                         수정
                       </button>
-                      <button class="btn btn-danger btn-sm" @click="handleSelectAction('panels-rowDelete', d)">
+                      <button class="btn btn_row_delete" @click="handleSelectAction('panels-rowDelete', d)">
                         삭제
                       </button>
                     </div>
@@ -949,7 +949,7 @@ window.DpDispPanelMng = {
   <!-- ===== ■. 하단 상세: DispDtl 임베드 ====================================== -->
   <bo-container bare>
     <div v-if="uiStateDetail.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+      <button data-hide-close style="display:none;" class="btn btn_close" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기
       </button>
     </div>
@@ -1056,10 +1056,10 @@ window.DpDispPanelMng = {
     ID: {{ uiState.cardPreviewItem.dispId }} · 등록일: {{ uiState.cardPreviewItem.regDate }}
   </span>
   <div style="display:flex;gap:8px;">
-    <button @click="handleSelectAction('cardPreview-previewDisp', uiState.cardPreviewItem)" class="btn btn-sm" style="background:#e8f0fe;border:1px solid #b0c4de;color:#1a73e8;font-size:11px;">
+    <button @click="handleSelectAction('cardPreview-previewDisp', uiState.cardPreviewItem)" class="btn btn_preview" style="background:#e8f0fe;border:1px solid #b0c4de;color:#1a73e8;font-size:11px;">
       👁 내용미리보기
     </button>
-    <button @click="handleBtnAction('cardPreview-close')" class="btn btn-secondary btn-sm">
+    <button @click="handleBtnAction('cardPreview-close')" class="btn btn_close">
       닫기
     </button>
   </div>

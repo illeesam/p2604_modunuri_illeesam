@@ -350,10 +350,10 @@ window.SyBbsMng = {
   <bo-container title="게시글목록" :count-text="baseGridPager.pageTotalCount + '건'">
     <template #toolbar-actions>
       <div style="display:flex;gap:6px;">
-        <button class="btn btn-green btn-sm" @click="handleBtnAction('bbsList-excel')">
+        <button class="btn btn_excel" @click="handleBtnAction('bbsList-excel')">
           📥 엑셀
         </button>
-        <button class="btn btn-primary btn-sm" @click="handleBtnAction('bbsList-add')">
+        <button class="btn btn_new" @click="handleBtnAction('bbsList-add')">
           + 신규
         </button>
       </div>
@@ -372,10 +372,10 @@ window.SyBbsMng = {
       <template #row-actions="{ row, gridId }">
         <td style="white-space:nowrap;">
           <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
-            <button class="btn btn-blue btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
+            <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
               수정
             </button>
-            <button class="btn btn-danger btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">
+            <button class="btn btn_row_delete" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">
               삭제
             </button>
           </div>
@@ -388,7 +388,7 @@ window.SyBbsMng = {
   <!-- ===== ■. 상세 패널 (인라인 임베드, 항상 표시) =================================== -->
   <bo-container bare>
     <div v-if="detailModal.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+      <button data-hide-close style="display:none;" class="btn btn_close" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기
       </button>
     </div>

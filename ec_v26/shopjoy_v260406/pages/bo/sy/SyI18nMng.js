@@ -259,10 +259,10 @@ window.SyI18nMng = {
         </span>
       </span>
       <div v-if="cfSelectedKey" style="margin-left:auto;display:flex;gap:6px;">
-        <button class="btn btn-primary btn-sm" @click="handleBtnAction('msgForm-save')">
+        <button class="btn btn_save" @click="handleBtnAction('msgForm-save')">
           저장
         </button>
-        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('msgForm-close')">
+        <button class="btn btn_close" @click="handleBtnAction('msgForm-close')">
           닫기
         </button>
       </div>

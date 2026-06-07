@@ -517,20 +517,20 @@ window.DpDispUiDtl = {
           {{ cfRelatedAreas.length }}개
         </span>
       </span>
-      <button class="btn btn-sm" style="background:#f5f0ff;border:1px solid #b39ddb;color:#6a1b9a;" @click="handleBtnAction('preview-uiOpen')">
+      <button class="btn btn_preview" style="background:#f5f0ff;border:1px solid #b39ddb;color:#6a1b9a;" @click="handleBtnAction('preview-uiOpen')">
         🖼 UI미리보기
       </button>
-      <button class="btn btn-sm" style="background:#e0f2fe;border:1px solid #bae6fd;color:#0369a1;" @click="handleBtnAction('preview-areaOpen', 'fo')">
+      <button class="btn btn_preview" style="background:#e0f2fe;border:1px solid #bae6fd;color:#0369a1;" @click="handleBtnAction('preview-areaOpen', 'fo')">
         👁 사용자 미리보기
       </button>
-      <button class="btn btn-sm" style="background:#fef3eb;border:1px solid #f5e8de;color:#c2410c;" @click="handleBtnAction('preview-areaOpen', 'bo')">
+      <button class="btn btn_preview" style="background:#fef3eb;border:1px solid #f5e8de;color:#c2410c;" @click="handleBtnAction('preview-areaOpen', 'bo')">
         👁 관리자 미리보기
       </button>
       <button class="btn btn-secondary btn-sm" @click="handleBtnAction('form-toggleExpand')">{{ expanded ? '📥 접기' : '📤 펼치기' }}</button>
-      <button v-if="cfDtlMode" class="btn btn-primary btn-sm" @click="handleBtnAction('form-edit')" style="font-weight:700;">✏ 수정</button>
-      <button v-if="cfDtlMode" class="btn btn-secondary btn-sm" @click="handleBtnAction('form-close')">닫기</button>
-      <button v-if="!cfDtlMode" class="btn btn-primary btn-sm" @click="handleBtnAction('form-save')" style="font-weight:700;">💾 저장</button>
-      <button v-if="!cfDtlMode" class="btn btn-secondary btn-sm" @click="handleBtnAction('form-cancel')">취소</button>
+      <button v-if="cfDtlMode" class="btn btn_edit" @click="handleBtnAction('form-edit')" style="font-weight:700;">✏ 수정</button>
+      <button v-if="cfDtlMode" class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
+      <button v-if="!cfDtlMode" class="btn btn_save" @click="handleBtnAction('form-save')" style="font-weight:700;">💾 저장</button>
+      <button v-if="!cfDtlMode" class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
     </div>
   </div>
   <!-- ===== □. 헤더 ====================================================== -->

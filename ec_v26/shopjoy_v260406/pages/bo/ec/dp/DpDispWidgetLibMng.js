@@ -343,11 +343,11 @@ window.DpDispWidgetLibMng = {
         <span v-if="cfFilterDirty" style="font-size:11px;color:#e8587a;font-weight:600;animation:pulse 1.2s ease-in-out infinite;">
           변경됨 →
         </span>
-        <button class="btn btn-primary btn-sm" @click="handleBtnAction('searchParam-list')"
+        <button class="btn btn_search" @click="handleBtnAction('searchParam-list')"
         :style="cfFilterDirty ? 'box-shadow:0 0 0 3px rgba(232,88,122,0.35);animation:pulse 1.2s ease-in-out infinite;' : ''">
           조회
         </button>
-        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('searchParam-reset')">
+        <button class="btn btn_reset" @click="handleBtnAction('searchParam-reset')">
           초기화
         </button>
       </div>
@@ -387,7 +387,7 @@ window.DpDispWidgetLibMng = {
             상태: {{ applied.status === 'Y' ? '활성' : '비활성' }}
           </span>
         </div>
-        <button class="btn btn-primary btn-sm" @click="handleBtnAction('widgetLibs-add')">
+        <button class="btn btn_new" @click="handleBtnAction('widgetLibs-add')">
           + 신규
         </button>
       </template>
@@ -399,10 +399,10 @@ window.DpDispWidgetLibMng = {
       grid-id="widgetLibs-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
         <template #row-actions="{ row }">
           <div class="actions">
-            <button class="btn btn-blue btn-xs" @click.stop="handleSelectAction('widgetLibs-rowEdit', row.widgetLibId)">
+            <button class="btn btn_row_edit" @click.stop="handleSelectAction('widgetLibs-rowEdit', row.widgetLibId)">
               수정
             </button>
-            <button class="btn btn-danger btn-xs" @click.stop="handleSelectAction('widgetLibs-rowDelete', row)">
+            <button class="btn btn_row_delete" @click.stop="handleSelectAction('widgetLibs-rowDelete', row)">
               삭제
             </button>
           </div>
@@ -414,7 +414,7 @@ window.DpDispWidgetLibMng = {
   <!-- ===== ■. 상세 패널 (인라인 임베드 — 항상 표시, 전체 폭) ============== -->
   <bo-container bare>
     <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+      <button data-hide-close style="display:none;" class="btn btn_close" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기
       </button>
     </div>

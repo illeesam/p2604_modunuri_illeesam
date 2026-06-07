@@ -185,7 +185,7 @@ window.OdClaimHist = {
         </span>
       </div>
       <div style="display:flex;justify-content:flex-end;margin-bottom:10px;">
-        <button class="btn btn-sm btn-secondary" @click="handleBtnAction('claimItems-add')">
+        <button class="btn btn_new" @click="handleBtnAction('claimItems-add')">
           + 항목 추가
         </button>
       </div>
@@ -314,7 +314,7 @@ window.OdClaimHist = {
       <bo-form-area :columns="columns.processForm" :form="processForm" :errors="{}"
         :cols="3" :show-actions="false" />
       <div class="form-actions">
-        <button class="btn btn-primary" @click="handleBtnAction('processForm-save')">
+        <button class="btn btn_save" @click="handleBtnAction('processForm-save')">
           저장
         </button>
       </div>

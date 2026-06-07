@@ -344,12 +344,12 @@ window.SyBbsDtl = {
   <!-- ===== □.□. 첨부파일 ================================================== -->
   <!-- ===== ■.■. 폼 액션 (보기모드: 수정/닫기 · 수정모드: 저장/취소) ================== -->
   <div class="form-actions" v-if="active && cfDtlMode">
-    <button class="btn btn-blue" @click="handleBtnAction('form-edit')">수정</button>
-    <button class="btn btn-secondary" @click="handleBtnAction('form-close')">닫기</button>
+    <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
+    <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
   </div>
   <div class="form-actions" v-if="active && !cfDtlMode">
-    <button class="btn btn-primary" @click="handleBtnAction('form-save')">저장</button>
-    <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">취소</button>
+    <button class="btn btn_save" @click="handleBtnAction('form-save')">저장</button>
+    <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
   </div>
   <!-- ===== □. 카드 영역 =================================================== -->
   <!-- ===== ■. 게시판 선택 팝업 =============================================== -->
@@ -362,7 +362,7 @@ window.SyBbsDtl = {
     <bo-form-area v-if="selectedBbm" :columns="columns.bbmDetail" :form="selectedBbm" :errors="{}"
       :cols="1" :show-actions="false" />
     <template #footer>
-      <button class="btn btn-secondary" @click="handleBtnAction('bbmDetail-close')">닫기</button>
+      <button class="btn btn_close" @click="handleBtnAction('bbmDetail-close')">닫기</button>
     </template>
   </bo-modal>
   <!-- ===== □. 게시판 상세보기 팝업 ============================================= -->

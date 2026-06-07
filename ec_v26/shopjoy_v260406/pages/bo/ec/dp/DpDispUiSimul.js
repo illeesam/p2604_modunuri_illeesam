@@ -1613,7 +1613,7 @@ window.DpDispUiSimul = {
           </div>
           <!-- ===== ■.■.■. 푸터 ================================================== -->
           <div style="padding:10px 18px;border-top:1px solid #eee;display:flex;justify-content:flex-end;">
-            <button @click="handleBtnAction('simul-closeSiteModal')" class="btn btn-secondary btn-sm">
+            <button @click="handleBtnAction('simul-closeSiteModal')" class="btn btn_close">
               닫기
             </button>
           </div>
@@ -1672,7 +1672,7 @@ window.DpDispUiSimul = {
             </button>
             <span v-else>
             </span>
-            <button @click="handleBtnAction('simul-closeMemberModal')" class="btn btn-secondary btn-sm">
+            <button @click="handleBtnAction('simul-closeMemberModal')" class="btn btn_close">
               닫기
             </button>
           </div>

@@ -319,10 +319,10 @@ window.CmChattMng = {
   <!-- ===== ■. 목록 영역 =================================================== -->
   <bo-container title="채팅목록" :count-text="'총 ' + baseGridPager.pageTotalCount + '건'">
     <template #toolbar-actions>
-      <button class="btn btn-green btn-sm" @click="handleBtnAction('chatts-excel')">
+      <button class="btn btn_excel" @click="handleBtnAction('chatts-excel')">
         📥 엑셀
       </button>
-      <button class="btn btn-primary btn-sm" @click="handleBtnAction('chatts-add')">
+      <button class="btn btn_new" @click="handleBtnAction('chatts-add')">
         + 신규
       </button>
     </template>
@@ -334,10 +334,10 @@ window.CmChattMng = {
       grid-id="chatts-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
       <template #row-actions="{ row, gridId }">
         <div class="actions">
-          <button class="btn btn-blue btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
+          <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
             수정
           </button>
-          <button class="btn btn-danger btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">
+          <button class="btn btn_row_delete" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">
             삭제
           </button>
         </div>
@@ -349,7 +349,7 @@ window.CmChattMng = {
   <!-- ===== ■. 하단 상세: ChattDtl 임베드 (항상 표시) ============================ -->
   <bo-container bare>
     <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+      <button data-hide-close style="display:none;" class="btn btn_close" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기
       </button>
     </div>

@@ -261,7 +261,7 @@ window.ZdLocalStorage = {
                     <button @click="handleBtnAction('lsItems-rowSave', item.key)" class="btn btn-primary" style="padding: 4px 12px; font-size: 12px;">
                       저장
                     </button>
-                    <button @click="handleBtnAction('lsItems-rowCancel')" class="btn btn-secondary" style="padding: 4px 12px; font-size: 12px;">
+                    <button @click="handleBtnAction('lsItems-rowCancel')" class="btn btn_cancel" style="padding: 4px 12px; font-size: 12px;">
                       취소
                     </button>
                   </div>
@@ -274,13 +274,13 @@ window.ZdLocalStorage = {
               </td>
               <!-- ===== ■.■.■.■.■.■. 영역 ============================================ -->
               <td style="padding: 12px; text-align: center; white-space: nowrap;">
-                <button @click="handleBtnAction('lsItems-rowCopy', item.value)" class="btn btn-blue" style="padding: 4px 8px; font-size: 11px; margin-right: 2px;">
+                <button @click="handleBtnAction('lsItems-rowCopy', item.value)" class="btn btn_copy" style="padding: 4px 8px; font-size: 11px; margin-right: 2px;">
                   복사
                 </button>
-                <button v-if="uiState.editingKey !== item.key" @click="handleBtnAction('lsItems-rowEdit', { key: item.key, value: item.value })" class="btn btn-blue" style="padding: 4px 8px; font-size: 11px; margin-right: 2px;">
+                <button v-if="uiState.editingKey !== item.key" @click="handleBtnAction('lsItems-rowEdit', { key: item.key, value: item.value })" class="btn btn_row_edit" style="padding: 4px 8px; font-size: 11px; margin-right: 2px;">
                   수정
                 </button>
-                <button @click="handleBtnAction('lsItems-rowDelete', item.key)" class="btn btn-danger" style="padding: 4px 8px; font-size: 11px;">
+                <button @click="handleBtnAction('lsItems-rowDelete', item.key)" class="btn btn_row_delete" style="padding: 4px 8px; font-size: 11px;">
                   삭제
                 </button>
               </td>

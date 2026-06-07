@@ -193,7 +193,7 @@ window.OrderDetailModal = {
 </div>
 <!-- 푸터 -->
 <div style="padding:12px 20px;border-top:1px solid var(--border);flex-shrink:0;">
-  <button type="button" @click="handleBtnAction('modal-close')" class="btn-blue"
+  <button type="button" @click="handleBtnAction('modal-close')" class="btn btn_close"
         style="width:100%;padding:10px;border:none;border-radius:8px;cursor:pointer;font-size:0.88rem;font-weight:700;">
     닫기
   </button>
@@ -698,7 +698,7 @@ window.CustomerModal = {
     </div>
   </div>
   <div style="padding:12px 20px;border-top:1px solid var(--border);flex-shrink:0;">
-    <button type="button" @click="handleBtnAction('modal-close')" class="btn-blue" style="width:100%;padding:10px;border:none;border-radius:8px;cursor:pointer;font-size:0.88rem;font-weight:700;">
+    <button type="button" @click="handleBtnAction('modal-close')" class="btn btn_close" style="width:100%;padding:10px;border:none;border-radius:8px;cursor:pointer;font-size:0.88rem;font-weight:700;">
       닫기
     </button>
   </div>

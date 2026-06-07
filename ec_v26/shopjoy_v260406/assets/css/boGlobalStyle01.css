@@ -50,6 +50,46 @@ body { background: #f0f2f5; color: #222; font-family: 'Noto Sans KR', sans-serif
 .btn-sm        { padding: 4px 10px; font-size: 12px; border-radius: 6px; }
 .btn-xs        { padding: 2px 7px; font-size: 11px; border-radius: 5px; font-weight: 500; }
 
+/* ── 표준 의미 버튼 (전체공통 클래스명 고정) ───────────────────────────────────
+ *   조회=btn_search / 검색=btn_search / 초기화=btn_reset / 수정=btn_edit / 삭제=btn_delete / 신규=btn_new
+ *   저장=btn_save / 취소=btn_cancel / 닫기=btn_close
+ *   행수정=btn_row_edit / 행삭제=btn_row_delete (xs 크기 내장)
+ *   색/크기를 이 클래스가 직접 정의 → 화면에서 btn-blue/btn-danger 등 색상 클래스 병기 불필요.
+ *   변경 시 이 한 곳만 수정하면 전 화면 일괄 반영. */
+.btn_search    { background: linear-gradient(135deg, #e8587a, #d14165); color: #fff; box-shadow: 0 2px 6px rgba(232,88,122,.22); padding: 4px 10px; font-size: 12px; border-radius: 6px; }
+.btn_search:hover:not(:disabled)    { box-shadow: 0 4px 12px rgba(232,88,122,.35); }
+.btn_reset     { background: #eef1f6; color: #4b5563; border: 1px solid #d4dae3; padding: 4px 10px; font-size: 12px; border-radius: 6px; }
+.btn_reset:hover:not(:disabled)     { background: #e2e7ef; border-color: #c2cad6; }
+.btn_new       { background: linear-gradient(135deg, #e8587a, #d14165); color: #fff; box-shadow: 0 2px 6px rgba(232,88,122,.22); padding: 4px 10px; font-size: 12px; border-radius: 6px; }
+.btn_new:hover:not(:disabled)       { box-shadow: 0 4px 12px rgba(232,88,122,.35); }
+.btn_edit      { background: linear-gradient(135deg, #1677ff, #0958d9); color: #fff; box-shadow: 0 2px 6px rgba(22,119,255,.22); }
+.btn_edit:hover:not(:disabled)      { box-shadow: 0 4px 12px rgba(22,119,255,.35); }
+.btn_delete    { background: linear-gradient(135deg, #ff4d4f, #d9363e); color: #fff; box-shadow: 0 2px 6px rgba(255,77,79,.22); }
+.btn_delete:hover:not(:disabled)    { box-shadow: 0 4px 12px rgba(255,77,79,.35); }
+.btn_save      { background: linear-gradient(135deg, #e8587a, #d14165); color: #fff; box-shadow: 0 2px 6px rgba(232,88,122,.22); }
+.btn_save:hover:not(:disabled)      { box-shadow: 0 4px 12px rgba(232,88,122,.35); }
+.btn_cancel    { background: #eef1f6; color: #4b5563; border: 1px solid #d4dae3; }
+.btn_cancel:hover:not(:disabled)    { background: #e2e7ef; border-color: #c2cad6; }
+.btn_close     { background: #eef1f6; color: #4b5563; border: 1px solid #d4dae3; }
+.btn_close:hover:not(:disabled)     { background: #e2e7ef; border-color: #c2cad6; }
+.btn_excel     { background: linear-gradient(135deg, #52c41a, #389e0d); color: #fff; box-shadow: 0 2px 6px rgba(82,196,26,.22); padding: 4px 10px; font-size: 12px; border-radius: 6px; }
+.btn_excel:hover:not(:disabled)     { box-shadow: 0 4px 12px rgba(82,196,26,.35); }
+.btn_excel_upload { background: linear-gradient(135deg, #1677ff, #0958d9); color: #fff; box-shadow: 0 2px 6px rgba(22,119,255,.22); padding: 4px 10px; font-size: 12px; border-radius: 6px; }
+.btn_excel_upload:hover:not(:disabled) { box-shadow: 0 4px 12px rgba(22,119,255,.35); }
+/* ── 확장 의미 버튼 (2026-06-07) — 선택/확인/적용/전송=accent, 미리보기=blue, 유틸=gray ── */
+.btn_select, .btn_confirm, .btn_apply, .btn_send { background: linear-gradient(135deg, #e8587a, #d14165); color: #fff; box-shadow: 0 2px 6px rgba(232,88,122,.22); }
+.btn_select:hover:not(:disabled), .btn_confirm:hover:not(:disabled), .btn_apply:hover:not(:disabled), .btn_send:hover:not(:disabled) { box-shadow: 0 4px 12px rgba(232,88,122,.35); }
+.btn_preview { background: linear-gradient(135deg, #1677ff, #0958d9); color: #fff; box-shadow: 0 2px 6px rgba(22,119,255,.22); }
+.btn_preview:hover:not(:disabled) { box-shadow: 0 4px 12px rgba(22,119,255,.35); }
+.btn_expand_all, .btn_collapse_all, .btn_check_all, .btn_uncheck_all, .btn_copy, .btn_list, .btn_detail { background: #eef1f6; color: #4b5563; border: 1px solid #d4dae3; }
+.btn_expand_all:hover:not(:disabled), .btn_collapse_all:hover:not(:disabled), .btn_check_all:hover:not(:disabled), .btn_uncheck_all:hover:not(:disabled), .btn_copy:hover:not(:disabled), .btn_list:hover:not(:disabled), .btn_detail:hover:not(:disabled) { background: #e2e7ef; border-color: #c2cad6; }
+.btn_filter_toggle { background:#fafbfc; color:#555; border:1px solid #e5e7eb; border-radius:6px; padding:4px 12px; font-size:11px; cursor:pointer; transition:background .15s; }
+.btn_filter_toggle:hover:not(:disabled) { background:#eef1f6; }
+.btn_row_edit  { background: linear-gradient(135deg, #1677ff, #0958d9); color: #fff; box-shadow: 0 2px 6px rgba(22,119,255,.22); padding: 2px 7px; font-size: 11px; border-radius: 5px; font-weight: 500; }
+.btn_row_edit:hover:not(:disabled)  { box-shadow: 0 4px 12px rgba(22,119,255,.35); }
+.btn_row_delete{ background: linear-gradient(135deg, #ff4d4f, #d9363e); color: #fff; box-shadow: 0 2px 6px rgba(255,77,79,.22); padding: 2px 7px; font-size: 11px; border-radius: 5px; font-weight: 500; }
+.btn_row_delete:hover:not(:disabled){ box-shadow: 0 4px 12px rgba(255,77,79,.35); }
+
 .bo-table { width: 100%; min-width: 720px; border-collapse: collapse; }
 /* 표준 행 높이: 세로 패딩 6px(th)/3px(td) — 코드목록(crud-grid) 행높이 기준으로 전 BO 그리드 통일 */
 .bo-table th { background: #fafafa; padding: 6px 10px; text-align: center; font-size: 12px; font-weight: 600; color: #555; border-bottom: 1px solid #e8e8e8; border-right: 1px solid #ececec; white-space: nowrap; }

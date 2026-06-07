@@ -743,7 +743,7 @@ window.SyVendorUserMng = {
       <!-- ===== ■.■.■. 사용자 목록 (항상 표시 — 업체 미선택 시 안내 empty-text) ======== -->
       <bo-container title="사용자목록" :count-text="vendorUsers.length + '건'">
         <template #toolbar-actions>
-          <button class="btn btn-primary btn-sm" :disabled="uiState.searchVendorId == null" @click="handleBtnAction('vendorUsers-add')">
+          <button class="btn btn_new" :disabled="uiState.searchVendorId == null" @click="handleBtnAction('vendorUsers-add')">
             + 신규등록
           </button>
         </template>
@@ -753,7 +753,7 @@ window.SyVendorUserMng = {
           :empty-text="uiState.searchVendorId != null ? '사용자가 없습니다.' : '좌측 업체목록에서 업체를 선택하면 사용자 목록이 표시됩니다.'"
           grid-id="vendorUsers-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
           <template #row-actions="{ row }">
-            <button class="btn btn-danger btn-xs" @click.stop="handleSelectAction('vendorUsers-rowDelete', row)">삭제</button>
+            <button class="btn btn_row_delete" @click.stop="handleSelectAction('vendorUsers-rowDelete', row)">삭제</button>
           </template>
         </bo-grid>
         <bo-pager v-if="uiState.searchVendorId != null" :pager="userGridPager" :on-set-page="n => handleBtnAction('vendorUsers-pager-setPage', n)" :on-size-change="() => handleSelectAction('vendorUsers-pager-sizeChange')" />
@@ -775,8 +775,8 @@ window.SyVendorUserMng = {
         <div v-if="uiState.formMode" style="display:flex;gap:6px;flex-wrap:wrap;">
           <button class="btn btn-blue btn-sm" @click="handleBtnAction('vendorUsers-sendJoinMail')">✉ 회원가입메일</button>
           <button class="btn btn-blue btn-sm" @click="handleBtnAction('vendorUsers-sendPwresetMail')">🔑 비밀번호초기화</button>
-          <button class="btn btn-secondary btn-sm" @click="handleBtnAction('vendorUsers-close')">취소</button>
-          <button class="btn btn-primary btn-sm" @click="handleBtnAction('vendorUsers-save')">저장</button>
+          <button class="btn btn_cancel" @click="handleBtnAction('vendorUsers-close')">취소</button>
+          <button class="btn btn_save" @click="handleBtnAction('vendorUsers-save')">저장</button>
         </div>
       </div>
       <!-- ===== ■.■. 업체사용자 상세 폼 (항상 표시 — 미선택 시 빈 폼 구조 노출) =============== -->
@@ -797,7 +797,7 @@ window.SyVendorUserMng = {
         <bo-grid v-else bare :columns="columns.userRoleGrid" :rows="userRoles" row-key="vendorUserRoleId"
           empty-text="부여된 역할이 없습니다." row-actions>
           <template #row-actions="{ row }">
-            <button class="btn btn-danger btn-xs" @click="handleSelectAction('userRoles-rowDelete', row)">삭제</button>
+            <button class="btn btn_row_delete" @click="handleSelectAction('userRoles-rowDelete', row)">삭제</button>
           </template>
         </bo-grid>
       </div>

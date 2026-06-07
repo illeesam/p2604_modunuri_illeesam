@@ -1406,6 +1406,44 @@ const baseFormColumns = [
 **적용 현황**: BO 전 도메인 84파일 전수 적용 완료(2026-05-20, ~790→393 슬롯, 50%
 속성화, `node --check` 0 실패). 상세 표준 → [`_doc/정책서/sy/sy.51.프로그램설계정책.md`](_doc/정책서/sy/sy.51.프로그램설계정책.md) §4.6
 
+### 표준 의미 버튼 클래스 ⭐⭐ (2026-06-07 확정 / 06-08 확장)
+
+**원칙**: 반복되는 모든 기능 버튼은 **고정 의미 클래스명**을 사용한다. 색/크기는 클래스가 직접 정의하므로
+`btn-blue`·`btn-danger`·`btn-primary`·`btn-green` 같은 색상 클래스 **병기 금지**(인라인 색상 style 도 제거).
+색을 바꾸려면 CSS 한 곳(`assets/css/{bo,fo}GlobalStyle0{1,2,3}.css`)만 수정 → 전 화면 일괄 반영.
+
+**전체 taxonomy (26종)**:
+
+| 액션 | 클래스 | BO 색 | 액션 | 클래스 | BO 색 |
+|---|---|---|---|---|---|
+| 조회/검색 | `btn_search` | primary | 저장/등록 | `btn_save` | primary |
+| 초기화 | `btn_reset` | gray | 취소 | `btn_cancel` | gray |
+| 수정(상세) | `btn_edit` | **파랑** | 닫기 | `btn_close` | gray |
+| 삭제(상세) | `btn_delete` | 빨강 | 엑셀(다운로드) | `btn_excel` | 초록 |
+| 신규/+추가(메인) | `btn_new` | primary | 엑셀업로드 | `btn_excel_upload` | 파랑 |
+| 행 수정 | `btn_row_edit` | 파랑(xs) | 선택(모달확정) | `btn_select` | primary |
+| 행 삭제/✕ | `btn_row_delete` | 빨강(xs) | 확인 | `btn_confirm` | primary |
+| 미리보기 | `btn_preview` | 파랑 | 적용 | `btn_apply` | primary |
+| 전체펼치기 | `btn_expand_all` | gray | 전송/발송 | `btn_send` | primary |
+| 전체닫기/접기 | `btn_collapse_all` | gray | 복사 | `btn_copy` | gray |
+| 전체선택 | `btn_check_all` | gray | 목록으로 | `btn_list` | gray |
+| 전체해제 | `btn_uncheck_all` | gray | 상세/상세보기(행) | `btn_detail` | gray |
+| 장바구니(FO) | `btn_cart` | 검정 | 바로구매(FO) | `btn_buy` | 검정 |
+
+- BO: primary 는 테마별(01 핑크 / 02 민트 / 03 퍼플), 수정·미리보기=파랑·삭제=빨강·엑셀=초록은 전 테마 공통
+- FO: 확정형(search/edit/new/save/select/confirm/send/preview/buy/cart/list/detail)=검정 그라데이션, 유틸=아웃라인, 삭제=빨강
+- row 변형(`btn_row_edit`/`btn_row_delete`)은 xs 크기 내장 → `btn-xs` 병기 불필요
+- **공통 컴포넌트 자동 적용**: BoSearchArea(조회/초기화) · BoFormArea(수정/저장/취소/닫기) · BoGrid 기본 행삭제 ·
+  BoRowCancelDelete(행삭제) · BoComp 트리(전체펼치기/닫기) · BoGridCrud(엑셀/엑셀업로드) · BoModals(선택/닫기) ·
+  Fo 대응(FoSearchArea/FoFormArea/FoGrid/FoRowCancelDelete)
+- 사용 예: `<button class="btn btn_edit" @click="...">수정</button>` (BO 는 `btn` 베이스 유지, FO 는 단독 가능)
+- **대상 외(미변환 유지)**: 폼 내부 자식 리스트 add/remove(+값/+파일/+상품 추가, removeImage/체크삭제),
+  모달 OPEN 트리거(`*Modal-open`)·모달 picker 조회, 폼 내부 필터/비번 초기화, 일괄(toolbar-delete-checked),
+  페이지네이션(‹›«»), 뷰토글(리스트/카드 tab-mode), 정렬토글, 모달 헤더 아이콘 ✕/×, 상태배지 `<span class=badge>`
+- ⚠️ 그리드 cmd colKey `'btn_edit'`/`'btn_delete'`/`'btn_view'`(작은따옴표 문자열)는 라우팅 식별자로
+  CSS 클래스(`.btn_edit` 등)와 **이름만 같고 별개**. grep 감사 시 `class="..."` 안만 세야 실제 적용 수
+- 상세 정책 → `_doc/정책서/base/base.UX-admin.md` §20
+
 ### 알림 & 사용자 피드백
 
 **원칙**: 시스템 alert/confirm 금지 → 디자인된 UI 모달 사용

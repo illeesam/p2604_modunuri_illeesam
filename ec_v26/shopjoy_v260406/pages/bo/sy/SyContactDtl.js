@@ -300,14 +300,14 @@ window.SyContactDtl = {
       </div>
       <div class="form-actions" v-if="active">
         <template v-if="cfDtlMode">
-          <button class="btn btn-blue" @click="handleBtnAction('form-edit')">수정</button>
-          <button class="btn btn-secondary" @click="handleBtnAction('form-close')">닫기</button>
+          <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
+          <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
         </template>
         <template v-else>
-          <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 문의 내용 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
+          <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 문의 내용 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
             저장
           </button>
-          <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">취소</button>
+          <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
         </template>
       </div>
     </div>
@@ -342,14 +342,14 @@ window.SyContactDtl = {
       </div>
       <div class="form-actions" v-if="active">
         <template v-if="cfDtlMode">
-          <button class="btn btn-blue" @click="handleBtnAction('form-edit')">수정</button>
-          <button class="btn btn-secondary" @click="handleBtnAction('form-close')">닫기</button>
+          <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
+          <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
         </template>
         <template v-else>
-          <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 문의 내용 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-saveAnswer')">
+          <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 문의 내용 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-saveAnswer')">
             답변 저장
           </button>
-          <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">취소</button>
+          <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
         </template>
       </div>
     </div>

@@ -340,10 +340,10 @@ window.PmGiftMng = {
           ⊞ 카드
         </button>
       </div>
-      <button class="btn btn-green btn-sm" @click="handleBtnAction('gifts-excel')">
+      <button class="btn btn_excel" @click="handleBtnAction('gifts-excel')">
         📥 엑셀
       </button>
-      <button class="btn btn-primary btn-sm" @click="handleBtnAction('gifts-add')">
+      <button class="btn btn_new" @click="handleBtnAction('gifts-add')">
         + 신규
       </button>
     </template>
@@ -358,10 +358,10 @@ window.PmGiftMng = {
       </template>
       <template #row-actions="{ row: g, gridId }">
         <div class="actions">
-          <button class="btn btn-blue btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_edit', g)">
+          <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_edit', g)">
             수정
           </button>
-          <button class="btn btn-danger btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_delete', g)">
+          <button class="btn btn_row_delete" @click.stop="handleGridCellAction(gridId, 'btn_delete', g)">
             삭제
           </button>
         </div>
@@ -408,10 +408,10 @@ window.PmGiftMng = {
           </div>
         </div>
         <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:center;align-items:center;">
-          <button class="btn btn-blue btn-sm" @click.stop="handleGridCellAction('gifts-cellClick', 'btn_edit', g)" style="font-size:11px;padding:4px 12px;">
+          <button class="btn btn_row_edit" @click.stop="handleGridCellAction('gifts-cellClick', 'btn_edit', g)" style="font-size:11px;padding:4px 12px;">
             수정
           </button>
-          <button class="btn btn-danger btn-sm" @click.stop="handleGridCellAction('gifts-cellClick', 'btn_delete', g)" style="font-size:11px;padding:4px 12px;">
+          <button class="btn btn_row_delete" @click.stop="handleGridCellAction('gifts-cellClick', 'btn_delete', g)" style="font-size:11px;padding:4px 12px;">
             삭제
           </button>
           <span style="font-size:11px;color:#999;margin-left:auto;">
@@ -426,7 +426,7 @@ window.PmGiftMng = {
   <!-- ===== ■. 하단 상세영역: PmGiftDtl 인라인 임베드 ============================== -->
   <bo-container bare>
     <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+      <button data-hide-close style="display:none;" class="btn btn_close" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기
       </button>
     </div>

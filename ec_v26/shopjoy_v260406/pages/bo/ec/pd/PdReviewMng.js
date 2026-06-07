@@ -481,7 +481,7 @@ window.PdReviewMng = {
             {{ s.label }}
           </option>
         </select>
-        <button data-hide-close style="display:none;" class="btn btn-xs" style="margin-left:6px;background:#f5f5f5;border:1px solid #ddd;color:#666;font-size:11px;padding:3px 10px;" @click="handleBtnAction('detailPanel-close')">
+        <button data-hide-close style="display:none;" class="btn btn_close" style="margin-left:6px;background:#f5f5f5;border:1px solid #ddd;color:#666;font-size:11px;padding:3px 10px;" @click="handleBtnAction('detailPanel-close')">
           ✕ 닫기
         </button>
       </span>
@@ -576,10 +576,10 @@ window.PdReviewMng = {
           style="margin:6px 0 0;width:100%;font-size:13px;box-sizing:border-box;"></textarea>
         </div>
         <div style="padding:12px 20px;border-top:1px solid #f0f0f0;background:#fafafa;display:flex;justify-content:flex-end;gap:8px;">
-          <button class="btn btn-secondary btn-sm" @click="handleBtnAction('statusModal-close')">
+          <button class="btn btn_cancel" @click="handleBtnAction('statusModal-close')">
             취소
           </button>
-          <button class="btn btn-primary btn-sm" @click="handleBtnAction('statusModal-confirm')">
+          <button class="btn btn_save" @click="handleBtnAction('statusModal-confirm')">
             저장
           </button>
         </div>

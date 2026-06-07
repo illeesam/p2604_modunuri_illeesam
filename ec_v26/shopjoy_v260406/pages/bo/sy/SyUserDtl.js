@@ -306,12 +306,12 @@ window.SyUserDtl = {
   <!-- ===== ■.■. 폼 액션 (active 일 때만 노출) ================================ -->
   <div class="form-actions" v-if="active">
     <template v-if="cfDtlMode">
-      <button class="btn btn-blue" @click="handleBtnAction('form-edit')">수정</button>
-      <button class="btn btn-secondary" @click="handleBtnAction('form-close')">닫기</button>
+      <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
+      <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
     </template>
     <template v-else>
-      <button class="btn btn-primary" @click="handleBtnAction('form-save')">저장</button>
-      <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">취소</button>
+      <button class="btn btn_save" @click="handleBtnAction('form-save')">저장</button>
+      <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
     </template>
   </div>
   <!-- ===== □.□. 폼 액션 ================================================== -->

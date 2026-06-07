@@ -396,10 +396,10 @@ window.SyPathMng = {
     <!-- ===== ■.■. 그리드 =================================================== -->
     <bo-container title="경로 목록" :count-text="baseGridPager.pageTotalCount + '건'">
       <template #toolbar-actions>
-        <button class="btn btn-green btn-sm" @click="handleBtnAction('paths-add')">
+        <button class="btn btn_new" @click="handleBtnAction('paths-add')">
           + 행추가
         </button>
-        <button class="btn btn-primary btn-sm" @click="handleBtnAction('paths-save')">
+        <button class="btn btn_save" @click="handleBtnAction('paths-save')">
           저장
         </button>
       </template>
@@ -437,10 +437,10 @@ window.SyPathMng = {
              N(신규): [취소](행제거) / D(삭제마킹): [취소](복원)+[삭제] / 그외: [삭제](D마킹). 실제 반영은 상단 [저장] -->
         <template #row-actions="{ row }">
           <div style="display:inline-flex;gap:4px;flex-wrap:nowrap;">
-            <button v-if="fnShowCancel(row)" class="btn btn-secondary btn-xs" @click.stop="handleSelectAction('paths-rowCancel', row)">
+            <button v-if="fnShowCancel(row)" class="btn btn_cancel" @click.stop="handleSelectAction('paths-rowCancel', row)">
               취소
             </button>
-            <button v-if="fnShowDelete(row)" class="btn btn-danger btn-xs" @click.stop="handleSelectAction('paths-rowDelete', row)">
+            <button v-if="fnShowDelete(row)" class="btn btn_row_delete" @click.stop="handleSelectAction('paths-rowDelete', row)">
               삭제
             </button>
           </div>

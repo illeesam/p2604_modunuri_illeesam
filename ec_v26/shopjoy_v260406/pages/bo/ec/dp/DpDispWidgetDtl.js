@@ -729,15 +729,15 @@ window.DpDispWidgetDtl = {
       <button @click="handleBtnAction('libPickModal-open', 'ref')"  class="btn btn-outline" style="font-size:12px;background:#f3e5f5;color:#6a1b9a;border-color:#ce93d8;">
         🔗 전시위젯Lib 참조
       </button>
-      <button @click="handleBtnAction('form-save')"   class="btn btn-primary" style="font-size:13px;">저장</button>
-      <button v-if="!cfIsNew" @click="handleBtnAction('form-delete')" class="btn btn-outline" style="font-size:13px;color:#e8587a;border-color:#e8587a;">
+      <button @click="handleBtnAction('form-save')"   class="btn btn_save" style="font-size:13px;">저장</button>
+      <button v-if="!cfIsNew" @click="handleBtnAction('form-delete')" class="btn btn_delete" style="font-size:13px;color:#e8587a;border-color:#e8587a;">
         삭제
       </button>
-      <button @click="handleBtnAction('form-close')" class="btn btn-outline" style="font-size:13px;">닫기</button>
+      <button @click="handleBtnAction('form-close')" class="btn btn_close" style="font-size:13px;">닫기</button>
     </template>
     <template v-if="active && cfDtlMode">
-      <button @click="handleBtnAction('form-edit')" class="btn btn-blue" style="font-size:13px;">수정</button>
-      <button @click="handleBtnAction('form-close')" class="btn btn-outline" style="font-size:13px;">닫기</button>
+      <button @click="handleBtnAction('form-edit')" class="btn btn_edit" style="font-size:13px;">수정</button>
+      <button @click="handleBtnAction('form-close')" class="btn btn_close" style="font-size:13px;">닫기</button>
     </template>
   </template>
   <!-- ===== ■.■. 위젯Lib 선택 팝업 =========================================== -->

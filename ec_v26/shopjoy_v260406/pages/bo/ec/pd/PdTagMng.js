@@ -204,10 +204,10 @@ window.PdTagMng = {
   <!-- ===== ■. 목록 그리드 =================================================== -->
   <bo-container title="태그 목록" :count-text="baseGridPager.pageTotalCount + '건'">
     <template #toolbar-actions>
-      <button class="btn btn-primary btn-sm" @click="handleBtnAction('tags-add')">
+      <button class="btn btn_new" @click="handleBtnAction('tags-add')">
         + 행추가
       </button>
-      <button class="btn btn-primary btn-sm" @click="handleBtnAction('tags-save')">
+      <button class="btn btn_save" @click="handleBtnAction('tags-save')">
         저장
       </button>
     </template>
@@ -217,7 +217,7 @@ window.PdTagMng = {
       :row-class="(row) => row._row_status==='N' ? 'table-rowNew' : (row._row_status==='U' ? 'table-rowMod' : '')"
       grid-id="tags-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
       <template #row-actions="{ idx }">
-        <button class="btn btn-danger btn-xs" @click="handleSelectAction('tags-rowDelete', idx)">
+        <button class="btn btn_row_delete" @click="handleSelectAction('tags-rowDelete', idx)">
           삭제
         </button>
       </template>

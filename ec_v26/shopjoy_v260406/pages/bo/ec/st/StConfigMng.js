@@ -240,7 +240,7 @@ window.StConfigMng = {
   <!-- ===== ■. 목록 영역 ================================================= -->
   <bo-container title="정산기준 목록" :count-text="'총 ' + configs.length + '건'">
     <template #toolbar-actions>
-      <button class="btn btn-primary btn-sm" @click="handleBtnAction('configs-add')">+ 기준 추가</button>
+      <button class="btn btn_new" @click="handleBtnAction('configs-add')">+ 기준 추가</button>
     </template>
     <bo-grid bare
       :columns="columns.baseGrid" :rows="configs" row-key="settleConfigId" :selected-key="uiState.selectedId"
@@ -251,8 +251,8 @@ window.StConfigMng = {
       </template>
       <template #row-actions="{ row: c }">
         <div class="actions">
-          <button class="btn btn-xs btn-blue" @click="handleSelectAction('configs-rowEdit', c)">수정</button>
-          <button class="btn btn-xs btn-danger"  @click="handleSelectAction('configs-rowDelete', c)">삭제</button>
+          <button class="btn btn_row_edit" @click="handleSelectAction('configs-rowEdit', c)">수정</button>
+          <button class="btn btn_row_delete"  @click="handleSelectAction('configs-rowDelete', c)">삭제</button>
         </div>
       </template>
     </bo-grid>

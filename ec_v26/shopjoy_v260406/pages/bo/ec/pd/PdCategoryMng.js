@@ -556,7 +556,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
         </span>
       </template>
       <template #toolbar-actions>
-        <button class="btn btn-green btn-sm" @click="handleBtnAction('categories-add')">
+        <button class="btn btn_new" @click="handleBtnAction('categories-add')">
           + 행추가
         </button>
         <button class="btn btn-danger btn-sm" @click="handleBtnAction('categories-deleteChecked')">
@@ -565,7 +565,7 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
         <button class="btn btn-secondary btn-sm" @click="handleBtnAction('categories-cancelChecked')">
           취소
         </button>
-        <button class="btn btn-primary btn-sm" @click="handleBtnAction('categories-save')">
+        <button class="btn btn_save" @click="handleBtnAction('categories-save')">
           저장
         </button>
       </template>
@@ -704,21 +704,21 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
           </td>
           <!-- ===== ■.■.■.■.■.■. 하위 추가 ========================================= -->
           <td style="text-align:center;padding:2px">
-            <button v-if="row._row_status!=='D' && row.categoryId>0" class="btn btn-xs" style="padding:1px 5px;font-size:11px;background:#f0f7ff;color:#1677ff;border:1px solid #91caff" title="하위 카테고리 추가" @click.stop="handleSelectAction('categories-rowAddChild', { row, idx: getRealIdx(idx) })">
+            <button v-if="row._row_status!=='D' && row.categoryId>0" class="btn btn_new" style="padding:1px 5px;font-size:11px;background:#f0f7ff;color:#1677ff;border:1px solid #91caff" title="하위 카테고리 추가" @click.stop="handleSelectAction('categories-rowAddChild', { row, idx: getRealIdx(idx) })">
             +하위
           </button>
         </td>
         <!-- ===== ■.■.■.■.■.■. 취소 ============================================ -->
         <td style="text-align:center;padding:2px">
           <button v-if="['U','I','D'].includes(row._row_status)"
-                class="btn btn-secondary btn-xs" @click.stop="handleSelectAction('categories-rowCancel', getRealIdx(idx))">
+                class="btn btn_cancel" @click.stop="handleSelectAction('categories-rowCancel', getRealIdx(idx))">
             취소
           </button>
         </td>
         <!-- ===== ■.■.■.■.■.■. 삭제 ============================================ -->
         <td style="text-align:center;padding:2px">
           <button v-if="row._row_status !== 'D'"
-                class="btn btn-danger btn-xs" @click.stop="handleSelectAction('categories-rowDelete', getRealIdx(idx))">
+                class="btn btn_row_delete" @click.stop="handleSelectAction('categories-rowDelete', getRealIdx(idx))">
             삭제
           </button>
         </td>

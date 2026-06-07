@@ -375,10 +375,10 @@ window.FoSearchArea = {
 <div v-if="showActions" style="display:flex;gap:6px;margin-left:auto;">
   <slot name="actions-before">
   </slot>
-  <button class="btn-blue" :disabled="loading" @click="handleBtnAction('search-emit')">
+  <button class="btn_search" :disabled="loading" @click="handleBtnAction('search-emit')">
     {{ searchLabel }}
   </button>
-  <button class="btn-outline btn-sm" @click="handleBtnAction('search-reset')">
+  <button class="btn_reset" @click="handleBtnAction('search-reset')">
     {{ resetLabel }}
   </button>
   <slot name="actions-after">
@@ -728,7 +728,7 @@ window.FoGrid = {
             </template>
             <td v-if="rowActions" style="text-align:center;">
               <slot name="row-actions" :row="row" :idx="idx">
-                <button class="btn-outline btn-sm" @click="handleSelectAction('grid-row-remove', { row })">
+                <button class="btn_row_delete" @click="handleSelectAction('grid-row-remove', { row })">
                   ✕
                 </button>
               </slot>
@@ -897,7 +897,7 @@ window.FoGridCrud = {
       <button v-if="showRowCheck" class="btn-outline btn-sm" @click="handleBtnAction('toolbar-cancel-checked')">
         취소
       </button>
-      <button v-if="showSave" class="btn-blue btn-sm" @click="handleBtnAction('toolbar-save')">
+      <button v-if="showSave" class="btn btn_save" @click="handleBtnAction('toolbar-save')">
         저장
       </button>
     </div>
@@ -1153,8 +1153,8 @@ window.FoRowCancelDelete = {
     style="font-size:10px;padding:2px 7px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;">
     {{ cancelLabel }}
   </button>
-  <button v-if="cfShowDelete" @click.stop="handleBtnAction('row-delete')"
-    style="font-size:10px;padding:2px 7px;border:1px solid #fca5a5;border-radius:4px;background:#fee2e2;color:#991b1b;cursor:pointer;">
+  <button v-if="cfShowDelete" class="btn_row_delete" @click.stop="handleBtnAction('row-delete')"
+    style="font-size:10px;padding:2px 7px;">
     {{ deleteLabel }}
   </button>
 </span>

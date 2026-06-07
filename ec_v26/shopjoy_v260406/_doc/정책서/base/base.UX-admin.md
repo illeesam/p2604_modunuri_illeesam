@@ -1632,3 +1632,99 @@ public void saveList(String cmd, List<Xxx> rows) {
 - ✅ **PdCategoryMng** — `boApiSvc.pdCategory.saveList('order', ...)` + `handleSearchList()` 재조회 (이전의 수동 `_row_status` 정리 로직 제거)
 - ❌ **PdCategoryProdMng** — 전체 교체 API(`updateProds`) 패턴, 묶음 저장 유지
 - ❌ **PdProdDtl / PdBundleMng / PdSetMng / DpDispWidgetDtl / DpDispPanelMng** — Dtl 자식 리스트, 부모 [저장]에 종속
+
+## 20. 표준 의미 버튼 클래스 ⭐⭐ (2026-06-07 확정 / 06-08 전체 taxonomy 확장, 전체공통 BO+FO)
+
+**원칙**: 반복되는 **모든 기능 버튼**은 **고정 의미 클래스명**을 사용한다. 색·크기는 클래스가 직접 정의하므로
+`btn-blue`·`btn-danger`·`btn-primary`·`btn-secondary`·`btn-green` 같은 **색상 클래스 병기 금지** (인라인 색상 style 도 제거).
+색을 바꾸려면 CSS 한 곳(`assets/css/{bo,fo}GlobalStyle0{1,2,3}.css`)만 수정 → 전 화면 일괄 반영.
+
+### 20.1 클래스 ↔ 액션 ↔ 색 (전체 26종)
+
+| 액션 | 클래스 | BO 색 | 적용 트리거(cmd/라벨) |
+|---|---|---|---|
+| 조회/검색 | `btn_search` | primary(테마) | 메인 검색영역 [조회]/[검색] (`searchParam-list/apply`/`search-do`/`onSearch`) |
+| 초기화 | `btn_reset` | gray | 메인 검색 [초기화] (`searchParam-reset`/`onReset`) |
+| 수정 | `btn_edit` | **파랑** | 상세폼 [수정] (`form-edit`/`baseForm-edit`) |
+| 삭제 | `btn_delete` | 빨강 | 상세/메인 [삭제] (`form-delete`/`detailPanel-delete`/`handleDelete`) |
+| 신규/+추가 | `btn_new` | primary(테마) | 목록 [+ 신규]/[+ XXX 추가] (`xxx-add` 메인 그리드 생성) |
+| 저장/등록 | `btn_save` | primary(테마) | 폼 [저장]/[등록] (`form-save`/`xxx-save`/`modal-save`/`actionsModal-apply`) |
+| 취소 | `btn_cancel` | gray | 폼/모달 [취소] (`form-cancel`/`modal-close`) |
+| 닫기 | `btn_close` | gray | 폼/모달 [닫기] (`form-close`/`closeModal`/`modal-close`) |
+| 엑셀(다운로드) | `btn_excel` | 초록 | [📥 엑셀] (`xxx-excel`/`toolbar-export`) |
+| 엑셀업로드 | `btn_excel_upload` | 파랑 | [📤 엑셀업로드] (`xxx-excel-upload`) |
+| 선택(모달확정) | `btn_select` | primary(테마) | 모달 picker 행확정 (`list-select`/`*-pick`/`picker-confirm`) |
+| 확인 | `btn_confirm` | primary(테마) | 검증/확인 (`verify`/`doConfirm`/`modal-confirm`) |
+| 적용 | `btn_apply` | primary(테마) | [적용] (`*-apply`) |
+| 전송/발송 | `btn_send` | primary(테마) | [전송]/[발송] (`*-send`/`track2`) |
+| 미리보기 | `btn_preview` | 파랑 | [미리보기] (`preview-*Open`) |
+| 전체펼치기 | `btn_expand_all` | gray | 트리 [전체펼치기] (`*-expand-all`/`expandAll`) |
+| 전체닫기/접기 | `btn_collapse_all` | gray | 트리 [전체닫기/접기] (`*-collapse-all`/`collapseAll`) |
+| 전체선택 | `btn_check_all` | gray | [전체선택] (`checkAll`/`selectAll`) |
+| 전체해제 | `btn_uncheck_all` | gray | [전체해제] (`clearAll`/`clearChecked`) |
+| 복사 | `btn_copy` | gray | 행 [복사] (`rowCopy`) |
+| 목록으로 | `btn_list` | gray | [목록으로] (`*-back`) ※ 리스트/카드 뷰토글 제외 |
+| 상세/상세보기 | `btn_detail` | gray | 그리드 행 [상세] (`rowView`/colKey `'btn_view'`) |
+| 행 수정 | `btn_row_edit` | 파랑(xs) | #row-actions [수정] (`xxx-rowEdit`/`handleLoadDetail`) |
+| 행 삭제/✕ | `btn_row_delete` | 빨강(xs) | #row-actions [삭제]/[✕] (`xxx-rowDelete`/`grid-row-remove`) |
+| 장바구니(FO) | `btn_cart` | 검정 | [장바구니 담기]/[담기] (`cart-add`/`quickBuy-openCart`) |
+| 바로구매(FO) | `btn_buy` | 검정 | [바로구매]/[구매하기] (`order-buyNow`/`quickBuy-openBuy`) |
+| 상세필터 토글 | `btn_filter_toggle` | gray pill | 대시보드 [▼ 상세필터 펼치기/접기] (`filters-toggleExpand`) |
+
+- BO: `primary` 는 테마별(01 핑크 / 02 민트 / 03 퍼플), **수정·미리보기=파랑, 삭제=빨강, 엑셀=초록은 전 테마 공통**.
+- FO: 확정형(search/edit/new/save/select/confirm/apply/send/preview/buy/cart/list/detail)=검정 그라데이션, 유틸(reset/cancel/close/expand/collapse/check/copy/excel_upload)=아웃라인, 삭제=빨강.
+- 행 변형(`btn_row_edit`/`btn_row_delete`)은 **xs 크기 내장** → `btn-xs` 병기 불필요.
+- 수정·미리보기 버튼이 **파랑**인 이유: 알림관리(BoFormArea)가 핑크였던 것을 공지사항처럼 파랑으로 통일 (2026-06-07).
+
+### 20.2 공통 컴포넌트 자동 적용
+
+다음 컴포넌트를 쓰는 화면은 자동 반영 — 개별 화면 수정 불필요:
+
+- `BoSearchArea`/`FoSearchArea` — [조회]=`btn_search`, [초기화]=`btn_reset`
+- `BoFormArea`/`FoFormArea` — [수정]=`btn_edit`, [저장]=`btn_save`, [취소]=`btn_cancel`, [닫기]=`btn_close`
+- `BoGrid` 기본 #row-actions(✕)·`BoRowCancelDelete`(행삭제)·`FoGrid`·`FoRowCancelDelete` — `btn_row_delete`
+- `BoComp` 트리 카드 [전체펼치기]/[전체닫기] — `btn_expand_all`/`btn_collapse_all`
+- `BoGridCrud` [📥 엑셀]/[📤 엑셀업로드]/[적용] — `btn_excel`/`btn_excel_upload`/`btn_apply`
+- `BoModals` picker [선택]/[닫기] — `btn_select`/`btn_close`
+
+### 20.3 사용 예
+
+```html
+<!-- BO: btn 베이스 유지 + 의미 클래스 -->
+<button class="btn btn_edit"   @click="handleBtnAction('form-edit')">수정</button>
+<button class="btn btn_save"   @click="handleBtnAction('form-save')">저장</button>
+<button class="btn btn_excel"  @click="handleBtnAction('notices-excel')">📥 엑셀</button>
+<button class="btn btn_preview" @click="handleBtnAction('preview-uiOpen')">🖼 UI미리보기</button>
+<!-- 행 액션 (xs 크기 내장 → btn-xs 불필요) -->
+<button class="btn btn_row_edit"   @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">수정</button>
+<button class="btn btn_row_delete" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">삭제</button>
+<!-- FO: btn 베이스 없이 단독도 가능 -->
+<button class="btn_search" @click="handleBtnAction('search-do')">조회</button>
+<button class="btn_cart"   @click="handleBtnAction('cart-add')">장바구니 담기</button>
+```
+
+### 20.4 대상 외 (미변환 — 명명된 표준 액션이 아님)
+
+다음은 **표준 의미 버튼이 아니므로 변환하지 않는다** (적대적 검증으로 확정):
+
+- **폼 내부 자식 리스트 조작** — `+ 값/파일/상품/경로/위젯/역할 추가`, `행추가`(제너릭 BoGridCrud toolbar-add), `+ 차원 추가`, `removeImage`/`removeOptGroup`/`removeRelProd`/`removeCategory`/`체크삭제` (서브컬렉션 add/remove)
+- **모달 OPEN 트리거** — [선택]/[+ 추가] 가 `*Modal-open`/`openSiteModal`/`coupon-open` 등 모달을 **여는** 버튼 (모달 내부 확정 [선택]만 `btn_select`)
+- **모달 picker 조회** — `prodPickModal-search`/`memberPickModal-search`
+- **필터/입력/비번 초기화** — `필터 초기화`(`filter-clear`), `주소 초기화`, `캐쉬 초기화`(`cash-reset`), `미리보기 초기화`(`preview-reset`), `비밀번호초기화`(메일발송)
+- **일괄/전체 비우기** — `toolbar-delete-checked`/`cancel-checked`, `전체 삭제`(`clearAll`/`clear-rows`)
+- **모달/팝업 헤더 아이콘 닫기** — `×`/`✕` 아이콘전용 (`cardPreview-close`/`spanPopup-close`) ※ 라벨 [닫기] 는 `btn_close`
+- **페이지네이션/뷰토글/정렬** — `‹›«»`, 리스트/카드 `tab-mode`, `최근등록순`(`sort-change`)
+- **상태 배지** — `<span class="badge">수정/신규</span>` (표시 전용, 버튼 아님)
+- **스토어프론트 일반 네비** — `쇼핑하기`/`더 보기`/`사이즈 가이드`/`상품 문의하기` 등 (cart/buy 외 storefront 내비/정보 버튼)
+
+> ⚠️ **함정**: 그리드 cmd colKey `'btn_edit'`/`'btn_delete'`/`'btn_view'`(작은따옴표 JS 문자열, §6.10/§6.11)는
+> 라우팅 식별자로 CSS 클래스 `.btn_edit` 와 **이름만 같고 별개**. grep 감사 시 `class="..."` 안만 세야 실제 적용 수.
+
+### 20.5 적용 현황 (2026-06-08)
+
+- CSS: BO/FO 6개 파일에 **26종 클래스** 정의 (테마별 primary, 공통 파랑/빨강/초록, 유틸 gray/아웃라인)
+- 공통 컴포넌트: `BoAreaComp.js`(SearchArea/FormArea/Grid/GridCrud/RowCancelDelete) · `BoComp.js`(트리) · `BoModals.js` · `FoAreaComp.js`
+- 페이지: BO ~95 + FO ~15 파일 일괄 적용 (Node 스크립트 6회 패스 + 워크플로우 2회 — 후보 인벤토리/적대적 검증)
+- 변환 원칙: 라벨 + @click cmd 로 의미 확정된 버튼만. 모호(애매한 [선택]/[확인])·서브리스트·모달열기·필터초기화·뷰토글은 제외
+- 미적용(의도적): DispUiSimul/Sample 등 데모 화면의 class 없는 인라인 [전체선택/해제] 버튼 (프로덕션 영향 없음)
+- 검증: `node --check` 전체 통과 · CSS 중괄호 균형 OK · 멀티라인 스캔으로 잔여 CRUD-cmd 버튼 점검

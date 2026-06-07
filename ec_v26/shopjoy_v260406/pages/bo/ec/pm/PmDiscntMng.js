@@ -353,7 +353,7 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
             ⊞ 카드
           </button>
         </div>
-        <button class="btn btn-green btn-sm" @click="exportExcel">
+        <button class="btn btn_excel" @click="exportExcel">
           📥 엑셀
         </button>
         <button class="btn btn-primary btn-sm" @click="openNew">
@@ -374,10 +374,10 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
       </template>
       <template #row-actions="{ row: d }">
         <div class="actions">
-          <button class="btn btn-blue btn-xs" @click.stop="handleLoadDetail(d.discntId)">
+          <button class="btn btn_row_edit" @click.stop="handleLoadDetail(d.discntId)">
             수정
           </button>
-          <button class="btn btn-danger btn-xs" @click.stop="handleDelete(d)">
+          <button class="btn btn_delete" @click.stop="handleDelete(d)">
             삭제
           </button>
         </div>
@@ -423,10 +423,10 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
           </div>
         </div>
         <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:center;align-items:center;">
-          <button class="btn btn-blue btn-sm" @click="handleLoadDetail(d.discntId)" style="font-size:11px;padding:4px 12px;">
+          <button class="btn btn_row_edit" @click="handleLoadDetail(d.discntId)" style="font-size:11px;padding:4px 12px;">
             수정
           </button>
-          <button class="btn btn-danger btn-sm" @click="handleDelete(d)" style="font-size:11px;padding:4px 12px;">
+          <button class="btn btn_delete" @click="handleDelete(d)" style="font-size:11px;padding:4px 12px;">
             삭제
           </button>
           <span style="font-size:11px;color:#999;margin-left:auto;">
@@ -444,7 +444,7 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
   <!-- ===== ■. 상세 패널 (인라인 임베드) ========================================= -->
   <bo-container bare>
     <div v-if="uiStateDetail.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="closeDetail">
+      <button data-hide-close style="display:none;" class="btn btn_close" @click="closeDetail">
         ✕ 닫기
       </button>
     </div>

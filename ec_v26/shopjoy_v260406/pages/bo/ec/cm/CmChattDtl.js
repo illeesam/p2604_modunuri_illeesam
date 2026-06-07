@@ -359,17 +359,17 @@ window.CmChattDtl = {
             <div v-if="uiState.chat.chattStatusCd==='진행중'" style="display:flex;gap:8px;margin-top:12px;">
               <textarea class="form-control" v-model="uiState.replyText" rows="2" placeholder="답변을 입력하고 Enter..." style="resize:none;"
                 @keydown.enter.exact.prevent="handleBtnAction('chat-sendReply')"></textarea>
-              <button class="btn btn-primary" @click="handleBtnAction('chat-sendReply')" style="white-space:nowrap;">전송</button>
+              <button class="btn btn_send" @click="handleBtnAction('chat-sendReply')" style="white-space:nowrap;">전송</button>
             </div>
             <div v-else style="margin-top:12px;text-align:center;color:#aaa;font-size:13px;padding:10px;background:#fafafa;border-radius:6px;">
               종료된 채팅입니다.
             </div>
             <div class="form-actions" v-if="cofAnd(active, cfDtlMode)">
-              <button class="btn btn-blue" @click="handleBtnAction('form-edit')">수정</button>
-              <button class="btn btn-secondary" @click="handleBtnAction('chat-back')">목록으로</button>
+              <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
+              <button class="btn btn_list" @click="handleBtnAction('chat-back')">목록으로</button>
             </div>
             <div class="form-actions" v-if="cofAnd(active, !cfDtlMode)">
-              <button class="btn btn-secondary" @click="handleBtnAction('chat-back')">목록으로</button>
+              <button class="btn btn_list" @click="handleBtnAction('chat-back')">목록으로</button>
             </div>
           </template>
           <div v-else style="text-align:center;color:#aaa;padding:40px;">채팅을 찾을 수 없습니다.</div>
@@ -391,7 +391,7 @@ window.CmChattDtl = {
           <!-- ===== ■.■.■.■. 목록 영역 ============================================= -->
           <bo-grid bare :columns="columns.memberChatGrid" :rows="cfMemberChats" row-key="chattRoomId" empty-text="다른 채팅 이력이 없습니다." row-actions>
             <template #row-actions="{ row }">
-              <button class="btn btn-blue btn-xs" @click="handleSelectAction('memberChats-rowView', row.chattRoomId)">상세</button>
+              <button class="btn btn_detail" @click="handleSelectAction('memberChats-rowView', row.chattRoomId)">상세</button>
             </template>
           </bo-grid>
         </div>
@@ -418,8 +418,8 @@ window.CmChattDtl = {
           </template>
         </bo-form-area>
         <div class="form-actions" v-if="!cfDtlMode">
-          <button class="btn btn-primary" @click="handleBtnAction('form-save')">등록</button>
-          <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">취소</button>
+          <button class="btn btn_save" @click="handleBtnAction('form-save')">등록</button>
+          <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
         </div>
       </div>
       <!-- ===== ■.■.■. 고객 채팅 조회 탭 ========================================== -->
@@ -442,7 +442,7 @@ window.CmChattDtl = {
     :title="refModal.type==='product'?'상품 상세':refModal.type==='order'?'주문 상세':'클레임 상세'" modal-name="ref" :on-callback="fnCallbackModal" @close="refModal.show = false">
     <div style="text-align:center;color:#aaa;padding:20px;">정보를 찾을 수 없습니다.</div>
     <template #footer>
-      <button class="btn btn-secondary" @click="handleBtnAction('refModal-close')">닫기</button>
+      <button class="btn btn_close" @click="handleBtnAction('refModal-close')">닫기</button>
     </template>
   </bo-modal>
   <!-- ===== □. 메시지 내 참조 모달 (상품/주문/클레임) ================================= -->

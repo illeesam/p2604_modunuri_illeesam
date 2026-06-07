@@ -357,7 +357,7 @@ window.MbMemberMng = {
   <!-- ===== ■. 목록 영역 =================================================== -->
   <bo-container title="회원목록" :count-text="'총 ' + baseGridPager.pageTotalCount + '건'">
     <template #toolbar-actions>
-      <button class="btn btn-primary btn-sm" @click="handleBtnAction('members-add')">
+      <button class="btn btn_new" @click="handleBtnAction('members-add')">
         + 신규
       </button>
     </template>
@@ -367,7 +367,7 @@ window.MbMemberMng = {
       @sort="key => handleBtnAction('members-sort', key)"
       grid-id="members-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
       <template #row-actions="{ row }">
-        <button class="btn btn-blue btn-xs" @click.stop="handleSelectAction('members-rowEdit', row)">
+        <button class="btn btn_row_edit" @click.stop="handleSelectAction('members-rowEdit', row)">
           수정
         </button>
       </template>

@@ -243,7 +243,7 @@ window.SiteSelectModal = {
     :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
     @row-click="row => handleSelectAction('list-select', row)">
     <template #row-actions="{ row }">
-      <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('list-select', row)">
+      <button class="btn btn_select" @click.stop="handleSelectAction('list-select', row)">
         선택
       </button>
     </template>
@@ -374,7 +374,7 @@ window.VendorSelectModal = {
     :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
     @row-click="row => handleSelectAction('list-select', row)">
     <template #row-actions="{ row }">
-      <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('list-select', row)">
+      <button class="btn btn_select" @click.stop="handleSelectAction('list-select', row)">
         선택
       </button>
     </template>
@@ -507,7 +507,7 @@ window.BrandSelectModal = {
     :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
     @row-click="row => handleSelectAction('list-select', row)">
     <template #row-actions="{ row }">
-      <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('list-select', row)">
+      <button class="btn btn_select" @click.stop="handleSelectAction('list-select', row)">
         선택
       </button>
     </template>
@@ -756,10 +756,10 @@ window.BoUserSelectModal = {
             style="width:100%;border:1px solid #e5e7eb;border-radius:6px;padding:5px 8px;font-size:12px;outline:none;box-sizing:border-box;background:#fff;color:#374151;" />
         </div>
         <div style="display:flex;gap:4px;padding:6px 10px;border-bottom:1px solid #ebebeb;">
-          <button class="btn btn-sm" @click="handleBtnAction('deptTree-expandAll')" style="flex:1;font-size:11px;padding:3px 4px;">
+          <button class="btn btn_expand_all" @click="handleBtnAction('deptTree-expandAll')" style="flex:1;font-size:11px;padding:3px 4px;">
             ▼ 전체펼치기
           </button>
-          <button class="btn btn-sm" @click="handleBtnAction('deptTree-collapseAll')" style="flex:1;font-size:11px;padding:3px 4px;">
+          <button class="btn btn_collapse_all" @click="handleBtnAction('deptTree-collapseAll')" style="flex:1;font-size:11px;padding:3px 4px;">
             ▶ 전체닫기
           </button>
         </div>
@@ -921,7 +921,7 @@ window.MemberSelectModal = {
     :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
     @row-click="row => handleSelectAction('list-select', row)">
     <template #row-actions="{ row }">
-      <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('list-select', row)">
+      <button class="btn btn_select" @click.stop="handleSelectAction('list-select', row)">
         선택
       </button>
     </template>
@@ -1054,7 +1054,7 @@ window.OrderSelectModal = {
     :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
     @row-click="row => handleSelectAction('list-select', row)">
     <template #row-actions="{ row }">
-      <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('list-select', row)">
+      <button class="btn btn_select" @click.stop="handleSelectAction('list-select', row)">
         선택
       </button>
     </template>
@@ -1196,7 +1196,7 @@ window.BbmSelectModal = {
     :empty-text="loading ? '로딩 중...' : '검색 결과가 없습니다.'"
     @row-click="row => handleSelectAction('list-select', row)">
     <template #row-actions="{ row }">
-      <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('list-select', row)">
+      <button class="btn btn_select" @click.stop="handleSelectAction('list-select', row)">
         선택
       </button>
     </template>
@@ -1355,7 +1355,7 @@ window.TemplatePreviewModal = {
       v-html="cfRenderedContent"></pre>
     </div>
     <div style="margin-top:18px;display:flex;justify-content:flex-end;">
-      <button class="btn btn-secondary" @click="handleBtnAction('modal-close')">
+      <button class="btn btn_close" @click="handleBtnAction('modal-close')">
         닫기
       </button>
     </div>
@@ -1993,7 +1993,7 @@ window.RoleTreeModal = {
       <bo-pager :pager="pager" :on-set-page="onSetPage" :on-size-change="onSizeChange" />
     </div>
     <div style="padding:11px 16px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;background:#fafafa;">
-      <button class="btn btn-secondary" @click="handleBtnAction('modal-close')">
+      <button class="btn btn_cancel" @click="handleBtnAction('modal-close')">
         취소
       </button>
     </div>
@@ -2197,7 +2197,7 @@ window.MenuTreeModal = {
     </div>
     <!-- ── 푸터 ── -->
     <div style="padding:11px 16px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;background:#fafafa;">
-      <button class="btn btn-secondary" @click="handleBtnAction('modal-close')">
+      <button class="btn btn_cancel" @click="handleBtnAction('modal-close')">
         취소
       </button>
     </div>
@@ -2408,7 +2408,7 @@ window.DeptTreeModal = {
     </div>
     <!-- ── 푸터 ── -->
     <div style="padding:11px 16px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;background:#fafafa;">
-      <button class="btn btn-secondary" @click="handleBtnAction('modal-close')">
+      <button class="btn btn_cancel" @click="handleBtnAction('modal-close')">
         취소
       </button>
     </div>
@@ -2608,7 +2608,7 @@ window.CategoryTreeModal = {
       <bo-pager :pager="pager" :on-set-page="onSetPage" :on-size-change="onSizeChange" />
     </div>
     <div style="padding:11px 16px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;background:#fafafa;">
-      <button class="btn btn-secondary" @click="handleBtnAction('modal-close')">
+      <button class="btn btn_cancel" @click="handleBtnAction('modal-close')">
         취소
       </button>
     </div>
@@ -2766,7 +2766,7 @@ window.DispPreviewModal = {
 </div>
 <!-- 푸터 -->
 <div style="padding:10px 18px;border-top:1px solid #f0f0f0;text-align:right;flex-shrink:0;background:#fafafa;">
-  <button class="btn btn-secondary" @click="handleBtnAction('modal-close')">
+  <button class="btn btn_close" @click="handleBtnAction('modal-close')">
     닫기
   </button>
 </div>
@@ -2871,7 +2871,7 @@ window.DispUiModal = {
         style="font-size:12px;padding:5px 16px;border-radius:8px;border:1px solid #a5d6a7;background:#e8f5e9;color:#2e7d32;cursor:pointer;font-weight:600;">
         🔗 팝업으로 열기
       </button>
-      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('modal-close')">
+      <button class="btn btn_close" @click="handleBtnAction('modal-close')">
         닫기
       </button>
     </div>
@@ -3822,7 +3822,7 @@ window.AreaPickModal = {
                     </span>
                   </td>
                   <td style="vertical-align:top;padding-top:10px;text-align:right;">
-                    <button @click="handleSelectAction('list-pick', a)" class="btn btn-primary btn-sm" style="font-size:11px;">
+                    <button @click="handleSelectAction('list-pick', a)" class="btn btn_select" style="font-size:11px;">
                       선택
                     </button>
                   </td>
@@ -4187,7 +4187,7 @@ window.PanelPickModal = {
                     </span>
                   </td>
                   <td style="vertical-align:top;padding-top:10px;text-align:right;">
-                    <button @click="handleSelectAction('list-pick', p)" class="btn btn-primary btn-sm" style="font-size:11px;">
+                    <button @click="handleSelectAction('list-pick', p)" class="btn btn_select" style="font-size:11px;">
                       선택
                     </button>
                   </td>
@@ -5256,7 +5256,7 @@ window.BizPickModal = {
           row-clickable :row-actions="true"
           @row-click="row => handleSelectAction('list-pick', row)">
           <template #row-actions="{ row }">
-            <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('list-pick', row)">
+            <button class="btn btn_select" @click.stop="handleSelectAction('list-pick', row)">
               선택
             </button>
           </template>
@@ -5265,7 +5265,7 @@ window.BizPickModal = {
       </div>
     </div>
     <div style="padding:14px 22px;display:flex;justify-content:flex-end;background:#fff;border-top:1px solid #eef0f3;">
-      <button class="btn btn-secondary" @click="handleBtnAction('modal-close')">
+      <button class="btn btn_cancel" @click="handleBtnAction('modal-close')">
         취소
       </button>
     </div>
@@ -5426,7 +5426,7 @@ window.SimpleUserPickModal = {
         row-clickable :row-actions="true"
         @row-click="row => handleSelectAction('list-pick', row)">
         <template #row-actions="{ row }">
-          <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('list-pick', row)">
+          <button class="btn btn_select" @click.stop="handleSelectAction('list-pick', row)">
             선택
           </button>
         </template>
@@ -5434,7 +5434,7 @@ window.SimpleUserPickModal = {
       <bo-pager :pager="pager" :on-set-page="onSetPage" :on-size-change="onSizeChange" />
     </div>
     <div style="padding:14px 22px;display:flex;justify-content:flex-end;background:#fff;border-top:1px solid #eef0f3;">
-      <button class="btn btn-secondary" @click="handleBtnAction('modal-close')">
+      <button class="btn btn_cancel" @click="handleBtnAction('modal-close')">
         취소
       </button>
     </div>
@@ -5556,7 +5556,7 @@ window.SimpleVendorPickModal = {
     <bo-pager :pager="pager" :on-set-page="onSetPage" :on-size-change="onSizeChange" />
   </div>
   <template #footer>
-    <button class="btn btn-secondary btn-sm" @click="handleBtnAction('modal-close')">
+    <button class="btn btn_close" @click="handleBtnAction('modal-close')">
       닫기
     </button>
   </template>
@@ -5715,7 +5715,7 @@ window.OdMemberPickModal = {
         @row-click="(row) => handleSelectAction('members-pick', row)"
  row-actions>
         <template #row-actions="{ row }">
-          <button class="btn btn-primary btn-xs" @click.stop="handleSelectAction('members-pick', row)" style="border-radius:6px;font-size:11px;">
+          <button class="btn btn_select" @click.stop="handleSelectAction('members-pick', row)" style="border-radius:6px;font-size:11px;">
             선택
           </button>
         </template>
@@ -6044,7 +6044,7 @@ window.BoRefModal = {
     </div>
   </template>
   <div style="margin-top:16px;text-align:right;">
-    <button class="btn btn-secondary" @click="handleBtnAction('modal-close')">
+    <button class="btn btn_close" @click="handleBtnAction('modal-close')">
       닫기
     </button>
   </div>
@@ -6332,7 +6332,7 @@ window.BoCodeGrpModal = {
         <span style="font-size:11px;color:#888;">
           총 {{ codes.length }}건 · 행 클릭 시 선택
         </span>
-        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('modal-close')">
+        <button class="btn btn_close" @click="handleBtnAction('modal-close')">
           닫기
         </button>
       </div>
@@ -6533,10 +6533,10 @@ window.AuthProfileModal = {
   </div>
   <bo-form-area :columns="baseFormColumns" :form="form" :cols="2" :show-actions="false" />
   <template #footer>
-    <button class="btn btn-secondary" @click="handleBtnAction('modal-close')">
+    <button class="btn btn_cancel" @click="handleBtnAction('modal-close')">
       취소
     </button>
-    <button class="btn btn-primary" @click="handleBtnAction('modal-save')">
+    <button class="btn btn_save" @click="handleBtnAction('modal-save')">
       저장
     </button>
   </template>
@@ -6738,7 +6738,7 @@ window.AuthPwChangeModal = {
     {{ error }}
   </div>
   <template #footer>
-    <button class="btn btn-secondary" @click="handleBtnAction('modal-close')">
+    <button class="btn btn_cancel" @click="handleBtnAction('modal-close')">
       취소
     </button>
     <button class="btn btn-primary" @click="handleBtnAction('modal-save')">
@@ -7997,7 +7997,7 @@ if (props.onCallback) props.onCallback(props.modalName, null, null);
     <!-- 업로드 탭: [취소] [엑셀업로드] [그리드업로드] -->
     <template v-if="tab==='upload'">
       <button class="btn btn-secondary" :disabled="loading" @click="handleBtnAction('close')">취소</button>
-      <button class="btn btn-primary" :disabled="loading || !selectedFile"
+      <button class="btn btn_excel_upload" :disabled="loading || !selectedFile"
               @click="handleBtnAction('excel-upload')"
               title="원본 파일을 서버에 그대로 전송 — 그리드 수정사항은 반영되지 않음">
         📤 엑셀업로드
@@ -8214,10 +8214,10 @@ window.BoProdCatePickModal = {
             style="width:100%;border:1px solid #e5e7eb;border-radius:6px;padding:5px 8px;font-size:12px;outline:none;box-sizing:border-box;background:#fff;color:#374151;" />
         </div>
         <div style="display:flex;gap:4px;padding:6px 10px;border-bottom:1px solid #ebebeb;">
-          <button class="btn btn-sm" @click="handleBtnAction('catTree-expandAll')" style="flex:1;font-size:11px;padding:3px 4px;">
+          <button class="btn btn_expand_all" @click="handleBtnAction('catTree-expandAll')" style="flex:1;font-size:11px;padding:3px 4px;">
             ▼ 전체펼치기
           </button>
-          <button class="btn btn-sm" @click="handleBtnAction('catTree-collapseAll')" style="flex:1;font-size:11px;padding:3px 4px;">
+          <button class="btn btn_collapse_all" @click="handleBtnAction('catTree-collapseAll')" style="flex:1;font-size:11px;padding:3px 4px;">
             ▶ 전체닫기
           </button>
         </div>

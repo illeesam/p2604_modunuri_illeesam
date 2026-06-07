@@ -456,14 +456,14 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       <!-- ===== ■.■. 판매업체 선택 모달 ============================================ -->
       <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId" modal-name="vendor-pick" :on-callback="fnCallbackModal" />
       <div class="form-actions" v-if="active && cfDtlMode">
-        <button class="btn btn-blue" @click="handleBtnAction('form-edit')">수정</button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">닫기</button>
+        <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
+        <button class="btn btn_close" @click="handleBtnAction('form-cancel')">닫기</button>
       </div>
       <div class="form-actions" v-if="active && !cfDtlMode">
-        <button @click="handleBtnAction('form-save')" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요. (발급/사용/미리보기 탭은 조회 전용)' : ''" class="btn btn-primary">
+        <button @click="handleBtnAction('form-save')" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요. (발급/사용/미리보기 탭은 조회 전용)' : ''" class="btn btn_save">
           {{ cfIsNew ? '등록' : '저장' }}
         </button>
-        <button @click="handleBtnAction('form-cancel')" class="btn btn-secondary">취소</button>
+        <button @click="handleBtnAction('form-cancel')" class="btn btn_cancel">취소</button>
       </div>
     </div>
     <!-- ===== □.□. 판매업체 선택 모달 ============================================ -->
@@ -652,8 +652,8 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
     <textarea v-model="snsMsg" class="form-control" style="height:120px;"></textarea>
   </div>
   <template #footer>
-    <button @click="handleBtnAction('snsModal-close')" class="btn btn-secondary btn-sm">취소</button>
-    <button @click="handleBtnAction('snsModal-send')" class="btn btn-primary btn-sm">전송</button>
+    <button @click="handleBtnAction('snsModal-close')" class="btn btn_cancel">취소</button>
+    <button @click="handleBtnAction('snsModal-send')" class="btn btn_send">전송</button>
   </template>
 </bo-modal>
 <!-- ===== □. SNS 전송 모달 =============================================== -->

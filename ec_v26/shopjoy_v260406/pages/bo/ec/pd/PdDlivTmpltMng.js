@@ -291,7 +291,7 @@ window.PdDlivTmpltMng = {
   <!-- ===== ■. 목록 그리드 =================================================== -->
   <bo-container title="배송템플릿 목록" :count-text="baseGridPager.pageTotalCount + '건'">
     <template #toolbar-actions>
-      <button class="btn btn-primary btn-sm" @click="handleBtnAction('dlivTmplts-add')">+ 신규</button>
+      <button class="btn btn_new" @click="handleBtnAction('dlivTmplts-add')">+ 신규</button>
     </template>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
     <bo-grid bare
@@ -324,9 +324,9 @@ window.PdDlivTmpltMng = {
         :cols="3" compact :show-actions="false" />
       <!-- ===== ■.■.■. 하단 액션 (저장/삭제/닫기) — .form-actions 가 중앙 정렬 ===== -->
       <div class="form-actions">
-        <button class="btn btn-primary" @click="handleBtnAction('form-save')">저장</button>
-        <button v-if="!uiState.isNew" class="btn btn-danger" @click="handleBtnAction('form-delete')">삭제</button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-close')">닫기</button>
+        <button class="btn btn_save" @click="handleBtnAction('form-save')">저장</button>
+        <button v-if="!uiState.isNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
+        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
     </div>
   </bo-container>

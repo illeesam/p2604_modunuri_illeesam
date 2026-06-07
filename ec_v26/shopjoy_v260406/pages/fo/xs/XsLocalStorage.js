@@ -299,10 +299,10 @@ window.XsLocalStorage = {
                 <button @click="handleSelectAction('lsItems-rowCopy', item.value)" style="padding: 6px 10px; font-size: 11px; border: 1px solid #e5e7eb; background: white; color: #666; cursor: pointer; border-radius: 4px; font-weight: 500; margin-right: 4px; transition: all 0.2s;">
                   복사
                 </button>
-                <button v-if="uiStateGlobal.editingKey !== item.key" @click="handleSelectAction('lsItems-rowEdit', { key: item.key, value: item.value })" style="padding: 6px 10px; font-size: 11px; border: 1px solid #e5e7eb; background: white; color: #666; cursor: pointer; border-radius: 4px; font-weight: 500; margin-right: 4px; transition: all 0.2s;">
+                <button v-if="uiStateGlobal.editingKey !== item.key" class="btn_row_edit" @click="handleSelectAction('lsItems-rowEdit', { key: item.key, value: item.value })" style="margin-right: 4px;">
                   수정
                 </button>
-                <button @click="handleSelectAction('lsItems-rowDelete', item.key)" style="padding: 6px 10px; font-size: 11px; border: 1px solid #ffb3c1; background: #fff5f7; color: #d63384; cursor: pointer; border-radius: 4px; font-weight: 500; transition: all 0.2s;">
+                <button class="btn_row_delete" @click="handleSelectAction('lsItems-rowDelete', item.key)">
                   삭제
                 </button>
               </td>

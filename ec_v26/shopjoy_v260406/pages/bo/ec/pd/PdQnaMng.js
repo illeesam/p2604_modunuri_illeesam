@@ -296,10 +296,10 @@ window.PdQnaMng = {
         </div>
         <!-- 하단 액션 -->
         <div class="form-actions">
-          <button class="btn btn-blue" @click="handleBtnAction('form-save')">
+          <button class="btn btn_save" @click="handleBtnAction('form-save')">
             답변 저장
           </button>
-          <button class="btn btn-secondary" @click="handleBtnAction('form-close')">
+          <button class="btn btn_close" @click="handleBtnAction('form-close')">
             닫기
           </button>
         </div>

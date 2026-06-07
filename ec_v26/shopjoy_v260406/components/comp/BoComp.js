@@ -189,10 +189,10 @@ window.BoPathTree = {
   template: /* html */`
 <div>
   <div style="display:flex;gap:4px;margin-bottom:8px;">
-    <button class="btn btn-sm" @click="handleBtnAction('tree-expand-all')"  style="flex:1;font-size:11px;">
+    <button class="btn btn_expand_all" @click="handleBtnAction('tree-expand-all')"  style="flex:1;font-size:11px;">
       ▼ 전체펼치기
     </button>
-    <button class="btn btn-sm" @click="handleBtnAction('tree-collapse-all')" style="flex:1;font-size:11px;">
+    <button class="btn btn_collapse_all" @click="handleBtnAction('tree-collapse-all')" style="flex:1;font-size:11px;">
       ▶ 전체닫기
     </button>
   </div>
@@ -322,10 +322,10 @@ window.BoMenuTree = {
   template: /* html */`
 <div>
   <div style="display:flex;gap:4px;margin-bottom:8px;">
-    <button class="btn btn-sm" @click="handleBtnAction('tree-expand-all')"  style="flex:1;font-size:11px;">
+    <button class="btn btn_expand_all" @click="handleBtnAction('tree-expand-all')"  style="flex:1;font-size:11px;">
       ▼ 전체펼치기
     </button>
-    <button class="btn btn-sm" @click="handleBtnAction('tree-collapse-all')" style="flex:1;font-size:11px;">
+    <button class="btn btn_collapse_all" @click="handleBtnAction('tree-collapse-all')" style="flex:1;font-size:11px;">
       ▶ 전체닫기
     </button>
   </div>
@@ -765,10 +765,10 @@ window.BoCategoryTree = {
       {{ pickerTempCat ? '선택: ' + pickerTempCat.categoryNm : '카테고리를 클릭하세요.' }}
     </span>
     <div style="display:flex;gap:6px;">
-      <button type="button" class="btn btn-secondary btn-sm" @click="handleBtnAction('picker-close')">
+      <button type="button" class="btn btn_cancel" @click="handleBtnAction('picker-close')">
         취소
       </button>
-      <button type="button" class="btn btn-primary btn-sm" :disabled="!pickerTempCat" @click="handleBtnAction('picker-confirm')">
+      <button type="button" class="btn btn_select" :disabled="!pickerTempCat" @click="handleBtnAction('picker-confirm')">
         선택
       </button>
     </div>

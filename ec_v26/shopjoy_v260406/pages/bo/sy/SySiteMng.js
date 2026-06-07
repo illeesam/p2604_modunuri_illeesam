@@ -443,10 +443,10 @@ window.SySiteMng = {
     <!-- ===== ■.■. 목록 영역 (bo-container 카드+제목, bo-grid bare, baseGridPager 바깥) ======== -->
     <bo-container title="사이트목록" :count-text="baseGridPager.pageTotalCount + '건'">
       <template #toolbar-actions>
-        <button class="btn btn-green btn-sm" @click="handleBtnAction('sites-excel')">
+        <button class="btn btn_excel" @click="handleBtnAction('sites-excel')">
           📥 엑셀
         </button>
-        <button class="btn btn-primary btn-sm" @click="handleBtnAction('sites-add')">
+        <button class="btn btn_new" @click="handleBtnAction('sites-add')">
           + 신규
         </button>
       </template>
@@ -464,10 +464,10 @@ window.SySiteMng = {
         <template #row-actions="{ row, gridId }">
           <td style="white-space:nowrap;">
             <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
-              <button class="btn btn-blue btn-xs" style="white-space:nowrap;" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
+              <button class="btn btn_row_edit" style="white-space:nowrap;" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
                 수정
               </button>
-              <button class="btn btn-danger btn-xs" style="white-space:nowrap;" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">
+              <button class="btn btn_row_delete" style="white-space:nowrap;" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">
                 삭제
               </button>
             </div>

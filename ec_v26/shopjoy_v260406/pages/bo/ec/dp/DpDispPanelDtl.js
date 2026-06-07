@@ -971,7 +971,7 @@ window.DpDispPanelDtl = {
         @click="handleBtnAction('rowCopyModal-open')">
         📄 전시항목 복사
       </button>
-      <button v-if="active && !cfDtlMode" class="btn btn-primary btn-sm" @click="handleBtnAction('form-save')" style="font-weight:700;">
+      <button v-if="active && !cfDtlMode" class="btn btn_save" @click="handleBtnAction('form-save')" style="font-weight:700;">
         💾 저장
       </button>
     </div>
@@ -1162,11 +1162,11 @@ window.DpDispPanelDtl = {
               <!-- ===== /내용 ======================================================== -->
               <div class="form-actions" v-if="active && !cfDtlMode">
                 <template v-if="cfDtlMode">
-                  <button class="btn btn-blue" @click="handleBtnAction('form-edit')">수정</button>
-                  <button class="btn btn-secondary" @click="handleBtnAction('form-close')">닫기</button>
+                  <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
+                  <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
                 </template>
                 <template v-else>
-                  <button class="btn btn-secondary" @click="handleBtnAction('form-close')">취소</button>
+                  <button class="btn btn_cancel" @click="handleBtnAction('form-close')">취소</button>
                 </template>
               </div>
             </div>
@@ -1473,11 +1473,11 @@ window.DpDispPanelDtl = {
               <!-- ===== /내용 영역 ===================================================== -->
               <div class="form-actions" v-if="active && !cfDtlMode">
                 <template v-if="cfDtlMode">
-                  <button class="btn btn-blue" @click="handleBtnAction('form-edit')">수정</button>
-                  <button class="btn btn-secondary" @click="handleBtnAction('form-close')">닫기</button>
+                  <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
+                  <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
                 </template>
                 <template v-else>
-                  <button class="btn btn-secondary" @click="handleBtnAction('form-close')">취소</button>
+                  <button class="btn btn_cancel" @click="handleBtnAction('form-close')">취소</button>
                 </template>
               </div>
             </div>
@@ -1671,11 +1671,11 @@ window.DpDispPanelDtl = {
             </div>
             <div class="form-actions" v-if="active && !cfDtlMode">
               <template v-if="cfDtlMode">
-                <button class="btn btn-blue" @click="handleBtnAction('form-edit')">수정</button>
-                <button class="btn btn-secondary" @click="handleBtnAction('form-close')">닫기</button>
+                <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
+                <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
               </template>
               <template v-else>
-                <button class="btn btn-secondary" @click="handleBtnAction('form-close')">취소</button>
+                <button class="btn btn_cancel" @click="handleBtnAction('form-close')">취소</button>
               </template>
             </div>
           </div>
@@ -1851,11 +1851,11 @@ window.DpDispPanelDtl = {
               </table>
               <div class="form-actions" v-if="active && !cfDtlMode">
                 <template v-if="cfDtlMode">
-                  <button class="btn btn-blue" @click="handleBtnAction('form-edit')">수정</button>
-                  <button class="btn btn-secondary" @click="handleBtnAction('form-close')">닫기</button>
+                  <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
+                  <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
                 </template>
                 <template v-else>
-                  <button class="btn btn-secondary" @click="handleBtnAction('form-close')">취소</button>
+                  <button class="btn btn_cancel" @click="handleBtnAction('form-close')">취소</button>
                 </template>
               </div>
             </template>
@@ -1922,7 +1922,7 @@ window.DpDispPanelDtl = {
       </div>
       <!-- ===== ■.■.■. 푸터 ================================================== -->
       <div style="padding:12px 20px;background:#f8f8f8;border-top:1px solid #f0f0f0;border-radius:0 0 14px 14px;text-align:right;">
-        <button @click="closeCardPreview" class="btn btn-secondary btn-sm">닫기</button>
+        <button @click="closeCardPreview" class="btn btn_close">닫기</button>
       </div>
     </div>
   </div>

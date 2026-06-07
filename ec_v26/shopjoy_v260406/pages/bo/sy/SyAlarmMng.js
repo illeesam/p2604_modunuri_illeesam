@@ -436,10 +436,10 @@ window.SyAlarmMng = {
     <bo-container title="알림목록" :count-text="baseGridPager.pageTotalCount + '건'">
       <template #toolbar-actions>
         <div style="display:flex;gap:6px;">
-          <button class="btn btn-green btn-sm" @click="handleBtnAction('alarms-excel')">
+          <button class="btn btn_excel" @click="handleBtnAction('alarms-excel')">
             📥 엑셀
           </button>
-          <button class="btn btn-primary btn-sm" @click="handleBtnAction('alarms-add')">
+          <button class="btn btn_new" @click="handleBtnAction('alarms-add')">
             + 신규
           </button>
         </div>
@@ -457,10 +457,10 @@ window.SyAlarmMng = {
         <template #row-actions="{ row, gridId }">
           <td style="white-space:nowrap;">
             <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
-              <button class="btn btn-blue btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
+              <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
                 수정
               </button>
-              <button class="btn btn-danger btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">
+              <button class="btn btn_row_delete" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">
                 삭제
               </button>
             </div>

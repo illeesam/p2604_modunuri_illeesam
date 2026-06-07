@@ -314,10 +314,10 @@ window.PmEventMng = {
           ⊞ 카드
         </button>
       </div>
-      <button class="btn btn-green btn-sm" @click="handleBtnAction('events-excel')">
+      <button class="btn btn_excel" @click="handleBtnAction('events-excel')">
         📥 엑셀
       </button>
-      <button class="btn btn-primary btn-sm" @click="handleBtnAction('events-add')">
+      <button class="btn btn_new" @click="handleBtnAction('events-add')">
         + 신규
       </button>
     </template>
@@ -332,10 +332,10 @@ window.PmEventMng = {
       </template>
       <template #row-actions="{ row: e, gridId }">
         <div class="actions" style="display:flex;gap:6px;align-items:center;justify-content:center;">
-          <button class="btn btn-blue btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_edit', e)">
+          <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_edit', e)">
             수정
           </button>
-          <button class="btn btn-danger btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_delete', e)">
+          <button class="btn btn_row_delete" @click.stop="handleGridCellAction(gridId, 'btn_delete', e)">
             삭제
           </button>
         </div>
@@ -383,10 +383,10 @@ window.PmEventMng = {
           </div>
         </div>
         <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:center;align-items:center;">
-          <button class="btn btn-blue btn-sm" @click.stop="handleGridCellAction('events-cellClick', 'btn_edit', e)" style="font-size:11px;padding:4px 12px;">
+          <button class="btn btn_row_edit" @click.stop="handleGridCellAction('events-cellClick', 'btn_edit', e)" style="font-size:11px;padding:4px 12px;">
             수정
           </button>
-          <button class="btn btn-danger btn-sm" @click.stop="handleGridCellAction('events-cellClick', 'btn_delete', e)" style="font-size:11px;padding:4px 12px;">
+          <button class="btn btn_row_delete" @click.stop="handleGridCellAction('events-cellClick', 'btn_delete', e)" style="font-size:11px;padding:4px 12px;">
             삭제
           </button>
           <span style="font-size:11px;color:#999;margin-left:auto;">
@@ -401,7 +401,7 @@ window.PmEventMng = {
   <!-- ===== ■. 하단 상세: EventDtl 임베드 ===================================== -->
   <bo-container bare>
     <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+      <button data-hide-close style="display:none;" class="btn btn_close" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기
       </button>
     </div>

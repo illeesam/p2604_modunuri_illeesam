@@ -362,10 +362,10 @@ window.BoSearchArea = {
 <div v-if="showActions" class="search-actions">
   <slot name="actions-before">
   </slot>
-  <button class="btn btn-primary btn-sm" :disabled="loading" @click="handleBtnAction('search-emit')">
+  <button class="btn btn_search" :disabled="loading" @click="handleBtnAction('search-emit')">
     {{ searchLabel }}
   </button>
-  <button class="btn btn-secondary btn-sm" @click="handleBtnAction('search-reset')">
+  <button class="btn btn_reset" @click="handleBtnAction('search-reset')">
     {{ resetLabel }}
   </button>
   <slot name="actions-after">
@@ -823,7 +823,7 @@ window.BoGrid = {
             </template>
             <td v-if="rowActions" style="text-align:center;white-space:nowrap;">
               <slot name="row-actions" :row="row" :idx="idx" :grid-id="gridId">
-                <button class="btn btn-danger btn-xs" @click="handleSelectAction('grid-row-remove', { row })">
+                <button class="btn btn_row_delete" @click="handleSelectAction('grid-row-remove', { row })">
                   ✕
                 </button>
               </slot>
@@ -1042,10 +1042,10 @@ window.BoGridCrud = {
     <div style="display:flex;gap:6px;margin-left:auto;">
       <slot name="toolbar-actions">
       </slot>
-      <button v-if="showExport" class="btn btn-green btn-sm" @click="handleBtnAction('toolbar-export')">
+      <button v-if="showExport" class="btn btn_excel" @click="handleBtnAction('toolbar-export')">
         📥 엑셀
       </button>
-      <button v-if="showExcelUpload" class="btn btn-blue btn-sm" @click="handleBtnAction('toolbar-excel-upload')">
+      <button v-if="showExcelUpload" class="btn btn_excel_upload" @click="handleBtnAction('toolbar-excel-upload')">
         📤 엑셀업로드
       </button>
       <button v-if="showAdd" class="btn btn-green btn-sm" @click="handleBtnAction('toolbar-add')">
@@ -1057,7 +1057,7 @@ window.BoGridCrud = {
       <button v-if="showRowCheck" class="btn btn-secondary btn-sm" @click="handleBtnAction('toolbar-cancel-checked')">
         취소
       </button>
-      <button v-if="showSave" class="btn btn-primary btn-sm" @click="handleBtnAction('toolbar-save')">
+      <button v-if="showSave" class="btn btn_save" @click="handleBtnAction('toolbar-save')">
         저장
       </button>
     </div>
@@ -1444,10 +1444,10 @@ window.BoLocalTreeCard = {
   <slot name="filter">
   </slot>
   <div v-if="expandable" style="display:flex;gap:4px;margin-bottom:8px">
-    <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="handleBtnAction('tree-expand-all')">
+    <button class="btn btn_expand_all" style="flex:1;font-size:11px" @click="handleBtnAction('tree-expand-all')">
       ▼ 전체펼치기
     </button>
-    <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="handleBtnAction('tree-collapse-all')">
+    <button class="btn btn_collapse_all" style="flex:1;font-size:11px" @click="handleBtnAction('tree-collapse-all')">
       ▶ 전체닫기
     </button>
   </div>
@@ -1770,10 +1770,10 @@ window.BoCronModal = {
         </span>
       </div>
       <template #footer>
-        <button class="btn btn-secondary" @click="handleBtnAction('cron-close')">
+        <button class="btn btn_cancel" @click="handleBtnAction('cron-close')">
           취소
         </button>
-        <button class="btn btn-primary" @click="handleBtnAction('cron-apply')">
+        <button class="btn btn_apply" @click="handleBtnAction('cron-apply')">
           적용
         </button>
       </template>
@@ -1916,7 +1916,7 @@ window.BoRoleSelectModal = {
       <slot name="footer-extra">
       </slot>
     </span>
-    <button class="btn btn-secondary" @click="handleBtnAction('roleModal-close')">
+    <button class="btn btn_cancel" @click="handleBtnAction('roleModal-close')">
       취소
     </button>
     <button class="btn btn-primary" :disabled="confirmDisabled" @click="handleBtnAction('roleModal-confirm')">
@@ -1984,7 +1984,7 @@ window.BoRowCancelDelete = {
   <button v-if="cfShowCancel" class="btn btn-secondary btn-xs" @click.stop="handleBtnAction('row-cancel')">
     {{ cancelLabel }}
   </button>
-  <button v-if="cfShowDelete" class="btn btn-danger btn-xs" @click.stop="handleBtnAction('row-delete')">
+  <button v-if="cfShowDelete" class="btn btn_row_delete" @click.stop="handleBtnAction('row-delete')">
     {{ deleteLabel }}
   </button>
 </span>
@@ -2231,18 +2231,18 @@ window.BoFormArea = {
   <slot name="actions-before">
   </slot>
   <template v-if="readonly">
-    <button class="btn btn-primary" :class="compact?'btn-sm':''" @click="handleBtnAction('form-edit')">
+    <button class="btn btn_edit" :class="compact?'btn-sm':''" @click="handleBtnAction('form-edit')">
       {{ editLabel }}
     </button>
-    <button class="btn btn-secondary" :class="compact?'btn-sm':''" @click="handleBtnAction('form-close')">
+    <button class="btn btn_close" :class="compact?'btn-sm':''" @click="handleBtnAction('form-close')">
       {{ closeLabel }}
     </button>
   </template>
   <template v-else>
-    <button class="btn btn-primary" :class="compact?'btn-sm':''" @click="handleBtnAction('form-save')">
+    <button class="btn btn_save" :class="compact?'btn-sm':''" @click="handleBtnAction('form-save')">
       {{ saveLabel }}
     </button>
-    <button class="btn btn-secondary" :class="compact?'btn-sm':''" @click="handleBtnAction('form-cancel')">
+    <button class="btn btn_cancel" :class="compact?'btn-sm':''" @click="handleBtnAction('form-cancel')">
       {{ cancelLabel }}
     </button>
   </template>

@@ -427,10 +427,10 @@ window.SyUserMng = {
     <bo-container title="📂 부서">
       <template #toolbar-actions>
         <div style="display:flex;gap:4px;">
-          <button class="btn btn-sm" @click="handleBtnAction('deptTree-expandAll')" style="font-size:11px;">
+          <button class="btn btn_expand_all" @click="handleBtnAction('deptTree-expandAll')" style="font-size:11px;">
             ▼ 전체펼치기
           </button>
-          <button class="btn btn-sm" @click="handleBtnAction('deptTree-collapseAll')" style="font-size:11px;">
+          <button class="btn btn_collapse_all" @click="handleBtnAction('deptTree-collapseAll')" style="font-size:11px;">
             ▶ 전체닫기
           </button>
         </div>
@@ -446,13 +446,13 @@ window.SyUserMng = {
     <bo-container bare title="사용자목록" :count-text="baseGridPager.pageTotalCount + '건'">
       <template #toolbar-actions>
         <div style="display:flex;gap:6px;">
-          <button class="btn btn-green btn-sm" @click="handleBtnAction('users-excel')">
+          <button class="btn btn_excel" @click="handleBtnAction('users-excel')">
             📥 엑셀
           </button>
-          <button class="btn btn-blue btn-sm" @click="handleBtnAction('users-excel-upload')">
+          <button class="btn btn_excel_upload" @click="handleBtnAction('users-excel-upload')">
             📤 엑셀업로드
           </button>
-          <button class="btn btn-primary btn-sm" @click="handleBtnAction('users-add')">
+          <button class="btn btn_new" @click="handleBtnAction('users-add')">
             + 신규
           </button>
         </div>
@@ -470,10 +470,10 @@ window.SyUserMng = {
         <template #row-actions="{ row, gridId }">
           <td style="white-space:nowrap;">
             <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
-              <button class="btn btn-blue btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
+              <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
                 수정
               </button>
-              <button class="btn btn-danger btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">
+              <button class="btn btn_row_delete" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">
                 삭제
               </button>
             </div>

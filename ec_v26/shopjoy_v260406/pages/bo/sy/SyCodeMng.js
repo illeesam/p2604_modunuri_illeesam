@@ -765,10 +765,10 @@ window.SyCodeMng = {
       @sort="key => handleBtnAction('codeGroups-sort', key)"
       grid-id="codeGroups-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
       <template #toolbar-actions>
-        <button class="btn btn-green btn-sm" @click="handleBtnAction('codeGroups-add')">
+        <button class="btn btn_new" @click="handleBtnAction('codeGroups-add')">
           + 행추가
         </button>
-        <button class="btn btn-primary btn-sm" @click="handleBtnAction('codeGroups-save')" :disabled="!uiState.grpDirtyCount">
+        <button class="btn btn_save" @click="handleBtnAction('codeGroups-save')" :disabled="!uiState.grpDirtyCount">
           저장
           <span v-if="uiState.grpDirtyCount">
             ({{ uiState.grpDirtyCount }})

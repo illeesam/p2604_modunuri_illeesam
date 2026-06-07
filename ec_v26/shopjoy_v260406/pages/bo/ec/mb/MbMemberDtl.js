@@ -95,9 +95,9 @@ window.MbMemberDtl = {
   :title-id="!active ? '' : (detailModal.isNew ? '' : (detailModal.form?.memberId || ''))">
   <!-- ===== ■.■. 상세 툴바: 저장/삭제/닫기 (active 시에만 버튼 노출) ============ -->
   <template v-if="active" #toolbar-actions>
-    <button class="btn btn-primary btn-sm" @click="handleBtnAction('form-save')">저장</button>
-    <button v-if="!detailModal.isNew" class="btn btn-danger btn-sm" @click="handleBtnAction('form-delete')">삭제</button>
-    <button class="btn btn-secondary btn-sm" @click="handleBtnAction('form-close')">닫기</button>
+    <button class="btn btn_save" @click="handleBtnAction('form-save')">저장</button>
+    <button v-if="!detailModal.isNew" class="btn btn_delete" @click="handleBtnAction('form-delete')">삭제</button>
+    <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
   </template>
   <!-- ===== □.■. 상세 툴바 ================================================ -->
   <!-- ===== ■.■. 폼 영역 (BoFormArea 자동 렌더) ============================== -->

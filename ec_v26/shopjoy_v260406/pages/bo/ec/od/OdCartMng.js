@@ -303,7 +303,7 @@ window.OdCartMng = {
       @toggle-check="id => handleSelectAction('carts-rowToggleCheck', id)"
       @toggle-check-all="handleSelectAction('carts-rowToggleCheckAll')" row-actions>
       <template #row-actions="{ row }">
-        <button class="btn btn-danger btn-xs" @click="handleSelectAction('carts-rowDelete', row.cartId)">
+        <button class="btn btn_row_delete" @click="handleSelectAction('carts-rowDelete', row.cartId)">
           삭제
         </button>
       </template>

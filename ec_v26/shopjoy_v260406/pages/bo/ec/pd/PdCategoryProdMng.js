@@ -567,7 +567,7 @@ window.PdCategoryProdMng = {
             <button class="btn btn-secondary btn-sm" :disabled="!cfSelectedCatId" @click="handleBtnAction('prodPickModal-open')">
               + 상품추가
             </button>
-            <button class="btn btn-primary btn-sm" @click="handleBtnAction('categoryProds-save')">
+            <button class="btn btn_save" @click="handleBtnAction('categoryProds-save')">
               저장
             </button>
           </div>
@@ -722,7 +722,7 @@ window.PdCategoryProdMng = {
             → {{ cfSelectedCat?.categoryNm }} / {{ window.safeArrayUtils.safeFind(TYPE_TABS, t=>t.cd===uiState.activeTypeCd)?.nm }}
           </span>
         </div>
-        <button class="btn btn-secondary btn-xs" @click="handleBtnAction('prodPickModal-close')">
+        <button class="btn btn_close" @click="handleBtnAction('prodPickModal-close')">
           닫기
         </button>
       </div>

@@ -253,8 +253,8 @@ window.CmNoticeMng = {
   <!-- ===== ■. 목록 영역 ===================================================== -->
   <bo-container title="공지사항목록" :count-text="'총 ' + baseGrid.pager.pageTotalCount + '건'">
     <template #toolbar-actions>
-      <button class="btn btn-green btn-sm" @click="handleBtnAction('notices-excel')">📥 엑셀</button>
-      <button class="btn btn-primary btn-sm" @click="handleBtnAction('notices-add')">+ 신규</button>
+      <button class="btn btn_excel" @click="handleBtnAction('notices-excel')">📥 엑셀</button>
+      <button class="btn btn_new" @click="handleBtnAction('notices-add')">+ 신규</button>
     </template>
     <bo-grid bare :columns="columns.baseGrid" :rows="notices" :pager="baseGrid.pager" row-key="noticeId" :selected-key="baseDetail.selectedId"
       :sort-state="baseGrid"
@@ -263,8 +263,8 @@ window.CmNoticeMng = {
       grid-id="notices-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
       <template #row-actions="{ row, gridId }">
         <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
-          <button class="btn btn-blue btn-xs" style="white-space:nowrap;" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">수정</button>
-          <button class="btn btn-danger btn-xs" style="white-space:nowrap;" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">삭제</button>
+          <button class="btn btn_row_edit" style="white-space:nowrap;" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">수정</button>
+          <button class="btn btn_row_delete" style="white-space:nowrap;" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">삭제</button>
         </div>
       </template>
     </bo-grid>
@@ -273,7 +273,7 @@ window.CmNoticeMng = {
   <!-- ===== ■. 상세 패널 (인라인 임베드 — 항상 표시, 진입 시 빈 신규 폼) ============= -->
   <bo-container bare>
     <div v-if="baseDetail.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('baseDetail-close')">✕ 닫기</button>
+      <button data-hide-close style="display:none;" class="btn btn_close" @click="handleBtnAction('baseDetail-close')">✕ 닫기</button>
     </div>
     <cm-notice-dtl :key="baseDetail.panelKey + '_' + baseDetail.resetSeq" :navigate="inlineNavigate"
       :dtl-id="baseDetail.editId" :dtl-mode="baseDetail.dtlMode"

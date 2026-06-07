@@ -220,10 +220,10 @@ window.SyBatchHist = {
 <!-- ===== ■. 목록 영역 =================================================== -->
 <bo-container title="배치 실행이력" :count-text="histGridPager.pageTotalCount + '건'">
   <template #toolbar-actions>
-    <button class="btn btn-secondary btn-sm" @click="handleBtnAction('batchLogs-expandAll')" style="height:30px;font-size:11px;padding:2px 8px;" title="전체 펼치기">
+    <button class="btn btn_expand_all" @click="handleBtnAction('batchLogs-expandAll')" style="height:30px;font-size:11px;padding:2px 8px;" title="전체 펼치기">
       ▼ 전체펼치기
     </button>
-    <button class="btn btn-secondary btn-sm" @click="handleBtnAction('batchLogs-collapseAll')" style="height:30px;font-size:11px;padding:2px 8px;" title="전체 접기">
+    <button class="btn btn_collapse_all" @click="handleBtnAction('batchLogs-collapseAll')" style="height:30px;font-size:11px;padding:2px 8px;" title="전체 접기">
       ▲ 전체접기
     </button>
     <select class="form-control" style="height:30px;font-size:12px;padding:2px 6px;width:160px;" v-model="uiState.searchBatchId">
@@ -242,7 +242,7 @@ window.SyBatchHist = {
         {{ c.codeLabel }}
       </option>
     </select>
-    <button class="btn btn-primary btn-sm" @click="handleBtnAction('searchParam-list')" style="height:30px;font-size:12px;padding:2px 12px;">
+    <button class="btn btn_search" @click="handleBtnAction('searchParam-list')" style="height:30px;font-size:12px;padding:2px 12px;">
       조회
     </button>
   </template>

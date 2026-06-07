@@ -374,10 +374,10 @@ window.PdProdMng = {
   <!-- ===== ■. 목록 ====================================================== -->
   <bo-container title="상품목록" :count-text="baseGridPager.pageTotalCount + '건'">
     <template #toolbar-actions>
-      <button class="btn btn-green btn-sm" @click="handleBtnAction('prods-excel')">
+      <button class="btn btn_excel" @click="handleBtnAction('prods-excel')">
         📥 엑셀
       </button>
-      <button class="btn btn-primary btn-sm" @click="handleBtnAction('prods-add')">
+      <button class="btn btn_new" @click="handleBtnAction('prods-add')">
         + 신규
       </button>
     </template>
@@ -397,10 +397,10 @@ window.PdProdMng = {
             @click.stop="handleSelectAction('prods-rowPreview', p.prodId)">
             👁
           </button>
-          <button class="btn btn-blue btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
+          <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
             수정
           </button>
-          <button class="btn btn-danger btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">
+          <button class="btn btn_row_delete" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">
             삭제
           </button>
         </div>
@@ -417,7 +417,7 @@ window.PdProdMng = {
   <!-- ===== ■. 하단 상세: ProdDtl 임베드 (항상 표시, 진입 시 빈 신규 폼) ============== -->
   <bo-container bare>
     <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+      <button data-hide-close style="display:none;" class="btn btn_close" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기
       </button>
     </div>

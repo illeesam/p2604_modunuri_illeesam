@@ -615,10 +615,10 @@ window.OdClaimMng = {
       <button class="btn btn-blue btn-sm" :disabled="!checked.size" @click="handleBtnAction('actionsModal-open')">
         📝 변경작업 선택
       </button>
-      <button class="btn btn-green btn-sm" @click="handleBtnAction('claims-excel')">
+      <button class="btn btn_excel" @click="handleBtnAction('claims-excel')">
         📥 엑셀
       </button>
-      <button class="btn btn-primary btn-sm" @click="handleBtnAction('claims-add')">
+      <button class="btn btn_new" @click="handleBtnAction('claims-add')">
         + 신규
       </button>
     </template>
@@ -635,10 +635,10 @@ window.OdClaimMng = {
         @ref-click="({type,id}) => handleSelectAction('claims-rowRefClick', {type, id})" row-actions>
         <template #row-actions="{ row }">
           <div class="actions">
-            <button class="btn btn-blue btn-xs" @click="handleSelectAction('claims-rowEdit', row.claimId)">
+            <button class="btn btn_row_edit" @click="handleSelectAction('claims-rowEdit', row.claimId)">
               수정
             </button>
-            <button class="btn btn-danger btn-xs" @click="handleSelectAction('claims-rowDelete', row)">
+            <button class="btn btn_row_delete" @click="handleSelectAction('claims-rowDelete', row)">
               삭제
             </button>
           </div>
@@ -655,7 +655,7 @@ window.OdClaimMng = {
   <!-- ===== ■. 하단 상세: ClaimDtl 임베드 (항상 표시, 진입 시 빈 신규 폼) ============= -->
   <bo-container bare>
     <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+      <button data-hide-close style="display:none;" class="btn btn_close" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기
       </button>
     </div>
@@ -775,10 +775,10 @@ window.OdClaimMng = {
           style="width:100%;min-height:120px;max-height:200px;font-family:monospace;font-size:11.5px;padding:8px;border:1px solid #ddd;border-radius:6px;background:#fff;resize:vertical;"></textarea>
       </div>
       <div style="padding:12px 18px;border-top:1px solid #eee;display:flex;justify-content:flex-end;gap:6px;background:#fff;flex-shrink:0;">
-        <button class="btn btn-secondary btn-sm" @click="handleBtnAction('actionsModal-close')">
+        <button class="btn btn_cancel" @click="handleBtnAction('actionsModal-close')">
           취소
         </button>
-        <button class="btn btn-primary btn-sm" @click="handleBtnAction('actionsModal-apply')">
+        <button class="btn btn_save" @click="handleBtnAction('actionsModal-apply')">
           저장
         </button>
       </div>

@@ -1189,7 +1189,7 @@ window.Prod02View = {
     <!-- ===== ■.■.■.■.■.■. 버튼 ============================================ -->
     <div ref="buyBtnRef" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
       <div style="display:flex;gap:8px;">
-        <button class="btn-blue" style="flex:1;padding:13px;font-size:0.95rem;" @click="handleBtnAction('cart-add')">
+        <button class="btn btn_cart" style="flex:1;padding:13px;font-size:0.95rem;" @click="handleBtnAction('cart-add')">
           🛒 장바구니 담기
         </button>
         <button @click="handleBtnAction('prod-toggleLike', prod.prodId)" :title="isLiked && isLiked(prod.prodId) ? '찜 해제' : '찜하기'" :style="{ width:'52px',flexShrink:0,border:'1.5px solid var(--border)',borderRadius:'10px', background: isLiked && isLiked(prod.prodId) ? '#fee2e2' : 'var(--bg-card)', cursor:'pointer',fontSize:'1.3rem',display:'flex',alignItems:'center',justifyContent:'center', transition:'all .15s', }">
@@ -1198,7 +1198,7 @@ window.Prod02View = {
       </span>
     </button>
   </div>
-  <button class="btn-outline" style="width:100%;padding:13px;font-size:0.95rem;" @click="handleBtnAction('order-buyNow')">
+  <button class="btn btn_buy" style="width:100%;padding:13px;font-size:0.95rem;" @click="handleBtnAction('order-buyNow')">
     ⚡ 바로구매
   </button>
   <button @click="handleBtnAction('page-goContact')"
@@ -1742,7 +1742,7 @@ window.Prod02View = {
   <p style="margin-top:14px;font-size:0.75rem;color:var(--text-muted);">
     * 측정 방법에 따라 1~2cm 오차가 있을 수 있습니다.
   </p>
-  <button class="btn-blue" @click="handleBtnAction('sizeGuideModal-close')" style="width:100%;margin-top:16px;padding:10px;">
+  <button class="btn btn_confirm" @click="handleBtnAction('sizeGuideModal-close')" style="width:100%;margin-top:16px;padding:10px;">
     확인
   </button>
 </fo-modal>
@@ -1760,10 +1760,10 @@ window.Prod02View = {
     </div>
   </div>
   <div style="display:flex;gap:4px;flex-shrink:0;">
-    <button class="btn-outline" style="padding:10px 16px;font-size:0.88rem;white-space:nowrap;" @click="handleBtnAction('quickBuy-openCart')">
+    <button class="btn btn_cart" style="padding:10px 16px;font-size:0.88rem;white-space:nowrap;" @click="handleBtnAction('quickBuy-openCart')">
       담기
     </button>
-    <button class="btn-blue"    style="padding:10px 16px;font-size:0.88rem;white-space:nowrap;" @click="handleBtnAction('quickBuy-openBuy')">
+    <button class="btn btn_buy"    style="padding:10px 16px;font-size:0.88rem;white-space:nowrap;" @click="handleBtnAction('quickBuy-openBuy')">
       구매하기
     </button>
   </div>
@@ -1921,10 +1921,10 @@ window.Prod02View = {
       {{ cfQuickBuyTotal }}
     </span>
   </div>
-  <button v-if="uiState.drawerMode==='cart'" class="btn-blue" style="width:100%;padding:14px;font-size:0.95rem;font-weight:700;" @click="handleBtnAction('cart-addFromDrawer')">
+  <button v-if="uiState.drawerMode==='cart'" class="btn btn_cart" style="width:100%;padding:14px;font-size:0.95rem;font-weight:700;" @click="handleBtnAction('cart-addFromDrawer')">
     🛒 장바구니 담기
   </button>
-  <button v-else class="btn-blue" style="width:100%;padding:14px;font-size:0.95rem;font-weight:700;" @click="handleBtnAction('order-buyNow')">
+  <button v-else class="btn btn_buy" style="width:100%;padding:14px;font-size:0.95rem;font-weight:700;" @click="handleBtnAction('order-buyNow')">
     ⚡ 바로구매
   </button>
 </div>

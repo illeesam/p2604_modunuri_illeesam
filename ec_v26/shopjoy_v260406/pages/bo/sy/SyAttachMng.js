@@ -457,7 +457,7 @@ window.SyAttachMng = {
     <!-- ===== ■.■. 좌: 첨부그룹관리 (30%) ======================================= -->
     <bo-container title="첨부그룹관리" :count-text="grpPager.pageTotalCount + '건'">
       <template #toolbar-actions>
-        <button class="btn btn-primary btn-sm" @click="handleBtnAction('attachGrps-add')">
+        <button class="btn btn_new" @click="handleBtnAction('attachGrps-add')">
           + 신규
         </button>
       </template>
@@ -477,10 +477,10 @@ window.SyAttachMng = {
         <bo-form-area :columns="columns.grpForm" :form="grpForm" :errors="{}"
           :cols="2" compact :show-actions="false" />
         <div style="display:flex;gap:6px;margin-top:8px;">
-          <button class="btn btn-primary btn-sm" style="flex:1;" @click="handleBtnAction('attachGrps-save')">
+          <button class="btn btn_save" style="flex:1;" @click="handleBtnAction('attachGrps-save')">
             저장
           </button>
-          <button class="btn btn-secondary btn-sm" style="flex:1;" @click="handleBtnAction('attachGrps-formClose')">
+          <button class="btn btn_cancel" style="flex:1;" @click="handleBtnAction('attachGrps-formClose')">
             취소
           </button>
         </div>
@@ -504,10 +504,10 @@ window.SyAttachMng = {
               </div>
             </div>
             <div style="display:flex;gap:4px;" @click.stop>
-              <button class="btn btn-blue btn-sm" style="font-size:11px;padding:2px 6px;" @click="handleSelectAction('attachGrps-rowEdit', g)">
+              <button class="btn btn_row_edit" style="font-size:11px;padding:2px 6px;" @click="handleSelectAction('attachGrps-rowEdit', g)">
                 수정
               </button>
-              <button class="btn btn-danger btn-sm" style="font-size:11px;padding:2px 6px;" @click="handleSelectAction('attachGrps-rowDelete', g)">
+              <button class="btn btn_row_delete" style="font-size:11px;padding:2px 6px;" @click="handleSelectAction('attachGrps-rowDelete', g)">
                 삭제
               </button>
             </div>
@@ -546,7 +546,7 @@ window.SyAttachMng = {
       <!-- ===== ■.■.■. 목록 영역 (별도 컨테이너) ================================= -->
       <bo-container title="첨부파일목록" :count-text="fileGridPager.pageTotalCount + '건'">
         <template #toolbar-actions>
-          <button class="btn btn-primary btn-sm" @click="handleBtnAction('attaches-add')">
+          <button class="btn btn_new" @click="handleBtnAction('attaches-add')">
             + 신규
           </button>
         </template>
@@ -564,10 +564,10 @@ window.SyAttachMng = {
             :cols="3" compact :show-actions="false" />
           <!-- ===== ■.■.■.■.■. 저장/취소 가운데 정렬 ==================================== -->
           <div style="display:flex;gap:8px;justify-content:center;">
-            <button class="btn btn-primary btn-sm" style="min-width:60px;" @click="handleBtnAction('attaches-save')">
+            <button class="btn btn_save" style="min-width:60px;" @click="handleBtnAction('attaches-save')">
               저장
             </button>
-            <button class="btn btn-secondary btn-sm" style="min-width:60px;" @click="handleBtnAction('attaches-formClose')">
+            <button class="btn btn_cancel" style="min-width:60px;" @click="handleBtnAction('attaches-formClose')">
               취소
             </button>
           </div>
@@ -586,10 +586,10 @@ window.SyAttachMng = {
  row-actions>
             <template #row-actions="{ row }">
               <div class="actions">
-                <button class="btn btn-blue btn-xs" @click="handleSelectAction('attaches-rowEdit', row)">
+                <button class="btn btn_row_edit" @click="handleSelectAction('attaches-rowEdit', row)">
                   수정
                 </button>
-                <button class="btn btn-danger btn-xs" @click="handleSelectAction('attaches-rowDelete', row)">
+                <button class="btn btn_row_delete" @click="handleSelectAction('attaches-rowDelete', row)">
                   삭제
                 </button>
               </div>

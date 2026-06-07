@@ -730,15 +730,15 @@ window.PmCouponDtl = {
   <!-- ===== ■. 본문 영역 =================================================== -->
   <!-- 보기모드: [수정][닫기] -->
   <div class="form-actions" v-if="coUtil.cofAnd(active, cfDtlMode)">
-    <button class="btn btn-blue" @click="handleBtnAction('form-edit')" style="min-width:120px;">수정</button>
-    <button class="btn btn-secondary" @click="handleBtnAction('form-close')" style="min-width:120px;">닫기</button>
+    <button class="btn btn_edit" @click="handleBtnAction('form-edit')" style="min-width:120px;">수정</button>
+    <button class="btn btn_close" @click="handleBtnAction('form-close')" style="min-width:120px;">닫기</button>
   </div>
   <!-- 수정모드: [저장][취소] -->
   <div v-if="coUtil.cofAnd(active, !cfDtlMode)" style="margin-top:16px;text-align:center;gap:8px;display:flex;justify-content:center;">
-    <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요. (발급/사용/미리보기 탭은 조회 전용)' : ''" @click="handleBtnAction('form-save')" style="min-width:120px;">
+    <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요. (발급/사용/미리보기 탭은 조회 전용)' : ''" @click="handleBtnAction('form-save')" style="min-width:120px;">
       저장
     </button>
-    <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')" style="min-width:120px;">취소</button>
+    <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')" style="min-width:120px;">취소</button>
   </div>
 </bo-container>
 <!-- ===== □. 본문 영역 =================================================== -->

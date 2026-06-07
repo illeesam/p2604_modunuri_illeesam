@@ -460,10 +460,10 @@ window.SyDeptMng = {
     <!-- ===== ■.■. 부서 트리 ================================================= -->
     <bo-container title="📂 부서">
       <template #toolbar-actions>
-        <button class="btn btn-sm" @click="handleBtnAction('deptTree-expandAll')" style="font-size:11px;">
+        <button class="btn btn_expand_all" @click="handleBtnAction('deptTree-expandAll')" style="font-size:11px;">
           ▼ 전체펼치기
         </button>
-        <button class="btn btn-sm" @click="handleBtnAction('deptTree-collapseAll')" style="font-size:11px;">
+        <button class="btn btn_collapse_all" @click="handleBtnAction('deptTree-collapseAll')" style="font-size:11px;">
           ▶ 전체닫기
         </button>
       </template>

@@ -338,7 +338,7 @@ window.CmBlogMng = {
   <!-- ===== ■. 목록 영역 =================================================== -->
   <bo-container title="게시글 목록" :count-text="'총 ' + baseGridPager.pageTotalCount + '건'">
     <template #toolbar-actions>
-      <button class="btn btn-primary btn-sm" @click="handleBtnAction('blogs-add')">
+      <button class="btn btn_new" @click="handleBtnAction('blogs-add')">
         + 신규
       </button>
     </template>
@@ -382,13 +382,13 @@ window.CmBlogMng = {
         </bo-form-area>
         <!-- ===== ■.■.■. 하단 액션 (저장/삭제/닫기) — .form-actions 가 중앙 정렬 ===== -->
         <div class="form-actions">
-          <button class="btn btn-primary" @click="handleBtnAction('detailPanel-save')">
+          <button class="btn btn_save" @click="handleBtnAction('detailPanel-save')">
             저장
           </button>
-          <button v-if="!detailPanel.isNew" class="btn btn-danger" @click="handleBtnAction('detailPanel-delete')">
+          <button v-if="!detailPanel.isNew" class="btn btn_delete" @click="handleBtnAction('detailPanel-delete')">
             삭제
           </button>
-          <button class="btn btn-secondary" @click="handleBtnAction('detailPanel-close')">
+          <button class="btn btn_close" @click="handleBtnAction('detailPanel-close')">
             닫기
           </button>
         </div>

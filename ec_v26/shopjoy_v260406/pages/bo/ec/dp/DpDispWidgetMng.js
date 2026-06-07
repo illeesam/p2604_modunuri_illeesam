@@ -415,11 +415,11 @@ window.DpDispWidgetMng = {
       <span v-if="cfFilterDirty" style="font-size:11px;color:#e8587a;font-weight:600;align-self:center;">
         변경됨 →
       </span>
-      <button @click="handleBtnAction('searchParam-list')" class="btn btn-primary btn-sm"
+      <button @click="handleBtnAction('searchParam-list')" class="btn btn_search"
         :style="cfFilterDirty ? 'box-shadow:0 0 0 3px rgba(232,88,122,0.35);' : ''">
         조회
       </button>
-      <button @click="handleBtnAction('searchParam-reset')"  class="btn btn-secondary btn-sm">
+      <button @click="handleBtnAction('searchParam-reset')"  class="btn btn_reset">
         초기화
       </button>
     </div>
@@ -462,7 +462,7 @@ window.DpDispWidgetMng = {
             상태: {{ applied.status === 'Y' ? '활성' : '비활성' }}
           </span>
         </div>
-        <button @click="handleBtnAction('widgets-add')" class="btn btn-primary btn-sm" style="height:30px;padding:0 14px;">
+        <button @click="handleBtnAction('widgets-add')" class="btn btn_new" style="height:30px;padding:0 14px;">
           + 신규등록
         </button>
       </template>
@@ -549,10 +549,10 @@ window.DpDispWidgetMng = {
         </template>
         <template #row-actions="{ row, gridId }">
           <div class="actions" style="justify-content:flex-end;">
-            <button @click.stop="handleGridCellAction(gridId, 'btn_edit', row)" class="btn btn-blue btn-xs">
+            <button @click.stop="handleGridCellAction(gridId, 'btn_edit', row)" class="btn btn_row_edit">
               수정
             </button>
-            <button @click.stop="handleGridCellAction(gridId, 'btn_delete', row)" class="btn btn-danger btn-xs">
+            <button @click.stop="handleGridCellAction(gridId, 'btn_delete', row)" class="btn btn_row_delete">
               삭제
             </button>
           </div>

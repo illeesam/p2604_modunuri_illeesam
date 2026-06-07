@@ -403,8 +403,8 @@ window.Prod03List = {
       {{ (selColors.size+selSizes.size+selCats.size+(uiState.priceMin?1:0)+(uiState.priceMax?1:0)) }}
     </span>
   </button>
-  <button @click="handleBtnAction('search-do')"
-      style="padding:10px 18px;border:1.5px solid var(--blue);border-radius:10px;background:var(--blue);color:#fff;cursor:pointer;font-size:0.85rem;font-weight:700;white-space:nowrap;transition:all 0.2s;">
+  <button class="btn_search" @click="handleBtnAction('search-do')"
+      style="white-space:nowrap;">
     조회
   </button>
 </fo-search-area>

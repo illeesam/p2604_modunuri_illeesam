@@ -199,10 +199,10 @@ window.BlogEdit = {
     <!-- ===== □.□. 태그 ==================================================== -->
     <!-- ===== ■.■. 버튼 ==================================================== -->
     <div style="display:flex;gap:10px;justify-content:flex-end;">
-      <button class="btn-outline" @click="handleBtnAction('form-cancel')" style="padding:11px 28px;font-size:0.88rem;">
+      <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')" style="padding:11px 28px;font-size:0.88rem;">
         취소
       </button>
-      <button class="btn-blue" @click="handleBtnAction('form-save')" style="padding:11px 28px;font-size:0.88rem;">
+      <button class="btn btn_save" @click="handleBtnAction('form-save')" style="padding:11px 28px;font-size:0.88rem;">
         {{ cfIsEdit ? '수정' : '등록' }}
       </button>
     </div>

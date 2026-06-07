@@ -304,7 +304,7 @@ window.DpDispAreaMng = {
         <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">
           #{{ uiState.selectedPath }}
         </span>
-        <button class="btn btn-primary btn-sm" @click="handleBtnAction('areas-add')">
+        <button class="btn btn_new" @click="handleBtnAction('areas-add')">
           ✚ 신규등록
         </button>
       </template>
@@ -314,10 +314,10 @@ window.DpDispAreaMng = {
         @sort="key => handleBtnAction('areas-sort', key)"
         grid-id="areas-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
         <template #row-actions="{ row, gridId }">
-          <button class="btn btn-xs btn-secondary" @click.stop="handleGridCellAction(gridId, 'btn_view', row)">
+          <button class="btn btn_detail" @click.stop="handleGridCellAction(gridId, 'btn_view', row)">
             상세
           </button>
-          <button class="btn btn-xs btn-blue" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
+          <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
             수정
           </button>
         </template>

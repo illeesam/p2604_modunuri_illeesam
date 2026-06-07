@@ -618,7 +618,7 @@ const setGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pag
   <!-- ===== ■. 목록 ====================================================== -->
   <bo-container title="세트상품 목록" :count-text="setGridPager.pageTotalCount + '건'">
     <template #toolbar-actions>
-      <button class="btn btn-green btn-sm" @click="handleBtnAction('sets-add')">+ 신규등록</button>
+      <button class="btn btn_new" @click="handleBtnAction('sets-add')">+ 신규등록</button>
     </template>
     <!-- ===== ■.■. 그리드 (기본 10개 영역 + 화면 높이 반응형 확장, 초과 시 내부 스크롤) =========== -->
     <div style="max-height:calc(100vh - 340px);min-height:480px;overflow-y:auto;border:1px solid #eef0f3;border-radius:6px;background:#fff;">
@@ -646,8 +646,8 @@ const setGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pag
           </td>
         </template>
         <template #row-actions="{ row }">
-          <button class="btn btn-blue btn-xs" @click="handleSelectAction('sets-rowEdit', row.setProdId)">수정</button>
-          <button class="btn btn-danger btn-xs" @click="handleSelectAction('sets-rowDelete', row.setProdId)">삭제</button>
+          <button class="btn btn_row_edit" @click="handleSelectAction('sets-rowEdit', row.setProdId)">수정</button>
+          <button class="btn btn_row_delete" @click="handleSelectAction('sets-rowDelete', row.setProdId)">삭제</button>
         </template>
       </bo-grid>
     </div>
@@ -794,8 +794,8 @@ const setGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pag
       <!-- ===== □.□. 목록 영역 ================================================= -->
       <!-- ===== ■.■. 하단 액션 (저장/닫기 중앙 정렬) ================================ -->
       <div class="form-actions">
-        <button class="btn btn-blue" @click="handleBtnAction('detailPanel-save')">{{ uiState.dtlMode==='new' ? '등록' : '저장' }}</button>
-        <button class="btn btn-secondary" @click="handleBtnAction('detailPanel-close')">닫기</button>
+        <button class="btn btn_save" @click="handleBtnAction('detailPanel-save')">{{ uiState.dtlMode==='new' ? '등록' : '저장' }}</button>
+        <button class="btn btn_close" @click="handleBtnAction('detailPanel-close')">닫기</button>
       </div>
     </template>
     <!-- ===== □.□. Dtl 본문 (활성 시에만 표시) ====================================== -->
@@ -809,7 +809,7 @@ const setGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pag
       <div style="background:#fff;border-radius:14px;padding:24px;width:580px;max-height:72vh;display:flex;flex-direction:column;box-shadow:0 8px 48px rgba(0,0,0,0.22)">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
           <strong style="font-size:15px">구성품 상품 선택</strong>
-          <button class="btn btn-secondary btn-xs" @click="handleBtnAction('prodPickModal-close')">닫기</button>
+          <button class="btn btn_close" @click="handleBtnAction('prodPickModal-close')">닫기</button>
         </div>
         <bo-multi-check-select
           v-model="uiState.pickerSearchType"
@@ -831,7 +831,7 @@ const setGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pag
           <bo-grid bare :columns="columns.pickerGrid" :rows="cfPickerList" row-key="productId"
             empty-text="검색 결과가 없습니다." row-actions>
             <template #row-actions="{ row }">
-              <button class="btn btn-blue btn-xs" @click="handleSelectAction('prodPickModal-add', row)">선택</button>
+              <button class="btn btn_select" @click="handleSelectAction('prodPickModal-add', row)">선택</button>
             </template>
           </bo-grid>
         </div>

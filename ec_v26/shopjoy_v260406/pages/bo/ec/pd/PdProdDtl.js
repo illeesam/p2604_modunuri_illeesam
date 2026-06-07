@@ -1599,14 +1599,14 @@ window.PdProdDtl = {
         </label>
       </div>
       <div class="form-actions" v-if="cfDtlMode && active">
-        <button class="btn btn-blue" @click="handleBtnAction('form-edit')">수정</button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-close')">닫기</button>
+        <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
+        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
       <div class="form-actions" v-if="!cfDtlMode && active">
-        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
+        <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           저장
         </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">취소</button>
+        <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
       </div>
     </div>
     <!-- ══════════════════════════════════════
@@ -1820,14 +1820,14 @@ window.PdProdDtl = {
         탭에서 관리합니다.
       </div>
       <div class="form-actions" v-if="cfDtlMode && active">
-        <button class="btn btn-blue" @click="handleBtnAction('form-edit')">수정</button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-close')">닫기</button>
+        <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
+        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
       <div class="form-actions" v-if="!cfDtlMode && active">
-        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
+        <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           저장
         </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">취소</button>
+        <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
       </div>
     </div>
     <!-- ══════════════════════════════════════
@@ -1945,14 +1945,14 @@ window.PdProdDtl = {
         </div>
       </div>
       <div class="form-actions" v-if="cfDtlMode && active" style="padding:8px 16px;border-top:1px solid #f0f0f0;">
-        <button class="btn btn-blue" @click="handleBtnAction('form-edit')">수정</button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-close')">닫기</button>
+        <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
+        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
       <div class="form-actions" v-if="!cfDtlMode && active" style="padding:8px 16px;border-top:1px solid #f0f0f0;">
-        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
+        <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           저장
         </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">취소</button>
+        <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
       </div>
     </div>
     <!-- ══════════════════════════════════════
@@ -1993,14 +1993,14 @@ window.PdProdDtl = {
         </label>
       </div>
       <div class="form-actions" v-if="cfDtlMode && active">
-        <button class="btn btn-blue" @click="handleBtnAction('form-edit')">수정</button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-close')">닫기</button>
+        <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
+        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
       <div class="form-actions" v-if="!cfDtlMode && active">
-        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
+        <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           저장
         </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">취소</button>
+        <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
       </div>
     </div>
     <!-- ══════════════════════════════════════
@@ -2080,14 +2080,14 @@ window.PdProdDtl = {
       </div>
       <!-- ===== ■.■.■. /이미지 스크롤 컨테이너 ======================================= -->
       <div class="form-actions" v-if="cfDtlMode && active">
-        <button class="btn btn-blue" @click="handleBtnAction('form-edit')">수정</button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-close')">닫기</button>
+        <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
+        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
       <div class="form-actions" v-if="!cfDtlMode && active">
-        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
+        <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           저장
         </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">취소</button>
+        <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
       </div>
     </div>
     <!-- ══════════════════════════════════════
@@ -2147,14 +2147,14 @@ window.PdProdDtl = {
         </bo-grid>
       </div>
       <div class="form-actions" v-if="cfDtlMode && active">
-        <button class="btn btn-blue" @click="handleBtnAction('form-edit')">수정</button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-close')">닫기</button>
+        <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
+        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
       <div class="form-actions" v-if="!cfDtlMode && active">
-        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
+        <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           저장
         </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">취소</button>
+        <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
       </div>
       <!-- ===== ■.■.■. 상품 추가 피커 모달 (좌:카테고리트리 / 우:상품목록) ===================== -->
       <bo-prod-cate-pick-modal v-if="prodPickerOpen"
@@ -2432,14 +2432,14 @@ window.PdProdDtl = {
       </template>
       <!-- ===== ■.■.■. 저장/취소 버튼 (맨 아래) ===================================== -->
       <div class="form-actions" v-if="cfDtlMode && active">
-        <button class="btn btn-blue" @click="handleBtnAction('form-edit')">수정</button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-close')">닫기</button>
+        <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
+        <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
       <div class="form-actions" v-if="!cfDtlMode && active">
-        <button class="btn btn-primary" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
+        <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           저장
         </button>
-        <button class="btn btn-secondary" @click="handleBtnAction('form-cancel')">취소</button>
+        <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
       </div>
     </div>
   </div>

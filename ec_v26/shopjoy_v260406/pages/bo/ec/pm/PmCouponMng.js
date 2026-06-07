@@ -340,10 +340,10 @@ window.PmCouponMng = {
           ⊞ 카드
         </button>
       </div>
-      <button class="btn btn-green btn-sm" @click="handleBtnAction('coupons-excel')">
+      <button class="btn btn_excel" @click="handleBtnAction('coupons-excel')">
         📥 엑셀
       </button>
-      <button class="btn btn-primary btn-sm" @click="handleBtnAction('coupons-add')">
+      <button class="btn btn_new" @click="handleBtnAction('coupons-add')">
         + 신규
       </button>
     </template>
@@ -360,10 +360,10 @@ window.PmCouponMng = {
       </template>
       <template #row-actions="{ row: c, gridId }">
         <div class="actions">
-          <button class="btn btn-blue btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_edit', c)">
+          <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_edit', c)">
             수정
           </button>
-          <button class="btn btn-danger btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_delete', c)">
+          <button class="btn btn_row_delete" @click.stop="handleGridCellAction(gridId, 'btn_delete', c)">
             삭제
           </button>
         </div>
@@ -408,10 +408,10 @@ window.PmCouponMng = {
           </div>
         </div>
         <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:center;align-items:center;">
-          <button class="btn btn-blue btn-sm" @click.stop="handleGridCellAction('coupons-cellClick', 'btn_edit', c)" style="font-size:11px;padding:4px 12px;">
+          <button class="btn btn_row_edit" @click.stop="handleGridCellAction('coupons-cellClick', 'btn_edit', c)" style="font-size:11px;padding:4px 12px;">
             수정
           </button>
-          <button class="btn btn-danger btn-sm" @click.stop="handleGridCellAction('coupons-cellClick', 'btn_delete', c)" style="font-size:11px;padding:4px 12px;">
+          <button class="btn btn_row_delete" @click.stop="handleGridCellAction('coupons-cellClick', 'btn_delete', c)" style="font-size:11px;padding:4px 12px;">
             삭제
           </button>
         </div>
@@ -423,7 +423,7 @@ window.PmCouponMng = {
   <!-- ===== ■. 하단 상세: CouponDtl 임베드 (항상 표시, 진입 시 빈 신규 폼) ============= -->
   <bo-container bare>
     <div v-if="uiStateDetail.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+      <button data-hide-close style="display:none;" class="btn btn_close" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기
       </button>
     </div>

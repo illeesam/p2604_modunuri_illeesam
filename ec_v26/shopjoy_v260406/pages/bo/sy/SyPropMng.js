@@ -308,7 +308,7 @@ window.SyPropMng = {
         @delete-checked="handleBtnAction('props-deleteChecked')" @cancel-checked="handleBtnAction('props-cancelChecked')"
         grid-id="props-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">
         <template #row-actions="{ row }">
-          <button v-if="['N','U'].includes(row._row_status)" class="btn btn-xs btn-danger" @click.stop="handleSelectAction('props-rowDelete', row)">
+          <button v-if="['N','U'].includes(row._row_status)" class="btn btn_row_delete" @click.stop="handleSelectAction('props-rowDelete', row)">
             삭제
           </button>
           <button v-else-if="row._row_status==='D'" class="btn btn-xs btn-secondary" @click.stop="handleSelectAction('props-rowRestore', row)">

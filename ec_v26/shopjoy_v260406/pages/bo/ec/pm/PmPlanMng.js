@@ -320,10 +320,10 @@ window.PmPlanMng = {
             ⊞ 카드
           </button>
         </div>
-        <button class="btn btn-green btn-sm" @click="handleBtnAction('plans-excel')">
+        <button class="btn btn_excel" @click="handleBtnAction('plans-excel')">
           📥 엑셀
         </button>
-        <button class="btn btn-primary btn-sm" @click="handleBtnAction('plans-add')">
+        <button class="btn btn_new" @click="handleBtnAction('plans-add')">
           + 신규
         </button>
       </div>
@@ -339,10 +339,10 @@ window.PmPlanMng = {
       </template>
       <template #row-actions="{ row: p, gridId }">
         <div class="actions">
-          <button class="btn btn-blue btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_edit', p)">
+          <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_edit', p)">
             수정
           </button>
-          <button class="btn btn-danger btn-xs" @click.stop="handleGridCellAction(gridId, 'btn_delete', p)">
+          <button class="btn btn_row_delete" @click.stop="handleGridCellAction(gridId, 'btn_delete', p)">
             삭제
           </button>
         </div>
@@ -393,10 +393,10 @@ window.PmPlanMng = {
           </div>
         </div>
         <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:center;align-items:center;">
-          <button class="btn btn-blue btn-sm" @click.stop="handleGridCellAction('plans-cellClick', 'btn_edit', p)" style="font-size:11px;padding:4px 12px;">
+          <button class="btn btn_row_edit" @click.stop="handleGridCellAction('plans-cellClick', 'btn_edit', p)" style="font-size:11px;padding:4px 12px;">
             수정
           </button>
-          <button class="btn btn-danger btn-sm" @click.stop="handleGridCellAction('plans-cellClick', 'btn_delete', p)" style="font-size:11px;padding:4px 12px;">
+          <button class="btn btn_row_delete" @click.stop="handleGridCellAction('plans-cellClick', 'btn_delete', p)" style="font-size:11px;padding:4px 12px;">
             삭제
           </button>
           <span style="font-size:11px;color:#999;margin-left:auto;">
@@ -411,7 +411,7 @@ window.PmPlanMng = {
   <!-- ===== ■. 하단 상세: PlanDtl 임베드 (항상 표시, 진입 시 빈 신규 폼) ============= -->
   <bo-container bare>
     <div v-if="detailPanel.active" style="display:flex;justify-content:flex-end;padding:10px 0 0;">
-      <button data-hide-close style="display:none;" class="btn btn-secondary btn-sm" @click="handleBtnAction('detailPanel-close')">
+      <button data-hide-close style="display:none;" class="btn btn_close" @click="handleBtnAction('detailPanel-close')">
         ✕ 닫기
       </button>
     </div>

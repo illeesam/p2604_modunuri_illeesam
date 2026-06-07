@@ -842,10 +842,10 @@ window.DpDispUiPreview = {
         건
       </span>
       <div style="display:flex;align-items:center;gap:6px;margin-left:auto;">
-        <button @click="handleBtnAction('searchParam-apply')" class="btn btn-primary btn-sm" style="height:30px;padding:0 14px;">
+        <button @click="handleBtnAction('searchParam-apply')" class="btn btn_search" style="height:30px;padding:0 14px;">
           검색
         </button>
-        <button @click="handleBtnAction('searchParam-reset')" class="btn btn-secondary btn-sm" style="height:30px;padding:0 12px;">
+        <button @click="handleBtnAction('searchParam-reset')" class="btn btn_reset" style="height:30px;padding:0 12px;">
           초기화
         </button>
       </div>

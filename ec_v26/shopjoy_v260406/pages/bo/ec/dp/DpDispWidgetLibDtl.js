@@ -724,11 +724,11 @@ window.DpDispWidgetLibDtl = {
       <button @click="handleBtnAction('libPickModal-open')" class="btn btn-outline" style="font-size:12px;background:#e3f2fd;color:#1565c0;border-color:#90caf9;">
         📋 전시위젯Lib 내용복사
       </button>
-      <button @click="handleBtnAction('form-save')"   class="btn btn-primary" style="font-size:13px;">저장</button>
-      <button v-if="!cfIsNew" @click="handleBtnAction('form-delete')" class="btn btn-outline" style="font-size:13px;color:#e8587a;border-color:#e8587a;">
+      <button @click="handleBtnAction('form-save')"   class="btn btn_save" style="font-size:13px;">저장</button>
+      <button v-if="!cfIsNew" @click="handleBtnAction('form-delete')" class="btn btn_delete" style="font-size:13px;color:#e8587a;border-color:#e8587a;">
         삭제
       </button>
-      <button @click="handleBtnAction('form-close')" class="btn btn-outline" style="font-size:13px;">닫기</button>
+      <button @click="handleBtnAction('form-close')" class="btn btn_close" style="font-size:13px;">닫기</button>
     </div>
     <widget-lib-pick-modal v-if="libPickOpen" mode="copy"
       :widget-libs="[] || []" modal-name="widget-lib-pick" :on-callback="fnCallbackModal" />

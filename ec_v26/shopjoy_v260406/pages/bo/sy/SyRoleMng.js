@@ -1000,7 +1000,7 @@ window.SyRoleMng = {
                   @click="handleBtnAction('roleMenus-setAll', p)">
                   {{ p }}
                 </button>
-                <button class="btn btn-primary btn-sm" style="margin-left:8px;" @click="handleBtnAction('config-save')">
+                <button class="btn btn_save" style="margin-left:8px;" @click="handleBtnAction('config-save')">
                   💾 설정 저장
                 </button>
               </div>
@@ -1071,7 +1071,7 @@ window.SyRoleMng = {
                   <button class="btn btn-primary btn-sm" @click="handleBtnAction('roleUsers-openSelect')">
                     + 사용자 추가
                   </button>
-                  <button class="btn btn-primary btn-sm" style="margin-left:4px;" @click="handleBtnAction('roleUsers-save')">
+                  <button class="btn btn_save" style="margin-left:4px;" @click="handleBtnAction('roleUsers-save')">
                     💾 저장
                   </button>
                 </div>

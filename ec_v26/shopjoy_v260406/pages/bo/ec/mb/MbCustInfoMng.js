@@ -570,8 +570,8 @@
           :placeholder="uiState.searchMode==='order'?'주문번호  ex) ORD-2026-025':'클레임번호  ex) CLM-2026-013'"
           style="border:none;background:transparent;padding:8px 14px;font-size:13px;outline:none;flex:1;min-width:0;"
           @keyup.enter="handleBtnAction('searchParam-list')" />
-        <button @click="handleBtnAction('searchParam-list')"
-          style="background:#1976d2;color:#fff;border:none;padding:9px 18px;font-size:13px;font-weight:600;white-space:nowrap;">
+        <button class="btn btn_search" @click="handleBtnAction('searchParam-list')"
+          style="white-space:nowrap;">
           조회
         </button>
       </div>

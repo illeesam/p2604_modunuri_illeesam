@@ -646,7 +646,7 @@ const bundleGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, 
   <!-- ===== ■. 목록 ====================================================== -->
   <bo-container title="묶음상품 목록" :count-text="bundleGridPager.pageTotalCount + '건'">
     <template #toolbar-actions>
-      <button class="btn btn-green btn-sm" @click="handleBtnAction('bundles-add')">
+      <button class="btn btn_new" @click="handleBtnAction('bundles-add')">
         + 신규등록
       </button>
     </template>
@@ -678,10 +678,10 @@ const bundleGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, 
     </td>
   </template>
   <template #row-actions="{ row: g }">
-    <button class="btn btn-blue btn-xs" @click="handleSelectAction('bundles-rowEdit', g.bundleProdId)">
+    <button class="btn btn_row_edit" @click="handleSelectAction('bundles-rowEdit', g.bundleProdId)">
       수정
     </button>
-    <button class="btn btn-danger btn-xs" @click="handleSelectAction('bundles-rowDelete', g.bundleProdId)">
+    <button class="btn btn_row_delete" @click="handleSelectAction('bundles-rowDelete', g.bundleProdId)">
       삭제
     </button>
   </template>
@@ -928,10 +928,10 @@ const bundleGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, 
 </div>
 <!-- ===== ■.■. 하단 액션 (저장/닫기 중앙 정렬) ================================ -->
 <div class="form-actions">
-  <button class="btn btn-blue" @click="handleBtnAction('detailPanel-save')">
+  <button class="btn btn_save" @click="handleBtnAction('detailPanel-save')">
     {{ uiState.dtlMode==='new' ? '등록' : '저장' }}
   </button>
-  <button class="btn btn-secondary" @click="handleBtnAction('detailPanel-close')">
+  <button class="btn btn_close" @click="handleBtnAction('detailPanel-close')">
     닫기
   </button>
 </div>
@@ -949,7 +949,7 @@ const bundleGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, 
         <strong style="font-size:15px">
           구성품 상품 선택
         </strong>
-        <button class="btn btn-secondary btn-xs" @click="handleBtnAction('prodPickModal-close')">
+        <button class="btn btn_close" @click="handleBtnAction('prodPickModal-close')">
           닫기
         </button>
       </div>
@@ -1007,7 +1007,7 @@ const bundleGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, 
               {{ (p.salePrice || p.price || 0).toLocaleString() }}원
             </td>
             <td style="text-align:center">
-              <button class="btn btn-blue btn-xs" @click="handleSelectAction('prodPickModal-add', p)">
+              <button class="btn btn_select" @click="handleSelectAction('prodPickModal-add', p)">
                 선택
               </button>
             </td>
