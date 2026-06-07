@@ -443,7 +443,7 @@ window.SyUserMng = {
       </div>
     </bo-container>
     <!-- ===== ■.■. 목록 그리드 ============================================== -->
-    <bo-container bare title="사용자목록" :count-text="baseGridPager.pageTotalCount + '건'">
+    <bo-container title="사용자목록" :count-text="baseGridPager.pageTotalCount + '건'">
       <template #toolbar-actions>
         <div style="display:flex;gap:6px;">
           <button class="btn btn_excel" @click="handleBtnAction('users-excel')">

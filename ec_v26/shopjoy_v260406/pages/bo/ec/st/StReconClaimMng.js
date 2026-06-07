@@ -198,7 +198,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </bo-container>
   <!-- ===== ■. 집계 영역 =================================================== -->
-  <bo-container bare>
+  <bo-container>
     <bo-form-area :columns="columns.summaryForm" :form="{}" :cols="3" readonly label-left compact :show-actions="false" label-width="100px" />
   </bo-container>
   <!-- ===== ■. 목록 영역 =================================================== -->

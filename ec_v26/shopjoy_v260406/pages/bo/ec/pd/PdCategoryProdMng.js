@@ -545,7 +545,7 @@ window.PdCategoryProdMng = {
     </bo-container>
     <!-- ===== □.□. 좌측 카테고리 트리 ============================================ -->
     <!-- ===== ■.■. 우측 상품 목록 ============================================== -->
-    <bo-container bare>
+    <bo-container>
         <!-- ===== ■.■.■.■. 카테고리명 + 저장/추가 버튼 (탭바와 간격 확보) ================== -->
         <div class="toolbar" style="margin-bottom:10px">
           <span class="list-title">

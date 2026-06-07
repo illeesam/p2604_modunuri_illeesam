@@ -340,7 +340,7 @@ window.DpDispUiMng = {
       </div>
     </bo-container>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-container bare title="전시 UI 목록" :count-text="'총 ' + baseGridPager.pageTotalCount + '건'">
+    <bo-container title="전시 UI 목록" :count-text="'총 ' + baseGridPager.pageTotalCount + '건'">
       <template #toolbar-actions>
         <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">
           #{{ uiState.selectedPath }}

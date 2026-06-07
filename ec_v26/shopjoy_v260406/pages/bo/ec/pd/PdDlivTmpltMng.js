@@ -304,7 +304,7 @@ window.PdDlivTmpltMng = {
   </bo-container>
   <!-- ===== □. 목록 그리드 =================================================== -->
   <!-- ===== ■. 상세 패널 (항상 표시 — 미선택 시 안내, 선택/신규 시 폼) ============== -->
-  <bo-container bare>
+  <bo-container>
     <!-- ===== ■.■. 상세 툴바: 제목만 (저장/삭제/닫기는 하단 form-actions) ======== -->
     <div class="toolbar">
       <span class="list-title">

@@ -1031,7 +1031,7 @@ window.DpDispWidgetPreview = {
     <!-- ===== ■.■. 왼쪽: 트리 (카드) =========================================== -->
     <div class="card" style="width:340px;flex-shrink:0;display:flex;flex-direction:column;padding:0;overflow:hidden;">
       <div style="padding:7px 12px;border-bottom:1px solid #f0f0f0;font-size:12px;font-weight:700;color:#555;background:#fafafa;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;">
-        <span>표시경로
+        <span class="list-title">표시경로
           <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;margin-left:4px;">#ec_disp_widget</span>
         </span>
         <span style="font-size:10px;color:#aaa;font-weight:400;">⠿ 드래그하여 배치</span>
@@ -1114,6 +1114,10 @@ window.DpDispWidgetPreview = {
     <!-- ===== ■.■. 오른쪽 (카드) ============================================== -->
     <div class="card" style="flex:1;display:flex;flex-direction:column;overflow:hidden;background:#f0f2f5;min-width:0;padding:0;">
 
+      <!-- ===== ■.■.■. 영역 제목 ================================================ -->
+      <div style="padding:7px 12px;border-bottom:1px solid #f0f0f0;background:#fafafa;flex-shrink:0;">
+        <span class="list-title">미리보기</span>
+      </div>
       <!-- ===== ■.■.■. 탭바 + 뷰포트 토글 + 배치수 =================================== -->
       <div style="display:flex;align-items:stretch;background:#f8f9fa;border-bottom:1px solid #e8e8e8;flex-shrink:0;padding:0 12px;">
         <div style="display:flex;gap:2px;align-items:flex-end;padding-top:8px;flex:1;">

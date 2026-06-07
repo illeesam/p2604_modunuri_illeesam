@@ -576,7 +576,7 @@ window.OdDlivMng = {
     <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </bo-container>
   <!-- ===== ■. 목록 영역 =================================================== -->
-  <bo-container bare title="배송목록" :count-text="listGridPager.pageTotalCount + '건'">
+  <bo-container title="배송목록" :count-text="listGridPager.pageTotalCount + '건'">
     <template #toolbar-actions>
       <span v-if="checked.size" style="margin-right:10px;font-size:12px;color:#1565c0;font-weight:700;">
         선택 {{ checked.size }}건

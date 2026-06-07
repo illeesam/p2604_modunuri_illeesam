@@ -247,7 +247,7 @@ window.SyI18nMng = {
     <bo-pager :pager="baseGridPager" :on-set-page="n => handleSelectAction('i18ns-pager-setPage', n)" :on-size-change="() => handleSelectAction('i18ns-pager-sizeChange')" />
   </bo-container>
   <!-- ===== ■. 번역 편집 패널 (항상 표시) ====================================== -->
-  <bo-container bare>
+  <bo-container>
     <div class="toolbar">
       <span class="list-title">
         번역 편집

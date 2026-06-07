@@ -299,7 +299,7 @@ window.DpDispAreaMng = {
       </div>
     </bo-container>
     <!-- ===== ■.■. 목록 영역 ================================================= -->
-    <bo-container title="전시 영역 목록" :count-text="'총 ' + listGridPager.pageTotalCount + '건'" bare>
+    <bo-container title="전시 영역 목록" :count-text="'총 ' + listGridPager.pageTotalCount + '건'">
       <template #toolbar-actions>
         <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">
           #{{ uiState.selectedPath }}
