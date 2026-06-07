@@ -10,7 +10,6 @@ window.DpDispWidgetMng = {
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const codes = reactive({ disp_widget_types: [], active_statuses: [] });
     const widgetCounts = reactive({});                 // 좌 트리 노드별 카운트 (검색조건 동기)
     const uiState = reactive({ loading: false, isPageCodeLoad: false, selectedPath: null, sortKey: '', sortDir: 'asc' });
@@ -340,7 +339,7 @@ window.DpDispWidgetMng = {
       pathLabel, wTypeLabel, wIcon, sortIcon,                                         // 헬퍼
       fnStatusCls, fnStatusLabel, contentSummary, fnRowStyle,                         // 헬퍼
       inlineNavigate,                                                                 // Dtl 콜백 (closure 필요)
-      showToast, showConfirm, showRefModal, setApiRes,                                // Dtl 콜백
+      showToast, showConfirm, showRefModal, // Dtl 콜백
     };
   },
   template: /* html */`

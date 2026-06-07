@@ -10,7 +10,6 @@ window.OdDlivMng = {
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
 
     const dlivs = reactive([]);                                                 // 배송 목록 (메인 그리드 데이터)
     const members = reactive([]);                                               // 회원 목록 (추가결재요청 picker)
@@ -301,12 +300,10 @@ window.OdDlivMng = {
       if (detailPanel.selectedId === d.dlivId) { resetDetailToNew(); }
       try {
         const res = await boApiSvc.odDliv.remove(d.dlivId, '배송관리', '삭제');
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast('삭제되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
         if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
@@ -394,12 +391,10 @@ window.OdDlivMng = {
         checked.clear(); uiState.bulkOpen = false;
         try {
           const res = await boApiSvc.odDliv.saveList('status', rows, '배송관리', '일괄처리');
-          if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
           if (showToast) { showToast(`${ids.length}건 변경되었습니다.`, 'success'); }
         } catch (err) {
           console.error('[catch-info]', err);
           const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-          if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
           if (showToast) { showToast(errMsg, 'error', 0); }
         }
       } else if (uiState.bulkTab === 'courier') {
@@ -416,12 +411,10 @@ window.OdDlivMng = {
         checked.clear(); uiState.bulkOpen = false;
         try {
           const res = await boApiSvc.odDliv.saveList('courier', rows, '배송관리', '택배정보');
-          if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
           if (showToast) { showToast(`${ids.length}건 변경되었습니다.`, 'success'); }
         } catch (err) {
           console.error('[catch-info]', err);
           const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-          if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
           if (showToast) { showToast(errMsg, 'error', 0); }
         }
       } else if (uiState.bulkTab === 'approval') {
@@ -433,12 +426,10 @@ window.OdDlivMng = {
         checked.clear(); uiState.bulkOpen = false;
         try {
           const res = await boApiSvc.odDliv.saveList('approval', rows, '배송관리', '결재처리');
-          if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
           if (showToast) { showToast(`${ids.length}건 처리되었습니다.`, 'success'); }
         } catch (err) {
           console.error('[catch-info]', err);
           const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-          if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
           if (showToast) { showToast(errMsg, 'error', 0); }
         }
       } else if (uiState.bulkTab === 'approvalReq') {
@@ -454,12 +445,10 @@ window.OdDlivMng = {
         checked.clear(); uiState.bulkOpen = false;
         try {
           const res = await boApiSvc.odDliv.saveList('approvalReq', rows, '배송관리', '추가결재요청');
-          if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
           if (showToast) { showToast(`${ids.length}건 요청되었습니다.`, 'success'); }
         } catch (err) {
           console.error('[catch-info]', err);
           const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-          if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
           if (showToast) { showToast(errMsg, 'error', 0); }
         }
       }

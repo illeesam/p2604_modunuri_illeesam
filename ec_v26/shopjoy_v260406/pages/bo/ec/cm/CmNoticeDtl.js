@@ -25,7 +25,7 @@ window.CmNoticeDtl = {
     /* ##### [01] 초기 변수 정의 #################################################### */
 
     const { reactive, computed, onMounted, watch } = Vue;
-    const { showToast, showConfirm, setApiRes } = window.boApp;
+    const { showToast, showConfirm } = window.boApp;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({ noticeTypes: [], noticeStatuses: [] });
 
@@ -116,11 +116,9 @@ window.CmNoticeDtl = {
         const res = await (isNew
           ? boApiSvc.cmNotice.create({ ...baseForm }, '공지사항관리', '등록')
           : boApiSvc.cmNotice.update(props.dtlId, { ...baseForm }, '공지사항관리', '저장'));
-        setApiRes({ ok: true, status: res.status, data: res.data });
         showToast(isNew ? '등록되었습니다.' : '저장되었습니다.', 'success');
         props.navigate('cmNoticeMng', { reload: true });
       } catch (err) {
-        setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
         showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
       }
     };

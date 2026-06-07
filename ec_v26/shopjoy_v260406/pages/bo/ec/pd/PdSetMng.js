@@ -9,7 +9,6 @@ window.PdSetMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const categories = reactive([]);
     const products = reactive([]);
     const brands = reactive([]);
@@ -498,7 +497,6 @@ const setGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pag
         const res = await (isNewSet
           ? boApiSvc.pdSet.create({ prodNm: newForm.prodNm, siteId: newForm.siteId || null, items: setItems }, '세트상품관리', '등록')
           : boApiSvc.pdSet.updateItems(setProdId, { items: setItems }, '세트상품관리', '저장'));
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast(isNewSet ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
         /* 저장 완료: 목록 재조회 후 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역 유지) */
         await handleSearchData('RELOAD');
@@ -506,7 +504,6 @@ const setGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pag
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
         if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
@@ -520,12 +517,10 @@ const setGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pag
       if (uiState.editSetId === setProdId) { closeDtl(); }
       try {
         const res = await boApiSvc.pdSet.remove(setProdId, '세트상품관리', '삭제');
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast('삭제되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
         if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };

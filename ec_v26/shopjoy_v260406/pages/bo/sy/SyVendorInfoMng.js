@@ -9,7 +9,6 @@ window.SyVendorInfoMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
-    const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
 
     const vendors = reactive([]);                  // 업체 목록 (2단 그리드 데이터)
     const uiState = reactive({                     // UI 상태

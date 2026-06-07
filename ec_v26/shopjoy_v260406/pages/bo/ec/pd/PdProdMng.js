@@ -10,7 +10,6 @@ window.PdProdMng = {
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
     const showRefModal = window.boApp.showRefModal; // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
     const products = reactive([]);                 // 상품 목록 (메인 그리드 데이터)
     const uiState = reactive({                     // UI 상태
       loading: false, error: null, isPageCodeLoad: false,
@@ -249,12 +248,10 @@ window.PdProdMng = {
       if (detailPanel.selectedId === p.prodId) { resetDetailToNew(); }
       try {
         const res = await boApiSvc.pdProd.remove(p.prodId, '상품관리', '삭제');
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast('삭제되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
         if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
@@ -355,7 +352,7 @@ window.PdProdMng = {
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                         // computed
       fnStatusBadge, sortIcon,                                                     // 헬퍼
       inlineNavigate,                                                              // Dtl 콜백 (closure 필요)
-      showRefModal, showToast, showConfirm, setApiRes, handleSearchList,           // Dtl 임베드 전달용
+      showRefModal, showToast, showConfirm, handleSearchList,           // Dtl 임베드 전달용
     };
   },
   template: /* html */`

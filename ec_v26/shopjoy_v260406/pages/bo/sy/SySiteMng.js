@@ -9,7 +9,6 @@ window.SySiteMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
-    const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
     const sites = reactive([]);                    // 사이트 목록 (메인 그리드 데이터)
     const siteCounts = reactive({});               // { pathId: 사이트수 } — 좌 트리 우측 뱃지 표시용
     const uiState = reactive({                     // UI 상태
@@ -319,12 +318,10 @@ window.SySiteMng = {
       if (detailModal.dtlId === s.siteId) { detailModal.show = false; detailModal.dtlId = null; }
       try {
         const res = await boApiSvc.sySite.remove(s.siteId, '사이트관리', '삭제');
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast('삭제되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
         if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };

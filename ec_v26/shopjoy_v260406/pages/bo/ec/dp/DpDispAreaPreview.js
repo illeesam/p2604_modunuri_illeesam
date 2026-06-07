@@ -11,7 +11,6 @@ const _WP_DispAreaPreview2 = {
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const chartColors = ['#e8587a','#ff8c69','#9c5fa3','#1677ff','#52c41a','#fa8c16','#36cfc9'];
     const cfChartBars = computed(() => {
       const w = props.lib;
@@ -225,7 +224,6 @@ window.DpDispAreaPreview = {
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
     const showRefModal = window.boApp.showRefModal; // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
     const codes = reactive({ disp_widget_types: [], disp_area: [], active_statuses: [], disp_envs: [], visibility_opts: [
       { value: '', label: '전체' },
       { value: 'PUBLIC',    label: '전체공개' },

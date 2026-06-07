@@ -10,7 +10,6 @@ window.PmCouponMng = {
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const coupons = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tabMode: 'list', sortKey: '', sortDir: 'asc' });
     const codes = reactive({
@@ -251,12 +250,10 @@ window.PmCouponMng = {
       if (uiStateDetail.selectedId === c.couponId) { resetDetailToNew(); }
       try {
         const res = await boApiSvc.pmCoupon.remove(c.couponId, '쿠폰관리', '삭제');
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast('삭제되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
         if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
@@ -309,7 +306,7 @@ window.PmCouponMng = {
       handleBtnAction, handleSelectAction, handleGridCellAction,                   // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                         // computed
       discountLabel, fnStatusBadge, sortIcon,                                      // 헬퍼
-      inlineNavigate, showToast, showConfirm, showRefModal, setApiRes,             // 콜백 / 전역
+      inlineNavigate, showToast, showConfirm, showRefModal, // 콜백 / 전역
       get tabMode() { return uiState.tabMode; }, set tabMode(v) { uiState.tabMode = v; },
       get selectedId() { return uiStateDetail.selectedId; }
     };

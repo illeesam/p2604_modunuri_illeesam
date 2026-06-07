@@ -13,7 +13,6 @@ window.SySiteDtl = {
     const { reactive, computed, watch, onMounted, ref } = Vue;
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
-    const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false }); // UI 상태
     const codes = reactive({                       // 공통코드 / 정적 옵션
@@ -140,13 +139,11 @@ window.SySiteDtl = {
         const res = await (cfIsNew.value
           ? boApiSvc.sySite.create({ ...form }, '사이트관리', '등록')
           : boApiSvc.sySite.update(form.siteId, { ...form }, '사이트관리', '저장'));
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
         if (props.navigate) { props.navigate('sySiteMng', { reload: true }); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
         if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };

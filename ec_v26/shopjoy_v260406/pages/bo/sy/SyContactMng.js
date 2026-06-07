@@ -10,7 +10,6 @@ window.SyContactMng = {
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const contacts = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, sortKey: '', sortDir: 'asc' });
     const codes = reactive({ contact_status: [], contact_categories: [], date_range_opts: [] });
@@ -252,12 +251,10 @@ window.SyContactMng = {
       if (detailModal.dtlId === c.contactId) { resetDetailToNew(); }
       try {
         const res = await boApiSvc.syContact.remove(c.contactId, '문의관리', '삭제');
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast('삭제되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
         if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
@@ -303,7 +300,7 @@ window.SyContactMng = {
       contacts, uiState, codes, searchParam, baseGridPager, detailModal,         // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,         // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,               // computed
-      fnStatusBadge, fnRowStyle, sortIcon, showToast, showConfirm, setApiRes, showRefModal, inlineNavigate, handleSearchList, // 헬퍼 / closure
+      fnStatusBadge, fnRowStyle, sortIcon, showToast, showConfirm, showRefModal, inlineNavigate, handleSearchList, // 헬퍼 / closure
     };
   },
   template: /* html */`

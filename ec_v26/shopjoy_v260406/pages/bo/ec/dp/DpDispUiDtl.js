@@ -13,7 +13,6 @@ window.DpDispUiDtl = {
     const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
-    const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
     const codes = reactive({ disp_ui_types: [], use_yn: [] });
     const uis = reactive([]);                      // UI 목록 (조회 결과)
     const areas = reactive([]);                    // 영역 목록 (조회 결과)
@@ -440,13 +439,11 @@ window.DpDispUiDtl = {
       body.pathId       = form.pathId;
       try {
         const res = await (isNewUi ? boApiSvc.dpUi.create(body, '전시UI관리', '등록') : boApiSvc.dpUi.update(body.uiId, body, '전시UI관리', '저장'));
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast('저장되었습니다.', 'success'); }
         if (props.navigate) { props.navigate('dpDispUiMng', { reload: true }); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
         if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };

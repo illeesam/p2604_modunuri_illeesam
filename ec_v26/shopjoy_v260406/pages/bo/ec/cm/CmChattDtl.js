@@ -15,7 +15,6 @@ window.CmChattDtl = {
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
     const showRefModal = window.boApp.showRefModal; // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
     const uiState = reactive({                     // UI 상태 (탭/뷰모드 영속화)
       loading: false, error: null, isPageCodeLoad: false,
       tab: window._cmChattDtlState.tab || 'chat',
@@ -202,13 +201,11 @@ window.CmChattDtl = {
           subject: form.subject, chattStatusCd: form.chattStatusCd,
         };
         const res = await boApiSvc.cmChatt.create(payload, '채팅관리', '등록');
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast('등록되었습니다.', 'success'); }
         if (props.navigate) { props.navigate('cmChattMng', { reload: true }); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
         if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };

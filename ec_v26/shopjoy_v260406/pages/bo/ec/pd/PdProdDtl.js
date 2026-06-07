@@ -17,7 +17,6 @@ window.PdProdDtl = {
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     // window 접근 불가한 템플릿용 + setup 내부 공용 헬퍼
     const { safeFirst, safeGet, safeFind, safeFilter } = window.safeArrayUtils;
     const products = reactive([]);
@@ -1091,7 +1090,6 @@ window.PdProdDtl = {
 
     /* _afterApiOk — 후 API 성공 */
     const _afterApiOk  = (res, msg) => {
-      if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
       if (showToast) { showToast(msg, 'success'); }
     };
 
@@ -1099,7 +1097,6 @@ window.PdProdDtl = {
     const _afterApiErr = (err) => {
       console.error('[handleSave]', err);
       const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-      if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
       if (showToast) { showToast(errMsg, 'error', 0); }
     };
 

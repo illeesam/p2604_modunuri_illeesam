@@ -15,7 +15,6 @@ window.OdDlivDtl = {
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
 
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, tab: window._odDlivDtlState.tab || 'info', tabMode2: window._odDlivDtlState.tabMode || 'tab' });
     const tab = Vue.toRef(uiState, 'tab');
@@ -167,13 +166,11 @@ window.OdDlivDtl = {
         const res = await (isNewDliv
           ? boApiSvc.odDliv.create({ ...form }, '배송관리', '등록')
           : boApiSvc.odDliv.update(form.dlivId, { ...form }, '배송관리', '저장'));
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast(isNewDliv ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
         if (props.navigate) { props.navigate('odDlivMng', { reload: true }); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
         if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };

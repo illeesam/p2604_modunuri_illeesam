@@ -7,7 +7,7 @@ window.StErpViewMng = {
   setup(props) {
     /* ##### [01] 초기 변수 정의 ################################################## */
     const { reactive, onMounted } = Vue;
-    const { showToast, showConfirm, setApiRes } = window.boApp;
+    const { showToast, showConfirm } = window.boApp;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: '' });
     const codes = reactive({ erp_statuses: [], erp_voucher_types: [], erp_voucher_statuses: [], date_range_opts: [] });
     const slips = reactive([]);
@@ -82,10 +82,8 @@ window.StErpViewMng = {
       r.sendStatus = '전송완료'; r.erpRef = 'ERP-JE-RESEND-' + Date.now();
       try {
         const res = await boApiSvc.stErp.resend(r.erpVoucherId || r.slipId, {}, 'ERP전표조회', '전송');
-        setApiRes({ ok: true, status: res.status, data: res.data });
         showToast('재전송이 완료되었습니다.', 'success');
       } catch (err) {
-        setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
         showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
       }
     };

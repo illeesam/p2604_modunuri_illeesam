@@ -9,7 +9,6 @@ window.PdCategoryMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const categories = reactive([]);
     const sites = computed(() => window._boCmSites || []);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, selectedCatId: null, focusedIdx: null });
@@ -432,13 +431,11 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
       row._row_status = 'D';
       try {
         const res = await boApiSvc.pdCategory.remove(row.categoryId, '카테고리관리', '삭제');
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast('삭제되었습니다.', 'success'); }
         gridRows.splice(idx, 1);
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = err.response?.data?.message || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
         if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
@@ -480,12 +477,10 @@ const EDIT_FIELDS = ['categoryNm', 'parentCategoryId', 'sortOrd', 'categoryDesc'
           const res = isNew
             ? await boApiSvc.pdCategory.create(payload, '카테고리관리', '저장')
             : await boApiSvc.pdCategory.update(row.categoryId, payload, '카테고리관리', '저장');
-          if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
           row._row_status = null;
         } catch (err) {
           console.error('[handleSave]', err);
           const errMsg = err.response?.data?.message || err.message || '오류가 발생했습니다.';
-          if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
           if (showToast) { showToast(errMsg, 'error', 0); }
           return;
         }

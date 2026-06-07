@@ -9,7 +9,6 @@ window.PdCategoryProdMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const categories = reactive([]);
     const products = reactive([]);
     const categoryProds = reactive([]);
@@ -444,7 +443,6 @@ window.PdCategoryProdMng = {
       if (!ok) { return; }
       try {
         const res = await boApiSvc.pdCategory.updateProds({ categoryProds }, '카테고리상품관리', '저장');
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast('저장되었습니다.', 'success'); }
         /* 저장 후 트리 카운트용 전체 매핑 재조회 + 현재 카테고리 목록 재조회 */
         await handleSearchAllCategoryProds();
@@ -452,7 +450,6 @@ window.PdCategoryProdMng = {
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
         if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };

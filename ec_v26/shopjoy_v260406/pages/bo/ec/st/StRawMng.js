@@ -9,7 +9,6 @@ window.StRawMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const uiState = reactive({ descOpen: false, error: null, isPageCodeLoad: false, loading: false });
     const codes = reactive({ raw_types: [], raw_collect_statuses: [], raw_vendor_divs: [], pay_methods: [], order_statuses_kr: [],
       confirm_yn_opts: [], close_yn_opts: [], send_yn_opts: [],
@@ -230,7 +229,6 @@ const raws = reactive([]);
       if (!ok) { return; }
       try {
         const res = await boApiSvc.stSettleRaw.collect({ dateStart: searchParam.dateStart, dateEnd: searchParam.dateEnd }, '원장관리', '저장');
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast('재수집이 완료되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);

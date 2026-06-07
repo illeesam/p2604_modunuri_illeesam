@@ -9,7 +9,6 @@ window.PdBundleMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const categories = reactive([]);
     const products = reactive([]);
     const brands = reactive([]);
@@ -539,7 +538,6 @@ const bundleGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, 
         const res = await (isNewBundle
           ? boApiSvc.pdBundle.create({ prodNm: newForm.prodNm, siteId: newForm.siteId || null, items: bundleItems }, '묶음상품관리', '등록')
           : boApiSvc.pdBundle.updateItems(bundleProdId, { items: bundleItems }, '묶음상품관리', '저장'));
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast(isNewBundle ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
         /* 저장 완료: 목록 재조회 + 상세영역은 유지하고 빈 신규 폼(비활성)으로 초기화 */
         await handleSearchData('RELOAD');
@@ -547,7 +545,6 @@ const bundleGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, 
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
         if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
@@ -560,12 +557,10 @@ const bundleGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, 
       if (uiState.editBundleId === bundleProdId) { closeDtl(); }
       try {
         const res = await boApiSvc.pdBundle.remove(bundleProdId, '묶음상품관리', '삭제');
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast('삭제되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
         if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };

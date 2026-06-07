@@ -199,14 +199,18 @@
         if (auth) reqHeaderInfo.push('authorization: ' + auth.slice(0, 7) + auth.slice(7, 12) + '...(' + auth.length + ')');
       })(reqHeaders);
 
-      // 응답 헤더에서 X- 정보 수집 (받은 정보)
+      // 응답 헤더에서 X- 정보 수집 (받은 정보) — AxiosHeaders/plain object 모두 안전 처리
       var resHeaders = res.headers || {};
       var resHeaderInfo = [];
-      resHeaders.forEach(function (val, key) {
-        if (key.toLowerCase().startsWith('x-')) {
-          resHeaderInfo.push(key + ': ' + val);
-        }
-      });
+      if (resHeaders && typeof resHeaders.forEach === 'function') {
+        resHeaders.forEach(function (val, key) {
+          if (key.toLowerCase().startsWith('x-')) { resHeaderInfo.push(key + ': ' + val); }
+        });
+      } else {
+        Object.keys(resHeaders).forEach(function (key) {
+          if (key.toLowerCase().startsWith('x-')) { resHeaderInfo.push(key + ': ' + resHeaders[key]); }
+        });
+      }
 
       global.dispatchEvent(new CustomEvent('api-response-success', {
         detail: { scope: 'bo', method: method, url: displayUrl, status: res.status, data: res.data, detail: detail, uiLabel: uiLabel, reqHeaders: reqHeaderInfo, resHeaders: resHeaderInfo },

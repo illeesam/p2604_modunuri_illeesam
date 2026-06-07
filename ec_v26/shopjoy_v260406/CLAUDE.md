@@ -476,7 +476,6 @@ props는 **배열 형식 금지**, 반드시 **객체 형식**으로 type·requi
 | `showToast` | Function | false | `() => {}` | `// 토스트 알림` |
 | `showConfirm` | Function | false | `() => Promise.resolve(true)` | `// 확인 모달` |
 | `showRefModal` | Function | false | `() => {}` | `// 참조 모달 열기` |
-| `setApiRes` | Function | false | `() => {}` | `// API 결과 전달` |
 | `dtlId` | String | false | `null` | `// 수정 대상 ID` |
 | `tabMode` | String | false | `'tab'` | `// 뷰모드 (tab/1col/2col/3col/4col)` |
 | `adminData` / `boData` | Object | false | `() => ({})` | `// 목업/BO 공통 데이터` |
@@ -492,7 +491,6 @@ props: {
   showRefModal: { type: Function, default: () => {} },                    // 참조 모달 열기
   showToast:    { type: Function, default: () => {} },                    // 토스트 알림
   showConfirm:  { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
-  setApiRes:    { type: Function, default: () => {} },                    // API 결과 전달
 },
 
 // Dtl
@@ -501,7 +499,6 @@ props: {
   showRefModal: { type: Function, default: () => {} },                    // 참조 모달 열기
   showToast:    { type: Function, default: () => {} },                    // 토스트 알림
   showConfirm:  { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
-  setApiRes:    { type: Function, default: () => {} },                    // API 결과 전달
   dtlId:       { type: String,   default: null },                        // 수정 대상 ID
   tabMode:     { type: String,   default: 'tab' },                       // 뷰모드 (tab/1col/2col/3col/4col)
 },
@@ -541,18 +538,21 @@ props: {
 
 ### 저장/삭제 표준 패턴
 
+> **API 응답 수집은 화면에서 하지 않는다** — `boApiAxios` response 인터셉터가 모든 응답에 대해
+> `api-response-success` / `api-response-error` 이벤트를 발행하고, `boApp` 이 이를 받아 우측 API
+> 응답 패널에 자동 반영한다. 따라서 화면 저장/삭제 로직에서 `setApiRes(...)` 같은 결과 전달 호출은
+> 작성하지 않는다 (과거 표준이었으나 폐기됨).
+
 ```js
 // 저장 (POST/PUT) — boApi 사용 (BO) + coUtil.apiHdr 필수
 const ok = await props.showConfirm('저장', '저장하시겠습니까?');
 if (!ok) return;
 try {
-  const res = await boApi.put(`/bo/sy/code/${form.id}`, { ...form }, coUtil.apiHdr('공통코드관리', '저장'));
-  if (props.setApiRes) props.setApiRes({ ok: true, status: res.status, data: res.data });
+  await boApi.put(`/bo/sy/code/${form.id}`, { ...form }, coUtil.apiHdr('공통코드관리', '저장'));
   props.showToast('저장되었습니다.', 'success');
   props.navigate('pageId');
 } catch (err) {
   const errMsg = err.response?.data?.message || err.message || '오류가 발생했습니다.';
-  if (props.setApiRes) props.setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
   props.showToast(errMsg, 'error', 0);
 }
 

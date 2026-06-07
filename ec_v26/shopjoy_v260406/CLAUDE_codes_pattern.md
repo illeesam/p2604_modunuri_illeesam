@@ -91,7 +91,7 @@ onMounted(() => {
 ```javascript
 window.DpDispUiMng = {
   name: 'DpDispUiMng',
-  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm'],
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     
@@ -209,7 +209,7 @@ window.DpDispUiMng = {
 ```javascript
 window.DpDispPanelMng = {
   name: 'DpDispPanelMng',
-  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm'],
   setup(props) {
     const { ref, reactive, computed, onMounted, watch } = Vue;
     

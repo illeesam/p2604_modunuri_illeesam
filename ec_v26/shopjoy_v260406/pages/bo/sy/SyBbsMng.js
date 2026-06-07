@@ -9,7 +9,6 @@ window.SyBbsMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
 
     const bbsList = reactive([]);                  // 게시글 목록 (메인 그리드 데이터)
     const bbms = reactive([]);                     // 게시판 마스터 (select 옵션용)
@@ -238,12 +237,10 @@ window.SyBbsMng = {
       if (detailModal.dtlId === b.bbsId) { resetDetailToNew(); }
       try {
         const res = await boApiSvc.syBbs.remove(b.bbsId, '게시판관리', '삭제');
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast('삭제되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
         if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
@@ -331,7 +328,7 @@ window.SyBbsMng = {
       handleBtnAction, handleSelectAction, handleGridCellAction,                         // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                               // computed
       fnRowStyle,                                                                        // 헬퍼
-      inlineNavigate, showToast, showConfirm, setApiRes, handleSearchBbs,                // Dtl props (closure 필요)
+      inlineNavigate, showToast, showConfirm, handleSearchBbs,                // Dtl props (closure 필요)
     };
   },
   template: /* html */`

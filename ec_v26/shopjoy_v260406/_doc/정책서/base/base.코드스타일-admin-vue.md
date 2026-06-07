@@ -922,7 +922,7 @@ const handleSave = async () => {
 /* ShopJoy Admin - 화면명 */
 window.XxxMng = {
   name: 'XxxMng',
-  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes'],
+  props: ['navigate', 'showRefModal', 'showToast', 'showConfirm'],
   setup(props) {
     // ===== 초기 변수 정의 =====================================================
 

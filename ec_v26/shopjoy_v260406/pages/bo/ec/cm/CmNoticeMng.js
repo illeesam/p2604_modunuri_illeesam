@@ -18,7 +18,7 @@ window.CmNoticeMng = {
     /* ##### [01] 초기 변수 정의 #################################################### */
 
     const { reactive, onMounted } = Vue;
-    const { showToast, showConfirm, setApiRes } = window.boApp;
+    const { showToast, showConfirm } = window.boApp;
     const notices = reactive([]);
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({ noticeTypes: [], noticeStatuses: [], date_range_opts: [] });
@@ -183,12 +183,10 @@ window.CmNoticeMng = {
       if (!(await showConfirm('삭제', `[${n.noticeTitle}]을 삭제하시겠습니까?`))) return;
       try {
         const res = await boApiSvc.cmNotice.remove(n.noticeId, '공지사항관리', '삭제');
-        setApiRes({ ok: true, status: res.status, data: res.data });
         showToast('삭제되었습니다.', 'success');
         if (baseDetail.selectedId === n.noticeId) resetDetailToNew();
         await handleSearchList();
       } catch (err) {
-        setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
         showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
       }
     };

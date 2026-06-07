@@ -9,7 +9,6 @@ window.PdTagMng = {
     const { ref, reactive, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const tags = reactive([]);                    // 태그 목록 원본
     const gridRows = reactive([]);                // 태그 그리드 행 (편집 상태 포함)
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
@@ -109,11 +108,9 @@ window.PdTagMng = {
       const si = tags.findIndex(t => t.tagId === row.tagId); if (si !== -1) tags.splice(si, 1); gridRows.splice(idx, 1);
       try {
         const res = await boApiSvc.pdTag.remove(row.tagId, '태그관리', '삭제');
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
         if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };

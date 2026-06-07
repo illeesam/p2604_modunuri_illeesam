@@ -8,7 +8,6 @@ window.PdReviewMng = {
     /* ##### [01] 초기 변수 정의 ################################################## */
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const products = reactive([]);
     const members = reactive([]);
     const reviews = reactive([]);
@@ -304,13 +303,11 @@ window.PdReviewMng = {
         if (cfSelectedRow.value && cfSelectedRow.value.reviewId === row.reviewId) {
           cfSelectedRow.value.reviewStatusCd = newStatus;
         }
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast(`상태가 [${STATUS_LABEL[newStatus]}] 로 변경되었습니다.`, 'success'); }
         statusModal.show = false;
       } catch (err) {
         console.error('[confirmStatusChange]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
         if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };

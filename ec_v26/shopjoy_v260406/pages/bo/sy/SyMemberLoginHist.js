@@ -6,7 +6,6 @@ window.SyMemberLoginHist = {
     showRefModal: { type: Function, default: () => {} },                    // 참조 모달 열기
     showToast:    { type: Function, default: () => {} },                    // 토스트 알림
     showConfirm:  { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
-    setApiRes:    { type: Function, default: () => {} },                    // API 결과 전달
   },
   setup(props) {
     /* ##### [01] 초기 변수 정의 #################################################### */

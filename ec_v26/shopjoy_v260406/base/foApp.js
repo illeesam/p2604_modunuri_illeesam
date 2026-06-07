@@ -251,12 +251,15 @@
 
     /* ── FO API Log ── */
     const FO_API_LOG_KEY = 'modu-fo-apiLog';
+    const FO_API_LOG_OPEN_KEY = 'modu-fo-apiLogOpen';   // API 로그 패널 열림 상태 (F5 후 유지)
     const MAX_FO_API_LOGS = 15;
     const foApiLogs = reactive(JSON.parse(localStorage.getItem(FO_API_LOG_KEY) || '[]'));
-    const showApiLog = ref(false);
+    const showApiLog = ref(localStorage.getItem(FO_API_LOG_OPEN_KEY) === 'true');   // 저장된 열림 상태 복원
+    watch(showApiLog, (v) => { try { localStorage.setItem(FO_API_LOG_OPEN_KEY, v ? 'true' : 'false'); } catch (e) {} });
     const showSettings = ref(false);
-    const apiLogLockedDetail = ref(null);
     const apiLogHoverDetail  = ref(null);
+    const apiLogDock = ref(localStorage.getItem('modu-fo-apiLogDock') === 'true');   // 영역차지(📌): ON 이면 패널이 본문을 밀어내 영역 차지(가리지 않음)
+    watch(apiLogDock, (v) => { try { localStorage.setItem('modu-fo-apiLogDock', v ? 'true' : 'false'); } catch (e) {} });
     let _foApiLogSeq = foApiLogs.length ? Math.max(...foApiLogs.map(l => l._seq || 0)) + 1 : 1;
 
     /* addFoApiLog */
@@ -267,13 +270,17 @@
       const entry = { _seq: _foApiLogSeq++, ts, ...detail };
       foApiLogs.unshift(entry);
       if (foApiLogs.length > MAX_FO_API_LOGS) foApiLogs.splice(MAX_FO_API_LOGS);
-      try { localStorage.setItem(FO_API_LOG_KEY, JSON.stringify(foApiLogs)); } catch(e) {}
+      // localStorage 저장: 응답 body(data)/요청 body(reqData)는 용량 커서 제외 (메모리 reactive 에는 유지 → hover 상세창용)
+      try {
+        const slim = foApiLogs.map(({ data, reqData, ...rest }) => rest);
+        localStorage.setItem(FO_API_LOG_KEY, JSON.stringify(slim));
+      } catch (e) {}
     };
 
     /* clearFoApiLogs */
     const clearFoApiLogs = () => {
       foApiLogs.splice(0, foApiLogs.length);
-      apiLogLockedDetail.value = null;
+      apiLogHoverDetail.value = null;
       try { localStorage.removeItem(FO_API_LOG_KEY); } catch(e) {}
     };
 
@@ -283,6 +290,14 @@
       if (status >= 500) return 'color:#e74c3c;font-weight:700;';
       if (status >= 400) return 'color:#e67e22;font-weight:700;';
       return 'color:#27ae60;font-weight:700;';
+    };
+
+    /* fnFoApiLogRecent — ts(YYYY-MM-DD HH:MM:SS)가 현재 기준 1분 이내면 true (최근 로그 bold 강조용) */
+    const fnFoApiLogRecent = (ts) => {
+      try {
+        const t = new Date(String(ts).replace(' ', 'T')).getTime();
+        return !isNaN(t) && (Date.now() - t) <= 60000;
+      } catch (_) { return false; }
     };
 
     /* foApiLogMethodStyle */
@@ -315,6 +330,10 @@
     const onFoApiLogDetailEnter = () => {
       if (_foApiLogCloseTimer) { clearTimeout(_foApiLogCloseTimer); _foApiLogCloseTimer = null; }
     };
+    /* onFoApiLogToggleDock — 📌 영역차지 토글. ON 이면 본문을 패널 폭만큼 밀어 가리지 않음 */
+    const onFoApiLogToggleDock = () => { apiLogDock.value = !apiLogDock.value; };
+    /* cfApiLogDockPad — 패널이 열려있고(showApiLog) 영역차지(apiLogDock) 상태면 본문 우측 여백(패널 폭) */
+    const cfApiLogDockPad = computed(() => (showApiLog.value && apiLogDock.value) ? '280px' : '0px');
     /* formatJsonData — 요청/응답 데이터를 보기 좋은 JSON 문자열로 (BO 동일) */
     const formatJsonData = (data) => {
       try {
@@ -803,9 +822,10 @@
       auth, uiState, onShowLogin, onLogout,
       foInitReady,
       foHomeComp, foProdListComp, foProdViewComp,
-      foApiLogs, showApiLog, showSettings, apiLogLockedDetail, apiLogHoverDetail,
+      foApiLogs, showApiLog, showSettings, apiLogHoverDetail,
       clearFoApiLogs, foApiLogStatusClass, foApiLogMethodStyle,
-      onFoApiLogEnter, onFoApiLogLeave, onFoApiLogDetailEnter, formatJsonData, fnFoApiLogIndex, fnFoApiLogBadgeStyle,
+      onFoApiLogEnter, onFoApiLogLeave, onFoApiLogDetailEnter, formatJsonData, fnFoApiLogIndex, fnFoApiLogBadgeStyle, fnFoApiLogRecent,
+      apiLogDock, onFoApiLogToggleDock, cfApiLogDockPad,
       cfShowSidebar,
       onToggleApiLog: () => { showApiLog.value = !showApiLog.value; showSettings.value = false; },
       notFoundPageId: computed(() => {
@@ -817,7 +837,7 @@
   },
 
   template: /* html */ `
-<div style="height:100%;min-height:100vh;display:flex;flex-direction:column;background:var(--bg-base);">
+<div style="height:100%;min-height:100vh;display:flex;flex-direction:column;background:var(--bg-base);transition:padding-right .15s;" :style="{ paddingRight: cfApiLogDockPad }">
 
   <!-- API Progress Bar + Dim + Loading Indicator -->
   <transition name="fo-dim">
@@ -1055,7 +1075,7 @@
 
   <!-- FO API LOG PANEL -->
   <div v-if="showApiLog"
-    style="position:fixed;top:0;right:0;bottom:0;width:420px;max-width:95vw;background:#fff;box-shadow:-4px 0 24px rgba(0,0,0,.18);z-index:9990;display:flex;flex-direction:column;border-left:3px solid var(--accent,#c9a96e);">
+    style="position:fixed;top:0;right:0;bottom:0;width:280px;max-width:95vw;background:#fff;box-shadow:-4px 0 24px rgba(0,0,0,.18);z-index:9990;display:flex;flex-direction:column;border-left:3px solid var(--accent,#c9a96e);">
     <!-- 패널 헤더 -->
     <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px 10px;background:linear-gradient(135deg,#fff8f0,#fff3e0);border-bottom:1px solid #eee;flex-shrink:0;">
       <div style="display:flex;align-items:center;gap:8px;">
@@ -1065,49 +1085,21 @@
       </div>
       <div style="display:flex;align-items:center;gap:6px;">
         <button @click="clearFoApiLogs" style="font-size:11px;padding:3px 8px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;color:#999;">지우기</button>
+        <button @click="onFoApiLogToggleDock" :title="apiLogDock ? '영역차지 해제(레이어로)' : '영역차지(본문 밀기)'"
+          :style="'width:24px;height:24px;border-radius:50%;border:none;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;' + (apiLogDock ? 'background:var(--accent,#c9a96e);color:#fff;' : 'background:rgba(0,0,0,.08);color:#666;')">📌</button>
         <button @click="showApiLog=false" style="width:24px;height:24px;border-radius:50%;border:none;background:rgba(0,0,0,.08);cursor:pointer;color:#666;font-size:14px;display:flex;align-items:center;justify-content:center;">✕</button>
       </div>
     </div>
-    <!-- 선택된 로그 상세 -->
-    <div v-if="apiLogLockedDetail" style="padding:10px 12px;background:#fffbf0;border-bottom:2px solid var(--accent,#c9a96e);flex-shrink:0;max-height:260px;overflow-y:auto;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-        <span style="font-size:11px;font-weight:700;color:#888;">상세 보기</span>
-        <button @click="apiLogLockedDetail=null" style="font-size:10px;padding:1px 6px;border:1px solid #ddd;border-radius:3px;background:#fff;cursor:pointer;color:#aaa;">닫기</button>
-      </div>
-      <div style="font-size:11px;color:#555;line-height:1.6;">
-        <div style="margin-bottom:4px;">
-          <span style="display:inline-block;padding:1px 5px;border-radius:3px;font-size:10px;font-weight:700;margin-right:4px;" :style="foApiLogMethodStyle(apiLogLockedDetail.method)">{{ apiLogLockedDetail.method }}</span>
-          <span style="color:#1a5276;word-break:break-all;">{{ apiLogLockedDetail.url }}</span>
-          <span style="margin-left:6px;font-weight:700;" :style="foApiLogStatusClass(apiLogLockedDetail.status)">{{ apiLogLockedDetail.status }}</span>
-          <span v-if="apiLogLockedDetail.duration" style="margin-left:6px;color:#aaa;font-size:10px;">{{ apiLogLockedDetail.duration }}ms</span>
-        </div>
-        <div v-if="apiLogLockedDetail.uiLabel" style="color:#7d3c98;margin-bottom:4px;font-size:10px;">{{ apiLogLockedDetail.uiLabel }}</div>
-        <div v-if="apiLogLockedDetail.ts" style="color:#aaa;font-size:10px;margin-bottom:4px;">{{ apiLogLockedDetail.ts }}</div>
-        <div v-if="apiLogLockedDetail.detail" style="margin-top:4px;">
-          <div style="font-size:10px;color:#888;margin-bottom:2px;">응답 데이터</div>
-          <pre style="margin:0;padding:6px;background:#f8f9fa;border-radius:4px;font-size:10px;color:#333;white-space:pre-wrap;word-break:break-all;max-height:100px;overflow-y:auto;">{{ apiLogLockedDetail.detail }}</pre>
-        </div>
-        <div v-if="apiLogLockedDetail.reqHeaders && apiLogLockedDetail.reqHeaders.length" style="margin-top:4px;">
-          <div style="font-size:10px;color:#888;margin-bottom:2px;">요청 헤더</div>
-          <pre style="margin:0;padding:6px;background:#f0f8ff;border-radius:4px;font-size:10px;color:#1a5276;white-space:pre-wrap;word-break:break-all;max-height:80px;overflow-y:auto;">{{ (apiLogLockedDetail.reqHeaders||[]).join(String.fromCharCode(10)) }}</pre>
-        </div>
-        <div v-if="apiLogLockedDetail.resHeaders && apiLogLockedDetail.resHeaders.length" style="margin-top:4px;">
-          <div style="font-size:10px;color:#888;margin-bottom:2px;">응답 헤더</div>
-          <pre style="margin:0;padding:6px;background:#f0fff0;border-radius:4px;font-size:10px;color:#1e8449;white-space:pre-wrap;word-break:break-all;max-height:80px;overflow-y:auto;">{{ (apiLogLockedDetail.resHeaders||[]).join(String.fromCharCode(10)) }}</pre>
-        </div>
-      </div>
-    </div>
-    <!-- 로그 목록 -->
-    <div style="flex:1;overflow-y:auto;padding:6px 0;">
+    <!-- 로그 목록 (행 hover 시 좌측 상세창 표시 — 상단 인라인 상세는 폐기) -->
+    <div style="flex:1;overflow-y:auto;padding:0;">
       <div v-if="!foApiLogs.length" style="padding:24px;text-align:center;color:#ccc;font-size:13px;">API 호출 기록이 없습니다</div>
       <div v-for="log in foApiLogs" :key="log._seq"
-        @click="apiLogLockedDetail = apiLogLockedDetail && apiLogLockedDetail._seq===log._seq ? null : log"
         @mouseenter="onFoApiLogEnter(log)" @mouseleave="onFoApiLogLeave()"
-        style="padding:7px 12px;border-bottom:1px solid #f5f5f5;cursor:pointer;transition:background .12s;"
-        :style="(apiLogLockedDetail && apiLogLockedDetail._seq===log._seq)?'background:#fffbf0;':log._isErr?'background:#fff5f5;':'background:#fff;'">
-        <div style="display:flex;align-items:center;gap:5px;margin-bottom:2px;">
-          <span style="display:inline-block;padding:1px 5px;border-radius:3px;font-size:10px;font-weight:700;flex-shrink:0;" :style="foApiLogMethodStyle(log.method)">{{ log.method || '-' }}</span>
-          <span style="font-size:11px;color:#1a5276;word-break:break-all;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="log.url">{{ log.url }}</span>
+        style="padding:3px 10px;border-bottom:1px solid #e5e7eb;cursor:pointer;transition:background .12s;"
+        :style="(log._isErr ? 'background:#fff5f5;' : 'background:#fff;') + (fnFoApiLogRecent(log.ts) ? 'font-weight:700;' : 'font-weight:400;')">
+        <div style="display:flex;align-items:center;gap:5px;">
+          <span style="display:inline-block;padding:0 4px;border-radius:3px;font-size:10px;font-weight:700;flex-shrink:0;" :style="foApiLogMethodStyle(log.method)">{{ log.method || '-' }}</span>
+          <span style="font-size:11px;color:#1a5276;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="log.url">{{ log.url }}</span>
           <span style="font-size:11px;font-weight:700;flex-shrink:0;" :style="foApiLogStatusClass(log.status)">{{ log.status }}</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
@@ -1122,7 +1114,7 @@
 
   <!-- FO API LOG HOVER 상세창 (행 hover 시 패널 왼쪽에 표시. 클릭 펼침 없이 hover 전용 / BO 동일 3섹션 구조) -->
   <div v-if="showApiLog && apiLogHoverDetail" @mouseenter="onFoApiLogDetailEnter" @mouseleave="onFoApiLogLeave()"
-    style="position:fixed;top:80px;right:440px;width:600px;max-height:80vh;background:#fff;border:2px solid #8b5cf6;border-radius:4px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:9991;font-size:11px;font-family:monospace;overflow:hidden;display:flex;flex-direction:column;">
+    style="position:fixed;top:80px;right:290px;width:600px;max-height:80vh;background:#fff;border:2px solid #8b5cf6;border-radius:4px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:9991;font-size:11px;font-family:monospace;overflow:hidden;display:flex;flex-direction:column;">
     <!-- 헤더 -->
     <div style="padding:12px;background:linear-gradient(135deg,#f3f4f6 0%,#e5e7eb 100%);border-bottom:1px solid #d1d5db;flex-shrink:0;">
       <div style="font-weight:700;color:#374151;font-size:12px;margin-bottom:6px;">📡 API 요청/응답 상세 <span style="color:#ef4444;margin-left:4px;">#{{ fnFoApiLogIndex(apiLogHoverDetail) }}</span></div>

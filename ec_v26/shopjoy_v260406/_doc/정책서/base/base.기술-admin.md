@@ -77,7 +77,6 @@ app.component('MbMemGradeMng', window.MbMemGradeMng);
   :admin-data="adminData"
   :show-toast="showToast"
   :show-confirm="showConfirm"
-  :set-api-res="setApiRes"
 />
 ```
 
@@ -119,7 +118,7 @@ pages/admin/sy/      ← 시스템(System) 도메인
 ### Mng 컴포넌트
 
 ```js
-props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes']
+props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm']
 ```
 
 `showRefModal` 은 참조 모달 없는 단순 Mng 에서는 생략 가능.
@@ -127,7 +126,7 @@ props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'se
 ### Dtl 컴포넌트 (별도 페이지)
 
 ```js
-props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'setApiRes', 'dtlId', 'tabMode']
+props: ['navigate', 'adminData', 'showRefModal', 'showToast', 'showConfirm', 'dtlId', 'tabMode']
 ```
 
 ### Hist 컴포넌트
@@ -153,20 +152,22 @@ const list = res.data?.data?.pageList || [];
 
 ### 6.2 POST/PUT/DELETE 변경성 — boApi 직접 + coUtil.apiHdr
 
+> **API 응답 수집은 화면에서 하지 않는다** — `boApiAxios` response 인터셉터가 모든 응답에 대해
+> `api-response-success` / `api-response-error` 이벤트를 발행하고 `boApp` 이 우측 API 응답 패널에
+> 자동 반영한다. 화면 저장/삭제 로직에 `setApiRes(...)` 결과 전달 호출은 작성하지 않는다 (과거 표준 폐기).
+
 ```js
 const onSave = async () => {
   const ok = await props.showConfirm('저장', '저장하시겠습니까?');
   if (!ok) { return; }
   try {
-    const res = isNew.value
+    isNew.value
       ? await boApi.post('/bo/sy/code', { ...form }, coUtil.apiHdr('공통코드관리', '등록'))
       : await boApi.put(`/bo/sy/code/${form.codeId}`, { ...form }, coUtil.apiHdr('공통코드관리', '저장'));
-    props.setApiRes?.({ ok: true, status: res.status, data: res.data });
     props.showToast('저장되었습니다.', 'success');
     props.navigate('syCodeMng', { reload: true });
   } catch (err) {
     const errMsg = err.response?.data?.message || err.message || '오류가 발생했습니다.';
-    props.setApiRes?.({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message });
     props.showToast(errMsg, 'error', 0);
   }
 };

@@ -199,14 +199,18 @@
         if (auth) reqHeaderInfo.push('authorization: ' + auth.slice(0, 7) + auth.slice(7, 12) + '...(' + auth.length + ')');
       })(reqHeaders);
 
-      // 응답 헤더에서 X- 정보 수집 (받은 정보)
+      // 응답 헤더에서 X- 정보 수집 (받은 정보) — AxiosHeaders/plain object 모두 안전 처리
       var resHeaders = res.headers || {};
       var resHeaderInfo = [];
-      resHeaders.forEach(function (val, key) {
-        if (key.toLowerCase().startsWith('x-')) {
-          resHeaderInfo.push(key + ': ' + val);
-        }
-      });
+      if (resHeaders && typeof resHeaders.forEach === 'function') {
+        resHeaders.forEach(function (val, key) {
+          if (key.toLowerCase().startsWith('x-')) { resHeaderInfo.push(key + ': ' + val); }
+        });
+      } else {
+        Object.keys(resHeaders).forEach(function (key) {
+          if (key.toLowerCase().startsWith('x-')) { resHeaderInfo.push(key + ': ' + resHeaders[key]); }
+        });
+      }
 
       var sDuration = resCfg._startAt ? (Date.now() - resCfg._startAt) : null;       /* 소요시간(ms) */
       var sReqData = (resCfg.data != null ? resCfg.data : (resCfg.params != null ? resCfg.params : null)); /* 요청 본문/파라미터 */

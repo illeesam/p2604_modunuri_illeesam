@@ -9,7 +9,6 @@ window.SyVendorMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
-    const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
     const vendors = reactive([]);                  // 업체 목록 (메인 그리드 데이터)
     const vendorCounts = reactive({});                 // 좌 트리 노드별 카운트 (검색조건 동기)
     const uiState = reactive({                     // UI 상태
@@ -234,12 +233,10 @@ window.SyVendorMng = {
       if (detailPanel.selectedId === v.vendorId) { resetDetailToNew(); }
       try {
         const res = await boApiSvc.syVendor.remove(v.vendorId, '판매자관리', '삭제');
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast('삭제되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
         if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
@@ -321,7 +318,7 @@ window.SyVendorMng = {
       handleBtnAction, handleSelectAction, handleGridCellAction,                      // dispatch (모든 이벤트 / 액션 라우팅)
       cfDetailEditId, cfIsViewMode, cfDetailKey,                                      // computed
       fnRowStyle,                                                                     // 헬퍼
-      inlineNavigate, showToast, showConfirm, setApiRes,                              // Dtl 콜백 (closure 필요)
+      inlineNavigate, showToast, showConfirm, // Dtl 콜백 (closure 필요)
       handleSearchList,                                                               // Dtl 의 onListReload 콜백
     };
   },

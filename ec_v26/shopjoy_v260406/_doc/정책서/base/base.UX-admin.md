@@ -137,9 +137,12 @@
 
 ## 5. 우측 패널 (API 응답 결과)
 
-- `setApiRes` prop 을 통해 API 호출 결과를 우측 패널에 JSON 형태로 표시
+- `boApiAxios` response 인터셉터가 모든 응답에 대해 `api-response-success` / `api-response-error`
+  이벤트를 발행하고, `boApp` 이 이를 받아 우측 패널에 **자동 반영** (화면에서 직접 전달하지 않음)
+- ❌ 폐기: 화면이 `setApiRes` prop 으로 결과를 직접 전달하던 방식 (전 화면에서 제거됨)
 - 개발·디버깅 전용: 프로덕션에서는 숨김 처리 가능
 - 표시 형식: HTTP 메서드 + 경로 + 응답 status + 응답 body (collapsed JSON)
+- 누적 로그 패널(최근 N건)은 BO `addBoApiLog` / FO `addFoApiLog` 로 채워지며, 행 hover 시 상세창 표시
 
 ---
 

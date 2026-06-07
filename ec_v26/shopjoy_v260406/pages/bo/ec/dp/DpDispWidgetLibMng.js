@@ -10,7 +10,6 @@ window.DpDispWidgetLibMng = {
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const widgetLibs = reactive([]);
     const widgetLibCounts = reactive({});                 // 좌 트리 노드별 카운트 (검색조건 동기)
     const uiState = reactive({ loading: false, isPageCodeLoad: false, selectedPath: null, sortKey: '', sortDir: 'asc' });
@@ -280,7 +279,6 @@ window.DpDispWidgetLibMng = {
       if (detailPanel.selectedId === lib.widgetLibId) { resetDetailToNew(); }
       try {
         const res = await boApiSvc.dpWidgetLib.remove(lib.widgetLibId, '전시위젯라이브러리', '삭제');
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast('삭제되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
@@ -323,7 +321,7 @@ window.DpDispWidgetLibMng = {
       cfFilterDirty, cfDetailEditId, cfDetailKey, cfNoFilter,                          // computed
       pathLabel, wIcon, wTypeLabel, sortIcon, fnStatusCls, fnStatusLabel,              // 헬퍼
       inlineNavigate,                                                                   // Dtl 콜백 (closure 필요)
-      showToast, showConfirm, showRefModal, setApiRes, handleSearchList,               // Dtl 콜백
+      showToast, showConfirm, showRefModal, handleSearchList,               // Dtl 콜백
     };
   },
   template: /* html */`

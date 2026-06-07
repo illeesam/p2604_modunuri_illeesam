@@ -14,7 +14,6 @@ window.PmCouponDtl = {
     const { ref, reactive, computed, onMounted, watch, onBeforeUnmount, nextTick } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
     const vendors = reactive([]);
     const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmCouponDtlState.tab || 'info', tabMode2: window._pmCouponDtlState.tabMode || 'tab', previewTab: 'barcode', barcodeContainer: null, qrcodeContainer: null });
     const tab = Vue.toRef(uiState, 'tab');
@@ -327,7 +326,6 @@ window.PmCouponDtl = {
 
     /* _afterApiOk — 후 API 성공 */
     const _afterApiOk  = (res, msg) => {
-      if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
       if (showToast) { showToast(msg, 'success'); }
     };
 
@@ -335,7 +333,6 @@ window.PmCouponDtl = {
     const _afterApiErr = (err) => {
       console.error('[handleSave]', err);
       const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-      if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
       if (showToast) { showToast(errMsg, 'error', 0); }
     };
 

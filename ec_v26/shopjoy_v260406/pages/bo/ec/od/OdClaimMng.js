@@ -10,7 +10,6 @@ window.OdClaimMng = {
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
 
     const claims = reactive([]);                                                // 클레임 목록 (메인 그리드 데이터)
     const members = reactive([]);                                               // 회원 목록 (추가결재요청 picker)
@@ -326,12 +325,10 @@ window.OdClaimMng = {
       if (detailPanel.selectedId === c.claimId) { resetDetailToNew(); }
       try {
         const res = await boApiSvc.odClaim.remove(c.claimId, '클레임관리', '삭제');
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast('삭제되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
         if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };
@@ -439,12 +436,10 @@ window.OdClaimMng = {
         uiState.bulkOpen = false;
         try {
           const res = await boApiSvc.odClaim.saveList('status', rows, '클레임관리', '일괄처리');
-          if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
           if (showToast) { showToast(`${totalCnt}건 변경되었습니다.`, 'success'); }
         } catch (err) {
           console.error('[catch-info]', err);
           const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-          if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
           if (showToast) { showToast(errMsg, 'error', 0); }
         }
       } else if (uiState.bulkTab === 'type') {
@@ -459,12 +454,10 @@ window.OdClaimMng = {
         uiState.bulkOpen = false;
         try {
           const res = await boApiSvc.odClaim.saveList('type', rows, '클레임관리', '일괄처리');
-          if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
           if (showToast) { showToast(`${ids.length}건 변경되었습니다.`, 'success'); }
         } catch (err) {
           console.error('[catch-info]', err);
           const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-          if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
           if (showToast) { showToast(errMsg, 'error', 0); }
         }
       } else if (uiState.bulkTab === 'approval') {
@@ -477,12 +470,10 @@ window.OdClaimMng = {
         checked.clear(); uiState.bulkOpen = false;
         try {
           const res = await boApiSvc.odClaim.saveList('approval', rows, '클레임관리', '결재처리');
-          if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
           if (showToast) { showToast(`${ids.length}건 처리되었습니다.`, 'success'); }
         } catch (err) {
           console.error('[catch-info]', err);
           const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-          if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
           if (showToast) { showToast(errMsg, 'error', 0); }
         }
       } else if (uiState.bulkTab === 'approvalReq') {
@@ -499,12 +490,10 @@ window.OdClaimMng = {
         checked.clear(); uiState.bulkOpen = false;
         try {
           const res = await boApiSvc.odClaim.saveList('approvalReq', rows, '클레임관리', '추가결재요청');
-          if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
           if (showToast) { showToast(`${ids.length}건 요청되었습니다.`, 'success'); }
         } catch (err) {
           console.error('[catch-info]', err);
           const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-          if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
           if (showToast) { showToast(errMsg, 'error', 0); }
         }
       }

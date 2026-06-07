@@ -13,7 +13,6 @@ window.SyCodeDtl = {
     const { reactive, computed, watch, onMounted, ref } = Vue;
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
-    const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
 
     const pageCodes = reactive({ use_yn: [] });    // 공통코드
     const uiState   = reactive({ loading: false, error: null, isPageCodeLoad: false }); // UI 상태
@@ -93,13 +92,11 @@ window.SyCodeDtl = {
         const res = await (cfIsNew.value
           ? boApiSvc.syCode.create({ ...form }, '코드관리', '등록')
           : boApiSvc.syCode.update(form.codeId, { ...form }, '코드관리', '저장'));
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
         if (props.navigate) { props.navigate('syCodeMng', { reload: true }); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
         if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };

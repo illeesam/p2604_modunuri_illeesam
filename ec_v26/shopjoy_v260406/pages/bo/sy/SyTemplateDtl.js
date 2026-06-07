@@ -13,7 +13,6 @@ window.SyTemplateDtl = {
     const { reactive, computed, onMounted, ref, onBeforeUnmount, watch, nextTick } = Vue;
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
-    const setApiRes    = window.boApp.setApiRes;   // API 결과 전달
 
     const uiState = reactive({ previewOpen: false, sendOpen: false, error: null, isPageCodeLoad: false, loading: false }); // UI 상태 (미리보기/발송 모달 포함)
     const codes   = reactive({ use_yn: [], template_types: ['메일템플릿','문자템플릿','MMS템플릿','kakao톡템플릿','kakao알림톡템플릿','시스템알림','회원알림'] }); // 공통코드
@@ -142,13 +141,11 @@ window.SyTemplateDtl = {
         const res = await (cfIsNew.value
           ? boApiSvc.syTemplate.create({ ...form }, '템플릿관리', '등록')
           : boApiSvc.syTemplate.update(form.templateId, { ...form }, '템플릿관리', '저장'));
-        if (setApiRes) { setApiRes({ ok: true, status: res.status, data: res.data }); }
         if (showToast) { showToast(cfIsNew.value ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
         if (props.navigate) { props.navigate('syTemplateMng', { reload: true }); }
       } catch (err) {
         console.error('[catch-info]', err);
         const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok: false, status: err.response?.status, data: err.response?.data, message: err.message }); }
         if (showToast) { showToast(errMsg, 'error', 0); }
       }
     };

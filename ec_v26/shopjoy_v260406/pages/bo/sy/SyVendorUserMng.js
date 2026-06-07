@@ -9,7 +9,6 @@ window.SyVendorUserMng = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-    const setApiRes    = window.boApp.setApiRes;  // API 결과 전달
 
     const vendorUsers = reactive([]);
     const uiState = reactive({ loading: false, roleLoading: false, roleModalOpen: false, vendorPickOpen: false, error: null, isPageCodeLoad: false, selectedPath: null, searchVendorId: null, bizSearchType: '', bizSearchValue: '', bizVendorFlt: '', bizStatusFlt: '', treeRoleCat: '', formMode: '', roleModalTemp: null, userSearchType: '', userSearchValue: '', userStatusFlt: ''});
@@ -425,7 +424,6 @@ window.SyVendorUserMng = {
         const res = uiState.formMode === 'new'
           ? await boApiSvc.syVendorUser.create({ ...formData }, '사업자사용자관리', '등록')
           : await boApiSvc.syVendorUser.update(formData.vendorUserId, { ...formData }, '사업자사용자관리', '저장');
-        if (setApiRes) { setApiRes({ ok:true, status:res.status, data:res.data }); }
         showToast(uiState.formMode==='new'?'등록되었습니다.':'저장되었습니다.', 'success');
         await loadVendorUsers(formData.vendorId);
         if (uiState.formMode === 'edit') {
@@ -437,7 +435,6 @@ window.SyVendorUserMng = {
         uiState.formMode = uiState.formMode === 'new' ? '' : 'edit';
       } catch(err) {
         const msg = err.response?.data?.message || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok:false, status:err.response?.status, data:err.response?.data, message:err.message }); }
         showToast(msg, 'error', 0);
       }
     };
@@ -448,13 +445,11 @@ window.SyVendorUserMng = {
       if (!ok) { return; }
       try {
         const res = await boApiSvc.syVendorUser.remove(u.vendorUserId, '사업자사용자관리', '삭제');
-        if (setApiRes) { setApiRes({ ok:true, status:res.status, data:res.data }); }
         showToast('삭제되었습니다.', 'success');
         await loadVendorUsers(u.vendorId);
         if (uiState.formMode === 'edit' && formData.vendorUserId === u.vendorUserId) { closeForm(); }
       } catch(err) {
         const msg = err.response?.data?.message || err.message || '오류가 발생했습니다.';
-        if (setApiRes) { setApiRes({ ok:false, status:err.response?.status, data:err.response?.data, message:err.message }); }
         showToast(msg, 'error', 0);
       }
     };
@@ -541,7 +536,6 @@ window.SyVendorUserMng = {
           userId: formData.vendorUserId,
           roleId: rid,
         }, '사업자사용자관리', '등록');
-        if (setApiRes) { setApiRes({ ok:true, status:res.status, data:res.data }); }
         showToast('역할이 부여되었습니다.', 'success');
         await loadUserRoles(formData.vendorUserId);
       } catch(err) {
@@ -557,7 +551,6 @@ window.SyVendorUserMng = {
       if (!ok) { return; }
       try {
         const res = await boApiSvc.syVendorUser.removeRole(r.vendorUserRoleId, '사업자사용자관리', '삭제');
-        if (setApiRes) { setApiRes({ ok:true, status:res.status, data:res.data }); }
         showToast('역할이 삭제되었습니다.', 'success');
         await loadUserRoles(formData.vendorUserId);
       } catch(err) {
