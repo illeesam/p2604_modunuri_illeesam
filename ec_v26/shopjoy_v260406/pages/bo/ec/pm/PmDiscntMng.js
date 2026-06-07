@@ -68,8 +68,8 @@ window.PmDiscntMng = {
       console.log(' ■■ PmDiscntMng.js : handleGridCellAction -> ', cmd, colKey, row);
       if (cmd === 'discnts-cellClick') {
         // 행 액션 버튼 (colKey='btn_*') — [수정]/[삭제] 등
-        if (colKey === 'btn_edit')   { return handleLoadDetail(row.discntId); }
-        if (colKey === 'btn_delete') { return handleDelete(row); }
+        if (colKey === 'btn_row_edit')   { return handleLoadDetail(row.discntId); }
+        if (colKey === 'btn_row_delete') { return handleDelete(row); }
         // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
         const VIEW_COLS = ['__no__'];
         if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {

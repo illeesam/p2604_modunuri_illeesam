@@ -98,8 +98,8 @@ window.PmPlanMng = {
       console.log(' ■■ PmPlanMng.js : handleGridCellAction -> ', cmd, colKey, row);
       if (cmd === 'plans-cellClick') {
         // 행 액션 버튼 (colKey='btn_*') — [수정]/[삭제] 등
-        if (colKey === 'btn_edit')   { return handleLoadDetail(row.planId); }
-        if (colKey === 'btn_delete') { return handleDelete(row); }
+        if (colKey === 'btn_row_edit')   { return handleLoadDetail(row.planId); }
+        if (colKey === 'btn_row_delete') { return handleDelete(row); }
         // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
         const VIEW_COLS = ['__no__'];
         if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
@@ -339,10 +339,10 @@ window.PmPlanMng = {
       </template>
       <template #row-actions="{ row: p, gridId }">
         <div class="actions">
-          <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_edit', p)">
+          <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_row_edit', p)">
             수정
           </button>
-          <button class="btn btn_row_delete" @click.stop="handleGridCellAction(gridId, 'btn_delete', p)">
+          <button class="btn btn_row_delete" @click.stop="handleGridCellAction(gridId, 'btn_row_delete', p)">
             삭제
           </button>
         </div>
@@ -393,10 +393,10 @@ window.PmPlanMng = {
           </div>
         </div>
         <div style="padding:10px 16px;background:#f9f9f9;display:flex;gap:6px;justify-content:center;align-items:center;">
-          <button class="btn btn_row_edit" @click.stop="handleGridCellAction('plans-cellClick', 'btn_edit', p)" style="font-size:11px;padding:4px 12px;">
+          <button class="btn btn_row_edit" @click.stop="handleGridCellAction('plans-cellClick', 'btn_row_edit', p)" style="font-size:11px;padding:4px 12px;">
             수정
           </button>
-          <button class="btn btn_row_delete" @click.stop="handleGridCellAction('plans-cellClick', 'btn_delete', p)" style="font-size:11px;padding:4px 12px;">
+          <button class="btn btn_row_delete" @click.stop="handleGridCellAction('plans-cellClick', 'btn_row_delete', p)" style="font-size:11px;padding:4px 12px;">
             삭제
           </button>
           <span style="font-size:11px;color:#999;margin-left:auto;">

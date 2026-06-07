@@ -102,8 +102,8 @@ window.PdProdMng = {
       console.log(' ■■ PdProdMng.js : handleGridCellAction -> ', cmd, colKey, row);
       if (cmd === 'prods-cellClick') {
         // 행 액션 버튼 (colKey='btn_*') — [수정]/[삭제] 등
-        if (colKey === 'btn_edit')   { return handleLoadDetail(row.prodId); }
-        if (colKey === 'btn_delete') { return handleDelete(row); }
+        if (colKey === 'btn_row_edit')   { return handleLoadDetail(row.prodId); }
+        if (colKey === 'btn_row_delete') { return handleDelete(row); }
         // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
         const VIEW_COLS = ['__no__'];
         if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
@@ -397,10 +397,10 @@ window.PdProdMng = {
             @click.stop="handleSelectAction('prods-rowPreview', p.prodId)">
             👁
           </button>
-          <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_edit', p)">
+          <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_row_edit', p)">
             수정
           </button>
-          <button class="btn btn_row_delete" @click.stop="handleGridCellAction(gridId, 'btn_delete', p)">
+          <button class="btn btn_row_delete" @click.stop="handleGridCellAction(gridId, 'btn_row_delete', p)">
             삭제
           </button>
         </div>

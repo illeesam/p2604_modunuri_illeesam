@@ -135,11 +135,11 @@ window.OdOrderMng = {
       console.log(' ■■ OdOrderMng.js : handleGridCellAction -> ', cmd, colKey, row);
       if (cmd === 'orders-cellClick') {
         // 행 액션 버튼 (colKey='btn_*') — [수정]/[삭제] 등
-        if (colKey === 'btn_edit') {
+        if (colKey === 'btn_row_edit') {
           detailPanel.selectedId = row.orderId; detailPanel.openMode = 'edit'; detailPanel.active = true; detailPanel.reloadTrigger++;
           return;
         }
-        if (colKey === 'btn_delete') { return handleDelete(row); }
+        if (colKey === 'btn_row_delete') { return handleDelete(row); }
         // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
         const VIEW_COLS = ['__no__'];
         if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
@@ -613,10 +613,10 @@ window.OdOrderMng = {
         @ref-click="({type,id}) => handleSelectAction('orders-rowRefClick', {type, id})" row-actions>
         <template #row-actions="{ row, gridId }">
           <div class="actions">
-            <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
+            <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_row_edit', row)">
               수정
             </button>
-            <button class="btn btn_row_delete" @click.stop="handleGridCellAction(gridId, 'btn_delete', row)">
+            <button class="btn btn_row_delete" @click.stop="handleGridCellAction(gridId, 'btn_row_delete', row)">
               삭제
             </button>
           </div>

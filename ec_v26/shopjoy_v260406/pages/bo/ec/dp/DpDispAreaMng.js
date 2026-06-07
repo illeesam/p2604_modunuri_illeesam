@@ -83,8 +83,8 @@ window.DpDispAreaMng = {
       console.log(' ■■ DpDispAreaMng.js : handleGridCellAction -> ', cmd, colKey, row);
       if (cmd === 'areas-cellClick') {
         // 행 액션 버튼 (colKey='btn_*') — [상세]/[수정] 등
-        if (colKey === 'btn_view') { return loadView(row.areaId); }
-        if (colKey === 'btn_edit') { return handleLoadDetail(row.areaId); }
+        if (colKey === 'btn_row_view') { return loadView(row.areaId); }
+        if (colKey === 'btn_row_edit') { return handleLoadDetail(row.areaId); }
         // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
         const VIEW_COLS = ['__no__'];
         if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
@@ -314,10 +314,10 @@ window.DpDispAreaMng = {
         @sort="key => handleBtnAction('areas-sort', key)"
         grid-id="areas-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
         <template #row-actions="{ row, gridId }">
-          <button class="btn btn_detail" @click.stop="handleGridCellAction(gridId, 'btn_view', row)">
+          <button class="btn btn_detail" @click.stop="handleGridCellAction(gridId, 'btn_row_view', row)">
             상세
           </button>
-          <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
+          <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_row_edit', row)">
             수정
           </button>
         </template>

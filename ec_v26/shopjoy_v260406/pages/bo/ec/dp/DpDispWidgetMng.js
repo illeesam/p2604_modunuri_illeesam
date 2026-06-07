@@ -78,8 +78,8 @@ window.DpDispWidgetMng = {
       console.log(' ■■ DpDispWidgetMng.js : handleGridCellAction -> ', cmd, colKey, row);
       if (cmd === 'widgets-cellClick') {
         // 행 액션 버튼 (colKey='btn_*') — [수정]/[삭제] 등
-        if (colKey === 'btn_edit')   { return handleLoadDetail(row.widgetId); }
-        if (colKey === 'btn_delete') { return handleDelete(row); }
+        if (colKey === 'btn_row_edit')   { return handleLoadDetail(row.widgetId); }
+        if (colKey === 'btn_row_delete') { return handleDelete(row); }
         // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
         const VIEW_COLS = ['__no__'];
         if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
@@ -549,10 +549,10 @@ window.DpDispWidgetMng = {
         </template>
         <template #row-actions="{ row, gridId }">
           <div class="actions" style="justify-content:flex-end;">
-            <button @click.stop="handleGridCellAction(gridId, 'btn_edit', row)" class="btn btn_row_edit">
+            <button @click.stop="handleGridCellAction(gridId, 'btn_row_edit', row)" class="btn btn_row_edit">
               수정
             </button>
-            <button @click.stop="handleGridCellAction(gridId, 'btn_delete', row)" class="btn btn_row_delete">
+            <button @click.stop="handleGridCellAction(gridId, 'btn_row_delete', row)" class="btn btn_row_delete">
               삭제
             </button>
           </div>

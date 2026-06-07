@@ -91,8 +91,8 @@ window.DpDispUiMng = {
       console.log(' ■■ DpDispUiMng.js : handleGridCellAction -> ', cmd, colKey, row);
       if (cmd === 'uis-cellClick') {
         // 행 액션 버튼 (colKey='btn_*') — [상세]/[수정] 등
-        if (colKey === 'btn_view') { return loadView(row.uiId); }
-        if (colKey === 'btn_edit') { return handleLoadDetail(row.uiId); }
+        if (colKey === 'btn_row_view') { return loadView(row.uiId); }
+        if (colKey === 'btn_row_edit') { return handleLoadDetail(row.uiId); }
         // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
         const VIEW_COLS = ['__no__'];
         if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
@@ -355,10 +355,10 @@ window.DpDispUiMng = {
         @sort="key => handleBtnAction('uis-sort', key)"
         grid-id="uis-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
         <template #row-actions="{ row, gridId }">
-          <button class="btn btn_detail" @click.stop="handleGridCellAction(gridId, 'btn_view', row)">
+          <button class="btn btn_detail" @click.stop="handleGridCellAction(gridId, 'btn_row_view', row)">
             상세
           </button>
-          <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_edit', row)">
+          <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_row_edit', row)">
             수정
           </button>
         </template>
