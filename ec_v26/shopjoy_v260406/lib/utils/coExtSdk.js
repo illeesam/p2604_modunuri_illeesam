@@ -46,6 +46,32 @@
     } catch (_) { return fallback; }
   };
 
+  /* ──────────────────────────────────────────────────────────
+   * 개발용 디버그 훅 — 소셜/결제 창을 띄우기 직전 URL·파라미터를 노출.
+   *   화면에서 coExtSdk.setDebugHook((label, info) => showToast(...)) 로 등록.
+   *   훅 미등록 시 console.log 폴백. 운영에서 끄려면 setDebugHook(null).
+   * ────────────────────────────────────────────────────────── */
+  let _debugHook = null;
+  const setDebugHook = (fn) => { _debugHook = (typeof fn === 'function') ? fn : null; };
+  const _debug = (label, info) => {
+    try {
+      if (_debugHook) _debugHook(label, info);
+      else console.log('[coExtSdk:debug]', label, info);
+    } catch (_) {}
+  };
+  /* _fmtParams — 파라미터 객체를 한 줄 문자열로 (긴 값/시크릿은 잘라서 표시) */
+  const _fmtParams = (obj) => {
+    try {
+      return Object.entries(obj || {})
+        .map(([k, v]) => {
+          let s = (v == null) ? '' : String(v);
+          if (s.length > 80) s = s.slice(0, 77) + '…';
+          return `${k}=${s}`;
+        })
+        .join('\n');
+    } catch (_) { return ''; }
+  };
+
   /* _errMsg — "원인 — 해결방법" 형식의 표준 에러 메시지 생성.
    * 호출자(화면)는 catch 후 showToast(e.message, 'error') 로 그대로 노출한다.
    * SDK 창(팝업/위젯)이 안 뜨는 대표 원인별 안내를 한 곳에서 관리. */
@@ -126,6 +152,13 @@
             '팝업 차단 해제·네트워크 상태를 확인하고 다시 시도하세요.')));
         }
       };
+      _debug('Google 로그인 창', {
+        sdk: 'Google Identity Services (oauth2 token popup)',
+        client_id: _key('svGoogleClientId'),
+        scope: 'openid email profile',
+        prompt: 'consent',
+        userinfo_url: _env('oauth.GOOGLE_USERINFO_URL', 'https://www.googleapis.com/oauth2/v3/userinfo'),
+      });
       client.requestAccessToken({ prompt: 'consent' });
     } catch (e) { reject(e); }
   });
@@ -144,6 +177,12 @@
   const loginKakao = () => new Promise((resolve, reject) => {
     try {
       _initKakao();
+      _debug('카카오 로그인 창', {
+        sdk: 'Kakao JS SDK (Kakao.Auth.login)',
+        jsKey: _key('svKakaoJsKey'),
+        scope: 'profile_nickname,account_email',
+        userinfo_url: _env('oauth.KAKAO_USERINFO_URL', 'https://kapi.kakao.com/v2/user/me'),
+      });
       Kakao.Auth.login({
         scope: 'profile_nickname,account_email',
         success: (authObj) => {
@@ -201,19 +240,34 @@
   const loginNaver = () => new Promise((resolve, reject) => {
     try {
       const inst = _initNaver();
+      const _naverAuthBase = _env('oauth.NAVER_AUTHORIZE_URL', 'https://nid.naver.com/oauth2.0/authorize');
+      const _naverRedirect = _key('svNaverCallbackUrl') || (window.location.origin + window.location.pathname);
 
       // SDK 가 자동 생성한 a 태그를 찾아 클릭 → 팝업 트리거. 없으면 직접 OAuth URL 팝업.
       const a = document.querySelector('#naverIdLogin a, #naverIdLogin_loginButton');
       if (a) {
+        _debug('네이버 로그인 창', {
+          sdk: 'Naver Login SDK (a-tag click popup)',
+          authorize_url: _naverAuthBase,
+          client_id: _key('svNaverClientId'),
+          redirect_uri: _naverRedirect,
+          response_type: 'token',
+        });
         a.click();
       } else {
         const state = Math.random().toString(36).slice(2);
-        const url = _env('oauth.NAVER_AUTHORIZE_URL', 'https://nid.naver.com/oauth2.0/authorize')
+        const url = _naverAuthBase
           + '?response_type=token'
           + '&client_id=' + encodeURIComponent(_key('svNaverClientId'))
-          + '&redirect_uri=' + encodeURIComponent(_key('svNaverCallbackUrl') || (window.location.origin + window.location.pathname))
+          + '&redirect_uri=' + encodeURIComponent(_naverRedirect)
           + '&state=' + state;
-        window.open(url, 'naverLogin', 'width=500,height=650');
+        _debug('네이버 로그인 창', { sdk: 'Naver OAuth (window.open)', url });
+        const popup = window.open(url, 'naverLogin', 'width=500,height=650');
+        if (_isPopupBlocked(popup)) {
+          reject(new Error(_errMsg('네이버 로그인 창이 열리지 않았습니다 — 브라우저 팝업이 차단되었습니다.',
+            '주소창 우측 팝업 차단 아이콘에서 이 사이트의 팝업을 허용한 뒤 다시 시도하세요.')));
+          return;
+        }
       }
 
       const started = Date.now();
@@ -255,10 +309,16 @@
   /* getTossPayments */
   const getTossPayments = async () => {
     if (_tossInstance) return _tossInstance;
-    if (!window.TossPayments) throw new Error('Toss Payments SDK 가 로드되지 않았습니다. (bo.html 의 v2/standard 스크립트 확인)');
+    if (!window.TossPayments) throw new Error(_errMsg('결제창을 열 수 없습니다 — Toss Payments SDK 가 로드되지 않았습니다.',
+      'index.html/bo.html 의 js.tosspayments.com/v2/standard 스크립트 로드와 네트워크/광고차단 확장을 확인하세요.'));
     let clientKey = _key('svTossClientKey');
     if (!clientKey) { clientKey = TOSS_TEST_CLIENT_KEY; _usedTestKey = true; }
     else { _usedTestKey = false; }
+    _debug('토스 결제 SDK 초기화', {
+      sdk: _env('toss.SDK_V2_URL', 'https://js.tosspayments.com/v2/standard'),
+      clientKey,
+      keyType: _usedTestKey ? '테스트키(폴백)' : '운영키(svTossClientKey)',
+    });
     _tossInstance = TossPayments(clientKey);
     return _tossInstance;
   };
@@ -269,11 +329,13 @@
    *       await w.renderAgreement({ selector }); await w.requestPayment({ orderId, orderName, successUrl, failUrl }); */
   const getTossPaymentWidgets = async (customerKey) => {
     const toss = await getTossPayments();
-    if (typeof toss.widgets !== 'function') throw new Error('이 Toss SDK 버전은 결제위젯(widgets)을 지원하지 않습니다.');
+    if (typeof toss.widgets !== 'function') throw new Error(_errMsg('결제위젯을 표시할 수 없습니다 — 이 Toss SDK 버전은 결제위젯(widgets)을 지원하지 않습니다.',
+      '결제 스크립트를 v2/standard(js.tosspayments.com/v2/standard) 로 교체하세요.'));
     /* 비회원/게스트 결제는 customerKey 대신 'ANONYMOUS' 센티넬 사용 (Toss v2 규약).
      * 회원은 2~50자 불투명 키 권장 (회원ID 그대로는 비권장이나 프로토타입에선 허용). */
     const k = String(customerKey || '');
     const ck = (k.length >= 2 && k.length <= 50) ? k : 'ANONYMOUS';
+    _debug('토스 결제위젯 생성', { customerKey: ck, testKey: _usedTestKey });
     return toss.widgets({ customerKey: ck });
   };
 
@@ -313,5 +375,7 @@
     getTossPayments, getTossPaymentWidgets, isTossTestKey,
     // 지도
     loadKakaoMap, loadNaverMap,
+    // 개발용 디버그 훅 (창 띄울 때 URL·파라미터 노출) + 포맷터
+    setDebugHook, _fmtParams,
   };
 })();

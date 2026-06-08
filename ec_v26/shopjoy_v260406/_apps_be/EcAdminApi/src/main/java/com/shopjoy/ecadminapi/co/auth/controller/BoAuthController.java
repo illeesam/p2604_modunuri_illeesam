@@ -5,7 +5,9 @@ import com.shopjoy.ecadminapi.co.auth.data.vo.BoJoinRes;
 import com.shopjoy.ecadminapi.co.auth.data.vo.ChangePasswordReq;
 import com.shopjoy.ecadminapi.co.auth.data.vo.LoginReq;
 import com.shopjoy.ecadminapi.co.auth.data.vo.LoginRes;
+import com.shopjoy.ecadminapi.co.auth.data.vo.SocialLoginReq;
 import com.shopjoy.ecadminapi.co.auth.service.BoAuthService;
+import com.shopjoy.ecadminapi.co.auth.service.SocialAuthService;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyUser;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,12 +29,20 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class BoAuthController {
 
-    private final BoAuthService authService;
+    private final BoAuthService    authService;
+    private final SocialAuthService socialAuthService;
 
     /** login — 로그인 */
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<LoginRes>> login(@RequestBody @Valid LoginReq request) {
         LoginRes result = authService.login(request, "BO");
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
+    /** socialLogin — 소셜 로그인 (provider accessToken 검증 → 매칭/가입 → JWT) */
+    @PostMapping("/social-login")
+    public ResponseEntity<ApiResponse<LoginRes>> socialLogin(@RequestBody @Valid SocialLoginReq request) {
+        LoginRes result = socialAuthService.loginSocial(request, "BO");
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 

@@ -153,20 +153,8 @@
         }
       },
 
-      // 소셜 로그인 (데모) — 백엔드 bo-auth 소셜 엔드포인트 추가 전까지 프론트 데모 세션 설정
-      // ([[프로토타입 단계]] FO foAuth.loginSocial 미러. 실 연동 시 /api/co/bo-auth/social-login 등으로 교체)
-      saLoginSocial(provider) {
-        const demos = {
-          google: { authId: 'bo_g1', userId: 'bo_g1', name: 'Google관리자', email: 'google.admin@gmail.com', role: 'ADMIN', loginId: 'google.admin@gmail.com' },
-          kakao:  { authId: 'bo_k1', userId: 'bo_k1', name: 'Kakao관리자',  email: 'kakao.admin@kakao.com',  role: 'ADMIN', loginId: 'kakao.admin@kakao.com' },
-          naver:  { authId: 'bo_n1', userId: 'bo_n1', name: 'Naver관리자',  email: 'naver.admin@naver.com',  role: 'ADMIN', loginId: 'naver.admin@naver.com' },
-        };
-        const user = demos[provider];
-        if (!user) return { ok: false, msg: '알 수 없는 provider: ' + provider };
-        const token = 'sjt_bo_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 9);
-        this.saSetAuth({ accessToken: token, refreshToken: token, authUser: user });
-        return { ok: true };
-      },
+      // 소셜 로그인은 co 모듈로 이관됨 → window.coAuth.socialLogin('bo', provider) 사용
+      // (coAuth 가 데모 사용자 확정 후 this.saSetAuth 로 세션 발급)
 
       // 로그아웃
       async saLogout() {

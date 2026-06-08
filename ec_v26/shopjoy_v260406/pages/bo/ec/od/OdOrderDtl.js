@@ -209,7 +209,7 @@ window.OdOrderDtl = {
       }
     };
 
-    /* handlePayRequest — 토스 브랜드페이 결제 (시뮬 기본 / clientKey 설정 시 실 SDK) */
+    /* handlePayRequest — 토스 브랜드페이 결제. 결제창이 안 뜨면 이유+해결방법을 오류 toast 로 안내하고 중단 */
     const handlePayRequest = async () => {
       const amount = (Number(form.totalAmt) || 0);
       if (amount <= 0) { showToast('결제금액이 0원입니다. 주문항목/배송비를 확인하세요.', 'error'); return; }
@@ -218,31 +218,36 @@ window.OdOrderDtl = {
       if (!ok) { return; }
       payState.processing = true;
       try {
-        if (!window.TossPayments) {
-          showToast('토스 SDK 미로드로 시뮬레이션 결제합니다. (실 결제: bo.html SDK 로드 확인)', 'info');
-          _simulatePay(amount); return;
+        if (!window.coAuth) {
+          showToast('결제 모듈(coAuth)이 로드되지 않았습니다.', 'error', 0);
+          return;
         }
-        try {
-          const toss = await window.coExtSdk.getTossPayments();
-          const bp = await toss.brandpay?.({ customerKey: form.memberId });
-          if (bp && bp.requestPayment) {
-            await bp.requestPayment({ amount, orderId: form.orderId || ('ORD' + Date.now()), orderName: form.prodNm || '주문결제' });
-          } else {
-            showToast('브랜드페이는 별도 약정/연동이 필요합니다. 우선 시뮬레이션 결제합니다.', 'info');
-            _simulatePay(amount);
-          }
-        } catch (sdkErr) {
-          console.warn('[Toss 브랜드페이 실패 → 시뮬]', sdkErr);
-          showToast('브랜드페이 호출 실패로 시뮬레이션 결제합니다: ' + ((sdkErr && sdkErr.message) || ''), 'info');
-          _simulatePay(amount);
+        /* co 통합: coAuth.pay('bo', opts). 결제창이 안 뜨면 coAuth/coExtSdk 가 "원인—해결방법" 에러 throw → catch 에서 toast.
+         * 개발용 onDebug 로 SDK·키·파라미터를 toast 표시 */
+        await window.coAuth.pay('bo', {
+          customerKey: form.memberId,
+          amount,
+          orderId: form.orderId || ('ORD' + Date.now()),
+          orderName: form.prodNm || '주문결제',
+          onDebug: (label, info) => showToast('[개발] ' + label + '\n' + window.coExtSdk._fmtParams(info), 'info', 0),
+        });
+        _applyPaySuccess(amount);
+      } catch (sdkErr) {
+        console.warn('[Toss 브랜드페이 실패]', sdkErr);
+        const msg = (sdkErr && sdkErr.message) || '';
+        /* 사용자 취소는 오류가 아님 (안내 토스트만) */
+        if (/취소|cancel|USER_CANCEL/i.test(msg)) {
+          showToast('결제가 취소되었습니다.', 'info');
+        } else {
+          showToast('결제창 호출에 실패했습니다.\n→ 해결: 팝업 차단 해제·네트워크 상태·토스 키 설정을 확인한 뒤 다시 시도하세요.' + (msg ? ('\n(' + msg + ')') : ''), 'error', 0);
         }
       } finally {
         payState.processing = false;
       }
     };
 
-    /* _simulatePay — 모의 결제 성공 처리 */
-    const _simulatePay = (amount) => {
+    /* _applyPaySuccess — 결제 성공 후 화면 상태 반영 */
+    const _applyPaySuccess = (amount) => {
       form.payStatusCd = '결제완료';
       form.payMethodCd = form.payMethodCd || '토스페이먼츠';
       form.payIssuer   = '토스 브랜드페이';
@@ -251,7 +256,7 @@ window.OdOrderDtl = {
         payMethod: '토스 브랜드페이', payStatus: '결제완료', amount,
         payDate: form.payDate || '', apprNo: form.apprNo, issuer: '토스 브랜드페이',
       });
-      showToast(`${amount.toLocaleString()}원 결제가 완료되었습니다. (시뮬)`, 'success');
+      showToast(`${amount.toLocaleString()}원 결제가 완료되었습니다.`, 'success');
     };
 
     /* (토스 간편 위젯 결제는 공통 컴포넌트 <base-toss-pay-widget> 으로 분리됨 — components/comp/BaseComp.js) */

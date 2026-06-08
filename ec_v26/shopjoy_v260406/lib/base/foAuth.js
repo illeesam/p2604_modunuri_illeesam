@@ -37,9 +37,6 @@
     set(v) { _localState.loading = v; },
   });
 
-  /* ── 토큰 생성 (소셜 로그인 데모용) ── */
-  const _mkToken = () => 'sjt_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 9);
-
   /* ── Pinia 초기화 (foApp.js 에서 호출) ── */
   const init = pinia => {
     _store = window.useFoAuthStore(pinia);
@@ -122,18 +119,7 @@
     } finally { state.loading = false; }
   };
 
-  /* ── 소셜 로그인 (데모) ── */
-  const loginSocial = provider => {
-    const demos = {
-      google: { authId: 'g1', memberId: 'g1', userId: null, AppTypeCd: 'FO', loginId: 'google.user@gmail.com', memberNm: 'Google유저', siteId: '' },
-      kakao:  { authId: 'k1', memberId: 'k1', userId: null, AppTypeCd: 'FO', loginId: 'kakao.user@kakao.com',  memberNm: 'Kakao유저',  siteId: '' },
-      naver:  { authId: 'n1', memberId: 'n1', userId: null, AppTypeCd: 'FO', loginId: 'naver.user@naver.com',  memberNm: 'Naver유저',  siteId: '' },
-    };
-    const user = demos[provider];
-    if (!user) return { ok: false };
-    _store.saSetSession(user, _mkToken());
-    return { ok: true };
-  };
+  /* 소셜 로그인은 co 모듈로 이관됨 → window.coAuth.socialLogin('fo', provider) 사용 */
 
   /* ── 회원가입 ── */
   const signup = async (memberNm, loginId, phone, extra = {}) => {
@@ -166,5 +152,5 @@
   };
 
   /* sfIsFoLogin 은 foAuthStore.js 가 window 에 정의 — 본 파일은 재정의하지 않음 */
-  window.foAuth = { state, init, login, loginSocial, signup, logout };
+  window.foAuth = { state, init, login, signup, logout };
 })();

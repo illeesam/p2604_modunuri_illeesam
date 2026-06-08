@@ -1164,7 +1164,14 @@ window.BaseTossPayWidget = {
       }
       try {
         await Vue.nextTick();
+        /* 개발용: 결제위젯 띄울 때 SDK·키·파라미터를 toast 로 표시 */
+        if (window.coExtSdk.setDebugHook) {
+          window.coExtSdk.setDebugHook((label, info) => {
+            props.showToast('[개발] ' + label + '\n' + window.coExtSdk._fmtParams(info), 'info', 0);
+          });
+        }
         if (!_widgets) { _widgets = await window.coExtSdk.getTossPaymentWidgets(props.customerKey || undefined); }
+        props.showToast('[개발] 토스 결제위젯 렌더\n' + window.coExtSdk._fmtParams({ customerKey: props.customerKey || 'ANONYMOUS', amount, currency: 'KRW' }), 'info', 0);
         await _widgets.setAmount({ currency: 'KRW', value: amount });
         if (!_rendered) {
           await _widgets.renderPaymentMethods({ selector: '#' + methodId, variantKey: 'DEFAULT' });

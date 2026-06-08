@@ -226,25 +226,19 @@ window.Login = {
       await doLogin();
     };
 
-    /* _callSocialSdk — 호출 소셜 SDK */
-    const _callSocialSdk = async (provider) => {
-      if (!window.coExtSdk) { throw new Error('coExtSdk 헬퍼가 로드되지 않았습니다.'); }
-      if (provider === 'google') { return await window.coExtSdk.loginGoogle(); }
-      if (provider === 'kakao') { return await window.coExtSdk.loginKakao(); }
-      if (provider === 'naver') { return await window.coExtSdk.loginNaver(); }
-      throw new Error('알 수 없는 provider: ' + provider);
+    /* 개발용: SDK 창 띄울 때 URL·파라미터를 toast 로 표시 */
+    const _sdkDebug = (label, info) => {
+      props.showToast('[개발] ' + label + '\n' + window.coExtSdk._fmtParams(info), 'info', 0);
     };
 
-    /* doSocial — 실행 */
+    /* doSocial — 소셜 로그인 (co 통합: coAuth.socialLogin('fo', provider)) */
     const doSocial = async (provider) => {
       uiState.loginErr = '';
       try {
-        const res = await _callSocialSdk(provider);
-        console.log('[doSocial] SDK 응답:', res);
-        // 추후: 서버에 res.accessToken / res.profile 전달하여 회원 매칭/세션 발급
-        // 지금은 데모 흐름 유지 (foAuth.loginSocial 호출)
-        window.foAuth.loginSocial(provider);
-        const userNm = window.foAuth.state.user?.memberNm || (res.profile?.nickname || res.profile?.name || provider);
+        if (!window.coAuth) { throw new Error('coAuth 모듈이 로드되지 않았습니다.'); }
+        const res = await window.coAuth.socialLogin('fo', provider, { onDebug: _sdkDebug });
+        if (!res.ok) { throw new Error(res.msg || (provider + ' 로그인 실패')); }
+        const userNm = window.foAuth?.state?.user?.memberNm || res.user?.memberNm || provider;
         props.showToast(userNm + '님, 환영합니다!', 'success');
         emit('close');
       } catch (e) {

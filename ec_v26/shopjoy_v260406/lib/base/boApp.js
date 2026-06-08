@@ -1728,18 +1728,21 @@
         }
       };
 
-      /* doSocial — 소셜 로그인 (구글/네이버/카카오). 프로토타입: boAuthStore 데모 세션.
-       * 실 SDK 연동 시 window.coExtSdk.loginXxx() 호출 후 그 profile 로 백엔드 소셜 인증 교체 */
+      /* doSocial — 소셜 로그인 (co 통합: coAuth.socialLogin('bo', provider)).
+       * 개발용 onDebug 로 SDK 창 URL·파라미터를 toast 표시. 프로토타입: 데모 세션. */
       const doSocial = async (provider) => {
         loginError.value = '';
         try {
-          if (!_boAuthStore) {
-            loginError.value = '스토어 초기화 실패';
+          if (!window.coAuth) {
+            loginError.value = 'coAuth 모듈이 로드되지 않았습니다.';
             return;
           }
-          const res = _boAuthStore.saLoginSocial(provider);
+          const res = await window.coAuth.socialLogin('bo', provider, {
+            onDebug: (label, info) => showToast('[개발] ' + label + '\n' + window.coExtSdk._fmtParams(info), 'info', 0),
+          });
           if (!res?.ok) {
             loginError.value = res?.msg || (provider + ' 로그인 실패');
+            showToast(loginError.value, 'error', 0);
             return;
           }
           _syncCurrentAuthUser();
@@ -1750,6 +1753,7 @@
         } catch (err) {
           console.error('[doSocial]', err);
           loginError.value = err?.message || (provider + ' 로그인 실패');
+          showToast(loginError.value, 'error', 0);
         }
       };
 
