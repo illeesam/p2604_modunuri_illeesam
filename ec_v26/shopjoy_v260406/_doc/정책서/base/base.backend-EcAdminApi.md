@@ -31,13 +31,16 @@
 com.shopjoy.ecadminapi
 ├─ EcAdminApiApplication.java          진입점 (@SpringBootApplication)
 │
-├─ auth/                               인증 계층
-│   ├─ AuthController.java             POST /auth/admin/login|refresh|logout
-│   ├─ AuthService.java                로그인·토큰 발급·갱신·무효화
-│   ├─ JwtProvider.java                JWT 생성·검증
-│   ├─ JwtAuthFilter.java              OncePerRequestFilter — 토큰 파싱·SecurityContext 주입
-│   ├─ UserDetailsServiceImpl.java     sy_user 조회 → Spring Security UserDetails 변환
-│   └─ dto/  LoginRequest · LoginResponse · RefreshRequest · TokenPair
+├─ co/auth/                            인증 계층 (BO·FO 공통)
+│   ├─ controller/BoAuthController.java   POST /api/co/bo-auth/login|join|token-refresh|logout|change-password
+│   ├─ controller/FoAuthController.java   POST /api/co/fo-auth/login|join|token-refresh|logout|change-password
+│   ├─ service/BoAuthService.java         BO 로그인·토큰 발급·갱신·무효화
+│   ├─ service/FoAuthService.java         FO 로그인·토큰 발급·갱신·무효화
+│   ├─ security/JwtProvider.java          JWT 생성·검증
+│   ├─ security/JwtAuthFilter.java        OncePerRequestFilter — 토큰 파싱·SecurityContext 주입
+│   ├─ service/UserDetailsServiceImpl.java sy_user 조회 → Spring Security UserDetails 변환
+│   ├─ data/vo/  LoginReq · LoginRes
+│   └─ data/dto/ TokenPair
 │
 ├─ autorest/                           제너릭 REST 계층 (9가지 표준 오퍼레이션)
 │   ├─ AutoRestController.java         URL: /autoRest/{domain}/{sub}/{table}
@@ -61,12 +64,11 @@ com.shopjoy.ecadminapi
 │   ├─ response/
 │   │   ├─ ApiResponse<T>              표준 응답 래퍼 { ok, status, data, message }
 │   │   └─ PageResult<T>              페이지 결과 { pageList, pageNo, pageSize, pageTotalCount, pageTotalPage, pageCond }
-│   └─ util/PatchUtil.java             null 필드 제외 복사 유틸
-│
-└─ config/
-    ├─ SecurityConfig.java             Spring Security 설정 (JWT stateless)
-    ├─ WebConfig.java                  CORS 설정
-    └─ MyBatisConfig.java              MyBatis 설정
+│   ├─ util/PatchUtil.java             null 필드 제외 복사 유틸
+│   └─ config/
+│       ├─ SecurityConfig.java         Spring Security 설정 (JWT stateless)
+│       ├─ WebConfig.java              CORS 설정
+│       └─ MyBatisConfig.java          MyBatis 설정
 ```
 
 ---
@@ -89,20 +91,20 @@ com.shopjoy.ecadminapi
 ### 4.1 토큰 발급
 
 ```
-POST /api/auth/admin/login
-Body: { "loginId": "admin@shopjoy.com", "password": "admin123!" }
+POST /api/co/bo-auth/login        (FO 는 /api/co/fo-auth/login)
+Body: { "loginId": "admin@shopjoy.com", "loginPwd": "admin123!" }
 Response: { ok:true, data: { accessToken, refreshToken, user:{...} } }
 ```
 
-| 토큰 | 만료 | 저장 위치 (클라이언트) |
+| 토큰 | 만료 | 저장 위치 (클라이언트, BO / FO) |
 |---|---|---|
-| accessToken | 15분 (900,000ms) | `localStorage modu-admin-token` |
-| refreshToken | 7일 (604,800,000ms) | `localStorage modu-admin-refresh` |
+| accessToken | 15분 (900,000ms) | `localStorage modu-bo-accessToken` / `modu-fo-accessToken` |
+| refreshToken | 7일 (604,800,000ms) | `localStorage modu-bo-refreshToken` / `modu-fo-refreshToken` |
 
 ### 4.2 토큰 갱신
 
 ```
-POST /api/auth/admin/refresh
+POST /api/co/bo-auth/token-refresh   (FO 는 /api/co/fo-auth/token-refresh)
 Body: { "refreshToken": "..." }
 Response: { ok:true, data: { accessToken, refreshToken } }
 ```
@@ -112,7 +114,7 @@ refreshToken 은 DB(`sy_user_token_log`)에 저장·비교·무효화한다.
 ### 4.3 로그아웃
 
 ```
-POST /api/auth/admin/logout
+POST /api/co/bo-auth/logout          (FO 는 /api/co/fo-auth/logout)
 Body: { "refreshToken": "..." }
 ```
 
@@ -121,7 +123,7 @@ Body: { "refreshToken": "..." }
 ### 4.4 요청 인증 흐름
 
 ```
-모든 /api/** 요청 (단, /api/auth/admin/** 제외)
+모든 /api/** 요청 (단, /api/co/** 등 공개 경로 제외)
   → JwtAuthFilter
     → Authorization: Bearer {token} 헤더 파싱
     → JwtProvider.validateToken()
@@ -132,8 +134,9 @@ Body: { "refreshToken": "..." }
 ### 4.5 허용 공개 경로
 
 ```
-/api/auth/admin/**   (로그인·갱신·로그아웃)
-/api/actuator/**     (헬스체크)
+/api/co/**            (로그인·공통코드 등 공통 API — 누구나)
+/actuator/**          (헬스체크)
+GET /cdn/**, /zz/**   (static 리소스)
 OPTIONS /**           (CORS preflight)
 ```
 

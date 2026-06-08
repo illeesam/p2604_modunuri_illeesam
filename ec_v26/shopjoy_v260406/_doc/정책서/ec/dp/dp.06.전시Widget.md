@@ -5,7 +5,7 @@
 전시 Widget(dp_widget)은 화면에 실제 렌더링되는 콘텐츠 단위를 정의한다.
 위젯은 `widget_type_cd`로 동작 방식을 결정하며, `widget_config_json`에 위젯별 설정값을 저장한다.
 라이브러리를 참조하거나(`widget_lib_ref_yn = 'Y'`), 직접 콘텐츠를 입력(`N`)하는 두 가지 방식을 지원한다.
-관리자는 `preview_img_url`로 위젯 선택 화면에서 썸네일을 확인할 수 있다.
+관리자는 `thumbnail_url`로 위젯 선택 화면에서 썸네일을 확인할 수 있다.
 
 ---
 
@@ -44,7 +44,7 @@
 | `title_show_yn` | CHAR(1) | 타이틀 화면 표시 여부 (Y/N) |
 | `widget_lib_ref_yn` | CHAR(1) | 라이브러리 참조 여부 (Y/N) |
 | `widget_config_json` | TEXT | 위젯 타입별 상세 설정 (JSON) |
-| `preview_img_url` | VARCHAR(500) | 관리자 위젯 선택 썸네일 이미지 URL |
+| `thumbnail_url` | VARCHAR(500) | 관리자 위젯 선택 썸네일 이미지 URL |
 | `sort_ord` | INTEGER | 목록 정렬 순서 |
 | `use_yn` | CHAR(1) | 관리자 사용여부 토글 (Y/N) |
 | `disp_env` | VARCHAR(50) | 전시 환경 (`^PROD^`, `^DEV^`, `^TEST^` 조합) |
@@ -280,7 +280,7 @@
 widget_nm    = '2026봄시즌_메인배너'
 widget_type_cd = 'image_banner'
 disp_env     = '^PROD^'
-preview_img_url = '/img/thumb_spring_banner.jpg'
+thumbnail_url = '/img/thumb_spring_banner.jpg'
 widget_config_json = {
   "img_url": "/img/spring_main_pc.jpg",
   "mobile_img_url": "/img/spring_main_m.jpg",
@@ -331,7 +331,7 @@ widget_config_json = {
 3. `widget_type_cd`는 공통코드 `WIDGET_TYPE` 기준 19종 중 하나 — 임의 코드 입력 불가
 4. `html_editor` 타입은 XSS 방지를 위해 서버 측 HTML Sanitize 처리 필수
 5. `disp_env` 미설정 시 기본값 `^PROD^` — 운영 환경 기본 노출
-6. `preview_img_url` 미설정 시 위젯 타입별 기본 썸네일 이미지 표시
+6. `thumbnail_url` 미설정 시 위젯 타입별 기본 썸네일 이미지 표시
 7. `chart_*` 타입은 `data_api` 엔드포인트가 유효한 JSON 배열을 반환해야 함
 
 ---

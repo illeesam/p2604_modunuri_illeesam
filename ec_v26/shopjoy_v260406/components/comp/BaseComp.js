@@ -1111,7 +1111,7 @@ window.BaseHtmlEditor = {
 
 /* ──────────────────────────────────────────────────────────────────────────
  * BaseTossPayWidget — 토스페이먼츠 v2 결제위젯 공통 컴포넌트 (FO·BO 공용)
- *   · coExtSdk.getTossPaymentWidgets / coEnvConsts 의존 (SDK 레이어는 공통)
+ *   · coExtSdk.getTossPaymentWidgets / foEnvConsts·boEnvConsts 의존 (SDK 레이어는 공통)
  *   · 인스턴스별 고유 selector 로 한 페이지 다중 렌더 충돌 방지
  *   · 정보 불충분/실패 시 조용히 폴백하지 않고 showToast 로 이유+해결법 안내
  *   · 결제 성공 시 successUrl 로 리다이렉트(토스 표준). emit: open/close/error
