@@ -1,6 +1,6 @@
 ---
 정책명: 관리자(Back Office) UX 정책
-정책번호: base-UX-admin
+정책번호: base-UX-bo
 관리자: 개발팀
 최종수정: 2026-05-05
 ---
@@ -159,7 +159,7 @@
 ```
 
 - 콘텐츠 영역 최대 폭: **1550px**, 중앙 정렬
-- AdminApp.js 가 이미 `.admin-wrap` 을 적용하므로 **컴포넌트 루트에 재사용 금지**
+- lib/base/boApp.js 가 이미 `.admin-wrap` 을 적용하므로 **컴포넌트 루트에 재사용 금지**
 - 컴포넌트 루트는 반드시 `<div>` (class 없음)
 
 ### 6.2 콘텐츠 영역 루트 구조
@@ -205,7 +205,7 @@
 Dtl 탭 뷰모드 중 **3열(`cols-3`) 또는 4열(`cols-4`)** 선택 시 max-width 제한 해제:
 
 ```css
-/* adminGlobalStyle0N.css */
+/* boGlobalStyle0N.css */
 .admin-wrap:has(.dtl-tab-grid.cols-3),
 .admin-wrap:has(.dtl-tab-grid.cols-4) { max-width: none; }
 ```
@@ -710,7 +710,7 @@ Vue.onMounted(loadColSettings);
 `window.adminCommonFilter` 는 **전역 reactive 객체**로, 사이트·업체·회원·주문 범위를 전 화면에서 공유.
 
 ```js
-// utils/adminUtil.js
+// lib/utils/boUtil.js
 window.adminCommonFilter = Vue.reactive({
   siteId:   null,   // 사이트 ID (null = 전체)
   vendorId: null,   // 업체 ID
@@ -725,8 +725,8 @@ window.adminCommonFilter = Vue.reactive({
 [사이트: 전체 ▼]  [업체: 전체 ▼]
 ```
 
-- **사이트 선택**: `adminData.sites` 기준 선택 → `adminCommonFilter.siteId` 갱신
-- **업체 선택**: `adminData.vendors` 기준 선택 → `adminCommonFilter.vendorId` 갱신
+- **사이트 선택**: `adminData.sites` 기준 선택 → `adminCommonFilter.siteId` 갱신 (폐기됨 — 실 API boApiSvc 기반)
+- **업체 선택**: `adminData.vendors` 기준 선택 → `adminCommonFilter.vendorId` 갱신 (폐기됨 — 실 API boApiSvc 기반)
 - 선택 값은 URL query로도 동기화 (탭 공유 시 유지)
 - 관리자 역할이 특정 업체에 묶인 경우 업체 선택 고정·변경 불가
 
@@ -1400,7 +1400,7 @@ props.showRefModal({ type: 'member', onSelect: (m) => { form.memberId = m.userId
 
 ## 관련 정책
 - `sy.51.프로그램설계정책.md` — 초기값·데이터 정렬·ID 표시
-- `base.기술-admin.md` — 컴포넌트 등록 4단계·Props 표준·boApi 저장/삭제 패턴
+- `base.기술-bo.md` — 컴포넌트 등록 4단계·Props 표준·boApi 저장/삭제 패턴
 
 ---
 
@@ -1429,7 +1429,7 @@ const openCatModal = () => {
 `window._boCmPaths`를 갱신한다. 각 화면의 `openPathPick`에서 별도 재조회 불필요.
 
 ```js
-// PathPickModal 내부 (BaseModals.js) — 마운트 시 자동 재조회
+// PathPickModal 내부 (BoModals.js) — 마운트 시 자동 재조회
 Vue.onMounted(async () => {
   const res = await boApi.get('/bo/sy/path/page', { params: { pageNo: 1, pageSize: 10000 }, ...coUtil.apiHdr('표시경로', '목록조회') });
   const list = res.data?.data?.pageList || [];

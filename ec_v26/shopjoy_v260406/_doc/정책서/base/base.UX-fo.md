@@ -1,6 +1,6 @@
 ---
 정책명: 사용자(Front Office) UX 정책
-정책번호: base-UX-front
+정책번호: base-UX-fo
 관리자: 개발팀
 최종수정: 2026-04-19
 ---
@@ -64,9 +64,9 @@
 
 로그인 처리 흐름:
 ```
-로그인 폼 입력 → frontAuthStore.login(email, pw)
+로그인 폼 입력 → foAuthStore.login(email, pw)
   → API 호출 → 토큰 발급 → localStorage 저장
-  → frontAuth.state.isLoggedIn = true
+  → foAuth.state.isLoggedIn = true
   → 이전 페이지 또는 home으로 이동
 ```
 
@@ -82,15 +82,15 @@
 
 ```js
 // localStorage 토큰 자동 복원
-// base/frontAuth.js
-window.frontAuth = {
+// lib/base/foAuth.js
+window.foAuth = {
   state: Vue.reactive({ isLoggedIn: false, user: null }),
   async init() { /* localStorage 토큰 확인 → 자동 복원 */ },
   async logout() { /* 토큰 제거 + state 초기화 */ },
 };
 
-// Pinia 스토어 (base/stores/frontAuthStore.js)
-frontAuthStore: { isLoggedIn, user, token }
+// Pinia 스토어 (lib/stores/fo/foAuthStore.js)
+foAuthStore: { isLoggedIn, user, token }
 ```
 
 ### 2.5 모바일 대응
@@ -100,15 +100,15 @@ frontAuthStore: { isLoggedIn, user, token }
 
 ---
 
-## 3. 사이트 테마 (FRONT_SITE_NO)
+## 3. 사이트 테마 (FO_SITE_NO)
 
-| FRONT_SITE_NO | 테마 | 특징 |
+| FO_SITE_NO | 테마 | 특징 |
 |---|---|---|
 | `01` | 기본 (베이지/카키) | 기준 테마. 리본 없음 |
 | `02` | Mint Edition (민트/세이지) | 상단 🌿 리본 표시 |
 | `03` | Luxe Edition (로얄 퍼플) | 상단 👑 리본 표시 |
 
-- URL 오버라이드: `?FRONT_SITE_NO=02` → localStorage 저장 후 쿼리 자동 제거
+- URL 오버라이드: `?FO_SITE_NO=02` → localStorage 저장 후 쿼리 자동 제거
 - CSS 변수로 테마 전환: `--accent`, `--text-primary`, `--bg-base`, `--bg-card`, `--border`, `--shadow`
 
 ---
@@ -216,7 +216,7 @@ URL 단축: `/index.html` → `/` (history.replaceState, 해시/쿼리 유지)
 ### 6.3 navigate 함수
 
 ```js
-// base/frontApp.js
+// lib/base/foApp.js
 navigate('prodView', { pid: 123 });
 // → #page=prodView&pid=123
 ```
@@ -234,8 +234,8 @@ navigate('prodView', { pid: 123 });
 ### 7.2 라우터 처리
 
 ```js
-// base/frontApp.js
-if (AUTH_REQUIRED_PAGES.includes(page.value) && !window.frontAuth.state.isLoggedIn) {
+// lib/base/foApp.js
+if (AUTH_REQUIRED_PAGES.includes(page.value) && !window.foAuth.state.isLoggedIn) {
   navigate('error401');
   return;
 }
@@ -365,6 +365,6 @@ if (AUTH_REQUIRED_PAGES.includes(page.value) && !window.frontAuth.state.isLogged
 ---
 
 ## 관련 정책
-- `base.기술-front.md` — FRONT_SITE_NO 시스템, Vue 3 CDN, Pinia, 해시 라우팅 구현
+- `base.기술-fo.md` — FO_SITE_NO 시스템, Vue 3 CDN, Pinia, 해시 라우팅 구현
 - `ec.mb.*` — 회원 상태·등급 관련 UX 제약
 - `ec.od.*` — 주문·결제·클레임 흐름

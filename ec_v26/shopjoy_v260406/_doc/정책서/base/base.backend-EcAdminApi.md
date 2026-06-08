@@ -10,7 +10,7 @@
 ## 1. 개요
 
 `_apps/EcAdminApi` — Spring Boot 3.2 기반 관리자 전용 REST API 서버.  
-관리자 프론트(`bo.html`)의 `window.boApi`(`utils/boApiAxios.js` axios 래퍼) + `window.boApiSvc`/`window.coApiSvc`(`services/boApiSvc.js` · `services/coApiSvc.js` 도메인별 서비스 객체) 가 이 서버를 호출한다.
+관리자 프론트(`bo.html`)의 `window.boApi`(`lib/utils/boApiAxios.js` axios 래퍼) + `window.boApiSvc`/`window.coApiSvc`(`lib/services/boApiSvc.js` · `lib/services/coApiSvc.js` 도메인별 서비스 객체) 가 이 서버를 호출한다.
 
 | 항목 | 값 |
 |---|---|
@@ -720,7 +720,7 @@ public void saveList(String cmd, List<SyUser> rows) {
 - URL: `POST /bo/{도메인}/{서브}/save-list/order`
 - JS: `boApiSvc.xxx.saveList('order', sortChangedRows, '화면명', '순서변경')`
 - 드롭 핸들러는 신규/삭제 행 제외 후 `{ keyId, sortOrd, rowStatus:'U' }` 만 전송
-- 저장 성공 후 `handleSearchList()` 로 재조회 — 상세는 [`base.UX-admin.md`](base.UX-admin.md) §19.3
+- 저장 성공 후 `handleSearchList()` 로 재조회 — 상세는 [`base.UX-bo.md`](base.UX-bo.md) §19.3
 
 ### 14.7.4 핵심 원칙
 
@@ -1341,8 +1341,8 @@ GET /api/od/order/{orderId}
 
 ## 관련 정책
 
-- `base.인증-admin.md` — 관리자 인증 흐름 (프론트엔드 관점)
-- `base.권한-admin.md` — RBAC 역할·메뉴 접근 제어
+- `base.인증-bo.md` — 관리자 인증 흐름 (프론트엔드 관점)
+- `base.권한-bo.md` — RBAC 역할·메뉴 접근 제어
 - `sy.04.사용자.md` — sy_user 계정 관리
 - `sy.51.프로그램설계정책.md` — 전체 설계 원칙
 - `sy.52.ddl단어사전규칙.md` — DDL 컬럼명 표준

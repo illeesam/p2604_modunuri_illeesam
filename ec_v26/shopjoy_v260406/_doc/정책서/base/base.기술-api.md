@@ -489,7 +489,7 @@ private List<OdOrderDiscntDto.Item> discnts;
 ---
 
 ## 관련 정책
-- `base.인증-admin.md` — 관리자 인증/토큰 정책
-- `base.인증-front.md` — 사용자 인증/토큰 정책
+- `base.인증-bo.md` — 관리자 인증/토큰 정책
+- `base.인증-fo.md` — 사용자 인증/토큰 정책
 - `sy.51.프로그램설계정책.md` — 화면 설계 기준
 - `sy.52.ddl단어사전규칙.md` — DDL 컬럼명 표준

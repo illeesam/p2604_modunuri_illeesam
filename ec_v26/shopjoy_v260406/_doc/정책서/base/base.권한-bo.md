@@ -1,6 +1,6 @@
 ﻿---
 정책명: 관리자(Back Office) 권한 정책
-정책번호: base-권한-admin
+정책번호: base-권한-bo
 관리자: 개발팀
 최종수정: 2026-04-19
 ---
@@ -397,7 +397,7 @@ API 요청
 ---
 
 ## 관련 정책
-- `base.인증-admin.md` — accessToken/refreshToken 발급·갱신
+- `base.인증-bo.md` — accessToken/refreshToken 발급·갱신
 - `sy.05.사용자권한.md` — sy_user 역할 할당 운영 절차
 - `sy.07.권한.md` — 역할 정의 상세
 - `_doc/정책서-sy-운영업체/sy.11~15` — 업체 유형별 상세 정책

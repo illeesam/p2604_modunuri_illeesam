@@ -639,7 +639,7 @@ BoGrid/FoGrid 의 **모든 데이터 셀**은 다음을 기본으로 한다. `Bo
 ```
 
 **컴포넌트**: [`components/comp/BoAreaComp.js`](../../../components/comp/BoAreaComp.js) `window.BoFormArea`
-([`base/boApp.js`](../../../base/boApp.js) 에서 등록).
+([`lib/base/boApp.js`](../../../lib/base/boApp.js) 에서 등록).
 
 **컬럼 변수명**: `baseFormColumns` (기본), `infoFormColumns` / `contentFormColumns`
 (탭별 부분 적용), `xxxFormColumns` 접미사 통일.
@@ -1034,7 +1034,7 @@ const form = reactive({
 // onMounted에서 ID 할당
 onMounted(() => {
   if (!isNew.value) {
-    const data = props.adminData.getCoupon(props.dtlId);
+    const data = props.adminData.getCoupon(props.dtlId);  // (폐기됨 — 실 API boApiSvc 기반)
     if (data) Object.assign(form, { ...data });
     // form.couponId는 자동으로 설정됨
   }

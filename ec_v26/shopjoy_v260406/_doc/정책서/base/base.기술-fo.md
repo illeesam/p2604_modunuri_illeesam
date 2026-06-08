@@ -1,6 +1,6 @@
 ---
 정책명: 사용자(Front Office) 기술 정책
-정책번호: base-기술-front
+정책번호: base-기술-fo
 관리자: 개발팀
 최종수정: 2026-04-26
 ---
@@ -26,42 +26,42 @@
 
 ```
 index.html
-├─ head: FRONT_SITE_NO 결정 → CSS/JS 동적 로드
-├─ base/config.js                (window.SITE_CONFIG, window.FRONT_SITE_NO)
-├─ base/stores/frontAuthStore.js + frontMyStore.js    (Pinia)
-├─ layout/frontAppHeader.js + frontAppSidebar.js + frontAppFooter.js + frontMyLayout.js
-├─ pages/Home{NO}.js  Prod{NO}List.js  Prod{NO}View.js   (FRONT_SITE_NO별 동적 로드)
+├─ head: FO_SITE_NO 결정 → CSS/JS 동적 로드
+├─ lib/base/foConfig.js          (window.SITE_CONFIG, window.FO_SITE_NO)
+├─ lib/stores/fo/foAuthStore.js + foMyStore.js    (Pinia)
+├─ components/layout/foAppHeader.js + foAppSidebar.js + foAppFooter.js + foMyLayout.js
+├─ pages/Home{NO}.js  Prod{NO}List.js  Prod{NO}View.js   (FO_SITE_NO별 동적 로드)
 ├─ pages/{Cart,Order,Contact,Faq,Login,Event,Blog,Like,Location,About,...}.js
 ├─ pages/my/My*.js
 ├─ components/modals/BaseModals.js + components/comp/BaseComp.js
-└─ base/frontApp.js              (마지막. Vue 앱 생성·마운트)
+└─ lib/base/foApp.js             (마지막. Vue 앱 생성·마운트)
 ```
 
 ---
 
-## 3. FRONT_SITE_NO 시스템
+## 3. FO_SITE_NO 시스템
 
 하나의 값으로 6곳 자동 동기화:
 
 | 대상 | 동작 |
 |---|---|
-| CSS | `frontGlobalStyle{NO}.css` 자동 로드 |
+| CSS | `foGlobalStyle{NO}.css` 자동 로드 |
 | 스크립트 | `Home{NO}.js`, `Prod{NO}List.js`, `Prod{NO}View.js` document.write 동적 삽입 |
 | 컴포넌트 등록 | `app.component('Home'+NO, window['Home'+NO])` |
-| 런타임 렌더 | `<component :is="frontHomeComp">` (window['Home'+NO] 참조) |
-| URL 오버라이드 | `?FRONT_SITE_NO=02` → localStorage 저장 후 쿼리 자동 제거 |
+| 런타임 렌더 | `<component :is="foHomeComp">` (window['Home'+NO] 참조) |
+| URL 오버라이드 | `?FO_SITE_NO=02` → localStorage 저장 후 쿼리 자동 제거 |
 | 헤더 배지 | AppHeader 로고 옆 `01/02/03` 배지 (hover 툴팁) |
 
 ### 사이트별 CSS 변수 (테마)
 
 ```css
-/* frontGlobalStyle01.css — 베이지/카키 */
+/* foGlobalStyle01.css — 베이지/카키 */
 --accent: #c9a96e;
 
-/* frontGlobalStyle02.css — 민트/세이지 */
+/* foGlobalStyle02.css — 민트/세이지 */
 --accent: #4a9b7e;
 
-/* frontGlobalStyle03.css — 로얄 퍼플 */
+/* foGlobalStyle03.css — 로얄 퍼플 */
 --accent: #7c3aed;
 ```
 
@@ -72,7 +72,7 @@ index.html
 ## 4. 해시 기반 라우팅
 
 ```js
-// base/frontApp.js
+// lib/base/foApp.js
 const navigate = (pageId, params = {}) => {
   const query = new URLSearchParams({ page: pageId, ...params });
   location.hash = query.toString();
@@ -92,11 +92,11 @@ URL 단축: `/index.html` → `/` (history.replaceState, 해시/쿼리 유지)
 
 ## 5. Pinia 스토어
 
-### frontAuthStore
+### foAuthStore
 
 ```js
-// base/stores/frontAuthStore.js
-const frontAuthStore = Pinia.defineStore('frontAuth', {
+// lib/stores/fo/foAuthStore.js
+const foAuthStore = Pinia.defineStore('foAuth', {
   state: () => ({ isLoggedIn: false, user: null, token: null }),
   actions: {
     async login(email, password) { /* API 호출 */ },
@@ -106,11 +106,11 @@ const frontAuthStore = Pinia.defineStore('frontAuth', {
 });
 ```
 
-### frontMyStore
+### foMyStore
 
 ```js
-// base/stores/frontMyStore.js
-const frontMyStore = Pinia.defineStore('frontMy', {
+// lib/stores/fo/foMyStore.js
+const foMyStore = Pinia.defineStore('foMy', {
   state: () => ({ orders: [], claims: [], coupons: [], cache: 0 }),
   actions: {
     async fetchOrders() { /* foApi 또는 foApiSvc 호출 */ },
@@ -123,9 +123,9 @@ const frontMyStore = Pinia.defineStore('frontMy', {
 ## 6. API 호출 (foApi / foApiSvc / coApiSvc) ⭐
 
 ```js
-// utils/foApiAxios.js — window.foApi
-// services/foApiSvc.js — window.foApiSvc (FO 전용 도메인 묶음)
-// services/coApiSvc.js — window.coApiSvc (BO·FO 공통)
+// lib/utils/foApiAxios.js — window.foApi
+// lib/services/foApiSvc.js — window.foApiSvc (FO 전용 도메인 묶음)
+// lib/services/coApiSvc.js — window.coApiSvc (BO·FO 공통)
 
 // ✅ 권장 — services 등록된 GET
 const res = await foApiSvc.myOrder.getPage({ status: 'COMPLT' });
@@ -170,7 +170,7 @@ window.ProdList = {
 };
 ```
 
-### 7.2 FRONT_SITE_NO 별 분기 컴포넌트
+### 7.2 FO_SITE_NO 별 분기 컴포넌트
 
 ```js
 // Home01.js — 사이트 01 전용 홈
@@ -184,11 +184,11 @@ window.Home02 = { name: 'Home02', ... };
 
 ---
 
-## 8. 인증 (frontAuth)
+## 8. 인증 (foAuth)
 
 ```js
-// base/frontAuth.js — window.frontAuth
-window.frontAuth = {
+// lib/base/foAuth.js — window.foAuth
+window.foAuth = {
   state: Vue.reactive({ isLoggedIn: false, user: null }),
   async init() { /* localStorage 토큰 확인 → 자동 로그인 */ },
   async logout() { /* 토큰 제거 + state 초기화 */ },
@@ -198,8 +198,8 @@ window.frontAuth = {
 로그인 필요 페이지 접근 시 처리:
 
 ```js
-// base/frontApp.js 라우터
-if (AUTH_REQUIRED_PAGES.includes(page.value) && !window.frontAuth.state.isLoggedIn) {
+// lib/base/foApp.js 라우터
+if (AUTH_REQUIRED_PAGES.includes(page.value) && !window.foAuth.state.isLoggedIn) {
   navigate('error401');
   return;
 }
@@ -231,7 +231,7 @@ api/
 
 ## 10. window.SITE_CONFIG
 
-`base/config.js` 에서 정의. `foApi.get('api/base/site-config.json')` 으로 불러와 병합.
+`lib/base/foConfig.js` 에서 정의. `foApi.get('api/base/site-config.json')` 으로 불러와 병합.
 
 주요 항목:
 
@@ -301,8 +301,8 @@ const html = marked.parse(markdownText);
 
 ```
 disp-fo-ui.html
-├─ Vue, axios, yup, adminGlobalStyle0N.css
-├─ pages/admin/AdminData.js + utils/adminUtil.js
+├─ Vue, axios, yup, boGlobalStyle0N.css
+├─ lib/utils/boUtil.js (visibilityUtil 등) + 실 API(boApiSvc)
 ├─ components/comp/BaseComp.js
 ├─ components/disp/DispX01Ui.js ~ DispX04Widget.js
 ├─ pages/xd/DispUi01.js ~ DispUi06.js + DispUiPage.js
@@ -481,7 +481,7 @@ const _assignImg = (p) => {
 ---
 
 ## 관련 정책
-- `base.UX-front.md` — 사용자 UX 레이아웃·흐름
+- `base.UX-fo.md` — 사용자 UX 레이아웃·흐름
 - `ec.mb.*` — 회원·인증 정책
 - `ec.od.*` — 주문·결제 정책
 - `sy.54.네이밍규칙.md` — 함수·변수 접두어 네이밍 규칙

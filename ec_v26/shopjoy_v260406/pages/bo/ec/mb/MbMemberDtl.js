@@ -10,7 +10,7 @@ window.MbMemberDtl = {
     handleDelete:  { type: Function, default: () => {} },     // 삭제 콜백
     closeDetail:   { type: Function, default: () => {} },     // 닫기 콜백
     dtlMode:       { type: String, default: 'view' },         // 상세 모드 (new/view/edit)
-    reloadTrigger: { type: Number, default: 0 },              // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
+    reloadTrigger: { type: Number, default: 0 },              // 첫 탭 저장 시 상위 Mng 재조회 (UX-bo §18)
   },
   setup(props) {
 

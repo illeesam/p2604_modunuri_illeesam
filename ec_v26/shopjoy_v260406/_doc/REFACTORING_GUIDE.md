@@ -439,7 +439,7 @@ setup(props) {
 
 - 정책서: `_doc/정책서/sy/sy.54.네이밍규칙.md`
 - 프로젝트 설정: `CLAUDE.md`
-- 기술 스택: `_doc/정책서/base/base.기술-admin.md`
+- 기술 스택: `_doc/정책서/base/base.기술-bo.md`
 
 ---
 

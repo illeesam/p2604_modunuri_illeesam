@@ -1,6 +1,6 @@
 ---
 정책명: 관리자(Back Office) 기술 정책
-정책번호: base-기술-admin
+정책번호: base-기술-bo
 관리자: 개발팀
 최종수정: 2026-04-19
 ---
@@ -25,18 +25,18 @@
 
 ```
 bo.html
-├─ head: Vue, Yup, Quill, adminGlobalStyle0N.css
-├─ pages/admin/AdminData.js        (window.adminData - 모든 목업)
-├─ utils/boApiAxios.js             (window.boApi — BO axios 래퍼)
-├─ utils/boUtil.js                 (window.boUtil)
-├─ utils/coUtil.js                 (window.coUtil — cofAnd / cofExportCsv / apiHdr)
-├─ services/coApiSvc.js            (window.coApiSvc — BO·FO 공통 API)
-├─ services/boApiSvc.js            (window.boApiSvc — BO 전용 API)
+├─ head: Vue, Yup, Quill, boGlobalStyle0N.css
+├─ (목업) window.adminData (폐기됨 — 실 API boApiSvc 기반으로 전환)
+├─ lib/utils/boApiAxios.js         (window.boApi — BO axios 래퍼)
+├─ lib/utils/boUtil.js             (window.boUtil)
+├─ lib/utils/coUtil.js             (window.coUtil — cofAnd / cofExportCsv / apiHdr)
+├─ lib/services/coApiSvc.js        (window.coApiSvc — BO·FO 공통 API)
+├─ lib/services/boApiSvc.js        (window.boApiSvc — BO 전용 API)
 ├─ components/modals/BaseModals.js
 ├─ components/comp/BaseComp.js
-├─ pages/admin/ec/*.js             (EC 도메인 컴포넌트)
-├─ pages/admin/sy/*.js             (SY 도메인 컴포넌트)
-└─ pages/admin/AdminApp.js         (마지막. Vue 앱 생성·마운트)
+├─ pages/bo/ec/*.js                (EC 도메인 컴포넌트)
+├─ pages/bo/sy/*.js                (SY 도메인 컴포넌트)
+└─ lib/base/boApp.js               (마지막. Vue 앱 생성·마운트)
 ```
 
 ---
@@ -44,16 +44,16 @@ bo.html
 ## 3. 새 관리자 페이지 추가 — 필수 4단계
 
 > **3단계만 해도 에러 없이 보이지만 페이지가 렌더링되지 않음 (404 페이지 표시)**  
-> AdminApp.js 의 v-else-if 체인이 누락되기 때문.
+> lib/base/boApp.js 의 v-else-if 체인이 누락되기 때문.
 
 ### Step 1. bo.html — script 태그 추가
 
 ```html
 <!-- 관련 파일 다음에 순서 맞춰 추가 -->
-<script src="pages/admin/ec/mb/MbMemGradeMng.js"></script>
+<script src="pages/bo/ec/mb/MbMemGradeMng.js"></script>
 ```
 
-### Step 2. AdminApp.js — PAGE_COMP_MAP 등록
+### Step 2. lib/base/boApp.js — PAGE_COMP_MAP 등록
 
 ```js
 const PAGE_COMP_MAP = {
@@ -62,13 +62,13 @@ const PAGE_COMP_MAP = {
 };
 ```
 
-### Step 3. AdminApp.js — app.component() 등록
+### Step 3. lib/base/boApp.js — app.component() 등록
 
 ```js
 app.component('MbMemGradeMng', window.MbMemGradeMng);
 ```
 
-### Step 4. AdminApp.js — template v-else-if 체인에 추가 (핵심!)
+### Step 4. lib/base/boApp.js — template v-else-if 체인에 추가 (핵심!)
 
 ```html
 <mb-mem-grade-mng
@@ -87,14 +87,14 @@ app.component('MbMemGradeMng', window.MbMemGradeMng);
 ### 4.1 파일 위치 규칙
 
 ```
-pages/admin/ec/mb/   ← 회원(Member) 도메인
-pages/admin/ec/pd/   ← 상품(Product) 도메인
-pages/admin/ec/od/   ← 주문(Order) 도메인
-pages/admin/ec/pm/   ← 프로모션(Promotion) 도메인
-pages/admin/ec/dp/   ← 전시(Display) 도메인
-pages/admin/ec/st/   ← 정산(Settle) 도메인
-pages/admin/ec/cm/   ← 공통/커뮤니티 도메인
-pages/admin/sy/      ← 시스템(System) 도메인
+pages/bo/ec/mb/   ← 회원(Member) 도메인
+pages/bo/ec/pd/   ← 상품(Product) 도메인
+pages/bo/ec/od/   ← 주문(Order) 도메인
+pages/bo/ec/pm/   ← 프로모션(Promotion) 도메인
+pages/bo/ec/dp/   ← 전시(Display) 도메인
+pages/bo/ec/st/   ← 정산(Settle) 도메인
+pages/bo/ec/cm/   ← 공통/커뮤니티 도메인
+pages/bo/sy/      ← 시스템(System) 도메인
 ```
 
 ### 4.2 파일 네이밍
@@ -140,12 +140,12 @@ props: ['navigate', 'adminData', 'showRefModal', 'showToast', '{entityId}']
 
 ## 6. 저장·삭제 표준 패턴 (boApi + coUtil.apiHdr)
 
-⭐ `adminApiCall` 헬퍼는 **폐기됨** (2026-05-25). `boApi` 직접 호출 + `services/boApiSvc.js` 우선 + `coUtil.apiHdr(uiNm, cmdNm)` 필수.
+⭐ `adminApiCall` 헬퍼는 **폐기됨** (2026-05-25). `boApi` 직접 호출 + `lib/services/boApiSvc.js` 우선 + `coUtil.apiHdr(uiNm, cmdNm)` 필수.
 
 ### 6.1 GET 조회 — services 등록 우선
 
 ```js
-// ✅ services/boApiSvc.js 에 등록된 GET — uiNm/cmdNm 인자 + 헤더 자동
+// ✅ lib/services/boApiSvc.js 에 등록된 GET — uiNm/cmdNm 인자 + 헤더 자동
 const res = await boApiSvc.syCode.getPage({ codeGrp: 'USE_YN' }, '공통코드관리', '목록조회');
 const list = res.data?.data?.pageList || [];
 ```
@@ -242,10 +242,9 @@ const doSave = async () => {
 
 ## 8. adminData (목업 데이터 소스)
 
-`pages/admin/AdminData.js` → `window.adminData`
+`window.adminData` (폐기됨 — 실 API boApiSvc 기반으로 전환)
 
-모든 컴포넌트가 이 객체를 직접 참조·수정.  
-API가 연결되면 이 데이터를 실제 API 응답으로 교체.
+과거 모든 컴포넌트가 이 목업 객체를 직접 참조·수정했으나, 현재 BO 는 실 API(`boApiSvc`)를 사용한다.
 
 ### 주요 데이터 키
 
@@ -301,7 +300,7 @@ API가 연결되면 이 데이터를 실제 API 응답으로 교체.
 
 | 클래스 | 용도 |
 |---|---|
-| `admin-wrap` | AdminApp.js 가 이미 적용 — **컴포넌트 루트에 재사용 금지** |
+| `admin-wrap` | lib/base/boApp.js 가 이미 적용 — **컴포넌트 루트에 재사용 금지** |
 | `card` | 카드 컨테이너 |
 | `search-bar` | 검색 영역 flex row |
 | `search-label` | 검색 필드 레이블 |
@@ -387,7 +386,7 @@ const setViewMode = (m) => { tabMode.value = m;  dtlState.tabMode = m; };
 ---
 
 ## 관련 정책
-- `base.UX-admin.md` — 관리자 UX 레이아웃·패턴
+- `base.UX-bo.md` — 관리자 UX 레이아웃·패턴
 - `sy.51.프로그램설계정책.md` — 초기값·데이터 정렬·상세화면 ID 표시
 - `sy.52.ddl단어사전규칙.md` — DDL 컬럼명 표준
 - `sy.54.네이밍규칙.md` — 함수·변수 접두어 네이밍 규칙

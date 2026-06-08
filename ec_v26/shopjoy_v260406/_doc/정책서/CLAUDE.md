@@ -3,10 +3,12 @@
 주요 정책서 문서, 기술 표준, 설계 가이드를 도메인별로 정리한 마스터 인덱스.
 
 **핵심 참조**:
+- 📘 **프로젝트 지침(Claude Code)**: [CLAUDE-프로젝트지침.md](CLAUDE-프로젝트지침.md) — 루트 `CLAUDE.md`가 `@import`로 자동 로드하는 본문
 - 🚀 신규 개발: [base/CLAUDE.md](base/CLAUDE.md) → [해당도메인/CLAUDE.md](ec/pd/CLAUDE.md)
 - 🔧 기술 표준: [sy.54.네이밍규칙.md](sy/sy.54.네이밍규칙.md), [sy.55.mybatis쿼리테이블별칭정책.md](sy/sy.55.mybatis쿼리테이블별칭정책.md), [sy.56.JPA스키마검증.md](sy/sy.56.JPA스키마검증.md)
+- 🧩 코드 패턴: [base/base.55.codes_reactive_pattern.md](base/base.55.codes_reactive_pattern.md) — codes Reactive 통합 상태관리 패턴
 - 📋 상태 코드: [sy.01.시스템상태표.md](sy/sy.01.시스템상태표.md), [od.01.주문상태표.md](ec/od/od.01.주문상태표(주문,클레임,결제,배송).md)
-- 🏗️ 아키텍처: [base/base.기술-api.md](base/base.기술-api.md), [base/base.기술-front.md](base/base.기술-front.md)
+- 🏗️ 아키텍처: [base/base.기술-api.md](base/base.기술-api.md), [base/base.기술-fo.md](base/base.기술-fo.md)
 
 ## 폴더 구조
 
@@ -43,7 +45,7 @@
 | 01-10 | 상태표, UX/권한, 기술/인증 | 모든 도메인의 기초 정책 |
 | 50-59 | 네이밍, 캐시, 배포, 코드스타일 | 기술 표준 및 구현 가이드 |
 
-**주요 파일**: `base.기술-api.md`, `base.기술-front.md`, `base.권한-admin.md`, `base.인증-authId.md`
+**주요 파일**: `base.기술-api.md`, `base.기술-fo.md`, `base.권한-bo.md`, `base.인증-authId.md`
 
 ### 🟩 EC (전자상거래) — 45개 파일
 
@@ -130,7 +132,7 @@
 | 04 | 사용자 | 관리자 계정, 비밀번호, 로그인 이력 |
 | 05 | 사용자권한 | 역할 할당, 권한 캐싱 |
 | 06 | 메뉴 | 시스템 메뉴 계층 |
-| 07 | ~~권한~~ | **→ base.권한-admin.md로 통합** |
+| 07 | ~~권한~~ | **→ base.권한-bo.md로 통합** |
 | 08 | 공통코드 | 코드 표준화 (ORDER_STATUS 등) |
 | 10 | 업체 | 판매자 기본정보, 계약 상태, 은행 계좌 |
 | 11 | VOC | 고객의소리 코드 |
@@ -242,7 +244,7 @@
 | **UI 정책** | `base/base.UX-*.md` |
 | **BoGrid 컬럼 속성화** ⭐ | `sy.51.프로그램설계정책.md` §4.6 — #cell- 슬롯 대신 columns 의 fmt/badge/cellStyle/cellClass/edit 로 (AG-Grid colDef 식) |
 | **BoFormArea 폼 자동 렌더** ⭐ | `sy.51.프로그램설계정책.md` §4.7 — Dtl 의 form-row 보일러플레이트를 `baseFormColumns`/`infoFormColumns` 정의로 대체 (BO Dtl 28개 전환 완료) |
-| **화면 영역 표준 뼈대** ⭐ | `base/base.UX-admin.md` §6.12 — `<bo-page>`(화면 래퍼) / `<bo-container>`(영역 래퍼, bare) / `.bo-2col`(2열). FO 대응 `<fo-page>`(배너 흡수) / `<fo-container>` / `.fo-2col`. 날 `page-title`+`card` 마크업 폐기 |
+| **화면 영역 표준 뼈대** ⭐ | `base/base.UX-bo.md` §6.12 — `<bo-page>`(화면 래퍼) / `<bo-container>`(영역 래퍼, bare) / `.bo-2col`(2열). FO 대응 `<fo-page>`(배너 흡수) / `<fo-container>` / `.fo-2col`. 날 `page-title`+`card` 마크업 폐기 |
 | **소스 코드 포매팅** ⭐ | `base/base.코드스타일-admin-vue.md` §12 — template HTML 2칸 들여쓰기 + JS 빈줄 1줄 압축. `boApp.js` 예외. 일반 IDE 포매터 금지(전용 도구만) |
 | **API 설계** | `base/base.기술-api.md`, `ec/pd/pd.10.상품상세-API설계.md` |
 | **`/api/base/**` 호출 금지** ⭐ | `base/base.기술-api.md` §3.5 — 클라이언트는 `/api/bo/**` / `/api/fo/**` 만 호출 |
@@ -251,7 +253,7 @@
 | **Service `save`/`saveList` 표준** ⭐ | `base/base.backend-EcAdminApi.md` §14.7 — `save(String cmd, Entity)` / `saveList(String cmd, List)` 시그니처, cmd 인라인 분기 ("base" 기본), rowStatus I/U/D/M, `updateSelective` + updDate DB 시간, flush/clear 최소화. `SyUserService` 표준 모델 |
 | **Controller `save`/`saveList` 4 엔드포인트** ⭐ | `base/base.backend-EcAdminApi.md` §14.8 — `POST /save`, `/save/{cmd}`, `/save-list`, `/save-list/{cmd}` 4쌍. 메서드명 saveDefault/saveCmd/saveList/saveListCmd. `SyUserController` 표준 모델 |
 | **신규 도메인 체크리스트** ⭐ | `base/base.backend-EcAdminApi.md` §14.9 — Repository/Service/Controller 3개 표준 일괄 적용. 표준 모델: SyUser 트리플 |
-| **탭별 저장 후 재조회** ⭐ | `base/base.UX-admin.md` §18 — 저장 탭 즉시 GET 재조회, 첫 탭 저장 시 상위 Mng 도 재조회 |
+| **탭별 저장 후 재조회** ⭐ | `base/base.UX-bo.md` §18 — 저장 탭 즉시 GET 재조회, 첫 탭 저장 시 상위 Mng 도 재조회 |
 | **네이밍** | `sy.54.네이밍규칙.md` (Vue), `sy.55.mybatis쿼리테이블별칭정책.md` (SQL) |
 | **JPA 검증** | `sy.56.JPA스키마검증.md` — validate 프로파일 게이트 |
 | **DDL 관리** | `base/base.DDL작성규칙.md` — DB 자동 추출, `_doc/ddl_pgsql/{ec,sy}/` 구조 |
@@ -264,7 +266,7 @@
 
 ### 수행한 작업
 
-✅ **sy.07.권한.md 삭제** — [`base/base.권한-admin.md`](base/base.권한-admin.md)로 통합 (중복 제거)
+✅ **sy.07.권한.md 삭제** — [`base/base.권한-bo.md`](base/base.권한-bo.md)로 통합 (중복 제거)
 
 ✅ **설계 진화 폴더 신설** — `_design-evolution/` 생성
 - `od.09.배송설계개선.md` 이동 (현재 정책 아님, 설계안)

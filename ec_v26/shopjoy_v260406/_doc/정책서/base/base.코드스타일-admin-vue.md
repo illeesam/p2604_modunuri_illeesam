@@ -41,7 +41,7 @@ SyntaxError: Unexpected token ')'
 | 텍스트 노드 | `{{ a && b }}` | **그대로 허용** (mustache 는 안전) |
 
 `coUtil.cofAnd(...args)` — `&&` 단축평가와 의미 100% 동일(첫 falsy 반환, 모두 truthy 면
-마지막 인자). `utils/coUtil.js` 정의, FO·BO 전 진입점에서 컴포넌트보다 먼저 로드됨.
+마지막 인자). `lib/utils/coUtil.js` 정의, FO·BO 전 진입점에서 컴포넌트보다 먼저 로드됨.
 
 > ⚠️ **연산자 우선순위 주의**: `&&` 는 삼항 `?:` 보다 우선순위가 높다.
 > `a && b ? c : d` ≡ `(a && b) ? c : d` 이므로 `coUtil.cofAnd(a, b) ? c : d` 로 치환한다.
@@ -453,7 +453,7 @@ return {
   - 도메인별: sy(35) · ec/dp(17) · ec/pm(16) · ec/st(14) · ec/pd(13) · ec/od(10) · ec/mb(6) · ec/cm(5) + zd(2) + bo루트(3)
 - **FO 54개** (`pages/fo/**/*.js`): `node --check` 54/54 통과
   - 4섹션 완전 적용 40개, 단순 컴포넌트(handler 면제) 14개
-- **공통 컴포넌트 single-setup 8개** (`components/disp/DispX01~04Ui.js`, `components/modals/HelpBoModal.js`, `layout/foApp{Header,Footer,Sidebar}.js`)
+- **공통 컴포넌트 single-setup 8개** (`components/disp/DispX01~04Ui.js`, `components/modals/HelpBoModal.js`, `components/layout/foApp{Header,Footer,Sidebar}.js`)
   - 4섹션 완전 적용 6개, 단순 컴포넌트(handler 면제) 2개 (`DispX02Area`, `HelpBoModal`)
 
 #### 의도 제외 (총 6 파일 — multi-setup 모음 파일)
@@ -467,11 +467,11 @@ return {
 - `components/comp/BaseComp.js` (3)
 - `components/comp/CoWidgetComp.js` (2)
 - `components/modals/FoModals.js` (2)
-- `layout/foMyLayout.js` (3)
+- `components/layout/foMyLayout.js` (3)
 
 #### 의도 제외 (template 포매팅 위험)
 
-- `base/boApp.js`, `base/foApp.js` — Vue 컴파일 깨짐 위험으로 일반 포매팅도 금지된 파일 ([[boapp_template_no_format]])
+- `lib/base/boApp.js`, `lib/base/foApp.js` — Vue 컴파일 깨짐 위험으로 일반 포매팅도 금지된 파일 ([[boapp_template_no_format]])
 
 #### 추가 작업 (장기)
 
@@ -817,10 +817,10 @@ await window.adminApiCall({ method: 'post', path: 'resource/x', data, ... });
 #### ✅ 권장 패턴
 
 ```js
-// ✅ services/ 에 등록된 경우 (GET 위주) — uiNm/cmdNm 자동 헤더
+// ✅ lib/services/ 에 등록된 경우 (GET 위주) — uiNm/cmdNm 자동 헤더
 const res = await boApiSvc.syCode.getPage({ codeGrp: 'USE_YN' }, '공통코드관리', '목록조회');
 
-// ✅ services/ 에 등록 안 된 경우 (POST/PUT/DELETE 등 변경성) — URL 직접
+// ✅ lib/services/ 에 등록 안 된 경우 (POST/PUT/DELETE 등 변경성) — URL 직접
 await boApi.post('/bo/sy/code', body, coUtil.apiHdr('공통코드관리', '등록'));
 await boApi.put(`/bo/sy/code/${id}`, body, coUtil.apiHdr('공통코드관리', '수정'));
 await boApi.delete(`/bo/sy/code/${id}`, coUtil.apiHdr('공통코드관리', '삭제'));
@@ -840,7 +840,7 @@ await foApi.post('api/base/sy/zz-sample1', body);
 
 | 케이스 | 위치 |
 |---|---|
-| GET 조회 | **services/ 에 등록** (`boApiSvc.xxx.getXxx`) |
+| GET 조회 | **lib/services/ 에 등록** (`boApiSvc.xxx.getXxx`) |
 | POST/PUT/DELETE/PATCH (변경성) | **페이지 파일에서 직접** (`boApi.post(url, body, coUtil.apiHdr(...))`) |
 | FO 의 `/api/base/xxx` (샘플/디버깅용) | 페이지에서 `foApi.get(url, { params })` 직접 |
 
@@ -864,7 +864,7 @@ await foApi.post('api/base/sy/zz-sample1', body);
 ### 올바른 예시
 
 ```js
-// GET (조회) — services/boApiSvc.js 에 등록하면 내부에서 coUtil.apiHdr 사용
+// GET (조회) — lib/services/boApiSvc.js 에 등록하면 내부에서 coUtil.apiHdr 사용
 const res = await boApiSvc.syCode.getPage({ codeGrp: 'USE_YN' }, '공통코드관리', '목록조회');
 
 // POST (등록)
@@ -1008,7 +1008,7 @@ window.XxxMng = {
 
 ### 12.2 제외 파일
 
-- `base/boApp.js`, `base/foApp.js` — 앱 부트스트랩. template 백틱이 Vue 컴파일러에 의해 특수하게
+- `lib/base/boApp.js`, `lib/base/foApp.js` — 앱 부트스트랩. template 백틱이 Vue 컴파일러에 의해 특수하게
   파싱되므로 **자동 포매팅 금지**. 직접 수정 시에도 줄바꿈/들여쓰기를 임의로 바꾸지 말 것.
 - `assets/cdn/**` — 외부 라이브러리(Vue, Pinia, axios, Yup 등). 절대 수정하지 않는다.
 
@@ -1455,7 +1455,7 @@ pathModal-pick            ← 경로 선택 모달 선택
 - BO: 121/121 (sy 34, ec 95, zd 2, Dashboard 3 + 기타 1)
 - FO: 54/54 (메인 22, my 6, xs 19, xd 7)
 - **공통 컴포넌트** (single-setup + multi-setup): **16/17** (FoComp.js placeholder 1개 제외)
-  - components/ + layout/ 폴더
+  - components/ + components/layout/ 폴더
   - 가장 큰 파일 BoModals.js 는 한 파일 안에 **33개 모달 컴포넌트 setup()** 존재 — 각각에 dispatch 적용
 
 #### dispatch 함수 위치 표준 ⭐ (2026-05-25)
@@ -1496,8 +1496,8 @@ setup(props) {
 
 #### 의도적 제외 파일 (dispatch 미적용) ⭐
 
-- **base/boApp.js** (2943 lines, 10 handler) — BO 앱 부트스트랩
-- **base/foApp.js** (1197 lines, 4 handler) — FO 앱 부트스트랩
+- **lib/base/boApp.js** (2943 lines, 10 handler) — BO 앱 부트스트랩
+- **lib/base/foApp.js** (1197 lines, 4 handler) — FO 앱 부트스트랩
 
 > 이유: §12 (포매팅 정책) 와 동일 — Vue 런타임 컴파일러가 이 두 파일의 template 백틱 문자열을 특수하게 파싱하므로, 자동/수동 변경 시 컴파일러 크래시 위험 존재. dispatch 도입 시 setup() 영역 대규모 재배치가 필요한데 이는 같은 위험을 안고 있음. 메모리 [[boapp_template_no_format]] 참조.
 > 새 화면은 BO 의 경우 `pages/bo/**` 안에서 작업 — boApp.js 자체는 라우팅/공통 setup 이라 도메인 로직이 아님.
@@ -1507,7 +1507,7 @@ setup(props) {
 **single-setup 8개** (1 파일 1 setup):
 - components/disp/DispX01Ui.js / DispX02Area.js / DispX03Panel.js / DispX04Widget.js
 - components/modals/HelpBoModal.js
-- layout/foAppHeader.js / foAppFooter.js / foAppSidebar.js
+- components/layout/foAppHeader.js / foAppFooter.js / foAppSidebar.js
 
 **multi-setup 8개** (1 파일 N setup, 총 ~75 setup):
 - components/modals/BoModals.js (33 setup) — 모달 모음 (Site/Vendor/User/Member/Order/Bbm/Tree/Path/Code/Auth 등)
@@ -1517,7 +1517,7 @@ setup(props) {
 - components/comp/BoComp.js (8 setup) — BoPropTreeNode, BoDeptTreeNode, BoPathTree, BoCategoryTree, BoMultiCheckSelect, BoDateTimePicker, BoPathPickField, BoPathTreeNode
 - components/comp/CoWidgetComp.js (2 setup) — CoBarcodeWidget, CoCountdownWidget
 - components/comp/BaseComp.js (3 setup) — BaseAttachGrp, BaseAttachOne, BaseHtmlEditor
-- layout/foMyLayout.js (3 setup) — MyDateFilter, Pagination, foMyLayout
+- components/layout/foMyLayout.js (3 setup) — MyDateFilter, Pagination, foMyLayout
 
 #### multi-setup 컴포넌트 dispatch 특수 처리
 
@@ -1630,7 +1630,7 @@ if (cmd === 'roleMenus-set') {
 
 ### 등록
 
-- BoComp.js / FoComp.js 의 컴포넌트는 `base/boApp.js` 또는 `base/foApp.js` 에서 `app.component('Name', window.Name)` 로 등록한다.
+- BoComp.js / FoComp.js 의 컴포넌트는 `lib/base/boApp.js` 또는 `lib/base/foApp.js` 에서 `app.component('Name', window.Name)` 로 등록한다.
 - 보조 컴포넌트 이동 후에도 등록 코드는 그대로 유지 (등록은 boApp.js 가 담당).
 
 ### 명명 규칙 — `Bo` 프리픽스 통일 ⭐

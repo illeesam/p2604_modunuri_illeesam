@@ -1,6 +1,6 @@
 ---
 정책명: 사용자(Front Office) 권한 정책
-정책번호: base-권한-front
+정책번호: base-권한-fo
 관리자: 개발팀
 최종수정: 2026-04-19
 ---
@@ -13,9 +13,9 @@
 
 | 축 | 판단 기준 | 저장 위치 |
 |---|---|---|
-| 로그인 여부 | `frontAuthStore.isLoggedIn` | localStorage `modu-front-token` |
+| 로그인 여부 | `foAuthStore.isLoggedIn` | localStorage `modu-fo-token` |
 | 회원 상태 | `member_status_cd` | 서버 API |
-| 회원 등급 | `mem_grade_id` | 서버 API / `frontAuth.state.user` |
+| 회원 등급 | `mem_grade_id` | 서버 API / `foAuth.state.user` |
 
 ---
 
@@ -59,7 +59,7 @@
 미로그인 상태에서 접근 시 `error401` 페이지로 리다이렉트.
 
 ```js
-// base/frontApp.js
+// lib/base/foApp.js
 const AUTH_REQUIRED_PAGES = [
   'myOrder', 'myClaim', 'myCoupon', 'myCache',
   'myContact', 'myChatt',
@@ -104,7 +104,7 @@ const AUTH_REQUIRED_PAGES = [
 
 ```js
 // setup() 내
-const auth = window.frontAuth.state;
+const auth = window.foAuth.state;
 
 // 로그인 여부 체크
 const isLoggedIn = Vue.computed(() => !!auth.user);
@@ -130,7 +130,7 @@ const toggleLike = () => {
 전시 위젯, 배너, 이벤트 등의 공개 대상 필터링:
 
 ```js
-// utils/adminUtil.js
+// lib/utils/boUtil.js (visibilityUtil)
 window.visibilityUtil.isVisible(targetStr, userGrade);
 // targetStr: '^PUBLIC^MEMBER^VIP^' 형식
 // userGrade: 'PUBLIC' | 'MEMBER' | 'PREMIUM' | 'VIP' | ...
@@ -138,7 +138,7 @@ window.visibilityUtil.isVisible(targetStr, userGrade);
 ```
 
 비회원의 `userGrade` = `'PUBLIC'`  
-로그인 회원의 `userGrade` = `frontAuth.state.user.gradeCode` 또는 `'MEMBER'`
+로그인 회원의 `userGrade` = `foAuth.state.user.gradeCode` 또는 `'MEMBER'`
 
 ---
 
@@ -154,7 +154,7 @@ window.visibilityUtil.isVisible(targetStr, userGrade);
 ---
 
 ## 관련 정책
-- `base.인증-front.md` — 로그인/로그아웃/토큰 관리
-- `base.UX-front.md` — 접근 제어 UX (error401 리다이렉트, 로그인 유도 모달)
+- `base.인증-fo.md` — 로그인/로그아웃/토큰 관리
+- `base.UX-fo.md` — 접근 제어 UX (error401 리다이렉트, 로그인 유도 모달)
 - `ec.mb.*` — 회원 상태·등급 정의
 - `ec.dp.*` — 전시 공개 대상(visibilityUtil) 상세

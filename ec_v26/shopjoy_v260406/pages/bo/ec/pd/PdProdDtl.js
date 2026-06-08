@@ -8,7 +8,7 @@ window.PdProdDtl = {
     dtlMode:      { type: String, default: 'view' }, // 상세 모드 (new/view/edit)
     active:       { type: Boolean, default: true }, // false=행 미선택 빈 폼(저장/취소 등 버튼 숨김)
     onListReload: { type: Function, default: () => {} },
-    reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
+    reloadTrigger: { type: Number, default: 0 }, // reload signal from parent Mng // 첫 탭 저장 시 상위 Mng 재조회 (UX-bo §18)
   },
   setup(props) {
 
@@ -1163,7 +1163,7 @@ window.PdProdDtl = {
               }
             } catch (catErr) { console.error('[handleSave:category]', catErr); }
           }
-          /* UX-admin §18: 저장 후 재조회 — 본 탭 + 첫 탭(info)이면 상위 Mng 도 */
+          /* UX-bo §18: 저장 후 재조회 — 본 탭 + 첫 탭(info)이면 상위 Mng 도 */
           await handleLoadData();
           if (tabId === 'info') { try { await props.onListReload(); } catch (_) {} }
           _afterApiOk(res, isCreate ? '등록되었습니다. 다른 탭을 저장할 수 있습니다.' : '저장되었습니다.');
@@ -1206,7 +1206,7 @@ window.PdProdDtl = {
         } else {
           res = await boApiSvc.pdProd.update(cfCurProdId.value, payload, '상품관리', `${TAB_LABEL[tabId] || tabId}저장`);
         }
-        /* UX-admin §18: 저장한 탭의 데이터를 다시 가져와 화면 동기화 */
+        /* UX-bo §18: 저장한 탭의 데이터를 다시 가져와 화면 동기화 */
         await handleLoadData();
         _afterApiOk(res, `${TAB_LABEL[tabId] || ''} 저장되었습니다.`);
       } catch (err) { _afterApiErr(err); }

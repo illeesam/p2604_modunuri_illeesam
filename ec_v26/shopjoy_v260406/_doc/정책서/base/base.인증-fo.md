@@ -1,6 +1,6 @@
 ---
 정책명: 사용자(Front Office) 인증 정책
-정책번호: base-인증-front
+정책번호: base-인증-fo
 관리자: 개발팀
 최종수정: 2026-04-24
 ---
@@ -11,7 +11,7 @@
 
 쇼핑몰 회원(`ec_member`) 인증 체계.  
 이메일/비밀번호 로그인 지원 (소셜 로그인은 별도 OAuth 연동으로 확장).  
-Pinia(`frontAuthStore`) + `window.frontAuth` 레거시 reactive 이중 구조로 상태를 동기화한다.  
+Pinia(`foAuthStore`) + `window.foAuth` 레거시 reactive 이중 구조로 상태를 동기화한다.  
 **refreshToken은 서버 DB(`mbh_member_token_log`)에만 저장하며 클라이언트에 전달하지 않는다.**
 
 ---
@@ -61,7 +61,7 @@ Pinia(`frontAuthStore`) + `window.frontAuth` 레거시 reactive 이중 구조로
 
 ## 5. 토큰 자동 갱신 (Silent Refresh)
 
-`utils/foApiAxios.js` interceptors.response 에서 처리.
+`lib/utils/foApiAxios.js` interceptors.response 에서 처리.
 
 ```
 API 요청
@@ -105,7 +105,7 @@ POST /api/auth/fo/auth/logout
 클라이언트:
   localStorage.removeItem('modu-fo-accessToken')
   localStorage.removeItem('modu-fo-authUser')
-  → frontAuthStore 상태 초기화
+  → foAuthStore 상태 초기화
   → 홈 또는 로그인 화면 이동
 ```
 
@@ -114,7 +114,7 @@ POST /api/auth/fo/auth/logout
 ## 7. 세션 복원 (페이지 로드)
 
 ```js
-// base/stores/frontAuthStore.js — Pinia state 초기화
+// lib/stores/fo/foAuthStore.js — Pinia state 초기화
 state: () => {
   const token = localStorage.getItem('modu-fo-accessToken') || null;
   let authUser = null;
@@ -130,7 +130,7 @@ state: () => {
 ## 8. 실시간 동기화
 
 ```js
-// base/frontAuth.js init() 내부
+// lib/base/foAuth.js init() 내부
 setInterval(() => {
   store.syncFromStorage();  // 1초 폴링: 토큰 삭제 감지 → 즉시 로그아웃
 }, 1000);
@@ -196,6 +196,6 @@ const AUTH_REQUIRED_PAGES = [
 ---
 
 ## 관련 정책
-- `base.권한-front.md` — 회원 등급·상태 기반 접근 제어
-- `base.UX-front.md` — 로그인 UI, 헤더 로그인 상태 표시
+- `base.권한-fo.md` — 회원 등급·상태 기반 접근 제어
+- `base.UX-fo.md` — 로그인 UI, 헤더 로그인 상태 표시
 - `ec.mb.02.회원.md` — 회원 상태·등급 관련 정책

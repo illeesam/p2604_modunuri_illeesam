@@ -7,27 +7,27 @@
 ### 🎨 UX/UI 정책 (2개)
 | 파일 | 내용 |
 |------|------|
-| `base.UX-admin.md` | 관리자 페이스 UX/UI 가이드라인 (컬러, 버튼, 모달, 알림) |
-| `base.UX-front.md` | 사용자 페이스 UX/UI 가이드라인 (반응형, 접근성) |
+| `base.UX-bo.md` | 관리자 페이스 UX/UI 가이드라인 (컬러, 버튼, 모달, 알림) |
+| `base.UX-fo.md` | 사용자 페이스 UX/UI 가이드라인 (반응형, 접근성) |
 
 ### 🔐 권한 정책 (2개)
 | 파일 | 내용 |
 |------|------|
-| `base.권한-admin.md` | 관리자 권한 체계 (RBAC, 역할별 접근 정책) |
-| `base.권한-front.md` | 사용자 권한 체계 (공개/회원/VIP 노출 정책) |
+| `base.권한-bo.md` | 관리자 권한 체계 (RBAC, 역할별 접근 정책) |
+| `base.권한-fo.md` | 사용자 권한 체계 (공개/회원/VIP 노출 정책) |
 
 ### 🛠️ 기술 스택 (3개)
 | 파일 | 내용 |
 |------|------|
-| `base.기술-admin.md` | 관리자 페이스 기술 스택 (Vue 3, Pinia, axios) |
-| `base.기술-front.md` | 사용자 페이스 기술 스택 (Vue 3, CDN 로드, Pinia) |
+| `base.기술-bo.md` | 관리자 페이스 기술 스택 (Vue 3, Pinia, axios) |
+| `base.기술-fo.md` | 사용자 페이스 기술 스택 (Vue 3, CDN 로드, Pinia) |
 | `base.기술-api.md` | 백엔드 API 기술 스택 (Spring Boot, MyBatis, PostgreSQL) — **§3.5 `/api/base/**` URL 직접 호출 금지** ⭐ |
 
 ### 🔑 인증 정책 (3개)
 | 파일 | 내용 |
 |------|------|
-| `base.인증-admin.md` | 관리자 로그인/토큰 정책 (1세션, 2시간 Sliding) |
-| `base.인증-front.md` | 사용자 로그인/토큰 정책 (멀티디바이스, 15일 Sliding) |
+| `base.인증-bo.md` | 관리자 로그인/토큰 정책 (1세션, 2시간 Sliding) |
+| `base.인증-fo.md` | 사용자 로그인/토큰 정책 (멀티디바이스, 15일 Sliding) |
 | `base.인증-authId.md` | 통합 인증 식별자 설계 (BO=user_id, FO=member_id) |
 
 ### 📋 백엔드 설계 (3개)
@@ -54,7 +54,7 @@
 | `base.55.codes_reactive_pattern.md` | codes reactive 패턴 설명 및 적용 가이드 |
 
 ## 관련 구현
-- `base/config.js` — SITE_CONFIG, FRONT_SITE_NO 전역 설정
-- `base/frontAuth.js` — 사용자 인증 init/logout/state
-- `utils/adminAxios.js` / `utils/frontAxios.js` — API 래퍼
-- `utils/adminUtil.js` — 공통 필터, 유틸, visibilityUtil
+- `lib/base/foConfig.js` — SITE_CONFIG, FO_SITE_NO 전역 설정
+- `lib/base/foAuth.js` — 사용자 인증 init/logout/state
+- `lib/utils/boApiAxios.js` (window.boApi) / `lib/utils/foApiAxios.js` (window.foApi) — API 래퍼
+- `lib/utils/boUtil.js` — 공통 필터, 유틸, visibilityUtil

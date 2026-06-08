@@ -5,7 +5,7 @@ window.SyBatchDtl = {
     navigate:      { type: Function, required: true },        // 페이지 이동
     dtlId:         { type: String, default: null },           // 수정 대상 ID
     dtlMode:       { type: String, default: 'view' },         // 상세 모드 (new/view/edit)
-    reloadTrigger: { type: Number, default: 0 },              // 첫 탭 저장 시 상위 Mng 재조회 (UX-admin §18)
+    reloadTrigger: { type: Number, default: 0 },              // 첫 탭 저장 시 상위 Mng 재조회 (UX-bo §18)
   },
   setup(props) {
 

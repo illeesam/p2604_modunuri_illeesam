@@ -16,7 +16,7 @@ Vue 3 Composition API(CDN) 기반 코드에서 함수와 변수의 역할을 이
 - `pages/bo/**/*.js` — 관리자(Back Office) 컴포넌트
 - `pages/fo/**/*.js` — 사용자(Front Office) 컴포넌트
 - `components/**/*.js` — 공통 컴포넌트
-- `base/stores/**/*.js` — Pinia 스토어
+- `lib/stores/**/*.js` — Pinia 스토어 (BO=`lib/stores/bo/*`, FO=`lib/stores/fo/*`)
 
 ---
 
@@ -940,5 +940,5 @@ const baseSearchColumns = [
 ## 관련 정책
 
 - `sy.51.프로그램설계정책.md` — 초기값·데이터 정렬·상세화면 ID 표시 + §4.6 BoGrid 컬럼 속성화
-- `base.기술-admin.md` — 관리자 기술 스택 및 컴포넌트 구조
-- `base.기술-front.md` — 사용자 기술 스택 및 컴포넌트 구조
+- `base.기술-bo.md` — 관리자 기술 스택 및 컴포넌트 구조
+- `base.기술-fo.md` — 사용자 기술 스택 및 컴포넌트 구조

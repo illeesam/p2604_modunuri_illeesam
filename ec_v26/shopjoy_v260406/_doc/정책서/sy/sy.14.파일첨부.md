@@ -252,7 +252,7 @@ PK: attach_grp_id (ATG + timestamp + random)
 - **이중 방어**: 템플릿 `v-if="!readonly"` + setup 의 `openPicker`/`removeFile`/`onDrop` 첫 줄 `if (props.readonly) return;` 가드.
 - **사용처**: `:readonly="cfReadonly"`(또는 `cfDtlMode`). 항상-보기 FO 화면은 `:readonly="true"`, FO 작성 폼은 미지정(편집).
 - ❌ 첨부 컴포넌트를 `v-if="!cfDtlMode"` 로 통째 숨기면 보기모드에서 목록까지 사라짐 → **`:readonly` 로 컨트롤만 숨기고 목록은 유지**.
-- 적용: CmNoticeDtl·SyBbsDtl·SyContactDtl(내용·답변)·SyUserDtl·MyContact(FO). UX 정책 → [base/base.UX-admin.md](../base/base.UX-admin.md) §6.9.
+- 적용: CmNoticeDtl·SyBbsDtl·SyContactDtl(내용·답변)·SyUserDtl·MyContact(FO). UX 정책 → [base/base.UX-bo.md](../base/base.UX-bo.md) §6.9.
 
 ## 구현 참조
 
