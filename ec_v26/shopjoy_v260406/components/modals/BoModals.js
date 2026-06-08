@@ -7742,7 +7742,7 @@ if (props.onCallback) props.onCallback(props.modalName, null, null);
   <!-- ═══ 상단 영역 (자연 높이, flex:0 0 auto) ═══ -->
   <div style="flex:0 0 auto;">
 
-  <!-- 도메인 select (config/excelDomains.js 기반) -->
+  <!-- 도메인 select (lib/config/excelDomains.js 기반) -->
   <div style="display:flex;gap:12px;align-items:center;margin-bottom:8px;padding:10px 12px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:8px;">
     <label style="font-size:12px;color:#475569;font-weight:600;min-width:48px;">대상</label>
     <select :value="selectedDomainKey" @change="e => handleSelectAction('domain-change', e.target.value)"

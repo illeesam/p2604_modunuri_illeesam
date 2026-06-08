@@ -8,11 +8,11 @@
  *  4) 앱 라이프사이클 이벤트 (window.coNative.bindAppState)
  *  5) Safe Area inset 자동 적용 (iOS notch)
  *
- * 의존: utils/coUtil.js (apiHdr) — 먼저 로드되어야 함
+ * 의존: lib/utils/coUtil.js (apiHdr) — 먼저 로드되어야 함
  *
  * 로드 순서 (index.html / bo.html):
- *   <script src="utils/coUtil.js"></script>
- *   <script src="utils/coNative.js"></script>
+ *   <script src="lib/utils/coUtil.js"></script>
+ *   <script src="lib/utils/coNative.js"></script>
  */
 (function (global) {
   'use strict';

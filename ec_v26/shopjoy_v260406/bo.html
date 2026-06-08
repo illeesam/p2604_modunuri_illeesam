@@ -160,24 +160,24 @@
        B2.x: 공통부 (필수 기초)
   ═══════════════════════════════════════════════════════════════════════════ -->
   <!-- ■ B2.1: 유틸 & 모니터링 ■ -->
-  <script src="utils/safeUtil.js"></script>
+  <script src="lib/utils/safeUtil.js"></script>
 
   <!-- ■ B2.2: Axios & Utility Wrappers ■ -->
-  <script src="base/license/licenseBo.js"></script>
-  <script src="utils/boApiAxios.js"></script>
-  <script src="utils/coUtil.js"></script>
-  <script src="utils/boUtil.js"></script>
+  <script src="lib/license/licenseBo.js"></script>
+  <script src="lib/utils/boApiAxios.js"></script>
+  <script src="lib/utils/coUtil.js"></script>
+  <script src="lib/utils/boUtil.js"></script>
   <!-- 외부 연동 상수(토스 테스트키 / SDK URL 등) — coExtSdk 보다 먼저 로드 -->
-  <script src="utils/coEnvConsts.js"></script>
+  <script src="lib/utils/coEnvConsts.js"></script>
   <!-- 소셜 로그인 / 결제(Toss) / 지도(Naver, Kakao) 통합 헬퍼 — AppStore 키 의존 -->
-  <script src="utils/coExtSdk.js"></script>
+  <script src="lib/utils/coExtSdk.js"></script>
 
   <!-- ■ B2.2a: 공통 API 서비스 (2개 이상 화면 공유 엔드포인트) ■ -->
-  <script src="services/coApiSvc.js"></script>
-  <script src="services/boApiSvc.js"></script>
+  <script src="lib/services/coApiSvc.js"></script>
+  <script src="lib/services/boApiSvc.js"></script>
 
   <!-- ■ B2.2b: 설정 카탈로그 ■ -->
-  <script src="config/excelDomains.js"></script>
+  <script src="lib/config/excelDomains.js"></script>
 
   <!-- ■ B2.3: Base Pages (Error Handlers) ■ -->
   <script src="pages/base/boError401.js"></script>
@@ -185,18 +185,18 @@
   <script src="pages/base/boError500.js"></script>
 
   <!-- ■ B2.4: Pinia & Data Setup ■ -->
-  <script src="base/stores/bo/boAppInitStore.js"></script>
-  <script src="base/stores/bo/boAppStore.js"></script>
-  <script src="base/stores/bo/boAuthStore.js"></script>
-  <script src="base/stores/bo/boCodeStore.js"></script>
-  <script src="base/stores/bo/boConfigStore.js"></script>
-  <script src="base/stores/bo/boMenuStore.js"></script>
-  <script src="base/stores/bo/boPropStore.js"></script>
-  <script src="base/stores/bo/boRoleStore.js"></script>
+  <script src="lib/stores/bo/boAppInitStore.js"></script>
+  <script src="lib/stores/bo/boAppStore.js"></script>
+  <script src="lib/stores/bo/boAuthStore.js"></script>
+  <script src="lib/stores/bo/boCodeStore.js"></script>
+  <script src="lib/stores/bo/boConfigStore.js"></script>
+  <script src="lib/stores/bo/boMenuStore.js"></script>
+  <script src="lib/stores/bo/boPropStore.js"></script>
+  <script src="lib/stores/bo/boRoleStore.js"></script>
 
   <!-- ■ B2.5: Data Utils ■ -->
-  <script src="base/utils/refDefaults.js"></script>
-  <script src="base/utils/safeArrayUtils.js"></script>
+  <script src="lib/utils/refDefaults.js"></script>
+  <script src="lib/utils/safeArrayUtils.js"></script>
 
   <!-- ═══════════════════════════════════════════════════════════════════════════
        B3.x: 컴포넌트부 (UI 기반)
@@ -371,6 +371,6 @@
        B99: 메인 앱 부트스트랩 (반드시 마지막)
   ═══════════════════════════════════════════════════════════════════════════ -->
   <!-- ■ B99: Main App Bootstrap ■ -->
-  <script src="base/boApp.js"></script>
+  <script src="lib/base/boApp.js"></script>
 </body>
 </html>

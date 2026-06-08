@@ -1,7 +1,7 @@
 /* ShopJoy - FO Auth Module (Pinia store 위임 + API 흐름 오케스트레이션)
  *
  * 역할 분리:
- *   - 상태(토큰/사용자/localStorage 동기화) → base/stores/fo/foAuthStore.js (Pinia)
+ *   - 상태(토큰/사용자/localStorage 동기화) → lib/stores/fo/foAuthStore.js (Pinia)
  *   - API 흐름(login/logout/signup) + 부트스트랩(F5 검증/폴링/마이그레이션) → 본 파일
  *
  * 호환:

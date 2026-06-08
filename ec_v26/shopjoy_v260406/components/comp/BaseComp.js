@@ -1160,7 +1160,7 @@ window.BaseTossPayWidget = {
         props.showToast('토스 결제 SDK 가 로드되지 않았습니다. (페이지의 v2/standard 스크립트 확인)', 'error', 0); return;
       }
       if (!window.coExtSdk || !window.coExtSdk.getTossPaymentWidgets) {
-        props.showToast('coExtSdk 결제위젯 헬퍼를 찾을 수 없습니다. (utils/coExtSdk.js 로드 확인)', 'error', 0); return;
+        props.showToast('coExtSdk 결제위젯 헬퍼를 찾을 수 없습니다. (lib/utils/coExtSdk.js 로드 확인)', 'error', 0); return;
       }
       try {
         await Vue.nextTick();
