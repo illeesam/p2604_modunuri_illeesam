@@ -37,7 +37,13 @@ window.OdOrderDtl = {
       totalAmt: '', payMethodCd: '', orderStatusCd: '',
       payStatusCd: '', payDate: '', apprNo: '', payIssuer: '',
       memo: '',
+      dlivFee: 0,                                  // 배송비 (추가 요청 가능)
+      extraReqAmt: 0, extraReqReason: '',          // 추가결제 요청 금액/사유
     });
+    /* ── MD 대리주문: 모달 상태 ── */
+    const products = reactive([]);                 // 상품 선택 모달용 상품 목록
+    const odModal = reactive({ member: false, orderCopy: false, prod: false }); // 회원/주문복사/상품 모달 표시
+    const payState = reactive({ processing: false }); // 브랜드페이 결제 진행 플래그 (위젯은 공통 컴포넌트가 자체 관리)
     /* _applyNewDefaults — 신규 진입 시에만 비어있지 않던 기본값 채움 (미선택 시 빈 폼 유지) */
     const _applyNewDefaults = () => {
       Object.assign(form, {
@@ -47,7 +53,11 @@ window.OdOrderDtl = {
     };
     const errors = reactive({});
 
-    const schema = yup.object({
+    /* 신규 주문은 orderId 를 서버가 생성하므로 회원ID만 필수. 기존 주문은 orderId 도 필수. */
+    const schemaNew = yup.object({
+      memberId: yup.string().required('회원ID를 입력해주세요. (회원선택)'),
+    });
+    const schemaEdit = yup.object({
       orderId: yup.string().required('주문ID를 입력해주세요.'),
       memberId: yup.string().required('회원ID를 입력해주세요.'),
     });
@@ -93,6 +103,30 @@ window.OdOrderDtl = {
       // 배송 추적 창 열기
       } else if (cmd === 'tracking-open') {
         return openTracking(param.courier, param.trackingNo);
+      // ── MD 대리주문: 모달 열기/닫기 ──
+      } else if (cmd === 'memberModal-open') {
+        odModal.member = true; return;
+      } else if (cmd === 'memberModal-close') {
+        odModal.member = false; return;
+      } else if (cmd === 'orderCopyModal-open') {
+        odModal.orderCopy = true; return;
+      } else if (cmd === 'orderCopyModal-close') {
+        odModal.orderCopy = false; return;
+      } else if (cmd === 'prodModal-open') {
+        odModal.prod = true; return;
+      } else if (cmd === 'prodModal-close') {
+        odModal.prod = false; return;
+      // ── 주문항목: 행 삭제 ──
+      } else if (cmd === 'orderItems-remove') {
+        orderItems.splice(param, 1);
+        recalcTotal();
+        return;
+      // ── 결제: 토스 브랜드페이 결제 (시뮬 기본 + clientKey 있으면 실 SDK) ──
+      } else if (cmd === 'pay-request') {
+        return handlePayRequest();
+      // ── 추가결제 요청 ──
+      } else if (cmd === 'extraPay-request') {
+        return handleExtraPayRequest();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -106,8 +140,135 @@ window.OdOrderDtl = {
         if (expandedItems.has(param)) { expandedItems.delete(param); }
         else { expandedItems.add(param); }
         return;
+      // 배송비 변경 → 결제금액 재계산
+      } else if (cmd === 'dlivFee-change') {
+        return recalcTotal();
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* fnCallbackModal — 모달 통합 콜백 (회원선택 / 주문복사). cmd=modalName, result=선택값 */
+    const fnCallbackModal = (modalName, param, result) => {
+      console.log(' ■■ OdOrderDtl : fnCallbackModal -> ', modalName, result);
+      if (modalName === 'member-pick') {
+        odModal.member = false;
+        if (result) { onMemberPicked(result); }
+      } else if (modalName === 'order-copy') {
+        odModal.orderCopy = false;
+        if (result) { onOrderCopied(result); }
+      }
+    };
+
+    /* onMemberPicked — 회원 선택 모달 결과 반영 */
+    const onMemberPicked = (m) => {
+      form.memberId = m.memberId || m.userId || '';
+      form.memberNm = m.memberNm || m.memberName || m.name || '';
+      showToast('회원이 선택되었습니다.', 'success');
+    };
+
+    /* onOrderCopied — 기존 주문 복사(템플릿): 회원·상품·결제수단·배송정보를 신규 폼에 불러옴 */
+    const onOrderCopied = (o) => {
+      form.memberId   = o.memberId || '';
+      form.memberNm   = o.memberNm || '';
+      form.prodNm     = o.prodNm || '';
+      form.payMethodCd = o.payMethodCd || form.payMethodCd;
+      form.dlivFee    = Number(o.dlivFee || 0);
+      /* 주문항목 복사 (있으면) */
+      const items = o.orderItems || o.items || [];
+      orderItems.splice(0, orderItems.length, ...items.map(it => ({ ...it })));
+      recalcTotal();
+      showToast(`주문 ${o.orderId} 를 복사했습니다.`, 'success');
+    };
+
+    /* onProdToggled — 상품 선택 모달 토글: 주문항목에 추가/제거 */
+    const onProdToggled = (productId) => {
+      const idx = orderItems.findIndex(it => it.productId === productId);
+      if (idx !== -1) { orderItems.splice(idx, 1); }
+      else {
+        const p = products.find(x => x.productId === productId);
+        if (p) {
+          orderItems.push({
+            productId: p.productId, prodNm: p.prodNm, qty: 1,
+            salePrice: Number(p.salePrice || p.price || 0),
+            discAmount: 0, price: Number(p.salePrice || p.price || 0),
+          });
+        }
+      }
+      recalcTotal();
+    };
+
+    /* recalcTotal — 신규 대리주문 조립 시에만 결제금액 재계산.
+     * ⚠️ 기존 주문(cfIsNew=false)의 totalAmt(=total_amt 상품합계)는 서버 값이므로 덮어쓰지 않음(데이터 오염 방지). */
+    const recalcTotal = () => {
+      if (!cfIsNew.value) { return; }
+      const itemSum = orderItems.reduce((s, x) => s + (Number(x.price) || 0), 0);
+      form.totalAmt = itemSum + (Number(form.dlivFee) || 0);
+      if (!form.prodNm && orderItems.length) {
+        form.prodNm = orderItems[0].prodNm + (orderItems.length > 1 ? ` 외 ${orderItems.length - 1}건` : '');
+      }
+    };
+
+    /* handlePayRequest — 토스 브랜드페이 결제 (시뮬 기본 / clientKey 설정 시 실 SDK) */
+    const handlePayRequest = async () => {
+      const amount = (Number(form.totalAmt) || 0);
+      if (amount <= 0) { showToast('결제금액이 0원입니다. 주문항목/배송비를 확인하세요.', 'error'); return; }
+      if (!form.memberId) { showToast('회원을 먼저 선택하세요.', 'error'); return; }
+      const ok = await showConfirm('결제 요청', `${amount.toLocaleString()}원을 토스 브랜드페이로 결제하시겠습니까?`);
+      if (!ok) { return; }
+      payState.processing = true;
+      try {
+        if (!window.TossPayments) {
+          showToast('토스 SDK 미로드로 시뮬레이션 결제합니다. (실 결제: bo.html SDK 로드 확인)', 'info');
+          _simulatePay(amount); return;
+        }
+        try {
+          const toss = await window.coExtSdk.getTossPayments();
+          const bp = await toss.brandpay?.({ customerKey: form.memberId });
+          if (bp && bp.requestPayment) {
+            await bp.requestPayment({ amount, orderId: form.orderId || ('ORD' + Date.now()), orderName: form.prodNm || '주문결제' });
+          } else {
+            showToast('브랜드페이는 별도 약정/연동이 필요합니다. 우선 시뮬레이션 결제합니다.', 'info');
+            _simulatePay(amount);
+          }
+        } catch (sdkErr) {
+          console.warn('[Toss 브랜드페이 실패 → 시뮬]', sdkErr);
+          showToast('브랜드페이 호출 실패로 시뮬레이션 결제합니다: ' + ((sdkErr && sdkErr.message) || ''), 'info');
+          _simulatePay(amount);
+        }
+      } finally {
+        payState.processing = false;
+      }
+    };
+
+    /* _simulatePay — 모의 결제 성공 처리 */
+    const _simulatePay = (amount) => {
+      form.payStatusCd = '결제완료';
+      form.payMethodCd = form.payMethodCd || '토스페이먼츠';
+      form.payIssuer   = '토스 브랜드페이';
+      form.apprNo      = 'BP' + String(Date.now()).slice(-10);
+      payments.unshift({
+        payMethod: '토스 브랜드페이', payStatus: '결제완료', amount,
+        payDate: form.payDate || '', apprNo: form.apprNo, issuer: '토스 브랜드페이',
+      });
+      showToast(`${amount.toLocaleString()}원 결제가 완료되었습니다. (시뮬)`, 'success');
+    };
+
+    /* (토스 간편 위젯 결제는 공통 컴포넌트 <base-toss-pay-widget> 으로 분리됨 — components/comp/BaseComp.js) */
+
+    /* handleExtraPayRequest — 추가결제 요청 */
+    const handleExtraPayRequest = async () => {
+      const amt = Number(form.extraReqAmt) || 0;
+      if (amt <= 0) { showToast('추가결제 요청금액을 입력하세요.', 'error'); return; }
+      if (!form.orderId) { showToast('주문을 먼저 저장한 뒤 추가결제를 요청하세요.', 'error'); return; }
+      const ok = await showConfirm('추가결제 요청', `${amt.toLocaleString()}원 추가결제를 요청하시겠습니까?`);
+      if (!ok) { return; }
+      try {
+        await boApiSvc.odOrder.requestExtraPay({ orderId: form.orderId, memberId: form.memberId, amount: amt, reason: form.extraReqReason }, '주문관리', '추가결제요청');
+        showToast('추가결제 요청이 전송되었습니다.', 'success');
+        payments.unshift({ payMethod: '추가결제요청', payStatus: '미결제', amount: amt, payDate: '', apprNo: '-', issuer: form.extraReqReason || '-' });
+      } catch (err) {
+        showToast(err.response?.data?.message || err.message || '추가결제 요청 실패', 'error', 0);
       }
     };
 
@@ -126,6 +287,8 @@ window.OdOrderDtl = {
         ]);
         const o = orderRes.data?.data || orderRes.data || {};
         Object.assign(form, { ...o });
+        /* 배송비: 서버 필드명(outboundShippingFee/shippingFee) → form.dlivFee 시드 (기존 주문 편집 시 0 으로 덮이지 않게) */
+        form.dlivFee = Number(o.dlivFee ?? o.outboundShippingFee ?? o.shippingFee ?? 0);
         if (!form.orderId) { form.orderId = props.dtlId; }
         if (o.orderStatusCd) { form.orderStatusCd = o.orderStatusCd; }
         if (o.payMethodCd) { form.payMethodCd = o.payMethodCd; }
@@ -201,7 +364,7 @@ window.OdOrderDtl = {
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
       try {
-        await schema.validate(form, { abortEarly: false });
+        await (cfIsNew.value ? schemaNew : schemaEdit).validate(form, { abortEarly: false });
       } catch (err) {
         console.error('[catch-info]', err);
         err.inner.forEach(e => { errors[e.path] = e.message; });
@@ -212,9 +375,30 @@ window.OdOrderDtl = {
       const ok = await showConfirm(isNewOrder ? '등록' : '저장', isNewOrder ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) { return; }
       try {
-        const res = await (isNewOrder
-          ? boApiSvc.odOrder.create({ ...form, totalAmt: Number(form.totalAmt) }, '주문관리', '등록')
-          : boApiSvc.odOrder.update(form.orderId, { ...form, totalAmt: Number(form.totalAmt) }, '주문관리', '저장'));
+        /* MD 대리주문(주문항목 보유) 은 주문+항목 동시 저장 API(save-proxy) 사용 */
+        if (orderItems.length) {
+          const itemSum = orderItems.reduce((s, x) => s + (Number(x.price) || 0), 0);
+          const proxy = {
+            orderId: form.orderId || null,
+            memberId: form.memberId, memberNm: form.memberNm,
+            orderStatusCd: form.orderStatusCd, payMethodCd: form.payMethodCd,
+            totalAmt: itemSum, dlivFee: Number(form.dlivFee || 0), payAmt: itemSum + Number(form.dlivFee || 0),
+            memo: form.memo,
+            orderItems: orderItems.map(it => ({
+              prodId: it.productId || it.prodId, skuId: it.skuId || null, prodNm: it.prodNm,
+              unitPrice: Number(it.salePrice || it.unitPrice || it.price || 0), orderQty: Number(it.qty || it.orderQty || 1),
+              itemOrderAmt: Number(it.price || it.itemOrderAmt || (it.salePrice * (it.qty || 1)) || 0),
+            })),
+          };
+          await boApiSvc.odOrder.saveProxy(proxy, '주문관리', isNewOrder ? '대리주문등록' : '대리주문수정');
+        } else {
+          const payload = { ...form, totalAmt: Number(form.totalAmt), dlivFee: Number(form.dlivFee || 0) };
+          /* 빈/공백 날짜시각 필드 제거 — LocalDateTime 역직렬화는 빈 문자열을 거부(400). 서버가 now() 할당하도록 미전송 */
+          ['orderDate', 'payDate'].forEach(k => { if (!payload[k] || !String(payload[k]).trim()) { delete payload[k]; } });
+          await (isNewOrder
+            ? boApiSvc.odOrder.create(payload, '주문관리', '등록')
+            : boApiSvc.odOrder.update(form.orderId, payload, '주문관리', '저장'));
+        }
         if (showToast) { showToast(isNewOrder ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
         if (props.navigate) { props.navigate('odOrderMng', { reload: true }); }
       } catch (err) {
@@ -231,7 +415,20 @@ window.OdOrderDtl = {
       if (isAppReady.value) { fnLoadCodes(); }
       await handleSearchDetail();
       if (props.active && cfIsNew.value) { _applyNewDefaults(); }
+      fnLoadProducts();
     });
+
+    /* fnLoadProducts — 상품 선택 모달용 상품 목록 로드 (MD 대리주문) */
+    const fnLoadProducts = async () => {
+      try {
+        const res = await boApiSvc.pdProd.getPage({ pageNo: 1, pageSize: 200 }, '주문관리', '상품목록');
+        const list = res.data?.data?.pageList || res.data?.data?.list || [];
+        products.splice(0, products.length, ...list.map(p => ({
+          productId: p.prodId || p.productId, prodNm: p.prodNm,
+          salePrice: Number(p.salePrice || p.price || 0),
+        })));
+      } catch (e) { console.warn('[fnLoadProducts]', e); }
+    };
 
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
     watch(() => props.reloadTrigger, async (n, o) => {
@@ -450,32 +647,39 @@ window.OdOrderDtl = {
     return {
       columns,
       form, errors, codes, orderItems, expandedItems, activeTab, tabMode2,                                // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                                                                // dispatch (모든 이벤트 / 액션 라우팅)
+      products, odModal, payState,                                                                         // MD 대리주문: 모달/결제 상태
+      handleBtnAction, handleSelectAction, fnCallbackModal, onProdToggled,                                // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfDtlMode, cfCurrentStepIdx, cfIsCanceled, cfRelatedVendor, cfRelatedDelivery,             // computed
       cfRelatedClaim, tabs, cfEditHistList, cfPaymentList, cfStatusHistList, cfAllExpanded,             // computed
       ORDER_STEPS, CLAIM_FLOWS, CLAIM_TYPE_COLOR,                                                         // 상수
       fmt, showTab, isExpanded, fnItemExpanded, getExchangedItem, fnPayStatusBadge,                       // 헬퍼
-      showRefModal,                                                                                       // 모달 (template 직접 참조)
+      showRefModal, showToast, showConfirm,                                                                // 모달/알림 (template + 공통 컴포넌트 prop 전달)
     };
   },
   template: /* html */`
 <!-- ===== ■. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
 <bo-container :title="!active ? '주문 상세' : (cfIsNew ? '주문 등록' : (cfDtlMode ? '주문 상세' : '주문 수정'))"
   :title-id="!active ? '' : (cfIsNew ? '' : form.orderId)">
-  <!-- ===== ■.■. 탭바 ==================================================== -->
-  <bo-tab-bar v-if="!cfIsNew" :tabs="tabs" :tab="activeTab" :tab-mode="tabMode2"
+  <!-- ===== ■.■. 탭바 (초기/신규에도 항상 표시 — 화면 구성 노출) ==================== -->
+  <bo-tab-bar :tabs="tabs" :tab="activeTab" :tab-mode="tabMode2"
     @tab-select="id => handleBtnAction('tab-change', id)"
     @mode-select="m => handleBtnAction('viewMode-change', m)" />
   <!-- ===== □.■. 탭바 ==================================================== -->
   <!-- ===== ■. 탭 컨텐츠 =================================================== -->
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
-    <div v-if="cfIsNew || showTab('info')" class="dtl-pane">
+    <div v-if="showTab('info')" class="dtl-pane">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 상세정보</div>
-      <!-- ===== ■.■.■. 주문 진행 상태 흐름 ========================================= -->
-      <div v-if="!cfIsNew" style="margin-bottom:20px;padding:16px 18px;background:#f6f6f6;border-radius:10px;">
+      <!-- ===== ■.■.■. MD 대리주문 툴바 (주문 복사 — 편집 모드에서만) ==================== -->
+      <div v-if="!cfDtlMode" style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:10px 14px;background:#eef4ff;border:1px solid #c7d9f5;border-radius:8px;">
+        <span style="font-size:12px;font-weight:700;color:#1e40af;">🧾 MD 대리주문</span>
+        <span style="font-size:11px;color:#5a6b8c;">고객 요청으로 MD가 대신 주문합니다.</span>
+        <button type="button" class="btn btn-secondary btn-sm" style="margin-left:auto;" @click="handleBtnAction('orderCopyModal-open')">📋 기존 주문 복사</button>
+      </div>
+      <!-- ===== ■.■.■. 주문 진행 상태 흐름 (초기/신규에도 표시 — 빈 주문은 회색 스텝) ====== -->
+      <div style="margin-bottom:20px;padding:16px 18px;background:#f6f6f6;border-radius:10px;">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
           <span style="font-size:11px;font-weight:800;padding:3px 10px;border-radius:10px;color:#fff;background:#16a34a;">주문</span>
-          <span style="font-size:13px;font-weight:700;color:#222;">{{ form.orderId }}</span>
+          <span style="font-size:13px;font-weight:700;color:#222;">{{ form.orderId || (cfIsNew ? '신규 주문' : '') }}</span>
           <span v-if="form.orderDate" style="font-size:11px;color:#888;">{{ form.orderDate }}</span>
         </div>
         <div v-if="cfIsCanceled" style="text-align:center;padding:8px 0;">
@@ -561,10 +765,11 @@ window.OdOrderDtl = {
         @cancel="handleBtnAction('form-cancel')"
         @edit="handleBtnAction('form-edit')"
         @close="handleBtnAction('form-close')">
-        <!-- ===== ■.■.■.■. 회원ID + 보기 ========================================= -->
+        <!-- ===== ■.■.■.■. 회원ID + 선택/보기 (MD 대리주문: 회원 모달 선택) ============ -->
         <template #memberId>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <input class="form-control" v-model="form.memberId" placeholder="회원 ID" :readonly="cfDtlMode" :class="errors.memberId ? 'is-invalid' : ''" />
+          <div style="display:flex;gap:6px;align-items:center;">
+            <input class="form-control" v-model="form.memberId" placeholder="회원 ID" :readonly="cfDtlMode" :class="errors.memberId ? 'is-invalid' : ''" style="flex:1;min-width:0;" />
+            <button v-if="!cfDtlMode" type="button" class="btn btn-blue btn-sm" style="flex-shrink:0;" @click="handleBtnAction('memberModal-open')">🔍 회원선택</button>
             <span v-if="form.memberId" class="ref-link" @click="handleBtnAction('form-memberRef')">보기</span>
           </div>
           <span v-if="errors.memberId" class="field-error">{{ errors.memberId }}</span>
@@ -586,8 +791,13 @@ window.OdOrderDtl = {
       </bo-form-area>
     </div>
     <!-- ===== ■.■. 주문항목목록 탭 ============================================== -->
-    <div v-if="!cfIsNew && showTab('items')" class="dtl-pane" style="padding:20px;">
+    <div v-if="showTab('items')" class="dtl-pane" style="padding:20px;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📦 주문항목 <span class="tab-count"> {{ orderItems.length }} </span></div>
+      <!-- ===== ■.■.■. 상품 선택 툴바 (MD 대리주문 — 편집 모드) ====================== -->
+      <div v-if="!cfDtlMode" style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+        <button type="button" class="btn btn-blue btn-sm" @click="handleBtnAction('prodModal-open')">🛍 상품 선택</button>
+        <span style="font-size:11px;color:#888;">상품을 선택하여 주문항목에 추가합니다.</span>
+      </div>
       <div v-if="cfRelatedClaim && cfRelatedClaim.type==='교환'" style="display:flex;justify-content:flex-end;margin-bottom:10px;">
         <button class="btn btn-secondary btn-sm" @click="handleBtnAction('orderItems-toggleExpandAll')">
           {{ cfAllExpanded ? '▲ 교환품 모두접기' : '▼ 교환품 모두펼치기' }}
@@ -595,8 +805,11 @@ window.OdOrderDtl = {
       </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid bare :columns="columns.orderItemGrid" :rows="orderItems"
-        :is-expanded="fnItemExpanded"
+        :is-expanded="fnItemExpanded" :row-actions="!cfDtlMode"
         empty-text="주문 항목 정보가 없습니다.">
+        <template #row-actions="{ idx }">
+          <button class="btn btn_row_delete" @click.stop="handleBtnAction('orderItems-remove', idx)">삭제</button>
+        </template>
         <template #cell-prodNm="{ row, idx }">
           <td style="font-size:12px;">
             <span v-if="cfRelatedClaim && cfRelatedClaim.type==='교환'" @click="handleSelectAction('orderItems-rowToggleExpand', idx)" style="font-size:11px;color:#3b82f6;font-weight:800;user-select:none;margin-right:6px;" :title="isExpanded(idx)?'교환품 숨기기':'교환품 보기'">
@@ -626,20 +839,66 @@ window.OdOrderDtl = {
             <td style="width:90px;text-align:right;color:#d84315;">-{{ fmt(orderItems.reduce((s,x)=>s+(x.discAmount||0),0)) }}</td>
             <td style="width:100px;text-align:right;color:#1a1a1a;">{{ fmt(orderItems.reduce((s,x)=>s+(x.price||0),0)) }}</td>
             <td colspan="3"></td>
+            <td v-if="!cfDtlMode"></td>
           </tr>
         </template>
       </bo-grid>
     </div>
     <!-- ===== □.□. 주문항목목록 탭 ============================================== -->
     <!-- ===== ■.■. 결제정보 탭 ================================================ -->
-    <div v-if="!cfIsNew && showTab('payment')" class="dtl-pane" style="padding:20px;">
+    <div v-if="showTab('payment')" class="dtl-pane" style="padding:20px;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">💳 결제정보 <span class="tab-count"> {{ cfPaymentList.length }} </span></div>
+      <!-- ===== ■.■.■. 결제 요약 + 토스 브랜드페이 결제 (편집 모드) ==================== -->
+      <div v-if="!cfDtlMode" style="margin-bottom:18px;padding:16px 18px;background:#f9fafb;border:1px solid #e5e8ed;border-radius:10px;">
+        <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;">
+          <div class="form-group" style="margin:0;">
+            <label class="form-label">상품 합계</label>
+            <div class="form-control" style="background:#fff;text-align:right;font-weight:700;min-width:120px;">{{ fmt(orderItems.reduce((s,x)=>s+(Number(x.price)||0),0)) }}</div>
+          </div>
+          <div style="font-size:18px;color:#bbb;padding-bottom:6px;">+</div>
+          <div class="form-group" style="margin:0;">
+            <label class="form-label">배송비 <span style="font-size:10px;color:#e8587a;">(추가요청 가능)</span></label>
+            <input class="form-control" type="number" v-model.number="form.dlivFee" style="text-align:right;min-width:120px;" @input="handleSelectAction('dlivFee-change')" />
+          </div>
+          <div style="font-size:18px;color:#bbb;padding-bottom:6px;">=</div>
+          <div class="form-group" style="margin:0;">
+            <label class="form-label">결제 금액</label>
+            <div class="form-control" style="background:#fff8f9;border-color:#f3c6d4;text-align:right;font-weight:800;color:#e8587a;min-width:140px;">{{ fmt(form.totalAmt) }}</div>
+          </div>
+          <button type="button" class="btn btn-primary" style="margin-left:auto;min-width:160px;" :disabled="payState.processing" @click="handleBtnAction('pay-request')">
+            {{ payState.processing ? '결제 처리중…' : '💳 브랜드페이 결제' }}
+          </button>
+        </div>
+        <!-- ===== ■.■.■.■. 토스 간편 결제위젯 (공통 컴포넌트 — FO/BO 공용) =============== -->
+        <div style="margin-top:16px;border-top:1px dashed #e0e0e0;padding-top:14px;">
+          <base-toss-pay-widget :amount="Number(form.totalAmt)||0"
+            :order-id="form.orderId" :order-name="form.prodNm || '주문결제'"
+            :customer-key="form.memberId" :customer-name="form.memberNm || '고객'"
+            success-page="odOrderMng" fail-page="odOrderMng"
+            :show-toast="showToast" :show-confirm="showConfirm" />
+        </div>
+      </div>
+      <!-- ===== ■.■.■. 추가결제 요청 (편집 모드) ===================================== -->
+      <div v-if="!cfDtlMode" style="margin-bottom:18px;padding:14px 18px;background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;">
+        <div style="font-size:12px;font-weight:700;color:#c2410c;margin-bottom:8px;">➕ 추가결제 요청 <span style="font-weight:400;color:#9a6a4a;">— 배송비 등 추가 비용을 고객에게 요청</span></div>
+        <div style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;">
+          <div class="form-group" style="margin:0;">
+            <label class="form-label">요청 금액</label>
+            <input class="form-control" type="number" v-model.number="form.extraReqAmt" placeholder="0" style="text-align:right;min-width:120px;" />
+          </div>
+          <div class="form-group" style="margin:0;flex:1;min-width:200px;">
+            <label class="form-label">사유</label>
+            <input class="form-control" v-model="form.extraReqReason" placeholder="예: 도서산간 추가 배송비" />
+          </div>
+          <button type="button" class="btn btn_send" style="flex-shrink:0;" @click="handleBtnAction('extraPay-request')">전송</button>
+        </div>
+      </div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid bare :columns="columns.paymentGrid" :rows="cfPaymentList" empty-text="결제정보가 없습니다."></bo-grid>
     </div>
     <!-- ===== □.□. 결제정보 탭 ================================================ -->
     <!-- ===== ■.■. 상태변경이력 탭 ============================================== -->
-    <div v-if="!cfIsNew && showTab('hist')" class="dtl-pane">
+    <div v-if="showTab('hist')" class="dtl-pane">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title" style="margin-bottom:10px;padding:0 0 10px 0;">
         🕒 상태변경이력
         <span class="tab-count">{{ cfStatusHistList.length }}</span>
@@ -648,7 +907,7 @@ window.OdOrderDtl = {
     </div>
     <!-- ===== □.□. 상태변경이력 탭 ============================================== -->
     <!-- ===== ■.■. 정보수정이력 탭 ============================================== -->
-    <div v-if="!cfIsNew && showTab('editHist')" class="dtl-pane" style="padding:20px;">
+    <div v-if="showTab('editHist')" class="dtl-pane" style="padding:20px;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📝 정보수정이력 <span class="tab-count"> {{ cfEditHistList.length }} </span></div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid bare :columns="columns.editHistGrid" :rows="cfEditHistList" empty-text="정보 수정 이력이 없습니다."></bo-grid>
@@ -656,6 +915,17 @@ window.OdOrderDtl = {
     <!-- ===== □.□. 정보수정이력 탭 ============================================== -->
   </div>
   <!-- ===== □. 탭 컨텐츠 =================================================== -->
+  <!-- ===== ■. MD 대리주문 모달 (회원 선택 / 주문 복사 / 상품 선택) =================== -->
+  <!-- v-if 미사용: :show false→true 전환을 모달 내부 watch 가 관찰해야 최초 목록 로드됨 -->
+  <od-member-pick-modal :show="odModal.member" ui-nm="주문관리"
+    subtitle="대리주문할 고객을 선택해주세요" modal-name="member-pick"
+    :on-callback="fnCallbackModal" @close="handleBtnAction('memberModal-close')" />
+  <order-select-modal v-if="odModal.orderCopy"
+    modal-name="order-copy" :on-callback="fnCallbackModal" @close="handleBtnAction('orderCopyModal-close')" />
+  <simple-prod-pick-modal :show="odModal.prod" :prods="products"
+    :selected-ids="orderItems.map(it => it.productId)"
+    @toggle="onProdToggled" @close="handleBtnAction('prodModal-close')" />
+  <!-- ===== □. MD 대리주문 모달 ============================================== -->
 </bo-container>
 <!-- ===== □. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
 `

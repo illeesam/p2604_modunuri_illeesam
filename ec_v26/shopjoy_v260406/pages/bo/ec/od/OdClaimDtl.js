@@ -387,22 +387,22 @@ window.OdClaimDtl = {
 <bo-container :title="!active ? '클레임 상세' : (cfIsNew ? '클레임 등록' : (cfDtlMode ? '클레임 상세' : '클레임 수정'))"
   :title-id="!active ? '' : (cfIsNew ? '' : form.claimId)">
   <!-- ===== ■.■. 탭바 ==================================================== -->
-  <bo-tab-bar v-if="!cfIsNew" :tabs="tabs" :tab="activeTab" :tab-mode="tabMode2"
+  <bo-tab-bar :tabs="tabs" :tab="activeTab" :tab-mode="tabMode2"
     @tab-select="id => handleBtnAction('tab-change', id)"
     @mode-select="m => handleBtnAction('viewMode-change', m)" />
   <!-- ===== □. 탭바 ====================================================== -->
   <!-- ===== ■. 탭 컨텐츠 =================================================== -->
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
-    <div v-if="cfIsNew || showTab('info')" class="dtl-pane">
+    <div v-if="showTab('info')" class="dtl-pane">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 상세정보</div>
       <!-- ===== ■.■.■. 클레임 진행 상태 흐름 ======================================== -->
-      <div v-if="!cfIsNew" style="margin-bottom:20px;padding:16px 18px;background:#f6f6f6;border-radius:10px;">
+      <div style="margin-bottom:20px;padding:16px 18px;background:#f6f6f6;border-radius:10px;">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
           <span :style="{
             fontSize:'11px',padding:'3px 10px',borderRadius:'10px',color:'#fff',fontWeight:800,
             background: CLAIM_TYPE_COLOR[form.claimTypeCd] || '#9ca3af',
             }">
-            ↩ {{ form.claimTypeCd }}
+            ↩ {{ form.claimTypeCd || (cfIsNew ? '신규 클레임' : '') }}
           </span>
           <span style="font-size:13px;font-weight:700;color:#222;">{{ form.claimId }}</span>
           <span v-if="form.requestDate" style="font-size:11px;color:#888;">신청일: {{ form.requestDate }}</span>
@@ -464,7 +464,7 @@ window.OdClaimDtl = {
       </bo-form-area>
     </div>
     <!-- ===== ■.■. 클레임항목목록 탭 ============================================= -->
-    <div v-if="!cfIsNew && showTab('items')" class="dtl-pane" style="padding:20px;">
+    <div v-if="showTab('items')" class="dtl-pane" style="padding:20px;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">↩ 클레임항목 <span class="tab-count"> {{ claimItems.length }} </span></div>
       <div v-if="form.claimTypeCd==='교환'" style="display:flex;justify-content:flex-end;margin-bottom:10px;">
         <button class="btn btn-secondary btn-sm" @click="handleBtnAction('claimItems-toggleExpandAll')">
@@ -509,14 +509,14 @@ window.OdClaimDtl = {
     </div>
     <!-- ===== □.□. 클레임항목목록 탭 ============================================= -->
     <!-- ===== ■.■. 결제정보 탭 ================================================ -->
-    <div v-if="!cfIsNew && showTab('payment')" class="dtl-pane" style="padding:20px;">
+    <div v-if="showTab('payment')" class="dtl-pane" style="padding:20px;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">💳 결제정보 <span class="tab-count"> {{ cfPaymentList.length }} </span></div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid bare :columns="columns.paymentGrid" :rows="cfPaymentList" empty-text="결제·환불 정보가 없습니다."></bo-grid>
     </div>
     <!-- ===== □.□. 결제정보 탭 ================================================ -->
     <!-- ===== ■.■. 상태변경이력 탭 ============================================== -->
-    <div v-if="!cfIsNew && showTab('hist')" class="dtl-pane">
+    <div v-if="showTab('hist')" class="dtl-pane">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title" style="margin-bottom:10px;padding:0 0 10px 0;">
         🕒 상태변경이력
         <span class="tab-count">{{ cfStatusHistList.length }}</span>
@@ -525,7 +525,7 @@ window.OdClaimDtl = {
     </div>
     <!-- ===== □.□. 상태변경이력 탭 ============================================== -->
     <!-- ===== ■.■. 정보수정이력 탭 ============================================== -->
-    <div v-if="!cfIsNew && showTab('editHist')" class="dtl-pane" style="padding:20px;">
+    <div v-if="showTab('editHist')" class="dtl-pane" style="padding:20px;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📝 정보수정이력 <span class="tab-count"> {{ cfEditHistList.length }} </span></div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid bare :columns="columns.editHistGrid" :rows="cfEditHistList" empty-text="정보 수정 이력이 없습니다."></bo-grid>

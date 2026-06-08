@@ -2767,6 +2767,7 @@
     .component('BaseAttachGrp', window.BaseAttachGrp)
     .component('BaseAttachOne', window.BaseAttachOne)
     .component('BaseHtmlEditor', window.BaseHtmlEditor)
+    .component('BaseTossPayWidget', window.BaseTossPayWidget)
     /* ── pages/bo/ (공통) ── */
     .component('BoRefModal', window.BoRefModal)
     .component('BoCodeGrpModal', window.BoCodeGrpModal)

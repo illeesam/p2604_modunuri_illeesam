@@ -1109,6 +1109,137 @@ window.BaseHtmlEditor = {
 `
 };
 
+/* ──────────────────────────────────────────────────────────────────────────
+ * BaseTossPayWidget — 토스페이먼츠 v2 결제위젯 공통 컴포넌트 (FO·BO 공용)
+ *   · coExtSdk.getTossPaymentWidgets / coEnvConsts 의존 (SDK 레이어는 공통)
+ *   · 인스턴스별 고유 selector 로 한 페이지 다중 렌더 충돌 방지
+ *   · 정보 불충분/실패 시 조용히 폴백하지 않고 showToast 로 이유+해결법 안내
+ *   · 결제 성공 시 successUrl 로 리다이렉트(토스 표준). emit: open/close/error
+ * 사용:
+ *   <base-toss-pay-widget :amount="form.totalAmt" :order-id="form.orderId"
+ *     :order-name="form.prodNm" :customer-key="form.memberId" :customer-name="form.memberNm"
+ *     :show-toast="showToast" :show-confirm="showConfirm"
+ *     success-page="odOrderMng" />
+ * ────────────────────────────────────────────────────────────────────────── */
+window.BaseTossPayWidget = {
+  name: 'BaseTossPayWidget',
+  props: {
+    amount:       { type: [Number, String], default: 0 },        // 결제 금액(원)
+    orderId:      { type: String, default: '' },                 // 주문번호(없으면 자동)
+    orderName:    { type: String, default: '주문결제' },         // 주문명
+    customerKey:  { type: String, default: '' },                 // 구매자 키(회원ID 등). 없으면 ANONYMOUS
+    customerName: { type: String, default: '고객' },             // 구매자명
+    successPage:  { type: String, default: '' },                 // 성공 시 이동할 #page (hash 라우팅)
+    failPage:     { type: String, default: '' },                 // 실패 시 이동할 #page
+    showToast:    { type: Function, default: () => {} },         // 토스트 (FO/BO 주입)
+    showConfirm:  { type: Function, default: () => Promise.resolve(true) }, // 확인 모달
+    buttonLabel:  { type: String, default: '🧩 간편 위젯 결제' }, // 토글 버튼 라벨
+  },
+  emits: ['open', 'close', 'error'],
+  setup(props, { emit }) {
+    const { reactive, computed } = Vue;
+    const ui = reactive({ open: false, ready: false, processing: false });
+    /* 인스턴스 고유 id (다중 위젯 selector 충돌 방지) — Date/Math.random 금지라 카운터 사용 */
+    window._baseTossPayWidgetSeq = (window._baseTossPayWidgetSeq || 0) + 1;
+    const uid = window._baseTossPayWidgetSeq;
+    const methodId = 'toss-pay-method-' + uid;
+    const agreeId  = 'toss-pay-agreement-' + uid;
+    let _widgets = null;
+    let _rendered = false;
+
+    const cfAmount = computed(() => Number(props.amount) || 0);
+    const fmtWon = (n) => Number(n || 0).toLocaleString() + '원';
+
+    /* 결제위젯 토글 + 최초 1회 렌더 */
+    const toggle = async () => {
+      if (ui.open) { ui.open = false; emit('close'); return; }
+      const amount = cfAmount.value;
+      if (amount <= 0) { props.showToast('결제금액이 0원입니다. 금액을 확인하세요.', 'error'); return; }
+      ui.open = true; ui.ready = false; emit('open');
+      if (!window.TossPayments) {
+        props.showToast('토스 결제 SDK 가 로드되지 않았습니다. (페이지의 v2/standard 스크립트 확인)', 'error', 0); return;
+      }
+      if (!window.coExtSdk || !window.coExtSdk.getTossPaymentWidgets) {
+        props.showToast('coExtSdk 결제위젯 헬퍼를 찾을 수 없습니다. (utils/coExtSdk.js 로드 확인)', 'error', 0); return;
+      }
+      try {
+        await Vue.nextTick();
+        if (!_widgets) { _widgets = await window.coExtSdk.getTossPaymentWidgets(props.customerKey || undefined); }
+        await _widgets.setAmount({ currency: 'KRW', value: amount });
+        if (!_rendered) {
+          await _widgets.renderPaymentMethods({ selector: '#' + methodId, variantKey: 'DEFAULT' });
+          await _widgets.renderAgreement({ selector: '#' + agreeId, variantKey: 'AGREEMENT' });
+          _rendered = true;
+        }
+        ui.ready = true;
+        if (window.coExtSdk.isTossTestKey && window.coExtSdk.isTossTestKey()) {
+          props.showToast('토스 테스트 키로 위젯을 표시합니다. 실 결제는 사이트 설정에 tossClientKey(운영키)를 입력하세요.', 'info');
+        }
+      } catch (e) {
+        console.error('[BaseTossPayWidget 렌더 실패]', e);
+        ui.ready = false; emit('error', e);
+        props.showToast('토스 위젯을 표시할 수 없습니다: ' + ((e && e.message) || '알 수 없는 오류') + ' / 클라이언트 키·SDK 버전을 확인하세요.', 'error', 0);
+      }
+    };
+
+    /* 결제 요청 */
+    const request = async () => {
+      const amount = cfAmount.value;
+      if (amount <= 0) { props.showToast('결제금액이 0원입니다.', 'error'); return; }
+      if (!ui.ready || !_widgets) {
+        props.showToast('결제위젯이 준비되지 않았습니다. [' + props.buttonLabel + '] 를 먼저 눌러 위젯을 표시하세요.', 'error', 0); return;
+      }
+      const ok = await props.showConfirm('결제 요청', fmtWon(amount) + ' 을 결제하시겠습니까?');
+      if (!ok) { return; }
+      ui.processing = true;
+      try {
+        await _widgets.setAmount({ currency: 'KRW', value: amount });   // 결제 직전 최신 금액 동기화
+        const base = window.location.origin + window.location.pathname;
+        await _widgets.requestPayment({
+          orderId: props.orderId || ('ORDW' + String(uid).padStart(6, '0')),  // 토스 orderId 6~64자 규약 + 인스턴스 고정
+          orderName: props.orderName || '주문결제',
+          customerName: props.customerName || '고객',
+          successUrl: base + (props.successPage ? ('#page=' + props.successPage + '&payResult=success') : '#payResult=success'),
+          failUrl:    base + (props.failPage    ? ('#page=' + props.failPage    + '&payResult=fail')    : '#payResult=fail'),
+        });
+        /* 성공 시 successUrl 리다이렉트 → 이후 코드 보통 미실행 */
+      } catch (e) {
+        console.error('[BaseTossPayWidget 결제 실패]', e);
+        emit('error', e);
+        if (e && (e.code === 'USER_CANCEL' || /취소/.test(e.message || ''))) {
+          props.showToast('결제가 취소되었습니다.', 'info');
+        } else {
+          props.showToast('결제 요청 실패: ' + ((e && e.message) || '알 수 없는 오류') + ' / 결제수단 선택·약관 동의 후 다시 시도하세요.', 'error', 0);
+        }
+      } finally {
+        ui.processing = false;
+      }
+    };
+
+    return { ui, methodId, agreeId, cfAmount, fmtWon, toggle, request };
+  },
+  template: /* html */`
+<div>
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+    <button type="button" class="btn btn-secondary btn-sm" :disabled="ui.processing" @click="toggle">
+      {{ ui.open ? '✕ 위젯 닫기' : buttonLabel }}
+    </button>
+    <span style="font-size:12px;color:#888;">결제 금액 <b style="color:#e8587a;">{{ fmtWon(cfAmount) }}</b></span>
+  </div>
+  <div v-show="ui.open" style="margin-top:14px;border-top:1px dashed #e0e0e0;padding-top:14px;">
+    <div style="font-size:12px;color:#888;margin-bottom:8px;">결제 수단을 선택한 뒤 [결제하기] 를 누르세요. (Toss Client Key 미설정 시 테스트 키)</div>
+    <div :id="methodId"></div>
+    <div :id="agreeId" style="margin-top:8px;"></div>
+    <div style="text-align:right;margin-top:10px;">
+      <button type="button" class="btn btn-primary" :disabled="ui.processing" @click="request">
+        {{ ui.processing ? '결제 처리중…' : '결제하기' }}
+      </button>
+    </div>
+  </div>
+</div>
+`
+};
+
 /* ── BaseComp 레지스트리 ── */
 window.BaseComp = {
   'attach_grp': window.BaseAttachGrp,

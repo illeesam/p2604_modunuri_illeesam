@@ -192,6 +192,10 @@
     saveOne(cmd, entity, uiNm, cmdNm)   { return global.boApi.post('/bo/ec/od/order/save/' + cmd, entity, hdr(uiNm, cmdNm)); },
     /* 일괄저장 — cmd: status/payMethod/approval/approvalReq. rows = List<OdOrder> */
     saveList(cmd, rows, uiNm, cmdNm)    { return global.boApi.post('/bo/ec/od/order/save-list/' + cmd, rows, hdr(uiNm, cmdNm)); },
+    /* MD 대리주문 저장 — 주문 + 주문항목 동시 (body: ProxyOrderRequest) */
+    saveProxy(body, uiNm, cmdNm)        { return global.boApi.post('/bo/ec/od/order/save-proxy', body, hdr(uiNm, cmdNm)); },
+    /* 추가결제 요청 (body: { orderId, memberId, amount, reason }) */
+    requestExtraPay(body, uiNm, cmdNm)  { return global.boApi.post('/bo/ec/od/order/extra-pay', body, hdr(uiNm, cmdNm)); },
   };
 
   /* ── pd: 묶음상품 ───────────────────────────────────────────── */

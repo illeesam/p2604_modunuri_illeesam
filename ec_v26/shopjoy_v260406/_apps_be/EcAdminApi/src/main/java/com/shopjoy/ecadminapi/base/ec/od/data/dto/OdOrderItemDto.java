@@ -82,4 +82,15 @@ public class OdOrderItemDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class PageResponse extends BasePageResponse<Item, Request> {}
+
+    /** SaveItem — MD 대리주문 저장용 최소 주문항목 (필드 기본값 금지) */
+    @Getter @Setter @NoArgsConstructor
+    public static class SaveItem {
+        private String  prodId;
+        private String  skuId;
+        private String  prodNm;
+        private Long    unitPrice;     // 판매 단가
+        private Integer orderQty;      // 수량
+        private Long    itemOrderAmt;  // 항목 주문금액 (단가 × 수량)
+    }
 }

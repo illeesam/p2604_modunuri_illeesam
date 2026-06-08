@@ -35,6 +35,15 @@
     return s ? (s[name] || '') : '';
   };
 
+  /* _env — coEnvConsts 안전 접근 (path: 'toss.SDK_V2_URL'). 미로드 시 fallback */
+  const _env = (path, fallback) => {
+    try {
+      let v = window.coEnvConsts;
+      for (const k of path.split('.')) { v = v && v[k]; }
+      return (v != null) ? v : fallback;
+    } catch (_) { return fallback; }
+  };
+
   /* _loadScript */
   const _loadScript = (src) => new Promise((resolve, reject) => {
     const existing = Array.from(document.querySelectorAll('script')).find((s) => s.src === src);
@@ -83,7 +92,7 @@
         if (resp.error) { reject(new Error(resp.error_description || resp.error)); return; }
         const accessToken = resp.access_token;
         try {
-          const r = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          const r = await fetch(_env('oauth.GOOGLE_USERINFO_URL', 'https://www.googleapis.com/oauth2/v3/userinfo'), {
             headers: { Authorization: 'Bearer ' + accessToken },
           });
           const profile = await r.json();
@@ -157,7 +166,7 @@
         a.click();
       } else {
         const state = Math.random().toString(36).slice(2);
-        const url = 'https://nid.naver.com/oauth2.0/authorize'
+        const url = _env('oauth.NAVER_AUTHORIZE_URL', 'https://nid.naver.com/oauth2.0/authorize')
           + '?response_type=token'
           + '&client_id=' + encodeURIComponent(_key('svNaverClientId'))
           + '&redirect_uri=' + encodeURIComponent(_key('svNaverCallbackUrl') || (window.location.origin + window.location.pathname))
@@ -193,14 +202,38 @@
    * ════════════════════════════════════════════════════════════ */
   let _tossInstance = null;
 
+  /* 토스 공식 문서용 테스트 클라이언트 키 (결제위젯). svTossClientKey 미설정 시 폴백.
+   * 상수는 coEnvConsts 에서 가져옴 (미로드 시 안전 폴백). 실 결제는 사이트 설정의 tossClientKey 필요. */
+  const TOSS_TEST_CLIENT_KEY = (window.coEnvConsts && window.coEnvConsts.toss && window.coEnvConsts.toss.TEST_CLIENT_KEY)
+    || 'test_gck_docs_Ovk5rk1gB5Nrm6CzWlVWax';
+
+  /* 마지막 getTossPayments 호출이 테스트 키 폴백을 썼는지 (호출자 안내용) */
+  let _usedTestKey = false;
+  const isTossTestKey = () => _usedTestKey;
+
   /* getTossPayments */
   const getTossPayments = async () => {
     if (_tossInstance) return _tossInstance;
-    if (!window.TossPayments) throw new Error('Toss Payments SDK 가 로드되지 않았습니다.');
-    const clientKey = _key('svTossClientKey');
-    if (!clientKey) throw new Error('Toss Client Key 가 설정되지 않았습니다.');
+    if (!window.TossPayments) throw new Error('Toss Payments SDK 가 로드되지 않았습니다. (bo.html 의 v2/standard 스크립트 확인)');
+    let clientKey = _key('svTossClientKey');
+    if (!clientKey) { clientKey = TOSS_TEST_CLIENT_KEY; _usedTestKey = true; }
+    else { _usedTestKey = false; }
     _tossInstance = TossPayments(clientKey);
     return _tossInstance;
+  };
+
+  /* getTossPaymentWidgets — Toss v2 결제위젯 인스턴스 생성 (customerKey 별).
+   * 사용: const w = await coExtSdk.getTossPaymentWidgets(customerKey);
+   *       await w.setAmount({ currency:'KRW', value }); await w.renderPaymentMethods({ selector });
+   *       await w.renderAgreement({ selector }); await w.requestPayment({ orderId, orderName, successUrl, failUrl }); */
+  const getTossPaymentWidgets = async (customerKey) => {
+    const toss = await getTossPayments();
+    if (typeof toss.widgets !== 'function') throw new Error('이 Toss SDK 버전은 결제위젯(widgets)을 지원하지 않습니다.');
+    /* 비회원/게스트 결제는 customerKey 대신 'ANONYMOUS' 센티넬 사용 (Toss v2 규약).
+     * 회원은 2~50자 불투명 키 권장 (회원ID 그대로는 비권장이나 프로토타입에선 허용). */
+    const k = String(customerKey || '');
+    const ck = (k.length >= 2 && k.length <= 50) ? k : 'ANONYMOUS';
+    return toss.widgets({ customerKey: ck });
   };
 
   /* ════════════════════════════════════════════════════════════
@@ -213,7 +246,7 @@
     if (_kakaoMapPromise) return _kakaoMapPromise;
     const appKey = _key('svKakaoMapJsKey');
     if (!appKey) return Promise.reject(new Error('Kakao Map JS Key 가 설정되지 않았습니다.'));
-    const src = 'https://dapi.kakao.com/v2/maps/sdk.js?autoload=false&libraries=services,clusterer&appkey=' + encodeURIComponent(appKey);
+    const src = _env('map.KAKAO_SDK_URL', 'https://dapi.kakao.com/v2/maps/sdk.js?autoload=false&libraries=services,clusterer&appkey=') + encodeURIComponent(appKey);
     _kakaoMapPromise = _loadScript(src).then(() => new Promise((resolve) => {
       kakao.maps.load(() => resolve(kakao.maps));
     }));
@@ -227,7 +260,7 @@
     if (_naverMapPromise) return _naverMapPromise;
     const clientId = _key('svNaverMapClientId');
     if (!clientId) return Promise.reject(new Error('Naver Map Client ID 가 설정되지 않았습니다.'));
-    const src = 'https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=' + encodeURIComponent(clientId);
+    const src = _env('map.NAVER_SDK_URL', 'https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=') + encodeURIComponent(clientId);
     _naverMapPromise = _loadScript(src).then(() => naver.maps);
     return _naverMapPromise;
   };
@@ -236,7 +269,7 @@
     // 소셜 로그인
     loginGoogle, loginKakao, loginNaver,
     // 결제
-    getTossPayments,
+    getTossPayments, getTossPaymentWidgets, isTossTestKey,
     // 지도
     loadKakaoMap, loadNaverMap,
   };

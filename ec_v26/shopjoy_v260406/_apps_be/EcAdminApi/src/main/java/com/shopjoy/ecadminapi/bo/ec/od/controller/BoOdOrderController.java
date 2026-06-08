@@ -101,4 +101,18 @@ public class BoOdOrderController {
         }
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
+
+    /** saveProxyOrder -- MD 대리주문 저장 (주문 + 주문항목 동시) */
+    @PostMapping("/save-proxy")
+    public ResponseEntity<ApiResponse<OdOrderDto.Item>> saveProxyOrder(@RequestBody OdOrderDto.ProxyOrderRequest req) {
+        OdOrderDto.Item result = boOdOrderService.saveProxyOrder(req);
+        return ResponseEntity.ok(ApiResponse.ok(result, "저장되었습니다."));
+    }
+
+    /** requestExtraPay -- 추가결제 요청 */
+    @PostMapping("/extra-pay")
+    public ResponseEntity<ApiResponse<OdOrderDto.Item>> requestExtraPay(@RequestBody OdOrderDto.ExtraPayRequest req) {
+        OdOrderDto.Item result = boOdOrderService.requestExtraPay(req);
+        return ResponseEntity.ok(ApiResponse.ok(result, "추가결제 요청이 전송되었습니다."));
+    }
 }

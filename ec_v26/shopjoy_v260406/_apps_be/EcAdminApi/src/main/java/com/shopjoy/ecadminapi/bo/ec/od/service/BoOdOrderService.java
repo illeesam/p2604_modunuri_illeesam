@@ -6,7 +6,9 @@ import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderItemDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdPayDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdOrder;
+import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdOrderItem;
 import com.shopjoy.ecadminapi.base.ec.od.repository.OdOrderRepository;
+import com.shopjoy.ecadminapi.base.ec.od.repository.OdOrderItemRepository;
 import com.shopjoy.ecadminapi.base.ec.od.service.OdDlivService;
 import com.shopjoy.ecadminapi.base.ec.od.service.OdOrderDiscntService;
 import com.shopjoy.ecadminapi.base.ec.od.service.OdOrderItemService;
@@ -38,6 +40,7 @@ public class BoOdOrderService {
     private final OdOrderService         odOrderService;
     private final OdOrderRepository      odOrderRepository;
     private final OdOrderItemService     odOrderItemService;
+    private final OdOrderItemRepository  odOrderItemRepository;
     private final OdPayService           odPayService;
     private final OdDlivService          odDlivService;
     private final OdOrderDiscntService   odOrderDiscntService;
@@ -146,6 +149,104 @@ public class BoOdOrderService {
     @Transactional public OdOrder update(String id, OdOrder body) { return odOrderService.update(id, body); }
     @Transactional public void delete(String id) { odOrderService.delete(id); }
     @Transactional public void saveListBase(List<OdOrder> rows) { odOrderService.saveListBase(rows); }
+
+    /**
+     * saveProxyOrder — MD 대리주문 저장 (주문 + 주문항목 동시 저장).
+     * 신규(orderId=null)면 create, 기존이면 update 후 항목 전체 교체(delete→insert).
+     */
+    @Transactional
+    public OdOrderDto.Item saveProxyOrder(OdOrderDto.ProxyOrderRequest req) {
+        if (req == null) throw new CmBizException("요청이 비어 있습니다.::" + CmUtil.svcCallerInfo(this));
+        if (req.getMemberId() == null || req.getMemberId().isBlank())
+            throw new CmBizException("회원ID는 필수입니다.::" + CmUtil.svcCallerInfo(this));
+
+        boolean isNew = (req.getOrderId() == null || req.getOrderId().isBlank());
+        long dlivFee = req.getDlivFee() == null ? 0L : req.getDlivFee();
+        long totalAmt = req.getTotalAmt() == null ? 0L : req.getTotalAmt();
+        long payAmt = req.getPayAmt() == null ? (totalAmt + dlivFee) : req.getPayAmt();
+
+        OdOrder order;
+        if (isNew) {
+            order = new OdOrder();
+            order.setSiteId(req.getSiteId() != null ? req.getSiteId() : SecurityUtil.getSiteId());
+            order.setMemberId(req.getMemberId());
+            order.setMemberNm(req.getMemberNm());
+            order.setOrdererEmail(req.getOrdererEmail());
+            order.setOrderDate(LocalDateTime.now());
+            order.setOrderStatusCd(req.getOrderStatusCd() != null ? req.getOrderStatusCd() : "PENDING");
+            order.setPayMethodCd(req.getPayMethodCd());
+            order.setTotalAmt(totalAmt);
+            order.setOutboundShippingFee(dlivFee);
+            order.setPayAmt(payAmt);
+            order.setMemo(req.getMemo());
+            order = odOrderService.create(order);   // orderId 생성 + flush
+        } else {
+            order = odOrderRepository.findById(req.getOrderId())
+                .orElseThrow(() -> new CmBizException("존재하지 않는 주문입니다: " + req.getOrderId() + "::" + CmUtil.svcCallerInfo(this)));
+            order.setMemberId(req.getMemberId());
+            if (req.getMemberNm() != null)      order.setMemberNm(req.getMemberNm());
+            if (req.getOrdererEmail() != null)  order.setOrdererEmail(req.getOrdererEmail());
+            if (req.getOrderStatusCd() != null) order.setOrderStatusCd(req.getOrderStatusCd());
+            if (req.getPayMethodCd() != null)   order.setPayMethodCd(req.getPayMethodCd());
+            order.setTotalAmt(totalAmt);
+            order.setOutboundShippingFee(dlivFee);
+            order.setPayAmt(payAmt);
+            if (req.getMemo() != null)          order.setMemo(req.getMemo());
+            order.setUpdBy(SecurityUtil.getAuthUser().authId());
+            order.setUpdDate(LocalDateTime.now());
+            odOrderRepository.save(order);
+            /* 기존 항목 전체 삭제 후 재삽입 (전체 교체 방식) */
+            odOrderItemRepository.deleteByOrderId(order.getOrderId());
+            em.flush();
+        }
+
+        /* 주문항목 저장 */
+        final String orderId = order.getOrderId();
+        final String siteId  = order.getSiteId();
+        if (req.getOrderItems() != null) {
+            for (OdOrderItemDto.SaveItem si : req.getOrderItems()) {
+                if (si == null || si.getProdId() == null) continue;
+                OdOrderItem item = new OdOrderItem();
+                item.setSiteId(siteId);
+                item.setOrderId(orderId);
+                item.setProdId(si.getProdId());
+                item.setSkuId(si.getSkuId());
+                item.setProdNm(si.getProdNm());
+                item.setUnitPrice(si.getUnitPrice());
+                item.setOrderQty(si.getOrderQty() != null ? si.getOrderQty() : 1);
+                long amt = si.getItemOrderAmt() != null ? si.getItemOrderAmt()
+                    : (si.getUnitPrice() != null ? si.getUnitPrice() * (si.getOrderQty() != null ? si.getOrderQty() : 1) : 0L);
+                item.setItemOrderAmt(amt);
+                item.setOrderItemStatusCd("ORDERED");
+                odOrderItemService.create(item);   // orderItemId 생성 + 저장
+            }
+        }
+        em.flush();
+        return getById(orderId);
+    }
+
+    /**
+     * requestExtraPay — 추가결제 요청. 현재는 주문 메모에 요청 이력만 누적(별도 결재 테이블 도입 전).
+     * 반환: 갱신된 주문 단건.
+     */
+    @Transactional
+    public OdOrderDto.Item requestExtraPay(OdOrderDto.ExtraPayRequest req) {
+        if (req == null || req.getOrderId() == null || req.getOrderId().isBlank())
+            throw new CmBizException("orderId는 필수입니다.::" + CmUtil.svcCallerInfo(this));
+        if (req.getAmount() == null || req.getAmount() <= 0)
+            throw new CmBizException("요청 금액은 0보다 커야 합니다.::" + CmUtil.svcCallerInfo(this));
+        OdOrder order = odOrderRepository.findById(req.getOrderId())
+            .orElseThrow(() -> new CmBizException("존재하지 않는 주문입니다: " + req.getOrderId() + "::" + CmUtil.svcCallerInfo(this)));
+        String line = "[추가결제요청] " + req.getAmount() + "원"
+            + (req.getReason() != null && !req.getReason().isBlank() ? " / 사유: " + req.getReason() : "")
+            + " (" + LocalDateTime.now() + ")";
+        order.setMemo((order.getMemo() == null ? "" : order.getMemo() + "\n") + line);
+        order.setUpdBy(SecurityUtil.getAuthUser().authId());
+        order.setUpdDate(LocalDateTime.now());
+        odOrderRepository.save(order);
+        em.flush();
+        return getById(order.getOrderId());
+    }
 
     /** saveOneStatus — 단건 orderStatusCd 변경 (이력 보존). row: orderId + orderStatusCd */
     @Transactional

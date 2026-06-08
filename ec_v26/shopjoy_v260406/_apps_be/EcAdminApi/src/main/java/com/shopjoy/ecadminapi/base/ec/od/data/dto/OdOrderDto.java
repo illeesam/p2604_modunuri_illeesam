@@ -87,4 +87,33 @@ public class OdOrderDto {
 
     @Getter @Setter @NoArgsConstructor
     public static class PageResponse extends BasePageResponse<Item, Request> {}
+
+    /**
+     * ProxyOrderRequest — MD 대리주문 저장 요청 (주문 + 주문항목 동시 저장).
+     * 주의: 필드 기본값 금지(VoUtil selective-copy 전제). 모두 null 시작.
+     */
+    @Getter @Setter @NoArgsConstructor
+    public static class ProxyOrderRequest {
+        private String orderId;        // 신규 시 null (서버 생성)
+        private String siteId;
+        private String memberId;
+        private String memberNm;
+        private String ordererEmail;
+        private String orderStatusCd;
+        private String payMethodCd;
+        private Long    totalAmt;       // 상품 합계
+        private Long    dlivFee;        // 배송비 → outbound_shipping_fee
+        private Long    payAmt;         // 최종 결제금액 (상품합계 + 배송비)
+        private String  memo;
+        private List<OdOrderItemDto.SaveItem> orderItems;  // 주문항목
+    }
+
+    /** ExtraPayRequest — 추가결제 요청 (배송비 등 추가 비용을 고객에게 요청) */
+    @Getter @Setter @NoArgsConstructor
+    public static class ExtraPayRequest {
+        private String orderId;
+        private String memberId;
+        private Long   amount;
+        private String reason;
+    }
 }

@@ -343,19 +343,19 @@ window.OdDlivDtl = {
 <bo-container :title="!active ? '배송 상세' : (cfIsNew ? '배송 등록' : (cfDtlMode ? '배송 상세' : '배송 수정'))"
   :title-id="!active ? '' : (cfIsNew ? '' : form.dlivId)">
   <!-- ===== ■.■. 탭바 ==================================================== -->
-  <bo-tab-bar v-if="!cfIsNew" :tabs="tabs" :tab="tab" :tab-mode="tabMode2"
+  <bo-tab-bar :tabs="tabs" :tab="tab" :tab-mode="tabMode2"
     @tab-select="id => handleBtnAction('tab-change', id)"
     @mode-select="m => handleBtnAction('viewMode-change', m)" />
   <!-- ===== □. 탭바 ====================================================== -->
   <!-- ===== ■. 탭 컨텐츠 =================================================== -->
   <div :class="tabMode2!=='tab' ? 'dtl-tab-grid cols-'+tabMode2.charAt(0) : ''">
-    <div v-if="cfIsNew || showTab('info')" class="dtl-pane">
+    <div v-if="showTab('info')" class="dtl-pane">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📋 상세정보</div>
       <!-- ===== ■.■.■. 배송 진행 상태 흐름 ========================================= -->
-      <div v-if="!cfIsNew" style="margin-bottom:20px;padding:16px 18px;background:#f6f6f6;border-radius:10px;">
+      <div style="margin-bottom:20px;padding:16px 18px;background:#f6f6f6;border-radius:10px;">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
           <span style="font-size:11px;font-weight:800;padding:3px 10px;border-radius:10px;color:#fff;background:#0ea5e9;">🚚 배송</span>
-          <span style="font-size:13px;font-weight:700;color:#222;">{{ form.dlivId }}</span>
+          <span style="font-size:13px;font-weight:700;color:#222;">{{ form.dlivId || (cfIsNew ? '신규 배송' : '') }}</span>
           <span v-if="form.orderId" style="font-size:11px;color:#888;">주문: {{ form.orderId }}</span>
           <span v-if="form.outboundCourierCd && form.outboundTrackingNo" style="font-size:11px;color:#888;margin-left:auto;">
             {{ form.outboundCourierCd }} · {{ form.outboundTrackingNo }}
@@ -422,7 +422,7 @@ window.OdDlivDtl = {
       </bo-form-area>
     </div>
     <!-- ===== ■.■. 배송항목목록 탭 ============================================== -->
-    <div v-if="!cfIsNew && showTab('items')" class="dtl-pane" style="padding:20px;">
+    <div v-if="showTab('items')" class="dtl-pane" style="padding:20px;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📦 배송항목 <span class="tab-count"> {{ dlivItems.length }} </span></div>
       <div style="background:#f9fafb;padding:10px 14px;border-radius:8px;margin-bottom:12px;display:flex;flex-wrap:wrap;gap:14px;font-size:12px;">
         <span><b style="color:#888;"> 택배사: </b> {{ form.outboundCourierCd || '미지정' }}</span>
@@ -455,14 +455,14 @@ window.OdDlivDtl = {
     </div>
     <!-- ===== □.□. 배송항목목록 탭 ============================================== -->
     <!-- ===== ■.■. 결제정보 탭 ================================================ -->
-    <div v-if="!cfIsNew && showTab('payment')" class="dtl-pane" style="padding:20px;">
+    <div v-if="showTab('payment')" class="dtl-pane" style="padding:20px;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">💳 결제정보 <span class="tab-count"> {{ cfPaymentList.length }} </span></div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid bare :columns="columns.paymentGrid" :rows="cfPaymentList" empty-text="결제정보가 없습니다." @ref-click="({type,id}) => handleBtnAction('payment-refClick', {type, id})"></bo-grid>
     </div>
     <!-- ===== □.□. 결제정보 탭 ================================================ -->
     <!-- ===== ■.■. 배송상태변경이력 탭 ============================================ -->
-    <div v-if="!cfIsNew && showTab('hist')" class="dtl-pane">
+    <div v-if="showTab('hist')" class="dtl-pane">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title" style="margin-bottom:10px;padding:0 0 10px 0;">
         🕒 상태변경이력
         <span class="tab-count">{{ cfStatusHistList.length }}</span>
@@ -471,7 +471,7 @@ window.OdDlivDtl = {
     </div>
     <!-- ===== □.□. 배송상태변경이력 탭 ============================================ -->
     <!-- ===== ■.■. 정보수정이력 탭 ============================================== -->
-    <div v-if="!cfIsNew && showTab('editHist')" class="dtl-pane" style="padding:20px;">
+    <div v-if="showTab('editHist')" class="dtl-pane" style="padding:20px;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">📝 정보수정이력 <span class="tab-count"> {{ cfEditHistList.length }} </span></div>
       <!-- ===== ■.■.■. 목록 영역 =============================================== -->
       <bo-grid bare :columns="columns.editHistGrid" :rows="cfEditHistList" empty-text="정보 수정 이력이 없습니다."></bo-grid>
