@@ -1728,6 +1728,31 @@
         }
       };
 
+      /* doSocial — 소셜 로그인 (구글/네이버/카카오). 프로토타입: boAuthStore 데모 세션.
+       * 실 SDK 연동 시 window.coExtSdk.loginXxx() 호출 후 그 profile 로 백엔드 소셜 인증 교체 */
+      const doSocial = async (provider) => {
+        loginError.value = '';
+        try {
+          if (!_boAuthStore) {
+            loginError.value = '스토어 초기화 실패';
+            return;
+          }
+          const res = _boAuthStore.saLoginSocial(provider);
+          if (!res?.ok) {
+            loginError.value = res?.msg || (provider + ' 로그인 실패');
+            return;
+          }
+          _syncCurrentAuthUser();
+          openTabs.splice(0);
+          closeLogin();
+          navigate('dashboard');
+          showToast(`${currentAuthUser?.authNm || currentAuthUser?.name || '사용자'}님 환영합니다.`);
+        } catch (err) {
+          console.error('[doSocial]', err);
+          loginError.value = err?.message || (provider + ' 로그인 실패');
+        }
+      };
+
       /* doLogout */
       const doLogout = async () => {
         try {
@@ -1981,6 +2006,7 @@
         openLogin,
         closeLogin,
         doLogin,
+        doSocial,
         doLogout,
         doRegister,
         QUICK_USERS,
@@ -2746,6 +2772,7 @@
     :user-roles="userRoles"
     @do-login="doLogin"
     @do-register="doRegister"
+    @do-social="doSocial"
     @open-user-pick="openUserPick"
     @clear-error="loginError=''"
     @close="closeLogin" />

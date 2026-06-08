@@ -27,6 +27,8 @@
     oauth: {
       GOOGLE_USERINFO_URL: 'https://www.googleapis.com/oauth2/v3/userinfo',
       NAVER_AUTHORIZE_URL: 'https://nid.naver.com/oauth2.0/authorize',
+      /* 카카오는 Kakao JS SDK(Kakao.Auth.login) 사용 — 사용자정보 REST 엔드포인트 (SDK 미사용/직접 호출 시 폴백) */
+      KAKAO_USERINFO_URL: 'https://kapi.kakao.com/v2/user/me',
     },
 
     /* ── 지도 SDK (동적 로드) ── */

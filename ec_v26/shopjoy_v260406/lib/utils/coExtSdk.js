@@ -46,6 +46,14 @@
     } catch (_) { return fallback; }
   };
 
+  /* _errMsg — "원인 — 해결방법" 형식의 표준 에러 메시지 생성.
+   * 호출자(화면)는 catch 후 showToast(e.message, 'error') 로 그대로 노출한다.
+   * SDK 창(팝업/위젯)이 안 뜨는 대표 원인별 안내를 한 곳에서 관리. */
+  const _errMsg = (reason, howto) => `${reason}\n→ 해결: ${howto}`;
+
+  /* _isPopupBlocked — window.open 결과가 차단되었는지 판정 */
+  const _isPopupBlocked = (win) => (!win || win.closed || typeof win.closed === 'undefined');
+
   /* _loadScript */
   const _loadScript = (src) => new Promise((resolve, reject) => {
     const existing = Array.from(document.querySelectorAll('script')).find((s) => s.src === src);
@@ -73,10 +81,12 @@
   const _initGoogle = () => {
     if (_googleClient) return _googleClient;
     if (!window.google || !google.accounts || !google.accounts.oauth2) {
-      throw new Error('Google Identity Services 가 로드되지 않았습니다.');
+      throw new Error(_errMsg('Google 로그인 창을 열 수 없습니다 — Google Identity Services(GIS) 스크립트가 로드되지 않았습니다.',
+        'index.html/bo.html 의 accounts.google.com/gsi/client 스크립트 로드와 네트워크/광고차단 확장을 확인하세요.'));
     }
     const clientId = _key('svGoogleClientId');
-    if (!clientId) throw new Error('Google Client ID 가 설정되지 않았습니다.');
+    if (!clientId) throw new Error(_errMsg('Google 로그인 창을 열 수 없습니다 — Google Client ID 가 설정되지 않았습니다.',
+      '사이트 설정(AppStore)의 svGoogleClientId 값을 등록하세요.'));
 
     _googleClient = google.accounts.oauth2.initTokenClient({
       client_id: clientId,
@@ -103,15 +113,30 @@
           resolve({ provider: 'google', accessToken, idToken: null, profile: null });
         }
       };
+      /* 팝업이 안 뜨거나 닫힘 → error_callback 으로 사유 전달 (GIS 지원) */
+      client.error_callback = (err) => {
+        const t = err && err.type;
+        if (t === 'popup_failed_to_open') {
+          reject(new Error(_errMsg('Google 로그인 창이 열리지 않았습니다 — 브라우저 팝업이 차단되었습니다.',
+            '주소창 우측 팝업 차단 아이콘에서 이 사이트의 팝업을 허용한 뒤 다시 시도하세요.')));
+        } else if (t === 'popup_closed') {
+          reject(new Error('Google 로그인이 취소되었습니다 (창을 닫음).'));
+        } else {
+          reject(new Error(_errMsg('Google 로그인 창을 여는 중 오류가 발생했습니다 (' + (t || 'unknown') + ').',
+            '팝업 차단 해제·네트워크 상태를 확인하고 다시 시도하세요.')));
+        }
+      };
       client.requestAccessToken({ prompt: 'consent' });
     } catch (e) { reject(e); }
   });
 
   /* ── Kakao: Kakao SDK login + 사용자 정보 요청 ── */
   const _initKakao = () => {
-    if (!window.Kakao) throw new Error('Kakao SDK 가 로드되지 않았습니다.');
+    if (!window.Kakao) throw new Error(_errMsg('카카오 로그인 창을 열 수 없습니다 — Kakao SDK 가 로드되지 않았습니다.',
+      'index.html/bo.html 의 kakao SDK(t1.kakaocdn.net) 스크립트 로드와 네트워크/광고차단 확장을 확인하세요.'));
     const jsKey = _key('svKakaoJsKey');
-    if (!jsKey) throw new Error('Kakao JavaScript Key 가 설정되지 않았습니다.');
+    if (!jsKey) throw new Error(_errMsg('카카오 로그인 창을 열 수 없습니다 — Kakao JavaScript Key 가 설정되지 않았습니다.',
+      '사이트 설정(AppStore)의 svKakaoJsKey 값을 등록하세요.'));
     if (!Kakao.isInitialized()) Kakao.init(jsKey);
   };
 
@@ -122,13 +147,26 @@
       Kakao.Auth.login({
         scope: 'profile_nickname,account_email',
         success: (authObj) => {
+          /* Kakao.API.request 의 url 은 SDK 가 kapi.kakao.com 을 자동 prefix 하므로 경로만 전달.
+           * 상수(oauth.KAKAO_USERINFO_URL)는 전체 URL 보관 → pathname 만 추출해 단일 소스 유지 */
+          let kakaoMePath = '/v2/user/me';
+          try { kakaoMePath = new URL(_env('oauth.KAKAO_USERINFO_URL', 'https://kapi.kakao.com/v2/user/me')).pathname; } catch (_) {}
           Kakao.API.request({
-            url: '/v2/user/me',
+            url: kakaoMePath,
             success: (profile) => resolve({ provider: 'kakao', accessToken: authObj.access_token, profile }),
             fail:    ()         => resolve({ provider: 'kakao', accessToken: authObj.access_token, profile: null }),
           });
         },
-        fail: (err) => reject(new Error(err?.error_description || '카카오 로그인 실패')),
+        fail: (err) => {
+          const msg = (err && (err.error_description || err.error)) || '';
+          /* 팝업 차단/창 미오픈 추정 (Kakao 는 표준 코드가 일정치 않아 메시지 키워드로 판정) */
+          if (/popup|차단|blocked|window/i.test(msg)) {
+            reject(new Error(_errMsg('카카오 로그인 창이 열리지 않았습니다 — 브라우저 팝업이 차단되었습니다.',
+              '주소창 우측 팝업 차단 아이콘에서 이 사이트의 팝업을 허용한 뒤 다시 시도하세요.')));
+          } else {
+            reject(new Error(msg || '카카오 로그인이 취소되었거나 실패했습니다.'));
+          }
+        },
       });
     } catch (e) { reject(e); }
   });
@@ -140,11 +178,13 @@
   const _initNaver = () => {
     if (_naverInstance) return _naverInstance;
     if (!window.naver || !naver.LoginWithNaverId) {
-      throw new Error('Naver Login SDK 가 로드되지 않았습니다.');
+      throw new Error(_errMsg('네이버 로그인 창을 열 수 없습니다 — Naver Login SDK 가 로드되지 않았습니다.',
+        'index.html/bo.html 의 네이버 로그인 SDK 스크립트 로드와 네트워크/광고차단 확장을 확인하세요.'));
     }
     const clientId = _key('svNaverClientId');
     const callbackUrl = _key('svNaverCallbackUrl') || (window.location.origin + window.location.pathname);
-    if (!clientId) throw new Error('Naver Client ID 가 설정되지 않았습니다.');
+    if (!clientId) throw new Error(_errMsg('네이버 로그인 창을 열 수 없습니다 — Naver Client ID 가 설정되지 않았습니다.',
+      '사이트 설정(AppStore)의 svNaverClientId 값을 등록하세요.'));
 
     _naverInstance = new naver.LoginWithNaverId({
       clientId,

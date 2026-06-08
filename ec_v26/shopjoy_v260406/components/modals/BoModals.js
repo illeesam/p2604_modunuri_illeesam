@@ -6765,7 +6765,7 @@ window.AuthLoginModal = {
     modalName:  { type: String,   default: '' },                       // 모달 식별자
     onCallback: { type: Function, default: null },                     // 통합 콜백
   },
-  emits: ['do-login', 'do-register', 'open-user-pick', 'close', 'clear-error'],
+  emits: ['do-login', 'do-register', 'do-social', 'open-user-pick', 'close', 'clear-error'],
   setup(props, { emit }) {
     const setTab = (t) => { props.modal.tab = t; emit('clear-error'); };
 
@@ -6782,6 +6782,8 @@ window.AuthLoginModal = {
         return emit('do-register');
       } else if (cmd === 'modal-open-user-pick') {
         return emit('open-user-pick');
+      } else if (cmd === 'modal-social') {
+        return emit('do-social', param);
       } else if (cmd === 'tab-change') {
         return setTab(param);
       } else {
@@ -6856,6 +6858,37 @@ window.AuthLoginModal = {
       <button class="btn btn-primary" style="width:100%;margin-top:4px;" @click="handleBtnAction('modal-login')">
         로그인
       </button>
+      <!-- 소셜 로그인 (구글 / 카카오 / 네이버) -->
+      <div style="display:flex;align-items:center;gap:10px;margin:16px 0 12px;color:#bbb;font-size:0.78rem;">
+        <div style="flex:1;height:1px;background:#eee;">
+        </div>
+        소셜 로그인
+        <div style="flex:1;height:1px;background:#eee;">
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <button @click="handleBtnAction('modal-social', 'google')"
+          style="width:100%;padding:10px;border:1.5px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-size:0.85rem;color:#333;font-weight:600;">
+          <span style="font-size:1.05rem;">
+            🌐
+          </span>
+          Google로 로그인
+        </button>
+        <button @click="handleBtnAction('modal-social', 'kakao')"
+          style="width:100%;padding:10px;border:none;border-radius:8px;background:#FEE500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-size:0.85rem;color:#3C1E1E;font-weight:700;">
+          <span style="font-size:1.05rem;">
+            💬
+          </span>
+          카카오로 로그인
+        </button>
+        <button @click="handleBtnAction('modal-social', 'naver')"
+          style="width:100%;padding:10px;border:none;border-radius:8px;background:#03C75A;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-size:0.85rem;color:#fff;font-weight:700;">
+          <span style="font-size:1.05rem;font-weight:900;">
+            N
+          </span>
+          네이버로 로그인
+        </button>
+      </div>
       <div style="text-align:center;margin-top:12px;font-size:12px;color:#aaa;">
         <span>
           계정이 없으신가요?
