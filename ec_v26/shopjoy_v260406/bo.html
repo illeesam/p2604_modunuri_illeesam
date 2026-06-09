@@ -51,10 +51,10 @@
         location.reload();
       }
     });
-    /* 개발 시 기본 페이지 자동 이동 */
+    /* 기본 페이지 자동 이동 — 해시 없이 진입 시 대시보드(홈)로 */
     (function(){
       if (!window.location.hash) {
-        window.location.hash = '#page=zdStore';
+        window.location.hash = '#page=dashboard';
       }
     })();
   </script>

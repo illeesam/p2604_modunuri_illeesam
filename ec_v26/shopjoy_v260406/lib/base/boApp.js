@@ -1703,9 +1703,16 @@
         loginError.value = '';
       };
 
+      /* onLogoClick — 로고(ShopJoy) 클릭. 로그인 상태면 대시보드, 비로그인이면 전용 로그인 화면(page) */
+      const onLogoClick = () => {
+        if (cfIsLoggedIn.value) navigate('dashboard');
+        else openLogin('login', 'page');
+      };
+
       /* closeLogin */
       const closeLogin = () => {
         loginModal.show = false;
+        loginModal.mode = 'modal'; // page 모드 해제 — 안 풀면 cfIsPage 가 true 라 :show 가 항상 표시되어 안 닫힘
         loginError.value = '';
       };
 
@@ -1781,21 +1788,39 @@
 
           uiState.userMenuShow = false;
           openTabs.splice(0);
-          navigate('dashboard');
+          _syncCurrentAuthUser();
+          page.value = 'dashboard';                  // 루트로 이동 (본문은 cfIsLoggedIn=false 라 미렌더)
+          openLogin('login', 'page');                // 전용 로그인 화면 표시
           showToast('로그아웃되었습니다.');
         } catch (e) {
           console.error('doLogout error:', e);
           uiState.userMenuShow = false;
         }
       };
-      /* 다른 탭 로그인/로그아웃 동기화 */
+      /* 다른 탭 로그인/로그아웃/계정변경 동기화.
+       * 사용자(authId)가 바뀌면(다른 계정 로그인 또는 로그아웃) 이 탭의 메모리에 이전 사용자
+       * 데이터가 남아있으므로 reload 하여 새 사용자 기준으로 완전히 다시 로드한다. */
       window.addEventListener('storage', (e) => {
         if (e.key === 'modu-bo-accessToken' || e.key === 'modu-bo-authUser') {
+          const prevAuthId = currentAuthUser?.authId || '';
           _boAuthStore?.saSyncFromStorage?.();
           _syncCurrentAuthUser();
+          const nextAuthId = currentAuthUser?.authId || '';
+          /* 사용자가 실제로 바뀐 경우에만 reload (같은 사용자 토큰 갱신 등은 동기화로 충분) */
+          if (prevAuthId !== nextAuthId) {
+            /* BO 는 dashboard 외 전 페이지가 인증 필수 → 로그아웃/계정변경 시 dashboard 로 해시 변경 후 reload.
+             * (이전 사용자의 작업 페이지에 남지 않도록 — FO 의 home 전환과 동일 취지) */
+            const curPage = (new URLSearchParams((location.hash || '').replace(/^#/, ''))).get('page') || '';
+            if (curPage && curPage !== 'dashboard') {
+              location.hash = '#page=dashboard';
+            }
+            location.reload();
+          }
         }
       });
-      /* 같은 탭 DevTools 변경 감지 — FO의 syncFromStorage + _sync() 패턴 동일 적용 (가드: 중복 setInterval 방지) */
+      /* 같은 탭 DevTools 변경 감지 — FO의 syncFromStorage + _sync() 패턴 동일 적용 (가드: 중복 setInterval 방지).
+       * (사용자 변경 시 reload 는 storage 이벤트 핸들러에서만 처리 — 같은 탭의 로그인/로그아웃은
+       *  doLogin/doLogout 정상 흐름으로 처리되므로 여기서는 동기화만 한다.) */
       if (!window._boAuthSyncTimer) {
         window._boAuthSyncTimer = setInterval(() => {
           _boAuthStore?.saSyncFromStorage?.();
@@ -2017,6 +2042,7 @@
         uiState,
         userRoles,
         openLogin,
+        onLogoClick,
         closeLogin,
         doLogin,
         doSocial,
@@ -2073,7 +2099,7 @@
   <!-- ① TOP NAV -->
   <nav class="bo-top-nav" v-if="!cfEmbed">
     <button class="sidebar-toggle-btn" @click.stop="leftMenuOpen=!leftMenuOpen" title="사이드바">☰</button>
-    <span class="brand" @click="navigate('dashboard')" style="display:inline-flex;align-items:center;gap:8px;">
+    <span class="brand" @click="onLogoClick" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;">
       ShopJoy
       <span class="fo-site-badge"
         :title="'FO_SITE_NO=' + (currentFoSiteNo || '-') + ' BO_SITE_NO=' + (currentBoSiteNo || '-') + ' — 클릭: 연관사이트'"
@@ -2331,6 +2357,10 @@
         <!-- 초기화 중 로딩 표시 -->
         <div v-if="!boInitReady" style="display:flex;align-items:center;justify-content:center;height:200px;color:#aaa;font-size:14px;">
           <span>초기화 중...</span>
+        </div>
+        <!-- 비로그인 시 본문(데이터) 미렌더 — 전용 로그인 화면(page 모드)이 자동 표시됨 -->
+        <div v-else-if="!cfIsLoggedIn" style="display:flex;align-items:center;justify-content:center;height:60vh;color:#bbb;font-size:14px;">
+          <span>로그인이 필요합니다.</span>
         </div>
         <template v-else>
           <!-- 고정된 탭: v-show로 항상 마운트 유지, 전환 시 상태 보존 -->

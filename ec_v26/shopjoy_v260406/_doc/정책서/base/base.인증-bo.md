@@ -126,21 +126,50 @@ POST /api/co/bo-auth/logout
 
 ---
 
-## 9. 다른 탭 / DevTools 로그아웃 감지
+## 9. 로그인 화면 정책 — 전용 화면 vs 모달 (단일 컴포넌트 재활용)
 
-`lib/stores/bo/boAuthStore.js`:
+**원칙**: BO(관리자)는 인증이 전제다. **비로그인이면 데이터가 보이면 안 되고, 로그인 화면만 노출**한다.
+
+`AuthLoginModal`(`components/modals/BoModals.js`) 하나를 `mode` prop으로 두 방식으로 재활용한다 (로그인 폼은 단일 소스, 폼 중복 금지).
+
+| 상황 | 모드 | 동작 |
+|------|------|------|
+| 최초 미인증 진입 / 로그아웃 / 로고 클릭(비로그인) | `page` | 전용 화면 — 불투명 배경(`#f3f4f6`, 뒤 데이터 안 비침), 닫기 ✕ 숨김, 배경 클릭 닫기 비활성 |
+| 세션 만료(401) 재인증 | `modal` | 현재 작업 화면 위 모달 — 반투명 배경, 작업 컨텍스트 유지하며 재로그인 |
+
+- `bo-modal` 에 `overlayBg` prop 으로 배경색 제어(page=불투명 / modal=반투명)
+- `boApp.js`: `openLogin(tab, mode)` / 로고 클릭 `onLogoClick`(로그인 상태면 dashboard, 아니면 `openLogin('login','page')`) / 로그아웃 `doLogout` → `openLogin('login','page')`
+- ⚠️ **`closeLogin()` 에서 `loginModal.mode='modal'` 리셋 필수** — page 모드는 `:show="cfIsPage ? true : ..."` 라 mode 안 풀면 로그인 성공 후에도 모달이 안 닫힘
+- **본문 인증 게이트**: 페이지 렌더 영역을 `v-else-if="!cfIsLoggedIn"`(→"로그인이 필요합니다") + `<template v-else>`(실제 본문) 로 분리. 비로그인 시 dashboard 데이터 미렌더 (라우팅이 미인증도 dashboard 허용하던 보안 홀 차단)
+- BO 홈 = `dashboard` (별도 home 없음). `bo.html` 해시 없이 진입 시 `#page=dashboard`
+
+## 10. 다른 탭 / DevTools 로그아웃·계정변경 감지
+
+`lib/base/boApp.js`:
 
 ```js
-// storage 이벤트: 다른 탭 로그아웃 즉시 감지
-window.addEventListener('storage', e => {
-  if (e.key === 'modu-bo-accessToken') store.syncFromStorage();
+// storage 이벤트: 다른 탭 로그인/로그아웃/계정변경 감지
+window.addEventListener('storage', (e) => {
+  if (e.key === 'modu-bo-accessToken' || e.key === 'modu-bo-authUser') {
+    const prevAuthId = currentAuthUser?.authId || '';
+    _boAuthStore?.saSyncFromStorage?.();
+    _syncCurrentAuthUser();
+    const nextAuthId = currentAuthUser?.authId || '';
+    // ⭐ 사용자(authId)가 바뀌면 reload — 이전 사용자 데이터(메모리 잔존) 격리, 새 사용자 기준 재로드
+    if (prevAuthId !== nextAuthId) {
+      // BO 는 dashboard 외 전 페이지 인증 필수 → 작업 페이지에 남지 않도록 dashboard 로 해시 전환 후 reload
+      const curPage = new URLSearchParams((location.hash||'').replace(/^#/,'')).get('page') || '';
+      if (curPage && curPage !== 'dashboard') location.hash = '#page=dashboard';
+      location.reload();
+    }
+  }
 });
 
-// 1초 폴링: 같은 탭 DevTools에서 토큰 삭제 감지
-setInterval(() => {
-  store.syncFromStorage();
-}, 1000);
+// 3초 폴링: 같은 탭 DevTools 토큰 변경 동기화 (reload 안 함 — 같은 탭은 doLogin/doLogout 정상흐름)
+setInterval(() => { _boAuthStore?.saSyncFromStorage?.(); _syncCurrentAuthUser(); }, 3000);
 ```
+
+**⭐ 교차탭 계정변경 보안 (핵심)**: 두 탭이 같은 `localStorage` 를 공유하므로, 다른 탭에서 로그아웃하거나 **다른 계정으로 재로그인**하면 이 탭 메모리(Vue 상태·이미 로드된 그리드 데이터)에 **이전 사용자 데이터가 잔존**한다(인증 게이트는 가리기만 하고 메모리는 안 비움). → `storage` 이벤트에서 authId 변경 감지 시 `location.reload()` 로 메모리를 완전 초기화하여 새 사용자 기준으로 다시 로드한다. 무한루프 안전(storage 이벤트는 타 탭 변경만 발생, reload 는 자기 탭). authId 는 `|| ''` 정규화. setInterval(같은 탭 DevTools 감지)에는 reload 미적용.
 
 ---
 

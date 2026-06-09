@@ -67,10 +67,27 @@
       window._foAuthSyncTimer = setInterval(() => { _store.saSyncFromStorage(); }, 3000);
     }
 
-    /* 다른 탭에서 localStorage 변경 시 즉시 동기화 */
+    /* 다른 탭에서 localStorage 변경 시 즉시 동기화.
+     * 교차탭 계정변경 보안: 로그인돼 있던 회원이 다른 탭에서 로그아웃되거나 다른 계정으로 바뀌면
+     * 이 탭 메모리에 이전 회원 데이터(마이페이지 주문/캐시 등 개인정보)가 남으므로 reload 한다.
+     * 단 '비로그인 → 로그인'(prevAuthId='')은 둘러보던 상태에 개인정보가 없으므로 reload 생략(장바구니 등 보존). */
+    /* 인증 필요 페이지 — 로그아웃/계정변경 reload 시 이 해시에 머물면 home 으로 전환 후 reload */
+    const AUTH_PAGES = ['myOrder', 'myClaim', 'myCoupon', 'myCache', 'myContact', 'myChatt', 'order', 'blogEdit'];
     window.addEventListener('storage', e => {
       if (e.key === 'modu-fo-accessToken' || e.key === 'modu-fo-authUser') {
+        const prevAuthId = _store.svAuthUser?.authId || '';
         _store.saSyncFromStorage();
+        const nextAuthId = _store.svAuthUser?.authId || '';
+        /* 이전에 로그인 상태였고(prev !== '') 사용자가 바뀐 경우에만 reload */
+        if (prevAuthId && prevAuthId !== nextAuthId) {
+          /* 인증 필요 페이지(마이페이지/주문 등)에 머물러 있으면 reload 후 다시 진입하지 않도록 home 으로 해시 변경.
+           * 로그아웃·타계정 변경 후 이전 회원의 인증 페이지에 남는 것 방지. */
+          const curPage = (new URLSearchParams((location.hash || '').replace(/^#/, ''))).get('page') || '';
+          if (AUTH_PAGES.includes(curPage)) {
+            location.hash = '#page=home';
+          }
+          location.reload();
+        }
       }
     });
   };

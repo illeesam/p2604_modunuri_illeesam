@@ -6842,7 +6842,7 @@ window.AuthLoginModal = {
           회원가입
         </span>
       </div>
-      <span class="modal-close" @click="handleBtnAction('modal-close')">
+      <span v-if="!cfIsPage" class="modal-close" @click="handleBtnAction('modal-close')">
         ✕
       </span>
     </div>

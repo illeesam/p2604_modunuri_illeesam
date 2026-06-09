@@ -127,20 +127,31 @@ state: () => {
 
 ---
 
-## 8. 실시간 동기화
+## 8. 실시간 동기화 + 교차탭 계정변경
 
 ```js
 // lib/base/foAuth.js init() 내부
-setInterval(() => {
-  store.syncFromStorage();  // 1초 폴링: 토큰 삭제 감지 → 즉시 로그아웃
-}, 1000);
+setInterval(() => { store.saSyncFromStorage(); }, 3000);  // 3초 폴링: 토큰 삭제 감지
 
 window.addEventListener('storage', e => {
   if (e.key === 'modu-fo-accessToken' || e.key === 'modu-fo-authUser') {
-    store.syncFromStorage();  // 다른 탭 로그인/로그아웃 즉시 반영
+    const prevAuthId = store.svAuthUser?.authId || '';
+    store.saSyncFromStorage();
+    const nextAuthId = store.svAuthUser?.authId || '';
+    // ⭐ '로그인돼 있던 회원'이 로그아웃되거나 다른 계정으로 바뀌면 reload (이전 회원 데이터 격리)
+    //    단 '비로그인 → 로그인'(prev='')은 reload 생략 — 둘러보던 상태·장바구니 보존
+    if (prevAuthId && prevAuthId !== nextAuthId) {
+      // 인증 필요 페이지(마이페이지/주문 등)에 머물러 있으면 reload 후 다시 진입하지 않도록 home 으로
+      const curPage = new URLSearchParams((location.hash||'').replace(/^#/,'')).get('page') || '';
+      if (AUTH_PAGES.includes(curPage)) location.hash = '#page=home';
+      location.reload();
+    }
   }
 });
 ```
+
+**⭐ 교차탭 계정변경 보안 (BO와 동일 원칙, FO 특성 반영)**: 다른 탭에서 회원이 로그아웃하거나 **다른 계정으로 재로그인**하면 이 탭 메모리에 이전 회원의 개인정보(마이페이지 주문/캐시/쿠폰 등)가 잔존하므로 `location.reload()` 로 격리한다.
+단 BO와 달리 FO는 **비로그인이 정상 케이스**이므로, `prevAuthId === ''`(비로그인 둘러보기 중 다른 탭에서 로그인) 인 경우는 reload 하지 않는다 → 둘러보던 화면과 **장바구니(`shopjoy_cart`)를 보존**한다.
 
 ---
 
@@ -160,11 +171,15 @@ const AUTH_REQUIRED_PAGES = [
 
 | 기능 | 미로그인 처리 |
 |---|---|
+| 상품 둘러보기 / 검색 | **허용** (FO 는 비로그인 둘러보기가 정상 케이스) |
+| 장바구니 담기 / 수정 / 삭제 | **허용 (비로그인 자유)** — `localStorage('shopjoy_cart')` 브라우저 기준, 로그인 무관. 결제 시점에 로그인 |
 | 찜 버튼 (♡) | 로그인 모달 표시 |
-| 장바구니 담기 | 로그인 후 진행 또는 비회원 허용 |
-| 주문 페이지 | `error401` 리다이렉트 |
+| 주문 페이지 | `error401` 리다이렉트 (로그인 후 진행) |
 | 블로그 작성 | `error401` 리다이렉트 |
 | 마이페이지 전체 | `error401` 리다이렉트 |
+
+> **로그인 화면 = 모달** (BO 의 전용 화면과 반대). 사용자는 둘러보다 장바구니/주문 시점에 그 자리에서 모달로 로그인 → 페이지 이탈 없음.
+> **장바구니 정책**: 회원별 분리 없이 브라우저 단일 키(`shopjoy_cart`). 비로그인으로 담아두고 로그인 후 결제하는 게스트 장바구니 흐름. 교차탭 reload 시에도 별도 키라 보존됨. 로그아웃해도 장바구니 유지(`onLogout` 은 장바구니 미변경, 마이페이지에 있으면 `home` 으로 이동).
 
 ---
 
