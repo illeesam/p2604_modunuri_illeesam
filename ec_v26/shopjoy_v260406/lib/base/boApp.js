@@ -2586,7 +2586,7 @@
         </div>
 
         <!-- API 로그 섹션 -->
-        <div style="padding: 12px 8px; border-top: 1px solid #e5e7eb; margin-top: 12px;">
+        <div style="padding: 12px 3px; border-top: 1px solid #e5e7eb; margin-top: 12px;">
           <div style="font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
             <span>📡 API 로그 (BO)</span>
             <button v-if="apiLogs.length" @click="clearApiLogs" style="font-size: 10px; padding: 2px 6px; background: #ef4444; color: white; border: none; border-radius: 2px; cursor: pointer; font-weight: 600;">Clear</button>
@@ -2596,7 +2596,7 @@
             <div v-for="(log, idx) in apiLogs" :key="idx"
               @mouseenter="onApiLogEnter(log)"
               @mouseleave="onApiLogLeave(log)"
-              style="padding: 3px 8px; border-bottom: 1px solid #d1d5db; font-size: 10px; font-family: monospace; cursor: pointer; position: relative;"
+              style="padding: 3px 3px; border-bottom: 1px solid #d1d5db; font-size: 10px; font-family: monospace; cursor: pointer; position: relative;"
               :style="{ background: (apiLogHoverDetail === log || apiLogLockedDetail === log) ? '#f9fafb' : 'white' }">
               <!-- 1줄: 메서드(첫글자) + URL(/api.. 축약) + status(200 숨김) — FO 동일 형태, 좌우 공백 활용 -->
               <div style="display:flex;align-items:center;gap:4px;">
