@@ -88,6 +88,24 @@ var isRefreshing = false;
 var pending = [];  // subscribe/flush 패턴으로 중복 refresh 방지
 ```
 
+### ⭐ 401 vs 403 분리 (2026-06-10 critical 수정)
+
+**문제(과거)**: 보호 경로(`/api/bo/**`)는 `AuthorizationManager`(BO_ONLY) 기반 인가라, accessToken 만료 시에도 `AccessDeniedException` → **403** 을 반환했다. 그런데 프론트 axios 인터셉터는 **401 에서만** token-refresh 를 트리거하므로(`boApiAxios.js`/`foApiAxios.js` `if (status === 401 && !cfg._retry)`), **자동 갱신이 전혀 작동하지 않아 15분(accessToken 수명)마다 강제 재로그인**되는 결함이 있었다.
+
+**수정**: `SecurityConfig.exceptionHandling` 에 `authenticationEntryPoint`(401) 를 추가했다.
+- **미인증**(토큰 없음/만료/무효 → `JwtAuthFilter` 가 SecurityContext 에 인증 미등록) → `ExceptionTranslationFilter` 가 anonymous 주체의 AccessDenied 를 entryPoint 로 라우팅 → **401** → 프론트가 token-refresh 후 원요청 재시도
+- **권한 부족**(인증됐으나 타 appType 등) → `accessDeniedHandler` → **403** (refresh 안 함, 정상 권한거부)
+- 전제: `http.anonymous()` 비활성화하지 않음(기본 활성) — 그래야 미인증/권한부족 분기가 동작
+
+### 운영 전 보완 항목 (high, 프로토타입 단계 → 운영 전 처리 권장)
+
+| 항목 | 내용 |
+|------|------|
+| **refreshToken 재사용 탐지** | 현재 회전(rotation, prev_token)만 있고 재사용 탐지 없음. 탈취된 구 토큰으로 만료 전까지 재발급 가능. → refreshToken `jti` + DB 일회성, 폐기 토큰으로 refresh 시도 시 해당 세션/디바이스 전체 REVOKE + 보안 이벤트 로깅 |
+| **토큰 평문 저장** | `syh_user_token_log.access_token`(컬럼 코멘트는 'SHA-256 권장')에 JWT 원문 평문 저장 + WHERE 평문 비교. 길이 512 초과 위험 + DB 유출 시 활성 토큰 탈취. → 토큰 해시(SHA-256) 저장·비교, 컬럼 길이 TEXT/충분히 확장 |
+| **refresh 디바이스 바인딩** | `token_log` 에 ip/device 컬럼 존재하나 미기록. refresh 시 IP/UA 대조하면 탈취 토큰 갱신 차단 강화 |
+| **死코드 정리** | `boAuthStore.saRefreshAccessToken` 은 호출처 0건 + 응답 파싱 경로 오류(死코드). 갱신은 axios 인터셉터로 일원화 — 제거 권장 |
+
 ---
 
 ## 6. 로그아웃

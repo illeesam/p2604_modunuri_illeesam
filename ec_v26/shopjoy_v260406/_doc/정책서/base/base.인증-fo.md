@@ -92,6 +92,19 @@ var isRefreshing = false;
 var pending = [];  // subscribe/flush 패턴으로 중복 refresh 방지
 ```
 
+### ⭐ 401 vs 403 분리 (2026-06-10 critical 수정)
+
+`/api/fo/my/**`, `/api/fo/order/**`, `/api/fo/ec/od/**`(장바구니·주문), `/api/fo/ec/mb/like/**`(찜), `/api/fo/ec/pm/cache/**` 등 인증 필요 경로는 `FO_ONLY` 인가라, accessToken 만료 시 **403** 을 반환했고 프론트는 **401 에서만** refresh 를 트리거해 **자동 갱신이 작동하지 않았다**(BO 와 동일 결함). → `SecurityConfig.exceptionHandling` 에 `authenticationEntryPoint`(401) 추가로 **미인증(만료/무토큰)=401, 권한부족=403** 분리. 상세는 [`base.인증-bo.md`](base.인증-bo.md) §5 참조.
+
+> FO 비로그인 허용 경로(`/api/fo/**` permitAll)는 애초에 인가 통과하므로 영향 없음 — 인증 필요 경로만 해당.
+
+### 운영 전 보완 항목 (high)
+
+- **refreshToken 재사용 탐지 부재**: FO 는 멀티디바이스(token_log 행 추가, 삭제 없음)라 행별 독립 회전 → 특정 행 탈취 시 만료 전까지 무한 갱신 가능. jti 일회성 + 폐기 토큰 재사용 시 디바이스 행 REVOKE 필요
+- **토큰 평문 저장**(`mbh_member_token_log.access_token`) → SHA-256 해시 저장·비교 권장
+- **로그아웃 디바이스 식별**: FO 로그아웃은 `WHERE authId AND accessToken(평문)` 으로 해당 디바이스 행만 삭제 → 토큰 truncation/불일치 시 서버 refreshToken 잔존 위험. 안정 키(log_id/해시)로 변경 권장
+- **소셜 로그인 refreshToken**: 소셜도 일반 로그인과 동일하게 refreshToken 을 서버 token_log 에만 저장하고 클라이언트엔 `null` 반환(의도된 설계). 만료 후 token-refresh(Authorization 헤더 accessToken 기반)로 갱신 가능
+
 ---
 
 ## 6. 로그아웃

@@ -134,6 +134,17 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
             .exceptionHandling(ex -> ex
+                // 미인증(토큰 없음/만료/무효 → SecurityContext 비어있음) → 401 Unauthorized.
+                // 프론트 axios 인터셉터가 401 에서 token-refresh 후 원요청을 재시도한다.
+                // (권한 부족=인증됐으나 타 appType 등 → 아래 accessDeniedHandler 403 과 분리)
+                .authenticationEntryPoint((request, response, e) -> {
+                    String uri = request.getRequestURI();
+                    log.warn("[SecurityConfig] Unauthorized [401]: {} | uri={}", e.getMessage(), uri);
+                    response.setStatus(401);
+                    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                    response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+                    response.getWriter().write("{\"status\":401,\"message\":\"인증이 필요합니다. (토큰 없음/만료)\"}");
+                })
                 .accessDeniedHandler((request, response, e) -> {
                     String uri = request.getRequestURI();
                     String msg = "접근 권한이 없습니다. (" + (uri.contains("/api/bo/") ? "BO" : uri.contains("/api/fo/") ? "FO" : uri.contains("/api/base/") ? "BASE" : "-") + ")";
