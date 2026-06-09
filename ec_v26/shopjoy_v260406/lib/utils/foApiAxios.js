@@ -66,60 +66,23 @@
         }
       } catch (_) {}
       /* coUtil.cofApiHdr 미사용 호출 대비 — X-Trace-Id / X-File-Nm / X-Func-Nm / X-Line-No 자동 보충 */
-      try {
-        if (!cfg.headers['X-Trace-Id'] && !cfg.headers['x-trace-id']) {
-          var now = new Date();
-          var pad = function(n){ return String(n).padStart(2,'0'); };
-          var rand = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
-          cfg.headers['X-Trace-Id'] = now.getFullYear() + pad(now.getMonth()+1) + pad(now.getDate()) +
-            '_' + pad(now.getHours()) + pad(now.getMinutes()) + pad(now.getSeconds()) + '_' + rand;
-          /* 호출 위치 정보도 보충 */
-          try {
-            var stack = new Error().stack.split('\n');
-            for (var si = 1; si < stack.length; si++) {
-              if (!stack[si].includes('foApiAxios.js') && !stack[si].includes('axios.min.js') && !stack[si].includes('coApiSvc.js') && !stack[si].includes('foApiSvc.js')) {
-                var fm = stack[si].match(/([a-zA-Z0-9_-]+\.js)/);
-                var fnm = stack[si].match(/at\s+(?:Object\.)?([a-zA-Z0-9_$.<>]+)\s+/);
-                var lm = stack[si].match(/:(\d+):\d+[\)$]/);
-                if (fm) cfg.headers['X-File-Nm'] = fm[1];
-                if (fnm && fnm[1] !== '<anonymous>') cfg.headers['X-Func-Nm'] = fnm[1];
-                if (lm) cfg.headers['X-Line-No'] = lm[1];
-                break;
-              }
-            }
-          } catch (_) {}
-        }
-      } catch (_) {}
+      coUtil.cofFillTraceHeaders(cfg.headers);
     } catch (_) {}
     /* X-UI-Nm / X-Cmd-Nm: 필수 헤더 검증 */
-    var uiNm  = (cfg.headers && (cfg.headers['X-UI-Nm']  || cfg.headers['x-ui-nm']))  || '';
-    var cmdNm = (cfg.headers && (cfg.headers['X-Cmd-Nm'] || cfg.headers['x-cmd-nm'])) || '';
-    if (!uiNm || !cmdNm) {
-      var missingHeaders = [];
-      if (!uiNm) missingHeaders.push('X-UI-Nm');
-      if (!cmdNm) missingHeaders.push('X-Cmd-Nm');
-      var errMsg = '[FO API] 필수 헤더 누락: ' + missingHeaders.join(', ') + '\n\n' +
+    var chk = coUtil.cofCheckNmHeaders(cfg.headers, 'FO API');
+    if (!chk.ok) {
+      var errMsg = chk.errMsg + '\n\n' +
                    'Method: ' + (cfg.method || 'GET').toUpperCase() + '\n' +
-                   'URL: ' + (cfg.url || '') + '\n' +
-                   'X-UI-Nm: ' + (uiNm || '(미설정)') + '\n' +
-                   'X-Cmd-Nm: ' + (cmdNm || '(미설정)');
+                   'URL: ' + (cfg.url || '');
       try { if (typeof global.alert === 'function') global.alert(errMsg); } catch (_) {}
-      console.error(TAG + ' ✗ REQUIRED HEADERS MISSING', { method: cfg.method, url: cfg.url, uiNm: uiNm, cmdNm: cmdNm });
+      console.error(TAG + ' ✗ REQUIRED HEADERS MISSING', { method: cfg.method, url: cfg.url });
       return Promise.reject(new Error('[FO API] 필수 헤더 누락: X-UI-Nm, X-Cmd-Nm'));
     }
+    var uiNm = chk.uiNm, cmdNm = chk.cmdNm;
     /* X-UI-Nm / X-Cmd-Nm: 한글은 ISO-8859-1 불가 → encodeURIComponent로 인코딩 후 전송, 로그는 디코딩 */
-    try {
-      if (cfg.headers['X-UI-Nm'])  cfg.headers['X-UI-Nm']  = encodeURIComponent(cfg.headers['X-UI-Nm']);
-      if (cfg.headers['X-Cmd-Nm']) cfg.headers['X-Cmd-Nm'] = encodeURIComponent(cfg.headers['X-Cmd-Nm']);
-    } catch (_) {}
-    try { uiNm  = uiNm  ? decodeURIComponent(uiNm)  : ''; } catch (_) {}
-    try { cmdNm = cmdNm ? decodeURIComponent(cmdNm) : ''; } catch (_) {}
-    var uiTag = uiNm ? (' [' + uiNm + (cmdNm ? ' > ' + cmdNm : '') + ']') : '';
-    var displayUrl = cfg.url;
-    if (displayUrl && (displayUrl.includes('localhost') || displayUrl.includes('127'))) {
-      var pathMatch = displayUrl.match(/\/api(\/.*)?$/);
-      if (pathMatch) displayUrl = pathMatch[0];
-    }
+    coUtil.cofEncodeNmHeaders(cfg.headers);
+    var uiTag = coUtil.cofUiTag(uiNm, cmdNm);
+    var displayUrl = coUtil.cofShortApiUrl(cfg.url);
     var fileNm  = cfg.headers['X-File-Nm']  || cfg.headers['x-file-nm']  || '';
     var funcNm  = cfg.headers['X-Func-Nm']  || cfg.headers['x-func-nm']  || '';
     var lineNo  = cfg.headers['X-Line-No']  || cfg.headers['x-line-no']  || '';
@@ -131,12 +94,8 @@
     return Promise.reject(err);
   });
 
-  /* ── AxiosHeaders 호환 헤더 읽기 (axios 1.x는 키를 소문자로 정규화) + URL 디코딩 ── */
-  function getHdr(headers, key) {
-    if (!headers) return '';
-    var v = (typeof headers.get === 'function') ? (headers.get(key) || '') : (headers[key] || headers[key.toLowerCase()] || '');
-    try { return v ? decodeURIComponent(v) : ''; } catch (_) { return v; }
-  }
+  /* ── AxiosHeaders 호환 헤더 읽기 — coUtil.cofReadHdr 위임 (로컬 별칭) ── */
+  function getHdr(headers, key) { return coUtil.cofReadHdr(headers, key); }
 
   /* ── Response: 로그 + 401 재갱신 ── */
   var isRefreshing = false;
@@ -147,16 +106,11 @@
   inst.interceptors.response.use(function (res) {
     try { if (typeof global._showProgress === 'function') global._showProgress(false); } catch (_) {}
     var resCfg = res.config || {};
-    var resUiNm  = (resCfg.headers && (resCfg.headers['X-UI-Nm']  || resCfg.headers['x-ui-nm']))  || '';
-    var resCmdNm = (resCfg.headers && (resCfg.headers['X-Cmd-Nm'] || resCfg.headers['x-cmd-nm'])) || '';
-    try { resUiNm  = resUiNm  ? decodeURIComponent(resUiNm)  : ''; } catch (_) {}
-    try { resCmdNm = resCmdNm ? decodeURIComponent(resCmdNm) : ''; } catch (_) {}
-    var resUiTag = resUiNm ? (' [' + resUiNm + (resCmdNm ? ' > ' + resCmdNm : '') + ']') : '';
-    var resDisplayUrl = resCfg.url || '';
-    if (resDisplayUrl && (resDisplayUrl.includes('localhost') || resDisplayUrl.includes('127'))) {
-      var resPathMatch = resDisplayUrl.match(/\/api(\/.*)?$/);
-      if (resPathMatch) resDisplayUrl = resPathMatch[0];
-    }
+    var resUiTag = coUtil.cofUiTag(
+      (resCfg.headers && (resCfg.headers['X-UI-Nm']  || resCfg.headers['x-ui-nm']))  || '',
+      (resCfg.headers && (resCfg.headers['X-Cmd-Nm'] || resCfg.headers['x-cmd-nm'])) || ''
+    );
+    var resDisplayUrl = coUtil.cofShortApiUrl(resCfg.url || '');
     var resLogData = (function(d) {
       try {
         var inner = d?.data?.data ?? d?.data ?? d;
@@ -173,11 +127,7 @@
     try {
       var cfg = res.config || {};
       var method = (cfg.method || 'get').toUpperCase();
-      var displayUrl = cfg.url || '';
-      if (displayUrl && (displayUrl.includes('localhost') || displayUrl.includes('127'))) {
-        var pathMatch = displayUrl.match(/\/api(\/.*)?$/);
-        if (pathMatch) displayUrl = pathMatch[0];
-      }
+      var displayUrl = coUtil.cofShortApiUrl(cfg.url || '');
       var paramStr = cfg.params ? JSON.stringify(cfg.params) : '';
       var dataStr  = cfg.data  ? (typeof cfg.data === 'string' ? cfg.data : JSON.stringify(cfg.data)) : '';
       var detail   = [paramStr && ('params: ' + paramStr), dataStr && ('data: ' + dataStr)].filter(Boolean).join('\n');
@@ -224,11 +174,7 @@
     var res = err.response;
     var cfg = err.config || {};
     var status = res && res.status;
-    var errDisplayUrl = cfg.url;
-    if (errDisplayUrl && (errDisplayUrl.includes('localhost') || errDisplayUrl.includes('127'))) {
-      var errPathMatch = errDisplayUrl.match(/\/api(\/.*)?$/);
-      if (errPathMatch) errDisplayUrl = errPathMatch[0];
-    }
+    var errDisplayUrl = coUtil.cofShortApiUrl(cfg.url);
     console.error(TAG + ' ✗ ' + (status || 'NETWORK'), errDisplayUrl, err.message);
 
     /* 200-299 범위가 아닌 모든 응답 → toast 출력 */
@@ -251,13 +197,7 @@
       } catch (_) {}
       try {
         // URL 정리 (localhost/127로 시작하면 /api/... 형태로 표시)
-        var displayUrl = cfg.url;
-        if (displayUrl && (displayUrl.includes('localhost') || displayUrl.includes('127'))) {
-          var pathMatch = displayUrl.match(/\/api(\/.*)?$/);
-          if (pathMatch) {
-            displayUrl = pathMatch[0];
-          }
-        }
+        var displayUrl = coUtil.cofShortApiUrl(cfg.url);
         var uiLabel = getHdr(cfg.headers, 'x-ui-nm') + (getHdr(cfg.headers, 'x-cmd-nm') ? ' > ' + getHdr(cfg.headers, 'x-cmd-nm') : '');
 
         // 요청 헤더에서 X- 정보 수집

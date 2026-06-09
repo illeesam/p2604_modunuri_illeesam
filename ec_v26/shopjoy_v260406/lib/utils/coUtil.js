@@ -637,6 +637,77 @@
    *   각 로그/이력 화면의 fnDecode 복붙 대체. */
   function cofDecodeUri(s) { try { return s ? decodeURIComponent(s) : ''; } catch (_) { return s || ''; } }
 
+  /* ──────────────────────────────────────────────────────────────────────
+   * API axios 인터셉터 공용 작은 헬퍼 (foApiAxios.js / boApiAxios.js 반복 조각 추출).
+   * 인터셉터 등록·refresh 큐잉 등 뼈대는 각 axios 파일에 그대로 두고, 순수 조각만 여기로.
+   * ────────────────────────────────────────────────────────────────────── */
+
+  /* cofShortApiUrl — 로그용 URL 축약. localhost/127 호출이면 '/api...' 부분만 남김. */
+  function cofShortApiUrl(url) {
+    var u = url || '';
+    if (u && (u.indexOf('localhost') >= 0 || u.indexOf('127') >= 0)) {
+      var m = u.match(/\/api(\/.*)?$/);
+      if (m) return m[0];
+    }
+    return u;
+  }
+
+  /* cofUiTag — 로그 prefix 태그 ' [화면 > 기능]'. 디코드 포함. 없으면 ''. (cofUiNmCmdNm 과 달리 대괄호 래핑) */
+  function cofUiTag(uiNm, cmdNm) {
+    var u = uiNm ? cofDecodeUri(uiNm) : '';
+    var c = cmdNm ? cofDecodeUri(cmdNm) : '';
+    return u ? (' [' + u + (c ? ' > ' + c : '') + ']') : '';
+  }
+
+  /* cofReadHdr — AxiosHeaders(axios 1.x 소문자 정규화) 호환 헤더 읽기 + 디코드. */
+  function cofReadHdr(headers, key) {
+    if (!headers) return '';
+    var v = (typeof headers.get === 'function')
+      ? (headers.get(key) || '')
+      : (headers[key] || headers[key.toLowerCase()] || '');
+    return cofDecodeUri(v);
+  }
+
+  /* cofEncodeNmHeaders — X-UI-Nm/X-Cmd-Nm 한글을 encodeURIComponent (ISO-8859-1 전송 불가 대응). in-place 수정. */
+  function cofEncodeNmHeaders(headers) {
+    if (!headers) return;
+    try {
+      if (headers['X-UI-Nm'])  headers['X-UI-Nm']  = encodeURIComponent(headers['X-UI-Nm']);
+      if (headers['X-Cmd-Nm']) headers['X-Cmd-Nm'] = encodeURIComponent(headers['X-Cmd-Nm']);
+    } catch (_) {}
+  }
+
+  /* cofCheckNmHeaders — 필수헤더 X-UI-Nm/X-Cmd-Nm 검증. 누락 시 { ok:false, missing, errMsg }, 정상 시 { ok:true, uiNm, cmdNm }.
+   *   label 예: 'FO API' / 'BO API'. (alert/console/reject 는 호출측 axios 파일이 담당) */
+  function cofCheckNmHeaders(headers, label) {
+    var h = headers || {};
+    var uiNm  = (h['X-UI-Nm']  || h['x-ui-nm'])  || '';
+    var cmdNm = (h['X-Cmd-Nm'] || h['x-cmd-nm']) || '';
+    if (!uiNm || !cmdNm) {
+      var missing = [];
+      if (!uiNm)  missing.push('X-UI-Nm');
+      if (!cmdNm) missing.push('X-Cmd-Nm');
+      return { ok: false, missing: missing, errMsg: '[' + label + '] 필수 헤더 누락: ' + missing.join(', ') };
+    }
+    return { ok: true, uiNm: cofDecodeUri(uiNm), cmdNm: cofDecodeUri(cmdNm) };
+  }
+
+  /* cofFillTraceHeaders — coUtil.cofApiHdr 미사용 호출 대비 X-Trace-Id/X-File-Nm/X-Func-Nm/X-Line-No 자동 보충.
+   *   이미 있으면 건드리지 않음. 호출 위치는 기존 cofApiInfo.extractCallerInfo() 재사용. in-place 수정. */
+  function cofFillTraceHeaders(headers) {
+    if (!headers) return;
+    try {
+      if (headers['X-Trace-Id'] || headers['x-trace-id']) return;
+      headers['X-Trace-Id'] = cofApiInfo.cofGenerateTraceId();
+      var info = cofApiInfo.extractCallerInfo();
+      if (info) {
+        if (info.fileNm) headers['X-File-Nm'] = info.fileNm;
+        if (info.funcNm) headers['X-Func-Nm'] = info.funcNm;
+        if (info.lineNo) headers['X-Line-No'] = info.lineNo;
+      }
+    } catch (_) {}
+  }
+
   /* cofUiNmCmdNm — x-헤더 화면명/기능명을 디코드해 '화면 > 기능' 으로 결합. 둘 중 하나만 있으면 그것만, 둘 다 없으면 '-'.
    *   로그/이력 화면 _uiNm 컬럼 fmt 복붙(12곳) 대체.
    *   사용: { key:'_uiNm', fmt: (v, row) => coUtil.cofUiNmCmdNm(row.uiNm, row.cmdNm) } */
@@ -834,6 +905,12 @@
   global.coUtil.cofYmdHms = global.coUtil.cofYmdHms || cofYmdHms;
   global.coUtil.cofYmd = global.coUtil.cofYmd || cofYmd;
   global.coUtil.cofDecodeUri = global.coUtil.cofDecodeUri || cofDecodeUri;
+  global.coUtil.cofShortApiUrl = global.coUtil.cofShortApiUrl || cofShortApiUrl;
+  global.coUtil.cofUiTag = global.coUtil.cofUiTag || cofUiTag;
+  global.coUtil.cofReadHdr = global.coUtil.cofReadHdr || cofReadHdr;
+  global.coUtil.cofEncodeNmHeaders = global.coUtil.cofEncodeNmHeaders || cofEncodeNmHeaders;
+  global.coUtil.cofCheckNmHeaders = global.coUtil.cofCheckNmHeaders || cofCheckNmHeaders;
+  global.coUtil.cofFillTraceHeaders = global.coUtil.cofFillTraceHeaders || cofFillTraceHeaders;
   global.coUtil.cofUiNmCmdNm = global.coUtil.cofUiNmCmdNm || cofUiNmCmdNm;
   global.coUtil.cofToYmd = global.coUtil.cofToYmd || cofToYmd;
   global.coUtil.cofToYm = global.coUtil.cofToYm || cofToYm;
