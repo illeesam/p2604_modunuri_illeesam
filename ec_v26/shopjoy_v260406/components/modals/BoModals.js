@@ -6630,7 +6630,7 @@ window.AuthUserPickModal = {
   },
   template: /* html */`
 <bo-modal :show="modal.show" width="820px" max-width="96vw" box-pad="0" body-pad="0"
-  z-index="1100" @close="handleBtnAction('modal-close')">
+  :z-index="9100" @close="handleBtnAction('modal-close')">
   <div style="display:flex;flex-direction:column;max-height:90vh;">
     <!-- 모달 헤더 -->
     <div style="background:linear-gradient(135deg,#fff0f4,#ffe4ec,#ffd5e1);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ffc8d6;flex-shrink:0;">
@@ -6842,7 +6842,7 @@ window.AuthLoginModal = {
           회원가입
         </span>
       </div>
-      <span v-if="!cfIsPage" class="modal-close" @click="handleBtnAction('modal-close')">
+      <span class="modal-close" @click="handleBtnAction('modal-close')">
         ✕
       </span>
     </div>
