@@ -2596,7 +2596,7 @@
             <div v-for="(log, idx) in apiLogs" :key="idx"
               @mouseenter="onApiLogEnter(log)"
               @mouseleave="onApiLogLeave(log)"
-              style="padding: 6px 8px; border-bottom: 1px solid #f3f4f6; font-size: 10px; font-family: monospace; cursor: pointer; position: relative;"
+              style="padding: 3px 8px; border-bottom: 1px solid #d1d5db; font-size: 10px; font-family: monospace; cursor: pointer; position: relative;"
               :style="{ background: (apiLogHoverDetail === log || apiLogLockedDetail === log) ? '#f9fafb' : 'white' }">
               <!-- 1줄: 메서드(첫글자) + URL(/api.. 축약) + status(200 숨김) — FO 동일 형태, 좌우 공백 활용 -->
               <div style="display:flex;align-items:center;gap:4px;">
@@ -2611,20 +2611,7 @@
                 <span v-if="log.duration" style="font-size:9px;color:#aaa;flex-shrink:0;" :title="log.duration + 'ms'">{{ fnFmtSec(log.duration) }}</span>
                 <span style="font-size:9px;color:#ccc;flex-shrink:0;" :title="log.time">{{ fnHmsToMs(log.time) }}</span>
               </div>
-              <div v-if="!log.hasError && log.resData" style="font-size: 9px; color: #6b7280; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 1px 2px 0 10px; line-height: 1.3;">
-                ▶ {{ (function(d){ try{
-                const o=JSON.parse(d);
-                const inner = o?.data?.data ?? o?.data ?? o;
-
-                /* totalCnt */
-                const totalCnt = (x) => x.pageTotalCount ?? x.totalCount ?? x.total ?? '?';
-                if(inner==null) return '';
-                if(Array.isArray(inner)) return '[' + inner.length + '건] ' + JSON.stringify(inner[0]||{}).slice(0,100);
-                if(inner.pageList) return '[' + (inner.pageList.length||0) + '건/' + totalCnt(inner) + '] ' + JSON.stringify(inner.pageList[0]||{}).slice(0,100);
-                if(inner.list) return '[' + (inner.list.length||0) + '건/' + totalCnt(inner) + '] ' + JSON.stringify(inner.list[0]||{}).slice(0,100);
-                return JSON.stringify(inner).slice(0,120);
-                }catch(_){ return ''; } })(log.resData) }}
-              </div>
+              <!-- 응답 데이터 미리보기(▶)는 목록에서 숨김 — 전체 req/res 는 hover 상세 레이어에서 확인 -->
             </div>
           </div>
         </div>
