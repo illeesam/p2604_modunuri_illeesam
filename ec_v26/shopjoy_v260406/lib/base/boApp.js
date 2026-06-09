@@ -2530,57 +2530,52 @@
           </div>
         </div>
         <div class="popup-sel">
-          <div class="popup-sel-label">판매업체
-            <span v-if="commonFilter.vendorId" class="popup-sel-clear" @click.stop="clearFilter('vendor')">✕</span>
-          </div>
+          <div class="popup-sel-label">판매업체</div>
           <div class="popup-sel-row" @click="openSelectModal('vendor')">
             <span v-if="filterVendor" class="popup-sel-name">{{ filterVendor.vendorNm }}</span>
             <span v-else class="popup-sel-placeholder">선택하세요</span>
             <span v-if="filterVendor" class="popup-sel-id">{{ filterVendor.vendorId }}</span>
+            <span v-if="commonFilter.vendorId" class="popup-sel-clear" @click.stop="clearFilter('vendor')" title="선택 해제">✕</span>
             <span class="popup-sel-btn">🔍</span>
           </div>
         </div>
         <div class="popup-sel">
-          <div class="popup-sel-label">판매사용자
-            <span v-if="commonFilter.userId" class="popup-sel-clear" @click.stop="clearFilter('boUser')">✕</span>
-          </div>
+          <div class="popup-sel-label">판매사용자</div>
           <div class="popup-sel-row" @click="openSelectModal('boUser')">
             <span v-if="cfFilterBoUser" class="popup-sel-name">{{ cfFilterBoUser.name }}</span>
             <span v-else class="popup-sel-placeholder">선택하세요</span>
             <span v-if="cfFilterBoUser" class="popup-sel-id">{{ cfFilterBoUser.boUserId }}</span>
+            <span v-if="commonFilter.userId" class="popup-sel-clear" @click.stop="clearFilter('boUser')" title="선택 해제">✕</span>
             <span class="popup-sel-btn">🔍</span>
           </div>
         </div>
         <div class="popup-sel">
-          <div class="popup-sel-label">배송업체
-            <span v-if="commonFilter.dlivVendorId" class="popup-sel-clear" @click.stop="clearFilter('dlivVendor')">✕</span>
-          </div>
+          <div class="popup-sel-label">배송업체</div>
           <div class="popup-sel-row" @click="openSelectModal('dlivVendor')">
             <span v-if="cfFilterDlivVendor" class="popup-sel-name">{{ cfFilterDlivVendor.vendorNm }}</span>
             <span v-else class="popup-sel-placeholder">선택하세요</span>
             <span v-if="cfFilterDlivVendor" class="popup-sel-id">{{ cfFilterDlivVendor.vendorId }}</span>
+            <span v-if="commonFilter.dlivVendorId" class="popup-sel-clear" @click.stop="clearFilter('dlivVendor')" title="선택 해제">✕</span>
             <span class="popup-sel-btn">🔍</span>
           </div>
         </div>
         <div class="popup-sel">
-          <div class="popup-sel-label">회원
-            <span v-if="commonFilter.memberId" class="popup-sel-clear" @click.stop="clearFilter('member')">✕</span>
-          </div>
+          <div class="popup-sel-label">회원</div>
           <div class="popup-sel-row" @click="openSelectModal('member')">
             <span v-if="filterMember" class="popup-sel-name">{{ filterMember.memberNm }}</span>
             <span v-else class="popup-sel-placeholder">선택하세요</span>
             <span v-if="filterMember" class="popup-sel-id">{{ filterMember.memberId }}</span>
+            <span v-if="commonFilter.memberId" class="popup-sel-clear" @click.stop="clearFilter('member')" title="선택 해제">✕</span>
             <span class="popup-sel-btn">🔍</span>
           </div>
         </div>
         <div class="popup-sel">
-          <div class="popup-sel-label">주문
-            <span v-if="commonFilter.orderId" class="popup-sel-clear" @click.stop="clearFilter('order')">✕</span>
-          </div>
+          <div class="popup-sel-label">주문</div>
           <div class="popup-sel-row" @click="openSelectModal('order')">
             <span v-if="filterOrder" class="popup-sel-name">{{ filterOrder.orderId }}</span>
             <span v-else class="popup-sel-placeholder">선택하세요</span>
             <span v-if="filterOrder" class="popup-sel-id">{{ filterOrder.userNm }}</span>
+            <span v-if="commonFilter.orderId" class="popup-sel-clear" @click.stop="clearFilter('order')" title="선택 해제">✕</span>
             <span class="popup-sel-btn">🔍</span>
           </div>
         </div>
