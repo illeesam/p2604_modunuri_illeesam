@@ -1118,6 +1118,26 @@
       };
 
       /* getRelativeTime */
+      /* fnFmtSec — API 로그 duration(ms) → 초(소수1자리). 1581ms → '1.5' (FO 동일) */
+      const fnFmtSec = (ms) => {
+        const n = Number(ms);
+        if (!n || isNaN(n)) return '';
+        return (n / 1000).toFixed(1);
+      };
+
+      /* fnShortUrl — 로그 URL 축약. http://127.0.0.1:3000/api/... → /api/... (coUtil.cofShortApiUrl 위임) */
+      const fnShortUrl = (url) => {
+        try { return window.coUtil && coUtil.cofShortApiUrl ? coUtil.cofShortApiUrl(url || '') : (url || ''); }
+        catch (_) { return url || ''; }
+      };
+
+      /* fnHmsToMs — BO 로그 time('HH:MM:SSs') → '분:초'(MM:SS). '08:17:18s' → '17:18' */
+      const fnHmsToMs = (t) => {
+        if (!t) return '';
+        const c = String(t).replace('s', '').split(':');
+        return c.length >= 3 ? (c[1] + ':' + c[2]) : String(t).replace('s', '');
+      };
+
       const getRelativeTime = (timeStr) => {
         try {
           const [hh, mm, ss] = timeStr.replace('s', '').split(':').map(Number);
@@ -2025,6 +2045,9 @@
         formatJsonData,
         isWithin60Seconds,
         getRelativeTime,
+        fnFmtSec,
+        fnHmsToMs,
+        fnShortUrl,
         tabBarRef,
         scrollTabs,
         boInitReady,
@@ -2565,7 +2588,7 @@
         <!-- API 로그 섹션 -->
         <div style="padding: 12px 8px; border-top: 1px solid #e5e7eb; margin-top: 12px;">
           <div style="font-size: 12px; font-weight: 600; color: #374151; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
-            <span>📡 API 로그</span>
+            <span>📡 API 로그 (BO)</span>
             <button v-if="apiLogs.length" @click="clearApiLogs" style="font-size: 10px; padding: 2px 6px; background: #ef4444; color: white; border: none; border-radius: 2px; cursor: pointer; font-weight: 600;">Clear</button>
           </div>
           <div v-if="apiLogs.length === 0" style="font-size: 11px; color: #9ca3af; padding: 8px; text-align: center;">로그 없음</div>
@@ -2575,16 +2598,20 @@
               @mouseleave="onApiLogLeave(log)"
               style="padding: 6px 8px; border-bottom: 1px solid #f3f4f6; font-size: 10px; font-family: monospace; cursor: pointer; position: relative;"
               :style="{ background: (apiLogHoverDetail === log || apiLogLockedDetail === log) ? '#f9fafb' : 'white' }">
-              <div v-if="log.uiLabel" style="font-size: 9px; font-weight: 700; color: #7c3aed; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; letter-spacing: -0.2px;">{{ log.uiLabel }}</div>
-              <div style="display: grid; grid-template-columns: 18px 50px 32px 1fr 28px 18px; gap: 2px; align-items: center;">
-                <div :style="{ color: isWithin60Seconds(log.time) ? '#000000' : '#8C8C8C', textAlign: 'center', fontSize: '9px', fontWeight: isWithin60Seconds(log.time) ? '700' : '400' }">{{ apiLogs.length - idx }}</div>
-                <div :style="{ color: isWithin60Seconds(log.time) ? '#000000' : '#8C8C8C', whiteSpace: 'nowrap', fontWeight: isWithin60Seconds(log.time) ? '700' : '400', fontSize: '9px' }">{{ getRelativeTime(log.time) }}</div>
-                <div :style="{ color: log.method === 'GET' ? '#3b82f6' : log.method === 'POST' ? '#8b5cf6' : '#f59e0b', fontWeight: '600', textAlign: 'center' }">{{ log.method }}</div>
-                <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: log.hasError ? '#ef4444' : '#374151';">{{ log.url }}</div>
-                <div :style="{ color: getApiStatusColor(log.status), fontWeight: '600', textAlign: 'center', fontSize: '10px' }">{{ log.status }}</div>
-                <div @click.stop="toggleApiLogLock(log)" style="text-align: center; cursor: pointer; font-size: 12px; color: #6b7280; user-select: none; padding: 2px;">{{ apiLogLockedDetail === log ? '🔒' : '🔓' }}</div>
+              <!-- 1줄: 메서드(첫글자) + URL(/api.. 축약) + status(200 숨김) — FO 동일 형태, 좌우 공백 활용 -->
+              <div style="display:flex;align-items:center;gap:4px;">
+                <span :style="{ color: log.method === 'GET' ? '#3b82f6' : log.method === 'POST' ? '#8b5cf6' : '#f59e0b', fontWeight:'700' }" style="flex-shrink:0;" :title="log.method">{{ (log.method || '-').charAt(0) }}</span>
+                <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :style="{ color: log.hasError ? '#ef4444' : '#1a5276' }" :title="log.url">{{ fnShortUrl(log.url) }}</span>
+                <span v-if="log.status && Number(log.status) !== 200" :style="{ color: getApiStatusColor(log.status), fontWeight:'700' }" style="flex-shrink:0;" :title="log.status">{{ log.status }}</span>
               </div>
-              <div v-if="!log.hasError && log.resData" style="grid-column: 1 / -1; font-size: 9px; color: #6b7280; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 1px 2px 2px 20px; line-height: 1.3;">
+              <!-- 2줄: uiLabel + duration(초) + 시각(분:초) -->
+              <div style="display:flex;align-items:center;gap:6px;margin-top:1px;">
+                <span v-if="log.uiLabel" :style="{ fontWeight: isWithin60Seconds(log.time) ? '700' : '400' }" style="font-size:9px;color:#7c3aed;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-0.2px;">{{ log.uiLabel }}</span>
+                <span v-else style="flex:1;"></span>
+                <span v-if="log.duration" style="font-size:9px;color:#aaa;flex-shrink:0;" :title="log.duration + 'ms'">{{ fnFmtSec(log.duration) }}</span>
+                <span style="font-size:9px;color:#ccc;flex-shrink:0;" :title="log.time">{{ fnHmsToMs(log.time) }}</span>
+              </div>
+              <div v-if="!log.hasError && log.resData" style="font-size: 9px; color: #6b7280; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 1px 2px 0 10px; line-height: 1.3;">
                 ▶ {{ (function(d){ try{
                 const o=JSON.parse(d);
                 const inner = o?.data?.data ?? o?.data ?? o;

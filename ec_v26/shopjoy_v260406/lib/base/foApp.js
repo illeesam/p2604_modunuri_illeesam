@@ -304,6 +304,13 @@
       } catch (_) { return false; }
     };
 
+    /* fnFmtSec — API 로그 duration(ms) → 초(소수1자리). 1581ms → '1.5' */
+    const fnFmtSec = (ms) => {
+      const n = Number(ms);
+      if (!n || isNaN(n)) return '';
+      return (n / 1000).toFixed(1);
+    };
+
     /* foApiLogMethodStyle */
     const foApiLogMethodStyle = (method) => {
       const m = (method || '').toUpperCase();
@@ -828,7 +835,7 @@
       foHomeComp, foProdListComp, foProdViewComp,
       foApiLogs, showApiLog, showSettings, apiLogHoverDetail,
       clearFoApiLogs, foApiLogStatusClass, foApiLogMethodStyle,
-      onFoApiLogEnter, onFoApiLogLeave, onFoApiLogDetailEnter, formatJsonData, fnFoApiLogIndex, fnFoApiLogBadgeStyle, fnFoApiLogRecent,
+      onFoApiLogEnter, onFoApiLogLeave, onFoApiLogDetailEnter, formatJsonData, fnFoApiLogIndex, fnFoApiLogBadgeStyle, fnFoApiLogRecent, fnFmtSec,
       apiLogDock, onFoApiLogToggleDock, cfApiLogDockPad,
       apiToastEnabled,
       onToggleApiToast: () => { apiToastEnabled.value = !apiToastEnabled.value; },
@@ -1105,15 +1112,15 @@
         style="padding:3px 10px;border-bottom:1px solid #e5e7eb;cursor:pointer;transition:background .12s;"
         :style="(log._isErr ? 'background:#fff5f5;' : 'background:#fff;') + (fnFoApiLogRecent(log.ts) ? 'font-weight:700;' : 'font-weight:400;')">
         <div style="display:flex;align-items:center;gap:5px;">
-          <span style="display:inline-block;padding:0 4px;border-radius:3px;font-size:10px;font-weight:700;flex-shrink:0;" :style="foApiLogMethodStyle(log.method)">{{ log.method || '-' }}</span>
+          <span style="display:inline-block;padding:0 2px;border-radius:3px;font-size:10px;font-weight:700;flex-shrink:0;" :style="foApiLogMethodStyle(log.method)" :title="log.method">{{ (log.method || '-').charAt(0) }}</span>
           <span style="font-size:11px;color:#1a5276;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="log.url">{{ log.url }}</span>
-          <span style="font-size:11px;font-weight:700;flex-shrink:0;" :style="foApiLogStatusClass(log.status)">{{ log.status }}</span>
+          <span v-if="log.status && Number(log.status) !== 200" style="font-size:11px;font-weight:700;flex-shrink:0;" :style="foApiLogStatusClass(log.status)">{{ log.status }}</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
           <span v-if="log.uiLabel" style="font-size:10px;color:#7d3c98;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">{{ log.uiLabel }}</span>
           <span v-else style="flex:1;"></span>
-          <span v-if="log.duration" style="font-size:10px;color:#aaa;flex-shrink:0;">{{ log.duration }}ms</span>
-          <span style="font-size:10px;color:#ccc;flex-shrink:0;">{{ log.ts ? log.ts.slice(11,19) : '' }}</span>
+          <span v-if="log.duration" style="font-size:10px;color:#aaa;flex-shrink:0;" :title="log.duration + 'ms'">{{ fnFmtSec(log.duration) }}</span>
+          <span style="font-size:10px;color:#ccc;flex-shrink:0;" :title="log.ts ? log.ts.slice(11,19) : ''">{{ log.ts ? log.ts.slice(14,19) : '' }}</span>
         </div>
       </div>
     </div>
