@@ -6762,6 +6762,7 @@ window.AuthLoginModal = {
     error:       { type: String, default: '' },     // loginError
     authMethods: { type: Array,  default: () => [] },// AUTH_METHODS
     userRoles:   { type: Array,  default: () => [] },// userRoles,
+    mode:        { type: String,  default: 'modal' },// 'modal'(세션만료 재인증, 배경 비침) | 'page'(최초 미인증 진입, 전용 화면)
     modalName:  { type: String,   default: '' },                       // 모달 식별자
     onCallback: { type: Function, default: null },                     // 통합 콜백
   },
@@ -6818,13 +6819,19 @@ window.AuthLoginModal = {
       { key: 'authMethod', label: '인증방식',  type: 'slot', name: 'authMethod' },
     ];
 
+    /* page 모드 = 최초 미인증 전용 화면 (불투명 배경 + 배경클릭/닫기 비활성) */
+    const cfIsPage = Vue.computed(() => props.mode === 'page');
+
     return {
       baseRegFormColumns, baseLoginFormColumns,                               // 컬럼 정의
+      cfIsPage,                                                              // 전용 화면 여부
       handleBtnAction, handleSelectAction,                                    // dispatch
     };
   },
   template: /* html */`
-<bo-modal :show="!!modal.show" box-pad="0" body-pad="0" @close="handleBtnAction('modal-close')">
+<bo-modal :show="cfIsPage ? true : !!modal.show" width="420px" box-pad="0" body-pad="0"
+  :overlay-bg="cfIsPage ? '#f3f4f6' : 'rgba(18,24,40,0.55)'"
+  :close-on-backdrop="!cfIsPage" @close="handleBtnAction('modal-close')">
   <div class="login-modal-box">
     <div class="login-modal-header">
       <div class="login-tabs">
@@ -6835,7 +6842,7 @@ window.AuthLoginModal = {
           회원가입
         </span>
       </div>
-      <span class="modal-close" @click="handleBtnAction('modal-close')">
+      <span v-if="!cfIsPage" class="modal-close" @click="handleBtnAction('modal-close')">
         ✕
       </span>
     </div>

@@ -62,31 +62,57 @@
    * 프로토타입: SDK 창은 띄우되 세션은 데모 발급. 실 연동 시 _resolveSocialUser 의 SDK 결과 + 백엔드 검증으로 교체. */
   const socialLogin = async (ctx, provider, opts = {}) => {
     const c = _ctx(ctx);
-    const user = await _resolveSocialUser(c, provider, opts);
-    if (!user) return { ok: false, msg: '알 수 없는 provider: ' + provider };
-    const ok = _setSession(c, user, _mkToken(c));
+    const resolved = await _resolveSocialUser(c, provider, opts);
+    if (!resolved) return { ok: false, msg: '알 수 없는 provider: ' + provider };
+    /* 백엔드 검증 성공 시 백엔드 발급 토큰, 데모 폴백 시 자체 토큰 */
+    const ok = _setSession(c, resolved.user, resolved.token || _mkToken(c));
     if (!ok) return { ok: false, msg: (c.toUpperCase() + ' 인증 스토어를 찾을 수 없습니다.') };
-    return { ok: true, ctx: c, provider, user };
+    return { ok: true, ctx: c, provider, user: resolved.user, verified: !!resolved.verified };
   };
 
   const _cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
-  /* _resolveSocialUser — 소셜 사용자 확정.
-   * SDK 로그인 창을 실제로 띄운다(opts.openSdk!==false). 프로토타입이라 SDK 결과는
-   * 로그/디버그로만 쓰고 세션은 데모 사용자로 발급한다.
-   * [실 연동] SDK profile + 백엔드 검증으로 교체:
-   *   const verified = await coApiSvc[ctx+'Auth'].socialLogin({ provider, accessToken: res.accessToken, profile: res.profile });
-   *   return verified.data.data.authUser; */
+  /* _resolveSocialUser — 소셜 사용자 확정 → { user, token, verified }.
+   * 1) SDK 로그인 창을 띄워 accessToken/profile 획득 (opts.openSdk!==false)
+   * 2) 백엔드 /co/{ctx}-auth/social-login 으로 토큰 검증 + 회원매칭 + JWT 발급
+   * 3) 백엔드 미연동/검증실패 시 데모 사용자로 폴백 (프로토타입 — 실 키 없어도 개발 가능) */
   const _resolveSocialUser = async (ctx, provider, opts = {}) => {
-    if (!_demoUser(ctx, provider)) return null;  // 알 수 없는 provider 조기 차단
+    const demo = _demoUser(ctx, provider);
+    if (!demo) return null;  // 알 수 없는 provider 조기 차단
+
+    let sdkRes = null;
     if (opts.openSdk !== false && window.coExtSdk && typeof window.coExtSdk['login' + _cap(provider)] === 'function') {
       if (opts.onDebug && window.coExtSdk.setDebugHook) window.coExtSdk.setDebugHook(opts.onDebug);
       /* SDK 창 띄움 — 창이 안 뜨면 coExtSdk 가 "원인—해결방법" 에러 throw (호출자가 toast) */
-      const res = await window.coExtSdk['login' + _cap(provider)]();
-      console.log('[coAuth] SDK 응답(' + ctx + '/' + provider + '):', res);
-      /* 실 연동 시 여기서 res.profile/res.accessToken 을 백엔드로 검증 후 그 결과를 반환 */
+      sdkRes = await window.coExtSdk['login' + _cap(provider)]();
+      console.log('[coAuth] SDK 응답(' + ctx + '/' + provider + '):', sdkRes);
     }
-    return _demoUser(ctx, provider);
+
+    /* 백엔드 검증 시도 (coApiSvc 로드 + SDK accessToken 있을 때) */
+    if (sdkRes && sdkRes.accessToken && window.coApiSvc && window.coApiSvc[ctx + 'Auth']) {
+      try {
+        const p = sdkRes.profile || {};
+        const body = {
+          provider,
+          accessToken: sdkRes.accessToken,
+          email: p.email || p.kakao_account?.email || '',
+          name: p.name || p.nickname || p.kakao_account?.profile?.nickname || '',
+        };
+        const res = await window.coApiSvc[ctx + 'Auth'].socialLogin(body, '소셜로그인', provider);
+        const d = res?.data?.data;
+        if (d) {
+          /* 백엔드 LoginRes → 세션용 사용자 객체로 정규화 (saSetAuth/saSetSession 둘 다 수용) */
+          const user = (ctx === 'bo')
+            ? { authId: d.authId || d.userId, userId: d.userId, name: d.userNm, email: d.userEmail, role: d.roleId, loginId: d.userId, siteId: d.siteId }
+            : { authId: d.authId || d.memberId, memberId: d.memberId, userId: null, AppTypeCd: 'FO', loginId: d.userEmail, memberNm: d.userNm, siteId: d.siteId };
+          return { user, token: d.accessToken, verified: true };
+        }
+      } catch (e) {
+        console.warn('[coAuth] 백엔드 소셜 검증 실패 → 데모 폴백:', e?.message || e);
+      }
+    }
+    /* 폴백: 데모 사용자 (프로토타입) */
+    return { user: demo, token: null, verified: false };
   };
 
   /* pay(ctx, opts) — 결제 흐름 통합 (ctx 별 키/흐름).
@@ -109,8 +135,38 @@
     return { ok: true, ctx: c, amount };
   };
 
+  /* cancelPay(ctx, opts) — 결제취소/부분환불 흐름 통합 (ctx 별 키/흐름).
+   * 토스 cancel 호출 (/co/cm/toss/cancel) → status=CANCELED|PARTIAL_CANCELED.
+   * opts: { paymentKey, cancelReason, cancelAmount } (cancelAmount 미지정 시 전액취소). */
+  const cancelPay = async (ctx, opts = {}) => {
+    const c = _ctx(ctx);
+    const { paymentKey, cancelReason, cancelAmount } = opts;
+    const body = { paymentKey, cancelReason };
+    if (cancelAmount != null) body.cancelAmount = cancelAmount;
+    const res = await window.coApiSvc.cmToss.cancel(body, '결제취소', cancelAmount != null ? '부분환불' : '전액취소');
+    const data = res?.data?.data || null;
+    return { ok: true, ctx: c, status: data?.status, data };
+  };
+
+  /* socialWithdraw(ctx) — 소셜 회원탈퇴 흐름 통합 (ctx 별).
+   * 백엔드 탈퇴 호출 후 해당 ctx 세션 클리어 (fo: saClearSession / bo: saReset). */
+  const socialWithdraw = async (ctx) => {
+    const c = _ctx(ctx);
+    const res = await window.coApiSvc[c + 'Auth'].withdraw('회원탈퇴', '탈퇴');
+    if (c === 'bo') {
+      const store = (typeof window.useBoAuthStore === 'function') ? window.useBoAuthStore() : null;
+      store?.saReset();
+    } else {
+      const store = (typeof window.useFoAuthStore === 'function') ? window.useFoAuthStore() : null;
+      store?.saClearSession();
+    }
+    return { ok: true, ctx: c, data: res?.data?.data || null };
+  };
+
   window.coAuth = {
-    socialLogin,   // (ctx, provider)
-    pay,           // (ctx, opts)
+    socialLogin,    // (ctx, provider)
+    pay,            // (ctx, opts)
+    cancelPay,      // (ctx, { paymentKey, cancelReason, cancelAmount })
+    socialWithdraw, // (ctx)
   };
 })();

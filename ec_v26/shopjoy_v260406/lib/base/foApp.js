@@ -878,7 +878,7 @@
 
   <div style="flex:1;display:flex;overflow:hidden;position:relative;">
     <fo-app-sidebar
-      v-show="cfShowSidebar"
+      v-show="cfShowSidebar || uiState.mobileOpen"
       :page="page" :app-sidebar-open="sidebarOpen" :app-mobile-open="uiState.mobileOpen"
       :config="config" :navigate="navigate" :app-cart-count="cfCartCount" :app-auth="auth"
       @modu-fo-toggle-sidebar="sidebarOpen=!sidebarOpen" @modu-fo-close-mobile="closeMobileMenu"

@@ -307,12 +307,14 @@
           return;
         }
         if (st === 401) {
-          errorMessage.value = msg;
-          page.value = 'error401';
-          // hash 동기화 — 미동기화 시 readHash 가 다시 원래 페이지로 복원하면서 무한 마운트 루프 발생
-          try {
-            window.history.replaceState(null, '', '#page=error401');
-          } catch (_) {}
+          /* 세션 만료 → error401 페이지로 튕기지 않고, 현재 작업 화면 위에 로그인 모달(재인증) 표시.
+           * 컨텍스트 유지하며 재로그인 (최초 미인증 진입은 page 모드, 세션만료 재인증은 modal 모드) */
+          try { window.useBoAuthStore?.()?.saReset?.(); } catch (_) {}
+          _syncCurrentAuthUser?.();
+          if (!loginModal.show) {
+            showToast('세션이 만료되었습니다. 다시 로그인해 주세요.', 'error');
+            openLogin('login', 'modal');
+          }
         } else if (st >= 500 || st === 0) {
           errorMessage.value = msg;
           page.value = 'error500';
@@ -1391,6 +1393,12 @@
           const roles = codeStore.sgGetGrpCodes('USER_ROLE') || [];
           userRoles.splice(0, userRoles.length, ...roles);
         }
+        /* 최초 진입 시 미인증이면 전용 화면(page 모드) 으로 로그인 표시 — 뒤에 데이터 안 비침.
+         * (세션 만료 후 재인증은 modal 모드로 별도 호출) */
+        setTimeout(() => {
+          const isLoggedIn = !!localStorage.getItem('modu-bo-accessToken');
+          if (!isLoggedIn) openLogin('login', 'page');
+        }, 50);
       });
       // currentAuthUser 객체 deep watch 시 매번 fire → userId 변화에만 반응
       watch(
@@ -1413,7 +1421,7 @@
         },
         { immediate: true },
       );
-      const loginModal = reactive({ show: false, tab: 'login' });
+      const loginModal = reactive({ show: false, tab: 'login', mode: 'modal' }); // mode: 'modal'(세션만료 재인증) | 'page'(최초 미인증 전용화면)
       const loginForm = reactive({ loginId: '', loginPwd: '', authMethod: '메인' });
       const QUICK_USERS = [
         {
@@ -1688,8 +1696,9 @@
       };
 
       /* openLogin */
-      const openLogin = (tab = 'login') => {
+      const openLogin = (tab = 'login', mode = 'modal') => {
         loginModal.tab = tab;
+        loginModal.mode = mode;
         loginModal.show = true;
         loginError.value = '';
       };
@@ -2769,6 +2778,7 @@
   <auth-login-modal
     modal-name="auth-login"
     :modal="loginModal"
+    :mode="loginModal.mode"
     :login-form="loginForm"
     :reg-form="regForm"
     :error="loginError"

@@ -1511,6 +1511,7 @@ window.BoModal = {
     boxPad:          { type: String,  default: '20px' },  // .modal-box 자체 padding (인라인 디자인 모달은 '0')
     bodyPad:         { type: String,  default: '20px' },  // body 내부 padding
     closeOnBackdrop: { type: Boolean, default: true },
+    overlayBg:       { type: String,  default: 'rgba(18,24,40,0.55)' },  // 오버레이 배경 (전용 화면 모드는 불투명 지정)
     teleport:        { type: Boolean, default: true },
     onCloseCb:       { type: Function, default: null },  // 닫기 시 호출되는 콜백 (emit('close')와 병행)
     onConfirmCb:     { type: Function, default: null },  // 확인 시 호출되는 콜백 (#footer 슬롯 prop 'confirm' + emit('confirm'))
@@ -1520,7 +1521,7 @@ window.BoModal = {
     /* ── ▼ 초기 reactive / 파생 변수 ─────────────────────────────────────── */
     const cfOverlayStyle = Vue.computed(() =>
       'position:fixed;inset:0;display:flex;align-items:center;justify-content:center;'
-      + 'background:rgba(18,24,40,0.55);z-index:' + props.zIndex + ';');
+      + 'background:' + props.overlayBg + ';z-index:' + props.zIndex + ';');
     const cfBoxStyle = Vue.computed(() =>
       'background:#fff;width:' + props.width + ';max-width:' + props.maxWidth + ';'
       + 'height:' + props.height + ';max-height:' + props.maxHeight + ';'

@@ -10,9 +10,11 @@ import com.shopjoy.ecadminapi.co.auth.data.dto.AccessTokenClaims;
 import com.shopjoy.ecadminapi.co.auth.data.dto.SocialUserInfo;
 import com.shopjoy.ecadminapi.co.auth.data.vo.LoginRes;
 import com.shopjoy.ecadminapi.co.auth.data.vo.SocialLoginReq;
+import com.shopjoy.ecadminapi.co.auth.data.vo.WithdrawReq;
 import com.shopjoy.ecadminapi.co.auth.security.JwtProvider;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
@@ -129,6 +131,65 @@ public class SocialAuthService {
             .roleId("")
             .deptId("")
             .build();
+    }
+
+    // ── withdraw ──────────────────────────────────────────────────────────
+
+    /**
+     * 회원 탈퇴 (소셜/일반 공통) — 본인 인증 필수.
+     *
+     * <p>처리 순서:</p>
+     * <ol>
+     *   <li>SecurityUtil 로 현재 로그인 회원 확인(비로그인/타인 차단)</li>
+     *   <li>mb_member_sns 의 해당 회원 SNS 연동행 전체 삭제</li>
+     *   <li>mb_member.member_status_cd 를 "WITHDRAWN" 으로 변경
+     *       (이전 상태값은 member_status_cd_before 에 보존, 탈퇴시각은 updDate 로 기록)</li>
+     *   <li>보유 토큰 전체 무효화(mbh_member_token_log 삭제) + REVOKE 이력 기록 (logout 흐름 모방)</li>
+     * </ol>
+     *
+     * <p>JPA 영속성 컨텍스트 변경감지(dirty checking)로 member 는 save 호출 없이 UPDATE 된다
+     * (changePassword 동일). 탈퇴는 모든 디바이스 세션을 끊어야 하므로 해당 회원의 토큰 로그를
+     * 전체 삭제한다(logout 의 단일 토큰 삭제와 차이).</p>
+     */
+    @Transactional
+    public void withdraw(WithdrawReq request, String appTypeCd) {
+        if (!SecurityUtil.isLogin()) {
+            throw new CmBizException("로그인이 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
+        }
+        String memberId = SecurityUtil.getAuthUser().authId();
+        if (memberId == null || memberId.isBlank()) {
+            throw new CmBizException("로그인이 필요합니다." + "::" + CmUtil.svcCallerInfo(this));
+        }
+
+        MbMember member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new CmBizException(
+                "회원 정보를 찾을 수 없습니다." + "::" + CmUtil.svcCallerInfo(this)));
+
+        if ("WITHDRAWN".equals(member.getMemberStatusCd())) {
+            throw new CmBizException("이미 탈퇴된 계정입니다." + "::" + CmUtil.svcCallerInfo(this));
+        }
+
+        String siteId = CmUtil.nvl(member.getSiteId());
+
+        // 1) SNS 연동행 전체 삭제 (소셜 연동 정보 제거)
+        memberSnsRepository.deleteByMemberId(memberId);
+
+        // 2) 회원 상태 WITHDRAWN 변경 (이전 상태 보존, updDate=탈퇴시각)
+        member.setMemberStatusCdBefore(member.getMemberStatusCd());
+        member.setMemberStatusCd("WITHDRAWN");
+        member.setUpdBy(memberId);
+        member.setUpdDate(LocalDateTime.now());
+
+        // 3) 보유 토큰 전체 무효화 (모든 디바이스 세션 종료) + REVOKE 이력 (logout 흐름 모방)
+        String reason = (request != null)
+            ? CmUtil.nvl(request.getWithdrawReason(), "WITHDRAW") : "WITHDRAW";
+        em.createQuery("DELETE FROM MbhMemberTokenLog t WHERE t.authId = :authId")
+            .setParameter("authId", memberId)
+            .executeUpdate();
+        saveTokenLog(memberId, siteId, null, null, "REVOKE", appTypeCd, reason, null, null);
+
+        // 탈퇴 이력 기록 (login_log)
+        saveLoginLog(memberId, siteId, member.getLoginId(), "WITHDRAW", null, 0, null, null);
     }
 
     // ── join (social) ───────────────────────────────────────────────────────

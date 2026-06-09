@@ -870,17 +870,17 @@ window.OdOrderDtl = {
             <label class="form-label">결제 금액</label>
             <div class="form-control" style="background:#fff8f9;border-color:#f3c6d4;text-align:right;font-weight:800;color:#e8587a;min-width:140px;">{{ fmt(form.totalAmt) }}</div>
           </div>
-          <button type="button" class="btn btn-primary" style="margin-left:auto;min-width:160px;" :disabled="payState.processing" @click="handleBtnAction('pay-request')">
+          <!-- 간편 위젯 결제 (브랜드페이 결제 왼쪽) — 공통 컴포넌트, FO/BO 공용 -->
+          <div style="margin-left:auto;">
+            <base-toss-pay-widget :amount="Number(form.totalAmt)||0"
+              :order-id="form.orderId" :order-name="form.prodNm || '주문결제'"
+              :customer-key="form.memberId" :customer-name="form.memberNm || '고객'"
+              success-page="odOrderMng" fail-page="odOrderMng"
+              :show-toast="showToast" :show-confirm="showConfirm" />
+          </div>
+          <button type="button" class="btn btn-primary" style="min-width:160px;" :disabled="payState.processing" @click="handleBtnAction('pay-request')">
             {{ payState.processing ? '결제 처리중…' : '💳 브랜드페이 결제' }}
           </button>
-        </div>
-        <!-- ===== ■.■.■.■. 토스 간편 결제위젯 (공통 컴포넌트 — FO/BO 공용) =============== -->
-        <div style="margin-top:16px;border-top:1px dashed #e0e0e0;padding-top:14px;">
-          <base-toss-pay-widget :amount="Number(form.totalAmt)||0"
-            :order-id="form.orderId" :order-name="form.prodNm || '주문결제'"
-            :customer-key="form.memberId" :customer-name="form.memberNm || '고객'"
-            success-page="odOrderMng" fail-page="odOrderMng"
-            :show-toast="showToast" :show-confirm="showConfirm" />
         </div>
       </div>
       <!-- ===== ■.■.■. 추가결제 요청 (편집 모드) ===================================== -->

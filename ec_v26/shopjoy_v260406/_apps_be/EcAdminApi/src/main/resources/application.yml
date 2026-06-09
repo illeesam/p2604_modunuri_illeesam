@@ -122,15 +122,26 @@ auth:
     naver-userinfo-url:  ${SOCIAL_NAVER_USERINFO_URL:https://openapi.naver.com/v1/nid/me}
     default-site-id:     ${SOCIAL_DEFAULT_SITE_ID:SITE000001}
 
-# ── 토스페이먼츠 결제 (결제 승인은 반드시 서버에서 시크릿키로 호출) ──────
-#   confirm-url : 토스 결제승인 API 엔드포인트
-#   secret-key  : 토스 시크릿키 (Basic 인증 username). 운영은 환경변수 TOSS_SECRET_KEY 로 주입 필수.
-#                 기본값은 토스 공식 문서용 테스트 시크릿키(test_gsk_*) — 프론트 폴백 테스트 클라이언트키와 짝.
-#   client-key  : 프론트 SDK 초기화용 클라이언트키 (공개 가능 키)
+# ── 토스페이먼츠 결제 (결제 승인/취소는 반드시 서버에서 시크릿키로 호출) ──────
+#   confirm-url     : 토스 결제승인 API 엔드포인트
+#   cancel-url-base : 토스 결제취소 API 베이스 URL. 실제 호출 시 "/{paymentKey}/cancel" 을 덧붙임.
+#                     (paymentKey 가 path 에 들어가 완성형 외부화 불가 → 베이스만 외부화)
+#   secret-key      : 토스 시크릿키 (Basic 인증 username). 운영은 환경변수 TOSS_SECRET_KEY 로 주입 필수.
+#                     기본값은 토스 공식 문서용 테스트 시크릿키(test_gsk_*) — 프론트 폴백 테스트 클라이언트키와 짝.
+#   client-key      : 프론트 SDK 초기화용 클라이언트키 (공개 가능 키)
 toss:
-  confirm-url: ${TOSS_CONFIRM_URL:https://api.tosspayments.com/v1/payments/confirm}
-  secret-key:  ${TOSS_SECRET_KEY:test_gsk_docs_GjLJoQ1aVZ8yMnpZ0vlrrPmOoBN0}
-  client-key:  ${TOSS_CLIENT_KEY:test_gck_docs_Ovk5rk1gB5Nrm6CzWlVWax}
+  confirm-url:     ${TOSS_CONFIRM_URL:https://api.tosspayments.com/v1/payments/confirm}
+  cancel-url-base: ${TOSS_CANCEL_URL_BASE:https://api.tosspayments.com/v1/payments}
+  secret-key:      ${TOSS_SECRET_KEY:test_gsk_docs_GjLJoQ1aVZ8yMnpZ0vlrrPmOoBN0}
+  client-key:      ${TOSS_CLIENT_KEY:test_gck_docs_Ovk5rk1gB5Nrm6CzWlVWax}
+
+# ── 지도(맵) JS 공개키 (브라우저 SDK 초기화용, 도메인 허용으로 보호되는 공개키만) ──
+#   kakao-js-key         : 카카오맵 JavaScript 키 (카카오 디벨로퍼스 앱의 JavaScript 키)
+#   naver-map-client-id  : 네이버 클라우드 맵 Client ID (ncpClientId/ncpKeyId)
+#   ※ 공개키만 보관. 시크릿/REST 키는 절대 두지 않는다. 미설정 시 빈 문자열 반환(에러 없음).
+map:
+  kakao-js-key:        ${KAKAO_MAP_JS_KEY:}
+  naver-map-client-id: ${NAVER_MAP_CLIENT_ID:}
 
 springdoc:
   swagger-ui:

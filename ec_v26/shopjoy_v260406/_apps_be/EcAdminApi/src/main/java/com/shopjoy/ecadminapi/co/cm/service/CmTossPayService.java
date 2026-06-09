@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.co.cm.service;
 
+import com.shopjoy.ecadminapi.co.cm.data.vo.TossCancelReq;
 import com.shopjoy.ecadminapi.co.cm.data.vo.TossConfirmReq;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -42,6 +43,13 @@ public class CmTossPayService {
     /** 토스 결제승인 API 엔드포인트. 설정값으로 외부화(테스트 시 모의 서버 지정 가능). */
     private final String confirmUrl;
 
+    /**
+     * 토스 결제취소 API 베이스 URL. 실제 호출 시 "/{paymentKey}/cancel" 을 덧붙인다.
+     * paymentKey 가 path 에 들어가므로 confirm-url 처럼 완성형으로 외부화하지 못하고
+     * 베이스만 외부화한다(테스트 시 모의 서버 지정 가능).
+     */
+    private final String cancelUrlBase;
+
     /** 토스 시크릿키 (Basic 인증의 username, 비밀번호는 빈 문자열). */
     private final String secretKey;
 
@@ -52,12 +60,14 @@ public class CmTossPayService {
 
     public CmTossPayService(
             @Value("${toss.confirm-url:https://api.tosspayments.com/v1/payments/confirm}") String confirmUrl,
+            @Value("${toss.cancel-url-base:https://api.tosspayments.com/v1/payments}") String cancelUrlBase,
             @Value("${toss.secret-key:test_gsk_docs_GjLJoQ1aVZ8yMnpZ0vlrrPmOoBN0}") String secretKey,
             @Value("${toss.client-key:test_gck_docs_Ovk5rk1gB5Nrm6CzWlVWax}") String clientKey) {
-        this.confirmUrl = confirmUrl;
-        this.secretKey  = secretKey;
-        this.clientKey  = clientKey;
-        this.restClient = RestClient.create();
+        this.confirmUrl    = confirmUrl;
+        this.cancelUrlBase = cancelUrlBase;
+        this.secretKey     = secretKey;
+        this.clientKey     = clientKey;
+        this.restClient    = RestClient.create();
     }
 
     // ── 클라이언트키 조회 ─────────────────────────────────────────────────
@@ -142,6 +152,80 @@ public class CmTossPayService {
                 appTypeCd, request.getOrderId(), e.getMessage());
             throw new CmBizException(
                 "토스 결제 승인 호출에 실패했습니다. 네트워크 또는 결제 정보를 확인하세요."
+                + "::" + CmUtil.svcCallerInfo(this), HttpStatus.BAD_GATEWAY);
+        }
+    }
+
+    // ── 결제 취소 / 부분환불 ───────────────────────────────────────────────
+
+    /**
+     * 토스 결제 취소(전체) / 부분환불. paymentKey 로 식별되는 승인 완료 건을
+     * 시크릿키 Basic 인증으로 토스 결제취소 API 에 전달하여 취소한다.
+     *
+     * <p>cancelReason 은 필수. cancelAmount 가 null 이면 전체취소,
+     * 값이 있으면 해당 금액만 부분환불(잔액 남으면 추가 부분취소 가능).</p>
+     *
+     * @param request   paymentKey / cancelReason / cancelAmount (컨트롤러 @Valid 검증 완료)
+     * @param appTypeCd "BO" 또는 "FO"
+     * @return 토스 결제취소 응답 본문(Map). 취소 실패 시 CmBizException.
+     */
+    @Transactional
+    public Map<String, Object> cancel(TossCancelReq request, String appTypeCd) {
+        if (secretKey == null || secretKey.isBlank()) {
+            throw new CmBizException(
+                "토스 시크릿키가 설정되지 않았습니다. application.yml 의 toss.secret-key (또는 환경변수 TOSS_SECRET_KEY) 를 설정하세요."
+                + "::" + CmUtil.svcCallerInfo(this));
+        }
+
+        // Basic 인증: username=시크릿키, password=빈 문자열 → "{secretKey}:" 를 Base64 인코딩
+        String basic = "Basic " + Base64.getEncoder()
+            .encodeToString((secretKey + ":").getBytes(StandardCharsets.UTF_8));
+
+        // 토스 취소 엔드포인트: paymentKey 가 path 에 들어감. 베이스 + "/{paymentKey}/cancel"
+        String cancelUrl = cancelUrlBase + "/" + request.getPaymentKey() + "/cancel";
+
+        // 토스 cancel 요청 본문 (cancelReason 필수, cancelAmount 있으면 부분환불)
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("cancelReason", request.getCancelReason());
+        if (request.getCancelAmount() != null) {
+            body.put("cancelAmount", request.getCancelAmount());
+        }
+
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> res = restClient.post()
+                .uri(cancelUrl)
+                .header(HttpHeaders.AUTHORIZATION, basic)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(body)
+                .retrieve()
+                // 4xx/5xx 도 예외 던지지 않고 본문을 읽어 토스 에러 메시지를 그대로 노출
+                .onStatus(status -> status.isError(), (req, resp) -> { /* 본문 파싱 위해 무시 */ })
+                .body(Map.class);
+
+            if (res == null || res.isEmpty()) {
+                throw new CmBizException(
+                    "토스 결제 취소 응답이 비어 있습니다." + "::" + CmUtil.svcCallerInfo(this));
+            }
+
+            // 토스 에러 응답 형식: { "code": "...", "message": "..." } (status 필드 없음)
+            // 정상 취소 응답: { "paymentKey": "...", "status": "CANCELED"|"PARTIAL_CANCELED", ... }
+            if (res.containsKey("code") && !res.containsKey("status")) {
+                String code    = String.valueOf(res.get("code"));
+                String message = res.get("message") != null ? String.valueOf(res.get("message")) : "토스 결제 취소에 실패했습니다.";
+                log.warn("toss cancel failed: appTypeCd={}, paymentKey={}, code={}, message={}",
+                    appTypeCd, request.getPaymentKey(), code, message);
+                throw new CmBizException(message + " (" + code + ")" + "::" + CmUtil.svcCallerInfo(this));
+            }
+
+            return res;
+        } catch (CmBizException e) {
+            throw e;
+        } catch (Exception e) {
+            log.warn("toss cancel error: appTypeCd={}, paymentKey={}, err={}",
+                appTypeCd, request.getPaymentKey(), e.getMessage());
+            throw new CmBizException(
+                "토스 결제 취소 호출에 실패했습니다. 네트워크 또는 결제 정보를 확인하세요."
                 + "::" + CmUtil.svcCallerInfo(this), HttpStatus.BAD_GATEWAY);
         }
     }

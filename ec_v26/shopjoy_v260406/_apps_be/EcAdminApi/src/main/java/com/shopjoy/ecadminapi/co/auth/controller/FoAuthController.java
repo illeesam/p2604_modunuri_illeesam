@@ -6,6 +6,7 @@ import com.shopjoy.ecadminapi.co.auth.data.vo.FoJoinRes;
 import com.shopjoy.ecadminapi.co.auth.data.vo.LoginReq;
 import com.shopjoy.ecadminapi.co.auth.data.vo.LoginRes;
 import com.shopjoy.ecadminapi.co.auth.data.vo.SocialLoginReq;
+import com.shopjoy.ecadminapi.co.auth.data.vo.WithdrawReq;
 import com.shopjoy.ecadminapi.co.auth.service.FoAuthService;
 import com.shopjoy.ecadminapi.co.auth.service.SocialAuthService;
 import com.shopjoy.ecadminapi.base.ec.mb.data.entity.MbMember;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
  * POST /api/co/fo-auth/token-refresh   — 토큰 갱신 (Authorization 헤더로 만료된 accessToken 전달, refreshToken은 서버 DB 조회)
  * POST /api/co/fo-auth/logout          — 로그아웃
  * POST /api/co/fo-auth/change-password — 비밀번호 변경 (로그인 필요)
+ * POST /api/co/fo-auth/withdraw        — 회원 탈퇴 (로그인 필요, 본인 인증)
  */
 @RestController
 @RequestMapping("/api/co/fo-auth")
@@ -83,5 +85,13 @@ public class FoAuthController {
             @RequestBody @Valid ChangePasswordReq request) {
         authService.changePassword(request, "FO");
         return ResponseEntity.ok(ApiResponse.ok(null, "비밀번호가 변경되었습니다."));
+    }
+
+    /** withdraw — 회원 탈퇴 (본인 인증 필요, SNS 연동 삭제 + 상태 WITHDRAWN + 토큰 무효화) */
+    @PostMapping("/withdraw")
+    public ResponseEntity<ApiResponse<Void>> withdraw(
+            @RequestBody(required = false) WithdrawReq request) {
+        socialAuthService.withdraw(request, "FO");
+        return ResponseEntity.ok(ApiResponse.ok(null, "탈퇴 처리되었습니다."));
     }
 }

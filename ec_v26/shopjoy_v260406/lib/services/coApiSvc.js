@@ -52,6 +52,7 @@
    * ─────────────────────────────────────────────────────────── */
   coApiSvc.boAuth = {
     login(body, uiNm, cmdNm)          { return global.boApi.post(  '/co/bo-auth/login',           body, hdr(uiNm, cmdNm)); },
+    socialLogin(body, uiNm, cmdNm)    { return global.boApi.post(  '/co/bo-auth/social-login',    body, hdr(uiNm, cmdNm)); },
     tokenRefresh(body, uiNm, cmdNm)   { return global.boApi.post(  '/co/bo-auth/token-refresh',   body, hdr(uiNm, cmdNm)); },
     logout(body, uiNm, cmdNm)         { return global.boApi.post(  '/co/bo-auth/logout',          body, hdr(uiNm, cmdNm)); },
     join(body, uiNm, cmdNm)           { return global.boApi.post(  '/co/bo-auth/join',            body, hdr(uiNm, cmdNm)); },
@@ -139,15 +140,29 @@
     },
   };
 
+  /* ── cm: 지도 키 (/co/cm/map) — 카카오/네이버 맵 공개키 발급 (FO·BO 공용) ── */
+  coApiSvc.cmMap = {
+    getKeys(uiNm, cmdNm) { return client().get('/co/cm/map/keys', hdr(uiNm, cmdNm)); },
+  };
+
+  /* ── cm: 토스 결제 (/co/cm/toss) — 클라이언트키 조회 + 결제 승인/취소 (FO·BO 공용) ── */
+  coApiSvc.cmToss = {
+    getClientKey(uiNm, cmdNm)  { return client().get('/co/cm/toss/client-key', hdr(uiNm, cmdNm)); },
+    confirm(body, uiNm, cmdNm) { return client().post('/co/cm/toss/confirm', body, hdr(uiNm, cmdNm)); },
+    cancel(body, uiNm, cmdNm)  { return client().post('/co/cm/toss/cancel', body, hdr(uiNm, cmdNm)); },
+  };
+
   /* ── fo-auth: FO 인증 (/co/fo-auth) ─────────────────────────
    * foAuth.js 에서 사용. 로그인/회원가입/비밀번호변경.
    * ─────────────────────────────────────────────────────────── */
   coApiSvc.foAuth = {
     login(body, uiNm, cmdNm)          { return global.foApi.post('/co/fo-auth/login',   body, hdr(uiNm, cmdNm)); },
+    socialLogin(body, uiNm, cmdNm)    { return global.foApi.post('/co/fo-auth/social-login', body, hdr(uiNm, cmdNm)); },
     tokenRefresh(body, uiNm, cmdNm)   { return global.foApi.post('/co/fo-auth/token-refresh', body, hdr(uiNm, cmdNm)); },
     logout(body, uiNm, cmdNm)         { return global.foApi.post('/co/fo-auth/logout',  body, hdr(uiNm, cmdNm)); },
     join(body, uiNm, cmdNm)           { return global.foApi.post('/co/fo-auth/join',    body, hdr(uiNm, cmdNm)); },
     changePassword(body, uiNm, cmdNm) { return global.foApi.post('/co/fo-auth/change-password', body, hdr(uiNm, cmdNm)); },
+    withdraw(uiNm, cmdNm)             { return global.foApi.post('/co/fo-auth/withdraw', {}, hdr(uiNm, cmdNm)); },
   };
 
   /* ── sy: 공통코드 (FO·BO 모두 코드 조회 시 사용) ────────── */
