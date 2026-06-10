@@ -169,8 +169,18 @@
       'index.html/bo.html 의 kakao SDK(t1.kakaocdn.net) 스크립트 로드와 네트워크/광고차단 확장을 확인하세요.'));
     const jsKey = _key('svKakaoJsKey');
     if (!jsKey) throw new Error(_errMsg('카카오 로그인 창을 열 수 없습니다 — Kakao JavaScript Key 가 설정되지 않았습니다.',
-      '사이트 설정(AppStore)의 svKakaoJsKey 값을 등록하세요.'));
-    if (!Kakao.isInitialized()) Kakao.init(jsKey);
+      '사이트 설정(AppStore)의 svKakaoJsKey 값을 등록하거나, 로그인 후 서버에서 키가 주입되는지 확인하세요. (BO 는 로그인 전이면 키가 없을 수 있습니다)'));
+    try {
+      if (typeof Kakao.isInitialized === 'function' ? !Kakao.isInitialized() : true) Kakao.init(jsKey);
+    } catch (e) {
+      throw new Error(_errMsg('카카오 로그인 창을 열 수 없습니다 — Kakao SDK 초기화에 실패했습니다 (' + (e && e.message || '키 오류') + ').',
+        'svKakaoJsKey 가 유효한 JavaScript 키인지, 카카오 디벨로퍼스에 현재 도메인이 등록됐는지 확인하세요.'));
+    }
+    /* Kakao.Auth.login 함수 존재 확인 — 잘못된 키/초기화 시 Auth 모듈이 안 붙어 "is not a function" 발생 */
+    if (!Kakao.Auth || typeof Kakao.Auth.login !== 'function') {
+      throw new Error(_errMsg('카카오 로그인 창을 열 수 없습니다 — Kakao SDK 가 정상 초기화되지 않았습니다 (Kakao.Auth.login 없음).',
+        'svKakaoJsKey(JavaScript 키)가 유효한지와 카카오 디벨로퍼스 앱에 현재 도메인(예: 127.0.0.1:5501)이 플랫폼 등록됐는지 확인하세요. 키 미설정 시 로그인 후 서버 init data 로 주입됩니다.'));
+    }
   };
 
   /* loginKakao */
