@@ -21,6 +21,7 @@ window.DpDispPanelDtl = {
     const previewMode = Vue.toRef(uiState, 'previewMode');
     const codes = reactive({ layout_types: [], disp_widget_types: [], active_statuses: [], disp_areas: [], click_action_opts: [{value:'none',label:'없음'},{value:'navigate',label:'페이지 이동'},{value:'event',label:'이벤트 호출'},{value:'modal',label:'모달 오픈'},{value:'url',label:'외부 URL'}] });
     const events = reactive([]);
+    const areas = reactive([]);                   // 소속 영역 목록 (dp_area)
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
@@ -161,7 +162,7 @@ window.DpDispPanelDtl = {
       const codeStore = window.sfGetBoCodeStore();
       codes.layout_types = codeStore.sgGetGrpCodes('LAYOUT_TYPE');
       codes.disp_widget_types = codeStore.sgGetGrpCodes('DISP_WIDGET_TYPE');
-      codes.active_statuses = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
+      codes.active_statuses = codeStore.sgGetGrpCodes('DISP_STATUS');
       codes.disp_areas = codeStore.sgGetGrpCodes('DISP_AREA');
       uiState.isPageCodeLoad = true;
     };
@@ -191,22 +192,28 @@ window.DpDispPanelDtl = {
           form.useStartDate           = data.useStartDate       ?? form.useStartDate;
           form.useEndDate             = data.useEndDate         ?? form.useEndDate;
           form.pathId                 = data.pathId             ?? form.pathId;
+          form.areaId                 = data.areaId             ?? form.areaId;
           /* 위젯 목록: 임베드된 panelItems 가 있으면 우선 사용, 없으면 content_json 파싱 폴백 */
           if (Array.isArray(data.panelItems) && data.panelItems.length) {
             /* DpPanelItemDto.Item → row 별칭 매핑 (Entity 기준) */
             const mapped = data.panelItems
               .slice()
               .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
-              .map(it => makeRowData({
-                widgetType:      it.widgetTypeCd,
-                widgetTitle:     it.widgetTitle,
-                title:           it.widgetTitle,
-                titleYn:         it.titleShowYn || 'N',
-                contentTypeCd:   it.contentTypeCd,
-                widgetConfigJson: it.widgetConfigJson,
-                sortOrder:       it.sortOrd,
-                dispYn:          it.dispYn || 'Y',
-              }));
+              .map(it => {
+                /* widgetConfigJson 에 행 전체가 직렬화되어 있으면 펼쳐서 상세 필드 복원 */
+                let _cfg = {};
+                try { _cfg = JSON.parse(it.widgetConfigJson || '{}'); } catch (e) { /* 파싱 실패 무시 */ }
+                return makeRowData({
+                  ..._cfg,
+                  widgetType:      it.widgetTypeCd,
+                  widgetTitle:     it.widgetTitle,
+                  title:           it.widgetTitle,
+                  titleYn:         it.titleShowYn || 'N',
+                  contentTypeCd:   it.contentTypeCd,
+                  sortOrder:       it.sortOrd,
+                  dispYn:          it.dispYn || 'Y',
+                });
+              });
             rows.splice(0, rows.length, ...mapped);
           } else if (data.contentJson) {
             /* 위젯 목록은 content_json 에 직렬화되어 저장됨 */
@@ -229,10 +236,12 @@ window.DpDispPanelDtl = {
     const handleLoadData = async () => {
       uiState.loading = true;
       try {
-        const [eventsRes] = await Promise.all([
+        const [eventsRes, areasRes] = await Promise.all([
           boApiSvc.pmEvent.getPage({ pageNo: 1, pageSize: 10000 }, '전시패널관리', '조회'),
+          boApiSvc.dpArea.getPage({ pageNo: 1, pageSize: 1000 }, '전시패널관리', '영역조회'),
         ]);
         events.splice(0, events.length, ...(eventsRes.data?.data?.pageList || eventsRes.data?.data?.list || []));
+        areas.splice(0, areas.length, ...(areasRes.data?.data?.pageList || []));
         uiState.error = null;
       } catch (err) {
         console.error('[catch-info]', err);
@@ -301,7 +310,7 @@ window.DpDispPanelDtl = {
     const DEFAULT_END_DATE   = `${_today.getFullYear()+10}-12-31`;
 
     const form = reactive({
-      dispId: null, dispCode: '', area: 'HOME_BANNER', name: '', status: '활성',
+      dispId: null, dispCode: '', areaId: '', area: '', name: '', status: 'SHOW',
       layoutType: 'grid', gridCols: 1,
       titleYn: 'N', title: '',
       htmlDesc: '',
@@ -599,7 +608,7 @@ window.DpDispPanelDtl = {
 
     /* handleSave — 저장 */
     const handleSave = async () => {
-      if (!form.name || !form.area || !form.dispCode) { showToast('필수 항목을 입력해주세요. (패널코드·패널명·화면영역)', 'error'); return; }
+      if (!form.name || !form.areaId || !form.dispCode) { showToast('필수 항목을 입력해주세요. (패널코드·패널명·소속 영역)', 'error'); return; }
       const isNewPanel = cfIsNew.value;
       const ok = await showConfirm(isNewPanel ? '등록' : '저장', isNewPanel ? '등록하시겠습니까?' : '저장하시겠습니까?');
       if (!ok) { return; }
@@ -615,6 +624,7 @@ window.DpDispPanelDtl = {
         body.useStartDate       = form.useStartDate;
         body.useEndDate         = form.useEndDate;
         body.pathId             = form.pathId;
+        body.areaId             = form.areaId || null;
         body.contentJson        = JSON.stringify({ rows: _rows });
         const res = await (isNewPanel ? boApiSvc.dpPanel.create(body, '전시패널관리', '등록') : boApiSvc.dpPanel.update(body.panelId, body, '전시패널관리', '저장'));
         if (showToast) { showToast(isNewPanel ? '등록되었습니다.' : '저장되었습니다.', 'success'); }
@@ -647,8 +657,8 @@ window.DpDispPanelDtl = {
     /* closeCardPreview — 닫기 */
     const closeCardPreview = () => { cardPreview.show = false; };
     const cfCurrentAreaLabel = computed(() => {
-      const found = (Array.isArray(codes) ? codes : []).find(c => c.codeGrp === 'DISP_AREA' && c.codeValue === form.area);
-      return found ? found.codeLabel : form.area;
+      const found = areas.find(a => a.areaId === form.areaId);
+      return found ? found.areaNm : (form.areaId || '');
     });
 
     /* fnWLabel — 유틸 */
@@ -883,8 +893,9 @@ window.DpDispPanelDtl = {
     columns.pathAreaForm = [
       { key: 'pathId', label: '표시경로', type: 'slot', name: 'pathPick', colSpan: 3,
         hint: '예: FO.모바일메인' },
-      { key: 'area',   label: '포함된 화면영역', type: 'slot', name: 'areaDisp', colSpan: 3,
-        hint: '전시영역관리에서 편집' },
+      { key: 'areaId', label: '소속 영역', type: 'select', colSpan: 3, required: true,
+        options: () => areas.map(a => ({ value: a.areaId, label: a.areaNm + ' (' + a.areaCd + ')' })),
+        nullLabel: '선택', hint: '패널이 표시될 전시영역 (dp_area)' },
     ];
     // 위젯 행: 위젯 유형/노출 순서 (각 row 객체에 바인딩)
     columns.widgetRowForm = [
@@ -898,8 +909,9 @@ window.DpDispPanelDtl = {
       { key: 'name',     label: '패널명', type: 'text', required: true, placeholder: '패널 이름' },
       { key: 'pathId',   label: '표시경로', type: 'slot', name: 'pathPick2',
         hint: '예: FO.모바일메인' },
-      { key: 'area',     label: '포함된 화면영역', type: 'slot', name: 'areaDisp2',
-        hint: '전시영역관리에서 편집' },
+      { key: 'areaId',   label: '소속 영역', type: 'select', required: true,
+        options: () => areas.map(a => ({ value: a.areaId, label: a.areaNm + ' (' + a.areaCd + ')' })),
+        nullLabel: '선택', hint: '패널이 표시될 전시영역 (dp_area)' },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
@@ -1039,15 +1051,6 @@ window.DpDispPanelDtl = {
                         @mouseout="$event.currentTarget.style.background='#fff'">
                         🔍
                       </button>
-                    </div>
-                  </template>
-                  <template #areaDisp>
-                    <div style="padding:8px 10px;border:1px solid #e4e4e4;border-radius:6px;background:#fafbfc;min-height:34px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;">
-                      <span v-if="form.area" style="font-size:11px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:10px;padding:2px 10px;">
-                        <code style="font-size:10px;background:transparent;">{{ form.area }}</code>
-                        &nbsp;{{ cfCurrentAreaLabel }}
-                      </span>
-                      <span v-else style="font-size:11px;color:#bbb;">영역에 포함되지 않음</span>
                     </div>
                   </template>
                 </bo-form-area>
@@ -1599,15 +1602,6 @@ window.DpDispPanelDtl = {
                   </button>
                 </div>
               </template>
-              <template #areaDisp2>
-                <div style="padding:8px 10px;border:1px solid #e4e4e4;border-radius:6px;background:#fafbfc;min-height:34px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;">
-                  <span v-if="form.area" style="font-size:11px;background:#fff3e0;color:#e65100;border:1px solid #ffcc80;border-radius:10px;padding:2px 10px;">
-                    <code style="font-size:10px;background:transparent;">{{ form.area }}</code>
-                    &nbsp;{{ cfCurrentAreaLabel }}
-                  </span>
-                  <span v-else style="font-size:11px;color:#bbb;">영역에 포함되지 않음</span>
-                </div>
-              </template>
             </bo-form-area>
             <div class="form-group">
               <label class="form-label">상태</label>
@@ -1856,7 +1850,7 @@ window.DpDispPanelDtl = {
     :show="preview.show"
     mode="single"
     :tab-label="preview.tabLabel"
-    :area="form.area"
+    :area="cfCurrentAreaLabel"
     :widgets="[]"
     :widget="cfPreviewWidget" modal-name="disp-preview" :on-callback="fnCallbackModal" />
   <!-- ===== □. 위젯미리보기 모달 =============================================== -->
@@ -1875,10 +1869,10 @@ window.DpDispPanelDtl = {
         <!-- ===== ■.■.■.■. 영역 + 상태 배지 ======================================== -->
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center;">
           <code style="font-size:11px;background:#f0f2f5;color:#555;padding:3px 8px;border-radius:4px;letter-spacing:.3px;">
-            {{ form.area }}
+            {{ form.areaId || '-' }}
           </code>
           <span style="font-size:12px;background:#e8f4fd;color:#1565c0;border-radius:10px;padding:2px 10px;">{{ cfCurrentAreaLabel }}</span>
-          <span class="badge" :class="form.status==='활성'?'badge-green':'badge-gray'" style="font-size:12px;">{{ form.status }}</span>
+          <span class="badge" :class="form.status==='SHOW'?'badge-green':'badge-gray'" style="font-size:12px;">{{ form.status }}</span>
         </div>
         <!-- ===== ■.■.■.■. 패널명 =============================================== -->
         <div style="font-size:22px;font-weight:800;color:#222;margin-bottom:16px;line-height:1.3;">{{ form.name || '(패널명 없음)' }}</div>

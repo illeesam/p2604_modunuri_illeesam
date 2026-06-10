@@ -16,6 +16,8 @@ public class DpPanelDto {
     @Getter @Setter @NoArgsConstructor
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
+        @Size(max = 21) private String areaId;
+        private List<String> areaIds;                 // 상위 FK 다건 IN
         @Size(max = 21) private String pathId;
         @Size(max = 1) private String useYn;
         @Size(max = 21) private String panelId;
@@ -27,6 +29,7 @@ public class DpPanelDto {
     public static class Item {
         private String panelId;
         private String siteId;
+        private String areaId;
         private String panelNm;
         private String panelTypeCd;
         private String pathId;

@@ -28,6 +28,10 @@ public class DpPanel extends BaseEntity {
     @Column(name = "site_id", length = 21, nullable = false)
     private String siteId;
 
+    @Comment("영역ID (dp_area.area_id)")
+    @Column(name = "area_id", length = 21)
+    private String areaId;
+
     @Comment("패널명")
     @Column(name = "panel_nm", length = 100, nullable = false)
     private String panelNm;

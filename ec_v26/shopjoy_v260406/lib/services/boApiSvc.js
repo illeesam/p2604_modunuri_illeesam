@@ -57,8 +57,10 @@
     getPathTreeNodeCounts(params, uiNm, cmdNm) { return global.boApi.get('/bo/ec/dp/area/path-counts', { params, ...hdr(uiNm, cmdNm) }); },
     getPage(params, uiNm, cmdNm)     { return global.boApi.get(   '/bo/ec/dp/area/page', { params, ...hdr(uiNm, cmdNm) }); },
     getBasePage(params, uiNm, cmdNm) { return global.boApi.get(   '/bo/ec/dp/area/page', { params, ...hdr(uiNm, cmdNm) }); },
+    getById(_id, uiNm, cmdNm)        { return chkId(_id, uiNm, cmdNm) || global.boApi.get(   `/bo/ec/dp/area/${_id}`, hdr(uiNm, cmdNm)); },
     create(body, uiNm, cmdNm)        { return global.boApi.post(  '/bo/ec/dp/area', body, hdr(uiNm, cmdNm)); },
     update(_id, body, uiNm, cmdNm)   { return chkId(_id, uiNm, cmdNm) || global.boApi.put(   `/bo/ec/dp/area/${_id}`, body, hdr(uiNm, cmdNm)); },
+    remove(_id, uiNm, cmdNm)         { return chkId(_id, uiNm, cmdNm) || global.boApi.delete(`/bo/ec/dp/area/${_id}`, hdr(uiNm, cmdNm)); },
   };
 
   /* ── dp: 전시패널 ───────────────────────────────────────────── */
@@ -91,8 +93,10 @@
   boApiSvc.dpUi = {
     getPathTreeNodeCounts(params, uiNm, cmdNm) { return global.boApi.get('/bo/ec/dp/ui/path-counts', { params, ...hdr(uiNm, cmdNm) }); },
     getPage(params, uiNm, cmdNm)   { return global.boApi.get(   '/bo/ec/dp/ui/page', { params, ...hdr(uiNm, cmdNm) }); },
+    getById(_id, uiNm, cmdNm)      { return chkId(_id, uiNm, cmdNm) || global.boApi.get(   `/bo/ec/dp/ui/${_id}`, hdr(uiNm, cmdNm)); },
     create(body, uiNm, cmdNm)      { return global.boApi.post(  '/bo/ec/dp/ui', body, hdr(uiNm, cmdNm)); },
     update(_id, body, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.boApi.put(   `/bo/ec/dp/ui/${_id}`, body, hdr(uiNm, cmdNm)); },
+    remove(_id, uiNm, cmdNm)       { return chkId(_id, uiNm, cmdNm) || global.boApi.delete(`/bo/ec/dp/ui/${_id}`, hdr(uiNm, cmdNm)); },
   };
 
   /* ── dp: 위젯라이브러리 ─────────────────────────────────────── */

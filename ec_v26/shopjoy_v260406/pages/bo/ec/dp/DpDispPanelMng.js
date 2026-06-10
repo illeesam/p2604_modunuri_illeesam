@@ -1,1011 +1,243 @@
-/* ShopJoy Admin - 전시관리 목록 + 하단 DispDtl 임베드 */
+/* ShopJoy Admin - 전시패널관리 (dp_panel)
+ * 계층: dp_ui ─< dp_area(ui_id) ─< dp_panel(area_id) ─ content_json{rows} — 2026-06-11 구조개선 재작성
+ * 표준: CmNoticeMng 참조 모델 (위젯 편집은 인라인 DpDispPanelDtl 담당)
+ */
 window.DpDispPanelMng = {
   name: 'DpDispPanelMng',
   props: {
-    navigate:     { type: Function, required: true }, // 페이지 이동
+    navigate: { type: Function, required: true }, // 페이지 이동
   },
   setup(props) {
 
-    /* ##### [01] 초기 변수 정의 ################################################## */
+    /* ##### [01] 초기 변수 정의 #################################################### */
 
-    const { ref, reactive, computed, onMounted, watch } = Vue;
-    const showToast    = window.boApp.showToast;  // 토스트 알림
-    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-    const showRefModal = window.boApp.showRefModal;  // 참조 모달
+    const { reactive, onMounted } = Vue;
+    const { showToast, showConfirm } = window.boApp;
     const panels = reactive([]);
-    const panelCounts = reactive({});                 // 좌 트리 노드별 카운트 (검색조건 동기)
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, cardPreviewItem: null, panelDragSrc: null, panelDragOverIdx: -1, widgetDragPanel: null, widgetDragSrcWi: null, widgetDragOverWi: null, selectedTreeKey: '', selectedPath: null, sortKey: '', sortDir: 'asc' });
-    const displays = reactive([]);
+    const areas = reactive([]);                   // 상위 영역 목록 (검색 select + 그리드 라벨)
+    const uis = reactive([]);                     // UI 목록 (영역 라벨 prefix)
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({ panel_types: [], disp_statuses: [], use_yn: [{ value: 'Y', label: '사용' }, { value: 'N', label: '미사용' }] });
+
+    const _initSearchParam = () => ({ searchValue: '', areaId: '', panelTypeCd: '', dispPanelStatusCd: '' });
+    const searchParam = reactive(_initSearchParam());
+
+    /* baseGrid — pager + 정렬 캡슐 (수동) */
+    const _sortMap = { nm: { asc: 'panelNm asc', desc: 'panelNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
+    const baseGrid = reactive({
+      pager: { pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1,
+               pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageNums: [], pageCond: {} },
+      sortKey: '', sortDir: 'asc',
+      sortIcon: (k) => baseGrid.sortKey !== k ? '⇅' : baseGrid.sortDir === 'asc' ? '↑' : '↓',
+      sortParam: () => { const m = _sortMap[baseGrid.sortKey]; return m ? { sort: m[baseGrid.sortDir] } : {}; },
+      onSort: (k) => {
+        if (baseGrid.sortKey === k) {
+          if (baseGrid.sortDir === 'asc') baseGrid.sortDir = 'desc';
+          else { baseGrid.sortKey = ''; baseGrid.sortDir = 'asc'; }
+        } else { baseGrid.sortKey = k; baseGrid.sortDir = 'asc'; }
+        baseGrid.pager.pageNo = 1;
+        handleSearchList();
+      },
+      setPage: (n) => { if (n >= 1 && n <= baseGrid.pager.pageTotalPage) { baseGrid.pager.pageNo = n; handleSearchList(); } },
+      onSizeChange: () => { baseGrid.pager.pageNo = 1; handleSearchList(); },
+      reset: () => { baseGrid.sortKey = ''; baseGrid.sortDir = 'asc'; baseGrid.pager.pageNo = 1; },
+      applyPage: (d) => {
+        d = d || {};
+        baseGrid.pager.pageTotalCount = d.pageTotalCount || 0;
+        baseGrid.pager.pageTotalPage  = d.pageTotalPage  || Math.ceil(baseGrid.pager.pageTotalCount / baseGrid.pager.pageSize) || 1;
+        coUtil.cofBuildPagerNums(baseGrid.pager);
+        return d.pageList || [];
+      },
+    });
+
+    /* baseDetail — 인라인 Dtl 패널 (coUtil.cofDetail, 항상 표시) */
+    const baseDetail = coUtil.cofDetail();
+    baseDetail.active = false;
+    baseDetail.resetSeq = 0;
+    const resetDetailToNew = () => {
+      baseDetail.selectedId = '__new__'; baseDetail.openMode = 'edit';
+      baseDetail.active = false; baseDetail.resetSeq++;
+    };
+    resetDetailToNew();
+    const openDetailEdit = (id) => { baseDetail.openEdit(id); baseDetail.active = true; };
+    const openDetailView = (id) => { baseDetail.openView(id); baseDetail.active = true; };
+    const openDetailNew  = () => { baseDetail.openNew(); baseDetail.active = true; baseDetail.resetSeq++; };
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
-    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ DpDispPanelMng.js : handleBtnAction -> ', cmd, param);
-      // 검색조건으로 목록 조회
-      if (cmd === 'searchParam-list') {
-        return onSearch();
-      // 검색조건 초기화 + 재조회
-      } else if (cmd === 'searchParam-reset') {
-        return onReset();
-      // 기간 옵션 변경
-      } else if (cmd === 'searchParam-dateRange') {
-        return handleDateRangeChange();
-      // 신규 패널 등록
-      } else if (cmd === 'panels-add') {
-        return openNew();
-      // 엑셀 다운로드
-      } else if (cmd === 'panels-export') {
-        return exportExcel();
-      // 상세 인라인 패널 닫기
-      } else if (cmd === 'detailPanel-close') {
-        return closeDetail();
-      // 좌측 표시경로 트리 전체 보기
-      } else if (cmd === 'pathTree-all') {
-        return selectPathNode(null);
-      // 좌측 트리 전체 펼치기
-      } else if (cmd === 'pathTree-expandAll') {
-        return expandAll();
-      // 좌측 트리 전체 접기
-      } else if (cmd === 'pathTree-collapseAll') {
-        return collapseAll();
-      // 카드 미리보기 닫기
-      } else if (cmd === 'cardPreview-close') {
-        return closeCardPreview();
-      // 그리드 정렬 헤더 클릭
-      } else if (cmd === 'panels-sort') {
-        return onSort(param);
-      // 페이지 번호 클릭
-      } else if (cmd === 'panels-pager-setPage') {
-        return setPage(param);
+    /* handleBtnAction — 버튼 액션 dispatch */
+    const handleBtnAction = (cmd, param) => {
+      if (cmd === 'searchParam-list')    { baseGrid.pager.pageNo = 1; return handleSearchList(); }
+      if (cmd === 'searchParam-reset')   { Object.assign(searchParam, _initSearchParam()); baseGrid.reset(); resetDetailToNew(); return handleSearchList(); }
+      if (cmd === 'panels-add')           return openDetailNew();
+      if (cmd === 'baseDetail-close')     return resetDetailToNew();
+      if (cmd === 'panels-sort')          return baseGrid.onSort(param);
+      if (cmd === 'panels-pager-setPage') return baseGrid.setPage(param);
+      console.warn('[handleBtnAction] unknown cmd:', cmd);
+    };
+
+    /* handleSelectAction — 그리드 행/페이지 선택 액션 dispatch */
+    const handleSelectAction = (cmd) => {
+      if (cmd === 'panels-pager-sizeChange') return baseGrid.onSizeChange();
+      console.warn('[handleSelectAction] unknown cmd:', cmd);
+    };
+
+    /* handleGridCellAction — 그리드 셀 클릭 라우터 */
+    const handleGridCellAction = (cmd, colKey, row, e = {}) => {
+      if (cmd === 'panels-cellClick') {
+        if (colKey === 'btn_row_edit')   return openDetailEdit(row.panelId);
+        if (colKey === 'btn_row_delete') return handleDelete(row);
+        const VIEW_COLS = ['__no__'];
+        if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) return openDetailView(row.panelId);
       } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
+        console.warn('[handleGridCellAction] unknown cmd:', cmd);
       }
     };
 
-    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ DpDispPanelMng.js : handleSelectAction -> ', cmd, param);
-      // 페이지 크기 변경
-      if (cmd === 'panels-pager-sizeChange') {
-        return onSizeChange();
-      // 그리드 행 클릭 → 상세 보기
-      } else if (cmd === 'panels-rowView') {
-        return loadView(param);
-      // 그리드 행 수정 버튼 → 편집 패널 열기
-      } else if (cmd === 'panels-rowEdit') {
-        return handleLoadDetail(param);
-      // 그리드 행 삭제 버튼
-      } else if (cmd === 'panels-rowDelete') {
-        return handleDelete(param);
-      // 그리드 행 펼치기/접기 토글
-      } else if (cmd === 'panels-toggleExpand') {
-        return toggleExpand(param);
-      // 카드 미리보기 열기 (내용 미리보기로 새 창)
-      } else if (cmd === 'cardPreview-previewDisp') {
-        previewDisp(param); closeCardPreview();
-        return;
-      // 좌측 표시경로 트리 노드 선택
-      } else if (cmd === 'pathTree-select') {
-        return selectPathNode(param);
-      // 좌측 트리 노드 토글
-      } else if (cmd === 'pathTree-toggle') {
-        return toggleTree(param);
-      // 좌측 트리 노드 선택
-      } else if (cmd === 'pathTree-keySelect') {
-        return selectTree(param);
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
-    const codes = reactive({
-      layout_types: [],
-      disp_area: [],
-      active_statuses: [],
-      visibility_opts: [
-        { value: '', label: '전체' },
-        { value: 'PUBLIC',    label: '전체공개' },
-        { value: 'MEMBER',    label: '회원공개' },
-        { value: 'VERIFIED',  label: '인증회원' },
-        { value: 'PREMIUM',   label: '우수회원↑' },
-        { value: 'VIP',       label: 'VIP전용' },
-        { value: 'INVITED',   label: '초대회원' },
-        { value: 'STAFF',     label: '직원' },
-        { value: 'EXECUTIVE', label: '임직원' },
-      ],
-      date_range_opts: [],
-    });
-
-    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드) #################################### */
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      codes.layout_types = codeStore.sgGetGrpCodes('LAYOUT_TYPE');
-      codes.disp_area = codeStore.sgGetGrpCodes('DISP_AREA');
-      codes.active_statuses = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
-      codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
+      const s = window.sfGetBoCodeStore();
+      codes.panel_types   = s.sgGetGrpCodes('DISP_TYPE');
+      codes.disp_statuses = s.sgGetGrpCodes('DISP_STATUS');
       uiState.isPageCodeLoad = true;
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    // 코드 주입
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
+      handleLoadAreas();
+      handleSearchList();
+    });
 
-    const SORT_MAP = { nm: { asc: 'panelNm asc', desc: 'panelNm desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ###################### */
 
-    /* getSortParam — 조회 */
-    const getSortParam = () => {
-      const { sortKey, sortDir } = uiState;
-      if (!sortKey || !SORT_MAP[sortKey]) { return {}; }
-      return { sort: SORT_MAP[sortKey][sortDir] };
-    };
-
-    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
-
-    /* onSort — 정렬 */
-    const onSort = (key) => {
-      if (uiState.sortKey === key) {
-        if (uiState.sortDir === 'asc') { uiState.sortDir = 'desc'; }
-        else { uiState.sortKey = ''; uiState.sortDir = 'asc'; }
-      } else { uiState.sortKey = key; uiState.sortDir = 'asc'; }
-      panelsGridPager.pageNo = 1;
-      handleSearchData(buildSearchParams?.() || {});
-    };
-
-    /* sortIcon — 정렬 */
-    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
-
-    /* handleLoadPathTreeNodeCounts — 좌 트리 노드별 카운트 (검색조건 동기) */
-    const handleLoadPathTreeNodeCounts = async () => {
+    /* handleLoadAreas — 상위 영역/UI 전체 로드 (select 옵션 + 그리드 라벨) */
+    const handleLoadAreas = async () => {
       try {
-        const params = Object.fromEntries(Object.entries(searchParam)
-          .filter(([k, v]) => v !== '' && v !== null && v !== undefined && k !== 'pathId'));
-        const res = await boApiSvc.dpPanel.getPathTreeNodeCounts(params, '경로별카운트', '조회');
-        const rows = res.data?.data || [];
-
-        Object.keys(panelCounts).forEach(k => { delete panelCounts[k]; });
-
-        for (const r of rows) { if (r && r.pathId != null) panelCounts[r.pathId] = r.cnt; }
-      } catch (e) { console.error('[handleLoadPathTreeNodeCounts]', e); }
+        const [areaRes, uiRes] = await Promise.all([
+          boApiSvc.dpArea.getPage({ pageNo: 1, pageSize: 1000 }, '전시패널관리', '영역조회'),
+          boApiSvc.dpUi.getPage({ pageNo: 1, pageSize: 1000 }, '전시패널관리', 'UI조회'),
+        ]);
+        areas.splice(0, areas.length, ...(areaRes.data?.data?.pageList || []));
+        uis.splice(0, uis.length, ...(uiRes.data?.data?.pageList || []));
+      } catch (err) {
+        console.error('[handleLoadAreas]', err);
+      }
     };
 
-    /* handleSearchData — 처리 */
-    const handleSearchData = async (uiParams = {}) => {
+    /* handleSearchList — 목록 조회 */
+    const handleSearchList = async () => {
       uiState.loading = true;
       try {
-        const params = { pageNo: 1, pageSize: 10000, ...getSortParam(), ...uiParams };
-        // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
-        if (params.searchValue && !params.searchType) {
-          params.searchType = 'panelNm,areaCd';
-        }
-        const [panelsRes, displaysRes] = await Promise.all([
-          boApiSvc.dpPanel.getPage({ pageNo: 1, pageSize: 10000 }, '전시패널관리', '조회'),
-          boApiSvc.dpUi.getPage(params, '전시패널관리', '조회'),
-        ]);
-        panels.splice(0, panels.length, ...(panelsRes.data?.data?.pageList || panelsRes.data?.data?.list || []));
-        displays.splice(0, displays.length, ...(displaysRes.data?.data?.pageList || displaysRes.data?.data?.list || []));
+        const params = { pageNo: baseGrid.pager.pageNo, pageSize: baseGrid.pager.pageSize, ...baseGrid.sortParam(),
+                         ...coUtil.cofOmitEmpty(searchParam) };
+        const d = (await boApiSvc.dpPanel.getPage(params, '전시패널관리', '조회')).data?.data;
+        panels.splice(0, panels.length, ...baseGrid.applyPage(d));
         uiState.error = null;
-        /* 좌 트리 카운트 동기 갱신 */
-        handleLoadPathTreeNodeCounts();
       } catch (err) {
-        console.error('[catch-info]', err);
         uiState.error = err.message;
       } finally {
         uiState.loading = false;
       }
     };
 
-    // ★ onMounted
-    onMounted(() => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchData('DEFAULT');
-    });
-
-    /* fnPathLabel — 유틸 */
-    const fnPathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
-
-    /* handleDateRangeChange — 기간 변경 */
-    const handleDateRangeChange = () => {
-      boUtil.bofApplyDateRange(searchParam);
-      panelsGridPager.pageNo = 1;
-    };
-    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-
-    const panelsGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-/* 하단 상세
- * 정책: 행상세/행수정 클릭 시 항상 상세 API 재조회. 같은 id 재클릭이어도 닫지 않고 reloadTrigger 만 ++ */
-    const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reloadTrigger: 0, resetSeq: 0, active: false });
-
-    /* loadView — 뷰 로드 */
-    const loadView         = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; uiStateDetail.active = true; uiStateDetail.reloadTrigger++; };
-
-    /* handleLoadDetail — 상세 조회 */
-    const handleLoadDetail = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'edit'; uiStateDetail.active = true; uiStateDetail.reloadTrigger++; };
-
-    /* openNew — 신규 열기 (빈 폼 + 활성 → 저장/취소 노출) */
-    const openNew     = () => { uiStateDetail.selectedId = '__new__'; uiStateDetail.openMode = 'edit'; uiStateDetail.active = true; uiStateDetail.resetSeq++; };
-
-    /* resetDetailToNew — 상세영역을 빈 신규 폼(비활성)으로 초기화 (영역은 항상 표시 유지) */
-    const resetDetailToNew = () => {
-      uiStateDetail.selectedId = '__new__';
-      uiStateDetail.openMode = 'edit';
-      uiStateDetail.active = false;   // 버튼 숨김
-      uiStateDetail.resetSeq++;       // :key 재마운트 → 폼 초기화
-    };
-
-    /* closeDetail — 상세 닫기 = 빈 신규 폼(비활성)으로 초기화 (영역 유지) */
-    const closeDetail = () => { resetDetailToNew(); };
-
-    /* inlineNavigate — 인라인 이동 */
-    const inlineNavigate = (pg, opts = {}) => {
-      if (pg === 'dpDispPanelMng') { if (opts.reload) handleSearchData(buildSearchParams()); resetDetailToNew(); return; }
-      /* 취소: 패널은 그대로 두고 상세영역만 빈 신규 폼으로 초기화 */
-      if (pg === '__cancelEdit__') { resetDetailToNew(); return; }
-      if (pg === '__switchToEdit__') { uiStateDetail.openMode = 'edit'; return; }
-      props.navigate(pg, opts);
-    };
-    const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId);
-    /* resetSeq 포함 → 취소/신규 시 컴포넌트 remount 로 폼 초기화 */
-    const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}_${uiStateDetail.resetSeq}`);
-
-    /* previewDisp — 미리보기 Disp */
-    const previewDisp = (d) => {
-      const areaPageMap = {
-        'HOME_BANNER': '', 'HOME_PRODUCT': '', 'HOME_CHART': '', 'HOME_EVENT': '',
-        'PRODUCT_TOP': '#page=prod01list', 'PRODUCT_BTM': '#page=prod01list',
-        'MY_PAGE': '#page=mypage', 'FOOTER': '',
-      };
-      const hash = areaPageMap[d.area] || '';
-      window.open(`${window.pageUrl('index.html')}${hash}`, '_blank', 'width=1280,height=900,scrollbars=yes');
-    };
-
-
-    const cfFiltered = computed(() => {
-      if (!uiState.selectedTreeKey) { return displays; }
-      const k = uiState.selectedTreeKey;
-      return window.safeArrayUtils.safeFilter(displays, d => {
-        if (k.startsWith('panel_')) { return d.dispId === k.slice(6); }
-        const areaNm = (code) => {
-          const c = window.safeArrayUtils.safeFind(codes.disp_area, x => x.codeValue === code);
-          return c ? c.codeLabel : code;
-        };
-        const area = d.area || '';
-        if (k.includes('_')) {
-          const [topPrefix, ...labelParts] = k.split('_');
-          const targetLabel = labelParts.join('_');
-          if (!area.startsWith(topPrefix + '_')) { return false; }
-          return areaNm(area) === targetLabel;
-        } else {
-          return area === k || area.startsWith(k + '_');
-        }
-      });
-    });
-    const cfAreas = computed(() =>
-      (codes.disp_area || [])
-        .filter(c => c.useYn === 'Y')
-        .sort((a, b) => a.sortOrd - b.sortOrd)
-    );
-    /* :columns select 옵션 — 라벨에 codeValue 병기 (영역코드 가독성) */
-    const cfAreaSelectOptions = computed(() =>
-      cfAreas.value.map(a => ({ value: a.codeValue, label: `${a.codeValue} ${a.codeLabel}` }))
-    );
-
-    /* fnBuildPagerNums — 유틸 */
-    const fnBuildPagerNums = () => {
-      panelsGridPager.pageTotalCount = cfFiltered.value.length;
-      panelsGridPager.pageTotalPage  = Math.max(1, Math.ceil(cfFiltered.value.length / panelsGridPager.pageSize));
-      const c=panelsGridPager.pageNo,l=panelsGridPager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4);
-      panelsGridPager.pageNums = Array.from({length:e-s+1},(_,i)=>s+i);
-      panelsGridPager.pageList = cfFiltered.value.slice((panelsGridPager.pageNo-1)*panelsGridPager.pageSize, panelsGridPager.pageNo*panelsGridPager.pageSize);
-    };
-    watch(cfFiltered, () => { fnBuildPagerNums(); });
-
-    /* fnStatusBadge */
-    const _DISP_STATUS_FB = { '활성': 'badge-green', '비활성': 'badge-gray' };
-    /* fnStatusBadge — 상태 배지 */
-    const fnStatusBadge = s => coUtil.cofCodeBadge('DISP_STATUS', s, _DISP_STATUS_FB[s] || 'badge-gray');
-
-
-
-    /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
-
-    /* 1행: 일반 검색 :columns */
-    // --- [컬럼 정의] ---
-    const columns = {};
-    columns.baseSearch = [
-      { key: 'searchType', type: 'multiCheck', label: '검색대상',
-        options: [
-          { value: 'panelNm', label: '패널명' },
-          { value: 'areaCd',  label: '영역코드' },
-        ],
-        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
-      { key: 'area', type: 'select', label: '화면영역', options: () => cfAreaSelectOptions.value, nullLabel: '전체 영역', minWidth: '160px' },
-      { key: 'status', type: 'select', label: '상태', options: () => codes.active_statuses, nullLabel: '상태 전체' },
-      { key: 'dateRange', type: 'dateRange', label: '등록일',
-        startKey: 'dateStart', endKey: 'dateEnd',
-        rangeOptions: () => codes.date_range_opts,
-        onRangeChange: () => handleDateRangeChange() },
-    ];
-    /* 2행: 전시일·노출조건·인증 :columns ('전시일시' 는 bo-date-time-picker 라 slot 탈출구) */
-    columns.moreSearch = [
-      { type: 'label', label: '전시일시' },
-      { type: 'slot', name: 'dispDate' },
-      { key: 'visibility', type: 'select', label: '공개대상', options: () => codes.visibility_opts, nullable: false, minWidth: '100px' },
-      { key: 'layoutType', type: 'select', label: '표시방식', options: () => codes.layout_types, nullLabel: '전체', minWidth: '100px' },
-    ];
-
-    /* setDispNow — 설정 */
-    const setDispNow = () => {
-      const now = new Date();
-      searchParam.dispDate = now.toISOString().slice(0, 10);
-      searchParam.dispTime = now.toTimeString().slice(0, 5);
-    };
-
-    /* buildSearchParams — 빌드 */
-    const buildSearchParams = () => ({
-      ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
-      ...Object.fromEntries(Object.entries(searchParam).filter(([k, v]) => k !== 'dateRange' && v !== '' && v !== null && v !== undefined)),
-    });
-
-    /* onSearch — 조회 */
-    const onSearch = async () => { panelsGridPager.pageNo = 1; await handleSearchData(buildSearchParams()); };
-
-    /* onReset — 초기화 */
-    const onReset = () => {
-      Object.assign(searchParam, _initSearchParam());
-      uiState.sortKey = ''; uiState.sortDir = 'asc';
-      uiState.selectedPath = null;   // 표시경로 트리 전체로 복귀
-      panelsGridPager.pageNo = 1;
-      handleSearchData(buildSearchParams());
-    };
-
-    /* setPage — 설정 */
-    const setPage = n => { if (n >= 1 && n <= panelsGridPager.pageTotalPage) { panelsGridPager.pageNo = n; fnBuildPagerNums(); } };
-
-    /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { panelsGridPager.pageNo = 1; fnBuildPagerNums(); };
-
-    /* handleDelete — 삭제 */
-    const handleDelete = async (d) => {
-      const ok = await showConfirm('삭제', `[${d.name}]을 삭제하시겠습니까?`);
-      if (!ok) { return; }
-      const idx = displays.findIndex(x => x.dispId === d.dispId);
-      if (idx !== -1) { displays.splice(idx, 1); }
-      if (uiStateDetail.selectedId === d.dispId) { uiStateDetail.selectedId = null; }
+    /* handleDelete — 삭제 (dp_panel_item 은 FK CASCADE 로 함께 삭제) */
+    const handleDelete = async (p) => {
+      if (!(await showConfirm('삭제', `[${p.panelNm}] 패널을 삭제하시겠습니까?`))) return;
       try {
-        const res = await boApiSvc.dpPanel.remove(d.dispId, '전시패널관리', '삭제');
-        if (showToast) { showToast('삭제되었습니다.', 'success'); }
+        await boApiSvc.dpPanel.remove(p.panelId, '전시패널관리', '삭제');
+        showToast('삭제되었습니다.', 'success');
+        if (baseDetail.selectedId === p.panelId) resetDetailToNew();
+        await handleSearchList();
       } catch (err) {
-        console.error('[catch-info]', err);
-        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (showToast) { showToast(errMsg, 'error', 0); }
+        showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
       }
     };
 
-    /* exportExcel — 엑셀 내보내기 */
-    const exportExcel = () => coUtil.cofExportCsv(cfFiltered.value, [{label:'ID',key:'dispId'},{label:'영역',key:'dispArea'},{label:'제목',key:'title'},{label:'유형',key:'dispType'},{label:'상태',key:'status'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}], '전시목록.csv');
-
-    /* fnAreaLabel — 유틸 */
-    const fnAreaLabel = (code) => {
-      const found = (codes.disp_area || []).find(c => c.codeValue === code);
-      return found ? found.codeLabel : code;
+    /* inlineNavigate — 인라인 Dtl 의 navigate 콜백 */
+    const inlineNavigate = (pg, opts = {}) => {
+      if (pg === 'dpDispPanelMng') { if (opts.reload) handleSearchList(); resetDetailToNew(); return; }
+      if (pg === '__cancelEdit__') { resetDetailToNew(); return; }
+      if (pg === '__switchToEdit__') return baseDetail.switchToEdit();
+      props.navigate(pg, opts);
     };
 
-    /* 펼치기/접기 */
-    const expandedIds = reactive(new Set());
+    /* ##### [05] 사용자 함수 (헬퍼 / 컬럼정의) #################################### */
 
-    /* toggleExpand — 토글 */
-    const toggleExpand = (id) => {
-      if (expandedIds.has(id)) { expandedIds.delete(id); }
-      else { expandedIds.add(id); }
+    const fnAreaNm = (areaId) => {
+      const a = areas.find(x => x.areaId === areaId);
+      if (!a) return areaId || '-';
+      const u = uis.find(x => x.uiId === a.uiId);
+      return (u ? u.uiNm + ' > ' : '') + a.areaNm;
+    };
+    const fnWidgetCnt = (row) => {
+      try { return (JSON.parse(row.contentJson || '{}').rows || []).length; } catch (e) { return 0; }
     };
 
-    /* isExpanded — 여부 확인 */
-    const isExpanded = (id) => expandedIds.has(id);
+    const columns = {};
+    columns.baseSearch = [
+      { key: 'searchValue',       label: '패널명', type: 'text',   placeholder: '패널명 검색' },
+      { key: 'areaId',            label: '소속 영역', type: 'select',
+        options: () => areas.map(a => ({ value: a.areaId, label: fnAreaNm(a.areaId) })), nullLabel: '영역 전체' },
+      { key: 'panelTypeCd',       label: '표시유형', type: 'select', options: () => codes.panel_types,   nullLabel: '유형 전체' },
+      { key: 'dispPanelStatusCd', label: '상태',     type: 'select', options: () => codes.disp_statuses, nullLabel: '상태 전체' },
+    ];
 
-    /* 위젯 유형 레이블 (목록용) */
-    const WIDGET_TYPE_LABELS = {
-      'image_banner':'이미지 배너', 'product_slider':'상품 슬라이더', 'product':'상품',
-      'cond_product':'조건상품', 'chart_bar':'차트(Bar)', 'chart_line':'차트(Line)', 'chart_pie':'차트(Pie)',
-      'text_banner':'텍스트 배너', 'info_card':'정보카드', 'popup':'팝업',
-      'file':'파일', 'file_list':'파일목록', 'coupon':'쿠폰', 'html_editor':'HTML 에디터',
-      'textarea':'텍스트 영역', 'markdown':'Markdown',
-      'barcode':'바코드',      'qrcode':'QR코드',        'barcode_qrcode':'바코드+QR',
-      'video_player':'동영상', 'countdown':'카운트다운', 'payment_widget':'결제위젯',
-      'approval_widget':'전자결재', 'map_widget':'지도맵',
-      'event_banner':'이벤트', 'cache_banner':'캐쉬', 'widget_embed':'위젯',
-    };
-
-    /* fnWLabel — 유틸 */
-    const fnWLabel = (t) => WIDGET_TYPE_LABELS[t] || t || '-';
-
-    /* closeCardPreview — 닫기 */
-    const closeCardPreview = () => { uiState.cardPreviewItem = null; };
-
-    /* -- 패널 드래그 정렬 -- */
-        const onPanelDragStart = (e, pageIdx) => {
-      uiState.panelDragSrc = pageIdx;
-      e.dataTransfer.effectAllowed = 'move';
-    };
-
-    /* onPanelDragOver — 이벤트 */
-    const onPanelDragOver = (e, pageIdx) => {
-      e.preventDefault();
-      if (uiState.panelDragSrc === null || uiState.panelDragSrc === pageIdx) { return; }
-      uiState.panelDragOverIdx = pageIdx;
-    };
-
-    /* onPanelDragLeave — 이벤트 */
-    const onPanelDragLeave = () => { uiState.panelDragOverIdx = -1; };
-
-    /* onPanelDrop — 이벤트 */
-    const onPanelDrop = (e, pageIdx) => {
-      e.preventDefault(); uiState.panelDragOverIdx = -1;
-      const src = uiState.panelDragSrc;
-      if (src === null || src === pageIdx) { uiState.panelDragSrc = null; return; }
-      const srcId = panelsGridPager.pageList?.[src]?.dispId;
-      const tgtId = panelsGridPager.pageList?.[pageIdx]?.dispId;
-      if (!srcId || !tgtId) { uiState.panelDragSrc = null; return; }
-      const arr = displays;
-      const si = arr.findIndex(x => x.dispId === srcId);
-      const ti = arr.findIndex(x => x.dispId === tgtId);
-      if (si === -1 || ti === -1) { uiState.panelDragSrc = null; return; }
-      const moved = arr.splice(si, 1)[0];
-      arr.splice(ti, 0, moved);
-      window.safeArrayUtils.safeForEach(arr, (x, i) => { x.sortOrder = i + 1; });
-      showToast('패널 순서가 변경되었습니다.', 'info');
-      uiState.panelDragSrc = null;
-    };
-
-    /* onPanelDragEnd — 이벤트 */
-    const onPanelDragEnd = () => { uiState.panelDragSrc = null; uiState.panelDragOverIdx = -1; };
-
-    /* -- 위젯 드래그 정렬 -- */
-        const onWidgetDragStart = (e, dispId, wi) => {
-      e.stopPropagation();
-      uiState.widgetDragPanel = dispId; uiState.widgetDragSrcWi = wi;
-      e.dataTransfer.effectAllowed = 'move';
-    };
-
-    /* onWidgetDragOver — 이벤트 */
-    const onWidgetDragOver = (e, dispId, wi) => {
-      e.preventDefault(); e.stopPropagation();
-      if (uiState.widgetDragPanel !== dispId) { return; }
-      uiState.widgetDragOverWi = wi;
-    };
-
-    /* onWidgetDragLeave — 이벤트 */
-    const onWidgetDragLeave = (e) => { e.stopPropagation(); uiState.widgetDragOverWi = null; };
-
-    /* onWidgetDrop — 이벤트 */
-    const onWidgetDrop = (e, dispId, wi) => {
-      e.preventDefault(); e.stopPropagation();
-      uiState.widgetDragOverWi = null;
-      if (uiState.widgetDragPanel !== dispId) { return; }
-      const src = uiState.widgetDragSrcWi;
-      if (src === null || src === wi) { uiState.widgetDragPanel = null; uiState.widgetDragSrcWi = null; return; }
-      const panel = window.safeArrayUtils.safeFind(displays, x => x.dispId === dispId);
-      if (!panel?.rows) { return; }
-      const moved = panel.rows.splice(src, 1)[0];
-      panel.rows.splice(wi, 0, moved);
-      window.safeArrayUtils.safeForEach(panel.rows, (r, i) => { r.sortOrder = i + 1; });
-      uiState.widgetDragPanel = null; uiState.widgetDragSrcWi = null;
-    };
-
-    /* onWidgetDragEnd — 이벤트 */
-    const onWidgetDragEnd = () => { uiState.widgetDragPanel = null; uiState.widgetDragSrcWi = null; uiState.widgetDragOverWi = null; };
-
-    /* selectPathNode — 선택 ([정책] 부모 트리 변경 시 자식 상세영역 선택 초기화) */
-    const selectPathNode = (id) => { uiState.selectedPath = id; panelsGridPager.pageNo = 1; resetDetailToNew(); handleSearchData(buildSearchParams()); };
-
-    /* _initSearchParam — 초기화 */
-    const _initSearchParam = () => {
-      const today = new Date(); const thisYear = today.getFullYear();
-      return { searchType: '', searchValue: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, area: '', status: '', dispDate: '', dispTime: '', visibility: '', layoutType: '' };
-    };
-      const searchParam = reactive(_initSearchParam());
-  /* '' = 전체, '<areaCode>' = 특정 영역 */
-    const treeOpen = reactive(new Set(['__root__']));
-
-    /* toggleTree — 토글 */
-    const toggleTree = (k) => { if (treeOpen.has(k)) treeOpen.delete(k); else treeOpen.add(k); };
-
-
-    /* selectTree — 선택 */
-    const selectTree = (k) => { uiState.selectedTreeKey = uiState.selectedTreeKey === k ? '' : k; panelsGridPager.pageNo = 1; };
-
-    /* expandAll — 펼치기 전체 */
-    const expandAll  = () => {
-      treeOpen.add('__root__');
-      window.safeArrayUtils.safeForEach(cfPanelTree.value, n => {
-        treeOpen.add('grp_'+n.label);
-        window.safeArrayUtils.safeForEach(n.children, c => treeOpen.add(n.label+'_'+c.label));
-      });
-    };
-
-    /* collapseAll — 접기 전체 */
-    const collapseAll= () => { treeOpen.clear(); treeOpen.add('__root__'); };
-
-    /* 패널 목록 (영역별 그룹) */
-    const cfPanelTree = computed(() => {
-      /* areaNm — 영역 Nm */
-      const areaNm = (code) => {
-        const c = window.safeArrayUtils.safeFind(codes.disp_area, x => x.codeValue === code);
-        return c ? c.codeLabel : code;
-      };
-      const map = {};
-      (displays || []).forEach(p => {
-        const area = p.area || '(미등록)';
-        const top = area.split('_')[0] || '(기타)';
-        const subKey = areaNm(area);
-        if (!map[top]) { map[top] = {}; }
-        if (!map[top][subKey]) { map[top][subKey] = []; }
-        map[top][subKey].push(p);
-      });
-      return Object.keys(map).sort().map(top => ({
-        label: top,
-        children: Object.keys(map[top]).sort().map(sub => ({
-          label: sub,
-          count: map[top][sub].length,
-          panels: map[top][sub].sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)).map(p => ({
-            label: p.name,
-            panelId: p.dispId,
-            area: p.area,
-            dispId: p.dispId,
-          })),
-        })),
-      }));
-    });
+    columns.baseGrid = [
+      { key: 'panelNm',           label: '패널명', sortKey: 'nm', link: true,
+        cellInnerStyle: (v, row) => baseDetail.selectedId === row.panelId ? 'color:#e8587a;font-weight:700;' : '' },
+      { key: 'areaId',            label: '소속 영역', style: 'width:200px;', cellStyle: 'color:#2563eb;', fmt: (v) => fnAreaNm(v) },
+      { key: 'panelTypeCd',       label: '표시유형', style: 'width:110px;', badge: () => 'badge-blue' },
+      { key: '_widgetCnt',        label: '위젯',     style: 'width:60px;', align: 'center', fmt: (v, row) => fnWidgetCnt(row) + '개' },
+      { key: 'dispPanelStatusCd', label: '상태',     style: 'width:80px;',
+        badge: (row) => row.dispPanelStatusCd === 'SHOW' ? 'badge-green' : 'badge-gray' },
+      { key: 'useYn',             label: '사용',     style: 'width:70px;',
+        badge: (row) => row.useYn === 'Y' ? 'badge-green' : 'badge-gray', fmt: (v) => v === 'Y' ? '사용' : '미사용' },
+      { key: 'regDate',           label: '등록일',   style: 'width:110px;', sortKey: 'reg', fmt: (v) => coUtil.cofYmd(v) || '-' },
+    ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
+      panels, areas, uis, uiState, codes, searchParam, baseGrid, baseDetail,
       columns,
-      uiStateDetail, panels, uiState, panelCounts, searchParam, panelsGridPager,                 // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
-      cfFiltered, cfDetailEditId,                                            // computed
-      cfDetailKey, cfSiteNm, cfPanelTree, selectedId: computed(() => uiStateDetail.selectedId), // computed
-      fnPathLabel, fnStatusBadge,                                         // 헬퍼
-      fnAreaLabel, fnWLabel, sortIcon, isExpanded,            // 헬퍼
-      inlineNavigate, handleSearchData,                                                // Dtl 콜백 (closure 필요)
-      previewDisp, setDispNow,                                                         // 헬퍼 (외부 호출용)
-      onPanelDragStart, onPanelDragOver, onPanelDragLeave, onPanelDrop, onPanelDragEnd, // 드래그 핸들러
-      onWidgetDragStart, onWidgetDragOver, onWidgetDragLeave, onWidgetDrop, onWidgetDragEnd, // 드래그 핸들러
+      handleBtnAction, handleSelectAction, handleGridCellAction,
+      inlineNavigate,
     };
   },
   template: /* html */`
-<bo-page>
-  <template #title>
-    전시패널관리
-    <span style="font-size:13px;font-weight:400;color:#888;">
-      화면 영역별 전시패널 관리
-    </span>
-  </template>
+<bo-page title="전시패널관리" desc="영역 안의 위젯 묶음(패널) — 계층: UI > 영역 > 패널 > 위젯">
   <!-- ===== ■. 검색 영역 =================================================== -->
   <bo-container>
-    <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area :loading="uiState.loading"
-      :columns="columns.baseSearch" :param="searchParam"
+    <bo-search-area :loading="uiState.loading" :columns="columns.baseSearch" :param="searchParam"
       @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" />
-    <!-- ===== □.□. 검색 영역 ================================================= -->
-    <!-- ===== ■.■. 2행: 전시일·노출조건·인증 (별도 BoSearchArea, actions 없음) ========= -->
-    <bo-search-area :show-actions="false"
-      bar-style="margin-top:8px;padding-top:8px;border-top:1px dashed #eee;"
-      :columns="columns.moreSearch" :param="searchParam"
-      @search="handleBtnAction('searchParam-list')">
-      <template #dispDate>
-        <bo-date-time-picker v-model:date="searchParam.dispDate" v-model:time="searchParam.dispTime"
-          :show-clear="false" input-class="date-range-input" date-width="145px" time-width="145px" />
-      </template>
-    </bo-search-area>
   </bo-container>
-  <!-- ===== □. 검색 영역 =================================================== -->
-  <!-- ===== ■. 본문: 좌측 트리 + 우측 목록 ======================================= -->
-  <div class="bo-2col">
-    <!-- ===== ■.■. 좌측 표시경로 =============================================== -->
-    <bo-container title="📂 표시경로">
-      <template #toolbar-actions>
-        <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">
-          #ec_disp_panel
-        </span>
-        <span v-if="uiState.selectedPath != null" @click="handleBtnAction('pathTree-all')" style="font-size:11px;color:#1677ff;margin-left:6px;">
-          전체보기
-        </span>
-      </template>
-      <div style="max-height:55vh;overflow:auto;">
-        <bo-path-tree biz-cd="ec_disp_panel" :counts="panelCounts" :selected="uiState.selectedPath" @select="p => handleSelectAction('pathTree-select', p)" />
-      </div>
-    </bo-container>
-    <!-- ===== □.□. 좌측 표시경로 =============================================== -->
-    <!-- ===== ■.■. 우측 목록 ================================================= -->
-    <bo-container title="전시패널 목록" :count-text="cfFiltered.length + '건'">
-      <template #toolbar-actions>
-        <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;margin-left:6px;font-size:12px;">
-          #{{ uiState.selectedPath }}
-        </span>
-        <button class="btn btn_excel" @click="handleBtnAction('panels-export')">
-          📥 엑셀
-        </button>
-        <button class="btn btn_new" @click="handleBtnAction('panels-add')">
-          + 신규
-        </button>
-      </template>
-        <!-- ===== ■.■.■.■. 테이블 =============================================== -->
-        <table class="bo-table">
-          <thead>
-            <tr>
-              <th style="width:36px;text-align:center;">
-                번호
-              </th>
-              <th style="width:24px;">
-              </th>
-              <th style="width:28px;">
-              </th>
-              <th style="width:44px;">
-                ID
-              </th>
-              <th @click="handleBtnAction('panels-sort', 'nm')" style="user-select:none;white-space:nowrap;">
-                패널 정보
-                <span :style="uiState.sortKey==='nm'?{color:'#e8587a',fontWeight:'bold'}:{color:'#bbb'}">
-                  {{ sortIcon('nm') }}
-                </span>
-              </th>
-              <th style="width:240px;text-align:right;">
-                관리
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-if="!panelsGridPager.pageList?.length">
-              <td colspan="6" style="text-align:center;color:#999;padding:30px;">
-                데이터가 없습니다.
-              </td>
-            </tr>
-            <template v-else v-for="(d, pageIdx) in panelsGridPager.pageList" :key="d?.dispId">
-              <tr draggable="true"
-                @dragstart="onPanelDragStart($event, pageIdx)"
-                @dragover="onPanelDragOver($event, pageIdx)"
-                @dragleave="onPanelDragLeave"
-                @drop="onPanelDrop($event, pageIdx)"
-                @dragend="onPanelDragEnd"
-                :style="(uiStateDetail.selectedId===d.dispId?'background:#fff8f9;':'') + (uiState.panelDragOverIdx===pageIdx?'outline:2px solid #1d4ed8;background:#e3f2fd;':'')">
-                <td style="text-align:center;font-size:11px;color:#999;">
-                  {{ (panelsGridPager.pageNo - 1) * panelsGridPager.pageSize + pageIdx + 1 }}
-                </td>
-                <td style="text-align:center;padding:0;cursor:grab;color:#bbb;font-size:16px;user-select:none;">
-                  ⠿
-                </td>
-                <td style="text-align:center;padding:0;">
-                  <button @click="handleSelectAction('panels-toggleExpand', d.dispId)"
-                    style="background:none;border:none;font-size:11px;color:#999;width:28px;height:28px;display:flex;align-items:center;justify-content:center;">
-                    {{ isExpanded(d.dispId) ? '▼' : '▶' }}
-                  </button>
-                </td>
-                <td style="color:#aaa;font-size:12px;vertical-align:top;padding-top:12px;">
-                  {{ d.dispId }}
-                </td>
-                <td style="padding:10px 12px;">
-                  <!-- ===== ■.■.■.■.■.■.■.■.■. 패널명 ===================================== -->
-                  <div style="margin-bottom:6px;">
-                    <span class="title-link" @click="handleSelectAction('panels-rowEdit', d.dispId)"
-                      :style="'font-size:14px;font-weight:700;'+(uiStateDetail.selectedId===d.dispId?'color:#e8587a;':'color:#222;')">
-                      {{ d.name }}
-                      <span v-if="uiStateDetail.selectedId===d.dispId" style="font-size:10px;margin-left:3px;">
-                        ▼
-                      </span>
-                    </span>
-                    <span class="badge" :class="fnStatusBadge(d.status)" style="font-size:11px;margin-left:8px;">
-                      {{ d.status }}
-                    </span>
-                  </div>
-                  <!-- ===== ■.■.■.■.■.■.■.■.■. label:value 라인 ========================== -->
-                  <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:11px;color:#555;line-height:1.6;">
-                    <span>
-                      <b style="color:#888;">
-                        표시경로:
-                      </b>
-                      <template v-if="fnPathLabel(d.pathId) || d.displayPath">
-                        <span style="background:#e3f2fd;color:#1565c0;border-radius:8px;padding:1px 7px;margin-left:3px;">
-                          {{ fnPathLabel(d.pathId) || d.displayPath }}
-                        </span>
-                      </template>
-                      <template v-else>
-                        <span style="font-size:9px;background:#fff3e0;color:#e65100;border-radius:6px;padding:1px 6px;margin-left:3px;font-weight:600;white-space:nowrap;">
-                          (패널)
-                        </span>
-                        <span style="background:#e8f0fe;color:#0277bd;border-radius:8px;padding:1px 7px;margin-left:3px;">
-                          {{ (d.area||'').split('_')[0] }}
-                        </span>
-                        <span style="color:#ccc;margin:0 3px;">
-                          ·
-                        </span>
-                        <span style="background:#fff3e0;color:#e65100;border-radius:8px;padding:1px 7px;">
-                          {{ fnAreaLabel(d.area) }}
-                        </span>
-                      </template>
-                    </span>
-                    <span>
-                      <b style="color:#888;">
-                        화면영역:
-                      </b>
-                      <code style="font-size:10px;background:#f0f2f5;padding:1px 5px;border-radius:3px;margin:0 3px;">{{ d.area }}</code>
-                        {{ fnAreaLabel(d.area) }}
-                      </span>
-                      <span>
-                        <b style="color:#888;">
-                          표시:
-                        </b>
-                        {{ (d.layoutType||'grid')==='dashboard' ? '🧩 대시보드' : '🔲 그리드 ' + (d.gridCols||1) + '열' }}
-                      </span>
-                      <span>
-                        <b style="color:#888;">
-                          순서:
-                        </b>
-                        {{ d.sortOrder != null ? d.sortOrder : '-' }}
-                      </span>
-                      <span>
-                        <b style="color:#888;">
-                          타이틀:
-                        </b>
-                        {{ d.titleYn==='Y' ? (d.title || '표시') : '미표시' }}
-                      </span>
-                      <span>
-                        <b style="color:#888;">
-                          노출조건:
-                        </b>
-                        <span style="background:#e3f2fd;color:#1565c0;border-radius:8px;padding:1px 7px;margin-left:3px;">
-                          {{ d.condition || '항상 표시' }}
-                        </span>
-                      </span>
-                      <span v-if="d.authRequired">
-                        <b style="color:#888;">
-                          인증:
-                        </b>
-                        <span style="background:#fff3e0;color:#e65100;border-radius:8px;padding:1px 7px;margin-left:3px;">
-                          필요
-                        </span>
-                        <span v-if="d.authGrade" style="background:#f3e5f5;color:#6a1b9a;border-radius:8px;padding:1px 7px;margin-left:3px;">
-                          {{ d.authGrade }}↑
-                        </span>
-                      </span>
-                      <!-- ===== ■.■.■.■.■.■.■.■.■.■. 영역 ==================================== -->
-                      <span>
-                        <b style="color:#888;">
-                          전시기간:
-                        </b>
-                        <template v-if="d.dispStartDt || d.dispEndDt">
-                          {{ d.dispStartDt || '∞' }} ~ {{ d.dispEndDt || '∞' }}
-                        </template>
-                        <span v-else style="color:#ccc;">
-                          없음
-                        </span>
-                      </span>
-                      <span>
-                        <b style="color:#888;">
-                          등록일:
-                        </b>
-                        {{ d.regDate || '-' }}
-                      </span>
-                      <span>
-                        <b style="color:#888;">
-                          사이트:
-                        </b>
-                        <span style="background:#e8f0fe;color:#1565c0;border:1px solid #bbdefb;border-radius:8px;padding:0 6px;margin-left:3px;">
-                          {{ cfSiteNm }}
-                        </span>
-                      </span>
-                    </div>
-                  </td>
-                  <td style="vertical-align:top;padding-top:10px;">
-                    <div class="actions" style="justify-content:flex-end;">
-                      <button class="btn btn_row_edit" @click="handleSelectAction('panels-rowEdit', d.dispId)">
-                        수정
-                      </button>
-                      <button class="btn btn_row_delete" @click="handleSelectAction('panels-rowDelete', d)">
-                        삭제
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-                <!-- ===== ■.■.■.■.■.■.■. 위젯 펼치기 서브 행 ================================= -->
-                <tr v-if="isExpanded(d.dispId)" :key="'exp_'+d.dispId">
-                  <td colspan="5" style="padding:0;background:#f8f9fb;border-top:none;">
-                    <div style="padding:10px 16px 12px 44px;">
-                      <div style="font-size:11px;font-weight:600;color:#888;margin-bottom:6px;letter-spacing:.3px;">
-                        📌 연결된 항목 ({{ (d.rows||[]).length }}개)
-                      </div>
-                      <!-- ===== ■.■.■.■.■.■.■.■.■.■. 테이블 =================================== -->
-                      <table style="width:100%;border-collapse:collapse;font-size:11px;">
-                        <thead>
-                          <tr style="background:#eef0f3;color:#666;">
-                            <th style="padding:4px 4px;text-align:center;width:24px;font-weight:600;">
-                            </th>
-                            <th style="padding:4px 8px;text-align:center;width:48px;font-weight:600;">
-                              순서
-                            </th>
-                            <th style="padding:4px 8px;font-weight:600;">
-                              전시항목명
-                            </th>
-                            <th style="padding:4px 8px;text-align:center;width:120px;font-weight:600;">
-                              유형
-                            </th>
-                            <th style="padding:4px 8px;text-align:center;width:100px;font-weight:600;">
-                              클릭동작
-                            </th>
-                            <th style="padding:4px 8px;text-align:center;width:60px;font-weight:600;">
-                              사용여부
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <template v-if="d.rows && d.rows.length">
-                          <tr v-for="(w, wi) in d.rows" :key="wi" draggable="true" @dragstart="onWidgetDragStart($event, d.dispId, wi)" @dragover="onWidgetDragOver($event, d.dispId, wi)" @dragleave="onWidgetDragLeave" @drop="onWidgetDrop($event, d.dispId, wi)" @dragend="onWidgetDragEnd" :style="'border-bottom:1px solid #e8eaed;' + (wi % 2 === 1 ? 'background:#fff;' : '') + (uiState.widgetDragOverWi===wi && uiState.widgetDragPanel===d.dispId ? 'outline:2px solid #1d4ed8;background:#e3f2fd;' : '')">
-                          <td style="padding:4px 4px;text-align:center;cursor:grab;color:#bbb;font-size:14px;user-select:none;">
-                            ⠿
-                          </td>
-                          <td style="padding:4px 8px;text-align:center;color:#aaa;">
-                            {{ w.sortOrder || (wi+1) }}
-                          </td>
-                          <td style="padding:4px 8px;color:#444;">
-                            <span style="font-size:10px;background:#e8f4f8;color:#0277bd;border-radius:8px;padding:2px 8px;font-weight:600;margin-right:6px;white-space:nowrap;">
-                              아이템
-                            </span>
-                            {{ w.widgetNm || ('전시항목 ' + (wi+1)) }}
-                          </td>
-                          <td style="padding:4px 8px;text-align:center;">
-                            <span style="background:#e8f0fe;color:#1a73e8;border-radius:8px;padding:1px 7px;font-size:10px;">
-                              {{ fnWLabel(w.widgetType) }}
-                            </span>
-                          </td>
-                          <td style="padding:4px 8px;text-align:center;color:#888;">
-                            {{ w.clickAction || '-' }}
-                          </td>
-                          <td style="padding:4px 8px;text-align:center;">
-                            <span v-if="w.useYn === 'Y'" class="badge badge-green" style="font-size:11px;">
-                              사용
-                            </span>
-                            <span v-else class="badge badge-gray" style="font-size:11px;">
-                              미사용
-                            </span>
-                          </td>
-                        </tr>
-                      </template>
-                      <!-- ===== ■.■.■.■.■.■.■.■.■.■.■.■. 영역 ================================ -->
-                      <tr v-else>
-                        <td colspan="6" style="padding:8px;text-align:center;color:#bbb;">
-                          등록된 전시항목이 없습니다. (수정 후 저장하면 전시항목 정보가 표시됩니다)
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </td>
-            </tr>
-          </template>
-        </tbody>
-      </table>
-      <bo-pager :pager="panelsGridPager" :on-set-page="n => handleBtnAction('panels-pager-setPage', n)" :on-size-change="() => handleSelectAction('panels-pager-sizeChange')" />
-    </bo-container>
-    <!-- ===== /우측 목록 ===================================================== -->
-  </div>
-  <!-- ===== /본문 bo-2col =================================================== -->
-  <!-- ===== □. 본문: 좌측 트리 + 우측 목록 ======================================= -->
-  <!-- ===== ■. 하단 상세: DispDtl 임베드 ====================================== -->
-  <dp-disp-panel-dtl
-      :key="cfDetailKey"
-      :navigate="inlineNavigate"
-      :dtl-id="cfDetailEditId"
-      :dtl-mode="uiStateDetail.openMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
-      :active="uiStateDetail.active"
-      :reload-trigger="uiStateDetail.reloadTrigger"
-      />
-  <!-- ===== □. 하단 상세: DispDtl 임베드 ====================================== -->
-<!-- ===== ■. 패널미리보기 오버레이 ============================================= -->
-<div v-if="uiState.cardPreviewItem"
-    @click.self="handleBtnAction('cardPreview-close')"
-    style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;display:flex;align-items:center;justify-content:center;">
-  <div style="background:#fff;border-radius:14px;width:520px;max-width:92vw;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,0.35);">
-    <!-- ===== ■.■.■. 헤더 ================================================== -->
-    <div style="background:linear-gradient(135deg,#e8587a,#c0395e);color:#fff;padding:15px 20px;border-radius:14px 14px 0 0;display:flex;justify-content:space-between;align-items:center;">
-      <span style="font-size:14px;font-weight:700;">
-        🖼 패널미리보기
-      </span>
-      <button @click="handleBtnAction('cardPreview-close')" style="background:none;border:none;color:#fff;font-size:22px;opacity:0.85;line-height:1;padding:0;">
-        ×
-      </button>
-    </div>
-    <!-- ===== ■.■.■. 카드 본문 =============================================== -->
-    <div style="padding:24px;">
-      <!-- ===== ■.■.■.■. 영역 + 상태 배지 ======================================== -->
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center;">
-        <code style="font-size:11px;background:#f0f2f5;color:#555;padding:3px 8px;border-radius:4px;letter-spacing:.3px;">
-            {{ uiState.cardPreviewItem.area }}
-          </code>
-          <span style="font-size:12px;background:#e8f4fd;color:#1565c0;border-radius:10px;padding:2px 10px;">
-            {{ fnAreaLabel(uiState.cardPreviewItem.area) }}
-          </span>
-          <span class="badge" :class="uiState.cardPreviewItem.status==='활성'?'badge-green':'badge-gray'" style="font-size:12px;">
-            {{ uiState.cardPreviewItem.status }}
-          </span>
-        </div>
-        <!-- ===== ■.■.■.■. 패널명 =============================================== -->
-        <div style="font-size:22px;font-weight:800;color:#222;margin-bottom:16px;line-height:1.3;">
-          {{ uiState.cardPreviewItem.name }}
-        </div>
-        <!-- ===== ■.■.■.■. 노출조건 / 인증 배지 ====================================== -->
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
-          <span style="font-size:12px;background:#e3f2fd;color:#1565c0;border-radius:12px;padding:4px 12px;">
-            {{ uiState.cardPreviewItem.condition || '항상 표시' }}
-          </span>
-          <span v-if="uiState.cardPreviewItem.authRequired" style="font-size:12px;background:#fff3e0;color:#e65100;border-radius:12px;padding:4px 12px;">
-            인증 필요
-          </span>
-          <span v-if="uiState.cardPreviewItem.authRequired && uiState.cardPreviewItem.authGrade" style="font-size:12px;background:#f3e5f5;color:#6a1b9a;border-radius:12px;padding:4px 12px;">
-          {{ uiState.cardPreviewItem.authGrade }} 이상
-        </span>
-      </div>
-      <!-- ===== ■.■.■.■. 전시 기간 ============================================= -->
-      <div v-if="uiState.cardPreviewItem.dispStartDt || uiState.cardPreviewItem.dispEndDt"
-          style="font-size:12px;color:#555;background:#f8faff;border:1px solid #e0e8f8;border-radius:8px;padding:10px 14px;margin-bottom:16px;">
-        <div style="font-size:11px;color:#888;margin-bottom:4px;font-weight:600;">
-          📅 전시 기간
-        </div>
-        <span>
-          {{ uiState.cardPreviewItem.dispStartDt || '∞' }}
-        </span>
-        <span style="color:#aaa;margin:0 8px;">
-          ~
-        </span>
-        <span>
-          {{ uiState.cardPreviewItem.dispEndDt || '∞' }}
-        </span>
-      </div>
-      <div v-else style="font-size:12px;color:#bbb;margin-bottom:16px;">
-        전시 기간 미설정
-      </div>
-      <!-- ===== ■.■.■.■. 위젯 구성 ============================================= -->
-      <div style="border-top:1px solid #f0f0f0;padding-top:14px;">
-        <div style="font-size:12px;font-weight:700;color:#888;letter-spacing:.5px;margin-bottom:10px;">
-          📐 전시항목 구성
-        </div>
-        <template v-if="uiState.cardPreviewItem.rows && uiState.cardPreviewItem.rows.length">
-        <div v-for="(r, i) in uiState.cardPreviewItem.rows" :key="Math.random()"
-              style="display:flex;align-items:center;gap:10px;padding:9px 14px;border:1px solid #f0f0f0;border-radius:8px;margin-bottom:6px;background:#fafafa;">
-          <span style="font-size:11px;color:#bbb;font-weight:700;min-width:16px;text-align:center;">
-            {{ r.sortOrder || i+1 }}
-          </span>
-          <span style="font-size:13px;font-weight:600;color:#333;flex:1;">
-            {{ fnWLabel(r.widgetType) }}
-          </span>
-          <span v-if="r.clickAction && r.clickAction !== 'none'" style="font-size:10px;color:#888;background:#f0f0f0;border-radius:8px;padding:2px 8px;">
-          {{ r.clickAction }}
-        </span>
-      </div>
+  <!-- ===== ■. 목록 영역 ===================================================== -->
+  <bo-container title="전시패널목록" :count-text="'총 ' + baseGrid.pager.pageTotalCount + '건'">
+    <template #toolbar-actions>
+      <button class="btn btn_new" @click="handleBtnAction('panels-add')">+ 신규</button>
     </template>
-    <div v-else style="font-size:12px;color:#bbb;padding:12px;text-align:center;background:#f9f9f9;border-radius:8px;">
-      전시항목 정보가 없습니다. 수정 후 저장하면 표시됩니다.
-    </div>
-  </div>
-</div>
-<!-- ===== ■.■.■. 푸터 ================================================== -->
-<div style="padding:12px 20px;background:#f8f8f8;border-top:1px solid #f0f0f0;border-radius:0 0 14px 14px;display:flex;justify-content:space-between;align-items:center;">
-  <span style="font-size:11px;color:#aaa;">
-    ID: {{ uiState.cardPreviewItem.dispId }} · 등록일: {{ uiState.cardPreviewItem.regDate }}
-  </span>
-  <div style="display:flex;gap:8px;">
-    <button @click="handleSelectAction('cardPreview-previewDisp', uiState.cardPreviewItem)" class="btn btn_preview" style="background:#e8f0fe;border:1px solid #b0c4de;color:#1a73e8;font-size:11px;">
-      👁 내용미리보기
-    </button>
-    <button @click="handleBtnAction('cardPreview-close')" class="btn btn_close">
-      닫기
-    </button>
-  </div>
-</div>
-</div>
-</div>
-<!-- ===== □. 패널미리보기 오버레이 ============================================= -->
+    <bo-grid bare :columns="columns.baseGrid" :rows="panels" :pager="baseGrid.pager" row-key="panelId" :selected-key="baseDetail.selectedId"
+      :sort-state="baseGrid"
+      :row-class="row => baseDetail.selectedId === row.panelId ? 'active' : ''" empty-text="데이터가 없습니다."
+      @sort="key => handleBtnAction('panels-sort', key)"
+      grid-id="panels-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
+      <template #row-actions="{ row, gridId }">
+        <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
+          <button class="btn btn_row_edit" style="white-space:nowrap;" @click.stop="handleGridCellAction(gridId, 'btn_row_edit', row)">수정</button>
+          <button class="btn btn_row_delete" style="white-space:nowrap;" @click.stop="handleGridCellAction(gridId, 'btn_row_delete', row)">삭제</button>
+        </div>
+      </template>
+    </bo-grid>
+    <bo-pager :pager="baseGrid.pager" :on-set-page="n => handleBtnAction('panels-pager-setPage', n)" :on-size-change="() => handleSelectAction('panels-pager-sizeChange')" />
+  </bo-container>
+  <!-- ===== ■. 상세 패널 (인라인 임베드 — 항상 표시, 위젯 편집 포함) ============== -->
+  <dp-disp-panel-dtl :key="baseDetail.panelKey + '_' + baseDetail.resetSeq" :navigate="inlineNavigate"
+    :dtl-id="baseDetail.editId" :dtl-mode="baseDetail.dtlMode"
+    :active="baseDetail.active"
+    :reload-trigger="baseDetail.reloadTrigger" />
 </bo-page>
-`
+`,
 };

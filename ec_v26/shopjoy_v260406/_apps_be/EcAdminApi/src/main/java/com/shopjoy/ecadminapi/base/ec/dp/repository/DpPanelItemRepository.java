@@ -5,4 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.shopjoy.ecadminapi.base.ec.dp.repository.qrydsl.QDpPanelItemRepository;
 
 public interface DpPanelItemRepository extends JpaRepository<DpPanelItem, String>, QDpPanelItemRepository {
+    java.util.List<DpPanelItem> findByPanelIdOrderBySortOrdAsc(String panelId);
+    void deleteByPanelId(String panelId);
 }

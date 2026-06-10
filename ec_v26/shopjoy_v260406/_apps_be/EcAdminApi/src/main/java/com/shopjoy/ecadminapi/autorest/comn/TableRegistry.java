@@ -19,7 +19,7 @@ public class TableRegistry {
         "cm_blog_cate", "cm_blog_file", "cm_blog_good", "cm_blog_reply", "cm_blog_tag", "cm_blog",
         "cm_chatt_msg", "cm_chatt_room", "cm_path",
         // ec - 전시
-        "dp_area_panel", "dp_area", "dp_panel_item", "dp_panel", "dp_ui_area", "dp_ui",
+        "dp_area", "dp_panel_item", "dp_panel", "dp_ui",
         "dp_widget_lib", "dp_widget",
         // ec - 회원
         "mb_dvc_token", "mb_like", "mb_member_addr", "mb_member_grade", "mb_member_group",
@@ -755,38 +755,26 @@ public class TableRegistry {
             .pkColumn("ui_id")
             .requiredFields(List.of("ui_nm"))
             .fkFields(Map.of("site_id", "sy_site"))
-            .childTables(List.of("dp_ui_area"))
+            .childTables(List.of("dp_area"))
             .searchFields(List.of("ui_nm"))
-            .build());
-
-        register("dp_ui_area", TableConfig.builder()
-            .pkColumn("ui_area_id")
-            .requiredFields(List.of("ui_id", "area_id"))
-            .fkFields(Map.of(
-                "ui_id", "dp_ui",
-                "area_id", "dp_area"))
             .build());
 
         register("dp_area", TableConfig.builder()
             .pkColumn("area_id")
             .requiredFields(List.of("area_nm"))
-            .fkFields(Map.of("site_id", "sy_site"))
-            .childTables(List.of("dp_area_panel"))
-            .searchFields(List.of("area_nm", "area_cd"))
-            .build());
-
-        register("dp_area_panel", TableConfig.builder()
-            .pkColumn("area_panel_id")
-            .requiredFields(List.of("area_id", "panel_id"))
             .fkFields(Map.of(
-                "area_id", "dp_area",
-                "panel_id", "dp_panel"))
+                "site_id", "sy_site",
+                "ui_id", "dp_ui"))
+            .childTables(List.of("dp_panel"))
+            .searchFields(List.of("area_nm", "area_cd"))
             .build());
 
         register("dp_panel", TableConfig.builder()
             .pkColumn("panel_id")
             .requiredFields(List.of("panel_nm"))
-            .fkFields(Map.of("site_id", "sy_site"))
+            .fkFields(Map.of(
+                "site_id", "sy_site",
+                "area_id", "dp_area"))
             .childTables(List.of("dp_panel_item"))
             .searchFields(List.of("panel_nm"))
             .build());

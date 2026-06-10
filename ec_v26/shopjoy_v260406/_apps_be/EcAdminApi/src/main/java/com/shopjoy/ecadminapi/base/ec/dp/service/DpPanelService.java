@@ -1,7 +1,12 @@
 package com.shopjoy.ecadminapi.base.ec.dp.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpPanelDto;
+import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpPanelItemDto;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpPanel;
+import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpPanelItem;
+import com.shopjoy.ecadminapi.base.ec.dp.repository.DpPanelItemRepository;
 import com.shopjoy.ecadminapi.base.ec.dp.repository.DpPanelRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -23,14 +28,19 @@ import java.util.List;
 public class DpPanelService {
 
     private final DpPanelRepository dpPanelRepository;
+    private final DpPanelItemRepository dpPanelItemRepository;
+    private static final ObjectMapper OM = new ObjectMapper();
 
     @PersistenceContext
     private EntityManager em;
 
-    /* 전시 패널 키조회 */
+    /* 전시 패널 키조회 (+ 패널 아이템 연관 채움) */
     public DpPanelDto.Item getById(String id) {
         DpPanelDto.Item dto = dpPanelRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        dto.setPanelItems(dpPanelItemRepository.findByPanelIdOrderBySortOrdAsc(id).stream()
+            .map(e -> { DpPanelItemDto.Item d = new DpPanelItemDto.Item(); VoUtil.voCopy(e, d); return d; })
+            .toList());
         return dto;
     }
 
@@ -83,10 +93,11 @@ public class DpPanelService {
         DpPanel saved = dpPanelRepository.save(body);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
+        syncPanelItems(saved);
         return saved;
     }
 
-    
+
 
     /* 전시 패널 수정 */
     @Transactional
@@ -99,7 +110,45 @@ public class DpPanelService {
         DpPanel saved = dpPanelRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
+        syncPanelItems(saved);
         return saved;
+    }
+
+    /** syncPanelItems — content_json(rows) → dp_panel_item 관계형 미러 동기화.
+     *  content_json 이 화면 저장 소스이므로, 저장 시 아이템 테이블을 전량 재생성한다.
+     *  rows 파싱 실패는 패널 저장을 막지 않는다 (미러 성격). */
+    private void syncPanelItems(DpPanel saved) {
+        if (saved == null || saved.getPanelId() == null) return;
+        dpPanelItemRepository.deleteByPanelId(saved.getPanelId());
+        String cj = saved.getContentJson();
+        if (cj == null || cj.isBlank()) return;
+        try {
+            JsonNode rows = OM.readTree(cj).path("rows");
+            if (!rows.isArray()) return;
+            String authId = SecurityUtil.getAuthUser().authId();
+            LocalDateTime now = LocalDateTime.now();
+            int ord = 0;
+            for (JsonNode r : rows) {
+                ord++;
+                DpPanelItem it = new DpPanelItem();
+                it.setPanelItemId(CmUtil.generateId("dp_panel_item"));
+                it.setPanelId(saved.getPanelId());
+                it.setSiteId(saved.getSiteId());
+                it.setWidgetTypeCd(r.path("widgetType").asText(null));
+                it.setWidgetTitle(r.path("title").asText(null));
+                it.setTitleShowYn(r.path("titleYn").asText("N"));
+                it.setWidgetLibRefYn("N");
+                it.setSortOrd(r.path("sortOrder").asInt(ord));
+                it.setWidgetConfigJson(r.toString());
+                it.setDispYn(r.path("dispYn").asText("Y"));
+                it.setUseYn("Y");
+                it.setRegBy(authId); it.setRegDate(now);
+                it.setUpdBy(authId); it.setUpdDate(now);
+                dpPanelItemRepository.save(it);
+            }
+        } catch (Exception e) {
+            org.slf4j.LoggerFactory.getLogger(getClass()).warn("[DpPanelService] panel_item 동기화 실패: {}", e.getMessage());
+        }
     }
 
     /* 전시 패널 수정 */

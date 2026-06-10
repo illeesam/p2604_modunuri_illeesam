@@ -44,7 +44,7 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
     /* 전시 패널 baseSelColumnQuery */
     private JPAQuery<DpPanelDto.Item> baseSelColumnQuery() {
         return queryFactory.select(Projections.bean(DpPanelDto.Item.class,
-                dpPanel.panelId, dpPanel.siteId, dpPanel.panelNm, dpPanel.panelTypeCd, dpPanel.pathId,
+                dpPanel.panelId, dpPanel.siteId, dpPanel.areaId, dpPanel.panelNm, dpPanel.panelTypeCd, dpPanel.pathId,
                 dpPanel.visibilityTargets, dpPanel.useYn, dpPanel.useStartDate, dpPanel.useEndDate,
                 dpPanel.dispPanelStatusCd, dpPanel.dispPanelStatusCdBefore, dpPanel.contentJson,
                 dpPanel.regBy, dpPanel.regDate, dpPanel.updBy, dpPanel.updDate
@@ -67,6 +67,8 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                     baseAndSiteId(search),
+                    baseAndAreaId(search),
+                    baseAndAreaIds(search),
                     baseAndPathId(search),
                     baseAndPanelId(search),
                     baseAndDispPanelStatusCd(search),
@@ -96,6 +98,8 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
                 baseAndSiteId(search),
+                baseAndAreaId(search),
+                baseAndAreaIds(search),
                 baseAndPathId(search),
                 baseAndPanelId(search),
                 baseAndDispPanelStatusCd(search),
@@ -134,6 +138,18 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
     private BooleanExpression baseAndSiteId(DpPanelDto.Request search) {
         return search != null && StringUtils.hasText(search.getSiteId())
                 ? dpPanel.siteId.eq(search.getSiteId()) : null;
+    }
+
+    /* areaId 정확 일치 (소속 영역) */
+    private BooleanExpression baseAndAreaId(DpPanelDto.Request search) {
+        return search != null && StringUtils.hasText(search.getAreaId())
+                ? dpPanel.areaId.eq(search.getAreaId()) : null;
+    }
+
+    /* areaIds 다건 IN (상위 영역 일괄조회) */
+    private BooleanExpression baseAndAreaIds(DpPanelDto.Request search) {
+        return search != null && search.getAreaIds() != null && !search.getAreaIds().isEmpty()
+                ? dpPanel.areaId.in(search.getAreaIds()) : null;
     }
 
     /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
@@ -259,6 +275,8 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
         JPAUpdateClause update = queryFactory.update(dpPanel);
         boolean hasAny = false;
         if (entity.getSiteId()                  != null) { update.set(dpPanel.siteId,                  entity.getSiteId());                  hasAny = true; }
+        if (entity.getAreaId()                  != null) { update.set(dpPanel.areaId,                  entity.getAreaId());                  hasAny = true; }
+        if (entity.getAreaId()                  != null) { update.set(dpPanel.areaId,                  entity.getAreaId());                  hasAny = true; }
         if (entity.getPanelNm()                 != null) { update.set(dpPanel.panelNm,                 entity.getPanelNm());                 hasAny = true; }
         if (entity.getPanelTypeCd()             != null) { update.set(dpPanel.panelTypeCd,             entity.getPanelTypeCd());             hasAny = true; }
         if (entity.getPathId()                  != null) { update.set(dpPanel.pathId,                  entity.getPathId());                  hasAny = true; }

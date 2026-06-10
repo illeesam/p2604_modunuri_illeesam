@@ -1,10 +1,10 @@
 package com.shopjoy.ecadminapi.bo.ec.dp.service;
 
 import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpAreaDto;
-import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpAreaPanelDto;
+import com.shopjoy.ecadminapi.base.ec.dp.data.dto.DpPanelDto;
 import com.shopjoy.ecadminapi.base.ec.dp.data.entity.DpArea;
 import com.shopjoy.ecadminapi.base.ec.dp.service.DpAreaService;
-import com.shopjoy.ecadminapi.base.ec.dp.service.DpAreaPanelService;
+import com.shopjoy.ecadminapi.base.ec.dp.service.DpPanelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 public class BoDpAreaService {
 
     private final DpAreaService dpAreaService;
-    private final DpAreaPanelService dpAreaPanelService;
+    private final DpPanelService dpPanelService;
 
     /* 키조회 */
     public DpAreaDto.Item getById(String id) {
@@ -48,10 +48,10 @@ public class BoDpAreaService {
     private void _itemFillRelations(DpAreaDto.Item area) {
         if (area == null) return;
 
-        // 하위 영역-패널 연결 목록 조회 (areaId 기준)
-        DpAreaPanelDto.Request apReq = new DpAreaPanelDto.Request();
-        apReq.setAreaId(area.getAreaId());
-        area.setPanels(dpAreaPanelService.getList(apReq)); // 영역패널목록
+        // 소속 패널 목록 조회 (dp_panel.area_id 기준)
+        DpPanelDto.Request pReq = new DpPanelDto.Request();
+        pReq.setAreaId(area.getAreaId());
+        area.setPanels(dpPanelService.getList(pReq)); // 소속 패널 목록
     }
 
     /**
@@ -69,11 +69,12 @@ public class BoDpAreaService {
             .toList();
         if (areaIds.isEmpty()) return;
 
-        // 영역-패널 연결 일괄조회 → Map<areaId, List<panel>>
-        DpAreaPanelDto.Request apReq = new DpAreaPanelDto.Request();
-        apReq.setAreaIds(areaIds);
-        Map<String, List<DpAreaPanelDto.Item>> apMap = dpAreaPanelService.getList(apReq).stream()
-            .collect(Collectors.groupingBy(DpAreaPanelDto.Item::getAreaId));
+        // 소속 패널 일괄조회 → Map<areaId, List<panel>>
+        DpPanelDto.Request pReq = new DpPanelDto.Request();
+        pReq.setAreaIds(areaIds);
+        Map<String, List<DpPanelDto.Item>> apMap = dpPanelService.getList(pReq).stream()
+            .filter(p -> p.getAreaId() != null)
+            .collect(Collectors.groupingBy(DpPanelDto.Item::getAreaId));
 
         // 각 항목에 분배
         for (DpAreaDto.Item area : list) {

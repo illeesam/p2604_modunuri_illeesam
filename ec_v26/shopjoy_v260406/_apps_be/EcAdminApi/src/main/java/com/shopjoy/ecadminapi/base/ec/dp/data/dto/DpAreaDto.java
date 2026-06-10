@@ -42,7 +42,7 @@ public class DpAreaDto {
         private String updBy;
         private LocalDateTime updDate;
         // ── 연관정보 (getById / 목록 시 채움) ──
-        private List<DpAreaPanelDto.Item> panels;   // 영역-패널 연결 목록
+        private List<DpPanelDto.Item> panels;       // 소속 패널 목록 (dp_panel.area_id)
     }
 
     @Getter @Setter @NoArgsConstructor

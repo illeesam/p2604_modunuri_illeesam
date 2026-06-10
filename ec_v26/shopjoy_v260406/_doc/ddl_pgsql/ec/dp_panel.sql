@@ -4,6 +4,7 @@
 CREATE TABLE shopjoy_2604.dp_panel (
     panel_id                    VARCHAR(21)  NOT NULL PRIMARY KEY,
     site_id                     VARCHAR(21)  NOT NULL,
+    area_id                     VARCHAR(21) ,
     panel_nm                    VARCHAR(100) NOT NULL,
     panel_type_cd               VARCHAR(30) ,
     path_id                     VARCHAR(21) ,
@@ -11,18 +12,20 @@ CREATE TABLE shopjoy_2604.dp_panel (
     use_yn                      VARCHAR(1)   DEFAULT 'Y'::bpchar,
     use_start_date              DATE        ,
     use_end_date                DATE        ,
-    disp_panel_status_cd        VARCHAR(20)  DEFAULT 'ACTIVE'::character varying,
+    disp_panel_status_cd        VARCHAR(20)  DEFAULT 'SHOW'::character varying,
     disp_panel_status_cd_before VARCHAR(20) ,
     content_json                TEXT        ,
     reg_by                      VARCHAR(30) ,
     reg_date                    TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by                      VARCHAR(30) ,
-    upd_date                    TIMESTAMP   
+    upd_date                    TIMESTAMP   ,
+    CONSTRAINT dp_panel_area_id_fkey FOREIGN KEY (area_id) REFERENCES shopjoy_2604.dp_area (area_id)
 );
 
 COMMENT ON TABLE  shopjoy_2604.dp_panel IS '디스플레이 패널';
 COMMENT ON COLUMN shopjoy_2604.dp_panel.panel_id IS '패널ID (YYMMDDhhmmss+rand4)';
 COMMENT ON COLUMN shopjoy_2604.dp_panel.site_id IS '사이트ID (sy_site.site_id)';
+COMMENT ON COLUMN shopjoy_2604.dp_panel.area_id IS '영역ID (dp_area.area_id)';
 COMMENT ON COLUMN shopjoy_2604.dp_panel.panel_nm IS '패널명';
 COMMENT ON COLUMN shopjoy_2604.dp_panel.panel_type_cd IS '표시유형 (코드: DISP_TYPE)';
 COMMENT ON COLUMN shopjoy_2604.dp_panel.path_id IS '점(.) 구분 표시경로';
@@ -39,3 +42,4 @@ COMMENT ON COLUMN shopjoy_2604.dp_panel.upd_by IS '수정자 (sy_user.user_id, m
 COMMENT ON COLUMN shopjoy_2604.dp_panel.upd_date IS '수정일';
 
 CREATE INDEX idx_dp_panel_site ON shopjoy_2604.dp_panel USING btree (site_id);
+CREATE INDEX idx_dp_panel_area ON shopjoy_2604.dp_panel USING btree (area_id);

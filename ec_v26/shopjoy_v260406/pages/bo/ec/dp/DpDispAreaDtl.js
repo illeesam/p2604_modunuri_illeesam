@@ -1,944 +1,209 @@
-/* ShopJoy Admin - 전시영역 상세/등록 (탭 구성) */
+/* ShopJoy Admin - 전시영역 상세/등록 (dp_area)
+ * 2026-06-11 구조개선 재작성 — CmNoticeDtl 표준 + 상위 UI 선택 + 소속 패널 목록(dp_panel.area_id) 표시
+ */
 window.DpDispAreaDtl = {
   name: 'DpDispAreaDtl',
   props: {
     navigate:      { type: Function, required: true }, // 페이지 이동
-    dtlId:         { type: String, default: null }, // 수정 대상 ID
-    dtlMode:       { type: String, default: 'view' }, // 상세 모드 (new/view/edit),
-    active:        { type: Boolean, default: true }, // false=행 미선택 빈 폼(저장/취소 등 버튼 숨김)
-    reloadTrigger: { type: Number, default: 0 }, // 부모 Mng 가 ++ 로 신호 보내면 상세 API 재조회 (정책: 행상세/행수정 클릭 시 항상 호출)
+    dtlId:         { type: String, default: null },    // 수정 대상 ID
+    dtlMode:       { type: String, default: 'view' },  // 상세 모드 (new/view/edit)
+    active:        { type: Boolean, default: true },   // false=행 미선택 빈 폼(버튼 숨김)
+    reloadTrigger: { type: Number, default: 0 },       // 상위 reload signal
   },
   setup(props) {
 
-    /* ##### [01] 초기 변수 정의 ################################################## */
+    /* ##### [01] 초기 변수 정의 #################################################### */
 
-    const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
-    const showToast    = window.boApp.showToast;  // 토스트 알림
-    const showConfirm  = window.boApp.showConfirm;  // 확인 모달
-    const codes = reactive({ disp_areas: [], layout_types: [], use_yn: [] });
-    const areas = reactive([]);
-    const panels = reactive([]);
-    const uiState = reactive({ loading: false, pickOpen: false, showComponentTooltip: false, isPageCodeLoad: false, error: null, pickSearchValue: '', activeTab: 'base', previewMode: 'default', previewPaneWidth: 520 });
-    const activeTab = Vue.toRef(uiState, 'activeTab');
-    const previewMode = Vue.toRef(uiState, 'previewMode');
+    const { reactive, computed, onMounted, watch } = Vue;
+    const { showToast, showConfirm } = window.boApp;
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
+    const codes = reactive({ area_types: [], use_yn: [{ value: 'Y', label: '사용' }, { value: 'N', label: '미사용' }] });
+    const uis = reactive([]);                         // 상위 UI 목록 (select)
+    const panels = reactive([]);                      // 소속 패널 목록 (dp_panel.area_id = dtlId)
+
+    const baseForm = reactive({
+      areaId: null, uiId: '', areaCd: '', areaNm: '', areaTypeCd: '', areaDesc: '',
+      pathId: null, useYn: 'Y', useStartDate: '', useEndDate: '',
+    });
+    const errors = reactive({});
+    const schema = yup.object({
+      uiId: yup.string().required('소속 UI를 선택해주세요.'),
+      areaCd: yup.string().required('영역코드를 입력해주세요.'),
+      areaNm: yup.string().required('영역명을 입력해주세요.'),
+    });
+    const pathPickModal = reactive({ show: false });
+
+    const cfIsNew    = computed(() => props.dtlId == null);
+    const cfReadonly = computed(() => props.dtlMode === 'view');
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
-    /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleBtnAction = (cmd, param = {}) => {
-      console.log(' ■■ DpDispAreaDtl.js : handleBtnAction -> ', cmd, param);
-      // 폼 저장 (신규 등록 또는 수정)
-      if (cmd === 'form-save') {
-        return handleSave();
-      // 폼 편집 취소 → 상세영역 유지 + 빈 신규 폼으로 초기화 (영역 사라지지 않음)
-      } else if (cmd === 'form-cancel') {
-        return props.navigate('__cancelEdit__');
-      // 보기모드 → 수정모드 전환
-      } else if (cmd === 'form-edit') {
-        return props.navigate('__switchToEdit__');
-      // 우측 미리보기 영역 펼치기/접기 토글
-      } else if (cmd === 'form-toggleExpand') {
-        expanded.value = !expanded.value;
-        return;
-      // 패널 미리보기 새 창
-      } else if (cmd === 'preview-panelOpen') {
-        return openPanelPreview();
-      // 위젯 미리보기 새 창 (FO/BO)
-      } else if (cmd === 'preview-widgetOpen') {
-        return openWidgetPreview(param);
-      // 패널 추가 픽 모달 열기
-      } else if (cmd === 'pickModal-open') {
-        if (cfIsNew.value) { return; }
-        return openPick();
-      // 패널 추가 픽 모달 닫기
-      } else if (cmd === 'pickModal-close') {
-        return closePick();
-      // 신규 패널 추가 (지름길)
-      } else if (cmd === 'pickModal-newPanel') {
-        if (cfIsNew.value) { return; }
-        return addPanelShortcut();
-      // 표시경로 선택 모달 열기
-      } else if (cmd === 'pathModal-open') {
-        return openPathPick(param);
-      // 표시경로 선택 모달 닫기
-      } else if (cmd === 'pathModal-close') {
-        return closePathPick();
-      // 패널 편집 페이지로 이동
-      } else if (cmd === 'areaPanels-editPage') {
-        return props.navigate('dpDispPanelDtl', { id: cfActivePanel.value?.dispId });
-      // 활성 패널을 영역에서 제거
-      } else if (cmd === 'areaPanels-removeActive') {
-        if (cfActivePanel.value) { return removePanel(cfActivePanel.value); }
-        return;
-      } else {
-        console.warn('[handleBtnAction] unknown cmd:', cmd);
-      }
+    /* handleBtnAction — 버튼 액션 dispatch */
+    const handleBtnAction = (cmd) => {
+      if (cmd === 'baseForm-save')     return handleSave();
+      if (cmd === 'baseForm-cancel')   return props.navigate('__cancelEdit__');
+      if (cmd === 'baseForm-edit')     return props.navigate('__switchToEdit__');
+      if (cmd === 'baseForm-close')    return props.navigate('__cancelEdit__');
+      if (cmd === 'pathModal-open')    { pathPickModal.show = true; return; }
+      if (cmd === 'panels-goPanelMng') return props.navigate('dpDispPanelMng');
+      console.warn('[handleBtnAction] unknown cmd:', cmd);
     };
 
-    /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-    const handleSelectAction = (cmd, param = {}) => {
-      console.log(' ■■ DpDispAreaDtl.js : handleSelectAction -> ', cmd, param);
-      // 좌측 탭 선택 (base 또는 panel_{id})
-      if (cmd === 'tab-select') {
-        uiState.activeTab = param;
-        return;
-      // 패널 순서 위/아래 이동
-      } else if (cmd === 'areaPanels-move') {
-        return movePanel(param.idx, param.dir);
-      // 디바이스 미리보기 모드 변경
-      } else if (cmd === 'preview-mode') {
-        uiState.previewMode = param;
-        return;
-      // 스플리터 드래그
-      } else if (cmd === 'preview-split') {
-        return onSplitDrag(param);
-      // 영역 공개대상 토글
-      } else if (cmd === 'panelVisibility-toggle') {
-        return togglePanelVisibility(param);
-      // 영역 전시환경 토글
-      } else if (cmd === 'areaDispEnv-toggle') {
-        return toggleAreaDispEnv(param);
-      // 영역기본 전시환경 토글
-      } else if (cmd === 'areaBaseDispEnv-toggle') {
-        return toggleAreaBaseDispEnv(param);
-      // 영역기본 공개대상 토글
-      } else if (cmd === 'areaBaseVisibility-toggle') {
-        return toggleAreaBaseVisibility(param);
-      // 패널 픽 모달에서 패널 선택
-      } else if (cmd === 'pickModal-select') {
-        return onPanelPicked(param);
-      // 표시경로 모달에서 경로 선택
-      } else if (cmd === 'pathModal-pick') {
-        return onPathPicked(param);
-      } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
-      }
-    };
-
-
-    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 시 파라미터, result=응답 결과 */
+    /* fnCallbackModal — 모달 통합 콜백 (표시경로 선택) */
     const fnCallbackModal = (cmd, param, result) => {
-      console.log(' ■■ DpDispAreaDtl : fnCallbackModal -> ', cmd, param, result);
-      if (cmd === 'panel-pick') {
-        if (result == null) {
-            return closePick();
-        }
-          return onPanelPicked(result);
-      } else if (cmd === 'path-pick') {
-        if (result == null) {
-            return closePathPick();
-        }
-        return onPathPicked(result);
-      } else {
-        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      if (cmd === 'path-pick') {
+        if (result != null) baseForm.pathId = result;
+        pathPickModal.show = false;
+        return;
       }
+      console.warn('[fnCallbackModal] unknown cmd:', cmd);
     };
 
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      codes.disp_areas = codeStore.sgGetGrpCodes('DISP_AREA');
-      codes.layout_types = codeStore.sgGetGrpCodes('LAYOUT_TYPE');
-      codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
+      const s = window.sfGetBoCodeStore();
+      codes.area_types = s.sgGetGrpCodes('DISP_AREA_TYPE');
       uiState.isPageCodeLoad = true;
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    // 코드 주입
-
-    // onMounted에서 API 로드
-    /* handleLoadData — 처리 */
-    const handleLoadData = async () => {
-      uiState.loading = true;
-      try {
-        const [areaRes, panelRes] = await Promise.all([
-          boApiSvc.dpArea.getPage({ pageNo: 1, pageSize: 10000 }, '전시영역관리', '상세조회'),
-          boApiSvc.dpPanel.getPage({ pageNo: 1, pageSize: 10000 }, '전시영역관리', '패널조회')
-        ]);
-        areas.splice(0, areas.length, ...(areaRes.data?.data?.pageList || areaRes.data?.data?.list || []));
-        panels.splice(0, panels.length, ...(panelRes.data?.data?.pageList || panelRes.data?.data?.list || []));
-        uiState.error = null;
-      } catch (err) {
-        console.error('[catch-info]', err);
-        uiState.error = err.message;
-      } finally {
-        uiState.loading = false;
-      }
-    };
-    /* -- 표시경로 선택 모달 (sy_path) -- */
-    const pathPickModal = reactive({ show: false, target: null });
-
-    /* openPathPick — 경로 선택 열기 */
-    const openPathPick = (target) => { pathPickModal.target = target; pathPickModal.show = true; };
-
-    /* closePathPick — 경로 선택 닫기 */
-    const closePathPick = () => { pathPickModal.show = false; pathPickModal.target = null; };
-
-    /* onPathPicked — 이벤트 */
-    const onPathPicked = (pathId) => { if (pathPickModal.target === 'form') form.pathId = pathId; };
-
-    /* fnPathLabel — 유틸 */
-    const fnPathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
-
-    const cfIsNew = computed(() => !props.dtlId);
-    const cfDtlMode = computed(() => props.dtlMode === 'view');
-
-
-    /* -- 기본 기간: 오늘 ~ +10년 -- */
-    const _today = new Date();
-
-    /* _pad — 패딩 */
-    const _pad = n => String(n).padStart(2, '0');
-    const DEFAULT_START_DATE = `${_today.getFullYear()}-${_pad(_today.getMonth()+1)}-${_pad(_today.getDate())}`;
-    const DEFAULT_END_DATE   = `${_today.getFullYear()+10}-12-31`;
-
-    const form = reactive({
-      codeId: null, codeGrp: 'DISP_AREA',
-      codeValue: '', codeLabel: '', areaType: '',
-      layoutType: 'grid', gridCols: 1,
-      titleYn: 'N', title: '',
-      htmlDesc: '',
-      remark: '', sortOrd: 1, useYn: 'Y', useStartDate: DEFAULT_START_DATE, useEndDate: DEFAULT_END_DATE, regDate: '', displayPath: '', pathId: null,
-      /* 영역 레벨 전시 설정 */
-      areaBaseDispYn: 'Y',
-      areaBaseDispStartDate: '', areaBaseDispEndDate: '',
-      areaBaseDispEnv: '^PROD^',
-      areaBaseVisibilityTargets: '^PUBLIC^',
-    });
-
-    const errors = reactive({});
-    const schema = yup.object({
-      codeValue: yup.string().required('영역코드를 입력해주세요.'),
-      codeLabel: yup.string().required('영역명을 입력해주세요.'),
-    });
-
-    /* handleInitForm — 처리 */
-    const handleInitForm = async () => {
-      if (!cfIsNew.value) {
-        const a = areas.find(c => String(c.areaId || c.codeId) === String(props.dtlId));
-        if (a) {
-          Object.assign(form, { ...a });
-          /* DpAreaDto.Item → form 별칭 매핑 (Entity 기준) */
-          form.codeId       = a.areaId       ?? form.codeId;
-          form.codeValue    = a.areaCd       ?? form.codeValue;
-          form.codeLabel    = a.areaNm       ?? form.codeLabel;
-          form.areaType     = a.areaTypeCd   ?? form.areaType;
-          form.remark       = a.areaDesc     ?? form.remark;
-          form.sortOrd      = a.sortOrd      ?? form.sortOrd;
-          form.useYn        = a.useYn        ?? form.useYn;
-          form.useStartDate = a.useStartDate ?? form.useStartDate;
-          form.useEndDate   = a.useEndDate   ?? form.useEndDate;
-          form.pathId       = a.pathId       ?? form.pathId;
-        }
-      } else {
-        const areaList = areas.filter(c => c.codeGrp === 'DISP_AREA');
-        form.sortOrd = areaList.length ? Math.max(...areaList.map(c => c.sortOrd || 0)) + 1 : 1;
-        const t = new Date();
-        const p = n => String(n).padStart(2, '0');
-        form.regDate = `${t.getFullYear()}-${p(t.getMonth()+1)}-${p(t.getDate())}`;
-        /* 자동 코드: DA_YYMMDD_HHMMSS */
-        form.codeValue = `DA_${String(t.getFullYear()).slice(2)}${p(t.getMonth()+1)}${p(t.getDate())}_${p(t.getHours())}${p(t.getMinutes())}${p(t.getSeconds())}`;
-      }
-    };
-
-    // ★ onMounted
     onMounted(async () => {
-      if (isAppReady.value) { fnLoadCodes(); }
-      await handleLoadData();
-      handleInitForm();
+      if (isAppReady.value) fnLoadCodes();
+      await handleLoadUis();
+      await handleSearchDetail();
     });
 
-    /* 정책: 부모 Mng 의 reloadTrigger 가 변할 때마다 (행상세/행수정 클릭) 상세 API 재호출 */
-    watch(() => props.reloadTrigger, async (n, o) => {
-      if (n === o || n === 0) { return; }
+    watch(() => props.reloadTrigger, (n, o) => {
+      if (n === o || n === 0) return;
       Object.keys(errors).forEach(k => delete errors[k]);
-      await handleLoadData();
-      handleInitForm();
+      handleSearchDetail();
     });
 
-    /* -- 연결된 패널 -- */
-    const cfRelatedPanels = computed(() =>
-      (panels || [])
-        .filter(p => p.area === form.codeValue)
-        .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
-    );
+    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ###################### */
 
-    /* openPick — 열기 */
-    const openPick  = () => { uiState.pickOpen = true; uiState.pickSearchValue = ''; };
-
-    /* movePanel — 이동 */
-    const movePanel = (idx, dir) => {
-      const arr = cfRelatedPanels.value;
-      const target = idx + dir;
-      if (target < 0 || target >= arr.length) { return; }
-      const a = arr[idx], b = arr[target];
-      const tmp = a.sortOrder; a.sortOrder = b.sortOrder; b.sortOrder = tmp;
-      showToast && showToast(`[${a.name}] 순서가 ${dir < 0 ? '위로' : '아래로'} 이동되었습니다.`, 'info');
+    /* handleLoadUis — 상위 UI 전체 로드 */
+    const handleLoadUis = async () => {
+      try {
+        const d = (await boApiSvc.dpUi.getPage({ pageNo: 1, pageSize: 1000 }, '전시영역관리', 'UI조회')).data?.data;
+        uis.splice(0, uis.length, ...(d?.pageList || []));
+      } catch (err) {
+        console.error('[handleLoadUis]', err);
+      }
     };
 
-    /* onPanelPicked — 이벤트 */
-    const onPanelPicked = (p) => {
-      if (!form.codeValue) { showToast && showToast('영역코드를 먼저 입력하세요.', 'error'); return; }
-      p.area = form.codeValue;
-      const list = (panels || []).filter(x => x.area === form.codeValue);
-      window.safeArrayUtils.safeForEach(list, (x, i) => { x.sortOrder = i + 1; });
-      showToast && showToast(`[${p.name}] 패널을 추가했습니다.`, 'info');
-      uiState.pickOpen = false;
+    /* handleSearchDetail — 상세 조회 (getById 가 소속 panels 까지 채워줌) */
+    const handleSearchDetail = async () => {
+      if (cfIsNew.value) return;
+      try {
+        const res = await boApiSvc.dpArea.getById(props.dtlId, '전시영역관리', '상세조회');
+        const data = res.data?.data || {};
+        Object.assign(baseForm, data);
+        panels.splice(0, panels.length, ...(data.panels || []));
+      } catch (err) {
+        console.error('[handleSearchDetail]', err);
+      }
     };
 
-    /* closePick — 닫기 */
-    const closePick = () => { uiState.pickOpen = false; };
-
-    /* removePanel — 제거 */
-    const removePanel = (p) => {
-      showConfirm && showConfirm({
-        title: '영역에서 제거',
-        message: `[${p.name}]을 이 영역에서 제거하시겠습니까?`,
-        onOk: () => {
-          p.area = ''; /* 영역 연결 해제 */
-          showToast && showToast('제거되었습니다.', 'info');
-        },
-      });
-    };
-
-    /* -- 탭 상태 -- */
-              /* 'base' | 'panel_<dispId>' */
-    const expanded  = ref(false);           /* 우측 미리보기 펼치기 */
-         /* 'default' | 'pc' | 'tablet' | 'mobile' */
-    const PREVIEW_MODES = [
-      { value: 'default', label: '기본',   width: 480  },
-      { value: 'pc',      label: 'PC',     width: 1200 },
-      { value: 'tablet',  label: '태블릿', width: 768  },
-      { value: 'mobile',  label: '모바일', width: 375  },
-    ];
-    const cfPreviewFrameWidth = computed(() => {
-      const m = window.safeArrayUtils.safeFind(PREVIEW_MODES, x => x.value === uiState.previewMode);
-      return (m?.width || 480) + 'px';
-    });
-
-        watch(previewMode, (m) => {
-      const info = window.safeArrayUtils.safeFind(PREVIEW_MODES, x => x.value === m);
-      uiState.previewPaneWidth = (info?.width || 480) + 40;
-    });
-
-    /* onSplitDrag — 이벤트 */
-    const onSplitDrag = (e) => {
-      e.preventDefault();
-      const startX = e.clientX;
-      const startW = uiState.previewPaneWidth;
-
-      /* onMove — 이벤트 */
-      const onMove = (ev) => {
-        uiState.previewPaneWidth = Math.max(260, Math.min(1600, startW + (startX - ev.clientX)));
-      };
-
-      /* onUp — 이벤트 */
-      const onUp = () => {
-        window.removeEventListener('mousemove', onMove);
-        window.removeEventListener('mouseup', onUp);
-      };
-      window.addEventListener('mousemove', onMove);
-      window.addEventListener('mouseup', onUp);
-    };
-
-    const cfActivePanel = computed(() => {
-      if (!activeTab.value.startsWith('panel_')) { return null; }
-      const id = Number(activeTab.value.replace('panel_', ''));
-      return cfRelatedPanels.value.find(p => p.dispId === id) || null;
-    });
-
-    /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
-
-    /* handleSave — 저장 */
+    /* handleSave — 저장 (신규 등록 / 수정) */
     const handleSave = async () => {
       Object.keys(errors).forEach(k => delete errors[k]);
-      form.codeValue = (form.codeValue || '').toUpperCase();
       try {
-        await schema.validate(form, { abortEarly: false });
+        await schema.validate(baseForm, { abortEarly: false });
       } catch (err) {
-        (err.inner || []).forEach(e => { errors[e.path] = e.message; });
-        showToast && showToast('입력 내용을 확인해주세요.', 'error');
+        err.inner.forEach(e => { errors[e.path] = e.message; });
+        showToast('입력 내용을 확인해주세요.', 'error');
         return;
       }
-      if (!/^[A-Z0-9_]+$/.test(form.codeValue || '')) {
-        errors.codeValue = '영문 대문자·숫자·_ 만 가능합니다.';
-        showToast && showToast('입력 내용을 확인해주세요.', 'error');
-        return;
-      }
-      const isNewArea = cfIsNew.value;
-      const ok = await showConfirm('저장', isNewArea ? '신규 영역을 등록하시겠습니까?' : '영역 정보를 수정하시겠습니까?');
-      if (!ok) { return; }
-      /* form 별칭 → DpArea Entity 필드 매핑 */
-      const body = { ...form };
-      body.areaId       = form.codeId    || form.areaId || null;
-      body.areaCd       = form.codeValue || form.areaCd;
-      body.areaNm       = form.codeLabel || form.areaNm;
-      body.areaTypeCd   = form.areaType  || form.areaTypeCd;
-      body.areaDesc     = form.remark    || form.areaDesc;
-      body.sortOrd      = form.sortOrd;
-      body.useYn        = form.useYn;
-      body.useStartDate = form.useStartDate;
-      body.useEndDate   = form.useEndDate;
-      body.pathId       = form.pathId;
+      const isNew = cfIsNew.value;
+      if (!(await showConfirm(isNew ? '등록' : '저장', isNew ? '등록하시겠습니까?' : '저장하시겠습니까?'))) return;
       try {
-        await (isNewArea ? boApiSvc.dpArea.create(body, '전시영역관리', '등록') : boApiSvc.dpArea.update(body.areaId, body, '전시영역관리', '저장'));
-        if (showToast) { showToast('저장되었습니다.', 'success'); }
-        if (props.navigate) { props.navigate('dpDispAreaMng', { reload: true }); }
+        const body = { ...baseForm };
+        delete body.panels;
+        if (!body.useStartDate) delete body.useStartDate;
+        if (!body.useEndDate)   delete body.useEndDate;
+        await (isNew
+          ? boApiSvc.dpArea.create(body, '전시영역관리', '등록')
+          : boApiSvc.dpArea.update(props.dtlId, body, '전시영역관리', '저장'));
+        showToast(isNew ? '등록되었습니다.' : '저장되었습니다.', 'success');
+        props.navigate('dpDispAreaMng', { reload: true });
       } catch (err) {
-        console.error('[catch-info]', err);
-        const errMsg = (err.response?.data?.message) || err.message || '오류가 발생했습니다.';
-        if (showToast) { showToast(errMsg, 'error', 0); }
+        showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);
       }
     };
 
+    /* ##### [05] 사용자 함수 (헬퍼 / 컬럼정의) #################################### */
 
-    /* openPanelPreview — 열기 */
-    const openPanelPreview = () => {
-      if (!form.codeValue) { return showToast && showToast('영역코드를 먼저 입력하세요.', 'error'); }
-      const areaPageMap = {
-        'HOME_BANNER':'', 'HOME_PRODUCT':'', 'HOME_CHART':'', 'HOME_EVENT':'',
-        'PRODUCT_TOP':'#page=prod01list', 'PRODUCT_BTM':'#page=prod01list',
-        'MY_PAGE':'#page=mypage', 'FOOTER':'',
-      };
-      const hash = areaPageMap[form.codeValue] || '';
-      window.open(`${window.pageUrl('index.html')}${hash}`, '_blank', 'width=1280,height=900');
-    };
+    const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
 
-    /* openWidgetPreview — 열기 */
-    const openWidgetPreview = (scope) => {
-      if (!cfActivePanel.value) { return showToast && showToast('미리볼 패널을 선택하세요.', 'error'); }
-      const file = scope === 'bo' ? 'disp-bo-ui.html' : 'disp-fo-ui.html';
-      window.open(`${window.pageUrl(file)}?areas=${form.codeValue}&date=${form.regDate}&time=00:00`, '_blank', 'width=1280,height=900');
-    };
-
-    /* -- 패널 유형 레이블 / 위젯 요약 -- */
-    const WIDGET_LABEL = {
-      'image_banner':'이미지배너', 'product_slider':'상품슬라이더', 'product':'상품',
-      'chart_bar':'차트', 'chart_line':'차트', 'chart_pie':'차트',
-      'text_banner':'텍스트', 'info_card':'정보카드', 'popup':'팝업',
-      'file':'파일', 'coupon':'쿠폰', 'html_editor':'HTML',
-      'event_banner':'이벤트', 'cache_banner':'캐쉬', 'widget_embed':'위젯',
-    };
-
-    /* fnWLabel — 유틸 */
-    const fnWLabel = (t) => WIDGET_LABEL[t] || t || '-';
-
-    /* addPanelShortcut — 추가 */
-    const addPanelShortcut = () => {
-      if (!form.codeId) { return showToast && showToast('먼저 영역을 저장해주세요.', 'error'); }
-      props.navigate('dpDispPanelDtl', { id: null, preset: { area: form.codeValue } });
-    };
-
-    /* -- 공개 대상 (Area-Panel 매핑) -- */
-    const cfVisibilityOptions = computed(() => window.visibilityUtil.allOptions());
-
-
-    /* togglePanelVisibility — 패널 토글 */
-    const togglePanelVisibility = (code) => {
-      if (!cfActivePanel.value) { return; }
-      if (!cfActivePanel.value.visibilityTargets) { cfActivePanel.value.visibilityTargets = '^PUBLIC^'; }
-      const list = window.visibilityUtil.parse(cfActivePanel.value.visibilityTargets);
-      const i = list.indexOf(code);
-      if (i >= 0) list.splice(i, 1); else list.push(code);
-      if (code === 'PUBLIC' && i < 0) {
-        cfActivePanel.value.visibilityTargets = '^PUBLIC^';
-        return;
-      }
-      const filtered = window.safeArrayUtils.safeFilter(list, c => c !== 'PUBLIC' || code === 'PUBLIC');
-      cfActivePanel.value.visibilityTargets = window.visibilityUtil.serialize(filtered);
-    };
-
-    /* -- 영역-패널 전시 환경 멀티체크 토글 -- */
-    const areaDispEnvOptions = [
-      { code: 'PROD', label: 'PROD' },
-      { code: 'DEV', label: 'DEV' },
-      { code: 'TEST', label: 'TEST' },
-    ];
-
-    /* BoMultiCheckSelect 용 {value,label} 매핑 (areaDispEnvOptions 는 {code} 형식이라 불인식) */
-    const cfAreaDispEnvMcsOptions = computed(() => areaDispEnvOptions.map(o => ({ value: o.code, label: o.label })));
-
-
-    /* toggleAreaDispEnv — 영역 토글 */
-    const toggleAreaDispEnv = (code) => {
-      if (!cfActivePanel.value) { return; }
-      if (!cfActivePanel.value.areaDispEnv) { cfActivePanel.value.areaDispEnv = '^PROD^'; }
-      const envList = cfActivePanel.value.areaDispEnv.split('^').filter(e => e && e !== 'NONE');
-      const i = envList.indexOf(code);
-      if (i >= 0) envList.splice(i, 1); else envList.push(code);
-      cfActivePanel.value.areaDispEnv = envList.length > 0 ? '^' + envList.join('^') + '^' : '^NONE^';
-    };
-
-    /* -- 영역 레벨 dispEnv/visibility 토글 -- */
-
-
-    /* toggleAreaBaseDispEnv — 영역 토글 */
-    const toggleAreaBaseDispEnv = (code) => {
-      const envList = form.areaBaseDispEnv.split('^').filter(e => e && e !== 'NONE');
-      const i = envList.indexOf(code);
-      if (i >= 0) envList.splice(i, 1); else envList.push(code);
-      form.areaBaseDispEnv = envList.length > 0 ? '^' + envList.join('^') + '^' : '^NONE^';
-    };
-
-
-    /* toggleAreaBaseVisibility — 영역 토글 */
-    const toggleAreaBaseVisibility = (code) => {
-      const list = window.visibilityUtil.parse(form.areaBaseVisibilityTargets);
-      const i = list.indexOf(code);
-      if (i >= 0) list.splice(i, 1); else list.push(code);
-      if (code === 'PUBLIC' && i < 0) { form.areaBaseVisibilityTargets = '^PUBLIC^'; return; }
-      const filtered = window.safeArrayUtils.safeFilter(list, c => c !== 'PUBLIC' || code === 'PUBLIC');
-      form.areaBaseVisibilityTargets = window.visibilityUtil.serialize(filtered);
-    };
-
-    const pickOpen = Vue.toRef(uiState, 'pickOpen');
-    const previewPaneWidth = Vue.toRef(uiState, 'previewPaneWidth');
-    const showComponentTooltip = Vue.toRef(uiState, 'showComponentTooltip');
-
-    // ===== 폼 컬럼 정의 (BoFormArea :columns) - 영역코드/영역명/영역유형 ======
-    // 기본 영역 폼
     const columns = {};
-    columns.baseAreaForm = [
-      { key: 'codeValue',  label: '영역코드', type: 'text', required: true,
-        placeholder: 'HOME_BANNER', mono: true,
-        onChange: (v, f) => { f.codeValue = (f.codeValue || '').toUpperCase(); } },
-      { key: 'codeLabel',  label: '영역명', type: 'text', required: true, placeholder: '홈 메인배너' },
-      { key: 'areaType',   label: '영역유형', type: 'select', nullable: false,
-        options: () => codes.disp_areas },
+    columns.baseForm = [
+      { key: 'uiId',         label: '소속 UI',   type: 'select', required: true,
+        options: () => uis.map(u => ({ value: u.uiId, label: u.uiNm })), nullLabel: '선택' },
+      { key: 'areaCd',       label: '영역코드',  type: 'text',   required: true, mono: true, placeholder: 'MAIN_TOP' },
+      { key: 'areaNm',       label: '영역명',    type: 'text',   required: true, placeholder: '메인 톱배너' },
+      { key: 'areaTypeCd',   label: '영역유형',  type: 'select', options: () => codes.area_types, nullLabel: '선택' },
+      { key: 'pathId',       label: '표시경로',  type: 'pathPick',
+        pathLabel: (id) => pathLabel(id),
+        onOpen: () => handleBtnAction('pathModal-open') },
+      { key: 'useYn',        label: '사용여부',  type: 'select', options: () => codes.use_yn },
+      { key: 'useStartDate', label: '사용시작일', type: 'date' },
+      { key: 'useEndDate',   label: '사용종료일', type: 'date' },
+      { key: 'areaDesc',     label: '영역설명',  type: 'textarea', colSpan: 3, placeholder: '영역 설명' },
     ];
-    // 표시경로 picker
-    columns.pathPickForm = [
-      { key: 'pathId', label: '표시경로', type: 'slot', name: 'pathPick', colSpan: 3,
-        hint: '영역이 노출되는 경로 (예: FO.모바일메인)' },
+
+    columns.panelsGrid = [
+      { key: 'panelNm',           label: '패널명' },
+      { key: 'panelTypeCd',       label: '표시유형', style: 'width:110px;', badge: () => 'badge-blue' },
+      { key: 'dispPanelStatusCd', label: '상태',     style: 'width:80px;',
+        badge: (row) => row.dispPanelStatusCd === 'SHOW' ? 'badge-green' : 'badge-gray' },
+      { key: 'useYn',             label: '사용',     style: 'width:70px;',
+        badge: (row) => row.useYn === 'Y' ? 'badge-green' : 'badge-gray', fmt: (v) => v === 'Y' ? '사용' : '미사용' },
+      { key: 'regDate',           label: '등록일',   style: 'width:110px;', fmt: (v) => coUtil.cofYmd(v) || '-' },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
       columns,
-      codes, areas, panels, pathPickModal, form, errors,         // 상태 / 데이터
-      handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch + 모달 통합 콜백
-      cfIsNew, cfDtlMode, cfRelatedPanels, cfActivePanel, cfPreviewFrameWidth, // computed
-      cfVisibilityOptions, cfAreaDispEnvMcsOptions, // computed
-      activeTab, previewMode, expanded, pickOpen, previewPaneWidth, // toRef
-      showComponentTooltip, // toRef
-      PREVIEW_MODES,                                            // 상수
-      fnPathLabel, fnWLabel,                 // 헬퍼
+      uiState, codes, baseForm, errors, uis, panels, pathPickModal,
+      handleBtnAction, fnCallbackModal,
+      cfIsNew, cfReadonly,
     };
   },
   template: /* html */`
-<bo-container card-style="padding:0;overflow:hidden;">
-  <!-- ===== ■. 헤더: 타이틀 + 우측 액션 ========================================= -->
-  <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #eee;background:#fafafa;">
-    <span class="list-title" style="font-size:14px;">
-      전시
-      <span style="color:#e8587a;">영역</span>
-      {{ !active ? '상세' : (cfIsNew ? '등록' : '수정') }}
-      <span v-if="active && !cfIsNew" style="font-size:12px;color:#888;font-weight:400;margin-left:6px;">
-        #{{ form.codeId }}
-      </span>
-    </span>
-    <div v-if="active" style="display:flex;gap:8px;align-items:center;">
-      <button class="btn btn-sm" :disabled="cfIsNew"
-        :style="cfIsNew ? 'background:#f5f5f5;border:1px solid #ddd;color:#bbb;cursor:not-allowed;' : 'background:#e3f2fd;border:1px solid #90caf9;color:#1565c0;font-weight:600;'"
-        :title="cfIsNew ? '저장 후 패널을 추가할 수 있습니다.' : ''"
-        @click="handleBtnAction('pickModal-open')">
-        ✚ 전시패널추가
-      </button>
-      <span style="font-size:12px;color:#888;margin-right:10px;">
-        연결된 패널:
-        <span style="background:#e3f2fd;color:#1565c0;border-radius:10px;padding:1px 8px;font-weight:700;margin-left:4px;">
-          {{ cfRelatedPanels.length }}개
-        </span>
-      </span>
-      <button class="btn btn_preview" style="background:#f5f0ff;border:1px solid #b39ddb;color:#6a1b9a;" @click="handleBtnAction('preview-panelOpen')">
-        🖼 패널미리보기
-      </button>
-      <button class="btn btn_preview" style="background:#e0f2fe;border:1px solid #bae6fd;color:#0369a1;" @click="handleBtnAction('preview-widgetOpen', 'fo')">
-        👁 사용자 미리보기
-      </button>
-      <button class="btn btn_preview" style="background:#fef3eb;border:1px solid #f5e8de;color:#c2410c;" @click="handleBtnAction('preview-widgetOpen', 'bo')">
-        👁 관리자 미리보기
-      </button>
-      <button class="btn btn-secondary btn-sm" @click="handleBtnAction('form-toggleExpand')">{{ expanded ? '📥 접기' : '📤 펼치기' }}</button>
-      <button v-if="cfDtlMode" class="btn btn_edit" @click="handleBtnAction('form-edit')" style="font-weight:700;">✎ 수정</button>
-      <button v-if="!cfDtlMode" class="btn btn_save" @click="handleBtnAction('form-save')" style="font-weight:700;">💾 저장</button>
+<bo-container :title="!active ? '전시영역 상세' : (cfIsNew ? '전시영역 등록' : (cfReadonly ? '전시영역 상세' : '전시영역 수정'))"
+  :title-id="!active ? '' : (cfIsNew ? '' : baseForm.areaId)">
+  <!-- ===== ■. 폼 영역 ===================================================== -->
+  <bo-form-area :columns="columns.baseForm" :form="baseForm" :errors="errors"
+    :readonly="cfReadonly" :cols="3" compact :show-actions="false" />
+  <!-- ===== ■. 소속 패널 목록 (수정 시에만) =================================== -->
+  <div v-if="!cfIsNew" style="margin-top:14px;">
+    <div class="toolbar">
+      <span class="list-title">소속 패널</span>
+      <span class="list-count">{{ panels.length }}개</span>
+      <div style="margin-left:auto;">
+        <button class="btn btn_detail" @click="handleBtnAction('panels-goPanelMng')">전시패널관리로 이동</button>
+      </div>
     </div>
+    <bo-grid bare :columns="columns.panelsGrid" :rows="panels" row-key="panelId" empty-text="소속 패널이 없습니다. 전시패널관리에서 등록하세요." />
   </div>
-  <!-- ===== □. 헤더: 타이틀 + 우측 액션 ========================================= -->
-  <!-- ===== ■. 본문: 좌측 탭사이드 + 중앙 폼 + 우측 미리보기 ============================ -->
-  <div style="display:flex;min-height:500px;">
-    <!-- ===== ■.■. 좌측 탭사이드 =============================================== -->
-    <div style="width:140px;background:#f4f5f8;border-right:1px solid #e8ebef;padding:12px 8px;flex-shrink:0;">
-      <!-- ===== ■.■.■. 기본정보 탭 ============================================== -->
-      <div @click="handleSelectAction('tab-select', 'base')"
-        :style="{
-        display:'flex',alignItems:'center',justifyContent:'space-between',
-        padding:'9px 12px',borderRadius:'8px',cursor:'pointer',marginBottom:'6px',
-        fontSize:'12px',fontWeight: activeTab==='base'?'700':'500',
-        background: activeTab==='base' ? '#fff' : 'transparent',
-        color: activeTab==='base' ? '#e8587a' : '#555',
-        border: '1px solid '+(activeTab==='base' ? '#e8587a' : 'transparent'),
-        }">
-        <span>📋 <b> 영역기본정보 </b></span>
-      </div>
-      <!-- ===== ■.■.■. 패널 리스트 ============================================== -->
-      <div v-for="(p, i) in cfRelatedPanels" :key="p?.dispId"
-        @click="handleSelectAction('tab-select', 'panel_'+p.dispId)"
-        :style="{
-        display:'flex',alignItems:'center',justifyContent:'space-between',
-        padding:'8px 12px',borderRadius:'8px',cursor:'pointer',marginBottom:'4px',
-        fontSize:'12px',
-        background: activeTab==='panel_'+p.dispId ? '#fff' : 'transparent',
-        color: activeTab==='panel_'+p.dispId ? '#1565c0' : '#666',
-        border: '1px solid '+(activeTab==='panel_'+p.dispId ? '#1565c0' : 'transparent'),
-        }">
-        <span>패널 {{ i+1 }}</span>
-        <span style="display:flex;gap:4px;align-items:center;">
-          <span :style="'width:6px;height:6px;border-radius:50%;background:'+(p.status==='활성'?'#43a047':'#ccc')+';'"></span>
-          <template v-if="activeTab==='panel_'+p.dispId">
-            <button @click.stop="handleSelectAction('areaPanels-move', { idx: i, dir: -1 })" :disabled="i===0" title="위로"
-              style="font-size:9px;border:1px solid #e0e0e0;border-radius:3px;background:#fff;padding:1px 4px;line-height:1.2;color:#888;"
-              :style="i===0?'opacity:0.3;cursor:default;':''">
-              ▲
-            </button>
-            <button @click.stop="handleSelectAction('areaPanels-move', { idx: i, dir: 1 })" :disabled="i===cfRelatedPanels.length-1" title="아래로"
-              style="font-size:9px;border:1px solid #e0e0e0;border-radius:3px;background:#fff;padding:1px 4px;line-height:1.2;color:#888;"
-              :style="i===cfRelatedPanels.length-1?'opacity:0.3;cursor:default;':''">
-              ▼
-            </button>
-          </template>
-        </span>
-      </div>
-      <!-- ===== ■.■.■. 기존 패널 추가 + 신규 생성 ==================================== -->
-      <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;">
-        <button @click="handleBtnAction('pickModal-open')" :disabled="cfIsNew"
-          :title="cfIsNew ? '저장 후 패널을 추가할 수 있습니다.' : ''"
-          :style="cfIsNew ? 'padding:7px;border:1px solid #e0e0e0;background:#f5f5f5;color:#bbb;border-radius:8px;font-size:11px;font-weight:600;cursor:not-allowed;' : 'padding:7px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;border-radius:8px;font-size:11px;font-weight:600;'">
-          ✚ 기존 패널 추가
-        </button>
-        <button @click="handleBtnAction('pickModal-newPanel')" :disabled="cfIsNew"
-          :title="cfIsNew ? '저장 후 신규 패널을 추가할 수 있습니다.' : ''"
-          :style="cfIsNew ? 'padding:7px;border:1px dashed #e0e0e0;background:#f5f5f5;color:#bbb;border-radius:8px;font-size:11px;cursor:not-allowed;' : 'padding:7px;border:1px dashed #ccc;background:#fff;color:#888;border-radius:8px;font-size:11px;'">
-          + 신규 패널
-        </button>
-      </div>
-    </div>
-    <!-- ===== □.□. 좌측 탭사이드 =============================================== -->
-    <!-- ===== ■.■. 중앙 폼 ================================================== -->
-    <div style="flex:1;padding:20px;min-width:0;overflow-y:auto;">
-      <!-- ===== ■.■.■. 기본정보 탭 ============================================== -->
-      <div v-if="activeTab==='base'" class="area-base-tab">
-        <!-- 행간 압축 (이 탭 내부 한정) -->
-        <style>
-          .area-base-tab .form-group { margin-bottom: 6px; }
-          .area-base-tab .form-label { margin-bottom: 2px; font-size: 12px; }
-          .area-base-tab .form-row { gap: 10px; row-gap: 6px; }
-        </style>
-        <!-- ===== ■.■.■.■. 설정 ================================================ -->
-        <div style="margin-bottom:12px;padding:14px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;">
-          <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
-            <span style="display:inline-block;width:4px;height:16px;background:#1d4ed8;border-radius:2px;"></span>
-            설정
-          </div>
-          <!-- ===== ■.■.■.■.■. 영역코드/영역명/영역유형 (BoFormArea 자동 렌더) ================ -->
-          <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
-          <bo-form-area :columns="columns.baseAreaForm" :form="form" :errors="errors"
-            :readonly="false" :cols="3" compact :show-actions="false" />
-          <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin:2px 0 6px;">🔲 위젯 레이아웃</div>
-          <div class="form-row" style="align-items:flex-end;margin-bottom:8px;gap:10px;row-gap:8px;">
-            <div class="form-group" style="flex:0 0 auto;">
-              <label class="form-label">표시방식</label>
-              <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;max-width:200px;">
-                <button v-for="o in codes.layout_types" :key="o?.codeValue"
-                  @click="form.layoutType = o.codeValue"
-                  type="button"
-                  style="flex:1;padding:6px 0;font-size:12px;border:none;border-left:1px solid #d1d5db;transition:all .15s;"
-                  :style="[o.codeValue==='grid'?'border-left:none;':'', form.layoutType===o.codeValue ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;']">
-                  {{ o.codeValue==='grid' ? '🔲 ' : '🧩 ' }}{{ o.codeLabel }}
-                </button>
-              </div>
-            </div>
-            <div class="form-group" style="flex:0 0 auto;" v-if="form.layoutType==='grid'">
-              <label class="form-label">열수 <span style="font-size:10px;color:#aaa;"> (위젯 배치 열 개수) </span></label>
-              <div style="display:flex;align-items:center;gap:6px;">
-                <div style="display:flex;border:1px solid #d1d5db;border-radius:6px;overflow:hidden;">
-                  <button v-for="n in [1,2,3,4]" :key="Math.random()" type="button"
-                    @click="form.gridCols = n"
-                    style="padding:6px 12px;font-size:12px;border:none;border-left:1px solid #d1d5db;transition:all .15s;"
-                    :style="[n===1?'border-left:none;':'', form.gridCols===n ? 'background:#1d4ed8;color:#fff;font-weight:700;' : 'background:#fff;color:#6b7280;']">
-                    {{ n }}
-                  </button>
-                </div>
-                <input type="number" v-model.number="form.gridCols" min="1" max="32"
-                  style="width:64px;font-size:13px;padding:5px 8px;border:1px solid #d1d5db;border-radius:6px;text-align:center;" />
-                <span style="font-size:12px;color:#aaa;">열</span>
-              </div>
-            </div>
-            <div class="form-group" style="flex:0 0 auto;" v-else>
-              <label class="form-label">배치</label>
-              <span style="font-size:12px;color:#6b7280;padding:6px 0;display:block;">자유 배치 (열수 없음)</span>
-            </div>
-            <div class="form-group">
-              <label class="form-label">정렬 순서</label>
-              <input class="form-control" type="number" v-model.number="form.sortOrd" />
-            </div>
-            <!-- ===== ■.■.■.■.■.■. 영역 ============================================ -->
-            <div class="form-group">
-              <label class="form-label">사용 여부</label>
-              <select class="form-control" v-model="form.useYn">
-                <option v-for="o in codes.use_yn" :key="o.codeValue" :value="o.codeValue">{{ o.codeLabel }}</option>
-              </select>
-            </div>
-            <div class="form-group" style="flex:2;">
-              <label class="form-label">설명</label>
-              <input class="form-control" v-model="form.remark" placeholder="영역 설명" />
-            </div>
-          </div>
-          <!-- ===== ■.■.■.■.■. 표시경로 (BoFormArea 자동 렌더) ========================= -->
-          <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
-          <bo-form-area :columns="columns.pathPickForm" :form="form" :errors="{}"
-            :cols="3" compact :show-actions="false">
-            <template #pathPick>
-              <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'flex-end',gap:'6px',fontFamily:'monospace'}">
-                <span style="flex:1;">{{ fnPathLabel(form.pathId) || '경로 선택...' }}</span>
-                <button v-if="form.pathId != null" type="button" title="선택 해제" @click="form.pathId=null"
-                  style="background:none;border:none;padding:0 2px 2px;color:#999;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0;">
-                  x
-                </button>
-                <button type="button" @click="handleBtnAction('pathModal-open', 'form')" title="표시경로 선택"
-                  :style="{cursor:'pointer',display:'inline-flex',alignItems:'center',justifyContent:'center',width:'24px',height:'24px',background:'#fff',border:'1px solid #d1d5db',borderRadius:'4px',fontSize:'12px',color:'#6b7280',padding:'0'}"
-                  @mouseover="$event.currentTarget.style.background='#eef2ff'"
-                  @mouseout="$event.currentTarget.style.background='#fff'">
-                  🔍
-                </button>
-              </div>
-            </template>
-          </bo-form-area>
-          <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin:2px 0 6px;">📅 사용기간</div>
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-            <input type="date" class="form-control" v-model="form.useStartDate" style="width:150px;margin:0;" />
-            <span style="color:#aaa;font-size:13px;padding:0 4px;">~</span>
-            <input type="date" class="form-control" v-model="form.useEndDate" style="width:150px;margin:0;" />
-          </div>
-        </div>
-        <!-- ===== /설정 ======================================================== -->
-        <!-- ===== ■.■.■.■. 제목 ================================================ -->
-        <div style="margin-bottom:12px;padding:14px;background:#faf8ff;border:1px solid #e9d5ff;border-radius:8px;">
-          <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-            <span style="display:inline-block;width:4px;height:16px;background:#7c3aed;border-radius:2px;flex-shrink:0;"></span>
-            <span style="white-space:nowrap;">제목</span>
-            <span style="margin-left:auto;display:flex;align-items:center;gap:8px;flex-shrink:0;">
-              <span style="font-size:11px;font-weight:600;color:#888;">타이틀 표시</span>
-              <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:500;color:#444;">
-                <input type="radio" v-model="form.titleYn" value="Y" />
-                표시
-              </label>
-              <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:500;color:#444;">
-                <input type="radio" v-model="form.titleYn" value="N" />
-                미표시
-              </label>
-            </span>
-          </div>
-          <div v-if="form.titleYn==='Y'" style="display:flex;align-items:center;gap:10px;">
-            <label style="font-size:12px;font-weight:600;color:#555;width:50px;flex-shrink:0;">타이틀</label>
-            <input class="form-control" v-model="form.title" placeholder="타이틀 텍스트" style="margin:0;flex:1;" />
-          </div>
-        </div>
-        <!-- ===== /제목 ======================================================== -->
-        <!-- ===== ■.■.■.■. 내용 ================================================ -->
-        <div style="margin-bottom:14px;padding:14px;background:#fff8fa;border:1px solid #fce4ec;border-radius:8px;">
-          <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
-            <span style="display:inline-block;width:4px;height:16px;background:#e8587a;border-radius:2px;"></span>
-            내용
-          </div>
-          <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">📝 영역코멘트</div>
-          <div v-if="cfDtlMode" class="form-control" style="min-height:260px;line-height:1.6;overflow:auto;" v-html="form.htmlDesc || '<span style=color:#bbb>-</span>'"></div>
-          <base-html-editor v-else v-model="form.htmlDesc" height="280px" />
-        </div>
-        <!-- ===== /내용 ======================================================== -->
-      </div>
-      <!-- ===== ■.■.■. 패널 탭 ================================================ -->
-      <div v-else-if="cfActivePanel">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-          <div>
-            <span style="font-size:11px;color:#888;">#{{ cfActivePanel.dispId }}</span>
-            <span style="font-size:15px;font-weight:700;color:#222;margin-left:8px;">{{ cfActivePanel.name }}</span>
-            <span class="badge" :class="cfActivePanel.status==='활성'?'badge-green':'badge-gray'" style="font-size:11px;margin-left:8px;">
-              {{ cfActivePanel.status }}
-            </span>
-          </div>
-          <div style="display:flex;gap:6px;">
-            <button class="btn btn-blue btn-sm" @click="handleBtnAction('areaPanels-editPage')">패널 편집</button>
-            <button class="btn btn-danger btn-sm" @click="handleBtnAction('areaPanels-removeActive')">영역에서 제거</button>
-          </div>
-        </div>
-        <div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:#555;margin-bottom:12px;">
-          <span>
-            <b style="color:#888;">표시:</b>
-            {{ cfActivePanel.layoutType==='dashboard' ? '🧩 대시보드' : '🔲 그리드 '+(cfActivePanel.gridCols||1)+'열' }}
-          </span>
-          <span><b style="color:#888;"> 순서: </b> {{ cfActivePanel.sortOrder != null ? cfActivePanel.sortOrder : '-' }}</span>
-          <span>
-            <b style="color:#888;">패널기본전시기간:</b>
-            <template v-if="cfActivePanel.dispStartDt || cfActivePanel.dispEndDt">
-              {{ cfActivePanel.dispStartDt || '∞' }} ~ {{ cfActivePanel.dispEndDt || '∞' }}
-            </template>
-            <span v-else style="color:#ccc;">없음</span>
-          </span>
-        </div>
-        <!-- ===== ■.■.■.■. 설정 ================================================ -->
-        <div style="margin-bottom:14px;padding:14px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;">
-          <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
-            <span style="display:inline-block;width:4px;height:16px;background:#1d4ed8;border-radius:2px;"></span>
-            설정
-          </div>
-          <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;">
-            <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#555;padding:5px 10px;background:#f0f0f0;border-radius:6px;">
-              <span>전시여부</span>
-              <input type="checkbox" v-model="cfActivePanel.areaDispYn" :true-value="'Y'" :false-value="'N'" style="accent-color:#e8587a;" />
-              <span>{{ cfActivePanel.areaDispYn === 'Y' ? '전시' : '숨김' }}</span>
-            </label>
-            <span style="font-size:10px;color:#aaa;">(배치로 자동 관리됨)</span>
-          </div>
-          <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">
-            📅 전시기간
-            <span style="font-size:10px;color:#aaa;font-weight:400;">(미설정 시 패널 기간 사용)</span>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;background:#f9fafb;padding:10px 12px;border-radius:6px;border:1px solid #e5e7eb;">
-            <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-size:11px;color:#888;white-space:nowrap;width:28px;">시작</span>
-              <bo-date-time-picker v-model:date="cfActivePanel.areaDispStartDate" v-model:time="cfActivePanel.areaDispStartTime" />
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;">
-              <span style="font-size:11px;color:#888;white-space:nowrap;width:28px;">종료</span>
-              <bo-date-time-picker v-model:date="cfActivePanel.areaDispEndDate" v-model:time="cfActivePanel.areaDispEndTime" />
-            </div>
-          </div>
-          <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin:10px 0 6px;">🌍 전시환경</div>
-          <div style="margin-bottom:12px;">
-            <bo-multi-check-select v-model="cfActivePanel.areaDispEnv" :options="cfAreaDispEnvMcsOptions"
-              separator="^" wrap empty-value="^NONE^" placeholder="전체 환경" all-label="전체 환경"
-              :disabled="cfDtlMode" min-width="280px" />
-          </div>
-          <!-- ===== ■.■.■.■.■. 헤더 영역 =========================================== -->
-          <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin:10px 0 6px;">🔒 공개대상 (하나라도 해당하면 노출)</div>
-          <div style="margin-bottom:4px;">
-            <bo-multi-check-select v-model="cfActivePanel.visibilityTargets" :options="cfVisibilityOptions"
-              separator="^" wrap empty-value="^NONE^" placeholder="전체 공개" all-label="전체 공개"
-              :disabled="cfDtlMode" min-width="320px" />
-          </div>
-          <div v-if="!cfActivePanel.visibilityTargets" style="font-size:11px;color:#d32f2f;">⚠ 선택 없음 — 아무에게도 노출되지 않습니다.</div>
-        </div>
-        <!-- ===== /설정 ======================================================== -->
-        <!-- ===== ■.■.■.■. 내용 ================================================ -->
-        <div style="margin-bottom:14px;padding:14px;background:#fff8fa;border:1px solid #fce4ec;border-radius:8px;">
-          <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
-            <span style="display:inline-block;width:4px;height:16px;background:#e8587a;border-radius:2px;"></span>
-            내용
-            <span style="margin-left:auto;font-size:12px;color:#888;font-weight:500;">위젯 {{ (cfActivePanel.rows||[]).length }}개</span>
-          </div>
-          <div v-if="(cfActivePanel.rows||[]).length" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;">
-            <div v-for="(w, wi) in cfActivePanel.rows" :key="wi"
-              style="padding:10px 12px;border:1px solid #e0e4ea;border-radius:8px;background:#fafbfc;">
-              <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
-                <span style="font-size:11px;color:#aaa;">#{{ w.sortOrder || (wi+1) }}</span>
-                <span style="background:#e8f0fe;color:#1a73e8;border-radius:8px;padding:1px 8px;font-size:10px;">
-                  {{ fnWLabel(w.widgetType) }}
-                </span>
-              </div>
-              <div style="font-size:12px;color:#333;font-weight:600;">{{ w.widgetNm || ('위젯 '+(wi+1)) }}</div>
-              <div v-if="w.clickAction && w.clickAction!=='none'" style="font-size:10px;color:#888;margin-top:2px;">
-                클릭: {{ w.clickAction }}
-              </div>
-            </div>
-          </div>
-          <div v-else style="padding:16px;text-align:center;color:#bbb;font-size:12px;border:1px dashed #e0e4ea;border-radius:8px;">
-            등록된 위젯이 없습니다.
-          </div>
-        </div>
-        <!-- ===== /내용 ======================================================== -->
-      </div>
-    </div>
-    <!-- ===== □.□. 중앙 폼 ================================================== -->
-    <!-- ===== ■.■. 스플리터 ================================================== -->
-    <div @mousedown="e => handleSelectAction('preview-split', e)"
-      style="width:6px;cursor:col-resize;background:#e8e8e8;flex-shrink:0;position:relative;"
-      title="드래그로 폭 조절">
-      <div style="position:absolute;top:50%;left:1px;transform:translateY(-50%);width:4px;height:32px;background:#bbb;border-radius:2px;"></div>
-    </div>
-    <!-- ===== □.□. 스플리터 ================================================== -->
-    <!-- ===== ■.■. 우측 영역미리보기 ============================================= -->
-    <div :style="{
-      width: previewPaneWidth + 'px',
-      background:'#fafafa',borderLeft:'1px solid #e8ebef',padding:'14px',flexShrink:0,
-      transition:'width .2s',
-      overflowX:'auto',
-      }">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <span style="font-size:12px;font-weight:700;color:#555;cursor:help;position:relative;"
-          @mouseenter="showComponentTooltip=true" @mouseleave="showComponentTooltip=false">
-          👁 {{ activeTab==='base' ? '영역' : '패널' }} 미리보기
-          <span style="position:absolute;bottom:-28px;left:0;background:#333;color:#fff;padding:4px 8px;border-radius:4px;font-size:9px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s;z-index:1000;" :style="{opacity: showComponentTooltip ? 1 : 0}">
-            {{ activeTab==='base' ? '&lt;disp-x02-area /&gt;' : '&lt;disp-x03-panel /&gt;' }}
-          </span>
-        </span>
-        <span style="font-size:10px;color:#aaa;">{{ cfRelatedPanels.length }}개 패널</span>
-      </div>
-      <!-- ===== ■.■.■. 디바이스 모드 버튼 ========================================== -->
-      <div style="display:flex;gap:4px;margin-bottom:10px;padding:3px;background:#eef0f3;border-radius:6px;">
-        <button v-for="m in PREVIEW_MODES" :key="m?.value"
-          @click="handleSelectAction('preview-mode', m.value)"
-          :style="{
-          flex:'1',padding:'5px 0',fontSize:'11px',border:'none',borderRadius:'4px',cursor:'pointer',
-          background: previewMode===m.value ? '#fff' : 'transparent',
-          color: previewMode===m.value ? '#1565c0' : '#666',
-          fontWeight: previewMode===m.value ? 700 : 500,
-          boxShadow: previewMode===m.value ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
-          }">
-          {{ m.label }}
-        </button>
-      </div>
-      <!-- ===== ■.■.■. 디바이스 프레임 ============================================ -->
-      <div :style="{
-        width: cfPreviewFrameWidth, margin:'0 auto', border:'1px solid #d0d7de', borderRadius:'8px',
-        background:'#fff', padding:'8px', transition:'width .2s',
-        }">
-        <!-- ===== ■.■.■.■. 영역 기본정보 탭: disp-x02-area 로 전체 영역 렌더 =============== -->
-        <div v-if="activeTab==='base'" style="max-height:560px;overflow-y:auto;">
-          <disp-x02-area v-if="form.codeValue"
-            :params="{ date: form.regDate || '', time: '00:00', status: '활성' }"
-            :disp-opt="{ layout:'auto', showHeader:true, showBadges:false, mode:'area_detail', showDesc:false }"
-            :area-item="{ code: form.codeValue, label: form.codeLabel, info: form, panels: cfRelatedPanels }" />
-          <div v-else style="padding:20px 8px;text-align:center;color:#bbb;font-size:11px;">영역코드를 입력하세요.</div>
-        </div>
-        <!-- ===== ■.■.■.■. 패널 탭: disp-x03-panel 로 선택 패널 렌더 =================== -->
-        <div v-else-if="cfActivePanel" style="max-height:560px;overflow-y:auto;">
-          <disp-x03-panel
-            :params="{ date: form.regDate || '', time: '00:00', status: '활성' }"
-            :disp-opt="{ layout:'vertical', showBadges:false }"
-            :panel-item="cfActivePanel"
-            :show-header="true" />
-        </div>
-        <div v-else style="padding:20px 8px;text-align:center;color:#bbb;font-size:11px;">미리볼 항목을 선택하세요.</div>
-      </div>
-      <!-- ===== /device frame ============================================== -->
-    </div>
+  <!-- ===== ■. 폼 액션 ===================================================== -->
+  <div class="form-actions" v-if="active">
+    <template v-if="cfReadonly">
+      <button class="btn btn_edit"  @click="handleBtnAction('baseForm-edit')">수정</button>
+      <button class="btn btn_close" @click="handleBtnAction('baseForm-close')">닫기</button>
+    </template>
+    <template v-else>
+      <button class="btn btn_save"   @click="handleBtnAction('baseForm-save')">저장</button>
+      <button class="btn btn_cancel" @click="handleBtnAction('baseForm-cancel')">취소</button>
+    </template>
   </div>
-  <!-- ===== □.□. 우측 영역미리보기 ============================================= -->
-  <!-- ===== □. 본문: 좌측 탭사이드 + 중앙 폼 + 우측 미리보기 ============================ -->
-  <!-- ===== ■. 패널 선택 팝업 ================================================ -->
-  <panel-pick-modal v-if="pickOpen"
-    :title="'전시패널 추가 [' + form.codeValue + ']'"
-    :panels="panels"
-    :areas="areas"
-    :exclude-area="form.codeValue" modal-name="panel-pick" :on-callback="fnCallbackModal" />
-  <!-- ===== □. 패널 선택 팝업 ================================================ -->
-  <!-- ===== ■. 조건부 영역 ================================================== -->
-  <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="ec_disp_area" :value="form.pathId" title="영역 표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
+  <!-- ===== ■. 표시경로 선택 모달 ============================================ -->
+  <path-pick-modal v-if="pathPickModal.show" biz-cd="ec_disp_area"
+    :value="baseForm.pathId"
+    title="전시영역 표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
 </bo-container>
-<!-- ===== □. 조건부 영역 ================================================== -->
 `,
 };

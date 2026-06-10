@@ -51,3 +51,10 @@ COMMENT ON COLUMN shopjoy_2604.dp_panel_item.disp_end_dt IS '전시종료일시'
 
 CREATE INDEX idx_dp_panel_item_disp_date ON shopjoy_2604.dp_panel_item USING btree (disp_start_dt, disp_end_dt);
 CREATE INDEX idx_dp_panel_item_site ON shopjoy_2604.dp_panel_item USING btree (site_id);
+CREATE INDEX idx_dp_panel_item_panel ON shopjoy_2604.dp_panel_item USING btree (panel_id);
+
+-- 2026-06-11 구조개선: FK 보강 (패널 삭제 시 아이템 CASCADE)
+ALTER TABLE shopjoy_2604.dp_panel_item ADD CONSTRAINT dp_panel_item_panel_id_fkey
+    FOREIGN KEY (panel_id) REFERENCES shopjoy_2604.dp_panel (panel_id) ON DELETE CASCADE;
+ALTER TABLE shopjoy_2604.dp_panel_item ADD CONSTRAINT dp_panel_item_widget_lib_id_fkey
+    FOREIGN KEY (widget_lib_id) REFERENCES shopjoy_2604.dp_widget_lib (widget_lib_id);
