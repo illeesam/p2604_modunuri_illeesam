@@ -198,8 +198,6 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
 
     const cfVisibilityOptions = computed(() => window.visibilityUtil.allOptions());
 
-    /* hasVisibility — 여부 확인 */
-    const hasVisibility = (code) => window.visibilityUtil.has(form.visibilityTargets, code);
 
     /* toggleVisibility — 토글 */
     const toggleVisibility = (code) => {
@@ -317,13 +315,13 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
-      coUtil,  // 템플릿 cofAnd 접근용
+      coUtil, // 템플릿 cofAnd 접근용
       columns,
-      vendors, showVendorModal, uiState, codes, form, errors,                       // 상태 / 데이터
+      vendors, showVendorModal, form, errors,                // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal,                                          // dispatch (모든 이벤트 / 액션 라우팅)
-      cfIsNew, cfHasId, cfSaveDisabled, cfDtlMode, cfVisibilityOptions, cfSelectedVendorNm, // computed
-      tabs, tab, tabMode2,                                                                // toRef
-      showTab, hasVisibility,                                                       // 헬퍼
+      cfIsNew, cfSaveDisabled, cfDtlMode, cfVisibilityOptions, cfSelectedVendorNm,         // computed
+      tabs, tab, tabMode2, // toRef
+      showTab,               // 헬퍼
       coUtil,                                                                       // 의존 (템플릿 cofAnd)
     };
   },

@@ -158,11 +158,6 @@ window.SyContactDtl = {
     };
 
     /* 문의 fnStatusBadge */
-    const _CONTACT_STATUS_KR_FB = {
-      '요청': 'badge-orange', '처리중': 'badge-blue', '답변완료': 'badge-green', '취소됨': 'badge-gray'
-    };
-    /* fnStatusBadge — 상태 배지 */
-    const fnStatusBadge = s => coUtil.cofCodeBadge('CONTACT_STATUS_KR', s, _CONTACT_STATUS_KR_FB[s] || 'badge-gray');
 
     /* _afterApiOk — 후 API 성공 */
     const _afterApiOk  = (res, msg) => {
@@ -246,10 +241,10 @@ window.SyContactDtl = {
 
     return {
       columns,
-      uiState, codes, form, errors, tab, tabMode2,                  // 상태 / 데이터
+      form, errors, tab, tabMode2,                // 상태 / 데이터
       handleBtnAction, handleSelectAction,                          // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfHasId, cfSaveDisabled, cfSiteNm, cfDtlMode, tabs,  // computed / reactive(tabs)
-      showTab, fnStatusBadge,                                       // 헬퍼
+      showTab,               // 헬퍼
     };
   },
   template: /* html */`

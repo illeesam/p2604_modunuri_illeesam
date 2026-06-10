@@ -325,10 +325,9 @@ window.SyBrandMng = {
 
     return {
       columns,
-      brands, uiState, brandCounts, codes, searchParam, gridRows,                  // 상태 / 데이터
+      brands, uiState, brandCounts, searchParam, gridRows,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                            // dispatch (모든 이벤트 / 액션 라우팅)
-      cfIsLocalMode,                                                  // computed
-      fnColTitle,                                                     // 헬퍼
+      fnColTitle, // 헬퍼
     };
   },
   template: /* html */`

@@ -194,8 +194,7 @@ window.OdClaimMng = {
       handleSearchData();
     };
 
-    /* sortIcon — 정렬 */
-    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+
 
     /* handleSearchData — 처리 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
@@ -299,26 +298,20 @@ window.OdClaimMng = {
       props.navigate(pg, opts);
     };
     const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
-    const cfIsViewMode = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
+
     const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}_${detailPanel.resetSeq}`);
 
 
     /* 클레임(취소/반품/교환) fnTypeBadge — 공통코드 CLAIM_TYPE_KR 우선, 미매칭 시 로컬 fallback */
-    const _CLAIM_TYPE_FB = { '취소': 'badge-gray', '반품': 'badge-orange', '교환': 'badge-blue' };
-    /* fnTypeBadge — 유형 배지 */
-    const fnTypeBadge = t => coUtil.cofCodeBadge('CLAIM_TYPE_KR', t, _CLAIM_TYPE_FB[t] || 'badge-gray');
+
+
 
     /* fnClaimTypeColor — 유틸 */
     const fnClaimTypeColor = (t) => ({ '취소':'#ef4444', '반품':'#FFBB00', '교환':'#3b82f6' }[t] || '#9ca3af');
 
     /* 클레임(취소/반품/교환) fnStatusBadge — 공통코드 CLAIM_STATUS_KR 우선, 미매칭 시 로컬 fallback */
-    const _CLAIM_STATUS_FB = {
-      '신청': 'badge-orange', '승인': 'badge-blue', '수거중': 'badge-blue',
-      '처리중': 'badge-purple', '환불대기': 'badge-orange',
-      '완료': 'badge-green', '거부': 'badge-red', '철회': 'badge-gray',
-    };
-    /* fnStatusBadge — 상태 배지 */
-    const fnStatusBadge = s => coUtil.cofCodeBadge('CLAIM_STATUS_KR', s, _CLAIM_STATUS_FB[s] || 'badge-gray');
+
+
 
     /* handleDelete — 삭제 */
     const handleDelete = async (c) => {
@@ -590,12 +583,12 @@ window.OdClaimMng = {
 
     return {
       columns,
-      claims, members, uiState, codes, searchParam, listGridPager, detailPanel, checked, bulkForm, bulkOpen, memberPick,         // 상태 / 데이터
-      handleBtnAction, handleSelectAction, fnCallbackModal,                                                                 // dispatch + 모달 통합 콜백
-      cfDetailEditId, cfIsViewMode, cfDetailKey, cfAllChecked, cfBuildTmplMsg, cfBulkPreview, cfSiteNm, cfCheckedByType,   // computed
+      claims, members, uiState, codes, searchParam, listGridPager, detailPanel, checked, bulkForm, bulkOpen, memberPick, // 상태 / 데이터
+      handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch + 모달 통합 콜백
+      cfDetailEditId, cfDetailKey, cfAllChecked, cfBuildTmplMsg, cfBulkPreview, cfCheckedByType,                        // computed
       selectedId: computed(() => detailPanel.selectedId),                                                                 // template 직접 참조
-      CLAIM_STATUS_BY_TYPE, CLAIM_TYPE_OPTIONS,                                                                           // 상수
-      isChecked, fnGridRowStyle, sortIcon, fnTypeBadge, fnStatusBadge,                                                    // 헬퍼
+      CLAIM_STATUS_BY_TYPE,                    // 상수
+      isChecked, fnGridRowStyle,                                      // 헬퍼
       inlineNavigate,                                                                                                     // Dtl 콜백 (closure 필요)
     };
   },

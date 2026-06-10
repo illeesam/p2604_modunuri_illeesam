@@ -13,6 +13,7 @@ window.EventPage = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: 'ongoing', sortBy: 'latest'});;
     const codes = reactive({});
 
+
     const events = reactive([]);
 
     const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageType: 'PAGE', pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
@@ -52,13 +53,11 @@ window.EventPage = {
     /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
-    /* setPage — 설정 */
-    const setPage = n => { if (n>=1 && n<=pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
+
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
 
-    /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+
 
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -96,7 +95,7 @@ window.EventPage = {
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
     const cfOngoingCount = computed(() => events.filter(e => e.status === 'ongoing').length);
-    const cfEndedCount   = computed(() => events.filter(e => e.status === 'ended').length);
+
 
     onMounted(() => {
       handleSearchList();
@@ -105,11 +104,10 @@ window.EventPage = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
-      uiState, codes,                                  // 상태
-      handleBtnAction, handleSelectAction,             // dispatch
-      pager, setPage, onSizeChange,                    // 페이징
-      events,                                          // 데이터
-      cfOngoingCount, cfEndedCount,                    // computed
+      uiState,       // 상태
+      handleBtnAction, handleSelectAction, // dispatch
+      events, // 데이터
+      cfOngoingCount,              // computed
     };
   },
   template: /* html */ `

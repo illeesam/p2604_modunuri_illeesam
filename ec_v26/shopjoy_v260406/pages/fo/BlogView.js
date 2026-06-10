@@ -112,7 +112,6 @@ window.BlogView = {
 
     /* 사이드바 */
     const searchParam = reactive({ searchValue: '', commentText: ''});;
-    const searchParamOrg = reactive({ searchValue: '' });
     const cfLatestPosts = computed(() => posts.filter(p => p.id !== cfPostId.value).slice(0, 3));
     const categories  = [
       { name: 'Fashion', count: 12 },
@@ -128,17 +127,7 @@ window.BlogView = {
     /* 관련 글 */
     const cfRelatedPosts = computed(() => posts.filter(p => p.id !== cfPostId.value).slice(0, 3));
 
-    /* onSearch — 조회 */
-    const onSearch = async () => {
-      try {
-        // 실제 검색 API 호출
-      } catch (e) {}
-    };
 
-    /* onReset — 초기화 */
-    const onReset = () => {
-      Object.assign(searchParam, searchParamOrg);
-    };
 
     // ★ onMounted
     onMounted(() => {
@@ -149,12 +138,11 @@ window.BlogView = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
-      uiState, codes,                                                          // 상태
-      handleBtnAction, handleSelectAction,                                     // dispatch
-      cfPost, cfBodyParagraphs, cfAllComments,                                 // computed - 본문
-      cfLatestPosts, cfRecentComments, cfRelatedPosts,                         // computed - 사이드
-      commentText, addComment,                                                 // 댓글
-      searchParam, categories, archives, onSearch, onReset,                    // 검색/카테고리
+      handleBtnAction, handleSelectAction, // dispatch
+      cfPost, cfBodyParagraphs, cfAllComments, // computed - 본문
+      cfLatestPosts, cfRecentComments, cfRelatedPosts, // computed - 사이드
+      commentText,            // 댓글
+      searchParam, categories, archives,                   // 검색/카테고리
     };
   },
   template: /* html */ `

@@ -330,11 +330,11 @@ window.OdDlivDtl = {
 
     return {
       columns,
-      form, errors, codes, dlivItems, relatedClaims, tab, tabMode2,                                                       // 상태 / 데이터
+      form, errors, dlivItems, tab, tabMode2,                      // 상태 / 데이터
       handleBtnAction, handleSelectAction,                                                                                // dispatch (모든 이벤트 / 액션 라우팅)
-      cfIsNew, cfDtlMode, cfCurrentStepIdx, tabs, cfEditHistList, cfPaymentList, cfStatusHistList, cfFirstClaim,        // computed
-      DLIV_STEPS, CLAIM_TYPE_COLOR,                                                                                       // 상수
-      fmt, showTab,                                                                                                       // 헬퍼
+      cfIsNew, cfDtlMode, cfCurrentStepIdx, tabs, cfEditHistList, cfPaymentList, cfStatusHistList,              // computed
+      DLIV_STEPS,                  // 상수
+      fmt, showTab, // 헬퍼
       showRefModal,                                                                                                       // 모달 (template 직접 참조)
     };
   },

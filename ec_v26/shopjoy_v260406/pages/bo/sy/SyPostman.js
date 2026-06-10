@@ -680,8 +680,7 @@ window.SyPostman = {
     const statusStyle = s => !s ? '' : s < 300 ? 'color:#166534;font-weight:700;'
       : s < 400 ? 'color:#92400e;font-weight:700;' : 'color:#991b1b;font-weight:700;';
 
-    /* methodDot — 메서드 점 */
-    const methodDot = m => ({ GET:'#166534', POST:'#1e40af', PUT:'#92400e', PATCH:'#6b21a8', DELETE:'#991b1b' }[m] || '#888');
+
 
     /* handleSearchList — 목록 조회 */
 
@@ -703,10 +702,10 @@ window.SyPostman = {
 
     return {
       uiState, codes, openTabs, hostUrl, token, defHeaders, lsItems, toasts, history, histSelIdx, histModal, editReq, autoPopupPos, countdown, // 상태 / 데이터
-      cfFlatTree, cfActiveTab, cfResGridColumns, cfResGridRows,                                                                                // computed
+      cfFlatTree, cfActiveTab, cfResGridColumns, cfResGridRows, // computed
       handleBtnAction, handleSelectAction,                                                                                                     // dispatch (모든 이벤트 / 액션 라우팅)
-      appFilter, APP_META, POPUP_ROWS, SECS, MINS, HOURS,                                                                                      // 정적/상수
-      methodStyle, statusStyle, methodDot, histResJson, histResStatus, histResTime, histResTs,                                                 // 헬퍼
+      appFilter, APP_META, POPUP_ROWS,                   // 정적/상수
+      methodStyle, statusStyle, histResJson, histResStatus, histResTime, histResTs,           // 헬퍼
     };
   },
 

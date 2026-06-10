@@ -15,6 +15,7 @@ window.XsLocalStorage = {
     const uiStateGlobal = reactive({ loading: false, error: null, isPageCodeLoad: false, filterKey: '', editingKey: null, editingValue: '', valueColWidth: 65, startX: 0, startWidth: 0});
     const codes = reactive({});
 
+
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
@@ -199,10 +200,9 @@ window.XsLocalStorage = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
-      uiStateGlobal, uiState, codes,                                         // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                                   // dispatch
-      // ===== lsItems 영역 =====================================================
-      storageData, cfFilteredData,
+      uiStateGlobal, uiState,       // 상태 / 데이터
+      handleBtnAction, handleSelectAction, // dispatch
+      cfFilteredData,
       // ===== shared (헬퍼) ====================================================
       parseValue,
     };

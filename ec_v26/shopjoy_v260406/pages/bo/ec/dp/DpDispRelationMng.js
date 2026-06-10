@@ -183,10 +183,10 @@ window.DpDispRelationMng = {
 
     return {
       columns,
-      codes, searchParam, uiState, expandedNodes,                                   // 상태 / 데이터
+      searchParam, uiState,                      // 상태 / 데이터
       handleBtnAction, handleSelectAction,                                          // dispatch (모든 이벤트 / 액션 라우팅)
-      cfTreeData,                                                                   // computed
-      fnGetVisibilityBadges, fnGetBadgeColor, fnGetUseYnBadge, isNodeExpanded,      // 헬퍼
+      cfTreeData, // computed
+      fnGetVisibilityBadges, fnGetBadgeColor, fnGetUseYnBadge, isNodeExpanded, // 헬퍼
     };
   },
   template: /* html */`

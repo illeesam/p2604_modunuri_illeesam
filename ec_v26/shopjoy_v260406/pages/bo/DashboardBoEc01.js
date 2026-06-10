@@ -331,16 +331,16 @@ window.DashboardBoEc01 = {
       /* ##### [06] return (템플릿 노출) ############################################## */
 
       return {
-        uiState, filters,                                                            // 상태 / 데이터
+        uiState, filters, // 상태 / 데이터
         handleBtnAction, handleSelectAction,                                          // dispatch (모든 이벤트 / 액션 라우팅)
-        cfBaseGridColumns, cfMonthLabels,                                             // computed
-        cfMonthlySales, cfMonthlyJoin, cfMonthlyLeave,                                // computed
-        cfMonthlyClicks, cfMonthlyOrders, cfChannelMonthly,                           // computed
-        cfTotalSales, cfTotalQtyComp, cfAvgOrderValue,                                // computed
-        cfRadarPath, cfRadarAxes,                                                     // computed
-        TABS, VIEW_MODES, CHANNELS, AGES, GENDERS, MEMBER_TYPES, CATEGORIES,          // 상수
-        marginRate, topProducts, salesByChannel, salesByDevice, salesByTime,          // 상수
-        regionSales, hourlyTrend, radarValues, economySales, shippingTypes,           // 상수
+        cfBaseGridColumns, cfMonthLabels, // computed
+        cfMonthlySales, cfMonthlyJoin, cfMonthlyLeave, // computed
+        cfMonthlyClicks, cfMonthlyOrders, cfChannelMonthly, // computed
+        cfTotalSales, cfTotalQtyComp, cfAvgOrderValue, // computed
+        cfRadarPath, cfRadarAxes, // computed
+        TABS, VIEW_MODES, CHANNELS, AGES, GENDERS, MEMBER_TYPES, CATEGORIES, // 상수
+        marginRate, topProducts, salesByChannel, salesByDevice, salesByTime, // 상수
+        regionSales, hourlyTrend, economySales, shippingTypes,             // 상수
         fmt, pct, isSel, showPanel,                                                   // 헬퍼 (template)
         linePoints, areaPath, maxOf,                                                  // 헬퍼 (SVG)
       };

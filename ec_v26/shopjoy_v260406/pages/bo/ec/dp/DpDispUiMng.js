@@ -138,8 +138,7 @@ window.DpDispUiMng = {
       handleSearchList();
     };
 
-    /* sortIcon — 정렬 아이콘 */
-    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+
     /* handleLoadPathTreeNodeCounts — 좌 트리 노드별 카운트 (검색조건 동기, 백엔드 재귀 CTE) */
     const handleLoadPathTreeNodeCounts = async () => {
       try {
@@ -293,11 +292,11 @@ window.DpDispUiMng = {
 
     return {
       columns,
-      uis, uiState, uiCounts, codes, searchParam, baseGridPager, detailPanel,                           // 상태 / 데이터
-      pathNodes, pathPickModal,                                                       // 표시경로 select / 모달
+      uis, uiState, uiCounts, searchParam, baseGridPager, detailPanel,       // 상태 / 데이터
+      pathNodes, pathPickModal, // 표시경로 select / 모달
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,     // dispatch (모든 이벤트 / 액션 라우팅)
-      cfDetailEditId, cfDetailKey,                                                    // computed
-      pathLabel, sortIcon, onPathSelectChange, openPathManage,                       // 헬퍼
+      cfDetailEditId, cfDetailKey, // computed
+      pathLabel, onPathSelectChange, openPathManage,          // 헬퍼
       inlineNavigate,                                                                 // Dtl 콜백 (closure 필요)
     };
   },

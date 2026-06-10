@@ -152,9 +152,9 @@ window.SyCodeDtl = {
 
     return {
       columns,
-      uiState, pageCodes, form, errors,                      // 상태 / 데이터
+      form, errors,                    // 상태 / 데이터
       handleBtnAction,                                       // dispatch (모든 이벤트 / 액션 라우팅)
-      cfIsNew, cfDtlMode,                                    // computed
+      cfIsNew, cfDtlMode, // computed
     };
   },
   template: /* html */`

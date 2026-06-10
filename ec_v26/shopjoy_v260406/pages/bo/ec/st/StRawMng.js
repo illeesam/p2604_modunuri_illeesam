@@ -150,14 +150,11 @@ const raws = reactive([]);
     /* setPage — 설정 */
     const setPage = n => { if (n >= 1 && n <= rawGridPager.pageTotalPage) { rawGridPager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
 
-    /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { rawGridPager.pageNo = 1; handleSearchList('DEFAULT'); };
 
-    /* onSearch — 조회 */
-    const onSearch = () => { rawGridPager.pageNo = 1; handleSearchList('DEFAULT'); };
 
-    /* onReset — 초기화 */
-    const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
+
+
+
 
     const expandedRows = reactive(new Set());
 
@@ -333,13 +330,10 @@ const raws = reactive([]);
 
   return {
       columns,
-      uiState, handleDateRangeChange,
       searchParam,
       rawGridPager, raws, cfSummary,
-      handleBtnAction, handleSelectAction, handleGridCellAction,
-      expandedRows, toggleRow, isExpanded,
-      fnStatusBadge, rawStatusLabel, fnRawStatusBadge, vendorTypeLabel, orderStatusLabel,
-      fmtW, fmtPct, doCollect, codes, };
+      handleBtnAction, handleSelectAction, toggleRow, isExpanded,
+      doCollect, };
   },
   template: /* html */`
 <bo-page title="정산수집원장"

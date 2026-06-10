@@ -40,7 +40,7 @@ window.XsSample02 = {
     /* ===== 무한스크롤 ===== */
     const visibleCount  = ref(10);
     const sentinelEl    = ref(null);               // 템플릿 ref: "더 불러오기" 요소
-    const cfVisibleRows = computed(() => gridRows.slice(0, uiState.visibleCount));
+
     const cfHasMore     = computed(() => uiState.visibleCount < gridRows.length);
     let _observer = null;
 
@@ -184,8 +184,7 @@ window.XsSample02 = {
     /* onReset — 초기화 */
     const onReset  = async () => { Object.assign(searchParam, searchParamOrg); pager.pageNo = 1; await handleSearchList('DEFAULT'); };
 
-    /* setFocused — 포커스 설정 */
-    const setFocused = idx => { uiState.focusedIdx = idx; };
+
 
     /* onCellChange — 셀 변경 */
     const onCellChange = row => {
@@ -274,26 +273,13 @@ window.XsSample02 = {
       }
     };
 
-    /* onDragStart — 드래그 시작 */
-    const onDragStart = idx => { uiState.dragSrc = idx; uiState.dragMoved = false; };
 
-    /* onDragOver — 드래그 오버 */
-    const onDragOver = (e, idx) => {
-      e.preventDefault();
-      if (uiState.dragSrc === null || uiState.dragSrc === idx) { return; }
-      const m = gridRows.splice(uiState.dragSrc, 1)[0];
-      gridRows.splice(idx, 0, m);
-      uiState.dragSrc = idx; uiState.dragMoved = true;
-    };
 
-    /* onDragEnd — 드래그 종료 */
-    const onDragEnd = () => {
-      if (uiState.dragMoved) { showToast('정렬이 변경되었습니다.'); }
-      uiState.dragSrc = null; uiState.dragMoved = false;
-    };
 
-    /* toggleCheckAll — 전체 체크 토글 */
-    const toggleCheckAll = () => { cfVisibleRows.value.forEach(r => { r._row_check = uiState.checkAll; }); };
+
+
+
+
 
     /* onReorder — 정렬 변경 알림 */
     const onReorder = () => showToast('정렬이 변경되었습니다.');
@@ -306,20 +292,9 @@ window.XsSample02 = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 
-    /* fnStatusBadge — 상태 배지 스타일 */
-    const fnStatusBadge = s => ({
-      N: 'background:#f0f0f0;color:#666;',
-      I: 'background:#dbeafe;color:#1e40af;',
-      U: 'background:#fef3c7;color:#92400e;',
-      D: 'background:#fee2e2;color:#991b1b;',
-    }[s] || '');
 
-    /* rowBg — 행 배경 스타일 */
-    const rowBg = s => ({
-      I: 'background:#f0fdf4;',
-      U: 'background:#fffbeb;',
-      D: 'background:#fff1f2;opacity:.45;',
-    }[s] || '');
+
+
 
     /* category_opts 가 문자열 배열 → {value,label} 으로 변환 (FoSearchArea select / fo-grid-crud 공유) */
     const cfCategoryOpts = computed(() => codes.category_opts.map(c => ({ value: c, label: c })));
@@ -348,9 +323,8 @@ window.XsSample02 = {
 
     return {
       columns,
-      uiState, codes, toast, searchParam, gridRows, pager,    // 상태 / 데이터
-      cfVisibleRows, cfHasMore, sentinelEl,                   // 무한스크롤
-      handleBtnAction, handleSelectAction,                    // dispatch
+      uiState, toast, searchParam, gridRows,              // 상태 / 데이터
+      handleBtnAction, handleSelectAction, // dispatch
     };
   },
   template: /* html */`

@@ -114,7 +114,7 @@ window.SyContactMng = {
 
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const cfDetailEditId = computed(() => detailModal.dtlId === '__new__' ? null : detailModal.dtlId);
-    const cfIsViewMode = computed(() => detailModal.dtlMode === 'view' && detailModal.dtlId !== '__new__');
+
     const cfDetailKey = computed(() => `${detailModal.dtlId}_${detailModal.dtlMode}_${detailModal.resetSeq}`);
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
@@ -137,8 +137,7 @@ window.SyContactMng = {
       handleSearchList();
     };
 
-    /* sortIcon — 정렬 */
-    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+
 
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -304,10 +303,10 @@ window.SyContactMng = {
 
     return {
       columns,
-      contacts, uiState, codes, searchParam, baseGridPager, detailModal,         // 상태 / 데이터
+      contacts, uiState, searchParam, baseGridPager, detailModal,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,         // dispatch (모든 이벤트 / 액션 라우팅)
-      cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,               // computed
-      fnStatusBadge, fnRowStyle, sortIcon, showToast, showConfirm, showRefModal, inlineNavigate, handleSearchList, // 헬퍼 / closure
+      cfDetailEditId, cfDetailKey,                        // computed
+      fnRowStyle, inlineNavigate,                                                                                 // 헬퍼 / closure
     };
   },
   template: /* html */`

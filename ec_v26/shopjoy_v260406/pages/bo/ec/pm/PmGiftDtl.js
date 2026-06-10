@@ -230,12 +230,6 @@ window.PmGiftDtl = {
       uiState.showVendorModal = false;
     };
 
-    const cfCondValLabel = computed(() => {
-      if (form.giftTypeCd === '금액조건') { return '기준금액 (원 이상)'; }
-      if (form.giftTypeCd === '수량조건') { return '기준수량 (개 이상)'; }
-      if (form.giftTypeCd === '구매조건') { return '기준금액 (원 이상)'; }
-      return '조건값';
-    });
 
     /* _afterApiOk — 후 API 성공 */
     const _afterApiOk  = (res, msg) => {
@@ -330,10 +324,10 @@ window.PmGiftDtl = {
 
     return {
       columns,
-      vendors, uiState, codes, form, errors,                                          // 상태 / 데이터
+      vendors, form, errors,                // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal,                                            // dispatch (모든 이벤트 / 액션 라우팅)
-      cfIsNew, cfHasId, cfSaveDisabled, cfIsView, cfVisibilityOptions, cfCondValLabel, cfSelectedVendorNm, // computed
-      tabs, tab, tabMode2, showVendorModal,                                                 // toRef
+      cfIsNew, cfSaveDisabled, cfIsView, cfVisibilityOptions, cfSelectedVendorNm,                         // computed
+      tabs, tab, tabMode2, showVendorModal, // toRef
       showTab, hasVisibility, coUtil,                                                  // 헬퍼 (coUtil: 템플릿 cofAnd 접근용)
     };
   },

@@ -210,8 +210,7 @@ window.OdOrderMng = {
       handleSearchData();
     };
 
-    /* sortIcon — 정렬 아이콘 */
-    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+
 
     /* handleSearchData — 처리 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
@@ -290,7 +289,7 @@ window.OdOrderMng = {
       props.navigate(pg, opts);
     };
     const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
-    const cfIsViewMode = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
+
     const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}_${detailPanel.resetSeq}`);
 
 
@@ -569,11 +568,11 @@ window.OdOrderMng = {
 
     return {
       columns,
-      orders, members, claims, uiState, codes, searchParam, listGridPager, detailPanel, checked, bulkForm, bulkOpen, memberPick,  // 상태 / 데이터
+      orders, members, uiState, codes, searchParam, listGridPager, detailPanel, checked, bulkForm, bulkOpen, memberPick,        // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                           // dispatch (모든 이벤트 / 액션 라우팅) + 모달 통합 콜백
-      cfDetailEditId, cfIsViewMode, cfDetailKey, cfAllChecked, cfBuildTmplMsg, cfBulkPreview, cfSiteNm,                    // computed
+      cfDetailEditId, cfDetailKey, cfAllChecked, cfBuildTmplMsg, cfBulkPreview,                        // computed
       selectedId: computed(() => detailPanel.selectedId),                                                                  // template 직접 참조
-      isChecked, fnGridRowStyle, sortIcon, fnStatusBadge, fnPayStatusBadge,                                                // 헬퍼
+      isChecked, fnGridRowStyle,                                           // 헬퍼
       inlineNavigate,                                                                                                      // Dtl 콜백 (closure 필요)
     };
   },

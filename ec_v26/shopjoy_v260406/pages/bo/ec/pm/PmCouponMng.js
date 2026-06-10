@@ -153,8 +153,7 @@ window.PmCouponMng = {
       handleSearchList();
     };
 
-    /* sortIcon — 정렬 */
-    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+
 
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -214,7 +213,7 @@ window.PmCouponMng = {
       props.navigate(pg, opts);
     };
     const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId);
-    const cfIsViewMode = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__');
+
     const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}_${uiStateDetail.resetSeq}`);
 
 
@@ -226,19 +225,9 @@ window.PmCouponMng = {
     /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = s => coUtil.cofCodeBadge('PROMO_STATUS', s, _COUPON_STATUS_FB[s] || 'badge-gray');
 
-    /* onSearch — 조회 */
-    const onSearch = async () => {
-      baseGridPager.pageNo = 1;
-      await handleSearchList('DEFAULT');
-    };
 
-    /* onReset — 초기화 */
-    const onReset = async () => {
-      Object.assign(searchParam, _initSearchParam());
-      uiState.sortKey = ''; uiState.sortDir = 'asc';
-      baseGridPager.pageNo = 1;
-      await handleSearchList();
-    };
+
+
 
     /* setPage — 설정 */
     const setPage = async n => { if (n >= 1 && n <= baseGridPager.pageTotalPage) { baseGridPager.pageNo = n; await handleSearchList('PAGE_CLICK'); } };
@@ -312,11 +301,11 @@ window.PmCouponMng = {
 
     return {
       columns,
-      coupons, uiState, codes, searchParam, baseGridPager, uiStateDetail,                  // 상태 / 데이터
+      coupons, uiState, searchParam, baseGridPager, uiStateDetail,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                   // dispatch (모든 이벤트 / 액션 라우팅)
-      cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                         // computed
-      discountLabel, fnStatusBadge, sortIcon,                                      // 헬퍼
-      inlineNavigate, showToast, showConfirm, showRefModal, // 콜백 / 전역
+      cfDetailEditId, cfDetailKey,                        // computed
+      discountLabel, fnStatusBadge,          // 헬퍼
+      inlineNavigate,                                      // 콜백 / 전역
       get tabMode() { return uiState.tabMode; }, set tabMode(v) { uiState.tabMode = v; },
       get selectedId() { return uiStateDetail.selectedId; }
     };

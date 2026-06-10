@@ -281,11 +281,11 @@ window.SyVendorInfoMng = {
 
     return {
       columns, tabs,
-      vendors, uiState, codes, searchParam, baseGridPager,                                    // 상태 / 데이터
-      brands, discnts, dlivTmplts, extras, tabLoading,                                // 탭 영역 데이터
-      brandPager, pricePager, dlivPager,                                              // 탭별 페이저
+      vendors, uiState, searchParam, baseGridPager,       // 상태 / 데이터
+      brands, discnts, dlivTmplts, tabLoading,        // 탭 영역 데이터
+      brandPager, pricePager, dlivPager, // 탭별 페이저
       handleBtnAction, handleSelectAction, handleGridCellAction,                                            // dispatch (모든 이벤트 / 액션 라우팅)
-      fnRowStyle, fnSelectedVendorNm,                                                 // 헬퍼
+      fnRowStyle, fnSelectedVendorNm, // 헬퍼
     };
   },
   template: /* html */`

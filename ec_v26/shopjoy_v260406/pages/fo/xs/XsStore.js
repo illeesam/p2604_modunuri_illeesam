@@ -15,6 +15,7 @@ window.XsStore = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, storeInfo: '', selectedStore: null, tabMode: 'col5'});
     const codes = reactive({});
 
+
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
@@ -219,10 +220,10 @@ window.XsStore = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
-      uiState, codes,                                                       // 상태
-      handleBtnAction, handleSelectAction,                                  // dispatch
-      cfStoreList,                                                          // computed
-      openStores, editedStoreInfo,                                          // 데이터
+      uiState,       // 상태
+      handleBtnAction, handleSelectAction, // dispatch
+      cfStoreList, // computed
+      editedStoreInfo,            // 데이터
     };
   },
   template: `

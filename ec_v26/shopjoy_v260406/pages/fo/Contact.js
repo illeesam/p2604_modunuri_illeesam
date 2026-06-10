@@ -14,6 +14,7 @@ window.Contact = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, openFaq: null});
     const codes = reactive({});
 
+
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
@@ -118,10 +119,9 @@ window.Contact = {
 
     return {
       columns,
-      uiState, codes, showToast,                       // 상태
-      handleBtnAction, handleSelectAction,             // dispatch
+      uiState, showToast,       // 상태
+      handleBtnAction, handleSelectAction, // dispatch
       form, errors, // 폼
-      cfInquiryCodes,                                  // computed
       handleSubmit,                                    // 이벤트 (호환)
     };
   },

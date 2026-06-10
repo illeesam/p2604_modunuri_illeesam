@@ -228,9 +228,8 @@ window.StConfigMng = {
 
     return {
       columns,
-      uiState, codes, configs, form, errors,
+      uiState, configs, form, errors,
       handleBtnAction, handleSelectAction,
-      fnCycleBadge, fnCycleCdToLabel,
     };
   },
   template: /* html */`

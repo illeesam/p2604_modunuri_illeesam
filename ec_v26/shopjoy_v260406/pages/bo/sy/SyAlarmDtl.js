@@ -199,9 +199,9 @@ window.SyAlarmDtl = {
 
     return {
       columns,
-      uiState, codes, form, errors, pathPickModal,  // 상태 / 데이터
+      form, errors, pathPickModal,                // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal,          // dispatch (모든 이벤트 / 액션 라우팅)
-      cfIsNew, cfSiteNm, cfDtlMode,                 // computed
+      cfIsNew, cfDtlMode,          // computed
     };
   },
   template: /* html */`

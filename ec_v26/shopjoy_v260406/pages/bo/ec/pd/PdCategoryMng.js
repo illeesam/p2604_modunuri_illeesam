@@ -513,11 +513,11 @@ window.PdCategoryMng = {
 
     return {
       columns,
-      codes, uiState, sites, searchParam, gridRows, categoriesGridPager, catPickerModal,           // 상태 / 데이터
+      codes, uiState, searchParam, gridRows, categoriesGridPager, catPickerModal,       // 상태 / 데이터
       handleBtnAction, handleSelectAction,                                           // dispatch (모든 이벤트 / 액션 라우팅)
-      cfCatPickerList,                                                               // computed
-      fnDepthColor, fnDepthBullet, parentNm, fnStatusClass, getRealIdx, fnCategoryDescCount,  // 헬퍼
-      focusedIdx, checkAll, dragoverRowIdx,                                          // ref
+      cfCatPickerList, // computed
+      fnDepthColor, fnDepthBullet, parentNm, fnStatusClass, getRealIdx, fnCategoryDescCount, // 헬퍼
+      focusedIdx, checkAll, dragoverRowIdx, // ref
     };
   },
 

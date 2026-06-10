@@ -410,13 +410,13 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
-      coUtil,  // 템플릿 cofAnd 접근용
+      coUtil, // 템플릿 cofAnd 접근용
       columns,
-      vendors, showVendorModal, uiState, codes, form, errors, snsModal, snsMsg,        // 상태 / 데이터
+      vendors, showVendorModal, form, errors, snsModal, snsMsg,                // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal,                                             // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfHasId, cfSaveDisabled, cfDtlMode, cfIssuedList, cfUsedList, cfSelectedVendorNm, tabs, // computed / reactive(tabs)
-      tab, tabMode2, previewTab, barcodeContainer, qrcodeContainer,                    // toRef
-      showTab, DEFAULT_START, DEFAULT_END,                                             // 헬퍼
+      tab, tabMode2, barcodeContainer, qrcodeContainer,            // toRef
+      showTab,                            // 헬퍼
     };
   },
   template: /* html */`

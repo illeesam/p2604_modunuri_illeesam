@@ -299,10 +299,10 @@ window.CmChattDtl = {
 
     return {
       columns,
-      uiState, codes, form, errors, refModal, msgBoxRef, cfUserChats,                  // 상태 / 데이터
-      handleBtnAction, handleSelectAction, fnCallbackModal,                              // dispatch + 모달 통합 콜백
+      uiState, form, errors, refModal, msgBoxRef, cfUserChats,       // 상태 / 데이터
+      handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch + 모달 통합 콜백
       cfIsNew, cfDtlMode, cfMemberChats, tabs, newTabs,                                // computed / reactive(tabs)
-      showTab, hasRef, refLabel,                                                       // 헬퍼
+      showTab, hasRef, refLabel, // 헬퍼
       cofAnd: coUtil.cofAnd,                                                            // 템플릿 && 대체 (속성값 && 금지)
       showRefModal,                                                                    // 참조 모달 (직접 호출)
     };

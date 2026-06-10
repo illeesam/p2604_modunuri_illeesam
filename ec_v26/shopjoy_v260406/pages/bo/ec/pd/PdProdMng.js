@@ -169,8 +169,7 @@ window.PdProdMng = {
       handleSearchList();
     };
 
-    /* sortIcon — 정렬 아이콘 */
-    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+
 
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -311,7 +310,7 @@ window.PdProdMng = {
 
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
-    const cfIsViewMode = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
+
     const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}_${detailPanel.resetSeq}`);
 
     // 기본 검색
@@ -354,12 +353,11 @@ window.PdProdMng = {
 
     return {
       columns,
-      products, uiState, codes, searchParam, baseGridPager, detailPanel, catModal,        // 상태 / 데이터
+      products, uiState, searchParam, baseGridPager, detailPanel, catModal,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                         // dispatch (모든 이벤트 / 액션 라우팅)
-      cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                         // computed
-      fnStatusBadge, sortIcon,                                                     // 헬퍼
+      cfDetailEditId, cfDetailKey,                        // computed
       inlineNavigate,                                                              // Dtl 콜백 (closure 필요)
-      showRefModal, showToast, showConfirm, handleSearchList,           // Dtl 임베드 전달용
+      handleSearchList,                                      // Dtl 임베드 전달용
     };
   },
   template: /* html */`

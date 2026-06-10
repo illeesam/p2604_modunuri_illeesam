@@ -292,7 +292,7 @@ window.SyBbsMng = {
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const cfBbmOptions = computed(() => bbms.map(b => ({ value: b.bbmId, label: b.bbmNm })));
     const cfDetailEditId = computed(() => detailModal.dtlId === '__new__' ? null : detailModal.dtlId);
-    const cfIsViewMode = computed(() => detailModal.dtlMode === 'view' && detailModal.dtlId !== '__new__');
+
     const cfDetailKey = computed(() => `${detailModal.dtlId}_${detailModal.dtlMode}_${detailModal.resetSeq}`);
 
     // 기본 검색
@@ -331,10 +331,10 @@ window.SyBbsMng = {
 
     return {
       columns,
-      bbsList, uiState, codes, searchParam, baseGridPager, detailModal,                          // 상태 / 데이터
+      bbsList, uiState, searchParam, baseGridPager, detailModal,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                         // dispatch (모든 이벤트 / 액션 라우팅)
-      cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                               // computed
-      fnRowStyle,                                                                        // 헬퍼
+      cfDetailEditId, cfDetailKey,                        // computed
+      fnRowStyle, // 헬퍼
       inlineNavigate, showToast, showConfirm, handleSearchBbs,                // Dtl props (closure 필요)
     };
   },

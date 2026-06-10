@@ -143,8 +143,7 @@ window.DpDispWidgetLibMng = {
       handleSearchList();
     };
 
-    /* sortIcon — 정렬 */
-    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+
     /* handleLoadPathTreeNodeCounts — 좌 트리 노드별 카운트 (검색조건 동기, 백엔드 재귀 CTE) */
     const handleLoadPathTreeNodeCounts = async () => {
       try {
@@ -206,8 +205,7 @@ window.DpDispWidgetLibMng = {
       handleSearchList('DEFAULT');
     });
 
-    /* pathLabel — 경로 라벨 */
-    const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
+
 
     const WIDGET_ICONS = {
       'image_banner':'🖼', 'product_slider':'🛒', 'product':'📦',
@@ -323,12 +321,11 @@ window.DpDispWidgetLibMng = {
 
     return {
       columns,
-      widgetLibs, uiState, widgetLibCounts, codes, searchParam, applied, listGridPager, detailPanel,           // 상태 / 데이터
+      widgetLibs, uiState, widgetLibCounts, searchParam, applied, listGridPager, detailPanel,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
-      cfFilterDirty, cfDetailEditId, cfDetailKey, cfNoFilter,                          // computed
-      pathLabel, wIcon, wTypeLabel, sortIcon, fnStatusCls, fnStatusLabel,              // 헬퍼
+      cfFilterDirty, cfDetailEditId, cfDetailKey, cfNoFilter, // computed
+      wTypeLabel,                                                        // 헬퍼
       inlineNavigate,                                                                   // Dtl 콜백 (closure 필요)
-      showToast, showConfirm, showRefModal, handleSearchList,               // Dtl 콜백
     };
   },
   template: /* html */`

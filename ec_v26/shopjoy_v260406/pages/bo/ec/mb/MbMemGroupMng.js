@@ -202,12 +202,7 @@ window.MbMemGroupMng = {
       }
     };
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
-      uiState.isPageCodeLoad = true;
-    };
+
 
     // ★ onMounted — 진입 시 목록 초기 조회
     onMounted(() => {
@@ -216,10 +211,9 @@ window.MbMemGroupMng = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 
-    /* fnStatusClass — 상태 배지 클래스 */
-    const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
 
-    const cfVisibleCount = computed(() => groups.filter(r => r._row_status !== 'D').length);
+
+
 
     // 기본 검색
     const columns = {};
@@ -244,10 +238,8 @@ window.MbMemGroupMng = {
 
     return {
       columns,
-      uiState, codes, searchParam, groups,                                             // 상태 / 데이터
+      uiState, searchParam, groups,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
-      cfVisibleCount,                                                                  // computed
-      fnStatusClass,                                                                   // 헬퍼
     };
   },
   template: `

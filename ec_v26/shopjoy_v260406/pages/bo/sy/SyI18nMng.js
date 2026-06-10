@@ -217,11 +217,11 @@ window.SyI18nMng = {
 
     return {
       columns,
-      uiState, codes, searchParam, baseGridPager, i18ns, msgForm,                         // 상태 / 데이터
-      msgFormColumns,                        // 컬럼 정의
+      uiState, searchParam, baseGridPager, i18ns, msgForm,       // 상태 / 데이터
+      msgFormColumns, // 컬럼 정의
       handleBtnAction, handleSelectAction, handleGridCellAction,                 // dispatch (모든 이벤트 / 액션 라우팅)
-      cfSelectedKey,                                                             // computed
-      fnRowStyle,                                                                // 헬퍼
+      cfSelectedKey, // computed
+      fnRowStyle, // 헬퍼
     };
   },
   template: `

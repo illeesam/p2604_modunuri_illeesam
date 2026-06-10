@@ -102,8 +102,6 @@ window.EventView = {
       };
     });
 
-    /* setTab — 설정 */
-    const setTab = (i) => { uiState.activeTab = i; };
 
     /* 더 많은 프로모션: 단건 상세 응답이라 목록 없음 → 빈 배열 */
     const cfPromoEvents = computed(() => []);
@@ -115,10 +113,8 @@ window.EventView = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
-      uiState, codes,                                  // 상태
-      handleBtnAction, handleSelectAction,             // dispatch
-      cfEvent, cfPromoEvents,                          // computed
-      setTab,                                          // 이벤트
+      handleBtnAction, handleSelectAction, // dispatch
+      cfEvent, cfPromoEvents, // computed
     };
   },
 

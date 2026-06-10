@@ -206,10 +206,10 @@ window.SyTemplateDtl = {
 
     return {
       columns,
-      uiState, codes, form, errors,                                     // 상태 / 데이터
-      handleBtnAction, fnCallbackModal,                                   // dispatch + 모달 통합 콜백
-      cfIsNew, cfDtlMode, cfUseHtmlEditor, cfIsLongContent,             // computed
-      showToast, showConfirm,                                           // 모달 props
+      uiState, form, errors,       // 상태 / 데이터
+      handleBtnAction, fnCallbackModal, // dispatch + 모달 통합 콜백
+      cfIsNew, cfDtlMode, cfUseHtmlEditor, cfIsLongContent, // computed
+      showToast, showConfirm, // 모달 props
     };
   },
   template: /* html */`

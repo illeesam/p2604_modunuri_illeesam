@@ -154,10 +154,10 @@ window.OdOrderHist = {
 
     return {
       columns,
-      uiState, orderItems, botTab, tabMode2,                                                              // 상태 / 데이터
+      orderItems, botTab, tabMode2,         // 상태 / 데이터
       handleBtnAction, handleSelectAction,                                                                // dispatch (모든 이벤트 / 액션 라우팅)
       cfRelatedDliv, cfRelatedClaims, cfDlivHistory, tabs,                                                // computed / reactive(tabs)
-      showTab,                                                                                            // 헬퍼
+      showTab, // 헬퍼
       orderId: props.orderId,                                                                             // template 직접 참조
     };
   },

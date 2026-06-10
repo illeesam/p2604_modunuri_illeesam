@@ -137,8 +137,7 @@ window.CmChattMng = {
       handleSearchList();
     };
 
-    /* sortIcon — 정렬 아이콘 */
-    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+
 
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -251,7 +250,7 @@ window.CmChattMng = {
 
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
-    const cfIsViewMode = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
+
     const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}_${detailPanel.resetSeq}`);
 
     /* fnStatusBadge — 상태 배지 */
@@ -301,11 +300,11 @@ window.CmChattMng = {
 
     return {
       columns,
-      chatts, uiState, codes, searchParam, baseGridPager, detailPanel,                         // 상태 / 데이터
+      chatts, uiState, searchParam, baseGridPager, detailPanel,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                       // dispatch (모든 이벤트 / 액션 라우팅)
-      cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                             // computed
-      sortIcon, fnStatusBadge, fnGridRowClass,                                         // 헬퍼
-      inlineNavigate, showToast, showConfirm, showRefModal, handleSearchList, // Dtl 콜백 / 모달 함수
+      cfDetailEditId, cfDetailKey,                        // computed
+      fnGridRowClass,                         // 헬퍼
+      inlineNavigate,                                                        // Dtl 콜백 / 모달 함수
     };
   },
   template: /* html */`

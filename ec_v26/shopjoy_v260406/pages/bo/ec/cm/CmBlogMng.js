@@ -125,8 +125,7 @@ window.CmBlogMng = {
       handleSearchList();
     };
 
-    /* sortIcon — 정렬 아이콘 */
-    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+
 
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -321,10 +320,9 @@ window.CmBlogMng = {
 
     return {
       columns,
-      blogs, uiState, codes, searchParam, baseGridPager, detailPanel,                          // 상태 / 데이터
+      blogs, uiState, searchParam, baseGridPager, detailPanel,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
-      cfSelectedRow,                                                                   // computed
-      sortIcon, fnYnBadge, fnGridRowClass,                                             // 헬퍼
+      fnGridRowClass,                     // 헬퍼
     };
   },
   template: `

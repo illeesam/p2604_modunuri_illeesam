@@ -434,9 +434,9 @@ window.SyBatchMng = {
 
     return {
       columns,
-      batches, uiState, batchCounts, codes, searchParam, gridRows, pathPickModal, cronModal, histReloadTrigger, histFilterBatchId, // 상태 / 데이터
+      batches, uiState, batchCounts, searchParam, gridRows, pathPickModal, cronModal, histReloadTrigger, histFilterBatchId,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                               // dispatch (모든 이벤트 / 액션 라우팅)
-      cfSiteNm, cfShowRunNow,                                                            // computed / 헬퍼
+      cfShowRunNow,          // computed / 헬퍼
     };
   },
   template: /* html */`

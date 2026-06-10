@@ -383,11 +383,7 @@ window.DpDispUiSimul = {
     ───────────────────────────────────────── */
     const checkedPanelIds = reactive(new Set());
 
-    /* panelWidgetTypes — 패널 위젯 Types */
-    const panelWidgetTypes = (p) => {
-      if (p.rows && p.rows.length) { return p.rows.map(r => r.widgetType); }
-      return p.widgetType ? [p.widgetType] : [];
-    };
+
 
     /* 영역별 유효 패널 목록 (날짜·영역 필터 적용) */
     const cfStructAreaList = computed(() =>
@@ -503,18 +499,7 @@ window.DpDispUiSimul = {
     const cfCheckedWidgetCount = computed(() => checkedWidgetKeys.size);
 
     /* 선택된 위젯 목록 (패널·영역 정보 포함) */
-    const cfCheckedWidgetList = computed(() => {
-      const result = [];
-      window.safeArrayUtils.safeForEach(cfStructAreaList.value, a =>
-        a.panels.forEach(p =>
-          (p.rows || []).forEach((w, wi) => {
-            if (checkedWidgetKeys.has(`${p.dispId}_${wi}`))
-              result.push({ ...w, _dispId: p.dispId, _panelNm: p.name, _area: a.codeLabel, _wi: wi });
-          })
-        )
-      );
-      return result;
-    });
+
 
     /* ─────────────────────────────────────────
        Tab3: 소스 구조
@@ -1000,10 +985,7 @@ window.DpDispUiSimul = {
     });
 
     /* 모달 탭 목록 */
-    const cfDispUiModalTabs = computed(() =>
-      [{ key:'content', label:'내용보기' }, { key:'struct', label:'구조보기' }, { key:'source', label:'소스보기' }]
-        .filter(t => dispUiViewOpts[t.key])
-    );
+
 
     /* _validateDispUi — 검증 Disp UI */
     const _validateDispUi = () => {
@@ -1019,7 +1001,7 @@ window.DpDispUiSimul = {
       /* 레이어 닫지 않음 */
     };
 
-    const cfDispUiSourceText = computed(() => ''); /* DispUi 컴포넌트 내부 처리 */
+/* DispUi 컴포넌트 내부 처리 */
 
     /* ── DispX02Area props ── */
     const cfFilterParams = computed(() => ({
@@ -1112,43 +1094,34 @@ window.DpDispUiSimul = {
 
     return {
       handleBtnAction, handleSelectAction, fnCallbackModal,                           // dispatch + 모달 통합 콜백
-      today, cfSiteNm, codes,
-      uiState, switchTab, mainTabs,
+      cfSiteNm, codes,
+      uiState, mainTabs,
       searchParam,
       selectedAreas, cfAllAreaListRaw, cfAreaList,
-      onReset,
-      toggleArea, selectAllAreas, clearAllAreas, cfAreaBtnLabel,
-      panelsForArea, cfTotalPanels, resetDate, isDateInRange,
-      cfFilterParams, cfDispOpt, areaInfo,
+      cfAreaBtnLabel,
+      panelsForArea, cfTotalPanels, cfFilterParams, cfDispOpt, areaInfo,
       /* Tab2 */
-      cfStructAreaList, expandedAreas, toggleAreaExpand,
-      checkedPanelIds, togglePanelCheck, checkAllPanels, clearCheckedPanels,
+      cfStructAreaList, expandedAreas, checkedPanelIds, togglePanelCheck, checkAllPanels, clearCheckedPanels,
       checkAreaPanels, isAreaAllChecked,
       cfCheckedCount,
-      panelWidgetTypes, isPanelAllChecked,
-      checkedWidgetKeys, toggleWidgetCheck, checkAllWidgets, clearCheckedWidgets, cfCheckedWidgetCount, cfCheckedWidgetList,
-      /* Tab2 그리드 */
+      isPanelAllChecked,
+      checkedWidgetKeys, toggleWidgetCheck, checkAllWidgets, clearCheckedWidgets, cfCheckedWidgetCount, /* Tab2 그리드 */
       structSlots, cfStructGridColumns,
       STRUCT_VIEWPORT,
       applyAreaLayout,
       onStructDragOver, onStructDragLeave, onStructDrop,
       removeStructSlot, setStructSpan, cfStructPlacedCount, resetStructGrid,
-      toggleStructSpanPopup, closeStructSpanPopup,
-      structDashItems,
+      toggleStructSpanPopup, structDashItems,
       onStructDashDragOver, onStructDashDragLeave, onStructDashDrop,
-      startStructDashMove, startStructDashResize, removeStructDashItem,
-      onAreaDragStart, onPanelDragStart, onAreaDragEnd,
+      startStructDashMove, startStructDashResize, onAreaDragStart, onPanelDragStart, onAreaDragEnd,
       /* Tab3 */
-      cfSourceLines, cfSourceText, copySource,
+      copySource,
       wLabel, wIcon,
       /* Ui미리보기 */
       cfDispUiAreaBtnLabel, dispUiToggleArea, dispUiSelectAllAreas, dispUiClearAllAreas,
       dispUiForm,
       dispUiViewOpts, cfDispUiParamObj,
-      cfDispUiModalTabs, cfDispUiSourceText,
-      cfDispUiSiteList, selectDispUiSite,
-      cfDispUiMemberList, selectDispUiMember,
-      openDispUiLayer, openDispUiModal, openDispUiPopup, openDispUiOther, resetDispUiForm,
+      cfDispUiSiteList, cfDispUiMemberList, openDispUiLayer, openDispUiModal, openDispUiPopup, openDispUiOther, resetDispUiForm,
       DISP_UI_OTHER_PAGES, closeOtherMenu, pickOtherPage,
     };
   },

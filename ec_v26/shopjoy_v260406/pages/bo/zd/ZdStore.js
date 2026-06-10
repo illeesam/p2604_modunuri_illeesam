@@ -220,10 +220,7 @@ window.ZdStore = {
       }
     };
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      uiState.isPageCodeLoad = true;
-    };
+
 
     onMounted(() => {
       // storeList 는 computed 이므로 .value 필요. 잘못된 .length 검사가 무한 호출 유발 가능 → 안전 가드.
@@ -237,9 +234,9 @@ window.ZdStore = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
-      uiState, openStores, editedStoreInfo,                                // 상태 / 데이터
+      uiState, editedStoreInfo,            // 상태 / 데이터
       handleBtnAction, handleSelectAction,                                  // dispatch (모든 이벤트 / 액션 라우팅)
-      storeList, storeTabs,                                                  // computed
+      storeList, storeTabs, // computed
     };
   },
   template: `

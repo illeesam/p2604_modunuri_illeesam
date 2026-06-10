@@ -369,10 +369,10 @@ window.SyPathMng = {
 
     return {
       columns,
-      uiState, searchParam, codes, expanded, gridRows, baseGridPager, parentModal,         // 상태 / 데이터
+      uiState, searchParam, expanded, gridRows, baseGridPager, parentModal,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                         // dispatch (모든 이벤트 / 액션 라우팅)
-      cfTree, cfParentTree, cfDirtyRows,                                           // computed
-      fnRowClass, getParentLabel, fnShowCancel, fnShowDelete,                      // 헬퍼
+      cfTree, cfParentTree,             // computed
+      fnRowClass, getParentLabel, fnShowCancel, fnShowDelete, // 헬퍼
     };
   },
   template: /* html */`

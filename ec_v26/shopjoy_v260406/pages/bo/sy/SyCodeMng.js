@@ -728,15 +728,13 @@ window.SyCodeMng = {
 
     return {
       columns,
-      uiState, codeGrpCounts, pageCodes, searchParam, treeExpanded, flatTree,                  // 상태 / 데이터
+      uiState, codeGrpCounts, searchParam, treeExpanded, flatTree,           // 상태 / 데이터
       cfCodeGridColumns, // 컬럼 정의 (computed 캐싱)
-      treeRowAccessor, treeRowKeyFn,                                            // 컬럼 부속
+      treeRowAccessor, treeRowKeyFn, // 컬럼 부속
       handleBtnAction, handleSelectAction, handleGridCellAction,                                      // dispatch (모든 이벤트 / 액션 라우팅)
-      fnCodeListTitle,                                                          // 헬퍼
+      fnCodeListTitle, // 헬퍼
       cfDetailEditId, cfDetailKey,                                              // computed (상세 패널)
       openNew, inlineNavigate,                                                  // 상세 패널 제어 / Dtl 콜백 (closure 필요)
-      showToast, showConfirm,                                                   // Dtl 콜백
-      handleSearchList,                                                         // Dtl reload 콜백
     };
   },
   template: /* html */`

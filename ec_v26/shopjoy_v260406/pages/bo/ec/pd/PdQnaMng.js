@@ -144,8 +144,7 @@ window.PdQnaMng = {
       handleSearchList();
     };
 
-    /* sortIcon — 정렬 아이콘 */
-    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+
 
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -225,10 +224,9 @@ window.PdQnaMng = {
 
     return {
       columns,
-      qnas, uiState, codes, baseGridPager, searchParam, form,                                  // 상태 / 데이터
-      handleBtnAction, handleSelectAction, handleGridCellAction,                       // dispatch
-      cfSiteNm,                                                                        // computed
-      sortIcon, fnStatusBadge, fnAnswLabel, fnProdNm, fnMemNm,                         // 헬퍼
+      qnas, uiState, baseGridPager, searchParam, form,       // 상태 / 데이터
+      handleBtnAction, handleSelectAction, handleGridCellAction, // dispatch
+      fnStatusBadge, fnAnswLabel, fnProdNm, fnMemNm,          // 헬퍼
     };
   },
   template: /* html */`

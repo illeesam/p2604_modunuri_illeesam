@@ -328,18 +328,7 @@ window.XsSample14 = {
       checkedPanels.has(p.dispId) &&
       ((p.rows||[]).length === 0 || (p.rows||[]).every((_,wi) => checkedWidgets.has(`${p.dispId}_${wi}`)));
     /* 선택 위젯 목록 */
-    const cfCheckedWidgetList = computed(() => {
-      const result = [];
-      cfStructAreaList.value.forEach(a =>
-        a.panels.forEach(p =>
-          (p.rows||[]).forEach((w, wi) => {
-            if (checkedWidgets.has(`${p.dispId}_${wi}`))
-              result.push({ ...w, _dispId: p.dispId, _panelNm: p.name, _area: a.codeLabel, _wi: wi });
-          })
-        )
-      );
-      return result;
-    });
+
     /* 화면영역 드롭다운 */
     const cfAreaBtnLabel = computed(() => selectedAreas.size === 0 ? '전체 영역' : `${selectedAreas.size}개 선택`);
 
@@ -579,26 +568,20 @@ window.XsSample14 = {
     initExpand();
 
     return {
-      uiState, codes, searchParam,                                     // 상태 / 데이터
-      handleBtnAction, handleSelectAction, fnCallbackModal,                              // dispatch
-      // ===== 영역 / 카테고리 ==================================================
+      uiState, codes, searchParam, // 상태 / 데이터
+      handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch
       selectedAreas, cfAllAreas, cfAreaBtnLabel,
-      selectedCatIds, cfCatBtnLabel, cfSelectedCatNames,
-      // ===== 사용자 ==========================================================
+      selectedCatIds, cfCatBtnLabel,
       isLoggedIn, userGrade, userNm, cfAccessibleConds,
-      // ===== 트리 / 위젯 ======================================================
       cfStructAreaList, expandedAreas,
       checkedPanels, checkedWidgets,
       isAreaAllChecked, isPanelAllChecked,
-      cfCheckedWidgetList,
-      // ===== 미리보기 / 드래그 ================================================
       TABS, GRID_COLS, gridCells, wColor,
       cfPreviewWidgets,
       onWidgetDragStart, onAreaNodeDragStart, onPanelNodeDragStart, onDragEnd,
       onCellDrop,
       dashItems, dashDrag, dashResize,
       onDashDrop, onDashItemMd, onDashResizeMd, onDashMm, onDashMu,
-      // ===== 위젯정보 / 뷰포트 ================================================
       popoverPos, showWidgetInfo,
       cfAutoGridColumns, cfViewportWidth,
       wLabel, wIcon,

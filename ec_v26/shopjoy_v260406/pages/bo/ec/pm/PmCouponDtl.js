@@ -453,13 +453,13 @@ window.PmCouponDtl = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
-      coUtil,  // 템플릿 cofAnd 접근용
+      coUtil, // 템플릿 cofAnd 접근용
       columns,
-      uiState, codes, form, errors, vendors,                                          // 상태 / 데이터
+      codes, form, errors, vendors,         // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal,                                            // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfDtlMode, cfHasId, cfSaveDisabled, cfIssuedList, cfUsedList, cfIssuedTop, cfUsedTop, cfSelectedVendorNm, tabs, // computed / reactive(tabs)
-      tab, tabMode2, previewTab, barcodeContainer, qrcodeContainer, showVendorModal,  // toRef
-      showTab, coUtil,                                                                // 헬퍼 / 전역
+      tab, tabMode2, barcodeContainer, qrcodeContainer, showVendorModal,            // toRef
+      showTab, coUtil, // 헬퍼 / 전역
     };
   },
   template: /* html */`

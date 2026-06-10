@@ -358,10 +358,9 @@ window.SyMemberLoginHist = {
 
     return {
       columns,
-      searchParam, codes, logGridPager, tabCounts, histTabs, cfCurrentList, allExpanded,                       // 상태 / 데이터
+      searchParam, logGridPager, histTabs, cfCurrentList, allExpanded,                  // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                                                              // dispatch (모든 이벤트 / 액션 라우팅)
-      fnResultBadge, fnResultLabel, fnActionBadge, fnActionLabel, fnTypeBadge, fnDecode,                // template 표현식에서 사용
-      fnRowExpanded, fnRowClickStyle,                                                                   // 행 표시
+      fnRowExpanded, fnRowClickStyle, // 행 표시
     };
   },
   template: /* html */`

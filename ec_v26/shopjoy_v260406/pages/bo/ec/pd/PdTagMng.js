@@ -141,8 +141,7 @@ window.PdTagMng = {
     };
 
 
-    /* fnYnBadge — 사용여부 배지 */
-    const fnYnBadge = v => v === 'Y' ? 'badge-green' : 'badge-gray';
+
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
@@ -188,9 +187,8 @@ window.PdTagMng = {
 
     return {
       columns,
-      uiState, codes, searchParam, baseGridPager, gridRows,                                  // 상태 / 데이터
-      handleBtnAction, handleSelectAction, handleGridCellAction,                                           // dispatch
-      fnYnBadge,                                                                     // 헬퍼
+      uiState, searchParam, baseGridPager, gridRows,       // 상태 / 데이터
+      handleBtnAction, handleSelectAction, handleGridCellAction, // dispatch
     };
   },
   template: `

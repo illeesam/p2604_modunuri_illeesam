@@ -171,9 +171,9 @@ window.PdCategoryDtl = {
 
     return {
       columns,
-      form, errors, codes,                                       // 상태 / 데이터
-      handleBtnAction,                                           // dispatch
-      cfIsNew, cfDtlMode, cfParentOptions,                       // computed
+      form, errors,       // 상태 / 데이터
+      handleBtnAction, // dispatch
+      cfIsNew, cfDtlMode,                 // computed
     };
   },
   template: /* html */`

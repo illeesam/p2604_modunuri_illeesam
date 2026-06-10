@@ -130,8 +130,7 @@ window.DpDispAreaMng = {
       handleSearchData();
     };
 
-    /* sortIcon — 정렬 아이콘 */
-    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+
 
     /* handleLoadPathTreeNodeCounts — 좌 트리 노드별 카운트 (검색조건 동기) */
     const handleLoadPathTreeNodeCounts = async () => {
@@ -181,8 +180,7 @@ window.DpDispAreaMng = {
       handleSearchData('DEFAULT');
     });
 
-    /* fnPathLabel — 경로 라벨 */
-    const fnPathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
+
 
     /* selectNode — 노드 선택 (상세영역 빈 신규 폼으로 초기화) */
     const selectNode = (id) => { uiState.selectedPath = id; listGridPager.pageNo = 1; resetDetailToNew(); handleSearchData('DEFAULT'); };
@@ -269,10 +267,9 @@ window.DpDispAreaMng = {
 
     return {
       columns,
-      areas, uiState, areaCounts, codes, searchParam, listGridPager, detailPanel,                       // 상태 / 데이터
+      areas, uiState, areaCounts, searchParam, listGridPager, detailPanel,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                    // dispatch (모든 이벤트 / 액션 라우팅)
-      cfDetailEditId, cfDetailKey,                                                  // computed
-      fnPathLabel, sortIcon,                                                        // 헬퍼
+      cfDetailEditId, cfDetailKey, // computed
       inlineNavigate, handleSearchData,                                             // Dtl 콜백 (closure 필요)
     };
   },

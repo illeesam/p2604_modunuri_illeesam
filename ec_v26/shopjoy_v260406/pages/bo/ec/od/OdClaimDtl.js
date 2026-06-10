@@ -373,12 +373,12 @@ window.OdClaimDtl = {
 
     return {
       columns,
-      form, errors, codes, claimItems, expandedItems, activeTab, tabMode2,                                // 상태 / 데이터
+      form, errors, claimItems, activeTab, tabMode2,                      // 상태 / 데이터
       handleBtnAction, handleSelectAction,                                                                // dispatch (모든 이벤트 / 액션 라우팅)
-      cfIsNew, cfDtlMode, cfStatusOptions, cfClaimSteps, cfCurrentStepIdx, tabs, cfEditHistList,        // computed
-      cfPaymentList, cfStatusHistList, cfAllExpanded,                                                     // computed
-      CLAIM_TYPE_COLOR,                                                                                   // 상수
-      fmt, showTab, isExpanded, fnItemExpanded, getExchangedItem,                                         // 헬퍼
+      cfIsNew, cfDtlMode, cfClaimSteps, cfCurrentStepIdx, tabs, cfEditHistList,                 // computed
+      cfPaymentList, cfStatusHistList, cfAllExpanded, // computed
+      CLAIM_TYPE_COLOR, // 상수
+      fmt, showTab, isExpanded, fnItemExpanded, getExchangedItem, // 헬퍼
       showRefModal,                                                                                       // 모달 (template 직접 참조)
     };
   },

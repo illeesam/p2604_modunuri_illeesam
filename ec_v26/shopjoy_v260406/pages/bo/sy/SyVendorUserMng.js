@@ -171,17 +171,11 @@ window.SyVendorUserMng = {
         console.warn('[SyVendorUserMng] role/menu load failed', err);
       }
     };
-    /* toggleNode — 노드 토글 */
-    const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
 
-    /* selectNode — 노드 선택 */
-    const selectNode = (id) => { uiState.selectedPath = id; };
 
     /* expandAll — 펼치기 전체 */
     const expandAll = () => { expanded.add(null); roles.forEach(r => expanded.add(r.roleCode)); };
 
-    /* collapseAll — 접기 전체 */
-    const collapseAll = () => { expanded.clear(); expanded.add(null); };
 
     /* fnBuildBizPagerNums — 유틸 */
     const fnBuildBizPagerNums = () => { vendorGridPager.pageTotalCount=vendors.length; vendorGridPager.pageTotalPage=Math.max(1,Math.ceil(vendors.length/vendorGridPager.pageSize)); vendorGridPager.pageList=vendors.slice((vendorGridPager.pageNo-1)*vendorGridPager.pageSize,vendorGridPager.pageNo*vendorGridPager.pageSize); const c=vendorGridPager.pageNo,l=vendorGridPager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); vendorGridPager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
@@ -231,8 +225,6 @@ window.SyVendorUserMng = {
 
     const cfVendorMap = computed(() => Object.fromEntries(vendors.map(v => [v.vendorId, v])));
 
-    /* fnVendorNm — 유틸 */
-    const fnVendorNm  = (id) => (cfVendorMap.value[id] || {}).vendorNm || '#'+id;
 
     /* fnVendorTypeCd — 유틸 */
     const fnVendorTypeCd = (id) => (cfVendorMap.value[id] || {}).vendorTypeCd || '';
@@ -248,11 +240,7 @@ window.SyVendorUserMng = {
     /* setBizPage — 설정 */
     const setBizPage    = n => { if(n>=1&&n<=vendorGridPager.pageTotalPage) { vendorGridPager.pageNo=n; fnBuildBizPagerNums(); } };
 
-    /* fnVendorStatusBadge — 유틸 */
-    const fnVendorStatusBadge = (s) => ({ ACTIVE:'badge-green', SUSPENDED:'badge-orange', TERMINATED:'badge-red' }[s] || 'badge-gray');
 
-    /* fnVendorStatusLabel — 유틸 */
-    const fnVendorStatusLabel = (s) => ({ ACTIVE:'운영중', SUSPENDED:'중지', TERMINATED:'종료' }[s] || s);
 
     /* fnVendorTypeBadge — 유틸 */
     const fnVendorTypeBadge   = (cd) => ({ SALES:'badge-blue', DELIVERY:'badge-purple', PARTNER:'badge-teal', INTERNAL:'badge-gray' }[cd] || 'badge-gray');
@@ -332,16 +320,6 @@ window.SyVendorUserMng = {
       }
     };
 
-    /* cfPathRoleCodes: 선택된 역할 코드 하위 descendants */
-    const cfPathRoleCodes = computed(() => {
-      if (uiState.selectedPath == null) { return null; }
-      const root = roles.find(r => r.roleCode === uiState.selectedPath);
-      if (!root) { return new Set([uiState.selectedPath]); }
-      const ids = new Set([root.roleId]);
-      let added = true;
-      while (added) { added = false; roles.forEach(r => { if(ids.has(r.parentRoleId)&&!ids.has(r.roleId)){ids.add(r.roleId);added=true;}}); }
-      return new Set(roles.filter(r=>ids.has(r.roleId)).map(r=>r.roleCode));
-    });
 
     /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { userGridPager.pageTotalCount=vendorUsers.length; userGridPager.pageTotalPage=Math.max(1,Math.ceil(vendorUsers.length/userGridPager.pageSize)); userGridPager.pageList=vendorUsers.slice((userGridPager.pageNo-1)*userGridPager.pageSize,userGridPager.pageNo*userGridPager.pageSize); const c=userGridPager.pageNo,l=userGridPager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); userGridPager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
@@ -667,12 +645,11 @@ window.SyVendorUserMng = {
 
     return {
       columns,
-      uiState, codes, vendorUsers, vendors, vendorGridPager, userGridPager, formData, userRoles, roleTreeExpanded,            // 상태 / 데이터
-      handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                               // dispatch (모든 이벤트 / 액션 라우팅)
-      cfVendorMap, cfFormRoleTree, cfFormAllowedRootCode, cfSelectedModalRole, cfModalMenuList,                // computed
-      fnVendorNm, fnVendorTypeCd, fnVendorSummary, fnVendorStatusBadge, fnVendorStatusLabel,                   // 헬퍼
-      fnVendorTypeBadge, fnVendorTypeLabel, fnStatusBadge, fnStatusLabel, fnVendorRowStyle, fnUserRowStyle,    // 헬퍼
-      fnPermBadgeColor, roleNmByCode, onRoleRootHover, onRoleChildHover, onRoleChildLeave,                     // 헬퍼
+      uiState, vendorUsers, vendors, vendorGridPager, userGridPager, formData, userRoles, roleTreeExpanded,    // 상태 / 데이터
+      handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                              // dispatch (모든 이벤트 / 액션 라우팅)
+      cfFormRoleTree, cfFormAllowedRootCode, cfSelectedModalRole, cfModalMenuList,                             // computed
+      fnVendorRowStyle, fnUserRowStyle, fnPermBadgeColor, roleNmByCode,                                        // 헬퍼
+      onRoleRootHover, onRoleChildHover, onRoleChildLeave,                                                     // 헬퍼
     };
   },
   template: /* html */`

@@ -22,6 +22,7 @@ window.Cart = {
     });
     const codes = reactive({});
 
+
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
@@ -198,11 +199,11 @@ window.Cart = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
-      uiState, codes, cart,                                                // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                                 // dispatch
-      cfSortedCart, cfAllChecked, cfSomeChecked,                           // computed - 목록
-      cfSummaryItems, cfTotalPriceStr, cfOrderCount,                       // computed - 요약
-      isChecked, cartSortIcon, formatPrice,                                // 헬퍼
+      uiState, cart,       // 상태 / 데이터
+      handleBtnAction, handleSelectAction, // dispatch
+      cfSortedCart, cfAllChecked, cfSomeChecked, // computed - 목록
+      cfSummaryItems, cfTotalPriceStr, cfOrderCount, // computed - 요약
+      isChecked, cartSortIcon, formatPrice, // 헬퍼
     };
   },
   template: /* html */ `

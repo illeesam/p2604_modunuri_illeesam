@@ -514,13 +514,13 @@ window.PdCategoryProdMng = {
 
     return {
       columns,
-      codes, uiState, categories, categoryProds, cfVisibleCategoryProds, searchParam, pager, pickerResults, // 상태 / 데이터
+      codes, uiState, categoryProds, cfVisibleCategoryProds, searchParam, pickerResults,                   // 상태 / 데이터
       cfCatProdGridColumns, // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                  // dispatch (모든 이벤트 / 액션 라우팅)
       cfSelectedCatId, cfSelectedCat, cfIsLeafCat, cfTypeCountMap, tabs,                    // computed / reactive(tabs)
-      fnCatProdRowStyle, fnDepthColor, fnDepthBullet, totalProdCount,                       // 헬퍼
-      TYPE_TABS, EMPHASIS_OPTS, hasEmphasis, getProdNm, getProd, getCatPath,                // 헬퍼
-      dragoverIdx, pickerOpen, pickerSearchType, pickerSearch,                              // ref
+      fnCatProdRowStyle, fnDepthColor, fnDepthBullet, totalProdCount, // 헬퍼
+      TYPE_TABS, EMPHASIS_OPTS, hasEmphasis, getProdNm, getProd, getCatPath, // 헬퍼
+      dragoverIdx, pickerOpen, pickerSearchType, pickerSearch, // ref
     };
   },
 

@@ -19,6 +19,7 @@ window.Prod03List = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, searchText: '', priceMin: '', priceMax: '', isMobile: window.innerWidth < 768, filterOpen: false });
     const codes = reactive({});
 
+
     /* -- 상품 데이터 -- */
     const allProds = reactive([]);
 
@@ -304,13 +305,13 @@ window.Prod03List = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
-       columns, pager,                                                      // 컬럼 / 페이저
-       uiState, codes, allProds,                                     // 상태 / 데이터
-      selColors, selSizes, selCats,                                        // 필터 상태
-      handleBtnAction, handleSelectAction,                                 // dispatch
-      cfAllColors, cfAllSizes, cfAllCats, cfHasFilter,                     // computed
+       columns, pager, // 컬럼 / 페이저
+       uiState, allProds,       // 상태 / 데이터
+      selColors, selSizes, selCats, // 필터 상태
+      handleBtnAction, handleSelectAction, // dispatch
+      cfAllColors, cfAllSizes, cfAllCats, cfHasFilter, // computed
       fnCategoryLabel, isLiked, // 헬퍼 / 컬럼
-      onSearch, clearFilters,                                              // FoSearchArea @search 직결용 + 폴백
+      onSearch,              // FoSearchArea @search 직결용 + 폴백
     };
   },
   template: /* html */ `

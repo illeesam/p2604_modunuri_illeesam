@@ -623,13 +623,12 @@ const bundleGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, 
 
     return {
       columns,
-      codes, uiState, bundles, bundleList, searchParam, bundleGridPager,                                   // 상태 / 데이터
-      categories, products, brands, categoryProds, dtlCategories, dtlItems, newForm, newErrors,  // 상태 / 데이터
-      pickerResults,                                                                             // 상태 / 데이터
+      codes, uiState, bundles, bundleList, searchParam, bundleGridPager, // 상태 / 데이터
+      dtlCategories, dtlItems, newForm, newErrors,                                             // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal,                                                       // dispatch (모든 이벤트 / 액션 라우팅)
       cfCatExcludeSet, cfDtlRateSum, cfDtlRateOk, cfDtlRateDiff, cfDtlProdNm, cfDtlBundleId, cfPickerList, // computed
-      fnBundleRowStyle, fnBundleStatusBadge, fnBundleStatusText, rateSum, fnRateSumBadge,        // 헬퍼
-      getProdNm, getProdPrice, getCategoryNm, getCategoryDepth, getBrandNm, getVendorNm,          // 헬퍼
+      fnBundleRowStyle,                                                                  // 헬퍼
+      getProdNm, getProdPrice, getBrandNm, getVendorNm,                                 // 헬퍼
     };
   },
 

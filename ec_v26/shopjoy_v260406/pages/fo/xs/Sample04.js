@@ -289,13 +289,11 @@ window.XsSample04 = {
 
     return {
       columns,
-      uiState, codes,                                                        // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                                   // dispatch
-      // ===== modals 영역 ======================================================
+      uiState, codes, // 상태 / 데이터
       members, form, formErrors, CATALOG,
       sample04Top3,
-      openModal,                                                             // 다양한 variant 인자가 있어 인라인 호출 유지
-      openEditConfirm,                                                       // 상세 모달 내부 인라인 호출
+      openModal, // 다양한 variant 인자가 있어 인라인 호출 유지
+      openEditConfirm, // 상세 모달 내부 인라인 호출
       fnGradeBadge, fnStatusBadge, fnAlertMeta,
       // ===== bmodal 영역 (BaseModal) ==========================================
       boData, bModal, openBModal, bShowToast, bShowConfirm,

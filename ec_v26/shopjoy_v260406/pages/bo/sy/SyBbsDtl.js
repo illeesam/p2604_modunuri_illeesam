@@ -258,11 +258,11 @@ window.SyBbsDtl = {
 
     return {
       columns,
-      uiState, codes, form, errors, showBbmModal, dtlId,                            // 상태 / 데이터
+      form, errors, showBbmModal, dtlId,                // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal,                                           // dispatch (모든 이벤트 / 액션 라우팅)
-      cfIsNew, cfSiteNm, cfDtlMode, cfContentType, cfAllowAttach, cfAttachMaxCount,  // computed
+      cfIsNew, cfDtlMode, cfAllowAttach, cfAttachMaxCount,                         // computed
       selectedBbm, showBbmDetail,                                                    // computed (ref)
-      showToast, coUtil,                                                             // 헬퍼 / 의존
+      showToast, coUtil, // 헬퍼 / 의존
     };
   },
   template: /* html */`

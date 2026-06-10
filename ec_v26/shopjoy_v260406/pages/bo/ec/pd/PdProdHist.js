@@ -268,8 +268,8 @@ window.PdProdHist = {
       columns,
       uiState, botTab, tabMode2, tabs,                                                      // 상태 / reactive(tabs)
       qnas, reviews, relatedOrders, stockHistories, priceHistories, statusHistories, changeHistories, // 데이터
-      handleBtnAction, handleSelectAction,                                                  // dispatch
-      showTab, fnFmtDate, fnStockBadge, fnNoCursor,                                         // 헬퍼
+      handleBtnAction, handleSelectAction, // dispatch
+      showTab, fnNoCursor,                         // 헬퍼
     };
   },
   template: /* html */`

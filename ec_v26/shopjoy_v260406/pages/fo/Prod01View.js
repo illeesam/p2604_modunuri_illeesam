@@ -921,8 +921,7 @@ window.Prod01View = {
       uiState.qty = 1;
     };
 
-    /* handleBuyNow — 처리 */
-    const handleBuyNow = () => execBuyNow();
+
 
     /* openQuickBuy — 열기 */
     const openQuickBuy  = () => { uiState.drawerMode = 'buy';  uiState.quickBuyOpen = true; };

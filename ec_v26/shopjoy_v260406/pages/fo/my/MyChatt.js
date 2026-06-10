@@ -13,6 +13,7 @@ window.MyChatt = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
 
+
     const myStore = window.useFoMyStore();
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
@@ -80,10 +81,8 @@ window.MyChatt = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
-      uiState, codes,                                                        // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                                   // dispatch
-      // ===== chatts 영역 ======================================================
-      myStore, chats, expandedChat, chatPager, paginate, cfDateFilteredChats,
+      handleBtnAction, handleSelectAction, // dispatch
+      chats, expandedChat, chatPager, paginate, cfDateFilteredChats,
     };
   },
   template: /* html */ `

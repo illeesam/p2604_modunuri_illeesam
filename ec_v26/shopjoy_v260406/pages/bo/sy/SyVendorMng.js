@@ -139,8 +139,7 @@ window.SyVendorMng = {
       handleSearchList();
     };
 
-    /* sortIcon — 정렬 아이콘 */
-    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+
     /* handleLoadPathTreeNodeCounts — 좌 트리 노드별 카운트 (검색조건 동기, 백엔드 재귀 CTE) */
     const handleLoadPathTreeNodeCounts = async () => {
       try {
@@ -270,7 +269,7 @@ window.SyVendorMng = {
 
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
-    const cfIsViewMode = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
+
     const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}_${detailPanel.resetSeq}`);
 
     /* fnTypeBadge — 유형 배지 */
@@ -321,12 +320,11 @@ window.SyVendorMng = {
 
     return {
       columns,
-      vendors, uiState, vendorCounts, codes, searchParam, baseGridPager, detailPanel,                       // 상태 / 데이터
+      vendors, uiState, vendorCounts, searchParam, baseGridPager, detailPanel,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                      // dispatch (모든 이벤트 / 액션 라우팅)
-      cfDetailEditId, cfIsViewMode, cfDetailKey,                                      // computed
-      fnRowStyle,                                                                     // 헬퍼
+      cfDetailEditId, cfDetailKey,              // computed
+      fnRowStyle, // 헬퍼
       inlineNavigate, showToast, showConfirm, // Dtl 콜백 (closure 필요)
-      handleSearchList,                                                               // Dtl 의 onListReload 콜백
     };
   },
   template: /* html */`

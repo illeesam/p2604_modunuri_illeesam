@@ -12,6 +12,7 @@ window.Blog = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
 
+
     const searchParam = reactive({ searchValue: '', cat: 'all' });
     const searchParamOrg = reactive({ searchValue: '', cat: 'all' });
 
@@ -58,13 +59,11 @@ window.Blog = {
     /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
-    /* setPage — 설정 */
-    const setPage = n => { if (n>=1 && n<=pager.pageTotalPage) { pager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
+
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
 
-    /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { pager.pageNo = 1; handleSearchList('DEFAULT'); };
+
 
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -100,17 +99,9 @@ window.Blog = {
       onSearch();
     };
 
-    const thumbBgs = [
-      'linear-gradient(135deg, #f5f0e8 0%, #e8d5b7 100%)',
-      'linear-gradient(135deg, #e8edf5 0%, #c7d2e0 100%)',
-      'linear-gradient(135deg, #f0e8f5 0%, #d5c2e0 100%)',
-      'linear-gradient(135deg, #e8f5f0 0%, #b7e0d5 100%)',
-      'linear-gradient(135deg, #f5e8ea 0%, #e0c2c7 100%)',
-      'linear-gradient(135deg, #f5f2e8 0%, #e0d5b7 100%)',
-    ];
 
-    /* postBg — 게시물 배경 */
-    const postBg = (id) => thumbBgs[(id - 1) % thumbBgs.length];
+
+
 
     const cfLatestPosts = computed(() => [...posts].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 4));
 
@@ -133,13 +124,11 @@ window.Blog = {
 
     return {
       columns,
-      uiState, codes,                                  // 상태
-      handleBtnAction, handleSelectAction,             // dispatch
-      pager, setPage, onSizeChange,                    // 페이징
+      handleBtnAction, handleSelectAction, // dispatch
       searchParam, // 검색
-      categories, posts,                               // 데이터
-      cfLatestPosts,                                   // computed
-      postBg, onSearch, onReset,                       // 헬퍼/이벤트
+      categories, posts, // 데이터
+      cfLatestPosts, // computed
+      onSearch, onReset,        // 헬퍼/이벤트
     };
   },
   template: /* html */ `

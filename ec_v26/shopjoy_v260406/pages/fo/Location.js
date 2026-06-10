@@ -12,6 +12,7 @@ window.Location = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, mapProvider: 'kakao', mapSrc: '' });
     const codes = reactive({});
 
+
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
@@ -40,7 +41,7 @@ window.Location = {
     const LAT  = 37.4407;
     const LNG  = 127.1468;
     const ADDR = '경기도 성남시 중원구 성남대로 997번길 49-14';
-    const ADDR_ENC = encodeURIComponent(ADDR);
+
 
     /* 지도 iframe src — 카카오 → 구글 → OSM 순 */
        // 현재 사용 중인 제공자
@@ -107,10 +108,10 @@ window.Location = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
-      uiState, codes,                                  // 상태
-      handleBtnAction,                                 // dispatch
-      onMapError,                                      // 이벤트
-      kakaoLink, naverLink, googleLink, ADDR,          // 데이터
+      uiState,       // 상태
+      handleBtnAction, // dispatch
+      onMapError, // 이벤트
+      kakaoLink, naverLink, googleLink, ADDR, // 데이터
     };
   },
 

@@ -135,8 +135,7 @@ window.PdReviewMng = {
       handleSearchList();
     };
 
-    /* sortIcon — 정렬 */
-    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+
 
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -341,8 +340,7 @@ window.PdReviewMng = {
     /* onSizeChange — 페이지 크기 변경 */
     const onSizeChange = () => { listGridPager.pageNo = 1; handleSearchList('DEFAULT'); };
 
-    /* starStr — 별점 문자열 */
-    const starStr  = r => '★'.repeat(Math.floor(r)) + (r % 1 >= 0.5 ? '½' : '') + '☆'.repeat(5 - Math.ceil(r));
+
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'reg' 와 sortKey 일치) */
         // --- [컬럼 정의] ---
         const columns = {};
@@ -404,13 +402,13 @@ window.PdReviewMng = {
 
     return {
       columns,
-      reviews, uiState, searchParam, listGridPager, codes,                                            // 상태 / 데이터
-      prodReviews, prodReviewPager, statusModal,                                              // 상태 / 데이터
+      reviews, uiState, searchParam, listGridPager, codes, // 상태 / 데이터
+      prodReviews, prodReviewPager, statusModal, // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                              // dispatch (모든 이벤트 / 액션 라우팅)
-      cfSelectedRow, cfStatusModalRowTitle, cfStatusModalCurrentCd,                           // computed
-      fnStatusBadge, STATUS_LABEL, getProdNm, getMemNm, starStr, sortIcon,                    // 헬퍼
-      fnGridRowClass, fnProdReviewRowClass,                                                   // 그리드 row 헬퍼
-      selectedId, selectedProdId,                                                             // ref
+      cfSelectedRow, cfStatusModalRowTitle, cfStatusModalCurrentCd, // computed
+      fnStatusBadge, STATUS_LABEL, getProdNm, getMemNm,                   // 헬퍼
+      fnGridRowClass, fnProdReviewRowClass, // 그리드 row 헬퍼
+      selectedId, selectedProdId, // ref
     };
   },
   template: `

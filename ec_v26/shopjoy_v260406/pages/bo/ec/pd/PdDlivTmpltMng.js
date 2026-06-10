@@ -23,8 +23,8 @@ window.PdDlivTmpltMng = {
     });
     const form = reactive({});                    // 상세 폼 데이터
     const SORT_MAP = { nm: { asc: 'dlivTmpltNm asc', desc: 'dlivTmpltNm desc' } };
-    const METHOD_LABELS = { COURIER:'택배', DIRECT:'직접배송', PICKUP:'방문수령' };
-    const PAY_LABELS = { PREPAY:'선결제', COD:'착불' };
+
+
 
     /* ===== 검색조건 ===== */
     /* _initSearchParam — 초기화 */
@@ -273,9 +273,8 @@ window.PdDlivTmpltMng = {
 
     return {
       columns,
-      uiState, codes, searchParam, baseGridPager, dlivTmplts, form,                            // 상태 / 데이터
-      handleBtnAction, handleSelectAction, handleGridCellAction,                        // dispatch
-      fnYnBadge, fnMethodBadge, METHOD_LABELS, PAY_LABELS,                              // 헬퍼
+      uiState, searchParam, baseGridPager, dlivTmplts, form,       // 상태 / 데이터
+      handleBtnAction, handleSelectAction, handleGridCellAction, // dispatch
     };
   },
   template: `

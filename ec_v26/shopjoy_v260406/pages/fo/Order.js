@@ -318,14 +318,14 @@ window.Order = {
 
     return {
       columns,
-      uiState, codes,                                                          // 상태
-      handleBtnAction, handleSelectAction,                                     // dispatch
+      uiState,       // 상태
+      handleBtnAction, handleSelectAction, // dispatch
       form, errors, clearErr, // 폼
-      cfOrderItems, cfCartTotal, cfTotalCouponDiscount,                        // computed - 주문
-      cfAppliedCash, cfFinalPrice, cfShippingCoupons,                          // computed - 금액/쿠폰
-      parsePrice, fmt,                                                         // 헬퍼
-      allCoupons, productCoupons, discountLabel, calcCouponDiscount,           // 쿠폰
-      couponPopup, selectedCoupons,                                            // 쿠폰 상태
+      cfOrderItems, cfCartTotal, cfTotalCouponDiscount, // computed - 주문
+      cfAppliedCash, cfFinalPrice, cfShippingCoupons, // computed - 금액/쿠폰
+      parsePrice, fmt, // 헬퍼
+      productCoupons, discountLabel, calcCouponDiscount,            // 쿠폰
+      couponPopup, selectedCoupons, // 쿠폰 상태
       config: window.SITE_CONFIG || {},
     };
   },

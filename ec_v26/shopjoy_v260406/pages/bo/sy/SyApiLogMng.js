@@ -397,11 +397,10 @@ window.SyApiLogMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
-      uiState, codes, accessGridPager, tabCounts, expandedRows, allExpanded,                          // 상태 / 데이터
+      uiState, accessGridPager, tabCounts, allExpanded,                     // 상태 / 데이터
       columns,                                                                              // 컬럼 정의 모음 (baseSearch/moreSearch/accessGrid/errorGrid/accessExpand/errorExpand)
       handleBtnAction, handleSelectAction, handleGridCellAction,                                                  // dispatch (모든 이벤트 / 액션 라우팅)
-      cfCurrentList,                                                                        // computed
-      fnMethodBadge, fnStatusBadge, fnDecode, fnRowExpanded, fnRowClickStyle, showRefModal, // 헬퍼
+      cfCurrentList, // computed
     };
   },
   template: /* html */`

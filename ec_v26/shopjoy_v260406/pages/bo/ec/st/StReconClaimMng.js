@@ -129,17 +129,14 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     /* fmtW — 포맷 W */
     const fmtW = coUtil.cofWon;
 
-    /* onSearch — 조회 */
-    const onSearch = () => { baseGridPager.pageNo = 1; handleSearchList('DEFAULT'); };
 
-    /* onReset — 초기화 */
-    const onReset = () => { Object.assign(searchParam, _initSearchParam()); onSearch(); };
+
+
 
     /* setPage — 설정 */
     const setPage = n => { if (n >= 1 && n <= baseGridPager.pageTotalPage) { baseGridPager.pageNo = n; handleSearchList('PAGE_CLICK'); } };
 
-    /* onSizeChange — 페이지 크기 변경 */
-    const onSizeChange = () => { baseGridPager.pageNo = 1; handleSearchList('DEFAULT'); };
+
 
         /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 
@@ -183,10 +180,8 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
 
     return {
       columns,
-      uiState, codes, baseGridPager, rows, searchParam,                                       // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                                             // dispatch
-      cfSummary,                                                                       // computed
-      fnDiffBadge, fnTypeBadge, fnStatusBadge, fmtW,                                   // 헬퍼
+      uiState, baseGridPager, rows, searchParam,       // 상태 / 데이터
+      handleBtnAction, handleSelectAction, // dispatch
     };
   },
   template: /* html */`

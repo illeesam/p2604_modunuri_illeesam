@@ -224,10 +224,9 @@ window.MbMemGradeMng = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 
-    /* fnStatusClass — 상태 배지 클래스 */
-    const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
 
-    const cfVisibleCount = computed(() => grades.filter(r => r._row_status !== 'D').length);
+
+
 
     // 기본 검색
     const columns = {};
@@ -262,10 +261,8 @@ window.MbMemGradeMng = {
 
     return {
       columns,
-      uiState, codes, searchParam, grades,                                             // 상태 / 데이터
+      uiState, searchParam, grades,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
-      cfVisibleCount,                                                                  // computed
-      fnStatusClass,                                                                   // 헬퍼
     };
   },
   template: `

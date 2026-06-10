@@ -113,10 +113,10 @@ window.OdDlivHist = {
 
     return {
       columns,
-      uiState, botTab, tabMode2,                                                                                          // 상태 / 데이터
+      botTab, tabMode2,         // 상태 / 데이터
       handleBtnAction, handleSelectAction,                                                                                // dispatch (모든 이벤트 / 액션 라우팅)
       cfRelatedOrder, cfRelatedClaims, tabs,                                                                              // computed / reactive(tabs)
-      showTab,                                                                                                            // 헬퍼
+      showTab, // 헬퍼
       showRefModal,                                                                                                       // 모달 (template 직접 참조)
     };
   },

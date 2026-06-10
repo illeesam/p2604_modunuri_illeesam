@@ -198,8 +198,7 @@ window.OdDlivMng = {
       handleSearchData();
     };
 
-    /* sortIcon — 정렬 */
-    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+
 
     /* handleSearchData — 처리 */
     const handleSearchData = async (searchType = 'DEFAULT') => {
@@ -283,7 +282,7 @@ window.OdDlivMng = {
     };
 
     const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
-    const cfIsViewMode = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
+
     const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}_${detailPanel.resetSeq}`);
 
 
@@ -561,11 +560,11 @@ window.OdDlivMng = {
 
     return {
       columns,
-      dlivs, members, uiState, codes, searchParam, listGridPager, detailPanel, checked, bulkForm, bulkOpen, memberPick,           // 상태 / 데이터
-      handleBtnAction, handleSelectAction, fnCallbackModal,                                                                 // dispatch + 모달 통합 콜백
-      cfDetailEditId, cfIsViewMode, cfDetailKey, cfAllChecked, cfBuildTmplMsg, cfBulkPreview, cfSiteNm,                    // computed
+      dlivs, members, uiState, codes, searchParam, listGridPager, detailPanel, checked, bulkForm, bulkOpen, memberPick, // 상태 / 데이터
+      handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch + 모달 통합 콜백
+      cfDetailEditId, cfDetailKey, cfAllChecked, cfBuildTmplMsg, cfBulkPreview,                        // computed
       selectedId: computed(() => detailPanel.selectedId),                                                                 // template 직접 참조
-      isChecked, fnGridRowStyle, sortIcon, fnStatusBadge,                                                                 // 헬퍼
+      isChecked, fnGridRowStyle,                         // 헬퍼
       inlineNavigate,                                                                                                     // Dtl 콜백 (closure 필요)
     };
   },

@@ -169,8 +169,7 @@ window.SyUserMng = {
       handleSearchList('DEFAULT');
     };
 
-    /* sortIcon — 정렬 아이콘 */
-    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+
 
     /* handleLoadDeptTreeNodeCounts — 좌 부서 트리 노드별 사용자수 (검색조건 동기, 백엔드 재귀 CTE) */
     const handleLoadDeptTreeNodeCounts = async () => {
@@ -351,7 +350,7 @@ window.SyUserMng = {
 
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
-    const cfIsViewMode = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
+
     const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}_${detailPanel.resetSeq}`);
 
     /* fnRoleBadge — 권한 배지 */
@@ -406,13 +405,12 @@ window.SyUserMng = {
 
     return {
       columns,
-      users, uiState, codes, searchParam, baseGridPager, detailPanel, expanded, deptCounts,  // 상태 / 데이터
-      excelUploadModal,                                                  // 엑셀 업로드 모달
-      handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                // dispatch + 모달 통합 콜백
-      cfTree, cfDetailEditId, cfIsViewMode, cfDetailKey,                 // computed
-      fnRowStyle,                                                        // 헬퍼
+      users, uiState, searchParam, baseGridPager, detailPanel, expanded, deptCounts,       // 상태 / 데이터
+      excelUploadModal, // 엑셀 업로드 모달
+      handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal, // dispatch + 모달 통합 콜백
+      cfTree, cfDetailEditId, cfDetailKey,              // computed
+      fnRowStyle, // 헬퍼
       inlineNavigate, showToast, showConfirm,                            // Dtl 콜백 (closure 필요)
-      handleSearchList,                                                  // Dtl 의 onListReload 콜백
     };
   },
   template: /* html */`

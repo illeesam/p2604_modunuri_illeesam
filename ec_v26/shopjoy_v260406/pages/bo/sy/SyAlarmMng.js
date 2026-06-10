@@ -369,7 +369,7 @@ window.SyAlarmMng = {
 
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const cfDetailEditId = computed(() => detailModal.dtlId === '__new__' ? null : detailModal.dtlId);
-    const cfIsViewMode = computed(() => detailModal.dtlMode === 'view' && detailModal.dtlId !== '__new__');
+
     const cfDetailKey = computed(() => `${detailModal.dtlId}_${detailModal.dtlMode}_${detailModal.resetSeq}`);
 
     // 기본 검색
@@ -410,10 +410,10 @@ window.SyAlarmMng = {
 
     return {
       columns,
-      alarms, uiState, alarmCounts, codes, searchParam, baseGridPager, detailModal, pathPickModal,         // 상태 / 데이터
+      alarms, uiState, alarmCounts, searchParam, baseGridPager, detailModal, pathPickModal,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                       // dispatch (모든 이벤트 / 액션 라우팅)
-      cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                             // computed
-      fnRowStyle,                                                                      // 헬퍼
+      cfDetailEditId, cfDetailKey,                        // computed
+      fnRowStyle, // 헬퍼
       inlineNavigate, showToast, showConfirm, // Dtl props (closure 필요)
     };
   },

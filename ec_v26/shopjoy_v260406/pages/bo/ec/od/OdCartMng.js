@@ -269,10 +269,10 @@ window.OdCartMng = {
 
     return {
       columns,
-      carts, listGridPager, searchParam, uiState, codes, memberPick,                   // 상태 / 데이터
-      handleBtnAction, handleSelectAction, fnCallbackModal,                      // dispatch + 모달 통합 콜백
-      cfAllChecked,                                                            // computed
-      isChecked, fnGridRowStyle,                                               // 헬퍼
+      carts, listGridPager, searchParam, uiState, memberPick,       // 상태 / 데이터
+      handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch + 모달 통합 콜백
+      cfAllChecked, // computed
+      isChecked, fnGridRowStyle, // 헬퍼
     };
   },
   template: `

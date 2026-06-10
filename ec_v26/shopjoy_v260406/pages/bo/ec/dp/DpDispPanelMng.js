@@ -246,7 +246,6 @@ window.DpDispPanelMng = {
       props.navigate(pg, opts);
     };
     const cfDetailEditId = computed(() => uiStateDetail.selectedId === '__new__' ? null : uiStateDetail.selectedId);
-    const cfIsViewMode = computed(() => uiStateDetail.openMode === 'view' && uiStateDetail.selectedId !== '__new__');
     /* resetSeq 포함 → 취소/신규 시 컴포넌트 remount 로 폼 초기화 */
     const cfDetailKey = computed(() => `${uiStateDetail.selectedId}_${uiStateDetail.openMode}_${uiStateDetail.resetSeq}`);
 
@@ -261,30 +260,6 @@ window.DpDispPanelMng = {
       window.open(`${window.pageUrl('index.html')}${hash}`, '_blank', 'width=1280,height=900,scrollbars=yes');
     };
 
-    /* fnDispSummary — 유틸 */
-    const fnDispSummary = (d) => {
-      if (d.widgetType === 'image_banner') { return d.imageUrl ? '🖼 ' + d.imageUrl.split('/').pop().slice(0, 20) : '-'; }
-      if (d.widgetType === 'product_slider' || d.widgetType === 'product') { return d.productIds ? '상품: ' + d.productIds.slice(0, 20) : '-'; }
-      if (d.widgetType === 'coupon') { return d.couponCode ? '쿠폰: ' + d.couponCode : '-'; }
-      if (d.widgetType === 'file') { return d.fileUrl ? '파일: ' + d.fileLabel || d.fileUrl.split('/').pop() : '-'; }
-      if (d.widgetType === 'event_banner') { return d.eventId ? '이벤트#' + d.eventId : '-'; }
-      if (d.widgetType === 'cache_banner') { return d.cacheDesc || '-'; }
-      if (d.widgetType === 'html_editor') { return d.htmlContent ? d.htmlContent.replace(/<[^>]+>/g, '').slice(0, 20) + '…' : '-'; }
-      if (d.widgetType === 'textarea') { return d.textareaContent ? d.textareaContent.slice(0, 20) + (d.textareaContent.length > 20 ? '…' : '') : '-'; }
-      if (d.widgetType === 'markdown') { return d.markdownContent ? d.markdownContent.slice(0, 20) + (d.markdownContent.length > 20 ? '…' : '') : '-'; }
-      if (['barcode','qrcode','barcode_qrcode'].includes(d.widgetType)) { return d.codeValue ? '코드: ' + d.codeValue.slice(0, 20) : '-'; }
-      if (d.widgetType === 'video_player') { return d.videoUrl ? d.videoUrl.slice(0, 30) + '…' : '-'; }
-      if (d.widgetType === 'countdown') { return d.countdownTarget || '-'; }
-      if (d.widgetType === 'payment_widget') { return d.payAmount ? Number(d.payAmount).toLocaleString() + '원' : '-'; }
-      if (d.widgetType === 'approval_widget') { return d.approvalDocType || '-'; }
-      if (d.widgetType === 'map_widget') { return d.mapAddress || (d.mapLat ? `${d.mapLat},${d.mapLng}` : '-'); }
-      if (d.widgetType === 'widget_embed') { return d.embedCode ? d.embedCode.slice(0, 20) + '…' : '-'; }
-      if (d.widgetType.startsWith('chart_')) { return d.chartTitle || '-'; }
-      if (d.widgetType === 'text_banner') { return d.textContent ? d.textContent.slice(0, 20) + (d.textContent.length > 20 ? '…' : '') : '-'; }
-      if (d.widgetType === 'info_card') { return d.infoTitle || '-'; }
-      if (d.widgetType === 'popup') { return d.popupWidth && d.popupHeight ? `${d.popupWidth}×${d.popupHeight}` : '-'; }
-      return '-';
-    };
 
     const cfFiltered = computed(() => {
       if (!uiState.selectedTreeKey) { return displays; }
@@ -331,31 +306,7 @@ window.DpDispPanelMng = {
     /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = s => coUtil.cofCodeBadge('DISP_STATUS', s, _DISP_STATUS_FB[s] || 'badge-gray');
 
-    /* fnTypeBadge — 유형 배지 */
-    const fnTypeBadge = t => ({
-      'image_banner':'badge-blue', 'product_slider':'badge-purple', 'product':'badge-purple',
-      'chart_bar':'badge-orange', 'chart_line':'badge-orange', 'chart_pie':'badge-orange',
-      'text_banner':'badge-gray', 'info_card':'badge-blue', 'popup':'badge-red',
-      'file':'badge-gray', 'coupon':'badge-green', 'html_editor':'badge-orange',
-      'textarea':'badge-gray', 'markdown':'badge-blue',
-      'barcode':'badge-purple',  'qrcode':'badge-purple',      'barcode_qrcode':'badge-purple',
-      'video_player':'badge-red', 'countdown':'badge-orange',   'payment_widget':'badge-green',
-      'approval_widget':'badge-blue', 'map_widget':'badge-blue',
-      'event_banner':'badge-blue', 'cache_banner':'badge-green', 'widget_embed':'badge-purple',
-    }[t] || 'badge-gray');
 
-    /* fnTypeLabel — 유틸 */
-    const fnTypeLabel = t => ({
-      'image_banner':'이미지배너', 'product_slider':'상품슬라이더', 'product':'상품',
-      'chart_bar':'차트(Bar)', 'chart_line':'차트(Line)', 'chart_pie':'차트(Pie)',
-      'text_banner':'텍스트배너', 'info_card':'정보카드', 'popup':'팝업',
-      'file':'파일', 'coupon':'쿠폰', 'html_editor':'HTML에디터',
-      'textarea':'텍스트영역', 'markdown':'Markdown',
-      'barcode':'바코드',      'qrcode':'QR코드',        'barcode_qrcode':'바코드+QR',
-      'video_player':'동영상', 'countdown':'카운트다운', 'payment_widget':'결제위젯',
-      'approval_widget':'전자결재', 'map_widget':'지도맵',
-      'event_banner':'이벤트', 'cache_banner':'캐쉬', 'widget_embed':'위젯',
-    }[t] || t);
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 
@@ -561,8 +512,6 @@ window.DpDispPanelMng = {
     /* toggleTree — 토글 */
     const toggleTree = (k) => { if (treeOpen.has(k)) treeOpen.delete(k); else treeOpen.add(k); };
 
-    /* isTreeOpen — 여부 확인 */
-    const isTreeOpen = (k) => treeOpen.has(k);
 
     /* selectTree — 선택 */
     const selectTree = (k) => { uiState.selectedTreeKey = uiState.selectedTreeKey === k ? '' : k; panelsGridPager.pageNo = 1; };
@@ -614,12 +563,12 @@ window.DpDispPanelMng = {
 
     return {
       columns,
-      uiStateDetail, panels, uiState, panelCounts, displays, codes, searchParam, panelsGridPager,            // 상태 / 데이터
+      uiStateDetail, panels, uiState, panelCounts, searchParam, panelsGridPager,                 // 상태 / 데이터
       handleBtnAction, handleSelectAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
-      cfFiltered, cfAreas, cfAreaSelectOptions, cfDetailEditId, cfIsViewMode,          // computed
+      cfFiltered, cfDetailEditId,                                            // computed
       cfDetailKey, cfSiteNm, cfPanelTree, selectedId: computed(() => uiStateDetail.selectedId), // computed
-      fnPathLabel, fnStatusBadge, fnTypeBadge, fnTypeLabel, fnDispSummary,             // 헬퍼
-      fnAreaLabel, fnWLabel, sortIcon, isExpanded, isTreeOpen,                         // 헬퍼
+      fnPathLabel, fnStatusBadge,                                         // 헬퍼
+      fnAreaLabel, fnWLabel, sortIcon, isExpanded,            // 헬퍼
       inlineNavigate, handleSearchData,                                                // Dtl 콜백 (closure 필요)
       previewDisp, setDispNow,                                                         // 헬퍼 (외부 호출용)
       onPanelDragStart, onPanelDragOver, onPanelDragLeave, onPanelDrop, onPanelDragEnd, // 드래그 핸들러

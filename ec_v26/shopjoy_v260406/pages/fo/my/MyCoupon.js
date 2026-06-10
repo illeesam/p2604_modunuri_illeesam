@@ -14,6 +14,7 @@ window.MyCoupon = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: 'unused'});
     const codes = reactive({});
 
+
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
@@ -105,12 +106,11 @@ window.MyCoupon = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
-      uiState, codes,                                                        // 상태 / 데이터
-      handleBtnAction,                                                       // dispatch
-      // ===== coupons 영역 =====================================================
+      uiState,       // 상태 / 데이터
+      handleBtnAction, // dispatch
       myStore, coupons, couponCode, pager, paginate,
       cfDateFilteredCoupons, cfUnusedCount, cfUsedCount,
-      onDateSearch, onSearch,
+      onSearch,
     };
   },
   template: /* html */ `

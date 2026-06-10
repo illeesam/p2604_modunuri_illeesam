@@ -323,10 +323,10 @@ window.SyBbmMng = {
 
     return {
       columns,
-      bbms, uiState, bbmCounts, codes, searchParam, baseGridPager, detailModal,                       // 상태 / 데이터
+      bbms, uiState, bbmCounts, searchParam, baseGridPager, detailModal,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                    // dispatch (모든 이벤트 / 액션 라우팅)
-      cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                          // computed
-      fnRowStyle,                                                                   // 헬퍼
+      cfDetailEditId, cfIsViewMode, cfDetailKey,          // computed
+      fnRowStyle, // 헬퍼
       inlineNavigate, showToast, showConfirm, handleSearchList,          // Dtl props (closure 필요)
     };
   },

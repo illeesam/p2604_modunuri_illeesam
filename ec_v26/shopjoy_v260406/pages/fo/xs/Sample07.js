@@ -273,19 +273,7 @@ window.XsSample07 = {
       } catch {}
     };
 
-    /* loadSettings — 로드 */
-    const loadSettings = () => {
-      try {
-        const s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
-        if (s.hostUrl) { uiState.hostUrl = s.hostUrl; }
-        if (s.token) { uiState.token   = s.token; }
-        if (s.defHeaders?.length) {
-          defHeaders.splice(0);
-          s.defHeaders.forEach(h => defHeaders.push({ ...h }));
-          defHeaders.push({ k: '', v: '' });
-        }
-      } catch {}
-    };
+
 
     watch([hostUrl, token, defHeaders], saveSettings, { deep: true });
 
@@ -644,8 +632,7 @@ window.XsSample07 = {
     const fnStatusStyle = s => !s ? '' : s < 300 ? 'color:#166534;font-weight:700;'
       : s < 400 ? 'color:#92400e;font-weight:700;' : 'color:#991b1b;font-weight:700;';
 
-    /* fnMethodDot — 유틸 */
-    const fnMethodDot = m => ({ GET:'#166534', POST:'#1e40af', PUT:'#92400e', PATCH:'#6b21a8', DELETE:'#991b1b' }[m] || '#888');
+
 
     /* ===== Mount ===== */
 
@@ -659,24 +646,18 @@ window.XsSample07 = {
     });
     return {
       columns,
-      uiState, codes,                                                        // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                                   // dispatch
-      // ===== tree / tabs 영역 =================================================
+      uiState, codes, // 상태 / 데이터
       cfFlatTree, treeSearch, toggleNode, selectApiNode, appFilter, APP_META,
       openTabs, activeTabId, cfActiveTab, closeTab, closeAllTabs,
-      // ===== settings / ls 영역 ===============================================
       hostUrl, token, defHeaders, lsItems, refreshLs, settingsOpen,
-      // ===== toast 영역 =======================================================
       toasts, closeToast,
-      // ===== history / response 영역 ==========================================
-      doSend, history, histSelIdx, histModal, histModalTab, editReq,
+      doSend, history, histSelIdx, histModal, editReq,
       histResJson, histResStatus, histResTime, histResTs, histResProgress,
-      selectHistory, closeHistModal, resendHist,
-      cfResGridColumns, cfResGridRows, cfResColDefs,
+      closeHistModal, resendHist,
+      cfResGridRows, cfResColDefs,
       onHistClick, fnHistRowStyle,
       // ===== shared (헬퍼) ====================================================
-      addRow, removeRow, fnMethodStyle, fnStatusStyle, fnMethodDot, quickRun,
-      // ===== auto-run 영역 ====================================================
+      addRow, removeRow, fnMethodStyle, fnStatusStyle, quickRun,
       autoPopupTabId, autoPopupPos, POPUP_ROWS,
       openAutoPopup, closeAutoPopup, selectAuto, countdown,
     };

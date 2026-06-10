@@ -124,8 +124,7 @@ window.MbMemberMng = {
       handleSearchList();
     };
 
-    /* sortIcon — 정렬 아이콘 */
-    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+
 
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -277,13 +276,7 @@ window.MbMemberMng = {
     const onSizeChange = () => { baseGridPager.pageNo = 1; handleSearchList('DEFAULT'); };
 
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      codes.member_statuses = codeStore.sgGetGrpCodes('MEMBER_STATUS');
-      codes.member_grades = codeStore.sgGetGrpCodes('MEMBER_GRADE');
-      uiState.isPageCodeLoad = true;
-    };
+
 
     // ★ onMounted — 진입 시 목록 초기 조회
     onMounted(() => {
@@ -339,10 +332,9 @@ window.MbMemberMng = {
 
     return {
       columns,
-      members, uiState, codes, searchParam, baseGridPager, detailPanel,                        // 상태 / 데이터
+      members, uiState, searchParam, baseGridPager, detailPanel,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
-      cfSelectedRow,                                                                   // computed
-      sortIcon, fnGradeBadge, fnStatusBadge, fnFmtDate, fnGridRowClass,                // 헬퍼
+      fnGridRowClass,                                                  // 헬퍼
       handleSave, handleDelete, closeDetail, handleSearchList,                         // Dtl 콜백 (자식 컴포넌트로 전달)
     };
   },

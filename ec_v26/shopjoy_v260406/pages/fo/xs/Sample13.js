@@ -283,15 +283,12 @@ window.XsSample13 = {
     };
 
     return {
-      uiState, codes, searchParam,                                     // 상태 / 데이터
-      handleBtnAction, handleSelectAction, fnCallbackModal,                              // dispatch
-      // ===== 영역 / 카테고리 ==================================================
+      uiState, codes, searchParam, // 상태 / 데이터
+      handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch
       selectedAreas, cfAllAreas, cfAreaBtnLabel,
       selectedCatIds, cfCatBtnLabel, cfSelectedCatNames,
-      // ===== 사용자 ==========================================================
       isLoggedIn, userGrade, userNm, cfAccessibleConds,
-      // ===== 패널 / 소스 ======================================================
-      cfPanelsByArea, panelSource, panelSourceHtml,
+      cfPanelsByArea, panelSourceHtml,
       fnWLabel, fnWIcon,
     };
   },

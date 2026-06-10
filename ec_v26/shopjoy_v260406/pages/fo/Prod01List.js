@@ -19,6 +19,7 @@ window.Prod01List = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, searchText: '', priceMin: '', priceMax: '', isMobile: window.innerWidth < 768, filterOpen: false });
     const codes = reactive({});
 
+
     /* -- 상품 데이터 -- */
     const allProds = reactive([]);
 
@@ -206,12 +207,9 @@ window.Prod01List = {
     });
     const cfAllCats = computed(() => (window.SITE_CONFIG && window.SITE_CONFIG.categorys) || []);
 
-    /* fnDiscountRate — 유틸 */
-    const fnDiscountRate = p => p.originalPrice
-      ? Math.round((1 - p.priceNum / p.originalPrice) * 100) : 0;
 
-    /* fnFmtPrice — 유틸 */
-    const fnFmtPrice = n => n ? n.toLocaleString() + '원' : '';
+
+
 
     /* fnCategoryLabel — 유틸 */
     const fnCategoryLabel = p => {
@@ -312,13 +310,13 @@ window.Prod01List = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
-       columns, pager,                                                      // 컬럼 / 페이저
-       uiState, codes, allProds,                                     // 상태 / 데이터
-      selColors, selSizes, selCats,                                        // 필터 상태
-      handleBtnAction, handleSelectAction,                                 // dispatch
-      cfAllColors, cfAllSizes, cfAllCats, cfHasFilter,                     // computed
+       columns, pager, // 컬럼 / 페이저
+       uiState, allProds,       // 상태 / 데이터
+      selColors, selSizes, selCats, // 필터 상태
+      handleBtnAction, handleSelectAction, // dispatch
+      cfAllColors, cfAllSizes, cfAllCats, cfHasFilter, // computed
       fnCategoryLabel, isLiked, // 헬퍼 / 컬럼
-      onSearch, clearFilters,                                              // FoSearchArea @search 직결용 + 폴백
+      onSearch,              // FoSearchArea @search 직결용 + 폴백
     };
   },
   template: /* html */ `

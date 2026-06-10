@@ -12,6 +12,7 @@ window.About = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
 
+
     /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
@@ -67,9 +68,8 @@ window.About = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
-      uiState, codes,                                  // 상태
-      handleBtnAction,                                 // dispatch
-      values, history, bizInfo,                        // 데이터
+      handleBtnAction, // dispatch
+      values, history, bizInfo, // 데이터
     };
   },
   template: /* html */ `

@@ -163,8 +163,7 @@ window.SySiteMng = {
       handleSearchList();
     };
 
-    /* sortIcon — 정렬 아이콘 */
-    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+
 
     /* handleLoadSiteTreeNodeCounts — 좌 트리 노드별 사이트수 집계 (검색조건 동기)
      *   백엔드 GET /bo/sy/site/path-counts — PostgreSQL 재귀 CTE 로 자손 누적 + 검색조건 적용.
@@ -372,7 +371,7 @@ window.SySiteMng = {
 
     const cfTypeOptions = computed(() => [...new Set(sites.map(s => s.siteTypeCd).filter(v => v != null && v !== ''))].sort());
     const cfDetailEditId = computed(() => detailModal.dtlId === '__new__' ? null : detailModal.dtlId);
-    const cfIsViewMode = computed(() => detailModal.dtlMode === 'view' && detailModal.dtlId !== '__new__');
+
     const cfDetailKey = computed(() => `${detailModal.dtlId}_${detailModal.dtlMode}_${detailModal.resetSeq}`);
 
     // 기본 검색
@@ -417,10 +416,10 @@ window.SySiteMng = {
 
     return {
       columns,
-      sites, siteCounts, uiState, codes, searchParam, baseGridPager, detailModal, pathPickModal,  // 상태 / 데이터
+      sites, siteCounts, uiState, searchParam, baseGridPager, detailModal, pathPickModal,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                     // dispatch (모든 이벤트 / 액션 라우팅)
-      cfTypeOptions, cfDetailEditId, cfIsViewMode, cfDetailKey,                      // computed
-      sortIcon, fnRowStyle, fnStatusBadge, fnTypeBadge,                              // 헬퍼
+      cfDetailEditId, cfDetailKey,                             // computed
+      fnRowStyle,                                      // 헬퍼
       inlineNavigate,                                                                // Dtl 콜백 (closure 필요)
     };
   },

@@ -185,8 +185,6 @@ window.DpDispAreaDtl = {
     const cfIsNew = computed(() => !props.dtlId);
     const cfDtlMode = computed(() => props.dtlMode === 'view');
 
-    /* fnAreaTypeLabel — 유틸 */
-    const fnAreaTypeLabel = (v) => codes.disp_areas.find(c => c.codeValue === v)?.codeLabel || '-';
 
     /* -- 기본 기간: 오늘 ~ +10년 -- */
     const _today = new Date();
@@ -345,8 +343,6 @@ window.DpDispAreaDtl = {
       window.addEventListener('mouseup', onUp);
     };
 
-    /* selectTab — 선택 */
-    const selectTab = (key) => { uiState.activeTab = key; };
     const cfActivePanel = computed(() => {
       if (!activeTab.value.startsWith('panel_')) { return null; }
       const id = Number(activeTab.value.replace('panel_', ''));
@@ -397,8 +393,6 @@ window.DpDispAreaDtl = {
       }
     };
 
-    /* onCancel — 이벤트 */
-    const onCancel = () => { props.navigate('dpDispAreaMng'); };
 
     /* openPanelPreview — 열기 */
     const openPanelPreview = () => {
@@ -440,12 +434,6 @@ window.DpDispAreaDtl = {
     /* -- 공개 대상 (Area-Panel 매핑) -- */
     const cfVisibilityOptions = computed(() => window.visibilityUtil.allOptions());
 
-    /* hasPanelVisibility — 여부 확인 */
-    const hasPanelVisibility = (code) => {
-      if (!cfActivePanel.value) { return false; }
-      if (!cfActivePanel.value.visibilityTargets) { cfActivePanel.value.visibilityTargets = '^PUBLIC^'; }
-      return window.visibilityUtil.has(cfActivePanel.value.visibilityTargets, code);
-    };
 
     /* togglePanelVisibility — 패널 토글 */
     const togglePanelVisibility = (code) => {
@@ -472,12 +460,6 @@ window.DpDispAreaDtl = {
     /* BoMultiCheckSelect 용 {value,label} 매핑 (areaDispEnvOptions 는 {code} 형식이라 불인식) */
     const cfAreaDispEnvMcsOptions = computed(() => areaDispEnvOptions.map(o => ({ value: o.code, label: o.label })));
 
-    /* hasAreaDispEnv — 여부 확인 */
-    const hasAreaDispEnv = (code) => {
-      if (!cfActivePanel.value) { return false; }
-      if (!cfActivePanel.value.areaDispEnv) { cfActivePanel.value.areaDispEnv = '^PROD^'; }
-      return cfActivePanel.value.areaDispEnv.includes('^' + code + '^');
-    };
 
     /* toggleAreaDispEnv — 영역 토글 */
     const toggleAreaDispEnv = (code) => {
@@ -490,15 +472,7 @@ window.DpDispAreaDtl = {
     };
 
     /* -- 영역 레벨 dispEnv/visibility 토글 -- */
-    const areaBaseDispEnvOptions = [
-      { code: 'PLAN', label: '준비/계획' },
-      { code: 'DEV',  label: 'DEV' },
-      { code: 'TEST', label: 'TEST' },
-      { code: 'PROD', label: 'PROD' },
-    ];
 
-    /* hasAreaBaseDispEnv — 여부 확인 */
-    const hasAreaBaseDispEnv = (code) => form.areaBaseDispEnv.includes('^' + code + '^');
 
     /* toggleAreaBaseDispEnv — 영역 토글 */
     const toggleAreaBaseDispEnv = (code) => {
@@ -508,8 +482,6 @@ window.DpDispAreaDtl = {
       form.areaBaseDispEnv = envList.length > 0 ? '^' + envList.join('^') + '^' : '^NONE^';
     };
 
-    /* hasAreaBaseVisibility — 여부 확인 */
-    const hasAreaBaseVisibility = (code) => window.visibilityUtil.has(form.areaBaseVisibilityTargets, code);
 
     /* toggleAreaBaseVisibility — 영역 토글 */
     const toggleAreaBaseVisibility = (code) => {
@@ -546,15 +518,14 @@ window.DpDispAreaDtl = {
 
     return {
       columns,
-      codes, areas, panels, uiState, pathPickModal, form, errors,                  // 상태 / 데이터
-      handleBtnAction, handleSelectAction, fnCallbackModal,                          // dispatch + 모달 통합 콜백
-      cfIsNew, cfDtlMode, cfRelatedPanels, cfActivePanel, cfPreviewFrameWidth,                // computed
-      cfVisibilityOptions, cfAreaDispEnvMcsOptions,                                // computed
-      activeTab, previewMode, expanded, pickOpen, previewPaneWidth,                // toRef
-      showComponentTooltip,                                                        // toRef
-      PREVIEW_MODES, areaDispEnvOptions, areaBaseDispEnvOptions,                   // 상수
-      fnPathLabel, fnAreaTypeLabel, fnWLabel,                                      // 헬퍼
-      hasPanelVisibility, hasAreaDispEnv, hasAreaBaseDispEnv, hasAreaBaseVisibility, // 헬퍼
+      codes, areas, panels, pathPickModal, form, errors,         // 상태 / 데이터
+      handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch + 모달 통합 콜백
+      cfIsNew, cfDtlMode, cfRelatedPanels, cfActivePanel, cfPreviewFrameWidth, // computed
+      cfVisibilityOptions, cfAreaDispEnvMcsOptions, // computed
+      activeTab, previewMode, expanded, pickOpen, previewPaneWidth, // toRef
+      showComponentTooltip, // toRef
+      PREVIEW_MODES,                                            // 상수
+      fnPathLabel, fnWLabel,                 // 헬퍼
     };
   },
   template: /* html */`

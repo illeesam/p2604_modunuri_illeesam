@@ -116,8 +116,6 @@ window.StErpGenMng = {
     /* fmtW — 포맷 W */
     const fmtW = coUtil.cofWon;
 
-    /* onSearch — 조회 */
-    const onSearch = async () => { await handleSearchData('DEFAULT'); };
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 
@@ -156,10 +154,9 @@ window.StErpGenMng = {
 
     return {
       columns,
-      uiState, codes, targetMon, slipType, genHistories, settingForm,                  // 상태 / 데이터
-      handleBtnAction,                                                                // dispatch
-      cfPreviewRows,                                                                  // computed
-      fnStatusBadge, fmtW,                                                            // 헬퍼
+      targetMon, genHistories, settingForm,                          // 상태 / 데이터
+      handleBtnAction, // dispatch
+      cfPreviewRows, // computed
     };
   },
   template: /* html */`

@@ -15,6 +15,7 @@ window.Login = {
     const uiState = reactive({ snsPhoneVerified: false, loading: false, error: null, isPageCodeLoad: false, step: 'login', snsProvider: null, loginErr: '', signupErr: '', _ec: '', _pc: '', snsNickname: '', snsPhoneCode: '', snsPhoneCodeSent: false, _spc: '', snsErr: ''});;
     const codes = reactive({});
 
+
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
@@ -420,11 +421,11 @@ window.Login = {
 
     return {
       columns,
-      uiState, codes,                                                          // 상태
-      handleBtnAction, handleSelectAction,                                     // dispatch
-      form, sf, snsSf, snsPhone, terms,                                        // 폼/약관
-      IS,                                                                      // 스타일
-      providerLabel, providerColor, providerTextColor,                         // 헬퍼
+      uiState,       // 상태
+      handleBtnAction, handleSelectAction, // dispatch
+      form, sf, snsSf, snsPhone, terms, // 폼/약관
+      IS, // 스타일
+      providerLabel, providerColor, providerTextColor, // 헬퍼
       foAuth: window.foAuth,                                                   // 인증 상태
       memberPick, // 회원선택 모달
     };

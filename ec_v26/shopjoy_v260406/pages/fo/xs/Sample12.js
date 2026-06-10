@@ -309,14 +309,11 @@ window.XsSample12 = {
     initExpand();
 
     return {
-      uiState, codes, searchParam,                                     // 상태 / 데이터
-      handleBtnAction, handleSelectAction, fnCallbackModal,                              // dispatch
-      // ===== 영역 / 카테고리 ==================================================
+      uiState, codes, searchParam, // 상태 / 데이터
+      handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch
       selectedAreas, cfAllAreas, cfAreaBtnLabel,
-      selectedCatIds, cfCatBtnLabel, cfSelectedCatNames,
-      // ===== 사용자 ==========================================================
+      selectedCatIds, cfCatBtnLabel,
       isLoggedIn, userGrade, userNm, cfAccessibleConds,
-      // ===== 트리 / 위젯 ======================================================
       cfStructAreaList, expandedAreas,
       checkedPanels, checkedWidgets,
       isAreaAllChecked, isPanelAllChecked,

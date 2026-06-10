@@ -165,7 +165,7 @@ window.SyTemplateMng = {
 
     const cfSiteNm        = computed(() => boUtil.bofGetSiteNm());
     const cfDetailEditId  = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
-    const cfIsViewMode    = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
+
     const cfDetailKey     = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}_${detailPanel.resetSeq}`);
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
@@ -402,10 +402,10 @@ window.SyTemplateMng = {
 
     return {
       columns,
-      templates, uiState, templateCounts, codes, searchParam, baseGridPager, detailPanel, pathPickModal, previewModal, sendModal, // 상태 / 데이터
+      templates, uiState, templateCounts, searchParam, baseGridPager, detailPanel, pathPickModal, previewModal, sendModal,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                            // dispatch (모든 이벤트 / 액션 라우팅)
-      cfDetailEditId, cfIsViewMode, cfDetailKey,                                                           // computed
-      fnRowStyle,                                                                                          // 헬퍼
+      cfDetailEditId, cfDetailKey,              // computed
+      fnRowStyle, // 헬퍼
       inlineNavigate, handleSearchList,                                                                    // Dtl 콜백 (closure 필요)
       showToast, showConfirm, // Dtl/모달 props
     };

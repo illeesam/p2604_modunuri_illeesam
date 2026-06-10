@@ -280,7 +280,7 @@ window.SyPropMng = {
 
     return {
       columns,
-      uiState, propCounts, codes, searchParam, propRows,                        // 상태 / 데이터
+      uiState, propCounts, searchParam, propRows,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                          // dispatch (모든 이벤트 / 액션 라우팅)
     };
   },

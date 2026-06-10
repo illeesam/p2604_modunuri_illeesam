@@ -351,9 +351,8 @@ window.SyAttachMng = {
     };
 
     /* 첨부파일 fnStatusBadge */
-    const _USE_YN_FB = { '활성': 'badge-green', '비활성': 'badge-gray', 'ACTIVE': 'badge-green', 'INACTIVE': 'badge-gray' };
-    /* fnStatusBadge — 상태 배지 */
-    const fnStatusBadge = s => coUtil.cofCodeBadge('USE_YN', s, _USE_YN_FB[s] || 'badge-gray');
+
+
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 
@@ -444,10 +443,9 @@ window.SyAttachMng = {
 
     return {
       columns,
-      attaches, attachGrps, uiState, codes, searchParam, fileGridPager, grpPager, grpSearchParam, grpForm, fileForm, // 상태 / 데이터
+      attaches, attachGrps, uiState, searchParam, fileGridPager, grpPager, grpSearchParam, grpForm, fileForm,       // 상태 / 데이터
       handleBtnAction, handleSelectAction,                                                                                  // dispatch (모든 이벤트 / 액션 라우팅)
-      cfSiteNm,                                                                                                             // computed
-      fnFmtSize, fnStatusBadge,                                                                                             // 헬퍼
+      cfSiteNm, // computed
     };
   },
   template: /* html */`

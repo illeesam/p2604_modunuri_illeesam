@@ -191,9 +191,8 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: 'Ïù¥Î≤
 
     return {
       columns,
-      uiState, codes, baseGridPager, pays, searchParam,
+      uiState, baseGridPager, pays, searchParam,
       handleBtnAction, handleSelectAction,
-      cfSummary, fnStatusBadge, fmtW,
     };
   },
   template: /* html */`

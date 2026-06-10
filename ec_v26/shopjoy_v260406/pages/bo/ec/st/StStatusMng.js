@@ -364,8 +364,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, activeTab: 'vendo
       onSearch();
     };
 
-    /* pageNums — 페이지 Nums */
-    const pageNums = (cur, last) => { const s = Math.max(1, cur-2), e = Math.min(last, s+4); return Array.from({length: e-s+1}, (_,i) => s+i); };
+
 
     /* setVendorPage — 설정 */
     const setVendorPage = n => { if (n >= 1 && n <= cfVendorPages.value) vendorPager.pageNo = n; };
@@ -546,15 +545,14 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, activeTab: 'vendo
     ];
 
     return {
-      uiState, codes, TABS,                                                         // 상태 / 데이터
-      columns, cfTopSearchColumns,                                                  // 컬럼 정의 모음 + 상단 검색 computed
+      uiState, TABS,       // 상태 / 데이터
+      columns, cfTopSearchColumns, // 컬럼 정의 모음 + 상단 검색 computed
       handleBtnAction, handleSelectAction,                                          // dispatch (모든 이벤트 / 액션 라우팅)
-      vendorPager, cfVendorTotal, cfVendorPageList, cfVendorSummary,                // vendor
-      orderPager, cfOrderTotal, cfOrderPageList, cfOrderSummary,                    // order
-      claimPager, cfClaimRows, cfClaimTotal, cfClaimPageList, cfClaimSummary,       // claim
-      promoPager, cfPromoTotal, cfPromoPageList, cfPromoSummary,                    // promo
-      settlePager, cfSettleTotal, cfSettlePageList, cfSettleSummary,                // settle
-      fmt, fmtW, fnStatusBadge, fnTypeBadge,                                        // 헬퍼
+      vendorPager, cfVendorTotal, cfVendorPageList,                 // vendor
+      orderPager, cfOrderTotal, cfOrderPageList,                // order
+      claimPager, cfClaimTotal, cfClaimPageList,                             // claim
+      promoPager, cfPromoTotal, cfPromoPageList,                // promo
+      settlePager, cfSettleTotal, cfSettlePageList,                 // settle
     };
   },
   template: /* html */`

@@ -133,7 +133,7 @@ window.StErpViewMng = {
 
     return {
       columns,
-      uiState, codes, slips, searchParam, baseGrid,
+      uiState, slips, searchParam, baseGrid,
       handleBtnAction, handleSelectAction,
     };
   },

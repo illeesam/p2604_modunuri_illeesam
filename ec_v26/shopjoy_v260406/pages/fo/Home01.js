@@ -18,6 +18,7 @@ window.Home01 = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, cartModalMode: false, quickViewProduct: null, bannerIdx: 0});
     const codes = reactive({});
 
+
     /* -- 배너 슬라이더 -- */
     const banners = [
       { img: 'assets/cdn/prod/img/slider/slider-1.jpg', title: '나만의 스타일을', sub: '완성하세요', desc: '트렌디한 의류를 합리적인 가격으로. 색상과 사이즈를 직접 선택해 나만의 스타일을 만들어보세요.' },
@@ -145,13 +146,9 @@ window.Home01 = {
       return map[id] || '🏷️';
     }
 
-    const cfNewProds = computed(() =>
-      (prods || []).filter(p => p.badge === 'NEW').slice(0, 3)
-    );
 
-    const cfBestProds = computed(() =>
-      (prods || []).filter(p => p.badge === '인기').slice(0, 3)
-    );
+
+
 
     /* -- 할인 상품 -- */
     const cfSaleProds = computed(() =>
@@ -167,11 +164,11 @@ window.Home01 = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
-      uiState, codes, banners, siteConfig,                                 // 상태 / 데이터
-      handleBtnAction, handleSelectAction, fnCallbackModal,                                 // dispatch
-      cfNewProds, cfBestProds, cfAllHomeProds, cfSaleProds,                // computed
-      fnCategoryLabel, fnCatEmoji, isLiked,                                // 헬퍼
-      selectProd, toggleLike,                                              // 모달 전달용
+      uiState, banners, siteConfig,       // 상태 / 데이터
+      handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch
+      cfAllHomeProds, cfSaleProds,                         // computed
+      isLiked,                             // 헬퍼
+      selectProd, toggleLike, // 모달 전달용
     };
   },
   template: /* html */ `

@@ -119,12 +119,6 @@ window.PdProdDtl = {
     // 탭별 전체 데이터 (페이징은 프론트 슬라이스)
     const tabData = reactive({ images: [], opts: { groups: [], items: [] }, skus: [], content: [], rels: [] });
 
-    const cfTabPageList = computed(() => ({
-      images:  tabData.images.slice((tabPage.images.pageNo -1)*tabPage.images.pageSize,   tabPage.images.pageNo  *tabPage.images.pageSize),
-      skus:    tabData.skus.slice(  (tabPage.skus.pageNo   -1)*tabPage.skus.pageSize,     tabPage.skus.pageNo    *tabPage.skus.pageSize),
-      content: tabData.content.slice((tabPage.content.pageNo-1)*tabPage.content.pageSize, tabPage.content.pageNo *tabPage.content.pageSize),
-      rels:    tabData.rels.slice(  (tabPage.rels.pageNo   -1)*tabPage.rels.pageSize,     tabPage.rels.pageNo    *tabPage.rels.pageSize),
-    }));
 
     /* 상품 onTabPageChange */
 
@@ -145,11 +139,7 @@ window.PdProdDtl = {
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     };
 
-    /* TAB_BASE — TAB_ 기본 */
-    const TAB_BASE = () => `/bo/ec/pd/prod/${props.dtlId}`;
 
-    /* HDR — 헤더 */
-    const HDR = (cmd) => coUtil.cofApiHdr('상품관리', cmd);
 
     // 보조 데이터(사용자/카테고리) + 기본정보 + 탭 전체 동시 조회
     /* handleLoadData — 처리 */
@@ -404,8 +394,6 @@ window.PdProdDtl = {
         .sort(fnSortByOrd)
     );
 
-    /* clearOpt — 비우기 */
-    const clearOpt = () => { optGroups.length = 0; skus.length = 0; uiState.prodOptCategoryTypeCd = ''; };
 
     // 단일 프리셋 → 옵션 행 객체
     //   valCodeId 는 sy_code.code_id (예: CD000963) — select v-model 매칭용
@@ -787,21 +775,6 @@ window.PdProdDtl = {
 
     // 상품 추가 피커 모달 — uiState.prodPickerOpen 을 template 에서 직접 참조 가능하도록 toRef
     const prodPickerOpen   = Vue.toRef(uiState, 'prodPickerOpen');
-        const cfProdPickerList   = computed(() => {
-      const q    = (uiState.prodPickerSearch || '').trim().toLowerCase();
-      const all  = products;
-      const used = (uiState.prodPickerOpen === 'rel' ? relProds : codeProds).map(r => r.prodId);
-      const types = uiState.prodPickerSearchType || 'prodId,prodNm,cateNm';
-      return safeFilter(all, p => {
-        if (used.includes(p.prodId)) { return false; }
-        if (!q) { return true; }
-        const hits = [];
-        if (types.includes('prodId')) { hits.push(String(p.prodId).includes(q)); }
-        if (types.includes('prodNm')) { hits.push((p.prodNm || '').toLowerCase().includes(q)); }
-        if (types.includes('cateNm')) { hits.push((p.cateNm || '').toLowerCase().includes(q)); }
-        return hits.some(Boolean);
-      });
-    });
 
     /* openProdPicker — 열기 (좌:카테고리트리 + 우:상품목록 모달) */
     const openProdPicker = (type) => { uiState.prodPickerOpen = type; };
@@ -832,10 +805,7 @@ window.PdProdDtl = {
     const removeCodeProd = (idx) => codeProds.splice(idx, 1);
 
     // 드래그 정렬 — 연관상품
-    const onRelDragStart = (idx) => { uiState.dragRelIdx = idx; };
 
-    /* onRelDragOver — 이벤트 */
-    const onRelDragOver  = (idx) => { uiState.dragoverRelIdx = idx; };
 
     /* onRelDrop — 이벤트 */
     const onRelDrop = () => {
@@ -844,10 +814,7 @@ window.PdProdDtl = {
       relProds.splice(0, relProds.length, ...items); uiState.dragRelIdx = null; uiState.dragoverRelIdx = null;
     };
     // 드래그 정렬 — 코드상품
-    const onCodeDragStart = (idx) => { uiState.dragCodeIdx = idx; };
 
-    /* onCodeDragOver — 이벤트 */
-    const onCodeDragOver  = (idx) => { uiState.dragoverCodeIdx = idx; };
 
     /* onCodeDrop — 이벤트 */
     const onCodeDrop = () => {
@@ -1234,7 +1201,6 @@ window.PdProdDtl = {
     const openHelp = (topic) => { if (window.showBoHelp) window.showBoHelp(topic); };
     const prodPickerSearch = Vue.toRef(uiState, 'prodPickerSearch');
     const prodPickerSearchType = Vue.toRef(uiState, 'prodPickerSearchType');
-    const mdSearchTypeRef = Vue.toRef(uiState, 'mdSearchType');
     const skuFilter1 = Vue.toRef(uiState, 'skuFilter1');
     const skuFilter2 = Vue.toRef(uiState, 'skuFilter2');
     const skuFilterStock = Vue.toRef(uiState, 'skuFilterStock');
@@ -1260,8 +1226,6 @@ window.PdProdDtl = {
     };
 
     // -- bo-grid 컬럼 정의 (특수 셀은 #cell- 슬롯) ----------------------------
-    /* fnNoCursor — 유틸 */
-    const fnNoCursor = () => '';
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 
@@ -1417,32 +1381,32 @@ window.PdProdDtl = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
-      columns, handleBtnAction, handleSelectAction, fnCallbackModal,                   // dispatch + 모달 통합 콜백
-      cfIsNew, cfHasProdId, cfSaveDisabled, showTab, topTab, cfDtlMode, tabMode2, tabs, form, errors, handleSave, onPreview, codeGrpModal, openCodeGrpModal,
-      tabPage, tabData, cfTabPageList, onTabPageChange, cfTabTotalPages, fnTabPageNos,
-      uiState, cfMdUserList, cfMdUserListFiltered, cfMdSelectedNm, openMdModal, selectMdUser, mdSearchTypeRef, prodPickerSearchType,
-      clearOpt, optGroups, skus, cfTotalStock, generateSkus, moveSku,
+      columns, handleBtnAction, fnCallbackModal,                    // dispatch + 모달 통합 콜백
+      cfIsNew, cfSaveDisabled, showTab, topTab, cfDtlMode, tabMode2, tabs, form, errors, codeGrpModal, openCodeGrpModal,
+      tabPage, tabData, onTabPageChange, cfTabTotalPages, fnTabPageNos,
+      uiState, cfMdUserListFiltered, cfMdSelectedNm, openMdModal, selectMdUser,
+      optGroups, skus, cfTotalStock, generateSkus, moveSku,
       cfSkuFilter1Options, cfSkuFilter2Options, cfSkusFiltered,
       cfOptTypeAllCodes, cfOptTypeLevel1Codes, cfOptTypeCodes, cfOptInputTypeCodes, getOptValCodes,
       onCategoryChange, addOptGroup, removeOptGroup, addOptItem, removeOptItem,
       onOptItemDragStart, onOptItemDragOver, onOptItemDrop,
       images, addImageByUrl, onFileChange, setMain, removeImage, fileInputRef, triggerFileInput, fnOptItem2Label,
       onImgDragStart, onImgDragOver, onImgDrop,
-      prodCategories, cfCatExcludeSet, catPickerOpen, addCategory, removeCategory,
+      prodCategories, cfCatExcludeSet, catPickerOpen, removeCategory,
       onCatDragStart, onCatDragOver, onCatDrop,
-      relProds, codeProds, cfProdPickerList, prodPickerOpen, openProdPicker, selectProdItem, fnProdPickerCallback,
+      relProds, codeProds, prodPickerOpen, openProdPicker, fnProdPickerCallback,
       removeRelProd, removeCodeProd,
-      onRelDragStart, onRelDragOver, onRelDrop,
-      onCodeDragStart, onCodeDragOver, onCodeDrop,
-      salePlans, cfPlanVisible, cfPlanAllChecked, addPlanRow, onPlanChange, deletePlanChecked, planRowStyle,
-      cfMarginRateCalc, cfDiscountRate, cfPlatformFee, cfPlatformFeeDisp, cfNetRevenueDisp,
+      onRelDrop,
+      onCodeDrop,
+      cfPlanVisible, cfPlanAllChecked, addPlanRow, onPlanChange, deletePlanChecked,
+      cfMarginRateCalc, cfDiscountRate, cfPlatformFeeDisp, cfNetRevenueDisp,
       contentBlocks, addContentBlock, removeContentBlock, onBlockFileChange,
       onBlockDragStart, onBlockDragOver, onBlockDrop,
       contentSplitRef, onDividerMousedown,
       prodOptCategoryTypeCd, openHelp,
-      safeFirst, safeGet, safeFind, safeFilter,
+      safeFirst, safeFind, safeFilter,
       grpCodes,
-      fnNoCursor, fnMdRowStyle, fnRemainSkuRowStyle,
+      fnMdRowStyle, fnRemainSkuRowStyle,
       fnPlanRowChecked, onPlanToggleCheck, onPlanToggleCheckAll, fnPlanRowStyle2,
       dtlId: Vue.computed(() => props.dtlId),
       };

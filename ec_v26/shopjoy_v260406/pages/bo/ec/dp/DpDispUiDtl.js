@@ -358,12 +358,6 @@ window.DpDispUiDtl = {
     /* cfUiDispEnvMcsOptions — 전시환경 옵션 {code,label} → {value,label} (BoMultiCheckSelect 인식용) */
     const cfUiDispEnvMcsOptions = computed(() => uiDispEnvOptions.map(o => ({ value: o.code, label: o.label })));
 
-    /* hasAreaVisibility — 공개대상 포함 여부 */
-    const hasAreaVisibility = (code) => {
-      if (!cfActiveArea.value) { return false; }
-      if (!cfActiveArea.value.visibilityTargets) { cfActiveArea.value.visibilityTargets = '^PUBLIC^'; }
-      return window.visibilityUtil.has(cfActiveArea.value.visibilityTargets, code);
-    };
 
     /* toggleAreaVisibility — 공개대상 토글 */
     const toggleAreaVisibility = (code) => {
@@ -380,12 +374,6 @@ window.DpDispUiDtl = {
       cfActiveArea.value.visibilityTargets = window.visibilityUtil.serialize(filtered);
     };
 
-    /* hasUiDispEnv — 전시환경 포함 여부 */
-    const hasUiDispEnv = (code) => {
-      if (!cfActiveArea.value) { return false; }
-      if (!cfActiveArea.value.uiDispEnv) { cfActiveArea.value.uiDispEnv = '^PROD^'; }
-      return cfActiveArea.value.uiDispEnv.includes('^' + code + '^');
-    };
 
     /* toggleUiDispEnv — 전시환경 토글 */
     const toggleUiDispEnv = (code) => {
@@ -481,15 +469,14 @@ window.DpDispUiDtl = {
 
     return {
       columns,
-      codes, uis, areas, uiState, pathPickModal, form, errors,                       // 상태 / 데이터
-      handleBtnAction, handleSelectAction, fnCallbackModal,                            // dispatch + 모달 통합 콜백
-      cfIsNew, cfDtlMode, cfRelatedAreas, cfActiveArea, cfPreviewFrameWidth,          // computed
-      cfAvailableAreas, cfVisibilityOptions, cfUiDispEnvMcsOptions,                  // computed
-      activeTab, previewMode, expanded, pickOpen, previewPaneWidth,                  // toRef
-      showComponentTooltip,                                                          // toRef
-      PREVIEW_MODES, uiDispEnvOptions,                                               // 상수
-      panelsOfArea, pathLabel,                                                       // 헬퍼
-      hasAreaVisibility, hasUiDispEnv,                                               // 헬퍼
+      areas, uiState, pathPickModal, form, errors,            // 상태 / 데이터
+      handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch + 모달 통합 콜백
+      cfIsNew, cfDtlMode, cfRelatedAreas, cfActiveArea, cfPreviewFrameWidth, // computed
+      cfAvailableAreas, cfVisibilityOptions, cfUiDispEnvMcsOptions, // computed
+      activeTab, previewMode, expanded, pickOpen, previewPaneWidth, // toRef
+      showComponentTooltip, // toRef
+      PREVIEW_MODES,                  // 상수
+      panelsOfArea, pathLabel, // 헬퍼
     };
   },
   template: /* html */`

@@ -249,24 +249,11 @@ const setGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pag
     const dtlItems = reactive([]);
     let _seq = 1;
 
-    /* onDragStart — 드래그 시작 */
-    const onDragStart = idx => { uiState.dragIdx = idx; };
 
-    /* onDragOver — 드래그 오버 */
-    const onDragOver  = idx => { uiState.dragoverIdx = idx; };
 
-    /* onDrop — 이벤트 */
-    const onDrop = () => {
-      if (uiState.dragIdx === null || uiState.dragIdx === uiState.dragoverIdx) {
-        uiState.dragIdx = uiState.dragoverIdx = null; return;
-      }
-      const arr = [...dtlItems];
-      const [moved] = arr.splice(uiState.dragIdx, 1);
-      arr.splice(uiState.dragoverIdx, 0, moved);
-      window.safeArrayUtils.safeForEach(arr, (item, i) => { item.sortOrd = i + 1; });
-      dtlItems.splice(0, dtlItems.length, ...arr);
-      uiState.dragIdx = uiState.dragoverIdx = null;
-    };
+
+
+
 
     /* onItemReorder — 이벤트 */
     const onItemReorder = () => {
@@ -595,12 +582,12 @@ const setGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pag
 
     return {
       columns,
-      codes, uiState, setList, searchParam, setGridPager,                                          // 상태 / 데이터
-      dtlCategories, dtlItems, newForm, newErrors, pickerResults,                           // 상태 / 데이터
+      uiState, searchParam, setGridPager,                // 상태 / 데이터
+      dtlCategories, dtlItems, newForm, newErrors,               // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal,                                                  // dispatch (모든 이벤트 / 액션 라우팅)
-      cfCatExcludeSet, cfDtlProdNm, cfSetPageRows, cfPickerList,                            // computed
-      fnSetRowStyle, fnSetItemRowStyle,                                                     // 헬퍼
-      getProdNm, getProd, getBrandNm, getVendorNm, getCategoryNm, getCategoryDepth,          // 헬퍼
+      cfCatExcludeSet, cfDtlProdNm, cfSetPageRows, cfPickerList, // computed
+      fnSetRowStyle, fnSetItemRowStyle, // 헬퍼
+      getProdNm, getBrandNm, getVendorNm,                                          // 헬퍼
       onItemReorder,                                                                        // BoGrid 콜백 (closure 필요)
     };
   },

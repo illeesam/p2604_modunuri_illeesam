@@ -13,6 +13,7 @@ window.SyDashboardMng = {
     const uiState = reactive({ isPageCodeLoad: false });
     const codes = reactive({});
 
+
     const shortcuts = [
       { id: 'ecMemberMng',   label: '회원관리',   icon: '👥', color: '#e8587a' },
       { id: 'ecProdMng',     label: '상품관리',   icon: '📦', color: '#1677ff' },
@@ -99,9 +100,9 @@ window.SyDashboardMng = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
-      uiState, codes, shortcuts,                          // 상태 / 데이터
+      shortcuts,                // 상태 / 데이터
       handleBtnAction, handleSelectAction,                // dispatch (모든 이벤트 / 액션 라우팅)
-      cfStats,                                            // computed
+      cfStats, // computed
     };
   },
   template: /* html */`

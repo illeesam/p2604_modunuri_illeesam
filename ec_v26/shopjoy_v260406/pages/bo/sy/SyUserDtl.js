@@ -244,11 +244,11 @@ window.SyUserDtl = {
 
     return {
       columns,
-      uiState, codes, form, errors, addrDetailRef, deptModal,             // 상태 / 데이터
+      form, errors, addrDetailRef, deptModal,                // 상태 / 데이터
       cfUserRoles,                                   // 역할 목록 (하단)
       handleBtnAction, handleSelectAction, fnCallbackModal,                                // dispatch (모든 이벤트 / 액션 라우팅)
-      cfIsNew, cfDtlMode,                                                 // computed
-      showToast,                                                          // BaseAttachOne 콜백
+      cfIsNew, cfDtlMode, // computed
+      showToast, // BaseAttachOne 콜백
     };
   },
   template: /* html */`

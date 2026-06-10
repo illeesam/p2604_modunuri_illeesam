@@ -223,10 +223,9 @@ window.StSettleCloseMng = {
 
     return {
       columns,
-      uiState, codes, closes, searchParam, thisMonth,
+      uiState, searchParam, thisMonth,
       handleBtnAction, handleSelectAction,
-      cfFilteredClose, cfThisMonthSales, cfThisMonthRefund, cfThisMonthNet, cfThisMonthComm, cfThisMonthPromo, cfThisMonthSettle, cfAlreadyClosed,
-      fnStatusBadge, fmtW,
+      cfFilteredClose, cfAlreadyClosed,
     };
   },
   template: /* html */`

@@ -247,8 +247,6 @@ window.DpDispPanelDtl = {
     /* openPathPick — 경로 선택 열기 */
     const openPathPick = (target) => { pathPickModal.target = target; pathPickModal.show = true; };
 
-    /* closePathPick — 경로 선택 닫기 */
-    const closePathPick = () => { pathPickModal.show = false; pathPickModal.target = null; };
 
     /* onPathPicked — 이벤트 */
     const onPathPicked = (pathId) => { if (pathPickModal.target === 'form') form.pathId = pathId; };
@@ -395,11 +393,6 @@ window.DpDispPanelDtl = {
       uiState.tab = cfRowTabKeys.value[target];
     };
 
-    const cfAreas = computed(() =>
-      codes.disp_areas
-        .filter(c => c.useYn === 'Y')
-        .sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0))
-    );
 
     const cfIsChart       = computed(() => cfActiveRow.value?.widgetType?.startsWith('chart_'));
     const cfIsProduct     = computed(() => ['product_slider','product'].includes(cfActiveRow.value?.widgetType));
@@ -757,11 +750,6 @@ window.DpDispPanelDtl = {
     /* -- 공개 대상 멀티체크 토글 (전시항목별) -- */
     const cfVisibilityOptions = computed(() => window.visibilityUtil.allOptions());
 
-    /* hasVisibility — 여부 확인 */
-    const hasVisibility = (code) => {
-      if (!cfActiveRow.value) { return false; }
-      return window.visibilityUtil.has(cfActiveRow.value.visibilityTargets, code);
-    };
 
     /* toggleVisibility — 토글 */
     const toggleVisibility = (code) => {
@@ -788,11 +776,6 @@ window.DpDispPanelDtl = {
     /* cfDispEnvMcsOptions — 전시환경 옵션 {code,label} → {value,label} (BoMultiCheckSelect 인식용) */
     const cfDispEnvMcsOptions = computed(() => dispEnvOptions.map(o => ({ value: o.code, label: o.label })));
 
-    /* hasDispEnv — 여부 확인 */
-    const hasDispEnv = (code) => {
-      if (!cfActiveRow.value) { return false; }
-      return cfActiveRow.value.dispEnv.includes('^' + code + '^');
-    };
 
     /* toggleDispEnv — 토글 */
     const toggleDispEnv = (code) => {
@@ -803,8 +786,6 @@ window.DpDispPanelDtl = {
       cfActiveRow.value.dispEnv = envList.length > 0 ? '^' + envList.join('^') + '^' : '^NONE^';
     };
 
-    /* hasPanelDispEnv — 여부 확인 */
-    const hasPanelDispEnv = (code) => form.panelDispEnv.includes('^' + code + '^');
 
     /* togglePanelDispEnv — 패널 토글 */
     const togglePanelDispEnv = (code) => {
@@ -814,8 +795,6 @@ window.DpDispPanelDtl = {
       form.panelDispEnv = envList.length > 0 ? '^' + envList.join('^') + '^' : '^NONE^';
     };
 
-    /* hasPanelVisibility — 여부 확인 */
-    const hasPanelVisibility = (code) => window.visibilityUtil.has(form.panelVisibilityTargets, code);
 
     /* togglePanelVisibility — 패널 토글 */
     const togglePanelVisibility = (code) => {
@@ -927,28 +906,26 @@ window.DpDispPanelDtl = {
 
     return {
       columns,
-      uiState, pathPickModal, form, rows, codes, preview, cardPreview,              // 상태 / 데이터
-      handleBtnAction, handleSelectAction, fnCallbackModal,                             // dispatch + 모달 통합 콜백
-      cfIsNew, cfAreas, cfTabLabels, cfTabRowMap, cfActiveRowIdx, cfActiveRow,        // computed
-      cfDisplayRows, cfRelatedEvent, cfFileListItems, cfPreviewWidget,                // computed
-      cfCurrentAreaLabel, cfDtlMode, cfPreviewFrameWidth, cfVisibilityOptions,        // computed
+      pathPickModal, form, rows, codes, preview, cardPreview,         // 상태 / 데이터
+      handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch + 모달 통합 콜백
+      cfIsNew, cfTabLabels, cfTabRowMap, cfActiveRowIdx, cfActiveRow,         // computed
+      cfDisplayRows, cfRelatedEvent, cfFileListItems, cfPreviewWidget, // computed
+      cfCurrentAreaLabel, cfDtlMode, cfPreviewFrameWidth, cfVisibilityOptions, // computed
       cfDispEnvMcsOptions,                                                            // computed (전시환경 MCS 옵션)
-      tab, previewMode, libPickMode, libPickOpen, previewPaneWidth,                   // toRef
-      rowCopyOpen, viewAll, showComponentTooltip,                                     // toRef
-      MAX_WIDGETS, PREVIEW_MODES, dispEnvOptions,                                     // 상수
-      fnPathLabel, fnWLabel,                                                          // 헬퍼
-      fnRowIsHtmlEditor, fnRowIsFileList, fnRowIsImage, fnRowIsText, fnRowIsProduct,  // 헬퍼
-      fnGetDisplayRows, fnGetRelatedEvent, fnGetFileListItems, fnFileListColsForRow,  // 헬퍼
-      fnAddFileItemAt, fnRemoveFileItemAt, fnSetFileItem,                             // 헬퍼
-      hasVisibility, hasDispEnv, hasPanelDispEnv, hasPanelVisibility,                 // 헬퍼
-      isSectionExpanded,                                                              // 헬퍼
-      cfIsChart, cfIsProduct, cfIsImage, cfIsText, cfIsInfo, cfIsPopup, cfIsFile,     // 위젯타입 computed
-      cfIsFileList, cfIsCoupon, cfIsHtmlEditor, cfIsEventBanner, cfIsCacheBanner,     // 위젯타입 computed
-      cfIsWidgetEmbed, cfIsCondProduct,                                               // 위젯타입 computed
+      tab, previewMode, libPickMode, libPickOpen, previewPaneWidth, // toRef
+      rowCopyOpen, viewAll, showComponentTooltip, // toRef
+      MAX_WIDGETS, PREVIEW_MODES,                // 상수
+      fnPathLabel, fnWLabel, // 헬퍼
+      fnRowIsHtmlEditor, fnRowIsFileList, fnRowIsImage, fnRowIsText, fnRowIsProduct, // 헬퍼
+      fnGetDisplayRows, fnGetRelatedEvent, fnGetFileListItems, fnFileListColsForRow, // 헬퍼
+      fnAddFileItemAt, fnRemoveFileItemAt,               // 헬퍼
+      isSectionExpanded, // 헬퍼
+      cfIsProduct, cfIsImage, cfIsText,                                          // 위젯타입 computed
+      cfIsFileList, cfIsHtmlEditor,                                              // 위젯타입 computed
       addFileItem, removeFileItem, updateFileItem, moveRowAt,                         // 파일/행 조작 (인자 인라인)
       fnAddFileItemAt, fnRemoveFileItemAt,                                            // file_list row 조작 (인자 인라인)
       closePreview, closeCardPreview,                                                 // 모달 닫기 (인자 없음)
-      showRefModal,                                                                   // 공통
+      showRefModal, // 공통
     };
   },
   template: /* html */`

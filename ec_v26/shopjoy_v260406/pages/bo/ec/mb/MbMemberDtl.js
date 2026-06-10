@@ -84,7 +84,7 @@ window.MbMemberDtl = {
 
     return {
       columns,
-      currentId, codes,                                                                // 상태 / 데이터
+      currentId,       // 상태 / 데이터
       handleBtnAction,                                                                 // dispatch (모든 이벤트 / 액션 라우팅)
     };
   },

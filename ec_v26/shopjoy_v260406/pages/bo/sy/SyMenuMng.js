@@ -373,7 +373,7 @@ window.SyMenuMng = {
 
     return {
       columns,
-      menus, uiState, menuCounts, codes, searchParam, gridRows, parentModal,         // 상태 / 데이터
+      menus, uiState, menuCounts, searchParam, gridRows, parentModal,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                               // dispatch (모든 이벤트 / 액션 라우팅)
     };
   },

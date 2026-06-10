@@ -36,8 +36,7 @@
   /* fnFmtPrice — 금액 포맷 */
   const fnFmtPrice = v => v != null ? Number(v).toLocaleString() + '원' : '-';
 
-  /* dateStr — 날짜 문자열(YYYY-MM-DD...) → YYYY-MM-DD 추출 */
-  const dateStr = v => v ? String(v).slice(0, 10) : '';
+
 
   /* today — 오늘 YYYY-MM-DD */
   const today = () => new Date().toISOString().slice(0, 10);
@@ -54,14 +53,7 @@
     return d.toISOString().slice(0, 10);
   };
 
-  /* inRange — dateFrom~dateTo 필터 */
-  const inRange = (dateVal, from, to) => {
-    const d = dateStr(dateVal);
-    if (!d) { return false; }
-    if (from && d < from) { return false; }
-    if (to   && d > to) { return false; }
-    return true;
-  };
+
 
   window._mbCustInfoState = window._mbCustInfoState || { tab: 'orders', tabMode: '3col' };
   window.MbCustInfoMng = {
@@ -523,16 +515,15 @@
 
       return {
         columns,
-        uiState, codes, searchParam, memberModal,                                                                                   // 상태 / 데이터
+        uiState, searchParam, memberModal,       // 상태 / 데이터
         orders, claims, deliveries, caches, contacts, chats, loginHistories, couponUsages, sendHistories,                           // 9개 이력 데이터 (서버사이드 페이지별)
-        SEARCH_MODES, PERIOD_OPTS,                                                                                                  // 정적 옵션
-        // BoSearchArea 컬럼
+        SEARCH_MODES, PERIOD_OPTS, // 정적 옵션
         ordersPager, claimsPager, dlivPager, cachePager, contactsPager, chatsPager, loginPager, couponPager, sendPager, modalPager, // 페이저
         cfPageModalList,                                                                                                            // 모달용 클라이언트 슬라이스 (picker)
-        onSetPage, onSizeChange,                                                                                                    // BoGrid pager 콜백
-        handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                                   // dispatch + 모달 통합 콜백
-        cfDateFrom, cfDateTo, cfCustCacheBalance, tabs,                                                                             // computed
-        showTab, fnFmtPrice,                                                                                                        // 헬퍼
+        onSetPage, onSizeChange, // BoGrid pager 콜백
+        handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal, // dispatch + 모달 통합 콜백
+        cfDateFrom, cfDateTo, cfCustCacheBalance, tabs, // computed
+        showTab, fnFmtPrice, // 헬퍼
       };
     },
 

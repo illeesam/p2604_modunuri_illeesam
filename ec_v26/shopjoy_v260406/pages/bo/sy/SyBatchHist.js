@@ -210,10 +210,10 @@ window.SyBatchHist = {
 
     return {
       columns,
-      batches, batchLogs, uiState, codes, histGridPager,                        // 상태 / 데이터
+      batchLogs, uiState, codes, histGridPager,         // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                               // dispatch (모든 이벤트 / 액션 라우팅)
-      cfBatchOptions,                                                    // computed
-      fnRunBadge, fnFmtDuration, fnRowExpanded, fnHistRowStyle,          // 헬퍼
+      cfBatchOptions, // computed
+      fnRowExpanded, fnHistRowStyle,                           // 헬퍼
     };
   },
   template: /* html */`

@@ -698,15 +698,15 @@ window.DpDispWidgetLibDtl = {
 
     return {
       columns,
-      pathPickModal, uiState, codes, form, errors,                                   // 상태 / 데이터
-      handleBtnAction, handleSelectAction, fnCallbackModal,                            // dispatch + 모달 통합 콜백
-      cfDtlMode, cfIsNew, cfDisplayRows, cfFileListItems,                            // computed
-      cfPreviewWidget, cfSampleJson, cfPreviewFrameWidth,                            // computed
+      pathPickModal, codes, form, errors,         // 상태 / 데이터
+      handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch + 모달 통합 콜백
+      cfDtlMode, cfIsNew, cfDisplayRows, cfFileListItems, // computed
+      cfPreviewWidget, cfSampleJson, cfPreviewFrameWidth, // computed
       cfIsImage, cfIsProduct, cfIsCondProduct, cfIsChart, cfIsText, cfIsInfo,        // computed (위젯 유형 분기)
-      cfIsPopup, cfIsFile, cfIsFileList, cfIsCoupon, cfIsHtmlEditor,                 // computed
-      cfIsEvent, cfIsCache, cfIsEmbed,                                               // computed
-      previewMode, libPickOpen, showComponentTooltip, jsonCopied, previewPaneWidth,  // toRef
-      PREVIEW_MODES,                                                                  // 상수
+      cfIsFileList, cfIsHtmlEditor,                                 // computed
+      cfIsEmbed,                      // computed
+      previewMode, libPickOpen, showComponentTooltip, jsonCopied, previewPaneWidth, // toRef
+      PREVIEW_MODES, // 상수
       pathLabel, updateFileItem,                                                      // 헬퍼 (template 직접 호출 유지)
     };
   },

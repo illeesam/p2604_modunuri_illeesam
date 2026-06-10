@@ -241,10 +241,6 @@ window.PmPlanDtl = {
     });
 
     /* 대상 상품 팝업 */
-    const cfFilteredProds = computed(() => window.safeArrayUtils.safeFilter(products, p => {
-      const searchVal = prodSearch.value.trim().toLowerCase();
-      return !searchVal || p.prodNm.toLowerCase().includes(searchVal);
-    }));
 
     /* toggleProduct — 토글 */
     const toggleProduct = (pid) => {
@@ -253,8 +249,6 @@ window.PmPlanDtl = {
       else { form.productIds.splice(idx, 1); }
     };
 
-    /* isSelected — 여부 확인 */
-    const isSelected = (pid) => form.productIds.includes(pid);
     const cfSelectedProducts = computed(() =>
       form.productIds.map(pid => products.find(p => p.productId === pid)).filter(Boolean)
     );
@@ -265,10 +259,6 @@ window.PmPlanDtl = {
       if (idx !== -1) { form.productIds.splice(idx, 1); }
     };
 
-    /* hasVisibility — 여부 확인 */
-    const hasVisibility = (code) => {
-      return (form.visibilityTargets || '').includes('^' + code + '^');
-    };
 
     /* toggleVisibility — 토글 */
     const toggleVisibility = (code) => {
@@ -389,13 +379,12 @@ window.PmPlanDtl = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
-      coUtil,  // 템플릿 cofAnd 접근용
       columns,
-      vendors, products, uiState, codes, form, errors, VISIBILITY_OPTIONS, tabs,     // 상태 / 데이터
+      vendors, products, form, errors, VISIBILITY_OPTIONS, tabs,                // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal,                                           // dispatch (모든 이벤트 / 액션 라우팅)
-      cfIsNew, cfHasId, cfSaveDisabled, cfDtlMode, cfFilteredProds, cfSelectedProducts, cfSelectedVendorNm, // computed
-      tab, tabMode2, activeContentTab, prodSearch, showProdPopup, showVendorModal,   // toRef
-      showTab, isSelected, hasVisibility,                                            // 헬퍼
+      cfIsNew, cfSaveDisabled, cfDtlMode, cfSelectedProducts, cfSelectedVendorNm,                          // computed
+      tab, tabMode2, activeContentTab, showProdPopup, showVendorModal,            // toRef
+      showTab,                           // 헬퍼
     };
   },
   template: /* html */`

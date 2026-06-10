@@ -283,11 +283,7 @@ window.SyRoleMng = {
     /* -- 표시경로 선택 모달 (sy_path) -- */
     const pathPickModal = reactive({ show: false, row: null });
 
-    /* openPathPick — 경로 선택 열기 */
-    const openPathPick = (row) => { pathPickModal.row = row; pathPickModal.show = true; };
 
-    /* closePathPick — 경로 선택 닫기 */
-    const closePathPick = () => { pathPickModal.show = false; pathPickModal.row = null; };
 
     /* onPathPicked — 이벤트 */
     const onPathPicked = (pathId) => {
@@ -298,17 +294,11 @@ window.SyRoleMng = {
       }
     };
 
-    /* pathLabel — 경로 라벨 */
-    const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
 
     /* -- 좌측 표시경로 트리 -- */
         const expanded = reactive(new Set(['']));
 
-    /* toggleNode — 노드 토글 */
-    const toggleNode = (path) => { if (expanded.has(path)) expanded.delete(path); else expanded.add(path); };
 
-    /* selectNode — 노드 선택 */
-    const selectNode = (path) => { uiState.selectedPath = path; handleSearchList(); };
     /* cfTree — 좌측 역할 트리 (treeRoles API 응답 기반, store 비의존)
      *   treeRoles 가 변경되면 자동 재빌드 — 그리드 저장 후 fnLoadTreeRoles() 호출로 갱신. */
     const cfTree = computed(() => {
@@ -392,12 +382,6 @@ window.SyRoleMng = {
     /* effectiveRoleCat — effective 권한 카테고리 */
     const effectiveRoleCat = (row) => (row.roleCat && row.roleCat.length) ? row.roleCat : deriveRoleCat(row);
 
-    /* toggleRoleCat — 토글 */
-    const toggleRoleCat = (row, code) => {
-      const cur = effectiveRoleCat(row);
-      row.roleCat = (cur.length === 1 && cur[0] === code) ? [] : [code];
-      onCellChange(row);
-    };
     boUtil.__roleCatOf = (roleId) => {
       const rolesData = roles || [];
       const r = roles.find(x => x.roleId === roleId);
@@ -445,16 +429,7 @@ window.SyRoleMng = {
       };
     };
 
-    /* onSearch — 조회 */
-    const onSearch = async () => {
-      await handleSearchList('DEFAULT');
-    };
 
-    /* onReset — 초기화 */
-    const onReset = () => {
-      Object.assign(searchParam, _initSearchParam());
-      handleSearchList();
-    };
 
     /* fnLoadMenusAndUsers — 유틸 */
     const fnLoadMenusAndUsers = async () => {
@@ -645,11 +620,7 @@ window.SyRoleMng = {
       }
     };
 
-    /* toggleCheckAll — 전체 체크 토글 */
-    const toggleCheckAll = () => { gridRows.forEach(r => { r._row_check = uiState.checkAll; }); };
 
-    /* fnStatusClass — 상태 배지 클래스 */
-    const fnStatusClass = s => ({ N: 'badge-gray', I: 'badge-blue', U: 'badge-orange', D: 'badge-red' }[s] || 'badge-gray');
 
     /* parentNm — 상위 Nm */
     const parentNm = (parentRoleId) => {
@@ -664,11 +635,6 @@ window.SyRoleMng = {
      *   주의: 그리드 재조회 금지 — 사용자가 편집 중인 행 객체가 새로 교체되면 onCellChange 의 _row_status 변경이 반영되지 않음 */
     const openParentModal = (row) => { roleTreeModal.targetRow = row; roleTreeModal.show = true; };
 
-    /* onParentSelect — 이벤트 */
-    const onParentSelect  = (role) => {
-      if (roleTreeModal.targetRow) { roleTreeModal.targetRow.parentRoleId = role.roleId; roleTreeModal.targetRow._depth = 0; onCellChange(roleTreeModal.targetRow); }
-      roleTreeModal.show = false;
-    };
 
     /* -- 하단: 메뉴 배분 -- */
         const buildMenuTree = (items, parentId, depth) => {
@@ -809,12 +775,6 @@ window.SyRoleMng = {
       }
     };
 
-    /* removeUser — 제거 */
-    const removeUser = (boUserId) => {
-      if (!uiState.selectedRoleId) { return; }
-      const idx = roleUsers.findIndex(x => x.roleId === uiState.selectedRoleId && x.boUserId === boUserId);
-      if (idx !== -1) { roleUsers.splice(idx, 1); }
-    };
 
     const cfSelectedRoleNm = computed(() => {
       if (!uiState.selectedRoleId) { return ''; }
@@ -829,8 +789,6 @@ window.SyRoleMng = {
       '역할목록.csv'
     );
 
-    /* onTreeCatChange — 이벤트 */
-    const onTreeCatChange = () => { handleSearchList(); };
 
     /* BoGridCrud 컬럼 정의 (특수셀은 cell/head 슬롯으로 override) */
 
@@ -885,14 +843,13 @@ window.SyRoleMng = {
 
     return {
       columns,
-      uiState, codes, searchParam, gridRows, expanded,                                                       // 상태 / 데이터
-      excelUploadModal,                                                                                      // 엑셀 업로드 모달
+      uiState, codes, searchParam, gridRows, expanded, // 상태 / 데이터
+      excelUploadModal, // 엑셀 업로드 모달
       handleBtnAction, handleSelectAction, handleGridCellAction,                                                                   // dispatch (모든 이벤트 / 액션 라우팅)
-      cfTree, cfShowRoleSetting, cfSelectedRoleNm, cfMenuTree, cfMenuAllChecked,                            // computed
-      fnRoleUsersList, fnCallbackModal,                                                                       // 함수 / 모달 콜백 dispatch
-      fnPermColor, getMenuPerm, isMenuChecked,                                                               // 헬퍼
-      pathPickModal, roleTreeModal,                                                                          // 모달 상태
-      showToast, showConfirm,                                                                                // 모달 콜백
+      cfTree, cfShowRoleSetting, cfSelectedRoleNm, cfMenuTree, cfMenuAllChecked, // computed
+      fnRoleUsersList, fnCallbackModal, // 함수 / 모달 콜백 dispatch
+      fnPermColor, getMenuPerm, isMenuChecked, // 헬퍼
+      pathPickModal, roleTreeModal, // 모달 상태
     };
   },
   template: /* html */`

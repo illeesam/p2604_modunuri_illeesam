@@ -214,9 +214,9 @@ window.SySiteDtl = {
 
     return {
       columns,
-      uiState, codes, form, errors, addrDetailRef, pathPickModal,   // 상태 / 데이터
-      handleBtnAction, fnCallbackModal,                             // dispatch + 모달 통합 콜백
-      cfIsNew, cfDtlMode,                                           // computed
+      form, errors, pathPickModal,                               // 상태 / 데이터
+      handleBtnAction, fnCallbackModal, // dispatch + 모달 통합 콜백
+      cfIsNew, cfDtlMode, // computed
     };
   },
   template: /* html */`

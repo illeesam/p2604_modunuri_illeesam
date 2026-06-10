@@ -15,6 +15,7 @@ window.MyClaim = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
 
+
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
@@ -185,12 +186,10 @@ window.MyClaim = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
-      uiState, codes,                                                        // 상태 / 데이터
-      handleBtnAction, handleSelectAction, fnCallbackModal,                    // dispatch + 모달 통합 콜백
-      // ===== claims 영역 ======================================================
+      handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch + 모달 통합 콜백
       myStore, claims, claimFilter, filteredClaims, orders,
       pager, paginate, cfDateFilteredClaims, claimStatusFilter,
-      onDateSearch, onSearch,
+      onSearch,
       // ===== shared (헬퍼) ====================================================
       cfAuthUser, findProd,
     };

@@ -141,8 +141,7 @@ window.DpDispWidgetMng = {
       handleSearchData('DEFAULT');
     };
 
-    /* sortIcon — 정렬 */
-    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+
 
     /* handleLoadPathTreeNodeCounts — 좌 트리 노드별 카운트 (검색조건 동기) */
     const handleLoadPathTreeNodeCounts = async () => {
@@ -209,8 +208,7 @@ window.DpDispWidgetMng = {
       handleSearchData('DEFAULT');
     });
 
-    /* pathLabel — 경로 라벨 */
-    const pathLabel = (id) => boUtil.bofGetPathLabel(id) || (id == null ? '' : ('#' + id));
+
 
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
@@ -292,8 +290,7 @@ window.DpDispWidgetMng = {
     /* fnStatusLabel — 유틸 */
     const fnStatusLabel = (v) => v === 'Y' ? '활성' : '비활성';
 
-    /* contentSummary — content 요약 */
-    const contentSummary = (d) => d?.widgetLibDesc || d?.contents || d?.desc || '';
+
 
     /* 적용 필터 없음 여부 (template 속성값 && 금지 회피용) */
     const cfNoFilter = computed(() => !applied.searchValue && !applied.type && !applied.status);
@@ -339,14 +336,13 @@ window.DpDispWidgetMng = {
 
     return {
       columns,
-      widgets, widgetLibs, uiState, widgetCounts, codes, searchParam, applied, listGridPager, detailPanel, // 상태 / 데이터
+      widgets, uiState, widgetCounts, codes, searchParam, applied, listGridPager, detailPanel,            // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                      // dispatch (모든 이벤트 / 액션 라우팅)
-      cfFilterDirty, cfSiteNm, cfDetailEditId, cfDetailKey, cfNoFilter,               // computed
+      cfFilterDirty, cfSiteNm, cfDetailEditId, cfDetailKey, cfNoFilter, // computed
       selectedId: computed(() => detailPanel.selectedId),                             // computed
-      pathLabel, wTypeLabel, wIcon, sortIcon,                                         // 헬퍼
-      fnStatusCls, fnStatusLabel, contentSummary, fnRowStyle,                         // 헬퍼
+      wTypeLabel, wIcon,                     // 헬퍼
+      fnStatusCls, fnStatusLabel, fnRowStyle,                // 헬퍼
       inlineNavigate,                                                                 // Dtl 콜백 (closure 필요)
-      showToast, showConfirm, showRefModal, // Dtl 콜백
     };
   },
   template: /* html */`

@@ -651,13 +651,13 @@ window.OdOrderDtl = {
 
     return {
       columns,
-      form, errors, codes, orderItems, expandedItems, activeTab, tabMode2,                                // 상태 / 데이터
+      form, errors, orderItems, activeTab, tabMode2,                      // 상태 / 데이터
       products, odModal, payState,                                                                         // MD 대리주문: 모달/결제 상태
       handleBtnAction, handleSelectAction, fnCallbackModal, onProdToggled,                                // dispatch (모든 이벤트 / 액션 라우팅)
-      cfIsNew, cfDtlMode, cfCurrentStepIdx, cfIsCanceled, cfRelatedVendor, cfRelatedDelivery,             // computed
-      cfRelatedClaim, tabs, cfEditHistList, cfPaymentList, cfStatusHistList, cfAllExpanded,             // computed
-      ORDER_STEPS, CLAIM_FLOWS, CLAIM_TYPE_COLOR,                                                         // 상수
-      fmt, showTab, isExpanded, fnItemExpanded, getExchangedItem, fnPayStatusBadge,                       // 헬퍼
+      cfIsNew, cfDtlMode, cfCurrentStepIdx, cfIsCanceled, cfRelatedVendor, cfRelatedDelivery, // computed
+      cfRelatedClaim, tabs, cfEditHistList, cfPaymentList, cfStatusHistList, cfAllExpanded, // computed
+      ORDER_STEPS, CLAIM_FLOWS, CLAIM_TYPE_COLOR, // 상수
+      fmt, showTab, isExpanded, fnItemExpanded, getExchangedItem,                  // 헬퍼
       showRefModal, showToast, showConfirm,                                                                // 모달/알림 (template + 공통 컴포넌트 prop 전달)
     };
   },

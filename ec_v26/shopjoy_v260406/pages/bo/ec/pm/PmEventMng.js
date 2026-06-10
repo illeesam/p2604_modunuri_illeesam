@@ -152,8 +152,7 @@ window.PmEventMng = {
       handleSearchList();
     };
 
-    /* sortIcon — 정렬 */
-    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+
 
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -216,7 +215,7 @@ window.PmEventMng = {
       props.navigate(pg, opts);
     };
     const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
-    const cfIsViewMode = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
+
     const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}_${detailPanel.resetSeq}`);
 
 
@@ -287,12 +286,12 @@ window.PmEventMng = {
 
     return {
       columns,
-      events, uiState, codes, searchParam, baseGridPager, detailPanel,                       // 상태 / 데이터
+      events, uiState, searchParam, baseGridPager, detailPanel,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                     // dispatch (모든 이벤트 / 액션 라우팅)
-      cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                           // computed
-      tabMode,                                                                       // toRef
-      fnStatusBadge, sortIcon,                                                       // 헬퍼
-      inlineNavigate, showToast, showConfirm, showRefModal, // 콜백 / 전역
+      cfDetailEditId, cfDetailKey,                        // computed
+      tabMode, // toRef
+      fnStatusBadge,          // 헬퍼
+      inlineNavigate,                                      // 콜백 / 전역
     };
   },
   template: /* html */`

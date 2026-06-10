@@ -157,8 +157,7 @@ window.PmCacheMng = {
       handleSearchList();
     };
 
-    /* sortIcon — 정렬 아이콘 */
-    const sortIcon = (key) => uiState.sortKey !== key ? '⇅' : uiState.sortDir === 'asc' ? '↑' : '↓';
+
 
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
@@ -253,7 +252,7 @@ window.PmCacheMng = {
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 
     const cfDetailEditId = computed(() => detailPanel.selectedId === '__new__' ? null : detailPanel.selectedId);
-    const cfIsViewMode = computed(() => detailPanel.openMode === 'view' && detailPanel.selectedId !== '__new__');
+
     const cfDetailKey = computed(() => `${detailPanel.selectedId}_${detailPanel.openMode}_${detailPanel.resetSeq}`);
 
     // 기본 검색
@@ -292,10 +291,10 @@ window.PmCacheMng = {
 
     return {
       columns,
-      caches, uiState, codes, searchParam, baseGridPager, detailPanel,                       // 상태 / 데이터
+      caches, uiState, searchParam, baseGridPager, detailPanel,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                     // dispatch (모든 이벤트 / 액션 라우팅)
-      cfSiteNm, cfDetailEditId, cfIsViewMode, cfDetailKey,                           // computed
-      fnTypeBadge, sortIcon,                                                         // 헬퍼
+      cfDetailEditId, cfDetailKey,                        // computed
+      fnTypeBadge,          // 헬퍼
       inlineNavigate,                                                                // Dtl 콜백 (closure 필요)
     };
   },

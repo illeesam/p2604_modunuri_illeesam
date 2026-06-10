@@ -15,6 +15,7 @@ window.BlogEdit = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
 
+
     const cfIsEdit = computed(() => !!props.dtlId);
     const form = reactive({
       title: '',
@@ -143,10 +144,9 @@ window.BlogEdit = {
 
     return {
       columns,
-      uiState, codes,                                                  // 상태
-      handleBtnAction, handleSelectAction,                             // dispatch
+      handleBtnAction, handleSelectAction, // dispatch
       cfIsEdit, form, errors, // 폼
-      categories, images,                                              // 데이터
+      images,            // 데이터
       handleSave, cancel, addImage, removeImage,                       // 이벤트 (호환)
     };
   },

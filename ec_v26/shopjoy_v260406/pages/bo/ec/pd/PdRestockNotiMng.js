@@ -174,10 +174,10 @@ window.PdRestockNotiMng = {
 
     return {
       columns,
-      restockNotis, uiState, codes, searchParam, baseGridPager,                                 // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                                               // dispatch
-      checkedCount, allChecked,                                                          // computed
-      fnIsChecked, fnYnBadge,                                                            // 헬퍼
+      restockNotis, uiState, searchParam, baseGridPager,       // 상태 / 데이터
+      handleBtnAction, handleSelectAction, // dispatch
+      checkedCount, allChecked, // computed
+      fnIsChecked,           // 헬퍼
     };
   },
   template: `

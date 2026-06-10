@@ -249,13 +249,7 @@ window.SyDeptMng = {
     /* collapseAll — 트리 전체 접기 */
     const collapseAll = () => { expanded.clear(); expanded.add(null); };
 
-    /* fnLoadCodes — 공통코드 로드 */
-    const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      codes.dept_status = codeStore.sgGetGrpCodes('DEPT_STATUS');
-      codes.use_yn = codeStore.sgGetGrpCodes('USE_YN');
-      uiState.isPageCodeLoad = true;
-    };
+
 
     // ★ onMounted — 진입 시 트리 + 그리드 조회
     onMounted(async () => {
@@ -444,9 +438,9 @@ window.SyDeptMng = {
 
     return {
       columns,
-      depts, uiState, codes, searchParam, gridRows, expanded, parentModal,                                   // 상태 / 데이터
+      depts, uiState, searchParam, gridRows, expanded, parentModal,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal,                                                                   // dispatch (모든 이벤트 / 액션 라우팅)
-      cfTree, cfDeptCounts,                                                                                  // computed
+      cfTree, cfDeptCounts, // computed
     };
   },
   template: /* html */`
