@@ -178,8 +178,13 @@
     /* X-Skip-Error-Toast 헤더가 있으면 toast/이벤트 발생 생략 */
     var skipToast = getHdr(cfg.headers, 'x-skip-error-toast') === 'true';
 
-    /* 200-299 범위가 아닌 모든 응답 → toast 출력 */
-    if (!skipToast && ((status && (status < 200 || status >= 300)) || !status)) {
+    /* 재갱신 대상 401 은 에러 이벤트를 쏘지 않는다 — 토큰 재갱신(refresh)으로 자동 복구되므로
+       "세션 만료" 로 오인해 로그인 화면으로 튕기는 것을 방지. refresh 가 최종 실패하면
+       아래 .catch 에서 session expired 이벤트를 별도로 dispatch 한다. */
+    var willRefresh = (status === 401 && !cfg._retry);
+
+    /* 200-299 범위가 아닌 모든 응답 → toast 출력 (단, 재갱신 대상 401 은 제외) */
+    if (!skipToast && !willRefresh && ((status && (status < 200 || status >= 300)) || !status)) {
       cfg._notified = true;
       var errMsg = (res && res.data && res.data.message) || err.message || '오류가 발생했습니다.';
       var errorDetails = '';

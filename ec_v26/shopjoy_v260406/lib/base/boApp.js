@@ -1793,6 +1793,38 @@
         }
       };
 
+      /* doExpireToken — [개발용] accessToken 강제 만료 → 401 → refreshToken 으로 자동 재갱신 테스트.
+       * refreshToken 은 그대로 두고 accessToken 만 손상시켜, 다음 보호 API 호출 시
+       * boApiAxios 인터셉터가 401 → token-refresh → 원요청 재시도 흐름을 타게 한다.
+       * 손상 후 곧바로 보호 API(member/page)를 호출해 즉시 갱신을 트리거(우측 API 로그에서 확인). */
+      const doExpireToken = async () => {
+        uiState.userMenuShow = false;
+        try {
+          const ACCESS_KEY = 'modu-bo-accessToken';
+          const cur = localStorage.getItem(ACCESS_KEY) || '';
+          if (!cur) { showToast('accessToken 이 없습니다. (로그인 후 시도)', 'error'); return; }
+          /* 서버가 거부하도록 토큰을 손상 (서명 깨짐 → 401). refreshToken 은 보존 */
+          const broken = cur + '__EXPIRED__';
+          localStorage.setItem(ACCESS_KEY, broken);
+          const authStore = window.useBoAuthStore?.();
+          if (authStore) authStore.svAccessToken = broken;
+          showToast('🔄 accessToken 을 강제 만료했습니다. 다음 API에서 자동 재갱신을 시도합니다.', 'info');
+          /* 즉시 보호 API 호출 → 401 → refresh → 재시도 (성공 시 새 토큰으로 교체됨) */
+          try {
+            await boApiSvc.mbMember.getPage({ pageNo: 1, pageSize: 1 }, '토큰테스트', '강제만료');
+            /* 인터셉터가 localStorage 의 accessToken 을 새 값으로 교체함 → store 도 동기화 */
+            const newTok = localStorage.getItem(ACCESS_KEY) || '';
+            if (authStore && newTok && newTok !== broken) authStore.svAccessToken = newTok;
+            showToast('✅ 토큰 자동 재갱신 성공 (refresh 흐름 정상). 화면 유지됨.', 'success');
+          } catch (apiErr) {
+            showToast('⚠️ 재갱신 실패 — refreshToken 만료/재사용 등으로 재인증 필요할 수 있습니다.', 'error', 0);
+          }
+        } catch (e) {
+          console.error('[doExpireToken] error:', e);
+          showToast('토큰 강제 만료 처리 중 오류: ' + (e?.message || ''), 'error', 0);
+        }
+      };
+
       /* doLogout */
       const doLogout = async () => {
         try {
@@ -2070,6 +2102,7 @@
         doLogin,
         doSocial,
         doLogout,
+        doExpireToken,
         doRegister,
         QUICK_USERS,
         quickLogin,
@@ -2204,6 +2237,8 @@
           <div class="user-dropdown-item" @click="openPwChange">🔑 비밀번호 변경</div>
           <div class="user-dropdown-sep"></div>
           <div class="user-dropdown-item danger" @click="doLogout">↩ 로그아웃</div>
+          <div class="user-dropdown-sep"></div>
+          <div class="user-dropdown-item" @click="doExpireToken" title="accessToken을 강제 만료시켜 refresh 자동 재갱신 흐름을 테스트합니다 (개발용)">🔄 토큰 강제만료 (refresh 테스트)</div>
         </div>
       </template>
       <template v-else>
