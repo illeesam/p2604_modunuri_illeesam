@@ -16,7 +16,6 @@ window.DpDispPanelDtl = {
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
-    const panels = reactive([]);
     const uiState = reactive({ libPickOpen: false, loading: false, rowCopyOpen: false, showComponentTooltip: false, viewAll: false, isPageCodeLoad: false, error: null, tab: 'info', previewMode: 'default', previewPaneWidth: 520, libPickMode: 'copy' });
     const tab = Vue.toRef(uiState, 'tab');
     const previewMode = Vue.toRef(uiState, 'previewMode');

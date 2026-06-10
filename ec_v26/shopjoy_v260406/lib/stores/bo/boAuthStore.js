@@ -133,25 +133,7 @@
         }
       },
 
-      // 토큰 갱신
-      async saRefreshAccessToken() {
-        if (!this.svRefreshToken) { this.saReset(); return false; }
-        try {
-          const res = await coApiSvc.boAuth.tokenRefresh({ refreshToken: this.svRefreshToken }, '로그인', '토큰갱신');
-          this.svAccessToken = res.data?.accessToken || '';
-          this.svRefreshToken = res.data?.refreshToken || '';
-          this.svAccessExpiresIn = res.data?.accessExpiresIn || 0;
-          this.svRefreshExpiresIn = res.data?.refreshExpiresIn || 0;
-          try {
-            if (this.svAccessToken) localStorage.setItem('modu-bo-accessToken', this.svAccessToken);
-            if (this.svRefreshToken) localStorage.setItem('modu-bo-refreshToken', this.svRefreshToken);
-          } catch (_) {}
-          return true;
-        } catch (err) {
-          this.saReset();
-          return false;
-        }
-      },
+      /* 토큰 갱신은 boApiAxios 인터셉터가 401 → token-refresh → 원요청 재시도로 처리 */
 
       // 소셜 로그인은 co 모듈로 이관됨 → window.coAuth.socialLogin('bo', provider) 사용
       // (coAuth 가 데모 사용자 확정 후 this.saSetAuth 로 세션 발급)

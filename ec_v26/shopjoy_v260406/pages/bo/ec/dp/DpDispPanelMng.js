@@ -470,9 +470,6 @@ window.DpDispPanelMng = {
     /* fnWLabel — 유틸 */
     const fnWLabel = (t) => WIDGET_TYPE_LABELS[t] || t || '-';
 
-    /* 패널미리보기 (카드) */
-        const openCardPreview = (d) => { uiState.cardPreviewItem = d; };
-
     /* closeCardPreview — 닫기 */
     const closeCardPreview = () => { uiState.cardPreviewItem = null; };
 

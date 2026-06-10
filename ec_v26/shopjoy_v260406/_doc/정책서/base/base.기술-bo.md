@@ -288,7 +288,6 @@ const doSave = async () => {
 | `window.boUtil.bofGetSiteNm(siteId?)` | 사이트명 반환 |
 | `window.boUtil.bofGetDateRange(opt)` | 옵션 → `{from, to}` 날짜 계산 |
 | `window.boUtil.bofGetPathLabel(pathId)` | 경로(sy_path) 라벨 |
-| `window.boUtil.bofBuildRoleTree()` | 역할 트리 빌드 |
 | `window.visibilityUtil` | 공개대상 인코딩 (`^PUBLIC^MEMBER^VIP^`) |
 | `window.adminCommonFilter` | 사이트/업체/회원/주문 공통 필터 |
 

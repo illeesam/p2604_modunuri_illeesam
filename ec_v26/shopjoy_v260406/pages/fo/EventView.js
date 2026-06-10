@@ -71,7 +71,6 @@ window.EventView = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
-    const cfEventId  = computed(() => props.dtlId);
     /* 백엔드 PmEventDto.Item → 화면 표준 형태로 정규화 (benefits/eventItems 연관정보 포함) */
     const cfEvent    = computed(() => {
       const raw = events.length > 0 ? events[0] : null;

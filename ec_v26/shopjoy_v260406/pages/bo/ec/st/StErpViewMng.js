@@ -86,7 +86,7 @@ window.StErpViewMng = {
       if (!(await showConfirm('재전송', '전표를 ERP로 재전송하시겠습니까?'))) return;
       r.sendStatus = '전송완료'; r.erpRef = 'ERP-JE-RESEND-' + Date.now();
       try {
-        const res = await boApiSvc.stErp.resend(r.erpVoucherId || r.slipId, {}, 'ERP전표조회', '전송');
+        await boApiSvc.stErp.resend(r.erpVoucherId || r.slipId, {}, 'ERP전표조회', '전송');
         showToast('재전송이 완료되었습니다.', 'success');
       } catch (err) {
         showToast(err.response?.data?.message || err.message || '오류가 발생했습니다.', 'error', 0);

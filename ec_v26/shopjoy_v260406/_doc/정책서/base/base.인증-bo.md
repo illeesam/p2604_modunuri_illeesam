@@ -104,7 +104,7 @@ var pending = [];  // subscribe/flush 패턴으로 중복 refresh 방지
 | **refreshToken 재사용 탐지** | 현재 회전(rotation, prev_token)만 있고 재사용 탐지 없음. 탈취된 구 토큰으로 만료 전까지 재발급 가능. → refreshToken `jti` + DB 일회성, 폐기 토큰으로 refresh 시도 시 해당 세션/디바이스 전체 REVOKE + 보안 이벤트 로깅 |
 | **토큰 평문 저장** | `syh_user_token_log.access_token`(컬럼 코멘트는 'SHA-256 권장')에 JWT 원문 평문 저장 + WHERE 평문 비교. 길이 512 초과 위험 + DB 유출 시 활성 토큰 탈취. → 토큰 해시(SHA-256) 저장·비교, 컬럼 길이 TEXT/충분히 확장 |
 | **refresh 디바이스 바인딩** | `token_log` 에 ip/device 컬럼 존재하나 미기록. refresh 시 IP/UA 대조하면 탈취 토큰 갱신 차단 강화 |
-| **死코드 정리** | `boAuthStore.saRefreshAccessToken` 은 호출처 0건 + 응답 파싱 경로 오류(死코드). 갱신은 axios 인터셉터로 일원화 — 제거 권장 |
+| **死코드 정리** | ~~`boAuthStore.saRefreshAccessToken`~~ 2026-06-11 제거 완료. 갱신은 axios 인터셉터(401 → token-refresh → 재시도)로 일원화 |
 
 ---
 

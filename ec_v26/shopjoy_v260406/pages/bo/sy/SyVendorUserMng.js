@@ -171,37 +171,6 @@ window.SyVendorUserMng = {
         console.warn('[SyVendorUserMng] role/menu load failed', err);
       }
     };
-    const ROOT_BADGE_MAP = {
-      SUPER_ADMIN:['관리자','#7c3aed'], SITE_GROUP:['사이트','#2563eb'],
-      SITE_MGR_ROOT:['판매업체','#16a34a'], DLIV_ROOT:['배송업체','#f59e0b'],
-      CS_ROOT:['콜센터업체','#0891b2'], SITE_OP_ROOT:['사이트운영업체','#7c3aed'], PROG_ROOT:['유지보수업체','#dc2626']
-    };
-    const cfTree = computed(() => {
-      const rolesById = Object.fromEntries(roles.map(r => [r.roleId, r]));
-
-      /* badgeOf — 배지 의 */
-      const badgeOf = (role) => {
-        let cur = role;
-        while (cur && cur.parentRoleId) { cur = rolesById[cur.parentRoleId]; }
-        return cur ? ROOT_BADGE_MAP[cur.roleCode] : null;
-      };
-      const CAT_ROOT_MAP = { SALES:'SITE_MGR_ROOT', DELIVERY:'DLIV_ROOT', CS:'CS_ROOT', SITE:'SITE_OP_ROOT', PROG:'PROG_ROOT' };
-
-      /* childrenOf — 자식 의 */
-      const childrenOf = (pid) => roles
-        .filter(r => r.parentRoleId === pid)
-        .sort((a,b) => (a.sortOrd||0) - (b.sortOrd||0))
-        .map(r => ({ pathId: r.roleCode, path: r.roleCode, name: r.roleNm, pathLabel: r.roleNm,
-                     _raw: r, _badge: badgeOf(r), children: childrenOf(r.roleId) }));
-      let kids = childrenOf(null);
-      if (uiState.treeRoleCat && CAT_ROOT_MAP[uiState.treeRoleCat]) {
-        const wantRoot = CAT_ROOT_MAP[uiState.treeRoleCat];
-        kids = kids.filter(k => k._raw && k._raw.roleCode === wantRoot);
-      }
-
-      return { pathId: null, path: null, name: '전체', pathLabel: '전체', children: kids };
-    });
-
     /* toggleNode — 노드 토글 */
     const toggleNode = (id) => { if (expanded.has(id)) expanded.delete(id); else expanded.add(id); };
 

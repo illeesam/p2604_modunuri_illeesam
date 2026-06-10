@@ -214,8 +214,6 @@ window.PmPlanDtl = {
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-
       uiState.isPageCodeLoad = true;
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);

@@ -1649,13 +1649,6 @@ window.BoCronModal = {
     watch(() => props.show, v => { if (v) _load(props.value); });
     watch(() => props.value, v => { if (props.show) _load(v); });
 
-    const updatePreview = () => { st.preview = st.minute + ' ' + st.hour + ' ' + st.day + ' ' + st.month + ' ' + st.weekday; };
-    const applyPreset = (val) => {
-      const pts = val.split(' ');
-      st.minute = pts[0]; st.hour = pts[1]; st.day = pts[2]; st.month = pts[3]; st.weekday = pts[4];
-      st.preview = val;
-    };
-
     /* cron → 한국어 설명 */
     const cronToKorean = (expr) => {
       if (!expr) return '';

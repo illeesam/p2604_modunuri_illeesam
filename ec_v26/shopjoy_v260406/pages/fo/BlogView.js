@@ -131,7 +131,6 @@ window.BlogView = {
     /* onSearch — 조회 */
     const onSearch = async () => {
       try {
-        const params = { ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
         // 실제 검색 API 호출
       } catch (e) {}
     };

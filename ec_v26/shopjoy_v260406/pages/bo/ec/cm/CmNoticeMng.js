@@ -182,7 +182,7 @@ window.CmNoticeMng = {
     const handleDelete = async (n) => {
       if (!(await showConfirm('삭제', `[${n.noticeTitle}]을 삭제하시겠습니까?`))) return;
       try {
-        const res = await boApiSvc.cmNotice.remove(n.noticeId, '공지사항관리', '삭제');
+        await boApiSvc.cmNotice.remove(n.noticeId, '공지사항관리', '삭제');
         showToast('삭제되었습니다.', 'success');
         if (baseDetail.selectedId === n.noticeId) resetDetailToNew();
         await handleSearchList();

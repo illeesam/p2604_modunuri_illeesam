@@ -853,11 +853,13 @@ select `options` 는 함수형 + 다양한 배열 형식 지원:
 
 ---
 
-### 4.8 coUtil 표준 캡슐 — cofDetail / cofTree (+ 수동 pager) (2026-05-28 ⭐ / 2026-06-07 갱신)
+### 4.8 coUtil 표준 캡슐 — cofDetail (+ 수동 pager) (2026-05-28 ⭐ / 2026-06-11 갱신)
 
 **목적**: Mng 화면의 반복 보일러플레이트(인라인 Dtl 패널, 좌측 트리 선택/펼침)를 `coUtil` 캡슐로 통합. setup() 감소 + 화면 간 일관성 보장.
 
-> ⚠️ **`cofGrid` 폐기 (2026-06-07)** — pager+정렬+setPage 를 묶던 `coUtil.cofGrid()` 는 제거됨. 페이저는 화면 안에 **수동 `reactive` 객체**로 직접 선언한다. `cofDetail`/`cofTree` 는 유지.
+> ⚠️ **`cofGrid` 폐기 (2026-06-07)** — pager+정렬+setPage 를 묶던 `coUtil.cofGrid()` 는 제거됨. 페이저는 화면 안에 **수동 `reactive` 객체**로 직접 선언한다. `cofDetail` 은 유지.
+>
+> ⚠️ **`cofTree` 제거 (2026-06-11)** — 호출처 0건으로 미사용 확정되어 coUtil 에서 삭제. 트리 화면은 각 화면의 `cfTree` computed + `expanded`(Set) 인라인 패턴 또는 `coUtil.cofBuildGenericTree()` 순수 빌더를 사용한다.
 
 #### 4.8.1 페이저 — 수동 reactive ( {그리드명}Pager )
 
@@ -906,22 +908,14 @@ const baseDetail = coUtil.cofDetail();
 </div>
 ```
 
-#### 4.8.3 cofTree — 좌측 트리 선택/펼침
+#### 4.8.3 ~~cofTree~~ (제거됨 2026-06-11)
 
-```js
-const allCats = reactive([]);
-const baseTree = coUtil.cofTree(allCats, {
-  idKey: 'catId', parentKey: 'parentCatId', labelKey: 'catNm', sortKey: 'sortOrd',
-  onSelect: (id) => { baseGridPager.pageNo = 1; handleSearchList(); },
-});
-```
-
-**제공 멤버**: `root`(computed 가상 루트 `{ [idKey]:null, [labelKey]:'전체', children, count }`), `expanded`(Set), `selectedId`, `select(id)`(토글), `toggle(id)`, `expand(id)`, `collapse(id)`, `expandAll()`, `collapseAll()`, `expandToDepth(depth)`.
+호출처 0건으로 미사용 확정되어 coUtil 에서 삭제. 트리는 화면별 `cfTree` computed + `expanded`(Set) 인라인 패턴 또는 `coUtil.cofBuildGenericTree()` 순수 빌더 사용.
 
 #### 4.8.4 변수 명명 표준
 
 - **페이저**: 메인 그리드명 유추 → `baseGridPager` / `listGridPager` / `userGridPager` 등 (picker 등 메인그리드 무관 페이저는 `pager` 허용)
-- **캡슐 첫 번째는 `base*`** (`baseDetail` / `baseTree`), **두 번째부터 도메인 prefix** (`noticeDetail`, `catTree` 등)
+- **캡슐 첫 번째는 `base*`** (`baseDetail`), **두 번째부터 도메인 prefix** (`noticeDetail` 등)
 - **cmd 라우팅 문자열은 도메인명 유지** — `'baseDetail-close'`, `'notices-pager-setPage'`(페이저 cmd 는 영역 도메인명, 변수명 `baseGridPager` 와 별개). `<bo-pager>` 태그·`:pager` prop명 보존
 - 상세: [`sy.54.네이밍규칙.md`](sy.54.네이밍규칙.md) §coUtil 표준 캡슐 변수 명명 / §페이저 변수 명명
 
@@ -979,9 +973,9 @@ const baseTree = coUtil.cofTree(allCats, {
 
 #### 4.8.6 적용 대상 / 적용 제외
 
-**적용 대상** (캡슐 = cofDetail/cofTree, 페이저 = 수동 reactive):
+**적용 대상** (캡슐 = cofDetail, 페이저 = 수동 reactive):
 - 단일 Mng (검색 + 목록 + 인라인 Dtl) — `baseGridPager`(수동) + `baseDetail`(cofDetail)
-- 트리 + 그리드 (`SyPathMng`, `PdCategoryMng` 등) — `baseTree`(cofTree) + `baseGridPager` + `baseDetail`
+- 트리 + 그리드 (`SyPathMng`, `PdCategoryMng` 등) — 화면별 트리 computed + `baseGridPager` + `baseDetail`
 - 다중 그리드 화면 (`MbCustInfoMng`) — 그리드별 페이저 (`userGridPager` + `vendorGridPager` ...) 다수
 
 **적용 제외**:

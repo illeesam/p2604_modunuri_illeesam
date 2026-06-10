@@ -1189,8 +1189,6 @@
       };
 
       /* ── 로그인 상태 (localStorage 영속화) ── */
-      const _mkBoToken = () => 'sjat_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 9);
-
       /* _restoreBoUser */
       const _restoreBoUser = () => {
         try {

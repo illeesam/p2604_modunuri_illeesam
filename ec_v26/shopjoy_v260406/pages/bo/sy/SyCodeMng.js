@@ -192,7 +192,7 @@ window.SyCodeMng = {
     };
     watch(() => window.sfGetBoCodeStore()?.svCodes?.length, checkAndLoadCodes);
 
-    const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
+    coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     onMounted(() => {
       checkAndLoadCodes();

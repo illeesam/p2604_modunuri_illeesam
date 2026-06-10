@@ -207,8 +207,6 @@ window.SyVendorInfoMng = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 
-    const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
-
     /* fnTypeBadge — 유형 배지 */
     const fnTypeBadge = boUtil.bofVendorTypeBadge;
 

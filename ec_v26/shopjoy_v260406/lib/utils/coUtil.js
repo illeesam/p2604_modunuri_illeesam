@@ -218,21 +218,6 @@
     return { headers };
   }
 
-  // 디버깅용: 호출자 정보 반환
-  function cofGetCallerInfo() {
-    const callerInfo = cofApiInfo.extractCallerInfo();
-    const clientInfo = cofApiInfo.getClientInfo();
-    return {
-      ...callerInfo,
-      userAgent: clientInfo.userAgent,
-      userId: cofApiInfo.getCurrentUser(),
-      siteId: cofApiInfo.getCurrentSiteId(),
-      siteNo: cofApiInfo.getCurrentSiteNo(),
-      licenseNo: cofApiInfo.getCurrentLicenseNo(),
-      traceId: cofApiInfo.cofGenerateTraceId(),
-    };
-  }
-
   /**
    * API 호출 전 _id 검증 유틸
    *
@@ -375,23 +360,6 @@
       .sort((a, b) => (a.codeId || 0) - (b.codeId || 0));
   }
 
-  function cofCodesByGroupOrStringList(config, grp, fallbackStrings) {
-    const rows = cofCodesByGroup(config, grp);
-    if (rows.length) return rows;
-    const list = (fallbackStrings || []).filter(x => typeof x === 'string');
-    return list.map((x, i) => ({ codeId: i + 1, codeGrp: grp, codeValue: x, codeLabel: x }));
-  }
-
-  function cofCodesByGroupOrRows(config, grp, fallbackRows) {
-    const rows = cofCodesByGroup(config, grp);
-    if (rows.length) return rows;
-    return (fallbackRows && fallbackRows.length) ? fallbackRows : [];
-  }
-
-  function cofListImgSrc(src) {
-    return typeof window.imageThumbnailSrc === 'function' ? window.imageThumbnailSrc(src) : src;
-  }
-
   /* ─────────────────────────────────────────────────────────────────────
    * 공통코드 기반 배지/라벨 헬퍼 (FO/BO 공통)
    *  - 코드그룹의 code_opt1 에 저장된 배지 클래스(badge-green 등)를 반환
@@ -399,7 +367,6 @@
    *
    *   cofCodeBadge('CLAIM_STATUS_KR', '완료')           → 'badge-green' (없으면 'badge-gray')
    *   cofCodeBadge('ORDER_STATUS_KR', s, 'badge-blue')  → fallback 지정
-   *   cofCodeNm('CLAIM_TYPE_KR', 'CANCEL')              → '취소' (없으면 입력값 그대로)
    * ───────────────────────────────────────────────────────────────────── */
   function _codeStore() {
     try {
@@ -415,12 +382,6 @@
     const opt1 = st && typeof st.sgGetCodeOpt1 === 'function' ? st.sgGetCodeOpt1(grp, codeVal) : '';
     return opt1 || fb;
   }
-  function cofCodeNm(grp, codeVal) {
-    if (codeVal == null || codeVal === '') return codeVal;
-    const st = _codeStore();
-    return st && typeof st.sgGetCodeNmByVal === 'function' ? st.sgGetCodeNmByVal(grp, codeVal) : codeVal;
-  }
-
   /* ─────────────────────────────────────────────────────────────────────
    * CSV/엑셀 다운로드 (FO/BO 공통)
    * columns: [{ label:'표시명', key:'필드명' } | { label:'표시명', value: row => ... }]
@@ -583,20 +544,6 @@
     const recur = (n) => { n.count = (n.children || []).reduce((s, c) => s + recur(c) + 1, 0); return n.count; };
     recur(root);
     return root;
-  }
-
-  /* 트리 후손 ID Set */
-  function cofCollectDescendantIds(items, idKey, parentKey, rootId) {
-    if (rootId == null) return null;
-    const set = new Set([rootId]);
-    let added = true;
-    while (added) {
-      added = false;
-      (items || []).forEach(x => {
-        if (set.has(x[parentKey]) && !set.has(x[idKey])) { set.add(x[idKey]); added = true; }
-      });
-    }
-    return set;
   }
 
   /* 트리에서 N레벨까지 펼친 pathId Set 반환 (root=null 포함) */
@@ -785,76 +732,6 @@
     return d;
   }
 
-  /* ─────────────────────────────────────────────────────────────────────
-   * cofTree — 좌측 트리 + 선택/펼침 표준 캡슐 (FO/BO 공통)
-   *  - 평탄 배열(items) 에서 계층 트리 빌드 + selectedId / expanded(Set) 관리
-   *  - opts.idKey       (default 'id')
-   *  - opts.parentKey   (default 'parentId')
-   *  - opts.labelKey    (default 'label')
-   *  - opts.sortKey     (default 'sortOrd')
-   *  - opts.rootLabel   (default '전체')
-   *  - opts.onSelect(id): 선택 변경 시 콜백 (목록 재조회 등)
-   *
-   *  사용:
-   *    const allPaths = reactive([]);
-   *    const tree = coUtil.cofTree(allPaths, {
-   *      idKey: 'pathId', parentKey: 'parentPathId', labelKey: 'pathLabel',
-   *      onSelect: () => handleSearchList(),
-   *    });
-   *    // template: tree.root / tree.expanded / tree.selectedId
-   *    //           tree.select(id) / tree.toggle(id) / tree.expandAll() / tree.collapseAll()
-   * ─────────────────────────────────────────────────────────────────── */
-  function cofTree(items, opts = {}) {
-    const { reactive, computed } = Vue;
-    const idKey     = opts.idKey     || 'id';
-    const parentKey = opts.parentKey || 'parentId';
-    const labelKey  = opts.labelKey  || 'label';
-    const sortKey   = opts.sortKey   || 'sortOrd';
-    const rootLabel = opts.rootLabel || '전체';
-
-    const t = reactive({
-      expanded: new Set([null]),
-      selectedId: null,
-      select: (id) => {
-        t.selectedId = (t.selectedId === id) ? null : id;
-        opts.onSelect && opts.onSelect(t.selectedId);
-      },
-      /* reset — 트리 선택을 '전체'(null)로 되돌린다. [초기화] 버튼 공통.
-       *   토글 로직을 타지 않도록 selectedId 를 직접 null 로 설정. */
-      reset: () => {
-        t.selectedId = null;
-        opts.onSelect && opts.onSelect(null);
-      },
-      toggle: (id) => { if (t.expanded.has(id)) t.expanded.delete(id); else t.expanded.add(id); },
-      expand:   (id) => { t.expanded.add(id); },
-      collapse: (id) => { t.expanded.delete(id); },
-      expandAll:   () => { items.forEach(r => t.expanded.add(r[idKey])); t.expanded.add(null); },
-      collapseAll: () => { t.expanded.clear(); t.expanded.add(null); },
-      expandToDepth: (depth) => {
-        const tree = t.root;
-        const walk = (n, d) => { if (d < depth) { t.expanded.add(n[idKey] ?? null); (n.children || []).forEach(c => walk(c, d + 1)); } };
-        walk(tree, 0);
-      },
-    });
-
-    t.root = computed(() => {
-      const map = {};
-      items.forEach(r => { map[r[idKey]] = { ...r, children: [] }; });
-      const roots = [];
-      items.forEach(r => {
-        const pid = r[parentKey];
-        if (pid != null && map[pid]) map[pid].children.push(map[r[idKey]]);
-        else roots.push(map[r[idKey]]);
-      });
-      const sort = (arr) => arr.sort((a, b) => (a[sortKey] || 0) - (b[sortKey] || 0));
-      const sortDeep = (nodes) => { sort(nodes).forEach(n => sortDeep(n.children)); return nodes; };
-      sortDeep(roots);
-      return { [idKey]: null, [labelKey]: rootLabel, children: roots, count: items.length };
-    });
-
-    return t;
-  }
-
   /* cofBuildPagerNums — pager.pageNo 기준 ±2 범위 페이지 번호 배열을 pager.pageNums 에 채움
    *   사용: const res = await api.getPage(...); pager.pageTotalPage = ...; coUtil.cofBuildPagerNums(pager);
    *   기존 각 화면의 fnBuildPagerNums() 복붙 대체 */
@@ -873,8 +750,6 @@
   // 공개 API: window.coUtil 에 등록
   global.coUtil = global.coUtil || {};
   global.coUtil.cofApiHdr = global.coUtil.cofApiHdr || cofApiHdr;
-  global.coUtil.cofGetCallerInfo = global.coUtil.cofGetCallerInfo || cofGetCallerInfo;
-  global.coUtil.cofGenerateTraceId = global.coUtil.cofGenerateTraceId || (() => cofApiInfo.cofGenerateTraceId());
   global.coUtil.cofApiInfo = global.coUtil.cofApiInfo || cofApiInfo;
   global.coUtil.cofAnd = global.coUtil.cofAnd || cofAnd;
   global.coUtil.cofChkId = global.coUtil.cofChkId || cofChkId;
@@ -883,12 +758,8 @@
   global.coUtil.cofUseAppCodeReady = global.coUtil.cofUseAppCodeReady || cofUseAppCodeReady;
   // 코드 그룹 헬퍼 (FO/BO 공통)
   global.coUtil.cofCodesByGroup = global.coUtil.cofCodesByGroup || cofCodesByGroup;
-  global.coUtil.cofCodesByGroupOrStringList = global.coUtil.cofCodesByGroupOrStringList || cofCodesByGroupOrStringList;
-  global.coUtil.cofCodesByGroupOrRows = global.coUtil.cofCodesByGroupOrRows || cofCodesByGroupOrRows;
-  global.coUtil.cofListImgSrc = global.coUtil.cofListImgSrc || cofListImgSrc;
   // 공통코드 배지/라벨 헬퍼
   global.coUtil.cofCodeBadge = global.coUtil.cofCodeBadge || cofCodeBadge;
-  global.coUtil.cofCodeNm = global.coUtil.cofCodeNm || cofCodeNm;
   // CSV/엑셀 헬퍼
   global.coUtil.cofExportCsv = global.coUtil.cofExportCsv || cofExportCsv;
   global.coUtil.cofDownloadExcel = global.coUtil.cofDownloadExcel || cofDownloadExcel;
@@ -896,7 +767,6 @@
   global.coUtil.EXCEL_UPLOAD_MAX_ROWS = global.coUtil.EXCEL_UPLOAD_MAX_ROWS || EXCEL_UPLOAD_MAX_ROWS;
   global.coUtil.cofBuildExportFilename = global.coUtil.cofBuildExportFilename || cofBuildExportFilename;
   global.coUtil.cofBuildGenericTree = global.coUtil.cofBuildGenericTree || cofBuildGenericTree;
-  global.coUtil.cofCollectDescendantIds = global.coUtil.cofCollectDescendantIds || cofCollectDescendantIds;
   global.coUtil.cofCollectExpandedToDepth = global.coUtil.cofCollectExpandedToDepth || cofCollectExpandedToDepth;
   // 숫자/날짜 포맷 헬퍼
   global.coUtil.cofFmt = global.coUtil.cofFmt || cofFmt;
@@ -922,7 +792,6 @@
   global.coUtil.cofOmitEmpty = global.coUtil.cofOmitEmpty || cofOmitEmpty;
   global.coUtil.cofLinePoints = global.coUtil.cofLinePoints || cofLinePoints;
   global.coUtil.cofAreaPath = global.coUtil.cofAreaPath || cofAreaPath;
-  // Mng 표준 캡슐 (상세패널/트리)
+  // Mng 표준 캡슐 (상세패널)
   global.coUtil.cofDetail = global.coUtil.cofDetail || cofDetail;
-  global.coUtil.cofTree = global.coUtil.cofTree || cofTree;
 })(typeof window !== 'undefined' ? window : this);

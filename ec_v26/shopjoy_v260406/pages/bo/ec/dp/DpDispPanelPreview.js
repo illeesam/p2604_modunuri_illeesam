@@ -406,7 +406,6 @@ window.DpDispPanelPreview = {
     /* -- 트리 상태 -- */
     /* -- 패널 트리: prefix > 영역명 > 패널명 -- */
     const cfTree = computed(() => {
-      const codesData = codes || [];
 
       /* areaNm — 영역 Nm */
       const areaNm = (code) => {

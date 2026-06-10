@@ -87,13 +87,6 @@ window.SyI18nMng = {
     const msgForm = reactive({});              // 번역 입력 폼
 
     const cfSelectedKey = computed(() => (i18ns||[]).find(k => k.i18nId === uiState.selectedId) || null);
-    const cfSelectedMsgs = computed(() => {
-      if (!cfSelectedKey.value) { return {}; }
-      const msgs = {};
-      LANGS.forEach(lang => { msgs[lang] = ''; });
-      (i18nMsgs||[]).filter(m => m.i18nId === uiState.selectedId).forEach(m => { msgs[m.langCd] = m.i18nMsg; });
-      return msgs;
-    });
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
 

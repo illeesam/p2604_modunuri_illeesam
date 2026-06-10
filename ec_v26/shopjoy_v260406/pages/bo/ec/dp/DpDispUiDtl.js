@@ -443,7 +443,7 @@ window.DpDispUiDtl = {
       body.useEndDate   = form.useEndDate;
       body.pathId       = form.pathId;
       try {
-        const res = await (isNewUi ? boApiSvc.dpUi.create(body, '전시UI관리', '등록') : boApiSvc.dpUi.update(body.uiId, body, '전시UI관리', '저장'));
+        await (isNewUi ? boApiSvc.dpUi.create(body, '전시UI관리', '등록') : boApiSvc.dpUi.update(body.uiId, body, '전시UI관리', '저장'));
         if (showToast) { showToast('저장되었습니다.', 'success'); }
         if (props.navigate) { props.navigate('dpDispUiMng', { reload: true }); }
       } catch (err) {

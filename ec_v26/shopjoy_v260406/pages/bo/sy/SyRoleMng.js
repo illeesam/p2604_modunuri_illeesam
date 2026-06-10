@@ -336,12 +336,6 @@ window.SyRoleMng = {
       }
       return t;
     });
-    /* 선택 권한 + 자손 roleId Set */
-    const cfAllowedRoleIds = computed(() => {
-      if (uiState.selectedPath == null) { return null; }
-      return coUtil.cofCollectDescendantIds(roles, 'roleId', 'parentRoleId', uiState.selectedPath);
-    });
-
     /* expandAll — 펼치기 전체 */
     const expandAll = () => { const walk = (n) => { expanded.add(n.path); n.children.forEach(walk); }; walk(cfTree.value); };
 
@@ -381,7 +375,6 @@ window.SyRoleMng = {
     });
 
     const cfSiteNm  = computed(() => boUtil.bofGetSiteNm());
-    const ROLE_TYPES  = ['시스템', '업무', '기타'];
     const ROLE_CAT_COLOR = { ADMIN:'#7c3aed', SITE:'#2563eb', SALES:'#16a34a', DLIV:'#f59e0b' };
     /* 루트 역할코드 → 자동 카테고리 매핑 */
     const ROOT_CAT_MAP = { SUPER_ADMIN:'ADMIN', SITE_GROUP:'SITE', SITE_MGR_ROOT:'SALES', DLIV_ROOT:'DLIV' };
@@ -695,11 +688,6 @@ window.SyRoleMng = {
       const all = menus || [];
       const list = searchVal ? all.filter(m => m.menuNm.toLowerCase().includes(searchVal) || m.menuCode.toLowerCase().includes(searchVal)) : all;
       return flatMenuTree(buildMenuTree(list, null, 0));
-    });
-
-    const cfRoleMenuIds = computed(() => {
-      if (!uiState.selectedRoleId) { return new Set(); }
-      return new Set(roleMenus.filter(x => x.roleId === uiState.selectedRoleId).map(x => x.menuId));
     });
 
     /* getMenuPerm — 조회 */

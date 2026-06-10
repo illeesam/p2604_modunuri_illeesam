@@ -146,7 +146,6 @@ window.SyBatchMng = {
     const gridRows = reactive([]);                 // 편집 상태 포함 그리드 행
     let _tempId = -1;                              // 신규 행 임시 ID (음수)
     const EDIT_FIELDS = ['batchNm', 'batchCode', 'cronExpr', 'batchStatusCd', 'batchDesc'];
-    const dragSrc = ref(null);                     // 드래그 소스 인덱스
 
     /* ===== 표시경로 선택 모달 (sy_path) ===== */
     const pathPickModal = reactive({ show: false, row: null });

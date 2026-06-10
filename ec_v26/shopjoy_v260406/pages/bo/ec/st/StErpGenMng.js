@@ -99,7 +99,7 @@ window.StErpGenMng = {
         genDate: new Date().toISOString().slice(0,10), status: '생성완료', regUserNm: '관리자',
       });
       try {
-        const res = await boApiSvc.stErp.gen({ targetMon: targetMon.value, slipType: slipType.value, rows: cfPreviewRows.value }, '정산ERP생성', '저장');
+        await boApiSvc.stErp.gen({ targetMon: targetMon.value, slipType: slipType.value, rows: cfPreviewRows.value }, '정산ERP생성', '저장');
         if (showToast) { showToast('ERP 전표가 생성되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);

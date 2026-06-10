@@ -769,11 +769,11 @@ grep -r "const selected\w* = ref(" pages/bo/**/*.js
 
 ## coUtil 표준 캡슐 변수 명명 (2026-05-28 ⭐ / 2026-06-07 갱신)
 
-`coUtil.cofDetail()` / `coUtil.cofTree()` 로 생성한 표준 캡슐 객체와 페이저(`pager`)·Dtl 폼은 한 파일 안에서 여러 개를 둘 수 있으므로 **첫 번째는 `base*`, 두 번째부터는 도메인 prefix** 로 명명.
+`coUtil.cofDetail()` 로 생성한 표준 캡슐 객체와 페이저(`pager`)·Dtl 폼은 한 파일 안에서 여러 개를 둘 수 있으므로 **첫 번째는 `base*`, 두 번째부터는 도메인 prefix** 로 명명.
 
 **표준 참조 모델**: [`pages/bo/ec/cm/CmNoticeMng.js`](../../../pages/bo/ec/cm/CmNoticeMng.js) (BO Mng), [`pages/bo/ec/cm/CmNoticeDtl.js`](../../../pages/bo/ec/cm/CmNoticeDtl.js) (BO Dtl) — 신규 화면 작성 시 이 두 파일 구조를 따른다.
 
-> ⚠️ **`coUtil.cofGrid()` 제거됨 (2026-06-07)** — pager+정렬+setPage 를 한 캡슐로 묶던 `cofGrid` 는 폐기. 이제 페이저는 화면 안에 **수동 `reactive` 객체**로 직접 선언한다. 정렬·페이지 액션 메서드가 필요하면 각 화면에서 인라인 정의(또는 `coUtil.cofBuildPagerNums(pager)` 사용). `cofDetail`/`cofTree` 캡슐은 그대로 유지.
+> ⚠️ **`coUtil.cofGrid()` 제거됨 (2026-06-07)** — pager+정렬+setPage 를 한 캡슐로 묶던 `cofGrid` 는 폐기. 이제 페이저는 화면 안에 **수동 `reactive` 객체**로 직접 선언한다. 정렬·페이지 액션 메서드가 필요하면 각 화면에서 인라인 정의(또는 `coUtil.cofBuildPagerNums(pager)` 사용). `cofDetail` 캡슐은 그대로 유지. (`cofTree` 는 2026-06-11 미사용 확정으로 제거)
 
 ### 표준 형식
 
@@ -781,7 +781,6 @@ grep -r "const selected\w* = ref(" pages/bo/**/*.js
 |---|---|---|
 | **페이저 `reactive({ pageType, pageNo, … })`** | **메인 그리드명 + `Pager`** (예: `baseGridPager`) | `listGridPager`, `userGridPager`, `vendorGridPager` 등 (각 그리드명 + `Pager`) |
 | `coUtil.cofDetail()` | `baseDetail` | `noticeDetail`, `userDetail`, `orderDetail` 등 |
-| `coUtil.cofTree()`   | `baseTree`   | `catTree`, `deptTree`, `pathTree`, `menuTree` 등 |
 | Dtl 폼 `reactive({...})` | `baseForm`   | `noticeForm`, `addrForm`, `optionForm` 등 |
 
 ### 페이저 변수 명명 — `{메인그리드명}Pager` (2026-06-07 ⭐)
@@ -810,7 +809,6 @@ const userGridPager   = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, /*
 const vendorGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5,  /* … */ });
 
 // 트리 + 그리드 (예: 카테고리관리)
-const catTree       = coUtil.cofTree(allCats, { idKey: 'catId', parentKey: 'parentCatId', onSelect: () => { baseGridPager.pageNo = 1; handleSearchList(); } });
 const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, /* … */ });
 const baseDetail    = coUtil.cofDetail();
 

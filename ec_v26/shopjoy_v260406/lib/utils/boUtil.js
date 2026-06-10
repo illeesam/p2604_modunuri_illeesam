@@ -197,35 +197,6 @@
     return root;
   };
 
-  boUtil.bofGetPathDescendants = function (bizCd, pathId) {
-    if (pathId == null) return null;
-    const set = new Set([pathId]);
-    const list = (window._boCmPaths || []).filter(p => p.bizCd === bizCd);
-    let added = true;
-    while (added) {
-      added = false;
-      list.forEach(p => {
-        if (set.has(p.parentPathId) && !set.has(p.pathId)) { set.add(p.pathId); added = true; }
-      });
-    }
-    return set;
-  };
-
-  /* buildGenericTree / collectDescendantIds / collectExpandedToDepth → coUtil 로 통합.
-   * BO 전용 트리(buildDeptTree/MenuTree/RoleTree)는 BO store 의존이므로 boUtil 에 유지하되 coUtil 호출. */
-  boUtil.bofBuildDeptTree = function () {
-    const depts = window.useBoDeptStore?.()?.depts || window._boCmDepts || [];
-    return window.coUtil.cofBuildGenericTree(depts, 'deptId', 'parentDeptId', 'deptNm', 'sortOrd');
-  };
-  boUtil.bofBuildMenuTree = function () {
-    const menus = window.useBoMenuStore?.()?.svMenus || window._boCmMenus || [];
-    return window.coUtil.cofBuildGenericTree(menus, 'menuId', 'parentMenuId', 'menuNm', 'sortOrd');
-  };
-  boUtil.bofBuildRoleTree = function () {
-    const roles = window.sfGetBoRoleStore?.()?.svRoles || [];
-    return window.coUtil.cofBuildGenericTree(roles, 'roleId', 'parentRoleId', 'roleNm', 'sortOrd');
-  };
-
   boUtil.bofGetPathLabel = function (pathId) {
     if (pathId == null) return '';
     const list = window._boCmPaths || [];

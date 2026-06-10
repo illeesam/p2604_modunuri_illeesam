@@ -387,7 +387,7 @@ window.DpDispAreaDtl = {
       body.useEndDate   = form.useEndDate;
       body.pathId       = form.pathId;
       try {
-        const res = await (isNewArea ? boApiSvc.dpArea.create(body, '전시영역관리', '등록') : boApiSvc.dpArea.update(body.areaId, body, '전시영역관리', '저장'));
+        await (isNewArea ? boApiSvc.dpArea.create(body, '전시영역관리', '등록') : boApiSvc.dpArea.update(body.areaId, body, '전시영역관리', '저장'));
         if (showToast) { showToast('저장되었습니다.', 'success'); }
         if (props.navigate) { props.navigate('dpDispAreaMng', { reload: true }); }
       } catch (err) {
