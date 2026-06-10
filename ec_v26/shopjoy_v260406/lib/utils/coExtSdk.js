@@ -18,6 +18,52 @@
  *   - loadNaverMap()  → Promise<naver.maps>
  *
  * 모든 로그인은 팝업 방식. 인증/취소만 책임지며 서버 검증은 호출자가 수행.
+ *
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  🔑 키 발급처 → 저장 위치 → 코드 사용처  (어디서 얻어 어디에 넣는가)
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  모든 외부 키는 _key('svXxx') 로 AppStore(Pinia)에서 읽는다.
+ *  AppStore 값은 로그인 시 서버 init data 로 주입된다:
+ *    coApiSvc.cmBoAppStore.getInitData() → 응답 data.syApp.{xxx} → boAppStore.saSetApp()
+ *    → svXxx 로 저장 (FO 는 foAppStore 동일 구조)
+ *  ※ BO 로그인 화면은 로그인 *전* 이라 syApp 이 아직 없음 → svXxx 가 '' → "키 미설정" 안내가 정상.
+ *  ※ 데모/로컬에서 로그인 전에도 창을 띄우려면 boAppStore/foAppStore state 의 svXxx 기본값에 실키를 시드.
+ *
+ *  ┌─────────────┬──────────────────────┬──────────────────────────────────────────────┐
+ *  │ 용도        │ AppStore 키 (코드)   │ 발급처 (외부 콘솔)                            │
+ *  ├─────────────┼──────────────────────┼──────────────────────────────────────────────┤
+ *  │ 구글 로그인 │ svGoogleClientId     │ console.cloud.google.com → API 및 서비스 →    │
+ *  │             │ (syApp.googleClientId)│  사용자 인증 정보 → OAuth 2.0 클라이언트 ID    │
+ *  │             │                      │  (웹) → "클라이언트 ID". 승인된 JS 원본에      │
+ *  │             │                      │  http://127.0.0.1:5501 등록.                  │
+ *  ├─────────────┼──────────────────────┼──────────────────────────────────────────────┤
+ *  │ 카카오 로그인│ svKakaoJsKey         │ developers.kakao.com → 내 애플리케이션 →      │
+ *  │             │ (syApp.kakaoJsKey)   │  앱 설정 → 앱 키 → "JavaScript 키".            │
+ *  │             │                      │  플랫폼 → Web 에 127.0.0.1:5501 도메인 등록 +  │
+ *  │             │                      │  카카오 로그인 활성화 ON + Redirect URI 등록.  │
+ *  ├─────────────┼──────────────────────┼──────────────────────────────────────────────┤
+ *  │ 네이버 로그인│ svNaverClientId      │ developers.naver.com → Application →           │
+ *  │             │ svNaverCallbackUrl   │  애플리케이션 등록 → "Client ID".              │
+ *  │             │ (syApp.naverClientId,│  서비스 URL·Callback URL 에 127.0.0.1:5501 등록.│
+ *  │             │  syApp.naverCallbackUrl)│ Callback 미설정 시 현재 origin+pathname 사용.│
+ *  ├─────────────┼──────────────────────┼──────────────────────────────────────────────┤
+ *  │ 토스 결제   │ svTossClientKey      │ developers.tosspayments.com → 내 개발정보 →   │
+ *  │             │ (syApp.tossClientKey)│  "클라이언트 키"(결제위젯 연동 키, gck/ck).    │
+ *  │             │                      │  미설정 시 toss.TEST_CLIENT_KEY 로 폴백(테스트).│
+ *  ├─────────────┼──────────────────────┼──────────────────────────────────────────────┤
+ *  │ 카카오 지도 │ svKakaoMapJsKey      │ 카카오 디벨로퍼스의 JavaScript 키(로그인과 별개 │
+ *  │             │ (syApp.kakaoMapJsKey)│  앱 가능). 플랫폼 Web 도메인 등록 필요.        │
+ *  ├─────────────┼──────────────────────┼──────────────────────────────────────────────┤
+ *  │ 네이버 지도 │ svNaverMapClientId   │ console.ncloud.com → Maps → Application 등록 → │
+ *  │             │ (syApp.naverMapClientId)│ "Client ID"(ncpClientId).                    │
+ *  └─────────────┴──────────────────────┴──────────────────────────────────────────────┘
+ *
+ *  넣는 방법 (택1):
+ *   A) 운영/정식: 관리자 → 사이트 설정(AppStore)에 키 저장 → 서버 init data 로 자동 주입.
+ *   B) 데모/로컬: lib/stores/{bo,fo}/{bo,fo}AppStore.js 의 state svXxx 기본값에 실키를 직접 시드.
+ *      (saSetApp 이 서버 빈 값으로 덮어쓰지 않도록 'appData[k] || this.svXxx' 보정 권장)
+ *  ※ 발급처 표준 URL/엔드포인트는 lib/env/{fo,bo}EnvConsts.js 에 상수로 관리.
+ * ═══════════════════════════════════════════════════════════════════════════
  */
 (function () {
   /* ──────────────────────────────────────────────────────────
@@ -111,8 +157,11 @@
         'index.html/bo.html 의 accounts.google.com/gsi/client 스크립트 로드와 네트워크/광고차단 확장을 확인하세요.'));
     }
     const clientId = _key('svGoogleClientId');
-    if (!clientId) throw new Error(_errMsg('Google 로그인 창을 열 수 없습니다 — Google Client ID 가 설정되지 않았습니다.',
-      '사이트 설정(AppStore)의 svGoogleClientId 값을 등록하세요.'));
+    if (!clientId) throw new Error(_errMsg('Google 로그인 창을 열 수 없습니다 — Google Client ID(svGoogleClientId) 가 설정되지 않았습니다.',
+      'console.cloud.google.com → API 및 서비스 → 사용자 인증 정보 → OAuth 2.0 클라이언트 ID(웹) 의 "클라이언트 ID" 를 발급받아 '
+      + '사이트 설정(AppStore)의 svGoogleClientId(syApp.googleClientId) 에 등록하세요. '
+      + '승인된 JavaScript 원본에 현재 도메인(예: http://127.0.0.1:5501)을 추가해야 합니다. '
+      + '(BO 는 로그인 전이면 키가 없을 수 있습니다)'));
 
     _googleClient = google.accounts.oauth2.initTokenClient({
       client_id: clientId,
@@ -168,8 +217,11 @@
     if (!window.Kakao) throw new Error(_errMsg('카카오 로그인 창을 열 수 없습니다 — Kakao SDK 가 로드되지 않았습니다.',
       'index.html/bo.html 의 kakao SDK(t1.kakaocdn.net) 스크립트 로드와 네트워크/광고차단 확장을 확인하세요.'));
     const jsKey = _key('svKakaoJsKey');
-    if (!jsKey) throw new Error(_errMsg('카카오 로그인 창을 열 수 없습니다 — Kakao JavaScript Key 가 설정되지 않았습니다.',
-      '사이트 설정(AppStore)의 svKakaoJsKey 값을 등록하거나, 로그인 후 서버에서 키가 주입되는지 확인하세요. (BO 는 로그인 전이면 키가 없을 수 있습니다)'));
+    if (!jsKey) throw new Error(_errMsg('카카오 로그인 창을 열 수 없습니다 — Kakao JavaScript Key(svKakaoJsKey) 가 설정되지 않았습니다.',
+      'developers.kakao.com → 내 애플리케이션 → 앱 설정 → 앱 키 → "JavaScript 키" 를 발급받아 '
+      + '사이트 설정(AppStore)의 svKakaoJsKey(syApp.kakaoJsKey) 에 등록하세요. '
+      + '카카오 디벨로퍼스에서 [카카오 로그인] 활성화 ON + 플랫폼(Web)에 현재 도메인(예: http://127.0.0.1:5501) 등록 + Redirect URI 설정이 필요합니다. '
+      + '(BO 는 로그인 전이면 서버 init data 로 키가 주입되기 전이라 비어 있을 수 있습니다)'));
     try {
       if (typeof Kakao.isInitialized === 'function' ? !Kakao.isInitialized() : true) Kakao.init(jsKey);
     } catch (e) {
@@ -232,8 +284,12 @@
     }
     const clientId = _key('svNaverClientId');
     const callbackUrl = _key('svNaverCallbackUrl') || (window.location.origin + window.location.pathname);
-    if (!clientId) throw new Error(_errMsg('네이버 로그인 창을 열 수 없습니다 — Naver Client ID 가 설정되지 않았습니다.',
-      '사이트 설정(AppStore)의 svNaverClientId 값을 등록하세요.'));
+    if (!clientId) throw new Error(_errMsg('네이버 로그인 창을 열 수 없습니다 — Naver Client ID(svNaverClientId) 가 설정되지 않았습니다.',
+      'developers.naver.com → Application → 애플리케이션 등록 후 "Client ID" 를 발급받아 '
+      + '사이트 설정(AppStore)의 svNaverClientId(syApp.naverClientId) 에 등록하세요. '
+      + '서비스 URL·Callback URL 에 현재 도메인(예: http://127.0.0.1:5501)을 등록해야 하며, '
+      + 'Callback 을 따로 지정하려면 svNaverCallbackUrl(syApp.naverCallbackUrl) 도 설정하세요(미설정 시 현재 URL 사용). '
+      + '(BO 는 로그인 전이면 키가 없을 수 있습니다)'));
 
     _naverInstance = new naver.LoginWithNaverId({
       clientId,

@@ -4,6 +4,7 @@
  * OAuth 엔드포인트, 택배 추적 URL 등)를 한 곳에 모은다.
  *   · 운영용 비밀키/클라이언트키는 여기에 두지 않는다 → 사이트 설정(AppStore svXxxKey)에서 주입.
  *   · 여기에 두는 것은 "공개 가능한 상수" 만: 토스 공식 문서 테스트 키, 표준 SDK URL, 공개 트래킹 URL.
+ *   · 🔑 각 키의 발급처(외부 콘솔) → 저장 위치(AppStore svXxx) → 사용처 표는 lib/utils/coExtSdk.js 상단 참조.
  *
  * 전역: window.boEnvConsts (BO 전용 — bo.html 에서 로드)
  * 로드 순서: coExtSdk.js / 각 페이지보다 먼저 (bo.html)
