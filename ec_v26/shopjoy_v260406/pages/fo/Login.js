@@ -245,7 +245,10 @@ window.Login = {
       } catch (e) {
         console.error('[doSocial] error:', e);
         uiState.loginErr = e.message || (provider + ' 로그인 실패');
-        props.showToast(uiState.loginErr, 'error');
+        /* 설정 문제(키/도메인/팝업차단)면 설정안내 도움말 팝업, 사용자 취소면 toast 폴백 */
+        if (!(window.coExtHelp && window.coExtHelp.open({ kind: 'social', provider, error: e }))) {
+          props.showToast(uiState.loginErr, 'error');
+        }
       }
     };
 
@@ -270,7 +273,10 @@ window.Login = {
       } catch (e) {
         console.error('[startSnsSignup] error:', e);
         uiState.snsErr = e.message || (provider + ' 인증 실패');
-        props.showToast(uiState.snsErr, 'error');
+        /* 설정 문제(키/도메인/팝업차단)면 설정안내 도움말 팝업, 사용자 취소면 toast 폴백 */
+        if (!(window.coExtHelp && window.coExtHelp.open({ kind: 'social', provider, error: e }))) {
+          props.showToast(uiState.snsErr, 'error');
+        }
       }
     };
 

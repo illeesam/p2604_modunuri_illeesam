@@ -1787,7 +1787,10 @@
         } catch (err) {
           console.error('[doSocial]', err);
           loginError.value = err?.message || (provider + ' 로그인 실패');
-          showToast(loginError.value, 'error', 0);
+          /* 설정 문제(키/도메인/팝업차단)면 설정안내 도움말 팝업, 사용자 취소면 toast 폴백 */
+          if (!(window.coExtHelp && window.coExtHelp.open({ kind: 'social', provider, error: err }))) {
+            showToast(loginError.value, 'error', 0);
+          }
         }
       };
 
@@ -2862,6 +2865,9 @@
     @open-user-pick="openUserPick"
     @clear-error="loginError=''"
     @close="closeLogin" />
+
+  <!-- 외부 연동 설정 도움말 (SNS 로그인/토스 결제 실패 시 자동 오픈 — window.coExtHelp) -->
+  <co-ext-help-modal />
 </div>
 `,
   })
@@ -3054,6 +3060,7 @@
     .component('CmBlogMng', window.CmBlogMng)
     /* ── components/modals/ — 인증 모달 ── */
     .component('AuthLoginModal', window.AuthLoginModal)
+    .component('CoExtHelpModal', window.CoExtHelpModal || { template: '<div/>' })
     .component('AuthPwChangeModal', window.AuthPwChangeModal)
     .component('AuthUserPickModal', window.AuthUserPickModal)
     .component('AuthProfileModal', window.AuthProfileModal)

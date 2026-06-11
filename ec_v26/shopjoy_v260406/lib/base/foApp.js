@@ -1024,6 +1024,9 @@
   <!-- LOGIN MODAL -->
   <login v-if="uiState.showLogin" :show-toast="showToast" @close="uiState.showLogin=false" />
 
+  <!-- 외부 연동 설정 도움말 (SNS 로그인/토스 결제 실패 시 자동 오픈 — window.coExtHelp) -->
+  <co-ext-help-modal />
+
   <!-- TOAST STACK -->
   <div v-if="toasts.length"
     style="position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:6px;min-width:300px;transition:max-width 0.2s ease;"
@@ -1250,7 +1253,9 @@
   /* ── components/modals/FoModals.js — FO 전용 모달 ── */
   .component('CustomerModal',        window.CustomerModal)
   .component('OrderDetailModal',     window.OrderDetailModal)
-  .component('ProductModal',         window.ProductModal);
+  .component('ProductModal',         window.ProductModal)
+  /* ── components/modals/CoExtHelpModal.js — 외부 연동 설정 도움말 (FO/BO 공용) ── */
+  .component('CoExtHelpModal',       window.CoExtHelpModal || { template: '<div/>' });
 
   /* ■■■ disp 공통 컴포넌트 등록 ■■■ */
   ['DispX01Ui','DispX02Area','DispX03Panel','DispX04Widget'].forEach(name => {

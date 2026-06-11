@@ -59,8 +59,9 @@ window.useFoAppStore = Pinia.defineStore('foApp', {
       this.svAppVersion     = appData.appVersion     || '2.6.0';
       this.svLastUpdateDate = appData.lastUpdateDate || '';
       this.svActive         = appData.active         || '-';
-      // 외부 키 일괄 매핑
-      _EXT_KEYS.forEach((k) => { this[_svKey(k)] = appData[k] || ''; });
+      // 외부 키 일괄 매핑 — 서버 값 우선, 서버가 빈 값이면 데모/로컬 시드(state 기본값) 유지
+      // (소스 구매자가 state 의 svXxx 에 직접 시드한 키가 로그인 시 지워지지 않도록 보정)
+      _EXT_KEYS.forEach((k) => { this[_svKey(k)] = appData[k] || this[_svKey(k)] || ''; });
     },
 
     saSetAppVersion(version) { if (version) this.svAppVersion = version; },
