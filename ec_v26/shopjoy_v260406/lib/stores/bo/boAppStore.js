@@ -28,6 +28,11 @@ const _BO_EXT_KEYS = [
 const _boSvKey = (k) => 'sv' + k.charAt(0).toUpperCase() + k.slice(1);
 const _boEmptyExt = () => _BO_EXT_KEYS.reduce((acc, k) => { acc[_boSvKey(k)] = ''; return acc; }, {});
 
+// 서버 init data 의 데모 플레이스홀더(DEMO_* / demo_* / test_ck_DEMO_*) 판별
+// → 데모 더미는 빈 값처럼 취급해, 파일에 시드한 실키나 SDK 테스트키 폴백을 덮지 않게 함
+const _boDemoRe = /(^|_)demo(_|$)/i;
+const _boIsDemo = (v) => !!v && _boDemoRe.test(String(v));
+
 window.useBoAppStore = Pinia.defineStore('boApp', {
   state: () => ({
     svBoSiteNo: '01',
@@ -58,9 +63,12 @@ window.useBoAppStore = Pinia.defineStore('boApp', {
       this.svAppVersion     = appData.appVersion     || '2.6.0';
       this.svLastUpdateDate = appData.lastUpdateDate || '';
       this.svActive         = appData.active         || '-';
-      // 외부 키 일괄 매핑 — 서버 값 우선, 서버가 빈 값이면 데모/로컬 시드(state 기본값) 유지
-      // (소스 구매자가 state 의 svXxx 에 직접 시드한 키가 로그인 시 지워지지 않도록 보정)
-      _BO_EXT_KEYS.forEach((k) => { this[_boSvKey(k)] = appData[k] || this[_boSvKey(k)] || ''; });
+      // 외부 키 일괄 매핑 — 서버 실값 우선, 서버가 빈 값/데모 더미면 로컬 시드(state 기본값) 유지
+      // (소스 구매자가 state 의 svXxx 에 직접 시드한 키가 로그인 시 데모 더미로 덮이지 않도록 보정)
+      _BO_EXT_KEYS.forEach((k) => {
+        const sv = appData[k];
+        this[_boSvKey(k)] = (sv && !_boIsDemo(sv)) ? sv : (this[_boSvKey(k)] || '');
+      });
     },
 
     saSetAppVersion(version) { if (version) this.svAppVersion = version; },

@@ -255,10 +255,9 @@ window.Login = {
       } catch (e) {
         console.error('[doSocial] error:', e);
         uiState.loginErr = e.message || (provider + ' 로그인 실패');
-        /* 설정 문제(키/도메인/팝업차단)면 설정안내 도움말 팝업, 사용자 취소면 toast 폴백 */
-        if (!(window.coExtHelp && window.coExtHelp.open({ kind: 'social', provider, error: e }))) {
-          props.showToast(uiState.loginErr, 'error');
-        }
+        /* 실패 토스트에 [설정 방법 보기] 버튼 부착 (사용자 취소면 action=null → 일반 토스트) */
+        const action = window.coExtHelp && window.coExtHelp.toastAction({ kind: 'social', provider, error: e });
+        props.showToast(uiState.loginErr, 'error', 0, '', action);
       }
     };
 
@@ -283,10 +282,9 @@ window.Login = {
       } catch (e) {
         console.error('[startSnsSignup] error:', e);
         uiState.snsErr = e.message || (provider + ' 인증 실패');
-        /* 설정 문제(키/도메인/팝업차단)면 설정안내 도움말 팝업, 사용자 취소면 toast 폴백 */
-        if (!(window.coExtHelp && window.coExtHelp.open({ kind: 'social', provider, error: e }))) {
-          props.showToast(uiState.snsErr, 'error');
-        }
+        /* 실패 토스트에 [설정 방법 보기] 버튼 부착 (사용자 취소면 action=null → 일반 토스트) */
+        const action = window.coExtHelp && window.coExtHelp.toastAction({ kind: 'social', provider, error: e });
+        props.showToast(uiState.snsErr, 'error', 0, '', action);
       }
     };
 

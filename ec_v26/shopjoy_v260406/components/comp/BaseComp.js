@@ -1185,13 +1185,11 @@ window.BaseTossPayWidget = {
       } catch (e) {
         console.error('[BaseTossPayWidget 렌더 실패]', e);
         ui.ready = false; emit('error', e);
-        /* 설정 문제면 설정안내 도움말 팝업 (없으면 기존 toast 폴백) */
-        if (!(window.coExtHelp && window.coExtHelp.open({ kind: 'pay', provider: 'toss', error: e }))) {
-          props.showToast('토스 위젯을 표시할 수 없습니다: ' + ((e && e.message) || '알 수 없는 오류')
-            + '\n→ 해결: developers.tosspayments.com → 내 개발정보 → "클라이언트 키"(결제위젯 연동 키, gck/ck 로 시작)를 발급받아 '
-            + '사이트 설정(AppStore)의 svTossClientKey(syApp.tossClientKey) 에 등록하세요. '
-            + 'API 개별 연동 키(시크릿/sk)는 위젯에서 지원되지 않습니다. 미설정 시 테스트 키로 동작합니다.', 'error', 0);
-        }
+        /* 실패 토스트에 [결제 설정 방법 보기] 버튼 부착 (사용자 취소면 action=null) */
+        const action = window.coExtHelp && window.coExtHelp.toastAction({ kind: 'pay', provider: 'toss', error: e });
+        props.showToast('토스 위젯을 표시할 수 없습니다: ' + ((e && e.message) || '알 수 없는 오류')
+          + '\n→ 해결: 토스 클라이언트 키(결제위젯 연동 키, gck/ck 로 시작)를 발급받아 svTossClientKey 에 등록하세요. '
+          + '미설정 시 테스트 키로 동작합니다. (자세한 발급 방법은 아래 버튼)', 'error', 0, '', action);
       }
     };
 
@@ -1221,8 +1219,10 @@ window.BaseTossPayWidget = {
         emit('error', e);
         if (e && (e.code === 'USER_CANCEL' || /취소/.test(e.message || ''))) {
           props.showToast('결제가 취소되었습니다.', 'info');
-        } else if (!(window.coExtHelp && window.coExtHelp.open({ kind: 'pay', provider: 'toss', error: e }))) {
-          props.showToast('결제 요청 실패: ' + ((e && e.message) || '알 수 없는 오류') + ' / 결제수단 선택·약관 동의 후 다시 시도하세요.', 'error', 0);
+        } else {
+          /* 실패 토스트에 [결제 설정 방법 보기] 버튼 부착 */
+          const action = window.coExtHelp && window.coExtHelp.toastAction({ kind: 'pay', provider: 'toss', error: e });
+          props.showToast('결제 요청 실패: ' + ((e && e.message) || '알 수 없는 오류') + ' / 결제수단 선택·약관 동의 후 다시 시도하세요.', 'error', 0, '', action);
         }
       } finally {
         ui.processing = false;

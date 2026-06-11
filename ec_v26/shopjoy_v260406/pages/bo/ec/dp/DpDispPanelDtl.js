@@ -386,6 +386,8 @@ window.DpDispPanelDtl = {
 
     const cfActiveRowIdx = computed(() => { const idx = cfTabRowMap.value[uiState.tab]; return idx !== undefined ? idx : null; });
     const cfActiveRow    = computed(() => (cfActiveRowIdx.value !== null && cfActiveRowIdx.value !== undefined) ? rows[cfActiveRowIdx.value] : null);
+    /* cfActiveTabLabel — 현재 탭의 라벨 (템플릿에서 window.* 직접 호출 금지 → setup 헬퍼로 분리) */
+    const cfActiveTabLabel = computed(() => (cfTabLabels.value.find(t => t.key === uiState.tab) || {}).label || '');
 
     /* moveRow — 이동 */
     const moveRow = (dir) => {
@@ -953,7 +955,7 @@ window.DpDispPanelDtl = {
       columns,
       pathPickModal, form, rows, codes, preview, cardPreview, pickData,         // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch + 모달 통합 콜백
-      cfIsNew, cfTabLabels, cfTabRowMap, cfActiveRowIdx, cfActiveRow,         // computed
+      cfIsNew, cfTabLabels, cfTabRowMap, cfActiveRowIdx, cfActiveRow, cfActiveTabLabel,         // computed
       cfDisplayRows, cfRelatedEvent, cfFileListItems, cfPreviewWidget, // computed
       cfCurrentAreaLabel, cfDtlMode, cfPreviewFrameWidth, cfVisibilityOptions, // computed
       cfDispEnvMcsOptions,                                                            // computed (전시환경 MCS 옵션)
@@ -1517,7 +1519,7 @@ window.DpDispPanelDtl = {
                 </span>
               </span>
               <span style="font-size:10px;color:#aaa;margin-left:auto;">
-                {{ tab==='info' ? '전체 전시항목' : (window.safeArrayUtils.safeFind(cfTabLabels, t=>t.key===tab)||{}).label }}
+                {{ tab==='info' ? '전체 전시항목' : cfActiveTabLabel }}
               </span>
             </div>
             <!-- ===== ■.■.■.■.■.■. 디바이스 모드 버튼 ==================================== -->
@@ -1557,7 +1559,7 @@ window.DpDispPanelDtl = {
                   <disp-x04-widget
                     :params="{ }"
                     :disp-opt="{ showBadges: true }"
-                    :widget-item="{...cfActiveRow, widgetNm: cfActiveRow.widgetNm||(window.safeArrayUtils.safeFind(cfTabLabels, t=>t.key===tab)||{}).label||'위젯', status:'활성', condition:'항상 표시'}"
+                    :widget-item="{...cfActiveRow, widgetNm: cfActiveRow.widgetNm||cfActiveTabLabel||'위젯', status:'활성', condition:'항상 표시'}"
                     />
                 </template>
               </div>

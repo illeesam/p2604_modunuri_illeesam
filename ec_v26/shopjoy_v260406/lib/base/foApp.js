@@ -381,8 +381,9 @@
     const FO_TOAST_DETAIL_KEY = 'modu-fo-toast-isShowDetail';
     const toastShowDetail = ref(localStorage.getItem(FO_TOAST_DETAIL_KEY) !== 'false');
 
-    /* showToast */
-    const showToast = (msg, type = 'success', duration = 0, detail = '') => {
+    /* showToast(msg, type, duration, detail, action?)
+     * action: { label, onClick } — 토스트 안에 표시되는 액션 버튼 (예: 설정 도움말 열기). 선택. */
+    const showToast = (msg, type = 'success', duration = 0, detail = '', action = null) => {
       let msgTitle = msg;
       let msgDetail = '';
       if (msg && msg.includes('\n')) {
@@ -395,10 +396,13 @@
         ? (type === 'error' ? 0 : type === 'info' ? 3000 : 4000)
         : duration;
       const expanded = !!(detail) && toastShowDetail.value;
-      const t = { id, msg, msgTitle, msgDetail, type, detail, expanded, persistent: autoDismiss === 0, duration: autoDismiss };
+      const t = { id, msg, msgTitle, msgDetail, type, detail, action, expanded, persistent: autoDismiss === 0, duration: autoDismiss };
       toasts.push(t);
       if (autoDismiss > 0) setTimeout(() => removeToast(id), autoDismiss);
     };
+
+    /* onToastAction — 토스트 액션 버튼 클릭 (도움말 모달 오픈 등) */
+    const onToastAction = (t) => { if (t.action && typeof t.action.onClick === 'function') t.action.onClick(); };
 
     /* removeToast */
     const removeToast     = (id) => { const i = toasts.findIndex(t => t.id === id); if (i !== -1) toasts.splice(i, 1); };
@@ -821,7 +825,7 @@
     return {
       theme, toggleTheme,
       page, sidebarOpen, navigate, closeMobileMenu, toggleMobileMenu,
-      toasts, showToast, removeToast, removeAllToasts, toggleToastDetail, toggleAllToastDetail, toastShowDetail, toast,
+      toasts, showToast, removeToast, removeAllToasts, toggleToastDetail, toggleAllToastDetail, toastShowDetail, toast, onToastAction,
       isApiLoading,
       alertState, showAlert, closeAlert,
       confirmState, showConfirm, closeConfirm,
@@ -1044,6 +1048,11 @@
             <span style="color:#aaa;font-weight:700;margin-right:4px;">#{{ t.id }}</span>{{ t.msgTitle || t.msg }}
           </div>
           <div v-if="t.msgDetail" style="font-size:11px;color:#666;margin-top:2px;font-family:monospace;">{{ t.msgDetail }}</div>
+          <!-- 액션 버튼 (예: 설정 도움말 열기) -->
+          <button v-if="t.action" @click="onToastAction(t)"
+            style="margin-top:7px;padding:5px 12px;font-size:12px;font-weight:700;border:1px solid #1d4ed8;border-radius:6px;background:#eef4ff;color:#1d4ed8;cursor:pointer;">
+            {{ t.action.label }}
+          </button>
           <!-- 상세 펼치기 영역 -->
           <div v-if="t.expanded && t.detail"
             style="margin-top:6px;padding:6px 8px;background:#f8f9fa;border-radius:5px;font-size:11px;font-family:monospace;color:#444;white-space:pre-wrap;max-height:200px;overflow-y:auto;word-break:break-all;">{{ t.detail }}</div>

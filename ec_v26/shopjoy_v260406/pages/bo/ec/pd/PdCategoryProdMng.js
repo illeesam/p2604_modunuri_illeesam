@@ -324,6 +324,8 @@ window.PdCategoryProdMng = {
       id: t.cd, label: t.nm,
       get count() { return cfTypeCountMap.value[t.cd] || 0; },
     })));
+    /* cfActiveTypeNm — 현재 진열유형 라벨 (템플릿에서 window.* 직접 호출 금지 → setup 헬퍼로 분리) */
+    const cfActiveTypeNm = computed(() => (TYPE_TABS.find(t => t.cd === uiState.activeTypeCd) || {}).nm || '');
 
     /* cfFilteredRows 제거: 카테고리(자식포함)+진열유형 필터는 서버(API)가 수행 → categoryProds 직접 사용 */
 
@@ -517,7 +519,7 @@ window.PdCategoryProdMng = {
       codes, uiState, categoryProds, cfVisibleCategoryProds, searchParam, pickerResults,                   // 상태 / 데이터
       cfCatProdGridColumns, // 컬럼 정의
       handleBtnAction, handleSelectAction,                                                  // dispatch (모든 이벤트 / 액션 라우팅)
-      cfSelectedCatId, cfSelectedCat, cfIsLeafCat, cfTypeCountMap, tabs,                    // computed / reactive(tabs)
+      cfSelectedCatId, cfSelectedCat, cfIsLeafCat, cfTypeCountMap, tabs, cfActiveTypeNm,      // computed / reactive(tabs)
       fnCatProdRowStyle, fnDepthColor, fnDepthBullet, totalProdCount, // 헬퍼
       TYPE_TABS, EMPHASIS_OPTS, hasEmphasis, getProdNm, getProd, getCatPath, // 헬퍼
       dragoverIdx, pickerOpen, pickerSearchType, pickerSearch, // ref
@@ -719,7 +721,7 @@ window.PdCategoryProdMng = {
             상품 추가
           </strong>
           <span style="font-size:12px;color:#aaa;margin-left:8px">
-            → {{ cfSelectedCat?.categoryNm }} / {{ window.safeArrayUtils.safeFind(TYPE_TABS, t=>t.cd===uiState.activeTypeCd)?.nm }}
+            → {{ cfSelectedCat?.categoryNm }} / {{ cfActiveTypeNm }}
           </span>
         </div>
         <button class="btn btn_close" @click="handleBtnAction('prodPickModal-close')">

@@ -235,11 +235,12 @@ window.OdOrderDtl = {
       } catch (sdkErr) {
         console.warn('[Toss 브랜드페이 실패]', sdkErr);
         const msg = (sdkErr && sdkErr.message) || '';
-        /* 사용자 취소는 오류가 아님 (안내 토스트만), 설정 문제는 설정안내 도움말 팝업 */
+        /* 사용자 취소는 오류가 아님 (안내 토스트만), 설정 문제는 실패 토스트에 [결제 설정 방법 보기] 버튼 부착 */
         if (/취소|cancel|USER_CANCEL/i.test(msg)) {
           showToast('결제가 취소되었습니다.', 'info');
-        } else if (!(window.coExtHelp && window.coExtHelp.open({ kind: 'pay', provider: 'toss', error: sdkErr }))) {
-          showToast('결제창 호출에 실패했습니다.\n→ 해결: 팝업 차단 해제·네트워크 상태·토스 키 설정을 확인한 뒤 다시 시도하세요.' + (msg ? ('\n(' + msg + ')') : ''), 'error', 0);
+        } else {
+          const action = window.coExtHelp && window.coExtHelp.toastAction({ kind: 'pay', provider: 'toss', error: sdkErr });
+          showToast('결제창 호출에 실패했습니다.\n→ 해결: 팝업 차단 해제·네트워크 상태·토스 키 설정을 확인한 뒤 다시 시도하세요.' + (msg ? ('\n(' + msg + ')') : ''), 'error', 0, '', action);
         }
       } finally {
         payState.processing = false;

@@ -75,10 +75,13 @@
     return null;
   };
 
-  /* _key */
+  /* _key — AppStore svXxx 키 읽기. 서버 init data 의 데모 플레이스홀더(DEMO_, demo_, test_ck_DEMO_ 등)는
+   * 실제 키가 아니므로 빈 값으로 취급 → "키 미설정" 안내가 정확히 뜨고, 토스 테스트키 폴백도 정상 작동 */
+  const _DEMO_RE = /(^|_)demo(_|$)/i;
   const _key = (name) => {
     const s = _getAppStore();
-    return s ? (s[name] || '') : '';
+    const v = s ? (s[name] || '') : '';
+    return (v && _DEMO_RE.test(v)) ? '' : v;
   };
 
   /* _env — env 상수 안전 접근 (path: 'toss.SDK_V2_URL'). 미로드 시 fallback.
@@ -228,10 +231,20 @@
       throw new Error(_errMsg('카카오 로그인 창을 열 수 없습니다 — Kakao SDK 초기화에 실패했습니다 (' + (e && e.message || '키 오류') + ').',
         'svKakaoJsKey 가 유효한 JavaScript 키인지, 카카오 디벨로퍼스에 현재 도메인이 등록됐는지 확인하세요.'));
     }
-    /* Kakao.Auth.login 함수 존재 확인 — 잘못된 키/초기화 시 Auth 모듈이 안 붙어 "is not a function" 발생 */
-    if (!Kakao.Auth || typeof Kakao.Auth.login !== 'function') {
-      throw new Error(_errMsg('카카오 로그인 창을 열 수 없습니다 — Kakao SDK 가 정상 초기화되지 않았습니다 (Kakao.Auth.login 없음).',
-        'svKakaoJsKey(JavaScript 키)가 유효한지와 카카오 디벨로퍼스 앱에 현재 도메인(예: 127.0.0.1:5501)이 플랫폼 등록됐는지 확인하세요. 키 미설정 시 로그인 후 서버 init data 로 주입됩니다.'));
+    if (!Kakao.Auth) {
+      throw new Error(_errMsg('카카오 로그인 창을 열 수 없습니다 — Kakao SDK 가 정상 초기화되지 않았습니다 (Kakao.Auth 없음).',
+        'svKakaoJsKey(JavaScript 키)가 유효한지와 카카오 디벨로퍼스 앱에 현재 도메인(예: 127.0.0.1:5501)이 플랫폼 등록됐는지 확인하세요.'));
+    }
+    /* Kakao SDK v2.x 는 보안 정책상 클라이언트 팝업 로그인(Kakao.Auth.login)을 제거하고
+     * redirect 방식(Kakao.Auth.authorize → 인가코드 → 백엔드 토큰 교환)만 지원한다.
+     * 현재 index.html/bo.html 은 v2(2.7.x)를 로드하므로 login 콜백식은 동작하지 않음 →
+     * 팝업식이 필요하면 v1 SDK 로 교체하거나, redirect+백엔드 토큰 교환을 구현해야 함을 안내. */
+    if (typeof Kakao.Auth.login !== 'function') {
+      throw new Error(_errMsg('카카오 로그인 창을 열 수 없습니다 — 현재 로드된 Kakao SDK(v2)는 팝업 로그인을 지원하지 않습니다.',
+        'Kakao JavaScript SDK v2 는 보안상 팝업 방식(Kakao.Auth.login)을 제거하고 redirect 방식만 지원합니다. '
+        + '해결: ① 팝업 방식이 필요하면 index.html/bo.html 의 카카오 SDK 를 v1(예: developers.kakao.com/sdk/js/kakao.sdk.js v1.x)로 교체하거나, '
+        + '② redirect 방식(Kakao.Auth.authorize 로 인가코드 발급 → 백엔드에서 액세스 토큰 교환)을 구현하세요. '
+        + 'Redirect URI 는 카카오 디벨로퍼스 [카카오 로그인 > Redirect URI] 에 현재 주소(' + (window.location.origin + window.location.pathname) + ')를 등록해야 합니다.'));
     }
   };
 
@@ -264,8 +277,13 @@
           if (/popup|차단|blocked|window/i.test(msg)) {
             reject(new Error(_errMsg('카카오 로그인 창이 열리지 않았습니다 — 브라우저 팝업이 차단되었습니다.',
               '주소창 우측 팝업 차단 아이콘에서 이 사이트의 팝업을 허용한 뒤 다시 시도하세요.')));
+          } else if (/cancel|취소|access_denied/i.test(msg)) {
+            /* 사용자가 동의 거부/창 닫음 → 취소로 분류 (도움말 팝업 억제) */
+            reject(new Error('카카오 로그인이 취소되었습니다.'));
           } else {
-            reject(new Error(msg || '카카오 로그인이 취소되었거나 실패했습니다.'));
+            /* 그 외는 설정/키 문제로 보고 도움말 안내 (메시지에 '취소' 미포함) */
+            reject(new Error(_errMsg('카카오 로그인에 실패했습니다' + (msg ? (' (' + msg + ')') : '') + '.',
+              'svKakaoJsKey(JavaScript 키)와 카카오 디벨로퍼스의 [카카오 로그인] 활성화·동의항목·플랫폼 도메인 등록을 확인하세요.')));
           }
         },
       });

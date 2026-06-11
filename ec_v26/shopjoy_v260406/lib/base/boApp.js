@@ -703,8 +703,9 @@
         503: '서비스 일시 중단 — 잠시 후 다시 시도하세요.',
       };
 
-      /* showToast */
-      const showToast = (msg, type = 'success', duration = TOAST_DURATION, errorDetails = '') => {
+      /* showToast(msg, type, duration, errorDetails, action?)
+       * action: { label, onClick } — 토스트 안에 표시되는 액션 버튼 (예: 설정 도움말 열기). 선택. */
+      const showToast = (msg, type = 'success', duration = TOAST_DURATION, errorDetails = '', action = null) => {
         if (type === 'error') duration = 0;
         const id = ++_toastId;
         let msgTitle = msg;
@@ -727,6 +728,7 @@
           statusHint,
           msg,
           type,
+          action,
           persistent: duration === 0,
           errorDetails,
           expanded: type === 'error' && toastShowDetail.value,
@@ -738,6 +740,9 @@
           }, duration);
         }
       };
+
+      /* onToastAction — 토스트 액션 버튼 클릭 (도움말 모달 오픈 등) */
+      const onToastAction = (t) => { if (t.action && typeof t.action.onClick === 'function') t.action.onClick(); };
       /* 전역 노출 (BaseModal 등에서 props 없이 호출) */
       window.boToast = showToast;
 
@@ -1787,10 +1792,9 @@
         } catch (err) {
           console.error('[doSocial]', err);
           loginError.value = err?.message || (provider + ' 로그인 실패');
-          /* 설정 문제(키/도메인/팝업차단)면 설정안내 도움말 팝업, 사용자 취소면 toast 폴백 */
-          if (!(window.coExtHelp && window.coExtHelp.open({ kind: 'social', provider, error: err }))) {
-            showToast(loginError.value, 'error', 0);
-          }
+          /* 실패 토스트에 [설정 방법 보기] 버튼 부착 (사용자 취소면 action=null → 일반 토스트) */
+          const action = window.coExtHelp && window.coExtHelp.toastAction({ kind: 'social', provider, error: err });
+          showToast(loginError.value, 'error', 0, '', action);
         }
       };
 
@@ -2040,6 +2044,7 @@
         setTopMenu,
         toasts,
         showToast,
+        onToastAction,
         closeToast,
         closeAllToasts,
         toastShowDetail,
@@ -2773,6 +2778,11 @@
       <div v-if="t.msgDetail" class="toast-msg-detail">{{ t.msgDetail }}</div>
       <!-- 상태코드 한글 안내 -->
       <div v-if="t.statusHint" class="toast-status-hint">💡 {{ t.statusHint }}</div>
+      <!-- 액션 버튼 (예: 설정 도움말 열기) -->
+      <button v-if="t.action" @click.stop="onToastAction(t)"
+        style="margin-top:7px;padding:5px 12px;font-size:12px;font-weight:700;border:1px solid #1d4ed8;border-radius:6px;background:#eef4ff;color:#1d4ed8;cursor:pointer;">
+        {{ t.action.label }}
+      </button>
       <!-- 펼쳐진 상세 내용 -->
       <div v-if="t.expanded" class="toast-error-details">
         <pre class="toast-error-content">{{ t.errorDetails || (t.msgTitle || t.msg) }}</pre>

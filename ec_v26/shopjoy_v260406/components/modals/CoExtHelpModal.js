@@ -22,6 +22,12 @@
   /* ── 전역 상태 + open/close API ─────────────────────────────────────── */
   const st = Vue.reactive({ show: false, tab: 'google', kind: 'social', message: '' });
 
+  /* _DEMO_RE — 서버 init data 가 내려주는 데모 플레이스홀더 패턴.
+   * 백엔드 getApp() 이 미설정 키에 'DEMO_*' / 'demo_*' / 'test_ck_DEMO_*' 더미를 채워 보내므로,
+   * 이 값이 들어 있으면 "실제로는 미설정"으로 본다. (실키 오탐 방지: 토스 실테스트키 test_ck_/test_gck_ 는 DEMO 미포함) */
+  const _DEMO_RE = /(^|_)demo(_|$)/i;
+  const _isDemoVal = (v) => !!v && _DEMO_RE.test(String(v));
+
   /* _isUserCancel — 사용자가 직접 창을 닫은 경우는 설정 문제가 아님 → 팝업 제외 */
   const _isUserCancel = (err) => {
     if (!err) return false;
@@ -30,15 +36,32 @@
     return /USER_CANCEL/i.test(code) || /취소|canceled|cancelled|user.?cancel/i.test(msg);
   };
 
+  /* _applyOpts — opts 로 모달 상태 세팅 (탭/종류/메시지) */
+  const _applyOpts = (opts = {}) => {
+    st.kind = opts.kind === 'pay' ? 'pay' : 'social';
+    const p = String(opts.provider || '').toLowerCase();
+    st.tab = (st.kind === 'pay') ? 'toss' : (['google', 'kakao', 'naver'].includes(p) ? p : 'google');
+    st.message = String(opts.message || (opts.error && opts.error.message) || '');
+  };
+
   window.coExtHelp = {
+    /* open — 도움말 모달을 즉시 연다 (액션 버튼/도움말 버튼 등 명시적 클릭 전용).
+     * 사용자 취소(USER_CANCEL/취소)면 열지 않고 false 반환. */
     open(opts = {}) {
       if (_isUserCancel(opts.error)) return false;
-      st.kind = opts.kind === 'pay' ? 'pay' : 'social';
-      const p = String(opts.provider || '').toLowerCase();
-      st.tab = (st.kind === 'pay') ? 'toss' : (['google', 'kakao', 'naver'].includes(p) ? p : 'google');
-      st.message = String(opts.message || (opts.error && opts.error.message) || '');
+      _applyOpts(opts);
       st.show = true;
       return true;
+    },
+    /* toastAction — 실패 시 토스트에 붙일 액션 버튼 객체 {label, onClick} 을 반환.
+     * 사용자 취소면 null (호출자는 일반 toast 만 표시). 자동으로 모달을 열지 않고,
+     * 버튼 클릭 시점의 opts 로 모달을 연다 → "버튼 클릭하자마자 모달" 문제 해결. */
+    toastAction(opts = {}) {
+      if (_isUserCancel(opts.error)) return null;
+      return {
+        label: opts.label || (opts.kind === 'pay' ? '⚙ 결제 설정 방법 보기' : '⚙ 설정 방법 보기'),
+        onClick: () => { _applyOpts(opts); st.show = true; },
+      };
     },
     openManual(tab) {
       st.kind = (tab === 'toss') ? 'pay' : 'social';
@@ -75,23 +98,24 @@
     },
     kakao: {
       label: '카카오 로그인', badge: 'K', badgeBg: '#fee500',
-      summary: '카카오 디벨로퍼스에서 앱을 만들고 "JavaScript 키"를 발급받습니다. (무료 · 약 10분)',
+      summary: '카카오 디벨로퍼스에서 앱을 만들고 "JavaScript 키"를 발급받습니다. (무료 · 약 10분) ⚠ 카카오 SDK v2는 팝업 로그인을 지원하지 않아 별도 처리가 필요합니다(아래 참고).',
       consoleNm: '카카오 디벨로퍼스', consoleUrl: 'https://developers.kakao.com',
       keys: [{ store: 'svKakaoJsKey', server: 'syApp.kakaoJsKey', what: 'JavaScript 키',
                sample: 'a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4' }],
       steps: [
+        { t: '⚠ 먼저 알아두기 (SDK 버전)', d: '이 소스는 카카오 SDK v2(t1.kakaocdn.net/kakao_js_sdk/2.7.2)를 로드합니다.\n카카오는 v2부터 보안 정책상 "팝업 로그인"을 제거하고 redirect 방식(인가코드 → 백엔드 토큰 교환)만 지원합니다.\n→ 팝업 방식을 그대로 쓰려면 index.html/bo.html 의 카카오 SDK 를 v1 으로 교체하거나, redirect 흐름을 구현해야 합니다. 키 발급 절차 자체는 동일합니다.' },
         { t: '카카오 디벨로퍼스 접속', d: 'developers.kakao.com 에 접속해 카카오 계정으로 로그인합니다.' },
         { t: '애플리케이션 추가', d: '[내 애플리케이션] → [애플리케이션 추가하기] → 앱 이름·회사명은 자유롭게 입력 → 저장.' },
         { t: 'JavaScript 키 복사', d: '생성한 앱 클릭 → [앱 설정 > 앱 키] 화면에서 "JavaScript 키"를 복사합니다.\n※ REST API 키·Admin 키가 아니라 반드시 "JavaScript 키"입니다.' },
         { t: 'Web 플랫폼 등록', d: '[앱 설정 > 플랫폼] → [Web 플랫폼 등록] → 사이트 도메인에 아래 현재 주소를 등록합니다.\n→ ' + ORIGIN },
-        { t: '카카오 로그인 활성화', d: '[제품 설정 > 카카오 로그인] → "활성화 설정" ON → Redirect URI 에 아래 주소를 등록합니다.\n→ ' + PAGE_URL + '\n(팝업 방식이라도 Redirect URI 등록이 필요합니다)' },
+        { t: '카카오 로그인 활성화', d: '[제품 설정 > 카카오 로그인] → "활성화 설정" ON → Redirect URI 에 아래 주소를 등록합니다.\n→ ' + PAGE_URL + '\n(v2 redirect 방식은 Redirect URI 가 반드시 필요합니다)' },
         { t: '동의항목 설정', d: '[제품 설정 > 카카오 로그인 > 동의항목] → 닉네임은 "필수 동의", 카카오계정(이메일)은 "선택 동의"로 설정.' },
         { t: '키 입력', d: '복사한 JavaScript 키를 svKakaoJsKey 에 입력합니다. (입력 위치는 [키 입력 방법] 탭 참고)' },
       ],
       faq: [
+        { q: '현재 로드된 Kakao SDK(v2)는 팝업 로그인을 지원하지 않습니다', a: '카카오 v2 는 보안상 팝업식(Kakao.Auth.login)을 제거했습니다. 팝업이 필요하면 HTML 의 카카오 SDK 를 v1 으로 교체하거나, redirect 방식(Kakao.Auth.authorize → 백엔드 토큰 교환)을 구현하세요.' },
         { q: 'KOE101 (앱 관리자 설정 오류)', a: 'JavaScript 키가 잘못되었습니다. 앱 키 화면에서 "JavaScript 키"를 다시 복사해 넣으세요.' },
         { q: 'KOE006 (등록되지 않은 도메인)', a: '[플랫폼 > Web] 의 사이트 도메인에 현재 주소(' + ORIGIN + ')가 등록되어 있는지 확인하세요.' },
-        { q: 'Kakao.Auth.login is not a function', a: 'SDK 버전 문제입니다. bo.html/index.html 의 카카오 SDK 스크립트(developers.kakao.com/sdk/js/kakao.js 계열)가 로드되는지 확인하세요.' },
         { q: '로그인 창이 안 뜸', a: '브라우저 팝업 차단을 해제하세요.' },
       ],
     },
@@ -181,14 +205,27 @@
         try { if (typeof window.useBoAppStore === 'function') return window.useBoAppStore(); } catch (e) { /* 미로드 무시 */ }
         return null;
       };
-      const fnKeySet = (name) => { const s = _appStore(); return !!(s && s[name]); };
+      /* fnKeyState — 키 상태 3분류: 'set'(실키) | 'demo'(서버 데모 더미) | 'unset'(빈값) */
+      const fnKeyState = (name) => {
+        const s = _appStore();
+        const v = s && s[name];
+        if (!v) return 'unset';
+        return _isDemoVal(v) ? 'demo' : 'set';
+      };
+      /* fnKeyBadge — 상태표 뱃지 스타일/문구 */
+      const fnKeyBadge = (name) => {
+        const st2 = fnKeyState(name);
+        if (st2 === 'set')  return { text: '✓ 설정됨',       css: 'background:#e8f5e9;color:#2e7d32;border-radius:6px;padding:2px 8px;font-weight:700;' };
+        if (st2 === 'demo') return { text: '✕ 데모값(미설정)', css: 'background:#fff7e6;color:#b8860b;border-radius:6px;padding:2px 8px;font-weight:700;' };
+        return { text: '✕ 미설정', css: 'background:#fff3f3;color:#c0392b;border-radius:6px;padding:2px 8px;font-weight:700;' };
+      };
 
       const cfGuide = computed(() => GUIDES[st.tab] || null);
       const cfTitle = computed(() =>
         (st.kind === 'pay' ? '결제 연동 설정 도움말' : 'SNS 로그인 설정 도움말'));
 
       /* ##### [06] return (템플릿 노출) ###################################### */
-      return { st, shell, tabs, handleBtnAction, fnKeySet, cfGuide, cfTitle,
+      return { st, shell, tabs, handleBtnAction, fnKeyState, fnKeyBadge, cfGuide, cfTitle,
                ALL_KEYS, ORIGIN, PAGE_URL };
     },
     template: /* html */`
@@ -253,8 +290,8 @@
               <td style="border:1px solid #eee;padding:6px 10px;">{{ k.what }}</td>
               <td style="border:1px solid #eee;padding:6px 10px;font-family:monospace;">{{ k.store }}</td>
               <td style="border:1px solid #eee;padding:6px 10px;">
-                <span :style="fnKeySet(k.store) ? 'background:#e8f5e9;color:#2e7d32;border-radius:6px;padding:2px 8px;font-weight:700;' : 'background:#fff3f3;color:#c0392b;border-radius:6px;padding:2px 8px;font-weight:700;'">
-                  {{ fnKeySet(k.store) ? '✓ 설정됨' : '✕ 미설정' }}
+                <span :style="fnKeyBadge(k.store).css">
+                  {{ fnKeyBadge(k.store).text }}
                 </span>
               </td>
             </tr>
@@ -340,7 +377,7 @@
 svKakaoJsKey:     'a1b2c3d4e5f6...(JavaScript 키)',
 svNaverClientId:  'AbC1dEf2GhI3...(Client ID)',
 svTossClientKey:  'test_gck_...(클라이언트 키)',</pre>
-            ※ 로그인 후 서버 값이 비어 있으면 이 기본값이 유지되도록 되어 있습니다. 운영 배포 시에는 방법 B 를 사용하세요.
+            ※ 로그인하면 서버 설정값이 우선 적용되지만, 서버가 비어 있거나 <b>데모(DEMO_…) 값</b>이면 위에서 넣은 키가 그대로 유지됩니다. 운영 배포 시에는 방법 B 를 사용하세요.
           </div>
         </div>
         <!-- 방법 B: 운영 -->
@@ -373,8 +410,8 @@ svTossClientKey:  'test_gck_...(클라이언트 키)',</pre>
             <td style="border:1px solid #eee;padding:6px 10px;font-family:monospace;">{{ k.store }}</td>
             <td style="border:1px solid #eee;padding:6px 10px;">{{ k.what }}</td>
             <td style="border:1px solid #eee;padding:6px 10px;">
-              <span :style="fnKeySet(k.store) ? 'background:#e8f5e9;color:#2e7d32;border-radius:6px;padding:2px 8px;font-weight:700;' : 'background:#fff3f3;color:#c0392b;border-radius:6px;padding:2px 8px;font-weight:700;'">
-                {{ fnKeySet(k.store) ? '✓ 설정됨' : '✕ 미설정' }}
+              <span :style="fnKeyBadge(k.store).css">
+                {{ fnKeyBadge(k.store).text }}
               </span>
             </td>
           </tr>

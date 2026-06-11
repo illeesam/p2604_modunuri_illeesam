@@ -725,6 +725,8 @@ window.DpDispUiSimul = {
       if (n === 4) { return 'repeat(auto-fill,minmax(max(calc(25% - 6px),220px),1fr))'; }
       return `repeat(${n},1fr)`;
     });
+    /* cfStructAllEmpty — 구조 그리드 슬롯이 전부 비었는지 (템플릿에서 window.* 직접 호출 금지 → setup 헬퍼로 분리) */
+    const cfStructAllEmpty = computed(() => structSlots.every(s => !s));
 
     /* applyAreaLayout — 적용 */
     const applyAreaLayout = (area) => {
@@ -1129,7 +1131,7 @@ window.DpDispUiSimul = {
       cfCheckedCount,
       isPanelAllChecked,
       checkedWidgetKeys, toggleWidgetCheck, checkAllWidgets, clearCheckedWidgets, cfCheckedWidgetCount, /* Tab2 그리드 */
-      structSlots, cfStructGridColumns,
+      structSlots, cfStructGridColumns, cfStructAllEmpty,
       STRUCT_VIEWPORT,
       applyAreaLayout,
       onStructDragOver, onStructDragLeave, onStructDrop,
@@ -2189,7 +2191,7 @@ window.DpDispUiSimul = {
               </template>
             </div>
             <!-- ===== /grid ====================================================== -->
-            <div v-if="window.safeArrayUtils.safeEvery(structSlots, s=>!s)" style="text-align:center;padding:40px;color:#bbb;font-size:13px;">
+            <div v-if="cfStructAllEmpty" style="text-align:center;padding:40px;color:#bbb;font-size:13px;">
               좌측 영역 또는 패널을 드래그하여 배치하세요
             </div>
           </div>
