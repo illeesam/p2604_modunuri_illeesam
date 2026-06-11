@@ -798,7 +798,7 @@ window.DpDispWidgetDtl = {
           <div style="font-size:10px;color:#888;font-weight:600;margin-bottom:6px;letter-spacing:.3px;">▸ 참조 내용 미리보기</div>
           <disp-x04-widget
             :params="{ }"
-            :disp-opt="{ showBadges: true }"
+            :disp-opt="{ showBadges: true, interactive: true }"
             :widget-item="pickLibs.find(l => l.libId===form.refLibId) || {}" />
         </div>
       </div>
@@ -953,7 +953,7 @@ window.DpDispWidgetDtl = {
       <div :style="{ width: cfPreviewFrameWidth, margin:'0 auto', background:'#fff', border:'1px solid #e4e4e4', borderRadius:'8px', padding:'12px', minHeight:'100px', transition:'width .2s' }">
         <disp-x04-widget
           :params="{ }"
-          :disp-opt="{ showBadges: true }"
+          :disp-opt="{ showBadges: true, interactive: true }"
           :widget-item="cfPreviewWidget"
           />
       </div>

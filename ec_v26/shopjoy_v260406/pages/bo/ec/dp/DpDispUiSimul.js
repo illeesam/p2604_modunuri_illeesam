@@ -1036,7 +1036,7 @@ window.DpDispUiSimul = {
       isLoggedIn:   false,
       userGrade:    '',
     }));
-    const cfDispOpt = computed(() => ({ layout: uiState.tabMode, showBadges: true, mode: uiState.tabMode, showDesc: uiState.showDesc }));
+    const cfDispOpt = computed(() => ({ layout: uiState.tabMode, showBadges: true, mode: uiState.tabMode, showDesc: uiState.showDesc, interactive: true }));
 
     /* areaInfo — 영역 정보 (실 dp_area 어댑터 엔트리) */
     const areaInfo = (code) => areasRaw.find(c => c.codeValue === code);

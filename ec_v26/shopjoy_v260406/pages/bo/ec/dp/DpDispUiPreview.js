@@ -1139,7 +1139,7 @@ window.DpDispUiPreview = {
                 </button>
               </div>
               <!-- ===== ■.■.■.■.■.■.■.■.■.■. UI 미리보기 (slot.uiCode가 있으면 disp-x01-ui로 렌더) ===== -->
-              <disp-x01-ui v-if="slot.uiCode" :params="{ areas: fnUiAreas(slot.uiCode), date: searchParam.previewDate, time: searchParam.previewTime, status: applied.status, visibilityTargets: applied.visibility ? '^' + applied.visibility + '^' : '', siteId: null, memberId: null, viewOpts: '' }" :disp-dataset="dispData" :disp-opt="{ layout:'auto', showHeader:true, showBadges:false, mode:'area_detail', showDesc:false }" />
+              <disp-x01-ui v-if="slot.uiCode" :params="{ areas: fnUiAreas(slot.uiCode), date: searchParam.previewDate, time: searchParam.previewTime, status: applied.status, visibilityTargets: applied.visibility ? '^' + applied.visibility + '^' : '', siteId: null, memberId: null, viewOpts: '' }" :disp-dataset="dispData" :disp-opt="{ layout:'auto', showHeader:true, showBadges:false, mode:'area_detail', showDesc:false, interactive:true }" />
               <widget-preview v-else :lib="slot" />
             </template>
           </div>
@@ -1212,7 +1212,7 @@ window.DpDispUiPreview = {
   </div>
   <!-- ===== ■.■.■.■.■.■. UI 미리보기 ======================================= -->
   <div style="overflow:auto;" :style="{maxHeight:(item.h-40)+'px'}">
-    <disp-x01-ui v-if="item.lib.uiCode" :params="{ areas: fnUiAreas(item.lib.uiCode), date: searchParam.previewDate, time: searchParam.previewTime, status: applied.status, visibilityTargets: applied.visibility ? '^' + applied.visibility + '^' : '', siteId: null, memberId: null, viewOpts: '' }" :disp-dataset="dispData" :disp-opt="{ layout:'auto', showHeader:true, showBadges:false, mode:'area_detail', showDesc:false }" />
+    <disp-x01-ui v-if="item.lib.uiCode" :params="{ areas: fnUiAreas(item.lib.uiCode), date: searchParam.previewDate, time: searchParam.previewTime, status: applied.status, visibilityTargets: applied.visibility ? '^' + applied.visibility + '^' : '', siteId: null, memberId: null, viewOpts: '' }" :disp-dataset="dispData" :disp-opt="{ layout:'auto', showHeader:true, showBadges:false, mode:'area_detail', showDesc:false, interactive:true }" />
     <widget-preview v-else :lib="item.lib" />
   </div>
   <!-- ===== ■.■.■.■.■.■. 크기 조절 핸들 ====================================== -->

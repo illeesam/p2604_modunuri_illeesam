@@ -90,11 +90,40 @@ window.DispX04Widget = {
       return true;
     });
 
-    /* handleClick — 처리 */
+    /* cfClickInfo — 위젯의 실제 클릭 동작 산출.
+     *   1순위: 명시적 clickAction(+clickTarget)
+     *   2순위: clickAction 미설정 시 위젯이 가진 링크/파일 URL 을 url 동작으로 폴백
+     *   → 링크 URL 만 입력한 배너도 클릭 가능하게 만든다 (미리보기·FO 공통) */
+    const cfClickInfo = computed(() => {
+      const w = widget.value;
+      if (w.clickAction && w.clickAction !== 'none') {
+        return { action: w.clickAction, target: w.clickTarget || '' };
+      }
+      const linkTarget = w.linkUrl || w.fileUrl || w.eventUrl || '';
+      if (linkTarget) { return { action: 'url', target: linkTarget }; }
+      return null;
+    });
+
+    /* handleClick — 처리.
+     *   항상 click-action 을 부모로 발화(emit)하되,
+     *   dispOpt.interactive===true (미리보기/시뮬레이션) 인 경우 위젯 자체가
+     *   기본 동작(외부 URL·페이지 이동 새 탭)을 직접 수행 → 부모 별도 배선 불필요.
+     *   event/modal 처럼 참조가 필요한 동작은 부모(emit 수신)에게 위임. */
     const handleClick = () => {
-      const w = props.widgetItem;
-      if (!w.clickAction || w.clickAction === 'none') { return; }
-      emit('click-action', { action: w.clickAction, target: w.clickTarget, widget: w });
+      const info = cfClickInfo.value;
+      if (!info) { return; }
+      const w = widget.value;
+      emit('click-action', { ...info, widget: w });
+      if (props.dispOpt && props.dispOpt.interactive) {
+        const target = (info.target || '').trim();
+        if (info.action === 'url' && target) {
+          const href = /^https?:\/\//i.test(target) ? target : ('https://' + target);
+          window.open(href, '_blank', 'noopener');
+        } else if (info.action === 'navigate' && target) {
+          const path = target.startsWith('#') ? target : ('#' + target.replace(/^\//, ''));
+          window.open('index.html' + path, '_blank');
+        }
+      }
     };
 
     /* 이름 기반 그라디언트 (일관성 있게 같은 이름 → 같은 색) */
@@ -221,12 +250,12 @@ window.DispX04Widget = {
     return {
       uiState, codes,                                                       // 상태
       handleBtnAction, handleSelectAction,                                  // dispatch
-      widget, cfVisible, cfChartBars, chartColors,                          // computed
+      widget, cfVisible, cfChartBars, chartColors, cfClickInfo,             // computed
       nameGrad, parseMarkdown, getVideoEmbed, getMapEmbed, parseApprovalLine, // 헬퍼
     };
   },
   template: /* html */`
-<div v-if="cfVisible" class="disp-widget" :style="{ cursor: widget.clickAction && widget.clickAction !== 'none' ? 'pointer' : 'default' }" @click="handleBtnAction('widget-click')">
+<div v-if="cfVisible" class="disp-widget" :style="{ cursor: cfClickInfo ? 'pointer' : 'default' }" @click="handleBtnAction('widget-click')">
 <!-- ===== ■. 위젯 타이틀 ================================================== -->
 <div v-if="widget.titleYn==='Y' && widget.title" style="font-size:14px;font-weight:700;color:var(--text-primary,#222);margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid var(--blue,#1677ff);">
 {{ widget.title }}

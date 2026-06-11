@@ -1140,7 +1140,7 @@ window.DpDispAreaPreview = {
                 </button>
               </div>
               <!-- ===== ■.■.■.■.■.■.■.■.■.■. 위젯미리보기 ================================ -->
-              <disp-x02-area v-if="slot.areaCode" :params="{ date: searchParam.previewDate, time: searchParam.previewTime, status: applied.status, visibilityTargets: applied.visibility ? '^' + applied.visibility + '^' : '' }" :disp-dataset="dispData" :disp-opt="{ layout:'auto', showHeader:true, showBadges:false, mode:'area_detail', showDesc:false }" :area-item="{ code: slot.areaCode, label: slot.areaLabel, info: fnAreaInfo(slot.areaCode), panels: fnAreaPanels(slot.areaCode) }" />
+              <disp-x02-area v-if="slot.areaCode" :params="{ date: searchParam.previewDate, time: searchParam.previewTime, status: applied.status, visibilityTargets: applied.visibility ? '^' + applied.visibility + '^' : '' }" :disp-dataset="dispData" :disp-opt="{ layout:'auto', showHeader:true, showBadges:false, mode:'area_detail', showDesc:false, interactive:true }" :area-item="{ code: slot.areaCode, label: slot.areaLabel, info: fnAreaInfo(slot.areaCode), panels: fnAreaPanels(slot.areaCode) }" />
               <widget-preview v-else :lib="slot" />
             </template>
           </div>
@@ -1213,7 +1213,7 @@ window.DpDispAreaPreview = {
   </div>
   <!-- ===== ■.■.■.■.■.■. 위젯미리보기 ======================================== -->
   <div style="overflow:hidden;" :style="{maxHeight:(item.h-40)+'px'}">
-    <disp-x02-area v-if="item.lib.areaCode" :params="{ date: searchParam.previewDate, time: searchParam.previewTime, status: applied.status, visibilityTargets: applied.visibility ? '^' + applied.visibility + '^' : '' }" :disp-dataset="dispData" :disp-opt="{ layout:'auto', showHeader:true, showBadges:false, mode:'area_detail', showDesc:false }" :area-item="{ code: item.lib.areaCode, label: item.lib.areaLabel, info: fnAreaInfo(item.lib.areaCode), panels: fnAreaPanels(item.lib.areaCode) }" />
+    <disp-x02-area v-if="item.lib.areaCode" :params="{ date: searchParam.previewDate, time: searchParam.previewTime, status: applied.status, visibilityTargets: applied.visibility ? '^' + applied.visibility + '^' : '' }" :disp-dataset="dispData" :disp-opt="{ layout:'auto', showHeader:true, showBadges:false, mode:'area_detail', showDesc:false, interactive:true }" :area-item="{ code: item.lib.areaCode, label: item.lib.areaLabel, info: fnAreaInfo(item.lib.areaCode), panels: fnAreaPanels(item.lib.areaCode) }" />
     <widget-preview v-else :lib="item.lib" />
   </div>
   <!-- ===== ■.■.■.■.■.■. 크기 조절 핸들 ====================================== -->

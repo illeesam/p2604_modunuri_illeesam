@@ -1126,7 +1126,7 @@ window.DpDispPanelPreview = {
               <!-- ===== ■.■.■.■.■.■.■.■.■.■. 위젯미리보기 ================================ -->
               <disp-x03-panel v-if="slot.panelId"
                       :params="{ date: searchParam.previewDate, time: searchParam.previewTime, status: applied.status, visibilityTargets: applied.visibility ? '^' + applied.visibility + '^' : '' }"
-                      :disp-opt="{ layout:'vertical', showBadges:false }"
+                      :disp-opt="{ layout:'vertical', showBadges:false, interactive:true }"
                       :panel-item="fnPanel(slot.panelId)"
                       :show-header="true" />
               <widget-preview v-else :lib="slot" />
@@ -1203,7 +1203,7 @@ window.DpDispPanelPreview = {
   <div style="overflow:hidden;" :style="{maxHeight:(item.h-40)+'px'}">
     <disp-x03-panel v-if="item.lib.panelId"
                 :params="{ date: searchParam.previewDate, time: searchParam.previewTime, status: applied.status, visibilityTargets: applied.visibility ? '^' + applied.visibility + '^' : '' }"
-                :disp-opt="{ layout:'vertical', showBadges:false }"
+                :disp-opt="{ layout:'vertical', showBadges:false, interactive:true }"
                 :panel-item="fnPanel(item.lib.panelId)"
                 :show-header="true" />
     <widget-preview v-else :lib="item.lib" />

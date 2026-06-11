@@ -138,7 +138,7 @@ window.DpDispUiDtl = {
       { key: 'useYn',        label: '사용여부',  type: 'select', options: () => codes.use_yn },
       { key: 'useStartDate', label: '사용시작일', type: 'date' },
       { key: 'useEndDate',   label: '사용종료일', type: 'date' },
-      { key: 'uiDesc',       label: 'UI설명',    type: 'textarea', colSpan: 3, placeholder: 'UI 설명' },
+      { key: 'uiDesc',       label: 'UI설명',    type: 'textarea', colSpan: 2, placeholder: 'UI 설명' },
     ];
 
     columns.areasGrid = [
@@ -164,7 +164,7 @@ window.DpDispUiDtl = {
   :title-id="!active ? '' : (cfIsNew ? '' : baseForm.uiId)">
   <!-- ===== ■. 폼 영역 ===================================================== -->
   <bo-form-area :columns="columns.baseForm" :form="baseForm" :errors="errors"
-    :readonly="cfReadonly" :cols="3" compact :show-actions="false" />
+    :readonly="cfReadonly" :cols="2" compact :show-actions="false" />
   <!-- ===== ■. 하위 영역 목록 (수정 시에만) =================================== -->
   <div v-if="!cfIsNew" style="margin-top:14px;">
     <div class="toolbar">

@@ -153,7 +153,7 @@ window.DpDispAreaDtl = {
       { key: 'useYn',        label: '사용여부',  type: 'select', options: () => codes.use_yn },
       { key: 'useStartDate', label: '사용시작일', type: 'date' },
       { key: 'useEndDate',   label: '사용종료일', type: 'date' },
-      { key: 'areaDesc',     label: '영역설명',  type: 'textarea', colSpan: 3, placeholder: '영역 설명' },
+      { key: 'areaDesc',     label: '영역설명',  type: 'textarea', colSpan: 2, placeholder: '영역 설명' },
     ];
 
     columns.panelsGrid = [
@@ -180,7 +180,7 @@ window.DpDispAreaDtl = {
   :title-id="!active ? '' : (cfIsNew ? '' : baseForm.areaId)">
   <!-- ===== ■. 폼 영역 ===================================================== -->
   <bo-form-area :columns="columns.baseForm" :form="baseForm" :errors="errors"
-    :readonly="cfReadonly" :cols="3" compact :show-actions="false" />
+    :readonly="cfReadonly" :cols="2" compact :show-actions="false" />
   <!-- ===== ■. 소속 패널 목록 (수정 시에만) =================================== -->
   <div v-if="!cfIsNew" style="margin-top:14px;">
     <div class="toolbar">

@@ -647,6 +647,42 @@ window.DpDispPanelDtl = {
 
     /* closePreview — 미리보기 닫기 */
     const closePreview = () => { preview.show = false; };
+
+    /* onPreviewClick — 미리보기 위젯 클릭 시 clickAction 실제 동작 수행
+     *   payload = { action, target, widget } (DispX04Widget 의 click-action 발화)
+     *   - navigate : FO 페이지 경로 이동 (해시 라우팅)
+     *   - url      : 외부 URL 새 탭 열기
+     *   - event/modal : 이벤트/상품/쿠폰 참조 모달 또는 안내 토스트 */
+    const onPreviewClick = (payload) => {
+      const action = payload?.action;
+      const target = (payload?.target || '').trim();
+      const w = payload?.widget || {};
+      if (!action || action === 'none') { return; }
+      if (action === 'navigate') {
+        if (!target) { showToast && showToast('이동 대상(경로)이 설정되지 않았습니다.', 'error'); return; }
+        /* FO 해시 라우팅 경로는 새 탭에서 index.html#... 으로 오픈 */
+        const path = target.startsWith('#') ? target : ('#' + target.replace(/^\//, ''));
+        window.open('index.html' + path, '_blank');
+        return;
+      }
+      if (action === 'url') {
+        if (!target) { showToast && showToast('링크 URL이 설정되지 않았습니다.', 'error'); return; }
+        const href = /^https?:\/\//i.test(target) ? target : ('https://' + target);
+        window.open(href, '_blank', 'noopener');
+        return;
+      }
+      if (action === 'event' || action === 'modal') {
+        /* 위젯 유형에 맞는 참조 모달 우선, 없으면 안내 토스트 */
+        if (w.eventId)   { showRefModal && showRefModal('event', Number(w.eventId)); return; }
+        if (w.productIds) {
+          const pid = String(w.productIds).split(',').map(s => s.trim()).filter(Boolean)[0];
+          if (pid) { showRefModal && showRefModal('product', Number(pid)); return; }
+        }
+        showToast && showToast(`클릭 동작: ${action}${target ? ' → ' + target : ''}`, 'info');
+        return;
+      }
+      showToast && showToast(`클릭 동작: ${action}${target ? ' → ' + target : ''}`, 'info');
+    };
     const cfPreviewWidget = computed(() => ({
       ...form, ...(cfActiveRow.value ? { ...cfActiveRow.value } : {}), status: '활성',
     }));
@@ -926,9 +962,9 @@ window.DpDispPanelDtl = {
     ];
     // 표시경로 (picker) / 포함된 화면영역 (readonly 표시)
     columns.pathAreaForm = [
-      { key: 'pathId', label: '표시경로', type: 'slot', name: 'pathPick', colSpan: 3,
+      { key: 'pathId', label: '표시경로', type: 'slot', name: 'pathPick',
         hint: '예: FO.모바일메인' },
-      { key: 'areaId', label: '소속 영역', type: 'select', colSpan: 3, required: true,
+      { key: 'areaId', label: '소속 영역', type: 'select', required: true,
         options: () => areas.map(a => ({ value: a.areaId, label: a.areaNm + ' (' + a.areaCd + ')' })),
         nullLabel: '선택', hint: '패널이 표시될 전시영역 (dp_area)' },
     ];
@@ -972,6 +1008,7 @@ window.DpDispPanelDtl = {
       addFileItem, removeFileItem, updateFileItem, moveRowAt,                         // 파일/행 조작 (인자 인라인)
       fnAddFileItemAt, fnRemoveFileItemAt,                                            // file_list row 조작 (인자 인라인)
       closePreview, closeCardPreview,                                                 // 모달 닫기 (인자 없음)
+      onPreviewClick,                                                                 // 미리보기 위젯 클릭 동작
       showRefModal, // 공통
     };
   },
@@ -1044,11 +1081,11 @@ window.DpDispPanelDtl = {
               ✕
             </button>
           </div>
-          <!-- ===== ■.■.■.■.■. 추가 버튼 =========================================== -->
-          <div v-if="rows.length < MAX_WIDGETS" style="margin-top:8px;">
+          <!-- ===== ■.■.■.■.■. 추가 버튼 (아주 작은 버튼) =============================== -->
+          <div v-if="rows.length < MAX_WIDGETS" style="margin-top:8px;display:flex;justify-content:center;">
             <button @click="handleBtnAction('panelItems-add')" :disabled="cfIsNew"
               :title="cfIsNew ? '저장 후 전시항목을 추가할 수 있습니다.' : ''"
-              :style="cfIsNew ? 'width:100%;padding:8px;border:1px solid #e0e0e0;background:#f5f5f5;color:#bbb;border-radius:8px;font-size:11px;font-weight:600;cursor:not-allowed;' : 'width:100%;padding:8px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;border-radius:8px;font-size:11px;font-weight:600;'">
+              :style="cfIsNew ? 'padding:2px 8px;border:1px solid #e0e0e0;background:#f5f5f5;color:#bbb;border-radius:6px;font-size:10px;font-weight:600;line-height:1.4;cursor:not-allowed;' : 'padding:2px 8px;border:1px solid #90caf9;background:#e3f2fd;color:#1565c0;border-radius:6px;font-size:10px;font-weight:600;line-height:1.4;'">
               ✚ 전시항목 추가
             </button>
           </div>
@@ -1068,11 +1105,11 @@ window.DpDispPanelDtl = {
                 <!-- ===== ■.■.■.■.■.■.■.■. 패널코드/패널명/상태 (BoFormArea 자동 렌더) ============ -->
                 <!-- ===== ■.■.■.■.■.■.■.■. 폼 영역 ====================================== -->
                 <bo-form-area :columns="columns.basePanelForm" :form="form" :errors="{}"
-                  :readonly="cfDtlMode" :cols="3" compact :show-actions="false" />
+                  :readonly="cfDtlMode" :cols="2" compact :show-actions="false" />
                 <!-- ===== ■.■.■.■.■.■.■.■. 표시경로 + 포함된 화면영역 (BoFormArea 자동 렌더) ======== -->
                 <!-- ===== ■.■.■.■.■.■.■.■. 폼 영역 ====================================== -->
                 <bo-form-area :columns="columns.pathAreaForm" :form="form" :errors="{}"
-                  :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
+                  :readonly="cfDtlMode" :cols="2" compact :show-actions="false">
                   <template #pathPick>
                     <div :style="{padding:'7px 10px',border:'1px solid #e5e7eb',borderRadius:'6px',fontSize:'12px',background:'#f5f5f7',color:form.pathId!=null?'#374151':'#9ca3af',fontWeight:form.pathId!=null?600:400,display:'flex',alignItems:'flex-end',gap:'6px',fontFamily:'monospace'}">
                       <span style="flex:1;">{{ fnPathLabel(form.pathId) || '경로 선택...' }}</span>
@@ -1243,75 +1280,86 @@ window.DpDispPanelDtl = {
                       :widget-item="pickData.libs.find(l => l.libId===cfActiveRow.refLibId) || {}" />
                   </div>
                 </div>
-                <!-- ===== ■.■.■.■.■.■.■.■. 노출순서 + 전시여부 =============================== -->
-                <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;">
-                  <div style="display:flex;align-items:center;gap:8px;">
-                    <label style="font-size:12px;font-weight:600;color:#555;white-space:nowrap;">노출 순서</label>
-                    <input class="form-control" type="number" v-model.number="cfActiveRow.sortOrder" min="1" :readonly="cfDtlMode"
-                      style="width:80px;margin:0;" />
+                <!-- ===== ■.■.■.■.■.■.■.■. 2열 배열 (좌→우 순서) ========================== -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;align-items:start;">
+                  <!-- ===== ■.■.■.■.■.■.■.■.■. 1. 노출순서 + 전시여부 ======================= -->
+                  <div>
+                    <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">🔢 노출순서 / 전시여부</div>
+                    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                      <input class="form-control" type="number" v-model.number="cfActiveRow.sortOrder" min="1" :readonly="cfDtlMode"
+                        style="width:80px;margin:0;" />
+                      <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#555;padding:5px 10px;background:#f0f0f0;border-radius:6px;">
+                        <span>전시여부</span>
+                        <input type="checkbox" v-model="cfActiveRow.dispYn" :true-value="'Y'" :false-value="'N'" :disabled="cfDtlMode" style="accent-color:#e8587a;" />
+                        <span>{{ cfActiveRow.dispYn === 'Y' ? '전시' : '숨김' }}</span>
+                      </label>
+                      <span style="font-size:10px;color:#aaa;">(배치로 자동 관리됨)</span>
+                    </div>
                   </div>
-                  <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#555;padding:5px 10px;background:#f0f0f0;border-radius:6px;">
-                    <span>전시여부</span>
-                    <input type="checkbox" v-model="cfActiveRow.dispYn" :true-value="'Y'" :false-value="'N'" :disabled="cfDtlMode" style="accent-color:#e8587a;" />
-                    <span>{{ cfActiveRow.dispYn === 'Y' ? '전시' : '숨김' }}</span>
-                  </label>
-                  <span style="font-size:10px;color:#aaa;">(배치로 자동 관리됨)</span>
-                </div>
-                <!-- ===== ■.■.■.■.■.■.■.■. 전시기간 ====================================== -->
-                <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">
-                  📅 전시기간
-                  <span style="font-size:10px;color:#aaa;font-weight:400;">(미설정 시 패널 기간 사용)</span>
-                </div>
-                <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px;background:#f9fafb;padding:10px 12px;border-radius:6px;border:1px solid #e5e7eb;">
-                  <div style="display:flex;align-items:center;gap:8px;">
-                    <span style="font-size:11px;color:#888;white-space:nowrap;width:28px;">시작</span>
-                    <bo-date-time-picker v-model="cfActiveRow.dispStartDt" :readonly="cfDtlMode" />
+                  <!-- ===== ■.■.■.■.■.■.■.■.■. 2. 전시기간 ================================ -->
+                  <div>
+                    <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">
+                      📅 전시기간
+                      <span style="font-size:10px;color:#aaa;font-weight:400;">(미설정 시 패널 기간 사용)</span>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:8px;background:#f9fafb;padding:10px 12px;border-radius:6px;border:1px solid #e5e7eb;">
+                      <div style="display:flex;align-items:center;gap:8px;">
+                        <span style="font-size:11px;color:#888;white-space:nowrap;width:28px;">시작</span>
+                        <bo-date-time-picker v-model="cfActiveRow.dispStartDt" :readonly="cfDtlMode" />
+                      </div>
+                      <div style="display:flex;align-items:center;gap:8px;">
+                        <span style="font-size:11px;color:#888;white-space:nowrap;width:28px;">종료</span>
+                        <bo-date-time-picker v-model="cfActiveRow.dispEndDt" :readonly="cfDtlMode" />
+                      </div>
+                    </div>
                   </div>
-                  <div style="display:flex;align-items:center;gap:8px;">
-                    <span style="font-size:11px;color:#888;white-space:nowrap;width:28px;">종료</span>
-                    <bo-date-time-picker v-model="cfActiveRow.dispEndDt" :readonly="cfDtlMode" />
+                  <!-- ===== ■.■.■.■.■.■.■.■.■. 3. 전시환경 ================================ -->
+                  <div>
+                    <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">🌍 전시환경</div>
+                    <bo-multi-check-select v-model="cfActiveRow.dispEnv" :options="cfDispEnvMcsOptions"
+                      separator="^" wrap empty-value="^NONE^" placeholder="전체 환경" all-label="전체 환경"
+                      :disabled="cfDtlMode" min-width="280px" />
                   </div>
-                </div>
-                <!-- ===== ■.■.■.■.■.■.■.■. 전시환경 ====================================== -->
-                <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin:10px 0 6px;">🌍 전시환경</div>
-                <div style="margin-bottom:12px;">
-                  <bo-multi-check-select v-model="cfActiveRow.dispEnv" :options="cfDispEnvMcsOptions"
-                    separator="^" wrap empty-value="^NONE^" placeholder="전체 환경" all-label="전체 환경"
-                    :disabled="cfDtlMode" min-width="280px" />
-                </div>
-                <!-- ===== ■.■.■.■.■.■.■.■. 공개대상 ====================================== -->
-                <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin:10px 0 6px;">🔒 공개대상 (하나라도 해당하면 노출)</div>
-                <div style="margin-bottom:8px;">
-                  <bo-multi-check-select v-model="cfActiveRow.visibilityTargets" :options="cfVisibilityOptions"
-                    separator="^" wrap empty-value="^NONE^" placeholder="전체 공개" all-label="전체 공개"
-                    :disabled="cfDtlMode" min-width="320px" />
-                </div>
-                <div v-if="!cfActiveRow.visibilityTargets" style="font-size:11px;color:#d32f2f;margin-bottom:4px;">
-                  ⚠ 선택 없음 — 아무에게도 노출되지 않습니다.
+                  <!-- ===== ■.■.■.■.■.■.■.■.■. 4. 공개대상 ================================ -->
+                  <div>
+                    <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">🔒 공개대상 (하나라도 해당하면 노출)</div>
+                    <bo-multi-check-select v-model="cfActiveRow.visibilityTargets" :options="cfVisibilityOptions"
+                      separator="^" wrap empty-value="^NONE^" placeholder="전체 공개" all-label="전체 공개"
+                      :disabled="cfDtlMode" min-width="320px" />
+                    <div v-if="!cfActiveRow.visibilityTargets" style="font-size:11px;color:#d32f2f;margin-top:4px;">
+                      ⚠ 선택 없음 — 아무에게도 노출되지 않습니다.
+                    </div>
+                  </div>
                 </div>
               </div>
               <!-- ===== /설정 영역 ===================================================== -->
-              <!-- ===== ■.■.■.■.■.■.■. 섹션 2: 제목 ==================================== -->
+              <!-- ===== ■.■.■.■.■.■.■. 섹션 2: 제목 (2열) ============================== -->
               <div style="margin-bottom:14px;padding:14px;background:#faf8ff;border:1px solid #e9d5ff;border-radius:8px;">
-                <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+                <div style="font-size:13px;font-weight:700;color:#222;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
                   <span style="display:inline-block;width:4px;height:16px;background:#7c3aed;border-radius:2px;"></span>
                   제목
-                  <span style="margin-left:auto;display:flex;align-items:center;gap:8px;">
-                    <span style="font-size:11px;font-weight:600;color:#888;">타이틀 표시</span>
-                    <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:500;color:#444;">
-                      <input type="radio" v-model="cfActiveRow.titleYn" value="Y" :disabled="cfDtlMode" />
-                      표시
-                    </label>
-                    <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:500;color:#444;">
-                      <input type="radio" v-model="cfActiveRow.titleYn" value="N" :disabled="cfDtlMode" />
-                      미표시
-                    </label>
-                  </span>
                 </div>
-                <div v-if="cfActiveRow.titleYn==='Y'" style="display:flex;align-items:center;gap:10px;">
-                  <label style="font-size:12px;font-weight:600;color:#555;width:50px;flex-shrink:0;">타이틀</label>
-                  <input v-model="cfActiveRow.title" type="text" placeholder="타이틀 텍스트 입력" :readonly="cfDtlMode"
-                    style="flex:1;padding:6px 10px;border:1px solid #d0d0d0;border-radius:6px;font-size:13px;" />
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;align-items:start;">
+                  <!-- ===== ■.■.■.■.■.■.■.■. 1. 타이틀 표시 여부 ========================== -->
+                  <div>
+                    <div style="font-size:12px;font-weight:500;color:#555;margin-bottom:4px;">타이틀 표시</div>
+                    <div style="display:flex;align-items:center;gap:12px;height:34px;">
+                      <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:500;color:#444;">
+                        <input type="radio" v-model="cfActiveRow.titleYn" value="Y" :disabled="cfDtlMode" />
+                        표시
+                      </label>
+                      <label style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:500;color:#444;">
+                        <input type="radio" v-model="cfActiveRow.titleYn" value="N" :disabled="cfDtlMode" />
+                        미표시
+                      </label>
+                    </div>
+                  </div>
+                  <!-- ===== ■.■.■.■.■.■.■.■. 2. 타이틀 텍스트 (표시일 때만) ================== -->
+                  <div v-if="cfActiveRow.titleYn==='Y'">
+                    <div style="font-size:12px;font-weight:500;color:#555;margin-bottom:4px;">타이틀</div>
+                    <input v-model="cfActiveRow.title" type="text" placeholder="타이틀 텍스트 입력" :readonly="cfDtlMode"
+                      class="form-control" style="margin:0;" />
+                  </div>
                 </div>
               </div>
               <!-- ===== /제목 영역 ===================================================== -->
@@ -1369,120 +1417,91 @@ window.DpDispPanelDtl = {
                     </button>
                   </div>
                 </div>
-                <!-- ===== ■.■.■.■.■.■.■.■. 일반 표현 설정 테이블 (조건상품 포함) ==================== -->
+                <!-- ===== ■.■.■.■.■.■.■.■. 일반 표현 설정 (2열 그리드, 조건상품 포함) ============== -->
                 <div v-else-if="cfDisplayRows.length===0" style="color:#bbb;text-align:center;padding:20px 0 24px;font-size:13px;">
                   위젯 유형을 선택하면 표현 설정 항목이 표시됩니다.
                 </div>
-                <!-- ===== ■.■.■.■.■.■.■.■. 테이블 ======================================= -->
-                <table v-else class="bo-table" style="margin-bottom:20px;">
-                  <thead>
-                    <tr>
-                      <th style="width:180px;">항목</th>
-                      <th>값</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="row in cfDisplayRows" :key="row?.key">
-                      <td style="font-weight:500;color:#555;vertical-align:middle;">{{ row.label }}</td>
-                      <td style="padding:6px 8px;">
-                        <input v-if="row.type==='input'" class="form-control" v-model="cfActiveRow[row.key]" :placeholder="row.ph" style="margin:0;" :readonly="cfDtlMode" />
-                        <input v-else-if="row.type==='number'" class="form-control" type="number" v-model.number="cfActiveRow[row.key]" style="margin:0;max-width:200px;" :readonly="cfDtlMode" />
-                        <select v-else-if="row.type==='select'" class="form-control" v-model="cfActiveRow[row.key]" style="margin:0;max-width:200px;" :disabled="cfDtlMode">
-                          <option v-for="o in row.options" :key="o?.v" :value="o.v">{{ o.l }}</option>
-                        </select>
-                        <textarea v-else-if="row.type==='textarea'" class="form-control" v-model="cfActiveRow[row.key]" rows="3" style="margin:0;" :readonly="cfDtlMode"></textarea>
-                        <textarea v-else-if="row.type==='code'" class="form-control" v-model="cfActiveRow[row.key]" rows="6" style="margin:0;font-family:monospace;font-size:12px;background:#1e1e2e;color:#cdd3de;border-color:#444;line-height:1.6;" :readonly="cfDtlMode"></textarea>
-                        <div v-else-if="row.type==='color'" style="display:flex;gap:8px;align-items:center;">
-                          <input type="color" v-model="cfActiveRow[row.key]" style="width:40px;height:34px;border:1px solid #ddd;border-radius:4px;padding:2px;" :disabled="cfDtlMode" />
-                          <input class="form-control" v-model="cfActiveRow[row.key]" style="margin:0;max-width:140px;" :readonly="cfDtlMode" />
-                          <span style="display:inline-block;width:60px;height:28px;border-radius:4px;border:1px solid #e8e8e8;" :style="{background:cfActiveRow[row.key]}"></span>
-                        </div>
-                        <textarea v-else-if="row.type==='code'" class="form-control" v-model="cfActiveRow[row.key]" rows="5" style="margin:0;font-family:monospace;font-size:12px;" :placeholder="row.ph" :readonly="cfDtlMode"></textarea>
-                        <div v-else-if="row.type==='event'">
-                          <div style="display:flex;gap:8px;align-items:center;">
-                            <input class="form-control" v-model="cfActiveRow.eventId" placeholder="이벤트 ID" style="margin:0;max-width:160px;" :readonly="cfDtlMode" />
-                            <span v-if="cfActiveRow.eventId" class="ref-link" @click="showRefModal('event', Number(cfActiveRow.eventId))">
-                              보기
-                            </span>
-                          </div>
-                          <div v-if="cfRelatedEvent" style="margin-top:6px;padding:8px 12px;background:#e6f4ff;border-radius:6px;font-size:12px;display:flex;align-items:center;gap:8px;">
-                            <b>{{ cfRelatedEvent.title }}</b>
-                            <span class="badge badge-green">{{ cfRelatedEvent.status }}</span>
-                            <span style="color:#888;">{{ cfRelatedEvent.startDate }} ~ {{ cfRelatedEvent.endDate }}</span>
-                          </div>
-                          <div v-else-if="cfActiveRow.eventId" style="margin-top:6px;font-size:12px;color:#aaa;">해당 이벤트를 찾을 수 없습니다.</div>
-                        </div>
-                      </td>
-                    </tr>
-                    <!-- ===== ■.■.■.■.■.■.■.■.■.■. 조건부 영역 ================================ -->
-                    <tr v-if="cfIsText && cfActiveRow.textContent">
-                      <td style="font-weight:500;color:#555;">미리보기</td>
-                      <td style="padding:6px 8px;">
-                        <div style="padding:14px;border-radius:6px;font-size:13px;" :style="{background:cfActiveRow.bgColor,color:cfActiveRow.textColor}">
-                          {{ cfActiveRow.textContent }}
-                        </div>
-                      </td>
-                    </tr>
-                    <tr v-if="cfIsImage && cfActiveRow.imageUrl">
-                      <td style="font-weight:500;color:#555;">이미지 미리보기</td>
-                      <td style="padding:6px 8px;">
-                        <img :src="cfActiveRow.imageUrl" style="max-height:120px;border-radius:6px;border:1px solid #e8e8e8;" @error="$event.target.style.display='none'" />
-                      </td>
-                    </tr>
-                    <tr v-if="cfIsProduct && cfActiveRow.productIds">
-                      <td style="font-weight:500;color:#555;">상품 링크</td>
-                      <td style="padding:6px 8px;">
-                        <div style="display:flex;flex-wrap:wrap;gap:6px;">
-                          <span v-for="pid in cfActiveRow.productIds.split(',').map(s=>s.trim()).filter(Boolean)" :key="pid"
-                            class="ref-link" @click="showRefModal('product', Number(pid))"
-                            style="padding:2px 10px;background:#e6f4ff;border-radius:12px;font-size:12px;">
-                            상품 #{{ pid }}
-                          </span>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-                <!-- ===== ■.■.■.■.■.■.■.■. 클릭동작 ====================================== -->
+                <!-- ===== ■.■.■.■.■.■.■.■. 2열 필드 그리드 (좌→우 순서, 긴 입력은 전체 폭) ========= -->
+                <div v-else style="display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;align-items:start;margin-bottom:20px;">
+                  <div v-for="row in cfDisplayRows" :key="row?.key"
+                    :style="{ gridColumn: (row.type==='textarea'||row.type==='code') ? '1 / -1' : 'auto' }">
+                    <div style="font-size:12px;font-weight:500;color:#555;margin-bottom:4px;">{{ row.label }}</div>
+                    <input v-if="row.type==='input'" class="form-control" v-model="cfActiveRow[row.key]" :placeholder="row.ph" style="margin:0;" :readonly="cfDtlMode" />
+                    <input v-else-if="row.type==='number'" class="form-control" type="number" v-model.number="cfActiveRow[row.key]" style="margin:0;max-width:200px;" :readonly="cfDtlMode" />
+                    <select v-else-if="row.type==='select'" class="form-control" v-model="cfActiveRow[row.key]" style="margin:0;max-width:200px;" :disabled="cfDtlMode">
+                      <option v-for="o in row.options" :key="o?.v" :value="o.v">{{ o.l }}</option>
+                    </select>
+                    <textarea v-else-if="row.type==='textarea'" class="form-control" v-model="cfActiveRow[row.key]" rows="3" style="margin:0;" :readonly="cfDtlMode"></textarea>
+                    <textarea v-else-if="row.type==='code'" class="form-control" v-model="cfActiveRow[row.key]" rows="6" style="margin:0;font-family:monospace;font-size:12px;background:#1e1e2e;color:#cdd3de;border-color:#444;line-height:1.6;" :readonly="cfDtlMode"></textarea>
+                    <div v-else-if="row.type==='color'" style="display:flex;gap:8px;align-items:center;">
+                      <input type="color" v-model="cfActiveRow[row.key]" style="width:40px;height:34px;border:1px solid #ddd;border-radius:4px;padding:2px;" :disabled="cfDtlMode" />
+                      <input class="form-control" v-model="cfActiveRow[row.key]" style="margin:0;max-width:140px;" :readonly="cfDtlMode" />
+                      <span style="display:inline-block;width:60px;height:28px;border-radius:4px;border:1px solid #e8e8e8;" :style="{background:cfActiveRow[row.key]}"></span>
+                    </div>
+                    <div v-else-if="row.type==='event'">
+                      <div style="display:flex;gap:8px;align-items:center;">
+                        <input class="form-control" v-model="cfActiveRow.eventId" placeholder="이벤트 ID" style="margin:0;max-width:160px;" :readonly="cfDtlMode" />
+                        <span v-if="cfActiveRow.eventId" class="ref-link" @click="showRefModal('event', Number(cfActiveRow.eventId))">
+                          보기
+                        </span>
+                      </div>
+                      <div v-if="cfRelatedEvent" style="margin-top:6px;padding:8px 12px;background:#e6f4ff;border-radius:6px;font-size:12px;display:flex;align-items:center;gap:8px;">
+                        <b>{{ cfRelatedEvent.title }}</b>
+                        <span class="badge badge-green">{{ cfRelatedEvent.status }}</span>
+                        <span style="color:#888;">{{ cfRelatedEvent.startDate }} ~ {{ cfRelatedEvent.endDate }}</span>
+                      </div>
+                      <div v-else-if="cfActiveRow.eventId" style="margin-top:6px;font-size:12px;color:#aaa;">해당 이벤트를 찾을 수 없습니다.</div>
+                    </div>
+                  </div>
+                  <!-- ===== ■.■.■.■.■.■.■.■.■. 조건부 미리보기 (전체 폭) ====================== -->
+                  <div v-if="cfIsText && cfActiveRow.textContent" style="grid-column:1 / -1;">
+                    <div style="font-size:12px;font-weight:500;color:#555;margin-bottom:4px;">미리보기</div>
+                    <div style="padding:14px;border-radius:6px;font-size:13px;" :style="{background:cfActiveRow.bgColor,color:cfActiveRow.textColor}">
+                      {{ cfActiveRow.textContent }}
+                    </div>
+                  </div>
+                  <div v-if="cfIsImage && cfActiveRow.imageUrl" style="grid-column:1 / -1;">
+                    <div style="font-size:12px;font-weight:500;color:#555;margin-bottom:4px;">이미지 미리보기</div>
+                    <img :src="cfActiveRow.imageUrl" style="max-height:120px;border-radius:6px;border:1px solid #e8e8e8;" @error="$event.target.style.display='none'" />
+                  </div>
+                  <div v-if="cfIsProduct && cfActiveRow.productIds" style="grid-column:1 / -1;">
+                    <div style="font-size:12px;font-weight:500;color:#555;margin-bottom:4px;">상품 링크</div>
+                    <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                      <span v-for="pid in cfActiveRow.productIds.split(',').map(s=>s.trim()).filter(Boolean)" :key="pid"
+                        class="ref-link" @click="showRefModal('product', Number(pid))"
+                        style="padding:2px 10px;background:#e6f4ff;border-radius:12px;font-size:12px;">
+                        상품 #{{ pid }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <!-- ===== ■.■.■.■.■.■.■.■. 클릭동작 (2열) ================================ -->
                 <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:8px;">👆 클릭동작</div>
-                <!-- ===== ■.■.■.■.■.■.■.■. 테이블 ======================================= -->
-                <table class="bo-table" style="margin-bottom:8px;">
-                  <thead>
-                    <tr>
-                      <th style="width:180px;">항목</th>
-                      <th>값</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td style="font-weight:500;color:#555;vertical-align:middle;">클릭 시 동작</td>
-                      <td style="padding:6px 8px;">
-                        <select class="form-control" v-model="cfActiveRow.clickAction" style="margin:0;max-width:220px;" :disabled="cfDtlMode">
-                          <option v-for="o in codes.click_action_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
-                        </select>
-                      </td>
-                    </tr>
-                    <tr v-if="cfActiveRow.clickAction !== 'none'">
-                      <td style="font-weight:500;color:#555;vertical-align:middle;">대상</td>
-                      <td style="padding:6px 8px;">
-                        <input class="form-control" v-model="cfActiveRow.clickTarget" placeholder="/products, showCoupon, https://..." style="margin:0;" :readonly="cfDtlMode" />
-                        <div style="margin-top:6px;font-size:12px;color:#888;">
-                          <span v-if="cfActiveRow.clickAction==='navigate'">
-                            💡
-                            <code>/home</code>
-                            ,
-                            <code>/products</code>
-                            ,
-                            <code>/detail?pid=1</code>
-                            형식
-                          </span>
-                          <span v-if="cfActiveRow.clickAction==='event'">💡 <code>showCoupon</code> , <code>openEvent</code> 등 이벤트명</span>
-                          <span v-if="cfActiveRow.clickAction==='url'">💡 외부 URL (http:// 포함)</span>
-                        </div>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;align-items:start;margin-bottom:8px;">
+                  <div>
+                    <div style="font-size:12px;font-weight:500;color:#555;margin-bottom:4px;">클릭 시 동작</div>
+                    <select class="form-control" v-model="cfActiveRow.clickAction" style="margin:0;max-width:220px;" :disabled="cfDtlMode">
+                      <option v-for="o in codes.click_action_opts" :key="o.value" :value="o.value">{{ o.label }}</option>
+                    </select>
+                  </div>
+                  <div v-if="cfActiveRow.clickAction !== 'none'">
+                    <div style="font-size:12px;font-weight:500;color:#555;margin-bottom:4px;">대상</div>
+                    <input class="form-control" v-model="cfActiveRow.clickTarget" placeholder="/products, showCoupon, https://..." style="margin:0;" :readonly="cfDtlMode" />
+                    <div style="margin-top:6px;font-size:12px;color:#888;">
+                      <span v-if="cfActiveRow.clickAction==='navigate'">
+                        💡
+                        <code>/home</code>
+                        ,
+                        <code>/products</code>
+                        ,
+                        <code>/detail?pid=1</code>
+                        형식
+                      </span>
+                      <span v-if="cfActiveRow.clickAction==='event'">💡 <code>showCoupon</code> , <code>openEvent</code> 등 이벤트명</span>
+                      <span v-if="cfActiveRow.clickAction==='url'">💡 외부 URL (http:// 포함)</span>
+                    </div>
+                  </div>
+                </div>
               </div>
               <!-- ===== /내용 영역 ===================================================== -->
               <div class="form-actions" v-if="active && !cfDtlMode">
@@ -1552,6 +1571,7 @@ window.DpDispPanelDtl = {
                     :disp-opt="{ layout:'vertical', showBadges:true }"
                     :panel-item="{...form, rows: rows, status:'활성', condition: form.condition||'항상 표시'}"
                     :show-header="true"
+                    @widget-action="onPreviewClick"
                     />
                 </template>
                 <!-- ===== ■.■.■.■.■.■.■.■. 위젯1~5: 해당 위젯만 ============================= -->
@@ -1560,6 +1580,7 @@ window.DpDispPanelDtl = {
                     :params="{ }"
                     :disp-opt="{ showBadges: true }"
                     :widget-item="{...cfActiveRow, widgetNm: cfActiveRow.widgetNm||cfActiveTabLabel||'위젯', status:'활성', condition:'항상 표시'}"
+                    @click-action="onPreviewClick"
                     />
                 </template>
               </div>
