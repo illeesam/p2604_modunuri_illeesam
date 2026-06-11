@@ -310,6 +310,7 @@
       const _naverRedirect = _key('svNaverCallbackUrl') || (window.location.origin + window.location.pathname);
 
       // SDK 가 자동 생성한 a 태그를 찾아 클릭 → 팝업 트리거. 없으면 직접 OAuth URL 팝업.
+      let popup = null;   // window.open 경로일 때만 핸들 보유 (닫힘 감지용)
       const a = document.querySelector('#naverIdLogin a, #naverIdLogin_loginButton');
       if (a) {
         _debug('네이버 로그인 창', {
@@ -328,7 +329,7 @@
           + '&redirect_uri=' + encodeURIComponent(_naverRedirect)
           + '&state=' + state;
         _debug('네이버 로그인 창', { sdk: 'Naver OAuth (window.open)', url });
-        const popup = window.open(url, 'naverLogin', 'width=500,height=650');
+        popup = window.open(url, 'naverLogin', 'width=500,height=650');
         if (_isPopupBlocked(popup)) {
           reject(new Error(_errMsg('네이버 로그인 창이 열리지 않았습니다 — 브라우저 팝업이 차단되었습니다.',
             '주소창 우측 팝업 차단 아이콘에서 이 사이트의 팝업을 허용한 뒤 다시 시도하세요.')));
@@ -337,6 +338,7 @@
       }
 
       const started = Date.now();
+      let closedAt = 0;   // 팝업 닫힘 최초 감지 시각 (성공 직후 자동 닫힘 레이스 대비 2초 유예)
       const timer = setInterval(() => {
         try {
           inst.getLoginStatus((status) => {
@@ -351,9 +353,18 @@
             }
           });
         } catch (_) {}
+        /* 사용자가 팝업을 직접 닫음 → 2초 내 로그인 상태가 안 잡히면 취소 처리 (60초 대기 방지) */
+        if (popup && popup.closed) {
+          if (!closedAt) closedAt = Date.now();
+          else if (Date.now() - closedAt > 2000) {
+            clearInterval(timer);
+            reject(new Error('네이버 로그인이 취소되었습니다 (창을 닫음).'));
+            return;
+          }
+        }
         if (Date.now() - started > 60000) {
           clearInterval(timer);
-          reject(new Error('네이버 로그인 시간이 초과되었습니다.'));
+          reject(new Error('네이버 로그인 시간이 초과되었습니다.\n→ 해결: 개발자센터의 Callback URL 이 현재 주소와 일치하는지 확인하세요.'));
         }
       }, 500);
     } catch (e) { reject(e); }

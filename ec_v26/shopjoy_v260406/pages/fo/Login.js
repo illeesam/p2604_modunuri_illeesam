@@ -232,6 +232,16 @@ window.Login = {
       props.showToast('[개발] ' + label + '\n' + window.coExtSdk._fmtParams(info), 'info', 0);
     };
 
+    /* _callSocialSdk — SNS 가입용 SDK 창 호출 (세션 발급 없이 인증/프로필만 — coExtSdk.loginXxx) */
+    const _callSocialSdk = (provider) => {
+      const cap = provider.charAt(0).toUpperCase() + provider.slice(1);
+      if (!window.coExtSdk || typeof window.coExtSdk['login' + cap] !== 'function') {
+        return Promise.reject(new Error('소셜 SDK 모듈(coExtSdk)이 로드되지 않았거나 알 수 없는 provider 입니다: ' + provider));
+      }
+      if (window.coExtSdk.setDebugHook) window.coExtSdk.setDebugHook(_sdkDebug);
+      return window.coExtSdk['login' + cap]();
+    };
+
     /* doSocial — 소셜 로그인 (co 통합: coAuth.socialLogin('fo', provider)) */
     const doSocial = async (provider) => {
       uiState.loginErr = '';
