@@ -240,16 +240,24 @@ window.DpDispWidgetLibPreview = {
 
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
-    /* handleSearchList — 목록 조회 */
-    const handleSearchList = async (searchType = 'DEFAULT') => {
+    /* handleSearchList — 실 dp_widget_lib 조회 + 어댑터 (config 펼침, 표시경로 라벨 트리 그룹) */
+    const handleSearchList = async () => {
       try {
         const res = await boApiSvc.dpWidgetLib.getPage({ pageNo: 1, pageSize: 10000 }, '전시위젯라이브러리', '조회');
-        widgetLibs.splice(0, widgetLibs.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
-      } catch (_) {}
+        const rows = (res.data?.data?.pageList || []).map(x => {
+          let cfg = {}; try { cfg = JSON.parse(x.widgetConfigJson || '{}'); } catch (e) { /* 파싱 실패 무시 */ }
+          const pathLabel = boUtil.bofGetPathLabel(x.pathId) || '';
+          return { ...cfg, libId: x.widgetLibId, libCode: x.widgetCode, name: x.widgetNm,
+                   widgetType: x.widgetTypeCd, desc: x.widgetLibDesc, tags: cfg.tags || '',
+                   status: x.useYn === 'Y' ? '활성' : '비활성', thumbnailUrl: x.thumbnailUrl,
+                   usedPaths: pathLabel ? [pathLabel] : [] };
+        });
+        widgetLibs.splice(0, widgetLibs.length, ...rows);
+      } catch (err) { console.error('[handleSearchList]', err); }
     };
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => { handleSearchList('DEFAULT'); });
+    onMounted(() => { handleSearchList(); });
 
     const today   = new Date().toISOString().slice(0, 10);
     const nowTime = new Date().toTimeString().slice(0, 5);

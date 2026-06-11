@@ -81,7 +81,7 @@ window.DpDispWidgetMng = {
         if (colKey === 'btn_row_edit')   { return handleLoadDetail(row.widgetId); }
         if (colKey === 'btn_row_delete') { return handleDelete(row); }
         // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
-        const VIEW_COLS = ['__no__'];
+        const VIEW_COLS = ['__no__', 'widgetInfo'];
         if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
           return loadView(row.widgetId);
         }
@@ -119,7 +119,8 @@ window.DpDispWidgetMng = {
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.disp_widget_types = codeStore.sgGetGrpCodes('DISP_WIDGET_TYPE');
-      codes.active_statuses = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
+      /* 상태 = use_yn(Y/N) — 검색 시 useYn 파라미터로 전달 (구 ACTIVE_STATUS '활성' 값은 백엔드 Y/N 비교와 불일치) */
+      codes.active_statuses = [{ codeValue: 'Y', codeLabel: '활성' }, { codeValue: 'N', codeLabel: '비활성' }];
       uiState.isPageCodeLoad = true;
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
@@ -477,7 +478,7 @@ window.DpDispWidgetMng = {
               <span style="background:#f5f5f5;border:1px solid #e8e8e8;border-radius:6px;padding:1px 7px;font-size:11px;color:#555;">
                 {{ wTypeLabel(row.widgetTypeCd) }}
               </span>
-              <span class="title-link" @click="handleGridCellAction('widgets-cellClick', { row, colKey: 'widgetInfo' })"
+              <span class="title-link" @click="handleGridCellAction('widgets-cellClick', 'widgetInfo', row)"
                 :style="'font-size:14px;font-weight:700;margin-left:8px;'+(selectedId===row.widgetId?'color:#e8587a;':'color:#222;')">
                 {{ row.widgetNm }}
               </span>

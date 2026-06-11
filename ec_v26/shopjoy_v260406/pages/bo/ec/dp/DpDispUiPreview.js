@@ -221,7 +221,10 @@ window.DpDispUiPreview = {
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
     const showRefModal = window.boApp.showRefModal; // 참조 모달
 
-    const codes = reactive({ disp_widget_types: [], disp_ui: [], active_statuses: [], disp_envs: [], visibility_opts: [
+    const codes = reactive({ disp_widget_types: [],
+      /* 상태는 dp_ui.use_yn 파생 (구 ACTIVE_STATUS 코드그룹 미사용) */
+      active_statuses: [{ codeValue: '활성', codeLabel: '활성' }, { codeValue: '비활성', codeLabel: '비활성' }],
+      visibility_opts: [
       { value: '', label: '전체' },
       { value: 'PUBLIC',    label: '전체공개' },
       { value: 'MEMBER',    label: '회원공개' },
@@ -232,7 +235,8 @@ window.DpDispUiPreview = {
       { value: 'STAFF',     label: '직원' },
       { value: 'EXECUTIVE', label: '임직원' },
     ] });
-    const widgetLibs = reactive([]);
+    const uis = reactive([]);                                  // 실 dp_ui 목록
+    const dispData = reactive({ displays: [], codes: [] });    // DispX01Ui 렌더러용 어댑터 dataset
     const uiState = reactive({ isPageCodeLoad: false, selectedLibId: null, previewGrid: 'grid1', viewportMode: 'desktop', dragOverIdx: -1, spanPopupIdx: -1});
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
@@ -322,25 +326,50 @@ window.DpDispUiPreview = {
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.disp_widget_types = codeStore.sgGetGrpCodes('DISP_WIDGET_TYPE');
-      codes.disp_ui = codeStore.sgGetGrpCodes('DISP_UI');
-      codes.active_statuses = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
-      codes.disp_envs = codeStore.sgGetGrpCodes('DISP_ENV');
       uiState.isPageCodeLoad = true;
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    /* handleSearchList — 목록 조회 */
-    const handleSearchList = async (searchType = 'DEFAULT') => {
+    /* handleSearchList — dp_ui / dp_area / dp_panel 병렬 조회 + 렌더러(dispDataset) 어댑터 구성 */
+    const handleSearchList = async () => {
       try {
-        const res = await boApiSvc.dpWidgetLib.getPage({ pageNo: 1, pageSize: 10000 }, '전시UI관리', '조회');
-        widgetLibs.splice(0, widgetLibs.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
-      } catch (_) {}
+        const [uiRes, areaRes, panelRes] = await Promise.all([
+          boApiSvc.dpUi.getPage({ pageNo: 1, pageSize: 10000 }, '전시UI미리보기', '조회'),
+          boApiSvc.dpArea.getPage({ pageNo: 1, pageSize: 10000 }, '전시UI미리보기', '영역조회'),
+          boApiSvc.dpPanel.getPage({ pageNo: 1, pageSize: 10000 }, '전시UI미리보기', '패널조회'),
+        ]);
+        const uiRows    = uiRes.data?.data?.pageList || [];
+        const areaRows  = areaRes.data?.data?.pageList || [];
+        const panelRows = panelRes.data?.data?.pageList || [];
+        uis.splice(0, uis.length, ...uiRows);
+        /* 영역 → DispX01Ui 가 기대하는 DISP_AREA 코드형 엔트리 */
+        const uiCdById = Object.fromEntries(uiRows.map(u => [u.uiId, u.uiCd]));
+        dispData.codes = areaRows.map((a, i) => ({
+          codeGrp: 'DISP_AREA', codeValue: a.areaCd, codeLabel: a.areaNm,
+          uiCode: uiCdById[a.uiId] || '', sortOrd: i, layoutType: 'grid', gridCols: 1, titleYn: 'N',
+        }));
+        /* 패널 → displays (rows = content_json.rows, 상태 SHOW/HIDE → 활성/비활성) */
+        const areaCdById = Object.fromEntries(areaRows.map(a => [a.areaId, a.areaCd]));
+        dispData.displays = panelRows.map((p, i) => {
+          let rows = []; try { rows = JSON.parse(p.contentJson || '{}').rows || []; } catch (e) { /* 파싱 실패 무시 */ }
+          return {
+            dispId: p.panelId, name: p.panelNm, area: areaCdById[p.areaId] || '',
+            status: p.dispPanelStatusCd === 'SHOW' ? '활성' : '비활성',
+            rows, sortOrder: i + 1, dispYn: 'Y', useYn: p.useYn,
+            useStartDate: String(p.useStartDate || '').slice(0, 10),
+            useEndDate: String(p.useEndDate || '').slice(0, 10),
+            dispStartDt: '', dispEndDt: '', dispEnv: '',
+            visibilityTargets: p.visibilityTargets || '',
+            layoutType: 'grid', gridCols: 1, titleYn: 'N', title: '',
+          };
+        });
+      } catch (err) { console.error('[handleSearchList]', err); }
     };
 
     // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchList('DEFAULT');
+      handleSearchList();
     });
 
     const WIDGET_ICONS = {
@@ -387,20 +416,22 @@ window.DpDispUiPreview = {
     resetCurrent();   // 검색 초기화 시 우측 미리보기도 비움
     };
 
+    /* _adaptUi — 실 dp_ui 행 → 트리/슬롯 leaf 형태 (uiCode 가 disp-x01-ui 렌더 트리거) */
+    const _adaptUi = (u) => ({
+      libId: u.uiId,
+      uiId: u.uiId,
+      uiCode: u.uiCd,
+      name: `${u.uiCd || ''} ${u.uiNm || ''}`.trim(),
+      widgetType: '-',
+      deviceTypeCd: u.deviceTypeCd,
+      status: u.useYn === 'Y' ? '활성' : '비활성',
+    });
+
     const cfFilteredLibs = computed(() => {
       const searchVal = applied.searchValue;
-      const types = applied.searchType || 'widgetNm,tag,widgetLibDesc';
-      return (Array.isArray(widgetLibs) ? widgetLibs : []).filter(lib => {
-        if (applied.type   && lib.widgetType !== applied.type) { return false; }
-        if (applied.status && lib.status     !== applied.status) { return false; }
-        if (applied.dispEnv && lib.dispEnv && !lib.dispEnv.includes('^' + applied.dispEnv + '^')) { return false; }
-        if (searchVal) {
-          const hits = [];
-          if (types.includes('widgetNm')) { hits.push((lib.name || '').toLowerCase().includes(searchVal)); }
-          if (types.includes('tag')) { hits.push((lib.tags || '').toLowerCase().includes(searchVal)); }
-          if (types.includes('widgetLibDesc')) { hits.push((lib.desc || '').toLowerCase().includes(searchVal)); }
-          if (!hits.some(Boolean)) { return false; }
-        }
+      return uis.map(_adaptUi).filter(item => {
+        if (applied.status && item.status !== applied.status) { return false; }
+        if (searchVal && !(item.name || '').toLowerCase().includes(searchVal)) { return false; }
         return true;
       });
     });
@@ -408,24 +439,17 @@ window.DpDispUiPreview = {
     /* -- 트리 선택 -- */
     const onTreeSelect  = (lib) => { uiState.selectedLibId = lib.libId; };
 
-    /* -- UI 트리: uiType > codeLabel > (codeValue codeLabel) -- */
+    /* -- UI 트리: 디바이스유형 > UI코드 > (UI) — 실 dp_ui 기반 -- */
+    const DEVICE_LABELS = { PC: '🖥 PC', MOBILE: '📱 모바일', TABLET: '📟 태블릿', ALL: '🌐 전체 디바이스' };
     const cfTree = computed(() => {
       const map = {};
-      (codes.disp_ui || [])
-        .filter(c => c.codeGrp === 'DISP_UI')
-        .forEach(u => {
-          const top = u.uiType || '(미분류)';
-          const subKey = u.codeLabel || u.codeValue;
-          if (!map[top]) { map[top] = {}; }
-          if (!map[top][subKey]) { map[top][subKey] = []; }
-          map[top][subKey].push({
-            libId: u.codeId,
-            name: `${u.codeValue} ${u.codeLabel || ''}`.trim(),
-            widgetType: '-',
-            uiCode: u.codeValue,
-            uiType: u.uiType,
-          });
-        });
+      cfFilteredLibs.value.forEach(item => {
+        const top = DEVICE_LABELS[item.deviceTypeCd] || item.deviceTypeCd || '(미분류)';
+        const subKey = item.uiCode || item.name;
+        if (!map[top]) { map[top] = {}; }
+        if (!map[top][subKey]) { map[top][subKey] = []; }
+        map[top][subKey].push(item);
+      });
       return Object.keys(map).sort().map(top => ({
         label: top,
         children: Object.keys(map[top]).sort().map(sub => ({
@@ -434,6 +458,9 @@ window.DpDispUiPreview = {
         })),
       }));
     });
+
+    /* fnUiAreas — 해당 UI(uiCode)에 소속된 영역 코드 목록 (disp-x01-ui params.areas) */
+    const fnUiAreas = (uiCode) => dispData.codes.filter(c => c.uiCode === uiCode).map(c => c.codeValue);
     const openNodes = reactive(new Set());
 
     /* toggleNode — 노드 토글 */
@@ -733,12 +760,12 @@ window.DpDispUiPreview = {
     // ===== return (템플릿 노출) ===============================================
 
     return {
-      codes, searchParam, applied, widgetLibs, uiState, gridState,                  // 상태 / 데이터
+      codes, searchParam, applied, uis, dispData, uiState, gridState,               // 상태 / 데이터
       tabSlots, dashCanvas, dashItems, openNodes,                                   // 상태 / 데이터
       handleBtnAction, handleSelectAction,                                          // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfFilteredLibs, cfTree, cfAutoGridColumns, cfCurrentSlots, cfPlacedCount, // computed
       GRID_TABS, GRID_COLS, VIEWPORT,                                               // 상수
-      wIcon, wTypeLabel, isOpen, allChildrenOpen,                                   // 헬퍼
+      wIcon, wTypeLabel, isOpen, allChildrenOpen, fnUiAreas,                        // 헬퍼
       toggleAllChildren,                                                            // 헬퍼 (이벤트인자 인라인)
       onItemDragStart, onItemDragEnd, onNodeDragStart, onNodeDragEnd,               // dnd 핸들러 (이벤트인자 인라인 필요)
       onDragOver, onDragLeave, onDrop,                                              // dnd 핸들러
@@ -789,19 +816,6 @@ window.DpDispUiPreview = {
       </div>
       <div style="display:flex;align-items:center;gap:5px;">
         <span style="font-size:12px;font-weight:600;color:#555;">
-          환경
-        </span>
-        <select v-model="searchParam.filterDispEnv" class="form-control" style="width:76px;margin:0;font-size:12px;">
-          <option value="">
-            전체
-          </option>
-          <option v-for="c in codes.disp_envs" :key="c.codeValue" :value="c.codeValue">
-            {{ c.codeLabel }}
-          </option>
-        </select>
-      </div>
-      <div style="display:flex;align-items:center;gap:5px;">
-        <span style="font-size:12px;font-weight:600;color:#555;">
           공개대상
         </span>
         <select v-model="searchParam.filterVisibility" class="form-control" style="width:100px;margin:0;font-size:12px;">
@@ -812,28 +826,8 @@ window.DpDispUiPreview = {
       </div>
       <div style="width:1px;height:24px;background:#e0e0e0;">
       </div>
-      <!-- ===== ■.■.■. 위젯유형 + 검색 ============================================ -->
-      <div style="display:flex;align-items:center;gap:5px;">
-        <span style="font-size:12px;font-weight:600;color:#555;">
-          위젯유형
-        </span>
-        <select v-model="searchParam.filterType" class="form-control" style="width:114px;margin:0;font-size:12px;">
-          <option v-for="t in codes.disp_widget_types" :key="t?.value" :value="t.codeValue">
-            {{ t.codeLabel }}
-          </option>
-        </select>
-      </div>
-      <bo-multi-check-select
-        v-model="searchParam.searchType"
-        :options="[
-        { value: 'widgetNm',   label: '이름' },
-        { value: 'tag',  label: '태그' },
-        { value: 'widgetLibDesc', label: '설명' },
-        ]"
-        placeholder="검색대상 전체"
-        all-label="전체 선택"
-        min-width="130px" />
-      <input v-model="searchParam.searchValue" class="form-control" placeholder="검색어 입력" style="margin:0;width:130px;font-size:12px;" @keyup.enter="handleBtnAction('searchParam-apply')" />
+      <!-- ===== ■.■.■. UI 검색 ================================================ -->
+      <input v-model="searchParam.searchValue" class="form-control" placeholder="UI명/코드 검색" style="margin:0;width:150px;font-size:12px;" @keyup.enter="handleBtnAction('searchParam-apply')" />
       <span style="font-size:12px;color:#888;">
         총
         <b>
@@ -1145,7 +1139,7 @@ window.DpDispUiPreview = {
                 </button>
               </div>
               <!-- ===== ■.■.■.■.■.■.■.■.■.■. UI 미리보기 (slot.uiCode가 있으면 disp-x01-ui로 렌더) ===== -->
-              <disp-x01-ui v-if="slot.uiCode" :params="{ areas: ([]||[]).filter(c=>c.codeGrp==='DISP_AREA' && c.uiCode===slot.uiCode).map(c=>c.codeValue), date: searchParam.previewDate, time: searchParam.previewTime, status: applied.status, visibilityTargets: applied.visibility ? '^' + applied.visibility + '^' : '', siteId: null, memberId: null, viewOpts: '' }" :disp-opt="{ layout:'auto', showHeader:true, showBadges:false, mode:'area_detail', showDesc:false }" />
+              <disp-x01-ui v-if="slot.uiCode" :params="{ areas: fnUiAreas(slot.uiCode), date: searchParam.previewDate, time: searchParam.previewTime, status: applied.status, visibilityTargets: applied.visibility ? '^' + applied.visibility + '^' : '', siteId: null, memberId: null, viewOpts: '' }" :disp-dataset="dispData" :disp-opt="{ layout:'auto', showHeader:true, showBadges:false, mode:'area_detail', showDesc:false }" />
               <widget-preview v-else :lib="slot" />
             </template>
           </div>
@@ -1218,7 +1212,7 @@ window.DpDispUiPreview = {
   </div>
   <!-- ===== ■.■.■.■.■.■. UI 미리보기 ======================================= -->
   <div style="overflow:auto;" :style="{maxHeight:(item.h-40)+'px'}">
-    <disp-x01-ui v-if="item.lib.uiCode" :params="{ areas: ([]||[]).filter(c=>c.codeGrp==='DISP_AREA' && c.uiCode===item.lib.uiCode).map(c=>c.codeValue), date: searchParam.previewDate, time: searchParam.previewTime, status: applied.status, visibilityTargets: applied.visibility ? '^' + applied.visibility + '^' : '', siteId: null, memberId: null, viewOpts: '' }" :disp-opt="{ layout:'auto', showHeader:true, showBadges:false, mode:'area_detail', showDesc:false }" />
+    <disp-x01-ui v-if="item.lib.uiCode" :params="{ areas: fnUiAreas(item.lib.uiCode), date: searchParam.previewDate, time: searchParam.previewTime, status: applied.status, visibilityTargets: applied.visibility ? '^' + applied.visibility + '^' : '', siteId: null, memberId: null, viewOpts: '' }" :disp-dataset="dispData" :disp-opt="{ layout:'auto', showHeader:true, showBadges:false, mode:'area_detail', showDesc:false }" />
     <widget-preview v-else :lib="item.lib" />
   </div>
   <!-- ===== ■.■.■.■.■.■. 크기 조절 핸들 ====================================== -->

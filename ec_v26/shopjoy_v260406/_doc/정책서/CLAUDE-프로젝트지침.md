@@ -824,6 +824,7 @@ const tabs = reactive([
 - 패널 상태: `DISP_STATUS` (SHOW/HIDE). 표시경로: sy_path `ec_disp_ui / ec_disp_area / ec_disp_panel / ec_disp_widget_lib`
 - 관리 컴포넌트: `DpDispUiMng/Dtl`, `DpDispAreaMng/Dtl/Preview`, `DpDispPanelMng/Dtl/Preview`, `DpDispWidgetMng/Dtl/Preview`, `DpDispWidgetLibMng/Dtl/Preview` — Ui/Area/Panel Mng·Dtl 은 CmNotice 표준 모델(검색+그리드+인라인 Dtl, bo-form-area) 구조 (2026-06-11 재작성)
 - 렌더 컴포넌트: `DispX01Ui`, `DispX02Area`, `DispX03Panel`, `DispX04Widget` / 시뮬레이션: `DpDispUiSimul.js`
+- **Preview/Simul/관계도 실 API 정합** (2026-06-11 2차): `DpDisp{Ui,Area,Panel,Widget,WidgetLib}Preview` + `DpDispUiSimul` + `DpDispRelationMng` 은 구 sy_code(DISP_UI/DISP_AREA/ACTIVE_STATUS) 트리 대신 실 `dpUi/dpArea/dpPanel/dpWidget/dpWidgetLib` API 로 조회. 렌더러(DispX0*)는 목업 형태(`dispId/name/area/status('활성')/rows`)를 기대하므로 화면에서 **어댑터 변환** 후 전달 — 패널: `contentJson.rows`→`rows` + `disp_panel_status_cd(SHOW/HIDE)`→'활성'/'비활성', 위젯(Lib): `widgetConfigJson` 펼침 + `widgetNm→name`/`widgetTypeCd→widgetType`. 상태 select 는 코드그룹 미사용(use_yn 파생 정적 옵션 — Widget/WidgetLib Mng 검색은 `useYn` Y/N 값으로 전달)
 - 샘플 데이터: SITE000001 단일 — UI 6 / 영역 18 / 패널 36 / 아이템 76 / 위젯Lib 27종×10 / 위젯 인스턴스 270 (`_doc/sample_insert_pgsql/dp_*.sql`, 마이그레이션 `_doc/ddl_pgsql/migration_20260611_dp_restructure.sql`)
 
 ## CSS 규칙

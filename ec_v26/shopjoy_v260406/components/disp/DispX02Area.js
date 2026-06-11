@@ -43,6 +43,10 @@ window.DispX02Area = {
       'popup':'팝업',              'file':'파일',                    'file_list':'파일목록',
       'coupon':'쿠폰',             'html_editor':'HTML 에디터',      'event_banner':'이벤트',
       'cache_banner':'캐쉬',       'widget_embed':'위젯',
+      'textarea':'텍스트 영역',    'markdown':'Markdown',            'barcode':'바코드',
+      'qrcode':'QR코드',           'barcode_qrcode':'바코드+QR',     'video_player':'동영상',
+      'countdown':'카운트다운',    'payment_widget':'결제위젯',      'approval_widget':'전자결재',
+      'map_widget':'지도',
     };
 
     /* 위젯 유형 아이콘 */
@@ -52,7 +56,10 @@ window.DispX02Area = {
       'chart_pie':'🥧',   'text_banner':'📝',     'info_card':'ℹ️',
       'popup':'💬',        'file':'📎',            'file_list':'📁',
       'coupon':'🎟',       'html_editor':'📄',     'event_banner':'🎉',
-      'cache_banner':'💰', 'widget_embed':'🧩',
+      'cache_banner':'💰', 'widget_embed':'🧩',    'textarea':'📋',
+      'markdown':'📑',     'barcode':'🔖',          'qrcode':'📱',
+      'barcode_qrcode':'🔖','video_player':'▶️',   'countdown':'⏱',
+      'payment_widget':'💳','approval_widget':'✅', 'map_widget':'🗺',
     };
 
     /* wLabel — w 라벨 */

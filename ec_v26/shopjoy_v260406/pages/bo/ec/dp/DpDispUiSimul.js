@@ -10,7 +10,10 @@ window.DpDispUiSimul = {
 
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const showToast    = window.boApp.showToast;  // 토스트 알림
-    const codes = reactive({ active_statuses: [], visibility_opts: [
+    const codes = reactive({
+      /* 상태는 dp_panel.disp_panel_status_cd(SHOW/HIDE) 파생 (구 ACTIVE_STATUS 코드그룹 미사용) */
+      active_statuses: [{ codeValue: '활성', codeLabel: '노출' }, { codeValue: '비활성', codeLabel: '숨김' }],
+      visibility_opts: [
       { value: '', label: '전체' },
       { value: 'PUBLIC',    label: '전체공개' },
       { value: 'MEMBER',    label: '회원공개' },
@@ -21,7 +24,8 @@ window.DpDispUiSimul = {
       { value: 'STAFF',     label: '직원' },
       { value: 'EXECUTIVE', label: '임직원' },
     ] });
-    const displays = reactive([]);
+    const displays = reactive([]);    // 실 dp_panel → 렌더러(panelItem) 형태 어댑터 목록
+    const areasRaw = reactive([]);    // 실 dp_area → DISP_AREA 코드형 엔트리
     const sites = reactive([]);
     const members = reactive([]);
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
@@ -230,18 +234,40 @@ window.DpDispUiSimul = {
       }
     };
 
-    /* handleSearchData — 처리 */
-    const handleSearchData = async (searchType = 'DEFAULT') => {
+    /* handleSearchData — dp_area / dp_panel / 사이트 / 회원 병렬 조회 + 렌더러 어댑터 구성 */
+    const handleSearchData = async () => {
       try {
-        const [dpRes, sitesRes, membersRes] = await Promise.all([
-          boApiSvc.dpUi.getPage({ pageNo: 1, pageSize: 10000 }, '전시UI시뮬레이션', '조회'),
+        const [areaRes, panelRes, sitesRes, membersRes] = await Promise.all([
+          boApiSvc.dpArea.getPage({ pageNo: 1, pageSize: 10000 }, '전시UI시뮬레이션', '영역조회'),
+          boApiSvc.dpPanel.getPage({ pageNo: 1, pageSize: 10000 }, '전시UI시뮬레이션', '패널조회'),
           boApiSvc.sySite.getPage({ pageNo: 1, pageSize: 1000 }, '전시UI시뮬레이션', '조회'),
           boApiSvc.mbMember.getPage({ pageNo: 1, pageSize: 10000 }, '전시UI시뮬레이션', '조회'),
         ]);
-        displays.splice(0, displays.length, ...(dpRes.data?.data?.pageList || dpRes.data?.data?.list || []));
-        sites.splice(0, sites.length, ...(sitesRes.data?.data?.pageList || sitesRes.data?.data?.list || []));
-        members.splice(0, members.length, ...(membersRes.data?.data?.pageList || membersRes.data?.data?.list || []));
-      } catch (_) {}
+        const areaRows  = areaRes.data?.data?.pageList || [];
+        const panelRows = panelRes.data?.data?.pageList || [];
+        /* 영역 → DISP_AREA 코드형 엔트리 (codeValue/codeLabel 로 기존 로직 호환) */
+        areasRaw.splice(0, areasRaw.length, ...areaRows.map((a, i) => ({
+          codeGrp: 'DISP_AREA', codeValue: a.areaCd, codeLabel: a.areaNm,
+          useYn: a.useYn, sortOrd: i, layoutType: 'grid', gridCols: 1, titleYn: 'N',
+        })));
+        /* 패널 → displays (rows = content_json.rows, 상태 SHOW/HIDE → 활성/비활성) */
+        const areaCdById = Object.fromEntries(areaRows.map(a => [a.areaId, a.areaCd]));
+        displays.splice(0, displays.length, ...panelRows.map((p, i) => {
+          let rows = []; try { rows = JSON.parse(p.contentJson || '{}').rows || []; } catch (e) { /* 파싱 실패 무시 */ }
+          return {
+            dispId: p.panelId, name: p.panelNm, area: areaCdById[p.areaId] || '',
+            status: p.dispPanelStatusCd === 'SHOW' ? '활성' : '비활성',
+            rows, sortOrder: i + 1, dispYn: 'Y', useYn: p.useYn,
+            useStartDate: String(p.useStartDate || '').slice(0, 10),
+            useEndDate: String(p.useEndDate || '').slice(0, 10),
+            dispStartDt: '', dispEndDt: '', dispEnv: '',
+            visibilityTargets: p.visibilityTargets || '',
+            layoutType: 'grid', gridCols: 1, titleYn: 'N', title: '',
+          };
+        }));
+        sites.splice(0, sites.length, ...(sitesRes.data?.data?.pageList || []));
+        members.splice(0, members.length, ...(membersRes.data?.data?.pageList || []));
+      } catch (err) { console.error('[handleSearchData]', err); }
     };
 
     /* ── 오늘 날짜 ── */
@@ -265,8 +291,6 @@ window.DpDispUiSimul = {
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      codes.active_statuses = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
       uiState.isPageCodeLoad = true;
     };
 
@@ -289,6 +313,10 @@ window.DpDispUiSimul = {
       'popup':'팝업',              'file':'파일',                    'file_list':'파일목록',
       'coupon':'쿠폰',             'html_editor':'HTML 에디터',      'event_banner':'이벤트',
       'cache_banner':'캐시',       'widget_embed':'위젯',
+      'textarea':'텍스트 영역',    'markdown':'Markdown',            'barcode':'바코드',
+      'qrcode':'QR코드',           'barcode_qrcode':'바코드+QR',     'video_player':'동영상',
+      'countdown':'카운트다운',    'payment_widget':'결제위젯',      'approval_widget':'전자결재',
+      'map_widget':'지도',
     };
     const WIDGET_ICONS = {
       'image_banner':'🖼', 'product_slider':'🛒', 'product':'📦',
@@ -296,7 +324,10 @@ window.DpDispUiSimul = {
       'chart_pie':'🥧',   'text_banner':'📝',     'info_card':'ℹ',
       'popup':'💬',        'file':'📎',            'file_list':'📁',
       'coupon':'🎟',       'html_editor':'📄',     'event_banner':'🎉',
-      'cache_banner':'💰', 'widget_embed':'🧩',
+      'cache_banner':'💰', 'widget_embed':'🧩',    'textarea':'📋',
+      'markdown':'📑',     'barcode':'🔖',          'qrcode':'📱',
+      'barcode_qrcode':'🔖','video_player':'▶️',   'countdown':'⏱',
+      'payment_widget':'💳','approval_widget':'✅', 'map_widget':'🗺',
     };
 
     /* wLabel — w 라벨 */
@@ -305,11 +336,9 @@ window.DpDispUiSimul = {
     /* wIcon — w 아이콘 */
     const wIcon  = (t) => WIDGET_ICONS[t] || '▪';
 
-    /* ── 화면영역 코드 ── */
+    /* ── 화면영역 (실 dp_area 어댑터) ── */
     const cfAllAreaListRaw = computed(() =>
-      (Array.isArray(codes) ? codes : [])
-        .filter(c => c.codeGrp === 'DISP_AREA' && c.useYn === 'Y')
-        .sort((a, b) => a.sortOrd - b.sortOrd)
+      areasRaw.filter(c => c.useYn === 'Y')
     );
     const cfAreaList = computed(() => {
       const all = cfAllAreaListRaw.value;
@@ -391,14 +420,7 @@ window.DpDispUiSimul = {
         const panels = (Array.isArray(displays) ? displays : [])
           .filter(p => p.area === area.codeValue && panelFilter(p))
           .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
-
-        onMounted(() => {
-      handleSearchData();
-    });
-
-    /* ##### [06] return (템플릿 노출) ############################################## */
-
-    return { ...area, panels };
+        return { ...area, panels };
       }).filter(a => selectedAreas.size === 0 || selectedAreas.has(a.codeValue))
     );
 
@@ -1014,9 +1036,8 @@ window.DpDispUiSimul = {
     }));
     const cfDispOpt = computed(() => ({ layout: uiState.tabMode, showBadges: true, mode: uiState.tabMode, showDesc: uiState.showDesc }));
 
-    /* areaInfo — 영역 정보 */
-    const areaInfo = (code) =>
-      (Array.isArray(codes) ? codes : []).find(c => c.codeGrp === 'DISP_AREA' && c.codeValue === code);
+    /* areaInfo — 영역 정보 (실 dp_area 어댑터 엔트리) */
+    const areaInfo = (code) => areasRaw.find(c => c.codeValue === code);
 
     const DISP_UI_OTHER_PAGES = [
       '/index.html#page=dispUiPage',
@@ -1092,6 +1113,8 @@ window.DpDispUiSimul = {
     const structViewport = Vue.toRef(uiState, 'structViewport');
     const tabMode = Vue.toRef(uiState, 'tabMode');
 
+    /* ##### [06] return (템플릿 노출) ############################################## */
+
     return {
       handleBtnAction, handleSelectAction, fnCallbackModal,                           // dispatch + 모달 통합 콜백
       cfSiteNm, codes,
@@ -1115,7 +1138,7 @@ window.DpDispUiSimul = {
       onStructDashDragOver, onStructDashDragLeave, onStructDashDrop,
       startStructDashMove, startStructDashResize, onAreaDragStart, onPanelDragStart, onAreaDragEnd,
       /* Tab3 */
-      copySource,
+      copySource, sourceLines: cfSourceLines,
       wLabel, wIcon,
       /* Ui미리보기 */
       cfDispUiAreaBtnLabel, dispUiToggleArea, dispUiSelectAllAreas, dispUiClearAllAreas,
@@ -1123,6 +1146,9 @@ window.DpDispUiSimul = {
       dispUiViewOpts, cfDispUiParamObj,
       cfDispUiSiteList, cfDispUiMemberList, openDispUiLayer, openDispUiModal, openDispUiPopup, openDispUiOther, resetDispUiForm,
       DISP_UI_OTHER_PAGES, closeOtherMenu, pickOtherPage,
+      /* toRef (템플릿 bare 참조용 — return 누락 시 구조탭 span/뷰포트/드래그 표시 무력화) */
+      dispUiAreaDrop, dispUiMemberModalOpen, dispUiSiteModalOpen, showAreaDrop, showDesc,
+      structDashDragOver, structDragOverIdx, structShowReal, structSpanPopupIdx, structViewport, tabMode,
     };
   },
   template: /* html */`
@@ -1280,13 +1306,13 @@ window.DpDispUiSimul = {
           조회 조건:
         </span>
         <span style="font-size:12px;background:#fff8e1;color:#f57c00;border-radius:10px;padding:2px 10px;">
-          📅 {{ previewDate }} {{ previewTime }}
+          📅 {{ searchParam.previewDate }} {{ searchParam.previewTime }}
         </span>
-        <span v-if="searchStatus" style="font-size:12px;background:#e8f5e9;color:#2e7d32;border-radius:10px;padding:2px 10px;">
-          상태: {{ searchStatus }}
+        <span v-if="searchParam.status" style="font-size:12px;background:#e8f5e9;color:#2e7d32;border-radius:10px;padding:2px 10px;">
+          상태: {{ searchParam.status }}
         </span>
-        <span v-if="searchVisibility" style="font-size:12px;background:#f3e5f5;color:#6a1b9a;border-radius:10px;padding:2px 10px;">
-          공개: {{ window.safeArrayUtils.safeFind(codes.visibility_opts, o => o.value === searchVisibility)?.label }}
+        <span v-if="searchParam.visibility" style="font-size:12px;background:#f3e5f5;color:#6a1b9a;border-radius:10px;padding:2px 10px;">
+          공개: {{ (codes.visibility_opts.find(o => o.value === searchParam.visibility) || {}).label }}
         </span>
         <div style="margin-left:auto;display:flex;gap:6px;align-items:center;">
           <button @click="handleBtnAction('simul-openDispUiLayer')"
@@ -1661,7 +1687,7 @@ window.DpDispUiSimul = {
       <!-- ===== □. 탭 헤더 ==================================================== -->
       <!-- ===== ■. 조건부 영역 ================================================== -->
       <div v-if="uiState.mainTab==='preview'">
-        <div v-if="!previewDate" style="text-align:center;padding:40px;color:#e8587a;font-size:14px;">
+        <div v-if="!searchParam.previewDate" style="text-align:center;padding:40px;color:#e8587a;font-size:14px;">
           기준 날짜를 선택해주세요.
         </div>
         <div v-else>
@@ -2025,13 +2051,13 @@ window.DpDispUiSimul = {
                         <span style="min-width:28px;text-align:center;font-size:14px;font-weight:700;color:#1d4ed8;">
                           {{ slot.colSpan||1 }}
                         </span>
-                        <button @click="handleSelectAction('simul-setStructSpan', { idx, axis: 'col', delta: +1 })" :disabled="(slot.colSpan||1)>=(STRUCT_GRID_COLS[structGrid]||1)"
+                        <button @click="handleSelectAction('simul-setStructSpan', { idx, axis: 'col', delta: +1 })" :disabled="(slot.colSpan||1)>=(uiState.structColCount||1)"
                               style="width:24px;height:24px;border:1px solid #e5e7eb;border-radius:4px;background:#f9fafb;font-size:13px;display:flex;align-items:center;justify-content:center;padding:0;"
-                              :style="(slot.colSpan||1)>=(STRUCT_GRID_COLS[structGrid]||1)?'opacity:.3;cursor:default;':''">
+                              :style="(slot.colSpan||1)>=(uiState.structColCount||1)?'opacity:.3;cursor:default;':''">
                           +
                         </button>
                         <span style="font-size:10px;color:#9ca3af;">
-                          / {{ STRUCT_GRID_COLS[structGrid]||1 }}
+                          / {{ uiState.structColCount||1 }}
                         </span>
                       </div>
                       <div style="display:flex;align-items:center;gap:6px;">
@@ -2504,7 +2530,7 @@ window.DpDispUiSimul = {
         ■ 플레이스홀더(~)
       </span>
       <span style="font-size:11px;color:#aaa;margin-left:auto;">
-        📅 {{ previewDate }} 기준 활성 패널
+        📅 {{ searchParam.previewDate }} 기준 활성 패널
       </span>
     </div>
   </div>

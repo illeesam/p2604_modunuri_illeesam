@@ -3077,8 +3077,6 @@
     .component('DispPreviewModal', window.DispPreviewModal || { template: '<div/>' })
     .component('DispUiModal', window.DispUiModal || { template: '<div/>' })
     .component('WidgetLibPickModal', window.WidgetLibPickModal || { template: '<div/>' })
-    .component('PanelPickModal', window.PanelPickModal || { template: '<div/>' })
-    .component('AreaPickModal', window.AreaPickModal || { template: '<div/>' })
     .component('RowPickModal', window.RowPickModal || { template: '<div/>' })
     .component('TemplatePreviewModal', window.TemplatePreviewModal)
     .component('TemplateSendModal', window.TemplateSendModal)

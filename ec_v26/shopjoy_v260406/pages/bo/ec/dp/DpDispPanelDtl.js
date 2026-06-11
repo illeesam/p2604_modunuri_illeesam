@@ -19,7 +19,7 @@ window.DpDispPanelDtl = {
     const uiState = reactive({ libPickOpen: false, loading: false, rowCopyOpen: false, showComponentTooltip: false, viewAll: false, isPageCodeLoad: false, error: null, tab: 'info', previewMode: 'default', previewPaneWidth: 520, libPickMode: 'copy' });
     const tab = Vue.toRef(uiState, 'tab');
     const previewMode = Vue.toRef(uiState, 'previewMode');
-    const codes = reactive({ layout_types: [], disp_widget_types: [], active_statuses: [], disp_areas: [], click_action_opts: [{value:'none',label:'없음'},{value:'navigate',label:'페이지 이동'},{value:'event',label:'이벤트 호출'},{value:'modal',label:'모달 오픈'},{value:'url',label:'외부 URL'}] });
+    const codes = reactive({ layout_types: [], disp_widget_types: [], active_statuses: [], click_action_opts: [{value:'none',label:'없음'},{value:'navigate',label:'페이지 이동'},{value:'event',label:'이벤트 호출'},{value:'modal',label:'모달 오픈'},{value:'url',label:'외부 URL'}] });
     const events = reactive([]);
     const areas = reactive([]);                   // 소속 영역 목록 (dp_area)
 
@@ -44,6 +44,7 @@ window.DpDispPanelDtl = {
       // 전시항목 복사 모달 열기
       } else if (cmd === 'rowCopyModal-open') {
         if (cfIsNew.value) { return; }
+        fnLoadPickPanels();
         uiState.rowCopyOpen = true;
         return;
       // 위젯 추가
@@ -163,7 +164,6 @@ window.DpDispPanelDtl = {
       codes.layout_types = codeStore.sgGetGrpCodes('LAYOUT_TYPE');
       codes.disp_widget_types = codeStore.sgGetGrpCodes('DISP_WIDGET_TYPE');
       codes.active_statuses = codeStore.sgGetGrpCodes('DISP_STATUS');
-      codes.disp_areas = codeStore.sgGetGrpCodes('DISP_AREA');
       uiState.isPageCodeLoad = true;
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
@@ -591,9 +591,10 @@ window.DpDispPanelDtl = {
       }
     };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회 (픽Lib 은 참조 미리보기용 선로드)
     onMounted(async () => {
       if (isAppReady.value) { fnLoadCodes(); }
+      fnLoadPickLibs();
       await handleLoadDetail();
       handleLoadData();
       handleInitForm();
@@ -816,6 +817,37 @@ window.DpDispPanelDtl = {
       form.panelVisibilityTargets = window.visibilityUtil.serialize(filtered);
     };
 
+    /* -- 픽 모달용 실 데이터 (목업형 어댑터: 모달은 dispId/name/area/status/rows 형태 기대) -- */
+    const pickData = reactive({ libs: [], displays: [], areaCodes: [] });
+
+    /* fnLoadPickLibs — 위젯Lib 픽 모달/참조 미리보기용 dp_widget_lib 로드 (1회 캐시) */
+    const fnLoadPickLibs = async () => {
+      if (pickData.libs.length) { return; }
+      try {
+        const res = await boApiSvc.dpWidgetLib.getPage({ pageNo: 1, pageSize: 10000 }, '전시패널관리', '위젯Lib조회');
+        pickData.libs = (res.data?.data?.pageList || []).map(x => {
+          let cfg = {}; try { cfg = JSON.parse(x.widgetConfigJson || '{}'); } catch (e) { /* 파싱 실패 무시 */ }
+          return { ...cfg, libId: x.widgetLibId, libCode: x.widgetCode, name: x.widgetNm,
+                   widgetType: x.widgetTypeCd, desc: x.widgetLibDesc, tags: cfg.tags || '',
+                   status: x.useYn === 'Y' ? '활성' : '비활성', thumbnailUrl: x.thumbnailUrl };
+        });
+      } catch (err) { console.error('[fnLoadPickLibs]', err); }
+    };
+
+    /* fnLoadPickPanels — 전시항목 복사 모달용 dp_panel 로드 (rows = content_json.rows) */
+    const fnLoadPickPanels = async () => {
+      try {
+        const res = await boApiSvc.dpPanel.getPage({ pageNo: 1, pageSize: 10000 }, '전시패널관리', '패널조회');
+        pickData.displays = (res.data?.data?.pageList || []).map(p => {
+          let rows = []; try { rows = JSON.parse(p.contentJson || '{}').rows || []; } catch (e) { /* 파싱 실패 무시 */ }
+          const a = areas.find(x => x.areaId === p.areaId);
+          return { dispId: p.panelId, name: p.panelNm, area: a ? a.areaCd : '',
+                   status: p.dispPanelStatusCd === 'SHOW' ? '활성' : '비활성', rows };
+        });
+        pickData.areaCodes = areas.map(a => ({ codeValue: a.areaCd, codeLabel: a.areaNm }));
+      } catch (err) { console.error('[fnLoadPickPanels]', err); }
+    };
+
     /* onRowCopy — 이벤트 */
     const onRowCopy = (pickedRows) => {
       if (!Array.isArray(pickedRows) || !pickedRows.length) { return; }
@@ -828,8 +860,9 @@ window.DpDispPanelDtl = {
     };
 
     /* -- 위젯Lib 선택 팝업 (활성 row에 복사/참조) -- */
-        const openLibPick = (mode) => {
+    const openLibPick = (mode) => {
       if (!cfActiveRow.value) { return; }
+      fnLoadPickLibs();
       uiState.libPickMode = mode; uiState.libPickOpen = true;
     };
 
@@ -918,7 +951,7 @@ window.DpDispPanelDtl = {
 
     return {
       columns,
-      pathPickModal, form, rows, codes, preview, cardPreview,         // 상태 / 데이터
+      pathPickModal, form, rows, codes, preview, cardPreview, pickData,         // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch + 모달 통합 콜백
       cfIsNew, cfTabLabels, cfTabRowMap, cfActiveRowIdx, cfActiveRow,         // computed
       cfDisplayRows, cfRelatedEvent, cfFileListItems, cfPreviewWidget, // computed
@@ -1205,7 +1238,7 @@ window.DpDispPanelDtl = {
                     <disp-x04-widget
                       :params="{ }"
                       :disp-opt="{ showBadges: true }"
-                      :widget-item="([]||[]).find(l => l.libId===cfActiveRow.refLibId) || {}" />
+                      :widget-item="pickData.libs.find(l => l.libId===cfActiveRow.refLibId) || {}" />
                   </div>
                 </div>
                 <!-- ===== ■.■.■.■.■.■.■.■. 노출순서 + 전시여부 =============================== -->
@@ -1836,7 +1869,7 @@ window.DpDispPanelDtl = {
       <!-- ===== /v-for 섹션 ================================================== -->
       <!-- ===== ■.■.■. 위젯 추가 버튼 (펼치기 모드) =================================== -->
       <div v-if="rows.length < MAX_WIDGETS" style="margin-top:6px;">
-        <button @click="!cfIsNew && addWidget()" :disabled="cfIsNew" :title="cfIsNew ? '저장 후 전시항목을 추가할 수 있습니다.' : ''" :style="cfIsNew ? 'width:100%;padding:9px 0;border:1.5px dashed #e0e0e0;border-radius:8px;background:#f5f5f5;cursor:not-allowed;font-size:13px;color:#bbb;' : 'width:100%;padding:9px 0;border:1.5px dashed #d0d0d0;border-radius:8px;background:#fafafa;font-size:13px;color:#888;'">
+        <button @click="handleBtnAction('panelItems-add')" :disabled="cfIsNew" :title="cfIsNew ? '저장 후 전시항목을 추가할 수 있습니다.' : ''" :style="cfIsNew ? 'width:100%;padding:9px 0;border:1.5px dashed #e0e0e0;border-radius:8px;background:#f5f5f5;cursor:not-allowed;font-size:13px;color:#bbb;' : 'width:100%;padding:9px 0;border:1.5px dashed #d0d0d0;border-radius:8px;background:#fafafa;font-size:13px;color:#888;'">
           + 위젯 추가
         </button>
       </div>
@@ -1899,13 +1932,13 @@ window.DpDispPanelDtl = {
   <!-- ===== □. 패널미리보기 오버레이 ============================================= -->
   <!-- ===== ■. 전시위젯Lib 선택 팝업 =========================================== -->
   <widget-lib-pick-modal v-if="libPickOpen" :mode="libPickMode"
-    :widget-libs="[] || []" modal-name="widget-lib-pick" :on-callback="fnCallbackModal" />
+    :widget-libs="pickData.libs" modal-name="widget-lib-pick" :on-callback="fnCallbackModal" />
   <!-- ===== □. 전시위젯Lib 선택 팝업 =========================================== -->
   <!-- ===== ■. 전시항목 복사 팝업 ============================================== -->
   <row-pick-modal v-if="rowCopyOpen"
     :title="'전시항목 복사 [' + (form.name || '현재 패널') + ']'"
-    :displays="[] || []"
-    :areas="([]||[]).filter(c => c.codeGrp==='DISP_AREA')"
+    :displays="pickData.displays"
+    :areas="pickData.areaCodes"
     :exclude-panel-id="form.dispId" modal-name="row-pick" :on-callback="fnCallbackModal" />
   <!-- ===== □. 전시항목 복사 팝업 ============================================== -->
   <!-- ===== ■. 조건부 영역 ================================================== -->

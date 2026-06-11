@@ -27,6 +27,10 @@ window.DispX01Ui = {
       { key: 'source',  label: '</> 소스보기' },
     ];
     const cfActiveTabs = computed(() => {
+      const opts = (props.params.viewOpts || '').split(',').filter(Boolean);
+      return opts.length ? ALL_TABS.filter(t => opts.includes(t.key)) : [];
+    });
+    const activeTab = ref('');
 
     // ===== [02] 액션 모음 (dispatch) ==============================================
 
@@ -72,11 +76,6 @@ window.DispX01Ui = {
       }
     };
 
-      const opts = (props.params.viewOpts || '').split(',').filter(Boolean);
-      return opts.length ? ALL_TABS.filter(t => opts.includes(t.key)) : [];
-    });
-    const activeTab = ref('');
-
     Vue.watchEffect(() => {
       const first = cfActiveTabs.value[0]?.key || 'content';
       if (!cfActiveTabs.value.find(t => t.key === activeTab.value)) {
@@ -100,6 +99,10 @@ window.DispX01Ui = {
       'popup':'팝업',              'file':'파일',                    'file_list':'파일목록',
       'coupon':'쿠폰',             'html_editor':'HTML 에디터',      'event_banner':'이벤트',
       'cache_banner':'캐시',       'widget_embed':'위젯',
+      'textarea':'텍스트 영역',    'markdown':'Markdown',            'barcode':'바코드',
+      'qrcode':'QR코드',           'barcode_qrcode':'바코드+QR',     'video_player':'동영상',
+      'countdown':'카운트다운',    'payment_widget':'결제위젯',      'approval_widget':'전자결재',
+      'map_widget':'지도',
     };
 
     /* wLabel — w 라벨 */

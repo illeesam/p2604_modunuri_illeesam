@@ -406,7 +406,10 @@ window.DpDispWidgetPreview = {
     // ===== 초기 변수 정의 =====================================================
 
     const { reactive, computed, ref, watch, onMounted, nextTick, watchEffect } = Vue;
-    const codes = reactive({ disp_widget_types: [], active_statuses: [], disp_envs: [], visibility_opts: [
+    const codes = reactive({ disp_widget_types: [], disp_envs: [],
+      /* 상태는 dp_widget.use_yn 파생 (구 ACTIVE_STATUS 코드그룹 미사용) */
+      active_statuses: [{ codeValue: '활성', codeLabel: '활성' }, { codeValue: '비활성', codeLabel: '비활성' }],
+      visibility_opts: [
       { value: '', label: '전체' },
       { value: 'PUBLIC',    label: '전체공개' },
       { value: 'MEMBER',    label: '회원공개' },
@@ -490,17 +493,21 @@ window.DpDispWidgetPreview = {
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.disp_widget_types = codeStore.sgGetGrpCodes('DISP_WIDGET_TYPE');
-      codes.active_statuses = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
       codes.disp_envs = codeStore.sgGetGrpCodes('DISP_ENV');
       uiState.isPageCodeLoad = true;
     };
 
-    /* handleSearchList — 목록 조회 */
-    const handleSearchList = async (searchType = 'DEFAULT') => {
+    /* handleSearchList — 실 dp_widget(위젯 인스턴스) 조회 + 어댑터 (config 펼침, 유형별 트리 그룹) */
+    const handleSearchList = async () => {
       try {
-        const res = await boApiSvc.dpWidgetLib.getPage({ pageNo: 1, pageSize: 10000 }, '전시위젯관리', '조회');
-        widgetLibs.splice(0, widgetLibs.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
-      } catch (_) {}
+        const res = await boApiSvc.dpWidget.getPage({ pageNo: 1, pageSize: 10000 }, '전시위젯미리보기', '조회');
+        const rows = (res.data?.data?.pageList || []).map(x => {
+          let cfg = {}; try { cfg = JSON.parse(x.widgetConfigJson || '{}'); } catch (e) { /* 파싱 실패 무시 */ }
+          return { ...cfg, ...x, name: x.widgetNm, widgetType: x.widgetTypeCd, desc: x.widgetDesc,
+                   libId: x.widgetId, tags: cfg.tags || '', pathId: x.widgetTypeCd };
+        });
+        widgetLibs.splice(0, widgetLibs.length, ...rows);
+      } catch (err) { console.error('[handleSearchList]', err); }
     };
 
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
@@ -573,8 +580,8 @@ window.DpDispWidgetPreview = {
     /* _getPath — 조회 */
     const _getPath = (lib) => lib.pathId || (Array.isArray(lib.usedPaths) && lib.usedPaths[0]) || '';
 
-    /* _getId — 조회 */
-    const _getId   = (lib) => lib.widgetLibId || lib.libId || '';
+    /* _getId — 조회 (위젯 인스턴스 ID 우선 — widgetLibId 는 참조 FK 라 식별자로 부적합) */
+    const _getId   = (lib) => lib.widgetId || lib.libId || lib.widgetLibId || '';
 
     const cfFilteredLibs = computed(() => {
       const searchVal = (applied.searchValue || '').toLowerCase();

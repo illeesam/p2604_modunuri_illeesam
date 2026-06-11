@@ -125,7 +125,8 @@ window.DpDispWidgetDtl = {
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.disp_widget_types = codeStore.sgGetGrpCodes('DISP_WIDGET_TYPE');
-      codes.active_statuses = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
+      /* 상태(form.status '활성'/'비활성') ↔ use_yn 변환 — 구 ACTIVE_STATUS 코드그룹 미사용 */
+      codes.active_statuses = [{ codeValue: '활성', codeLabel: '활성' }, { codeValue: '비활성', codeLabel: '비활성' }];
       uiState.isPageCodeLoad = true;
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
@@ -303,6 +304,7 @@ window.DpDispWidgetDtl = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(async () => {
       if (isAppReady.value) { fnLoadCodes(); }
+      fnLoadPickLibs();
       await handleLoadDetail();
       handleInitNewForm();
     });
@@ -620,10 +622,25 @@ window.DpDispWidgetDtl = {
       props.navigate('dpDispWidgetMng', { reload: true });
     };
 
-    /* -- 위젯Lib 선택 팝업 -- */
+    /* -- 위젯Lib 선택 팝업 / 참조 미리보기 — 실 dp_widget_lib (목업형 어댑터) -- */
+    const pickLibs = reactive([]);
+
+    /* fnLoadPickLibs — dp_widget_lib 로드 (1회 캐시) */
+    const fnLoadPickLibs = async () => {
+      if (pickLibs.length) { return; }
+      try {
+        const res = await boApiSvc.dpWidgetLib.getPage({ pageNo: 1, pageSize: 10000 }, '전시위젯관리', '위젯Lib조회');
+        pickLibs.splice(0, pickLibs.length, ...(res.data?.data?.pageList || []).map(x => {
+          let cfg = {}; try { cfg = JSON.parse(x.widgetConfigJson || '{}'); } catch (e) { /* 파싱 실패 무시 */ }
+          return { ...cfg, libId: x.widgetLibId, libCode: x.widgetCode, name: x.widgetNm,
+                   widgetType: x.widgetTypeCd, desc: x.widgetLibDesc, tags: cfg.tags || '',
+                   status: x.useYn === 'Y' ? '활성' : '비활성', thumbnailUrl: x.thumbnailUrl };
+        }));
+      } catch (err) { console.error('[fnLoadPickLibs]', err); }
+    };
 
     /* openLibPick — 열기 */
-    const openLibPick = (mode) => { uiState.libPickMode = mode; uiState.libPickOpen = true; };
+    const openLibPick = (mode) => { fnLoadPickLibs(); uiState.libPickMode = mode; uiState.libPickOpen = true; };
 
     /* onLibPicked — 이벤트 */
     const onLibPicked = (lib) => {
@@ -699,7 +716,7 @@ window.DpDispWidgetDtl = {
 
     return {
       columns,
-      pathPickModal, codes, form, errors,         // 상태 / 데이터
+      pathPickModal, codes, form, errors, pickLibs,         // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch + 모달 통합 콜백
       cfDtlMode, cfIsNew, cfShowActions, cfDisplayRows, cfFileListItems, // computed
       cfPreviewWidget, cfSampleJson, cfPreviewFrameWidth, // computed
@@ -742,7 +759,7 @@ window.DpDispWidgetDtl = {
   </template>
   <!-- ===== ■.■. 위젯Lib 선택 팝업 =========================================== -->
   <widget-lib-pick-modal v-if="libPickOpen" :mode="libPickMode"
-    :widget-libs="[] || []" modal-name="widget-lib-pick" :on-callback="fnCallbackModal" />
+    :widget-libs="pickLibs" modal-name="widget-lib-pick" :on-callback="fnCallbackModal" />
   <!-- ===== □. 헤더 ====================================================== -->
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:flex;gap:0;">
@@ -782,7 +799,7 @@ window.DpDispWidgetDtl = {
           <disp-x04-widget
             :params="{ }"
             :disp-opt="{ showBadges: true }"
-            :widget-item="([]||[]).find(l => l.libId===form.refLibId) || {}" />
+            :widget-item="pickLibs.find(l => l.libId===form.refLibId) || {}" />
         </div>
       </div>
       <!-- ===== ■.■.■. 설정 ================================================== -->

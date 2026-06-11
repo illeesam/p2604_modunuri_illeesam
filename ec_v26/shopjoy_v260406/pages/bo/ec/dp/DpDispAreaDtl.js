@@ -93,14 +93,17 @@ window.DpDispAreaDtl = {
       }
     };
 
-    /* handleSearchDetail — 상세 조회 (getById 가 소속 panels 까지 채워줌) */
+    /* handleSearchDetail — 상세 + 소속 패널 조회 (getById 는 영역만 반환 → 패널은 별도 getPage) */
     const handleSearchDetail = async () => {
       if (cfIsNew.value) return;
       try {
-        const res = await boApiSvc.dpArea.getById(props.dtlId, '전시영역관리', '상세조회');
-        const data = res.data?.data || {};
+        const [areaRes, panelRes] = await Promise.all([
+          boApiSvc.dpArea.getById(props.dtlId, '전시영역관리', '상세조회'),
+          boApiSvc.dpPanel.getPage({ areaId: props.dtlId, pageNo: 1, pageSize: 1000 }, '전시영역관리', '패널조회'),
+        ]);
+        const data = areaRes.data?.data || {};
         Object.assign(baseForm, data);
-        panels.splice(0, panels.length, ...(data.panels || []));
+        panels.splice(0, panels.length, ...(panelRes.data?.data?.pageList || []));
       } catch (err) {
         console.error('[handleSearchDetail]', err);
       }

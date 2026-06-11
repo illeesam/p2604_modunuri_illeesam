@@ -119,7 +119,8 @@ window.DpDispWidgetLibDtl = {
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.disp_widget_types = codeStore.sgGetGrpCodes('DISP_WIDGET_TYPE');
-      codes.active_statuses = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
+      /* 상태(form.status '활성'/'비활성') ↔ use_yn 변환 — 구 ACTIVE_STATUS 코드그룹 미사용 */
+      codes.active_statuses = [{ codeValue: '활성', codeLabel: '활성' }, { codeValue: '비활성', codeLabel: '비활성' }];
       uiState.isPageCodeLoad = true;
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);

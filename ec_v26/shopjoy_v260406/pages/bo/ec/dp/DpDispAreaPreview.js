@@ -224,7 +224,10 @@ window.DpDispAreaPreview = {
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
     const showRefModal = window.boApp.showRefModal; // 참조 모달
-    const codes = reactive({ disp_widget_types: [], disp_area: [], active_statuses: [], disp_envs: [], visibility_opts: [
+    const codes = reactive({ disp_widget_types: [],
+      /* 상태는 dp_area.use_yn 파생 (구 ACTIVE_STATUS 코드그룹 미사용) */
+      active_statuses: [{ codeValue: '활성', codeLabel: '활성' }, { codeValue: '비활성', codeLabel: '비활성' }],
+      visibility_opts: [
       { value: '', label: '전체' },
       { value: 'PUBLIC',    label: '전체공개' },
       { value: 'MEMBER',    label: '회원공개' },
@@ -235,7 +238,8 @@ window.DpDispAreaPreview = {
       { value: 'STAFF',     label: '직원' },
       { value: 'EXECUTIVE', label: '임직원' },
     ] });
-    const widgetLibs = reactive([]);
+    const areas = reactive([]);                                // 실 dp_area 목록
+    const dispData = reactive({ displays: [], codes: [] });    // DispX02Area 렌더러용 어댑터 dataset
     const uiState = reactive({ isPageCodeLoad: false, selectedLibId: null});
     const tab = Vue.toRef(uiState, 'tab');
 
@@ -307,29 +311,52 @@ window.DpDispAreaPreview = {
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.disp_widget_types = codeStore.sgGetGrpCodes('DISP_WIDGET_TYPE');
-      codes.disp_area = codeStore.sgGetGrpCodes('DISP_AREA');
-      codes.active_statuses = codeStore.sgGetGrpCodes('ACTIVE_STATUS');
-      codes.disp_envs = codeStore.sgGetGrpCodes('DISP_ENV');
       uiState.isPageCodeLoad = true;
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    // 코드 주입
-
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
 
-    /* handleSearchList — 목록 조회 */
-    const handleSearchList = async (searchType = 'DEFAULT') => {
+    /* handleSearchList — dp_ui / dp_area / dp_panel 병렬 조회 + 렌더러(dispDataset) 어댑터 구성 */
+    const handleSearchList = async () => {
       try {
-        const res = await boApiSvc.dpWidgetLib.getPage({ pageNo: 1, pageSize: 10000 }, '전시영역관리', '조회');
-        widgetLibs.splice(0, widgetLibs.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
-      } catch (_) {}
+        const [uiRes, areaRes, panelRes] = await Promise.all([
+          boApiSvc.dpUi.getPage({ pageNo: 1, pageSize: 10000 }, '전시영역미리보기', 'UI조회'),
+          boApiSvc.dpArea.getPage({ pageNo: 1, pageSize: 10000 }, '전시영역미리보기', '조회'),
+          boApiSvc.dpPanel.getPage({ pageNo: 1, pageSize: 10000 }, '전시영역미리보기', '패널조회'),
+        ]);
+        const uiRows    = uiRes.data?.data?.pageList || [];
+        const areaRows  = areaRes.data?.data?.pageList || [];
+        const panelRows = panelRes.data?.data?.pageList || [];
+        const uiNmById = Object.fromEntries(uiRows.map(u => [u.uiId, (u.uiCd ? '[' + u.uiCd + '] ' : '') + (u.uiNm || '')]));
+        areas.splice(0, areas.length, ...areaRows.map(a => ({ ...a, uiLabel: uiNmById[a.uiId] || '(미지정 UI)' })));
+        /* 영역 → DispX02Area info 용 DISP_AREA 코드형 엔트리 */
+        dispData.codes = areaRows.map((a, i) => ({
+          codeGrp: 'DISP_AREA', codeValue: a.areaCd, codeLabel: a.areaNm,
+          sortOrd: i, layoutType: 'grid', gridCols: 1, titleYn: 'N',
+        }));
+        /* 패널 → displays (rows = content_json.rows, 상태 SHOW/HIDE → 활성/비활성) */
+        const areaCdById = Object.fromEntries(areaRows.map(a => [a.areaId, a.areaCd]));
+        dispData.displays = panelRows.map((p, i) => {
+          let rows = []; try { rows = JSON.parse(p.contentJson || '{}').rows || []; } catch (e) { /* 파싱 실패 무시 */ }
+          return {
+            dispId: p.panelId, name: p.panelNm, area: areaCdById[p.areaId] || '',
+            status: p.dispPanelStatusCd === 'SHOW' ? '활성' : '비활성',
+            rows, sortOrder: i + 1, dispYn: 'Y', useYn: p.useYn,
+            useStartDate: String(p.useStartDate || '').slice(0, 10),
+            useEndDate: String(p.useEndDate || '').slice(0, 10),
+            dispStartDt: '', dispEndDt: '', dispEnv: '',
+            visibilityTargets: p.visibilityTargets || '',
+            layoutType: 'grid', gridCols: 1, titleYn: 'N', title: '',
+          };
+        });
+      } catch (err) { console.error('[handleSearchList]', err); }
     };
 
     // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchList('DEFAULT');
+      handleSearchList();
     });
 
     const today   = new Date().toISOString().slice(0, 10);
@@ -378,46 +405,40 @@ window.DpDispAreaPreview = {
     onResetCurrent();   // 검색 초기화 시 우측 미리보기도 비움
     };
 
+    /* _adaptArea — 실 dp_area 행 → 트리/슬롯 leaf 형태 (areaCode 가 disp-x02-area 렌더 트리거) */
+    const _adaptArea = (a) => ({
+      libId: a.areaId,
+      areaId: a.areaId,
+      areaCode: a.areaCd,
+      areaLabel: a.areaNm,
+      name: `${a.areaCd || ''} ${a.areaNm || ''}`.trim(),
+      widgetType: '-',
+      uiLabel: a.uiLabel,
+      status: a.useYn === 'Y' ? '활성' : '비활성',
+    });
+
     const cfFilteredLibs = computed(() => {
       const searchVal = applied.searchValue;
-      const types = applied.searchType || 'widgetNm,tag,widgetLibDesc';
-      return (Array.isArray(widgetLibs) ? widgetLibs : []).filter(lib => {
-        if (applied.type   && lib.widgetType !== applied.type) { return false; }
-        if (applied.status && lib.status     !== applied.status) { return false; }
-        if (applied.dispEnv && lib.dispEnv && !lib.dispEnv.includes('^' + applied.dispEnv + '^')) { return false; }
-        if (searchVal) {
-          const hits = [];
-          if (types.includes('widgetNm')) { hits.push((lib.name || '').toLowerCase().includes(searchVal)); }
-          if (types.includes('tag')) { hits.push((lib.tags || '').toLowerCase().includes(searchVal)); }
-          if (types.includes('widgetLibDesc')) { hits.push((lib.desc || '').toLowerCase().includes(searchVal)); }
-          if (!hits.some(Boolean)) { return false; }
-        }
+      return areas.map(_adaptArea).filter(item => {
+        if (applied.status && item.status !== applied.status) { return false; }
+        if (searchVal && !(item.name || '').toLowerCase().includes(searchVal)) { return false; }
         return true;
       });
     });
 
     /* -- 트리 선택 -- */
-        const onTreeSelect  = (lib) => { uiState.selectedLibId = lib.libId; };
+    const onTreeSelect  = (lib) => { uiState.selectedLibId = lib.libId; };
 
-    /* -- 트리 상태 -- */
-    /* -- 영역 트리: prefix > codeLabel > (codeValue codeLabel) -- */
+    /* -- 영역 트리: 소속 UI > 영역코드 > (영역) — 실 dp_area 기반 -- */
     const cfTree = computed(() => {
       const map = {};
-      (codes.disp_area || [])
-        .filter(c => c.codeGrp === 'DISP_AREA')
-        .forEach(a => {
-          const top = (a.codeValue || '').split('_')[0] || '(기타)';
-          const subKey = a.codeLabel || a.codeValue;
-          if (!map[top]) { map[top] = {}; }
-          if (!map[top][subKey]) { map[top][subKey] = []; }
-          map[top][subKey].push({
-            libId: a.codeId,
-            name: `${a.codeValue} ${a.codeLabel || ''}`.trim(),
-            widgetType: '-',
-            areaCode: a.codeValue,
-            areaLabel: a.codeLabel,
-          });
-        });
+      cfFilteredLibs.value.forEach(item => {
+        const top = item.uiLabel || '(미지정 UI)';
+        const subKey = item.areaCode || item.name;
+        if (!map[top]) { map[top] = {}; }
+        if (!map[top][subKey]) { map[top][subKey] = []; }
+        map[top][subKey].push(item);
+      });
       return Object.keys(map).sort().map(top => ({
         label: top,
         children: Object.keys(map[top]).sort().map(sub => ({
@@ -426,6 +447,10 @@ window.DpDispAreaPreview = {
         })),
       }));
     });
+
+    /* fnAreaInfo / fnAreaPanels — disp-x02-area 의 areaItem(info/panels) 구성 헬퍼 */
+    const fnAreaInfo   = (areaCode) => dispData.codes.find(c => c.codeValue === areaCode) || {};
+    const fnAreaPanels = (areaCode) => dispData.displays.filter(p => p.area === areaCode);
     const openNodes = reactive(new Set());
 
     /* toggleNode — 노드 토글 */
@@ -736,12 +761,12 @@ window.DpDispAreaPreview = {
     // ===== return (템플릿 노출) ===============================================
 
     return {
-      codes, searchParam, applied, widgetLibs, uiState, gridState,                  // 상태 / 데이터
+      codes, searchParam, applied, areas, dispData, uiState, gridState,             // 상태 / 데이터
       tabSlots, dashCanvas, dashItems, openNodes, dragState,                        // 상태 / 데이터
       handleBtnAction, handleSelectAction,                                          // dispatch (모든 이벤트 / 액션 라우팅)
       cfSiteNm, cfFilteredLibs, cfTree, cfAutoGridColumns, cfCurrentSlots, cfPlacedCount, // computed
       GRID_TABS, GRID_COLS, VIEWPORT, today,                                        // 상수
-      wIcon, wTypeLabel, isOpen, allChildrenOpen,                                   // 헬퍼
+      wIcon, wTypeLabel, isOpen, allChildrenOpen, fnAreaInfo, fnAreaPanels,         // 헬퍼
       toggleAllChildren,                                                            // 헬퍼 (이벤트인자 인라인)
       onItemDragStart, onItemDragEnd, onNodeDragStart, onNodeDragEnd,               // dnd 핸들러
       onDragOver, onDragLeave, onDrop,                                              // dnd 핸들러
@@ -791,19 +816,6 @@ window.DpDispAreaPreview = {
       </div>
       <div style="display:flex;align-items:center;gap:5px;">
         <span style="font-size:12px;font-weight:600;color:#555;">
-          환경
-        </span>
-        <select v-model="searchParam.filterDispEnv" class="form-control" style="width:76px;margin:0;font-size:12px;">
-          <option value="">
-            전체
-          </option>
-          <option v-for="c in codes.disp_envs" :key="c.codeValue" :value="c.codeValue">
-            {{ c.codeLabel }}
-          </option>
-        </select>
-      </div>
-      <div style="display:flex;align-items:center;gap:5px;">
-        <span style="font-size:12px;font-weight:600;color:#555;">
           공개대상
         </span>
         <select v-model="searchParam.filterVisibility" class="form-control" style="width:100px;margin:0;font-size:12px;">
@@ -814,28 +826,8 @@ window.DpDispAreaPreview = {
       </div>
       <div style="width:1px;height:24px;background:#e0e0e0;">
       </div>
-      <!-- ===== ■.■.■. 영역 ================================================== -->
-      <div style="display:flex;align-items:center;gap:5px;">
-        <span style="font-size:12px;font-weight:600;color:#555;">
-          위젯유형
-        </span>
-        <select v-model="searchParam.filterType" class="form-control" style="width:114px;margin:0;font-size:12px;">
-          <option v-for="t in codes.disp_widget_types" :key="t?.value" :value="t.codeValue">
-            {{ t.codeLabel }}
-          </option>
-        </select>
-      </div>
-      <bo-multi-check-select
-        v-model="searchParam.searchType"
-        :options="[
-        { value: 'widgetNm',   label: '이름' },
-        { value: 'tag',  label: '태그' },
-        { value: 'widgetLibDesc', label: '설명' },
-        ]"
-        placeholder="검색대상 전체"
-        all-label="전체 선택"
-        min-width="130px" />
-      <input v-model="searchParam.searchValue" class="form-control" placeholder="검색어 입력" style="margin:0;width:130px;font-size:12px;" @keyup.enter="handleBtnAction('searchParam-apply')" />
+      <!-- ===== ■.■.■. 영역 검색 =============================================== -->
+      <input v-model="searchParam.searchValue" class="form-control" placeholder="영역명/코드 검색" style="margin:0;width:150px;font-size:12px;" @keyup.enter="handleBtnAction('searchParam-apply')" />
       <span style="font-size:12px;color:#888;">
         총
         <b>
@@ -1148,7 +1140,7 @@ window.DpDispAreaPreview = {
                 </button>
               </div>
               <!-- ===== ■.■.■.■.■.■.■.■.■.■. 위젯미리보기 ================================ -->
-              <disp-x02-area v-if="slot.areaCode" :params="{ date: searchParam.previewDate, time: searchParam.previewTime, status: applied.status, visibilityTargets: applied.visibility ? '^' + applied.visibility + '^' : '' }" :disp-opt="{ layout:'auto', showHeader:true, showBadges:false, mode:'area_detail', showDesc:false }" :area-item="{ code: slot.areaCode, label: slot.areaLabel, info: ([]||[]).find(c => c.codeGrp==='DISP_AREA' && c.codeValue===slot.areaCode) || {}, panels: ([]||[]).filter(p => p.area===slot.areaCode).sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0)) }" />
+              <disp-x02-area v-if="slot.areaCode" :params="{ date: searchParam.previewDate, time: searchParam.previewTime, status: applied.status, visibilityTargets: applied.visibility ? '^' + applied.visibility + '^' : '' }" :disp-dataset="dispData" :disp-opt="{ layout:'auto', showHeader:true, showBadges:false, mode:'area_detail', showDesc:false }" :area-item="{ code: slot.areaCode, label: slot.areaLabel, info: fnAreaInfo(slot.areaCode), panels: fnAreaPanels(slot.areaCode) }" />
               <widget-preview v-else :lib="slot" />
             </template>
           </div>
@@ -1221,7 +1213,7 @@ window.DpDispAreaPreview = {
   </div>
   <!-- ===== ■.■.■.■.■.■. 위젯미리보기 ======================================== -->
   <div style="overflow:hidden;" :style="{maxHeight:(item.h-40)+'px'}">
-    <disp-x02-area v-if="item.lib.areaCode" :params="{ date: searchParam.previewDate, time: searchParam.previewTime, status: applied.status, visibilityTargets: applied.visibility ? '^' + applied.visibility + '^' : '' }" :disp-opt="{ layout:'auto', showHeader:true, showBadges:false, mode:'area_detail', showDesc:false }" :area-item="{ code: item.lib.areaCode, label: item.lib.areaLabel, info: ([]||[]).find(c => c.codeGrp==='DISP_AREA' && c.codeValue===item.lib.areaCode) || {}, panels: ([]||[]).filter(p => p.area===item.lib.areaCode).sort((a,b)=>(a.sortOrder||0)-(b.sortOrder||0)) }" />
+    <disp-x02-area v-if="item.lib.areaCode" :params="{ date: searchParam.previewDate, time: searchParam.previewTime, status: applied.status, visibilityTargets: applied.visibility ? '^' + applied.visibility + '^' : '' }" :disp-dataset="dispData" :disp-opt="{ layout:'auto', showHeader:true, showBadges:false, mode:'area_detail', showDesc:false }" :area-item="{ code: item.lib.areaCode, label: item.lib.areaLabel, info: fnAreaInfo(item.lib.areaCode), panels: fnAreaPanels(item.lib.areaCode) }" />
     <widget-preview v-else :lib="item.lib" />
   </div>
   <!-- ===== ■.■.■.■.■.■. 크기 조절 핸들 ====================================== -->

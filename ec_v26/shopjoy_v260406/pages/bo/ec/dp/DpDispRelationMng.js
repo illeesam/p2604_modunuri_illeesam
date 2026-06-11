@@ -10,10 +10,7 @@ window.DpDispRelationMng = {
 
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
-    const codes = reactive({
-      disp_relation_types: [],
-      date_range_opts: [],
-    });
+    const codes = reactive({});
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
@@ -46,98 +43,104 @@ window.DpDispRelationMng = {
 
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
-      const codeStore = window.sfGetBoCodeStore();
-      try {
-        codes.disp_relation_types = codeStore.sgGetGrpCodes('DISP_RELATION_TYPE');
-        codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
-        uiState.isPageCodeLoad = true;
-      } catch (err) {
-        console.error('[fnLoadCodes]', err);
-      }
+      uiState.isPageCodeLoad = true;
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    const displays = reactive([]);
+    /* 실 데이터 — dp_ui / dp_area / dp_panel (직접 FK 계층) */
+    const uis = reactive([]);
+    const areas = reactive([]);
+    const panels = reactive([]);
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
 
-    /* handleSearchData — 처리 */
-    const handleSearchData = async (searchType = 'DEFAULT') => {
+    /* handleSearchData — UI/영역/패널 3계층 병렬 조회 (조인은 cfTreeData에서 uiId/areaId 기준) */
+    const handleSearchData = async () => {
+      uiState.loading = true;
       try {
-        const res = await boApiSvc.dpUi.getPage({ pageNo: 1, pageSize: 10000 }, '전시연관관리', '조회');
-        displays.splice(0, displays.length, ...(res.data?.data?.pageList || res.data?.data?.list || []));
-      } catch (_) {
-      console.error('[catch-info]', _);}
+        const params = { pageNo: 1, pageSize: 10000, ...coUtil.cofOmitEmpty(searchParam) };
+        const [uiRes, areaRes, panelRes] = await Promise.all([
+          boApiSvc.dpUi.getPage(params, '전시관계도', '조회'),
+          boApiSvc.dpArea.getPage(params, '전시관계도', '조회'),
+          boApiSvc.dpPanel.getPage(params, '전시관계도', '조회'),
+        ]);
+        uis.splice(0, uis.length, ...(uiRes.data?.data?.pageList || []));
+        areas.splice(0, areas.length, ...(areaRes.data?.data?.pageList || []));
+        panels.splice(0, panels.length, ...(panelRes.data?.data?.pageList || []));
+        uiState.error = null;
+      } catch (err) {
+        uiState.error = err.message;
+        console.error('[handleSearchData]', err);
+      } finally {
+        uiState.loading = false;
+      }
     };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     /* _initSearchParam — 초기화 */
     const _initSearchParam = () => {
       const today = new Date(); const thisYear = today.getFullYear();
       return { dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
     };
+    const searchParam = reactive(_initSearchParam());
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) { fnLoadCodes(); }
-      handleSearchData('DEFAULT');    });
-
-    /* 검색 */
-  const searchParam = reactive(_initSearchParam());
+      handleSearchData();
+    });
 
     /* onSearch — 조회 */
-    const onSearch = async () => {
-    try {
-      const params = { pageNo: 1, pageSize: 100000, ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)) };
-      const res = await boApiSvc.dpResource.getPage(params, '전시연관관리', '조회');
-      // TODO: Update items array based on response
-      pager.pageNo = 1;
-      await handleSearchData();
-    } catch (err) {
-      console.error('[catch-info]', err);
-    }
-  };
+    const onSearch = () => handleSearchData();
 
     /* onReset — 초기화 */
     const onReset = () => {
-    Object.assign(searchParam, _initSearchParam());
-    onSearch();
-  };
+      Object.assign(searchParam, _initSearchParam());
+      return handleSearchData();
+    };
 
-    const cfTreeData = computed(() => {
-      const uis = displays || [];
-      return uis.map(ui => ({
-        type: 'ui',
-        id: ui.dispId,
-        code: ui.dispId,
-        name: ui.name,
-        useYn: ui.useYn,
-        visibilityTargets: ui.visibilityTargets || '',
-        childCount: (ui.areas || []).length,
-        children: (ui.areas || []).map(area => {
-          const areaPanels = (area.panels || []);
+    /* _panelWidgetCount — dp_panel.content_json rows 개수 (위젯 수) */
+    const _panelWidgetCount = (p) => {
+      try { return (JSON.parse(p.contentJson || '{}').rows || []).length; } catch (e) { return 0; }
+    };
 
-          return {
-            type: 'area',
-            id: area.codeId,
-            code: area.codeValue,
-            name: area.codeLabel,
-            useYn: area.useYn,
-            visibilityTargets: area.visibilityTargets || '',
-            childCount: areaPanels.length,
-            children: areaPanels
-              .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
-              .map(p => ({
+    const cfTreeData = computed(() =>
+      uis.map(ui => {
+        const uiAreas = areas.filter(a => a.uiId === ui.uiId);
+        return {
+          type: 'ui',
+          id: ui.uiId,
+          code: ui.uiCd,
+          name: (ui.uiCd ? '[' + ui.uiCd + '] ' : '') + (ui.uiNm || ''),
+          useYn: ui.useYn,
+          visibilityTargets: '',
+          childCount: uiAreas.length,
+          children: uiAreas.map(area => {
+            const areaPanels = panels
+              .filter(p => p.areaId === area.areaId)
+              .sort((a, b) => String(a.panelId).localeCompare(String(b.panelId)));
+            return {
+              type: 'area',
+              id: area.areaId,
+              code: area.areaCd,
+              name: (area.areaCd ? '[' + area.areaCd + '] ' : '') + (area.areaNm || ''),
+              useYn: area.useYn,
+              visibilityTargets: '',
+              childCount: areaPanels.length,
+              children: areaPanels.map(p => ({
                 type: 'panel',
-                id: p.dispId,
-                code: p.dispId,
-                name: p.name,
+                id: p.panelId,
+                code: p.panelId,
+                name: p.panelNm,
                 useYn: p.useYn,
+                statusCd: p.dispPanelStatusCd,
                 visibilityTargets: p.visibilityTargets || '',
-                childCount: (p.rows || []).length,
+                childCount: _panelWidgetCount(p),
               })),
-          };
-        }),
-      }));
-    });
+            };
+          }),
+        };
+      })
+    );
 
     const expandedNodes = reactive(new Set());
 
@@ -268,6 +271,12 @@ window.DpDispRelationMng = {
                   {{ fnGetVisibilityBadges(panel.visibilityTargets).join(', ') }}
                 </span>
               </template>
+              <span v-if="panel.statusCd"
+                :style="panel.statusCd==='SHOW'
+                  ? {background:'#e8f5e9', color:'#2e7d32', fontSize:'10px', borderRadius:'6px', padding:'2px 8px', fontWeight:600, flexShrink:0}
+                  : {background:'#f1f1f1', color:'#999', fontSize:'10px', borderRadius:'6px', padding:'2px 8px', fontWeight:600, flexShrink:0}">
+                {{ panel.statusCd==='SHOW' ? '노출' : '숨김' }}
+              </span>
               <span :style="{background: fnGetUseYnBadge(panel.useYn).bg, color: fnGetUseYnBadge(panel.useYn).color, fontSize:'10px', borderRadius:'6px', padding:'2px 8px', fontWeight:600, flexShrink:0}">
                 {{ fnGetUseYnBadge(panel.useYn).text }}
               </span>
