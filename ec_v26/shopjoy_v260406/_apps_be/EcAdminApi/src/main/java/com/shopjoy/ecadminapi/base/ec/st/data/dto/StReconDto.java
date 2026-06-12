@@ -15,6 +15,8 @@ public class StReconDto {
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
         @Size(max = 21) private String reconId;
+        @Size(max = 20) private String reconTypeCd;
+        @Size(max = 20) private String reconStatusCd;
     }
 
     @Getter @Setter @NoArgsConstructor

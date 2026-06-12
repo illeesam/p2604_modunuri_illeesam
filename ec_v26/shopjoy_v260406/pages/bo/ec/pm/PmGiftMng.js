@@ -96,6 +96,8 @@ window.PmGiftMng = {
       gift_statuses: [],
       gift_cond_types: [],
       date_range_opts: [],
+      // 기간유형 — 백엔드 baseAndDateRange switch(reg_date/upd_date) 와 정합 (GIFT_DATE_TYPE 코드그룹 미존재 → 정적)
+      gift_date_types: [{ value: 'reg_date', label: '등록일' }, { value: 'upd_date', label: '수정일' }],
     });
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
@@ -104,7 +106,7 @@ window.PmGiftMng = {
     /* _initSearchParam — 초기화 */
     const _initSearchParam = () => {
       const today = new Date(); const thisYear = today.getFullYear();
-      return { searchType: '', searchValue: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, type: '', status: '' };
+      return { searchType: '', searchValue: '', dateType: 'reg_date', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, giftTypeCd: '', giftStatusCd: '' };
     };
     const searchParam = reactive(_initSearchParam());
     // ===== 공통코드 로딩 ===================================================
@@ -282,10 +284,11 @@ window.PmGiftMng = {
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
-      { key: 'type', type: 'select', label: '유형', options: () => codes.gift_cond_types, nullLabel: '유형 전체' },
-      { key: 'status', type: 'select', label: '상태', options: () => codes.gift_statuses, nullLabel: '상태 전체' },
+      { key: 'giftTypeCd', type: 'select', label: '유형', options: () => codes.gift_cond_types, nullLabel: '유형 전체' },
+      { key: 'giftStatusCd', type: 'select', label: '상태', options: () => codes.gift_statuses, nullLabel: '상태 전체' },
       { key: 'dateRange', type: 'dateRange', label: '시작일',
-        startKey: 'dateStart', endKey: 'dateEnd',
+        typeKey: 'dateType', startKey: 'dateStart', endKey: 'dateEnd',
+        typeOptions: () => codes.gift_date_types,
         rangeOptions: () => codes.date_range_opts,
         onRangeChange: () => handleBtnAction('searchParam-dateRange') },
     ];

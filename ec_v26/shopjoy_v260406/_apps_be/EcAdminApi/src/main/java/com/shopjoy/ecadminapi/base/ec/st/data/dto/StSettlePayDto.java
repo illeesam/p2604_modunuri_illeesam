@@ -15,6 +15,7 @@ public class StSettlePayDto {
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
         @Size(max = 21) private String settlePayId;
+        @Size(max = 20) private String payStatusCd;
     }
 
     @Getter @Setter @NoArgsConstructor

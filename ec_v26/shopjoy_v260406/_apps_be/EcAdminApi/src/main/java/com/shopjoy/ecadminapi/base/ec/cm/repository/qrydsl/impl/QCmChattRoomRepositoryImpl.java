@@ -63,6 +63,7 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
                 baseAndSiteId(search),
                 baseAndChattRoomId(search),
                 baseAndMemberId(search),
+                baseAndChattStatusCd(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
         )
@@ -90,6 +91,7 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
                 baseAndSiteId(search),
                 baseAndChattRoomId(search),
                 baseAndMemberId(search),
+                baseAndChattStatusCd(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
         };
@@ -140,6 +142,12 @@ public class QCmChattRoomRepositoryImpl implements QCmChattRoomRepository {
     private BooleanExpression baseAndMemberId(CmChattRoomDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberId())
                 ? cmChattRoom.memberId.eq(search.getMemberId()) : null;
+    }
+
+    /* chattStatusCd 정확 일치 */
+    private BooleanExpression baseAndChattStatusCd(CmChattRoomDto.Request search) {
+        return search != null && StringUtils.hasText(search.getChattStatusCd())
+                ? cmChattRoom.chattStatusCd.eq(search.getChattStatusCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */

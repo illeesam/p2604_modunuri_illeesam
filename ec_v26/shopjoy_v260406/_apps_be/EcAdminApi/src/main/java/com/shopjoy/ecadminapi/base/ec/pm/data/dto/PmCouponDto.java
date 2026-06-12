@@ -21,6 +21,7 @@ public class PmCouponDto {
         @Size(max = 21) private String couponId;
         private List<String> couponIds;                // PK 다건 IN
         @Size(max = 21) private String memberId;
+        @Size(max = 20) private String couponStatusCd; // 상태 (코드: COUPON_STATUS)
     }
 
     @Getter @Setter @NoArgsConstructor

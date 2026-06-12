@@ -58,6 +58,9 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
         JPAQuery<DpWidgetDto.Item> query = baseQuery()
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
+                    baseAndSiteId(search),
+                    baseAndWidgetTypeCd(search),
+                    baseAndUseYn(search),
                     baseAndSearchValue(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -80,6 +83,9 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
         int limit    = pageSize;
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
+                baseAndSiteId(search),
+                baseAndWidgetTypeCd(search),
+                baseAndUseYn(search),
                 baseAndSearchValue(search)
         };
         // 공용 base: 조인까지만 정의 (list/count 가 동일한 from·join 공유)
@@ -110,6 +116,24 @@ public class QDpWidgetRepositoryImpl implements QDpWidgetRepository {
      * .where(andSiteId(s), andDeptId(s), ...) 형태로 직접 나열 사용
      * null 반환은 .where(Predicate...) vararg 가 자동 무시
      * ============================================================ */
+
+    /* widgetTypeCd 정확 일치 (위젯 유형 드롭다운) */
+    private BooleanExpression baseAndWidgetTypeCd(DpWidgetDto.Request search) {
+        return search != null && StringUtils.hasText(search.getWidgetTypeCd())
+                ? dpWidget.widgetTypeCd.eq(search.getWidgetTypeCd()) : null;
+    }
+
+    /* useYn 정확 일치 (상태 드롭다운 Y/N) */
+    private BooleanExpression baseAndUseYn(DpWidgetDto.Request search) {
+        return search != null && StringUtils.hasText(search.getUseYn())
+                ? dpWidget.useYn.eq(search.getUseYn()) : null;
+    }
+
+    /* siteId 정확 일치 */
+    private BooleanExpression baseAndSiteId(DpWidgetDto.Request search) {
+        return search != null && StringUtils.hasText(search.getSiteId())
+                ? dpWidget.siteId.eq(search.getSiteId()) : null;
+    }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
     private BooleanExpression baseAndSearchValue(DpWidgetDto.Request search) {

@@ -18,6 +18,8 @@ public class PdReviewDto {
         @Size(max = 21) private String siteId;
         @Size(max = 21) private String reviewId;
         @Size(max = 21) private String prodId;
+        @Size(max = 20) private String reviewStatusCd;
+        @Size(max = 5)  private String rating;
     }
 
     @Getter @Setter @NoArgsConstructor

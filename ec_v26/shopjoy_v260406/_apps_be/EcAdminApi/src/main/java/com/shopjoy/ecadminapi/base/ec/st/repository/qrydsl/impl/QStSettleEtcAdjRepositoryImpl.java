@@ -72,6 +72,7 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
                 .where(
                     baseAndSiteId(search),
                     baseAndSettleEtcAdjId(search),
+                    baseAndEtcAdjTypeCd(search),
                     baseAndDateRange(search),
                     baseAndSearchValue(search)
                 )
@@ -98,6 +99,7 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
         BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndSettleEtcAdjId(search),
+                baseAndEtcAdjTypeCd(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
         };
@@ -143,6 +145,12 @@ public class QStSettleEtcAdjRepositoryImpl implements QStSettleEtcAdjRepository 
     private BooleanExpression baseAndSettleEtcAdjId(StSettleEtcAdjDto.Request search) {
         return search != null && StringUtils.hasText(search.getSettleEtcAdjId())
                 ? stSettleEtcAdj.settleEtcAdjId.eq(search.getSettleEtcAdjId()) : null;
+    }
+
+    /* etcAdjTypeCd 정확 일치 (유형 필터) */
+    private BooleanExpression baseAndEtcAdjTypeCd(StSettleEtcAdjDto.Request search) {
+        return search != null && StringUtils.hasText(search.getEtcAdjTypeCd())
+                ? stSettleEtcAdj.etcAdjTypeCd.eq(search.getEtcAdjTypeCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */

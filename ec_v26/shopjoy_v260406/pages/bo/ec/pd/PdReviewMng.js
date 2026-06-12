@@ -166,7 +166,7 @@ window.PdReviewMng = {
     const selectedId   = ref(null);
 
     /* _initSearchParam — 초기화 */
-    const _initSearchParam = () => ({ status: '', rating: '' });
+    const _initSearchParam = () => ({ reviewStatusCd: '', rating: '' });
     const searchParam = reactive(_initSearchParam());
 
     const STATUS_LABEL = { ACTIVE:'공개', HIDDEN:'숨김', DELETED:'삭제' };
@@ -346,7 +346,7 @@ window.PdReviewMng = {
         const columns = {};
         columns.baseSearch = [
       { key: 'searchValue', label: '리뷰제목', type: 'text', placeholder: '리뷰 제목 검색' },
-      { key: 'status', label: '상태', type: 'select', options: () => codes.review_status_list, nullLabel: '전체' },
+      { key: 'reviewStatusCd', label: '상태', type: 'select', options: () => codes.review_status_list, nullLabel: '전체' },
       { key: 'rating', label: '평점', type: 'select', options: () => codes.review_rating_opts, nullLabel: '전체' },
     ];
 

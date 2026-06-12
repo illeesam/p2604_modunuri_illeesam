@@ -76,6 +76,8 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
                 .where(
                     baseAndSiteId(search),
                     baseAndGiftId(search),
+                    baseAndGiftTypeCd(search),
+                    baseAndGiftStatusCd(search),
                     baseAndUseYn(search),
                     baseAndDateRange(search),
                     baseAndSearchValue(search)
@@ -103,6 +105,8 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
         BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndGiftId(search),
+                baseAndGiftTypeCd(search),
+                baseAndGiftStatusCd(search),
                 baseAndUseYn(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
@@ -148,6 +152,18 @@ public class QPmGiftRepositoryImpl implements QPmGiftRepository {
     private BooleanExpression baseAndGiftId(PmGiftDto.Request search) {
         return search != null && StringUtils.hasText(search.getGiftId())
                 ? pmGift.giftId.eq(search.getGiftId()) : null;
+    }
+
+    /* giftTypeCd 정확 일치 (조건유형 select) */
+    private BooleanExpression baseAndGiftTypeCd(PmGiftDto.Request search) {
+        return search != null && StringUtils.hasText(search.getGiftTypeCd())
+                ? pmGift.giftTypeCd.eq(search.getGiftTypeCd()) : null;
+    }
+
+    /* giftStatusCd 정확 일치 (상태 select) */
+    private BooleanExpression baseAndGiftStatusCd(PmGiftDto.Request search) {
+        return search != null && StringUtils.hasText(search.getGiftStatusCd())
+                ? pmGift.giftStatusCd.eq(search.getGiftStatusCd()) : null;
     }
 
     /* useYn 정확 일치 */

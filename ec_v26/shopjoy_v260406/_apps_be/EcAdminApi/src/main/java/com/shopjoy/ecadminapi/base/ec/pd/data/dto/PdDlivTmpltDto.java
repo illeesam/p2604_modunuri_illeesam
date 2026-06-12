@@ -15,6 +15,7 @@ public class PdDlivTmpltDto {
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
         @Size(max = 1) private String useYn;
+        @Size(max = 20) private String dlivMethodCd;
         @Size(max = 21) private String dlivTmpltId;
     }
 

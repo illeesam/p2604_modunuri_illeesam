@@ -17,6 +17,7 @@ public class PmVoucherDto {
         @Size(max = 21) private String siteId;
         @Size(max = 1) private String useYn;
         @Size(max = 21) private String voucherId;
+        @Size(max = 20) private String voucherStatusCd; // 상태 (코드: VOUCHER_STATUS)
     }
 
     @Getter @Setter @NoArgsConstructor

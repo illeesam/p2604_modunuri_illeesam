@@ -19,6 +19,7 @@ import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyBbsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -67,7 +68,9 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
                 .where(
                     baseAndSiteId(search),
                     baseAndBbsId(search),
+                    baseAndBbmId(search),
                     baseAndStatus(search),
+                    baseAndDateRange(search),
                     baseAndSearchValue(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -93,7 +96,9 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
         BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndBbsId(search),
+                baseAndBbmId(search),
                 baseAndStatus(search),
+                baseAndDateRange(search),
                 baseAndSearchValue(search)
         };
 
@@ -135,6 +140,28 @@ public class QSyBbsRepositoryImpl implements QSyBbsRepository {
     private BooleanExpression baseAndBbsId(SyBbsDto.Request search) {
         return search != null && StringUtils.hasText(search.getBbsId())
                 ? syBbs.bbsId.eq(search.getBbsId()) : null;
+    }
+
+    /* bbmId(게시판) 정확 일치 */
+    private BooleanExpression baseAndBbmId(SyBbsDto.Request search) {
+        return search != null && StringUtils.hasText(search.getBbmId())
+                ? syBbs.bbmId.eq(search.getBbmId()) : null;
+    }
+
+    /* 등록일(regDate) 기간 검색 — dateStart/dateEnd (yyyy-MM-dd) 포함 범위 */
+    private BooleanExpression baseAndDateRange(SyBbsDto.Request search) {
+        if (search == null) return null;
+        BooleanExpression expr = null;
+        if (StringUtils.hasText(search.getDateStart())) {
+            LocalDateTime from = LocalDate.parse(search.getDateStart(), DF).atStartOfDay();
+            expr = syBbs.regDate.goe(from);
+        }
+        if (StringUtils.hasText(search.getDateEnd())) {
+            LocalDateTime to = LocalDate.parse(search.getDateEnd(), DF).atTime(23, 59, 59);
+            BooleanExpression toExpr = syBbs.regDate.loe(to);
+            expr = expr == null ? toExpr : expr.and(toExpr);
+        }
+        return expr;
     }
 
     /* bbsStatusCd 정확 일치 */

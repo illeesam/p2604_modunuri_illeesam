@@ -94,7 +94,7 @@ window.CmBlogMng = {
     };
 
     const _initSearchParam = () => {
-      return { searchType: '', searchValue: '', use: '', notice: '' };
+      return { searchType: '', searchValue: '', useYn: '', isNotice: '' };
     };
     const searchParam = reactive(_initSearchParam());
 
@@ -283,8 +283,8 @@ window.CmBlogMng = {
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
-      { key: 'use', type: 'select', label: '공개여부', options: () => codes.open_yn_opts, nullLabel: '전체' },
-      { key: 'notice', type: 'select', label: '공지여부', options: () => codes.notice_yn_opts, nullLabel: '전체' },
+      { key: 'useYn', type: 'select', label: '공개여부', options: () => codes.open_yn_opts, nullLabel: '전체' },
+      { key: 'isNotice', type: 'select', label: '공지여부', options: () => codes.notice_yn_opts, nullLabel: '전체' },
     ];
 
     // 기본 그리드

@@ -20,6 +20,7 @@ public class SyBrandDto {
         @Size(max = 21) private String brandId;
         @Size(max = 21) private String pathId;
         @Size(max = 21) private String vendorId;
+        @Size(max = 1)  private String useYn;
     }
 
     /** 단건/목록 항목 */

@@ -108,7 +108,7 @@ window.PmEventMng = {
 
     const _initSearchParam = () => {
       const today = new Date(); const thisYear = today.getFullYear();
-      return { searchValue: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, status: '' };
+      return { searchValue: '', dateRange: '', dateType: 'reg_date', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, eventStatusCd: '' };
     };
     const searchParam = reactive(_initSearchParam());
     /* 이벤트 fnLoadCodes */
@@ -259,7 +259,7 @@ window.PmEventMng = {
     const columns = {};
     columns.baseSearch = [
       { key: 'searchValue', type: 'text', label: '이벤트 제목', placeholder: '이벤트 제목 검색' },
-      { key: 'status', type: 'select', label: '상태', options: () => codes.event_statuses, nullLabel: '상태 전체' },
+      { key: 'eventStatusCd', type: 'select', label: '상태', options: () => codes.event_statuses, nullLabel: '상태 전체' },
       { key: 'dateRange', type: 'dateRange', label: '등록일',
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,

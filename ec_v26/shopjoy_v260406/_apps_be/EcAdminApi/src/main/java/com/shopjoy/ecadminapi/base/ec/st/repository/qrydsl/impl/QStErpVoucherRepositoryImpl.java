@@ -78,6 +78,8 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
                 .where(
                     baseAndSiteId(search),
                     baseAndErpVoucherId(search),
+                    baseAndErpVoucherTypeCd(search),
+                    baseAndErpVoucherStatusCd(search),
                     baseAndDateRange(search),
                     baseAndSearchValue(search)
                 )
@@ -104,6 +106,8 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
         BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndErpVoucherId(search),
+                baseAndErpVoucherTypeCd(search),
+                baseAndErpVoucherStatusCd(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
         };
@@ -151,6 +155,18 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
                 ? stErpVoucher.erpVoucherId.eq(search.getErpVoucherId()) : null;
     }
 
+    /* erpVoucherTypeCd 정확 일치 */
+    private BooleanExpression baseAndErpVoucherTypeCd(StErpVoucherDto.Request search) {
+        return search != null && StringUtils.hasText(search.getErpVoucherTypeCd())
+                ? stErpVoucher.erpVoucherTypeCd.eq(search.getErpVoucherTypeCd()) : null;
+    }
+
+    /* erpVoucherStatusCd 정확 일치 */
+    private BooleanExpression baseAndErpVoucherStatusCd(StErpVoucherDto.Request search) {
+        return search != null && StringUtils.hasText(search.getErpVoucherStatusCd())
+                ? stErpVoucher.erpVoucherStatusCd.eq(search.getErpVoucherStatusCd()) : null;
+    }
+
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
     private BooleanExpression baseAndDateRange(StErpVoucherDto.Request search) {
         if (search == null
@@ -158,9 +174,12 @@ public class QStErpVoucherRepositoryImpl implements QStErpVoucherRepository {
                 || !StringUtils.hasText(search.getDateStart())
                 || !StringUtils.hasText(search.getDateEnd())) return null;
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDateTime start   = LocalDate.parse(search.getDateStart(), fmt).atStartOfDay();
-        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   fmt).plusDays(1).atStartOfDay();
+        LocalDate startDate = LocalDate.parse(search.getDateStart(), fmt);
+        LocalDate endIncl   = LocalDate.parse(search.getDateEnd(),   fmt);
+        LocalDateTime start   = startDate.atStartOfDay();
+        LocalDateTime endExcl = endIncl.plusDays(1).atStartOfDay();
         switch (search.getDateType()) {
+            case "voucher_date": return stErpVoucher.voucherDate.goe(startDate).and(stErpVoucher.voucherDate.loe(endIncl));
             case "reg_date": return stErpVoucher.regDate.goe(start).and(stErpVoucher.regDate.lt(endExcl));
             case "upd_date": return stErpVoucher.updDate.goe(start).and(stErpVoucher.updDate.lt(endExcl));
             default: return null;

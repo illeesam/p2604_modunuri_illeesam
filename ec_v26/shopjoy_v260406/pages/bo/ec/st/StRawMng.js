@@ -92,7 +92,7 @@ window.StRawMng = {
     };
 
     // 검색 필드
-  const _initSearchParam = () => ({ dateRange: '이번달', dateStart: '', dateEnd: '', searchMoreOpen: false, searchType: '', searchValue: '', type: '', status: '', vendorType: '', payMethod: '', buyConfirm: '', closeYn: '', erpSend: '', period: '', orderStatus: '', amtFrom: '', amtTo: '' });
+  const _initSearchParam = () => ({ dateRange: '이번달', dateType: 'order_date', dateStart: '', dateEnd: '', searchMoreOpen: false, searchType: '', searchValue: '', rawTypeCd: '', rawStatusCd: '', vendorTypeCd: '', payMethodCd: '', buyConfirmYn: '', closeYn: '', erpSendYn: '', settlePeriod: '', orderItemStatusCd: '', amtFrom: '', amtTo: '' });
   const searchParam = reactive(_initSearchParam());
   boUtil.bofApplyDateRange(searchParam, '이번달');
 
@@ -252,13 +252,14 @@ const raws = reactive([]);
     /* baseSearchColumns — 검색 영역 컬럼 (1+2행 평면화) */
     columns.baseSearch = [
       { key: 'dateRange', type: 'dateRange', label: '기간',
-        startKey: 'dateStart', endKey: 'dateEnd',
+        typeKey: 'dateType', startKey: 'dateStart', endKey: 'dateEnd',
+        typeOptions: () => [{ value: 'order_date', label: '거래일' }, { value: 'reg_date', label: '등록일' }, { value: 'upd_date', label: '수정일' }],
         rangeOptions: () => codes.date_range_opts,
         dateWidth: '140px', sepStyle: 'line-height:32px',
         onRangeChange: () => handleDateRangeChange() },
-      { key: 'type',       type: 'select', label: '유형',
+      { key: 'rawTypeCd',  type: 'select', label: '유형',
         options: () => codes.raw_types, nullLabel: '유형 전체', width: '100px' },
-      { key: 'status',     type: 'select', label: '수집상태',
+      { key: 'rawStatusCd', type: 'select', label: '수집상태',
         options: () => codes.raw_collect_statuses, nullLabel: '수집상태 전체', width: '110px' },
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
@@ -270,22 +271,22 @@ const raws = reactive([]);
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력', width: '230px' },
-      { key: 'vendorType', type: 'select', label: '업체구분',
+      { key: 'vendorTypeCd', type: 'select', label: '업체구분',
         options: () => codes.raw_vendor_divs, nullLabel: '업체구분 전체', width: '110px' },
-      { key: 'payMethod',  type: 'select', label: '결제수단',
+      { key: 'payMethodCd', type: 'select', label: '결제수단',
         options: () => codes.pay_methods, nullLabel: '결제수단 전체', width: '120px' },
-      { key: 'buyConfirm', type: 'select', label: '구매확정',
+      { key: 'buyConfirmYn', type: 'select', label: '구매확정',
         options: () => codes.confirm_yn_opts, nullLabel: '구매확정 전체', width: '110px' },
       { key: 'closeYn',    type: 'select', label: '마감여부',
         options: () => codes.close_yn_opts, nullLabel: '마감여부 전체', width: '110px' },
-      { key: 'erpSend',    type: 'select', label: 'ERP전송',
+      { key: 'erpSendYn',  type: 'select', label: 'ERP전송',
         options: () => codes.send_yn_opts, nullLabel: 'ERP전송 전체', width: '110px' },
-      { key: 'period',     type: 'text',   label: '정산기간', placeholder: '정산기간(YYYY-MM)', width: '150px' },
+      { key: 'settlePeriod', type: 'text', label: '정산기간', placeholder: '정산기간(YYYY-MM)', width: '150px' },
     ];
 
     /* moreSearchColumns — 펼침 영역(searchMoreOpen=true) 두번째 검색바 */
     columns.moreSearch = [
-      { key: 'orderStatus', type: 'select', label: '주문상태',
+      { key: 'orderItemStatusCd', type: 'select', label: '주문상태',
         options: () => codes.order_statuses_kr, nullLabel: '주문상태 전체', width: '120px' },
       { key: 'amtFrom',     type: 'text',   label: '수집금액(최소)', placeholder: '최솟값(원)', width: '120px' },
       { key: 'amtTo',       type: 'text',   label: '수집금액(최대)', placeholder: '최댓값(원)', width: '120px' },

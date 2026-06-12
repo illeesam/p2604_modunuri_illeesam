@@ -18,6 +18,8 @@ public class PmDiscntDto {
         @Size(max = 21) private String siteId;
         @Size(max = 1) private String useYn;
         @Size(max = 21) private String discntId;
+        @Size(max = 20) private String discntTypeCd;
+        @Size(max = 20) private String discntStatusCd;
     }
 
     @Getter @Setter @NoArgsConstructor

@@ -169,8 +169,8 @@ window.DpDispWidgetMng = {
           ...getSortParam(),
           ...(searchValue ? { searchValue: searchValue.trim() } : {}),
           ...(searchType ? { searchType }                     : {}),
-          ...(type   ? { typeCd: type }  : {}),
-          ...(status ? { useYn: status } : {}),
+          ...(type   ? { widgetTypeCd: type } : {}),  /* 백엔드 DpWidgetDto.Request.widgetTypeCd */
+          ...(status ? { useYn: status }       : {}),
         };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (widgetParams.searchValue && !widgetParams.searchType) {
@@ -324,8 +324,22 @@ window.DpDispWidgetMng = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 
-    /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'reg' 와 sortKey 일치) */
+    /* 검색바 :columns 자동 렌더 정의 (전시패널관리 검색바와 동일 스타일) */
     const columns = {};
+    columns.baseSearch = [
+      { key: 'searchType', type: 'multiCheck', label: '검색대상',
+        options: [
+          { value: 'widgetNm',   label: '이름' },
+          { value: 'widgetDesc', label: '설명' },
+          { value: 'tag',        label: '태그' },
+        ],
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '130px' },
+      { key: 'searchValue', type: 'text',   label: '검색어',    placeholder: '검색어 입력', width: '200px' },
+      { key: 'type',        type: 'select', label: '위젯 유형', options: () => codes.disp_widget_types, nullLabel: '전체' },
+      { key: 'status',      type: 'select', label: '상태',      options: () => codes.active_statuses,   nullLabel: '전체' },
+    ];
+
+    /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'reg' 와 sortKey 일치) */
     columns.listGrid = [
       { key: 'widgetId',   label: 'ID',       style: 'width:56px;', link: true,
         cellStyle: 'color:#aaa;font-size:11px;vertical-align:top;padding-top:12px;font-family:monospace;',
@@ -364,62 +378,24 @@ window.DpDispWidgetMng = {
     </span>
   </template>
   <!-- ===== □. 페이지 타이틀 ================================================= -->
-  <!-- ===== ■. 검색 필터 =================================================== -->
+  <!-- ===== ■. 검색 필터 (전시패널관리 검색바와 동일 — bo-search-area :columns) ====== -->
   <bo-container>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
-      <div class="form-group" style="margin:0;min-width:180px;flex:1;">
-        <label class="form-label">
-          검색어
-        </label>
-        <bo-multi-check-select
-          v-model="searchParam.searchType"
-          :options="[
-          { value: 'widgetNm',   label: '이름' },
-          { value: 'widgetDesc', label: '설명' },
-          { value: 'tag',  label: '태그' },
-          ]"
-          placeholder="검색대상 전체"
-          all-label="전체 선택"
-          min-width="160px" />
-        <input v-model="searchParam.searchValue" class="form-control" placeholder="검색어 입력" @keyup.enter="handleBtnAction('searchParam-list')" style="margin:0;" />
+    <bo-search-area :loading="uiState.loading" :show-actions="false"
+      :columns="columns.baseSearch" :param="searchParam"
+      @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')">
+      <div class="search-actions" style="display:flex;align-items:center;gap:6px;">
+        <span v-if="cfFilterDirty" style="font-size:11px;color:#e8587a;font-weight:600;align-self:center;">
+          변경됨 →
+        </span>
+        <button @click="handleBtnAction('searchParam-list')" class="btn btn_search"
+          :style="cfFilterDirty ? 'box-shadow:0 0 0 3px rgba(232,88,122,0.35);' : ''">
+          조회
+        </button>
+        <button @click="handleBtnAction('searchParam-reset')" class="btn btn_reset">
+          초기화
+        </button>
       </div>
-      <div class="form-group" style="margin:0;width:160px;">
-        <label class="form-label">
-          위젯 유형
-        </label>
-        <select v-model="searchParam.type" class="form-control" style="margin:0;">
-          <option value="">
-            전체
-          </option>
-          <option v-for="t in codes.disp_widget_types" :key="t?.codeValue" :value="t.codeValue">
-            {{ t.codeLabel }}
-          </option>
-        </select>
-      </div>
-      <div class="form-group" style="margin:0;width:110px;">
-        <label class="form-label">
-          상태
-        </label>
-        <select v-model="searchParam.status" class="form-control" style="margin:0;">
-          <option value="">
-            전체
-          </option>
-          <option v-for="c in codes.active_statuses" :key="c.codeValue" :value="c.codeValue">
-            {{ c.codeLabel }}
-          </option>
-        </select>
-      </div>
-      <span v-if="cfFilterDirty" style="font-size:11px;color:#e8587a;font-weight:600;align-self:center;">
-        변경됨 →
-      </span>
-      <button @click="handleBtnAction('searchParam-list')" class="btn btn_search"
-        :style="cfFilterDirty ? 'box-shadow:0 0 0 3px rgba(232,88,122,0.35);' : ''">
-        조회
-      </button>
-      <button @click="handleBtnAction('searchParam-reset')"  class="btn btn_reset">
-        초기화
-      </button>
-    </div>
+    </bo-search-area>
   </bo-container>
   <!-- ===== □. 검색 필터 =================================================== -->
   <!-- ===== ■. 본문: 좌측 트리 + 우측 목록 ======================================= -->

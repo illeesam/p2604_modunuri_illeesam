@@ -69,6 +69,8 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
                 .where(
                     baseAndSiteId(search),
                     baseAndRestockNotiId(search),
+                    baseAndProdId(search),
+                    baseAndNotiYn(search),
                     baseAndDateRange(search),
                     baseAndSearchValue(search)
                 )
@@ -95,6 +97,8 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
         BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndRestockNotiId(search),
+                baseAndProdId(search),
+                baseAndNotiYn(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
         };
@@ -137,6 +141,18 @@ public class QPdRestockNotiRepositoryImpl implements QPdRestockNotiRepository {
     private BooleanExpression baseAndRestockNotiId(PdRestockNotiDto.Request search) {
         return search != null && StringUtils.hasText(search.getRestockNotiId())
                 ? pdRestockNoti.restockNotiId.eq(search.getRestockNotiId()) : null;
+    }
+
+    /* prodId 정확 일치 */
+    private BooleanExpression baseAndProdId(PdRestockNotiDto.Request search) {
+        return search != null && StringUtils.hasText(search.getProdId())
+                ? pdRestockNoti.prodId.eq(search.getProdId()) : null;
+    }
+
+    /* notiYn 정확 일치 (발송여부 Y/N) */
+    private BooleanExpression baseAndNotiYn(PdRestockNotiDto.Request search) {
+        return search != null && StringUtils.hasText(search.getNotiYn())
+                ? pdRestockNoti.notiYn.eq(search.getNotiYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */

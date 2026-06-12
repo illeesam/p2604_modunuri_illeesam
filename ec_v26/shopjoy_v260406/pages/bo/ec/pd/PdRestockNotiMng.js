@@ -71,7 +71,7 @@ window.PdRestockNotiMng = {
       }
     };
 
-    const _initSearchParam = () => ({ prod: '', noti: '' });
+    const _initSearchParam = () => ({ prodId: '', notiYn: '' });
     const searchParam = reactive(_initSearchParam());
 
     /* ===== 페이지네이션 ===== */
@@ -155,8 +155,8 @@ window.PdRestockNotiMng = {
     // 기본 검색
     const columns = {};
     columns.baseSearch = [
-      { key: 'prod', label: '상품명', type: 'text', placeholder: '상품명 검색' },
-      { key: 'noti', label: '알림발송', type: 'select', options: () => codes.send_yn_opts, nullLabel: '전체' },
+      { key: 'prodId', label: '상품ID', type: 'text', placeholder: '상품ID 검색' },
+      { key: 'notiYn', label: '알림발송', type: 'select', options: () => codes.send_yn_opts, nullLabel: '전체' },
     ];
 
     // 기본 그리드

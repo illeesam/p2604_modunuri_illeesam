@@ -97,6 +97,8 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
                     baseAndOrderId(search),
                     baseAndSiteId(search),
                     baseAndDlivId(search),
+                    baseAndMemberId(search),
+                    baseAndDlivStatusCd(search),
                     baseAndDateRange(search),
                     baseAndSearchValue(search)
                 )
@@ -125,6 +127,8 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
                 baseAndOrderId(search),
                 baseAndSiteId(search),
                 baseAndDlivId(search),
+                baseAndMemberId(search),
+                baseAndDlivStatusCd(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
         };
@@ -179,6 +183,18 @@ public class QOdDlivRepositoryImpl implements QOdDlivRepository {
     private BooleanExpression baseAndDlivId(OdDlivDto.Request search) {
         return search != null && StringUtils.hasText(search.getDlivId())
                 ? odDliv.dlivId.eq(search.getDlivId()) : null;
+    }
+
+    /* memberId 정확 일치 */
+    private BooleanExpression baseAndMemberId(OdDlivDto.Request search) {
+        return search != null && StringUtils.hasText(search.getMemberId())
+                ? odDliv.memberId.eq(search.getMemberId()) : null;
+    }
+
+    /* dlivStatusCd 정확 일치 */
+    private BooleanExpression baseAndDlivStatusCd(OdDlivDto.Request search) {
+        return search != null && StringUtils.hasText(search.getDlivStatusCd())
+                ? odDliv.dlivStatusCd.eq(search.getDlivStatusCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */

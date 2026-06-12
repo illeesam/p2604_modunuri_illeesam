@@ -68,6 +68,7 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
                 .where(
                     baseAndSiteId(search),
                     baseAndCacheId(search),
+                    baseAndCacheTypeCd(search),
                     baseAndDateRange(search),
                     baseAndSearchValue(search)
                 )
@@ -94,6 +95,7 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
         BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndCacheId(search),
+                baseAndCacheTypeCd(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
         };
@@ -136,6 +138,12 @@ public class QPmCacheRepositoryImpl implements QPmCacheRepository {
     private BooleanExpression baseAndCacheId(PmCacheDto.Request search) {
         return search != null && StringUtils.hasText(search.getCacheId())
                 ? pmCache.cacheId.eq(search.getCacheId()) : null;
+    }
+
+    /* cacheTypeCd(유형) 정확 일치 */
+    private BooleanExpression baseAndCacheTypeCd(PmCacheDto.Request search) {
+        return search != null && StringUtils.hasText(search.getCacheTypeCd())
+                ? pmCache.cacheTypeCd.eq(search.getCacheTypeCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */

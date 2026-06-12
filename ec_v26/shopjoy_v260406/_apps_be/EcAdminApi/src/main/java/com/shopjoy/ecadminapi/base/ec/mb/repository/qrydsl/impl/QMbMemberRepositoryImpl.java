@@ -74,6 +74,8 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
                 .where(
                     baseAndSiteId(search),
                     baseAndMemberId(search),
+                    baseAndGradeCd(search),
+                    baseAndMemberStatusCd(search),
                     baseAndDateRange(search),
                     baseAndSearchValue(search)
                 )
@@ -100,6 +102,8 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
         BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndMemberId(search),
+                baseAndGradeCd(search),
+                baseAndMemberStatusCd(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
         };
@@ -144,6 +148,18 @@ public class QMbMemberRepositoryImpl implements QMbMemberRepository {
     private BooleanExpression baseAndMemberId(MbMemberDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberId())
                 ? mbMember.memberId.eq(search.getMemberId()) : null;
+    }
+
+    /* gradeCd 정확 일치 (등급 드롭다운) */
+    private BooleanExpression baseAndGradeCd(MbMemberDto.Request search) {
+        return search != null && StringUtils.hasText(search.getGradeCd())
+                ? mbMember.gradeCd.eq(search.getGradeCd()) : null;
+    }
+
+    /* memberStatusCd 정확 일치 (상태 드롭다운) */
+    private BooleanExpression baseAndMemberStatusCd(MbMemberDto.Request search) {
+        return search != null && StringUtils.hasText(search.getMemberStatusCd())
+                ? mbMember.memberStatusCd.eq(search.getMemberStatusCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */

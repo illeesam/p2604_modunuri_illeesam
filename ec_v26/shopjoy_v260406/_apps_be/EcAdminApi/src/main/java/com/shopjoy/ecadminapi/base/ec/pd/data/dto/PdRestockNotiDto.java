@@ -15,6 +15,8 @@ public class PdRestockNotiDto {
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
         @Size(max = 21) private String restockNotiId;
+        @Size(max = 21) private String prodId;
+        @Size(max = 1)  private String notiYn;
     }
 
     @Getter @Setter @NoArgsConstructor

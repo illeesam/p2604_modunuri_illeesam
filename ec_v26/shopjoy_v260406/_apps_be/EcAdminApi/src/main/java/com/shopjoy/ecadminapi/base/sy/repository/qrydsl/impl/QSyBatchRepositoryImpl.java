@@ -74,6 +74,7 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
                     baseAndPathId(search),
                     baseAndBatchId(search),
                     baseAndStatus(search),
+                    baseAndRunStatus(search),
                     baseAndSearchValue(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -101,6 +102,7 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
                 baseAndPathId(search),
                 baseAndBatchId(search),
                 baseAndStatus(search),
+                baseAndRunStatus(search),
                 baseAndSearchValue(search)
         };
 
@@ -158,6 +160,12 @@ public class QSyBatchRepositoryImpl implements QSyBatchRepository {
     private BooleanExpression baseAndStatus(SyBatchDto.Request search) {
         return search != null && StringUtils.hasText(search.getStatus())
                 ? syBatch.batchStatusCd.eq(search.getStatus()) : null;
+    }
+
+    /* batchRunStatus 정확 일치 (실행상태) */
+    private BooleanExpression baseAndRunStatus(SyBatchDto.Request search) {
+        return search != null && StringUtils.hasText(search.getRunStatus())
+                ? syBatch.batchRunStatus.eq(search.getRunStatus()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */

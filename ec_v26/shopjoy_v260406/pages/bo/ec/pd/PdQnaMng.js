@@ -119,7 +119,7 @@ window.PdQnaMng = {
     /* handleClose — 상세 패널 닫기 */
     const handleClose = () => { uiState.selectedId = null; uiState.isNew = false; };
 
-    const _initSearchParam = () => ({ status: '', prod: '' });
+    const _initSearchParam = () => ({ answYn: '', prodId: '' });
     const searchParam = reactive(_initSearchParam());
 
     /* ===== 페이지네이션 ===== */
@@ -207,7 +207,7 @@ window.PdQnaMng = {
     const columns = {};
     columns.baseSearch = [
       { key: 'searchValue', label: '키워드', type: 'text', placeholder: '제목 검색' },
-      { key: 'status', label: '상태', type: 'select', options: () => codes.qna_statuses, nullLabel: '전체' },
+      { key: 'answYn', label: '상태', type: 'select', options: () => codes.qna_statuses, nullLabel: '전체' },
     ];
 
     // 기본 그리드

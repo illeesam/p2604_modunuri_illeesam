@@ -89,7 +89,7 @@ window.MbMemberMng = {
       }
     };
 
-    const _initSearchParam = () => ({ searchType: '', searchValue: '', grade: '', status: '' });
+    const _initSearchParam = () => ({ searchType: '', searchValue: '', gradeCd: '', memberStatusCd: '' });
     const searchParam = reactive(_initSearchParam());
 
     /* ===== 페이지네이션 ===== */
@@ -311,8 +311,8 @@ window.MbMemberMng = {
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
-      { key: 'grade', type: 'select', label: '등급', options: () => codes.member_grades, nullLabel: '전체' },
-      { key: 'status', type: 'select', label: '상태', options: () => codes.member_statuses, nullLabel: '전체' },
+      { key: 'gradeCd', type: 'select', label: '등급', options: () => codes.member_grades, nullLabel: '전체' },
+      { key: 'memberStatusCd', type: 'select', label: '상태', options: () => codes.member_statuses, nullLabel: '전체' },
     ];
 
     // 기본 그리드

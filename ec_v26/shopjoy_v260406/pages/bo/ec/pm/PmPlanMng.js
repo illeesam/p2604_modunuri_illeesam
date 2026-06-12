@@ -21,14 +21,6 @@ window.PmPlanMng = {
     });
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-    const CATEGORIES = [
-      { value: '', label: '전체' },
-      { value: '패션', label: '패션' },
-      { value: '스포츠', label: '스포츠' },
-      { value: '스타일링', label: '스타일링' },
-      { value: '직원전용', label: '직원전용' },
-      { value: '명품', label: '명품' },
-    ];
 
     /* 하단 상세 (진입 시 빈 신규 폼, 항상 표시) */
     const detailPanel = reactive({ selectedId: '__new__', openMode: 'edit', reloadTrigger: 0, resetSeq: 0, active: false });
@@ -112,7 +104,7 @@ window.PmPlanMng = {
 
     const _initSearchParam = () => {
       const today = new Date(); const thisYear = today.getFullYear();
-      return { searchValue: '', category: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, status: '' };
+      return { searchValue: '', dateRange: '', dateType: 'reg_date', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, planStatusCd: '' };
     };
     const searchParam = reactive(_initSearchParam());
     /* 프로모션 플랜 fnLoadCodes */
@@ -262,8 +254,7 @@ window.PmPlanMng = {
     const columns = {};
     columns.baseSearch = [
       { key: 'searchValue', type: 'text', label: '기획전명', placeholder: '기획전명 검색' },
-      { key: 'category', type: 'select', label: '카테고리', options: () => CATEGORIES.slice(1), nullLabel: '카테고리 전체' },
-      { key: 'status',   type: 'select', label: '상태', options: () => codes.plan_statuses, nullLabel: '상태 전체' },
+      { key: 'planStatusCd', type: 'select', label: '상태', options: () => codes.plan_statuses, nullLabel: '상태 전체' },
       { key: 'dateRange', type: 'dateRange', label: '등록일',
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,

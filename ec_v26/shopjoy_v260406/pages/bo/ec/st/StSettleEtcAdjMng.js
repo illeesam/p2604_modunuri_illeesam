@@ -81,11 +81,10 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    /* handleDateRangeChange — 기간 변경 */
+    /* handleDateRangeChange — 기간 변경 (searchParam.dateRange → dateStart/dateEnd) */
     const handleDateRangeChange = () => {
-      boUtil.bofApplyDateRange(uiState);
+      boUtil.bofApplyDateRange(searchParam);
     };
-    boUtil.bofApplyDateRange(uiState, '이번달');
 
     const vendors = reactive([]);
     const cfVendors = computed(() => vendors.filter(v => v.vendorType === '판매업체'));
@@ -102,7 +101,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
             };
             // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
             if (params.searchValue && !params.searchType) {
-              params.searchType = 'id,vendorNm,reason';
+              params.searchType = 'settleEtcAdjId,etcAdjReason,settleEtcAdjMemo';
             }
             return boApiSvc.stSettleEtcAdj.getPage(params, '정산기타조정', '목록조회');
           })()
@@ -134,7 +133,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     const errors = reactive({});
 
     /* 정산 기타 조정 _initSearchParam */
-    const _initSearchParam = () => ({ searchType: '', searchValue: '', type: '', status: '' });
+    const _initSearchParam = () => ({ searchType: '', searchValue: '', etcAdjTypeCd: '', status: '', dateType: 'reg_date', dateRange: '', dateStart: '', dateEnd: '' });
     const searchParam = reactive(_initSearchParam());
 
     /* openNew — 신규 열기 */
@@ -219,18 +218,18 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
 
         const columns = {};
         columns.baseSearch = [
-      { key: 'dateRange', label: '정산일', type: 'dateRange', paramObj: uiState,
+      { key: 'dateRange', label: '정산일', type: 'dateRange',
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
         rangeFirst: true, dateWidth: '140px', sepStyle: 'line-height:32px',
         onRangeChange: () => handleDateRangeChange() },
-      { key: 'type', label: '유형', type: 'select', options: () => codes.settle_etc_adj_types, nullLabel: '유형 전체' },
+      { key: 'etcAdjTypeCd', label: '유형', type: 'select', options: () => codes.settle_etc_adj_types, nullLabel: '유형 전체' },
       { key: 'status', label: '상태', type: 'select', options: () => codes.settle_adj_statuses, nullLabel: '상태 전체' },
       { key: 'searchType', label: '검색대상', type: 'multiCheck',
         options: [
-          { value: 'id',       label: 'ID' },
-          { value: 'vendorNm', label: '업체명' },
-          { value: 'reason',   label: '사유' },
+          { value: 'settleEtcAdjId',   label: 'ID' },
+          { value: 'etcAdjReason',     label: '사유' },
+          { value: 'settleEtcAdjMemo', label: '메모' },
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', label: '검색어', type: 'text', placeholder: '검색어 입력', width: '180px' },

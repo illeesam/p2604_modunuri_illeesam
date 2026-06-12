@@ -149,6 +149,17 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
                 .where(
                     baseAndSiteId(search),
                     baseAndSettleRawId(search),
+                    baseAndRawTypeCd(search),
+                    baseAndRawStatusCd(search),
+                    baseAndVendorTypeCd(search),
+                    baseAndPayMethodCd(search),
+                    baseAndBuyConfirmYn(search),
+                    baseAndCloseYn(search),
+                    baseAndErpSendYn(search),
+                    baseAndSettlePeriod(search),
+                    baseAndOrderItemStatusCd(search),
+                    baseAndAmtFrom(search),
+                    baseAndAmtTo(search),
                     baseAndDateRange(search),
                     baseAndSearchValue(search)
                 )
@@ -175,6 +186,17 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
         BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndSettleRawId(search),
+                baseAndRawTypeCd(search),
+                baseAndRawStatusCd(search),
+                baseAndVendorTypeCd(search),
+                baseAndPayMethodCd(search),
+                baseAndBuyConfirmYn(search),
+                baseAndCloseYn(search),
+                baseAndErpSendYn(search),
+                baseAndSettlePeriod(search),
+                baseAndOrderItemStatusCd(search),
+                baseAndAmtFrom(search),
+                baseAndAmtTo(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
         };
@@ -220,6 +242,72 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
     private BooleanExpression baseAndSettleRawId(StSettleRawDto.Request search) {
         return search != null && StringUtils.hasText(search.getSettleRawId())
                 ? stSettleRaw.settleRawId.eq(search.getSettleRawId()) : null;
+    }
+
+    /* rawTypeCd 정확 일치 (검색 필터) */
+    private BooleanExpression baseAndRawTypeCd(StSettleRawDto.Request search) {
+        return search != null && StringUtils.hasText(search.getRawTypeCd())
+                ? stSettleRaw.rawTypeCd.eq(search.getRawTypeCd()) : null;
+    }
+
+    /* rawStatusCd 정확 일치 (검색 필터) */
+    private BooleanExpression baseAndRawStatusCd(StSettleRawDto.Request search) {
+        return search != null && StringUtils.hasText(search.getRawStatusCd())
+                ? stSettleRaw.rawStatusCd.eq(search.getRawStatusCd()) : null;
+    }
+
+    /* vendorTypeCd 정확 일치 (검색 필터) */
+    private BooleanExpression baseAndVendorTypeCd(StSettleRawDto.Request search) {
+        return search != null && StringUtils.hasText(search.getVendorTypeCd())
+                ? stSettleRaw.vendorTypeCd.eq(search.getVendorTypeCd()) : null;
+    }
+
+    /* payMethodCd 정확 일치 (검색 필터) */
+    private BooleanExpression baseAndPayMethodCd(StSettleRawDto.Request search) {
+        return search != null && StringUtils.hasText(search.getPayMethodCd())
+                ? stSettleRaw.payMethodCd.eq(search.getPayMethodCd()) : null;
+    }
+
+    /* buyConfirmYn 정확 일치 (검색 필터) */
+    private BooleanExpression baseAndBuyConfirmYn(StSettleRawDto.Request search) {
+        return search != null && StringUtils.hasText(search.getBuyConfirmYn())
+                ? stSettleRaw.buyConfirmYn.eq(search.getBuyConfirmYn()) : null;
+    }
+
+    /* closeYn 정확 일치 (검색 필터) */
+    private BooleanExpression baseAndCloseYn(StSettleRawDto.Request search) {
+        return search != null && StringUtils.hasText(search.getCloseYn())
+                ? stSettleRaw.closeYn.eq(search.getCloseYn()) : null;
+    }
+
+    /* erpSendYn 정확 일치 (검색 필터) */
+    private BooleanExpression baseAndErpSendYn(StSettleRawDto.Request search) {
+        return search != null && StringUtils.hasText(search.getErpSendYn())
+                ? stSettleRaw.erpSendYn.eq(search.getErpSendYn()) : null;
+    }
+
+    /* settlePeriod 정확 일치 (검색 필터, YYYY-MM) */
+    private BooleanExpression baseAndSettlePeriod(StSettleRawDto.Request search) {
+        return search != null && StringUtils.hasText(search.getSettlePeriod())
+                ? stSettleRaw.settlePeriod.eq(search.getSettlePeriod()) : null;
+    }
+
+    /* orderItemStatusCd 정확 일치 (검색 필터) */
+    private BooleanExpression baseAndOrderItemStatusCd(StSettleRawDto.Request search) {
+        return search != null && StringUtils.hasText(search.getOrderItemStatusCd())
+                ? stSettleRaw.orderItemStatusCd.eq(search.getOrderItemStatusCd()) : null;
+    }
+
+    /* settleTargetAmt 최솟값 (검색 필터, 이상) */
+    private BooleanExpression baseAndAmtFrom(StSettleRawDto.Request search) {
+        return search != null && search.getAmtFrom() != null
+                ? stSettleRaw.settleTargetAmt.goe(search.getAmtFrom()) : null;
+    }
+
+    /* settleTargetAmt 최댓값 (검색 필터, 이하) */
+    private BooleanExpression baseAndAmtTo(StSettleRawDto.Request search) {
+        return search != null && search.getAmtTo() != null
+                ? stSettleRaw.settleTargetAmt.loe(search.getAmtTo()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */

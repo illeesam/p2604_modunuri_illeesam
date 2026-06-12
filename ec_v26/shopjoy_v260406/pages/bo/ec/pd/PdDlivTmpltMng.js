@@ -95,7 +95,7 @@ window.PdDlivTmpltMng = {
       }
     };
 
-    const _initSearchParam = () => ({ method: '', use: '' });
+    const _initSearchParam = () => ({ dlivMethodCd: '', useYn: '' });
     const searchParam = reactive(_initSearchParam());
 
     /* ===== 페이지네이션 ===== */
@@ -218,8 +218,8 @@ window.PdDlivTmpltMng = {
     const columns = {};
     columns.baseSearch = [
       { key: 'searchValue', label: '템플릿명', type: 'text', placeholder: '템플릿명 검색' },
-      { key: 'method', label: '배송방법', type: 'select', options: () => codes.dliv_methods, nullLabel: '전체' },
-      { key: 'use', label: '사용여부', type: 'select', options: () => codes.use_yn, nullLabel: '전체' },
+      { key: 'dlivMethodCd', label: '배송방법', type: 'select', options: () => codes.dliv_methods, nullLabel: '전체' },
+      { key: 'useYn', label: '사용여부', type: 'select', options: () => codes.use_yn, nullLabel: '전체' },
     ];
 
     // 기본 그리드

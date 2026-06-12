@@ -76,7 +76,7 @@ window.PdTagMng = {
       }
     };
 
-    const _initSearchParam = () => ({ use: '' });
+    const _initSearchParam = () => ({ useYn: '' });
     const searchParam = reactive(_initSearchParam());
 
     /* ===== 페이지네이션 ===== */
@@ -169,7 +169,7 @@ window.PdTagMng = {
     const columns = {};
     columns.baseSearch = [
       { key: 'searchValue', label: '태그명', type: 'text', placeholder: '태그명 검색' },
-      { key: 'use', label: '사용여부', type: 'select', options: () => codes.use_yn, nullLabel: '전체' },
+      { key: 'useYn', label: '사용여부', type: 'select', options: () => codes.use_yn, nullLabel: '전체' },
     ];
 
     // 기본 그리드

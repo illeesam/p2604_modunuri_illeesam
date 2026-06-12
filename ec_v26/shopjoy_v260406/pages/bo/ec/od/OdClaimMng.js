@@ -150,7 +150,7 @@ window.OdClaimMng = {
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
-      return { searchType: '', searchValue: '', memberId: '', memberNm: '', type: '', status: '', dateType: 'request_date', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+      return { searchType: '', searchValue: '', memberId: '', memberNm: '', claimTypeCd: '', claimStatusCd: '', dateType: 'request_date', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
     };
     const searchParam = reactive(_initSearchParam());
 
@@ -518,8 +518,8 @@ window.OdClaimMng = {
         display: (p) => p.memberNm || p.memberId, placeholder: '회원 선택',
         onOpen: () => handleBtnAction('memberPickModal-open'),
         onClear: () => handleBtnAction('memberPickModal-clear') },
-      { key: 'type', type: 'select', label: '유형', options: () => codes.claim_types, nullLabel: '유형 전체' },
-      { key: 'status', type: 'select', label: '상태', options: () => codes.claim_statuses, nullLabel: '상태 전체' },
+      { key: 'claimTypeCd', type: 'select', label: '유형', options: () => codes.claim_types, nullLabel: '유형 전체' },
+      { key: 'claimStatusCd', type: 'select', label: '상태', options: () => codes.claim_statuses, nullLabel: '상태 전체' },
       { key: 'dateRange', type: 'dateRange', label: '신청일',
         typeKey: 'dateType', startKey: 'dateStart', endKey: 'dateEnd',
         typeOptions: () => codes.claim_date_types,

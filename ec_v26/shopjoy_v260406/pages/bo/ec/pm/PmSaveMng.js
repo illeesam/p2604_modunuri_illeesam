@@ -105,7 +105,7 @@ window.PmSaveMng = {
     /* _initSearchParam — 초기화 */
     const _initSearchParam = () => {
       const today = new Date(); const thisYear = today.getFullYear();
-      return { searchType: '', searchValue: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, type: '', status: '' };
+      return { searchType: '', searchValue: '', dateType: 'reg_date', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, saveTypeCd: '', status: '' };
     };
     const searchParam = reactive(_initSearchParam());
     // ===== 공통코드 로딩 ===================================================
@@ -284,7 +284,7 @@ window.PmSaveMng = {
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
-      { key: 'type', type: 'select', label: '유형', options: () => codes.save_issue_types, nullLabel: '유형 전체' },
+      { key: 'saveTypeCd', type: 'select', label: '유형', options: () => codes.save_issue_types, nullLabel: '유형 전체' },
       { key: 'status', type: 'select', label: '상태', options: () => codes.promo_statuses, nullLabel: '상태 전체' },
       { key: 'dateRange', type: 'dateRange', label: '시작일',
         startKey: 'dateStart', endKey: 'dateEnd',

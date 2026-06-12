@@ -74,6 +74,7 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
                     baseAndBbmId(search),
                     baseAndPathId(search),
                     baseAndTypeCd(search),
+                    baseAndUseYn(search),
                     baseAndSearchValue(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -101,6 +102,7 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
                 baseAndBbmId(search),
                 baseAndPathId(search),
                 baseAndTypeCd(search),
+                baseAndUseYn(search),
                 baseAndSearchValue(search)
         };
 
@@ -158,6 +160,12 @@ public class QSyBbmRepositoryImpl implements QSyBbmRepository {
     private BooleanExpression baseAndTypeCd(SyBbmDto.Request search) {
         return search != null && StringUtils.hasText(search.getTypeCd())
                 ? syBbm.bbmTypeCd.eq(search.getTypeCd()) : null;
+    }
+
+    /* useYn 정확 일치 */
+    private BooleanExpression baseAndUseYn(SyBbmDto.Request search) {
+        return search != null && StringUtils.hasText(search.getUseYn())
+                ? syBbm.useYn.eq(search.getUseYn()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */

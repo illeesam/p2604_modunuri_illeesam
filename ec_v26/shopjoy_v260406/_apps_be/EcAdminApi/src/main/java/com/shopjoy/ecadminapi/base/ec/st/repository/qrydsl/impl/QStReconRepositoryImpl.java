@@ -82,6 +82,8 @@ public class QStReconRepositoryImpl implements QStReconRepository {
                 .where(
                     baseAndSiteId(search),
                     baseAndReconId(search),
+                    baseAndReconTypeCd(search),
+                    baseAndReconStatusCd(search),
                     baseAndDateRange(search),
                     baseAndSearchValue(search)
                 )
@@ -108,6 +110,8 @@ public class QStReconRepositoryImpl implements QStReconRepository {
         BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndReconId(search),
+                baseAndReconTypeCd(search),
+                baseAndReconStatusCd(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
         };
@@ -153,6 +157,18 @@ public class QStReconRepositoryImpl implements QStReconRepository {
     private BooleanExpression baseAndReconId(StReconDto.Request search) {
         return search != null && StringUtils.hasText(search.getReconId())
                 ? stRecon.reconId.eq(search.getReconId()) : null;
+    }
+
+    /* reconTypeCd 정확 일치 (유형 select 필터) */
+    private BooleanExpression baseAndReconTypeCd(StReconDto.Request search) {
+        return search != null && StringUtils.hasText(search.getReconTypeCd())
+                ? stRecon.reconTypeCd.eq(search.getReconTypeCd()) : null;
+    }
+
+    /* reconStatusCd 정확 일치 (대사결과 select 필터) */
+    private BooleanExpression baseAndReconStatusCd(StReconDto.Request search) {
+        return search != null && StringUtils.hasText(search.getReconStatusCd())
+                ? stRecon.reconStatusCd.eq(search.getReconStatusCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */

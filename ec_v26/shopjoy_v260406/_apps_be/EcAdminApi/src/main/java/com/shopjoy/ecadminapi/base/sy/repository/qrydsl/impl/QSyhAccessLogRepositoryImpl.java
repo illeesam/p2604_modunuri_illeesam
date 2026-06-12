@@ -71,6 +71,10 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
         List<OrderSpecifier<?>> orderList = buildOrder(search);
         BooleanExpression[] wheres = {
                 baseAndMethod(search),
+                baseAndStatus(search),
+                baseAndPath(search),
+                baseAndUiNm(search),
+                baseAndTraceId(search),
                 baseAndAppTypeCd(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
@@ -109,6 +113,34 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
     private BooleanExpression baseAndMethod(SyhAccessLogDto.Request search) {
         return search != null && StringUtils.hasText(search.getMethod())
                 ? syhAccessLog.reqMethod.eq(search.getMethod()) : null;
+    }
+
+    /* respStatus 정확 일치 (숫자만 파싱, 비숫자면 무시) */
+    private BooleanExpression baseAndStatus(SyhAccessLogDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getStatus())) return null;
+        try {
+            return syhAccessLog.respStatus.eq(Integer.valueOf(search.getStatus().trim()));
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    /* reqPath LIKE (앞 일치 시작 부분 검색) */
+    private BooleanExpression baseAndPath(SyhAccessLogDto.Request search) {
+        return search != null && StringUtils.hasText(search.getPath())
+                ? syhAccessLog.reqPath.likeIgnoreCase("%" + search.getPath().trim() + "%") : null;
+    }
+
+    /* uiNm LIKE (x-ui-nm 화면명) */
+    private BooleanExpression baseAndUiNm(SyhAccessLogDto.Request search) {
+        return search != null && StringUtils.hasText(search.getUiNm())
+                ? syhAccessLog.uiNm.likeIgnoreCase("%" + search.getUiNm().trim() + "%") : null;
+    }
+
+    /* traceId 정확 일치 */
+    private BooleanExpression baseAndTraceId(SyhAccessLogDto.Request search) {
+        return search != null && StringUtils.hasText(search.getTraceId())
+                ? syhAccessLog.traceId.eq(search.getTraceId().trim()) : null;
     }
 
     /* appTypeCd 정확 일치 */

@@ -18,6 +18,8 @@ public class PmGiftDto {
         @Size(max = 21) private String siteId;
         @Size(max = 1) private String useYn;
         @Size(max = 21) private String giftId;
+        @Size(max = 20) private String giftTypeCd;
+        @Size(max = 20) private String giftStatusCd;
     }
 
     @Getter @Setter @NoArgsConstructor

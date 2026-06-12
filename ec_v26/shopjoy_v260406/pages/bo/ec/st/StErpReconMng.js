@@ -86,7 +86,7 @@ const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, d
     const recons = reactive([]);
 
     /* _initSearchParam — 초기화 */
-    const _initSearchParam = () => ({ diff: '', type: '' });
+    const _initSearchParam = () => ({ reconStatusCd: '', reconTypeCd: '' });
     const searchParam = reactive(_initSearchParam());
     const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
@@ -104,7 +104,7 @@ const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, d
       try {
         const res = await boApiSvc.stErp.getReconPage({
           pageNo: baseGridPager.pageNo, pageSize: baseGridPager.pageSize,
-          dateStart: uiState.dateStart, dateEnd: uiState.dateEnd,
+          dateType: 'reg_date', dateStart: uiState.dateStart, dateEnd: uiState.dateEnd,
           ...coUtil.cofOmitEmpty(searchParam)
         }, 'ERP전표대사', '목록조회');
         const data = res.data?.data;
@@ -163,8 +163,8 @@ const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, d
         rangeOptions: () => codes.date_range_opts,
         rangeFirst: true, dateWidth: '140px', sepStyle: 'line-height:32px',
         onRangeChange: () => handleDateRangeChange() },
-      { key: 'type', label: '유형', type: 'select', options: () => codes.erp_voucher_types, nullLabel: '유형 전체' },
-      { key: 'diff', label: '대사결과', type: 'select', options: () => codes.erp_recon_results, nullLabel: '결과 전체' },
+      { key: 'reconTypeCd', label: '유형', type: 'select', options: () => codes.erp_voucher_types, nullLabel: '유형 전체' },
+      { key: 'reconStatusCd', label: '대사결과', type: 'select', options: () => codes.erp_recon_results, nullLabel: '결과 전체' },
     ];
 
     // 기본 그리드

@@ -16,6 +16,8 @@ public class StErpVoucherDto {
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
         @Size(max = 21) private String erpVoucherId;
+        @Size(max = 20) private String erpVoucherTypeCd;
+        @Size(max = 20) private String erpVoucherStatusCd;
     }
 
     @Getter @Setter @NoArgsConstructor

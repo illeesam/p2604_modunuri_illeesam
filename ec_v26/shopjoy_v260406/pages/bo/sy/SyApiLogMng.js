@@ -149,6 +149,7 @@ window.SyApiLogMng = {
       const p = {
         pageNo:      accessGridPager.pageNo,
         pageSize:    accessGridPager.pageSize,
+        dateType:    'reg_date',
         dateStart:   uiState.dateStart       || undefined,
         dateEnd:     uiState.dateEnd         || undefined,
         searchType: uiState.searchType      || undefined,

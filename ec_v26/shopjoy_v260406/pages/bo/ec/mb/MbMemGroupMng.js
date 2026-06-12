@@ -72,7 +72,7 @@ window.MbMemGroupMng = {
       }
     };
 
-    const _initSearchParam = () => ({ searchValue: '', use: '' });
+    const _initSearchParam = () => ({ searchValue: '', useYn: '' });
     const searchParam = reactive(_initSearchParam());
 
     /* ===== CRUD 그리드 ===== */
@@ -219,7 +219,7 @@ window.MbMemGroupMng = {
     const columns = {};
     columns.baseSearch = [
       { key: 'searchValue', type: 'text', label: '그룹명', placeholder: '그룹명 검색' },
-      { key: 'use', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '전체' },
+      { key: 'useYn', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '전체' },
     ];
 
     // 기본 그리드

@@ -63,6 +63,7 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
                     baseAndSiteId(search),
                     baseAndQnaId(search),
                     baseAndProdId(search),
+                    baseAndAnswYn(search),
                     baseAndUseYn(search),
                     baseAndDateRange(search),
                     baseAndSearchValue(search)
@@ -91,6 +92,7 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
                 baseAndSiteId(search),
                 baseAndQnaId(search),
                 baseAndProdId(search),
+                baseAndAnswYn(search),
                 baseAndUseYn(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
@@ -143,6 +145,12 @@ public class QPdProdQnaRepositoryImpl implements QPdProdQnaRepository {
     private BooleanExpression baseAndProdId(PdProdQnaDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdId())
                 ? pdProdQna.prodId.eq(search.getProdId()) : null;
+    }
+
+    /* answYn 정확 일치 */
+    private BooleanExpression baseAndAnswYn(PdProdQnaDto.Request search) {
+        return search != null && StringUtils.hasText(search.getAnswYn())
+                ? pdProdQna.answYn.eq(search.getAnswYn()) : null;
     }
 
     /* useYn 정확 일치 */

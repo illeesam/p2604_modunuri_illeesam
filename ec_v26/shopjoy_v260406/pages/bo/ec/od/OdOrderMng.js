@@ -167,7 +167,7 @@ window.OdOrderMng = {
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
-      return { searchType: '', searchValue: '', memberId: '', memberNm: '', dateType: 'order_date', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, status: '' };
+      return { searchType: '', searchValue: '', memberId: '', memberNm: '', dateType: 'order_date', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31`, orderStatusCd: '' };
     };
     const searchParam = reactive(_initSearchParam());
 
@@ -486,7 +486,7 @@ window.OdOrderMng = {
         display: (p) => p.memberNm || p.memberId, placeholder: '회원 선택',
         onOpen: () => handleBtnAction('memberPickModal-open'),
         onClear: () => handleBtnAction('memberPickModal-clear') },
-      { key: 'status', type: 'select', label: '상태', options: () => codes.order_statuses, nullLabel: '상태 전체' },
+      { key: 'orderStatusCd', type: 'select', label: '상태', options: () => codes.order_statuses, nullLabel: '상태 전체' },
       { key: 'dateRange', type: 'dateRange', label: '주문일',
         typeKey: 'dateType', startKey: 'dateStart', endKey: 'dateEnd',
         typeOptions: () => codes.order_date_types,

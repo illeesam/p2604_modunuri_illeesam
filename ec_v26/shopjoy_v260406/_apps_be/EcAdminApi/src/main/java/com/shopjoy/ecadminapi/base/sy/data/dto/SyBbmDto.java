@@ -17,6 +17,7 @@ public class SyBbmDto {
         @Size(max = 21) private String bbmId;
         @Size(max = 21) private String pathId;
         @Size(max = 20) private String typeCd;
+        @Size(max = 1) private String useYn;
     }
 
     @Getter @Setter @NoArgsConstructor

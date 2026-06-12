@@ -91,7 +91,7 @@ window.SyBbmMng = {
     };
 
     const _initSearchParam = () => {
-      return { searchType: '', searchValue: '', type: '', useYn: 'Y' };
+      return { searchType: '', searchValue: '', typeCd: '', useYn: 'Y' };
     };
     const searchParam = reactive(_initSearchParam());
 
@@ -295,7 +295,7 @@ window.SyBbmMng = {
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
-      { key: 'type', type: 'select', label: '유형', options: () => codes.bbm_type, nullLabel: '유형 전체' },
+      { key: 'typeCd', type: 'select', label: '유형', options: () => codes.bbm_type, nullLabel: '유형 전체' },
       { key: 'useYn', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '사용여부 전체' },
     ];
 

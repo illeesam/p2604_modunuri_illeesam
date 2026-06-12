@@ -10,11 +10,11 @@ window.StErpViewMng = {
 
     const { reactive, onMounted } = Vue;
     const { showToast, showConfirm } = window.boApp;
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, dateRange: '이번달', dateStart: '', dateEnd: '' });
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, dateType: 'voucher_date', dateRange: '이번달', dateStart: '', dateEnd: '' });
     const codes = reactive({ erp_statuses: [], erp_voucher_types: [], erp_voucher_statuses: [], date_range_opts: [] });
     const slips = reactive([]);
 
-    const _initSearchParam = () => ({ searchType: '', searchValue: '', type: '', status: '' });
+    const _initSearchParam = () => ({ searchType: '', searchValue: '', erpVoucherTypeCd: '', erpVoucherStatusCd: '' });
     const searchParam = reactive(_initSearchParam());
     boUtil.bofApplyDateRange(uiState, '이번달'); // 진입 시 기본 기간 적용
 
@@ -101,16 +101,22 @@ window.StErpViewMng = {
     const columns = {};
     columns.baseSearch = [
       { key: 'dateRange', label: '전표일', type: 'dateRange', paramObj: uiState,
+        typeKey: 'dateType',
+        typeOptions: [
+          { value: 'voucher_date', label: '전표일자' },
+          { value: 'reg_date', label: '등록일' },
+          { value: 'upd_date', label: '수정일' },
+        ],
         startKey: 'dateStart', endKey: 'dateEnd',
         rangeOptions: () => codes.date_range_opts,
         rangeFirst: true, dateWidth: '140px', sepStyle: 'line-height:32px',
         onRangeChange: () => handleBtnAction('searchParam-dateRange') },
-      { key: 'type', label: '유형', type: 'select', options: () => codes.erp_voucher_types, nullLabel: '유형 전체' },
-      { key: 'status', label: '상태', type: 'select', options: () => codes.erp_voucher_statuses, nullLabel: '상태 전체' },
+      { key: 'erpVoucherTypeCd', label: '유형', type: 'select', options: () => codes.erp_voucher_types, nullLabel: '유형 전체' },
+      { key: 'erpVoucherStatusCd', label: '상태', type: 'select', options: () => codes.erp_voucher_statuses, nullLabel: '상태 전체' },
       { key: 'searchType', label: '검색대상', type: 'multiCheck',
         options: [
-          { value: 'slipId', label: '전표ID' },
-          { value: 'summary', label: '적요' },
+          { value: 'erpVoucherId', label: '전표ID' },
+          { value: 'erpVoucherDesc', label: '적요' },
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', label: '검색어', type: 'text', placeholder: '검색어 입력', width: '180px' },

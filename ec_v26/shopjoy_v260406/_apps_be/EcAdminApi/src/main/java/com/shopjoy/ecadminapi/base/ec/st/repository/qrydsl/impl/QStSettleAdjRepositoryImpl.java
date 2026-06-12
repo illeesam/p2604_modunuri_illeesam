@@ -69,6 +69,8 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
                 .where(
                     baseAndSiteId(search),
                     baseAndSettleAdjId(search),
+                    baseAndAdjTypeCd(search),
+                    baseAndAprvStatusCd(search),
                     baseAndDateRange(search),
                     baseAndSearchValue(search)
                 )
@@ -95,6 +97,8 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
         BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndSettleAdjId(search),
+                baseAndAdjTypeCd(search),
+                baseAndAprvStatusCd(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
         };
@@ -142,6 +146,18 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
                 ? stSettleAdj.settleAdjId.eq(search.getSettleAdjId()) : null;
     }
 
+    /* adjTypeCd 정확 일치 (검색 select: 유형) */
+    private BooleanExpression baseAndAdjTypeCd(StSettleAdjDto.Request search) {
+        return search != null && StringUtils.hasText(search.getAdjTypeCd())
+                ? stSettleAdj.adjTypeCd.eq(search.getAdjTypeCd()) : null;
+    }
+
+    /* aprvStatusCd 정확 일치 (검색 select: 승인상태) */
+    private BooleanExpression baseAndAprvStatusCd(StSettleAdjDto.Request search) {
+        return search != null && StringUtils.hasText(search.getAprvStatusCd())
+                ? stSettleAdj.aprvStatusCd.eq(search.getAprvStatusCd()) : null;
+    }
+
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
     private BooleanExpression baseAndDateRange(StSettleAdjDto.Request search) {
         if (search == null
@@ -173,6 +189,7 @@ public class QStSettleAdjRepositoryImpl implements QStSettleAdjRepository {
         or = orLike(or, all, types, ",settleAdjMemo,", stSettleAdj.settleAdjMemo, pattern);
         or = orLike(or, all, types, ",settleId,", stSettleAdj.settleId, pattern);
         or = orLike(or, all, types, ",siteId,", stSettleAdj.siteId, pattern);
+        or = orLike(or, all, types, ",siteNm,", sySite.siteNm, pattern);
         return or;
     }
 

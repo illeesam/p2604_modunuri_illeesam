@@ -18,6 +18,7 @@ public class PmEventDto {
         @Size(max = 21) private String siteId;
         @Size(max = 1) private String useYn;
         @Size(max = 21) private String eventId;
+        @Size(max = 20) private String eventStatusCd;
     }
 
     @Getter @Setter @NoArgsConstructor

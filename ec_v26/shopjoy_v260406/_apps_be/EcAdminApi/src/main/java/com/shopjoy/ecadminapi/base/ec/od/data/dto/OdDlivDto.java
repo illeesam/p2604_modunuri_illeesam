@@ -18,6 +18,8 @@ public class OdDlivDto {
         @Size(max = 21) private String dlivId;
         @Size(max = 21) private String orderId;        // 상위 FK 필터
         private List<String> orderIds;                 // 상위 FK 다건 IN
+        @Size(max = 21) private String memberId;       // 회원 필터
+        @Size(max = 20) private String dlivStatusCd;   // 배송상태 필터
     }
 
     @Getter @Setter @NoArgsConstructor

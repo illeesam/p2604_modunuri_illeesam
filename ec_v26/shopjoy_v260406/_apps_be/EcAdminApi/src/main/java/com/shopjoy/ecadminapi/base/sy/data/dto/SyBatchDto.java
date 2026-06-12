@@ -20,6 +20,7 @@ public class SyBatchDto {
         @Size(max = 21) private String batchId;
         @Size(max = 21) private String pathId;
         @Size(max = 20) private String status;
+        @Size(max = 20) private String runStatus;
     }
 
     /** 단건/목록 항목 */

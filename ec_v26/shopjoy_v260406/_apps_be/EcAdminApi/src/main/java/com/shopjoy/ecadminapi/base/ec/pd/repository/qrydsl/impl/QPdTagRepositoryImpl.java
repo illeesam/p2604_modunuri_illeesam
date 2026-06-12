@@ -63,6 +63,7 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
                 .where(
                     baseAndSiteId(search),
                     baseAndTagId(search),
+                    baseAndUseYn(search),
                     baseAndDateRange(search),
                     baseAndSearchValue(search)
                 )
@@ -89,6 +90,7 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
         BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndTagId(search),
+                baseAndUseYn(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
         };
@@ -131,6 +133,12 @@ public class QPdTagRepositoryImpl implements QPdTagRepository {
     private BooleanExpression baseAndTagId(PdTagDto.Request search) {
         return search != null && StringUtils.hasText(search.getTagId())
                 ? pdTag.tagId.eq(search.getTagId()) : null;
+    }
+
+    /* useYn 정확 일치 */
+    private BooleanExpression baseAndUseYn(PdTagDto.Request search) {
+        return search != null && StringUtils.hasText(search.getUseYn())
+                ? pdTag.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */

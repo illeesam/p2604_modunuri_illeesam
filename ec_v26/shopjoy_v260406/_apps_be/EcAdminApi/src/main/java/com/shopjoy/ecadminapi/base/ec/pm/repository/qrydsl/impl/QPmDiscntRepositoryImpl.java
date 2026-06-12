@@ -67,6 +67,8 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
                     baseAndSiteId(search),
                     baseAndDiscntId(search),
                     baseAndUseYn(search),
+                    baseAndDiscntTypeCd(search),
+                    baseAndDiscntStatusCd(search),
                     baseAndDateRange(search),
                     baseAndSearchValue(search)
                 )
@@ -94,6 +96,8 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
                 baseAndSiteId(search),
                 baseAndDiscntId(search),
                 baseAndUseYn(search),
+                baseAndDiscntTypeCd(search),
+                baseAndDiscntStatusCd(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
         };
@@ -142,6 +146,18 @@ public class QPmDiscntRepositoryImpl implements QPmDiscntRepository {
     private BooleanExpression baseAndUseYn(PmDiscntDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? pmDiscnt.useYn.eq(search.getUseYn()) : null;
+    }
+
+    /* discntTypeCd 정확 일치 */
+    private BooleanExpression baseAndDiscntTypeCd(PmDiscntDto.Request search) {
+        return search != null && StringUtils.hasText(search.getDiscntTypeCd())
+                ? pmDiscnt.discntTypeCd.eq(search.getDiscntTypeCd()) : null;
+    }
+
+    /* discntStatusCd 정확 일치 */
+    private BooleanExpression baseAndDiscntStatusCd(PmDiscntDto.Request search) {
+        return search != null && StringUtils.hasText(search.getDiscntStatusCd())
+                ? pmDiscnt.discntStatusCd.eq(search.getDiscntStatusCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */

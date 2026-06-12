@@ -160,6 +160,12 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
                 ? syBrand.vendorId.eq(search.getVendorId()) : null;
     }
 
+    /* useYn 정확 일치 (Y/N) */
+    private BooleanExpression baseAndUseYn(SyBrandDto.Request search) {
+        return search != null && StringUtils.hasText(search.getUseYn())
+                ? syBrand.useYn.eq(search.getUseYn()) : null;
+    }
+
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
     private BooleanExpression baseAndDateRange(SyBrandDto.Request search) {
         if (search == null

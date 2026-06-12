@@ -154,7 +154,7 @@ window.OdDlivMng = {
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
-      return { searchType: '', searchValue: '', memberId: '', memberNm: '', status: '', dateType: 'dliv_ship_date', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+      return { searchType: '', searchValue: '', memberId: '', memberNm: '', dlivStatusCd: '', dateType: 'dliv_ship_date', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
     };
     const searchParam = reactive(_initSearchParam());
 
@@ -479,7 +479,7 @@ window.OdDlivMng = {
         display: (p) => p.memberNm || p.memberId, placeholder: '회원 선택',
         onOpen: () => handleBtnAction('memberPickModal-open'),
         onClear: () => handleBtnAction('memberPickModal-clear') },
-      { key: 'status', type: 'select', label: '상태', options: () => codes.dliv_statuses, nullLabel: '상태 전체' },
+      { key: 'dlivStatusCd', type: 'select', label: '상태', options: () => codes.dliv_statuses, nullLabel: '상태 전체' },
       { key: 'dateRange', type: 'dateRange', label: '배송일',
         typeKey: 'dateType', startKey: 'dateStart', endKey: 'dateEnd',
         typeOptions: () => codes.dliv_date_types,

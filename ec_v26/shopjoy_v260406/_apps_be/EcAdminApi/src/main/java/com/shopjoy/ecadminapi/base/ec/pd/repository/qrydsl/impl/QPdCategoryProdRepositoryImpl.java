@@ -77,6 +77,7 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
                     baseAndCategoryId(search),
                     baseAndCategoryIdsCsv(search),
                     baseAndProdId(search),
+                    baseAndProdNm(search),
                     baseAndTypeCd(search),
                     baseAndDateRange(search),
                     baseAndSearchValue(search)
@@ -107,6 +108,7 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
                 baseAndCategoryId(search),
                 baseAndCategoryIdsCsv(search),
                 baseAndProdId(search),
+                baseAndProdNm(search),
                 baseAndTypeCd(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
@@ -156,6 +158,12 @@ public class QPdCategoryProdRepositoryImpl implements QPdCategoryProdRepository 
     private BooleanExpression baseAndProdId(PdCategoryProdDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdId())
                 ? pdCategoryProd.prodId.eq(search.getProdId()) : null;
+    }
+
+    /* prodNm — 조인된 pd_prod.prodNm LIKE (상품명 검색, 대소문자 무시) */
+    private BooleanExpression baseAndProdNm(PdCategoryProdDto.Request search) {
+        return search != null && StringUtils.hasText(search.getProdNm())
+                ? pdProd.prodNm.likeIgnoreCase("%" + search.getProdNm() + "%") : null;
     }
 
     /* categoryId 정확 일치 */

@@ -16,6 +16,7 @@ import com.shopjoy.ecadminapi.base.ec.pd.repository.qrydsl.QPdReviewRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -64,6 +65,8 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
                     baseAndSiteId(search),
                     baseAndReviewId(search),
                     baseAndProdId(search),
+                    baseAndReviewStatusCd(search),
+                    baseAndRating(search),
                     baseAndDateRange(search),
                     baseAndSearchValue(search)
                 )
@@ -91,6 +94,8 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
                 baseAndSiteId(search),
                 baseAndReviewId(search),
                 baseAndProdId(search),
+                baseAndReviewStatusCd(search),
+                baseAndRating(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
         };
@@ -142,6 +147,26 @@ public class QPdReviewRepositoryImpl implements QPdReviewRepository {
     private BooleanExpression baseAndProdId(PdReviewDto.Request search) {
         return search != null && StringUtils.hasText(search.getProdId())
                 ? pdReview.prodId.eq(search.getProdId()) : null;
+    }
+
+    /* reviewStatusCd 정확 일치 (REVIEW_STATUS 코드) */
+    private BooleanExpression baseAndReviewStatusCd(PdReviewDto.Request search) {
+        return search != null && StringUtils.hasText(search.getReviewStatusCd())
+                ? pdReview.reviewStatusCd.eq(search.getReviewStatusCd()) : null;
+    }
+
+    /* rating — 점수대(floor) 범위 (예: "4" => 4.0 이상 5.0 미만) */
+    private BooleanExpression baseAndRating(PdReviewDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getRating())) return null;
+        int floor;
+        try {
+            floor = Integer.parseInt(search.getRating().trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+        BigDecimal lo = BigDecimal.valueOf(floor);
+        BigDecimal hi = BigDecimal.valueOf(floor + 1L);
+        return pdReview.rating.goe(lo).and(pdReview.rating.lt(hi));
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */

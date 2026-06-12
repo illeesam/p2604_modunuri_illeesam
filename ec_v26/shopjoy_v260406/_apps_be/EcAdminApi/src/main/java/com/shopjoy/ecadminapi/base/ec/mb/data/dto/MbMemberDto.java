@@ -17,6 +17,8 @@ public class MbMemberDto {
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
         @Size(max = 21) private String memberId;
+        @Size(max = 20) private String gradeCd;          // 등급 드롭다운
+        @Size(max = 20) private String memberStatusCd;   // 상태 드롭다운
     }
 
     @Getter @Setter @NoArgsConstructor

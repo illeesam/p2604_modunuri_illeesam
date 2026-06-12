@@ -18,6 +18,7 @@ public class PmCacheDto {
         @Size(max = 21) private String siteId;
         @Size(max = 21) private String cacheId;
         @Size(max = 21) private String memberId;
+        @Size(max = 20) private String cacheTypeCd;
     }
 
     @Getter @Setter @NoArgsConstructor

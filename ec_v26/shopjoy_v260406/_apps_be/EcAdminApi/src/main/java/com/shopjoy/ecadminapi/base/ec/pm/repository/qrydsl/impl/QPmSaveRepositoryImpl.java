@@ -68,6 +68,7 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
                 .where(
                     baseAndSiteId(search),
                     baseAndSaveId(search),
+                    baseAndSaveTypeCd(search),
                     baseAndDateRange(search),
                     baseAndSearchValue(search)
                 )
@@ -94,6 +95,7 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
         BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndSaveId(search),
+                baseAndSaveTypeCd(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
         };
@@ -137,6 +139,12 @@ public class QPmSaveRepositoryImpl implements QPmSaveRepository {
     private BooleanExpression baseAndSaveId(PmSaveDto.Request search) {
         return search != null && StringUtils.hasText(search.getSaveId())
                 ? pmSave.saveId.eq(search.getSaveId()) : null;
+    }
+
+    /* saveTypeCd 정확 일치 (유형 필터) */
+    private BooleanExpression baseAndSaveTypeCd(PmSaveDto.Request search) {
+        return search != null && StringUtils.hasText(search.getSaveTypeCd())
+                ? pmSave.saveTypeCd.eq(search.getSaveTypeCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */

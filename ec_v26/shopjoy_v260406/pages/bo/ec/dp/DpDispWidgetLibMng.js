@@ -171,8 +171,8 @@ window.DpDispWidgetLibMng = {
           ...Object.fromEntries(Object.entries(restParam).filter(([, v]) => v !== '' && v !== null && v !== undefined)),
           ...(searchValue ? { searchValue: searchValue.trim() } : {}),
           ...(searchType ? { searchType }                     : {}),
-          ...(type   ? { typeCd: type }  : {}),  /* mapper 는 typeCd 파라미터를 받음 */
-          ...(status ? { useYn: status } : {}),
+          ...(type   ? { widgetTypeCd: type } : {}),  /* 백엔드 DpWidgetLibDto.Request.widgetTypeCd */
+          ...(status ? { useYn: status }       : {}),
           ...(uiState.selectedPath != null ? { pathId: uiState.selectedPath } : {}),
         };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
@@ -301,10 +301,10 @@ window.DpDispWidgetLibMng = {
           { value: 'widgetLibDesc', label: '설명' },
           { value: 'tag',           label: '태그' },
         ],
-        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
-      { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
-      { key: 'type',   type: 'select', label: '유형', options: () => codes.disp_widget_types, nullLabel: '타입 전체' },
-      { key: 'status', type: 'select', label: '상태', options: () => codes.active_statuses,   nullLabel: '상태 전체' },
+        placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '130px' },
+      { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력', width: '200px' },
+      { key: 'type',   type: 'select', label: '위젯 유형', options: () => codes.disp_widget_types, nullLabel: '전체' },
+      { key: 'status', type: 'select', label: '상태', options: () => codes.active_statuses,   nullLabel: '전체' },
     ];
 
     /* BoGrid 컬럼 정의 (정렬은 SORT_MAP 키 'nm' 와 sortKey 일치) */

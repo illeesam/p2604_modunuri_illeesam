@@ -110,7 +110,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
     const pays = reactive([]);
 
   /* 정산 지급 _initSearchParam */
-  const _initSearchParam = () => ({ searchType: '', searchValue: '', status: '' });
+  const _initSearchParam = () => ({ searchType: '', searchValue: '', payStatusCd: '' });
   const searchParam = reactive(_initSearchParam());
     const baseGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
@@ -153,7 +153,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, dateRange: '이�
         rangeOptions: () => codes.date_range_opts,
         rangeFirst: true, dateWidth: '140px', sepStyle: 'line-height:32px',
         onRangeChange: () => handleDateRangeChange() },
-      { key: 'status', label: '상태', type: 'select', options: () => codes.settle_pay_statuses, nullLabel: '상태 전체' },
+      { key: 'payStatusCd', label: '상태', type: 'select', options: () => codes.settle_pay_statuses, nullLabel: '상태 전체' },
       { key: 'searchType', label: '검색대상', type: 'multiCheck',
         options: [
           { value: 'payId',    label: '지급ID' },

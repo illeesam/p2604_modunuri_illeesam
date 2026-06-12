@@ -15,6 +15,7 @@ public class PmSaveDto {
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
         @Size(max = 21) private String saveId;
+        @Size(max = 20) private String saveTypeCd;
     }
 
     @Getter @Setter @NoArgsConstructor

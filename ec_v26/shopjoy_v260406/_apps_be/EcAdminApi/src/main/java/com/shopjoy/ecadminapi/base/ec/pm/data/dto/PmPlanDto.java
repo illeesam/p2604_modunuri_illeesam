@@ -17,6 +17,7 @@ public class PmPlanDto {
         @Size(max = 21) private String siteId;
         @Size(max = 1) private String useYn;
         @Size(max = 21) private String planId;
+        @Size(max = 20) private String planStatusCd;
     }
 
     @Getter @Setter @NoArgsConstructor

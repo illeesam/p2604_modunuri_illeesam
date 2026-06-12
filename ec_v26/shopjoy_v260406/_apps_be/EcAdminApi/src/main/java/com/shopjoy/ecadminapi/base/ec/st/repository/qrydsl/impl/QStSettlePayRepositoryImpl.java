@@ -77,6 +77,7 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
                 .where(
                     baseAndSiteId(search),
                     baseAndSettlePayId(search),
+                    baseAndPayStatusCd(search),
                     baseAndDateRange(search),
                     baseAndSearchValue(search)
                 )
@@ -103,6 +104,7 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
         BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndSettlePayId(search),
+                baseAndPayStatusCd(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
         };
@@ -148,6 +150,12 @@ public class QStSettlePayRepositoryImpl implements QStSettlePayRepository {
     private BooleanExpression baseAndSettlePayId(StSettlePayDto.Request search) {
         return search != null && StringUtils.hasText(search.getSettlePayId())
                 ? stSettlePay.settlePayId.eq(search.getSettlePayId()) : null;
+    }
+
+    /* payStatusCd 정확 일치 */
+    private BooleanExpression baseAndPayStatusCd(StSettlePayDto.Request search) {
+        return search != null && StringUtils.hasText(search.getPayStatusCd())
+                ? stSettlePay.payStatusCd.eq(search.getPayStatusCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */

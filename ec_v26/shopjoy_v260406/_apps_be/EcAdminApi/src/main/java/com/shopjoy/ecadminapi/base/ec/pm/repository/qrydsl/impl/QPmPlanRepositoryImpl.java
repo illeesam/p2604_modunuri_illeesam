@@ -70,6 +70,7 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
                     baseAndSiteId(search),
                     baseAndPlanId(search),
                     baseAndUseYn(search),
+                    baseAndPlanStatusCd(search),
                     baseAndDateRange(search),
                     baseAndSearchValue(search)
                 )
@@ -97,6 +98,7 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
                 baseAndSiteId(search),
                 baseAndPlanId(search),
                 baseAndUseYn(search),
+                baseAndPlanStatusCd(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
         };
@@ -146,6 +148,12 @@ public class QPmPlanRepositoryImpl implements QPmPlanRepository {
     private BooleanExpression baseAndUseYn(PmPlanDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? pmPlan.useYn.eq(search.getUseYn()) : null;
+    }
+
+    /* planStatusCd 정확 일치 */
+    private BooleanExpression baseAndPlanStatusCd(PmPlanDto.Request search) {
+        return search != null && StringUtils.hasText(search.getPlanStatusCd())
+                ? pmPlan.planStatusCd.eq(search.getPlanStatusCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */

@@ -98,7 +98,7 @@ window.SyBrandMng = {
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
-      return { searchType: '', searchValue: '', bizCd: '', useYn: 'Y', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+      return { searchType: '', searchValue: '', useYn: 'Y', dateType: 'reg_date', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
     };
     const searchParam = reactive(_initSearchParam()); // 검색조건
 
@@ -294,7 +294,6 @@ window.SyBrandMng = {
     // 기본 검색
     const columns = {};
     columns.baseSearch = [
-      { key: 'bizCd', type: 'text', label: '업무코드', placeholder: 'biz_cd 검색', width: '160px' },
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
           { value: 'brandCode', label: '브랜드코드' },

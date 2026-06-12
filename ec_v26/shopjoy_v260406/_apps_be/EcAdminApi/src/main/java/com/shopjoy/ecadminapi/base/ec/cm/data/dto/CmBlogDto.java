@@ -16,6 +16,7 @@ public class CmBlogDto {
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
         @Size(max = 1) private String useYn;
+        @Size(max = 1) private String isNotice;
         @Size(max = 21) private String blogId;
     }
 

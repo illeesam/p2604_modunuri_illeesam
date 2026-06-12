@@ -65,6 +65,7 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
                     baseAndSiteId(search),
                     baseAndEventId(search),
                     baseAndUseYn(search),
+                    baseAndEventStatusCd(search),
                     baseAndDateRange(search),
                     baseAndSearchValue(search)
                 )
@@ -92,6 +93,7 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
                 baseAndSiteId(search),
                 baseAndEventId(search),
                 baseAndUseYn(search),
+                baseAndEventStatusCd(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
         };
@@ -140,6 +142,12 @@ public class QPmEventRepositoryImpl implements QPmEventRepository {
     private BooleanExpression baseAndUseYn(PmEventDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? pmEvent.useYn.eq(search.getUseYn()) : null;
+    }
+
+    /* eventStatusCd 정확 일치 */
+    private BooleanExpression baseAndEventStatusCd(PmEventDto.Request search) {
+        return search != null && StringUtils.hasText(search.getEventStatusCd())
+                ? pmEvent.eventStatusCd.eq(search.getEventStatusCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */

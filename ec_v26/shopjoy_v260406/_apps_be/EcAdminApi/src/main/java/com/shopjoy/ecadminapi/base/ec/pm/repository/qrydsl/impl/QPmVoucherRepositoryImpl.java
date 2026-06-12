@@ -69,6 +69,7 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
                 .where(
                     baseAndSiteId(search),
                     baseAndVoucherId(search),
+                    baseAndVoucherStatusCd(search),
                     baseAndUseYn(search),
                     baseAndDateRange(search),
                     baseAndSearchValue(search)
@@ -96,6 +97,7 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
         BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndVoucherId(search),
+                baseAndVoucherStatusCd(search),
                 baseAndUseYn(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
@@ -140,6 +142,12 @@ public class QPmVoucherRepositoryImpl implements QPmVoucherRepository {
     private BooleanExpression baseAndVoucherId(PmVoucherDto.Request search) {
         return search != null && StringUtils.hasText(search.getVoucherId())
                 ? pmVoucher.voucherId.eq(search.getVoucherId()) : null;
+    }
+
+    /* voucherStatusCd 정확 일치 */
+    private BooleanExpression baseAndVoucherStatusCd(PmVoucherDto.Request search) {
+        return search != null && StringUtils.hasText(search.getVoucherStatusCd())
+                ? pmVoucher.voucherStatusCd.eq(search.getVoucherStatusCd()) : null;
     }
 
     /* useYn 정확 일치 */

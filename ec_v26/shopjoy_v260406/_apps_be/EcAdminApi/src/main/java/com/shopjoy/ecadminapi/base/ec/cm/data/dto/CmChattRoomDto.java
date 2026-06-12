@@ -16,6 +16,7 @@ public class CmChattRoomDto {
         @Size(max = 21) private String siteId;
         @Size(max = 21) private String chattRoomId;
         @Size(max = 21) private String memberId;
+        @Size(max = 20) private String chattStatusCd;
     }
 
     @Getter @Setter @NoArgsConstructor

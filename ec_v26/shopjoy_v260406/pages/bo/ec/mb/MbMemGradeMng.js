@@ -72,7 +72,7 @@ window.MbMemGradeMng = {
       }
     };
 
-    const _initSearchParam = () => ({ searchType: '', searchValue: '', use: '' });
+    const _initSearchParam = () => ({ searchType: '', searchValue: '', useYn: '' });
     const searchParam = reactive(_initSearchParam());
 
     /* ===== CRUD 그리드 ===== */
@@ -238,7 +238,7 @@ window.MbMemGradeMng = {
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
-      { key: 'use', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '전체' },
+      { key: 'useYn', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '전체' },
     ];
 
     // 기본 그리드

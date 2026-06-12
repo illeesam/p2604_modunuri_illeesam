@@ -75,6 +75,8 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
                 .where(
                     baseAndSiteId(search),
                     baseAndDlivTmpltId(search),
+                    baseAndDlivMethodCd(search),
+                    baseAndUseYn(search),
                     baseAndDateRange(search),
                     baseAndSearchValue(search)
                 )
@@ -101,6 +103,8 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
         BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndDlivTmpltId(search),
+                baseAndDlivMethodCd(search),
+                baseAndUseYn(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
         };
@@ -143,6 +147,18 @@ public class QPdDlivTmpltRepositoryImpl implements QPdDlivTmpltRepository {
     private BooleanExpression baseAndDlivTmpltId(PdDlivTmpltDto.Request search) {
         return search != null && StringUtils.hasText(search.getDlivTmpltId())
                 ? pdDlivTmplt.dlivTmpltId.eq(search.getDlivTmpltId()) : null;
+    }
+
+    /* dlivMethodCd 정확 일치 */
+    private BooleanExpression baseAndDlivMethodCd(PdDlivTmpltDto.Request search) {
+        return search != null && StringUtils.hasText(search.getDlivMethodCd())
+                ? pdDlivTmplt.dlivMethodCd.eq(search.getDlivMethodCd()) : null;
+    }
+
+    /* useYn 정확 일치 */
+    private BooleanExpression baseAndUseYn(PdDlivTmpltDto.Request search) {
+        return search != null && StringUtils.hasText(search.getUseYn())
+                ? pdDlivTmplt.useYn.eq(search.getUseYn()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */

@@ -83,6 +83,7 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
                     baseAndSiteId(search),
                     baseAndCouponId(search),
                     baseAndUseYn(search),
+                    baseAndCouponStatusCd(search),
                     baseAndDateRange(search),
                     baseAndSearchValue(search)
                 )
@@ -111,6 +112,7 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
                 baseAndSiteId(search),
                 baseAndCouponId(search),
                 baseAndUseYn(search),
+                baseAndCouponStatusCd(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
         };
@@ -165,6 +167,12 @@ public class QPmCouponRepositoryImpl implements QPmCouponRepository {
     private BooleanExpression baseAndUseYn(PmCouponDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? pmCoupon.useYn.eq(search.getUseYn()) : null;
+    }
+
+    /* couponStatusCd 정확 일치 */
+    private BooleanExpression baseAndCouponStatusCd(PmCouponDto.Request search) {
+        return search != null && StringUtils.hasText(search.getCouponStatusCd())
+                ? pmCoupon.couponStatusCd.eq(search.getCouponStatusCd()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
