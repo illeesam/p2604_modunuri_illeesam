@@ -6,7 +6,7 @@ window.boError500 = {
     onReload() { window.location.reload(); },   // 페이지 새로고침 (템플릿 location 스코프 미접근 회피)
   },
   template: /* html */`
-<fo-page bare>
+<div>
   <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;text-align:center;min-height:60vh;">
   <div style="font-size:80px;margin-bottom:16px;">
     💥
@@ -24,7 +24,7 @@ window.boError500 = {
     {{ message }}
   </div>
   <div style="display:flex;gap:10px;margin-top:28px;">
-    <button @click="$event => location.reload()"
+    <button @click="onReload"
       style="padding:12px 28px;font-size:14px;font-weight:600;background:#6a1b9a;color:#fff;border:none;border-radius:8px;cursor:pointer;">
       새로고침
     </button>
@@ -34,6 +34,6 @@ window.boError500 = {
     </button>
   </div>
   </div>
-</fo-page>
+</div>
 `,
 };

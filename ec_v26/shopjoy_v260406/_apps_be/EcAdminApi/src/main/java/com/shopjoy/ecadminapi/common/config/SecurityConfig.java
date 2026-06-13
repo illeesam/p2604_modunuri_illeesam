@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.co.auth.security.AuthPrincipal;
 import com.shopjoy.ecadminapi.co.auth.security.JwtAuthFilter;
 //import com.shopjoy.ecadminapi.common.license.LicenseFilter;
 import com.shopjoy.ecadminapi.common.log.ErrorLogQueue;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhAccessErrorLog;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -139,11 +140,37 @@ public class SecurityConfig {
                 // (권한 부족=인증됐으나 타 appType 등 → 아래 accessDeniedHandler 403 과 분리)
                 .authenticationEntryPoint((request, response, e) -> {
                     String uri = request.getRequestURI();
+                    String msg = "인증이 필요합니다. (토큰 없음/만료)";
+                    // 에러 큐에 직접 적재 (GlobalExceptionHandler 를 거치지 않는 경로이므로 여기서 기록)
+                    Map<String, String> mdc = MDC.getCopyOfContextMap();
+                    if (mdc == null) mdc = Map.of();
+                    String logId = "EL" + LocalDateTime.now().format(ID_FMT)
+                        + String.format("%04d", (int)(Math.random() * 10000));
+                    errorLogQueue.offer(SyhAccessErrorLog.builder()
+                        .logId(logId)
+                        .reqMethod(mdc.getOrDefault("reqMethod", request.getMethod()))   // HTTP 메서드 (GET/POST 등)
+                        .reqHost(mdc.getOrDefault("reqHost", request.getServerName()))   // 요청 호스트명
+                        .reqPath(mdc.getOrDefault("reqPath", uri))                       // 요청 경로
+                        .reqQuery(mdc.getOrDefault("reqQuery", request.getQueryString())) // 쿼리스트링
+                        .reqIp(mdc.getOrDefault("reqIp", request.getRemoteAddr()))       // 클라이언트 IP
+                        .appTypeCd(mdc.getOrDefault("appTypeCd", "-"))                 // 앱 유형 (BO/FO/-)
+                        .userId(mdc.getOrDefault("authId", "-"))                         // 인증된 사용자 ID
+                        .roleId(mdc.getOrDefault("roleId", null))                        // 권한 ID
+                        .deptId(mdc.getOrDefault("deptId", null))                        // 부서 ID
+                        .vendorId(mdc.getOrDefault("vendorId", null))                    // 업체 ID
+                        .uiNm(mdc.getOrDefault("uiNm", null))                            // 화면명 (X-UI-Nm 헤더)
+                        .cmdNm(mdc.getOrDefault("cmdNm", null))                          // 커맨드명 (X-Cmd-Nm 헤더)
+                        .traceId(mdc.getOrDefault("traceId", null))                      // 요청 추적 ID
+                        .errorType("AuthenticationException")                             // 에러 유형: 미인증
+                        .errorMsg(CmUtil.nvl(e.getMessage(), msg))
+                        .logDt(LocalDateTime.now())
+                        .regDate(LocalDateTime.now())
+                        .build());
                     log.warn("[SecurityConfig] Unauthorized [401]: {} | uri={}", e.getMessage(), uri);
                     response.setStatus(401);
                     response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                     response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-                    response.getWriter().write("{\"status\":401,\"message\":\"인증이 필요합니다. (토큰 없음/만료)\"}");
+                    response.getWriter().write("{\"status\":401,\"message\":\"" + msg + "\"}");
                 })
                 .accessDeniedHandler((request, response, e) -> {
                     String uri = request.getRequestURI();

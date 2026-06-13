@@ -11,15 +11,6 @@
     const DEFAULT_BO_SITE_NO = '01';
     /* BO_SITE_NO — URL ?SITE_NO=02 로 오버라이드 가능, localStorage 영속 */
     (function(){
-      try {
-        /* 구 키(언더스코어) → 신 키(카멜) 마이그레이션 */
-        var _oldNo = localStorage.getItem('modu-bo-sy-siteNo');
-        if (_oldNo && !localStorage.getItem('modu-bo-sy-siteNo')) localStorage.setItem('modu-bo-sy-siteNo', _oldNo);
-        if (localStorage.getItem('modu-bo-sy-siteNo')) localStorage.removeItem('modu-bo-sy-siteNo');
-        var _oldId = localStorage.getItem('modu-bo-sy-siteId');
-        if (_oldId && !localStorage.getItem('modu-bo-sy-siteId')) localStorage.setItem('modu-bo-sy-siteId', _oldId);
-        if (localStorage.getItem('modu-bo-sy-siteId')) localStorage.removeItem('modu-bo-sy-siteId');
-      } catch(_){}
       var _toSiteId = function(no){ return 'SITE' + String(no || '01').padStart(6, '0'); };
       try {
         var qs = new URLSearchParams(window.location.search);
@@ -45,11 +36,18 @@
       /* BO_SITE_NO 기준 CSS 로드 */
       document.write('<link rel="stylesheet" href="assets/css/boGlobalStyle' + window.BO_SITE_NO + '.css">');
     })();
-    /* 다른 탭에서 SITE_NO 변경 시 자동 반영 */
+    /* 다른 탭에서 SITE_NO 변경 시 자동 반영.
+     * ⚠️ 무한 리로드 방지: 실제로 "다른 값"으로 바뀌었고, 현재 탭의 BO_SITE_NO 와도 다를 때만 reload.
+     *   (이전 코드는 newValue!==oldValue 만 보고 reload → 같은 값 재기록/탭 핑퐁 시 무한 루프 발생) */
     window.addEventListener('storage', function(e){
-      if (e.key === 'modu-bo-sy-siteNo' && e.newValue !== e.oldValue) {
+      try {
+        if (e.key !== 'modu-bo-sy-siteNo') return;
+        var nv = e.newValue;
+        if (!nv) return;                                  // 삭제 이벤트(null)는 무시
+        if (nv === e.oldValue) return;                    // 값 변화 없으면 무시
+        if (nv === window.BO_SITE_NO) return;             // 현재 탭과 같은 값이면 reload 불필요 (핑퐁 차단)
         location.reload();
-      }
+      } catch(_){}
     });
     /* 기본 페이지 자동 이동 — 해시 없이 진입 시 대시보드(홈)로 */
     (function(){

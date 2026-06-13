@@ -20,25 +20,17 @@
   const _resolveBoSite = () => {
     let no = '01', id;
     try {
-      // 구 키(언더스코어) → 신 키(카멜) 마이그레이션
-      const oldNo = localStorage.getItem('modu-bo-sy-siteNo');
-      if (oldNo && !localStorage.getItem('modu-bo-sy-siteNo')) {
-        localStorage.setItem('modu-bo-sy-siteNo', oldNo);
-      }
-      if (localStorage.getItem('modu-bo-sy-siteNo')) localStorage.removeItem('modu-bo-sy-siteNo');
-      const oldId = localStorage.getItem('modu-bo-sy-siteId');
-      if (oldId && !localStorage.getItem('modu-bo-sy-siteId')) {
-        localStorage.setItem('modu-bo-sy-siteId', oldId);
-      }
-      if (localStorage.getItem('modu-bo-sy-siteId')) localStorage.removeItem('modu-bo-sy-siteId');
-
+      /* ⚠️ 과거의 "구 키→신 키 마이그레이션" 블록 제거:
+       *   구 키와 신 키 이름이 동일(modu-bo-sy-siteNo)하게 작성돼 매 호출마다 removeItem→setItem 발생.
+       *   removeItem 은 다른 탭에 oldValue→null storage 이벤트를 쏘고, bo.html 의 storage 리스너가
+       *   이를 변화로 오인해 location.reload() → 무한 리로드 루프를 유발했음. */
       const u = new URLSearchParams(location.search).get('SITE_NO');
       no = u || localStorage.getItem('modu-bo-sy-siteNo') || '01';
       id = (!u && localStorage.getItem('modu-bo-sy-siteId')) || _toSiteId(no);
 
-      // 항상 localStorage 에 영속화 (로그인만 해도 키 생성)
-      localStorage.setItem('modu-bo-sy-siteNo', no);
-      localStorage.setItem('modu-bo-sy-siteId', id);
+      // 항상 localStorage 에 영속화 (로그인만 해도 키 생성). 값이 같으면 storage 이벤트 미발생 → 안전
+      if (localStorage.getItem('modu-bo-sy-siteNo') !== no) localStorage.setItem('modu-bo-sy-siteNo', no);
+      if (localStorage.getItem('modu-bo-sy-siteId') !== id) localStorage.setItem('modu-bo-sy-siteId', id);
     } catch (_) {
       no = no || '01';
       id = id || 'SITE000001';

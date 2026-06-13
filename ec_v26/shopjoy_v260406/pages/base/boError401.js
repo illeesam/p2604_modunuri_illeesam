@@ -6,7 +6,7 @@ window.boError401 = {
     reloadPage() { location.reload(); },
   },
   template: /* html */`
-<fo-page bare>
+<div>
   <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;text-align:center;min-height:60vh;">
   <div style="font-size:80px;margin-bottom:16px;">
     🔒
@@ -27,6 +27,6 @@ window.boError401 = {
     </button>
   </div>
   </div>
-</fo-page>
+</div>
 `,
 };

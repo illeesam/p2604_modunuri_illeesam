@@ -73,6 +73,8 @@ public class GlobalExceptionHandler {
             msgBuilder.append(fe.getField()).append(": ").append(fe.getDefaultMessage());
         }
         String message = msgBuilder.length() > 0 ? msgBuilder.toString() : "입력 내용을 확인해주세요.";
+        // log.error 로 남겨야 DbErrorLogAppender 가 syh_access_error_log 에 적재한다.
+        log.error("MethodArgumentNotValidException [400]: {}", message, ex);
         return ResponseEntity.badRequest()
             .body(ApiResponse.error(400, message, errors)
                 .withDebug(buildStack(ex), buildUserInfo(req)));
@@ -125,6 +127,8 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ApiResponse<Void>> handleBadCredentials(BadCredentialsException ex, HttpServletRequest req) {
+        // log.error 로 남겨야 DbErrorLogAppender 가 syh_access_error_log 에 적재한다.
+        log.error("BadCredentialsException [401]: {}", ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
             .body(ApiResponse.<Void>error(401, "아이디 또는 비밀번호가 올바르지 않습니다.")
                 .withDebug(buildStack(ex), buildUserInfo(req)));
@@ -143,6 +147,8 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ApiResponse<Void>> handleAuth(AuthenticationException ex, HttpServletRequest req) {
+        // log.error 로 남겨야 DbErrorLogAppender 가 syh_access_error_log 에 적재한다.
+        log.error("AuthenticationException [401]: {}", ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
             .body(ApiResponse.<Void>error(401, "인증이 필요합니다.")
                 .withDebug(buildStack(ex), buildUserInfo(req)));
