@@ -11,8 +11,8 @@
 
   const { defineStore } = Pinia;
 
-  /* site_no → site_id 매핑 (coUtil.siteNoToSiteId 와 동일 규칙) */
-  const _toSiteId = (no) => 'SITE' + String(no || '01').padStart(6, '0');
+  /* site_no → site_id 매핑 (coUtil.siteNoToSiteId 와 동일 규칙: 실 DB sy_site 기준) */
+  const _toSiteId = (no) => '260401' + String(no || '01').padStart(10, '0');
 
   /* BO 사이트 정보 결정 + localStorage 영속화 + 구 키 마이그레이션.
      우선순위: URL ?SITE_NO= → localStorage(siteNo) → '01'.
@@ -33,7 +33,7 @@
       if (localStorage.getItem('modu-bo-sy-siteId') !== id) localStorage.setItem('modu-bo-sy-siteId', id);
     } catch (_) {
       no = no || '01';
-      id = id || 'SITE000001';
+      id = id || '2604010000000001';
     }
     return { no, id };
   };
@@ -46,7 +46,7 @@
       // 사이트 번호(01/02/03/9999)
       svSiteNo: _site.no,
 
-      // 사이트 ID(SITE000001 ...) — modu-bo-sy-siteId 우선, 없으면 site_no 매핑
+      // 사이트 ID(2604010000000001 ...) — modu-bo-sy-siteId 우선, 없으면 site_no 매핑
       svSiteId: _site.id,
 
       // 공통 코드 (CODE_GRP: CODE_LIST)

@@ -9,9 +9,11 @@ window.Faq = {
 
     /* ##### [01] 초기 변수 정의 ################################################## */
 
-    const { ref, reactive, watch, onMounted } = Vue;
+    const { ref, reactive, computed, watch, onMounted } = Vue;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, openFaq: null});
     const codes = reactive({});
+    /* faqs — API(cm_faq) 로 로드. {q, a, cate} 형태로 정규화. 실패 시 SITE_CONFIG.faqs fallback */
+    const faqs = reactive([]);
 
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
@@ -54,13 +56,35 @@ window.Faq = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
+    /* handleLoadFaqs — DB(cm_faq) 공개 FAQ 조회. 실패 시 SITE_CONFIG.faqs fallback */
+    const handleLoadFaqs = async () => {
+      uiState.loading = true;
+      try {
+        const res = await foApiSvc.cmFaq.getList({}, 'FAQ', '목록조회');
+        const list = res.data?.data || [];
+        faqs.splice(0, faqs.length, ...list.map(f => ({
+          q: f.faqQuestion, a: f.faqAnswer, cate: f.pathLabel || '',
+        })));
+      } catch (err) {
+        console.error('[handleLoadFaqs]', err);
+        /* fallback: 정적 SITE_CONFIG.faqs */
+        const fb = (window.SITE_CONFIG && window.SITE_CONFIG.faqs) || [];
+        faqs.splice(0, faqs.length, ...fb.map(f => ({ q: f.q, a: f.a, cate: '' })));
+      } finally {
+        uiState.loading = false;
+      }
+    };
+
+    // ★ onMounted — 진입 시 코드 로드 + FAQ 조회
+    onMounted(() => {
+      if (isAppReady.value) fnLoadCodes();
+      handleLoadFaqs();
+    });
 
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
-      uiState,       // 상태
+      uiState, faqs, // 상태 / FAQ 목록
       handleBtnAction, handleSelectAction, // dispatch
     };
   },
@@ -72,7 +96,7 @@ window.Faq = {
   @nav="() => handleBtnAction('page-goHome')">
   <!-- ===== ■. 카드 영역 =================================================== -->
   <fo-container card-style="padding:8px clamp(14px,3vw,28px);margin-bottom:24px;">
-    <div v-for="(faq, idx) in config.faqs" :key="idx" class="faq-item">
+    <div v-for="(faq, idx) in faqs" :key="idx" class="faq-item">
       <button class="faq-question" @click="handleSelectAction('faqs-rowToggle', idx)">
         <span style="flex:1;">
           {{ faq.q }}

@@ -43,6 +43,15 @@
     remove(_id, uiNm, cmdNm)     { return chkId(_id, uiNm, cmdNm) || global.boApi.delete(`/bo/ec/cm/chatt/${_id}`, hdr(uiNm, cmdNm)); },
   };
 
+  /* ── cm: FAQ ────────────────────────────────────────────────── */
+  boApiSvc.cmFaq = {
+    getPage(params, uiNm, cmdNm)   { return global.boApi.get(   '/bo/ec/cm/faq/page', { params, ...hdr(uiNm, cmdNm) }); },
+    getById(_id, uiNm, cmdNm)      { return chkId(_id, uiNm, cmdNm) || global.boApi.get(   `/bo/ec/cm/faq/${_id}`, hdr(uiNm, cmdNm)); },
+    create(body, uiNm, cmdNm)      { return global.boApi.post(  '/bo/ec/cm/faq', body, hdr(uiNm, cmdNm)); },
+    update(_id, body, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.boApi.put(   `/bo/ec/cm/faq/${_id}`, body, hdr(uiNm, cmdNm)); },
+    remove(_id, uiNm, cmdNm)       { return chkId(_id, uiNm, cmdNm) || global.boApi.delete(`/bo/ec/cm/faq/${_id}`, hdr(uiNm, cmdNm)); },
+  };
+
   /* ── cm: 공지사항 ───────────────────────────────────────────── */
   boApiSvc.cmNotice = {
     getPage(params, uiNm, cmdNm)   { return global.boApi.get(   '/bo/ec/cm/notice/page', { params, ...hdr(uiNm, cmdNm) }); },

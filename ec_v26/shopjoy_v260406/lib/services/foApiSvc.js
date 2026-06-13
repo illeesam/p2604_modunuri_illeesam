@@ -39,6 +39,11 @@
     },
   };
 
+  /* ── cm: FAQ (공개 목록) ────────────────────────────────────── */
+  foApiSvc.cmFaq = {
+    getList(params, uiNm, cmdNm) { return global.foApi.get('/fo/faq/list', { params, ...hdr(uiNm, cmdNm) }); },
+  };
+
   /* ── my: 캐시 ───────────────────────────────────────────────── */
   foApiSvc.myCash = {
     getInfo(params, uiNm, cmdNm) {

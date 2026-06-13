@@ -28,7 +28,7 @@ public class DbErrorLogAppender extends UnsynchronizedAppenderBase<ILoggingEvent
     /** 에러 메시지 저장 최대 길이(문자) */
     private static final int    MAX_MSG_LEN    = 2000;
     /** site_id 는 NOT NULL — MDC siteId 미설정/"-" 시 대표 사이트로 fallback */
-    private static final String DEFAULT_SITE_ID = "SITE000001";
+    private static final String DEFAULT_SITE_ID = "2604010000000001";
     /** logId 생성용 타임스탬프 포맷 (yyMMddHHmmss) */
     private static final DateTimeFormatter ID_FMT =
             DateTimeFormatter.ofPattern("yyMMddHHmmss");

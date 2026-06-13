@@ -389,6 +389,6 @@ public class CmUploadService {
     /** resolveSiteId — 인증 사용자 siteId, 없으면(비회원 FO 업로드) 대표 사이트 fallback */
     private String resolveSiteId() {
         String siteId = com.shopjoy.ecadminapi.common.util.SecurityUtil.getSiteId();
-        return (siteId == null || siteId.isBlank()) ? "SITE000001" : siteId;
+        return (siteId == null || siteId.isBlank()) ? "2604010000000001" : siteId;
     }
 }

@@ -91,6 +91,7 @@
       { group: '고객센터' },
       { id: 'syContactMng', label: '문의관리' },
       { id: 'cmChattMng', label: '채팅관리' },
+      { id: 'cmFaqMng', label: 'FAQ관리' },
     ],
     settle: [
       { group: '기준정보' },
@@ -434,6 +435,7 @@
         syMenuMng: 'sy-menu-mng',
         syRoleMng: 'sy-role-mng',
         cmNoticeMng: 'cm-notice-mng',
+        cmFaqMng: 'cm-faq-mng',
         syAlarmMng: 'sy-alarm-mng',
         syPropMng: 'sy-prop-mng',
         syPathMng: 'sy-path-mng',
@@ -2504,6 +2506,7 @@
             <sy-menu-mng  v-else-if="page==='syMenuMng'"  :navigate="navigate" />
             <sy-role-mng  v-else-if="page==='syRoleMng'"  :navigate="navigate" />
             <cm-notice-mng  v-else-if="page==='cmNoticeMng'"  :navigate="navigate" />
+            <cm-faq-mng  v-else-if="page==='cmFaqMng'"  :navigate="navigate" />
             <sy-alarm-mng  v-else-if="page==='syAlarmMng'"  :navigate="navigate" />
             <sy-prop-mng  v-else-if="page==='syPropMng'"  :navigate="navigate" />
             <sy-path-mng  v-else-if="page==='syPathMng'"  :navigate="navigate" />
@@ -2990,6 +2993,8 @@
     .component('StErpReconMng', window.StErpReconMng)
     .component('CmNoticeMng', window.CmNoticeMng)
     .component('CmNoticeDtl', window.CmNoticeDtl)
+    .component('CmFaqMng', window.CmFaqMng)
+    .component('CmFaqDtl', window.CmFaqDtl)
     /* ── pages/bo/ec/ — 채팅/고객 ── */
     .component('CmChattMng', window.CmChattMng)
     .component('CmChattDtl', window.CmChattDtl)

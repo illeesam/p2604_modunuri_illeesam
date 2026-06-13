@@ -35,7 +35,7 @@ public class AccessLogFilter extends OncePerRequestFilter {
     public static final String ATTR_VENDOR_ID = "_authVendorId";
 
     /** site_id 는 NOT NULL — X-Site-Id 헤더 미수신 시 대표 사이트로 fallback */
-    private static final String DEFAULT_SITE_ID = "SITE000001";
+    private static final String DEFAULT_SITE_ID = "2604010000000001";
 
     /** logId 생성용 타임스탬프 포맷 (yyMMddHHmmss) */
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");

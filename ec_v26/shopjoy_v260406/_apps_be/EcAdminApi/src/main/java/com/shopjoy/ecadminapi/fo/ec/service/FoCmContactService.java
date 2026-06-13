@@ -31,7 +31,7 @@ public class FoCmContactService {
     /** 신규 문의 초기 상태 — CONTACT_STATUS_KR 코드값(요청/처리중/답변완료/취소됨) 기준 */
     private static final String CONTACT_STATUS_NEW = "요청";
     /** site_id 는 NOT NULL — 요청/인증에 siteId 없을 때(비회원 문의) 대표 사이트로 fallback */
-    private static final String DEFAULT_SITE_ID = "SITE000001";
+    private static final String DEFAULT_SITE_ID = "2604010000000001";
 
     private final CmBlogRepository cmBlogRepository;
     private final CmBlogReplyService cmBlogReplyService;

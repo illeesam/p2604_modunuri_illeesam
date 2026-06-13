@@ -94,7 +94,7 @@
         if (_oldNo && !localStorage.getItem('modu-fo-sy-siteNo')) localStorage.setItem('modu-fo-sy-siteNo', _oldNo);
         if (localStorage.getItem('modu-fo-sy-siteNo')) localStorage.removeItem('modu-fo-sy-siteNo');
       } catch(_){}
-      var _toSiteId = function(no){ return 'SITE' + String(no || '01').padStart(6, '0'); };
+      var _toSiteId = function(no){ return '260401' + String(no || '01').padStart(10, '0'); };
       try {
         var qs = new URLSearchParams(window.location.search);
         var v = qs.get('SITE_NO');

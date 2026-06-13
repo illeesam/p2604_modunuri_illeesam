@@ -11,7 +11,7 @@
     const DEFAULT_BO_SITE_NO = '01';
     /* BO_SITE_NO — URL ?SITE_NO=02 로 오버라이드 가능, localStorage 영속 */
     (function(){
-      var _toSiteId = function(no){ return 'SITE' + String(no || '01').padStart(6, '0'); };
+      var _toSiteId = function(no){ return '260401' + String(no || '01').padStart(10, '0'); };
       try {
         var qs = new URLSearchParams(window.location.search);
         var v = qs.get('SITE_NO');
@@ -299,6 +299,8 @@
   <script src="pages/bo/ec/cm/CmChattMng.js"></script>
   <script src="pages/bo/ec/cm/CmNoticeDtl.js"></script>
   <script src="pages/bo/ec/cm/CmNoticeMng.js"></script>
+  <script src="pages/bo/ec/cm/CmFaqDtl.js"></script>
+  <script src="pages/bo/ec/cm/CmFaqMng.js"></script>
 
   <!-- ■ B4.7: EC Domain - 전시(DP) ■ -->
   <script src="pages/bo/ec/dp/DpDispAreaDtl.js"></script>

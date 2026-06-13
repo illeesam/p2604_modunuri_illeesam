@@ -92,12 +92,12 @@
       return '';
     },
 
-    // site_no(01/02/03/9999) → site_id(SITE000001 ...) 매핑
-    // 규칙: 'SITE' + 6자리 0 패딩. 빈 값이면 대표 사이트(SITE000001)
+    // site_no(01/02/03) → site_id 매핑 (실 DB sy_site 기준)
+    // 규칙: '260401' + 10자리 0 패딩. 예: 01 → 2604010000000001 (메인몰, 대표 사이트)
     siteNoToSiteId(siteNo) {
       const no = String(siteNo || '').trim();
-      if (!no) return 'SITE000001';
-      return 'SITE' + no.padStart(6, '0');
+      if (!no) return '2604010000000001';
+      return '260401' + no.padStart(10, '0');
     },
 
     // 사이트 ID 조회 (DB 사이트 아이디)

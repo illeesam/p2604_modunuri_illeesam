@@ -36,7 +36,7 @@ import java.util.Map;
 @Transactional(readOnly = true)
 public class CmMsgSendService {
 
-    private static final String DEFAULT_SITE_ID = "SITE000001";
+    private static final String DEFAULT_SITE_ID = "2604010000000001";
 
     private final SyTemplateRepository syTemplateRepository;
     private final CmMailSendService  cmMailSendService;
