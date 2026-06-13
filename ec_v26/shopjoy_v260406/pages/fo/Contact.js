@@ -79,22 +79,30 @@ window.Contact = {
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
 
-    /* handleSubmit — 처리 */
+    /* handleSubmit — 문의 접수 (백엔드 CmContactSubmitDto.Request 필드명에 정확히 매핑) */
     const handleSubmit = async () => {
       if (!validate()) { return; }
-      if (typeof foApi !== 'undefined') {
+      uiState.loading = true;
+      try {
         await foApiSvc.myInquiry.create({
-          source: 'shopjoy',
-          name: form.name,
-          email: form.email,
-          tel: form.tel,
-          orderNo: form.orderNo,
-          inquiryType: form.inquiryType,
-          desc: form.desc,
-        }, '문의', '저장').catch(() => {});
+          inquiryType:        form.inquiryType,
+          name:               form.name,
+          email:              form.email,
+          tel:                form.tel,
+          orderNo:            form.orderNo,
+          message:            form.desc,                // 백엔드 DTO 필드명은 message (프론트 desc)
+          blogAuthor:         form.name,                // 작성자명 = 문의자 이름
+          contentAttachGrpId: form.contentAttachGrpId,  // 첨부파일 그룹 연결
+          // siteId 는 foApiAxios 가 X-Site-Id 헤더로 전달 → 백엔드 fallback 처리
+        }, '문의', '저장');
+        showToast('문의가 접수되었습니다. 빠르게 답변드리겠습니다!', 'success');
+        Object.assign(form, { name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '', contentAttachGrpId: null });
+      } catch (err) {
+        const msg = err.response?.data?.message || err.message || '문의 접수 중 오류가 발생했습니다.';
+        showToast(msg, 'error', 0);
+      } finally {
+        uiState.loading = false;
       }
-      showToast('문의가 접수되었습니다. 빠르게 답변드리겠습니다!', 'success');
-      Object.assign(form, { name: '', email: '', tel: '', orderNo: '', inquiryType: '', desc: '' });
     };
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
@@ -150,8 +158,8 @@ window.Contact = {
           :max-size-mb="10"
           allow-ext="jpg,jpeg,png,gif,pdf,xlsx,docx,zip" />
       </div>
-      <button class="btn-blue" @click="handleBtnAction('form-submit')" style="width:100%;padding:13px;">
-        문의 접수하기
+      <button class="btn-blue" @click="handleBtnAction('form-submit')" :disabled="uiState.loading" style="width:100%;padding:13px;">
+        {{ uiState.loading ? '접수 중...' : '문의 접수하기' }}
       </button>
     </fo-container>
     <!-- ===== □.□. 문의 폼 ================================================== -->

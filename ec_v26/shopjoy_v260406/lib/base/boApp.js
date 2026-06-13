@@ -145,6 +145,7 @@
       { id: 'syMemberLoginHist', label: '회원로그인이력' },
       { id: 'syUserLoginHist', label: '사용자로그인이력' },
       { id: 'syApiLogMng', label: 'API로그조회' },
+      { id: 'sySendMsgLog', label: '메시지발송이력' },
       { id: 'syPostman', label: 'postman' },
     ],
     devtools: [
@@ -442,6 +443,7 @@
         syMemberLoginHist: 'sy-member-login-hist',
         syUserLoginHist: 'sy-user-login-hist',
         syApiLogMng: 'sy-api-log-mng',
+        sySendMsgLog: 'sy-send-msg-log-mng',
         syPostman: 'sy-postman',
         zdStore: 'zd-store',
         zdLocalStorage: 'zd-local-storage',
@@ -2537,6 +2539,7 @@
             <sy-member-login-hist v-else-if="page==='syMemberLoginHist'" :navigate="navigate" />
             <sy-user-login-hist  v-else-if="page==='syUserLoginHist'"  :navigate="navigate" />
             <sy-api-log-mng      v-else-if="page==='syApiLogMng'"      :navigate="navigate" />
+            <sy-send-msg-log-mng v-else-if="page==='sySendMsgLog'"     :navigate="navigate" />
             <sy-postman  v-else-if="page==='syPostman'"  :navigate="navigate" />
             <zd-store  v-else-if="page==='zdStore'"  :navigate="navigate" />
             <zd-local-storage  v-else-if="page==='zdLocalStorage'"  :navigate="navigate" />

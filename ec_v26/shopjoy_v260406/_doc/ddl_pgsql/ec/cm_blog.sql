@@ -10,6 +10,7 @@ CREATE TABLE shopjoy_2604.cm_blog (
     blog_content TEXT         NOT NULL,
     blog_author  VARCHAR(100),
     prod_id      VARCHAR(21) ,
+    content_attach_grp_id VARCHAR(21) ,
     view_count   INTEGER      DEFAULT 0,
     use_yn       VARCHAR(1)   DEFAULT 'Y'::bpchar,
     is_notice    VARCHAR(1)   DEFAULT 'N'::bpchar,
@@ -28,6 +29,7 @@ COMMENT ON COLUMN shopjoy_2604.cm_blog.blog_summary IS '요약 (미리보기, �
 COMMENT ON COLUMN shopjoy_2604.cm_blog.blog_content IS '본문 (HTML 에디터)';
 COMMENT ON COLUMN shopjoy_2604.cm_blog.blog_author IS '작성자 이름';
 COMMENT ON COLUMN shopjoy_2604.cm_blog.prod_id IS '상품ID (pd_prod.prod_id, 상품 관련 글일 때만)';
+COMMENT ON COLUMN shopjoy_2604.cm_blog.content_attach_grp_id IS '내용 첨부파일그룹ID (sy_attach_grp.attach_grp_id, 문의글 첨부 grp_code=CONTACT_CONTENT_ATTACH)';
 COMMENT ON COLUMN shopjoy_2604.cm_blog.view_count IS '조회수';
 COMMENT ON COLUMN shopjoy_2604.cm_blog.use_yn IS '공개여부 Y/N (비공개 글)';
 COMMENT ON COLUMN shopjoy_2604.cm_blog.is_notice IS '공지글 여부 Y/N (상단 고정)';

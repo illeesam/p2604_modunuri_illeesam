@@ -24,5 +24,7 @@ public class CmContactSubmitDto {
         @Size(max = 4000) private String message;
         /** 작성자(로그인 회원 nm) */
         @Size(max = 100) private String blogAuthor;
+        /** 문의 내용 첨부파일그룹ID (sy_attach_grp.attach_grp_id, grp_code=CONTACT_CONTENT_ATTACH) */
+        @Size(max = 21) private String contentAttachGrpId;
     }
 }

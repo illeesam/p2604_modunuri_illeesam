@@ -120,6 +120,9 @@
     deleteFile(attachId, uiNm = '첨부파일', cmdNm = '삭제') {
       return chkId(attachId, uiNm, cmdNm) || client().delete(`/co/cm/upload/attach/${attachId}`, hdr(uiNm, cmdNm));
     },
+    updateSort(attachId, sortOrd, uiNm = '첨부파일', cmdNm = '순서변경') {
+      return chkId(attachId, uiNm, cmdNm) || client().patch(`/co/cm/upload/attach/${attachId}/sort`, { sortOrd }, hdr(uiNm, cmdNm));
+    },
   };
 
   /* ── cm: 파일 업로드 (/co/cm/upload) ────────────────────── */

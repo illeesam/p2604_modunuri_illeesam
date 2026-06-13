@@ -2,7 +2,7 @@
 정책명: 백엔드 API 기술 정책 (EcAdminApi)
 정책번호: base-기술-api
 관리자: 개발팀
-최종수정: 2026-05-05
+최종수정: 2026-06-13
 ---
 
 # 백엔드 API 기술 정책 (EcAdminApi)
@@ -114,13 +114,37 @@ co/
 │   ├── controller/   BoAuthController, FoAuthController
 │   └── service/      BoAuthService, FoAuthService
 ├── cm/
-│   ├── controller/   공통 초기화 데이터 (앱 스토어 데이터 등)
-│   └── service/      CmAppStoreDataService
+│   ├── controller/   공통 초기화·외부연동·발송 (앱 스토어/지도/토스/업로드/메시지발송)
+│   ├── service/      CmAppStoreDataService, CmMapService, CmTossPayService, CmUploadService
+│   │                 CmMailSendService, CmKakaoSendService, CmSmsSendService, CmAlarmSendService, CmMsgSendService
+│   └── data/vo/      MapKeysRes, TossConfirmReq, SendResultVo, MsgSendReq 등
 └── sy/
     └── controller/   CoSyCodeController, CoSyPathController, CoSySiteController, CoSyUserController
 ```
 
-- **예시**: `/api/co/bo-auth/login`, `/api/co/sy/code/list`, `/api/co/cm/bo-app-store`
+- **예시**: `/api/co/bo-auth/login`, `/api/co/sy/code/list`, `/api/co/cm/bo-app-store`, `/api/co/cm/send/mail`
+
+#### `co/cm` 의 책임 — 외부 연동·발송·공통 인프라 ⭐ (2026-06-13)
+
+BO·FO 양쪽이 공유하는 **외부 시스템 연동**과 **메시지 발송**은 `co/cm` 에 둔다. 특정 화면(주문/문의 등)에
+종속되지 않고 여러 업무에서 재사용되는 인프라성 기능이기 때문이다.
+
+| 기능 | 위치 |
+|---|---|
+| 지도 키 발급 (카카오/네이버맵) | `CmMapService` |
+| 토스 결제 승인/취소 | `CmTossPayService` |
+| 파일 업로드/이미지/동영상 | `CmUploadService` |
+| **메일 발송** (JavaMailSender) | `CmMailSendService` → `syh_send_email_log` |
+| **카카오 알림톡 발송** | `CmKakaoSendService` → `syh_send_msg_log` |
+| **SMS 발송** | `CmSmsSendService` → `syh_send_msg_log` |
+| **시스템 알림** | `CmAlarmSendService` → `sy_alarm` + `syh_alarm_send_hist` |
+| **발송 오케스트레이터** (템플릿 조회·치환 + 채널 조합) | `CmMsgSendService` |
+
+- 채널 서비스는 **1 채널 1 책임**으로 분리하고, 업무 시나리오(예: 문의접수 알림)는 오케스트레이터
+  `CmMsgSendService` 의 진입점 메서드(`sendContactReceived(...)`)로 묶는다.
+- 업무 서비스(예: `FoCmContactService`)는 자기 일(문의 저장)을 끝낸 뒤 `cmMsgSendService` 를 호출한다.
+  발송은 `try-catch` 로 감싸 **발송 실패가 본 업무를 깨지 않게** 한다.
+- 상세 정책 → [`sy/sy.16.메시지발송.md`](../sy/sy.16.메시지발송.md)
 
 ---
 
@@ -296,20 +320,29 @@ grep -rn "['\"]/\?base/\|/api/base/" pages/bo services/boApiSvc.js base/boApp.js
 ```
 신규 기능 추가 시 판단 흐름:
 
-1. DDL에서 자동 생성 가능한 CRUD인가?
-   → YES: base/ 에 생성 (수동 수정 금지)
+1. DDL에서 자동 생성 가능한 단순 CRUD인가?
+   → YES: base/ 에 생성 (수동 수정 금지, 조회/단순저장 위임용)
    → NO: 다음 단계
 
-2. Admin(bo)과 Front(fo) 양쪽에서 사용하는가?
-   → YES: share/
+2. 외부 시스템 연동 / 발송 / 인증 / 공통 초기화 등
+   BO·FO 가 공유하는 인프라성 기능인가?
+   (메일·카톡·SMS·알림 발송, 결제, 지도, 파일업로드, 코드/사이트 조회 등)
+   → YES: co/ (URL /api/co/...). 발송·외부연동은 co/cm/service
    → NO: 다음 단계
 
 3. Admin(관리자)에서만 사용하는가?
-   → YES: bo/
+   → YES: bo/ (URL /api/bo/...)
 
 4. Front(사용자)에서만 사용하는가?
-   → YES: fo/
+   → YES: fo/ (URL /api/fo/...)
 ```
+
+> **요약 — 기능을 어디에 만드는가** ⭐
+> - **단순 CRUD(테이블 1:1 조회/저장)** → `base/` (자동 생성, 수정 금지). BO/FO 화면은 이걸 직접 호출하지 말고
+>   `bo/`·`fo/` Controller(필요 시 단순 위임)를 거친다 (§3.5/§3.6).
+> - **외부 연동·발송·공통 초기화** → `co/cm` (BO·FO 공용). 메일/카톡/SMS/알림 발송, 결제, 지도, 업로드.
+> - **관리자 전용 비즈니스 로직** → `bo/`. **사용자 전용 흐름** → `fo/`.
+> - 업무 서비스가 발송 같은 공통 인프라를 쓸 때는 해당 `co/cm` 서비스를 **주입해서 호출**한다(중복 구현 금지).
 
 ---
 

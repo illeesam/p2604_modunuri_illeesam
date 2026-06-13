@@ -628,6 +628,24 @@
     getById(_id, uiNm, cmdNm)    { return chkId(_id, uiNm, cmdNm) || global.boApi.get(`/bo/sy/access-error-log/${_id}`, hdr(uiNm, cmdNm)); },
   };
 
+  /* ── sy: 알림 발송이력 (syh_alarm_send_hist) ─────────────────── */
+  boApiSvc.syAlarmSendHist = {
+    getPage(params, uiNm, cmdNm) { return global.boApi.get(   '/bo/sy/alarm-send-hist/page', { params, ...hdr(uiNm, cmdNm) }); },
+    getById(_id, uiNm, cmdNm)    { return chkId(_id, uiNm, cmdNm) || global.boApi.get(`/bo/sy/alarm-send-hist/${_id}`, hdr(uiNm, cmdNm)); },
+  };
+
+  /* ── sy: 메일 발송이력 (syh_send_email_log) ──────────────────── */
+  boApiSvc.sySendEmailLog = {
+    getPage(params, uiNm, cmdNm) { return global.boApi.get(   '/bo/sy/send-email-log/page', { params, ...hdr(uiNm, cmdNm) }); },
+    getById(_id, uiNm, cmdNm)    { return chkId(_id, uiNm, cmdNm) || global.boApi.get(`/bo/sy/send-email-log/${_id}`, hdr(uiNm, cmdNm)); },
+  };
+
+  /* ── sy: 메시지 발송이력 (syh_send_msg_log, SMS·카카오) ──────── */
+  boApiSvc.sySendMsgLog = {
+    getPage(params, uiNm, cmdNm) { return global.boApi.get(   '/bo/sy/send-msg-log/page', { params, ...hdr(uiNm, cmdNm) }); },
+    getById(_id, uiNm, cmdNm)    { return chkId(_id, uiNm, cmdNm) || global.boApi.get(`/bo/sy/send-msg-log/${_id}`, hdr(uiNm, cmdNm)); },
+  };
+
   /* ── sy: 업체(Vendor) ───────────────────────────────────────── */
   boApiSvc.syVendor = {
     getPathTreeNodeCounts(params, uiNm, cmdNm) { return global.boApi.get('/bo/sy/vendor/path-counts', { params, ...hdr(uiNm, cmdNm) }); },

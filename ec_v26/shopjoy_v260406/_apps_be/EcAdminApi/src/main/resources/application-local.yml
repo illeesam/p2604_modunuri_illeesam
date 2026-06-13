@@ -23,8 +23,6 @@ spring:
   # 자동 설정 제외 — 사용 안 하는 모듈 제거로 부팅 단축
   autoconfigure:
     exclude:
-      # 메일 안 씀 (sy_alarm 은 직접 send 함)
-      - org.springframework.boot.autoconfigure.mail.MailSenderAutoConfiguration
       # 보안 OAuth2 클라이언트 안 씀
       - org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration
       # ElasticSearch 안 씀

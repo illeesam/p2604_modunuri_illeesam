@@ -51,6 +51,10 @@ public class CmBlog extends BaseEntity {
     @Column(name = "prod_id", length = 21)
     private String prodId;
 
+    @Comment("내용 첨부파일그룹ID (sy_attach_grp.attach_grp_id, 문의글 첨부 grp_code=CONTACT_CONTENT_ATTACH)")
+    @Column(name = "content_attach_grp_id", length = 21)
+    private String contentAttachGrpId;
+
     @Comment("조회수")
     @Column(name = "view_count")
     private Integer viewCount;

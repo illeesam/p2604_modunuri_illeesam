@@ -139,6 +139,7 @@
 | 12 | 다국어 | i18n 키·번역 |
 | 13 | 에러로그 | HTTP 요청 에러 로그 |
 | 14 | 파일첨부 | 파일 업로드/저장/썸네일 |
+| 16 | 메시지발송 | 메일/카카오/SMS/시스템알림 발송 (co/cm 채널서비스 + 이력 + 템플릿) ⭐ |
 
 #### 개발 표준 (sy.50~57)
 | # | 파일 | 내용 |
@@ -181,7 +182,7 @@
 | 도메인 | 번호 | 상태 | 설명 |
 |--------|------|------|------|
 | `sy` | `09` | 예약 | 배치 스케줄 (향후) |
-| `sy` | `15~20` | 예약 | 배치/알람/게시판/게시글/문의 등 (향후) |
+| `sy` | `15,17~20` | 예약 | 배치/알람/게시판/게시글/문의 등 (향후) — sy.16=메시지발송 사용 중 |
 | `od` | `10~11` | 예약 | 추가 배송 설계 |
 | `od` | `18~20` | 예약 | 추가 클레임 유형 |
 
@@ -247,6 +248,8 @@
 | **화면 영역 표준 뼈대** ⭐ | `base/base.UX-bo.md` §6.12 — `<bo-page>`(화면 래퍼) / `<bo-container>`(영역 래퍼, bare) / `.bo-2col`(2열). FO 대응 `<fo-page>`(배너 흡수) / `<fo-container>` / `.fo-2col`. 날 `page-title`+`card` 마크업 폐기 |
 | **소스 코드 포매팅** ⭐ | `base/base.코드스타일-admin-vue.md` §12 — template HTML 2칸 들여쓰기 + JS 빈줄 1줄 압축. `boApp.js` 예외. 일반 IDE 포매터 금지(전용 도구만) |
 | **API 설계** | `base/base.기술-api.md`, `ec/pd/pd.10.상품상세-API설계.md` |
+| **기능을 어디에 만드는가 (레이어)** ⭐ | `base/base.기술-api.md` §3.4-A / §4 — 단순CRUD=base, 외부연동·발송=co/cm, 관리자=bo, 사용자=fo |
+| **메시지 발송 (메일/카톡/SMS/알림)** ⭐ | `sy/sy.16.메시지발송.md` — co/cm 채널서비스 + 오케스트레이터 + 이력 + 템플릿. starter-mail clean build·Gmail 앱비밀번호 주의 |
 | **`/api/base/**` 호출 금지** ⭐ | `base/base.기술-api.md` §3.5 — 클라이언트는 `/api/bo/**` / `/api/fo/**` 만 호출 |
 | **JPA `@Query` 작성 규칙** ⭐ | `base/base.backend-EcAdminApi.md` §14.5 — named 파라미터(`:name` + `@Param`) 필수, nativeQuery 위치는 `*Repository.java` 인터페이스 |
 | **QueryDSL `Q*RepositoryImpl` 표준** ⭐ | `base/base.backend-EcAdminApi.md` §14.6 — 6개 섹션 구분, `buildCondition` 금지, 개별 `andXxx()` + `.where(...)` 직접 나열, `QSyUserRepositoryImpl` 표준 모델 |
@@ -293,4 +296,4 @@
 
 > ※ 위 표는 2026-04-29 정리 시점 스냅샷. 이후 `sy/` 에 `sy.56.JPA스키마검증.md`, `sy.57.사이트테넌시정책.md` 추가됨.
 
-**📌 마지막 업데이트**: 2026-05-16 | **현재 정책서**: 85개 (sy.57 사이트테넌시정책 신규)
+**📌 마지막 업데이트**: 2026-06-13 | **현재 정책서**: 86개 (sy.16 메시지발송 신규 — co/cm 채널서비스 + 이력 + 템플릿)

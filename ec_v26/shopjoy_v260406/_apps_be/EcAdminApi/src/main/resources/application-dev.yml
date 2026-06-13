@@ -41,6 +41,26 @@ spring:
     baseline-on-migrate: true
     baseline-version: 0
 
+  # ── 메일(SMTP) 발송 — Gmail ────────────────────────────────────────
+  # ⚠️ Gmail 은 일반 비밀번호 불가. 2단계 인증 후 '앱 비밀번호'(16자리) 발급해 MAIL_PASSWORD 로 주입.
+  #    https://myaccount.google.com/apppasswords
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:illeesam4@gmail.com}
+    password: ${MAIL_PASSWORD:song5544!!}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+    default-encoding: UTF-8
+
 mybatis:
   mapper-locations: classpath:mapper/**/*.xml
   config-location: classpath:mybatis/mybatis-config.xml
@@ -67,6 +87,11 @@ management:
       enabled: false   # app.redis.enabled=false 시 연결 없음 → 헬스체크 제외
 
 app:
+  # 메일 발신자(From) 표기 — 발송 본문은 spring.mail.* SMTP 설정 사용
+  mail:
+    from: ${MAIL_FROM:illeesam4@gmail.com}
+    from-nm: ${MAIL_FROM_NM:ShopJoy 고객센터}
+
   license:
     secret: ${LICENSE_SECRET:SJ2604-LicenseSecret-X9kQm#vLpNrTzWbYd}
     enabled: ${LICENSE_ENABLED:true}

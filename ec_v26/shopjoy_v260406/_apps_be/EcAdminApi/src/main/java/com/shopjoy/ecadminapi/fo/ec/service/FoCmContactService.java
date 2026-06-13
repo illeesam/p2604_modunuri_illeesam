@@ -27,9 +27,12 @@ import java.time.LocalDateTime;
 public class FoCmContactService {
 
     private static final String CONTACT_CATE = "CONTACT";
+    /** site_id 는 NOT NULL — 요청/인증에 siteId 없을 때(비회원 문의) 대표 사이트로 fallback */
+    private static final String DEFAULT_SITE_ID = "SITE000001";
 
     private final CmBlogRepository cmBlogRepository;
     private final CmBlogReplyService cmBlogReplyService;
+    private final com.shopjoy.ecadminapi.co.cm.service.CmMsgSendService cmMsgSendService;
 
     /** getById — 조회 */
     public CmBlogDto.Item getById(String id) {
@@ -58,8 +61,9 @@ public class FoCmContactService {
         entity.setBlogCateId(CONTACT_CATE);
         entity.setBlogTitle("[문의] " + (req.getInquiryType() != null ? req.getInquiryType() : "일반"));
         entity.setBlogContent(buildContent(req));
-        entity.setSiteId(req.getSiteId());
+        entity.setSiteId(_resolveSiteId(req));
         entity.setBlogAuthor(req.getBlogAuthor());
+        entity.setContentAttachGrpId(req.getContentAttachGrpId());
         entity.setUseYn("Y");
         entity.setViewCount(0);
 
@@ -70,7 +74,25 @@ public class FoCmContactService {
         entity.setUpdDate(LocalDateTime.now());
         CmBlog saved = cmBlogRepository.save(entity);
         if (saved == null) throw new CmBizException("문의 접수에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
+
+        // 접수 완료 알림 발송 (메일/카카오/시스템알림) — 실패해도 접수 자체는 성공 처리
+        try {
+            cmMsgSendService.sendContactReceived(
+                saved.getSiteId(), saved.getBlogId(),
+                req.getName(), req.getEmail(), req.getTel(), req.getInquiryType());
+        } catch (Exception e) {
+            org.slf4j.LoggerFactory.getLogger(getClass())
+                .error("[FoCmContact] 문의 접수 알림 발송 실패 (blogId={})", saved.getBlogId(), e);
+        }
         return saved;
+    }
+
+    /** _resolveSiteId — siteId 결정: 요청값 → 인증 사용자 → 대표 사이트(비회원 문의 fallback) */
+    private String _resolveSiteId(CmContactSubmitDto.Request req) {
+        if (req.getSiteId() != null && !req.getSiteId().isBlank()) return req.getSiteId();
+        String authSiteId = SecurityUtil.getSiteId();
+        if (authSiteId != null && !authSiteId.isBlank()) return authSiteId;
+        return DEFAULT_SITE_ID;
     }
 
     /** buildContent — 구성 */

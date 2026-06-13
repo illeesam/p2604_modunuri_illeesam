@@ -388,4 +388,53 @@ public class CmUtil {
         return sb.toString();
     }
 
+    /**
+     * 템플릿 본문의 {key} 플레이스홀더를 params 값으로 치환.
+     *
+     * <p>예: "안녕하세요 {name}님" + {name=홍길동} → "안녕하세요 홍길동님".
+     * params 에 없는 키나 null 값은 빈 문자열로 치환한다. template 가 null 이면 빈 문자열 반환.
+     *
+     * @param template 치환 대상 템플릿 (예: "...{name}...{inquiryType}...")
+     * @param params   치환 파라미터 맵 (key → value)
+     * @return 치환 완료 문자열
+     */
+    public static String fillTemplate(String template, Map<String, Object> params) {
+        if (template == null) return "";
+        if (params == null || params.isEmpty()) return template;
+        String result = template;
+        for (Map.Entry<String, Object> e : params.entrySet()) {
+            Object v = e.getValue();
+            result = result.replace("{" + e.getKey() + "}", v == null ? "" : String.valueOf(v));
+        }
+        return result;
+    }
+
+    /**
+     * 간단한 Map → JSON 문자열 직렬화 (발송 로그 params 컬럼 저장용).
+     *
+     * <p>값은 모두 문자열로 따옴표 감싸 직렬화하며, 따옴표/역슬래시만 이스케이프한다.
+     * 외부 노출용이 아닌 로그 저장용이므로 중첩 객체는 지원하지 않는다.
+     *
+     * @param params 직렬화할 맵 (null/empty 면 "{}")
+     * @return JSON 문자열
+     */
+    public static String toJsonParams(Map<String, Object> params) {
+        if (params == null || params.isEmpty()) return "{}";
+        StringBuilder sb = new StringBuilder("{");
+        boolean first = true;
+        for (Map.Entry<String, Object> e : params.entrySet()) {
+            if (!first) sb.append(",");
+            first = false;
+            sb.append("\"").append(jsonEsc(e.getKey())).append("\":");
+            Object v = e.getValue();
+            sb.append("\"").append(v == null ? "" : jsonEsc(String.valueOf(v))).append("\"");
+        }
+        sb.append("}");
+        return sb.toString();
+    }
+
+    private static String jsonEsc(String s) {
+        return s.replace("\\", "\\\\").replace("\"", "\\\"");
+    }
+
 }
