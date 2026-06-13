@@ -84,7 +84,7 @@ window.MyCache = {
         cashId: Date.now(), date: new Date().toISOString().slice(0, 10),
         type: '충전', amount, desc: '직접 충전', balance: cashBalance.value
       });
-      chargeAmount.value = ''; pager.page = 1;
+      chargeAmount.value = ''; pager.pageNo = 1;
       showToast(amount.toLocaleString() + '원이 충전되었습니다!', 'success');
     };
 

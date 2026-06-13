@@ -61,7 +61,7 @@ window.MyOrder = {
       // 주문 흐름 상태 토글
       if (cmd === 'orders-flowToggle') {
         toggleFlowStatus(param);
-        pager.page = 1;
+        pager.pageNo = 1;
       // 주문 취소
       } else if (cmd === 'orders-cancel') {
         return cancelOrder(param);

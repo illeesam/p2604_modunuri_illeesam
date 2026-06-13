@@ -2,7 +2,7 @@ package com.shopjoy.ecadminapi.fo.ec.controller;
 
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmContactSubmitDto;
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlog;
+import com.shopjoy.ecadminapi.base.sy.data.entity.SyContact;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.fo.ec.service.FoCmContactService;
 import lombok.RequiredArgsConstructor;
@@ -29,10 +29,10 @@ public class FoCmContactController {
         return ResponseEntity.ok(ApiResponse.ok(foCmContactService.getById(id)));
     }
 
-    /** submit — 제출 */
+    /** submit — 제출 (sy_contact 저장) */
     @PostMapping
-    public ResponseEntity<ApiResponse<CmBlog>> submit(@RequestBody CmContactSubmitDto.Request req) {
-        CmBlog result = foCmContactService.submit(req);
+    public ResponseEntity<ApiResponse<SyContact>> submit(@RequestBody CmContactSubmitDto.Request req) {
+        SyContact result = foCmContactService.submit(req);
         return ResponseEntity.status(201).body(ApiResponse.created(result));
     }
 }

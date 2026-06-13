@@ -3,9 +3,10 @@ package com.shopjoy.ecadminapi.fo.ec.service;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogReplyDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmContactSubmitDto;
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlog;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBlogRepository;
 import com.shopjoy.ecadminapi.base.ec.cm.service.CmBlogReplyService;
+import com.shopjoy.ecadminapi.base.sy.data.entity.SyContact;
+import com.shopjoy.ecadminapi.base.sy.repository.SyContactRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
@@ -17,21 +18,24 @@ import java.time.LocalDateTime;
 
 /**
  * FO 문의(Contact) 서비스 — 1:1 문의 / 고객 문의 폼 접수
- * URL: /api/fo/ec/cm/contact
+ * URL: /api/fo/inquiry/create
  *
- * 문의 내용을 cm_blog 테이블에 저장 (blogCateId = CONTACT)
+ * 문의 내용을 sy_contact 테이블에 저장한다(마이페이지 문의 조회 = sy_contact 와 정본 일치).
+ * (이전에는 cm_blog 에 저장해 마이페이지 조회(sy_contact)와 어긋났음 — 2026-06-13 통일)
  */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class FoCmContactService {
 
-    private static final String CONTACT_CATE = "CONTACT";
+    /** 신규 문의 초기 상태 — CONTACT_STATUS_KR 코드값(요청/처리중/답변완료/취소됨) 기준 */
+    private static final String CONTACT_STATUS_NEW = "요청";
     /** site_id 는 NOT NULL — 요청/인증에 siteId 없을 때(비회원 문의) 대표 사이트로 fallback */
     private static final String DEFAULT_SITE_ID = "SITE000001";
 
     private final CmBlogRepository cmBlogRepository;
     private final CmBlogReplyService cmBlogReplyService;
+    private final SyContactRepository syContactRepository;
     private final com.shopjoy.ecadminapi.co.cm.service.CmMsgSendService cmMsgSendService;
 
     /** getById — 조회 */
@@ -52,33 +56,36 @@ public class FoCmContactService {
         contact.setReplies(cmBlogReplyService.getList(rReq)); // 답변목록
     }
 
-    /** submit — 제출 */
+    /** submit — 제출 (sy_contact 에 저장). 마이페이지 문의 조회(sy_contact)와 정본 일치. */
     @Transactional
-    public CmBlog submit(CmContactSubmitDto.Request req) {
+    public SyContact submit(CmContactSubmitDto.Request req) {
         if (req == null) throw new CmBizException("요청 데이터가 비어있습니다." + "::" + CmUtil.svcCallerInfo(this));
-        CmBlog entity = new CmBlog();
-        entity.setBlogId(CmUtil.generateId("fo_contact"));
-        entity.setBlogCateId(CONTACT_CATE);
-        entity.setBlogTitle("[문의] " + (req.getInquiryType() != null ? req.getInquiryType() : "일반"));
-        entity.setBlogContent(buildContent(req));
+
+        SyContact entity = new SyContact();
+        entity.setContactId(CmUtil.generateId("fo_contact"));
         entity.setSiteId(_resolveSiteId(req));
-        entity.setBlogAuthor(req.getBlogAuthor());
+        // 로그인 회원이면 memberId 세팅 → 마이페이지(memberId 필터) 조회에 노출. 비회원이면 null.
+        if (SecurityUtil.isLogin()) entity.setMemberId(SecurityUtil.getAuthUser().userId());
+        entity.setMemberNm(req.getName());
+        entity.setCategoryCd(req.getInquiryType());
+        entity.setContactTitle("[문의] " + (req.getInquiryType() != null ? req.getInquiryType() : "일반"));
+        entity.setContactContent(buildContent(req));
         entity.setContentAttachGrpId(req.getContentAttachGrpId());
-        entity.setUseYn("Y");
-        entity.setViewCount(0);
+        entity.setContactStatusCd(CONTACT_STATUS_NEW);
+        entity.setContactDate(LocalDateTime.now());
 
         String authId = SecurityUtil.getAuthIdOrGuest();
         entity.setRegBy(authId);
         entity.setRegDate(LocalDateTime.now());
         entity.setUpdBy(authId);
         entity.setUpdDate(LocalDateTime.now());
-        CmBlog saved = cmBlogRepository.save(entity);
+        SyContact saved = syContactRepository.save(entity);
         if (saved == null) throw new CmBizException("문의 접수에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
 
         // 접수 완료 알림 발송 (메일/카카오/시스템알림) — 비동기(fire-and-forget).
         // 메일 SMTP 발송이 응답을 지연시키지 않도록 별도 스레드풀에서 처리. 발송 결과는 이력 테이블에만 기록.
         cmMsgSendService.sendContactReceivedAsync(
-            saved.getSiteId(), saved.getBlogId(),
+            saved.getSiteId(), saved.getContactId(),
             req.getName(), req.getEmail(), req.getTel(), req.getInquiryType());
         return saved;
     }

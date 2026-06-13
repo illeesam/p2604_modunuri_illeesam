@@ -25,7 +25,7 @@ window.MyClaim = {
       if (cmd === 'claims-setFilter') {
         claimFilter.value = param;
         claimStatusFilter.splice(0);
-        pager.page = 1;
+        pager.pageNo = 1;
       // 상태 필터 초기화
       } else if (cmd === 'claims-statusReset') {
         claimStatusFilter.splice(0);
@@ -40,7 +40,7 @@ window.MyClaim = {
       // 클레임 상태 토글
       if (cmd === 'claims-statusToggle') {
         toggleClaimStatus(param);
-        pager.page = 1;
+        pager.pageNo = 1;
       // 클레임 신청 취소
       } else if (cmd === 'claims-cancel') {
         return cancelClaim(param);
