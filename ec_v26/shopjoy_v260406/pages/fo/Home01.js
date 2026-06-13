@@ -25,7 +25,8 @@ window.Home01 = {
       { img: 'assets/cdn/prod/img/slider/slider-2.jpg', title: '2026 S/S', sub: '신상품 컬렉션', desc: '올 봄·여름 시즌을 빛낼 새로운 컬렉션이 도착했습니다. 지금 만나보세요.' },
       { img: 'assets/cdn/prod/img/slider/slider-3.jpg', title: '특별한 혜택', sub: '시즌 세일 진행중', desc: '인기 상품 최대 50% 할인! 한정 수량으로 준비된 특별 혜택을 놓치지 마세요.' },
     ];
-    let bannerTimer = null;
+    /* 배너 자동 슬라이드 타이머 — coUtil.cofBannerTimer 팩토리 (start/set/stop) */
+    const bannerCtl = coUtil.cofBannerTimer(i => { uiState.bannerIdx = i; }, () => uiState.bannerIdx, banners.length, 20000);
 
     const siteConfig = window.SITE_CONFIG || {};
 
@@ -107,11 +108,8 @@ window.Home01 = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    /* startBannerTimer — 시작 Banner Timer */
-    const startBannerTimer = () => { bannerTimer = setInterval(() => { uiState.bannerIdx = (uiState.bannerIdx + 1) % banners.length; }, 20000); };
-
-    /* setBanner — 설정 */
-    const setBanner = (i) => { uiState.bannerIdx = i; clearInterval(bannerTimer); startBannerTimer(); };
+    /* setBanner — 인디케이터 클릭 시 해당 배너로 + 타이머 리셋 */
+    const setBanner = (i) => bannerCtl.set(i);
 
     // ★ onMounted
     onMounted(() => {
@@ -128,18 +126,14 @@ window.Home01 = {
         `;
         document.head.appendChild(s);
       }
-      startBannerTimer();
+      bannerCtl.start();
     });
-    onBeforeUnmount(() => clearInterval(bannerTimer));
+    onBeforeUnmount(() => bannerCtl.stop());
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 
-    function fnCategoryLabel(p) {
-      if (!p) { return ''; }
-      const cats = (window.SITE_CONFIG && window.SITE_CONFIG.categorys) || [];
-      const row = cats.find(c => c.categoryId === p.categoryId);
-      return row ? row.categoryNm : p.categoryId;
-    }
+    /* fnCategoryLabel — coUtil.cofCategoryLabel 위임 (categoryId → categoryNm) */
+    const fnCategoryLabel = (p) => coUtil.cofCategoryLabel(p);
 
     function fnCatEmoji(id) {
       const map = { tops: '👕', bottoms: '👖', outer: '🧥', dress: '👗', acc: '💍' };

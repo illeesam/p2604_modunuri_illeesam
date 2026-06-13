@@ -172,9 +172,7 @@ window.DpDispPanelMng = {
       const u = uis.find(x => x.uiId === a.uiId);
       return (u ? u.uiNm + ' > ' : '') + a.areaNm;
     };
-    const fnWidgetCnt = (row) => {
-      try { return (JSON.parse(row.contentJson || '{}').rows || []).length; } catch (e) { return 0; }
-    };
+    const fnWidgetCnt = (row) => coUtil.cofPanelRowCount(row.contentJson);
 
     const columns = {};
     columns.baseSearch = [

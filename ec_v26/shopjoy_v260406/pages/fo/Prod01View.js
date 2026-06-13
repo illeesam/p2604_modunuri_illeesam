@@ -181,81 +181,8 @@ window.Prod01View = {
        - opt1 → opt2 의 종속 트리: 색상별 가능한 사이즈 매핑
        - skus 의 1단별 addPrice 평균 → opt2Prices = { 'S': delta, ... }
     */
-    /* fnMergeProdOpts — 유틸 */
-    const fnMergeProdOpts = (prod, optsObj, skusList, imgList) => {
-      const groups = (optsObj?.groups || []).slice().sort((a,b) => (a.optLevel||a.level||0) - (b.optLevel||b.level||0));
-      const items  = optsObj?.items  || [];
-      const lv1    = groups.find(g => Number(g.optLevel||g.level||0) === 1);
-      const lv2    = groups.find(g => Number(g.optLevel||g.level||0) === 2);
-
-      /* itemsOf — items 의 */
-      const itemsOf = (g) => g ? items.filter(i => i.optId === g.optId) : [];
-
-      const lv1Items = itemsOf(lv1).sort((a,b) => (a.sortOrd||0) - (b.sortOrd||0));
-      const lv2Items = itemsOf(lv2).sort((a,b) => (a.sortOrd||0) - (b.sortOrd||0));
-
-      // 옵션 그룹명 (사용자가 BO 옵션설정에서 입력한 옵션명) — 비면 기본값 fallback
-      const opt1Nm = (lv1?.optGrpNm || lv1?.grpNm || '').trim() || '색상';
-      const opt2Nm = (lv2?.optGrpNm || lv2?.grpNm || '').trim() || '사이즈';
-
-      // opt1s: 색상/1단 옵션 — name/priceDelta/imgUrl/hex
-      //   hex: pd_prod_opt_item.opt_style 의 hex 값(#xxxxxx) 그대로 사용. 비어있거나 hex 가 아니면 회색
-      const opt1s = lv1Items.map(it => {
-        const optImgs = imgList.filter(im => im.optItemId1 === it.optItemId);
-        const style   = (it.optStyle || '').trim();
-        return {
-          optItemId:  it.optItemId,
-          name:       it.optNm || it.optVal || '',
-          val:        it.optVal || '',
-          priceDelta: 0,
-          imgUrl:     optImgs[0]?.cdnImgUrl || optImgs[0]?.cdnThumbUrl || '',
-          optStyle:   style,
-          hex:        /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(style) ? style : '',
-        };
-      });
-
-      // opt2sAll: 2단 옵션 전체 (parent 종속 정보 포함)
-      const opt2sAll = lv2Items.map(it => ({
-        optItemId:       it.optItemId,
-        name:            it.optNm || it.optVal || '',
-        val:             it.optVal || '',
-        parentOptItemId: it.parentOptItemId || '',
-      }));
-
-      // opt1 의 첫 번째 자식 그룹을 기준으로 한 사이즈 표시 목록 (호환용 opt2s — 이름 배열, 중복 제거 + 정렬)
-      const seenNm = new Set();
-      const opt2s = [];
-      opt2sAll.forEach(it => { if (it.name && !seenNm.has(it.name)) { seenNm.add(it.name); opt2s.push(it.name); } });
-
-      // opt2Prices: 사이즈별 추가금액 (parent 묶음 없이 평균치)
-      const opt2Prices = {};
-      lv2Items.forEach(it => {
-        const matchedSkus = skusList.filter(s => (s.optItemId2 === it.optItemId) || (s.optItemNm2 === it.optNm));
-        if (!matchedSkus.length) { return; }
-        const avg = Math.round(matchedSkus.reduce((a,s) => a + (Number(s.addPrice)||0), 0) / matchedSkus.length);
-        if (avg) { opt2Prices[it.optNm || it.optVal] = avg; }
-      });
-
-      // 대표 이미지 / 추가 이미지
-      const main = imgList.find(im => im.isThumb === 'Y') || imgList[0];
-      const mainImage = main?.cdnImgUrl || main?.cdnThumbUrl || '';
-
-      const priceVal = prod.salePrice || prod.listPrice || prod.price || 0;
-
-      return {
-        ...prod,
-        price:      priceVal,
-        mainImage,
-        images:     imgList,
-        opt1Nm,       // 1단 옵션 라벨 (예: "색상", "색상2")
-        opt2Nm,       // 2단 옵션 라벨 (예: "사이즈", "사이즈2")
-        opt1s,
-        opt2s,        // 호환용: 사이즈 이름 unique 배열
-        opt2sAll,     // 신규: 종속 정보 포함 전체 2단 항목
-        opt2Prices,
-        skus:       skusList,
-      };
-    };
+    /* fnMergeProdOpts — coUtil.cofMergeProdOpts 위임 (opts/skus/images → opt1s/opt2s/opt2sAll/opt2Prices) */
+    const fnMergeProdOpts = (prod, optsObj, skusList, imgList) => coUtil.cofMergeProdOpts(prod, optsObj, skusList, imgList);
     if (prod) { fnApplySvProduct(prod); }
     /* Tier 2/3 lazy 데이터 — 배열/객체는 reactive (정책: base.데이터흐름-상태관리.md §2-1) */
     const svContents      = reactive([]);  // 상품 상세 HTML
@@ -266,13 +193,8 @@ window.Prod01View = {
     const svQnas           = reactive([]);  // Q&A
     const svPromotions    = reactive({});  // 프로모션 (쿠폰/할인/사은품/이벤트)
 
-    /* fnGetProdIdFromHash — 유틸 */
-    const fnGetProdIdFromHash = () => {
-      try {
-        const rawHash = String(window.location.hash || '').replace(/^#/, '');
-        return new URLSearchParams(rawHash).get('prodid') || '';
-      } catch (e) { return ''; }
-    };
+    /* fnGetProdIdFromHash — coUtil.cofProdIdFromHash 위임 (#...&prodid= 추출) */
+    const fnGetProdIdFromHash = () => coUtil.cofProdIdFromHash();
 
     /* fnPickData — 유틸 */
     const fnPickData = (res) => res?.data?.data ?? res?.data ?? null;
@@ -472,8 +394,14 @@ window.Prod01View = {
           if (c.val) { opt2ById.set(String(c.val), c); }
           if (c.name) { opt2ById.set(String(c.name), c); }
         });
+        // 색상 무관 공통 이미지(optItemId1 빈값)는 어떤 색상이든 항상 표시.
+        // 선택 색상 전용 이미지가 있을 때만 다른 색상 전용을 제외한다.
+        const isCommon = (im) => !im.optItemId1 || String(im.optItemId1).trim() === '';
+        const matchesColor = (im) => colorKeys.has(String(im.optItemId1));
         const filtered = colorKeys.size
-          ? real.filter(im => im.optItemId1 && colorKeys.has(String(im.optItemId1)))
+          ? (real.some(matchesColor)
+              ? real.filter(im => isCommon(im) || matchesColor(im))
+              : real)
           : real;
         const list = filtered.slice().sort((a,b) =>
           ((b.isThumb === 'Y') - (a.isThumb === 'Y')) || ((a.sortOrd||0) - (b.sortOrd||0))
@@ -487,7 +415,7 @@ window.Prod01View = {
           if (c2) { parts.push((p.opt2Nm || '사이즈') + ': ' + c2.name); }
           if (im.isThumb === 'Y') { parts.push('★ 대표'); }
           return {
-            src:    im.cdnImgUrl || im.cdnThumbUrl || im.previewUrl || '',
+            src:    coUtil.cofImgSrc(im.cdnImgUrl || im.cdnThumbUrl || im.previewUrl || ''),
             label:  '이미지 ' + (i + 1),
             optTip: parts.join(' / '),
             opt1Nm: c1 ? c1.name : '',
@@ -523,7 +451,7 @@ window.Prod01View = {
         colorInfo:  r.optNm1 || r.colorInfo || '',
         text:       r.reviewContent || r.reviewTitle || '',
         hasPhoto:   imgs.length > 0,
-        photoImg:   imgs[0]?.thumbUrl || imgs[0]?.cdnImgUrl || '',
+        photoImg:   coUtil.cofImgSrc(imgs[0]?.thumbUrl || imgs[0]?.cdnImgUrl || ''),
         helpful:    Number(r.helpfulCnt) || 0,
       };
     };
@@ -763,6 +691,9 @@ window.Prod01View = {
     const cfAllowedSizeNms = computed(() => {
       const all = svProduct.opt2sAll || [];
       if (!all.length) return null; // 종속 정보 없으면 전체 허용
+      // 어떤 사이즈도 부모색상 연결이 없으면 색상-사이즈 종속 트리가 없는 것 → 전체 허용
+      const hasTree = all.some(it => it.parentOptItemId && String(it.parentOptItemId).trim());
+      if (!hasTree) return null;
       const parent = uiState.selectedColor?.optItemId;
       if (!parent) return new Set(); // 색상 미선택 시 빈 Set
       const set = new Set();

@@ -877,10 +877,10 @@ window.DpDispPanelDtl = {
       try {
         const res = await boApiSvc.dpPanel.getPage({ pageNo: 1, pageSize: 10000 }, '전시패널관리', '패널조회');
         pickData.displays = (res.data?.data?.pageList || []).map(p => {
-          let rows = []; try { rows = JSON.parse(p.contentJson || '{}').rows || []; } catch (e) { /* 파싱 실패 무시 */ }
+          const rows = coUtil.cofParsePanelRows(p.contentJson);
           const a = areas.find(x => x.areaId === p.areaId);
           return { dispId: p.panelId, name: p.panelNm, area: a ? a.areaCd : '',
-                   status: p.dispPanelStatusCd === 'SHOW' ? '활성' : '비활성', rows };
+                   status: coUtil.cofPanelStatusLabel(p.dispPanelStatusCd), rows };
         });
         pickData.areaCodes = areas.map(a => ({ codeValue: a.areaCd, codeLabel: a.areaNm }));
       } catch (err) { console.error('[fnLoadPickPanels]', err); }

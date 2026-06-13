@@ -253,10 +253,10 @@ window.DpDispUiSimul = {
         /* 패널 → displays (rows = content_json.rows, 상태 SHOW/HIDE → 활성/비활성) */
         const areaCdById = Object.fromEntries(areaRows.map(a => [a.areaId, a.areaCd]));
         displays.splice(0, displays.length, ...panelRows.map((p, i) => {
-          let rows = []; try { rows = JSON.parse(p.contentJson || '{}').rows || []; } catch (e) { /* 파싱 실패 무시 */ }
+          const rows = coUtil.cofParsePanelRows(p.contentJson);
           return {
             dispId: p.panelId, name: p.panelNm, area: areaCdById[p.areaId] || '',
-            status: p.dispPanelStatusCd === 'SHOW' ? '활성' : '비활성',
+            status: coUtil.cofPanelStatusLabel(p.dispPanelStatusCd),
             rows, sortOrder: i + 1, dispYn: 'Y', useYn: p.useYn,
             useStartDate: String(p.useStartDate || '').slice(0, 10),
             useEndDate: String(p.useEndDate || '').slice(0, 10),

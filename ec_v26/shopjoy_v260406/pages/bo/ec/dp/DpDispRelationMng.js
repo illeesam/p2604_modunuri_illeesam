@@ -98,10 +98,8 @@ window.DpDispRelationMng = {
       return handleSearchData();
     };
 
-    /* _panelWidgetCount — dp_panel.content_json rows 개수 (위젯 수) */
-    const _panelWidgetCount = (p) => {
-      try { return (JSON.parse(p.contentJson || '{}').rows || []).length; } catch (e) { return 0; }
-    };
+    /* _panelWidgetCount — dp_panel.content_json rows 개수 (위젯 수) — coUtil 위임 */
+    const _panelWidgetCount = (p) => coUtil.cofPanelRowCount(p.contentJson);
 
     const cfTreeData = computed(() =>
       uis.map(ui => {

@@ -15,7 +15,7 @@ const _WP_DispWidgetPreview = {
     const { reactive, computed } = Vue;
     const codes = reactive({ disp_widget_types: [] });
     const uiState = reactive({ isPageCodeLoad: false });
-    const chartColors = ['#e8587a','#ff8c69','#9c5fa3','#1677ff','#52c41a','#fa8c16','#36cfc9'];
+    const chartColors = coUtil.cofChartColors();  // 전시 차트 공용 팔레트
 
     // ===== 초기 함수 (마운트 / 코드 로드 / watch) =============================
 
@@ -100,22 +100,9 @@ const _WP_DispWidgetPreview = {
       return values.map((v,i) => ({ v, label: labels[i] || '', pct: Math.round((v/max)*100), color: chartColors[i % chartColors.length] }));
     });
 
-    /* 파이 차트 segments */
-    const cfPie = computed(() => {
-      const bars = cfChartBars.value;
-      const total = bars.reduce((s,b)=>s+b.v,0) || 1;
-      let acc = 0;
-      return bars.map(b => {
-        const start = acc / total * 360;
-        acc += b.v;
-        const end = acc / total * 360;
-        return { ...b, start, end, ratio: Math.round(b.v / total * 100) };
-      });
-    });
-    const cfPieGradient = computed(() => {
-      const segs = cfPie.value;
-      return 'conic-gradient(' + segs.map(s => `${s.color} ${s.start}deg ${s.end}deg`).join(',') + ')';
-    });
+    /* 파이 차트 segments / gradient — coUtil 위임 (세그먼트·conic-gradient 공용) */
+    const cfPie = computed(() => coUtil.cofChartPie(cfChartBars.value));
+    const cfPieGradient = computed(() => coUtil.cofChartPieGradient(cfPie.value));
 
     // ===== return (템플릿 노출) ===============================================
 

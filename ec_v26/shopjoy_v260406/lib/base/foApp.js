@@ -462,31 +462,8 @@
     const closeConfirm = r => { confirmState.show = false; confirmState.resolve?.(r); };
 
     /* ── Prods (이미지 자동 할당) ── */
-    const _IMG = 'assets/cdn/prod/img/shop/product';
-
-    /* _assignImg */
-    const _assignImg = (p) => {
-      /* colors→opt1s, sizes→opt2s 호환 */
-      if (p.colors && !p.opt1s) { p.opt1s = p.colors; }
-      if (p.sizes  && !p.opt2s) { p.opt2s = p.sizes; }
-      /* 이미지 자동 할당 */
-      if (!p.image) {
-        const id = p.prodId || 1;
-        if (id <= 12) {
-          p.image = `${_IMG}/fashion/fashion-${id}.webp`;
-          p.images = [p.image, `${_IMG}/fashion/fashion-${((id % 12) + 1)}.webp`];
-        } else {
-          const n = ((id - 1) % 23) + 1;
-          p.image = `${_IMG}/prod_${n}.png`;
-          p.images = [p.image, `${_IMG}/prod_${(n % 23) + 1}.png`];
-        }
-      }
-      /* priceNum 보정 */
-      if (!p.priceNum && p.price) {
-        p.priceNum = parseInt(String(p.price).replace(/[^0-9]/g, ''), 10) || 0;
-      }
-      return p;
-    };
+    /* _assignImg — coUtil.cofAssignProdImage 위임 (이미지/priceNum 보정) */
+    const _assignImg = (p) => coUtil.cofAssignProdImage(p);
     /* SITE_CONFIG로 초기값 동기 세팅 → foApi 로드 성공 시 덮어씀 */
     const _initFallback = window.SITE_CONFIG?.prods || [];
     _initFallback.forEach(_assignImg);
@@ -524,15 +501,8 @@
     /* ── Cart ── */
     const cart = reactive([]);
 
-    /* 임의 ID 생성: yymmddHHMMSS + rand4 */
-    const genId = () => {
-      const d = new Date();
-
-      /* pad */
-      const pad = n => String(n).padStart(2,'0');
-      return [d.getFullYear()%100,d.getMonth()+1,d.getDate(),d.getHours(),d.getMinutes(),d.getSeconds()].map(pad).join('')
-        + Math.random().toString(36).slice(2,6).toUpperCase();
-    };
+    /* 임의 ID 생성: yymmddHHMMSS + rand4 — coUtil.cofGenId 위임 */
+    const genId = () => coUtil.cofGenId();
 
     /* prods 로드 후: 장바구니 복원 + URL pid 복원 */
     const _restoreAfterProds = () => {

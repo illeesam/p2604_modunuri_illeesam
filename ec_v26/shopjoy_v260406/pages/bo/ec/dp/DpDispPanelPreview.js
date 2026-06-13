@@ -12,15 +12,8 @@ const _WP_DispPanelPreview = {
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
     const codes = Vue.computed(() => window.sfGetBoCodeStore().svCodes);
-    const chartColors = ['#e8587a','#ff8c69','#9c5fa3','#1677ff','#52c41a','#fa8c16','#36cfc9'];
-    const cfChartBars = computed(() => {
-      const w = props.lib;
-      if (!w || !w.chartValues) { return []; }
-      const values = w.chartValues.split(',').map(v => Number(v.trim()) || 0);
-      const labels = w.chartLabels ? w.chartLabels.split(',').map(l => l.trim()) : values.map((_,i)=>String(i+1));
-      const max = Math.max(...values, 1);
-      return values.map((v,i) => ({ v, label:labels[i]||'', pct:Math.round((v/max)*100), color:chartColors[i%chartColors.length] }));
-    });
+    /* 차트 막대 — coUtil.cofChartBars 위임 (팔레트/계산 공용) */
+    const cfChartBars = computed(() => coUtil.cofChartBars((props.lib || {}).chartValues, (props.lib || {}).chartLabels));
     const selectedLibId = Vue.toRef(uiState, 'selectedLibId');
 
     // ===== return (템플릿 노출) ===============================================
@@ -330,14 +323,14 @@ window.DpDispPanelPreview = {
         const uiNmById   = Object.fromEntries(uiRows.map(u => [u.uiId, (u.uiCd ? '[' + u.uiCd + '] ' : '') + (u.uiNm || '')]));
         const areaById   = Object.fromEntries(areaRows.map(a => [a.areaId, a]));
         displays.splice(0, displays.length, ...panelRows.map((p, i) => {
-          let rows = []; try { rows = JSON.parse(p.contentJson || '{}').rows || []; } catch (e) { /* 파싱 실패 무시 */ }
+          const rows = coUtil.cofParsePanelRows(p.contentJson);
           const a = areaById[p.areaId];
           return {
             dispId: p.panelId, name: p.panelNm, rows,
             area: a ? a.areaCd : '(미등록)',
             areaLabel: a ? `[${a.areaCd}] ${a.areaNm || ''}` : '(미등록)',
             uiLabel: a ? (uiNmById[a.uiId] || '(미지정 UI)') : '(미지정 UI)',
-            status: p.dispPanelStatusCd === 'SHOW' ? '활성' : '비활성',
+            status: coUtil.cofPanelStatusLabel(p.dispPanelStatusCd),
             sortOrder: i + 1, dispYn: 'Y', useYn: p.useYn,
             useStartDate: String(p.useStartDate || '').slice(0, 10),
             useEndDate: String(p.useEndDate || '').slice(0, 10),

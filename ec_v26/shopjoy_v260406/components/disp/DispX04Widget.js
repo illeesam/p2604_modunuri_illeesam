@@ -143,16 +143,9 @@ window.DispX04Widget = {
       return GRADIENTS[h % GRADIENTS.length];
     };
 
-    /* 차트 데이터 */
-    const chartColors = ['#e8587a','#ff8c69','#9c5fa3','#1677ff','#52c41a','#fa8c16','#36cfc9'];
-    const cfChartBars = computed(() => {
-      const w = props.widgetItem;
-      if (!w.chartValues) { return []; }
-      const vals   = w.chartValues.split(',').map(v => Number(v.trim()) || 0);
-      const labels = w.chartLabels ? w.chartLabels.split(',').map(l => l.trim()) : vals.map((_, i) => i + 1);
-      const max    = Math.max(...vals, 1);
-      return vals.map((v, i) => ({ value: v, label: labels[i] || '', pct: Math.round((v / max) * 100), color: chartColors[i % chartColors.length] }));
-    });
+    /* 차트 데이터 — coUtil.cofChartBars 위임 (팔레트/막대 계산 공용) */
+    const chartColors = coUtil.cofChartColors();
+    const cfChartBars = computed(() => coUtil.cofChartBars(props.widgetItem.chartValues, props.widgetItem.chartLabels));
 
     /* parseMarkdown — 파싱 Markdown */
     const parseMarkdown = (md) => (window.marked ? window.marked.parse(md || '') : (md || ''));
@@ -248,7 +241,7 @@ window.DispX04Widget = {
     });
 
     return {
-      uiState, codes,                                                       // 상태
+      uiState, codes, coUtil,                                               // 상태 / 공용유틸(템플릿 cofAnd/cofImgSrc)
       handleBtnAction, handleSelectAction,                                  // dispatch
       widget, cfVisible, cfChartBars, chartColors, cfClickInfo,             // computed
       nameGrad, parseMarkdown, getVideoEmbed, getMapEmbed, parseApprovalLine, // 헬퍼
@@ -257,14 +250,14 @@ window.DispX04Widget = {
   template: /* html */`
 <div v-if="cfVisible" class="disp-widget" :style="{ cursor: cfClickInfo ? 'pointer' : 'default' }" @click="handleBtnAction('widget-click')">
 <!-- ===== ■. 위젯 타이틀 ================================================== -->
-<div v-if="widget.titleYn==='Y' && widget.title" style="font-size:14px;font-weight:700;color:var(--text-primary,#222);margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid var(--blue,#1677ff);">
+<div v-if="coUtil.cofAnd(widget.titleYn==='Y', widget.title)" style="font-size:14px;font-weight:700;color:var(--text-primary,#222);margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid var(--blue,#1677ff);">
 {{ widget.title }}
 </div>
 <!-- ===== □. 위젯 타이틀 ================================================== -->
 <!-- ===== ■. 이미지 배너 ================================================== -->
 <template v-if="widget.widgetType==='image_banner'">
   <div v-if="widget.imageUrl" style="border-radius:10px;overflow:hidden;">
-    <img :src="widget.imageUrl" :alt="widget.altText||'배너'" style="width:100%;display:block;max-height:220px;object-fit:cover;" />
+    <img :src="coUtil.cofImgSrc(widget.imageUrl)" :alt="widget.altText||'배너'" style="width:100%;display:block;max-height:220px;object-fit:cover;" />
   </div>
   <div v-else :style="'border-radius:10px;overflow:hidden;background:'+nameGrad(widget.name)+';padding:36px 20px;text-align:center;color:#fff;'"  >
     <div style="font-size:32px;margin-bottom:10px;">
@@ -342,7 +335,7 @@ window.DispX04Widget = {
       <span v-if="widget.condBrand">
         브랜드: {{ widget.condBrand }}
       </span>
-      <span v-if="!widget.condSort&&!widget.condLimit">
+      <span v-if="coUtil.cofAnd(!widget.condSort, !widget.condLimit)">
       조건상품 렌더링
     </span>
   </div>
@@ -350,7 +343,7 @@ window.DispX04Widget = {
 </template>
 <!-- ===== □. 조건 상품 =================================================== -->
 <!-- ===== ■. 차트 ====================================================== -->
-<template v-else-if="widget.widgetType&&widget.widgetType.startsWith('chart_')">
+<template v-else-if="coUtil.cofAnd(widget.widgetType, widget.widgetType.startsWith('chart_'))">
 <div style="background:#fff;border-radius:10px;padding:16px;border:1px solid #e8e8e8;">
   <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:14px;">
     {{ widget.widgetType==='chart_bar'?'📊':widget.widgetType==='chart_line'?'📈':'🥧' }} {{ widget.chartTitle || widget.name }}

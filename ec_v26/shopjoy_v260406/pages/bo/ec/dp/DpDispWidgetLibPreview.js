@@ -11,15 +11,8 @@ const _WidgetPreview = {
     const showToast    = window.boApp.showToast;  // 토스트 알림
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
-    const chartColors = ['#e8587a','#ff8c69','#9c5fa3','#1677ff','#52c41a','#fa8c16','#36cfc9'];
-    const cfChartBars = computed(() => {
-      const w = props.lib;
-      if (!w || !w.chartValues) { return []; }
-      const values = w.chartValues.split(',').map(v => Number(v.trim()) || 0);
-      const labels = w.chartLabels ? w.chartLabels.split(',').map(l => l.trim()) : values.map((_,i)=>String(i+1));
-      const max = Math.max(...values, 1);
-      return values.map((v,i) => ({ v, label:labels[i]||'', pct:Math.round((v/max)*100), color:chartColors[i%chartColors.length] }));
-    });
+    /* 차트 막대 — coUtil.cofChartBars 위임 (팔레트/계산 공용) */
+    const cfChartBars = computed(() => coUtil.cofChartBars((props.lib || {}).chartValues, (props.lib || {}).chartLabels));
 
     // ===== return (템플릿 노출) ===============================================
 

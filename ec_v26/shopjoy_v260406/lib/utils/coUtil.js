@@ -747,6 +747,264 @@
     return Object.fromEntries(Object.entries(obj || {}).filter(([, v]) => v !== '' && v !== null && v !== undefined));
   }
 
+  /* cofHexColor — opt_style 등 CSS 조각에서 색상 버튼용 hex(#xxxxxx)를 추출
+   *   허용 입력: '#000', '#000000', 'background-color:#000000', 'background:#fff', '  #ABCDEF '
+   *   추출 실패 시 '' 반환 (호출부에서 회색 처리) */
+  function cofHexColor(style) {
+    const s = (style == null ? '' : String(style)).trim();
+    if (!s) { return ''; }
+    const m = s.match(/#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b/);
+    return m ? '#' + m[1] : '';
+  }
+
+  /* cofImgSrc — 서버 이미지 경로를 브라우저(루트 기준)에서 접근 가능하도록 정규화
+   *   서버는 '/cdn/...' (절대) 로 저장하지만 실제 파일은 'assets/cdn/...' 에 있음 → 'assets/' 프리픽스 보정
+   *   - 빈값: '' 반환 (호출부에서 NO_IMAGE 폴백)
+   *   - http(s)://, // , data: : 그대로 (외부/인라인)
+   *   - '/cdn/...' 또는 'cdn/...' : 'assets/cdn/...' 로 보정
+   *   - 그 외(이미 'assets/...' 등 상대경로): 그대로 */
+  function cofImgSrc(url) {
+    const s = (url == null ? '' : String(url)).trim();
+    if (!s) { return ''; }
+    if (/^(https?:)?\/\//i.test(s) || s.startsWith('data:')) { return s; }
+    if (s.startsWith('assets/')) { return s; }
+    const rel = s.replace(/^\//, '');           // 선행 '/' 제거
+    if (rel.startsWith('cdn/')) { return 'assets/' + rel; }
+    return s;
+  }
+
+  /* ──────────────────────────────────────────────────────────────────────
+   * FO 상품 공용 헬퍼 (foApp.js / Home*.js / Prod*List.js / Prod*View.js 반복 제거)
+   * ────────────────────────────────────────────────────────────────────── */
+
+  /* 상품 이미지 자동 할당 기본 경로 */
+  var PROD_IMG_BASE = 'assets/cdn/prod/img/shop/product';
+
+  /* cofGenId — 임의 ID 생성: yymmddHHMMSS + rand4 (예: 2606131530AB12)
+   *   foApp.js genId 통합. 장바구니 cartId 등 클라이언트 임시 키용. */
+  function cofGenId() {
+    var d = new Date();
+    var pad = function (n) { return String(n).padStart(2, '0'); };
+    return [d.getFullYear() % 100, d.getMonth() + 1, d.getDate(), d.getHours(), d.getMinutes(), d.getSeconds()]
+      .map(pad).join('') + Math.random().toString(36).slice(2, 6).toUpperCase();
+  }
+
+  /* cofAssignProdImage — 상품 객체에 image/images/priceNum 자동 보정 (in-place + 반환)
+   *   foApp._assignImg + Prod*List.assignImage 통합.
+   *   1) colors→opt1s, sizes→opt2s 호환
+   *   2) thumbnailUrl → image (cofImgSrc 정규화)
+   *   3) image 없으면 prodId 숫자 기반 폴백 이미지 할당
+   *   4) priceNum 없으면 price 문자열에서 숫자 추출
+   *   imgBase 미지정 시 기본 경로 사용. */
+  function cofAssignProdImage(p, imgBase) {
+    if (!p) { return p; }
+    var base = imgBase || PROD_IMG_BASE;
+    if (p.colors && !p.opt1s) { p.opt1s = p.colors; }
+    if (p.sizes && !p.opt2s) { p.opt2s = p.sizes; }
+    if (!p.image && p.thumbnailUrl) { p.image = cofImgSrc(p.thumbnailUrl); }
+    if (!p.image) {
+      var id = parseInt(String(p.prodId || 1).replace(/[^0-9]/g, ''), 10) || 1;
+      if (id <= 12) {
+        p.image = base + '/fashion/fashion-' + id + '.webp';
+        p.images = [p.image, base + '/fashion/fashion-' + ((id % 12) + 1) + '.webp'];
+      } else {
+        var n = ((id - 1) % 23) + 1;
+        p.image = base + '/product_' + n + '.png';
+        p.images = [p.image, base + '/product_' + ((n % 23) + 1) + '.png'];
+      }
+    }
+    if (!p.priceNum && p.price) {
+      p.priceNum = parseInt(String(p.price).replace(/[^0-9]/g, ''), 10) || 0;
+    }
+    return p;
+  }
+
+  /* cofProdIdFromHash — 현재 URL 해시(#page=prodView&prodid=...)에서 prodid 추출.
+   *   Prod*View.fnGetProdIdFromHash 통합. 실패 시 ''. */
+  function cofProdIdFromHash() {
+    try {
+      var rawHash = String(window.location.hash || '').replace(/^#/, '');
+      return new URLSearchParams(rawHash).get('prodid') || '';
+    } catch (e) { return ''; }
+  }
+
+  /* cofCategoryLabel — 상품의 categoryId → SITE_CONFIG.categorys 의 categoryNm.
+   *   Home*.fnCategoryLabel + Prod*List.fnCategoryLabel 통합. 매칭 없으면 categoryId 그대로. */
+  function cofCategoryLabel(p) {
+    if (!p) { return ''; }
+    var cats = (window.SITE_CONFIG && window.SITE_CONFIG.categorys) || [];
+    var row = cats.find(function (c) { return c.categoryId === p.categoryId; });
+    return row ? row.categoryNm : p.categoryId;
+  }
+
+  /* cofToggleSet — Set 에 값 토글 (있으면 삭제, 없으면 추가). Prod*List toggleColor/Size/Cat 통합.
+   *   사용: const toggleColor = (n) => coUtil.cofToggleSet(selColors, n); */
+  function cofToggleSet(set, val) {
+    if (!set) { return; }
+    if (set.has(val)) { set.delete(val); } else { set.add(val); }
+  }
+
+  /* cofBannerTimer — 히어로 배너 자동 슬라이드 타이머 팩토리. Home*.startBannerTimer/setBanner 통합.
+   *   onIndex(i): 다음 인덱스를 적용하는 콜백 (예: i => { uiState.bannerIdx = i; })
+   *   getIndex(): 현재 인덱스 반환
+   *   count: 배너 개수,  ms: 간격(기본 20000)
+   *   반환: { start(), set(i), stop() } — onMounted 에서 start(), onBeforeUnmount 에서 stop(). */
+  function cofBannerTimer(onIndex, getIndex, count, ms) {
+    var interval = ms || 20000;
+    var timer = null;
+    function start() {
+      stop();
+      timer = setInterval(function () {
+        var next = ((getIndex() || 0) + 1) % (count || 1);
+        onIndex(next);
+      }, interval);
+    }
+    function stop() { if (timer) { clearInterval(timer); timer = null; } }
+    function set(i) { onIndex(i); start(); }
+    return { start: start, set: set, stop: stop };
+  }
+
+  /* cofMergeProdOpts — 백엔드 상품상세 응답(prod + opts + skus + images)을
+   *   화면이 기대하는 단일 prod 형태(opt1s/opt2s/opt2sAll/opt2Prices/mainImage/images)로 머지.
+   *   Prod*View.fnMergeProdOpts 통합 (Prod01 의 opt2sAll 포함 슈퍼셋 기준 — View02/03 도 호환).
+   *   - opts.groups[level=1] → opt1s = [{ optItemId, name, val, priceDelta, imgUrl, optStyle, hex }]
+   *   - opts.groups[level=2] → opt2s(unique 이름) + opt2sAll(parentOptItemId 포함)
+   *   - skus 의 2단별 addPrice 평균 → opt2Prices = { '사이즈명': delta } */
+  function cofMergeProdOpts(prod, optsObj, skusList, imgList) {
+    var groups = ((optsObj && optsObj.groups) || []).slice()
+      .sort(function (a, b) { return (a.optLevel || a.level || 0) - (b.optLevel || b.level || 0); });
+    var items = (optsObj && optsObj.items) || [];
+    var imgs = imgList || [];
+    var skus = skusList || [];
+    var lv1 = groups.find(function (g) { return Number(g.optLevel || g.level || 0) === 1; });
+    var lv2 = groups.find(function (g) { return Number(g.optLevel || g.level || 0) === 2; });
+
+    var itemsOf = function (g) { return g ? items.filter(function (i) { return i.optId === g.optId; }) : []; };
+    var lv1Items = itemsOf(lv1).sort(function (a, b) { return (a.sortOrd || 0) - (b.sortOrd || 0); });
+    var lv2Items = itemsOf(lv2).sort(function (a, b) { return (a.sortOrd || 0) - (b.sortOrd || 0); });
+
+    var opt1Nm = ((lv1 && (lv1.optGrpNm || lv1.grpNm)) || '').trim() || '색상';
+    var opt2Nm = ((lv2 && (lv2.optGrpNm || lv2.grpNm)) || '').trim() || '사이즈';
+
+    var opt1s = lv1Items.map(function (it) {
+      var optImgs = imgs.filter(function (im) { return im.optItemId1 === it.optItemId; });
+      var style = (it.optStyle || '').trim();
+      return {
+        optItemId: it.optItemId,
+        name: it.optNm || it.optVal || '',
+        val: it.optVal || '',
+        priceDelta: 0,
+        imgUrl: cofImgSrc((optImgs[0] && (optImgs[0].cdnImgUrl || optImgs[0].cdnThumbUrl)) || ''),
+        optStyle: style,
+        hex: cofHexColor(style),
+      };
+    });
+
+    var opt2sAll = lv2Items.map(function (it) {
+      return {
+        optItemId: it.optItemId,
+        name: it.optNm || it.optVal || '',
+        val: it.optVal || '',
+        parentOptItemId: it.parentOptItemId || '',
+      };
+    });
+
+    var seenNm = new Set();
+    var opt2s = [];
+    opt2sAll.forEach(function (it) { if (it.name && !seenNm.has(it.name)) { seenNm.add(it.name); opt2s.push(it.name); } });
+
+    var opt2Prices = {};
+    lv2Items.forEach(function (it) {
+      var matchedSkus = skus.filter(function (s) { return (s.optItemId2 === it.optItemId) || (s.optItemNm2 === it.optNm); });
+      if (!matchedSkus.length) { return; }
+      var avg = Math.round(matchedSkus.reduce(function (a, s) { return a + (Number(s.addPrice) || 0); }, 0) / matchedSkus.length);
+      if (avg) { opt2Prices[it.optNm || it.optVal] = avg; }
+    });
+
+    var main = imgs.find(function (im) { return im.isThumb === 'Y'; }) || imgs[0];
+    var mainImage = cofImgSrc((main && (main.cdnImgUrl || main.cdnThumbUrl)) || '');
+    var priceVal = prod.salePrice || prod.listPrice || prod.price || 0;
+
+    return Object.assign({}, prod, {
+      price: priceVal,
+      mainImage: mainImage,
+      images: imgs,
+      opt1Nm: opt1Nm,
+      opt2Nm: opt2Nm,
+      opt1s: opt1s,
+      opt2s: opt2s,
+      opt2sAll: opt2sAll,
+      opt2Prices: opt2Prices,
+      skus: skus,
+    });
+  }
+
+  /* ──────────────────────────────────────────────────────────────────────
+   * 전시(Display) 공용 헬퍼 (DispX0*.js / DpDisp*Preview/Simul/Relation/Dtl/Mng 반복 제거)
+   * ────────────────────────────────────────────────────────────────────── */
+
+  /* 전시 차트 위젯 공용 색상 팔레트 (DispX04Widget + DpDisp*Preview 6파일 동일 상수) */
+  var DISP_CHART_COLORS = ['#e8587a', '#ff8c69', '#9c5fa3', '#1677ff', '#52c41a', '#fa8c16', '#36cfc9'];
+
+  /* cofChartColors — 전시 차트 색상 팔레트 배열 반환 (복사본). */
+  function cofChartColors() { return DISP_CHART_COLORS.slice(); }
+
+  /* cofChartBars — chartValues/chartLabels(콤마구분 문자열 또는 배열) → 막대 데이터 배열.
+   *   반환: [{ v, label, pct, color }]  (pct = value/max*100, color = 팔레트 순환)
+   *   값 없으면 [] 반환. DpDisp{Area,Panel,Ui,WidgetLib}Preview 의 cfChartBars 통합. */
+  function cofChartBars(chartValues, chartLabels) {
+    if (chartValues == null || chartValues === '') { return []; }
+    var values = Array.isArray(chartValues)
+      ? chartValues.map(function (v) { return Number(v) || 0; })
+      : String(chartValues).split(',').map(function (v) { return Number(v.trim()) || 0; });
+    if (!values.length) { return []; }
+    var labels = (chartLabels != null && chartLabels !== '')
+      ? (Array.isArray(chartLabels) ? chartLabels.map(String) : String(chartLabels).split(',').map(function (l) { return l.trim(); }))
+      : values.map(function (_, i) { return String(i + 1); });
+    var max = Math.max.apply(null, values.concat([1]));
+    return values.map(function (v, i) {
+      return { v: v, label: labels[i] || '', pct: Math.round((v / max) * 100), color: DISP_CHART_COLORS[i % DISP_CHART_COLORS.length] };
+    });
+  }
+
+  /* cofChartPie — cofChartBars 결과 → 파이 세그먼트(start/end deg + ratio%) 배열. */
+  function cofChartPie(bars) {
+    var list = bars || [];
+    var total = list.reduce(function (s, b) { return s + (b.v || 0); }, 0) || 1;
+    var acc = 0;
+    return list.map(function (b) {
+      var start = acc / total * 360;
+      acc += (b.v || 0);
+      var end = acc / total * 360;
+      return Object.assign({}, b, { start: start, end: end, ratio: Math.round((b.v || 0) / total * 100) });
+    });
+  }
+
+  /* cofChartPieGradient — 파이 세그먼트 → CSS conic-gradient 문자열. */
+  function cofChartPieGradient(pieSegs) {
+    var segs = pieSegs || [];
+    return 'conic-gradient(' + segs.map(function (s) { return s.color + ' ' + s.start + 'deg ' + s.end + 'deg'; }).join(',') + ')';
+  }
+
+  /* cofParsePanelRows — dp_panel.content_json(문자열/객체) → rows 배열. 파싱 실패/없으면 [].
+   *   DpDisp{Area,Panel,Ui}Preview / DpDispUiSimul / DpDispPanelDtl 의 rows 파싱 통합. */
+  function cofParsePanelRows(contentJson) {
+    try {
+      var obj = typeof contentJson === 'string' ? JSON.parse(contentJson || '{}') : (contentJson || {});
+      return obj.rows || [];
+    } catch (e) { return []; }
+  }
+
+  /* cofPanelRowCount — content_json 의 rows 개수. DpDispPanelMng / DpDispRelationMng 통합. */
+  function cofPanelRowCount(contentJson) { return cofParsePanelRows(contentJson).length; }
+
+  /* cofPanelStatusLabel — dp_panel.disp_panel_status_cd(SHOW/HIDE) → '활성'/'비활성'.
+   *   렌더러가 기대하는 라벨로 변환. 알 수 없는 값은 원문 반환.
+   *   DpDisp{Area,Panel,Ui}Preview / DpDispUiSimul 어댑터 통합. */
+  function cofPanelStatusLabel(statusCd) {
+    return statusCd === 'SHOW' ? '활성' : (statusCd === 'HIDE' ? '비활성' : (statusCd || ''));
+  }
+
   // 공개 API: window.coUtil 에 등록
   global.coUtil = global.coUtil || {};
   global.coUtil.cofApiHdr = global.coUtil.cofApiHdr || cofApiHdr;
@@ -790,6 +1048,24 @@
   global.coUtil.cofMaxOf = global.coUtil.cofMaxOf || cofMaxOf;
   global.coUtil.cofBuildPagerNums = global.coUtil.cofBuildPagerNums || cofBuildPagerNums;
   global.coUtil.cofOmitEmpty = global.coUtil.cofOmitEmpty || cofOmitEmpty;
+  global.coUtil.cofImgSrc = global.coUtil.cofImgSrc || cofImgSrc;
+  global.coUtil.cofHexColor = global.coUtil.cofHexColor || cofHexColor;
+  // FO 상품 공용 헬퍼
+  global.coUtil.cofGenId = global.coUtil.cofGenId || cofGenId;
+  global.coUtil.cofAssignProdImage = global.coUtil.cofAssignProdImage || cofAssignProdImage;
+  global.coUtil.cofProdIdFromHash = global.coUtil.cofProdIdFromHash || cofProdIdFromHash;
+  global.coUtil.cofCategoryLabel = global.coUtil.cofCategoryLabel || cofCategoryLabel;
+  global.coUtil.cofToggleSet = global.coUtil.cofToggleSet || cofToggleSet;
+  global.coUtil.cofBannerTimer = global.coUtil.cofBannerTimer || cofBannerTimer;
+  global.coUtil.cofMergeProdOpts = global.coUtil.cofMergeProdOpts || cofMergeProdOpts;
+  // 전시(Display) 공용 헬퍼
+  global.coUtil.cofChartColors = global.coUtil.cofChartColors || cofChartColors;
+  global.coUtil.cofChartBars = global.coUtil.cofChartBars || cofChartBars;
+  global.coUtil.cofChartPie = global.coUtil.cofChartPie || cofChartPie;
+  global.coUtil.cofChartPieGradient = global.coUtil.cofChartPieGradient || cofChartPieGradient;
+  global.coUtil.cofParsePanelRows = global.coUtil.cofParsePanelRows || cofParsePanelRows;
+  global.coUtil.cofPanelRowCount = global.coUtil.cofPanelRowCount || cofPanelRowCount;
+  global.coUtil.cofPanelStatusLabel = global.coUtil.cofPanelStatusLabel || cofPanelStatusLabel;
   global.coUtil.cofLinePoints = global.coUtil.cofLinePoints || cofLinePoints;
   global.coUtil.cofAreaPath = global.coUtil.cofAreaPath || cofAreaPath;
   // Mng 표준 캡슐 (상세패널)

@@ -106,30 +106,8 @@ window.Prod03List = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    /* -- 상품 이미지 자동 할당 -- */
-    const IMG_BASE = 'assets/cdn/prod/img/shop/product';
-
-    /* assignImage — assign 이미지 */
-    const assignImage = (p) => {
-      /* colors→opt1s, sizes→opt2s 호환 */
-      if (p.colors && !p.opt1s) { p.opt1s = p.colors; }
-      if (p.sizes  && !p.opt2s) { p.opt2s = p.sizes; }
-      /* API 대표이미지 → image 매핑 */
-      if (!p.image && p.thumbnailUrl) { p.image = p.thumbnailUrl; }
-      /* 이미지 자동 할당 (실제 이미지 없을 때만) */
-      if (!p.image) {
-        const id = p.prodId || 1;
-        if (id <= 12) {
-          p.image  = `${IMG_BASE}/fashion/fashion-${id}.webp`;
-          p.images = [p.image, `${IMG_BASE}/fashion/fashion-${((id % 12) + 1)}.webp`];
-        } else {
-          const n = ((id - 1) % 23) + 1;
-          p.image  = `${IMG_BASE}/prod_${n}.png`;
-          p.images = [p.image, `${IMG_BASE}/prod_${(n % 23) + 1}.png`];
-        }
-      }
-      return p;
-    };
+    /* -- 상품 이미지 자동 할당 -- coUtil.cofAssignProdImage 위임 (thumbnailUrl→image + 폴백 + priceNum) */
+    const assignImage = (p) => coUtil.cofAssignProdImage(p);
 
     /* fnBuildPagerNums — 유틸 */
     const fnBuildPagerNums = () => {
@@ -206,21 +184,13 @@ window.Prod03List = {
     });
     const cfAllCats = computed(() => (window.SITE_CONFIG && window.SITE_CONFIG.categorys) || []);
 
-    /* fnCategoryLabel — 유틸 */
-    const fnCategoryLabel = p => {
-      if (!p) { return ''; }
-      const row = cfAllCats.value.find(c => c.categoryId === p.categoryId);
-      return row ? row.categoryNm : p.categoryId;
-    };
+    /* fnCategoryLabel — coUtil.cofCategoryLabel 위임 (categoryId → categoryNm) */
+    const fnCategoryLabel = p => coUtil.cofCategoryLabel(p);
 
-    /* toggleColor — 토글 */
-    const toggleColor = name => { if (selColors.has(name)) selColors.delete(name); else selColors.add(name); };
-
-    /* toggleSize — 토글 */
-    const toggleSize  = sz   => { if (selSizes.has(sz)) selSizes.delete(sz); else selSizes.add(sz); };
-
-    /* toggleCat — 토글 */
-    const toggleCat   = id   => { if (selCats.has(id)) selCats.delete(id); else selCats.add(id); };
+    /* toggle* — coUtil.cofToggleSet 위임 (Set 토글) */
+    const toggleColor = name => coUtil.cofToggleSet(selColors, name);
+    const toggleSize  = sz   => coUtil.cofToggleSet(selSizes, sz);
+    const toggleCat   = id   => coUtil.cofToggleSet(selCats, id);
 
     const cfHasFilter = computed(() =>
       uiState.searchText || uiState.priceMin || uiState.priceMax ||
