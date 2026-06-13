@@ -8,6 +8,12 @@ import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhAccessErrorLogDto;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyDept;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyRole;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendor;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyhAccessErrorLog;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyhAccessErrorLogRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +24,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 /** SyhAccessErrorLog QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepository {
@@ -25,12 +32,19 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhAccessErrorLogRepositoryImpl";
     private static final QSyhAccessErrorLog syhAccessErrorLog = QSyhAccessErrorLog.syhAccessErrorLog;
+    private static final QSySite   sySite   = QSySite.sySite;
+    private static final QSyUser   syUser   = QSyUser.syUser;
+    private static final QSyRole   syRole   = QSyRole.syRole;
+    private static final QSyDept   syDept   = QSyDept.syDept;
+    private static final QSyVendor syVendor = QSyVendor.syVendor;
+    private static final QSyCode   cd_at    = new QSyCode("cd_at");
 
-    /* baseSelColumnQuery */
+    /* baseSelColumnQuery — list/page/byId 공유 프로젝션 (코드명/연관명 조인 포함 풀필드) */
     private JPAQuery<SyhAccessErrorLogDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyhAccessErrorLogDto.Item.class,
                         syhAccessErrorLog.logId,
+                        syhAccessErrorLog.siteId,
                         syhAccessErrorLog.reqMethod,
                         syhAccessErrorLog.reqHost,
                         syhAccessErrorLog.reqPath,
@@ -58,9 +72,31 @@ public class QSyhAccessErrorLogRepositoryImpl implements QSyhAccessErrorLogRepos
                         syhAccessErrorLog.threadNm,
                         syhAccessErrorLog.loggerNm,
                         syhAccessErrorLog.logDt,
-                        syhAccessErrorLog.regDate
+                        syhAccessErrorLog.regDate,
+                        sySite.siteNm.as("siteNm"),
+                        cd_at.codeLabel.as("appTypeCdNm"),
+                        syUser.userNm.as("userNm"),
+                        syRole.roleNm.as("roleNm"),
+                        syDept.deptNm.as("deptNm"),
+                        syVendor.vendorNm.as("vendorNm")
                 ))
-                .from(syhAccessErrorLog);
+                .from(syhAccessErrorLog)
+                .leftJoin(sySite).on(sySite.siteId.eq(syhAccessErrorLog.siteId))
+                .leftJoin(syUser).on(syUser.userId.eq(syhAccessErrorLog.userId))
+                .leftJoin(syRole).on(syRole.roleId.eq(syhAccessErrorLog.roleId))
+                .leftJoin(syDept).on(syDept.deptId.eq(syhAccessErrorLog.deptId))
+                .leftJoin(syVendor).on(syVendor.vendorId.eq(syhAccessErrorLog.vendorId))
+                .leftJoin(cd_at).on(cd_at.codeGrp.eq("APP_TYPE").and(cd_at.codeValue.eq(syhAccessErrorLog.appTypeCd)));
+    }
+
+    /* 단건 상세조회 (코드명/연관명 조인 포함 풀필드 — baseSelColumnQuery 공유) */
+    @Override
+    public Optional<SyhAccessErrorLogDto.Item> selectById(String id) {
+        SyhAccessErrorLogDto.Item dto = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
+                .where(syhAccessErrorLog.logId.eq(id))
+                .fetchOne();
+        return Optional.ofNullable(dto);
     }
 
     /* 페이지조회 */

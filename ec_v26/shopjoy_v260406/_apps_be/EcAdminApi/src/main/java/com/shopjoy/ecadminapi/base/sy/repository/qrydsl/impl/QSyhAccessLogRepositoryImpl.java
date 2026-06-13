@@ -8,6 +8,12 @@ import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhAccessLogDto;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyDept;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyRole;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyVendor;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyhAccessLog;
 import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyhAccessLogRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +24,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 /** SyhAccessLog QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
@@ -25,18 +32,26 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
     private final JPAQueryFactory queryFactory;
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhAccessLogRepositoryImpl";
     private static final QSyhAccessLog syhAccessLog = QSyhAccessLog.syhAccessLog;
+    private static final QSySite   sySite   = QSySite.sySite;
+    private static final QSyUser   syUser   = QSyUser.syUser;
+    private static final QSyRole   syRole   = QSyRole.syRole;
+    private static final QSyDept   syDept   = QSyDept.syDept;
+    private static final QSyVendor syVendor = QSyVendor.syVendor;
+    private static final QSyCode   cd_at    = new QSyCode("cd_at");
 
-    /* baseSelColumnQuery */
+    /* baseSelColumnQuery — list/page/byId 공유 프로젝션 (코드명/연관명 조인 포함 풀필드) */
     private JPAQuery<SyhAccessLogDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyhAccessLogDto.Item.class,
                         syhAccessLog.logId,
+                        syhAccessLog.siteId,
                         syhAccessLog.reqMethod,
                         syhAccessLog.reqHost,
                         syhAccessLog.reqPath,
                         syhAccessLog.reqQuery,
                         syhAccessLog.reqIp,
                         syhAccessLog.reqUa,
+                        syhAccessLog.reqBody,
                         syhAccessLog.appTypeCd,
                         syhAccessLog.userId,
                         syhAccessLog.roleId,
@@ -45,6 +60,7 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
                         syhAccessLog.localeId,
                         syhAccessLog.respStatus,
                         syhAccessLog.respTimeMs,
+                        syhAccessLog.respBody,
                         syhAccessLog.serverNm,
                         syhAccessLog.profile,
                         syhAccessLog.threadNm,
@@ -55,9 +71,31 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
                         syhAccessLog.lineNo,
                         syhAccessLog.traceId,
                         syhAccessLog.reqDt,
-                        syhAccessLog.regDate
+                        syhAccessLog.regDate,
+                        sySite.siteNm.as("siteNm"),
+                        cd_at.codeLabel.as("appTypeCdNm"),
+                        syUser.userNm.as("userNm"),
+                        syRole.roleNm.as("roleNm"),
+                        syDept.deptNm.as("deptNm"),
+                        syVendor.vendorNm.as("vendorNm")
                 ))
-                .from(syhAccessLog);
+                .from(syhAccessLog)
+                .leftJoin(sySite).on(sySite.siteId.eq(syhAccessLog.siteId))
+                .leftJoin(syUser).on(syUser.userId.eq(syhAccessLog.userId))
+                .leftJoin(syRole).on(syRole.roleId.eq(syhAccessLog.roleId))
+                .leftJoin(syDept).on(syDept.deptId.eq(syhAccessLog.deptId))
+                .leftJoin(syVendor).on(syVendor.vendorId.eq(syhAccessLog.vendorId))
+                .leftJoin(cd_at).on(cd_at.codeGrp.eq("APP_TYPE").and(cd_at.codeValue.eq(syhAccessLog.appTypeCd)));
+    }
+
+    /* 단건 상세조회 (코드명/연관명 조인 포함 풀필드 — baseSelColumnQuery 공유) */
+    @Override
+    public Optional<SyhAccessLogDto.Item> selectById(String id) {
+        SyhAccessLogDto.Item dto = baseSelColumnQuery()
+                .setHint("org.hibernate.comment", QRY_SRC + " :: selectById()")
+                .where(syhAccessLog.logId.eq(id))
+                .fetchOne();
+        return Optional.ofNullable(dto);
     }
 
     /* 페이지조회 */

@@ -35,7 +35,7 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
     private static final QMbMember          mbMember  = QMbMember.mbMember;
     private static final QSyCode            cdLr = new QSyCode("cd_lr");
 
-    /* 회원 로그인 로그 baseSelColumnQuery */
+    /* 회원 로그인 로그 baseSelColumnQuery — list/page/byId 공유 (코드명 포함 풀필드) */
     private JPAQuery<MbhMemberLoginLogDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(MbhMemberLoginLogDto.Item.class,
@@ -45,7 +45,8 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
                         mbhMemberLoginLog.uiNm, mbhMemberLoginLog.cmdNm,
                         mbhMemberLoginLog.regBy, mbhMemberLoginLog.regDate, mbhMemberLoginLog.updBy, mbhMemberLoginLog.updDate,
                         sySite.siteNm.as("siteNm"),
-                        mbMember.memberNm.as("memberNm")
+                        mbMember.memberNm.as("memberNm"),
+                        cdLr.codeLabel.as("resultCdNm")
                 ))
                 .from(mbhMemberLoginLog)
                 .leftJoin(sySite).on(sySite.siteId.eq(mbhMemberLoginLog.siteId))
@@ -53,7 +54,7 @@ public class QMbhMemberLoginLogRepositoryImpl implements QMbhMemberLoginLogRepos
                 .leftJoin(cdLr).on(cdLr.codeGrp.eq("LOGIN_RESULT").and(cdLr.codeValue.eq(mbhMemberLoginLog.resultCd)));
     }
 
-    /* 회원 로그인 로그 키조회 */
+    /* 회원 로그인 로그 키조회 (단건 상세 — baseSelColumnQuery 공유) */
     @Override
     public Optional<MbhMemberLoginLogDto.Item> selectById(String logId) {
         return Optional.ofNullable(baseSelColumnQuery()

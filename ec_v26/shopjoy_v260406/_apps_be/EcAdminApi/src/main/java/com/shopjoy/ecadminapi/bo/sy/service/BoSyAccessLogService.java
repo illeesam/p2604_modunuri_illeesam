@@ -16,6 +16,11 @@ public class BoSyAccessLogService {
 
     private final SyhAccessLogService syhAccessLogService;
 
+    /** getById — 단건 상세조회 */
+    public SyhAccessLogDto.Item getById(String id) {
+        return syhAccessLogService.getById(id);
+    }
+
     /** getPageData — 페이징조회 */
     public SyhAccessLogDto.PageResponse getPageData(SyhAccessLogDto.Request req) {
         return syhAccessLogService.getPageData(req);

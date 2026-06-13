@@ -48,6 +48,10 @@ window.SyApiLogMng = {
     // 펼쳐진 행 ID 집합
     const expandedRows  = reactive(new Set());
     const allExpanded   = reactive({ value: false });
+    /* 펼침 시 상세 API(getById) 조회 결과 캐시 — 한 번 조회한 행은 재펼침 시 재조회 안 함.
+       키: '{탭}:{logId}' (요청/오류 탭이 logId 를 공유할 수 있어 탭 구분) */
+    const detailCache   = reactive({});
+    const detailLoading = reactive(new Set());   // 조회 중인 캐시키 집합
 
     // 기본 기간: 최근 1주일
     boUtil.bofApplyDateRange(uiState, '1week');
@@ -130,17 +134,46 @@ window.SyApiLogMng = {
       accessGridPager.pageNo = 1;
     };
 
-    /* toggleRow — 토글 */
-    const toggleRow     = id => { if (expandedRows.has(id)) expandedRows.delete(id); else expandedRows.add(id); };
+    /* fnCacheKey — 캐시 키 (탭+logId) */
+    const fnCacheKey = id => `${uiState.activeTab}:${id}`;
+
+    /* fnFetchDetail — 행 상세 API(getById) 조회 후 캐시 적재. 이미 캐시/조회중이면 skip */
+    const fnFetchDetail = async (id) => {
+      if (id == null) { return; }
+      const key = fnCacheKey(id);
+      if (detailCache[key] || detailLoading.has(key)) { return; }   // 재펼침 시 재조회 안 함
+      detailLoading.add(key);
+      try {
+        const svc = uiState.activeTab === 'access' ? boApiSvc.syAccessLog : boApiSvc.syAccessErrorLog;
+        const res = await svc.getById(id, 'API로그조회', '상세조회');
+        detailCache[key] = res.data?.data || res.data || {};
+      } catch (err) {
+        if (showToast) { showToast(err.response?.data?.message || err.message || '상세 조회 오류', 'error', 0); }
+      } finally {
+        detailLoading.delete(key);
+      }
+    };
+
+    /* toggleRow — 행 펼침 토글 (펼칠 때만 상세 조회) */
+    const toggleRow     = id => {
+      if (expandedRows.has(id)) { expandedRows.delete(id); }
+      else { expandedRows.add(id); fnFetchDetail(id); }
+    };
 
     /* isExpanded — 여부 확인 */
     const isExpanded    = id => expandedRows.has(id);
 
-    /* toggleExpandAll — 토글 */
+    /* fnRowDetail — 펼침 상세 폼 데이터 (캐시 우선, 미조회 시 목록 row 폴백) */
+    const fnRowDetail = (row) => detailCache[fnCacheKey(row.logId)] || row;
+
+    /* fnRowDetailLoading — 해당 행 상세 조회중 여부 */
+    const fnRowDetailLoading = (row) => detailLoading.has(fnCacheKey(row.logId));
+
+    /* toggleExpandAll — 토글 (펼칠 때 각 행 상세 조회) */
     const toggleExpandAll = () => {
       const list = uiState.activeTab === 'access' ? accessLogs : errorLogs;
       if (allExpanded.value) { expandedRows.clear(); allExpanded.value = false; }
-      else { list.forEach((r, i) => expandedRows.add(r.logId || i)); allExpanded.value = true; }
+      else { list.forEach((r, i) => { expandedRows.add(r.logId || i); fnFetchDetail(r.logId); }); allExpanded.value = true; }
     };
 
 
@@ -178,7 +211,7 @@ window.SyApiLogMng = {
         accessGridPager.pageTotalPage  = data?.pageTotalPage  || Math.ceil(accessGridPager.pageTotalCount / accessGridPager.pageSize) || 1;
         tabCounts.access = accessGridPager.pageTotalCount;
         coUtil.cofBuildPagerNums(accessGridPager);
-        expandedRows.clear();
+        expandedRows.clear(); Object.keys(detailCache).forEach(k => delete detailCache[k]);
       } catch (err) {
         console.error('[handleSearchAccessLog]', err);
         if (showToast) { showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0); }
@@ -195,7 +228,7 @@ window.SyApiLogMng = {
         accessGridPager.pageTotalPage  = data?.pageTotalPage  || Math.ceil(accessGridPager.pageTotalCount / accessGridPager.pageSize) || 1;
         tabCounts.error = accessGridPager.pageTotalCount;
         coUtil.cofBuildPagerNums(accessGridPager);
-        expandedRows.clear();
+        expandedRows.clear(); Object.keys(detailCache).forEach(k => delete detailCache[k]);
       } catch (err) {
         console.error('[handleSearchErrorLog]', err);
         if (showToast) { showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0); }
@@ -346,8 +379,8 @@ window.SyApiLogMng = {
       return exp ? ('background:' + bg + ';') : '';
     };
 
-    /* accessExpand — API요청로그 행 펼침 BoFormArea 컬럼 (cols=4, labelLeft) */
-    columns.accessExpand = [
+    /* accessGridRowDetail — API요청로그 행 펼침 BoFormArea 컬럼 (cols=4, labelLeft) */
+    columns.accessGridRowDetail = [
       { key: '_path',     label: '경로',     type: 'readonly', mono: true, colSpan: 4, fmt: (v, row) => (row.reqPath || '') + (row.reqQuery ? '?' + row.reqQuery : '') },
       { key: '_method',   label: '메서드',   type: 'readonly', html: true, fmt: (v, row) => `<span class="badge ${fnMethodBadge(row.reqMethod)}">${row.reqMethod || '-'}</span>` },
       { key: '_status',   label: '상태코드', type: 'readonly', html: true, fmt: (v, row) => `<span class="badge ${fnStatusBadge(row.respStatus)}">${row.respStatus || '-'}</span>` },
@@ -372,8 +405,8 @@ window.SyApiLogMng = {
       { key: '_regDate',  label: '등록일시', type: 'readonly', fmt: (v, row) => coUtil.cofYmdHms(row.regDate || '') || '-' },
     ];
 
-    /* errorExpand — API오류로그 행 펼침 BoFormArea 컬럼 (cols=4, labelLeft) */
-    columns.errorExpand = [
+    /* errorGridRowDetail — API오류로그 행 펼침 BoFormArea 컬럼 (cols=4, labelLeft) */
+    columns.errorGridRowDetail = [
       { key: '_path',     label: '경로',       type: 'readonly', mono: true, colSpan: 4, fmt: (v, row) => (row.reqPath || '') + (row.reqQuery ? '?' + row.reqQuery : '') },
       { key: '_method',   label: '메서드',     type: 'readonly', html: true, fmt: (v, row) => `<span class="badge ${fnMethodBadge(row.reqMethod)}">${row.reqMethod || '-'}</span>` },
       { key: '_respTime', label: '처리시간',   type: 'readonly', fmt: (v, row) => row.respTimeMs != null ? row.respTimeMs + 'ms' : '-' },
@@ -399,9 +432,10 @@ window.SyApiLogMng = {
 
     return {
       uiState, accessGridPager, tabCounts, allExpanded,                     // 상태 / 데이터
-      columns,                                                                              // 컬럼 정의 모음 (baseSearch/moreSearch/accessGrid/errorGrid/accessExpand/errorExpand)
+      columns,                                                                              // 컬럼 정의 모음 (baseSearch/moreSearch/accessGrid/errorGrid/accessGridRowDetail/errorGridRowDetail)
       handleBtnAction, handleSelectAction, handleGridCellAction,                                                  // dispatch (모든 이벤트 / 액션 라우팅)
       cfCurrentList, // computed
+      fnRowDetail, fnRowDetailLoading,                                                                            // 행 펼침 상세 (캐시)
     };
   },
   template: /* html */`
@@ -464,7 +498,8 @@ window.SyApiLogMng = {
       :row-style="(r, idx) => handleGridCellAction('apiLogs-cellClick', 'rowStyle', r, idx)" :is-expanded="(r, idx) => handleGridCellAction('apiLogs-cellClick', 'isExpanded', r, idx)">
       <template #row-expand="{ row, colspan }">
         <td :colspan="colspan" style="background:#f4f6fb;padding:16px 20px;border-top:none;">
-          <bo-form-area :columns="columns.accessExpand" :form="row" :cols="3" readonly label-left compact :show-actions="false" />
+          <div v-if="fnRowDetailLoading(row)" style="font-size:12px;color:#888;padding:4px 2px;">⏳ 상세 정보를 불러오는 중…</div>
+          <bo-form-area :columns="columns.accessGridRowDetail" :form="fnRowDetail(row)" :cols="3" readonly label-left compact :show-actions="false" />
         </td>
       </template>
     </bo-grid>
@@ -474,13 +509,14 @@ window.SyApiLogMng = {
       :row-style="(r, idx) => handleGridCellAction('apiLogs-cellClick', 'rowStyle', r, idx)" :is-expanded="(r, idx) => handleGridCellAction('apiLogs-cellClick', 'isExpanded', r, idx)">
       <template #row-expand="{ row, colspan }">
         <td :colspan="colspan" style="background:#fff8f8;padding:16px 20px;border-top:none;">
-          <bo-form-area :columns="columns.errorExpand" :form="row" :cols="3" readonly label-left compact :show-actions="false" />
+          <div v-if="fnRowDetailLoading(row)" style="font-size:12px;color:#888;padding:4px 2px;">⏳ 상세 정보를 불러오는 중…</div>
+          <bo-form-area :columns="columns.errorGridRowDetail" :form="fnRowDetail(row)" :cols="3" readonly label-left compact :show-actions="false" />
           <div style="margin-top:12px;">
             <div style="font-weight:700;color:#c0392b;margin-bottom:6px;border-bottom:1px solid #fcc;padding-bottom:4px;font-size:12px;">
               📋 스택트레이스
             </div>
-            <div v-if="row.stackTrace" style="font-family:monospace;font-size:11px;color:#555;white-space:pre-wrap;word-break:break-all;max-height:300px;overflow-y:auto;background:#fdf8ff;padding:10px;border-radius:6px;border:1px solid #e8d8f0;">
-              {{ row.stackTrace }}
+            <div v-if="fnRowDetail(row).stackTrace" style="font-family:monospace;font-size:11px;color:#555;white-space:pre-wrap;word-break:break-all;max-height:300px;overflow-y:auto;background:#fdf8ff;padding:10px;border-radius:6px;border:1px solid #e8d8f0;">
+              {{ fnRowDetail(row).stackTrace }}
             </div>
             <div v-else style="color:#bbb;font-size:12px;padding:10px 0;">
               스택트레이스 없음

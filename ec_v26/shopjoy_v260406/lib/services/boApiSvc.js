@@ -145,11 +145,13 @@
   /* ── mb: 회원 로그인이력 ────────────────────────────────────── */
   boApiSvc.mbMemberLoginLog = {
     getPage(params, uiNm, cmdNm) { return global.boApi.get('/bo/ec/mb/member-login-log/page', { params, ...hdr(uiNm, cmdNm) }); },
+    getById(_id, uiNm, cmdNm)    { return chkId(_id, uiNm, cmdNm) || global.boApi.get(`/bo/ec/mb/member-login-log/${_id}`, hdr(uiNm, cmdNm)); },
   };
 
   /* ── mb: 회원 토큰이력 ──────────────────────────────────────── */
   boApiSvc.mbMemberTokenLog = {
     getPage(params, uiNm, cmdNm) { return global.boApi.get('/bo/ec/mb/member-token-log/page', { params, ...hdr(uiNm, cmdNm) }); },
+    getById(_id, uiNm, cmdNm)    { return chkId(_id, uiNm, cmdNm) || global.boApi.get(`/bo/ec/mb/member-token-log/${_id}`, hdr(uiNm, cmdNm)); },
   };
 
   /* ── od: 장바구니 ──────────────────────────────────────────── */
@@ -378,6 +380,7 @@
   /* ── st: 정산원장 ───────────────────────────────────────────── */
   boApiSvc.stSettleRaw = {
     getPage(params, uiNm, cmdNm) { return global.boApi.get(   '/bo/ec/st/raw/page', { params, ...hdr(uiNm, cmdNm) }); },
+    getById(_id, uiNm, cmdNm)    { return chkId(_id, uiNm, cmdNm) || global.boApi.get(`/bo/ec/st/raw/${_id}`, hdr(uiNm, cmdNm)); },
     collect(body, uiNm, cmdNm)   { return global.boApi.post(  '/bo/ec/st/raw/collect', body, hdr(uiNm, cmdNm)); },
   };
 
@@ -459,6 +462,7 @@
   /* ── sy: 배치이력 ───────────────────────────────────────────── */
   boApiSvc.syBatchLog = {
     getPage(params, uiNm, cmdNm) { return global.boApi.get(   '/bo/sy/batch-log/page', { params, ...hdr(uiNm, cmdNm) }); },
+    getById(_id, uiNm, cmdNm)    { return chkId(_id, uiNm, cmdNm) || global.boApi.get(`/bo/sy/batch-log/${_id}`, hdr(uiNm, cmdNm)); },
   };
 
   /* ── sy: 게시판 ─────────────────────────────────────────────── */
@@ -603,21 +607,25 @@
   /* ── sy: 사용자 로그인이력 ─────────────────────────────────── */
   boApiSvc.syUserLoginLog = {
     getPage(params, uiNm, cmdNm) { return global.boApi.get('/bo/sy/user-login-log/page', { params, ...hdr(uiNm, cmdNm) }); },
+    getById(_id, uiNm, cmdNm)    { return chkId(_id, uiNm, cmdNm) || global.boApi.get(`/bo/sy/user-login-log/${_id}`, hdr(uiNm, cmdNm)); },
   };
 
   /* ── sy: 사용자 토큰이력 ────────────────────────────────────── */
   boApiSvc.syUserTokenLog = {
     getPage(params, uiNm, cmdNm) { return global.boApi.get('/bo/sy/user-token-log/page', { params, ...hdr(uiNm, cmdNm) }); },
+    getById(_id, uiNm, cmdNm)    { return chkId(_id, uiNm, cmdNm) || global.boApi.get(`/bo/sy/user-token-log/${_id}`, hdr(uiNm, cmdNm)); },
   };
 
   /* ── sy: API요청로그 ────────────────────────────────────────── */
   boApiSvc.syAccessLog = {
     getPage(params, uiNm, cmdNm) { return global.boApi.get(   '/bo/sy/access-log/page', { params, ...hdr(uiNm, cmdNm) }); },
+    getById(_id, uiNm, cmdNm)    { return chkId(_id, uiNm, cmdNm) || global.boApi.get(`/bo/sy/access-log/${_id}`, hdr(uiNm, cmdNm)); },
   };
 
   /* ── sy: API오류로그 ────────────────────────────────────────── */
   boApiSvc.syAccessErrorLog = {
     getPage(params, uiNm, cmdNm) { return global.boApi.get(   '/bo/sy/access-error-log/page', { params, ...hdr(uiNm, cmdNm) }); },
+    getById(_id, uiNm, cmdNm)    { return chkId(_id, uiNm, cmdNm) || global.boApi.get(`/bo/sy/access-error-log/${_id}`, hdr(uiNm, cmdNm)); },
   };
 
   /* ── sy: 업체(Vendor) ───────────────────────────────────────── */

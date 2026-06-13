@@ -14,6 +14,11 @@ public class SyhAccessLogService {
 
     private final SyhAccessLogRepository syhAccessLogRepository;
 
+    /** getById — 단건 상세조회 (코드명/연관명 풀필드) */
+    public SyhAccessLogDto.Item getById(String id) {
+        return syhAccessLogRepository.selectById(id).orElse(null);
+    }
+
     /** getPageData — 페이징조회 */
     public SyhAccessLogDto.PageResponse getPageData(SyhAccessLogDto.Request req) {
         PageHelper.addPaging(req);

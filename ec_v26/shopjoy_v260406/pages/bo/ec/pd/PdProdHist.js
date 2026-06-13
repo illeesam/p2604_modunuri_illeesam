@@ -22,6 +22,12 @@ window.PdProdHist = {
     const botTab   = Vue.toRef(uiState, 'botTab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
 
+    /* 행 펼침 상태 (7그리드 공유, '{탭}:{키}' 로 그리드 간 충돌 방지) */
+    const expandedRows = reactive(new Set());
+    const fnExpKey  = (tab, row) => `${tab}:${row.qnaId ?? row.reviewId ?? row.orderId ?? row.histId ?? ''}`;
+    const toggleRow = (key) => { if (expandedRows.has(key)) { expandedRows.delete(key); } else { expandedRows.add(key); } };
+    const isExpanded = (key) => expandedRows.has(key);
+
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
@@ -163,6 +169,10 @@ window.PdProdHist = {
     // 문의 그리드
     const columns = {};
     columns.qnaGrid = [
+      { key: '_exp', label: '', style: 'width:24px', align: 'center',
+        linkToggle: { active: (row) => isExpanded(fnExpKey('qna', row)), title: '펼치기/닫기', onClick: (row) => toggleRow(fnExpKey('qna', row)),
+          activeStyle: 'color:#666;font-size:11px;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;user-select:none;' },
+        fmt: (v, row) => isExpanded(fnExpKey('qna', row)) ? '▲' : '▼' },
       { key: 'qnaTitle',     label: '질문',   style: 'max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;',
         cellStyle: 'max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;',
         fmt: (v, row) => (row.qnaTitle || row.qnaContent) },
@@ -175,6 +185,10 @@ window.PdProdHist = {
     ];
     // 리뷰 그리드
     columns.reviewGrid = [
+      { key: '_exp', label: '', style: 'width:24px', align: 'center',
+        linkToggle: { active: (row) => isExpanded(fnExpKey('review', row)), title: '펼치기/닫기', onClick: (row) => toggleRow(fnExpKey('review', row)),
+          activeStyle: 'color:#666;font-size:11px;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;user-select:none;' },
+        fmt: (v, row) => isExpanded(fnExpKey('review', row)) ? '▲' : '▼' },
       { key: 'rating',           label: '평점',  style: 'white-space:nowrap;',
         cellInnerStyle: 'color:#faad14;font-weight:700;',
         fmt: (v) => `${v} ★` },
@@ -188,6 +202,10 @@ window.PdProdHist = {
     ];
     // 주문 그리드
     columns.orderGrid = [
+      { key: '_exp', label: '', style: 'width:24px', align: 'center',
+        linkToggle: { active: (row) => isExpanded(fnExpKey('orders', row)), title: '펼치기/닫기', onClick: (row) => toggleRow(fnExpKey('orders', row)),
+          activeStyle: 'color:#666;font-size:11px;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;user-select:none;' },
+        fmt: (v, row) => isExpanded(fnExpKey('orders', row)) ? '▲' : '▼' },
       { key: 'orderId',        label: '주문ID', refLink: 'order' },
       { key: 'memberNm',       label: '회원', refLink: 'member', refKey: 'memberId',
         fmt: (v, row) => (row.memberNm || row.memberId) },
@@ -199,6 +217,10 @@ window.PdProdHist = {
     ];
     // 재고 그리드
     columns.stockGrid = [
+      { key: '_exp', label: '', style: 'width:24px', align: 'center',
+        linkToggle: { active: (row) => isExpanded(fnExpKey('stock', row)), title: '펼치기/닫기', onClick: (row) => toggleRow(fnExpKey('stock', row)),
+          activeStyle: 'color:#666;font-size:11px;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;user-select:none;' },
+        fmt: (v, row) => isExpanded(fnExpKey('stock', row)) ? '▲' : '▼' },
       { key: 'histDate',     label: '일시',        fmt: (v) => fnFmtDate(v) },
       { key: 'stockTypeCd',  label: '유형', badge: (row) => fnStockBadge(row.stockTypeCd),
         fmt: (v, row) => (row.stockTypeCdNm || row.stockTypeCd) },
@@ -211,6 +233,10 @@ window.PdProdHist = {
     ];
     // 가격 그리드
     columns.priceGrid = [
+      { key: '_exp', label: '', style: 'width:24px', align: 'center',
+        linkToggle: { active: (row) => isExpanded(fnExpKey('price', row)), title: '펼치기/닫기', onClick: (row) => toggleRow(fnExpKey('price', row)),
+          activeStyle: 'color:#666;font-size:11px;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;user-select:none;' },
+        fmt: (v, row) => isExpanded(fnExpKey('price', row)) ? '▲' : '▼' },
       { key: 'histDate',    label: '일시',          fmt: (v) => fnFmtDate(v) },
       { key: 'priceField',  label: '항목(변경사유)', cellInnerClass: 'tag' },
       { key: 'priceBefore', label: '변경 전', style: 'color:#888;' },
@@ -219,6 +245,10 @@ window.PdProdHist = {
     ];
     // 상태 그리드
     columns.statusGrid = [
+      { key: '_exp', label: '', style: 'width:24px', align: 'center',
+        linkToggle: { active: (row) => isExpanded(fnExpKey('status', row)), title: '펼치기/닫기', onClick: (row) => toggleRow(fnExpKey('status', row)),
+          activeStyle: 'color:#666;font-size:11px;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;user-select:none;' },
+        fmt: (v, row) => isExpanded(fnExpKey('status', row)) ? '▲' : '▼' },
       { key: 'histDate',      label: '일시',     fmt: (v) => fnFmtDate(v) },
       { key: 'statusCdBefore', label: '변경 전', badge: () => 'badge-gray',
         fmt: (v, row) => (row.statusCdBeforeNm || row.statusCdBefore || '-') },
@@ -228,11 +258,76 @@ window.PdProdHist = {
     ];
     // 변경 그리드
     columns.changeGrid = [
+      { key: '_exp', label: '', style: 'width:24px', align: 'center',
+        linkToggle: { active: (row) => isExpanded(fnExpKey('changes', row)), title: '펼치기/닫기', onClick: (row) => toggleRow(fnExpKey('changes', row)),
+          activeStyle: 'color:#666;font-size:11px;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;user-select:none;' },
+        fmt: (v, row) => isExpanded(fnExpKey('changes', row)) ? '▲' : '▼' },
       { key: 'histDate',     label: '일시',     fmt: (v) => fnFmtDate(v) },
       { key: 'changeField',  label: '항목', cellInnerClass: 'tag' },
       { key: 'changeBefore', label: '변경 전', style: 'color:#888;' },
       { key: 'changeAfter',  label: '변경 후', style: 'font-weight:500;' },
       { key: 'regByNm',      label: '처리자', fmt: (v, row) => (row.regByNm || row.regBy) },
+    ];
+
+    /* 행 펼침 BoFormArea 컬럼 (그리드에 안 보이던 추가/상세 필드, readonly) */
+    columns.qnaGridRowDetail = [
+      { key: '_qnaTitle',   label: '질문제목', type: 'readonly', fmt: (v, row) => (row.qnaTitle || '-') },
+      { key: '_member',     label: '작성자',   type: 'readonly', fmt: (v, row) => (row.memberNm || row.memberId || '-') },
+      { key: '_regDate',    label: '작성일',   type: 'readonly', fmt: (v, row) => fnFmtDate(row.regDate) },
+      { key: '_qnaStatus',  label: '상태',     type: 'readonly', fmt: (v, row) => (row.qnaStatusCdNm || row.qnaStatusCd || '-') },
+      { key: '_answerYn',   label: '답변여부', type: 'readonly', fmt: (v, row) => (row.answerYn === 'Y' ? '답변완료' : '미답변') },
+      { key: '_qnaId',      label: '문의ID',   type: 'readonly', fmt: (v, row) => (row.qnaId || '-') },
+      { key: '_qnaContent', label: '내용',     type: 'readonly', colSpan: 3, fmt: (v, row) => (row.qnaContent || '-') },
+    ];
+    columns.reviewGridRowDetail = [
+      { key: '_rating',       label: '평점',   type: 'readonly', fmt: (v, row) => (row.rating != null ? `${row.rating} ★` : '-') },
+      { key: '_reviewTitle',  label: '제목',   type: 'readonly', fmt: (v, row) => (row.reviewTitle || '-') },
+      { key: '_member',       label: '작성자', type: 'readonly', fmt: (v, row) => (row.memberNm || row.memberId || '-') },
+      { key: '_reviewDate',   label: '작성일', type: 'readonly', fmt: (v, row) => fnFmtDate(row.reviewDate || row.regDate) },
+      { key: '_reviewStatus', label: '상태',   type: 'readonly', fmt: (v, row) => (row.reviewStatusCdNm || row.reviewStatusCd || '-') },
+      { key: '_reviewId',     label: '리뷰ID', type: 'readonly', fmt: (v, row) => (row.reviewId || '-') },
+      { key: '_reviewContent',label: '내용',   type: 'readonly', colSpan: 3, fmt: (v, row) => (row.reviewContent || '-') },
+    ];
+    columns.orderGridRowDetail = [
+      { key: '_orderId',     label: '주문ID', type: 'readonly', fmt: (v, row) => (row.orderId || '-') },
+      { key: '_member',      label: '회원',   type: 'readonly', fmt: (v, row) => (row.memberNm || row.memberId || '-') },
+      { key: '_orderDate',   label: '주문일', type: 'readonly', fmt: (v, row) => fnFmtDate(row.orderDate) },
+      { key: '_totalAmt',    label: '금액',   type: 'readonly', fmt: (v, row) => ((row.totalAmt || 0).toLocaleString() + '원') },
+      { key: '_orderQty',    label: '수량',   type: 'readonly', fmt: (v, row) => (row.orderQty != null ? row.orderQty : '-') },
+      { key: '_orderStatus', label: '상태',   type: 'readonly', fmt: (v, row) => (row.orderStatusCdNm || row.orderStatusCd || '-') },
+    ];
+    columns.stockGridRowDetail = [
+      { key: '_histDate',    label: '일시',         type: 'readonly', fmt: (v, row) => fnFmtDate(row.histDate) },
+      { key: '_stockType',   label: '유형',         type: 'readonly', fmt: (v, row) => (row.stockTypeCdNm || row.stockTypeCd || '-') },
+      { key: '_stockQty',    label: '수량',         type: 'readonly', fmt: (v, row) => (((row.stockQty || 0) > 0 ? '+' : '') + (row.stockQty != null ? row.stockQty : 0)) },
+      { key: '_stockBalance',label: '처리 후 재고', type: 'readonly', fmt: (v, row) => (row.stockBalance == null ? '-' : row.stockBalance + '개') },
+      { key: '_regBy',       label: '처리자',       type: 'readonly', fmt: (v, row) => (row.regByNm || row.regBy || '-') },
+      { key: '_histId',      label: '이력ID',       type: 'readonly', fmt: (v, row) => (row.histId || '-') },
+      { key: '_prodId',      label: '상품ID',       type: 'readonly', fmt: (v, row) => (row.prodId || '-') },
+      { key: '_stockMemo',   label: '메모',         type: 'readonly', colSpan: 3, fmt: (v, row) => (row.stockMemo || '-') },
+    ];
+    columns.priceGridRowDetail = [
+      { key: '_histDate',    label: '일시',          type: 'readonly', fmt: (v, row) => fnFmtDate(row.histDate) },
+      { key: '_priceField',  label: '항목(변경사유)', type: 'readonly', fmt: (v, row) => (row.priceField || '-') },
+      { key: '_priceBefore', label: '변경 전',       type: 'readonly', fmt: (v, row) => (row.priceBefore != null ? row.priceBefore : '-') },
+      { key: '_priceAfter',  label: '변경 후',       type: 'readonly', fmt: (v, row) => (row.priceAfter != null ? row.priceAfter : '-') },
+      { key: '_regBy',       label: '처리자',        type: 'readonly', fmt: (v, row) => (row.regByNm || row.regBy || '-') },
+      { key: '_histId',      label: '이력ID',        type: 'readonly', fmt: (v, row) => (row.histId || '-') },
+    ];
+    columns.statusGridRowDetail = [
+      { key: '_histDate',     label: '일시',     type: 'readonly', fmt: (v, row) => fnFmtDate(row.histDate) },
+      { key: '_statusBefore', label: '변경 전',  type: 'readonly', fmt: (v, row) => (row.statusCdBeforeNm || row.statusCdBefore || '-') },
+      { key: '_statusAfter',  label: '변경 후',  type: 'readonly', fmt: (v, row) => (row.statusCdAfterNm || row.statusCdAfter || '-') },
+      { key: '_regBy',        label: '처리자',   type: 'readonly', fmt: (v, row) => (row.regByNm || row.regBy || '-') },
+      { key: '_histId',       label: '이력ID',   type: 'readonly', fmt: (v, row) => (row.histId || '-') },
+    ];
+    columns.changeGridRowDetail = [
+      { key: '_histDate',     label: '일시',     type: 'readonly', fmt: (v, row) => fnFmtDate(row.histDate) },
+      { key: '_changeField',  label: '항목',     type: 'readonly', fmt: (v, row) => (row.changeField || '-') },
+      { key: '_changeBefore', label: '변경 전',  type: 'readonly', fmt: (v, row) => (row.changeBefore != null ? row.changeBefore : '-') },
+      { key: '_regBy',        label: '처리자',   type: 'readonly', fmt: (v, row) => (row.regByNm || row.regBy || '-') },
+      { key: '_histId',       label: '이력ID',   type: 'readonly', fmt: (v, row) => (row.histId || '-') },
+      { key: '_changeAfter',  label: '변경 후',  type: 'readonly', colSpan: 3, fmt: (v, row) => (row.changeAfter != null ? row.changeAfter : '-') },
     ];
 
     onMounted(() => {
@@ -245,6 +340,7 @@ window.PdProdHist = {
 
     watch(() => props.prodId, () => {
       uiState.loadedTabs = new Set();
+      expandedRows.clear();
       qnas.splice(0);
       reviews.splice(0);
       relatedOrders.splice(0);
@@ -270,6 +366,7 @@ window.PdProdHist = {
       qnas, reviews, relatedOrders, stockHistories, priceHistories, statusHistories, changeHistories, // 데이터
       handleBtnAction, handleSelectAction, // dispatch
       showTab, fnNoCursor,                         // 헬퍼
+      toggleRow, isExpanded, fnExpKey,             // 행 펼침
     };
   },
   template: /* html */`
@@ -301,7 +398,12 @@ window.PdProdHist = {
       </span>
     </div>
     <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-    <bo-grid bare :columns="columns.qnaGrid" :rows="qnas" row-key="qnaId" :row-style="fnNoCursor" empty-text="Q&amp;A가 없습니다.">
+    <bo-grid bare :columns="columns.qnaGrid" :rows="qnas" row-key="qnaId" :row-style="fnNoCursor" empty-text="Q&amp;A가 없습니다." :is-expanded="(row) => isExpanded(fnExpKey('qna', row))">
+      <template #row-expand="{ row, colspan }">
+        <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
+          <bo-form-area :columns="columns.qnaGridRowDetail" :form="row" :cols="3" readonly label-left compact :show-actions="false" />
+        </td>
+      </template>
     </bo-grid>
   </div>
   <!-- ===== □.□. 상품 Q&A ================================================ -->
@@ -314,7 +416,12 @@ window.PdProdHist = {
       </span>
     </div>
     <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-    <bo-grid bare :columns="columns.reviewGrid" :rows="reviews" row-key="reviewId" :row-style="fnNoCursor" empty-text="리뷰가 없습니다.">
+    <bo-grid bare :columns="columns.reviewGrid" :rows="reviews" row-key="reviewId" :row-style="fnNoCursor" empty-text="리뷰가 없습니다." :is-expanded="(row) => isExpanded(fnExpKey('review', row))">
+      <template #row-expand="{ row, colspan }">
+        <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
+          <bo-form-area :columns="columns.reviewGridRowDetail" :form="row" :cols="3" readonly label-left compact :show-actions="false" />
+        </td>
+      </template>
     </bo-grid>
   </div>
   <!-- ===== □.□. 리뷰 ==================================================== -->
@@ -327,11 +434,16 @@ window.PdProdHist = {
       </span>
     </div>
     <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-    <bo-grid bare :columns="columns.orderGrid" :rows="relatedOrders" row-key="orderId" :row-style="fnNoCursor" empty-text="연관 주문이 없습니다." @ref-click="({type,id}) => handleSelectAction('orders-refClick', { type, id })" row-actions>
+    <bo-grid bare :columns="columns.orderGrid" :rows="relatedOrders" row-key="orderId" :row-style="fnNoCursor" empty-text="연관 주문이 없습니다." @ref-click="({type,id}) => handleSelectAction('orders-refClick', { type, id })" row-actions :is-expanded="(row) => isExpanded(fnExpKey('orders', row))">
       <template #row-actions="{ row }">
         <button class="btn btn-blue btn-xs" @click="handleSelectAction('orders-rowDetail', row)">
           상세
         </button>
+      </template>
+      <template #row-expand="{ row, colspan }">
+        <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
+          <bo-form-area :columns="columns.orderGridRowDetail" :form="row" :cols="3" readonly label-left compact :show-actions="false" />
+        </td>
       </template>
     </bo-grid>
   </div>
@@ -345,7 +457,12 @@ window.PdProdHist = {
       </span>
     </div>
     <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-    <bo-grid bare :columns="columns.stockGrid" :rows="stockHistories" row-key="histId" :row-style="fnNoCursor" empty-text="재고 이력이 없습니다.">
+    <bo-grid bare :columns="columns.stockGrid" :rows="stockHistories" row-key="histId" :row-style="fnNoCursor" empty-text="재고 이력이 없습니다." :is-expanded="(row) => isExpanded(fnExpKey('stock', row))">
+      <template #row-expand="{ row, colspan }">
+        <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
+          <bo-form-area :columns="columns.stockGridRowDetail" :form="row" :cols="3" readonly label-left compact :show-actions="false" />
+        </td>
+      </template>
     </bo-grid>
   </div>
   <!-- ===== □.□. 재고 이력 ================================================= -->
@@ -358,7 +475,12 @@ window.PdProdHist = {
       </span>
     </div>
     <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-    <bo-grid bare :columns="columns.priceGrid" :rows="priceHistories" row-key="histId" :row-style="fnNoCursor" empty-text="가격 변경 이력이 없습니다.">
+    <bo-grid bare :columns="columns.priceGrid" :rows="priceHistories" row-key="histId" :row-style="fnNoCursor" empty-text="가격 변경 이력이 없습니다." :is-expanded="(row) => isExpanded(fnExpKey('price', row))">
+      <template #row-expand="{ row, colspan }">
+        <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
+          <bo-form-area :columns="columns.priceGridRowDetail" :form="row" :cols="3" readonly label-left compact :show-actions="false" />
+        </td>
+      </template>
     </bo-grid>
   </div>
   <!-- ===== □.□. 가격변경이력 ================================================ -->
@@ -371,7 +493,12 @@ window.PdProdHist = {
       </span>
     </div>
     <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-    <bo-grid bare :columns="columns.statusGrid" :rows="statusHistories" row-key="histId" :row-style="fnNoCursor" empty-text="상태 변경 이력이 없습니다.">
+    <bo-grid bare :columns="columns.statusGrid" :rows="statusHistories" row-key="histId" :row-style="fnNoCursor" empty-text="상태 변경 이력이 없습니다." :is-expanded="(row) => isExpanded(fnExpKey('status', row))">
+      <template #row-expand="{ row, colspan }">
+        <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
+          <bo-form-area :columns="columns.statusGridRowDetail" :form="row" :cols="3" readonly label-left compact :show-actions="false" />
+        </td>
+      </template>
     </bo-grid>
   </div>
   <!-- ===== □.□. 상품상태 이력 =============================================== -->
@@ -384,7 +511,12 @@ window.PdProdHist = {
       </span>
     </div>
     <!-- ===== ■.■.■. 목록 영역 =============================================== -->
-    <bo-grid bare :columns="columns.changeGrid" :rows="changeHistories" row-key="histId" :row-style="fnNoCursor" empty-text="변경 이력이 없습니다.">
+    <bo-grid bare :columns="columns.changeGrid" :rows="changeHistories" row-key="histId" :row-style="fnNoCursor" empty-text="변경 이력이 없습니다." :is-expanded="(row) => isExpanded(fnExpKey('changes', row))">
+      <template #row-expand="{ row, colspan }">
+        <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
+          <bo-form-area :columns="columns.changeGridRowDetail" :form="row" :cols="3" readonly label-left compact :show-actions="false" />
+        </td>
+      </template>
     </bo-grid>
   </div>
 </div>

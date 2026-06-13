@@ -116,6 +116,7 @@ const raws = reactive([]);
         const res = await boApiSvc.stSettleRaw.getPage(params, '정산데이터관리', '목록조회');
         const data = res.data?.data;
         raws.splice(0, raws.length, ...(data?.pageList || data?.list || []));
+        expandedRows.clear(); Object.keys(detailCache).forEach(k => delete detailCache[k]);
         rawGridPager.pageTotalCount = data?.pageTotalCount || raws.length;
         rawGridPager.pageTotalPage = data?.pageTotalPage || Math.ceil(rawGridPager.pageTotalCount / rawGridPager.pageSize) || 1;
         coUtil.cofBuildPagerNums(rawGridPager);
@@ -157,12 +158,36 @@ const raws = reactive([]);
 
 
     const expandedRows = reactive(new Set());
+    /* 펼침 시 상세 API(getById) 조회 결과 캐시 — 한 번 조회한 행은 재펼침 시 재조회 안 함. 키: settleRawId */
+    const detailCache   = reactive({});
+    const detailLoading = reactive(new Set());   // 조회 중인 settleRawId 집합
 
-    /* toggleRow — 토글 */
-    const toggleRow = id => { if (expandedRows.has(id)) expandedRows.delete(id); else expandedRows.add(id); };
+    /* fnFetchDetail — 행 상세 API(getById) 조회 후 캐시 적재. 이미 캐시/조회중이면 skip */
+    const fnFetchDetail = async (id) => {
+      if (id == null) { return; }
+      if (detailCache[id] || detailLoading.has(id)) { return; }   // 재펼침 시 재조회 안 함
+      detailLoading.add(id);
+      try {
+        const res = await boApiSvc.stSettleRaw.getById(id, '정산데이터관리', '상세조회');
+        detailCache[id] = res.data?.data || res.data || {};
+      } catch (err) {
+        if (showToast) { showToast(err.response?.data?.message || err.message || '상세 조회 오류', 'error', 0); }
+      } finally {
+        detailLoading.delete(id);
+      }
+    };
+
+    /* toggleRow — 토글 (펼칠 때만 상세 조회) */
+    const toggleRow = id => { if (expandedRows.has(id)) { expandedRows.delete(id); } else { expandedRows.add(id); fnFetchDetail(id); } };
 
     /* isExpanded — 여부 확인 */
     const isExpanded = id => expandedRows.has(id);
+
+    /* fnRowDetail — 펼침 상세 폼 데이터 (캐시 우선, 미조회 시 목록 row 폴백) */
+    const fnRowDetail = (r) => detailCache[r.settleRawId] || r;
+
+    /* fnRowDetailLoading — 해당 행 상세 조회중 여부 */
+    const fnRowDetailLoading = (r) => detailLoading.has(r.settleRawId);
 
     /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = s => ({ 'COLLECTED':'badge-green', 'EXCLUDED':'badge-gray', 'SETTLED':'badge-purple', 'PENDING':'badge-blue' }[s] || 'badge-gray');
@@ -292,8 +317,8 @@ const raws = reactive([]);
       { key: 'amtTo',       type: 'text',   label: '수집금액(최대)', placeholder: '최댓값(원)', width: '120px' },
     ];
 
-    /* rawExpandColumns — 정산원장 행 펼침 BoFormArea 컬럼 (cols=4, labelLeft) */
-    columns.rawExpand = [
+    /* rawGridRowDetail — 정산원장 행 펼침 BoFormArea 컬럼 (cols=4, labelLeft) */
+    columns.rawGridRowDetail = [
       { key: '_orderId',      label: '주문ID',     type: 'readonly', fmt: (v, row) => row.orderId || '-' },
       { key: '_orderDate',    label: '거래일자',   type: 'readonly', fmt: (v, row) => row.orderDate || '-' },
       { key: '_orderStatus',  label: '주문상태',   type: 'readonly', fmt: (v, row) => orderStatusLabel(row.orderItemStatusCd) },
@@ -334,6 +359,7 @@ const raws = reactive([]);
       searchParam,
       rawGridPager, raws, cfSummary,
       handleBtnAction, handleSelectAction, toggleRow, isExpanded,
+      fnRowDetail, fnRowDetailLoading,
       doCollect, };
   },
   template: /* html */`
@@ -388,7 +414,8 @@ const raws = reactive([]);
       empty-text="데이터가 없습니다.">
       <template #row-expand="{ row: r, colspan }">
         <td :colspan="colspan" style="background:#f4f6fb;padding:12px 20px;border-top:none">
-          <bo-form-area :columns="columns.rawExpand" :form="r" :cols="3" readonly label-left compact :show-actions="false" />
+          <div v-if="fnRowDetailLoading(r)" style="font-size:12px;color:#888;padding:4px 2px;">⏳ 상세 정보를 불러오는 중…</div>
+          <bo-form-area :columns="columns.rawGridRowDetail" :form="fnRowDetail(r)" :cols="3" readonly label-left compact :show-actions="false" />
         </td>
       </template>
     </bo-grid>

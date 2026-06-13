@@ -43,6 +43,7 @@ public class MbhMemberLoginLogDto {
         private LocalDateTime updDate;
         private String siteNm;
         private String memberNm;
+        private String resultCdNm;   // 로그인결과 코드명 — 단건 상세조회(selectById)에서만 채워짐
     }
 
     @Getter @Setter @NoArgsConstructor

@@ -640,8 +640,8 @@ window.OdOrderDtl = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
 
-    /* itemExpandColumns — 주문항목 행 펼침 BoFormArea 컬럼 (교환품 정보) */
-    columns.itemExpand = [
+    /* orderItemGridRowDetail — 주문항목 행 펼침 BoFormArea 컬럼 (교환품 정보) */
+    columns.orderItemGridRowDetail = [
       { key: '_exchLabel', label: '교환품',  type: 'readonly', html: true, fmt: () => `<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:#3b82f6;color:#fff;font-weight:800;">↔ 교환</span>` },
       { key: '_exchProd',  label: '상품명',  type: 'readonly', html: true, fmt: (v, row) => `<b style="color:#1e40af;">${getExchangedItem(row).prodNm || '-'}</b>` },
       { key: '_exchColor', label: '색상',    type: 'readonly', html: true, fmt: (v, row) => `<b>${row.color || '-'}</b> → <b style="color:#1e40af;">${getExchangedItem(row).color || '-'}</b>` },
@@ -827,7 +827,7 @@ window.OdOrderDtl = {
         </template>
         <template #row-expand="{ row, colspan }">
           <td :colspan="colspan" style="padding:10px 14px;background:#f0f7ff;">
-            <bo-form-area :columns="columns.itemExpand" :form="row" :cols="3" compact readonly label-left :show-actions="false">
+            <bo-form-area :columns="columns.orderItemGridRowDetail" :form="row" :cols="3" compact readonly label-left :show-actions="false">
               <template #tracking>
                 <div class="readonly-field" @click="handleBtnAction('tracking-open', { courier: getExchangedItem(row).courier, trackingNo: getExchangedItem(row).trackingNo })" style="padding:2px 8px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-size:11px;font-weight:700;display:inline-block;">
                   {{ getExchangedItem(row).courier }} · {{ getExchangedItem(row).trackingNo || '-' }} 🔍

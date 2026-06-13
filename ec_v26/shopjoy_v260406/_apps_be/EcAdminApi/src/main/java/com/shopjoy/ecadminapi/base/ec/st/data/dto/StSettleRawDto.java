@@ -99,6 +99,28 @@ public class StSettleRawDto {
         private LocalDateTime regDate;
         private String updBy;
         private LocalDateTime updDate;
+        // 연관 엔티티명 (조인 alias)
+        private String siteNm;
+        private String orderNm;
+        private String orderItemNm;
+        private String memberNm;
+        private String claimNm;
+        private String claimItemNm;
+        private String vendorNm;
+        private String prodIdNm;
+        private String brandIdNm;
+        private String mdUserNm;
+        private String promoNm;
+        private String couponNm;
+        private String discntNm;
+        private String voucherNm;
+        private String giftNm;
+        // 코드명 (sy_code codeLabel 조인 alias)
+        private String rawTypeCdNm;
+        private String rawStatusCdNm;
+        private String orderItemStatusCdNm;
+        private String vendorTypeCdNm;
+        private String payMethodCdNm;
     }
 
     @Getter @Setter @NoArgsConstructor

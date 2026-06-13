@@ -18,6 +18,12 @@ public class BoSyAccessLogController {
 
     private final BoSyAccessLogService boSyAccessLogService;
 
+    /** getById — 단건 상세조회 (코드명/연관명 풀필드) */
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<SyhAccessLogDto.Item>> getById(@PathVariable("id") String id) {
+        return ResponseEntity.ok(ApiResponse.ok(boSyAccessLogService.getById(id)));
+    }
+
     /** page — 페이징조회 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<SyhAccessLogDto.PageResponse>> page(@Valid @ModelAttribute SyhAccessLogDto.Request req) {

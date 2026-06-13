@@ -43,6 +43,10 @@ window.SyUserLoginHist = {
     /* ===== 행 펼치기 상태 ===== */
     const expandedRows    = reactive(new Set());
     const allExpanded     = reactive({ value: false });
+    /* 펼침 시 상세 API(getById) 조회 결과 캐시 — 한 번 조회한 행은 재펼침 시 재조회 안 함.
+       키: '{탭}:{logId}' (로그/토큰 탭이 logId 를 공유할 수 있어 탭 구분) */
+    const detailCache     = reactive({});
+    const detailLoading   = reactive(new Set());   // 조회 중인 캐시키 집합
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
@@ -132,17 +136,46 @@ window.SyUserLoginHist = {
       logGridPager.pageNums = Array.from({length:e-s+1},(_,i)=>s+i);
     };
 
-    /* toggleRow — 행 펼침 토글 */
-    const toggleRow       = id => { if (expandedRows.has(id)) expandedRows.delete(id); else expandedRows.add(id); };
+    /* fnCacheKey — 캐시 키 (탭+logId) */
+    const fnCacheKey = id => `${searchParam.activeTab}:${id}`;
+
+    /* fnFetchDetail — 행 상세 API(getById) 조회 후 캐시 적재. 이미 캐시/조회중이면 skip */
+    const fnFetchDetail = async (id) => {
+      if (id == null) { return; }
+      const key = fnCacheKey(id);
+      if (detailCache[key] || detailLoading.has(key)) { return; }   // 재펼침 시 재조회 안 함
+      detailLoading.add(key);
+      try {
+        const svc = searchParam.activeTab === 'log' ? boApiSvc.syUserLoginLog : boApiSvc.syUserTokenLog;
+        const res = await svc.getById(id, '사용자로그인이력', '상세조회');
+        detailCache[key] = res.data?.data || res.data || {};
+      } catch (err) {
+        props.showToast(err.response?.data?.message || err.message || '상세 조회 오류', 'error', 0);
+      } finally {
+        detailLoading.delete(key);
+      }
+    };
+
+    /* toggleRow — 행 펼침 토글 (펼칠 때만 상세 조회) */
+    const toggleRow = (id) => {
+      if (expandedRows.has(id)) { expandedRows.delete(id); }
+      else { expandedRows.add(id); fnFetchDetail(id); }
+    };
 
     /* isExpanded — 펼침 여부 */
     const isExpanded      = id => expandedRows.has(id);
 
-    /* toggleExpandAll — 전체 펼침 토글 */
+    /* fnRowDetail — 펼침 상세 폼 데이터 (캐시 우선, 미조회 시 목록 row 폴백) */
+    const fnRowDetail = (row) => detailCache[fnCacheKey(row.logId)] || row;
+
+    /* fnRowDetailLoading — 해당 행 상세 조회중 여부 */
+    const fnRowDetailLoading = (row) => detailLoading.has(fnCacheKey(row.logId));
+
+    /* toggleExpandAll — 전체 펼침 토글 (펼칠 때 각 행 상세 조회) */
     const toggleExpandAll = () => {
       const list = searchParam.activeTab==='log' ? logs : tokens;
       if (allExpanded.value) { expandedRows.clear(); allExpanded.value = false; }
-      else { list.forEach((r,i) => expandedRows.add(r.logId||i)); allExpanded.value = true; }
+      else { list.forEach((r,i) => { const id = r.logId||i; expandedRows.add(id); fnFetchDetail(r.logId); }); allExpanded.value = true; }
     };
 
     /* buildParams — 검색 파라미터 빌드 */
@@ -172,7 +205,7 @@ window.SyUserLoginHist = {
         logs.splice(0, logs.length, ...(d?.pageList || []));
         logGridPager.pageTotalCount = d?.pageTotalCount || 0;
         tabCounts.log = logGridPager.pageTotalCount;
-        fnBuildPagerNums(); expandedRows.clear();
+        fnBuildPagerNums(); expandedRows.clear(); Object.keys(detailCache).forEach(k => delete detailCache[k]);
       } catch (err) {
         props.showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0);
       }
@@ -186,7 +219,7 @@ window.SyUserLoginHist = {
         tokens.splice(0, tokens.length, ...(d?.pageList || []));
         logGridPager.pageTotalCount = d?.pageTotalCount || 0;
         tabCounts.token = logGridPager.pageTotalCount;
-        fnBuildPagerNums(); expandedRows.clear();
+        fnBuildPagerNums(); expandedRows.clear(); Object.keys(detailCache).forEach(k => delete detailCache[k]);
       } catch (err) {
         props.showToast(err.response?.data?.message || err.message || '조회 오류', 'error', 0);
       }
@@ -217,7 +250,7 @@ window.SyUserLoginHist = {
         props.showToast(`${tabNm} 전체 삭제 완료`, 'success');
         if (searchParam.activeTab==='log') { logs.splice(0); tabCounts.log=0; }
         else                           { tokens.splice(0); tabCounts.token=0; }
-        logGridPager.pageTotalCount=0; logGridPager.pageTotalPage=1; expandedRows.clear(); allExpanded.value=false;
+        logGridPager.pageTotalCount=0; logGridPager.pageTotalPage=1; expandedRows.clear(); Object.keys(detailCache).forEach(k => delete detailCache[k]); allExpanded.value=false;
       } catch (err) {
         props.showToast(err.response?.data?.message || err.message || '삭제 오류', 'error', 0);
       }
@@ -314,8 +347,8 @@ window.SyUserLoginHist = {
       { key: 'revokeReason',  label: '폐기사유', cellStyle: 'color:#e74c3c', fmt: (v) => v || '-' },
     ];
 
-    /* logExpandColumns — 로그인 로그 행 펼침 BoFormArea 컬럼 (cols=4, labelLeft) */
-    columns.logExpand = [
+    /* logGridRowDetail — 로그인 로그 행 펼침 BoFormArea 컬럼 (cols=4, labelLeft) */
+    columns.logGridRowDetail = [
       { key: '_loginDate',  label: '로그인일시', type: 'readonly', fmt: (v, row) => coUtil.cofYmdHms(row.loginDate || row.regDate || '') || '-' },
       { key: '_ip',         label: 'IP',         type: 'readonly', mono: true, fmt: (v, row) => row.ip || '-' },
       { key: '_os',         label: 'OS',         type: 'readonly', fmt: (v, row) => row.os || '-' },
@@ -335,8 +368,8 @@ window.SyUserLoginHist = {
       { key: '_accessToken',label: 'AccessToken',type: 'readonly', mono: true, colSpan: 4, fmt: (v, row) => row.accessToken || '미발급' },
     ];
 
-    /* tokenExpandColumns — 토큰 이력 행 펼침 BoFormArea 컬럼 (cols=4, labelLeft) */
-    columns.tokenExpand = [
+    /* tokenGridRowDetail — 토큰 이력 행 펼침 BoFormArea 컬럼 (cols=4, labelLeft) */
+    columns.tokenGridRowDetail = [
       { key: '_action',      label: '액션',     type: 'readonly', html: true, fmt: (v, row) => `<span class="badge ${fnActionBadge(row.actionCd)}">${fnActionLabel(row.actionCd)}</span>` },
       { key: '_tokenType',   label: '토큰유형', type: 'readonly', html: true, fmt: (v, row) => `<span class="badge ${fnTypeBadge(row.tokenTypeCd)}">${row.tokenTypeCd || '-'}</span>` },
       { key: '_atExp',       label: 'AT만료',   type: 'readonly', fmt: (v, row) => coUtil.cofYmdHms(row.accessTokenExp || '') || '-' },
@@ -360,7 +393,7 @@ window.SyUserLoginHist = {
       columns,
       searchParam, logGridPager, histTabs, cfCurrentList, allExpanded,                  // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                                                              // dispatch (모든 이벤트 / 액션 라우팅)
-      fnRowExpanded, fnRowClickStyle, // 행 표시
+      fnRowExpanded, fnRowClickStyle, fnRowDetail, fnRowDetailLoading, // 행 표시 / 펼침 상세
     };
   },
   template: /* html */`
@@ -407,7 +440,8 @@ window.SyUserLoginHist = {
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded">
     <template #row-expand="{ row, colspan }">
       <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
-        <bo-form-area :columns="columns.logExpand" :form="row" :cols="3" readonly label-left compact :show-actions="false" />
+        <div v-if="fnRowDetailLoading(row)" style="font-size:12px;color:#888;padding:4px 2px;">⏳ 상세 정보를 불러오는 중…</div>
+        <bo-form-area :columns="columns.logGridRowDetail" :form="fnRowDetail(row)" :cols="3" readonly label-left compact :show-actions="false" />
       </td>
     </template>
   </bo-grid>
@@ -418,7 +452,8 @@ window.SyUserLoginHist = {
     :row-style="fnRowClickStyle" :is-expanded="fnRowExpanded">
     <template #row-expand="{ row, colspan }">
       <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
-        <bo-form-area :columns="columns.tokenExpand" :form="row" :cols="3" readonly label-left compact :show-actions="false" />
+        <div v-if="fnRowDetailLoading(row)" style="font-size:12px;color:#888;padding:4px 2px;">⏳ 상세 정보를 불러오는 중…</div>
+        <bo-form-area :columns="columns.tokenGridRowDetail" :form="fnRowDetail(row)" :cols="3" readonly label-left compact :show-actions="false" />
         <div style="margin-top:6px;padding:5px 8px;background:#fdf8ff;border-radius:4px;font-size:11px;color:#888">
           ℹ SHA-256 해시. 원문 복원 불가 — syh_user_token_log
         </div>

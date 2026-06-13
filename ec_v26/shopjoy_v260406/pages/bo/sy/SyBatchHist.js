@@ -22,6 +22,11 @@ window.SyBatchHist = {
     });
     const codes = reactive({ batch_run_statuses: [] });
 
+    /* 펼침 시 상세 API(getById) 조회 결과 캐시 — 한 번 조회한 행은 재펼침 시 재조회 안 함.
+       키: batchLogId 문자열. 자동 전체펼침 시에도 fnFetchDetail 이 캐시/조회중 skip 으로 중복 안전 */
+    const detailCache   = reactive({});
+    const detailLoading = reactive(new Set());     // 조회 중인 batchLogId 집합
+
     /* ===== 페이지네이션 ===== */
     const histGridPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
@@ -89,6 +94,7 @@ window.SyBatchHist = {
         batches.splice(0, batches.length, ...(resBatch.data?.data?.list || []));
         const d = resLogs.data?.data;
         batchLogs.splice(0, batchLogs.length, ...(d?.pageList || d?.list || []));
+        Object.keys(detailCache).forEach(k => delete detailCache[k]);   // 목록 갱신 → 상세 캐시 클리어(자동 재펼침 시 새 데이터로 다시 조회)
         histGridPager.pageTotalCount = d?.pageTotalCount || 0;
         histGridPager.pageTotalPage  = d?.pageTotalPage  || 1;
         coUtil.cofBuildPagerNums(histGridPager);
@@ -110,16 +116,38 @@ window.SyBatchHist = {
     /* isExpanded — 펼침 여부 */
     const isExpanded = (logId) => uiState.expandedSet.has(logId);
 
-    /* toggleExpand — 펼침 토글 */
-    const toggleExpand = (logId) => {
-      if (uiState.expandedSet.has(logId)) { uiState.expandedSet.delete(logId); }
-      else { uiState.expandedSet.add(logId); }
+    /* fnFetchDetail — 행 상세 API(getById) 조회 후 캐시 적재. 이미 캐시/조회중이면 skip */
+    const fnFetchDetail = async (id) => {
+      if (id == null) { return; }
+      const key = String(id);
+      if (detailCache[key] || detailLoading.has(key)) { return; }   // 재펼침 시 재조회 안 함
+      detailLoading.add(key);
+      try {
+        const res = await boApiSvc.syBatchLog.getById(id, '배치이력', '상세조회');
+        detailCache[key] = res.data?.data || res.data || {};
+      } catch (err) {
+        console.error('[fnFetchDetail]', err);
+      } finally {
+        detailLoading.delete(key);
+      }
     };
 
-    /* onExpandAll — 전체 펼치기 */
+    /* fnRowDetail — 펼침 상세 폼 데이터 (캐시 우선, 미조회 시 목록 row 폴백) */
+    const fnRowDetail = (row) => detailCache[String(row.batchLogId)] || row;
+
+    /* fnRowDetailLoading — 해당 행 상세 조회중 여부 */
+    const fnRowDetailLoading = (row) => detailLoading.has(String(row.batchLogId));
+
+    /* toggleExpand — 펼침 토글 (펼칠 때만 상세 조회) */
+    const toggleExpand = (logId) => {
+      if (uiState.expandedSet.has(logId)) { uiState.expandedSet.delete(logId); }
+      else { uiState.expandedSet.add(logId); fnFetchDetail(logId); }
+    };
+
+    /* onExpandAll — 전체 펼치기 (각 행 상세 조회 동반, fnFetchDetail 이 캐시/조회중 skip 으로 중복 안전) */
     const onExpandAll = () => {
       uiState.expandedSet.clear();
-      batchLogs.forEach(l => uiState.expandedSet.add(l.batchLogId));
+      batchLogs.forEach(l => { uiState.expandedSet.add(l.batchLogId); fnFetchDetail(l.batchLogId); });
     };
 
     /* onCollapseAll — 전체 접기 */
@@ -197,8 +225,8 @@ window.SyBatchHist = {
       { key: 'message',    label: '메시지',  style: 'width:auto;', cellStyle: (v, row) => 'font-size:11px;max-width:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;' + (row.runStatus === '실패' ? 'color:#dc2626' : 'color:#555') },
     ];
 
-    /* histExpandColumns — 실행이력 행 펼침 BoFormArea 컬럼 (cols=5, labelLeft) */
-    columns.histExpand = [
+    /* histGridRowDetail — 실행이력 행 펼침 BoFormArea 컬럼 (cols=5, labelLeft) */
+    columns.histGridRowDetail = [
       { key: '_batchNm',   label: '배치명',   type: 'readonly', fmt: (v, row) => row.batchNm || '-' },
       { key: '_batchCode', label: '배치코드', type: 'readonly', mono: true, fmt: (v, row) => row.batchCode || '-' },
       { key: '_runAt',     label: '실행일시', type: 'readonly', mono: true, fmt: (v, row) => row.runAt || '-' },
@@ -214,6 +242,7 @@ window.SyBatchHist = {
       handleBtnAction, handleSelectAction, handleGridCellAction,                               // dispatch (모든 이벤트 / 액션 라우팅)
       cfBatchOptions, // computed
       fnRowExpanded, fnHistRowStyle,                           // 헬퍼
+      fnRowDetail, fnRowDetailLoading,                         // 펼침 상세 (캐시)
     };
   },
   template: /* html */`
@@ -257,7 +286,8 @@ window.SyBatchHist = {
       <div style="font-size:11px;font-weight:700;letter-spacing:.3px;margin-bottom:8px;" :style="row.runStatus==='실패' ? 'color:#b91c1c;' : 'color:#1d4ed8;'">
         ▼ 실행 상세
       </div>
-      <bo-form-area :columns="columns.histExpand" :form="row" :cols="5" readonly label-left compact :show-actions="false" />
+      <div v-if="fnRowDetailLoading(row)" style="font-size:12px;color:#888;padding:4px 2px;">⏳ 상세 정보를 불러오는 중…</div>
+      <bo-form-area :columns="columns.histGridRowDetail" :form="fnRowDetail(row)" :cols="5" readonly label-left compact :show-actions="false" />
       <div style="display:flex;align-items:flex-start;gap:10px;margin:6px 0 0;">
         <div style="flex:0 0 70px;font-size:11px;font-weight:600;color:#888;padding-top:7px;">
           메시지
@@ -266,17 +296,17 @@ window.SyBatchHist = {
           :style="row.runStatus==='실패'
             ? 'background:#fef2f2;border:1px solid #fecaca;color:#b91c1c;font-family:monospace;'
             : 'background:#f1f5f9;border:1px solid #e2e8f0;color:#374151;'">
-          {{ row.message }}
+          {{ fnRowDetail(row).message }}
         </div>
       </div>
-      <template v-if="row.detail">
+      <template v-if="fnRowDetail(row).detail">
         <div style="font-size:11px;font-weight:600;color:#888;margin:6px 0 3px;">
           상세 내용
         </div>
         <pre style="margin:0;font-size:11px;padding:10px 12px;border-radius:5px;white-space:pre-wrap;word-break:break-all;line-height:1.65;font-family:monospace;"
           :style="row.runStatus==='실패'
             ? 'background:#1e1e1e;color:#f87171;border:1px solid #7f1d1d;'
-            : 'background:#1e1e1e;color:#86efac;border:1px solid #14532d;'">{{ row.detail }}</pre>
+            : 'background:#1e1e1e;color:#86efac;border:1px solid #14532d;'">{{ fnRowDetail(row).detail }}</pre>
       </template>
       </div>
     </td>

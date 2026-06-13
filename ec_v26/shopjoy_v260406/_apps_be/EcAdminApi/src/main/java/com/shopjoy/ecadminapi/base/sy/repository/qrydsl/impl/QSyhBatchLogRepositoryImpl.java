@@ -10,6 +10,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAUpdateClause;
 import com.querydsl.core.types.dsl.Expressions;
 import com.shopjoy.ecadminapi.base.sy.data.dto.SyhBatchLogDto;
+import com.shopjoy.ecadminapi.base.sy.data.entity.QSyCode;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyhBatchLog;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhBatchLog;
@@ -31,8 +32,9 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
     private static final String QRY_SRC = "base.sy.repository.qrydsl.impl.QSyhBatchLogRepositoryImpl";
     private static final QSyhBatchLog syhBatchLog   = QSyhBatchLog.syhBatchLog;
     private static final QSySite      sySite = QSySite.sySite;
+    private static final QSyCode      cd_bs  = new QSyCode("cd_bs");
 
-    /* 배치 로그 baseSelColumnQuery */
+    /* 배치 로그 baseSelColumnQuery — list/page/byId 공유 (코드명 조인 포함 풀필드) */
     private JPAQuery<SyhBatchLogDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(SyhBatchLogDto.Item.class,
@@ -53,13 +55,15 @@ public class QSyhBatchLogRepositoryImpl implements QSyhBatchLogRepository {
                         syhBatchLog.regDate,
                         syhBatchLog.updBy,
                         syhBatchLog.updDate,
-                        sySite.siteNm.as("siteNm")
+                        sySite.siteNm.as("siteNm"),
+                        cd_bs.codeLabel.as("runStatusNm")
                 ))
                 .from(syhBatchLog)
-                .leftJoin(sySite).on(sySite.siteId.eq(syhBatchLog.siteId));
+                .leftJoin(sySite).on(sySite.siteId.eq(syhBatchLog.siteId))
+                .leftJoin(cd_bs).on(cd_bs.codeGrp.eq("BATCH_STATUS").and(cd_bs.codeValue.eq(syhBatchLog.runStatus)));
     }
 
-    /* 배치 로그 키조회 */
+    /* 배치 로그 키조회 (단건 상세 — baseSelColumnQuery 공유) */
     @Override
     public Optional<SyhBatchLogDto.Item> selectById(String id) {
         SyhBatchLogDto.Item dto = baseSelColumnQuery()

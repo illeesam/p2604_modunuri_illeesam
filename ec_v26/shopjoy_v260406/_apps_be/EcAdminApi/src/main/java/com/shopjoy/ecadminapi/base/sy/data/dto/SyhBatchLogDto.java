@@ -45,6 +45,7 @@ public class SyhBatchLogDto {
 
         // ── JOIN ──────────────────────────────────────────────────
         private String siteNm;
+        private String runStatusNm;
     }
 
     /** 응답 (pageList + 페이징 메타 + 조회조건 echo) */

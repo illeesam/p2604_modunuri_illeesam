@@ -30,6 +30,7 @@ public class SyhAccessLogDto {
 
         // ── syh_access_log ──────────────────────────────────────────
         private String logId;
+        private String siteId;
 
         private String reqMethod;
         private String reqHost;
@@ -63,6 +64,14 @@ public class SyhAccessLogDto {
 
         private LocalDateTime reqDt;
         private LocalDateTime regDate;
+
+        // ── 조인 파생 (코드명/연관명) — 단건 상세조회(selectById)에서만 채워짐 ──
+        private String siteNm;
+        private String appTypeCdNm;
+        private String userNm;
+        private String roleNm;
+        private String deptNm;
+        private String vendorNm;
     }
 
     /** 응답 (pageList + 페이징 메타 + 조회조건 echo) */

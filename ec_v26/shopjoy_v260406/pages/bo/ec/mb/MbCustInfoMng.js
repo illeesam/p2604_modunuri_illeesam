@@ -91,6 +91,12 @@
         member_grades: [],
       });
 
+      /* 행 펼침 상태 (9그리드 공유, '{영역}:{키}' 로 그리드 간 충돌 방지) */
+      const expandedRows = reactive(new Set());
+      const fnExpKey  = (area, row) => `${area}:${row.orderId ?? row.claimId ?? row.dlivId ?? row.cacheId ?? row.inquiryId ?? row.chatId ?? row.loginId ?? row.usageId ?? row.sendId ?? ''}`;
+      const toggleRow = (key) => { if (expandedRows.has(key)) { expandedRows.delete(key); } else { expandedRows.add(key); } };
+      const isExpanded = (key) => expandedRows.has(key);
+
       /* ===== 검색조건 (기간 필터) ===== */
       const searchParam    = reactive({ period: '1y', customFrom: '', customTo: today() });
       const searchParamOrg = reactive({ period: '1y', customFrom: '', customTo: today() });
@@ -337,6 +343,7 @@
 
       /* watch — 고객 선택 시 9개 영역 서버 조회 */
       watch(() => uiState.customer?.userId, async (uid) => {
+        expandedRows.clear();
         if (uid) { await handleSearchData(); }
         else { Object.values(HIST_META).forEach(m => { m.rows.splice(0, m.rows.length); m.pager.pageTotalCount = 0; }); }
       });
@@ -416,6 +423,10 @@
       // 주문 그리드
       const columns = {};
       columns.orderGrid = [
+        { key: '_exp', label: '', style: 'width:24px', align: 'center',
+          linkToggle: { active: (row) => isExpanded(fnExpKey('orders', row)), title: '펼치기/닫기', onClick: (row) => toggleRow(fnExpKey('orders', row)),
+            activeStyle: 'color:#666;font-size:11px;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;user-select:none;' },
+          fmt: (v, row) => isExpanded(fnExpKey('orders', row)) ? '▲' : '▼' },
         { key: 'orderId', label: '주문번호', refLink: 'order' },
         { key: 'orderDate', label: '일시', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;',  fmt: (v) => v ? String(v).slice(0, 16) : '-' },
         { key: 'prodNm', label: '상품명', cellStyle: _ellipsis(150), cellTitle: true },
@@ -424,6 +435,10 @@
       ];
       // 클레임 그리드
       columns.claimGrid = [
+        { key: '_exp', label: '', style: 'width:24px', align: 'center',
+          linkToggle: { active: (row) => isExpanded(fnExpKey('claims', row)), title: '펼치기/닫기', onClick: (row) => toggleRow(fnExpKey('claims', row)),
+            activeStyle: 'color:#666;font-size:11px;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;user-select:none;' },
+          fmt: (v, row) => isExpanded(fnExpKey('claims', row)) ? '▲' : '▼' },
         { key: 'claimId', label: '클레임번호', refLink: 'claim' },
         { key: 'type', label: '유형' },
         { key: 'prodNm', label: '상품명', cellStyle: _ellipsis(130), cellTitle: true },
@@ -432,6 +447,10 @@
       ];
       // 배송 그리드
       columns.dlivGrid = [
+        { key: '_exp', label: '', style: 'width:24px', align: 'center',
+          linkToggle: { active: (row) => isExpanded(fnExpKey('dliv', row)), title: '펼치기/닫기', onClick: (row) => toggleRow(fnExpKey('dliv', row)),
+            activeStyle: 'color:#666;font-size:11px;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;user-select:none;' },
+          fmt: (v, row) => isExpanded(fnExpKey('dliv', row)) ? '▲' : '▼' },
         { key: 'dlivId', label: '배송번호', cellStyle: 'font-weight:500;' },
         { key: 'orderId', label: '주문번호' },
         { key: 'courier', label: '택배사', fmt: (v) => v || '-' },
@@ -440,6 +459,10 @@
       ];
       // 캐쉬 그리드
       columns.cacheGrid = [
+        { key: '_exp', label: '', style: 'width:24px', align: 'center',
+          linkToggle: { active: (row) => isExpanded(fnExpKey('cache', row)), title: '펼치기/닫기', onClick: (row) => toggleRow(fnExpKey('cache', row)),
+            activeStyle: 'color:#666;font-size:11px;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;user-select:none;' },
+          fmt: (v, row) => isExpanded(fnExpKey('cache', row)) ? '▲' : '▼' },
         { key: 'date', label: '일시', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;' },
         { key: 'type', label: '구분', badge: (row) => (row.type === '충전' ? 'badge-blue' : 'badge-orange') },
         { key: 'amount', label: '금액', style: 'text-align:right;', align: 'right', cellStyle: (v, row) => 'font-weight:600;' + (row.amount > 0 ? 'color:#1565c0;' : 'color:#c62828;'), fmt: (v, row) => (row.amount > 0 ? '+' : '') + row.amount.toLocaleString() + '원' },
@@ -448,6 +471,10 @@
       ];
       // 문의 그리드
       columns.contactGrid = [
+        { key: '_exp', label: '', style: 'width:24px', align: 'center',
+          linkToggle: { active: (row) => isExpanded(fnExpKey('contacts', row)), title: '펼치기/닫기', onClick: (row) => toggleRow(fnExpKey('contacts', row)),
+            activeStyle: 'color:#666;font-size:11px;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;user-select:none;' },
+          fmt: (v, row) => isExpanded(fnExpKey('contacts', row)) ? '▲' : '▼' },
         { key: 'date', label: '접수일', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;', fmt: (v) => (v ? v.slice(0, 10) : '') },
         { key: 'category', label: '분류', cellStyle: 'white-space:nowrap;' },
         { key: 'title', label: '제목', cellStyle: _ellipsis(200), cellTitle: true },
@@ -455,6 +482,10 @@
       ];
       // 채팅 그리드
       columns.chatGrid = [
+        { key: '_exp', label: '', style: 'width:24px', align: 'center',
+          linkToggle: { active: (row) => isExpanded(fnExpKey('chats', row)), title: '펼치기/닫기', onClick: (row) => toggleRow(fnExpKey('chats', row)),
+            activeStyle: 'color:#666;font-size:11px;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;user-select:none;' },
+          fmt: (v, row) => isExpanded(fnExpKey('chats', row)) ? '▲' : '▼' },
         { key: 'date', label: '일시', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;', fmt: (v) => (v ? v.slice(0, 10) : '') },
         { key: 'subject', label: '제목', cellStyle: _ellipsis(130), cellTitle: true },
         { key: 'lastMsg', label: '마지막 메시지', cellStyle: _ellipsis(180, 'color:#666;'), cellTitle: true },
@@ -462,6 +493,10 @@
       ];
       // 로그인 그리드
       columns.loginGrid = [
+        { key: '_exp', label: '', style: 'width:24px', align: 'center',
+          linkToggle: { active: (row) => isExpanded(fnExpKey('login', row)), title: '펼치기/닫기', onClick: (row) => toggleRow(fnExpKey('login', row)),
+            activeStyle: 'color:#666;font-size:11px;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;user-select:none;' },
+          fmt: (v, row) => isExpanded(fnExpKey('login', row)) ? '▲' : '▼' },
         { key: 'loginDate', label: '일시', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;',  fmt: (v) => v ? String(v).slice(0, 16) : '-' },
         { key: 'ip', label: 'IP', cellStyle: 'color:#666;font-family:monospace;' },
         { key: 'device', label: '기기/브라우저', cellStyle: 'color:#555;' },
@@ -469,6 +504,10 @@
       ];
       // 쿠폰 그리드
       columns.couponGrid = [
+        { key: '_exp', label: '', style: 'width:24px', align: 'center',
+          linkToggle: { active: (row) => isExpanded(fnExpKey('coupon', row)), title: '펼치기/닫기', onClick: (row) => toggleRow(fnExpKey('coupon', row)),
+            activeStyle: 'color:#666;font-size:11px;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;user-select:none;' },
+          fmt: (v, row) => isExpanded(fnExpKey('coupon', row)) ? '▲' : '▼' },
         { key: 'usedDate', label: '사용일', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;',  fmt: (v) => coUtil.cofYmd(v) || '-' },
         { key: 'couponNm', label: '쿠폰명', cellStyle: _ellipsis(150), cellTitle: true },
         { key: 'couponCode', label: '코드', cellStyle: 'font-family:monospace;color:#666;' },
@@ -477,6 +516,10 @@
       ];
       // 발송 그리드
       columns.sendGrid = [
+        { key: '_exp', label: '', style: 'width:24px', align: 'center',
+          linkToggle: { active: (row) => isExpanded(fnExpKey('send', row)), title: '펼치기/닫기', onClick: (row) => toggleRow(fnExpKey('send', row)),
+            activeStyle: 'color:#666;font-size:11px;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;user-select:none;' },
+          fmt: (v, row) => isExpanded(fnExpKey('send', row)) ? '▲' : '▼' },
         { key: 'sendDate', label: '발송일시', style: 'white-space:nowrap;', cellStyle: 'color:#888;white-space:nowrap;',  fmt: (v) => v ? String(v).slice(0, 16) : '-' },
         { key: 'channelCd', label: '채널', badge: (row) => fnChannelCls(row.channelCd) },
         { key: 'title', label: '제목/내용', cellStyle: _ellipsis(220, 'color:#333;'), cellTitle: true },
@@ -490,6 +533,75 @@
         { key: 'phone', label: '전화', style: 'width:130px;', cellStyle: 'color:#666;font-family:monospace;', fmt: (v) => v || '-' },
         { key: 'grade', label: '등급', style: 'width:60px;text-align:center;', align: 'center', badge: (row) => (row.grade === 'VIP' ? 'badge-purple' : row.grade === '우수' ? 'badge-blue' : 'badge-gray') },
         { key: 'status', label: '상태', style: 'width:60px;text-align:center;', align: 'center', badge: (row) => (row.status === '활성' ? 'badge-green' : 'badge-red') },
+      ];
+
+      /* 행 펼침 BoFormArea 컬럼 (그리드에 안 보이던 추가/상세 필드, readonly) */
+      columns.orderGridRowDetail = [
+        { key: '_orderId',   label: '주문번호', type: 'readonly', fmt: (v, row) => (row.orderId || '-') },
+        { key: '_orderDate', label: '일시',     type: 'readonly', fmt: (v, row) => (row.orderDate ? String(row.orderDate).slice(0, 16) : '-') },
+        { key: '_prodNm',    label: '상품명',   type: 'readonly', fmt: (v, row) => (row.prodNm || '-') },
+        { key: '_totalPrice',label: '금액',     type: 'readonly', fmt: (v, row) => fnFmtPrice(row.totalPrice) },
+        { key: '_status',    label: '상태',     type: 'readonly', fmt: (v, row) => (row.statusNm || row.status || '-') },
+        { key: '_memberId',  label: '회원ID',   type: 'readonly', fmt: (v, row) => (row.memberId || row.userId || '-') },
+      ];
+      columns.claimGridRowDetail = [
+        { key: '_claimId',    label: '클레임번호', type: 'readonly', fmt: (v, row) => (row.claimId || '-') },
+        { key: '_type',       label: '유형',       type: 'readonly', fmt: (v, row) => (row.typeNm || row.type || '-') },
+        { key: '_prodNm',     label: '상품명',     type: 'readonly', fmt: (v, row) => (row.prodNm || '-') },
+        { key: '_status',     label: '상태',       type: 'readonly', fmt: (v, row) => (row.statusNm || row.status || '-') },
+        { key: '_requestDate',label: '신청일',     type: 'readonly', fmt: (v, row) => (row.requestDate ? String(row.requestDate).slice(0, 10) : '-') },
+        { key: '_orderId',    label: '주문번호',   type: 'readonly', fmt: (v, row) => (row.orderId || '-') },
+      ];
+      columns.dlivGridRowDetail = [
+        { key: '_dlivId',     label: '배송번호',   type: 'readonly', fmt: (v, row) => (row.dlivId || '-') },
+        { key: '_orderId',    label: '주문번호',   type: 'readonly', fmt: (v, row) => (row.orderId || '-') },
+        { key: '_courier',    label: '택배사',     type: 'readonly', fmt: (v, row) => (row.courier || '-') },
+        { key: '_trackingNo', label: '운송장번호', type: 'readonly', fmt: (v, row) => (row.trackingNo || '-') },
+        { key: '_status',     label: '상태',       type: 'readonly', fmt: (v, row) => (row.statusNm || row.status || '-') },
+      ];
+      columns.cacheGridRowDetail = [
+        { key: '_cacheId', label: '캐쉬ID', type: 'readonly', fmt: (v, row) => (row.cacheId || '-') },
+        { key: '_date',    label: '일시',   type: 'readonly', fmt: (v, row) => (row.date || '-') },
+        { key: '_type',    label: '구분',   type: 'readonly', fmt: (v, row) => (row.typeNm || row.type || '-') },
+        { key: '_amount',  label: '금액',   type: 'readonly', fmt: (v, row) => (row.amount != null ? (row.amount > 0 ? '+' : '') + Number(row.amount).toLocaleString() + '원' : '-') },
+        { key: '_balance', label: '잔액',   type: 'readonly', fmt: (v, row) => fnFmtPrice(row.balance) },
+        { key: '_desc',    label: '사유',   type: 'readonly', colSpan: 2, fmt: (v, row) => (row.desc || '-') },
+      ];
+      columns.contactGridRowDetail = [
+        { key: '_inquiryId',label: '문의ID', type: 'readonly', fmt: (v, row) => (row.inquiryId || '-') },
+        { key: '_date',     label: '접수일', type: 'readonly', fmt: (v, row) => (row.date ? String(row.date).slice(0, 10) : '-') },
+        { key: '_category', label: '분류',   type: 'readonly', fmt: (v, row) => (row.categoryNm || row.category || '-') },
+        { key: '_status',   label: '상태',   type: 'readonly', fmt: (v, row) => (row.statusNm || row.status || '-') },
+        { key: '_title',    label: '제목',   type: 'readonly', colSpan: 2, fmt: (v, row) => (row.title || '-') },
+      ];
+      columns.chatGridRowDetail = [
+        { key: '_chatId',  label: '채팅ID',      type: 'readonly', fmt: (v, row) => (row.chatId || '-') },
+        { key: '_date',    label: '일시',        type: 'readonly', fmt: (v, row) => (row.date ? String(row.date).slice(0, 10) : '-') },
+        { key: '_subject', label: '제목',        type: 'readonly', fmt: (v, row) => (row.subject || '-') },
+        { key: '_status',  label: '상태',        type: 'readonly', fmt: (v, row) => (row.statusNm || row.status || '-') },
+        { key: '_lastMsg', label: '마지막 메시지', type: 'readonly', colSpan: 2, fmt: (v, row) => (row.lastMsg || '-') },
+      ];
+      columns.loginGridRowDetail = [
+        { key: '_loginId',  label: '로그인ID',     type: 'readonly', fmt: (v, row) => (row.loginId || '-') },
+        { key: '_loginDate',label: '일시',         type: 'readonly', fmt: (v, row) => (row.loginDate ? String(row.loginDate).slice(0, 16) : '-') },
+        { key: '_ip',       label: 'IP',           type: 'readonly', fmt: (v, row) => (row.ip || '-') },
+        { key: '_device',   label: '기기/브라우저', type: 'readonly', fmt: (v, row) => (row.device || '-') },
+        { key: '_result',   label: '결과',         type: 'readonly', fmt: (v, row) => (row.resultNm || row.result || '-') },
+      ];
+      columns.couponGridRowDetail = [
+        { key: '_usageId',     label: '사용ID',  type: 'readonly', fmt: (v, row) => (row.usageId || '-') },
+        { key: '_usedDate',    label: '사용일',  type: 'readonly', fmt: (v, row) => (coUtil.cofYmd(row.usedDate) || '-') },
+        { key: '_couponNm',    label: '쿠폰명',  type: 'readonly', fmt: (v, row) => (row.couponNm || '-') },
+        { key: '_couponCode',  label: '코드',    type: 'readonly', fmt: (v, row) => (row.couponCode || '-') },
+        { key: '_orderId',     label: '주문번호', type: 'readonly', fmt: (v, row) => (row.orderId || '-') },
+        { key: '_discountAmt', label: '할인금액', type: 'readonly', fmt: (v, row) => (row.discountAmt != null ? '-' + Number(row.discountAmt).toLocaleString() + '원' : '-') },
+      ];
+      columns.sendGridRowDetail = [
+        { key: '_sendId',   label: '발송ID',  type: 'readonly', fmt: (v, row) => (row.sendId || '-') },
+        { key: '_sendDate', label: '발송일시', type: 'readonly', fmt: (v, row) => (row.sendDate ? String(row.sendDate).slice(0, 16) : '-') },
+        { key: '_channel',  label: '채널',    type: 'readonly', fmt: (v, row) => (row.channelNm || row.channelCd || '-') },
+        { key: '_status',   label: '결과',    type: 'readonly', fmt: (v, row) => (row.statusNm || row.statusCd || '-') },
+        { key: '_title',    label: '제목/내용', type: 'readonly', colSpan: 2, fmt: (v, row) => (row.title || '-') },
       ];
 
       /* periodSearchColumns — 기간 필터 BoSearchArea 컬럼 */
@@ -524,6 +636,7 @@
         handleBtnAction, handleSelectAction, handleGridCellAction, fnCallbackModal, // dispatch + 모달 통합 콜백
         cfDateFrom, cfDateTo, cfCustCacheBalance, tabs, // computed
         showTab, fnFmtPrice, // 헬퍼
+        toggleRow, isExpanded, fnExpKey, // 행 펼침
       };
     },
 
@@ -712,7 +825,12 @@
         </div>
         <div style="overflow:auto;max-height:340px;">
           <bo-grid bare :columns="columns.orderGrid" :rows="orders" :pager="ordersPager" row-key="orderId" empty-text="주문 내역이 없습니다."
-            @ref-click="ref => handleSelectAction('row-ref', ref)">
+            @ref-click="ref => handleSelectAction('row-ref', ref)" :is-expanded="(row) => isExpanded(fnExpKey('orders', row))">
+            <template #row-expand="{ row, colspan }">
+              <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
+                <bo-form-area :columns="columns.orderGridRowDetail" :form="row" :cols="2" readonly label-left compact :show-actions="false" />
+              </td>
+            </template>
           </bo-grid>
         </div>
         <bo-pager v-if="ordersPager.pageTotalCount > 0" :pager="ordersPager" :on-set-page="n => onSetPage('orders', n)" :on-size-change="() => onSizeChange('orders')" />
@@ -731,7 +849,12 @@
         </div>
         <div style="overflow:auto;max-height:340px;">
           <bo-grid bare :columns="columns.claimGrid" :rows="claims" :pager="claimsPager" row-key="claimId" empty-text="클레임 내역이 없습니다."
-            @ref-click="ref => handleSelectAction('row-ref', ref)">
+            @ref-click="ref => handleSelectAction('row-ref', ref)" :is-expanded="(row) => isExpanded(fnExpKey('claims', row))">
+            <template #row-expand="{ row, colspan }">
+              <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
+                <bo-form-area :columns="columns.claimGridRowDetail" :form="row" :cols="2" readonly label-left compact :show-actions="false" />
+              </td>
+            </template>
           </bo-grid>
         </div>
         <bo-pager v-if="claimsPager.pageTotalCount > 0" :pager="claimsPager" :on-set-page="n => onSetPage('claims', n)" :on-size-change="() => onSizeChange('claims')" />
@@ -749,7 +872,13 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="columns.dlivGrid" :rows="deliveries" :pager="dlivPager" row-key="dlivId" empty-text="배송 내역이 없습니다.">
+          <bo-grid bare :columns="columns.dlivGrid" :rows="deliveries" :pager="dlivPager" row-key="dlivId" empty-text="배송 내역이 없습니다."
+            :is-expanded="(row) => isExpanded(fnExpKey('dliv', row))">
+            <template #row-expand="{ row, colspan }">
+              <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
+                <bo-form-area :columns="columns.dlivGridRowDetail" :form="row" :cols="2" readonly label-left compact :show-actions="false" />
+              </td>
+            </template>
           </bo-grid>
         </div>
         <bo-pager v-if="dlivPager.pageTotalCount > 0" :pager="dlivPager" :on-set-page="n => onSetPage('dliv', n)" :on-size-change="() => onSizeChange('dliv')" />
@@ -770,7 +899,13 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="columns.cacheGrid" :rows="caches" :pager="cachePager" row-key="cacheId" empty-text="캐쉬 내역이 없습니다.">
+          <bo-grid bare :columns="columns.cacheGrid" :rows="caches" :pager="cachePager" row-key="cacheId" empty-text="캐쉬 내역이 없습니다."
+            :is-expanded="(row) => isExpanded(fnExpKey('cache', row))">
+            <template #row-expand="{ row, colspan }">
+              <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
+                <bo-form-area :columns="columns.cacheGridRowDetail" :form="row" :cols="2" readonly label-left compact :show-actions="false" />
+              </td>
+            </template>
           </bo-grid>
         </div>
         <bo-pager v-if="cachePager.pageTotalCount > 0" :pager="cachePager" :on-set-page="n => onSetPage('cache', n)" :on-size-change="() => onSizeChange('cache')" />
@@ -788,7 +923,13 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="columns.contactGrid" :rows="contacts" :pager="contactsPager" row-key="inquiryId" empty-text="문의 내역이 없습니다.">
+          <bo-grid bare :columns="columns.contactGrid" :rows="contacts" :pager="contactsPager" row-key="inquiryId" empty-text="문의 내역이 없습니다."
+            :is-expanded="(row) => isExpanded(fnExpKey('contacts', row))">
+            <template #row-expand="{ row, colspan }">
+              <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
+                <bo-form-area :columns="columns.contactGridRowDetail" :form="row" :cols="2" readonly label-left compact :show-actions="false" />
+              </td>
+            </template>
           </bo-grid>
         </div>
         <bo-pager v-if="contactsPager.pageTotalCount > 0" :pager="contactsPager" :on-set-page="n => onSetPage('contacts', n)" :on-size-change="() => onSizeChange('contacts')" />
@@ -806,7 +947,13 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="columns.chatGrid" :rows="chats" :pager="chatsPager" row-key="chatId" empty-text="채팅 내역이 없습니다.">
+          <bo-grid bare :columns="columns.chatGrid" :rows="chats" :pager="chatsPager" row-key="chatId" empty-text="채팅 내역이 없습니다."
+            :is-expanded="(row) => isExpanded(fnExpKey('chats', row))">
+            <template #row-expand="{ row, colspan }">
+              <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
+                <bo-form-area :columns="columns.chatGridRowDetail" :form="row" :cols="2" readonly label-left compact :show-actions="false" />
+              </td>
+            </template>
           </bo-grid>
         </div>
         <bo-pager v-if="chatsPager.pageTotalCount > 0" :pager="chatsPager" :on-set-page="n => onSetPage('chats', n)" :on-size-change="() => onSizeChange('chats')" />
@@ -824,7 +971,13 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="columns.loginGrid" :rows="loginHistories" :pager="loginPager" row-key="loginId" empty-text="로그인 내역이 없습니다.">
+          <bo-grid bare :columns="columns.loginGrid" :rows="loginHistories" :pager="loginPager" row-key="loginId" empty-text="로그인 내역이 없습니다."
+            :is-expanded="(row) => isExpanded(fnExpKey('login', row))">
+            <template #row-expand="{ row, colspan }">
+              <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
+                <bo-form-area :columns="columns.loginGridRowDetail" :form="row" :cols="2" readonly label-left compact :show-actions="false" />
+              </td>
+            </template>
           </bo-grid>
         </div>
         <bo-pager v-if="loginPager.pageTotalCount > 0" :pager="loginPager" :on-set-page="n => onSetPage('login', n)" :on-size-change="() => onSizeChange('login')" />
@@ -843,7 +996,12 @@
         </div>
         <div style="overflow:auto;max-height:340px;">
           <bo-grid bare :columns="columns.couponGrid" :rows="couponUsages" :pager="couponPager" row-key="usageId" empty-text="쿠폰 사용 내역이 없습니다."
-            @ref-click="ref => handleSelectAction('row-ref', ref)">
+            @ref-click="ref => handleSelectAction('row-ref', ref)" :is-expanded="(row) => isExpanded(fnExpKey('coupon', row))">
+            <template #row-expand="{ row, colspan }">
+              <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
+                <bo-form-area :columns="columns.couponGridRowDetail" :form="row" :cols="2" readonly label-left compact :show-actions="false" />
+              </td>
+            </template>
           </bo-grid>
         </div>
         <bo-pager v-if="couponPager.pageTotalCount > 0" :pager="couponPager" :on-set-page="n => onSetPage('coupon', n)" :on-size-change="() => onSizeChange('coupon')" />
@@ -861,7 +1019,13 @@
           </span>
         </div>
         <div style="overflow:auto;max-height:340px;">
-          <bo-grid bare :columns="columns.sendGrid" :rows="sendHistories" :pager="sendPager" row-key="sendId" empty-text="발송 내역이 없습니다.">
+          <bo-grid bare :columns="columns.sendGrid" :rows="sendHistories" :pager="sendPager" row-key="sendId" empty-text="발송 내역이 없습니다."
+            :is-expanded="(row) => isExpanded(fnExpKey('send', row))">
+            <template #row-expand="{ row, colspan }">
+              <td :colspan="colspan" style="background:#eef2fb;padding:10px 14px;border-top:none;border-left:3px solid #2563eb;box-shadow:inset 0 1px 0 #d6deef">
+                <bo-form-area :columns="columns.sendGridRowDetail" :form="row" :cols="2" readonly label-left compact :show-actions="false" />
+              </td>
+            </template>
           </bo-grid>
         </div>
         <bo-pager v-if="sendPager.pageTotalCount > 0" :pager="sendPager" :on-set-page="n => onSetPage('send', n)" :on-size-change="() => onSizeChange('send')" />
