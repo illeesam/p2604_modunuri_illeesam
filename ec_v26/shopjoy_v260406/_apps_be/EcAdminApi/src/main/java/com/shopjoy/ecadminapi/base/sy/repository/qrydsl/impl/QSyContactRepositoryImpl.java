@@ -17,6 +17,7 @@ import com.shopjoy.ecadminapi.base.sy.repository.qrydsl.QSyContactRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -65,7 +66,9 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
                     baseAndSiteId(search),
                     baseAndContactId(search),
                     baseAndMemberId(search),
+                    baseAndCategoryCd(search),
                     baseAndStatus(search),
+                    baseAndDateRange(search),
                     baseAndSearchValue(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -92,7 +95,9 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
                 baseAndSiteId(search),
                 baseAndContactId(search),
                 baseAndMemberId(search),
+                baseAndCategoryCd(search),
                 baseAndStatus(search),
+                baseAndDateRange(search),
                 baseAndSearchValue(search)
         };
 
@@ -140,6 +145,28 @@ public class QSyContactRepositoryImpl implements QSyContactRepository {
     private BooleanExpression baseAndMemberId(SyContactDto.Request search) {
         return search != null && StringUtils.hasText(search.getMemberId())
                 ? syContact.memberId.eq(search.getMemberId()) : null;
+    }
+
+    /* categoryCd(문의유형) 정확 일치 */
+    private BooleanExpression baseAndCategoryCd(SyContactDto.Request search) {
+        return search != null && StringUtils.hasText(search.getCategoryCd())
+                ? syContact.categoryCd.eq(search.getCategoryCd()) : null;
+    }
+
+    /* 등록일(regDate) 기간 검색 — dateStart/dateEnd (yyyy-MM-dd) 포함 범위 */
+    private BooleanExpression baseAndDateRange(SyContactDto.Request search) {
+        if (search == null) return null;
+        BooleanExpression expr = null;
+        if (StringUtils.hasText(search.getDateStart())) {
+            LocalDateTime from = LocalDate.parse(search.getDateStart(), DF).atStartOfDay();
+            expr = syContact.regDate.goe(from);
+        }
+        if (StringUtils.hasText(search.getDateEnd())) {
+            LocalDateTime to = LocalDate.parse(search.getDateEnd(), DF).atTime(23, 59, 59);
+            BooleanExpression toExpr = syContact.regDate.loe(to);
+            expr = expr == null ? toExpr : expr.and(toExpr);
+        }
+        return expr;
     }
 
     /* contactStatusCd 정확 일치 */

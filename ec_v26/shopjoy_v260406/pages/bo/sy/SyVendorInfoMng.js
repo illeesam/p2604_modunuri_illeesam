@@ -21,7 +21,7 @@ window.SyVendorInfoMng = {
     const codes = reactive({ vendor_status: [], vendor_type_kr: [] });
 
     /* ===== 검색조건 ===== */
-    const _initSearchParam = () => ({ searchType: '', searchValue: '', type: '', status: '' });
+    const _initSearchParam = () => ({ searchType: '', searchValue: '', vendorType: '', status: '' });
     const searchParam = reactive(_initSearchParam());
 
     /* ===== 페이지네이션 (2단 업체목록) ===== */
@@ -241,7 +241,7 @@ window.SyVendorInfoMng = {
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
-      { key: 'type', type: 'select', label: '유형', options: () => codes.vendor_type_kr, nullLabel: '유형 전체' },
+      { key: 'vendorType', type: 'select', label: '유형', options: () => codes.vendor_type_kr, nullLabel: '유형 전체' },
       { key: 'status', type: 'select', label: '상태', options: () => codes.vendor_status, nullLabel: '상태 전체' },
     ];
 

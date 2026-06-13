@@ -141,7 +141,7 @@ window.SyTemplateMng = {
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
-      return { searchType: '', searchValue: '', type: '', useYn: 'Y', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+      return { searchType: '', searchValue: '', templateTypeCd: '', useYn: 'Y', dateRange: '', dateType: 'reg_date', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
     };
     const searchParam = reactive(_initSearchParam()); // 검색조건
 
@@ -373,7 +373,7 @@ window.SyTemplateMng = {
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
-      { key: 'type', type: 'select', label: '유형', options: () => codes.template_types, nullLabel: '유형 전체' },
+      { key: 'templateTypeCd', type: 'select', label: '유형', options: () => codes.template_types, nullLabel: '유형 전체' },
       { key: 'useYn', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '사용여부 전체' },
       { key: 'dateRange', type: 'dateRange', label: '등록일',
         startKey: 'dateStart', endKey: 'dateEnd',

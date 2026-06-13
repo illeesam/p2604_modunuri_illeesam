@@ -56,6 +56,7 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()")
                 .where(
                     baseAndBizCd(search),
+                    baseAndParentPathId(search),
                     baseAndUseYn(search),
                     baseAndSearchValue(search)
                 );
@@ -81,6 +82,7 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
 
         BooleanExpression[] wheres = {
                 baseAndBizCd(search),
+                baseAndParentPathId(search),
                 baseAndUseYn(search),
                 baseAndSearchValue(search)
         };
@@ -117,6 +119,12 @@ public class QSyPathRepositoryImpl implements QSyPathRepository {
     private BooleanExpression baseAndBizCd(SyPathDto.Request search) {
         return search != null && StringUtils.hasText(search.getBizCd())
                 ? syPath.bizCd.eq(search.getBizCd()) : null;
+    }
+
+    /* parentPathId 정확 일치 (좌측 트리 노드 선택 → 자식 필터) */
+    private BooleanExpression baseAndParentPathId(SyPathDto.Request search) {
+        return search != null && StringUtils.hasText(search.getParentPathId())
+                ? syPath.parentPathId.eq(search.getParentPathId()) : null;
     }
 
     /* useYn 정확 일치 */

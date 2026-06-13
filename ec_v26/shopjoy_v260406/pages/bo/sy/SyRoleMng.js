@@ -257,6 +257,12 @@ window.SyRoleMng = {
       try {
         const params = {
           pageNo: 1, pageSize: 10000,
+          /* 검색바 조건 — 백엔드 Request 매핑 필드만 전송 (cat/treeCatFilter 는 클라이언트 전용 파생값이라 제외) */
+          ...coUtil.cofOmitEmpty({
+            searchType: searchParam.searchType,
+            searchValue: searchParam.searchValue,
+            useYn: searchParam.useYn,
+          }),
           /* 좌측 트리 선택 노드 — 서버측 자기참조 재귀 CTE 로 자손 역할 포함 필터 */
           ...(uiState.selectedPath != null ? { parentRoleId: uiState.selectedPath } : {}),
         };

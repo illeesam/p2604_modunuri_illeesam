@@ -74,6 +74,7 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
                 baseAndPathId(search),
                 baseAndBrandId(search),
                 baseAndVendorId(search),
+                baseAndUseYn(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
         )
@@ -102,6 +103,7 @@ public class QSyBrandRepositoryImpl implements QSyBrandRepository {
                 baseAndPathId(search),
                 baseAndBrandId(search),
                 baseAndVendorId(search),
+                baseAndUseYn(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
         };

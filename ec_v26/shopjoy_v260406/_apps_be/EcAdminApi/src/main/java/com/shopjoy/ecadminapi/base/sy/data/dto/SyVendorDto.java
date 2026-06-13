@@ -18,6 +18,7 @@ public class SyVendorDto {
         @Size(max = 21) private String vendorId;
         @Size(max = 21) private String pathId;
         @Size(max = 50) private String vendorClassCd;
+        @Size(max = 50) private String vendorType;
         @Size(max = 20) private String status;
     }
 

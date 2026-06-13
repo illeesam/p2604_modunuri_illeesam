@@ -147,6 +147,7 @@ window.SyCodeMng = {
       return {
         searchType: '', searchValue: '',
         grp: '', useYn: 'Y', dateRange: '',
+        dateType: 'reg_date',
         dateStart: `${thisYear - 3}-01-01`,
         dateEnd:   `${thisYear}-12-31`,
       };

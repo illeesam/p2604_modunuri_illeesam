@@ -21,6 +21,7 @@ import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -74,6 +75,7 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
                     baseAndTemplateId(search),
                     baseAndTemplateTypeCd(search),
                     baseAndUseYn(search),
+                    baseAndDateRange(search),
                     baseAndSearchValue(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -102,6 +104,7 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
                 baseAndTemplateId(search),
                 baseAndTemplateTypeCd(search),
                 baseAndUseYn(search),
+                baseAndDateRange(search),
                 baseAndSearchValue(search)
         };
 
@@ -165,6 +168,21 @@ public class QSyTemplateRepositoryImpl implements QSyTemplateRepository {
     private BooleanExpression baseAndUseYn(SyTemplateDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? syTemplate.useYn.eq(search.getUseYn()) : null;
+    }
+
+    /* 기간 검색 — dateType 컬럼 기준 [dateStart, dateEnd+1일) 범위 */
+    private BooleanExpression baseAndDateRange(SyTemplateDto.Request search) {
+        if (search == null
+                || !StringUtils.hasText(search.getDateType())
+                || !StringUtils.hasText(search.getDateStart())
+                || !StringUtils.hasText(search.getDateEnd())) return null;
+        LocalDateTime start   = LocalDate.parse(search.getDateStart(), DF).atStartOfDay();
+        LocalDateTime endExcl = LocalDate.parse(search.getDateEnd(),   DF).plusDays(1).atStartOfDay();
+        switch (search.getDateType()) {
+            case "reg_date": return syTemplate.regDate.goe(start).and(syTemplate.regDate.lt(endExcl));
+            case "upd_date": return syTemplate.updDate.goe(start).and(syTemplate.updDate.lt(endExcl));
+            default: return null;
+        }
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */

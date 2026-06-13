@@ -95,7 +95,7 @@ window.SyContactMng = {
     const _initSearchParam = () => {
       const today = new Date();
       const thisYear = today.getFullYear();
-      return { searchType: '', searchValue: '', category: '', status: '', dateRange: '', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
+      return { searchType: '', searchValue: '', categoryCd: '', status: '', dateRange: '', dateType: 'reg_date', dateStart: `${thisYear - 3}-01-01`, dateEnd: `${thisYear}-12-31` };
     };
     const searchParam = reactive(_initSearchParam());
 
@@ -278,7 +278,7 @@ window.SyContactMng = {
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
-      { key: 'category', type: 'select', label: '카테고리', options: () => codes.contact_categories, nullLabel: '카테고리 전체' },
+      { key: 'categoryCd', type: 'select', label: '카테고리', options: () => codes.contact_categories, nullLabel: '카테고리 전체' },
       { key: 'status', type: 'select', label: '상태', options: () => codes.contact_status, nullLabel: '상태 전체' },
       { key: 'dateRange', type: 'dateRange', label: '등록일',
         startKey: 'dateStart', endKey: 'dateEnd',

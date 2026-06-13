@@ -24,6 +24,9 @@ public class SyUserDto {
 
         @Size(max = 20, message = "status 는 20자 이내여야 합니다.")
         private String status;
+
+        @Size(max = 100, message = "role 은 100자 이내여야 합니다.")
+        private String role;
     }
 
     /** 단건/목록 항목 */

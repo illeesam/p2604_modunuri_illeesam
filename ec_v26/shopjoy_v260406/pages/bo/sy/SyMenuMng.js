@@ -121,7 +121,7 @@ window.SyMenuMng = {
       }
     };
     const _initSearchParam = () => {
-      return { searchType: '', searchValue: '', type: '', useYn: 'Y' };
+      return { searchType: '', searchValue: '', menuTypeCd: '', useYn: 'Y' };
     };
     const searchParam = reactive(_initSearchParam());
 
@@ -165,6 +165,9 @@ window.SyMenuMng = {
       try {
         const params = {
           pageNo: 1, pageSize: 10000,
+          /* 검색조건 — 빈값 제외 후 백엔드 Request 필드명 그대로 전달 (searchType/searchValue/menuTypeCd/useYn) */
+          ...Object.fromEntries(Object.entries(searchParam)
+            .filter(([k, v]) => v !== '' && v !== null && v !== undefined)),
           /* 좌측 트리 선택 노드 — 서버측 자기참조 재귀 CTE(findTreeMenuIds)로 자손 메뉴 포함 필터 */
           ...(uiState.selectedTreeId != null ? { menuId: uiState.selectedTreeId } : {}),
         };
@@ -348,7 +351,7 @@ window.SyMenuMng = {
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
-      { key: 'type', type: 'select', label: '유형', options: () => codes.menu_types, nullLabel: '유형 전체' },
+      { key: 'menuTypeCd', type: 'select', label: '유형', options: () => codes.menu_types, nullLabel: '유형 전체' },
       { key: 'useYn', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '사용여부 전체' },
     ];
 

@@ -188,7 +188,7 @@ window.SyVendorUserMng = {
           pageNo: 1, pageSize: 10000,
           ...(uiState.bizSearchValue        ? { searchValue: uiState.bizSearchValue.trim() }          : {}),
           ...(uiState.bizSearchType        ? { searchType: uiState.bizSearchType }                  : {}),
-          ...(uiState.bizVendorFlt ? { vendorTypeCd: uiState.bizVendorFlt } : {}),
+          ...(uiState.bizVendorFlt ? { vendorType: uiState.bizVendorFlt } : {}),
         };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
@@ -305,7 +305,7 @@ window.SyVendorUserMng = {
           vendorId, pageSize: 10000,
           ...(uiState.userSearchValue ? { searchValue: uiState.userSearchValue.trim() } : {}),
           ...(uiState.userSearchType  ? { searchType: uiState.userSearchType }         : {}),
-          ...(uiState.userStatusFlt   ? { statusCd: uiState.userStatusFlt }            : {}),
+          ...(uiState.userStatusFlt   ? { status: uiState.userStatusFlt }              : {}),
         };
         if (params.searchValue && !params.searchType) {
           params.searchType = 'memberNm,vendorUserEmail,vendorUserMobile';

@@ -119,6 +119,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
                     baseAndSiteId(search),
                     baseAndDeptId(search),
                     baseAndStatus(search),
+                    baseAndRole(search),
                     baseAndDateRange(search),
                     baseAndSearchValue(search)
                 )
@@ -146,6 +147,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
                 baseAndSiteId(search),
                 baseAndDeptId(search),
                 baseAndStatus(search),
+                baseAndRole(search),
                 baseAndDateRange(search),
                 baseAndSearchValue(search)
         };
@@ -177,10 +179,13 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
     public long selectCount(SyUserDto.Request search) {
         Long total = queryFactory.select(syUser.count())
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectCount()").from(syUser)
+                /* baseAndRole 이 syRole 을 참조하므로 join 필요 (목록/페이징과 동일 필터 집합 유지) */
+                .leftJoin(syRole).on(syRole.roleId.eq(syUser.roleId))
                 .where(
                     baseAndSiteId(search),
                     baseAndDeptId(search),
                     baseAndStatus(search),
+                    baseAndRole(search),
                     baseAndDateRange(search),
                     baseAndSearchValue(search)
                 )
@@ -211,6 +216,12 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
     private BooleanExpression baseAndStatus(SyUserDto.Request search) {
         return search != null && StringUtils.hasText(search.getStatus())
                 ? syUser.userStatusCd.eq(search.getStatus()) : null;
+    }
+
+    /* 권한 — USER_ROLE 코드값(=역할명) 정확 일치 (조인된 sy_role.role_nm 기준) */
+    private BooleanExpression baseAndRole(SyUserDto.Request search) {
+        return search != null && StringUtils.hasText(search.getRole())
+                ? syRole.roleNm.eq(search.getRole()) : null;
     }
 
     /* 기간 — dateType + dateStart + dateEnd (yyyy-MM-dd, 끝일 포함) */
@@ -370,6 +381,7 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
 
         /* 검색조건 — depttreeAnd*() 헬퍼로 SQL 조각 + 파라미터 함께 추가 */
         depttreeAndStatus(search, sql, params);
+        depttreeAndRole(search, sql, params);
         depttreeAndSearchValue(search, sql, params);
         depttreeAndDateRange(search, sql, params);
 
@@ -417,6 +429,13 @@ public class QSyUserRepositoryImpl implements QSyUserRepository {
         if (s == null || !StringUtils.hasText(s.getStatus())) return;
         sql.append("      AND t.user_status_cd = :statusCd\n");
         p.put("statusCd", s.getStatus());
+    }
+
+    /* 권한 — role_id → sy_role.role_nm 매칭 (목록 baseAndRole 과 동일 기준, 카운트 동기화) */
+    private void depttreeAndRole(SyUserDto.Request s, StringBuilder sql, Map<String, Object> p) {
+        if (s == null || !StringUtils.hasText(s.getRole())) return;
+        sql.append("      AND EXISTS (SELECT 1 FROM sy_role r WHERE r.role_id = t.role_id AND r.role_nm = :roleNm)\n");
+        p.put("roleNm", s.getRole());
     }
 
     private void depttreeAndSearchValue(SyUserDto.Request s, StringBuilder sql, Map<String, Object> p) {

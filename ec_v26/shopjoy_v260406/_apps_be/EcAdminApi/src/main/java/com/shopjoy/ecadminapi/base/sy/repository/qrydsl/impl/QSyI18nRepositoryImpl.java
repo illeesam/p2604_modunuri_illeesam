@@ -63,6 +63,8 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
                 .where(
                     baseAndSiteId(search),
                     baseAndI18nId(search),
+                    baseAndI18nScopeCd(search),
+                    baseAndUseYn(search),
                     baseAndSearchValue(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -88,6 +90,8 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
         BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndI18nId(search),
+                baseAndI18nScopeCd(search),
+                baseAndUseYn(search),
                 baseAndSearchValue(search)
         };
 
@@ -129,6 +133,18 @@ public class QSyI18nRepositoryImpl implements QSyI18nRepository {
     private BooleanExpression baseAndI18nId(SyI18nDto.Request search) {
         return search != null && StringUtils.hasText(search.getI18nId())
                 ? syI18n.i18nId.eq(search.getI18nId()) : null;
+    }
+
+    /* i18nScopeCd 정확 일치 (범위 select) */
+    private BooleanExpression baseAndI18nScopeCd(SyI18nDto.Request search) {
+        return search != null && StringUtils.hasText(search.getI18nScopeCd())
+                ? syI18n.i18nScopeCd.eq(search.getI18nScopeCd()) : null;
+    }
+
+    /* useYn 정확 일치 (사용여부 select) */
+    private BooleanExpression baseAndUseYn(SyI18nDto.Request search) {
+        return search != null && StringUtils.hasText(search.getUseYn())
+                ? syI18n.useYn.eq(search.getUseYn()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
