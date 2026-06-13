@@ -40,6 +40,7 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
                         syhAlarmSendHist.siteId,
                         syhAlarmSendHist.alarmId,
                         syhAlarmSendHist.memberId,
+                        syhAlarmSendHist.userId,
                         syhAlarmSendHist.channel,
                         syhAlarmSendHist.sendTo,
                         syhAlarmSendHist.sendDate,
@@ -182,6 +183,7 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
         or = orLike(or, all, types, ",channel,", syhAlarmSendHist.channel, pattern);
         or = orLike(or, all, types, ",errorMsg,", syhAlarmSendHist.errorMsg, pattern);
         or = orLike(or, all, types, ",memberId,", syhAlarmSendHist.memberId, pattern);
+        or = orLike(or, all, types, ",userId,", syhAlarmSendHist.userId, pattern);
         or = orLike(or, all, types, ",sendHistId,", syhAlarmSendHist.sendHistId, pattern);
         or = orLike(or, all, types, ",sendHistStatusCd,", syhAlarmSendHist.sendHistStatusCd, pattern);
         or = orLike(or, all, types, ",sendTo,", syhAlarmSendHist.sendTo, pattern);
@@ -244,6 +246,7 @@ public class QSyhAlarmSendHistRepositoryImpl implements QSyhAlarmSendHistReposit
         if (entity.getSiteId()           != null) { update.set(syhAlarmSendHist.siteId,           entity.getSiteId());           hasAny = true; }
         if (entity.getAlarmId()          != null) { update.set(syhAlarmSendHist.alarmId,          entity.getAlarmId());          hasAny = true; }
         if (entity.getMemberId()         != null) { update.set(syhAlarmSendHist.memberId,         entity.getMemberId());         hasAny = true; }
+        if (entity.getUserId()           != null) { update.set(syhAlarmSendHist.userId,           entity.getUserId());           hasAny = true; }
         if (entity.getChannel()          != null) { update.set(syhAlarmSendHist.channel,          entity.getChannel());          hasAny = true; }
         if (entity.getSendTo()           != null) { update.set(syhAlarmSendHist.sendTo,           entity.getSendTo());           hasAny = true; }
         if (entity.getSendDate()         != null) { update.set(syhAlarmSendHist.sendDate,         entity.getSendDate());         hasAny = true; }

@@ -298,6 +298,8 @@ window.SySendMsgLogMng = {
         fmt: (v, row) => isExpanded(row.sendHistId) ? '▲' : '▼' },
       { key: 'channel',  label: '채널', style: 'text-align:center;', align: 'center', badge: (row) => fnChannelBadge(row.channel), fmt: (v) => v || '-' },
       { key: 'sendTo',   label: '수신처', cellStyle: 'color:#333', fmt: (v) => v || '-' },
+      { key: 'memberId', label: '회원ID', mono: true, cellStyle: 'font-size:11px;color:#888', fmt: (v) => v || '-' },
+      { key: 'userId',   label: '사용자ID', mono: true, cellStyle: 'font-size:11px;color:#888', fmt: (v) => v || '-' },
       { key: 'alarmId',  label: '알림ID', mono: true, cellStyle: 'font-size:11px;color:#888', fmt: (v) => v || '-' },
       { key: 'sendHistStatusCd', label: '결과', style: 'text-align:center;', align: 'center', badge: (row) => fnHistStatusBadge(row.sendHistStatusCd), fmt: (v) => v || '-' },
       { key: 'errorMsg', label: '오류메시지', cellStyle: 'color:#c0392b;' + fnEllip, cellTitle: (v, row) => row.errorMsg, fmt: (v) => v || '-' },
@@ -332,6 +334,7 @@ window.SySendMsgLogMng = {
       { key: '_status', label: '결과', type: 'readonly', html: true, fmt: (v, r) => `<span class="badge ${fnHistStatusBadge(r.sendHistStatusCd)}">${r.sendHistStatusCd || '-'}</span>` },
       { key: '_alarmId', label: '알림ID', type: 'readonly', mono: true, fmt: (v, r) => r.alarmId || '-' },
       { key: '_member', label: '회원ID', type: 'readonly', mono: true, fmt: (v, r) => r.memberId || '-' },
+      { key: '_user',   label: '사용자ID', type: 'readonly', mono: true, fmt: (v, r) => r.userId || '-' },
       { key: '_date',   label: '발송일시', type: 'readonly', fmt: (v, r) => coUtil.cofYmdHms(r.sendDate || '') || '-' },
       { key: '_error',  label: '오류메시지', type: 'readonly', colSpan: 3, fmt: (v, r) => r.errorMsg || '-' },
     ];

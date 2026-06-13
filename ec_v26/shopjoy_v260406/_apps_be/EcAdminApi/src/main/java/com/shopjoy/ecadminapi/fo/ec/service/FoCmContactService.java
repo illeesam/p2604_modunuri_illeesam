@@ -65,7 +65,9 @@ public class FoCmContactService {
         entity.setContactId(CmUtil.generateId("fo_contact"));
         entity.setSiteId(_resolveSiteId(req));
         // 로그인 회원이면 memberId 세팅 → 마이페이지(memberId 필터) 조회에 노출. 비회원이면 null.
-        if (SecurityUtil.isLogin()) entity.setMemberId(SecurityUtil.getAuthUser().userId());
+        // ⚠️ FO 회원 식별자는 authId (= ec_member.member_id). userId() 는 BO 전용이라 FO 에선 "" 가 되어
+        //    마이페이지 조회(memberId=authId 필터)와 어긋남 — 반드시 authId() 사용.
+        if (SecurityUtil.isLogin()) entity.setMemberId(SecurityUtil.getAuthUser().authId());
         entity.setMemberNm(req.getName());
         entity.setCategoryCd(req.getInquiryType());
         entity.setContactTitle("[문의] " + (req.getInquiryType() != null ? req.getInquiryType() : "일반"));

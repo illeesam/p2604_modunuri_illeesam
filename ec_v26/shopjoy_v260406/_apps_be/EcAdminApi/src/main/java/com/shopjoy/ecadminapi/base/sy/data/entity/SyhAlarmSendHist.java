@@ -36,6 +36,10 @@ public class SyhAlarmSendHist extends BaseEntity {
     @Column(name = "member_id", length = 21)
     private String memberId;
 
+    @Comment("수신자 사용자ID (sy_user.user_id)")
+    @Column(name = "user_id", length = 21)
+    private String userId;
+
     @Comment("발송채널")
     @Column(name = "channel", length = 20)
     private String channel;

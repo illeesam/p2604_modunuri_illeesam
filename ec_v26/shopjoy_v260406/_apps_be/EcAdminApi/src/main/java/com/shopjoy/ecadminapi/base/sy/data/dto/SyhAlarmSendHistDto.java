@@ -30,6 +30,7 @@ public class SyhAlarmSendHistDto {
         private String siteId;
         private String alarmId;
         private String memberId;
+        private String userId;
         private String channel;
         private String sendTo;
         private LocalDateTime sendDate;

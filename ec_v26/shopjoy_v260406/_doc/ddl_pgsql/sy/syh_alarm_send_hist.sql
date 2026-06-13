@@ -6,6 +6,7 @@ CREATE TABLE shopjoy_2604.syh_alarm_send_hist (
     site_id             VARCHAR(21)  NOT NULL,
     alarm_id            VARCHAR(21)  NOT NULL,
     member_id           VARCHAR(21) ,
+    user_id             VARCHAR(21) ,
     channel             VARCHAR(20) ,
     send_to             VARCHAR(200),
     send_date           TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
@@ -22,6 +23,7 @@ COMMENT ON COLUMN shopjoy_2604.syh_alarm_send_hist.send_hist_id IS '발송이력
 COMMENT ON COLUMN shopjoy_2604.syh_alarm_send_hist.site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.syh_alarm_send_hist.alarm_id IS '알림ID';
 COMMENT ON COLUMN shopjoy_2604.syh_alarm_send_hist.member_id IS '수신자 회원ID';
+COMMENT ON COLUMN shopjoy_2604.syh_alarm_send_hist.user_id IS '수신자 사용자ID (sy_user.user_id)';
 COMMENT ON COLUMN shopjoy_2604.syh_alarm_send_hist.channel IS '발송채널';
 COMMENT ON COLUMN shopjoy_2604.syh_alarm_send_hist.send_to IS '수신처 (이메일/전화/토큰)';
 COMMENT ON COLUMN shopjoy_2604.syh_alarm_send_hist.send_date IS '발송일시';
