@@ -110,8 +110,8 @@
         }
       } catch (e) {}
       try {
-        const ls = localStorage.getItem('modu-bo-siteId')
-                || localStorage.getItem('modu-fo-siteId');
+        const ls = localStorage.getItem('modu-bo-sy-siteId')
+                || localStorage.getItem('modu-fo-sy-siteId');
         if (ls) return ls;
       } catch (e) {}
       return this.siteNoToSiteId(this.getCurrentSiteNo());
@@ -142,7 +142,7 @@
           return boConfig.svLicenseNo;
         }
         // localStorage에서 조회 (설정값)
-        const storedLicense = localStorage.getItem('modu-license-no');
+        const storedLicense = localStorage.getItem('modu-sy-license-no');
         if (storedLicense) {
           return storedLicense;
         }

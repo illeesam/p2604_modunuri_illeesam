@@ -79,6 +79,9 @@ var Pinia = (function (exports, vueDemi) {
                   defaultSettings[id] = item.defaultValue;
               }
           }
+          // [Pinia 내부 / Vue DevTools 연동] 개발용 코드 — 앱 비즈니스 키(modu-*)와 무관.
+          //   Vue DevTools 확장이 없을 때의 fallback 으로, DevTools 패널 설정을 localStorage 에 보관한다.
+          //   키: `__vue-devtools-plugin-settings__<plugin.id>` (플러그인별 고유). 운영 동작과 무관, 미설치 시에도 안전(try/catch noop).
           const localSettingsSaveId = `__vue-devtools-plugin-settings__${plugin.id}`;
           let currentSettings = Object.assign({}, defaultSettings);
           try {

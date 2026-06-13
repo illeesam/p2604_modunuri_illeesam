@@ -90,12 +90,12 @@
       window.foInitReady = true;
     })();
     /* ── Theme ── */
-    const theme = ref(localStorage.getItem('modu-fo-theme') || 'light');
+    const theme = ref(localStorage.getItem('modu-fo-sy-theme') || 'light');
 
     /* applyTheme */
     const applyTheme = t => {
       theme.value = t;
-      localStorage.setItem('modu-fo-theme', t);
+      localStorage.setItem('modu-fo-sy-theme', t);
       document.documentElement.setAttribute('data-theme', t);
     };
     applyTheme(theme.value);
@@ -251,19 +251,18 @@
     window.addEventListener('resize', () => { if (window.innerWidth < 1024) uiState.mobileOpen = false; });
 
     /* ── FO API Log ── */
-    const FO_API_LOG_KEY = 'modu-fo-apiLog';
-    const FO_API_LOG_OPEN_KEY = 'modu-fo-setting-rigthtDevPanal';   // 우측 개발 패널(API 로그) 열림 상태 (F5 후 유지)
     const MAX_FO_API_LOGS = 15;
-    const foApiLogs = reactive(JSON.parse(localStorage.getItem(FO_API_LOG_KEY) || '[]'));
-    const showApiLog = ref(localStorage.getItem(FO_API_LOG_OPEN_KEY) === 'true');   // 저장된 열림 상태 복원
-    watch(showApiLog, (v) => { try { localStorage.setItem(FO_API_LOG_OPEN_KEY, v ? 'true' : 'false'); } catch (e) {} });
-    const FO_API_TOAST_KEY = 'modu-fo-setting-apiToastOpen';   // API 응답 toast 출력 ON/OFF (F5 후 유지)
-    const apiToastEnabled = ref(localStorage.getItem(FO_API_TOAST_KEY) === 'true');   // 기본 OFF(미저장 시)
-    watch(apiToastEnabled, (v) => { try { localStorage.setItem(FO_API_TOAST_KEY, v ? 'true' : 'false'); } catch (e) {} });
+    const foApiLogs = reactive(JSON.parse(localStorage.getItem('modu-fo-sy-apiLog') || '[]'));
+    // modu-fo-sy-apiLogOpen: 우측 개발 패널(API 로그) 열림 상태 (F5 후 유지)
+    const showApiLog = ref(localStorage.getItem('modu-fo-sy-apiLogOpen') === 'true');   // 저장된 열림 상태 복원
+    watch(showApiLog, (v) => { try { localStorage.setItem('modu-fo-sy-apiLogOpen', v ? 'true' : 'false'); } catch (e) {} });
+    // modu-fo-sy-apiToastOpen: API 응답 toast 출력 ON/OFF (F5 후 유지)
+    const apiToastEnabled = ref(localStorage.getItem('modu-fo-sy-apiToastOpen') === 'true');   // 기본 OFF(미저장 시)
+    watch(apiToastEnabled, (v) => { try { localStorage.setItem('modu-fo-sy-apiToastOpen', v ? 'true' : 'false'); } catch (e) {} });
     const showSettings = ref(false);
     const apiLogHoverDetail  = ref(null);
-    const apiLogDock = ref(localStorage.getItem('modu-fo-apiLogDock') === 'true');   // 영역차지(📌): ON 이면 패널이 본문을 밀어내 영역 차지(가리지 않음)
-    watch(apiLogDock, (v) => { try { localStorage.setItem('modu-fo-apiLogDock', v ? 'true' : 'false'); } catch (e) {} });
+    const apiLogDock = ref(localStorage.getItem('modu-fo-sy-apiLogDock') === 'true');   // 영역차지(📌): ON 이면 패널이 본문을 밀어내 영역 차지(가리지 않음)
+    watch(apiLogDock, (v) => { try { localStorage.setItem('modu-fo-sy-apiLogDock', v ? 'true' : 'false'); } catch (e) {} });
     let _foApiLogSeq = foApiLogs.length ? Math.max(...foApiLogs.map(l => l._seq || 0)) + 1 : 1;
 
     /* addFoApiLog */
@@ -277,7 +276,7 @@
       // localStorage 저장: 응답 body(data)/요청 body(reqData)는 용량 커서 제외 (메모리 reactive 에는 유지 → hover 상세창용)
       try {
         const slim = foApiLogs.map(({ data, reqData, ...rest }) => rest);
-        localStorage.setItem(FO_API_LOG_KEY, JSON.stringify(slim));
+        localStorage.setItem('modu-fo-sy-apiLog', JSON.stringify(slim));
       } catch (e) {}
     };
 
@@ -285,7 +284,7 @@
     const clearFoApiLogs = () => {
       foApiLogs.splice(0, foApiLogs.length);
       apiLogHoverDetail.value = null;
-      try { localStorage.removeItem(FO_API_LOG_KEY); } catch(e) {}
+      try { localStorage.removeItem('modu-fo-sy-apiLog'); } catch(e) {}
     };
 
     /* foApiLogStatusClass */
@@ -378,8 +377,7 @@
     /* ── Toast (누적 스택) ── */
     const toasts = reactive([]);
     let _toastSeq = 0;
-    const FO_TOAST_DETAIL_KEY = 'modu-fo-toast-isShowDetail';
-    const toastShowDetail = ref(localStorage.getItem(FO_TOAST_DETAIL_KEY) !== 'false');
+    const toastShowDetail = ref(localStorage.getItem('modu-fo-sy-toast-isShowDetail') !== 'false');
 
     /* showToast(msg, type, duration, detail, action?)
      * action: { label, onClick } — 토스트 안에 표시되는 액션 버튼 (예: 설정 도움말 열기). 선택. */
@@ -413,7 +411,7 @@
     /* toggleAllToastDetail */
     const toggleAllToastDetail = () => {
       toastShowDetail.value = !toastShowDetail.value;
-      localStorage.setItem(FO_TOAST_DETAIL_KEY, toastShowDetail.value);
+      localStorage.setItem('modu-fo-sy-toast-isShowDetail', toastShowDetail.value);
       toasts.forEach(t => { if (t.detail) t.expanded = toastShowDetail.value; });
     };
 
@@ -504,12 +502,12 @@
     /* ── Likes (좋아요/위시리스트) ── */
     let likes = reactive(new Set());
     try {
-      const savedLikes = localStorage.getItem('shopjoy_likes');
+      const savedLikes = localStorage.getItem('modu-fo-pd-like');
       if (savedLikes) likes = new Set(JSON.parse(savedLikes));
     } catch (e) {}
 
     /* saveLikes */
-    const saveLikes = () => { try { localStorage.setItem('shopjoy_likes', JSON.stringify([...likes])); } catch (e) {} };
+    const saveLikes = () => { try { localStorage.setItem('modu-fo-pd-like', JSON.stringify([...likes])); } catch (e) {} };
 
     /* toggleLike */
     const toggleLike = (prodId) => {
@@ -539,7 +537,7 @@
     /* prods 로드 후: 장바구니 복원 + URL pid 복원 */
     const _restoreAfterProds = () => {
       try {
-        const saved = localStorage.getItem('shopjoy_cart');
+        const saved = localStorage.getItem('modu-fo-od-cart');
         if (saved) {
           const parsed = JSON.parse(saved);
           if (Array.isArray(parsed)) {
@@ -583,7 +581,7 @@
     /* saveCart */
     const saveCart = () => {
       try {
-        localStorage.setItem('shopjoy_cart', JSON.stringify(
+        localStorage.setItem('modu-fo-od-cart', JSON.stringify(
           cart.map(i => ({ cartId: i.cartId, prodId: i.prod.prodId, color: i.color, size: i.size, qty: i.qty }))
         ));
       } catch (e) {}
@@ -645,7 +643,7 @@
       showToast('로그아웃되었습니다.', 'info');
       if (MY_PAGES.includes(page.value)) page.value = 'home';
     };
-    /* modu-fo-accessToken 삭제(DevTools 등) 감지 → 자동 로그아웃 처리 */
+    /* modu-fo-auth-accessToken 삭제(DevTools 등) 감지 → 자동 로그아웃 처리 */
     /* auth.user 가 새 객체로 갱신되면 watch 가 매번 fire 되므로 authId 만 비교 (로그인 상태 변화만 트래킹) */
     watch(() => auth.user?.authId || '', authId => {
       if (!authId && MY_PAGES.includes(page.value) && page.value !== 'home') page.value = 'home';
@@ -670,7 +668,7 @@
 
       /* isMyPage */
       const isMyPage = p => ['myOrder','myClaim','myCoupon','myCache','myContact','myChatt'].includes(p);
-      const isLoggedIn = !!(localStorage.getItem('modu-fo-accessToken'));
+      const isLoggedIn = !!(localStorage.getItem('modu-fo-auth-accessToken'));
       if (hasPageParam) {
         const hPage = params.get('page');
         if (hPage && validPages.includes(hPage) && (!isMyPage(hPage) || isLoggedIn)) page.value = hPage;

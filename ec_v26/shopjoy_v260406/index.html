@@ -90,9 +90,9 @@
     (function(){
       try {
         /* 구 키(언더스코어) → 신 키(카멜) 마이그레이션 */
-        var _oldNo = localStorage.getItem('modu-fo-site_no');
-        if (_oldNo && !localStorage.getItem('modu-fo-siteNo')) localStorage.setItem('modu-fo-siteNo', _oldNo);
-        if (localStorage.getItem('modu-fo-site_no')) localStorage.removeItem('modu-fo-site_no');
+        var _oldNo = localStorage.getItem('modu-fo-sy-siteNo');
+        if (_oldNo && !localStorage.getItem('modu-fo-sy-siteNo')) localStorage.setItem('modu-fo-sy-siteNo', _oldNo);
+        if (localStorage.getItem('modu-fo-sy-siteNo')) localStorage.removeItem('modu-fo-sy-siteNo');
       } catch(_){}
       var _toSiteId = function(no){ return 'SITE' + String(no || '01').padStart(6, '0'); };
       try {
@@ -107,13 +107,13 @@
           } catch(_){}
         } else {
           var saved = null;
-          try { saved = localStorage.getItem('modu-fo-siteNo'); } catch(_){}
+          try { saved = localStorage.getItem('modu-fo-sy-siteNo'); } catch(_){}
           window.FO_SITE_NO = saved || DEFAULT_FO_SITE_NO;
         }
-        /* 카멜 키로 항상 영속화 (로그인/접속만 해도 modu-fo-siteNo / modu-fo-siteId 생성) */
+        /* 카멜 키로 항상 영속화 (로그인/접속만 해도 modu-fo-sy-siteNo / modu-fo-sy-siteId 생성) */
         try {
-          localStorage.setItem('modu-fo-siteNo', window.FO_SITE_NO);
-          localStorage.setItem('modu-fo-siteId', _toSiteId(window.FO_SITE_NO));
+          localStorage.setItem('modu-fo-sy-siteNo', window.FO_SITE_NO);
+          localStorage.setItem('modu-fo-sy-siteId', _toSiteId(window.FO_SITE_NO));
         } catch(_){}
       } catch(e) { window.FO_SITE_NO = DEFAULT_FO_SITE_NO; }
       /* BO_SITE_NO는 bo.html에서 전적으로 관리 — FO에서 접근 금지 */
@@ -121,7 +121,7 @@
     document.write('<link rel="stylesheet" href="assets/css/foGlobalStyle' + window.FO_SITE_NO + '.css">');
     /* 다른 탭에서 SITE_NO 변경 시 자동 반영 */
     window.addEventListener('storage', function(e){
-      if (e.key === 'modu-fo-siteNo' && e.newValue !== e.oldValue) {
+      if (e.key === 'modu-fo-sy-siteNo' && e.newValue !== e.oldValue) {
         location.reload();
       }
     });

@@ -64,16 +64,16 @@ window.foAppFooter = {
         /* target = FO 번호만, index.html 이동 */
         const foSiteId = 'SITE' + String(target).padStart(6, '0');
         try {
-          localStorage.setItem('modu-fo-siteNo', target);
-          localStorage.setItem('modu-fo-siteId', foSiteId);
+          localStorage.setItem('modu-fo-sy-siteNo', target);
+          localStorage.setItem('modu-fo-sy-siteId', foSiteId);
         } catch(_){}
         window.location.href = (window.pageUrl ? window.pageUrl('index.html') : 'index.html') + '?SITE_NO=' + target;
       } else if (root === 'boOnly') {
         /* target = BO 번호만, bo.html 새창 오픈 — URL 파라미터로 전달, FO localStorage 접근 금지 */
         const boSiteId = 'SITE' + String(target).padStart(6, '0');
         try {
-          localStorage.setItem('modu-bo-siteNo', target);
-          localStorage.setItem('modu-bo-siteId', boSiteId);
+          localStorage.setItem('modu-bo-sy-siteNo', target);
+          localStorage.setItem('modu-bo-sy-siteId', boSiteId);
         } catch(_){}
         window.open((window.pageUrl ? window.pageUrl('bo.html') : 'bo.html') + '?SITE_NO=' + target, '_blank');
       }

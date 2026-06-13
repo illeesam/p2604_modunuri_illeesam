@@ -107,7 +107,7 @@ window.foAppSidebar = {
 
     /* navToSite — 이동 */
     const navToSite = (siteNo) => {
-      try { localStorage.setItem('modu-fo-siteNo', siteNo); } catch(_){}
+      try { localStorage.setItem('modu-fo-sy-siteNo', siteNo); } catch(_){}
       window.location.href = (window.pageUrl ? window.pageUrl('index.html') : 'index.html') + '?FO_SITE_NO=' + siteNo;
     };
 

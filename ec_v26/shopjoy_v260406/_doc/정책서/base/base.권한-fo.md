@@ -13,7 +13,7 @@
 
 | 축 | 판단 기준 | 저장 위치 |
 |---|---|---|
-| 로그인 여부 | `foAuthStore.isLoggedIn` | localStorage `modu-fo-token` |
+| 로그인 여부 | `foAuthStore.isLoggedIn` | localStorage `modu-fo-auth-accessToken` |
 | 회원 상태 | `member_status_cd` | 서버 API |
 | 회원 등급 | `mem_grade_id` | 서버 API / `foAuth.state.user` |
 

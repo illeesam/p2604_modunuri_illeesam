@@ -22,7 +22,6 @@ window.XsSample07 = {
     };
 
     /* ===== Settings (localStorage 자동저장) ===== */
-    const SETTINGS_KEY = 'sj_sample07_v2';
     const treeSearch   = ref('');
     const hostUrl      = ref(window.location.origin);
     const token        = ref('');
@@ -266,7 +265,7 @@ window.XsSample07 = {
     /* saveSettings — 저장 */
     const saveSettings = () => {
       try {
-        localStorage.setItem(SETTINGS_KEY, JSON.stringify({
+        localStorage.setItem('modu-fo-xdev-sample07_v2', JSON.stringify({
           hostUrl: uiState.hostUrl, token: uiState.token,
           defHeaders: defHeaders.filter(h => h.k.trim()),
         }));

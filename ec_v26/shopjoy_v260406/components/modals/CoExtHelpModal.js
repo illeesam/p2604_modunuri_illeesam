@@ -80,6 +80,10 @@
       consoleNm: 'Google Cloud Console', consoleUrl: 'https://console.cloud.google.com',
       keys: [{ store: 'svGoogleClientId', server: 'syApp.googleClientId', what: 'OAuth 클라이언트 ID',
                sample: '1234567890-abc123.apps.googleusercontent.com' }],
+      videos: [
+        { t: 'Google 공식 — OAuth 클라이언트 ID 만들기 (Google for Developers 채널)', url: 'https://www.youtube.com/watch?v=Qt3KJZ2kQk4' },
+        { t: '영상으로 더 찾아보기 (구글 OAuth 클라이언트 ID 발급)', url: 'https://www.youtube.com/results?search_query=google+oauth+client+id+%EB%B0%9C%EA%B8%89' },
+      ],
       steps: [
         { t: 'Google Cloud Console 접속', d: 'console.cloud.google.com 에 접속해 구글 계정으로 로그인합니다.' },
         { t: '프로젝트 만들기', d: '상단의 프로젝트 선택 상자 → [새 프로젝트] → 이름은 자유롭게 입력(예: my-shop) → 만들기.' },
@@ -102,6 +106,10 @@
       consoleNm: '카카오 디벨로퍼스', consoleUrl: 'https://developers.kakao.com',
       keys: [{ store: 'svKakaoJsKey', server: 'syApp.kakaoJsKey', what: 'JavaScript 키',
                sample: 'a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4' }],
+      videos: [
+        { t: '카카오 로그인 앱 등록 · JavaScript 키 발급 따라하기', url: 'https://www.youtube.com/results?search_query=%EC%B9%B4%EC%B9%B4%EC%98%A4+%EB%A1%9C%EA%B7%B8%EC%9D%B8+JavaScript+%ED%82%A4+%EB%B0%9C%EA%B8%89' },
+        { t: '카카오 로그인 연동(redirect 방식) 구현 영상', url: 'https://www.youtube.com/results?search_query=%EC%B9%B4%EC%B9%B4%EC%98%A4+%EB%A1%9C%EA%B7%B8%EC%9D%B8+%EC%97%B0%EB%8F%99+redirect' },
+      ],
       steps: [
         { t: '⚠ 먼저 알아두기 (SDK 버전)', d: '이 소스는 카카오 SDK v2(t1.kakaocdn.net/kakao_js_sdk/2.7.2)를 로드합니다.\n카카오는 v2부터 보안 정책상 "팝업 로그인"을 제거하고 redirect 방식(인가코드 → 백엔드 토큰 교환)만 지원합니다.\n→ 팝업 방식을 그대로 쓰려면 index.html/bo.html 의 카카오 SDK 를 v1 으로 교체하거나, redirect 흐름을 구현해야 합니다. 키 발급 절차 자체는 동일합니다.' },
         { t: '카카오 디벨로퍼스 접속', d: 'developers.kakao.com 에 접속해 카카오 계정으로 로그인합니다.' },
@@ -127,6 +135,10 @@
         { store: 'svNaverClientId',    server: 'syApp.naverClientId',    what: 'Client ID',                sample: 'AbC1dEf2GhI3jKl4MnO5' },
         { store: 'svNaverCallbackUrl', server: 'syApp.naverCallbackUrl', what: 'Callback URL (선택)',      sample: PAGE_URL },
       ],
+      videos: [
+        { t: '네이버 로그인 애플리케이션 등록 · Client ID 발급 따라하기', url: 'https://www.youtube.com/results?search_query=%EB%84%A4%EC%9D%B4%EB%B2%84+%EB%A1%9C%EA%B7%B8%EC%9D%B8+%EC%95%A0%ED%94%8C%EB%A6%AC%EC%BC%80%EC%9D%B4%EC%85%98+%EB%93%B1%EB%A1%9D+client+id' },
+        { t: '네이버 아이디로 로그인(네아로) 연동 영상', url: 'https://www.youtube.com/results?search_query=%EB%84%A4%EC%9D%B4%EB%B2%84+%EC%95%84%EC%9D%B4%EB%94%94%EB%A1%9C+%EB%A1%9C%EA%B7%B8%EC%9D%B8+%EC%97%B0%EB%8F%99' },
+      ],
       steps: [
         { t: '네이버 개발자센터 접속', d: 'developers.naver.com 에 접속해 네이버 계정으로 로그인합니다.' },
         { t: '애플리케이션 등록', d: '상단 [Application] → [애플리케이션 등록] → 애플리케이션 이름 입력.' },
@@ -147,6 +159,10 @@
       consoleNm: '토스페이먼츠 개발자센터', consoleUrl: 'https://developers.tosspayments.com',
       keys: [{ store: 'svTossClientKey', server: 'syApp.tossClientKey', what: '클라이언트 키 (결제위젯 연동 키)',
                sample: 'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm' }],
+      videos: [
+        { t: '토스페이먼츠 결제위젯 연동 · 클라이언트 키 발급 따라하기', url: 'https://www.youtube.com/results?search_query=%ED%86%A0%EC%8A%A4%ED%8E%98%EC%9D%B4%EB%A8%BC%EC%B8%A0+%EA%B2%B0%EC%A0%9C%EC%9C%84%EC%A0%AF+%EC%97%B0%EB%8F%99' },
+        { t: '토스페이먼츠 공식 개발자 영상 (TossPayments 채널)', url: 'https://www.youtube.com/@tosspayments/videos' },
+      ],
       steps: [
         { t: '먼저 알아두기 (테스트 vs 운영)', d: '· 키 미설정 → 공용 테스트 키로 자동 동작 (결제창은 뜨지만 실 결제 안 됨)\n· test_ 로 시작하는 키 → 내 테스트 상점 키 (실 결제 안 됨)\n· live_ 로 시작하는 키 → 운영 키 (토스페이먼츠 입점 계약 후 발급, 실 결제 발생)' },
         { t: '개발자센터 가입', d: 'developers.tosspayments.com 에 접속해 회원가입/로그인합니다. (사업자 없이도 테스트 키는 즉시 발급)' },
@@ -159,6 +175,52 @@
         { q: '인증 실패 / 유효하지 않은 키', a: 'svTossClientKey 오타이거나 시크릿 키(sk_)를 넣은 경우입니다. "클라이언트 키"(ck/gck)를 다시 복사하세요.' },
         { q: '브랜드페이가 연동되지 않았습니다', a: '브랜드페이는 토스와 별도 약정이 필요한 상품입니다. 약정 전에는 테스트 위젯 결제만 가능합니다.' },
         { q: '결제가 취소되었습니다', a: '사용자가 결제창을 직접 닫은 것으로, 설정 오류가 아닙니다.' },
+      ],
+    },
+    kakaomap: {
+      label: '카카오 지도', badge: '🗺', badgeBg: '#fee500',
+      summary: '카카오 디벨로퍼스의 "JavaScript 키"를 사용합니다. (로그인용 앱과 같은 키를 써도 되고, 지도 전용 앱을 따로 만들어도 됩니다. 무료 · 약 5분)',
+      consoleNm: '카카오 디벨로퍼스', consoleUrl: 'https://developers.kakao.com',
+      keys: [{ store: 'svKakaoMapJsKey', server: 'syApp.kakaoMapJsKey', what: 'JavaScript 키 (지도용)',
+               sample: 'a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4' }],
+      videos: [
+        { t: '카카오맵 API 키 발급 · 웹 지도 띄우기 따라하기', url: 'https://www.youtube.com/results?search_query=%EC%B9%B4%EC%B9%B4%EC%98%A4%EB%A7%B5+api+%ED%82%A4+%EB%B0%9C%EA%B8%89+%EC%A7%80%EB%8F%84' },
+        { t: '카카오맵(Kakao Maps) JavaScript SDK 사용법', url: 'https://www.youtube.com/results?search_query=kakao+map+javascript+sdk' },
+      ],
+      steps: [
+        { t: '카카오 디벨로퍼스 접속', d: 'developers.kakao.com 에 로그인합니다. 로그인용 앱이 이미 있으면 그 앱의 JavaScript 키를 그대로 써도 됩니다.' },
+        { t: '앱의 JavaScript 키 복사', d: '[내 애플리케이션] → 앱 선택 → [앱 설정 > 앱 키] 에서 "JavaScript 키"를 복사합니다. (지도도 로그인과 동일한 JavaScript 키를 사용)' },
+        { t: 'Web 플랫폼 도메인 등록', d: '[앱 설정 > 플랫폼] → [Web 플랫폼 등록] → 사이트 도메인에 아래 현재 주소를 등록해야 지도가 표시됩니다.\n→ ' + ORIGIN },
+        { t: '카카오맵 사용 설정 확인', d: '카카오맵은 별도 활성화 없이 JavaScript 키 + 도메인 등록만으로 동작합니다. (지도 API는 무료 일일 호출 한도 내 사용)' },
+        { t: '키 입력', d: '복사한 JavaScript 키를 svKakaoMapJsKey 에 입력합니다. (입력 위치는 [키 입력 방법] 탭 참고)' },
+      ],
+      faq: [
+        { q: '지도가 회색 빈 화면으로만 나옴', a: '[플랫폼 > Web] 사이트 도메인에 현재 주소(' + ORIGIN + ')가 등록되어 있는지 확인하세요. 포트까지 정확히 같아야 합니다.' },
+        { q: 'appkey 가 유효하지 않습니다', a: 'svKakaoMapJsKey 가 비었거나 오타입니다. REST API 키가 아니라 "JavaScript 키"인지 확인하세요.' },
+        { q: '지도 SDK 로드 실패', a: 'dapi.kakao.com 스크립트가 광고차단/네트워크로 막혔는지 확인하세요.' },
+      ],
+    },
+    navermap: {
+      label: '네이버 지도', badge: '🗺', badgeBg: '#03c75a',
+      summary: '네이버 클라우드 플랫폼(NCP)에서 Maps Application 을 등록하고 "Client ID"(ncpClientId)를 발급받습니다. (NCP 가입 필요 · 약 10분)',
+      consoleNm: '네이버 클라우드 플랫폼', consoleUrl: 'https://console.ncloud.com',
+      keys: [{ store: 'svNaverMapClientId', server: 'syApp.naverMapClientId', what: 'Client ID (ncpClientId)',
+               sample: 'abcd1234ef' }],
+      videos: [
+        { t: '네이버 지도(NCP Maps) API 신청 · Client ID 발급 따라하기', url: 'https://www.youtube.com/results?search_query=%EB%84%A4%EC%9D%B4%EB%B2%84+%EC%A7%80%EB%8F%84+api+%ED%81%B4%EB%9D%BC%EC%9D%B4%EC%96%B8%ED%8A%B8+id+%EB%B0%9C%EA%B8%89' },
+        { t: '네이버 클라우드 플랫폼 Maps 연동 영상', url: 'https://www.youtube.com/results?search_query=ncloud+maps+web+dynamic+map' },
+      ],
+      steps: [
+        { t: '네이버 클라우드 플랫폼 가입', d: 'console.ncloud.com 에 접속해 가입/로그인합니다. (네이버 "개발자센터(developers.naver.com)"가 아니라 "클라우드 플랫폼(NCP)"입니다 — 헷갈리기 쉬움)' },
+        { t: 'Maps 서비스 신청', d: 'Services → AI·Application Service → [Maps] → [Application 등록]. 결제수단 등록이 요구될 수 있으나 Web Dynamic Map 은 일정 호출까지 무료입니다.' },
+        { t: 'Web 서비스 URL 등록', d: 'Application 등록 시 "Web 서비스 URL"에 아래 현재 주소를 등록합니다 (등록 도메인에서만 지도가 표시됨).\n→ ' + ORIGIN },
+        { t: 'Client ID 복사', d: '등록 완료 후 발급된 "Client ID"(=ncpClientId)를 복사합니다.\n※ Client Secret 은 프론트 지도에는 사용하지 않습니다.' },
+        { t: '키 입력', d: '복사한 Client ID 를 svNaverMapClientId 에 입력합니다. (입력 위치는 [키 입력 방법] 탭 참고)' },
+      ],
+      faq: [
+        { q: '지도가 안 뜨고 인증 실패(Authentication Failed) 표시', a: 'Application 의 "Web 서비스 URL"에 현재 주소(' + ORIGIN + ')가 등록되어 있는지 확인하세요. http/https·포트까지 같아야 합니다.' },
+        { q: 'ncpClientId 오류', a: 'svNaverMapClientId 값이 비었거나 오타입니다. NCP 콘솔의 Maps Application 에서 Client ID 를 다시 복사하세요.' },
+        { q: '개발자센터에서 발급한 키를 넣었는데 안 됨', a: '지도는 developers.naver.com(로그인용)이 아니라 console.ncloud.com(클라우드 플랫폼)의 Maps Client ID 를 사용합니다. 발급처가 다릅니다.' },
       ],
     },
   };
@@ -184,11 +246,13 @@
       const shell = (typeof window.useBoAuthStore === 'function') ? 'bo-modal' : 'fo-modal';
 
       const tabs = [
-        { id: 'google', label: '구글 로그인' },
-        { id: 'kakao',  label: '카카오 로그인' },
-        { id: 'naver',  label: '네이버 로그인' },
-        { id: 'toss',   label: '토스 결제' },
-        { id: 'input',  label: '🔑 키 입력 방법' },
+        { id: 'google',   label: '구글 로그인' },
+        { id: 'kakao',    label: '카카오 로그인' },
+        { id: 'naver',    label: '네이버 로그인' },
+        { id: 'toss',     label: '토스 결제' },
+        { id: 'kakaomap', label: '카카오 지도' },
+        { id: 'navermap', label: '네이버 지도' },
+        { id: 'input',    label: '🔑 키 입력 방법' },
       ];
 
       /* ##### [02] 액션 모음 (dispatch) ###################################### */
@@ -221,8 +285,11 @@
       };
 
       const cfGuide = computed(() => GUIDES[st.tab] || null);
-      const cfTitle = computed(() =>
-        (st.kind === 'pay' ? '결제 연동 설정 도움말' : 'SNS 로그인 설정 도움말'));
+      const cfTitle = computed(() => {
+        if (st.tab === 'kakaomap' || st.tab === 'navermap') return '지도 연동 설정 도움말';
+        if (st.kind === 'pay') return '결제 연동 설정 도움말';
+        return 'SNS 로그인 설정 도움말';
+      });
 
       /* ##### [06] return (템플릿 노출) ###################################### */
       return { st, shell, tabs, handleBtnAction, fnKeyState, fnKeyBadge, cfGuide, cfTitle,
@@ -323,6 +390,29 @@
           </li>
         </ol>
       </div>
+      <!-- ===== ■.■. 참고 영상 (YouTube) ==================================== -->
+      <div v-if="cfGuide.videos" style="margin-bottom:12px;">
+        <div style="font-weight:700;margin-bottom:6px;">
+          📺 참고 영상 (YouTube)
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <a v-for="(vd, i) in cfGuide.videos" :key="i" :href="vd.url" target="_blank" rel="noopener"
+            style="display:flex;align-items:center;gap:10px;background:#fff;border:1px solid #f0f0f0;border-radius:8px;padding:9px 12px;text-decoration:none;color:#333;">
+            <span style="width:26px;height:26px;border-radius:6px;background:#ff0000;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">
+              ▶
+            </span>
+            <span style="flex:1;font-size:12px;font-weight:600;">
+              {{ vd.t }}
+            </span>
+            <span style="flex-shrink:0;font-size:12px;color:#1d4ed8;font-weight:700;">
+              열기 ↗
+            </span>
+          </a>
+        </div>
+        <div style="font-size:11px;color:#999;margin-top:4px;">
+          ※ 외부 영상은 게시자 사정으로 변경/삭제될 수 있습니다. 콘솔 화면이 영상과 다르면 위 [발급 단계]를 우선 따르세요.
+        </div>
+      </div>
       <!-- ===== ■.■. 키 넣는 곳 바로가기 ===================================== -->
       <div style="background:#fffbe8;border:1px solid #f5e6a8;border-radius:8px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;">
         <span style="font-size:18px;flex-shrink:0;">🔑</span>
@@ -367,16 +457,32 @@
             방법 A — 데모/로컬: 파일에 직접 입력 (가장 간단, 추천 시작점)
           </div>
           <div style="padding:10px 14px;font-size:12px;color:#555;line-height:1.8;">
-            아래 두 파일을 텍스트 에디터로 열어 state 의 svXxx 빈 값('')에 발급키를 붙여넣고 저장 → 브라우저 새로고침.
+            아래 두 파일을 텍스트 에디터로 엽니다. (FO·BO 둘 다 같은 키를 넣어야 양쪽 화면에서 동작)
             <div style="font-family:monospace;background:#f6f8fa;border:1px solid #eee;border-radius:6px;padding:8px 12px;margin:6px 0;">
-              · 사용자 화면(FO): lib/stores/fo/foAppStore.js<br/>
-              · 관리자 화면(BO): lib/stores/bo/boAppStore.js
+              · 사용자 화면(FO): <b>lib/stores/fo/foAppStore.js</b><br/>
+              · 관리자 화면(BO): <b>lib/stores/bo/boAppStore.js</b>
             </div>
-            수정 예시 (foAppStore.js 의 state 부분):
-            <pre style="background:#1e1e2e;color:#cdd9e5;border-radius:6px;padding:10px 14px;margin:6px 0;font-size:12px;line-height:1.7;overflow-x:auto;">svGoogleClientId: '1234567890-abc123.apps.googleusercontent.com',
-svKakaoJsKey:     'a1b2c3d4e5f6...(JavaScript 키)',
-svNaverClientId:  'AbC1dEf2GhI3...(Client ID)',
-svTossClientKey:  'test_gck_...(클라이언트 키)',</pre>
+            <b style="color:#1d4ed8;">정확한 위치</b> — 파일 안의 <code style="background:#eef;padding:1px 5px;border-radius:4px;">state: () =&gt; ({ ... })</code> 블록에서
+            <code style="background:#eef;padding:1px 5px;border-radius:4px;">..._emptyExt()</code> 라고 적힌 줄을 찾으세요.
+            이 줄이 모든 키를 빈 값('')으로 깔기 때문에, 발급키는 <b>반드시 <code style="background:#eef;padding:1px 5px;border-radius:4px;">..._emptyExt()</code> 바로 아래 줄</b>에 적어 덮어써야 합니다(순서 중요).
+            <pre style="background:#1e1e2e;color:#cdd9e5;border-radius:6px;padding:10px 14px;margin:6px 0;font-size:12px;line-height:1.7;overflow-x:auto;">  state: () =&gt; ({
+    svFoSiteNo: '01',
+    svAppVersion: '2.6.0',
+    svLastUpdateDate: '',
+    svActive: '-',
+    ..._emptyExt(),          <span style="color:#6a9955;">// ← 모든 키를 '' 로 초기화 (이 줄은 그대로 둠)</span>
+
+    <span style="color:#6a9955;">// ↓↓↓ 발급받은 실제 키를 이 아래에 적어 위 빈 값을 덮어씁니다 ↓↓↓</span>
+    svGoogleClientId:   '1234567890-abc123.apps.googleusercontent.com',
+    svKakaoJsKey:       'a1b2c3d4e5f6...(로그인용 JavaScript 키)',
+    svNaverClientId:    'AbC1dEf2GhI3...(로그인 Client ID)',
+    svNaverCallbackUrl: '',  <span style="color:#6a9955;">// 비우면 현재 페이지 주소 자동 사용</span>
+    svTossClientKey:    'test_gck_...(토스 클라이언트 키)',
+    svKakaoMapJsKey:    'a1b2c3d4e5f6...(지도용 JavaScript 키)',
+    svNaverMapClientId: 'abcd1234ef...(NCP Maps Client ID)',
+  }),</pre>
+            ※ 카카오는 <b>로그인용(svKakaoJsKey)</b>과 <b>지도용(svKakaoMapJsKey)</b>을 따로 둡니다(같은 JavaScript 키를 양쪽에 넣어도 됨).
+            네이버는 <b>로그인(svNaverClientId, developers.naver.com)</b>과 <b>지도(svNaverMapClientId, console.ncloud.com)</b>의 <b>발급처가 다릅니다</b>.<br/>
             ※ 로그인하면 서버 설정값이 우선 적용되지만, 서버가 비어 있거나 <b>데모(DEMO_…) 값</b>이면 위에서 넣은 키가 그대로 유지됩니다. 운영 배포 시에는 방법 B 를 사용하세요.
           </div>
         </div>
@@ -388,7 +494,7 @@ svTossClientKey:  'test_gck_...(클라이언트 키)',</pre>
           <div style="padding:10px 14px;font-size:12px;color:#555;line-height:1.8;">
             관리자 화면(bo.html) 로그인 → 사이트 설정에서 키를 저장하면, 로그인 시 서버 초기화 데이터(syApp.googleClientId 등)로
             모든 화면에 자동 주입됩니다.<br/>
-            ※ 서버 측 보관 항목: syApp.googleClientId / kakaoJsKey / naverClientId / naverCallbackUrl / tossClientKey 등.<br/>
+            ※ 서버 측 보관 항목: syApp.googleClientId / kakaoJsKey / naverClientId / naverCallbackUrl / tossClientKey / kakaoMapJsKey / naverMapClientId 등.<br/>
             ※ 토스 <b>시크릿 키(sk_)</b>는 화면이 아니라 백엔드 환경변수(TOSS_SECRET_KEY)로만 설정합니다 — 프론트에 넣으면 유출됩니다.
           </div>
         </div>

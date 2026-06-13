@@ -154,7 +154,7 @@ window.foAppHeader = {
         try {
           const store = window.useFoAuthStore(Pinia.getActivePinia());
           store.svAuthUser = { ...u };
-          localStorage.setItem('modu-fo-authUser', JSON.stringify(store.svAuthUser));
+          localStorage.setItem('modu-fo-auth-authUser', JSON.stringify(store.svAuthUser));
         } catch (e) {}
       }
       uiState.profileOpen = false;

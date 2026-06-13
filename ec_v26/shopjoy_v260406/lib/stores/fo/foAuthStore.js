@@ -54,10 +54,10 @@
         else if (authData.user) this.saSetAuthUser(authData.user); // StoreAuth.user 필드 호환
         if (authData.tempAuthInfo !== undefined) this.svTempAuthInfo = authData.tempAuthInfo;
         try {
-          if (this.svAccessToken) localStorage.setItem('modu-fo-accessToken', this.svAccessToken);
-          if (this.svRefreshToken) localStorage.setItem('modu-fo-refreshToken', this.svRefreshToken);
-          if (this.svAuthUser) localStorage.setItem('modu-fo-authUser', JSON.stringify(this.svAuthUser));
-          if (this.svTempAuthInfo) localStorage.setItem('modu-fo-tempAuthInfo', JSON.stringify(this.svTempAuthInfo));
+          if (this.svAccessToken) localStorage.setItem('modu-fo-auth-accessToken', this.svAccessToken);
+          if (this.svRefreshToken) localStorage.setItem('modu-fo-auth-refreshToken', this.svRefreshToken);
+          if (this.svAuthUser) localStorage.setItem('modu-fo-auth-authUser', JSON.stringify(this.svAuthUser));
+          if (this.svTempAuthInfo) localStorage.setItem('modu-fo-auth-tempAuthInfo', JSON.stringify(this.svTempAuthInfo));
         } catch (e) {
           console.error('[foAuthStore] saSetAuth localStorage error:', e);
         }
@@ -70,8 +70,8 @@
         this.svAccessExpiresIn = authData.accessExpiresIn || this.svAccessExpiresIn;
         this.svRefreshExpiresIn = authData.refreshExpiresIn || this.svRefreshExpiresIn;
         try {
-          if (this.svAccessToken) localStorage.setItem('modu-fo-accessToken', this.svAccessToken);
-          if (this.svRefreshToken) localStorage.setItem('modu-fo-refreshToken', this.svRefreshToken);
+          if (this.svAccessToken) localStorage.setItem('modu-fo-auth-accessToken', this.svAccessToken);
+          if (this.svRefreshToken) localStorage.setItem('modu-fo-auth-refreshToken', this.svRefreshToken);
         } catch (e) {
           console.error('[foAuthStore] saUpdateAuth localStorage error:', e);
         }
@@ -81,7 +81,7 @@
         if (!authUserData) return;
         this.svAuthUser = authUserData;
         try {
-          localStorage.setItem('modu-fo-authUser', JSON.stringify(authUserData));
+          localStorage.setItem('modu-fo-auth-authUser', JSON.stringify(authUserData));
         } catch (e) {
           console.error('[foAuthStore] saSetAuthUser localStorage error:', e);
         }
@@ -91,8 +91,8 @@
         this.svAuthUser = authUser || _defaultAuthUser();
         this.svAccessToken = accessToken || '';
         try {
-          if (this.svAccessToken) localStorage.setItem('modu-fo-accessToken', this.svAccessToken);
-          if (authUser) localStorage.setItem('modu-fo-authUser', JSON.stringify(authUser));
+          if (this.svAccessToken) localStorage.setItem('modu-fo-auth-accessToken', this.svAccessToken);
+          if (authUser) localStorage.setItem('modu-fo-auth-authUser', JSON.stringify(authUser));
         } catch (e) {
           console.error('[foAuthStore] saSetSession localStorage error:', e);
         }
@@ -106,10 +106,10 @@
         this.svRefreshExpiresIn = 0;
         this.svTempAuthInfo = null;
         try {
-          localStorage.removeItem('modu-fo-accessToken');
-          localStorage.removeItem('modu-fo-refreshToken');
-          localStorage.removeItem('modu-fo-authUser');
-          localStorage.removeItem('modu-fo-tempAuthInfo');
+          localStorage.removeItem('modu-fo-auth-accessToken');
+          localStorage.removeItem('modu-fo-auth-refreshToken');
+          localStorage.removeItem('modu-fo-auth-authUser');
+          localStorage.removeItem('modu-fo-auth-tempAuthInfo');
         } catch (e) {
           console.error('[foAuthStore] saClearSession localStorage error:', e);
         }
@@ -123,9 +123,9 @@
         this.svRefreshExpiresIn = 0;
         this.svTempAuthInfo = null;
         try {
-          localStorage.removeItem('modu-fo-accessToken');
-          localStorage.removeItem('modu-fo-refreshToken');
-          localStorage.removeItem('modu-fo-tempAuthInfo');
+          localStorage.removeItem('modu-fo-auth-accessToken');
+          localStorage.removeItem('modu-fo-auth-refreshToken');
+          localStorage.removeItem('modu-fo-auth-tempAuthInfo');
         } catch (e) {
           console.error('[foAuthStore] saClear localStorage error:', e);
         }
@@ -133,9 +133,9 @@
 
       saSyncFromStorage() {
         try {
-          const token        = localStorage.getItem('modu-fo-accessToken') || '';
-          const refreshToken = localStorage.getItem('modu-fo-refreshToken') || '';
-          const authUserJson = localStorage.getItem('modu-fo-authUser')   || '';
+          const token        = localStorage.getItem('modu-fo-auth-accessToken') || '';
+          const refreshToken = localStorage.getItem('modu-fo-auth-refreshToken') || '';
+          const authUserJson = localStorage.getItem('modu-fo-auth-authUser')   || '';
           // 이전 값과 동일하면 reactive 갱신 스킵 (1초 폴링 시 매번 svAuthUser 객체 갱신으로 인한 무한 리렌더 방지)
           if (this.svAccessToken === token
               && this.svRefreshToken === refreshToken
@@ -162,9 +162,9 @@
 
       saRestoreFromStorage() {
         try {
-          const token         = localStorage.getItem('modu-fo-accessToken');
-          const refreshToken  = localStorage.getItem('modu-fo-refreshToken');
-          const authUserJson  = localStorage.getItem('modu-fo-authUser');
+          const token         = localStorage.getItem('modu-fo-auth-accessToken');
+          const refreshToken  = localStorage.getItem('modu-fo-auth-refreshToken');
+          const authUserJson  = localStorage.getItem('modu-fo-auth-authUser');
           if (token) {
             this.svAccessToken = token;
             if (refreshToken) this.svRefreshToken = refreshToken;

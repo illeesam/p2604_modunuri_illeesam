@@ -601,7 +601,7 @@
         if (embed.value !== newEmbed) embed.value = newEmbed;
         const pg = p.get('page');
         if (pg && ALL_PAGES.includes(pg)) {
-          const isLoggedIn = !!localStorage.getItem('modu-bo-accessToken');
+          const isLoggedIn = !!localStorage.getItem('modu-bo-auth-accessToken');
           if (!isLoggedIn && pg !== 'dashboard') {
             if (showNotification) showToast('로그인이 필요합니다.', 'error');
             if (page.value !== 'dashboard') page.value = 'dashboard';
@@ -621,7 +621,7 @@
 
       /* navigate */
       const navigate = (pg, opts = {}) => {
-        const isLoggedIn = !!localStorage.getItem('modu-bo-accessToken');
+        const isLoggedIn = !!localStorage.getItem('modu-bo-auth-accessToken');
         if (!isLoggedIn && pg !== 'dashboard') {
           showToast('로그인이 필요합니다.', 'error');
           return;
@@ -655,9 +655,9 @@
       const toasts = reactive([]);
       /* ── 설정(우측 상단 ⚙) ── */
       const boSettingShow = Vue.ref(false);   // 설정 드롭다운 표시
-      const BO_API_TOAST_KEY = 'modu-bo-setting-apiToastOpen';   // API 응답 toast 출력 ON/OFF (F5 후 유지)
-      const apiToastEnabled = Vue.ref(localStorage.getItem(BO_API_TOAST_KEY) === 'true');   // 기본 OFF(미저장 시)
-      Vue.watch(apiToastEnabled, (v) => { try { localStorage.setItem(BO_API_TOAST_KEY, v ? 'true' : 'false'); } catch (e) {} });
+      // modu-bo-sy-apiToastOpen: API 응답 toast 출력 ON/OFF (F5 후 유지)
+      const apiToastEnabled = Vue.ref(localStorage.getItem('modu-bo-sy-apiToastOpen') === 'true');   // 기본 OFF(미저장 시)
+      Vue.watch(apiToastEnabled, (v) => { try { localStorage.setItem('modu-bo-sy-apiToastOpen', v ? 'true' : 'false'); } catch (e) {} });
       const onToggleApiToast = () => { apiToastEnabled.value = !apiToastEnabled.value; };
       const onToggleBoSetting = () => { boSettingShow.value = !boSettingShow.value; };
       /* ── API Progress Overlay ── */
@@ -756,13 +756,12 @@
       const closeAllToasts = () => {
         toasts.splice(0, toasts.length);
       };
-      const TOAST_DETAIL_KEY = 'modu-bo-toast-isShowDetail';
-      const toastShowDetail = ref(localStorage.getItem(TOAST_DETAIL_KEY) !== 'false');
+      const toastShowDetail = ref(localStorage.getItem('modu-bo-sy-toast-isShowDetail') !== 'false');
 
       /* toggleToastDetail */
       const toggleToastDetail = () => {
         toastShowDetail.value = !toastShowDetail.value;
-        localStorage.setItem(TOAST_DETAIL_KEY, toastShowDetail.value);
+        localStorage.setItem('modu-bo-sy-toast-isShowDetail', toastShowDetail.value);
         toasts.forEach((t) => {
           t.expanded = toastShowDetail.value;
         });
@@ -940,7 +939,7 @@
       /* _loadApiLogsFromStorage */
       const _loadApiLogsFromStorage = () => {
         try {
-          const stored = localStorage.getItem('modu-bo-apiLog');
+          const stored = localStorage.getItem('modu-bo-sy-apiLog');
           if (stored) {
             const parsed = JSON.parse(stored);
             if (Array.isArray(parsed)) {
@@ -953,7 +952,7 @@
       /* _saveApiLogsToStorage */
       const _saveApiLogsToStorage = () => {
         try {
-          localStorage.setItem('modu-bo-apiLog', JSON.stringify(apiLogs.slice(0, 10)));
+          localStorage.setItem('modu-bo-sy-apiLog', JSON.stringify(apiLogs.slice(0, 10)));
         } catch (_) {}
       };
 
@@ -1052,7 +1051,7 @@
       const clearApiLogs = () => {
         apiLogs.length = 0;
         try {
-          localStorage.removeItem('modu-bo-apiLog');
+          localStorage.removeItem('modu-bo-sy-apiLog');
         } catch (_) {}
         showToast('API 로그가 초기화되었습니다.', 'success');
       };
@@ -1197,9 +1196,9 @@
       /* _restoreBoUser */
       const _restoreBoUser = () => {
         try {
-          const tok = localStorage.getItem('modu-bo-accessToken');
+          const tok = localStorage.getItem('modu-bo-auth-accessToken');
           if (!tok) return { userId: '', name: '', email: '', role: '', phone: '', dept: '' };
-          const authUser = JSON.parse(localStorage.getItem('modu-bo-authUser') || 'null');
+          const authUser = JSON.parse(localStorage.getItem('modu-bo-auth-authUser') || 'null');
           return authUser || { userId: '', name: '', email: '', role: '', phone: '', dept: '' };
         } catch (_) {
           return { userId: '', name: '', email: '', role: '', phone: '', dept: '' };
@@ -1239,7 +1238,7 @@
 
       // 초기 복원 — 토큰 없으면 reset, 있으면 syncFromStorage (FO foAuth.init() 동일 패턴)
       try {
-        const _initToken = localStorage.getItem('modu-bo-accessToken');
+        const _initToken = localStorage.getItem('modu-bo-auth-accessToken');
         if (!_initToken) _boAuthStore?.saReset?.();
         else _boAuthStore?.saSyncFromStorage?.();
       } catch (_) {}
@@ -1419,7 +1418,7 @@
         /* 최초 진입 시 미인증이면 전용 화면(page 모드) 으로 로그인 표시 — 뒤에 데이터 안 비침.
          * (세션 만료 후 재인증은 modal 모드로 별도 호출) */
         setTimeout(() => {
-          const isLoggedIn = !!localStorage.getItem('modu-bo-accessToken');
+          const isLoggedIn = !!localStorage.getItem('modu-bo-auth-accessToken');
           if (!isLoggedIn) openLogin('login', 'page');
         }, 50);
       });
@@ -1805,12 +1804,11 @@
       const doExpireToken = async () => {
         uiState.userMenuShow = false;
         try {
-          const ACCESS_KEY = 'modu-bo-accessToken';
-          const cur = localStorage.getItem(ACCESS_KEY) || '';
+          const cur = localStorage.getItem('modu-bo-auth-accessToken') || '';
           if (!cur) { showToast('accessToken 이 없습니다. (로그인 후 시도)', 'error'); return; }
           /* 서버가 거부하도록 토큰을 손상 (서명 깨짐 → 401). refreshToken 은 보존 */
           const broken = cur + '__EXPIRED__';
-          localStorage.setItem(ACCESS_KEY, broken);
+          localStorage.setItem('modu-bo-auth-accessToken', broken);
           const authStore = window.useBoAuthStore?.();
           if (authStore) authStore.svAccessToken = broken;
           showToast('🔄 accessToken 을 강제 만료했습니다. 다음 API에서 자동 재갱신을 시도합니다.', 'info');
@@ -1818,7 +1816,7 @@
           try {
             await boApiSvc.mbMember.getPage({ pageNo: 1, pageSize: 1 }, '토큰테스트', '강제만료');
             /* 인터셉터가 localStorage 의 accessToken 을 새 값으로 교체함 → store 도 동기화 */
-            const newTok = localStorage.getItem(ACCESS_KEY) || '';
+            const newTok = localStorage.getItem('modu-bo-auth-accessToken') || '';
             if (authStore && newTok && newTok !== broken) authStore.svAccessToken = newTok;
             showToast('✅ 토큰 자동 재갱신 성공 (refresh 흐름 정상). 화면 유지됨.', 'success');
           } catch (apiErr) {
@@ -1858,7 +1856,7 @@
        * 사용자(authId)가 바뀌면(다른 계정 로그인 또는 로그아웃) 이 탭의 메모리에 이전 사용자
        * 데이터가 남아있으므로 reload 하여 새 사용자 기준으로 완전히 다시 로드한다. */
       window.addEventListener('storage', (e) => {
-        if (e.key === 'modu-bo-accessToken' || e.key === 'modu-bo-authUser') {
+        if (e.key === 'modu-bo-auth-accessToken' || e.key === 'modu-bo-auth-authUser') {
           const prevAuthId = currentAuthUser?.authId || '';
           _boAuthStore?.saSyncFromStorage?.();
           _syncCurrentAuthUser();
@@ -1932,7 +1930,7 @@
       /* goFoSite */
       const goFoSite = (no) => {
         try {
-          localStorage.setItem('modu-fo-siteNo', no);
+          localStorage.setItem('modu-fo-sy-siteNo', no);
         } catch (_) {}
         window.open('index.html?SITE_NO=' + no, '_blank');
         uiState.relatedSiteOpen = false;
@@ -1941,12 +1939,12 @@
       /* goBoSite */
       const goBoSite = (no) => {
         try {
-          localStorage.setItem('modu-bo-siteNo', no);
+          localStorage.setItem('modu-bo-sy-siteNo', no);
         } catch (_) {}
         window.open('bo.html?SITE_NO=' + no, '_blank');
         uiState.relatedSiteOpen = false;
       };
-      const currentFoSiteNo = (typeof localStorage !== 'undefined' && localStorage.getItem('modu-fo-siteNo')) || '01';
+      const currentFoSiteNo = (typeof localStorage !== 'undefined' && localStorage.getItem('modu-fo-sy-siteNo')) || '01';
       const currentBoSiteNo = window.BO_SITE_NO || '01';
       const _boAppStore = window.useBoAppStore?.();
       const cfBoActive = computed(() => _boAppStore?.svActive || '-');

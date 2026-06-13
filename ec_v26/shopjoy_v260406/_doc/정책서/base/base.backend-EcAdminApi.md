@@ -98,8 +98,8 @@ Response: { ok:true, data: { accessToken, refreshToken, user:{...} } }
 
 | 토큰 | 만료 | 저장 위치 (클라이언트, BO / FO) |
 |---|---|---|
-| accessToken | 15분 (900,000ms) | `localStorage modu-bo-accessToken` / `modu-fo-accessToken` |
-| refreshToken | 7일 (604,800,000ms) | `localStorage modu-bo-refreshToken` / `modu-fo-refreshToken` |
+| accessToken | 15분 (900,000ms) | `localStorage modu-bo-auth-accessToken` / `modu-fo-auth-accessToken` |
+| refreshToken | 7일 (604,800,000ms) | `localStorage modu-bo-auth-refreshToken` / `modu-fo-auth-refreshToken` |
 
 ### 4.2 토큰 갱신
 

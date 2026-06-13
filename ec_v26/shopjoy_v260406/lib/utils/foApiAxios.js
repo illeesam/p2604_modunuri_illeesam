@@ -1,6 +1,6 @@
 /**
  * FO axios 클라이언트 (foApi)
- * - Bearer 토큰 자동 주입 (modu-fo-accessToken)
+ * - Bearer 토큰 자동 주입 (modu-fo-auth-accessToken)
  * - 401 → /auth/fo/refresh 로 토큰 재갱신 후 원 요청 재시도 (1회)
  * - request / response / error 콘솔 로그
  *
@@ -31,8 +31,6 @@
 
   /* ── 설정 ────────────────────────────────────────────────────── */
   var TAG              = '[fo]';
-  var ACCESS_TOKEN_KEY = 'modu-fo-accessToken';
-  var REFRESH_URL      = 'co/fo-auth/token-refresh';
   var TIMEOUT          = 15000;
 
   var inst = global.axios.create({ timeout: TIMEOUT });
@@ -48,7 +46,7 @@
         cfg.headers['Content-Type'] = 'application/json';
       }
       /* Bearer 토큰 주입 */
-      var t = localStorage.getItem(ACCESS_TOKEN_KEY);
+      var t = localStorage.getItem('modu-fo-auth-accessToken');
       if (t) {
         cfg.headers.Authorization = 'Bearer ' + t;
       }
@@ -249,15 +247,15 @@
       }
       isRefreshing = true;
       var expiredToken = null;
-      try { expiredToken = localStorage.getItem(ACCESS_TOKEN_KEY); } catch (_) {}
-      return global.axios.post(apiUrl(REFRESH_URL), null, {
+      try { expiredToken = localStorage.getItem('modu-fo-auth-accessToken'); } catch (_) {}
+      return global.axios.post(apiUrl('co/fo-auth/token-refresh'), null, {
           headers: { Authorization: expiredToken ? 'Bearer ' + expiredToken : '' }
         })
         .then(function (r) {
           var d = r && r.data && r.data.data || r && r.data;
           var newTok = d && (d.accessToken || d.token);
           if (!newTok) throw new Error('no token in refresh response');
-          try { localStorage.setItem(ACCESS_TOKEN_KEY, newTok); } catch (_) {}
+          try { localStorage.setItem('modu-fo-auth-accessToken', newTok); } catch (_) {}
           flush(newTok);
           isRefreshing = false;
           cfg.headers = cfg.headers || {};
@@ -268,8 +266,8 @@
           flush(null);
           isRefreshing = false;
           try {
-            localStorage.removeItem(ACCESS_TOKEN_KEY);
-            localStorage.removeItem('modu-fo-authUser');
+            localStorage.removeItem('modu-fo-auth-accessToken');
+            localStorage.removeItem('modu-fo-auth-authUser');
           } catch (_) {}
           if (global.foAuth && typeof global.foAuth.logout === 'function') {
             try { global.foAuth.logout(); } catch (_) {}

@@ -284,7 +284,6 @@ window.SyPostman = {
     const cfFlatTree = computed(() => flattenTree(treeRoot));
 
     /* ===== Settings (localStorage 자동저장) ===== */
-    const SETTINGS_KEY = 'sj_admin_postman_v1';
     const hostUrl      = ref(window.location.origin);
     const token        = ref('');
     const defHeaders   = reactive([{ k: 'Content-Type', v: 'application/json' }, { k: '', v: '' }]);
@@ -292,7 +291,7 @@ window.SyPostman = {
     /* saveSettings — 저장 */
     const saveSettings = () => {
       try {
-        localStorage.setItem(SETTINGS_KEY, JSON.stringify({
+        localStorage.setItem('modu-bo-xdev-postman_v1', JSON.stringify({
           hostUrl: uiState.hostUrl, token: uiState.token,
           defHeaders: defHeaders.filter(h => h.k.trim()),
         }));
@@ -302,7 +301,7 @@ window.SyPostman = {
     /* loadSettings — 로드 */
     const loadSettings = () => {
       try {
-        const s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+        const s = JSON.parse(localStorage.getItem('modu-bo-xdev-postman_v1') || '{}');
         if (s.hostUrl) { uiState.hostUrl = s.hostUrl; }
         if (s.token) { uiState.token   = s.token; }
         if (s.defHeaders?.length) {

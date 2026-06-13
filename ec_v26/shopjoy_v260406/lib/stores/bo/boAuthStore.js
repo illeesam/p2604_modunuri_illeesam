@@ -90,11 +90,11 @@
 
 
           try {
-            if (this.svAccessToken) localStorage.setItem('modu-bo-accessToken', this.svAccessToken);
-            if (this.svRefreshToken) localStorage.setItem('modu-bo-refreshToken', this.svRefreshToken);
-            if (this.svAuthUser) localStorage.setItem('modu-bo-authUser', JSON.stringify(this.svAuthUser));
-            if (this.svAccessExpiresIn) localStorage.setItem('modu-bo-accessExpiresIn', this.svAccessExpiresIn.toString());
-            if (this.svRefreshExpiresIn) localStorage.setItem('modu-bo-refreshExpiresIn', this.svRefreshExpiresIn.toString());
+            if (this.svAccessToken) localStorage.setItem('modu-bo-auth-accessToken', this.svAccessToken);
+            if (this.svRefreshToken) localStorage.setItem('modu-bo-auth-refreshToken', this.svRefreshToken);
+            if (this.svAuthUser) localStorage.setItem('modu-bo-auth-authUser', JSON.stringify(this.svAuthUser));
+            if (this.svAccessExpiresIn) localStorage.setItem('modu-bo-auth-accessExpiresIn', this.svAccessExpiresIn.toString());
+            if (this.svRefreshExpiresIn) localStorage.setItem('modu-bo-auth-refreshExpiresIn', this.svRefreshExpiresIn.toString());
           } catch (_) {}
 
           /* 로그인 후 초기 데이터 조회 */
@@ -155,10 +155,10 @@
         this.svRefreshToken = '';
         this.svTempAuthInfo = null;
         try {
-          localStorage.removeItem('modu-bo-accessToken');
-          localStorage.removeItem('modu-bo-refreshToken');
-          localStorage.removeItem('modu-bo-authUser');
-          localStorage.removeItem('modu-bo-tempAuthInfo');
+          localStorage.removeItem('modu-bo-auth-accessToken');
+          localStorage.removeItem('modu-bo-auth-refreshToken');
+          localStorage.removeItem('modu-bo-auth-authUser');
+          localStorage.removeItem('modu-bo-auth-tempAuthInfo');
         } catch (_) {}
       },
 
@@ -173,12 +173,12 @@
         else if (authData.user) this.saSetAuthUser(authData.user); // StoreAuth.user 필드 호환
         if (authData.tempAuthInfo !== undefined) this.svTempAuthInfo = authData.tempAuthInfo;
         try {
-          if (this.svAccessToken) localStorage.setItem('modu-bo-accessToken', this.svAccessToken);
-          if (this.svRefreshToken) localStorage.setItem('modu-bo-refreshToken', this.svRefreshToken);
-          if (this.svAuthUser) localStorage.setItem('modu-bo-authUser', JSON.stringify(this.svAuthUser));
-          if (this.svAccessExpiresIn) localStorage.setItem('modu-bo-accessExpiresIn', this.svAccessExpiresIn.toString());
-          if (this.svRefreshExpiresIn) localStorage.setItem('modu-bo-refreshExpiresIn', this.svRefreshExpiresIn.toString());
-          if (this.svTempAuthInfo) localStorage.setItem('modu-bo-tempAuthInfo', JSON.stringify(this.svTempAuthInfo));
+          if (this.svAccessToken) localStorage.setItem('modu-bo-auth-accessToken', this.svAccessToken);
+          if (this.svRefreshToken) localStorage.setItem('modu-bo-auth-refreshToken', this.svRefreshToken);
+          if (this.svAuthUser) localStorage.setItem('modu-bo-auth-authUser', JSON.stringify(this.svAuthUser));
+          if (this.svAccessExpiresIn) localStorage.setItem('modu-bo-auth-accessExpiresIn', this.svAccessExpiresIn.toString());
+          if (this.svRefreshExpiresIn) localStorage.setItem('modu-bo-auth-refreshExpiresIn', this.svRefreshExpiresIn.toString());
+          if (this.svTempAuthInfo) localStorage.setItem('modu-bo-auth-tempAuthInfo', JSON.stringify(this.svTempAuthInfo));
         } catch (_) {}
       },
 
@@ -197,26 +197,26 @@
           role:   authUserData.role || authUserData.roleId || '',
         };
         try {
-          localStorage.setItem('modu-bo-authUser', JSON.stringify(this.svAuthUser));
+          localStorage.setItem('modu-bo-auth-authUser', JSON.stringify(this.svAuthUser));
         } catch (_) {}
       },
 
       // localStorage에서 복원
       saRestoreFromStorage() {
         try {
-          // 구 key 마이그레이션: modu-bo-user → modu-bo-authUser
-          const _oldUser = localStorage.getItem('modu-bo-user');
-          if (_oldUser && !localStorage.getItem('modu-bo-authUser')) {
-            localStorage.setItem('modu-bo-authUser', _oldUser);
+          // 구 key 마이그레이션: modu-bo-auth-user → modu-bo-auth-authUser
+          const _oldUser = localStorage.getItem('modu-bo-auth-user');
+          if (_oldUser && !localStorage.getItem('modu-bo-auth-authUser')) {
+            localStorage.setItem('modu-bo-auth-authUser', _oldUser);
           }
-          if (_oldUser) localStorage.removeItem('modu-bo-user');
+          if (_oldUser) localStorage.removeItem('modu-bo-auth-user');
         } catch (_) {}
         try {
-          const accessToken      = localStorage.getItem('modu-bo-accessToken');
-          const refreshToken     = localStorage.getItem('modu-bo-refreshToken');
-          const authUserJson     = localStorage.getItem('modu-bo-authUser');
-          const accessExpiresIn  = localStorage.getItem('modu-bo-accessExpiresIn');
-          const refreshExpiresIn = localStorage.getItem('modu-bo-refreshExpiresIn');
+          const accessToken      = localStorage.getItem('modu-bo-auth-accessToken');
+          const refreshToken     = localStorage.getItem('modu-bo-auth-refreshToken');
+          const authUserJson     = localStorage.getItem('modu-bo-auth-authUser');
+          const accessExpiresIn  = localStorage.getItem('modu-bo-auth-accessExpiresIn');
+          const refreshExpiresIn = localStorage.getItem('modu-bo-auth-refreshExpiresIn');
 
           if (accessToken && authUserJson) {
             this.svAccessToken = accessToken;
@@ -233,9 +233,9 @@
       // FO syncFromStorage와 동일: 토큰 없으면 리셋, 있으면 복원 (이전 값과 동일하면 reactive 갱신 스킵)
       saSyncFromStorage() {
         try {
-          const token        = localStorage.getItem('modu-bo-accessToken')  || '';
-          const refreshToken = localStorage.getItem('modu-bo-refreshToken') || '';
-          const authUserJson = localStorage.getItem('modu-bo-authUser')     || '';
+          const token        = localStorage.getItem('modu-bo-auth-accessToken')  || '';
+          const refreshToken = localStorage.getItem('modu-bo-auth-refreshToken') || '';
+          const authUserJson = localStorage.getItem('modu-bo-auth-authUser')     || '';
           if (this.svAccessToken === token
               && this.svRefreshToken === refreshToken
               && this._lastAuthUserJson === authUserJson) {
@@ -267,7 +267,7 @@
   // localStorage 변화 감지
   if (typeof window !== 'undefined') {
     window.addEventListener('storage', (e) => {
-      if (e.key === 'modu-bo-accessToken' || e.key === 'modu-bo-authUser' || e.key === 'modu-bo-refreshToken') {
+      if (e.key === 'modu-bo-auth-accessToken' || e.key === 'modu-bo-auth-authUser' || e.key === 'modu-bo-auth-refreshToken') {
         const store = window.useBoAuthStore?.();
         if (store) store.saSyncFromStorage();
       }

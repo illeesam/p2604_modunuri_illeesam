@@ -1,6 +1,6 @@
 /**
  * BO axios 클라이언트 (boApi)
- * - Bearer 토큰 자동 주입 (modu-bo-accessToken)
+ * - Bearer 토큰 자동 주입 (modu-bo-auth-accessToken)
  * - 401 → /auth/bo/refresh 로 토큰 재갱신 후 원 요청 재시도 (1회)
  * - request / response / error 콘솔 로그
  *
@@ -31,8 +31,6 @@
 
   /* ── 설정 ────────────────────────────────────────────────────── */
   var TAG              = '[bo]';
-  var ACCESS_TOKEN_KEY = 'modu-bo-accessToken';
-  var REFRESH_URL      = 'co/bo-auth/token-refresh';
   var TIMEOUT          = 15000;
 
   var inst = global.axios.create({ timeout: TIMEOUT });
@@ -47,7 +45,7 @@
         cfg.headers['Content-Type'] = 'application/json';
       }
       /* Bearer 토큰 주입 */
-      var t = localStorage.getItem(ACCESS_TOKEN_KEY);
+      var t = localStorage.getItem('modu-bo-auth-accessToken');
       if (t) {
         cfg.headers.Authorization = 'Bearer ' + t;
       }
@@ -253,15 +251,15 @@
       }
       isRefreshing = true;
       var expiredToken = null;
-      try { expiredToken = localStorage.getItem(ACCESS_TOKEN_KEY); } catch (_) {}
-      return global.axios.post(apiUrl(REFRESH_URL), null, {
+      try { expiredToken = localStorage.getItem('modu-bo-auth-accessToken'); } catch (_) {}
+      return global.axios.post(apiUrl('co/bo-auth/token-refresh'), null, {
           headers: { Authorization: expiredToken ? 'Bearer ' + expiredToken : '' }
         })
         .then(function (r) {
           var d = r && r.data && r.data.data || r && r.data;
           var newTok = d && (d.accessToken || d.token);
           if (!newTok) throw new Error('no token in refresh response');
-          try { localStorage.setItem(ACCESS_TOKEN_KEY, newTok); } catch (_) {}
+          try { localStorage.setItem('modu-bo-auth-accessToken', newTok); } catch (_) {}
           flush(newTok);
           isRefreshing = false;
           cfg.headers = cfg.headers || {};
@@ -272,8 +270,8 @@
           flush(null);
           isRefreshing = false;
           try {
-            localStorage.removeItem(ACCESS_TOKEN_KEY);
-            localStorage.removeItem('modu-bo-authUser');
+            localStorage.removeItem('modu-bo-auth-accessToken');
+            localStorage.removeItem('modu-bo-auth-authUser');
           } catch (_) {}
           try {
             global.dispatchEvent(new CustomEvent('api-response-error', {

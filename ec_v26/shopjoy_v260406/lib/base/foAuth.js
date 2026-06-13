@@ -10,13 +10,13 @@
  *   - window.sfIsFoLogin           → foAuthStore.js 가 정의 (본 파일은 재정의하지 않음)
  */
 (function () {
-  /* ── 구 key 마이그레이션: modu-fo-user → modu-fo-authUser ── */
+  /* ── 구 key 마이그레이션: modu-fo-auth-user → modu-fo-auth-authUser ── */
   try {
-    const _oldUser = localStorage.getItem('modu-fo-user');
-    if (_oldUser && !localStorage.getItem('modu-fo-authUser')) {
-      localStorage.setItem('modu-fo-authUser', _oldUser);
+    const _oldUser = localStorage.getItem('modu-fo-auth-user');
+    if (_oldUser && !localStorage.getItem('modu-fo-auth-authUser')) {
+      localStorage.setItem('modu-fo-auth-authUser', _oldUser);
     }
-    localStorage.removeItem('modu-fo-user');
+    localStorage.removeItem('modu-fo-auth-user');
   } catch (e) {}
 
   /* ── Pinia 스토어 인스턴스 (init() 후 사용 가능) ── */
@@ -74,7 +74,7 @@
     /* 인증 필요 페이지 — 로그아웃/계정변경 reload 시 이 해시에 머물면 home 으로 전환 후 reload */
     const AUTH_PAGES = ['myOrder', 'myClaim', 'myCoupon', 'myCache', 'myContact', 'myChatt', 'order', 'blogEdit'];
     window.addEventListener('storage', e => {
-      if (e.key === 'modu-fo-accessToken' || e.key === 'modu-fo-authUser') {
+      if (e.key === 'modu-fo-auth-accessToken' || e.key === 'modu-fo-auth-authUser') {
         const prevAuthId = _store.svAuthUser?.authId || '';
         _store.saSyncFromStorage();
         const nextAuthId = _store.svAuthUser?.authId || '';
@@ -159,7 +159,7 @@
 
   /* ── 로그아웃 ── */
   const logout = async () => {
-    const refreshToken = localStorage.getItem('modu-fo-refreshToken');
+    const refreshToken = localStorage.getItem('modu-fo-auth-refreshToken');
     if (refreshToken) {
       try {
         await coApiSvc.foAuth.logout({ refreshToken }, '로그인', '로그아웃');
