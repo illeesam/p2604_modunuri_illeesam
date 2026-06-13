@@ -99,6 +99,8 @@ public class FoAuthService {
             .userId(null)
             .memberId(authId)
             .userNm(member.getMemberNm())
+            .userEmail(member.getLoginId())          // FO 는 loginId 가 이메일
+            .userPhone(member.getMemberPhone())
             .siteId(CmUtil.nvl(member.getSiteId()))
             .appTypeCd(appTypeCd)
             .roleId("")

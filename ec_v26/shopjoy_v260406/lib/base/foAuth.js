@@ -100,8 +100,10 @@
       memberId: authId,             // FO 전용: ec_member.member_id
       userId: null,                 // BO 전용: FO 는 null
       AppTypeCd: d.AppTypeCd || 'FO',
-      loginId: d.loginId || fallbackLoginId || '',
+      loginId: d.loginId || d.userEmail || fallbackLoginId || '',
       memberNm: d.userNm || d.memberNm || fallbackMemberNm || '사용자',
+      email: d.userEmail || d.email || d.loginId || '',
+      phone: d.userPhone || d.memberPhone || d.phone || '',
       siteId: d.siteId || '',
     };
   };

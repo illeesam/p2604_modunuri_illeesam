@@ -10,7 +10,9 @@ import com.shopjoy.ecadminapi.common.util.CmUtil;
 import com.shopjoy.ecadminapi.common.util.VoUtil;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto;
+import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderItemDto;
 import com.shopjoy.ecadminapi.base.ec.od.repository.OdClaimRepository;
+import com.shopjoy.ecadminapi.base.ec.od.repository.OdOrderItemRepository;
 import com.shopjoy.ecadminapi.base.ec.od.repository.OdOrderRepository;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCacheDto;
 import com.shopjoy.ecadminapi.base.ec.pm.data.dto.PmCouponDto;
@@ -30,6 +32,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 
 /**
@@ -44,6 +49,7 @@ public class FoMyPageService {
     private final MbMemberRepository     memberRepository;
     private final MbMemberAddrRepository addrRepository;
     private final OdOrderRepository      orderRepository;
+    private final OdOrderItemRepository  orderItemRepository;
     private final OdClaimRepository      claimRepository;
     private final PmCouponRepository     couponRepository;
     private final PmCacheRepository      cacheRepository;
@@ -142,11 +148,28 @@ public class FoMyPageService {
         addrRepository.delete(addr);
     }
 
-    /** getMyOrders — 조회 */
+    /** getMyOrders — 조회 (주문상품 orderItems 일괄 채워 반환) */
     public List<OdOrderDto.Item> getMyOrders(OdOrderDto.Request req) {
         if (req == null) req = new OdOrderDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
-        return orderRepository.selectList(req);
+        List<OdOrderDto.Item> orders = orderRepository.selectList(req);
+        _fillOrderItems(orders);
+        return orders;
+    }
+
+    /** _fillOrderItems — 주문 목록에 orderItems 일괄 조회·분배 (1회 IN 쿼리) */
+    private void _fillOrderItems(List<OdOrderDto.Item> orders) {
+        if (orders == null || orders.isEmpty()) return;
+        List<String> orderIds = orders.stream()
+            .map(OdOrderDto.Item::getOrderId).filter(Objects::nonNull).distinct().toList();
+        if (orderIds.isEmpty()) return;
+        OdOrderItemDto.Request itemReq = new OdOrderItemDto.Request();
+        itemReq.setOrderIds(orderIds);
+        Map<String, List<OdOrderItemDto.Item>> itemMap = orderItemRepository.selectList(itemReq).stream()
+            .collect(Collectors.groupingBy(OdOrderItemDto.Item::getOrderId));
+        for (OdOrderDto.Item o : orders) {
+            o.setOrderItems(itemMap.getOrDefault(o.getOrderId(), List.of()));
+        }
     }
 
     /** getMyClaims — 조회 */

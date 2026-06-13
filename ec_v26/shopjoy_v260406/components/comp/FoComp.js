@@ -61,8 +61,8 @@ window.FoPager = {
   <button :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageNo+1)">
     ›
   </button>
-  <button :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageTotalPage)" title="마지막">
-    »
+  <button :disabled="pager.pageNo===pager.pageTotalPage" @click="onSetPage(pager.pageTotalPage)" title="마지막 페이지">
+    {{ pager.pageTotalPage || 1 }}
   </button>
   <select v-if="(pager.pageSizes||[]).length" class="fo-grid-pager-size" v-model.number="pager.pageSize" @change="onSizeChange">
     <option v-for="s in (pager.pageSizes||[])" :key="s" :value="s">

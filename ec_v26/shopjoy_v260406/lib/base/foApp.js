@@ -1214,6 +1214,7 @@
   .component('CoBarcodeWidget',  window.CoBarcodeWidget  || { template: '<div/>' })
   .component('CoCountdownWidget', window.CoCountdownWidget || { template: '<div/>' })
   .component('BaseAttachGrp', window.BaseAttachGrp)
+  .component('BaseHtmlEditor', window.BaseHtmlEditor)
   .component('BaseTossPayWidget', window.BaseTossPayWidget)
   /* ── components/comp/FoAreaComp.js — 공통 영역(페이지/컨테이너/검색/그리드/폼/모달) ── */
   .component('FoPage',       window.FoPage)
