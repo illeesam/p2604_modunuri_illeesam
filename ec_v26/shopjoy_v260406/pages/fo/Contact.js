@@ -3,6 +3,7 @@ window.Contact = {
   name: 'Contact',
   props: {
     navigate:  { type: Function, required: true },        // 페이지 이동
+    config:    { type: Object, default: () => ({}) },     // 사이트 설정 (tel/email/faqs)
   },
   emits: [],
   setup(props) {
@@ -13,6 +14,8 @@ window.Contact = {
     const showToast            = window.foApp.showToast;  // 토스트 알림
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, openFaq: null});
     const codes = reactive({});
+    /* config: props 우선, 없으면 window.SITE_CONFIG fallback (템플릿 config.tel/email/faqs 안전 접근) */
+    const config = computed(() => (props.config && Object.keys(props.config).length ? props.config : (window.SITE_CONFIG || {})));
 
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
@@ -81,7 +84,11 @@ window.Contact = {
 
     /* handleSubmit — 문의 접수 (백엔드 CmContactSubmitDto.Request 필드명에 정확히 매핑) */
     const handleSubmit = async () => {
-      if (!validate()) { return; }
+      if (!validate()) {
+        const firstErr = errors.name || errors.email || errors.desc || '입력 내용을 확인해주세요.';
+        showToast(firstErr, 'error');
+        return;
+      }
       uiState.loading = true;
       try {
         await foApiSvc.myInquiry.create({
@@ -126,7 +133,7 @@ window.Contact = {
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
-      columns,
+      columns, config,          // 컬럼정의 / 사이트설정
       uiState, showToast,       // 상태
       handleBtnAction, handleSelectAction, // dispatch
       form, errors, // 폼
@@ -220,7 +227,7 @@ window.Contact = {
         </div>
       </fo-container>
       <fo-container title="❓ 자주 묻는 질문" card-style="padding:24px;">
-        <div v-for="(faq, idx) in config.faqs.slice(0,3)" :key="idx" class="faq-item">
+        <div v-for="(faq, idx) in (config.faqs || []).slice(0,3)" :key="idx" class="faq-item">
           <button class="faq-question" @click="handleSelectAction('faqs-rowToggle', 'c'+idx)">
             <span>
               {{ faq.q }}

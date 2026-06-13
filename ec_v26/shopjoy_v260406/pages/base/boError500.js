@@ -2,6 +2,9 @@
 window.boError500 = {
   name: 'BoError500',
   props: ['navigate', 'message'],
+  methods: {
+    onReload() { window.location.reload(); },   // 페이지 새로고침 (템플릿 location 스코프 미접근 회피)
+  },
   template: /* html */`
 <fo-page bare>
   <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;text-align:center;min-height:60vh;">

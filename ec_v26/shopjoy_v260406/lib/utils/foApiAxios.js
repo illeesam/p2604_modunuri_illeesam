@@ -41,8 +41,8 @@
     try { cfg._startAt = Date.now(); } catch (_) {}  /* 소요시간(duration) 계산용 시작시각 */
     try {
       cfg.headers = cfg.headers || {};
-      /* Content-Type 기본값 설정 (이미 설정되어 있으면 유지) */
-      if (!cfg.headers['Content-Type']) {
+      /* Content-Type 기본값 설정 — FormData는 axios가 boundary 포함해서 자동 설정 (multipart 업로드 보존) */
+      if (!cfg.headers['Content-Type'] && !(cfg.data instanceof FormData)) {
         cfg.headers['Content-Type'] = 'application/json';
       }
       /* Bearer 토큰 주입 */
