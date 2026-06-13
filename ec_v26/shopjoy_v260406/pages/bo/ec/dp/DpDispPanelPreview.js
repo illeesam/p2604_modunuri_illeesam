@@ -18,14 +18,14 @@ const _WP_DispPanelPreview = {
 
     // ===== return (템플릿 노출) ===============================================
 
-    return { codes, cfChartBars };
+    return { codes, cfChartBars, coUtil };
   },
   template: /* html */`
 <div style="padding:10px;">
   <!-- ===== ■. 이미지 배너 ================================================== -->
   <template v-if="lib.widgetType==='image_banner'">
     <div style="border-radius:6px;overflow:hidden;background:#f0f0f0;">
-      <img v-if="lib.imageUrl" :src="lib.imageUrl" style="width:100%;display:block;max-height:130px;object-fit:cover;" />
+      <img v-if="lib.imageUrl" :src="coUtil.cofImgSrc(lib.imageUrl)" style="width:100%;display:block;max-height:130px;object-fit:cover;" />
       <div v-else style="height:80px;display:flex;align-items:center;justify-content:center;color:#ccc;font-size:12px;">
         🖼 이미지 배너
       </div>

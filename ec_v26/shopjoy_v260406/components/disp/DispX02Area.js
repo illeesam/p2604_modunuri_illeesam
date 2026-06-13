@@ -99,7 +99,7 @@ window.DispX02Area = {
     // ===== [06] return (템플릿 노출) ==============================================
 
     return {
-      uiState, codes, mode, showDesc,                                       // 상태
+      uiState, codes, mode, showDesc, coUtil,                               // 상태 / 공용유틸(템플릿 cofAnd)
       handleBtnAction, handleSelectAction,                                  // dispatch
       wLabel, wIcon, padId, panelWidgetTypes, periodText, statusCls, panelTitle,  // 헬퍼
     };
@@ -125,12 +125,12 @@ window.DispX02Area = {
     <!-- ===== □. 본문 영역 =================================================== -->
     <!-- ===== ■. 영역 타이틀 ================================================== -->
     <!-- ===== ■. 조건부 영역 ================================================== -->
-    <div v-if="areaItem.info && areaItem.info.titleYn==='Y' && areaItem.info.title" style="padding:12px 16px 8px;font-size:16px;font-weight:700;color:#222;border-bottom:2px solid #222;margin-bottom:16px;">
+    <div v-if="coUtil.cofAnd(areaItem.info, areaItem.info?.titleYn==='Y', areaItem.info?.title)" style="padding:12px 16px 8px;font-size:16px;font-weight:700;color:#222;border-bottom:2px solid #222;margin-bottom:16px;">
     {{ areaItem.info.title }}
   </div>
   <!-- ===== □. 조건부 영역 ================================================== -->
   <!-- ===== ■. 영역코멘트 (htmlDesc) — 입력 시 실시간 반영 ========================= -->
-  <div v-if="areaItem.info && areaItem.info.htmlDesc" style="padding:12px 16px;background:#fff;border:1px solid #e0e0e0;border-top:none;font-size:13px;color:#333;line-height:1.6;" v-html="areaItem.info.htmlDesc">
+  <div v-if="coUtil.cofAnd(areaItem.info, areaItem.info?.htmlDesc)" style="padding:12px 16px;background:#fff;border:1px solid #e0e0e0;border-top:none;font-size:13px;color:#333;line-height:1.6;" v-html="areaItem.info.htmlDesc">
   </div>
   <!-- ===== □. 영역코멘트 ================================================== -->
   <!-- ===== ■. 리스트 모드 ================================================== -->
@@ -249,7 +249,7 @@ window.DispX02Area = {
         <span v-if="p.authRequired" style="font-size:10px;background:#fff3e0;color:#e65100;border-radius:8px;padding:1px 7px;">
           인증
         </span>
-        <span v-if="p.authRequired && p.authGrade" style="font-size:10px;background:#f3e5f5;color:#6a1b9a;border-radius:8px;padding:1px 7px;">
+        <span v-if="coUtil.cofAnd(p.authRequired, p.authGrade)" style="font-size:10px;background:#f3e5f5;color:#6a1b9a;border-radius:8px;padding:1px 7px;">
         {{ p.authGrade }}↑
       </span>
     </div>
@@ -362,7 +362,7 @@ window.DispX02Area = {
         <span style="color:#f1fa8c;">
           "{{ r.widgetType }}"
         </span>
-        <span v-if="r.clickAction && r.clickAction!=='none'">
+        <span v-if="coUtil.cofAnd(r.clickAction, r.clickAction!=='none')">
         clickAction=
         <span style="color:#f1fa8c;">
           "{{ r.clickAction }}"

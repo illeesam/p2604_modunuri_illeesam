@@ -113,7 +113,7 @@ public class CmBlogService {
         int affected = cmBlogRepository.updateSelective(entity);
         if (affected == 0) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.clear();
-        return entity;
+        return findById(entity.getBlogId());  // em.clear() 후 detached entity 반환 금지 — 새로 attach (saveOneBase 패턴과 동일)
     }
 
     /* 게시물 삭제 */

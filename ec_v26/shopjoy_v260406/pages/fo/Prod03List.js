@@ -15,7 +15,7 @@ window.Prod03List = {
     const isLiked           = (id) => window.foApp.isLiked?.(id) ?? false;
 
     /* pager — FO 무한스크롤 페이저 (PC 페이지네이션 + 모바일 무한스크롤) */
-    const pager = reactive({ pageType: 'INFINITE_SCROLL', pageNo: 1, pageSize: 12, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [12, 24, 48], pageNums: [], pageCond: {} });
+    const pager = reactive({ pageType: 'INFINITE_SCROLL', pageNo: 1, pageSize: 12, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [12, 24, 48], pageNums: [], pageList: [], pageCond: {} });
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, searchText: '', priceMin: '', priceMax: '', isMobile: window.innerWidth < 768, filterOpen: false });
     const codes = reactive({});
 
@@ -56,11 +56,13 @@ window.Prod03List = {
         return;
       // 페이지네이션: 이전
       } else if (cmd === 'pager-prev') {
-        pager.pageNo = Math.max(1, pager.pageNo - 1); fnBuildPagerNums();
+        if (pager.pageNo <= 1) { return; }
+        pager.pageNo = pager.pageNo - 1; handleLoadProds();
         return;
-      // 페이지네이션: 다음
+      // 페이지네이션: 다음 (서버 재조회)
       } else if (cmd === 'pager-next') {
-        pager.pageNo = Math.min(pager.pageTotalPage, pager.pageNo + 1); fnBuildPagerNums();
+        if (pager.pageNo >= pager.pageTotalPage) { return; }
+        pager.pageNo = pager.pageNo + 1; handleLoadProds();
         return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -85,9 +87,10 @@ window.Prod03List = {
       // 좋아요 토글
       } else if (cmd === 'prods-rowLike') {
         return toggleLike(param);
-      // 페이지 번호 클릭
+      // 페이지 번호 클릭 (서버 재조회)
       } else if (cmd === 'pager-rowGo') {
-        pager.pageNo = param; fnBuildPagerNums();
+        if (param === pager.pageNo) { return; }
+        pager.pageNo = param; handleLoadProds();
         return;
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -109,15 +112,10 @@ window.Prod03List = {
     /* -- 상품 이미지 자동 할당 -- coUtil.cofAssignProdImage 위임 (thumbnailUrl→image + 폴백 + priceNum) */
     const assignImage = (p) => coUtil.cofAssignProdImage(p);
 
-    /* fnBuildPagerNums — 유틸 */
+    /* fnBuildPagerNums — 페이지 번호 UI 배열만 계산 (서버 pageTotalPage 기준, 슬라이싱·총건수 재계산 금지) */
     const fnBuildPagerNums = () => {
-      const t = Math.max(1, Math.ceil(allProds.length / pager.pageSize));
-      pager.pageTotalPage = t;
-      pager.pageTotalCount = allProds.length;
+      const t = Math.max(1, pager.pageTotalPage || 1);
       const c = pager.pageNo;
-      pager.pageList = uiState.isMobile
-        ? allProds.slice(0, c * pager.pageSize)
-        : allProds.slice((c - 1) * pager.pageSize, c * pager.pageSize);
       if (t <= 7) { pager.pageNums = Array.from({ length: t }, (_, i) => i + 1); return; }
       const set = new Set([1, t, c-2, c-1, c, c+1, c+2].filter(n => n >= 1 && n <= t));
       const sorted = [...set].sort((a, b) => a - b);
@@ -143,17 +141,24 @@ window.Prod03List = {
           ...(selSizes.size  > 0   ? { sizes: [...selSizes].join(',') }        : {}),
         };
         const res = await foApiSvc.pdProd.getPage(params, '상품목록', '목록조회');
-        pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
-        pager.pageTotalPage = res.data?.data?.pageTotalPage || 1;
-        allProds.splice(0, allProds.length, ...(res.data?.data?.pageList || []).map(p => assignImage({
+        pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;   // 서버 총건수 그대로 사용
+        pager.pageTotalPage = res.data?.data?.pageTotalPage || 1;     // 서버 총페이지 그대로 사용
+        const rows = (res.data?.data?.pageList || []).map(p => assignImage({
           ...p,
           priceNum: p.price,
-          price: p.price.toLocaleString() + '원',
-        })));
+          price: (p.price || 0).toLocaleString() + '원',
+        }));
+        allProds.splice(0, allProds.length, ...rows);                 // 필터옵션 계산용: 현재 페이지 행
+        /* 모바일 무한스크롤은 2페이지+ 누적, PC/첫페이지는 교체 (서버사이드 페이징) */
+        if (uiState.isMobile && pager.pageNo > 1) {
+          pager.pageList.push(...rows);
+        } else {
+          pager.pageList = rows;
+        }
         /* app.js prods 도 갱신해 Detail/Cart 에서 동일 객체 참조 가능하게 */
         try {
           if (window.SITE_CONFIG && Array.isArray(window.SITE_CONFIG.prods)) {
-            window.SITE_CONFIG.prods.splice(0, window.SITE_CONFIG.prods.length, ...allProds);
+            window.SITE_CONFIG.prods.splice(0, window.SITE_CONFIG.prods.length, ...pager.pageList);
           }
         } catch (e) {}
         fnBuildPagerNums();
@@ -229,9 +234,9 @@ window.Prod03List = {
       const el = document.getElementById('sj-sentinel');
       if (!el || !('IntersectionObserver' in window)) { return; }
       observer = new IntersectionObserver(entries => {
-        if (entries[0].isIntersecting && uiState.isMobile && pager.pageNo < pager.pageTotalPage) {
+        if (entries[0].isIntersecting && uiState.isMobile && !uiState.loading && pager.pageNo < pager.pageTotalPage) {
           pager.pageNo++;
-          fnBuildPagerNums();
+          handleLoadProds();   // 다음 페이지를 서버에서 받아 pageList 에 누적
         }
       }, { rootMargin: '300px' });
       observer.observe(el);

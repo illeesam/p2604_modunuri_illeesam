@@ -275,11 +275,20 @@
         else { await loadMembersForModal(); }
       };
 
-      /* loadMembersForModal — 모달용 회원 전체 로드 (별도 화면, picker 용도) */
+      /* loadMembersForModal — 모달 picker 서버사이드 조회 (검색어/검색대상 + pageNo/pageSize 서버 전달) */
       const loadMembersForModal = async () => {
         try {
-          const r = await boApiSvc.mbMember.getPage({ pageNo: 1, pageSize: 10000 }, '고객종합정보', '회원조회');
-          members.splice(0, members.length, ...(r.data?.data?.pageList || r.data?.data?.list || []));
+          const params = {
+            pageNo: modalPager.pageNo, pageSize: modalPager.pageSize,
+            ...(memberModal.keyword.trim() ? { searchValue: memberModal.keyword.trim() } : {}),
+            ...(memberModal.searchType ? { searchType: memberModal.searchType } : {}),
+          };
+          const r = await boApiSvc.mbMember.getPage(params, '고객종합정보', '회원조회');
+          const d = r.data?.data || {};
+          memberModal.list = d.pageList ?? [];
+          modalPager.pageTotalCount = d.pageTotalCount || 0;
+          modalPager.pageTotalPage = d.pageTotalPage || 1;
+          coUtil.cofBuildPagerNums(modalPager);
         } catch (e) { console.error('[loadMembersForModal]', e); }
       };
 
@@ -293,24 +302,15 @@
       /* openMemberModal — 고객 검색 모달 열기 (회원 목록 picker) */
       const openMemberModal = async () => {
         memberModal.keyword = '';
+        modalPager.pageNo = 1;
         await loadMembersForModal();
-        memberModal.list = [...members];
         memberModal.show = true;
       };
 
-      /* searchMemberModal — 모달 내 검색 실행 */
-      const searchMemberModal = () => {
-        const searchVal = memberModal.keyword.trim().toLowerCase();
-        const types = memberModal.searchType || 'memberNm,email,phone';
-        memberModal.list = searchVal
-          ? members.filter(m => {
-              const hits = [];
-              if (types.includes('memberNm')) { hits.push((m.memberNm || '').includes(searchVal)); }
-              if (types.includes('email')) { hits.push((m.email || '').toLowerCase().includes(searchVal)); }
-              if (types.includes('phone')) { hits.push((m.phone || '').includes(searchVal)); }
-              return hits.some(Boolean);
-            })
-          : [...members];
+      /* searchMemberModal — 모달 내 검색 실행 (서버 재조회) */
+      const searchMemberModal = async () => {
+        modalPager.pageNo = 1;
+        await loadMembersForModal();
       };
 
       /* selectMember — 회원 선택 (모달에서) */
@@ -392,30 +392,18 @@
       const onSetPage = (which, n) => {
         const p = fnPagerOf(which); if (!p || n < 1 || n > p.pageTotalPage) { return; }
         p.pageNo = n;
-        if (which === 'modal') { fnRebuildModalPager(); return; }
+        if (which === 'modal') { loadMembersForModal(); return; }
         fnLoadHist(which);
       };
       const onSizeChange = (which) => {
         const p = fnPagerOf(which); if (!p) { return; }
         p.pageNo = 1;
-        if (which === 'modal') { fnRebuildModalPager(); return; }
+        if (which === 'modal') { loadMembersForModal(); return; }
         fnLoadHist(which);
       };
 
-      /* fnRebuildModalPager — 모달은 클라이언트 picker 라 슬라이싱 유지 (모달 검색 결과 표시용) */
-      const fnRebuildModalPager = () => {
-        const list = memberModal.list || [];
-        modalPager.pageTotalCount = list.length;
-        modalPager.pageTotalPage = Math.max(1, Math.ceil(list.length / modalPager.pageSize));
-        if (modalPager.pageNo > modalPager.pageTotalPage) modalPager.pageNo = modalPager.pageTotalPage;
-        const c = modalPager.pageNo, l = modalPager.pageTotalPage, s = Math.max(1, c - 2), e = Math.min(l, s + 4);
-        modalPager.pageNums = Array.from({ length: e - s + 1 }, (_, i) => s + i);
-      };
-      const cfPageModalList = computed(() => {
-        fnRebuildModalPager();
-        const list = memberModal.list || [];
-        return list.slice((modalPager.pageNo - 1) * modalPager.pageSize, modalPager.pageNo * modalPager.pageSize);
-      });
+      /* cfPageModalList — 서버사이드 picker: 응답 page 행 그대로 (클라이언트 슬라이싱 제거) */
+      const cfPageModalList = computed(() => memberModal.list || []);
 
       /* _ellipsis — 말줄임 스타일 */
       const _ellipsis = (maxw, extra) => 'max-width:' + maxw + 'px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;' + (extra || '');

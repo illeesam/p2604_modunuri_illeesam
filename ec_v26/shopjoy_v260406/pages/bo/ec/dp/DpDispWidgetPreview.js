@@ -71,11 +71,12 @@ const _WP_DispWidgetPreview = {
       return cfgJson;
     });
 
-    /* 썸네일 / 미리보기 이미지 */
+    /* 썸네일 / 미리보기 이미지 — 서버 '/cdn/...' 경로 → 'assets/cdn/...' 정규화 */
     const cfImg = computed(() => {
       const w = props.lib || {};
-      return cfConfig.value.img_url || cfConfig.value.imageUrl
+      const rawUrl = cfConfig.value.img_url || cfConfig.value.imageUrl
           || w.thumbnailUrl || w.imageUrl || '';
+      return coUtil.cofImgSrc(rawUrl);
     });
 
     /* 차트 막대 데이터 */

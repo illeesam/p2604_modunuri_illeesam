@@ -65,7 +65,7 @@ window.DispX03Panel = {
     // ===== [06] return (템플릿 노출) ==============================================
 
     return {
-      uiState, codes,                                                       // 상태
+      uiState, codes, coUtil,                                               // 상태 / 공용유틸(템플릿 cofAnd)
       handleBtnAction, handleSelectAction,                                  // dispatch
       mergedWidget, cfLayoutStyle,                                          // 헬퍼 / computed
     };
@@ -86,14 +86,14 @@ window.DispX03Panel = {
       :style="panelItem.status==='활성'?'background:#e8f5e9;color:#2e7d32;':'background:#f5f5f5;color:#999;'">
       {{ panelItem.status }}
     </span>
-    <span v-if="panelItem.condition && panelItem.condition!=='항상 표시'" style="font-size:10px;background:#f3e5f5;color:#6a1b9a;border-radius:5px;padding:1px 6px;flex-shrink:0;">
+    <span v-if="coUtil.cofAnd(panelItem.condition, panelItem.condition!=='항상 표시')" style="font-size:10px;background:#f3e5f5;color:#6a1b9a;border-radius:5px;padding:1px 6px;flex-shrink:0;">
     {{ panelItem.condition }}
   </span>
 </div>
 <!-- ===== □. 조건부 영역 ================================================== -->
 <!-- ===== ■. 패널 타이틀 ================================================== -->
 <!-- ===== ■. 조건부 영역 ================================================== -->
-<div v-if="panelItem.titleYn==='Y' && panelItem.title" style="padding:10px 16px 6px;font-size:15px;font-weight:700;color:#222;border-bottom:2px solid #222;margin-bottom:12px;">
+<div v-if="coUtil.cofAnd(panelItem.titleYn==='Y', panelItem.title)" style="padding:10px 16px 6px;font-size:15px;font-weight:700;color:#222;border-bottom:2px solid #222;margin-bottom:12px;">
 {{ panelItem.title }}
 </div>
 <!-- ===== □. 조건부 영역 ================================================== -->
@@ -109,7 +109,7 @@ window.DispX03Panel = {
       :widget-item="mergedWidget(w)"
       @click-action="payload => handleSelectAction('widgets-action', payload)"
       />
-  <div v-if="!(panelItem.rows && panelItem.rows.length)" style="color:#ccc;font-size:12px;padding:8px;text-align:center;">
+  <div v-if="!coUtil.cofAnd(panelItem.rows, panelItem.rows?.length)" style="color:#ccc;font-size:12px;padding:8px;text-align:center;">
   위젯 없음
 </div>
 </div>

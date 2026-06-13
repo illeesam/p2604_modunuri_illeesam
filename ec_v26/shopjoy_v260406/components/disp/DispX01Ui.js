@@ -301,7 +301,7 @@ window.DispX01Ui = {
     // ===== [06] return (템플릿 노출) ==============================================
 
     return {
-      uiState, codes,                                                       // 상태
+      uiState, codes, coUtil,                                               // 상태 / 공용유틸(템플릿 cofAnd)
       handleBtnAction, handleSelectAction,                                  // dispatch
       cfActiveTabs, activeTab, showContentStruct,                           // 탭 상태
       structAreaOpen, structPanelOpen, allAreas1Open, allPanels2Open,       // 트리 상태
@@ -409,7 +409,7 @@ window.DispX01Ui = {
     <!-- ===== □. 본문 영역 =================================================== -->
     <!-- ===== ■. 영역 없음 =================================================== -->
     <!-- ===== ■. 조건부 영역 ================================================== -->
-    <div v-if="!(params.areas&&params.areas.length)" style="text-align:center;padding:60px;color:#bbb;font-size:14px;">
+    <div v-if="!coUtil.cofAnd(params.areas, params.areas.length)" style="text-align:center;padding:60px;color:#bbb;font-size:14px;">
     전시영역 파라미터가 없습니다. 관리자 화면에서 영역을 선택 후 다시 열어주세요.
   </div>
   <!-- ===== □. 조건부 영역 ================================================== -->
@@ -599,7 +599,7 @@ window.DispX01Ui = {
                   <!-- ===== ■.■.■.■.■.■.■. 조건부 영역 ====================================== -->
                   <div v-if="structPanelOpen.has(p.dispId)"
                 style="margin-left:28px;border-left:2px solid #c8e6c9;padding-left:8px;margin-top:2px;margin-bottom:2px;">
-                    <div v-if="!(p.rows&&p.rows.length)" style="padding:4px 10px;font-size:11px;color:#ccc;font-style:italic;">
+                    <div v-if="!coUtil.cofAnd(p.rows, p.rows.length)" style="padding:4px 10px;font-size:11px;color:#ccc;font-style:italic;">
                     ── 위젯 없음
                   </div>
                   <div v-for="(w, wi) in (p.rows||[])" :key="wi"
