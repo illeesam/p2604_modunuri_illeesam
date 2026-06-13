@@ -88,7 +88,7 @@ public class CmAlarmSendService {
                 .channel(CHANNEL_SYSTEM)
                 .success(false)
                 .resultCd(RESULT_FAILED)
-                .failReason(trim(e.getMessage(), 500))
+                .failReason(CmUtil.describeError(e, 500))
                 .build();
         }
 
@@ -134,9 +134,4 @@ public class CmAlarmSendService {
     }
 
     private static String nz(String s) { return s == null ? "" : s; }
-
-    private static String trim(String s, int max) {
-        if (s == null) return null;
-        return s.length() <= max ? s : s.substring(0, max);
-    }
 }

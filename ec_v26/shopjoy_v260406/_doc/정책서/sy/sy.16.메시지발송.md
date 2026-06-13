@@ -39,22 +39,37 @@ FoCmContactService.submit() ──┐
 ## 2. 발송 호출 규칙
 
 - 업무 서비스(예: `FoCmContactService`)는 **자기 일(문의 저장)을 끝낸 뒤** `cmMsgSendService` 를 호출한다.
-- 발송 호출은 **`try-catch` 로 감싼다** — 발송 실패가 본 업무(접수)를 깨면 안 된다.
+- 발송은 **비동기(`@Async`)** — 본 업무 응답이 메일 SMTP 발송(수 초) 등으로 지연되지 않게 한다.
+  업무 서비스는 `sendContactReceivedAsync(...)`(fire-and-forget)를 호출한다.
 
 ```java
 CmBlog saved = cmBlogRepository.save(entity);
-// ... 저장 완료 후
-try {
-    cmMsgSendService.sendContactReceived(
-        saved.getSiteId(), saved.getBlogId(),
-        req.getName(), req.getEmail(), req.getTel(), req.getInquiryType());
-} catch (Exception e) {
-    log.error("[FoCmContact] 알림 발송 실패 (blogId={})", saved.getBlogId(), e); // 접수는 성공 처리
-}
+// 비동기 발송 — 응답을 지연시키지 않음. 발송 결과는 이력 테이블에만 기록.
+cmMsgSendService.sendContactReceivedAsync(
+    saved.getSiteId(), saved.getBlogId(),
+    req.getName(), req.getEmail(), req.getTel(), req.getInquiryType());
+return saved;
 ```
 
+- 발송은 별도 스레드풀 `msgSendExecutor` 에서 실행([`common/config/AsyncConfig.java`](../../../_apps_be/EcAdminApi/src/main/java/com/shopjoy/ecadminapi/common/config/AsyncConfig.java), `@EnableAsync`).
 - 각 채널 서비스도 내부적으로 발송 실패를 삼키고 `SendResultVo.success=false` 로 반환한다(예외 미전파).
   → **한 채널이 실패해도 다른 채널·본 흐름에 영향 없음**.
+- 동기 결과가 필요한 경우(컨트롤러/테스트)는 `sendContactReceived(...)`(동기, `List<SendResultVo>` 반환) 사용.
+
+### ⚠️ 비동기 주의
+
+- `@Async` 스레드에는 **SecurityContext / PageHelper ThreadLocal 이 전파되지 않는다.** 이력 `reg_by` 는
+  GUEST 로 기록된다(발송 주체는 시스템이므로 의도된 동작).
+- 비동기 발송은 본 업무 트랜잭션과 **별개 스레드/트랜잭션**이다. 발송 로직이 본 업무 데이터(예: cm_blog)를
+  **재조회하면 커밋 전이라 못 찾을 수 있다.** 발송 시 필요한 값은 **인자로 넘겨받아** 쓴다(현재 구조 준수).
+- `@Async` 는 **같은 클래스 self-invocation 에서 동작하지 않는다**(프록시 우회). 비동기 진입점은 별도
+  메서드로 두고 **다른 빈(업무 서비스)에서 호출**한다.
+
+### 실패사유 상세 저장 ⭐
+
+발송 실패 시 `fail_reason` 에는 **예외 원인 체인을 펼쳐** 저장한다(`CmUtil.describeError(e, 500)`).
+메일 인증 실패처럼 최상위 메시지("Authentication failed")가 짧고 실제 SMTP 응답(`535-5.7.8 ...`)이
+cause 에 있는 경우, 원인까지 ` ⇐ ` 로 연결해 보존한다.
 
 ---
 

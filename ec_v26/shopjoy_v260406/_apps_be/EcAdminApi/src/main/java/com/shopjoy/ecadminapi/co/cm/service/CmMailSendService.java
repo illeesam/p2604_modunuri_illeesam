@@ -79,8 +79,8 @@ public class CmMailSendService {
             log.info("[CmMailSend] 메일 발송 성공 → {}", toAddr);
         } catch (Exception e) {
             resultCd   = RESULT_FAILED;
-            failReason = trim(e.getMessage(), 500);
-            log.warn("[CmMailSend] 메일 발송 실패 → {} : {}", toAddr, e.getMessage());
+            failReason = CmUtil.describeError(e, 500);
+            log.warn("[CmMailSend] 메일 발송 실패 → {} : {}", toAddr, failReason);
         }
 
         String logId = null;
@@ -150,9 +150,4 @@ public class CmMailSendService {
     }
 
     private static String nz(String s) { return s == null ? "" : s; }
-
-    private static String trim(String s, int max) {
-        if (s == null) return null;
-        return s.length() <= max ? s : s.substring(0, max);
-    }
 }

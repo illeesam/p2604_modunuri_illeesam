@@ -263,15 +263,14 @@ window.SySendMsgLogMng = {
         activeStyle: 'color:#666;font-size:11px;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;user-select:none;' },
       fmt: (v, row) => isExpanded(fnRowId(row)) ? '▲' : '▼',
     };
-    const numCol = { key: '_no', label: '번호', style: 'width:46px;text-align:center;', align: 'center',
-      fmt: (v, row, idx) => (baseGridPager.pageNo - 1) * baseGridPager.pageSize + (idx + 1) };
+    // 번호 컬럼은 BoGrid 가 showRowNo(기본 true)로 자동 렌더 — 직접 추가 금지(중복 '번호')
     const resultCol = { key: 'resultCd', label: '결과', style: 'text-align:center;', align: 'center',
       badge: (row) => fnResultBadge(row.resultCd), fmt: (v) => v || '-' };
     const dateCol = { key: 'sendDate', label: '발송일시', cellStyle: 'white-space:nowrap', fmt: (v) => coUtil.cofYmdHms(v || '') };
 
     /* 메일 그리드 */
     columns.emailGrid = [
-      expCol, numCol,
+      expCol,
       { key: 'toAddr',       label: '수신 이메일', mono: true, cellStyle: 'color:#333', fmt: (v) => v || '-' },
       { key: 'subject',      label: '제목', cellStyle: fnEllip, cellTitle: (v, row) => row.subject, fmt: (v) => v || '-' },
       { key: 'templateCode', label: '템플릿코드', mono: true, cellStyle: 'font-size:11px;color:#888', fmt: (v) => v || '-' },
@@ -281,7 +280,7 @@ window.SySendMsgLogMng = {
     ];
     /* 메시지(SMS·카카오) 그리드 */
     columns.msgGrid = [
-      expCol, numCol,
+      expCol,
       { key: 'channelCd',    label: '채널', style: 'text-align:center;', align: 'center', badge: (row) => fnChannelBadge(row.channelCd), fmt: (v) => v || '-' },
       { key: 'recvPhone',    label: '수신번호', mono: true, fmt: (v) => v || '-' },
       { key: 'content',      label: '내용', cellStyle: fnEllip, cellTitle: (v, row) => row.content, fmt: (v) => v || '-' },
@@ -297,7 +296,6 @@ window.SySendMsgLogMng = {
           onClick: (row) => handleGridCellAction('sendLogs-cellClick', 'btn_row_expand', row),
           activeStyle: 'color:#666;font-size:11px;user-select:none;', baseStyle: 'color:#bbb;font-size:11px;user-select:none;' },
         fmt: (v, row) => isExpanded(row.sendHistId) ? '▲' : '▼' },
-      numCol,
       { key: 'channel',  label: '채널', style: 'text-align:center;', align: 'center', badge: (row) => fnChannelBadge(row.channel), fmt: (v) => v || '-' },
       { key: 'sendTo',   label: '수신처', cellStyle: 'color:#333', fmt: (v) => v || '-' },
       { key: 'alarmId',  label: '알림ID', mono: true, cellStyle: 'font-size:11px;color:#888', fmt: (v) => v || '-' },
@@ -417,8 +415,9 @@ window.SySendMsgLogMng = {
           <div v-if="fnRowDetailLoading(row)" style="font-size:12px;color:#888;padding:4px 2px;">⏳ 상세 정보를 불러오는 중…</div>
           <bo-form-area :columns="cfCurDetailCols" :form="fnRowDetail(row)" :cols="3" readonly label-left compact :show-actions="false">
             <template #emailContent>
-              <div style="max-height:360px;overflow:auto;border:1px solid #e8d8f0;border-radius:6px;padding:10px;background:#fff;font-size:12px;"
-                v-html="fnRowDetail(row).content || '<span style=&quot;color:#bbb&quot;>내용 없음</span>'"></div>
+              <div v-if="fnRowDetail(row).content" style="max-height:360px;overflow:auto;border:1px solid #e8d8f0;border-radius:6px;padding:10px;background:#fff;font-size:12px;"
+                v-html="fnRowDetail(row).content"></div>
+              <div v-else style="color:#bbb;font-size:12px;padding:10px;">내용 없음</div>
             </template>
           </bo-form-area>
         </td>

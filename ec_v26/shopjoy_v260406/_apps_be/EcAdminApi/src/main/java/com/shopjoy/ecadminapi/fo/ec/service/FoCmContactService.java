@@ -75,15 +75,11 @@ public class FoCmContactService {
         CmBlog saved = cmBlogRepository.save(entity);
         if (saved == null) throw new CmBizException("문의 접수에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
 
-        // 접수 완료 알림 발송 (메일/카카오/시스템알림) — 실패해도 접수 자체는 성공 처리
-        try {
-            cmMsgSendService.sendContactReceived(
-                saved.getSiteId(), saved.getBlogId(),
-                req.getName(), req.getEmail(), req.getTel(), req.getInquiryType());
-        } catch (Exception e) {
-            org.slf4j.LoggerFactory.getLogger(getClass())
-                .error("[FoCmContact] 문의 접수 알림 발송 실패 (blogId={})", saved.getBlogId(), e);
-        }
+        // 접수 완료 알림 발송 (메일/카카오/시스템알림) — 비동기(fire-and-forget).
+        // 메일 SMTP 발송이 응답을 지연시키지 않도록 별도 스레드풀에서 처리. 발송 결과는 이력 테이블에만 기록.
+        cmMsgSendService.sendContactReceivedAsync(
+            saved.getSiteId(), saved.getBlogId(),
+            req.getName(), req.getEmail(), req.getTel(), req.getInquiryType());
         return saved;
     }
 

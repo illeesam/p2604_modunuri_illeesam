@@ -437,4 +437,33 @@ public class CmUtil {
         return s.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 
+    /**
+     * 예외의 원인 체인을 펼쳐 사람이 읽을 수 있는 한 줄 메시지로 만든다 (발송 실패사유 저장용).
+     *
+     * <p>최상위 예외 메시지 + 하위 cause 들의 메시지를 " ⇐ " 로 연결한다. 메일 인증 실패처럼
+     * 최상위는 "Authentication failed" 로 짧고 실제 SMTP 응답(예: "535-5.7.8 ...")이 cause 에 있는
+     * 케이스에서 원인까지 보존한다. 동일 메시지 중복·null 은 건너뛰고, max 길이로 자른다.
+     *
+     * @param t   예외 (null 이면 "")
+     * @param max 최대 길이 (초과 시 잘라냄)
+     * @return 원인 체인이 펼쳐진 메시지
+     */
+    public static String describeError(Throwable t, int max) {
+        if (t == null) return "";
+        StringBuilder sb = new StringBuilder();
+        String prev = null;
+        int depth = 0;
+        for (Throwable c = t; c != null && depth < 6; c = c.getCause(), depth++) {
+            String msg = c.getMessage();
+            if (msg == null || msg.isBlank()) msg = c.getClass().getSimpleName();
+            msg = msg.trim();
+            if (msg.equals(prev)) continue;   // 동일 메시지 반복 생략
+            if (sb.length() > 0) sb.append(" ⇐ ");
+            sb.append(msg);
+            prev = msg;
+        }
+        String result = sb.toString();
+        return result.length() <= max ? result : result.substring(0, max);
+    }
+
 }

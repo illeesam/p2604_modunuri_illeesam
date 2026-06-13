@@ -6,6 +6,7 @@ import com.shopjoy.ecadminapi.co.cm.data.vo.SendResultVo;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,7 +49,28 @@ public class CmMsgSendService {
      * ───────────────────────────────────────────────────────────── */
 
     /**
-     * 고객센터 문의 접수 완료 알림을 3개 채널(메일/카카오/시스템알림)로 발송한다.
+     * 고객센터 문의 접수 완료 알림을 **비동기**로 발송한다 (fire-and-forget).
+     *
+     * <p>문의 접수 응답이 메일 SMTP 발송(수 초) 등으로 지연되지 않도록 별도 스레드풀
+     * ({@code msgSendExecutor})에서 처리한다. 발송 결과는 호출자에게 반환하지 않고 이력 테이블에만
+     * 기록한다. 예외는 {@link com.shopjoy.ecadminapi.common.config.AsyncConfig} 의 핸들러가 로깅한다.</p>
+     *
+     * <p>주의: @Async 스레드에는 SecurityContext 가 전파되지 않아 이력 reg_by 는 GUEST 로 기록된다
+     * (발송 주체는 시스템이므로 의도된 동작).</p>
+     */
+    @Async("msgSendExecutor")
+    public void sendContactReceivedAsync(String siteId, String blogId, String name,
+                                         String email, String tel, String inquiryType) {
+        try {
+            sendContactReceived(siteId, blogId, name, email, tel, inquiryType);
+        } catch (Exception e) {
+            log.error("[CmMsgSend] 문의접수 알림 비동기 발송 실패 (blogId={})", blogId, e);
+        }
+    }
+
+    /**
+     * 고객센터 문의 접수 완료 알림을 3개 채널(메일/카카오/시스템알림)로 **동기** 발송한다.
+     * 결과를 즉시 확인해야 하는 컨트롤러/테스트용. 일반 업무 흐름은 {@link #sendContactReceivedAsync} 사용.
      *
      * @param siteId      사이트ID (null 이면 대표 사이트)
      * @param blogId      문의 글ID (cm_blog.blog_id) — 이력 ref_id 로 기록

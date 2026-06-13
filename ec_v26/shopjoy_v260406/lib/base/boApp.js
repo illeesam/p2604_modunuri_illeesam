@@ -3101,6 +3101,7 @@
     .component('SyMemberLoginHist', window.SyMemberLoginHist)
     .component('SyUserLoginHist', window.SyUserLoginHist)
     .component('SyApiLogMng', window.SyApiLogMng)
+    .component('SySendMsgLogMng', window.SySendMsgLogMng)
     .component('SyPostman', window.SyPostman)
     /* ── pages/bo/zd/ — 개발도구 ── */
     .component('ZdStore', window.ZdStore)
