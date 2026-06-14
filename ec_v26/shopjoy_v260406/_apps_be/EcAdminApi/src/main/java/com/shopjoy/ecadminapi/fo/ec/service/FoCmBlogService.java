@@ -45,8 +45,11 @@ public class FoCmBlogService {
     @PersistenceContext
     private EntityManager em;
 
+    private static final String DEFAULT_SITE_ID = "2604010000000001";
+
     /** getList — 조회 */
     public List<CmBlogDto.Item> getList(CmBlogDto.Request req) {
+        SecurityUtil.applySiteId(req::getSiteId, req::setSiteId, DEFAULT_SITE_ID);
         List<CmBlogDto.Item> list = cmBlogRepository.selectList(req);
         _listFillRelations(list);
         return list;
@@ -54,6 +57,7 @@ public class FoCmBlogService {
 
     /** getPageData — 조회 */
     public CmBlogDto.PageResponse getPageData(CmBlogDto.Request req) {
+        SecurityUtil.applySiteId(req::getSiteId, req::setSiteId, DEFAULT_SITE_ID);
         PageHelper.addPaging(req);
         CmBlogDto.PageResponse res = cmBlogRepository.selectPageData(req);
         _listFillRelations(res.getPageList());

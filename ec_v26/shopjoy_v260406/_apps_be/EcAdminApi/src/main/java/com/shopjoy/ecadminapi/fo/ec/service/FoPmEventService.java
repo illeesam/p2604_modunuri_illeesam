@@ -7,6 +7,7 @@ import com.shopjoy.ecadminapi.base.ec.pm.repository.PmEventRepository;
 import com.shopjoy.ecadminapi.base.ec.pm.service.PmEventItemService;
 import com.shopjoy.ecadminapi.base.ec.pm.service.PmEventBenefitService;
 import com.shopjoy.ecadminapi.common.util.PageHelper;
+import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,8 +32,11 @@ public class FoPmEventService {
     private final PmEventItemService pmEventItemService;
     private final PmEventBenefitService pmEventBenefitService;
 
+    private static final String DEFAULT_SITE_ID = "2604010000000001";
+
     /** getList — 조회 */
     public List<PmEventDto.Item> getList(PmEventDto.Request req) {
+        SecurityUtil.applySiteId(req::getSiteId, req::setSiteId, DEFAULT_SITE_ID);
         List<PmEventDto.Item> list = pmEventRepository.selectList(req);
         _listFillRelations(list);
         return list;
@@ -40,6 +44,7 @@ public class FoPmEventService {
 
     /** getPageData — 조회 */
     public PmEventDto.PageResponse getPageData(PmEventDto.Request req) {
+        SecurityUtil.applySiteId(req::getSiteId, req::setSiteId, DEFAULT_SITE_ID);
         PageHelper.addPaging(req);
         PmEventDto.PageResponse res = pmEventRepository.selectPageData(req);
         _listFillRelations(res.getPageList());

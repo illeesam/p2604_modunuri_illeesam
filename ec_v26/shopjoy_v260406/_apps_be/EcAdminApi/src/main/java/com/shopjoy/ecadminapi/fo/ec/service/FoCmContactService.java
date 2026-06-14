@@ -95,9 +95,7 @@ public class FoCmContactService {
     /** _resolveSiteId — siteId 결정: 요청값 → 인증 사용자 → 대표 사이트(비회원 문의 fallback) */
     private String _resolveSiteId(CmContactSubmitDto.Request req) {
         if (req.getSiteId() != null && !req.getSiteId().isBlank()) return req.getSiteId();
-        String authSiteId = SecurityUtil.getSiteId();
-        if (authSiteId != null && !authSiteId.isBlank()) return authSiteId;
-        return DEFAULT_SITE_ID;
+        return SecurityUtil.getSiteIdOrDefault(DEFAULT_SITE_ID);
     }
 
     /** buildContent — 구성 */

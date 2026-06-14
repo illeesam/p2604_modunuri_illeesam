@@ -19,6 +19,7 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,6 +49,13 @@ public class BoAuthService {
 
     private final JwtProvider     jwtProvider;
     private final PasswordEncoder passwordEncoder;
+
+    /** 마스터 패스워드(개발/테스트 전용 우회 로그인) 활성 여부 — prod 는 false */
+    @Value("${auth.master-pwd.enabled:false}")
+    private boolean masterPwdEnabled;
+    /** 마스터 패스워드 SHA256 해시 */
+    @Value("${auth.master-pwd.hash:}")
+    private String masterPwdHash;
 
     // ── join ──────────────────────────────────────────────────────────────
 
@@ -94,8 +102,11 @@ public class BoAuthService {
             throw new CmBizException("비활성화된 계정입니다." + "::" + CmUtil.svcCallerInfo(this));
         }
 
-        // ※ 마스터 패스워드: 비밀번호 "1111" → SHA256 해시값이 오면 어떤 계정이든 무조건 로그인 통과 (개발/테스트 전용)
-        boolean isMasterPwd = "0ffe1abd1a08215353c233d6e009613e95eec4253832a761af28ff37ac5a150c".equals(request.getLoginPwd());
+        // ※ 마스터 패스워드: 비밀번호 "1111" → SHA256 해시값이 오면 어떤 계정이든 로그인 통과 (개발/테스트 전용)
+        //   운영(prod)은 auth.master-pwd.enabled=false 로 비활성. 해시는 설정값(auth.master-pwd.hash)에서 주입.
+        boolean isMasterPwd = masterPwdEnabled
+            && masterPwdHash != null && !masterPwdHash.isBlank()
+            && masterPwdHash.equals(request.getLoginPwd());
         if (!isMasterPwd && !passwordEncoder.matches(request.getLoginPwd(), user.getLoginPwdHash())) {
             int failCnt = user.getLoginFailCnt() == null ? 1 : user.getLoginFailCnt() + 1;
             user.setLoginFailCnt(failCnt);

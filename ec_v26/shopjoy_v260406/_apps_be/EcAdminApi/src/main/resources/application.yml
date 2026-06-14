@@ -116,6 +116,12 @@ app:
 #   클라이언트가 제공자 SDK로 발급받은 accessToken을 아래 userinfo URL로 검증한다.
 #   default-site-id: siteId 미전달 소셜 가입/매칭의 대표 사이트
 auth:
+  # ── 마스터 패스워드 (개발/테스트 전용) ───────────────────────────────
+  #   enabled=true 일 때만 마스터 해시로 임의 계정 로그인 통과. 운영(prod)은 반드시 false.
+  #   hash: 마스터 비밀번호의 SHA256 해시 (기본 "1111")
+  master-pwd:
+    enabled: ${AUTH_MASTER_PWD_ENABLED:true}
+    hash:    ${AUTH_MASTER_PWD_HASH:0ffe1abd1a08215353c233d6e009613e95eec4253832a761af28ff37ac5a150c}
   social:
     google-userinfo-url: ${SOCIAL_GOOGLE_USERINFO_URL:https://www.googleapis.com/oauth2/v3/userinfo}
     kakao-userinfo-url:  ${SOCIAL_KAKAO_USERINFO_URL:https://kapi.kakao.com/v2/user/me}

@@ -12,6 +12,7 @@ import com.shopjoy.ecadminapi.base.ec.pm.service.PmDiscntService;
 import com.shopjoy.ecadminapi.base.ec.pm.service.PmEventService;
 import com.shopjoy.ecadminapi.base.ec.pm.service.PmGiftService;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
+import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,8 +59,11 @@ public class FoPdProdService {
 
     /* ── 목록 ────────────────────────────────────────────────── */
 
+    private static final String DEFAULT_SITE_ID = "2604010000000001";
+
     /* 목록조회 */
     public List<PdProdDto.Item> getList(PdProdDto.Request req) {
+        SecurityUtil.applySiteId(req::getSiteId, req::setSiteId, DEFAULT_SITE_ID);
         List<PdProdDto.Item> list = pdProdRepository.selectList(req);
         _listFillRelations(list);
         return list;
@@ -67,6 +71,7 @@ public class FoPdProdService {
 
     /** getPageData — 조회 */
     public PdProdDto.PageResponse getPageData(PdProdDto.Request req) {
+        SecurityUtil.applySiteId(req::getSiteId, req::setSiteId, DEFAULT_SITE_ID);
         PdProdDto.PageResponse res = pdProdService.getPageData(req);
         _listFillRelations(res.getPageList());
         return res;

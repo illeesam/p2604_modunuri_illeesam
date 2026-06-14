@@ -61,7 +61,7 @@ public class SchBatchExecutor {
     private Map<String, SchBatchJobHandler> handlerMap() {
         if (handlerMap == null) {
             handlerMap = handlers.stream()
-                .collect(Collectors.toMap(SchBatchJobHandler::batchCode, Function.identity()));
+                .collect(Collectors.toMap(SchBatchJobHandler::batchCode, Function.identity(), (a, b) -> a));
         }
         return handlerMap;
     }

@@ -26,10 +26,7 @@ public class FoCmFaqService {
     public List<CmFaqDto.Item> getFaqs(CmFaqDto.Request req) {
         if (req == null) req = new CmFaqDto.Request();
         // siteId: 요청값 → 인증 사용자 siteId → 대표 사이트(비회원 공개)
-        if (req.getSiteId() == null || req.getSiteId().isBlank()) {
-            String authSiteId = SecurityUtil.getSiteId();
-            req.setSiteId((authSiteId != null && !authSiteId.isBlank()) ? authSiteId : DEFAULT_SITE_ID);
-        }
+        SecurityUtil.applySiteId(req::getSiteId, req::setSiteId, DEFAULT_SITE_ID);
         req.setUseYn("Y");   // 공개(노출중)만
         return cmFaqService.getList(req);
     }

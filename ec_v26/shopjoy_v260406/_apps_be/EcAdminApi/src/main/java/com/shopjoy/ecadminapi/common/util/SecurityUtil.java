@@ -111,6 +111,41 @@ public final class SecurityUtil {
     }
 
     /**
+     * 현재 인증된 사용자의 siteId 반환, 없으면(미인증/공백) 지정 기본(대표) 사이트.
+     *
+     * <p>FO 서비스에서 비회원 공개 조회 시 siteId 격리 강제용.
+     *
+     * @param defaultSiteId 미인증/미설정 시 사용할 대표 사이트 ID
+     * @return 인증 사이트 ID 또는 defaultSiteId
+     */
+    public static String getSiteIdOrDefault(String defaultSiteId) {
+        String siteId = getSiteId();
+        return (siteId != null && !siteId.isBlank()) ? siteId : defaultSiteId;
+    }
+
+    /**
+     * 요청 DTO 의 siteId 격리 보정 (FO 공개 조회용 공통 헬퍼).
+     *
+     * <p>요청에 siteId 가 이미 채워져 있으면 그대로 두고, 비어 있을 때만
+     * 인증 사용자 siteId → (없으면) 대표 사이트로 강제 설정한다. 각 FO 서비스의
+     * getList/getPageData 시작부에서 호출해 멀티사이트 격리를 보장한다.
+     *
+     * <pre>{@code SecurityUtil.applySiteId(req::getSiteId, req::setSiteId, DEFAULT_SITE_ID);}</pre>
+     *
+     * @param getter        요청 DTO 의 siteId getter (예: {@code req::getSiteId})
+     * @param setter        요청 DTO 의 siteId setter (예: {@code req::setSiteId})
+     * @param defaultSiteId 미인증/미설정 시 사용할 대표 사이트 ID
+     */
+    public static void applySiteId(java.util.function.Supplier<String> getter,
+                                   java.util.function.Consumer<String> setter,
+                                   String defaultSiteId) {
+        String cur = getter.get();
+        if (cur == null || cur.isBlank()) {
+            setter.accept(getSiteIdOrDefault(defaultSiteId));
+        }
+    }
+
+    /**
      * BO_GUEST 권한 보유 여부.
      *
      * <p>{@link #isBo()}(AppType 기반)와 달리 Spring Security authorities 기반으로 체크한다.

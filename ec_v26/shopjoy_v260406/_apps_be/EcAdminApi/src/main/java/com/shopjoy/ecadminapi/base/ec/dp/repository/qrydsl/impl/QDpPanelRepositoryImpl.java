@@ -276,7 +276,6 @@ public class QDpPanelRepositoryImpl implements QDpPanelRepository {
         boolean hasAny = false;
         if (entity.getSiteId()                  != null) { update.set(dpPanel.siteId,                  entity.getSiteId());                  hasAny = true; }
         if (entity.getAreaId()                  != null) { update.set(dpPanel.areaId,                  entity.getAreaId());                  hasAny = true; }
-        if (entity.getAreaId()                  != null) { update.set(dpPanel.areaId,                  entity.getAreaId());                  hasAny = true; }
         if (entity.getPanelNm()                 != null) { update.set(dpPanel.panelNm,                 entity.getPanelNm());                 hasAny = true; }
         if (entity.getPanelTypeCd()             != null) { update.set(dpPanel.panelTypeCd,             entity.getPanelTypeCd());             hasAny = true; }
         if (entity.getPathId()                  != null) { update.set(dpPanel.pathId,                  entity.getPathId());                  hasAny = true; }
