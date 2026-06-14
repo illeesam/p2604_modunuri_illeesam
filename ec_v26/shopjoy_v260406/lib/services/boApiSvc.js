@@ -37,6 +37,12 @@
     setUse(_id, body, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.boApi.put(   `/bo/ec/cm/blog/${_id}/use`, body, hdr(uiNm, cmdNm)); },
   };
 
+  /* ── cm: 블로그 첨부 이미지 (cm_blog_file) ───────────────────── */
+  boApiSvc.cmBlogFile = {
+    getList(params, uiNm, cmdNm)     { return global.boApi.get('/bo/ec/cm/blog-file', { params, ...hdr(uiNm, cmdNm) }); },
+    saveList(cmd, rows, uiNm, cmdNm) { return global.boApi.post('/bo/ec/cm/blog-file/save-list/' + cmd, rows, hdr(uiNm, cmdNm)); },
+  };
+
   /* ── cm: 채팅 ───────────────────────────────────────────────── */
   boApiSvc.cmChatt = {
     getPage(params, uiNm, cmdNm) { return global.boApi.get(   '/bo/ec/cm/chatt/page', { params, ...hdr(uiNm, cmdNm) }); },
