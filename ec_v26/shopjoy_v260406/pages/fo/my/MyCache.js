@@ -69,11 +69,8 @@ window.MyCache = {
     const { cashBalance, cashHistory, chargeAmount } = Pinia.storeToRefs(myStore);
 
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 50, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-    const paginate = myStore.paginate;
 
     const { dateRange, onDateSearch } = window.myDateFilterHelper();
-    // 날짜/기간 필터는 서버(API)가 처리 — cashHistory 는 이미 조회기간 내 결과.
-    const cfDateFilteredHistory = computed(() => cashHistory.value);
 
     /* addCash — 추가 */
     const handleAddCash = () => {
@@ -95,25 +92,35 @@ window.MyCache = {
       if (!ok) { showToast('주문 정보를 찾을 수 없습니다.', 'error'); }
     };
 
-    /* handleSearchData — 처리 */
-    const handleSearchData = async () => {
-      const params = { dateType: 'reg_date', dateStart: dateRange.start, dateEnd: dateRange.end };
-      await myStore.handleLoadCash(params);
-      myStore.handleLoadOrders();
+    /* fnBuildParams — 현재 검색조건(기간) → 서버 파라미터 */
+    const fnBuildParams = () => ({ dateType: 'reg_date', dateStart: dateRange.start, dateEnd: dateRange.end });
+
+    /* handleLoadPage — 서버사이드 페이징 조회 (현재 pager 기준) */
+    const handleLoadPage = async () => {
+      await myStore.handleLoadCashPage(fnBuildParams(), pager);
     };
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
 
-    /* onSearch — 조회 */
+    /* onSearch — 조회 (기간 변경) → 1페이지부터 서버 재조회 */
     const onSearch = async (dateParams) => {
       if (dateParams) { onDateSearch(dateParams); }
-      await handleSearchData();
+      pager.pageNo = 1;
+      await handleLoadPage();
+      myStore.handleLoadOrders();
     };
+
+    /* onPageChange — 페이지 버튼 클릭 → 서버 재조회 (페이징 정책) */
+    const onPageChange = async () => { await handleLoadPage(); };
+
+    /* onSizeChange — 페이지크기 변경 → 서버 재조회 */
+    const onSizeChange = async () => { await handleLoadPage(); };
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
-    onMounted(() => {
-      handleSearchData();
+    onMounted(async () => {
+      await handleLoadPage();
+      myStore.handleLoadOrders();
     });
 
     /* ##### [06] return (템플릿 노출) ############################################## */
@@ -121,7 +128,7 @@ window.MyCache = {
     return {
       handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch + 모달 통합 콜백
       myStore, cashBalance, cashHistory, chargeAmount,
-      pager, paginate, cfDateFilteredHistory,
+      pager, onPageChange, onSizeChange,
       onSearch,
     };
   },
@@ -161,13 +168,13 @@ window.MyCache = {
   </div>
   <!-- ===== □. 빠른 금액 버튼 ================================================ -->
   <!-- ===== ■. 영역 ====================================================== -->
-  <PagerHeader :total="cfDateFilteredHistory.length" :pager="pager" />
+  <PagerHeader :total="cashHistory.length" :pager="pager" @size-change="onSizeChange" />
   <!-- ===== ■. 조건부 영역 ================================================== -->
-  <div v-if="!cfDateFilteredHistory.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">
+  <div v-if="!cashHistory.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">
     캐쉬 내역이 없습니다.
   </div>
   <!-- ===== ■. 영역 ====================================================== -->
-  <div v-for="h in paginate(cfDateFilteredHistory, pager)" :key="h.cashId"
+  <div v-for="h in cashHistory" :key="h.cashId"
     style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;">
     <div style="width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;"
       :style="h.type==='환불'?'background:#ffedd5;':h.type==='충전'?'background:#dcfce7;':'background:#fee2e2;'">
@@ -288,7 +295,7 @@ window.MyCache = {
       </div>
     </div>
   </div>
-  <Pagination :total="cashHistory.length" :pager="pager" />
+  <Pagination :total="cashHistory.length" :pager="pager" @set-page="onPageChange" />
   <!-- ===== □.□. 4열: 잔액 ================================================ -->
   <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 영역 ====================================================== -->

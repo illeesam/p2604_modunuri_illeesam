@@ -208,21 +208,6 @@ window.Faq = {
       return faqAll.filter(f => ids.has(f.pathId)).length;
     };
 
-    /* cfPagedFaqs — 서버에서 분류 필터된 faqs 의 현재 페이지 슬라이스 + pager 메타 갱신 */
-    const cfPagedFaqs = computed(() => {
-      const list = faqs;
-      const size = pager.pageSize || 10;
-      const total = list.length;
-      const totalPage = Math.max(1, Math.ceil(total / size));
-      /* 필터 변경으로 현재 페이지가 범위를 넘으면 보정 */
-      const cur = Math.min(Math.max(1, pager.pageNo), totalPage);
-      pager.pageTotalCount = total;
-      pager.pageTotalPage = totalPage;
-      if (pager.pageNo !== cur) pager.pageNo = cur;
-      const start = (cur - 1) * size;
-      return list.slice(start, start + size);
-    });
-
     /* cfTotalCount — 좌측 '전체' 뱃지용 전체 건수 (분류 무관 스냅샷) */
     const cfTotalCount = computed(() => faqAll.length);
 
@@ -230,7 +215,7 @@ window.Faq = {
 
     return {
       uiState, faqs, selectedPathId, pager,
-      cfTree, cfPagedFaqs, cfTotalCount,
+      cfTree, cfTotalCount,
       handleBtnAction, handleSelectAction,
     };
   },
@@ -277,7 +262,7 @@ window.Faq = {
         <div v-if="!faqs.length" style="text-align:center;padding:48px 0;color:var(--text-muted);font-size:0.9rem;">
           {{ uiState.loading ? '불러오는 중...' : '해당 분류의 FAQ가 없습니다.' }}
         </div>
-        <div v-for="faq in cfPagedFaqs" :key="faq.faqId" class="faq-item">
+        <div v-for="faq in faqs" :key="faq.faqId" class="faq-item">
           <button class="faq-question" @click="handleSelectAction('faqs-rowToggle', faq.faqId)">
             <span style="flex:1;">
               {{ faq.q }}

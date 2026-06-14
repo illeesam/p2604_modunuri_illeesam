@@ -21,11 +21,12 @@ window.MyClaim = {
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ MyClaim.js : handleBtnAction -> ', cmd, param);
-      // 클레임 유형 필터 변경 (전체/취소/반품/교환)
+      // 클레임 유형 필터 변경 (전체/취소/반품/교환) → 1페이지부터 서버 재조회 (claimTypeCd)
       if (cmd === 'claims-setFilter') {
         claimFilter.value = param;
         claimStatusFilter.splice(0);
         pager.pageNo = 1;
+        return handleLoadPage();
       // 상태 필터 초기화
       } else if (cmd === 'claims-statusReset') {
         claimStatusFilter.splice(0);
@@ -37,10 +38,9 @@ window.MyClaim = {
     /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ MyClaim.js : handleSelectAction -> ', cmd, param);
-      // 클레임 상태 토글
+      // 클레임 상태 토글 (다중선택 단계 필터) — 현재 서버 페이지 내 표시 구분(클라이언트 refine)
       if (cmd === 'claims-statusToggle') {
         toggleClaimStatus(param);
-        pager.pageNo = 1;
       // 클레임 신청 취소
       } else if (cmd === 'claims-cancel') {
         return cancelClaim(param);
@@ -91,14 +91,15 @@ window.MyClaim = {
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     const myStore = window.useFoMyStore();
-    const { claims, claimFilter, cfFilteredClaims, orders } = Pinia.storeToRefs(myStore);
-    const filteredClaims = cfFilteredClaims;
+    const { claims, claimFilter, orders } = Pinia.storeToRefs(myStore);
 
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 50, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-    const paginate = myStore.paginate;
 
     const { dateRange, onDateSearch } = window.myDateFilterHelper();
     const claimStatusFilter = reactive([]);
+
+    /* 유형 필터 라벨(전체/취소/반품/교환) → 서버 claimTypeCd 코드값 매핑 */
+    const CLAIM_TYPE_CD = { '취소': 'CANCEL', '반품': 'RETURN', '교환': 'EXCHANGE' };
 
     /* toggleClaimStatus — 토글 */
     const toggleClaimStatus = (step) => {
@@ -106,9 +107,9 @@ window.MyClaim = {
       if (idx === -1) { claimStatusFilter.push(step); }
       else { claimStatusFilter.splice(idx, 1); }
     };
-    // 날짜/기간 필터는 서버(API)가 처리 — claims 는 이미 조회기간 내 결과.
-    // 클레임상태 토글만 클라이언트에서 즉시 좁힘 (검색정책 예외: 토글 UX).
-    const cfDateFilteredClaims = computed(() => filteredClaims.value
+    // 날짜/기간·유형(claimTypeCd) 필터는 서버(API)가 처리 — claims 는 이미 현재 페이지 결과.
+    // 클레임상태 토글(다중선택)만 현재 서버 페이지 안에서 클라이언트 표시 구분.
+    const cfDateFilteredClaims = computed(() => claims.value
       .filter(c => !claimStatusFilter.length || claimStatusFilter.includes(c.status))
     );
 
@@ -162,25 +163,40 @@ window.MyClaim = {
       showToast('신청이 취소되었습니다.', 'info');
     };
 
-    /* handleSearchData — 처리 */
-    const handleSearchData = async () => {
-      const params = { dateType: 'request_date', dateStart: dateRange.start, dateEnd: dateRange.end };
-      await myStore.handleLoadClaims(params);
-      myStore.handleLoadOrders();
+    /* fnBuildParams — 현재 검색조건(기간 + 유형 claimTypeCd) → 서버 파라미터 */
+    const fnBuildParams = () => {
+      const p = { dateType: 'request_date', dateStart: dateRange.start, dateEnd: dateRange.end };
+      const typeCd = CLAIM_TYPE_CD[claimFilter.value];
+      if (typeCd) { p.claimTypeCd = typeCd; }   // '전체'면 미전송
+      return p;
+    };
+
+    /* handleLoadPage — 서버사이드 페이징 조회 (현재 pager 기준) */
+    const handleLoadPage = async () => {
+      await myStore.handleLoadClaimsPage(fnBuildParams(), pager);
     };
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
 
-    /* onSearch — 조회 */
+    /* onSearch — 조회 (기간 변경) → 1페이지부터 서버 재조회 */
     const onSearch = async (dateParams) => {
       if (dateParams) { onDateSearch(dateParams); }
-      await handleSearchData();
+      pager.pageNo = 1;
+      await handleLoadPage();
+      myStore.handleLoadOrders();
     };
+
+    /* onPageChange — 페이지 버튼 클릭 → 서버 재조회 (페이징 정책) */
+    const onPageChange = async () => { await handleLoadPage(); };
+
+    /* onSizeChange — 페이지크기 변경 → 서버 재조회 */
+    const onSizeChange = async () => { await handleLoadPage(); };
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
-    onMounted(() => {
-      handleSearchData();
+    onMounted(async () => {
+      await handleLoadPage();
+      myStore.handleLoadOrders();
     });
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더) ############################### */
@@ -205,9 +221,9 @@ window.MyClaim = {
 
     return {
       handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch + 모달 통합 콜백
-      myStore, claims, claimFilter, filteredClaims, orders,
-      pager, paginate, cfDateFilteredClaims, claimStatusFilter,
-      onSearch,
+      myStore, claims, claimFilter, orders,
+      pager, cfDateFilteredClaims, claimStatusFilter,
+      onSearch, onPageChange, onSizeChange,
       // ===== shared (헬퍼) ====================================================
       cfAuthUser, findProd, fnClaimStepCount, fnShowPickupTrack, fnShowShipTrack,
     };
@@ -274,13 +290,13 @@ window.MyClaim = {
 </template>
 <!-- ===== □. 처리 흐름 (취소/반품/교환) ======================================== -->
 <!-- ===== ■. 영역 ====================================================== -->
-<PagerHeader :total="cfDateFilteredClaims.length" :pager="pager" />
+<PagerHeader :total="cfDateFilteredClaims.length" :pager="pager" @size-change="onSizeChange" />
 <!-- ===== ■. 조건부 영역 ================================================== -->
 <div v-if="!cfDateFilteredClaims.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">
   해당 내역이 없습니다.
 </div>
 <!-- ===== ■. 영역 ====================================================== -->
-<div v-for="c in paginate(cfDateFilteredClaims, pager)" :key="c.claimId"
+<div v-for="c in cfDateFilteredClaims" :key="c.claimId"
     style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:14px;">
   <!-- ===== ■.■. 카드 헤더 ================================================= -->
   <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin:-16px -16px 12px;padding:12px 16px;border-bottom:1px solid var(--border);border-radius:var(--radius) var(--radius) 0 0;"
@@ -472,7 +488,7 @@ window.MyClaim = {
 </div>
 </div>
 </div>
-<Pagination :total="filteredClaims.length" :pager="pager" />
+<Pagination :total="claims.length" :pager="pager" @set-page="onPageChange" />
 <!-- ===== □.□. 사유 + 교환 정보 ============================================ -->
 <!-- ===== □. 영역 ====================================================== -->
 <!-- ===== ■. 영역 ====================================================== -->

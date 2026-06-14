@@ -109,6 +109,25 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
     }
   };
 
+  /* _applyPageMeta — PageResponse 메타(pageTotalCount/pageTotalPage)를 pager 에 반영 */
+  const _applyPageMeta = (pager, d) => {
+    if (!pager || !d) return;
+    pager.pageTotalCount = d.pageTotalCount || 0;
+    pager.pageTotalPage  = d.pageTotalPage  || 1;
+  };
+
+  /* handleLoadOrdersPage — 서버사이드 페이징 조회. params(검색조건)+pager(pageNo/pageSize) → 현재 페이지만 적재 + pager 메타 갱신 */
+  const handleLoadOrdersPage = async (params, pager) => {
+    if (!Array.isArray(orders)) Object.assign(orders, []);
+    try {
+      const p = { ...(params || {}), pageNo: pager.pageNo, pageSize: pager.pageSize };
+      const res = await foApiSvc.myOrder.getPage(p, '마이주문', '목록조회');
+      const d = res.data?.data || {};
+      orders.splice(0, orders.length, ...(d.pageList || []).map(_adaptOrder));
+      _applyPageMeta(pager, d);
+    } catch (e) { orders.splice(0, orders.length); _applyPageMeta(pager, {}); }
+  };
+
   /* setOrderStatus */
   const setOrderStatus = (orderId, status) => {
     const o = orders.find(x => x.orderId === orderId);
@@ -167,6 +186,18 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
         claims.splice(0, claims.length, ...list.map(_adaptClaim));
       } catch (e) { claims.splice(0, claims.length); }
     }
+  };
+
+  /* handleLoadClaimsPage — 서버사이드 페이징 조회 (유형/상태/기간 검색 params + pager) */
+  const handleLoadClaimsPage = async (params, pager) => {
+    if (!Array.isArray(claims)) Object.assign(claims, []);
+    try {
+      const p = { ...(params || {}), pageNo: pager.pageNo, pageSize: pager.pageSize };
+      const res = await foApiSvc.myClaim.getPage(p, '마이클레임', '목록조회');
+      const d = res.data?.data || {};
+      claims.splice(0, claims.length, ...(d.pageList || []).map(_adaptClaim));
+      _applyPageMeta(pager, d);
+    } catch (e) { claims.splice(0, claims.length); _applyPageMeta(pager, {}); }
   };
   const cfFilteredClaims = computed(() => {
     if (!Array.isArray(claims)) return [];
@@ -242,6 +273,18 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
     }
   };
 
+  /* handleLoadCouponsPage — 서버사이드 페이징 조회 (상태/기간 검색 params + pager) */
+  const handleLoadCouponsPage = async (params, pager) => {
+    if (!Array.isArray(coupons)) Object.assign(coupons, []);
+    try {
+      const p = { ...(params || {}), pageNo: pager.pageNo, pageSize: pager.pageSize };
+      const res = await foApiSvc.myCoupon.getPage(p, '마이쿠폰', '목록조회');
+      const d = res.data?.data || {};
+      coupons.splice(0, coupons.length, ...(d.pageList || []).map(_adaptCoupon));
+      _applyPageMeta(pager, d);
+    } catch (e) { coupons.splice(0, coupons.length); _applyPageMeta(pager, {}); }
+  };
+
   /* discountLabel */
   const discountLabel = c => c.discountType === 'rate' ? c.discountValue + '% 할인'
     : c.discountType === 'shipping' ? '무료배송'
@@ -282,6 +325,19 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
     }
   };
 
+  /* handleLoadCashPage — 서버사이드 페이징 조회. history 가 PageResponse(pageList/pageTotalCount) 로 옴 */
+  const handleLoadCashPage = async (params, pager) => {
+    if (!Array.isArray(cashHistory)) Object.assign(cashHistory, []);
+    try {
+      const p = { ...(params || {}), pageNo: pager.pageNo, pageSize: pager.pageSize };
+      const res = await foApiSvc.myCash.getPage(p, '마이캐시', '조회');
+      cashBalance.value = res.data?.data?.balance || 0;
+      const d = res.data?.data?.history || {};
+      cashHistory.splice(0, cashHistory.length, ...(d.pageList || []).map(_adaptCash));
+      _applyPageMeta(pager, d);
+    } catch (e) { cashHistory.splice(0, cashHistory.length); _applyPageMeta(pager, {}); }
+  };
+
   /* ── 문의 ── */
   const inquiries = reactive([]);
   const expandedInquiry = ref(null);
@@ -319,6 +375,18 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
     }
   };
 
+  /* loadInquiriesPage — 서버사이드 페이징 조회 (상태/기간 검색 params + pager) */
+  const loadInquiriesPage = async (params, pager) => {
+    if (!Array.isArray(inquiries)) Object.assign(inquiries, []);
+    try {
+      const p = { ...(params || {}), pageNo: pager.pageNo, pageSize: pager.pageSize };
+      const res = await foApiSvc.myInquiry.getPage(p, '마이문의', '목록조회');
+      const d = res.data?.data || {};
+      inquiries.splice(0, inquiries.length, ...(d.pageList || []).map(_adaptInquiry));
+      _applyPageMeta(pager, d);
+    } catch (e) { inquiries.splice(0, inquiries.length); _applyPageMeta(pager, {}); }
+  };
+
   /* inquiryStatusColor */
   const inquiryStatusColor = s => ({ '요청':'#3b82f6','처리중':'#f97316','답변완료':'#22c55e','취소됨':'#9ca3af' }[s] || '#9ca3af');
 
@@ -348,6 +416,18 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
         chats.splice(0, chats.length, ...list.map(_adaptChat));
       } catch (e) { chats.splice(0, chats.length); }
     }
+  };
+
+  /* loadChatsPage — 서버사이드 페이징 조회 (기간 검색 params + pager) */
+  const loadChatsPage = async (params, pager) => {
+    if (!Array.isArray(chats)) Object.assign(chats, []);
+    try {
+      const p = { ...(params || {}), pageNo: pager.pageNo, pageSize: pager.pageSize };
+      const res = await foApiSvc.myChat.getPage(p, '마이채팅', '목록조회');
+      const d = res.data?.data || {};
+      chats.splice(0, chats.length, ...(d.pageList || []).map(_adaptChat));
+      _applyPageMeta(pager, d);
+    } catch (e) { chats.splice(0, chats.length); _applyPageMeta(pager, {}); }
   };
 
   /* openChat */
@@ -413,17 +493,17 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
     ORDER_FLOW, CANCELABLE, SHOW_COURIER, orderStatusLabel, statusColor,
     CLAIM_FLOWS, CLAIM_DONE, CLAIM_TYPE_COLOR, CLAIM_STATUS_COLOR,
     /* 주문 */
-    orders, handleLoadOrders, setOrderStatus,
+    orders, handleLoadOrders, handleLoadOrdersPage, setOrderStatus,
     /* 클레임 */
-    claims, claimFilter, cfFilteredClaims, cfClaimsByOrderId, handleLoadClaims, removeClaim,
+    claims, claimFilter, cfFilteredClaims, cfClaimsByOrderId, handleLoadClaims, handleLoadClaimsPage, removeClaim,
     /* 쿠폰 */
-    coupons, couponCode, handleLoadCoupons, discountLabel,
+    coupons, couponCode, handleLoadCoupons, handleLoadCouponsPage, discountLabel,
     /* 캐쉬 */
-    cashBalance, cashHistory, chargeAmount, handleLoadCash,
+    cashBalance, cashHistory, chargeAmount, handleLoadCash, handleLoadCashPage,
     /* 문의 */
-    inquiries, expandedInquiry, loadInquiries, inquiryStatusColor,
+    inquiries, expandedInquiry, loadInquiries, loadInquiriesPage, inquiryStatusColor,
     /* 채팅 */
-    chats, expandedChat, loadChats, openChat,
+    chats, expandedChat, loadChats, loadChatsPage, openChat,
     /* 공유 모달 */
     orderDetailModal, openOrderModal,
     productModal, customerModal,

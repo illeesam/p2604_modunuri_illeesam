@@ -47,9 +47,13 @@
   };
 
   /* ── my: 캐시 ───────────────────────────────────────────────── */
+  /* getPage 응답 data: { balance, history: PageResponse(pageList/pageTotalCount/...) } */
   foApiSvc.myCash = {
     getInfo(params, uiNm, cmdNm) {
       return global.foApi.get('/fo/my/cash/info', { params: params || {}, ...hdr(uiNm, cmdNm) });
+    },
+    getPage(params, uiNm, cmdNm) {
+      return global.foApi.get('/fo/my/cash/page', { params: params || {}, ...hdr(uiNm, cmdNm) });
     },
   };
 
@@ -58,12 +62,18 @@
     getList(params, uiNm, cmdNm) {
       return global.foApi.get('/fo/my/chat/list', { params, ...hdr(uiNm, cmdNm) });
     },
+    getPage(params, uiNm, cmdNm) {
+      return global.foApi.get('/fo/my/chat/page', { params, ...hdr(uiNm, cmdNm) });
+    },
   };
 
   /* ── my: 클레임 ─────────────────────────────────────────────── */
   foApiSvc.myClaim = {
     getList(params, uiNm, cmdNm) {
       return global.foApi.get('/fo/my/claim/list', { params, ...hdr(uiNm, cmdNm) });
+    },
+    getPage(params, uiNm, cmdNm) {
+      return global.foApi.get('/fo/my/claim/page', { params, ...hdr(uiNm, cmdNm) });
     },
   };
 
@@ -72,17 +82,22 @@
     getList(params, uiNm, cmdNm) {
       return global.foApi.get('/fo/my/coupon/list', { params, ...hdr(uiNm, cmdNm) });
     },
+    getPage(params, uiNm, cmdNm) {
+      return global.foApi.get('/fo/my/coupon/page', { params, ...hdr(uiNm, cmdNm) });
+    },
   };
 
   /* ── my: 문의 ───────────────────────────────────────────────── */
   foApiSvc.myInquiry = {
     getList(params, uiNm, cmdNm) { return global.foApi.get('/fo/my/inquiry/list', { params, ...hdr(uiNm, cmdNm) }); },
+    getPage(params, uiNm, cmdNm) { return global.foApi.get('/fo/my/inquiry/page', { params, ...hdr(uiNm, cmdNm) }); },
     create(body, uiNm, cmdNm)    { return global.foApi.post('/fo/inquiry/create', body, hdr(uiNm, cmdNm)); },
   };
 
   /* ── my: 주문 ───────────────────────────────────────────────── */
   foApiSvc.myOrder = {
     getList(params, uiNm, cmdNm) { return global.foApi.get('/fo/my/order/list', { params, ...hdr(uiNm, cmdNm) }); },
+    getPage(params, uiNm, cmdNm) { return global.foApi.get('/fo/my/order/page', { params, ...hdr(uiNm, cmdNm) }); },
     create(body, uiNm, cmdNm)    { return global.foApi.post('/fo/order/create', body, hdr(uiNm, cmdNm)); },
   };
 

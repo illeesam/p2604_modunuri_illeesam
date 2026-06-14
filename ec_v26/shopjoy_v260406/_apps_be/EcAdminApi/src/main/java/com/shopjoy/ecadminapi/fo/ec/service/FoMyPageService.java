@@ -157,6 +157,15 @@ public class FoMyPageService {
         return orders;
     }
 
+    /** getMyOrdersPage — 서버사이드 페이징 조회 (현재 페이지에 orderItems 채워 반환) */
+    public OdOrderDto.PageResponse getMyOrdersPage(OdOrderDto.Request req) {
+        if (req == null) req = new OdOrderDto.Request();
+        req.setMemberId(SecurityUtil.getAuthUser().authId());
+        OdOrderDto.PageResponse page = orderRepository.selectPageData(req);
+        _fillOrderItems(page.getPageList());
+        return page;
+    }
+
     /** _fillOrderItems — 주문 목록에 orderItems 일괄 조회·분배 (1회 IN 쿼리) */
     private void _fillOrderItems(List<OdOrderDto.Item> orders) {
         if (orders == null || orders.isEmpty()) return;
@@ -179,11 +188,25 @@ public class FoMyPageService {
         return claimRepository.selectList(req);
     }
 
+    /** getMyClaimsPage — 서버사이드 페이징 조회 */
+    public OdClaimDto.PageResponse getMyClaimsPage(OdClaimDto.Request req) {
+        if (req == null) req = new OdClaimDto.Request();
+        req.setMemberId(SecurityUtil.getAuthUser().authId());
+        return claimRepository.selectPageData(req);
+    }
+
     /** getMyCoupons — 조회 */
     public List<PmCouponDto.Item> getMyCoupons(PmCouponDto.Request req) {
         if (req == null) req = new PmCouponDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
         return couponRepository.selectList(req);
+    }
+
+    /** getMyCouponsPage — 서버사이드 페이징 조회 */
+    public PmCouponDto.PageResponse getMyCouponsPage(PmCouponDto.Request req) {
+        if (req == null) req = new PmCouponDto.Request();
+        req.setMemberId(SecurityUtil.getAuthUser().authId());
+        return couponRepository.selectPageData(req);
     }
 
     /** getMyCacheHistory — 조회 */
@@ -193,6 +216,13 @@ public class FoMyPageService {
         return cacheRepository.selectList(req);
     }
 
+    /** getMyCacheHistoryPage — 서버사이드 페이징 조회 */
+    public PmCacheDto.PageResponse getMyCacheHistoryPage(PmCacheDto.Request req) {
+        if (req == null) req = new PmCacheDto.Request();
+        req.setMemberId(SecurityUtil.getAuthUser().authId());
+        return cacheRepository.selectPageData(req);
+    }
+
     /** getMyInquiries — 조회 (내 1:1 문의 목록, 기간/상태 검색은 req 로 위임) */
     public List<SyContactDto.Item> getMyInquiries(SyContactDto.Request req) {
         if (req == null) req = new SyContactDto.Request();
@@ -200,10 +230,24 @@ public class FoMyPageService {
         return contactRepository.selectList(req);
     }
 
+    /** getMyInquiriesPage — 서버사이드 페이징 조회 */
+    public SyContactDto.PageResponse getMyInquiriesPage(SyContactDto.Request req) {
+        if (req == null) req = new SyContactDto.Request();
+        req.setMemberId(SecurityUtil.getAuthUser().authId());
+        return contactRepository.selectPageData(req);
+    }
+
     /** getMyChats — 조회 (내 채팅방 목록, 기간 검색은 req 로 위임) */
     public List<CmChattRoomDto.Item> getMyChats(CmChattRoomDto.Request req) {
         if (req == null) req = new CmChattRoomDto.Request();
         req.setMemberId(SecurityUtil.getAuthUser().authId());
         return chattRoomRepository.selectList(req);
+    }
+
+    /** getMyChatsPage — 서버사이드 페이징 조회 */
+    public CmChattRoomDto.PageResponse getMyChatsPage(CmChattRoomDto.Request req) {
+        if (req == null) req = new CmChattRoomDto.Request();
+        req.setMemberId(SecurityUtil.getAuthUser().authId());
+        return chattRoomRepository.selectPageData(req);
     }
 }

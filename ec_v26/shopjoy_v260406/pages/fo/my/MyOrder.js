@@ -58,10 +58,9 @@ window.MyOrder = {
     /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ MyOrder.js : handleSelectAction -> ', cmd, param);
-      // 주문 흐름 상태 토글
+      // 주문 흐름 상태 토글 (다중선택 단계 필터) — 현재 서버 페이지 내 표시 구분(클라이언트 refine)
       if (cmd === 'orders-flowToggle') {
         toggleFlowStatus(param);
-        pager.pageNo = 1;
       // 주문 취소
       } else if (cmd === 'orders-cancel') {
         return cancelOrder(param);
@@ -154,9 +153,8 @@ window.MyOrder = {
     const { orders, cfClaimsByOrderId, coupons } = Pinia.storeToRefs(myStore);
     const claimsByOrderId = cfClaimsByOrderId;
 
-    /* -- 로컬 페이저 -- */
+    /* -- 페이저 (서버사이드) -- */
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 50, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-    const paginate = myStore.paginate;
 
     /* -- 배송조회 -- */
     const COURIER_URLS = {
@@ -337,30 +335,35 @@ window.MyOrder = {
       .filter(o => !flowStatusFilter.length || flowStatusFilter.includes(o.status))
     );
 
-    /* handleSearchData — 처리 */
-    const handleSearchData = async () => {
-      const params = {
-        dateType:  'order_date',
-        dateStart: dateRange.start,
-        dateEnd:   dateRange.end,
-      };
-      await myStore.handleLoadOrders(params);
+    /* fnBuildParams — 현재 검색조건(기간) → 서버 파라미터 */
+    const fnBuildParams = () => ({ dateType: 'order_date', dateStart: dateRange.start, dateEnd: dateRange.end });
+
+    /* handleLoadPage — 서버사이드 페이징 조회 (현재 pager 기준) + 연관(클레임/쿠폰) 로드 */
+    const handleLoadPage = async () => {
+      await myStore.handleLoadOrdersPage(fnBuildParams(), pager);
       myStore.handleLoadClaims();
       myStore.handleLoadCoupons();
     };
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
 
-    /* onSearch — 조회 */
+    /* onSearch — 조회 (기간 변경) → 1페이지부터 서버 재조회 */
     const onSearch = async (dateParams) => {
       if (dateParams) { onDateSearch(dateParams); }
-      await handleSearchData();
+      pager.pageNo = 1;
+      await handleLoadPage();
     };
+
+    /* onPageChange — 페이지 버튼 클릭 → 서버 재조회 (페이징 정책) */
+    const onPageChange = async () => { await handleLoadPage(); };
+
+    /* onSizeChange — 페이지크기 변경 → 서버 재조회 */
+    const onSizeChange = async () => { await handleLoadPage(); };
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
     onMounted(() => {
-      handleSearchData();
+      handleLoadPage();
     });
 
     /* ##### [05] 사용자 함수 (헬퍼 / 판정 / 렌더) — 템플릿 속성값 && 회피용 ######## */
@@ -394,8 +397,8 @@ window.MyOrder = {
       uiState,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch + 모달 통합 콜백
       myStore, orders, claimsByOrderId, cfDateFilteredOrders,
-      pager, paginate, flowStatusFilter,
-      onSearch,
+      pager, flowStatusFilter,
+      onSearch, onPageChange, onSizeChange,
       showOrderPayBreakdown,
       // ===== 판정 헬퍼 (속성값 && 회피) =======================================
       fnCanCancel, fnCanExchange, fnShowCourierStep, fnShowClaimPickup, fnShowClaimShip,
@@ -454,13 +457,13 @@ window.MyOrder = {
 </div>
 <!-- ===== □. 주문 처리 흐름 (토글 필터) ======================================== -->
 <!-- ===== ■. 영역 ====================================================== -->
-<PagerHeader :total="cfDateFilteredOrders.length" :pager="pager" />
+<PagerHeader :total="orders.length" :pager="pager" @size-change="onSizeChange" />
 <!-- ===== ■. 조건부 영역 ================================================== -->
 <div v-if="!cfDateFilteredOrders.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">
   주문 내역이 없습니다.
 </div>
 <!-- ===== ■. 영역 ====================================================== -->
-<div v-for="o in paginate(cfDateFilteredOrders, pager)" :key="o.orderId"
+<div v-for="o in cfDateFilteredOrders" :key="o.orderId"
     style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;">
   <!-- ===== ■.■. 주문 헤더 ================================================= -->
   <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin:-16px -16px 12px;padding:12px 16px;border-bottom:1px solid var(--border);border-radius:var(--radius) var(--radius) 0 0;"
@@ -821,7 +824,7 @@ window.MyOrder = {
 <!-- ===== □.□. 합계 + 택배 =============================================== -->
 <!-- ===== □. 영역 ====================================================== -->
 <!-- ===== ■. 영역 ====================================================== -->
-<Pagination :total="orders.length" :pager="pager" />
+<Pagination :total="orders.length" :pager="pager" @set-page="onPageChange" />
 <!-- ===== ■. Teleport 모달들 ============================================ -->
 <Teleport to="body">
   <!-- ===== ■.■. 리뷰 작성/수정 모달 =========================================== -->

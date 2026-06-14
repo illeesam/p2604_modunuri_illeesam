@@ -111,22 +111,26 @@ window.MyDateFilter = {
   <!-- ===== □. 본문 영역 =================================================== -->`
 };
 
-/* ── 공통 페이저 컴포넌트 (My 탭 전체에서 공유) ── */
+/* ── 공통 페이저 컴포넌트 (My 탭 전체에서 공유) ──
+ *  서버사이드 페이징 표준: pageNo/pageSize/pageTotalCount/pageTotalPage 필드 사용.
+ *  페이지/페이지크기 변경은 @set-page / @size-change 이벤트로 부모에 위임 → 부모가 API 재조회.
+ *  (이벤트 미바인딩 시에도 pager 필드는 직접 갱신되어 하위호환 동작) */
 window.PagerHeader = {
   props: ['total', 'pager'],
+  emits: ['size-change'],
+  setup(props, { emit }) {
+    /* onSizeChange — 페이지크기 변경 → 1페이지로 리셋 후 부모에 위임(서버 재조회) */
+    const onSizeChange = () => { props.pager.pageNo = 1; emit('size-change'); };
+    return { onSizeChange };
+  },
   template: `
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
   <!-- ===== ■. 본문 영역 =================================================== -->
-  <div style="font-size:0.85rem;color:var(--text-secondary);">총 <strong style="color:var(--text-primary);">{{ total }}</strong>건</div>
+  <div style="font-size:0.85rem;color:var(--text-secondary);">총 <strong style="color:var(--text-primary);">{{ pager.pageTotalCount != null ? pager.pageTotalCount : total }}</strong>건</div>
   <!-- ===== ■. 영역 ====================================================== -->
-  <select v-model="pager.size" @change="pager.page=1"
+  <select v-model="pager.pageSize" @change="onSizeChange"
     style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);font-size:0.82rem;cursor:pointer;">
-    <option :value="5">5개씩</option>
-    <option :value="10">10개씩</option>
-    <option :value="20">20개씩</option>
-    <option :value="30">30개씩</option>
-    <option :value="50">50개씩</option>
-    <option :value="100">100개씩</option>
+    <option v-for="s in (pager.pageSizes || [5,10,20,30,50,100])" :key="s" :value="s">{{ s }}개씩</option>
   </select>
 </div>
   <!-- ===== □. 영역 ====================================================== -->`
@@ -134,21 +138,29 @@ window.PagerHeader = {
 
 window.Pagination = {
   props: ['total', 'pager'],
-  setup(props) {
+  emits: ['set-page'],
+  setup(props, { emit }) {
+    /* pages — 서버 pageTotalPage 기준 번호 배열 (slice 재계산 금지) */
     const pages = Vue.computed(() => {
-      const t = Math.max(1, Math.ceil(props.total / props.pager.size));
+      const t = Math.max(1, props.pager.pageTotalPage || 1);
       return Array.from({ length: t }, (_, i) => i + 1);
     });
+
+    /* goPage — pageNo 설정 후 부모에 위임(서버 재조회). 범위/동일페이지 가드 */
+    const goPage = (n) => {
+      const t = pages.value.length;
+      if (n < 1 || n > t || n === props.pager.pageNo) { return; }
+      props.pager.pageNo = n;
+      emit('set-page', n);
+    };
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleBtnAction = (cmd, param = {}) => {
       console.log(' ■■ Pagination : handleBtnAction -> ', cmd, param);
       if (cmd === 'pager-prev') {
-        props.pager.page = Math.max(1, props.pager.page - 1);
-        return;
+        return goPage(props.pager.pageNo - 1);
       } else if (cmd === 'pager-next') {
-        props.pager.page = Math.min(pages.value.length, props.pager.page + 1);
-        return;
+        return goPage(props.pager.pageNo + 1);
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -158,8 +170,7 @@ window.Pagination = {
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ Pagination : handleSelectAction -> ', cmd, param);
       if (cmd === 'pager-set-page') {
-        props.pager.page = param;
-        return;
+        return goPage(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
@@ -173,17 +184,17 @@ window.Pagination = {
   template: `
 <div v-if="pages.length>1" style="display:flex;gap:6px;justify-content:center;margin-top:20px;flex-wrap:wrap;">
   <!-- ===== ■. 영역 ====================================================== -->
-  <button @click="handleBtnAction('pager-prev')" :disabled="pager.page===1"
+  <button @click="handleBtnAction('pager-prev')" :disabled="pager.pageNo===1"
     style="padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);cursor:pointer;color:var(--text-secondary);font-size:0.82rem;"
-    :style="pager.page===1?'opacity:0.4;cursor:not-allowed;':''">‹</button>
+    :style="pager.pageNo===1?'opacity:0.4;cursor:not-allowed;':''">‹</button>
   <button v-for="p in pages" :key="p" @click="handleSelectAction('pager-set-page', p)"
     style="padding:6px 12px;border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:0.82rem;min-width:36px;"
-    :style="pager.page===p?'background:var(--blue);color:#fff;border-color:var(--blue);font-weight:700;':'background:var(--bg-card);color:var(--text-secondary);'">{{ p }}</button>
+    :style="pager.pageNo===p?'background:var(--blue);color:#fff;border-color:var(--blue);font-weight:700;':'background:var(--bg-card);color:var(--text-secondary);'">{{ p }}</button>
   <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 영역 ====================================================== -->
-  <button @click="handleBtnAction('pager-next')" :disabled="pager.page===pages.length"
+  <button @click="handleBtnAction('pager-next')" :disabled="pager.pageNo===pages.length"
     style="padding:6px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);cursor:pointer;color:var(--text-secondary);font-size:0.82rem;"
-    :style="pager.page===pages.length?'opacity:0.4;cursor:not-allowed;':''">›</button>
+    :style="pager.pageNo===pages.length?'opacity:0.4;cursor:not-allowed;':''">›</button>
 </div>
   <!-- ===== □. 영역 ====================================================== -->`
 };

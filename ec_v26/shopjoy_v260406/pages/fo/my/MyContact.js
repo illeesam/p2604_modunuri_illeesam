@@ -61,11 +61,8 @@ window.MyContact = {
     const { inquiries, expandedInquiry } = Pinia.storeToRefs(myStore);
 
     const inquiryPager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 50, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
-    const paginate = myStore.paginate;
 
     const { dateRange, onDateSearch } = window.myDateFilterHelper();
-    // 날짜/기간 필터는 서버(API)가 처리 — inquiries 는 이미 조회기간 내 결과.
-    const cfDateFilteredInquiries = computed(() => inquiries.value);
 
     /* cancelInquiry — 취소 */
     const cancelInquiry = async id => {
@@ -76,19 +73,31 @@ window.MyContact = {
       showToast('문의가 취소되었습니다.', 'success');
     };
 
-    /* handleSearchData — 처리 */
-    const handleSearchData = async () => {
-      const params = { dateType: 'reg_date', dateStart: dateRange.start, dateEnd: dateRange.end };
-      await myStore.loadInquiries(params);
+    /* fnBuildParams — 현재 검색조건(기간) → 서버 파라미터 */
+    const fnBuildParams = () => ({ dateType: 'reg_date', dateStart: dateRange.start, dateEnd: dateRange.end });
+
+    /* handleLoadPage — 서버사이드 페이징 조회 (현재 inquiryPager 기준) */
+    const handleLoadPage = async () => {
+      await myStore.loadInquiriesPage(fnBuildParams(), inquiryPager);
     };
+
+    /* handleSearchData — 초기/조회 진입점 */
+    const handleSearchData = async () => { await handleLoadPage(); };
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
 
-    /* onSearch — 조회 */
+    /* onSearch — 조회 (기간 변경) → 1페이지부터 서버 재조회 */
     const onSearch = async (dateParams) => {
       if (dateParams) { onDateSearch(dateParams); }
-      await handleSearchData();
+      inquiryPager.pageNo = 1;
+      await handleLoadPage();
     };
+
+    /* onPageChange — 페이지 버튼 클릭 → 서버 재조회 (페이징 정책) */
+    const onPageChange = async () => { await handleLoadPage(); };
+
+    /* onSizeChange — 페이지크기 변경 → 서버 재조회 */
+    const onSizeChange = async () => { await handleLoadPage(); };
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
@@ -97,7 +106,7 @@ window.MyContact = {
     return {
       handleBtnAction, handleSelectAction, // dispatch
       myStore, inquiries, expandedInquiry,
-      inquiryPager, paginate, cfDateFilteredInquiries,
+      inquiryPager, onPageChange, onSizeChange,
     };
   },
   template: /* html */ `
@@ -105,13 +114,13 @@ window.MyContact = {
 <fo-my-layout :navigate="navigate" :cart-count="cartCount" active-page="myContact">
   <MyDateFilter @search="handleBtnAction('searchParam-dateSearch', $event)" />
   <!-- ===== ■. 영역 ====================================================== -->
-  <PagerHeader :total="cfDateFilteredInquiries.length" :pager="inquiryPager" />
+  <PagerHeader :total="inquiries.length" :pager="inquiryPager" @size-change="onSizeChange" />
   <!-- ===== ■. 조건부 영역 ================================================== -->
-  <div v-if="!cfDateFilteredInquiries.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">
+  <div v-if="!inquiries.length" style="text-align:center;padding:60px 0;color:var(--text-muted);">
     문의 내역이 없습니다.
   </div>
   <!-- ===== ■. 영역 ====================================================== -->
-  <div v-for="q in paginate(cfDateFilteredInquiries, inquiryPager)" :key="q.inquiryId"
+  <div v-for="q in inquiries" :key="q.inquiryId"
     style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:10px;">
     <div style="display:flex;align-items:flex-start;gap:12px;">
       <div style="flex:1;cursor:pointer;" @click="handleSelectAction('contacts-toggle', q.inquiryId)">
@@ -168,7 +177,7 @@ window.MyContact = {
   </div>
   <!-- ===== □. 영역 ====================================================== -->
   <!-- ===== ■. 영역 ====================================================== -->
-  <Pagination :total="inquiries.length" :pager="inquiryPager" />
+  <Pagination :total="inquiries.length" :pager="inquiryPager" @set-page="onPageChange" />
 </fo-my-layout>
 <!-- ===== □. 영역 ====================================================== -->
 </fo-page>
