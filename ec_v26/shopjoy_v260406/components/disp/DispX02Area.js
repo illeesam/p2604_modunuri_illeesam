@@ -348,7 +348,7 @@ window.DispX02Area = {
             &gt;
           </span>
         </div>
-        <div v-for="(r, ri) in (p.rows && p.rows.length ? p.rows : [p])" :key="ri" style="padding-left:10px;margin-top:2px;">
+        <div v-for="(r, ri) in (p.rows?.length ? p.rows : [p])" :key="ri" style="padding-left:10px;margin-top:2px;">
         <span style="color:#6272a4;">
           &#47;&#47; 위젯{{ ri+1 }}
         </span>

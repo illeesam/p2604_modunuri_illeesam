@@ -210,7 +210,7 @@ window.BoPage = {
     <button v-if="descDetail" class="page-desc-toggle" @click="descOpen = !descOpen">
       {{ descOpen ? '▲ 접기' : '▼ 더보기' }}
     </button>
-    <div v-if="descOpen && descDetail" class="page-desc-detail">{{ descDetail }}</div>
+    <div v-if="descOpen ? (descDetail) : false" class="page-desc-detail">{{ descDetail }}</div>
   </div>
   <!-- 화면 본문 (검색/목록/상세 등 모든 영역) -->
   <slot></slot>
@@ -272,7 +272,7 @@ window.BoSearchArea = {
   template: /* html */`
 <div class="search-bar" :style="barStyle" @keyup.enter="handleBtnAction('search-emit')">
   <!-- ▼ search 영역 -->
-  <template v-if="columns && param">
+  <template v-if="columns ? (param) : false">
   <!-- 라벨 텍스트(type:'label') / 슬롯(type:'slot') 은 묶음(search-field) 밖에 단독 배치 -->
   <template v-for="(col, ci) in columns" :key="col.key || ('_' + ci)">
   <label v-if="col.type==='label'" class="search-label">
@@ -330,7 +330,7 @@ window.BoSearchArea = {
       </option>
     </select>
     <!-- rangeFirst: true → rangeOptions select 를 date 앞에 표시 (옵션선택 placeholder는 col.rangeFirstLabel) -->
-    <select v-if="col.rangeFirst && col.rangeOptions" v-model="po(col)[col.key]" @change="handleSelectAction('field-range-change', { col, event: $event })" :style="col.rangeWidth ? ('min-width:' + col.rangeWidth) : ''">
+    <select v-if="col.rangeFirst ? (col.rangeOptions) : false" v-model="po(col)[col.key]" @change="handleSelectAction('field-range-change', { col, event: $event })" :style="col.rangeWidth ? ('min-width:' + col.rangeWidth) : ''">
     <option value="">
       {{ col.rangeFirstLabel || '기간 선택' }}
     </option>
@@ -345,7 +345,7 @@ window.BoSearchArea = {
   </span>
   <input type="date" v-model="po(col)[col.endKey || 'dateEnd']"
           :class="col.dateClass || 'date-range-input'" :style="col.dateWidth ? ('width:' + col.dateWidth) : ''" />
-  <select v-if="!col.rangeFirst && col.rangeOptions" v-model="po(col)[col.key]" @change="handleSelectAction('field-range-change', { col, event: $event })">
+  <select v-if="!col.rangeFirst ? (col.rangeOptions) : false" v-model="po(col)[col.key]" @change="handleSelectAction('field-range-change', { col, event: $event })">
   <option value="">
     옵션선택
   </option>
@@ -662,7 +662,7 @@ window.BoGrid = {
        min-height 미지정: 행 수가 적으면 내용 높이만큼만 차지(하단 빈 공백 제거). max-height 로만 상한 제한. -->
   <div :style="(bare ? 'overflow-x:auto;' : 'max-height:calc(100vh - 380px);overflow:auto;') + 'position:relative;'">
     <!-- 조회 중 오버레이 (기존 행 위에 표시 — 재조회/페이지 이동 피드백). 행이 없을 땐 빈행 문구로 안내 -->
-    <div v-if="loading && rows.length" style="position:absolute;inset:0;z-index:5;background:rgba(255,255,255,.55);display:flex;align-items:flex-start;justify-content:center;padding-top:40px;pointer-events:none;">
+    <div v-if="loading ? (rows.length) : false" style="position:absolute;inset:0;z-index:5;background:rgba(255,255,255,.55);display:flex;align-items:flex-start;justify-content:center;padding-top:40px;pointer-events:none;">
       <span style="font-size:13px;color:#e8587a;background:#fff;border:1px solid #f3c6d4;border-radius:14px;padding:4px 14px;box-shadow:0 2px 8px rgba(0,0,0,.08);">⏳ 조회 중…</span>
     </div>
     <table class="bo-table" :class="{ 'crud-grid': draggable || showSave }">
@@ -1130,7 +1130,7 @@ window.BoGridCrud = {
         <template v-for="(col, ci) in columns" :key="col.key">
           <slot :name="'cell-' + col.key" :row="fnRow(item)" :idx="idx" :node="item">
             <td :style="U.tdStyle(col, fnRow(item))" :class="U.cellClass(col, fnRow(item))" :title="U.cellTitle(col, fnRow(item))">
-              <div v-if="col.edit==='text' && col.treeDepth" style="display:flex;align-items:center;">
+              <div v-if="col.edit==='text' ? (col.treeDepth) : false" style="display:flex;align-items:center;">
               <span :style="{ marginLeft:(fnRow(item)._depth*14)+'px', marginRight:'6px', fontWeight:'700',
                     fontSize: fnRow(item)._depth===0 ? '7px' : '12px', flexShrink:0,
                     color: (typeof col.treeColor==='function' ? col.treeColor(fnRow(item)._depth) : '#888') }">
@@ -2118,32 +2118,32 @@ window.BoFormArea = {
   },
   template: /* html */`
 <div class="bo-form-area" :class="compact?'bo-form-compact':''">
-  <div v-for="(row, ri) in cfRows" :key="ri" class="form-row" :class="cols===3?'col3':''" :style="cols!==2&&cols!==3?('grid-template-columns:repeat('+cols+',1fr)'):''">
+  <div v-for="(row, ri) in cfRows" :key="ri" class="form-row" :class="cols===3?'col3':''" :style="(cols!==2 ? cols!==3 : false) ? ('grid-template-columns:repeat('+cols+',1fr)') : ''">
     <div v-for="col in row" :key="col.key" class="form-group" :style="cfFieldStyle(col)">
     <!-- 라벨 (hideLabel:true 면 라벨 영역만 빈 칸으로 자리 유지)
          slot 타입도 col.label 이 있으면 위쪽 라벨 모드에서 자동 렌더 (라벨 누락 방지).
          단, labelLeft 모드 + slot 의 경우 grid 첫 칸 채우기 위해 별도 렌더 분기. -->
-    <label v-if="col.type !== 'slot' && !col.hideLabel" class="form-label" :style="labelLeft?'margin-bottom:0;white-space:nowrap;':''">
+    <label v-if="col.type !== 'slot' ? (!col.hideLabel) : false" class="form-label" :style="labelLeft?'margin-bottom:0;white-space:nowrap;':''">
     {{ col.label }}
-    <span v-if="col.required && !readonly" class="req">
+    <span v-if="col.required ? (!readonly) : false" class="req">
     *
   </span>
     <span v-if="col.hint" class="form-hint" style="font-size:11px;color:#888;font-weight:400;margin-left:6px;">
     {{ col.hint }}
   </span>
 </label>
-<label v-else-if="col.type !== 'slot' && col.hideLabel" class="form-label" :style="'visibility:hidden;'+(labelLeft?'margin-bottom:0;':'')">
+<label v-else-if="col.type !== 'slot' ? (col.hideLabel) : false" class="form-label" :style="'visibility:hidden;'+(labelLeft?'margin-bottom:0;':'')">
 ·
 </label>
-<label v-else-if="col.type === 'slot' && labelLeft && col.label && !col.hideLabel" class="form-label" style="margin-bottom:0;white-space:nowrap;">
+<label v-else-if="col.type === 'slot' ? (labelLeft ? (col.label ? (!col.hideLabel) : false) : false) : false" class="form-label" style="margin-bottom:0;white-space:nowrap;">
 {{ col.label }}
-<span v-if="col.required && !readonly" class="req">
+<span v-if="col.required ? (!readonly) : false" class="req">
 *
 </span>
 </label>
-<label v-else-if="col.type === 'slot' && !labelLeft && col.label && !col.hideLabel" class="form-label">
+<label v-else-if="col.type === 'slot' ? (!labelLeft ? (col.label ? (!col.hideLabel) : false) : false) : false" class="form-label">
 {{ col.label }}
-<span v-if="col.required && !readonly" class="req">
+<span v-if="col.required ? (!readonly) : false" class="req">
 *
 </span>
 <span v-if="col.hint" class="form-hint" style="font-size:11px;color:#888;font-weight:400;margin-left:6px;">
@@ -2151,7 +2151,7 @@ window.BoFormArea = {
 </span>
 </label>
 <!-- readonly 표시 -->
-<div v-if="col.type === 'readonly' && col.html" class="readonly-field" v-html="dispVal(col)">
+<div v-if="col.type === 'readonly' ? (col.html) : false" class="readonly-field" v-html="dispVal(col)">
 </div>
 <div v-else-if="col.type === 'readonly'" class="readonly-field">
   {{ dispVal(col) }}
@@ -2196,7 +2196,7 @@ window.BoFormArea = {
         v-model="form[col.key]" :disabled="readonly"
         :class="errors[col.key] ? 'is-invalid' : ''"
         @change="handleSelectAction('field-change', { col, event: $event })">
-    <option v-if="col.nullable !== false && col.nullLabel" value="">
+    <option v-if="col.nullable !== false ? (col.nullLabel) : false" value="">
     {{ col.nullLabel }}
   </option>
   <option v-for="o in normOpts(col.options)" :key="o.value" :value="o.value">

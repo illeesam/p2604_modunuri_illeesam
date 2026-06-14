@@ -1022,7 +1022,7 @@
             {{ t.action.label }}
           </button>
           <!-- 상세 펼치기 영역 -->
-          <div v-if="t.expanded && t.detail"
+          <div v-if="t.expanded ? (t.detail) : false"
             style="margin-top:6px;padding:6px 8px;background:#f8f9fa;border-radius:5px;font-size:11px;font-family:monospace;color:#444;white-space:pre-wrap;max-height:200px;overflow-y:auto;word-break:break-all;">{{ t.detail }}</div>
         </div>
         <!-- 상세보기 토글 (detail 있을 때만) -->
@@ -1094,7 +1094,7 @@
         <div style="display:flex;align-items:center;gap:5px;">
           <span style="display:inline-block;padding:0 2px;border-radius:3px;font-size:10px;font-weight:700;flex-shrink:0;" :style="foApiLogMethodStyle(log.method)" :title="log.method">{{ (log.method || '-').charAt(0) }}</span>
           <span style="font-size:11px;color:#1a5276;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="log.url">{{ log.url }}</span>
-          <span v-if="log.status && Number(log.status) !== 200" style="font-size:11px;font-weight:700;flex-shrink:0;" :style="foApiLogStatusClass(log.status)">{{ log.status }}</span>
+          <span v-if="log.status ? (Number(log.status) !== 200) : false" style="font-size:11px;font-weight:700;flex-shrink:0;" :style="foApiLogStatusClass(log.status)">{{ log.status }}</span>
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
           <span v-if="log.uiLabel" style="font-size:10px;color:#7d3c98;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">{{ log.uiLabel }}</span>
@@ -1107,7 +1107,7 @@
   </div>
 
   <!-- FO API LOG HOVER 상세창 (행 hover 시 패널 왼쪽에 표시. 클릭 펼침 없이 hover 전용 / BO 동일 3섹션 구조) -->
-  <div v-if="showApiLog && apiLogHoverDetail" @mouseenter="onFoApiLogDetailEnter" @mouseleave="onFoApiLogLeave()"
+  <div v-if="showApiLog ? (apiLogHoverDetail) : false" @mouseenter="onFoApiLogDetailEnter" @mouseleave="onFoApiLogLeave()"
     style="position:fixed;top:80px;right:290px;width:600px;max-height:80vh;background:#fff;border:2px solid #8b5cf6;border-radius:4px;box-shadow:0 4px 12px rgba(0,0,0,0.15);z-index:9991;font-size:11px;font-family:monospace;overflow:hidden;display:flex;flex-direction:column;">
     <!-- 헤더 -->
     <div style="padding:12px;background:linear-gradient(135deg,#f3f4f6 0%,#e5e7eb 100%);border-bottom:1px solid #d1d5db;flex-shrink:0;">

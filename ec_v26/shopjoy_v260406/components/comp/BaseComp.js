@@ -315,7 +315,7 @@ window.BaseAttachGrp = {
   },
   template: /* html */`
 <div :style="displayMode==='image' ? 'display:inline-flex;flex-direction:column;align-items:center;gap:8px;' : 'border:1px solid #e8e8e8;border-radius:8px;background:#fafafa;padding:12px 14px;'">
-  <input ref="fileInputRef" type="file" :accept="cfAcceptAttr" :multiple="displayMode!=='image' && maxCount>1" style="display:none;" @change="onFileChange" @click.stop />
+  <input ref="fileInputRef" type="file" :accept="cfAcceptAttr" :multiple="displayMode!=='image' ? maxCount>1 : false" style="display:none;" @change="onFileChange" @click.stop />
   <!-- ============= [image 모드] 단일 프로필 이미지 박스 UI ============= -->
   <template v-if="displayMode==='image'">
     <!-- 이미지 미리보기 박스 (보기 모드에서는 클릭 비활성) -->
@@ -323,11 +323,11 @@ window.BaseAttachGrp = {
       :style="{width:width,height:height,border:'2px dashed #e0e0e0',borderRadius:'10px',overflow:'hidden',cursor:readonly?'default':'pointer',background:'#fafafa',display:'flex',alignItems:'center',justifyContent:'center',position:'relative',transition:'border-color .15s'}"
       @mouseenter="e=>{ if(!readonly) e.currentTarget.style.borderColor='#e8587a'; }"
       @mouseleave="e=>e.currentTarget.style.borderColor='#e0e0e0'"
-      :title="(files[0] && files[0].fileNm) || (readonly ? '' : '클릭하여 이미지 선택')">
+      :title="(files[0]?.fileNm) || (readonly ? '' : '클릭하여 이미지 선택')">
       <span v-if="uiState.loading || uiState.uploading" style="font-size:22px;">
         ⏳
       </span>
-      <img v-else-if="files[0] && (files[0].thumbCdnUrl || files[0].cdnImgUrl)"
+      <img v-else-if="files[0] ? ((files[0].thumbCdnUrl || files[0].cdnImgUrl)) : false"
         :src="files[0].thumbCdnUrl || files[0].cdnImgUrl"
         style="width:100%;height:100%;object-fit:cover;display:block;" />
       <span v-else style="font-size:32px;color:#ccc;">
@@ -497,7 +497,7 @@ window.BaseAttachGrp = {
     </span>
   </div>
   <!-- hover 미리보기 레이어 (fixed, 마우스 우측 하단) -->
-  <div v-if="hoverState.show && hoverState.url" style="position:fixed;z-index:10000;pointer-events:none;border-radius:8px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.35);background:#fff;border:1px solid #e0e0e0;" :style="{left: hoverState.x + 'px', top: hoverState.y + 'px'}">
+  <div v-if="hoverState.show ? (hoverState.url) : false" style="position:fixed;z-index:10000;pointer-events:none;border-radius:8px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.35);background:#fff;border:1px solid #e0e0e0;" :style="{left: hoverState.x + 'px', top: hoverState.y + 'px'}">
   <img :src="hoverState.url" style="display:block;max-width:200px;max-height:200px;object-fit:contain;" />
 </div>
 <!-- 팝업 모달 -->

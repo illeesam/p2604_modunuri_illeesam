@@ -411,14 +411,14 @@ window.BoPathTreeNode = {
     <span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
       {{ node.pathLabel || '(이름없음)' }}
     </span>
-    <span v-if="showBizCd && node.bizCd" style="font-size:9px;color:#aaa;font-family:monospace;flex-shrink:0;margin-left:2px;">
+    <span v-if="showBizCd ? (node.bizCd) : false" style="font-size:9px;color:#aaa;font-family:monospace;flex-shrink:0;margin-left:2px;">
     #{{ node.bizCd }}
   </span>
   <!-- counts(외부 데이터 수) 가 제공되고 비어있지 않으면 우선 표시 (백엔드가 자손 누적까지 계산해 제공).
        node.pathId === null (루트 "전체") 은 counts['__total__'] 로 매핑.
        counts 가 제공됐지만 해당 키가 없으면 0 으로 표시 (데이터 없음을 명시).
        counts 미제공 또는 아직 로드 전(빈 객체) 이면 node.count(경로 자손수) 폴백 표시. -->
-  <span v-if="counts && Object.keys(counts).length > 0"
+  <span v-if="counts ? (Object.keys(counts).length > 0) : false"
     style="font-size:10px;color:#1677ff;background:#e6f4ff;padding:1px 6px;border-radius:8px;flex-shrink:0;font-weight:600;">
     {{ counts[node.pathId == null ? '__total__' : node.pathId] != null
        ? counts[node.pathId == null ? '__total__' : node.pathId]
@@ -428,7 +428,7 @@ window.BoPathTreeNode = {
     {{ node.count }}
   </span>
 </div>
-<div v-if="expanded.has(node.pathId) && (node.children||[]).length>0">
+<div v-if="expanded.has(node.pathId) ? ((node.children||[]).length>0) : false">
 <bo-path-tree-node v-for="ch in node.children" :key="ch.pathId"
       :node="ch" :expanded="expanded" :selected="selected"
       :on-toggle="onToggle" :on-select="onSelect" :depth="depth+1" :show-biz-cd="showBizCd" :counts="counts" />
@@ -650,7 +650,7 @@ window.BoCategoryTree = {
       <span style="font-size:12px;flex:1">
         전체
       </span>
-      <span v-if="showCount && showCount(null) > 0" style="font-size:10px;color:#1677ff;background:#e6f4ff;padding:1px 6px;border-radius:8px;font-weight:600;flex-shrink:0;margin-left:4px;">
+      <span v-if="showCount ? (showCount(null) > 0) : false" style="font-size:10px;color:#1677ff;background:#e6f4ff;padding:1px 6px;border-radius:8px;font-weight:600;flex-shrink:0;margin-left:4px;">
         {{ showCount(null) }}
       </span>
     </div>
@@ -677,7 +677,7 @@ window.BoCategoryTree = {
       <span style="font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
         {{ cat.categoryNm }}
       </span>
-      <span v-if="showCount && showCount(cat.categoryId) > 0" style="font-size:10px;color:#1677ff;background:#e6f4ff;padding:1px 6px;border-radius:8px;font-weight:600;flex-shrink:0;margin-left:4px;">
+      <span v-if="showCount ? (showCount(cat.categoryId) > 0) : false" style="font-size:10px;color:#1677ff;background:#e6f4ff;padding:1px 6px;border-radius:8px;font-weight:600;flex-shrink:0;margin-left:4px;">
       {{ showCount(cat.categoryId) }}
     </span>
     <span v-if="cat.categoryStatusCd==='INACTIVE'" style="font-size:10px;color:#bbb;margin-left:4px">
@@ -718,7 +718,7 @@ window.BoCategoryTree = {
                 ▶ 닫기
               </button>
             </div>
-            <div v-for="cat in cfTreeFlat" :key="cat.categoryId" style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:2px;padding:5px 6px;transition:background .1s;" :style="{ paddingLeft:(cat._depth*14+6)+'px', opacity: excludeIds && excludeIds.has(String(cat.categoryId)) ? 0.35 : 1, pointerEvents: excludeIds && excludeIds.has(String(cat.categoryId)) ? 'none' : 'auto', background: pickerTempCat && pickerTempCat.categoryId === cat.categoryId ? '#eff6ff' : '', outline: pickerTempCat && pickerTempCat.categoryId === cat.categoryId ? '2px solid #2563eb' : 'none', outlineOffset: pickerTempCat && pickerTempCat.categoryId === cat.categoryId ? '-2px' : '0', position:'relative', zIndex: pickerTempCat && pickerTempCat.categoryId === cat.categoryId ? 1 : 'auto' }" @click="handleSelectAction('picker-select', cat)">
+            <div v-for="cat in cfTreeFlat" :key="cat.categoryId" style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:2px;padding:5px 6px;transition:background .1s;" :style="{ paddingLeft:(cat._depth*14+6)+'px', opacity: excludeIds?.has(String(cat.categoryId)) ? 0.35 : 1, pointerEvents: excludeIds?.has(String(cat.categoryId)) ? 'none' : 'auto', background: pickerTempCat?.categoryId === cat.categoryId ? '#eff6ff' : '', outline: pickerTempCat?.categoryId === cat.categoryId ? '2px solid #2563eb' : 'none', outlineOffset: pickerTempCat?.categoryId === cat.categoryId ? '-2px' : '0', position:'relative', zIndex: pickerTempCat?.categoryId === cat.categoryId ? 1 : 'auto' }" @click="handleSelectAction('picker-select', cat)">
             <span v-if="cat._hasChildren"
                 style="width:14px;text-align:center;font-size:9px;color:#aaa;flex-shrink:0"
                 @click.stop="handleSelectAction('tree-node-toggle', cat.categoryId)">
@@ -746,7 +746,7 @@ window.BoCategoryTree = {
         <div v-if="cfPickerList.length===0" style="text-align:center;color:#aaa;padding:24px;font-size:13px;">
           검색 결과 없음
         </div>
-        <div v-for="cat in cfPickerList" :key="cat.categoryId" @click="handleSelectAction('picker-select', cat)" style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:6px;padding:6px 10px;transition:background .1s;" :style="{ opacity: excludeIds && excludeIds.has(String(cat.categoryId)) ? 0.35 : 1, pointerEvents: excludeIds && excludeIds.has(String(cat.categoryId)) ? 'none' : 'auto', background: pickerTempCat && pickerTempCat.categoryId === cat.categoryId ? '#eff6ff' : '', outline: pickerTempCat && pickerTempCat.categoryId === cat.categoryId ? '2px solid #2563eb' : 'none', outlineOffset: pickerTempCat && pickerTempCat.categoryId === cat.categoryId ? '-2px' : '0', position:'relative', zIndex: pickerTempCat && pickerTempCat.categoryId === cat.categoryId ? 1 : 'auto' }">
+        <div v-for="cat in cfPickerList" :key="cat.categoryId" @click="handleSelectAction('picker-select', cat)" style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:6px;padding:6px 10px;transition:background .1s;" :style="{ opacity: excludeIds?.has(String(cat.categoryId)) ? 0.35 : 1, pointerEvents: excludeIds?.has(String(cat.categoryId)) ? 'none' : 'auto', background: pickerTempCat?.categoryId === cat.categoryId ? '#eff6ff' : '', outline: pickerTempCat?.categoryId === cat.categoryId ? '2px solid #2563eb' : 'none', outlineOffset: pickerTempCat?.categoryId === cat.categoryId ? '-2px' : '0', position:'relative', zIndex: pickerTempCat?.categoryId === cat.categoryId ? 1 : 'auto' }">
         <span :style="{ fontSize:'11px', fontWeight:700, color:DEPTH_COLOR((cat.categoryDepth||1)-1) }">
           {{ DEPTH_BULLET((cat.categoryDepth||1)-1) }}
         </span>
@@ -862,7 +862,7 @@ window.BoPathParentSelector = {
       {{ node.pathLabel || '(이름없음)' }}
     </span>
   </div>
-  <div v-if="expanded.has(node.pathId) && (node.children||[]).length>0">
+  <div v-if="expanded.has(node.pathId) ? ((node.children||[]).length>0) : false">
   <bo-path-parent-selector v-for="ch in node.children" :key="ch.pathId"
       :node="ch" :expanded="expanded" :on-toggle="onToggle" :on-select="onSelect" :depth="depth+1" />
 </div>
@@ -1215,13 +1215,13 @@ window.BoDateTimePicker = {
   <input type="time" :class="inputClass" :value="cfParts.time"
     :disabled="readonly" @change="handleSelectAction('picker-time-change', $event)"
     :style="cfBaseStyle+'width:'+timeWidth+';margin:0;flex-shrink:0;'" />
-  <span v-if="placeholderDate && !cfParts.date && !cfParts.time" style="font-size:11px;color:#aaa;white-space:nowrap;">
+  <span v-if="placeholderDate ? (!cfParts.date ? (!cfParts.time) : false) : false" style="font-size:11px;color:#aaa;white-space:nowrap;">
   {{ placeholderDate }}
 </span>
-<button v-if="showNow && !readonly" type="button" @click="handleBtnAction('picker-now')" style="font-size:11px;padding:4px 9px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;color:#555;white-space:nowrap;flex-shrink:0;">
+<button v-if="showNow ? (!readonly) : false" type="button" @click="handleBtnAction('picker-now')" style="font-size:11px;padding:4px 9px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;color:#555;white-space:nowrap;flex-shrink:0;">
 🕐 현재
 </button>
-<button v-if="showClear && !readonly && (cfParts.date || cfParts.time)" type="button" @click="handleBtnAction('picker-clear')" style="font-size:11px;padding:4px 9px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;color:#999;white-space:nowrap;flex-shrink:0;">
+<button v-if="showClear ? (!readonly ? ((cfParts.date || cfParts.time)) : false) : false" type="button" @click="handleBtnAction('picker-clear')" style="font-size:11px;padding:4px 9px;border:1px solid #d0d0d0;border-radius:8px;background:#fff;cursor:pointer;color:#999;white-space:nowrap;flex-shrink:0;">
 ✕ 지움
 </button>
 </div>
@@ -1327,7 +1327,7 @@ window.BoPathPickField = {
     <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="cfLabel || ''">
       {{ cfLabel || placeholder }}
     </span>
-    <span v-if="cfHasVal && !disabled" title="비우기"
+    <span v-if="cfHasVal ? (!disabled) : false" title="비우기"
       style="cursor:pointer;color:#9ca3af;font-size:9px;flex-shrink:0;line-height:1;padding:0;margin-right:-1px;align-self:flex-end;margin-bottom:2px;"
       @click.stop="handleBtnAction('pathPick-clear')">
       ✕
@@ -1404,7 +1404,7 @@ window.BoPropTreeNode = {
     position:'relative', zIndex: selected===node.path ? 1 : 'auto'}"
     @mouseover="handleSelectAction('node-hover', $event)"
     @mouseout="handleSelectAction('node-leave', $event)">
-    <span v-if="node.children && node.children.length>0" style="width:14px;font-size:10px;color:#999;" @click.stop="handleBtnAction('node-toggle', node.path)">
+    <span v-if="node.children ? (node.children.length>0) : false" style="width:14px;font-size:10px;color:#999;" @click.stop="handleBtnAction('node-toggle', node.path)">
     {{ expanded.has(node.path) ? '▼' : '▶' }}
   </span>
   <span v-else style="width:14px;">
@@ -1422,7 +1422,7 @@ window.BoPropTreeNode = {
 </div>
 <!-- ===== □. 영역 ====================================================== -->
 <!-- ===== ■. 조건부 영역 ================================================== -->
-<div v-if="expanded.has(node.path) && node.children.length>0">
+<div v-if="expanded.has(node.path) ? (node.children.length>0) : false">
 <bo-prop-tree-node v-for="ch in node.children" :key="ch.path"
       :node="ch" :expanded="expanded" :selected="selected"
       :on-toggle="onToggle" :on-select="onSelect" :depth="depth+1" />
@@ -1484,7 +1484,7 @@ window.BoDeptTreeNode = {
     outlineOffset: selected === node.deptId ? '-2px' : '0',
     position:'relative', zIndex: selected === node.deptId ? 1 : 'auto' }"
     @click.stop="handleSelectAction('node-select', node.deptId)">
-    <span v-if="node.children && node.children.length" @click.stop="handleBtnAction('node-toggle', node.deptId)" style="margin-right:4px;font-size:10px;width:14px;text-align:center;flex-shrink:0;">
+    <span v-if="node.children ? (node.children.length) : false" @click.stop="handleBtnAction('node-toggle', node.deptId)" style="margin-right:4px;font-size:10px;width:14px;text-align:center;flex-shrink:0;">
     {{ expanded.has(node.deptId) ? '▼' : '▶' }}
   </span>
   <span v-else style="margin-right:4px;width:14px;flex-shrink:0;">
@@ -1494,7 +1494,7 @@ window.BoDeptTreeNode = {
   </span>
   <!-- counts(외부 데이터 수) 가 제공되고 비어있지 않으면 우선 표시 (백엔드에서 자손 누적 계산).
        node.deptId === null (루트 "전체") 은 counts['__total__'] 매핑 -->
-  <span v-if="counts && Object.keys(counts).length > 0"
+  <span v-if="counts ? (Object.keys(counts).length > 0) : false"
     style="font-size:10px;color:#1677ff;background:#e6f4ff;padding:1px 6px;border-radius:8px;flex-shrink:0;font-weight:600;margin-left:4px;">
     {{ counts[node.deptId == null ? '__total__' : node.deptId] != null
        ? counts[node.deptId == null ? '__total__' : node.deptId]
@@ -1503,7 +1503,7 @@ window.BoDeptTreeNode = {
 </div>
 <!-- ===== □. 영역 ====================================================== -->
 <!-- ===== ■. 조건부 영역 ================================================== -->
-<template v-if="node.children && node.children.length && expanded.has(node.deptId)">
+<template v-if="node.children ? (node.children.length ? (expanded.has(node.deptId)) : false) : false">
 <bo-dept-tree-node v-for="child in node.children" :key="child.deptId"
       :node="child" :expanded="expanded" :selected="selected"
       :on-toggle="onToggle" :on-select="onSelect" :depth="depth + 1" :counts="counts" />

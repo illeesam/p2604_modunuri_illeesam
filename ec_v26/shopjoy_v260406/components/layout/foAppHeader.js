@@ -334,7 +334,7 @@ window.foAppHeader = {
   <nav style="flex:1;display:flex;align-items:center;gap:2px;overflow-x:auto;padding:0 8px;scrollbar-width:none;">
     <template v-for="m in cfTopMenu" :key="m.menuId">
       <!-- ===== ■.■.■. Site 01은 disp UI 샘플 메뉴 숨김 (samples는 01 에서 제외) ======= -->
-      <template v-if="foSiteNo==='01' && (m.menuId && (m.menuId.startsWith('dispUi') || m.menuId==='divider-disp'))"></template>
+      <template v-if="foSiteNo==='01' ? ((m.menuId ? ((m.menuId.startsWith('dispUi') || m.menuId==='divider-disp')) : false)) : false"></template>
       <span v-else-if="m.type==='divider'" style="color:var(--border);padding:0 6px;font-size:1rem;user-select:none;">|</span>
       <button v-else @click="handleSelectAction('nav-select-menu', m.menuId)" class="nav-link" :class="{active: page===m.menuId}">
         <span>{{ m.menuNm }}</span>
@@ -466,7 +466,7 @@ window.foAppHeader = {
           @mouseleave="$event.currentTarget.style.background=appShowApiLog?'var(--accent-dim,#fdf8f1)':'transparent'">
           <span style="font-size:13px;">🌐</span>
           <span>API 로그 보기</span>
-          <span v-if="appApiLogs && appApiLogs.length" style="margin-left:auto;font-size:10px;background:#e8e8e8;border-radius:8px;padding:1px 5px;color:#666;">{{ appApiLogs.length }}</span>
+          <span v-if="appApiLogs ? (appApiLogs.length) : false" style="margin-left:auto;font-size:10px;background:#e8e8e8;border-radius:8px;padding:1px 5px;color:#666;">{{ appApiLogs.length }}</span>
         </button>
         <button @click="handleBtnAction('settings-toggle-api-toast')"
           style="width:100%;padding:10px 14px;border:none;background:none;cursor:pointer;text-align:left;font-size:13px;display:flex;align-items:center;gap:8px;color:var(--text-primary);transition:background 0.15s;"

@@ -129,7 +129,7 @@ window.OrderDetailModal = {
             <div style="font-size:0.78rem;color:var(--text-muted);">
               {{ item.color }} / {{ item.size }} / {{ item.qty }}개
             </div>
-            <div v-if="item.productCoupon && item.productCoupon.discount" style="margin-top:2px;font-size:0.7rem;color:#16a34a;">
+            <div v-if="item.productCoupon ? (item.productCoupon.discount) : false" style="margin-top:2px;font-size:0.7rem;color:#16a34a;">
             🎟 {{ item.productCoupon.name }} -{{ Number(item.productCoupon.discount).toLocaleString() }}원
           </div>
         </div>
@@ -148,7 +148,7 @@ window.OrderDetailModal = {
           {{ order.shippingFee.toLocaleString() }}원
         </span>
       </div>
-      <div v-if="order.shippingCoupon && Number(order.shippingCoupon.discount) > 0" style="display:flex;justify-content:space-between;">
+      <div v-if="order.shippingCoupon ? (Number(order.shippingCoupon.discount) > 0) : false" style="display:flex;justify-content:space-between;">
       <span style="color:var(--text-muted);">
         🚚 배송비 쿠폰
       </span>
@@ -182,7 +182,7 @@ window.OrderDetailModal = {
     </div>
   </div>
   <!-- 택배 정보 -->
-  <div v-if="order.courier && order.trackingNo" style="display:flex;align-items:center;gap:8px;font-size:0.8rem;padding:10px 14px;background:var(--bg-base);border-radius:8px;">
+  <div v-if="order.courier ? (order.trackingNo) : false" style="display:flex;align-items:center;gap:8px;font-size:0.8rem;padding:10px 14px;background:var(--bg-base);border-radius:8px;">
   <span style="color:var(--text-muted);">
     🚚 {{ order.courier }}
   </span>
@@ -458,7 +458,7 @@ window.ProductModal = {
         <span v-if="product.originalPrice" style="font-size:0.85rem;color:#bbb;text-decoration:line-through;">
           {{ product.originalPrice.toLocaleString ? product.originalPrice.toLocaleString() + '원' : product.originalPrice }}
         </span>
-        <span v-if="product.originalPrice && product.priceNum" style="font-size:0.8rem;font-weight:700;color:#ef4444;">
+        <span v-if="product.originalPrice ? (product.priceNum) : false" style="font-size:0.8rem;font-weight:700;color:#ef4444;">
         {{ Math.round((1 - product.priceNum / product.originalPrice) * 100) }}%
       </span>
     </div>
@@ -467,7 +467,7 @@ window.ProductModal = {
       {{ product.desc }}
     </p>
     <!-- 색상 -->
-    <div v-if="product.opt1s && product.opt1s.length" style="margin-bottom:14px;">
+    <div v-if="product.opt1s ? (product.opt1s.length) : false" style="margin-bottom:14px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
       <span style="font-size:0.75rem;font-weight:600;color:#999;letter-spacing:0.5px;">
         색상
@@ -477,7 +477,7 @@ window.ProductModal = {
       </span>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;">
-      <button v-for="c in product.opt1s" :key="c.name" @click="handleSelectAction('modal-sel-color', c)" :style="{ width:'28px', height:'28px', borderRadius:'50%', background:c.hex, cursor:'pointer', border: selColor&&selColor.name===c.name ? '3px solid #1a1a1a' : '2px solid rgba(0,0,0,0.12)', outline: selColor&&selColor.name===c.name ? '2px solid #fff' : 'none', outlineOffset: '-4px', boxSizing:'border-box', transition:'border .15s', }" :title="c.name">
+      <button v-for="c in product.opt1s" :key="c.name" @click="handleSelectAction('modal-sel-color', c)" :style="{ width:'28px', height:'28px', borderRadius:'50%', background:c.hex, cursor:'pointer', border: selColor?.name===c.name ? '3px solid #1a1a1a' : '2px solid rgba(0,0,0,0.12)', outline: selColor?.name===c.name ? '2px solid #fff' : 'none', outlineOffset: '-4px', boxSizing:'border-box', transition:'border .15s', }" :title="c.name">
     </button>
   </div>
   <p v-if="errColor" style="margin:6px 0 0;font-size:0.75rem;color:#ef4444;">
@@ -485,7 +485,7 @@ window.ProductModal = {
   </p>
 </div>
 <!-- 사이즈 -->
-<div v-if="product.opt2s && product.opt2s.length && !(product.opt2s.length===1 && product.opt2s[0]==='FREE')" style="margin-bottom:14px;">
+<div v-if="product.opt2s ? (product.opt2s.length ? (!(product.opt2s.length===1 ? (product.opt2s[0]==='FREE') : false)) : false) : false" style="margin-bottom:14px;">
 <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
   <span :style="{ fontSize:'0.75rem', fontWeight:'600', letterSpacing:'0.5px', color: errSize ? '#ef4444' : '#999' }">
     사이즈
@@ -512,7 +512,7 @@ window.ProductModal = {
 </div>
 </div>
 <!-- 태그 -->
-<div v-if="product.tags && product.tags.length" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
+<div v-if="product.tags ? (product.tags.length) : false" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;">
 <span v-for="t in product.tags" :key="t"
           style="padding:2px 10px;background:#f5f5f5;border-radius:20px;font-size:0.72rem;color:#888;">
   #{{ t }}
@@ -558,8 +558,8 @@ window.ProductModal = {
         바로구매
       </button>
       <!-- 좋아요 토글 -->
-      <button @click="handleBtnAction('modal-like')" :style="{ width:'44px', height:'44px', borderRadius:'4px', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, transition:'all .15s', border: isLiked && isLiked(product.productId) ? '1.5px solid #ef4444' : '1.5px solid #ddd', background: isLiked && isLiked(product.productId) ? '#fff5f5' : '#fff', }">
-      <svg width="18" height="18" viewBox="0 0 24 24" :fill="isLiked && isLiked(product.productId) ? '#ef4444' : 'none'" :stroke="isLiked && isLiked(product.productId) ? '#ef4444' : '#999'" stroke-width="2">
+      <button @click="handleBtnAction('modal-like')" :style="{ width:'44px', height:'44px', borderRadius:'4px', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, transition:'all .15s', border: isLiked?.(product.productId) ? '1.5px solid #ef4444' : '1.5px solid #ddd', background: isLiked?.(product.productId) ? '#fff5f5' : '#fff', }">
+      <svg width="18" height="18" viewBox="0 0 24 24" :fill="isLiked?.(product.productId) ? '#ef4444' : 'none'" :stroke="isLiked?.(product.productId) ? '#ef4444' : '#999'" stroke-width="2">
       <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
       </path>
     </svg>
@@ -677,7 +677,7 @@ window.CustomerModal = {
           </span>
         </div>
       </div>
-      <div v-if="order && order.paymentDetails && order.paymentDetails.length" style="background:var(--bg-base);border-radius:8px;padding:14px 16px;">
+      <div v-if="order ? (order.paymentDetails ? (order.paymentDetails.length) : false) : false" style="background:var(--bg-base);border-radius:8px;padding:14px 16px;">
       <div style="font-size:0.72rem;font-weight:700;color:var(--text-muted);letter-spacing:0.04em;margin-bottom:8px;">
         입금 정보
       </div>

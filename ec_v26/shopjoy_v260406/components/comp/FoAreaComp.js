@@ -290,7 +290,7 @@ window.FoSearchArea = {
   <template v-if="cfAutoMode">
     <template v-for="(col, ci) in columns" :key="col.key || ('_' + ci)">
       <!-- 필드 좌측 라벨 (label/slot 타입 제외, col.label 지정 시) -->
-      <label v-if="col.label && col.type!=='label' && col.type!=='slot'" style="font-size:13px;color:var(--text-muted);white-space:nowrap;">
+      <label v-if="col.label ? (col.type!=='label' ? (col.type!=='slot') : false) : false" style="font-size:13px;color:var(--text-muted);white-space:nowrap;">
       {{ col.label }}
     </label>
     <!-- 라벨 텍스트 -->
@@ -648,7 +648,7 @@ window.FoGrid = {
   </div>
   <div class="fo-grid-scroll" style="position:relative;">
     <!-- 조회 중 오버레이 (기존 행 위에 표시 — 재조회/페이지 이동 피드백). 행이 없을 땐 빈행 문구로 안내 -->
-    <div v-if="loading && rows.length" style="position:absolute;inset:0;z-index:5;background:rgba(255,255,255,.55);display:flex;align-items:flex-start;justify-content:center;padding-top:40px;pointer-events:none;">
+    <div v-if="loading ? (rows.length) : false" style="position:absolute;inset:0;z-index:5;background:rgba(255,255,255,.55);display:flex;align-items:flex-start;justify-content:center;padding-top:40px;pointer-events:none;">
       <span style="font-size:13px;color:var(--accent);background:#fff;border:1px solid var(--border);border-radius:14px;padding:4px 14px;box-shadow:0 2px 8px rgba(0,0,0,.08);">⏳ 조회 중…</span>
     </div>
     <table class="fo-grid-table" :style="cfTableStyle">
@@ -1253,9 +1253,9 @@ window.FoFormArea = {
 <div class="fo-form-area">
   <div v-for="(row, ri) in cfRows" :key="ri"
     :style="{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax('+minColWidth+',1fr))',gap:gap+'px',marginBottom:gap+'px'}">
-    <div v-for="col in row" :key="col.key" :style="(col.colSpan && col.colSpan>1 ? ('grid-column: span ' + Math.min(col.colSpan, cols) + ';') : '')">
+    <div v-for="col in row" :key="col.key" :style="((col.colSpan ? col.colSpan>1 : false) ? ('grid-column: span ' + Math.min(col.colSpan, cols) + ';') : '')">
     <!-- 라벨 -->
-    <label v-if="col.type !== 'slot' && !col.hideLabel" class="form-label">
+    <label v-if="col.type !== 'slot' ? (!col.hideLabel) : false" class="form-label">
     {{ col.label }}
     <span v-if="col.required" class="form-required">
       *

@@ -226,7 +226,7 @@ window.SiteSelectModal = {
         {{ cfSiteNm }}
       </span>
       <span style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#e5e7eb;color:#555;font-size:11px;text-align:center;line-height:16px;margin-left:8px;cursor:help;font-weight:700;"
-        title="사이트번호 : 프로그램 작업코드 (01, 02, 03…)&#10;사이트코드 : 라이선스코드 (ST0001 형식)">
+        :title="'사이트번호 : 프로그램 작업코드 (01, 02, 03…)\n사이트코드 : 라이선스코드 (ST0001 형식)'">
         ?
       </span>
     </span>
@@ -2699,10 +2699,10 @@ window.DispPreviewModal = {
         <span style="margin-left:8px;font-size:12px;color:#e8587a;font-weight:600;">
           {{ tabLabel }}
         </span>
-        <span v-if="mode==='single' && cfWidgetLabel" style="margin-left:6px;font-size:11px;color:#aaa;">
+        <span v-if="mode==='single' ? (cfWidgetLabel) : false" style="margin-left:6px;font-size:11px;color:#aaa;">
         ({{ cfWidgetLabel }})
       </span>
-      <span v-if="mode==='all' && area" style="margin-left:6px;font-size:11px;color:#aaa;">
+      <span v-if="mode==='all' ? (area) : false" style="margin-left:6px;font-size:11px;color:#aaa;">
       영역: {{ area }}
     </span>
   </div>
@@ -3428,7 +3428,7 @@ window.RowPickModal = {
                       </b>
                       {{ o.__panelName }} (#{{ o.__panelId }})
                     </span>
-                    <span v-if="o.row.clickAction && o.row.clickAction !== 'none'" style="margin-left:10px;">
+                    <span v-if="o.row.clickAction ? (o.row.clickAction !== 'none') : false" style="margin-left:10px;">
                     <b style="color:#888;">
                       클릭:
                     </b>
@@ -3749,7 +3749,7 @@ window.WidgetLibPickModal = {
                     </span>
                   </div>
                   <div style="font-size:11px;color:#555;line-height:1.5;">
-                    <span v-if="d.usedPaths && d.usedPaths.length">
+                    <span v-if="d.usedPaths ? (d.usedPaths.length) : false">
                     <b style="color:#888;">
                       사용위치:
                     </b>
@@ -4303,7 +4303,7 @@ window.PathPickTreeNode = {
         </template>
       </template>
     </div>
-    <div v-if="expanded.has(ch.pathId) && (ch.children||[]).length>0" :style="{position:'relative'}">
+    <div v-if="expanded.has(ch.pathId) ? ((ch.children||[]).length>0) : false" :style="{position:'relative'}">
     <span :style="{position:'absolute',left:(depth*20 + 16)+'px',top:'0',bottom: (ci===node.children.length-1) ? '50%' : '0',width:'1px',borderLeft:'1px dotted #cbd5e1',pointerEvents:'none'}">
     </span>
     <path-pick-tree-node :node="ch" :expanded="expanded" :selected="selected" :add-parent="addParent"
@@ -4312,7 +4312,7 @@ window.PathPickTreeNode = {
         :on-start-edit="onStartEdit" :on-save-edit="onSaveEdit" :on-cancel-edit="onCancelEdit"
         :on-update-label="onUpdateLabel" :on-delete="onDelete" :depth="depth+1" />
   </div>
-  <span v-if="depth > 0 && ci < node.children.length - 1" :style="{position:'absolute',left:(depth*20 + 16 - 20)+'px',top:'0',bottom:'0',width:'1px',borderLeft:'1px dotted #cbd5e1',pointerEvents:'none'}">
+  <span v-if="depth > 0 ? (ci < node.children.length - 1) : false" :style="{position:'absolute',left:(depth*20 + 16 - 20)+'px',top:'0',bottom:'0',width:'1px',borderLeft:'1px dotted #cbd5e1',pointerEvents:'none'}">
 </span>
 </div>
 </div>
@@ -5551,7 +5551,7 @@ window.BoCodeGrpModal = {
       <!-- 본문 -->
       <div style="padding:14px 20px;overflow-y:auto;flex:1;">
         <!-- 검색 (list 탭에서만) -->
-        <div v-if="tab==='list' && codes.length" style="margin-bottom:10px;">
+        <div v-if="tab==='list' ? (codes.length) : false" style="margin-bottom:10px;">
           <bo-search-area :columns="baseSearchColumns" :param="searchParam" :show-actions="false" />
         </div>
         <div v-if="loading" style="padding:32px;text-align:center;color:#999;font-size:13px;">
@@ -5653,7 +5653,7 @@ window.BoCodeGrpTreeNode = {
     + 'border-left:3px solid '+(node.codeLevel===1?'#1677ff':node.codeLevel===2?'#22c55e':'#f59e0b')+';'
     + 'margin-left:'+(depth*16)+'px;'"
     title="더블클릭하여 선택">
-    <button v-if="node.children && node.children.length" type="button" @click.stop="handleBtnAction('codes-toggle')" style="border:none;background:transparent;cursor:pointer;font-size:11px;color:#666;width:16px;">
+    <button v-if="node.children ? (node.children.length) : false" type="button" @click.stop="handleBtnAction('codes-toggle')" style="border:none;background:transparent;cursor:pointer;font-size:11px;color:#666;width:16px;">
     {{ open ? '▼' : '▶' }}
   </button>
   <span v-else style="display:inline-block;width:16px;color:#ddd;font-size:11px;text-align:center;">
@@ -5678,7 +5678,7 @@ window.BoCodeGrpTreeNode = {
         {{ node.useYn || '-' }}
       </span>
     </div>
-    <ul v-if="open && node.children && node.children.length" style="list-style:none;padding-left:0;margin:0;">
+    <ul v-if="open ? (node.children ? (node.children.length) : false) : false" style="list-style:none;padding-left:0;margin:0;">
     <bo-code-grp-tree-node v-for="child in node.children" :key="child.codeId || child.codeValue"
       :node="child" :depth="depth+1" @select="onSelect" />
   </ul>
@@ -7299,10 +7299,10 @@ if (props.onCallback) props.onCallback(props.modalName, null, null);
         📤 엑셀업로드
       </button>
       <button class="btn"
-              :class="(inspect.ran && !inspect.ok) ? 'btn-danger' : 'btn-primary'"
+              :class="(inspect.ran ? !inspect.ok : false) ? 'btn-danger' : 'btn-primary'"
               :disabled="loading || !cfHasRows" @click="handleBtnAction('grid-upload')"
-              :title="(inspect.ran && !inspect.ok) ? '점검 결과 오류가 있습니다. 강행 시 일부 행만 저장될 수 있어요.' : '그리드에 표시된 행(편집 후 상태)을 upsert'">
-        {{ (inspect.ran && !inspect.ok) ? '⚠ 강행 그리드업로드' : '📋 그리드업로드' }}
+              :title="(inspect.ran ? !inspect.ok : false) ? '점검 결과 오류가 있습니다. 강행 시 일부 행만 저장될 수 있어요.' : '그리드에 표시된 행(편집 후 상태)을 upsert'">
+        {{ (inspect.ran ? !inspect.ok : false) ? '⚠ 강행 그리드업로드' : '📋 그리드업로드' }}
       </button>
     </template>
 

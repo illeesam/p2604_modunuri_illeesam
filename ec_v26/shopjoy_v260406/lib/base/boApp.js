@@ -2564,7 +2564,7 @@
         <div class="popup-sel">
           <div class="popup-sel-label">사이트 <span style="color:#e8587a;font-size:10px;">필수</span>
             <span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:#e5e7eb;color:#555;font-size:10px;text-align:center;line-height:14px;margin-left:4px;cursor:help;font-weight:700;"
-              title="사이트번호 : 프로그램 작업코드 (01, 02, 03…)&#10;사이트코드 : 라이선스코드 (ST0001 형식)">?</span>
+              :title="'사이트번호 : 프로그램 작업코드 (01, 02, 03…)\n사이트코드 : 라이선스코드 (ST0001 형식)'">?</span>
           </div>
           <div class="popup-sel-row" @click="openSelectModal('site')">
             <span v-if="filterSite" style="font-family:monospace;font-size:11px;color:#e8587a;font-weight:700;margin-right:6px;">{{ filterSite.siteNo || String(filterSite.siteId).slice(-2) }}</span>
@@ -2642,7 +2642,7 @@
               <div style="display:flex;align-items:center;gap:4px;">
                 <span :style="{ color: log.method === 'GET' ? '#3b82f6' : log.method === 'POST' ? '#8b5cf6' : '#f59e0b', fontWeight:'700' }" style="flex-shrink:0;" :title="log.method">{{ (log.method || '-').charAt(0) }}</span>
                 <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :style="{ color: log.hasError ? '#ef4444' : '#1a5276' }" :title="log.url">{{ fnShortUrl(log.url) }}</span>
-                <span v-if="log.status && Number(log.status) !== 200" :style="{ color: getApiStatusColor(log.status), fontWeight:'700' }" style="flex-shrink:0;" :title="log.status">{{ log.status }}</span>
+                <span v-if="log.status ? (Number(log.status) !== 200) : false" :style="{ color: getApiStatusColor(log.status), fontWeight:'700' }" style="flex-shrink:0;" :title="log.status">{{ log.status }}</span>
               </div>
               <!-- 2줄: uiLabel + duration(초) + 시각(분:초) -->
               <div style="display:flex;align-items:center;gap:6px;margin-top:1px;">
@@ -2680,7 +2680,7 @@
           <div style="padding: 8px 12px; background: #fafbfc; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; gap: 16px; flex-shrink: 0;">
             <div>
               <span style="color: #6b7280; font-size: 10px; font-weight: 600;">상태:</span>
-              <div :style="{ display: 'inline-block', background: ((apiLogLockedDetail || apiLogHoverDetail).status >= 200 && (apiLogLockedDetail || apiLogHoverDetail).status < 300) ? '#ecfdf5' : '#fef2f2', color: ((apiLogLockedDetail || apiLogHoverDetail).status >= 200 && (apiLogLockedDetail || apiLogHoverDetail).status < 300) ? '#10b981' : '#ef4444', padding: '4px 8px', borderRadius: '2px', fontWeight: '700', border: '1px solid ' + (((apiLogLockedDetail || apiLogHoverDetail).status >= 200 && (apiLogLockedDetail || apiLogHoverDetail).status < 300) ? '#10b981' : '#ef4444'), fontSize: '11px', marginLeft: '4px' }">{{ (apiLogLockedDetail || apiLogHoverDetail).status }}</div>
+              <div :style="{ display: 'inline-block', background: ((apiLogLockedDetail || apiLogHoverDetail).status >= 200 ? (apiLogLockedDetail || apiLogHoverDetail).status < 300 : false) ? '#ecfdf5' : '#fef2f2', color: ((apiLogLockedDetail || apiLogHoverDetail).status >= 200 ? (apiLogLockedDetail || apiLogHoverDetail).status < 300 : false) ? '#10b981' : '#ef4444', padding: '4px 8px', borderRadius: '2px', fontWeight: '700', border: '1px solid ' + (((apiLogLockedDetail || apiLogHoverDetail).status >= 200 ? (apiLogLockedDetail || apiLogHoverDetail).status < 300 : false) ? '#10b981' : '#ef4444'), fontSize: '11px', marginLeft: '4px' }">{{ (apiLogLockedDetail || apiLogHoverDetail).status }}</div>
             </div>
             <div>
               <span style="color: #6b7280; font-size: 10px; font-weight: 600;">소요시간:</span>
@@ -2718,27 +2718,27 @@
   </div><!-- /bo-body -->
 
   <!-- 선택 모달들 -->
-  <site-select-modal v-if="selectModal.show && selectModal.type==='site'" modal-name="site-select"  @select="onSelectItem('site', $event)" @close="closeSelectModal" />
-  <vendor-select-modal v-if="selectModal.show && selectModal.type==='vendor'" modal-name="vendor-select"  @select="onSelectItem('vendor', $event)" @close="closeSelectModal" />
-  <vendor-select-modal v-if="selectModal.show && selectModal.type==='dlivVendor'" modal-name="dliv-vendor-select"  @select="onSelectItem('dlivVendor', $event)" @close="closeSelectModal" />
-  <bo-user-select-modal v-if="selectModal.show && selectModal.type==='boUser'" modal-name="bo-user-select"  @select="onSelectItem('boUser', $event)" @close="closeSelectModal" />
-  <member-select-modal v-if="selectModal.show && selectModal.type==='member'" modal-name="member-select"  @select="onSelectItem('member', $event)" @close="closeSelectModal" />
-  <order-select-modal v-if="selectModal.show && selectModal.type==='order'" modal-name="order-select"  @select="onSelectItem('order', $event)" @close="closeSelectModal" />
+  <site-select-modal v-if="selectModal.show ? (selectModal.type==='site') : false" modal-name="site-select"  @select="onSelectItem('site', $event)" @close="closeSelectModal" />
+  <vendor-select-modal v-if="selectModal.show ? (selectModal.type==='vendor') : false" modal-name="vendor-select"  @select="onSelectItem('vendor', $event)" @close="closeSelectModal" />
+  <vendor-select-modal v-if="selectModal.show ? (selectModal.type==='dlivVendor') : false" modal-name="dliv-vendor-select"  @select="onSelectItem('dlivVendor', $event)" @close="closeSelectModal" />
+  <bo-user-select-modal v-if="selectModal.show ? (selectModal.type==='boUser') : false" modal-name="bo-user-select"  @select="onSelectItem('boUser', $event)" @close="closeSelectModal" />
+  <member-select-modal v-if="selectModal.show ? (selectModal.type==='member') : false" modal-name="member-select"  @select="onSelectItem('member', $event)" @close="closeSelectModal" />
+  <order-select-modal v-if="selectModal.show ? (selectModal.type==='order') : false" modal-name="order-select"  @select="onSelectItem('order', $event)" @close="closeSelectModal" />
 
   <!-- 참조 모달 -->
-  <bo-ref-modal v-if="refModal && refModal.show" :state="refModal" modal-name="bo-ref"  @close="closeRefModal" />
+  <bo-ref-modal v-if="refModal ? (refModal.show) : false" :state="refModal" modal-name="bo-ref"  @close="closeRefModal" />
 
   <!-- 도움말 모달 -->
   <help-bo-modal v-if="helpModal.show" :show="helpModal.show" :topic="helpModal.topic" modal-name="help-bo" @close="helpModal.show=false" />
 
   <!-- Confirm — BoModal(z-index 9000) 위에 항상 노출되도록 z-index 10000 -->
-  <div v-if="confirmState && confirmState.show" class="modal-overlay" style="z-index:10000;" @click.self="closeConfirm(false)">
+  <div v-if="confirmState ? (confirmState.show) : false" class="modal-overlay" style="z-index:10000;" @click.self="closeConfirm(false)">
     <div class="confirm-box">
       <div class="confirm-icon">💾</div>
       <div class="confirm-title">{{ confirmState.title }}</div>
       <div class="confirm-msg">{{ confirmState.msg }}</div>
       <!-- 상세 배지 (details 있을 때만) -->
-      <div v-if="confirmState.details && confirmState.details.length" class="confirm-details">
+      <div v-if="confirmState.details ? (confirmState.details.length) : false" class="confirm-details">
         <span v-for="d in confirmState.details" :key="d.label"
           class="badge confirm-detail-badge" :class="d.cls">{{ d.label }}</span>
       </div>
@@ -2796,7 +2796,7 @@
   </div>
 
   <!-- API 응답 패널 -->
-  <div v-if="apiResPanel && apiResPanel.show" style="position:fixed;bottom:20px;right:20px;z-index:8900;width:440px;max-height:55vh;background:#1e1e2e;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.4);display:flex;flex-direction:column;overflow:hidden;">
+  <div v-if="apiResPanel ? (apiResPanel.show) : false" style="position:fixed;bottom:20px;right:20px;z-index:8900;width:440px;max-height:55vh;background:#1e1e2e;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.4);display:flex;flex-direction:column;overflow:hidden;">
     <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#2a2a3e;flex-shrink:0;">
       <span style="font-size:12px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px;">
         API 응답
@@ -2813,7 +2813,7 @@
   </div>
 
   <!-- 탭 컨텍스트 메뉴 -->
-  <div v-if="ctxMenu && ctxMenu.show"
+  <div v-if="ctxMenu ? (ctxMenu.show) : false"
     class="tab-ctx-menu"
     :style="{left: ctxMenu.x+'px', top: ctxMenu.y+'px'}"
     @click.stop>
