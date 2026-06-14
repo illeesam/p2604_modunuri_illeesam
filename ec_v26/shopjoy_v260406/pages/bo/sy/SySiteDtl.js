@@ -239,7 +239,7 @@ window.SySiteDtl = {
           style="white-space:nowrap;">
           🔍 주소 검색
         </button>
-        <button v-if="!cfDtlMode && (form.siteZipCode || form.siteAddress)" type="button"
+        <button v-if="!cfDtlMode ? ((form.siteZipCode || form.siteAddress)) : false" type="button"
           title="주소 초기화" @click="form.siteZipCode=''; form.siteAddress='';"
           style="background:none;border:none;padding:0 2px 2px;margin-left:-6px;color:#999;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0;">
           x

@@ -1416,7 +1416,7 @@ window.PdProdDtl = {
 <bo-container :title="!active ? '상품 상세' : (cfIsNew ? '상품 등록' : (cfDtlMode ? '상품 상세' : '상품 수정'))"
   :title-id="!active ? '' : (cfIsNew ? '' : form.prodId)">
   <template #toolbar-actions>
-    <button v-if="active && !cfIsNew" class="btn btn-sm" style="background:#fff;border:1px solid #d9d9d9;color:#555;font-weight:500;"
+    <button v-if="active ? (!cfIsNew) : false" class="btn btn-sm" style="background:#fff;border:1px solid #d9d9d9;color:#555;font-weight:500;"
       title="사용자 페이스에서 상품 상세 미리보기" @click="handleBtnAction('form-preview')">
       👁 미리보기
     </button>
@@ -1565,11 +1565,11 @@ window.PdProdDtl = {
         </label>
       </div>
       </fieldset>
-      <div class="form-actions" v-if="cfDtlMode && active">
+      <div class="form-actions" v-if="cfDtlMode ? (active) : false">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
         <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
-      <div class="form-actions" v-if="!cfDtlMode && active">
+      <div class="form-actions" v-if="!cfDtlMode ? (active) : false">
         <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           저장
         </button>
@@ -1624,7 +1624,7 @@ window.PdProdDtl = {
           </button>
         </div>
         <!-- ===== ■.■.■.■. STEP 2: 옵션 차원별 유형 선택 — 1레벨 선택 후 활성화 =============== -->
-        <template v-if="prodOptCategoryTypeCd && optGroups.length>0">
+        <template v-if="prodOptCategoryTypeCd ? (optGroups.length>0) : false">
           <span style="font-size:11px;color:#ddd;flex-shrink:0;">│</span>
           <div v-for="(grp, gi) in optGroups" :key="'typeCd-'+grp._id"
             style="display:flex;align-items:flex-start;gap:6px;">
@@ -1682,7 +1682,7 @@ window.PdProdDtl = {
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
             <div style="font-size:11px;color:#888;">
               옵션 값 목록 (pd_prod_opt_item)
-              <span v-if="grp.typeCd && getOptValCodes(grp.typeCd).length>0" style="color:#1677ff;margin-left:6px;">
+              <span v-if="grp.typeCd ? (getOptValCodes(grp.typeCd).length>0) : false" style="color:#1677ff;margin-left:6px;">
                 공통코드 opt_val:
                 <strong>{{ getOptValCodes(grp.typeCd).length }}</strong>
                 개 프리셋 사용 가능
@@ -1699,7 +1699,7 @@ window.PdProdDtl = {
                 <tr style="background:#f5f5f5;border-bottom:1px solid #e0e0e0;">
                   <th style="width:18px;padding:4px 2px;"></th>
                   <th style="width:24px;padding:4px 4px;text-align:center;font-weight:600;color:#888;font-size:11px;">#</th>
-                  <th v-if="grp.level===2 && safeFirst(optGroups)?.items.length>0" style="width:110px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">
+                  <th v-if="grp.level===2 ? (safeFirst(optGroups)?.items.length>0) : false" style="width:110px;padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">
                     상위옵션값
                   </th>
                   <th style="padding:4px 6px;text-align:left;font-weight:600;color:#555;font-size:11px;">표시명 (opt_nm)</th>
@@ -1713,14 +1713,14 @@ window.PdProdDtl = {
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(item, ii) in grp.items" :key="item?._id" draggable="true" @dragstart="onOptItemDragStart(grp, ii)" @dragover.prevent="onOptItemDragOver(grp, ii)" @drop.prevent="onOptItemDrop(grp)" @dragend="dragOptGrpId=null;dragOptItemIdx=null;dragoverOptItemIdx=null" style="border-bottom:1px solid #f0f0f0;transition:background 0.1s;" :style="dragOptGrpId===grp._id && dragoverOptItemIdx===ii && dragOptItemIdx!==ii ? 'background:#dbeafe;' : (ii%2===1 ? 'background:#fafafa;' : '')">
+                <tr v-for="(item, ii) in grp.items" :key="item?._id" draggable="true" @dragstart="onOptItemDragStart(grp, ii)" @dragover.prevent="onOptItemDragOver(grp, ii)" @drop.prevent="onOptItemDrop(grp)" @dragend="dragOptGrpId=null;dragOptItemIdx=null;dragoverOptItemIdx=null" style="border-bottom:1px solid #f0f0f0;transition:background 0.1s;" :style="(dragOptGrpId===grp._id ? (dragoverOptItemIdx===ii ? dragOptItemIdx!==ii : false) : false) ? 'background:#dbeafe;' : (ii%2===1 ? 'background:#fafafa;' : '')">
                   <!-- ===== ■.■.■.■.■.■.■.■.■. 햄버거 핸들 ================================== -->
                   <td style="padding:2px 2px;text-align:center;cursor:grab;color:#ccc;font-size:14px;user-select:none;letter-spacing:-2px;" title="드래그로 순서 변경">
                     ≡
                   </td>
                   <td style="padding:2px 4px;text-align:center;color:#bbb;font-size:11px;">{{ ii+1 }}</td>
                   <!-- ===== ■.■.■.■.■.■.■.■.■. 2단: 상위 옵션값 ============================== -->
-                  <td v-if="grp.level===2 && safeFirst(optGroups)?.items.length>0" style="padding:2px 4px;">
+                  <td v-if="grp.level===2 ? (safeFirst(optGroups)?.items.length>0) : false" style="padding:2px 4px;">
                     <select v-model="item.parentOptItemId"
                       style="width:100%;font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 4px;height:24px;">
                       <option value="">전체 공통</option>
@@ -1743,7 +1743,7 @@ window.PdProdDtl = {
                   <!-- ===== ■.■.■.■.■.■.■.■.■. 스타일 (opt_style = 컬러 hex / 아이콘 클래스 등) ===== -->
                   <td style="padding:2px 4px;">
                     <div style="display:flex;gap:4px;align-items:center;">
-                      <span v-if="item.optStyle && item.optStyle.startsWith('#')" :style="'flex-shrink:0;width:18px;height:18px;border-radius:3px;border:1px solid #ddd;background:'+item.optStyle+';'"></span>
+                      <span v-if="item.optStyle ? (item.optStyle.startsWith('#')) : false" :style="'flex-shrink:0;width:18px;height:18px;border-radius:3px;border:1px solid #ddd;background:'+item.optStyle+';'"></span>
                       <input v-model="item.optStyle"
                         placeholder="#000000 / fa-icon"
                         style="flex:1;min-width:0;font-size:11px;border:1px solid #ddd;border-radius:4px;padding:2px 6px;height:24px;font-family:monospace;" />
@@ -1773,7 +1773,7 @@ window.PdProdDtl = {
                   </td>
                 </tr>
                 <tr v-if="grp.items.length===0">
-                  <td :colspan="grp.level===2&&safeFirst(optGroups)?.items.length>0?9:8" style="text-align:center;color:#bbb;padding:10px;font-size:12px;border-bottom:1px solid #f0f0f0;">
+                  <td :colspan="(grp.level===2 ? safeFirst(optGroups)?.items.length>0 : false)?9:8" style="text-align:center;color:#bbb;padding:10px;font-size:12px;border-bottom:1px solid #f0f0f0;">
                     값을 추가해주세요.
                   </td>
                 </tr>
@@ -1789,11 +1789,11 @@ window.PdProdDtl = {
         탭에서 관리합니다.
       </div>
       </fieldset>
-      <div class="form-actions" v-if="cfDtlMode && active">
+      <div class="form-actions" v-if="cfDtlMode ? (active) : false">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
         <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
-      <div class="form-actions" v-if="!cfDtlMode && active">
+      <div class="form-actions" v-if="!cfDtlMode ? (active) : false">
         <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           저장
         </button>
@@ -1822,7 +1822,7 @@ window.PdProdDtl = {
             위 버튼으로 블록을 추가해주세요.
           </div>
           <!-- ===== ■.■.■.■.■. 블록 리스트 ========================================== -->
-          <div v-for="(block, bi) in contentBlocks" :key="block?._id" :draggable="!cfDtlMode" @dragstart="cfDtlMode ? null : onBlockDragStart(bi)" @dragover.prevent="cfDtlMode ? null : onBlockDragOver(bi)" @drop.prevent="cfDtlMode ? null : onBlockDrop()" @dragend="dragBlockIdx=null;dragoverBlockIdx=null" style="border:1px solid #e8e8e8;border-radius:10px;margin-bottom:10px;background:#fff;transition:border-color 0.15s,background 0.15s;overflow:hidden;" :style="dragoverBlockIdx===bi && dragBlockIdx!==bi ? 'border-color:#1677ff;background:#e6f4ff;' : ''">
+          <div v-for="(block, bi) in contentBlocks" :key="block?._id" :draggable="!cfDtlMode" @dragstart="cfDtlMode ? null : onBlockDragStart(bi)" @dragover.prevent="cfDtlMode ? null : onBlockDragOver(bi)" @drop.prevent="cfDtlMode ? null : onBlockDrop()" @dragend="dragBlockIdx=null;dragoverBlockIdx=null" style="border:1px solid #e8e8e8;border-radius:10px;margin-bottom:10px;background:#fff;transition:border-color 0.15s,background 0.15s;overflow:hidden;" :style="(dragoverBlockIdx===bi ? dragBlockIdx!==bi : false) ? 'border-color:#1677ff;background:#e6f4ff;' : ''">
             <!-- ===== ■.■.■.■.■.■. 블록 헤더 ========================================= -->
             <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f9f9f9;border-bottom:1px solid #f0f0f0;">
               <!-- ===== ■.■.■.■.■.■.■. 햄버거 핸들 (수정모드 전용) ========================= -->
@@ -1845,10 +1845,10 @@ window.PdProdDtl = {
                 📎 파일 선택
                 <input type="file" accept="image/*" style="display:none;" @change="onBlockFileChange(block, $event)" />
               </label>
-              <button v-if="!cfDtlMode && block.content" class="btn btn-xs btn-danger" @click="block.content='';block.fileName=''" style="margin-left:6px;">
+              <button v-if="!cfDtlMode ? (block.content) : false" class="btn btn-xs btn-danger" @click="block.content='';block.fileName=''" style="margin-left:6px;">
                 삭제
               </button>
-              <span v-if="cfDtlMode && !block.content" style="font-size:12px;color:#bbb;">이미지 없음</span>
+              <span v-if="cfDtlMode ? (!block.content) : false" style="font-size:12px;color:#bbb;">이미지 없음</span>
             </div>
             <!-- ===== ■.■.■.■.■.■. URL 방식 ======================================== -->
             <div v-else-if="block.type==='url'" style="padding:12px;">
@@ -1917,11 +1917,11 @@ window.PdProdDtl = {
           </div>
         </div>
       </div>
-      <div class="form-actions" v-if="cfDtlMode && active" style="padding:8px 16px;border-top:1px solid #f0f0f0;">
+      <div class="form-actions" v-if="cfDtlMode ? (active) : false" style="padding:8px 16px;border-top:1px solid #f0f0f0;">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
         <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
-      <div class="form-actions" v-if="!cfDtlMode && active" style="padding:8px 16px;border-top:1px solid #f0f0f0;">
+      <div class="form-actions" v-if="!cfDtlMode ? (active) : false" style="padding:8px 16px;border-top:1px solid #f0f0f0;">
         <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           저장
         </button>
@@ -1968,11 +1968,11 @@ window.PdProdDtl = {
         </label>
       </div>
       </fieldset>
-      <div class="form-actions" v-if="cfDtlMode && active">
+      <div class="form-actions" v-if="cfDtlMode ? (active) : false">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
         <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
-      <div class="form-actions" v-if="!cfDtlMode && active">
+      <div class="form-actions" v-if="!cfDtlMode ? (active) : false">
         <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           저장
         </button>
@@ -1997,7 +1997,7 @@ window.PdProdDtl = {
       </div>
       <!-- ===== ■.■.■. 이미지 5행 보이는 스크롤 컨테이너 (행 ≈ 116px × 5 + 여유 → 620px) ===== -->
       <div v-if="images.length>0" style="max-height:620px;overflow-y:auto;border:1px solid #f0f0f0;border-radius:10px;padding:8px;background:#fafafa;">
-        <div v-for="(img, idx) in images" :key="img?.id" :draggable="!cfDtlMode" @dragstart="cfDtlMode ? null : onImgDragStart(idx)" @dragover.prevent="cfDtlMode ? null : onImgDragOver(idx)" @drop.prevent="cfDtlMode ? null : onImgDrop()" @dragend="dragImgIdx=null;dragoverImgIdx=null" style="display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid #e8e8e8;border-radius:10px;margin-bottom:10px;background:#fff;transition:border-color 0.15s,background 0.15s;" :style="img.isMain ? 'border-color:#e8587a;background:#fff8f9;' : (dragoverImgIdx===idx && dragImgIdx!==idx ? 'border-color:#1677ff;background:#e6f4ff;' : '')">
+        <div v-for="(img, idx) in images" :key="img?.id" :draggable="!cfDtlMode" @dragstart="cfDtlMode ? null : onImgDragStart(idx)" @dragover.prevent="cfDtlMode ? null : onImgDragOver(idx)" @drop.prevent="cfDtlMode ? null : onImgDrop()" @dragend="dragImgIdx=null;dragoverImgIdx=null" style="display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid #e8e8e8;border-radius:10px;margin-bottom:10px;background:#fff;transition:border-color 0.15s,background 0.15s;" :style="img.isMain ? 'border-color:#e8587a;background:#fff8f9;' : ((dragoverImgIdx===idx ? dragImgIdx!==idx : false) ? 'border-color:#1677ff;background:#e6f4ff;' : '')">
           <!-- ===== ■.■.■.■.■. 드래그 핸들 (수정모드 전용) ============================= -->
           <div v-if="!cfDtlMode" style="flex-shrink:0;display:flex;align-items:center;justify-content:center;width:20px;height:90px;cursor:grab;color:#ccc;font-size:15px;user-select:none;letter-spacing:-2px;" title="드래그로 순서 변경">
             ⋮⋮
@@ -2033,7 +2033,7 @@ window.PdProdDtl = {
               <!-- ===== ■.■.■.■.■.■.■. opt_item_id_2: 옵션 2단 select (1단 선택 후 연동) ===== -->
               <div class="form-group" style="flex:1;min-width:140px;margin-bottom:4px;">
                 <label class="form-label" style="font-size:11px;">opt_item_id_2 <span style="color:#aaa;"> (NULL=옵션1 공통) </span></label>
-                <select class="form-control" v-model="img.optItemId2" style="font-size:12px;" :disabled="cfDtlMode || (!img.optItemId1 && optGroups.length<2)">
+                <select class="form-control" v-model="img.optItemId2" style="font-size:12px;" :disabled="cfDtlMode || (!img.optItemId1 ? optGroups.length<2 : false)">
                   <option value="">-- 공통 (NULL) --</option>
                   <option v-if="!optGroups[1]||optGroups[1].items.length===0" disabled value="">2단 옵션 없음</option>
                   <option v-for="item in (optGroups[1]?.items||[])" :key="item?._id" :value="item.val||String(item._id)">
@@ -2045,7 +2045,7 @@ window.PdProdDtl = {
           </div>
           <!-- ===== ■.■.■.■.■. 우측 버튼 =========================================== -->
           <div style="flex-shrink:0;display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
-            <button v-if="!cfDtlMode && !img.isMain" class="btn btn-sm btn-secondary" @click="setMain(img.id)" style="font-size:11px;">대표 설정</button>
+            <button v-if="!cfDtlMode ? (!img.isMain) : false" class="btn btn-sm btn-secondary" @click="setMain(img.id)" style="font-size:11px;">대표 설정</button>
             <span v-if="img.isMain" style="font-size:11px;font-weight:700;color:#e8587a;padding:4px 8px;background:#fde8ee;border-radius:4px;">
               ★ 대표
             </span>
@@ -2055,11 +2055,11 @@ window.PdProdDtl = {
         </div>
       </div>
       <!-- ===== ■.■.■. /이미지 스크롤 컨테이너 ======================================= -->
-      <div class="form-actions" v-if="cfDtlMode && active">
+      <div class="form-actions" v-if="cfDtlMode ? (active) : false">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
         <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
-      <div class="form-actions" v-if="!cfDtlMode && active">
+      <div class="form-actions" v-if="!cfDtlMode ? (active) : false">
         <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           저장
         </button>
@@ -2125,11 +2125,11 @@ window.PdProdDtl = {
         </bo-grid>
       </div>
       </fieldset>
-      <div class="form-actions" v-if="cfDtlMode && active">
+      <div class="form-actions" v-if="cfDtlMode ? (active) : false">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
         <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
-      <div class="form-actions" v-if="!cfDtlMode && active">
+      <div class="form-actions" v-if="!cfDtlMode ? (active) : false">
         <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           저장
         </button>
@@ -2413,11 +2413,11 @@ window.PdProdDtl = {
       </template>
       </fieldset>
       <!-- ===== ■.■.■. 저장/취소 버튼 (맨 아래) ===================================== -->
-      <div class="form-actions" v-if="cfDtlMode && active">
+      <div class="form-actions" v-if="cfDtlMode ? (active) : false">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
         <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
-      <div class="form-actions" v-if="!cfDtlMode && active">
+      <div class="form-actions" v-if="!cfDtlMode ? (active) : false">
         <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 상품을 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           저장
         </button>

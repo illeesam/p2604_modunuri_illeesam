@@ -372,7 +372,7 @@ window.PmDiscntDtl = {
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
         <button class="btn btn_close" @click="handleBtnAction('form-cancel')">닫기</button>
       </div>
-      <div class="form-actions" v-if="active && !cfDtlMode">
+      <div class="form-actions" v-if="active ? (!cfDtlMode) : false">
         <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           저장
         </button>
@@ -416,7 +416,7 @@ window.PmDiscntDtl = {
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
         <button class="btn btn_close" @click="handleBtnAction('form-cancel')">닫기</button>
       </div>
-      <div class="form-actions" v-if="active && !cfDtlMode">
+      <div class="form-actions" v-if="active ? (!cfDtlMode) : false">
         <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           저장
         </button>
@@ -460,7 +460,7 @@ window.PmDiscntDtl = {
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
         <button class="btn btn_close" @click="handleBtnAction('form-cancel')">닫기</button>
       </div>
-      <div class="form-actions" v-if="active && !cfDtlMode">
+      <div class="form-actions" v-if="active ? (!cfDtlMode) : false">
         <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           저장
         </button>

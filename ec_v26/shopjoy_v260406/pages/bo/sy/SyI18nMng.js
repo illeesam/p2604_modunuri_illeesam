@@ -244,7 +244,7 @@ window.SyI18nMng = {
     <div class="toolbar">
       <span class="list-title">
         번역 편집
-        <span v-if="cfSelectedKey && cfSelectedKey.i18nKey" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+        <span v-if="cfSelectedKey ? (cfSelectedKey.i18nKey) : false" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
           #{{ cfSelectedKey.i18nKey }}
         </span>
         <span v-else style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">

@@ -419,7 +419,7 @@ window.DashboardBoEc03 = {
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
     <div class="tab-nav" style="margin-bottom:0;flex:1;flex-wrap:wrap;">
-      <button v-for="t in TABS" :key="t.key" class="tab-btn" :class="{active: uiState.activeTab===t.key && uiState.tabMode==='tab'}" :disabled="uiState.tabMode!=='tab'" @click="handleSelectAction('tabs-select', t.key)" :style="uiState.tabMode!=='tab' ? 'opacity:0.4;cursor:not-allowed;' : ''">
+      <button v-for="t in TABS" :key="t.key" class="tab-btn" :class="{active: uiState.activeTab===t.key ? uiState.tabMode==='tab' : false}" :disabled="uiState.tabMode!=='tab'" @click="handleSelectAction('tabs-select', t.key)" :style="uiState.tabMode!=='tab' ? 'opacity:0.4;cursor:not-allowed;' : ''">
       <span style="margin-right:4px;">
         {{ t.icon }}
       </span>

@@ -280,7 +280,7 @@ window.PdDlivTmpltMng = {
   template: `
 <bo-page title="배송템플릿관리"
   desc-summary="배송템플릿은 상품에 공통 적용할 배송비 조건을 미리 정의해두는 설정입니다."
-  desc-detail="✔ 무료·고정·조건부(금액/수량) 배송비 방식을 선택하고 상품 등록 시 템플릿을 연결해 재사용합니다.&#10;✔ 도서·산간 지역 추가 배송비, 반품지 주소를 함께 관리합니다.&#10;✔ 업체(벤더)별로 독립 설정이 가능하며, 여러 상품이 동일 템플릿을 공유할 수 있습니다.&#10;예) 3만원 이상 무료배송, 제주·도서 추가 3,000원">
+  :desc-detail="'✔ 무료·고정·조건부(금액/수량) 배송비 방식을 선택하고 상품 등록 시 템플릿을 연결해 재사용합니다.\n✔ 도서·산간 지역 추가 배송비, 반품지 주소를 함께 관리합니다.\n✔ 업체(벤더)별로 독립 설정이 가능하며, 여러 상품이 동일 템플릿을 공유할 수 있습니다.\n예) 3만원 이상 무료배송, 제주·도서 추가 3,000원'">
   <!-- ===== ■. 검색 ====================================================== -->
   <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
@@ -308,7 +308,7 @@ window.PdDlivTmpltMng = {
     <div class="toolbar">
       <span class="list-title">
         {{ !uiState.selectedId ? '배송템플릿 상세' : (uiState.isNew ? '배송템플릿 신규 등록' : '배송템플릿 상세 / 수정') }}
-        <span v-if="uiState.selectedId && !uiState.isNew && form.dlivTmpltId" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+        <span v-if="uiState.selectedId ? (!uiState.isNew ? (form.dlivTmpltId) : false) : false" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
           #{{ form.dlivTmpltId }}
         </span>
       </span>

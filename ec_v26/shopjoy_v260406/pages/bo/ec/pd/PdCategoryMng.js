@@ -524,7 +524,7 @@ window.PdCategoryMng = {
   template: `
 <bo-page title="카테고리관리"
     desc-summary="카테고리관리는 상품 분류를 위한 3단계 계층(대/중/소) 카테고리를 관리합니다."
-    desc-detail="✔ 대·중·소 3단계로 카테고리 트리를 구성합니다.&#10;✔ 정렬순서·표시여부를 설정하고 상품과 연결합니다.&#10;✔ 카테고리 삭제 시 하위 카테고리와 연결 상품을 함께 확인합니다.&#10;예) 의류 > 상의 > 티셔츠, 전자기기 > 스마트폰">
+    :desc-detail="'✔ 대·중·소 3단계로 카테고리 트리를 구성합니다.\n✔ 정렬순서·표시여부를 설정하고 상품과 연결합니다.\n✔ 카테고리 삭제 시 하위 카테고리와 연결 상품을 함께 확인합니다.\n예) 의류 > 상의 > 티셔츠, 전자기기 > 스마트폰'">
   <!-- ===== ■. 검색 ====================================================== -->
   <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
@@ -638,7 +638,7 @@ window.PdCategoryMng = {
               {{ uiState.selectedCatId ? '하위 카테고리가 없습니다. [+ 행추가]로 추가하세요.' : '데이터가 없습니다.' }}
             </td>
           </tr>
-          <tr v-else v-for="(row, idx) in categoriesGridPager.pageList" :key="(row && row.categoryId)" :class="[uiState.focusedIdx===getRealIdx(idx) ? 'focused' : '', 'status-'+row._row_status]" draggable="true" @dragstart="handleSelectAction('categories-rowDragStart', getRealIdx(idx))" @dragover.prevent="handleSelectAction('categories-rowDragOver', getRealIdx(idx))" @drop="handleSelectAction('categories-rowDrop')" :style="dragoverRowIdx===getRealIdx(idx) ? 'background:#e6f4ff' : ''" @click="handleSelectAction('categories-rowFocus', getRealIdx(idx))">
+          <tr v-else v-for="(row, idx) in categoriesGridPager.pageList" :key="(row?.categoryId)" :class="[uiState.focusedIdx===getRealIdx(idx) ? 'focused' : '', 'status-'+row._row_status]" draggable="true" @dragstart="handleSelectAction('categories-rowDragStart', getRealIdx(idx))" @dragover.prevent="handleSelectAction('categories-rowDragOver', getRealIdx(idx))" @drop="handleSelectAction('categories-rowDrop')" :style="dragoverRowIdx===getRealIdx(idx) ? 'background:#e6f4ff' : ''" @click="handleSelectAction('categories-rowFocus', getRealIdx(idx))">
           <!-- ===== ■.■.■.■.■.■. 번호 ============================================ -->
           <td style="text-align:center;font-size:11px;color:#999;">
             {{ getRealIdx(idx) + 1 }}
@@ -703,7 +703,7 @@ window.PdCategoryMng = {
           </td>
           <!-- ===== ■.■.■.■.■.■. 하위 추가 ========================================= -->
           <td style="text-align:center;padding:2px">
-            <button v-if="row._row_status!=='D' && row.categoryId>0" class="btn btn_new" style="padding:1px 5px;font-size:11px;background:#f0f7ff;color:#1677ff;border:1px solid #91caff" title="하위 카테고리 추가" @click.stop="handleSelectAction('categories-rowAddChild', { row, idx: getRealIdx(idx) })">
+            <button v-if="row._row_status!=='D' ? (row.categoryId>0) : false" class="btn btn_new" style="padding:1px 5px;font-size:11px;background:#f0f7ff;color:#1677ff;border:1px solid #91caff" title="하위 카테고리 추가" @click.stop="handleSelectAction('categories-rowAddChild', { row, idx: getRealIdx(idx) })">
             +하위
           </button>
         </td>
@@ -739,7 +739,7 @@ window.PdCategoryMng = {
         @click="handleSelectAction('parentModal-select', null)">
       최상위 (상위없음)
     </div>
-    <div v-for="c in cfCatPickerList" :key="(c && c.categoryId)" style="padding:7px 12px;font-size:13px;border-bottom:1px solid #f9f9f9;display:flex;align-items:center;gap:6px" :style="{ paddingLeft: (c.categoryDepth * 14 + 12) + 'px' }" @mouseenter="$event.target.style.background='#f5f5f5'" @mouseleave="$event.target.style.background=''" @click="handleSelectAction('parentModal-select', c)">
+    <div v-for="c in cfCatPickerList" :key="(c?.categoryId)" style="padding:7px 12px;font-size:13px;border-bottom:1px solid #f9f9f9;display:flex;align-items:center;gap:6px" :style="{ paddingLeft: (c.categoryDepth * 14 + 12) + 'px' }" @mouseenter="$event.target.style.background='#f5f5f5'" @mouseleave="$event.target.style.background=''" @click="handleSelectAction('parentModal-select', c)">
       <span :style="{ fontSize:'11px', fontWeight:700, color:fnDepthColor((c.categoryDepth||1)-1) }">
         {{ fnDepthBullet((c.categoryDepth||1)-1) }}
       </span>

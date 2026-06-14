@@ -107,7 +107,7 @@ window.MbMemberDtl = {
 </bo-container>
 <!-- ===== □. 상세/수정 카드 ================================================ -->
 <!-- ===== ■. 이력정보 카드 (행 선택 + 기존 회원일 때만) ============================= -->
-<bo-container v-if="active && !detailModal.isNew">
+<bo-container v-if="active ? (!detailModal.isNew) : false">
   <mb-member-hist :member-id="currentId" :key="currentId" />
 </bo-container>
 <!-- ===== □. 이력정보 카드 ================================================= -->

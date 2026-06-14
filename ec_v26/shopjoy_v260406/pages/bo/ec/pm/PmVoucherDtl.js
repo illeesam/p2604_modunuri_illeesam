@@ -455,11 +455,11 @@ watch(() => uiState.tab, v => { window._pmVoucherDtlState.tab = v; });
       <!-- ===== □.□. 폼 영역 ================================================== -->
       <!-- ===== ■.■. 판매업체 선택 모달 ============================================ -->
       <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId" modal-name="vendor-pick" :on-callback="fnCallbackModal" />
-      <div class="form-actions" v-if="active && cfDtlMode">
+      <div class="form-actions" v-if="active ? (cfDtlMode) : false">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
         <button class="btn btn_close" @click="handleBtnAction('form-cancel')">닫기</button>
       </div>
-      <div class="form-actions" v-if="active && !cfDtlMode">
+      <div class="form-actions" v-if="active ? (!cfDtlMode) : false">
         <button @click="handleBtnAction('form-save')" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요. (발급/사용/미리보기 탭은 조회 전용)' : ''" class="btn btn_save">
           {{ cfIsNew ? '등록' : '저장' }}
         </button>

@@ -202,7 +202,7 @@ window.SyVendorDtl = {
           style="white-space:nowrap;">
           🔍 주소 검색
         </button>
-        <button v-if="!cfDtlMode && (form.vendorZipCode || form.vendorAddr)" type="button" title="주소 초기화"
+        <button v-if="!cfDtlMode ? ((form.vendorZipCode || form.vendorAddr)) : false" type="button" title="주소 초기화"
           @click="form.vendorZipCode=''; form.vendorAddr='';"
           style="background:none;border:none;padding:0 2px 2px;margin-left:-4px;color:#999;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0;">
           x

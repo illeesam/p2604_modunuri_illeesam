@@ -380,7 +380,7 @@ window.SyBbmMng = {
   </div>
   <!-- ===== □. 본문 영역 =================================================== -->
   <!-- ===== ■. 상세 인라인 패널 (전체 폭, 항상 표시) ============================ -->
-  <sy-bbm-dtl :key="cfDetailKey" :navigate="inlineNavigate" :dtl-id="cfDetailEditId" :tab-mode="cfIsViewMode"
+  <sy-bbm-dtl :key="cfDetailKey" :navigate="inlineNavigate" :dtl-id="cfDetailEditId"
     :dtl-mode="detailModal.dtlMode === 'edit' ? (cfDetailEditId ? 'edit' : 'new') : 'view'"
     :active="detailModal.active"
     :reload-trigger="detailModal.reloadTrigger"

@@ -1031,7 +1031,7 @@ window.DpDispPanelDtl = {
         @click="handleBtnAction('rowCopyModal-open')">
         📄 전시항목 복사
       </button>
-      <button v-if="active && !cfDtlMode" class="btn btn_save" @click="handleBtnAction('form-save')" style="font-weight:700;">
+      <button v-if="active ? (!cfDtlMode) : false" class="btn btn_save" @click="handleBtnAction('form-save')" style="font-weight:700;">
         💾 저장
       </button>
     </div>
@@ -1065,7 +1065,7 @@ window.DpDispPanelDtl = {
             }">
             <span v-if="t.key==='info'">📋 <b> 패널기본정보 </b></span>
             <span v-else>{{ t.label }}</span>
-            <span v-if="t.key !== 'info' && tab===t.key" style="display:flex;gap:2px;">
+            <span v-if="t.key !== 'info' ? (tab===t.key) : false" style="display:flex;gap:2px;">
               <button @click.stop="handleSelectAction('tab-move', -1)" :disabled="cfActiveRowIdx===0" title="위로"
                 style="font-size:9px;border:1px solid #e0e0e0;border-radius:3px;background:#fff;padding:1px 4px;line-height:1.2;color:#888;"
                 :style="cfActiveRowIdx===0?'opacity:0.3;cursor:default;':''">
@@ -1077,7 +1077,7 @@ window.DpDispPanelDtl = {
                 ▼
               </button>
             </span>
-            <button v-if="tIdx >= 2 && tab!==t.key" @click.stop="handleSelectAction('panelItems-remove', tIdx-1)" title="전시항목 삭제" style="font-size:11px;border:none;background:none;color:#bbb;line-height:1;padding:0 2px;" @mouseenter="$event.currentTarget.style.color='#e8587a'" @mouseleave="$event.currentTarget.style.color='#bbb'">
+            <button v-if="tIdx >= 2 ? (tab!==t.key) : false" @click.stop="handleSelectAction('panelItems-remove', tIdx-1)" title="전시항목 삭제" style="font-size:11px;border:none;background:none;color:#bbb;line-height:1;padding:0 2px;" @mouseenter="$event.currentTarget.style.color='#e8587a'" @mouseleave="$event.currentTarget.style.color='#bbb'">
               ✕
             </button>
           </div>
@@ -1211,7 +1211,7 @@ window.DpDispPanelDtl = {
                 <base-html-editor v-else v-model="form.htmlDesc" height="280px" />
               </div>
               <!-- ===== /내용 ======================================================== -->
-              <div class="form-actions" v-if="active && !cfDtlMode">
+              <div class="form-actions" v-if="active ? (!cfDtlMode) : false">
                 <template v-if="cfDtlMode">
                   <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
                   <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
@@ -1454,17 +1454,17 @@ window.DpDispPanelDtl = {
                     </div>
                   </div>
                   <!-- ===== ■.■.■.■.■.■.■.■.■. 조건부 미리보기 (전체 폭) ====================== -->
-                  <div v-if="cfIsText && cfActiveRow.textContent" style="grid-column:1 / -1;">
+                  <div v-if="cfIsText ? (cfActiveRow.textContent) : false" style="grid-column:1 / -1;">
                     <div style="font-size:12px;font-weight:500;color:#555;margin-bottom:4px;">미리보기</div>
                     <div style="padding:14px;border-radius:6px;font-size:13px;" :style="{background:cfActiveRow.bgColor,color:cfActiveRow.textColor}">
                       {{ cfActiveRow.textContent }}
                     </div>
                   </div>
-                  <div v-if="cfIsImage && cfActiveRow.imageUrl" style="grid-column:1 / -1;">
+                  <div v-if="cfIsImage ? (cfActiveRow.imageUrl) : false" style="grid-column:1 / -1;">
                     <div style="font-size:12px;font-weight:500;color:#555;margin-bottom:4px;">이미지 미리보기</div>
                     <img :src="cfActiveRow.imageUrl" style="max-height:120px;border-radius:6px;border:1px solid #e8e8e8;" @error="$event.target.style.display='none'" />
                   </div>
-                  <div v-if="cfIsProduct && cfActiveRow.productIds" style="grid-column:1 / -1;">
+                  <div v-if="cfIsProduct ? (cfActiveRow.productIds) : false" style="grid-column:1 / -1;">
                     <div style="font-size:12px;font-weight:500;color:#555;margin-bottom:4px;">상품 링크</div>
                     <div style="display:flex;flex-wrap:wrap;gap:6px;">
                       <span v-for="pid in cfActiveRow.productIds.split(',').map(s=>s.trim()).filter(Boolean)" :key="pid"
@@ -1504,7 +1504,7 @@ window.DpDispPanelDtl = {
                 </div>
               </div>
               <!-- ===== /내용 영역 ===================================================== -->
-              <div class="form-actions" v-if="active && !cfDtlMode">
+              <div class="form-actions" v-if="active ? (!cfDtlMode) : false">
                 <template v-if="cfDtlMode">
                   <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
                   <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
@@ -1607,7 +1607,7 @@ window.DpDispPanelDtl = {
               {{ t.label }}
             </span>
             <!-- ===== ■.■.■.■.■.■. 위젯 이동 버튼: 위젯 섹션이 열려 있을 때만 표시 ================== -->
-            <template v-if="t.key !== 'info' && isSectionExpanded(t.key)">
+            <template v-if="t.key !== 'info' ? (isSectionExpanded(t.key)) : false">
               <button @click.stop="moveRowAt(cfTabRowMap[t.key], -1)" :disabled="cfTabRowMap[t.key]===0"
                 style="font-size:10px;border:1px solid #e0e0e0;border-radius:3px;background:#fff;padding:1px 6px;color:#888;"
                 :style="cfTabRowMap[t.key]===0?'opacity:0.3;cursor:default;':''">
@@ -1695,7 +1695,7 @@ window.DpDispPanelDtl = {
             <div v-else style="margin-bottom:16px;">
               <base-html-editor v-model="form.htmlDesc" height="280px" />
             </div>
-            <div class="form-actions" v-if="active && !cfDtlMode">
+            <div class="form-actions" v-if="active ? (!cfDtlMode) : false">
               <template v-if="cfDtlMode">
                 <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
                 <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
@@ -1814,7 +1814,7 @@ window.DpDispPanelDtl = {
                     </td>
                   </tr>
                   <!-- ===== ■.■.■.■.■.■.■.■. 조건부 영역 ==================================== -->
-                  <tr v-if="fnRowIsText(r) && r.textContent">
+                  <tr v-if="fnRowIsText(r) ? (r.textContent) : false">
                     <td style="font-weight:500;color:#555;">미리보기</td>
                     <td style="padding:6px 8px;">
                       <div style="padding:14px;border-radius:6px;font-size:13px;" :style="{background:r.bgColor,color:r.textColor}">
@@ -1822,13 +1822,13 @@ window.DpDispPanelDtl = {
                       </div>
                     </td>
                   </tr>
-                  <tr v-if="fnRowIsImage(r) && r.imageUrl">
+                  <tr v-if="fnRowIsImage(r) ? (r.imageUrl) : false">
                     <td style="font-weight:500;color:#555;">이미지 미리보기</td>
                     <td style="padding:6px 8px;">
                       <img :src="r.imageUrl" style="max-height:120px;border-radius:6px;border:1px solid #e8e8e8;" @error="$event.target.style.display='none'" />
                     </td>
                   </tr>
-                  <tr v-if="fnRowIsProduct(r) && r.productIds">
+                  <tr v-if="fnRowIsProduct(r) ? (r.productIds) : false">
                     <td style="font-weight:500;color:#555;">상품 링크</td>
                     <td style="padding:6px 8px;">
                       <div style="display:flex;flex-wrap:wrap;gap:6px;">
@@ -1875,7 +1875,7 @@ window.DpDispPanelDtl = {
                   </tr>
                 </tbody>
               </table>
-              <div class="form-actions" v-if="active && !cfDtlMode">
+              <div class="form-actions" v-if="active ? (!cfDtlMode) : false">
                 <template v-if="cfDtlMode">
                   <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
                   <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
@@ -1911,7 +1911,7 @@ window.DpDispPanelDtl = {
     :widget="cfPreviewWidget" modal-name="disp-preview" :on-callback="fnCallbackModal" />
   <!-- ===== □. 위젯미리보기 모달 =============================================== -->
   <!-- ===== ■. 패널미리보기 오버레이 ============================================= -->
-  <div v-if="cardPreview && cardPreview.show" @click.self="closeCardPreview" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;display:flex;align-items:center;justify-content:center;">
+  <div v-if="cardPreview ? (cardPreview.show) : false" @click.self="closeCardPreview" style="position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9999;display:flex;align-items:center;justify-content:center;">
     <div style="background:#fff;border-radius:14px;width:520px;max-width:92vw;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,0.35);">
       <!-- ===== ■.■.■. 헤더 ================================================== -->
       <div style="background:linear-gradient(135deg,#e8587a,#c0395e);color:#fff;padding:15px 20px;border-radius:14px 14px 0 0;display:flex;justify-content:space-between;align-items:center;">
@@ -1940,7 +1940,7 @@ window.DpDispPanelDtl = {
             <span style="font-size:11px;color:#bbb;font-weight:700;min-width:16px;text-align:center;">{{ i+1 }}</span>
             <span style="font-size:13px;font-weight:600;color:#333;flex:1;">{{ fnWLabel(r.widgetType) }}</span>
             <span style="font-size:10px;background:#e8f0fe;color:#1a73e8;border-radius:8px;padding:2px 8px;">순서 {{ r.sortOrder }}</span>
-            <span v-if="r.clickAction && r.clickAction !== 'none'" style="font-size:10px;color:#888;background:#f0f0f0;border-radius:8px;padding:2px 8px;">
+            <span v-if="r.clickAction ? (r.clickAction !== 'none') : false" style="font-size:10px;color:#888;background:#f0f0f0;border-radius:8px;padding:2px 8px;">
               {{ r.clickAction }}
             </span>
           </div>
@@ -1965,7 +1965,7 @@ window.DpDispPanelDtl = {
     :exclude-panel-id="form.dispId" modal-name="row-pick" :on-callback="fnCallbackModal" />
   <!-- ===== □. 전시항목 복사 팝업 ============================================== -->
   <!-- ===== ■. 조건부 영역 ================================================== -->
-  <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="ec_disp_panel" :value="form.pathId" title="표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
+  <path-pick-modal v-if="pathPickModal ? (pathPickModal.show) : false" biz-cd="ec_disp_panel" :value="form.pathId" title="표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
   <!-- ===== □. 조건부 영역 ================================================== -->
 </bo-container>
 `,

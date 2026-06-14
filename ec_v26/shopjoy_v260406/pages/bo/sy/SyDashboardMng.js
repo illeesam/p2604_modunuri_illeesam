@@ -8,10 +8,16 @@ window.SyDashboardMng = {
 
     /* ##### [01] 초기 변수 정의 #################################################### */
 
-    const { computed, reactive, watch, onMounted } = Vue;
+    const { computed, reactive, ref, watch, onMounted } = Vue;
 
     const uiState = reactive({ isPageCodeLoad: false });
     const codes = reactive({});
+
+    // 통계 카드 건수 (서버 pageTotalCount 기반)
+    const stats = reactive({
+      members: 0, products: 0, orders: 0, claims: 0,
+      deliveries: 0, coupons: 0, sites: 0, boUsers: 0,
+    });
 
 
     const shortcuts = [
@@ -63,38 +69,43 @@ window.SyDashboardMng = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
+    /* fnLoadStats — 8개 도메인 건수 조회 (pageTotalCount 기반, 1건만 요청해 카운트만 사용) */
+    const fnLoadStats = async () => {
+      const PG = { pageNo: 1, pageSize: 1 };
+      const cnt = (res) => res?.data?.data?.pageTotalCount || 0;
+      const jobs = [
+        ['members',    () => boApiSvc.mbMember.getPage(PG, '대시보드', '회원수')],
+        ['products',   () => boApiSvc.pdProd.getPage(PG, '대시보드', '상품수')],
+        ['orders',     () => boApiSvc.odOrder.getPage(PG, '대시보드', '주문수')],
+        ['claims',     () => boApiSvc.odClaim.getPage(PG, '대시보드', '클레임수')],
+        ['deliveries', () => boApiSvc.odDliv.getPage(PG, '대시보드', '배송수')],
+        ['coupons',    () => boApiSvc.pmCoupon.getPage(PG, '대시보드', '쿠폰수')],
+        ['sites',      () => boApiSvc.sySite.getPage(PG, '대시보드', '사이트수')],
+        ['boUsers',    () => boApiSvc.syUser.getPage(PG, '대시보드', '관리자수')],
+      ];
+      await Promise.all(jobs.map(async ([key, fn]) => {
+        try { stats[key] = cnt(await fn()); }
+        catch (err) { console.error('[fnLoadStats]', key, err); stats[key] = 0; }
+      }));
+    };
+
     // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) { fnLoadCodes(); }
+      fnLoadStats();
     });
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 
     const cfStats = computed(() => [
-      { label: '전체 회원',   value: members.value?.length || 0,
-        color: '#e8587a', icon: '👥',
-        sub: '활성 ' + (members.value?.filter(m => m.status === '활성').length || 0) + '명' },
-      { label: '전체 상품',   value: products.value?.length || 0,
-        color: '#1677ff', icon: '📦',
-        sub: '판매중 ' + (products.value?.filter(p => p.status === '판매중').length || 0) + '개' },
-      { label: '전체 주문',   value: orders.value?.length || 0,
-        color: '#52c41a', icon: '🛒',
-        sub: '완료 ' + (orders.value?.filter(o => o.status === '주문완료').length || 0) + '건' },
-      { label: '클레임',      value: claims.value?.length || 0,
-        color: '#ff4d4f', icon: '⚠️',
-        sub: '처리중 ' + (claims.value?.filter(c => c.status === '처리중').length || 0) + '건' },
-      { label: '배송중',      value: deliveries.value?.filter(d => d.status === '배송중').length || 0,
-        color: '#389e0d', icon: '🚚',
-        sub: '전체 ' + (deliveries.value?.length || 0) + '건' },
-      { label: '쿠폰',        value: coupons.value?.length || 0,
-        color: '#722ed1', icon: '🎫',
-        sub: '활성 ' + (coupons.value?.filter(c => c.status === '활성').length || 0) + '개' },
-      { label: '사이트',      value: sites.value?.length || 0,
-        color: '#d46b08', icon: '🌐',
-        sub: '운영중 ' + (sites.value?.filter(s => s.status === '운영중').length || 0) + '개' },
-      { label: '관리자',      value: boUsers.value?.length || 0,
-        color: '#13c2c2', icon: '👤',
-        sub: '활성 ' + (boUsers.value?.filter(u => u.status === '활성').length || 0) + '명' },
+      { label: '전체 회원', value: stats.members,    color: '#e8587a', icon: '👥', sub: '명' },
+      { label: '전체 상품', value: stats.products,   color: '#1677ff', icon: '📦', sub: '개' },
+      { label: '전체 주문', value: stats.orders,     color: '#52c41a', icon: '🛒', sub: '건' },
+      { label: '클레임',    value: stats.claims,     color: '#ff4d4f', icon: '⚠️', sub: '건' },
+      { label: '배송',      value: stats.deliveries, color: '#389e0d', icon: '🚚', sub: '건' },
+      { label: '쿠폰',      value: stats.coupons,    color: '#722ed1', icon: '🎫', sub: '개' },
+      { label: '사이트',    value: stats.sites,      color: '#d46b08', icon: '🌐', sub: '개' },
+      { label: '관리자',    value: stats.boUsers,    color: '#13c2c2', icon: '👤', sub: '명' },
     ]);
 
     /* ##### [06] return (템플릿 노출) ############################################## */

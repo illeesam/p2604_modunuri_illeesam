@@ -151,10 +151,17 @@ window.SyContactDtl = {
       await handleLoadDetail();
     });
 
-    /* onUserIdChange — 이벤트 */
-    const onUserIdChange = () => {
-      const m = getMember.value(Number(form.memberId));
-      if (m) { form.memberNm = m.memberNm; }
+    /* onUserIdChange — 회원ID 변경 시 회원명 자동 조회 */
+    const onUserIdChange = async () => {
+      if (!form.memberId) { form.memberNm = ''; return; }
+      try {
+        const res = await boApiSvc.mbMember.getById(Number(form.memberId), '문의관리', '회원조회');
+        const m = res.data?.data || null;
+        form.memberNm = m ? (m.memberNm || '') : '';
+      } catch (err) {
+        console.error('[onUserIdChange]', err);
+        form.memberNm = '';
+      }
     };
 
     /* 문의 fnStatusBadge */

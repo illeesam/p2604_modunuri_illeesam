@@ -412,7 +412,7 @@ window.SyMenuMng = {
         </template>
       </bo-grid-crud>
       <!-- ===== ■.■.■. 상위메뉴 선택 모달 ========================================= -->
-      <menu-tree-modal v-if="parentModal && parentModal.show" :exclude-id="parentModal.targetRow && parentModal.targetRow.menuId > 0 ? parentModal.targetRow.menuId : null" modal-name="parent-menu" :on-callback="fnCallbackModal" />
+      <menu-tree-modal v-if="parentModal ? (parentModal.show) : false" :exclude-id="parentModal.targetRow?.menuId > 0 ? parentModal.targetRow.menuId : null" modal-name="parent-menu" :on-callback="fnCallbackModal" />
     </bo-container>
   </div>
 </bo-page>

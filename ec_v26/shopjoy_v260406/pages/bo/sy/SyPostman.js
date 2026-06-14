@@ -701,6 +701,7 @@ window.SyPostman = {
 
     return {
       uiState, codes, openTabs, hostUrl, token, defHeaders, lsItems, toasts, history, histSelIdx, histModal, editReq, autoPopupPos, countdown, // 상태 / 데이터
+      autoPopupTabId, // toRef(uiState) — 템플릿 직접 참조용
       cfFlatTree, cfActiveTab, cfResGridColumns, cfResGridRows, // computed
       handleBtnAction, handleSelectAction,                                                                                                     // dispatch (모든 이벤트 / 액션 라우팅)
       appFilter, APP_META, POPUP_ROWS,                   // 정적/상수
@@ -1103,7 +1104,7 @@ window.SyPostman = {
               style="padding:5px 13px;font-size:11px;border:none;font-weight:600;border-bottom:2px solid transparent;transition:all .12s;"
               :style="cfActiveTab.resTab===t.id?'background:#fff;border-bottom-color:#1a73e8;color:#1a73e8;':'background:transparent;color:#999;'">
                 {{ t.nm }}
-                <span v-if="t.id==='grid'&&cfResGridRows.length" style="font-size:9px;background:#e8f0fe;color:#1a73e8;padding:1px 5px;border-radius:8px;margin-left:3px;">
+                <span v-if="t.id==='grid' ? (cfResGridRows.length) : false" style="font-size:9px;background:#e8f0fe;color:#1a73e8;padding:1px 5px;border-radius:8px;margin-left:3px;">
                 {{ cfResGridRows.length }}
               </span>
             </button>
@@ -1221,9 +1222,9 @@ window.SyPostman = {
               @mouseleave="e=>{ e.currentTarget.style.background=histSelIdx===i?'#e8f0fe':''; }">
                 <td style="text-align:center;padding:2px 6px;">
                   <span style="position:relative;display:inline-flex;align-items:center;justify-content:center;font-size:10px;color:#999;">
-                    <span v-if="h.status && h.status<300" style="position:absolute;top:-2px;right:-4px;width:6px;height:6px;border-radius:50%;background:#22c55e;">
+                    <span v-if="h.status ? (h.status<300) : false" style="position:absolute;top:-2px;right:-4px;width:6px;height:6px;border-radius:50%;background:#22c55e;">
                   </span>
-                  <span v-else-if="h.status && h.status>=300" style="position:absolute;top:-2px;right:-4px;width:6px;height:6px;border-radius:50%;background:#ef4444;">
+                  <span v-else-if="h.status ? (h.status>=300) : false" style="position:absolute;top:-2px;right:-4px;width:6px;height:6px;border-radius:50%;background:#ef4444;">
                 </span>
                 {{ history.length - i }}
               </span>
@@ -1264,9 +1265,9 @@ window.SyPostman = {
           전송이력상세
         </span>
         <span style="position:relative;font-size:11px;font-weight:700;color:#888;padding:0 6px;">
-          <span v-if="histModal.status && histModal.status<300" style="position:absolute;top:-2px;right:0;width:6px;height:6px;border-radius:50%;background:#22c55e;">
+          <span v-if="histModal.status ? (histModal.status<300) : false" style="position:absolute;top:-2px;right:0;width:6px;height:6px;border-radius:50%;background:#22c55e;">
         </span>
-        <span v-else-if="histModal.status && histModal.status>=300" style="position:absolute;top:-2px;right:0;width:6px;height:6px;border-radius:50%;background:#ef4444;">
+        <span v-else-if="histModal.status ? (histModal.status>=300) : false" style="position:absolute;top:-2px;right:0;width:6px;height:6px;border-radius:50%;background:#ef4444;">
       </span>
       #{{ history.length - histSelIdx }}
     </span>
@@ -1443,10 +1444,10 @@ window.SyPostman = {
           </div>
         </div>
         <div style="flex:1;overflow-y:auto;padding:12px 14px;">
-          <pre v-if="!uiState.histResSending && histResJson" style="margin:0;font-size:11px;font-family:monospace;white-space:pre-wrap;word-break:break-all;color:#333;line-height:1.6;background:#fafafa;border:1px solid #eee;border-radius:6px;padding:10px;">
+          <pre v-if="!uiState.histResSending ? (histResJson) : false" style="margin:0;font-size:11px;font-family:monospace;white-space:pre-wrap;word-break:break-all;color:#333;line-height:1.6;background:#fafafa;border:1px solid #eee;border-radius:6px;padding:10px;">
           {{ histResJson }}
         </pre>
-        <pre v-else-if="!uiState.histResSending && !histResJson && histModal.resJson" style="margin:0;font-size:11px;font-family:monospace;white-space:pre-wrap;word-break:break-all;color:#888;line-height:1.6;background:#fafafa;border:1px solid #eee;border-radius:6px;padding:10px;">
+        <pre v-else-if="!uiState.histResSending ? (!histResJson ? (histModal.resJson) : false) : false" style="margin:0;font-size:11px;font-family:monospace;white-space:pre-wrap;word-break:break-all;color:#888;line-height:1.6;background:#fafafa;border:1px solid #eee;border-radius:6px;padding:10px;">
         {{ histModal.resJson }}
       </pre>
       <div v-else-if="!uiState.histResSending" style="display:flex;align-items:center;justify-content:center;height:80px;color:#ccc;font-size:12px;">

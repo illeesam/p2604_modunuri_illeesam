@@ -365,11 +365,11 @@ window.PmGiftDtl = {
       </bo-form-area>
       <!-- ===== ■.■.■. 판매업체 선택 모달 ========================================== -->
       <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId" modal-name="vendor-pick" :on-callback="fnCallbackModal" />
-      <div class="form-actions" v-if="active && cfIsView">
+      <div class="form-actions" v-if="active ? (cfIsView) : false">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
         <button class="btn btn_close" @click="handleBtnAction('form-cancel')">닫기</button>
       </div>
-      <div class="form-actions" v-if="active && !cfIsView">
+      <div class="form-actions" v-if="active ? (!cfIsView) : false">
         <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           저장
         </button>
@@ -384,11 +384,11 @@ window.PmGiftDtl = {
       <bo-multi-check-select v-model="form.visibilityTargets" :options="cfVisibilityOptions"
         separator="^" wrap empty-value="^NONE^" placeholder="전체 공개" all-label="전체 공개"
         :disabled="cfIsView" min-width="320px" />
-      <div class="form-actions" v-if="active && cfIsView">
+      <div class="form-actions" v-if="active ? (cfIsView) : false">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
         <button class="btn btn_close" @click="handleBtnAction('form-cancel')">닫기</button>
       </div>
-      <div class="form-actions" v-if="active && !cfIsView">
+      <div class="form-actions" v-if="active ? (!cfIsView) : false">
         <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           저장
         </button>

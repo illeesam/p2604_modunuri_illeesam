@@ -595,7 +595,7 @@ const setGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pag
   template: `
 <bo-page title="세트상품관리"
   desc-summary="세트상품은 여러 구성품을 하나의 세트로 판매하는 방식입니다."
-  desc-detail="✔ 안분율 없이 세트 전체 단일 가격으로 판매·정산합니다.&#10;✔ 클레임은 세트 전체 단위로만 가능합니다 (부분 취소·교환·반품 불가).&#10;✔ 구성품은 등록 상품 연결 없이 비상품 항목도 추가할 수 있습니다.&#10;예) 선물세트, 패키지 구성품, 사은품 포함 세트">
+  :desc-detail="'✔ 안분율 없이 세트 전체 단일 가격으로 판매·정산합니다.\n✔ 클레임은 세트 전체 단위로만 가능합니다 (부분 취소·교환·반품 불가).\n✔ 구성품은 등록 상품 연결 없이 비상품 항목도 추가할 수 있습니다.\n예) 선물세트, 패키지 구성품, 사은품 포함 세트'">
   <!-- ===== ■. 검색 ====================================================== -->
   <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
@@ -623,7 +623,7 @@ const setGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pag
                     style="font-size:11px;color:#888;background:#f5f5f5;padding:1px 7px;border-radius:10px;white-space:nowrap">
                     {{ item.itemNm }}
                     <span style="color:#1677ff">×{{ item.itemQty }}</span>
-                    <span v-if="coUtil.cofAnd(!item.itemProdId, !item.componentProdId)" style="color:#f59e0b;margin-left:2px" title="비상품구성품">
+                    <span v-if="!item.itemProdId ? !item.componentProdId : false" style="color:#f59e0b;margin-left:2px" title="비상품구성품">
                       ◆
                     </span>
                   </span>
@@ -715,7 +715,7 @@ const setGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, pag
           <label class="form-label">카테고리 <span style="font-size:11px;color:#aaa;font-weight:400"> N개 등록 · 첫 번째 = 대표 </span></label>
           <div style="border:1px solid #e2e8f0;border-radius:6px;background:#fff;min-height:38px;padding:4px 6px">
             <div v-if="dtlCategories.length===0" style="color:#aaa;font-size:12px;padding:4px 2px">카테고리를 추가해주세요</div>
-            <div v-for="(cat,idx) in dtlCategories" :key="(cat && cat.categoryId)" draggable="true" @dragstart="handleSelectAction('detailPanel-categoryDragStart', idx)" @dragover.prevent="handleSelectAction('detailPanel-categoryDragOver', idx)" @drop.prevent="handleSelectAction('detailPanel-categoryDrop')" :style="uiState.catDragoverIdx===idx ? 'opacity:0.5' : ''" style="display:flex;align-items:center;gap:4px;padding:2px 0">
+            <div v-for="(cat,idx) in dtlCategories" :key="(cat?.categoryId)" draggable="true" @dragstart="handleSelectAction('detailPanel-categoryDragStart', idx)" @dragover.prevent="handleSelectAction('detailPanel-categoryDragOver', idx)" @drop.prevent="handleSelectAction('detailPanel-categoryDrop')" :style="uiState.catDragoverIdx===idx ? 'opacity:0.5' : ''" style="display:flex;align-items:center;gap:4px;padding:2px 0">
               <span style="cursor:grab;color:#bbb;font-size:14px;flex-shrink:0">≡</span>
               <span v-if="idx===0" style="font-size:10px;background:#f9a8d4;color:#9d174d;padding:1px 5px;border-radius:10px;flex-shrink:0">
                 대표

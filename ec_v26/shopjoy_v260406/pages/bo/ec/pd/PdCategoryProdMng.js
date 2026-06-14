@@ -558,7 +558,7 @@ window.PdCategoryProdMng = {
               ★
             </span>
             {{ cfSelectedCatId ? cfSelectedCat?.categoryNm : '전체' }}
-            <span v-if="cfSelectedCatId && !cfIsLeafCat" style="font-size:11px;color:#aaa;margin-left:6px">
+            <span v-if="cfSelectedCatId ? (!cfIsLeafCat) : false" style="font-size:11px;color:#aaa;margin-left:6px">
               (하위 포함)
             </span>
             <span v-else-if="!cfSelectedCatId" style="font-size:11px;color:#aaa;margin-left:6px">
@@ -598,7 +598,7 @@ window.PdCategoryProdMng = {
               </span>
             </div>
             <div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:4px">
-              <button v-for="opt in EMPHASIS_OPTS" :key="(opt && opt.cd)" @click="handleSelectAction('categoryProds-rowEmphasisToggle', { row, cd: opt.cd })" style="padding:1px 5px;border-radius:4px;font-size:10px;border:1px solid;line-height:1.5" :style="hasEmphasis(row.emphasisCd, opt.cd) ? 'background:#fce4ec;border-color:#e8587a;color:#e8587a;font-weight:700' : 'background:#f5f5f5;border-color:#ddd;color:#bbb'">
+              <button v-for="opt in EMPHASIS_OPTS" :key="(opt?.cd)" @click="handleSelectAction('categoryProds-rowEmphasisToggle', { row, cd: opt.cd })" style="padding:1px 5px;border-radius:4px;font-size:10px;border:1px solid;line-height:1.5" :style="hasEmphasis(row.emphasisCd, opt.cd) ? 'background:#fce4ec;border-color:#e8587a;color:#e8587a;font-weight:700' : 'background:#f5f5f5;border-color:#ddd;color:#bbb'">
               {{ opt.icon }} {{ opt.nm }}
             </button>
           </div>
@@ -632,7 +632,7 @@ window.PdCategoryProdMng = {
           gridTemplateColumns: uiState.tabMode==='2col' ? 'repeat(2,1fr)' : uiState.tabMode==='3col' ? 'repeat(3,1fr)' : 'repeat(4,1fr)',
           gap:'10px',
           }">
-      <div v-for="(row, idx) in cfVisibleCategoryProds" :key="(row && row._id)" draggable="true" @dragstart="handleSelectAction('categoryProds-rowDragStart', idx)" @dragover.prevent="handleSelectAction('categoryProds-rowDragOver', idx)" @drop="handleSelectAction('categoryProds-rowDrop')" style="border:1px solid #eee;border-radius:10px;padding:10px;background:#fff" :style="dragoverIdx===idx ? 'border-color:#1677ff;box-shadow:0 0 0 2px #bfdbfe' : row._isNew ? 'border-color:#52c41a' : (uiState.activeTypeCd!=='NORMAL' && row.dispYn==='N') ? 'opacity:0.6' : ''">
+      <div v-for="(row, idx) in cfVisibleCategoryProds" :key="(row?._id)" draggable="true" @dragstart="handleSelectAction('categoryProds-rowDragStart', idx)" @dragover.prevent="handleSelectAction('categoryProds-rowDragOver', idx)" @drop="handleSelectAction('categoryProds-rowDrop')" style="border:1px solid #eee;border-radius:10px;padding:10px;background:#fff" :style="dragoverIdx===idx ? 'border-color:#1677ff;box-shadow:0 0 0 2px #bfdbfe' : row._isNew ? 'border-color:#52c41a' : (uiState.activeTypeCd!=='NORMAL' ? row.dispYn==='N' : false) ? 'opacity:0.6' : ''">
       <!-- ===== ■.■.■.■.■.■. 카드 헤더 ========================================= -->
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
         <div style="display:flex;align-items:center;gap:5px">
@@ -675,7 +675,7 @@ window.PdCategoryProdMng = {
       </div>
       <!-- ===== ■.■.■.■.■.■. 강조옵션 chips ==================================== -->
       <div style="display:flex;gap:3px;flex-wrap:wrap;margin-bottom:7px">
-        <button v-for="opt in EMPHASIS_OPTS" :key="(opt && opt.cd)" @click="handleSelectAction('categoryProds-rowEmphasisToggle', { row, cd: opt.cd })" style="padding:1px 5px;border-radius:4px;font-size:10px;border:1px solid;line-height:1.5" :style="hasEmphasis(row.emphasisCd, opt.cd) ? 'background:#fce4ec;border-color:#e8587a;color:#e8587a;font-weight:700' : 'background:#f5f5f5;border-color:#ddd;color:#bbb'">
+        <button v-for="opt in EMPHASIS_OPTS" :key="(opt?.cd)" @click="handleSelectAction('categoryProds-rowEmphasisToggle', { row, cd: opt.cd })" style="padding:1px 5px;border-radius:4px;font-size:10px;border:1px solid;line-height:1.5" :style="hasEmphasis(row.emphasisCd, opt.cd) ? 'background:#fce4ec;border-color:#e8587a;color:#e8587a;font-weight:700' : 'background:#f5f5f5;border-color:#ddd;color:#bbb'">
         {{ opt.icon }} {{ opt.nm }}
       </button>
     </div>

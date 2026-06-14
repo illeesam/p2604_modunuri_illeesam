@@ -276,7 +276,7 @@ window.SyBbsDtl = {
     <label class="form-label">게시판 <span v-if="!cfDtlMode" class="req"> * </span></label>
     <div style="display:flex;align-items:center;gap:8px;">
       <!-- ===== ■.■.■. 신규: 선택 버튼 =========================================== -->
-      <template v-if="cfIsNew && !cfDtlMode">
+      <template v-if="cfIsNew ? (!cfDtlMode) : false">
         <button class="btn btn-secondary btn-sm" type="button" @click="handleBtnAction('bbmModal-open')">📋 게시판 선택</button>
         <button v-if="selectedBbm" class="btn btn-blue btn-sm" type="button" @click="handleBtnAction('bbmDetail-open')" title="게시판 상세보기">
           🔍
@@ -321,7 +321,7 @@ window.SyBbsDtl = {
   </bo-form-area>
   <!-- ===== □.□. 내용 입력 (contentType 에 따라 렌더링) ========================== -->
   <!-- ===== ■.■. 첨부파일 ================================================== -->
-  <div v-if="selectedBbm && cfAttachMaxCount > 0" class="form-group">
+  <div v-if="selectedBbm ? (cfAttachMaxCount > 0) : false" class="form-group">
     <label class="form-label">
       첨부파일
       <span style="font-size:11px;font-weight:400;color:#bbb;margin-left:4px;">({{ cfAllowAttach }})</span>
@@ -338,17 +338,17 @@ window.SyBbsDtl = {
       :max-size-mb="10"
       allow-ext="*" />
   </div>
-  <div v-else-if="selectedBbm && cfAllowAttach==='불가'" class="form-group">
+  <div v-else-if="selectedBbm ? (cfAllowAttach==='불가') : false" class="form-group">
     <label class="form-label">첨부파일</label>
     <div style="color:#bbb;font-size:13px;padding:4px 0;">이 게시판은 첨부파일을 지원하지 않습니다.</div>
   </div>
   <!-- ===== □.□. 첨부파일 ================================================== -->
   <!-- ===== ■.■. 폼 액션 (보기모드: 수정/닫기 · 수정모드: 저장/취소) ================== -->
-  <div class="form-actions" v-if="active && cfDtlMode">
+  <div class="form-actions" v-if="active ? (cfDtlMode) : false">
     <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
     <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
   </div>
-  <div class="form-actions" v-if="active && !cfDtlMode">
+  <div class="form-actions" v-if="active ? (!cfDtlMode) : false">
     <button class="btn btn_save" @click="handleBtnAction('form-save')">저장</button>
     <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
   </div>

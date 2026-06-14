@@ -635,7 +635,7 @@ const bundleGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, 
   template: `
 <bo-page title="묶음상품관리"
     desc-summary="묶음상품은 여러 단품을 하나의 묶음으로 판매하는 방식입니다."
-    desc-detail="✔ 구성 상품별 안분율을 설정해 가격·정산을 개별 처리합니다.&#10;✔ 구성 상품 단위로 부분 취소·교환·반품이 가능합니다.&#10;✔ 재고는 각 구성 상품의 재고를 개별 차감합니다.&#10;예) 상의+하의 코디 세트, 3개 묶음 할인 패키지">
+    :desc-detail="'✔ 구성 상품별 안분율을 설정해 가격·정산을 개별 처리합니다.\n✔ 구성 상품 단위로 부분 취소·교환·반품이 가능합니다.\n✔ 재고는 각 구성 상품의 재고를 개별 차감합니다.\n예) 상의+하의 코디 세트, 3개 묶음 할인 패키지'">
   <!-- ===== ■. 검색 ====================================================== -->
   <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
@@ -662,7 +662,7 @@ const bundleGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, 
               {{ g.prodNm }}
             </span>
             <div style="margin-top:3px;display:flex;flex-wrap:wrap;gap:4px">
-              <span v-for="(item,i) in (g?.items || [])" :key="(item && item.bundleItemId)||i" style="font-size:11px;color:#888;background:#f5f5f5;padding:1px 7px;border-radius:10px;white-space:nowrap">
+              <span v-for="(item,i) in (g?.items || [])" :key="(item?.bundleItemId)||i" style="font-size:11px;color:#888;background:#f5f5f5;padding:1px 7px;border-radius:10px;white-space:nowrap">
               {{ getProdNm(item.itemProdId) }}
               <span style="color:#1677ff">
                 ×{{ item.itemQty }}
@@ -778,7 +778,7 @@ const bundleGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, 
       <div v-if="dtlCategories.length===0" style="color:#aaa;font-size:12px;padding:4px 2px;">
         카테고리를 추가해주세요
       </div>
-      <div v-for="(cat,idx) in dtlCategories" :key="(cat && cat.categoryId)" draggable="true" @dragstart="handleSelectAction('detailPanel-categoryDragStart', idx)" @dragover.prevent="handleSelectAction('detailPanel-categoryDragOver', idx)" @drop.prevent="handleSelectAction('detailPanel-categoryDrop')" :style="uiState.catDragoverIdx===idx?'opacity:0.5;':''" style="display:flex;align-items:center;gap:4px;padding:2px 0;">
+      <div v-for="(cat,idx) in dtlCategories" :key="(cat?.categoryId)" draggable="true" @dragstart="handleSelectAction('detailPanel-categoryDragStart', idx)" @dragover.prevent="handleSelectAction('detailPanel-categoryDragOver', idx)" @drop.prevent="handleSelectAction('detailPanel-categoryDrop')" :style="uiState.catDragoverIdx===idx?'opacity:0.5;':''" style="display:flex;align-items:center;gap:4px;padding:2px 0;">
       <span style="cursor:grab;color:#bbb;font-size:14px;flex-shrink:0;">
         ≡
       </span>
@@ -846,7 +846,7 @@ const bundleGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, 
     </tr>
   </thead>
   <tbody>
-    <tr v-for="(item, idx) in dtlItems" :key="(item && item._id)" draggable="true" @dragstart="handleSelectAction('detailPanel-itemDragStart', idx)" @dragover.prevent="handleSelectAction('detailPanel-itemDragOver', idx)" @drop="handleSelectAction('detailPanel-itemDrop')" :style="uiState.dragoverIdx===idx ? 'background:#e6f4ff' : ''">
+    <tr v-for="(item, idx) in dtlItems" :key="(item?._id)" draggable="true" @dragstart="handleSelectAction('detailPanel-itemDragStart', idx)" @dragover.prevent="handleSelectAction('detailPanel-itemDragOver', idx)" @drop="handleSelectAction('detailPanel-itemDrop')" :style="uiState.dragoverIdx===idx ? 'background:#e6f4ff' : ''">
     <td style="text-align:center;cursor:grab;color:#bbb;font-size:17px;user-select:none">
       ≡
     </td>
@@ -992,7 +992,7 @@ const bundleGridPager    = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 5, 
             </tr>
           </thead>
           <tbody>
-            <tr v-for="p in cfPickerList" :key="(p && p.productId)">
+            <tr v-for="p in cfPickerList" :key="(p?.productId)">
             <td style="color:#aaa;font-size:12px">
               {{ p.productId }}
             </td>

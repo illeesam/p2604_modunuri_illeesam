@@ -235,11 +235,11 @@ window.SyTemplateDtl = {
   </bo-form-area>
   <!-- ===== □.□. 폼 영역 ================================================== -->
   <!-- ===== ■.■. 폼 액션 버튼 (미리보기/발송하기 포함 커스텀) ============================ -->
-  <div class="form-actions" v-if="active && cfDtlMode">
+  <div class="form-actions" v-if="active ? (cfDtlMode) : false">
     <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
     <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
   </div>
-  <div class="form-actions" v-if="active && !cfDtlMode">
+  <div class="form-actions" v-if="active ? (!cfDtlMode) : false">
     <button class="btn btn-secondary" @click="handleBtnAction('previewModal-open')">📄 미리보기</button>
     <button class="btn btn-primary" style="background:#52c41a;border-color:#52c41a;" @click="handleBtnAction('sendModal-open')">
       📨 발송하기

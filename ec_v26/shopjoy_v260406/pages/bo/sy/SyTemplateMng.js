@@ -475,9 +475,9 @@ window.SyTemplateMng = {
     :reload-trigger="detailPanel.reloadTrigger"
  />
   <!-- ===== ■. 미리보기 / 발송 / 경로 선택 모달 =============================== -->
-  <template-preview-modal v-if="previewModal && previewModal.show" :tmpl="previewModal.template" :sample-params="previewModal.template?.sampleParams || '{}'" modal-name="template-preview" :on-callback="fnCallbackModal" />
-  <template-send-modal v-if="sendModal && sendModal.show" :tmpl="sendModal.template" :show-toast="showToast" :show-confirm="showConfirm" modal-name="template-send" :on-callback="fnCallbackModal" />
-  <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_template" :value="pathPickModal.row ? pathPickModal.row.pathId : null" modal-name="path-pick" :on-callback="fnCallbackModal" />
+  <template-preview-modal v-if="previewModal ? (previewModal.show) : false" :tmpl="previewModal.template" :sample-params="previewModal.template?.sampleParams || '{}'" modal-name="template-preview" :on-callback="fnCallbackModal" />
+  <template-send-modal v-if="sendModal ? (sendModal.show) : false" :tmpl="sendModal.template" :show-toast="showToast" :show-confirm="showConfirm" modal-name="template-send" :on-callback="fnCallbackModal" />
+  <path-pick-modal v-if="pathPickModal ? (pathPickModal.show) : false" biz-cd="sy_template" :value="pathPickModal.row ? pathPickModal.row.pathId : null" modal-name="path-pick" :on-callback="fnCallbackModal" />
 </bo-page>
 `,
 };

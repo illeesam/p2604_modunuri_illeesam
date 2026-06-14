@@ -52,7 +52,7 @@ const _WP_DispAreaPreview2 = {
   </template>
   <!-- ===== □. 상품 슬라이더 / 상품 ============================================ -->
   <!-- ===== ■. 차트 ====================================================== -->
-  <template v-else-if="lib.widgetType&&lib.widgetType.startsWith('chart_')">
+  <template v-else-if="lib.widgetType ? (lib.widgetType.startsWith('chart_')) : false">
   <div style="font-size:12px;font-weight:700;color:#222;margin-bottom:8px;">
     {{ lib.chartTitle||lib.name }}
   </div>
@@ -1028,9 +1028,9 @@ window.DpDispAreaPreview = {
               gap: '10px',
               }">
               <template v-for="(slot, idx) in cfCurrentSlots" :key="idx">
-                <div v-if="!gridState.showRealContent || slot" @dragover="onDragOver($event, idx)" @dragleave="onDragLeave($event, idx)" @drop="onDrop($event, idx)" style="border-radius:8px;transition:all .15s;position:relative;" :style="[ dragState.dragOverIdx===idx ? 'border:2px dashed #1d4ed8;background:#eff6ff;min-height:110px;' : slot ? (gridState.showRealContent ? 'border:none;background:transparent;min-height:0;' : 'border:1px solid #e5e7eb;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.07);min-height:110px;') : 'border:2px dashed #d1d5db;background:#f9fafb;min-height:60px;', slot && (slot.colSpan||1) > 1 ? { gridColumn: 'span ' + slot.colSpan } : {}, slot && (slot.rowSpan||1) > 1 ? { gridRow: 'span ' + slot.rowSpan } : {}, ]">
+                <div v-if="!gridState.showRealContent || slot" @dragover="onDragOver($event, idx)" @dragleave="onDragLeave($event, idx)" @drop="onDrop($event, idx)" style="border-radius:8px;transition:all .15s;position:relative;" :style="[ dragState.dragOverIdx===idx ? 'border:2px dashed #1d4ed8;background:#eff6ff;min-height:110px;' : slot ? (gridState.showRealContent ? 'border:none;background:transparent;min-height:0;' : 'border:1px solid #e5e7eb;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.07);min-height:110px;') : 'border:2px dashed #d1d5db;background:#f9fafb;min-height:60px;', (slot ? (slot.colSpan||1) > 1 : false) ? { gridColumn: 'span ' + slot.colSpan } : {}, (slot ? (slot.rowSpan||1) > 1 : false) ? { gridRow: 'span ' + slot.rowSpan } : {}, ]">
                 <!-- ===== ■.■.■.■.■.■.■.■.■. 비어있음 ==================================== -->
-                <div v-if="!slot && dragState.dragOverIdx!==idx" style="height:100%;min-height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:#d1d5db;padding:10px;">
+                <div v-if="!slot ? (dragState.dragOverIdx!==idx) : false" style="height:100%;min-height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:#d1d5db;padding:10px;">
                 <span style="font-size:20px;">
                   +
                 </span>
@@ -1039,7 +1039,7 @@ window.DpDispAreaPreview = {
                 </span>
               </div>
               <!-- ===== ■.■.■.■.■.■.■.■.■. 드롭 오버 =================================== -->
-              <div v-else-if="!slot && dragState.dragOverIdx===idx" style="min-height:60px;display:flex;align-items:center;justify-content:center;color:#1d4ed8;font-size:12px;font-weight:700;padding:10px;">
+              <div v-else-if="!slot ? (dragState.dragOverIdx===idx) : false" style="min-height:60px;display:flex;align-items:center;justify-content:center;color:#1d4ed8;font-size:12px;font-weight:700;padding:10px;">
               ▼ 여기에 추가
             </div>
             <!-- ===== ■.■.■.■.■.■.■.■.■. 배치됨 ===================================== -->
@@ -1157,7 +1157,7 @@ window.DpDispAreaPreview = {
           style="position:relative;min-height:560px;min-width:600px;background:#fff;border-radius:8px;border:2px dashed #e5e7eb;transition:border-color .15s;"
           :style="gridState.dashDragOver ? 'border-color:#1d4ed8;background:#eff6ff;' : ''">
     <!-- ===== ■.■.■.■.■. 빈 상태 ============================================ -->
-    <div v-if="!dashItems.length && !gridState.dashDragOver" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#d1d5db;pointer-events:none;">
+    <div v-if="!dashItems.length ? (!gridState.dashDragOver) : false" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#d1d5db;pointer-events:none;">
     <span style="font-size:48px;">
       🧩
     </span>
@@ -1165,7 +1165,7 @@ window.DpDispAreaPreview = {
       왼쪽 트리에서 위젯을 드래그하여 배치하세요
     </span>
   </div>
-  <div v-if="gridState.dashDragOver && !dashItems.length" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#1d4ed8;font-size:14px;font-weight:700;pointer-events:none;">
+  <div v-if="gridState.dashDragOver ? (!dashItems.length) : false" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#1d4ed8;font-size:14px;font-weight:700;pointer-events:none;">
   ▼ 여기에 배치
 </div>
 <!-- ===== ■.■.■.■.■. 배치된 아이템 ========================================= -->

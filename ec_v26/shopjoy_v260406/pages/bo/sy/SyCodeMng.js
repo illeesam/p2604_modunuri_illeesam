@@ -836,7 +836,7 @@ window.SyCodeMng = {
     </div>
     <!-- ===== □.□. 일반 탭 ================================================== -->
     <!-- ===== ■.■. 트리 탭 (BoGridCrud 트리 모드) =============================== -->
-    <div v-if="uiState.activeCodeTab==='트리' && uiState.selectedGrp">
+    <div v-if="uiState.activeCodeTab==='트리' ? (uiState.selectedGrp) : false">
     <!-- ===== ■.■.■. CRUD 그리드 ============================================ -->
     <bo-grid-crud
         :columns="columns.treeGrid"

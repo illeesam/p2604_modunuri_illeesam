@@ -1933,7 +1933,7 @@ window.DpDispUiSimul = {
               @drop="onStructDashDrop"
               style="position:relative;min-height:500px;min-width:400px;background:#fff;border-radius:8px;border:2px dashed #e5e7eb;transition:border-color .15s;"
               :style="structDashDragOver ? 'border-color:#1d4ed8;background:#eff6ff;' : ''">
-                      <div v-if="!structDashItems.length && !structDashDragOver" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#d1d5db;pointer-events:none;">
+                      <div v-if="!structDashItems.length ? (!structDashDragOver) : false" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#d1d5db;pointer-events:none;">
                       <span style="font-size:40px;">
                         🧩
                       </span>
@@ -1941,7 +1941,7 @@ window.DpDispUiSimul = {
                         좌측에서 영역·패널을 드래그하여 배치하세요
                       </span>
                     </div>
-                    <div v-if="structDashDragOver && !structDashItems.length" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#1d4ed8;font-size:14px;font-weight:700;pointer-events:none;">
+                    <div v-if="structDashDragOver ? (!structDashItems.length) : false" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#1d4ed8;font-size:14px;font-weight:700;pointer-events:none;">
                     ▼ 여기에 배치
                   </div>
                   <!-- ===== ■.■.■.■.■.■.■. 배치된 아이템 ===================================== -->
@@ -1986,9 +1986,9 @@ window.DpDispUiSimul = {
                   <div :style="{ border: STRUCT_VIEWPORT[structViewport].width ? '2px solid #d1d5db' : 'none', borderRadius: STRUCT_VIEWPORT[structViewport].width ? '12px' : '0', padding: STRUCT_VIEWPORT[structViewport].width ? '10px' : '0', background:'#fff', boxShadow: STRUCT_VIEWPORT[structViewport].width ? '0 4px 20px rgba(0,0,0,.12)' : 'none' }">
                     <div :style="{ display:'grid', gridTemplateColumns:cfStructGridColumns, gap:'10px' }">
                       <template v-for="(slot, idx) in structSlots" :key="idx">
-                        <div v-if="!structShowReal || slot" @dragover="onStructDragOver($event, idx)" @dragleave="onStructDragLeave($event, idx)" @drop="onStructDrop($event, idx)" style="border-radius:8px;transition:all .15s;position:relative;" :style="[ structDragOverIdx===idx ? 'border:2px dashed #1d4ed8;background:#eff6ff;min-height:100px;' : slot ? (uiState.structShowReal ? 'border:none;background:transparent;min-height:0;' : 'border:1px solid #e5e7eb;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.07);min-height:100px;') : 'border:2px dashed #d1d5db;background:#f9fafb;min-height:60px;', slot && (slot.colSpan||1)>1 ? { gridColumn:'span '+slot.colSpan } : {}, slot && (slot.rowSpan||1)>1 ? { gridRow:'span '+slot.rowSpan } : {}, ]">
+                        <div v-if="!structShowReal || slot" @dragover="onStructDragOver($event, idx)" @dragleave="onStructDragLeave($event, idx)" @drop="onStructDrop($event, idx)" style="border-radius:8px;transition:all .15s;position:relative;" :style="[ structDragOverIdx===idx ? 'border:2px dashed #1d4ed8;background:#eff6ff;min-height:100px;' : slot ? (uiState.structShowReal ? 'border:none;background:transparent;min-height:0;' : 'border:1px solid #e5e7eb;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.07);min-height:100px;') : 'border:2px dashed #d1d5db;background:#f9fafb;min-height:60px;', (slot ? (slot.colSpan||1) > 1 : false) ? { gridColumn:'span '+slot.colSpan } : {}, (slot ? (slot.rowSpan||1) > 1 : false) ? { gridRow:'span '+slot.rowSpan } : {}, ]">
                         <!-- ===== ■.■.■.■.■.■.■.■.■.■.■. 빈 슬롯 ================================ -->
-                        <div v-if="!slot && structDragOverIdx!==idx" style="min-height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#d1d5db;padding:10px;">
+                        <div v-if="!slot ? (structDragOverIdx!==idx) : false" style="min-height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#d1d5db;padding:10px;">
                         <span style="font-size:18px;">
                           +
                         </span>
@@ -1996,7 +1996,7 @@ window.DpDispUiSimul = {
                           드래그하여 추가
                         </span>
                       </div>
-                      <div v-else-if="!slot && structDragOverIdx===idx" style="min-height:60px;display:flex;align-items:center;justify-content:center;color:#1d4ed8;font-size:12px;font-weight:700;">
+                      <div v-else-if="!slot ? (structDragOverIdx===idx) : false" style="min-height:60px;display:flex;align-items:center;justify-content:center;color:#1d4ed8;font-size:12px;font-weight:700;">
                       ▼ 여기에 추가
                     </div>
                     <!-- ===== ■.■.■.■.■.■.■.■.■.■.■. 배치된 위젯 ============================== -->
@@ -2032,7 +2032,7 @@ window.DpDispUiSimul = {
                         </button>
                       </div>
                       <!-- ===== ■.■.■.■.■.■.■.■.■.■.■.■. span 팝업 =========================== -->
-                      <div v-if="!structShowReal && structSpanPopupIdx===idx" @click.stop style="position:absolute;top:34px;right:6px;z-index:20;background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);padding:12px 14px;min-width:170px;">
+                      <div v-if="!structShowReal ? (structSpanPopupIdx===idx) : false" @click.stop style="position:absolute;top:34px;right:6px;z-index:20;background:#fff;border:1px solid #e5e7eb;border-radius:8px;box-shadow:0 4px 16px rgba(0,0,0,.12);padding:12px 14px;min-width:170px;">
                       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
                         <span style="font-size:11px;font-weight:700;color:#374151;">
                           그리드 스팬 설정

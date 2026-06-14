@@ -486,7 +486,7 @@ window.SyDeptMng = {
         </template>
       </bo-grid-crud>
       <!-- ===== ■.■.■. 상위부서 선택 모달 ========================================= -->
-      <dept-tree-modal v-if="parentModal && parentModal.show" :exclude-id="parentModal.targetRow && parentModal.targetRow.deptId > 0 ? parentModal.targetRow.deptId : null" modal-name="parent-dept" :on-callback="fnCallbackModal" />
+      <dept-tree-modal v-if="parentModal ? (parentModal.show) : false" :exclude-id="parentModal.targetRow?.deptId > 0 ? parentModal.targetRow.deptId : null" modal-name="parent-dept" :on-callback="fnCallbackModal" />
     </bo-container>
   </div>
   <!-- ===== □. 본문 영역 =================================================== -->

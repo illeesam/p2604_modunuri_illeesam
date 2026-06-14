@@ -708,7 +708,7 @@ window.OdOrderDtl = {
                 }">
                 {{ step==='완료' ? '구매확정' : step }}
               </div>
-              <span v-if="step==='배송완료' && cfRelatedDelivery && cfRelatedDelivery.trackingNo" @click="handleBtnAction('tracking-open', { courier: cfRelatedDelivery.courier, trackingNo: cfRelatedDelivery.trackingNo })" title="배송조회 창 열기" style="margin-top:4px;padding:1px 7px;border:1px solid #86efac;background:#dcfce7;color:#15803d;border-radius:4px;font-size:0.7rem;font-weight:700;user-select:none;">
+              <span v-if="step==='배송완료' ? (cfRelatedDelivery ? (cfRelatedDelivery.trackingNo) : false) : false" @click="handleBtnAction('tracking-open', { courier: cfRelatedDelivery.courier, trackingNo: cfRelatedDelivery.trackingNo })" title="배송조회 창 열기" style="margin-top:4px;padding:1px 7px;border:1px solid #86efac;background:#dcfce7;color:#15803d;border-radius:4px;font-size:0.7rem;font-weight:700;user-select:none;">
                 {{ (cfRelatedDelivery.courier||'').replace('대한통운','').replace('택배','') || 'CJ' }}배송 🔍
               </span>
             </div>
@@ -719,7 +719,7 @@ window.OdOrderDtl = {
         </div>
       </div>
       <!-- ===== ■.■.■. 클레임 진행 흐름 (있을 때만) =================================== -->
-      <div v-if="!cfIsNew && cfRelatedClaim" style="margin-bottom:20px;padding:16px;border-radius:10px;border:1px dashed #e8e8e8;" :style="{ background: 'linear-gradient(135deg,'+CLAIM_TYPE_COLOR[cfRelatedClaim.type]+'15 0%,#fff 70%)', }">
+      <div v-if="!cfIsNew ? (cfRelatedClaim) : false" style="margin-bottom:20px;padding:16px;border-radius:10px;border:1px dashed #e8e8e8;" :style="{ background: 'linear-gradient(135deg,'+CLAIM_TYPE_COLOR[cfRelatedClaim.type]+'15 0%,#fff 70%)', }">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
           <span :style="{
             fontSize:'11px',padding:'3px 10px',borderRadius:'10px',color:'#fff',fontWeight:800,
@@ -748,10 +748,10 @@ window.OdOrderDtl = {
                 }">
                 {{ step }}
               </div>
-              <span v-if="step==='수거중' && cfRelatedClaim.trackingNo" @click="handleBtnAction('tracking-open', { courier: cfRelatedClaim.courier, trackingNo: cfRelatedClaim.trackingNo })" title="수거 배송조회" style="margin-top:4px;padding:1px 7px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;border-radius:4px;font-size:0.7rem;font-weight:700;user-select:none;">
+              <span v-if="step==='수거중' ? (cfRelatedClaim.trackingNo) : false" @click="handleBtnAction('tracking-open', { courier: cfRelatedClaim.courier, trackingNo: cfRelatedClaim.trackingNo })" title="수거 배송조회" style="margin-top:4px;padding:1px 7px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;border-radius:4px;font-size:0.7rem;font-weight:700;user-select:none;">
                 {{ (cfRelatedClaim.courier||'').replace('대한통운','').replace('택배','') || 'CJ' }}수거 🔍
               </span>
-              <span v-if="step==='완료' && cfRelatedClaim.exchangeTrackingNo" @click="handleBtnAction('tracking-open', { courier: cfRelatedClaim.exchangeCourier, trackingNo: cfRelatedClaim.exchangeTrackingNo })" title="발송 배송조회" style="margin-top:4px;padding:1px 7px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-size:0.7rem;font-weight:700;user-select:none;">
+              <span v-if="step==='완료' ? (cfRelatedClaim.exchangeTrackingNo) : false" @click="handleBtnAction('tracking-open', { courier: cfRelatedClaim.exchangeCourier, trackingNo: cfRelatedClaim.exchangeTrackingNo })" title="발송 배송조회" style="margin-top:4px;padding:1px 7px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;border-radius:4px;font-size:0.7rem;font-weight:700;user-select:none;">
                 {{ (cfRelatedClaim.exchangeCourier||'').replace('대한통운','').replace('택배','') || 'CJ' }}발송 🔍
               </span>
             </div>
@@ -804,7 +804,7 @@ window.OdOrderDtl = {
         <button type="button" class="btn btn-blue btn-sm" @click="handleBtnAction('prodModal-open')">🛍 상품 선택</button>
         <span style="font-size:11px;color:#888;">상품을 선택하여 주문항목에 추가합니다.</span>
       </div>
-      <div v-if="cfRelatedClaim && cfRelatedClaim.type==='교환'" style="display:flex;justify-content:flex-end;margin-bottom:10px;">
+      <div v-if="cfRelatedClaim ? (cfRelatedClaim.type==='교환') : false" style="display:flex;justify-content:flex-end;margin-bottom:10px;">
         <button class="btn btn-secondary btn-sm" @click="handleBtnAction('orderItems-toggleExpandAll')">
           {{ cfAllExpanded ? '▲ 교환품 모두접기' : '▼ 교환품 모두펼치기' }}
         </button>
@@ -818,7 +818,7 @@ window.OdOrderDtl = {
         </template>
         <template #cell-prodNm="{ row, idx }">
           <td style="font-size:12px;">
-            <span v-if="cfRelatedClaim && cfRelatedClaim.type==='교환'" @click="handleSelectAction('orderItems-rowToggleExpand', idx)" style="font-size:11px;color:#3b82f6;font-weight:800;user-select:none;margin-right:6px;" :title="isExpanded(idx)?'교환품 숨기기':'교환품 보기'">
+            <span v-if="cfRelatedClaim ? (cfRelatedClaim.type==='교환') : false" @click="handleSelectAction('orderItems-rowToggleExpand', idx)" style="font-size:11px;color:#3b82f6;font-weight:800;user-select:none;margin-right:6px;" :title="isExpanded(idx)?'교환품 숨기기':'교환품 보기'">
               {{ isExpanded(idx) ? '▼' : '▶' }}
             </span>
             <span style="font-size:18px;margin-right:6px;">{{ row.emoji || '🛍' }}</span>

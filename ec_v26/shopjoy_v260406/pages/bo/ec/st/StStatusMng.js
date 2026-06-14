@@ -558,7 +558,7 @@ const uiState = reactive({ error: null, isPageCodeLoad: false, activeTab: 'vendo
   template: /* html */`
 <bo-page title="정산현황"
   desc-summary="업체별·기간별 정산 진행 현황을 집계 탭으로 조회합니다. 수집~지급 전 단계 금액과 건수를 확인할 수 있습니다."
-  desc-detail="• 탭 구성: 업체별 / 주문별 / 클레임별 / 프로모션별 / 정산집계&#10;• 업체별 탭: 매출·환불·순매출·수수료·정산예정액 집계&#10;• 정산집계 탭: 마감 기준 월별 최종 정산액 목록&#10;• CSV 내보내기를 지원합니다.">
+  :desc-detail="'• 탭 구성: 업체별 / 주문별 / 클레임별 / 프로모션별 / 정산집계\n• 업체별 탭: 매출·환불·순매출·수수료·정산예정액 집계\n• 정산집계 탭: 마감 기준 월별 최종 정산액 목록\n• CSV 내보내기를 지원합니다.'">
   <!-- ===== ■. 공통 날짜 필터 ================================================ -->
   <bo-container>
     <bo-search-area :bar-style="'flex-wrap:wrap;gap:8px'"

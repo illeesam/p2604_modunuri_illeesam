@@ -811,7 +811,7 @@ window.DpDispWidgetLibDtl = {
         </div>
         <div v-if="errors.widgetType" class="field-error" style="margin-bottom:8px;">{{ errors.widgetType }}</div>
         <!-- ===== ■.■.■.■. 클릭동작 (BoFormArea 자동 렌더) =========================== -->
-        <div v-if="!cfIsHtmlEditor && !cfIsFileList && !cfIsEmbed" style="margin-bottom:14px;">
+        <div v-if="!cfIsHtmlEditor ? (!cfIsFileList ? (!cfIsEmbed) : false) : false" style="margin-bottom:14px;">
           <div style="font-size:11px;font-weight:700;color:#888;letter-spacing:.3px;margin-bottom:6px;">👆 클릭동작</div>
           <!-- ===== ■.■.■.■.■. 폼 영역 ============================================ -->
           <bo-form-area :columns="columns.clickActionForm" :form="form" :errors="errors"
@@ -915,7 +915,7 @@ window.DpDispWidgetLibDtl = {
   <!-- ===== □.□. 오른쪽: 위젯Lib미리보기 ======================================== -->
   <!-- ===== □. 본문 영역 =================================================== -->
   <!-- ===== ■. 조건부 영역 ================================================== -->
-  <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="ec_disp_widget_lib" :value="form.pathId" title="위젯 표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
+  <path-pick-modal v-if="pathPickModal ? (pathPickModal.show) : false" biz-cd="ec_disp_widget_lib" :value="form.pathId" title="위젯 표시경로 선택" modal-name="path-pick" :on-callback="fnCallbackModal" />
   <!-- ===== □. 조건부 영역 ================================================== -->
 </bo-container>
 `

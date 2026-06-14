@@ -334,7 +334,7 @@ window.OdDlivDtl = {
       handleBtnAction, handleSelectAction,                                                                                // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfDtlMode, cfCurrentStepIdx, tabs, cfEditHistList, cfPaymentList, cfStatusHistList,              // computed
       DLIV_STEPS,                  // 상수
-      fmt, showTab, // 헬퍼
+      fmt, showTab, trackingUrl, // 헬퍼
       showRefModal,                                                                                                       // 모달 (template 직접 참조)
     };
   },
@@ -357,7 +357,7 @@ window.OdDlivDtl = {
           <span style="font-size:11px;font-weight:800;padding:3px 10px;border-radius:10px;color:#fff;background:#0ea5e9;">🚚 배송</span>
           <span style="font-size:13px;font-weight:700;color:#222;">{{ form.dlivId || (cfIsNew ? '신규 배송' : '') }}</span>
           <span v-if="form.orderId" style="font-size:11px;color:#888;">주문: {{ form.orderId }}</span>
-          <span v-if="form.outboundCourierCd && form.outboundTrackingNo" style="font-size:11px;color:#888;margin-left:auto;">
+          <span v-if="form.outboundCourierCd ? (form.outboundTrackingNo) : false" style="font-size:11px;color:#888;margin-left:auto;">
             {{ form.outboundCourierCd }} · {{ form.outboundTrackingNo }}
           </span>
         </div>
@@ -378,10 +378,10 @@ window.OdDlivDtl = {
                 }">
                 {{ step }}
               </div>
-              <span v-if="step==='배송완료' && form.outboundTrackingNo" @click="handleBtnAction('tracking-open', { courier: form.outboundCourierCd, trackingNo: form.outboundTrackingNo })" title="배송조회 창 열기" style="margin-top:4px;padding:1px 7px;border:1px solid #86efac;background:#dcfce7;color:#15803d;border-radius:4px;font-size:0.7rem;font-weight:700;user-select:none;">
+              <span v-if="step==='배송완료' ? (form.outboundTrackingNo) : false" @click="handleBtnAction('tracking-open', { courier: form.outboundCourierCd, trackingNo: form.outboundTrackingNo })" title="배송조회 창 열기" style="margin-top:4px;padding:1px 7px;border:1px solid #86efac;background:#dcfce7;color:#15803d;border-radius:4px;font-size:0.7rem;font-weight:700;user-select:none;">
                 {{ (form.outboundCourierCd||'').replace('대한통운','').replace('택배','') || 'CJ' }}배송 🔍
               </span>
-              <span v-else-if="step==='배송중' && form.outboundTrackingNo && cfCurrentStepIdx < 2" @click="handleBtnAction('tracking-open', { courier: form.outboundCourierCd, trackingNo: form.outboundTrackingNo })" title="배송조회 창 열기" style="margin-top:4px;padding:1px 7px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;border-radius:4px;font-size:0.7rem;font-weight:700;user-select:none;">
+              <span v-else-if="step==='배송중' ? (form.outboundTrackingNo ? (cfCurrentStepIdx < 2) : false) : false" @click="handleBtnAction('tracking-open', { courier: form.outboundCourierCd, trackingNo: form.outboundTrackingNo })" title="배송조회 창 열기" style="margin-top:4px;padding:1px 7px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;border-radius:4px;font-size:0.7rem;font-weight:700;user-select:none;">
                 {{ (form.outboundCourierCd||'').replace('대한통운','').replace('택배','') || 'CJ' }}배송중 🔍
               </span>
             </div>
@@ -427,13 +427,7 @@ window.OdDlivDtl = {
       <div style="background:#f9fafb;padding:10px 14px;border-radius:8px;margin-bottom:12px;display:flex;flex-wrap:wrap;gap:14px;font-size:12px;">
         <span><b style="color:#888;"> 택배사: </b> {{ form.outboundCourierCd || '미지정' }}</span>
         <span><b style="color:#888;"> 운송장번호: </b> {{ form.outboundTrackingNo || '-' }}</span>
-        <a v-if="form.outboundCourierCd==='CJ대한통운' && form.outboundTrackingNo" :href="'https://trace.cjlogistics.com/next/tracking.html?wblNo='+form.outboundTrackingNo" target="_blank" style="color:#1565c0;">
-          조회 →
-        </a>
-        <a v-else-if="form.outboundCourierCd==='롯데택배' && form.outboundTrackingNo" :href="'https://www.lotteglogis.com/open/tracking?invno='+form.outboundTrackingNo" target="_blank" style="color:#1565c0;">
-          조회 →
-        </a>
-        <a v-else-if="form.outboundCourierCd==='한진택배' && form.outboundTrackingNo" :href="'https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&wblnumText2='+form.outboundTrackingNo" target="_blank" style="color:#1565c0;">
+        <a v-if="trackingUrl(form.outboundCourierCd, form.outboundTrackingNo)" :href="trackingUrl(form.outboundCourierCd, form.outboundTrackingNo)" target="_blank" style="color:#1565c0;">
           조회 →
         </a>
       </div>

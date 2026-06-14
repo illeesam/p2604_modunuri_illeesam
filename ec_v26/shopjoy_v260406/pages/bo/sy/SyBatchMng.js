@@ -496,7 +496,7 @@ window.SyBatchMng = {
   <sy-batch-hist :reload-trigger="histReloadTrigger" :filter-batch-id="histFilterBatchId" />
   <!-- ===== □. 배치 실행이력 (전체 폭) ========================================== -->
   <!-- ===== ■. 표시경로 선택 모달 ============================================= -->
-  <path-pick-modal v-if="pathPickModal && pathPickModal.show" biz-cd="sy_batch" :value="pathPickModal.row ? pathPickModal.row.pathId : null" modal-name="path-pick" :on-callback="fnCallbackModal" />
+  <path-pick-modal v-if="pathPickModal ? (pathPickModal.show) : false" biz-cd="sy_batch" :value="pathPickModal.row ? pathPickModal.row.pathId : null" modal-name="path-pick" :on-callback="fnCallbackModal" />
   <!-- ===== □. 표시경로 선택 모달 ============================================= -->
 </bo-page>
 `,

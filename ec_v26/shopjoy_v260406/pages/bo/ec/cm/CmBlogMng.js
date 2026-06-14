@@ -360,7 +360,7 @@ window.CmBlogMng = {
       <div class="toolbar">
         <span class="list-title">
           {{ !detailPanel.active ? '상세 / 등록' : (detailPanel.isNew ? '신규 등록' : '상세 / 수정') }}
-          <span v-if="detailPanel.active && !detailPanel.isNew && detailPanel.form.blogId" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+          <span v-if="detailPanel.active ? (!detailPanel.isNew ? (detailPanel.form.blogId) : false) : false" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
             #{{ detailPanel.form.blogId }}
           </span>
         </span>

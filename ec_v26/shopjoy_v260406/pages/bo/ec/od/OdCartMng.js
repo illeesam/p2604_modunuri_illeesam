@@ -175,7 +175,7 @@ window.OdCartMng = {
       const ok = await showConfirm('삭제', '장바구니 항목을 삭제하시겠습니까?');
       if (!ok) { return; }
       try {
-        await window.boApi.delete(`/bo/ec/od/cart/${cartId}`, coUtil.cofApiHdr('장바구니관리', '삭제'));
+        await boApiSvc.odCart.remove(cartId, '장바구니관리', '삭제');
         showToast('삭제되었습니다.', 'success');
         handleSearchList();
       } catch (err) {
@@ -190,7 +190,7 @@ window.OdCartMng = {
       if (!ok) { return; }
       try {
         await Promise.all(uiState.selectedIds.map(id =>
-          window.boApi.delete(`/bo/ec/od/cart/${id}`, coUtil.cofApiHdr('장바구니관리', '일괄삭제'))
+          boApiSvc.odCart.remove(id, '장바구니관리', '일괄삭제')
         ));
         showToast(`${uiState.selectedIds.length}건 삭제되었습니다.`, 'success');
         uiState.selectedIds = [];

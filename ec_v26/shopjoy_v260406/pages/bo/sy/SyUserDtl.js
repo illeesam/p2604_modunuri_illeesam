@@ -327,7 +327,7 @@ window.SyUserDtl = {
 </bo-container>
 <!-- ===== □. 적용 역할 목록 ================================================ -->
 <!-- ===== ■. 부서 선택 팝업 ================================================ -->
-<dept-tree-modal v-if="deptModal && deptModal.show" :exclude-id="null" modal-name="dept-pick" :on-callback="fnCallbackModal" />
+<dept-tree-modal v-if="deptModal ? (deptModal.show) : false" :exclude-id="null" modal-name="dept-pick" :on-callback="fnCallbackModal" />
 <!-- ===== □. 부서 선택 팝업 ================================================ -->
 `,
 };

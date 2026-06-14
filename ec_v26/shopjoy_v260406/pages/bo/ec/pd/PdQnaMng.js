@@ -230,7 +230,8 @@ window.PdQnaMng = {
     };
   },
   template: /* html */`
-<bo-page title="상품 Q&A 관리">
+<bo-page>
+  <template #title>상품 Q&A 관리</template>
   <!-- ===== ■. 검색 ====================================================== -->
   <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
@@ -256,7 +257,7 @@ window.PdQnaMng = {
       <div class="toolbar">
         <span class="list-title">
           상품 Q&A 상세 / 답변
-          <span v-if="uiState.selectedId && form.qnaId" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
+          <span v-if="uiState.selectedId ? (form.qnaId) : false" style="font-size:12px;color:#999;margin-left:8px;font-weight:400;">
             #{{ form.qnaId }}
           </span>
           <span v-if="!uiState.selectedId" style="font-size:12px;color:#bbb;margin-left:8px;font-weight:400;">

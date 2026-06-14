@@ -195,7 +195,7 @@ const _WP_DispWidgetPreview = {
   <!-- ===== ■. 9) 파일 목록 ================================================ -->
   <template v-else-if="cfType==='file_list'">
     <div style="border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;">
-      <div v-for="(f,i) in (Array.isArray(cfConfig.files) && cfConfig.files.length ? cfConfig.files : [{nm:'카탈로그.pdf'},{nm:'가격표.pdf'},{nm:'사용자매뉴얼.pdf'}])" :key="i"
+      <div v-for="(f,i) in ((Array.isArray(cfConfig.files) ? cfConfig.files.length : false) ? cfConfig.files : [{nm:'카탈로그.pdf'},{nm:'가격표.pdf'},{nm:'사용자매뉴얼.pdf'}])" :key="i"
            style="display:flex;align-items:center;gap:8px;padding:7px 10px;font-size:11px;border-bottom:1px solid #f0f0f0;background:#fff;">
         <span>📄</span><span style="flex:1;color:#374151;">{{ f.nm || f.name || ('파일 ' + (i+1)) }}</span>
         <span style="color:#1677ff;font-size:10px;">⬇</span>
@@ -1190,14 +1190,14 @@ window.DpDispWidgetPreview = {
                 ]">
 
                 <!-- ===== ■.■.■.■.■.■.■.■. 비어있음 ====================================== -->
-                <div v-if="!slot && dragState.dragOverIdx!==idx"
+                <div v-if="!slot ? (dragState.dragOverIdx!==idx) : false"
                   style="height:100%;min-height:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:#d1d5db;padding:10px;">
                   <span style="font-size:20px;">+</span>
                   <span style="font-size:11px;">드래그하여 추가</span>
                 </div>
 
                 <!-- ===== ■.■.■.■.■.■.■.■. 드롭 오버 ===================================== -->
-                <div v-else-if="!slot && dragState.dragOverIdx===idx"
+                <div v-else-if="!slot ? (dragState.dragOverIdx===idx) : false"
                   style="min-height:60px;display:flex;align-items:center;justify-content:center;color:#1d4ed8;font-size:12px;font-weight:700;padding:10px;">
                   ▼ 여기에 추가
                 </div>
@@ -1278,12 +1278,12 @@ window.DpDispWidgetPreview = {
           :style="gridState.dashDragOver ? 'border-color:#1d4ed8;background:#eff6ff;' : ''">
 
           <!-- ===== ■.■.■.■.■. 빈 상태 ============================================ -->
-          <div v-if="!dashItems.length && !gridState.dashDragOver"
+          <div v-if="!dashItems.length ? (!gridState.dashDragOver) : false"
             style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#d1d5db;pointer-events:none;">
             <span style="font-size:48px;">🧩</span>
             <span style="font-size:13px;">왼쪽 트리에서 위젯을 드래그하여 배치하세요</span>
           </div>
-          <div v-if="gridState.dashDragOver && !dashItems.length"
+          <div v-if="gridState.dashDragOver ? (!dashItems.length) : false"
             style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#1d4ed8;font-size:14px;font-weight:700;pointer-events:none;">
             ▼ 여기에 배치
           </div>

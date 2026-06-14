@@ -422,11 +422,11 @@ window.PmEventDtl = {
         <div v-if="cfDtlMode" class="form-control" style="min-height:300px;line-height:1.6;overflow:auto;" v-html="form.bannerImage || '<span style=color:#bbb>-</span>'"></div>
         <base-html-editor v-else v-model="form.bannerImage" height="320px" />
       </div>
-      <div class="form-actions" v-if="active && cfDtlMode">
+      <div class="form-actions" v-if="active ? (cfDtlMode) : false">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
         <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
-      <div class="form-actions" v-if="active && !cfDtlMode">
+      <div class="form-actions" v-if="active ? (!cfDtlMode) : false">
         <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           저장
         </button>
@@ -471,11 +471,11 @@ window.PmEventDtl = {
       </div>
       <!-- ===== ■.■.■. 판매업체 선택 모달 ========================================== -->
       <simple-vendor-pick-modal :show="showVendorModal" :vendors="vendors" :selected-id="form.vendorId" modal-name="vendor-pick" :on-callback="fnCallbackModal" />
-      <div class="form-actions" v-if="active && cfDtlMode">
+      <div class="form-actions" v-if="active ? (cfDtlMode) : false">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
         <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
-      <div class="form-actions" v-if="active && !cfDtlMode">
+      <div class="form-actions" v-if="active ? (!cfDtlMode) : false">
         <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           저장
         </button>
@@ -491,24 +491,24 @@ window.PmEventDtl = {
           :class="activeContentTab===n ? 'btn-primary' : 'btn-secondary'"
           @click="handleBtnAction('content-tab', n)">
           내용 {{ n }}
-          <span v-if="form.authRequired && n >= 3" class="tab-count" style="background:#fde8ee;color:#e8587a;">
+          <span v-if="form.authRequired ? (n >= 3) : false" class="tab-count" style="background:#fde8ee;color:#e8587a;">
             인증
           </span>
         </button>
       </div>
       <div v-for="n in 5" :key="Math.random()" v-show="activeContentTab===n">
-        <div v-if="form.authRequired && n >= 3" style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:8px 12px;background:#fff7e6;border-radius:6px;border:1px solid #ffd591;">
+        <div v-if="form.authRequired ? (n >= 3) : false" style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:8px 12px;background:#fff7e6;border-radius:6px;border:1px solid #ffd591;">
           <span class="badge badge-orange">인증 후 표시</span>
           <span style="font-size:12px;color:#888;">로그인 회원에게만 표시됩니다</span>
         </div>
         <div v-if="cfDtlMode" class="form-control" style="min-height:160px;line-height:1.6;" v-html="form['content'+n] || '<span style=color:#bbb>-</span>'"></div>
         <base-html-editor v-else :model-value="form['content'+n]" @update:model-value="v => form['content'+n] = v" height="220px" />
       </div>
-      <div class="form-actions" v-if="active && cfDtlMode">
+      <div class="form-actions" v-if="active ? (cfDtlMode) : false">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
         <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
-      <div class="form-actions" v-if="active && !cfDtlMode">
+      <div class="form-actions" v-if="active ? (!cfDtlMode) : false">
         <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           저장
         </button>
@@ -533,11 +533,11 @@ window.PmEventDtl = {
           <button class="btn btn-danger btn-xs" @click="handleSelectAction('items-rowDelete', row.productId)">제거</button>
         </template>
       </bo-grid>
-      <div class="form-actions" v-if="active && cfDtlMode">
+      <div class="form-actions" v-if="active ? (cfDtlMode) : false">
         <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
         <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
       </div>
-      <div class="form-actions" v-if="active && !cfDtlMode">
+      <div class="form-actions" v-if="active ? (!cfDtlMode) : false">
         <button class="btn btn_save" :disabled="cfSaveDisabled" :title="cfSaveDisabled ? '먼저 기본정보 탭에서 등록해주세요.' : ''" @click="handleBtnAction('form-save')">
           저장
         </button>

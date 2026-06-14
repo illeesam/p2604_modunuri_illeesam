@@ -201,7 +201,7 @@ const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, d
   template: /* html */`
 <bo-page title="ERP 전표대사"
   desc-summary="ERP로 전송된 전표와 ERP 처리 결과를 대사하여 불일치 전표를 수정합니다."
-  desc-detail="• ShopJoy 전표금액 vs ERP 처리금액 차이를 자동 비교합니다.&#10;• 차이 상태: 일치 / 차이발생 / 오류&#10;• [오류수정] 버튼으로 전표 재생성 또는 ERP 수동 반영을 처리합니다.&#10;• 유형 필터: 정산지급 / 수수료 / 조정 / 기타">
+  :desc-detail="'• ShopJoy 전표금액 vs ERP 처리금액 차이를 자동 비교합니다.\n• 차이 상태: 일치 / 차이발생 / 오류\n• [오류수정] 버튼으로 전표 재생성 또는 ERP 수동 반영을 처리합니다.\n• 유형 필터: 정산지급 / 수수료 / 조정 / 기타'">
   <!-- ===== ■. 검색 영역 ================================================= -->
   <bo-container>
     <bo-search-area :loading="uiState.loading" bar-style="flex-wrap:wrap;gap:8px" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />

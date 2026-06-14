@@ -597,7 +597,7 @@ window.OdDlivMng = {
         :sort-state="uiState" :is-checked="isChecked" :all-checked="cfAllChecked"
         :row-style="fnGridRowStyle" empty-text="데이터가 없습니다."
         @sort="key => handleBtnAction('dlivs-sort', key)"
-        grid-id="dlivs-cellClick" @cell-click="e => { if (e.col && e.col.link) handleSelectAction('dlivs-rowEdit', e.row.dlivId); }"
+        grid-id="dlivs-cellClick" @cell-click="e => { if (e.col?.link) handleSelectAction('dlivs-rowEdit', e.row.dlivId); }"
         @toggle-check="id => handleSelectAction('dlivs-rowToggleCheck', id)"
         @toggle-check-all="handleSelectAction('dlivs-rowToggleCheckAll')"
         @ref-click="({type,id}) => handleSelectAction('dlivs-rowRefClick', {type, id})" row-actions>

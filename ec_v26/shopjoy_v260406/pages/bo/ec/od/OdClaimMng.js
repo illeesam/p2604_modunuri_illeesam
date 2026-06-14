@@ -622,7 +622,7 @@ window.OdClaimMng = {
         :sort-state="uiState" :is-checked="isChecked" :all-checked="cfAllChecked"
         :row-style="fnGridRowStyle" empty-text="데이터가 없습니다."
         @sort="key => handleBtnAction('claims-sort', key)"
-        grid-id="claims-cellClick" @cell-click="e => { if (e.col && e.col.link) handleSelectAction('claims-rowEdit', e.row.claimId); }"
+        grid-id="claims-cellClick" @cell-click="e => { if (e.col?.link) handleSelectAction('claims-rowEdit', e.row.claimId); }"
         @toggle-check="id => handleSelectAction('claims-rowToggleCheck', id)"
         @toggle-check-all="handleSelectAction('claims-rowToggleCheckAll')"
         @ref-click="({type,id}) => handleSelectAction('claims-rowRefClick', {type, id})" row-actions>
