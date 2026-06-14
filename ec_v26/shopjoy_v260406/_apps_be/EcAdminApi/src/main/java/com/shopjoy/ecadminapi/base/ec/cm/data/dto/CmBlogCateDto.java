@@ -31,6 +31,7 @@ public class CmBlogCateDto {
         private String updBy;
         private LocalDateTime updDate;
         private String siteNm;
+        private Long blogCnt;   // 카테고리별 블로그 글 수 (FO 사이드바 count, 서비스에서 채움)
     }
 
     @Getter @Setter @NoArgsConstructor

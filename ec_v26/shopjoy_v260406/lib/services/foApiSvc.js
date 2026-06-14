@@ -37,6 +37,9 @@
     getById(_id, uiNm, cmdNm) {
       return chkId(_id, uiNm, cmdNm) || global.foApi.get(`/fo/ec/cm/bltn/${_id}`, hdr(uiNm, cmdNm));
     },
+    getCate(params, uiNm, cmdNm) {   // 블로그 카테고리 목록 (좌측 사이드바)
+      return global.foApi.get('/fo/ec/cm/bltn/cate', { params, ...hdr(uiNm, cmdNm) });
+    },
   };
 
   /* ── cm: FAQ (공개 목록) ────────────────────────────────────── */

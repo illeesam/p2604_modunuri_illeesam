@@ -1,11 +1,13 @@
 package com.shopjoy.ecadminapi.fo.ec.service;
 
+import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogCateDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogReplyDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogFileDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogTagDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlog;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBlogRepository;
+import com.shopjoy.ecadminapi.base.ec.cm.service.CmBlogCateService;
 import com.shopjoy.ecadminapi.base.ec.cm.service.CmBlogReplyService;
 import com.shopjoy.ecadminapi.base.ec.cm.service.CmBlogFileService;
 import com.shopjoy.ecadminapi.base.ec.cm.service.CmBlogTagService;
@@ -42,10 +44,30 @@ public class FoCmBlogService {
     private final CmBlogReplyService cmBlogReplyService;
     private final CmBlogFileService cmBlogFileService;
     private final CmBlogTagService cmBlogTagService;
+    private final CmBlogCateService cmBlogCateService;
     @PersistenceContext
     private EntityManager em;
 
     private static final String DEFAULT_SITE_ID = "2604010000000001";
+
+    /** getCateList — 블로그 카테고리 목록 (좌측 사이드바용, 사용중 use_yn=Y 만, 현재 사이트)
+     *   각 카테고리에 공개 블로그 건수(blogCnt) 채워 반환 */
+    public List<CmBlogCateDto.Item> getCateList(CmBlogCateDto.Request req) {
+        SecurityUtil.applySiteId(req::getSiteId, req::setSiteId, DEFAULT_SITE_ID);
+        req.setUseYn("Y");
+        List<CmBlogCateDto.Item> list = cmBlogCateService.getList(req);
+
+        // 카테고리별 공개 블로그 건수 집계 → Map<blogCateId, count>
+        Map<String, Long> cntMap = cmBlogRepository.countByBlogCate(req.getSiteId()).stream()
+                .collect(Collectors.toMap(
+                        row -> (String) row[0],
+                        row -> (Long) row[1],
+                        (x, y) -> x));
+        for (CmBlogCateDto.Item it : list) {
+            it.setBlogCnt(cntMap.getOrDefault(it.getBlogCateId(), 0L));
+        }
+        return list;
+    }
 
     /** getList — 조회 */
     public List<CmBlogDto.Item> getList(CmBlogDto.Request req) {

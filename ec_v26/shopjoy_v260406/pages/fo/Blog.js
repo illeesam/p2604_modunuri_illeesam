@@ -3,6 +3,7 @@ window.Blog = {
   name: 'Blog',
   props: {
     navigate: { type: Function, required: true },        // 페이지 이동
+    dtlId:    { type: String,   default: null },          // 진입 시 초기 카테고리(blogCateId) — 상세에서 카테고리 클릭 시 전달
   },
   setup(props) {
 
@@ -12,15 +13,17 @@ window.Blog = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false });
     const codes = reactive({});
 
+    /* 검색조건: blogCateId='' = 전체, searchValue = 검색어 */
+    const _initSearchParam = () => ({ searchValue: '', blogCateId: '' });
+    const searchParam = reactive(_initSearchParam());
 
-    const searchParam = reactive({ searchValue: '', cat: 'all' });
-    const searchParamOrg = reactive({ searchValue: '', cat: 'all' });
-
-    const categories = foConsts.BLOG_CATEGORIES;
+    /* 카테고리 — 실 cm_blog_cate API 로 로드 ('전체' 가상 항목 prepend). blogCateId='' = 전체. blogCnt=글 수 */
+    const categories = reactive([{ blogCateId: '', blogCateNm: '전체', blogCnt: 0 }]);
 
     const posts = reactive([]);
+    const latestPosts = reactive([]);   // 최신 글(사이드바) — 페이지와 무관하게 최신 4건
 
-    const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalCount: 0, pageTotalPage: 1, pageType: 'PAGE', pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
+    const pager = reactive({ pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageType: 'PAGE', pageSizes: [5, 10, 20, 30, 50, 100], pageCond: {} });
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
@@ -30,10 +33,11 @@ window.Blog = {
       // 홈으로 이동
       if (cmd === 'page-goHome') {
         return props.navigate('home');
-      // 카테고리 선택 (param: 카테고리 ID)
+      // 카테고리 선택 (param: blogCateId, '' = 전체)
       } else if (cmd === 'category-select') {
-        searchParam.cat = param;
-        return onSearch();
+        searchParam.blogCateId = param;
+        pager.pageNo = 1;
+        return handleSearchList();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -45,6 +49,12 @@ window.Blog = {
       // 블로그 포스트 클릭 (param: postId)
       if (cmd === 'blogs-rowView') {
         return props.navigate('blogView', { dtlId: param });
+      // 페이지 번호 클릭
+      } else if (cmd === 'blogs-pager-setPage') {
+        return setPage(param);
+      // 페이지 크기 변경
+      } else if (cmd === 'blogs-pager-sizeChange') {
+        return onSizeChange();
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
@@ -76,10 +86,12 @@ window.Blog = {
       thumb:    _blogThumb(b),
       readTime: coUtil.cofReadTime(b.blogContent),
       viewCount: b.viewCount || 0,
+      fileCount: Array.isArray(b.files) ? b.files.length : 0,   // 첨부 개수 (목록 카드 표시)
     });
 
-    /* handleSearchList — 목록 조회 */
-    const handleSearchList = async (searchType = 'DEFAULT') => {
+    /* handleSearchList — 목록 조회 (서버사이드 페이징). blogCateId '' 는 자동 제외 = 전체 */
+    const handleSearchList = async () => {
+      uiState.loading = true;
       try {
         const params = { ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)), pageNo: pager.pageNo, pageSize: pager.pageSize };
         const res = await foApiSvc.cmBltn.getPage(params, '블로그', '목록조회');
@@ -88,9 +100,49 @@ window.Blog = {
         pager.pageTotalPage = d.pageTotalPage || 1;
         posts.splice(0, posts.length, ...(d.pageList || []).map(_adaptBlog));
         coUtil.cofBuildPagerNums(pager);
+        uiState.error = null;
       } catch (e) {
         console.error('[handleSearchList]', e);
         posts.splice(0, posts.length);
+        uiState.error = e.message;
+      } finally {
+        uiState.loading = false;
+      }
+    };
+
+    /* setPage — 페이지 번호 변경 */
+    const setPage = (n) => {
+      if (n >= 1 && n <= pager.pageTotalPage && n !== pager.pageNo) {
+        pager.pageNo = n;
+        handleSearchList();
+      }
+    };
+
+    /* onSizeChange — 페이지 크기 변경 */
+    const onSizeChange = () => { pager.pageNo = 1; handleSearchList(); };
+
+    /* loadCategories — 좌측 카테고리 실 API 로드 ('전체' 항목 유지 + API 결과 append).
+     *   '전체' blogCnt = 각 카테고리 blogCnt 합계 */
+    const loadCategories = async () => {
+      try {
+        const res = await foApiSvc.cmBltn.getCate({}, '블로그', '카테고리조회');
+        const list = res.data?.data || [];
+        categories.splice(1, categories.length - 1, ...list); // [0]=전체 유지
+        categories[0].blogCnt = list.reduce((sum, c) => sum + (c.blogCnt || 0), 0);
+      } catch (e) {
+        console.error('[loadCategories]', e);
+      }
+    };
+
+    /* loadLatestPosts — 최신 글 4건 (페이지/검색과 무관, regDate DESC 1페이지) */
+    const loadLatestPosts = async () => {
+      try {
+        const res = await foApiSvc.cmBltn.getPage({ pageNo: 1, pageSize: 4 }, '블로그', '최신글조회');
+        const d = res.data?.data || {};
+        latestPosts.splice(0, latestPosts.length, ...(d.pageList || []).map(_adaptBlog));
+      } catch (e) {
+        console.error('[loadLatestPosts]', e);
+        latestPosts.splice(0, latestPosts.length);
       }
     };
 
@@ -104,24 +156,29 @@ window.Blog = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    /* onSearch — 조회 */
-    const onSearch = async () => { Object.assign(pager.pageCond, searchParam); await handleSearchList('DEFAULT'); };
+    /* onSearch — [조회] 클릭 / Enter (1페이지부터 서버 재조회) */
+    const onSearch = async () => { pager.pageNo = 1; await handleSearchList(); };
 
-    /* onReset — 초기화 */
-    const onReset = () => {
-      Object.assign(searchParam, searchParamOrg);
-      onSearch();
+    /* onReset — 초기화 (검색어·카테고리 비우고 1페이지 재조회) */
+    const onReset = async () => {
+      Object.assign(searchParam, _initSearchParam());
+      pager.pageNo = 1;
+      await handleSearchList();
     };
 
 
 
 
 
-    const cfLatestPosts = computed(() => [...posts].sort((a, b) => String(b.date || '').localeCompare(String(a.date || ''))).slice(0, 4));
+    /* cfLatestPosts — 최신 글(사이드바). 별도 API 로 받은 latestPosts 사용 */
+    const cfLatestPosts = computed(() => latestPosts);
 
-    // ★ onMounted
+    // ★ onMounted — 카테고리/최신글/목록 초기 조회 (진입 시 dtlId 있으면 해당 카테고리로 필터)
     onMounted(() => {
       if (isAppReady.value) { fnLoadCodes(); }
+      if (props.dtlId) { searchParam.blogCateId = props.dtlId; }
+      loadCategories();
+      loadLatestPosts();
       handleSearchList();
     });
 
@@ -139,8 +196,8 @@ window.Blog = {
     return {
       columns,
       handleBtnAction, handleSelectAction, // dispatch
-      searchParam, // 검색
-      categories, posts, // 데이터
+      searchParam, uiState, pager, // 검색 / 상태 / 페이저
+      categories, posts, latestPosts, // 데이터
       cfLatestPosts, // computed
       onSearch, onReset,        // 헬퍼/이벤트
     };
@@ -155,13 +212,13 @@ window.Blog = {
   <div style="display:flex;justify-content:center;margin-bottom:32px;">
     <!-- ===== ■.■. 검색 영역 ================================================= -->
     <fo-search-area bar-style="max-width:640px;width:100%;justify-content:center;"
-      :columns="columns.baseSearch" :param="searchParam"
+      :columns="columns.baseSearch" :param="searchParam" :loading="uiState.loading"
       @search="onSearch" @reset="onReset" />
   </div>
   <!-- ===== □.□. 검색 영역 ================================================= -->
   <!-- ===== □. 검색 ====================================================== -->
   <!-- ===== ■. 레이아웃: 사이드바 + 본문 ========================================= -->
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(16px,3vw,32px);" class="blog-grid">
+  <div style="display:grid;grid-template-columns:minmax(0,3fr) minmax(0,7fr);gap:clamp(16px,3vw,32px);align-items:start;" class="blog-grid">
     <!-- ===== ■.■. 사이드바 ================================================== -->
     <aside>
       <!-- ===== ■.■.■. 카테고리 ================================================ -->
@@ -170,16 +227,18 @@ window.Blog = {
           Prod Categories
         </h3>
         <ul style="list-style:none;padding:0;margin:0;">
-          <li v-for="cat in categories" :key="cat.codeValue"
-            @click="handleBtnAction('category-select', cat.codeValue)"
+          <li v-for="cat in categories" :key="cat.blogCateId || 'all'"
+            @click="handleBtnAction('category-select', cat.blogCateId)"
             :style="{
+            display:'flex', justifyContent:'space-between', alignItems:'center', gap:'8px',
             padding:'8px 0', cursor:'pointer', fontSize:'0.84rem',
-            color: searchParam.cat===cat.codeValue ? 'var(--blue)' : 'var(--text-secondary)',
-            fontWeight: searchParam.cat===cat.codeValue ? '700' : '400',
-            borderLeft: searchParam.cat===cat.codeValue ? '2px solid var(--blue)' : '2px solid transparent',
+            color: searchParam.blogCateId===cat.blogCateId ? 'var(--blue)' : 'var(--text-secondary)',
+            fontWeight: searchParam.blogCateId===cat.blogCateId ? '700' : '400',
+            borderLeft: searchParam.blogCateId===cat.blogCateId ? '2px solid var(--blue)' : '2px solid transparent',
             paddingLeft: '12px', transition:'all .15s',
             }">
-            {{ cat.codeLabel }}
+            <span>{{ cat.blogCateNm }}</span>
+            <span style="font-size:0.78rem;color:var(--text-muted);font-weight:400;">({{ cat.blogCnt || 0 }})</span>
           </li>
         </ul>
       </div>
@@ -223,7 +282,7 @@ window.Blog = {
         <div style="flex:1;min-width:200px;padding:clamp(14px,2vw,24px) clamp(14px,2vw,24px) clamp(14px,2vw,24px) 0;display:flex;flex-direction:column;justify-content:center;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
             <span style="font-size:0.72rem;color:var(--blue);font-weight:600;">
-              {{ categories.find(c => c.codeValue === post.category)?.codeLabel || post.category }}
+              {{ categories.find(c => c.blogCateId === post.category)?.blogCateNm || post.category }}
             </span>
           </div>
           <h2 style="font-size:1.1rem;font-weight:800;color:var(--text-primary);margin-bottom:10px;line-height:1.4;">
@@ -248,6 +307,12 @@ window.Blog = {
             <span>
               {{ post.readTime }} 읽기
             </span>
+            <span v-if="post.fileCount > 0">
+              ·
+            </span>
+            <span v-if="post.fileCount > 0" style="display:inline-flex;align-items:center;gap:3px;">
+              📎 {{ post.fileCount }}
+            </span>
           </div>
         </div>
       </div>
@@ -259,6 +324,12 @@ window.Blog = {
         <div style="font-size:0.95rem;">
           검색 결과가 없습니다.
         </div>
+      </div>
+      <!-- ===== ■.■.■. 페이지네이션 ============================================ -->
+      <div v-if="posts.length > 0" style="display:flex;justify-content:center;margin-top:24px;">
+        <fo-pager :pager="pager"
+          :on-set-page="n => handleSelectAction('blogs-pager-setPage', n)"
+          :on-size-change="() => handleSelectAction('blogs-pager-sizeChange')" />
       </div>
     </div>
   </div>

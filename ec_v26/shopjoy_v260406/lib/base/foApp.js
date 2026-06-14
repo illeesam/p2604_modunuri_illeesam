@@ -905,7 +905,7 @@
         />
         <blog-page
           v-else-if="page==='blog'"
-          :navigate="navigate"
+          :navigate="navigate" :dtl-id="viewEditId"
         />
         <blog-view
           v-else-if="page==='blogView'"

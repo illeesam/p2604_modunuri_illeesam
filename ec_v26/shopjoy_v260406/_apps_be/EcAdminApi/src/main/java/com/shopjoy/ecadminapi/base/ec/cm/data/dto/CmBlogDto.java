@@ -19,6 +19,7 @@ public class CmBlogDto {
         @Size(max = 1) private String isNotice;
         @Size(max = 21) private String blogId;
         @Size(max = 20) private String blogTypeCd;
+        @Size(max = 21) private String blogCateId;
     }
 
     @Getter @Setter @NoArgsConstructor

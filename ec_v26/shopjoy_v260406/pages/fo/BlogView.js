@@ -14,7 +14,12 @@ window.BlogView = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, commentText: ''});
     const codes = reactive({});
 
-    const posts = reactive([]);
+    const posts = reactive([]);                   // 현재 상세글(1건)
+    const categories = reactive([]);              // 우측 카테고리 (실 cm_blog_cate + count)
+    const latestPosts = reactive([]);             // 우측 최신 글 (현재글 제외)
+    const relatedPosts = reactive([]);            // 하단 관련 글 (같은 카테고리)
+    /* 카테고리 인라인 펼침: 클릭한 카테고리의 글 목록을 사이드바에서 펼쳐 표시 */
+    const catExpand = reactive({ openId: null, loading: false, posts: [] });
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
@@ -24,6 +29,12 @@ window.BlogView = {
       // 블로그 목록으로 이동
       if (cmd === 'page-goBlogList') {
         return props.navigate('blog');
+      // 카테고리 클릭 → 인라인 펼침(토글). 해당 카테고리 글 목록 API 조회
+      } else if (cmd === 'category-select') {
+        return toggleCatExpand(param);
+      // 펼친 카테고리 전체보기 → 목록 화면으로 (dtlId 채널로 blogCateId 전달)
+      } else if (cmd === 'category-viewAll') {
+        return props.navigate('blog', { dtlId: param || '' });
       // 댓글 등록
       } else if (cmd === 'comments-add') {
         return handleAddComment();
@@ -45,14 +56,81 @@ window.BlogView = {
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
 
-    /* handleSearchData — 처리 */
-    const handleSearchData = async (searchType = 'DEFAULT') => {
+    /* _adaptCard — CmBlogDto.Item → 사이드/관련 카드 형태 (썸네일/날짜 정규화) */
+    const _adaptCard = (b) => {
+      const f = Array.isArray(b.files) && b.files.length ? b.files[0] : null;
+      const thumb = (f && (f.thumbUrl || f.imgUrl)) || '';
+      return {
+        id:     b.blogId,
+        title:  b.blogTitle || '',
+        author: b.blogAuthor || '',
+        date:   (b.regDate || '').toString().slice(0, 10).replace(/-/g, '.'),
+        imgSm:  thumb ? coUtil.cofImgSrc(thumb) : '',
+        img:    thumb ? coUtil.cofImgSrc(thumb) : '',
+      };
+    };
+
+    /* handleSearchData — 상세 조회 + (이어서) 관련글 로드 */
+    const handleSearchData = async () => {
       try {
         const res = await foApiSvc.cmBltn.getById(props.dtlId, '블로그상세', '상세조회');
-        posts.splice(0, posts.length, ...(res.data?.data ? [res.data.data] : []));
+        const raw = res.data?.data || null;
+        posts.splice(0, posts.length, ...(raw ? [raw] : []));
+        if (raw) { loadRelated(raw.blogCateId); }   // 상세의 카테고리로 관련글 로드
       } catch (e) {
         console.error('[handleSearchData]', e);
         posts.splice(0, posts.length);
+      }
+    };
+
+    /* loadCategories — 우측 카테고리 (실 cm_blog_cate + count) */
+    const loadCategories = async () => {
+      try {
+        const res = await foApiSvc.cmBltn.getCate({}, '블로그상세', '카테고리조회');
+        categories.splice(0, categories.length, ...(res.data?.data || []));
+      } catch (e) { console.error('[loadCategories]', e); }
+    };
+
+    /* loadLatest — 우측 최신 글 5건(현재글 제외 후 4건) */
+    const loadLatest = async () => {
+      try {
+        const res = await foApiSvc.cmBltn.getPage({ pageNo: 1, pageSize: 5 }, '블로그상세', '최신글조회');
+        const list = (res.data?.data?.pageList || []).map(_adaptCard).filter(c => c.id !== props.dtlId).slice(0, 4);
+        latestPosts.splice(0, latestPosts.length, ...list);
+      } catch (e) { console.error('[loadLatest]', e); }
+    };
+
+    /* loadRelated — 같은 카테고리 관련 글 (현재글 제외 후 3건) */
+    const loadRelated = async (blogCateId) => {
+      try {
+        const params = { pageNo: 1, pageSize: 6 };
+        if (blogCateId) { params.blogCateId = blogCateId; }
+        const res = await foApiSvc.cmBltn.getPage(params, '블로그상세', '관련글조회');
+        const list = (res.data?.data?.pageList || []).map(_adaptCard).filter(c => c.id !== props.dtlId).slice(0, 3);
+        relatedPosts.splice(0, relatedPosts.length, ...list);
+      } catch (e) { console.error('[loadRelated]', e); }
+    };
+
+    /* toggleCatExpand — 카테고리 클릭 시 인라인 펼침 토글 + 해당 카테고리 글 목록 API 조회 */
+    const toggleCatExpand = async (blogCateId) => {
+      // 같은 카테고리 다시 클릭 → 접기
+      if (catExpand.openId === blogCateId) {
+        catExpand.openId = null;
+        catExpand.posts.splice(0, catExpand.posts.length);
+        return;
+      }
+      catExpand.openId = blogCateId;
+      catExpand.loading = true;
+      catExpand.posts.splice(0, catExpand.posts.length);
+      try {
+        const res = await foApiSvc.cmBltn.getPage(
+          { pageNo: 1, pageSize: 10, blogCateId }, '블로그상세', '카테고리글조회');
+        const list = (res.data?.data?.pageList || []).map(_adaptCard);
+        catExpand.posts.splice(0, catExpand.posts.length, ...list);
+      } catch (e) {
+        console.error('[toggleCatExpand]', e);
+      } finally {
+        catExpand.loading = false;
       }
     };
 
@@ -66,7 +144,6 @@ window.BlogView = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    const cfPostId = computed(() => props.dtlId);
     /* 백엔드 CmBlogDto.Item → 화면 표준 형태로 정규화 (replies/tags/files 연관정보 포함) */
     const cfPost   = computed(() => {
       const raw = posts.length > 0 ? posts[0] : null;
@@ -110,29 +187,24 @@ window.BlogView = {
       uiState.commentText = '';
     };
 
-    /* 사이드바 */
-    const searchParam = reactive({ searchValue: '', commentText: ''});;
-    const cfLatestPosts = computed(() => posts.filter(p => p.id !== cfPostId.value).slice(0, 3));
-    const categories  = [
-      { name: 'Fashion', count: 12 },
-      { name: 'Trend',   count: 8 },
-      { name: 'Lifestyle', count: 5 },
-      { name: 'Style Guide', count: 9 },
-    ];
-    const archives = ['2026년 4월 (3)', '2026년 3월 (5)', '2026년 2월 (4)', '2026년 1월 (6)'];
-    const cfRecentComments = computed(() =>
-      posts.flatMap(p => (p.comments || []).map(c => ({ ...c, postTitle: p.title, postId: p.id }))).slice(0, 3)
-    );
+    /* 사이드바 검색 입력 */
+    const searchParam = reactive({ searchValue: '', commentText: ''});
 
-    /* 관련 글 */
-    const cfRelatedPosts = computed(() => posts.filter(p => p.id !== cfPostId.value).slice(0, 3));
+    /* 우측 Recent Comments — 현재 글 댓글 최근 3건 (cfPost.comments 기준) */
+    const cfRecentComments = computed(() => (cfPost.value.comments || []).slice(-3).reverse());
 
-
-
-    // ★ onMounted
+    // ★ onMounted — 상세 + 카테고리 + 최신글 병렬 로드 (관련글은 상세 후 카테고리로 로드)
     onMounted(() => {
       if (isAppReady.value) { fnLoadCodes(); }
       handleSearchData();
+      loadCategories();
+      loadLatest();
+    });
+
+    /* dtlId 변경(다른 글 클릭) 시 재로드 — :dtl-id 로 재마운트 안 되는 경우 대비 */
+    watch(() => props.dtlId, () => {
+      handleSearchData();
+      loadLatest();
     });
 
     /* ##### [06] return (템플릿 노출) ############################################## */
@@ -140,15 +212,16 @@ window.BlogView = {
     return {
       handleBtnAction, handleSelectAction, // dispatch
       cfPost, cfBodyParagraphs, cfAllComments, // computed - 본문
-      cfLatestPosts, cfRecentComments, cfRelatedPosts, // computed - 사이드
+      latestPosts, relatedPosts, cfRecentComments, // 사이드/관련 (실데이터)
+      catExpand,              // 카테고리 인라인 펼침 상태
       commentText,            // 댓글
-      searchParam, categories, archives,                   // 검색/카테고리
+      searchParam, categories,                   // 검색/카테고리(실데이터)
     };
   },
   template: /* html */ `
 <fo-page>
   <!-- ===== ■. ══ 2컬럼 레이아웃 ══ ========================================== -->
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(20px,4vw,48px);align-items:start;">
+  <div style="display:grid;grid-template-columns:minmax(0,7fr) minmax(0,3fr);gap:clamp(20px,4vw,48px);align-items:start;" class="blog-view-grid">
     <!-- ===== ■.■. 좌: 본문 영역 ============================================== -->
     <div>
       <!-- ===== ■.■.■. 뒤로 ================================================== -->
@@ -301,32 +374,69 @@ window.BlogView = {
   <!-- ===== □.□. 좌: 본문 영역 ============================================== -->
   <!-- ===== ■.■. 우: 사이드바 =============================================== -->
   <div style="position:sticky;top:80px;display:flex;flex-direction:column;gap:clamp(16px,2.5vw,32px);">
-    <!-- ===== ■.■.■. 검색 ================================================== -->
+    <!-- ===== ■.■.■. 검색 (Enter → 목록 화면으로 이동) ============================ -->
     <div>
       <div style="position:relative;">
-        <input v-model="searchParam.searchValue" type="text" placeholder="Search..."
+        <input v-model="searchParam.searchValue" type="text" placeholder="블로그 검색..."
+            @keyup.enter="handleBtnAction('page-goBlogList')"
             style="width:100%;padding:10px 42px 10px 14px;border:1.5px solid var(--border);border-radius:4px;font-size:0.85rem;outline:none;background:var(--bg-card);color:var(--text-primary);box-sizing:border-box;" />
-        <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--text-muted);">
+        <span @click="handleBtnAction('page-goBlogList')"
+            style="position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--text-muted);cursor:pointer;">
           🔍
         </span>
       </div>
     </div>
-    <!-- ===== ■.■.■. Prod Categories ===================================== -->
+    <!-- ===== ■.■.■. 카테고리 (실 cm_blog_cate + count, 클릭 → 목록 필터) ============ -->
     <div>
       <h4 style="font-size:0.9rem;font-weight:700;color:var(--text-primary);margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid var(--blue);">
-        Prod Categories
+        카테고리
       </h4>
       <div style="display:flex;flex-direction:column;gap:0;">
-        <div v-for="cat in categories" :key="cat.name"
-            style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer;"
-            @mouseenter="$event.currentTarget.style.color='var(--blue)'"
-            @mouseleave="$event.currentTarget.style.color=''">
-          <span style="font-size:0.85rem;color:var(--text-secondary);transition:color .15s;">
-            {{ cat.name }}
-          </span>
-          <span style="font-size:0.75rem;color:var(--text-muted);">
-            ({{ cat.count }})
-          </span>
+        <template v-for="cat in categories" :key="cat.blogCateId">
+          <!-- 카테고리 행 (클릭 → 펼침 토글) -->
+          <div @click="handleBtnAction('category-select', cat.blogCateId)"
+              :style="{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'9px 0', borderBottom:'1px solid var(--border)', cursor:'pointer', color: catExpand.openId===cat.blogCateId ? 'var(--blue)' : '' }"
+              @mouseenter="$event.currentTarget.style.color='var(--blue)'"
+              @mouseleave="$event.currentTarget.style.color = (catExpand.openId===cat.blogCateId ? 'var(--blue)' : '')">
+            <span style="font-size:0.85rem;display:inline-flex;align-items:center;gap:6px;">
+              <span style="font-size:0.7rem;transition:transform .15s;" :style="{ transform: catExpand.openId===cat.blogCateId ? 'rotate(90deg)' : 'rotate(0)' }">▶</span>
+              {{ cat.blogCateNm }}
+            </span>
+            <span style="font-size:0.75rem;color:var(--text-muted);">
+              ({{ cat.blogCnt || 0 }})
+            </span>
+          </div>
+          <!-- 펼침 패널: 해당 카테고리 글 목록 (API 조회 결과) -->
+          <div v-if="catExpand.openId===cat.blogCateId"
+              style="padding:6px 0 10px 16px;border-bottom:1px solid var(--border);background:var(--bg-base);">
+            <div v-if="catExpand.loading" style="font-size:0.78rem;color:var(--text-muted);padding:6px 0;">
+              불러오는 중…
+            </div>
+            <template v-else>
+              <div v-for="cp in catExpand.posts" :key="cp.id"
+                  @click.stop="handleSelectAction('blogs-rowView', cp.id)"
+                  style="display:flex;gap:8px;align-items:center;padding:6px 0;cursor:pointer;"
+                  @mouseenter="$event.currentTarget.style.opacity='0.7'"
+                  @mouseleave="$event.currentTarget.style.opacity='1'">
+                <div style="width:34px;height:34px;border-radius:4px;overflow:hidden;flex-shrink:0;background:var(--bg-card);">
+                  <img v-if="cp.imgSm" :src="cp.imgSm" :alt="cp.title" style="width:100%;height:100%;object-fit:cover;" />
+                </div>
+                <div style="font-size:0.78rem;color:var(--text-secondary);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+                  {{ cp.title }}
+                </div>
+              </div>
+              <div v-if="catExpand.posts.length===0" style="font-size:0.78rem;color:var(--text-muted);padding:6px 0;">
+                글이 없습니다.
+              </div>
+              <div v-if="catExpand.posts.length>0" @click.stop="handleBtnAction('category-viewAll', cat.blogCateId)"
+                  style="font-size:0.75rem;color:var(--blue);cursor:pointer;padding:8px 0 2px;font-weight:600;">
+                전체보기 →
+              </div>
+            </template>
+          </div>
+        </template>
+        <div v-if="categories.length === 0" style="font-size:0.82rem;color:var(--text-muted);padding:9px 0;">
+          카테고리가 없습니다.
         </div>
       </div>
     </div>
@@ -336,7 +446,7 @@ window.BlogView = {
         Latest Posts
       </h4>
       <div style="display:flex;flex-direction:column;gap:14px;">
-        <div v-for="lp in cfLatestPosts" :key="lp.id"
+        <div v-for="lp in latestPosts" :key="lp.id"
             style="display:flex;gap:12px;cursor:pointer;"
             @click="handleSelectAction('blogs-rowView', lp.id)">
           <div style="width:64px;height:64px;border-radius:4px;overflow:hidden;flex-shrink:0;background:var(--bg-base);">
@@ -350,6 +460,9 @@ window.BlogView = {
               {{ lp.date }}
             </div>
           </div>
+        </div>
+        <div v-if="latestPosts.length === 0" style="font-size:0.82rem;color:var(--text-muted);">
+          최신 글이 없습니다.
         </div>
       </div>
     </div>
@@ -374,31 +487,17 @@ window.BlogView = {
         </div>
       </div>
     </div>
-    <!-- ===== ■.■.■. Archives ============================================ -->
-    <div>
-      <h4 style="font-size:0.9rem;font-weight:700;color:var(--text-primary);margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid var(--blue);">
-        Archives
-      </h4>
-      <div style="display:flex;flex-direction:column;gap:0;">
-        <div v-for="a in archives" :key="a"
-            style="padding:8px 0;border-bottom:1px solid var(--border);font-size:0.84rem;color:var(--text-secondary);cursor:pointer;transition:color .15s;"
-            @mouseenter="$event.target.style.color='var(--blue)'"
-            @mouseleave="$event.target.style.color='var(--text-secondary)'">
-          {{ a }}
-        </div>
-      </div>
-    </div>
   </div>
 </div>
 <!-- ===== □.□. 우: 사이드바 =============================================== -->
 <!-- ===== □. ══ 2컬럼 레이아웃 ══ ========================================== -->
 <!-- ===== ■. ══ 하단: You Might Also Like ══ =========================== -->
-<div v-if="cfRelatedPosts.length" style="margin-top:64px;padding-top:40px;border-top:1px solid var(--border);">
+<div v-if="relatedPosts.length" style="margin-top:64px;padding-top:40px;border-top:1px solid var(--border);">
   <h2 style="font-size:1.3rem;font-weight:800;color:var(--text-primary);margin-bottom:28px;text-align:center;">
     You Might Also Like
   </h2>
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:clamp(14px,2vw,28px);">
-    <div v-for="rp in cfRelatedPosts" :key="rp.id"
+    <div v-for="rp in relatedPosts" :key="rp.id"
         style="cursor:pointer;transition:transform .25s;"
         @mouseenter="$event.currentTarget.style.transform='translateY(-4px)'"
         @mouseleave="$event.currentTarget.style.transform=''"

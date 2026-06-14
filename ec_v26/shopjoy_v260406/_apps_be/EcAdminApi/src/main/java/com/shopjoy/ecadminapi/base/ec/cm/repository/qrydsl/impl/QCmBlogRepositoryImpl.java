@@ -62,6 +62,7 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
                 baseAndSiteId(search),
                 baseAndBlogId(search),
                 baseAndBlogTypeCd(search),
+                baseAndBlogCateId(search),
                 baseAndUseYn(search),
                 baseAndIsNotice(search),
                 baseAndDateRange(search),
@@ -91,6 +92,7 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
                 baseAndSiteId(search),
                 baseAndBlogId(search),
                 baseAndBlogTypeCd(search),
+                baseAndBlogCateId(search),
                 baseAndUseYn(search),
                 baseAndIsNotice(search),
                 baseAndDateRange(search),
@@ -143,6 +145,12 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
     private BooleanExpression baseAndBlogTypeCd(CmBlogDto.Request search) {
         return search != null && StringUtils.hasText(search.getBlogTypeCd())
                 ? cmBlog.blogTypeCd.eq(search.getBlogTypeCd()) : null;
+    }
+
+    /* blogCateId 정확 일치 (카테고리 필터) */
+    private BooleanExpression baseAndBlogCateId(CmBlogDto.Request search) {
+        return search != null && StringUtils.hasText(search.getBlogCateId())
+                ? cmBlog.blogCateId.eq(search.getBlogCateId()) : null;
     }
 
     /* useYn 정확 일치 */
