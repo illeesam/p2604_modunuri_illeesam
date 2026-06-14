@@ -499,6 +499,22 @@
     return s;
   }
 
+  /* cofReadTime — HTML/텍스트 길이 → 대략 읽기시간 문자열('N분'). 200자/분 가정, 최소 1분.
+   *   Blog 등 글 목록/상세의 _readTime 통합. 태그는 제거 후 글자수로 계산. */
+  function cofReadTime(html) {
+    var txt = String(html == null ? '' : html).replace(/<[^>]*>/g, '');
+    return Math.max(1, Math.round(txt.length / 200)) + '분';
+  }
+
+  /* cofHashIdx — 문자열 → 0..(len-1) 결정적 인덱스. 같은 입력이면 항상 같은 인덱스.
+   *   배너색/태그색 등 ID 기반 안정 배정용(랜덤 대신). Event/Blog 의 _hashIdx 통합.
+   * 사용: palette[coUtil.cofHashIdx(id, palette.length)] */
+  function cofHashIdx(s, len) {
+    var h = 0; var str = String(s == null ? '' : s);
+    for (var i = 0; i < str.length; i++) { h = (h * 31 + str.charCodeAt(i)) >>> 0; }
+    return len ? h % len : 0;
+  }
+
   /* cofParseCsv — CSV 텍스트를 [{컬럼명:값},...] 행 배열로 파싱.
    *   1행을 헤더로 사용. 따옴표 escape ("...""..."), 구분자 = 콤마 고정.
    *   BOM(﻿) 제거, CRLF/LF 모두 허용. 빈 줄은 스킵.
@@ -606,6 +622,10 @@
 
   /* cofYmd — 날짜 문자열을 'YYYY-MM-DD'(앞 10자)로 자르기. String(v||'').slice(0,10) 대체. */
   function cofYmd(v) { return String(v || '').slice(0, 10); }
+
+  /* cofDatetimeNorm — LocalDateTime 정규화: space→T + 앞 16자('YYYY-MM-DDTHH:mm').
+   *   <input type="datetime-local"> 비교/바인딩용. DispX01Ui/DispX04Widget/Sample* 의 _norm 통합. */
+  function cofDatetimeNorm(v) { return String(v || '').replace(' ', 'T').slice(0, 16); }
 
   /* cofDecodeUri — 안전한 decodeURIComponent. 디코드 실패(malformed %)시 원문 반환, 빈값이면 ''.
    *   각 로그/이력 화면의 fnDecode 복붙 대체. */
@@ -1050,6 +1070,8 @@
   global.coUtil.cofDownloadExcel = global.coUtil.cofDownloadExcel || cofDownloadExcel;
   global.coUtil.cofParseCsv = global.coUtil.cofParseCsv || cofParseCsv;
   global.coUtil.cofStripHtml = global.coUtil.cofStripHtml || cofStripHtml;
+  global.coUtil.cofReadTime = global.coUtil.cofReadTime || cofReadTime;
+  global.coUtil.cofHashIdx = global.coUtil.cofHashIdx || cofHashIdx;
   global.coUtil.EXCEL_UPLOAD_MAX_ROWS = global.coUtil.EXCEL_UPLOAD_MAX_ROWS || EXCEL_UPLOAD_MAX_ROWS;
   global.coUtil.cofBuildExportFilename = global.coUtil.cofBuildExportFilename || cofBuildExportFilename;
   global.coUtil.cofBuildGenericTree = global.coUtil.cofBuildGenericTree || cofBuildGenericTree;
@@ -1060,6 +1082,7 @@
   global.coUtil.cofPad = global.coUtil.cofPad || cofPad;
   global.coUtil.cofYmdHms = global.coUtil.cofYmdHms || cofYmdHms;
   global.coUtil.cofYmd = global.coUtil.cofYmd || cofYmd;
+  global.coUtil.cofDatetimeNorm = global.coUtil.cofDatetimeNorm || cofDatetimeNorm;
   global.coUtil.cofDecodeUri = global.coUtil.cofDecodeUri || cofDecodeUri;
   global.coUtil.cofShortApiUrl = global.coUtil.cofShortApiUrl || cofShortApiUrl;
   global.coUtil.cofUiTag = global.coUtil.cofUiTag || cofUiTag;

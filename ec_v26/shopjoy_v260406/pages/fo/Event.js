@@ -10,7 +10,7 @@ window.EventPage = {
 
     const { ref, reactive, computed, watch, onMounted } = Vue;
 
-    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: 'ongoing', sortBy: 'latest'});;
+    const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: 'ongoing', sortBy: 'latest', broadened: false });
     const codes = reactive({});
 
 
@@ -50,32 +50,85 @@ window.EventPage = {
       }
     };
 
-    /* fnBuildPagerNums — 유틸 */
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
-
-
-
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
 
 
 
-    /* handleSearchList — 목록 조회 */
+    /* ── 백엔드 → 화면 어댑터 ──
+     *   eventStatusCd(PENDING/ACTIVE/ENDED) → status('ongoing'|'ended'),
+     *   eventTitle/startDate 등 → 화면 카드 기대 필드. 배너색/태그는 백엔드에 없어 결정적 생성. */
+    const STATUS_KOR = { PENDING: '진행예정', ACTIVE: '진행중', ENDED: '종료' };
+    const BANNER_BGS = [
+      'linear-gradient(135deg,#667eea,#764ba2)', 'linear-gradient(135deg,#f093fb,#f5576c)',
+      'linear-gradient(135deg,#4facfe,#00f2fe)', 'linear-gradient(135deg,#43e97b,#38f9d7)',
+      'linear-gradient(135deg,#fa709a,#fee140)', 'linear-gradient(135deg,#30cfd0,#330867)',
+    ];
+
+    /* _adaptEvent — PmEventDto.Item → 화면 카드 기대 형태 */
+    const _adaptEvent = (e) => {
+      const cd = String(e.eventStatusCd || '').toUpperCase();
+      const status = cd === 'ENDED' ? 'ended' : 'ongoing';   // PENDING/ACTIVE → 진행중 탭
+      const title = e.eventTitle || e.eventNm || '';
+      return {
+        id:        e.eventId,
+        title,
+        status,
+        startDate: coUtil.cofYmd(e.startDate),
+        endDate:   coUtil.cofYmd(e.endDate),
+        bannerBg:  BANNER_BGS[coUtil.cofHashIdx(e.eventId, BANNER_BGS.length)],
+        bannerText: '#ffffff',
+        bannerLine1: '',
+        bannerLine2: title,
+        tag:       STATUS_KOR[cd] || (e.eventTypeCdNm || '이벤트'),
+        tagColor:  status === 'ended' ? '#9ca3af' : '#ef4444',
+      };
+    };
+
+    /* _fetchEvents — 서버 조회 1회 (eventStatusCd 옵션). { list, total, totalPage } 반환 */
+    const _fetchEvents = async (statusCd) => {
+      const params = {
+        pageNo: pager.pageNo, pageSize: pager.pageSize,
+        ...(statusCd ? { eventStatusCd: statusCd } : {}),
+        ...(uiState.sortBy === 'deadline' ? { sort: 'endDate asc' } : {}),
+      };
+      const res = await foApiSvc.pmEvent.getPage(params, '이벤트', '목록조회');
+      const d = res.data?.data || {};
+      return { list: d.pageList || [], total: d.pageTotalCount || 0, totalPage: d.pageTotalPage || 1 };
+    };
+
+    /* handleSearchList — 목록 조회.
+     *   진행중 탭: ACTIVE 조회 → 0건이면 상태필터 해제하고 전체(기간 무제한) 재조회(폴백 안내).
+     *   ⚠️ 백엔드 기간검색은 reg_date/upd_date 만 지원하고 이벤트 진행기간(start/end_date) 검색은
+     *      미지원 → dateType 미전송이 곧 '기간 무제한'. 폴백은 상태필터 해제로 기간을 최대로 넓힌다. */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
-        const params = {
-          pageNo: pager.pageNo, pageSize: pager.pageSize,
-          ...(uiState.activeTab             ? { status: uiState.activeTab } : {}),
-          ...(uiState.sortBy === 'deadline' ? { sortBy: 'endDate' }         : {}),
-        };
-        const res = await foApiSvc.pmEvent.getPage(params, '이벤트', '목록조회');
-        pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
-        pager.pageTotalPage = res.data?.data?.pageTotalPage || 1;
-        events.splice(0, events.length, ...(res.data?.data?.pageList || []));
-        fnBuildPagerNums();
+        uiState.broadened = false;
+        if (uiState.activeTab === 'ended') {
+          const r = await _fetchEvents('ENDED');
+          _applyResult(r);
+          return;
+        }
+        // 진행중 탭: 먼저 ACTIVE
+        let r = await _fetchEvents('ACTIVE');
+        if (r.total === 0) {
+          // 진행중 0건 → 상태필터 해제, 전체 이벤트(기간 무제한)로 폴백
+          r = await _fetchEvents(null);
+          uiState.broadened = r.total > 0;
+        }
+        _applyResult(r);
       } catch (e) {
         console.error('[handleSearchList]', e);
         events.splice(0, events.length);
+        pager.pageTotalCount = 0; pager.pageTotalPage = 1;
       }
+    };
+
+    /* _applyResult — 조회 결과를 화면 상태에 반영 */
+    const _applyResult = (r) => {
+      pager.pageTotalCount = r.total;
+      pager.pageTotalPage  = r.totalPage;
+      events.splice(0, events.length, ...r.list.map(_adaptEvent));
+      coUtil.cofBuildPagerNums(pager);
     };
 
     /* fnLoadCodes — 공통코드 로드 */
@@ -94,7 +147,12 @@ window.EventPage = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
-    const cfOngoingCount = computed(() => events.filter(e => e.status === 'ongoing').length);
+    /* cfOngoingCount — 진행중 탭이면 서버 총건수(단, 전체 폴백 시 진행중은 0건),
+     *   그 외 탭이면 현재 페이지 내 진행중 수 */
+    const cfOngoingCount = computed(() => {
+      if (uiState.activeTab !== 'ongoing') { return events.filter(e => e.status === 'ongoing').length; }
+      return uiState.broadened ? 0 : pager.pageTotalCount;
+    });
 
 
     onMounted(() => {
@@ -167,6 +225,11 @@ window.EventPage = {
   </div>
   <!-- ===== □.□. 정렬 ==================================================== -->
   <!-- ===== □. 탭 + 정렬 ================================================== -->
+  <!-- ===== ■. 폴백 안내 (진행중 0건 → 전체 이벤트로 확장) ========================= -->
+  <div v-if="uiState.broadened" style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:10px 14px;margin-bottom:18px;font-size:0.82rem;color:var(--text-secondary);display:flex;align-items:center;gap:8px;">
+    <span>ℹ️</span>
+    <span>진행 중인 이벤트가 없어 전체 이벤트를 보여드립니다.</span>
+  </div>
   <!-- ===== ■. 이벤트 그리드 ================================================= -->
   <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px;">
     <div v-for="ev in events" :key="ev.id"

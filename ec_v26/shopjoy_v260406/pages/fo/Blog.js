@@ -56,8 +56,6 @@ window.Blog = {
       }
     };
 
-    /* fnBuildPagerNums — 유틸 */
-    const fnBuildPagerNums = () => { const c=pager.pageNo,l=pager.pageTotalPage,s=Math.max(1,c-2),e=Math.min(l,s+4); pager.pageNums=Array.from({length:e-s+1},(_,i)=>s+i); };
 
 
 
@@ -65,15 +63,37 @@ window.Blog = {
 
 
 
+    /* _blogThumb — 첨부 목록(files[])에서 대표 썸네일 1장 추출 (cm_blog_file: thumbUrl/imgUrl).
+     *   서버 경로 '/cdn/...' → 'assets/cdn/...' 는 coUtil.cofImgSrc 로 보정. */
+    const _blogThumb = (b) => {
+      const f = Array.isArray(b.files) && b.files.length ? b.files[0] : null;
+      const raw = (f && (f.thumbUrl || f.imgUrl)) || b.thumbUrl || b.imgUrl || '';
+      return raw ? coUtil.cofImgSrc(raw) : '';
+    };
+
+    /* _adaptBlog — CmBlogDto.Item → 화면 카드 기대 형태 (이벤트 어댑터와 동일 취지) */
+    const _adaptBlog = (b) => ({
+      id:       b.blogId,
+      title:    b.blogTitle || '',
+      excerpt:  b.blogSummary || coUtil.cofStripHtml(b.blogContent, 120),
+      author:   b.blogAuthor || '',
+      date:     coUtil.cofYmd(b.regDate),
+      category: b.blogCateId || '',
+      thumb:    _blogThumb(b),
+      readTime: coUtil.cofReadTime(b.blogContent),
+      viewCount: b.viewCount || 0,
+    });
+
     /* handleSearchList — 목록 조회 */
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         const params = { ...Object.fromEntries(Object.entries(searchParam).filter(([, v]) => v)), pageNo: pager.pageNo, pageSize: pager.pageSize };
         const res = await foApiSvc.cmBltn.getPage(params, '블로그', '목록조회');
-        pager.pageTotalCount = res.data?.data?.pageTotalCount || 0;
-        pager.pageTotalPage = res.data?.data?.pageTotalPage || 1;
-        posts.splice(0, posts.length, ...(res.data?.data?.pageList || []));
-        fnBuildPagerNums();
+        const d = res.data?.data || {};
+        pager.pageTotalCount = d.pageTotalCount || 0;
+        pager.pageTotalPage = d.pageTotalPage || 1;
+        posts.splice(0, posts.length, ...(d.pageList || []).map(_adaptBlog));
+        coUtil.cofBuildPagerNums(pager);
       } catch (e) {
         console.error('[handleSearchList]', e);
         posts.splice(0, posts.length);
@@ -103,7 +123,7 @@ window.Blog = {
 
 
 
-    const cfLatestPosts = computed(() => [...posts].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 4));
+    const cfLatestPosts = computed(() => [...posts].sort((a, b) => String(b.date || '').localeCompare(String(a.date || ''))).slice(0, 4));
 
     // ★ onMounted
     onMounted(() => {

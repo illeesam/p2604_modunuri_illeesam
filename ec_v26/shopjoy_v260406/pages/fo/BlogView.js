@@ -80,9 +80,9 @@ window.BlogView = {
         date:      (raw.regDate || '').toString().slice(0, 10).replace(/-/g, '.'),
         readTime:  '',
         viewCount: raw.viewCount || 0,
-        body:      raw.blogContent || raw.blogSummary || '',
-        img:       files[0]?.imgUrl || '',
-        imgMid:    files[1]?.imgUrl || '',
+        body:      String(raw.blogContent || raw.blogSummary || '').replace(/(src|href)=(['"])\/cdn\//g, '$1=$2assets/cdn/'),
+        img:       files[0]?.imgUrl ? coUtil.cofImgSrc(files[0].imgUrl) : '',
+        imgMid:    files[1]?.imgUrl ? coUtil.cofImgSrc(files[1].imgUrl) : '',
         files:     files,
         tags:      (raw.tags || []).map(t => t.tagNm).filter(Boolean),
         comments:  (raw.replies || []).map(r => ({

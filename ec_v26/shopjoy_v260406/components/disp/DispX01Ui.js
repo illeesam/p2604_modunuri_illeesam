@@ -127,9 +127,8 @@ window.DispX01Ui = {
       if (pm.date) {
         const t  = pm.time || '00:00';
         const dt = `${pm.date}T${t}`;
-        const _norm = v => String(v || '').replace(' ', 'T').slice(0, 16);
-        if (p.dispStartDt && dt < _norm(p.dispStartDt)) { return false; }
-        if (p.dispEndDt   && dt > _norm(p.dispEndDt)) { return false; }
+        if (p.dispStartDt && dt < coUtil.cofDatetimeNorm(p.dispStartDt)) { return false; }
+        if (p.dispEndDt   && dt > coUtil.cofDatetimeNorm(p.dispEndDt)) { return false; }
       }
       // ✓ 전시환경 체크 (UI-Area 매핑)
       if (p.dispEnv && pm.dispEnv && !p.dispEnv.includes('^' + pm.dispEnv + '^')) { return false; }

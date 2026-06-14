@@ -262,8 +262,11 @@ window.Faq = {
         <div v-if="!faqs.length" style="text-align:center;padding:48px 0;color:var(--text-muted);font-size:0.9rem;">
           {{ uiState.loading ? '불러오는 중...' : '해당 분류의 FAQ가 없습니다.' }}
         </div>
-        <div v-for="faq in faqs" :key="faq.faqId" class="faq-item">
+        <div v-for="(faq, idx) in faqs" :key="faq.faqId" class="faq-item">
           <button class="faq-question" @click="handleSelectAction('faqs-rowToggle', faq.faqId)">
+            <span style="flex-shrink:0;margin-right:12px;min-width:24px;text-align:right;font-size:0.85rem;font-weight:700;color:var(--text-muted);">
+              {{ (pager.pageNo - 1) * pager.pageSize + idx + 1 }}
+            </span>
             <span style="flex:1;">
               {{ faq.q }}
             </span>

@@ -729,7 +729,7 @@ window.OrderPickModal = {
     const { reactive, computed, watch } = Vue;
     const showToast = window.foApp.showToast;
 
-    const _ymd = (d) => { const z = n => String(n).padStart(2, '0'); return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}`; };
+    const _ymd = (d) => coUtil.cofToYmd(d);   // Date → 'YYYY-MM-DD' (coUtil 위임)
     const _today = new Date();
     const _yearAgo = new Date(); _yearAgo.setFullYear(_yearAgo.getFullYear() - 1);
 

@@ -42,8 +42,8 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
   /* ── 주문 ── */
   const orders = reactive([]);
 
-  /* _fmtDate — LocalDateTime/ISO 문자열 → 'YYYY-MM-DD' (값 없으면 빈 문자열) */
-  const _fmtDate = v => (v ? String(v).slice(0, 10) : '');
+  /* _fmtDate — LocalDateTime/ISO 문자열 → 'YYYY-MM-DD' (coUtil.cofYmd 위임) */
+  const _fmtDate = v => coUtil.cofYmd(v);
 
   /* _orderStatusKor — 백엔드 주문상태(코드/라벨) → 화면 흐름(ORDER_FLOW) 한글 status 로 정규화.
      orderStatusCdNm 이 이미 한글이면 그대로, 코드값이면 맵으로 변환. */

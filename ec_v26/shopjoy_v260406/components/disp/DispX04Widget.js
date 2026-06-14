@@ -70,9 +70,8 @@ window.DispX04Widget = {
         if (pm.date) {
           const t  = pm.time || '00:00';
           const dt = `${pm.date}T${t}`;
-          const _norm = v => String(v || '').replace(' ', 'T').slice(0, 16);
-          if (w.dispStartDt && dt < _norm(w.dispStartDt)) { return false; }
-          if (w.dispEndDt   && dt > _norm(w.dispEndDt)) { return false; }
+          if (w.dispStartDt && dt < coUtil.cofDatetimeNorm(w.dispStartDt)) { return false; }
+          if (w.dispEndDt   && dt > coUtil.cofDatetimeNorm(w.dispEndDt)) { return false; }
         }
 
         // ✓ 전시환경 체크 (panel item 레벨)
