@@ -94,6 +94,7 @@ window.Faq = {
         const list = res.data?.data || [];
         faqs.splice(0, faqs.length, ...list.map(f => ({
           faqId: f.faqId, q: f.faqQuestion, a: f.faqAnswer,
+          attachGrpId: f.answerAttachGrpId || null,
           pathId: f.pathId != null ? String(f.pathId) : '', cate: f.pathLabel || '',
         })));
       } catch (err) {
@@ -240,7 +241,16 @@ window.Faq = {
             </span>
           </button>
           <div v-show="uiState.openFaq===faq.faqId" class="faq-answer">
-            {{ faq.a }}
+            <div v-if="faq.a" class="faq-answer-html" v-html="faq.a"></div>
+            <!-- 답변 첨부파일 -->
+            <div v-if="faq.attachGrpId" style="margin-top:12px;padding-top:10px;border-top:1px dashed var(--border);">
+              <div style="font-size:0.78rem;font-weight:600;color:var(--text-muted);margin-bottom:6px;">
+                📎 첨부파일
+              </div>
+              <base-attach-grp :model-value="faq.attachGrpId" :ref-id="'FAQ-' + faq.faqId"
+                grp-code="FAQ_ANSWER_ATTACH" grp-nm="FAQ 답변 첨부파일"
+                display-mode="list" :readonly="true" />
+            </div>
           </div>
         </div>
       </fo-container>

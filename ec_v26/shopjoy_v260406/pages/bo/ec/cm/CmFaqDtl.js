@@ -22,9 +22,12 @@ window.CmFaqDtl = {
     const cfIsNew = computed(() => props.dtlId === null || props.dtlId === undefined);
     const cfSiteNm = computed(() => boUtil.bofGetSiteNm());
     const cfDtlMode = computed(() => props.dtlMode === 'view'); // view=읽기전용
+    // 첨부 ref-id: 신규는 빈값(저장 후 부여), 기존은 FAQ-{faqId}
+    const cfAttachRefId = computed(() => props.dtlId ? ('FAQ-' + props.dtlId) : '');
 
     const form = reactive({
       faqId: null, pathId: null, faqQuestion: '', faqAnswer: '',
+      answerAttachGrpId: null,
       sortOrd: '', useYn: '',
     });
     // 신규 진입 시에만 채울 기본값
@@ -172,7 +175,7 @@ window.CmFaqDtl = {
         onOpen: () => handleBtnAction('pathModal-open') },
       { key: 'useYn',       label: '노출여부',  type: 'select', options: () => codes.use_yn },
       { key: 'faqQuestion', label: '질문',      type: 'text', required: true, colSpan: 3, placeholder: '질문을 입력하세요' },
-      { key: 'faqAnswer',   label: '답변',      type: 'textarea', colSpan: 3, rowSpan: 2, placeholder: '답변을 입력하세요' },
+      { key: 'faqAnswer',   label: '답변',      type: 'slot', name: 'answer', colSpan: 3 },
       { key: 'sortOrd',     label: '정렬순서',  type: 'number', min: 1 },
     ];
 
@@ -182,7 +185,8 @@ window.CmFaqDtl = {
       columns,
       form, errors, pathPickModal,
       handleBtnAction, handleSelectAction, fnCallbackModal,
-      cfIsNew, cfDtlMode,
+      cfIsNew, cfDtlMode, cfAttachRefId,
+      showToast,
     };
   },
   template: /* html */`
@@ -190,11 +194,35 @@ window.CmFaqDtl = {
   :title-id="!active ? '' : (cfIsNew ? '' : form.faqId)">
   <!-- ===== ■.■. 폼 영역 ================================================== -->
   <bo-form-area :columns="columns.baseForm" :form="form" :errors="errors"
-    :readonly="cfDtlMode" :cols="3" compact :show-actions="active"
-    @save="handleBtnAction('form-save')"
-    @cancel="handleBtnAction('form-cancel')"
-    @edit="handleBtnAction('form-edit')"
-    @close="handleBtnAction('form-close')" />
+    :readonly="cfDtlMode" :cols="3" compact :show-actions="false">
+    <!-- 답변 (HtmlEditor 또는 view 모드 HTML) -->
+    <template #answer>
+      <div v-if="cfDtlMode" class="form-control" style="min-height:160px;line-height:1.6;overflow:auto;">
+        <div v-if="form.faqAnswer" v-html="form.faqAnswer"></div>
+        <span v-else style="color:#bbb;">-</span>
+      </div>
+      <base-html-editor v-else v-model="form.faqAnswer" height="260px" />
+    </template>
+  </bo-form-area>
+  <!-- ===== ■.■. 답변 첨부파일 ============================================== -->
+  <div class="form-group" style="margin-top:12px;">
+    <label class="form-label">답변 첨부파일</label>
+    <base-attach-grp :model-value="form.answerAttachGrpId" @update:model-value="form.answerAttachGrpId = $event"
+      :ref-id="cfAttachRefId" :show-toast="showToast" :readonly="cfDtlMode"
+      grp-code="FAQ_ANSWER_ATTACH" grp-nm="FAQ 답변 첨부파일"
+      :max-count="5" :max-size-mb="10" allow-ext="jpg,png,gif,pdf,xlsx,docx" />
+  </div>
+  <!-- ===== ■.■. 폼 액션 (행 선택/신규 시에만 노출) ============================ -->
+  <div class="form-actions" v-if="active">
+    <template v-if="cfDtlMode">
+      <button class="btn btn_edit"  @click="handleBtnAction('form-edit')">수정</button>
+      <button class="btn btn_close" @click="handleBtnAction('form-close')">닫기</button>
+    </template>
+    <template v-else>
+      <button class="btn btn_save"   @click="handleBtnAction('form-save')">저장</button>
+      <button class="btn btn_cancel" @click="handleBtnAction('form-cancel')">취소</button>
+    </template>
+  </div>
   <!-- ===== ■. 표시경로 선택 모달 ============================================== -->
   <path-pick-modal v-if="pathPickModal.show" biz-cd="cm_faq"
     :value="form.pathId"

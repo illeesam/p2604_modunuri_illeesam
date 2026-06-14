@@ -16,12 +16,17 @@ import com.shopjoy.ecadminapi.base.ec.cm.repository.qrydsl.QCmFaqRepository;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSyPath;
 import com.shopjoy.ecadminapi.base.sy.data.entity.QSySite;
 import com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /** CmFaq QueryDSL Custom 구현체 */
@@ -30,6 +35,10 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
 
     private final JPAQueryFactory queryFactory;
     private final SyPathRepository syPathRepository;
+
+    @PersistenceContext
+    private EntityManager em;
+
     private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmFaqRepositoryImpl";
     private static final QCmFaq  cmFaq  = QCmFaq.cmFaq;
     private static final QSySite sySite = QSySite.sySite;
@@ -40,6 +49,7 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
         return queryFactory
                 .select(Projections.bean(CmFaqDto.Item.class,
                         cmFaq.faqId, cmFaq.siteId, cmFaq.pathId, cmFaq.faqQuestion, cmFaq.faqAnswer,
+                        cmFaq.answerAttachGrpId,
                         cmFaq.sortOrd, cmFaq.useYn, cmFaq.viewCount,
                         cmFaq.regBy, cmFaq.regDate, cmFaq.updBy, cmFaq.updDate,
                         sySite.siteNm.as("siteNm"),
@@ -215,6 +225,7 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
         if (entity.getPathId()      != null) { update.set(cmFaq.pathId,      entity.getPathId());      hasAny = true; }
         if (entity.getFaqQuestion() != null) { update.set(cmFaq.faqQuestion, entity.getFaqQuestion()); hasAny = true; }
         if (entity.getFaqAnswer()   != null) { update.set(cmFaq.faqAnswer,   entity.getFaqAnswer());   hasAny = true; }
+        if (entity.getAnswerAttachGrpId() != null) { update.set(cmFaq.answerAttachGrpId, entity.getAnswerAttachGrpId()); hasAny = true; }
         if (entity.getSortOrd()     != null) { update.set(cmFaq.sortOrd,     entity.getSortOrd());     hasAny = true; }
         if (entity.getUseYn()       != null) { update.set(cmFaq.useYn,       entity.getUseYn());       hasAny = true; }
         if (entity.getViewCount()   != null) { update.set(cmFaq.viewCount,   entity.getViewCount());   hasAny = true; }
@@ -226,5 +237,79 @@ public class QCmFaqRepositoryImpl implements QCmFaqRepository {
 
         long affected = update.where(cmFaq.faqId.eq(entity.getFaqId())).execute();
         return (int) affected;
+    }
+
+    /* selectPathTreeFaqCnts — 표시경로 노드별 FAQ 수 (검색조건 + 자손 누적, 트리 우측 뱃지용).
+     *   결과: { pathId: cnt, '__total__': 전체, '__orphan__': path 없음 } */
+    @Override
+    public List<Map<String, Object>> selectPathTreeFaqCnts(CmFaqDto.Request search) {
+        StringBuilder sql = new StringBuilder();
+        Map<String, Object> params = new LinkedHashMap<>();
+
+        sql.append("/* " + QRY_SRC + " :: selectPathTreeFaqCnts() */\n");
+        sql.append("""
+                WITH RECURSIVE descendants /* 각 path 의 자손 path_id (자신 포함, biz_cd 한정) */ AS (
+                    SELECT path_id AS root_id, path_id AS leaf_id
+                    FROM sy_path
+                    WHERE biz_cd = :bizCd
+                    UNION ALL
+                    SELECT d.root_id, c.path_id
+                    FROM descendants d
+                    JOIN sy_path c ON c.parent_path_id = d.leaf_id
+                    WHERE c.biz_cd = :bizCd
+                ),
+                filtered /* 검색조건이 적용된 행 */ AS (
+                    SELECT faq_id, path_id
+                    FROM cm_faq t
+                    WHERE 1=1
+                """);
+        params.put("bizCd", "cm_faq");
+
+        /* 검색조건 — siteId/useYn/searchValue */
+        if (search != null && StringUtils.hasText(search.getSiteId())) {
+            sql.append("      AND t.site_id = :siteId\n");
+            params.put("siteId", search.getSiteId());
+        }
+        if (search != null && StringUtils.hasText(search.getUseYn())) {
+            sql.append("      AND t.use_yn = :useYn\n");
+            params.put("useYn", search.getUseYn());
+        }
+        if (search != null && StringUtils.hasText(search.getSearchValue())) {
+            sql.append("      AND (t.faq_question LIKE :sv OR t.faq_answer LIKE :sv)\n");
+            params.put("sv", "%" + search.getSearchValue() + "%");
+        }
+
+        sql.append("""
+                )
+                  /* (1) 일반 path_id 행 : 노드 + 자손 누적 카운트 */
+                  SELECT d.root_id AS path_id, COUNT(t.faq_id) AS cnt
+                  FROM descendants d
+                    LEFT JOIN filtered t ON t.path_id = d.leaf_id
+                  GROUP BY d.root_id
+                UNION ALL
+                  /* (2) '__total__' : 트리 루트 "전체" 노드용 */
+                  SELECT '__total__' AS path_id, COUNT(*) AS cnt
+                  FROM filtered
+                UNION ALL
+                  /* (3) '__orphan__' : 경로 미지정(path_id IS NULL) 카운트 */
+                  SELECT '__orphan__' AS path_id, COUNT(*) AS cnt
+                  FROM filtered
+                  WHERE path_id IS NULL
+                """);
+
+        Query q = em.createNativeQuery(sql.toString());
+        params.forEach(q::setParameter);
+
+        @SuppressWarnings("unchecked")
+        List<Object[]> rows = (List<Object[]>) q.getResultList();
+
+        List<Map<String, Object>> result = new ArrayList<>(rows.size());
+        for (Object[] row : rows) {
+            Map<String, Object> m = new LinkedHashMap<>();
+            m.put("pathId", row[0] == null ? null : String.valueOf(row[0]));
+            m.put("cnt",    row[1] == null ? 0L   : ((Number) row[1]).longValue());
+            result.add(m);
+        }
+        return result;
     }
 }

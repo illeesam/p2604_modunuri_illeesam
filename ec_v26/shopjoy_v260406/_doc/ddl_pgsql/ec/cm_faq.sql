@@ -7,6 +7,7 @@ CREATE TABLE shopjoy_2604.cm_faq (
     path_id       VARCHAR(21) ,
     faq_question  VARCHAR(500) NOT NULL,
     faq_answer    TEXT,
+    answer_attach_grp_id VARCHAR(21),
     sort_ord      INTEGER      DEFAULT 0,
     use_yn        VARCHAR(1)   DEFAULT 'Y',
     view_count    INTEGER      DEFAULT 0,
@@ -21,7 +22,8 @@ COMMENT ON COLUMN shopjoy_2604.cm_faq.faq_id IS 'FAQ ID (YYMMDDhhmmss+rand4)';
 COMMENT ON COLUMN shopjoy_2604.cm_faq.site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.cm_faq.path_id IS 'FAQ 분류 표시경로 (sy_path.path_id, biz_cd=cm_faq)';
 COMMENT ON COLUMN shopjoy_2604.cm_faq.faq_question IS '질문';
-COMMENT ON COLUMN shopjoy_2604.cm_faq.faq_answer IS '답변';
+COMMENT ON COLUMN shopjoy_2604.cm_faq.faq_answer IS '답변(HTML)';
+COMMENT ON COLUMN shopjoy_2604.cm_faq.answer_attach_grp_id IS '답변 첨부파일그룹ID (sy_attach_grp.attach_grp_id, grp_code=FAQ_ANSWER_ATTACH)';
 COMMENT ON COLUMN shopjoy_2604.cm_faq.sort_ord IS '정렬순서';
 COMMENT ON COLUMN shopjoy_2604.cm_faq.use_yn IS '노출여부 Y/N';
 COMMENT ON COLUMN shopjoy_2604.cm_faq.view_count IS '조회수';

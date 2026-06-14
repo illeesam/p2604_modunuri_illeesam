@@ -4,6 +4,7 @@ import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmFaqDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmFaq;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public interface QCmFaqRepository {
@@ -11,4 +12,5 @@ public interface QCmFaqRepository {
     List<CmFaqDto.Item> selectList(CmFaqDto.Request search);
     CmFaqDto.PageResponse selectPageData(CmFaqDto.Request search);
     int updateSelective(CmFaq entity);
+    List<Map<String, Object>> selectPathTreeFaqCnts(CmFaqDto.Request search);
 }

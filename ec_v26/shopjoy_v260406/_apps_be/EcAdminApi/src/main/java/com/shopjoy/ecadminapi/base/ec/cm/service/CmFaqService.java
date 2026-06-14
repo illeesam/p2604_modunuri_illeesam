@@ -150,4 +150,9 @@ public class CmFaqService {
         em.flush();
         em.clear();
     }
+
+    /** getPathTreeNodeCounts — 표시경로 노드별 FAQ 수 (검색조건 + 자손 누적, 트리 우측 뱃지용) */
+    public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(CmFaqDto.Request req) {
+        return cmFaqRepository.selectPathTreeFaqCnts(req);
+    }
 }

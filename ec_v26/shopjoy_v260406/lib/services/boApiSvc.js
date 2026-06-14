@@ -45,6 +45,7 @@
 
   /* ── cm: FAQ ────────────────────────────────────────────────── */
   boApiSvc.cmFaq = {
+    getPathTreeNodeCounts(params, uiNm, cmdNm) { return global.boApi.get('/bo/ec/cm/faq/path-counts', { params, ...hdr(uiNm, cmdNm) }); },
     getPage(params, uiNm, cmdNm)   { return global.boApi.get(   '/bo/ec/cm/faq/page', { params, ...hdr(uiNm, cmdNm) }); },
     getById(_id, uiNm, cmdNm)      { return chkId(_id, uiNm, cmdNm) || global.boApi.get(   `/bo/ec/cm/faq/${_id}`, hdr(uiNm, cmdNm)); },
     create(body, uiNm, cmdNm)      { return global.boApi.post(  '/bo/ec/cm/faq', body, hdr(uiNm, cmdNm)); },

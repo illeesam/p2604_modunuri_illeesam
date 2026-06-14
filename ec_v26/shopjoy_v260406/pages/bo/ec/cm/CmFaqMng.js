@@ -113,6 +113,20 @@ window.CmFaqMng = {
       } finally {
         uiState.loading = false;
       }
+      handleLoadPathCounts();
+    };
+
+    /* handleLoadPathCounts — 좌 트리 노드별 카운트 (검색조건 동기, 백엔드 재귀 CTE / 자손 누적) */
+    const handleLoadPathCounts = async () => {
+      try {
+        /* 카운트는 선택 노드와 무관하게 전체 트리용 — pathId 제외, 검색조건(useYn/검색어)만 반영 */
+        const params = { ...coUtil.cofOmitEmpty(searchParam) };
+        delete params.pathId;
+        const res = await boApiSvc.cmFaq.getPathTreeNodeCounts(params, '경로별카운트', '조회');
+        const rows = res.data?.data || [];
+        Object.keys(faqCounts).forEach(k => { delete faqCounts[k]; });
+        for (const r of rows) { if (r && r.pathId != null) faqCounts[r.pathId] = r.cnt; }
+      } catch (e) { console.error('[handleLoadPathCounts]', e); }
     };
 
     /* loadView — 인라인 패널 뷰 모드로 열기 (토글) */

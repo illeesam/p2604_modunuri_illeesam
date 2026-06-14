@@ -34,6 +34,12 @@ public class BoCmFaqController {
         return ResponseEntity.ok(ApiResponse.ok(boCmFaqService.getList(req)));
     }
 
+    /* 표시경로 노드별 FAQ 수 (자손 누적, 트리 우측 뱃지용) */
+    @GetMapping("/path-counts")
+    public ResponseEntity<ApiResponse<List<java.util.Map<String, Object>>>> pathCounts(@Valid @ModelAttribute CmFaqDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(boCmFaqService.getPathTreeNodeCounts(req)));
+    }
+
     /* 페이지조회 */
     @GetMapping("/page")
     public ResponseEntity<ApiResponse<CmFaqDto.PageResponse>> page(@Valid @ModelAttribute CmFaqDto.Request req) {

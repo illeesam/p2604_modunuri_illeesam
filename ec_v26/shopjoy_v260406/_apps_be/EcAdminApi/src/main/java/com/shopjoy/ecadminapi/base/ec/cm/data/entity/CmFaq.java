@@ -33,9 +33,13 @@ public class CmFaq extends BaseEntity {
     @Column(name = "faq_question", length = 500, nullable = false)
     private String faqQuestion;
 
-    @Comment("답변")
+    @Comment("답변(HTML)")
     @Column(name = "faq_answer", columnDefinition = "TEXT")
     private String faqAnswer;
+
+    @Comment("답변 첨부파일그룹ID (sy_attach_grp.attach_grp_id, grp_code=FAQ_ANSWER_ATTACH)")
+    @Column(name = "answer_attach_grp_id", length = 21)
+    private String answerAttachGrpId;
 
     @Comment("정렬순서")
     @Column(name = "sort_ord")

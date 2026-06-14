@@ -30,4 +30,7 @@ public class BoCmFaqService {
     @Transactional public CmFaq update(String id, CmFaq body) { return cmFaqService.update(id, body); }
     @Transactional public void delete(String id) { cmFaqService.delete(id); }
     @Transactional public void saveListBase(List<CmFaq> rows) { cmFaqService.saveListBase(rows); }
+
+    /* 표시경로 노드별 카운트 */
+    public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(CmFaqDto.Request req) { return cmFaqService.getPathTreeNodeCounts(req); }
 }

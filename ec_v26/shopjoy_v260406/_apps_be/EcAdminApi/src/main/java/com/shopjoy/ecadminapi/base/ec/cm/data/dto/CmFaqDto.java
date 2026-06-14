@@ -32,6 +32,7 @@ public class CmFaqDto {
         private String pathId;
         private String faqQuestion;
         private String faqAnswer;
+        private String answerAttachGrpId;
         private Integer sortOrd;
         private String useYn;
         private Integer viewCount;
