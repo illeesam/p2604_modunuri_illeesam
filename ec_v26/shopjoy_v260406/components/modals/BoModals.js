@@ -226,7 +226,7 @@ window.SiteSelectModal = {
         {{ cfSiteNm }}
       </span>
       <span style="display:inline-block;width:16px;height:16px;border-radius:50%;background:#e5e7eb;color:#555;font-size:11px;text-align:center;line-height:16px;margin-left:8px;cursor:help;font-weight:700;"
-        :title="'사이트번호 : 프로그램 작업코드 (01, 02, 03…)\n사이트코드 : 라이선스코드 (ST0001 형식)'">
+        :title="['사이트번호 : 프로그램 작업코드 (01, 02, 03…)','사이트코드 : 라이선스코드 (ST0001 형식)'].join(String.fromCharCode(10))">
         ?
       </span>
     </span>

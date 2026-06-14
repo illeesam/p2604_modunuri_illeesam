@@ -399,7 +399,7 @@ window.SyUserLoginHist = {
   template: /* html */`
 <bo-page title="사용자로그인이력"
   desc-summary="관리자 사용자의 로그인 로그·토큰 생애주기(발급·갱신·폐기·만료)를 조회합니다."
-  :desc-detail="'• 로그인 로그: syh_user_login_log — 로그인 시도·결과·IP·디바이스·x-헤더\n• 토큰 이력: syh_user_token_log — 토큰 액션 (ISSUE발급/REFRESH갱신/REVOKE폐기/EXPIRE만료)\n• 행 클릭 → 상세정보 펼치기 (x-헤더 포함)\n• 이상 로그인(외부IP/연속실패/REVOKE)은 보안 담당자에게 즉시 보고하세요.'">
+  :desc-detail="['• 로그인 로그: syh_user_login_log — 로그인 시도·결과·IP·디바이스·x-헤더','• 토큰 이력: syh_user_token_log — 토큰 액션 (ISSUE발급/REFRESH갱신/REVOKE폐기/EXPIRE만료)','• 행 클릭 → 상세정보 펼치기 (x-헤더 포함)','• 이상 로그인(외부IP/연속실패/REVOKE)은 보안 담당자에게 즉시 보고하세요.'].join(String.fromCharCode(10))">
   <!-- ===== ■. 검색 ====================================================== -->
   <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
