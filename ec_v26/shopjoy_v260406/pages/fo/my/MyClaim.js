@@ -183,6 +183,24 @@ window.MyClaim = {
       handleSearchData();
     });
 
+    /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더) ############################### */
+
+    /* fnClaimStepCount — 클레임 유형/단계별 건수 (템플릿 속성값 && 회피용 헬퍼) */
+    const fnClaimStepCount = (claimType, step) => claims.value.filter(c => c.type === claimType && c.status === step).length;
+
+    /* fnShowPickupTrack — 수거완료 단계 운송장 추적 버튼 노출 여부 */
+    const fnShowPickupTrack = (c, step) => {
+      if (!c.trackingNo || step !== '수거완료') { return false; }
+      const flows = myStore.CLAIM_FLOWS[c.type];
+      return flows.indexOf(c.status) >= flows.indexOf('수거완료');
+    };
+    /* fnShowShipTrack — 발송완료 단계 운송장 추적 버튼 노출 여부 */
+    const fnShowShipTrack = (c, step) => {
+      if (!c.exchangeTrackingNo || step !== '발송완료') { return false; }
+      const flows = myStore.CLAIM_FLOWS[c.type];
+      return flows.indexOf(c.status) >= flows.indexOf('발송완료');
+    };
+
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
@@ -191,7 +209,7 @@ window.MyClaim = {
       pager, paginate, cfDateFilteredClaims, claimStatusFilter,
       onSearch,
       // ===== shared (헬퍼) ====================================================
-      cfAuthUser, findProd,
+      cfAuthUser, findProd, fnClaimStepCount, fnShowPickupTrack, fnShowShipTrack,
     };
   },
   template: /* html */ `
@@ -232,12 +250,12 @@ window.MyClaim = {
         </span>
         <!-- ===== ■.■.■.■. 흐름 단계 ============================================= -->
         <template v-for="(step, si) in myStore.CLAIM_FLOWS[claimType]" :key="step">
-          <button @click="claims.filter(c=>c.type===claimType&&c.status===step).length>0 && handleSelectAction('claims-statusToggle', step)" style="display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;border:1.5px solid transparent;white-space:nowrap;flex-shrink:0;transition:all 0.15s;" :style="claimStatusFilter.includes(step) ? 'background:var(--blue);border-color:var(--blue);cursor:pointer;' : claims.filter(c=>c.type===claimType&&c.status===step).length>0 ? 'background:var(--bg-base);border-color:var(--border);cursor:pointer;' : 'background:var(--bg-card);border-color:#e5e7eb;cursor:default;opacity:0.72;'">
-          <span style="font-size:0.7rem;font-weight:600;" :style="claimStatusFilter.includes(step) ? 'color:#fff;' : claims.filter(c=>c.type===claimType&&c.status===step).length>0 ? 'color:var(--text-primary);' : 'color:#9ca3af;'">
+          <button @click="fnClaimStepCount(claimType, step)>0 ? handleSelectAction('claims-statusToggle', step) : null" style="display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;border:1.5px solid transparent;white-space:nowrap;flex-shrink:0;transition:all 0.15s;" :style="claimStatusFilter.includes(step) ? 'background:var(--blue);border-color:var(--blue);cursor:pointer;' : fnClaimStepCount(claimType, step)>0 ? 'background:var(--bg-base);border-color:var(--border);cursor:pointer;' : 'background:var(--bg-card);border-color:#e5e7eb;cursor:default;opacity:0.72;'">
+          <span style="font-size:0.7rem;font-weight:600;" :style="claimStatusFilter.includes(step) ? 'color:#fff;' : fnClaimStepCount(claimType, step)>0 ? 'color:var(--text-primary);' : 'color:#9ca3af;'">
           {{ step }}
         </span>
-        <span style="font-size:0.65rem;font-weight:800;padding:0px 5px;border-radius:8px;" :style="claimStatusFilter.includes(step) ? 'background:rgba(255,255,255,0.25);color:#fff;' : claims.filter(c=>c.type===claimType&&c.status===step).length>0 ? 'background:var(--blue-dim);color:var(--blue);' : 'color:#9ca3af;'">
-        {{ claims.filter(c=>c.type===claimType&&c.status===step).length || 0 }}
+        <span style="font-size:0.65rem;font-weight:800;padding:0px 5px;border-radius:8px;" :style="claimStatusFilter.includes(step) ? 'background:rgba(255,255,255,0.25);color:#fff;' : fnClaimStepCount(claimType, step)>0 ? 'background:var(--blue-dim);color:var(--blue);' : 'color:#9ca3af;'">
+        {{ fnClaimStepCount(claimType, step) || 0 }}
       </span>
     </button>
     <span v-if="si < myStore.CLAIM_FLOWS[claimType].length-1"
@@ -323,10 +341,10 @@ window.MyClaim = {
               : 'color:var(--text-muted);'">
             {{ step }}
           </div>
-          <button v-if="c.trackingNo && step==='수거완료' && myStore.CLAIM_FLOWS[c.type].indexOf(c.status) >= myStore.CLAIM_FLOWS[c.type].indexOf('수거완료')" @click.stop="handleSelectAction('claims-track', { courier: c.courier, trackingNo: c.trackingNo })" style="margin-top:4px;padding:2px 6px;border-radius:4px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;cursor:pointer;font-size:0.6rem;font-weight:700;white-space:nowrap;">
+          <button v-if="fnShowPickupTrack(c, step)" @click.stop="handleSelectAction('claims-track', { courier: c.courier, trackingNo: c.trackingNo })" style="margin-top:4px;padding:2px 6px;border-radius:4px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;cursor:pointer;font-size:0.6rem;font-weight:700;white-space:nowrap;">
           {{ (c.courier||'').replace('대한통운','').replace('택배','').replace('로지스','') }}수거
         </button>
-        <button v-if="c.exchangeTrackingNo && step==='발송완료' && myStore.CLAIM_FLOWS[c.type].indexOf(c.status) >= myStore.CLAIM_FLOWS[c.type].indexOf('발송완료')" @click.stop="handleSelectAction('claims-track', { courier: c.exchangeCourier, trackingNo: c.exchangeTrackingNo })" style="margin-top:3px;padding:2px 6px;border-radius:4px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;cursor:pointer;font-size:0.6rem;font-weight:700;white-space:nowrap;">
+        <button v-if="fnShowShipTrack(c, step)" @click.stop="handleSelectAction('claims-track', { courier: c.exchangeCourier, trackingNo: c.exchangeTrackingNo })" style="margin-top:3px;padding:2px 6px;border-radius:4px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;cursor:pointer;font-size:0.6rem;font-weight:700;white-space:nowrap;">
         {{ (c.exchangeCourier||'').replace('대한통운','').replace('택배','').replace('로지스','') }}발송
       </button>
     </div>
@@ -424,7 +442,7 @@ window.MyClaim = {
       {{ c.refundAmount.toLocaleString() }}원
     </span>
   </div>
-  <div v-if="c.refundDetails && c.refundDetails.length" style="margin-top:8px;padding:8px 10px;background:var(--bg-base);border-radius:7px;">
+  <div v-if="c.refundDetails?.length" style="margin-top:8px;padding:8px 10px;background:var(--bg-base);border-radius:7px;">
   <div style="font-size:0.68rem;font-weight:700;color:var(--text-muted);letter-spacing:0.04em;margin-bottom:5px;">
     💸 환불 내역
   </div>
@@ -444,7 +462,7 @@ window.MyClaim = {
     <span v-if="rd.account" style="color:var(--text-secondary);white-space:nowrap;">
       {{ rd.account }}
     </span>
-    <span v-if="rd.name && rd.type==='계좌환불'" style="color:var(--text-secondary);white-space:nowrap;">
+    <span v-if="rd.name ? rd.type==='계좌환불' : false" style="color:var(--text-secondary);white-space:nowrap;">
     · {{ rd.name }}
   </span>
   <span style="color:var(--text-muted);white-space:nowrap;flex-shrink:0;">

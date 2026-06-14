@@ -36,10 +36,10 @@ window.BlogEdit = {
         return handleSave();
       // 취소 — 블로그 목록 이동
       } else if (cmd === 'form-cancel') {
-        return cancel();
+        return handleCancel();
       // 이미지 추가
       } else if (cmd === 'form-addImage') {
-        return addImage();
+        return handleAddImage();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -50,7 +50,7 @@ window.BlogEdit = {
       console.log(' ■■ BlogEdit.js : handleSelectAction -> ', cmd, param);
       // 이미지 행 삭제 (param: imageId)
       if (cmd === 'form-rowRemoveImage') {
-        return removeImage(param);
+        return handleRemoveImage(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
@@ -123,18 +123,18 @@ window.BlogEdit = {
     };
 
     /* cancel — 취소 */
-    const cancel = () => props.navigate('blog');
+    const handleCancel = () => props.navigate('blog');
 
     /* 이미지 첨부 (목업) */
     const images = reactive([]);
 
     /* addImage — 추가 */
-    const addImage = () => {
+    const handleAddImage = () => {
       images.push({ id: Date.now(), name: 'image_' + (images.length + 1) + '.jpg', size: '1.2 MB' });
     };
 
     /* removeImage — 제거 */
-    const removeImage = (id) => { const idx = images.findIndex(img => img.id === id); if (idx !== -1) images.splice(idx, 1); };
+    const handleRemoveImage = (id) => { const idx = images.findIndex(img => img.id === id); if (idx !== -1) images.splice(idx, 1); };
 
     onMounted(() => {
       handleSearchDetail();
@@ -147,7 +147,7 @@ window.BlogEdit = {
       handleBtnAction, handleSelectAction, // dispatch
       cfIsEdit, form, errors, // 폼
       images,            // 데이터
-      handleSave, cancel, addImage, removeImage,                       // 이벤트 (호환)
+      handleSave, handleCancel, handleAddImage, handleRemoveImage,                       // 이벤트 (호환)
     };
   },
   template: /* html */ `

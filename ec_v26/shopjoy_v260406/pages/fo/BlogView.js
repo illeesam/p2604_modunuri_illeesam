@@ -26,7 +26,7 @@ window.BlogView = {
         return props.navigate('blog');
       // 댓글 등록
       } else if (cmd === 'comments-add') {
-        return addComment();
+        return handleAddComment();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -103,7 +103,7 @@ window.BlogView = {
     const cfAllComments   = computed(() => [...(cfPost.value.comments || []), ...localComments]);
 
     /* addComment — 추가 */
-    const addComment    = () => {
+    const handleAddComment = () => {
       const t = searchParam.commentText.trim();
       if (!t) { return; }
       localComments.push({ id: Date.now(), author: '홍길동', date: new Date().toISOString().slice(0,10).replace(/-/g,'.'), text: t });
@@ -240,7 +240,7 @@ window.BlogView = {
         </div>
       </div>
       <!-- ===== ■.■.■. 첨부 파일 =============================================== -->
-      <div v-if="cfPost.files && cfPost.files.length" style="margin-bottom:36px;">
+      <div v-if="cfPost.files?.length" style="margin-bottom:36px;">
       <h3 style="font-size:0.95rem;font-weight:700;color:var(--text-primary);margin-bottom:14px;">
         첨부 ({{ cfPost.files.length }})
       </h3>

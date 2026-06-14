@@ -95,7 +95,7 @@ window.Login = {
         return;
       // 전체 약관 토글
       } else if (cmd === 'form-toggleAllTerms') {
-        return toggleAll();
+        return handleToggleAll();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -292,7 +292,7 @@ window.Login = {
     const terms = reactive({ all: false, t1: false, t2: false, t3: false, t4: false });
 
     /* toggleAll — 전체 토글 */
-    const toggleAll = () => { terms.t1 = terms.t2 = terms.t3 = terms.t4 = terms.all; };
+    const handleToggleAll = () => { terms.t1 = terms.t2 = terms.t3 = terms.t4 = terms.all; };
 
     watch(() => [terms.t1, terms.t2, terms.t3, terms.t4], () => {
       terms.all = terms.t1 && terms.t2 && terms.t3 && terms.t4;
@@ -688,7 +688,7 @@ window.Login = {
         <button @click="handleBtnAction('tab-step', 'login')" class="btn-outline" style="flex:1;padding:12px;">
           이전
         </button>
-        <button @click="handleBtnAction('tab-nextFromTerms')" :disabled="!(terms.t1&&terms.t2&&terms.t3)" class="btn-blue" style="flex:2;padding:12px;" :style="!(terms.t1&&terms.t2&&terms.t3)?'opacity:0.5;cursor:not-allowed;':''">
+        <button @click="handleBtnAction('tab-nextFromTerms')" :disabled="!([terms.t1,terms.t2,terms.t3].every(Boolean))" class="btn-blue" style="flex:2;padding:12px;" :style="!([terms.t1,terms.t2,terms.t3].every(Boolean))?'opacity:0.5;cursor:not-allowed;':''">
         다음
       </button>
     </div>
@@ -721,7 +721,7 @@ window.Login = {
             {{ sf.emailVerified ? '✓ 인증됨' : '코드 발송' }}
           </button>
         </div>
-        <div v-if="sf.emailSent && !sf.emailVerified" style="display:flex;gap:8px;margin-top:8px;">
+        <div v-if="sf.emailSent ? !sf.emailVerified : false" style="display:flex;gap:8px;margin-top:8px;">
         <input v-model="sf.emailCode" type="text" placeholder="인증코드 6자리"
               style="flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.9rem;outline:none;">
         <button @click="handleBtnAction('form-verifyEmail')" style="padding:10px 14px;border:none;border-radius:8px;background:var(--blue);color:#fff;cursor:pointer;font-size:0.82rem;font-weight:600;">
@@ -743,7 +743,7 @@ window.Login = {
           {{ sf.phoneVerified ? '✓ 인증됨' : '코드 발송' }}
         </button>
       </div>
-      <div v-if="sf.phoneSent && !sf.phoneVerified" style="display:flex;gap:8px;margin-top:8px;">
+      <div v-if="sf.phoneSent ? !sf.phoneVerified : false" style="display:flex;gap:8px;margin-top:8px;">
       <input v-model="sf.phoneCode" type="text" placeholder="인증코드 6자리"
               style="flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.9rem;outline:none;">
       <button @click="handleBtnAction('form-verifyPhone')" style="padding:10px 14px;border:none;border-radius:8px;background:var(--blue);color:#fff;cursor:pointer;font-size:0.82rem;font-weight:600;">
@@ -844,7 +844,7 @@ window.Login = {
           {{ uiState.snsPhoneVerified ? '✓ 인증됨' : '코드 발송' }}
         </button>
       </div>
-      <div v-if="uiState.snsPhoneCodeSent && !uiState.snsPhoneVerified" style="display:flex;gap:8px;margin-top:8px;">
+      <div v-if="uiState.snsPhoneCodeSent ? !uiState.snsPhoneVerified : false" style="display:flex;gap:8px;margin-top:8px;">
       <input v-model="uiState.snsPhoneCode" type="text" placeholder="인증코드 6자리"
               style="flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:0.9rem;outline:none;">
       <button @click="handleBtnAction('form-verifySnsPhone')" style="padding:10px 14px;border:none;border-radius:8px;background:var(--blue);color:#fff;cursor:pointer;font-size:0.82rem;font-weight:600;">

@@ -734,7 +734,7 @@ window.XsSample14 = {
         <span v-if="userNm" style="font-size:11px;color:#555;">
           {{ userNm }}
         </span>
-        <span v-if="isLoggedIn && userGrade" style="font-size:11px;background:#e3f2fd;color:#1565c0;border-radius:6px;padding:1px 7px;">
+        <span v-if="isLoggedIn ? userGrade : false" style="font-size:11px;background:#e3f2fd;color:#1565c0;border-radius:6px;padding:1px 7px;">
         등급: {{ userGrade }}
       </span>
       <span style="font-size:11px;color:#aaa;">
@@ -964,7 +964,7 @@ window.XsSample14 = {
                 <template v-if="GRID_COLS[activeTab]">
                   <div @click="closeSpanPopup" :style="{ display:'grid', gridTemplateColumns: cfAutoGridColumns, gap: '8px' }">
                     <template v-for="(cell, ci) in gridCells[activeTab]" :key="ci">
-                      <div v-if="!showRealContent || cell.widget" @dragover.prevent="dropZoneIdx=ci" @dragleave="dropZoneIdx=-1" @drop="onCellDrop(activeTab, ci, $event)" :style="[ cell.widget ? (showRealContent ? 'border:none;background:transparent;min-height:0;' : 'border:1px solid #e0e0e0;background:#fff;min-height:130px;') : dropZoneIdx===ci ? 'border:2px dashed #1a73e8;background:#e8f0fe;min-height:60px;' : 'border:2px dashed #e0e0e0;background:#fafafa;min-height:60px;', cell.widget && (cell.colSpan||1) > 1 ? { gridColumn: 'span ' + (cell.colSpan||1) } : {}, cell.widget && (cell.rowSpan||1) > 1 ? { gridRow: 'span ' + (cell.rowSpan||1) } : {}, ]" style="border-radius:8px;overflow:hidden;transition:border .15s,background .15s;position:relative;">
+                      <div v-if="!showRealContent || cell.widget" @dragover.prevent="dropZoneIdx=ci" @dragleave="dropZoneIdx=-1" @drop="onCellDrop(activeTab, ci, $event)" :style="[ cell.widget ? (showRealContent ? 'border:none;background:transparent;min-height:0;' : 'border:1px solid #e0e0e0;background:#fff;min-height:130px;') : dropZoneIdx===ci ? 'border:2px dashed #1a73e8;background:#e8f0fe;min-height:60px;' : 'border:2px dashed #e0e0e0;background:#fafafa;min-height:60px;', (cell.widget ? (cell.colSpan||1) > 1 : false) ? { gridColumn: 'span ' + (cell.colSpan||1) } : {}, (cell.widget ? (cell.rowSpan||1) > 1 : false) ? { gridRow: 'span ' + (cell.rowSpan||1) } : {}, ]" style="border-radius:8px;overflow:hidden;transition:border .15s,background .15s;position:relative;">
                       <!-- ===== ■.■.■.■.■.■.■.■.■.■. 위젯 있음 ================================= -->
                       <template v-if="cell.widget">
                         <!-- ===== ■.■.■.■.■.■.■.■.■.■.■. 관리자 헤더 (실제컨텐츠 OFF 시) ================ -->
@@ -1318,7 +1318,7 @@ window.XsSample14 = {
               </div>
             </div>
             <!-- ===== ■.■.■.■.■. 위젯 아이템 ========================================== -->
-            <div v-for="(item, idx) in dashItems" :key="idx" style="position:absolute;background:#fff;border-radius:8px;overflow:hidden;user-select:none;box-shadow:0 2px 10px rgba(0,0,0,.1);" :style="{ left:item.x+'px', top:item.y+'px', width:item.w+'px', height:item.h+'px', border:(dashDrag.on&&dashDrag.idx===idx)||(dashResize.on&&dashResize.idx===idx)?'2px solid #1a73e8':'1px solid #e0e0e0', zIndex:(dashDrag.on&&dashDrag.idx===idx)||(dashResize.on&&dashResize.idx===idx)?10:1, cursor:dashDrag.on&&dashDrag.idx===idx?'grabbing':'grab' }" @mousedown="onDashItemMd(idx, $event)">
+            <div v-for="(item, idx) in dashItems" :key="idx" style="position:absolute;background:#fff;border-radius:8px;overflow:hidden;user-select:none;box-shadow:0 2px 10px rgba(0,0,0,.1);" :style="{ left:item.x+'px', top:item.y+'px', width:item.w+'px', height:item.h+'px', border:(dashDrag.on?dashDrag.idx===idx:false)||(dashResize.on?dashResize.idx===idx:false)?'2px solid #1a73e8':'1px solid #e0e0e0', zIndex:(dashDrag.on?dashDrag.idx===idx:false)||(dashResize.on?dashResize.idx===idx:false)?10:1, cursor:(dashDrag.on?dashDrag.idx===idx:false)?'grabbing':'grab' }" @mousedown="onDashItemMd(idx, $event)">
             <!-- ===== ■.■.■.■.■.■. 타이틀 바 ========================================= -->
             <div :style="'height:28px;background:'+wColor(item.widget.widgetType)+';display:flex;align-items:center;padding:0 8px;gap:6px;cursor:grab;'">
               <span style="font-size:12px;">
@@ -1587,7 +1587,7 @@ window.XsSample14 = {
   <div v-if="popoverKey" @click="closePopover" style="position:fixed;inset:0;z-index:199;">
   </div>
   <!-- ===== ■. 위젯 정보 팝오버 =============================================== -->
-  <div v-if="popoverKey && popoverWidget" style="position:fixed;z-index:200;background:#fff;border:1px solid #e0e0e0;border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,.16);width:300px;max-height:460px;overflow-y:auto;" :style="{ top: popoverPos.top + 'px', left: popoverPos.left + 'px' }">
+  <div v-if="popoverKey ? popoverWidget : false" style="position:fixed;z-index:200;background:#fff;border:1px solid #e0e0e0;border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,.16);width:300px;max-height:460px;overflow-y:auto;" :style="{ top: popoverPos.top + 'px', left: popoverPos.left + 'px' }">
   <!-- ===== ■.■. 팝오버 헤더 ================================================ -->
   <div :style="'padding:10px 14px;background:'+wColor(popoverWidget.widgetType)+';border-radius:10px 10px 0 0;display:flex;align-items:center;gap:8px;'">
     <span style="font-size:18px;">

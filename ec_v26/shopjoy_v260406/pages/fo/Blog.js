@@ -91,7 +91,7 @@ window.Blog = {
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     /* onSearch — 조회 */
-    const onSearch = async () => { await Object.assign(pager.pageCond, searchParam); handleSearchList('DEFAULT'); };
+    const onSearch = async () => { Object.assign(pager.pageCond, searchParam); await handleSearchList('DEFAULT'); };
 
     /* onReset — 초기화 */
     const onReset = () => {

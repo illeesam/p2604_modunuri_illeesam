@@ -22,7 +22,7 @@ window.MyCache = {
       console.log(' ■■ MyCache.js : handleBtnAction -> ', cmd, param);
       // 캐쉬 충전
       if (cmd === 'caches-add') {
-        return addCash();
+        return handleAddCash();
       // 빠른 금액 설정
       } else if (cmd === 'caches-setAmount') {
         chargeAmount.value = param;
@@ -36,7 +36,7 @@ window.MyCache = {
       console.log(' ■■ MyCache.js : handleSelectAction -> ', cmd, param);
       // 주문 모달 열기
       if (cmd === 'caches-orderOpen') {
-        return openOrderModal(param);
+        return handleOpenOrderModal(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
@@ -76,7 +76,7 @@ window.MyCache = {
     const cfDateFilteredHistory = computed(() => cashHistory.value);
 
     /* addCash — 추가 */
-    const addCash = () => {
+    const handleAddCash = () => {
       const amount = parseInt(String(chargeAmount.value).replace(/,/g, ''), 10);
       if (!amount || amount < 1000) { showToast('최소 1,000원 이상 충전 가능합니다.', 'error'); return; }
       cashBalance.value += amount;
@@ -89,7 +89,7 @@ window.MyCache = {
     };
 
     /* openOrderModal — 열기 */
-    const openOrderModal = async orderId => {
+    const handleOpenOrderModal = async orderId => {
       await myStore.handleLoadOrders();
       const ok = myStore.openOrderModal(orderId);
       if (!ok) { showToast('주문 정보를 찾을 수 없습니다.', 'error'); }

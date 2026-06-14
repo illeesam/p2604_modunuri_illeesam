@@ -429,7 +429,7 @@ window.XsSample11 = {
         <span v-if="userNm" style="font-size:11px;color:#555;">
           {{ userNm }}
         </span>
-        <span v-if="isLoggedIn && userGrade" style="font-size:11px;background:#e3f2fd;color:#1565c0;border-radius:6px;padding:1px 7px;">
+        <span v-if="isLoggedIn ? userGrade : false" style="font-size:11px;background:#e3f2fd;color:#1565c0;border-radius:6px;padding:1px 7px;">
         등급: {{ userGrade }}
       </span>
       <span style="font-size:11px;color:#aaa;">
@@ -505,7 +505,7 @@ window.XsSample11 = {
               <div style="font-size:13px;font-weight:700;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
                 {{ p.name }}
               </div>
-              <div v-if="uiState.showDesc && p.description" style="font-size:11px;color:#888;margin-bottom:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+              <div v-if="uiState.showDesc ? p.description : false" style="font-size:11px;color:#888;margin-bottom:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
               {{ p.description }}
             </div>
             <div style="font-size:10px;color:#999;">
@@ -533,7 +533,7 @@ window.XsSample11 = {
                 </span>
               </div>
               <!-- ===== ■.■.■.■. 설명 ================================================ -->
-              <div v-if="uiState.showDesc && p.description" style="padding:4px 14px 4px 30px;font-size:11px;color:#888;">
+              <div v-if="uiState.showDesc ? p.description : false" style="padding:4px 14px 4px 30px;font-size:11px;color:#888;">
               {{ p.description }}
             </div>
             <!-- ===== ■.■.■.■. 위젯 목록 ============================================= -->

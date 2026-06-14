@@ -57,19 +57,12 @@ window.Order = {
       } else if (cmd === 'shipCoupon-open') {
         uiState.shipCouponPopup = true;
         return;
-      // 배송비 쿠폰 팝업 닫기
-      } else if (cmd === 'shipCoupon-close') {
-        uiState.shipCouponPopup = false;
-        return;
       // 배송비 쿠폰 제거
       } else if (cmd === 'shipCoupon-remove') {
         return removeShipCoupon();
       // 상품 쿠폰 팝업 열기 (param: idx)
       } else if (cmd === 'coupon-open') {
         return openCouponPopup(param);
-      // 상품 쿠폰 팝업 닫기
-      } else if (cmd === 'coupon-close') {
-        return closeCouponPopup();
       // 상품 쿠폰 제거 (param: idx)
       } else if (cmd === 'coupon-remove') {
         return removeCoupon(param);
@@ -81,14 +74,22 @@ window.Order = {
     /* handleSelectAction — 행/선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ Order.js : handleSelectAction -> ', cmd, param);
-      // 상품 쿠폰 적용 (param: 쿠폰 객체 또는 null)
-      if (cmd === 'coupon-rowApply') {
-        return applyCoupon(param);
-      // 배송비 쿠폰 적용 (param: 쿠폰 객체 또는 null)
-      } else if (cmd === 'shipCoupon-rowApply') {
-        return applyShipCoupon(param);
+      console.warn('[handleSelectAction] unknown cmd:', cmd);
+    };
+
+    /* fnCallbackModal — 모든 모달 통합 dispatch. cmd=모달명, param=호출 파라미터, result=응답(null=닫기, 값=선택) */
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ Order.js : fnCallbackModal -> ', cmd, param, result);
+      // 상품 쿠폰 모달 (result=쿠폰객체 적용 / null=닫기)
+      if (cmd === 'coupon') {
+        if (result === undefined) { closeCouponPopup(); return; }
+        return applyCoupon(result);   // result=null 이면 쿠폰 미적용(해제)
+      // 배송비 쿠폰 모달
+      } else if (cmd === 'shipCoupon') {
+        if (result === undefined) { uiState.shipCouponPopup = false; return; }
+        return applyShipCoupon(result);
       } else {
-        console.warn('[handleSelectAction] unknown cmd:', cmd);
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
       }
     };
 
@@ -319,7 +320,7 @@ window.Order = {
     return {
       columns,
       uiState,       // 상태
-      handleBtnAction, handleSelectAction, // dispatch
+      handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch
       form, errors, clearErr, // 폼
       cfOrderItems, cfCartTotal, cfTotalCouponDiscount, // computed - 주문
       cfAppliedCash, cfFinalPrice, cfShippingCoupons, // computed - 금액/쿠폰
@@ -337,7 +338,7 @@ window.Order = {
   :crumbs="[{ label:'홈', page:'home' }, { label:'주문하기' }]"
   @nav="() => handleBtnAction('page-goHome')">
   <!-- ===== ■. ══ 주문 결과 화면 ══ ========================================== -->
-  <template v-if="uiState.view==='result' && uiState.resultData">
+  <template v-if="uiState.view==='result' ? uiState.resultData : false">
   <div style="max-width:600px;margin:0 auto;padding:40px 20px;text-align:center;">
     <div style="font-size:4rem;margin-bottom:16px;">
       🎉
@@ -435,7 +436,7 @@ window.Order = {
         💳 입금 안내
       </div>
       <div style="font-size:0.85rem;color:var(--text-secondary);line-height:1.8;">
-        {{ config.bank && config.bank.name }} {{ config.bank && config.bank.account }}
+        {{ config.bank && config.bank.name }} {{ config.bank?.account }}
         <br>
         예금주: {{ config.bank && config.bank.holder }}
         <br>
@@ -710,7 +711,7 @@ window.Order = {
                 입금 계좌
               </div>
               <div class="info-val" style="margin-top:4px;">
-                <span v-if="config.bank && config.bank.account">
+                <span v-if="config.bank?.account">
                 {{ config.bank.name }} {{ config.bank.account }}
                 <br>
                 예금주: {{ config.bank.holder }}
@@ -822,7 +823,7 @@ window.Order = {
 <!-- ===== □.□. 페이지 타이틀 배너 ============================================ -->
 <!-- ===== □. ══ 주문 입력 화면 ══ ========================================== -->
 <!-- ===== ■. ══ 상품 쿠폰 팝업 ══ ========================================== -->
-<div v-if="couponPopup.show" class="modal-overlay" @click.self="handleBtnAction('coupon-close')" style="z-index:200;">
+<div v-if="couponPopup.show" class="modal-overlay" @click.self="fnCallbackModal('coupon', {})" style="z-index:200;">
   <div class="modal-box" style="max-width:480px;width:92%;padding:0;max-height:82vh;display:flex;flex-direction:column;border-radius:14px;overflow:hidden;">
     <!-- ===== ■.■.■. 헤더 ================================================== -->
     <div style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#fff;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;">
@@ -834,14 +835,14 @@ window.Order = {
           할인(정률/정액) 쿠폰 · 상품 1개당 1개 적용
         </div>
       </div>
-      <button @click="handleBtnAction('coupon-close')" style="background:rgba(255,255,255,0.2);border:none;cursor:pointer;font-size:1rem;color:#fff;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+      <button @click="fnCallbackModal('coupon', {})" style="background:rgba(255,255,255,0.2);border:none;cursor:pointer;font-size:1rem;color:#fff;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;">
         ✕
       </button>
     </div>
     <!-- ===== ■.■.■. 리스트 ================================================= -->
     <div style="overflow-y:auto;flex:1;padding:16px;background:#fafbfc;display:flex;flex-direction:column;gap:8px;">
       <!-- ===== ■.■.■.■. 쿠폰 없음 ============================================= -->
-      <div @click="handleSelectAction('coupon-rowApply', null)"
+      <div @click="fnCallbackModal('coupon', {}, null)"
           style="padding:14px 16px;border-radius:10px;border:1.5px solid #e4e7ec;background:#fff;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all .15s;"
           :style="!selectedCoupons[couponPopup.targetIdx]?'border-color:#9ca3af;background:#f3f4f6;':''"
           @mouseenter="!selectedCoupons[couponPopup.targetIdx] || $event.currentTarget.style.setProperty('border-color','#d0d7de')"
@@ -857,7 +858,7 @@ window.Order = {
       </div>
       <template v-if="couponPopup.targetIdx!==null">
         <div v-for="c in productCoupons(cfOrderItems[couponPopup.targetIdx])" :key="c.couponId"
-            @click="handleSelectAction('coupon-rowApply', c)"
+            @click="fnCallbackModal('coupon', {}, c)"
             :style="{
             padding:'14px 16px',borderRadius:'10px',cursor:'pointer',
             display:'flex',alignItems:'center',gap:'12px',transition:'all .15s',
@@ -899,7 +900,7 @@ window.Order = {
 </div>
 <!-- ===== □. ══ 상품 쿠폰 팝업 ══ ========================================== -->
 <!-- ===== ■. ══ 배송비 쿠폰 팝업 ══ ========================================= -->
-<div v-if="uiState.shipCouponPopup" class="modal-overlay" @click.self="handleBtnAction('shipCoupon-close')" style="z-index:200;">
+<div v-if="uiState.shipCouponPopup" class="modal-overlay" @click.self="fnCallbackModal('shipCoupon', {})" style="z-index:200;">
   <div class="modal-box" style="max-width:440px;width:92%;padding:0;max-height:72vh;display:flex;flex-direction:column;border-radius:14px;overflow:hidden;">
     <div style="background:linear-gradient(135deg,#22c55e 0%,#0ea5e9 100%);color:#fff;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;">
       <div>
@@ -910,12 +911,12 @@ window.Order = {
           배송비 할인 쿠폰만 표시됩니다
         </div>
       </div>
-      <button @click="handleBtnAction('shipCoupon-close')" style="background:rgba(255,255,255,0.2);border:none;cursor:pointer;font-size:1rem;color:#fff;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;">
+      <button @click="fnCallbackModal('shipCoupon', {})" style="background:rgba(255,255,255,0.2);border:none;cursor:pointer;font-size:1rem;color:#fff;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;">
         ✕
       </button>
     </div>
     <div style="overflow-y:auto;flex:1;padding:16px;background:#fafbfc;display:flex;flex-direction:column;gap:8px;">
-      <div @click="handleSelectAction('shipCoupon-rowApply', null)"
+      <div @click="fnCallbackModal('shipCoupon', {}, null)"
           style="padding:14px 16px;border-radius:10px;border:1.5px solid #e4e7ec;background:#fff;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all .15s;"
           :style="!uiState.selectedShipCoupon?'border-color:#9ca3af;background:#f3f4f6;':''">
         <div style="width:38px;height:38px;border-radius:10px;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;color:#9ca3af;">
@@ -928,7 +929,7 @@ window.Order = {
         </div>
       </div>
       <div v-for="c in cfShippingCoupons" :key="c.couponId"
-          @click="handleSelectAction('shipCoupon-rowApply', c)"
+          @click="fnCallbackModal('shipCoupon', {}, c)"
           :style="{
           padding:'14px 16px',borderRadius:'10px',cursor:'pointer',
           display:'flex',alignItems:'center',gap:'12px',transition:'all .15s',

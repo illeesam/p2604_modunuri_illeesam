@@ -375,7 +375,7 @@ window.Prod02List = {
       <span>
         {{ uiState.filterOpen ? '필터 닫기' : '필터' }}
       </span>
-      <span v-if="cfHasFilter && !uiState.filterOpen" style="display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 4px;background:#f97316;color:#fff;border-radius:9px;font-size:0.7rem;font-weight:700;">
+      <span v-if="cfHasFilter ? !uiState.filterOpen : false" style="display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 4px;background:#f97316;color:#fff;border-radius:9px;font-size:0.7rem;font-weight:700;">
       {{ (selColors.size+selSizes.size+selCats.size+(uiState.priceMin?1:0)+(uiState.priceMax?1:0)) }}
     </span>
   </button>
@@ -416,7 +416,7 @@ window.Prod02List = {
         </span>
       </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;">
-        <button v-for="r in [{label:'~3만',max:30000},{label:'3~5만',min:30000,max:50000},{label:'5~10만',min:50000,max:100000},{label:'10만~',min:100000}]" :key="r.label" @click="handleBtnAction('filter-priceRange', r)" style="padding:5px 10px;border:1px solid var(--border);border-radius:20px;background:var(--bg-base);cursor:pointer;font-size:0.75rem;font-weight:600;color:var(--text-secondary);transition:all 0.15s;" :style="uiState.priceMin==(r.min||'')&&uiState.priceMax==(r.max||'')?'background:var(--blue);color:#fff;border-color:var(--blue);':''">
+        <button v-for="r in [{label:'~3만',max:30000},{label:'3~5만',min:30000,max:50000},{label:'5~10만',min:50000,max:100000},{label:'10만~',min:100000}]" :key="r.label" @click="handleBtnAction('filter-priceRange', r)" style="padding:5px 10px;border:1px solid var(--border);border-radius:20px;background:var(--bg-base);cursor:pointer;font-size:0.75rem;font-weight:600;color:var(--text-secondary);transition:all 0.15s;" :style="(uiState.priceMin==(r.min||'') ? uiState.priceMax==(r.max||'') : false)?'background:var(--blue);color:#fff;border-color:var(--blue);':''">
         {{ r.label }}
       </button>
     </div>
@@ -603,7 +603,7 @@ window.Prod02List = {
 </div>
 <!-- ===== □. 상품 그리드 ================================================== -->
 <!-- ===== ■. 결과 없음 =================================================== -->
-<div v-if="!uiState.loading && allProds.length===0" style="text-align:center;padding:60px 0;color:var(--text-muted);">
+<div v-if="!uiState.loading ? allProds.length===0 : false" style="text-align:center;padding:60px 0;color:var(--text-muted);">
 <div style="font-size:3rem;margin-bottom:12px;">
   🔍
 </div>
@@ -617,7 +617,7 @@ window.Prod02List = {
 </div>
 <!-- ===== □. 결과 없음 =================================================== -->
 <!-- ===== ■. PC 페이지네이션 =============================================== -->
-<div v-if="!uiState.loading && !uiState.isMobile && pager.pageTotalPage > 1" style="display:flex;align-items:center;justify-content:center;gap:4px;margin-top:32px;flex-wrap:wrap;">
+<div v-if="!uiState.loading ? (!uiState.isMobile ? pager.pageTotalPage > 1 : false) : false" style="display:flex;align-items:center;justify-content:center;gap:4px;margin-top:32px;flex-wrap:wrap;">
 <button @click="handleBtnAction('pager-prev')" :disabled="pager.pageNo===1"
       style="padding:8px 14px;border:1px solid var(--border);border-radius:8px;background:var(--bg-card);cursor:pointer;color:var(--text-secondary);font-size:0.85rem;"
       :style="pager.pageNo===1?'opacity:0.4;cursor:not-allowed;':''">
@@ -646,10 +646,10 @@ window.Prod02List = {
 </div>
 <!-- ===== □. PC 페이지네이션 =============================================== -->
 <!-- ===== ■. 모바일 무한스크롤 센티넬 =========================================== -->
-<div v-if="!uiState.loading && uiState.isMobile" id="sj-sentinel" style="height:1px;">
+<div v-if="!uiState.loading ? uiState.isMobile : false" id="sj-sentinel" style="height:1px;">
 </div>
 <!-- ===== ■. 조건부 영역 ================================================== -->
-<div v-if="!uiState.loading && uiState.isMobile && pager.pageNo < pager.pageTotalPage" style="text-align:center;padding:16px;color:var(--text-muted);font-size:0.85rem;">
+<div v-if="!uiState.loading ? (uiState.isMobile ? pager.pageNo < pager.pageTotalPage : false) : false" style="text-align:center;padding:16px;color:var(--text-muted);font-size:0.85rem;">
 스크롤하면 더 불러옵니다…
 </div>
 </fo-page>

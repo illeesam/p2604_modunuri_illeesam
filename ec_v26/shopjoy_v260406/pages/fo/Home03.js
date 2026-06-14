@@ -46,7 +46,7 @@ window.Home03 = {
         return props.navigate('blog');
       // 히어로 배너 인디케이터 클릭
       } else if (cmd === 'hero-set') {
-        return setBanner(param);
+        return handleSetBanner(param);
       // 빠른보기 모달: 장바구니 모드 열기
       } else if (cmd === 'quickViewModal-openCart') {
         uiState.quickViewProduct = param; uiState.cartModalMode = true;
@@ -109,7 +109,7 @@ window.Home03 = {
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
     /* setBanner — 인디케이터 클릭 시 해당 배너로 + 타이머 리셋 */
-    const setBanner = (i) => bannerCtl.set(i);
+    const handleSetBanner = (i) => bannerCtl.set(i);
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
@@ -311,7 +311,7 @@ window.Home03 = {
           <span v-if="p.originalPrice" style="font-size:0.78rem;color:#bbb;text-decoration:line-through;">
             {{ p.originalPrice.toLocaleString ? p.originalPrice.toLocaleString() + '원' : p.originalPrice }}
           </span>
-          <span v-if="p.originalPrice && p.priceNum" style="font-size:0.75rem;font-weight:700;color:#ef4444;">
+          <span v-if="p.originalPrice ? p.priceNum : false" style="font-size:0.75rem;font-weight:700;color:#ef4444;">
           {{ Math.round((1 - p.priceNum / p.originalPrice) * 100) }}%
         </span>
       </div>
@@ -403,7 +403,7 @@ window.Home03 = {
         @click="handleSelectAction('prods-rowSelect', p)">
       <div style="background:#f5f5f5;padding:20px;margin-bottom:12px;position:relative;aspect-ratio:1;overflow:hidden;">
         <img :src="p.image || window.NO_IMAGE" :alt="p.prodNm" style="width:100%;height:100%;object-fit:contain;" />
-        <span v-if="p.originalPrice && p.priceNum" style="position:absolute;top:8px;left:8px;font-size:0.68rem;font-weight:700;padding:3px 8px;border-radius:2px;background:#ef4444;color:#fff;">
+        <span v-if="p.originalPrice ? p.priceNum : false" style="position:absolute;top:8px;left:8px;font-size:0.68rem;font-weight:700;padding:3px 8px;border-radius:2px;background:#ef4444;color:#fff;">
         -{{ Math.round((1 - p.priceNum / p.originalPrice) * 100) }}%
       </span>
     </div>
@@ -468,7 +468,7 @@ window.Home03 = {
 </div>
 <!-- ===== □. ══ 블로그 포스트 ══ =========================================== -->
 <!-- ===== ■. ══ 빠른보기 모달 (ProductModal 컴포넌트) ══ ======================= -->
-<prod-modal :show="!!uiState.quickViewProduct" :prod="uiState.quickViewProduct" :cart-mode="uiState.cartModalMode" :navigate="(page, opts) => { if(opts&&opts.instantOrder){ navigate('order',opts); uiState.quickViewProduct=null; } else { selectProd(uiState.quickViewProduct); uiState.quickViewProduct=null; } }" :toggle-like="toggleLike" :is-liked="isLiked" modal-name="quick-view" :on-callback="fnCallbackModal" />
+<prod-modal :show="!!uiState.quickViewProduct" :prod="uiState.quickViewProduct" :cart-mode="uiState.cartModalMode" :navigate="(page, opts) => { if(opts?.instantOrder){ navigate('order',opts); uiState.quickViewProduct=null; } else { selectProd(uiState.quickViewProduct); uiState.quickViewProduct=null; } }" :toggle-like="toggleLike" :is-liked="isLiked" modal-name="quick-view" :on-callback="fnCallbackModal" />
 </fo-page>
 <!-- ===== □. ══ 빠른보기 모달 (ProductModal 컴포넌트) ══ ======================= -->
 `

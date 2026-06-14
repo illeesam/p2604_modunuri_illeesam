@@ -182,7 +182,7 @@ window.MyCoupon = {
           :style="c.discountType==='shipping' ? 'background:#dbeafe;color:#1d4ed8;' : 'background:#dcfce7;color:#15803d;'">
           {{ c.discountType==='shipping' ? '배송비 할인' : '상품 할인' }}
         </span>
-        <span v-if="c.applicableTo && c.discountType!=='shipping'" style="font-size:0.72rem;padding:2px 8px;border-radius:10px;font-weight:600;background:var(--bg-base);color:var(--text-secondary);border:1px solid var(--border);">
+        <span v-if="c.applicableTo ? c.discountType!=='shipping' : false" style="font-size:0.72rem;padding:2px 8px;border-radius:10px;font-weight:600;background:var(--bg-base);color:var(--text-secondary);border:1px solid var(--border);">
         {{ c.applicableTo }}
       </span>
       <span style="font-size:0.72rem;padding:2px 8px;border-radius:10px;font-weight:600;"

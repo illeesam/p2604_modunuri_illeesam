@@ -41,6 +41,7 @@ window.Location = {
     const LAT  = 37.4407;
     const LNG  = 127.1468;
     const ADDR = '경기도 성남시 중원구 성남대로 997번길 49-14';
+    const ADDR_ENC = encodeURIComponent(ADDR);   // 지도 URL 쿼리용 인코딩 주소
 
 
     /* 지도 iframe src — 카카오 → 구글 → OSM 순 */
@@ -130,11 +131,11 @@ window.Location = {
     </div>
     <!-- ===== □.□. 카카오 SDK 모드: div 컨테이너 ================================== -->
     <!-- ===== ■.■. iframe 모드 (Google / OSM) ============================== -->
-    <iframe v-else-if="!uiState.mapError && uiState.mapSrc" :src="uiState.mapSrc" width="100%" style="border:0;display:block;height:clamp(220px,40vw,320px);" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade" @error="onMapError">
+    <iframe v-else-if="!uiState.mapError ? uiState.mapSrc : false" :src="uiState.mapSrc" width="100%" style="border:0;display:block;height:clamp(220px,40vw,320px);" allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade" @error="onMapError">
   </iframe>
   <!-- ===== □.□. iframe 모드 (Google / OSM) ============================== -->
   <!-- ===== ■.■. 로딩 중 (mapSrc 아직 미설정) ================================== -->
-  <div v-else-if="!uiState.mapError && !uiState.mapSrc" style="height:clamp(220px,40vw,320px);display:flex;align-items:center;justify-content:center;background:var(--bg-base);color:var(--text-muted);font-size:13px;gap:8px;">
+  <div v-else-if="!uiState.mapError ? !uiState.mapSrc : false" style="height:clamp(220px,40vw,320px);display:flex;align-items:center;justify-content:center;background:var(--bg-base);color:var(--text-muted);font-size:13px;gap:8px;">
   <span style="animation:spin .8s linear infinite;display:inline-block;">
     ⏳
   </span>
@@ -257,7 +258,7 @@ window.Location = {
         <span>
           전화
         </span>
-        <a :href="'tel:'+(config&&config.tel||'010-3805-0206')" style="font-weight:700;color:var(--blue);text-decoration:none;">
+        <a :href="'tel:'+(config?.tel||'010-3805-0206')" style="font-weight:700;color:var(--blue);text-decoration:none;">
         {{ config&&config.tel||'010-3805-0206' }}
       </a>
     </div>
@@ -265,7 +266,7 @@ window.Location = {
       <span>
         이메일
       </span>
-      <a :href="'mailto:'+(config&&config.email||'illeesam@gmail.com')" style="font-weight:700;color:var(--blue);text-decoration:none;font-size:0.82rem;">
+      <a :href="'mailto:'+(config?.email||'illeesam@gmail.com')" style="font-weight:700;color:var(--blue);text-decoration:none;font-size:0.82rem;">
       {{ config&&config.email||'illeesam@gmail.com' }}
     </a>
   </div>

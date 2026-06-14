@@ -199,7 +199,7 @@ window.EventView = {
     </div>
     <!-- ===== □.□. ③ 혜택 카드 =============================================== -->
     <!-- ===== ■.■. ④ 이벤트 대상 (eventItems) ================================= -->
-    <div v-if="cfEvent.eventItems && cfEvent.eventItems.length" style="margin-bottom:36px;">
+    <div v-if="cfEvent.eventItems?.length" style="margin-bottom:36px;">
     <h2 style="font-size:1.1rem;font-weight:800;color:var(--text-primary);margin-bottom:18px;">
       이벤트 대상
     </h2>

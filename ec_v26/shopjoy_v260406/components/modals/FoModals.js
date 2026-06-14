@@ -706,3 +706,252 @@ window.CustomerModal = {
 </fo-modal>
 `,
 };
+
+/* ── 주문 선택 모달 ──────────────────────────────────
+   내 주문 목록에서 하나를 선택 (고객센터 문의 등에서 사용).
+   자체적으로 주문 조회/검색(기간 기본 1년)/페이징/상품 펼치기 관리.
+   Props: show (Boolean), modalName (String), onCallback (Function)
+   응답: onCallback(modalName, null, order=선택 | null=닫기)
+   ─────────────────────────────────────────────────── */
+window.OrderPickModal = {
+  name: 'OrderPickModal',
+  inheritAttrs: false,
+  props: {
+    show:       { type: Boolean,  default: false },   // 모달 표시 여부
+    modalName:  { type: String,   default: 'orderPick' }, // 모달 식별자
+    onCallback: { type: Function, default: null },    // 통합 콜백
+  },
+  emits: ['close'],
+  setup(props, { emit }) {
+
+    /* ##### [01] 초기 변수 정의 ################################################## */
+
+    const { reactive, computed, watch } = Vue;
+    const showToast = window.foApp.showToast;
+
+    const _ymd = (d) => { const z = n => String(n).padStart(2, '0'); return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}`; };
+    const _today = new Date();
+    const _yearAgo = new Date(); _yearAgo.setFullYear(_yearAgo.getFullYear() - 1);
+
+    const uiState = reactive({
+      loading: false, list: [], expandedId: null,
+      dateStart: _ymd(_yearAgo), dateEnd: _ymd(_today), searchValue: '',
+      pager: { pageNo: 1, pageSize: 5, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 50] },
+      loaded: false,
+    });
+
+    /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
+    /* handleBtnAction — 버튼 액션 dispatch */
+    const handleBtnAction = (cmd, param = {}) => {
+      console.log(' ■■ OrderPickModal : handleBtnAction -> ', cmd, param);
+      if (cmd === 'modal-search') {
+        return loadOrders();
+      } else {
+        console.warn('[handleBtnAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* handleSelectAction — 행/선택 액션 dispatch (모달 내부조작) */
+    const handleSelectAction = (cmd, param = {}) => {
+      console.log(' ■■ OrderPickModal : handleSelectAction -> ', cmd, param);
+      // 상품정보 펼치기 토글
+      if (cmd === 'order-toggle') {
+        uiState.expandedId = (uiState.expandedId === param ? null : param);
+        return;
+      // 페이지 이동
+      } else if (cmd === 'pager-setPage') {
+        if (param >= 1 && param <= uiState.pager.pageTotalPage) { uiState.pager.pageNo = param; uiState.expandedId = null; }
+        return;
+      // 페이지 크기 변경
+      } else if (cmd === 'pager-sizeChange') {
+        uiState.pager.pageNo = 1; uiState.expandedId = null;
+        return;
+      } else {
+        console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* fnCallbackModal — 모달 응답 (닫기/선택 → 부모 onCallback 으로 통합 전달) */
+    const fnCallbackModal = (cmd, param, result) => {
+      console.log(' ■■ OrderPickModal : fnCallbackModal -> ', cmd, param, result);
+      if (cmd === 'self') {
+        emit('close');
+        if (props.onCallback) props.onCallback(props.modalName, null, result || null);
+        return;
+      } else {
+        console.warn('[fnCallbackModal] unknown cmd:', cmd);
+      }
+    };
+
+    /* ##### [03] 초기 함수 (watch) ############################## */
+
+    /* show=true 시 1회 조회 (열 때마다 재조회는 안 함 — 검색버튼으로 갱신) */
+    watch(() => props.show, (v) => {
+      if (v && !uiState.loaded) { loadOrders(); }
+    });
+
+    /* ##### [04] 내장 사용 함수 ############################## */
+
+    /* loadOrders — 검색조건으로 내 주문 조회 (기간/검색어 서버 필터) */
+    const loadOrders = async () => {
+      uiState.loading = true;
+      uiState.expandedId = null;
+      try {
+        const params = { dateType: 'order_date', dateStart: uiState.dateStart, dateEnd: uiState.dateEnd };
+        if (uiState.searchValue) { params.searchValue = uiState.searchValue; params.searchType = 'orderId'; }
+        const res = await foApiSvc.myOrder.getList(params, '주문선택', '목록조회');
+        const list = res.data?.data || [];
+        uiState.list = list.map(o => ({
+          orderId:   o.orderId,
+          orderDate: String(o.orderDate || '').slice(0, 10),
+          amount:    (o.payAmt != null ? o.payAmt : (o.totalAmt || 0)),
+          status:    o.orderStatusCdNm || o.orderStatusCd || '',
+          items:     Array.isArray(o.orderItems) ? o.orderItems.map(it => ({
+            prodId: it.prodId || '',
+            prodNm: it.prodNm,
+            opt:    [it.optItemNm1, it.optItemNm2].filter(Boolean).join(' / '),
+            qty:    it.orderQty != null ? it.orderQty : 0,
+            price:  it.unitPrice != null ? it.unitPrice : 0,
+          })) : [],
+        }));
+        uiState.pager.pageNo = 1;
+        uiState.loaded = true;
+      } catch (err) {
+        console.error('[OrderPickModal.loadOrders]', err);
+        showToast('주문 내역을 불러오지 못했습니다.', 'error');
+      } finally {
+        uiState.loading = false;
+      }
+    };
+
+    /* ##### [05] 사용자 함수 (computed) ############################## */
+
+    /* cfPaged — 현재 페이지 슬라이스 + pager 메타 갱신 */
+    const cfPaged = computed(() => {
+      const list = uiState.list;
+      const size = uiState.pager.pageSize || 5;
+      const total = list.length;
+      const totalPage = Math.max(1, Math.ceil(total / size));
+      const cur = Math.min(Math.max(1, uiState.pager.pageNo), totalPage);
+      uiState.pager.pageTotalCount = total;
+      uiState.pager.pageTotalPage = totalPage;
+      if (uiState.pager.pageNo !== cur) uiState.pager.pageNo = cur;
+      const start = (cur - 1) * size;
+      return list.slice(start, start + size);
+    });
+
+    /* ##### [06] return (템플릿 노출) ############################## */
+
+    return {
+      uiState, cfPaged,
+      handleBtnAction, handleSelectAction, fnCallbackModal,
+    };
+  },
+  template: /* html */`
+<fo-modal :show="show" title="📦 주문 선택" width="600px" @close="fnCallbackModal('self', {}, null)">
+  <!-- 헤더 안내 배너 -->
+  <div style="margin:-2px -2px 14px;padding:12px 16px;border-radius:10px;background:linear-gradient(135deg,#eef2ff 0%,#f5f3ff 55%,#fdf2f8 100%);border:1px solid var(--border);display:flex;align-items:center;gap:10px;">
+    <span style="font-size:1.3rem;">🧾</span>
+    <div>
+      <div style="font-size:0.86rem;font-weight:800;color:var(--text-primary);">
+        문의할 주문을 선택하세요
+      </div>
+      <div style="font-size:0.74rem;color:var(--text-secondary);margin-top:1px;">
+        ▶ 를 눌러 주문 상품을 확인한 뒤 [선택] 하세요.
+      </div>
+    </div>
+  </div>
+  <!-- 검색바 (등록기간 + 검색어) -->
+  <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px;padding:10px 12px;background:var(--bg-base);border:1px solid var(--border);border-radius:10px;">
+    <span style="font-size:0.78rem;color:var(--text-muted);font-weight:600;white-space:nowrap;">등록기간</span>
+    <input type="date" class="form-input" v-model="uiState.dateStart" style="width:140px;padding:6px 8px;font-size:0.8rem;" />
+    <span style="color:var(--text-muted);">~</span>
+    <input type="date" class="form-input" v-model="uiState.dateEnd" style="width:140px;padding:6px 8px;font-size:0.8rem;" />
+    <input type="text" class="form-input" v-model="uiState.searchValue" placeholder="주문번호 검색"
+      style="flex:1;min-width:120px;padding:6px 10px;font-size:0.8rem;"
+      @keyup.enter="handleBtnAction('modal-search')" />
+    <button type="button" class="btn-blue btn-sm" style="white-space:nowrap;" @click="handleBtnAction('modal-search')">
+      🔍 조회
+    </button>
+  </div>
+  <div v-if="uiState.loading" style="text-align:center;padding:48px 0;color:var(--text-muted);">
+    불러오는 중...
+  </div>
+  <div v-else-if="!uiState.list.length" style="text-align:center;padding:48px 0;color:var(--text-muted);font-size:0.9rem;">
+    🗂 조회된 주문이 없습니다.
+  </div>
+  <div v-else style="max-height:48vh;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:2px;">
+    <div v-for="o in cfPaged" :key="o.orderId"
+      style="border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--bg-card);transition:box-shadow .15s;position:relative;"
+      :style="uiState.expandedId===o.orderId ? 'box-shadow:0 4px 14px rgba(0,0,0,0.10);border-color:var(--accent);z-index:1;' : ''">
+      <!-- 주문 헤더 행 -->
+      <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;">
+        <button type="button" @click="handleSelectAction('order-toggle', o.orderId)"
+          :title="uiState.expandedId===o.orderId ? '접기' : '상품보기'"
+          style="flex-shrink:0;width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--bg-base);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.7rem;color:var(--text-secondary);transition:transform .15s;"
+          :style="uiState.expandedId===o.orderId ? 'transform:rotate(90deg);' : ''">
+          ▶
+        </button>
+        <div style="flex:1;min-width:0;cursor:pointer;" @click="handleSelectAction('order-toggle', o.orderId)">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span style="font-weight:700;font-size:0.9rem;color:var(--text-primary);">
+              {{ o.orderId }}
+            </span>
+            <span style="font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:10px;background:var(--blue-dim,#eef2ff);color:var(--blue);">
+              {{ o.status }}
+            </span>
+          </div>
+          <div style="font-size:0.76rem;color:var(--text-muted);margin-top:3px;">
+            🗓 {{ o.orderDate }} · 🛍 {{ o.items.length }}개 상품 · <b style="color:var(--text-secondary);">{{ Number(o.amount).toLocaleString() }}원</b>
+          </div>
+        </div>
+        <button type="button" @click="fnCallbackModal('self', {}, o)"
+          class="btn-blue btn-sm" style="flex-shrink:0;white-space:nowrap;">
+          선택
+        </button>
+      </div>
+      <!-- 펼침: 주문상품 목록 -->
+      <div v-show="uiState.expandedId===o.orderId"
+        style="border-top:1px dashed var(--border);background:var(--bg-base);padding:8px 16px 12px 42px;">
+        <div style="font-size:0.7rem;font-weight:700;color:var(--text-muted);letter-spacing:0.03em;padding:4px 0;">
+          🛍 구성 상품
+        </div>
+        <div v-if="!o.items.length" style="font-size:0.78rem;color:var(--text-muted);padding:10px 0;">
+          상품 정보가 없습니다.
+        </div>
+        <div v-for="(it, ii) in o.items" :key="ii"
+          style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(0,0,0,0.05);">
+          <span style="font-size:1.05rem;flex-shrink:0;">📦</span>
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+              <span style="font-size:0.84rem;font-weight:600;color:var(--text-primary);">
+                {{ it.prodNm }}
+              </span>
+              <span v-if="it.prodId" style="font-size:0.66rem;font-family:monospace;color:var(--text-muted);background:var(--bg-card);border:1px solid var(--border);border-radius:4px;padding:0 5px;line-height:1.6;">
+                #{{ it.prodId }}
+              </span>
+            </div>
+            <div v-if="it.opt" style="font-size:0.74rem;color:var(--text-muted);margin-top:2px;">
+              {{ it.opt }}
+            </div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;">
+            <div style="font-size:0.82rem;font-weight:700;color:var(--text-primary);">
+              {{ Number(it.price).toLocaleString() }}원
+            </div>
+            <div style="font-size:0.72rem;color:var(--text-muted);">
+              수량 {{ it.qty }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 페이지네이션 -->
+  <fo-pager v-if="uiState.list.length" :pager="uiState.pager"
+    :on-set-page="n => handleSelectAction('pager-setPage', n)"
+    :on-size-change="() => handleSelectAction('pager-sizeChange')" />
+</fo-modal>
+`,
+};

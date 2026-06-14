@@ -363,7 +363,7 @@ window.XsSample04 = {
         열기 →
       </button>
       <!-- ===== ■.■.■. Detail: 첫 번째 회원 데이터로 오픈 ============================= -->
-      <button v-else-if="item.id==='detail' && members.length" @click="openModal('detail',{data:members[0]})" style="align-self:flex-start;font-size:11px;padding:5px 14px;border:none;border-radius:5px;cursor:pointer;font-weight:600;color:#fff;" :style="'background:'+item.color">
+      <button v-else-if="item.id==='detail' ? members.length : false" @click="openModal('detail',{data:members[0]})" style="align-self:flex-start;font-size:11px;padding:5px 14px;border:none;border-radius:5px;cursor:pointer;font-weight:600;color:#fff;" :style="'background:'+item.color">
       열기 →
     </button>
     <!-- ===== ■.■.■. 그 외 ================================================= -->
@@ -669,7 +669,7 @@ window.XsSample04 = {
 </template>
 <!-- ===== □. ③ 폼 입력 모달 =============================================== -->
 <!-- ===== ■. ④ 상세보기 모달 =============================================== -->
-<template v-if="uiState.modalType==='detail' && uiState.modalData">
+<template v-if="uiState.modalType==='detail' ? uiState.modalData : false">
 <div @click="closeModal"
       style="position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.48);display:flex;align-items:center;justify-content:center;">
   <div @click.stop

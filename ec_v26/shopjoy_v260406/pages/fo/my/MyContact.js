@@ -156,7 +156,7 @@ window.MyContact = {
         {{ q.answer }}
       </div>
       <!-- ===== ■.■. 답변 첨부파일 ============================================ -->
-      <div v-if="q.answer && q.answerAttachGrpId" style="margin-top:10px;">
+      <div v-if="q.answer ? q.answerAttachGrpId : false" style="margin-top:10px;">
         <div style="font-size:0.78rem;font-weight:600;color:var(--text-muted);margin-bottom:4px;">
           📎 답변 첨부파일
         </div>

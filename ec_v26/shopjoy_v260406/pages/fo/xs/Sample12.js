@@ -468,7 +468,7 @@ window.XsSample12 = {
         <span v-if="userNm" style="font-size:11px;color:#555;">
           {{ userNm }}
         </span>
-        <span v-if="isLoggedIn && userGrade" style="font-size:11px;background:#e3f2fd;color:#1565c0;border-radius:6px;padding:1px 7px;">
+        <span v-if="isLoggedIn ? userGrade : false" style="font-size:11px;background:#e3f2fd;color:#1565c0;border-radius:6px;padding:1px 7px;">
         등급: {{ userGrade }}
       </span>
       <span style="font-size:11px;color:#aaa;">

@@ -26,27 +26,27 @@ window.MyOrder = {
       // 도움말 모달 열기
       if (cmd === 'orders-helpOpen') {
         uiState.flowHelpOpen = true;
-      // 도움말 모달 닫기
+      // 도움말 모달 닫기 → 모달 응답은 fnCallbackModal 로 위임
       } else if (cmd === 'orders-helpClose') {
-        uiState.flowHelpOpen = false;
+        return fnCallbackModal('orders-help', {}, null);
       // 도움말 탭 변경
       } else if (cmd === 'orders-helpTab') {
         uiState.helpTab = param;
       // 흐름 필터 초기화
       } else if (cmd === 'orders-flowReset') {
         flowStatusFilter.splice(0);
-      // 리뷰 모달 닫기
+      // 리뷰 모달 닫기 → 모달 응답은 fnCallbackModal 로 위임
       } else if (cmd === 'review-modalClose') {
-        reviewModal.show = false;
+        return fnCallbackModal('review', {}, null);
       // 리뷰 제출
       } else if (cmd === 'review-submit') {
         return submitReview();
       // 리뷰 별점 설정
       } else if (cmd === 'review-setRating') {
         reviewModal.rating = param;
-      // 클레임 모달 닫기
+      // 클레임 모달 닫기 → 모달 응답은 fnCallbackModal 로 위임
       } else if (cmd === 'claim-modalClose') {
-        claimModal.show = false;
+        return fnCallbackModal('claim', {}, null);
       // 클레임 제출
       } else if (cmd === 'claim-submit') {
         return submitClaimModal();
@@ -121,6 +121,18 @@ window.MyOrder = {
       } else if (cmd === 'customer') {
         if (result == null) { myStore.customerModal.show = false; return; }
         return;
+      // 주문흐름 도움말 (닫기)
+      } else if (cmd === 'orders-help') {
+        if (result == null) { uiState.flowHelpOpen = false; return; }
+        return;
+      // 리뷰 모달 (닫기)
+      } else if (cmd === 'review') {
+        if (result == null) { reviewModal.show = false; return; }
+        return;
+      // 클레임 모달 (닫기)
+      } else if (cmd === 'claim') {
+        if (result == null) { claimModal.show = false; return; }
+        return;
       } else {
         console.warn('[fnCallbackModal] unknown cmd:', cmd);
       }
@@ -169,7 +181,7 @@ window.MyOrder = {
     /* showOrderPayBreakdown — 표시 */
     const showOrderPayBreakdown = o =>
       (o.shippingFee != null && o.shippingFee > 0) ||
-      (o.shippingCoupon && Number(o.shippingCoupon.discount) > 0) ||
+      (Number(o.shippingCoupon?.discount) > 0) ||
       Number(o.cashPaid) > 0 ||
       Number(o.transferPaid) > 0;
 
@@ -351,6 +363,31 @@ window.MyOrder = {
       handleSearchData();
     });
 
+    /* ##### [05] 사용자 함수 (헬퍼 / 판정 / 렌더) — 템플릿 속성값 && 회피용 ######## */
+
+    /* fnNoActiveClaim — 해당 주문에 진행중(미완료) 클레임이 없는지 (취소/교환 버튼 노출 조건) */
+    const fnNoActiveClaim = (o) => {
+      const cl = claimsByOrderId.value[o.orderId];
+      return !(cl && !myStore.CLAIM_DONE.includes(cl.status));
+    };
+    /* fnCanCancel — 취소 가능 주문 + 진행 클레임 없음 */
+    const fnCanCancel = (o) => myStore.CANCELABLE.includes(o.status) && fnNoActiveClaim(o);
+    /* fnCanExchange — 배송완료 + 진행 클레임 없음 */
+    const fnCanExchange = (o) => o.status === '배송완료' && fnNoActiveClaim(o);
+    /* fnShowCourierStep — 흐름 단계 중 배송완료 단계에서 운송장 추적 노출 */
+    const fnShowCourierStep = (o, stepStatus) => stepStatus === '배송완료' && !!o.trackingNo && myStore.SHOW_COURIER.includes(o.status);
+    /* fnShowClaimPickup — 클레임 수거완료 단계 운송장 노출 */
+    const fnShowClaimPickup = (cl, step) => {
+      if (!cl || !cl.trackingNo || step !== '수거완료') { return false; }
+      const flows = myStore.CLAIM_FLOWS[cl.type];
+      return flows.indexOf(cl.status) >= flows.indexOf('수거완료');
+    };
+    /* fnShowClaimShip — 클레임 발송완료 단계 운송장 노출 */
+    const fnShowClaimShip = (cl, step) => {
+      if (!cl || step !== '발송완료' || !cl.exchangeTrackingNo) { return false; }
+      return ['발송완료', '교환완료'].includes(cl.status);
+    };
+
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
@@ -360,6 +397,8 @@ window.MyOrder = {
       pager, paginate, flowStatusFilter,
       onSearch,
       showOrderPayBreakdown,
+      // ===== 판정 헬퍼 (속성값 && 회피) =======================================
+      fnCanCancel, fnCanExchange, fnShowCourierStep, fnShowClaimPickup, fnShowClaimShip,
       // ===== claim 영역 (모달) ================================================
       EXCHANGE_REASONS, RETURN_REASONS,
       claimModal, cfClaimShippingFee, cfApplicableCoupons, cfClaimFinalFee, cfClaimModalProduct,
@@ -384,7 +423,7 @@ window.MyOrder = {
         ›
       </span>
       <template v-for="(step, si) in myStore.ORDER_FLOW" :key="step.status">
-        <button @click="orders.filter(o=>o.status===step.status).length>0 && handleSelectAction('orders-flowToggle', step.status)" style="display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;border:1.5px solid transparent;white-space:nowrap;flex-shrink:0;transition:all 0.15s;" :style="flowStatusFilter.includes(step.status) ? 'background:var(--blue);border-color:var(--blue);cursor:pointer;' : orders.filter(o=>o.status===step.status).length>0 ? 'background:var(--bg-card);border-color:var(--border);cursor:pointer;' : 'background:transparent;border-color:transparent;opacity:0.35;cursor:default;'">
+        <button @click="orders.filter(o=>o.status===step.status).length>0 ? handleSelectAction('orders-flowToggle', step.status) : null" style="display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;border:1.5px solid transparent;white-space:nowrap;flex-shrink:0;transition:all 0.15s;" :style="flowStatusFilter.includes(step.status) ? 'background:var(--blue);border-color:var(--blue);cursor:pointer;' : orders.filter(o=>o.status===step.status).length>0 ? 'background:var(--bg-card);border-color:var(--border);cursor:pointer;' : 'background:transparent;border-color:transparent;opacity:0.35;cursor:default;'">
         <span style="font-size:0.7rem;font-weight:700;"
             :style="flowStatusFilter.includes(step.status) ? 'color:#fff;' : orders.filter(o=>o.status===step.status).length>0 ? 'color:var(--text-primary);' : 'color:var(--text-muted);'">
           {{ step.label || step.status }}
@@ -442,10 +481,10 @@ window.MyOrder = {
       </button>
     </div>
     <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;">
-      <button v-if="myStore.CANCELABLE.includes(o.status) && !(claimsByOrderId[o.orderId] && !myStore.CLAIM_DONE.includes(claimsByOrderId[o.orderId].status))" @click="handleSelectAction('orders-cancel', o.orderId)" style="padding:5px 12px;border:1.5px solid #ef4444;border-radius:6px;background:transparent;color:#ef4444;cursor:pointer;font-size:0.78rem;font-weight:600;">
+      <button v-if="fnCanCancel(o)" @click="handleSelectAction('orders-cancel', o.orderId)" style="padding:5px 12px;border:1.5px solid #ef4444;border-radius:6px;background:transparent;color:#ef4444;cursor:pointer;font-size:0.78rem;font-weight:600;">
       주문취소
     </button>
-    <template v-if="o.status==='배송완료' && !(claimsByOrderId[o.orderId] && !myStore.CLAIM_DONE.includes(claimsByOrderId[o.orderId].status))">
+    <template v-if="fnCanExchange(o)">
     <button @click="handleSelectAction('orders-claimOpen', { orderId: o.orderId, type: 'exchange' })"
             style="padding:5px 12px;border:1.5px solid #f59e0b;border-radius:6px;background:transparent;color:#f59e0b;cursor:pointer;font-size:0.78rem;font-weight:600;white-space:nowrap;">
       교환신청
@@ -486,7 +525,7 @@ window.MyOrder = {
               : 'color:var(--text-muted);'">
           {{ step.label || step.status }}
         </div>
-        <button v-if="step.status==='배송완료' && o.trackingNo && myStore.SHOW_COURIER.includes(o.status)" @click.stop="handleSelectAction('orders-track', { courier: o.courier, trackingNo: o.trackingNo })" style="margin-top:3px;padding:1px 6px;border-radius:4px;border:1px solid #86efac;background:#dcfce7;color:#15803d;cursor:pointer;font-size:0.58rem;font-weight:700;white-space:nowrap;">
+        <button v-if="fnShowCourierStep(o, step.status)" @click.stop="handleSelectAction('orders-track', { courier: o.courier, trackingNo: o.trackingNo })" style="margin-top:3px;padding:1px 6px;border-radius:4px;border:1px solid #86efac;background:#dcfce7;color:#15803d;cursor:pointer;font-size:0.58rem;font-weight:700;white-space:nowrap;">
         {{ (o.courier||'').replace('대한통운','').replace('택배','').replace('로지스','') }}배송
       </button>
     </div>
@@ -541,10 +580,10 @@ window.MyOrder = {
                   ? 'color:var(--text-secondary);' : 'color:var(--text-muted);'">
               {{ step }}
             </div>
-            <button v-if="claimsByOrderId[o.orderId].trackingNo && step==='수거완료' && myStore.CLAIM_FLOWS[claimsByOrderId[o.orderId].type].indexOf(claimsByOrderId[o.orderId].status) >= myStore.CLAIM_FLOWS[claimsByOrderId[o.orderId].type].indexOf('수거완료')" @click.stop="handleSelectAction('orders-track2', { courier: claimsByOrderId[o.orderId].courier, trackingNo: claimsByOrderId[o.orderId].trackingNo })" style="margin-top:2px;padding:1px 4px;border-radius:3px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;cursor:pointer;font-size:0.52rem;font-weight:700;white-space:nowrap;">
+            <button v-if="fnShowClaimPickup(claimsByOrderId[o.orderId], step)" @click.stop="handleSelectAction('orders-track2', { courier: claimsByOrderId[o.orderId].courier, trackingNo: claimsByOrderId[o.orderId].trackingNo })" style="margin-top:2px;padding:1px 4px;border-radius:3px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;cursor:pointer;font-size:0.52rem;font-weight:700;white-space:nowrap;">
             {{ (claimsByOrderId[o.orderId].courier||'').replace('대한통운','').replace('택배','').replace('로지스','') }}수거
           </button>
-          <button v-if="step==='발송완료' && claimsByOrderId[o.orderId].exchangeTrackingNo && ['발송완료','교환완료'].includes(claimsByOrderId[o.orderId].status)" @click.stop="handleSelectAction('orders-track2', { courier: claimsByOrderId[o.orderId].exchangeCourier, trackingNo: claimsByOrderId[o.orderId].exchangeTrackingNo })" style="margin-top:2px;padding:1px 4px;border-radius:3px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;cursor:pointer;font-size:0.52rem;font-weight:700;white-space:nowrap;">
+          <button v-if="fnShowClaimShip(claimsByOrderId[o.orderId], step)" @click.stop="handleSelectAction('orders-track2', { courier: claimsByOrderId[o.orderId].exchangeCourier, trackingNo: claimsByOrderId[o.orderId].exchangeTrackingNo })" style="margin-top:2px;padding:1px 4px;border-radius:3px;border:1px solid #93c5fd;background:#dbeafe;color:#1d4ed8;cursor:pointer;font-size:0.52rem;font-weight:700;white-space:nowrap;">
           {{ (claimsByOrderId[o.orderId].exchangeCourier||'').replace('대한통운','').replace('택배','').replace('로지스','') }}발송
         </button>
       </div>
@@ -578,12 +617,12 @@ window.MyOrder = {
   <span v-if="claimsByOrderId[o.orderId].refundMethod" style="color:var(--text-muted);">
     · {{ claimsByOrderId[o.orderId].refundMethod }}
   </span>
-  <template v-if="claimsByOrderId[o.orderId].refundDetails && claimsByOrderId[o.orderId].refundDetails.length">
+  <template v-if="claimsByOrderId[o.orderId].refundDetails?.length">
   <template v-for="(rd, rdi) in claimsByOrderId[o.orderId].refundDetails" :key="rdi">
     <span v-if="rd.account" style="color:var(--text-secondary);">
       {{ rd.account }}
     </span>
-    <span v-if="rd.name && rd.type==='계좌환불'" style="color:var(--text-secondary);">
+    <span v-if="rd.name ? rd.type==='계좌환불' : false" style="color:var(--text-secondary);">
     · {{ rd.name }}
   </span>
   <span style="color:var(--text-muted);">
@@ -592,7 +631,7 @@ window.MyOrder = {
 </template>
 </template>
 </div>
-<div v-if="claimsByOrderId[o.orderId].type==='교환' && (claimsByOrderId[o.orderId].exchangeSize || claimsByOrderId[o.orderId].exchangeColor)" style="font-size:0.73rem;margin-bottom:3px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+<div v-if="claimsByOrderId[o.orderId].type==='교환' ? (claimsByOrderId[o.orderId].exchangeSize || claimsByOrderId[o.orderId].exchangeColor) : false" style="font-size:0.73rem;margin-bottom:3px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
 <span style="color:var(--text-muted);">
   교환
 </span>
@@ -670,7 +709,7 @@ window.MyOrder = {
       </button>
     </div>
   </div>
-  <div v-if="item.productCoupon && item.productCoupon.discount" style="margin:1px 0 4px 46px;padding:3px 8px;border-radius:5px;font-size:0.68rem;background:var(--bg-base);display:inline-flex;align-items:center;gap:4px;">
+  <div v-if="item.productCoupon?.discount" style="margin:1px 0 4px 46px;padding:3px 8px;border-radius:5px;font-size:0.68rem;background:var(--bg-base);display:inline-flex;align-items:center;gap:4px;">
   <span style="color:var(--text-muted);">
     🎟
   </span>
@@ -685,7 +724,7 @@ window.MyOrder = {
 <!-- ===== □.□. 상품 목록 ================================================= -->
 <!-- ===== ■.■. 결제 내역 ================================================= -->
 <div v-if="showOrderPayBreakdown(o)" style="border-top:1px dashed var(--border);margin-top:10px;padding-top:12px;display:flex;flex-direction:column;gap:6px;">
-  <div v-if="o.shippingFee != null && o.shippingFee > 0" style="display:flex;justify-content:space-between;font-size:0.8rem;color:var(--text-secondary);">
+  <div v-if="o.shippingFee != null ? o.shippingFee > 0 : false" style="display:flex;justify-content:space-between;font-size:0.8rem;color:var(--text-secondary);">
   <span>
     배송비
   </span>
@@ -693,7 +732,7 @@ window.MyOrder = {
     {{ o.shippingFee.toLocaleString() }}원
   </span>
 </div>
-<div v-if="o.shippingCoupon && Number(o.shippingCoupon.discount) > 0" style="display:flex;justify-content:space-between;font-size:0.8rem;">
+<div v-if="Number(o.shippingCoupon?.discount) > 0" style="display:flex;justify-content:space-between;font-size:0.8rem;">
 <span style="color:var(--text-secondary);">
   🚚 배송비 쿠폰 ·
   <span style="color:var(--text-primary);font-weight:600;">
@@ -726,7 +765,7 @@ window.MyOrder = {
 </div>
 <!-- ===== □.□. 결제 내역 ================================================= -->
 <!-- ===== ■.■. 입금 내역 ================================================= -->
-<div v-if="o.paymentDetails && o.paymentDetails.length" style="border-top:1px dashed var(--border);margin-top:8px;padding-top:8px;">
+<div v-if="o.paymentDetails?.length" style="border-top:1px dashed var(--border);margin-top:8px;padding-top:8px;">
 <div style="font-size:0.68rem;font-weight:700;color:var(--text-muted);letter-spacing:0.04em;margin-bottom:5px;">
   💳 입금 내역
 </div>
@@ -757,7 +796,7 @@ window.MyOrder = {
 <!-- ===== ■.■. 합계 + 택배 =============================================== -->
 <div style="border-top:1px solid var(--border);margin-top:10px;padding-top:10px;">
   <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
-    <div v-if="myStore.SHOW_COURIER.includes(o.status) && o.courier" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+    <div v-if="myStore.SHOW_COURIER.includes(o.status) ? o.courier : false" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
     <span style="font-size:0.8rem;color:var(--text-muted);">
       🚚 {{ o.courier }}
     </span>
@@ -1066,7 +1105,7 @@ window.MyOrder = {
               style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg-base);color:var(--text-primary);font-size:0.8rem;resize:none;box-sizing:border-box;outline:none;"></textarea>
             </div>
             <!-- ===== ■.■.■.■.■. 조건부 영역 ========================================== -->
-            <div v-if="claimModal.type==='exchange' && claimModal.order && claimModal.order.orderItems.length > 1">
+            <div v-if="claimModal.type==='exchange' ? claimModal.order?.orderItems.length > 1 : false">
             <div style="font-size:0.8rem;font-weight:700;color:var(--text-primary);margin-bottom:8px;">
               교환 상품 선택
               <span style="color:#ef4444;">
@@ -1101,7 +1140,7 @@ window.MyOrder = {
                 *
               </span>
             </div>
-            <div v-if="cfClaimModalProduct && cfClaimModalProduct.opt2s">
+            <div v-if="cfClaimModalProduct?.opt2s">
             <div style="font-size:0.74rem;color:var(--text-muted);margin-bottom:5px;">
               사이즈
             </div>
@@ -1113,7 +1152,7 @@ window.MyOrder = {
               </button>
             </div>
           </div>
-          <div v-if="cfClaimModalProduct && cfClaimModalProduct.opt1s">
+          <div v-if="cfClaimModalProduct?.opt1s">
           <div style="font-size:0.74rem;color:var(--text-muted);margin-bottom:5px;">
             색상
           </div>

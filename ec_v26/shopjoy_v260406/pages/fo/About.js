@@ -13,8 +13,6 @@ window.About = {
     const codes = reactive({});
 
 
-    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
-
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
     /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
@@ -28,6 +26,8 @@ window.About = {
       }
     };
 
+    /* ##### [03] 초기 함수 (마운트 / 코드 로드 / watch) ############################## */
+
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       try {
@@ -40,6 +40,8 @@ window.About = {
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
+
+    /* ##### [05] 사용자 함수 (헬퍼 / 정적 데이터) ################################# */
 
     const values = [
       { icon:'😊', bg:'#dbeafe', title:'고객 중심', desc:'모든 의사결정의 기준은 고객 만족입니다.' },
