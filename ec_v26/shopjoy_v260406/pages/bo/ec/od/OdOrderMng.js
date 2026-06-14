@@ -179,7 +179,7 @@ window.OdOrderMng = {
     /* 일괄선택 */
     const checked = reactive(new Set());
 
-    const DEFAULT_TMPL = '[결재요청]\n요청대상: {target} - {targetNm}\n요청금액: {amount}원\n내용: {reason}\n\n위 건에 대한 추가결재 부탁드립니다.';
+    const DEFAULT_TMPL = boConsts.APPROVAL_TMPL;
 
     /* 변경작업 모달 (actionsModal) */
     const bulkForm = reactive({
@@ -294,19 +294,12 @@ window.OdOrderMng = {
 
 
     /* 주문 fnStatusBadge — 공통코드 ORDER_STATUS code_opt1 우선, 미매칭 시 로컬 fallback */
-    const _ORDER_STATUS_FB = {
-      '입금대기': 'badge-orange', '결제완료': 'badge-blue', '상품준비중': 'badge-orange',
-      '배송중': 'badge-blue', '배송완료': 'badge-green', '구매확정': 'badge-gray',
-      '취소': 'badge-red', '자동취소': 'badge-red',
-    };
+    const _ORDER_STATUS_FB = boConsts.ORDER_STATUS_BADGE;
     /* fnStatusBadge — 상태 배지 */
     const fnStatusBadge = s => coUtil.cofCodeBadge('ORDER_STATUS', s, _ORDER_STATUS_FB[s] || 'badge-gray');
 
     /* 주문 fnPayStatusBadge */
-    const _PAY_STATUS_FB = {
-      '미결제':'badge-gray','부분결제':'badge-orange','결제완료':'badge-green',
-      '결제실패':'badge-red','환불중':'badge-orange','부분환불':'badge-orange','환불완료':'badge-purple',
-    };
+    const _PAY_STATUS_FB = boConsts.PAY_STATUS_BADGE;
     /* fnPayStatusBadge — 유틸 */
     const fnPayStatusBadge = s => coUtil.cofCodeBadge('PAY_STATUS', s, _PAY_STATUS_FB[s] || 'badge-gray');
 
@@ -336,7 +329,7 @@ window.OdOrderMng = {
       (Array.isArray(claims) ? claims : []).find(c => c.orderId === orderId);
 
     /* fnClaimTypeColor — 유틸 */
-    const fnClaimTypeColor = (t) => ({ '취소':'#ef4444', '반품':'#FFBB00', '교환':'#3b82f6' }[t] || '#9ca3af');
+    const fnClaimTypeColor = (t) => coConsts.claimTypeColor(t);
 
     /* 결제수단 색맵 (배지 배경/글자색) */
     const PAY_COLORS = {

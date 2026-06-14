@@ -820,6 +820,20 @@
     return s;
   }
 
+  /* cofHtmlCdnToAsset — HTML 본문 안의 src/href="/cdn/..." → "assets/cdn/..." 보정 (브라우저 표시용)
+   *   에디터/미리보기에 넣기 전 호출. cofImgSrc 의 HTML 일괄 버전. (BlogView 본문 표시와 동일 변환) */
+  function cofHtmlCdnToAsset(html) {
+    if (html == null) { return ''; }
+    return String(html).replace(/(src|href)=(['"])\/cdn\//g, '$1=$2assets/cdn/');
+  }
+
+  /* cofHtmlAssetToCdn — HTML 본문 안의 src/href="assets/cdn/..." → "/cdn/..." 역보정 (저장용)
+   *   서버는 '/cdn/...' 절대경로로 저장하므로 저장 직전 호출. cofHtmlCdnToAsset 의 역함수. */
+  function cofHtmlAssetToCdn(html) {
+    if (html == null) { return ''; }
+    return String(html).replace(/(src|href)=(['"])assets\/cdn\//g, '$1=$2/cdn/');
+  }
+
   /* ──────────────────────────────────────────────────────────────────────
    * FO 상품 공용 헬퍼 (foApp.js / Home*.js / Prod*List.js / Prod*View.js 반복 제거)
    * ────────────────────────────────────────────────────────────────────── */
@@ -1100,6 +1114,8 @@
   global.coUtil.cofBuildPagerNums = global.coUtil.cofBuildPagerNums || cofBuildPagerNums;
   global.coUtil.cofOmitEmpty = global.coUtil.cofOmitEmpty || cofOmitEmpty;
   global.coUtil.cofImgSrc = global.coUtil.cofImgSrc || cofImgSrc;
+  global.coUtil.cofHtmlCdnToAsset = global.coUtil.cofHtmlCdnToAsset || cofHtmlCdnToAsset;
+  global.coUtil.cofHtmlAssetToCdn = global.coUtil.cofHtmlAssetToCdn || cofHtmlAssetToCdn;
   global.coUtil.cofHexColor = global.coUtil.cofHexColor || cofHexColor;
   // FO 상품 공용 헬퍼
   global.coUtil.cofGenId = global.coUtil.cofGenId || cofGenId;

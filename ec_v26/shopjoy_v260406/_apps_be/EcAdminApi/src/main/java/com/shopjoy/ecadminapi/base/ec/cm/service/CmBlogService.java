@@ -1,7 +1,9 @@
 package com.shopjoy.ecadminapi.base.ec.cm.service;
 
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogDto;
+import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmBlogFileDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmBlog;
+import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBlogFileRepository;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmBlogRepository;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -16,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,15 +27,36 @@ import java.util.List;
 public class CmBlogService {
 
     private final CmBlogRepository cmBlogRepository;
+    private final CmBlogFileRepository cmBlogFileRepository;
 
     @PersistenceContext
     private EntityManager em;
 
-    /* 게시물 키조회 */
+    /* 게시물 키조회 (첨부 files[] 포함) */
     public CmBlogDto.Item getById(String id) {
         CmBlogDto.Item dto = cmBlogRepository.selectById(id).orElse(null);
         if (dto == null) throw new CmBizException("존재하지 않는 데이터입니다: " + id + "::" + CmUtil.svcCallerInfo(this));
+        attachFiles(List.of(dto));
         return dto;
+    }
+
+    /* attachFiles — items 목록에 cm_blog_file 첨부(files[])를 blogId 기준으로 일괄 채움 (N+1 회피) */
+    private void attachFiles(List<CmBlogDto.Item> items) {
+        if (items == null || items.isEmpty()) return;
+        List<String> blogIds = items.stream()
+                .map(CmBlogDto.Item::getBlogId)
+                .filter(java.util.Objects::nonNull)
+                .distinct()
+                .toList();
+        if (blogIds.isEmpty()) return;
+        CmBlogFileDto.Request fileReq = new CmBlogFileDto.Request();
+        fileReq.setBlogIds(blogIds);
+        List<CmBlogFileDto.Item> files = cmBlogFileRepository.selectList(fileReq);
+        Map<String, List<CmBlogFileDto.Item>> byBlogId = files.stream()
+                .collect(Collectors.groupingBy(CmBlogFileDto.Item::getBlogId));
+        for (CmBlogDto.Item it : items) {
+            it.setFiles(byBlogId.getOrDefault(it.getBlogId(), List.of()));
+        }
     }
 
     /** getByIdOrNull — 단건조회 (없으면 null 반환, 예외 던지지 않음) */
@@ -66,10 +91,12 @@ public class CmBlogService {
         return cmBlogRepository.selectList(req);
     }
 
-    /* 게시물 페이지조회 */
+    /* 게시물 페이지조회 (첨부 files[] 포함 — 그리드 썸네일용) */
     public CmBlogDto.PageResponse getPageData(CmBlogDto.Request req) {
         PageHelper.addPaging(req);
-        return cmBlogRepository.selectPageData(req);
+        CmBlogDto.PageResponse res = cmBlogRepository.selectPageData(req);
+        if (res != null) attachFiles(res.getPageList());
+        return res;
     }
 
     /* 게시물 등록 */

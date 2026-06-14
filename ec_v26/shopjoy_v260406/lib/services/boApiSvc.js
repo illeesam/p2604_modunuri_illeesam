@@ -30,6 +30,8 @@
   /* ── cm: 블로그 ─────────────────────────────────────────────── */
   boApiSvc.cmBlog = {
     getPage(params, uiNm, cmdNm)   { return global.boApi.get(   '/bo/ec/cm/blog/page', { params, ...hdr(uiNm, cmdNm) }); },
+    getById(_id, uiNm, cmdNm)      { return chkId(_id, uiNm, cmdNm) || global.boApi.get(   `/bo/ec/cm/blog/${_id}`, hdr(uiNm, cmdNm)); },
+    create(body, uiNm, cmdNm)      { return global.boApi.post(  '/bo/ec/cm/blog', body, hdr(uiNm, cmdNm)); },
     update(_id, body, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.boApi.put(   `/bo/ec/cm/blog/${_id}`, body, hdr(uiNm, cmdNm)); },
     remove(_id, uiNm, cmdNm)       { return chkId(_id, uiNm, cmdNm) || global.boApi.delete(`/bo/ec/cm/blog/${_id}`, hdr(uiNm, cmdNm)); },
     setUse(_id, body, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.boApi.put(   `/bo/ec/cm/blog/${_id}/use`, body, hdr(uiNm, cmdNm)); },

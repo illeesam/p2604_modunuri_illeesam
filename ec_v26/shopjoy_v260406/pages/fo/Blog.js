@@ -16,13 +16,7 @@ window.Blog = {
     const searchParam = reactive({ searchValue: '', cat: 'all' });
     const searchParamOrg = reactive({ searchValue: '', cat: 'all' });
 
-    const categories = [
-      { id: 'all', name: '전체' },
-      { id: 'fashion', name: '패션' },
-      { id: 'lifestyle', name: '라이프스타일' },
-      { id: 'trend', name: '트렌드' },
-      { id: 'howto', name: '스타일링 팁' },
-    ];
+    const categories = foConsts.BLOG_CATEGORIES;
 
     const posts = reactive([]);
 
@@ -176,16 +170,16 @@ window.Blog = {
           Prod Categories
         </h3>
         <ul style="list-style:none;padding:0;margin:0;">
-          <li v-for="cat in categories" :key="cat.id"
-            @click="handleBtnAction('category-select', cat.id)"
+          <li v-for="cat in categories" :key="cat.codeValue"
+            @click="handleBtnAction('category-select', cat.codeValue)"
             :style="{
             padding:'8px 0', cursor:'pointer', fontSize:'0.84rem',
-            color: searchParam.cat===cat.id ? 'var(--blue)' : 'var(--text-secondary)',
-            fontWeight: searchParam.cat===cat.id ? '700' : '400',
-            borderLeft: searchParam.cat===cat.id ? '2px solid var(--blue)' : '2px solid transparent',
+            color: searchParam.cat===cat.codeValue ? 'var(--blue)' : 'var(--text-secondary)',
+            fontWeight: searchParam.cat===cat.codeValue ? '700' : '400',
+            borderLeft: searchParam.cat===cat.codeValue ? '2px solid var(--blue)' : '2px solid transparent',
             paddingLeft: '12px', transition:'all .15s',
             }">
-            {{ cat.name }}
+            {{ cat.codeLabel }}
           </li>
         </ul>
       </div>
@@ -229,7 +223,7 @@ window.Blog = {
         <div style="flex:1;min-width:200px;padding:clamp(14px,2vw,24px) clamp(14px,2vw,24px) clamp(14px,2vw,24px) 0;display:flex;flex-direction:column;justify-content:center;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
             <span style="font-size:0.72rem;color:var(--blue);font-weight:600;">
-              {{ categories.find(c => c.id === post.category)?.name || post.category }}
+              {{ categories.find(c => c.codeValue === post.category)?.codeLabel || post.category }}
             </span>
           </div>
           <h2 style="font-size:1.1rem;font-weight:800;color:var(--text-primary);margin-bottom:10px;line-height:1.4;">

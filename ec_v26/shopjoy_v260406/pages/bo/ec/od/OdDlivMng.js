@@ -166,8 +166,8 @@ window.OdDlivMng = {
     /* 일괄선택 */
     const checked = reactive(new Set());
 
-    const COURIER_OPTIONS = ['CJ대한통운','롯데택배','한진택배','우체국택배','로젠택배'];
-    const DEFAULT_TMPL = '[결재요청]\n요청대상: {target} - {targetNm}\n요청금액: {amount}원\n내용: {reason}\n\n위 건에 대한 추가결재 부탁드립니다.';
+    const COURIER_OPTIONS = boConsts.COURIER_OPTIONS;   // [{codeValue,codeLabel}] (boConsts)
+    const DEFAULT_TMPL = boConsts.APPROVAL_TMPL;
 
     /* 변경작업 모달 (actionsModal) */
     const bulkForm = reactive({
@@ -537,7 +537,7 @@ window.OdDlivMng = {
     const cfCourierOpts = computed(() => {
       const arr = codes.courier_codes;
       if (arr && arr.length) { return arr; }
-      return COURIER_OPTIONS.map(v => ({ codeValue: v, codeLabel: v }));
+      return COURIER_OPTIONS;   // 이미 [{codeValue,codeLabel}] 형식 (boConsts)
     });
     // 일괄 택배 폼
     columns.bulkCourierForm = [

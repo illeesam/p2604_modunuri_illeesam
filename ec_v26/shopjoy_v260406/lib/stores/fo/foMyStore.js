@@ -2,42 +2,24 @@
 window.useFoMyStore = Pinia.defineStore('foMy', () => {
   const { ref, reactive, computed } = Vue;
 
-  /* ── 클레임 상수 ── */
-  const CLAIM_FLOWS = {
-    '취소': ['취소요청', '취소처리중', '취소완료'],
-    '반품': ['반품요청', '수거예정', '수거중', '수거완료', '환불처리중', '환불완료'],
-    '교환': ['교환요청', '수거예정', '수거중', '수거완료', '상품준비중', '발송중', '발송완료', '교환완료'],
-  };
-  const CLAIM_DONE = ['취소완료', '환불완료', '교환완료'];
-  const CLAIM_TYPE_COLOR = { '취소': '#ef4444', '반품': '#FFBB00', '교환': '#3b82f6' };
+  /* ── 클레임 상수 (foConsts/coConsts 참조) ── */
+  const CLAIM_FLOWS = foConsts.CLAIM_FLOWS;
+  const CLAIM_DONE = foConsts.CLAIM_DONE;
+  const CLAIM_TYPE_COLOR = coConsts.CLAIM_TYPE_COLOR;
 
-  /* CLAIM_STATUS_COLOR */
-  const CLAIM_STATUS_COLOR = s => ({
-    '취소요청':'#ef4444','취소처리중':'#f97316','취소완료':'#9ca3af',
-    '반품요청':'#ef4444','수거예정':'#f59e0b','수거중':'#fb923c','수거완료':'#8b5cf6','환불처리중':'#f97316','환불완료':'#9ca3af',
-    '교환요청':'#3b82f6','상품준비중':'#f59e0b','발송중':'#14b8a6','발송완료':'#22c55e','교환완료':'#9ca3af',
-  }[s] || '#9ca3af');
+  /* CLAIM_STATUS_COLOR — 클레임 상태 → hex (foConsts 맵) */
+  const CLAIM_STATUS_COLOR = s => (foConsts.CLAIM_STATUS_COLOR_MAP[s] || '#9ca3af');
 
-  /* ── 주문 상태 흐름 ── */
-  const ORDER_FLOW = [
-    { status: '주문완료',   icon: '📋' },
-    { status: '결제완료',   icon: '💳' },
-    { status: '배송준비중', icon: '📦' },
-    { status: '배송중',     icon: '🚚' },
-    { status: '배송완료',   icon: '✅' },
-    { status: '완료',       label: '구매확정', icon: '🏁' },
-  ];
-  const CANCELABLE   = ['주문완료', '결제완료'];
-  const SHOW_COURIER = ['배송준비중', '배송중', '배송완료', '완료'];
+  /* ── 주문 상태 흐름 (foConsts 참조) ── */
+  const ORDER_FLOW = foConsts.ORDER_FLOW;
+  const CANCELABLE   = foConsts.CANCELABLE;
+  const SHOW_COURIER = foConsts.SHOW_COURIER;
 
   /* orderStatusLabel */
   const orderStatusLabel = s => (s === '완료' ? '구매확정' : s);
 
-  /* statusColor */
-  const statusColor = s => ({
-    '주문완료':'#3b82f6','결제완료':'#8b5cf6','배송준비중':'#f59e0b','배송중':'#f97316',
-    '배송완료':'#22c55e','완료':'#6b7280','교환요청':'#f59e0b','반품요청':'#f97316','취소됨':'#9ca3af',
-  }[s] || '#9ca3af');
+  /* statusColor — 주문 상태 → hex (foConsts 맵) */
+  const statusColor = s => (foConsts.ORDER_STATUS_COLOR[s] || '#9ca3af');
 
   /* ── 주문 ── */
   const orders = reactive([]);
@@ -46,13 +28,8 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
   const _fmtDate = v => coUtil.cofYmd(v);
 
   /* _orderStatusKor — 백엔드 주문상태(코드/라벨) → 화면 흐름(ORDER_FLOW) 한글 status 로 정규화.
-     orderStatusCdNm 이 이미 한글이면 그대로, 코드값이면 맵으로 변환. */
-  const _ORDER_STATUS_KOR = {
-    ORDER: '주문완료', PAID: '결제완료', PREPARING: '배송준비중', SHIPPING: '배송중',
-    SHIPPED: '배송완료', DELIVERED: '배송완료', COMPLT: '완료', COMPLETED: '완료',
-    DONE: '완료', CANCEL: '취소됨', CANCELED: '취소됨', CANCELLED: '취소됨',
-    EXCHANGE: '교환요청', RETURN: '반품요청',
-  };
+     orderStatusCdNm 이 이미 한글이면 그대로, 코드값이면 맵(foConsts)으로 변환. */
+  const _ORDER_STATUS_KOR = foConsts.ORDER_STATUS_KOR;
   const _orderStatusKor = (o) => {
     const nm = o.orderStatusCdNm;
     if (nm && /[가-힣]/.test(nm)) return nm;          // 한글 라벨이면 그대로
@@ -139,7 +116,7 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
   const claimFilter = ref('전체');
 
   /* _claimTypeKor — 클레임 유형(코드/라벨) → '취소'|'반품'|'교환' 정규화 (CLAIM_FLOWS 키와 일치) */
-  const _CLAIM_TYPE_KOR = { CANCEL: '취소', RETURN: '반품', EXCHANGE: '교환' };
+  const _CLAIM_TYPE_KOR = foConsts.CLAIM_TYPE_KOR;
   const _claimTypeKor = (c) => {
     const nm = c.claimTypeCdNm;
     if (nm && /[가-힣]/.test(nm)) {
@@ -343,7 +320,7 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
   const expandedInquiry = ref(null);
 
   /* _contactStatusKor — 문의상태(코드/라벨) → 화면 한글(요청/처리중/답변완료) */
-  const _CONTACT_STATUS_KOR = { REQUEST: '요청', REQ: '요청', PROC: '처리중', PROCESSING: '처리중', DONE: '답변완료', ANSWERED: '답변완료', COMPLETE: '답변완료', CANCEL: '취소됨' };
+  const _CONTACT_STATUS_KOR = foConsts.CONTACT_STATUS_KOR;
   const _contactStatusKor = (q) => {
     const nm = q.contactStatusCdNm;
     if (nm && /[가-힣]/.test(nm)) return nm;
@@ -388,7 +365,7 @@ window.useFoMyStore = Pinia.defineStore('foMy', () => {
   };
 
   /* inquiryStatusColor */
-  const inquiryStatusColor = s => ({ '요청':'#3b82f6','처리중':'#f97316','답변완료':'#22c55e','취소됨':'#9ca3af' }[s] || '#9ca3af');
+  const inquiryStatusColor = s => (foConsts.CONTACT_STATUS_COLOR[s] || '#9ca3af');
 
   /* ── 채팅 ── */
   const chats = reactive([]);

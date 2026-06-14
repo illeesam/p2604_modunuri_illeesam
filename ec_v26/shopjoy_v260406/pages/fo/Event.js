@@ -57,12 +57,8 @@ window.EventPage = {
     /* ── 백엔드 → 화면 어댑터 ──
      *   eventStatusCd(PENDING/ACTIVE/ENDED) → status('ongoing'|'ended'),
      *   eventTitle/startDate 등 → 화면 카드 기대 필드. 배너색/태그는 백엔드에 없어 결정적 생성. */
-    const STATUS_KOR = { PENDING: '진행예정', ACTIVE: '진행중', ENDED: '종료' };
-    const BANNER_BGS = [
-      'linear-gradient(135deg,#667eea,#764ba2)', 'linear-gradient(135deg,#f093fb,#f5576c)',
-      'linear-gradient(135deg,#4facfe,#00f2fe)', 'linear-gradient(135deg,#43e97b,#38f9d7)',
-      'linear-gradient(135deg,#fa709a,#fee140)', 'linear-gradient(135deg,#30cfd0,#330867)',
-    ];
+    const STATUS_KOR = foConsts.EVENT_STATUS_KOR;
+    const BANNER_BGS = foConsts.EVENT_BANNER_BGS;
 
     /* _adaptEvent — PmEventDto.Item → 화면 카드 기대 형태 */
     const _adaptEvent = (e) => {

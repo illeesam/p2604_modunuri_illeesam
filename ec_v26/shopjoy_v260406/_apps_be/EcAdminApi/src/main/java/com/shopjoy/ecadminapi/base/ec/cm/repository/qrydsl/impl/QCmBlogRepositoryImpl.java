@@ -35,7 +35,7 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
     private JPAQuery<CmBlogDto.Item> baseSelColumnQuery() {
         return queryFactory
                 .select(Projections.bean(CmBlogDto.Item.class,
-                        cmBlog.blogId, cmBlog.siteId, cmBlog.blogCateId, cmBlog.blogTitle, cmBlog.blogSummary,
+                        cmBlog.blogId, cmBlog.siteId, cmBlog.blogCateId, cmBlog.blogTypeCd, cmBlog.blogTitle, cmBlog.blogSummary,
                         cmBlog.blogContent, cmBlog.blogAuthor, cmBlog.prodId, cmBlog.viewCount,
                         cmBlog.useYn, cmBlog.isNotice,
                         cmBlog.regBy, cmBlog.regDate, cmBlog.updBy, cmBlog.updDate
@@ -61,6 +61,7 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
                 .setHint("org.hibernate.comment", QRY_SRC + " :: selectList()").where(
                 baseAndSiteId(search),
                 baseAndBlogId(search),
+                baseAndBlogTypeCd(search),
                 baseAndUseYn(search),
                 baseAndIsNotice(search),
                 baseAndDateRange(search),
@@ -89,6 +90,7 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
         BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndBlogId(search),
+                baseAndBlogTypeCd(search),
                 baseAndUseYn(search),
                 baseAndIsNotice(search),
                 baseAndDateRange(search),
@@ -135,6 +137,12 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
     private BooleanExpression baseAndBlogId(CmBlogDto.Request search) {
         return search != null && StringUtils.hasText(search.getBlogId())
                 ? cmBlog.blogId.eq(search.getBlogId()) : null;
+    }
+
+    /* blogTypeCd 정확 일치 (NEWS/BLOG) */
+    private BooleanExpression baseAndBlogTypeCd(CmBlogDto.Request search) {
+        return search != null && StringUtils.hasText(search.getBlogTypeCd())
+                ? cmBlog.blogTypeCd.eq(search.getBlogTypeCd()) : null;
     }
 
     /* useYn 정확 일치 */
@@ -242,6 +250,7 @@ public class QCmBlogRepositoryImpl implements QCmBlogRepository {
 
         if (entity.getSiteId()      != null) { update.set(cmBlog.siteId,      entity.getSiteId());      hasAny = true; }
         if (entity.getBlogCateId()  != null) { update.set(cmBlog.blogCateId,  entity.getBlogCateId());  hasAny = true; }
+        if (entity.getBlogTypeCd()  != null) { update.set(cmBlog.blogTypeCd,  entity.getBlogTypeCd());  hasAny = true; }
         if (entity.getBlogTitle()   != null) { update.set(cmBlog.blogTitle,   entity.getBlogTitle());   hasAny = true; }
         if (entity.getBlogSummary() != null) { update.set(cmBlog.blogSummary, entity.getBlogSummary()); hasAny = true; }
         if (entity.getBlogContent() != null) { update.set(cmBlog.blogContent, entity.getBlogContent()); hasAny = true; }

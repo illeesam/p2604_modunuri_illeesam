@@ -60,11 +60,7 @@ window.MyDateFilter = {
 
     /* calcStart — 계산 시작 */
     const calcStart = months => { const d = new Date(today); d.setMonth(d.getMonth() - months); return fmt(d); };
-    const PERIODS = [
-      { label: '1달', value: 1 }, { label: '2달', value: 2 }, { label: '3달', value: 3 },
-      { label: '6달', value: 6 }, { label: '1년', value: 12 }, { label: '1년6개월', value: 18 },
-      { label: '2년', value: 24 }, { label: '3년', value: 36 },
-    ];
+    const PERIODS = foConsts.DATE_FILTER_PERIODS;
     const period   = ref(6);
     const startDate = ref(calcStart(6));
     const endDate   = ref(fmt(today));
@@ -226,14 +222,7 @@ window.foMyLayout = {
       }
     };
 
-    const MY_TABS = [
-      { pageId: 'myOrder',   label: '주문',          icon: '📦' },
-      { pageId: 'myClaim',   label: '취소/반품/교환', icon: '↩️' },
-      { pageId: 'myCoupon',  label: '쿠폰',           icon: '🎟️' },
-      { pageId: 'myCache',   label: '캐쉬',           icon: '💰' },
-      { pageId: 'myContact', label: '문의',           icon: '📩' },
-      { pageId: 'myChatt',   label: '채팅',           icon: '💬' },
-    ];
+    const MY_TABS = foConsts.MY_TABS;
 
     const cfTabCounts = computed(() => myStore.getTabCounts(props.cartCount));
 

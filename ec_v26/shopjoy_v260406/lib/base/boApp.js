@@ -91,7 +91,12 @@
       { group: '고객센터' },
       { id: 'syContactMng', label: '문의관리' },
       { id: 'cmChattMng', label: '채팅관리' },
+      { group: '공통업무' },
+      { id: 'cmNoticeMng', label: '공지사항관리' },
       { id: 'cmFaqMng', label: 'FAQ관리' },
+      { id: 'cmBlogMng', label: '뉴스&블로그 관리' },
+      { id: 'syBbmMng', label: '게시판관리' },
+      { id: 'syBbsMng', label: '게시글관리' },
     ],
     settle: [
       { group: '기준정보' },
@@ -124,10 +129,6 @@
       { id: 'syVendorMng', label: '업체' },
       { id: 'syVendorUserMng', label: '업체사용자' },
       { id: 'syVendorInfoMng', label: '업체정보' },
-      { group: '공통업무' },
-      { id: 'cmNoticeMng', label: '공지사항관리' },
-      { id: 'syBbmMng', label: '게시판관리' },
-      { id: 'syBbsMng', label: '게시글관리' },
       { group: '시스템' },
       { id: 'syAttachMng', label: '첨부관리' },
       { id: 'syTemplateMng', label: '템플릿관리' },
@@ -436,6 +437,7 @@
         syRoleMng: 'sy-role-mng',
         cmNoticeMng: 'cm-notice-mng',
         cmFaqMng: 'cm-faq-mng',
+        cmBlogMng: 'cm-blog-mng',
         syAlarmMng: 'sy-alarm-mng',
         syPropMng: 'sy-prop-mng',
         syPathMng: 'sy-path-mng',
@@ -2507,6 +2509,7 @@
             <sy-role-mng  v-else-if="page==='syRoleMng'"  :navigate="navigate" />
             <cm-notice-mng  v-else-if="page==='cmNoticeMng'"  :navigate="navigate" />
             <cm-faq-mng  v-else-if="page==='cmFaqMng'"  :navigate="navigate" />
+            <cm-blog-mng  v-else-if="page==='cmBlogMng'"  :navigate="navigate" />
             <sy-alarm-mng  v-else-if="page==='syAlarmMng'"  :navigate="navigate" />
             <sy-prop-mng  v-else-if="page==='syPropMng'"  :navigate="navigate" />
             <sy-path-mng  v-else-if="page==='syPathMng'"  :navigate="navigate" />

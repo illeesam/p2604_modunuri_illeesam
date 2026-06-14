@@ -5,6 +5,7 @@ CREATE TABLE shopjoy_2604.cm_blog (
     blog_id      VARCHAR(21)  NOT NULL PRIMARY KEY,
     site_id      VARCHAR(21)  NOT NULL,
     blog_cate_id VARCHAR(21) ,
+    blog_type_cd VARCHAR(20)  DEFAULT 'BLOG',
     blog_title   VARCHAR(200) NOT NULL,
     blog_summary VARCHAR(500),
     blog_content TEXT         NOT NULL,
@@ -24,6 +25,7 @@ COMMENT ON TABLE  shopjoy_2604.cm_blog IS '블로그 게시글';
 COMMENT ON COLUMN shopjoy_2604.cm_blog.blog_id IS '블로그ID';
 COMMENT ON COLUMN shopjoy_2604.cm_blog.site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.cm_blog.blog_cate_id IS '블로그카테고리ID (cm_bltn_cate.blog_cate_id)';
+COMMENT ON COLUMN shopjoy_2604.cm_blog.blog_type_cd IS '게시글 구분 코드 (NEWS=뉴스 / BLOG=블로그)';
 COMMENT ON COLUMN shopjoy_2604.cm_blog.blog_title IS '제목';
 COMMENT ON COLUMN shopjoy_2604.cm_blog.blog_summary IS '요약 (미리보기, 검색결과용)';
 COMMENT ON COLUMN shopjoy_2604.cm_blog.blog_content IS '본문 (HTML 에디터)';

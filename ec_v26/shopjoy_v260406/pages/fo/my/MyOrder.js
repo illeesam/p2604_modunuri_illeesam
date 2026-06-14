@@ -157,23 +157,17 @@ window.MyOrder = {
     const pager = reactive({ pageType: 'PAGE', pageNo: 1, pageSize: 50, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50, 100, 200, 500], pageCond: {} });
 
     /* -- 배송조회 -- */
-    const COURIER_URLS = {
-      'CJ대한통운': no => `https://trace.cjlogistics.com/next/tracking.html?wblNo=${no}`,
-      '롯데택배':   no => `https://www.lotteglogis.com/open/tracking?invno=${no}`,
-      '한진택배':   no => `https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&schLang=KR&wblnumText2=${no}`,
-    };
-
-    /* openTracking — 열기 */
+    /* openTracking — 열기 (택배사 송장조회 URL: coConsts.courierTrackUrl) */
     const openTracking = (courier, trackingNo) => {
-      const fn = COURIER_URLS[courier];
-      if (!fn) { showToast('택배사 정보를 찾을 수 없습니다.', 'error'); return; }
-      window.open(fn(trackingNo), '_blank', 'width=960,height=700,scrollbars=yes,resizable=yes');
+      const url = coConsts.courierTrackUrl(courier, trackingNo);
+      if (!url) { showToast('택배사 정보를 찾을 수 없습니다.', 'error'); return; }
+      window.open(url, '_blank', 'width=960,height=700,scrollbars=yes,resizable=yes');
     };
 
     /* openTracking2 — 열기 */
     const openTracking2 = (courier, trackingNo) => {
-      const fn = COURIER_URLS[courier];
-      if (fn) { window.open(fn(trackingNo), '_blank', 'width=960,height=700,scrollbars=yes'); }
+      const url = coConsts.courierTrackUrl(courier, trackingNo);
+      if (url) { window.open(url, '_blank', 'width=960,height=700,scrollbars=yes'); }
     };
 
     /* showOrderPayBreakdown — 표시 */
@@ -199,11 +193,11 @@ window.MyOrder = {
       showToast('구매가 확정되었습니다. 감사합니다! 🎉', 'success');
     };
 
-    /* -- 클레임 신청 모달 -- */
-    const CLAIM_SHIPPING_FEE = 5000;
-    const CLAIM_FREE_REASONS = ['상품불량', '오배송'];
-    const EXCHANGE_REASONS = ['사이즈 불일치', '색상 변경', '상품불량', '오배송', '단순변심'];
-    const RETURN_REASONS  = ['단순변심', '사이즈 불일치', '색상 상이', '상품불량', '오배송'];
+    /* -- 클레임 신청 모달 (foConsts 참조) -- */
+    const CLAIM_SHIPPING_FEE = foConsts.CLAIM_SHIPPING_FEE;
+    const CLAIM_FREE_REASONS = foConsts.CLAIM_FREE_REASONS;
+    const EXCHANGE_REASONS = foConsts.EXCHANGE_REASONS;
+    const RETURN_REASONS  = foConsts.RETURN_REASONS;
     const claimModal = reactive({
       show: false, type: '', orderId: '', order: null,
       reason: '', reasonDetail: '', exchangeSize: '', exchangeColor: '',

@@ -31,6 +31,10 @@ public class CmBlog extends BaseEntity {
     @Column(name = "blog_cate_id", length = 21)
     private String blogCateId;
 
+    @Comment("게시글 구분 코드 (NEWS=뉴스 / BLOG=블로그)")
+    @Column(name = "blog_type_cd", length = 20)
+    private String blogTypeCd;
+
     @Comment("제목")
     @Column(name = "blog_title", length = 200, nullable = false)
     private String blogTitle;

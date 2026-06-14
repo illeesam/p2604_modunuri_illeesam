@@ -138,15 +138,10 @@ window.MyClaim = {
       if (!ok) { showToast('주문 정보를 찾을 수 없습니다.', 'error'); }
     };
 
-    /* openTracking2 — 열기 */
+    /* openTracking2 — 열기 (택배사 송장조회 URL: coConsts.courierTrackUrl) */
     const openTracking2 = (courier, trackingNo) => {
-      const URLS = {
-        'CJ대한통운': no => `https://trace.cjlogistics.com/next/tracking.html?wblNo=${no}`,
-        '롯데택배':   no => `https://www.lotteglogis.com/open/tracking?invno=${no}`,
-        '한진택배':   no => `https://www.hanjin.com/kor/CMS/DeliveryMgr/WaybillResult.do?mCode=MN038&schLang=KR&wblnumText2=${no}`,
-      };
-      const fn = URLS[courier];
-      if (fn) { window.open(fn(trackingNo), '_blank', 'width=960,height=700,scrollbars=yes'); }
+      const url = coConsts.courierTrackUrl(courier, trackingNo);
+      if (url) { window.open(url, '_blank', 'width=960,height=700,scrollbars=yes'); }
     };
 
     /* cancelClaim — 취소 */

@@ -162,7 +162,7 @@ window.OdClaimMng = {
     /* 일괄선택 */
     const checked = reactive(new Set());
 
-    const DEFAULT_TMPL = '[결재요청]\n요청대상: {target} - {targetNm}\n요청금액: {amount}원\n내용: {reason}\n\n위 건에 대한 추가결재 부탁드립니다.';
+    const DEFAULT_TMPL = boConsts.APPROVAL_TMPL;
 
     /* 변경작업 모달 (actionsModal) */
     const bulkForm = reactive({
@@ -307,7 +307,7 @@ window.OdClaimMng = {
 
 
     /* fnClaimTypeColor — 유틸 */
-    const fnClaimTypeColor = (t) => ({ '취소':'#ef4444', '반품':'#FFBB00', '교환':'#3b82f6' }[t] || '#9ca3af');
+    const fnClaimTypeColor = (t) => coConsts.claimTypeColor(t);
 
     /* 클레임(취소/반품/교환) fnStatusBadge — 공통코드 CLAIM_STATUS_KR 우선, 미매칭 시 로컬 fallback */
 

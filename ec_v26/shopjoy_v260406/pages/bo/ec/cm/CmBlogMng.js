@@ -20,6 +20,7 @@ window.CmBlogMng = {
       blog_display_statuses: [],
       open_yn_opts:   [{ codeValue: 'Y', codeLabel: '공개' }, { codeValue: 'N', codeLabel: '비공개' }],
       notice_yn_opts: [{ codeValue: 'Y', codeLabel: '공지' }, { codeValue: 'N', codeLabel: '일반' }],
+      blog_type_opts: [{ codeValue: 'NEWS', codeLabel: '뉴스' }, { codeValue: 'BLOG', codeLabel: '블로그' }],
     });
     const SORT_MAP = { nm: { asc: 'blogTitle asc', desc: 'blogTitle desc' }, reg: { asc: 'regDate asc', desc: 'regDate desc' } };
 
@@ -74,6 +75,9 @@ window.CmBlogMng = {
       // 그리드 행 공개/비공개 토글
       } else if (cmd === 'blogs-rowToggleUse') {
         return toggleUse(param);
+      // 그리드 행 삭제
+      } else if (cmd === 'blogs-rowDelete') {
+        return handleDeleteRow(param);
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
@@ -83,6 +87,10 @@ window.CmBlogMng = {
     const handleGridCellAction = (cmd, colKey, row, e = {}) => {
       console.log(' ■■ CmBlogMng.js : handleGridCellAction -> ', cmd, colKey, row);
       if (cmd === 'blogs-cellClick') {
+        // 행 수정 버튼 → 상세/수정 패널 열기
+        if (colKey === 'btn_row_edit') {
+          return openDetail(row);
+        }
         // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
         const VIEW_COLS = ['__no__'];
         if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
@@ -94,7 +102,7 @@ window.CmBlogMng = {
     };
 
     const _initSearchParam = () => {
-      return { searchType: '', searchValue: '', useYn: '', isNotice: '' };
+      return { searchType: '', searchValue: '', useYn: '', isNotice: '', blogTypeCd: '' };
     };
     const searchParam = reactive(_initSearchParam());
 
@@ -103,7 +111,7 @@ window.CmBlogMng = {
 
     /* ===== 상세 인라인 패널 ===== */
     /* _initBlogForm — 빈(신규) 블로그 폼 기본값 */
-    const _initBlogForm = () => ({ blogId: null, siteId: 1, blogCateId: null, blogTitle: '', blogSummary: '', blogContent: '', blogAuthor: '', viewCount: 0, useYn: 'Y', isNotice: 'N' });
+    const _initBlogForm = () => ({ blogId: null, siteId: 1, blogCateId: null, blogTypeCd: 'BLOG', blogTitle: '', blogSummary: '', blogContent: '', blogAuthor: '', viewCount: 0, useYn: 'Y', isNotice: 'N' });
     const detailPanel = reactive({ show: true, active: false, isNew: false, dtlId: null, form: _initBlogForm() }); // 인라인 Dtl 패널 상태 (항상 표시, active=false 면 버튼 숨김)
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) ############################ */
@@ -170,9 +178,11 @@ window.CmBlogMng = {
       detailPanel.dtlId = null; detailPanel.isNew = false; detailPanel.show = true; detailPanel.active = false;
     };
 
-    /* openDetail — 인라인 패널 열기 (토글) */
+    /* openDetail — 인라인 패널 열기 (토글)
+     *   본문 이미지 경로 '/cdn/...' → 'assets/cdn/...' 보정 후 에디터에 표시 (저장 시 역변환) */
     const openDetail = (row) => {
       Object.assign(detailPanel.form, _initBlogForm(), { ...row });
+      detailPanel.form.blogContent = coUtil.cofHtmlCdnToAsset(detailPanel.form.blogContent);
       detailPanel.dtlId = row.blogId; detailPanel.isNew = false; detailPanel.show = true; detailPanel.active = true;
     };
 
@@ -201,9 +211,11 @@ window.CmBlogMng = {
         if (si !== -1) { Object.assign(blogs[si], detailPanel.form); }
       }
       try {
+        /* 저장 페이로드: 본문 이미지 경로 'assets/cdn/...' → '/cdn/...' 역변환 (서버는 /cdn 절대경로 저장) */
+        const payload = { ...detailPanel.form, blogContent: coUtil.cofHtmlAssetToCdn(detailPanel.form.blogContent) };
         const res = await (isNewPost
-          ? boApiSvc.cmBlog.create({ ...detailPanel.form }, '블로그관리', '등록')
-          : boApiSvc.cmBlog.update(detailPanel.form.blogId, { ...detailPanel.form }, '블로그관리', '저장'));
+          ? boApiSvc.cmBlog.create(payload, '블로그관리', '등록')
+          : boApiSvc.cmBlog.update(detailPanel.form.blogId, payload, '블로그관리', '저장'));
         if (showToast) { showToast('저장되었습니다.', 'success'); }
         /* 저장 완료: 상세영역은 유지하고 빈 신규 폼(비활성)으로 초기화 */
         resetDetailToNew();
@@ -214,16 +226,23 @@ window.CmBlogMng = {
       }
     };
 
-    /* handleDelete — 삭제 */
+    /* handleDelete — 상세 패널 [삭제] (현재 선택 행 기준) */
     const handleDelete = async () => {
       if (!cfSelectedRow.value) { return; }
-      const ok = await showConfirm('삭제', `[${cfSelectedRow.value.blogTitle}]을 삭제하시겠습니까?`);
+      return handleDeleteRow(cfSelectedRow.value);
+    };
+
+    /* handleDeleteRow — 특정 행 삭제 (그리드 행 [삭제] + 상세 패널 [삭제] 공용) */
+    const handleDeleteRow = async (row) => {
+      if (!row || !row.blogId) { return; }
+      const ok = await showConfirm('삭제', `[${row.blogTitle}]을 삭제하시겠습니까?`);
       if (!ok) { return; }
-      const si = blogs.findIndex(p => p.blogId === cfSelectedRow.value.blogId);
+      const si = blogs.findIndex(p => p.blogId === row.blogId);
       if (si !== -1) { blogs.splice(si, 1); }
-      closeDetail();
+      // 삭제 행이 현재 상세 패널과 동일하면 패널 초기화
+      if (detailPanel.dtlId === row.blogId) { closeDetail(); }
       try {
-        const res = await boApiSvc.cmBlog.remove(cfSelectedRow.value.blogId, '블로그관리', '삭제');
+        const res = await boApiSvc.cmBlog.remove(row.blogId, '블로그관리', '삭제');
         if (showToast) { showToast('삭제되었습니다.', 'success'); }
       } catch (err) {
         console.error('[catch-info]', err);
@@ -270,6 +289,11 @@ window.CmBlogMng = {
     /* fnYnBadge — Y/N 배지 클래스 */
     const fnYnBadge = v => v === 'Y' ? 'badge-green' : 'badge-gray';
 
+    /* fnBlogTypeLabel — NEWS/BLOG → 한글 라벨 */
+    const fnBlogTypeLabel = v => (codes.blog_type_opts.find(o => o.codeValue === v) || {}).codeLabel || v || '-';
+    /* fnBlogTypeBadge — 구분 배지 클래스 (뉴스=blue, 블로그=purple) */
+    const fnBlogTypeBadge = v => v === 'NEWS' ? 'badge-blue' : 'badge-purple';
+
     /* fnGridRowClass — 그리드 행 클래스 (선택 행 강조) */
     const fnGridRowClass = (row) => (detailPanel.dtlId === row.blogId ? 'active' : '');
 
@@ -283,12 +307,15 @@ window.CmBlogMng = {
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력' },
+      { key: 'blogTypeCd', type: 'select', label: '구분', options: () => codes.blog_type_opts, nullLabel: '전체' },
       { key: 'useYn', type: 'select', label: '공개여부', options: () => codes.open_yn_opts, nullLabel: '전체' },
       { key: 'isNotice', type: 'select', label: '공지여부', options: () => codes.notice_yn_opts, nullLabel: '전체' },
     ];
 
     // 기본 그리드
     columns.baseGrid = [
+      { key: 'blogTypeCd', label: '구분',     style: 'width:70px;', align: 'center',
+        badge: row => fnBlogTypeBadge(row.blogTypeCd), fmt: v => fnBlogTypeLabel(v) },
       { key: 'blogTitle',  label: '제목',     sortKey: 'nm', link: true, cellInnerClass: 'title-link',
         fmt: (v, row) => {
           const prefix = row.isNotice === 'Y' ? '[공지] ' : '';
@@ -304,6 +331,8 @@ window.CmBlogMng = {
 
     // 블로그 폼
     columns.blogForm = [
+      { key: 'blogTypeCd',  label: '구분', type: 'select', required: true,
+        options: () => (codes.blog_type_opts || []).map(o => ({ value: o.codeValue, label: o.codeLabel })) },
       { key: 'blogTitle',   label: '제목', type: 'text', required: true, colSpan: 2 },
       { key: 'blogAuthor',  label: '작성자', type: 'text' },
       { key: 'isNotice',    label: '공지여부', type: 'select',
@@ -311,9 +340,9 @@ window.CmBlogMng = {
       { key: 'useYn',       label: '공개여부', type: 'select',
         options: () => (codes.open_yn_opts || []).map(o => ({ value: o.codeValue, label: o.codeValue + ' (' + o.codeLabel + ')' })) },
       { type: 'rowBreak' },
-      { key: 'blogSummary', label: '요약', type: 'text', placeholder: '목록에 표시될 요약 내용', colSpan: 2 },
+      { key: 'blogSummary', label: '요약', type: 'text', placeholder: '목록에 표시될 요약 내용', colSpan: 3 },
       { type: 'rowBreak' },
-      { key: 'blogContent', label: '본문', type: 'slot', name: 'blogContent', colSpan: 2 },
+      { key: 'blogContent', label: '본문', type: 'slot', name: 'blogContent', colSpan: 3 },
     ];
 
     /* ##### [06] return (템플릿 노출) ############################################## */
@@ -346,6 +375,12 @@ window.CmBlogMng = {
       @sort="key => handleBtnAction('blogs-sort', key)"
       grid-id="blogs-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
       <template #row-actions="{ row }">
+        <button class="btn btn_row_edit" @click.stop="handleGridCellAction('blogs-cellClick', 'btn_row_edit', row)">
+          수정
+        </button>
+        <button class="btn btn_row_delete" @click.stop="handleSelectAction('blogs-rowDelete', row)">
+          삭제
+        </button>
         <button :class="['btn','btn-xs',row.useYn==='Y'?'btn-secondary':'btn-green']" @click.stop="handleSelectAction('blogs-rowToggleUse', row)">
           {{ row.useYn==='Y'?'비공개':'공개' }}
         </button>
