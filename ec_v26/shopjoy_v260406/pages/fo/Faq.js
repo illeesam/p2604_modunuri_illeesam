@@ -12,8 +12,10 @@ window.Faq = {
     const { ref, reactive, computed, watch, onMounted } = Vue;
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, openFaq: null });
     const codes = reactive({});
-    /* faqs — API(cm_faq). {q, a, pathId, cate} 형태로 정규화. 실패 시 SITE_CONFIG.faqs fallback */
+    /* faqs — 우측 목록(선택 분류로 서버 필터된 결과). {q, a, pathId, cate} 정규화 */
     const faqs = reactive([]);
+    /* faqAll — 좌측 트리 뱃지 카운트용 전체 스냅샷(분류 무관, 1회 로드) */
+    const faqAll = reactive([]);
     /* pathRows — sy_path(biz_cd=cm_faq) 원본 행. 트리 빌드용 */
     const pathRows = reactive([]);
     /* 선택 분류 (null=전체) */
@@ -42,11 +44,12 @@ window.Faq = {
       if (cmd === 'faqs-rowToggle') {
         uiState.openFaq = (uiState.openFaq === param ? null : param);
         return;
-      // 분류 트리 노드 선택 (param: pathId | null=전체)
+      // 분류 트리 노드 선택 (param: pathId | null=전체) — 클릭마다 서버 재조회
       } else if (cmd === 'tree-select') {
         selectedPathId.value = param;
         uiState.openFaq = null;
         pager.pageNo = 1;
+        handleLoadFaqs();
         return;
       // 페이지 이동
       } else if (cmd === 'pager-setPage') {
@@ -86,11 +89,13 @@ window.Faq = {
       }
     };
 
-    /* handleLoadFaqs — DB(cm_faq) 공개 FAQ 조회. 실패 시 SITE_CONFIG.faqs fallback */
+    /* handleLoadFaqs — DB(cm_faq) 공개 FAQ 조회 (선택 분류 pathId 서버 전달, 하위 트리 포함).
+     *   좌측 분류 클릭마다 API 재조회 (검색정책: 조건 변경 시 서버 조회). 실패 시 SITE_CONFIG.faqs fallback */
     const handleLoadFaqs = async () => {
       uiState.loading = true;
       try {
-        const res = await foApiSvc.cmFaq.getList({}, 'FAQ', '목록조회');
+        const params = selectedPathId.value != null ? { pathId: selectedPathId.value } : {};
+        const res = await foApiSvc.cmFaq.getList(params, 'FAQ', '목록조회');
         const list = res.data?.data || [];
         faqs.splice(0, faqs.length, ...list.map(f => ({
           faqId: f.faqId, q: f.faqQuestion, a: f.faqAnswer,
@@ -107,10 +112,22 @@ window.Faq = {
       }
     };
 
-    // ★ onMounted — 진입 시 코드 로드 + 분류 트리 + FAQ 조회
+    /* handleLoadFaqCounts — 좌측 트리 뱃지용 전체 FAQ 스냅샷(분류 무관, 1회). 카운트만 사용 */
+    const handleLoadFaqCounts = async () => {
+      try {
+        const res = await foApiSvc.cmFaq.getList({}, 'FAQ', '분류카운트');
+        const list = res.data?.data || [];
+        faqAll.splice(0, faqAll.length, ...list.map(f => ({
+          faqId: f.faqId, pathId: f.pathId != null ? String(f.pathId) : '',
+        })));
+      } catch (err) { console.error('[handleLoadFaqCounts]', err); }
+    };
+
+    // ★ onMounted — 진입 시 코드 로드 + 분류 트리 + 카운트(전체) + FAQ(선택분류) 조회
     onMounted(() => {
       if (isAppReady.value) fnLoadCodes();
       handleLoadTree();
+      handleLoadFaqCounts();
       handleLoadFaqs();
     });
 
@@ -149,22 +166,16 @@ window.Faq = {
       return ids;
     };
 
-    /* fnCountFor — 해당 노드(하위 포함) FAQ 건수 */
+    /* fnCountFor — 해당 노드(하위 포함) FAQ 건수. 트리 뱃지용으로 전체 스냅샷(faqAll)에서 집계
+     *   (우측 목록 faqs 는 선택 분류로 서버 필터된 결과라 카운트엔 부적합) */
     const fnCountFor = (pathId) => {
       const ids = fnDescendantIds(pathId);
-      return faqs.filter(f => ids.has(f.pathId)).length;
+      return faqAll.filter(f => ids.has(f.pathId)).length;
     };
 
-    /* cfFilteredFaqs — 선택 분류(하위 포함) 필터. null=전체 */
-    const cfFilteredFaqs = computed(() => {
-      if (selectedPathId.value == null) return faqs;
-      const ids = fnDescendantIds(selectedPathId.value);
-      return faqs.filter(f => ids.has(f.pathId));
-    });
-
-    /* cfPagedFaqs — 현재 페이지(최대 pageSize건) 슬라이스 + pager 메타 갱신 */
+    /* cfPagedFaqs — 서버에서 분류 필터된 faqs 의 현재 페이지 슬라이스 + pager 메타 갱신 */
     const cfPagedFaqs = computed(() => {
-      const list = cfFilteredFaqs.value;
+      const list = faqs;
       const size = pager.pageSize || 10;
       const total = list.length;
       const totalPage = Math.max(1, Math.ceil(total / size));
@@ -177,14 +188,14 @@ window.Faq = {
       return list.slice(start, start + size);
     });
 
-    /* cfTotalCount — 전체 건수 */
-    const cfTotalCount = computed(() => faqs.length);
+    /* cfTotalCount — 좌측 '전체' 뱃지용 전체 건수 (분류 무관 스냅샷) */
+    const cfTotalCount = computed(() => faqAll.length);
 
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
       uiState, faqs, selectedPathId, pager,
-      cfTree, cfFilteredFaqs, cfPagedFaqs, cfTotalCount,
+      cfTree, cfPagedFaqs, cfTotalCount,
       handleBtnAction, handleSelectAction,
     };
   },
@@ -228,7 +239,7 @@ window.Faq = {
     <!-- ===== ■.■. 우: FAQ 목록 ============================================= -->
     <div>
       <fo-container card-style="padding:8px clamp(14px,3vw,28px);margin-bottom:16px;">
-        <div v-if="!cfFilteredFaqs.length" style="text-align:center;padding:48px 0;color:var(--text-muted);font-size:0.9rem;">
+        <div v-if="!faqs.length" style="text-align:center;padding:48px 0;color:var(--text-muted);font-size:0.9rem;">
           {{ uiState.loading ? '불러오는 중...' : '해당 분류의 FAQ가 없습니다.' }}
         </div>
         <div v-for="faq in cfPagedFaqs" :key="faq.faqId" class="faq-item">
@@ -255,7 +266,7 @@ window.Faq = {
         </div>
       </fo-container>
       <!-- ===== ■. 페이지네이션 (최대 10건/페이지) ============================ -->
-      <fo-pager v-if="cfFilteredFaqs.length" :pager="pager"
+      <fo-pager v-if="faqs.length" :pager="pager"
         :on-set-page="n => handleSelectAction('pager-setPage', n)"
         :on-size-change="() => handleSelectAction('pager-sizeChange')" />
       <!-- ===== □. 페이지네이션 =============================================== -->

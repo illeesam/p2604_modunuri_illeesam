@@ -174,6 +174,76 @@ VS Code **Live Server** 확장의 chokidar watcher 가 워크스페이스 안의
 
 ---
 
+## ⛔ 0-D. `storage` 이벤트 핸들러의 `location.reload()` 무한 재로드 금지 ⭐ (화면 깜빡임·먹통)
+
+### 증상
+
+화면이 정상 렌더된 직후 **계속 새로고침(reload) 반복** — 콘솔 에러는 없고, Network 탭에
+`index.html`/`bo.html` GET 이 끊임없이 재발생. 로딩 스피너가 반복되며 사실상 사용 불가.
+
+> ⚠️ Live Server(0-C) 와 증상이 비슷하나 **원인이 다르다.** Live Server 를 꺼도 재로드가
+> 계속되면 → 이 항목(storage 이벤트 루프) 을 의심한다.
+
+### 원인
+
+`window.addEventListener('storage', …)` 핸들러가 **가드 없이 `location.reload()`** 를 호출하면
+교차 탭(또는 같은 키 반복 write)에서 무한 루프가 발생한다.
+
+- `storage` 이벤트는 **다른 탭**에서 `localStorage.setItem/removeItem` 시 발생.
+- 페이지 로드 때마다 같은 키를 **무조건 재기록**(예: `setItem('modu-fo-sy-siteNo', …)`)하면,
+  탭 A 로드 → 탭 B 의 storage 핸들러 발화 → B `reload()` → B 로드 시 재기록 → A 의 핸들러
+  발화 → A `reload()` … **무한 핑퐁**.
+- "구 키 → 신 키 마이그레이션" 류 코드가 **같은 키를 set 했다가 즉시 remove** 하는 자해 패턴이면
+  단독 탭에서도 storage 이벤트가 연쇄 발화한다.
+
+### 필수 가드 (3중)
+
+```js
+/* (1) 핸들러: '값이 실제로 바뀌었고, 현재 메모리 값과 다를 때만' 1회 reload */
+window.addEventListener('storage', function (e) {
+  if (e.key !== 'modu-fo-sy-siteNo') return;       // 대상 키만
+  var nv = e.newValue;
+  if (nv && nv !== window.FO_SITE_NO) {             // 빈 값/같은 값이면 무시 (← 핵심)
+    location.reload();
+  }
+});
+
+/* (2) write: 값이 바뀔 때만 setItem (불필요한 storage 이벤트 자체를 줄임) */
+if (localStorage.getItem('modu-fo-sy-siteNo') !== no) localStorage.setItem('modu-fo-sy-siteNo', no);
+
+/* (3) 자해 마이그레이션 금지: 같은 키를 set→remove 하거나, 의미 없는 재기록을 하지 않는다 */
+```
+
+### 계정 변경 reload 는 다른 패턴 (정상)
+
+인증 토큰/사용자 storage 핸들러는 **이전 사용자와 실제로 달라진 경우에만** reload 한다(토큰 갱신·동일
+사용자는 reload 안 함). 이 가드가 있으면 무한 루프 없음 — 아래는 허용 패턴.
+
+```js
+const prevAuthId = store.svAuthUser?.authId || '';
+store.saSyncFromStorage();
+const nextAuthId = store.svAuthUser?.authId || '';
+if (prevAuthId && prevAuthId !== nextAuthId) location.reload();   // 실제 계정 변경 시에만
+```
+
+### 점검
+
+```bash
+# storage 핸들러 + reload 가 가드 없이 묶여 있는지 확인 — 각 핸들러에 'nv !== 현재값' 가드 필수
+grep -rnE "addEventListener\(['\"]storage|location\.reload\(\)" index.html bo.html lib/base/*.js
+```
+
+### 재발 사례 (2026-06-14)
+
+- **현상**: FO(`index.html`) 홈 진입 후 무한 재로드. BO 는 이전에 동일 증상으로 수정 완료(가드 적용)했으나
+  FO 의 `index.html` 에는 미적용 상태였음.
+- **원인**: ① 구 키 마이그레이션이 `modu-fo-sy-siteNo` 를 set→remove 하는 자해 코드 ② storage 핸들러가
+  `e.newValue !== e.oldValue` 만 보고 reload(현재값 비교 없음) → 교차 탭 핑퐁.
+- **수정**: 자해 마이그레이션 제거 + 핸들러에 `nv && nv !== window.FO_SITE_NO` 가드 + write 시 값 비교 가드.
+  `bo.html`/`index.html` 양쪽을 동일 패턴으로 통일.
+
+---
+
 ## 0. watch / computed 최소화 원칙 ⭐
 
 **핵심 방침**: `watch`와 `computed`는 꼭 필요한 경우에만 사용하고, 가능하면 직접 함수 호출 방식으로 대체한다.

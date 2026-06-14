@@ -410,6 +410,14 @@ body {
   line-height: 1.75;
 }
 
+.faq-answer-html { word-break: break-word; }
+.faq-answer-html p { margin: 0 0 8px; }
+.faq-answer-html p:last-child { margin-bottom: 0; }
+.faq-answer-html img { max-width: 100%; height: auto; border-radius: 6px; }
+.faq-answer-html ul, .faq-answer-html ol { margin: 0 0 8px; padding-left: 20px; }
+.faq-answer-html table { border-collapse: collapse; }
+.faq-answer-html td, .faq-answer-html th { border: 1px solid var(--border); padding: 4px 8px; }
+
 /* ── Form ── */
 .form-required {
   color: #e53935;

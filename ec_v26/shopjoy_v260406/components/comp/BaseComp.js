@@ -710,15 +710,14 @@ window.BaseAttachOne = {
   const style = document.createElement('style');
   style.id = 'base-html-editor-style';
   style.textContent = `
-    /* 에디터 컨테이너 전체 — overflow 해제로 팝업이 영역 밖으로 자유롭게 표시 */
+    /* 툴바 영역만 overflow 해제 (드롭다운 메뉴가 잘리지 않도록).
+     * ※ 본문 컨테이너(-main/-ww-container/-md-container)에 overflow:visible 을 주면
+     *   미리보기 ON 으로 폭이 좁아질 때 내용이 컨테이너 밖으로 흘러 툴바와 겹침(레이아웃 붕괴).
+     *   팝업은 이미 position:fixed 라 부모 overflow 와 무관하므로 본문엔 강제하지 않는다. */
     .toastui-editor-defaultUI,
     .toastui-editor-defaultUI-toolbar,
     .toastui-editor-toolbar,
-    .toastui-editor-toolbar-icons,
-    .toastui-editor-main,
-    .toastui-editor-main-container,
-    .toastui-editor-ww-container,
-    .toastui-editor-md-container { overflow: visible !important; }
+    .toastui-editor-toolbar-icons { overflow: visible !important; }
 
     /* 팝업 — viewport 기준 fixed 로 변경하여 어떤 부모의 overflow:hidden 도 무시 */
     .toastui-editor-popup {
@@ -761,6 +760,13 @@ window.BaseAttachOne = {
       overflow-y: visible;
     }
     .toastui-editor-toolbar-group { flex-wrap: nowrap !important; flex-shrink: 0; }
+
+    /* 래퍼 div 가 테두리/라운드를 담당 — Toast 기본 UI 는 자체 테두리 제거(이중 테두리 방지).
+     * 높이는 Toast 가 props.height 로 직접 관리하므로 강제하지 않음(강제 시 0 높이 부모로 붕괴). */
+    .base-html-editor-box .toastui-editor-defaultUI {
+      border: none !important;
+      border-radius: inherit;
+    }
   `;
   document.head.appendChild(style);
 })();
@@ -789,6 +795,15 @@ window.BaseHtmlEditor = {
     let splitDragMove = null;
     let splitDragUp = null;
 
+    /* _notifyEditorResize — 편집 영역 폭 변경(미리보기 토글/스플리터 드래그) 후 Toast UI 에디터
+     *   내부 레이아웃을 재계산시킨다. Toast 는 window resize 를 구독하므로 DOM 반영(nextTick) 후
+     *   resize 이벤트를 디스패치한다. (공개 resize API 가 없어 이 방식 사용) */
+    const _notifyEditorResize = () => {
+      nextTick(() => {
+        try { window.dispatchEvent(new Event('resize')); } catch (_) {}
+      });
+    };
+
     /* _startSplitDrag — 중앙 스플리터 바 드래그 시작. 좌/우 폭 비율(splitPct) 조절 */
     const _startSplitDrag = (e) => {
       e.preventDefault();
@@ -800,6 +815,7 @@ window.BaseHtmlEditor = {
         let pct = (x / rect.width) * 100;
         pct = Math.max(20, Math.min(80, pct));   // 20~80% 범위 제한
         splitPct.value = pct;
+        _notifyEditorResize();   // 드래그 중 에디터 폭 변화 → 내부 레이아웃 재계산
       };
       splitDragUp = () => {
         document.removeEventListener('mousemove', splitDragMove);
@@ -823,6 +839,7 @@ window.BaseHtmlEditor = {
       // 미리보기 독립 토글 (편집 모드 유지한 채 우측 미리보기 패널 on/off)
       } else if (cmd === 'editor-toggle-preview') {
         previewOn.value = !previewOn.value;
+        _notifyEditorResize();  // 폭 변경 후 Toast 에디터 내부 레이아웃 재계산
         return;
       } else if (cmd === 'editor-split-drag') {
         return _startSplitDrag(param);
@@ -1032,19 +1049,29 @@ window.BaseHtmlEditor = {
       outline: 'none',
     }));
 
-    /* preview 모드 컨테이너 스타일 (실제 렌더링 결과 표시) */
-    const cfPreviewStyle = Vue.computed(() => ({
-      width: '100%',
-      minHeight: props.height,
-      padding: '14px 16px',
-      border: '1px solid #d9d9d9',
-      borderRadius: '6px',
-      background: '#fff',
-      boxSizing: 'border-box',
-      overflowY: 'auto',
-      lineHeight: '1.7',
-      color: '#222',
-    }));
+    /* preview 모드 컨테이너 스타일 (실제 렌더링 결과 표시).
+     * 폭 = previewOn 이면 (100-splitPct)%, 아니면 0(접힘). 높이는 편집영역과 동일하게 고정.
+     * 구분선을 우측 끝(OFF)↔중앙(ON)으로 옮기는 핵심: 미리보기 폭만 0↔나머지로 변경. */
+    const cfPreviewStyle = Vue.computed(() => {
+      const w = previewOn.value ? (100 - splitPct.value) : 0;
+      return {
+        flex: '0 0 ' + w + '%',
+        width: w + '%',
+        minWidth: 0,
+        height: props.height,
+        padding: previewOn.value ? '14px 16px' : '0',
+        border: previewOn.value ? '1px solid #d0d0d0' : 'none',
+        borderLeft: 'none',
+        borderRadius: '0 6px 6px 0',
+        background: '#fff',
+        boxSizing: 'border-box',
+        overflow: 'hidden',
+        overflowY: previewOn.value ? 'auto' : 'hidden',
+        lineHeight: '1.7',
+        color: '#222',
+        transition: 'flex-basis .15s ease, width .15s ease',
+      };
+    });
 
     return {
       editorEl, mode, previewOn, splitPct, splitRoot, cfTextareaStyle, cfPreviewStyle,   // 상태
@@ -1080,26 +1107,27 @@ window.BaseHtmlEditor = {
       비우기
     </button>
   </div>
-  <!-- 편집 영역 + (미리보기 ON 시) 우측 미리보기 패널. previewOn 이면 좌(편집)|스플리터|우(미리보기) -->
-  <div ref="splitRoot" :style="previewOn ? 'display:flex;align-items:stretch;gap:0;' : ''">
-    <!-- 좌측 편집 영역: 디자인(에디터 인스턴스) 또는 HTML(textarea). previewOn 일 때 splitPct% 폭 -->
-    <div :style="previewOn ? ('width:' + splitPct + '%;min-width:0;') : 'width:100%;'">
-      <!-- 디자인 에디터(인스턴스 DOM 항상 동일). border 명시 — 미리보기↔디자인 전환 시 테두리 유지 -->
-      <div v-show="mode === 'wysiwyg'" ref="editorEl"
-        :style="previewOn ? 'background:#fff;border:1px solid #d0d0d0;border-radius:6px 0 0 6px;' : 'background:#fff;border:1px solid #d0d0d0;border-radius:6px;'">
+  <!-- 편집 영역 | 구분선 | 미리보기. 구조는 항상 분할 유지 — 폭만 splitPct 로 변경(DOM 불변 → 에디터 안깨짐).
+       미리보기 OFF: 편집 100% (구분선이 우측 끝). ON: 편집 50% (구분선이 중앙). 드래그로 미세조정. -->
+  <div ref="splitRoot" style="display:flex;align-items:stretch;gap:0;">
+    <!-- 좌측 편집 영역: 남는 폭 모두 차지(flex:1) — 우측 미리보기 폭(0~50%)에 따라 자동 조절 -->
+    <div style="flex:1 1 0;min-width:0;">
+      <!-- 디자인 에디터(인스턴스 DOM 항상 동일). 래퍼가 테두리 담당(base-html-editor-box) -->
+      <div v-show="mode === 'wysiwyg'" ref="editorEl" class="base-html-editor-box"
+        style="background:#fff;border:1px solid #d0d0d0;border-radius:6px 0 0 6px;overflow:hidden;">
       </div>
       <!-- HTML 소스 textarea -->
       <textarea v-show="mode === 'source'" :value="modelValue" @input="handleSelectAction('editor-source-input', $event)"
         spellcheck="false" :style="cfTextareaStyle"></textarea>
     </div>
-    <!-- 중앙 스플리터 바 (드래그로 좌/우 폭 조절) -->
-    <div v-show="previewOn" @mousedown="handleBtnAction('editor-split-drag', $event)" @touchstart="handleBtnAction('editor-split-drag', $event)"
-      title="드래그하여 크기 조절"
-      style="flex:0 0 8px;cursor:col-resize;background:#e5e7eb;border-left:1px solid #d0d0d0;border-right:1px solid #d0d0d0;display:flex;align-items:center;justify-content:center;user-select:none;">
-      <span style="color:#999;font-size:10px;line-height:1;">⋮⋮</span>
+    <!-- 중앙 구분선 바 (미리보기 ON 일 때만 드래그 가능) — OFF 면 우측 끝, ON 이면 중앙 -->
+    <div @mousedown="previewOn ? handleBtnAction('editor-split-drag', $event) : null" @touchstart="previewOn ? handleBtnAction('editor-split-drag', $event) : null"
+      :title="previewOn ? '드래그하여 크기 조절' : ''"
+      :style="{ flex:'0 0 8px', cursor: previewOn ? 'col-resize' : 'default', background:'#e5e7eb', borderTop:'1px solid #d0d0d0', borderBottom:'1px solid #d0d0d0', display:'flex', alignItems:'center', justifyContent:'center', userSelect:'none', transition:'all .15s ease' }">
+      <span v-show="previewOn" style="color:#999;font-size:10px;line-height:1;">⋮⋮</span>
     </div>
-    <!-- 우측 실시간 미리보기 (previewOn) -->
-    <div v-show="previewOn" :style="cfPreviewStyle" style="flex:1;min-width:0;border-radius:0 6px 6px 0;"
+    <!-- 우측 실시간 미리보기: 폭 = (100-splitPct)% (OFF=0 → 접힘, ON=50%) -->
+    <div :style="cfPreviewStyle"
       v-html="modelValue || '<span style=color:#bbb>(내용 없음)</span>'">
     </div>
   </div>

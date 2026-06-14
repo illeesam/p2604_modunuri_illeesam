@@ -259,7 +259,7 @@ window.CmFaqMng = {
       { key: 'faqQuestion', label: '질문', link: true,
         cellInnerStyle: (v, row) => detailModal.dtlId === row.faqId ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'faqAnswer',   label: '답변', cellStyle: 'color:#666;font-size:12px;',
-        fmt: (v) => v ? (v.length > 40 ? v.slice(0, 40) + '…' : v) : '-' },
+        fmt: (v) => coUtil.cofStripHtml(v, 40) || '-' },
       { key: 'sortOrd',     label: '정렬순서', align: 'center' },
       { key: 'viewCount',   label: '조회수', align: 'center', fmt: (v) => v || 0 },
       { key: 'useYn',       label: '노출여부', badge: (row) => fnYnBadge(row.useYn), fmt: (v) => v === 'Y' ? '노출' : '숨김' },

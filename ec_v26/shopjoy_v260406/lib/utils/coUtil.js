@@ -472,6 +472,33 @@
    * ───────────────────────────────────────────────────────────────────── */
   const EXCEL_UPLOAD_MAX_ROWS = 300_000;
 
+  /* cofStripHtml — HTML 문자열에서 태그 제거 + 엔티티 디코드 → 평문(목록/미리보기용).
+   *   리치텍스트(htmlEditor) 내용을 그리드 셀·요약에 안전하게 텍스트로 보여줄 때 사용.
+   *   block 태그(p/div/br/li 등)는 공백으로 치환해 단어 붙음 방지. max 지정 시 말줄임(…).
+   * 사용: coUtil.cofStripHtml(faq.faqAnswer, 40) */
+  function cofStripHtml(html, max) {
+    if (html == null) return '';
+    let s = String(html);
+    if (!s) return '';
+    // 줄바꿈/블록 경계를 공백으로
+    s = s.replace(/<\s*(br|\/p|\/div|\/li|\/tr|\/h[1-6])\s*>/gi, ' ');
+    // 나머지 태그 제거
+    s = s.replace(/<[^>]*>/g, '');
+    // 기본 HTML 엔티티 디코드
+    s = s.replace(/&nbsp;/gi, ' ')
+         .replace(/&amp;/gi, '&')
+         .replace(/&lt;/gi, '<')
+         .replace(/&gt;/gi, '>')
+         .replace(/&quot;/gi, '"')
+         .replace(/&#39;/g, "'");
+    // 연속 공백 정리
+    s = s.replace(/\s+/g, ' ').trim();
+    if (typeof max === 'number' && max > 0 && s.length > max) {
+      s = s.slice(0, max) + '…';
+    }
+    return s;
+  }
+
   /* cofParseCsv — CSV 텍스트를 [{컬럼명:값},...] 행 배열로 파싱.
    *   1행을 헤더로 사용. 따옴표 escape ("...""..."), 구분자 = 콤마 고정.
    *   BOM(﻿) 제거, CRLF/LF 모두 허용. 빈 줄은 스킵.
@@ -1022,6 +1049,7 @@
   global.coUtil.cofExportCsv = global.coUtil.cofExportCsv || cofExportCsv;
   global.coUtil.cofDownloadExcel = global.coUtil.cofDownloadExcel || cofDownloadExcel;
   global.coUtil.cofParseCsv = global.coUtil.cofParseCsv || cofParseCsv;
+  global.coUtil.cofStripHtml = global.coUtil.cofStripHtml || cofStripHtml;
   global.coUtil.EXCEL_UPLOAD_MAX_ROWS = global.coUtil.EXCEL_UPLOAD_MAX_ROWS || EXCEL_UPLOAD_MAX_ROWS;
   global.coUtil.cofBuildExportFilename = global.coUtil.cofBuildExportFilename || cofBuildExportFilename;
   global.coUtil.cofBuildGenericTree = global.coUtil.cofBuildGenericTree || cofBuildGenericTree;
