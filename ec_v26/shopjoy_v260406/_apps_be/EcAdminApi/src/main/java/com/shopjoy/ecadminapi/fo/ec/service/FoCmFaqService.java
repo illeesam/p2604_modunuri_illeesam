@@ -30,4 +30,18 @@ public class FoCmFaqService {
         req.setUseYn("Y");   // 공개(노출중)만
         return cmFaqService.getList(req);
     }
+
+    /** getFaqsPage — 공개 FAQ 페이지 조회 (노출중·사이트별, pathId 자손 포함). 페이징 버튼 클릭마다 호출 */
+    public CmFaqDto.PageResponse getFaqsPage(CmFaqDto.Request req) {
+        if (req == null) req = new CmFaqDto.Request();
+        SecurityUtil.applySiteId(req::getSiteId, req::setSiteId, DEFAULT_SITE_ID);
+        req.setUseYn("Y");   // 공개(노출중)만
+        return cmFaqService.getPageData(req);
+    }
+
+    /** incrViewCount — FAQ 펼침(읽음) 시 조회수 +1, 갱신된 viewCount 반환 */
+    @Transactional
+    public Integer incrViewCount(String faqId) {
+        return cmFaqService.incrViewCount(faqId);
+    }
 }

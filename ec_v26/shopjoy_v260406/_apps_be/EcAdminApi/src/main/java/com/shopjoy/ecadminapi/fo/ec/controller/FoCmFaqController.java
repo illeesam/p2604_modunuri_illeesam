@@ -26,4 +26,16 @@ public class FoCmFaqController {
     public ResponseEntity<ApiResponse<List<CmFaqDto.Item>>> list(@Valid @ModelAttribute CmFaqDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(foCmFaqService.getFaqs(req)));
     }
+
+    /** page — 공개 FAQ 페이지 조회 (페이징/분류 필터). pageList/pageTotalCount/pageTotalPage 반환 */
+    @GetMapping("/page")
+    public ResponseEntity<ApiResponse<CmFaqDto.PageResponse>> page(@Valid @ModelAttribute CmFaqDto.Request req) {
+        return ResponseEntity.ok(ApiResponse.ok(foCmFaqService.getFaqsPage(req)));
+    }
+
+    /** 조회수 증가 — FAQ 펼침(읽음) 시 호출. 갱신된 viewCount 반환 (세션 중복 방지는 프론트에서 가드) */
+    @PostMapping("/{faqId}/view")
+    public ResponseEntity<ApiResponse<Integer>> incrView(@PathVariable("faqId") String faqId) {
+        return ResponseEntity.ok(ApiResponse.ok(foCmFaqService.incrViewCount(faqId)));
+    }
 }

@@ -20,6 +20,8 @@ window.Faq = {
     const pathRows = reactive([]);
     /* 선택 분류 (null=전체) */
     const selectedPathId = ref(null);
+    /* 이번 세션에 이미 조회수 증가시킨 faqId — 재펼침 시 중복 증가 방지(새로고침 시 초기화 → 재반영 허용) */
+    const _viewedFaqIds = new Set();
     /* 페이저 (클라이언트 페이징, 최대 10건/페이지) */
     const pager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageSizes: [5, 10, 20, 30, 50] });
 
@@ -40,9 +42,11 @@ window.Faq = {
     /* handleSelectAction — 행/선택 액션 dispatch */
     const handleSelectAction = (cmd, param = {}) => {
       console.log(' ■■ Faq.js : handleSelectAction -> ', cmd, param);
-      // FAQ 아코디언 토글 (param: faqId)
+      // FAQ 아코디언 토글 (param: faqId). 펼칠 때(처음 읽을 때만) 조회수 +1
       if (cmd === 'faqs-rowToggle') {
-        uiState.openFaq = (uiState.openFaq === param ? null : param);
+        const willOpen = uiState.openFaq !== param;
+        uiState.openFaq = willOpen ? param : null;
+        if (willOpen) { handleIncrView(param); }
         return;
       // 분류 트리 노드 선택 (param: pathId | null=전체) — 클릭마다 서버 재조회
       } else if (cmd === 'tree-select') {
@@ -51,13 +55,17 @@ window.Faq = {
         pager.pageNo = 1;
         handleLoadFaqs();
         return;
-      // 페이지 이동
+      // 페이지 이동 — 버튼 클릭마다 서버 재조회 (페이징 정책)
       } else if (cmd === 'pager-setPage') {
-        if (param >= 1 && param <= pager.pageTotalPage) { pager.pageNo = param; uiState.openFaq = null; }
+        if (param >= 1 && param <= pager.pageTotalPage) {
+          pager.pageNo = param; uiState.openFaq = null;
+          handleLoadFaqs();
+        }
         return;
-      // 페이지 크기 변경
+      // 페이지 크기 변경 — 1페이지로 리셋 후 서버 재조회
       } else if (cmd === 'pager-sizeChange') {
         pager.pageNo = 1; uiState.openFaq = null;
+        handleLoadFaqs();
         return;
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
@@ -89,26 +97,53 @@ window.Faq = {
       }
     };
 
-    /* handleLoadFaqs — DB(cm_faq) 공개 FAQ 조회 (선택 분류 pathId 서버 전달, 하위 트리 포함).
-     *   좌측 분류 클릭마다 API 재조회 (검색정책: 조건 변경 시 서버 조회). 실패 시 SITE_CONFIG.faqs fallback */
+    /* handleLoadFaqs — DB(cm_faq) 공개 FAQ 서버사이드 페이지 조회 (분류 pathId 자손 포함 + pageNo/pageSize).
+     *   분류 클릭·페이지 버튼·페이지크기 변경 시마다 API 재조회 (검색·페이징 정책). 실패 시 SITE_CONFIG.faqs fallback */
     const handleLoadFaqs = async () => {
       uiState.loading = true;
       try {
-        const params = selectedPathId.value != null ? { pathId: selectedPathId.value } : {};
-        const res = await foApiSvc.cmFaq.getList(params, 'FAQ', '목록조회');
-        const list = res.data?.data || [];
+        const params = {
+          pageNo: pager.pageNo, pageSize: pager.pageSize,
+          ...(selectedPathId.value != null ? { pathId: selectedPathId.value } : {}),
+        };
+        const res = await foApiSvc.cmFaq.getPage(params, 'FAQ', '목록조회');
+        const d = res.data?.data || {};
+        const list = d.pageList || [];
         faqs.splice(0, faqs.length, ...list.map(f => ({
           faqId: f.faqId, q: f.faqQuestion, a: f.faqAnswer,
           attachGrpId: f.answerAttachGrpId || null,
+          viewCount: f.viewCount || 0,
           pathId: f.pathId != null ? String(f.pathId) : '', cate: f.pathLabel || '',
         })));
+        pager.pageTotalCount = d.pageTotalCount || 0;
+        pager.pageTotalPage = d.pageTotalPage || 1;
       } catch (err) {
         console.error('[handleLoadFaqs]', err);
-        /* fallback: 정적 SITE_CONFIG.faqs */
+        /* fallback: 정적 SITE_CONFIG.faqs (페이징 없이 전체) */
         const fb = (window.SITE_CONFIG && window.SITE_CONFIG.faqs) || [];
-        faqs.splice(0, faqs.length, ...fb.map((f, i) => ({ faqId: 'fb' + i, q: f.q, a: f.a, pathId: '', cate: '' })));
+        faqs.splice(0, faqs.length, ...fb.map((f, i) => ({ faqId: 'fb' + i, q: f.q, a: f.a, viewCount: 0, pathId: '', cate: '' })));
+        pager.pageTotalCount = faqs.length;
+        pager.pageTotalPage = 1;
       } finally {
         uiState.loading = false;
+      }
+    };
+
+    /* handleIncrView — FAQ 펼침(읽음) 시 조회수 +1. 이번 세션에 이미 본 FAQ 는 재증가 안 함.
+     *   fallback 항목(fb*)·미존재는 스킵. 서버 갱신값으로 로컬 카운트 동기화. */
+    const handleIncrView = async (faqId) => {
+      if (!faqId || faqId.startsWith('fb') || _viewedFaqIds.has(faqId)) { return; }
+      _viewedFaqIds.add(faqId);   // 낙관적 마킹(중복 호출 방지)
+      try {
+        const res = await foApiSvc.cmFaq.incrView(faqId, 'FAQ', '조회수증가');
+        const next = res.data?.data;
+        if (next != null) {
+          const item = faqs.find(f => f.faqId === faqId);
+          if (item) { item.viewCount = next; }
+        }
+      } catch (err) {
+        console.error('[handleIncrView]', err);
+        _viewedFaqIds.delete(faqId);   // 실패 시 마킹 해제(다음 펼침에 재시도)
       }
     };
 
@@ -246,6 +281,9 @@ window.Faq = {
           <button class="faq-question" @click="handleSelectAction('faqs-rowToggle', faq.faqId)">
             <span style="flex:1;">
               {{ faq.q }}
+            </span>
+            <span class="faq-views" title="읽음 수" style="flex-shrink:0;margin-right:10px;font-size:0.72rem;color:var(--text-muted);font-weight:500;">
+              👁 {{ (faq.viewCount || 0).toLocaleString() }}
             </span>
             <span class="chevron" :class="{open: uiState.openFaq===faq.faqId}">
               ▼

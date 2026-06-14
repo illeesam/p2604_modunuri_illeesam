@@ -39,6 +39,18 @@ public class CmFaqService {
         return cmFaqRepository.selectById(id).orElse(null);
     }
 
+    /** incrViewCount — FAQ 조회수(읽음수) +1 후 갱신된 viewCount 반환. 없으면 null */
+    @Transactional
+    public Integer incrViewCount(String id) {
+        CmFaq entity = cmFaqRepository.findById(id).orElse(null);
+        if (entity == null) return null;
+        int next = (entity.getViewCount() != null ? entity.getViewCount() : 0) + 1;
+        entity.setViewCount(next);
+        cmFaqRepository.save(entity);
+        em.flush();
+        return next;
+    }
+
     /* FAQ 상세조회 (Entity) */
     public CmFaq findById(String id) {
         return cmFaqRepository.findById(id)

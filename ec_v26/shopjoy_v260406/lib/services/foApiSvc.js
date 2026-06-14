@@ -42,6 +42,8 @@
   /* ── cm: FAQ (공개 목록) ────────────────────────────────────── */
   foApiSvc.cmFaq = {
     getList(params, uiNm, cmdNm) { return global.foApi.get('/fo/faq/list', { params, ...hdr(uiNm, cmdNm) }); },
+    getPage(params, uiNm, cmdNm) { return global.foApi.get('/fo/faq/page', { params, ...hdr(uiNm, cmdNm) }); },
+    incrView(faqId, uiNm, cmdNm) { return global.foApi.post('/fo/faq/' + faqId + '/view', {}, hdr(uiNm, cmdNm)); },
   };
 
   /* ── my: 캐시 ───────────────────────────────────────────────── */
