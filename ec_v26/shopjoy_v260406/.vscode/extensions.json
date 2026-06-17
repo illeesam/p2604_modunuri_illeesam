@@ -21,6 +21,8 @@
         "ms-python.vscode-python-envs",
         "humao.rest-client",
         "vscjava.vscode-java-test",
-        "matt-meyers.vscode-dbml"
+        "matt-meyers.vscode-dbml",
+        "usernamehw.errorlens",
+        "dbaeumer.vscode-eslint"
     ]
 }
