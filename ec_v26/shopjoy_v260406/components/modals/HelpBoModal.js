@@ -249,9 +249,10 @@ window.HelpBoModal = {
       { title: '표시경로(Path)', desc: 'biz_cd 기준 카테고리, 메뉴 트리 경로 관리.' },
     ];
 
-    const activeTab   = ref(props.topic || 'overview');
-    const optSubTab   = ref('basic');
-    const orderSubTab = ref('flow');
+    const activeTab    = ref(props.topic || 'overview');
+    const optSubTab    = ref('basic');
+    const orderSubTab  = ref('flow');
+    const showExtHelp  = ref(false);
 
     watch(() => props.topic, (v) => { if (v) activeTab.value = v; });
     watch(() => props.show,  (v) => { if (v && props.topic) activeTab.value = props.topic; });
@@ -295,7 +296,7 @@ window.HelpBoModal = {
 
     return {
       handleBtnAction, handleSelectAction,                                  // dispatch
-      activeTab, optSubTab, orderSubTab,                                    // 탭 상태
+      activeTab, optSubTab, orderSubTab, showExtHelp,                       // 탭 상태
       TABS, OPT_SUB_TABS,                                                   // 탭 정의
       OPT_OVERVIEW_ROWS, OPT_CLOTHING_ROWS, OPT_SHOES_ROWS, OPT_ELEC_ROWS, OPT_SINGLE_ROWS, INPUT_TYPES,  // 옵션 데이터
       OVERVIEW_CARDS, PRODUCT_STEPS, PRODUCT_TABS, MEMBER_TABS_LIST,        // 개요/회원/상품
@@ -362,6 +363,22 @@ window.HelpBoModal = {
           <div style="background:#fffbe6;border:1px solid #ffe58f;border-radius:8px;padding:12px 16px;font-size:12px;color:#7c5500;">
             각 탭을 클릭하면 해당 도메인의 상세 도움말을 확인할 수 있습니다.
           </div>
+          <div style="margin-top:12px;border:1px solid #c8e6ff;border-radius:8px;padding:12px 16px;background:#e8f4ff;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+            <div>
+              <div style="font-size:13px;font-weight:700;color:#0958d9;margin-bottom:3px;">
+                🔗 외부연동 설정 도움말
+              </div>
+              <div style="font-size:11px;color:#4a6fa5;line-height:1.5;">
+                소셜로그인(Google · Kakao · Naver), 결제(Toss), 지도(Kakao) API 키 발급 및 설정 안내
+              </div>
+            </div>
+            <button class="btn" @click="showExtHelp=true"
+              style="white-space:nowrap;font-size:12px;background:#1677ff;color:#fff;border:none;border-radius:6px;padding:6px 14px;cursor:pointer;flex-shrink:0;">
+              설정 안내 보기 →
+            </button>
+          </div>
+          <!-- 외부연동 설정 도움말 모달 (인라인 임베드) -->
+          <co-ext-help-modal v-if="showExtHelp" :show="showExtHelp" @close="showExtHelp=false" />
         </template>
         <!-- ===== ■.■.■.■. 회원관리 ============================================== -->
         <!-- ===== ■.■.■.■. 영역 ================================================ -->

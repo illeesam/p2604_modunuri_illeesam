@@ -45,6 +45,7 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
                 .select(Projections.bean(SyPropDto.Item.class,
                         syProp.propId, syProp.siteId, syProp.pathId, syProp.propKey, syProp.propValue, syProp.propLabel,
                         syProp.propTypeCd, syProp.sortOrd, syProp.useYn, syProp.propRemark,
+                        Expressions.stringPath(syProp, "propProfile").as("propProfile"),
                         syProp.regBy, syProp.regDate, syProp.updBy, syProp.updDate,
                         sySite.siteNm.as("siteNm")
                 ))
@@ -72,6 +73,7 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
                     baseAndPathId(search),
                     baseAndPropTypeCd(search),
                     baseAndUseYn(search),
+                    baseAndPropProfile(search),
                     baseAndSearchValue(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -99,6 +101,7 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
                 baseAndPathId(search),
                 baseAndPropTypeCd(search),
                 baseAndUseYn(search),
+                baseAndPropProfile(search),
                 baseAndSearchValue(search)
         };
 
@@ -156,6 +159,13 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
     private BooleanExpression baseAndUseYn(SyPropDto.Request search) {
         return search != null && StringUtils.hasText(search.getUseYn())
                 ? syProp.useYn.eq(search.getUseYn()) : null;
+    }
+
+    /* propProfile LIKE — 프로파일 필터 (^local^ 포함 여부) */
+    private BooleanExpression baseAndPropProfile(SyPropDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getPropProfile())) return null;
+        String profile = search.getPropProfile().trim();
+        return Expressions.stringPath(syProp, "propProfile").like("%" + "^" + profile + "^" + "%");
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
@@ -243,8 +253,9 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
         if (entity.getPropTypeCd() != null) { update.set(syProp.propTypeCd, entity.getPropTypeCd()); hasAny = true; }
         if (entity.getSortOrd()    != null) { update.set(syProp.sortOrd,    entity.getSortOrd());    hasAny = true; }
         if (entity.getUseYn()      != null) { update.set(syProp.useYn,      entity.getUseYn());      hasAny = true; }
-        if (entity.getPropRemark() != null) { update.set(syProp.propRemark, entity.getPropRemark()); hasAny = true; }
-        if (entity.getUpdBy()      != null) { update.set(syProp.updBy,      entity.getUpdBy());      hasAny = true; }
+        if (entity.getPropRemark()   != null) { update.set(syProp.propRemark,   entity.getPropRemark());   hasAny = true; }
+        if (entity.getPropProfile()  != null) { update.set(Expressions.stringPath(syProp, "propProfile"), entity.getPropProfile()); hasAny = true; }
+        if (entity.getUpdBy()        != null) { update.set(syProp.updBy,        entity.getUpdBy());        hasAny = true; }
         /* updDate 는 entity 값 무시하고 DB CURRENT_TIMESTAMP 강제 적용 */
         update.set(syProp.updDate, Expressions.dateTimeTemplate(LocalDateTime.class, "CURRENT_TIMESTAMP"));
 

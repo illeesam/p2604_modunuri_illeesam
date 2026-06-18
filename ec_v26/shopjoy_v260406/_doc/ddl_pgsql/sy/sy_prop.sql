@@ -12,6 +12,7 @@ CREATE TABLE shopjoy_2604.sy_prop (
     sort_ord     INTEGER      DEFAULT 0,
     use_yn       VARCHAR(1)   DEFAULT 'Y'::bpchar,
     prop_remark  VARCHAR(500),
+    prop_profile VARCHAR(100),
     reg_by       VARCHAR(30) ,
     reg_date     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     upd_by       VARCHAR(30) ,
@@ -29,7 +30,9 @@ COMMENT ON COLUMN shopjoy_2604.sy_prop.prop_type_cd IS '값 타입 (코드: PROP
 COMMENT ON COLUMN shopjoy_2604.sy_prop.sort_ord IS '같은 표시경로 내 정렬순서';
 COMMENT ON COLUMN shopjoy_2604.sy_prop.use_yn IS '사용여부 Y/N';
 COMMENT ON COLUMN shopjoy_2604.sy_prop.prop_remark IS '비고';
+COMMENT ON COLUMN shopjoy_2604.sy_prop.prop_profile IS '적용 프로파일 (^local^dev^prod^ 형식, 비어있으면 전체 환경 적용)';
 
 CREATE INDEX idx_sy_disp_path ON shopjoy_2604.sy_prop USING btree (path_id);
 CREATE INDEX idx_sy_prop_site ON shopjoy_2604.sy_prop USING btree (site_id);
-CREATE UNIQUE INDEX sy_prop_site_id_disp_path_prop_key_key ON shopjoy_2604.sy_prop USING btree (site_id, path_id, prop_key);
+-- 2026-06-18: prop_profile 포함으로 확장 (환경별 동일 키 허용)
+CREATE UNIQUE INDEX sy_prop_site_path_key_profile_uq ON shopjoy_2604.sy_prop USING btree (site_id, path_id, prop_key, COALESCE(prop_profile, ''));

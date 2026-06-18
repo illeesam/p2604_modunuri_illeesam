@@ -19,6 +19,7 @@ public class SyPropDto {
         @Size(max = 100) private String propKey;
         @Size(max = 50) private String propTypeCd;
         @Size(max = 1)  private String useYn;
+        @Size(max = 100) private String propProfile;
     }
 
     @Getter @Setter @NoArgsConstructor
@@ -35,6 +36,7 @@ public class SyPropDto {
         private Integer sortOrd;
         private String useYn;
         private String propRemark;
+        private String propProfile;
         private String regBy;
         private LocalDateTime regDate;
         private String updBy;

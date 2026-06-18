@@ -1068,7 +1068,7 @@ window.BoGridCrud = {
       </button>
     </div>
   </div>
-  <div :style="'max-height:' + maxHeight + ';overflow-y:auto;'">
+  <div :style="'max-height:' + maxHeight + ';overflow:auto;'">
     <table class="bo-table crud-grid">
       <thead>
         <tr>

@@ -19,11 +19,13 @@ window.SyPropMng = {
 
     const cfSiteId = computed(() => boCommonFilter?.siteId || null);
 
-    const searchParam = reactive({ searchType: '', searchValue: '', useFlt: '', typeFlt: '' }); // 검색조건
+    const searchParam = reactive({ searchType: '', searchValue: '', useFlt: '', typeFlt: '', profileFlt: '' }); // 검색조건
 
     const propRows  = reactive([]);                // 프로퍼티 그리드 행 (BoGridCrud 규약: _row_status N/I/U/D, _row_check, _row_org)
     const _rawProps = reactive([]);                // 원본 (reload 복원용)
-    const EDIT_FIELDS = ['pathId', 'propKey', 'propValue', 'propLabel', 'propTypeCd', 'sortOrd', 'useYn', 'propRemark'];
+    const EDIT_FIELDS = ['pathId', 'propProfile', 'propKey', 'propValue', 'propLabel', 'propTypeCd', 'sortOrd', 'useYn', 'propRemark'];
+
+    const sortState = reactive({ sortKey: '', sortDir: 'asc' }); // 그리드 헤더 정렬 상태
 
     /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
@@ -39,6 +41,7 @@ window.SyPropMng = {
         searchParam.searchType = '';
         searchParam.useFlt = '';
         searchParam.typeFlt = '';
+        searchParam.profileFlt = '';
         uiState.selectedPath = '';
         return reload();
       // 프로퍼티 그리드 행 추가
@@ -56,6 +59,9 @@ window.SyPropMng = {
       // CSV 내보내기
       } else if (cmd === 'props-export') {
         return exportCsv();
+      // 프로퍼티 런타임 갱신 (Pinia boPropStore → coExtSdk 키 즉시 반영)
+      } else if (cmd === 'props-reload') {
+        return handleReload();
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -115,7 +121,7 @@ window.SyPropMng = {
     /* handleLoadPathTreeNodeCounts — 좌 트리 노드별 카운트 (목록과 동일 검색조건 동기) */
     const handleLoadPathTreeNodeCounts = async () => {
       try {
-        const { searchType, searchValue, useFlt, typeFlt } = searchParam;
+        const { searchType, searchValue, useFlt, typeFlt, profileFlt } = searchParam;
         // ⚠️ 목록(getPage)과 동일한 필터를 적용해야 트리 숫자 ↔ 우측 목록 건수가 일치한다.
         //    pathId 만 제외(트리는 경로별 분해 표시이므로 특정 경로로 고정하지 않음).
         const params = {
@@ -124,6 +130,7 @@ window.SyPropMng = {
           ...(searchType     ? { searchType }                 : {}),
           ...(useFlt         ? { useYn: useFlt }               : {}),
           ...(typeFlt        ? { propTypeCd: typeFlt }         : {}),
+          ...(profileFlt     ? { propProfile: profileFlt }     : {}),
         };
         if (params.searchValue && !params.searchType) {
           params.searchType = 'pathId,propKey,propValue,propLabel';
@@ -140,7 +147,7 @@ window.SyPropMng = {
     /* fetchData — 목록 조회 */
     const fetchData = async () => {
       try {
-        const { searchType, searchValue, useFlt, typeFlt } = searchParam;
+        const { searchType, searchValue, useFlt, typeFlt, profileFlt } = searchParam;
         const params = {
           pageNo: 1, pageSize: 10000,
           ...(cfSiteId.value          ? { siteId: cfSiteId.value }       : {}),
@@ -149,6 +156,7 @@ window.SyPropMng = {
           ...(searchType ? { searchType }        : {}),
           ...(useFlt  ? { useYn: useFlt }         : {}),
           ...(typeFlt ? { propTypeCd: typeFlt }   : {}),
+          ...(profileFlt ? { propProfile: profileFlt } : {}),
         };
         if (params.searchValue && !params.searchType) {
           params.searchType = 'pathId,propKey,propValue,propLabel';
@@ -183,6 +191,7 @@ window.SyPropMng = {
         propId: uiState._newId--,
         siteId: cfSiteId.value || 1,
         pathId: uiState.selectedPath || 'new.prop',
+        propProfile: '',
         propKey: 'new_key',
         propLabel: '신규 프로퍼티',
         propValue: '',
@@ -231,6 +240,21 @@ window.SyPropMng = {
       }
     };
 
+    /* handleReload — 런타임 프로퍼티 갱신 (DB → Pinia boPropStore, coExtSdk 즉시 반영) */
+    const handleReload = async () => {
+      try {
+        const res = await coApiSvc.cmBoAppStore.getInitData('syProps', '속성관리', '프로퍼티갱신');
+        const data = res?.data?.data;
+        if (data?.syProps) {
+          const propStore = window.useBoPropStore?.();
+          if (propStore) propStore.saSetProps(data.syProps);
+        }
+        showToast('런타임 프로퍼티가 갱신되었습니다.', 'success');
+      } catch (err) {
+        showToast(err.response?.data?.message || err.message || '갱신 중 오류가 발생했습니다.', 'error', 0);
+      }
+    };
+
     /* exportCsv — CSV 내보내기 */
     const exportCsv = () => {
       const header = ['ID','표시경로','키','값','라벨','타입','정렬','사용','비고'];
@@ -248,6 +272,12 @@ window.SyPropMng = {
 
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 
+    const PROFILE_OPTIONS = [
+      { value: 'local', label: 'local' },
+      { value: 'dev',   label: 'dev'   },
+      { value: 'prod',  label: 'prod'  },
+    ];
+
     // 기본 검색
     const columns = {};
     columns.baseSearch = [
@@ -260,32 +290,56 @@ window.SyPropMng = {
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력', width: '420px' },
-      { key: 'typeFlt', type: 'select', label: '타입', options: () => codes.prop_types, nullLabel: '전체 타입' },
-      { key: 'useFlt', type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '사용여부 전체' },
+      { key: 'typeFlt',    type: 'select', label: '타입',     options: () => codes.prop_types, nullLabel: '전체 타입' },
+      { key: 'profileFlt', type: 'select', label: '프로파일', options: () => PROFILE_OPTIONS, nullLabel: '전체 환경' },
+      { key: 'useFlt',     type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '사용여부 전체' },
     ];
 
-    // 기본 그리드
     columns.baseGrid = [
-      { key: 'pathId',     label: '표시경로',  style: 'width:170px;max-width:170px;', pathPick: 'sy_prop' },
-      { key: 'propKey',    label: '키',        edit: 'text', mono: true },
-      { key: 'propValue',  label: '값',        edit: 'text' },
-      { key: 'propLabel',  label: '라벨',      edit: 'text' },
-      { key: 'propTypeCd', label: '타입',      cls: 'col-id', edit: 'select', options: () => codes.prop_types.map(t => ({ value: t, label: t })) },
-      { key: 'sortOrd',    label: '정렬',      cls: 'col-ord', edit: 'number' },
-      { key: 'useYn',      label: '사용',      cls: 'col-use', edit: 'select', options: () => codes.use_yn },
-      { key: 'propRemark', label: '비고',      edit: 'text' },
+      { key: 'pathId',      label: '표시경로',  style: 'width:180px;min-width:180px;', pathPick: 'sy_prop' },
+      { key: 'propProfile', label: '프로파일',  style: 'width:130px;min-width:130px;', edit: 'text', mono: true },
+      { key: 'propKey',     label: '키',        style: 'width:200px;min-width:200px;', edit: 'text', mono: true, sortKey: 'propKey' },
+      { key: 'propValue',  label: '값',        style: 'width:280px;min-width:280px;', edit: 'text' },
+      { key: 'propLabel',  label: '라벨',      style: 'width:160px;min-width:160px;', edit: 'text' },
+      { key: 'propTypeCd', label: '타입',      style: 'width:90px;min-width:90px;',  cls: 'col-id', edit: 'select', options: () => codes.prop_types.map(t => ({ value: t, label: t })) },
+      { key: 'sortOrd',    label: '정렬',      style: 'width:60px;min-width:60px;',  cls: 'col-ord', edit: 'number' },
+      { key: 'useYn',      label: '사용',      style: 'width:80px;min-width:80px;',  cls: 'col-use', edit: 'select', options: () => codes.use_yn },
+      { key: 'propRemark', label: '비고',      style: 'width:160px;min-width:160px;', edit: 'text' },
     ];
+
+    const onSort = (key) => {
+      if (sortState.sortKey === key) {
+        sortState.sortDir = sortState.sortDir === 'asc' ? 'desc' : 'asc';
+      } else {
+        sortState.sortKey = key;
+        sortState.sortDir = 'asc';
+      }
+      const dir = sortState.sortDir === 'asc' ? 1 : -1;
+      propRows.sort((a, b) => {
+        const av = (a[key] || '').toString().toLowerCase();
+        const bv = (b[key] || '').toString().toLowerCase();
+        return av < bv ? -dir : av > bv ? dir : 0;
+      });
+    };
 
     /* ##### [06] return (템플릿 노출) ############################################## */
 
     return {
       columns,
       uiState, propCounts, searchParam, propRows,       // 상태 / 데이터
+      sortState, onSort,                                // 정렬
       handleBtnAction, handleSelectAction, handleGridCellAction,                          // dispatch (모든 이벤트 / 액션 라우팅)
     };
   },
   template: /* html */`
 <bo-page title="프로퍼티관리">
+  <template #actions>
+    <button class="btn" style="font-size:12px;padding:4px 12px;background:#f0f0f0;border:1px solid #d0d0d0;border-radius:6px;cursor:pointer;color:#444;"
+      title="저장된 프로퍼티를 런타임에 즉시 반영합니다 (Pinia store 갱신)"
+      @click="handleBtnAction('props-reload')">
+      🔄 런타임 갱신
+    </button>
+  </template>
   <!-- ===== ■. 검색 바 ==================================================== -->
   <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
@@ -304,6 +358,7 @@ window.SyPropMng = {
       <bo-grid-crud
         :columns="columns.baseGrid" :rows="propRows" row-key="propId"
         list-title="프로퍼티목록" :draggable="false"
+        :sort-state="sortState" @sort="onSort"
         @add="handleBtnAction('props-add')" @save="handleBtnAction('props-save')"
         @delete-checked="handleBtnAction('props-deleteChecked')" @cancel-checked="handleBtnAction('props-cancelChecked')"
         grid-id="props-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">

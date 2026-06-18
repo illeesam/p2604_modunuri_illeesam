@@ -112,6 +112,16 @@ app:
       token: ${JENKINS_BATCH_TOKEN:}  # 환경변수 주입 필수. 빈값이면 토큰 검증 생략(비권장)
       url: ${JENKINS_URL:}            # 앱→Jenkins 역방향 트리거 URL (미사용, 향후 연동)
     allowed-ips: "192.168.1.1^192.168.1.2"  # 스케줄 관리 API 허용 IP (Jenkins 서버 IP 추가 필요)
+  # ── 외부 SDK 연동 키 (prod — 환경변수 필수) ──────────────────────────
+  ext-sdk:
+    google-client-id: ${GOOGLE_CLIENT_ID}
+    kakao-js-key: ${KAKAO_JS_KEY:}
+    naver-client-id: ${NAVER_CLIENT_ID:}
+    naver-callback-url: ${NAVER_CALLBACK_URL:}
+    toss-client-key: ${TOSS_CLIENT_KEY:}
+    kakao-map-js-key: ${KAKAO_MAP_JS_KEY:}
+    naver-map-client-id: ${NAVER_MAP_CLIENT_ID:}
+
   error-log:
     db-save: true
     queue-size: 100

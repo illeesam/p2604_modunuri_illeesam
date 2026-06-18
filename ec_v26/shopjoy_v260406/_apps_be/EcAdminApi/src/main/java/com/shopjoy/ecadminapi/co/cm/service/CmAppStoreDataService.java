@@ -12,6 +12,7 @@ import com.shopjoy.ecadminapi.co.cm.data.vo.*;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +36,15 @@ public class CmAppStoreDataService {
 
     @Autowired
     private Environment environment;
+
+    // ── 외부 SDK 키 — application-{profile}.yml app.ext-sdk.* 에서 주입 ──
+    @Value("${app.ext-sdk.google-client-id:}") private String googleClientId;
+    @Value("${app.ext-sdk.kakao-js-key:}") private String kakaoJsKey;
+    @Value("${app.ext-sdk.naver-client-id:}") private String naverClientId;
+    @Value("${app.ext-sdk.naver-callback-url:}") private String naverCallbackUrl;
+    @Value("${app.ext-sdk.toss-client-key:}") private String tossClientKey;
+    @Value("${app.ext-sdk.kakao-map-js-key:}") private String kakaoMapJsKey;
+    @Value("${app.ext-sdk.naver-map-client-id:}") private String naverMapClientId;
 
     private final MbMemberRepository memberRepository;
     private final SyUserRepository syUserRepository;
@@ -483,9 +493,13 @@ public class CmAppStoreDataService {
      */
     private StoreProp getProps(AuthPrincipal authUser) {
         String siteId = authUser != null ? authUser.siteId() : null;
-        // sy_prop :: select list :: siteId, useYn=Y
+        String[] activeProfs = environment.getActiveProfiles();
+        String activeProf = (activeProfs != null && activeProfs.length > 0) ? activeProfs[0] : "-";
+        // sy_prop :: select list :: siteId, useYn=Y, prop_profile 매칭
         Map<String, StoreProp.PropInfo> propsByKey = syPropRepository.findAll().stream()
-                .filter(prop -> "Y".equals(prop.getUseYn()) && (siteId == null || prop.getSiteId().equals(siteId)))
+                .filter(prop -> "Y".equals(prop.getUseYn())
+                        && (siteId == null || prop.getSiteId().equals(siteId))
+                        && isPropProfileMatch(prop.getPropProfile(), activeProf))
                 .collect(Collectors.toMap(
                         SyProp::getPropKey,
                         prop -> StoreProp.PropInfo.builder()
@@ -507,23 +521,41 @@ public class CmAppStoreDataService {
         String[] activeProfiles = environment.getActiveProfiles();
         String active = (activeProfiles != null && activeProfiles.length > 0) ? activeProfiles[0] : "-";
 
-        // ── 외부 SDK / 서비스 연동 키 (현재 모두 더미값. 추후 sy_prop 등에서 조회 예정) ──
-        // 소셜 로그인
-        String googleClientId   = "DEMO_GOOGLE_CLIENT_ID.apps.googleusercontent.com";
-        String kakaoJsKey       = "demo_kakao_javascript_app_key";
-        String naverClientId    = "DEMO_NAVER_CLIENT_ID";
-        String naverCallbackUrl = "http://127.0.0.1:5502/ec_v26/shopjoy_v260406/";
+        // ── 외부 SDK 키: sy_prop(DB) 우선 → yml 폴백 ──────────────────────
+        // prop_key 규칙: "ext.sdk.{name}" (path_id=ext.sdk, use_yn=Y)
+        // prop_profile 필터: 비어있으면 전체 적용, 값이 있으면 현재 active profile 포함 여부 확인
+        //   예) prop_profile = "^local^dev^" → local, dev 환경에서만 적용
+        final String currentProfile = active;
+        Map<String, String> sdkProps = syPropRepository.findAll().stream()
+                .filter(p -> "Y".equals(p.getUseYn()) && p.getPropKey() != null
+                        && p.getPropKey().startsWith("ext.sdk.") && p.getPropValue() != null && !p.getPropValue().isBlank()
+                        && isPropProfileMatch(p.getPropProfile(), currentProfile))
+                .collect(Collectors.toMap(SyProp::getPropKey, SyProp::getPropValue, (o, n) -> n));
+
+        // helper: DB 값 우선, 없으면 yml @Value 폴백
+        java.util.function.BiFunction<String, String, String> sdk =
+                (key, ymlVal) -> sdkProps.getOrDefault("ext.sdk." + key, ymlVal);
+
+        // 소셜
+        String resolvedGoogleClientId  = sdk.apply("googleClientId",  this.googleClientId);
+        String resolvedKakaoJsKey      = sdk.apply("kakaoJsKey",      this.kakaoJsKey);
+        String resolvedNaverClientId   = sdk.apply("naverClientId",   this.naverClientId);
+        String resolvedNaverCallbackUrl= sdk.apply("naverCallbackUrl",this.naverCallbackUrl);
+        // 결제
+        String resolvedTossClientKey   = sdk.apply("tossClientKey",   this.tossClientKey);
+        // 지도
+        String resolvedKakaoMapJsKey   = sdk.apply("kakaoMapJsKey",   this.kakaoMapJsKey);
+        String resolvedNaverMapClientId= sdk.apply("naverMapClientId",this.naverMapClientId);
+
         String facebookAppId    = "DEMO_FACEBOOK_APP_ID";
         String appleClientId    = "com.shopjoy.demo.signin";
         // 결제
-        String tossClientKey    = "test_ck_DEMO_toss_client_key";
+        String tossClientKey    = resolvedTossClientKey.isEmpty() ? "test_ck_DEMO_toss_client_key" : resolvedTossClientKey;
         String kakaoPayCid      = "TC0ONETIME";
         String naverPayClientId = "DEMO_NAVER_PAY_CLIENT_ID";
         String inicisMid        = "INIpayTest";
         String kcpSiteCd        = "T0000";
         // 지도
-        String naverMapClientId = "DEMO_NAVER_MAP_CLIENT_ID";
-        String kakaoMapJsKey    = "demo_kakao_map_javascript_key";
         String googleMapApiKey  = "DEMO_GOOGLE_MAP_API_KEY";
         // AWS
         String awsRegion        = "ap-northeast-2";
@@ -551,11 +583,11 @@ public class CmAppStoreDataService {
                 .appVersion("2.6.0")
                 .lastUpdateDate(java.time.LocalDate.now().toString())
                 .active(active)
-                // 소셜
-                .googleClientId(googleClientId)
-                .kakaoJsKey(kakaoJsKey)
-                .naverClientId(naverClientId)
-                .naverCallbackUrl(naverCallbackUrl)
+                // 소셜 (DB sy_prop 우선 → yml 폴백)
+                .googleClientId(resolvedGoogleClientId)
+                .kakaoJsKey(resolvedKakaoJsKey)
+                .naverClientId(resolvedNaverClientId)
+                .naverCallbackUrl(resolvedNaverCallbackUrl)
                 .facebookAppId(facebookAppId)
                 .appleClientId(appleClientId)
                 // 결제
@@ -564,9 +596,9 @@ public class CmAppStoreDataService {
                 .naverPayClientId(naverPayClientId)
                 .inicisMid(inicisMid)
                 .kcpSiteCd(kcpSiteCd)
-                // 지도
-                .naverMapClientId(naverMapClientId)
-                .kakaoMapJsKey(kakaoMapJsKey)
+                // 지도 (DB sy_prop 우선 → yml 폴백)
+                .naverMapClientId(resolvedNaverMapClientId)
+                .kakaoMapJsKey(resolvedKakaoMapJsKey)
                 .googleMapApiKey(googleMapApiKey)
                 // AWS
                 .awsRegion(awsRegion)
@@ -598,6 +630,19 @@ public class CmAppStoreDataService {
         return b.build();
     }
 
+
+    /**
+     * prop_profile 매칭 — 비어있으면 전체 환경 적용, 값이 있으면 현재 active profile 포함 여부 확인.
+     * 형식: "^local^dev^prod^" (^ 구분자 멀티값)
+     * 예) "^local^dev^" + active="dev"  → true
+     *     "^prod^"      + active="dev"  → false
+     *     null / ""     + active="dev"  → true (전체 적용)
+     */
+    private boolean isPropProfileMatch(String propProfile, String activeProfile) {
+        if (propProfile == null || propProfile.isBlank()) return true;
+        if (activeProfile == null || activeProfile.isBlank()) return true;
+        return propProfile.contains("^" + activeProfile + "^");
+    }
 
     /**
      * 전시 구조 조회 - dp_ui, dp_area, dp_panel, dp_panel_item (content 제외)

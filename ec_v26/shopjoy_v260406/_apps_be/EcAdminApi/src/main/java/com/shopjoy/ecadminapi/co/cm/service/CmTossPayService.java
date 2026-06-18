@@ -1,11 +1,14 @@
 package com.shopjoy.ecadminapi.co.cm.service;
 
+import com.shopjoy.ecadminapi.base.sy.data.entity.SyProp;
+import com.shopjoy.ecadminapi.base.sy.repository.SyPropRepository;
 import com.shopjoy.ecadminapi.co.cm.data.vo.TossCancelReq;
 import com.shopjoy.ecadminapi.co.cm.data.vo.TossConfirmReq;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -25,49 +28,41 @@ import java.util.Map;
  * paymentKey / orderId / amount 만 전달하고, 서버는 시크릿키 Basic 인증으로
  * 토스 결제승인 API 에 호출하여 최종 승인한다. (시크릿키 노출 방지)</p>
  *
- * <p>HTTP 클라이언트: Spring RestClient (spring-web 동봉, 별도 의존성 불필요).
- * SocialTokenVerifier 의 외부 HTTP 호출 패턴을 그대로 따른다.</p>
+ * <p>HTTP 클라이언트: Spring RestClient (spring-web 동봉, 별도 의존성 불필요).</p>
  *
- * <p>시크릿키 출처: application.yml 의 toss.secret-key (환경변수 TOSS_SECRET_KEY 주입 권장).
- * 미설정(빈 값) 시 명확한 CmBizException 으로 거부한다. 기본값은 토스 공식 문서용 테스트
- * 시크릿키(test_gsk_*)로, 프론트 폴백 테스트 클라이언트키(test_gck_docs_*)와 짝을 이룬다.</p>
+ * <p>키/URL 출처: sy_prop (path_id=payment.toss, prop_profile=환경별).
+ * 미설정(빈 값) 시 명확한 CmBizException 으로 거부한다.</p>
  *
- * <p>appTypeCd("BO"|"FO") 는 호출자(컨트롤러)가 전달한다. 현재 승인 로직은 BO/FO 동일하지만
- * 향후 사이트별 시크릿키 분기·감사 로그 분리 등을 위해 시그니처에 유지한다.</p>
+ * <p>appTypeCd("BO"|"FO") 는 호출자(컨트롤러)가 전달한다.</p>
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class CmTossPayService {
 
-    /** 토스 결제승인 API 엔드포인트. 설정값으로 외부화(테스트 시 모의 서버 지정 가능). */
-    private final String confirmUrl;
+    private final SyPropRepository syPropRepository;
+    private final Environment environment;
+    private final RestClient restClient = RestClient.create();
 
-    /**
-     * 토스 결제취소 API 베이스 URL. 실제 호출 시 "/{paymentKey}/cancel" 을 덧붙인다.
-     * paymentKey 가 path 에 들어가므로 confirm-url 처럼 완성형으로 외부화하지 못하고
-     * 베이스만 외부화한다(테스트 시 모의 서버 지정 가능).
-     */
-    private final String cancelUrlBase;
+    /** sy_prop에서 payment.toss.* 키를 현재 active profile 기준으로 조회 */
+    private String prop(String propKey) {
+        String profile = environment.getActiveProfiles().length > 0
+            ? environment.getActiveProfiles()[0] : "-";
+        return syPropRepository.findAll().stream()
+            .filter(p -> "Y".equals(p.getUseYn())
+                && propKey.equals(p.getPropKey())
+                && isPropProfileMatch(p.getPropProfile(), profile))
+            .map(SyProp::getPropValue)
+            .filter(v -> v != null && !v.isBlank())
+            .findFirst()
+            .orElse("");
+    }
 
-    /** 토스 시크릿키 (Basic 인증의 username, 비밀번호는 빈 문자열). */
-    private final String secretKey;
-
-    /** 클라이언트키 (프론트 SDK 초기화용). client-key 조회 엔드포인트에서 반환. */
-    private final String clientKey;
-
-    private final RestClient restClient;
-
-    public CmTossPayService(
-            @Value("${toss.confirm-url:https://api.tosspayments.com/v1/payments/confirm}") String confirmUrl,
-            @Value("${toss.cancel-url-base:https://api.tosspayments.com/v1/payments}") String cancelUrlBase,
-            @Value("${toss.secret-key:test_gsk_docs_GjLJoQ1aVZ8yMnpZ0vlrrPmOoBN0}") String secretKey,
-            @Value("${toss.client-key:test_gck_docs_Ovk5rk1gB5Nrm6CzWlVWax}") String clientKey) {
-        this.confirmUrl    = confirmUrl;
-        this.cancelUrlBase = cancelUrlBase;
-        this.secretKey     = secretKey;
-        this.clientKey     = clientKey;
-        this.restClient    = RestClient.create();
+    /** prop_profile 매칭: "all" 또는 null → 전체, "^local^dev^" → profile 포함 여부 */
+    private boolean isPropProfileMatch(String propProfile, String activeProfile) {
+        if (propProfile == null || propProfile.isBlank() || "all".equals(propProfile)) return true;
+        return propProfile.contains("^" + activeProfile + "^");
     }
 
     // ── 클라이언트키 조회 ─────────────────────────────────────────────────
@@ -79,9 +74,10 @@ public class CmTossPayService {
      * @return { clientKey: "..." }
      */
     public Map<String, Object> getClientKey(String appTypeCd) {
-        if (clientKey == null || clientKey.isBlank()) {
+        String clientKey = prop("payment.toss.client_key");
+        if (clientKey.isBlank()) {
             throw new CmBizException(
-                "토스 클라이언트키가 설정되지 않았습니다. application.yml 의 toss.client-key 를 설정하세요."
+                "토스 클라이언트키가 설정되지 않았습니다. sy_prop : payment.toss.client_key 를 설정하세요."
                 + "::" + CmUtil.svcCallerInfo(this));
         }
         Map<String, Object> result = new LinkedHashMap<>();
@@ -101,9 +97,16 @@ public class CmTossPayService {
      */
     @Transactional
     public Map<String, Object> confirm(TossConfirmReq request, String appTypeCd) {
-        if (secretKey == null || secretKey.isBlank()) {
+        String secretKey  = prop("payment.toss.secret_key");
+        String confirmUrl = prop("payment.toss.confirm_url");
+        if (secretKey.isBlank()) {
             throw new CmBizException(
-                "토스 시크릿키가 설정되지 않았습니다. application.yml 의 toss.secret-key (또는 환경변수 TOSS_SECRET_KEY) 를 설정하세요."
+                "토스 시크릿키가 설정되지 않았습니다. sy_prop : payment.toss.secret_key 를 설정하세요."
+                + "::" + CmUtil.svcCallerInfo(this));
+        }
+        if (confirmUrl.isBlank()) {
+            throw new CmBizException(
+                "토스 결제승인 URL이 설정되지 않았습니다. sy_prop : payment.toss.confirm_url 를 설정하세요."
                 + "::" + CmUtil.svcCallerInfo(this));
         }
 
@@ -171,9 +174,16 @@ public class CmTossPayService {
      */
     @Transactional
     public Map<String, Object> cancel(TossCancelReq request, String appTypeCd) {
-        if (secretKey == null || secretKey.isBlank()) {
+        String secretKey    = prop("payment.toss.secret_key");
+        String cancelUrlBase = prop("payment.toss.cancel_url");
+        if (secretKey.isBlank()) {
             throw new CmBizException(
-                "토스 시크릿키가 설정되지 않았습니다. application.yml 의 toss.secret-key (또는 환경변수 TOSS_SECRET_KEY) 를 설정하세요."
+                "토스 시크릿키가 설정되지 않았습니다. sy_prop : payment.toss.secret_key 를 설정하세요."
+                + "::" + CmUtil.svcCallerInfo(this));
+        }
+        if (cancelUrlBase.isBlank()) {
+            throw new CmBizException(
+                "토스 결제취소 URL이 설정되지 않았습니다. sy_prop : payment.toss.cancel_url 를 설정하세요."
                 + "::" + CmUtil.svcCallerInfo(this));
         }
 

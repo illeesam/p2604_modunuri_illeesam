@@ -58,4 +58,8 @@ public class SyProp extends BaseEntity {
     @Column(name = "prop_remark", length = 500)
     private String propRemark;
 
+    @Comment("적용 프로파일 (^local^dev^prod^ 형식, 비어있으면 전체 환경 적용)")
+    @Column(name = "prop_profile", length = 100)
+    private String propProfile;
+
 }
