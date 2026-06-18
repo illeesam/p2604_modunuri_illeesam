@@ -206,7 +206,7 @@
       };
       _debug('Google 로그인 창', {
         sdk: 'Google Identity Services (oauth2 token popup)',
-        client_id: _key('207844440856-5ib9mk6frvt7rfpt8823e48c3c0lavth.apps.googleusercontent.com'), // svGoogleClientId {illeesam@gmail.com > Google Cloud Console > API 및 서비스 > 사용자 인증 정보 > OAuth 2.0 클라이언트 ID(웹) > 클라이언트 ID 값}
+        client_id: _key('svGoogleClientId'), // svGoogleClientId {illeesam@gmail.com > Google Cloud Console > API 및 서비스 > 사용자 인증 정보 > OAuth 2.0 클라이언트 ID(웹) > 클라이언트 ID 값}
         scope: 'openid email profile',
         prompt: 'consent',
         userinfo_url: _env('oauth.GOOGLE_USERINFO_URL', 'https://www.googleapis.com/oauth2/v3/userinfo'),
