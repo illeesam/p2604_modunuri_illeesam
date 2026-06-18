@@ -154,6 +154,26 @@
       { group: '스토어' },
       { id: 'zdStore', label: 'store정보관리' },
       { id: 'zdLocalStorage', label: 'localstorage정보관리' },
+      { group: '소셜 로그인' },
+      { id: 'zdTestSnsLoginKakao', label: '카카오 로그인 테스트' },
+      { id: 'zdTestSnsLoginGoogle', label: '구글 로그인 테스트' },
+      { id: 'zdTestSnsLoginNaver', label: '네이버 로그인 테스트' },
+      { group: '결제' },
+      { id: 'zdTestPaymentToss', label: '토스페이먼츠 테스트' },
+      { group: '지도' },
+      { id: 'zdTestMapNaver', label: '네이버 지도 테스트' },
+      { id: 'zdTestMapGoogle', label: '구글 지도 테스트' },
+      { group: '메일 / SMS / 푸시 알림' },
+      { id: 'zdTestMailSmtp', label: 'SMTP 메일 테스트' },
+      { id: 'zdTestSms', label: 'SMS 테스트' },
+      { id: 'zdTestPushAlimFcm', label: 'FCM 푸시 테스트' },
+      { id: 'zdTestPushAlimApns', label: 'APNs 푸시 테스트' },
+      { group: '채팅 / AI' },
+      { id: 'zdTestAiChatbot', label: 'AI 챗봇 테스트' },
+      { id: 'zdTestChattingKakaoChannel', label: '카카오채널 메시지 테스트' },
+      { id: 'zdTestChattingWebSocket', label: 'WebSocket 채팅 테스트' },
+      { group: '앱 메시지' },
+      { id: 'zdTestAppMsgSendReceiv', label: 'Android/iOS 메시지 발송&수신' },
     ],
   };
 
@@ -451,6 +471,20 @@
         syPostman: 'sy-postman',
         zdStore: 'zd-store',
         zdLocalStorage: 'zd-local-storage',
+        zdTestSnsLoginKakao:   'zd-test-sns-login-kakao',
+        zdTestSnsLoginGoogle:  'zd-test-sns-login-google',
+        zdTestPaymentToss:     'zd-test-payment-toss',
+        zdTestMapNaver:        'zd-test-map-naver',
+        zdTestMapGoogle:       'zd-test-map-google',
+        zdTestMailSmtp:        'zd-test-mail-smtp',
+        zdTestSms:             'zd-test-sms',
+        zdTestPushAlimFcm:         'zd-test-push-alim-fcm',
+        zdTestPushAlimApns:        'zd-test-push-alim-apns',
+        zdTestSnsLoginNaver:       'zd-test-sns-login-naver',
+        zdTestAiChatbot:           'zd-test-ai-chatbot',
+        zdTestChattingKakaoChannel:'zd-test-chatting-kakao-channel',
+        zdTestChattingWebSocket:   'zd-test-chatting-web-socket',
+        zdTestAppMsgSendReceiv:    'zd-test-app-msg-send-receiv',
       };
 
       /* addTab */
@@ -2549,6 +2583,20 @@
             <sy-postman  v-else-if="page==='syPostman'"  :navigate="navigate" />
             <zd-store  v-else-if="page==='zdStore'"  :navigate="navigate" />
             <zd-local-storage  v-else-if="page==='zdLocalStorage'"  :navigate="navigate" />
+            <zd-test-sns-login-kakao  v-else-if="page==='zdTestSnsLoginKakao'"  :navigate="navigate" :show-toast="showToast" />
+            <zd-test-sns-login-google v-else-if="page==='zdTestSnsLoginGoogle'" :navigate="navigate" :show-toast="showToast" />
+            <zd-test-payment-toss     v-else-if="page==='zdTestPaymentToss'"    :navigate="navigate" :show-toast="showToast" />
+            <zd-test-map-naver        v-else-if="page==='zdTestMapNaver'"       :navigate="navigate" :show-toast="showToast" />
+            <zd-test-map-google       v-else-if="page==='zdTestMapGoogle'"      :navigate="navigate" :show-toast="showToast" />
+            <zd-test-mail-smtp        v-else-if="page==='zdTestMailSmtp'"       :navigate="navigate" :show-toast="showToast" />
+            <zd-test-sms              v-else-if="page==='zdTestSms'"            :navigate="navigate" :show-toast="showToast" />
+            <zd-test-push-alim-fcm          v-else-if="page==='zdTestPushAlimFcm'"          :navigate="navigate" :show-toast="showToast" />
+            <zd-test-push-alim-apns         v-else-if="page==='zdTestPushAlimApns'"         :navigate="navigate" :show-toast="showToast" />
+            <zd-test-sns-login-naver        v-else-if="page==='zdTestSnsLoginNaver'"        :navigate="navigate" :show-toast="showToast" />
+            <zd-test-ai-chatbot             v-else-if="page==='zdTestAiChatbot'"            :navigate="navigate" :show-toast="showToast" />
+            <zd-test-chatting-kakao-channel v-else-if="page==='zdTestChattingKakaoChannel'" :navigate="navigate" :show-toast="showToast" />
+            <zd-test-chatting-web-socket    v-else-if="page==='zdTestChattingWebSocket'"    :navigate="navigate" :show-toast="showToast" />
+            <zd-test-app-msg-send-receiv    v-else-if="page==='zdTestAppMsgSendReceiv'"    :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
             <bo-error-401 v-else-if="page==='error401'" :navigate="navigate" />
             <bo-error-500 v-else-if="page==='error500'" :navigate="navigate" :message="errorMessage" />
             <bo-error-404 v-else :navigate="navigate" :page-id="page" />
@@ -3114,6 +3162,20 @@
     /* ── pages/bo/zd/ — 개발도구 ── */
     .component('ZdStore', window.ZdStore)
     .component('ZdLocalStorage', window.ZdLocalStorage)
+    .component('ZdTestSnsLoginKakao',  window.ZdTestSnsLoginKakao)
+    .component('ZdTestSnsLoginGoogle', window.ZdTestSnsLoginGoogle)
+    .component('ZdTestPaymentToss',    window.ZdTestPaymentToss)
+    .component('ZdTestMapNaver',       window.ZdTestMapNaver)
+    .component('ZdTestMapGoogle',      window.ZdTestMapGoogle)
+    .component('ZdTestMailSmtp',       window.ZdTestMailSmtp)
+    .component('ZdTestSms',            window.ZdTestSms)
+    .component('ZdTestPushAlimFcm',          window.ZdTestPushAlimFcm)
+    .component('ZdTestPushAlimApns',         window.ZdTestPushAlimApns)
+    .component('ZdTestSnsLoginNaver',        window.ZdTestSnsLoginNaver)
+    .component('ZdTestAiChatbot',            window.ZdTestAiChatbot)
+    .component('ZdTestChattingKakaoChannel', window.ZdTestChattingKakaoChannel)
+    .component('ZdTestChattingWebSocket',    window.ZdTestChattingWebSocket)
+    .component('ZdTestAppMsgSendReceiv',     window.ZdTestAppMsgSendReceiv)
     .use(Pinia.createPinia())
     .mount('#app');
 
