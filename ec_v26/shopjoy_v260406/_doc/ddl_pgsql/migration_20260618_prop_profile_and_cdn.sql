@@ -57,22 +57,22 @@ ON CONFLICT (path_id) DO NOTHING;
 
 -- sy_prop: cdn.url.base — 기본 CDN URL (비워두면 상대경로 사용)
 INSERT INTO sy_prop (site_id, path_id, prop_key, prop_value, prop_label, prop_type_cd, sort_ord, use_yn, prop_remark, prop_profile, reg_by, reg_date)
-VALUES ('SITE000001', 'cdn.url', 'cdn.url.base', '', '기본 CDN URL', 'STRING', 1, 'N', '정적파일(이미지·JS·CSS) 기본 CDN 도메인. 비워두면 상대경로 사용. 예: https://cdn.myshop.com', NULL, 'admin', NOW())
+VALUES ('2604010000000001', 'cdn.url', 'cdn.url.base', '', '기본 CDN URL', 'STRING', 1, 'N', '정적파일(이미지·JS·CSS) 기본 CDN 도메인. 비워두면 상대경로 사용. 예: https://cdn.myshop.com', NULL, 'admin', NOW())
 ON CONFLICT (site_id, path_id, prop_key) DO NOTHING;
 
 -- sy_prop: cdn.url.image — 이미지 전용 CDN URL (비워두면 cdn.url.base 사용)
 INSERT INTO sy_prop (site_id, path_id, prop_key, prop_value, prop_label, prop_type_cd, sort_ord, use_yn, prop_remark, prop_profile, reg_by, reg_date)
-VALUES ('SITE000001', 'cdn.url', 'cdn.url.image', '', '이미지 CDN URL', 'STRING', 2, 'N', '상품·블로그 이미지 전용 CDN. 비워두면 cdn.url.base 사용. 예: https://img.myshop.com', NULL, 'admin', NOW())
+VALUES ('2604010000000001', 'cdn.url', 'cdn.url.image', '', '이미지 CDN URL', 'STRING', 2, 'N', '상품·블로그 이미지 전용 CDN. 비워두면 cdn.url.base 사용. 예: https://img.myshop.com', NULL, 'admin', NOW())
 ON CONFLICT (site_id, path_id, prop_key) DO NOTHING;
 
 -- sy_prop: cdn.url.upload — 파일 업로드 저장 경로 prefix
 INSERT INTO sy_prop (site_id, path_id, prop_key, prop_value, prop_label, prop_type_cd, sort_ord, use_yn, prop_remark, prop_profile, reg_by, reg_date)
-VALUES ('SITE000001', 'cdn.url', 'cdn.url.upload', '/uploads', '업로드 기본 경로', 'STRING', 3, 'Y', '파일 업로드 저장 기본 경로 prefix. 예: /uploads', NULL, 'admin', NOW())
+VALUES ('2604010000000001', 'cdn.url', 'cdn.url.upload', '/uploads', '업로드 기본 경로', 'STRING', 3, 'Y', '파일 업로드 저장 기본 경로 prefix. 예: /uploads', NULL, 'admin', NOW())
 ON CONFLICT (site_id, path_id, prop_key) DO NOTHING;
 
 -- sy_prop: cdn.url.static — 정적 파일 서빙 경로 prefix
 INSERT INTO sy_prop (site_id, path_id, prop_key, prop_value, prop_label, prop_type_cd, sort_ord, use_yn, prop_remark, prop_profile, reg_by, reg_date)
-VALUES ('SITE000001', 'cdn.url', 'cdn.url.static', '/static', '정적 파일 기본 경로', 'STRING', 4, 'Y', 'assets/ 이하 정적 파일 서빙 경로 prefix. 예: /static', NULL, 'admin', NOW())
+VALUES ('2604010000000001', 'cdn.url', 'cdn.url.static', '/static', '정적 파일 기본 경로', 'STRING', 4, 'Y', 'assets/ 이하 정적 파일 서빙 경로 prefix. 예: /static', NULL, 'admin', NOW())
 ON CONFLICT (site_id, path_id, prop_key) DO NOTHING;
 
 -- ============================================================
