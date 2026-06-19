@@ -38,14 +38,28 @@ window.ZdTestChattingKakaoChannel = {
 
     const uiState = reactive({ loading: false });
 
+    const syPropRows = reactive([]);
+
+    const syPropGridColumns = [
+      { key: 'propKey',     label: 'propKey',      cellStyle: 'font-family:monospace;color:#1e40af' },
+      { key: 'propProfile', label: 'propProfile',  fmt: (v) => v || '-', cellStyle: 'font-size:11px;color:#6b7280' },
+      { key: 'propLabel',   label: '표시명' },
+      { key: 'propValue',   label: 'propValue',    fmt: (v) => v || '-', cellStyle: 'font-family:monospace;font-size:11px;word-break:break-all' },
+      { key: 'useYn',       label: 'useYn',        badge: (row) => row.useYn === 'Y' ? 'badge-green' : 'badge-gray', align: 'center' },
+      { key: 'regDate',     label: '등록일시',      fmt: (v) => v ? String(v).replace('T',' ').slice(0,16) : '-', align: 'center' },
+      { key: 'updDate',     label: '수정일시',      fmt: (v) => v ? String(v).replace('T',' ').slice(0,16) : '-', align: 'center' },
+    ];
+
     /* ##### [02] 초기 로드 #################################################### */
 
     onMounted(async () => {
       try {
         const res = await boApiSvc.syProp?.getList?.({
           propKeys: 'app.kakao.channel-id,app.kakao.biz-msg-api-key,app.kakao.sender-key,app.kakao.from',
-        });
-        (res?.data?.data || []).forEach(p => {
+        }, '카카오 채널 테스트', '키 조회');
+        const list = res?.data?.data || [];
+        syPropRows.splice(0, syPropRows.length, ...list);
+        list.forEach(p => {
           if (p.propKey === 'app.kakao.channel-id')      cfg.channelId    = p.propValue || '';
           if (p.propKey === 'app.kakao.biz-msg-api-key') cfg.bizMsgApiKey = p.propValue || '';
           if (p.propKey === 'app.kakao.sender-key')      cfg.senderKey    = p.propValue || '';
@@ -114,7 +128,7 @@ window.ZdTestChattingKakaoChannel = {
       if (cmd === 'key-save') return saveKey();
     };
 
-    return { cfg, form, result, uiState, handleBtnAction };
+    return { cfg, form, result, uiState, handleBtnAction, syPropRows, syPropGridColumns };
   },
 
   template: `
@@ -212,7 +226,7 @@ window.ZdTestChattingKakaoChannel = {
   </div>
 
   <!-- 안내 -->
-  <div class="card">
+  <div class="card" style="margin-bottom:12px">
     <div class="toolbar"><span class="list-title">설정 안내</span></div>
     <div style="padding:12px;font-size:12px;line-height:1.8;color:#444">
       <b>1.</b> 카카오 비즈니스 채널 개설 → 카카오 비즈메시지 파트너사 등록<br>
@@ -222,6 +236,15 @@ window.ZdTestChattingKakaoChannel = {
       <b>백엔드 API:</b> <code>POST /api/bo/sy/test/kakao/channel</code><br>
       → <code>CmKakaoSendService</code> 경유 (알림톡/친구톡/채널추가 분기)
     </div>
+  </div>
+
+  <!-- sy_prop DB 조회 정보 -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="toolbar">
+      <span class="list-title">sy_prop DB 조회 정보</span>
+      <span class="list-count">{{ syPropRows.length }}건</span>
+    </div>
+    <bo-grid :columns="syPropGridColumns" :rows="syPropRows" row-key="propId" empty-msg="조회된 데이터가 없습니다." />
   </div>
 </div>`,
 };

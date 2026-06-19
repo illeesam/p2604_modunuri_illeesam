@@ -32,14 +32,38 @@ window.ZdTestSnsLoginNaver = {
 
     const STATE_KEY = 'naver_oauth_state_' + Math.random().toString(36).slice(2);
 
+    const ymlRows = reactive([]);
+    const ymlGridColumns = [
+      { key: 'ymlKey',   label: 'yml 키',  cellStyle: 'font-family:monospace;color:#6b7280' },
+      { key: 'ymlValue', label: 'yml 값',  cellStyle: 'font-family:monospace;font-size:11px;word-break:break-all' },
+    ];
+
+    const syPropRows = reactive([]);
+
+    const syPropGridColumns = [
+      { key: 'propKey',     label: 'propKey',      cellStyle: 'font-family:monospace;color:#1e40af' },
+      { key: 'propProfile', label: 'propProfile',  fmt: (v) => v || '-', cellStyle: 'font-size:11px;color:#6b7280' },
+      { key: 'propLabel',   label: '표시명' },
+      { key: 'propValue',   label: 'propValue',    fmt: (v) => v || '-', cellStyle: 'font-family:monospace;font-size:11px;word-break:break-all' },
+      { key: 'useYn',       label: 'useYn',        badge: (row) => row.useYn === 'Y' ? 'badge-green' : 'badge-gray', align: 'center' },
+      { key: 'regDate',     label: '등록일시',      fmt: (v) => v ? String(v).replace('T',' ').slice(0,16) : '-', align: 'center' },
+      { key: 'updDate',     label: '수정일시',      fmt: (v) => v ? String(v).replace('T',' ').slice(0,16) : '-', align: 'center' },
+    ];
+
     /* ##### [02] 초기 로드 #################################################### */
 
     onMounted(async () => {
       try {
+        const ymlRes = await boApi.get('/bo/sy/app-config/social', coUtil.apiHdr('네이버 소셜 로그인 테스트', 'yml 조회'));
+        ymlRows.splice(0, ymlRows.length, ...(ymlRes?.data?.data || []));
+      } catch (e) { /* yml 조회 실패 무시 */ }
+      try {
         const res = await boApiSvc.syProp?.getList?.({
           propKeys: 'ext.sdk.naverClientId,ext.sdk.naverClientSecret',
-        });
-        (res?.data?.data || []).forEach(p => {
+        }, '네이버 소셜 로그인 테스트', '키 조회');
+        const list = res?.data?.data || [];
+        syPropRows.splice(0, syPropRows.length, ...list);
+        list.forEach(p => {
           if (p.propKey === 'ext.sdk.naverClientId')     cfg.clientId     = p.propValue || '';
           if (p.propKey === 'ext.sdk.naverClientSecret') cfg.clientSecret = p.propValue || '';
         });
@@ -144,7 +168,7 @@ window.ZdTestSnsLoginNaver = {
       if (cmd === 'logout')        return logout();
     };
 
-    return { cfg, result, uiState, handleBtnAction };
+    return { cfg, result, uiState, handleBtnAction, ymlRows, ymlGridColumns, syPropRows, syPropGridColumns };
   },
 
   template: `
@@ -233,7 +257,7 @@ window.ZdTestSnsLoginNaver = {
   </div>
 
   <!-- 안내 -->
-  <div class="card">
+  <div class="card" style="margin-bottom:12px">
     <div class="toolbar"><span class="list-title">설정 안내</span></div>
     <div style="padding:12px;font-size:12px;line-height:1.8;color:#444">
       <b>1.</b> <a href="https://developers.naver.com/apps" target="_blank">네이버 개발자센터</a> → 애플리케이션 등록<br>
@@ -243,6 +267,24 @@ window.ZdTestSnsLoginNaver = {
       <b>5.</b> sy_prop <code>ext.sdk.naverClientId</code> / <code>ext.sdk.naverClientSecret</code> 등록<br><br>
       <b>백엔드 API:</b> <code>POST /api/bo/sy/test/sns/naver/profile</code> → 네이버 userinfo 프록시 호출
     </div>
+  </div>
+
+  <!-- application.yml 조회 정보 -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="toolbar">
+      <span class="list-title">application.yml 조회 정보</span>
+      <span class="list-count">{{ ymlRows.length }}건</span>
+    </div>
+    <bo-grid :columns="ymlGridColumns" :rows="ymlRows" row-key="ymlKey" empty-msg="조회된 데이터가 없습니다." />
+  </div>
+
+  <!-- sy_prop DB 조회 정보 -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="toolbar">
+      <span class="list-title">sy_prop DB 조회 정보</span>
+      <span class="list-count">{{ syPropRows.length }}건</span>
+    </div>
+    <bo-grid :columns="syPropGridColumns" :rows="syPropRows" row-key="propId" empty-msg="조회된 데이터가 없습니다." />
   </div>
 </div>`,
 };

@@ -39,12 +39,36 @@ window.ZdTestPaymentToss = {
 
     const uiState = reactive({ sdkLoaded: false, loading: false });
 
+    const ymlRows = reactive([]);
+    const ymlGridColumns = [
+      { key: 'ymlKey',   label: 'yml 키',  cellStyle: 'font-family:monospace;color:#6b7280' },
+      { key: 'ymlValue', label: 'yml 값',  cellStyle: 'font-family:monospace;font-size:11px;word-break:break-all' },
+    ];
+
+    const syPropRows = reactive([]);
+
+    const syPropGridColumns = [
+      { key: 'propKey',     label: 'propKey',      cellStyle: 'font-family:monospace;color:#1e40af' },
+      { key: 'propProfile', label: 'propProfile',  fmt: (v) => v || '-', cellStyle: 'font-size:11px;color:#6b7280' },
+      { key: 'propLabel',   label: '표시명' },
+      { key: 'propValue',   label: 'propValue',    fmt: (v) => v || '-', cellStyle: 'font-family:monospace;font-size:11px;word-break:break-all' },
+      { key: 'useYn',       label: 'useYn',        badge: (row) => row.useYn === 'Y' ? 'badge-green' : 'badge-gray', align: 'center' },
+      { key: 'regDate',     label: '등록일시',      fmt: (v) => v ? String(v).replace('T',' ').slice(0,16) : '-', align: 'center' },
+      { key: 'updDate',     label: '수정일시',      fmt: (v) => v ? String(v).replace('T',' ').slice(0,16) : '-', align: 'center' },
+    ];
+
     /* ##### [02] 초기 로드 #################################################### */
 
     onMounted(async () => {
       try {
-        const res = await boApiSvc.syProp?.getList?.({ propKeys: 'payment.toss.client_key,payment.toss.secret_key' });
-        (res?.data?.data || []).forEach(p => {
+        const ymlRes = await boApi.get('/bo/sy/app-config/toss', coUtil.apiHdr('토스페이먼츠 결제 테스트', 'yml 조회'));
+        ymlRows.splice(0, ymlRows.length, ...(ymlRes?.data?.data || []));
+      } catch (e) { /* yml 조회 실패 무시 */ }
+      try {
+        const res = await boApiSvc.syProp?.getList?.({ propKeys: 'payment.toss.client_key,payment.toss.secret_key' }, '토스페이먼츠 결제 테스트', '키 조회');
+        const list = res?.data?.data || [];
+        syPropRows.splice(0, syPropRows.length, ...list);
+        list.forEach(p => {
           if (p.propKey === 'payment.toss.client_key') cfg.clientKey = p.propValue || '';
           if (p.propKey === 'payment.toss.secret_key') cfg.secretKey = p.propValue || '';
         });
@@ -152,7 +176,7 @@ window.ZdTestPaymentToss = {
       if (cmd === 'orderid-refresh') return refreshOrderId();
     };
 
-    return { cfg, form, result, uiState, handleBtnAction };
+    return { cfg, form, result, uiState, handleBtnAction, ymlRows, ymlGridColumns, syPropRows, syPropGridColumns };
   },
 
   template: `
@@ -251,7 +275,7 @@ window.ZdTestPaymentToss = {
   </div>
 
   <!-- 흐름 안내 -->
-  <div class="card">
+  <div class="card" style="margin-bottom:12px">
     <div class="toolbar"><span class="list-title">연동 흐름</span></div>
     <div style="padding:12px;font-size:12px;line-height:1.8;color:#444">
       <b>1.</b> 토스페이먼츠 개발자센터 → 앱 생성 → 테스트 키 발급 (test_ck_/test_sk_)<br>
@@ -260,6 +284,24 @@ window.ZdTestPaymentToss = {
       <b>4.</b> 백엔드 <code>POST /api/co/cm/toss/confirm</code> 으로 승인 요청<br>
       <b>5.</b> 취소: <code>POST /api/co/cm/toss/cancel</code> (cancelAmount 없으면 전체 취소)
     </div>
+  </div>
+
+  <!-- application.yml 조회 정보 -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="toolbar">
+      <span class="list-title">application.yml 조회 정보</span>
+      <span class="list-count">{{ ymlRows.length }}건</span>
+    </div>
+    <bo-grid :columns="ymlGridColumns" :rows="ymlRows" row-key="ymlKey" empty-msg="조회된 데이터가 없습니다." />
+  </div>
+
+  <!-- sy_prop DB 조회 정보 -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="toolbar">
+      <span class="list-title">sy_prop DB 조회 정보</span>
+      <span class="list-count">{{ syPropRows.length }}건</span>
+    </div>
+    <bo-grid :columns="syPropGridColumns" :rows="syPropRows" row-key="propId" empty-msg="조회된 데이터가 없습니다." />
   </div>
 </div>`,
 };

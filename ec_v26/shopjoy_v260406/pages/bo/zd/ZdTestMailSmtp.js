@@ -39,14 +39,28 @@ window.ZdTestMailSmtp = {
 
     const uiState = reactive({ loading: false });
 
+    const syPropRows = reactive([]);
+
+    const syPropGridColumns = [
+      { key: 'propKey',     label: 'propKey',      cellStyle: 'font-family:monospace;color:#1e40af' },
+      { key: 'propProfile', label: 'propProfile',  fmt: (v) => v || '-', cellStyle: 'font-size:11px;color:#6b7280' },
+      { key: 'propLabel',   label: '표시명' },
+      { key: 'propValue',   label: 'propValue',    fmt: (v) => v || '-', cellStyle: 'font-family:monospace;font-size:11px;word-break:break-all' },
+      { key: 'useYn',       label: 'useYn',        badge: (row) => row.useYn === 'Y' ? 'badge-green' : 'badge-gray', align: 'center' },
+      { key: 'regDate',     label: '등록일시',      fmt: (v) => v ? String(v).replace('T',' ').slice(0,16) : '-', align: 'center' },
+      { key: 'updDate',     label: '수정일시',      fmt: (v) => v ? String(v).replace('T',' ').slice(0,16) : '-', align: 'center' },
+    ];
+
     /* ##### [02] 초기 로드 #################################################### */
 
     onMounted(async () => {
       try {
         const res = await boApiSvc.syProp?.getList?.({
           propKeys: 'site.email.smtp.host,site.email.smtp.port,app.mail.from,app.mail.from-nm',
-        });
-        (res?.data?.data || []).forEach(p => {
+        }, 'SMTP 메일 발송 테스트', '키 조회');
+        const list = res?.data?.data || [];
+        syPropRows.splice(0, syPropRows.length, ...list);
+        list.forEach(p => {
           if (p.propKey === 'site.email.smtp.host') cfg.smtpHost = p.propValue || '';
           if (p.propKey === 'site.email.smtp.port') cfg.smtpPort = p.propValue || '';
           if (p.propKey === 'app.mail.from')        cfg.from     = p.propValue || '';
@@ -103,30 +117,12 @@ window.ZdTestMailSmtp = {
       if (cmd === 'mail-send') return sendTestMail();
     };
 
-    return { cfg, form, result, uiState, handleBtnAction };
+    return { cfg, form, result, uiState, handleBtnAction, syPropRows, syPropGridColumns };
   },
 
   template: `
 <div>
   <div class="page-title">SMTP 메일 발송 테스트</div>
-
-  <!-- 현재 SMTP 설정 -->
-  <div class="card" style="margin-bottom:12px">
-    <div class="toolbar"><span class="list-title">현재 SMTP 설정 (AppTableLog 정보)</span></div>
-    <div style="padding:12px">
-      <table class="admin-table" style="font-size:12px">
-        <tbody>
-          <tr><td style="width:160px;color:#555">SMTP Host</td><td><code>{{ cfg.smtpHost || '(not configured)' }}</code></td><td style="color:#888;font-size:11px">sy_prop: site.email.smtp.host</td></tr>
-          <tr><td style="color:#555">SMTP Port</td><td><code>{{ cfg.smtpPort || '(not configured)' }}</code></td><td style="color:#888;font-size:11px">sy_prop: site.email.smtp.port</td></tr>
-          <tr><td style="color:#555">Username</td><td><code>{{ cfg.username || '(application-local.yml)' }}</code></td><td style="color:#888;font-size:11px">spring.mail.username</td></tr>
-          <tr><td style="color:#555">From</td><td><code>{{ cfg.fromNm }} &lt;{{ cfg.from }}&gt;</code></td><td style="color:#888;font-size:11px">app.mail.from / from-nm</td></tr>
-        </tbody>
-      </table>
-      <div style="margin-top:8px;font-size:11px;color:#888">
-        ※ Password 는 보안상 표시하지 않습니다. application-local.yml 에서 직접 확인하세요.
-      </div>
-    </div>
-  </div>
 
   <!-- 발송 폼 -->
   <div class="card" style="margin-bottom:12px">
@@ -189,6 +185,15 @@ window.ZdTestMailSmtp = {
       <b>백엔드 API:</b> <code>POST /api/bo/sy/test/mail</code> → <code>CmMailSendService.sendTestMail()</code><br>
       ※ 엔드포인트 미구현 시 "404 Not Found" — <code>BoSyTestController</code> 에 추가 필요
     </div>
+  </div>
+
+  <!-- sy_prop DB 조회 정보 -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="toolbar">
+      <span class="list-title">sy_prop DB 조회 정보</span>
+      <span class="list-count">{{ syPropRows.length }}건</span>
+    </div>
+    <bo-grid :columns="syPropGridColumns" :rows="syPropRows" row-key="propId" empty-msg="조회된 데이터가 없습니다." />
   </div>
 </div>`,
 };

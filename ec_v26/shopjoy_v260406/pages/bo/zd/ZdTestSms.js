@@ -36,6 +36,18 @@ window.ZdTestSms = {
 
     const uiState = reactive({ loading: false });
 
+    const syPropRows = reactive([]);
+
+    const syPropGridColumns = [
+      { key: 'propKey',     label: 'propKey',      cellStyle: 'font-family:monospace;color:#1e40af' },
+      { key: 'propProfile', label: 'propProfile',  fmt: (v) => v || '-', cellStyle: 'font-size:11px;color:#6b7280' },
+      { key: 'propLabel',   label: '표시명' },
+      { key: 'propValue',   label: 'propValue',    fmt: (v) => v || '-', cellStyle: 'font-family:monospace;font-size:11px;word-break:break-all' },
+      { key: 'useYn',       label: 'useYn',        badge: (row) => row.useYn === 'Y' ? 'badge-green' : 'badge-gray', align: 'center' },
+      { key: 'regDate',     label: '등록일시',      fmt: (v) => v ? String(v).replace('T',' ').slice(0,16) : '-', align: 'center' },
+      { key: 'updDate',     label: '수정일시',      fmt: (v) => v ? String(v).replace('T',' ').slice(0,16) : '-', align: 'center' },
+    ];
+
     const PROVIDER_LABELS = {
       aligo:    'Aligo 알리고',
       coolsms:  'CoolSMS 쿨SMS',
@@ -49,8 +61,10 @@ window.ZdTestSms = {
       try {
         const res = await boApiSvc.syProp?.getList?.({
           propKeys: 'app.sms.provider,app.sms.from',
-        });
-        (res?.data?.data || []).forEach(p => {
+        }, 'SMS 문자 발송 테스트', '키 조회');
+        const list = res?.data?.data || [];
+        syPropRows.splice(0, syPropRows.length, ...list);
+        list.forEach(p => {
           if (p.propKey === 'app.sms.provider') cfg.provider = p.propValue || '';
           if (p.propKey === 'app.sms.from')     cfg.from     = p.propValue || '';
         });
@@ -100,44 +114,12 @@ window.ZdTestSms = {
 
     const fnProviderLabel = (p) => PROVIDER_LABELS[p] || p || '(not configured)';
 
-    return { cfg, form, result, uiState, handleBtnAction, fnProviderLabel };
+    return { cfg, form, result, uiState, handleBtnAction, fnProviderLabel, syPropRows, syPropGridColumns };
   },
 
   template: `
 <div>
   <div class="page-title">SMS 문자 발송 테스트</div>
-
-  <!-- 현재 설정 -->
-  <div class="card" style="margin-bottom:12px">
-    <div class="toolbar"><span class="list-title">현재 SMS 설정</span></div>
-    <div style="padding:12px">
-      <table class="admin-table" style="font-size:12px">
-        <tbody>
-          <tr>
-            <td style="width:140px;color:#555">Provider</td>
-            <td>
-              <span v-if="cfg.provider" class="badge badge-blue">{{ fnProviderLabel(cfg.provider) }}</span>
-              <span v-else class="badge badge-gray">(not configured)</span>
-            </td>
-            <td style="color:#888;font-size:11px">sy_prop: app.sms.provider</td>
-          </tr>
-          <tr>
-            <td style="color:#555">발신 번호</td>
-            <td><code>{{ cfg.from || '(not configured)' }}</code></td>
-            <td style="color:#888;font-size:11px">sy_prop: app.sms.from</td>
-          </tr>
-          <tr>
-            <td style="color:#555">API Key/Secret</td>
-            <td><span style="color:#888">application-local.yml 또는 sy_prop 에서 관리</span></td>
-            <td style="color:#888;font-size:11px">sy_prop ^local^dev^: app.sms.api-key / api-secret</td>
-          </tr>
-        </tbody>
-      </table>
-      <div v-if="!cfg.provider" style="margin-top:8px;padding:8px;background:#fef9c3;border:1px solid #fde68a;border-radius:4px;font-size:12px;color:#92400e">
-        ⚠ Provider 미설정 — BO 프로퍼티관리에서 <code>app.sms.provider</code> 를 등록하세요. (aligo / coolsms / ncp / twilio)
-      </div>
-    </div>
-  </div>
 
   <!-- 발송 폼 -->
   <div class="card" style="margin-bottom:12px">
@@ -196,6 +178,15 @@ window.ZdTestSms = {
       <b>백엔드 API:</b> <code>POST /api/bo/sy/test/sms</code> → <code>CmSmsSendService.sendTestSms()</code><br>
       ※ 엔드포인트 미구현 시 "404 Not Found" — <code>BoSyTestController</code> 에 추가 필요
     </div>
+  </div>
+
+  <!-- sy_prop DB 조회 정보 -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="toolbar">
+      <span class="list-title">sy_prop DB 조회 정보</span>
+      <span class="list-count">{{ syPropRows.length }}건</span>
+    </div>
+    <bo-grid :columns="syPropGridColumns" :rows="syPropRows" row-key="propId" empty-msg="조회된 데이터가 없습니다." />
   </div>
 </div>`,
 };

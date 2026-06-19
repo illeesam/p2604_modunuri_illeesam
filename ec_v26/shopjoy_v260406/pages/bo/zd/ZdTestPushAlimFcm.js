@@ -39,14 +39,28 @@ window.ZdTestPushAlimFcm = {
 
     const uiState = reactive({ loading: false, loadingTokens: false });
 
+    const syPropRows = reactive([]);
+
+    const syPropGridColumns = [
+      { key: 'propKey',     label: 'propKey',      cellStyle: 'font-family:monospace;color:#1e40af' },
+      { key: 'propProfile', label: 'propProfile',  fmt: (v) => v || '-', cellStyle: 'font-size:11px;color:#6b7280' },
+      { key: 'propLabel',   label: '표시명' },
+      { key: 'propValue',   label: 'propValue',    fmt: (v) => v || '-', cellStyle: 'font-family:monospace;font-size:11px;word-break:break-all' },
+      { key: 'useYn',       label: 'useYn',        badge: (row) => row.useYn === 'Y' ? 'badge-green' : 'badge-gray', align: 'center' },
+      { key: 'regDate',     label: '등록일시',      fmt: (v) => v ? String(v).replace('T',' ').slice(0,16) : '-', align: 'center' },
+      { key: 'updDate',     label: '수정일시',      fmt: (v) => v ? String(v).replace('T',' ').slice(0,16) : '-', align: 'center' },
+    ];
+
     /* ##### [02] 초기 로드 #################################################### */
 
     onMounted(async () => {
       try {
         const res = await boApiSvc.syProp?.getList?.({
           propKeys: 'app.push.fcm.project-id,app.push.fcm.key-file,app.push.apns.enabled',
-        });
-        (res?.data?.data || []).forEach(p => {
+        }, 'FCM 푸시 알림 테스트', '키 조회');
+        const list = res?.data?.data || [];
+        syPropRows.splice(0, syPropRows.length, ...list);
+        list.forEach(p => {
           if (p.propKey === 'app.push.fcm.project-id')  cfg.fcmProjectId = p.propValue || '';
           if (p.propKey === 'app.push.fcm.key-file')    cfg.fcmKeyFile   = p.propValue || '';
           if (p.propKey === 'app.push.apns.enabled')    cfg.apnsEnabled  = p.propValue === 'true';
@@ -120,41 +134,12 @@ window.ZdTestPushAlimFcm = {
       if (cmd === 'token-use')   return useToken(param);
     };
 
-    return { cfg, form, result, uiState, handleBtnAction };
+    return { cfg, form, result, uiState, handleBtnAction, syPropRows, syPropGridColumns };
   },
 
   template: `
 <div>
   <div class="page-title">FCM 푸시 알림 테스트</div>
-
-  <!-- 현재 설정 -->
-  <div class="card" style="margin-bottom:12px">
-    <div class="toolbar"><span class="list-title">현재 FCM 설정</span></div>
-    <div style="padding:12px">
-      <table class="admin-table" style="font-size:12px">
-        <tbody>
-          <tr>
-            <td style="width:160px;color:#555">Project ID</td>
-            <td><code>{{ cfg.fcmProjectId || '(not configured)' }}</code></td>
-            <td style="color:#888;font-size:11px">sy_prop: app.push.fcm.project-id</td>
-          </tr>
-          <tr>
-            <td style="color:#555">Key File</td>
-            <td><code>{{ cfg.fcmKeyFile || '(not configured)' }}</code></td>
-            <td style="color:#888;font-size:11px">sy_prop: app.push.fcm.key-file (서비스 계정 JSON 경로)</td>
-          </tr>
-          <tr>
-            <td style="color:#555">APNs (iOS) 연동</td>
-            <td><span :class="cfg.apnsEnabled ? 'badge badge-green' : 'badge badge-gray'">{{ cfg.apnsEnabled ? '활성' : '비활성' }}</span></td>
-            <td style="color:#888;font-size:11px">sy_prop: app.push.apns.enabled</td>
-          </tr>
-        </tbody>
-      </table>
-      <div v-if="!cfg.fcmProjectId" style="margin-top:8px;padding:8px;background:#fef9c3;border:1px solid #fde68a;border-radius:4px;font-size:12px;color:#92400e">
-        ⚠ FCM Project ID 미설정 — BO 프로퍼티관리에서 <code>app.push.fcm.project-id</code> 를 등록하세요.
-      </div>
-    </div>
-  </div>
 
   <!-- 발송 폼 -->
   <div class="card" style="margin-bottom:12px">
@@ -279,6 +264,15 @@ window.ZdTestPushAlimFcm = {
       <b>백엔드 API:</b> <code>POST /api/bo/sy/test/push/fcm</code> → <code>CmPushSendService.sendFcm()</code><br>
       <code>GET /api/bo/sy/test/push/tokens</code> → <code>mb_device_token</code> 조회
     </div>
+  </div>
+
+  <!-- sy_prop DB 조회 정보 -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="toolbar">
+      <span class="list-title">sy_prop DB 조회 정보</span>
+      <span class="list-count">{{ syPropRows.length }}건</span>
+    </div>
+    <bo-grid :columns="syPropGridColumns" :rows="syPropRows" row-key="propId" empty-msg="조회된 데이터가 없습니다." />
   </div>
 </div>`,
 };

@@ -41,14 +41,28 @@ window.ZdTestPushAlimApns = {
 
     const uiState = reactive({ loading: false, loadingTokens: false });
 
+    const syPropRows = reactive([]);
+
+    const syPropGridColumns = [
+      { key: 'propKey',     label: 'propKey',      cellStyle: 'font-family:monospace;color:#1e40af' },
+      { key: 'propProfile', label: 'propProfile',  fmt: (v) => v || '-', cellStyle: 'font-size:11px;color:#6b7280' },
+      { key: 'propLabel',   label: '표시명' },
+      { key: 'propValue',   label: 'propValue',    fmt: (v) => v || '-', cellStyle: 'font-family:monospace;font-size:11px;word-break:break-all' },
+      { key: 'useYn',       label: 'useYn',        badge: (row) => row.useYn === 'Y' ? 'badge-green' : 'badge-gray', align: 'center' },
+      { key: 'regDate',     label: '등록일시',      fmt: (v) => v ? String(v).replace('T',' ').slice(0,16) : '-', align: 'center' },
+      { key: 'updDate',     label: '수정일시',      fmt: (v) => v ? String(v).replace('T',' ').slice(0,16) : '-', align: 'center' },
+    ];
+
     /* ##### [02] 초기 로드 #################################################### */
 
     onMounted(async () => {
       try {
         const res = await boApiSvc.syProp?.getList?.({
           propKeys: 'app.push.apns.key-id,app.push.apns.team-id,app.push.apns.key-file,app.push.apns.bundle-id,app.push.apns.production',
-        });
-        (res?.data?.data || []).forEach(p => {
+        }, 'APNs 푸시 알림 테스트', '키 조회');
+        const list = res?.data?.data || [];
+        syPropRows.splice(0, syPropRows.length, ...list);
+        list.forEach(p => {
           if (p.propKey === 'app.push.apns.key-id')    cfg.keyId      = p.propValue || '';
           if (p.propKey === 'app.push.apns.team-id')   cfg.teamId     = p.propValue || '';
           if (p.propKey === 'app.push.apns.key-file')  cfg.keyFile    = p.propValue || '';
@@ -138,7 +152,7 @@ window.ZdTestPushAlimApns = {
       if (cmd === 'key-save')      return saveKey();
     };
 
-    return { cfg, form, result, uiState, handleBtnAction };
+    return { cfg, form, result, uiState, handleBtnAction, syPropRows, syPropGridColumns };
   },
 
   template: `
@@ -293,7 +307,7 @@ window.ZdTestPushAlimApns = {
   </div>
 
   <!-- 안내 -->
-  <div class="card">
+  <div class="card" style="margin-bottom:12px">
     <div class="toolbar"><span class="list-title">APNs 설정 안내</span></div>
     <div style="padding:12px;font-size:12px;line-height:1.8;color:#444">
       <b>1.</b> Apple Developer → Certificates → Keys → New Key → APNs 체크 → 다운로드 (.p8)<br>
@@ -304,6 +318,15 @@ window.ZdTestPushAlimApns = {
       <b>백엔드 API:</b> <code>POST /api/bo/sy/test/push/apns</code> → <code>CmApnsSendService.sendApns()</code><br>
       라이브러리: <code>com.eatthepath:pushy</code> (Netty 기반 HTTP/2 APNs 클라이언트) 권장
     </div>
+  </div>
+
+  <!-- sy_prop DB 조회 정보 -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="toolbar">
+      <span class="list-title">sy_prop DB 조회 정보</span>
+      <span class="list-count">{{ syPropRows.length }}건</span>
+    </div>
+    <bo-grid :columns="syPropGridColumns" :rows="syPropRows" row-key="propId" empty-msg="조회된 데이터가 없습니다." />
   </div>
 </div>`,
 };
