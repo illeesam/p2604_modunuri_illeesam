@@ -152,6 +152,7 @@
     ],
     devtools: [
       { group: '스토어' },
+      { id: 'zdInfDashboard', label: '연동설정대시보드' },
       { id: 'zdStore', label: 'store정보관리' },
       { id: 'zdLocalStorage', label: 'localstorage정보관리' },
       { group: '소셜 로그인' },
@@ -469,6 +470,7 @@
         syApiLogMng: 'sy-api-log-mng',
         sySendMsgLog: 'sy-send-msg-log-mng',
         syPostman: 'sy-postman',
+        zdInfDashboard: 'zd-inf-dashboard',
         zdStore: 'zd-store',
         zdLocalStorage: 'zd-local-storage',
         zdTestSnsLoginKakao:   'zd-test-sns-login-kakao',
@@ -2581,6 +2583,7 @@
             <sy-api-log-mng      v-else-if="page==='syApiLogMng'"      :navigate="navigate" />
             <sy-send-msg-log-mng v-else-if="page==='sySendMsgLog'"     :navigate="navigate" />
             <sy-postman  v-else-if="page==='syPostman'"  :navigate="navigate" />
+            <zd-inf-dashboard v-else-if="page==='zdInfDashboard'" :navigate="navigate" :show-toast="showToast" />
             <zd-store  v-else-if="page==='zdStore'"  :navigate="navigate" />
             <zd-local-storage  v-else-if="page==='zdLocalStorage'"  :navigate="navigate" />
             <zd-test-sns-login-kakao  v-else-if="page==='zdTestSnsLoginKakao'"  :navigate="navigate" :show-toast="showToast" />
@@ -3160,6 +3163,7 @@
     .component('SySendMsgLogMng', window.SySendMsgLogMng)
     .component('SyPostman', window.SyPostman)
     /* ── pages/bo/zd/ — 개발도구 ── */
+    .component('ZdInfDashboard', window.ZdInfDashboard)
     .component('ZdStore', window.ZdStore)
     .component('ZdLocalStorage', window.ZdLocalStorage)
     .component('ZdTestSnsLoginKakao',  window.ZdTestSnsLoginKakao)
