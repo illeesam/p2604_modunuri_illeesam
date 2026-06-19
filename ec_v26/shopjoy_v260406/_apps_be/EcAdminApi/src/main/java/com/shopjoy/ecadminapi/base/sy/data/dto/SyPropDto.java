@@ -17,6 +17,7 @@ public class SyPropDto {
         @Size(max = 21) private String propId;
         @Size(max = 21) private String pathId;
         @Size(max = 100) private String propKey;
+        @Size(max = 2000) private String propKeys; // 쉼표 구분 복수 키 (IN 조건)
         @Size(max = 50) private String propTypeCd;
         @Size(max = 1)  private String useYn;
         @Size(max = 100) private String propProfile;

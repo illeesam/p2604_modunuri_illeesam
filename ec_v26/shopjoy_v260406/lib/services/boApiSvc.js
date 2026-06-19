@@ -570,7 +570,8 @@
   /* ── sy: 시스템속성 ─────────────────────────────────────────── */
   boApiSvc.syProp = {
     getPathTreeNodeCounts(params, uiNm, cmdNm) { return global.boApi.get('/bo/sy/prop/path-counts', { params, ...hdr(uiNm, cmdNm) }); },
-    getPage(params, uiNm, cmdNm) { return global.boApi.get(   '/bo/sy/prop/page', { params, ...hdr(uiNm, cmdNm) }); },
+    getList(params, uiNm, cmdNm)   { return global.boApi.get(   '/bo/sy/prop', { params, ...hdr(uiNm, cmdNm) }); },
+    getPage(params, uiNm, cmdNm)   { return global.boApi.get(   '/bo/sy/prop/page', { params, ...hdr(uiNm, cmdNm) }); },
     saveList(cmd, rows, uiNm, cmdNm)  { return chkRowIds(rows, 'propId', uiNm, cmdNm) || global.boApi.post('/bo/sy/prop/save-list/' + cmd, rows, hdr(uiNm, cmdNm)); },
   };
 

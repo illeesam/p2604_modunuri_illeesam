@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 개발도구 — 토스페이먼츠 결제 테스트
  */
 window.ZdTestPaymentToss = {
@@ -45,8 +45,8 @@ window.ZdTestPaymentToss = {
       try {
         const res = await boApiSvc.syProp?.getList?.({ propKeys: 'payment.toss.client_key,payment.toss.secret_key' });
         (res?.data?.data || []).forEach(p => {
-          if (p.propKey === 'payment.toss.client_key') cfg.clientKey = p.propVal || '';
-          if (p.propKey === 'payment.toss.secret_key') cfg.secretKey = p.propVal || '';
+          if (p.propKey === 'payment.toss.client_key') cfg.clientKey = p.propValue || '';
+          if (p.propKey === 'payment.toss.secret_key') cfg.secretKey = p.propValue || '';
         });
       } catch (e) {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);
@@ -132,8 +132,8 @@ window.ZdTestPaymentToss = {
     const saveKeys = async () => {
       try {
         const rows = [];
-        if (cfg.clientKey) rows.push({ propKey: 'payment.toss.client_key', propVal: cfg.clientKey });
-        if (cfg.secretKey) rows.push({ propKey: 'payment.toss.secret_key', propVal: cfg.secretKey });
+        if (cfg.clientKey) rows.push({ propKey: 'payment.toss.client_key', propValue: cfg.clientKey });
+        if (cfg.secretKey) rows.push({ propKey: 'payment.toss.secret_key', propValue: cfg.secretKey });
         if (!rows.length) { showToast('저장할 키가 없습니다.', 'error'); return; }
         await boApi.put('/bo/sy/prop/bulk', rows, coUtil.apiHdr('토스 결제 테스트', '키 저장'));
         showToast('sy_prop 에 저장되었습니다.', 'success');

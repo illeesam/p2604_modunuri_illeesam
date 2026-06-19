@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 개발도구 — SMTP 메일 발송 테스트
  */
 window.ZdTestMailSmtp = {
@@ -47,10 +47,10 @@ window.ZdTestMailSmtp = {
           propKeys: 'site.email.smtp.host,site.email.smtp.port,app.mail.from,app.mail.from-nm',
         });
         (res?.data?.data || []).forEach(p => {
-          if (p.propKey === 'site.email.smtp.host') cfg.smtpHost = p.propVal || '';
-          if (p.propKey === 'site.email.smtp.port') cfg.smtpPort = p.propVal || '';
-          if (p.propKey === 'app.mail.from')        cfg.from     = p.propVal || '';
-          if (p.propKey === 'app.mail.from-nm')     cfg.fromNm   = p.propVal || '';
+          if (p.propKey === 'site.email.smtp.host') cfg.smtpHost = p.propValue || '';
+          if (p.propKey === 'site.email.smtp.port') cfg.smtpPort = p.propValue || '';
+          if (p.propKey === 'app.mail.from')        cfg.from     = p.propValue || '';
+          if (p.propKey === 'app.mail.from-nm')     cfg.fromNm   = p.propValue || '';
         });
       } catch (e) {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);

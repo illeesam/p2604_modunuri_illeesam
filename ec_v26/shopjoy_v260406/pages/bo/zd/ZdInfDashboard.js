@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 개발도구 — 연동설정 대시보드
  *
  * 외부 서비스 연동 설정 현황을 한 눈에 확인하는 bo-grid 기반 대시보드.
@@ -248,7 +248,7 @@ window.ZdInfDashboard = {
           ...coUtil.apiHdr('연동설정대시보드', '설정조회'),
         });
         const list = res.data?.data?.pageList || res.data?.data || [];
-        list.forEach((p) => { if (p.propKey) _beCache[p.propKey] = p.propValue || ''; });
+        list.forEach((p) => { if (p.propKey) _beCache[p.propKey] = p.propValueue || ''; });
       } catch (_) { /* BE 조회 실패 — beStat '-' 유지 */ }
     };
 

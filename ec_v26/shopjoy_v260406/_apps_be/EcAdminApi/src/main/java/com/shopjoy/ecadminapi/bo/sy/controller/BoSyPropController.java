@@ -65,6 +65,13 @@ public class BoSyPropController {
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
+    /** bulk upsert — propKey 기준 (존재하면 UPDATE, 없으면 INSERT). 개발도구 테스트 화면에서 사용 */
+    @PutMapping("/bulk")
+    public ResponseEntity<ApiResponse<Void>> bulk(@RequestBody List<SyProp> rows) {
+        boSyPropService.bulkUpsert(rows);
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    }
+
     /** saveList -- 일괄 저장 (cmd 변형: order 등) */
     @PostMapping("/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> saveListCmd(

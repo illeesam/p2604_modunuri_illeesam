@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 개발도구 — 네이버 소셜 로그인 테스트
  */
 window.ZdTestSnsLoginNaver = {
@@ -40,8 +40,8 @@ window.ZdTestSnsLoginNaver = {
           propKeys: 'ext.sdk.naverClientId,ext.sdk.naverClientSecret',
         });
         (res?.data?.data || []).forEach(p => {
-          if (p.propKey === 'ext.sdk.naverClientId')     cfg.clientId     = p.propVal || '';
-          if (p.propKey === 'ext.sdk.naverClientSecret') cfg.clientSecret = p.propVal || '';
+          if (p.propKey === 'ext.sdk.naverClientId')     cfg.clientId     = p.propValue || '';
+          if (p.propKey === 'ext.sdk.naverClientSecret') cfg.clientSecret = p.propValue || '';
         });
       } catch (e) {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);
@@ -117,8 +117,8 @@ window.ZdTestSnsLoginNaver = {
       if (!cfg.clientId) { showToast('Client ID 를 입력하세요.', 'error'); return; }
       try {
         await boApi.put('/bo/sy/prop/bulk', [
-          { propKey: 'ext.sdk.naverClientId',     propVal: cfg.clientId },
-          { propKey: 'ext.sdk.naverClientSecret', propVal: cfg.clientSecret },
+          { propKey: 'ext.sdk.naverClientId',     propValue: cfg.clientId },
+          { propKey: 'ext.sdk.naverClientSecret', propValue: cfg.clientSecret },
         ], coUtil.apiHdr('네이버 로그인 테스트', '키 저장'));
         showToast('sy_prop 에 저장되었습니다.', 'success');
       } catch (e) {

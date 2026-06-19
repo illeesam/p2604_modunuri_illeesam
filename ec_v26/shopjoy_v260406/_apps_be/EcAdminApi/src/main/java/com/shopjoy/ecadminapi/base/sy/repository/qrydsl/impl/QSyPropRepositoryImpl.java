@@ -23,10 +23,12 @@ import org.springframework.util.StringUtils;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 /** SyProp QueryDSL Custom 구현체 */
 @RequiredArgsConstructor
 public class QSyPropRepositoryImpl implements QSyPropRepository {
@@ -71,6 +73,8 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
                 .where(
                     baseAndSiteId(search),
                     baseAndPathId(search),
+                    baseAndPropKey(search),
+                    baseAndPropKeys(search),
                     baseAndPropTypeCd(search),
                     baseAndUseYn(search),
                     baseAndPropProfile(search),
@@ -99,6 +103,8 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
         BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndPathId(search),
+                baseAndPropKey(search),
+                baseAndPropKeys(search),
                 baseAndPropTypeCd(search),
                 baseAndUseYn(search),
                 baseAndPropProfile(search),
@@ -147,6 +153,20 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
         return search != null && StringUtils.hasText(search.getPathId())
                 ? syProp.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_prop"))
                 : null;
+    }
+
+    /* propKey 정확 일치 (단건) */
+    private BooleanExpression baseAndPropKey(SyPropDto.Request search) {
+        return search != null && StringUtils.hasText(search.getPropKey())
+                ? syProp.propKey.eq(search.getPropKey()) : null;
+    }
+
+    /* propKeys IN 조건 (쉼표 구분 복수 키) */
+    private BooleanExpression baseAndPropKeys(SyPropDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getPropKeys())) return null;
+        List<String> keys = Arrays.stream(search.getPropKeys().split(","))
+                .map(String::trim).filter(StringUtils::hasText).collect(Collectors.toList());
+        return keys.isEmpty() ? null : syProp.propKey.in(keys);
     }
 
     /* propTypeCd 정확 일치 */

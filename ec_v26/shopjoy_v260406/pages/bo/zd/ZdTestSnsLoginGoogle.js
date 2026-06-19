@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 개발도구 — 구글 소셜 로그인 테스트
  */
 window.ZdTestSnsLoginGoogle = {
@@ -32,7 +32,7 @@ window.ZdTestSnsLoginGoogle = {
       try {
         const res = await boApiSvc.syProp?.getList?.({ propKeys: 'ext.sdk.googleClientId' });
         const list = res?.data?.data || [];
-        list.forEach(p => { if (p.propKey === 'ext.sdk.googleClientId') cfg.googleClientId = p.propVal || ''; });
+        list.forEach(p => { if (p.propKey === 'ext.sdk.googleClientId') cfg.googleClientId = p.propValue || ''; });
       } catch (e) {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);
       }
@@ -134,7 +134,7 @@ window.ZdTestSnsLoginGoogle = {
       if (!cfg.googleClientId) { showToast('Client ID 를 입력하세요.', 'error'); return; }
       try {
         await boApi.put('/bo/sy/prop/bulk', [
-          { propKey: 'ext.sdk.googleClientId', propVal: cfg.googleClientId },
+          { propKey: 'ext.sdk.googleClientId', propValue: cfg.googleClientId },
         ], coUtil.apiHdr('구글 SDK 테스트', '키 저장'));
         showToast('sy_prop 에 저장되었습니다.', 'success');
       } catch (e) {

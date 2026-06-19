@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 개발도구 — SMS 문자 발송 테스트
  */
 window.ZdTestSms = {
@@ -51,8 +51,8 @@ window.ZdTestSms = {
           propKeys: 'app.sms.provider,app.sms.from',
         });
         (res?.data?.data || []).forEach(p => {
-          if (p.propKey === 'app.sms.provider') cfg.provider = p.propVal || '';
-          if (p.propKey === 'app.sms.from')     cfg.from     = p.propVal || '';
+          if (p.propKey === 'app.sms.provider') cfg.provider = p.propValue || '';
+          if (p.propKey === 'app.sms.from')     cfg.from     = p.propValue || '';
         });
       } catch (e) {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);

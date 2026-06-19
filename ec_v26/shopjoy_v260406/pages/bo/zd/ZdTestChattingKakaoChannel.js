@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 개발도구 — 카카오 채널(플러스친구) 메시지 테스트
  */
 window.ZdTestChattingKakaoChannel = {
@@ -46,10 +46,10 @@ window.ZdTestChattingKakaoChannel = {
           propKeys: 'app.kakao.channel-id,app.kakao.biz-msg-api-key,app.kakao.sender-key,app.kakao.from',
         });
         (res?.data?.data || []).forEach(p => {
-          if (p.propKey === 'app.kakao.channel-id')      cfg.channelId    = p.propVal || '';
-          if (p.propKey === 'app.kakao.biz-msg-api-key') cfg.bizMsgApiKey = p.propVal || '';
-          if (p.propKey === 'app.kakao.sender-key')      cfg.senderKey    = p.propVal || '';
-          if (p.propKey === 'app.kakao.from')            cfg.from         = p.propVal || '';
+          if (p.propKey === 'app.kakao.channel-id')      cfg.channelId    = p.propValue || '';
+          if (p.propKey === 'app.kakao.biz-msg-api-key') cfg.bizMsgApiKey = p.propValue || '';
+          if (p.propKey === 'app.kakao.sender-key')      cfg.senderKey    = p.propValue || '';
+          if (p.propKey === 'app.kakao.from')            cfg.from         = p.propValue || '';
         });
       } catch (e) {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);
@@ -96,10 +96,10 @@ window.ZdTestChattingKakaoChannel = {
     const saveKey = async () => {
       try {
         await boApi.put('/bo/sy/prop/bulk', [
-          { propKey: 'app.kakao.channel-id',      propVal: cfg.channelId },
-          { propKey: 'app.kakao.biz-msg-api-key', propVal: cfg.bizMsgApiKey },
-          { propKey: 'app.kakao.sender-key',      propVal: cfg.senderKey },
-          { propKey: 'app.kakao.from',            propVal: cfg.from },
+          { propKey: 'app.kakao.channel-id',      propValue: cfg.channelId },
+          { propKey: 'app.kakao.biz-msg-api-key', propValue: cfg.bizMsgApiKey },
+          { propKey: 'app.kakao.sender-key',      propValue: cfg.senderKey },
+          { propKey: 'app.kakao.from',            propValue: cfg.from },
         ], coUtil.apiHdr('카카오채널 테스트', '키 저장'));
         showToast('sy_prop 에 저장되었습니다.', 'success');
       } catch (e) {

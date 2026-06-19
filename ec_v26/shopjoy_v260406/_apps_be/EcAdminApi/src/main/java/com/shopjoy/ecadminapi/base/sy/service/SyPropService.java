@@ -223,6 +223,35 @@ public class SyPropService {
         return;
 
     }
+    /** bulkUpsertByKey — propKey 기준 upsert. 존재하면 propValue만 UPDATE, 없으면 INSERT. */
+    @Transactional
+    public void bulkUpsertByKey(List<SyProp> rows) {
+        if (rows == null || rows.isEmpty()) return;
+        String authId = SecurityUtil.getAuthUser().authId();
+        LocalDateTime now = LocalDateTime.now();
+        for (SyProp row : rows) {
+            if (row.getPropKey() == null || row.getPropKey().isBlank()) continue;
+            SyPropDto.Request search = new SyPropDto.Request();
+            search.setPropKey(row.getPropKey());
+            List<SyPropDto.Item> existing = syPropRepository.selectList(search);
+            if (!existing.isEmpty()) {
+                SyProp upd = new SyProp();
+                upd.setPropId(existing.get(0).getPropId());
+                upd.setPropValue(row.getPropValue());
+                upd.setUpdBy(authId);
+                syPropRepository.updateSelective(upd);
+            } else {
+                row.setPropId(CmUtil.generateId("sy_prop"));
+                row.setRegBy(authId); row.setRegDate(now);
+                row.setUpdBy(authId); row.setUpdDate(now);
+                if (row.getUseYn() == null) row.setUseYn("Y");
+                syPropRepository.save(row);
+            }
+        }
+        em.flush();
+        em.clear();
+    }
+
     /** getPathTreeNodeCounts — 표시경로 노드별 SyProp 수 (검색조건 + 자손 누적, 트리 우측 뱃지용).
      *   검색조건 (useYn / propType / searchValue) 이 있으면 그 조건에 부합하는 row 만 카운트.
      *   결과: { pathId: cnt, '__total__': 전체, '__orphan__': path 없음 } */

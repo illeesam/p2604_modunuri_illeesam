@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 개발도구 — Android / iOS 앱 메시지 발송 & 수신 확인 통합 테스트
  *
  * 채널별 발송:
@@ -120,15 +120,15 @@ window.ZdTestAppMsgSendReceiv = {
           ].join(','),
         });
         (res?.data?.data || []).forEach(p => {
-          if (p.propKey === 'app.push.fcm.project-id')  cfg.fcmProjectId   = p.propVal || '';
-          if (p.propKey === 'app.push.apns.key-id')     cfg.apnsKeyId      = p.propVal || '';
-          if (p.propKey === 'app.push.apns.team-id')    cfg.apnsTeamId     = p.propVal || '';
-          if (p.propKey === 'app.push.apns.bundle-id')  cfg.apnsBundleId   = p.propVal || '';
-          if (p.propKey === 'app.push.apns.production') cfg.apnsProduction = p.propVal === 'true';
-          if (p.propKey === 'app.sms.provider')         cfg.smsProvider    = p.propVal || '';
-          if (p.propKey === 'app.sms.from')             cfg.smsFrom        = p.propVal || '';
-          if (p.propKey === 'app.kakao.sender-key')     cfg.kakaoSenderKey = p.propVal || '';
-          if (p.propKey === 'app.kakao.from')           cfg.kakaoFrom      = p.propVal || '';
+          if (p.propKey === 'app.push.fcm.project-id')  cfg.fcmProjectId   = p.propValue || '';
+          if (p.propKey === 'app.push.apns.key-id')     cfg.apnsKeyId      = p.propValue || '';
+          if (p.propKey === 'app.push.apns.team-id')    cfg.apnsTeamId     = p.propValue || '';
+          if (p.propKey === 'app.push.apns.bundle-id')  cfg.apnsBundleId   = p.propValue || '';
+          if (p.propKey === 'app.push.apns.production') cfg.apnsProduction = p.propValue === 'true';
+          if (p.propKey === 'app.sms.provider')         cfg.smsProvider    = p.propValue || '';
+          if (p.propKey === 'app.sms.from')             cfg.smsFrom        = p.propValue || '';
+          if (p.propKey === 'app.kakao.sender-key')     cfg.kakaoSenderKey = p.propValue || '';
+          if (p.propKey === 'app.kakao.from')           cfg.kakaoFrom      = p.propValue || '';
         });
       } catch (e) {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);

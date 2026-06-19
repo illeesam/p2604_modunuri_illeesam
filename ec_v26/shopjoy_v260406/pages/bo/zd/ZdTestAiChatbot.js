@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 개발도구 — AI 챗봇 (OpenAI / Claude) 테스트
  */
 window.ZdTestAiChatbot = {
@@ -44,10 +44,10 @@ window.ZdTestAiChatbot = {
           propKeys: 'app.ai.openai.api-key,app.ai.openai.model,app.ai.claude.api-key,app.ai.claude.model',
         });
         (res?.data?.data || []).forEach(p => {
-          if (p.propKey === 'app.ai.openai.api-key') cfg.openaiApiKey = p.propVal || '';
-          if (p.propKey === 'app.ai.openai.model')   cfg.openaiModel  = p.propVal || cfg.openaiModel;
-          if (p.propKey === 'app.ai.claude.api-key') cfg.claudeApiKey = p.propVal || '';
-          if (p.propKey === 'app.ai.claude.model')   cfg.claudeModel  = p.propVal || cfg.claudeModel;
+          if (p.propKey === 'app.ai.openai.api-key') cfg.openaiApiKey = p.propValue || '';
+          if (p.propKey === 'app.ai.openai.model')   cfg.openaiModel  = p.propValue || cfg.openaiModel;
+          if (p.propKey === 'app.ai.claude.api-key') cfg.claudeApiKey = p.propValue || '';
+          if (p.propKey === 'app.ai.claude.model')   cfg.claudeModel  = p.propValue || cfg.claudeModel;
         });
       } catch (e) {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);
@@ -101,10 +101,10 @@ window.ZdTestAiChatbot = {
     const saveKey = async () => {
       try {
         await boApi.put('/bo/sy/prop/bulk', [
-          { propKey: 'app.ai.openai.api-key', propVal: cfg.openaiApiKey },
-          { propKey: 'app.ai.openai.model',   propVal: cfg.openaiModel },
-          { propKey: 'app.ai.claude.api-key', propVal: cfg.claudeApiKey },
-          { propKey: 'app.ai.claude.model',   propVal: cfg.claudeModel },
+          { propKey: 'app.ai.openai.api-key', propValue: cfg.openaiApiKey },
+          { propKey: 'app.ai.openai.model',   propValue: cfg.openaiModel },
+          { propKey: 'app.ai.claude.api-key', propValue: cfg.claudeApiKey },
+          { propKey: 'app.ai.claude.model',   propValue: cfg.claudeModel },
         ], coUtil.apiHdr('AI 챗봇 테스트', '키 저장'));
         showToast('sy_prop 에 저장되었습니다.', 'success');
       } catch (e) {

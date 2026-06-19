@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 개발도구 — FCM 푸시 알림 테스트
  */
 window.ZdTestPushAlimFcm = {
@@ -47,9 +47,9 @@ window.ZdTestPushAlimFcm = {
           propKeys: 'app.push.fcm.project-id,app.push.fcm.key-file,app.push.apns.enabled',
         });
         (res?.data?.data || []).forEach(p => {
-          if (p.propKey === 'app.push.fcm.project-id')  cfg.fcmProjectId = p.propVal || '';
-          if (p.propKey === 'app.push.fcm.key-file')    cfg.fcmKeyFile   = p.propVal || '';
-          if (p.propKey === 'app.push.apns.enabled')    cfg.apnsEnabled  = p.propVal === 'true';
+          if (p.propKey === 'app.push.fcm.project-id')  cfg.fcmProjectId = p.propValue || '';
+          if (p.propKey === 'app.push.fcm.key-file')    cfg.fcmKeyFile   = p.propValue || '';
+          if (p.propKey === 'app.push.apns.enabled')    cfg.apnsEnabled  = p.propValue === 'true';
         });
       } catch (e) {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);

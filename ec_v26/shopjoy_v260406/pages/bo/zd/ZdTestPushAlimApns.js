@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 개발도구 — APNs (Apple Push Notification service) 테스트
  */
 window.ZdTestPushAlimApns = {
@@ -49,11 +49,11 @@ window.ZdTestPushAlimApns = {
           propKeys: 'app.push.apns.key-id,app.push.apns.team-id,app.push.apns.key-file,app.push.apns.bundle-id,app.push.apns.production',
         });
         (res?.data?.data || []).forEach(p => {
-          if (p.propKey === 'app.push.apns.key-id')    cfg.keyId      = p.propVal || '';
-          if (p.propKey === 'app.push.apns.team-id')   cfg.teamId     = p.propVal || '';
-          if (p.propKey === 'app.push.apns.key-file')  cfg.keyFile    = p.propVal || '';
-          if (p.propKey === 'app.push.apns.bundle-id') cfg.bundleId   = p.propVal || '';
-          if (p.propKey === 'app.push.apns.production') cfg.production = p.propVal === 'true';
+          if (p.propKey === 'app.push.apns.key-id')    cfg.keyId      = p.propValue || '';
+          if (p.propKey === 'app.push.apns.team-id')   cfg.teamId     = p.propValue || '';
+          if (p.propKey === 'app.push.apns.key-file')  cfg.keyFile    = p.propValue || '';
+          if (p.propKey === 'app.push.apns.bundle-id') cfg.bundleId   = p.propValue || '';
+          if (p.propKey === 'app.push.apns.production') cfg.production = p.propValue === 'true';
         });
       } catch (e) {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);
@@ -117,11 +117,11 @@ window.ZdTestPushAlimApns = {
     const saveKey = async () => {
       try {
         await boApi.put('/bo/sy/prop/bulk', [
-          { propKey: 'app.push.apns.key-id',     propVal: cfg.keyId },
-          { propKey: 'app.push.apns.team-id',    propVal: cfg.teamId },
-          { propKey: 'app.push.apns.key-file',   propVal: cfg.keyFile },
-          { propKey: 'app.push.apns.bundle-id',  propVal: cfg.bundleId },
-          { propKey: 'app.push.apns.production', propVal: String(cfg.production) },
+          { propKey: 'app.push.apns.key-id',     propValue: cfg.keyId },
+          { propKey: 'app.push.apns.team-id',    propValue: cfg.teamId },
+          { propKey: 'app.push.apns.key-file',   propValue: cfg.keyFile },
+          { propKey: 'app.push.apns.bundle-id',  propValue: cfg.bundleId },
+          { propKey: 'app.push.apns.production', propValue: String(cfg.production) },
         ], coUtil.apiHdr('APNs 테스트', '설정 저장'));
         showToast('sy_prop 에 저장되었습니다.', 'success');
       } catch (e) {

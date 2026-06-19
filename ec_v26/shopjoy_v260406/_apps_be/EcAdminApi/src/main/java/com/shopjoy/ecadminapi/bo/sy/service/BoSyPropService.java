@@ -57,6 +57,13 @@ public class BoSyPropService {
         syPropService.saveListBase(rows);
         propCache.evictAll();
     }
+
+    /* bulk upsert — propKey 기준 (존재하면 UPDATE, 없으면 INSERT) */
+    @Transactional
+    public void bulkUpsert(List<SyProp> rows) {
+        syPropService.bulkUpsertByKey(rows);
+        propCache.evictAll();
+    }
     /** getPathTreeNodeCounts — 표시경로 노드별 SyProp 수 (검색조건 + 자손 누적) */
     public java.util.List<java.util.Map<String, Object>> getPathTreeNodeCounts(SyPropDto.Request req) {
         return syPropService.getPathTreeNodeCounts(req);

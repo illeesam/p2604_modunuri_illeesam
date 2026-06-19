@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 개발도구 — 구글 지도 API 테스트
  */
 window.ZdTestMapGoogle = {
@@ -41,7 +41,7 @@ window.ZdTestMapGoogle = {
       try {
         const res = await boApiSvc.syProp?.getList?.({ propKeys: 'ext.sdk.googleMapApiKey' });
         (res?.data?.data || []).forEach(p => {
-          if (p.propKey === 'ext.sdk.googleMapApiKey') cfg.apiKey = p.propVal || '';
+          if (p.propKey === 'ext.sdk.googleMapApiKey') cfg.apiKey = p.propValue || '';
         });
       } catch (e) {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);
@@ -130,7 +130,7 @@ window.ZdTestMapGoogle = {
       if (!cfg.apiKey) { showToast('API Key 를 입력하세요.', 'error'); return; }
       try {
         await boApi.put('/bo/sy/prop/bulk', [
-          { propKey: 'ext.sdk.googleMapApiKey', propVal: cfg.apiKey },
+          { propKey: 'ext.sdk.googleMapApiKey', propValue: cfg.apiKey },
         ], coUtil.apiHdr('구글 지도 테스트', '키 저장'));
         showToast('sy_prop 에 저장되었습니다.', 'success');
       } catch (e) {

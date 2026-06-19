@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 개발도구 — 네이버 지도 API 테스트
  */
 window.ZdTestMapNaver = {
@@ -40,7 +40,7 @@ window.ZdTestMapNaver = {
       try {
         const res = await boApiSvc.syProp?.getList?.({ propKeys: 'ext.sdk.naverMapClientId' });
         (res?.data?.data || []).forEach(p => {
-          if (p.propKey === 'ext.sdk.naverMapClientId') cfg.clientId = p.propVal || '';
+          if (p.propKey === 'ext.sdk.naverMapClientId') cfg.clientId = p.propValue || '';
         });
       } catch (e) {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);
@@ -129,7 +129,7 @@ window.ZdTestMapNaver = {
       if (!cfg.clientId) { showToast('Client ID 를 입력하세요.', 'error'); return; }
       try {
         await boApi.put('/bo/sy/prop/bulk', [
-          { propKey: 'ext.sdk.naverMapClientId', propVal: cfg.clientId },
+          { propKey: 'ext.sdk.naverMapClientId', propValue: cfg.clientId },
         ], coUtil.apiHdr('네이버 지도 테스트', '키 저장'));
         showToast('sy_prop 에 저장되었습니다.', 'success');
       } catch (e) {

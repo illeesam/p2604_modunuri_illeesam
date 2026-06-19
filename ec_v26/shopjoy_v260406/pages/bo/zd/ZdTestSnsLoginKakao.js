@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 개발도구 — 카카오 소셜 로그인 테스트
  */
 window.ZdTestSnsLoginKakao = {
@@ -42,9 +42,9 @@ window.ZdTestSnsLoginKakao = {
         const res = await boApiSvc.syProp?.getList?.({ propKeys: 'ext.sdk.kakaoJsKey,ext.sdk.naverClientId,ext.sdk.naverCallbackUrl' });
         const props = res?.data?.data || [];
         props.forEach(p => {
-          if (p.propKey === 'ext.sdk.kakaoJsKey')       cfg.kakaoJsKey       = p.propVal || '';
-          if (p.propKey === 'ext.sdk.naverClientId')     cfg.naverClientId    = p.propVal || '';
-          if (p.propKey === 'ext.sdk.naverCallbackUrl')  cfg.naverCallbackUrl = p.propVal || '';
+          if (p.propKey === 'ext.sdk.kakaoJsKey')       cfg.kakaoJsKey       = p.propValue || '';
+          if (p.propKey === 'ext.sdk.naverClientId')     cfg.naverClientId    = p.propValue || '';
+          if (p.propKey === 'ext.sdk.naverCallbackUrl')  cfg.naverCallbackUrl = p.propValue || '';
         });
       } catch (e) {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);
@@ -125,7 +125,7 @@ window.ZdTestSnsLoginKakao = {
       if (!cfg.kakaoJsKey) { showToast('JS Key 를 입력하세요.', 'error'); return; }
       try {
         await boApi.put('/bo/sy/prop/bulk', [
-          { propKey: 'ext.sdk.kakaoJsKey', propVal: cfg.kakaoJsKey },
+          { propKey: 'ext.sdk.kakaoJsKey', propValue: cfg.kakaoJsKey },
         ], coUtil.apiHdr('카카오 SDK 테스트', '키 저장'));
         showToast('sy_prop 에 저장되었습니다.', 'success');
       } catch (e) {
