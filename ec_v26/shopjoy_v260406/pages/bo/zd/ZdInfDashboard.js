@@ -4,6 +4,7 @@
  * 외부 서비스 연동 설정 현황을 한 눈에 확인하는 bo-grid 기반 대시보드.
  * 소셜로그인 / 결제 / 지도 / 메일·SMS / 푸시 / 챗봇 / 앱 메시지 등
  * BE 설정 여부 / FE 설정 여부 / 테스트 버튼 / 연동결과 / 테스트 결과 표시.
+ * 행 클릭 시 상세정보(BE·FE 실제 키 값, 설명, 발급처 링크) 펼침.
  */
 window.ZdInfDashboard = {
   name: 'ZdInfDashboard',
@@ -20,35 +21,19 @@ window.ZdInfDashboard = {
 
     const codes = reactive({});
     const loading = ref(false);
+    const expandedKeys = reactive(new Set()); // 펼쳐진 행의 keyName 집합
 
     /* ##### [02] 그리드 컬럼 정의 ################################################### */
 
     const baseGridColumns = [
+      { key: '_expand',    label: '',           width: '32px',  align: 'center' },
       { key: 'category',   label: '분류',       width: '90px' },
       { key: 'channel',    label: '채널 / 서비스', width: '150px' },
       { key: 'keyName',    label: '설정 키',    width: '180px', mono: true },
-      {
-        key: 'beStat',
-        label: 'BE 설정',
-        width: '80px',
-        align: 'center',
-        badge: (row) => row.beStat === '설정됨' ? 'badge-green' : row.beStat === '미설정' ? 'badge-red' : 'badge-gray',
-      },
-      {
-        key: 'feStat',
-        label: 'FE 설정',
-        width: '80px',
-        align: 'center',
-        badge: (row) => row.feStat === '설정됨' ? 'badge-green' : row.feStat === '미설정' ? 'badge-red' : 'badge-gray',
-      },
+      { key: 'beStat', label: 'BE 설정', width: '200px', align: 'center' },
+      { key: 'feStat', label: 'FE 설정', width: '130px', align: 'center' },
       { key: '_test',      label: '테스트',     width: '90px',  align: 'center' },
-      {
-        key: 'testResult',
-        label: '연동결과',
-        width: '80px',
-        align: 'center',
-        badge: (row) => row.testResult === '성공' ? 'badge-green' : row.testResult === '실패' ? 'badge-red' : 'badge-gray',
-      },
+      { key: 'testResult', label: '연동결과', width: '60px', align: 'center' },
       { key: 'testMsg',    label: '테스트 결과' },
       { key: 'remark',     label: '비고' },
     ];
@@ -68,25 +53,157 @@ window.ZdInfDashboard = {
 
     const _META = [
       /* ── 소셜 로그인 ── */
-      { category: '소셜로그인', channel: 'Google 로그인',  feKey: 'googleClientId',   beKey: 'oauth.google.client-id',    remark: 'OAuth2 클라이언트 ID',         testFn: 'google' },
-      { category: '소셜로그인', channel: 'Kakao 로그인',   feKey: 'kakaoJsKey',        beKey: 'oauth.kakao.client-id',     remark: 'JavaScript 키',                testFn: 'kakao' },
-      { category: '소셜로그인', channel: 'Naver 로그인',   feKey: 'naverClientId',     beKey: 'oauth.naver.client-id',     remark: '클라이언트 ID',                testFn: 'naver' },
+      {
+        category: '소셜로그인', channel: 'Google 로그인', feKey: 'googleClientId', beKey: 'oauth.google.client-id',
+        remark: 'OAuth2 클라이언트 ID', testFn: 'google',
+        desc: 'Google OAuth 2.0 소셜 로그인에 사용합니다. Google Cloud Console에서 OAuth 클라이언트 ID를 발급받아 등록하세요.',
+        guideUrl: 'https://console.cloud.google.com/apis/credentials',
+        guideLabel: 'Google Cloud Console',
+        feDesc: 'FE에서 Google Sign-In 버튼 초기화에 사용 (window.google.accounts.id.initialize)',
+        feFile: 'sy_prop:propKey',
+        beDesc: 'BE에서 Google 토큰 검증 및 사용자 정보 조회 시 사용',
+        beFile: 'sy_prop:ext.sdk.googleClientId',
+        dbTable: 'mb_member_sns (sns_type=GOOGLE)',
+      },
+      {
+        category: '소셜로그인', channel: 'Kakao 로그인', feKey: 'kakaoJsKey', beKey: 'oauth.kakao.client-id',
+        remark: 'JavaScript 키', testFn: 'kakao',
+        desc: 'Kakao 소셜 로그인에 사용합니다. Kakao Developers에서 앱을 생성하고 JavaScript 키를 발급받으세요.',
+        guideUrl: 'https://developers.kakao.com/console/app',
+        guideLabel: 'Kakao Developers',
+        feDesc: 'FE에서 Kakao.init() 호출 시 사용하는 JavaScript 앱 키',
+        feFile: 'sy_prop:propKey',
+        beDesc: 'BE에서 Kakao REST API를 통한 토큰 검증 시 사용하는 REST API 키',
+        beFile: 'sy_prop:ext.sdk.kakaoJsKey',
+        dbTable: 'mb_member_sns (sns_type=KAKAO)',
+      },
+      {
+        category: '소셜로그인', channel: 'Naver 로그인', feKey: 'naverClientId', beKey: 'oauth.naver.client-id',
+        remark: '클라이언트 ID', testFn: 'naver',
+        desc: 'Naver 소셜 로그인에 사용합니다. Naver Developers에서 애플리케이션을 등록하고 클라이언트 ID를 발급받으세요.',
+        guideUrl: 'https://developers.naver.com/apps',
+        guideLabel: 'Naver Developers',
+        feDesc: 'FE에서 Naver 로그인 버튼 초기화 시 사용 (naver.LoginWithNaverId)',
+        feFile: 'sy_prop:propKey',
+        beDesc: 'BE에서 Naver 액세스 토큰 검증 및 사용자 프로필 조회 시 사용',
+        beFile: 'sy_prop:ext.sdk.naverClientId',
+        dbTable: 'mb_member_sns (sns_type=NAVER)',
+      },
       /* ── 결제 ── */
-      { category: '결제',       channel: '토스페이먼츠',   feKey: 'tossClientKey',     beKey: 'toss.secret-key',           remark: 'FE:클라이언트키 / BE:시크릿키', testFn: 'toss' },
+      {
+        category: '결제', channel: '토스페이먼츠', feKey: 'tossClientKey', beKey: 'toss.secret-key',
+        remark: 'FE:클라이언트키 / BE:시크릿키', testFn: 'toss',
+        desc: '토스페이먼츠 결제 연동에 사용합니다. 토스페이먼츠 개발자 센터에서 클라이언트 키(FE)와 시크릿 키(BE)를 발급받으세요.',
+        guideUrl: 'https://developers.tosspayments.com/',
+        guideLabel: '토스페이먼츠 개발자센터',
+        feDesc: 'FE에서 결제창 초기화 시 사용하는 클라이언트 키 (test_ck_ 또는 live_ck_ 접두어)',
+        feFile: 'sy_prop:propKey',
+        beDesc: 'BE에서 결제 승인 / 취소 API 호출 시 HTTP Basic Auth 비밀번호로 사용하는 시크릿 키',
+        beFile: 'sy_prop:payment.toss.secret_key',
+        dbTable: 'od_pay, od_pay_method, od_refund',
+      },
       /* ── 지도 ── */
-      { category: '지도',       channel: 'Naver 지도',     feKey: 'naverMapClientId',  beKey: 'naver.map.client-id',       remark: 'NCP 클라이언트 ID',            testFn: 'naverMap' },
-      { category: '지도',       channel: 'Google 지도',    feKey: 'googleMapKey',      beKey: 'google.map.api-key',        remark: 'Maps JavaScript API 키',       testFn: 'googleMap' },
+      {
+        category: '지도', channel: 'Naver 지도', feKey: 'naverMapClientId', beKey: 'naver.map.client-id',
+        remark: 'NCP 클라이언트 ID', testFn: 'naverMap',
+        desc: 'Naver Cloud Platform Maps API 연동에 사용합니다. NCP Console에서 Maps 서비스를 활성화하고 클라이언트 ID를 발급받으세요.',
+        guideUrl: 'https://console.ncloud.com/naver-service/application',
+        guideLabel: 'Naver Cloud Platform Console',
+        feDesc: 'FE 지도 스크립트 로드 시 ncpClientId 파라미터로 사용',
+        feFile: 'sy_prop:propKey',
+        beDesc: 'BE에서 주소 → 좌표 변환(Geocoding) 등 서버 사이드 Maps API 호출 시 사용',
+        beFile: 'sy_prop:ext.sdk.naverMapClientId',
+        dbTable: 'sy_site (site_address 좌표변환 시 사용)',
+      },
+      {
+        category: '지도', channel: 'Google 지도', feKey: 'googleMapKey', beKey: 'google.map.api-key',
+        remark: 'Maps JavaScript API 키', testFn: 'googleMap',
+        desc: 'Google Maps Platform 연동에 사용합니다. Google Cloud Console에서 Maps JavaScript API와 Geocoding API를 활성화하고 API 키를 발급받으세요.',
+        guideUrl: 'https://console.cloud.google.com/google/maps-apis',
+        guideLabel: 'Google Maps Platform Console',
+        feDesc: 'FE 지도 스크립트 로드 시 key 파라미터로 사용 (Maps JavaScript API)',
+        feFile: 'sy_prop:propKey',
+        beDesc: 'BE에서 서버 사이드 Geocoding / Places API 호출 시 사용',
+        beFile: 'sy_prop:ext.sdk.googleMapKey',
+        dbTable: 'sy_site (site_address 좌표변환 시 사용)',
+      },
       /* ── 메일 ── */
-      { category: '메일',       channel: 'SMTP',           feKey: null,                beKey: 'mail.host',                 remark: 'SMTP 호스트',                  testFn: 'smtp' },
+      {
+        category: '메일', channel: 'SMTP', feKey: null, beKey: 'mail.host',
+        remark: 'SMTP 호스트', testFn: 'smtp',
+        desc: '이메일 발송에 사용하는 SMTP 서버 설정입니다. Gmail 사용 시 앱 비밀번호를 별도 발급해야 합니다.',
+        guideUrl: 'https://myaccount.google.com/apppasswords',
+        guideLabel: 'Gmail 앱 비밀번호 발급',
+        feDesc: null,
+        feFile: null,
+        beDesc: 'application.yml의 spring.mail.host / port / username / password 값으로 설정',
+        beFile: 'sy_prop:site.email.smtp.host / port',
+        dbTable: 'cmh_push_log (channel=EMAIL)',
+      },
       /* ── SMS ── */
-      { category: 'SMS',        channel: 'SMS 발송',       feKey: null,                beKey: 'sms.api-key',               remark: 'API 키',                       testFn: 'sms' },
+      {
+        category: 'SMS', channel: 'SMS 발송', feKey: null, beKey: 'sms.api-key',
+        remark: 'API 키', testFn: 'sms',
+        desc: 'SMS 문자 발송 서비스 API 키입니다. 현재 연동된 SMS 공급사의 콘솔에서 API 키를 발급받으세요.',
+        guideUrl: null,
+        guideLabel: null,
+        feDesc: null,
+        feFile: null,
+        beDesc: 'BE SMS 발송 서비스에서 인증 헤더 또는 파라미터로 사용',
+        beFile: 'sy_prop:app.sms.api-key',
+        dbTable: 'cmh_push_log (channel=SMS)',
+      },
       /* ── 푸시 ── */
-      { category: '푸시',       channel: 'FCM',            feKey: 'fcmProjectId',      beKey: 'fcm.project-id',            remark: '프로젝트 ID',                  testFn: 'fcm' },
-      { category: '푸시',       channel: 'APNs',           feKey: null,                beKey: 'apns.key-id',               remark: '키 ID',                        testFn: 'apns' },
+      {
+        category: '푸시', channel: 'FCM', feKey: 'fcmProjectId', beKey: 'fcm.project-id',
+        remark: '프로젝트 ID', testFn: 'fcm',
+        desc: 'Firebase Cloud Messaging(FCM) 푸시 알림 연동에 사용합니다. Firebase Console에서 프로젝트를 생성하고 서비스 계정 키를 다운로드하세요.',
+        guideUrl: 'https://console.firebase.google.com/',
+        guideLabel: 'Firebase Console',
+        feDesc: 'FE Web Push 초기화 시 Firebase 프로젝트 ID로 사용',
+        feFile: 'sy_prop:propKey',
+        beDesc: 'BE에서 FCM v1 API 호출 시 프로젝트 ID (서비스 계정 JSON 파일도 별도 필요)',
+        beFile: 'sy_prop:app.push.fcm.project-id',
+        dbTable: 'mb_device_token, cmh_push_log (channel=FCM)',
+      },
+      {
+        category: '푸시', channel: 'APNs', feKey: null, beKey: 'apns.key-id',
+        remark: '키 ID', testFn: 'apns',
+        desc: 'Apple Push Notification service(APNs) iOS 푸시 알림 연동에 사용합니다. Apple Developer 계정에서 APNs 키를 생성하세요.',
+        guideUrl: 'https://developer.apple.com/account/resources/authkeys/list',
+        guideLabel: 'Apple Developer 계정',
+        feDesc: null,
+        feFile: null,
+        beDesc: 'BE에서 APNs JWT 토큰 생성 시 사용하는 키 ID (.p8 인증서 파일도 별도 필요)',
+        beFile: 'sy_prop:app.push.apns.key-id',
+        dbTable: 'mb_device_token, cmh_push_log (channel=APNS)',
+      },
       /* ── 카카오 ── */
-      { category: '카카오',     channel: '알림톡',         feKey: null,                beKey: 'kakao.alimtalk.sender-key', remark: '발신 프로필 키',               testFn: 'kakaoAlim' },
+      {
+        category: '카카오', channel: '알림톡', feKey: null, beKey: 'kakao.alimtalk.sender-key',
+        remark: '발신 프로필 키', testFn: 'kakaoAlim',
+        desc: '카카오 알림톡 발송에 사용합니다. 비즈니스 채널을 개설하고 발신 프로필 키를 발급받으세요.',
+        guideUrl: 'https://business.kakao.com/',
+        guideLabel: '카카오비즈니스',
+        feDesc: null,
+        feFile: null,
+        beDesc: 'BE에서 알림톡 API 호출 시 인증 헤더로 사용하는 발신 프로필 키',
+        beFile: 'yml:kakao.alimtalk.sender-key',
+        dbTable: 'cmh_push_log (channel=KAKAO)',
+      },
       /* ── AI ── */
-      { category: 'AI/챗봇',   channel: 'AI 챗봇',        feKey: null,                beKey: 'ai.chatbot.api-key',        remark: 'API 키',                       testFn: 'ai' },
+      {
+        category: 'AI/챗봇', channel: 'AI 챗봇', feKey: null, beKey: 'ai.chatbot.api-key',
+        remark: 'API 키', testFn: 'ai',
+        desc: 'AI 챗봇 서비스 연동 API 키입니다. 연동한 AI 서비스(OpenAI / Claude 등) 콘솔에서 API 키를 발급받으세요.',
+        guideUrl: null,
+        guideLabel: null,
+        feDesc: null,
+        feFile: null,
+        beDesc: 'BE AI 챗봇 서비스에서 API 인증 헤더로 사용',
+        beFile: 'sy_prop:app.chat.ai.api-key',
+        dbTable: 'cm_chatt_room, cm_chatt_msg',
+      },
     ];
 
     const _buildRows = () => {
@@ -100,11 +217,24 @@ window.ZdInfDashboard = {
           keyName:    m.feKey || m.beKey || '-',
           feStat:     m.feKey ? _statOf(feVal) : '-',
           beStat:     m.beKey ? _statOf(beVal)  : '-',
+          feRawVal:   feVal ? String(feVal).slice(0, 6) + '••••••' : null,
+          beRawVal:   beVal ? String(beVal).slice(0, 6) + '••••••' : null,
           testResult: '-',
           testMsg:    '',
           remark:     m.remark,
           _testFn:    m.testFn,
           _testing:   false,
+          /* 상세 정보 */
+          _desc:      m.desc,
+          _guideUrl:  m.guideUrl,
+          _guideLabel:m.guideLabel,
+          _feKey:     m.feKey,
+          _beKey:     m.beKey,
+          _feDesc:    m.feDesc,
+          _feFile:    m.feFile ? m.feFile.replace('propKey', m.feKey || '') : null,
+          _beDesc:    m.beDesc,
+          _beFile:    m.beFile  || null,
+          _dbTable:   m.dbTable || null,
         });
       });
     };
@@ -159,12 +289,17 @@ window.ZdInfDashboard = {
 
     /* ##### [06] 이벤트 핸들러 ##################################################### */
 
-    const handleGridCellAction = ({ colKey, row }) => {
-      if (colKey === '_test') handleTest(row);
+    const handleExpandToggle = (row) => {
+      if (expandedKeys.has(row.keyName)) expandedKeys.delete(row.keyName);
+      else expandedKeys.add(row.keyName);
     };
+
+    const handleExpandAll = () => rows.forEach((r) => expandedKeys.add(r.keyName));
+    const handleCollapseAll = () => expandedKeys.clear();
 
     const handleRefresh = async () => {
       loading.value = true;
+      expandedKeys.clear();
       await _fetchBeSettings();
       _buildRows();
       loading.value = false;
@@ -187,41 +322,170 @@ window.ZdInfDashboard = {
 
     /* ##### [08] 리턴 ############################################################## */
 
+    const fnIsExpanded = (row) => expandedKeys.has(row.keyName);
+
     return {
       codes, loading,
       baseGridColumns, rows,
-      handleTest, handleRefresh, handleTestAll, handleGridCellAction,
+      expandedKeys, fnIsExpanded,
+      handleTest, handleRefresh, handleTestAll, handleExpandToggle, handleExpandAll, handleCollapseAll,
     };
   },
 
   template: `
 <div>
-  <div class="page-title">연동설정 대시보드</div>
-
-  <bo-page desc="외부 서비스 연동 키 설정 현황 및 테스트. 테스트 버튼 클릭 시 백엔드 API를 통해 실제 연결을 확인합니다.">
+  <bo-page title="연동설정 대시보드" desc-summary="외부 서비스 연동 키 설정 현황 및 테스트. ▼ 클릭으로 상세 정보 확인, 테스트 버튼으로 실제 연결을 검증합니다.">
     <bo-container>
-      <div class="toolbar">
-        <span class="list-title">연동 채널 목록</span>
-        <span class="list-count">{{ rows.length }}건</span>
-        <div style="margin-left:auto;display:flex;gap:6px;">
-          <button class="btn btn_reset" @click="handleRefresh">새로고침</button>
-          <button class="btn btn_search" @click="handleTestAll">전체 테스트</button>
-        </div>
-      </div>
       <bo-grid
         :columns="baseGridColumns"
         :rows="rows"
         :loading="loading"
+        :is-expanded="fnIsExpanded"
+        list-title="연동 채널 목록"
         empty-text="연동 설정 항목이 없습니다."
-        @cell-click="handleGridCellAction"
       >
+        <template #toolbar-actions>
+          <button class="btn btn_expand_all" @click="handleExpandAll">전체펼치기</button>
+          <button class="btn btn_collapse_all" @click="handleCollapseAll">전체접기</button>
+          <button class="btn btn_reset" @click="handleRefresh">새로고침</button>
+          <button class="btn btn_search" @click="handleTestAll">전체 테스트</button>
+        </template>
+        <!-- 펼치기 아이콘 -->
+        <template #cell-_expand="{ row }">
+          <td style="text-align:center;cursor:pointer;" @click="handleExpandToggle(row)">
+            <span style="font-size:11px;color:#aaa;user-select:none;">
+              {{ expandedKeys.has(row.keyName) ? '▲' : '▼' }}
+            </span>
+          </td>
+        </template>
+
+        <!-- BE 설정 상태 -->
+        <template #cell-beStat="{ row }">
+          <td style="text-align:center;vertical-align:middle;padding:5px 8px;">
+            <span v-if="row.beStat === '설정됨'" class="badge badge-green">설정됨</span>
+            <span v-else-if="row.beStat === '미설정'" class="badge badge-red">미설정</span>
+            <span v-else class="badge badge-gray">-</span>
+            <div v-if="row._beFile &amp;&amp; row.beStat !== '-'" style="margin-top:4px;font-size:11px;line-height:1.4;word-break:break-all;">
+              <span style="font-weight:600;color:#1e40af;background:#dbeafe;border-radius:3px;padding:1px 4px;font-family:sans-serif;font-size:10px;">
+                {{ row._beFile.startsWith('yml:') ? 'app~.yml' : 'sy_prop' }}
+              </span>
+              <span style="font-family:monospace;color:#374151;margin-left:3px;">
+                {{ row._beFile.replace(/^(yml:|sy_prop:)/, '') }}
+              </span>
+            </div>
+          </td>
+        </template>
+
+        <!-- FE 설정 상태 -->
+        <template #cell-feStat="{ row }">
+          <td style="text-align:center;vertical-align:middle;padding:5px 8px;">
+            <span v-if="row.feStat === '설정됨'" class="badge badge-green">설정됨</span>
+            <span v-else-if="row.feStat === '미설정'" class="badge badge-red">미설정</span>
+            <span v-else class="badge badge-gray">-</span>
+            <div v-if="row._feFile &amp;&amp; row.feStat !== '-'" style="margin-top:4px;font-size:11px;line-height:1.4;word-break:break-all;">
+              <span style="font-weight:600;color:#6d28d9;background:#ede9fe;border-radius:3px;padding:1px 4px;font-family:sans-serif;font-size:10px;">
+                {{ row._feFile.startsWith('yml:') ? 'app~.yml' : 'sy_prop' }}
+              </span>
+              <span style="font-family:monospace;color:#374151;margin-left:3px;">
+                {{ row._feFile.replace(/^(yml:|sy_prop:)/, '') }}
+              </span>
+            </div>
+          </td>
+        </template>
+
+        <!-- 테스트 버튼 -->
         <template #cell-_test="{ row }">
-          <button class="btn btn-xs"
-            :disabled="row._testing"
-            :style="row._testing ? 'opacity:.5' : ''"
-            @click.stop="handleTest(row)">
-            {{ row._testing ? '확인중…' : '테스트' }}
-          </button>
+          <td style="text-align:center;" @click.stop>
+            <button class="btn btn-xs"
+              :disabled="row._testing"
+              :style="row._testing ? 'opacity:.5' : ''"
+              @click="handleTest(row)">
+              {{ row._testing ? '확인중…' : '테스트' }}
+            </button>
+          </td>
+        </template>
+
+        <!-- 연동결과 아이콘 -->
+        <template #cell-testResult="{ row }">
+          <td style="text-align:center;">
+            <span v-if="row.testResult === '성공'" title="성공" style="font-size:16px;">✅</span>
+            <span v-else-if="row.testResult === '실패'" :title="row.testMsg" style="font-size:16px;">❌</span>
+            <span v-else style="color:#ccc;font-size:13px;">-</span>
+          </td>
+        </template>
+
+        <!-- 행 펼침 상세 패널 -->
+        <template #row-expand="{ row, colspan }">
+          <td :colspan="colspan" style="padding:0;background:#eef2ff;">
+          <div style="margin:0 0 2px 0;border-left:4px solid #6366f1;background:#f5f7ff;padding:14px 20px 14px 18px;font-size:12px;box-shadow:inset 0 2px 4px rgba(99,102,241,.06);">
+            <!-- 설명 -->
+            <div style="margin-bottom:12px;color:#374151;line-height:1.6;">
+              {{ row._desc }}
+              <a v-if="row._guideUrl"
+                :href="row._guideUrl"
+                target="_blank"
+                style="margin-left:8px;color:#3b82f6;text-decoration:underline;">
+                {{ row._guideLabel }} →
+              </a>
+            </div>
+            <!-- 키 정보 테이블 -->
+            <table style="width:100%;border-collapse:collapse;font-size:12px;">
+              <colgroup>
+                <col style="width:50px">
+                <col style="width:200px">
+                <col style="width:160px">
+                <col>
+                <col style="width:110px">
+              </colgroup>
+              <thead>
+                <tr style="background:#e8eaf6;border-bottom:1px solid #c5cae9;">
+                  <th style="padding:6px 10px;text-align:left;color:#4a4a7a;font-weight:600;">구분</th>
+                  <th style="padding:6px 10px;text-align:left;color:#4a4a7a;font-weight:600;">저장 위치</th>
+                  <th style="padding:6px 10px;text-align:left;color:#4a4a7a;font-weight:600;">설정 키</th>
+                  <th style="padding:6px 10px;text-align:left;color:#4a4a7a;font-weight:600;">설명</th>
+                  <th style="padding:6px 10px;text-align:left;color:#4a4a7a;font-weight:600;">현재 값</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-if="row._beKey" style="border-bottom:1px solid #e8eaf6;">
+                  <td style="padding:7px 10px;color:#2563eb;font-weight:600;">BE</td>
+                  <td style="padding:7px 10px;font-family:monospace;font-size:11px;color:#1e40af;">{{ row._beFile || '-' }}</td>
+                  <td style="padding:7px 10px;font-family:monospace;color:#374151;">{{ row._beKey }}</td>
+                  <td style="padding:7px 10px;color:#6b7280;">{{ row._beDesc }}</td>
+                  <td style="padding:7px 10px;">
+                    <span v-if="row.beStat === '설정됨'"
+                      style="font-family:monospace;color:#059669;background:#ecfdf5;border-radius:4px;padding:2px 6px;">
+                      {{ row.beRawVal }}
+                    </span>
+                    <span v-else style="color:#dc2626;background:#fef2f2;border-radius:4px;padding:2px 6px;">미설정</span>
+                  </td>
+                </tr>
+                <tr v-if="row._feKey">
+                  <td style="padding:7px 10px;color:#7c3aed;font-weight:600;">FE</td>
+                  <td style="padding:7px 10px;font-size:11px;color:#5c35a0;">{{ row._feFile || '-' }}</td>
+                  <td style="padding:7px 10px;font-family:monospace;color:#374151;">{{ row._feKey }}</td>
+                  <td style="padding:7px 10px;color:#6b7280;">{{ row._feDesc }}</td>
+                  <td style="padding:7px 10px;">
+                    <span v-if="row.feStat === '설정됨'"
+                      style="font-family:monospace;color:#059669;background:#ecfdf5;border-radius:4px;padding:2px 6px;">
+                      {{ row.feRawVal }}
+                    </span>
+                    <span v-else style="color:#dc2626;background:#fef2f2;border-radius:4px;padding:2px 6px;">미설정</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <!-- 테스트 결과 -->
+            <div v-if="row.testResult !== '-'"
+              style="margin-top:10px;padding:8px 12px;border-radius:6px;font-size:12px;"
+              :style="row.testResult === '성공'
+                ? 'background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;'
+                : 'background:#fef2f2;color:#991b1b;border:1px solid #fecaca;'">
+              <strong>{{ row.testResult === '성공' ? '✓ 테스트 성공' : '✗ 테스트 실패' }}</strong>
+              <span style="margin-left:8px;">{{ row.testMsg }}</span>
+            </div>
+          </div>
+          </td>
         </template>
       </bo-grid>
     </bo-container>
