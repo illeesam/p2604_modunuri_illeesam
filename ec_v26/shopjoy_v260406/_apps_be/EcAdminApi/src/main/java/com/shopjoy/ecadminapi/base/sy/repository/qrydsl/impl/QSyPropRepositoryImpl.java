@@ -75,6 +75,7 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
                     baseAndPathId(search),
                     baseAndPropKey(search),
                     baseAndPropKeys(search),
+                    baseAndPropKeyPrefixes(search),
                     baseAndPropTypeCd(search),
                     baseAndUseYn(search),
                     baseAndPropProfile(search),
@@ -105,6 +106,7 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
                 baseAndPathId(search),
                 baseAndPropKey(search),
                 baseAndPropKeys(search),
+                baseAndPropKeyPrefixes(search),
                 baseAndPropTypeCd(search),
                 baseAndUseYn(search),
                 baseAndPropProfile(search),
@@ -167,6 +169,20 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
         List<String> keys = Arrays.stream(search.getPropKeys().split(","))
                 .map(String::trim).filter(StringUtils::hasText).collect(Collectors.toList());
         return keys.isEmpty() ? null : syProp.propKey.in(keys);
+    }
+
+    /* propKeyPrefixes — 쉼표 구분 prefix 목록 중 하나로 시작하는 행 (LIKE 'xxx%' OR) */
+    private BooleanExpression baseAndPropKeyPrefixes(SyPropDto.Request search) {
+        if (search == null || !StringUtils.hasText(search.getPropKeyPrefixes())) return null;
+        List<String> prefixes = Arrays.stream(search.getPropKeyPrefixes().split(","))
+                .map(String::trim).filter(StringUtils::hasText).collect(Collectors.toList());
+        if (prefixes.isEmpty()) return null;
+        BooleanExpression or = null;
+        for (String prefix : prefixes) {
+            BooleanExpression expr = syProp.propKey.startsWith(prefix);
+            or = or == null ? expr : or.or(expr);
+        }
+        return or;
     }
 
     /* propTypeCd 정확 일치 */
@@ -242,10 +258,13 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
                 Order order = "desc".equalsIgnoreCase(fieldAndDir[1]) ? Order.DESC : Order.ASC;
                 if ("propId".equals(field)) {
                     orders.add(new OrderSpecifier(order, syProp.propId));
+                } else if ("propKey".equals(field)) {
+                    orders.add(new OrderSpecifier(order, syProp.propKey));
                 } else if ("regDate".equals(field)) {
                     orders.add(new OrderSpecifier(order, syProp.regDate));
+                } else if ("sortOrd".equals(field)) {
+                    orders.add(new OrderSpecifier(order, syProp.sortOrd));
                 }
-                else if ("sortOrd".equals(field)) { orders.add(new OrderSpecifier(order, syProp.sortOrd)); }
             }
         }
         /* unknown sort → sortOrd ASC + regDate ASC fallback */

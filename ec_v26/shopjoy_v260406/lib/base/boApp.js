@@ -3162,6 +3162,9 @@
     .component('SyApiLogMng', window.SyApiLogMng)
     .component('SySendMsgLogMng', window.SySendMsgLogMng)
     .component('SyPostman', window.SyPostman)
+    /* ── comp — 개발도구 공통 그리드 ── */
+    .component('BoZdYmlGrid',     window.BoZdYmlGrid)
+    .component('BoZdSyPropGrid',  window.BoZdSyPropGrid)
     /* ── pages/bo/zd/ — 개발도구 ── */
     .component('ZdInfDashboard', window.ZdInfDashboard)
     .component('ZdStore', window.ZdStore)

@@ -23,6 +23,7 @@ window.ZdInfDashboard = {
     const loading = ref(false);
     const expandedKeys = reactive(new Set()); // 펼쳐진 행의 keyName 집합
 
+
     /* ##### [02] 그리드 컬럼 정의 ################################################### */
 
     const baseGridColumns = [
@@ -488,6 +489,10 @@ window.ZdInfDashboard = {
           </td>
         </template>
       </bo-grid>
+    </bo-container>
+    <bo-container>
+      <bo-zd-yml-grid />
+      <bo-zd-sy-prop-grid prop-key-prefixes="ext.,cdn.,payment." default-prop-key-filter="ext.sdk.toss; payment.toss." />
     </bo-container>
   </bo-page>
 </div>

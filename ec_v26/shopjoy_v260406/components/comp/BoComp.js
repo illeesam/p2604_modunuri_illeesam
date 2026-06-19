@@ -1611,3 +1611,153 @@ window.BoTabBar = {
 </div>
 `,
 };
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * BoZdYmlGrid — application.yml 조회 그리드
+ * props:
+ *   endpoint  {String}  조회 API URL (default: '/bo/sy/app-config/all')
+ *   title     {String}  카드 제목 (default: 'application.yml 조회 정보')
+ * ─────────────────────────────────────────────────────────────────────── */
+window.BoZdYmlGrid = {
+  name: 'BoZdYmlGrid',
+  props: {
+    endpoint: { type: String, default: '/bo/sy/app-config/all' }, // 조회 API URL
+    title:    { type: String, default: 'application.yml 조회 정보' }, // 카드 제목
+  },
+  setup(props) {
+    const { reactive, onMounted } = Vue;
+
+    const rows = reactive([]);
+
+    const columns = [
+      { key: 'ymlKey',   label: 'yml 키',  cellStyle: 'font-family:monospace;color:#6b7280' },
+      { key: 'ymlValue', label: 'yml 값',  cellStyle: 'font-family:monospace;font-size:11px;word-break:break-all' },
+    ];
+
+    onMounted(async () => {
+      try {
+        const res = await boApi.get(props.endpoint, coUtil.apiHdr('BoZdYmlGrid', 'yml 조회'));
+        rows.splice(0, rows.length, ...(res?.data?.data || []));
+      } catch (_) { /* 조회 실패 무시 */ }
+    });
+
+    return { rows, columns };
+  },
+  template: `
+<div class="card" style="margin-bottom:12px">
+  <div class="toolbar">
+    <span class="list-title">{{ title }}</span>
+    <span class="list-count">{{ rows.length }}건</span>
+  </div>
+  <bo-grid :columns="columns" :rows="rows" row-key="ymlKey" empty-msg="조회된 데이터가 없습니다." />
+</div>
+`,
+};
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * BoZdSyPropGrid — sy_prop DB 조회 + propProfile/propKey 필터 그리드
+ * props:
+ *   propKeyPrefixes    {String}  서버 조회 prefix (; 구분 → , 로 변환)
+ *                                예) 'ext.,cdn.,payment.'
+ *   defaultPropKeyFilter {String} propKey 검색어 기본값 (; 구분)
+ *                                예) 'ext.sdk.toss; payment.toss.'
+ *   title              {String}  카드 제목
+ * ─────────────────────────────────────────────────────────────────────── */
+window.BoZdSyPropGrid = {
+  name: 'BoZdSyPropGrid',
+  props: {
+    propKeyPrefixes:     { type: String, default: '' },                        // 서버 조회 prefix (, 구분)
+    defaultPropKeyFilter:{ type: String, default: '' },                        // propKey 검색어 기본값
+    title:               { type: String, default: 'sy_prop DB 조회 정보' },   // 카드 제목
+  },
+  setup(props) {
+    const { reactive, ref, computed, onMounted } = Vue;
+
+    const rows          = reactive([]);
+    const syPropProfile = ref('dev');
+    const syPropKeyFilter = ref(props.defaultPropKeyFilter || '');
+
+    const columns = [
+      { key: 'propKey',     label: 'propKey',     cellStyle: 'font-family:monospace;color:#1e40af' },
+      { key: 'propProfile', label: 'propProfile', fmt: (v) => v || '-', cellStyle: 'font-size:11px;color:#6b7280' },
+      { key: 'propLabel',   label: '표시명' },
+      { key: 'propValue',   label: 'propValue',   fmt: (v) => v || '-', cellStyle: 'font-family:monospace;font-size:11px;word-break:break-all' },
+      { key: 'useYn',       label: 'useYn',       badge: (row) => row.useYn === 'Y' ? 'badge-green' : 'badge-gray', align: 'center' },
+      { key: 'regDate',     label: '등록일시',     fmt: (v) => v ? String(v).replace('T',' ').slice(0,16) : '-', align: 'center' },
+      { key: 'updDate',     label: '수정일시',     fmt: (v) => v ? String(v).replace('T',' ').slice(0,16) : '-', align: 'center' },
+    ];
+
+    const cfPropProfileOptions = computed(() => {
+      const set = new Set();
+      rows.forEach((r) => {
+        if (!r.propProfile) return;
+        r.propProfile.split('^').map((s) => s.trim()).filter(Boolean).forEach((s) => set.add(s));
+      });
+      return [{ value: '', label: '전체' }, ...Array.from(set).sort().map((s) => ({ value: s, label: s }))];
+    });
+
+    const cfFilteredRows = computed(() => {
+      const p = syPropProfile.value;
+      const keywords = syPropKeyFilter.value.split(';').map((s) => s.trim()).filter(Boolean);
+      return rows.filter((r) => {
+        if (p && (!r.propProfile || !r.propProfile.includes('^' + p + '^'))) return false;
+        if (keywords.length === 0) return true;
+        return keywords.some((kw) => r.propKey && r.propKey.includes(kw));
+      });
+    });
+
+    onMounted(async () => {
+      try {
+        // propKeyPrefixes: ';' 또는 ',' 둘 다 허용 → ',' 로 정규화
+        const prefixes = props.propKeyPrefixes
+          ? props.propKeyPrefixes.split(/[;,]/).map((s) => s.trim()).filter(Boolean).join(',')
+          : '';
+        const res = await boApiSvc.syProp?.getList?.({
+          propKeyPrefixes: prefixes || undefined,
+          sort: 'propKey asc',
+          pageSize: 999,
+        }, 'BoZdSyPropGrid', 'prop 조회');
+        rows.splice(0, rows.length, ...(res?.data?.data || []));
+        // 로드 후 존재하는 프로파일 기준 default 자동설정 (local → dev → prod)
+        const profileSet = new Set();
+        rows.forEach((r) => {
+          if (r.propProfile) r.propProfile.split('^').map((s) => s.trim()).filter(Boolean).forEach((s) => profileSet.add(s));
+        });
+        const found = ['local', 'dev', 'prod'].find((p) => profileSet.has(p));
+        if (found) syPropProfile.value = found;
+      } catch (_) { /* 조회 실패 무시 */ }
+    });
+
+    return { rows, columns, syPropProfile, syPropKeyFilter, cfPropProfileOptions, cfFilteredRows };
+  },
+  template: `
+<div class="card" style="margin-bottom:12px">
+  <div class="toolbar">
+    <span class="list-title">{{ title }}</span>
+    <span class="list-count">{{ cfFilteredRows.length }}건 / 총 {{ rows.length }}건</span>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:6px;">
+      <label style="font-size:12px;color:#6b7280;white-space:nowrap;">propProfile</label>
+      <select class="form-control" style="width:100px;height:30px;font-size:12px;padding:2px 4px;"
+        @change="syPropProfile = $event.target.value">
+        <option value="">전체</option>
+        <option value="local" :selected="syPropProfile === 'local'">local</option>
+        <option value="dev"   :selected="syPropProfile === 'dev'">dev</option>
+        <option value="prod"  :selected="syPropProfile === 'prod'">prod</option>
+        <template v-for="opt in cfPropProfileOptions">
+          <option v-if="opt.value &amp;&amp; opt.value !== 'local' &amp;&amp; opt.value !== 'dev' &amp;&amp; opt.value !== 'prod'"
+            :key="opt.value" :value="opt.value" :selected="syPropProfile === opt.value">{{ opt.value }}</option>
+        </template>
+      </select>
+      <input type="text" class="form-control" style="width:110px;height:30px;font-size:12px;padding:2px 8px;"
+        :value="syPropProfile" placeholder="직접입력"
+        @input="syPropProfile = $event.target.value" />
+      <label style="font-size:12px;color:#6b7280;white-space:nowrap;margin-left:8px;">propKey</label>
+      <input type="text" class="form-control" style="width:200px;height:30px;font-size:12px;padding:2px 8px;font-family:monospace;"
+        :value="syPropKeyFilter" placeholder="키워드 ; 구분 입력"
+        @input="syPropKeyFilter = $event.target.value" />
+    </div>
+  </div>
+  <bo-grid :columns="columns" :rows="cfFilteredRows" row-key="propId" empty-msg="조회된 데이터가 없습니다." />
+</div>
+`,
+};

@@ -38,6 +38,16 @@ public class BoSyAppConfigController {
     @Value("${map.kakao-js-key:}")        private String kakaoJsKey;
     @Value("${map.naver-map-client-id:}") private String naverMapClientId;
 
+    /* ── 메일(SMTP) ── */
+    @Value("${spring.mail.host:}")     private String mailHost;
+    @Value("${spring.mail.port:}")     private String mailPort;
+    @Value("${spring.mail.username:}") private String mailUsername;
+    @Value("${app.mail.from:}")        private String mailFrom;
+    @Value("${app.mail.from-nm:}")     private String mailFromNm;
+
+    /* ── 카카오 알림톡 ── */
+    @Value("${kakao.alimtalk.sender-key:}") private String kakaoAlimtalkSenderKey;
+
     /** 공통: key-value 행 목록 반환 포맷 */
     private Map<String, String> row(String key, String value, boolean mask) {
         Map<String, String> m = new LinkedHashMap<>();
@@ -80,6 +90,49 @@ public class BoSyAppConfigController {
         return ResponseEntity.ok(ApiResponse.ok(List.of(
             row("map.kakao-js-key",        kakaoJsKey,        false),
             row("map.naver-map-client-id", naverMapClientId,  false)
+        )));
+    }
+
+    /** 메일(SMTP) */
+    @GetMapping("/mail")
+    public ResponseEntity<ApiResponse<List<Map<String, String>>>> mail() {
+        return ResponseEntity.ok(ApiResponse.ok(List.of(
+            row("spring.mail.host",     mailHost,     false),
+            row("spring.mail.port",     mailPort,     false),
+            row("spring.mail.username", mailUsername, false),
+            row("app.mail.from",        mailFrom,     false),
+            row("app.mail.from-nm",     mailFromNm,   false)
+        )));
+    }
+
+    /** 카카오 알림톡 */
+    @GetMapping("/kakao")
+    public ResponseEntity<ApiResponse<List<Map<String, String>>>> kakao() {
+        return ResponseEntity.ok(ApiResponse.ok(List.of(
+            row("kakao.alimtalk.sender-key", kakaoAlimtalkSenderKey, true)
+        )));
+    }
+
+    /** 대시보드 — 전체 연동 설정 한 번에 조회 */
+    @GetMapping("/all")
+    public ResponseEntity<ApiResponse<List<Map<String, String>>>> all() {
+        return ResponseEntity.ok(ApiResponse.ok(List.of(
+            row("auth.social.google-userinfo-url", googleUserinfoUrl,      false),
+            row("auth.social.kakao-userinfo-url",  kakaoUserinfoUrl,       false),
+            row("auth.social.naver-userinfo-url",  naverUserinfoUrl,       false),
+            row("auth.social.default-site-id",     socialDefaultSiteId,    false),
+            row("toss.confirm-url",                tossConfirmUrl,         false),
+            row("toss.cancel-url-base",            tossCancelUrlBase,      false),
+            row("toss.client-key",                 tossClientKey,          false),
+            row("toss.secret-key",                 tossSecretKey,          true),
+            row("map.kakao-js-key",                kakaoJsKey,             false),
+            row("map.naver-map-client-id",         naverMapClientId,       false),
+            row("spring.mail.host",                mailHost,               false),
+            row("spring.mail.port",                mailPort,               false),
+            row("spring.mail.username",            mailUsername,           false),
+            row("app.mail.from",                   mailFrom,               false),
+            row("app.mail.from-nm",                mailFromNm,             false),
+            row("kakao.alimtalk.sender-key",       kakaoAlimtalkSenderKey, true)
         )));
     }
 }
