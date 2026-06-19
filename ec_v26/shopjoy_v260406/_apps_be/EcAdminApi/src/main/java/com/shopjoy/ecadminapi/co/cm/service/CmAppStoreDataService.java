@@ -37,7 +37,8 @@ public class CmAppStoreDataService {
     @Autowired
     private Environment environment;
 
-    // ── 외부 SDK 키 — application-{profile}.yml app.ext-sdk.* 에서 주입 ──
+    // ── 외부 SDK 키 — sy_prop(DB) 우선, application-{profile}.yml 폴백 ──
+    // propKey 규칙: yml 경로 그대로 (예: app.ext-sdk.google-client-id)
     @Value("${app.ext-sdk.google-client-id:}") private String googleClientId;
     @Value("${app.ext-sdk.kakao-js-key:}") private String kakaoJsKey;
     @Value("${app.ext-sdk.naver-client-id:}") private String naverClientId;
@@ -521,31 +522,34 @@ public class CmAppStoreDataService {
         String[] activeProfiles = environment.getActiveProfiles();
         String active = (activeProfiles != null && activeProfiles.length > 0) ? activeProfiles[0] : "-";
 
-        // ── 외부 SDK 키: sy_prop(DB) 우선 → yml 폴백 ──────────────────────
-        // prop_key 규칙: "ext.sdk.{name}" (path_id=ext.sdk, use_yn=Y)
-        // prop_profile 필터: 비어있으면 전체 적용, 값이 있으면 현재 active profile 포함 여부 확인
-        //   예) prop_profile = "^local^dev^" → local, dev 환경에서만 적용
+        // ── sy_prop DB 우선 → yml @Value 폴백 ──────────────────────────────
+        // propKey = yml 경로 그대로 (예: app.ext-sdk.google-client-id)
+        // propProfile 매칭: ^local^dev^ / ^prod^ / ^local^dev^prod^ / null(전체)
         final String currentProfile = active;
-        Map<String, String> sdkProps = syPropRepository.findAll().stream()
-                .filter(p -> "Y".equals(p.getUseYn()) && p.getPropKey() != null
-                        && p.getPropKey().startsWith("ext.sdk.") && p.getPropValue() != null && !p.getPropValue().isBlank()
+        Map<String, String> dbProps = syPropRepository.findAll().stream()
+                .filter(p -> "Y".equals(p.getUseYn())
+                        && p.getPropKey() != null
+                        && p.getPropValue() != null && !p.getPropValue().isBlank()
                         && isPropProfileMatch(p.getPropProfile(), currentProfile))
                 .collect(Collectors.toMap(SyProp::getPropKey, SyProp::getPropValue, (o, n) -> n));
 
-        // helper: DB 값 우선, 없으면 yml @Value 폴백
-        java.util.function.BiFunction<String, String, String> sdk =
-                (key, ymlVal) -> sdkProps.getOrDefault("ext.sdk." + key, ymlVal);
+        // helper: propKey(=yml 경로) 기준 DB 값 우선, 없으면 yml @Value 폴백
+        java.util.function.BiFunction<String, String, String> resolve =
+                (propKey, ymlVal) -> {
+                    String v = dbProps.get(propKey);
+                    return (v != null && !v.isBlank()) ? v : ymlVal;
+                };
 
-        // 소셜
-        String resolvedGoogleClientId  = sdk.apply("googleClientId",  this.googleClientId);
-        String resolvedKakaoJsKey      = sdk.apply("kakaoJsKey",      this.kakaoJsKey);
-        String resolvedNaverClientId   = sdk.apply("naverClientId",   this.naverClientId);
-        String resolvedNaverCallbackUrl= sdk.apply("naverCallbackUrl",this.naverCallbackUrl);
-        // 결제
-        String resolvedTossClientKey   = sdk.apply("tossClientKey",   this.tossClientKey);
-        // 지도
-        String resolvedKakaoMapJsKey   = sdk.apply("kakaoMapJsKey",   this.kakaoMapJsKey);
-        String resolvedNaverMapClientId= sdk.apply("naverMapClientId",this.naverMapClientId);
+        // 소셜 SDK 키
+        String resolvedGoogleClientId   = resolve.apply("app.ext-sdk.google-client-id",   this.googleClientId);
+        String resolvedKakaoJsKey       = resolve.apply("app.ext-sdk.kakao-js-key",        this.kakaoJsKey);
+        String resolvedNaverClientId    = resolve.apply("app.ext-sdk.naver-client-id",     this.naverClientId);
+        String resolvedNaverCallbackUrl = resolve.apply("app.ext-sdk.naver-callback-url",  this.naverCallbackUrl);
+        // 결제 SDK 키
+        String resolvedTossClientKey    = resolve.apply("app.ext-sdk.toss-client-key",     this.tossClientKey);
+        // 지도 SDK 키
+        String resolvedKakaoMapJsKey    = resolve.apply("app.ext-sdk.kakao-map-js-key",    this.kakaoMapJsKey);
+        String resolvedNaverMapClientId = resolve.apply("app.ext-sdk.naver-map-client-id", this.naverMapClientId);
 
         String facebookAppId    = "DEMO_FACEBOOK_APP_ID";
         String appleClientId    = "com.shopjoy.demo.signin";

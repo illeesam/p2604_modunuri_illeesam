@@ -492,7 +492,7 @@ window.ZdInfDashboard = {
     </bo-container>
     <bo-container>
       <bo-zd-yml-grid />
-      <bo-zd-sy-prop-grid prop-key-prefixes="ext.,cdn.,payment." default-prop-key-filter="ext.sdk.toss; payment.toss." />
+      <bo-zd-sy-prop-grid prop-key-prefixes="ext.,cdn.,payment." />
     </bo-container>
   </bo-page>
 </div>
