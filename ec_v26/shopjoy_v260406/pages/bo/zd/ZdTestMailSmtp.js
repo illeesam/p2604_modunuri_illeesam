@@ -24,10 +24,10 @@ window.ZdTestMailSmtp = {
     });
 
     const form = reactive({
-      toEmail:  '',
-      toName:   '',
-      subject:  '[ShopJoy] SMTP 테스트 메일',
-      body:     'SMTP 연동이 정상적으로 작동하는지 확인하는 테스트 메일입니다.\n\n발송 시각: ' + new Date().toLocaleString(),
+      toEmail:  'illeesam@gmail.com',
+      toName:   '송성일',
+      subject:  '[ShopJoy] SMTP 테스트 메일 [' + new Date().toISOString().replace('T',' ').slice(0,19) + ']',
+      body:     'SMTP 연동이 정상적으로 작동하는지 확인하는 테스트 메일입니다.\n\n발송 시각: ' + new Date().toISOString().replace('T',' ').slice(0,19),
     });
 
     const result = reactive({
@@ -48,12 +48,16 @@ window.ZdTestMailSmtp = {
           propKeys: 'site.email.smtp.host,site.email.smtp.port,app.mail.from,app.mail.from-nm',
         }, 'SMTP 메일 발송 테스트', '키 조회');
         const list = res?.data?.data || [];
-        list.forEach(p => {
-          if (p.propKey === 'site.email.smtp.host') cfg.smtpHost = p.propValue || '';
-          if (p.propKey === 'site.email.smtp.port') cfg.smtpPort = p.propValue || '';
-          if (p.propKey === 'app.mail.from')        cfg.from     = p.propValue || '';
-          if (p.propKey === 'app.mail.from-nm')     cfg.fromNm   = p.propValue || '';
-        });
+        // 동일 propKey가 여러 프로파일 행으로 올 수 있음 → local/dev 우선, 없으면 값 있는 행
+        const pickVal = (key) => {
+          const rows = list.filter(p => p.propKey === key && p.propValue);
+          const preferred = rows.find(p => /local|dev/.test(p.propProfile || '')) || rows[0];
+          return preferred?.propValue || '';
+        };
+        cfg.smtpHost = pickVal('site.email.smtp.host');
+        cfg.smtpPort = pickVal('site.email.smtp.port');
+        cfg.from     = pickVal('app.mail.from');
+        cfg.fromNm   = pickVal('app.mail.from-nm');
       } catch (e) {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);
       }
@@ -80,7 +84,7 @@ window.ZdTestMailSmtp = {
       result.response = null;
       addLog('메일 발송 요청: ' + form.toEmail);
       try {
-        const res = await boApi.post('/bo/sy/test/mail', {
+        const res = await boApi.post('/co/ext/mail-send/send', {
           toEmail:  form.toEmail,
           toName:   form.toName,
           subject:  form.subject,
@@ -170,8 +174,7 @@ window.ZdTestMailSmtp = {
       <b>Gmail 기준:</b><br>
       Host: <code>smtp.gmail.com</code> / Port: <code>587</code> (TLS)<br>
       구글 계정 → 보안 → 2단계 인증 활성화 → 앱 비밀번호 생성 → application-local.yml 에 설정<br><br>
-      <b>백엔드 API:</b> <code>POST /api/bo/sy/test/mail</code> → <code>CmMailSendService.sendTestMail()</code><br>
-      ※ 엔드포인트 미구현 시 "404 Not Found" — <code>BoSyTestController</code> 에 추가 필요
+      <b>백엔드 API:</b> <code>POST /api/co/ext/mail-send/send</code> → <code>CoExtMailSendController → CmMailSendService.sendMail()</code>
     </div>
   </div>
 

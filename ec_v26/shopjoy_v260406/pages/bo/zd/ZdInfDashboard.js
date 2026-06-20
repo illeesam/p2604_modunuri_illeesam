@@ -330,6 +330,19 @@ window.ZdInfDashboard = {
         beFile: 'yml:app.kakao.alimtalk.sender-key',
         dbTable: 'cmh_push_log (channel=KAKAO)',
       },
+      /* ── 카카오 공유 ── */
+      {
+        category: '카카오', channel: '카카오톡 공유', feKey: 'kakaoJsKey', beKey: 'app.ext-sdk.kakao-js-key',
+        remark: 'JavaScript 키 (소셜 로그인과 동일)', testFn: 'kakaoShare',
+        desc: '카카오톡 공유 기능에 사용합니다. 소셜 로그인과 동일한 JavaScript 키를 사용하며, Kakao Developers 에서 Web 플랫폼에 도메인을 등록해야 합니다.',
+        guideUrl: 'https://developers.kakao.com/console/app',
+        guideLabel: 'Kakao Developers',
+        feDesc: 'FE에서 Kakao.Share.sendDefault() 호출 시 Kakao.init() 에 사용하는 JavaScript 앱 키',
+        feFile: 'sy_prop:app.ext-sdk.kakao-js-key',
+        beDesc: 'BE 서버 사이드 카카오 공유 API 없음 (FE 전용, Kakao SDK 2.x)',
+        beFile: 'sy_prop:app.ext-sdk.kakao-js-key',
+        dbTable: '없음 (클라이언트 공유, 서버 저장 없음)',
+      },
       /* ── AI ── */
       {
         category: 'AI/챗봇', channel: 'AI 챗봇', feKey: null, beKey: 'app.chat.ai.api-key',
@@ -410,20 +423,28 @@ window.ZdInfDashboard = {
 
     /* ##### [05] 테스트 실행 ####################################################### */
 
+    /* 각 채널별 테스트 — POST /co/ext/.../send 또는 GET ping */
     const _TEST_MAP = {
-      google:    { url: '/bo/sy/zd/test/oauth/google',   label: 'Google OAuth' },
-      kakao:     { url: '/bo/sy/zd/test/oauth/kakao',    label: 'Kakao OAuth' },
-      naver:     { url: '/bo/sy/zd/test/oauth/naver',    label: 'Naver OAuth' },
-      toss:      { url: '/bo/sy/zd/test/pay/toss',       label: '토스 결제키' },
-      kakaoMap:  { url: '/bo/sy/zd/test/map/kakao',      label: 'Kakao 지도' },
-      naverMap:  { url: '/bo/sy/zd/test/map/naver',      label: 'Naver 지도' },
-      googleMap: { url: '/bo/sy/zd/test/map/google',     label: 'Google 지도' },
-      smtp:      { url: '/bo/sy/zd/test/mail/smtp',      label: 'SMTP' },
-      sms:       { url: '/bo/sy/zd/test/sms',            label: 'SMS' },
-      fcm:       { url: '/bo/sy/zd/test/push/fcm',       label: 'FCM' },
-      apns:      { url: '/bo/sy/zd/test/push/apns',      label: 'APNs' },
-      kakaoAlim: { url: '/bo/sy/zd/test/kakao/alimtalk', label: '카카오 알림톡' },
-      ai:        { url: '/bo/sy/zd/test/ai/chatbot',     label: 'AI 챗봇' },
+      google:     { method: 'get',  url: '/bo/sy/app-config/all',          label: 'Google OAuth',  note: 'BE 키 조회로 설정 여부 확인' },
+      kakao:      { method: 'get',  url: '/bo/sy/app-config/all',          label: 'Kakao OAuth',   note: 'BE 키 조회로 설정 여부 확인' },
+      naver:      { method: 'get',  url: '/bo/sy/app-config/all',          label: 'Naver OAuth',   note: 'BE 키 조회로 설정 여부 확인' },
+      toss:       { method: 'get',  url: '/bo/sy/app-config/all',          label: '토스 결제키',   note: 'BE 키 조회로 설정 여부 확인' },
+      kakaoMap:   { method: 'get',  url: '/bo/sy/app-config/all',          label: 'Kakao 지도',    note: 'BE 키 조회로 설정 여부 확인' },
+      naverMap:   { method: 'get',  url: '/bo/sy/app-config/all',          label: 'Naver 지도',    note: 'BE 키 조회로 설정 여부 확인' },
+      googleMap:  { method: 'get',  url: '/bo/sy/app-config/all',          label: 'Google 지도',   note: 'BE 키 조회로 설정 여부 확인' },
+      smtp:       { method: 'post', url: '/co/ext/mail-send/send',         label: 'SMTP',
+                    body: { toEmail: 'test@example.com', toName: '테스트', subject: '[ShopJoy] 연동 테스트', body: '연동 설정 대시보드 테스트 발송' } },
+      sms:        { method: 'post', url: '/co/ext/sms-send/send',          label: 'SMS',
+                    body: { toPhone: '01000000000', message: '[ShopJoy] SMS 연동 테스트' } },
+      fcm:        { method: 'post', url: '/co/ext/push-fcm-send/send',     label: 'FCM',
+                    body: { targetType: 'topic', targetValue: 'test_ping', title: '[ShopJoy] FCM 테스트', body: '연동 확인' } },
+      apns:       { method: 'post', url: '/co/ext/push-apns-send/send',    label: 'APNs',
+                    body: { deviceToken: 'TEST_TOKEN', title: '[ShopJoy] APNs 테스트', body: '연동 확인' } },
+      kakaoAlim:  { method: 'post', url: '/co/ext/kakao-send/send',        label: '카카오 알림톡',
+                    body: { msgType: 'alimtalk', toPhone: '01000000000', templateCode: 'TEST_TMPL', variables: {} } },
+      kakaoShare: { method: 'get',  url: '/bo/sy/app-config/all',          label: '카카오톡 공유', note: 'FE 전용 — BE 키 조회로 확인' },
+      ai:         { method: 'post', url: '/co/ext/ai-chat/chat',           label: 'AI 챗봇',
+                    body: { provider: 'openai', message: '연동 테스트: 안녕하세요' } },
     };
 
     const handleTest = async (row) => {
@@ -432,10 +453,15 @@ window.ZdInfDashboard = {
       if (!meta) { row.testResult = '실패'; row.testMsg = '테스트 미정의'; return; }
       row._testing = true; row.testResult = '-'; row.testMsg = '확인 중...';
       try {
-        const res = await boApi.get(meta.url, coUtil.cofApiHdr('연동설정대시보드', meta.label + ' 테스트'));
+        let res;
+        if (meta.method === 'post') {
+          res = await boApi.post(meta.url, meta.body || {}, coUtil.cofApiHdr('연동설정대시보드', meta.label + ' 테스트'));
+        } else {
+          res = await boApi.get(meta.url, coUtil.cofApiHdr('연동설정대시보드', meta.label + ' 테스트'));
+        }
         const ok = res.data?.success !== false;
         row.testResult = ok ? '성공' : '실패';
-        row.testMsg    = res.data?.data?.message || res.data?.message || (ok ? '정상' : '오류');
+        row.testMsg    = res.data?.data?.message || res.data?.message || (ok ? (meta.note || '정상') : '오류');
       } catch (e) {
         row.testResult = '실패';
         row.testMsg    = e.response?.data?.message || e.message || '연결 실패';
@@ -554,7 +580,7 @@ window.ZdInfDashboard = {
             <span v-else-if="row.beStat === '미설정'" class="badge badge-red">미설정</span>
             <span v-else class="badge badge-gray">-</span>
             <div v-if="row._beFile &amp;&amp; row.beStat !== '-'" style="margin-top:4px;font-size:11px;line-height:1.4;word-break:break-all;">
-              <span style="font-weight:600;color:#1e40af;background:#dbeafe;border-radius:3px;padding:1px 4px;font-family:sans-serif;font-size:10px;">
+              <span :style="row._beFile.startsWith('yml:') ? 'font-weight:600;color:#0284c7;background:#bae6fd;border-radius:3px;padding:1px 4px;font-family:sans-serif;font-size:10px;' : 'font-weight:600;color:#1e40af;background:#dbeafe;border-radius:3px;padding:1px 4px;font-family:sans-serif;font-size:10px;'">
                 {{ row._beFile.startsWith('yml:') ? 'app~.yml' : 'sy_prop' }}
               </span>
               <span style="font-family:monospace;color:#374151;margin-left:3px;">
@@ -571,7 +597,7 @@ window.ZdInfDashboard = {
             <span v-else-if="row.feStat === '미설정'" class="badge badge-red">미설정</span>
             <span v-else class="badge badge-gray">-</span>
             <div v-if="row._feFile &amp;&amp; row.feStat !== '-'" style="margin-top:4px;font-size:11px;line-height:1.4;word-break:break-all;">
-              <span style="font-weight:600;color:#6d28d9;background:#ede9fe;border-radius:3px;padding:1px 4px;font-family:sans-serif;font-size:10px;">
+              <span :style="row._feFile.startsWith('yml:') ? 'font-weight:600;color:#0284c7;background:#bae6fd;border-radius:3px;padding:1px 4px;font-family:sans-serif;font-size:10px;' : 'font-weight:600;color:#6d28d9;background:#ede9fe;border-radius:3px;padding:1px 4px;font-family:sans-serif;font-size:10px;'">
                 {{ row._feFile.startsWith('yml:') ? 'app~.yml' : 'sy_prop' }}
               </span>
               <span style="font-family:monospace;color:#374151;margin-left:3px;">
@@ -823,11 +849,13 @@ window.ZdInfDashboard = {
 - ▪ 앱 > 플랫폼 키
 -- ▪ REST API 키: 44074b1c358f60292145b3068460f37d 
 --- ▪ 카카오 로그인 리다이렉트 URI: https://illeesam.synology.me:3000/login/oauth2/code/kakao ▪ https://illeesam.netlify.app/login/oauth2/code/kakao ▪ http://127.0.0.1:3000/login/oauth2/code/kakao
+---- ▪ 동의항목 : {닉네임:필수동의, 프로필사진:필수동의, 카카오서비스내친구목록:이용중동의}
+---- ▪ 접근권한 : {카카오톡 메시지 전송: 선택동의}
 --- ▪ 비즈니스 인증 리다이렉트 URI: https://illeesam.synology.me:3000/login/oauth2/code/kakao ▪ https://illeesam.netlify.app/login/oauth2/code/kakao ▪ http://127.0.0.1:3000/login/oauth2/code/kakao
 --- ▪ 클라이언트 시크릿 > 카카오 로그인 : { 코드: 1gV3lHvBP6KNju9P5E6I4TbchWByfPIh, 활성화:ON }
 --- ▪ 클라이언트 시크릿 > 비즈니스 로그인 : { 코드: ZyuNrjSOp2yilmTv9MSxDlXRdwPFXDTB, 활성화:ON }
 -- ▪ JavaScript 키: 797a116c08880d3865a89cf4f70b91f5 
---- ▪ JavaScript SDK 도메인 : https://illeesam.synology.me:3000/login/oauth2/code/kakao ▪ https://illeesam.netlify.app/login/oauth2/code/kakao ▪ http://127.0.0.1:3000/login/oauth2/code/kakao
+--- ▪ JavaScript SDK 도메인 : https://illeesam.synology.me:3000 ▪ https://illeesam.netlify.app ▪ http://127.0.0.1:5501
 --- ▪ 카카오 로그인 리다이렉트 URI : https://illeesam.synology.me:3000/login/oauth2/code/kakao ▪ https://illeesam.netlify.app/login/oauth2/code/kakao ▪ http://127.0.0.1:3000/login/oauth2/code/kakao
 -- ▪ 네이티브 앱 키: 96e57663db167a8e7a78345c9d0cf9d2 
 - ▪ 앱 > 카카오맵 : {사용설정: ON}
@@ -836,11 +864,28 @@ window.ZdInfDashboard = {
 - ▪ 앱 > 플랫폼 키
 -- ▪ REST API 키: 63d491e61a4caacf2fc90ee252f2d644 
 --- ▪ 카카오 로그인 리다이렉트 URI: https://illeesam.synology.me:3000/login/oauth2/code/kakao ▪ https://illeesam.netlify.app/login/oauth2/code/kakao ▪ http://127.0.0.1:3000/login/oauth2/code/kakao
+---- ▪ 동의항목 : {닉네임:필수동의, 프로필사진:필수동의, 카카오서비스내친구목록:이용중동의}
+---- ▪ 접근권한 : {카카오톡 메시지 전송: 선택동의}
 --- ▪ 비즈니스 인증 리다이렉트 URI: https://illeesam.synology.me:3000/login/oauth2/code/kakao ▪ https://illeesam.netlify.app/login/oauth2/code/kakao ▪ http://127.0.0.1:3000/login/oauth2/code/kakao
 --- ▪ 클라이언트 시크릿 > 카카오 로그인 : { 코드: 7gxUHEectTM7qYSDmhnXUJc3ZE1ymqRO, 활성화:ON }
 --- ▪ 클라이언트 시크릿 > 비즈니스 로그인 : { 코드: Q6d7uCUnJBXCXQ2qINFWt2wSZ0sEzpB2, 활성화:ON }
 -- ▪ JavaScript 키: a2990e41aa57c3a4ad1fe97a210938d7 
---- ▪ JavaScript SDK 도메인 : https://illeesam.synology.me:3000/login/oauth2/code/kakao ▪ https://illeesam.netlify.app/login/oauth2/code/kakao ▪ http://127.0.0.1:3000/login/oauth2/code/kakao
+--- ▪ JavaScript SDK 도메인 : https://illeesam.synology.me:3000 ▪ https://illeesam.netlify.app ▪ http://127.0.0.1:5501
+--- ▪ 카카오 로그인 리다이렉트 URI : https://illeesam.synology.me:3000/login/oauth2/code/kakao ▪ https://illeesam.netlify.app/login/oauth2/code/kakao ▪ http://127.0.0.1:3000/login/oauth2/code/kakao
+-- ▪ 네이티브 앱 키: 4f43ddc38e22c79280d18595a31ff27b 
+- ▪ 앱 > 카카오맵 : {사용설정: ON}
+-----------------------------------------------------------
+▪ 앱 > illeesam_localhost : { ID: 1491909 }
+- ▪ 앱 > 플랫폼 키
+-- ▪ REST API 키: 2e8671b1cc341f7d4d92724a2d4eee2c 
+--- ▪ 카카오 로그인 리다이렉트 URI: https://illeesam.synology.me:3000/login/oauth2/code/kakao ▪ https://illeesam.netlify.app/login/oauth2/code/kakao ▪ http://127.0.0.1:3000/login/oauth2/code/kakao
+---- ▪ 동의항목 : {닉네임:필수동의, 프로필사진:필수동의, 카카오서비스내친구목록:이용중동의}
+---- ▪ 접근권한 : {카카오톡 메시지 전송: 선택동의}
+--- ▪ 비즈니스 인증 리다이렉트 URI: https://illeesam.synology.me:3000/login/oauth2/code/kakao ▪ https://illeesam.netlify.app/login/oauth2/code/kakao ▪ http://127.0.0.1:3000/login/oauth2/code/kakao
+--- ▪ 클라이언트 시크릿 > 카카오 로그인 : { 코드: 7gxUHEectTM7qYSDmhnXUJc3ZE1ymqRO, 활성화:ON }
+--- ▪ 클라이언트 시크릿 > 비즈니스 로그인 : { 코드: Q6d7uCUnJBXCXQ2qINFWt2wSZ0sEzpB2, 활성화:ON }
+-- ▪ JavaScript 키: 2e8671b1cc341f7d4d92724a2d4eee2c 
+--- ▪ JavaScript SDK 도메인 : https://illeesam.synology.me:3000 ▪ https://illeesam.netlify.app ▪ http://127.0.0.1:5501
 --- ▪ 카카오 로그인 리다이렉트 URI : https://illeesam.synology.me:3000/login/oauth2/code/kakao ▪ https://illeesam.netlify.app/login/oauth2/code/kakao ▪ http://127.0.0.1:3000/login/oauth2/code/kakao
 -- ▪ 네이티브 앱 키: 4f43ddc38e22c79280d18595a31ff27b 
 - ▪ 앱 > 카카오맵 : {사용설정: ON}
@@ -876,6 +921,7 @@ window.ZdInfDashboard = {
       <pre>
 ▪ Google 디벨로퍼 https://developers.google.com/?hl=ko
 ▪ Google Play Console : https://developer.android.com/distribute/console?hl=ko
+▪ 계정 : illeesam4@gmail.com
 
 -----------------------------------------------------------
       </pre>
@@ -889,6 +935,16 @@ window.ZdInfDashboard = {
 ▪ 토스페이먼츠 개발자센터 > 결제 연동하기 : https://docs.tosspayments.com/guides/v2/payment-widget/integration
 - ▪ 토스페이먼츠 개발자센터 > 결제 연동하기 > 문서용 테스트 키 : test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm ▪ test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6
 ▪ 토스페이먼츠 sandbox : https://developers.tosspayments.com/sandbox
+      </pre>
+    </bo-container>
+  </bo-page>
+
+    <bo-container>
+      <div> ■■■ smtp : google</div>
+      <pre>
+▪ Google SMTP : https://developers.google.com/gmail/api
+▪ Google SMTP > 인증 : https://developers.google.com/gmail/api/auth/scopes
+▪ Google SMTP sandbox : https://developers.google.com/gmail/api/sandbox
       </pre>
     </bo-container>
   </bo-page>

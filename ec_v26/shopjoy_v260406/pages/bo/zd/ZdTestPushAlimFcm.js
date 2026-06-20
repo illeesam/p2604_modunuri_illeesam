@@ -23,7 +23,7 @@ window.ZdTestPushAlimFcm = {
     const form = reactive({
       targetType:  'token',  // token | topic | member
       targetValue: '',
-      title:       '[ShopJoy] 테스트 푸시',
+      title:       '[ShopJoy] 테스트 푸시 [' + new Date().toISOString().replace('T',' ').slice(0,19) + ']',
       body:        'FCM 연동이 정상적으로 작동하는지 확인하는 테스트 푸시입니다.',
       imageUrl:    '',
       data:        '{"type":"test","url":"/"}',
@@ -48,11 +48,10 @@ window.ZdTestPushAlimFcm = {
           propKeys: 'app.push.fcm.project-id,app.push.fcm.key-file,app.push.apns.enabled',
         }, 'FCM 푸시 알림 테스트', '키 조회');
         const list = res?.data?.data || [];
-        list.forEach(p => {
-          if (p.propKey === 'app.push.fcm.project-id')  cfg.fcmProjectId = p.propValue || '';
-          if (p.propKey === 'app.push.fcm.key-file')    cfg.fcmKeyFile   = p.propValue || '';
-          if (p.propKey === 'app.push.apns.enabled')    cfg.apnsEnabled  = p.propValue === 'true';
-        });
+        const pickVal = (key) => { const rows = list.filter(p => p.propKey === key && p.propValue); const pref = rows.find(p => /local|dev/.test(p.propProfile || '')) || rows[0]; return pref?.propValue || ''; };
+        cfg.fcmProjectId = pickVal('app.push.fcm.project-id');
+        cfg.fcmKeyFile   = pickVal('app.push.fcm.key-file');
+        const apnsEnabledVal = pickVal('app.push.apns.enabled'); if (apnsEnabledVal) cfg.apnsEnabled = apnsEnabledVal === 'true';
       } catch (e) {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);
       }
@@ -76,7 +75,7 @@ window.ZdTestPushAlimFcm = {
       let dataObj = {};
       try { dataObj = JSON.parse(form.data || '{}'); } catch (e) { /* 무시 */ }
       try {
-        const res = await boApi.post('/bo/sy/test/push/fcm', {
+        const res = await boApi.post('/co/ext/push-fcm-send/send', {
           targetType:  form.targetType,
           targetValue: form.targetValue,
           title:       form.title,
@@ -100,7 +99,7 @@ window.ZdTestPushAlimFcm = {
     const loadDeviceTokens = async () => {
       uiState.loadingTokens = true;
       try {
-        const res = await boApi.get('/bo/sy/test/push/tokens', coUtil.cofApiHdr('FCM 푸시 테스트', '토큰 목록'));
+        const res = await boApi.get('/co/ext/push-fcm-send/tokens', coUtil.cofApiHdr('FCM 푸시 테스트', '토큰 목록'));
         result.tokenLogs = res.data?.data || [];
       } catch (e) {
         showToast('토큰 목록 조회 실패: ' + (e.response?.data?.message || e.message), 'error', 0);
@@ -249,8 +248,8 @@ window.ZdTestPushAlimFcm = {
       <b>3.</b> sy_prop <code>app.push.fcm.project-id</code> = Firebase 프로젝트 ID<br>
       <b>4.</b> sy_prop <code>app.push.fcm.key-file</code> = 서비스 계정 JSON 파일 경로<br>
       <b>5.</b> 앱에서 FCM 토큰 발급 → <code>mb_device_token</code> 저장 → 위 토큰 목록 조회<br><br>
-      <b>백엔드 API:</b> <code>POST /api/bo/sy/test/push/fcm</code> → <code>CmPushSendService.sendFcm()</code><br>
-      <code>GET /api/bo/sy/test/push/tokens</code> → <code>mb_device_token</code> 조회
+      <b>백엔드 API:</b> <code>POST /api/co/ext/push-fcm-send/send</code> → <code>CoExtPushFcmSendController</code> (FCM 시뮬레이션)<br>
+      <code>GET /api/co/ext/push-fcm-send/tokens</code> → <code>mb_device_token</code> 조회
     </div>
   </div>
 

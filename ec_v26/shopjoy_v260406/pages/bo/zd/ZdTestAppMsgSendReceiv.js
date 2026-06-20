@@ -216,7 +216,7 @@ window.ZdTestAppMsgSendReceiv = {
       const targetLabel = baseForm.targetMode === 'broadcast' ? '(전체 브로드캐스트)' : baseForm.targetValue.substring(0, 20) + '…';
 
       try {
-        const res = await boApi.post('/bo/sy/test/app-msg/send', {
+        const res = await boApi.post('/co/ext/app-msg-send/send', {
           targetMode:    baseForm.targetMode,
           targetValue:   baseForm.targetValue,
           platform:      baseForm.platform,
@@ -254,7 +254,7 @@ window.ZdTestAppMsgSendReceiv = {
     const loadDevices = async () => {
       result.loadingDev = true;
       try {
-        const res = await boApi.get('/bo/sy/test/push/tokens', {
+        const res = await boApi.get('/co/ext/app-msg-send/tokens', {
           params: {
             platform: devices.filter.platform || undefined,
             memberId: devices.filter.memberId || undefined,
@@ -276,7 +276,7 @@ window.ZdTestAppMsgSendReceiv = {
     const loadHist = async () => {
       result.loadingHist = true;
       try {
-        const res = await boApi.get('/bo/sy/test/app-msg/history', {
+        const res = await boApi.get('/co/ext/app-msg-send/history', {
           params: {
             memberId:  hist.filter.memberId  || undefined,
             channel:   hist.filter.channel   || undefined,
@@ -355,7 +355,7 @@ window.ZdTestAppMsgSendReceiv = {
         const token = dev.fcmToken || dev.apnsToken || '';
         const ch = dev.platform === 'IOS' ? 'APNS' : 'FCM';
         try {
-          await boApi.post('/bo/sy/test/app-msg/send', {
+          await boApi.post('/co/ext/app-msg-send/send', {
             targetMode:  'token',
             targetValue: token,
             platform:    dev.platform,
@@ -815,7 +815,7 @@ window.ZdTestAppMsgSendReceiv = {
         </table>
         <div style="margin-top:12px;padding:8px;background:#f0f4ff;border-radius:4px">
           <b>📋 발송 이력 탭</b> — <code>cmh_push_log</code> 테이블의 모든 채널 발송 이력을 조회합니다.<br>
-          백엔드 엔드포인트: <code>POST /api/bo/sy/test/app-msg/send</code> (통합 발송 오케스트레이터)<br>
+          백엔드 엔드포인트: <code>POST /api/co/ext/app-msg-send/send</code> (통합 발송 오케스트레이터)<br>
           채널별 서비스: <code>CmPushSendService</code> (FCM/APNs) · <code>CmSmsSendService</code> · <code>CmKakaoSendService</code> · WebSocket Broker
         </div>
       </div>

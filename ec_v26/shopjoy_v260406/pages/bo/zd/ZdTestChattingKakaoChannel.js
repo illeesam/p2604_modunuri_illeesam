@@ -23,9 +23,9 @@ window.ZdTestChattingKakaoChannel = {
 
     const form = reactive({
       msgType:     'alimtalk',  // alimtalk | friendtalk | channel_add
-      toPhone:     '',
+      toPhone:     '01038050206',
       templateCode:'',
-      variables:   '{"name":"홍길동","orderNo":"ORD20260619001","amount":"150,000"}',
+      variables:   '{"name":"송성일","orderNo":"ORD20260619001","amount":"150,000"}',
       content:     '',
     });
 
@@ -47,12 +47,11 @@ window.ZdTestChattingKakaoChannel = {
           propKeys: 'app.kakao.channel-id,app.kakao.biz-msg-api-key,app.kakao.sender-key,app.kakao.from',
         }, '카카오 채널 테스트', '키 조회');
         const list = res?.data?.data || [];
-        list.forEach(p => {
-          if (p.propKey === 'app.kakao.channel-id')      cfg.channelId    = p.propValue || '';
-          if (p.propKey === 'app.kakao.biz-msg-api-key') cfg.bizMsgApiKey = p.propValue || '';
-          if (p.propKey === 'app.kakao.sender-key')      cfg.senderKey    = p.propValue || '';
-          if (p.propKey === 'app.kakao.from')            cfg.from         = p.propValue || '';
-        });
+        const pickVal = (key) => { const rows = list.filter(p => p.propKey === key && p.propValue); const pref = rows.find(p => /local|dev/.test(p.propProfile || '')) || rows[0]; return pref?.propValue || ''; };
+        cfg.channelId    = pickVal('app.kakao.channel-id');
+        cfg.bizMsgApiKey = pickVal('app.kakao.biz-msg-api-key');
+        cfg.senderKey    = pickVal('app.kakao.sender-key');
+        cfg.from         = pickVal('app.kakao.from');
       } catch (e) {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);
       }
@@ -75,7 +74,7 @@ window.ZdTestChattingKakaoChannel = {
       try { varsObj = JSON.parse(form.variables || '{}'); } catch (e) { /* 무시 */ }
       addLog('[' + form.msgType + '] 발송 요청 → ' + (form.toPhone || form.templateCode));
       try {
-        const res = await boApi.post('/bo/sy/test/kakao/channel', {
+        const res = await boApi.post('/co/ext/kakao-send/send', {
           msgType:      form.msgType,
           toPhone:      form.toPhone,
           templateCode: form.templateCode,
@@ -140,11 +139,11 @@ window.ZdTestChattingKakaoChannel = {
       <div class="form-row" style="gap:8px;margin-bottom:8px">
         <div class="form-group" style="flex:1">
           <label class="form-label">비즈메시지 API Key</label>
-          <input class="form-control" type="password" v-model="cfg.bizMsgApiKey" placeholder="sy_prop: app.kakao.biz-msg-api-key" />
+          <input class="form-control" v-model="cfg.bizMsgApiKey" placeholder="sy_prop: app.kakao.biz-msg-api-key" />
         </div>
         <div class="form-group" style="flex:1">
           <label class="form-label">발신 프로필 키 (Sender Key)</label>
-          <input class="form-control" type="password" v-model="cfg.senderKey" placeholder="sy_prop: app.kakao.sender-key" />
+          <input class="form-control" v-model="cfg.senderKey" placeholder="sy_prop: app.kakao.sender-key" />
         </div>
       </div>
       <button class="btn btn_save" @click="handleBtnAction('key-save')">sy_prop 저장</button>
@@ -221,7 +220,7 @@ window.ZdTestChattingKakaoChannel = {
       <b>2.</b> 알림톡 발신 프로필 등록 → Sender Key 발급<br>
       <b>3.</b> 알림톡 템플릿 등록 → 검수 완료 후 사용 가능<br>
       <b>4.</b> 비즈메시지 API Key 발급 (파트너사 포털)<br><br>
-      <b>백엔드 API:</b> <code>POST /api/bo/sy/test/kakao/channel</code><br>
+      <b>백엔드 API:</b> <code>POST /api/co/ext/kakao-send/send</code> → <code>CoExtKakaoSendController → CmKakaoSendService.sendKakao()</code><br>
       → <code>CmKakaoSendService</code> 경유 (알림톡/친구톡/채널추가 분기)
     </div>
   </div>

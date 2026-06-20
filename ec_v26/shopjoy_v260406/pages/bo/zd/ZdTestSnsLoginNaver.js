@@ -22,6 +22,8 @@ window.ZdTestSnsLoginNaver = {
 
     const result = reactive({
       sdkStatus:   '',
+      sdkUrl:      '',
+      initDetail:  '',
       loginResult: null,
       profile:     null,
       error:       '',
@@ -40,10 +42,14 @@ window.ZdTestSnsLoginNaver = {
           propKeys: 'app.ext-sdk.naver-client-id,app.ext-sdk.naver-client-secret',
         }, '네이버 소셜 로그인 테스트', '키 조회');
         const list = res?.data?.data || [];
-        list.forEach(p => {
-          if (p.propKey === 'app.ext-sdk.naver-client-id')     cfg.clientId     = p.propValue || '';
-          if (p.propKey === 'app.ext-sdk.naver-client-secret') cfg.clientSecret = p.propValue || '';
-        });
+        // 동일 propKey가 여러 프로파일 행으로 올 수 있음 → local/dev 우선, 없으면 값 있는 행
+        const pickVal = (key) => {
+          const rows = list.filter(p => p.propKey === key && p.propValue);
+          const preferred = rows.find(p => /local|dev/.test(p.propProfile || '')) || rows[0];
+          return preferred?.propValue || '';
+        };
+        cfg.clientId     = pickVal('app.ext-sdk.naver-client-id');
+        cfg.clientSecret = pickVal('app.ext-sdk.naver-client-secret');
       } catch (e) {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);
       }
@@ -55,6 +61,7 @@ window.ZdTestSnsLoginNaver = {
     const checkSdk = () => {
       const ok = !!(window.naver?.LoginWithNaverId);
       uiState.sdkLoaded = ok;
+      result.sdkUrl     = 'https://static.nid.naver.com/js/naveridlogin_js_sdk_2.0.2.js';
       result.sdkStatus  = ok ? '✅ 네이버 로그인 SDK 로드됨' : '❌ SDK 없음 — [SDK 로드] 클릭';
     };
 
@@ -86,6 +93,7 @@ window.ZdTestSnsLoginNaver = {
         naverLogin.login();
         // 팝업 완료 후 accessToken을 받아야 하지만 팝업 흐름 특성상
         // 개발 테스트 화면에서는 URL callback 처리 없이 토큰 직접 입력 방식 병행
+        result.initDetail = 'Client ID: ' + cfg.clientId;
         uiState.loading = false;
         showToast('네이버 로그인 팝업 열림 — 팝업 완료 후 accessToken 을 아래에 붙여넣기하여 프로필 조회 가능', 'success');
       } catch (e) {
@@ -101,7 +109,7 @@ window.ZdTestSnsLoginNaver = {
       result.error    = '';
       try {
         // 백엔드 프록시 경유 (CORS 문제로 프론트 직접 호출 불가)
-        const res = await boApi.post('/bo/sy/test/sns/naver/profile', {
+        const res = await boApi.post('/co/ext/sns-naver/profile', {
           accessToken: result.tokenRaw,
         }, coUtil.cofApiHdr('네이버 로그인 테스트', '프로필 조회'));
         result.profile    = res.data?.data || res.data;
@@ -163,7 +171,7 @@ window.ZdTestSnsLoginNaver = {
         </div>
         <div class="form-group" style="flex:1">
           <label class="form-label">Client Secret</label>
-          <input class="form-control" type="password" v-model="cfg.clientSecret" placeholder="sy_prop: app.ext-sdk.naver-client-secret" />
+          <input class="form-control" v-model="cfg.clientSecret" placeholder="sy_prop: app.ext-sdk.naver-client-secret" />
         </div>
       </div>
       <div class="form-group" style="margin-bottom:8px">
@@ -174,8 +182,9 @@ window.ZdTestSnsLoginNaver = {
         <button class="btn btn_save" @click="handleBtnAction('key-save')">sy_prop 저장</button>
         <button class="btn btn_apply" @click="handleBtnAction('sdk-load')">SDK 로드</button>
       </div>
-      <div style="font-size:12px;color:#666;padding:6px 8px;background:#f8f9fa;border-radius:4px;margin-top:8px">
-        SDK 상태: <strong>{{ result.sdkStatus || '확인 중…' }}</strong>
+      <div style="font-size:12px;color:#666;padding:6px 8px;background:#f8f9fa;border-radius:4px;margin-top:8px;line-height:2">
+        <div>SDK 상태: <strong>{{ result.sdkStatus || '확인 중…' }}</strong><span v-if="result.sdkUrl" style="margin-left:8px;color:#aaa;font-family:monospace;font-size:11px;">{{ result.sdkUrl }}</span></div>
+        <div>초기화 상태: <strong>{{ result.initDetail || (uiState.sdkLoaded ? '초기화 완료' : '미초기화') }}</strong></div>
       </div>
     </div>
   </div>
@@ -242,7 +251,7 @@ window.ZdTestSnsLoginNaver = {
       <b>3.</b> 서비스 URL: <code>{{ cfg.callbackUrl.split('/oauth')[0] }}</code><br>
       <b>4.</b> Callback URL: <code>{{ cfg.callbackUrl }}</code><br>
       <b>5.</b> sy_prop <code>app.ext-sdk.naver-client-id</code> / <code>app.ext-sdk.naver-client-secret</code> 등록<br><br>
-      <b>백엔드 API:</b> <code>POST /api/bo/sy/test/sns/naver/profile</code> → 네이버 userinfo 프록시 호출
+      <b>백엔드 API:</b> <code>POST /api/co/ext/sns-naver/profile</code> → 네이버 userinfo 프록시 호출
     </div>
   </div>
 

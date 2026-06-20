@@ -23,14 +23,16 @@ window.ZdTestPaymentToss = {
       amount:      1000,
       orderId:     'TEST-' + Date.now(),
       orderName:   '테스트 상품',
-      customerName: '홍길동',
-      customerEmail: 'test@shopjoy.kr',
+      customerName: '송성일',
+      customerEmail: 'illeesam@gmail.com',
       successUrl:  window.location.origin + '/api/co/cm/toss/confirm',
       failUrl:     window.location.origin + '/?toss_fail=1',
     });
 
     const result = reactive({
       sdkStatus:       '',
+      sdkUrl:          '',
+      initDetail:      '',
       confirmResult:   null,
       cancelResult:    null,
       error:           '',
@@ -45,10 +47,14 @@ window.ZdTestPaymentToss = {
       try {
         const res = await boApiSvc.syProp?.getList?.({ propKeys: 'app.toss.client-key,app.toss.secret-key' }, '토스페이먼츠 결제 테스트', '키 조회');
         const list = res?.data?.data || [];
-        list.forEach(p => {
-          if (p.propKey === 'app.toss.client-key') cfg.clientKey = p.propValue || '';
-          if (p.propKey === 'app.toss.secret-key') cfg.secretKey = p.propValue || '';
-        });
+        // 동일 propKey가 여러 프로파일 행으로 올 수 있음 → local/dev 우선, 없으면 값 있는 행
+        const pickVal = (key) => {
+          const rows = list.filter(p => p.propKey === key && p.propValue);
+          const preferred = rows.find(p => /local|dev/.test(p.propProfile || '')) || rows[0];
+          return preferred?.propValue || '';
+        };
+        cfg.clientKey = pickVal('app.toss.client-key');
+        cfg.secretKey = pickVal('app.toss.secret-key');
       } catch (e) {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);
       }
@@ -58,9 +64,12 @@ window.ZdTestPaymentToss = {
     /* ##### [03] 헬퍼 함수 #################################################### */
 
     const checkSdk = () => {
-      const ok = !!(window.TossPayments);
+      // v2: window.TossPayments 함수 존재 여부로 확인
+      const ok = typeof window.TossPayments === 'function';
       uiState.sdkLoaded = ok;
+      result.sdkUrl     = 'https://js.tosspayments.com/v2/standard';
       result.sdkStatus  = ok ? '✅ TossPayments SDK 로드됨' : '❌ TossPayments SDK 없음 (toss.payments.js 미로드)';
+      result.initDetail = ok ? ('Client Key: ' + (cfg.clientKey || '(미설정)')) : '';
     };
 
     const refreshOrderId = () => { form.orderId = 'TEST-' + Date.now(); };
@@ -72,9 +81,11 @@ window.ZdTestPaymentToss = {
       result.phase    = 'paying';
       result.error    = '';
       try {
-        const toss = TossPayments(cfg.clientKey);
-        await toss.requestPayment('카드', {
-          amount:        form.amount,
+        // TossPayments SDK v2: loadTossPayments(clientKey) async + requestPayment({ method })
+        const toss = await TossPayments(cfg.clientKey);
+        await toss.requestPayment({
+          method:        '카드',
+          amount:        { currency: 'KRW', value: Number(form.amount) },
           orderId:       form.orderId,
           orderName:     form.orderName,
           customerName:  form.customerName,
@@ -171,14 +182,15 @@ window.ZdTestPaymentToss = {
         </div>
         <div class="form-group" style="flex:1">
           <label class="form-label">Secret Key (서버)</label>
-          <input class="form-control" type="password" v-model="cfg.secretKey" placeholder="test_sk_… or live_sk_…" />
+          <input class="form-control" v-model="cfg.secretKey" placeholder="test_sk_… or live_sk_…" />
         </div>
         <div style="display:flex;align-items:flex-end;padding-bottom:1px">
           <button class="btn btn_save" @click="handleBtnAction('keys-save')">sy_prop 저장</button>
         </div>
       </div>
-      <div style="font-size:12px;color:#666;padding:6px 8px;background:#f8f9fa;border-radius:4px">
-        SDK 상태: <strong>{{ result.sdkStatus || '확인 중…' }}</strong>
+      <div style="font-size:12px;color:#666;padding:6px 8px;background:#f8f9fa;border-radius:4px;line-height:2">
+        <div>SDK 상태: <strong>{{ result.sdkStatus || '확인 중…' }}</strong><span v-if="result.sdkUrl" style="margin-left:8px;color:#aaa;font-family:monospace;font-size:11px;">{{ result.sdkUrl }}</span></div>
+        <div>초기화 상태: <strong>{{ result.initDetail || (uiState.sdkLoaded ? '초기화 완료' : '미초기화') }}</strong></div>
       </div>
     </div>
   </div>

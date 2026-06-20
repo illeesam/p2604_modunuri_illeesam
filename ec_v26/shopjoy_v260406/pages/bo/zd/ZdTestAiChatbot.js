@@ -19,7 +19,7 @@ window.ZdTestAiChatbot = {
       openaiApiKey:    '',
       openaiModel:     'gpt-4o-mini',
       claudeApiKey:    '',
-      claudeModel:     'claude-haiku-4-5-20251001',
+      claudeModel:     'claude-sonnet-4-6',
       systemPrompt:    '당신은 ShopJoy 쇼핑몰의 친절한 AI 고객 상담원입니다. 상품, 주문, 배송, 반품에 관한 질문에 간결하게 답변하세요.',
       maxTokens:       512,
       temperature:     0.7,
@@ -45,12 +45,11 @@ window.ZdTestAiChatbot = {
           propKeys: 'app.ai.openai.api-key,app.ai.openai.model,app.ai.claude.api-key,app.ai.claude.model',
         }, 'AI 챗봇 테스트', '키 조회');
         const list = res?.data?.data || [];
-        list.forEach(p => {
-          if (p.propKey === 'app.ai.openai.api-key') cfg.openaiApiKey = p.propValue || '';
-          if (p.propKey === 'app.ai.openai.model')   cfg.openaiModel  = p.propValue || cfg.openaiModel;
-          if (p.propKey === 'app.ai.claude.api-key') cfg.claudeApiKey = p.propValue || '';
-          if (p.propKey === 'app.ai.claude.model')   cfg.claudeModel  = p.propValue || cfg.claudeModel;
-        });
+        const pickVal = (key) => { const rows = list.filter(p => p.propKey === key && p.propValue); const pref = rows.find(p => /local|dev/.test(p.propProfile || '')) || rows[0]; return pref?.propValue || ''; };
+        cfg.openaiApiKey = pickVal('app.ai.openai.api-key');
+        cfg.claudeApiKey = pickVal('app.ai.claude.api-key');
+        const oModel = pickVal('app.ai.openai.model'); if (oModel) cfg.openaiModel = oModel;
+        const cModel = pickVal('app.ai.claude.model'); if (cModel) cfg.claudeModel = cModel;
       } catch (e) {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);
       }
@@ -75,7 +74,7 @@ window.ZdTestAiChatbot = {
       result.status   = '⏳ AI 응답 대기 중…';
       result.error    = '';
       try {
-        const res = await boApi.post('/bo/sy/test/ai/chat', {
+        const res = await boApi.post('/co/ext/ai-chat/chat', {
           provider:     cfg.provider,
           model:        cfg.provider === 'openai' ? cfg.openaiModel : cfg.claudeModel,
           systemPrompt: cfg.systemPrompt,
@@ -145,7 +144,7 @@ window.ZdTestAiChatbot = {
         </div>
         <div class="form-group" style="flex:1" v-if="cfg.provider === 'openai'">
           <label class="form-label">OpenAI API Key</label>
-          <input class="form-control" type="password" v-model="cfg.openaiApiKey" placeholder="sk-…" />
+          <input class="form-control" v-model="cfg.openaiApiKey" placeholder="sk-…" />
         </div>
         <div class="form-group" style="flex:0 0 200px" v-if="cfg.provider === 'openai'">
           <label class="form-label">모델</label>
@@ -153,11 +152,11 @@ window.ZdTestAiChatbot = {
         </div>
         <div class="form-group" style="flex:1" v-if="cfg.provider === 'claude'">
           <label class="form-label">Anthropic API Key</label>
-          <input class="form-control" type="password" v-model="cfg.claudeApiKey" placeholder="sk-ant-…" />
+          <input class="form-control" v-model="cfg.claudeApiKey" placeholder="sk-ant-…" />
         </div>
         <div class="form-group" style="flex:0 0 240px" v-if="cfg.provider === 'claude'">
           <label class="form-label">모델</label>
-          <input class="form-control" v-model="cfg.claudeModel" placeholder="claude-haiku-4-5-20251001" />
+          <input class="form-control" v-model="cfg.claudeModel" placeholder="claude-sonnet-4-6" />
         </div>
       </div>
       <div class="form-row" style="gap:8px;margin-bottom:8px">
@@ -227,7 +226,7 @@ window.ZdTestAiChatbot = {
     <div style="padding:12px;font-size:12px;line-height:1.8;color:#444">
       <b>OpenAI:</b> platform.openai.com → API Keys → sy_prop <code>app.ai.openai.api-key</code><br>
       <b>Claude:</b> console.anthropic.com → API Keys → sy_prop <code>app.ai.claude.api-key</code><br><br>
-      <b>백엔드 API:</b> <code>POST /api/bo/sy/test/ai/chat</code><br>
+      <b>백엔드 API:</b> <code>POST /api/co/ext/ai-chat/chat</code><br>
       provider=openai → OpenAI Chat Completions API 프록시<br>
       provider=claude → Anthropic Messages API 프록시 (API 키 서버 보관, CORS 우회)
     </div>

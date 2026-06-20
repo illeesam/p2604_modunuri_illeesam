@@ -932,6 +932,28 @@ Order/Claim/Dliv Mng의 "변경작업 선택" 모달:
 - `MAX_THINKING_TOKENS`: 내부 추론 토큰 제한 (기본값 10000)
 - `CLAUDE_CODE_SUBAGENT_MODEL`: 병렬 서브에이전트 모델 (haiku 권장 - 가볍고 빠름)
 
+## AI 모델 사용 정책
+
+이 프로젝트에서 AI API를 직접 호출하는 코드(백엔드 `CoExtAiChatController`, 프론트 `ZdTestAiChatbot.js` 등)의 모델 선택 기준:
+
+### 사용 모델
+
+| 공급사 | 사용 모델 | 비고 |
+|---|---|---|
+| **Anthropic** | `claude-sonnet-4-6` | 기본값. Haiku 계열 사용 금지 |
+| **OpenAI** | `gpt-4o-mini` | 기본값 |
+
+### ❌ 금지 모델
+
+- `claude-haiku-*` 계열 — 이 프로젝트에서 사용하지 않음
+- 잘못된 버전 ID (예: `claude-haiku-4-5-20251001`) — 존재하지 않는 ID
+
+### 적용 위치
+
+- 백엔드 기본 모델: `CoExtAiChatController.java` — `callClaude()` / `callOpenAi()` 의 model fallback
+- 프론트 기본 모델: `ZdTestAiChatbot.js` — `cfg.claudeModel` / `cfg.openaiModel` 초기값 및 placeholder
+- sy_prop 키: `app.ai.claude.model` / `app.ai.openai.model` — DB에서 오버라이드 가능
+
 ## 데이터베이스 연결 설정
 
 | 항목 | 값 |

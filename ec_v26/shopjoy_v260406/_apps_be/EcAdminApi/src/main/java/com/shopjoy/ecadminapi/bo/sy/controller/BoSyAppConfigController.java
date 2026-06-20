@@ -205,7 +205,7 @@ public class BoSyAppConfigController {
     public ResponseEntity<ApiResponse<List<Map<String, String>>>> kakao() {
         Map<String, String> db = loadDbProps();
         return ResponseEntity.ok(ApiResponse.ok(List.of(
-            rowResolved(db, "app.kakao.alimtalk.sender-key", kakaoAlimtalkSenderKey, true)
+            rowResolved(db, "app.kakao.alimtalk.sender-key", kakaoAlimtalkSenderKey, false)
         )));
     }
 
@@ -266,7 +266,7 @@ public class BoSyAppConfigController {
             rowResolved(db, "app.mail.from",        mailFrom,     false),
             rowResolved(db, "app.mail.from-nm",     mailFromNm,   false),
             // 카카오 알림톡
-            rowResolved(db, "app.kakao.alimtalk.sender-key", kakaoAlimtalkSenderKey, true),
+            rowResolved(db, "app.kakao.alimtalk.sender-key", kakaoAlimtalkSenderKey, false),
             // SMS / 푸시 / AI
             rowResolved(db, "app.sms.api-key",         smsApiKey,    true),
             rowResolved(db, "app.push.fcm.project-id", fcmProjectId, false),

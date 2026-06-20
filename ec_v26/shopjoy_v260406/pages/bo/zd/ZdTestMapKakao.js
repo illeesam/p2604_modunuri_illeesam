@@ -25,6 +25,8 @@ window.ZdTestMapKakao = {
 
     const result = reactive({
       sdkStatus:    '',
+      sdkUrl:       '',
+      initDetail:   '',
       geocodeResult: null,
       error:        '',
     });
@@ -76,9 +78,11 @@ window.ZdTestMapKakao = {
     const checkSdk = () => {
       const ok = !!(window.kakao?.maps);
       uiState.sdkLoaded = ok;
+      result.sdkUrl     = cfg.jsKey ? 'https://dapi.kakao.com/v2/maps/sdk.js?appkey=...&autoload=false' : '';
       result.sdkStatus  = ok
         ? '✅ Kakao Maps SDK 로드됨'
         : '❌ Kakao Maps SDK 없음 — JavaScript 키 설정 후 [SDK 로드] 버튼 클릭';
+      result.initDetail = ok ? ('앱키: ' + (cfg.jsKey || '(미설정)')) : '';
     };
 
     const loadSdk = () => {
@@ -228,8 +232,9 @@ window.ZdTestMapKakao = {
           <button class="btn btn_apply" @click="handleBtnAction('sdk-load')">SDK 로드 + 지도 렌더링</button>
         </div>
       </div>
-      <div style="font-size:12px;color:#666;padding:6px 8px;background:#f8f9fa;border-radius:4px">
-        SDK 상태: <strong>{{ result.sdkStatus || '확인 중…' }}</strong>
+      <div style="font-size:12px;color:#666;padding:6px 8px;background:#f8f9fa;border-radius:4px;line-height:2">
+        <div>SDK 상태: <strong>{{ result.sdkStatus || '확인 중…' }}</strong><span v-if="result.sdkUrl" style="margin-left:8px;color:#aaa;font-family:monospace;font-size:11px;">{{ result.sdkUrl }}</span></div>
+        <div>초기화 상태: <strong>{{ result.initDetail || (uiState.sdkLoaded ? '초기화 완료' : '미초기화') }}</strong></div>
       </div>
     </div>
   </div>

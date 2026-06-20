@@ -1710,10 +1710,13 @@ window.BoZdSyPropGrid = {
       { key: 'updDate',     label: '수정일시',     fmt: (v) => v ? String(v).replace('T',' ').slice(0,16) : '-', align: 'center' },
     ];
 
-    // propProfile 원본값(^all^local^ 형태) 고유 목록
+    // propProfile 에서 개별 환경 이름 추출 (^local^dev^prod^ → ['local','dev','prod'])
     const cfPropProfileOptions = computed(() => {
       const set = new Set();
-      rows.forEach((r) => { if (r.propProfile) set.add(r.propProfile); });
+      rows.forEach((r) => {
+        if (!r.propProfile) return;
+        r.propProfile.split('^').map((s) => s.trim()).filter(Boolean).forEach((env) => set.add(env));
+      });
       return [{ value: '', label: '전체 환경' }, ...Array.from(set).sort().map((s) => ({ value: s, label: s }))];
     });
 
@@ -1721,7 +1724,7 @@ window.BoZdSyPropGrid = {
       const p = syPropProfile.value;
       const keywords = syPropKeyFilter.value.split(';').map((s) => s.trim()).filter(Boolean);
       return rows.filter((r) => {
-        if (p && r.propProfile !== p) return false;
+        if (p && !(r.propProfile || '').includes(p)) return false;
         if (keywords.length === 0) return true;
         return keywords.some((kw) => r.propKey && r.propKey.includes(kw));
       });
@@ -1740,9 +1743,13 @@ window.BoZdSyPropGrid = {
           pageSize: 999,
         }, 'BoZdSyPropGrid', 'prop 조회');
         rows.splice(0, rows.length, ...(res?.data?.data || []));
-        // 로드 후 첫 번째 프로파일 옵션으로 자동 선택 (전체 환경 제외)
-        const first = rows.find((r) => r.propProfile)?.propProfile || '';
-        syPropProfile.value = first;
+        // 로드 후 기본 환경 자동 선택: local > dev > 첫 행 프로파일 포함값 > 전체
+        const allProfiles = rows.map((r) => r.propProfile || '').join(' ');
+        if (!syPropProfile.value || syPropProfile.value === 'dev') {
+          if (allProfiles.includes('local')) syPropProfile.value = 'local';
+          else if (allProfiles.includes('dev')) syPropProfile.value = 'dev';
+          else syPropProfile.value = '';
+        }
       } catch (e) {
         loadError.value = e?.response?.data?.message || e?.message || '조회 실패';
       } finally {
@@ -1761,14 +1768,11 @@ window.BoZdSyPropGrid = {
     <span class="list-count">{{ cfFilteredRows.length }}건 / 총 {{ rows.length }}건</span>
     <div style="margin-left:auto;display:flex;align-items:center;gap:6px;">
       <label style="font-size:12px;color:#6b7280;white-space:nowrap;">propProfile</label>
-      <select class="form-control" style="width:130px;height:30px;font-size:12px;padding:2px 4px;"
+      <select class="form-control" style="width:160px;height:30px;font-size:12px;padding:2px 4px;"
         :value="syPropProfile"
         @change="syPropProfile = $event.target.value">
         <option v-for="opt in cfPropProfileOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
       </select>
-      <input type="text" class="form-control" style="width:110px;height:30px;font-size:12px;padding:2px 8px;"
-        :value="syPropProfile" placeholder="직접입력"
-        @input="syPropProfile = $event.target.value" />
       <label style="font-size:12px;color:#6b7280;white-space:nowrap;margin-left:8px;">propKey</label>
       <input type="text" class="form-control" style="width:200px;height:30px;font-size:12px;padding:2px 8px;font-family:monospace;"
         :value="syPropKeyFilter" placeholder="키워드 ; 구분 입력"

@@ -173,6 +173,7 @@
       { group: '채팅 / AI' },
       { id: 'zdTestAiChatbot', label: 'AI 챗봇 테스트' },
       { id: 'zdTestChattingKakaoChannel', label: '카카오채널 메시지 테스트' },
+      { id: 'zdTestShareKakao', label: '카카오톡 공유 테스트' },
       { id: 'zdTestChattingWebSocket', label: 'WebSocket 채팅 테스트' },
       { group: '앱 메시지' },
       { id: 'zdTestAppMsgSendReceiv', label: 'Android/iOS 메시지 발송&수신' },
@@ -487,6 +488,7 @@
         zdTestSnsLoginNaver:       'zd-test-sns-login-naver',
         zdTestAiChatbot:           'zd-test-ai-chatbot',
         zdTestChattingKakaoChannel:'zd-test-chatting-kakao-channel',
+        zdTestShareKakao:          'zd-test-share-kakao',
         zdTestChattingWebSocket:   'zd-test-chatting-web-socket',
         zdTestAppMsgSendReceiv:    'zd-test-app-msg-send-receiv',
       };
@@ -2601,6 +2603,7 @@
             <zd-test-sns-login-naver        v-else-if="page==='zdTestSnsLoginNaver'"        :navigate="navigate" :show-toast="showToast" />
             <zd-test-ai-chatbot             v-else-if="page==='zdTestAiChatbot'"            :navigate="navigate" :show-toast="showToast" />
             <zd-test-chatting-kakao-channel v-else-if="page==='zdTestChattingKakaoChannel'" :navigate="navigate" :show-toast="showToast" />
+            <zd-test-share-kakao            v-else-if="page==='zdTestShareKakao'"            :navigate="navigate" :show-toast="showToast" />
             <zd-test-chatting-web-socket    v-else-if="page==='zdTestChattingWebSocket'"    :navigate="navigate" :show-toast="showToast" />
             <zd-test-app-msg-send-receiv    v-else-if="page==='zdTestAppMsgSendReceiv'"    :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
             <bo-error-401 v-else-if="page==='error401'" :navigate="navigate" />
@@ -3185,6 +3188,7 @@
     .component('ZdTestSnsLoginNaver',        window.ZdTestSnsLoginNaver)
     .component('ZdTestAiChatbot',            window.ZdTestAiChatbot)
     .component('ZdTestChattingKakaoChannel', window.ZdTestChattingKakaoChannel)
+    .component('ZdTestShareKakao',           window.ZdTestShareKakao)
     .component('ZdTestChattingWebSocket',    window.ZdTestChattingWebSocket)
     .component('ZdTestAppMsgSendReceiv',     window.ZdTestAppMsgSendReceiv)
     .use(Pinia.createPinia())

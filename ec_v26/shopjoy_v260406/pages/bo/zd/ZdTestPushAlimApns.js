@@ -24,7 +24,7 @@ window.ZdTestPushAlimApns = {
 
     const form = reactive({
       deviceToken: '',
-      title:       '[ShopJoy] APNs 테스트',
+      title:       '[ShopJoy] APNs 테스트 [' + new Date().toISOString().replace('T',' ').slice(0,19) + ']',
       body:        'APNs 연동이 정상적으로 작동하는지 확인하는 테스트 푸시입니다.',
       badge:       1,
       sound:       'default',
@@ -50,13 +50,12 @@ window.ZdTestPushAlimApns = {
           propKeys: 'app.push.apns.key-id,app.push.apns.team-id,app.push.apns.key-file,app.push.apns.bundle-id,app.push.apns.production',
         }, 'APNs 푸시 알림 테스트', '키 조회');
         const list = res?.data?.data || [];
-        list.forEach(p => {
-          if (p.propKey === 'app.push.apns.key-id')    cfg.keyId      = p.propValue || '';
-          if (p.propKey === 'app.push.apns.team-id')   cfg.teamId     = p.propValue || '';
-          if (p.propKey === 'app.push.apns.key-file')  cfg.keyFile    = p.propValue || '';
-          if (p.propKey === 'app.push.apns.bundle-id') cfg.bundleId   = p.propValue || '';
-          if (p.propKey === 'app.push.apns.production') cfg.production = p.propValue === 'true';
-        });
+        const pickVal = (key) => { const rows = list.filter(p => p.propKey === key && p.propValue); const pref = rows.find(p => /local|dev/.test(p.propProfile || '')) || rows[0]; return pref?.propValue || ''; };
+        cfg.keyId    = pickVal('app.push.apns.key-id');
+        cfg.teamId   = pickVal('app.push.apns.team-id');
+        cfg.keyFile  = pickVal('app.push.apns.key-file');
+        cfg.bundleId = pickVal('app.push.apns.bundle-id');
+        const prodVal = pickVal('app.push.apns.production'); if (prodVal) cfg.production = prodVal === 'true';
       } catch (e) {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);
       }
@@ -79,7 +78,7 @@ window.ZdTestPushAlimApns = {
       let dataObj = {};
       try { dataObj = JSON.parse(form.data || '{}'); } catch (e) { /* 무시 */ }
       try {
-        const res = await boApi.post('/bo/sy/test/push/apns', {
+        const res = await boApi.post('/co/ext/push-apns-send/send', {
           deviceToken: form.deviceToken,
           title:       form.title,
           body:        form.body,
@@ -103,7 +102,7 @@ window.ZdTestPushAlimApns = {
     const loadIosTokens = async () => {
       uiState.loadingTokens = true;
       try {
-        const res = await boApi.get('/bo/sy/test/push/tokens?platform=IOS', coUtil.cofApiHdr('APNs 테스트', 'iOS 토큰 목록'));
+        const res = await boApi.get('/co/ext/push-apns-send/tokens', coUtil.cofApiHdr('APNs 테스트', 'iOS 토큰 목록'));
         result.tokenLogs = res.data?.data || [];
       } catch (e) {
         showToast('토큰 목록 조회 실패: ' + (e.response?.data?.message || e.message), 'error', 0);
@@ -303,7 +302,8 @@ window.ZdTestPushAlimApns = {
       <b>3.</b> .p8 파일을 서버에 저장 → sy_prop <code>app.push.apns.key-file</code> 에 경로 등록<br>
       <b>4.</b> Bundle ID = Xcode 앱 Bundle Identifier<br>
       <b>5.</b> Sandbox(개발기기) vs Production(App Store 배포) 구분<br><br>
-      <b>백엔드 API:</b> <code>POST /api/bo/sy/test/push/apns</code> → <code>CmApnsSendService.sendApns()</code><br>
+      <b>백엔드 API:</b> <code>POST /api/co/ext/push-apns-send/send</code> → <code>CoExtPushApnsSendController</code> (APNs 시뮬레이션)<br>
+      <code>GET /api/co/ext/push-apns-send/tokens</code> → iOS <code>mb_device_token</code> 조회<br>
       라이브러리: <code>com.eatthepath:pushy</code> (Netty 기반 HTTP/2 APNs 클라이언트) 권장
     </div>
   </div>

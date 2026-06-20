@@ -25,6 +25,8 @@ window.ZdTestMapGoogle = {
 
     const result = reactive({
       sdkStatus:     '',
+      sdkUrl:        '',
+      initDetail:    '',
       geocodeResult: null,
       placeResult:   null,
       error:         '',
@@ -41,9 +43,13 @@ window.ZdTestMapGoogle = {
       try {
         const res = await boApiSvc.syProp?.getList?.({ propKeys: 'app.ext-sdk.google-map-api-key' }, '구글 지도 API 테스트', '키 조회');
         const list = res?.data?.data || [];
-        list.forEach(p => {
-          if (p.propKey === 'app.ext-sdk.google-map-api-key') cfg.apiKey = p.propValue || '';
-        });
+        // 동일 propKey가 여러 프로파일 행으로 올 수 있음 → local/dev 우선, 없으면 값 있는 행
+        const pickVal = (key) => {
+          const rows = list.filter(p => p.propKey === key && p.propValue);
+          const preferred = rows.find(p => /local|dev/.test(p.propProfile || '')) || rows[0];
+          return preferred?.propValue || '';
+        };
+        cfg.apiKey = pickVal('app.ext-sdk.google-map-api-key');
       } catch (e) {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);
       }
@@ -57,7 +63,9 @@ window.ZdTestMapGoogle = {
     const checkSdk = () => {
       const ok = !!(window.google?.maps);
       uiState.sdkLoaded = ok;
+      result.sdkUrl     = 'https://maps.googleapis.com/maps/api/js';
       result.sdkStatus  = ok ? '✅ Google Maps SDK 로드됨' : '❌ Google Maps SDK 없음 — API 키 설정 후 [SDK 로드] 클릭';
+      result.initDetail = ok ? ('API 키: ' + (cfg.apiKey || '(미설정)')) : '';
     };
 
     const loadSdk = () => {
@@ -170,8 +178,9 @@ window.ZdTestMapGoogle = {
           <button class="btn btn_apply" @click="handleBtnAction('sdk-load')">SDK 로드 + 지도 렌더링</button>
         </div>
       </div>
-      <div style="font-size:12px;color:#666;padding:6px 8px;background:#f8f9fa;border-radius:4px">
-        SDK 상태: <strong>{{ result.sdkStatus || '확인 중…' }}</strong>
+      <div style="font-size:12px;color:#666;padding:6px 8px;background:#f8f9fa;border-radius:4px;line-height:2">
+        <div>SDK 상태: <strong>{{ result.sdkStatus || '확인 중…' }}</strong><span v-if="result.sdkUrl" style="margin-left:8px;color:#aaa;font-family:monospace;font-size:11px;">{{ result.sdkUrl }}</span></div>
+        <div>초기화 상태: <strong>{{ result.initDetail || (uiState.sdkLoaded ? '초기화 완료' : '미초기화') }}</strong></div>
       </div>
     </div>
   </div>

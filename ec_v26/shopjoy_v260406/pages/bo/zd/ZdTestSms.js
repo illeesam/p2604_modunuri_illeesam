@@ -23,8 +23,8 @@ window.ZdTestSms = {
     });
 
     const form = reactive({
-      toPhone: '',
-      message: '[ShopJoy] SMS 연동 테스트 메시지입니다.',
+      toPhone: '01038050206',
+      message: '[ShopJoy] SMS 연동 테스트 메시지입니다. [' + new Date().toISOString().replace('T',' ').slice(0,19) + ']',
     });
 
     const result = reactive({
@@ -51,10 +51,9 @@ window.ZdTestSms = {
           propKeys: 'app.sms.provider,app.sms.from',
         }, 'SMS 문자 발송 테스트', '키 조회');
         const list = res?.data?.data || [];
-        list.forEach(p => {
-          if (p.propKey === 'app.sms.provider') cfg.provider = p.propValue || '';
-          if (p.propKey === 'app.sms.from')     cfg.from     = p.propValue || '';
-        });
+        const pickVal = (key) => { const rows = list.filter(p => p.propKey === key && p.propValue); const pref = rows.find(p => /local|dev/.test(p.propProfile || '')) || rows[0]; return pref?.propValue || ''; };
+        cfg.provider = pickVal('app.sms.provider');
+        cfg.from     = pickVal('app.sms.from');
       } catch (e) {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);
       }
@@ -76,7 +75,7 @@ window.ZdTestSms = {
       result.response = null;
       addLog('SMS 발송 요청: ' + form.toPhone);
       try {
-        const res = await boApi.post('/bo/sy/test/sms', {
+        const res = await boApi.post('/co/ext/sms-send/send', {
           toPhone: form.toPhone,
           message: form.message,
         }, coUtil.cofApiHdr('SMS 테스트', '발송'));
@@ -162,8 +161,7 @@ window.ZdTestSms = {
       <b>CoolSMS</b>: 솔라API → sy_prop <code>app.sms.api-key</code>, <code>app.sms.api-secret</code><br>
       <b>NCP</b>: Naver Cloud → Access Key/Secret → SMS 서비스 ID 필요<br>
       <b>Twilio</b>: AccountSID(api-key), AuthToken(api-secret)<br><br>
-      <b>백엔드 API:</b> <code>POST /api/bo/sy/test/sms</code> → <code>CmSmsSendService.sendTestSms()</code><br>
-      ※ 엔드포인트 미구현 시 "404 Not Found" — <code>BoSyTestController</code> 에 추가 필요
+      <b>백엔드 API:</b> <code>POST /api/co/ext/sms-send/send</code> → <code>CoExtSmsSendController → CmSmsSendService.sendSms()</code>
     </div>
   </div>
 

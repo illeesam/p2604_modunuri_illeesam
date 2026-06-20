@@ -22,6 +22,8 @@ window.ZdTestSnsLoginKakao = {
 
     const result = reactive({
       sdkStatus:   '',
+      sdkUrl:      '',
+      initDetail:  '',
       loginStatus: '',
       userInfo:    null,
       rawResponse: '',
@@ -41,11 +43,15 @@ window.ZdTestSnsLoginKakao = {
       try {
         const res = await boApiSvc.syProp?.getList?.({ propKeys: 'app.ext-sdk.kakao-js-key,app.ext-sdk.naver-client-id,app.ext-sdk.naver-callback-url' }, '카카오 소셜 로그인 테스트', '키 조회');
         const list = res?.data?.data || [];
-        list.forEach(p => {
-          if (p.propKey === 'app.ext-sdk.kakao-js-key')       cfg.kakaoJsKey       = p.propValue || '';
-          if (p.propKey === 'app.ext-sdk.naver-client-id')     cfg.naverClientId    = p.propValue || '';
-          if (p.propKey === 'app.ext-sdk.naver-callback-url')  cfg.naverCallbackUrl = p.propValue || '';
-        });
+        // 동일 propKey가 여러 프로파일 행으로 올 수 있음 → local/dev 우선, 없으면 값 있는 행
+        const pickVal = (key) => {
+          const rows = list.filter(p => p.propKey === key && p.propValue);
+          const preferred = rows.find(p => /local|dev/.test(p.propProfile || '')) || rows[0];
+          return preferred?.propValue || '';
+        };
+        cfg.kakaoJsKey       = pickVal('app.ext-sdk.kakao-js-key');
+        cfg.naverClientId    = pickVal('app.ext-sdk.naver-client-id');
+        cfg.naverCallbackUrl = pickVal('app.ext-sdk.naver-callback-url');
       } catch (e) {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);
       }
@@ -57,9 +63,13 @@ window.ZdTestSnsLoginKakao = {
     const checkSdkStatus = () => {
       const kakaoOk = !!(window.Kakao && window.Kakao.isInitialized?.());
       uiState.sdkLoaded = kakaoOk;
+      result.sdkUrl     = 'https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js';
       result.sdkStatus  = kakaoOk
         ? '✅ Kakao SDK 로드됨 (초기화 완료)'
         : (window.Kakao ? '⚠ Kakao SDK 로드됨 (미초기화)' : '❌ Kakao SDK 없음');
+      result.initDetail = window.Kakao?.isInitialized()
+        ? '앱키: ' + (cfg.kakaoJsKey || '(키 미입력)')
+        : '';
     };
 
     const initKakaoSdk = () => {
@@ -68,9 +78,11 @@ window.ZdTestSnsLoginKakao = {
         if (!window.Kakao) throw new Error('Kakao SDK 스크립트가 로드되지 않았습니다.');
         if (!window.Kakao.isInitialized()) window.Kakao.init(cfg.kakaoJsKey);
         uiState.sdkLoaded = true;
-        result.sdkStatus  = '✅ Kakao SDK 초기화 완료 (JS Key: ' + cfg.kakaoJsKey.substring(0, 8) + '…)';
+        result.sdkStatus  = '✅ Kakao SDK 초기화 완료';
+        result.initDetail = '앱키: ' + cfg.kakaoJsKey;
         showToast('Kakao SDK 초기화 완료', 'success');
       } catch (e) {
+        result.initDetail = '❌ ' + e.message;
         result.error = e.message;
         showToast('초기화 실패: ' + e.message, 'error', 0);
       }
@@ -163,8 +175,9 @@ window.ZdTestSnsLoginKakao = {
           <button class="btn btn_apply" @click="handleBtnAction('sdk-init')">SDK 초기화</button>
         </div>
       </div>
-      <div style="font-size:12px;color:#666;padding:6px 8px;background:#f8f9fa;border-radius:4px">
-        SDK 상태: <strong>{{ result.sdkStatus || '확인 중…' }}</strong>
+      <div style="font-size:12px;color:#666;padding:6px 8px;background:#f8f9fa;border-radius:4px;line-height:2">
+        <div>SDK 상태: <strong>{{ result.sdkStatus || '확인 중…' }}</strong><span v-if="result.sdkUrl" style="margin-left:8px;color:#aaa;font-family:monospace;font-size:11px;">{{ result.sdkUrl }}</span></div>
+        <div>초기화 상태: <strong>{{ result.initDetail || (uiState.sdkLoaded ? '초기화 완료' : '미초기화') }}</strong></div>
       </div>
     </div>
   </div>
