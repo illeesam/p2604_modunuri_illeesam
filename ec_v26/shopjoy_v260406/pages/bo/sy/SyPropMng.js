@@ -42,6 +42,7 @@ window.SyPropMng = {
         searchParam.useFlt = '';
         searchParam.typeFlt = '';
         searchParam.profileFlt = '';
+        profileFltDisplay.value = '';
         uiState.selectedPath = '';
         return reload();
       // 프로퍼티 그리드 행 추가
@@ -191,7 +192,7 @@ window.SyPropMng = {
         propId: uiState._newId--,
         siteId: cfSiteId.value || 1,
         pathId: uiState.selectedPath || 'new.prop',
-        propProfile: '',
+        propProfile: '^all^',
         propKey: 'new_key',
         propLabel: '신규 프로퍼티',
         propValue: '',
@@ -273,10 +274,43 @@ window.SyPropMng = {
     /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
 
     const PROFILE_OPTIONS = [
-      { value: 'local', label: 'local' },
-      { value: 'dev',   label: 'dev'   },
-      { value: 'prod',  label: 'prod'  },
+      { value: 'local', label: 'all; local' },
+      { value: 'dev',   label: 'all; dev'   },
+      { value: 'prod',  label: 'all; prod'  },
     ];
+
+    /* profileFltDisplay — select/input 표시용 텍스트 (API 전송값과 분리)
+       select 선택: value='local' → display='all; local'
+       직접입력: 그대로 표시, API 전송값도 그대로                        */
+    const profileFltDisplay = ref('');
+
+    const onProfileSelectChange = (e) => {
+      const val = e.target.value;
+      searchParam.profileFlt = val;
+      const opt = PROFILE_OPTIONS.find(o => o.value === val);
+      profileFltDisplay.value = opt ? opt.label : val;
+    };
+
+    const onProfileInputChange = (e) => {
+      const display = e.target.value;
+      profileFltDisplay.value = display;
+      // 표시값이 'all; xxx' 형태면 실제 값 'xxx' 추출, 아니면 그대로
+      const m = display.match(/^all;\s*(\S+)$/);
+      searchParam.profileFlt = m ? m[1] : display;
+    };
+
+    /* fnFmtProfile — propProfile 컬럼 표시 변환
+       ^local^dev^ → all; local, all; dev
+       ^prod^      → all; prod
+       ^all^       → all
+       (빈값)      → all                                           */
+    const fnFmtProfile = (v) => {
+      if (!v || v === '') return 'all';
+      if (v === '^all^' || v === 'all') return 'all';
+      const tokens = v.replace(/^\^|\^$/g, '').split('^').filter(Boolean);
+      if (!tokens.length) return 'all';
+      return tokens.map(t => (t === 'all' ? 'all' : 'all; ' + t)).join(', ');
+    };
 
     // 기본 검색
     const columns = {};
@@ -291,13 +325,13 @@ window.SyPropMng = {
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
       { key: 'searchValue', type: 'text', label: '검색어', placeholder: '검색어 입력', width: '420px' },
       { key: 'typeFlt',    type: 'select', label: '타입',     options: () => codes.prop_types, nullLabel: '전체 타입' },
-      { key: 'profileFlt', type: 'select', label: '프로파일', options: () => PROFILE_OPTIONS, nullLabel: '전체 환경' },
+      { key: 'profileFlt', type: 'slot', name: 'profileFlt', label: '프로파일' },
       { key: 'useFlt',     type: 'select', label: '사용여부', options: () => codes.use_yn, nullLabel: '사용여부 전체' },
     ];
 
     columns.baseGrid = [
       { key: 'pathId',      label: '표시경로',  style: 'width:180px;min-width:180px;', pathPick: 'sy_prop' },
-      { key: 'propProfile', label: '프로파일',  style: 'width:130px;min-width:130px;', edit: 'text', mono: true },
+      { key: 'propProfile', label: '프로파일',  style: 'width:160px;min-width:160px;', edit: 'text', mono: true, fmt: (v) => fnFmtProfile(v) },
       { key: 'propKey',     label: '키',        style: 'width:200px;min-width:200px;', edit: 'text', mono: true, sortKey: 'propKey' },
       { key: 'propValue',  label: '값',        style: 'width:280px;min-width:280px;', edit: 'text' },
       { key: 'propLabel',  label: '라벨',      style: 'width:160px;min-width:160px;', edit: 'text' },
@@ -328,6 +362,7 @@ window.SyPropMng = {
       columns,
       uiState, propCounts, searchParam, propRows,       // 상태 / 데이터
       sortState, onSort,                                // 정렬
+      fnFmtProfile, profileFltDisplay, onProfileSelectChange, onProfileInputChange, // 프로파일
       handleBtnAction, handleSelectAction, handleGridCellAction,                          // dispatch (모든 이벤트 / 액션 라우팅)
     };
   },
@@ -343,7 +378,26 @@ window.SyPropMng = {
   <!-- ===== ■. 검색 바 ==================================================== -->
   <bo-container>
     <!-- ===== ■.■. 검색 영역 ================================================= -->
-    <bo-search-area @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
+    <bo-search-area @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam">
+      <template #profileFlt>
+        <label class="search-label">프로파일</label>
+        <div style="display:flex;gap:4px;align-items:center;">
+          <select class="form-control" style="width:130px;"
+            :value="searchParam.profileFlt"
+            @change="onProfileSelectChange"
+            @keyup.enter="handleBtnAction('searchParam-list')">
+            <option value="">전체 환경</option>
+            <option value="local">all; local</option>
+            <option value="dev">all; dev</option>
+            <option value="prod">all; prod</option>
+          </select>
+          <input type="text" class="form-control" style="width:100px;font-family:monospace;font-size:12px;" placeholder="직접입력"
+            :value="profileFltDisplay"
+            @input="onProfileInputChange"
+            @keyup.enter="handleBtnAction('searchParam-list')" />
+        </div>
+      </template>
+    </bo-search-area>
   </bo-container>
   <!-- ===== □. 검색 바 ==================================================== -->
   <!-- ===== ■. 좌 트리 + 우 그리드 ============================================ -->

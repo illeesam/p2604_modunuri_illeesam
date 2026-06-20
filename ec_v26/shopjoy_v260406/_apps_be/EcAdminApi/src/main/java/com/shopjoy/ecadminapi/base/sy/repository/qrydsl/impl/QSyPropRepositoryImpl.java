@@ -202,11 +202,16 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
                 ? syProp.useYn.eq(search.getUseYn()) : null;
     }
 
-    /* propProfile LIKE — 프로파일 필터 (^local^ 포함 여부) */
+    /* propProfile 필터 — ^{profile}^ 포함 OR all(빈값/^all^ 포함) 행도 함께 조회 */
     private BooleanExpression baseAndPropProfile(SyPropDto.Request search) {
         if (search == null || !StringUtils.hasText(search.getPropProfile())) return null;
         String profile = search.getPropProfile().trim();
-        return Expressions.stringPath(syProp, "propProfile").like("%" + "^" + profile + "^" + "%");
+        StringPath col = syProp.propProfile;
+        // ^{profile}^ 을 포함하는 행
+        BooleanExpression hasProfile = col.like("%" + "^" + profile + "^" + "%");
+        // all 행: 빈값이거나 ^all^ 을 포함하는 행
+        BooleanExpression isAll = col.isNull().or(col.eq("")).or(col.like("%^all^%"));
+        return hasProfile.or(isAll);
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */
