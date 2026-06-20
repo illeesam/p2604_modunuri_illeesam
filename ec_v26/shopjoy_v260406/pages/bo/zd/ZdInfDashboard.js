@@ -16,12 +16,59 @@ window.ZdInfDashboard = {
 
     /* ##### [01] 초기 변수 정의 #################################################### */
 
-    const { reactive, ref, onMounted } = Vue;
+    const { reactive, ref, computed, onMounted } = Vue;
     const showToast = props.showToast || window.boApp?.showToast || (() => {});
 
     const codes = reactive({});
     const loading = ref(false);
     const expandedKeys = reactive(new Set()); // 펼쳐진 행의 keyName 집합
+
+    /* ── sy_prop 조회 섹션 ── */
+    const PROFILE_OPTIONS_ZD = [
+      { value: 'local', label: 'all; local' },
+      { value: 'dev',   label: 'all; dev'   },
+      { value: 'prod',  label: 'all; prod'  },
+    ];
+    const propSearch = reactive({ profile: '', profileDisplay: '', propKey: '' });
+    const propSearchRows = reactive([]);
+    const propSearchTotal = ref(0);
+    const propSearchLoading = ref(false);
+
+    const onPropProfileSelectChange = (e) => {
+      const val = e.target.value;
+      propSearch.profile = val;
+      const opt = PROFILE_OPTIONS_ZD.find(o => o.value === val);
+      propSearch.profileDisplay = opt ? opt.label : val;
+    };
+
+    const onPropProfileInputChange = (e) => {
+      const display = e.target.value;
+      propSearch.profileDisplay = display;
+      const m = display.match(/^all;\s*(\S+)$/);
+      propSearch.profile = m ? m[1] : display;
+    };
+
+    const handlePropSearch = async () => {
+      propSearchLoading.value = true;
+      propSearchRows.splice(0);
+      try {
+        const params = { pageSize: 200 };
+        if (propSearch.profile) params.propProfile = propSearch.profile;
+        if (propSearch.propKey)  params.searchValue = propSearch.propKey;
+        const res = await boApi.get('/bo/sy/prop/page', {
+          params,
+          ...coUtil.apiHdr('연동설정대시보드', 'sy_prop조회'),
+        });
+        const data = res.data?.data || {};
+        const list = data.pageList || data.list || [];
+        propSearchRows.push(...list);
+        propSearchTotal.value = data.pageTotalCount || list.length;
+      } catch (e) {
+        showToast(e.response?.data?.message || 'sy_prop 조회 실패', 'error');
+      } finally {
+        propSearchLoading.value = false;
+      }
+    };
 
 
     /* ##### [02] 그리드 컬럼 정의 ################################################### */
@@ -330,6 +377,9 @@ window.ZdInfDashboard = {
       baseGridColumns, rows,
       expandedKeys, fnIsExpanded,
       handleTest, handleRefresh, handleTestAll, handleExpandToggle, handleExpandAll, handleCollapseAll,
+      /* sy_prop 조회 */
+      PROFILE_OPTIONS_ZD, propSearch, propSearchRows, propSearchTotal, propSearchLoading,
+      onPropProfileSelectChange, onPropProfileInputChange, handlePropSearch,
     };
   },
 
@@ -491,9 +541,56 @@ window.ZdInfDashboard = {
       </bo-grid>
     </bo-container>
 
-    <bo-container>
-      <bo-zd-yml-grid />
-      <bo-zd-sy-prop-grid prop-key-prefixes="ext.,cdn.,payment." />
+    <bo-container title="sy_prop DB 조회 정보" :count-text="propSearchTotal + '건'">
+      <template #toolbar-actions>
+        <label class="search-label" style="margin-right:4px;">propProfile</label>
+        <select class="form-control" style="width:130px;"
+          :value="propSearch.profile"
+          @change="onPropProfileSelectChange"
+          @keyup.enter="handlePropSearch">
+          <option value="">전체 환경</option>
+          <option value="local">all; local</option>
+          <option value="dev">all; dev</option>
+          <option value="prod">all; prod</option>
+        </select>
+        <input type="text" class="form-control" style="width:100px;font-family:monospace;font-size:12px;margin-left:4px;" placeholder="직접입력"
+          :value="propSearch.profileDisplay"
+          @input="onPropProfileInputChange"
+          @keyup.enter="handlePropSearch" />
+        <label class="search-label" style="margin-left:12px;margin-right:4px;">propKey</label>
+        <input type="text" class="form-control" style="width:180px;font-family:monospace;font-size:12px;" placeholder="키워드 ; 구분 입력"
+          v-model="propSearch.propKey"
+          @keyup.enter="handlePropSearch" />
+        <button class="btn btn_search" style="margin-left:6px;" @click="handlePropSearch">조회</button>
+      </template>
+      <table class="admin-table" style="font-size:12px;">
+        <thead><tr>
+          <th style="width:36px;text-align:center;">번호</th>
+          <th>propKey</th>
+          <th style="width:140px;">propProfile</th>
+          <th style="width:160px;">표시명</th>
+          <th>propValue</th>
+          <th style="width:60px;text-align:center;">useYn</th>
+          <th style="width:140px;text-align:center;">등록일시</th>
+          <th style="width:140px;text-align:center;">수정일시</th>
+        </tr></thead>
+        <tbody>
+          <tr v-if="propSearchLoading"><td colspan="8" style="text-align:center;padding:20px;color:#aaa;">조회 중...</td></tr>
+          <tr v-else-if="!propSearchRows.length"><td colspan="8" style="text-align:center;padding:20px;color:#aaa;">데이터가 없습니다.</td></tr>
+          <tr v-for="(r, idx) in propSearchRows" :key="r.propId">
+            <td style="text-align:center;">{{ idx + 1 }}</td>
+            <td style="font-family:monospace;">{{ r.propKey }}</td>
+            <td style="font-family:monospace;font-size:11px;">{{ r.propProfile }}</td>
+            <td>{{ r.propLabel }}</td>
+            <td style="font-family:monospace;word-break:break-all;max-width:260px;">{{ r.propValue }}</td>
+            <td style="text-align:center;">
+              <span :class="r.useYn === 'Y' ? 'badge badge-green' : 'badge badge-gray'">{{ r.useYn }}</span>
+            </td>
+            <td style="text-align:center;font-size:11px;">{{ r.regDate }}</td>
+            <td style="text-align:center;font-size:11px;">{{ r.updDate }}</td>
+          </tr>
+        </tbody>
+      </table>
     </bo-container>
 
     <bo-container>
