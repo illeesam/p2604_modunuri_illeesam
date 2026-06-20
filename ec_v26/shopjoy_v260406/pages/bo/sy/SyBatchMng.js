@@ -452,13 +452,14 @@ window.SyBatchMng = {
     <!-- ===== ■.■. 경로 트리 ================================================= -->
     <bo-container bare>
       <bo-path-tree-card biz-cd="sy_batch" title="표시경로" :show-biz-cd="false" :counts="batchCounts"
+        max-height="calc(100vh - 320px)"
         :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
     </bo-container>
     <bo-container bare>
       <!-- ===== ■.■.■. CRUD 그리드 ============================================ -->
       <bo-grid-crud
         :columns="columns.baseGrid" :rows="gridRows" row-key="batchId"
-        list-title="배치목록" :show-export="true"
+        list-title="배치목록" :show-export="true" max-height="calc(100vh - 320px)"
         :selected-key="histFilterBatchId"
         :focusedIdx="uiState.focusedIdx" @update:focusedIdx="idx => handleSelectAction('batches-rowSelect', idx)"
         v-model:checkAll="uiState.checkAll"

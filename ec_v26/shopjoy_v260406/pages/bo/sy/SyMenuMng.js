@@ -391,6 +391,7 @@ window.SyMenuMng = {
     <!-- ===== ■.■. 메뉴 트리 (sy_menu 자기참조) ============================== -->
     <bo-container bare>
       <bo-menu-tree-card title="메뉴" :counts="menuCounts"
+        max-height="calc(100vh - 320px)"
         :selected="uiState.selectedTreeId"
         @select="path => handleSelectAction('pathTree-select', path)" />
     </bo-container>
@@ -398,7 +399,7 @@ window.SyMenuMng = {
     <bo-container bare>
       <bo-grid-crud
         :columns="columns.baseGrid" :rows="gridRows" row-key="menuId"
-        list-title="메뉴목록" :show-export="true" :draggable="false"
+        list-title="메뉴목록" :show-export="true" :draggable="false" max-height="calc(100vh - 320px)"
         v-model:focusedIdx="uiState.focusedIdx"
         v-model:checkAll="uiState.checkAll"
         @add="handleBtnAction('menus-add')" @save="handleBtnAction('menus-save')"

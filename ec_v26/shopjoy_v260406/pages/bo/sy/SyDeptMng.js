@@ -461,7 +461,7 @@ window.SyDeptMng = {
           ▶ 전체닫기
         </button>
       </template>
-      <div style="max-height:65vh;overflow:auto;">
+      <div style="max-height:calc(100vh - 320px);overflow:auto;">
         <bo-dept-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedTreeId"
           :on-toggle="id => handleBtnAction('deptTree-toggle', id)"
           :on-select="id => handleSelectAction('deptTree-select', id)"
@@ -472,7 +472,7 @@ window.SyDeptMng = {
     <bo-container bare>
       <bo-grid-crud
         :columns="columns.baseGrid" :rows="gridRows" row-key="deptId" :selected-key="uiState.selectedTreeId"
-        list-title="부서목록" :show-export="true" :draggable="false"
+        list-title="부서목록" :show-export="true" :draggable="false" max-height="calc(100vh - 320px)"
         v-model:focusedIdx="uiState.focusedIdx"
         v-model:checkAll="uiState.checkAll"
         @add="handleBtnAction('depts-add')" @save="handleBtnAction('depts-save')"

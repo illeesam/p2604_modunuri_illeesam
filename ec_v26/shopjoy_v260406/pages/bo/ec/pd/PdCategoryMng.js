@@ -540,7 +540,7 @@ window.PdCategoryMng = {
           전체보기
         </div>
       </template>
-      <bo-category-tree mode="tree" :site-id="searchParam.siteId" :selected="uiState.selectedCatId" :show-count="fnCategoryDescCount" @select="id => handleSelectAction('categoryTree-select', id)" />
+      <bo-category-tree mode="tree" :site-id="searchParam.siteId" :selected="uiState.selectedCatId" :show-count="fnCategoryDescCount" max-height="calc(100vh - 320px)" @select="id => handleSelectAction('categoryTree-select', id)" />
     </bo-container>
     <!-- ===== □.□. 좌측: 카테고리 트리 =========================================== -->
     <!-- ===== ■.■. 우측: 카테고리 그리드 ========================================== -->

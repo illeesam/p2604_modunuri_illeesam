@@ -13,8 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
  * 공개키는 브라우저에 노출되어도 무방한 클라이언트 키(JS 키 / Client ID)로,
  * 도메인 허용(referer) 제한으로 보호되는 키다. 시크릿/REST 키는 절대 반환하지 않는다.</p>
  *
- * <p>키 출처: application.yml 의 map.kakao-js-key / map.naver-map-client-id
- * (환경변수 KAKAO_MAP_JS_KEY / NAVER_MAP_CLIENT_ID 로 주입 권장).
+ * <p>키 출처: sy_prop (app.map.kakao-js-key / app.map.naver-map-client-id)
+ * 또는 환경변수 KAKAO_MAP_JS_KEY / NAVER_MAP_CLIENT_ID.
  * CmTossPayService 의 client-key 조회 패턴을 그대로 따른다. 미설정 시 빈 문자열로
  * 반환하여(에러 없이) 프론트가 폴백/안내를 처리할 수 있게 한다.</p>
  *
@@ -33,8 +33,8 @@ public class CmMapService {
     private final String naverMapClientId;
 
     public CmMapService(
-            @Value("${map.kakao-js-key:}") String kakaoMapJsKey,
-            @Value("${map.naver-map-client-id:}") String naverMapClientId) {
+            @Value("${app.map.kakao-js-key:}") String kakaoMapJsKey,
+            @Value("${app.map.naver-map-client-id:}") String naverMapClientId) {
         this.kakaoMapJsKey    = kakaoMapJsKey;
         this.naverMapClientId = naverMapClientId;
     }
@@ -47,10 +47,10 @@ public class CmMapService {
      */
     public MapKeysRes getMapKeys(String appTypeCd) {
         if (kakaoMapJsKey == null || kakaoMapJsKey.isBlank()) {
-            log.warn("카카오맵 JS 키 미설정 — application.yml 의 map.kakao-js-key (또는 환경변수 KAKAO_MAP_JS_KEY) 확인 필요. appTypeCd={}", appTypeCd);
+            log.warn("카카오맵 JS 키 미설정 — sy_prop : app.map.kakao-js-key 확인 필요. appTypeCd={}", appTypeCd);
         }
         if (naverMapClientId == null || naverMapClientId.isBlank()) {
-            log.warn("네이버맵 Client ID 미설정 — application.yml 의 map.naver-map-client-id (또는 환경변수 NAVER_MAP_CLIENT_ID) 확인 필요. appTypeCd={}", appTypeCd);
+            log.warn("네이버맵 Client ID 미설정 — sy_prop : app.map.naver-map-client-id 확인 필요. appTypeCd={}", appTypeCd);
         }
 
         return MapKeysRes.builder()

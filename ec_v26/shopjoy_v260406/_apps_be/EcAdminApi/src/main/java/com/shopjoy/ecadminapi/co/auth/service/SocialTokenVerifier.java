@@ -33,9 +33,9 @@ public class SocialTokenVerifier {
     private final String naverUserinfoUrl;
 
     public SocialTokenVerifier(
-            @Value("${auth.social.google-userinfo-url:https://www.googleapis.com/oauth2/v3/userinfo}") String googleUserinfoUrl,
-            @Value("${auth.social.kakao-userinfo-url:https://kapi.kakao.com/v2/user/me}") String kakaoUserinfoUrl,
-            @Value("${auth.social.naver-userinfo-url:https://openapi.naver.com/v1/nid/me}") String naverUserinfoUrl) {
+            @Value("${app.auth.social.google-userinfo-url:https://www.googleapis.com/oauth2/v3/userinfo}") String googleUserinfoUrl,
+            @Value("${app.auth.social.kakao-userinfo-url:https://kapi.kakao.com/v2/user/me}") String kakaoUserinfoUrl,
+            @Value("${app.auth.social.naver-userinfo-url:https://openapi.naver.com/v1/nid/me}") String naverUserinfoUrl) {
         this.restClient = RestClient.create();
         this.googleUserinfoUrl = googleUserinfoUrl;
         this.kakaoUserinfoUrl = kakaoUserinfoUrl;

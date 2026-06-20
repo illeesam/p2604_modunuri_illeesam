@@ -289,6 +289,7 @@ window.CmFaqMng = {
     <!-- ===== ■.■. 좌: 표시경로 트리 ============================================ -->
     <bo-container bare>
       <bo-path-tree-card biz-cd="cm_faq" title="FAQ 분류" :show-biz-cd="false" :counts="faqCounts"
+        max-height="calc(100vh - 320px)"
         :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
     </bo-container>
     <!-- ===== ■.■. 우: 목록 ================================================== -->
@@ -301,7 +302,7 @@ window.CmFaqMng = {
           + 신규
         </button>
       </template>
-      <bo-grid bare
+      <bo-grid bare max-height="calc(100vh - 320px)"
         :columns="columns.baseGrid" :rows="faqs" row-key="faqId" :selected-key="detailModal.dtlId"
         :row-style="fnRowStyle"
         grid-id="faqs-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">

@@ -433,7 +433,7 @@ window.SyUserMng = {
           </button>
         </div>
       </template>
-      <div style="max-height:65vh;overflow:auto;">
+      <div style="max-height:calc(100vh - 320px);overflow:auto;">
         <bo-dept-tree-node :node="cfTree" :expanded="expanded" :selected="uiState.selectedDeptId"
           :on-toggle="id => handleBtnAction('deptTree-toggle', id)"
           :on-select="id => handleSelectAction('deptTree-select', id)"
@@ -455,7 +455,7 @@ window.SyUserMng = {
           </button>
         </div>
       </template>
-      <bo-grid bare
+      <bo-grid bare max-height="calc(100vh - 320px)"
         :columns="columns.baseGrid" :rows="users" row-key="userId" :selected-key="detailPanel.selectedId"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="key => handleBtnAction('users-sort', key)"

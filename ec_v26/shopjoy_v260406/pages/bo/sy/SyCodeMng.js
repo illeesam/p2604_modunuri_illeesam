@@ -751,13 +751,14 @@ window.SyCodeMng = {
     <!-- ===== ■.■. 경로 트리 (bo-container bare → 자체 카드) ====================== -->
     <bo-container bare>
       <bo-path-tree-card biz-cd="sy_code_grp" title="표시경로" :show-biz-cd="false" :counts="codeGrpCounts"
+        max-height="calc(100vh - 320px)"
         :selected="uiState.grpSelectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
     </bo-container>
     <!-- ===== ■.■. CRUD 그리드 (bo-container bare → 자체 카드) ==================== -->
     <bo-container bare>
     <bo-grid-crud
       :columns="columns.grpGrid" :rows="uiState.grpRows" row-key="codeGrp" :selected-key="uiState.selectedGrp"
-      list-title="공통코드그룹관리" max-height="392px"
+      list-title="공통코드그룹관리" max-height="calc(100vh - 320px)"
       :show-row-id="false" :show-row-check="false" :draggable="false"
       :show-add="false" :show-save="false"
       :sort-state="{ sortKey: uiState.grpSortKey, sortDir: uiState.grpSortDir }"

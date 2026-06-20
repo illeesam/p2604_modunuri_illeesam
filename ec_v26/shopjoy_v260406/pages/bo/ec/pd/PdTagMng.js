@@ -210,7 +210,7 @@ window.PdTagMng = {
       </button>
     </template>
     <bo-grid
-      bare
+      bare max-height="calc(100vh - 320px)"
       :columns="columns.baseGrid" :rows="gridRows" row-key="tagId" row-actions
       :row-class="(row) => row._row_status==='N' ? 'table-rowNew' : (row._row_status==='U' ? 'table-rowMod' : '')"
       grid-id="tags-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">

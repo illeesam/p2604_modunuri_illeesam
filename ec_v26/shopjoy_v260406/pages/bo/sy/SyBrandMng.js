@@ -341,12 +341,13 @@ window.SyBrandMng = {
   <div class="bo-2col">
     <!-- ===== ■.■. 경로 트리 ================================================= -->
     <bo-path-tree-card biz-cd="sy_brand" title="표시경로" :show-biz-cd="false" :counts="brandCounts"
+      max-height="calc(100vh - 320px)"
       :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
     <!-- ===== ■.■. CRUD 그리드 ============================================== -->
     <bo-container bare>
       <bo-grid-crud
         :columns="columns.baseGrid" :rows="gridRows" row-key="brandId"
-        list-title="브랜드목록" :show-export="true"
+        list-title="브랜드목록" :show-export="true" max-height="calc(100vh - 320px)"
         v-model:focusedIdx="uiState.focusedIdx"
         v-model:checkAll="uiState.checkAll"
         :cell-title="fnColTitle"

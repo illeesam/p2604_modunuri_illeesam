@@ -455,6 +455,7 @@ window.BoCategoryTree = {
     mode:       { type: String,   default: 'tree' },   // 'tree' | 'picker'
     selected:   { default: null },                      // tree mode: 선택된 categoryId
     showCount:  { type: Function, default: null },      // tree mode: 카운트 표시 fn(categoryId)→number
+    maxHeight:  { type: String,   default: '65vh' },    // tree mode: 스크롤 높이
     show:       { type: Boolean,  default: false },     // picker mode: 모달 표시
     excludeIds: { type: Object,   default: () => new Set() }, // picker mode: 제외할 categoryId Set
     siteId:     { type: String,   default: null },      // 사이트 ID (없으면 boCommonFilter.siteId 사용)
@@ -625,7 +626,7 @@ window.BoCategoryTree = {
     로딩중...
   </div>
   <template v-else>
-    <div style="display:flex;gap:4px;margin-bottom:8px">
+    <div style="display:flex;gap:4px;margin-bottom:8px;flex-shrink:0;">
       <button class="btn btn-secondary btn-xs" style="flex:1;font-size:11px" @click="handleBtnAction('tree-expand-all')">
         ▼ 전체
       </button>
@@ -633,6 +634,7 @@ window.BoCategoryTree = {
         ▶ 닫기
       </button>
     </div>
+    <div :style="'overflow-y:auto;max-height:' + maxHeight">
     <!-- 전체 루트 항목 -->
     <div style="border-radius:4px;cursor:pointer;display:flex;align-items:center;gap:2px;padding:5px 6px;margin-bottom:2px"
       :style="{ background: selected===null ? '#eff6ff' : 'transparent',
@@ -686,6 +688,7 @@ window.BoCategoryTree = {
   </div>
   <div v-if="!cfTreeFlat.length" style="text-align:center;padding:20px;color:#aaa;font-size:12px">
     카테고리 없음
+  </div>
   </div>
 </template>
 </template>

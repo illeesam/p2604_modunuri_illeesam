@@ -68,7 +68,7 @@ public class SocialAuthService {
     private final PasswordEncoder       passwordEncoder;
 
     /** siteId 미전달 시 사용할 기본 사이트 (대표 사이트). */
-    @Value("${auth.social.default-site-id:2604010000000001}")
+    @Value("${app.auth.social.default-site-id:2604010000000001}")
     private String defaultSiteId;
 
     // ── loginSocial ───────────────────────────────────────────────────────

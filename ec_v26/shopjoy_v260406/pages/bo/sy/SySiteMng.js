@@ -437,6 +437,7 @@ window.SySiteMng = {
     <bo-container bare>
       <bo-path-tree-card biz-cd="sy_site" title="표시경로" :show-biz-cd="false"
         :counts="siteCounts"
+        max-height="calc(100vh - 320px)"
         :selected="uiState.selectedPath" @select="path => handleBtnAction('pathTree-select', path)" />
     </bo-container>
     <!-- ===== ■.■. 목록 영역 (bo-container 카드+제목, bo-grid bare, baseGridPager 바깥) ======== -->
@@ -450,7 +451,7 @@ window.SySiteMng = {
         </button>
       </template>
       <!-- ===== ■.■.■. 목록 그리드 ============================================ -->
-      <bo-grid bare
+      <bo-grid bare max-height="calc(100vh - 320px)"
         :columns="columns.baseGrid" :rows="sites" row-key="siteId" :selected-key="detailModal.dtlId"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="key => handleBtnAction('sites-sort', key)"

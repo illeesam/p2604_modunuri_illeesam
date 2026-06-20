@@ -351,6 +351,7 @@ window.SyPropMng = {
     <!-- ===== ■.■. 트리 ==================================================== -->
     <bo-container bare>
       <bo-path-tree-card biz-cd="sy_prop" title="표시경로" :show-biz-cd="false" :counts="propCounts"
+        max-height="calc(100vh - 320px)"
         :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
     </bo-container>
     <!-- ===== ■.■. 그리드 (BoGridCrud) ====================================== -->
@@ -358,6 +359,7 @@ window.SyPropMng = {
       <bo-grid-crud
         :columns="columns.baseGrid" :rows="propRows" row-key="propId"
         list-title="프로퍼티목록" :draggable="false"
+        max-height="calc(100vh - 320px)"
         :sort-state="sortState" @sort="onSort"
         @add="handleBtnAction('props-add')" @save="handleBtnAction('props-save')"
         @delete-checked="handleBtnAction('props-deleteChecked')" @cancel-checked="handleBtnAction('props-cancelChecked')"

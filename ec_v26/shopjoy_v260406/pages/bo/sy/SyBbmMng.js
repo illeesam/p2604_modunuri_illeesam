@@ -341,6 +341,7 @@ window.SyBbmMng = {
     <!-- ===== ■.■. 좌: 표시경로 트리 ============================================ -->
     <bo-container bare>
       <bo-path-tree-card biz-cd="sy_bbm" title="표시경로" :show-biz-cd="false" :counts="bbmCounts"
+        max-height="calc(100vh - 320px)"
         :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
     </bo-container>
     <!-- ===== ■.■. 우: 목록 ================================================== -->
@@ -353,7 +354,7 @@ window.SyBbmMng = {
           + 신규
         </button>
       </template>
-      <bo-grid bare
+      <bo-grid bare max-height="calc(100vh - 320px)"
         :columns="columns.baseGrid" :rows="bbms" row-key="bbmId" :selected-key="detailModal.dtlId"
         :row-style="fnRowStyle"
         grid-id="bbms-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">

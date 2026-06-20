@@ -33,18 +33,18 @@ public class BoSyAppConfigController {
     private final Environment environment;
 
     /* ── yml 폴백값 ── */
-    @Value("${auth.social.google-userinfo-url:}") private String googleUserinfoUrl;
-    @Value("${auth.social.kakao-userinfo-url:}")  private String kakaoUserinfoUrl;
-    @Value("${auth.social.naver-userinfo-url:}")  private String naverUserinfoUrl;
-    @Value("${auth.social.default-site-id:}")     private String socialDefaultSiteId;
+    @Value("${app.auth.social.google-userinfo-url:}") private String googleUserinfoUrl;
+    @Value("${app.auth.social.kakao-userinfo-url:}")  private String kakaoUserinfoUrl;
+    @Value("${app.auth.social.naver-userinfo-url:}")  private String naverUserinfoUrl;
+    @Value("${app.auth.social.default-site-id:}")     private String socialDefaultSiteId;
 
-    @Value("${toss.confirm-url:}")     private String tossConfirmUrl;
-    @Value("${toss.cancel-url-base:}") private String tossCancelUrlBase;
-    @Value("${toss.secret-key:}")      private String tossSecretKey;
-    @Value("${toss.client-key:}")      private String tossClientKey;
+    @Value("${app.toss.confirm-url:}")     private String tossConfirmUrl;
+    @Value("${app.toss.cancel-url-base:}") private String tossCancelUrlBase;
+    @Value("${app.toss.secret-key:}")      private String tossSecretKey;
+    @Value("${app.toss.client-key:}")      private String tossClientKey;
 
-    @Value("${map.kakao-js-key:}")        private String kakaoJsKey;
-    @Value("${map.naver-map-client-id:}") private String naverMapClientId;
+    @Value("${app.map.kakao-js-key:}")        private String kakaoJsKey;
+    @Value("${app.map.naver-map-client-id:}") private String naverMapClientId;
 
     @Value("${spring.mail.host:}")     private String mailHost;
     @Value("${spring.mail.port:}")     private String mailPort;
@@ -142,10 +142,10 @@ public class BoSyAppConfigController {
     public ResponseEntity<ApiResponse<List<Map<String, String>>>> social() {
         Map<String, String> db = loadDbProps();
         return ResponseEntity.ok(ApiResponse.ok(List.of(
-            row("auth.social.google-userinfo-url", resolve(db, "auth.social.google-userinfo-url", googleUserinfoUrl), false),
-            row("auth.social.kakao-userinfo-url",  resolve(db, "auth.social.kakao-userinfo-url",  kakaoUserinfoUrl),  false),
-            row("auth.social.naver-userinfo-url",  resolve(db, "auth.social.naver-userinfo-url",  naverUserinfoUrl),  false),
-            row("auth.social.default-site-id",     resolve(db, "auth.social.default-site-id",     socialDefaultSiteId), false)
+            row("auth.social.google-userinfo-url", resolve(db, "app.auth.social.google-userinfo-url", googleUserinfoUrl), false),
+            row("auth.social.kakao-userinfo-url",  resolve(db, "app.auth.social.kakao-userinfo-url",  kakaoUserinfoUrl),  false),
+            row("auth.social.naver-userinfo-url",  resolve(db, "app.auth.social.naver-userinfo-url",  naverUserinfoUrl),  false),
+            row("auth.social.default-site-id",     resolve(db, "app.auth.social.default-site-id",     socialDefaultSiteId), false)
         )));
     }
 
@@ -154,10 +154,10 @@ public class BoSyAppConfigController {
     public ResponseEntity<ApiResponse<List<Map<String, String>>>> toss() {
         Map<String, String> db = loadDbProps();
         return ResponseEntity.ok(ApiResponse.ok(List.of(
-            row("toss.confirm-url",     resolve(db, "toss.confirm-url",     tossConfirmUrl),    false),
-            row("toss.cancel-url-base", resolve(db, "toss.cancel-url-base", tossCancelUrlBase), false),
-            row("toss.client-key",      resolve(db, "toss.client-key",      tossClientKey),     false),
-            row("toss.secret-key",      resolve(db, "toss.secret-key",      tossSecretKey),     true)
+            row("toss.confirm-url",     resolve(db, "app.toss.confirm-url",     tossConfirmUrl),    false),
+            row("toss.cancel-url-base", resolve(db, "app.toss.cancel-url-base", tossCancelUrlBase), false),
+            row("toss.client-key",      resolve(db, "app.toss.client-key",      tossClientKey),     false),
+            row("toss.secret-key",      resolve(db, "app.toss.secret-key",      tossSecretKey),     true)
         )));
     }
 
@@ -166,8 +166,8 @@ public class BoSyAppConfigController {
     public ResponseEntity<ApiResponse<List<Map<String, String>>>> map() {
         Map<String, String> db = loadDbProps();
         return ResponseEntity.ok(ApiResponse.ok(List.of(
-            row("map.kakao-js-key",        resolve(db, "map.kakao-js-key",        kakaoJsKey),        false),
-            row("map.naver-map-client-id", resolve(db, "map.naver-map-client-id", naverMapClientId),  false)
+            row("map.kakao-js-key",        resolve(db, "app.map.kakao-js-key",        kakaoJsKey),        false),
+            row("map.naver-map-client-id", resolve(db, "app.map.naver-map-client-id", naverMapClientId),  false)
         )));
     }
 
@@ -222,18 +222,18 @@ public class BoSyAppConfigController {
         Map<String, String> db = loadDbProps();
         return ResponseEntity.ok(ApiResponse.ok(List.of(
             // 소셜
-            row("auth.social.google-userinfo-url", resolve(db, "auth.social.google-userinfo-url", googleUserinfoUrl),  false),
-            row("auth.social.kakao-userinfo-url",  resolve(db, "auth.social.kakao-userinfo-url",  kakaoUserinfoUrl),   false),
-            row("auth.social.naver-userinfo-url",  resolve(db, "auth.social.naver-userinfo-url",  naverUserinfoUrl),   false),
-            row("auth.social.default-site-id",     resolve(db, "auth.social.default-site-id",     socialDefaultSiteId), false),
+            row("auth.social.google-userinfo-url", resolve(db, "app.auth.social.google-userinfo-url", googleUserinfoUrl),  false),
+            row("auth.social.kakao-userinfo-url",  resolve(db, "app.auth.social.kakao-userinfo-url",  kakaoUserinfoUrl),   false),
+            row("auth.social.naver-userinfo-url",  resolve(db, "app.auth.social.naver-userinfo-url",  naverUserinfoUrl),   false),
+            row("auth.social.default-site-id",     resolve(db, "app.auth.social.default-site-id",     socialDefaultSiteId), false),
             // 토스
-            row("toss.confirm-url",     resolve(db, "toss.confirm-url",     tossConfirmUrl),    false),
-            row("toss.cancel-url-base", resolve(db, "toss.cancel-url-base", tossCancelUrlBase), false),
-            row("toss.client-key",      resolve(db, "toss.client-key",      tossClientKey),     false),
-            row("toss.secret-key",      resolve(db, "toss.secret-key",      tossSecretKey),     true),
+            row("toss.confirm-url",     resolve(db, "app.toss.confirm-url",     tossConfirmUrl),    false),
+            row("toss.cancel-url-base", resolve(db, "app.toss.cancel-url-base", tossCancelUrlBase), false),
+            row("toss.client-key",      resolve(db, "app.toss.client-key",      tossClientKey),     false),
+            row("toss.secret-key",      resolve(db, "app.toss.secret-key",      tossSecretKey),     true),
             // 지도
-            row("map.kakao-js-key",        resolve(db, "map.kakao-js-key",        kakaoJsKey),       false),
-            row("map.naver-map-client-id", resolve(db, "map.naver-map-client-id", naverMapClientId), false),
+            row("map.kakao-js-key",        resolve(db, "app.map.kakao-js-key",        kakaoJsKey),       false),
+            row("map.naver-map-client-id", resolve(db, "app.map.naver-map-client-id", naverMapClientId), false),
             // 메일
             row("spring.mail.host",     resolve(db, "spring.mail.host",     mailHost),     false),
             row("spring.mail.port",     resolve(db, "spring.mail.port",     mailPort),     false),

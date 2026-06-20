@@ -430,6 +430,7 @@ window.SyAlarmMng = {
     <!-- ===== ■.■. 경로 트리 ================================================= -->
     <bo-container bare>
       <bo-path-tree-card biz-cd="sy_alarm" title="표시경로" :show-biz-cd="false" :counts="alarmCounts"
+        max-height="calc(100vh - 320px)"
         :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
     </bo-container>
     <!-- ===== ■.■.■. 목록 그리드 ============================================ -->
@@ -444,7 +445,7 @@ window.SyAlarmMng = {
           </button>
         </div>
       </template>
-      <bo-grid bare
+      <bo-grid bare max-height="calc(100vh - 320px)"
         :columns="columns.baseGrid" :rows="alarms" row-key="alarmId" :selected-key="detailModal.dtlId"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="key => handleBtnAction('alarms-sort', key)"

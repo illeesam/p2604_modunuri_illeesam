@@ -338,6 +338,7 @@ window.SyVendorMng = {
     <!-- ===== ■.■. 경로 트리 ================================================= -->
     <bo-container bare>
       <bo-path-tree-card biz-cd="sy_vendor" title="표시경로" :show-biz-cd="false" :counts="vendorCounts"
+        max-height="calc(100vh - 320px)"
         :selected="uiState.selectedPath"
         @select="path => handleSelectAction('pathTree-select', path)" />
     </bo-container>
@@ -353,7 +354,7 @@ window.SyVendorMng = {
           </button>
         </div>
       </template>
-      <bo-grid bare
+      <bo-grid bare max-height="calc(100vh - 320px)"
         :columns="columns.baseGrid" :rows="vendors" row-key="vendorId" :selected-key="detailPanel.selectedId"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="key => handleBtnAction('vendors-sort', key)"

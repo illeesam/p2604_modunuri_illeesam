@@ -421,6 +421,7 @@ window.SyTemplateMng = {
     <!-- ===== ■.■. 경로 트리 ================================================= -->
     <bo-container bare>
       <bo-path-tree-card biz-cd="sy_template" title="표시경로" :show-biz-cd="false" :counts="templateCounts"
+        max-height="calc(100vh - 320px)"
         :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
     </bo-container>
     <!-- ===== ■.■. 목록 영역 =============================================== -->
@@ -435,7 +436,7 @@ window.SyTemplateMng = {
           </button>
         </div>
       </template>
-      <bo-grid bare
+      <bo-grid bare max-height="calc(100vh - 320px)"
         :columns="columns.baseGrid" :rows="templates" row-key="templateId" :selected-key="detailPanel.selectedId"
         :sort-state="uiState" :row-style="fnRowStyle"
         @sort="key => handleBtnAction('templates-sort', key)"

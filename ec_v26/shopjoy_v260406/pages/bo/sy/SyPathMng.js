@@ -388,6 +388,7 @@ window.SyPathMng = {
     <!-- ===== ■.■. 트리 ==================================================== -->
     <bo-container bare>
       <bo-local-tree-card title="경로 트리" biz-cd="sy_path" :sticky="true"
+        max-height="calc(100vh - 320px)"
         :node="cfTree" :expanded="expanded" :selected="uiState.selectedPathId"
         :on-toggle="id => handleBtnAction('pathTree-toggle', id)"
         @select="id => handleSelectAction('pathTree-select', id)" @expand-all="handleBtnAction('pathTree-expandAll')" @collapse-all="handleBtnAction('pathTree-collapseAll')" />
@@ -403,7 +404,7 @@ window.SyPathMng = {
           저장
         </button>
       </template>
-      <bo-grid bare
+      <bo-grid bare max-height="calc(100vh - 320px)"
         :columns="columns.baseGrid" :rows="gridRows" row-key="pathId"
         :row-class="fnRowClass" :row-actions="true"
         grid-id="paths-cellChange" @cell-change="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)">

@@ -543,7 +543,7 @@ window.PdCategoryProdMng = {
           전체
         </div>
       </template>
-      <bo-category-tree mode="tree" :selected="cfSelectedCatId" :show-count="totalProdCount" @select="id => handleSelectAction('categoryTree-select', id)" />
+      <bo-category-tree mode="tree" :selected="cfSelectedCatId" :show-count="totalProdCount" max-height="calc(100vh - 320px)" @select="id => handleSelectAction('categoryTree-select', id)" />
     </bo-container>
     <!-- ===== □.□. 좌측 카테고리 트리 ============================================ -->
     <!-- ===== ■.■. 우측 상품 목록 ============================================== -->
