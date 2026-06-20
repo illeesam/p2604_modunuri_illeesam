@@ -216,11 +216,11 @@ public class BoSyAppConfigController {
         )));
     }
 
-    /** 대시보드 — 전체 연동 설정 한 번에 조회 */
+    /** 대시보드 — 전체 연동 설정 한 번에 조회 (activeProfile 포함) */
     @GetMapping("/all")
-    public ResponseEntity<ApiResponse<List<Map<String, String>>>> all() {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> all() {
         Map<String, String> db = loadDbProps();
-        return ResponseEntity.ok(ApiResponse.ok(List.of(
+        List<Map<String, String>> items = List.of(
             // 소셜
             rowResolved(db, "app.auth.social.google-userinfo-url", googleUserinfoUrl,  false),
             rowResolved(db, "app.auth.social.kakao-userinfo-url",  kakaoUserinfoUrl,   false),
@@ -256,6 +256,10 @@ public class BoSyAppConfigController {
             rowResolved(db, "app.file.ncp.access-key",  ncpAccessKey,    true),
             rowResolved(db, "app.file.ncp.secret-key",  ncpSecretKey,    true),
             rowResolved(db, "app.file.ncp.cdn-url",     ncpCdnUrl,       false)
-        )));
+        );
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("activeProfile", activeProfile());
+        result.put("items", items);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 }

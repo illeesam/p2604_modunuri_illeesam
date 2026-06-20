@@ -43,9 +43,9 @@ ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
 
 INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
 VALUES ('2604010000000001','app.ext-sdk','app.ext-sdk.kakao-js-key',
- '',
+ 'a2990e41aa57c3a4ad1fe97a210938d7',
  'Kakao JavaScript 키','STRING',20,'Y','^local^dev^',
- '카카오 디벨로퍼스 → 내 애플리케이션 → 앱 키 → JavaScript 키 (테스트 앱)',
+ '카카오 디벨로퍼스 → illeesam_synology (ID:1491354) → 앱 키 → JavaScript 키 | Redirect URI: http://127.0.0.1:3000/login/oauth2/code/kakao',
  'SYSTEM','2026-06-20 00:00:00')
 ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
   SET prop_value=EXCLUDED.prop_value, prop_remark=EXCLUDED.prop_remark, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
@@ -61,9 +61,18 @@ ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
 
 INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
 VALUES ('2604010000000001','app.ext-sdk','app.ext-sdk.naver-client-id',
- '',
+ 'jWtLT9SUfE2JWEji2XGq',
  'Naver OAuth2 클라이언트 ID','STRING',30,'Y','^local^dev^',
- '네이버 개발자센터 → 애플리케이션 → Client ID (테스트 앱)',
+ '네이버 개발자센터 → illeesam_synology | Client Secret: QOX2GZO1uk | Callback URL: http://127.0.0.1:5501/bo.html, http://127.0.0.1:5501',
+ 'SYSTEM','2026-06-20 00:00:00')
+ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
+  SET prop_value=EXCLUDED.prop_value, prop_remark=EXCLUDED.prop_remark, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
+
+INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
+VALUES ('2604010000000001','app.ext-sdk','app.ext-sdk.naver-client-secret',
+ 'QOX2GZO1uk',
+ 'Naver OAuth2 클라이언트 Secret','SECRET',35,'Y','^local^dev^',
+ '네이버 개발자센터 → illeesam_synology | Client ID: jWtLT9SUfE2JWEji2XGq',
  'SYSTEM','2026-06-20 00:00:00')
 ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
   SET prop_value=EXCLUDED.prop_value, prop_remark=EXCLUDED.prop_remark, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
@@ -79,9 +88,9 @@ ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
 
 INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
 VALUES ('2604010000000001','app.ext-sdk','app.ext-sdk.naver-callback-url',
- 'http://127.0.0.1:5501/',
- 'Naver OAuth2 콜백 URL','STRING',40,'Y','^local^',
- '네이버 로그인 후 리다이렉트 URL — local: Live Server 주소',
+ 'http://127.0.0.1:5501/bo.html',
+ 'Naver OAuth2 콜백 URL (BO)', 'STRING',40,'Y','^local^',
+ '네이버 콘솔 등록 Callback URL — BO: http://127.0.0.1:5501/bo.html | FO: http://127.0.0.1:5501 (illeesam_synology 앱)',
  'SYSTEM','2026-06-20 00:00:00')
 ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
   SET prop_value=EXCLUDED.prop_value, prop_remark=EXCLUDED.prop_remark, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
@@ -106,9 +115,9 @@ ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
 
 INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
 VALUES ('2604010000000001','app.ext-sdk','app.ext-sdk.toss-client-key',
- 'test_gck_docs_Ovk5rk1gB5Nrm6CzWlVWax',
+ 'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm',
  '토스페이먼츠 클라이언트 키 (FE)','STRING',50,'Y','^local^dev^',
- '토스 디벨로퍼스 → 상점 → 클라이언트 키 (test_gck_*)',
+ '토스페이먼츠 개발자센터 → 결제 연동하기 → 문서용 테스트 키 (test_gck_docs_*) | sandbox: https://developers.tosspayments.com/sandbox',
  'SYSTEM','2026-06-20 00:00:00')
 ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
   SET prop_value=EXCLUDED.prop_value, prop_remark=EXCLUDED.prop_remark, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
@@ -222,12 +231,12 @@ ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
 
 INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
 VALUES ('2604010000000001','app.toss','toss.client-key',
- 'test_gck_docs_Ovk5rk1gB5Nrm6CzWlVWax',
+ 'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm',
  '토스 클라이언트 키 (FE)','STRING',30,'Y','^local^dev^',
- '토스 디벨로퍼스 → 상점 → 클라이언트 키 (test_gck_*)',
+ '토스페이먼츠 개발자센터 → 결제 연동하기 → 문서용 테스트 키 (test_gck_docs_*) | sandbox: https://developers.tosspayments.com/sandbox',
  'SYSTEM','2026-06-20 00:00:00')
 ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
-  SET prop_value=EXCLUDED.prop_value, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
+  SET prop_value=EXCLUDED.prop_value, prop_remark=EXCLUDED.prop_remark, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
 
 INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
 VALUES ('2604010000000001','app.toss','toss.client-key',
@@ -240,12 +249,12 @@ ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
 
 INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
 VALUES ('2604010000000001','app.toss','toss.secret-key',
- 'test_gsk_docs_GjLJoQ1aVZ8yMnpZ0vlrrPmOoBN0',
+ 'test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6',
  '토스 시크릿 키 (BE)','SECRET',40,'Y','^local^dev^',
- '토스 디벨로퍼스 → 상점 → 시크릿 키 (test_gsk_*) — 절대 FE 노출 금지',
+ '토스페이먼츠 개발자센터 → 결제 연동하기 → 문서용 테스트 키 (test_gsk_docs_*) — BE 전용, FE 노출 절대 금지',
  'SYSTEM','2026-06-20 00:00:00')
 ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
-  SET prop_value=EXCLUDED.prop_value, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
+  SET prop_value=EXCLUDED.prop_value, prop_remark=EXCLUDED.prop_remark, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
 
 INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
 VALUES ('2604010000000001','app.toss','toss.secret-key',
@@ -262,12 +271,12 @@ ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
 
 INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
 VALUES ('2604010000000001','app.map','map.kakao-js-key',
- '',
+ 'a2990e41aa57c3a4ad1fe97a210938d7',
  'Kakao 지도 JavaScript 키','STRING',10,'Y','^local^dev^',
- '카카오 디벨로퍼스 → JavaScript 키 (테스트 앱)',
+ '카카오 디벨로퍼스 → illeesam_synology (ID:1491354) → 앱 키 → JavaScript 키 | 앱 > 카카오맵: 사용설정 ON',
  'SYSTEM','2026-06-20 00:00:00')
 ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
-  SET prop_value=EXCLUDED.prop_value, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
+  SET prop_value=EXCLUDED.prop_value, prop_remark=EXCLUDED.prop_remark, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
 
 INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
 VALUES ('2604010000000001','app.map','map.kakao-js-key',

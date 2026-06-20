@@ -19,7 +19,8 @@
     toss: {
       /* 공식 문서용 테스트 클라이언트 키 (결제위젯). svTossClientKey 미설정 시 폴백.
        * 실 결제는 사이트 설정의 tossClientKey(운영키)가 있어야 함. */
-      TEST_CLIENT_KEY: 'test_gck_docs_Ovk5rk1EwkEbPOW43n07xlzm',
+      TEST_CLIENT_KEY: 'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm',
+      TEST_SECRET_KEY: 'test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6',
       /* v2 표준 SDK (bo.html 에서 <script> 로드) */
       SDK_V2_URL: 'https://js.tosspayments.com/v2/standard',
     },

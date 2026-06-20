@@ -39,13 +39,16 @@ window.ZdInfDashboard = {
     const ymlTotal = ref(0);
     const ymlLoading = ref(false);
     const ymlSearch = reactive({ searchValue: '' });
+    const ymlActiveProfile = ref('');
 
     const handleYmlSearch = async () => {
       ymlLoading.value = true;
       ymlRows.splice(0);
       try {
         const res = await boApi.get('/bo/sy/app-config/all', coUtil.cofApiHdr('연동설정대시보드', 'yml조회'));
-        const list = res.data?.data || [];
+        const d = res.data?.data || {};
+        ymlActiveProfile.value = d.activeProfile || '';
+        const list = d.items || [];
         const kw = ymlSearch.searchValue.trim().toLowerCase();
         const filtered = kw ? list.filter(r => (r.ymlKey||'').toLowerCase().includes(kw) || (r.ymlValue||'').toLowerCase().includes(kw)) : list;
         ymlRows.push(...filtered);
@@ -449,7 +452,7 @@ window.ZdInfDashboard = {
       onPropProfileSelectChange, onPropProfileInputChange, handlePropSearch,
       propColWidths, onPropResizeStart,
       /* yml 조회 */
-      ymlRows, ymlTotal, ymlLoading, ymlSearch, handleYmlSearch,
+      ymlRows, ymlTotal, ymlLoading, ymlSearch, ymlActiveProfile, handleYmlSearch,
       ymlColWidths, onYmlResizeStart,
     };
   },
@@ -634,56 +637,64 @@ window.ZdInfDashboard = {
           @keyup.enter="handlePropSearch" />
         <button class="btn btn_search" style="margin-left:6px;" @click="handlePropSearch">조회</button>
       </template>
-      <div style="max-height:210px;overflow-y:auto;border:1px solid #e8e8e8;border-radius:6px;">
-        <table class="bo-table" style="table-layout:fixed;width:100%;">
-          <colgroup>
-            <col style="width:44px;" />
-            <col style="width:110px;" />
-            <col style="width:180px;" />
-            <col />
-            <col style="width:130px;" />
-            <col style="width:56px;" />
-            <col style="width:130px;" />
-            <col style="width:130px;" />
-          </colgroup>
-          <thead>
-            <tr>
-              <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;' + (propColWidths._no ? 'width:' + propColWidths._no + ';' : '')">번호<div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onPropResizeStart($event, '_no')"></div></th>
-              <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;' + (propColWidths.profile ? 'width:' + propColWidths.profile + ';' : '')">propProfile<div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onPropResizeStart($event, 'profile')"></div></th>
-              <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;' + (propColWidths.propKey ? 'width:' + propColWidths.propKey + ';' : '')">propKey<div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onPropResizeStart($event, 'propKey')"></div></th>
-              <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;' + (propColWidths.propValue ? 'width:' + propColWidths.propValue + ';' : '')">propValue<div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onPropResizeStart($event, 'propValue')"></div></th>
-              <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;' + (propColWidths.propLabel ? 'width:' + propColWidths.propLabel + ';' : '')">표시명<div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onPropResizeStart($event, 'propLabel')"></div></th>
-              <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;' + (propColWidths.useYn ? 'width:' + propColWidths.useYn + ';' : '')">useYn<div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onPropResizeStart($event, 'useYn')"></div></th>
-              <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;' + (propColWidths.regDate ? 'width:' + propColWidths.regDate + ';' : '')">등록일시<div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onPropResizeStart($event, 'regDate')"></div></th>
-              <th style="position:sticky;top:0;z-index:3;background:#fafafa;">수정일시</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-if="propSearchLoading">
-              <td colspan="8" style="text-align:center;padding:16px;color:#aaa;">조회 중...</td>
-            </tr>
-            <tr v-else-if="!propSearchRows.length">
-              <td colspan="8" style="text-align:center;padding:16px;color:#aaa;">데이터가 없습니다.</td>
-            </tr>
-            <tr v-for="(r, idx) in propSearchRows" :key="r.propId">
-              <td style="text-align:center;">{{ idx + 1 }}</td>
-              <td style="font-family:monospace;font-size:11px;text-align:center;">{{ r.propProfile }}</td>
-              <td style="font-family:monospace;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="r.propKey">{{ r.propKey }}</td>
-              <td style="font-family:monospace;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="r.propValue">{{ r.propValue }}</td>
-              <td style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="r.propLabel">{{ r.propLabel }}</td>
-              <td style="text-align:center;">
-                <span :class="r.useYn === 'Y' ? 'badge badge-green' : 'badge badge-gray'">{{ r.useYn }}</span>
-              </td>
-              <td style="text-align:center;font-size:11px;">{{ r.regDate }}</td>
-              <td style="text-align:center;font-size:11px;">{{ r.updDate }}</td>
-            </tr>
-          </tbody>
-        </table>
+      <div style="overflow-x:auto;border:1px solid #e8e8e8;border-radius:6px;">
+        <div style="max-height:210px;overflow-y:auto;">
+          <table class="bo-table" style="table-layout:fixed;min-width:1100px;width:100%;">
+            <colgroup>
+              <col style="width:44px;" />
+              <col style="width:110px;" />
+              <col style="width:180px;" />
+              <col style="width:180px;" />
+              <col style="width:130px;" />
+              <col style="width:56px;" />
+              <col style="width:110px;" />
+              <col style="width:110px;" />
+              <col />
+            </colgroup>
+            <thead>
+              <tr>
+                <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;' + (propColWidths._no ? 'width:' + propColWidths._no + ';' : '')">번호<div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onPropResizeStart($event, '_no')"></div></th>
+                <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;' + (propColWidths.profile ? 'width:' + propColWidths.profile + ';' : '')">propProfile<div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onPropResizeStart($event, 'profile')"></div></th>
+                <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;' + (propColWidths.propKey ? 'width:' + propColWidths.propKey + ';' : '')">propKey<div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onPropResizeStart($event, 'propKey')"></div></th>
+                <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;' + (propColWidths.propValue ? 'width:' + propColWidths.propValue + ';' : '')">propValue<div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onPropResizeStart($event, 'propValue')"></div></th>
+                <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;' + (propColWidths.propLabel ? 'width:' + propColWidths.propLabel + ';' : '')">표시명<div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onPropResizeStart($event, 'propLabel')"></div></th>
+                <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;' + (propColWidths.useYn ? 'width:' + propColWidths.useYn + ';' : '')">useYn<div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onPropResizeStart($event, 'useYn')"></div></th>
+                <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;' + (propColWidths.regDate ? 'width:' + propColWidths.regDate + ';' : '')">등록일시<div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onPropResizeStart($event, 'regDate')"></div></th>
+                <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;' + (propColWidths.updDate ? 'width:' + propColWidths.updDate + ';' : '')">수정일시<div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onPropResizeStart($event, 'updDate')"></div></th>
+                <th style="position:sticky;top:0;z-index:3;background:#fafafa;">비고</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="propSearchLoading">
+                <td colspan="9" style="text-align:center;padding:16px;color:#aaa;">조회 중...</td>
+              </tr>
+              <tr v-else-if="!propSearchRows.length">
+                <td colspan="9" style="text-align:center;padding:16px;color:#aaa;">데이터가 없습니다.</td>
+              </tr>
+              <tr v-for="(r, idx) in propSearchRows" :key="r.propId">
+                <td style="text-align:center;">{{ idx + 1 }}</td>
+                <td style="font-family:monospace;font-size:11px;text-align:center;">{{ r.propProfile }}</td>
+                <td style="font-family:monospace;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="r.propKey">{{ r.propKey }}</td>
+                <td style="font-family:monospace;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="r.propValue">{{ r.propValue }}</td>
+                <td style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="r.propLabel">{{ r.propLabel }}</td>
+                <td style="text-align:center;">
+                  <span :class="r.useYn === 'Y' ? 'badge badge-green' : 'badge badge-gray'">{{ r.useYn }}</span>
+                </td>
+                <td style="text-align:center;font-size:11px;">{{ r.regDate }}</td>
+                <td style="text-align:center;font-size:11px;">{{ r.updDate }}</td>
+                <td style="font-size:11px;color:#6b7280;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="r.propRemark">{{ r.propRemark }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </bo-container>
 
     <bo-container title="application.yml 조회 정보" :count-text="ymlTotal + '건'">
       <template #toolbar-actions>
+        <span v-if="ymlActiveProfile" style="font-family:monospace;font-size:11px;background:#dbeafe;color:#1e40af;border-radius:4px;padding:2px 8px;margin-right:8px;">
+          active: {{ ymlActiveProfile }}
+        </span>
         <label class="search-label" style="margin-right:4px;">키워드</label>
         <input type="text" class="form-control" style="width:200px;font-family:monospace;font-size:12px;"
           placeholder="yml 키 / 값 검색"
@@ -694,27 +705,34 @@ window.ZdInfDashboard = {
       <div style="max-height:320px;overflow-y:auto;border:1px solid #e8e8e8;border-radius:6px;">
         <table class="bo-table" style="table-layout:fixed;width:100%;">
           <colgroup>
-            <col style="width:44px;" />
+            <col style="width:70px;" />
             <col style="width:50%;" />
+            <col style="width:60px;" />
             <col />
           </colgroup>
           <thead>
             <tr>
               <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;' + (ymlColWidths._no ? 'width:' + ymlColWidths._no + ';' : '')">번호<div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onYmlResizeStart($event, '_no')"></div></th>
               <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;' + (ymlColWidths.ymlKey ? 'width:' + ymlColWidths.ymlKey + ';' : '')">yml 키<div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onYmlResizeStart($event, 'ymlKey')"></div></th>
+              <th style="position:sticky;top:0;z-index:3;background:#fafafa;text-align:center;">출처</th>
               <th style="position:sticky;top:0;z-index:3;background:#fafafa;">yml 값</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="ymlLoading">
-              <td colspan="3" style="text-align:center;padding:16px;color:#aaa;">조회 중...</td>
+              <td colspan="4" style="text-align:center;padding:16px;color:#aaa;">조회 중...</td>
             </tr>
             <tr v-else-if="!ymlRows.length">
-              <td colspan="3" style="text-align:center;padding:16px;color:#aaa;">데이터가 없습니다.</td>
+              <td colspan="4" style="text-align:center;padding:16px;color:#aaa;">데이터가 없습니다.</td>
             </tr>
             <tr v-for="(r, idx) in ymlRows" :key="idx">
               <td style="text-align:center;">{{ idx + 1 }}</td>
               <td style="font-family:monospace;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="r.ymlKey">{{ r.ymlKey }}</td>
+              <td style="text-align:center;">
+                <span v-if="r.source === 'DB'" class="badge badge-green" style="font-size:10px;">DB</span>
+                <span v-else-if="r.source === 'YML'" class="badge badge-blue" style="font-size:10px;">YML</span>
+                <span v-else class="badge badge-gray" style="font-size:10px;">-</span>
+              </td>
               <td style="font-family:monospace;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="r.ymlValue">{{ r.ymlValue }}</td>
             </tr>
           </tbody>
