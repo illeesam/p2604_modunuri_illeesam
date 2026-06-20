@@ -233,5 +233,8 @@ window.ZdTestChattingWebSocket = {
       <b>채팅 서비스 확인:</b> BO → 고객센터 → 채팅관리 (CmChattMng) 에서 실 채팅 데이터 확인
     </div>
   </div>
+
+  <bo-zd-yml-grid endpoint="/bo/sy/app-config/all" title="application.yml — WebSocket 설정" />
+  <bo-zd-sy-prop-grid prop-key-prefixes="app.websocket.,app.chat." default-prop-key-filter="app.websocket." />
 </div>`,
 };

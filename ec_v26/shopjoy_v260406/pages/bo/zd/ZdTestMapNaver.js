@@ -38,10 +38,10 @@ window.ZdTestMapNaver = {
 
     onMounted(async () => {
       try {
-        const res = await boApiSvc.syProp?.getList?.({ propKeys: 'ext.sdk.naverMapClientId' }, '네이버 지도 API 테스트', '키 조회');
+        const res = await boApiSvc.syProp?.getList?.({ propKeys: 'app.map.naver-map-client-id' }, '네이버 지도 API 테스트', '키 조회');
         const list = res?.data?.data || [];
         list.forEach(p => {
-          if (p.propKey === 'ext.sdk.naverMapClientId') cfg.clientId = p.propValue || '';
+          if (p.propKey === 'app.map.naver-map-client-id') cfg.clientId = p.propValue || '';
         });
       } catch (e) {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);
@@ -130,8 +130,8 @@ window.ZdTestMapNaver = {
       if (!cfg.clientId) { showToast('Client ID 를 입력하세요.', 'error'); return; }
       try {
         await boApi.put('/bo/sy/prop/bulk', [
-          { propKey: 'ext.sdk.naverMapClientId', propValue: cfg.clientId },
-        ], coUtil.apiHdr('네이버 지도 테스트', '키 저장'));
+          { propKey: 'app.map.naver-map-client-id', propValue: cfg.clientId },
+        ], coUtil.cofApiHdr('네이버 지도 테스트', '키 저장'));
         showToast('sy_prop 에 저장되었습니다.', 'success');
       } catch (e) {
         showToast(e.response?.data?.message || e.message || '저장 실패', 'error', 0);
@@ -162,7 +162,7 @@ window.ZdTestMapNaver = {
       <div class="form-row" style="gap:8px;margin-bottom:8px">
         <div class="form-group" style="flex:1">
           <label class="form-label">NCP Client ID <span style="color:#e74c3c">*</span></label>
-          <input class="form-control" v-model="cfg.clientId" placeholder="sy_prop: ext.sdk.naverMapClientId" style="font-family:monospace" />
+          <input class="form-control" v-model="cfg.clientId" placeholder="sy_prop: app.map.naver-map-client-id" style="font-family:monospace" />
         </div>
         <div style="display:flex;align-items:flex-end;gap:6px;padding-bottom:1px">
           <button class="btn btn_save" @click="handleBtnAction('key-save')">sy_prop 저장</button>
@@ -240,12 +240,12 @@ window.ZdTestMapNaver = {
       <b>1.</b> Naver Cloud Platform → Application → Maps 서비스 등록<br>
       <b>2.</b> Web Dynamic Map + Geocoding API 활성화<br>
       <b>3.</b> 허용 도메인에 <code>127.0.0.1</code>, <code>localhost</code> 추가<br>
-      <b>4.</b> sy_prop <code>ext.sdk.naverMapClientId</code> 에 Client ID 등록<br>
+      <b>4.</b> sy_prop <code>app.map.naver-map-client-id</code> 에 Client ID 등록<br>
       <b>5.</b> FO 매장 위치 페이지(Location.js)에서 실제 렌더링 확인
     </div>
   </div>
 
-  <bo-zd-yml-grid />
-  <bo-zd-sy-prop-grid prop-key-prefixes="ext.sdk.naverMapClientId" default-prop-key-filter="ext.sdk.naverMap" />
+  <bo-zd-yml-grid endpoint="/bo/sy/app-config/map" title="application.yml — 지도 API 설정" />
+  <bo-zd-sy-prop-grid prop-key-prefixes="app.map." default-prop-key-filter="app.map." />
 </div>`,
 };

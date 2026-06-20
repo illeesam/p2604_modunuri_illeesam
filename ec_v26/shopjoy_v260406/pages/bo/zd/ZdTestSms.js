@@ -79,7 +79,7 @@ window.ZdTestSms = {
         const res = await boApi.post('/bo/sy/test/sms', {
           toPhone: form.toPhone,
           message: form.message,
-        }, coUtil.apiHdr('SMS 테스트', '발송'));
+        }, coUtil.cofApiHdr('SMS 테스트', '발송'));
         result.response = res.data?.data || res.data;
         result.status   = '✅ SMS 발송 성공';
         addLog('✅ 발송 완료 → ' + form.toPhone, 'success');
@@ -167,6 +167,7 @@ window.ZdTestSms = {
     </div>
   </div>
 
+  <bo-zd-yml-grid endpoint="/bo/sy/app-config/all" title="application.yml — SMS 설정" />
   <bo-zd-sy-prop-grid prop-key-prefixes="app.sms." default-prop-key-filter="app.sms." />
 </div>`,
 };

@@ -30,9 +30,9 @@ window.ZdTestSnsLoginGoogle = {
 
     onMounted(async () => {
       try {
-        const res = await boApiSvc.syProp?.getList?.({ propKeys: 'ext.sdk.googleClientId' }, '구글 소셜 로그인 테스트', '키 조회');
+        const res = await boApiSvc.syProp?.getList?.({ propKeys: 'app.ext-sdk.google-client-id' }, '구글 소셜 로그인 테스트', '키 조회');
         const list = res?.data?.data || [];
-        list.forEach(p => { if (p.propKey === 'ext.sdk.googleClientId') cfg.googleClientId = p.propValue || ''; });
+        list.forEach(p => { if (p.propKey === 'app.ext-sdk.google-client-id') cfg.googleClientId = p.propValue || ''; });
       } catch (e) {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);
       }
@@ -134,8 +134,8 @@ window.ZdTestSnsLoginGoogle = {
       if (!cfg.googleClientId) { showToast('Client ID 를 입력하세요.', 'error'); return; }
       try {
         await boApi.put('/bo/sy/prop/bulk', [
-          { propKey: 'ext.sdk.googleClientId', propValue: cfg.googleClientId },
-        ], coUtil.apiHdr('구글 SDK 테스트', '키 저장'));
+          { propKey: 'app.ext-sdk.google-client-id', propValue: cfg.googleClientId },
+        ], coUtil.cofApiHdr('구글 SDK 테스트', '키 저장'));
         showToast('sy_prop 에 저장되었습니다.', 'success');
       } catch (e) {
         showToast(e.response?.data?.message || e.message || '저장 실패', 'error', 0);
@@ -164,7 +164,7 @@ window.ZdTestSnsLoginGoogle = {
       <div class="form-row" style="gap:8px;margin-bottom:8px">
         <div class="form-group" style="flex:1">
           <label class="form-label">Google Client ID <span style="color:#e74c3c">*</span></label>
-          <input class="form-control" v-model="cfg.googleClientId" placeholder="sy_prop: ext.sdk.googleClientId" />
+          <input class="form-control" v-model="cfg.googleClientId" placeholder="sy_prop: app.ext-sdk.google-client-id" />
         </div>
         <div style="display:flex;align-items:flex-end;gap:6px;padding-bottom:1px">
           <button class="btn btn_save" @click="handleBtnAction('key-save')">sy_prop 저장</button>
@@ -210,8 +210,8 @@ window.ZdTestSnsLoginGoogle = {
     </div>
   </div>
 
-  <bo-zd-yml-grid />
-  <bo-zd-sy-prop-grid prop-key-prefixes="ext.sdk.googleClientId" default-prop-key-filter="ext.sdk.google" />
+  <bo-zd-yml-grid endpoint="/bo/sy/app-config/social" title="application.yml — 소셜 로그인 설정" />
+  <bo-zd-sy-prop-grid prop-key-prefixes="app.ext-sdk.,app.auth.social." default-prop-key-filter="app.ext-sdk.google-client" />
 
   <!-- 흐름 안내 -->
   <div class="card">
@@ -219,7 +219,7 @@ window.ZdTestSnsLoginGoogle = {
     <div style="padding:12px;font-size:12px;line-height:1.8;color:#444">
       <b>1.</b> Google Cloud Console → OAuth 2.0 클라이언트 ID 발급 (Web 유형)<br>
       <b>2.</b> 승인된 JavaScript 원본에 <code>http://127.0.0.1:5501</code>, <code>http://localhost:3000</code> 추가<br>
-      <b>3.</b> sy_prop <code>ext.sdk.googleClientId</code> 에 Client ID 등록<br>
+      <b>3.</b> sy_prop <code>app.ext-sdk.google-client-id</code> 에 Client ID 등록<br>
       <b>4.</b> 로그인 팝업 → ID Token(JWT) 수신 → 백엔드 <code>POST /api/co/fo-auth/social-login</code> 로 전달<br>
       <b>5.</b> 백엔드: Google tokeninfo 엔드포인트로 토큰 검증 후 JWT 발급
     </div>

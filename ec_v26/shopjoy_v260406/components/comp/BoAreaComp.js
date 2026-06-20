@@ -636,9 +636,39 @@ window.BoGrid = {
     const fnRowChkVal = (row) => row[props.checkedKey || props.rowKey];
     const fnRowChecked = (row) => (typeof props.isChecked === 'function' ? !!props.isChecked(fnRowChkVal(row)) : false);
 
+    /* ── ▼ 컬럼 리사이즈 ─────────────────────────────────────────────────── */
+    const colWidths = Vue.reactive({});
+    let _resizeTh = null, _resizeStartX = 0, _resizeStartW = 0;
+    const onResizeStart = (e, col) => {
+      e.preventDefault();
+      e.stopPropagation();
+      _resizeTh = e.target.closest('th');
+      _resizeStartX = e.clientX;
+      _resizeStartW = _resizeTh.offsetWidth;
+      document.body.classList.add('col-resizing');
+      const onMove = (ev) => {
+        const w = Math.max(40, _resizeStartW + ev.clientX - _resizeStartX);
+        colWidths[col.key] = w + 'px';
+      };
+      const onUp = () => {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        document.body.classList.remove('col-resizing');
+        _resizeTh = null;
+      };
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    };
+    const thResizeStyle = (col) => {
+      const base = U.thStyle(col);
+      if (colWidths[col.key]) return base.replace(/width:[^;]+;/, '') + 'width:' + colWidths[col.key] + ';';
+      return base;
+    };
+
     return { U, cfTotal, cfShowTfoot, rowNo, sortIcon, sortActive,
              fnRowStyle, fnRowClass, fnIsExpanded, cfColspan, fnRowChecked,
-             handleBtnAction, handleSelectAction };
+             handleBtnAction, handleSelectAction,
+             colWidths, onResizeStart, thResizeStyle };
   },
   template: /* html */`
 <div :class="bare ? '' : 'card'">
@@ -678,13 +708,15 @@ window.BoGrid = {
           </th>
           <slot name="head">
             <th v-for="col in columns" :key="col.key" :class="col.cls"
-            :style="U.thStyle(col) + (col.sortKey ? 'cursor:pointer;user-select:none;white-space:nowrap;' : '')"
+            :style="thResizeStyle(col) + (col.sortKey ? 'cursor:pointer;user-select:none;white-space:nowrap;' : '') + 'position:relative;overflow:visible;'"
             @click="handleSelectAction('sort-toggle', { col })">
               {{ col.noHead ? '' : col.label }}
               <span v-if="col.sortKey"
               :style="sortActive(col) ? 'color:#e8587a;font-weight:bold;' : 'color:#bbb;'">
                 {{ sortIcon(col) }}
               </span>
+              <div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;"
+                @mousedown.stop="onResizeStart($event, col)"></div>
             </th>
           </slot>
           <th v-if="rowActions" style="min-width:40px;text-align:center;white-space:nowrap;">

@@ -59,7 +59,7 @@ window.ZdTestMailSmtp = {
       }
       // application-local.yml 값은 서버 API 통해 가져옴
       try {
-        const appRes = await boApi.get('/bo/sy/app-config/mail', coUtil.apiHdr('SMTP 테스트', '설정 조회'));
+        const appRes = await boApi.get('/bo/sy/app-config/mail', coUtil.cofApiHdr('SMTP 테스트', '설정 조회'));
         const d = appRes?.data?.data || {};
         if (d.username) cfg.username = d.username;
       } catch (e) { /* 엔드포인트 없으면 무시 */ }
@@ -85,7 +85,7 @@ window.ZdTestMailSmtp = {
           toName:   form.toName,
           subject:  form.subject,
           body:     form.body,
-        }, coUtil.apiHdr('SMTP 테스트', '메일 발송'));
+        }, coUtil.cofApiHdr('SMTP 테스트', '메일 발송'));
         result.response = res.data?.data || res.data;
         result.status   = '✅ 메일 발송 성공';
         addLog('✅ 발송 완료 → ' + form.toEmail, 'success');
@@ -175,6 +175,7 @@ window.ZdTestMailSmtp = {
     </div>
   </div>
 
-  <bo-zd-sy-prop-grid prop-key-prefixes="app.mail." default-prop-key-filter="app.mail." />
+  <bo-zd-yml-grid endpoint="/bo/sy/app-config/mail" title="application.yml — 메일(SMTP) 설정" />
+  <bo-zd-sy-prop-grid prop-key-prefixes="app.mail.,spring.mail." default-prop-key-filter="app.mail." />
 </div>`,
 };

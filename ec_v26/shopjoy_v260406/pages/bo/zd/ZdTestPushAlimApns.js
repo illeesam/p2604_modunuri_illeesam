@@ -86,7 +86,7 @@ window.ZdTestPushAlimApns = {
           badge:       form.badge,
           sound:       form.sound,
           data:        dataObj,
-        }, coUtil.apiHdr('APNs 테스트', '푸시 발송'));
+        }, coUtil.cofApiHdr('APNs 테스트', '푸시 발송'));
         result.response = res.data?.data || res.data;
         result.status   = '✅ APNs 발송 완료';
         addLog('✅ 발송 완료 (apnsId: ' + (result.response?.apnsId || '-') + ')', 'success');
@@ -103,7 +103,7 @@ window.ZdTestPushAlimApns = {
     const loadIosTokens = async () => {
       uiState.loadingTokens = true;
       try {
-        const res = await boApi.get('/bo/sy/test/push/tokens?platform=IOS', coUtil.apiHdr('APNs 테스트', 'iOS 토큰 목록'));
+        const res = await boApi.get('/bo/sy/test/push/tokens?platform=IOS', coUtil.cofApiHdr('APNs 테스트', 'iOS 토큰 목록'));
         result.tokenLogs = res.data?.data || [];
       } catch (e) {
         showToast('토큰 목록 조회 실패: ' + (e.response?.data?.message || e.message), 'error', 0);
@@ -124,7 +124,7 @@ window.ZdTestPushAlimApns = {
           { propKey: 'app.push.apns.key-file',   propValue: cfg.keyFile },
           { propKey: 'app.push.apns.bundle-id',  propValue: cfg.bundleId },
           { propKey: 'app.push.apns.production', propValue: String(cfg.production) },
-        ], coUtil.apiHdr('APNs 테스트', '설정 저장'));
+        ], coUtil.cofApiHdr('APNs 테스트', '설정 저장'));
         showToast('sy_prop 에 저장되었습니다.', 'success');
       } catch (e) {
         showToast(e.response?.data?.message || e.message || '저장 실패', 'error', 0);
@@ -308,6 +308,7 @@ window.ZdTestPushAlimApns = {
     </div>
   </div>
 
+  <bo-zd-yml-grid endpoint="/bo/sy/app-config/all" title="application.yml — APNs 푸시 설정" />
   <bo-zd-sy-prop-grid prop-key-prefixes="app.push.apns." default-prop-key-filter="app.push.apns." />
 </div>`,
 };

@@ -81,7 +81,7 @@ window.ZdTestChattingKakaoChannel = {
           templateCode: form.templateCode,
           variables:    varsObj,
           content:      form.content,
-        }, coUtil.apiHdr('카카오채널 테스트', '발송'));
+        }, coUtil.cofApiHdr('카카오채널 테스트', '발송'));
         result.response = res.data?.data || res.data;
         result.status   = '✅ 발송 완료';
         addLog('✅ 완료', 'success');
@@ -102,7 +102,7 @@ window.ZdTestChattingKakaoChannel = {
           { propKey: 'app.kakao.biz-msg-api-key', propValue: cfg.bizMsgApiKey },
           { propKey: 'app.kakao.sender-key',      propValue: cfg.senderKey },
           { propKey: 'app.kakao.from',            propValue: cfg.from },
-        ], coUtil.apiHdr('카카오채널 테스트', '키 저장'));
+        ], coUtil.cofApiHdr('카카오채널 테스트', '키 저장'));
         showToast('sy_prop 에 저장되었습니다.', 'success');
       } catch (e) {
         showToast(e.response?.data?.message || e.message || '저장 실패', 'error', 0);
@@ -226,6 +226,7 @@ window.ZdTestChattingKakaoChannel = {
     </div>
   </div>
 
+  <bo-zd-yml-grid endpoint="/bo/sy/app-config/kakao" title="application.yml — 카카오 알림톡 설정" />
   <bo-zd-sy-prop-grid prop-key-prefixes="app.kakao." default-prop-key-filter="app.kakao." />
 </div>`,
 };

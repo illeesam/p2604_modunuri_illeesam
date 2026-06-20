@@ -104,6 +104,9 @@ body { background: #f0f2f5; color: #222; font-family: 'Noto Sans KR', sans-serif
 .bo-table tr.bo-row-selected:hover td { background:#e0ecff; }
 
 .bo-table .actions { display: inline-flex; flex-wrap: nowrap; gap: 4px; justify-content: center; white-space: nowrap; }
+/* 컬럼 리사이즈 핸들 hover 피드백 */
+.bo-table th:hover > div[style*="col-resize"] { background: rgba(0,0,0,0.12); border-radius: 2px; }
+body.col-resizing { cursor: col-resize !important; user-select: none !important; }
 .title-link { color: #1677ff; cursor: pointer; font-weight: 500; }
 .title-link:hover { text-decoration: underline; }
 

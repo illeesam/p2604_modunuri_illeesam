@@ -83,7 +83,7 @@ window.ZdTestPushAlimFcm = {
           body:        form.body,
           imageUrl:    form.imageUrl || undefined,
           data:        dataObj,
-        }, coUtil.apiHdr('FCM 푸시 테스트', '푸시 발송'));
+        }, coUtil.cofApiHdr('FCM 푸시 테스트', '푸시 발송'));
         result.response = res.data?.data || res.data;
         result.status   = '✅ 푸시 발송 완료';
         addLog('✅ 발송 완료 (messageId: ' + (result.response?.messageId || '-') + ')', 'success');
@@ -100,7 +100,7 @@ window.ZdTestPushAlimFcm = {
     const loadDeviceTokens = async () => {
       uiState.loadingTokens = true;
       try {
-        const res = await boApi.get('/bo/sy/test/push/tokens', coUtil.apiHdr('FCM 푸시 테스트', '토큰 목록'));
+        const res = await boApi.get('/bo/sy/test/push/tokens', coUtil.cofApiHdr('FCM 푸시 테스트', '토큰 목록'));
         result.tokenLogs = res.data?.data || [];
       } catch (e) {
         showToast('토큰 목록 조회 실패: ' + (e.response?.data?.message || e.message), 'error', 0);
@@ -254,6 +254,7 @@ window.ZdTestPushAlimFcm = {
     </div>
   </div>
 
+  <bo-zd-yml-grid endpoint="/bo/sy/app-config/all" title="application.yml — FCM 푸시 설정" />
   <bo-zd-sy-prop-grid prop-key-prefixes="app.push.fcm." default-prop-key-filter="app.push.fcm." />
 </div>`,
 };

@@ -1628,31 +1628,47 @@ window.BoZdYmlGrid = {
     title:    { type: String, default: 'application.yml 조회 정보' }, // 카드 제목
   },
   setup(props) {
-    const { reactive, onMounted } = Vue;
+    const { reactive, ref, onMounted } = Vue;
 
-    const rows = reactive([]);
+    const rows      = reactive([]);
+    const loadError = ref('');
+    const loading   = ref(false);
 
     const columns = [
-      { key: 'ymlKey',   label: 'yml 키',  cellStyle: 'font-family:monospace;color:#6b7280' },
-      { key: 'ymlValue', label: 'yml 값',  cellStyle: 'font-family:monospace;font-size:11px;word-break:break-all' },
+      { key: 'ymlKey',   label: 'yml 키',  cellStyle: 'font-family:monospace;color:#6b7280;text-align:left' },
+      { key: 'ymlValue', label: 'yml 값',  cellStyle: 'font-family:monospace;font-size:11px;word-break:break-all;text-align:left' },
     ];
 
-    onMounted(async () => {
+    const loadRows = async () => {
+      loading.value = true;
+      loadError.value = '';
       try {
-        const res = await boApi.get(props.endpoint, coUtil.apiHdr('BoZdYmlGrid', 'yml 조회'));
+        const res = await boApi.get(props.endpoint, coUtil.cofApiHdr('BoZdYmlGrid', 'yml 조회'));
         rows.splice(0, rows.length, ...(res?.data?.data || []));
-      } catch (_) { /* 조회 실패 무시 */ }
-    });
+      } catch (e) {
+        loadError.value = e?.response?.data?.message || e?.message || '조회 실패';
+      } finally {
+        loading.value = false;
+      }
+    };
 
-    return { rows, columns };
+    onMounted(loadRows);
+
+    return { rows, columns, loadError, loading, loadRows };
   },
   template: `
 <div class="card" style="margin-bottom:12px">
   <div class="toolbar">
     <span class="list-title">{{ title }}</span>
     <span class="list-count">{{ rows.length }}건</span>
+    <button class="btn btn_search" style="margin-left:auto;height:30px;font-size:12px;padding:0 10px;" :disabled="loading" @click="loadRows">
+      {{ loading ? '조회중…' : '재조회' }}
+    </button>
   </div>
-  <bo-grid :columns="columns" :rows="rows" row-key="ymlKey" empty-msg="조회된 데이터가 없습니다." />
+  <div v-if="loadError" style="padding:8px 12px;font-size:12px;color:#b91c1c;background:#fff5f5;border-top:1px solid #fca5a5;">
+    ⚠ {{ loadError }}
+  </div>
+  <bo-grid :columns="columns" :rows="rows" row-key="ymlKey" :loading="loading" empty-msg="조회된 데이터가 없습니다." />
 </div>
 `,
 };
@@ -1677,13 +1693,15 @@ window.BoZdSyPropGrid = {
     const { reactive, ref, computed, onMounted } = Vue;
 
     const rows          = reactive([]);
+    const loadError     = ref('');
+    const loading       = ref(false);
     const syPropProfile = ref('dev');
     const syPropKeyFilter = ref(props.defaultPropKeyFilter || '');
 
     const columns = [
-      { key: 'propKey',     label: 'propKey',     cellStyle: 'font-family:monospace;color:#1e40af' },
-      { key: 'propProfile', label: 'propProfile', fmt: (v) => v || '-', cellStyle: 'font-size:11px;color:#6b7280' },
-      { key: 'propLabel',   label: '표시명' },
+      { key: 'propKey',     label: 'propKey',     cellStyle: 'font-family:monospace;color:#1e40af;text-align:left' },
+      { key: 'propProfile', label: 'propProfile', fmt: (v) => v || '-', cellStyle: 'font-size:11px;color:#6b7280;text-align:left' },
+      { key: 'propLabel',   label: '표시명',       cellStyle: 'text-align:left' },
       { key: 'propValue',   label: 'propValue',   fmt: (v) => v || '-', cellStyle: 'font-family:monospace;font-size:11px;word-break:break-all;text-align:left' },
       { key: 'useYn',       label: 'useYn',       badge: (row) => row.useYn === 'Y' ? 'badge-green' : 'badge-gray', align: 'center' },
       { key: 'regDate',     label: '등록일시',     fmt: (v) => v ? String(v).replace('T',' ').slice(0,16) : '-', align: 'center' },
@@ -1709,7 +1727,9 @@ window.BoZdSyPropGrid = {
       });
     });
 
-    onMounted(async () => {
+    const loadRows = async () => {
+      loading.value = true;
+      loadError.value = '';
       try {
         // propKeyPrefixes: ';' 또는 ',' 둘 다 허용 → ',' 로 정규화
         const prefixes = props.propKeyPrefixes
@@ -1728,10 +1748,16 @@ window.BoZdSyPropGrid = {
         });
         const found = ['local', 'dev', 'prod'].find((p) => profileSet.has(p));
         if (found) syPropProfile.value = found;
-      } catch (_) { /* 조회 실패 무시 */ }
-    });
+      } catch (e) {
+        loadError.value = e?.response?.data?.message || e?.message || '조회 실패';
+      } finally {
+        loading.value = false;
+      }
+    };
 
-    return { rows, columns, syPropProfile, syPropKeyFilter, cfPropProfileOptions, cfFilteredRows };
+    onMounted(loadRows);
+
+    return { rows, columns, loadError, loading, loadRows, syPropProfile, syPropKeyFilter, cfPropProfileOptions, cfFilteredRows };
   },
   template: `
 <div class="card" style="margin-bottom:12px">
@@ -1758,9 +1784,15 @@ window.BoZdSyPropGrid = {
       <input type="text" class="form-control" style="width:200px;height:30px;font-size:12px;padding:2px 8px;font-family:monospace;"
         :value="syPropKeyFilter" placeholder="키워드 ; 구분 입력"
         @input="syPropKeyFilter = $event.target.value" />
+      <button class="btn btn_search" style="height:30px;font-size:12px;padding:0 10px;" :disabled="loading" @click="loadRows">
+        {{ loading ? '조회중…' : '재조회' }}
+      </button>
     </div>
   </div>
-  <bo-grid :columns="columns" :rows="cfFilteredRows" row-key="propId" empty-msg="조회된 데이터가 없습니다." />
+  <div v-if="loadError" style="padding:8px 12px;font-size:12px;color:#b91c1c;background:#fff5f5;border-top:1px solid #fca5a5;">
+    ⚠ {{ loadError }}
+  </div>
+  <bo-grid :columns="columns" :rows="cfFilteredRows" row-key="propId" :loading="loading" empty-msg="조회된 데이터가 없습니다." />
 </div>
 `,
 };

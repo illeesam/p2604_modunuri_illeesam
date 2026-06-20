@@ -230,7 +230,7 @@ window.ZdTestAppMsgSendReceiv = {
           templateCode:  baseForm.templateCode || undefined,
           templateVars:  varsObj,
           kakaoContent:  baseForm.kakaoContent || undefined,
-        }, coUtil.apiHdr('앱 메시지 발송 테스트', '발송'));
+        }, coUtil.cofApiHdr('앱 메시지 발송 테스트', '발송'));
 
         result.batchResult = res.data?.data || {};
         const r = result.batchResult;
@@ -261,7 +261,7 @@ window.ZdTestAppMsgSendReceiv = {
             pageNo:   devices.pager.pageNo,
             pageSize: devices.pager.pageSize,
           },
-          ...coUtil.apiHdr('앱 메시지 테스트', '디바이스 목록'),
+          ...coUtil.cofApiHdr('앱 메시지 테스트', '디바이스 목록'),
         });
         const d = res.data?.data || {};
         devices.rows              = d.pageList       || d || [];
@@ -285,7 +285,7 @@ window.ZdTestAppMsgSendReceiv = {
             pageNo:    hist.pager.pageNo,
             pageSize:  hist.pager.pageSize,
           },
-          ...coUtil.apiHdr('앱 메시지 테스트', '발송 이력'),
+          ...coUtil.cofApiHdr('앱 메시지 테스트', '발송 이력'),
         });
         const d = res.data?.data || {};
         hist.rows              = d.pageList       || [];
@@ -363,7 +363,7 @@ window.ZdTestAppMsgSendReceiv = {
             title:       baseForm.title,
             body:        baseForm.body,
             data:        dataObj,
-          }, coUtil.apiHdr('앱 메시지 테스트', '일괄 발송'));
+          }, coUtil.cofApiHdr('앱 메시지 테스트', '일괄 발송'));
           addSendLog(ch, token, '✅ 발송완료 → ' + (dev.memberId || '-'), 'success');
           successCnt++;
         } catch (e) {
@@ -822,6 +822,7 @@ window.ZdTestAppMsgSendReceiv = {
     </div>
   </div>
 
+  <bo-zd-yml-grid endpoint="/bo/sy/app-config/all" title="application.yml — 앱 메시지 설정" />
   <bo-zd-sy-prop-grid prop-key-prefixes="app.push.,app.sms.,app.kakao." default-prop-key-filter="app.push.; app.sms." />
 
 </div>`,

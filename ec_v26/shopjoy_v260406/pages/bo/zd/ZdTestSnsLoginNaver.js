@@ -37,12 +37,12 @@ window.ZdTestSnsLoginNaver = {
     onMounted(async () => {
       try {
         const res = await boApiSvc.syProp?.getList?.({
-          propKeys: 'ext.sdk.naverClientId,ext.sdk.naverClientSecret',
+          propKeys: 'app.ext-sdk.naver-client-id,app.ext-sdk.naver-client-secret',
         }, '네이버 소셜 로그인 테스트', '키 조회');
         const list = res?.data?.data || [];
         list.forEach(p => {
-          if (p.propKey === 'ext.sdk.naverClientId')     cfg.clientId     = p.propValue || '';
-          if (p.propKey === 'ext.sdk.naverClientSecret') cfg.clientSecret = p.propValue || '';
+          if (p.propKey === 'app.ext-sdk.naver-client-id')     cfg.clientId     = p.propValue || '';
+          if (p.propKey === 'app.ext-sdk.naver-client-secret') cfg.clientSecret = p.propValue || '';
         });
       } catch (e) {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);
@@ -103,7 +103,7 @@ window.ZdTestSnsLoginNaver = {
         // 백엔드 프록시 경유 (CORS 문제로 프론트 직접 호출 불가)
         const res = await boApi.post('/bo/sy/test/sns/naver/profile', {
           accessToken: result.tokenRaw,
-        }, coUtil.apiHdr('네이버 로그인 테스트', '프로필 조회'));
+        }, coUtil.cofApiHdr('네이버 로그인 테스트', '프로필 조회'));
         result.profile    = res.data?.data || res.data;
         uiState.loggedIn  = true;
         showToast('프로필 조회 성공', 'success');
@@ -118,9 +118,9 @@ window.ZdTestSnsLoginNaver = {
       if (!cfg.clientId) { showToast('Client ID 를 입력하세요.', 'error'); return; }
       try {
         await boApi.put('/bo/sy/prop/bulk', [
-          { propKey: 'ext.sdk.naverClientId',     propValue: cfg.clientId },
-          { propKey: 'ext.sdk.naverClientSecret', propValue: cfg.clientSecret },
-        ], coUtil.apiHdr('네이버 로그인 테스트', '키 저장'));
+          { propKey: 'app.ext-sdk.naver-client-id',     propValue: cfg.clientId },
+          { propKey: 'app.ext-sdk.naver-client-secret', propValue: cfg.clientSecret },
+        ], coUtil.cofApiHdr('네이버 로그인 테스트', '키 저장'));
         showToast('sy_prop 에 저장되었습니다.', 'success');
       } catch (e) {
         showToast(e.response?.data?.message || e.message || '저장 실패', 'error', 0);
@@ -159,11 +159,11 @@ window.ZdTestSnsLoginNaver = {
       <div class="form-row" style="gap:8px;margin-bottom:8px">
         <div class="form-group" style="flex:1">
           <label class="form-label">Client ID <span style="color:#e74c3c">*</span></label>
-          <input class="form-control" v-model="cfg.clientId" placeholder="sy_prop: ext.sdk.naverClientId" style="font-family:monospace" />
+          <input class="form-control" v-model="cfg.clientId" placeholder="sy_prop: app.ext-sdk.naver-client-id" style="font-family:monospace" />
         </div>
         <div class="form-group" style="flex:1">
           <label class="form-label">Client Secret</label>
-          <input class="form-control" type="password" v-model="cfg.clientSecret" placeholder="sy_prop: ext.sdk.naverClientSecret" />
+          <input class="form-control" type="password" v-model="cfg.clientSecret" placeholder="sy_prop: app.ext-sdk.naver-client-secret" />
         </div>
       </div>
       <div class="form-group" style="margin-bottom:8px">
@@ -241,12 +241,12 @@ window.ZdTestSnsLoginNaver = {
       <b>2.</b> 네이버 로그인 사용 API 추가 → 권한: 이름/이메일/닉네임/프로필사진<br>
       <b>3.</b> 서비스 URL: <code>{{ cfg.callbackUrl.split('/oauth')[0] }}</code><br>
       <b>4.</b> Callback URL: <code>{{ cfg.callbackUrl }}</code><br>
-      <b>5.</b> sy_prop <code>ext.sdk.naverClientId</code> / <code>ext.sdk.naverClientSecret</code> 등록<br><br>
+      <b>5.</b> sy_prop <code>app.ext-sdk.naver-client-id</code> / <code>app.ext-sdk.naver-client-secret</code> 등록<br><br>
       <b>백엔드 API:</b> <code>POST /api/bo/sy/test/sns/naver/profile</code> → 네이버 userinfo 프록시 호출
     </div>
   </div>
 
-  <bo-zd-yml-grid />
-  <bo-zd-sy-prop-grid prop-key-prefixes="ext.sdk.naverClientId" default-prop-key-filter="ext.sdk.naver" />
+  <bo-zd-yml-grid endpoint="/bo/sy/app-config/social" title="application.yml — 소셜 로그인 설정" />
+  <bo-zd-sy-prop-grid prop-key-prefixes="app.ext-sdk.,app.auth.social." default-prop-key-filter="app.ext-sdk.naver-client" />
 </div>`,
 };

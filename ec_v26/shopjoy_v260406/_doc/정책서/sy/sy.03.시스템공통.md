@@ -120,5 +120,46 @@ ORIH2604201530425678  ← cm_order_item_hist 의 ID
 - 코드는 삭제 불가능 (비활성화만)
 - 개인정보는 항상 암호화 저장
 
+### 11. sy_prop propKey 네이밍 규칙
+
+`sy_prop` 테이블에 저장하는 `prop_key` 값은 Spring Boot `application.yml` 프로퍼티 경로와 1:1로 대응하도록 **`spring.` 또는 `app.` 으로 시작하도록 권고**한다.
+
+#### 이유
+
+`BoSyAppConfigController`의 `resolve(db, "app.xxx.yyy", fallback)` 헬퍼는 `sy_prop` 테이블에서 해당 키를 조회한 뒤 없으면 Spring Environment(yml) 값을 반환한다. propKey가 `app.` 또는 `spring.` 접두어를 갖지 않으면 yml과 DB 간 키가 불일치해 DB 오버라이드가 동작하지 않는다.
+
+#### 네이밍 규칙
+
+| 용도 | propKey 예시 |
+|---|---|
+| Spring 내장 설정 오버라이드 | `spring.mail.host`, `spring.mail.port` |
+| 소셜 로그인 | `app.auth.social.google-client-id`, `app.auth.social.kakao-client-id` |
+| 토스 결제 | `app.toss.client-key`, `app.toss.secret-key` |
+| 지도 API | `app.map.kakao-app-key`, `app.map.naver-client-id` |
+| 카카오 알림톡 | `app.kakao.alimtalk.sender-key` |
+| 파일 업로드 | `app.file.upload-dir`, `app.file.max-size` |
+| 메일 설정 | `app.mail.from`, `app.mail.from-name` |
+
+#### 금지 패턴
+
+```
+# ❌ 금지 — app. 또는 spring. 접두어 없음
+prop_key = 'toss.client-key'
+prop_key = 'map.kakao-app-key'
+prop_key = 'auth.social.google-client-id'
+
+# ✅ 올바른 패턴
+prop_key = 'app.toss.client-key'
+prop_key = 'app.map.kakao-app-key'
+prop_key = 'app.auth.social.google-client-id'
+```
+
+#### 관련 컴포넌트
+
+- `BoSyAppConfigController.java` — `/api/bo/sy/app-config/{group}` 엔드포인트에서 `resolve()` 헬퍼로 DB 우선 조회
+- `SyPropService.java` — `sy_prop` CRUD
+- BO 화면: `syPropMng` (시스템 > 프로퍼티관리)
+
 ## 변경이력
 - 2026-04-16: 초기 작성
+- 2026-06-20: sy_prop propKey 네이밍 규칙 섹션 추가

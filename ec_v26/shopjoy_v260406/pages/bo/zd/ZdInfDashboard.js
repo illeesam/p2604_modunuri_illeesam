@@ -34,6 +34,51 @@ window.ZdInfDashboard = {
     const propSearchTotal = ref(0);
     const propSearchLoading = ref(false);
 
+    /* ── application.yml 조회 섹션 ── */
+    const ymlRows = reactive([]);
+    const ymlTotal = ref(0);
+    const ymlLoading = ref(false);
+    const ymlSearch = reactive({ searchValue: '' });
+
+    const handleYmlSearch = async () => {
+      ymlLoading.value = true;
+      ymlRows.splice(0);
+      try {
+        const res = await boApi.get('/bo/sy/app-config/all', coUtil.cofApiHdr('연동설정대시보드', 'yml조회'));
+        const list = res.data?.data || [];
+        const kw = ymlSearch.searchValue.trim().toLowerCase();
+        const filtered = kw ? list.filter(r => (r.ymlKey||'').toLowerCase().includes(kw) || (r.ymlValue||'').toLowerCase().includes(kw)) : list;
+        ymlRows.push(...filtered);
+        ymlTotal.value = filtered.length;
+      } catch (e) {
+        showToast(e.response?.data?.message || e.message || 'yml 조회 실패', 'error');
+      } finally {
+        ymlLoading.value = false;
+      }
+    };
+
+    /* ── yml 테이블 컬럼 리사이즈 ── */
+    const ymlColWidths = Vue.reactive({});
+    let _yResizeTh = null, _yResizeX = 0, _yResizeW = 0;
+    const onYmlResizeStart = (e, key) => {
+      e.preventDefault();
+      e.stopPropagation();
+      _yResizeTh = e.target.closest('th');
+      _yResizeX = e.clientX;
+      _yResizeW = _yResizeTh.offsetWidth;
+      document.body.classList.add('col-resizing');
+      const onMove = (ev) => {
+        ymlColWidths[key] = Math.max(40, _yResizeW + ev.clientX - _yResizeX) + 'px';
+      };
+      const onUp = () => {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        document.body.classList.remove('col-resizing');
+      };
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    };
+
     const onPropProfileSelectChange = (e) => {
       const val = e.target.value;
       propSearch.profile = val;
@@ -52,23 +97,21 @@ window.ZdInfDashboard = {
       propSearchLoading.value = true;
       propSearchRows.splice(0);
       try {
-        const params = { pageSize: 200 };
+        const params = { pageSize: 200, pageNo: 1 };
         if (propSearch.profile) params.propProfile = propSearch.profile;
         if (propSearch.propKey)  params.searchValue = propSearch.propKey;
-        const res = await boApi.get('/bo/sy/prop/page', {
-          params,
-          ...coUtil.apiHdr('연동설정대시보드', 'sy_prop조회'),
-        });
+        const res = await boApiSvc.syProp.getPage(params, '연동설정대시보드', 'sy_prop조회');
         const data = res.data?.data || {};
-        const list = data.pageList || data.list || [];
+        const list = data.pageList || [];
         propSearchRows.push(...list);
         propSearchTotal.value = data.pageTotalCount || list.length;
       } catch (e) {
-        showToast(e.response?.data?.message || 'sy_prop 조회 실패', 'error');
+        showToast(e.response?.data?.message || e.message || 'sy_prop 조회 실패', 'error');
       } finally {
         propSearchLoading.value = false;
       }
     };
+
 
 
     /* ##### [02] 그리드 컬럼 정의 ################################################### */
@@ -110,7 +153,7 @@ window.ZdInfDashboard = {
         feDesc: 'FE에서 Google Sign-In 버튼 초기화에 사용 (window.google.accounts.id.initialize)',
         feFile: 'sy_prop:propKey',
         beDesc: 'BE에서 Google 토큰 검증 및 사용자 정보 조회 시 사용',
-        beFile: 'sy_prop:ext.sdk.googleClientId',
+        beFile: 'sy_prop:app.ext-sdk.google-client-id',
         dbTable: 'mb_member_sns (sns_type=GOOGLE)',
       },
       {
@@ -122,7 +165,7 @@ window.ZdInfDashboard = {
         feDesc: 'FE에서 Kakao.init() 호출 시 사용하는 JavaScript 앱 키',
         feFile: 'sy_prop:propKey',
         beDesc: 'BE에서 Kakao REST API를 통한 토큰 검증 시 사용하는 REST API 키',
-        beFile: 'sy_prop:ext.sdk.kakaoJsKey',
+        beFile: 'sy_prop:app.ext-sdk.kakao-js-key',
         dbTable: 'mb_member_sns (sns_type=KAKAO)',
       },
       {
@@ -134,7 +177,7 @@ window.ZdInfDashboard = {
         feDesc: 'FE에서 Naver 로그인 버튼 초기화 시 사용 (naver.LoginWithNaverId)',
         feFile: 'sy_prop:propKey',
         beDesc: 'BE에서 Naver 액세스 토큰 검증 및 사용자 프로필 조회 시 사용',
-        beFile: 'sy_prop:ext.sdk.naverClientId',
+        beFile: 'sy_prop:app.ext-sdk.naver-client-id',
         dbTable: 'mb_member_sns (sns_type=NAVER)',
       },
       /* ── 결제 ── */
@@ -160,7 +203,7 @@ window.ZdInfDashboard = {
         feDesc: 'FE 지도 스크립트 로드 시 ncpClientId 파라미터로 사용',
         feFile: 'sy_prop:propKey',
         beDesc: 'BE에서 주소 → 좌표 변환(Geocoding) 등 서버 사이드 Maps API 호출 시 사용',
-        beFile: 'sy_prop:ext.sdk.naverMapClientId',
+        beFile: 'sy_prop:app.map.naver-map-client-id',
         dbTable: 'sy_site (site_address 좌표변환 시 사용)',
       },
       {
@@ -172,7 +215,7 @@ window.ZdInfDashboard = {
         feDesc: 'FE 지도 스크립트 로드 시 key 파라미터로 사용 (Maps JavaScript API)',
         feFile: 'sy_prop:propKey',
         beDesc: 'BE에서 서버 사이드 Geocoding / Places API 호출 시 사용',
-        beFile: 'sy_prop:ext.sdk.googleMapKey',
+        beFile: 'sy_prop:app.ext-sdk.google-map-api-key',
         dbTable: 'sy_site (site_address 좌표변환 시 사용)',
       },
       /* ── 메일 ── */
@@ -293,7 +336,7 @@ window.ZdInfDashboard = {
       try {
         const res = await boApi.get('/bo/sy/prop/list', {
           params: { pageSize: 999 },
-          ...coUtil.apiHdr('연동설정대시보드', '설정조회'),
+          ...coUtil.cofApiHdr('연동설정대시보드', '설정조회'),
         });
         const list = res.data?.data?.pageList || res.data?.data || [];
         list.forEach((p) => { if (p.propKey) _beCache[p.propKey] = p.propValueue || ''; });
@@ -323,7 +366,7 @@ window.ZdInfDashboard = {
       if (!meta) { row.testResult = '실패'; row.testMsg = '테스트 미정의'; return; }
       row._testing = true; row.testResult = '-'; row.testMsg = '확인 중...';
       try {
-        const res = await boApi.get(meta.url, coUtil.apiHdr('연동설정대시보드', meta.label + ' 테스트'));
+        const res = await boApi.get(meta.url, coUtil.cofApiHdr('연동설정대시보드', meta.label + ' 테스트'));
         const ok = res.data?.success !== false;
         row.testResult = ok ? '성공' : '실패';
         row.testMsg    = res.data?.data?.message || res.data?.message || (ok ? '정상' : '오류');
@@ -366,7 +409,31 @@ window.ZdInfDashboard = {
       await _fetchBeSettings();
       _buildRows();
       loading.value = false;
+      handlePropSearch();
+      handleYmlSearch();
     });
+
+    /* ── sy_prop 테이블 컬럼 리사이즈 ── */
+    const propColWidths = Vue.reactive({});
+    let _pResizeTh = null, _pResizeX = 0, _pResizeW = 0;
+    const onPropResizeStart = (e, key) => {
+      e.preventDefault();
+      e.stopPropagation();
+      _pResizeTh = e.target.closest('th');
+      _pResizeX = e.clientX;
+      _pResizeW = _pResizeTh.offsetWidth;
+      document.body.classList.add('col-resizing');
+      const onMove = (ev) => {
+        propColWidths[key] = Math.max(40, _pResizeW + ev.clientX - _pResizeX) + 'px';
+      };
+      const onUp = () => {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        document.body.classList.remove('col-resizing');
+      };
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    };
 
     /* ##### [08] 리턴 ############################################################## */
 
@@ -380,6 +447,10 @@ window.ZdInfDashboard = {
       /* sy_prop 조회 */
       PROFILE_OPTIONS_ZD, propSearch, propSearchRows, propSearchTotal, propSearchLoading,
       onPropProfileSelectChange, onPropProfileInputChange, handlePropSearch,
+      propColWidths, onPropResizeStart,
+      /* yml 조회 */
+      ymlRows, ymlTotal, ymlLoading, ymlSearch, handleYmlSearch,
+      ymlColWidths, onYmlResizeStart,
     };
   },
 
@@ -563,34 +634,92 @@ window.ZdInfDashboard = {
           @keyup.enter="handlePropSearch" />
         <button class="btn btn_search" style="margin-left:6px;" @click="handlePropSearch">조회</button>
       </template>
-      <table class="admin-table" style="font-size:12px;">
-        <thead><tr>
-          <th style="width:36px;text-align:center;">번호</th>
-          <th>propKey</th>
-          <th style="width:140px;">propProfile</th>
-          <th style="width:160px;">표시명</th>
-          <th>propValue</th>
-          <th style="width:60px;text-align:center;">useYn</th>
-          <th style="width:140px;text-align:center;">등록일시</th>
-          <th style="width:140px;text-align:center;">수정일시</th>
-        </tr></thead>
-        <tbody>
-          <tr v-if="propSearchLoading"><td colspan="8" style="text-align:center;padding:20px;color:#aaa;">조회 중...</td></tr>
-          <tr v-else-if="!propSearchRows.length"><td colspan="8" style="text-align:center;padding:20px;color:#aaa;">데이터가 없습니다.</td></tr>
-          <tr v-for="(r, idx) in propSearchRows" :key="r.propId">
-            <td style="text-align:center;">{{ idx + 1 }}</td>
-            <td style="font-family:monospace;">{{ r.propKey }}</td>
-            <td style="font-family:monospace;font-size:11px;">{{ r.propProfile }}</td>
-            <td>{{ r.propLabel }}</td>
-            <td style="font-family:monospace;word-break:break-all;max-width:260px;">{{ r.propValue }}</td>
-            <td style="text-align:center;">
-              <span :class="r.useYn === 'Y' ? 'badge badge-green' : 'badge badge-gray'">{{ r.useYn }}</span>
-            </td>
-            <td style="text-align:center;font-size:11px;">{{ r.regDate }}</td>
-            <td style="text-align:center;font-size:11px;">{{ r.updDate }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <div style="max-height:210px;overflow-y:auto;border:1px solid #e8e8e8;border-radius:6px;">
+        <table class="bo-table" style="table-layout:fixed;width:100%;">
+          <colgroup>
+            <col style="width:44px;" />
+            <col style="width:110px;" />
+            <col style="width:180px;" />
+            <col />
+            <col style="width:130px;" />
+            <col style="width:56px;" />
+            <col style="width:130px;" />
+            <col style="width:130px;" />
+          </colgroup>
+          <thead>
+            <tr>
+              <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;' + (propColWidths._no ? 'width:' + propColWidths._no + ';' : '')">번호<div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onPropResizeStart($event, '_no')"></div></th>
+              <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;' + (propColWidths.profile ? 'width:' + propColWidths.profile + ';' : '')">propProfile<div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onPropResizeStart($event, 'profile')"></div></th>
+              <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;' + (propColWidths.propKey ? 'width:' + propColWidths.propKey + ';' : '')">propKey<div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onPropResizeStart($event, 'propKey')"></div></th>
+              <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;' + (propColWidths.propValue ? 'width:' + propColWidths.propValue + ';' : '')">propValue<div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onPropResizeStart($event, 'propValue')"></div></th>
+              <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;' + (propColWidths.propLabel ? 'width:' + propColWidths.propLabel + ';' : '')">표시명<div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onPropResizeStart($event, 'propLabel')"></div></th>
+              <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;' + (propColWidths.useYn ? 'width:' + propColWidths.useYn + ';' : '')">useYn<div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onPropResizeStart($event, 'useYn')"></div></th>
+              <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;' + (propColWidths.regDate ? 'width:' + propColWidths.regDate + ';' : '')">등록일시<div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onPropResizeStart($event, 'regDate')"></div></th>
+              <th style="position:sticky;top:0;z-index:3;background:#fafafa;">수정일시</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-if="propSearchLoading">
+              <td colspan="8" style="text-align:center;padding:16px;color:#aaa;">조회 중...</td>
+            </tr>
+            <tr v-else-if="!propSearchRows.length">
+              <td colspan="8" style="text-align:center;padding:16px;color:#aaa;">데이터가 없습니다.</td>
+            </tr>
+            <tr v-for="(r, idx) in propSearchRows" :key="r.propId">
+              <td style="text-align:center;">{{ idx + 1 }}</td>
+              <td style="font-family:monospace;font-size:11px;text-align:center;">{{ r.propProfile }}</td>
+              <td style="font-family:monospace;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="r.propKey">{{ r.propKey }}</td>
+              <td style="font-family:monospace;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="r.propValue">{{ r.propValue }}</td>
+              <td style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="r.propLabel">{{ r.propLabel }}</td>
+              <td style="text-align:center;">
+                <span :class="r.useYn === 'Y' ? 'badge badge-green' : 'badge badge-gray'">{{ r.useYn }}</span>
+              </td>
+              <td style="text-align:center;font-size:11px;">{{ r.regDate }}</td>
+              <td style="text-align:center;font-size:11px;">{{ r.updDate }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </bo-container>
+
+    <bo-container title="application.yml 조회 정보" :count-text="ymlTotal + '건'">
+      <template #toolbar-actions>
+        <label class="search-label" style="margin-right:4px;">키워드</label>
+        <input type="text" class="form-control" style="width:200px;font-family:monospace;font-size:12px;"
+          placeholder="yml 키 / 값 검색"
+          v-model="ymlSearch.searchValue"
+          @keyup.enter="handleYmlSearch" />
+        <button class="btn btn_search" style="margin-left:6px;" @click="handleYmlSearch">조회</button>
+      </template>
+      <div style="max-height:320px;overflow-y:auto;border:1px solid #e8e8e8;border-radius:6px;">
+        <table class="bo-table" style="table-layout:fixed;width:100%;">
+          <colgroup>
+            <col style="width:44px;" />
+            <col style="width:50%;" />
+            <col />
+          </colgroup>
+          <thead>
+            <tr>
+              <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;' + (ymlColWidths._no ? 'width:' + ymlColWidths._no + ';' : '')">번호<div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onYmlResizeStart($event, '_no')"></div></th>
+              <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;' + (ymlColWidths.ymlKey ? 'width:' + ymlColWidths.ymlKey + ';' : '')">yml 키<div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onYmlResizeStart($event, 'ymlKey')"></div></th>
+              <th style="position:sticky;top:0;z-index:3;background:#fafafa;">yml 값</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-if="ymlLoading">
+              <td colspan="3" style="text-align:center;padding:16px;color:#aaa;">조회 중...</td>
+            </tr>
+            <tr v-else-if="!ymlRows.length">
+              <td colspan="3" style="text-align:center;padding:16px;color:#aaa;">데이터가 없습니다.</td>
+            </tr>
+            <tr v-for="(r, idx) in ymlRows" :key="idx">
+              <td style="text-align:center;">{{ idx + 1 }}</td>
+              <td style="font-family:monospace;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="r.ymlKey">{{ r.ymlKey }}</td>
+              <td style="font-family:monospace;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="r.ymlValue">{{ r.ymlValue }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </bo-container>
 
     <bo-container>

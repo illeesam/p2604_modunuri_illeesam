@@ -39,10 +39,10 @@ window.ZdTestMapGoogle = {
 
     onMounted(async () => {
       try {
-        const res = await boApiSvc.syProp?.getList?.({ propKeys: 'ext.sdk.googleMapApiKey' }, '구글 지도 API 테스트', '키 조회');
+        const res = await boApiSvc.syProp?.getList?.({ propKeys: 'app.ext-sdk.google-map-api-key' }, '구글 지도 API 테스트', '키 조회');
         const list = res?.data?.data || [];
         list.forEach(p => {
-          if (p.propKey === 'ext.sdk.googleMapApiKey') cfg.apiKey = p.propValue || '';
+          if (p.propKey === 'app.ext-sdk.google-map-api-key') cfg.apiKey = p.propValue || '';
         });
       } catch (e) {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);
@@ -131,8 +131,8 @@ window.ZdTestMapGoogle = {
       if (!cfg.apiKey) { showToast('API Key 를 입력하세요.', 'error'); return; }
       try {
         await boApi.put('/bo/sy/prop/bulk', [
-          { propKey: 'ext.sdk.googleMapApiKey', propValue: cfg.apiKey },
-        ], coUtil.apiHdr('구글 지도 테스트', '키 저장'));
+          { propKey: 'app.ext-sdk.google-map-api-key', propValue: cfg.apiKey },
+        ], coUtil.cofApiHdr('구글 지도 테스트', '키 저장'));
         showToast('sy_prop 에 저장되었습니다.', 'success');
       } catch (e) {
         showToast(e.response?.data?.message || e.message || '저장 실패', 'error', 0);
@@ -163,7 +163,7 @@ window.ZdTestMapGoogle = {
       <div class="form-row" style="gap:8px;margin-bottom:8px">
         <div class="form-group" style="flex:1">
           <label class="form-label">Google Maps API Key <span style="color:#e74c3c">*</span></label>
-          <input class="form-control" v-model="cfg.apiKey" placeholder="sy_prop: ext.sdk.googleMapApiKey" style="font-family:monospace" />
+          <input class="form-control" v-model="cfg.apiKey" placeholder="sy_prop: app.ext-sdk.google-map-api-key" style="font-family:monospace" />
         </div>
         <div style="display:flex;align-items:flex-end;gap:6px;padding-bottom:1px">
           <button class="btn btn_save" @click="handleBtnAction('key-save')">sy_prop 저장</button>
@@ -240,12 +240,12 @@ window.ZdTestMapGoogle = {
     <div style="padding:12px;font-size:12px;line-height:1.8;color:#444">
       <b>1.</b> Google Cloud Console → Maps JavaScript API + Geocoding API 활성화<br>
       <b>2.</b> API 키 생성 → HTTP 리퍼러 제한: <code>127.0.0.1:*</code>, <code>localhost:*</code><br>
-      <b>3.</b> sy_prop <code>ext.sdk.googleMapApiKey</code> 에 API Key 등록<br>
+      <b>3.</b> sy_prop <code>app.ext-sdk.google-map-api-key</code> 에 API Key 등록<br>
       <b>4.</b> SDK 로드 → 지도 렌더링 → 지오코딩 순서로 테스트
     </div>
   </div>
 
-  <bo-zd-yml-grid />
-  <bo-zd-sy-prop-grid prop-key-prefixes="ext.sdk.googleMapApiKey" default-prop-key-filter="ext.sdk.googleMap" />
+  <bo-zd-yml-grid endpoint="/bo/sy/app-config/map" title="application.yml — 지도 API 설정" />
+  <bo-zd-sy-prop-grid prop-key-prefixes="app.ext-sdk.,app.map." default-prop-key-filter="app.ext-sdk.google-map" />
 </div>`,
 };

@@ -82,7 +82,7 @@ window.ZdTestAiChatbot = {
           messages:     result.messages.filter(m => m.role !== 'system').map(m => ({ role: m.role, content: m.content })),
           maxTokens:    cfg.maxTokens,
           temperature:  cfg.temperature,
-        }, coUtil.apiHdr('AI 챗봇 테스트', '메시지 전송'));
+        }, coUtil.cofApiHdr('AI 챗봇 테스트', '메시지 전송'));
         const d = res.data?.data || {};
         result.messages.push({ role: 'assistant', content: d.content || '(응답 없음)', time: new Date().toLocaleTimeString() });
         result.usage  = d.usage || null;
@@ -107,7 +107,7 @@ window.ZdTestAiChatbot = {
           { propKey: 'app.ai.openai.model',   propValue: cfg.openaiModel },
           { propKey: 'app.ai.claude.api-key', propValue: cfg.claudeApiKey },
           { propKey: 'app.ai.claude.model',   propValue: cfg.claudeModel },
-        ], coUtil.apiHdr('AI 챗봇 테스트', '키 저장'));
+        ], coUtil.cofApiHdr('AI 챗봇 테스트', '키 저장'));
         showToast('sy_prop 에 저장되었습니다.', 'success');
       } catch (e) {
         showToast(e.response?.data?.message || e.message || '저장 실패', 'error', 0);
@@ -233,6 +233,7 @@ window.ZdTestAiChatbot = {
     </div>
   </div>
 
+  <bo-zd-yml-grid endpoint="/bo/sy/app-config/all" title="application.yml — AI 챗봇 설정" />
   <bo-zd-sy-prop-grid prop-key-prefixes="app.ai." default-prop-key-filter="app.ai." />
 </div>`,
 };
