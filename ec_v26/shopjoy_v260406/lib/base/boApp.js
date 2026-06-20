@@ -298,8 +298,8 @@
         const d = ev.detail || {};
         const st = d.status;
         let label = '';
-        if (d.method && d.url) {
-          label = `${d.method} ${d.url} ${st}`;
+        if (d.method && (d.fullUrl || d.url)) {
+          label = `${d.method} ${d.fullUrl || d.url} ${st}`;
           if (d.uiLabel) label += `  [${d.uiLabel}]`;
         }
         let msg = label ? `${label}\n${d.message || ''}` : d.message || '';

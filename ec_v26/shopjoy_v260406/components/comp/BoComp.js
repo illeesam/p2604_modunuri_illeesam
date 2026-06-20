@@ -1637,6 +1637,7 @@ window.BoZdYmlGrid = {
     const columns = [
       { key: 'ymlKey',   label: 'yml 키',  cellStyle: 'font-family:monospace;color:#6b7280;text-align:left' },
       { key: 'ymlValue', label: 'yml 값',  cellStyle: 'font-family:monospace;font-size:11px;word-break:break-all;text-align:left' },
+      { key: 'source',   label: '출처',    align: 'center', badge: (row) => row.source === 'DB' ? 'badge-blue' : row.source === 'YML' ? 'badge-green' : 'badge-gray' },
     ];
 
     const loadRows = async () => {
@@ -1661,6 +1662,7 @@ window.BoZdYmlGrid = {
   <div class="toolbar">
     <span class="list-title">{{ title }}</span>
     <span class="list-count">{{ rows.length }}건</span>
+    <code style="margin-left:8px;font-size:11px;color:#9ca3af;font-weight:400;background:#f3f4f6;padding:2px 6px;border-radius:4px;">GET /api{{ endpoint }}</code>
     <button class="btn btn_search" style="margin-left:auto;height:30px;font-size:12px;padding:0 10px;" :disabled="loading" @click="loadRows">
       {{ loading ? '조회중…' : '재조회' }}
     </button>
@@ -1699,29 +1701,27 @@ window.BoZdSyPropGrid = {
     const syPropKeyFilter = ref(props.defaultPropKeyFilter || '');
 
     const columns = [
-      { key: 'propKey',     label: 'propKey',     cellStyle: 'font-family:monospace;color:#1e40af;text-align:left' },
       { key: 'propProfile', label: 'propProfile', fmt: (v) => v || '-', cellStyle: 'font-size:11px;color:#6b7280;text-align:left' },
-      { key: 'propLabel',   label: '표시명',       cellStyle: 'text-align:left' },
+      { key: 'propKey',     label: 'propKey',     cellStyle: 'font-family:monospace;color:#1e40af;text-align:left' },
       { key: 'propValue',   label: 'propValue',   fmt: (v) => v || '-', cellStyle: 'font-family:monospace;font-size:11px;word-break:break-all;text-align:left' },
+      { key: 'propLabel',   label: '표시명',       cellStyle: 'text-align:left' },
       { key: 'useYn',       label: 'useYn',       badge: (row) => row.useYn === 'Y' ? 'badge-green' : 'badge-gray', align: 'center' },
       { key: 'regDate',     label: '등록일시',     fmt: (v) => v ? String(v).replace('T',' ').slice(0,16) : '-', align: 'center' },
       { key: 'updDate',     label: '수정일시',     fmt: (v) => v ? String(v).replace('T',' ').slice(0,16) : '-', align: 'center' },
     ];
 
+    // propProfile 원본값(^all^local^ 형태) 고유 목록
     const cfPropProfileOptions = computed(() => {
       const set = new Set();
-      rows.forEach((r) => {
-        if (!r.propProfile) return;
-        r.propProfile.split('^').map((s) => s.trim()).filter(Boolean).forEach((s) => set.add(s));
-      });
-      return [{ value: '', label: '전체' }, ...Array.from(set).sort().map((s) => ({ value: s, label: s }))];
+      rows.forEach((r) => { if (r.propProfile) set.add(r.propProfile); });
+      return [{ value: '', label: '전체 환경' }, ...Array.from(set).sort().map((s) => ({ value: s, label: s }))];
     });
 
     const cfFilteredRows = computed(() => {
       const p = syPropProfile.value;
       const keywords = syPropKeyFilter.value.split(';').map((s) => s.trim()).filter(Boolean);
       return rows.filter((r) => {
-        if (p && (!r.propProfile || !r.propProfile.includes('^' + p + '^'))) return false;
+        if (p && r.propProfile !== p) return false;
         if (keywords.length === 0) return true;
         return keywords.some((kw) => r.propKey && r.propKey.includes(kw));
       });
@@ -1731,7 +1731,6 @@ window.BoZdSyPropGrid = {
       loading.value = true;
       loadError.value = '';
       try {
-        // propKeyPrefixes: ';' 또는 ',' 둘 다 허용 → ',' 로 정규화
         const prefixes = props.propKeyPrefixes
           ? props.propKeyPrefixes.split(/[;,]/).map((s) => s.trim()).filter(Boolean).join(',')
           : '';
@@ -1741,13 +1740,9 @@ window.BoZdSyPropGrid = {
           pageSize: 999,
         }, 'BoZdSyPropGrid', 'prop 조회');
         rows.splice(0, rows.length, ...(res?.data?.data || []));
-        // 로드 후 존재하는 프로파일 기준 default 자동설정 (local → dev → prod)
-        const profileSet = new Set();
-        rows.forEach((r) => {
-          if (r.propProfile) r.propProfile.split('^').map((s) => s.trim()).filter(Boolean).forEach((s) => profileSet.add(s));
-        });
-        const found = ['local', 'dev', 'prod'].find((p) => profileSet.has(p));
-        if (found) syPropProfile.value = found;
+        // 로드 후 첫 번째 프로파일 옵션으로 자동 선택 (전체 환경 제외)
+        const first = rows.find((r) => r.propProfile)?.propProfile || '';
+        syPropProfile.value = first;
       } catch (e) {
         loadError.value = e?.response?.data?.message || e?.message || '조회 실패';
       } finally {
@@ -1766,16 +1761,10 @@ window.BoZdSyPropGrid = {
     <span class="list-count">{{ cfFilteredRows.length }}건 / 총 {{ rows.length }}건</span>
     <div style="margin-left:auto;display:flex;align-items:center;gap:6px;">
       <label style="font-size:12px;color:#6b7280;white-space:nowrap;">propProfile</label>
-      <select class="form-control" style="width:100px;height:30px;font-size:12px;padding:2px 4px;"
+      <select class="form-control" style="width:130px;height:30px;font-size:12px;padding:2px 4px;"
+        :value="syPropProfile"
         @change="syPropProfile = $event.target.value">
-        <option value="">전체</option>
-        <option value="local" :selected="syPropProfile === 'local'">local</option>
-        <option value="dev"   :selected="syPropProfile === 'dev'">dev</option>
-        <option value="prod"  :selected="syPropProfile === 'prod'">prod</option>
-        <template v-for="opt in cfPropProfileOptions">
-          <option v-if="opt.value &amp;&amp; opt.value !== 'local' &amp;&amp; opt.value !== 'dev' &amp;&amp; opt.value !== 'prod'"
-            :key="opt.value" :value="opt.value" :selected="syPropProfile === opt.value">{{ opt.value }}</option>
-        </template>
+        <option v-for="opt in cfPropProfileOptions" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
       </select>
       <input type="text" class="form-control" style="width:110px;height:30px;font-size:12px;padding:2px 8px;"
         :value="syPropProfile" placeholder="직접입력"
@@ -1785,7 +1774,7 @@ window.BoZdSyPropGrid = {
         :value="syPropKeyFilter" placeholder="키워드 ; 구분 입력"
         @input="syPropKeyFilter = $event.target.value" />
       <button class="btn btn_search" style="height:30px;font-size:12px;padding:0 10px;" :disabled="loading" @click="loadRows">
-        {{ loading ? '조회중…' : '재조회' }}
+        {{ loading ? '조회중…' : '조회' }}
       </button>
     </div>
   </div>

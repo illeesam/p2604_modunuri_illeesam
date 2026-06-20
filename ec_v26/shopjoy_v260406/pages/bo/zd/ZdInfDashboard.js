@@ -334,12 +334,12 @@ window.ZdInfDashboard = {
 
     const _fetchBeSettings = async () => {
       try {
-        const res = await boApi.get('/bo/sy/prop/list', {
+        const res = await boApi.get('/bo/sy/prop', {
           params: { pageSize: 999 },
           ...coUtil.cofApiHdr('연동설정대시보드', '설정조회'),
         });
-        const list = res.data?.data?.pageList || res.data?.data || [];
-        list.forEach((p) => { if (p.propKey) _beCache[p.propKey] = p.propValueue || ''; });
+        const list = res.data?.data || [];
+        list.forEach((p) => { if (p.propKey) _beCache[p.propKey] = p.propValue || ''; });
       } catch (_) { /* BE 조회 실패 — beStat '-' 유지 */ }
     };
 

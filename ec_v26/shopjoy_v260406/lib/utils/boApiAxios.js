@@ -232,7 +232,7 @@
         }
 
         global.dispatchEvent(new CustomEvent('api-response-error', {
-          detail: { scope: 'bo', method: (cfg.method || 'get').toUpperCase(), url: displayUrl, status: status || 0, message: errMsg, data: res && res.data, errorDetails: errorDetails, uiLabel: uiLabel, reqHeaders: errReqHeaderInfo, resHeaders: errResHeaderInfo },
+          detail: { scope: 'bo', method: (cfg.method || 'get').toUpperCase(), url: displayUrl, fullUrl: cfg.url || displayUrl, status: status || 0, message: errMsg, data: res && res.data, errorDetails: errorDetails, uiLabel: uiLabel, reqHeaders: errReqHeaderInfo, resHeaders: errResHeaderInfo },
         }));
       } catch (_) {}
     }

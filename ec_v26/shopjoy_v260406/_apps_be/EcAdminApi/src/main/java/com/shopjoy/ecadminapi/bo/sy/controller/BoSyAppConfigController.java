@@ -87,15 +87,6 @@ public class BoSyAppConfigController {
         return propProfile.contains("^" + active + "^");
     }
 
-    /**
-     * DB에서 propKey 기준 값 조회 (use_yn=Y + profile 매칭).
-     * 없으면 ymlFallback 반환.
-     */
-    private String resolve(Map<String, String> dbProps, String propKey, String ymlFallback) {
-        String dbVal = dbProps.get(propKey);
-        return (dbVal != null && !dbVal.isBlank()) ? dbVal : ymlFallback;
-    }
-
     /** 전체 sy_prop를 propKey → propValue 맵으로 로드 (현재 profile 매칭) */
     private Map<String, String> loadDbProps() {
         String active = activeProfile();
@@ -111,12 +102,21 @@ public class BoSyAppConfigController {
                 ));
     }
 
-    /** key-value 행 반환 포맷 — mask=true 면 값 마스킹 */
-    private Map<String, String> row(String key, String value, boolean mask) {
+    private Map<String, String> row(String key, String value, boolean mask, String source) {
         Map<String, String> m = new LinkedHashMap<>();
         m.put("ymlKey", key);
-        m.put("ymlValue", mask ? maskSecret(value) : (value == null || value.isBlank() ? "(미설정)" : value));
+        boolean empty = (value == null || value.isBlank());
+        m.put("ymlValue", empty ? "(미설정)" : (mask ? maskSecret(value) : value));
+        m.put("source", empty ? "(미설정)" : (source != null ? source : "YML"));
         return m;
+    }
+
+    /** resolve + source 추적 */
+    private Map<String, String> rowResolved(Map<String, String> dbProps, String propKey, String ymlFallback, boolean mask) {
+        String dbVal = dbProps.get(propKey);
+        boolean fromDb = (dbVal != null && !dbVal.isBlank());
+        String value  = fromDb ? dbVal : ymlFallback;
+        return row(propKey, value, mask, fromDb ? "DB" : "YML");
     }
 
     /** SECRET / password / access-key / secret-key 등 민감값 마스킹 */
@@ -142,10 +142,10 @@ public class BoSyAppConfigController {
     public ResponseEntity<ApiResponse<List<Map<String, String>>>> social() {
         Map<String, String> db = loadDbProps();
         return ResponseEntity.ok(ApiResponse.ok(List.of(
-            row("app.auth.social.google-userinfo-url", resolve(db, "app.auth.social.google-userinfo-url", googleUserinfoUrl), false),
-            row("app.auth.social.kakao-userinfo-url",  resolve(db, "app.auth.social.kakao-userinfo-url",  kakaoUserinfoUrl),  false),
-            row("app.auth.social.naver-userinfo-url",  resolve(db, "app.auth.social.naver-userinfo-url",  naverUserinfoUrl),  false),
-            row("app.auth.social.default-site-id",     resolve(db, "app.auth.social.default-site-id",     socialDefaultSiteId), false)
+            rowResolved(db, "app.auth.social.google-userinfo-url", googleUserinfoUrl, false),
+            rowResolved(db, "app.auth.social.kakao-userinfo-url",  kakaoUserinfoUrl,  false),
+            rowResolved(db, "app.auth.social.naver-userinfo-url",  naverUserinfoUrl,  false),
+            rowResolved(db, "app.auth.social.default-site-id",     socialDefaultSiteId, false)
         )));
     }
 
@@ -154,10 +154,10 @@ public class BoSyAppConfigController {
     public ResponseEntity<ApiResponse<List<Map<String, String>>>> toss() {
         Map<String, String> db = loadDbProps();
         return ResponseEntity.ok(ApiResponse.ok(List.of(
-            row("app.toss.confirm-url",     resolve(db, "app.toss.confirm-url",     tossConfirmUrl),    false),
-            row("app.toss.cancel-url-base", resolve(db, "app.toss.cancel-url-base", tossCancelUrlBase), false),
-            row("app.toss.client-key",      resolve(db, "app.toss.client-key",      tossClientKey),     false),
-            row("app.toss.secret-key",      resolve(db, "app.toss.secret-key",      tossSecretKey),     true)
+            rowResolved(db, "app.toss.confirm-url",     tossConfirmUrl,    false),
+            rowResolved(db, "app.toss.cancel-url-base", tossCancelUrlBase, false),
+            rowResolved(db, "app.toss.client-key",      tossClientKey,     false),
+            rowResolved(db, "app.toss.secret-key",      tossSecretKey,     true)
         )));
     }
 
@@ -166,8 +166,8 @@ public class BoSyAppConfigController {
     public ResponseEntity<ApiResponse<List<Map<String, String>>>> map() {
         Map<String, String> db = loadDbProps();
         return ResponseEntity.ok(ApiResponse.ok(List.of(
-            row("app.map.kakao-js-key",        resolve(db, "app.map.kakao-js-key",        kakaoJsKey),        false),
-            row("app.map.naver-map-client-id", resolve(db, "app.map.naver-map-client-id", naverMapClientId),  false)
+            rowResolved(db, "app.map.kakao-js-key",        kakaoJsKey,       false),
+            rowResolved(db, "app.map.naver-map-client-id", naverMapClientId, false)
         )));
     }
 
@@ -176,12 +176,12 @@ public class BoSyAppConfigController {
     public ResponseEntity<ApiResponse<List<Map<String, String>>>> mail() {
         Map<String, String> db = loadDbProps();
         return ResponseEntity.ok(ApiResponse.ok(List.of(
-            row("spring.mail.host",     resolve(db, "spring.mail.host",     mailHost),     false),
-            row("spring.mail.port",     resolve(db, "spring.mail.port",     mailPort),     false),
-            row("spring.mail.username", resolve(db, "spring.mail.username", mailUsername), false),
-            row("spring.mail.password", resolve(db, "spring.mail.password", ""),           true),
-            row("app.mail.from",        resolve(db, "app.mail.from",        mailFrom),     false),
-            row("app.mail.from-nm",     resolve(db, "app.mail.from-nm",     mailFromNm),   false)
+            rowResolved(db, "spring.mail.host",     mailHost,     false),
+            rowResolved(db, "spring.mail.port",     mailPort,     false),
+            rowResolved(db, "spring.mail.username", mailUsername, false),
+            rowResolved(db, "spring.mail.password", "",           true),
+            rowResolved(db, "app.mail.from",        mailFrom,     false),
+            rowResolved(db, "app.mail.from-nm",     mailFromNm,   false)
         )));
     }
 
@@ -190,7 +190,7 @@ public class BoSyAppConfigController {
     public ResponseEntity<ApiResponse<List<Map<String, String>>>> kakao() {
         Map<String, String> db = loadDbProps();
         return ResponseEntity.ok(ApiResponse.ok(List.of(
-            row("app.kakao.alimtalk.sender-key", resolve(db, "app.kakao.alimtalk.sender-key", kakaoAlimtalkSenderKey), true)
+            rowResolved(db, "app.kakao.alimtalk.sender-key", kakaoAlimtalkSenderKey, true)
         )));
     }
 
@@ -199,20 +199,20 @@ public class BoSyAppConfigController {
     public ResponseEntity<ApiResponse<List<Map<String, String>>>> file() {
         Map<String, String> db = loadDbProps();
         return ResponseEntity.ok(ApiResponse.ok(List.of(
-            row("app.file.storage-type",  resolve(db, "app.file.storage-type",  fileStorageType), false),
-            row("app.file.cdn-host",      resolve(db, "app.file.cdn-host",      fileCdnHost),     false),
+            rowResolved(db, "app.file.storage-type",    fileStorageType, false),
+            rowResolved(db, "app.file.cdn-host",        fileCdnHost,     false),
             // AWS S3
-            row("app.file.aws.bucket-name", resolve(db, "app.file.aws.bucket-name", awsBucketName), false),
-            row("app.file.aws.region",      resolve(db, "app.file.aws.region",      awsRegion),      false),
-            row("app.file.aws.access-key",  resolve(db, "app.file.aws.access-key",  awsAccessKey),   true),
-            row("app.file.aws.secret-key",  resolve(db, "app.file.aws.secret-key",  awsSecretKey),   true),
-            row("app.file.aws.cdn-url",     resolve(db, "app.file.aws.cdn-url",     awsCdnUrl),      false),
+            rowResolved(db, "app.file.aws.bucket-name", awsBucketName, false),
+            rowResolved(db, "app.file.aws.region",      awsRegion,      false),
+            rowResolved(db, "app.file.aws.access-key",  awsAccessKey,   true),
+            rowResolved(db, "app.file.aws.secret-key",  awsSecretKey,   true),
+            rowResolved(db, "app.file.aws.cdn-url",     awsCdnUrl,      false),
             // NCP OBS
-            row("app.file.ncp.bucket-name", resolve(db, "app.file.ncp.bucket-name", ncpBucketName), false),
-            row("app.file.ncp.endpoint",    resolve(db, "app.file.ncp.endpoint",    ncpEndpoint),    false),
-            row("app.file.ncp.access-key",  resolve(db, "app.file.ncp.access-key",  ncpAccessKey),   true),
-            row("app.file.ncp.secret-key",  resolve(db, "app.file.ncp.secret-key",  ncpSecretKey),   true),
-            row("app.file.ncp.cdn-url",     resolve(db, "app.file.ncp.cdn-url",     ncpCdnUrl),      false)
+            rowResolved(db, "app.file.ncp.bucket-name", ncpBucketName, false),
+            rowResolved(db, "app.file.ncp.endpoint",    ncpEndpoint,    false),
+            rowResolved(db, "app.file.ncp.access-key",  ncpAccessKey,   true),
+            rowResolved(db, "app.file.ncp.secret-key",  ncpSecretKey,   true),
+            rowResolved(db, "app.file.ncp.cdn-url",     ncpCdnUrl,      false)
         )));
     }
 
@@ -222,40 +222,40 @@ public class BoSyAppConfigController {
         Map<String, String> db = loadDbProps();
         return ResponseEntity.ok(ApiResponse.ok(List.of(
             // 소셜
-            row("app.auth.social.google-userinfo-url", resolve(db, "app.auth.social.google-userinfo-url", googleUserinfoUrl),  false),
-            row("app.auth.social.kakao-userinfo-url",  resolve(db, "app.auth.social.kakao-userinfo-url",  kakaoUserinfoUrl),   false),
-            row("app.auth.social.naver-userinfo-url",  resolve(db, "app.auth.social.naver-userinfo-url",  naverUserinfoUrl),   false),
-            row("app.auth.social.default-site-id",     resolve(db, "app.auth.social.default-site-id",     socialDefaultSiteId), false),
+            rowResolved(db, "app.auth.social.google-userinfo-url", googleUserinfoUrl,  false),
+            rowResolved(db, "app.auth.social.kakao-userinfo-url",  kakaoUserinfoUrl,   false),
+            rowResolved(db, "app.auth.social.naver-userinfo-url",  naverUserinfoUrl,   false),
+            rowResolved(db, "app.auth.social.default-site-id",     socialDefaultSiteId, false),
             // 토스
-            row("app.toss.confirm-url",     resolve(db, "app.toss.confirm-url",     tossConfirmUrl),    false),
-            row("app.toss.cancel-url-base", resolve(db, "app.toss.cancel-url-base", tossCancelUrlBase), false),
-            row("app.toss.client-key",      resolve(db, "app.toss.client-key",      tossClientKey),     false),
-            row("app.toss.secret-key",      resolve(db, "app.toss.secret-key",      tossSecretKey),     true),
+            rowResolved(db, "app.toss.confirm-url",     tossConfirmUrl,    false),
+            rowResolved(db, "app.toss.cancel-url-base", tossCancelUrlBase, false),
+            rowResolved(db, "app.toss.client-key",      tossClientKey,     false),
+            rowResolved(db, "app.toss.secret-key",      tossSecretKey,     true),
             // 지도
-            row("app.map.kakao-js-key",        resolve(db, "app.map.kakao-js-key",        kakaoJsKey),       false),
-            row("app.map.naver-map-client-id", resolve(db, "app.map.naver-map-client-id", naverMapClientId), false),
+            rowResolved(db, "app.map.kakao-js-key",        kakaoJsKey,       false),
+            rowResolved(db, "app.map.naver-map-client-id", naverMapClientId, false),
             // 메일
-            row("spring.mail.host",     resolve(db, "spring.mail.host",     mailHost),     false),
-            row("spring.mail.port",     resolve(db, "spring.mail.port",     mailPort),     false),
-            row("spring.mail.username", resolve(db, "spring.mail.username", mailUsername), false),
-            row("spring.mail.password", resolve(db, "spring.mail.password", ""),           true),
-            row("app.mail.from",        resolve(db, "app.mail.from",        mailFrom),     false),
-            row("app.mail.from-nm",     resolve(db, "app.mail.from-nm",     mailFromNm),   false),
+            rowResolved(db, "spring.mail.host",     mailHost,     false),
+            rowResolved(db, "spring.mail.port",     mailPort,     false),
+            rowResolved(db, "spring.mail.username", mailUsername, false),
+            rowResolved(db, "spring.mail.password", "",           true),
+            rowResolved(db, "app.mail.from",        mailFrom,     false),
+            rowResolved(db, "app.mail.from-nm",     mailFromNm,   false),
             // 카카오 알림톡
-            row("app.kakao.alimtalk.sender-key", resolve(db, "app.kakao.alimtalk.sender-key", kakaoAlimtalkSenderKey), true),
+            rowResolved(db, "app.kakao.alimtalk.sender-key", kakaoAlimtalkSenderKey, true),
             // 파일 저장소
-            row("app.file.storage-type",    resolve(db, "app.file.storage-type",    fileStorageType), false),
-            row("app.file.cdn-host",        resolve(db, "app.file.cdn-host",        fileCdnHost),     false),
-            row("app.file.aws.bucket-name", resolve(db, "app.file.aws.bucket-name", awsBucketName),  false),
-            row("app.file.aws.region",      resolve(db, "app.file.aws.region",      awsRegion),       false),
-            row("app.file.aws.access-key",  resolve(db, "app.file.aws.access-key",  awsAccessKey),    true),
-            row("app.file.aws.secret-key",  resolve(db, "app.file.aws.secret-key",  awsSecretKey),    true),
-            row("app.file.aws.cdn-url",     resolve(db, "app.file.aws.cdn-url",     awsCdnUrl),       false),
-            row("app.file.ncp.bucket-name", resolve(db, "app.file.ncp.bucket-name", ncpBucketName),  false),
-            row("app.file.ncp.endpoint",    resolve(db, "app.file.ncp.endpoint",    ncpEndpoint),     false),
-            row("app.file.ncp.access-key",  resolve(db, "app.file.ncp.access-key",  ncpAccessKey),    true),
-            row("app.file.ncp.secret-key",  resolve(db, "app.file.ncp.secret-key",  ncpSecretKey),    true),
-            row("app.file.ncp.cdn-url",     resolve(db, "app.file.ncp.cdn-url",     ncpCdnUrl),       false)
+            rowResolved(db, "app.file.storage-type",    fileStorageType, false),
+            rowResolved(db, "app.file.cdn-host",        fileCdnHost,     false),
+            rowResolved(db, "app.file.aws.bucket-name", awsBucketName,  false),
+            rowResolved(db, "app.file.aws.region",      awsRegion,       false),
+            rowResolved(db, "app.file.aws.access-key",  awsAccessKey,    true),
+            rowResolved(db, "app.file.aws.secret-key",  awsSecretKey,    true),
+            rowResolved(db, "app.file.aws.cdn-url",     awsCdnUrl,       false),
+            rowResolved(db, "app.file.ncp.bucket-name", ncpBucketName,  false),
+            rowResolved(db, "app.file.ncp.endpoint",    ncpEndpoint,     false),
+            rowResolved(db, "app.file.ncp.access-key",  ncpAccessKey,    true),
+            rowResolved(db, "app.file.ncp.secret-key",  ncpSecretKey,    true),
+            rowResolved(db, "app.file.ncp.cdn-url",     ncpCdnUrl,       false)
         )));
     }
 }

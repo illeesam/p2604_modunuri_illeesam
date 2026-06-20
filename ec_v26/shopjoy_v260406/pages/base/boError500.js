@@ -20,9 +20,7 @@ window.boError500 = {
   <div style="font-size:13px;color:#999;margin-top:12px;max-width:520px;">
     잠시 후 다시 시도해 주세요. 문제가 지속되면 시스템 관리자에게 문의 바랍니다.
   </div>
-  <div v-if="message" style="font-size:12px;color:#c62828;margin-top:12px;font-family:monospace;background:#fff5f5;padding:8px 14px;border-radius:6px;max-width:600px;word-break:break-all;">
-    {{ message }}
-  </div>
+  <div v-if="message" style="font-size:12px;color:#c62828;margin-top:12px;font-family:monospace;background:#fff5f5;padding:8px 14px;border-radius:6px;max-width:700px;word-break:break-all;white-space:pre-wrap;text-align:left;">{{ message }}</div>
   <div style="display:flex;gap:10px;margin-top:28px;">
     <button @click="onReload"
       style="padding:12px 28px;font-size:14px;font-weight:600;background:#6a1b9a;color:#fff;border:none;border-radius:8px;cursor:pointer;">
