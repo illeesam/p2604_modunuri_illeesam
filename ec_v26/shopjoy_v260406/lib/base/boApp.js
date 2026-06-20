@@ -162,6 +162,7 @@
       { group: '결제' },
       { id: 'zdTestPaymentToss', label: '토스페이먼츠 테스트' },
       { group: '지도' },
+      { id: 'zdTestMapKakao',  label: '카카오 지도 테스트' },
       { id: 'zdTestMapNaver', label: '네이버 지도 테스트' },
       { id: 'zdTestMapGoogle', label: '구글 지도 테스트' },
       { group: '메일 / SMS / 푸시 알림' },
@@ -476,6 +477,7 @@
         zdTestSnsLoginKakao:   'zd-test-sns-login-kakao',
         zdTestSnsLoginGoogle:  'zd-test-sns-login-google',
         zdTestPaymentToss:     'zd-test-payment-toss',
+        zdTestMapKakao:        'zd-test-map-kakao',
         zdTestMapNaver:        'zd-test-map-naver',
         zdTestMapGoogle:       'zd-test-map-google',
         zdTestMailSmtp:        'zd-test-mail-smtp',
@@ -2589,6 +2591,7 @@
             <zd-test-sns-login-kakao  v-else-if="page==='zdTestSnsLoginKakao'"  :navigate="navigate" :show-toast="showToast" />
             <zd-test-sns-login-google v-else-if="page==='zdTestSnsLoginGoogle'" :navigate="navigate" :show-toast="showToast" />
             <zd-test-payment-toss     v-else-if="page==='zdTestPaymentToss'"    :navigate="navigate" :show-toast="showToast" />
+            <zd-test-map-kakao        v-else-if="page==='zdTestMapKakao'"       :navigate="navigate" :show-toast="showToast" />
             <zd-test-map-naver        v-else-if="page==='zdTestMapNaver'"       :navigate="navigate" :show-toast="showToast" />
             <zd-test-map-google       v-else-if="page==='zdTestMapGoogle'"      :navigate="navigate" :show-toast="showToast" />
             <zd-test-mail-smtp        v-else-if="page==='zdTestMailSmtp'"       :navigate="navigate" :show-toast="showToast" />
@@ -3172,6 +3175,7 @@
     .component('ZdTestSnsLoginKakao',  window.ZdTestSnsLoginKakao)
     .component('ZdTestSnsLoginGoogle', window.ZdTestSnsLoginGoogle)
     .component('ZdTestPaymentToss',    window.ZdTestPaymentToss)
+    .component('ZdTestMapKakao',       window.ZdTestMapKakao)
     .component('ZdTestMapNaver',       window.ZdTestMapNaver)
     .component('ZdTestMapGoogle',      window.ZdTestMapGoogle)
     .component('ZdTestMailSmtp',       window.ZdTestMailSmtp)

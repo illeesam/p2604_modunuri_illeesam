@@ -54,6 +54,21 @@ public class BoSyAppConfigController {
 
     @Value("${app.kakao.alimtalk.sender-key:}") private String kakaoAlimtalkSenderKey;
 
+    @Value("${app.sms.api-key:}")       private String smsApiKey;
+    @Value("${app.push.fcm.project-id:}") private String fcmProjectId;
+    @Value("${app.push.apns.key-id:}")  private String apnsKeyId;
+    @Value("${app.chat.ai.api-key:}")   private String aiApiKey;
+
+    /* ── ext-sdk SDK 키 (FE/BE 공용, CmAppStoreData 와 동일 목록) ── */
+    @Value("${app.ext-sdk.google-client-id:}")    private String extGoogleClientId;
+    @Value("${app.ext-sdk.kakao-js-key:}")        private String extKakaoJsKey;
+    @Value("${app.ext-sdk.kakao-map-js-key:}")    private String extKakaoMapJsKey;
+    @Value("${app.ext-sdk.naver-client-id:}")     private String extNaverClientId;
+    @Value("${app.ext-sdk.naver-callback-url:}")  private String extNaverCallbackUrl;
+    @Value("${app.ext-sdk.toss-client-key:}")     private String extTossClientKey;
+    @Value("${app.ext-sdk.naver-map-client-id:}") private String extNaverMapClientId;
+    @Value("${app.ext-sdk.google-map-api-key:}")  private String extGoogleMapApiKey;
+
     @Value("${app.file.storage-type:LOCAL}") private String fileStorageType;
     @Value("${app.file.cdn-host:}")          private String fileCdnHost;
     @Value("${app.file.aws.bucket-name:}")   private String awsBucketName;
@@ -221,10 +236,19 @@ public class BoSyAppConfigController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> all() {
         Map<String, String> db = loadDbProps();
         List<Map<String, String>> items = List.of(
-            // 소셜
-            rowResolved(db, "app.auth.social.google-userinfo-url", googleUserinfoUrl,  false),
-            rowResolved(db, "app.auth.social.kakao-userinfo-url",  kakaoUserinfoUrl,   false),
-            rowResolved(db, "app.auth.social.naver-userinfo-url",  naverUserinfoUrl,   false),
+            // ext-sdk (소셜·결제·지도 FE SDK 키 — CmAppStoreData 동일 목록)
+            rowResolved(db, "app.ext-sdk.google-client-id",    extGoogleClientId,    false),
+            rowResolved(db, "app.ext-sdk.kakao-js-key",        extKakaoJsKey,        false),
+            rowResolved(db, "app.ext-sdk.naver-client-id",     extNaverClientId,     false),
+            rowResolved(db, "app.ext-sdk.naver-callback-url",  extNaverCallbackUrl,  false),
+            rowResolved(db, "app.ext-sdk.toss-client-key",     extTossClientKey,     false),
+            rowResolved(db, "app.ext-sdk.kakao-map-js-key",   extKakaoMapJsKey,     false),
+            rowResolved(db, "app.ext-sdk.naver-map-client-id", extNaverMapClientId,  false),
+            rowResolved(db, "app.ext-sdk.google-map-api-key",  extGoogleMapApiKey,   false),
+            // 소셜 공통
+            rowResolved(db, "app.auth.social.google-userinfo-url", googleUserinfoUrl,   false),
+            rowResolved(db, "app.auth.social.kakao-userinfo-url",  kakaoUserinfoUrl,    false),
+            rowResolved(db, "app.auth.social.naver-userinfo-url",  naverUserinfoUrl,    false),
             rowResolved(db, "app.auth.social.default-site-id",     socialDefaultSiteId, false),
             // 토스
             rowResolved(db, "app.toss.confirm-url",     tossConfirmUrl,    false),
@@ -243,6 +267,11 @@ public class BoSyAppConfigController {
             rowResolved(db, "app.mail.from-nm",     mailFromNm,   false),
             // 카카오 알림톡
             rowResolved(db, "app.kakao.alimtalk.sender-key", kakaoAlimtalkSenderKey, true),
+            // SMS / 푸시 / AI
+            rowResolved(db, "app.sms.api-key",         smsApiKey,    true),
+            rowResolved(db, "app.push.fcm.project-id", fcmProjectId, false),
+            rowResolved(db, "app.push.apns.key-id",    apnsKeyId,    false),
+            rowResolved(db, "app.chat.ai.api-key",     aiApiKey,     true),
             // 파일 저장소
             rowResolved(db, "app.file.storage-type",    fileStorageType, false),
             rowResolved(db, "app.file.cdn-host",        fileCdnHost,     false),

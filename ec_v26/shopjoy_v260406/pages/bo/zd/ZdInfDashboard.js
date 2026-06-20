@@ -33,11 +33,36 @@ window.ZdInfDashboard = {
     const propSearchRows = reactive([]);
     const propSearchTotal = ref(0);
     const propSearchLoading = ref(false);
+    const propSort = reactive({ key: 'propKey', dir: 'asc' });
+
+    const fnPropSort = (key) => {
+      if (propSort.key === key) propSort.dir = propSort.dir === 'asc' ? 'desc' : 'asc';
+      else { propSort.key = key; propSort.dir = 'asc'; }
+      propSearchRows.sort((a, b) => {
+        const va = (a[key] || '').toString(), vb = (b[key] || '').toString();
+        return propSort.dir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+      });
+    };
+    const fnSortIcon = (grid, key) => {
+      const s = grid === 'prop' ? propSort : ymlSort;
+      if (s.key !== key) return ' ⇅';
+      return s.dir === 'asc' ? ' ▲' : ' ▼';
+    };
 
     /* ── application.yml 조회 섹션 ── */
     const ymlRows = reactive([]);
     const ymlTotal = ref(0);
     const ymlLoading = ref(false);
+    const ymlSort = reactive({ key: '', dir: 'asc' });
+
+    const fnYmlSort = (key) => {
+      if (ymlSort.key === key) ymlSort.dir = ymlSort.dir === 'asc' ? 'desc' : 'asc';
+      else { ymlSort.key = key; ymlSort.dir = 'asc'; }
+      ymlRows.sort((a, b) => {
+        const va = (a[key] || '').toString(), vb = (b[key] || '').toString();
+        return ymlSort.dir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+      });
+    };
     const ymlSearch = reactive({ searchValue: '' });
     const ymlActiveProfile = ref('');
 
@@ -100,12 +125,15 @@ window.ZdInfDashboard = {
       propSearchLoading.value = true;
       propSearchRows.splice(0);
       try {
-        const params = { pageSize: 200, pageNo: 1 };
+        const params = { pageSize: 200, pageNo: 1, sortKey: 'prop_key', sortDir: 'asc' };
         if (propSearch.profile) params.propProfile = propSearch.profile;
         if (propSearch.propKey)  params.searchValue = propSearch.propKey;
         const res = await boApiSvc.syProp.getPage(params, '연동설정대시보드', 'sy_prop조회');
         const data = res.data?.data || {};
-        const list = data.pageList || [];
+        const list = (data.pageList || []).slice().sort((a, b) => {
+          const va = (a[propSort.key] || '').toString(), vb = (b[propSort.key] || '').toString();
+          return propSort.dir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+        });
         propSearchRows.push(...list);
         propSearchTotal.value = data.pageTotalCount || list.length;
       } catch (e) {
@@ -138,7 +166,12 @@ window.ZdInfDashboard = {
 
     const _feKey = (name) => {
       if (!name) return null;
-      return window.sfGetBoAppStore?.()?.svAppData?.[name] ?? null;
+      const store = window.sfGetBoAppStore?.();
+      if (!store) return null;
+      /* boAppStore 필드명: sv + 첫글자대문자 + 나머지 (예: kakaoJsKey → svKakaoJsKey) */
+      const svKey = 'sv' + name.charAt(0).toUpperCase() + name.slice(1);
+      const val = store[svKey];
+      return (val && val !== '' && val !== '-') ? val : null;
     };
 
     const _beCache = reactive({});
@@ -148,82 +181,94 @@ window.ZdInfDashboard = {
     const _META = [
       /* ── 소셜 로그인 ── */
       {
-        category: '소셜로그인', channel: 'Google 로그인', feKey: 'googleClientId', beKey: 'oauth.google.client-id',
+        category: '소셜로그인', channel: 'Google 로그인', feKey: 'googleClientId', beKey: 'app.ext-sdk.google-client-id',
         remark: 'OAuth2 클라이언트 ID', testFn: 'google',
         desc: 'Google OAuth 2.0 소셜 로그인에 사용합니다. Google Cloud Console에서 OAuth 클라이언트 ID를 발급받아 등록하세요.',
         guideUrl: 'https://console.cloud.google.com/apis/credentials',
         guideLabel: 'Google Cloud Console',
         feDesc: 'FE에서 Google Sign-In 버튼 초기화에 사용 (window.google.accounts.id.initialize)',
-        feFile: 'sy_prop:propKey',
+        feFile: 'sy_prop:app.ext-sdk.google-client-id',
         beDesc: 'BE에서 Google 토큰 검증 및 사용자 정보 조회 시 사용',
         beFile: 'sy_prop:app.ext-sdk.google-client-id',
         dbTable: 'mb_member_sns (sns_type=GOOGLE)',
       },
       {
-        category: '소셜로그인', channel: 'Kakao 로그인', feKey: 'kakaoJsKey', beKey: 'oauth.kakao.client-id',
+        category: '소셜로그인', channel: 'Kakao 로그인', feKey: 'kakaoJsKey', beKey: 'app.ext-sdk.kakao-js-key',
         remark: 'JavaScript 키', testFn: 'kakao',
         desc: 'Kakao 소셜 로그인에 사용합니다. Kakao Developers에서 앱을 생성하고 JavaScript 키를 발급받으세요.',
         guideUrl: 'https://developers.kakao.com/console/app',
         guideLabel: 'Kakao Developers',
-        feDesc: 'FE에서 Kakao.init() 호출 시 사용하는 JavaScript 앱 키',
-        feFile: 'sy_prop:propKey',
-        beDesc: 'BE에서 Kakao REST API를 통한 토큰 검증 시 사용하는 REST API 키',
+        feDesc: 'FE에서 Kakao.init() 호출 시 사용하는 JavaScript 앱 키 (FE·BE 동일 키)',
+        feFile: 'sy_prop:app.ext-sdk.kakao-js-key',
+        beDesc: 'BE에서 Kakao 사용자정보 API 호출 시 사용 (JavaScript 키)',
         beFile: 'sy_prop:app.ext-sdk.kakao-js-key',
         dbTable: 'mb_member_sns (sns_type=KAKAO)',
       },
       {
-        category: '소셜로그인', channel: 'Naver 로그인', feKey: 'naverClientId', beKey: 'oauth.naver.client-id',
+        category: '소셜로그인', channel: 'Naver 로그인', feKey: 'naverClientId', beKey: 'app.ext-sdk.naver-client-id',
         remark: '클라이언트 ID', testFn: 'naver',
         desc: 'Naver 소셜 로그인에 사용합니다. Naver Developers에서 애플리케이션을 등록하고 클라이언트 ID를 발급받으세요.',
         guideUrl: 'https://developers.naver.com/apps',
         guideLabel: 'Naver Developers',
         feDesc: 'FE에서 Naver 로그인 버튼 초기화 시 사용 (naver.LoginWithNaverId)',
-        feFile: 'sy_prop:propKey',
+        feFile: 'sy_prop:app.ext-sdk.naver-client-id',
         beDesc: 'BE에서 Naver 액세스 토큰 검증 및 사용자 프로필 조회 시 사용',
         beFile: 'sy_prop:app.ext-sdk.naver-client-id',
         dbTable: 'mb_member_sns (sns_type=NAVER)',
       },
       /* ── 결제 ── */
       {
-        category: '결제', channel: '토스페이먼츠', feKey: 'tossClientKey', beKey: 'toss.secret-key',
-        remark: 'FE:클라이언트키 / BE:시크릿키', testFn: 'toss',
+        category: '결제', channel: '토스페이먼츠', feKey: 'tossClientKey', beKey: 'app.ext-sdk.toss-client-key',
+        remark: 'FE:클라이언트키 / BE:시크릿키(app.toss.secret-key)', testFn: 'toss',
         desc: '토스페이먼츠 결제 연동에 사용합니다. 토스페이먼츠 개발자 센터에서 클라이언트 키(FE)와 시크릿 키(BE)를 발급받으세요.',
         guideUrl: 'https://developers.tosspayments.com/',
         guideLabel: '토스페이먼츠 개발자센터',
-        feDesc: 'FE에서 결제창 초기화 시 사용하는 클라이언트 키 (test_ck_ 또는 live_ck_ 접두어)',
-        feFile: 'sy_prop:propKey',
-        beDesc: 'BE에서 결제 승인 / 취소 API 호출 시 HTTP Basic Auth 비밀번호로 사용하는 시크릿 키',
-        beFile: 'sy_prop:toss.secret-key',
+        feDesc: 'FE에서 결제창 초기화 시 사용하는 클라이언트 키 (test_gck_docs_* 또는 live_ck_* 접두어)',
+        feFile: 'sy_prop:app.ext-sdk.toss-client-key',
+        beDesc: 'BE에서 결제 승인/취소 API 호출 시 HTTP Basic Auth 비밀번호로 사용하는 시크릿 키',
+        beFile: 'sy_prop:app.toss.secret-key',
         dbTable: 'od_pay, od_pay_method, od_refund',
       },
       /* ── 지도 ── */
       {
-        category: '지도', channel: 'Naver 지도', feKey: 'naverMapClientId', beKey: 'naver.map.client-id',
+        category: '지도', channel: 'Kakao 지도', feKey: 'kakaoMapJsKey', beKey: 'app.ext-sdk.kakao-map-js-key',
+        remark: 'JavaScript 키 (카카오맵)', testFn: 'kakaoMap',
+        desc: 'Kakao Maps API 연동에 사용합니다. Kakao Developers에서 앱 > 카카오맵 사용 설정을 ON으로 변경하고 JavaScript 키를 사용하세요.',
+        guideUrl: 'https://developers.kakao.com/console/app',
+        guideLabel: 'Kakao Developers',
+        feDesc: 'FE에서 Kakao.maps 스크립트 로드 시 appkey 파라미터로 사용 (소셜 로그인과 동일 JavaScript 키)',
+        feFile: 'sy_prop:app.ext-sdk.kakao-map-js-key',
+        beDesc: '현재 BE 서버 사이드 Kakao 지도 API 호출 없음 (FE 전용)',
+        beFile: 'sy_prop:app.ext-sdk.kakao-map-js-key',
+        dbTable: 'sy_site (site_address 좌표변환 시 사용)',
+      },
+      {
+        category: '지도', channel: 'Naver 지도', feKey: 'naverMapClientId', beKey: 'app.ext-sdk.naver-map-client-id',
         remark: 'NCP 클라이언트 ID', testFn: 'naverMap',
         desc: 'Naver Cloud Platform Maps API 연동에 사용합니다. NCP Console에서 Maps 서비스를 활성화하고 클라이언트 ID를 발급받으세요.',
         guideUrl: 'https://console.ncloud.com/naver-service/application',
         guideLabel: 'Naver Cloud Platform Console',
         feDesc: 'FE 지도 스크립트 로드 시 ncpClientId 파라미터로 사용',
-        feFile: 'sy_prop:propKey',
+        feFile: 'sy_prop:app.ext-sdk.naver-map-client-id',
         beDesc: 'BE에서 주소 → 좌표 변환(Geocoding) 등 서버 사이드 Maps API 호출 시 사용',
-        beFile: 'sy_prop:app.map.naver-map-client-id',
+        beFile: 'sy_prop:app.ext-sdk.naver-map-client-id',
         dbTable: 'sy_site (site_address 좌표변환 시 사용)',
       },
       {
-        category: '지도', channel: 'Google 지도', feKey: 'googleMapKey', beKey: 'google.map.api-key',
+        category: '지도', channel: 'Google 지도', feKey: 'googleMapApiKey', beKey: 'app.ext-sdk.google-map-api-key',
         remark: 'Maps JavaScript API 키', testFn: 'googleMap',
         desc: 'Google Maps Platform 연동에 사용합니다. Google Cloud Console에서 Maps JavaScript API와 Geocoding API를 활성화하고 API 키를 발급받으세요.',
         guideUrl: 'https://console.cloud.google.com/google/maps-apis',
         guideLabel: 'Google Maps Platform Console',
         feDesc: 'FE 지도 스크립트 로드 시 key 파라미터로 사용 (Maps JavaScript API)',
-        feFile: 'sy_prop:propKey',
+        feFile: 'sy_prop:app.ext-sdk.google-map-api-key',
         beDesc: 'BE에서 서버 사이드 Geocoding / Places API 호출 시 사용',
         beFile: 'sy_prop:app.ext-sdk.google-map-api-key',
         dbTable: 'sy_site (site_address 좌표변환 시 사용)',
       },
       /* ── 메일 ── */
       {
-        category: '메일', channel: 'SMTP', feKey: null, beKey: 'mail.host',
+        category: '메일', channel: 'SMTP', feKey: null, beKey: 'spring.mail.host',
         remark: 'SMTP 호스트', testFn: 'smtp',
         desc: '이메일 발송에 사용하는 SMTP 서버 설정입니다. Gmail 사용 시 앱 비밀번호를 별도 발급해야 합니다.',
         guideUrl: 'https://myaccount.google.com/apppasswords',
@@ -231,12 +276,12 @@ window.ZdInfDashboard = {
         feDesc: null,
         feFile: null,
         beDesc: 'application.yml의 spring.mail.host / port / username / password 값으로 설정',
-        beFile: 'sy_prop:site.email.smtp.host / port',
+        beFile: 'yml:spring.mail.host / port',
         dbTable: 'cmh_push_log (channel=EMAIL)',
       },
       /* ── SMS ── */
       {
-        category: 'SMS', channel: 'SMS 발송', feKey: null, beKey: 'sms.api-key',
+        category: 'SMS', channel: 'SMS 발송', feKey: null, beKey: 'app.sms.api-key',
         remark: 'API 키', testFn: 'sms',
         desc: 'SMS 문자 발송 서비스 API 키입니다. 현재 연동된 SMS 공급사의 콘솔에서 API 키를 발급받으세요.',
         guideUrl: null,
@@ -249,19 +294,19 @@ window.ZdInfDashboard = {
       },
       /* ── 푸시 ── */
       {
-        category: '푸시', channel: 'FCM', feKey: 'fcmProjectId', beKey: 'fcm.project-id',
+        category: '푸시', channel: 'FCM', feKey: 'fcmProjectId', beKey: 'app.push.fcm.project-id',
         remark: '프로젝트 ID', testFn: 'fcm',
         desc: 'Firebase Cloud Messaging(FCM) 푸시 알림 연동에 사용합니다. Firebase Console에서 프로젝트를 생성하고 서비스 계정 키를 다운로드하세요.',
         guideUrl: 'https://console.firebase.google.com/',
         guideLabel: 'Firebase Console',
         feDesc: 'FE Web Push 초기화 시 Firebase 프로젝트 ID로 사용',
-        feFile: 'sy_prop:propKey',
+        feFile: 'sy_prop:app.push.fcm.project-id',
         beDesc: 'BE에서 FCM v1 API 호출 시 프로젝트 ID (서비스 계정 JSON 파일도 별도 필요)',
         beFile: 'sy_prop:app.push.fcm.project-id',
         dbTable: 'mb_device_token, cmh_push_log (channel=FCM)',
       },
       {
-        category: '푸시', channel: 'APNs', feKey: null, beKey: 'apns.key-id',
+        category: '푸시', channel: 'APNs', feKey: null, beKey: 'app.push.apns.key-id',
         remark: '키 ID', testFn: 'apns',
         desc: 'Apple Push Notification service(APNs) iOS 푸시 알림 연동에 사용합니다. Apple Developer 계정에서 APNs 키를 생성하세요.',
         guideUrl: 'https://developer.apple.com/account/resources/authkeys/list',
@@ -274,7 +319,7 @@ window.ZdInfDashboard = {
       },
       /* ── 카카오 ── */
       {
-        category: '카카오', channel: '알림톡', feKey: null, beKey: 'kakao.alimtalk.sender-key',
+        category: '카카오', channel: '알림톡', feKey: null, beKey: 'app.kakao.alimtalk.sender-key',
         remark: '발신 프로필 키', testFn: 'kakaoAlim',
         desc: '카카오 알림톡 발송에 사용합니다. 비즈니스 채널을 개설하고 발신 프로필 키를 발급받으세요.',
         guideUrl: 'https://business.kakao.com/',
@@ -282,12 +327,12 @@ window.ZdInfDashboard = {
         feDesc: null,
         feFile: null,
         beDesc: 'BE에서 알림톡 API 호출 시 인증 헤더로 사용하는 발신 프로필 키',
-        beFile: 'yml:kakao.alimtalk.sender-key',
+        beFile: 'yml:app.kakao.alimtalk.sender-key',
         dbTable: 'cmh_push_log (channel=KAKAO)',
       },
       /* ── AI ── */
       {
-        category: 'AI/챗봇', channel: 'AI 챗봇', feKey: null, beKey: 'ai.chatbot.api-key',
+        category: 'AI/챗봇', channel: 'AI 챗봇', feKey: null, beKey: 'app.chat.ai.api-key',
         remark: 'API 키', testFn: 'ai',
         desc: 'AI 챗봇 서비스 연동 API 키입니다. 연동한 AI 서비스(OpenAI / Claude 등) 콘솔에서 API 키를 발급받으세요.',
         guideUrl: null,
@@ -337,12 +382,29 @@ window.ZdInfDashboard = {
 
     const _fetchBeSettings = async () => {
       try {
-        const res = await boApi.get('/bo/sy/prop', {
+        /* app-config/all: BE가 active profile 필터링 후 resolved 값 반환 */
+        const r1 = await boApi.get('/bo/sy/app-config/all', coUtil.cofApiHdr('연동설정대시보드', 'yml조회'));
+        const ymlList = r1.data?.data?.items || [];
+        ymlList.forEach((item) => {
+          if (item.ymlKey && item.ymlValue && item.ymlValue !== '(미설정)') {
+            _beCache[item.ymlKey] = item.ymlValue;
+          }
+        });
+
+        /* sy_prop 직접 조회로 보완 — 빈값 덮어쓰기 방지: 이미 채워진 키는 건너뜀 */
+        const r2 = await boApi.get('/bo/sy/prop', {
           params: { pageSize: 999 },
           ...coUtil.cofApiHdr('연동설정대시보드', '설정조회'),
         });
-        const list = res.data?.data || [];
-        list.forEach((p) => { if (p.propKey) _beCache[p.propKey] = p.propValue || ''; });
+        const propList = r2.data?.data || [];
+        if (Array.isArray(propList)) {
+          propList.forEach((p) => {
+            /* 값이 있는 경우만, 기존 채워진 키는 덮어쓰지 않음 */
+            if (p.propKey && p.propValue && !_beCache[p.propKey]) {
+              _beCache[p.propKey] = p.propValue;
+            }
+          });
+        }
       } catch (_) { /* BE 조회 실패 — beStat '-' 유지 */ }
     };
 
@@ -353,6 +415,7 @@ window.ZdInfDashboard = {
       kakao:     { url: '/bo/sy/zd/test/oauth/kakao',    label: 'Kakao OAuth' },
       naver:     { url: '/bo/sy/zd/test/oauth/naver',    label: 'Naver OAuth' },
       toss:      { url: '/bo/sy/zd/test/pay/toss',       label: '토스 결제키' },
+      kakaoMap:  { url: '/bo/sy/zd/test/map/kakao',      label: 'Kakao 지도' },
       naverMap:  { url: '/bo/sy/zd/test/map/naver',      label: 'Naver 지도' },
       googleMap: { url: '/bo/sy/zd/test/map/google',     label: 'Google 지도' },
       smtp:      { url: '/bo/sy/zd/test/mail/smtp',      label: 'SMTP' },
@@ -450,10 +513,10 @@ window.ZdInfDashboard = {
       /* sy_prop 조회 */
       PROFILE_OPTIONS_ZD, propSearch, propSearchRows, propSearchTotal, propSearchLoading,
       onPropProfileSelectChange, onPropProfileInputChange, handlePropSearch,
-      propColWidths, onPropResizeStart,
+      propColWidths, onPropResizeStart, propSort, fnPropSort, fnSortIcon,
       /* yml 조회 */
       ymlRows, ymlTotal, ymlLoading, ymlSearch, ymlActiveProfile, handleYmlSearch,
-      ymlColWidths, onYmlResizeStart,
+      ymlColWidths, onYmlResizeStart, ymlSort, fnYmlSort,
     };
   },
 
@@ -639,37 +702,33 @@ window.ZdInfDashboard = {
       </template>
       <div style="overflow-x:auto;border:1px solid #e8e8e8;border-radius:6px;">
         <div style="max-height:210px;overflow-y:auto;">
-          <table class="bo-table" style="table-layout:fixed;min-width:1100px;width:100%;">
+          <table class="bo-table" style="table-layout:fixed;min-width:800px;width:100%;">
             <colgroup>
               <col style="width:44px;" />
               <col style="width:110px;" />
-              <col style="width:180px;" />
-              <col style="width:180px;" />
-              <col style="width:130px;" />
-              <col style="width:56px;" />
-              <col style="width:110px;" />
-              <col style="width:110px;" />
+              <col style="width:28%;" />
+              <col style="width:28%;" />
+              <col style="width:120px;" />
+              <col style="width:50px;" />
               <col />
             </colgroup>
             <thead>
               <tr>
                 <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;' + (propColWidths._no ? 'width:' + propColWidths._no + ';' : '')">번호<div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onPropResizeStart($event, '_no')"></div></th>
-                <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;' + (propColWidths.profile ? 'width:' + propColWidths.profile + ';' : '')">propProfile<div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onPropResizeStart($event, 'profile')"></div></th>
-                <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;' + (propColWidths.propKey ? 'width:' + propColWidths.propKey + ';' : '')">propKey<div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onPropResizeStart($event, 'propKey')"></div></th>
-                <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;' + (propColWidths.propValue ? 'width:' + propColWidths.propValue + ';' : '')">propValue<div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onPropResizeStart($event, 'propValue')"></div></th>
-                <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;' + (propColWidths.propLabel ? 'width:' + propColWidths.propLabel + ';' : '')">표시명<div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onPropResizeStart($event, 'propLabel')"></div></th>
-                <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;' + (propColWidths.useYn ? 'width:' + propColWidths.useYn + ';' : '')">useYn<div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onPropResizeStart($event, 'useYn')"></div></th>
-                <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;' + (propColWidths.regDate ? 'width:' + propColWidths.regDate + ';' : '')">등록일시<div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onPropResizeStart($event, 'regDate')"></div></th>
-                <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;' + (propColWidths.updDate ? 'width:' + propColWidths.updDate + ';' : '')">수정일시<div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onPropResizeStart($event, 'updDate')"></div></th>
+                <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;cursor:pointer;user-select:none;' + (propColWidths.profile ? 'width:' + propColWidths.profile + ';' : '')" @click.stop="fnPropSort('propProfile')">propProfile<span style="color:#e06c75;">{{ fnSortIcon('prop','propProfile') }}</span><div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onPropResizeStart($event, 'profile')"></div></th>
+                <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;cursor:pointer;user-select:none;' + (propColWidths.propKey ? 'width:' + propColWidths.propKey + ';' : '')" @click.stop="fnPropSort('propKey')">propKey<span style="color:#e06c75;">{{ fnSortIcon('prop','propKey') }}</span><div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onPropResizeStart($event, 'propKey')"></div></th>
+                <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;cursor:pointer;user-select:none;' + (propColWidths.propValue ? 'width:' + propColWidths.propValue + ';' : '')" @click.stop="fnPropSort('propValue')">propValue<span style="color:#e06c75;">{{ fnSortIcon('prop','propValue') }}</span><div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onPropResizeStart($event, 'propValue')"></div></th>
+                <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;cursor:pointer;user-select:none;' + (propColWidths.propLabel ? 'width:' + propColWidths.propLabel + ';' : '')" @click.stop="fnPropSort('propLabel')">표시명<span style="color:#e06c75;">{{ fnSortIcon('prop','propLabel') }}</span><div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onPropResizeStart($event, 'propLabel')"></div></th>
+                <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;cursor:pointer;user-select:none;' + (propColWidths.useYn ? 'width:' + propColWidths.useYn + ';' : '')" @click.stop="fnPropSort('useYn')">useYn<span style="color:#e06c75;">{{ fnSortIcon('prop','useYn') }}</span><div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onPropResizeStart($event, 'useYn')"></div></th>
                 <th style="position:sticky;top:0;z-index:3;background:#fafafa;">비고</th>
               </tr>
             </thead>
             <tbody>
               <tr v-if="propSearchLoading">
-                <td colspan="9" style="text-align:center;padding:16px;color:#aaa;">조회 중...</td>
+                <td colspan="7" style="text-align:center;padding:16px;color:#aaa;">조회 중...</td>
               </tr>
               <tr v-else-if="!propSearchRows.length">
-                <td colspan="9" style="text-align:center;padding:16px;color:#aaa;">데이터가 없습니다.</td>
+                <td colspan="7" style="text-align:center;padding:16px;color:#aaa;">데이터가 없습니다.</td>
               </tr>
               <tr v-for="(r, idx) in propSearchRows" :key="r.propId">
                 <td style="text-align:center;">{{ idx + 1 }}</td>
@@ -680,8 +739,6 @@ window.ZdInfDashboard = {
                 <td style="text-align:center;">
                   <span :class="r.useYn === 'Y' ? 'badge badge-green' : 'badge badge-gray'">{{ r.useYn }}</span>
                 </td>
-                <td style="text-align:center;font-size:11px;">{{ r.regDate }}</td>
-                <td style="text-align:center;font-size:11px;">{{ r.updDate }}</td>
                 <td style="font-size:11px;color:#6b7280;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="r.propRemark">{{ r.propRemark }}</td>
               </tr>
             </tbody>
@@ -692,9 +749,6 @@ window.ZdInfDashboard = {
 
     <bo-container title="application.yml 조회 정보" :count-text="ymlTotal + '건'">
       <template #toolbar-actions>
-        <span v-if="ymlActiveProfile" style="font-family:monospace;font-size:11px;background:#dbeafe;color:#1e40af;border-radius:4px;padding:2px 8px;margin-right:8px;">
-          active: {{ ymlActiveProfile }}
-        </span>
         <label class="search-label" style="margin-right:4px;">키워드</label>
         <input type="text" class="form-control" style="width:200px;font-family:monospace;font-size:12px;"
           placeholder="yml 키 / 값 검색"
@@ -706,27 +760,36 @@ window.ZdInfDashboard = {
         <table class="bo-table" style="table-layout:fixed;width:100%;">
           <colgroup>
             <col style="width:70px;" />
-            <col style="width:50%;" />
+            <col style="width:56px;" />
+            <col style="width:25%;" />
             <col style="width:60px;" />
             <col />
           </colgroup>
           <thead>
             <tr>
               <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;' + (ymlColWidths._no ? 'width:' + ymlColWidths._no + ';' : '')">번호<div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onYmlResizeStart($event, '_no')"></div></th>
-              <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;' + (ymlColWidths.ymlKey ? 'width:' + ymlColWidths.ymlKey + ';' : '')">yml 키<div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onYmlResizeStart($event, 'ymlKey')"></div></th>
-              <th style="position:sticky;top:0;z-index:3;background:#fafafa;text-align:center;">출처</th>
-              <th style="position:sticky;top:0;z-index:3;background:#fafafa;">yml 값</th>
+              <th style="position:sticky;top:0;z-index:3;background:#fafafa;text-align:center;">active</th>
+              <th :style="'position:sticky;top:0;z-index:3;background:#fafafa;overflow:visible;cursor:pointer;user-select:none;' + (ymlColWidths.ymlKey ? 'width:' + ymlColWidths.ymlKey + ';' : '')" @click.stop="fnYmlSort('ymlKey')">yml 키<span style="color:#e06c75;">{{ fnSortIcon('yml','ymlKey') }}</span><div style="position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:10;" @mousedown.stop="onYmlResizeStart($event, 'ymlKey')"></div></th>
+              <th style="position:sticky;top:0;z-index:3;background:#fafafa;text-align:center;cursor:pointer;user-select:none;" @click="fnYmlSort('src')">출처<span style="color:#e06c75;">{{ fnSortIcon('yml','src') }}</span></th>
+              <th style="position:sticky;top:0;z-index:3;background:#fafafa;cursor:pointer;user-select:none;" @click="fnYmlSort('ymlValue')">yml 값<span style="color:#e06c75;">{{ fnSortIcon('yml','ymlValue') }}</span></th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="ymlLoading">
-              <td colspan="4" style="text-align:center;padding:16px;color:#aaa;">조회 중...</td>
+              <td colspan="5" style="text-align:center;padding:16px;color:#aaa;">조회 중...</td>
             </tr>
             <tr v-else-if="!ymlRows.length">
-              <td colspan="4" style="text-align:center;padding:16px;color:#aaa;">데이터가 없습니다.</td>
+              <td colspan="5" style="text-align:center;padding:16px;color:#aaa;">데이터가 없습니다.</td>
             </tr>
             <tr v-for="(r, idx) in ymlRows" :key="idx">
               <td style="text-align:center;">{{ idx + 1 }}</td>
+              <td style="text-align:center;">
+                <span v-if="ymlActiveProfile === 'local'" class="badge badge-green" style="font-size:10px;">local</span>
+                <span v-else-if="ymlActiveProfile === 'dev'" class="badge badge-blue" style="font-size:10px;">dev</span>
+                <span v-else-if="ymlActiveProfile === 'prod'" class="badge badge-orange" style="font-size:10px;">prod</span>
+                <span v-else-if="ymlActiveProfile" class="badge badge-gray" style="font-size:10px;">{{ ymlActiveProfile }}</span>
+                <span v-else class="badge badge-gray" style="font-size:10px;">-</span>
+              </td>
               <td style="font-family:monospace;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="r.ymlKey">{{ r.ymlKey }}</td>
               <td style="text-align:center;">
                 <span v-if="r.source === 'DB'" class="badge badge-green" style="font-size:10px;">DB</span>
