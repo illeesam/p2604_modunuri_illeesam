@@ -951,8 +951,8 @@ Order/Claim/Dliv Mng의 "변경작업 선택" 모달:
 ### 적용 위치
 
 - 백엔드 기본 모델: `CoExtAiChatController.java` — `callClaude()` / `callOpenAi()` 의 model fallback
-- 프론트 기본 모델: `ZdTestAiChatbot.js` — `cfg.claudeModel` / `cfg.openaiModel` 초기값 및 placeholder
 - sy_prop 키: `app.ai.claude.model` / `app.ai.openai.model` — DB에서 오버라이드 가능
+- **예외**: `ZdTestAiChatbot.js` 는 개발자가 임의 모델을 직접 입력하는 테스트 화면이므로 모델 제한 없음
 
 ## 데이터베이스 연결 설정
 
