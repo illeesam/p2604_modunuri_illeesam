@@ -91,12 +91,13 @@ window.ZdTestMailSmtp = {
           body:     form.body,
         }, coUtil.cofApiHdr('SMTP 테스트', '메일 발송'));
         result.response = res.data?.data || res.data;
-        result.status   = '✅ 메일 발송 성공';
-        addLog('✅ 발송 완료 → ' + form.toEmail, 'success');
-        showToast('테스트 메일 발송 완료', 'success');
+        const ok = result.response?.success !== false;
+        result.status   = ok ? 'success' : 'fail';
+        addLog((ok ? '✅' : '⚠️') + ' 발송 ' + (ok ? '완료' : '실패(서버응답)') + ' → ' + form.toEmail, ok ? 'success' : 'error');
+        showToast('테스트 메일 ' + (ok ? '발송 완료' : '발송 실패: ' + (result.response?.failReason || '')), ok ? 'success' : 'error', ok ? undefined : 0);
       } catch (e) {
         result.error  = e.response?.data?.message || e.message || '알 수 없는 오류';
-        result.status = '❌ 메일 발송 실패';
+        result.status = 'error';
         addLog('❌ 실패: ' + result.error, 'error');
         showToast('메일 발송 실패: ' + result.error, 'error', 0);
       }
@@ -147,10 +148,19 @@ window.ZdTestMailSmtp = {
       </div>
 
       <!-- 결과 -->
-      <div v-if="result.status" style="margin-top:12px;font-size:13px;font-weight:600">{{ result.status }}</div>
-      <div v-if="result.error" style="padding:8px;background:#fff5f5;border:1px solid #fca5a5;border-radius:4px;font-size:12px;color:#b91c1c;margin-top:8px;white-space:pre-wrap">{{ result.error }}</div>
-      <div v-if="result.response" style="padding:8px;background:#f0fdf4;border:1px solid #86efac;border-radius:4px;font-size:12px;margin-top:8px">
-        <pre style="margin:0">{{ JSON.stringify(result.response, null, 2) }}</pre>
+      <div v-if="uiState.loading" style="margin-top:12px;font-size:13px;font-weight:600;color:#6b7280;">⏳ 메일 발송 중…</div>
+      <div v-if="result.response || result.error" style="margin-top:12px;border-radius:6px;overflow:hidden;border:1px solid;"
+        :style="result.status==='success' ? 'border-color:#86efac;' : 'border-color:#fca5a5;'">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;font-size:13px;font-weight:600;"
+          :style="result.status==='success' ? 'background:#f0fdf4;color:#15803d;' : 'background:#fff5f5;color:#b91c1c;'">
+          <span>메일 발송 결과</span>
+          <span style="font-size:18px;">{{ result.status==='success' ? '✅' : result.status==='fail' ? '⚠️' : '❌' }}</span>
+        </div>
+        <div v-if="result.error" style="padding:8px 12px;font-size:12px;color:#b91c1c;white-space:pre-wrap;background:#fff5f5;">{{ result.error }}</div>
+        <div v-if="result.response" style="padding:8px 12px;font-size:12px;"
+          :style="result.status==='success' ? 'background:#f0fdf4;' : 'background:#fff5f5;'">
+          <pre style="margin:0;">{{ JSON.stringify(result.response, null, 2) }}</pre>
+        </div>
       </div>
     </div>
   </div>

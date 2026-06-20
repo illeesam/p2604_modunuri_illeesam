@@ -1,7 +1,9 @@
 package com.shopjoy.ecadminapi.co.cm.service;
 
 import com.shopjoy.ecadminapi.base.common.entity.BaseEntity;
+import com.shopjoy.ecadminapi.base.sy.data.entity.SyProp;
 import com.shopjoy.ecadminapi.base.sy.data.entity.SyhSendEmailLog;
+import com.shopjoy.ecadminapi.base.sy.repository.SyPropRepository;
 import com.shopjoy.ecadminapi.base.sy.repository.SyhSendEmailLogRepository;
 import com.shopjoy.ecadminapi.co.cm.data.vo.SendResultVo;
 import com.shopjoy.ecadminapi.common.util.CmUtil;
@@ -9,22 +11,21 @@ import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 /**
  * 메일 발송 단일 책임 서비스 (co 레이어).
  *
- * <p>JavaMailSender 로 HTML 메일을 실발송하고, 발송 결과를 {@code syh_send_email_log} 에 기록한다.
- * 발송 실패·이력 저장 실패가 발생해도 예외를 위로 던지지 않고 {@link SendResultVo} 의
- * {@code success=false} 로 반환하여, 호출 측(오케스트레이터)의 본 흐름에 영향을 주지 않는다.</p>
+ * <p>발송 시점마다 sy_prop 에서 SMTP 설정을 읽어 JavaMailSenderImpl 을 직접 생성한다.
+ * Spring 빈 JavaMailSender 에 의존하지 않으므로 application.yml 에 spring.mail.* 불필요.</p>
  */
 @Slf4j
 @Service
@@ -32,50 +33,28 @@ import java.util.Map;
 @Transactional(readOnly = true)
 public class CmMailSendService {
 
-    private static final String CHANNEL_EMAIL  = "EMAIL";
-    private static final String RESULT_SUCCESS  = "SUCCESS";
-    private static final String RESULT_FAILED   = "FAILED";
+    private static final String CHANNEL_EMAIL = "EMAIL";
+    private static final String RESULT_SUCCESS = "SUCCESS";
+    private static final String RESULT_FAILED  = "FAILED";
 
     private final SyhSendEmailLogRepository syhSendEmailLogRepository;
-
-    /** JavaMailSender — 메일 설정 미존재 시 null (앱 기동은 유지). */
-    private final ObjectProvider<JavaMailSender> mailSenderProvider;
-
-    @Value("${app.mail.from:illeesam4@gmail.com}")
-    private String mailFrom;
-
-    @Value("${app.mail.from-nm:ShopJoy}")
-    private String mailFromNm;
+    private final SyPropRepository syPropRepository;
 
     /* ─────────────────────────────────────────────────────────────
      * 공개 메서드: 메일 발송
      * ───────────────────────────────────────────────────────────── */
 
-    /**
-     * HTML 메일을 실발송하고 {@code syh_send_email_log} 에 결과를 기록한다.
-     *
-     * <p>발송 실패 시 예외를 던지지 않고 {@code success=false} 인 {@link SendResultVo} 를 반환한다.</p>
-     *
-     * @param siteId       사이트ID
-     * @param toAddr       수신 이메일 (NOT NULL)
-     * @param subject      발송 제목 (치환 완료본)
-     * @param content      발송 본문 (치환 완료본, HTML 또는 텍스트)
-     * @param templateId   템플릿ID (없으면 null)
-     * @param templateCode 템플릿코드 스냅샷 (없으면 null)
-     * @param refTypeCd    연관유형코드 (ORDER/CLAIM/CONTACT 등)
-     * @param refId        연관ID
-     * @param params       치환 파라미터 (이력 params 컬럼에 JSON 으로 기록)
-     * @return 발송 결과 VO (channel="EMAIL")
-     */
     @Transactional
     public SendResultVo sendMail(String siteId, String toAddr, String subject, String content,
                                  String templateId, String templateCode,
                                  String refTypeCd, String refId, Map<String, Object> params) {
 
+        SmtpConfig cfg = loadSmtpConfig();
+
         String resultCd   = RESULT_SUCCESS;
         String failReason = null;
         try {
-            doSendEmail(toAddr, subject, content);
+            doSendEmail(cfg, toAddr, subject, content);
             log.info("[CmMailSend] 메일 발송 성공 → {}", toAddr);
         } catch (Exception e) {
             resultCd   = RESULT_FAILED;
@@ -91,7 +70,7 @@ public class CmMailSendService {
             logRow.setSiteId(siteId);
             logRow.setTemplateId(templateId);
             logRow.setTemplateCode(templateCode);
-            logRow.setFromAddr(mailFrom);
+            logRow.setFromAddr(cfg.from);
             logRow.setToAddr(toAddr);
             logRow.setSubject(subject);
             logRow.setContent(content);
@@ -120,26 +99,66 @@ public class CmMailSendService {
      * 내부 헬퍼
      * ───────────────────────────────────────────────────────────── */
 
-    /** 실제 메일 발송 (HTML 본문). JavaMailSender 미존재 시 예외. */
-    private void doSendEmail(String toAddr, String subject, String content) throws Exception {
-        JavaMailSender sender = mailSenderProvider.getIfAvailable();
-        if (sender == null) throw new IllegalStateException("JavaMailSender 미설정 (spring.mail.* 누락)");
+    /** sy_prop 에서 SMTP 설정을 읽어 발송 시점마다 JavaMailSenderImpl 을 생성해 발송. */
+    private void doSendEmail(SmtpConfig cfg, String toAddr, String subject, String content) throws Exception {
+        if (cfg.host == null || cfg.host.isBlank())
+            throw new IllegalStateException("SMTP 설정 누락 (sy_prop: spring.mail.host)");
+
+        JavaMailSenderImpl sender = new JavaMailSenderImpl();
+        sender.setHost(nz(cfg.host));
+        sender.setPort(cfg.port);
+        sender.setUsername(nz(cfg.username));
+        sender.setPassword(nz(cfg.password));
+        sender.setDefaultEncoding("UTF-8");
+
+        Properties props = sender.getJavaMailProperties();
+        props.put("mail.transport.protocol", "smtp");
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.smtp.starttls.required", "true");
+
         MimeMessage mime = sender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(mime, false, "UTF-8");
-        helper.setTo(toAddr);
-        helper.setSubject(subject);
-        // 본문에 HTML 태그가 없으면 줄바꿈을 <br>로 변환해 가독성 유지
+        helper.setTo(nz(toAddr));
+        helper.setSubject(nz(subject));
         boolean looksHtml = content != null && content.contains("<") && content.contains(">");
-        helper.setText(looksHtml ? content : nz(content).replace("\n", "<br>"), true);
+        helper.setText(looksHtml ? nz(content) : nz(content).replace("\n", "<br>"), true);
         try {
-            helper.setFrom(mailFrom, mailFromNm);
+            helper.setFrom(nz(cfg.from), nz(cfg.fromNm));
         } catch (Exception ignore) {
-            helper.setFrom(mailFrom);
+            helper.setFrom(nz(cfg.from));
         }
         sender.send(mime);
     }
 
-    /** reg/upd 감사 필드 수동 주입 (리스너 비활성 케이스 안전망, 비회원=GUEST). */
+    /** sy_prop 전체 로드 후 spring.mail.* / app.mail.* 값 추출. */
+    private SmtpConfig loadSmtpConfig() {
+        List<SyProp> all = syPropRepository.findAll();
+        SmtpConfig cfg = new SmtpConfig();
+        for (SyProp p : all) {
+            if (p.getPropValue() == null || p.getPropValue().isBlank()) continue;
+            switch (nz(p.getPropKey())) {
+                case "spring.mail.host"     -> cfg.host     = p.getPropValue();
+                case "spring.mail.port"     -> { try { cfg.port = Integer.parseInt(p.getPropValue().trim()); } catch (Exception ignore) {} }
+                case "spring.mail.username" -> cfg.username = p.getPropValue();
+                case "spring.mail.password" -> cfg.password = p.getPropValue();
+                case "app.mail.from"        -> cfg.from     = p.getPropValue();
+                case "app.mail.from-nm"     -> cfg.fromNm   = p.getPropValue();
+            }
+        }
+        if (cfg.from == null || cfg.from.isBlank()) cfg.from = cfg.username; // fallback
+        return cfg;
+    }
+
+    private static class SmtpConfig {
+        String host;
+        int    port     = 587;
+        String username;
+        String password;
+        String from;
+        String fromNm   = "ShopJoy";
+    }
+
     private void stampReg(BaseEntity e) {
         String authId = SecurityUtil.getAuthIdOrGuest();
         LocalDateTime now = LocalDateTime.now();

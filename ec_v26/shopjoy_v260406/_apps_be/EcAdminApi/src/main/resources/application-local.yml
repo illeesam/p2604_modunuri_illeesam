@@ -1,14 +1,5 @@
 spring:
-  # ── 메일(SMTP) — host/port/username/password 는 sy_prop(spring.mail.*) 에서 주입 ──
-  mail:
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-            required: true
-    default-encoding: UTF-8
+  # spring.mail.* 설정 불필요 — CmMailSendService 가 발송 시점에 sy_prop 에서 직접 읽음
 
   # ────────────────────────────────────────────────────────────
   # 부팅 시간 단축 — local 전용 (운영은 prod 에서 다시 명시)
