@@ -1,4 +1,4 @@
--- ============================================================
+﻿-- ============================================================
 -- sy_prop — 외부 연동 설정 샘플 데이터
 --
 -- propKey 규칙: yml 경로를 그대로 사용 (역전환 시 키 변환 없음)
@@ -163,7 +163,7 @@ ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
 -- ──────────────────────────────────────────────────────────────
 
 INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
-VALUES ('2604010000000001','auth.social','auth.social.google-userinfo-url',
+VALUES ('2604010000000001','app.auth.social','auth.social.google-userinfo-url',
  'https://www.googleapis.com/oauth2/v3/userinfo',
  'Google userinfo URL','STRING',10,'Y','^local^dev^prod^',
  'Google OAuth2 토큰 검증 엔드포인트',
@@ -172,7 +172,7 @@ ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
   SET prop_value=EXCLUDED.prop_value, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
 
 INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
-VALUES ('2604010000000001','auth.social','auth.social.kakao-userinfo-url',
+VALUES ('2604010000000001','app.auth.social','auth.social.kakao-userinfo-url',
  'https://kapi.kakao.com/v2/user/me',
  'Kakao userinfo URL','STRING',20,'Y','^local^dev^prod^',
  '카카오 OAuth2 토큰 검증 엔드포인트',
@@ -181,7 +181,7 @@ ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
   SET prop_value=EXCLUDED.prop_value, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
 
 INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
-VALUES ('2604010000000001','auth.social','auth.social.naver-userinfo-url',
+VALUES ('2604010000000001','app.auth.social','auth.social.naver-userinfo-url',
  'https://openapi.naver.com/v1/nid/me',
  'Naver userinfo URL','STRING',30,'Y','^local^dev^prod^',
  '네이버 OAuth2 토큰 검증 엔드포인트',
@@ -190,7 +190,7 @@ ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
   SET prop_value=EXCLUDED.prop_value, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
 
 INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
-VALUES ('2604010000000001','auth.social','auth.social.default-site-id',
+VALUES ('2604010000000001','app.auth.social','auth.social.default-site-id',
  '2604010000000001',
  '소셜 가입 기본 사이트 ID','STRING',40,'Y','^local^dev^prod^',
  'siteId 미전달 소셜 가입/매칭 시 사용할 대표 사이트 ID',
@@ -203,7 +203,7 @@ ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
 -- ──────────────────────────────────────────────────────────────
 
 INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
-VALUES ('2604010000000001','toss','toss.confirm-url',
+VALUES ('2604010000000001','app.toss','toss.confirm-url',
  'https://api.tosspayments.com/v1/payments/confirm',
  '토스 결제승인 API URL','STRING',10,'Y','^local^dev^prod^',
  '토스 공식 엔드포인트 — 변경 가능성 낮음',
@@ -212,7 +212,7 @@ ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
   SET prop_value=EXCLUDED.prop_value, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
 
 INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
-VALUES ('2604010000000001','toss','toss.cancel-url-base',
+VALUES ('2604010000000001','app.toss','toss.cancel-url-base',
  'https://api.tosspayments.com/v1/payments',
  '토스 결제취소 API 베이스 URL','STRING',20,'Y','^local^dev^prod^',
  '실제 호출: {cancel-url-base}/{paymentKey}/cancel',
@@ -221,7 +221,7 @@ ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
   SET prop_value=EXCLUDED.prop_value, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
 
 INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
-VALUES ('2604010000000001','toss','toss.client-key',
+VALUES ('2604010000000001','app.toss','toss.client-key',
  'test_gck_docs_Ovk5rk1gB5Nrm6CzWlVWax',
  '토스 클라이언트 키 (FE)','STRING',30,'Y','^local^dev^',
  '토스 디벨로퍼스 → 상점 → 클라이언트 키 (test_gck_*)',
@@ -230,7 +230,7 @@ ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
   SET prop_value=EXCLUDED.prop_value, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
 
 INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
-VALUES ('2604010000000001','toss','toss.client-key',
+VALUES ('2604010000000001','app.toss','toss.client-key',
  '',
  '토스 클라이언트 키 (FE)','STRING',30,'Y','^prod^',
  '토스 디벨로퍼스 → 상점 → 클라이언트 키 (live_gck_*)',
@@ -239,7 +239,7 @@ ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
   SET prop_value=EXCLUDED.prop_value, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
 
 INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
-VALUES ('2604010000000001','toss','toss.secret-key',
+VALUES ('2604010000000001','app.toss','toss.secret-key',
  'test_gsk_docs_GjLJoQ1aVZ8yMnpZ0vlrrPmOoBN0',
  '토스 시크릿 키 (BE)','SECRET',40,'Y','^local^dev^',
  '토스 디벨로퍼스 → 상점 → 시크릿 키 (test_gsk_*) — 절대 FE 노출 금지',
@@ -248,7 +248,7 @@ ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
   SET prop_value=EXCLUDED.prop_value, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
 
 INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
-VALUES ('2604010000000001','toss','toss.secret-key',
+VALUES ('2604010000000001','app.toss','toss.secret-key',
  '',
  '토스 시크릿 키 (BE)','SECRET',40,'Y','^prod^',
  '토스 디벨로퍼스 → 상점 → 시크릿 키 (live_gsk_*)',
@@ -261,7 +261,7 @@ ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
 -- ──────────────────────────────────────────────────────────────
 
 INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
-VALUES ('2604010000000001','map','map.kakao-js-key',
+VALUES ('2604010000000001','app.map','map.kakao-js-key',
  '',
  'Kakao 지도 JavaScript 키','STRING',10,'Y','^local^dev^',
  '카카오 디벨로퍼스 → JavaScript 키 (테스트 앱)',
@@ -270,7 +270,7 @@ ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
   SET prop_value=EXCLUDED.prop_value, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
 
 INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
-VALUES ('2604010000000001','map','map.kakao-js-key',
+VALUES ('2604010000000001','app.map','map.kakao-js-key',
  '',
  'Kakao 지도 JavaScript 키','STRING',10,'Y','^prod^',
  '카카오 디벨로퍼스 → JavaScript 키 (운영 앱)',
@@ -279,7 +279,7 @@ ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
   SET prop_value=EXCLUDED.prop_value, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
 
 INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
-VALUES ('2604010000000001','map','map.naver-map-client-id',
+VALUES ('2604010000000001','app.map','map.naver-map-client-id',
  '',
  'Naver 지도 Client ID','STRING',20,'Y','^local^dev^',
  'NCP 콘솔 → Application → Client ID (테스트 앱)',
@@ -288,7 +288,7 @@ ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
   SET prop_value=EXCLUDED.prop_value, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
 
 INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
-VALUES ('2604010000000001','map','map.naver-map-client-id',
+VALUES ('2604010000000001','app.map','map.naver-map-client-id',
  '',
  'Naver 지도 Client ID','STRING',20,'Y','^prod^',
  'NCP 콘솔 → Application → Client ID (운영 앱)',
@@ -611,3 +611,4 @@ VALUES ('2604010000000001','app.file.ncp','app.file.ncp.cdn-url',
  'SYSTEM','2026-06-20 00:00:00')
 ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
   SET prop_value=EXCLUDED.prop_value, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
+

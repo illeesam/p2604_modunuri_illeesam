@@ -166,28 +166,28 @@ public class AppTableLog {
             String nc = "(not configured)";
 
             logTable("👤 소셜 로그인 — Google", new String[][]{
-                {"Client ID", googleClientId.isBlank() ? nc : googleClientId, "sy_prop ^local^dev^ : ext.sdk.googleClientId", googleClientId.isBlank() ? "⚠ FO/BO 구글 로그인 버튼 미작동" : ""},
+                {"Client ID", googleClientId.isBlank() ? nc : googleClientId, "sy_prop ^local^dev^ : app.ext-sdk.google-client-id", googleClientId.isBlank() ? "⚠ FO/BO 구글 로그인 버튼 미작동" : ""},
             });
             logTable("👤 소셜 로그인 — Kakao", new String[][]{
-                {"JS Key", kakaoJsKey.isBlank() ? nc : kakaoJsKey, "sy_prop ^local^dev^ : ext.sdk.kakaoJsKey", kakaoJsKey.isBlank() ? "⚠ FO/BO 카카오 로그인 버튼 미작동" : ""},
+                {"JS Key", kakaoJsKey.isBlank() ? nc : kakaoJsKey, "sy_prop ^local^dev^ : app.ext-sdk.kakao-js-key", kakaoJsKey.isBlank() ? "⚠ FO/BO 카카오 로그인 버튼 미작동" : ""},
             });
             logTable("👤 소셜 로그인 — Naver", new String[][]{
-                {"Client ID", naverClientId.isBlank() ? nc : naverClientId, "sy_prop ^local^dev^ : ext.sdk.naverClientId",    naverClientId.isBlank() ? "⚠ FO/BO 네이버 로그인 버튼 미작동" : ""},
-                {"Callback",  naverCbUrl.isBlank()    ? nc : naverCbUrl,    "sy_prop ^local^dev^ : ext.sdk.naverCallbackUrl", naverCbUrl.isBlank() ? "⚠ FO/BO 네이버 로그인 콜백 미설정" : ""},
+                {"Client ID", naverClientId.isBlank() ? nc : naverClientId, "sy_prop ^local^dev^ : app.ext-sdk.naver-client-id",    naverClientId.isBlank() ? "⚠ FO/BO 네이버 로그인 버튼 미작동" : ""},
+                {"Callback",  naverCbUrl.isBlank()    ? nc : naverCbUrl,    "sy_prop ^local^dev^ : app.ext-sdk.naver-callback-url", naverCbUrl.isBlank() ? "⚠ FO/BO 네이버 로그인 콜백 미설정" : ""},
             });
             logTable("💳 결제 (Toss Payments)", new String[][]{
-                {"Client Key",  tossClientKey.isBlank()  ? nc : tossClientKey,                   "sy_prop : payment.toss.client_key",  tossClientKey.isBlank()  ? "⚠ FO/BO 결제 버튼 미작동" : ""},
-                {"Secret Key",  "(runtime)",                                                       "sy_prop : payment.toss.secret_key",  "런타임 조회 — 미설정 시 결제승인 실패"},
-                {"Confirm URL", "(runtime)",                                                       "sy_prop : payment.toss.confirm_url", "런타임 조회 — 미설정 시 결제승인 콜백 실패"},
-                {"Cancel URL",  "(runtime)",                                                       "sy_prop : payment.toss.cancel_url",  "런타임 조회 — 미설정 시 환불 요청 실패"},
+                {"Client Key",  tossClientKey.isBlank()  ? nc : tossClientKey,                   "sy_prop : toss.client-key",      tossClientKey.isBlank()  ? "⚠ FO/BO 결제 버튼 미작동" : ""},
+                {"Secret Key",  "(runtime)",                                                       "sy_prop : toss.secret-key",      "런타임 조회 — 미설정 시 결제승인 실패"},
+                {"Confirm URL", "(runtime)",                                                       "sy_prop : toss.confirm-url",     "런타임 조회 — 미설정 시 결제승인 콜백 실패"},
+                {"Cancel URL",  "(runtime)",                                                       "sy_prop : toss.cancel-url-base", "런타임 조회 — 미설정 시 환불 요청 실패"},
                 {"Success URL", tossSuccessUrl.isBlank() ? "(프론트 직접 전달)" : tossSuccessUrl, "coExtSdk.js : opts.successUrl",      "FO 결제창에서 직접 전달 (서버 불필요)"},
                 {"Fail URL",    tossFailUrl.isBlank()    ? "(프론트 직접 전달)" : tossFailUrl,    "coExtSdk.js : opts.failUrl",         "FO 결제창에서 직접 전달 (서버 불필요)"},
             });
             logTable("🗺  지도 API — Kakao", new String[][]{
-                {"JS Key", kakaoMapJsKey.isBlank() ? nc : kakaoMapJsKey, "sy_prop ^local^dev^ : ext.sdk.kakaoMapJsKey", kakaoMapJsKey.isBlank() ? "⚠ FO 매장위치(지도) 페이지 미작동" : ""},
+                {"JS Key", kakaoMapJsKey.isBlank() ? nc : kakaoMapJsKey, "sy_prop ^local^dev^ : app.ext-sdk.kakao-map-js-key", kakaoMapJsKey.isBlank() ? "⚠ FO 매장위치(지도) 페이지 미작동" : ""},
             });
             logTable("🗺  지도 API — Naver", new String[][]{
-                {"Client ID", naverMapId.isBlank() ? nc : naverMapId, "sy_prop ^local^dev^ : ext.sdk.naverMapClientId", naverMapId.isBlank() ? "⚠ FO 매장위치(지도) 페이지 미작동" : ""},
+                {"Client ID", naverMapId.isBlank() ? nc : naverMapId, "sy_prop ^local^dev^ : app.ext-sdk.naver-map-client-id", naverMapId.isBlank() ? "⚠ FO 매장위치(지도) 페이지 미작동" : ""},
             });
         } catch (Exception e) {
             log.warn("❌ [외부 SDK 키] 설정 조회 실패 — {}", e.getMessage());

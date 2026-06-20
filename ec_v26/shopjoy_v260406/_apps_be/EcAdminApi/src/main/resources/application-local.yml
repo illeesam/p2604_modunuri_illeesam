@@ -1,10 +1,6 @@
 spring:
-  # ── 메일(SMTP) — dev 와 동일 설정 공유 (local 프로파일용) ──────────────
+  # ── 메일(SMTP) — host/port/username/password 는 sy_prop(spring.mail.*) 에서 주입 ──
   mail:
-    host: ${MAIL_HOST:smtp.gmail.com}
-    port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME:illeesam4@gmail.com}
-    password: ${MAIL_PASSWORD:song5544!!!}
     properties:
       mail:
         smtp:
@@ -54,22 +50,7 @@ spring:
     converters:
       preferred-json-mapper: jackson
 
-  # ────────────────────────────────────────────────────────────
-  # DevTools — hot-reload 활성, 일괄 변경 충돌 방지 + watch 대상 최소화
-  #
-  # 재기동 트리거 (실질적 watch 대상):
-  #   • *.java              → 컴파일된 .class 변경
-  #   • *Mapper.xml         → MyBatis SQL 변경 (재로드 필수)
-  #   • application*.yml    → Spring 설정 변경
-  #
-  # 위 3종 외 모든 리소스는 재기동 무관 → exclude 로 명시 제외
-  #
-  # 안정화 튜닝:
-  #   • poll-interval / quiet-period 늘려 일괄 변경 중 단편 reload 방지
-  #   • AI/스크립트 일괄 수정 → 5초+3초 안정화 후 한 번에 재시작
-  #
-  # 충돌 시 복구: scripts/clean-rebuild.bat 실행
-  # ────────────────────────────────────────────────────────────
+  # DevTools — hot-reload. poll 5s / quiet 3s (일괄 수정 중 단편 reload 방지)
   devtools:
     restart:
       enabled: true
@@ -175,12 +156,8 @@ management:
       enabled: false                 # local: 디스크 헬스체크 무의미
 
 app:
-  mail:
-    from: ${MAIL_FROM:illeesam4@gmail.com}
-    from-nm: ${MAIL_FROM_NM:ShopJoy 고객센터}
-
-  license:
-    enabled: false          # local: 라이선스 검증 비활성
+  # app.mail.from / from-nm 은 sy_prop(app.mail.*) 에서 주입
+  # app.license.secret / enabled 는 sy_prop(app.license.*) 에서 주입
 
   redis:
     enabled: false            # true 로 변경 시 Redis 활성화
@@ -222,33 +199,17 @@ app:
       token: ""             # Jenkins 인증 토큰 (local은 jenkins.enabled=false라 미사용)
       url: ""               # 앱→Jenkins 역방향 트리거 URL (미사용)
     allowed-ips: ""         # 빈값=전체허용 | "*"=전체허용 | "127.0.0.1^10.0.0.1"=IP지정
-  # ── 외부 SDK 연동 키 (local 프로파일) ───────────────────────────────
-  ext-sdk:
-    google-client-id: ${GOOGLE_CLIENT_ID:207844440856-5ib9mk6frvt7rfpt8823e48c3c0lavth.apps.googleusercontent.com}
-    kakao-js-key: ${KAKAO_JS_KEY:}
-    naver-client-id: ${NAVER_CLIENT_ID:}
-    naver-callback-url: ${NAVER_CALLBACK_URL:http://127.0.0.1:5501/}
-    toss-client-key: ${TOSS_CLIENT_KEY:}
-    kakao-map-js-key: ${KAKAO_MAP_JS_KEY:}
-    naver-map-client-id: ${NAVER_MAP_CLIENT_ID:}
-
   error-log:
     db-save: true             # true=DB저장 | false=파일만 기록(DB저장 생략)
     queue-size: 100           # 초과 시 즉시 드롭
   access-log:
     db-save: true             # true=DB저장 | false=필터 동작하나 DB저장 생략(설정 테스트 시)
     queue-size: 100
-    # filter 예시 ("^" 구분):
-    #   "*"                       → 전체 기록
-    #   "BO"                      → BO 관리자 전체
-    #   "BO^FO^EXT"               → 인증된 모든 AppType
-    #   "admin01"                 → 특정 userId만
-    #   "admin01^BO"              → 특정 userId + BO 전체
-    #   "admin01^member123^BO"    → 특정 userId 두 명 + BO 전체
-    filter: "*"               # local: 전체 기록
+    filter: "*"               # *=전체 | BO=관리자 | BO^FO^EXT | userId^BO
     max-body-size: 2000       # 요청/응답 바디 최대 저장 크기(bytes). 0=미수집
 
   # ── 파일 업로드 설정 (local 프로파일) ─────────────────────────────────
+  # storage-type / cdn-host / aws.* / ncp.* 는 sy_prop(app.file.*) 에서 주입
   file:
     allowed-extensions: jpg,jpeg,png,gif,webp,pdf,doc,docx,xls,xlsx,ppt,pptx,txt,zip,mp4,avi,mov,mkv,webm,flv,wmv,m4v
     max-file-size: 10485760
@@ -256,28 +217,12 @@ app:
     max-image-size: 5242880
     max-document-size: 20971520
     max-video-size: 104857600
-    storage-type: ${STORAGE_TYPE:LOCAL}
     local:
       physical-root: src/main/resources/static/cdn
       base-path: attach
       upload-dir: uploads
-    cdn-host: ${CDN_HOST:http://localhost:3000/cdn}
     thumbnail-enabled: true
     thumbnail-sizes: 200x200,400x400,800x800
-
-    aws:
-      bucket-name: ${AWS_S3_BUCKET:shopjoy-files-local}
-      region: ${AWS_REGION:ap-northeast-2}
-      access-key: ${AWS_ACCESS_KEY_ID:}
-      secret-key: ${AWS_SECRET_ACCESS_KEY:}
-      cdn-url: ${AWS_CLOUDFRONT_URL:https://cdn.shopjoy.com}
-
-    ncp:
-      bucket-name: ${NCP_BUCKET:shopjoy-files-local}
-      endpoint: ${NCP_ENDPOINT:https://obs.kr-standard.ncrdev.ncloud.com}
-      access-key: ${NCP_ACCESS_KEY:}
-      secret-key: ${NCP_SECRET_KEY:}
-      cdn-url: ${NCP_CDN_URL:https://cdn-ncp.shopjoy.com}
 
 # ────────────────────────────────────────────
 # 로깅 — local 프로파일

@@ -65,9 +65,10 @@ management:
       enabled: false   # app.redis.enabled=false 시 연결 없음 → 헬스체크 제외
 
 app:
+  # license.secret(prod) 는 환경변수 LICENSE_SECRET 필수 (sy_prop 빈값 → PostProcessor 건너뜀 → 환경변수 폴백)
+  # license.enabled 는 sy_prop(app.license.*) 에서 주입
   license:
-    secret: ${LICENSE_SECRET}       # 환경변수 필수
-    enabled: ${LICENSE_ENABLED:true}
+    secret: ${LICENSE_SECRET}       # 환경변수 필수 (sy_prop 에 빈값, 환경변수 우선)
     output-dir: ${LICENSE_OUTPUT_DIR:./_license-output}
 
   redis:
@@ -112,33 +113,18 @@ app:
       token: ${JENKINS_BATCH_TOKEN:}  # 환경변수 주입 필수. 빈값이면 토큰 검증 생략(비권장)
       url: ${JENKINS_URL:}            # 앱→Jenkins 역방향 트리거 URL (미사용, 향후 연동)
     allowed-ips: "192.168.1.1^192.168.1.2"  # 스케줄 관리 API 허용 IP (Jenkins 서버 IP 추가 필요)
-  # ── 외부 SDK 연동 키 (prod — 환경변수 필수) ──────────────────────────
-  ext-sdk:
-    google-client-id: ${GOOGLE_CLIENT_ID}
-    kakao-js-key: ${KAKAO_JS_KEY:}
-    naver-client-id: ${NAVER_CLIENT_ID:}
-    naver-callback-url: ${NAVER_CALLBACK_URL:}
-    toss-client-key: ${TOSS_CLIENT_KEY:}
-    kakao-map-js-key: ${KAKAO_MAP_JS_KEY:}
-    naver-map-client-id: ${NAVER_MAP_CLIENT_ID:}
-
   error-log:
     db-save: true
     queue-size: 100
   access-log:
     db-save: true
     queue-size: 100
-    # filter 예시 ("^" 구분):
-    #   "*"                       → 전체 기록
-    #   "BO"                      → BO 관리자 전체
-    #   "BO^FO^EXT"               → 인증된 모든 AppType
-    #   "admin01"                 → 특정 userId만
-    #   "admin01^BO"              → 특정 userId + BO 전체
-    #   "admin01^member123^BO"    → 특정 userId 두 명 + BO 전체
-    filter: "BO"             # prod: BO 관리자만 기록
+    filter: "BO"              # *=전체 | BO=관리자 | BO^FO^EXT | userId^BO
     max-body-size: 0         # prod: 바디 미수집 (성능/보안)
 
   # ── 파일 업로드 설정 (prod 프로파일) ─────────────────────────────────
+  # storage-type / cdn-host / aws.bucket/region/cdn-url / ncp.bucket/endpoint/cdn-url 는 sy_prop(app.file.*) 에서 주입
+  # aws.access-key / aws.secret-key / ncp.access-key / ncp.secret-key 는 환경변수 필수 (sy_prop 에 빈값)
   file:
     allowed-extensions: jpg,jpeg,png,gif,webp,pdf,doc,docx,xls,xlsx,ppt,pptx,txt,zip,mp4,avi,mov,mkv,webm,flv,wmv,m4v
     max-file-size: 10485760
@@ -146,25 +132,12 @@ app:
     max-image-size: 5242880
     max-document-size: 20971520
     max-video-size: 104857600
-    storage-type: ${STORAGE_TYPE:AWS_S3}
-
-    # AWS S3 설정 (운영 환경)
     aws:
-      bucket-name: ${AWS_S3_BUCKET:shopjoy-files-prod}
-      region: ${AWS_REGION:ap-northeast-2}
       access-key: ${AWS_ACCESS_KEY_ID}
       secret-key: ${AWS_SECRET_ACCESS_KEY}
-      cdn-url: ${AWS_CLOUDFRONT_URL:https://cdn.shopjoy.com}
-
-    # NCP OBS 설정 (대안)
     ncp:
-      bucket-name: ${NCP_BUCKET:shopjoy-files-prod}
-      endpoint: ${NCP_ENDPOINT:https://obs.kr-standard.ncrdev.ncloud.com}
       access-key: ${NCP_ACCESS_KEY}
       secret-key: ${NCP_SECRET_KEY}
-      cdn-url: ${NCP_CDN_URL:https://cdn-ncp.shopjoy.com}
-
-    cdn-host: ${CDN_HOST:https://cdn.shopjoy.com}
     thumbnail-enabled: true
     thumbnail-sizes: 200x200,400x400,800x800
 

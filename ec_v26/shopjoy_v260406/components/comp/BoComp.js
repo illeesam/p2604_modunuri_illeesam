@@ -111,11 +111,11 @@ window.BoPathTree = {
       const recur = (n) => { n.count = (n.children || []).reduce((s, c) => s + recur(c) + 1, 0); return n.count; };
       recur(root);
 
-      /* (미등록) 노드: counts['__orphan__'] (백엔드가 path_id IS NULL 항목 수 제공) 가 0 초과면
+      /* 기타 노드: counts['__orphan__'] (sy_path 미등록 path_id 또는 NULL 항목 수) 가 0 초과면
          루트 직속 마지막에 추가. pathId='__orphan__' 클릭 시 미등록 항목 필터(화면 dispatch). */
       const noneCnt = props.counts ? (props.counts['__orphan__'] || 0) : 0;
       if (noneCnt > 0) {
-        root.children.push({ pathId: '__orphan__', pathLabel: '(미등록)', bizCd: '', children: [], count: 0, isNone: true });
+        root.children.push({ pathId: '__orphan__', pathLabel: '기타', bizCd: '', children: [], count: 0, isNone: true });
       }
       return root;
     };
@@ -1681,7 +1681,7 @@ window.BoZdSyPropGrid = {
       { key: 'propKey',     label: 'propKey',     cellStyle: 'font-family:monospace;color:#1e40af' },
       { key: 'propProfile', label: 'propProfile', fmt: (v) => v || '-', cellStyle: 'font-size:11px;color:#6b7280' },
       { key: 'propLabel',   label: '표시명' },
-      { key: 'propValue',   label: 'propValue',   fmt: (v) => v || '-', cellStyle: 'font-family:monospace;font-size:11px;word-break:break-all' },
+      { key: 'propValue',   label: 'propValue',   fmt: (v) => v || '-', cellStyle: 'font-family:monospace;font-size:11px;word-break:break-all;text-align:left' },
       { key: 'useYn',       label: 'useYn',       badge: (row) => row.useYn === 'Y' ? 'badge-green' : 'badge-gray', align: 'center' },
       { key: 'regDate',     label: '등록일시',     fmt: (v) => v ? String(v).replace('T',' ').slice(0,16) : '-', align: 'center' },
       { key: 'updDate',     label: '수정일시',     fmt: (v) => v ? String(v).replace('T',' ').slice(0,16) : '-', align: 'center' },

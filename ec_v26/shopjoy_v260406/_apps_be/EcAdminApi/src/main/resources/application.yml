@@ -1,102 +1,9 @@
-# ════════════════════════════════════════════════════════════════════
-# application.yml — 공통 설정 (최소화)
-# 실제 값은 프로파일별 파일에서 관리
-#   application-local.yml  로컬 개발
-#   application-dev.yml    개발 서버
-#   application-prod.yml   운영 서버
-# ════════════════════════════════════════════════════════════════════
-#
-# ── 실행 방법 ────────────────────────────────────────────────────────
-#
-# [local]
-#   VM options: -Dspring.profiles.active=local
-#               -DDB_HOST=localhost -DDB_PORT=5432 -DDB_NAME=postgres
-#               -DDB_SCHEMA=shopjoy_2604 -DDB_USERNAME=postgres -DDB_PASSWORD=postgres
-#
-# [dev]
-#   VM options: -Dspring.profiles.active=dev
-#               -DDB_HOST=illeesam.synology.me -DDB_PORT=17632 -DDB_NAME=postgres
-#               -DDB_SCHEMA=shopjoy_2604 -DDB_USERNAME=postgres -DDB_PASSWORD=(실제값)
-#
-# [prod]
-#   VM options: -Dspring.profiles.active=prod
-#               -DDB_HOST=(IP) -DDB_PORT=(포트) -DDB_NAME=postgres -DDB_SCHEMA=shopjoy_2604
-#               -DDB_USERNAME=(실제값) -DDB_PASSWORD=(실제값)
-#               -DJWT_SECRET=(실제값) -DJENKINS_BATCH_TOKEN=(실제값)
-#               -DLICENSE_SECRET=(실제값)
-#
-# ════════════════════════════════════════════════════════════════════
-#
-# ── 속성 레퍼런스 (의미·허용값·기본값) ──────────────────────────────
-#
-# [spring.profiles.active]
-#   활성 프로파일. local / dev / prod
-#
-# [spring.servlet.multipart]
-#   max-file-size    : 단일 파일 최대 크기 (50MB)
-#   max-request-size : 전체 요청 최대 크기 (100MB)
-#
-# [springdoc]
-#   swagger-ui.enabled : Swagger UI 활성 여부. prod 에서는 false 권장
-#   swagger-ui.path    : /swagger-ui.html
-#   api-docs.path      : /v3/api-docs
-#
-# [jwt]
-#   secret                : HMAC 서명 키 (Base64 인코딩값 권장, 최소 32자)
-#   bo-access-expiry      : BO accessToken 만료(ms). 기본 900000 (15분)
-#   fo-access-expiry      : FO accessToken 만료(ms). 기본 900000 (15분)
-#   bo-refresh-expiry     : BO refreshToken 만료(ms). 기본 7200000 (2시간)
-#   fo-refresh-expiry     : FO refreshToken 만료(ms). 기본 1296000000 (15일)
-#
-# [app.license]
-#   secret      : HMAC-SHA256 서명 키. 환경변수 LICENSE_SECRET 으로 주입 권장
-#   enabled     : false → 검증 비활성 (local 개발 편의)
-#   output-dir  : LicenseGenerateMain 실행 시 JS 파일 출력 경로
-#
-# [app.redis]
-#   enabled     : true → Redis 활성. false → 모든 캐시 no-op (DB 직접 조회)
-#   primary     : 주 Redis 노드 (host/port/password/database/timeout)
-#   secondary   : 보조 Redis 노드 (미설정 시 primary fallback)
-#   ttl.*       : 캐시 항목별 TTL(초)
-#     bo-auth-seconds / fo-auth-seconds / ext-auth-seconds : 세션 TTL (JWT 만료와 동일)
-#     sy-code/menu/role/role-menu/prop/i18n-seconds        : 시스템 메타 TTL (1시간)
-#     ec-pd-prod/cate/cate-prod-seconds                    : 상품·카테고리 TTL
-#     ec-pm-prom/prom-item-seconds                         : 프로모션 TTL
-#     ec-dp-disp/disp-item-seconds                         : 전시 TTL
-#
-# [app.scheduler]
-#   enabled      : 배치 스케줄러 활성 여부. false → cron 등록·수동실행 모두 불가
-#   jenkins.enabled : true → cron 생략, Jenkins 가 POST /api/sch/jenkins/{code} 직접 호출
-#   jenkins.token   : Jenkins 인증 토큰 (미설정 시 검증 생략 — prod 필수 설정)
-#   allowed-ips  : 스케줄 관리 API 허용 IP. "" 또는 "*" → 전체허용 | "IP1^IP2" → 화이트리스트
-#
-# [app.error-log]
-#   db-save    : ERROR 로그를 syh_access_error_log 테이블에 저장할지 여부
-#   queue-size : 비동기 큐 최대 크기. 초과 시 즉시 드롭 (non-blocking)
-#
-# [app.access-log]
-#   db-save      : 요청 로그를 syh_access_log 테이블에 저장할지 여부
-#   queue-size   : 비동기 큐 최대 크기
-#   filter       : 기록 대상 필터. "^" 구분 토큰
-#                  "*" → 전체 | "BO" → BO 전체 | "BO^FO" → BO+FO
-#                  "admin01" → 특정 userId | "admin01^BO" → userId+BO
-#   max-body-size: 요청/응답 바디 최대 저장 크기(bytes). 0 → 미수집
-#
-# [app.file]
-#   storage-type        : LOCAL / AWS_S3 / NCP_OBS
-#   allowed-extensions  : 허용 확장자 (쉼표 구분)
-#   max-file-size       : 파일당 최대 크기(bytes). 기본 10MB
-#   max-image-size      : 이미지 최대 크기(bytes). 기본 5MB
-#   max-document-size   : 문서 최대 크기(bytes). 기본 20MB
-#   max-video-size      : 동영상 최대 크기(bytes). 기본 100MB
-#   local.base-path     : LOCAL 저장소 기본 경로
-#   aws.*               : AWS S3 연결 정보 (bucket-name/region/access-key/secret-key/cdn-url)
-#   ncp.*               : NCP OBS 연결 정보 (bucket-name/endpoint/access-key/secret-key/cdn-url)
-#   cdn-host            : CDN 호스트 URL (sy_attach.cdn_host 저장값)
-#   thumbnail-enabled   : 썸네일 자동 생성 여부
-#   thumbnail-sizes     : 썸네일 크기 목록 (WxH 쉼표 구분)
-#
-# ════════════════════════════════════════════════════════════════════
+# application.yml — 공통 설정 / 프로파일별: application-{local|dev|prod}.yml
+# ⚠️ 아래 항목은 sy_prop DB 에서 관리 (BO → 시스템 → 프로퍼티 관리):
+#    auth.social / toss / map / app.ext-sdk
+#    spring.mail.host/port/username/password / app.mail.*
+#    app.file.storage-type / cdn-host / aws.bucket/region/cdn-url / ncp.bucket/endpoint/cdn-url
+#    app.license.secret(local/dev) / app.license.enabled
 
 spring:
   profiles:
@@ -107,47 +14,15 @@ spring:
       max-request-size: 100MB
 
 app:
+  # license.secret / license.enabled 는 sy_prop(app.license.*) 에서 주입
   license:
-    secret: ${LICENSE_SECRET:SJ2604-LicenseSecret-X9kQm#vLpNrTzWbYd}
-    enabled: ${LICENSE_ENABLED:true}
     output-dir: ${LICENSE_OUTPUT_DIR:./_license-output}
 
-# ── 소셜 로그인 (token 검증 endpoint·기본 사이트) ─────────────────────
-#   클라이언트가 제공자 SDK로 발급받은 accessToken을 아래 userinfo URL로 검증한다.
-#   default-site-id: siteId 미전달 소셜 가입/매칭의 대표 사이트
+# 마스터 패스워드 — 개발 전용, prod=false 필수
 auth:
-  # ── 마스터 패스워드 (개발/테스트 전용) ───────────────────────────────
-  #   enabled=true 일 때만 마스터 해시로 임의 계정 로그인 통과. 운영(prod)은 반드시 false.
-  #   hash: 마스터 비밀번호의 SHA256 해시 (기본 "1111")
   master-pwd:
     enabled: ${AUTH_MASTER_PWD_ENABLED:true}
     hash:    ${AUTH_MASTER_PWD_HASH:0ffe1abd1a08215353c233d6e009613e95eec4253832a761af28ff37ac5a150c}
-  social:
-    google-userinfo-url: ${SOCIAL_GOOGLE_USERINFO_URL:https://www.googleapis.com/oauth2/v3/userinfo}
-    kakao-userinfo-url:  ${SOCIAL_KAKAO_USERINFO_URL:https://kapi.kakao.com/v2/user/me}
-    naver-userinfo-url:  ${SOCIAL_NAVER_USERINFO_URL:https://openapi.naver.com/v1/nid/me}
-    default-site-id:     ${SOCIAL_DEFAULT_SITE_ID:2604010000000001}
-
-# ── 토스페이먼츠 결제 (결제 승인/취소는 반드시 서버에서 시크릿키로 호출) ──────
-#   confirm-url     : 토스 결제승인 API 엔드포인트
-#   cancel-url-base : 토스 결제취소 API 베이스 URL. 실제 호출 시 "/{paymentKey}/cancel" 을 덧붙임.
-#                     (paymentKey 가 path 에 들어가 완성형 외부화 불가 → 베이스만 외부화)
-#   secret-key      : 토스 시크릿키 (Basic 인증 username). 운영은 환경변수 TOSS_SECRET_KEY 로 주입 필수.
-#                     기본값은 토스 공식 문서용 테스트 시크릿키(test_gsk_*) — 프론트 폴백 테스트 클라이언트키와 짝.
-#   client-key      : 프론트 SDK 초기화용 클라이언트키 (공개 가능 키)
-toss:
-  confirm-url:     ${TOSS_CONFIRM_URL:https://api.tosspayments.com/v1/payments/confirm}
-  cancel-url-base: ${TOSS_CANCEL_URL_BASE:https://api.tosspayments.com/v1/payments}
-  secret-key:      ${TOSS_SECRET_KEY:test_gsk_docs_GjLJoQ1aVZ8yMnpZ0vlrrPmOoBN0}
-  client-key:      ${TOSS_CLIENT_KEY:test_gck_docs_Ovk5rk1gB5Nrm6CzWlVWax}
-
-# ── 지도(맵) JS 공개키 (브라우저 SDK 초기화용, 도메인 허용으로 보호되는 공개키만) ──
-#   kakao-js-key         : 카카오맵 JavaScript 키 (카카오 디벨로퍼스 앱의 JavaScript 키)
-#   naver-map-client-id  : 네이버 클라우드 맵 Client ID (ncpClientId/ncpKeyId)
-#   ※ 공개키만 보관. 시크릿/REST 키는 절대 두지 않는다. 미설정 시 빈 문자열 반환(에러 없음).
-map:
-  kakao-js-key:        ${KAKAO_MAP_JS_KEY:}
-  naver-map-client-id: ${NAVER_MAP_CLIENT_ID:}
 
 springdoc:
   swagger-ui:

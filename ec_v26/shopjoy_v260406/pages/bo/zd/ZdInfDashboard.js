@@ -100,7 +100,7 @@ window.ZdInfDashboard = {
         feDesc: 'FE에서 결제창 초기화 시 사용하는 클라이언트 키 (test_ck_ 또는 live_ck_ 접두어)',
         feFile: 'sy_prop:propKey',
         beDesc: 'BE에서 결제 승인 / 취소 API 호출 시 HTTP Basic Auth 비밀번호로 사용하는 시크릿 키',
-        beFile: 'sy_prop:payment.toss.secret_key',
+        beFile: 'sy_prop:toss.secret-key',
         dbTable: 'od_pay, od_pay_method, od_refund',
       },
       /* ── 지도 ── */
@@ -490,9 +490,99 @@ window.ZdInfDashboard = {
         </template>
       </bo-grid>
     </bo-container>
+
     <bo-container>
       <bo-zd-yml-grid />
       <bo-zd-sy-prop-grid prop-key-prefixes="ext.,cdn.,payment." />
+    </bo-container>
+
+    <bo-container>
+      <div> ■ social 유투브 강좌</div>
+      <pre>
+- ▪▪▪ 소셜로그인 구현 원리_네이버로그인,카카오로그인,깃헙로그인 원리 : https://www.youtube.com/watch?v=Aa6oqanyOHY&t=26s
+- ▪▪▪ 카카오 로그인을 구현하기 위한 설정 및 준비 : https://www.youtube.com/watch?v=Aa6oqanyOHY&t=26s
+- ▪▪▪ 네이버 소셜 로그인 구현 :  https://www.youtube.com/watch?v=NrMUyA47gdU
+- ▪▪▪ Google OAuth; 구글 소셜 로그인하기 : https://www.youtube.com/watch?v=olnJzoa4A68
+- ▪▪▪ 토스페이먼츠 | 5분 만에 결제 연동하기 : https://www.youtube.com/watch?v=HtwLMwzTG5c
+      </pre>
+    </bo-container>
+
+    <bo-container>
+      <div> ■ social kakao</div>
+      <pre>
+▪ kakao developers > 전체 앱 : https://developers.kakao.com/console/app
+-----------------------------------------------------------
+▪ 앱 > illeesam_netlify : { ID: 1429368 }
+- ▪ 앱 > 플랫폼 키
+-- ▪ REST API 키: 44074b1c358f60292145b3068460f37d 
+--- ▪ 카카오 로그인 리다이렉트 URI: https://illeesam.netlify.app/login/oauth2/code/kakao ▪ http://127.0.0.1:5500/login/oauth2/code/kakao ▪ http://127.0.0.1:5501/login/oauth2/code/kakao
+--- ▪ 비즈니스 인증 리다이렉트 URI: https://illeesam.netlify.app/login/oauth2/code/kakao ▪ http://127.0.0.1:5500/login/oauth2/code/kakao ▪ http://127.0.0.1:5501/login/oauth2/code/kakao
+--- ▪ 클라이언트 시크릿 > 카카오 로그인 : { 코드: 1gV3lHvBP6KNju9P5E6I4TbchWByfPIh, 활성화:ON }
+--- ▪ 클라이언트 시크릿 > 비즈니스 로그인 : { 코드: ZyuNrjSOp2yilmTv9MSxDlXRdwPFXDTB, 활성화:ON }
+-- ▪ JavaScript 키: 797a116c08880d3865a89cf4f70b91f5 
+--- ▪ JavaScript SDK 도메인 : https://illeesam.netlify.app/login/oauth2/code/kakao ▪ http://127.0.0.1:5500/login/oauth2/code/kakao ▪ http://127.0.0.1:5501/login/oauth2/code/kakao
+--- ▪ 카카오 로그인 리다이렉트 URI : https://illeesam.netlify.app/login/oauth2/code/kakao ▪ http://127.0.0.1:5500/login/oauth2/code/kakao ▪ http://127.0.0.1:5501/login/oauth2/code/kakao
+-- ▪ 네이티브 앱 키: 96e57663db167a8e7a78345c9d0cf9d2 
+- ▪ 앱 > 카카오맵 : {사용설정: ON}
+-----------------------------------------------------------
+▪ 앱 > illeesam_synology : { ID: 1491354 }
+- ▪ 앱 > 플랫폼 키
+-- ▪ REST API 키: 63d491e61a4caacf2fc90ee252f2d644 
+--- ▪ 카카오 로그인 리다이렉트 URI: https://illeesam.synology.me:8008/login/oauth2/code/kakao ▪ http://127.0.0.1:5500/login/oauth2/code/kakao ▪ http://127.0.0.1:5501/login/oauth2/code/kakao
+--- ▪ 비즈니스 인증 리다이렉트 URI: https://illeesam.synology.me:8008/login/oauth2/code/kakao ▪ http://127.0.0.1:5500/login/oauth2/code/kakao ▪ http://127.0.0.1:5501/login/oauth2/code/kakao
+--- ▪ 클라이언트 시크릿 > 카카오 로그인 : { 코드: 7gxUHEectTM7qYSDmhnXUJc3ZE1ymqRO, 활성화:ON }
+--- ▪ 클라이언트 시크릿 > 비즈니스 로그인 : { 코드: Q6d7uCUnJBXCXQ2qINFWt2wSZ0sEzpB2, 활성화:ON }
+-- ▪ JavaScript 키: a2990e41aa57c3a4ad1fe97a210938d7 
+--- ▪ JavaScript SDK 도메인 : https://illeesam.synology.me:8008/login/oauth2/code/kakao ▪ http://127.0.0.1:5500/login/oauth2/code/kakao ▪ http://127.0.0.1:5501/login/oauth2/code/kakao
+--- ▪ 카카오 로그인 리다이렉트 URI : https://illeesam.synology.me:8008/login/oauth2/code/kakao ▪ http://127.0.0.1:5500/login/oauth2/code/kakao ▪ http://127.0.0.1:5501/login/oauth2/code/kakao
+-- ▪ 네이티브 앱 키: 4f43ddc38e22c79280d18595a31ff27b 
+- ▪ 앱 > 카카오맵 : {사용설정: ON}
+-----------------------------------------------------------
+      </pre>
+    </bo-container>
+
+    <bo-container>
+      <div> ■ social naver</div>
+      <pre>
+▪ naver developers > application : https://developers.naver.com/apps/#/myapps/K0Xy5CSEtyzRrHnDbf75/overview
+-----------------------------------------------------------
+▪ 앱 > illeesam_netlify : { Client ID: r6RWBr2qMOCZbGPFALrA, Client Secret : c_V0sjmlR5}
+- ▪ API설정 > 사용 API > 네이버 로그인 : { 회원이름: 필수, 연락처 이메일 주소: 필수}
+- ▪ API설정 > 로그인 오픈 API > PC웹 > 서비스URL : http://localhost:8080
+- ▪ API설정 > 로그인 오픈 API > PC웹 > 네이버로그인 Callback URL : http://localhost:8080/login/oauth2/code/naver
+-----------------------------------------------------------
+▪ 앱 > illeesam_synology : { Client ID: jWtLT9SUfE2JWEji2XGq, Client Secret : QOX2GZO1uk}
+- ▪ API설정 > 사용 API > 네이버 로그인 : { 회원이름: 필수, 연락처 이메일 주소: 필수}
+- ▪ API설정 > 로그인 오픈 API > PC웹 > 서비스URL : http://illeesam.synology.me:8080 
+- ▪ API설정 > 로그인 오픈 API > PC웹 > 네이버로그인 Callback URL : http://illeesam.synology.me:8080/login/oauth2/code/naver
+-----------------------------------------------------------
+▪ 어플리케이션 > illeesam_localhost : { Client ID: 01sBNJ_R7mdQDl5_d3AM, Client Secret : c5cSSSZCaF}
+- ▪ API설정 > 사용 API > 네이버 로그인 : { 회원이름: 필수, 연락처 이메일 주소: 필수} 
+- ▪ API설정 > 로그인 오픈 API > PC웹 > 서비스URL : http://localhost:8080 
+- ▪ API설정 > 로그인 오픈 API > PC웹 > 네이버로그인 Callback URL : http://localhost:8080/login/oauth2/code/naver 
+-----------------------------------------------------------
+      </pre>
+    </bo-container>
+
+    <bo-container>
+      <div> ■ social google</div>
+      <pre>
+▪ Google 디벨로퍼 https://developers.google.com/?hl=ko
+▪ Google Play Console : https://developer.android.com/distribute/console?hl=ko
+
+-----------------------------------------------------------
+      </pre>
+    </bo-container>
+  </bo-page>
+
+    <bo-container>
+      <div> ■ payment : toss</div>
+      <pre>
+▪ 토스페이먼츠 개발자센터 : https://developers.tosspayments.com/
+▪ 토스페이먼츠 개발자센터 > 결제 연동하기 : https://docs.tosspayments.com/guides/v2/payment-widget/integration
+- ▪ 토스페이먼츠 개발자센터 > 결제 연동하기 > 문서용 테스트 키 : test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm ▪ test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6
+▪ 토스페이먼츠 sandbox : https://developers.tosspayments.com/sandbox
+      </pre>
     </bo-container>
   </bo-page>
 </div>

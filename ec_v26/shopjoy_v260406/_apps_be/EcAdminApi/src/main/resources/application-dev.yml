@@ -41,14 +41,8 @@ spring:
     baseline-on-migrate: true
     baseline-version: 0
 
-  # ── 메일(SMTP) 발송 — Gmail ────────────────────────────────────────
-  # ⚠️ Gmail 은 일반 비밀번호 불가. 2단계 인증 후 '앱 비밀번호'(16자리) 발급해 MAIL_PASSWORD 로 주입.
-  #    https://myaccount.google.com/apppasswords
+  # ── 메일(SMTP) — host/port/username/password 는 sy_prop(spring.mail.*) 에서 주입 ──
   mail:
-    host: ${MAIL_HOST:smtp.gmail.com}
-    port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME:illeesam4@gmail.com}
-    password: ${MAIL_PASSWORD:song5544!!!}
     properties:
       mail:
         smtp:
@@ -87,14 +81,9 @@ management:
       enabled: false   # app.redis.enabled=false 시 연결 없음 → 헬스체크 제외
 
 app:
-  # 메일 발신자(From) 표기 — 발송 본문은 spring.mail.* SMTP 설정 사용
-  mail:
-    from: ${MAIL_FROM:illeesam4@gmail.com}
-    from-nm: ${MAIL_FROM_NM:ShopJoy 고객센터}
-
+  # app.mail.from / from-nm 은 sy_prop(app.mail.*) 에서 주입
+  # app.license.secret / enabled 는 sy_prop(app.license.*) 에서 주입
   license:
-    secret: ${LICENSE_SECRET:SJ2604-LicenseSecret-X9kQm#vLpNrTzWbYd}
-    enabled: ${LICENSE_ENABLED:true}
     output-dir: ${LICENSE_OUTPUT_DIR:./_license-output}
 
   redis:
@@ -138,33 +127,17 @@ app:
       token: ${JENKINS_TOKEN:dev-batch-jenkins-tk-9f2a4c8e1b7d}   # 환경변수 우선, 미설정 시 기본값 사용
       url: ""               # 앱→Jenkins 역방향 트리거 URL (미사용, 향후 연동 예정)
     allowed-ips: "*"        # 스케줄 관리 API 허용 IP. "*"=전체허용 | "IP1^IP2"=화이트리스트
-  # ── 외부 SDK 연동 키 (dev 프로파일) ─────────────────────────────────
-  ext-sdk:
-    google-client-id: ${GOOGLE_CLIENT_ID:207844440856-5ib9mk6frvt7rfpt8823e48c3c0lavth.apps.googleusercontent.com}
-    kakao-js-key: ${KAKAO_JS_KEY:}
-    naver-client-id: ${NAVER_CLIENT_ID:}
-    naver-callback-url: ${NAVER_CALLBACK_URL:http://127.0.0.1:5501/}
-    toss-client-key: ${TOSS_CLIENT_KEY:}
-    kakao-map-js-key: ${KAKAO_MAP_JS_KEY:}
-    naver-map-client-id: ${NAVER_MAP_CLIENT_ID:}
-
   error-log:
     db-save: true
     queue-size: 100
   access-log:
     db-save: true
     queue-size: 100
-    # filter 예시 ("^" 구분):
-    #   "*"                       → 전체 기록
-    #   "BO"                      → BO 관리자 전체
-    #   "BO^FO^EXT"               → 인증된 모든 AppType
-    #   "admin01"                 → 특정 userId만
-    #   "admin01^BO"              → 특정 userId + BO 전체
-    #   "admin01^member123^BO"    → 특정 userId 두 명 + BO 전체
-    filter: "BO^FO^EXT"       # dev: 인증된 모든 유형 기록
+    filter: "BO^FO^EXT"       # *=전체 | BO=관리자 | BO^FO^EXT | userId^BO
     max-body-size: 2000
 
   # ── 파일 업로드 설정 (dev 프로파일) ─────────────────────────────────
+  # storage-type / cdn-host / aws.* / ncp.* 는 sy_prop(app.file.*) 에서 주입
   file:
     allowed-extensions: jpg,jpeg,png,gif,webp,pdf,doc,docx,xls,xlsx,ppt,pptx,txt,zip,mp4,avi,mov,mkv,webm,flv,wmv,m4v
     max-file-size: 10485760
@@ -172,27 +145,11 @@ app:
     max-image-size: 5242880
     max-document-size: 20971520
     max-video-size: 104857600
-    storage-type: ${STORAGE_TYPE:LOCAL}
     local:
       base-path: static/cdn
       upload-dir: uploads
-    cdn-host: ${CDN_HOST:http://dev.shopjoy.com/static/cdn}
     thumbnail-enabled: true
     thumbnail-sizes: 200x200,400x400,800x800
-
-    aws:
-      bucket-name: ${AWS_S3_BUCKET:shopjoy-files-dev}
-      region: ${AWS_REGION:ap-northeast-2}
-      access-key: ${AWS_ACCESS_KEY_ID:}
-      secret-key: ${AWS_SECRET_ACCESS_KEY:}
-      cdn-url: ${AWS_CLOUDFRONT_URL:https://cdn-dev.shopjoy.com}
-
-    ncp:
-      bucket-name: ${NCP_BUCKET:shopjoy-files-dev}
-      endpoint: ${NCP_ENDPOINT:https://obs.kr-standard.ncrdev.ncloud.com}
-      access-key: ${NCP_ACCESS_KEY:}
-      secret-key: ${NCP_SECRET_KEY:}
-      cdn-url: ${NCP_CDN_URL:https://cdn-ncp-dev.shopjoy.com}
 
 # ────────────────────────────────────────────
 # 로깅 — dev 프로파일

@@ -29,4 +29,11 @@ public interface SyPathRepository extends JpaRepository<SyPath, String>, QSyPath
             """, nativeQuery = true)
     List<String> findTreePathIds(@Param("rootPathId") String rootPathId,
                                  @Param("bizCd")      String bizCd);
+
+    /* biz_cd 기준 등록된 모든 path_id 목록 (고아 필터용) */
+    @Query(value = """
+            /* com.shopjoy.ecadminapi.base.sy.repository.SyPathRepository :: findAllPathIdsByBizCd() */
+            SELECT path_id FROM sy_path WHERE biz_cd = :bizCd
+            """, nativeQuery = true)
+    List<String> findAllPathIdsByBizCd(@Param("bizCd") String bizCd);
 }

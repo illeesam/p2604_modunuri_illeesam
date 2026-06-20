@@ -266,6 +266,26 @@ INSERT INTO sy_path (biz_cd, parent_path_id, path_label, sort_ord, use_yn, reg_b
   ('sy_bbm',  141, '일반',    2, 'Y', 'admin', NOW()); -- 147
 
 -- ============================================================
+-- [16] sy_prop — 프로퍼티 (환경설정)
+--      사용처: SyPropMng 좌측 트리 — yml 경로 계층 반영
+--      ⚠️ path_id 를 yml 경로 문자열로 명시 지정 (시퀀스 자동생성 미사용)
+--          sy_prop.path_id 컬럼이 이 값을 직접 참조하므로 반드시 일치해야 함
+-- ============================================================
+INSERT INTO sy_path (path_id, biz_cd, parent_path_id, path_label, sort_ord, use_yn, site_id, reg_by, reg_date) VALUES
+  ('app',              'sy_prop', NULL,         'app',     1, 'Y', 'SITE000001', 'admin', NOW()),
+  ('app.ext-sdk',      'sy_prop', 'app',        'ext-sdk', 1, 'Y', 'SITE000001', 'admin', NOW()),
+  ('app.auth',         'sy_prop', 'app',        'auth',    2, 'Y', 'SITE000001', 'admin', NOW()),
+  ('app.auth.social',  'sy_prop', 'app.auth',   'social',  1, 'Y', 'SITE000001', 'admin', NOW()),
+  ('app.toss',         'sy_prop', 'app',        'toss',    3, 'Y', 'SITE000001', 'admin', NOW()),
+  ('app.map',          'sy_prop', 'app',        'map',     4, 'Y', 'SITE000001', 'admin', NOW()),
+  ('app.mail',         'sy_prop', 'app',        'mail',    5, 'Y', 'SITE000001', 'admin', NOW()),
+  ('app.file',         'sy_prop', 'app',        'file',    6, 'Y', 'SITE000001', 'admin', NOW()),
+  ('app.file.aws',     'sy_prop', 'app.file',   'aws',     1, 'Y', 'SITE000001', 'admin', NOW()),
+  ('app.file.ncp',     'sy_prop', 'app.file',   'ncp',     2, 'Y', 'SITE000001', 'admin', NOW()),
+  ('spring',           'sy_prop', NULL,         'spring',  2, 'Y', 'SITE000001', 'admin', NOW()),
+  ('spring.mail',      'sy_prop', 'spring',     'mail',    1, 'Y', 'SITE000001', 'admin', NOW());
+
+-- ============================================================
 -- 결과 확인
 -- ============================================================
 SELECT biz_cd, COUNT(*) AS cnt

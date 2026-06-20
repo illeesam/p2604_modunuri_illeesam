@@ -150,11 +150,16 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
                 ? syProp.siteId.eq(search.getSiteId()) : null;
     }
 
-    /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함 */
+    /* 표시경로 트리 — 선택 노드 + 모든 자손 경로 포함.
+     * '__orphan__' 특수값: sy_path 에 등록되지 않은 path_id 를 가진 행 (또는 NULL) 필터. */
     private BooleanExpression baseAndPathId(SyPropDto.Request search) {
-        return search != null && StringUtils.hasText(search.getPathId())
-                ? syProp.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_prop"))
-                : null;
+        if (search == null || !StringUtils.hasText(search.getPathId())) return null;
+        if ("__orphan__".equals(search.getPathId())) {
+            List<String> registeredPaths = syPathRepository.findAllPathIdsByBizCd("sy_prop");
+            if (registeredPaths.isEmpty()) return null;
+            return syProp.pathId.isNull().or(syProp.pathId.notIn(registeredPaths));
+        }
+        return syProp.pathId.in(syPathRepository.findTreePathIds(search.getPathId(), "sy_prop"));
     }
 
     /* propKey 정확 일치 (단건) */
@@ -350,10 +355,13 @@ public class QSyPropRepositoryImpl implements QSyPropRepository {
                   SELECT '__total__' AS path_id, COUNT(*) AS cnt
                   FROM filtered
                 UNION ALL
-                  /* (3) '__orphan__' : 경로 미지정(path_id IS NULL) 카운트 — 트리 외 표시 */
+                  /* (3) '__orphan__' : sy_path 미등록 경로(또는 NULL) 카운트 — 기타 노드 표시 */
                   SELECT '__orphan__' AS path_id, COUNT(*) AS cnt
                   FROM filtered
                   WHERE path_id IS NULL
+                     OR path_id NOT IN (
+                           SELECT path_id FROM sy_path WHERE biz_cd = :bizCd
+                        )
                 """);
 
         Query q = em.createNativeQuery(sql.toString());
