@@ -27,6 +27,7 @@ window.ZdTestSnsLoginKakao = {
       loginStatus: '',
       userInfo:    null,
       rawResponse: '',
+      tokenRaw:    '',
       error:       '',
     });
 
@@ -89,38 +90,44 @@ window.ZdTestSnsLoginKakao = {
     };
 
     const testLogin = () => {
-      if (!uiState.sdkLoaded) { showToast('SDK 초기화 먼저 하세요.', 'error'); return; }
-      uiState.loading    = true;
-      result.loginStatus = '⏳ 로그인 팝업 요청 중…';
+      if (!cfg.kakaoJsKey) { showToast('JS Key 를 입력하세요.', 'error'); return; }
+      result.loginStatus = '';
       result.error       = '';
       result.userInfo    = null;
-      window.Kakao.Auth.login({
-        success: (authObj) => {
-          result.rawResponse = JSON.stringify(authObj, null, 2);
-          // 사용자 정보 조회
-          window.Kakao.API.request({
-            url: '/v2/user/me',
-            success: (res) => {
-              result.userInfo    = res;
-              result.loginStatus = '✅ 로그인 성공';
-              uiState.loggedIn   = true;
-              uiState.loading    = false;
-              showToast('카카오 로그인 성공', 'success');
-            },
-            fail: (err) => {
-              result.error       = JSON.stringify(err);
-              result.loginStatus = '⚠ 토큰 발급 성공 / 사용자 정보 조회 실패';
-              uiState.loading    = false;
-            },
-          });
-        },
-        fail: (err) => {
-          result.error       = JSON.stringify(err, null, 2);
-          result.loginStatus = '❌ 로그인 실패';
-          uiState.loading    = false;
-          showToast('카카오 로그인 실패', 'error', 0);
-        },
-      });
+
+      /* Kakao.Auth.login() 팝업은 도메인 미등록/팝업차단 시 콜백 자체가 안 와서 무한 대기.
+       * 대신 OAuth 인증 URL을 직접 구성해 새 탭으로 열고, 발급된 토큰을 수동 입력받는다. */
+      const redirectUri = window.location.origin + '/oauth/callback/kakao';
+      const authUrl = 'https://kauth.kakao.com/oauth/authorize'
+        + '?client_id='    + encodeURIComponent(cfg.kakaoJsKey)
+        + '&redirect_uri=' + encodeURIComponent(redirectUri)
+        + '&response_type=token'
+        + '&scope=profile_nickname,profile_image,account_email';
+
+      window.open(authUrl, 'kakaoLogin', 'width=500,height=700,left=200,top=100');
+      result.loginStatus = '⏳ 카카오 인증 탭 열림 — 로그인 완료 후 발급된 Access Token을 아래에 붙여넣으세요.';
+      showToast('새 탭에서 로그인 후 Access Token을 복사해 붙여넣으세요.', 'success');
+    };
+
+    const fetchUserInfo = async () => {
+      if (!result.tokenRaw) { showToast('Access Token 을 입력하세요.', 'error'); return; }
+      uiState.loading = true;
+      result.error    = '';
+      try {
+        /* 백엔드 프록시 경유 (CORS) */
+        const res = await boApi.post('/co/ext/sns-kakao/profile',
+          { accessToken: result.tokenRaw },
+          coUtil.cofApiHdr('카카오 로그인 테스트', '프로필 조회'));
+        result.userInfo    = res.data?.data || res.data;
+        result.loginStatus = '✅ 로그인 성공';
+        uiState.loggedIn   = true;
+        showToast('카카오 프로필 조회 성공', 'success');
+      } catch (e) {
+        result.error       = e.response?.data?.message || e.message || '프로필 조회 실패';
+        result.loginStatus = '❌ 프로필 조회 실패';
+        showToast(result.error, 'error', 0);
+      }
+      uiState.loading = false;
     };
 
     const testLogout = () => {
@@ -148,10 +155,11 @@ window.ZdTestSnsLoginKakao = {
     /* ##### [04] 액션 dispatch #################################################### */
 
     const handleBtnAction = (cmd) => {
-      if (cmd === 'sdk-init')    return initKakaoSdk();
-      if (cmd === 'login-test')  return testLogin();
-      if (cmd === 'logout-test') return testLogout();
-      if (cmd === 'key-save')    return saveKey();
+      if (cmd === 'sdk-init')      return initKakaoSdk();
+      if (cmd === 'login-test')    return testLogin();
+      if (cmd === 'profile-fetch') return fetchUserInfo();
+      if (cmd === 'logout-test')   return testLogout();
+      if (cmd === 'key-save')      return saveKey();
     };
 
     return { cfg, result, uiState, handleBtnAction };
@@ -187,13 +195,25 @@ window.ZdTestSnsLoginKakao = {
     <div class="toolbar">
       <span class="list-title">로그인 / 로그아웃 테스트</span>
       <div style="margin-left:auto;display:flex;gap:6px">
-        <button class="btn btn_confirm" :disabled="uiState.loading || !uiState.sdkLoaded" @click="handleBtnAction('login-test')">
-          {{ uiState.loading ? '⏳ 처리 중…' : '카카오 로그인 팝업' }}
-        </button>
+        <button class="btn btn_confirm" @click="handleBtnAction('login-test')">🟡 카카오 인증 열기</button>
         <button class="btn btn_cancel" :disabled="!uiState.loggedIn" @click="handleBtnAction('logout-test')">로그아웃</button>
       </div>
     </div>
     <div style="padding:12px">
+      <div style="font-size:12px;color:#666;margin-bottom:10px;padding:8px;background:#fffbeb;border-radius:4px;line-height:1.6">
+        ⓘ 카카오 OAuth 인증 창이 열립니다. 로그인 완료 후 리다이렉트 URL의 <b>#access_token=…</b> 값을 복사해 아래에 붙여넣고 [프로필 조회] 하세요.
+      </div>
+      <div class="form-row" style="gap:8px;margin-bottom:8px">
+        <div class="form-group" style="flex:1">
+          <label class="form-label">Access Token (인증 완료 후 붙여넣기)</label>
+          <input class="form-control" v-model="result.tokenRaw" placeholder="예: AAABxxxxx..." style="font-family:monospace;font-size:12px" />
+        </div>
+        <div style="display:flex;align-items:flex-end;padding-bottom:1px">
+          <button class="btn btn_search" :disabled="uiState.loading" @click="handleBtnAction('profile-fetch')">
+            {{ uiState.loading ? '⏳' : '프로필 조회' }}
+          </button>
+        </div>
+      </div>
       <div v-if="result.loginStatus" style="margin-bottom:8px;font-size:13px;font-weight:600">{{ result.loginStatus }}</div>
       <div v-if="result.error" style="padding:8px;background:#fff5f5;border:1px solid #fca5a5;border-radius:4px;font-size:12px;color:#b91c1c;white-space:pre-wrap;margin-bottom:8px">{{ result.error }}</div>
       <!-- 사용자 정보 -->
@@ -208,11 +228,6 @@ window.ZdTestSnsLoginKakao = {
             {{ result.userInfo.properties?.profile_image ? '' : '(없음)' }}
           </td></tr>
         </table>
-      </div>
-      <!-- raw response -->
-      <div v-if="result.rawResponse" style="margin-top:8px">
-        <div style="font-size:11px;color:#888;margin-bottom:4px">Raw Token Response</div>
-        <pre style="background:#1e1e1e;color:#d4d4d4;padding:10px;border-radius:6px;font-size:11px;overflow:auto;max-height:160px">{{ result.rawResponse }}</pre>
       </div>
     </div>
   </div>

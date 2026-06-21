@@ -21,7 +21,6 @@ window.ZdInfDashboard = {
 
     const codes = reactive({});
     const loading = ref(false);
-    const expandedKeys = reactive(new Set()); // 펼쳐진 행의 keyName 집합
 
     /* ── sy_prop 조회 섹션 ── */
     const PROFILE_OPTIONS_ZD = [
@@ -148,16 +147,14 @@ window.ZdInfDashboard = {
     /* ##### [02] 그리드 컬럼 정의 ################################################### */
 
     const baseGridColumns = [
-      { key: '_expand',    label: '',           width: '32px',  align: 'center' },
-      { key: 'category',   label: '분류',       width: '90px' },
-      { key: 'channel',    label: '채널 / 서비스', width: '150px' },
-      { key: 'keyName',    label: '설정 키',    width: '180px', mono: true },
-      { key: 'beStat', label: 'BE 설정', width: '200px', align: 'center' },
-      { key: 'feStat', label: 'FE 설정', width: '130px', align: 'center' },
-      { key: '_test',      label: '테스트',     width: '90px',  align: 'center' },
-      { key: 'testResult', label: '연동결과', width: '60px', align: 'center' },
-      { key: 'testMsg',    label: '테스트 결과' },
-      { key: 'remark',     label: '비고' },
+      { key: 'channelCode', label: '코드',          width: '110px', mono: true },
+      { key: 'category',    label: '분류',           width: '80px' },
+      { key: 'channel',     label: '채널 / 서비스',  width: '130px' },
+      { key: 'beStat',      label: 'BE 설정',        width: '190px', align: 'center' },
+      { key: 'feStat',      label: 'FE 설정',        width: '120px', align: 'center' },
+      { key: '_test',       label: '테스트',         width: '90px',  align: 'center' },
+      { key: 'testResult',  label: '연동결과',       width: '150px', align: 'center' },
+      { key: 'testMsg',     label: '테스트 결과',    width: '180px' },
     ];
 
     /* ##### [03] 데이터 로드 ######################################################## */
@@ -181,6 +178,7 @@ window.ZdInfDashboard = {
     const _META = [
       /* ── 소셜 로그인 ── */
       {
+        channelCode: 'SOCIAL_GOOGLE',
         category: '소셜로그인', channel: 'Google 로그인', feKey: 'googleClientId', beKey: 'app.ext-sdk.google-client-id',
         remark: 'OAuth2 클라이언트 ID', testFn: 'google',
         desc: 'Google OAuth 2.0 소셜 로그인에 사용합니다. Google Cloud Console에서 OAuth 클라이언트 ID를 발급받아 등록하세요.',
@@ -193,6 +191,7 @@ window.ZdInfDashboard = {
         dbTable: 'mb_member_sns (sns_type=GOOGLE)',
       },
       {
+        channelCode: 'SOCIAL_KAKAO',
         category: '소셜로그인', channel: 'Kakao 로그인', feKey: 'kakaoJsKey', beKey: 'app.ext-sdk.kakao-js-key',
         remark: 'JavaScript 키', testFn: 'kakao',
         desc: 'Kakao 소셜 로그인에 사용합니다. Kakao Developers에서 앱을 생성하고 JavaScript 키를 발급받으세요.',
@@ -205,6 +204,7 @@ window.ZdInfDashboard = {
         dbTable: 'mb_member_sns (sns_type=KAKAO)',
       },
       {
+        channelCode: 'SOCIAL_NAVER',
         category: '소셜로그인', channel: 'Naver 로그인', feKey: 'naverClientId', beKey: 'app.ext-sdk.naver-client-id',
         remark: '클라이언트 ID', testFn: 'naver',
         desc: 'Naver 소셜 로그인에 사용합니다. Naver Developers에서 애플리케이션을 등록하고 클라이언트 ID를 발급받으세요.',
@@ -218,6 +218,7 @@ window.ZdInfDashboard = {
       },
       /* ── 결제 ── */
       {
+        channelCode: 'PAY_TOSS',
         category: '결제', channel: '토스페이먼츠', feKey: 'tossClientKey', beKey: 'app.ext-sdk.toss-client-key',
         remark: 'FE:클라이언트키 / BE:시크릿키(app.toss.secret-key)', testFn: 'toss',
         desc: '토스페이먼츠 결제 연동에 사용합니다. 토스페이먼츠 개발자 센터에서 클라이언트 키(FE)와 시크릿 키(BE)를 발급받으세요.',
@@ -231,6 +232,7 @@ window.ZdInfDashboard = {
       },
       /* ── 지도 ── */
       {
+        channelCode: 'MAP_KAKAO',
         category: '지도', channel: 'Kakao 지도', feKey: 'kakaoMapJsKey', beKey: 'app.ext-sdk.kakao-map-js-key',
         remark: 'JavaScript 키 (카카오맵)', testFn: 'kakaoMap',
         desc: 'Kakao Maps API 연동에 사용합니다. Kakao Developers에서 앱 > 카카오맵 사용 설정을 ON으로 변경하고 JavaScript 키를 사용하세요.',
@@ -243,6 +245,7 @@ window.ZdInfDashboard = {
         dbTable: 'sy_site (site_address 좌표변환 시 사용)',
       },
       {
+        channelCode: 'MAP_NAVER',
         category: '지도', channel: 'Naver 지도', feKey: 'naverMapClientId', beKey: 'app.ext-sdk.naver-map-client-id',
         remark: 'NCP 클라이언트 ID', testFn: 'naverMap',
         desc: 'Naver Cloud Platform Maps API 연동에 사용합니다. NCP Console에서 Maps 서비스를 활성화하고 클라이언트 ID를 발급받으세요.',
@@ -255,6 +258,7 @@ window.ZdInfDashboard = {
         dbTable: 'sy_site (site_address 좌표변환 시 사용)',
       },
       {
+        channelCode: 'MAP_GOOGLE',
         category: '지도', channel: 'Google 지도', feKey: 'googleMapApiKey', beKey: 'app.ext-sdk.google-map-api-key',
         remark: 'Maps JavaScript API 키', testFn: 'googleMap',
         desc: 'Google Maps Platform 연동에 사용합니다. Google Cloud Console에서 Maps JavaScript API와 Geocoding API를 활성화하고 API 키를 발급받으세요.',
@@ -268,6 +272,7 @@ window.ZdInfDashboard = {
       },
       /* ── 메일 ── */
       {
+        channelCode: 'MAIL_SMTP',
         category: '메일', channel: 'SMTP', feKey: null, beKey: 'spring.mail.host',
         remark: 'SMTP 호스트', testFn: 'smtp',
         desc: '이메일 발송에 사용하는 SMTP 서버 설정입니다. Gmail 사용 시 앱 비밀번호를 별도 발급해야 합니다.',
@@ -281,6 +286,7 @@ window.ZdInfDashboard = {
       },
       /* ── SMS ── */
       {
+        channelCode: 'MSG_SMS',
         category: 'SMS', channel: 'SMS 발송', feKey: null, beKey: 'app.sms.api-key',
         remark: 'API 키', testFn: 'sms',
         desc: 'SMS 문자 발송 서비스 API 키입니다. 현재 연동된 SMS 공급사의 콘솔에서 API 키를 발급받으세요.',
@@ -294,6 +300,7 @@ window.ZdInfDashboard = {
       },
       /* ── 푸시 ── */
       {
+        channelCode: 'PUSH_FCM',
         category: '푸시', channel: 'FCM', feKey: 'fcmProjectId', beKey: 'app.push.fcm.project-id',
         remark: '프로젝트 ID', testFn: 'fcm',
         desc: 'Firebase Cloud Messaging(FCM) 푸시 알림 연동에 사용합니다. Firebase Console에서 프로젝트를 생성하고 서비스 계정 키를 다운로드하세요.',
@@ -306,6 +313,7 @@ window.ZdInfDashboard = {
         dbTable: 'mb_device_token, cmh_push_log (channel=FCM)',
       },
       {
+        channelCode: 'PUSH_APNS',
         category: '푸시', channel: 'APNs', feKey: null, beKey: 'app.push.apns.key-id',
         remark: '키 ID', testFn: 'apns',
         desc: 'Apple Push Notification service(APNs) iOS 푸시 알림 연동에 사용합니다. Apple Developer 계정에서 APNs 키를 생성하세요.',
@@ -319,6 +327,7 @@ window.ZdInfDashboard = {
       },
       /* ── 카카오 ── */
       {
+        channelCode: 'KAKAO_ALIM',
         category: '카카오', channel: '알림톡', feKey: null, beKey: 'app.kakao.alimtalk.sender-key',
         remark: '발신 프로필 키', testFn: 'kakaoAlim',
         desc: '카카오 알림톡 발송에 사용합니다. 비즈니스 채널을 개설하고 발신 프로필 키를 발급받으세요.',
@@ -332,6 +341,7 @@ window.ZdInfDashboard = {
       },
       /* ── 카카오 공유 ── */
       {
+        channelCode: 'KAKAO_SHARE',
         category: '카카오', channel: '카카오톡 공유', feKey: 'kakaoJsKey', beKey: 'app.ext-sdk.kakao-js-key',
         remark: 'JavaScript 키 (소셜 로그인과 동일)', testFn: 'kakaoShare',
         desc: '카카오톡 공유 기능에 사용합니다. 소셜 로그인과 동일한 JavaScript 키를 사용하며, Kakao Developers 에서 Web 플랫폼에 도메인을 등록해야 합니다.',
@@ -345,6 +355,7 @@ window.ZdInfDashboard = {
       },
       /* ── AI ── */
       {
+        channelCode: 'AI_CHATBOT',
         category: 'AI/챗봇', channel: 'AI 챗봇', feKey: null, beKey: 'app.chat.ai.api-key',
         remark: 'API 키', testFn: 'ai',
         desc: 'AI 챗봇 서비스 연동 API 키입니다. 연동한 AI 서비스(OpenAI / Claude 등) 콘솔에서 API 키를 발급받으세요.',
@@ -358,38 +369,171 @@ window.ZdInfDashboard = {
       },
     ];
 
+    /* 이력 패널 상태 */
+    const histState = reactive({
+      show: false, channelKey: '', channelLabel: '', logs: [], loading: false,
+      pageNo: 1, pageSize: 5, total: 0,
+    });
+
     const _buildRows = () => {
       rows.length = 0;
       _META.forEach((m) => {
         const feVal = _feKey(m.feKey);
         const beVal = m.beKey ? (_beCache[m.beKey] ?? null) : null;
+        const key = m.testFn || m.feKey || m.beKey || '-';
         rows.push({
-          category:   m.category,
-          channel:    m.channel,
-          keyName:    m.feKey || m.beKey || '-',
-          feStat:     m.feKey ? _statOf(feVal) : '-',
-          beStat:     m.beKey ? _statOf(beVal)  : '-',
-          feRawVal:   feVal ? String(feVal).slice(0, 6) + '••••••' : null,
-          beRawVal:   beVal ? String(beVal).slice(0, 6) + '••••••' : null,
-          testResult: '-',
-          testMsg:    '',
-          remark:     m.remark,
-          _testFn:    m.testFn,
-          _testing:   false,
-          /* 상세 정보 */
-          _desc:      m.desc,
-          _guideUrl:  m.guideUrl,
-          _guideLabel:m.guideLabel,
-          _feKey:     m.feKey,
-          _beKey:     m.beKey,
-          _feDesc:    m.feDesc,
-          _feFile:    m.feFile ? m.feFile.replace('propKey', m.feKey || '') : null,
-          _beDesc:    m.beDesc,
-          _beFile:    m.beFile  || null,
-          _dbTable:   m.dbTable || null,
+          channelCode:   m.channelCode || key.toUpperCase(),
+          category:      m.category,
+          channel:       m.channel,
+          keyName:       key,
+          feStat:        m.feKey ? _statOf(feVal) : '-',
+          beStat:        m.beKey ? _statOf(beVal)  : '-',
+          feRawVal:      feVal ? String(feVal).slice(0, 6) + '••••••' : null,
+          beRawVal:      beVal ? String(beVal).slice(0, 6) + '••••••' : null,
+          testResult:    '-',
+          testMsg:       '',
+          lastTestDate:  null,
+          lastTestOk:    null,
+          remark:        m.remark,
+          _testFn:       m.testFn,
+          _testing:      false,
+          _desc:         m.desc,
+          _guideUrl:     m.guideUrl,
+          _guideLabel:   m.guideLabel,
+          _feKey:        m.feKey,
+          _beKey:        m.beKey,
+          _feDesc:       m.feDesc,
+          _feFile:       m.feFile ? m.feFile.replace('propKey', m.feKey || '') : null,
+          _beDesc:       m.beDesc,
+          _beFile:       m.beFile  || null,
+          _dbTable:      m.dbTable || null,
         });
       });
     };
+
+    /* 페이지 로드 시 채널별 최신 이력 1건씩 가져와 연동결과 열 초기화 */
+    const _fetchLatestResults = async () => {
+      try {
+        const res = await boApi.get('/bo/sy/ext-test-log/latest',
+          coUtil.cofApiHdr('연동설정대시보드', '최신이력조회'));
+        const list = res.data?.data || [];
+        const map = {};
+        list.forEach((lg) => { map[lg.channelKey] = lg; });
+        rows.forEach((row) => {
+          const lg = map[row.keyName];
+          if (lg) {
+            row.lastTestDate = lg.regDate;
+            row.lastTestOk   = lg.testResult === 'SUCCESS';
+          }
+        });
+      } catch (_) { /* 무시 */ }
+    };
+
+    const fnFmtDatetime = (iso) => {
+      if (!iso) return '-';
+      const d = new Date(iso);
+      const pad = (n) => String(n).padStart(2, '0');
+      return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate())
+        + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+    };
+
+    /* 이력 셀 표시 헬퍼 */
+
+    /* JSON 문자열 → [{k, v}, ...] 배열 (중첩 없이 1단계만) */
+    const fnParseKv = (str) => {
+      if (!str) return null;
+      try {
+        const obj = JSON.parse(str);
+        if (typeof obj !== 'object' || obj === null) return null;
+        return Object.entries(obj).map(([k, v]) => ({
+          k,
+          v: (typeof v === 'object' && v !== null) ? JSON.stringify(v) : String(v == null ? '' : v),
+        }));
+      } catch (_) { return null; }
+    };
+
+    /* 계정정보: [{k,v}] 배열 반환 */
+    const fnFmtAccount = (lg) => {
+      if (lg.testAccount) {
+        const kv = fnParseKv(lg.testAccount);
+        if (kv) return kv;
+        return [{ k: '대상', v: lg.testAccount }];
+      }
+      /* 구형 데이터: testMsg에서 [요청]{...}[결과] 추출 */
+      if (lg.testMsg && lg.testMsg.startsWith('[요청]')) {
+        try {
+          const m = lg.testMsg.match(/^\[요청\]\s*(\{[\s\S]*?\})\s*\[결과\]/);
+          if (m) {
+            const obj = JSON.parse(m[1]);
+            const acc = [];
+            if (obj.toEmail)     acc.push({ k: 'toEmail',  v: obj.toEmail });
+            if (obj.toPhone)     acc.push({ k: 'toPhone',  v: obj.toPhone });
+            if (obj.deviceToken) acc.push({ k: 'deviceToken', v: obj.deviceToken.slice(0, 20) + '…' });
+            if (obj.targetValue) acc.push({ k: 'target',   v: (obj.targetType || '') + ':' + obj.targetValue });
+            return acc.length ? acc : null;
+          }
+        } catch (_) {}
+      }
+      return null;
+    };
+
+    /* 요청내용: [{k,v}] 배열 반환 */
+    const fnFmtReq = (lg) => {
+      if (lg.testReqBody) {
+        const kv = fnParseKv(lg.testReqBody);
+        if (kv) return kv;
+        return [{ k: '내용', v: lg.testReqBody }];
+      }
+      if (lg.testMsg && lg.testMsg.startsWith('[요청]')) {
+        try {
+          const m = lg.testMsg.match(/^\[요청\]\s*(\{[\s\S]*?\})\s*\[결과\]/);
+          if (m) {
+            const kv = fnParseKv(m[1]);
+            return kv || [{ k: '내용', v: m[1] }];
+          }
+        } catch (_) {}
+      }
+      return null;
+    };
+
+    /* 응답내용: 문자열 반환 */
+    const fnFmtResp = (lg) => {
+      if (!lg.testMsg) return null;
+      if (lg.testMsg.startsWith('[요청]')) {
+        const idx = lg.testMsg.indexOf('[결과]');
+        return idx >= 0 ? lg.testMsg.slice(idx + 4).trim() : lg.testMsg;
+      }
+      return lg.testMsg;
+    };
+
+    const _loadHist = async () => {
+      if (!histState.channelKey) return;
+      histState.loading = true;
+      try {
+        const res = await boApi.get('/bo/sy/ext-test-log/list', {
+          params: { channelKey: histState.channelKey, pageNo: histState.pageNo, pageSize: histState.pageSize },
+          ...coUtil.cofApiHdr('연동설정대시보드', '이력조회'),
+        });
+        const d = res.data?.data || {};
+        histState.logs  = d.pageList || (Array.isArray(d) ? d : []);
+        histState.total = d.pageTotalCount ?? histState.logs.length;
+      } catch (_) { histState.logs = []; histState.total = 0; }
+      finally { histState.loading = false; }
+    };
+
+    const handleHistOpen = async (row) => {
+      histState.show         = true;
+      histState.channelKey   = row.keyName;
+      histState.channelLabel = row.channel;
+      histState.pageNo       = 1;
+      histState.logs         = [];
+      histState.total        = 0;
+      await _loadHist();
+    };
+
+    const handleHistClose = () => { histState.show = false; };
+
+    const handleHistPage = async (n) => { histState.pageNo = n; await _loadHist(); };
 
     /* ##### [04] BE 설정 조회 ####################################################### */
 
@@ -423,27 +567,32 @@ window.ZdInfDashboard = {
 
     /* ##### [05] 테스트 실행 ####################################################### */
 
-    /* 각 채널별 테스트 — POST /co/ext/.../send 또는 GET ping */
+    /*
+     * 채널별 테스트 맵
+     * method: 'key-check' — BE/FE 키 설정 여부로만 판정 (실제 API 호출 없음)
+     * method: 'post'/'get' — 실제 API 호출
+     * checkBeKey / checkFeKey — key-check 시 확인할 BE/FE 키 이름
+     */
     const _TEST_MAP = {
-      google:     { method: 'get',  url: '/bo/sy/app-config/all',          label: 'Google OAuth',  note: 'BE 키 조회로 설정 여부 확인' },
-      kakao:      { method: 'get',  url: '/bo/sy/app-config/all',          label: 'Kakao OAuth',   note: 'BE 키 조회로 설정 여부 확인' },
-      naver:      { method: 'get',  url: '/bo/sy/app-config/all',          label: 'Naver OAuth',   note: 'BE 키 조회로 설정 여부 확인' },
-      toss:       { method: 'get',  url: '/bo/sy/app-config/all',          label: '토스 결제키',   note: 'BE 키 조회로 설정 여부 확인' },
-      kakaoMap:   { method: 'get',  url: '/bo/sy/app-config/all',          label: 'Kakao 지도',    note: 'BE 키 조회로 설정 여부 확인' },
-      naverMap:   { method: 'get',  url: '/bo/sy/app-config/all',          label: 'Naver 지도',    note: 'BE 키 조회로 설정 여부 확인' },
-      googleMap:  { method: 'get',  url: '/bo/sy/app-config/all',          label: 'Google 지도',   note: 'BE 키 조회로 설정 여부 확인' },
-      smtp:       { method: 'post', url: '/co/ext/mail-send/send',         label: 'SMTP',
+      google:     { method: 'key-check', label: 'Google OAuth',  checkBeKey: 'app.ext-sdk.google-client-id', checkFeKey: 'googleClientId' },
+      kakao:      { method: 'key-check', label: 'Kakao OAuth',   checkBeKey: 'app.ext-sdk.kakao-js-key',    checkFeKey: 'kakaoJsKey' },
+      naver:      { method: 'key-check', label: 'Naver OAuth',   checkBeKey: 'app.ext-sdk.naver-client-id', checkFeKey: 'naverClientId' },
+      toss:       { method: 'key-check', label: '토스 결제',     checkBeKey: 'app.toss.secret-key',         checkFeKey: 'tossClientKey' },
+      kakaoMap:   { method: 'key-check', label: 'Kakao 지도',    checkBeKey: 'app.ext-sdk.kakao-map-js-key',checkFeKey: 'kakaoMapJsKey' },
+      naverMap:   { method: 'key-check', label: 'Naver 지도',    checkBeKey: 'app.ext-sdk.naver-map-client-id', checkFeKey: 'naverMapClientId' },
+      googleMap:  { method: 'key-check', label: 'Google 지도',   checkBeKey: 'app.ext-sdk.google-map-api-key',  checkFeKey: 'googleMapApiKey' },
+      kakaoShare: { method: 'key-check', label: '카카오톡 공유', checkBeKey: 'app.ext-sdk.kakao-js-key',    checkFeKey: 'kakaoJsKey' },
+      smtp:       { method: 'post', url: '/co/ext/mail-send/send',      label: 'SMTP',
                     body: { toEmail: 'test@example.com', toName: '테스트', subject: '[ShopJoy] 연동 테스트', body: '연동 설정 대시보드 테스트 발송' } },
-      sms:        { method: 'post', url: '/co/ext/sms-send/send',          label: 'SMS',
+      sms:        { method: 'post', url: '/co/ext/sms-send/send',       label: 'SMS',
                     body: { toPhone: '01000000000', message: '[ShopJoy] SMS 연동 테스트' } },
-      fcm:        { method: 'post', url: '/co/ext/push-fcm-send/send',     label: 'FCM',
+      fcm:        { method: 'post', url: '/co/ext/push-fcm-send/send',  label: 'FCM',
                     body: { targetType: 'topic', targetValue: 'test_ping', title: '[ShopJoy] FCM 테스트', body: '연동 확인' } },
-      apns:       { method: 'post', url: '/co/ext/push-apns-send/send',    label: 'APNs',
+      apns:       { method: 'post', url: '/co/ext/push-apns-send/send', label: 'APNs',
                     body: { deviceToken: 'TEST_TOKEN', title: '[ShopJoy] APNs 테스트', body: '연동 확인' } },
-      kakaoAlim:  { method: 'post', url: '/co/ext/kakao-send/send',        label: '카카오 알림톡',
+      kakaoAlim:  { method: 'post', url: '/co/ext/kakao-send/send',     label: '카카오 알림톡',
                     body: { msgType: 'alimtalk', toPhone: '01000000000', templateCode: 'TEST_TMPL', variables: {} } },
-      kakaoShare: { method: 'get',  url: '/bo/sy/app-config/all',          label: '카카오톡 공유', note: 'FE 전용 — BE 키 조회로 확인' },
-      ai:         { method: 'post', url: '/co/ext/ai-chat/chat',           label: 'AI 챗봇',
+      ai:         { method: 'post', url: '/co/ext/ai-chat/chat',        label: 'AI 챗봇',
                     body: { provider: 'openai', message: '연동 테스트: 안녕하세요' } },
     };
 
@@ -452,40 +601,97 @@ window.ZdInfDashboard = {
       const meta = _TEST_MAP[row._testFn];
       if (!meta) { row.testResult = '실패'; row.testMsg = '테스트 미정의'; return; }
       row._testing = true; row.testResult = '-'; row.testMsg = '확인 중...';
+
+      let ok = false;
+      let msg = '';
+      let reqBody = null;
+
       try {
-        let res;
-        if (meta.method === 'post') {
-          res = await boApi.post(meta.url, meta.body || {}, coUtil.cofApiHdr('연동설정대시보드', meta.label + ' 테스트'));
+        if (meta.method === 'key-check') {
+          /* 실제 키 설정 여부로 판정 */
+          const beOk = !meta.checkBeKey || !!_beCache[meta.checkBeKey];
+          const feOk = !meta.checkFeKey || !!_feKey(meta.checkFeKey);
+          const msgs = [];
+          if (meta.checkBeKey) msgs.push('BE(' + meta.checkBeKey + '): ' + (beOk ? '설정됨' : '미설정'));
+          if (meta.checkFeKey) msgs.push('FE(' + meta.checkFeKey + '): ' + (feOk ? '설정됨' : '미설정'));
+          ok  = (meta.checkBeKey ? beOk : true) && (meta.checkFeKey ? feOk : true);
+          msg = msgs.join(' / ');
         } else {
-          res = await boApi.get(meta.url, coUtil.cofApiHdr('연동설정대시보드', meta.label + ' 테스트'));
+          let res;
+          if (meta.method === 'post') {
+            reqBody = meta.body || {};
+            res = await boApi.post(meta.url, reqBody, coUtil.cofApiHdr('연동설정대시보드', meta.label + ' 테스트'));
+          } else {
+            res = await boApi.get(meta.url, coUtil.cofApiHdr('연동설정대시보드', meta.label + ' 테스트'));
+          }
+          ok  = res.data?.success !== false;
+          msg = res.data?.data?.message || res.data?.message || (ok ? '정상' : '오류');
         }
-        const ok = res.data?.success !== false;
         row.testResult = ok ? '성공' : '실패';
-        row.testMsg    = res.data?.data?.message || res.data?.message || (ok ? (meta.note || '정상') : '오류');
+        row.testMsg    = msg;
       } catch (e) {
+        ok  = false;
+        msg = e.response?.data?.message || e.message || '연결 실패';
         row.testResult = '실패';
-        row.testMsg    = e.response?.data?.message || e.message || '연결 실패';
+        row.testMsg    = msg;
       } finally {
         row._testing = false;
       }
+
+      /* 이력 저장 */
+      try {
+        const now = new Date().toISOString();
+        row.lastTestDate = now;
+        row.lastTestOk   = ok;
+
+        /* 계정정보: 채널별로 수신자/대상 정보 추출 */
+        let testAccount = null;
+        if (reqBody) {
+          if (reqBody.toEmail)     testAccount = reqBody.toEmail;
+          else if (reqBody.toPhone)  testAccount = reqBody.toPhone;
+          else if (reqBody.deviceToken) testAccount = reqBody.deviceToken.slice(0, 40) + (reqBody.deviceToken.length > 40 ? '…' : '');
+          else if (reqBody.targetValue) testAccount = reqBody.targetType + ':' + reqBody.targetValue;
+        }
+
+        /* 요청 내용: body JSON (key-check는 checkBeKey/checkFeKey 정보) */
+        let testReqBody = null;
+        if (meta.method === 'key-check') {
+          const parts = [];
+          if (meta.checkBeKey) parts.push('BE:' + meta.checkBeKey);
+          if (meta.checkFeKey) parts.push('FE:' + meta.checkFeKey);
+          testReqBody = parts.join(' / ');
+        } else if (reqBody && Object.keys(reqBody).length) {
+          testReqBody = JSON.stringify(reqBody, null, 0).slice(0, 2000);
+        }
+
+        await boApi.post('/bo/sy/ext-test-log/save', {
+          siteId:       window.boApp?.siteId || 'SITE000001',
+          channelKey:   row.keyName,
+          channelLabel: row.channel,
+          testResult:   ok ? 'SUCCESS' : 'FAIL',
+          testMsg:      msg.slice(0, 2000),
+          testUrl:      meta.url || null,
+          testReqBody:  testReqBody,
+          testAccount:  testAccount,
+        }, coUtil.cofApiHdr('연동설정대시보드', '이력저장'));
+
+        /* 테스트 완료 후 해당 채널 이력 패널 자동 열기/갱신 */
+        histState.show         = true;
+        histState.channelKey   = row.keyName;
+        histState.channelLabel = row.channel;
+        histState.pageNo       = 1;
+        await _loadHist();
+      } catch (_) { /* 이력 저장 실패는 조용히 무시 */ }
     };
 
     /* ##### [06] 이벤트 핸들러 ##################################################### */
 
-    const handleExpandToggle = (row) => {
-      if (expandedKeys.has(row.keyName)) expandedKeys.delete(row.keyName);
-      else expandedKeys.add(row.keyName);
-    };
-
-    const handleExpandAll = () => rows.forEach((r) => expandedKeys.add(r.keyName));
-    const handleCollapseAll = () => expandedKeys.clear();
-
     const handleRefresh = async () => {
       loading.value = true;
-      expandedKeys.clear();
       await _fetchBeSettings();
       _buildRows();
       loading.value = false;
+      _fetchLatestResults();
       showToast('연동 설정 현황을 새로고침했습니다.', 'success');
     };
 
@@ -501,6 +707,7 @@ window.ZdInfDashboard = {
       await _fetchBeSettings();
       _buildRows();
       loading.value = false;
+      _fetchLatestResults();
       handlePropSearch();
       handleYmlSearch();
     });
@@ -529,13 +736,12 @@ window.ZdInfDashboard = {
 
     /* ##### [08] 리턴 ############################################################## */
 
-    const fnIsExpanded = (row) => expandedKeys.has(row.keyName);
-
     return {
       codes, loading,
       baseGridColumns, rows,
-      expandedKeys, fnIsExpanded,
-      handleTest, handleRefresh, handleTestAll, handleExpandToggle, handleExpandAll, handleCollapseAll,
+      histState, fnFmtDatetime, fnFmtAccount, fnFmtReq, fnFmtResp,
+      handleHistOpen, handleHistClose, handleHistPage,
+      handleTest, handleRefresh, handleTestAll, _fetchLatestResults,
       /* sy_prop 조회 */
       PROFILE_OPTIONS_ZD, propSearch, propSearchRows, propSearchTotal, propSearchLoading,
       onPropProfileSelectChange, onPropProfileInputChange, handlePropSearch,
@@ -548,29 +754,18 @@ window.ZdInfDashboard = {
 
   template: `
 <div>
-  <bo-page title="연동설정 대시보드" desc-summary="외부 서비스 연동 키 설정 현황 및 테스트. ▼ 클릭으로 상세 정보 확인, 테스트 버튼으로 실제 연결을 검증합니다.">
+  <bo-page title="연동설정 대시보드" desc-summary="외부 서비스 연동 키 설정 현황 및 테스트. 행 클릭 시 하단에 이력을 표시합니다.">
     <bo-container>
       <bo-grid
         :columns="baseGridColumns"
         :rows="rows"
         :loading="loading"
-        :is-expanded="fnIsExpanded"
         list-title="연동 채널 목록"
         empty-text="연동 설정 항목이 없습니다."
       >
         <template #toolbar-actions>
-          <button class="btn btn_expand_all" @click="handleExpandAll">전체펼치기</button>
-          <button class="btn btn_collapse_all" @click="handleCollapseAll">전체접기</button>
           <button class="btn btn_reset" @click="handleRefresh">새로고침</button>
           <button class="btn btn_search" @click="handleTestAll">전체 테스트</button>
-        </template>
-        <!-- 펼치기 아이콘 -->
-        <template #cell-_expand="{ row }">
-          <td style="text-align:center;cursor:pointer;" @click="handleExpandToggle(row)">
-            <span style="font-size:11px;color:#aaa;user-select:none;">
-              {{ expandedKeys.has(row.keyName) ? '▲' : '▼' }}
-            </span>
-          </td>
         </template>
 
         <!-- BE 설정 상태 -->
@@ -607,101 +802,116 @@ window.ZdInfDashboard = {
           </td>
         </template>
 
-        <!-- 테스트 버튼 -->
+        <!-- 테스트 + 이력조회 버튼 -->
         <template #cell-_test="{ row }">
-          <td style="text-align:center;" @click.stop>
-            <button class="btn btn-xs"
+          <td style="text-align:center;padding:4px 6px;" @click.stop>
+            <button class="btn btn-xs" style="display:block;width:72px;margin:0 auto 4px;"
               :disabled="row._testing"
               :style="row._testing ? 'opacity:.5' : ''"
               @click="handleTest(row)">
               {{ row._testing ? '확인중…' : '테스트' }}
             </button>
+            <button class="btn btn-xs" style="display:block;width:72px;margin:0 auto;"
+              :style="histState.show &amp;&amp; histState.channelKey === row.keyName ? 'background:#6366f1;color:#fff;border-color:#6366f1;' : ''"
+              @click="handleHistOpen(row)">
+              이력조회
+            </button>
           </td>
         </template>
 
-        <!-- 연동결과 아이콘 -->
+        <!-- 연동결과: 마지막 테스트 일시 + 결과 -->
         <template #cell-testResult="{ row }">
-          <td style="text-align:center;">
-            <span v-if="row.testResult === '성공'" title="성공" style="font-size:16px;">✅</span>
-            <span v-else-if="row.testResult === '실패'" :title="row.testMsg" style="font-size:16px;">❌</span>
+          <td style="text-align:center;padding:4px 6px;">
+            <div v-if="row.lastTestDate" style="font-size:11px;line-height:1.5;">
+              <div style="color:#6b7280;font-size:10px;">{{ fnFmtDatetime(row.lastTestDate) }}</div>
+              <span v-if="row.lastTestOk" style="color:#059669;font-weight:600;">✅ 성공</span>
+              <span v-else style="color:#dc2626;font-weight:600;">❌ 실패</span>
+            </div>
             <span v-else style="color:#ccc;font-size:13px;">-</span>
           </td>
         </template>
-
-        <!-- 행 펼침 상세 패널 -->
-        <template #row-expand="{ row, colspan }">
-          <td :colspan="colspan" style="padding:0;background:#eef2ff;">
-          <div style="margin:0 0 2px 0;border-left:4px solid #6366f1;background:#f5f7ff;padding:14px 20px 14px 18px;font-size:12px;box-shadow:inset 0 2px 4px rgba(99,102,241,.06);">
-            <!-- 설명 -->
-            <div style="margin-bottom:12px;color:#374151;line-height:1.6;">
-              {{ row._desc }}
-              <a v-if="row._guideUrl"
-                :href="row._guideUrl"
-                target="_blank"
-                style="margin-left:8px;color:#3b82f6;text-decoration:underline;">
-                {{ row._guideLabel }} →
-              </a>
-            </div>
-            <!-- 키 정보 테이블 -->
-            <table style="width:100%;border-collapse:collapse;font-size:12px;">
-              <colgroup>
-                <col style="width:50px">
-                <col style="width:200px">
-                <col style="width:160px">
-                <col>
-                <col style="width:110px">
-              </colgroup>
-              <thead>
-                <tr style="background:#e8eaf6;border-bottom:1px solid #c5cae9;">
-                  <th style="padding:6px 10px;text-align:left;color:#4a4a7a;font-weight:600;">구분</th>
-                  <th style="padding:6px 10px;text-align:left;color:#4a4a7a;font-weight:600;">저장 위치</th>
-                  <th style="padding:6px 10px;text-align:left;color:#4a4a7a;font-weight:600;">설정 키</th>
-                  <th style="padding:6px 10px;text-align:left;color:#4a4a7a;font-weight:600;">설명</th>
-                  <th style="padding:6px 10px;text-align:left;color:#4a4a7a;font-weight:600;">현재 값</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-if="row._beKey" style="border-bottom:1px solid #e8eaf6;">
-                  <td style="padding:7px 10px;color:#2563eb;font-weight:600;">BE</td>
-                  <td style="padding:7px 10px;font-family:monospace;font-size:11px;color:#1e40af;">{{ row._beFile || '-' }}</td>
-                  <td style="padding:7px 10px;font-family:monospace;color:#374151;">{{ row._beKey }}</td>
-                  <td style="padding:7px 10px;color:#6b7280;">{{ row._beDesc }}</td>
-                  <td style="padding:7px 10px;">
-                    <span v-if="row.beStat === '설정됨'"
-                      style="font-family:monospace;color:#059669;background:#ecfdf5;border-radius:4px;padding:2px 6px;">
-                      {{ row.beRawVal }}
-                    </span>
-                    <span v-else style="color:#dc2626;background:#fef2f2;border-radius:4px;padding:2px 6px;">미설정</span>
-                  </td>
-                </tr>
-                <tr v-if="row._feKey">
-                  <td style="padding:7px 10px;color:#7c3aed;font-weight:600;">FE</td>
-                  <td style="padding:7px 10px;font-size:11px;color:#5c35a0;">{{ row._feFile || '-' }}</td>
-                  <td style="padding:7px 10px;font-family:monospace;color:#374151;">{{ row._feKey }}</td>
-                  <td style="padding:7px 10px;color:#6b7280;">{{ row._feDesc }}</td>
-                  <td style="padding:7px 10px;">
-                    <span v-if="row.feStat === '설정됨'"
-                      style="font-family:monospace;color:#059669;background:#ecfdf5;border-radius:4px;padding:2px 6px;">
-                      {{ row.feRawVal }}
-                    </span>
-                    <span v-else style="color:#dc2626;background:#fef2f2;border-radius:4px;padding:2px 6px;">미설정</span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <!-- 테스트 결과 -->
-            <div v-if="row.testResult !== '-'"
-              style="margin-top:10px;padding:8px 12px;border-radius:6px;font-size:12px;"
-              :style="row.testResult === '성공'
-                ? 'background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;'
-                : 'background:#fef2f2;color:#991b1b;border:1px solid #fecaca;'">
-              <strong>{{ row.testResult === '성공' ? '✓ 테스트 성공' : '✗ 테스트 실패' }}</strong>
-              <span style="margin-left:8px;">{{ row.testMsg }}</span>
-            </div>
-          </div>
-          </td>
-        </template>
       </bo-grid>
+    </bo-container>
+
+    <!-- 이력 목록 패널 -->
+    <bo-container v-if="histState.show"
+      :title="'테스트 이력 — ' + histState.channelLabel"
+      :count-text="histState.total + '건'">
+      <template #toolbar-actions>
+        <button class="btn btn_close" @click="handleHistClose">닫기</button>
+      </template>
+      <div v-if="histState.loading" style="padding:20px;text-align:center;color:#aaa;font-size:13px;">조회 중...</div>
+      <div v-else-if="!histState.logs.length" style="padding:20px;text-align:center;color:#aaa;font-size:13px;">이력이 없습니다.</div>
+      <template v-else>
+        <div style="overflow-x:auto;">
+          <table class="bo-table" style="width:100%;min-width:960px;table-layout:fixed;">
+            <colgroup>
+              <col style="width:36px;">
+              <col style="width:138px;">
+              <col style="width:56px;">
+              <col style="width:170px;">
+              <col style="width:150px;">
+              <col style="width:30%;">
+              <col>
+            </colgroup>
+            <thead>
+              <tr>
+                <th style="text-align:center;">번호</th>
+                <th style="text-align:center;">일시</th>
+                <th style="text-align:center;">결과</th>
+                <th>URL</th>
+                <th>계정정보</th>
+                <th>요청내용</th>
+                <th>응답내용</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(lg, li) in histState.logs" :key="lg.logId">
+                <td style="text-align:center;color:#aaa;vertical-align:top;padding-top:8px;">{{ (histState.pageNo - 1) * histState.pageSize + li + 1 }}</td>
+                <td style="text-align:center;white-space:nowrap;color:#6b7280;font-size:11px;vertical-align:top;padding-top:8px;">{{ fnFmtDatetime(lg.regDate) }}</td>
+                <td style="text-align:center;vertical-align:top;padding-top:8px;">
+                  <span v-if="lg.testResult === 'SUCCESS'" class="badge badge-green">성공</span>
+                  <span v-else class="badge badge-red">실패</span>
+                </td>
+                <td style="font-family:monospace;font-size:10px;color:#0284c7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:top;padding-top:8px;" :title="lg.testUrl">{{ lg.testUrl || '-' }}</td>
+                <td style="vertical-align:top;padding:6px 8px;">
+                  <template v-if="fnFmtAccount(lg)">
+                    <div v-for="(item, ii) in fnFmtAccount(lg)" :key="ii"
+                      style="font-size:11px;line-height:1.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                      <span style="color:#9ca3af;font-size:10px;">{{ item.k }}:</span>
+                      <span style="font-family:monospace;color:#1e40af;margin-left:3px;">{{ item.v }}</span>
+                    </div>
+                  </template>
+                  <span v-else style="color:#d1d5db;font-size:11px;">-</span>
+                </td>
+                <td style="vertical-align:top;padding:6px 8px;">
+                  <template v-if="fnFmtReq(lg)">
+                    <div v-for="(item, ri) in fnFmtReq(lg)" :key="ri"
+                      style="font-size:11px;line-height:1.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                      <span style="color:#9ca3af;font-size:10px;">{{ item.k }}:</span>
+                      <span style="font-family:monospace;color:#374151;margin-left:3px;">{{ item.v }}</span>
+                    </div>
+                  </template>
+                  <span v-else style="color:#d1d5db;font-size:11px;">-</span>
+                </td>
+                <td style="vertical-align:top;padding:6px 8px;">
+                  <span v-if="fnFmtResp(lg)"
+                    style="font-size:11px;color:#374151;white-space:pre-wrap;word-break:break-all;line-height:1.7;">{{ fnFmtResp(lg) }}</span>
+                  <span v-else style="color:#d1d5db;font-size:11px;">-</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- 페이징 -->
+        <div style="display:flex;justify-content:center;gap:4px;padding:10px 0 2px;">
+          <button class="btn btn-xs" :disabled="histState.pageNo <= 1" @click="handleHistPage(histState.pageNo - 1)">‹</button>
+          <span style="font-size:12px;color:#6b7280;padding:0 8px;line-height:26px;">
+            {{ histState.pageNo }} / {{ Math.max(1, Math.ceil(histState.total / histState.pageSize)) }}
+          </span>
+          <button class="btn btn-xs" :disabled="histState.pageNo >= Math.ceil(histState.total / histState.pageSize)" @click="handleHistPage(histState.pageNo + 1)">›</button>
+        </div>
+      </template>
     </bo-container>
 
     <bo-container title="sy_prop DB 조회 정보" :count-text="propSearchTotal + '건'">
@@ -857,7 +1067,7 @@ window.ZdInfDashboard = {
 --- ▪ 클라이언트 시크릿 > 비즈니스 로그인 : { 코드: ZyuNrjSOp2yilmTv9MSxDlXRdwPFXDTB, 활성화:ON }
 -- ▪ JavaScript 키: 797a116c08880d3865a89cf4f70b91f5 
 --- ▪ JavaScript SDK 도메인 : https://illeesam.synology.me:3000 ▪ https://illeesam.netlify.app ▪ http://127.0.0.1:5501
---- ▪ 카카오 로그인 리다이렉트 URI : https://illeesam.synology.me:3000/login/oauth2/code/kakao ▪ https://illeesam.netlify.app/login/oauth2/code/kakao ▪ http://127.0.0.1:3000/login/oauth2/code/kakao
+--- ▪ 카카오 로그인 리다이렉트 URI : https://illeesam.synology.me:3000/login/oauth2/code/kakao ▪ https://illeesam.netlify.app/login/oauth2/code/kakao ▪ http://127.0.0.1:5501/oauth/callback/kakao
 -- ▪ 네이티브 앱 키: 96e57663db167a8e7a78345c9d0cf9d2 
 - ▪ 앱 > 카카오맵 : {사용설정: ON}
 -----------------------------------------------------------
@@ -872,7 +1082,7 @@ window.ZdInfDashboard = {
 --- ▪ 클라이언트 시크릿 > 비즈니스 로그인 : { 코드: Q6d7uCUnJBXCXQ2qINFWt2wSZ0sEzpB2, 활성화:ON }
 -- ▪ JavaScript 키: a2990e41aa57c3a4ad1fe97a210938d7 
 --- ▪ JavaScript SDK 도메인 : https://illeesam.synology.me:3000 ▪ https://illeesam.netlify.app ▪ http://127.0.0.1:5501
---- ▪ 카카오 로그인 리다이렉트 URI : https://illeesam.synology.me:3000/login/oauth2/code/kakao ▪ https://illeesam.netlify.app/login/oauth2/code/kakao ▪ http://127.0.0.1:3000/login/oauth2/code/kakao
+--- ▪ 카카오 로그인 리다이렉트 URI : https://illeesam.synology.me:3000/login/oauth2/code/kakao ▪ https://illeesam.netlify.app/login/oauth2/code/kakao ▪ http://127.0.0.1:5501/oauth/callback/kakao
 -- ▪ 네이티브 앱 키: 4f43ddc38e22c79280d18595a31ff27b 
 - ▪ 앱 > 카카오맵 : {사용설정: ON}
 -----------------------------------------------------------
@@ -887,7 +1097,7 @@ window.ZdInfDashboard = {
 --- ▪ 클라이언트 시크릿 > 비즈니스 로그인 : { 코드: Q6d7uCUnJBXCXQ2qINFWt2wSZ0sEzpB2, 활성화:ON }
 -- ▪ JavaScript 키: 2e8671b1cc341f7d4d92724a2d4eee2c 
 --- ▪ JavaScript SDK 도메인 : https://illeesam.synology.me:3000 ▪ https://illeesam.netlify.app ▪ http://127.0.0.1:5501
---- ▪ 카카오 로그인 리다이렉트 URI : https://illeesam.synology.me:3000/login/oauth2/code/kakao ▪ https://illeesam.netlify.app/login/oauth2/code/kakao ▪ http://127.0.0.1:3000/login/oauth2/code/kakao
+--- ▪ 카카오 로그인 리다이렉트 URI : https://illeesam.synology.me:3000/login/oauth2/code/kakao ▪ https://illeesam.netlify.app/login/oauth2/code/kakao ▪ http://127.0.0.1:5501/oauth/callback/kakao
 -- ▪ 네이티브 앱 키: 4f43ddc38e22c79280d18595a31ff27b 
 - ▪ 앱 > 카카오맵 : {사용설정: ON}
 -----------------------------------------------------------
@@ -927,7 +1137,6 @@ window.ZdInfDashboard = {
 -----------------------------------------------------------
       </pre>
     </bo-container>
-  </bo-page>
 
     <bo-container>
       <div> ■■■ payment : toss</div>
@@ -938,18 +1147,18 @@ window.ZdInfDashboard = {
 ▪ 토스페이먼츠 sandbox : https://developers.tosspayments.com/sandbox
       </pre>
     </bo-container>
-  </bo-page>
 
     <bo-container>
       <div> ■■■ smtp : google</div>
       <pre>
-▪ 계정 : illeesam4@gmail.com, 
+▪ 계정 : illeesam4@gmail.com, pwd: sxxx5xx4x!
 ▪ 구글 계정관리
 ▪ 2단계인증 활성화
 ▪ 앱 비밀번호
-- ▪ 앱이름 : illeesam4app, 생성된 앱 비밀번호 : wqji ylpf pcwt vhnh
+- ▪ 앱이름 : illeesam4app, 생성된 앱 비밀번호 16자리 : wqji ylpf pcwt vhnh
       </pre>
     </bo-container>
+
   </bo-page>
 </div>
 `,

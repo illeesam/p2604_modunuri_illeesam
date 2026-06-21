@@ -82,20 +82,39 @@ window.ZdTestSnsLoginNaver = {
       result.profile  = null;
       result.tokenRaw = '';
       try {
+        /*
+         * 네이버 SDK는 login() 메서드가 없음.
+         * getLoginURL()로 인증 URL을 구한 뒤 window.open()으로 직접 팝업을 연다.
+         * loginButton 옵션 생략 — DOM 컨테이너가 없으면 .firstChild NPE 발생.
+         */
         const naverLogin = new naver.LoginWithNaverId({
-          clientId:     cfg.clientId,
-          callbackUrl:  cfg.callbackUrl,
-          isPopup:      true,
-          loginButton:  { color: 'green', type: 3, height: 60 },
-          callbackHandle: true,
+          clientId:    cfg.clientId,
+          callbackUrl: cfg.callbackUrl,
+          isPopup:     true,
         });
         naverLogin.init();
-        naverLogin.login();
-        // 팝업 완료 후 accessToken을 받아야 하지만 팝업 흐름 특성상
-        // 개발 테스트 화면에서는 URL callback 처리 없이 토큰 직접 입력 방식 병행
+        const loginUrl = naverLogin.generateState
+          ? (naverLogin.getLoginURL ? naverLogin.getLoginURL() : null)
+          : null;
+
+        /* getLoginURL 없는 구버전 SDK 대비: state를 직접 조립 */
+        const state  = Math.random().toString(36).slice(2);
+        const authUrl = 'https://nid.naver.com/oauth2.0/authorize'
+          + '?response_type=token'
+          + '&client_id='    + encodeURIComponent(cfg.clientId)
+          + '&redirect_uri=' + encodeURIComponent(cfg.callbackUrl)
+          + '&state='        + state;
+
+        const popup = window.open(loginUrl || authUrl, 'naverLogin',
+          'width=500,height=600,left=200,top=100,scrollbars=yes');
+        if (!popup) {
+          showToast('팝업이 차단되었습니다. 팝업 허용 후 다시 시도하세요.', 'error', 0);
+          uiState.loading = false;
+          return;
+        }
         result.initDetail = 'Client ID: ' + cfg.clientId;
         uiState.loading = false;
-        showToast('네이버 로그인 팝업 열림 — 팝업 완료 후 accessToken 을 아래에 붙여넣기하여 프로필 조회 가능', 'success');
+        showToast('네이버 로그인 팝업 열림 — 완료 후 발급된 Access Token을 아래에 붙여넣고 [프로필 조회] 클릭', 'success');
       } catch (e) {
         uiState.loading = false;
         result.error = e.message || '로그인 초기화 오류';
