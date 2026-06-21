@@ -837,6 +837,7 @@ window.ZdInfDashboard = {
 - ▪▪▪ 네이버 소셜 로그인 구현 :  https://www.youtube.com/watch?v=NrMUyA47gdU
 - ▪▪▪ Google OAuth; 구글 소셜 로그인하기 : https://www.youtube.com/watch?v=olnJzoa4A68
 - ▪▪▪ 토스페이먼츠 | 5분 만에 결제 연동하기 : https://www.youtube.com/watch?v=HtwLMwzTG5c
+- ▪▪▪ 스프링 메일 Sender : 3. 구글 SMTP 신청 : https://www.youtube.com/watch?v=Sedf9uO7W4E
       </pre>
     </bo-container>
 
@@ -942,9 +943,11 @@ window.ZdInfDashboard = {
     <bo-container>
       <div> ■■■ smtp : google</div>
       <pre>
-▪ Google SMTP : https://developers.google.com/gmail/api
-▪ Google SMTP > 인증 : https://developers.google.com/gmail/api/auth/scopes
-▪ Google SMTP sandbox : https://developers.google.com/gmail/api/sandbox
+▪ 계정 : illeesam4@gmail.com, 
+▪ 구글 계정관리
+▪ 2단계인증 활성화
+▪ 앱 비밀번호
+- ▪ 앱이름 : illeesam4app, 생성된 앱 비밀번호 : wqji ylpf pcwt vhnh
       </pre>
     </bo-container>
   </bo-page>
