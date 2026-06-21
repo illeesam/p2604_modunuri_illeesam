@@ -762,6 +762,7 @@ window.ZdInfDashboard = {
         :loading="loading"
         list-title="연동 채널 목록"
         empty-text="연동 설정 항목이 없습니다."
+        table-max-height="300px"
       >
         <template #toolbar-actions>
           <button class="btn btn_reset" @click="handleRefresh">새로고침</button>
@@ -867,7 +868,7 @@ window.ZdInfDashboard = {
             </thead>
             <tbody>
               <tr v-for="(lg, li) in histState.logs" :key="lg.logId">
-                <td style="text-align:center;color:#aaa;vertical-align:top;padding-top:8px;">{{ (histState.pageNo - 1) * histState.pageSize + li + 1 }}</td>
+                <td style="text-align:center;color:#aaa;vertical-align:top;padding-top:8px;">{{ histState.total - (histState.pageNo - 1) * histState.pageSize - li }}</td>
                 <td style="text-align:center;white-space:nowrap;color:#6b7280;font-size:11px;vertical-align:top;padding-top:8px;">{{ fnFmtDatetime(lg.regDate) }}</td>
                 <td style="text-align:center;vertical-align:top;padding-top:8px;">
                   <span v-if="lg.testResult === 'SUCCESS'" class="badge badge-green">성공</span>
@@ -1112,17 +1113,17 @@ window.ZdInfDashboard = {
 ▪ 앱 > illeesam_netlify : { Client ID: r6RWBr2qMOCZbGPFALrA, Client Secret : c_V0sjmlR5}
 - ▪ API설정 > 사용 API > 네이버 로그인 : { 회원이름: 필수, 연락처 이메일 주소: 필수}
 - ▪ API설정 > 로그인 오픈 API > PC웹 > 서비스URL : http://127.0.0.1:5501/bo.html
-- ▪ API설정 > 로그인 오픈 API > PC웹 > 네이버로그인 Callback URL : http://127.0.0.1:5501/bo.html ▪ http://127.0.0.1:5501
+- ▪ API설정 > 로그인 오픈 API > PC웹 > 네이버로그인 Callback URL : http://127.0.0.1:3000/oauth/callback/naver
 -----------------------------------------------------------
 ▪ 앱 > illeesam_synology : { Client ID: jWtLT9SUfE2JWEji2XGq, Client Secret : QOX2GZO1uk}
 - ▪ API설정 > 사용 API > 네이버 로그인 : { 회원이름: 필수, 연락처 이메일 주소: 필수}
 - ▪ API설정 > 로그인 오픈 API > PC웹 > 서비스URL : http://127.0.0.1:5501/bo.html
-- ▪ API설정 > 로그인 오픈 API > PC웹 > 네이버로그인 Callback URL : http://127.0.0.1:5501/bo.html ▪ http://127.0.0.1:5501
+- ▪ API설정 > 로그인 오픈 API > PC웹 > 네이버로그인 Callback URL : http://127.0.0.1:3000/oauth/callback/naver
 -----------------------------------------------------------
 ▪ 어플리케이션 > illeesam_localhost : { Client ID: 01sBNJ_R7mdQDl5_d3AM, Client Secret : c5cSSSZCaF}
 - ▪ API설정 > 사용 API > 네이버 로그인 : { 회원이름: 필수, 연락처 이메일 주소: 필수} 
 - ▪ API설정 > 로그인 오픈 API > PC웹 > 서비스URL : http://127.0.0.1:5501/bo.html
-- ▪ API설정 > 로그인 오픈 API > PC웹 > 네이버로그인 Callback URL : http://127.0.0.1:5501/bo.html ▪ http://127.0.0.1:5501
+- ▪ API설정 > 로그인 오픈 API > PC웹 > 네이버로그인 Callback URL : http://127.0.0.1:3000/oauth/callback/naver
 -----------------------------------------------------------
       </pre>
     </bo-container>

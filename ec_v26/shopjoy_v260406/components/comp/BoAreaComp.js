@@ -536,9 +536,10 @@ window.BoGrid = {
     showSave:   { type: Boolean, default: false },               // 툴바 [저장] 버튼
     saveLabel:  { type: String,  default: '저장' },              // 저장 버튼 라벨
     rowActions: { type: Boolean, default: false },               // 우측 행액션 컬럼 노출
-    loading:    { type: Boolean, default: false },               // 조회 중: 툴바 '⏳ 조회 중…' + 기존 행 위 오버레이 + 빈 목록 문구 전환
-    emptyText:  { type: String, default: '데이터가 없습니다.' },
-    bare:       { type: Boolean, default: false },               // true=card/toolbar/pager 없이 <table>만 (뷰토글·공용페이저·인라인Dtl 화면용)
+    loading:        { type: Boolean, default: false },            // 조회 중: 툴바 '⏳ 조회 중…' + 기존 행 위 오버레이 + 빈 목록 문구 전환
+    emptyText:      { type: String, default: '데이터가 없습니다.' },
+    tableMaxHeight: { type: String, default: null },             // 테이블 영역 최대 높이 (예: '320px'). null=기본(calc(100vh-380px))
+    bare:           { type: Boolean, default: false },           // true=card/toolbar/pager 없이 <table>만 (뷰토글·공용페이저·인라인Dtl 화면용)
     selectable: { type: Boolean, default: false },               // true=좌측 체크박스 컬럼 + 헤더 전체선택 (일괄작업 목록용). 기본 off → 기존 화면 무영향
     checkedKey: { type: String,  default: null },                // 체크 식별 필드 (없으면 rowKey 사용). isChecked/toggleCheck 가 받는 값
     isChecked:  { type: Function, default: null },                // (key)=>bool. 행 체크 여부 (부모 Set 기반)
@@ -690,7 +691,7 @@ window.BoGrid = {
   </div>
   <!-- 그리드 본문 — non-bare 모드에서는 max-height 로 감싸 내부 스크롤 + 페이저 하단 고정.
        min-height 미지정: 행 수가 적으면 내용 높이만큼만 차지(하단 빈 공백 제거). max-height 로만 상한 제한. -->
-  <div :style="(bare ? 'overflow-x:auto;' : 'max-height:calc(100vh - 380px);overflow:auto;') + 'position:relative;'">
+  <div :style="(bare ? 'overflow-x:auto;' : 'max-height:' + (tableMaxHeight || 'calc(100vh - 380px)') + ';overflow:auto;') + 'position:relative;'">
     <!-- 조회 중 오버레이 (기존 행 위에 표시 — 재조회/페이지 이동 피드백). 행이 없을 땐 빈행 문구로 안내 -->
     <div v-if="loading ? (rows.length) : false" style="position:absolute;inset:0;z-index:5;background:rgba(255,255,255,.55);display:flex;align-items:flex-start;justify-content:center;padding-top:40px;pointer-events:none;">
       <span style="font-size:13px;color:#e8587a;background:#fff;border:1px solid #f3c6d4;border-radius:14px;padding:4px 14px;box-shadow:0 2px 8px rgba(0,0,0,.08);">⏳ 조회 중…</span>

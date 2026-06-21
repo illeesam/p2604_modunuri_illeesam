@@ -11,13 +11,13 @@ window.ZdTestSnsLoginNaver = {
 
     /* ##### [01] 초기 변수 정의 #################################################### */
 
-    const { reactive, onMounted } = Vue;
+    const { reactive, onMounted, onUnmounted } = Vue;
     const showToast = props.showToast || window.boApp?.showToast || (() => {});
 
     const cfg = reactive({
       clientId:     '',
       clientSecret: '',
-      callbackUrl:  window.location.origin + '/oauth/callback/naver',
+      callbackUrl:  'http://127.0.0.1:5501/oauth/callback/naver',
     });
 
     const result = reactive({
@@ -35,6 +35,15 @@ window.ZdTestSnsLoginNaver = {
     const STATE_KEY = 'naver_oauth_state_' + Math.random().toString(36).slice(2);
 
     /* ##### [02] 초기 로드 #################################################### */
+
+    /* 팝업 callback에서 postMessage로 전달된 access_token 자동 수신 */
+    const _onMessage = (e) => {
+      if (e.data?.type === 'NAVER_TOKEN' && e.data.access_token) {
+        result.tokenRaw = e.data.access_token;
+        showToast('Access Token 자동 수신 완료 — [프로필 조회] 클릭', 'success');
+      }
+    };
+    window.addEventListener('message', _onMessage);
 
     onMounted(async () => {
       try {
@@ -172,6 +181,8 @@ window.ZdTestSnsLoginNaver = {
       if (cmd === 'logout')        return logout();
     };
 
+    onUnmounted(() => window.removeEventListener('message', _onMessage));
+
     return { cfg, result, uiState, handleBtnAction };
   },
 
@@ -267,7 +278,7 @@ window.ZdTestSnsLoginNaver = {
     <div style="padding:12px;font-size:12px;line-height:1.8;color:#444">
       <b>1.</b> <a href="https://developers.naver.com/apps" target="_blank">네이버 개발자센터</a> → 애플리케이션 등록<br>
       <b>2.</b> 네이버 로그인 사용 API 추가 → 권한: 이름/이메일/닉네임/프로필사진<br>
-      <b>3.</b> 서비스 URL: <code>{{ cfg.callbackUrl.split('/oauth')[0] }}</code><br>
+      <b>3.</b> 서비스 URL: <code>http://127.0.0.1:3000</code><br>
       <b>4.</b> Callback URL: <code>{{ cfg.callbackUrl }}</code><br>
       <b>5.</b> sy_prop <code>app.ext-sdk.naver-client-id</code> / <code>app.ext-sdk.naver-client-secret</code> 등록<br><br>
       <b>백엔드 API:</b> <code>POST /api/co/ext/sns-naver/profile</code> → 네이버 userinfo 프록시 호출
