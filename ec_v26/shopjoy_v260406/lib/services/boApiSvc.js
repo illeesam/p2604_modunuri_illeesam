@@ -43,6 +43,11 @@
     saveList(cmd, rows, uiNm, cmdNm) { return global.boApi.post('/bo/ec/cm/blog-file/save-list/' + cmd, rows, hdr(uiNm, cmdNm)); },
   };
 
+  /* ── cm: 대시보드 ────────────────────────────────────────────── */
+  boApiSvc.cmDashboard = {
+    getData(items, uiNm, cmdNm) { return global.boApi.post('/bo/ec/cm/dashboard/data', items, hdr(uiNm, cmdNm)); },
+  };
+
   /* ── cm: 채팅 ───────────────────────────────────────────────── */
   boApiSvc.cmChatt = {
     getPage(params, uiNm, cmdNm) { return global.boApi.get(   '/bo/ec/cm/chatt/page', { params, ...hdr(uiNm, cmdNm) }); },

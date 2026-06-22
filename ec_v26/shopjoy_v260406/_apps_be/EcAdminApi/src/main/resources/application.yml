@@ -4,7 +4,7 @@
 #    app.pay.toss.*     (confirm-url / cancel-url-base / widget-client-key / secret-key)
 #    app.pay.kakaopay.* (cid / secret-key)
 #    app.pay.naverpay.* (client-id / client-secret / api-url)
-#    app.map.*          (kakao-js-key / naver-map-client-id)
+#    app.map.*          (kakao-js-key / naver-map-client-id / google-api-key)
 #    spring.mail.host/port/username/password / app.mail.*
 #    app.file.storage-type / cdn-host / aws.bucket/region/cdn-url / ncp.bucket/endpoint/cdn-url
 #    app.license.secret(local/dev) / app.license.enabled

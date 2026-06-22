@@ -51,6 +51,7 @@ public class CmAppStoreDataService {
     // 지도
     @Value("${app.map.kakao-js-key:}") private String kakaoMapJsKey;
     @Value("${app.map.naver-map-client-id:}") private String naverMapClientId;
+    @Value("${app.map.google-api-key:}") private String googleMapApiKeyYml;
 
     private final MbMemberRepository memberRepository;
     private final SyUserRepository syUserRepository;
@@ -557,6 +558,7 @@ public class CmAppStoreDataService {
         // 지도 SDK 키
         String resolvedKakaoMapJsKey    = resolve.apply("app.map.kakao-js-key",        this.kakaoMapJsKey);
         String resolvedNaverMapClientId = resolve.apply("app.map.naver-map-client-id", this.naverMapClientId);
+        String resolvedGoogleMapApiKey  = resolve.apply("app.map.google-api-key",      this.googleMapApiKeyYml);
 
         String facebookAppId    = "DEMO_FACEBOOK_APP_ID";
         String appleClientId    = "com.shopjoy.demo.signin";
@@ -566,8 +568,8 @@ public class CmAppStoreDataService {
         String naverPayClientId = resolvedNaverPayClientId;
         String inicisMid        = "INIpayTest";
         String kcpSiteCd        = "T0000";
-        // 지도
-        String googleMapApiKey  = "DEMO_GOOGLE_MAP_API_KEY";
+        // 지도 (DB sy_prop 우선 → yml 폴백)
+        String googleMapApiKey  = resolvedGoogleMapApiKey;
         // AWS
         String awsRegion        = "ap-northeast-2";
         String awsS3Bucket      = "shopjoy-demo-bucket";

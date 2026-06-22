@@ -8,8 +8,7 @@ window.DashboardBoEc01 = {
 
     /* ##### [01] 초기 변수 정의 ################################################## */
 
-    const { ref, reactive, computed } = Vue;
-    /* 숫자/날짜/SVG 헬퍼는 coUtil(cof*) 사용. setup·template 호환을 위한 alias */
+    const { ref, reactive, computed, onMounted } = Vue;
     const fmt = coUtil.cofFmt;
     const toYmd = coUtil.cofToYmd;
     const toYm = coUtil.cofToYm;
@@ -19,332 +18,284 @@ window.DashboardBoEc01 = {
     const linePoints = coUtil.cofLinePoints;
     const areaPath = coUtil.cofAreaPath;
 
-      /* -- 필터 상태 -- */
-      const today   = new Date();
-      const endDef  = toYmd(endOfMonth(today));
-      const startDef= toYmd(new Date(addMonths(today, -13).getFullYear(), addMonths(today, -13).getMonth(), 1));
+    const today    = new Date();
+    const endDef   = toYmd(endOfMonth(today));
+    const startDef = toYmd(new Date(addMonths(today, -13).getFullYear(), addMonths(today, -13).getMonth(), 1));
 
-      const CHANNELS = ['자사몰','네이버 스마트스토어','쿠팡','11번가','G마켓','Auction','GS샵','TMON','위메프','롯데온','홈앤쇼핑','현대H몰'];
-      const AGES     = ['10대','20대','30대','40대','50대','60대+'];
-      const GENDERS  = ['남','여'];
-      const MEMBER_TYPES = ['일반','VIP','VVIP','휴면','탈퇴'];
-      const CATEGORIES = ['패션의류','패션잡화','뷰티','가전','식품','가구','리빙','스포츠','도서','기타'];
+    const CHANNELS = ['자사몰','네이버 스마트스토어','쿠팡','11번가','G마켓','Auction','GS샵','TMON','위메프','롯데온','홈앤쇼핑','현대H몰'];
+    const AGES     = ['10대','20대','30대','40대','50대','60대+'];
+    const GENDERS  = ['남','여'];
+    const MEMBER_TYPES = ['일반','VIP','VVIP','휴면','탈퇴'];
+    const CATEGORIES   = ['패션의류','패션잡화','뷰티','가전','식품','가구','리빙','스포츠','도서','기타'];
 
-      const filters = reactive({
-        startDt: startDef,
-        endDt:   endDef,
-        channels:  [...CHANNELS],
-        ages:      [...AGES],
-        genders:   [...GENDERS],
-        memberTypes: [...MEMBER_TYPES],
-        categories:  [...CATEGORIES],
+    const CHANNEL_COLORS = {
+      '자사몰':'#e8587a', '네이버 스마트스토어':'#10b981', '쿠팡':'#ef4444', '11번가':'#f97316',
+      'G마켓':'#3b82f6', 'Auction':'#6366f1', 'GS샵':'#a855f7', 'TMON':'#e11d48',
+      '위메프':'#f59e0b', '롯데온':'#9333ea', '홈앤쇼핑':'#0891b2', '현대H몰':'#c2410c',
+    };
+
+    const filters = reactive({
+      startDt: startDef,
+      endDt:   endDef,
+      channels:    [...CHANNELS],
+      ages:        [...AGES],
+      genders:     [...GENDERS],
+      memberTypes: [...MEMBER_TYPES],
+      categories:  [...CATEGORIES],
+    });
+
+    const uiState = reactive({
+      filterExpand: false,
+      activeTab: 'sales',
+      tabMode: '4col',
+      loading: false,
+    });
+
+    const COMP_IDS = [
+      'COMP0101', 'COMP0102', 'COMP0103', 'COMP0104',
+      'COMP0201', 'COMP0202', 'COMP0203', 'COMP0204',
+      'COMP0301', 'COMP0302', 'COMP0303', 'COMP0304',
+      'COMP0401', 'COMP0402', 'COMP0403',
+    ];
+
+    /* API 응답 데이터 — 15개 차트 */
+    const dash = reactive({
+      info0101: [], info0102: [], info0103: [], info0104: [],
+      info0201: [], info0202: [], info0203: [], info0204: [],
+      info0301: [], info0302: [], info0303: [], info0304: [],
+      info0401: [], info0402: [], info0403: [],
+    });
+
+    const TABS = [
+      { key: 'sales',       label: '월별 매출',       icon: '💰' },
+      { key: 'member',      label: '가입/탈퇴',       icon: '👥' },
+      { key: 'click',       label: '상품상세 클릭',   icon: '🖱' },
+      { key: 'order',       label: '주문완료',        icon: '📋' },
+      { key: 'channel',     label: '판매채널별 매출', icon: '📺' },
+      { key: 'kpi',         label: '핵심지표',        icon: '🎯' },
+      { key: 'topProducts', label: '상품 TOP 7',      icon: '📦' },
+      { key: 'channelMix',  label: '채널 비중',       icon: '📱' },
+      { key: 'deviceMix',   label: '디바이스 비중',   icon: '💻' },
+      { key: 'timeMix',     label: '시간대 비중',     icon: '⏰' },
+      { key: 'region',      label: '지역별',          icon: '🗺' },
+      { key: 'hourly',      label: '시간대 추이',     icon: '⏱' },
+      { key: 'radar',       label: '영업지표',        icon: '⚡' },
+      { key: 'economy',     label: '경제 수준별',     icon: '💼' },
+      { key: 'shipping',    label: '배송 조건',       icon: '🚚' },
+    ];
+    const VIEW_MODES = [
+      { key: 'tab',  icon: '📑', label: '탭' },
+      { key: '1col', icon: '▭',  label: '1열' },
+      { key: '2col', icon: '▭▭', label: '2열' },
+      { key: '3col', icon: '▭▭▭', label: '3열' },
+      { key: '4col', icon: '▭▭▭▭', label: '4열' },
+    ];
+
+    /* ##### [02] 액션 모음 (dispatch) ############################################## */
+
+    const handleBtnAction = (cmd, param = {}) => {
+      if (cmd === 'filters-search')        { return onSearch(); }
+      else if (cmd === 'filters-reset')    { return onReset(); }
+      else if (cmd === 'stats-excel')      { return doExcelDownload(); }
+      else if (cmd === 'filters-toggleExpand') { uiState.filterExpand = !uiState.filterExpand; }
+      else if (cmd === 'filters-toggleAll')    { return toggleAll(param.key, param.all); }
+      else if (cmd === 'filters-toggle')       { return toggle(filters[param.key], param.v); }
+      else { console.warn('[handleBtnAction] unknown cmd:', cmd); }
+    };
+
+    const handleSelectAction = (cmd, param = {}) => {
+      if (cmd === 'tabs-select')   { if (uiState.tabMode === 'tab') uiState.activeTab = param; }
+      else if (cmd === 'tabMode-set') { uiState.tabMode = param; }
+      else { console.warn('[handleSelectAction] unknown cmd:', cmd); }
+    };
+
+    const toggle    = (list, v) => { const i = list.indexOf(v); if (i >= 0) list.splice(i, 1); else list.push(v); };
+    const toggleAll = (key, all) => { filters[key] = filters[key].length === all.length ? [] : [...all]; };
+    const isSel     = (list, v) => list.includes(v);
+
+    /* ##### [04] 내장 사용 함수 #################################################### */
+
+    const loadDashboard = async () => {
+      uiState.loading = true;
+      try {
+        const startYmd = (filters.startDt || '').replace(/-/g, '');
+        const endYmd   = (filters.endDt   || '').replace(/-/g, '');
+        const items = COMP_IDS.map(compId => ({ compId, uiNm: 'DashboardBoEc01', startYmd, endYmd }));
+        const res = await boApiSvc.cmDashboard.getData(items, '대시보드', '조회');
+        const d = res.data?.data || {};
+        Object.keys(dash).forEach(k => { dash[k] = d[k] || []; });
+      } catch (err) {
+        console.error('[대시보드 조회 오류]', err);
+      } finally {
+        uiState.loading = false;
+      }
+    };
+
+    const onSearch = () => loadDashboard();
+
+    const onReset = () => {
+      filters.startDt     = startDef;
+      filters.endDt       = endDef;
+      filters.channels    = [...CHANNELS];
+      filters.ages        = [...AGES];
+      filters.genders     = [...GENDERS];
+      filters.memberTypes = [...MEMBER_TYPES];
+      filters.categories  = [...CATEGORIES];
+      loadDashboard();
+    };
+
+    const doExcelDownload = () => {
+      const labels = dash.info0101.map(r => r.col1Nm || '');
+      const rows   = [['월','매출','가입','탈퇴','클릭','주문완료']];
+      labels.forEach((m, i) => {
+        rows.push([
+          m,
+          dash.info0101[i]?.col1Num || 0,
+          dash.info0102[i]?.col1Num || 0,
+          dash.info0102[i]?.col2Num || 0,
+          dash.info0103[i]?.col1Num || 0,
+          dash.info0104[i]?.col1Num || 0,
+        ]);
       });
+      const csv  = rows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(',')).join('\n');
+      const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href = url; a.download = coUtil.cofBuildExportFilename('대시보드.csv'); a.click();
+      URL.revokeObjectURL(url);
+    };
 
-      /* toggle — 토글 */
+    /* ##### [05] 사용자 함수 (헬퍼 / 렌더) ########################################## */
 
-      /* ##### [02] 액션 모음 (dispatch) ############################################## */
+    const cfBaseGridColumns = computed(() => {
+      if (uiState.tabMode === 'tab') return '1fr';
+      return 'repeat(' + parseInt(uiState.tabMode) + ',minmax(0,1fr))';
+    });
 
-      /* handleBtnAction — 버튼 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-      const handleBtnAction = (cmd, param = {}) => {
-        console.log(' ■■ DashboardBoEc01.js : handleBtnAction -> ', cmd, param);
-        // 검색조건으로 대시보드 재조회
-        if (cmd === 'filters-search') {
-          return onSearch();
-        // 검색조건 초기화
-        } else if (cmd === 'filters-reset') {
-          return onReset();
-        // 엑셀 다운로드
-        } else if (cmd === 'stats-excel') {
-          return doExcelDownload();
-        // 상세필터 펼침 토글
-        } else if (cmd === 'filters-toggleExpand') {
-          uiState.filterExpand = !uiState.filterExpand;
-          return;
-        // 그룹 전체 선택/해제 (param: { key, all })
-        } else if (cmd === 'filters-toggleAll') {
-          return toggleAll(param.key, param.all);
-        // 그룹 단일 토글 (param: { key, v })
-        } else if (cmd === 'filters-toggle') {
-          return toggle(filters[param.key], param.v);
-        } else {
-          console.warn('[handleBtnAction] unknown cmd:', cmd);
-        }
-      };
+    const showPanel = (key) => uiState.tabMode === 'tab' ? uiState.activeTab === key : true;
 
-      /* handleSelectAction — 그리드 행/노드/모달 선택 액션 dispatch (cmd: '{영역명}-기능명'). 5줄 이하 짧은 로직은 인라인 */
-      const handleSelectAction = (cmd, param = {}) => {
-        console.log(' ■■ DashboardBoEc01.js : handleSelectAction -> ', cmd, param);
-        // 탭 선택 (param: tabKey)
-        if (cmd === 'tabs-select') {
-          if (uiState.tabMode === 'tab') { uiState.activeTab = param; }
-          return;
-        // 뷰모드 변경 (param: 'tab' | '1col' | '2col' | '3col' | '4col')
-        } else if (cmd === 'tabMode-set') {
-          uiState.tabMode = param;
-          return;
-        } else {
-          console.warn('[handleSelectAction] unknown cmd:', cmd);
-        }
-      };
+    /* 01행: 월별 추이 — col1Nm=월라벨, col1Num=값 */
+    const cfMonthLabels   = computed(() => dash.info0101.map(r => r.col1Nm || ''));
+    const cfMonthlySales  = computed(() => dash.info0101.map(r => r.col1Num || 0));
+    const cfMonthlyJoin   = computed(() => dash.info0102.map(r => r.col1Num || 0));
+    const cfMonthlyLeave  = computed(() => dash.info0102.map(r => r.col2Num || 0));
+    const cfMonthlyClicks = computed(() => dash.info0103.map(r => r.col1Num || 0));
+    const cfMonthlyOrders = computed(() => dash.info0104.map(r => r.col1Num || 0));
 
-      const toggle = (list, v) => {
-        const i = list.indexOf(v);
-        if (i >= 0) list.splice(i, 1); else list.push(v);
-      };
-
-      /* toggleAll — 전체 토글 */
-      const toggleAll = (key, all) => {
-        if (filters[key].length === all.length) { filters[key] = []; }
-        else { filters[key] = [...all]; }
-      };
-
-      /* isSel — 여부 확인 */
-      const isSel = (list, v) => list.includes(v);
-
-      /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
-
-      /* onSearch — 조회 */
-      const onSearch = () => {
-        console.log('[대시보드 검색]', JSON.parse(JSON.stringify(filters)));
-      };
-
-      /* doExcelDownload — 엑셀 다운로드 */
-      const doExcelDownload = () => {
-        const rows = [['월','매출','가입','탈퇴','클릭','주문완료']];
-        cfMonthLabels.value.forEach((m, i) => {
-          rows.push([m, cfMonthlySales.value[i], cfMonthlyJoin.value[i], cfMonthlyLeave.value[i], cfMonthlyClicks.value[i], cfMonthlyOrders.value[i]]);
-        });
-        const csv = rows.map(r => r.map(c => '"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
-        const blob = new Blob(['﻿'+csv], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = coUtil.cofBuildExportFilename('대시보드.csv');
-        a.click();
-        URL.revokeObjectURL(url);
-      };
-
-      /* onReset — 초기화 */
-      const onReset = () => {
-        filters.startDt = startDef;
-        filters.endDt   = endDef;
-        filters.channels    = [...CHANNELS];
-        filters.ages        = [...AGES];
-        filters.genders     = [...GENDERS];
-        filters.memberTypes = [...MEMBER_TYPES];
-        filters.categories  = [...CATEGORIES];
-      };
-
-      /* -- UI 상태 -- */
-      const uiState = reactive({
-        filterExpand: false,
-        activeTab: 'sales',
-        tabMode: '4col' // tab | 1col | 2col | 3col | 4col
+    /* 02행: 채널별 매출 — col1Nm=채널, col2Nm=월, col2Num=매출 */
+    const cfChannelMonthly = computed(() => {
+      const map = {};
+      dash.info0201.forEach(r => {
+        const ch = r.col1Nm || '';
+        if (!map[ch]) map[ch] = { name: ch, color: CHANNEL_COLORS[ch] || '#999', values: {} };
+        map[ch].values[r.col2Nm || ''] = r.col2Num || 0;
       });
-      const TABS = [
-        { key: 'sales',    label: '월별 매출',        icon: '💰' },
-        { key: 'member',   label: '가입/탈퇴',        icon: '👥' },
-        { key: 'click',    label: '상품상세 클릭',    icon: '🖱' },
-        { key: 'order',    label: '주문완료',         icon: '📋' },
-        { key: 'channel',  label: '판매채널별 매출',  icon: '📺' },
-        { key: 'kpi',        label: '핵심지표',       icon: '🎯' },
-        { key: 'topProducts',label: '상품 TOP 7',     icon: '📦' },
-        { key: 'channelMix', label: '채널 비중',      icon: '📱' },
-        { key: 'deviceMix',  label: '디바이스 비중',  icon: '💻' },
-        { key: 'timeMix',    label: '시간대 비중',    icon: '⏰' },
-        { key: 'region',     label: '지역별',         icon: '🗺' },
-        { key: 'hourly',     label: '시간대 추이',    icon: '⏱' },
-        { key: 'radar',      label: '영업지표',       icon: '⚡' },
-        { key: 'economy',    label: '경제 수준별',    icon: '💼' },
-        { key: 'shipping',   label: '배송 조건',      icon: '🚚' },
-      ];
-      const VIEW_MODES = [
-        { key: 'tab',  icon: '📑', label: '탭' },
-        { key: '1col', icon: '▭',  label: '1열' },
-        { key: '2col', icon: '▭▭', label: '2열' },
-        { key: '3col', icon: '▭▭▭', label: '3열' },
-        { key: '4col', icon: '▭▭▭▭', label: '4열' },
-      ];
+      const months = cfMonthLabels.value;
+      return Object.values(map).map(ch => ({
+        name: ch.name, color: ch.color,
+        values: months.map(m => ch.values[m] || 0),
+      }));
+    });
 
-      /* ##### [05] 사용자 함수 (헬퍼 / 카운트 / 렌더 / 컬럼정의) #################### */
+    /* 02행: KPI — info0202[0] 단일행 */
+    const cfKpi = computed(() => dash.info0202[0] || {});
+    const cfTotalSales    = computed(() => cfKpi.value.col1Num || 0);
+    const cfTotalQtyComp  = computed(() => cfKpi.value.col2Num || 0);
+    const marginRate      = computed(() => cfKpi.value.col3Num || 0);
+    const cfAvgOrderValue = computed(() => cfKpi.value.col4Num || 0);
 
-      const cfBaseGridColumns = computed(() => {
-        if (uiState.tabMode === 'tab') { return '1fr'; }
-        return 'repeat(' + parseInt(uiState.tabMode) + ',minmax(0,1fr))';
+    /* 02행: TOP7 — col1Nm=상품명, col1Num=매출 */
+    const topProducts = computed(() => dash.info0203.map(r => ({ name: r.col1Nm || '', value: r.col1Num || 0 })));
+
+    /* 02행: 채널 비중 */
+    const salesByChannel = computed(() => {
+      const COLORS = ['#e8587a','#7b1fa2','#3b82f6','#10b981','#f59e0b','#ef4444','#6366f1'];
+      return dash.info0204.map((r, i) => ({ label: r.col1Nm || '', value: r.col1Num || 0, color: COLORS[i % COLORS.length] }));
+    });
+
+    /* 03행: 디바이스 비중 */
+    const salesByDevice = computed(() => {
+      const COLORS = ['#3b82f6','#10b981','#f59e0b','#a855f7'];
+      return dash.info0301.map((r, i) => ({ label: r.col1Nm || '', value: r.col1Num || 0, color: COLORS[i % COLORS.length] }));
+    });
+
+    /* 03행: 시간대 비중 */
+    const salesByTime = computed(() => {
+      const COLORS = ['#fbbf24','#f97316','#e8587a','#6366f1'];
+      return dash.info0302.map((r, i) => ({ label: r.col1Nm || '', value: r.col1Num || 0, color: COLORS[i % COLORS.length] }));
+    });
+
+    /* 03행: 지역별 매출 */
+    const regionSales = computed(() => dash.info0303.map(r => ({ name: r.col1Nm || '', value: r.col1Num || 0 })));
+
+    /* 03행: 24H 추이 — col1Num 배열 */
+    const hourlyTrend = computed(() => dash.info0304.map(r => r.col1Num || 0));
+
+    /* 04행: 레이더 — col1Nm=지표명, col1Num=현재, col2Num=목표 */
+    const radarValues = computed(() => dash.info0401.map(r => ({ label: r.col1Nm || '', value: r.col1Num || 0 })));
+
+    const cfRadarPath = computed(() => {
+      const cx = 100, cy = 100, R = 70;
+      const rv = radarValues.value;
+      if (!rv.length) return '';
+      return rv.map((v, i) => {
+        const a = (i / rv.length) * Math.PI * 2 - Math.PI / 2;
+        const r = (v.value / 100) * R;
+        return ((cx + r * Math.cos(a)).toFixed(1)) + ',' + ((cy + r * Math.sin(a)).toFixed(1));
+      }).join(' ');
+    });
+
+    const cfRadarAxes = computed(() => {
+      const cx = 100, cy = 100, R = 70;
+      const rv = radarValues.value;
+      if (!rv.length) return [];
+      return rv.map((v, i) => {
+        const a = (i / rv.length) * Math.PI * 2 - Math.PI / 2;
+        return {
+          x2: (cx + R * Math.cos(a)).toFixed(1),
+          y2: (cy + R * Math.sin(a)).toFixed(1),
+          lx: (cx + (R + 12) * Math.cos(a)).toFixed(1),
+          ly: (cy + (R + 12) * Math.sin(a)).toFixed(1),
+          label: v.label,
+        };
       });
+    });
 
-      /* showPanel — 표시 */
-      const showPanel = (key) => uiState.tabMode === 'tab' ? uiState.activeTab === key : true;
+    /* 04행: 경제수준 — col1Nm=월, col1Num=상위, col2Num=중위, col3Num=하위 */
+    const economySales = computed(() => ({
+      labels: dash.info0402.map(r => r.col1Nm || ''),
+      high:   dash.info0402.map(r => r.col1Num || 0),
+      middle: dash.info0402.map(r => r.col2Num || 0),
+      low:    dash.info0402.map(r => r.col3Num || 0),
+    }));
 
-      /* -- 보조 대시보드 (원본 KPI 섹션) -- */
-      const cfTotalSales    = computed(() => cfMonthlySales.value.reduce((a,b)=>a+b,0));
-      const cfTotalQtyComp  = computed(() => cfMonthlyOrders.value.reduce((a,b)=>a+b,0));
-      const marginRate    = 7.7;
-      const cfAvgOrderValue = computed(() => Math.round(cfTotalSales.value / Math.max(cfTotalQtyComp.value, 1)));
+    /* 04행: 배송 조건 */
+    const shippingTypes = computed(() => {
+      const COLORS = ['#10b981','#9ca3af','#3b82f6','#f59e0b'];
+      return dash.info0403.map((r, i) => ({ label: r.col1Nm || '', value: r.col1Num || 0, color: COLORS[i % COLORS.length] }));
+    });
 
-      const topProducts = [
-        { name: '오버사이즈 코트', value: 1495000 },
-        { name: '슬림핏 데님 진',  value: 2995000 },
-        { name: '케이블 니트 스웨터', value: 2450000 },
-        { name: '클로럴 미디 드레스', value: 3950000 },
-        { name: '카고 와이드 팬츠', value: 2750000 },
-        { name: '울 블렌드 롱코트', value: 5950000 },
-        { name: '스트라이프 티셔츠', value: 2250000 },
-      ];
-      const salesByChannel = [
-        { label: '온라인',   value: 62, color: '#e8587a' },
-        { label: '모바일앱', value: 28, color: '#7b1fa2' },
-        { label: '오프라인', value: 10, color: '#d1d5db' },
-      ];
-      const salesByDevice = [
-        { label: 'Mobile',  value: 58, color: '#3b82f6' },
-        { label: 'Desktop', value: 32, color: '#10b981' },
-        { label: 'Tablet',  value: 10, color: '#f59e0b' },
-      ];
-      const salesByTime = [
-        { label: '아침',  value: 15, color: '#fbbf24' },
-        { label: '점심',  value: 22, color: '#f97316' },
-        { label: '저녁',  value: 38, color: '#e8587a' },
-        { label: '야간',  value: 25, color: '#6366f1' },
-      ];
-      const regionSales = [
-        { name: '서울', value: 58000000 }, { name: '경기', value: 42000000 },
-        { name: '부산', value: 21000000 }, { name: '인천', value: 16000000 },
-        { name: '대구', value: 12000000 }, { name: '광주', value: 9000000 },
-        { name: '기타', value: 6000000 },
-      ];
-      const hourlyTrend = [12,8,5,4,3,5,10,18,28,35,42,48,52,48,45,50,55,62,68,72,68,55,40,28];
-      const radarValues = [
-        { label: '매출', value: 85 }, { label: '주문', value: 72 },
-        { label: '신규회원', value: 65 }, { label: '재구매', value: 78 },
-        { label: '만족도', value: 88 },
-      ];
-      const cfRadarPath = computed(() => {
-        const cx = 100, cy = 100, R = 70;
-        return radarValues.map((v, i) => {
-          const a = (i / radarValues.length) * Math.PI * 2 - Math.PI / 2;
-          const r = (v.value / 100) * R;
-          return `${(cx + r * Math.cos(a)).toFixed(1)},${(cy + r * Math.sin(a)).toFixed(1)}`;
-        }).join(' ');
-      });
-      const cfRadarAxes = computed(() => {
-        const cx = 100, cy = 100, R = 70;
-        return radarValues.map((v, i) => {
-          const a = (i / radarValues.length) * Math.PI * 2 - Math.PI / 2;
-          return {
-            x2: (cx + R * Math.cos(a)).toFixed(1),
-            y2: (cy + R * Math.sin(a)).toFixed(1),
-            lx: (cx + (R + 12) * Math.cos(a)).toFixed(1),
-            ly: (cy + (R + 12) * Math.sin(a)).toFixed(1),
-            label: v.label,
-          };
-        });
-      });
-      const economySales = {
-        labels: ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'],
-        high:   [35,42,38,48,52,58,62,65,68,72,78,82],
-        middle: [48,52,55,58,62,65,68,70,72,75,78,80],
-        low:    [25,28,30,32,35,38,40,42,45,48,50,52],
-      };
-      const shippingTypes = [
-        { label: '무료', value: 58, color: '#10b981' },
-        { label: '유료', value: 42, color: '#9ca3af' },
-      ];
+    const pct = n => (Math.round(n * 10) / 10).toFixed(1) + '%';
 
-      /* pct — 퍼센트 */
-      const pct = n => (Math.round(n * 10) / 10).toFixed(1) + '%';
+    /* ##### [06] return (템플릿 노출) ############################################## */
 
-      /* -- 월별 레이블 (14개월) -- */
-      const cfMonthLabels = computed(() => {
-        try {
-          const s = new Date(filters.startDt);
-          const e = new Date(filters.endDt);
-          const months = [];
-          let cur = new Date(s.getFullYear(), s.getMonth(), 1);
-          while (cur <= e) {
-            months.push(toYm(cur));
-            cur = addMonths(cur, 1);
-          }
-          return months.slice(-14);
-        } catch (e) {
-          return [];
-        }
-      });
+    onMounted(() => loadDashboard());
 
-      /* -- 필터 강도 계수 (0~1) — 필터를 줄일수록 값 감소 -- */
-      const cfFilterFactor = computed(() => {
-        const ratio = (list, all) => list.length === 0 ? 0 : list.length / all.length;
-        return (
-          ratio(filters.channels,    CHANNELS) *
-          ratio(filters.ages,        AGES) *
-          ratio(filters.genders,     GENDERS) *
-          ratio(filters.memberTypes, MEMBER_TYPES) *
-          ratio(filters.categories,  CATEGORIES)
-        );
-      });
-
-      /* seededBase — 시드 기본 */
-      const seededBase = (seed, len, min, max) => {
-        const arr = [];
-        let s = seed;
-        for (let i = 0; i < len; i++) {
-          s = (s * 9301 + 49297) % 233280;
-          arr.push(Math.round(min + (s / 233280) * (max - min) + i * ((max - min) / len) * 0.3));
-        }
-        return arr;
-      };
-
-      /* 1) 월별 매출현황 */
-      const cfMonthlySales = computed(() =>
-        seededBase(137, cfMonthLabels.value.length, 80000000, 180000000).map(v => Math.round(v * cfFilterFactor.value))
-      );
-      /* 2) 월별 고객 가입/탈퇴 */
-      const cfMonthlyJoin   = computed(() => seededBase(211, cfMonthLabels.value.length, 180, 520).map(v => Math.round(v * cfFilterFactor.value)));
-      const cfMonthlyLeave  = computed(() => seededBase(431, cfMonthLabels.value.length, 30, 180).map(v => Math.round(v * cfFilterFactor.value)));
-      /* 3) 월별 상품상세 클릭 */
-      const cfMonthlyClicks = computed(() => seededBase(719, cfMonthLabels.value.length, 12000, 46000).map(v => Math.round(v * cfFilterFactor.value)));
-      /* 4) 월별 주문완료 */
-      const cfMonthlyOrders = computed(() => seededBase(983, cfMonthLabels.value.length, 850, 2800).map(v => Math.round(v * cfFilterFactor.value)));
-
-      /* 5) 월별 판매채널별 매출 (선택된 채널만) */
-      const CHANNEL_COLORS = {
-        '자사몰':'#e8587a', '네이버 스마트스토어':'#10b981', '쿠팡':'#ef4444', '11번가':'#f97316',
-        'G마켓':'#3b82f6', 'Auction':'#6366f1', 'GS샵':'#a855f7', 'TMON':'#e11d48',
-        '위메프':'#f59e0b', '롯데온':'#9333ea', '홈앤쇼핑':'#0891b2', '현대H몰':'#c2410c',
-      };
-      const cfChannelMonthly = computed(() => {
-        const months = cfMonthLabels.value.length;
-        const subFactor =
-          (filters.ages.length / AGES.length) *
-          (filters.genders.length / GENDERS.length) *
-          (filters.memberTypes.length / MEMBER_TYPES.length) *
-          (filters.categories.length / CATEGORIES.length);
-        return filters.channels.map((ch, i) => ({
-          name: ch,
-          color: CHANNEL_COLORS[ch] || '#999',
-          values: seededBase(97 + i * 31, months, 5000000, 28000000).map(v => Math.round(v * subFactor)),
-        }));
-      });
-
-      /* ##### [06] return (템플릿 노출) ############################################## */
-
-      /* ##### [06] return (템플릿 노출) ############################################## */
-
-      return {
-        uiState, filters, // 상태 / 데이터
-        handleBtnAction, handleSelectAction,                                          // dispatch (모든 이벤트 / 액션 라우팅)
-        cfBaseGridColumns, cfMonthLabels, // computed
-        cfMonthlySales, cfMonthlyJoin, cfMonthlyLeave, // computed
-        cfMonthlyClicks, cfMonthlyOrders, cfChannelMonthly, // computed
-        cfTotalSales, cfTotalQtyComp, cfAvgOrderValue, // computed
-        cfRadarPath, cfRadarAxes, // computed
-        TABS, VIEW_MODES, CHANNELS, AGES, GENDERS, MEMBER_TYPES, CATEGORIES, // 상수
-        marginRate, topProducts, salesByChannel, salesByDevice, salesByTime, // 상수
-        regionSales, hourlyTrend, economySales, shippingTypes,             // 상수
-        fmt, pct, isSel, showPanel,                                                   // 헬퍼 (template)
-        linePoints, areaPath, maxOf,                                                  // 헬퍼 (SVG)
-      };
-    },
+    return {
+      uiState, filters,
+      handleBtnAction, handleSelectAction,
+      cfBaseGridColumns, cfMonthLabels,
+      cfMonthlySales, cfMonthlyJoin, cfMonthlyLeave,
+      cfMonthlyClicks, cfMonthlyOrders, cfChannelMonthly,
+      cfTotalSales, cfTotalQtyComp, marginRate, cfAvgOrderValue,
+      cfRadarPath, cfRadarAxes,
+      topProducts, salesByChannel, salesByDevice, salesByTime,
+      regionSales, hourlyTrend, economySales, shippingTypes,
+      TABS, VIEW_MODES, CHANNELS, AGES, GENDERS, MEMBER_TYPES, CATEGORIES,
+      fmt, pct, isSel, showPanel,
+      linePoints, areaPath, maxOf,
+    };
+  },
 
     template: /* html */`
 <div :class="(uiState.tabMode==='3col'||uiState.tabMode==='4col') ? 'dash-wide' : 'bo-wrap'">

@@ -47,6 +47,7 @@ public class BoSyAppConfigController {
 
     @Value("${app.map.kakao-js-key:}")        private String kakaoMapJsKey;
     @Value("${app.map.naver-map-client-id:}") private String naverMapClientId;
+    @Value("${app.map.google-api-key:}")      private String googleMapApiKey;
 
     @Value("${spring.mail.host:}")     private String mailHost;
     @Value("${spring.mail.port:}")     private String mailPort;
@@ -207,7 +208,8 @@ public class BoSyAppConfigController {
         Map<String, String> db = loadDbProps();
         return ResponseEntity.ok(ApiResponse.ok(List.of(
             rowResolved(db, "app.map.kakao-js-key",        kakaoMapJsKey,    false),
-            rowResolved(db, "app.map.naver-map-client-id", naverMapClientId, false)
+            rowResolved(db, "app.map.naver-map-client-id", naverMapClientId, false),
+            rowResolved(db, "app.map.google-api-key",      googleMapApiKey,  false)
         )));
     }
 
@@ -287,6 +289,7 @@ public class BoSyAppConfigController {
             // 지도
             rowResolved(db, "app.map.kakao-js-key",        kakaoMapJsKey,    false),
             rowResolved(db, "app.map.naver-map-client-id", naverMapClientId, false),
+            rowResolved(db, "app.map.google-api-key",      googleMapApiKey,  false),
             // 메일
             rowResolved(db, "spring.mail.host",     mailHost,     false),
             rowResolved(db, "spring.mail.port",     mailPort,     false),

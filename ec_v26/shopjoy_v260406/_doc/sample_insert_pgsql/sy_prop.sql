@@ -349,6 +349,24 @@ VALUES ('2604010000000001','app.map','app.map.naver-map-client-id',
 ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
   SET prop_value=EXCLUDED.prop_value, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
 
+INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
+VALUES ('2604010000000001','app.map','app.map.google-api-key',
+ '',
+ 'Google 지도 API 키','STRING',30,'Y','^local^dev^',
+ 'Google Cloud Console → 사용자 인증 정보 → API 키 (Maps JavaScript API 허용) | console.cloud.google.com',
+ 'SYSTEM','2026-06-22 00:00:00')
+ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
+  SET prop_value=EXCLUDED.prop_value, prop_remark=EXCLUDED.prop_remark, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
+
+INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
+VALUES ('2604010000000001','app.map','app.map.google-api-key',
+ '',
+ 'Google 지도 API 키','STRING',30,'Y','^prod^',
+ 'Google Cloud Console → 사용자 인증 정보 → API 키 (운영 앱)',
+ 'SYSTEM','2026-06-22 00:00:00')
+ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
+  SET prop_value=EXCLUDED.prop_value, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
+
 -- ──────────────────────────────────────────────────────────────
 -- [7] 메일(SMTP) — spring.mail.* + app.mail.*
 -- ──────────────────────────────────────────────────────────────
