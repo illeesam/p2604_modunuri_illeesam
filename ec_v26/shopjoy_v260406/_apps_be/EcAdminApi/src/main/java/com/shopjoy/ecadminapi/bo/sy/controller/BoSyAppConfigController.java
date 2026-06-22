@@ -38,12 +38,14 @@ public class BoSyAppConfigController {
     @Value("${app.auth.social.naver-userinfo-url:}")  private String naverUserinfoUrl;
     @Value("${app.auth.social.default-site-id:}")     private String socialDefaultSiteId;
 
-    @Value("${app.toss.confirm-url:}")     private String tossConfirmUrl;
-    @Value("${app.toss.cancel-url-base:}") private String tossCancelUrlBase;
-    @Value("${app.toss.secret-key:}")      private String tossSecretKey;
-    @Value("${app.toss.client-key:}")      private String tossClientKey;
+    @Value("${app.pay.toss.confirm-url:}")     private String tossConfirmUrl;
+    @Value("${app.pay.toss.cancel-url-base:}") private String tossCancelUrlBase;
+    @Value("${app.pay.toss.secret-key:}")      private String tossSecretKey;
+    @Value("${app.pay.toss.widget-client-key:}") private String tossClientKey;
+    @Value("${app.pay.kakaopay.cid:}")         private String kakaoPayCid;
+    @Value("${app.pay.naverpay.client-id:}")   private String naverPayClientId;
 
-    @Value("${app.map.kakao-js-key:}")        private String kakaoJsKey;
+    @Value("${app.map.kakao-js-key:}")        private String kakaoMapJsKey;
     @Value("${app.map.naver-map-client-id:}") private String naverMapClientId;
 
     @Value("${spring.mail.host:}")     private String mailHost;
@@ -59,15 +61,17 @@ public class BoSyAppConfigController {
     @Value("${app.push.apns.key-id:}")  private String apnsKeyId;
     @Value("${app.chat.ai.api-key:}")   private String aiApiKey;
 
-    /* ── ext-sdk SDK 키 (FE/BE 공용, CmAppStoreData 와 동일 목록) ── */
-    @Value("${app.ext-sdk.google-client-id:}")    private String extGoogleClientId;
-    @Value("${app.ext-sdk.kakao-js-key:}")        private String extKakaoJsKey;
-    @Value("${app.ext-sdk.kakao-map-js-key:}")    private String extKakaoMapJsKey;
-    @Value("${app.ext-sdk.naver-client-id:}")     private String extNaverClientId;
-    @Value("${app.ext-sdk.naver-callback-url:}")  private String extNaverCallbackUrl;
-    @Value("${app.ext-sdk.toss-client-key:}")     private String extTossClientKey;
-    @Value("${app.ext-sdk.naver-map-client-id:}") private String extNaverMapClientId;
-    @Value("${app.ext-sdk.google-map-api-key:}")  private String extGoogleMapApiKey;
+    /* ── 소셜 SDK 키 (FE/BE 공용, CmAppStoreData 와 동일 목록) ── */
+    @Value("${app.auth.social.google-client-id:}")    private String extGoogleClientId;
+    @Value("${app.auth.social.kakao-js-key:}")        private String extKakaoJsKey;
+    @Value("${app.auth.social.naver-client-id:}")     private String extNaverClientId;
+    @Value("${app.auth.social.naver-callback-url:}")  private String extNaverCallbackUrl;
+    @Value("${app.auth.social.naver-client-secret:}") private String extNaverClientSecret;
+
+    /* ── 카카오페이 / 네이버페이 ── */
+    @Value("${app.pay.kakaopay.secret-key:}")      private String kakaoPaySecretKey;
+    @Value("${app.pay.naverpay.client-secret:}")   private String naverPayClientSecret;
+    @Value("${app.pay.naverpay.api-url:}")         private String naverPayApiUrl;
 
     @Value("${app.file.storage-type:LOCAL}") private String fileStorageType;
     @Value("${app.file.cdn-host:}")          private String fileCdnHost;
@@ -169,10 +173,31 @@ public class BoSyAppConfigController {
     public ResponseEntity<ApiResponse<List<Map<String, String>>>> toss() {
         Map<String, String> db = loadDbProps();
         return ResponseEntity.ok(ApiResponse.ok(List.of(
-            rowResolved(db, "app.toss.confirm-url",     tossConfirmUrl,    false),
-            rowResolved(db, "app.toss.cancel-url-base", tossCancelUrlBase, false),
-            rowResolved(db, "app.toss.client-key",      tossClientKey,     false),
-            rowResolved(db, "app.toss.secret-key",      tossSecretKey,     true)
+            rowResolved(db, "app.pay.toss.confirm-url",       tossConfirmUrl,    false),
+            rowResolved(db, "app.pay.toss.cancel-url-base",   tossCancelUrlBase, false),
+            rowResolved(db, "app.pay.toss.widget-client-key", tossClientKey,     false),
+            rowResolved(db, "app.pay.toss.secret-key",        tossSecretKey,     true)
+        )));
+    }
+
+    /** 카카오페이 */
+    @GetMapping("/kakaopay")
+    public ResponseEntity<ApiResponse<List<Map<String, String>>>> kakaopay() {
+        Map<String, String> db = loadDbProps();
+        return ResponseEntity.ok(ApiResponse.ok(List.of(
+            rowResolved(db, "app.pay.kakaopay.cid",        kakaoPayCid,       false),
+            rowResolved(db, "app.pay.kakaopay.secret-key", kakaoPaySecretKey, true)
+        )));
+    }
+
+    /** 네이버페이 */
+    @GetMapping("/naverpay")
+    public ResponseEntity<ApiResponse<List<Map<String, String>>>> naverpay() {
+        Map<String, String> db = loadDbProps();
+        return ResponseEntity.ok(ApiResponse.ok(List.of(
+            rowResolved(db, "app.pay.naverpay.client-id",     naverPayClientId,     false),
+            rowResolved(db, "app.pay.naverpay.client-secret", naverPayClientSecret, true),
+            rowResolved(db, "app.pay.naverpay.api-url",       naverPayApiUrl,       false)
         )));
     }
 
@@ -181,7 +206,7 @@ public class BoSyAppConfigController {
     public ResponseEntity<ApiResponse<List<Map<String, String>>>> map() {
         Map<String, String> db = loadDbProps();
         return ResponseEntity.ok(ApiResponse.ok(List.of(
-            rowResolved(db, "app.map.kakao-js-key",        kakaoJsKey,       false),
+            rowResolved(db, "app.map.kakao-js-key",        kakaoMapJsKey,    false),
             rowResolved(db, "app.map.naver-map-client-id", naverMapClientId, false)
         )));
     }
@@ -236,27 +261,31 @@ public class BoSyAppConfigController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> all() {
         Map<String, String> db = loadDbProps();
         List<Map<String, String>> items = List.of(
-            // ext-sdk (소셜·결제·지도 FE SDK 키 — CmAppStoreData 동일 목록)
-            rowResolved(db, "app.ext-sdk.google-client-id",    extGoogleClientId,    false),
-            rowResolved(db, "app.ext-sdk.kakao-js-key",        extKakaoJsKey,        false),
-            rowResolved(db, "app.ext-sdk.naver-client-id",     extNaverClientId,     false),
-            rowResolved(db, "app.ext-sdk.naver-callback-url",  extNaverCallbackUrl,  false),
-            rowResolved(db, "app.ext-sdk.toss-client-key",     extTossClientKey,     false),
-            rowResolved(db, "app.ext-sdk.kakao-map-js-key",   extKakaoMapJsKey,     false),
-            rowResolved(db, "app.ext-sdk.naver-map-client-id", extNaverMapClientId,  false),
-            rowResolved(db, "app.ext-sdk.google-map-api-key",  extGoogleMapApiKey,   false),
-            // 소셜 공통
-            rowResolved(db, "app.auth.social.google-userinfo-url", googleUserinfoUrl,   false),
-            rowResolved(db, "app.auth.social.kakao-userinfo-url",  kakaoUserinfoUrl,    false),
-            rowResolved(db, "app.auth.social.naver-userinfo-url",  naverUserinfoUrl,    false),
-            rowResolved(db, "app.auth.social.default-site-id",     socialDefaultSiteId, false),
-            // 토스
-            rowResolved(db, "app.toss.confirm-url",     tossConfirmUrl,    false),
-            rowResolved(db, "app.toss.cancel-url-base", tossCancelUrlBase, false),
-            rowResolved(db, "app.toss.client-key",      tossClientKey,     false),
-            rowResolved(db, "app.toss.secret-key",      tossSecretKey,     true),
+            // 소셜 SDK 키 (FE)
+            rowResolved(db, "app.auth.social.google-client-id",    extGoogleClientId,    false),
+            rowResolved(db, "app.auth.social.kakao-js-key",        extKakaoJsKey,        false),
+            rowResolved(db, "app.auth.social.naver-client-id",     extNaverClientId,     false),
+            rowResolved(db, "app.auth.social.naver-client-secret", extNaverClientSecret, true),
+            rowResolved(db, "app.auth.social.naver-callback-url",  extNaverCallbackUrl,  false),
+            // 소셜 공통 엔드포인트
+            rowResolved(db, "app.auth.social.google-userinfo-url", googleUserinfoUrl,    false),
+            rowResolved(db, "app.auth.social.kakao-userinfo-url",  kakaoUserinfoUrl,     false),
+            rowResolved(db, "app.auth.social.naver-userinfo-url",  naverUserinfoUrl,     false),
+            rowResolved(db, "app.auth.social.default-site-id",     socialDefaultSiteId,  false),
+            // 결제 — 토스페이먼츠
+            rowResolved(db, "app.pay.toss.confirm-url",       tossConfirmUrl,    false),
+            rowResolved(db, "app.pay.toss.cancel-url-base",   tossCancelUrlBase, false),
+            rowResolved(db, "app.pay.toss.widget-client-key", tossClientKey,     false),
+            rowResolved(db, "app.pay.toss.secret-key",        tossSecretKey,     true),
+            // 결제 — 카카오페이
+            rowResolved(db, "app.pay.kakaopay.cid",           kakaoPayCid,          false),
+            rowResolved(db, "app.pay.kakaopay.secret-key",    kakaoPaySecretKey,    true),
+            // 결제 — 네이버페이
+            rowResolved(db, "app.pay.naverpay.client-id",     naverPayClientId,     false),
+            rowResolved(db, "app.pay.naverpay.client-secret", naverPayClientSecret, true),
+            rowResolved(db, "app.pay.naverpay.api-url",       naverPayApiUrl,       false),
             // 지도
-            rowResolved(db, "app.map.kakao-js-key",        kakaoJsKey,       false),
+            rowResolved(db, "app.map.kakao-js-key",        kakaoMapJsKey,    false),
             rowResolved(db, "app.map.naver-map-client-id", naverMapClientId, false),
             // 메일
             rowResolved(db, "spring.mail.host",     mailHost,     false),

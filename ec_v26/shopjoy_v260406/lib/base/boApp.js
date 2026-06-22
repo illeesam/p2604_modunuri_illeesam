@@ -160,7 +160,11 @@
       { id: 'zdTestSnsLoginGoogle', label: '구글 로그인 테스트' },
       { id: 'zdTestSnsLoginNaver', label: '네이버 로그인 테스트' },
       { group: '결제' },
-      { id: 'zdTestPaymentToss', label: '토스페이먼츠 테스트' },
+      { id: 'zdTestPayTosspay', label: '토스 결제창 테스트' },
+      { id: 'zdTestPayTossWidget',  label: '토스 결제위젯 테스트' },
+      { id: 'zdTestPayTossBrandpay', label: '토스 브랜드페이 테스트' },
+      { id: 'zdTestPayKakaopay',   label: '카카오페이 결제 테스트' },
+      { id: 'zdTestPayNaverpay',   label: '네이버페이 결제 테스트' },
       { group: '지도' },
       { id: 'zdTestMapKakao',  label: '카카오 지도 테스트' },
       { id: 'zdTestMapNaver', label: '네이버 지도 테스트' },
@@ -477,7 +481,11 @@
         zdLocalStorage: 'zd-local-storage',
         zdTestSnsLoginKakao:   'zd-test-sns-login-kakao',
         zdTestSnsLoginGoogle:  'zd-test-sns-login-google',
-        zdTestPaymentToss:     'zd-test-payment-toss',
+        zdTestPayTosspay: 'zd-test-pay-tosspay',
+        zdTestPayTossWidget:  'zd-test-pay-toss-widget',
+        zdTestPayTossBrandpay: 'zd-test-pay-toss-brandpay',
+        zdTestPayKakaopay:   'zd-test-pay-kakaopay',
+        zdTestPayNaverpay:   'zd-test-pay-naverpay',
         zdTestMapKakao:        'zd-test-map-kakao',
         zdTestMapNaver:        'zd-test-map-naver',
         zdTestMapGoogle:       'zd-test-map-google',
@@ -2592,7 +2600,11 @@
             <zd-local-storage  v-else-if="page==='zdLocalStorage'"  :navigate="navigate" />
             <zd-test-sns-login-kakao  v-else-if="page==='zdTestSnsLoginKakao'"  :navigate="navigate" :show-toast="showToast" />
             <zd-test-sns-login-google v-else-if="page==='zdTestSnsLoginGoogle'" :navigate="navigate" :show-toast="showToast" />
-            <zd-test-payment-toss     v-else-if="page==='zdTestPaymentToss'"    :navigate="navigate" :show-toast="showToast" />
+            <zd-test-pay-tosspay v-else-if="page==='zdTestPayTosspay'" :navigate="navigate" :show-toast="showToast" />
+            <zd-test-pay-toss-widget  v-else-if="page==='zdTestPayTossWidget'"  :navigate="navigate" :show-toast="showToast" />
+            <zd-test-pay-toss-brandpay v-else-if="page==='zdTestPayTossBrandpay'" :navigate="navigate" :show-toast="showToast" />
+            <zd-test-pay-kakaopay     v-else-if="page==='zdTestPayKakaopay'"    :navigate="navigate" :show-toast="showToast" />
+            <zd-test-pay-naverpay     v-else-if="page==='zdTestPayNaverpay'"    :navigate="navigate" :show-toast="showToast" />
             <zd-test-map-kakao        v-else-if="page==='zdTestMapKakao'"       :navigate="navigate" :show-toast="showToast" />
             <zd-test-map-naver        v-else-if="page==='zdTestMapNaver'"       :navigate="navigate" :show-toast="showToast" />
             <zd-test-map-google       v-else-if="page==='zdTestMapGoogle'"      :navigate="navigate" :show-toast="showToast" />
@@ -3177,7 +3189,11 @@
     .component('ZdLocalStorage', window.ZdLocalStorage)
     .component('ZdTestSnsLoginKakao',  window.ZdTestSnsLoginKakao)
     .component('ZdTestSnsLoginGoogle', window.ZdTestSnsLoginGoogle)
-    .component('ZdTestPaymentToss',    window.ZdTestPaymentToss)
+    .component('ZdTestPayTosspay', window.ZdTestPayTosspay)
+    .component('ZdTestPayTossWidget',  window.ZdTestPayTossWidget)
+    .component('ZdTestPayTossBrandpay', window.ZdTestPayTossBrandpay)
+    .component('ZdTestPayKakaopay',    window.ZdTestPayKakaopay)
+    .component('ZdTestPayNaverpay',    window.ZdTestPayNaverpay)
     .component('ZdTestMapKakao',       window.ZdTestMapKakao)
     .component('ZdTestMapNaver',       window.ZdTestMapNaver)
     .component('ZdTestMapGoogle',      window.ZdTestMapGoogle)

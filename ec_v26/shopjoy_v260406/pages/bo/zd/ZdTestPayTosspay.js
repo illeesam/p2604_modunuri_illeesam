@@ -1,8 +1,8 @@
-﻿/**
+/**
  * 개발도구 — 토스페이먼츠 결제 테스트
  */
-window.ZdTestPaymentToss = {
-  name: 'ZdTestPaymentToss',
+window.ZdTestPayTosspay = {
+  name: 'ZdTestPayTosspay',
   props: {
     navigate:  { type: Function, required: true }, // 페이지 이동
     showToast: { type: Function, default: () => {} }, // 토스트 알림
@@ -45,16 +45,15 @@ window.ZdTestPaymentToss = {
 
     onMounted(async () => {
       try {
-        const res = await boApiSvc.syProp?.getList?.({ propKeys: 'app.toss.client-key,app.toss.secret-key' }, '토스페이먼츠 결제 테스트', '키 조회');
+        const res = await boApiSvc.syProp?.getList?.({ propKeys: 'app.pay.toss.client-key,app.pay.toss.secret-key' }, '토스페이먼츠 결제 테스트', '키 조회');
         const list = res?.data?.data || [];
-        // 동일 propKey가 여러 프로파일 행으로 올 수 있음 → local/dev 우선, 없으면 값 있는 행
         const pickVal = (key) => {
           const rows = list.filter(p => p.propKey === key && p.propValue);
           const preferred = rows.find(p => /local|dev/.test(p.propProfile || '')) || rows[0];
           return preferred?.propValue || '';
         };
-        cfg.clientKey = pickVal('app.toss.client-key');
-        cfg.secretKey = pickVal('app.toss.secret-key');
+        cfg.clientKey = pickVal('app.pay.toss.client-key');
+        cfg.secretKey = pickVal('app.pay.toss.secret-key');
       } catch (e) {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);
       }
@@ -64,7 +63,6 @@ window.ZdTestPaymentToss = {
     /* ##### [03] 헬퍼 함수 #################################################### */
 
     const checkSdk = () => {
-      // v2: window.TossPayments 함수 존재 여부로 확인
       const ok = typeof window.TossPayments === 'function';
       uiState.sdkLoaded = ok;
       result.sdkUrl     = 'https://js.tosspayments.com/v2/standard';
@@ -81,10 +79,11 @@ window.ZdTestPaymentToss = {
       result.phase    = 'paying';
       result.error    = '';
       try {
-        // TossPayments SDK v2: loadTossPayments(clientKey) async + requestPayment({ method })
         const toss = await TossPayments(cfg.clientKey);
-        await toss.requestPayment({
-          method:        '카드',
+        // v2 표준: ANONYMOUS 결제는 customerKey 없이 loadPaymentWidget 방식 또는
+        // payment({ customerKey: 'ANONYMOUS_...' }) + requestPayment (method 생략 → 결제창에서 선택)
+        const payment = toss.payment({ customerKey: 'ANONYMOUS_' + form.orderId });
+        await payment.requestPayment({
           amount:        { currency: 'KRW', value: Number(form.amount) },
           orderId:       form.orderId,
           orderName:     form.orderName,
@@ -93,7 +92,6 @@ window.ZdTestPaymentToss = {
           successUrl:    form.successUrl,
           failUrl:       form.failUrl,
         });
-        // 리다이렉트가 발생하므로 이 이후 코드는 실행 안 됨
       } catch (e) {
         result.error  = e.message || String(e);
         result.phase  = 'idle';
@@ -144,8 +142,8 @@ window.ZdTestPaymentToss = {
     const saveKeys = async () => {
       try {
         const rows = [];
-        if (cfg.clientKey) rows.push({ propKey: 'app.toss.client-key', propValue: cfg.clientKey });
-        if (cfg.secretKey) rows.push({ propKey: 'app.toss.secret-key', propValue: cfg.secretKey });
+        if (cfg.clientKey) rows.push({ propKey: 'app.pay.toss.client-key', propValue: cfg.clientKey });
+        if (cfg.secretKey) rows.push({ propKey: 'app.pay.toss.secret-key', propValue: cfg.secretKey });
         if (!rows.length) { showToast('저장할 키가 없습니다.', 'error'); return; }
         await boApi.put('/bo/sy/prop/bulk', rows, coUtil.cofApiHdr('토스 결제 테스트', '키 저장'));
         showToast('sy_prop 에 저장되었습니다.', 'success');
@@ -157,10 +155,10 @@ window.ZdTestPaymentToss = {
     /* ##### [04] 액션 dispatch #################################################### */
 
     const handleBtnAction = (cmd) => {
-      if (cmd === 'pay-test')      return testPay();
-      if (cmd === 'confirm-manual') return testConfirmManual();
-      if (cmd === 'cancel-test')   return testCancel();
-      if (cmd === 'keys-save')     return saveKeys();
+      if (cmd === 'pay-test')        return testPay();
+      if (cmd === 'confirm-manual')  return testConfirmManual();
+      if (cmd === 'cancel-test')     return testCancel();
+      if (cmd === 'keys-save')       return saveKeys();
       if (cmd === 'orderid-refresh') return refreshOrderId();
     };
 
@@ -169,11 +167,11 @@ window.ZdTestPaymentToss = {
 
   template: `
 <div>
-  <div class="page-title">토스페이먼츠 결제 테스트</div>
+  <div class="page-title">토스페이먼츠 결제창 테스트</div>
 
   <!-- 키 설정 -->
   <div class="card" style="margin-bottom:12px">
-    <div class="toolbar"><span class="list-title">API 키 설정</span></div>
+    <div class="toolbar"><span class="list-title">API 키 설정</span><span style="font-size:11px;color:#888;margin-left:8px">결제창 전용 키 (test_ck_ / live_ck_ 접두어)</span></div>
     <div style="padding:12px">
       <div class="form-row" style="gap:8px;margin-bottom:8px">
         <div class="form-group" style="flex:1">
@@ -199,6 +197,9 @@ window.ZdTestPaymentToss = {
   <div class="card" style="margin-bottom:12px">
     <div class="toolbar"><span class="list-title">결제 파라미터</span></div>
     <div style="padding:12px">
+      <div style="margin-bottom:8px;font-size:12px;color:#666;padding:6px 8px;background:#fffbeb;border:1px solid #fde68a;border-radius:4px">
+        결제수단(카드/계좌이체 등)은 결제창에서 구매자가 직접 선택합니다 (v2 표준 방식).
+      </div>
       <div class="form-row" style="gap:8px;margin-bottom:8px">
         <div class="form-group">
           <label class="form-label">금액</label>
@@ -243,7 +244,6 @@ window.ZdTestPaymentToss = {
     </div>
     <div style="padding:12px">
       <div v-if="result.error" style="padding:8px;background:#fff5f5;border:1px solid #fca5a5;border-radius:4px;font-size:12px;color:#b91c1c;margin-bottom:8px">{{ result.error }}</div>
-      <!-- 승인 결과 -->
       <div v-if="result.confirmResult" style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:10px;margin-bottom:8px">
         <div style="font-weight:600;margin-bottom:6px;color:#15803d">✅ 결제 승인 결과</div>
         <table style="font-size:12px;border-collapse:collapse;width:100%">
@@ -255,7 +255,6 @@ window.ZdTestPaymentToss = {
           <tr><td style="padding:2px 8px;color:#555">method</td><td>{{ result.confirmResult.method }}</td></tr>
         </table>
       </div>
-      <!-- 취소 결과 -->
       <div v-if="result.cancelResult" style="background:#fff7ed;border:1px solid #fdba74;border-radius:6px;padding:10px">
         <div style="font-weight:600;margin-bottom:6px;color:#c2410c">⊘ 결제 취소 결과</div>
         <pre style="font-size:11px;overflow:auto;max-height:120px">{{ JSON.stringify(result.cancelResult, null, 2) }}</pre>
@@ -268,7 +267,7 @@ window.ZdTestPaymentToss = {
     <div class="toolbar"><span class="list-title">연동 흐름</span></div>
     <div style="padding:12px;font-size:12px;line-height:1.8;color:#444">
       <b>1.</b> 토스페이먼츠 개발자센터 → 앱 생성 → 테스트 키 발급 (test_ck_/test_sk_)<br>
-      <b>2.</b> sy_prop <code>app.toss.client-key</code> / <code>app.toss.secret-key</code> 등록<br>
+      <b>2.</b> sy_prop <code>app.pay.toss.client-key</code> / <code>app.pay.toss.secret-key</code> 등록<br>
       <b>3.</b> 결제창 열기 → 카드/계좌 선택 → successUrl 로 리다이렉트 (paymentKey + orderId + amount 포함)<br>
       <b>4.</b> 백엔드 <code>POST /api/co/cm/toss/confirm</code> 으로 승인 요청<br>
       <b>5.</b> 취소: <code>POST /api/co/cm/toss/cancel</code> (cancelAmount 없으면 전체 취소)
@@ -276,6 +275,6 @@ window.ZdTestPaymentToss = {
   </div>
 
   <bo-zd-yml-grid endpoint="/bo/sy/app-config/toss" title="application.yml — 토스페이먼츠 설정" />
-  <bo-zd-sy-prop-grid prop-key-prefixes="app.toss." default-prop-key-filter="app.toss." />
+  <bo-zd-sy-prop-grid prop-key-prefixes="app.pay.toss." default-prop-key-filter="app.pay.toss." />
 </div>`,
 };

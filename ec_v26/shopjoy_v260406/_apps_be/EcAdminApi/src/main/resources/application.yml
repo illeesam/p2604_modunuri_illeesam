@@ -1,6 +1,10 @@
 # application.yml — 공통 설정 / 프로파일별: application-{local|dev|prod}.yml
 # ⚠️ 아래 항목은 sy_prop DB 에서 관리 (BO → 시스템 → 프로퍼티 관리):
-#    auth.social / toss / map / app.ext-sdk
+#    app.auth.social.*  (google-client-id / kakao-js-key / naver-client-id / naver-callback-url / *-userinfo-url)
+#    app.pay.toss.*     (confirm-url / cancel-url-base / widget-client-key / secret-key)
+#    app.pay.kakaopay.* (cid / secret-key)
+#    app.pay.naverpay.* (client-id / client-secret / api-url)
+#    app.map.*          (kakao-js-key / naver-map-client-id)
 #    spring.mail.host/port/username/password / app.mail.*
 #    app.file.storage-type / cdn-host / aws.bucket/region/cdn-url / ncp.bucket/endpoint/cdn-url
 #    app.license.secret(local/dev) / app.license.enabled

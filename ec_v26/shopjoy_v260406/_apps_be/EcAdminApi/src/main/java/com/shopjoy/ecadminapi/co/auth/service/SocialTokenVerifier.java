@@ -17,7 +17,7 @@ import java.util.Map;
  * <p>클라이언트가 보낸 provider accessToken을 각 제공자의 userinfo 엔드포인트로 호출하여
  * 토큰 유효성을 검증하고 실제 SNS 사용자ID/프로필을 정규화하여 반환한다.</p>
  *
- * <p>지원 provider: google / kakao / naver. userinfo URL은 설정값(auth.social.*-userinfo-url)
+ * <p>지원 provider: google / kakao / naver. userinfo URL은 설정값(app.auth.social.*-userinfo-url)
  * 으로 외부화하고, 미설정 시 각 제공자 공식 기본값을 사용한다.</p>
  *
  * <p>HTTP 클라이언트: Spring RestClient (spring-web 동봉, 별도 의존성 불필요).

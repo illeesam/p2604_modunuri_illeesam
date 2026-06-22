@@ -30,7 +30,7 @@ import java.util.Map;
  *
  * <p>HTTP 클라이언트: Spring RestClient (spring-web 동봉, 별도 의존성 불필요).</p>
  *
- * <p>키/URL 출처: sy_prop (path_id=app.toss, prop_profile=환경별).
+ * <p>키/URL 출처: sy_prop (path_id=app.pay.toss, prop_profile=환경별).
  * 미설정(빈 값) 시 명확한 CmBizException 으로 거부한다.</p>
  *
  * <p>appTypeCd("BO"|"FO") 는 호출자(컨트롤러)가 전달한다.</p>
@@ -45,7 +45,7 @@ public class CmTossPayService {
     private final Environment environment;
     private final RestClient restClient = RestClient.create();
 
-    /** sy_prop에서 app.toss.* 키를 현재 active profile 기준으로 조회 */
+    /** sy_prop에서 app.pay.toss.* 키를 현재 active profile 기준으로 조회 */
     private String prop(String propKey) {
         String profile = environment.getActiveProfiles().length > 0
             ? environment.getActiveProfiles()[0] : "-";
@@ -74,10 +74,10 @@ public class CmTossPayService {
      * @return { clientKey: "..." }
      */
     public Map<String, Object> getClientKey(String appTypeCd) {
-        String clientKey = prop("app.toss.client-key");
+        String clientKey = prop("app.pay.toss.widget-client-key");
         if (clientKey.isBlank()) {
             throw new CmBizException(
-                "토스 클라이언트키가 설정되지 않았습니다. sy_prop : app.toss.client-key 를 설정하세요."
+                "토스 클라이언트키가 설정되지 않았습니다. sy_prop : app.pay.toss.widget-client-key 를 설정하세요."
                 + "::" + CmUtil.svcCallerInfo(this));
         }
         Map<String, Object> result = new LinkedHashMap<>();
@@ -97,16 +97,16 @@ public class CmTossPayService {
      */
     @Transactional
     public Map<String, Object> confirm(TossConfirmReq request, String appTypeCd) {
-        String secretKey  = prop("app.toss.secret-key");
-        String confirmUrl = prop("app.toss.confirm-url");
+        String secretKey  = prop("app.pay.toss.secret-key");
+        String confirmUrl = prop("app.pay.toss.confirm-url");
         if (secretKey.isBlank()) {
             throw new CmBizException(
-                "토스 시크릿키가 설정되지 않았습니다. sy_prop : app.toss.secret-key 를 설정하세요."
+                "토스 시크릿키가 설정되지 않았습니다. sy_prop : app.pay.toss.secret-key 를 설정하세요."
                 + "::" + CmUtil.svcCallerInfo(this));
         }
         if (confirmUrl.isBlank()) {
             throw new CmBizException(
-                "토스 결제승인 URL이 설정되지 않았습니다. sy_prop : app.toss.confirm-url 를 설정하세요."
+                "토스 결제승인 URL이 설정되지 않았습니다. sy_prop : app.pay.toss.confirm-url 를 설정하세요."
                 + "::" + CmUtil.svcCallerInfo(this));
         }
 
@@ -174,16 +174,16 @@ public class CmTossPayService {
      */
     @Transactional
     public Map<String, Object> cancel(TossCancelReq request, String appTypeCd) {
-        String secretKey    = prop("app.toss.secret-key");
-        String cancelUrlBase = prop("app.toss.cancel-url-base");
+        String secretKey    = prop("app.pay.toss.secret-key");
+        String cancelUrlBase = prop("app.pay.toss.cancel-url-base");
         if (secretKey.isBlank()) {
             throw new CmBizException(
-                "토스 시크릿키가 설정되지 않았습니다. sy_prop : app.toss.secret-key 를 설정하세요."
+                "토스 시크릿키가 설정되지 않았습니다. sy_prop : app.pay.toss.secret-key 를 설정하세요."
                 + "::" + CmUtil.svcCallerInfo(this));
         }
         if (cancelUrlBase.isBlank()) {
             throw new CmBizException(
-                "토스 결제취소 URL이 설정되지 않았습니다. sy_prop : app.toss.cancel-url-base 를 설정하세요."
+                "토스 결제취소 URL이 설정되지 않았습니다. sy_prop : app.pay.toss.cancel-url-base 를 설정하세요."
                 + "::" + CmUtil.svcCallerInfo(this));
         }
 

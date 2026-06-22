@@ -38,14 +38,19 @@ public class CmAppStoreDataService {
     private Environment environment;
 
     // ── 외부 SDK 키 — sy_prop(DB) 우선, application-{profile}.yml 폴백 ──
-    // propKey 규칙: yml 경로 그대로 (예: app.ext-sdk.google-client-id)
-    @Value("${app.ext-sdk.google-client-id:}") private String googleClientId;
-    @Value("${app.ext-sdk.kakao-js-key:}") private String kakaoJsKey;
-    @Value("${app.ext-sdk.naver-client-id:}") private String naverClientId;
-    @Value("${app.ext-sdk.naver-callback-url:}") private String naverCallbackUrl;
-    @Value("${app.ext-sdk.toss-client-key:}") private String tossClientKey;
-    @Value("${app.ext-sdk.kakao-map-js-key:}") private String kakaoMapJsKey;
-    @Value("${app.ext-sdk.naver-map-client-id:}") private String naverMapClientId;
+    // propKey 규칙: yml 경로 그대로 (예: app.auth.social.google-client-id)
+    // 소셜 로그인
+    @Value("${app.auth.social.google-client-id:}") private String googleClientId;
+    @Value("${app.auth.social.kakao-js-key:}") private String kakaoJsKey;
+    @Value("${app.auth.social.naver-client-id:}") private String naverClientId;
+    @Value("${app.auth.social.naver-callback-url:}") private String naverCallbackUrl;
+    // 결제
+    @Value("${app.pay.toss.widget-client-key:}") private String tossClientKey;
+    @Value("${app.pay.kakaopay.cid:}") private String kakaoPayCidYml;
+    @Value("${app.pay.naverpay.client-id:}") private String naverPayClientIdYml;
+    // 지도
+    @Value("${app.map.kakao-js-key:}") private String kakaoMapJsKey;
+    @Value("${app.map.naver-map-client-id:}") private String naverMapClientId;
 
     private final MbMemberRepository memberRepository;
     private final SyUserRepository syUserRepository;
@@ -523,7 +528,7 @@ public class CmAppStoreDataService {
         String active = (activeProfiles != null && activeProfiles.length > 0) ? activeProfiles[0] : "-";
 
         // ── sy_prop DB 우선 → yml @Value 폴백 ──────────────────────────────
-        // propKey = yml 경로 그대로 (예: app.ext-sdk.google-client-id)
+        // propKey = yml 경로 그대로 (예: app.auth.social.google-client-id)
         // propProfile 매칭: ^local^dev^ / ^prod^ / ^local^dev^prod^ / null(전체)
         final String currentProfile = active;
         Map<String, String> dbProps = syPropRepository.findAll().stream()
@@ -540,23 +545,25 @@ public class CmAppStoreDataService {
                     return (v != null && !v.isBlank()) ? v : ymlVal;
                 };
 
-        // 소셜 SDK 키
-        String resolvedGoogleClientId   = resolve.apply("app.ext-sdk.google-client-id",   this.googleClientId);
-        String resolvedKakaoJsKey       = resolve.apply("app.ext-sdk.kakao-js-key",        this.kakaoJsKey);
-        String resolvedNaverClientId    = resolve.apply("app.ext-sdk.naver-client-id",     this.naverClientId);
-        String resolvedNaverCallbackUrl = resolve.apply("app.ext-sdk.naver-callback-url",  this.naverCallbackUrl);
+        // 소셜 SDK 키 — DB sy_prop 우선, yml @Value 폴백
+        String resolvedGoogleClientId   = resolve.apply("app.auth.social.google-client-id",   this.googleClientId);
+        String resolvedKakaoJsKey       = resolve.apply("app.auth.social.kakao-js-key",        this.kakaoJsKey);
+        String resolvedNaverClientId    = resolve.apply("app.auth.social.naver-client-id",     this.naverClientId);
+        String resolvedNaverCallbackUrl = resolve.apply("app.auth.social.naver-callback-url",  this.naverCallbackUrl);
         // 결제 SDK 키
-        String resolvedTossClientKey    = resolve.apply("app.ext-sdk.toss-client-key",     this.tossClientKey);
+        String resolvedTossClientKey    = resolve.apply("app.pay.toss.widget-client-key", this.tossClientKey);
+        String resolvedKakaoPayCid      = resolve.apply("app.pay.kakaopay.cid",        this.kakaoPayCidYml);
+        String resolvedNaverPayClientId = resolve.apply("app.pay.naverpay.client-id",  this.naverPayClientIdYml);
         // 지도 SDK 키
-        String resolvedKakaoMapJsKey    = resolve.apply("app.ext-sdk.kakao-map-js-key",    this.kakaoMapJsKey);
-        String resolvedNaverMapClientId = resolve.apply("app.ext-sdk.naver-map-client-id", this.naverMapClientId);
+        String resolvedKakaoMapJsKey    = resolve.apply("app.map.kakao-js-key",        this.kakaoMapJsKey);
+        String resolvedNaverMapClientId = resolve.apply("app.map.naver-map-client-id", this.naverMapClientId);
 
         String facebookAppId    = "DEMO_FACEBOOK_APP_ID";
         String appleClientId    = "com.shopjoy.demo.signin";
         // 결제
-        String tossClientKey    = resolvedTossClientKey.isEmpty() ? "test_ck_DEMO_toss_client_key" : resolvedTossClientKey;
-        String kakaoPayCid      = "TC0ONETIME";
-        String naverPayClientId = "DEMO_NAVER_PAY_CLIENT_ID";
+        String tossClientKey    = resolvedTossClientKey;
+        String kakaoPayCid      = resolvedKakaoPayCid.isEmpty()      ? "TC0ONETIME"              : resolvedKakaoPayCid;
+        String naverPayClientId = resolvedNaverPayClientId;
         String inicisMid        = "INIpayTest";
         String kcpSiteCd        = "T0000";
         // 지도
