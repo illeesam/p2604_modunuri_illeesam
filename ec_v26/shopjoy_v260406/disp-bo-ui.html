@@ -629,6 +629,17 @@
 
         /* 미리보기 탭 구조보기 토글 */
         const showStructure = ref(false);
+        const deviceMode = ref('pc'); /* 'pc' | 'mobile' | 'tablet' */
+        const DEVICE_MODES = [
+          { key: 'pc',     label: 'PC',     icon: '🖥',  width: null,  maxWidth: '1280px' },
+          { key: 'mobile', label: '모바일', icon: '📱', width: '390px',  maxWidth: '390px' },
+          { key: 'tablet', label: '태블릿', icon: '📟', width: '768px',  maxWidth: '768px' },
+        ];
+        const cfDeviceStyle = Vue.computed(() => {
+          const m = DEVICE_MODES.find(d => d.key === deviceMode.value);
+          if (!m || !m.width) return {};
+          return { width: m.width, maxWidth: m.maxWidth, margin: '0 auto', boxShadow: '0 0 0 1px #ccc, 0 4px 24px rgba(0,0,0,0.12)', borderRadius: '8px', overflow: 'hidden' };
+        });
 
         /* 트리 우측 미리보기 — 패널 목록 (area / ui 모드) */
         const cfRenderPanels = computed(() => {
@@ -646,7 +657,8 @@
           cfDataFields, cfSourceCode, cfSourceCodeHtml,
           cfRenderPanels,
           treeOpen, fnToggleTree, fnIsOpen, fnExpandAll, fnCollapseAll, fnAllExpanded,
-          showStructure, fnReload: fetchItem,
+          showStructure, deviceMode, DEVICE_MODES, cfDeviceStyle,
+          fnReload: async () => { const sy = window.scrollY; await fetchItem(); Vue.nextTick(() => window.scrollTo(0, sy)); },
         };
       },
       template: /* html */`
@@ -664,6 +676,7 @@
     .dsp-badge-area   { background:#f3e5f5; color:#6a1b9a; border:1px solid #e1bee7; border-radius:4px; padding:1px 6px; font-size:11px; font-weight:600; }
     .dsp-badge-panel  { background:#e8f5e9; color:#1b5e20; border:1px solid #c8e6c9; border-radius:4px; padding:1px 6px; font-size:11px; font-weight:600; }
     .dsp-badge-widget { background:#fff3e0; color:#e65100; border:1px solid #ffe0b2; border-radius:4px; padding:1px 6px; font-size:11px; font-weight:600; }
+    .dsp-prop-tag { background:#fff; color:#666; border:1px solid #ddd; border-radius:3px; padding:1px 6px; font-size:10px; white-space:nowrap; }
     .dsp-data-table { width:100%; border-collapse:collapse; font-size:13px; }
     .dsp-data-table tr { border-bottom:1px solid #f0f0f0; }
     .dsp-data-table td { padding:7px 12px; vertical-align:top; }
@@ -677,11 +690,24 @@
       <span style="font-size:13px;font-weight:600;letter-spacing:0.5px;color:#fff;">🔍 {{ label }} 미리보기</span>
       <span style="font-family:monospace;font-size:11px;color:#aaa;">#{{ previewId }}</span>
       <span v-if="item.loading" style="font-size:11px;color:#ffd700;">로딩 중...</span>
-      <button @click="fnReload()" :disabled="item.loading"
-        style="margin-left:auto;background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.25);border-radius:6px;padding:4px 12px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:5px;transition:background 0.15s;"
-        onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
-        <span :style="item.loading ? 'display:inline-block;animation:spin 0.6s linear infinite;' : ''">↺</span> 새로고침
-      </button>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+        <!-- 디바이스 모드 버튼 -->
+        <div style="display:flex;background:rgba(0,0,0,0.3);border-radius:6px;overflow:hidden;border:1px solid rgba(255,255,255,0.15);">
+          <button v-for="d in DEVICE_MODES" :key="d.key" @click="deviceMode=d.key"
+            :style="deviceMode===d.key
+              ? 'background:rgba(255,255,255,0.2);color:#fff;font-weight:700;'
+              : 'background:transparent;color:#888;font-weight:400;'"
+            style="border:none;padding:4px 11px;font-size:12px;cursor:pointer;transition:all .15s;white-space:nowrap;">
+            {{ d.icon }} {{ d.label }}
+          </button>
+        </div>
+        <!-- 새로고침 -->
+        <button @click="fnReload()" :disabled="item.loading"
+          style="background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.25);border-radius:6px;padding:4px 12px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:5px;"
+          onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+          <span :style="item.loading ? 'display:inline-block;animation:spin 0.6s linear infinite;' : ''">↺</span> 새로고침
+        </button>
+      </div>
     </div>
     <div class="dsp-tab-bar">
       <button class="dsp-tab" :class="tab==='preview' ? 'active' : ''" @click="tab='preview'">
@@ -708,10 +734,12 @@
 
   <!-- ═══════════════════════════════ 탭1: 미리보기 ═══════════════════════════════ -->
   <template v-else-if="tab === 'preview'">
-    <div style="max-width:1000px;margin:0 auto;padding:0 16px;">
+    <!-- 디바이스 프레임 wrapper -->
+    <div :style="deviceMode==='pc' ? 'max-width:none;margin:0;padding:0 24px;' : 'padding:16px;background:#e8e8e8;min-height:60vh;'">
+      <div :style="cfDeviceStyle" style="background:#fff;">
 
       <!-- 구조보기 토글 버튼 -->
-      <div style="display:flex;justify-content:flex-end;padding:10px 0 4px;">
+      <div style="display:flex;justify-content:flex-end;padding:10px 16px 4px;">
         <button @click="showStructure = !showStructure"
           :style="showStructure
             ? 'background:#1a1a2e;color:#e8587a;border:1px solid #e8587a;border-radius:6px;padding:5px 14px;font-size:12px;font-weight:600;cursor:pointer;letter-spacing:0.3px;'
@@ -836,12 +864,13 @@
         이 모드는 미리보기를 지원하지 않습니다.
       </div>
 
-    </div>
+      </div><!-- /cfDeviceStyle -->
+    </div><!-- /device-frame wrapper -->
   </template>
 
   <!-- ═══════════════════════════════ 탭2: 정보 / 구조 ═══════════════════════════════ -->
   <template v-else-if="tab === 'info' && item.data">
-    <div style="max-width:1000px;margin:24px auto;padding:0 16px;display:flex;flex-direction:column;gap:20px;">
+    <div :style="deviceMode==='pc' ? 'max-width:none;margin:24px 24px;' : (deviceMode==='tablet' ? 'max-width:768px;margin:24px auto;' : 'max-width:390px;margin:24px auto;')" style="padding:0;display:flex;flex-direction:column;gap:20px;">
 
       <!-- ① 데이터 정보 -->
       <div style="background:#fff;border-radius:10px;border:2px solid #c5cae9;box-shadow:0 1px 4px rgba(0,0,0,0.08);overflow:hidden;">
@@ -864,23 +893,10 @@
         </div>
       </div>
 
-      <!-- ② 소스 구조 -->
-      <div style="background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,0.08);overflow:hidden;">
-        <div style="background:#1e2330;padding:10px 16px;display:flex;align-items:center;gap:8px;">
-          <span style="font-size:13px;font-weight:700;color:#7ec8e3;">&lt;/&gt; 소스 구조</span>
-          <span style="font-size:11px;color:#6b7a99;">DispX01Ui → DispX02Area → DispX03Panel → DispX04Widget</span>
-          <button @click="(function(e){ var btn=e.target; if(navigator.clipboard){ navigator.clipboard.writeText(cfSourceCode).then(function(){ btn.textContent='✅ 복사됨'; setTimeout(function(){ btn.textContent='■ 전체 복사'; },1500); }); } }($event))"
-            style="margin-left:auto;background:#2d3748;color:#a0aec0;border:1px solid #4a5568;border-radius:4px;padding:3px 10px;font-size:11px;cursor:pointer;">■ 전체 복사</button>
-        </div>
-        <div style="padding:0;background:#1a1d2e;overflow:auto;max-height:520px;">
-          <pre style="font-size:12px;line-height:1.8;color:#cdd3de;background:transparent;padding:16px 20px;margin:0;white-space:pre;word-break:normal;font-family:'Consolas','Fira Mono','Courier New',monospace;" v-html="cfSourceCodeHtml"></pre>
-        </div>
-      </div>
-
-      <!-- ③ 구조 트리 + 인라인 미리보기 -->
+      <!-- ② 구조 트리 + 인라인 미리보기 -->
       <div style="background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,0.08);overflow:hidden;">
         <div style="background:#fff8f0;padding:10px 20px;border-bottom:2px solid #ffe0b2;display:flex;align-items:center;gap:8px;">
-          <span style="font-size:14px;font-weight:700;color:#e65100;">③ 구조 트리</span>
+          <span style="font-size:14px;font-weight:700;color:#e65100;">② 구조 트리</span>
           <span style="font-size:12px;color:#aaa;">▼/▶ 클릭으로 미리보기 펼치기/접기</span>
           <div style="margin-left:auto;">
             <button @click="fnAllExpanded() ? fnCollapseAll() : fnExpandAll()"
@@ -894,12 +910,15 @@
           <!-- widgetLib / widget 단독 -->
           <template v-if="mode === 'widgetLib' || mode === 'widget'">
             <div style="border:1px solid #f57c00;border-radius:8px;overflow:hidden;">
-              <div class="dsp-tree-node" style="padding:10px 14px;background:#fff3e0;border-bottom:1px solid #f57c00;cursor:pointer;" @click="fnToggleTree('widget_preview')">
+              <div class="dsp-tree-node" style="padding:10px 14px;background:#fff3e0;border-bottom:1px solid #f57c00;cursor:pointer;display:flex;align-items:center;flex-wrap:wrap;gap:4px;" @click="fnToggleTree('widget_preview')">
                 <span class="dsp-tree-toggle">{{ fnIsOpen('widget_preview') ? '▼' : '▶' }}</span>
                 <span class="dsp-badge-widget" style="margin-left:6px;">DispX04Widget</span>
                 <span style="margin-left:8px;color:#e65100;font-weight:700;">{{ item.data.widgetNm || item.data.widgetTitle }}</span>
-                <span style="margin-left:6px;font-size:11px;color:#bf360c;font-family:monospace;">{{ item.data.widgetTypeCd }}</span>
-                <span style="margin-left:6px;font-size:10px;color:#ffb74d;font-family:monospace;">{{ item.data.widgetLibId || item.data.widgetId }}</span>
+                <span style="margin-left:auto;display:flex;gap:4px;align-items:center;">
+                  <span v-if="item.data.widgetTypeCd" class="dsp-prop-tag" style="font-family:monospace;"><span style="color:#bbb;">widgetType=</span>{{ item.data.widgetTypeCd }}</span>
+                  <span v-if="item.data.widgetNm||item.data.widgetTitle" class="dsp-prop-tag"><span style="color:#bbb;">widgetNm=</span>{{ item.data.widgetNm||item.data.widgetTitle }}</span>
+                  <span style="font-size:10px;color:#ffb74d;font-family:monospace;">{{ item.data.widgetLibId || item.data.widgetId }}</span>
+                </span>
               </div>
               <div v-if="fnIsOpen('widget_preview')" style="padding:16px;background:#fff8f0;">
                 <disp-x04-widget v-if="cfWidgetItem" :params="{}" :disp-opt="{ showBadges: false }" :widget-item="cfWidgetItem" />
@@ -911,24 +930,33 @@
           <!-- panel 단독 -->
           <template v-else-if="mode === 'panel' && cfPanelItem">
             <div style="border:1px solid #7b1fa2;border-radius:8px;overflow:hidden;">
-              <div class="dsp-tree-node" style="padding:10px 14px;background:#f3e5f5;border-bottom:1px solid #7b1fa2;cursor:pointer;display:flex;align-items:center;" @click="fnToggleTree('panel')">
+              <div class="dsp-tree-node" style="padding:10px 14px;background:#f3e5f5;border-bottom:1px solid #7b1fa2;cursor:pointer;display:flex;align-items:center;flex-wrap:wrap;gap:4px;" @click="fnToggleTree('panel')">
                 <span class="dsp-tree-toggle">{{ fnIsOpen('panel') ? '▼' : '▶' }}</span>
                 <span class="dsp-badge-panel" style="margin-left:6px;">DispX03Panel</span>
                 <span style="margin-left:8px;color:#4a148c;font-weight:700;">{{ item.data.panelNm }}</span>
-                <span style="margin-left:6px;font-size:11px;color:#7b1fa2;">{{ item.data.panelCd }}</span>
-                <span style="margin-left:6px;font-size:10px;color:#ce93d8;font-family:monospace;">{{ item.data.panelId }}</span>
-                <span style="margin-left:8px;font-size:11px;" :style="item.data.dispPanelStatusCd==='SHOW'?'color:#2e7d32':'color:#c62828'">{{ item.data.dispPanelStatusCd }}</span>
+                <span style="margin-left:4px;font-size:11px;color:#7b1fa2;">{{ item.data.panelCd }}</span>
+                <span style="margin-left:4px;font-size:10px;color:#ce93d8;font-family:monospace;">{{ item.data.panelId }}</span>
+                <span style="margin-left:auto;display:flex;gap:4px;align-items:center;">
+                  <span v-if="item.data.layoutType" class="dsp-prop-tag">{{ item.data.layoutType }}</span>
+                  <span class="dsp-prop-tag" :style="item.data.dispPanelStatusCd==='SHOW'?'color:#2e7d32;border-color:#81c784;background:#f1f8f0;':'color:#c62828;border-color:#ef9a9a;background:#fff5f5;'">{{ item.data.dispPanelStatusCd }}</span>
+                  <span class="dsp-prop-tag">위젯 {{ (cfPanelItem?.rows||[]).length }}개</span>
+                </span>
               </div>
               <template v-if="fnIsOpen('panel')">
                 <div style="background:#fce4ec;">
                   <div v-if="!(cfPanelItem.rows && cfPanelItem.rows.length)" style="color:#ccc;font-size:12px;padding:8px 14px;">위젯 없음</div>
                   <div v-for="(row, ri) in (cfPanelItem.rows || [])" :key="ri" style="border-top:1px solid #e1bee7;">
-                    <div class="dsp-tree-node" style="padding:5px 14px;background:#f8bbd0;display:flex;align-items:center;cursor:pointer;" @click="fnToggleTree('panel_w_'+ri)">
+                    <div class="dsp-tree-node" style="padding:5px 14px 5px 30px;background:#f8bbd0;display:flex;align-items:center;flex-wrap:wrap;gap:4px;cursor:pointer;" @click="fnToggleTree('panel_w_'+ri)">
                       <span class="dsp-tree-toggle">{{ fnIsOpen('panel_w_'+ri) ? '▼' : '▶' }}</span>
                       <span class="dsp-badge-widget" style="margin-left:6px;">DispX04Widget</span>
-                      <span style="margin-left:6px;color:#880e4f;">[{{ ri+1 }}] {{ row.widgetTypeCd || row.type || 'widget' }}</span>
-                      <span v-if="row.widgetNm" style="margin-left:6px;font-size:11px;color:#ad1457;">{{ row.widgetNm }}</span>
-                      <span style="margin-left:6px;font-size:10px;color:#f48fb1;font-family:monospace;">{{ row.panelItemId || row.widgetId || '#'+(ri+1) }}</span>
+                      <span style="margin-left:6px;color:#880e4f;font-weight:600;">[{{ ri+1 }}]</span>
+                      <span style="margin-left:auto;display:flex;gap:4px;align-items:center;">
+                        <span v-if="row.widgetTypeCd||row.type" class="dsp-prop-tag" style="font-family:monospace;"><span style="color:#bbb;">widgetType=</span>{{ row.widgetTypeCd||row.type }}</span>
+                        <span v-if="row.widgetNm" class="dsp-prop-tag"><span style="color:#bbb;">widgetNm=</span>{{ row.widgetNm }}</span>
+                        <span v-if="row.condition" class="dsp-prop-tag">{{ row.condition }}</span>
+                        <span v-if="row.sortOrd != null" class="dsp-prop-tag">순서 {{ row.sortOrd }}</span>
+                        <span style="font-size:10px;color:#f48fb1;font-family:monospace;">{{ row.panelItemId || row.widgetId || '#'+(ri+1) }}</span>
+                      </span>
                     </div>
                     <div v-if="fnIsOpen('panel_w_'+ri)" style="padding:10px 14px;background:#fff9fb;">
                       <disp-x04-widget :params="{}" :disp-opt="{ showBadges: false }" :widget-item="row" />
@@ -942,34 +970,48 @@
           <!-- area 단독 -->
           <template v-else-if="mode === 'area'">
             <div style="border:1px solid #1565c0;border-radius:8px;overflow:hidden;">
-              <div class="dsp-tree-node" style="padding:10px 14px;background:#e3f2fd;border-bottom:1px solid #1565c0;cursor:pointer;display:flex;align-items:center;" @click="fnToggleTree('area')">
+              <div class="dsp-tree-node" style="padding:10px 14px;background:#e3f2fd;border-bottom:1px solid #1565c0;cursor:pointer;display:flex;align-items:center;flex-wrap:wrap;gap:4px;" @click="fnToggleTree('area')">
                 <span class="dsp-tree-toggle">{{ fnIsOpen('area') ? '▼' : '▶' }}</span>
                 <span class="dsp-badge-area" style="margin-left:6px;">DispX02Area</span>
                 <span style="margin-left:8px;color:#0d47a1;font-weight:700;">{{ item.data.areaNm }}</span>
-                <span style="margin-left:6px;font-size:11px;color:#1565c0;">{{ item.data.areaCd }}</span>
-                <span style="margin-left:6px;font-size:10px;color:#90caf9;font-family:monospace;">{{ item.data.areaId }}</span>
+                <span style="margin-left:4px;font-size:11px;color:#1565c0;">{{ item.data.areaCd }}</span>
+                <span style="margin-left:4px;font-size:10px;color:#90caf9;font-family:monospace;">{{ item.data.areaId }}</span>
+                <span style="margin-left:auto;display:flex;gap:4px;align-items:center;">
+                  <span v-if="item.data.layoutType" class="dsp-prop-tag">{{ item.data.layoutType }}</span>
+                  <span class="dsp-prop-tag" :style="item.data.useYn==='Y'?'color:#2e7d32;border-color:#81c784;background:#f1f8f0;':'color:#c62828;border-color:#ef9a9a;background:#fff5f5;'">{{ item.data.useYn==='Y' ? '사용' : '미사용' }}</span>
+                  <span class="dsp-prop-tag">패널 {{ cfAreaPanels.length }}개</span>
+                </span>
               </div>
               <template v-if="fnIsOpen('area')">
                 <div style="padding:10px;background:#e8f4fd;display:flex;flex-direction:column;gap:8px;">
                   <div v-for="(p, pi) in cfAreaPanels" :key="p.dispId" style="border:1px solid #7b1fa2;border-radius:6px;overflow:hidden;background:#fff;">
-                    <div class="dsp-tree-node" style="padding:7px 12px;background:#f3e5f5;border-bottom:1px solid #7b1fa2;cursor:pointer;display:flex;align-items:center;" @click="fnToggleTree('area_p_'+pi)">
+                    <div class="dsp-tree-node" style="padding:7px 12px;background:#f3e5f5;border-bottom:1px solid #7b1fa2;cursor:pointer;display:flex;align-items:center;flex-wrap:wrap;gap:4px;" @click="fnToggleTree('area_p_'+pi)">
                       <span class="dsp-tree-toggle">{{ fnIsOpen('area_p_'+pi) ? '▼' : '▶' }}</span>
                       <span class="dsp-badge-panel" style="margin-left:6px;">DispX03Panel</span>
                       <span style="margin-left:6px;color:#4a148c;font-weight:600;">{{ p.name }}</span>
-                      <span style="margin-left:6px;font-size:11px;color:#7b1fa2;">{{ p._raw.panelCd }}</span>
-                      <span style="margin-left:6px;font-size:10px;color:#ce93d8;font-family:monospace;">{{ p._raw.panelId }}</span>
-                      <span style="margin-left:8px;font-size:11px;" :style="p._raw.dispPanelStatusCd==='SHOW'?'color:#2e7d32':'color:#c62828'">{{ p._raw.dispPanelStatusCd }}</span>
+                      <span style="margin-left:4px;font-size:11px;color:#7b1fa2;">{{ p._raw.panelCd }}</span>
+                      <span style="margin-left:4px;font-size:10px;color:#ce93d8;font-family:monospace;">{{ p._raw.panelId }}</span>
+                      <span style="margin-left:auto;display:flex;gap:4px;align-items:center;">
+                        <span v-if="p._raw.layoutType" class="dsp-prop-tag">{{ p._raw.layoutType }}</span>
+                        <span class="dsp-prop-tag" :style="p._raw.dispPanelStatusCd==='SHOW'?'color:#2e7d32;border-color:#81c784;background:#f1f8f0;':'color:#c62828;border-color:#ef9a9a;background:#fff5f5;'">{{ p._raw.dispPanelStatusCd }}</span>
+                        <span class="dsp-prop-tag">위젯 {{ (p.rows||[]).length }}개</span>
+                      </span>
                     </div>
                     <template v-if="fnIsOpen('area_p_'+pi)">
                       <div style="background:#fce4ec;">
                         <div v-if="!(p.rows && p.rows.length)" style="color:#ccc;font-size:12px;padding:6px 12px;">위젯 없음</div>
                         <div v-for="(row, ri) in (p.rows || [])" :key="ri" style="border-top:1px solid #e1bee7;">
-                          <div class="dsp-tree-node" style="padding:4px 12px;background:#f8bbd0;display:flex;align-items:center;cursor:pointer;" @click="fnToggleTree('area_p_'+pi+'_w_'+ri)">
+                          <div class="dsp-tree-node" style="padding:4px 12px 4px 28px;background:#f8bbd0;display:flex;align-items:center;flex-wrap:wrap;gap:4px;cursor:pointer;" @click="fnToggleTree('area_p_'+pi+'_w_'+ri)">
                             <span class="dsp-tree-toggle">{{ fnIsOpen('area_p_'+pi+'_w_'+ri) ? '▼' : '▶' }}</span>
                             <span class="dsp-badge-widget" style="margin-left:6px;">DispX04Widget</span>
-                            <span style="margin-left:6px;color:#880e4f;">[{{ ri+1 }}] {{ row.widgetTypeCd || row.type || 'widget' }}</span>
-                            <span v-if="row.widgetNm" style="margin-left:6px;font-size:11px;color:#ad1457;">{{ row.widgetNm }}</span>
-                            <span style="margin-left:6px;font-size:10px;color:#f48fb1;font-family:monospace;">{{ row.panelItemId || row.widgetId || '#'+(ri+1) }}</span>
+                            <span style="margin-left:6px;color:#880e4f;font-weight:600;">[{{ ri+1 }}]</span>
+                            <span style="margin-left:auto;display:flex;gap:4px;align-items:center;">
+                              <span v-if="row.widgetTypeCd||row.type" class="dsp-prop-tag" style="font-family:monospace;"><span style="color:#bbb;">widgetType=</span>{{ row.widgetTypeCd||row.type }}</span>
+                              <span v-if="row.widgetNm" class="dsp-prop-tag"><span style="color:#bbb;">widgetNm=</span>{{ row.widgetNm }}</span>
+                              <span v-if="row.condition" class="dsp-prop-tag">{{ row.condition }}</span>
+                              <span v-if="row.sortOrd != null" class="dsp-prop-tag">순서 {{ row.sortOrd }}</span>
+                              <span style="font-size:10px;color:#f48fb1;font-family:monospace;">{{ row.panelItemId || row.widgetId || '#'+(ri+1) }}</span>
+                            </span>
                           </div>
                           <div v-if="fnIsOpen('area_p_'+pi+'_w_'+ri)" style="padding:10px 12px;background:#fff9fb;">
                             <disp-x04-widget :params="{}" :disp-opt="{ showBadges: false }" :widget-item="row" />
@@ -988,47 +1030,66 @@
           <template v-else-if="mode === 'ui'">
             <div style="border:1px solid #2e7d32;border-radius:8px;overflow:hidden;">
               <!-- UI 헤더 — 초록 -->
-              <div class="dsp-tree-node" style="padding:10px 14px;background:#e8f5e9;border-bottom:1px solid #2e7d32;cursor:pointer;display:flex;align-items:center;" @click="fnToggleTree('ui')">
+              <div class="dsp-tree-node" style="padding:10px 14px;background:#e8f5e9;border-bottom:1px solid #2e7d32;cursor:pointer;display:flex;align-items:center;flex-wrap:wrap;gap:4px;" @click="fnToggleTree('ui')">
                 <span class="dsp-tree-toggle">{{ fnIsOpen('ui') ? '▼' : '▶' }}</span>
                 <span class="dsp-badge-ui" style="margin-left:6px;">DispX01Ui</span>
                 <span style="margin-left:8px;color:#1b5e20;font-weight:700;">{{ item.data.uiNm }}</span>
-                <span style="margin-left:6px;font-size:11px;color:#2e7d32;">{{ item.data.uiCd }}</span>
-                <span style="margin-left:6px;font-size:10px;color:#a5d6a7;font-family:monospace;">{{ item.data.uiId }}</span>
+                <span style="margin-left:4px;font-size:11px;color:#2e7d32;">{{ item.data.uiCd }}</span>
+                <span style="margin-left:4px;font-size:10px;color:#a5d6a7;font-family:monospace;">{{ item.data.uiId }}</span>
+                <span style="margin-left:auto;display:flex;gap:4px;align-items:center;">
+                  <span v-if="item.data.deviceTypeCd" class="dsp-prop-tag">{{ item.data.deviceTypeCd }}</span>
+                  <span class="dsp-prop-tag" :style="item.data.useYn==='Y'?'color:#2e7d32;border-color:#81c784;background:#f1f8f0;':'color:#c62828;border-color:#ef9a9a;background:#fff5f5;'">{{ item.data.useYn==='Y' ? '사용' : '미사용' }}</span>
+                  <span class="dsp-prop-tag">영역 {{ cfUiAreas.length }}개</span>
+                </span>
               </div>
               <template v-if="fnIsOpen('ui')">
                 <div style="padding:8px;background:#c8e6c9;display:flex;flex-direction:column;gap:8px;">
                   <div v-for="(area, ai) in cfUiAreas" :key="area._raw.areaId" style="border:1px solid #1565c0;border-radius:6px;overflow:hidden;background:#fff;">
                     <!-- 영역 헤더 — 파랑 -->
-                    <div class="dsp-tree-node" style="padding:7px 12px;background:#e3f2fd;border-bottom:1px solid #1565c0;cursor:pointer;display:flex;align-items:center;" @click="fnToggleTree('ui_a_'+ai)">
+                    <div class="dsp-tree-node" style="padding:7px 12px;background:#e3f2fd;border-bottom:1px solid #1565c0;cursor:pointer;display:flex;align-items:center;flex-wrap:wrap;gap:4px;" @click="fnToggleTree('ui_a_'+ai)">
                       <span class="dsp-tree-toggle">{{ fnIsOpen('ui_a_'+ai) ? '▼' : '▶' }}</span>
                       <span class="dsp-badge-area" style="margin-left:6px;">DispX02Area</span>
                       <span style="margin-left:6px;color:#0d47a1;font-weight:600;">{{ area._raw.areaNm }}</span>
-                      <span style="margin-left:6px;font-size:11px;color:#1565c0;">{{ area._raw.areaCd }}</span>
-                      <span style="margin-left:6px;font-size:10px;color:#90caf9;font-family:monospace;">{{ area._raw.areaId }}</span>
+                      <span style="margin-left:4px;font-size:11px;color:#1565c0;">{{ area._raw.areaCd }}</span>
+                      <span style="margin-left:4px;font-size:10px;color:#90caf9;font-family:monospace;">{{ area._raw.areaId }}</span>
+                      <span style="margin-left:auto;display:flex;gap:4px;align-items:center;">
+                        <span v-if="area._raw.layoutType" class="dsp-prop-tag">{{ area._raw.layoutType }}</span>
+                        <span class="dsp-prop-tag" :style="area._raw.useYn==='Y'?'color:#2e7d32;border-color:#81c784;background:#f1f8f0;':'color:#c62828;border-color:#ef9a9a;background:#fff5f5;'">{{ area._raw.useYn==='Y' ? '사용' : '미사용' }}</span>
+                        <span class="dsp-prop-tag">패널 {{ area.panels.length }}개</span>
+                      </span>
                     </div>
                     <template v-if="fnIsOpen('ui_a_'+ai)">
                       <div style="padding:6px;background:#bbdefb;display:flex;flex-direction:column;gap:5px;">
                         <div v-for="(p, pi) in area.panels" :key="p.dispId" style="border:1px solid #7b1fa2;border-radius:5px;overflow:hidden;background:#fff;">
                           <!-- 패널 헤더 — 보라 -->
-                          <div class="dsp-tree-node" style="padding:6px 10px;background:#f3e5f5;border-bottom:1px solid #7b1fa2;cursor:pointer;display:flex;align-items:center;" @click="fnToggleTree('ui_a_'+ai+'_p_'+pi)">
+                          <div class="dsp-tree-node" style="padding:6px 10px;background:#f3e5f5;border-bottom:1px solid #7b1fa2;cursor:pointer;display:flex;align-items:center;flex-wrap:wrap;gap:4px;" @click="fnToggleTree('ui_a_'+ai+'_p_'+pi)">
                             <span class="dsp-tree-toggle">{{ fnIsOpen('ui_a_'+ai+'_p_'+pi) ? '▼' : '▶' }}</span>
                             <span class="dsp-badge-panel" style="margin-left:6px;">DispX03Panel</span>
                             <span style="margin-left:6px;color:#4a148c;font-weight:600;">{{ p.name }}</span>
-                            <span style="margin-left:6px;font-size:11px;color:#7b1fa2;">{{ p._raw.panelCd }}</span>
-                            <span style="margin-left:6px;font-size:10px;color:#ce93d8;font-family:monospace;">{{ p._raw.panelId }}</span>
-                            <span style="margin-left:8px;font-size:11px;" :style="p._raw.dispPanelStatusCd==='SHOW'?'color:#2e7d32':'color:#c62828'">{{ p._raw.dispPanelStatusCd }}</span>
+                            <span style="margin-left:4px;font-size:11px;color:#7b1fa2;">{{ p._raw.panelCd }}</span>
+                            <span style="margin-left:4px;font-size:10px;color:#ce93d8;font-family:monospace;">{{ p._raw.panelId }}</span>
+                            <span style="margin-left:auto;display:flex;gap:4px;align-items:center;">
+                              <span v-if="p._raw.layoutType" class="dsp-prop-tag">{{ p._raw.layoutType }}</span>
+                              <span class="dsp-prop-tag" :style="p._raw.dispPanelStatusCd==='SHOW'?'color:#2e7d32;border-color:#81c784;background:#f1f8f0;':'color:#c62828;border-color:#ef9a9a;background:#fff5f5;'">{{ p._raw.dispPanelStatusCd }}</span>
+                              <span class="dsp-prop-tag">위젯 {{ (p.rows||[]).length }}개</span>
+                            </span>
                           </div>
                           <template v-if="fnIsOpen('ui_a_'+ai+'_p_'+pi)">
                             <!-- 위젯들 — 핑크/오렌지 -->
                             <div style="background:#fce4ec;">
                               <div v-if="!(p.rows && p.rows.length)" style="color:#ccc;font-size:12px;padding:6px 10px;">위젯 없음</div>
                               <div v-for="(row, ri) in (p.rows || [])" :key="ri" style="border-top:1px solid #e1bee7;">
-                                <div class="dsp-tree-node" style="padding:4px 10px;background:#f8bbd0;display:flex;align-items:center;cursor:pointer;" @click="fnToggleTree('ui_a_'+ai+'_p_'+pi+'_w_'+ri)">
+                                <div class="dsp-tree-node" style="padding:4px 10px 4px 26px;background:#f8bbd0;display:flex;align-items:center;flex-wrap:wrap;gap:4px;cursor:pointer;" @click="fnToggleTree('ui_a_'+ai+'_p_'+pi+'_w_'+ri)">
                                   <span class="dsp-tree-toggle">{{ fnIsOpen('ui_a_'+ai+'_p_'+pi+'_w_'+ri) ? '▼' : '▶' }}</span>
                                   <span class="dsp-badge-widget" style="margin-left:6px;">DispX04Widget</span>
-                                  <span style="margin-left:6px;color:#880e4f;">[{{ ri+1 }}] {{ row.widgetTypeCd || row.type || 'widget' }}</span>
-                                  <span v-if="row.widgetNm" style="margin-left:6px;font-size:11px;color:#ad1457;">{{ row.widgetNm }}</span>
-                                  <span style="margin-left:6px;font-size:10px;color:#f48fb1;font-family:monospace;">{{ row.panelItemId || row.widgetId || '#'+(ri+1) }}</span>
+                                  <span style="margin-left:6px;color:#880e4f;font-weight:600;">[{{ ri+1 }}]</span>
+                                  <span style="margin-left:auto;display:flex;gap:4px;align-items:center;">
+                                    <span v-if="row.widgetTypeCd||row.type" class="dsp-prop-tag" style="font-family:monospace;"><span style="color:#bbb;">widgetType=</span>{{ row.widgetTypeCd||row.type }}</span>
+                                    <span v-if="row.widgetNm" class="dsp-prop-tag"><span style="color:#bbb;">widgetNm=</span>{{ row.widgetNm }}</span>
+                                    <span v-if="row.condition" class="dsp-prop-tag">{{ row.condition }}</span>
+                                    <span v-if="row.sortOrd != null" class="dsp-prop-tag">순서 {{ row.sortOrd }}</span>
+                                    <span style="font-size:10px;color:#f48fb1;font-family:monospace;">{{ row.panelItemId || row.widgetId || '#'+(ri+1) }}</span>
+                                  </span>
                                 </div>
                                 <div v-if="fnIsOpen('ui_a_'+ai+'_p_'+pi+'_w_'+ri)" style="padding:10px;background:#fff9fb;">
                                   <disp-x04-widget :params="{}" :disp-opt="{ showBadges: false }" :widget-item="row" />
@@ -1050,6 +1111,19 @@
           <!-- 기타 모드 -->
           <div v-else style="color:#aaa;font-size:13px;">이 모드는 트리 구조를 지원하지 않습니다.</div>
 
+        </div>
+      </div>
+
+      <!-- ③ 소스 구조 -->
+      <div style="background:#fff;border-radius:10px;box-shadow:0 1px 4px rgba(0,0,0,0.08);overflow:hidden;">
+        <div style="background:#1e2330;padding:10px 16px;display:flex;align-items:center;gap:8px;">
+          <span style="font-size:13px;font-weight:700;color:#7ec8e3;">&lt;/&gt; 소스 구조</span>
+          <span style="font-size:11px;color:#6b7a99;">DispX01Ui → DispX02Area → DispX03Panel → DispX04Widget</span>
+          <button @click="(function(e){ var btn=e.target; if(navigator.clipboard){ navigator.clipboard.writeText(cfSourceCode).then(function(){ btn.textContent='✅ 복사됨'; setTimeout(function(){ btn.textContent='■ 전체 복사'; },1500); }); } }($event))"
+            style="margin-left:auto;background:#2d3748;color:#a0aec0;border:1px solid #4a5568;border-radius:4px;padding:3px 10px;font-size:11px;cursor:pointer;">■ 전체 복사</button>
+        </div>
+        <div style="padding:0;background:#1a1d2e;overflow:auto;max-height:520px;">
+          <pre style="font-size:12px;line-height:1.8;color:#cdd3de;background:transparent;padding:16px 20px;margin:0;white-space:pre;word-break:normal;font-family:'Consolas','Fira Mono','Courier New',monospace;" v-html="cfSourceCodeHtml"></pre>
         </div>
       </div>
 
