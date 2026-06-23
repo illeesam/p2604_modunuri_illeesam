@@ -80,6 +80,7 @@ body { background: #f0f2f5; color: #222; font-family: 'Noto Sans KR', sans-serif
 .btn_expand_all:hover:not(:disabled), .btn_collapse_all:hover:not(:disabled), .btn_check_all:hover:not(:disabled), .btn_uncheck_all:hover:not(:disabled), .btn_copy:hover:not(:disabled), .btn_list:hover:not(:disabled), .btn_detail:hover:not(:disabled) { background: #e6def0; border-color: #cdbfe0; }
 .btn_filter_toggle { background:#fafbfc; color:#555; border:1px solid #e5e7eb; border-radius:6px; padding:4px 12px; font-size:11px; cursor:pointer; transition:background .15s; }
 .btn_filter_toggle:hover:not(:disabled) { background:#eef1f6; }
+.btn.btn-icon { padding:3px 7px; min-width:28px; line-height:1.2; font-size:15px; }
 .btn_row_edit  { background: linear-gradient(135deg, #1677ff, #0958d9); color: #fff; box-shadow: 0 2px 6px rgba(22,119,255,.22); padding: 2px 7px; font-size: 11px; border-radius: 5px; font-weight: 500; }
 .btn_row_edit:hover:not(:disabled)  { box-shadow: 0 4px 12px rgba(22,119,255,.35); }
 .btn_row_delete{ background: linear-gradient(135deg, #ff4d4f, #d9363e); color: #fff; box-shadow: 0 2px 6px rgba(255,77,79,.22); padding: 2px 7px; font-size: 11px; border-radius: 5px; font-weight: 500; }

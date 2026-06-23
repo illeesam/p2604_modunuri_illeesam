@@ -23,19 +23,19 @@ public class QCmDashboardRepositoryImpl implements QCmDashboardRepository {
     private final JPAQueryFactory queryFactory;
 
     private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmDashboardRepositoryImpl";
-    private static final QCmDashboard d = QCmDashboard.cmDashboard;
+    private static final QCmDashboard cmDashboard = QCmDashboard.cmDashboard;
 
     /*
      * uiNm — Entity 에 추가된 컬럼이지만 Q클래스는 clean build 후 재생성됨.
-     * 빌드 전에는 Expressions.stringPath 로 참조. 빌드 후 d.uiNm 으로 대체 가능.
+     * 빌드 전에는 Expressions.stringPath 로 참조. 빌드 후 cmDashboard.uiNm 으로 대체 가능.
      */
-    private static final StringPath UI_NM = Expressions.stringPath(d, "uiNm");
+    private static final StringPath UI_NM = Expressions.stringPath(cmDashboard, "uiNm");
 
     /* ── 공통 조건 헬퍼 ────────────────────────────────────── */
 
     private BooleanExpression andSiteNo(Map<String, Object> p) {
         Object v = p == null ? null : p.get("siteNo");
-        return (v != null && !v.toString().isBlank()) ? d.siteNo.eq(v.toString()) : null;
+        return (v != null && !v.toString().isBlank()) ? cmDashboard.siteNo.eq(v.toString()) : null;
     }
 
     private BooleanExpression andUiNm(Map<String, Object> p) {
@@ -55,25 +55,25 @@ public class QCmDashboardRepositoryImpl implements QCmDashboardRepository {
     public List<CmDashboardDto> selectDashboard(String compId, Map<String, Object> p) {
         JPAQuery<CmDashboardDto> query = queryFactory
             .select(Projections.bean(CmDashboardDto.class,
-                d.dashboardId, d.compId, d.sortOrd, d.yyyymmdd,
-                d.siteNo, d.siteNm,
+                cmDashboard.dashboardId, cmDashboard.compId, cmDashboard.sortOrd, cmDashboard.yyyymmdd,
+                cmDashboard.siteNo, cmDashboard.siteNm,
                 UI_NM.as("uiNm"),
-                d.deptId, d.deptNm, d.userId, d.userNm,
-                d.col1Nm, d.col1Num,
-                d.col2Nm, d.col2Num,
-                d.col3Nm, d.col3Num,
-                d.col4Nm, d.col4Num,
-                d.col5Nm, d.col5Num,
-                d.col6Nm, d.col6Num,
-                d.col7Nm, d.col7Num,
-                d.col8Nm, d.col8Num,
-                d.col9Nm, d.col9Num))
-            .from(d)
+                cmDashboard.deptId, cmDashboard.deptNm, cmDashboard.userId, cmDashboard.userNm,
+                cmDashboard.col1Nm, cmDashboard.col1Num,
+                cmDashboard.col2Nm, cmDashboard.col2Num,
+                cmDashboard.col3Nm, cmDashboard.col3Num,
+                cmDashboard.col4Nm, cmDashboard.col4Num,
+                cmDashboard.col5Nm, cmDashboard.col5Num,
+                cmDashboard.col6Nm, cmDashboard.col6Num,
+                cmDashboard.col7Nm, cmDashboard.col7Num,
+                cmDashboard.col8Nm, cmDashboard.col8Num,
+                cmDashboard.col9Nm, cmDashboard.col9Num))
+            .from(cmDashboard)
             .setHint("org.hibernate.comment", QRY_SRC + " :: selectDashboard(" + compId + ")")
-            .where(d.compId.eq(compId), andSiteNo(p), andUiNm(p))
-            .orderBy(new OrderSpecifier<>(Order.ASC, d.sortOrd),
-                     new OrderSpecifier<>(Order.ASC, d.yyyymmdd),
-                     new OrderSpecifier<>(Order.ASC, d.dashboardId));
+            .where(cmDashboard.compId.eq(compId), andSiteNo(p), andUiNm(p))
+            .orderBy(new OrderSpecifier<>(Order.ASC, cmDashboard.sortOrd),
+                     new OrderSpecifier<>(Order.ASC, cmDashboard.yyyymmdd),
+                     new OrderSpecifier<>(Order.ASC, cmDashboard.dashboardId));
 
         Object limit = p == null ? null : p.get("limit");
         if (limit instanceof Number n) {

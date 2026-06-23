@@ -84,8 +84,9 @@ window.DpDispAreaMng = {
     /* handleGridCellAction — 그리드 셀 클릭 라우터 */
     const handleGridCellAction = (cmd, colKey, row, e = {}) => {
       if (cmd === 'areas-cellClick') {
-        if (colKey === 'btn_row_edit')   return openDetailEdit(row.areaId);
-        if (colKey === 'btn_row_delete') return handleDelete(row);
+        if (colKey === 'btn_row_edit')    return openDetailEdit(row.areaId);
+        if (colKey === 'btn_row_delete')  return handleDelete(row);
+        if (colKey === 'btn_row_preview') return handleOpenPreview('area', row.areaId);
         const VIEW_COLS = ['__no__'];
         if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) return openDetailView(row.areaId);
       } else {
@@ -150,6 +151,12 @@ window.DpDispAreaMng = {
       }
     };
 
+    /* handleOpenPreview — 미리보기 팝업 */
+    const handleOpenPreview = (mode, id) => {
+      window.open(window.pageUrl('disp-bo-ui.html') + '?mode=' + mode + '&id=' + id,
+        '_blank', 'width=1440,height=900,scrollbars=yes,resizable=yes');
+    };
+
     /* inlineNavigate — 인라인 Dtl 의 navigate 콜백 */
     const inlineNavigate = (pg, opts = {}) => {
       if (pg === 'dpDispAreaMng')  { if (opts.reload) handleSearchList(); resetDetailToNew(); return; }
@@ -191,7 +198,7 @@ window.DpDispAreaMng = {
       areas, uis, uiState, codes, searchParam, baseGrid, baseDetail,
       columns,
       handleBtnAction, handleSelectAction, handleGridCellAction,
-      inlineNavigate,
+      handleOpenPreview, inlineNavigate,
     };
   },
   template: /* html */`
@@ -213,6 +220,7 @@ window.DpDispAreaMng = {
       grid-id="areas-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
       <template #row-actions="{ row, gridId }">
         <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
+          <button class="btn btn_preview btn-icon" title="미리보기" @click.stop="handleGridCellAction(gridId, 'btn_row_preview', row)">👁</button>
           <button class="btn btn_row_edit" style="white-space:nowrap;" @click.stop="handleGridCellAction(gridId, 'btn_row_edit', row)">수정</button>
           <button class="btn btn_row_delete" style="white-space:nowrap;" @click.stop="handleGridCellAction(gridId, 'btn_row_delete', row)">삭제</button>
         </div>

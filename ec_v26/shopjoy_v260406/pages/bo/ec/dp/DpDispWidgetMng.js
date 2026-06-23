@@ -77,9 +77,10 @@ window.DpDispWidgetMng = {
     const handleGridCellAction = (cmd, colKey, row, e = {}) => {
       console.log(' ■■ DpDispWidgetMng.js : handleGridCellAction -> ', cmd, colKey, row);
       if (cmd === 'widgets-cellClick') {
-        // 행 액션 버튼 (colKey='btn_*') — [수정]/[삭제] 등
-        if (colKey === 'btn_row_edit')   { return handleLoadDetail(row.widgetId); }
-        if (colKey === 'btn_row_delete') { return handleDelete(row); }
+        // 행 액션 버튼 (colKey='btn_*') — [미리보기]/[수정]/[삭제] 등
+        if (colKey === 'btn_row_edit')    { return handleLoadDetail(row.widgetId); }
+        if (colKey === 'btn_row_delete')  { return handleDelete(row); }
+        if (colKey === 'btn_row_preview') { return handleOpenPreview('widget', row.widgetId); }
         // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
         const VIEW_COLS = ['__no__', 'widgetInfo'];
         if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
@@ -305,6 +306,12 @@ window.DpDispWidgetMng = {
     /* onSizeChange — 페이지 크기 변경 */
     const onSizeChange = () => { listGridPager.pageNo = 1; handleSearchData(); };
 
+    /* handleOpenPreview — 미리보기 팝업 */
+    const handleOpenPreview = (mode, id) => {
+      window.open(window.pageUrl('disp-bo-ui.html') + '?mode=' + mode + '&id=' + id,
+        '_blank', 'width=1440,height=900,scrollbars=yes,resizable=yes');
+    };
+
     /* selectNode — 노드 선택 (트리 필터 변경 → 선택 행이 목록에서 사라질 수 있으므로 상세 빈 신규 폼으로 초기화) */
     const selectNode = (id) => { uiState.selectedPath = id; listGridPager.pageNo = 1; resetDetailToNew(); handleSearchData(); };
 
@@ -353,6 +360,7 @@ window.DpDispWidgetMng = {
       columns,
       widgets, uiState, widgetCounts, codes, searchParam, applied, listGridPager, detailPanel,            // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                      // dispatch (모든 이벤트 / 액션 라우팅)
+      handleOpenPreview,                                                              // 미리보기
       cfFilterDirty, cfSiteNm, cfDetailEditId, cfDetailKey, cfNoFilter, // computed
       selectedId: computed(() => detailPanel.selectedId),                             // computed
       wTypeLabel, wIcon,                     // 헬퍼
@@ -521,13 +529,10 @@ window.DpDispWidgetMng = {
           </td>
         </template>
         <template #row-actions="{ row, gridId }">
-          <div class="actions" style="justify-content:flex-end;">
-            <button @click.stop="handleGridCellAction(gridId, 'btn_row_edit', row)" class="btn btn_row_edit">
-              수정
-            </button>
-            <button @click.stop="handleGridCellAction(gridId, 'btn_row_delete', row)" class="btn btn_row_delete">
-              삭제
-            </button>
+          <div class="actions" style="white-space:nowrap;flex-wrap:nowrap;">
+            <button class="btn btn_preview btn-icon" title="미리보기" @click.stop="handleGridCellAction(gridId, 'btn_row_preview', row)">👁</button>
+            <button class="btn btn_row_edit" style="white-space:nowrap;" @click.stop="handleGridCellAction(gridId, 'btn_row_edit', row)">수정</button>
+            <button class="btn btn_row_delete" style="white-space:nowrap;" @click.stop="handleGridCellAction(gridId, 'btn_row_delete', row)">삭제</button>
           </div>
         </template>
       </bo-grid>

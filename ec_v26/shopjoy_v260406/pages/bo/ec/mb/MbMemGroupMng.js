@@ -254,7 +254,7 @@ window.MbMemGroupMng = {
   <bo-container bare>
     <bo-grid-crud
       :columns="columns.baseGrid" :rows="groups" row-key="memberGroupId"
-      list-title="회원그룹 목록" max-height="calc(100vh - 320px)"
+      list-title="회원그룹 목록" max-height="calc(100vh - 220px)"
       :empty-text="uiState.loading ? '로딩중...' : '데이터가 없습니다.'"
       v-model:focusedIdx="uiState.focusedIdx"
       v-model:checkAll="uiState.checkAll"

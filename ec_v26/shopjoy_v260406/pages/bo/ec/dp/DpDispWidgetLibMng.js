@@ -82,6 +82,7 @@ window.DpDispWidgetLibMng = {
     const handleGridCellAction = (cmd, colKey, row, e = {}) => {
       console.log(' ■■ DpDispWidgetLibMng.js : handleGridCellAction -> ', cmd, colKey, row);
       if (cmd === 'widgetLibs-cellClick') {
+        if (colKey === 'btn_row_preview') return handleOpenPreview('widgetLib', row.widgetLibId);
         // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
         const VIEW_COLS = ['__no__'];
         if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
@@ -274,6 +275,12 @@ window.DpDispWidgetLibMng = {
     /* 적용 필터 없음 여부 (template 속성값 && 금지 회피용) */
     const cfNoFilter = computed(() => !applied.searchValue && !applied.type && !applied.status);
 
+    /* handleOpenPreview — 미리보기 팝업 */
+    const handleOpenPreview = (mode, id) => {
+      window.open(window.pageUrl('disp-bo-ui.html') + '?mode=' + mode + '&id=' + id,
+        '_blank', 'width=1440,height=900,scrollbars=yes,resizable=yes');
+    };
+
     /* handleDelete — 삭제 */
     const handleDelete = async (lib) => {
       const ok = await showConfirm('삭제', `[${lib.widgetNm}]을 삭제하시겠습니까?`);
@@ -324,6 +331,7 @@ window.DpDispWidgetLibMng = {
       columns,
       widgetLibs, uiState, widgetLibCounts, searchParam, applied, listGridPager, detailPanel,       // 상태 / 데이터
       handleBtnAction, handleSelectAction, handleGridCellAction,                                             // dispatch (모든 이벤트 / 액션 라우팅)
+      handleOpenPreview,                                                               // 미리보기
       cfFilterDirty, cfDetailEditId, cfDetailKey, cfNoFilter, // computed
       wTypeLabel,                                                        // 헬퍼
       inlineNavigate,                                                                   // Dtl 콜백 (closure 필요)
@@ -395,8 +403,9 @@ window.DpDispWidgetLibMng = {
       empty-text="데이터가 없습니다."
       @sort="key => handleBtnAction('widgetLibs-sort', key)"
       grid-id="widgetLibs-cellClick" @cell-click="e => handleGridCellAction(e.cmd, e.colKey, e.row, e)" row-actions>
-        <template #row-actions="{ row }">
+        <template #row-actions="{ row, gridId }">
           <div class="actions">
+            <button class="btn btn_preview btn-icon" title="미리보기" @click.stop="handleGridCellAction(gridId, 'btn_row_preview', row)">👁</button>
             <button class="btn btn_row_edit" @click.stop="handleSelectAction('widgetLibs-rowEdit', row.widgetLibId)">
               수정
             </button>
