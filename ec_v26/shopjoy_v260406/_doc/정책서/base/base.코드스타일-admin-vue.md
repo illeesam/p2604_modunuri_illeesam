@@ -244,6 +244,149 @@ grep -rnE "addEventListener\(['\"]storage|location\.reload\(\)" index.html bo.ht
 
 ---
 
+## ⛔ 0-E. ECharts (`CoEchartComp`) 사용 시 크래시 방지 체크리스트 ⭐ (2026-06-24)
+
+### 배경
+
+`<co-echart>` / `<co-echart-comp>` 는 `window.echarts`(ECharts 5.6.0) 를 백틱 template 안에서
+Vue 3 Composition API 로 감싼 래퍼다. ECharts 특성상 **초기화·옵션 교체·리사이즈·정리**
+네 단계에서 각각 크래시 위험이 있다.
+
+### 체크리스트 (신규 차트 패널 추가 시 필수 점검)
+
+#### ① `<co-echart>` 속성값에 `&` 절대 금지
+`:option`, `:height`, `:group` 등 **모든 속성값** 은 §0-A 와 동일하게 `&&` / `&` 금지.
+computed 로 분리한 option 객체 내부(`{ ... }`)는 속성값이 아니므로 `&&` 사용 가능.
+
+```js
+// ✅ option 객체 내부(JS) — && 허용
+const cfOpt = computed(() => ({
+  tooltip: { formatter: p => p.value > 0 && p.name ? p.name : '' },
+}));
+// ✅ 속성 — 식별자만 전달
+<co-echart :option="cfOpt" height="300px" />
+
+// ❌ 속성값에 && → 크래시
+<co-echart :option="cfOpt && {}" />
+```
+
+#### ② option 반드시 `computed`로 분리
+
+`:option` 에 인라인 객체 리터럴을 직접 작성하면 Vue 재렌더마다 새 참조가 생겨 watch 가
+무한 setOption 루프를 유발한다.
+
+```js
+// ❌ 인라인 — 매 렌더마다 새 객체 참조 → watch 계속 발화
+<co-echart :option="{ series: [{ type: 'bar', data: rows }] }" />
+
+// ✅ computed — 의존 값이 바뀔 때만 재생성
+const cfOpt0101 = computed(() => ({ series: [{ type: 'bar', data: rows.value }] }));
+<co-echart :option="cfOpt0101" />
+```
+
+#### ③ `xviewData.value` 교체는 반드시 새 배열 참조
+
+실시간 업데이트처럼 `ref<Array>` 를 교체할 때 **원소 push / splice 금지** — ECharts 의
+`large scatter` 는 배열 내부 변경을 감지하지 못한다. 스프레드로 새 배열 할당.
+
+```js
+// ❌ 원소 push — computed watch 미발화
+xviewData.value.push(newPt);
+
+// ✅ 새 배열 교체 — computed watch 발화 → chart setOption
+xviewData.value = [...xviewData.value.filter(...), newPt];
+```
+
+#### ④ `onUnmounted` 반드시 타이머 + chart dispose
+
+`setInterval` / `ResizeObserver` 미정리 시 언마운트 후 메모리 누수 + `chart is disposed` 에러.
+
+```js
+// CoEchartComp 자체가 dispose 하지만, 페이지 컴포넌트의 타이머는 페이지가 직접 정리
+onUnmounted(() => {
+  if (xviewTimer) clearInterval(xviewTimer);  // ← 반드시
+});
+```
+
+#### ⑤ `brush` 이벤트 `coordRange` null 안전 처리
+
+ECharts brush 선택 해제(`clear` 버튼)나 빈 선택 시 `params.areas = []` 또는
+`area.coordRange = null` 이 올 수 있다. 가드 없으면 `Cannot read properties of null` 런타임 에러.
+
+```js
+const onXviewBrush = (params) => {
+  if (!params.areas || !params.areas.length) return;      // ← 빈 선택 가드
+  const area = params.areas[0];
+  if (!area.coordRange || !area.coordRange[0]) return;    // ← null 가드
+  const [tFrom, tTo] = area.coordRange[0];
+  // ...
+};
+```
+
+#### ⑥ `window.echarts` 로드 전 렌더 방지
+
+`bo.html` 에서 ECharts script 태그는 **CoEchartComp script 태그보다 먼저** 와야 한다.
+컴포넌트가 `onMounted` 전에 `window.echarts` 체크를 하므로 로드 순서 역전 시 콘솔 경고 + 빈 차트.
+
+```html
+<!-- bo.html 로드 순서 -->
+<script src="assets/cdn/pkg/echarts/5.6.0/echarts.min.js"></script>   <!-- ① 먼저 -->
+<script src="components/comp/CoEchartComp.js"></script>                <!-- ② 나중 -->
+```
+
+#### ⑦ 그리드 숨김(v-show)과 ECharts 크기 0 문제
+
+`v-show="false"` 로 숨긴 패널이 다시 표시될 때 컨테이너 크기가 0 → 차트가 찌그러져 보임.
+탭 모드에서 패널 전환 시 특히 발생. `CoEchartComp`의 `ResizeObserver`가 자동 처리하지만,
+transition 없이 즉시 표시되는 경우 브라우저가 크기를 아직 계산 안 한 상태일 수 있다.
+
+```js
+// 탭 전환 후 명시적 resize 가 필요하면 getInstance() 활용
+const chartRef = ref(null);
+// <co-echart ref="chartRef" ... />
+watch(() => uiState.activeTab, () => {
+  Vue.nextTick(() => chartRef.value?.getInstance()?.resize());
+});
+```
+
+> ⚠️ 단순 `v-show` 전환만이라면 ResizeObserver 가 대부분 자동 처리한다. `ref`+`nextTick` 방식은
+> 여전히 찌그러져 보일 때만 사용.
+
+### 점검 명령
+
+```bash
+# 속성값에 & 잔존 여부 (0건이어야 함)
+grep -nE '(:[a-zA-Z-]+|@[a-z-]+)="[^"]*&' pages/bo/Dashboard*.js
+
+# option 인라인 직접 작성 여부 (0건이어야 함)
+grep -n ':option="[{[]' pages/bo/Dashboard*.js
+
+# onUnmounted 에 clearInterval 없이 setInterval 만 있는 경우
+grep -n 'setInterval' pages/bo/Dashboard*.js
+grep -n 'clearInterval' pages/bo/Dashboard*.js
+```
+
+---
+
+## ⛔ 0-F. 신규 외부 차트/라이브러리 도입 시 크래시 방지 체크리스트 ⭐ (2026-06-24)
+
+새로운 JS 라이브러리를 로컬 CDN(`assets/cdn/pkg/`)으로 추가할 때 필수 점검 사항.
+
+| 체크 | 항목 | 이유 |
+|---|---|---|
+| ☐ | `bo.html` script 태그를 **의존 라이브러리 다음, 컴포넌트 직전**에 배치 | 로드 순서 역전 시 `window.xxx is not defined` |
+| ☐ | `boApp.js` 에 `.component('PascalCase', window.PascalCase)` + **단축 별칭** 추가 | `<kebab-case>` 태그 사용을 위해 두 이름 모두 등록 |
+| ☐ | 컴포넌트 내 `window.libName` 체크 후 **graceful fallback** 작성 | 라이브러리 미로드 시 콘솔 에러만 + 빈 컨테이너로 처리 |
+| ☐ | `onUnmounted` 에 **인스턴스 dispose + 타이머 정리** | 메모리 누수·disposed 인스턴스 재접근 방지 |
+| ☐ | 라이브러리가 내부적으로 DOM 직접 조작하는 경우 `ref` 기반으로만 마운트 | Vue 렌더 트리와 충돌 방지 |
+| ☐ | `setInterval` 류 실시간 업데이트는 페이지 컴포넌트가 타이머 소유, 래퍼 컴포넌트가 아님 | 탭 전환 시 래퍼 언마운트 → 타이머 살아남는 문제 방지 |
+| ☐ | 이벤트 콜백에서 반환된 외부 데이터는 **항상 null/undefined 가드** | 라이브러리 버전별 이벤트 payload 구조 차이 |
+| ☐ | `v-show` 패널 안에 배치 시 **ResizeObserver 또는 nextTick resize 호출** 추가 | 숨김 → 표시 전환 시 크기 0 렌더 방지 |
+| ☐ | **파일명 + 버전**을 `assets/cdn/pkg/README.md` 에 등록 | CDN 의존 제거 이력 및 업그레이드 추적용 |
+| ☐ | 라이브러리 파일 크기 > 500KB 이면 `bo.html` 에서 **비동기 defer** 또는 **lazy load** 검토 | 초기 로딩 시간 영향 |
+
+---
+
 ## 0. watch / computed 최소화 원칙 ⭐
 
 **핵심 방침**: `watch`와 `computed`는 꼭 필요한 경우에만 사용하고, 가능하면 직접 함수 호출 방식으로 대체한다.

@@ -4,8 +4,6 @@ import com.querydsl.core.types.Order;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmDashboardDto;
@@ -25,12 +23,6 @@ public class QCmDashboardRepositoryImpl implements QCmDashboardRepository {
     private static final String QRY_SRC = "base.ec.cm.repository.qrydsl.impl.QCmDashboardRepositoryImpl";
     private static final QCmDashboard cmDashboard = QCmDashboard.cmDashboard;
 
-    /*
-     * uiNm — Entity 에 추가된 컬럼이지만 Q클래스는 clean build 후 재생성됨.
-     * 빌드 전에는 Expressions.stringPath 로 참조. 빌드 후 cmDashboard.uiNm 으로 대체 가능.
-     */
-    private static final StringPath UI_NM = Expressions.stringPath(cmDashboard, "uiNm");
-
     /* ── 공통 조건 헬퍼 ────────────────────────────────────── */
 
     private BooleanExpression andSiteNo(Map<String, Object> p) {
@@ -41,7 +33,23 @@ public class QCmDashboardRepositoryImpl implements QCmDashboardRepository {
     private BooleanExpression andUiNm(Map<String, Object> p) {
         Object v = p == null ? null : p.get("uiNm");
         if (v == null || v.toString().isBlank()) return null;
-        return UI_NM.eq(v.toString());
+        return cmDashboard.uiNm.eq(v.toString());
+    }
+
+    private BooleanExpression andDateRange(Map<String, Object> p) {
+        if (p == null) return null;
+        Object s = p.get("startYmd");
+        Object e = p.get("endYmd");
+        if (s != null && !s.toString().isBlank() && e != null && !e.toString().isBlank()) {
+            return cmDashboard.yyyymmdd.between(s.toString(), e.toString());
+        }
+        if (s != null && !s.toString().isBlank()) {
+            return cmDashboard.yyyymmdd.goe(s.toString());
+        }
+        if (e != null && !e.toString().isBlank()) {
+            return cmDashboard.yyyymmdd.loe(e.toString());
+        }
+        return null;
     }
 
     /* ── 단일 조회 메서드 ──────────────────────────────────── */
@@ -57,7 +65,7 @@ public class QCmDashboardRepositoryImpl implements QCmDashboardRepository {
             .select(Projections.bean(CmDashboardDto.class,
                 cmDashboard.dashboardId, cmDashboard.compId, cmDashboard.sortOrd, cmDashboard.yyyymmdd,
                 cmDashboard.siteNo, cmDashboard.siteNm,
-                UI_NM.as("uiNm"),
+                cmDashboard.uiNm,
                 cmDashboard.deptId, cmDashboard.deptNm, cmDashboard.userId, cmDashboard.userNm,
                 cmDashboard.col1Nm, cmDashboard.col1Num,
                 cmDashboard.col2Nm, cmDashboard.col2Num,
@@ -70,7 +78,7 @@ public class QCmDashboardRepositoryImpl implements QCmDashboardRepository {
                 cmDashboard.col9Nm, cmDashboard.col9Num))
             .from(cmDashboard)
             .setHint("org.hibernate.comment", QRY_SRC + " :: selectDashboard(" + compId + ")")
-            .where(cmDashboard.compId.eq(compId), andSiteNo(p), andUiNm(p))
+            .where(cmDashboard.compId.eq(compId), andSiteNo(p), andUiNm(p), andDateRange(p))
             .orderBy(new OrderSpecifier<>(Order.ASC, cmDashboard.sortOrd),
                      new OrderSpecifier<>(Order.ASC, cmDashboard.yyyymmdd),
                      new OrderSpecifier<>(Order.ASC, cmDashboard.dashboardId));

@@ -2969,6 +2969,8 @@
     .component('CoBarcodeWidget', window.CoBarcodeWidget || { template: '<div/>' })
     .component('CoCountdownWidget', window.CoCountdownWidget || { template: '<div/>' })
     /* ── components/comp/ (공통 컴포넌트) ── */
+    .component('CoEchartComp', window.CoEchartComp)
+    .component('CoEchart', window.CoEchartComp)
     .component('BaseAttachGrp', window.BaseAttachGrp)
     .component('BaseAttachOne', window.BaseAttachOne)
     .component('BaseHtmlEditor', window.BaseHtmlEditor)
