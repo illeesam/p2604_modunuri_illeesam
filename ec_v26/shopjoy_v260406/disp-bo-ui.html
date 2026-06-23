@@ -651,6 +651,47 @@
           return [];
         });
 
+        /* 자동 새로고침 */
+        const AUTO_REFRESH_OPTIONS = [
+          { value: 0,     label: '선택' },
+          { value: 3,     label: '3초' },
+          { value: 5,     label: '5초' },
+          { value: 10,    label: '10초' },
+          { value: 20,    label: '20초' },
+          { value: 30,    label: '30초' },
+          { value: 60,    label: '1분' },
+          { value: 300,   label: '5분' },
+        ];
+        const autoRefreshSec = ref(0);
+        const autoRefreshRemain = ref(0);
+        let _autoTimer = null;
+        let _autoCountdown = null;
+        const fnStopAutoRefresh = () => {
+          if (_autoTimer) { clearInterval(_autoTimer); _autoTimer = null; }
+          if (_autoCountdown) { clearInterval(_autoCountdown); _autoCountdown = null; }
+          autoRefreshRemain.value = 0;
+        };
+        const fnStartAutoRefresh = (sec) => {
+          fnStopAutoRefresh();
+          if (!sec) return;
+          autoRefreshRemain.value = sec;
+          _autoCountdown = setInterval(() => {
+            autoRefreshRemain.value--;
+            if (autoRefreshRemain.value <= 0) autoRefreshRemain.value = sec;
+          }, 1000);
+          _autoTimer = setInterval(async () => {
+            const sy = window.scrollY;
+            await fetchItem();
+            Vue.nextTick(() => window.scrollTo(0, sy));
+          }, sec * 1000);
+        };
+        const onAutoRefreshChange = (e) => {
+          const sec = Number(e.target.value);
+          autoRefreshSec.value = sec;
+          fnStartAutoRefresh(sec);
+        };
+        Vue.onUnmounted(() => fnStopAutoRefresh());
+
         return {
           item, label, tab, mode: props.mode,
           cfPanelItem, cfAreaPanels, cfUiAreas, cfWidgetItem,
@@ -658,6 +699,7 @@
           cfRenderPanels,
           treeOpen, fnToggleTree, fnIsOpen, fnExpandAll, fnCollapseAll, fnAllExpanded,
           showStructure, deviceMode, DEVICE_MODES, cfDeviceStyle,
+          AUTO_REFRESH_OPTIONS, autoRefreshSec, autoRefreshRemain, onAutoRefreshChange,
           fnReload: async () => { const sy = window.scrollY; await fetchItem(); Vue.nextTick(() => window.scrollTo(0, sy)); },
         };
       },
@@ -700,6 +742,20 @@
             style="border:none;padding:4px 11px;font-size:12px;cursor:pointer;transition:all .15s;white-space:nowrap;">
             {{ d.icon }} {{ d.label }}
           </button>
+        </div>
+        <!-- 자동 새로고침 -->
+        <div style="display:flex;align-items:center;gap:6px;">
+          <select @change="onAutoRefreshChange"
+            style="background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.25);border-radius:6px;padding:4px 8px;font-size:12px;cursor:pointer;outline:none;">
+            <option v-for="opt in AUTO_REFRESH_OPTIONS" :key="opt.value" :value="opt.value"
+              style="background:#1a1a2e;color:#fff;">
+              {{ opt.label }}
+            </option>
+          </select>
+          <span v-if="autoRefreshSec > 0"
+            style="font-size:11px;color:#aef;font-family:monospace;min-width:28px;text-align:right;">
+            {{ autoRefreshRemain }}s
+          </span>
         </div>
         <!-- 새로고침 -->
         <button @click="fnReload()" :disabled="item.loading"
