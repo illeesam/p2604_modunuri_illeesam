@@ -32,15 +32,15 @@ public class PdProdHistQueryRepository {
 
     private final JPAQueryFactory queryFactory;
 
-    private static final QOdOrder            o     = QOdOrder.odOrder;
-    private static final QOdOrderItem        oi    = QOdOrderItem.odOrderItem;
-    private static final QPdhProdSkuStockHist sh   = QPdhProdSkuStockHist.pdhProdSkuStockHist;
-    private static final QPdhProdSkuPriceHist ph   = QPdhProdSkuPriceHist.pdhProdSkuPriceHist;
-    private static final QPdhProdStatusHist  sth   = QPdhProdStatusHist.pdhProdStatusHist;
-    private static final QPdhProdChgHist     ch    = QPdhProdChgHist.pdhProdChgHist;
-    private static final QSyUser             usr   = QSyUser.syUser;
-    private static final QSyCode             cd1   = new QSyCode("cd1");
-    private static final QSyCode             cd2   = new QSyCode("cd2");
+    private static final QOdOrder             order      = QOdOrder.odOrder;
+    private static final QOdOrderItem         orderItem  = QOdOrderItem.odOrderItem;
+    private static final QPdhProdSkuStockHist stockHist  = QPdhProdSkuStockHist.pdhProdSkuStockHist;
+    private static final QPdhProdSkuPriceHist priceHist  = QPdhProdSkuPriceHist.pdhProdSkuPriceHist;
+    private static final QPdhProdStatusHist   statusHist = QPdhProdStatusHist.pdhProdStatusHist;
+    private static final QPdhProdChgHist      chgHist    = QPdhProdChgHist.pdhProdChgHist;
+    private static final QSyUser              syUser     = QSyUser.syUser;
+    private static final QSyCode              syCode1    = new QSyCode("cd1");
+    private static final QSyCode              syCode2    = new QSyCode("cd2");
 
     private static final DateTimeFormatter DT_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -48,20 +48,20 @@ public class PdProdHistQueryRepository {
     public List<PdProdHistDto.Item> selectOrders(PdProdHistDto.Request req) {
         JPAQuery<PdProdHistDto.Item> query = queryFactory
                 .select(Projections.bean(PdProdHistDto.Item.class,
-                        o.orderId.as("orderId"),
-                        o.memberId.as("memberId"),
-                        o.memberNm.as("memberNm"),
-                        o.orderDate.as("orderDate"),
-                        o.totalAmt.as("totalAmt"),
-                        o.orderStatusCd.as("orderStatusCd"),
-                        cd1.codeLabel.as("orderStatusCdNm"),
-                        oi.orderQty.as("orderQty")))
-                .from(oi)
-                .join(o).on(o.orderId.eq(oi.orderId))
-                .leftJoin(cd1).on(cd1.codeGrp.eq("ORDER_STATUS").and(cd1.codeValue.eq(o.orderStatusCd)))
-                .where(oi.prodId.eq(req.getProdId()),
-                       dateBetween(req, "order_date", o.orderDate))
-                .orderBy(o.orderDate.desc());
+                        order.orderId.as("orderId"),
+                        order.memberId.as("memberId"),
+                        order.memberNm.as("memberNm"),
+                        order.orderDate.as("orderDate"),
+                        order.totalAmt.as("totalAmt"),
+                        order.orderStatusCd.as("orderStatusCd"),
+                        syCode1.codeLabel.as("orderStatusCdNm"),
+                        orderItem.orderQty.as("orderQty")))
+                .from(orderItem)
+                .join(order).on(order.orderId.eq(orderItem.orderId))
+                .leftJoin(syCode1).on(syCode1.codeGrp.eq("ORDER_STATUS").and(syCode1.codeValue.eq(order.orderStatusCd)))
+                .where(orderItem.prodId.eq(req.getProdId()),
+                       dateBetween(req, "order_date", order.orderDate))
+                .orderBy(order.orderDate.desc());
         applyLimit(query, req);
         return query.fetch();
     }
@@ -70,22 +70,22 @@ public class PdProdHistQueryRepository {
     public List<PdProdHistDto.Item> selectStockHist(PdProdHistDto.Request req) {
         JPAQuery<PdProdHistDto.Item> query = queryFactory
                 .select(Projections.bean(PdProdHistDto.Item.class,
-                        sh.histId.as("histId"),
-                        sh.prodId.as("prodId"),
-                        sh.chgDate.as("histDate"),
-                        sh.chgBy.as("regBy"),
-                        usr.userNm.as("regByNm"),
-                        sh.chgReasonCd.as("stockTypeCd"),
-                        cd1.codeLabel.as("stockTypeCdNm"),
-                        sh.chgQty.as("stockQty"),
-                        sh.stockAfter.as("stockBalance"),
-                        sh.chgReason.as("stockMemo")))
-                .from(sh)
-                .leftJoin(usr).on(usr.userId.eq(sh.chgBy))
-                .leftJoin(cd1).on(cd1.codeGrp.eq("SKU_STOCK_CHG").and(cd1.codeValue.eq(sh.chgReasonCd)))
-                .where(sh.prodId.eq(req.getProdId()),
-                       dateBetween(req, "chg_date", sh.chgDate))
-                .orderBy(sh.chgDate.desc());
+                        stockHist.histId.as("histId"),
+                        stockHist.prodId.as("prodId"),
+                        stockHist.chgDate.as("histDate"),
+                        stockHist.chgBy.as("regBy"),
+                        syUser.userNm.as("regByNm"),
+                        stockHist.chgReasonCd.as("stockTypeCd"),
+                        syCode1.codeLabel.as("stockTypeCdNm"),
+                        stockHist.chgQty.as("stockQty"),
+                        stockHist.stockAfter.as("stockBalance"),
+                        stockHist.chgReason.as("stockMemo")))
+                .from(stockHist)
+                .leftJoin(syUser).on(syUser.userId.eq(stockHist.chgBy))
+                .leftJoin(syCode1).on(syCode1.codeGrp.eq("SKU_STOCK_CHG").and(syCode1.codeValue.eq(stockHist.chgReasonCd)))
+                .where(stockHist.prodId.eq(req.getProdId()),
+                       dateBetween(req, "chg_date", stockHist.chgDate))
+                .orderBy(stockHist.chgDate.desc());
         applyLimit(query, req);
         return query.fetch();
     }
@@ -94,19 +94,19 @@ public class PdProdHistQueryRepository {
     public List<PdProdHistDto.Item> selectPriceHist(PdProdHistDto.Request req) {
         JPAQuery<PdProdHistDto.Item> query = queryFactory
                 .select(Projections.bean(PdProdHistDto.Item.class,
-                        ph.histId.as("histId"),
-                        ph.prodId.as("prodId"),
-                        ph.chgDate.as("histDate"),
-                        ph.chgBy.as("regBy"),
-                        usr.userNm.as("regByNm"),
-                        ph.chgReason.as("priceField"),
-                        ph.addPriceBefore.stringValue().as("priceBefore"),
-                        ph.addPriceAfter.stringValue().as("priceAfter")))
-                .from(ph)
-                .leftJoin(usr).on(usr.userId.eq(ph.chgBy))
-                .where(ph.prodId.eq(req.getProdId()),
-                       dateBetween(req, "chg_date", ph.chgDate))
-                .orderBy(ph.chgDate.desc());
+                        priceHist.histId.as("histId"),
+                        priceHist.prodId.as("prodId"),
+                        priceHist.chgDate.as("histDate"),
+                        priceHist.chgBy.as("regBy"),
+                        syUser.userNm.as("regByNm"),
+                        priceHist.chgReason.as("priceField"),
+                        priceHist.addPriceBefore.stringValue().as("priceBefore"),
+                        priceHist.addPriceAfter.stringValue().as("priceAfter")))
+                .from(priceHist)
+                .leftJoin(syUser).on(syUser.userId.eq(priceHist.chgBy))
+                .where(priceHist.prodId.eq(req.getProdId()),
+                       dateBetween(req, "chg_date", priceHist.chgDate))
+                .orderBy(priceHist.chgDate.desc());
         applyLimit(query, req);
         return query.fetch();
     }
@@ -115,22 +115,22 @@ public class PdProdHistQueryRepository {
     public List<PdProdHistDto.Item> selectStatusHist(PdProdHistDto.Request req) {
         JPAQuery<PdProdHistDto.Item> query = queryFactory
                 .select(Projections.bean(PdProdHistDto.Item.class,
-                        sth.prodStatusHistId.as("histId"),
-                        sth.prodId.as("prodId"),
-                        sth.procDate.as("histDate"),
-                        sth.procUserId.as("regBy"),
-                        usr.userNm.as("regByNm"),
-                        sth.beforeStatusCd.as("statusCdBefore"),
-                        cd1.codeLabel.as("statusCdBeforeNm"),
-                        sth.afterStatusCd.as("statusCdAfter"),
-                        cd2.codeLabel.as("statusCdAfterNm")))
-                .from(sth)
-                .leftJoin(usr).on(usr.userId.eq(sth.procUserId))
-                .leftJoin(cd1).on(cd1.codeGrp.eq("PRODUCT_STATUS").and(cd1.codeValue.eq(sth.beforeStatusCd)))
-                .leftJoin(cd2).on(cd2.codeGrp.eq("PRODUCT_STATUS").and(cd2.codeValue.eq(sth.afterStatusCd)))
-                .where(sth.prodId.eq(req.getProdId()),
-                       dateBetween(req, "proc_date", sth.procDate))
-                .orderBy(sth.procDate.desc());
+                        statusHist.prodStatusHistId.as("histId"),
+                        statusHist.prodId.as("prodId"),
+                        statusHist.procDate.as("histDate"),
+                        statusHist.procUserId.as("regBy"),
+                        syUser.userNm.as("regByNm"),
+                        statusHist.beforeStatusCd.as("statusCdBefore"),
+                        syCode1.codeLabel.as("statusCdBeforeNm"),
+                        statusHist.afterStatusCd.as("statusCdAfter"),
+                        syCode2.codeLabel.as("statusCdAfterNm")))
+                .from(statusHist)
+                .leftJoin(syUser).on(syUser.userId.eq(statusHist.procUserId))
+                .leftJoin(syCode1).on(syCode1.codeGrp.eq("PRODUCT_STATUS").and(syCode1.codeValue.eq(statusHist.beforeStatusCd)))
+                .leftJoin(syCode2).on(syCode2.codeGrp.eq("PRODUCT_STATUS").and(syCode2.codeValue.eq(statusHist.afterStatusCd)))
+                .where(statusHist.prodId.eq(req.getProdId()),
+                       dateBetween(req, "proc_date", statusHist.procDate))
+                .orderBy(statusHist.procDate.desc());
         applyLimit(query, req);
         return query.fetch();
     }
@@ -139,19 +139,19 @@ public class PdProdHistQueryRepository {
     public List<PdProdHistDto.Item> selectChangeHist(PdProdHistDto.Request req) {
         JPAQuery<PdProdHistDto.Item> query = queryFactory
                 .select(Projections.bean(PdProdHistDto.Item.class,
-                        ch.prodChgHistId.as("histId"),
-                        ch.prodId.as("prodId"),
-                        ch.chgDate.as("histDate"),
-                        ch.chgUserId.as("regBy"),
-                        usr.userNm.as("regByNm"),
-                        ch.chgTypeCd.as("changeField"),
-                        ch.beforeVal.as("changeBefore"),
-                        ch.afterVal.as("changeAfter")))
-                .from(ch)
-                .leftJoin(usr).on(usr.userId.eq(ch.chgUserId))
-                .where(ch.prodId.eq(req.getProdId()),
-                       dateBetween(req, "chg_date", ch.chgDate))
-                .orderBy(ch.chgDate.desc());
+                        chgHist.prodChgHistId.as("histId"),
+                        chgHist.prodId.as("prodId"),
+                        chgHist.chgDate.as("histDate"),
+                        chgHist.chgUserId.as("regBy"),
+                        syUser.userNm.as("regByNm"),
+                        chgHist.chgTypeCd.as("changeField"),
+                        chgHist.beforeVal.as("changeBefore"),
+                        chgHist.afterVal.as("changeAfter")))
+                .from(chgHist)
+                .leftJoin(syUser).on(syUser.userId.eq(chgHist.chgUserId))
+                .where(chgHist.prodId.eq(req.getProdId()),
+                       dateBetween(req, "chg_date", chgHist.chgDate))
+                .orderBy(chgHist.chgDate.desc());
         applyLimit(query, req);
         return query.fetch();
     }
