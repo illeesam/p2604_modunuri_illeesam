@@ -1,4 +1,4 @@
-﻿/* ShopJoy Admin - EC 醫낇빀 ??쒕낫??(ECharts 湲곕컲, 14媛쒖썡 ?꾪솴 + X-View ?덊듃留? */
+/* ShopJoy Admin - EC 종합 대시보드 (ECharts 기반, 14개월 현황 + X-View 히트맵) */
 window.DashboardBoEc02 = {
   name: 'DashboardBoEc02',
   props: {
@@ -6,7 +6,7 @@ window.DashboardBoEc02 = {
   },
   setup() {
 
-    /* ##### [01] 珥덇린 蹂???뺤쓽 ################################################## */
+    /* ##### [01] 초기 변수 정의 ################################################## */
 
     const { ref, reactive, computed, onMounted, onUnmounted } = Vue;
     const fmt      = coUtil.cofFmt;
@@ -18,16 +18,16 @@ window.DashboardBoEc02 = {
     const endDef   = toYmd(endOfMonth(today));
     const startDef = toYmd(new Date(addMonths(today, -13).getFullYear(), addMonths(today, -13).getMonth(), 1));
 
-    const CHANNELS      = ['?먯궗紐?,'?ㅼ씠踰??ㅻ쭏?몄뒪?좎뼱','荑좏뙜','11踰덇?','G留덉폆','Auction','GS??,'TMON','?꾨찓??,'濡?뜲??,'?덉븻?쇳븨','?꾨?H紐?];
-    const AGES          = ['10?','20?','30?','40?','50?','60?+'];
-    const GENDERS       = ['??,'??];
-    const MEMBER_TYPES  = ['?쇰컲','VIP','VVIP','?대㈃','?덊눜'];
-    const CATEGORIES    = ['?⑥뀡?섎쪟','?⑥뀡?≫솕','酉고떚','媛??,'?앺뭹','媛援?,'由щ튃','?ㅽ룷痢?,'?꾩꽌','湲고?'];
+    const CHANNELS      = ['자사몰','네이버 스마트스토어','쿠팡','11번가','G마켓','Auction','GS샵','TMON','위메프','롯데온','홈앤쇼핑','현대H몰'];
+    const AGES          = ['10대','20대','30대','40대','50대','60대+'];
+    const GENDERS       = ['남','여'];
+    const MEMBER_TYPES  = ['일반','VIP','VVIP','휴면','탈퇴'];
+    const CATEGORIES    = ['패션의류','패션잡화','뷰티','가전','식품','가구','리빙','스포츠','도서','기타'];
 
     const CHANNEL_COLORS = {
-      '?먯궗紐?:'#e8587a','?ㅼ씠踰??ㅻ쭏?몄뒪?좎뼱':'#10b981','荑좏뙜':'#ef4444','11踰덇?':'#f97316',
-      'G留덉폆':'#3b82f6','Auction':'#6366f1','GS??:'#a855f7','TMON':'#e11d48',
-      '?꾨찓??:'#f59e0b','濡?뜲??:'#9333ea','?덉븻?쇳븨':'#0891b2','?꾨?H紐?:'#c2410c',
+      '자사몰':'#e8587a','네이버 스마트스토어':'#10b981','쿠팡':'#ef4444','11번가':'#f97316',
+      'G마켓':'#3b82f6','Auction':'#6366f1','GS샵':'#a855f7','TMON':'#e11d48',
+      '위메프':'#f59e0b','롯데온':'#9333ea','홈앤쇼핑':'#0891b2','현대H몰':'#c2410c',
     };
 
     const filters = reactive({
@@ -39,6 +39,7 @@ window.DashboardBoEc02 = {
     const uiState = reactive({
       filterExpand: false, activeTab: 'sales', tabMode: '4col', loading: false,
       xviewDrillRows: [], xviewDrillVisible: false,
+      infoPanel: null, /* { title, optJson, dataJson, top, left } */
     });
 
     const COMP_IDS = [
@@ -56,33 +57,33 @@ window.DashboardBoEc02 = {
     });
 
     const TABS = [
-      { key:'sales',       label:'?붾퀎 留ㅼ텧',       icon:'?뮥' },
-      { key:'member',      label:'媛???덊눜',        icon:'?뫁' },
-      { key:'click',       label:'?곹뭹?곸꽭 ?대┃',    icon:'?뼮' },
-      { key:'order',       label:'二쇰Ц?꾨즺',         icon:'?뱥' },
-      { key:'channel',     label:'?먮ℓ梨꾨꼸蹂?留ㅼ텧',  icon:'?벟' },
-      { key:'kpi',         label:'?듭떖吏??,         icon:'?렞' },
-      { key:'topProducts', label:'?곹뭹 TOP 7',       icon:'?벀' },
-      { key:'channelMix',  label:'梨꾨꼸 鍮꾩쨷',        icon:'?벑' },
-      { key:'deviceMix',   label:'?붾컮?댁뒪 鍮꾩쨷',    icon:'?뮲' },
-      { key:'timeMix',     label:'?쒓컙? 鍮꾩쨷',      icon:'?? },
-      { key:'region',      label:'吏??퀎',           icon:'?뿺' },
-      { key:'hourly',      label:'?쒓컙? 異붿씠',      icon:'?? },
-      { key:'radar',       label:'?곸뾽吏??,         icon:'?? },
-      { key:'economy',     label:'寃쎌젣 ?섏?蹂?,      icon:'?뮳' },
-      { key:'shipping',    label:'諛곗넚 議곌굔',        icon:'?슊' },
-      { key:'xview',       label:'X-View',           icon:'?뵦' },
+      { key:'sales',       label:'월별 매출',       icon:'💰' },
+      { key:'member',      label:'가입/탈퇴',        icon:'👥' },
+      { key:'click',       label:'상품상세 클릭',    icon:'🖱' },
+      { key:'order',       label:'주문완료',         icon:'📋' },
+      { key:'channel',     label:'판매채널별 매출',  icon:'📺' },
+      { key:'kpi',         label:'핵심지표',         icon:'🎯' },
+      { key:'topProducts', label:'상품 TOP 7',       icon:'📦' },
+      { key:'channelMix',  label:'채널 비중',        icon:'📱' },
+      { key:'deviceMix',   label:'디바이스 비중',    icon:'💻' },
+      { key:'timeMix',     label:'시간대 비중',      icon:'⏰' },
+      { key:'region',      label:'지역별',           icon:'🗺' },
+      { key:'hourly',      label:'시간대 추이',      icon:'⏱' },
+      { key:'radar',       label:'영업지표',         icon:'⚡' },
+      { key:'economy',     label:'경제 수준별',      icon:'💼' },
+      { key:'shipping',    label:'배송 조건',        icon:'🚚' },
+      { key:'xview',       label:'X-View',           icon:'🔥' },
     ];
 
     const VIEW_MODES = [
-      { key:'tab',  icon:'?뱫', label:'?? },
-      { key:'1col', icon:'??,  label:'1?? },
-      { key:'2col', icon:'??뼪', label:'2?? },
-      { key:'3col', icon:'??뼪??, label:'3?? },
-      { key:'4col', icon:'??뼪??뼪', label:'4?? },
+      { key:'tab',  icon:'📑', label:'탭' },
+      { key:'1col', icon:'▭',  label:'1열' },
+      { key:'2col', icon:'▭▭', label:'2열' },
+      { key:'3col', icon:'▭▭▭', label:'3열' },
+      { key:'4col', icon:'▭▭▭▭', label:'4열' },
     ];
 
-    /* ##### [02] ?≪뀡 紐⑥쓬 (dispatch) ############################################## */
+    /* ##### [02] 액션 모음 (dispatch) ############################################## */
 
     const handleBtnAction = (cmd, param = {}) => {
       if (cmd === 'filters-search')            return onSearch();
@@ -92,6 +93,7 @@ window.DashboardBoEc02 = {
       if (cmd === 'filters-toggleAll')         return toggleAll(param.key, param.all);
       if (cmd === 'filters-toggle')            return toggle(filters[param.key], param.v);
       if (cmd === 'xview-drill-close')         { uiState.xviewDrillVisible = false; return; }
+      if (cmd === 'info-close')                { uiState.infoPanel = null; return; }
       console.warn('[handleBtnAction] unknown cmd:', cmd);
     };
 
@@ -105,7 +107,114 @@ window.DashboardBoEc02 = {
     const toggleAll = (key, all) => { filters[key] = filters[key].length === all.length ? [] : [...all]; };
     const isSel     = (list, v) => list.includes(v);
 
-    /* ##### [04] ?댁옣 ?ъ슜 ?⑥닔 #################################################### */
+    /* 위젯 소스정보 메타 — compId별 API/파라미터/차트 설명 */
+    const WIDGET_SRC = {
+      COMP0101: { compId:'COMP0101', chartType:'bar (세로 막대)', url:'POST /api/bo/ec/cm/dashboard/data', dataKey:'info0101', fields:'col1Nm(월라벨) / col1Num(매출액)', desc:'월별 매출 합계. 14개월 기간 기준 집계.',
+        tag:'<co-echart\n  :option="cfOpt0101"\n  height="260px"\n/>',
+        attrs:[{k:':option',v:'cfOpt0101',d:'ECharts option computed — series/xAxis/yAxis 포함'},{k:'height',v:'"260px"',d:'캔버스 높이 (고정값)'}] },
+      COMP0102: { compId:'COMP0102', chartType:'bar grouped (그룹 막대)', url:'POST /api/bo/ec/cm/dashboard/data', dataKey:'info0102', fields:'col1Nm(월) / col1Num(가입) / col2Nm(월) / col2Num(탈퇴)', desc:'월별 고객 가입·탈퇴 병렬 표시.',
+        tag:'<co-echart\n  :option="cfOpt0102"\n  height="260px"\n/>',
+        attrs:[{k:':option',v:'cfOpt0102',d:'가입(파랑)/탈퇴(빨강) grouped bar series'},{k:'height',v:'"260px"',d:'캔버스 높이'}] },
+      COMP0103: { compId:'COMP0103', chartType:'line + area (면적 꺾은선)', url:'POST /api/bo/ec/cm/dashboard/data', dataKey:'info0103', fields:'col1Nm(월) / col1Num(클릭수)', desc:'상품상세 페이지 월별 클릭 횟수.',
+        tag:'<co-echart\n  :option="cfOpt0103"\n  height="260px"\n/>',
+        attrs:[{k:':option',v:'cfOpt0103',d:'areaStyle 그라데이션 line 시리즈'},{k:'height',v:'"260px"',d:'캔버스 높이'}] },
+      COMP0104: { compId:'COMP0104', chartType:'line + area (면적 꺾은선)', url:'POST /api/bo/ec/cm/dashboard/data', dataKey:'info0104', fields:'col1Nm(월) / col1Num(주문건수)', desc:'월별 주문완료 건수.',
+        tag:'<co-echart\n  :option="cfOpt0104"\n  height="260px"\n/>',
+        attrs:[{k:':option',v:'cfOpt0104',d:'areaStyle 그라데이션 line 시리즈'},{k:'height',v:'"260px"',d:'캔버스 높이'}] },
+      COMP0201: { compId:'COMP0201', chartType:'line multi (채널별 꺾은선)', url:'POST /api/bo/ec/cm/dashboard/data', dataKey:'info0201', fields:'col1Nm(채널명) / col2Nm(월) / col2Num(채널매출)', desc:'12개 판매채널별 월별 매출 추이.',
+        tag:'<co-echart\n  :option="cfOpt0201"\n  height="300px"\n/>',
+        attrs:[{k:':option',v:'cfOpt0201',d:'채널별 12개 line series, CHANNEL_COLORS 매핑'},{k:'height',v:'"300px"',d:'멀티라인 가독성 확보 높이'}] },
+      COMP0202: { compId:'COMP0202', chartType:'KPI 카드 (차트 없음)', url:'POST /api/bo/ec/cm/dashboard/data', dataKey:'info0202', fields:'col1Num(총매출) / col2Num(구매수량) / col3Num(마진율%) / col4Num(평균결제액)', desc:'기간 내 핵심 KPI 단일 집계값.',
+        tag:'<div class="kpi-grid">\n  <div v-for="k in cfKpi">\n    {{ k.label }}: {{ k.value }}\n  </div>\n</div>',
+        attrs:[{k:'cfKpi',v:'computed',d:'info0202[0] 의 col1~4Num 을 라벨+값 배열로 변환'}] },
+      COMP0203: { compId:'COMP0203', chartType:'bar horizontal (가로 막대)', url:'POST /api/bo/ec/cm/dashboard/data', dataKey:'info0203', fields:'col1Nm(상품명) / col1Num(매출액)', desc:'상품별 매출 TOP 7 랭킹.',
+        tag:'<co-echart\n  :option="cfOpt0203"\n  height="240px"\n/>',
+        attrs:[{k:':option',v:'cfOpt0203',d:'yAxis category(상품명역순) + xAxis value 가로 막대'},{k:'height',v:'"240px"',d:'7행 기준 높이'}] },
+      COMP0204: { compId:'COMP0204', chartType:'pie (파이 차트)', url:'POST /api/bo/ec/cm/dashboard/data', dataKey:'info0204', fields:'col1Nm(채널명) / col1Num(비중%)', desc:'채널별 매출 구성 비중.',
+        tag:'<co-echart\n  :option="cfOpt0204"\n  height="220px"\n/>',
+        attrs:[{k:':option',v:'cfOpt0204',d:'pie series, radius:["35%","65%"] 도넛형'},{k:'height',v:'"220px"',d:'캔버스 높이'}] },
+      COMP0301: { compId:'COMP0301', chartType:'pie (파이 차트)', url:'POST /api/bo/ec/cm/dashboard/data', dataKey:'info0301', fields:'col1Nm(디바이스) / col1Num(비중%)', desc:'Mobile·Desktop·Tablet 접속 비중.',
+        tag:'<co-echart\n  :option="cfOpt0301"\n  height="220px"\n/>',
+        attrs:[{k:':option',v:'cfOpt0301',d:'pie series — Mobile/Desktop/Tablet 3색'},{k:'height',v:'"220px"',d:'캔버스 높이'}] },
+      COMP0302: { compId:'COMP0302', chartType:'pie (파이 차트)', url:'POST /api/bo/ec/cm/dashboard/data', dataKey:'info0302', fields:'col1Nm(시간대) / col1Num(비중%)', desc:'아침·점심·저녁·야간 시간대별 비중.',
+        tag:'<co-echart\n  :option="cfOpt0302"\n  height="220px"\n/>',
+        attrs:[{k:':option',v:'cfOpt0302',d:'pie series — 시간대 4구간 색상'},{k:'height',v:'"220px"',d:'캔버스 높이'}] },
+      COMP0303: { compId:'COMP0303', chartType:'bar horizontal (가로 막대)', url:'POST /api/bo/ec/cm/dashboard/data', dataKey:'info0303', fields:'col1Nm(지역명) / col1Num(매출액)', desc:'시도별 매출 순위.',
+        tag:'<co-echart\n  :option="cfOpt0303"\n  height="220px"\n/>',
+        attrs:[{k:':option',v:'cfOpt0303',d:'yAxis category(지역명역순) + xAxis value'},{k:'height',v:'"220px"',d:'캔버스 높이'}] },
+      COMP0304: { compId:'COMP0304', chartType:'line (꺾은선)', url:'POST /api/bo/ec/cm/dashboard/data', dataKey:'info0304', fields:'col1Nm(시각 00~23) / col1Num(주문건수)', desc:'24시간 시간대별 주문 분포.',
+        tag:'<co-echart\n  :option="cfOpt0304"\n  height="180px"\n/>',
+        attrs:[{k:':option',v:'cfOpt0304',d:'xAxis 0~23시 24포인트 line'},{k:'height',v:'"180px"',d:'좁은 카드 기준 높이'}] },
+      COMP0401: { compId:'COMP0401', chartType:'radar (레이더 차트)', url:'POST /api/bo/ec/cm/dashboard/data', dataKey:'info0401', fields:'col1Nm(지표명) / col1Num(점수 0~100)', desc:'매출성장·고객만족·재구매율·신규고객·마진율·채널확장 6개 지표.',
+        tag:'<co-echart\n  :option="cfOpt0401"\n  height="220px"\n/>',
+        attrs:[{k:':option',v:'cfOpt0401',d:'radar indicator 6축 + areaStyle 반투명'},{k:'height',v:'"220px"',d:'캔버스 높이'}] },
+      COMP0402: { compId:'COMP0402', chartType:'bar stacked (누적 막대)', url:'POST /api/bo/ec/cm/dashboard/data', dataKey:'info0402', fields:'col1Nm(월) / col1Num(고소득) / col2Num(중간) / col3Num(저소득)', desc:'월별 소득수준 3단계 누적 매출.',
+        tag:'<co-echart\n  :option="cfOpt0402"\n  height="220px"\n/>',
+        attrs:[{k:':option',v:'cfOpt0402',d:'stack:"total" bar 3 series — 고소득/중간/저소득'},{k:'height',v:'"220px"',d:'캔버스 높이'}] },
+      COMP0403: { compId:'COMP0403', chartType:'pie (파이 차트)', url:'POST /api/bo/ec/cm/dashboard/data', dataKey:'info0403', fields:'col1Nm(배송유형) / col1Num(비중%)', desc:'무료·유료·조건부무료·새벽배송 비중.',
+        tag:'<co-echart\n  :option="cfOpt0403"\n  height="220px"\n/>',
+        attrs:[{k:':option',v:'cfOpt0403',d:'pie series — 배송유형 4종 색상'},{k:'height',v:'"220px"',d:'캔버스 높이'}] },
+      XVIEW:    { compId:'(없음)', chartType:'scatter + brush (X-View 히트맵)', url:'(로컬 목업 — 실시간 생성)', dataKey:'xviewData', fields:'t(timestamp ms) / rt(응답시간ms) / err(boolean)', desc:'브라우저 로컬에서 800개 랜덤 포인트 생성. 10초마다 새 포인트 추가. 실제 구현 시 APM 에이전트 데이터 연동 필요.',
+        tag:'<co-echart\n  :option="cfOptXview"\n  height="360px"\n  @brush-selected="onXviewBrush"\n/>',
+        attrs:[{k:':option',v:'cfOptXview',d:'scatter series — 정상(파랑)/에러(빨강), brush toolbox 포함'},{k:'height',v:'"360px"',d:'드릴다운 영역 포함 높이'},{k:'@brush-selected',v:'onXviewBrush',d:'브러시 선택 시 드릴다운 테이블 갱신 emit 핸들러'}] },
+    };
+
+    /* 공통 API 요청 파라미터 */
+    const fnBuildApiParams = (compId) => ({
+      compId,
+      uiNm: 'DashboardBoEc02',
+      startYmd: (filters.startDt || '').replace(/-/g, ''),
+      endYmd:   (filters.endDt   || '').replace(/-/g, ''),
+    });
+
+    /* 위젯 정보 팝오버 열기
+     * optGetter  : () => ECharts option 반환 함수 (없으면 null)
+     * dataKey    : dash[dataKey] 배열을 원시 데이터로 사용 (없으면 null)
+     * rawOverride: dash 바깥의 데이터를 직접 전달 (없으면 undefined)
+     * srcKey     : WIDGET_SRC 키 (없으면 null)
+     */
+    const fnOpenInfo = (e, title, optGetter, dataKey, rawOverride, srcKey) => {
+      e.stopPropagation();
+      const rect = e.currentTarget.getBoundingClientRect();
+      const scrollY = window.scrollY || 0;
+      const scrollX = window.scrollX || 0;
+      if (uiState.infoPanel && uiState.infoPanel.title === title) {
+        uiState.infoPanel = null;
+        return;
+      }
+      let optObj = null;
+      try {
+        if (optGetter) {
+          const got = optGetter();
+          optObj = (got !== null && typeof got === 'object' && 'value' in got) ? got.value : got;
+        }
+      } catch (_) {}
+      const rawData = rawOverride !== undefined ? rawOverride : (dataKey ? dash[dataKey] : null);
+      const src = srcKey ? WIDGET_SRC[srcKey] : null;
+      const apiParams = src && src.compId !== '(없음)' ? fnBuildApiParams(src.compId) : null;
+      uiState.infoPanel = {
+        title,
+        optJson:  optObj   ? JSON.stringify(optObj,  null, 2) : '(없음)',
+        dataJson: rawData  ? JSON.stringify(rawData, null, 2) : '(없음)',
+        src, apiParams,
+        tab: 'opt',
+        top:  rect.bottom + scrollY + 6,
+        left: Math.min(rect.left  + scrollX, window.innerWidth - 560),
+      };
+    };
+
+    /* X-View 전용 팝오버 열기 */
+    const fnOpenXviewInfo = (e) => {
+      fnOpenInfo(e, 'X-View 히트맵', () => cfOptXview, null, xviewData.value.slice(0, 10), 'XVIEW');
+    };
+
+    /* 팝오버 탭 전환 */
+    const fnInfoTab = (t) => { if (uiState.infoPanel) uiState.infoPanel.tab = t; };
+
+    /* 외부 클릭 시 팝오버 닫기 */
+    const _onDocClick = () => { uiState.infoPanel = null; };
+
+    /* ##### [04] 내장 사용 함수 #################################################### */
 
     const MOCK_YMD  = ['20250501','20250601','20250701','20250801','20250901','20251001','20251101','20251201','20260101','20260201','20260301','20260401','20260501','20260601'];
     const MOCK_LBL  = ['25-05','25-06','25-07','25-08','25-09','25-10','25-11','25-12','26-01','26-02','26-03','26-04','26-05','26-06'];
@@ -114,7 +223,7 @@ window.DashboardBoEc02 = {
     const MOCK_LEAVE  = [87,102,94,118,109,131,125,153,111,98,107,128,142,95];
     const MOCK_CLICK  = [28400,33200,41100,38700,35900,44200,47600,59300,42100,37800,41500,46900,53200,40772];
     const MOCK_ORDER  = [1820,2150,2690,2530,2380,2870,3020,3810,2740,2490,2680,3010,3420,2540];
-    const MOCK_CH_CODES = ['?먯궗紐?,'?ㅼ씠踰??ㅻ쭏?몄뒪?좎뼱','荑좏뙜','11踰덇?','G留덉폆','Auction','GS??,'TMON','?꾨찓??,'濡?뜲??,'?덉븻?쇳븨','?꾨?H紐?];
+    const MOCK_CH_CODES = ['자사몰','네이버 스마트스토어','쿠팡','11번가','G마켓','Auction','GS샵','TMON','위메프','롯데온','홈앤쇼핑','현대H몰'];
     const MOCK_CH_BASE  = [38,22,14,9,6,4,2,1.5,1.2,1,0.8,0.5];
 
     const buildMock = () => {
@@ -129,45 +238,45 @@ window.DashboardBoEc02 = {
           r.info0201.push({ col1Nm: ch, col2Nm: MOCK_LBL[mi], col2Num: Math.round(MOCK_SALES[mi] * MOCK_CH_BASE[ci] / 100) });
         });
       });
-      r.info0202 = [{ col1Nm:'珥?留ㅼ텧?꾪솴', col1Num:1951772550, col2Nm:'珥?援щℓ?섎웾', col2Num:30033, col3Nm:'?됯퇏 留덉쭊??, col3Num:7.7, col4Nm:'?됯퇏 寃곗젣湲덉븸', col4Num:64988 }];
+      r.info0202 = [{ col1Nm:'총 매출현황', col1Num:1951772550, col2Nm:'총 구매수량', col2Num:30033, col3Nm:'평균 마진율', col3Num:7.7, col4Nm:'평균 결제금액', col4Num:64988 }];
       r.info0203 = [
-        { col1Nm:'??釉붾젋??肄뷀듃',       col1Num:59500000 },
-        { col1Nm:'湲濡쒕쾶 誘몃뵒 ?쒕젅??,   col1Num:42300000 },
-        { col1Nm:'?щ┝???곕떂 吏?,       col1Num:38900000 },
-        { col1Nm:'移닿퀬 ??대뱶 ?ъ툩',     col1Num:31200000 },
-        { col1Nm:'罹먯떆誘몄뼱 ?덊듃 ?ㅼ썾??, col1Num:27500000 },
-        { col1Nm:'?ㅻ쾭?ъ씠利?肄뷀듃',      col1Num:24100000 },
-        { col1Nm:'?ㅽ듃?쇱씠???곗뀛痢?,    col1Num:19800000 },
+        { col1Nm:'울 블렌드 코트',       col1Num:59500000 },
+        { col1Nm:'글로벌 미디 드레스',   col1Num:42300000 },
+        { col1Nm:'슬림핏 데님 진',       col1Num:38900000 },
+        { col1Nm:'카고 와이드 팬츠',     col1Num:31200000 },
+        { col1Nm:'캐시미어 니트 스웨터', col1Num:27500000 },
+        { col1Nm:'오버사이즈 코트',      col1Num:24100000 },
+        { col1Nm:'스트라이프 티셔츠',    col1Num:19800000 },
       ];
       r.info0204 = [
-        { col1Nm:'?먯궗紐?, col1Num:48 }, { col1Nm:'?ㅼ씠踰??ㅻ쭏?몄뒪?좎뼱', col1Num:22 },
-        { col1Nm:'荑좏뙜', col1Num:14 }, { col1Nm:'11踰덇?', col1Num:9 },
-        { col1Nm:'G留덉폆', col1Num:4 }, { col1Nm:'Auction', col1Num:2 }, { col1Nm:'湲고?', col1Num:1 },
+        { col1Nm:'자사몰', col1Num:48 }, { col1Nm:'네이버 스마트스토어', col1Num:22 },
+        { col1Nm:'쿠팡', col1Num:14 }, { col1Nm:'11번가', col1Num:9 },
+        { col1Nm:'G마켓', col1Num:4 }, { col1Nm:'Auction', col1Num:2 }, { col1Nm:'기타', col1Num:1 },
       ];
       r.info0301 = [{ col1Nm:'Mobile', col1Num:58 }, { col1Nm:'Desktop', col1Num:32 }, { col1Nm:'Tablet', col1Num:10 }];
-      r.info0302 = [{ col1Nm:'?꾩묠 (06-12)', col1Num:15 }, { col1Nm:'?먯떖 (12-18)', col1Num:22 }, { col1Nm:'???(18-24)', col1Num:38 }, { col1Nm:'?쇨컙 (00-06)', col1Num:25 }];
+      r.info0302 = [{ col1Nm:'아침 (06-12)', col1Num:15 }, { col1Nm:'점심 (12-18)', col1Num:22 }, { col1Nm:'저녁 (18-24)', col1Num:38 }, { col1Nm:'야간 (00-06)', col1Num:25 }];
       r.info0303 = [
-        { col1Nm:'?쒖슱', col1Num:58000000 }, { col1Nm:'寃쎄린', col1Num:42000000 },
-        { col1Nm:'遺??, col1Num:21000000 }, { col1Nm:'?몄쿇', col1Num:16000000 },
-        { col1Nm:'?援?, col1Num:12000000 }, { col1Nm:'愿묒＜', col1Num:9000000 },
-        { col1Nm:'???, col1Num:8500000 },  { col1Nm:'湲고?', col1Num:6000000 },
+        { col1Nm:'서울', col1Num:58000000 }, { col1Nm:'경기', col1Num:42000000 },
+        { col1Nm:'부산', col1Num:21000000 }, { col1Nm:'인천', col1Num:16000000 },
+        { col1Nm:'대구', col1Num:12000000 }, { col1Nm:'광주', col1Num:9000000 },
+        { col1Nm:'대전', col1Num:8500000 },  { col1Nm:'기타', col1Num:6000000 },
       ];
       const hourly = [42,28,19,14,11,13,21,38,65,89,102,118,135,128,119,124,138,156,187,212,198,176,143,87];
       r.info0304 = hourly.map((v,i) => ({ col1Nm: String(i).padStart(2,'0'), col1Num: v }));
       r.info0401 = [
-        { col1Nm:'留ㅼ텧?깆옣', col1Num:78 }, { col1Nm:'怨좉컼留뚯”', col1Num:82 },
-        { col1Nm:'?ш뎄留ㅼ쑉', col1Num:65 }, { col1Nm:'?좉퇋怨좉컼', col1Num:55 },
-        { col1Nm:'留덉쭊??,   col1Num:42 }, { col1Nm:'梨꾨꼸?뺤옣', col1Num:70 },
+        { col1Nm:'매출성장', col1Num:78 }, { col1Nm:'고객만족', col1Num:82 },
+        { col1Nm:'재구매율', col1Num:65 }, { col1Nm:'신규고객', col1Num:55 },
+        { col1Nm:'마진율',   col1Num:42 }, { col1Nm:'채널확장', col1Num:70 },
       ];
       const high = [42,47,52,49.5,46,55,58,71,51,47,53,57,62,40].map(v => v * 1000000);
       const mid  = [55,61,67,64,59,72,75,92,66,61,69,74,81,52].map(v => v * 1000000);
       const low  = [21.5,24,26.8,25.7,23.7,28.3,29.4,35.6,26.1,23.9,26.2,29.5,31.8,20.97].map(v => v * 1000000);
       r.info0402 = MOCK_YMD.map((d,i) => ({ col1Nm: MOCK_LBL[i], col1Num: high[i], col2Num: mid[i], col3Num: low[i] }));
-      r.info0403 = [{ col1Nm:'臾대즺諛곗넚', col1Num:48 }, { col1Nm:'?좊즺諛곗넚', col1Num:27 }, { col1Nm:'議곌굔遺臾대즺', col1Num:18 }, { col1Nm:'?덈꼍諛곗넚', col1Num:7 }];
+      r.info0403 = [{ col1Nm:'무료배송', col1Num:48 }, { col1Nm:'유료배송', col1Num:27 }, { col1Nm:'조건부무료', col1Num:18 }, { col1Nm:'새벽배송', col1Num:7 }];
       return r;
     };
 
-    /* X-View ?덊듃留?紐⑹뾽 ?곗씠??*/
+    /* X-View 히트맵 목업 데이터 */
     const buildXviewData = () => {
       const now = Date.now();
       const pts = [];
@@ -187,7 +296,7 @@ window.DashboardBoEc02 = {
     const xviewData = ref(buildXviewData());
     let xviewTimer  = null;
 
-    /* ##### [03] ?곗씠??濡쒕뱶 ##################################################### */
+    /* ##### [03] 데이터 로드 ##################################################### */
 
     const loadDashboard = async () => {
       uiState.loading = true;
@@ -195,11 +304,11 @@ window.DashboardBoEc02 = {
         const startYmd = (filters.startDt || '').replace(/-/g, '');
         const endYmd   = (filters.endDt   || '').replace(/-/g, '');
         const items = COMP_IDS.map(compId => ({ compId, uiNm: 'DashboardBoEc02', startYmd, endYmd }));
-        const res = await boApiSvc.cmDashboard.getData(items, '??쒕낫??, '議고쉶');
+        const res = await boApiSvc.cmDashboard.getData(items, '대시보드', '조회');
         const d = res.data?.data || {};
         Object.keys(dash).forEach(k => { dash[k] = d[k] || []; });
       } catch (err) {
-        console.error('[??쒕낫??議고쉶 ?ㅻ쪟]', err);
+        console.error('[대시보드 조회 오류]', err);
         const mock = buildMock();
         Object.keys(dash).forEach(k => { dash[k] = mock[k] || []; });
       } finally {
@@ -222,19 +331,19 @@ window.DashboardBoEc02 = {
 
     const doExcelDownload = () => {
       const labels = dash.info0101.map(r => r.col1Nm || '');
-      const rows = [['??,'留ㅼ텧','媛??,'?덊눜','?대┃','二쇰Ц?꾨즺']];
+      const rows = [['월','매출','가입','탈퇴','클릭','주문완료']];
       labels.forEach((m, i) => {
         rows.push([m, dash.info0101[i]?.col1Num||0, dash.info0102[i]?.col1Num||0, dash.info0102[i]?.col2Num||0, dash.info0103[i]?.col1Num||0, dash.info0104[i]?.col1Num||0]);
       });
       const csv  = rows.map(r => r.map(c => '"' + String(c).replace(/"/g,'""') + '"').join(',')).join('\n');
-      const blob = new Blob(['癤? + csv], { type: 'text/csv;charset=utf-8;' });
+      const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
       const url  = URL.createObjectURL(blob);
       const a    = document.createElement('a');
-      a.href = url; a.download = coUtil.cofBuildExportFilename('??쒕낫??csv'); a.click();
+      a.href = url; a.download = coUtil.cofBuildExportFilename('대시보드.csv'); a.click();
       URL.revokeObjectURL(url);
     };
 
-    /* ##### [05] ECharts option 鍮뚮뜑 ############################################# */
+    /* ##### [05] ECharts option 빌더 ############################################# */
 
     const cfMonthLabels   = computed(() => dash.info0101.map(r => r.col1Nm || ''));
     const cfMonthlySales  = computed(() => dash.info0101.map(r => r.col1Num || 0));
@@ -258,9 +367,9 @@ window.DashboardBoEc02 = {
 
     const baseGrid = { top: 36, right: 16, bottom: 36, left: 60 };
 
-    /* COMP0101 ?붾퀎 留ㅼ텧 - 留됰? */
+    /* COMP0101 월별 매출 - 막대 */
     const cfOpt0101 = computed(() => ({
-      tooltip: { trigger:'axis', formatter: p => p[0].name + '<br/>留ㅼ텧: ' + fmt(p[0].value) + '?? },
+      tooltip: { trigger:'axis', formatter: p => p[0].name + '<br/>매출: ' + fmt(p[0].value) + '원' },
       grid: baseGrid,
       xAxis: { type:'category', data: cfMonthLabels.value, axisLabel:{ fontSize:10, color:'#888' } },
       yAxis: { type:'value', axisLabel:{ fontSize:10, color:'#888', formatter: v => (v/1000000).toFixed(0)+'M' } },
@@ -271,7 +380,7 @@ window.DashboardBoEc02 = {
       }],
     }));
 
-    /* COMP0102 媛???덊눜 - 洹몃９ 留됰? */
+    /* COMP0102 가입/탈퇴 - 그룹 막대 */
     const cfOpt0102 = computed(() => ({
       tooltip: { trigger:'axis' },
       legend: { top:4, right:8, textStyle:{ fontSize:10 } },
@@ -279,14 +388,14 @@ window.DashboardBoEc02 = {
       xAxis: { type:'category', data: cfMonthLabels.value, axisLabel:{ fontSize:10, color:'#888' } },
       yAxis: { type:'value', axisLabel:{ fontSize:10, color:'#888' } },
       series: [
-        { name:'媛??, type:'bar', data: cfMonthlyJoin.value,  barMaxWidth:20, itemStyle:{ color:'#3b82f6', borderRadius:[3,3,0,0] } },
-        { name:'?덊눜', type:'bar', data: cfMonthlyLeave.value, barMaxWidth:20, itemStyle:{ color:'#ef4444', borderRadius:[3,3,0,0] } },
+        { name:'가입', type:'bar', data: cfMonthlyJoin.value,  barMaxWidth:20, itemStyle:{ color:'#3b82f6', borderRadius:[3,3,0,0] } },
+        { name:'탈퇴', type:'bar', data: cfMonthlyLeave.value, barMaxWidth:20, itemStyle:{ color:'#ef4444', borderRadius:[3,3,0,0] } },
       ],
     }));
 
-    /* COMP0103 ?곹뭹 ?대┃ - 硫댁쟻 爰얠???*/
+    /* COMP0103 상품 클릭 - 면적 꺾은선 */
     const cfOpt0103 = computed(() => ({
-      tooltip: { trigger:'axis', formatter: p => p[0].name + '<br/>?대┃: ' + fmt(p[0].value) + '?? },
+      tooltip: { trigger:'axis', formatter: p => p[0].name + '<br/>클릭: ' + fmt(p[0].value) + '회' },
       grid: baseGrid,
       xAxis: { type:'category', data: cfMonthLabels.value, axisLabel:{ fontSize:10, color:'#888' } },
       yAxis: { type:'value', axisLabel:{ fontSize:10, color:'#888' } },
@@ -298,9 +407,9 @@ window.DashboardBoEc02 = {
       }],
     }));
 
-    /* COMP0104 二쇰Ц?꾨즺 - 留됰? */
+    /* COMP0104 주문완료 - 막대 */
     const cfOpt0104 = computed(() => ({
-      tooltip: { trigger:'axis', formatter: p => p[0].name + '<br/>二쇰Ц: ' + fmt(p[0].value) + '嫄? },
+      tooltip: { trigger:'axis', formatter: p => p[0].name + '<br/>주문: ' + fmt(p[0].value) + '건' },
       grid: baseGrid,
       xAxis: { type:'category', data: cfMonthLabels.value, axisLabel:{ fontSize:10, color:'#888' } },
       yAxis: { type:'value', axisLabel:{ fontSize:10, color:'#888' } },
@@ -310,7 +419,7 @@ window.DashboardBoEc02 = {
       }],
     }));
 
-    /* COMP0201 梨꾨꼸蹂?留ㅼ텧 - 硫??爰얠???*/
+    /* COMP0201 채널별 매출 - 멀티 꺾은선 */
     const cfChannelMonthly = computed(() => {
       const map = {};
       dash.info0201.forEach(r => {
@@ -334,22 +443,22 @@ window.DashboardBoEc02 = {
       })),
     }));
 
-    /* COMP0203 TOP 7 - ?섑룊 留됰? */
+    /* COMP0203 TOP 7 - 수평 막대 */
     const topProducts = computed(() => dash.info0203.map(r => ({ name:r.col1Nm||'', value:r.col1Num||0 })));
 
     const cfOpt0203 = computed(() => ({
-      tooltip: { trigger:'axis', formatter: p => p[0].name + ': ' + fmt(p[0].value) + '?? },
+      tooltip: { trigger:'axis', formatter: p => p[0].name + ': ' + fmt(p[0].value) + '원' },
       grid: { top:8, right:80, bottom:8, left:130 },
       xAxis: { type:'value', axisLabel:{ fontSize:10, color:'#888', formatter: v => (v/1000000).toFixed(0)+'M' } },
       yAxis: { type:'category', data: topProducts.value.map(p => p.name).reverse(), axisLabel:{ fontSize:10, color:'#555' } },
       series: [{
         type:'bar', data: topProducts.value.map(p => p.value).reverse(), barMaxWidth:18,
         itemStyle:{ color:{ type:'linear',x:0,y:0,x2:1,y2:0, colorStops:[{offset:0,color:'#7b1fa2'},{offset:1,color:'#e8587a'}] }, borderRadius:[0,4,4,0] },
-        label:{ show:true, position:'right', formatter: p => fmt(p.value)+'??, fontSize:10, color:'#555' },
+        label:{ show:true, position:'right', formatter: p => fmt(p.value)+'원', fontSize:10, color:'#555' },
       }],
     }));
 
-    /* COMP0204 梨꾨꼸 ?꾨꽋 */
+    /* COMP0204 채널 도넛 */
     const salesByChannel = computed(() => {
       const COLORS = ['#e8587a','#7b1fa2','#3b82f6','#10b981','#f59e0b','#ef4444','#6366f1'];
       return dash.info0204.map((r,i) => ({ name:r.col1Nm||'', value:r.col1Num||0, itemStyle:{ color:COLORS[i%COLORS.length] } }));
@@ -366,7 +475,7 @@ window.DashboardBoEc02 = {
       }],
     }));
 
-    /* COMP0301 ?붾컮?댁뒪 ?꾨꽋 */
+    /* COMP0301 디바이스 도넛 */
     const salesByDevice = computed(() => {
       const COLORS = ['#3b82f6','#10b981','#f59e0b'];
       return dash.info0301.map((r,i) => ({ name:r.col1Nm||'', value:r.col1Num||0, itemStyle:{ color:COLORS[i%COLORS.length] } }));
@@ -383,7 +492,7 @@ window.DashboardBoEc02 = {
       }],
     }));
 
-    /* COMP0302 ?쒓컙? ?꾨꽋 */
+    /* COMP0302 시간대 도넛 */
     const salesByTime = computed(() => {
       const COLORS = ['#fbbf24','#f97316','#e8587a','#6366f1'];
       return dash.info0302.map((r,i) => ({ name:r.col1Nm||'', value:r.col1Num||0, itemStyle:{ color:COLORS[i%COLORS.length] } }));
@@ -400,7 +509,7 @@ window.DashboardBoEc02 = {
       }],
     }));
 
-    /* COMP0303 吏??퀎 ?섑룊 留됰? */
+    /* COMP0303 지역별 수평 막대 */
     const regionSales = computed(() => dash.info0303.map(r => ({ name:r.col1Nm||'', value:r.col1Num||0 })));
 
     const cfOpt0303 = computed(() => ({
@@ -415,11 +524,11 @@ window.DashboardBoEc02 = {
       }],
     }));
 
-    /* COMP0304 ?쒓컙? 異붿씠 爰얠???*/
+    /* COMP0304 시간대 추이 꺾은선 */
     const hourlyTrend = computed(() => dash.info0304.map(r => r.col1Num || 0));
 
     const cfOpt0304 = computed(() => ({
-      tooltip: { trigger:'axis', formatter: p => p[0].axisValue + '?? ' + p[0].value + '嫄? },
+      tooltip: { trigger:'axis', formatter: p => p[0].axisValue + '시: ' + p[0].value + '건' },
       grid: { top:20, right:16, bottom:28, left:44 },
       xAxis: { type:'category', data: Array.from({length:24}, (_,i) => String(i).padStart(2,'0')), axisLabel:{ fontSize:10, color:'#888', interval:5 } },
       yAxis: { type:'value', axisLabel:{ fontSize:10, color:'#888' } },
@@ -431,7 +540,7 @@ window.DashboardBoEc02 = {
       }],
     }));
 
-    /* COMP0401 ?덉씠??*/
+    /* COMP0401 레이더 */
     const radarValues = computed(() => dash.info0401.map(r => ({ label:r.col1Nm||'', value:r.col1Num||0 })));
 
     const cfOpt0401 = computed(() => ({
@@ -445,7 +554,7 @@ window.DashboardBoEc02 = {
       },
       series: [{
         type:'radar',
-        data:[{ value: radarValues.value.map(v => v.value), name:'?곸뾽吏??,
+        data:[{ value: radarValues.value.map(v => v.value), name:'영업지표',
           areaStyle:{ color:'rgba(232,88,122,0.2)' },
           lineStyle:{ color:'#e8587a', width:2 },
           itemStyle:{ color:'#e8587a' },
@@ -453,7 +562,7 @@ window.DashboardBoEc02 = {
       }],
     }));
 
-    /* COMP0402 寃쎌젣 ?섏?蹂?硫댁쟻 爰얠???*/
+    /* COMP0402 경제 수준별 면적 꺾은선 */
     const economySales = computed(() => ({
       labels: dash.info0402.map(r => r.col1Nm||''),
       high:   dash.info0402.map(r => r.col1Num||0),
@@ -468,20 +577,20 @@ window.DashboardBoEc02 = {
       xAxis: { type:'category', data: economySales.value.labels, axisLabel:{ fontSize:10, color:'#888' } },
       yAxis: { type:'value', axisLabel:{ fontSize:10, color:'#888', formatter: v => (v/1000000).toFixed(0)+'M' } },
       series: [
-        { name:'?곸쐞', type:'line', data: economySales.value.high,   smooth:true, symbolSize:4, lineStyle:{ color:'#7b1fa2' }, itemStyle:{ color:'#7b1fa2' }, areaStyle:{ color:'rgba(123,31,162,0.15)' } },
-        { name:'以묒쐞', type:'line', data: economySales.value.middle, smooth:true, symbolSize:4, lineStyle:{ color:'#3b82f6' }, itemStyle:{ color:'#3b82f6' }, areaStyle:{ color:'rgba(59,130,246,0.12)' } },
-        { name:'?섏쐞', type:'line', data: economySales.value.low,    smooth:true, symbolSize:4, lineStyle:{ color:'#10b981' }, itemStyle:{ color:'#10b981' }, areaStyle:{ color:'rgba(16,185,129,0.10)' } },
+        { name:'상위', type:'line', data: economySales.value.high,   smooth:true, symbolSize:4, lineStyle:{ color:'#7b1fa2' }, itemStyle:{ color:'#7b1fa2' }, areaStyle:{ color:'rgba(123,31,162,0.15)' } },
+        { name:'중위', type:'line', data: economySales.value.middle, smooth:true, symbolSize:4, lineStyle:{ color:'#3b82f6' }, itemStyle:{ color:'#3b82f6' }, areaStyle:{ color:'rgba(59,130,246,0.12)' } },
+        { name:'하위', type:'line', data: economySales.value.low,    smooth:true, symbolSize:4, lineStyle:{ color:'#10b981' }, itemStyle:{ color:'#10b981' }, areaStyle:{ color:'rgba(16,185,129,0.10)' } },
       ],
     }));
 
-    /* COMP0403 諛곗넚 議곌굔 ?꾨꽋 */
+    /* COMP0403 배송 조건 도넛 */
     const shippingTypes = computed(() => {
       const COLORS = ['#10b981','#9ca3af','#3b82f6','#f59e0b'];
       return dash.info0403.map((r,i) => ({ name:r.col1Nm||'', value:r.col1Num||0, itemStyle:{ color:COLORS[i%COLORS.length] } }));
     });
 
     const cfOpt0403 = computed(() => ({
-      tooltip: { trigger:'item', formatter: p => p.name + '諛곗넚: ' + p.value + '%' },
+      tooltip: { trigger:'item', formatter: p => p.name + '배송: ' + p.value + '%' },
       legend: { orient:'vertical', right:8, top:'center', textStyle:{ fontSize:10 } },
       series: [{
         type:'pie', radius:['40%','68%'], center:['38%','50%'],
@@ -491,7 +600,7 @@ window.DashboardBoEc02 = {
       }],
     }));
 
-    /* ?? X-View ?덊듃留?option ??????????????????????????? */
+    /* ── X-View 히트맵 option ─────────────────────────── */
     const cfOptXview = computed(() => {
       const now  = Date.now();
       const from = now - 10 * 60 * 1000;
@@ -503,12 +612,12 @@ window.DashboardBoEc02 = {
           formatter: p => {
             const d   = new Date(p.data[0]);
             const hms = d.getHours() + ':' + String(d.getMinutes()).padStart(2,'0') + ':' + String(d.getSeconds()).padStart(2,'0');
-            const lbl = ['?뺤긽','?먮┝','?ㅻ쪟'][p.data[2]] || '';
-            return hms + '<br/>?묐떟?쒓컙: <b>' + p.data[1].toFixed(0) + 'ms</b><br/>?곹깭: ' + lbl;
+            const lbl = ['정상','느림','오류'][p.data[2]] || '';
+            return hms + '<br/>응답시간: <b>' + p.data[1].toFixed(0) + 'ms</b><br/>상태: ' + lbl;
           },
         },
         toolbox: {
-          feature: { dataZoom:{ yAxisIndex:'none', title:{ zoom:'踰붿쐞 ?쒕옒洹?, back:'珥덇린?? } }, restore:{ title:'珥덇린?? } },
+          feature: { dataZoom:{ yAxisIndex:'none', title:{ zoom:'범위 드래그', back:'초기화' } }, restore:{ title:'초기화' } },
           right: 16, top: 6,
         },
         brush: {
@@ -526,7 +635,7 @@ window.DashboardBoEc02 = {
           splitLine: { lineStyle:{ color:'#f0f0f0' } },
         },
         yAxis: {
-          type: 'value', name: '?묐떟?쒓컙(ms)', nameTextStyle:{ fontSize:10, color:'#888' },
+          type: 'value', name: '응답시간(ms)', nameTextStyle:{ fontSize:10, color:'#888' },
           min: 0,
           axisLabel: { fontSize:10, color:'#888', formatter: v => v + 'ms' },
           splitLine: { lineStyle:{ color:'#f0f0f0' } },
@@ -534,9 +643,9 @@ window.DashboardBoEc02 = {
         visualMap: {
           show: true, type:'piecewise', categories: [0,1,2], dimension: 2,
           pieces: [
-            { value:0, label:'?뺤긽 (<500ms)',    color:'#3b82f6' },
-            { value:1, label:'?먮┝ (<3000ms)',   color:'#f59e0b' },
-            { value:2, label:'?ㅻ쪟 / 留ㅼ슦 ?먮┝', color:'#ef4444' },
+            { value:0, label:'정상 (<500ms)',    color:'#3b82f6' },
+            { value:1, label:'느림 (<3000ms)',   color:'#f59e0b' },
+            { value:2, label:'오류 / 매우 느림', color:'#ef4444' },
           ],
           right: 16, bottom: 48, textStyle:{ fontSize:10 },
         },
@@ -564,16 +673,17 @@ window.DashboardBoEc02 = {
         return {
           time: d.getHours() + ':' + String(d.getMinutes()).padStart(2,'0') + ':' + String(d.getSeconds()).padStart(2,'0'),
           rt: p.rt,
-          status: p.err ? '?ㅻ쪟' : p.rt > 3000 ? '留ㅼ슦 ?먮┝' : p.rt > 500 ? '?먮┝' : '?뺤긽',
+          status: p.err ? '오류' : p.rt > 3000 ? '매우 느림' : p.rt > 500 ? '느림' : '정상',
           statusColor: p.err ? '#ef4444' : p.rt > 3000 ? '#ef4444' : p.rt > 500 ? '#f59e0b' : '#10b981',
         };
       }).sort((a,b) => b.rt - a.rt);
       uiState.xviewDrillVisible = true;
     };
 
-    /* ##### [06] ?쇱씠?꾩궗?댄겢 #################################################### */
+    /* ##### [06] 라이프사이클 #################################################### */
 
     onMounted(() => {
+      document.addEventListener('click', _onDocClick);
       loadDashboard();
       xviewTimer = setInterval(() => {
         const now = Date.now();
@@ -583,7 +693,10 @@ window.DashboardBoEc02 = {
       }, 2000);
     });
 
-    onUnmounted(() => { if (xviewTimer) clearInterval(xviewTimer); });
+    onUnmounted(() => {
+      if (xviewTimer) clearInterval(xviewTimer);
+      document.removeEventListener('click', _onDocClick);
+    });
 
     return {
       uiState, filters, dash,
@@ -597,47 +710,48 @@ window.DashboardBoEc02 = {
       cfOpt0301, cfOpt0302, cfOpt0303, cfOpt0304,
       cfOpt0401, cfOpt0402, cfOpt0403,
       cfOptXview, onXviewBrush,
+      fnOpenInfo, fnOpenXviewInfo, fnInfoTab, fnBuildApiParams,
     };
   },
 
   template: `
 <div :class="(uiState.tabMode==='3col'||uiState.tabMode==='4col') ? 'dash-wide' : 'bo-wrap'">
 
-  <!-- ?ㅻ뜑 -->
+  <!-- 헤더 -->
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:12px 16px;background:linear-gradient(135deg,#1a1a2e 0%,#2d2d44 100%);border-radius:10px;color:#fff;">
     <div style="width:6px;height:24px;background:#e8587a;border-radius:3px;"></div>
-    <span style="font-size:17px;font-weight:800;letter-spacing:-0.5px;">?⑤씪???쇳븨紐?留ㅼ텧 諛??먮ℓ?꾪솴</span>
+    <span style="font-size:17px;font-weight:800;letter-spacing:-0.5px;">온라인 쇼핑몰 매출 및 판매현황</span>
     <span style="flex:1;"></span>
-    <span style="font-size:11px;color:#aaa;">14媛쒖썡 湲곗? 쨌 {{ cfMonthLabels.length > 0 ? (cfMonthLabels[0] + ' ~ ' + cfMonthLabels[cfMonthLabels.length-1]) : '-' }}</span>
+    <span style="font-size:11px;color:#aaa;">14개월 기준 · {{ cfMonthLabels.length > 0 ? (cfMonthLabels[0] + ' ~ ' + cfMonthLabels[cfMonthLabels.length-1]) : '-' }}</span>
   </div>
 
-  <!-- ?꾪꽣 -->
+  <!-- 필터 -->
   <bo-container card-style="padding:12px 14px;margin-bottom:14px;display:flex;flex-direction:column;gap:8px;">
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-      <span style="font-size:11px;font-weight:700;color:#666;width:74px;">議고쉶湲곌컙</span>
+      <span style="font-size:11px;font-weight:700;color:#666;width:74px;">조회기간</span>
       <input type="date" v-model="filters.startDt" class="form-control" style="width:150px;height:30px;font-size:12px;">
       <span style="color:#999;">~</span>
       <input type="date" v-model="filters.endDt" class="form-control" style="width:150px;height:30px;font-size:12px;">
       <button class="btn_filter_toggle" @click="handleBtnAction('filters-toggleExpand')" style="font-size:11px;padding:4px 12px;border-radius:6px;border:1px solid #e5e7eb;background:#fafbfc;color:#555;">
-        {{ uiState.filterExpand ? '???곸꽭?꾪꽣 ?묎린' : '???곸꽭?꾪꽣 ?쇱튂湲? }}
+        {{ uiState.filterExpand ? '▲ 상세필터 접기' : '▼ 상세필터 펼치기' }}
       </button>
       <span style="flex:1;"></span>
-      <button class="btn btn_search"  @click="handleBtnAction('filters-search')" style="font-size:11px;">?뵇 寃??/button>
-      <button class="btn btn_excel"   @click="handleBtnAction('stats-excel')" style="font-size:11px;background:#e8f5e9;color:#2e7d32;border-color:#a5d6a7;">?뱿 ?묒??ㅼ슫濡쒕뱶</button>
-      <button class="btn btn_reset"   @click="handleBtnAction('filters-reset')" style="font-size:11px;">?봽 珥덇린??/button>
+      <button class="btn btn_search"  @click="handleBtnAction('filters-search')" style="font-size:11px;">🔍 검색</button>
+      <button class="btn btn_excel"   @click="handleBtnAction('stats-excel')" style="font-size:11px;background:#e8f5e9;color:#2e7d32;border-color:#a5d6a7;">📥 엑셀다운로드</button>
+      <button class="btn btn_reset"   @click="handleBtnAction('filters-reset')" style="font-size:11px;">🔄 초기화</button>
     </div>
     <div v-if="uiState.filterExpand" style="display:flex;flex-direction:column;gap:8px;border-top:1px dashed #eee;padding-top:10px;">
-      <div v-for="grp in [{key:'channels',label:'?먮ℓ梨꾨꼸',all:CHANNELS},{key:'ages',label:'?섏씠?',all:AGES},{key:'genders',label:'?깅퀎',all:GENDERS},{key:'memberTypes',label:'?뚯썝?좏삎',all:MEMBER_TYPES},{key:'categories',label:'移댄뀒怨좊━',all:CATEGORIES}]" :key="grp.key" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <div v-for="grp in [{key:'channels',label:'판매채널',all:CHANNELS},{key:'ages',label:'나이대',all:AGES},{key:'genders',label:'성별',all:GENDERS},{key:'memberTypes',label:'회원유형',all:MEMBER_TYPES},{key:'categories',label:'카테고리',all:CATEGORIES}]" :key="grp.key" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
         <span style="font-size:11px;font-weight:700;color:#666;width:74px;">{{ grp.label }}</span>
         <button @click="handleBtnAction('filters-toggleAll',{key:grp.key,all:grp.all})"
-          :style="{fontSize:'11px',padding:'3px 10px',borderRadius:'12px',border:'1px solid',cursor:'pointer',background:filters[grp.key].length===grp.all.length?'#1a1a2e':'#fff',color:filters[grp.key].length===grp.all.length?'#fff':'#555',borderColor:filters[grp.key].length===grp.all.length?'#1a1a2e':'#ddd'}">?꾩껜</button>
+          :style="{fontSize:'11px',padding:'3px 10px',borderRadius:'12px',border:'1px solid',cursor:'pointer',background:filters[grp.key].length===grp.all.length?'#1a1a2e':'#fff',color:filters[grp.key].length===grp.all.length?'#fff':'#555',borderColor:filters[grp.key].length===grp.all.length?'#1a1a2e':'#ddd'}">전체</button>
         <button v-for="v in grp.all" :key="v" @click="handleBtnAction('filters-toggle',{key:grp.key,v})"
           :style="{fontSize:'11px',padding:'3px 10px',borderRadius:'12px',border:'1px solid',cursor:'pointer',background:isSel(filters[grp.key],v)?'#fff0f4':'#fafbfc',color:isSel(filters[grp.key],v)?'#e8587a':'#888',borderColor:isSel(filters[grp.key],v)?'#e8587a':'#e5e7eb',fontWeight:isSel(filters[grp.key],v)?700:400}">{{ v }}</button>
       </div>
     </div>
   </bo-container>
 
-  <!-- ??諛?+ 酉곕え??-->
+  <!-- 탭 바 + 뷰모드 -->
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
     <div class="tab-nav" style="margin-bottom:0;flex:1;flex-wrap:wrap;">
       <button v-for="t in TABS" :key="t.key" class="tab-btn"
@@ -649,67 +763,79 @@ window.DashboardBoEc02 = {
       </button>
     </div>
     <div style="display:flex;gap:4px;background:#fff;padding:4px;border:1px solid #eef0f3;border-radius:8px;flex-shrink:0;">
-      <button v-for="vm in VIEW_MODES" :key="vm.key" @click="handleSelectAction('tabMode-set',vm.key)" :title="vm.label+'濡?蹂닿린'"
+      <button v-for="vm in VIEW_MODES" :key="vm.key" @click="handleSelectAction('tabMode-set',vm.key)" :title="vm.label+'로 보기'"
         :style="{fontSize:'11px',padding:'4px 8px',borderRadius:'5px',border:'none',cursor:'pointer',minWidth:'34px',background:uiState.tabMode===vm.key?'#fff0f4':'transparent',color:uiState.tabMode===vm.key?'#e8587a':'#888',fontWeight:uiState.tabMode===vm.key?700:400}">
         {{ vm.icon }}
       </button>
     </div>
   </div>
 
-  <!-- 李⑦듃 洹몃━??-->
+  <!-- 차트 그리드 -->
   <div :style="{display:'grid',gridTemplateColumns:cfBaseGridColumns,gap:'12px'}">
 
-    <!-- 1) ?붾퀎 留ㅼ텧 留됰? -->
+    <!-- 1) 월별 매출 막대 -->
     <bo-container v-show="showPanel('sales')" card-style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
-        ?뮥 ?붾퀎 留ㅼ텧?꾪솴 (14媛쒖썡)
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'월별 매출현황',()=>cfOpt0101,'info0101',undefined,'COMP0101')" title="위젯 정보">💰</button>
+        월별 매출현황 (14개월)
         <span style="flex:1;"></span>
-        <span style="font-size:11px;color:#888;font-weight:500;">珥?{{ fmt(dash.info0101.reduce((a,r)=>a+(r.col1Num||0),0)) }}??/span>
+        <span style="font-size:11px;color:#888;font-weight:500;">총 {{ fmt(dash.info0101.reduce((a,r)=>a+(r.col1Num||0),0)) }}원</span>
       </div>
       <co-echart :option="cfOpt0101" height="260px" />
     </bo-container>
 
-    <!-- 2) 媛???덊눜 -->
+    <!-- 2) 가입/탈퇴 -->
     <bo-container v-show="showPanel('member')" card-style="padding:14px;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;">?뫁 ?붾퀎 怨좉컼 媛???덊눜???꾪솴 (14媛쒖썡)</div>
+      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'가입/탈퇴 현황',()=>cfOpt0102,'info0102',undefined,'COMP0102')" title="위젯 정보">👥</button>
+        월별 고객 가입/탈퇴자 현황 (14개월)
+      </div>
       <co-echart :option="cfOpt0102" height="260px" />
     </bo-container>
 
-    <!-- 3) ?곹뭹 ?대┃ -->
+    <!-- 3) 상품 클릭 -->
     <bo-container v-show="showPanel('click')" card-style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
-        ?뼮 ?붾퀎 ?곹뭹?곸꽭 ?대┃ ?꾪솴 (14媛쒖썡)
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'상품상세 클릭',()=>cfOpt0103,'info0103',undefined,'COMP0103')" title="위젯 정보">🖱</button>
+        월별 상품상세 클릭 현황 (14개월)
         <span style="flex:1;"></span>
-        <span style="font-size:11px;color:#888;">珥?{{ fmt(dash.info0103.reduce((a,r)=>a+(r.col1Num||0),0)) }}??/span>
+        <span style="font-size:11px;color:#888;">총 {{ fmt(dash.info0103.reduce((a,r)=>a+(r.col1Num||0),0)) }}회</span>
       </div>
       <co-echart :option="cfOpt0103" height="260px" />
     </bo-container>
 
-    <!-- 4) 二쇰Ц?꾨즺 -->
+    <!-- 4) 주문완료 -->
     <bo-container v-show="showPanel('order')" card-style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
-        ?뱥 ?붾퀎 二쇰Ц?꾨즺 ?꾪솴 (14媛쒖썡)
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'주문완료 현황',()=>cfOpt0104,'info0104',undefined,'COMP0104')" title="위젯 정보">📋</button>
+        월별 주문완료 현황 (14개월)
         <span style="flex:1;"></span>
-        <span style="font-size:11px;color:#888;">珥?{{ fmt(dash.info0104.reduce((a,r)=>a+(r.col1Num||0),0)) }}嫄?/span>
+        <span style="font-size:11px;color:#888;">총 {{ fmt(dash.info0104.reduce((a,r)=>a+(r.col1Num||0),0)) }}건</span>
       </div>
       <co-echart :option="cfOpt0104" height="260px" />
     </bo-container>
 
-    <!-- 5) 梨꾨꼸蹂?留ㅼ텧 硫?곕씪??-->
+    <!-- 5) 채널별 매출 멀티라인 -->
     <bo-container v-show="showPanel('channel')" card-style="padding:14px;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;">?벟 ?붾퀎 ?먮ℓ梨꾨꼸蹂?留ㅼ텧?꾪솴 (14媛쒖썡)</div>
+      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'채널별 매출',()=>cfOpt0201,'info0201',undefined,'COMP0201')" title="위젯 정보">📺</button>
+        월별 판매채널별 매출현황 (14개월)
+      </div>
       <co-echart :option="cfOpt0201" height="300px" />
     </bo-container>
 
-    <!-- 6) ?듭떖吏??KPI -->
+    <!-- 6) 핵심지표 KPI -->
     <bo-container v-show="showPanel('kpi')" card-style="padding:14px;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;">?렞 ?듭떖吏??/div>
+      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;display:flex;align-items:center;gap:4px;">
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'핵심지표 KPI',null,'info0202',undefined,'COMP0202')" title="위젯 정보">🎯</button>
+        핵심지표
+      </div>
       <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
         <div v-for="kpi in [
-            {label:'?꾩껜 留ㅼ텧?꾪솴',value:fmt(cfTotalSales),unit:'??,color:'#e8587a',icon:'?뮥',bg:'#fff0f4'},
-            {label:'?꾩껜 援щℓ?섎웾',value:fmt(cfTotalQtyComp),unit:'嫄?,color:'#3b82f6',icon:'?썟',bg:'#eff6ff'},
-            {label:'?됯퇏 留덉쭊??,value:pct(marginRate),unit:'',color:'#10b981',icon:'?뱢',bg:'#f0fdf4'},
-            {label:'?됯퇏 寃곗젣湲덉븸',value:fmt(cfAvgOrderValue),unit:'??,color:'#f59e0b',icon:'?뮩',bg:'#fffbeb'},
+            {label:'전체 매출현황',value:fmt(cfTotalSales),unit:'원',color:'#e8587a',icon:'💰',bg:'#fff0f4'},
+            {label:'전체 구매수량',value:fmt(cfTotalQtyComp),unit:'건',color:'#3b82f6',icon:'🛒',bg:'#eff6ff'},
+            {label:'평균 마진율',value:pct(marginRate),unit:'',color:'#10b981',icon:'📈',bg:'#f0fdf4'},
+            {label:'평균 결제금액',value:fmt(cfAvgOrderValue),unit:'원',color:'#f59e0b',icon:'💳',bg:'#fffbeb'},
           ]" :key="kpi.label"
           :style="{background:kpi.bg,border:'1px solid #eef0f3',borderRadius:'8px',padding:'12px',display:'flex',alignItems:'center',gap:'10px'}">
           <div :style="{fontSize:'22px',width:'36px',height:'36px',borderRadius:'8px',background:'#fff',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}">{{ kpi.icon }}</div>
@@ -723,83 +849,112 @@ window.DashboardBoEc02 = {
       </div>
     </bo-container>
 
-    <!-- 7) ?곹뭹 TOP 7 ?섑룊 留됰? -->
+    <!-- 7) 상품 TOP 7 수평 막대 -->
     <bo-container v-show="showPanel('topProducts')" card-style="padding:14px;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;">?벀 ?곹뭹蹂?留ㅼ텧 TOP 7</div>
+      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'상품 TOP 7',()=>cfOpt0203,'info0203',undefined,'COMP0203')" title="위젯 정보">📦</button>
+        상품별 매출 TOP 7
+      </div>
       <co-echart :option="cfOpt0203" height="240px" />
     </bo-container>
 
-    <!-- 8) 梨꾨꼸 ?꾨꽋 -->
+    <!-- 8) 채널 도넛 -->
     <bo-container v-show="showPanel('channelMix')" card-style="padding:14px;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;">?벑 ?먮ℓ 梨꾨꼸蹂?/div>
+      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'판매 채널별',()=>cfOpt0204,'info0204',undefined,'COMP0204')" title="위젯 정보">📱</button>
+        판매 채널별
+      </div>
       <co-echart :option="cfOpt0204" height="220px" />
     </bo-container>
 
-    <!-- 9) ?붾컮?댁뒪 ?꾨꽋 -->
+    <!-- 9) 디바이스 도넛 -->
     <bo-container v-show="showPanel('deviceMix')" card-style="padding:14px;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;">?뮲 ?붾컮?댁뒪蹂?/div>
+      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'디바이스별',()=>cfOpt0301,'info0301',undefined,'COMP0301')" title="위젯 정보">💻</button>
+        디바이스별
+      </div>
       <co-echart :option="cfOpt0301" height="220px" />
     </bo-container>
 
-    <!-- 10) ?쒓컙? ?꾨꽋 -->
+    <!-- 10) 시간대 도넛 -->
     <bo-container v-show="showPanel('timeMix')" card-style="padding:14px;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;">???쒓컙?蹂?/div>
+      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'시간대별',()=>cfOpt0302,'info0302',undefined,'COMP0302')" title="위젯 정보">⏰</button>
+        시간대별
+      </div>
       <co-echart :option="cfOpt0302" height="220px" />
     </bo-container>
 
-    <!-- 11) 吏??퀎 ?섑룊 留됰? -->
+    <!-- 11) 지역별 수평 막대 -->
     <bo-container v-show="showPanel('region')" card-style="padding:14px;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;">?뿺 吏??퀎 留ㅼ텧?꾪솴</div>
+      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'지역별 매출',()=>cfOpt0303,'info0303',undefined,'COMP0303')" title="위젯 정보">🗺</button>
+        지역별 매출현황
+      </div>
       <co-echart :option="cfOpt0303" height="220px" />
     </bo-container>
 
-    <!-- 12) ?쒓컙? 異붿씠 爰얠???-->
+    <!-- 12) 시간대 추이 꺾은선 -->
     <bo-container v-show="showPanel('hourly')" card-style="padding:14px;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;">???쒓컙?蹂?二쇰Ц 異붿씠 (24H)</div>
+      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'시간대별 주문 추이',()=>cfOpt0304,'info0304',undefined,'COMP0304')" title="위젯 정보">⏱</button>
+        시간대별 주문 추이 (24H)
+      </div>
       <co-echart :option="cfOpt0304" height="180px" />
     </bo-container>
 
-    <!-- 13) ?곸뾽吏???덉씠??-->
+    <!-- 13) 영업지표 레이더 -->
     <bo-container v-show="showPanel('radar')" card-style="padding:14px;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;">???곸뾽 吏??鍮꾧탳</div>
+      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'영업 지표',()=>cfOpt0401,'info0401',undefined,'COMP0401')" title="위젯 정보">⚡</button>
+        영업 지표 비교
+      </div>
       <co-echart :option="cfOpt0401" height="220px" />
     </bo-container>
 
-    <!-- 14) 寃쎌젣 ?섏?蹂?硫댁쟻 -->
+    <!-- 14) 경제 수준별 면적 -->
     <bo-container v-show="showPanel('economy')" card-style="padding:14px;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;">?뮳 寃쎌젣 ?섏?蹂?留ㅼ텧?꾪솴</div>
+      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'경제 수준별 매출',()=>cfOpt0402,'info0402',undefined,'COMP0402')" title="위젯 정보">💼</button>
+        경제 수준별 매출현황
+      </div>
       <co-echart :option="cfOpt0402" height="220px" />
     </bo-container>
 
-    <!-- 15) 諛곗넚 議곌굔 ?꾨꽋 -->
+    <!-- 15) 배송 조건 도넛 -->
     <bo-container v-show="showPanel('shipping')" card-style="padding:14px;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;">?슊 諛곗넚 議곌굔蹂?留ㅼ텧?꾪솴</div>
+      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'배송 조건별 매출',()=>cfOpt0403,'info0403',undefined,'COMP0403')" title="위젯 정보">🚚</button>
+        배송 조건별 매출현황
+      </div>
       <co-echart :option="cfOpt0403" height="220px" />
     </bo-container>
 
-    <!-- 16) X-View ?ㅼ떆媛??덊듃留?-->
+    <!-- 16) X-View 실시간 히트맵 -->
     <bo-container v-show="showPanel('xview')" card-style="padding:14px;" style="grid-column:1/-1;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:8px;">
-        ?뵦 X-View ?ㅼ떆媛??몃옖??뀡 ?덊듃留?        <span style="font-size:10px;font-weight:400;color:#10b981;background:#f0fdf4;padding:2px 8px;border-radius:10px;border:1px solid #bbf7d0;">??LIVE</span>
+        <button class="dash-info-btn" @click.stop="fnOpenXviewInfo($event)" title="위젯 정보">🔥</button>
+        X-View 실시간 트랜잭션 히트맵
+        <span style="font-size:10px;font-weight:400;color:#10b981;background:#f0fdf4;padding:2px 8px;border-radius:10px;border:1px solid #bbf7d0;">● LIVE</span>
         <span style="flex:1;"></span>
-        <span style="font-size:10px;color:#888;">?쒕옒洹명븯??踰붿쐞 ?좏깮 ???몃옖??뀡 ?곸꽭</span>
-        <span style="font-size:10px;color:#888;">????500ms 寃쎄퀬 &amp; ????3000ms ?ㅻ쪟</span>
+        <span style="font-size:10px;color:#888;">드래그하여 범위 선택 → 트랜잭션 상세</span>
+        <span style="font-size:10px;color:#888;">━ ━ 500ms 경고 &amp; ━ ━ 3000ms 오류</span>
       </div>
       <co-echart :option="cfOptXview" height="360px" @brush-selected="onXviewBrush" />
 
-      <!-- X-View ?쒕┫?ㅼ슫 ?뚯씠釉?-->
+      <!-- X-View 드릴다운 테이블 -->
       <div v-if="uiState.xviewDrillVisible" style="margin-top:12px;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;">
         <div style="display:flex;align-items:center;padding:8px 12px;background:#f8fafc;border-bottom:1px solid #e5e7eb;">
-          <span style="font-size:12px;font-weight:700;color:#444;">?좏깮 踰붿쐞 ?몃옖??뀡 <span style="color:#e8587a;">{{ uiState.xviewDrillRows.length }}嫄?/span></span>
+          <span style="font-size:12px;font-weight:700;color:#444;">선택 범위 트랜잭션 <span style="color:#e8587a;">{{ uiState.xviewDrillRows.length }}건</span></span>
           <span style="flex:1;"></span>
-          <button class="btn btn_close" @click="handleBtnAction('xview-drill-close')" style="font-size:11px;padding:3px 10px;">???リ린</button>
+          <button class="btn btn_close" @click="handleBtnAction('xview-drill-close')" style="font-size:11px;padding:3px 10px;">✕ 닫기</button>
         </div>
         <div style="max-height:220px;overflow-y:auto;">
           <table class="admin-table" style="width:100%;font-size:11px;">
             <thead><tr>
-              <th style="width:80px;">?쒓컖</th>
-              <th style="width:100px;">?묐떟?쒓컙</th>
-              <th style="width:100px;">?곹깭</th>
+              <th style="width:80px;">시각</th>
+              <th style="width:100px;">응답시간</th>
+              <th style="width:100px;">상태</th>
             </tr></thead>
             <tbody>
               <tr v-for="(row,i) in uiState.xviewDrillRows" :key="i">
@@ -808,7 +963,7 @@ window.DashboardBoEc02 = {
                 <td><span class="badge" :style="{background:row.statusColor,color:'#fff'}">{{ row.status }}</span></td>
               </tr>
               <tr v-if="!uiState.xviewDrillRows.length">
-                <td colspan="3" style="text-align:center;color:#aaa;padding:16px;">?좏깮 踰붿쐞???곗씠?곌? ?놁뒿?덈떎.</td>
+                <td colspan="3" style="text-align:center;color:#aaa;padding:16px;">선택 범위에 데이터가 없습니다.</td>
               </tr>
             </tbody>
           </table>
@@ -817,7 +972,133 @@ window.DashboardBoEc02 = {
     </bo-container>
 
   </div>
+
+  <!-- 위젯 정보 팝오버 -->
+  <teleport to="body">
+    <div v-if="uiState.infoPanel"
+      @click.stop
+      :style="{position:'absolute',top:uiState.infoPanel.top+'px',left:uiState.infoPanel.left+'px',width:'560px',background:'#fff',borderRadius:'10px',boxShadow:'0 8px 32px rgba(0,0,0,0.18)',border:'1px solid #e5e7eb',zIndex:9999,fontFamily:'monospace',overflow:'hidden'}">
+      <!-- 팝오버 헤더 -->
+      <div style="display:flex;align-items:center;padding:10px 14px;background:linear-gradient(135deg,#1a1a2e,#2d2d44);color:#fff;gap:8px;">
+        <span style="font-size:13px;font-weight:700;">🔍 {{ uiState.infoPanel.title }}</span>
+        <span style="flex:1;"></span>
+        <button @click="handleBtnAction('info-close')"
+          style="background:rgba(255,255,255,0.15);border:none;color:#fff;border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;">✕</button>
+      </div>
+      <!-- 탭 바 (3탭) -->
+      <div style="display:flex;border-bottom:1px solid #e5e7eb;background:#f8fafc;">
+        <button @click="fnInfoTab('src')"
+          :style="{flex:1,padding:'7px 4px',fontSize:'11px',fontWeight:700,border:'none',cursor:'pointer',borderBottom:uiState.infoPanel.tab==='src'?'2px solid #10b981':'2px solid transparent',color:uiState.infoPanel.tab==='src'?'#10b981':'#666',background:'transparent'}">
+          📝 소스정보
+        </button>
+        <button @click="fnInfoTab('opt')"
+          :style="{flex:1,padding:'7px 4px',fontSize:'11px',fontWeight:700,border:'none',cursor:'pointer',borderBottom:uiState.infoPanel.tab==='opt'?'2px solid #e8587a':'2px solid transparent',color:uiState.infoPanel.tab==='opt'?'#e8587a':'#666',background:'transparent'}">
+          ⚙ ECharts Option
+        </button>
+        <button @click="fnInfoTab('data')"
+          :style="{flex:1,padding:'7px 4px',fontSize:'11px',fontWeight:700,border:'none',cursor:'pointer',borderBottom:uiState.infoPanel.tab==='data'?'2px solid #3b82f6':'2px solid transparent',color:uiState.infoPanel.tab==='data'?'#3b82f6':'#666',background:'transparent'}">
+          📊 원시 데이터
+        </button>
+      </div>
+      <!-- 소스정보 탭 본문 -->
+      <div v-if="uiState.infoPanel.tab==='src'" style="padding:14px 16px;font-size:11px;line-height:1.7;max-height:400px;overflow-y:auto;background:#fafbfc;">
+        <template v-if="uiState.infoPanel.src">
+          <!-- API 섹션 -->
+          <div style="margin-bottom:12px;">
+            <div style="font-size:10px;font-weight:700;color:#888;letter-spacing:0.5px;margin-bottom:6px;text-transform:uppercase;">API 엔드포인트</div>
+            <div style="background:#1e1e2e;color:#7dd3fc;border-radius:6px;padding:8px 12px;font-size:11px;">{{ uiState.infoPanel.src.url }}</div>
+          </div>
+          <!-- 요청 파라미터 -->
+          <div style="margin-bottom:12px;">
+            <div style="font-size:10px;font-weight:700;color:#888;letter-spacing:0.5px;margin-bottom:6px;text-transform:uppercase;">요청 파라미터 (현재 필터 기준)</div>
+            <div v-if="uiState.infoPanel.apiParams" style="background:#1e1e2e;border-radius:6px;overflow:hidden;">
+              <table style="width:100%;border-collapse:collapse;">
+                <tr v-for="(v,k) in uiState.infoPanel.apiParams" :key="k">
+                  <td style="padding:4px 10px;color:#a78bfa;font-size:10.5px;border-bottom:1px solid rgba(255,255,255,0.06);white-space:nowrap;width:40%;">{{ k }}</td>
+                  <td style="padding:4px 10px;color:#cdd6f4;font-size:10.5px;border-bottom:1px solid rgba(255,255,255,0.06);">{{ v }}</td>
+                </tr>
+              </table>
+            </div>
+            <div v-else style="color:#aaa;font-size:11px;padding:6px 0;">(실시간 로컬 생성 — API 미사용)</div>
+          </div>
+          <!-- 차트 유형 -->
+          <div style="margin-bottom:12px;">
+            <div style="font-size:10px;font-weight:700;color:#888;letter-spacing:0.5px;margin-bottom:6px;text-transform:uppercase;">차트 유형</div>
+            <div style="display:inline-flex;align-items:center;gap:6px;background:#fff0f4;border:1px solid #fecdd3;border-radius:6px;padding:5px 12px;color:#e8587a;font-size:11px;font-weight:700;">
+              📊 {{ uiState.infoPanel.src.chartType }}
+            </div>
+          </div>
+          <!-- 데이터 필드 -->
+          <div style="margin-bottom:12px;">
+            <div style="font-size:10px;font-weight:700;color:#888;letter-spacing:0.5px;margin-bottom:6px;text-transform:uppercase;">응답 데이터 필드 (data.{{ uiState.infoPanel.src.dataKey }})</div>
+            <div style="background:#1e1e2e;color:#86efac;border-radius:6px;padding:8px 12px;font-size:10.5px;line-height:1.8;">{{ uiState.infoPanel.src.fields }}</div>
+          </div>
+          <!-- 설명 -->
+          <div style="margin-bottom:12px;">
+            <div style="font-size:10px;font-weight:700;color:#888;letter-spacing:0.5px;margin-bottom:6px;text-transform:uppercase;">위젯 설명</div>
+            <div style="background:#f0fdf4;border-left:3px solid #10b981;border-radius:0 6px 6px 0;padding:8px 12px;color:#065f46;font-size:11px;line-height:1.7;font-family:sans-serif;">{{ uiState.infoPanel.src.desc }}</div>
+          </div>
+          <!-- 템플릿 마크업 -->
+          <div v-if="uiState.infoPanel.src.tag">
+            <div style="font-size:10px;font-weight:700;color:#888;letter-spacing:0.5px;margin-bottom:6px;text-transform:uppercase;">템플릿 마크업</div>
+            <div style="background:#1e1e2e;border-radius:6px;overflow:hidden;">
+              <pre style="margin:0;padding:10px 14px;font-size:11px;line-height:1.7;color:#e2a7f0;white-space:pre;overflow-x:auto;">{{ uiState.infoPanel.src.tag }}</pre>
+            </div>
+            <!-- 속성 매핑 테이블 -->
+            <div v-if="uiState.infoPanel.src.attrs" style="margin-top:8px;background:#1e1e2e;border-radius:6px;overflow:hidden;">
+              <div style="padding:5px 12px;background:rgba(255,255,255,0.05);font-size:9.5px;font-weight:700;color:#888;letter-spacing:0.5px;text-transform:uppercase;">속성 매핑</div>
+              <table style="width:100%;border-collapse:collapse;">
+                <tr v-for="a in uiState.infoPanel.src.attrs" :key="a.k">
+                  <td style="padding:5px 10px;color:#7dd3fc;font-size:10.5px;border-bottom:1px solid rgba(255,255,255,0.05);white-space:nowrap;width:38%;font-weight:700;">{{ a.k }}</td>
+                  <td style="padding:5px 10px;color:#fbbf24;font-size:10.5px;border-bottom:1px solid rgba(255,255,255,0.05);white-space:nowrap;width:28%;">{{ a.v }}</td>
+                  <td style="padding:5px 10px;color:#9ca3af;font-size:10px;border-bottom:1px solid rgba(255,255,255,0.05);">{{ a.d }}</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </template>
+        <div v-else style="color:#aaa;padding:20px;text-align:center;">소스정보가 없습니다.</div>
+      </div>
+      <!-- ECharts Option / 원시 데이터 탭 본문 -->
+      <div v-if="uiState.infoPanel.tab==='opt' || uiState.infoPanel.tab==='data'" style="position:relative;">
+        <!-- 원시 데이터 탭일 때 API 정보 헤더 -->
+        <div v-if="uiState.infoPanel.tab==='data' &amp;&amp; uiState.infoPanel.src" style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:#f8fafc;border-bottom:1px solid #e5e7eb;font-size:10.5px;">
+          <span style="color:#888;">URL</span>
+          <span style="color:#3b82f6;font-weight:700;">{{ uiState.infoPanel.src.url }}</span>
+          <span style="color:#aaa;margin-left:4px;">→</span>
+          <span style="color:#10b981;font-weight:700;">data.{{ uiState.infoPanel.src.dataKey }}</span>
+        </div>
+        <pre :style="{margin:0,padding:'12px 14px',fontSize:'10.5px',lineHeight:'1.55',maxHeight:'360px',overflowY:'auto',overflowX:'auto',background:'#1e1e2e',color:'#cdd6f4',whiteSpace:'pre',tabSize:2}">{{ uiState.infoPanel.tab==='opt' ? uiState.infoPanel.optJson : uiState.infoPanel.dataJson }}</pre>
+        <button @click="navigator.clipboard.writeText(uiState.infoPanel.tab==='opt'?uiState.infoPanel.optJson:uiState.infoPanel.dataJson)"
+          title="클립보드 복사"
+          style="position:absolute;top:8px;right:10px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);color:#aaa;border-radius:5px;padding:2px 8px;font-size:10px;cursor:pointer;">
+          📋 복사
+        </button>
+      </div>
+    </div>
+  </teleport>
+
 </div>
+
+<style>
+.dash-info-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 2px;
+  line-height: 1;
+  border-radius: 4px;
+  transition: transform 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+.dash-info-btn:hover {
+  transform: scale(1.25);
+  background: rgba(232,88,122,0.10);
+}
+.dash-info-btn:active {
+  transform: scale(0.95);
+}
+</style>
 `,
 };
-

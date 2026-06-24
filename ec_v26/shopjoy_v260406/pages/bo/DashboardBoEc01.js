@@ -39,6 +39,7 @@ window.DashboardBoEc01 = {
     const uiState = reactive({
       filterExpand: false, activeTab: 'sales', tabMode: '4col', loading: false,
       xviewDrillRows: [], xviewDrillVisible: false,
+      infoPanel: null, /* { title, optJson, dataJson, top, left } */
     });
 
     const COMP_IDS = [
@@ -92,6 +93,7 @@ window.DashboardBoEc01 = {
       if (cmd === 'filters-toggleAll')         return toggleAll(param.key, param.all);
       if (cmd === 'filters-toggle')            return toggle(filters[param.key], param.v);
       if (cmd === 'xview-drill-close')         { uiState.xviewDrillVisible = false; return; }
+      if (cmd === 'info-close')                { uiState.infoPanel = null; return; }
       console.warn('[handleBtnAction] unknown cmd:', cmd);
     };
 
@@ -104,6 +106,113 @@ window.DashboardBoEc01 = {
     const toggle    = (list, v) => { const i = list.indexOf(v); if (i >= 0) list.splice(i, 1); else list.push(v); };
     const toggleAll = (key, all) => { filters[key] = filters[key].length === all.length ? [] : [...all]; };
     const isSel     = (list, v) => list.includes(v);
+
+    /* 위젯 소스정보 메타 — compId별 API/파라미터/차트 설명 */
+    const WIDGET_SRC = {
+      COMP0101: { compId:'COMP0101', chartType:'bar (세로 막대)', url:'POST /api/bo/ec/cm/dashboard/data', dataKey:'info0101', fields:'col1Nm(월라벨) / col1Num(매출액)', desc:'월별 매출 합계. 14개월 기간 기준 집계.',
+        tag:'<co-echart\n  :option="cfOpt0101"\n  height="260px"\n/>',
+        attrs:[{k:':option',v:'cfOpt0101',d:'ECharts option computed — series/xAxis/yAxis 포함'},{k:'height',v:'"260px"',d:'캔버스 높이 (고정값)'}] },
+      COMP0102: { compId:'COMP0102', chartType:'bar grouped (그룹 막대)', url:'POST /api/bo/ec/cm/dashboard/data', dataKey:'info0102', fields:'col1Nm(월) / col1Num(가입) / col2Nm(월) / col2Num(탈퇴)', desc:'월별 고객 가입·탈퇴 병렬 표시.',
+        tag:'<co-echart\n  :option="cfOpt0102"\n  height="260px"\n/>',
+        attrs:[{k:':option',v:'cfOpt0102',d:'가입(파랑)/탈퇴(빨강) grouped bar series'},{k:'height',v:'"260px"',d:'캔버스 높이'}] },
+      COMP0103: { compId:'COMP0103', chartType:'line + area (면적 꺾은선)', url:'POST /api/bo/ec/cm/dashboard/data', dataKey:'info0103', fields:'col1Nm(월) / col1Num(클릭수)', desc:'상품상세 페이지 월별 클릭 횟수.',
+        tag:'<co-echart\n  :option="cfOpt0103"\n  height="260px"\n/>',
+        attrs:[{k:':option',v:'cfOpt0103',d:'areaStyle 그라데이션 line 시리즈'},{k:'height',v:'"260px"',d:'캔버스 높이'}] },
+      COMP0104: { compId:'COMP0104', chartType:'line + area (면적 꺾은선)', url:'POST /api/bo/ec/cm/dashboard/data', dataKey:'info0104', fields:'col1Nm(월) / col1Num(주문건수)', desc:'월별 주문완료 건수.',
+        tag:'<co-echart\n  :option="cfOpt0104"\n  height="260px"\n/>',
+        attrs:[{k:':option',v:'cfOpt0104',d:'areaStyle 그라데이션 line 시리즈'},{k:'height',v:'"260px"',d:'캔버스 높이'}] },
+      COMP0201: { compId:'COMP0201', chartType:'line multi (채널별 꺾은선)', url:'POST /api/bo/ec/cm/dashboard/data', dataKey:'info0201', fields:'col1Nm(채널명) / col2Nm(월) / col2Num(채널매출)', desc:'12개 판매채널별 월별 매출 추이.',
+        tag:'<co-echart\n  :option="cfOpt0201"\n  height="300px"\n/>',
+        attrs:[{k:':option',v:'cfOpt0201',d:'채널별 12개 line series, CHANNEL_COLORS 매핑'},{k:'height',v:'"300px"',d:'멀티라인 가독성 확보 높이'}] },
+      COMP0202: { compId:'COMP0202', chartType:'KPI 카드 (차트 없음)', url:'POST /api/bo/ec/cm/dashboard/data', dataKey:'info0202', fields:'col1Num(총매출) / col2Num(구매수량) / col3Num(마진율%) / col4Num(평균결제액)', desc:'기간 내 핵심 KPI 단일 집계값.',
+        tag:'<div class="kpi-grid">\n  <div v-for="k in cfKpi">\n    {{ k.label }}: {{ k.value }}\n  </div>\n</div>',
+        attrs:[{k:'cfKpi',v:'computed',d:'info0202[0] 의 col1~4Num 을 라벨+값 배열로 변환'}] },
+      COMP0203: { compId:'COMP0203', chartType:'bar horizontal (가로 막대)', url:'POST /api/bo/ec/cm/dashboard/data', dataKey:'info0203', fields:'col1Nm(상품명) / col1Num(매출액)', desc:'상품별 매출 TOP 7 랭킹.',
+        tag:'<co-echart\n  :option="cfOpt0203"\n  height="240px"\n/>',
+        attrs:[{k:':option',v:'cfOpt0203',d:'yAxis category(상품명역순) + xAxis value 가로 막대'},{k:'height',v:'"240px"',d:'7행 기준 높이'}] },
+      COMP0204: { compId:'COMP0204', chartType:'pie (파이 차트)', url:'POST /api/bo/ec/cm/dashboard/data', dataKey:'info0204', fields:'col1Nm(채널명) / col1Num(비중%)', desc:'채널별 매출 구성 비중.',
+        tag:'<co-echart\n  :option="cfOpt0204"\n  height="220px"\n/>',
+        attrs:[{k:':option',v:'cfOpt0204',d:'pie series, radius:["35%","65%"] 도넛형'},{k:'height',v:'"220px"',d:'캔버스 높이'}] },
+      COMP0301: { compId:'COMP0301', chartType:'pie (파이 차트)', url:'POST /api/bo/ec/cm/dashboard/data', dataKey:'info0301', fields:'col1Nm(디바이스) / col1Num(비중%)', desc:'Mobile·Desktop·Tablet 접속 비중.',
+        tag:'<co-echart\n  :option="cfOpt0301"\n  height="220px"\n/>',
+        attrs:[{k:':option',v:'cfOpt0301',d:'pie series — Mobile/Desktop/Tablet 3색'},{k:'height',v:'"220px"',d:'캔버스 높이'}] },
+      COMP0302: { compId:'COMP0302', chartType:'pie (파이 차트)', url:'POST /api/bo/ec/cm/dashboard/data', dataKey:'info0302', fields:'col1Nm(시간대) / col1Num(비중%)', desc:'아침·점심·저녁·야간 시간대별 비중.',
+        tag:'<co-echart\n  :option="cfOpt0302"\n  height="220px"\n/>',
+        attrs:[{k:':option',v:'cfOpt0302',d:'pie series — 시간대 4구간 색상'},{k:'height',v:'"220px"',d:'캔버스 높이'}] },
+      COMP0303: { compId:'COMP0303', chartType:'bar horizontal (가로 막대)', url:'POST /api/bo/ec/cm/dashboard/data', dataKey:'info0303', fields:'col1Nm(지역명) / col1Num(매출액)', desc:'시도별 매출 순위.',
+        tag:'<co-echart\n  :option="cfOpt0303"\n  height="220px"\n/>',
+        attrs:[{k:':option',v:'cfOpt0303',d:'yAxis category(지역명역순) + xAxis value'},{k:'height',v:'"220px"',d:'캔버스 높이'}] },
+      COMP0304: { compId:'COMP0304', chartType:'line (꺾은선)', url:'POST /api/bo/ec/cm/dashboard/data', dataKey:'info0304', fields:'col1Nm(시각 00~23) / col1Num(주문건수)', desc:'24시간 시간대별 주문 분포.',
+        tag:'<co-echart\n  :option="cfOpt0304"\n  height="180px"\n/>',
+        attrs:[{k:':option',v:'cfOpt0304',d:'xAxis 0~23시 24포인트 line'},{k:'height',v:'"180px"',d:'좁은 카드 기준 높이'}] },
+      COMP0401: { compId:'COMP0401', chartType:'radar (레이더 차트)', url:'POST /api/bo/ec/cm/dashboard/data', dataKey:'info0401', fields:'col1Nm(지표명) / col1Num(점수 0~100)', desc:'매출성장·고객만족·재구매율·신규고객·마진율·채널확장 6개 지표.',
+        tag:'<co-echart\n  :option="cfOpt0401"\n  height="220px"\n/>',
+        attrs:[{k:':option',v:'cfOpt0401',d:'radar indicator 6축 + areaStyle 반투명'},{k:'height',v:'"220px"',d:'캔버스 높이'}] },
+      COMP0402: { compId:'COMP0402', chartType:'bar stacked (누적 막대)', url:'POST /api/bo/ec/cm/dashboard/data', dataKey:'info0402', fields:'col1Nm(월) / col1Num(고소득) / col2Num(중간) / col3Num(저소득)', desc:'월별 소득수준 3단계 누적 매출.',
+        tag:'<co-echart\n  :option="cfOpt0402"\n  height="220px"\n/>',
+        attrs:[{k:':option',v:'cfOpt0402',d:'stack:"total" bar 3 series — 고소득/중간/저소득'},{k:'height',v:'"220px"',d:'캔버스 높이'}] },
+      COMP0403: { compId:'COMP0403', chartType:'pie (파이 차트)', url:'POST /api/bo/ec/cm/dashboard/data', dataKey:'info0403', fields:'col1Nm(배송유형) / col1Num(비중%)', desc:'무료·유료·조건부무료·새벽배송 비중.',
+        tag:'<co-echart\n  :option="cfOpt0403"\n  height="220px"\n/>',
+        attrs:[{k:':option',v:'cfOpt0403',d:'pie series — 배송유형 4종 색상'},{k:'height',v:'"220px"',d:'캔버스 높이'}] },
+      XVIEW:    { compId:'(없음)', chartType:'scatter + brush (X-View 히트맵)', url:'(로컬 목업 — 실시간 생성)', dataKey:'xviewData', fields:'t(timestamp ms) / rt(응답시간ms) / err(boolean)', desc:'브라우저 로컬에서 800개 랜덤 포인트 생성. 10초마다 새 포인트 추가. 실제 구현 시 APM 에이전트 데이터 연동 필요.',
+        tag:'<co-echart\n  :option="cfOptXview"\n  height="360px"\n  @brush-selected="onXviewBrush"\n/>',
+        attrs:[{k:':option',v:'cfOptXview',d:'scatter series — 정상(파랑)/에러(빨강), brush toolbox 포함'},{k:'height',v:'"360px"',d:'드릴다운 영역 포함 높이'},{k:'@brush-selected',v:'onXviewBrush',d:'브러시 선택 시 드릴다운 테이블 갱신 emit 핸들러'}] },
+    };
+
+    /* 공통 API 요청 파라미터 (loadDashboard에서 실제로 전송하는 값) */
+    const fnBuildApiParams = (compId) => ({
+      compId,
+      uiNm: 'DashboardBoEc01',
+      startYmd: (filters.startDt || '').replace(/-/g, ''),
+      endYmd:   (filters.endDt   || '').replace(/-/g, ''),
+    });
+
+    /* 위젯 정보 팝오버 열기
+     * optGetter  : () => ECharts option 반환 함수 (없으면 null)
+     * dataKey    : dash[dataKey] 배열을 원시 데이터로 사용 (없으면 null)
+     * rawOverride: dash 바깥의 데이터를 직접 전달 (없으면 undefined)
+     * srcKey     : WIDGET_SRC 키 (없으면 null)
+     */
+    const fnOpenInfo = (e, title, optGetter, dataKey, rawOverride, srcKey) => {
+      e.stopPropagation();
+      const rect = e.currentTarget.getBoundingClientRect();
+      const scrollY = window.scrollY || 0;
+      const scrollX = window.scrollX || 0;
+      if (uiState.infoPanel && uiState.infoPanel.title === title) {
+        uiState.infoPanel = null;
+        return;
+      }
+      let optObj = null;
+      try {
+        if (optGetter) {
+          const got = optGetter();
+          optObj = (got !== null && typeof got === 'object' && 'value' in got) ? got.value : got;
+        }
+      } catch (_) {}
+      const rawData = rawOverride !== undefined ? rawOverride : (dataKey ? dash[dataKey] : null);
+      const src = srcKey ? WIDGET_SRC[srcKey] : null;
+      const apiParams = src && src.compId !== '(없음)' ? fnBuildApiParams(src.compId) : null;
+      uiState.infoPanel = {
+        title,
+        optJson:  optObj   ? JSON.stringify(optObj,  null, 2) : '(없음)',
+        dataJson: rawData  ? JSON.stringify(rawData, null, 2) : '(없음)',
+        src, apiParams,
+        tab: 'opt',
+        top:  rect.bottom + scrollY + 6,
+        left: Math.min(rect.left  + scrollX, window.innerWidth - 560),
+      };
+    };
+
+    /* X-View 전용 팝오버 열기 */
+    const fnOpenXviewInfo = (e) => {
+      fnOpenInfo(e, 'X-View 히트맵', () => cfOptXview, null, xviewData.value.slice(0, 10), 'XVIEW');
+    };
+
+    /* 팝오버 탭 전환 */
+    const fnInfoTab = (t) => { if (uiState.infoPanel) uiState.infoPanel.tab = t; };
+
+    /* 외부 클릭 시 팝오버 닫기 */
+    const _onDocClick = () => { uiState.infoPanel = null; };
 
     /* ##### [04] 내장 사용 함수 #################################################### */
 
@@ -574,6 +683,7 @@ window.DashboardBoEc01 = {
     /* ##### [06] 라이프사이클 #################################################### */
 
     onMounted(() => {
+      document.addEventListener('click', _onDocClick);
       loadDashboard();
       xviewTimer = setInterval(() => {
         const now = Date.now();
@@ -583,7 +693,10 @@ window.DashboardBoEc01 = {
       }, 2000);
     });
 
-    onUnmounted(() => { if (xviewTimer) clearInterval(xviewTimer); });
+    onUnmounted(() => {
+      if (xviewTimer) clearInterval(xviewTimer);
+      document.removeEventListener('click', _onDocClick);
+    });
 
     return {
       uiState, filters, dash,
@@ -597,6 +710,7 @@ window.DashboardBoEc01 = {
       cfOpt0301, cfOpt0302, cfOpt0303, cfOpt0304,
       cfOpt0401, cfOpt0402, cfOpt0403,
       cfOptXview, onXviewBrush,
+      fnOpenInfo, fnOpenXviewInfo, fnInfoTab, fnBuildApiParams,
     };
   },
 
@@ -662,7 +776,8 @@ window.DashboardBoEc01 = {
     <!-- 1) 월별 매출 막대 -->
     <bo-container v-show="showPanel('sales')" card-style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
-        💰 월별 매출현황 (14개월)
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'월별 매출현황',()=>cfOpt0101,'info0101',undefined,'COMP0101')" title="위젯 정보">💰</button>
+        월별 매출현황 (14개월)
         <span style="flex:1;"></span>
         <span style="font-size:11px;color:#888;font-weight:500;">총 {{ fmt(dash.info0101.reduce((a,r)=>a+(r.col1Num||0),0)) }}원</span>
       </div>
@@ -671,14 +786,18 @@ window.DashboardBoEc01 = {
 
     <!-- 2) 가입/탈퇴 -->
     <bo-container v-show="showPanel('member')" card-style="padding:14px;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;">👥 월별 고객 가입/탈퇴자 현황 (14개월)</div>
+      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'가입/탈퇴 현황',()=>cfOpt0102,'info0102',undefined,'COMP0102')" title="위젯 정보">👥</button>
+        월별 고객 가입/탈퇴자 현황 (14개월)
+      </div>
       <co-echart :option="cfOpt0102" height="260px" />
     </bo-container>
 
     <!-- 3) 상품 클릭 -->
     <bo-container v-show="showPanel('click')" card-style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
-        🖱 월별 상품상세 클릭 현황 (14개월)
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'상품상세 클릭',()=>cfOpt0103,'info0103',undefined,'COMP0103')" title="위젯 정보">🖱</button>
+        월별 상품상세 클릭 현황 (14개월)
         <span style="flex:1;"></span>
         <span style="font-size:11px;color:#888;">총 {{ fmt(dash.info0103.reduce((a,r)=>a+(r.col1Num||0),0)) }}회</span>
       </div>
@@ -688,7 +807,8 @@ window.DashboardBoEc01 = {
     <!-- 4) 주문완료 -->
     <bo-container v-show="showPanel('order')" card-style="padding:14px;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:6px;">
-        📋 월별 주문완료 현황 (14개월)
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'주문완료 현황',()=>cfOpt0104,'info0104',undefined,'COMP0104')" title="위젯 정보">📋</button>
+        월별 주문완료 현황 (14개월)
         <span style="flex:1;"></span>
         <span style="font-size:11px;color:#888;">총 {{ fmt(dash.info0104.reduce((a,r)=>a+(r.col1Num||0),0)) }}건</span>
       </div>
@@ -697,13 +817,19 @@ window.DashboardBoEc01 = {
 
     <!-- 5) 채널별 매출 멀티라인 -->
     <bo-container v-show="showPanel('channel')" card-style="padding:14px;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;">📺 월별 판매채널별 매출현황 (14개월)</div>
+      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'채널별 매출',()=>cfOpt0201,'info0201',undefined,'COMP0201')" title="위젯 정보">📺</button>
+        월별 판매채널별 매출현황 (14개월)
+      </div>
       <co-echart :option="cfOpt0201" height="300px" />
     </bo-container>
 
     <!-- 6) 핵심지표 KPI -->
     <bo-container v-show="showPanel('kpi')" card-style="padding:14px;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;">🎯 핵심지표</div>
+      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:10px;display:flex;align-items:center;gap:4px;">
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'핵심지표 KPI',null,'info0202',undefined,'COMP0202')" title="위젯 정보">🎯</button>
+        핵심지표
+      </div>
       <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
         <div v-for="kpi in [
             {label:'전체 매출현황',value:fmt(cfTotalSales),unit:'원',color:'#e8587a',icon:'💰',bg:'#fff0f4'},
@@ -725,62 +851,90 @@ window.DashboardBoEc01 = {
 
     <!-- 7) 상품 TOP 7 수평 막대 -->
     <bo-container v-show="showPanel('topProducts')" card-style="padding:14px;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;">📦 상품별 매출 TOP 7</div>
+      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'상품 TOP 7',()=>cfOpt0203,'info0203',undefined,'COMP0203')" title="위젯 정보">📦</button>
+        상품별 매출 TOP 7
+      </div>
       <co-echart :option="cfOpt0203" height="240px" />
     </bo-container>
 
     <!-- 8) 채널 도넛 -->
     <bo-container v-show="showPanel('channelMix')" card-style="padding:14px;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;">📱 판매 채널별</div>
+      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'판매 채널별',()=>cfOpt0204,'info0204',undefined,'COMP0204')" title="위젯 정보">📱</button>
+        판매 채널별
+      </div>
       <co-echart :option="cfOpt0204" height="220px" />
     </bo-container>
 
     <!-- 9) 디바이스 도넛 -->
     <bo-container v-show="showPanel('deviceMix')" card-style="padding:14px;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;">💻 디바이스별</div>
+      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'디바이스별',()=>cfOpt0301,'info0301',undefined,'COMP0301')" title="위젯 정보">💻</button>
+        디바이스별
+      </div>
       <co-echart :option="cfOpt0301" height="220px" />
     </bo-container>
 
     <!-- 10) 시간대 도넛 -->
     <bo-container v-show="showPanel('timeMix')" card-style="padding:14px;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;">⏰ 시간대별</div>
+      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'시간대별',()=>cfOpt0302,'info0302',undefined,'COMP0302')" title="위젯 정보">⏰</button>
+        시간대별
+      </div>
       <co-echart :option="cfOpt0302" height="220px" />
     </bo-container>
 
     <!-- 11) 지역별 수평 막대 -->
     <bo-container v-show="showPanel('region')" card-style="padding:14px;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;">🗺 지역별 매출현황</div>
+      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'지역별 매출',()=>cfOpt0303,'info0303',undefined,'COMP0303')" title="위젯 정보">🗺</button>
+        지역별 매출현황
+      </div>
       <co-echart :option="cfOpt0303" height="220px" />
     </bo-container>
 
     <!-- 12) 시간대 추이 꺾은선 -->
     <bo-container v-show="showPanel('hourly')" card-style="padding:14px;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;">⏱ 시간대별 주문 추이 (24H)</div>
+      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'시간대별 주문 추이',()=>cfOpt0304,'info0304',undefined,'COMP0304')" title="위젯 정보">⏱</button>
+        시간대별 주문 추이 (24H)
+      </div>
       <co-echart :option="cfOpt0304" height="180px" />
     </bo-container>
 
     <!-- 13) 영업지표 레이더 -->
     <bo-container v-show="showPanel('radar')" card-style="padding:14px;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;">⚡ 영업 지표 비교</div>
+      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'영업 지표',()=>cfOpt0401,'info0401',undefined,'COMP0401')" title="위젯 정보">⚡</button>
+        영업 지표 비교
+      </div>
       <co-echart :option="cfOpt0401" height="220px" />
     </bo-container>
 
     <!-- 14) 경제 수준별 면적 -->
     <bo-container v-show="showPanel('economy')" card-style="padding:14px;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;">💼 경제 수준별 매출현황</div>
+      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'경제 수준별 매출',()=>cfOpt0402,'info0402',undefined,'COMP0402')" title="위젯 정보">💼</button>
+        경제 수준별 매출현황
+      </div>
       <co-echart :option="cfOpt0402" height="220px" />
     </bo-container>
 
     <!-- 15) 배송 조건 도넛 -->
     <bo-container v-show="showPanel('shipping')" card-style="padding:14px;">
-      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;">🚚 배송 조건별 매출현황</div>
+      <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:4px;">
+        <button class="dash-info-btn" @click.stop="fnOpenInfo($event,'배송 조건별 매출',()=>cfOpt0403,'info0403',undefined,'COMP0403')" title="위젯 정보">🚚</button>
+        배송 조건별 매출현황
+      </div>
       <co-echart :option="cfOpt0403" height="220px" />
     </bo-container>
 
     <!-- 16) X-View 실시간 히트맵 -->
     <bo-container v-show="showPanel('xview')" card-style="padding:14px;" style="grid-column:1/-1;">
       <div style="font-size:12px;font-weight:800;color:#444;margin-bottom:6px;display:flex;align-items:center;gap:8px;">
-        🔥 X-View 실시간 트랜잭션 히트맵
+        <button class="dash-info-btn" @click.stop="fnOpenXviewInfo($event)" title="위젯 정보">🔥</button>
+        X-View 실시간 트랜잭션 히트맵
         <span style="font-size:10px;font-weight:400;color:#10b981;background:#f0fdf4;padding:2px 8px;border-radius:10px;border:1px solid #bbf7d0;">● LIVE</span>
         <span style="flex:1;"></span>
         <span style="font-size:10px;color:#888;">드래그하여 범위 선택 → 트랜잭션 상세</span>
@@ -818,6 +972,133 @@ window.DashboardBoEc01 = {
     </bo-container>
 
   </div>
+
+  <!-- 위젯 정보 팝오버 -->
+  <teleport to="body">
+    <div v-if="uiState.infoPanel"
+      @click.stop
+      :style="{position:'absolute',top:uiState.infoPanel.top+'px',left:uiState.infoPanel.left+'px',width:'560px',background:'#fff',borderRadius:'10px',boxShadow:'0 8px 32px rgba(0,0,0,0.18)',border:'1px solid #e5e7eb',zIndex:9999,fontFamily:'monospace',overflow:'hidden'}">
+      <!-- 팝오버 헤더 -->
+      <div style="display:flex;align-items:center;padding:10px 14px;background:linear-gradient(135deg,#1a1a2e,#2d2d44);color:#fff;gap:8px;">
+        <span style="font-size:13px;font-weight:700;">🔍 {{ uiState.infoPanel.title }}</span>
+        <span style="flex:1;"></span>
+        <button @click="handleBtnAction('info-close')"
+          style="background:rgba(255,255,255,0.15);border:none;color:#fff;border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;">✕</button>
+      </div>
+      <!-- 탭 바 (3탭) -->
+      <div style="display:flex;border-bottom:1px solid #e5e7eb;background:#f8fafc;">
+        <button @click="fnInfoTab('src')"
+          :style="{flex:1,padding:'7px 4px',fontSize:'11px',fontWeight:700,border:'none',cursor:'pointer',borderBottom:uiState.infoPanel.tab==='src'?'2px solid #10b981':'2px solid transparent',color:uiState.infoPanel.tab==='src'?'#10b981':'#666',background:'transparent'}">
+          📝 소스정보
+        </button>
+        <button @click="fnInfoTab('opt')"
+          :style="{flex:1,padding:'7px 4px',fontSize:'11px',fontWeight:700,border:'none',cursor:'pointer',borderBottom:uiState.infoPanel.tab==='opt'?'2px solid #e8587a':'2px solid transparent',color:uiState.infoPanel.tab==='opt'?'#e8587a':'#666',background:'transparent'}">
+          ⚙ ECharts Option
+        </button>
+        <button @click="fnInfoTab('data')"
+          :style="{flex:1,padding:'7px 4px',fontSize:'11px',fontWeight:700,border:'none',cursor:'pointer',borderBottom:uiState.infoPanel.tab==='data'?'2px solid #3b82f6':'2px solid transparent',color:uiState.infoPanel.tab==='data'?'#3b82f6':'#666',background:'transparent'}">
+          📊 원시 데이터
+        </button>
+      </div>
+      <!-- 소스정보 탭 본문 -->
+      <div v-if="uiState.infoPanel.tab==='src'" style="padding:14px 16px;font-size:11px;line-height:1.7;max-height:400px;overflow-y:auto;background:#fafbfc;">
+        <template v-if="uiState.infoPanel.src">
+          <!-- API 섹션 -->
+          <div style="margin-bottom:12px;">
+            <div style="font-size:10px;font-weight:700;color:#888;letter-spacing:0.5px;margin-bottom:6px;text-transform:uppercase;">API 엔드포인트</div>
+            <div style="background:#1e1e2e;color:#7dd3fc;border-radius:6px;padding:8px 12px;font-size:11px;">{{ uiState.infoPanel.src.url }}</div>
+          </div>
+          <!-- 요청 파라미터 -->
+          <div style="margin-bottom:12px;">
+            <div style="font-size:10px;font-weight:700;color:#888;letter-spacing:0.5px;margin-bottom:6px;text-transform:uppercase;">요청 파라미터 (현재 필터 기준)</div>
+            <div v-if="uiState.infoPanel.apiParams" style="background:#1e1e2e;border-radius:6px;overflow:hidden;">
+              <table style="width:100%;border-collapse:collapse;">
+                <tr v-for="(v,k) in uiState.infoPanel.apiParams" :key="k">
+                  <td style="padding:4px 10px;color:#a78bfa;font-size:10.5px;border-bottom:1px solid rgba(255,255,255,0.06);white-space:nowrap;width:40%;">{{ k }}</td>
+                  <td style="padding:4px 10px;color:#cdd6f4;font-size:10.5px;border-bottom:1px solid rgba(255,255,255,0.06);">{{ v }}</td>
+                </tr>
+              </table>
+            </div>
+            <div v-else style="color:#aaa;font-size:11px;padding:6px 0;">(실시간 로컬 생성 — API 미사용)</div>
+          </div>
+          <!-- 차트 유형 -->
+          <div style="margin-bottom:12px;">
+            <div style="font-size:10px;font-weight:700;color:#888;letter-spacing:0.5px;margin-bottom:6px;text-transform:uppercase;">차트 유형</div>
+            <div style="display:inline-flex;align-items:center;gap:6px;background:#fff0f4;border:1px solid #fecdd3;border-radius:6px;padding:5px 12px;color:#e8587a;font-size:11px;font-weight:700;">
+              📊 {{ uiState.infoPanel.src.chartType }}
+            </div>
+          </div>
+          <!-- 데이터 필드 -->
+          <div style="margin-bottom:12px;">
+            <div style="font-size:10px;font-weight:700;color:#888;letter-spacing:0.5px;margin-bottom:6px;text-transform:uppercase;">응답 데이터 필드 (data.{{ uiState.infoPanel.src.dataKey }})</div>
+            <div style="background:#1e1e2e;color:#86efac;border-radius:6px;padding:8px 12px;font-size:10.5px;line-height:1.8;">{{ uiState.infoPanel.src.fields }}</div>
+          </div>
+          <!-- 설명 -->
+          <div style="margin-bottom:12px;">
+            <div style="font-size:10px;font-weight:700;color:#888;letter-spacing:0.5px;margin-bottom:6px;text-transform:uppercase;">위젯 설명</div>
+            <div style="background:#f0fdf4;border-left:3px solid #10b981;border-radius:0 6px 6px 0;padding:8px 12px;color:#065f46;font-size:11px;line-height:1.7;font-family:sans-serif;">{{ uiState.infoPanel.src.desc }}</div>
+          </div>
+          <!-- 템플릿 마크업 -->
+          <div v-if="uiState.infoPanel.src.tag">
+            <div style="font-size:10px;font-weight:700;color:#888;letter-spacing:0.5px;margin-bottom:6px;text-transform:uppercase;">템플릿 마크업</div>
+            <div style="background:#1e1e2e;border-radius:6px;overflow:hidden;">
+              <pre style="margin:0;padding:10px 14px;font-size:11px;line-height:1.7;color:#e2a7f0;white-space:pre;overflow-x:auto;">{{ uiState.infoPanel.src.tag }}</pre>
+            </div>
+            <!-- 속성 매핑 테이블 -->
+            <div v-if="uiState.infoPanel.src.attrs" style="margin-top:8px;background:#1e1e2e;border-radius:6px;overflow:hidden;">
+              <div style="padding:5px 12px;background:rgba(255,255,255,0.05);font-size:9.5px;font-weight:700;color:#888;letter-spacing:0.5px;text-transform:uppercase;">속성 매핑</div>
+              <table style="width:100%;border-collapse:collapse;">
+                <tr v-for="a in uiState.infoPanel.src.attrs" :key="a.k">
+                  <td style="padding:5px 10px;color:#7dd3fc;font-size:10.5px;border-bottom:1px solid rgba(255,255,255,0.05);white-space:nowrap;width:38%;font-weight:700;">{{ a.k }}</td>
+                  <td style="padding:5px 10px;color:#fbbf24;font-size:10.5px;border-bottom:1px solid rgba(255,255,255,0.05);white-space:nowrap;width:28%;">{{ a.v }}</td>
+                  <td style="padding:5px 10px;color:#9ca3af;font-size:10px;border-bottom:1px solid rgba(255,255,255,0.05);">{{ a.d }}</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </template>
+        <div v-else style="color:#aaa;padding:20px;text-align:center;">소스정보가 없습니다.</div>
+      </div>
+      <!-- ECharts Option / 원시 데이터 탭 본문 -->
+      <div v-if="uiState.infoPanel.tab==='opt' || uiState.infoPanel.tab==='data'" style="position:relative;">
+        <!-- 원시 데이터 탭일 때 API 정보 헤더 -->
+        <div v-if="uiState.infoPanel.tab==='data' && uiState.infoPanel.src" style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:#f8fafc;border-bottom:1px solid #e5e7eb;font-size:10.5px;">
+          <span style="color:#888;">URL</span>
+          <span style="color:#3b82f6;font-weight:700;">{{ uiState.infoPanel.src.url }}</span>
+          <span style="color:#aaa;margin-left:4px;">→</span>
+          <span style="color:#10b981;font-weight:700;">data.{{ uiState.infoPanel.src.dataKey }}</span>
+        </div>
+        <pre :style="{margin:0,padding:'12px 14px',fontSize:'10.5px',lineHeight:'1.55',maxHeight:'360px',overflowY:'auto',overflowX:'auto',background:'#1e1e2e',color:'#cdd6f4',whiteSpace:'pre',tabSize:2}">{{ uiState.infoPanel.tab==='opt' ? uiState.infoPanel.optJson : uiState.infoPanel.dataJson }}</pre>
+        <button @click="navigator.clipboard.writeText(uiState.infoPanel.tab==='opt'?uiState.infoPanel.optJson:uiState.infoPanel.dataJson)"
+          title="클립보드 복사"
+          style="position:absolute;top:8px;right:10px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);color:#aaa;border-radius:5px;padding:2px 8px;font-size:10px;cursor:pointer;">
+          📋 복사
+        </button>
+      </div>
+    </div>
+  </teleport>
+
 </div>
+
+<style>
+.dash-info-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 2px;
+  line-height: 1;
+  border-radius: 4px;
+  transition: transform 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+.dash-info-btn:hover {
+  transform: scale(1.25);
+  background: rgba(232,88,122,0.10);
+}
+.dash-info-btn:active {
+  transform: scale(0.95);
+}
+</style>
 `,
 };
