@@ -277,6 +277,23 @@ window.DashboardBoEc01 = {
     };
 
     /* X-View 히트맵 목업 데이터 */
+    const XVIEW_URLS = [
+      { url:'/bo/ec/mb/member/page',        uiNm:'회원관리',     cmdNm:'목록조회' },
+      { url:'/bo/ec/pd/prod/page',           uiNm:'상품관리',     cmdNm:'목록조회' },
+      { url:'/bo/ec/od/order/page',          uiNm:'주문관리',     cmdNm:'목록조회' },
+      { url:'/bo/ec/od/claim/page',          uiNm:'클레임관리',   cmdNm:'목록조회' },
+      { url:'/bo/ec/pm/coupon/page',         uiNm:'쿠폰관리',     cmdNm:'목록조회' },
+      { url:'/bo/ec/cm/dashboard/data',      uiNm:'대시보드',     cmdNm:'조회' },
+      { url:'/bo/sy/user/page',              uiNm:'사용자관리',   cmdNm:'목록조회' },
+      { url:'/bo/sy/code/list',              uiNm:'코드관리',     cmdNm:'코드목록' },
+      { url:'/bo/ec/pd/prod/save/base',      uiNm:'상품관리',     cmdNm:'저장' },
+      { url:'/bo/ec/od/order/save/base',     uiNm:'주문관리',     cmdNm:'저장' },
+      { url:'/bo/ec/mb/member/save/base',    uiNm:'회원관리',     cmdNm:'저장' },
+      { url:'/bo/ec/dp/ui/list',             uiNm:'전시관리',     cmdNm:'목록조회' },
+      { url:'/bo/ec/pm/event/page',          uiNm:'이벤트관리',   cmdNm:'목록조회' },
+      { url:'/co/sy/code/grp-codes',         uiNm:'공통',         cmdNm:'코드조회' },
+      { url:'/bo/sy/menu/list',              uiNm:'메뉴관리',     cmdNm:'목록조회' },
+    ];
     const buildXviewData = () => {
       const now = Date.now();
       const pts = [];
@@ -288,7 +305,8 @@ window.DashboardBoEc01 = {
             ? 500 + Math.random() * 2500
             : 3000 + Math.random() * 5000;
         const err = rt > 5000 && Math.random() < 0.3;
-        pts.push({ t, rt: Math.round(rt), err });
+        const src = XVIEW_URLS[Math.floor(Math.random() * XVIEW_URLS.length)];
+        pts.push({ t, rt: Math.round(rt), err, url: src.url, uiNm: src.uiNm, cmdNm: src.cmdNm });
       }
       return pts;
     };
@@ -604,7 +622,7 @@ window.DashboardBoEc01 = {
     const cfOptXview = computed(() => {
       const now  = Date.now();
       const from = now - 10 * 60 * 1000;
-      const pts  = xviewData.value.map(p => [p.t, p.rt, p.err ? 2 : p.rt > 3000 ? 2 : p.rt > 500 ? 1 : 0]);
+      const pts  = xviewData.value.map(p => [p.t, p.rt, p.err ? 2 : p.rt > 3000 ? 2 : p.rt > 500 ? 1 : 0, p.url||'', p.uiNm||'', p.cmdNm||'']);
 
       return {
         tooltip: {
@@ -613,7 +631,13 @@ window.DashboardBoEc01 = {
             const d   = new Date(p.data[0]);
             const hms = d.getHours() + ':' + String(d.getMinutes()).padStart(2,'0') + ':' + String(d.getSeconds()).padStart(2,'0');
             const lbl = ['정상','느림','오류'][p.data[2]] || '';
-            return hms + '<br/>응답시간: <b>' + p.data[1].toFixed(0) + 'ms</b><br/>상태: ' + lbl;
+            const url   = p.data[3] || '';
+            const uiNm  = p.data[4] || '';
+            const cmdNm = p.data[5] || '';
+            return hms + '<br/>응답시간: <b>' + p.data[1].toFixed(0) + 'ms</b><br/>상태: ' + lbl
+              + (url   ? '<br/><span style="color:#7dd3fc;font-family:monospace;font-size:11px;">' + url + '</span>' : '')
+              + (uiNm  ? '<br/><span style="color:#c4b5fd;">X-UI-Nm: <b>' + uiNm + '</b></span>' : '')
+              + (cmdNm ? ' &nbsp;<span style="color:#6ee7b7;">X-Cmd-Nm: <b>' + cmdNm + '</b></span>' : '');
           },
         },
         toolbox: {
@@ -675,6 +699,9 @@ window.DashboardBoEc01 = {
           rt: p.rt,
           status: p.err ? '오류' : p.rt > 3000 ? '매우 느림' : p.rt > 500 ? '느림' : '정상',
           statusColor: p.err ? '#ef4444' : p.rt > 3000 ? '#ef4444' : p.rt > 500 ? '#f59e0b' : '#10b981',
+          url: p.url || '',
+          uiNm: p.uiNm || '',
+          cmdNm: p.cmdNm || '',
         };
       }).sort((a,b) => b.rt - a.rt);
       uiState.xviewDrillVisible = true;
@@ -689,7 +716,8 @@ window.DashboardBoEc01 = {
         const now = Date.now();
         const rt  = Math.random() < 0.75 ? Math.random()*500 : Math.random()<0.7 ? 500+Math.random()*2500 : 3000+Math.random()*5000;
         const err = rt > 5000 && Math.random() < 0.3;
-        xviewData.value = [...xviewData.value.filter(p => p.t > now - 10*60*1000), { t:now, rt:Math.round(rt), err }];
+        const src = XVIEW_URLS[Math.floor(Math.random() * XVIEW_URLS.length)];
+        xviewData.value = [...xviewData.value.filter(p => p.t > now - 10*60*1000), { t:now, rt:Math.round(rt), err, url:src.url, uiNm:src.uiNm, cmdNm:src.cmdNm }];
       }, 2000);
     });
 
@@ -949,21 +977,27 @@ window.DashboardBoEc01 = {
           <span style="flex:1;"></span>
           <button class="btn btn_close" @click="handleBtnAction('xview-drill-close')" style="font-size:11px;padding:3px 10px;">✕ 닫기</button>
         </div>
-        <div style="max-height:220px;overflow-y:auto;">
-          <table class="admin-table" style="width:100%;font-size:11px;">
+        <div style="max-height:260px;overflow-y:auto;overflow-x:auto;">
+          <table class="admin-table" style="width:100%;font-size:11px;min-width:640px;">
             <thead><tr>
-              <th style="width:80px;">시각</th>
-              <th style="width:100px;">응답시간</th>
-              <th style="width:100px;">상태</th>
+              <th style="width:72px;">시각</th>
+              <th style="width:88px;">응답시간</th>
+              <th style="width:76px;">상태</th>
+              <th style="min-width:180px;">URL</th>
+              <th style="width:90px;">X-UI-Nm</th>
+              <th style="width:90px;">X-Cmd-Nm</th>
             </tr></thead>
             <tbody>
               <tr v-for="(row,i) in uiState.xviewDrillRows" :key="i">
-                <td>{{ row.time }}</td>
-                <td style="font-weight:700;">{{ row.rt }}ms</td>
-                <td><span class="badge" :style="{background:row.statusColor,color:'#fff'}">{{ row.status }}</span></td>
+                <td style="white-space:nowrap;">{{ row.time }}</td>
+                <td style="font-weight:700;text-align:right;">{{ row.rt }}ms</td>
+                <td style="text-align:center;"><span class="badge" :style="{background:row.statusColor,color:'#fff',fontSize:'10px'}">{{ row.status }}</span></td>
+                <td style="font-family:monospace;font-size:10.5px;color:#3b82f6;white-space:nowrap;">{{ row.url }}</td>
+                <td style="font-size:10.5px;color:#6366f1;white-space:nowrap;">{{ row.uiNm }}</td>
+                <td style="font-size:10.5px;color:#10b981;white-space:nowrap;">{{ row.cmdNm }}</td>
               </tr>
               <tr v-if="!uiState.xviewDrillRows.length">
-                <td colspan="3" style="text-align:center;color:#aaa;padding:16px;">선택 범위에 데이터가 없습니다.</td>
+                <td colspan="6" style="text-align:center;color:#aaa;padding:16px;">선택 범위에 데이터가 없습니다.</td>
               </tr>
             </tbody>
           </table>
