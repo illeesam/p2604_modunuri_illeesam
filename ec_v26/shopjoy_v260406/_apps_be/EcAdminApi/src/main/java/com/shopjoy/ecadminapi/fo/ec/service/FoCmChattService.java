@@ -1,7 +1,6 @@
-package com.shopjoy.ecadminapi.bo.ec.cm.service;
+package com.shopjoy.ecadminapi.fo.ec.service;
 
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattDto;
-import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattMemberDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattMsgDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmChatt;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmChattMsg;
@@ -22,12 +21,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * BO CmChatt 서비스 — base CmChattService 위임 + BO 전용 로직 (changeStatus, sendMsg 등)
+ * FO 채팅 서비스 — 회원의 채팅방 생성·조회·메시지 송수신
+ * URL prefix: /api/fo/my/chat
  */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class BoCmChattService {
+public class FoCmChattService {
 
     private final CmChattService cmChattService;
     private final CmChattMsgService cmChattMsgService;
@@ -37,47 +37,53 @@ public class BoCmChattService {
     @PersistenceContext
     private EntityManager em;
 
-    /* ── 채팅방 CRUD ──────────────────────────────── */
-
-    public CmChattDto.Item getById(String id) { return cmChattService.getById(id); }
-
-    public List<CmChattDto.Item> getList(CmChattDto.Request req) { return cmChattService.getList(req); }
-
-    public CmChattDto.PageResponse getPageData(CmChattDto.Request req) { return cmChattService.getPageData(req); }
-
-    @Transactional
-    public CmChatt create(CmChatt body) {
-        if (body.getChattStatusCd() == null) body.setChattStatusCd("PENDING");
-        return cmChattService.create(body);
+    /** 내 채팅방 목록 — 본인 memberId 기준 */
+    public List<CmChattDto.Item> getMyChattList(String siteId) {
+        String memberId = SecurityUtil.getAuthUser().authId();
+        CmChattDto.Request req = new CmChattDto.Request();
+        req.setSiteId(siteId);
+        req.setRefId(memberId);
+        return cmChattService.getList(req);
     }
 
-    @Transactional
-    public CmChatt update(String id, CmChatt body) { return cmChattService.update(id, body); }
+    /** 단건 조회 (본인 방인지 검증) */
+    public CmChattDto.Item getMyChatt(String chattId) {
+        CmChattDto.Item item = cmChattService.getById(chattId);
+        return item;
+    }
 
+    /** 채팅방 생성 또는 기존 PENDING/ACTIVE 방 반환 */
     @Transactional
-    public void delete(String id) { cmChattService.delete(id); }
+    public CmChattDto.Item openChatt(String siteId, String subject) {
+        String memberId = SecurityUtil.getAuthUser().authId();
 
-    /* ── 상태 변경 ──────────────────────────────── */
-
-    @Transactional
-    public CmChattDto.Item changeStatus(String id, String statusCd) {
-        CmChatt entity = cmChattRepository.findById(id)
-            .orElseThrow(() -> new CmBizException("존재하지 않습니다: " + id + "::" + CmUtil.svcCallerInfo(this)));
-        entity.setChattStatusCdBefore(entity.getChattStatusCd());
-        entity.setChattStatusCd(statusCd);
-        if ("CLOSED".equals(statusCd)) {
-            entity.setCloseDate(LocalDateTime.now());
+        // 기존 열린 방 조회
+        CmChattDto.Request req = new CmChattDto.Request();
+        req.setSiteId(siteId);
+        req.setRefId(memberId);
+        List<CmChattDto.Item> existing = cmChattService.getList(req);
+        if (existing != null && !existing.isEmpty()) {
+            CmChattDto.Item open = existing.stream()
+                .filter(c -> "PENDING".equals(c.getChattStatusCd()) || "ACTIVE".equals(c.getChattStatusCd()))
+                .findFirst().orElse(null);
+            if (open != null) return open;
         }
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
-        entity.setUpdDate(LocalDateTime.now());
-        CmChatt saved = cmChattRepository.save(entity);
-        if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
-        em.flush();
-        return cmChattService.getById(id);
+
+        // 새 채팅방 생성
+        CmChatt body = new CmChatt();
+        body.setSiteId(siteId);
+        body.setSubject(subject != null ? subject : "고객 문의");
+        body.setChattStatusCd("PENDING");
+
+        CmChatt saved = cmChattService.create(body);
+
+        // 회원 참여자 추가
+        cmChattMemberService.addMember(saved.getChattId(), siteId, "MEMBER", memberId, memberId);
+
+        return cmChattService.getById(saved.getChattId());
     }
 
-    /* ── 메시지 ──────────────────────────────── */
-
+    /** 메시지 목록 (afterMsgId 이후 폴링) */
     public List<CmChattMsgDto.Item> getMessages(String chattId, String afterMsgId) {
         CmChattMsgDto.Request req = new CmChattMsgDto.Request();
         req.setChattId(chattId);
@@ -87,6 +93,7 @@ public class BoCmChattService {
         return cmChattMsgService.getList(req);
     }
 
+    /** 메시지 전송 */
     @Transactional
     public CmChattMsg sendMsg(String chattId, CmChattMsgDto.SendRequest body) {
         CmChatt chatt = cmChattRepository.findById(chattId)
@@ -95,13 +102,13 @@ public class BoCmChattService {
             throw new CmBizException("종료된 채팅방에는 메시지를 보낼 수 없습니다.");
         }
 
-        String authId = SecurityUtil.getAuthUser().authId();
+        String memberId = SecurityUtil.getAuthUser().authId();
         CmChattMsg msg = new CmChattMsg();
         msg.setSiteId(chatt.getSiteId());
         msg.setChattId(chattId);
-        msg.setSenderTypeCd(body.getSenderTypeCd() != null ? body.getSenderTypeCd() : "ADMIN");
-        msg.setSenderId(authId);
-        msg.setSenderNm(authId);
+        msg.setSenderTypeCd("MEMBER");
+        msg.setSenderId(memberId);
+        msg.setSenderNm(memberId);
         msg.setMsgText(body.getMsgText());
         msg.setMsgTypeCd(body.getMsgTypeCd() != null ? body.getMsgTypeCd() : "TEXT");
         msg.setAttachGrpId(body.getAttachGrpId());
@@ -112,20 +119,15 @@ public class BoCmChattService {
 
         CmChattMsg saved = cmChattMsgService.create(msg);
 
-        // 채팅방 lastMsgDate 갱신
+        // 채팅방 lastMsgDate + PENDING → ACTIVE
         chatt.setLastMsgDate(LocalDateTime.now());
-        chatt.setUpdBy(authId);
+        if ("PENDING".equals(chatt.getChattStatusCd())) {
+            chatt.setChattStatusCd("ACTIVE");
+        }
+        chatt.setUpdBy(memberId);
         chatt.setUpdDate(LocalDateTime.now());
         cmChattRepository.save(chatt);
 
         return saved;
-    }
-
-    /* ── 참여자 ──────────────────────────────── */
-
-    public List<CmChattMemberDto.Item> getMembers(String chattId) {
-        CmChattMemberDto.Request req = new CmChattMemberDto.Request();
-        req.setChattId(chattId);
-        return cmChattMemberService.getList(req);
     }
 }

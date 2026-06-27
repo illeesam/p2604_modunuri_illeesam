@@ -13,7 +13,7 @@ window.CmChattDtl = {
 
     /* ##### [01] 초기 변수 정의 #################################################### */
 
-    const { ref, reactive, computed, onMounted, watch, nextTick } = Vue;
+    const { ref, reactive, computed, onMounted, onUnmounted, watch, nextTick } = Vue;
     const showToast    = window.boApp.showToast;   // 토스트 알림
     const showConfirm  = window.boApp.showConfirm; // 확인 모달
     const showRefModal = window.boApp.showRefModal; // 참조 모달
@@ -38,6 +38,9 @@ window.CmChattDtl = {
     const msgBoxRef = ref(null);                   // 메시지 스크롤 컨테이너 ref
     const refModal = reactive({ show: false, type: '', id: null, data: null }); // 채팅 내 참조 모달
     const cfUserChats = reactive([]);              // 고객 채팅 검색 결과
+    const messages = reactive([]);                 // 실시간 메시지 목록
+    let pollTimer = null;                          // 폴링 타이머
+    let pollLastMsgId = null;                      // 마지막 수신 메시지 ID
 
     const cfIsNew = computed(() => !props.dtlId);
     const cfDtlMode = computed(() => props.dtlMode === 'view'); // dtlMode: 'view' 이면 읽기전용
@@ -117,21 +120,63 @@ window.CmChattDtl = {
 
     /* ##### [04] 내장 사용 함수 (이벤트 핸들러 on* / handle*) #################### */
 
-    /* handleSearchDetail — 상세 조회 */
+    /* handleSearchDetail — 상세 조회 + 메시지 전체 로드 */
     const handleSearchDetail = async () => {
       if (!props.dtlId) { return; }
       uiState.loading = true;
+      fnStopPoll();
       try {
         const res = await boApiSvc.cmChatt.getById(props.dtlId, '채팅관리', '상세조회');
         uiState.chat = res.data?.data || null;
         if (uiState.chat) { uiState.chat.memberUnreadCnt = 0; }
+        // 메시지 로드
+        messages.splice(0, messages.length);
+        pollLastMsgId = null;
+        try {
+          const msgRes = await boApiSvc.cmChatt.getMessages(props.dtlId, {}, '채팅관리', '메시지조회');
+          const msgList = msgRes.data?.data || [];
+          messages.push(...msgList);
+          if (msgList.length > 0) { pollLastMsgId = msgList[msgList.length - 1].chattMsgId; }
+        } catch (_) {}
         scrollToBottom();
+        // 진행 중인 채팅만 폴링 시작
+        if (uiState.chat && (uiState.chat.chattStatusCd === 'OPEN' || uiState.chat.chattStatusCd === 'PENDING' || uiState.chat.chattStatusCd === '진행중')) {
+          fnStartPoll();
+        }
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;
       } finally {
         uiState.loading = false;
       }
+    };
+
+    /* fnStartPoll — 폴링 시작 (3초, 새 메시지만) */
+    const fnStartPoll = () => {
+      if (pollTimer) { return; }
+      pollTimer = setInterval(async () => {
+        if (!props.dtlId) { return; }
+        try {
+          const params = pollLastMsgId ? { afterMsgId: pollLastMsgId } : {};
+          const res = await boApiSvc.cmChatt.getMessages(props.dtlId, params, '채팅관리', '폴링');
+          const newMsgs = res.data?.data || [];
+          if (newMsgs.length > 0) {
+            messages.push(...newMsgs);
+            pollLastMsgId = newMsgs[newMsgs.length - 1].chattMsgId;
+            scrollToBottom();
+            // 미읽음 카운트 갱신 (회원이 보낸 것만)
+            const memberMsgs = newMsgs.filter(m => m.senderCd === 'MEMBER');
+            if (memberMsgs.length > 0 && uiState.chat) { uiState.chat.memberUnreadCnt = (uiState.chat.memberUnreadCnt || 0) + memberMsgs.length; }
+          }
+        } catch (err) {
+          console.warn('[poll]', err.message);
+        }
+      }, 3000);
+    };
+
+    /* fnStopPoll — 폴링 중지 */
+    const fnStopPoll = () => {
+      if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
     };
 
     /* showTab — 탭 표시 여부 */
@@ -167,23 +212,62 @@ window.CmChattDtl = {
       nextTick(() => { const el = msgBoxRef.value; if (el) el.scrollTop = el.scrollHeight; });
     };
 
-    /* sendReply — 답변 전송 */
-    const sendReply = () => {
-      if (!uiState.replyText.trim()) { return; }
-      if (!uiState.chat) { return; }
-      if (!uiState.chat.messages) { uiState.chat.messages = []; }
-      uiState.chat.messages.push({ from: 'cs', text: uiState.replyText.trim(), time: new Date().toTimeString().slice(0, 5) });
-      uiState.chat.lastMsg = uiState.replyText.trim();
+    /* sendReply — 답변 전송 (실제 API 호출) */
+    const sendReply = async () => {
+      const text = uiState.replyText.trim();
+      if (!text || !props.dtlId) { return; }
+      // 낙관적 UI — 즉시 노출
+      const tempMsg = { chattMsgId: '_tmp_' + Date.now(), senderCd: 'ADMIN', msgText: text, sendDate: new Date().toISOString(), _pending: true };
+      messages.push(tempMsg);
       uiState.replyText = '';
       scrollToBottom();
-      showToast('답변을 전송했습니다.');
+      try {
+        const res = await boApiSvc.cmChatt.sendMsg(props.dtlId, { msgText: text, senderCd: 'ADMIN' }, '채팅관리', '답변전송');
+        const saved = res.data?.data;
+        if (saved) {
+          tempMsg.chattMsgId = saved.chattMsgId;
+          tempMsg.sendDate = saved.sendDate;
+          pollLastMsgId = saved.chattMsgId;
+        }
+        tempMsg._pending = false;
+        if (uiState.chat) { uiState.chat.adminUnreadCnt = 0; }
+      } catch (err) {
+        console.error('[sendReply]', err);
+        tempMsg._error = true;
+        tempMsg._pending = false;
+        showToast(err.response?.data?.message || '전송 실패', 'error');
+      }
     };
 
-    /* closeChat — 채팅 종료 */
-    const closeChat = () => {
-      if (!uiState.chat) { return; }
-      uiState.chat.chattStatusCd = '종료';
-      showToast('채팅이 종료되었습니다.');
+    /* closeChat — 채팅 종료 (API 상태 변경) */
+    const closeChat = async () => {
+      if (!props.dtlId || !uiState.chat) { return; }
+      const ok = await showConfirm('채팅 종료', '채팅을 종료하시겠습니까?');
+      if (!ok) { return; }
+      try {
+        await boApiSvc.cmChatt.updateStatus(props.dtlId, { chattStatusCd: 'CLOSED' }, '채팅관리', '채팅종료');
+        uiState.chat.chattStatusCd = 'CLOSED';
+        fnStopPoll();
+        messages.push({ chattMsgId: '_sys_close', senderCd: 'SYSTEM', msgText: '채팅이 종료되었습니다.', sendDate: new Date().toISOString() });
+        scrollToBottom();
+        showToast('채팅이 종료되었습니다.');
+      } catch (err) {
+        console.error('[closeChat]', err);
+        showToast(err.response?.data?.message || '종료 처리 실패', 'error');
+      }
+    };
+
+    /* handleSearchUserChats — 고객 채팅 조회 (회원ID로 검색) */
+    const handleSearchUserChats = async () => {
+      if (!uiState.searchUserId.trim()) { return; }
+      try {
+        const res = await boApiSvc.cmChatt.getPage({ memberId: uiState.searchUserId.trim(), pageSize: 20 }, '채팅관리', '고객채팅조회');
+        const rows = res.data?.data?.pageList || [];
+        cfUserChats.splice(0, cfUserChats.length, ...rows);
+      } catch (err) {
+        console.error('[handleSearchUserChats]', err);
+        cfUserChats.splice(0, cfUserChats.length);
+      }
     };
 
     /* handleSave — 신규 채팅 등록 저장 */
@@ -232,6 +316,8 @@ window.CmChattDtl = {
         uiState.tab = 'new';
       }
     });
+
+    onUnmounted(() => { fnStopPoll(); });
 
     /* policy: 상위 Mng 이 reloadTrigger 증가시키면 상세 API 재조회 */
     watch(() => props.reloadTrigger, async (n, o) => {
@@ -297,14 +383,28 @@ window.CmChattDtl = {
 
     /* ##### [06] return (템플릿 노출) ############################################## */
 
+    /* fnMsgSenderLabel — 발신자 라벨 */
+    const fnMsgSenderLabel = (msg) => {
+      if (msg.senderCd === 'ADMIN') { return '상담사'; }
+      if (msg.senderCd === 'MEMBER') { return '고객'; }
+      return '시스템';
+    };
+
+    /* cfChatStatus — 채팅 진행 중 여부 */
+    const cfChatActive = computed(() => {
+      const s = uiState.chat?.chattStatusCd;
+      return s === 'OPEN' || s === 'PENDING' || s === '진행중';
+    });
+
     return {
       columns,
-      uiState, form, errors, refModal, msgBoxRef, cfUserChats,       // 상태 / 데이터
+      uiState, form, errors, refModal, msgBoxRef, cfUserChats, messages, // 상태 / 데이터
       handleBtnAction, handleSelectAction, fnCallbackModal, // dispatch + 모달 통합 콜백
-      cfIsNew, cfDtlMode, cfMemberChats, tabs, newTabs,                                // computed / reactive(tabs)
-      showTab, hasRef, refLabel, // 헬퍼
-      cofAnd: coUtil.cofAnd,                                                            // 템플릿 && 대체 (속성값 && 금지)
-      showRefModal,                                                                    // 참조 모달 (직접 호출)
+      cfIsNew, cfDtlMode, cfMemberChats, cfChatActive, tabs, newTabs,   // computed / reactive(tabs)
+      get active() { return props.active; },                             // props.active 템플릿 노출
+      showTab, hasRef, refLabel, fnMsgSenderLabel, handleSearchUserChats, // 헬퍼
+      cofAnd: coUtil.cofAnd,                                             // 템플릿 && 대체 (속성값 && 금지)
+      showRefModal,                                                      // 참조 모달 (직접 호출)
     };
   },
   template: /* html */`
@@ -323,55 +423,91 @@ window.CmChattDtl = {
         <div class="card" v-show="showTab('chat')" style="margin:0;">
           <div v-if="uiState.tabMode2!=='tab'" class="dtl-tab-card-title">💬 채팅 내용</div>
           <template v-if="uiState.chat">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <!-- ===== ■.■.■.■.■. 채팅방 헤더 =========================================== -->
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:10px 12px;background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb;">
               <div>
-                <div style="font-size:15px;font-weight:700;">{{ uiState.chat.subject }}</div>
+                <div style="font-size:14px;font-weight:700;color:#111;">{{ uiState.chat.subject }}</div>
                 <div style="font-size:12px;color:#888;margin-top:3px;">
                   <span class="ref-link" @click="handleSelectAction('chat-ref', { type:'member', id: uiState.chat.memberId })">
                     {{ uiState.chat.memberNm }}
                   </span>
-                  &nbsp;·&nbsp;{{ uiState.chat.regDate }} &nbsp;·&nbsp;
-                  <span class="badge" :class="uiState.chat.chattStatusCd==='진행중'?'badge-green':'badge-gray'">
+                  &nbsp;·&nbsp;{{ String(uiState.chat.regDate||'').slice(0,16) }}
+                  &nbsp;·&nbsp;
+                  <span class="badge" :class="cfChatActive ? 'badge-green' : 'badge-gray'">
                     {{ uiState.chat.chattStatusCd }}
                   </span>
-                </div>
-              </div>
-              <button v-if="uiState.chat.chattStatusCd==='진행중'" class="btn btn-secondary btn-sm" @click="handleBtnAction('chat-close')">
-                채팅 종료
-              </button>
-            </div>
-            <!-- ===== ■.■.■.■.■. 메시지 목록 ========================================== -->
-            <div class="chat-messages" ref="msgBoxRef">
-              <div v-for="(msg, idx) in (uiState.chat.messages||[])" :key="idx" class="chat-msg" :class="msg.from">
-                <div class="chat-bubble">
-                  {{ msg.text }}
-                  <span v-if="hasRef(msg)" class="ref-link" style="display:block;margin-top:4px;" @click="handleSelectAction('chat-msgRef', msg)">
-                    {{ refLabel(msg) }}
+                  <span v-if="uiState.chat.memberUnreadCnt > 0" class="badge badge-red" style="margin-left:6px;">
+                    미읽음 {{ uiState.chat.memberUnreadCnt }}
                   </span>
                 </div>
-                <div class="chat-time">{{ msg.from==='user' ? '고객' : 'CS' }} · {{ msg.time }}</div>
               </div>
-              <div v-if="!(uiState.chat.messages||[]).length" style="text-align:center;color:#aaa;padding:20px;font-size:13px;">
+              <div style="display:flex;gap:6px;align-items:center;">
+                <span v-if="cfChatActive" style="font-size:11px;color:#15803d;">● 실시간</span>
+                <button v-if="cfChatActive" class="btn btn_cancel" @click="handleBtnAction('chat-close')">
+                  채팅 종료
+                </button>
+                <button class="btn btn_list" @click="handleBtnAction('chat-back')">목록으로</button>
+              </div>
+            </div>
+            <!-- ===== ■.■.■.■.■. 메시지 목록 ========================================== -->
+            <div class="chat-messages" ref="msgBoxRef"
+              style="height:320px;overflow-y:auto;border:1px solid #e5e7eb;border-radius:8px;padding:12px;background:#fafafa;display:flex;flex-direction:column;gap:8px;">
+              <!-- SYSTEM 메시지 -->
+              <template v-for="msg in messages" :key="msg.chattMsgId">
+                <div v-if="msg.senderCd==='SYSTEM'"
+                  style="text-align:center;font-size:11px;color:#888;background:#f0f0f0;border-radius:6px;padding:4px 10px;margin:0 40px;">
+                  {{ msg.msgText }}
+                </div>
+                <!-- MEMBER 메시지 (좌측) -->
+                <div v-else-if="msg.senderCd==='MEMBER'" style="display:flex;align-items:flex-end;gap:6px;">
+                  <div style="width:26px;height:26px;border-radius:50%;background:#e0e7ff;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;">
+                    👤
+                  </div>
+                  <div>
+                    <div style="font-size:10px;color:#888;margin-bottom:2px;">{{ uiState.chat.memberNm }}</div>
+                    <div style="background:#fff;border:1px solid #e5e7eb;border-radius:0 10px 10px 10px;padding:7px 10px;font-size:13px;line-height:1.5;max-width:280px;word-break:break-word;">
+                      {{ msg.msgText }}
+                      <span v-if="hasRef(msg)" class="ref-link" style="display:block;margin-top:4px;font-size:11px;" @click="handleSelectAction('chat-msgRef', msg)">
+                        {{ refLabel(msg) }}
+                      </span>
+                    </div>
+                    <div style="font-size:10px;color:#bbb;margin-top:2px;">{{ String(msg.sendDate||'').slice(11,16) }}</div>
+                  </div>
+                </div>
+                <!-- ADMIN 메시지 (우측) -->
+                <div v-else style="display:flex;flex-direction:row-reverse;align-items:flex-end;gap:6px;">
+                  <div style="width:26px;height:26px;border-radius:50%;background:#fce7f3;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;">
+                    💁
+                  </div>
+                  <div>
+                    <div style="font-size:10px;color:#888;margin-bottom:2px;text-align:right;">상담사</div>
+                    <div style="background:#e8587a;color:#fff;border-radius:10px 0 10px 10px;padding:7px 10px;font-size:13px;line-height:1.5;max-width:280px;word-break:break-word;"
+                      :style="msg._error ? 'opacity:0.6;' : ''">
+                      {{ msg.msgText }}
+                    </div>
+                    <div style="font-size:10px;color:#bbb;margin-top:2px;text-align:right;">
+                      <span v-if="msg._pending" style="color:#aaa;">전송 중...</span>
+                      <span v-else-if="msg._error" style="color:#f87171;">전송 실패</span>
+                      <span v-else>{{ String(msg.sendDate||'').slice(11,16) }}</span>
+                    </div>
+                  </div>
+                </div>
+              </template>
+              <div v-if="messages.length===0" style="text-align:center;color:#aaa;padding:40px 0;font-size:13px;">
                 메시지가 없습니다.
               </div>
             </div>
             <!-- ===== ■.■.■.■.■. 답변 입력 =========================================== -->
-            <div v-if="uiState.chat.chattStatusCd==='진행중'" style="display:flex;gap:8px;margin-top:12px;">
-              <textarea class="form-control" v-model="uiState.replyText" rows="2" placeholder="답변을 입력하고 Enter..." style="resize:none;"
+            <div v-if="cfChatActive" style="display:flex;gap:8px;margin-top:10px;align-items:flex-end;">
+              <textarea class="form-control" v-model="uiState.replyText" rows="3" placeholder="답변 입력 후 Enter 또는 [전송] 클릭" style="resize:none;flex:1;"
                 @keydown.enter.exact.prevent="handleBtnAction('chat-sendReply')"></textarea>
-              <button class="btn btn_send" @click="handleBtnAction('chat-sendReply')" style="white-space:nowrap;">전송</button>
+              <button class="btn btn_send" @click="handleBtnAction('chat-sendReply')" style="white-space:nowrap;height:72px;">전송</button>
             </div>
-            <div v-else style="margin-top:12px;text-align:center;color:#aaa;font-size:13px;padding:10px;background:#fafafa;border-radius:6px;">
+            <div v-else style="margin-top:10px;text-align:center;color:#aaa;font-size:13px;padding:10px;background:#fafafa;border-radius:6px;">
               종료된 채팅입니다.
             </div>
-            <div class="form-actions" v-if="cofAnd(active, cfDtlMode)">
-              <button class="btn btn_edit" @click="handleBtnAction('form-edit')">수정</button>
-              <button class="btn btn_list" @click="handleBtnAction('chat-back')">목록으로</button>
-            </div>
-            <div class="form-actions" v-if="cofAnd(active, !cfDtlMode)">
-              <button class="btn btn_list" @click="handleBtnAction('chat-back')">목록으로</button>
-            </div>
           </template>
+          <div v-else-if="uiState.loading" style="text-align:center;color:#aaa;padding:40px;">⏳ 로딩 중...</div>
           <div v-else style="text-align:center;color:#aaa;padding:40px;">채팅을 찾을 수 없습니다.</div>
         </div>
         <!-- ===== ■.■.■. 회원 채팅 이력 탭 ========================================== -->
@@ -425,7 +561,8 @@ window.CmChattDtl = {
       <!-- ===== ■.■.■. 고객 채팅 조회 탭 ========================================== -->
       <div v-show="uiState.tab==='search'">
         <div style="display:flex;gap:8px;margin-bottom:14px;">
-          <input class="form-control" style="max-width:200px;" v-model="uiState.searchUserId" placeholder="회원 ID 입력" />
+          <input class="form-control" style="max-width:240px;" v-model="uiState.searchUserId" placeholder="회원 ID 입력" @keyup.enter="handleSearchUserChats" />
+          <button class="btn btn_search" @click="handleSearchUserChats">조회</button>
         </div>
         <!-- ===== ■.■.■.■. 목록 영역 ============================================= -->
         <bo-grid bare :columns="columns.userChatGrid" :rows="cfUserChats" row-key="chattRoomId" :empty-text="uiState.searchUserId ? '해당 회원을 찾을 수 없습니다.' : '회원 ID를 입력하세요.'" row-actions>

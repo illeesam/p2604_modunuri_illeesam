@@ -1,30 +1,23 @@
 package com.shopjoy.ecadminapi.bo.ec.cm.controller;
 
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboardData;
+import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboard;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboardItem;
-import com.shopjoy.ecadminapi.base.ec.cm.service.CmDashboardDataService;
+import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboardItemData;
+import com.shopjoy.ecadminapi.base.ec.cm.repository.CmDashboardRepository;
+import com.shopjoy.ecadminapi.base.ec.cm.service.CmDashboardItemDataService;
 import com.shopjoy.ecadminapi.base.ec.cm.service.CmDashboardItemService;
 import com.shopjoy.ecadminapi.base.ec.cm.service.CmDashboardService;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
+import com.shopjoy.ecadminapi.common.util.CmUtil;
+import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
-/**
- * BO 대시보드 API — /api/bo/ec/cm/dashboard
- * <ul>
- *   <li>POST /data — cm_dashboard 기반 차트 데이터셋 제공 (기존)</li>
- *   <li>GET /item/list — 패널 정의 목록</li>
- *   <li>GET /item/{id} — 패널 정의 단건</li>
- *   <li>POST /item/save/{cmd} — 패널 정의 단건 저장</li>
- *   <li>POST /item/save-list/{cmd} — 패널 정의 일괄 저장</li>
- *   <li>GET /data/list — 집계 데이터 목록</li>
- *   <li>POST /data/upsert — 집계 데이터 upsert</li>
- * </ul>
- */
 @RestController
 @RequestMapping("/api/bo/ec/cm/dashboard")
 @RequiredArgsConstructor
@@ -32,39 +25,87 @@ public class BoCmDashboardController {
 
     private final CmDashboardService cmDashboardService;
     private final CmDashboardItemService cmDashboardItemService;
-    private final CmDashboardDataService cmDashboardDataService;
+    private final CmDashboardItemDataService cmDashboardItemDataService;
+    private final CmDashboardRepository cmDashboardRepository;
 
-    /* ── 기존: 차트 데이터셋 ─────────────────────────────────────── */
+    /* ── 차트 데이터셋 ────────────────────────────────────────── */
 
-    /**
-     * 대시보드 데이터 조회.
-     *
-     * @param items [{compId: "COMP0101", siteNo: "01", uiNm: "DashboardBoEc01", ...}, ...]
-     * @return {"info0101": [...], "info0202": [...], ...}
-     */
     @PostMapping("/data")
     public ResponseEntity<ApiResponse<Map<String, Object>>> data(
             @RequestBody List<Map<String, Object>> items) {
         return ResponseEntity.ok(ApiResponse.ok(cmDashboardService.getDashboard(items)));
     }
 
-    /* ── 패널 정의 (CmDashboardItem) ────────────────────────────── */
+    /* ── cm_dashboard CRUD ─────────────────────────────────────── */
 
-    /** 패널 정의 목록 — siteId, uiNm, useYn 필터 */
+    @GetMapping("/list")
+    public ResponseEntity<ApiResponse<List<CmDashboard>>> list(
+            @RequestParam(required = false) String siteId,
+            @RequestParam(required = false) String useYn) {
+        List<CmDashboard> result;
+        if (siteId != null && useYn != null) {
+            result = cmDashboardRepository.findBySiteIdAndUseYnOrderBySortOrdAsc(siteId, useYn);
+        } else if (siteId != null) {
+            result = cmDashboardRepository.findBySiteIdOrderBySortOrdAsc(siteId);
+        } else {
+            result = cmDashboardRepository.findAll();
+        }
+        return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<CmDashboard>> getById(@PathVariable("id") String id) {
+        CmDashboard entity = cmDashboardRepository.findById(id)
+            .orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않습니다: " + id));
+        return ResponseEntity.ok(ApiResponse.ok(entity));
+    }
+
+    @PostMapping
+    public ResponseEntity<ApiResponse<CmDashboard>> create(@RequestBody CmDashboard body) {
+        String authId = SecurityUtil.getAuthUser().authId();
+        body.setDashboardId(CmUtil.generateId("cm_dashboard"));
+        body.setRegBy(authId); body.setRegDate(LocalDateTime.now());
+        body.setUpdBy(authId); body.setUpdDate(LocalDateTime.now());
+        if (body.getUseYn() == null) body.setUseYn("Y");
+        return ResponseEntity.status(201).body(ApiResponse.created(cmDashboardRepository.save(body)));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<CmDashboard>> update(
+            @PathVariable("id") String id, @RequestBody CmDashboard body) {
+        CmDashboard entity = cmDashboardRepository.findById(id)
+            .orElseThrow(() -> new com.shopjoy.ecadminapi.common.exception.CmBizException("존재하지 않습니다: " + id));
+        if (body.getDashboardNm() != null) entity.setDashboardNm(body.getDashboardNm());
+        if (body.getUiCompNm() != null)    entity.setUiCompNm(body.getUiCompNm());
+        if (body.getLayoutCols() != null)  entity.setLayoutCols(body.getLayoutCols());
+        if (body.getSortOrd() != null)     entity.setSortOrd(body.getSortOrd());
+        if (body.getUseYn() != null)       entity.setUseYn(body.getUseYn());
+        if (body.getRemark() != null)      entity.setRemark(body.getRemark());
+        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        entity.setUpdDate(LocalDateTime.now());
+        return ResponseEntity.ok(ApiResponse.ok(cmDashboardRepository.save(entity)));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
+        cmDashboardRepository.deleteById(id);
+        return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
+    }
+
+    /* ── 패널 정의 (CmDashboardItem) ──────────────────────────── */
+
     @GetMapping("/item/list")
     public ResponseEntity<ApiResponse<List<CmDashboardItem>>> itemList(
             @RequestParam Map<String, Object> p) {
         return ResponseEntity.ok(ApiResponse.ok(cmDashboardItemService.getList(p)));
     }
 
-    /** 패널 정의 단건 */
     @GetMapping("/item/{id}")
     public ResponseEntity<ApiResponse<CmDashboardItem>> itemGetById(
             @PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(cmDashboardItemService.getById(id)));
     }
 
-    /** 패널 정의 단건 저장 (cmd: base) */
     @PostMapping("/item/save/{cmd}")
     public ResponseEntity<ApiResponse<CmDashboardItem>> itemSave(
             @PathVariable("cmd") String cmd,
@@ -72,7 +113,6 @@ public class BoCmDashboardController {
         return ResponseEntity.ok(ApiResponse.ok(cmDashboardItemService.save(cmd, body)));
     }
 
-    /** 패널 정의 일괄 저장 (cmd: base) */
     @PostMapping("/item/save-list/{cmd}")
     public ResponseEntity<ApiResponse<Void>> itemSaveList(
             @PathVariable("cmd") String cmd,
@@ -81,19 +121,17 @@ public class BoCmDashboardController {
         return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 
-    /* ── 집계 데이터 (CmDashboardData) ──────────────────────────── */
+    /* ── 집계 데이터 (CmDashboardItemData) ───────────────────── */
 
-    /** 집계 데이터 목록 — siteId, uiNm, dashboardItemId, yyyymmdd 필터 */
-    @GetMapping("/data/list")
-    public ResponseEntity<ApiResponse<List<CmDashboardData>>> dataList(
+    @GetMapping("/item-data/list")
+    public ResponseEntity<ApiResponse<List<CmDashboardItemData>>> itemDataList(
             @RequestParam Map<String, Object> p) {
-        return ResponseEntity.ok(ApiResponse.ok(cmDashboardDataService.getList(p)));
+        return ResponseEntity.ok(ApiResponse.ok(cmDashboardItemDataService.getList(p)));
     }
 
-    /** 집계 데이터 upsert — ID 없으면 INSERT, 있으면 UPDATE */
-    @PostMapping("/data/upsert")
-    public ResponseEntity<ApiResponse<CmDashboardData>> dataUpsert(
-            @RequestBody CmDashboardData body) {
-        return ResponseEntity.ok(ApiResponse.ok(cmDashboardDataService.upsert(body)));
+    @PostMapping("/item-data/upsert")
+    public ResponseEntity<ApiResponse<CmDashboardItemData>> itemDataUpsert(
+            @RequestBody CmDashboardItemData body) {
+        return ResponseEntity.ok(ApiResponse.ok(cmDashboardItemDataService.upsert(body)));
     }
 }

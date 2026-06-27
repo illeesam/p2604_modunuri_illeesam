@@ -68,6 +68,10 @@
     getPage(params, uiNm, cmdNm) {
       return global.foApi.get('/fo/my/chat/page', { params, ...hdr(uiNm, cmdNm) });
     },
+    getById(_id, uiNm, cmdNm)    { return chkId(_id, uiNm, cmdNm) || global.foApi.get(`/fo/my/chat/${_id}`, hdr(uiNm, cmdNm)); },
+    getMessages(_id, params, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.foApi.get(`/fo/my/chat/${_id}/messages`, { params, ...hdr(uiNm, cmdNm) }); },
+    createRoom(body, uiNm, cmdNm) { return global.foApi.post('/fo/my/chat/room', body, hdr(uiNm, cmdNm)); },
+    sendMsg(_id, body, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.foApi.post(`/fo/my/chat/${_id}/msg`, body, hdr(uiNm, cmdNm)); },
   };
 
   /* ── my: 클레임 ─────────────────────────────────────────────── */

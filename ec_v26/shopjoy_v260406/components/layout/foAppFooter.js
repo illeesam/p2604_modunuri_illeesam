@@ -6,9 +6,59 @@ window.foAppFooter = {
   setup() {
 
     // ===== [01] 초기 변수 정의 ==================================================
-    const { ref, reactive } = Vue;
+    const { ref, reactive, onUnmounted } = Vue;
     const uiState = reactive({ menuOpen: false, loading: false, error: '', isPageCodeLoad: false });
     const codes = reactive({});
+
+    /* ===== 채팅 상담 ===== */
+    const chatState = reactive({
+      open: false,           // 패널 열림 여부
+      roomId: null,          // 현재 채팅방 ID
+      msgs: [],              // 메시지 목록
+      inputText: '',         // 입력 중인 텍스트
+      sending: false,        // 전송 중
+      loading: false,        // 메시지 로드 중
+      unread: 0,             // 미읽음 수 (폴링으로 갱신)
+      status: null,          // 채팅방 상태 (PENDING/OPEN/CLOSED)
+      needAuth: false,       // 비로그인 → 로그인 유도 상태
+      tooltipId: null,       // 현재 tooltip 표시 중인 참여자 ID
+    });
+    let chatPollTimer = null;
+    const chatInputRef = ref(null);
+
+    /* fnChatAuthUser — 현재 로그인 사용자 (foAuthStore) */
+    const fnChatAuthUser = () => {
+      try { return window.sfGetFoAuthUser ? window.sfGetFoAuthUser() : null; } catch (_) { return null; }
+    };
+    const fnChatIsLoggedIn = () => {
+      try {
+        const store = window.sfGetFoAuthStore ? window.sfGetFoAuthStore() : null;
+        if (store) { return !!(store.sgIsLoggedIn); }
+        return !!(fnChatAuthUser()?.authId);
+      } catch (_) { return false; }
+    };
+
+    /* CHAT_PARTICIPANTS — 채팅 참여자 정의 (상담사 고정 + 회원 동적) */
+    const fnChatParticipants = () => {
+      const user = fnChatAuthUser();
+      const result = [];
+      // 상담사 (고정)
+      result.push({ id: '_admin', type: 'ADMIN', icon: '💁', name: '상담사', email: 'cs@shopjoy.com', userType: '상담 직원', dept: '고객센터', phone: '' });
+      // 회원
+      if (user && user.authId) {
+        result.push({
+          id: user.memberId || user.authId,
+          type: 'MEMBER',
+          icon: '👤',
+          name: user.memberNm || user.authNm || '회원',
+          email: user.email || user.loginId || '',
+          userType: '회원',
+          dept: user.orgNm || '',
+          phone: user.phone || user.mobile || '',
+        });
+      }
+      return result;
+    };
 
     // ===== [02] 액션 모음 (dispatch) ==============================================
 
@@ -21,6 +71,32 @@ window.foAppFooter = {
       // 메뉴 바로가기 모달 닫기
       } else if (cmd === 'linksModal-close') {
         return closeMenu();
+      // 채팅 패널 토글
+      } else if (cmd === 'chat-toggle') {
+        return toggleChat();
+      // 채팅 패널 닫기
+      } else if (cmd === 'chat-close') {
+        return closeChat();
+      // 채팅 메시지 전송
+      } else if (cmd === 'chat-send') {
+        return sendChatMsg();
+      // 채팅 종료 요청
+      } else if (cmd === 'chat-end') {
+        return endChat();
+      // 비회원 로그인 유도 → 로그인 페이지 이동
+      } else if (cmd === 'chat-goLogin') {
+        chatState.open = false;
+        if (typeof window.navigate === 'function') { window.navigate('login'); }
+        else { window.location.hash = '#page=login'; }
+        return;
+      // 참여자 툴팁 토글
+      } else if (cmd === 'chat-tooltip') {
+        chatState.tooltipId = (chatState.tooltipId === param) ? null : param;
+        return;
+      // 참여자 툴팁 닫기
+      } else if (cmd === 'chat-tooltip-hide') {
+        chatState.tooltipId = null;
+        return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
       }
@@ -44,6 +120,149 @@ window.foAppFooter = {
 
     /* closeMenu — 닫기 */
     const closeMenu  = () => { uiState.menuOpen = false; };
+
+    /* ===== 채팅 함수 ===== */
+
+    /* fnChatScrollBottom — 스크롤 하단 */
+    const fnChatScrollBottom = () => {
+      const Vue3 = Vue;
+      Vue3.nextTick(() => {
+        const el = document.getElementById('fo-chat-msgbox');
+        if (el) { el.scrollTop = el.scrollHeight; }
+      });
+    };
+
+    /* fnStartChatPoll — 폴링 시작 (3초마다 새 메시지 확인) */
+    const fnStartChatPoll = () => {
+      if (chatPollTimer) { return; }
+      chatPollTimer = setInterval(async () => {
+        if (!chatState.roomId || chatState.roomId === '_local' || !chatState.open) { return; }
+        try {
+          const lastId = chatState.msgs.length > 0 ? chatState.msgs[chatState.msgs.length - 1].chattMsgId : null;
+          const res = await foApiSvc.myChat.getMessages(chatState.roomId, { afterMsgId: lastId }, '채팅상담', '폴링');
+          const newMsgs = res.data?.data || [];
+          if (newMsgs.length > 0) {
+            chatState.msgs.push(...newMsgs);
+            fnChatScrollBottom();
+          }
+        } catch (err) {
+          console.warn('[chatPoll]', err.message);
+        }
+      }, 3000);
+    };
+
+    /* fnStopChatPoll — 폴링 중지 */
+    const fnStopChatPoll = () => {
+      if (chatPollTimer) { clearInterval(chatPollTimer); chatPollTimer = null; }
+    };
+
+    /* fnLoadOrCreateRoom — 채팅방 로드 또는 생성 */
+    const fnLoadOrCreateRoom = async () => {
+      chatState.loading = true;
+      try {
+        // 기존 채팅방 조회 (PENDING/OPEN 상태)
+        const res = await foApiSvc.myChat.getList({ activeOnly: 'Y' }, '채팅상담', '방조회');
+        const rooms = res.data?.data || [];
+        const activeRoom = rooms.find(r => r.chattStatusCd === 'PENDING' || r.chattStatusCd === 'OPEN');
+        if (activeRoom) {
+          chatState.roomId = activeRoom.chattRoomId;
+          chatState.status = activeRoom.chattStatusCd;
+          // 메시지 로드
+          const msgRes = await foApiSvc.myChat.getMessages(chatState.roomId, {}, '채팅상담', '메시지조회');
+          chatState.msgs = msgRes.data?.data || [];
+        } else {
+          // 신규 채팅방 생성
+          const createRes = await foApiSvc.myChat.createRoom({ subject: '채팅 상담 문의' }, '채팅상담', '방생성');
+          const newRoom = createRes.data?.data;
+          if (newRoom) {
+            chatState.roomId = newRoom.chattRoomId;
+            chatState.status = 'PENDING';
+            chatState.msgs = [];
+            // 안내 메시지 (로컬)
+            chatState.msgs.push({ chattMsgId: '_welcome', senderCd: 'SYSTEM', msgText: '안녕하세요! 채팅 상담을 시작합니다. 담당자가 곧 연결됩니다.', sendDate: new Date().toISOString() });
+          }
+        }
+      } catch (err) {
+        console.warn('[fnLoadOrCreateRoom]', err.message);
+        // 미로그인 등 API 실패 시 임시 로컬 모드
+        chatState.roomId = '_local';
+        chatState.status = 'PENDING';
+        chatState.msgs = [{ chattMsgId: '_welcome', senderCd: 'SYSTEM', msgText: '채팅 상담에 오신 것을 환영합니다. 로그인 후 상담을 시작할 수 있습니다.', sendDate: new Date().toISOString() }];
+      } finally {
+        chatState.loading = false;
+        fnChatScrollBottom();
+      }
+    };
+
+    /* toggleChat — 채팅 패널 토글 */
+    const toggleChat = async () => {
+      chatState.open = !chatState.open;
+      chatState.unread = 0;
+      chatState.needAuth = false;
+      if (chatState.open) {
+        // 비로그인 → 로그인 유도 상태
+        if (!fnChatIsLoggedIn()) {
+          chatState.needAuth = true;
+          return;
+        }
+        if (!chatState.roomId) { await fnLoadOrCreateRoom(); }
+        if (chatState.roomId && chatState.roomId !== '_local') { fnStartChatPoll(); }
+        Vue.nextTick(() => { if (chatInputRef.value) { chatInputRef.value.focus(); } });
+      } else {
+        fnStopChatPoll();
+      }
+    };
+
+    /* closeChat — 채팅 패널 닫기 */
+    const closeChat = () => {
+      chatState.open = false;
+      fnStopChatPoll();
+    };
+
+    /* sendChatMsg — 메시지 전송 */
+    const sendChatMsg = async () => {
+      const text = chatState.inputText.trim();
+      if (!text || chatState.sending) { return; }
+      chatState.sending = true;
+      // 낙관적 UI — 즉시 노출
+      const tempMsg = { chattMsgId: '_tmp_' + Date.now(), senderCd: 'MEMBER', msgText: text, sendDate: new Date().toISOString(), _pending: true };
+      chatState.msgs.push(tempMsg);
+      chatState.inputText = '';
+      fnChatScrollBottom();
+      try {
+        if (chatState.roomId && chatState.roomId !== '_local') {
+          await foApiSvc.myChat.sendMsg(chatState.roomId, { msgText: text }, '채팅상담', '메시지전송');
+          tempMsg._pending = false;
+        }
+      } catch (err) {
+        console.warn('[sendChatMsg]', err.message);
+        tempMsg._error = true;
+        tempMsg._pending = false;
+      } finally {
+        chatState.sending = false;
+      }
+    };
+
+    /* endChat — 채팅 종료 */
+    const endChat = async () => {
+      if (chatState.roomId && chatState.roomId !== '_local') {
+        try {
+          await foApiSvc.myChat.sendMsg(chatState.roomId, { msgText: '[채팅 종료 요청]', senderCd: 'MEMBER' }, '채팅상담', '종료요청');
+        } catch (_) {}
+      }
+      chatState.msgs.push({ chattMsgId: '_end', senderCd: 'SYSTEM', msgText: '채팅을 종료했습니다. 이용해 주셔서 감사합니다.', sendDate: new Date().toISOString() });
+      chatState.status = 'CLOSED';
+      chatState.roomId = null;
+      fnStopChatPoll();
+      fnChatScrollBottom();
+    };
+
+    /* onChatKeydown — 채팅 입력 Enter 처리 */
+    const onChatKeydown = (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMsg(); }
+    };
+
+    onUnmounted(() => { fnStopChatPoll(); });
     /* 외부(헤더 등)에서 팝업 오픈 요청 수신 */
     window.addEventListener('open-quick-menu', () => { uiState.menuOpen = true; });
 
@@ -141,6 +360,7 @@ window.foAppFooter = {
       handleBtnAction, handleSelectAction,                                  // dispatch
       currentFoSiteNo, currentBoSiteNo,                                     // 사이트번호
       FO_MENU, BO_MENU, DISP_MENU, SITE_MENU, SITE_PAIR_MENU,               // 메뉴 정의
+      chatState, chatInputRef, onChatKeydown, fnChatParticipants,            // 채팅
     };
   },
   template: /* html */ `
@@ -357,6 +577,202 @@ window.foAppFooter = {
     </div>
   </div>
 </footer>
-<!-- ===== □. 본문 영역 =================================================== -->
+<!-- ===== □. 채팅 상담 플로팅 버튼 + 패널 ============================== -->
+
+<!-- 채팅 패널 -->
+<div v-if="chatState.open"
+  style="position:fixed;right:24px;bottom:90px;z-index:8800;width:340px;height:480px;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.22);display:flex;flex-direction:column;overflow:hidden;border:1px solid #ffe4ec;">
+  <!-- 패널 헤더 -->
+  <div style="background:linear-gradient(135deg,#fff0f4 0%,#ffe4ec 60%,#ffd5e1 100%);border-bottom:1px solid #ffc9d6;">
+    <!-- 제목 행 -->
+    <div style="padding:12px 14px 8px;display:flex;align-items:center;gap:8px;">
+      <span style="font-size:18px;">💬</span>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:800;color:#9f2946;">채팅 상담</div>
+        <div style="font-size:11px;margin-top:1px;">
+          <span v-if="chatState.status==='OPEN'" style="color:#15803d;">● 상담 중</span>
+          <span v-else-if="chatState.status==='PENDING'" style="color:#b45309;">● 대기 중</span>
+          <span v-else-if="chatState.status==='CLOSED'" style="color:#888;">○ 종료됨</span>
+          <span v-else-if="chatState.needAuth" style="color:#6366f1;">● 로그인 필요</span>
+          <span v-else style="color:#aaa;">연결 중...</span>
+        </div>
+      </div>
+      <button type="button" @click="handleBtnAction('chat-end')"
+        v-if="chatState.status !== 'CLOSED' &amp;&amp; !chatState.needAuth"
+        style="font-size:11px;padding:3px 8px;background:rgba(255,255,255,0.6);border:1px solid #ffc9d6;border-radius:5px;color:#9f2946;cursor:pointer;">
+        종료
+      </button>
+      <button type="button" @click="handleBtnAction('chat-close')"
+        style="width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,0.6);border:none;color:#9f2946;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;"
+        onmouseover="this.style.background='#e8587a';this.style.color='#fff';"
+        onmouseout="this.style.background='rgba(255,255,255,0.6)';this.style.color='#9f2946';">
+        ✕
+      </button>
+    </div>
+    <!-- 참여자 뱃지 행 (로그인 상태일 때만) -->
+    <div v-if="!chatState.needAuth" style="padding:0 14px 10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+      <span style="font-size:10px;color:#b06070;font-weight:600;margin-right:2px;">참여자</span>
+      <div v-for="p in fnChatParticipants()" :key="p.id"
+        style="position:relative;display:inline-flex;">
+        <!-- 뱃지 버튼 -->
+        <button type="button"
+          @click="handleBtnAction('chat-tooltip', p.id)"
+          style="display:inline-flex;align-items:center;gap:4px;padding:3px 8px;background:rgba(255,255,255,0.75);border:1px solid #ffc9d6;border-radius:20px;font-size:11px;color:#9f2946;cursor:pointer;font-weight:600;white-space:nowrap;transition:all .12s;"
+          onmouseover="this.style.background='#fff';this.style.borderColor='#e8587a';"
+          onmouseout="this.style.background='rgba(255,255,255,0.75)';this.style.borderColor='#ffc9d6';">
+          <span>{{ p.icon }}</span>
+          <span>{{ p.name }}</span>
+        </button>
+        <!-- 툴팁 -->
+        <div v-if="chatState.tooltipId === p.id"
+          style="position:absolute;bottom:calc(100% + 6px);left:0;z-index:9900;background:#fff;border:1px solid #ffe4ec;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,0.16);padding:10px 13px;min-width:190px;white-space:nowrap;">
+          <!-- 툴팁 닫기 오버레이 -->
+          <div style="position:fixed;inset:0;" @click="handleBtnAction('chat-tooltip-hide')"></div>
+          <div style="position:relative;z-index:1;">
+            <div style="font-size:12px;font-weight:800;color:#9f2946;margin-bottom:7px;padding-bottom:6px;border-bottom:1px solid #ffe4ec;">
+              {{ p.icon }} {{ p.name }}
+            </div>
+            <table style="border-collapse:collapse;width:100%;">
+              <tr>
+                <td style="font-size:10px;color:#999;padding:2px 6px 2px 0;white-space:nowrap;vertical-align:top;">사용자유형</td>
+                <td style="font-size:11px;color:#333;font-weight:600;padding:2px 0;">{{ p.userType || '-' }}</td>
+              </tr>
+              <tr>
+                <td style="font-size:10px;color:#999;padding:2px 6px 2px 0;white-space:nowrap;vertical-align:top;">이메일</td>
+                <td style="font-size:11px;color:#333;padding:2px 0;word-break:break-all;white-space:normal;">{{ p.email || '-' }}</td>
+              </tr>
+              <tr>
+                <td style="font-size:10px;color:#999;padding:2px 6px 2px 0;white-space:nowrap;vertical-align:top;">소속</td>
+                <td style="font-size:11px;color:#333;padding:2px 0;">{{ p.dept || '-' }}</td>
+              </tr>
+              <tr>
+                <td style="font-size:10px;color:#999;padding:2px 6px 2px 0;white-space:nowrap;vertical-align:top;">전화번호</td>
+                <td style="font-size:11px;color:#333;padding:2px 0;">{{ p.phone || '-' }}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- needAuth: 로그인 유도 화면 -->
+  <div v-if="chatState.needAuth"
+    style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 24px;gap:16px;background:#fafafa;text-align:center;">
+    <div style="font-size:44px;line-height:1;">🔐</div>
+    <div style="font-size:14px;font-weight:700;color:#333;line-height:1.5;">
+      채팅 상담은 로그인 후 이용 가능합니다.
+    </div>
+    <div style="font-size:12px;color:#888;line-height:1.6;">
+      회원이 아닌 경우<br>
+      <strong style="color:#6366f1;">휴대폰 본인인증</strong> 후 이용 가능합니다.
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:200px;">
+      <button type="button" @click="handleBtnAction('chat-goLogin')"
+        style="padding:10px 0;background:linear-gradient(135deg,#ff8fab,#e8587a);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;width:100%;transition:opacity .15s;"
+        onmouseover="this.style.opacity='0.85';"
+        onmouseout="this.style.opacity='1';">
+        🔑 로그인하기
+      </button>
+      <button type="button"
+        style="padding:10px 0;background:#fff;color:#6366f1;border:1px solid #a5b4fc;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;width:100%;transition:all .15s;"
+        onmouseover="this.style.background='#eef2ff';"
+        onmouseout="this.style.background='#fff';"
+        title="휴대폰 본인인증은 준비 중입니다.">
+        📱 본인인증 (준비 중)
+      </button>
+    </div>
+  </div>
+
+  <!-- 메시지 영역 (로그인 후) -->
+  <div v-if="!chatState.needAuth" id="fo-chat-msgbox"
+    style="flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:#fafafa;">
+    <!-- 로딩 -->
+    <div v-if="chatState.loading" style="text-align:center;color:#aaa;font-size:12px;padding:20px 0;">
+      ⏳ 연결 중...
+    </div>
+    <!-- 메시지 목록 -->
+    <template v-for="m in chatState.msgs" :key="m.chattMsgId">
+      <!-- SYSTEM 메시지 -->
+      <div v-if="m.senderCd==='SYSTEM'"
+        style="text-align:center;font-size:11px;color:#888;background:#f0f0f0;border-radius:8px;padding:5px 10px;margin:0 20px;">
+        {{ m.msgText }}
+      </div>
+      <!-- ADMIN 메시지 (좌측) -->
+      <div v-else-if="m.senderCd==='ADMIN'" style="display:flex;align-items:flex-end;gap:6px;">
+        <div style="width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#ff8fab,#e8587a);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">
+          💁
+        </div>
+        <div style="max-width:75%;">
+          <div style="font-size:10px;color:#888;margin-bottom:3px;">상담사</div>
+          <div style="background:#fff;border:1px solid #ffe4ec;border-radius:0 10px 10px 10px;padding:8px 10px;font-size:13px;line-height:1.5;color:#333;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+            {{ m.msgText }}
+          </div>
+          <div style="font-size:10px;color:#bbb;margin-top:2px;">
+            {{ m.sendDate ? String(m.sendDate).slice(11,16) : '' }}
+          </div>
+        </div>
+      </div>
+      <!-- MEMBER 메시지 (우측) -->
+      <div v-else style="display:flex;flex-direction:row-reverse;align-items:flex-end;gap:6px;">
+        <div style="max-width:75%;">
+          <div style="background:linear-gradient(135deg,#ff8fab,#e8587a);border-radius:10px 0 10px 10px;padding:8px 10px;font-size:13px;line-height:1.5;color:#fff;"
+            :style="m._error ? 'opacity:0.6;' : ''">
+            {{ m.msgText }}
+          </div>
+          <div style="font-size:10px;color:#bbb;margin-top:2px;text-align:right;">
+            <span v-if="m._pending" style="color:#aaa;">전송 중...</span>
+            <span v-else-if="m._error" style="color:#f87171;">전송 실패</span>
+            <span v-else>{{ m.sendDate ? String(m.sendDate).slice(11,16) : '' }}</span>
+          </div>
+        </div>
+      </div>
+    </template>
+    <!-- 빈 상태 -->
+    <div v-if="!chatState.loading &amp;&amp; chatState.msgs.length===0"
+      style="text-align:center;color:#aaa;font-size:12px;padding:30px 0;">
+      메시지가 없습니다.<br>아래 입력창으로 문의하세요.
+    </div>
+  </div>
+
+  <!-- 입력 영역 (로그인 후) -->
+  <div v-if="!chatState.needAuth"
+    style="padding:10px;border-top:1px solid #ffe4ec;background:#fff;display:flex;gap:6px;align-items:flex-end;">
+    <textarea
+      ref="chatInputRef"
+      v-model="chatState.inputText"
+      @keydown="onChatKeydown"
+      placeholder="메시지를 입력하세요 (Enter: 전송)"
+      :disabled="chatState.sending || chatState.status==='CLOSED'"
+      rows="2"
+      style="flex:1;resize:none;border:1px solid #ffd5e1;border-radius:8px;padding:8px 10px;font-size:13px;outline:none;line-height:1.4;font-family:inherit;background:#fffafb;"
+      onfocus="this.style.borderColor='#e8587a';"
+      onblur="this.style.borderColor='#ffd5e1';"></textarea>
+    <button type="button"
+      @click="handleBtnAction('chat-send')"
+      :disabled="!chatState.inputText.trim() || chatState.sending || chatState.status==='CLOSED'"
+      style="width:38px;height:38px;border-radius:50%;border:none;background:linear-gradient(135deg,#ff8fab,#e8587a);color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity .15s;"
+      :style="(!chatState.inputText.trim() || chatState.sending || chatState.status==='CLOSED') ? 'opacity:0.4;cursor:not-allowed;' : ''">
+      ➤
+    </button>
+  </div>
+</div>
+
+<!-- 채팅 플로팅 버튼 -->
+<button type="button"
+  @click="handleBtnAction('chat-toggle')"
+  style="position:fixed;right:24px;bottom:28px;z-index:8801;width:54px;height:54px;border-radius:50%;border:none;background:linear-gradient(135deg,#ff8fab,#e8587a);color:#fff;font-size:24px;cursor:pointer;box-shadow:0 4px 20px rgba(232,88,122,0.45);display:flex;align-items:center;justify-content:center;transition:transform .15s,box-shadow .15s;"
+  onmouseover="this.style.transform='scale(1.1)';this.style.boxShadow='0 6px 28px rgba(232,88,122,0.6)';"
+  onmouseout="this.style.transform='';this.style.boxShadow='0 4px 20px rgba(232,88,122,0.45)';"
+  :title="chatState.open ? '채팅 닫기' : '채팅 상담 열기'">
+  <!-- 미읽음 뱃지 -->
+  <span v-if="chatState.unread > 0 &amp;&amp; !chatState.open"
+    style="position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;font-size:10px;font-weight:700;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;border:2px solid #fff;">
+    {{ chatState.unread > 9 ? '9+' : chatState.unread }}
+  </span>
+  <span v-if="chatState.open">✕</span>
+  <span v-else>💬</span>
+</button>
+<!-- ===== □. 채팅 상담 =================================================== -->
 `,
 };

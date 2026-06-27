@@ -1,10 +1,12 @@
 package com.shopjoy.ecadminapi.bo.ec.cm.controller;
 
-import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattRoomDto;
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattChangeStatusDto;
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmChattRoom;
+import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattDto;
+import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattMemberDto;
+import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmChattMsgDto;
+import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmChatt;
+import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmChattMsg;
 import com.shopjoy.ecadminapi.bo.ec.cm.service.BoCmChattService;
-import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -15,72 +17,72 @@ import java.util.List;
 
 /**
  * BO 채팅 API — /api/bo/ec/cm/chatt
- * 인가: BO_ONLY (관리자)
  */
 @RestController
 @RequestMapping("/api/bo/ec/cm/chatt")
 @RequiredArgsConstructor
 public class BoCmChattController {
+
     private final BoCmChattService boCmChattService;
 
-    /* 키조회 */
+    /* ── 채팅방 ──────────────────────────────────────────────── */
+
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<CmChattRoomDto.Item>> getById(@PathVariable("id") String id) {
+    public ResponseEntity<ApiResponse<CmChattDto.Item>> getById(@PathVariable("id") String id) {
         return ResponseEntity.ok(ApiResponse.ok(boCmChattService.getById(id)));
     }
 
-    /* 목록조회 */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<CmChattRoomDto.Item>>> list(@Valid @ModelAttribute CmChattRoomDto.Request req) {
+    public ResponseEntity<ApiResponse<List<CmChattDto.Item>>> list(@Valid @ModelAttribute CmChattDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boCmChattService.getList(req)));
     }
 
-    /* 페이지조회 */
     @GetMapping("/page")
-    public ResponseEntity<ApiResponse<CmChattRoomDto.PageResponse>> page(@Valid @ModelAttribute CmChattRoomDto.Request req) {
+    public ResponseEntity<ApiResponse<CmChattDto.PageResponse>> page(@Valid @ModelAttribute CmChattDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boCmChattService.getPageData(req)));
     }
 
-    /* 등록 */
     @PostMapping
-    public ResponseEntity<ApiResponse<CmChattRoom>> create(@RequestBody CmChattRoom body) {
+    public ResponseEntity<ApiResponse<CmChatt>> create(@RequestBody CmChatt body) {
         return ResponseEntity.status(201).body(ApiResponse.created(boCmChattService.create(body)));
     }
 
-    /* 수정 */
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<CmChattRoom>> update(@PathVariable("id") String id, @RequestBody CmChattRoom body) {
+    public ResponseEntity<ApiResponse<CmChatt>> update(@PathVariable("id") String id, @RequestBody CmChatt body) {
         return ResponseEntity.ok(ApiResponse.ok(boCmChattService.update(id, body)));
     }
 
-    /* upsert */
-    @PostMapping("/{id}")
-    public ResponseEntity<ApiResponse<CmChattRoom>> upsert(@PathVariable("id") String id, @RequestBody CmChattRoom body) {
-        return ResponseEntity.ok(ApiResponse.ok(boCmChattService.update(id, body)));
-    }
-
-    /* 삭제 */
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable("id") String id) {
         boCmChattService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok(null, "삭제되었습니다."));
     }
 
-    /* changeStatus */
     @PatchMapping("/{id}/status")
-    public ResponseEntity<ApiResponse<CmChattRoomDto.Item>> changeStatus(
+    public ResponseEntity<ApiResponse<CmChattDto.Item>> changeStatus(
             @PathVariable("id") String id, @RequestBody CmChattChangeStatusDto.Request req) {
         return ResponseEntity.ok(ApiResponse.ok(boCmChattService.changeStatus(id, req.getStatusCd())));
     }
 
-    /** saveList -- 일괄 저장 (cmd 변형: order 등) */
-    @PostMapping("/save-list/{cmd}")
-    public ResponseEntity<ApiResponse<Void>> saveListCmd(
-            @PathVariable("cmd") String cmd, @RequestBody List<CmChattRoom> rows) {
-        switch (cmd) {
-            case "base" -> boCmChattService.saveListBase(rows);
-            default -> throw new CmBizException("알 수 없는 saveList cmd: " + cmd);
-        }
-        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
+    /* ── 메시지 ──────────────────────────────────────────────── */
+
+    @GetMapping("/{id}/messages")
+    public ResponseEntity<ApiResponse<List<CmChattMsgDto.Item>>> getMessages(
+            @PathVariable("id") String id,
+            @RequestParam(value = "afterMsgId", required = false) String afterMsgId) {
+        return ResponseEntity.ok(ApiResponse.ok(boCmChattService.getMessages(id, afterMsgId)));
+    }
+
+    @PostMapping("/{id}/msg")
+    public ResponseEntity<ApiResponse<CmChattMsg>> sendMsg(
+            @PathVariable("id") String id, @RequestBody CmChattMsgDto.SendRequest body) {
+        return ResponseEntity.status(201).body(ApiResponse.created(boCmChattService.sendMsg(id, body)));
+    }
+
+    /* ── 참여자 ──────────────────────────────────────────────── */
+
+    @GetMapping("/{id}/members")
+    public ResponseEntity<ApiResponse<List<CmChattMemberDto.Item>>> getMembers(@PathVariable("id") String id) {
+        return ResponseEntity.ok(ApiResponse.ok(boCmChattService.getMembers(id)));
     }
 }

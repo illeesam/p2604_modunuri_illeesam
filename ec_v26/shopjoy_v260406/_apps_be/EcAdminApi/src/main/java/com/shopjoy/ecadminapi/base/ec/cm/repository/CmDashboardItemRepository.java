@@ -8,9 +8,7 @@ import java.util.List;
 
 @Repository
 public interface CmDashboardItemRepository extends JpaRepository<CmDashboardItem, String> {
-
-    List<CmDashboardItem> findBySiteIdAndUiNmOrderBySortOrdAsc(String siteId, String uiNm);
-
-    List<CmDashboardItem> findBySiteIdAndUiNmAndUseYnOrderBySortOrdAsc(
-            String siteId, String uiNm, String useYn);
+    List<CmDashboardItem> findByDashboardIdOrderBySortOrdAsc(String dashboardId);
+    List<CmDashboardItem> findByDashboardIdAndUseYnOrderBySortOrdAsc(String dashboardId, String useYn);
+    List<CmDashboardItem> findBySiteIdOrderBySortOrdAsc(String siteId);
 }

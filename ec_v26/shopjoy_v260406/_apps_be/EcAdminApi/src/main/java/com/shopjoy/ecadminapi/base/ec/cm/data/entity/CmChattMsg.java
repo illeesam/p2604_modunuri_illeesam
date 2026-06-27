@@ -15,7 +15,6 @@ import org.hibernate.annotations.Comment;
 @Table(name = "cm_chatt_msg", schema = "shopjoy_2604")
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @SuperBuilder
-// 채팅 메시지 엔티티
 @Comment("채팅 메시지")
 public class CmChattMsg extends BaseEntity {
 
@@ -28,17 +27,33 @@ public class CmChattMsg extends BaseEntity {
     @Column(name = "site_id", length = 21, nullable = false)
     private String siteId;
 
-    @Comment("채팅방ID")
-    @Column(name = "chatt_room_id", length = 21, nullable = false)
-    private String chattRoomId;
+    @Comment("채팅방ID (cm_chatt.chatt_id)")
+    @Column(name = "chatt_id", length = 21, nullable = false)
+    private String chattId;
 
-    @Comment("발신자유형 (MEMBER/ADMIN)")
-    @Column(name = "sender_cd", length = 20, nullable = false)
-    private String senderCd;
+    @Comment("발신자유형 (MEMBER/ADMIN/SYSTEM)")
+    @Column(name = "sender_type_cd", length = 20, nullable = false)
+    private String senderTypeCd;
 
-    @Comment("메시지내용")
+    @Comment("발신자ID (memberId 또는 userId)")
+    @Column(name = "sender_id", length = 21, nullable = false)
+    private String senderId;
+
+    @Comment("발신자명 (비정규화 캐시)")
+    @Column(name = "sender_nm", length = 100)
+    private String senderNm;
+
+    @Comment("메시지 내용")
     @Column(name = "msg_text", columnDefinition = "TEXT")
     private String msgText;
+
+    @Comment("메시지유형 (TEXT/IMAGE/FILE/REF/SYSTEM)")
+    @Column(name = "msg_type_cd", length = 20)
+    private String msgTypeCd;
+
+    @Comment("첨부그룹ID (sy_attach_grp.attach_grp_id)")
+    @Column(name = "attach_grp_id", length = 21)
+    private String attachGrpId;
 
     @Comment("참조유형 (ORDER/PRODUCT/CLAIM)")
     @Column(name = "ref_type", length = 20)
@@ -48,12 +63,11 @@ public class CmChattMsg extends BaseEntity {
     @Column(name = "ref_id", length = 21)
     private String refId;
 
-    @Comment("발송일시")
-    @Column(name = "send_date")
-    private LocalDateTime sendDate;
-
-    @Comment("읽음여부 Y/N")
+    @Comment("읽음여부 (Y/N)")
     @Column(name = "read_yn", length = 1)
     private String readYn;
 
+    @Comment("발송일시")
+    @Column(name = "send_date")
+    private LocalDateTime sendDate;
 }
