@@ -1,10 +1,12 @@
 package com.shopjoy.ecadminapi.base.ec.cm.service;
 
 import com.shopjoy.ecadminapi.base.ec.cm.data.dto.CmDashboardDto;
-import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboardData;
+import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboard;
 import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboardItem;
-import com.shopjoy.ecadminapi.base.ec.cm.repository.CmDashboardDataRepository;
+import com.shopjoy.ecadminapi.base.ec.cm.data.entity.CmDashboardItemData;
+import com.shopjoy.ecadminapi.base.ec.cm.repository.CmDashboardItemDataRepository;
 import com.shopjoy.ecadminapi.base.ec.cm.repository.CmDashboardItemRepository;
+import com.shopjoy.ecadminapi.base.ec.cm.repository.CmDashboardRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,7 +17,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * EC 종합 대시보드 서비스 — cm_dashboard_item + cm_dashboard_data 기반.
+ * EC 종합 대시보드 서비스 — cm_dashboard + cm_dashboard_item + cm_dashboard_item_data 기반.
  *
  * <p>요청 목록 [{compId, siteId, uiNm, startYmd, endYmd, limit}] 를 받아
  * 각 항목을 병렬 조회하여 {@code info{NNNN}} 키로 Map에 담아 반환한다.</p>
@@ -25,13 +27,14 @@ import java.util.concurrent.ConcurrentHashMap;
 @Transactional(readOnly = true)
 public class CmDashboardService {
 
+    private final CmDashboardRepository cmDashboardRepository;
     private final CmDashboardItemRepository cmDashboardItemRepository;
-    private final CmDashboardDataRepository cmDashboardDataRepository;
+    private final CmDashboardItemDataRepository cmDashboardItemDataRepository;
 
     /**
      * 대시보드 데이터 조회.
      *
-     * @param items [{compId: "COMP0101", siteId: "SITE000000000001", uiNm: "DashboardBoEc01",
+     * @param items [{compId: "COMP0101", siteId: "2604010000000001", uiNm: "DashboardBoEc01",
      *               startYmd: "20250501", endYmd: "20260624"}, ...]
      * @return {"info0101": [...], "info0202": [...], ...}
      */
@@ -49,14 +52,22 @@ public class CmDashboardService {
     }
 
     private List<CmDashboardDto> queryOne(String compId, Map<String, Object> p) {
-        // cm_dashboard_item에서 해당 패널 조회
         String siteId = str(p.get("siteId"));
         String uiNm   = str(p.get("uiNm"));
 
-        // siteId가 없으면 item_key로만 패널 찾기
-        List<CmDashboardItem> itemList;
+        // cm_dashboard 헤더로 dashboardId 조회
+        String dashboardId = null;
         if (siteId != null && uiNm != null) {
-            itemList = cmDashboardItemRepository.findBySiteIdAndUiNmOrderBySortOrdAsc(siteId, uiNm);
+            CmDashboard dash = cmDashboardRepository.findBySiteIdAndUiCompNm(siteId, uiNm).orElse(null);
+            if (dash != null) dashboardId = dash.getDashboardId();
+        }
+
+        // 패널 목록 조회
+        List<CmDashboardItem> itemList;
+        if (dashboardId != null) {
+            itemList = cmDashboardItemRepository.findByDashboardIdOrderBySortOrdAsc(dashboardId);
+        } else if (siteId != null) {
+            itemList = cmDashboardItemRepository.findBySiteIdOrderBySortOrdAsc(siteId);
         } else {
             itemList = cmDashboardItemRepository.findAll();
         }
@@ -67,19 +78,19 @@ public class CmDashboardService {
 
         if (panel == null) return List.of();
 
-        // cm_dashboard_data에서 해당 패널의 데이터 조회
+        // cm_dashboard_item_data에서 해당 패널의 데이터 조회
         String startYmd = str(p.get("startYmd"));
         String endYmd   = str(p.get("endYmd"));
         Object limitObj = p.get("limit");
 
-        List<CmDashboardData> rows;
+        List<CmDashboardItemData> rows;
         if (startYmd != null && endYmd != null) {
-            rows = cmDashboardDataRepository
-                .findBySiteIdAndDashboardItemIdAndYyyymmddBetweenOrderByYyyymmddAscDashboardDataIdAsc(
+            rows = cmDashboardItemDataRepository
+                .findBySiteIdAndDashboardItemIdAndYyyymmddBetweenOrderByYyyymmddAscItemDataIdAsc(
                     panel.getSiteId(), panel.getDashboardItemId(), startYmd, endYmd);
         } else {
-            rows = cmDashboardDataRepository
-                .findBySiteIdAndDashboardItemIdOrderByYyyymmddAscDashboardDataIdAsc(
+            rows = cmDashboardItemDataRepository
+                .findBySiteIdAndDashboardItemIdOrderByYyyymmddAscItemDataIdAsc(
                     panel.getSiteId(), panel.getDashboardItemId());
         }
 
@@ -90,9 +101,9 @@ public class CmDashboardService {
         return rows.stream().map(this::toDto).toList();
     }
 
-    private CmDashboardDto toDto(CmDashboardData d) {
+    private CmDashboardDto toDto(CmDashboardItemData d) {
         return CmDashboardDto.builder()
-            .dashboardId(d.getDashboardDataId())
+            .dashboardId(d.getItemDataId())
             .compId(d.getItemKey())
             .yyyymmdd(d.getYyyymmdd())
             .siteNo(d.getSiteId())

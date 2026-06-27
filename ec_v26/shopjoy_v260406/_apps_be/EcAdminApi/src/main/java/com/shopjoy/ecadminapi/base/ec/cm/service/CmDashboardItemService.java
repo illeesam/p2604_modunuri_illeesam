@@ -49,15 +49,18 @@ public class CmDashboardItemService {
      * useYn 있으면 useYn 필터 적용, 없으면 전체 조회.
      */
     public List<CmDashboardItem> getList(Map<String, Object> p) {
-        String siteId = (String) p.get("siteId");
-        String uiNm   = (String) p.get("uiNm");
-        String useYn  = (String) p.get("useYn");
+        String dashboardId = (String) p.get("dashboardId");
+        String siteId      = (String) p.get("siteId");
+        String useYn       = (String) p.get("useYn");
 
-        if (siteId != null && uiNm != null && useYn != null) {
-            return cmDashboardItemRepository.findBySiteIdAndUiNmAndUseYnOrderBySortOrdAsc(siteId, uiNm, useYn);
+        if (dashboardId != null && useYn != null) {
+            return cmDashboardItemRepository.findByDashboardIdAndUseYnOrderBySortOrdAsc(dashboardId, useYn);
         }
-        if (siteId != null && uiNm != null) {
-            return cmDashboardItemRepository.findBySiteIdAndUiNmOrderBySortOrdAsc(siteId, uiNm);
+        if (dashboardId != null) {
+            return cmDashboardItemRepository.findByDashboardIdOrderBySortOrdAsc(dashboardId);
+        }
+        if (siteId != null) {
+            return cmDashboardItemRepository.findBySiteIdOrderBySortOrdAsc(siteId);
         }
         return cmDashboardItemRepository.findAll();
     }

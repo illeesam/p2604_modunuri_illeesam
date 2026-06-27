@@ -45,7 +45,14 @@
 
   /* ── cm: 대시보드 ────────────────────────────────────────────── */
   boApiSvc.cmDashboard = {
-    getData(items, uiNm, cmdNm) { return global.boApi.post('/bo/ec/cm/dashboard/data', items, hdr(uiNm, cmdNm)); },
+    getData(items, uiNm, cmdNm)       { return global.boApi.post('/bo/ec/cm/dashboard/data', items, hdr(uiNm, cmdNm)); },
+    getList(params, uiNm, cmdNm)      { return global.boApi.get('/bo/ec/cm/dashboard/list', { params, ...hdr(uiNm, cmdNm) }); },
+    getById(id, uiNm, cmdNm)          { return global.boApi.get('/bo/ec/cm/dashboard/' + id, hdr(uiNm, cmdNm)); },
+    create(body, uiNm, cmdNm)         { return global.boApi.post('/bo/ec/cm/dashboard', body, hdr(uiNm, cmdNm)); },
+    update(id, body, uiNm, cmdNm)     { return global.boApi.put('/bo/ec/cm/dashboard/' + id, body, hdr(uiNm, cmdNm)); },
+    remove(id, uiNm, cmdNm)           { return global.boApi.delete('/bo/ec/cm/dashboard/' + id, hdr(uiNm, cmdNm)); },
+    getItemList(params, uiNm, cmdNm)  { return global.boApi.get('/bo/ec/cm/dashboard/item/list', { params, ...hdr(uiNm, cmdNm) }); },
+    itemDataUpsert(body, uiNm, cmdNm) { return global.boApi.post('/bo/ec/cm/dashboard/item-data/upsert', body, hdr(uiNm, cmdNm)); },
   };
 
   /* ── cm: 채팅 ───────────────────────────────────────────────── */
