@@ -1040,124 +1040,172 @@ window.ZdInfDashboard = {
       </div>
     </bo-container>
 
-    <bo-container>
-      <div> ■■■ social 유투브 강좌</div>
-      <pre>
-- ▪▪▪ 소셜로그인 구현 원리_네이버로그인,카카오로그인,깃헙로그인 원리 : https://www.youtube.com/watch?v=Aa6oqanyOHY&t=26s
-- ▪▪▪ 카카오 로그인을 구현하기 위한 설정 및 준비 : https://www.youtube.com/watch?v=Aa6oqanyOHY&t=26s
-- ▪▪▪ 네이버 소셜 로그인 구현 :  https://www.youtube.com/watch?v=NrMUyA47gdU
-- ▪▪▪ Google OAuth; 구글 소셜 로그인하기 : https://www.youtube.com/watch?v=olnJzoa4A68
-- ▪▪▪ 토스페이먼츠 | 5분 만에 결제 연동하기 : https://www.youtube.com/watch?v=HtwLMwzTG5c
-- ▪▪▪ 스프링 메일 Sender : 3. 구글 SMTP 신청 : https://www.youtube.com/watch?v=Sedf9uO7W4E
-      </pre>
-    </bo-container>
+    <bo-container title="참고자료 · 계정정보">
+      <style>
+        .ref-svc-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(360px,1fr)); gap:14px; padding:4px 0; }
+        .ref-svc-card { border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; }
+        .ref-svc-head { padding:8px 14px; display:flex; align-items:center; gap:8px; font-weight:700; font-size:13px; }
+        .ref-svc-body { padding:10px 14px; font-size:12px; line-height:1.9; }
+        .ref-sub { background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:8px 12px; margin:6px 0; }
+        .ref-sub-title { font-weight:700; font-size:11px; color:#374151; margin-bottom:4px; }
+        .ref-kv { display:flex; gap:6px; align-items:flex-start; flex-wrap:wrap; margin:1px 0; }
+        .ref-lbl { color:#9ca3af; font-size:11px; white-space:nowrap; min-width:80px; }
+        .ref-key { font-family:monospace; font-size:11px; padding:1px 6px; border-radius:3px; word-break:break-all; }
+        .ref-key.green  { background:#d1fae5; color:#065f46; }
+        .ref-key.blue   { background:#dbeafe; color:#1e40af; }
+        .ref-key.purple { background:#ede9fe; color:#5b21b6; }
+        .ref-key.yellow { background:#fef3c7; color:#92400e; }
+        .ref-key.red    { background:#fee2e2; color:#991b1b; font-size:15px; letter-spacing:3px; font-weight:700; }
+        .ref-key.gray   { background:#f3f4f6; color:#374151; }
+        .ref-link { color:#2563eb; text-decoration:none; font-size:11px; }
+        .ref-link:hover { text-decoration:underline; }
+        .ref-badge { font-size:10px; font-weight:700; padding:1px 6px; border-radius:3px; }
+        .ref-urls { font-size:10px; color:#6b7280; margin-top:2px; }
+      </style>
 
-    <bo-container>
-      <div> ■■■ social kakao</div>
-      <pre>
-▪ kakao developers > 전체 앱 : https://developers.kakao.com/console/app
------------------------------------------------------------
-▪ 앱 > illeesam_netlify : { ID: 1429368 }
-- ▪ 앱 > 플랫폼 키
--- ▪ REST API 키: 44074b1c358f60292145b3068460f37d 
---- ▪ 카카오 로그인 리다이렉트 URI: https://illeesam.synology.me:3000/login/oauth2/code/kakao ▪ https://illeesam.netlify.app/login/oauth2/code/kakao ▪ http://127.0.0.1:3000/login/oauth2/code/kakao
----- ▪ 동의항목 : {닉네임:필수동의, 프로필사진:필수동의, 카카오서비스내친구목록:이용중동의}
----- ▪ 접근권한 : {카카오톡 메시지 전송: 선택동의}
---- ▪ 비즈니스 인증 리다이렉트 URI: https://illeesam.synology.me:3000/login/oauth2/code/kakao ▪ https://illeesam.netlify.app/login/oauth2/code/kakao ▪ http://127.0.0.1:3000/login/oauth2/code/kakao
---- ▪ 클라이언트 시크릿 > 카카오 로그인 : { 코드: 1gV3lHvBP6KNju9P5E6I4TbchWByfPIh, 활성화:ON }
---- ▪ 클라이언트 시크릿 > 비즈니스 로그인 : { 코드: ZyuNrjSOp2yilmTv9MSxDlXRdwPFXDTB, 활성화:ON }
--- ▪ JavaScript 키: 797a116c08880d3865a89cf4f70b91f5 
---- ▪ JavaScript SDK 도메인 : https://illeesam.synology.me:3000 ▪ https://illeesam.netlify.app ▪ http://127.0.0.1:5501
---- ▪ 카카오 로그인 리다이렉트 URI : https://illeesam.synology.me:3000/login/oauth2/code/kakao ▪ https://illeesam.netlify.app/login/oauth2/code/kakao ▪ http://127.0.0.1:5501/oauth/callback/kakao
--- ▪ 네이티브 앱 키: 96e57663db167a8e7a78345c9d0cf9d2 
-- ▪ 앱 > 카카오맵 : {사용설정: ON}
------------------------------------------------------------
-▪ 앱 > illeesam_synology : { ID: 1491354 }
-- ▪ 앱 > 플랫폼 키
--- ▪ REST API 키: 63d491e61a4caacf2fc90ee252f2d644 
---- ▪ 카카오 로그인 리다이렉트 URI: https://illeesam.synology.me:3000/login/oauth2/code/kakao ▪ https://illeesam.netlify.app/login/oauth2/code/kakao ▪ http://127.0.0.1:3000/login/oauth2/code/kakao
----- ▪ 동의항목 : {닉네임:필수동의, 프로필사진:필수동의, 카카오서비스내친구목록:이용중동의}
----- ▪ 접근권한 : {카카오톡 메시지 전송: 선택동의}
---- ▪ 비즈니스 인증 리다이렉트 URI: https://illeesam.synology.me:3000/login/oauth2/code/kakao ▪ https://illeesam.netlify.app/login/oauth2/code/kakao ▪ http://127.0.0.1:3000/login/oauth2/code/kakao
---- ▪ 클라이언트 시크릿 > 카카오 로그인 : { 코드: 7gxUHEectTM7qYSDmhnXUJc3ZE1ymqRO, 활성화:ON }
---- ▪ 클라이언트 시크릿 > 비즈니스 로그인 : { 코드: Q6d7uCUnJBXCXQ2qINFWt2wSZ0sEzpB2, 활성화:ON }
--- ▪ JavaScript 키: a2990e41aa57c3a4ad1fe97a210938d7 
---- ▪ JavaScript SDK 도메인 : https://illeesam.synology.me:3000 ▪ https://illeesam.netlify.app ▪ http://127.0.0.1:5501
---- ▪ 카카오 로그인 리다이렉트 URI : https://illeesam.synology.me:3000/login/oauth2/code/kakao ▪ https://illeesam.netlify.app/login/oauth2/code/kakao ▪ http://127.0.0.1:5501/oauth/callback/kakao
--- ▪ 네이티브 앱 키: 4f43ddc38e22c79280d18595a31ff27b 
-- ▪ 앱 > 카카오맵 : {사용설정: ON}
------------------------------------------------------------
-▪ 앱 > illeesam_localhost : { ID: 1491909 }
-- ▪ 앱 > 플랫폼 키
--- ▪ REST API 키: 2e8671b1cc341f7d4d92724a2d4eee2c 
---- ▪ 카카오 로그인 리다이렉트 URI: https://illeesam.synology.me:3000/login/oauth2/code/kakao ▪ https://illeesam.netlify.app/login/oauth2/code/kakao ▪ http://127.0.0.1:3000/login/oauth2/code/kakao
----- ▪ 동의항목 : {닉네임:필수동의, 프로필사진:필수동의, 카카오서비스내친구목록:이용중동의}
----- ▪ 접근권한 : {카카오톡 메시지 전송: 선택동의}
---- ▪ 비즈니스 인증 리다이렉트 URI: https://illeesam.synology.me:3000/login/oauth2/code/kakao ▪ https://illeesam.netlify.app/login/oauth2/code/kakao ▪ http://127.0.0.1:3000/login/oauth2/code/kakao
---- ▪ 클라이언트 시크릿 > 카카오 로그인 : { 코드: 7gxUHEectTM7qYSDmhnXUJc3ZE1ymqRO, 활성화:ON }
---- ▪ 클라이언트 시크릿 > 비즈니스 로그인 : { 코드: Q6d7uCUnJBXCXQ2qINFWt2wSZ0sEzpB2, 활성화:ON }
--- ▪ JavaScript 키: 2e8671b1cc341f7d4d92724a2d4eee2c 
---- ▪ JavaScript SDK 도메인 : https://illeesam.synology.me:3000 ▪ https://illeesam.netlify.app ▪ http://127.0.0.1:5501
---- ▪ 카카오 로그인 리다이렉트 URI : https://illeesam.synology.me:3000/login/oauth2/code/kakao ▪ https://illeesam.netlify.app/login/oauth2/code/kakao ▪ http://127.0.0.1:5501/oauth/callback/kakao
--- ▪ 네이티브 앱 키: 4f43ddc38e22c79280d18595a31ff27b 
-- ▪ 앱 > 카카오맵 : {사용설정: ON}
------------------------------------------------------------
-      </pre>
-    </bo-container>
+      <div class="ref-svc-grid">
 
-    <bo-container>
-      <div> ■■■ social naver</div>
-      <pre>
-▪ naver developers > application : https://developers.naver.com/apps/#/myapps/K0Xy5CSEtyzRrHnDbf75/overview
------------------------------------------------------------
-▪ 앱 > illeesam_netlify : { Client ID: r6RWBr2qMOCZbGPFALrA, Client Secret : c_V0sjmlR5}
-- ▪ API설정 > 사용 API > 네이버 로그인 : { 회원이름: 필수, 연락처 이메일 주소: 필수}
-- ▪ API설정 > 로그인 오픈 API > PC웹 > 서비스URL : http://127.0.0.1:5501/bo.html
-- ▪ API설정 > 로그인 오픈 API > PC웹 > 네이버로그인 Callback URL : http://127.0.0.1:3000/oauth/callback/naver
------------------------------------------------------------
-▪ 앱 > illeesam_synology : { Client ID: jWtLT9SUfE2JWEji2XGq, Client Secret : QOX2GZO1uk}
-- ▪ API설정 > 사용 API > 네이버 로그인 : { 회원이름: 필수, 연락처 이메일 주소: 필수}
-- ▪ API설정 > 로그인 오픈 API > PC웹 > 서비스URL : http://127.0.0.1:5501/bo.html
-- ▪ API설정 > 로그인 오픈 API > PC웹 > 네이버로그인 Callback URL : http://127.0.0.1:3000/oauth/callback/naver
------------------------------------------------------------
-▪ 어플리케이션 > illeesam_localhost : { Client ID: 01sBNJ_R7mdQDl5_d3AM, Client Secret : c5cSSSZCaF}
-- ▪ API설정 > 사용 API > 네이버 로그인 : { 회원이름: 필수, 연락처 이메일 주소: 필수} 
-- ▪ API설정 > 로그인 오픈 API > PC웹 > 서비스URL : http://127.0.0.1:5501/bo.html
-- ▪ API설정 > 로그인 오픈 API > PC웹 > 네이버로그인 Callback URL : http://127.0.0.1:3000/oauth/callback/naver
------------------------------------------------------------
-      </pre>
-    </bo-container>
+        <!-- ① YouTube 강좌 -->
+        <div class="ref-svc-card">
+          <div class="ref-svc-head" style="background:#fef2f2;">
+            <span class="ref-badge" style="background:#dc2626;color:#fff;">YT</span>
+            YouTube 참고 강좌
+          </div>
+          <div class="ref-svc-body">
+            <div><a class="ref-link" href="https://www.youtube.com/watch?v=Aa6oqanyOHY" target="_blank">소셜로그인 구현 원리 (네이버/카카오/깃헙)</a></div>
+            <div><a class="ref-link" href="https://www.youtube.com/watch?v=Aa6oqanyOHY" target="_blank">카카오 로그인 설정 및 준비</a></div>
+            <div><a class="ref-link" href="https://www.youtube.com/watch?v=NrMUyA47gdU" target="_blank">네이버 소셜 로그인 구현</a></div>
+            <div><a class="ref-link" href="https://www.youtube.com/watch?v=olnJzoa4A68" target="_blank">Google OAuth 구글 소셜 로그인</a></div>
+            <div><a class="ref-link" href="https://www.youtube.com/watch?v=HtwLMwzTG5c" target="_blank">토스페이먼츠 5분 결제 연동</a></div>
+            <div><a class="ref-link" href="https://www.youtube.com/watch?v=Sedf9uO7W4E" target="_blank">스프링 SMTP / 구글 앱 비밀번호 신청</a></div>
+          </div>
+        </div>
 
-    <bo-container>
-      <div> ■■■ social google</div>
-      <pre>
-▪ Google 디벨로퍼 https://developers.google.com/?hl=ko
-▪ Google Play Console : https://developer.android.com/distribute/console?hl=ko
-▪ 계정 : illeesam4@gmail.com
+        <!-- ② Kakao -->
+        <div class="ref-svc-card">
+          <div class="ref-svc-head" style="background:#fefce8;">
+            <span class="ref-badge" style="background:#ca8a04;color:#fff;">KA</span>
+            Kakao &nbsp;<a class="ref-link" href="https://developers.kakao.com/console/app" target="_blank">developers console</a>
+          </div>
+          <div class="ref-svc-body">
 
------------------------------------------------------------
-      </pre>
-    </bo-container>
+            <div class="ref-sub">
+              <div class="ref-sub-title">illeesam_netlify &nbsp;<span style="color:#9ca3af;font-weight:400;">ID: 1429368</span></div>
+              <div class="ref-kv"><span class="ref-lbl">REST API 키</span><span class="ref-key green">44074b1c358f60292145b3068460f37d</span></div>
+              <div class="ref-kv"><span class="ref-lbl">JavaScript 키</span><span class="ref-key blue">797a116c08880d3865a89cf4f70b91f5</span></div>
+              <div class="ref-kv"><span class="ref-lbl">네이티브 앱 키</span><span class="ref-key purple">96e57663db167a8e7a78345c9d0cf9d2</span></div>
+              <div class="ref-kv"><span class="ref-lbl">시크릿(로그인)</span><span class="ref-key yellow">1gV3lHvBP6KNju9P5E6I4TbchWByfPIh</span></div>
+              <div class="ref-kv"><span class="ref-lbl">시크릿(비즈)</span><span class="ref-key yellow">ZyuNrjSOp2yilmTv9MSxDlXRdwPFXDTB</span></div>
+              <div class="ref-urls">Redirect: /login/oauth2/code/kakao (netlify / synology:3000 / 127.0.0.1:3000)</div>
+            </div>
 
-    <bo-container>
-      <div> ■■■ payment : toss</div>
-      <pre>
-▪ 토스페이먼츠 개발자센터 : https://developers.tosspayments.com/
-▪ 토스페이먼츠 개발자센터 > 결제 연동하기 : https://docs.tosspayments.com/guides/v2/payment-widget/integration
-- ▪ 토스페이먼츠 개발자센터 > 결제 연동하기 > 문서용 테스트 키 : test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm ▪ test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6
-▪ 토스페이먼츠 sandbox : https://developers.tosspayments.com/sandbox
-      </pre>
-    </bo-container>
+            <div class="ref-sub">
+              <div class="ref-sub-title">illeesam_synology &nbsp;<span style="color:#9ca3af;font-weight:400;">ID: 1491354</span></div>
+              <div class="ref-kv"><span class="ref-lbl">REST API 키</span><span class="ref-key green">63d491e61a4caacf2fc90ee252f2d644</span></div>
+              <div class="ref-kv"><span class="ref-lbl">JavaScript 키</span><span class="ref-key blue">a2990e41aa57c3a4ad1fe97a210938d7</span></div>
+              <div class="ref-kv"><span class="ref-lbl">네이티브 앱 키</span><span class="ref-key purple">4f43ddc38e22c79280d18595a31ff27b</span></div>
+              <div class="ref-kv"><span class="ref-lbl">시크릿(로그인)</span><span class="ref-key yellow">7gxUHEectTM7qYSDmhnXUJc3ZE1ymqRO</span></div>
+              <div class="ref-kv"><span class="ref-lbl">시크릿(비즈)</span><span class="ref-key yellow">Q6d7uCUnJBXCXQ2qINFWt2wSZ0sEzpB2</span></div>
+            </div>
 
-    <bo-container>
-      <div> ■■■ smtp : google</div>
-      <pre>
-▪ 계정 : illeesam4@gmail.com, pwd: sxxx5xx4x!
-▪ 구글 계정관리
-▪ 2단계인증 활성화
-▪ 앱 비밀번호
-- ▪ 앱이름 : illeesam4app, 생성된 앱 비밀번호 16자리 : wqji ylpf pcwt vhnh
-      </pre>
+            <div class="ref-sub">
+              <div class="ref-sub-title">illeesam_localhost &nbsp;<span style="color:#9ca3af;font-weight:400;">ID: 1491909</span></div>
+              <div class="ref-kv"><span class="ref-lbl">REST API 키</span><span class="ref-key green">2e8671b1cc341f7d4d92724a2d4eee2c</span></div>
+              <div class="ref-kv"><span class="ref-lbl">JavaScript 키</span><span class="ref-key blue">2e8671b1cc341f7d4d92724a2d4eee2c</span></div>
+              <div class="ref-kv"><span class="ref-lbl">네이티브 앱 키</span><span class="ref-key purple">4f43ddc38e22c79280d18595a31ff27b</span></div>
+              <div class="ref-kv"><span class="ref-lbl">시크릿(로그인)</span><span class="ref-key yellow">7gxUHEectTM7qYSDmhnXUJc3ZE1ymqRO</span></div>
+              <div class="ref-kv"><span class="ref-lbl">시크릿(비즈)</span><span class="ref-key yellow">Q6d7uCUnJBXCXQ2qINFWt2wSZ0sEzpB2</span></div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ③ Naver -->
+        <div class="ref-svc-card">
+          <div class="ref-svc-head" style="background:#f0fdf4;">
+            <span class="ref-badge" style="background:#16a34a;color:#fff;">NV</span>
+            Naver &nbsp;<a class="ref-link" href="https://developers.naver.com/apps/#/myapps/K0Xy5CSEtyzRrHnDbf75/overview" target="_blank">developers console</a>
+          </div>
+          <div class="ref-svc-body">
+
+            <div class="ref-sub">
+              <div class="ref-sub-title">illeesam_netlify</div>
+              <div class="ref-kv"><span class="ref-lbl">Client ID</span><span class="ref-key green">r6RWBr2qMOCZbGPFALrA</span></div>
+              <div class="ref-kv"><span class="ref-lbl">Client Secret</span><span class="ref-key yellow">c_V0sjmlR5</span></div>
+              <div class="ref-urls">Callback: http://127.0.0.1:3000/oauth/callback/naver</div>
+            </div>
+
+            <div class="ref-sub">
+              <div class="ref-sub-title">illeesam_synology</div>
+              <div class="ref-kv"><span class="ref-lbl">Client ID</span><span class="ref-key green">jWtLT9SUfE2JWEji2XGq</span></div>
+              <div class="ref-kv"><span class="ref-lbl">Client Secret</span><span class="ref-key yellow">QOX2GZO1uk</span></div>
+              <div class="ref-urls">Callback: http://127.0.0.1:3000/oauth/callback/naver</div>
+            </div>
+
+            <div class="ref-sub">
+              <div class="ref-sub-title">illeesam_localhost</div>
+              <div class="ref-kv"><span class="ref-lbl">Client ID</span><span class="ref-key green">01sBNJ_R7mdQDl5_d3AM</span></div>
+              <div class="ref-kv"><span class="ref-lbl">Client Secret</span><span class="ref-key yellow">c5cSSSZCaF</span></div>
+              <div class="ref-urls">Callback: http://127.0.0.1:3000/oauth/callback/naver</div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ④ Google -->
+        <div class="ref-svc-card">
+          <div class="ref-svc-head" style="background:#eff6ff;">
+            <span class="ref-badge" style="background:#2563eb;color:#fff;">GO</span>
+            Google &nbsp;<a class="ref-link" href="https://developers.google.com/?hl=ko" target="_blank">developers</a>
+            &nbsp;/&nbsp;<a class="ref-link" href="https://console.cloud.google.com/apis/credentials" target="_blank">cloud console</a>
+          </div>
+          <div class="ref-svc-body">
+            <div class="ref-sub">
+              <div class="ref-kv"><span class="ref-lbl">계정</span><span class="ref-key blue">illeesam4@gmail.com</span></div>
+              <div style="margin-top:6px;font-size:11px;color:#6b7280;">
+                <a class="ref-link" href="https://developer.android.com/distribute/console?hl=ko" target="_blank">Google Play Console</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ⑤ Toss -->
+        <div class="ref-svc-card">
+          <div class="ref-svc-head" style="background:#f5f3ff;">
+            <span class="ref-badge" style="background:#7c3aed;color:#fff;">TP</span>
+            토스페이먼츠 &nbsp;<a class="ref-link" href="https://developers.tosspayments.com/" target="_blank">개발자센터</a>
+            &nbsp;/&nbsp;<a class="ref-link" href="https://developers.tosspayments.com/sandbox" target="_blank">sandbox</a>
+          </div>
+          <div class="ref-svc-body">
+            <div class="ref-sub">
+              <div class="ref-sub-title">문서용 테스트 키</div>
+              <div class="ref-kv"><span class="ref-lbl">클라이언트 키</span><span class="ref-key green">test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm</span></div>
+              <div class="ref-kv"><span class="ref-lbl">시크릿 키</span><span class="ref-key yellow">test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6</span></div>
+              <div class="ref-urls">
+                <a class="ref-link" href="https://docs.tosspayments.com/guides/v2/payment-widget/integration" target="_blank">결제 연동하기 가이드</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ⑥ SMTP / Gmail -->
+        <div class="ref-svc-card">
+          <div class="ref-svc-head" style="background:#fef2f2;">
+            <span class="ref-badge" style="background:#dc2626;color:#fff;">ML</span>
+            SMTP / Gmail &nbsp;<a class="ref-link" href="https://myaccount.google.com/apppasswords" target="_blank">앱 비밀번호 발급</a>
+          </div>
+          <div class="ref-svc-body">
+            <div class="ref-sub">
+              <div class="ref-kv"><span class="ref-lbl">계정</span><span class="ref-key blue">illeesam4@gmail.com</span></div>
+              <div class="ref-kv"><span class="ref-lbl">비밀번호</span><span class="ref-key red">sxxx5xx4x!</span></div>
+              <div class="ref-kv"><span class="ref-lbl">앱 이름</span><span class="ref-key gray">illeesam4app</span></div>
+              <div class="ref-kv"><span class="ref-lbl">앱 비밀번호</span><span class="ref-key yellow">wqji ylpf pcwt vhnh</span></div>
+              <div class="ref-urls">2단계 인증 활성화 필수 · 구글 계정관리에서 앱 비밀번호 생성</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
     </bo-container>
 
   </bo-page>

@@ -233,17 +233,16 @@ window.DpDispWidgetLibPreview = {
 
     // ===== 내장 사용 함수 (이벤트 핸들러 on* / handle*) =======================
 
-    /* handleSearchList — 실 dp_widget_lib 조회 + 어댑터 (config 펼침, 표시경로 라벨 트리 그룹) */
+    /* handleSearchList — 실 dp_widget_lib 조회 + 어댑터 */
     const handleSearchList = async () => {
       try {
         const res = await boApiSvc.dpWidgetLib.getPage({ pageNo: 1, pageSize: 10000 }, '전시위젯라이브러리', '조회');
         const rows = (res.data?.data?.pageList || []).map(x => {
           let cfg = {}; try { cfg = JSON.parse(x.widgetConfigJson || '{}'); } catch (e) { /* 파싱 실패 무시 */ }
-          const pathLabel = boUtil.bofGetPathLabel(x.pathId) || '';
           return { ...cfg, libId: x.widgetLibId, libCode: x.widgetCode, name: x.widgetNm,
                    widgetType: x.widgetTypeCd, desc: x.widgetLibDesc, tags: cfg.tags || '',
                    status: x.useYn === 'Y' ? '활성' : '비활성', thumbnailUrl: x.thumbnailUrl,
-                   usedPaths: pathLabel ? [pathLabel] : [] };
+                   sortOrd: x.sortOrd || 0 };
         });
         widgetLibs.splice(0, widgetLibs.length, ...rows);
       } catch (err) { console.error('[handleSearchList]', err); }
@@ -317,26 +316,48 @@ window.DpDispWidgetLibPreview = {
     /* -- 트리 선택 -- */
         const onTreeSelect  = (lib) => { uiState.selectedLibId = lib.libId; };
 
-    /* -- 트리 상태 -- */
+    /* -- 위젯유형 → 카테고리 분류 맵 -- */
+    const WIDGET_TYPE_CATEGORY = {
+      'image_banner':     'Common > Banner',
+      'popup':            'Common > Popup',
+      'text_banner':      'Common > Text',
+      'html_editor':      'Common > HTML',
+      'textarea':         'Common > Textarea',
+      'markdown':         'Common > Markdown',
+      'info_card':        'Common > InfoCard',
+      'file':             'Common > File',
+      'file_list':        'Common > FileList',
+      'barcode':          'Common > Code',
+      'qrcode':           'Common > Code',
+      'barcode_qrcode':   'Common > Code',
+      'chart_bar':        'Common > Chart',
+      'chart_line':       'Common > Chart',
+      'chart_pie':        'Common > Chart',
+      'video_player':     'Common > Media',
+      'payment_widget':   'Common > Widget',
+      'approval_widget':  'Common > Widget',
+      'widget_embed':     'Common > Widget',
+      'map_widget':       'Common > Map',
+      'product_slider':   'Product > Slider',
+      'product':          'Product > Grid',
+      'cond_product':     'Product > CondGrid',
+      'coupon':           'Promotion > Coupon',
+      'cache_banner':     'Promotion > Cache',
+      'countdown':        'Promotion > Countdown',
+      'event_banner':     'Promotion > Event',
+    };
+
+    /* -- 트리 상태 (위젯유형 카테고리 기반) -- */
     const cfTree = computed(() => {
       const map = {};
-
-      /* addToPath — 추가 */
-      const addToPath = (lib, pathStr) => {
-        const parts = pathStr.split('>').map(s => s.trim()).filter(Boolean);
-        if (!parts.length) { return; }
-        const top = window.safeArrayUtils.safeGet(parts, 0);
-        const rest = parts.slice(1).join(' > ') || '(루트)';
-        if (!map[top]) { map[top] = {}; }
-        if (!map[top][rest]) { map[top][rest] = []; }
-        map[top][rest].push(lib);
-      };
       window.safeArrayUtils.safeForEach(cfFilteredLibs.value, lib => {
-        if (!lib.usedPaths || !lib.usedPaths.length) {
-          addToPath(lib, '(미등록) > (미등록)');
-        } else {
-          window.safeArrayUtils.safeForEach(lib.usedPaths, p => addToPath(lib, p));
-        }
+        const catPath = WIDGET_TYPE_CATEGORY[lib.widgetType] || ('기타 > ' + (lib.widgetType || '미분류'));
+        const parts = catPath.split('>').map(s => s.trim());
+        const top = parts[0] || '기타';
+        const sub = parts[1] || '기타';
+        if (!map[top]) { map[top] = {}; }
+        if (!map[top][sub]) { map[top][sub] = []; }
+        map[top][sub].push(lib);
       });
       return Object.keys(map).sort().map(top => ({
         label: top,
@@ -375,9 +396,9 @@ window.DpDispWidgetLibPreview = {
     watchEffect(() => {
       if (!openNodes.has('__root__')) { openNodes.add('__root__'); }
       const treeArr = Array.isArray(cfTree.value) ? cfTree.value : [];
+      /* 데이터 로드 후 최초 1회: 모든 최상위 노드 자동 펼침 */
       if (treeArr.length && openNodes.size === 1) {
-        const firstNode = treeArr[0];
-        if (firstNode && firstNode.label) { openNodes.add(firstNode.label); }
+        treeArr.forEach(n => { if (n && n.label) { openNodes.add(n.label); } });
       }
     });
 

@@ -13,10 +13,70 @@ window.DpDispWidgetMng = {
     const showConfirm  = window.boApp.showConfirm;  // 확인 모달
     const showRefModal = window.boApp.showRefModal;  // 참조 모달
     const codes = reactive({ disp_widget_types: [], active_statuses: [] });
-    const widgetCounts = reactive({});                 // 좌 트리 노드별 카운트 (검색조건 동기)
-    const uiState = reactive({ loading: false, isPageCodeLoad: false, selectedPath: null, sortKey: '', sortDir: 'asc' });
-    const widgetLibs = reactive([]);
+    const widgetCounts = reactive({});
+    const uiState = reactive({ loading: false, isPageCodeLoad: false, selectedType: null, sortKey: '', sortDir: 'asc' });
     const widgets = reactive([]);
+
+    /* 위젯유형 → 카테고리 매핑 (좌측 트리용 — 서브카테고리당 유형 1:1 유지해야 필터 정확) */
+    const WIDGET_TYPE_CATEGORY = {
+      'image_banner':     'Image > Banner',
+      'popup':            'Image > Popup',
+      'product_slider':   'Product > Slider',
+      'product':          'Product > Grid',
+      'cond_product':     'Product > CondGrid',
+      'chart_bar':        'Etc > Chart',
+      'chart_line':       'Etc > Chart',
+      'chart_pie':        'Etc > Chart',
+      'text_banner':      'Text > RichText',
+      'html_editor':      'Text > RichText',
+      'textarea':         'Text > Title',
+      'markdown':         'Text > Markdown',
+      'info_card':        'Etc > InfoCard',
+      'file':             'Etc > File',
+      'file_list':        'Etc > FileList',
+      'barcode':          'Etc > Code',
+      'qrcode':           'Etc > Code',
+      'barcode_qrcode':   'Etc > Code',
+      'video_player':     'Etc > Video',
+      'payment_widget':   'Etc > Widget',
+      'approval_widget':  'Etc > Widget',
+      'widget_embed':     'Etc > Widget',
+      'map_widget':       'Etc > Map',
+      'coupon':           'Promo > Coupon',
+      'cache_banner':     'Promo > Cache',
+      'countdown':        'Promo > Countdown',
+      'event_banner':     'Promo > EventBanner',
+    };
+
+    /* allTypeCounts — 전체 위젯유형별 카운트 (최초 전체 조회 시 1회 저장, 필터 후에도 고정) */
+    const allTypeCounts = reactive({});   // { image_banner: 10, product: 5, ... }
+    const allTotalCount = ref(0);
+
+    /* cfWidgetTree — allTypeCounts 기반 트리 (필터와 무관하게 고정) */
+    const cfWidgetTree = computed(() => {
+      const map = {};
+      for (const [typeCd, cnt] of Object.entries(allTypeCounts)) {
+        if (!cnt) continue;
+        const catPath = WIDGET_TYPE_CATEGORY[typeCd] || ('Etc > ' + typeCd);
+        const parts = catPath.split('>').map(s => s.trim());
+        const top = parts[0] || 'Etc';
+        const sub = parts[1] || '기타';
+        if (!map[top]) { map[top] = {}; }
+        if (!map[top][sub]) { map[top][sub] = { types: [], count: 0 }; }
+        if (!map[top][sub].types.includes(typeCd)) { map[top][sub].types.push(typeCd); }
+        map[top][sub].count += cnt;
+      }
+      return Object.keys(map).sort().map(top => ({
+        label: top,
+        count: Object.values(map[top]).reduce((s, n) => s + n.count, 0),
+        children: Object.keys(map[top]).sort().map(sub => ({
+          label: sub,
+          types: map[top][sub].types,
+          count: map[top][sub].count,
+        })),
+      }));
+    });
+    const openTopNodes = reactive(new Set(['Image', 'Product', 'Text', 'Promo', 'Etc']));
 
     /* _initSearchParam — 초기화 */
 
@@ -33,7 +93,7 @@ window.DpDispWidgetMng = {
       } else if (cmd === 'searchParam-reset') {
         Object.assign(searchParam, _initSearchParam());
         uiState.sortKey = ''; uiState.sortDir = 'asc';
-        uiState.selectedPath = null;          // 표시경로 트리 전체로 복귀
+        uiState.selectedType = null;
         listGridPager.pageNo = 1;
         resetDetailToNew();
         return handleSearchData('DEFAULT');
@@ -43,9 +103,10 @@ window.DpDispWidgetMng = {
       // 상세 인라인 패널 닫기
       } else if (cmd === 'detailPanel-close') {
         return closeDetail();
-      // 좌측 표시경로 트리 전체 보기
+      // 좌측 위젯유형 트리 전체 보기
       } else if (cmd === 'pathTree-all') {
-        uiState.selectedPath = null;
+        uiState.selectedType = null;
+        searchParam.type = '';
         listGridPager.pageNo = 1;
         return handleSearchData('DEFAULT');
       // 그리드 정렬 헤더 클릭
@@ -65,7 +126,7 @@ window.DpDispWidgetMng = {
       // 페이지 크기 변경
       if (cmd === 'widgets-pager-sizeChange') {
         return onSizeChange();
-      // 좌측 표시경로 트리 노드 선택
+      // 좌측 위젯유형 트리 노드 선택
       } else if (cmd === 'pathTree-select') {
         return selectNode(param);
       } else {
@@ -145,18 +206,19 @@ window.DpDispWidgetMng = {
 
 
 
-    /* handleLoadPathTreeNodeCounts — 좌 트리 노드별 카운트 (검색조건 동기) */
-    const handleLoadPathTreeNodeCounts = async () => {
+    /* fnLoadAllTypeCounts — 필터 없이 전체 위젯유형별 카운트 1회 로드 (트리 고정용) */
+    const fnLoadAllTypeCounts = async () => {
       try {
-        const params = Object.fromEntries(Object.entries(searchParam)
-          .filter(([k, v]) => v !== '' && v !== null && v !== undefined && k !== 'pathId'));
-        const res = await boApiSvc.dpWidget.getPathTreeNodeCounts(params, '경로별카운트', '조회');
-        const rows = res.data?.data || [];
-
-        Object.keys(widgetCounts).forEach(k => { delete widgetCounts[k]; });
-
-        for (const r of rows) { if (r && r.pathId != null) widgetCounts[r.pathId] = r.cnt; }
-      } catch (e) { console.error('[handleLoadPathTreeNodeCounts]', e); }
+        const res = await boApiSvc.dpWidget.getPage({ pageNo: 1, pageSize: 10000 }, '전시위젯관리', '전체카운트');
+        const rows = res.data?.data?.pageList || res.data?.data?.list || [];
+        Object.keys(allTypeCounts).forEach(k => { delete allTypeCounts[k]; });
+        for (const w of rows) {
+          if (w.widgetTypeCd) {
+            allTypeCounts[w.widgetTypeCd] = (allTypeCounts[w.widgetTypeCd] || 0) + 1;
+          }
+        }
+        allTotalCount.value = rows.length;
+      } catch (e) { console.error('[fnLoadAllTypeCounts]', e); }
     };
 
     /* handleSearchData — 처리 */
@@ -177,25 +239,23 @@ window.DpDispWidgetMng = {
         if (widgetParams.searchValue && !widgetParams.searchType) {
           widgetParams.searchType = 'widgetNm,widgetDesc,tag';
         }
-        const [res, resLibs] = await Promise.all([
-          boApiSvc.dpWidget.getPage(widgetParams, '전시위젯관리', '조회'),
-          /* widgetLib 은 라이브러리 참조 표시(widget_lib_nm)용으로 함께 로드 (path 트리는 widget_lib 의 path_id 기준이라 lib 도 필요) */
-          boApiSvc.dpWidgetLib.getPage({ pageNo: 1, pageSize: 10000 }, '전시위젯관리', '라이브러리조회'),
-        ]);
+        const res = await boApiSvc.dpWidget.getPage(widgetParams, '전시위젯관리', '조회');
         const dW = res.data?.data;
-        widgets.splice(0, widgets.length, ...(dW?.pageList || dW?.list || []));
-        const dLibs = resLibs.data?.data;
-        widgetLibs.splice(0, widgetLibs.length, ...(dLibs?.pageList || dLibs?.list || []));
+        let rows = dW?.pageList || dW?.list || [];
+        /* 복수 유형 선택(chart류) — 서버가 단일 type만 지원하므로 클라이언트 후필터 */
+        const selTypes = uiState.selectedType;
+        if (Array.isArray(selTypes) && selTypes.length > 1 && !searchParam.type) {
+          rows = rows.filter(w => selTypes.includes(w.widgetTypeCd));
+        }
+        widgets.splice(0, widgets.length, ...rows);
         listGridPager.pageTotalCount = dW?.pageTotalCount || 0;
         listGridPager.pageTotalPage  = dW?.pageTotalPage  || 1;
         coUtil.cofBuildPagerNums(listGridPager);
         /* 결과에 반영된 조건 기록 */
-        applied.searchValue     = searchParam.searchValue;
-        applied.type   = searchParam.type;
-        applied.status = searchParam.status;
+        applied.searchValue = searchParam.searchValue;
+        applied.type        = searchParam.type;
+        applied.status      = searchParam.status;
         uiState.error = null;
-        /* 좌 트리 카운트 동기 갱신 */
-        handleLoadPathTreeNodeCounts();
       } catch (err) {
         console.error('[catch-info]', err);
         uiState.error = err.message;
@@ -207,6 +267,7 @@ window.DpDispWidgetMng = {
     // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) { fnLoadCodes(); }
+      fnLoadAllTypeCounts();   // 트리 카운트: 필터 무관 전체 1회 로드
       handleSearchData('DEFAULT');
     });
 
@@ -292,6 +353,20 @@ window.DpDispWidgetMng = {
     /* fnStatusLabel — 유틸 */
     const fnStatusLabel = (v) => v === 'Y' ? '활성' : '비활성';
 
+    /* fnDispEnv — ^PROD^DEV^ → "PROD, DEV" 포맷 */
+    const fnDispEnv = (v) => {
+      if (!v) return '-';
+      return v.split('^').filter(s => s.trim()).join(', ') || v;
+    };
+
+    /* fnSubNodeStyle — 좌 트리 서브노드 스타일 (속성값 && 금지 우회) */
+    const fnSubNodeStyle = (subTypes) => {
+      const sel = uiState.selectedType;
+      const isSelected = Array.isArray(sel) && sel.join(',') === (Array.isArray(subTypes) ? subTypes.join(',') : '');
+      return 'display:flex;align-items:center;gap:6px;padding:3px 10px 3px 28px;cursor:pointer;border-radius:6px;font-size:12px;'
+        + (isSelected ? 'background:#fff0f4;font-weight:700;color:#c0254b;' : 'color:#666;');
+    };
+
 
 
     /* 적용 필터 없음 여부 (template 속성값 && 금지 회피용) */
@@ -312,8 +387,19 @@ window.DpDispWidgetMng = {
         '_blank', 'width=1440,height=900,scrollbars=yes,resizable=yes');
     };
 
-    /* selectNode — 노드 선택 (트리 필터 변경 → 선택 행이 목록에서 사라질 수 있으므로 상세 빈 신규 폼으로 초기화) */
-    const selectNode = (id) => { uiState.selectedPath = id; listGridPager.pageNo = 1; resetDetailToNew(); handleSearchData(); };
+    /* selectNode — 위젯유형 노드 선택 (types: 서브카테고리의 widgetTypeCd 배열) */
+    const selectNode = (types) => {
+      uiState.selectedType = types;
+      /* 서버는 단일 widgetTypeCd만 지원 — 단일이면 서버 필터, 복수(chart류)면 서버 전체조회 후 클라이언트 후필터 */
+      if (Array.isArray(types) && types.length === 1) {
+        searchParam.type = types[0];
+      } else {
+        searchParam.type = '';          // 서버는 전체 조회 — handleSearchData에서 후필터
+      }
+      listGridPager.pageNo = 1;
+      resetDetailToNew();
+      handleSearchData();
+    };
 
     /* handleDelete — 삭제 */
     const handleDelete = async (d) => {
@@ -358,13 +444,14 @@ window.DpDispWidgetMng = {
 
     return {
       columns,
-      widgets, uiState, widgetCounts, codes, searchParam, applied, listGridPager, detailPanel,            // 상태 / 데이터
+      widgets, uiState, widgetCounts, codes, searchParam, applied, listGridPager, detailPanel,
+      cfWidgetTree, openTopNodes, allTotalCount,                                        // 위젯유형 트리
       handleBtnAction, handleSelectAction, handleGridCellAction,                      // dispatch (모든 이벤트 / 액션 라우팅)
       handleOpenPreview,                                                              // 미리보기
       cfFilterDirty, cfSiteNm, cfDetailEditId, cfDetailKey, cfNoFilter, // computed
       selectedId: computed(() => detailPanel.selectedId),                             // computed
-      wTypeLabel, wIcon,                     // 헬퍼
-      fnStatusCls, fnStatusLabel, fnRowStyle,                // 헬퍼
+      wTypeLabel, wIcon,                                             // 헬퍼
+      fnStatusCls, fnStatusLabel, fnDispEnv, fnSubNodeStyle, fnRowStyle, // 헬퍼
       inlineNavigate,                                                                 // Dtl 콜백 (closure 필요)
     };
   },
@@ -408,26 +495,51 @@ window.DpDispWidgetMng = {
   <!-- ===== □. 검색 필터 =================================================== -->
   <!-- ===== ■. 본문: 좌측 트리 + 우측 목록 ======================================= -->
   <div class="bo-2col">
-    <!-- ===== ■.■. 좌측 표시경로 =============================================== -->
-    <bo-container title="📂 표시경로">
+    <!-- ===== ■.■. 좌측 위젯유형 트리 =========================================== -->
+    <bo-container title="📂 위젯유형">
       <template #toolbar-actions>
         <span style="font-size:10px;color:#aaa;font-family:monospace;font-weight:400;">
           #ec_disp_widget
         </span>
-        <span v-if="uiState.selectedPath != null" @click="handleBtnAction('pathTree-all')" style="font-size:11px;color:#1677ff;">
+        <span v-if="uiState.selectedType != null" @click="handleBtnAction('pathTree-all')" style="font-size:11px;color:#1677ff;cursor:pointer;">
           전체보기
         </span>
       </template>
-      <div style="max-height:65vh;overflow:auto;">
-        <bo-path-tree biz-cd="ec_disp_widget" :counts="widgetCounts" :selected="uiState.selectedPath" @select="path => handleSelectAction('pathTree-select', path)" />
+      <div style="max-height:65vh;overflow:auto;padding:6px 0;">
+        <!-- 전체 항목 -->
+        <div @click="handleBtnAction('pathTree-all')"
+          :style="'display:flex;align-items:center;gap:6px;padding:4px 10px;cursor:pointer;border-radius:6px;'+(uiState.selectedType==null?'background:#fff0f4;font-weight:700;color:#c0254b;':'')"
+        >
+          <span style="font-size:13px;">📦</span>
+          <span style="font-size:13px;">전체</span>
+          <span style="margin-left:auto;font-size:11px;color:#aaa;">{{ allTotalCount }}</span>
+        </div>
+        <!-- 카테고리 트리 -->
+        <div v-for="top in cfWidgetTree" :key="top.label" style="margin-top:2px;">
+          <div @click="openTopNodes.has(top.label) ? openTopNodes.delete(top.label) : openTopNodes.add(top.label)"
+            style="display:flex;align-items:center;gap:4px;padding:4px 10px;cursor:pointer;font-weight:600;font-size:13px;color:#555;user-select:none;">
+            <span>{{ openTopNodes.has(top.label) ? '▼' : '▶' }}</span>
+            <span>{{ top.label }}</span>
+            <span style="margin-left:auto;font-size:11px;color:#aaa;">{{ top.count }}</span>
+          </div>
+          <div v-if="openTopNodes.has(top.label)">
+            <div v-for="sub in top.children" :key="sub.label"
+              @click="handleSelectAction('pathTree-select', sub.types)"
+              :style="fnSubNodeStyle(sub.types)"
+            >
+              <span>{{ sub.label }}</span>
+              <span style="margin-left:auto;font-size:11px;color:#aaa;">{{ sub.count }}</span>
+            </div>
+          </div>
+        </div>
       </div>
     </bo-container>
-    <!-- ===== □.□. 좌측 표시경로 =============================================== -->
+    <!-- ===== □.□. 좌측 위젯유형 트리 =========================================== -->
     <!-- ===== ■.■. 우측 목록 ================================================= -->
     <bo-container title="전시위젯" :count-text="listGridPager.pageTotalCount + '건'">
       <template #toolbar-actions>
-        <span v-if="uiState.selectedPath != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">
-          #{{ uiState.selectedPath }}
+        <span v-if="uiState.selectedType != null" style="color:#e8587a;font-family:monospace;font-size:12px;align-self:center;">
+          {{ Array.isArray(uiState.selectedType) ? uiState.selectedType.join(', ') : uiState.selectedType }}
         </span>
         <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;font-size:11px;">
           <span v-if="cfNoFilter" style="color:#bbb;">
@@ -508,7 +620,7 @@ window.DpDispWidgetMng = {
                   환경:
                 </b>
                 <span style="font-family:monospace;font-size:10px;color:#666;">
-                  {{ row.dispEnv || '^PROD^' }}
+                  {{ fnDispEnv(row.dispEnv) }}
                 </span>
               </span>
               <span style="flex-shrink:0;">

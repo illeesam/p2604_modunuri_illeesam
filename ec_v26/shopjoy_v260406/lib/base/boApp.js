@@ -81,9 +81,6 @@
       { id: 'dpDispWidgetMng', label: '전시위젯관리' },
       { group: '전시리소스' },
       { id: 'dpDispWidgetLibMng', label: '전시위젯Lib' },
-      { group: '개발지원' },
-      { id: 'dpDispUiSimul', label: '전시UI시뮬레이션' },
-      { id: 'dpDispRelationMng', label: '전시관계도' },
     ],
     customer: [
       { group: '고객' },
@@ -398,7 +395,6 @@
         dpDispAreaPreview: 'dp-disp-area-preview',
         dpDispAreaMng: 'dp-disp-area-mng',
         dpDispUiPreview: 'dp-disp-ui-preview',
-        dpDispUiSimul: 'dp-disp-ui-simul',
         dpDispPanelPreview: 'dp-disp-panel-preview',
         dpDispWidgetPreview: 'dp-disp-widget-preview',
         dpDispAreaDtl: 'dp-disp-area-dtl',
@@ -406,7 +402,6 @@
         dpDispUiDtl: 'dp-disp-ui-dtl',
         dpDispWidgetMng: 'dp-disp-widget-mng',
         dpDispWidgetDtl: 'dp-disp-widget-dtl',
-        dpDispRelationMng: 'dp-disp-relation-mng',
         dpDispPanelDtl: 'dp-disp-panel-dtl',
         dpDispWidgetLibMng: 'dp-disp-widget-lib-mng',
         dpDispWidgetLibDtl: 'dp-disp-widget-lib-dtl',
@@ -2512,7 +2507,6 @@
             <dp-disp-panel-mng  v-else-if="page==='dpDispPanelMng'"  :navigate="navigate" />
             <dp-disp-area-preview  v-else-if="page==='dpDispAreaPreview'"  :navigate="navigate" />
             <dp-disp-ui-preview  v-else-if="page==='dpDispUiPreview'"  :navigate="navigate" />
-            <dp-disp-ui-simul  v-else-if="page==='dpDispUiSimul'"  :navigate="navigate" />
             <dp-disp-panel-preview v-else-if="page==='dpDispPanelPreview'" :navigate="navigate" />
             <dp-disp-widget-preview v-else-if="page==='dpDispWidgetPreview'" :navigate="navigate" />
             <dp-disp-area-mng  v-else-if="page==='dpDispAreaMng'"  :navigate="navigate" />
@@ -2522,7 +2516,6 @@
             <dp-disp-widget-lib-mng  v-else-if="page==='dpDispWidgetLibMng'"  :navigate="navigate" />
             <dp-disp-widget-lib-dtl  v-else-if="page==='dpDispWidgetLibDtl'"  :navigate="navigate" :dtl-id="dtlId" />
             <dp-disp-widget-lib-preview v-else-if="page==='dpDispWidgetLibPreview'" :navigate="navigate" />
-            <dp-disp-relation-mng v-else-if="page==='dpDispRelationMng'" :navigate="navigate" />
             <pm-event-mng  v-else-if="page==='pmEventMng'"  :navigate="navigate" />
             <pm-event-dtl  v-else-if="page==='pmEventDtl'"  :navigate="navigate" :dtl-id="dtlId" />
             <pm-plan-mng  v-else-if="page==='pmPlanMng'"  :navigate="navigate" />
@@ -3025,14 +3018,12 @@
     .component('DpDispWidgetMng', window.DpDispWidgetMng)
     .component('DpDispWidgetDtl', window.DpDispWidgetDtl)
     .component('DpDispUiPreview', window.DpDispUiPreview)
-    .component('DpDispUiSimul', window.DpDispUiSimul)
     .component('DpDispPanelPreview', window.DpDispPanelPreview)
     .component('DpDispWidgetPreview', window.DpDispWidgetPreview)
     .component('DpDispAreaPreview', window.DpDispAreaPreview)
     .component('DpDispWidgetLibMng', window.DpDispWidgetLibMng)
     .component('DpDispWidgetLibDtl', window.DpDispWidgetLibDtl)
     .component('DpDispWidgetLibPreview', window.DpDispWidgetLibPreview)
-    .component('DpDispRelationMng', window.DpDispRelationMng)
     /* ── pages/bo/ec/ — 카테고리 ── */
     .component('PdCategoryMng', window.PdCategoryMng)
     .component('PdCategoryDtl', window.PdCategoryDtl)
