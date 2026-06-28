@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 개발도구 — Android / iOS 앱 메시지 발송 & 수신 확인 통합 테스트
  *
  * 채널별 발송:
@@ -106,6 +106,158 @@ window.ZdTestAppMsgSendReceiv = {
       error:         '',
     });
 
+    // ── 발송 대상 폼 컬럼 ─────────────────────────────────
+    const targetFormColumns = [
+      {
+        key: 'targetMode', label: '대상 유형', type: 'select',
+        hint: 'targetMode',
+        options: [
+          { value: 'token',     label: '디바이스 토큰 (단건)' },
+          { value: 'member',    label: '회원 ID (전체 디바이스)' },
+          { value: 'topic',     label: 'FCM Topic (구독자)' },
+          { value: 'broadcast', label: '전체 브로드캐스트' },
+          { value: 'phone',     label: '전화번호 (SMS/카카오)' },
+        ],
+      },
+      {
+        key: 'targetValue', label: '발송 대상값', type: 'text',
+        hint: 'targetValue',
+        placeholder: 'FCM/APNs 토큰 또는 회원ID / Topic명 / 전화번호',
+        visible: (f) => f.targetMode !== 'broadcast',
+        colSpan: 2,
+      },
+      {
+        key: 'platform', label: '플랫폼', type: 'select',
+        hint: 'platform',
+        options: [
+          { value: 'ALL',     label: '자동 감지' },
+          { value: 'ANDROID', label: 'Android (FCM)' },
+          { value: 'IOS',     label: 'iOS (FCM/APNs)' },
+        ],
+        visible: (f) => f.targetMode === 'token',
+      },
+    ];
+
+    // ── Push/InApp 메시지 폼 컬럼 ────────────────────────
+    const pushFormColumns = [
+      { key: 'title',    label: '제목',               type: 'text',   hint: 'title',    colSpan: 2 },
+      { key: 'badge',    label: 'Badge',              type: 'number', hint: 'badge' },
+      { key: 'body',     label: '본문',               type: 'textarea', hint: 'body',   colSpan: 2, rowSpan: 2 },
+      { key: 'sound',    label: 'Sound',              type: 'text',   hint: 'sound',    placeholder: 'default' },
+      { key: 'imageUrl', label: '이미지 URL (선택)',  type: 'text',   hint: 'imageUrl', placeholder: 'https://…/image.png' },
+      { key: 'data',     label: 'Data Payload (JSON)', type: 'text',  hint: 'data',     colSpan: 3, mono: true, placeholder: '{"type":"order","orderId":"ORD001"}' },
+    ];
+
+    // ── 카카오 폼 컬럼 ────────────────────────────────────
+    const kakaoFormColumns = [
+      { key: 'templateCode',  label: '템플릿 코드 (알림톡)',            type: 'text',     hint: 'templateCode',  placeholder: 'ORDER_CONFIRM_01', mono: true },
+      { key: 'templateVars',  label: '템플릿 변수 (JSON)',              type: 'text',     hint: 'templateVars',  mono: true },
+      { key: 'kakaoContent',  label: '친구톡 내용 (템플릿 코드 없을 때)', type: 'textarea', hint: 'kakaoContent',  colSpan: 3, placeholder: '친구톡 텍스트 메시지 (최대 1000자)' },
+    ];
+
+    // ── 디바이스 필터 폼 컬럼 ────────────────────────────
+    const deviceFilterFormColumns = [
+      {
+        key: 'platform', label: '플랫폼', type: 'select',
+        hint: 'platform',
+        options: [
+          { value: '', label: '전체' },
+          { value: 'ANDROID', label: 'Android' },
+          { value: 'IOS', label: 'iOS' },
+        ],
+      },
+      { key: 'memberId', label: '회원 ID', type: 'text', hint: 'memberId', placeholder: 'MB000001' },
+    ];
+
+    // ── 이력 필터 폼 컬럼 ────────────────────────────────
+    const histFilterFormColumns = [
+      {
+        key: 'channel', label: '채널', type: 'select',
+        hint: 'channel',
+        options: [
+          { value: '', label: '전체' },
+          { value: 'FCM',   label: 'FCM' },
+          { value: 'APNS',  label: 'APNs' },
+          { value: 'SMS',   label: 'SMS' },
+          { value: 'KAKAO', label: '카카오' },
+          { value: 'INAPP', label: 'InApp' },
+        ],
+      },
+      { key: 'memberId',  label: '회원 ID', type: 'text', hint: 'memberId',  placeholder: 'MB000001' },
+      { key: 'dateStart', label: '시작일',   type: 'date', hint: 'dateStart' },
+      { key: 'dateEnd',   label: '종료일',   type: 'date', hint: 'dateEnd' },
+    ];
+
+    // ── 디바이스 그리드 컬럼 ─────────────────────────────
+    const devicesGridColumns = [
+      {
+        key: '_check', label: '선택', width: '28px', align: 'center',
+        cellType: 'slot', name: 'dev-check',
+      },
+      {
+        key: 'memberId', label: '회원 ID',
+        cellStyle: 'cursor:pointer',
+        link: true,
+      },
+      {
+        key: 'platform', label: '플랫폼', align: 'center',
+        badge: (row) => row.platform === 'ANDROID' ? 'badge badge-green' : row.platform === 'IOS' ? 'badge badge-blue' : 'badge badge-gray',
+      },
+      {
+        key: '_token', label: '토큰 (앞 32자)', mono: true,
+        fmt: (v, row) => ((row.fcmToken || row.apnsToken || '').substring(0, 32)) + '…',
+      },
+      { key: 'appVersion', label: '앱 버전', fmt: (v) => v || '-' },
+      { key: 'regDate',    label: '등록일' },
+      {
+        key: '_action', label: '액션', width: '80px', align: 'center',
+        cellType: 'slot', name: 'dev-action',
+      },
+    ];
+
+    // ── 발송 이력 그리드 컬럼 ────────────────────────────
+    const histGridColumns = [
+      {
+        key: 'sendDate', label: '발송일시',
+        fmt: (v, row) => v || row.regDate,
+      },
+      {
+        key: 'channel', label: '채널', align: 'center',
+        badge: (row) => {
+          const m = { FCM: 'badge badge-orange', APNS: 'badge badge-blue', SMS: 'badge badge-green', KAKAO: 'badge badge-purple', INAPP: 'badge badge-gray' };
+          return m[row.channel] || 'badge badge-gray';
+        },
+      },
+      { key: 'memberId', label: '회원 ID', fmt: (v) => v || '-' },
+      { key: 'title',    label: '제목' },
+      {
+        key: 'sendStatus', label: '결과', align: 'center',
+        badge: (row) => {
+          const s = row.sendStatus || row.status;
+          if (s === 'SUCCESS') return 'badge badge-green';
+          if (s === 'FAIL')    return 'badge badge-red';
+          return 'badge badge-gray';
+        },
+        fmt: (v, row) => row.sendStatus || row.status || '-',
+      },
+      { key: 'messageId', label: '메시지 ID', mono: true, fmt: (v) => v || '-' },
+      { key: 'errorMsg',  label: '오류',       fmt: (v) => v || '', cellStyle: 'color:#b91c1c;font-size:10px' },
+    ];
+
+    // ── 수신확인 안내 그리드 컬럼 ────────────────────────
+    const receiveGuideGridColumns = [
+      { key: 'channel',  label: '채널',          width: '80px', cellType: 'slot', name: 'guide-channel' },
+      { key: 'sendHow',  label: '발송 확인 방법' },
+      { key: 'recvHow',  label: '수신 확인 방법' },
+    ];
+
+    const receiveGuideRows = [
+      { channel: 'FCM',   sendHow: '발송 탭 → FCM 체크 → 발송 → 결과 messageId 확인',              recvHow: '실기기: 알림 트레이 확인 / Firebase Console → Messaging → 캠페인 이력' },
+      { channel: 'APNS',  sendHow: 'ZdTestPushAlimApns 에서 단건 발송 후 apnsId 확인',              recvHow: '실 iOS 기기 잠금화면/알림센터 / Apple Developer → 로그' },
+      { channel: 'SMS',   sendHow: '발송 탭 → SMS 체크 → 전화번호 입력 → 발송',                    recvHow: '실 수신 번호 문자 앱 확인 / 발송 이력 탭' },
+      { channel: 'KAKAO', sendHow: '발송 탭 → 카카오 체크 → 알림톡 템플릿 코드 입력 → 발송',      recvHow: '카카오톡 앱 알림 / 카카오 비즈메시지 포털 발송 이력' },
+      { channel: 'INAPP', sendHow: '발송 탭 → InApp 체크 → 발송',                                  recvHow: '이 탭의 WebSocket 수신 모니터에서 실시간 확인' },
+    ];
 
     /* ##### [02] 초기 로드 #################################################### */
 
@@ -395,6 +547,10 @@ window.ZdTestAppMsgSendReceiv = {
       codes, tab, cfg, baseForm, devices, hist, recvLog, result,
       cfActiveChannels, fnChannelBadge, fnPlatformBadge, fnStatusBadge,
       isDeviceSelected, handleBtnAction,
+      targetFormColumns, pushFormColumns, kakaoFormColumns,
+      deviceFilterFormColumns, histFilterFormColumns,
+      devicesGridColumns, histGridColumns,
+      receiveGuideGridColumns, receiveGuideRows,
     };
   },
 
@@ -417,40 +573,12 @@ window.ZdTestAppMsgSendReceiv = {
   ════════════════════════════════════════════════════ -->
   <div v-if="tab==='send'">
 
-    <!-- 대상 설정 -->
+    <!-- 발송 대상 -->
     <div class="card" style="margin-bottom:12px">
       <div class="toolbar"><span class="list-title">발송 대상</span></div>
       <div style="padding:12px">
-        <div class="form-row" style="gap:8px;margin-bottom:8px">
-          <div class="form-group" style="flex:0 0 180px">
-            <label class="form-label">대상 유형</label>
-            <select class="form-control" v-model="baseForm.targetMode">
-              <option value="token">디바이스 토큰 (단건)</option>
-              <option value="member">회원 ID (전체 디바이스)</option>
-              <option value="topic">FCM Topic (구독자)</option>
-              <option value="broadcast">전체 브로드캐스트</option>
-              <option value="phone">전화번호 (SMS/카카오)</option>
-            </select>
-          </div>
-          <div class="form-group" style="flex:1" v-if="baseForm.targetMode !== 'broadcast'">
-            <label class="form-label">
-              {{ baseForm.targetMode==='token'?'FCM/APNs 토큰':baseForm.targetMode==='member'?'회원 ID':baseForm.targetMode==='topic'?'Topic 명':'전화번호' }}
-              <span style="color:#e74c3c">*</span>
-            </label>
-            <input class="form-control" v-model="baseForm.targetValue"
-              :placeholder="baseForm.targetMode==='token'?'eXxxxxxxxx… 또는 iOS hex 64자':baseForm.targetMode==='member'?'MB000001':baseForm.targetMode==='topic'?'all_members':'01012345678'"
-              style="font-family:monospace;font-size:12px" />
-          </div>
-          <div class="form-group" style="flex:0 0 160px" v-if="baseForm.targetMode==='token'">
-            <label class="form-label">플랫폼</label>
-            <select class="form-control" v-model="baseForm.platform">
-              <option value="ALL">자동 감지</option>
-              <option value="ANDROID">Android (FCM)</option>
-              <option value="IOS">iOS (FCM/APNs)</option>
-            </select>
-          </div>
-        </div>
-        <div v-if="baseForm.targetMode==='broadcast'" style="padding:8px;background:#fef9c3;border:1px solid #fde68a;border-radius:4px;font-size:12px;color:#92400e">
+        <bo-form-area :columns="targetFormColumns" :form="baseForm" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+        <div v-if="baseForm.targetMode==='broadcast'" style="padding:8px;background:#fef9c3;border:1px solid #fde68a;border-radius:4px;font-size:12px;color:#92400e;margin-top:8px">
           ⚠ 전체 브로드캐스트: 등록된 모든 디바이스에 발송됩니다. 주의하여 사용하세요.
         </div>
       </div>
@@ -507,54 +635,12 @@ window.ZdTestAppMsgSendReceiv = {
         <!-- 공통 Push/InApp 내용 -->
         <div v-if="baseForm.chFcm || baseForm.chApns || baseForm.chInapp">
           <div style="font-size:11px;font-weight:600;color:#888;margin-bottom:6px;text-transform:uppercase">Push / 인앱 메시지</div>
-          <div class="form-row" style="gap:8px;margin-bottom:8px">
-            <div class="form-group" style="flex:1">
-              <label class="form-label">제목</label>
-              <input class="form-control" v-model="baseForm.title" />
-            </div>
-            <div class="form-group" style="flex:0 0 80px">
-              <label class="form-label">Badge</label>
-              <input class="form-control" type="number" v-model="baseForm.badge" min="0" />
-            </div>
-            <div class="form-group" style="flex:0 0 120px">
-              <label class="form-label">Sound</label>
-              <input class="form-control" v-model="baseForm.sound" placeholder="default" />
-            </div>
-          </div>
-          <div class="form-row" style="gap:8px;margin-bottom:8px">
-            <div class="form-group" style="flex:1">
-              <label class="form-label">본문</label>
-              <textarea class="form-control" v-model="baseForm.body" rows="2" style="resize:vertical"></textarea>
-            </div>
-            <div class="form-group" style="flex:1">
-              <label class="form-label">이미지 URL (선택)</label>
-              <input class="form-control" v-model="baseForm.imageUrl" placeholder="https://…/image.png" />
-            </div>
-          </div>
-          <div class="form-row" style="gap:8px;margin-bottom:8px">
-            <div class="form-group" style="flex:1">
-              <label class="form-label">Data Payload (JSON)</label>
-              <input class="form-control" v-model="baseForm.data" style="font-family:monospace;font-size:12px" placeholder='{"type":"order","orderId":"ORD001"}' />
-            </div>
-          </div>
+          <bo-form-area :columns="pushFormColumns" :form="baseForm" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
         </div>
         <!-- 카카오 알림톡 -->
         <div v-if="baseForm.chKakao" style="margin-top:12px;padding-top:12px;border-top:1px solid #f0f0f0">
           <div style="font-size:11px;font-weight:600;color:#888;margin-bottom:6px;text-transform:uppercase">카카오 알림톡 / 친구톡</div>
-          <div class="form-row" style="gap:8px;margin-bottom:8px">
-            <div class="form-group" style="flex:1">
-              <label class="form-label">템플릿 코드 (알림톡)</label>
-              <input class="form-control" v-model="baseForm.templateCode" placeholder="ORDER_CONFIRM_01" style="font-family:monospace" />
-            </div>
-            <div class="form-group" style="flex:1">
-              <label class="form-label">템플릿 변수 (JSON)</label>
-              <input class="form-control" v-model="baseForm.templateVars" style="font-family:monospace;font-size:12px" />
-            </div>
-          </div>
-          <div class="form-group" style="margin-bottom:8px">
-            <label class="form-label">친구톡 내용 (템플릿 코드 없을 때)</label>
-            <textarea class="form-control" v-model="baseForm.kakaoContent" rows="2" placeholder="친구톡 텍스트 메시지 (최대 1000자)" style="resize:vertical"></textarea>
-          </div>
+          <bo-form-area :columns="kakaoFormColumns" :form="baseForm" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
         </div>
         <!-- SMS -->
         <div v-if="baseForm.chSms" style="margin-top:12px;padding-top:12px;border-top:1px solid #f0f0f0">
@@ -613,55 +699,25 @@ window.ZdTestAppMsgSendReceiv = {
         </div>
       </div>
       <!-- 필터 -->
-      <div style="padding:12px;display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid #f0f0f0">
-        <div class="form-group" style="flex:0 0 160px">
-          <label class="form-label">플랫폼</label>
-          <select class="form-control" v-model="devices.filter.platform">
-            <option value="">전체</option>
-            <option value="ANDROID">Android</option>
-            <option value="IOS">iOS</option>
-          </select>
-        </div>
-        <div class="form-group" style="flex:1;max-width:240px">
-          <label class="form-label">회원 ID</label>
-          <input class="form-control" v-model="devices.filter.memberId" placeholder="MB000001" />
-        </div>
+      <div style="padding:12px;border-bottom:1px solid #f0f0f0">
+        <bo-form-area :columns="deviceFilterFormColumns" :form="devices.filter" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
       </div>
       <div style="padding:12px">
         <div v-if="!devices.rows.length" style="color:#999;font-size:12px;text-align:center;padding:24px">
           [조회] 버튼을 클릭하세요
         </div>
         <div v-else style="max-height:480px;overflow-y:auto">
-          <table class="admin-table" style="font-size:11px">
-            <thead><tr>
-              <th style="width:28px"><input type="checkbox" @change="e => e.target.checked ? devices.rows.forEach(r=>devices.selected.push(r)) : (devices.selected=[])"/></th>
-              <th style="width:36px">번호</th>
-              <th>회원 ID</th>
-              <th>플랫폼</th>
-              <th>토큰 (앞 32자)</th>
-              <th>앱 버전</th>
-              <th>등록일</th>
-              <th style="width:80px">액션</th>
-            </tr></thead>
-            <tbody>
-              <tr v-for="(row, idx) in devices.rows" :key="row.deviceTokenId" :style="isDeviceSelected(row)?'background:#eff6ff':''">
-                <td style="text-align:center">
-                  <input type="checkbox" :checked="isDeviceSelected(row)" @change="handleBtnAction('device-toggle', row)" />
-                </td>
-                <td style="text-align:center">{{ (devices.pager.pageNo-1)*devices.pager.pageSize + idx + 1 }}</td>
-                <td>
-                  <span class="title-link" @click="handleBtnAction('member-use', row.memberId)">{{ row.memberId }}</span>
-                </td>
-                <td><span :class="fnPlatformBadge(row.platform)">{{ row.platform }}</span></td>
-                <td style="font-family:monospace">{{ (row.fcmToken || row.apnsToken || '').substring(0, 32) }}…</td>
-                <td>{{ row.appVersion || '-' }}</td>
-                <td>{{ row.regDate }}</td>
-                <td style="text-align:center">
-                  <button class="btn btn_row_edit" @click="handleBtnAction('device-use', row)">선택</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <bo-grid :columns="devicesGridColumns" :rows="devices.rows" :show-row-num="true" :pager="devices.pager">
+            <template #dev-check="{ row }">
+              <input type="checkbox" :checked="isDeviceSelected(row)" @change="handleBtnAction('device-toggle', row)" />
+            </template>
+            <template #memberId="{ row }">
+              <span class="title-link" @click="handleBtnAction('member-use', row.memberId)">{{ row.memberId }}</span>
+            </template>
+            <template #dev-action="{ row }">
+              <button class="btn btn_row_edit" @click="handleBtnAction('device-use', row)">선택</button>
+            </template>
+          </bo-grid>
         </div>
         <div style="margin-top:8px;font-size:12px;color:#888">
           전체 {{ devices.pager.pageTotalCount }}건 | 선택 {{ devices.selected.length }}건
@@ -684,60 +740,15 @@ window.ZdTestAppMsgSendReceiv = {
         </div>
       </div>
       <!-- 필터 -->
-      <div style="padding:12px;display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid #f0f0f0">
-        <div class="form-group" style="flex:0 0 160px">
-          <label class="form-label">채널</label>
-          <select class="form-control" v-model="hist.filter.channel">
-            <option value="">전체</option>
-            <option value="FCM">FCM</option>
-            <option value="APNS">APNs</option>
-            <option value="SMS">SMS</option>
-            <option value="KAKAO">카카오</option>
-            <option value="INAPP">InApp</option>
-          </select>
-        </div>
-        <div class="form-group" style="flex:1;max-width:200px">
-          <label class="form-label">회원 ID</label>
-          <input class="form-control" v-model="hist.filter.memberId" placeholder="MB000001" />
-        </div>
-        <div class="form-group" style="flex:0 0 140px">
-          <label class="form-label">시작일</label>
-          <input class="form-control" type="date" v-model="hist.filter.dateStart" />
-        </div>
-        <div class="form-group" style="flex:0 0 140px">
-          <label class="form-label">종료일</label>
-          <input class="form-control" type="date" v-model="hist.filter.dateEnd" />
-        </div>
+      <div style="padding:12px;border-bottom:1px solid #f0f0f0">
+        <bo-form-area :columns="histFilterFormColumns" :form="hist.filter" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
       </div>
       <div style="padding:12px">
         <div v-if="!hist.rows.length" style="color:#999;font-size:12px;text-align:center;padding:24px">
           [조회] 버튼을 클릭하세요
         </div>
         <div v-else style="max-height:520px;overflow-y:auto">
-          <table class="admin-table" style="font-size:11px">
-            <thead><tr>
-              <th style="width:36px">번호</th>
-              <th>발송일시</th>
-              <th>채널</th>
-              <th>회원 ID</th>
-              <th>제목</th>
-              <th>결과</th>
-              <th>메시지 ID</th>
-              <th>오류</th>
-            </tr></thead>
-            <tbody>
-              <tr v-for="(row, idx) in hist.rows" :key="row.pushLogId || idx">
-                <td style="text-align:center">{{ (hist.pager.pageNo-1)*hist.pager.pageSize + idx + 1 }}</td>
-                <td style="white-space:nowrap">{{ row.sendDate || row.regDate }}</td>
-                <td><span :class="fnChannelBadge(row.channel)">{{ row.channel }}</span></td>
-                <td>{{ row.memberId || '-' }}</td>
-                <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ row.title }}</td>
-                <td><span :class="fnStatusBadge(row.sendStatus || row.status)">{{ row.sendStatus || row.status || '-' }}</span></td>
-                <td style="font-family:monospace;font-size:10px;max-width:120px;overflow:hidden;text-overflow:ellipsis">{{ row.messageId || '-' }}</td>
-                <td style="color:#b91c1c;font-size:10px;max-width:160px">{{ row.errorMsg || '' }}</td>
-              </tr>
-            </tbody>
-          </table>
+          <bo-grid :columns="histGridColumns" :rows="hist.rows" :show-row-num="true" :pager="hist.pager" />
         </div>
         <div style="margin-top:8px;font-size:12px;color:#888">전체 {{ hist.pager.pageTotalCount }}건</div>
       </div>
@@ -778,42 +789,13 @@ window.ZdTestAppMsgSendReceiv = {
     <!-- 수신 확인 방법 안내 -->
     <div class="card">
       <div class="toolbar"><span class="list-title">수신 확인 방법</span></div>
-      <div style="padding:12px;font-size:12px;line-height:2;color:#444">
-        <table class="admin-table" style="font-size:12px">
-          <thead><tr>
-            <th>채널</th>
-            <th>발송 확인 방법</th>
-            <th>수신 확인 방법</th>
-          </tr></thead>
-          <tbody>
-            <tr>
-              <td><span class="badge badge-orange">FCM</span></td>
-              <td>발송 탭 → FCM 체크 → 발송 → 결과 messageId 확인</td>
-              <td>실기기: 알림 트레이 확인 / Firebase Console → Messaging → 캠페인 이력</td>
-            </tr>
-            <tr>
-              <td><span class="badge badge-blue">APNs</span></td>
-              <td>ZdTestPushAlimApns 에서 단건 발송 후 apnsId 확인</td>
-              <td>실 iOS 기기 잠금화면/알림센터 / Apple Developer → 로그</td>
-            </tr>
-            <tr>
-              <td><span class="badge badge-green">SMS</span></td>
-              <td>발송 탭 → SMS 체크 → 전화번호 입력 → 발송</td>
-              <td>실 수신 번호 문자 앱 확인 / 발송 이력 탭</td>
-            </tr>
-            <tr>
-              <td><span class="badge badge-purple">카카오</span></td>
-              <td>발송 탭 → 카카오 체크 → 알림톡 템플릿 코드 입력 → 발송</td>
-              <td>카카오톡 앱 알림 / 카카오 비즈메시지 포털 발송 이력</td>
-            </tr>
-            <tr>
-              <td><span class="badge badge-gray">InApp</span></td>
-              <td>발송 탭 → InApp 체크 → 발송</td>
-              <td>이 탭의 WebSocket 수신 모니터에서 실시간 확인</td>
-            </tr>
-          </tbody>
-        </table>
-        <div style="margin-top:12px;padding:8px;background:#f0f4ff;border-radius:4px">
+      <div style="padding:12px">
+        <bo-grid :columns="receiveGuideGridColumns" :rows="receiveGuideRows" :show-row-num="false">
+          <template #guide-channel="{ row }">
+            <span :class="fnChannelBadge(row.channel)">{{ row.channel }}</span>
+          </template>
+        </bo-grid>
+        <div style="margin-top:12px;padding:8px;background:#f0f4ff;border-radius:4px;font-size:12px">
           <b>📋 발송 이력 탭</b> — <code>cmh_push_log</code> 테이블의 모든 채널 발송 이력을 조회합니다.<br>
           백엔드 엔드포인트: <code>POST /api/co/ext/app-msg-send/send</code> (통합 발송 오케스트레이터)<br>
           채널별 서비스: <code>CmPushSendService</code> (FCM/APNs) · <code>CmSmsSendService</code> · <code>CmKakaoSendService</code> · WebSocket Broker

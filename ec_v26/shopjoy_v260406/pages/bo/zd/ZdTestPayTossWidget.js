@@ -20,13 +20,24 @@ window.ZdTestPayTossWidget = {
     });
 
     const form = reactive({
-      amount:       1000,
-      orderId:      'TEST-' + Date.now(),
-      orderName:    '테스트 상품',
-      customerName: '송성일',
-      customerEmail: 'illeesam@gmail.com',
-      successUrl:   window.location.origin + '/api/co/cm/toss/confirm',
-      failUrl:      window.location.origin + '/?toss_fail=1',
+      amount:           1000,
+      orderId:          'TEST-' + Date.now(),
+      orderName:        '테스트 상품',
+      customerName:     '송성일',
+      customerEmail:    'illeesam@gmail.com',
+      customerMobilePhone: '',
+      successUrl:       window.location.origin + '/api/co/cm/toss/confirm',
+      failUrl:          window.location.origin + '/?toss_fail=1',
+      taxFreeAmount:    0,
+      taxExemptionAmount: 0,
+      cultureExpense:   false,
+      useEscrow:        false,
+      escrowProducts:   '',  // JSON 문자열 (배열)
+      addCardBenefits:  false,
+      appScheme:        '',
+      windowTarget:     '',
+      currency:         'KRW',
+      country:          'KR',
     });
 
     const result = reactive({
@@ -87,7 +98,7 @@ window.ZdTestPayTossWidget = {
         // 결제위젯 v2: TossPayments(clientKey) → .widgets({ customerKey }) → .setAmount() → .render()
         const toss = await TossPayments(cfg.clientKey);
         widgetsInstance = toss.widgets({ customerKey: 'ANONYMOUS_' + form.orderId });
-        await widgetsInstance.setAmount({ currency: 'KRW', value: Number(form.amount) });
+        await widgetsInstance.setAmount({ currency: form.currency || 'KRW', value: Number(form.amount) });
         await widgetsInstance.renderPaymentMethods({
           selector: '#' + widgetContainerId,
           variantKey: 'DEFAULT',
@@ -106,14 +117,30 @@ window.ZdTestPayTossWidget = {
       result.phase = 'paying';
       result.error = '';
       try {
-        await widgetsInstance.requestPayment({
-          orderId:      form.orderId,
-          orderName:    form.orderName,
-          customerName: form.customerName,
+        const payParams = {
+          orderId:       form.orderId,
+          orderName:     form.orderName,
+          customerName:  form.customerName,
           customerEmail: form.customerEmail,
-          successUrl:   form.successUrl,
-          failUrl:      form.failUrl,
-        });
+          successUrl:    form.successUrl,
+          failUrl:       form.failUrl,
+        };
+        if (form.customerMobilePhone) payParams.customerMobilePhone = form.customerMobilePhone;
+        if (form.taxFreeAmount)       payParams.taxFreeAmount = Number(form.taxFreeAmount);
+        if (form.taxExemptionAmount)  payParams.taxExemptionAmount = Number(form.taxExemptionAmount);
+        if (form.cultureExpense)      payParams.cultureExpense = true;
+        if (form.useEscrow) {
+          payParams.useEscrow = true;
+          if (form.escrowProducts) {
+            try { payParams.escrowProducts = JSON.parse(form.escrowProducts); } catch (_) {}
+          }
+        }
+        if (form.addCardBenefits)     payParams.addCardBenefits = true;
+        if (form.appScheme)           payParams.appScheme = form.appScheme;
+        if (form.windowTarget)        payParams.windowTarget = form.windowTarget;
+        if (form.country !== 'KR')    payParams.country = form.country;
+        if (form.currency !== 'KRW')  payParams.currency = form.currency;
+        await widgetsInstance.requestPayment(payParams);
         // 리다이렉트가 발생하므로 이 이후 코드는 실행 안 됨
       } catch (e) {
         result.error  = e.message || String(e);
@@ -186,7 +213,76 @@ window.ZdTestPayTossWidget = {
       if (cmd === 'orderid-refresh') return refreshOrderId();
     };
 
-    return { cfg, form, result, uiState, widgetContainerId, handleBtnAction };
+    /* ##### [05] 폼 컬럼 정의 #################################################### */
+
+    const cfPayParams = Vue.computed(() => {
+      const p = [
+        { _label: '주문ID',        _param: 'orderId',              _val: form.orderId,              _mono: true,  _color: '#1e40af' },
+        { _label: '상품명',        _param: 'orderName',            _val: form.orderName,            _mono: false, _color: '' },
+        { _label: '금액(setAmount)',_param: 'amount',              _val: form.amount.toLocaleString() + ' ' + form.currency, _mono: false, _color: '' },
+        { _label: '구매자명',      _param: 'customerName',         _val: form.customerName,         _mono: false, _color: '' },
+        { _label: '구매자 이메일', _param: 'customerEmail',        _val: form.customerEmail,        _mono: false, _color: '' },
+        { _label: '성공 URL',      _param: 'successUrl',           _val: form.successUrl,           _mono: true,  _color: '#1e40af' },
+        { _label: '실패 URL',      _param: 'failUrl',              _val: form.failUrl,              _mono: true,  _color: '#6b7280' },
+      ];
+      if (form.customerMobilePhone) p.push({ _label: '구매자 휴대폰', _param: 'customerMobilePhone', _val: form.customerMobilePhone, _mono: false, _color: '' });
+      if (form.taxFreeAmount)       p.push({ _label: '비과세 금액',   _param: 'taxFreeAmount',        _val: form.taxFreeAmount,       _mono: false, _color: '' });
+      if (form.taxExemptionAmount)  p.push({ _label: '면세 금액',     _param: 'taxExemptionAmount',   _val: form.taxExemptionAmount,  _mono: false, _color: '' });
+      if (form.cultureExpense)      p.push({ _label: '문화비 소득공제',_param: 'cultureExpense',       _val: 'true',                   _mono: false, _color: '#15803d', _badge: 'badge-green' });
+      if (form.useEscrow)           p.push({ _label: '에스크로 사용', _param: 'useEscrow',            _val: 'true',                   _mono: false, _color: '#1d4ed8', _badge: 'badge-blue' });
+      if (form.useEscrow && form.escrowProducts) p.push({ _label: '에스크로 상품', _param: 'escrowProducts', _val: form.escrowProducts, _mono: true, _color: '' });
+      if (form.addCardBenefits)     p.push({ _label: '카드 즉시할인', _param: 'addCardBenefits',      _val: 'true',                   _mono: false, _color: '#c2410c', _badge: 'badge-orange' });
+      if (form.appScheme)           p.push({ _label: '앱 복귀 스킴', _param: 'appScheme',            _val: form.appScheme,           _mono: true,  _color: '' });
+      if (form.windowTarget)        p.push({ _label: '팝업 창 타겟', _param: 'windowTarget',         _val: form.windowTarget,        _mono: false, _color: '' });
+      if (form.currency !== 'KRW')  p.push({ _label: '통화',         _param: 'currency',             _val: form.currency,            _mono: false, _color: '' });
+      if (form.country !== 'KR')    p.push({ _label: '국가코드',     _param: 'country',              _val: form.country,             _mono: false, _color: '' });
+      return p;
+    });
+
+    const previewGridColumns = [
+      { key: '_label', label: '항목명',     cellStyle: 'color:#555;font-size:11px;white-space:nowrap' },
+      { key: '_param', label: 'param명',    cellStyle: 'color:#8b5cf6;font-size:10px;font-family:monospace' },
+      { key: '_val',   label: '값',         fmt: (v, r) => v, cellStyle: (v, r) => (r._mono ? 'font-family:monospace;font-size:10px;word-break:break-all;' : 'font-size:11px;') + (r._color ? 'color:' + r._color + ';' : '') },
+    ];
+
+    const baseFormColumns = [
+      { key: 'amount',              label: '금액(원)',        type: 'number', hint: 'amount' },
+      { key: 'orderId',             label: '주문ID',          type: 'slot',   name: 'orderIdSlot', hint: 'orderId' },
+      { key: 'orderName',           label: '상품명',          type: 'text',   hint: 'orderName' },
+      { key: 'customerName',        label: '구매자명',        type: 'text',   hint: 'customerName' },
+      { key: 'customerEmail',       label: '구매자 이메일',   type: 'text',   hint: 'customerEmail' },
+      { key: 'customerMobilePhone', label: '구매자 휴대폰',   type: 'text',   placeholder: '01012345678 (선택)', hint: 'customerMobilePhone' },
+      { key: 'successUrl',          label: '결제 성공 콜백',  type: 'text',   colSpan: 2, mono: true, hint: 'successUrl' },
+      { key: 'failUrl',             label: '결제 실패 콜백',  type: 'text',   mono: true, hint: 'failUrl' },
+    ];
+
+    const hiddenFormColumns = [
+      { key: '_sec1', label: '', type: 'slot', name: 'sec1Header', colSpan: 3 },
+      { key: 'taxFreeAmount',      label: '비과세 금액',          type: 'number', hint: 'taxFreeAmount' },
+      { key: 'taxExemptionAmount', label: '면세 금액',            type: 'number', hint: 'taxExemptionAmount' },
+      { key: 'cultureExpense',     label: '문화비 소득공제',      type: 'slot', name: 'cultureExpenseSlot', hint: 'cultureExpense' },
+      { key: '_sec2',              label: '', type: 'slot', name: 'sec2Header', colSpan: 3 },
+      { key: 'useEscrow',          label: '에스크로 사용',        type: 'slot', name: 'useEscrowSlot', hint: 'useEscrow' },
+      { key: 'escrowProducts',     label: '에스크로 상품 (JSON)', type: 'textarea', colSpan: 2,
+        placeholder: '[{"id":"PROD-1","name":"상품","unitPrice":1000,"quantity":1}]',
+        hint: 'escrowProducts — 필드: id/name/code/unitPrice/quantity/category' },
+      { key: '_sec3',              label: '', type: 'slot', name: 'sec3Header', colSpan: 3 },
+      { key: 'appScheme',          label: '앱 복귀 스킴',         type: 'text', placeholder: 'shopjoy:// (선택)', mono: true, hint: 'appScheme' },
+      { key: 'windowTarget',       label: '팝업 창 타겟',         type: 'select',
+        options: [{ value: '', label: '기본 (_self)' }, { value: '_blank', label: '_blank (새 탭)' }, { value: '_top', label: '_top' }],
+        hint: 'windowTarget' },
+      { key: 'addCardBenefits',    label: '카드 즉시 할인',       type: 'slot', name: 'addCardBenefitsSlot', hint: 'addCardBenefits' },
+      { key: '_sec4',              label: '', type: 'slot', name: 'sec4Header', colSpan: 3 },
+      { key: 'currency',           label: '통화',                 type: 'select',
+        options: [{ value: 'KRW', label: 'KRW (기본)' }, { value: 'USD', label: 'USD' }, { value: 'JPY', label: 'JPY' }, { value: 'EUR', label: 'EUR' }],
+        hint: 'currency' },
+      { key: 'country',            label: '국가코드',             type: 'select',
+        options: [{ value: 'KR', label: 'KR (기본)' }, { value: 'US', label: 'US' }, { value: 'JP', label: 'JP' }],
+        hint: 'country' },
+      { key: '_currencyNote',      label: '', type: 'slot', name: 'currencyNote' },
+    ];
+
+    return { cfg, form, result, uiState, widgetContainerId, handleBtnAction, baseFormColumns, hiddenFormColumns, cfPayParams, previewGridColumns };
   },
 
   template: `
@@ -221,32 +317,65 @@ window.ZdTestPayTossWidget = {
   <div class="card" style="margin-bottom:12px">
     <div class="toolbar"><span class="list-title">결제 파라미터</span></div>
     <div style="padding:12px">
-      <div class="form-row" style="gap:8px;margin-bottom:8px">
-        <div class="form-group">
-          <label class="form-label">금액</label>
-          <input class="form-control" type="number" v-model="form.amount" style="width:120px" />
-        </div>
-        <div class="form-group" style="flex:1">
-          <label class="form-label">주문 ID</label>
+      <bo-form-area :columns="baseFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false">
+        <template #orderIdSlot>
           <div style="display:flex;gap:4px">
             <input class="form-control" v-model="form.orderId" style="flex:1;font-family:monospace;font-size:12px" />
             <button class="btn btn_reset" @click="handleBtnAction('orderid-refresh')" style="white-space:nowrap">새로고침</button>
           </div>
-        </div>
-        <div class="form-group" style="flex:1">
-          <label class="form-label">상품명</label>
-          <input class="form-control" v-model="form.orderName" />
-        </div>
-      </div>
-      <div class="form-row" style="gap:8px">
-        <div class="form-group" style="flex:1">
-          <label class="form-label">구매자명</label>
-          <input class="form-control" v-model="form.customerName" />
-        </div>
-        <div class="form-group" style="flex:1">
-          <label class="form-label">구매자 이메일</label>
-          <input class="form-control" v-model="form.customerEmail" />
-        </div>
+        </template>
+      </bo-form-area>
+    </div>
+  </div>
+
+  <!-- 히든 전송 항목 -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="toolbar">
+      <span class="list-title">히든 전송 항목</span>
+      <span style="font-size:11px;color:#888;margin-left:8px">requestPayment() 추가 파라미터 — 값 입력/체크 시 전송됨</span>
+    </div>
+    <div style="padding:12px">
+      <bo-form-area :columns="hiddenFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false">
+        <template #sec1Header>
+          <div style="font-size:11px;font-weight:600;color:#6b7280;padding:6px 0 4px;border-bottom:1px solid #f0f0f0;margin-bottom:2px">💰 금액 세부</div>
+        </template>
+        <template #cultureExpenseSlot>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;margin-top:6px">
+            <input type="checkbox" v-model="form.cultureExpense" /> 활성화 (도서/공연/박물관 등)
+          </label>
+        </template>
+        <template #sec2Header>
+          <div style="font-size:11px;font-weight:600;color:#6b7280;padding:6px 0 4px;border-bottom:1px solid #f0f0f0;margin-bottom:2px">🛡 에스크로</div>
+        </template>
+        <template #useEscrowSlot>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;margin-top:6px">
+            <input type="checkbox" v-model="form.useEscrow" /> 에스크로 적용
+          </label>
+        </template>
+        <template #sec3Header>
+          <div style="font-size:11px;font-weight:600;color:#6b7280;padding:6px 0 4px;border-bottom:1px solid #f0f0f0;margin-bottom:2px">📱 앱/브라우저</div>
+        </template>
+        <template #addCardBenefitsSlot>
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;margin-top:6px">
+            <input type="checkbox" v-model="form.addCardBenefits" /> 즉시 할인 혜택 표시
+          </label>
+        </template>
+        <template #sec4Header>
+          <div style="font-size:11px;font-weight:600;color:#6b7280;padding:6px 0 4px;border-bottom:1px solid #f0f0f0;margin-bottom:2px">🌍 국가/통화 (해외결제)</div>
+        </template>
+        <template #currencyNote>
+          <div style="font-size:11px;color:#9ca3af;line-height:1.7;padding-top:4px">
+            currency/country 는 KRW/KR 외 값 설정 시에만 전송됩니다.<br>
+            setAmount() 의 currency 도 동일하게 적용됩니다.
+          </div>
+        </template>
+      </bo-form-area>
+
+      <!-- 전송 미리보기 -->
+      <div style="margin-top:14px;padding:10px 12px;background:#f8fafc;border-radius:6px;border:1px solid #e2e8f0">
+        <div style="font-size:11px;font-weight:600;color:#475569;margin-bottom:6px">📋 requestPayment() 전송 파라미터 미리보기</div>
+        <bo-grid :columns="previewGridColumns" :rows="cfPayParams" :show-row-num="false"
+          style="font-size:11px" />
       </div>
     </div>
   </div>
@@ -275,14 +404,14 @@ window.ZdTestPayTossWidget = {
       <!-- 승인 결과 -->
       <div v-if="result.confirmResult" style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:10px;margin-bottom:8px">
         <div style="font-weight:600;margin-bottom:6px;color:#15803d">✅ 결제 승인 결과</div>
-        <table style="font-size:12px;border-collapse:collapse;width:100%">
-          <tr><td style="padding:2px 8px;color:#555;width:130px">paymentKey</td><td style="font-family:monospace;font-size:11px;word-break:break-all">{{ result.confirmResult.paymentKey }}</td></tr>
-          <tr><td style="padding:2px 8px;color:#555">orderId</td><td>{{ result.confirmResult.orderId }}</td></tr>
-          <tr><td style="padding:2px 8px;color:#555">orderName</td><td>{{ result.confirmResult.orderName }}</td></tr>
-          <tr><td style="padding:2px 8px;color:#555">totalAmount</td><td>{{ (result.confirmResult.totalAmount || 0).toLocaleString() }} 원</td></tr>
-          <tr><td style="padding:2px 8px;color:#555">status</td><td><span class="badge badge-green">{{ result.confirmResult.status }}</span></td></tr>
-          <tr><td style="padding:2px 8px;color:#555">method</td><td>{{ result.confirmResult.method }}</td></tr>
-        </table>
+        <bo-grid :columns="[
+          { key: 'paymentKey', label: 'paymentKey', cellStyle: 'font-family:monospace;font-size:10px;word-break:break-all;color:#1e40af' },
+          { key: 'orderId',    label: 'orderId',    cellStyle: 'font-family:monospace;font-size:11px' },
+          { key: 'orderName',  label: 'orderName' },
+          { key: 'totalAmount',label: 'totalAmount', fmt: v => (v || 0).toLocaleString() + ' 원', align: 'right' },
+          { key: 'status',     label: 'status',     badge: () => 'badge-green' },
+          { key: 'method',     label: 'method' },
+        ]" :rows="[result.confirmResult]" :show-row-num="false" />
       </div>
       <!-- 취소 결과 -->
       <div v-if="result.cancelResult" style="background:#fff7ed;border:1px solid #fdba74;border-radius:6px;padding:10px">

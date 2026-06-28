@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 개발도구 — 구글 소셜 로그인 테스트
  */
 window.ZdTestSnsLoginGoogle = {
@@ -161,7 +161,18 @@ window.ZdTestSnsLoginGoogle = {
       if (cmd === 'key-save')   return saveKey();
     };
 
-    return { cfg, result, uiState, handleBtnAction };
+    /* ##### [05] 폼/그리드 컬럼 정의 #################################################### */
+
+    const cfgFormColumns = [
+      { key: 'googleClientId', label: 'Google Client ID', type: 'text', hint: 'app.ext-sdk.google-client-id', mono: true, colSpan: 3, required: true, placeholder: 'sy_prop: app.ext-sdk.google-client-id' },
+    ];
+
+    const userInfoGridColumns = [
+      { key: '_label', label: '항목', cellStyle: 'color:#555;width:120px' },
+      { key: '_value', label: '값', type: 'slot', name: 'userInfoValue' },
+    ];
+
+    return { cfg, result, uiState, handleBtnAction, cfgFormColumns, userInfoGridColumns };
   },
 
   template: `
@@ -172,15 +183,10 @@ window.ZdTestSnsLoginGoogle = {
   <div class="card" style="margin-bottom:12px">
     <div class="toolbar"><span class="list-title">설정 / 키 확인</span></div>
     <div style="padding:12px">
-      <div class="form-row" style="gap:8px;margin-bottom:8px">
-        <div class="form-group" style="flex:1">
-          <label class="form-label">Google Client ID <span style="color:#e74c3c">*</span></label>
-          <input class="form-control" v-model="cfg.googleClientId" placeholder="sy_prop: app.ext-sdk.google-client-id" />
-        </div>
-        <div style="display:flex;align-items:flex-end;gap:6px;padding-bottom:1px">
-          <button class="btn btn_save" @click="handleBtnAction('key-save')">sy_prop 저장</button>
-          <button class="btn btn_apply" @click="handleBtnAction('sdk-init')">GSI 초기화</button>
-        </div>
+      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+      <div style="display:flex;gap:6px;margin-top:8px;margin-bottom:8px">
+        <button class="btn btn_save" @click="handleBtnAction('key-save')">sy_prop 저장</button>
+        <button class="btn btn_apply" @click="handleBtnAction('sdk-init')">GSI 초기화</button>
       </div>
       <div style="font-size:12px;color:#666;padding:6px 8px;background:#f8f9fa;border-radius:4px;line-height:2">
         <div>SDK 상태: <strong>{{ result.sdkStatus || '확인 중…' }}</strong><span v-if="result.sdkUrl" style="margin-left:8px;color:#aaa;font-family:monospace;font-size:11px;">{{ result.sdkUrl }}</span></div>
@@ -204,16 +210,22 @@ window.ZdTestSnsLoginGoogle = {
       <div v-if="result.error" style="padding:8px;background:#fff5f5;border:1px solid #fca5a5;border-radius:4px;font-size:12px;color:#b91c1c;white-space:pre-wrap;margin-bottom:8px">{{ result.error }}</div>
       <div v-if="result.userInfo" style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:10px">
         <div style="font-weight:600;margin-bottom:6px;color:#15803d">✅ 사용자 정보 (JWT Payload)</div>
-        <table style="font-size:12px;border-collapse:collapse;width:100%">
-          <tr><td style="padding:2px 8px;color:#555;width:120px">Sub (ID)</td><td>{{ result.userInfo.sub }}</td></tr>
-          <tr><td style="padding:2px 8px;color:#555">이름</td><td>{{ result.userInfo.name }}</td></tr>
-          <tr><td style="padding:2px 8px;color:#555">이메일</td><td>{{ result.userInfo.email }}</td></tr>
-          <tr><td style="padding:2px 8px;color:#555">이메일 인증</td><td>{{ result.userInfo.email_verified ? '✅ 인증됨' : '❌ 미인증' }}</td></tr>
-          <tr><td style="padding:2px 8px;color:#555">프로필 이미지</td><td>
-            <img v-if="result.userInfo.picture" :src="result.userInfo.picture" style="width:40px;height:40px;border-radius:50%;vertical-align:middle;margin-right:6px" />
-            {{ result.userInfo.picture ? '' : '(없음)' }}
-          </td></tr>
-        </table>
+        <bo-grid :columns="userInfoGridColumns" :rows="result.userInfo ? [
+          { _label: 'Sub (ID)',    _value: result.userInfo.sub,   _key: 'sub' },
+          { _label: '이름',        _value: result.userInfo.name,  _key: 'name' },
+          { _label: '이메일',      _value: result.userInfo.email, _key: 'email' },
+          { _label: '이메일 인증', _value: result.userInfo.email_verified, _key: 'email_verified' },
+          { _label: '프로필 이미지', _value: result.userInfo.picture, _key: 'picture' }
+        ] : []" :show-row-num="false">
+          <template #userInfoValue="{ row }">
+            <span v-if="row._key === 'email_verified'">{{ row._value ? '✅ 인증됨' : '❌ 미인증' }}</span>
+            <span v-else-if="row._key === 'picture'">
+              <img v-if="row._value" :src="row._value" style="width:40px;height:40px;border-radius:50%;vertical-align:middle;margin-right:6px" />
+              <span v-if="!row._value">(없음)</span>
+            </span>
+            <span v-else>{{ row._value }}</span>
+          </template>
+        </bo-grid>
       </div>
       <div v-if="result.rawToken" style="margin-top:8px">
         <div style="font-size:11px;color:#888;margin-bottom:4px">Raw Token</div>

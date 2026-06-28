@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 개발도구 — AI 챗봇 (OpenAI / Claude) 테스트
  */
 window.ZdTestAiChatbot = {
@@ -36,6 +36,54 @@ window.ZdTestAiChatbot = {
 
     const uiState = reactive({ loading: false });
 
+    // ── AI 설정 폼 컬럼 ───────────────────────────────────
+    const cfgFormColumns = [
+      {
+        key: 'provider', label: 'Provider', type: 'select',
+        hint: 'provider',
+        options: [
+          { value: 'openai',  label: 'OpenAI (GPT)' },
+          { value: 'claude',  label: 'Anthropic (Claude)' },
+        ],
+      },
+      {
+        key: 'openaiApiKey', label: 'OpenAI API Key', type: 'text',
+        hint: 'openaiApiKey',
+        placeholder: 'sk-…',
+        visible: (f) => f.provider === 'openai',
+      },
+      {
+        key: 'openaiModel', label: '모델 (OpenAI)', type: 'text',
+        hint: 'openaiModel',
+        placeholder: 'gpt-4o-mini',
+        visible: (f) => f.provider === 'openai',
+      },
+      {
+        key: 'claudeApiKey', label: 'Anthropic API Key', type: 'text',
+        hint: 'claudeApiKey',
+        placeholder: 'sk-ant-…',
+        visible: (f) => f.provider === 'claude',
+      },
+      {
+        key: 'claudeModel', label: '모델 (Claude)', type: 'text',
+        hint: 'claudeModel',
+        placeholder: 'claude-sonnet-4-6',
+        visible: (f) => f.provider === 'claude',
+      },
+      {
+        key: 'systemPrompt', label: 'System Prompt', type: 'textarea',
+        hint: 'systemPrompt',
+        colSpan: 3,
+      },
+      {
+        key: 'maxTokens', label: 'Max Tokens', type: 'number',
+        hint: 'maxTokens',
+      },
+      {
+        key: 'temperature', label: 'Temperature', type: 'number',
+        hint: 'temperature',
+      },
+    ];
 
     /* ##### [02] 초기 로드 #################################################### */
 
@@ -123,57 +171,21 @@ window.ZdTestAiChatbot = {
       if (cmd === 'key-save')  return saveKey();
     };
 
-    return { cfg, form, result, uiState, handleBtnAction, onKeydown };
+    return { cfg, form, result, uiState, handleBtnAction, onKeydown, cfgFormColumns };
   },
 
   template: `
 <div>
   <div class="page-title">AI 챗봇 테스트</div>
 
-  <!-- 키 설정 -->
+  <!-- AI 설정 -->
   <div class="card" style="margin-bottom:12px">
     <div class="toolbar"><span class="list-title">AI 설정</span></div>
     <div style="padding:12px">
-      <div class="form-row" style="gap:8px;margin-bottom:8px">
-        <div class="form-group" style="flex:0 0 140px">
-          <label class="form-label">Provider</label>
-          <select class="form-control" v-model="cfg.provider">
-            <option value="openai">OpenAI (GPT)</option>
-            <option value="claude">Anthropic (Claude)</option>
-          </select>
-        </div>
-        <div class="form-group" style="flex:1" v-if="cfg.provider === 'openai'">
-          <label class="form-label">OpenAI API Key</label>
-          <input class="form-control" v-model="cfg.openaiApiKey" placeholder="sk-…" />
-        </div>
-        <div class="form-group" style="flex:0 0 200px" v-if="cfg.provider === 'openai'">
-          <label class="form-label">모델</label>
-          <input class="form-control" v-model="cfg.openaiModel" placeholder="gpt-4o-mini" />
-        </div>
-        <div class="form-group" style="flex:1" v-if="cfg.provider === 'claude'">
-          <label class="form-label">Anthropic API Key</label>
-          <input class="form-control" v-model="cfg.claudeApiKey" placeholder="sk-ant-…" />
-        </div>
-        <div class="form-group" style="flex:0 0 240px" v-if="cfg.provider === 'claude'">
-          <label class="form-label">모델</label>
-          <input class="form-control" v-model="cfg.claudeModel" placeholder="claude-sonnet-4-6" />
-        </div>
+      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+      <div class="form-actions" style="justify-content:flex-start;margin-top:8px">
+        <button class="btn btn_save" @click="handleBtnAction('key-save')">sy_prop 저장</button>
       </div>
-      <div class="form-row" style="gap:8px;margin-bottom:8px">
-        <div class="form-group" style="flex:1">
-          <label class="form-label">System Prompt</label>
-          <textarea class="form-control" v-model="cfg.systemPrompt" rows="2" style="font-size:12px;resize:vertical"></textarea>
-        </div>
-        <div class="form-group" style="flex:0 0 100px">
-          <label class="form-label">Max Tokens</label>
-          <input class="form-control" type="number" v-model="cfg.maxTokens" min="64" max="4096" step="64" />
-        </div>
-        <div class="form-group" style="flex:0 0 100px">
-          <label class="form-label">Temperature</label>
-          <input class="form-control" type="number" v-model="cfg.temperature" min="0" max="2" step="0.1" />
-        </div>
-      </div>
-      <button class="btn btn_save" @click="handleBtnAction('key-save')">sy_prop 저장</button>
     </div>
   </div>
 

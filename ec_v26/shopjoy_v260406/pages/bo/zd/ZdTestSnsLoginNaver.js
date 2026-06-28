@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 개발도구 — 네이버 소셜 로그인 테스트
  */
 window.ZdTestSnsLoginNaver = {
@@ -183,7 +183,32 @@ window.ZdTestSnsLoginNaver = {
 
     onUnmounted(() => window.removeEventListener('message', _onMessage));
 
-    return { cfg, result, uiState, handleBtnAction };
+    /* ##### [05] 폼/그리드 컬럼 정의 #################################################### */
+
+    const cfgFormColumns = [
+      { key: 'clientId',     label: 'Client ID',     type: 'text',     hint: 'clientId',     mono: true, required: true,
+        placeholder: 'sy_prop: app.ext-sdk.naver-client-id' },
+      { key: 'clientSecret', label: 'Client Secret', type: 'text',     hint: 'clientSecret',
+        placeholder: 'sy_prop: app.ext-sdk.naver-client-secret' },
+      { key: 'callbackUrl',  label: 'Callback URL',  type: 'readonly', hint: 'callbackUrl',  mono: true, colSpan: 3,
+        fmt: () => cfg.callbackUrl },
+    ];
+
+    const tokenFormColumns = [
+      { key: 'tokenRaw', label: 'Access Token (팝업 완료 후 붙여넣기)', type: 'slot', name: 'tokenRawSlot', colSpan: 3 },
+    ];
+
+    const profileGridColumns = [
+      { key: 'nickname',      label: '닉네임' },
+      { key: 'name',          label: '이름' },
+      { key: 'email',         label: '이메일' },
+      { key: 'id',            label: 'ID',     mono: true },
+      { key: 'gender',        label: '성별' },
+      { key: 'birthday',      label: '생일' },
+      { key: 'age',           label: '연령대' },
+    ];
+
+    return { cfg, result, uiState, handleBtnAction, cfgFormColumns, tokenFormColumns, profileGridColumns };
   },
 
   template: `
@@ -194,21 +219,8 @@ window.ZdTestSnsLoginNaver = {
   <div class="card" style="margin-bottom:12px">
     <div class="toolbar"><span class="list-title">API 키 설정</span></div>
     <div style="padding:12px">
-      <div class="form-row" style="gap:8px;margin-bottom:8px">
-        <div class="form-group" style="flex:1">
-          <label class="form-label">Client ID <span style="color:#e74c3c">*</span></label>
-          <input class="form-control" v-model="cfg.clientId" placeholder="sy_prop: app.ext-sdk.naver-client-id" style="font-family:monospace" />
-        </div>
-        <div class="form-group" style="flex:1">
-          <label class="form-label">Client Secret</label>
-          <input class="form-control" v-model="cfg.clientSecret" placeholder="sy_prop: app.ext-sdk.naver-client-secret" />
-        </div>
-      </div>
-      <div class="form-group" style="margin-bottom:8px">
-        <label class="form-label">Callback URL (네이버 앱 등록 시 사용)</label>
-        <input class="form-control" v-model="cfg.callbackUrl" style="font-family:monospace;font-size:12px" readonly />
-      </div>
-      <div style="display:flex;gap:6px">
+      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+      <div style="display:flex;gap:6px;margin-top:8px">
         <button class="btn btn_save" @click="handleBtnAction('key-save')">sy_prop 저장</button>
         <button class="btn btn_apply" @click="handleBtnAction('sdk-load')">SDK 로드</button>
       </div>
@@ -233,18 +245,17 @@ window.ZdTestSnsLoginNaver = {
       <div style="font-size:12px;color:#666;margin-bottom:8px;padding:8px;background:#f0f4ff;border-radius:4px;line-height:1.6">
         ⓘ 네이버 로그인은 팝업 → 리다이렉트 구조입니다. 팝업 로그인 완료 후 발급된 <b>Access Token</b>을 아래에 붙여넣고 [프로필 조회] 하세요.
       </div>
-      <div class="form-row" style="gap:8px;margin-bottom:8px">
-        <div class="form-group" style="flex:1">
-          <label class="form-label">Access Token (팝업 완료 후 붙여넣기)</label>
-          <input class="form-control" v-model="result.tokenRaw" placeholder="AAAAxxxxx…" style="font-family:monospace;font-size:12px" />
-        </div>
-        <div style="display:flex;align-items:flex-end;padding-bottom:1px">
-          <button class="btn btn_search" :disabled="uiState.loading" @click="handleBtnAction('profile-fetch')">
-            {{ uiState.loading ? '⏳' : '프로필 조회' }}
-          </button>
-        </div>
-      </div>
-      <div v-if="result.error" style="padding:8px;background:#fff5f5;border:1px solid #fca5a5;border-radius:4px;font-size:12px;color:#b91c1c">{{ result.error }}</div>
+      <bo-form-area :columns="tokenFormColumns" :form="result" :errors="{}" :cols="3" :show-actions="false" :readonly="false">
+        <template #tokenRawSlot>
+          <div style="display:flex;gap:8px;align-items:flex-end">
+            <input class="form-control" v-model="result.tokenRaw" placeholder="AAAAxxxxx…" style="font-family:monospace;font-size:12px;flex:1" />
+            <button class="btn btn_search" :disabled="uiState.loading" @click="handleBtnAction('profile-fetch')">
+              {{ uiState.loading ? '⏳' : '프로필 조회' }}
+            </button>
+          </div>
+        </template>
+      </bo-form-area>
+      <div v-if="result.error" style="padding:8px;background:#fff5f5;border:1px solid #fca5a5;border-radius:4px;font-size:12px;color:#b91c1c;margin-top:8px">{{ result.error }}</div>
     </div>
   </div>
 
@@ -254,14 +265,8 @@ window.ZdTestSnsLoginNaver = {
     <div style="padding:12px;display:flex;gap:16px;align-items:flex-start">
       <img v-if="result.profile.profile_image" :src="result.profile.profile_image"
         style="width:64px;height:64px;border-radius:50%;border:2px solid #03c75a;object-fit:cover" />
-      <div style="font-size:13px;line-height:2">
-        <div><b>닉네임</b>: {{ result.profile.nickname }}</div>
-        <div><b>이름</b>: {{ result.profile.name }}</div>
-        <div><b>이메일</b>: {{ result.profile.email }}</div>
-        <div><b>ID</b>: <code>{{ result.profile.id }}</code></div>
-        <div><b>성별</b>: {{ result.profile.gender }}</div>
-        <div><b>생일</b>: {{ result.profile.birthday }}</div>
-        <div><b>연령대</b>: {{ result.profile.age }}</div>
+      <div style="flex:1">
+        <bo-grid :columns="profileGridColumns" :rows="result.profile ? [result.profile] : []" :show-row-num="false" />
       </div>
     </div>
     <div style="padding:0 12px 12px">

@@ -165,7 +165,32 @@ window.ZdTestPayTossBrandpay = {
       if (cmd === 'orderid-refresh') return refreshOrderId();
     };
 
-    return { cfg, form, result, uiState, handleBtnAction };
+    /* ##### [05] 폼/그리드 컬럼 정의 #################################################### */
+
+    const cfgFormColumns = [
+      { key: 'clientKey', label: 'Client Key (클라이언트)', type: 'text', hint: 'clientKey', mono: true, placeholder: 'test_ck_… or live_ck_…', colSpan: 2 },
+      { key: 'secretKey', label: 'Secret Key (서버)', type: 'text', hint: 'secretKey', mono: true, placeholder: 'test_sk_… or live_sk_…' },
+    ];
+
+    const payFormColumns = [
+      { key: 'customerKey', label: 'customerKey', type: 'text', hint: 'customerKey', mono: true, placeholder: '회원 고유 식별자 (영숫자/-/_)', required: true },
+      { key: 'amount', label: '금액', type: 'number', hint: 'amount' },
+      { key: '_orderId', label: '주문 ID', type: 'slot', name: 'orderIdSlot', hint: 'orderId' },
+      { key: 'orderName', label: '상품명', type: 'text', hint: 'orderName' },
+      { key: 'customerName', label: '구매자명', type: 'text', hint: 'customerName' },
+      { key: 'customerEmail', label: '구매자 이메일', type: 'text', hint: 'customerEmail' },
+    ];
+
+    const confirmGridColumns = [
+      { key: 'paymentKey', label: 'paymentKey', mono: true, cellStyle: 'font-size:11px;word-break:break-all' },
+      { key: 'orderId', label: 'orderId' },
+      { key: 'orderName', label: 'orderName' },
+      { key: 'totalAmount', label: 'totalAmount', align: 'right', fmt: (v) => ((v || 0).toLocaleString()) + ' 원' },
+      { key: 'status', label: 'status', badge: () => 'badge-green' },
+      { key: 'method', label: 'method' },
+    ];
+
+    return { cfg, form, result, uiState, handleBtnAction, cfgFormColumns, payFormColumns, confirmGridColumns };
   },
 
   template: `
@@ -181,22 +206,16 @@ window.ZdTestPayTossBrandpay = {
 
   <!-- 키 설정 -->
   <div class="card" style="margin-bottom:12px">
-    <div class="toolbar"><span class="list-title">API 키 설정</span><span style="font-size:11px;color:#888;margin-left:8px">결제창 전용 키 (test_ck_ / live_ck_ 접두어) — 결제위젯 키(gck) 사용 불가</span></div>
+    <div class="toolbar">
+      <span class="list-title">API 키 설정</span>
+      <span style="font-size:11px;color:#888;margin-left:8px">결제창 전용 키 (test_ck_ / live_ck_ 접두어) — 결제위젯 키(gck) 사용 불가</span>
+    </div>
     <div style="padding:12px">
-      <div class="form-row" style="gap:8px;margin-bottom:8px">
-        <div class="form-group" style="flex:1">
-          <label class="form-label">Client Key (클라이언트)</label>
-          <input class="form-control" v-model="cfg.clientKey" placeholder="test_ck_… or live_ck_…" />
-        </div>
-        <div class="form-group" style="flex:1">
-          <label class="form-label">Secret Key (서버)</label>
-          <input class="form-control" v-model="cfg.secretKey" placeholder="test_sk_… or live_sk_…" />
-        </div>
-        <div style="display:flex;align-items:flex-end;padding-bottom:1px">
-          <button class="btn btn_save" @click="handleBtnAction('keys-save')">sy_prop 저장</button>
-        </div>
+      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+      <div style="display:flex;justify-content:flex-end;margin-top:8px">
+        <button class="btn btn_save" @click="handleBtnAction('keys-save')">sy_prop 저장</button>
       </div>
-      <div style="font-size:12px;color:#666;padding:6px 8px;background:#f8f9fa;border-radius:4px;line-height:2">
+      <div style="font-size:12px;color:#666;padding:6px 8px;background:#f8f9fa;border-radius:4px;line-height:2;margin-top:8px">
         <div>SDK 상태: <strong>{{ result.sdkStatus || '확인 중…' }}</strong><span v-if="result.sdkUrl" style="margin-left:8px;color:#aaa;font-family:monospace;font-size:11px;">{{ result.sdkUrl }}</span></div>
         <div>초기화 상태: <strong>{{ result.initDetail || (uiState.sdkLoaded ? '초기화 완료' : '미초기화') }}</strong></div>
       </div>
@@ -207,37 +226,14 @@ window.ZdTestPayTossBrandpay = {
   <div class="card" style="margin-bottom:12px">
     <div class="toolbar"><span class="list-title">결제 파라미터</span></div>
     <div style="padding:12px">
-      <div class="form-row" style="gap:8px;margin-bottom:8px">
-        <div class="form-group" style="flex:1">
-          <label class="form-label">customerKey <span style="color:#e53e3e">*</span></label>
-          <input class="form-control" v-model="form.customerKey" placeholder="회원 고유 식별자 (영숫자/-/_)" style="font-family:monospace;font-size:12px" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">금액</label>
-          <input class="form-control" type="number" v-model="form.amount" style="width:120px" />
-        </div>
-        <div class="form-group" style="flex:1">
-          <label class="form-label">주문 ID</label>
+      <bo-form-area :columns="payFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false">
+        <template #orderIdSlot>
           <div style="display:flex;gap:4px">
             <input class="form-control" v-model="form.orderId" style="flex:1;font-family:monospace;font-size:12px" />
             <button class="btn btn_reset" @click="handleBtnAction('orderid-refresh')" style="white-space:nowrap">새로고침</button>
           </div>
-        </div>
-      </div>
-      <div class="form-row" style="gap:8px">
-        <div class="form-group" style="flex:1">
-          <label class="form-label">상품명</label>
-          <input class="form-control" v-model="form.orderName" />
-        </div>
-        <div class="form-group" style="flex:1">
-          <label class="form-label">구매자명</label>
-          <input class="form-control" v-model="form.customerName" />
-        </div>
-        <div class="form-group" style="flex:1">
-          <label class="form-label">구매자 이메일</label>
-          <input class="form-control" v-model="form.customerEmail" />
-        </div>
-      </div>
+        </template>
+      </bo-form-area>
     </div>
   </div>
 
@@ -258,14 +254,7 @@ window.ZdTestPayTossBrandpay = {
       <!-- 승인 결과 -->
       <div v-if="result.confirmResult" style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:10px;margin-bottom:8px">
         <div style="font-weight:600;margin-bottom:6px;color:#15803d">✅ 결제 승인 결과</div>
-        <table style="font-size:12px;border-collapse:collapse;width:100%">
-          <tr><td style="padding:2px 8px;color:#555;width:130px">paymentKey</td><td style="font-family:monospace;font-size:11px;word-break:break-all">{{ result.confirmResult.paymentKey }}</td></tr>
-          <tr><td style="padding:2px 8px;color:#555">orderId</td><td>{{ result.confirmResult.orderId }}</td></tr>
-          <tr><td style="padding:2px 8px;color:#555">orderName</td><td>{{ result.confirmResult.orderName }}</td></tr>
-          <tr><td style="padding:2px 8px;color:#555">totalAmount</td><td>{{ (result.confirmResult.totalAmount || 0).toLocaleString() }} 원</td></tr>
-          <tr><td style="padding:2px 8px;color:#555">status</td><td><span class="badge badge-green">{{ result.confirmResult.status }}</span></td></tr>
-          <tr><td style="padding:2px 8px;color:#555">method</td><td>{{ result.confirmResult.method }}</td></tr>
-        </table>
+        <bo-grid :columns="confirmGridColumns" :rows="result.confirmResult ? [result.confirmResult] : []" :show-row-num="false" />
       </div>
       <!-- 취소 결과 -->
       <div v-if="result.cancelResult" style="background:#fff7ed;border:1px solid #fdba74;border-radius:6px;padding:10px">

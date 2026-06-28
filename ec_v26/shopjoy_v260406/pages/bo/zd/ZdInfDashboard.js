@@ -154,7 +154,7 @@ window.ZdInfDashboard = {
      * propKey : 실제 적용 키명 (sy_prop 키 또는 yml 경로)
      * _where  : propKey 자동 추론 — sy_prop / yml / foEnvConsts / boEnvConsts / (없음)
      */
-    const _mkR = (svc, app, level, kind, val, applied, note, propKey, color) => {
+    const _mkR = (svc, app, level, kind, val, applied, note, propKey, color, configUrl) => {
       let _where = '';
       if (propKey) {
         /* 토스 테스트키·SDK URL은 fo/boEnvConsts.js 하드코딩 */
@@ -167,7 +167,7 @@ window.ZdInfDashboard = {
       }
       return { _svc: svc, _app: app || '', _level: level || '', _kind: kind, _val: val,
                _applied: applied || '', _note: note || '', _propKey: propKey || '',
-               _where, _color: color || 'gray' };
+               _where, _color: color || 'gray', _configUrl: configUrl || '' };
     };
 
     const refRows = [
@@ -179,60 +179,60 @@ window.ZdInfDashboard = {
       _mkR('YouTube', '결제',       '-', '강좌링크', '토스페이먼츠 5분 결제 연동',                 '참고', 'https://www.youtube.com/watch?v=HtwLMwzTG5c', '', 'red'),
       _mkR('YouTube', '메일',       '-', '강좌링크', '스프링 SMTP / 구글 앱 비밀번호 신청',        '참고', 'https://www.youtube.com/watch?v=Sedf9uO7W4E', '', 'red'),
       /* ── Kakao: illeesam_netlify (ID: 1429368) ── */
-      _mkR('Kakao', 'illeesam_netlify (1429368)', 'Lv1 앱',       'REST API 키',          '44074b1c358f60292145b3068460f37d', '미설정',   'https://developers.kakao.com/console/app', '',                                'green'),
-      _mkR('Kakao', 'illeesam_netlify (1429368)', 'Lv1 앱',       'JavaScript 키',        '797a116c08880d3865a89cf4f70b91f5',  '미설정',   'Kakao.init() / 카카오맵 공용',             '',                                'blue'),
-      _mkR('Kakao', 'illeesam_netlify (1429368)', 'Lv1 앱',       '네이티브 앱 키',       '96e57663db167a8e7a78345c9d0cf9d2',  '미사용',   '',                                         '',                                'purple'),
-      _mkR('Kakao', 'illeesam_netlify (1429368)', 'Lv2 로그인',   '시크릿(로그인)',       '1gV3lHvBP6KNju9P5E6I4TbchWByfPIh', '미설정',   '활성화:ON',                                '',                                'yellow'),
-      _mkR('Kakao', 'illeesam_netlify (1429368)', 'Lv2 로그인',   '시크릿(비즈)',         'ZyuNrjSOp2yilmTv9MSxDlXRdwPFXDTB', '미설정',   'Redirect: /login/oauth2/code/kakao | 활성화:ON', '',                         'yellow'),
-      _mkR('Kakao', 'illeesam_netlify (1429368)', 'Lv3 동의항목', '닉네임',               '',                                   '필수동의', '',                                         '',                                'gray'),
-      _mkR('Kakao', 'illeesam_netlify (1429368)', 'Lv3 동의항목', '프로필사진',           '',                                   '필수동의', '',                                         '',                                'gray'),
-      _mkR('Kakao', 'illeesam_netlify (1429368)', 'Lv3 동의항목', '친구목록',             '',                                   '이용중동의','카카오서비스내 친구목록',                '',                                'gray'),
-      _mkR('Kakao', 'illeesam_netlify (1429368)', 'Lv3 접근권한', '카카오톡 메시지 전송', '',                                   '선택동의', '',                                         '',                                'gray'),
+      _mkR('Kakao', 'illeesam_netlify (1429368)', 'Lv1 앱',       'REST API 키',          '44074b1c358f60292145b3068460f37d', '미설정',   '',                                               '', 'green',  'https://developers.kakao.com/console/app/1429368'),
+      _mkR('Kakao', 'illeesam_netlify (1429368)', 'Lv1 앱',       'JavaScript 키',        '797a116c08880d3865a89cf4f70b91f5',  '미설정',   'Kakao.init() / 카카오맵 공용',                   '', 'blue',   'https://developers.kakao.com/console/app/1429368'),
+      _mkR('Kakao', 'illeesam_netlify (1429368)', 'Lv1 앱',       '네이티브 앱 키',       '96e57663db167a8e7a78345c9d0cf9d2',  '미사용',   '',                                               '', 'purple', 'https://developers.kakao.com/console/app/1429368'),
+      _mkR('Kakao', 'illeesam_netlify (1429368)', 'Lv2 로그인',   '시크릿(로그인)',       '1gV3lHvBP6KNju9P5E6I4TbchWByfPIh', '미설정',   '활성화:ON',                                      '', 'yellow', 'https://developers.kakao.com/console/app/1429368/product/login'),
+      _mkR('Kakao', 'illeesam_netlify (1429368)', 'Lv2 로그인',   '시크릿(비즈)',         'ZyuNrjSOp2yilmTv9MSxDlXRdwPFXDTB', '미설정',   'Redirect: /login/oauth2/code/kakao | 활성화:ON', '', 'yellow', 'https://developers.kakao.com/console/app/1429368/product/login'),
+      _mkR('Kakao', 'illeesam_netlify (1429368)', 'Lv3 동의항목', '닉네임',               '',                                   '필수동의', '',                                               '', 'gray'),
+      _mkR('Kakao', 'illeesam_netlify (1429368)', 'Lv3 동의항목', '프로필사진',           '',                                   '필수동의', '',                                               '', 'gray'),
+      _mkR('Kakao', 'illeesam_netlify (1429368)', 'Lv3 동의항목', '친구목록',             '',                                   '이용중동의','카카오서비스내 친구목록',                        '', 'gray'),
+      _mkR('Kakao', 'illeesam_netlify (1429368)', 'Lv3 접근권한', '카카오톡 메시지 전송', '',                                   '선택동의', '',                                               '', 'gray'),
       /* ── Kakao: illeesam_synology (ID: 1491354) — DB 적용 앱 ── */
-      _mkR('Kakao', 'illeesam_synology (1491354)', 'Lv1 앱',      'REST API 키',          '63d491e61a4caacf2fc90ee252f2d644',  '미설정',   '',                                         '',                                'green'),
-      _mkR('Kakao', 'illeesam_synology (1491354)', 'Lv1 앱',      'JavaScript 키',        'a2990e41aa57c3a4ad1fe97a210938d7',  '적용됨',   'app.auth.social.kakao-js-key / app.map.kakao-js-key', 'app.auth.social.kakao-js-key', 'blue'),
-      _mkR('Kakao', 'illeesam_synology (1491354)', 'Lv1 앱',      '네이티브 앱 키',       '4f43ddc38e22c79280d18595a31ff27b',  '미사용',   '',                                         '',                                'purple'),
-      _mkR('Kakao', 'illeesam_synology (1491354)', 'Lv2 로그인',  '시크릿(로그인)',       '7gxUHEectTM7qYSDmhnXUJc3ZE1ymqRO', '미설정',   '활성화:ON',                                '',                                'yellow'),
-      _mkR('Kakao', 'illeesam_synology (1491354)', 'Lv2 로그인',  '시크릿(비즈)',         'Q6d7uCUnJBXCXQ2qINFWt2wSZ0sEzpB2', '미설정',   'Redirect: /login/oauth2/code/kakao | 활성화:ON', '',                         'yellow'),
-      _mkR('Kakao', 'illeesam_synology (1491354)', 'Lv3 동의항목','닉네임',               '',                                  '필수동의', '',                                         '',                                'gray'),
-      _mkR('Kakao', 'illeesam_synology (1491354)', 'Lv3 동의항목','프로필사진',           '',                                  '필수동의', '',                                         '',                                'gray'),
-      _mkR('Kakao', 'illeesam_synology (1491354)', 'Lv3 동의항목','친구목록',             '',                                  '이용중동의','',                                         '',                                'gray'),
-      _mkR('Kakao', 'illeesam_synology (1491354)', 'Lv3 접근권한','카카오톡 메시지 전송', '',                                  '선택동의', '',                                         '',                                'gray'),
+      _mkR('Kakao', 'illeesam_synology (1491354)', 'Lv1 앱',      'REST API 키',          '63d491e61a4caacf2fc90ee252f2d644',  '미설정',   '',                                               '',                                'green',  'https://developers.kakao.com/console/app/1491354'),
+      _mkR('Kakao', 'illeesam_synology (1491354)', 'Lv1 앱',      'JavaScript 키',        'a2990e41aa57c3a4ad1fe97a210938d7',  '적용됨',   'app.auth.social.kakao-js-key / app.map.kakao-js-key', 'app.auth.social.kakao-js-key', 'blue', 'https://developers.kakao.com/console/app/1491354'),
+      _mkR('Kakao', 'illeesam_synology (1491354)', 'Lv1 앱',      '네이티브 앱 키',       '4f43ddc38e22c79280d18595a31ff27b',  '미사용',   '',                                               '',                                'purple', 'https://developers.kakao.com/console/app/1491354'),
+      _mkR('Kakao', 'illeesam_synology (1491354)', 'Lv2 로그인',  '시크릿(로그인)',       '7gxUHEectTM7qYSDmhnXUJc3ZE1ymqRO', '미설정',   '활성화:ON',                                      '',                                'yellow', 'https://developers.kakao.com/console/app/1491354/product/login'),
+      _mkR('Kakao', 'illeesam_synology (1491354)', 'Lv2 로그인',  '시크릿(비즈)',         'Q6d7uCUnJBXCXQ2qINFWt2wSZ0sEzpB2', '미설정',   'Redirect: /login/oauth2/code/kakao | 활성화:ON', '',                                'yellow', 'https://developers.kakao.com/console/app/1491354/product/login'),
+      _mkR('Kakao', 'illeesam_synology (1491354)', 'Lv3 동의항목','닉네임',               '',                                  '필수동의', '',                                               '',                                'gray'),
+      _mkR('Kakao', 'illeesam_synology (1491354)', 'Lv3 동의항목','프로필사진',           '',                                  '필수동의', '',                                               '',                                'gray'),
+      _mkR('Kakao', 'illeesam_synology (1491354)', 'Lv3 동의항목','친구목록',             '',                                  '이용중동의','',                                               '',                                'gray'),
+      _mkR('Kakao', 'illeesam_synology (1491354)', 'Lv3 접근권한','카카오톡 메시지 전송', '',                                  '선택동의', '',                                               '',                                'gray'),
       /* ── Kakao: illeesam_localhost (ID: 1491909) ── */
-      _mkR('Kakao', 'illeesam_localhost (1491909)', 'Lv1 앱',     'REST API 키',          '2e8671b1cc341f7d4d92724a2d4eee2c',  '미설정',   '',                                         '',                                'green'),
-      _mkR('Kakao', 'illeesam_localhost (1491909)', 'Lv1 앱',     'JavaScript 키',        '2e8671b1cc341f7d4d92724a2d4eee2c',  '미설정',   '',                                         '',                                'blue'),
-      _mkR('Kakao', 'illeesam_localhost (1491909)', 'Lv1 앱',     '네이티브 앱 키',       '4f43ddc38e22c79280d18595a31ff27b',  '미사용',   '',                                         '',                                'purple'),
-      _mkR('Kakao', 'illeesam_localhost (1491909)', 'Lv2 로그인', '시크릿(로그인)',       '7gxUHEectTM7qYSDmhnXUJc3ZE1ymqRO', '미설정',   '활성화:ON',                                '',                                'yellow'),
-      _mkR('Kakao', 'illeesam_localhost (1491909)', 'Lv2 로그인', '시크릿(비즈)',         'Q6d7uCUnJBXCXQ2qINFWt2wSZ0sEzpB2', '미설정',   '활성화:ON',                                '',                                'yellow'),
-      _mkR('Kakao', 'illeesam_localhost (1491909)', 'Lv3 동의항목','닉네임',              '',                                  '필수동의', '',                                         '',                                'gray'),
-      _mkR('Kakao', 'illeesam_localhost (1491909)', 'Lv3 동의항목','프로필사진',          '',                                  '필수동의', '',                                         '',                                'gray'),
-      _mkR('Kakao', 'illeesam_localhost (1491909)', 'Lv3 동의항목','친구목록',            '',                                  '이용중동의','',                                         '',                                'gray'),
-      _mkR('Kakao', 'illeesam_localhost (1491909)', 'Lv3 접근권한','카카오톡 메시지 전송','',                                  '선택동의', '',                                         '',                                'gray'),
+      _mkR('Kakao', 'illeesam_localhost (1491909)', 'Lv1 앱',     'REST API 키',          '2e8671b1cc341f7d4d92724a2d4eee2c',  '미설정',   '',                                               '', 'green',  'https://developers.kakao.com/console/app/1491909'),
+      _mkR('Kakao', 'illeesam_localhost (1491909)', 'Lv1 앱',     'JavaScript 키',        '2e8671b1cc341f7d4d92724a2d4eee2c',  '미설정',   '',                                               '', 'blue',   'https://developers.kakao.com/console/app/1491909'),
+      _mkR('Kakao', 'illeesam_localhost (1491909)', 'Lv1 앱',     '네이티브 앱 키',       '4f43ddc38e22c79280d18595a31ff27b',  '미사용',   '',                                               '', 'purple', 'https://developers.kakao.com/console/app/1491909'),
+      _mkR('Kakao', 'illeesam_localhost (1491909)', 'Lv2 로그인', '시크릿(로그인)',       '7gxUHEectTM7qYSDmhnXUJc3ZE1ymqRO', '미설정',   '활성화:ON',                                      '', 'yellow', 'https://developers.kakao.com/console/app/1491909/product/login'),
+      _mkR('Kakao', 'illeesam_localhost (1491909)', 'Lv2 로그인', '시크릿(비즈)',         'Q6d7uCUnJBXCXQ2qINFWt2wSZ0sEzpB2', '미설정',   '활성화:ON',                                      '', 'yellow', 'https://developers.kakao.com/console/app/1491909/product/login'),
+      _mkR('Kakao', 'illeesam_localhost (1491909)', 'Lv3 동의항목','닉네임',              '',                                  '필수동의', '',                                               '', 'gray'),
+      _mkR('Kakao', 'illeesam_localhost (1491909)', 'Lv3 동의항목','프로필사진',          '',                                  '필수동의', '',                                               '', 'gray'),
+      _mkR('Kakao', 'illeesam_localhost (1491909)', 'Lv3 동의항목','친구목록',            '',                                  '이용중동의','',                                               '', 'gray'),
+      _mkR('Kakao', 'illeesam_localhost (1491909)', 'Lv3 접근권한','카카오톡 메시지 전송','',                                  '선택동의', '',                                               '', 'gray'),
       /* ── Naver ── */
-      _mkR('Naver', 'illeesam_netlify',   'Lv1 앱',       'Client ID',     'r6RWBr2qMOCZbGPFALrA', '미설정',   'https://developers.naver.com/apps',    '',                                    'green'),
-      _mkR('Naver', 'illeesam_netlify',   'Lv1 앱',       'Client Secret', 'c_V0sjmlR5',            '미설정',   'Callback: /oauth/callback/naver',       '',                                    'yellow'),
+      _mkR('Naver', 'illeesam_netlify',   'Lv1 앱',       'Client ID',     'r6RWBr2qMOCZbGPFALrA', '미설정',   '',                              '',                                    'green',  'https://developers.naver.com/apps'),
+      _mkR('Naver', 'illeesam_netlify',   'Lv1 앱',       'Client Secret', 'c_V0sjmlR5',            '미설정',   'Callback: /oauth/callback/naver','',                                    'yellow', 'https://developers.naver.com/apps'),
       _mkR('Naver', 'illeesam_netlify',   'Lv2 동의항목', '회원이름',      '', '필수', '', '', 'gray'),
       _mkR('Naver', 'illeesam_netlify',   'Lv2 동의항목', '이메일',        '', '필수', '', '', 'gray'),
-      _mkR('Naver', 'illeesam_synology',  'Lv1 앱',       'Client ID',     'jWtLT9SUfE2JWEji2XGq', '적용됨',   '',                                     'app.auth.social.naver-client-id',     'green'),
-      _mkR('Naver', 'illeesam_synology',  'Lv1 앱',       'Client Secret', 'QOX2GZO1uk',            '적용됨',   'Callback: /oauth/callback/naver',       'app.auth.social.naver-client-secret', 'yellow'),
+      _mkR('Naver', 'illeesam_synology',  'Lv1 앱',       'Client ID',     'jWtLT9SUfE2JWEji2XGq', '적용됨',   '',                              'app.auth.social.naver-client-id',     'green',  'https://developers.naver.com/apps'),
+      _mkR('Naver', 'illeesam_synology',  'Lv1 앱',       'Client Secret', 'QOX2GZO1uk',            '적용됨',   'Callback: /oauth/callback/naver','app.auth.social.naver-client-secret', 'yellow', 'https://developers.naver.com/apps'),
       _mkR('Naver', 'illeesam_synology',  'Lv2 동의항목', '회원이름',      '', '필수', '', '', 'gray'),
       _mkR('Naver', 'illeesam_synology',  'Lv2 동의항목', '이메일',        '', '필수', '', '', 'gray'),
-      _mkR('Naver', 'illeesam_localhost', 'Lv1 앱',       'Client ID',     '01sBNJ_R7mdQDl5_d3AM', '미설정',   '',                                     '',                                    'green'),
-      _mkR('Naver', 'illeesam_localhost', 'Lv1 앱',       'Client Secret', 'c5cSSSZCaF',            '미설정',   'Callback: /oauth/callback/naver',       '',                                    'yellow'),
+      _mkR('Naver', 'illeesam_localhost', 'Lv1 앱',       'Client ID',     '01sBNJ_R7mdQDl5_d3AM', '미설정',   '',                              '',                                    'green',  'https://developers.naver.com/apps'),
+      _mkR('Naver', 'illeesam_localhost', 'Lv1 앱',       'Client Secret', 'c5cSSSZCaF',            '미설정',   'Callback: /oauth/callback/naver','',                                    'yellow', 'https://developers.naver.com/apps'),
       _mkR('Naver', 'illeesam_localhost', 'Lv2 동의항목', '회원이름',      '', '필수', '', '', 'gray'),
       _mkR('Naver', 'illeesam_localhost', 'Lv2 동의항목', '이메일',        '', '필수', '', '', 'gray'),
       /* ── Google ── */
-      _mkR('Google', '공통 계정',   'Lv1 계정', 'Client ID',  '207844440856-5ib9mk6frvt7rfpt8823e48c3c0lavth.apps.googleusercontent.com', '적용됨', 'developers.google.com / cloud console', 'app.auth.social.google-client-id', 'blue'),
-      _mkR('Google', 'Play Console','Lv1',      'Console URL','developer.android.com/distribute/console', '참고',   '',                                             '', 'blue'),
+      _mkR('Google', '공통 계정',   'Lv1 계정', 'Client ID',  '207844440856-5ib9mk6frvt7rfpt8823e48c3c0lavth.apps.googleusercontent.com', '적용됨', 'OAuth 2.0 사용자 인증 정보', 'app.auth.social.google-client-id', 'blue', 'https://console.cloud.google.com/apis/credentials'),
+      _mkR('Google', 'Play Console','Lv1',      'Console URL','developer.android.com/distribute/console', '참고', '', '', 'blue', 'https://play.google.com/console'),
       /* ── 토스페이먼츠 ── */
-      _mkR('토스페이먼츠', '문서용 테스트키', 'Lv1 FE', '클라이언트 키 (sy_prop)',    'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm', '적용됨',      'https://developers.tosspayments.com/', 'app.pay.toss.widget-client-key', 'green'),
-      _mkR('토스페이먼츠', '문서용 테스트키', 'Lv1 FE', '클라이언트 키 (하드코딩)',   'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm', '적용됨',      'foEnvConsts.toss.TEST_CLIENT_KEY (폴백)', '__foEnvConsts__',               'green'),
-      _mkR('토스페이먼츠', '문서용 테스트키', 'Lv1 BE', '시크릿 키 (sy_prop)',        'test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6',  '적용됨',      '결제 연동하기 가이드',                'app.pay.toss.secret-key',        'yellow'),
-      _mkR('토스페이먼츠', '문서용 테스트키', 'Lv1 BE', '시크릿 키 (하드코딩)',       'test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6',  '적용됨',      'fo/boEnvConsts.toss.TEST_SECRET_KEY (폴백)', '__foEnvConsts__',            'yellow'),
+      _mkR('토스페이먼츠', '문서용 테스트키', 'Lv1 FE', '클라이언트 키 (sy_prop)',    'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm', '적용됨', '결제위젯 연동',                               'app.pay.toss.widget-client-key', 'green',  'https://developers.tosspayments.com/'),
+      _mkR('토스페이먼츠', '문서용 테스트키', 'Lv1 FE', '클라이언트 키 (하드코딩)',   'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm', '적용됨', 'foEnvConsts.toss.TEST_CLIENT_KEY (폴백)',     '__foEnvConsts__',               'green',  'https://developers.tosspayments.com/'),
+      _mkR('토스페이먼츠', '문서용 테스트키', 'Lv1 BE', '시크릿 키 (sy_prop)',        'test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6',  '적용됨', '결제 연동하기 가이드',                        'app.pay.toss.secret-key',        'yellow', 'https://developers.tosspayments.com/'),
+      _mkR('토스페이먼츠', '문서용 테스트키', 'Lv1 BE', '시크릿 키 (하드코딩)',       'test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6',  '적용됨', 'fo/boEnvConsts.toss.TEST_SECRET_KEY (폴백)', '__foEnvConsts__',               'yellow', 'https://developers.tosspayments.com/'),
       /* ── SMTP/Gmail ── */
-      _mkR('SMTP/Gmail', 'illeesam4app', 'Lv1', '계정',       'illeesam4@gmail.com', '사용중', 'myaccount.google.com/apppasswords', 'spring.mail.username', 'blue'),
-      _mkR('SMTP/Gmail', 'illeesam4app', 'Lv1', '비밀번호',   'sxxx5xx4x!',          '사용중', '구글 계정 비밀번호',                 '',                     'red'),
-      _mkR('SMTP/Gmail', 'illeesam4app', 'Lv1', '앱 비밀번호','wqji ylpf pcwt vhnh', '사용중', '2단계 인증 활성화 필수',             'spring.mail.password', 'yellow'),
+      _mkR('SMTP/Gmail', 'illeesam4app', 'Lv1', '계정',       'illeesam4@gmail.com', '사용중', '',                        'spring.mail.username', 'blue',   'https://myaccount.google.com/apppasswords'),
+      _mkR('SMTP/Gmail', 'illeesam4app', 'Lv1', '비밀번호',   'sxxx5xx4x!',          '사용중', '구글 계정 비밀번호',       '',                     'red'),
+      _mkR('SMTP/Gmail', 'illeesam4app', 'Lv1', '앱 비밀번호','wqji ylpf pcwt vhnh', '사용중', '2단계 인증 활성화 필수',   'spring.mail.password', 'yellow', 'https://myaccount.google.com/apppasswords'),
     ];
 
     /* 트리 렌더용: refRows를 서비스→앱→레벨→키 4단계 계층으로 변환 (정적 배열 → 일반 변수) */
@@ -1280,6 +1280,8 @@ window.ZdInfDashboard = {
                         style="color:#2563eb;text-decoration:underline;">{{ r._note }}</a>
                       <span v-else-if="r._note">{{ r._note }}</span>
                       <span v-else style="color:#d1d5db;">-</span>
+                      <a v-if="r._configUrl" :href="r._configUrl" target="_blank"
+                        style="display:inline-block;margin-left:6px;padding:1px 6px;border-radius:4px;background:#eff6ff;color:#2563eb;font-size:10px;text-decoration:none;border:1px solid #bfdbfe;white-space:nowrap;">⚙ 설정</a>
                     </td>
                   </tr>
                 </template>

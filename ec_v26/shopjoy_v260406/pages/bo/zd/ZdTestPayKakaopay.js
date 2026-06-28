@@ -187,7 +187,52 @@ window.ZdTestPayKakaopay = {
       if (cmd === 'orderid-refresh')  return refreshOrderId();
     };
 
-    return { cfg, form, result, uiState, manualApprove, handleBtnAction };
+    /* ##### [05] 폼/그리드 컬럼 정의 #################################################### */
+
+    // API 키 설정 폼 (cfg)
+    const cfgFormColumns = [
+      { key: 'cid',       label: 'CID (가맹점코드)', type: 'text', hint: 'cid', mono: true, placeholder: 'TC0ONETIME (테스트)' },
+      { key: 'secretKey', label: 'Secret Key',       type: 'text', hint: 'secretKey', colSpan: 2, placeholder: '카카오페이 파트너센터 → Secret Key' },
+    ];
+
+    // 결제 파라미터 폼 (form)
+    const payFormColumns = [
+      { key: 'amount',        label: '금액',              type: 'number', hint: 'amount' },
+      { key: 'taxFreeAmount', label: '비과세 금액',        type: 'number', hint: 'taxFreeAmount' },
+      { key: 'orderName',     label: '상품명',             type: 'text',   hint: 'orderName' },
+      { key: 'orderId',       label: '주문 ID',            type: 'slot',   name: 'orderIdSlot', hint: 'orderId', mono: true },
+      { key: 'userId',        label: '파트너 사용자 ID',   type: 'text',   hint: 'userId', mono: true },
+      { key: 'approvalUrl',   label: '승인 콜백 URL',      type: 'text',   hint: 'approvalUrl', mono: true, colSpan: 2 },
+    ];
+
+    // 수동 승인 폼 (manualApprove)
+    const approveFormColumns = [
+      { key: 'tid',      label: 'TID',      type: 'text', hint: 'tid',      mono: true, placeholder: 'ready 응답의 tid' },
+      { key: 'pgToken',  label: 'pg_token', type: 'text', hint: 'pgToken',  mono: true, placeholder: 'approvalUrl 파라미터의 pg_token', colSpan: 2 },
+    ];
+
+    // 결제 준비 결과 그리드
+    const readyGridColumns = [
+      { key: 'tid',                    label: 'tid',                    mono: true, cellStyle: 'font-size:11px' },
+      { key: 'next_redirect_pc_url',   label: 'next_redirect_pc_url',   cellStyle: 'font-size:11px;word-break:break-all', colSpan: 2 },
+      { key: 'created_at',             label: 'created_at' },
+    ];
+
+    // 결제 승인 결과 그리드
+    const approveGridColumns = [
+      { key: 'tid',                  label: 'tid',                  mono: true, cellStyle: 'font-size:11px' },
+      { key: 'partner_order_id',     label: 'partner_order_id' },
+      { key: 'amount_total',         label: 'amount.total',         fmt: (v, row) => (row.amount?.total?.toLocaleString() || '') + ' 원' },
+      { key: 'payment_method_type',  label: 'payment_method_type',  badge: () => 'badge-blue' },
+      { key: 'item_name',            label: 'item_name' },
+      { key: 'approved_at',          label: 'approved_at' },
+    ];
+
+    return {
+      cfg, form, result, uiState, manualApprove, handleBtnAction,
+      cfgFormColumns, payFormColumns, approveFormColumns,
+      readyGridColumns, approveGridColumns,
+    };
   },
 
   template: `
@@ -198,18 +243,9 @@ window.ZdTestPayKakaopay = {
   <div class="card" style="margin-bottom:12px">
     <div class="toolbar"><span class="list-title">API 키 설정</span></div>
     <div style="padding:12px">
-      <div class="form-row" style="gap:8px;margin-bottom:8px">
-        <div class="form-group" style="width:200px">
-          <label class="form-label">CID (가맹점코드)</label>
-          <input class="form-control" v-model="cfg.cid" placeholder="TC0ONETIME (테스트)" style="font-family:monospace" />
-        </div>
-        <div class="form-group" style="flex:1">
-          <label class="form-label">Secret Key</label>
-          <input class="form-control" v-model="cfg.secretKey" placeholder="카카오페이 파트너센터 → Secret Key" />
-        </div>
-        <div style="display:flex;align-items:flex-end;padding-bottom:1px">
-          <button class="btn btn_save" @click="handleBtnAction('keys-save')">sy_prop 저장</button>
-        </div>
+      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+      <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+        <button class="btn btn_save" @click="handleBtnAction('keys-save')">sy_prop 저장</button>
       </div>
       <div style="font-size:11px;color:#666;background:#fff8e1;padding:6px 10px;border-radius:4px;line-height:1.8;border:1px solid #ffe082">
         테스트 CID <code>TC0ONETIME</code> 은 카카오페이 공식 테스트용 고정 가맹점코드입니다.
@@ -222,37 +258,14 @@ window.ZdTestPayKakaopay = {
   <div class="card" style="margin-bottom:12px">
     <div class="toolbar"><span class="list-title">결제 파라미터</span></div>
     <div style="padding:12px">
-      <div class="form-row" style="gap:8px;margin-bottom:8px">
-        <div class="form-group">
-          <label class="form-label">금액</label>
-          <input class="form-control" type="number" v-model="form.amount" style="width:120px" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">비과세 금액</label>
-          <input class="form-control" type="number" v-model="form.taxFreeAmount" style="width:120px" />
-        </div>
-        <div class="form-group" style="flex:1">
-          <label class="form-label">주문 ID</label>
+      <bo-form-area :columns="payFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false">
+        <template #orderIdSlot>
           <div style="display:flex;gap:4px">
             <input class="form-control" v-model="form.orderId" style="flex:1;font-family:monospace;font-size:12px" />
             <button class="btn btn_reset" @click="handleBtnAction('orderid-refresh')" style="white-space:nowrap">새로고침</button>
           </div>
-        </div>
-        <div class="form-group" style="flex:1">
-          <label class="form-label">상품명</label>
-          <input class="form-control" v-model="form.orderName" />
-        </div>
-      </div>
-      <div class="form-row" style="gap:8px">
-        <div class="form-group" style="flex:1">
-          <label class="form-label">파트너 사용자 ID</label>
-          <input class="form-control" v-model="form.userId" style="font-family:monospace" />
-        </div>
-        <div class="form-group" style="flex:2">
-          <label class="form-label">승인 콜백 URL</label>
-          <input class="form-control" v-model="form.approvalUrl" style="font-family:monospace;font-size:12px" />
-        </div>
-      </div>
+        </template>
+      </bo-form-area>
     </div>
   </div>
 
@@ -274,11 +287,7 @@ window.ZdTestPayKakaopay = {
       <!-- ready 결과 -->
       <div v-if="result.readyResult" style="background:#fffde7;border:1px solid #f9a825;border-radius:6px;padding:10px;margin-bottom:12px">
         <div style="font-weight:600;margin-bottom:6px;color:#f57f17">📋 결제 준비 결과 (TID 복사 후 카카오페이 창 열기)</div>
-        <table style="font-size:12px;border-collapse:collapse;width:100%">
-          <tr><td style="padding:2px 8px;color:#555;width:130px">tid</td><td style="font-family:monospace;font-size:11px">{{ result.readyResult.tid }}</td></tr>
-          <tr><td style="padding:2px 8px;color:#555">next_redirect_pc_url</td><td style="font-size:11px;word-break:break-all">{{ result.readyResult.next_redirect_pc_url }}</td></tr>
-          <tr><td style="padding:2px 8px;color:#555">created_at</td><td>{{ result.readyResult.created_at }}</td></tr>
-        </table>
+        <bo-grid :columns="readyGridColumns" :rows="result.readyResult ? [result.readyResult] : []" :show-row-num="false" />
       </div>
 
       <!-- 수동 승인 영역 -->
@@ -287,32 +296,16 @@ window.ZdTestPayKakaopay = {
         <div style="font-size:11px;color:#555;margin-bottom:6px">
           카카오페이 결제창 완료 후 approval_url 로 리다이렉트 시 <code>pg_token</code> 파라미터가 붙습니다. 복사 후 아래 입력:
         </div>
-        <div class="form-row" style="gap:8px;align-items:flex-end">
-          <div class="form-group" style="flex:1">
-            <label class="form-label">TID</label>
-            <input class="form-control" v-model="manualApprove.tid" style="font-family:monospace;font-size:12px" placeholder="ready 응답의 tid" />
-          </div>
-          <div class="form-group" style="flex:1">
-            <label class="form-label">pg_token</label>
-            <input class="form-control" v-model="manualApprove.pgToken" style="font-family:monospace;font-size:12px" placeholder="approvalUrl 파라미터의 pg_token" />
-          </div>
-          <div style="padding-bottom:1px">
-            <button class="btn btn_apply" :disabled="uiState.loading" @click="handleBtnAction('approve-test')">결제 승인 (approve)</button>
-          </div>
+        <bo-form-area :columns="approveFormColumns" :form="manualApprove" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+        <div style="display:flex;justify-content:flex-end;margin-top:8px">
+          <button class="btn btn_apply" :disabled="uiState.loading" @click="handleBtnAction('approve-test')">결제 승인 (approve)</button>
         </div>
       </div>
 
       <!-- 승인 결과 -->
       <div v-if="result.approveResult" style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:10px;margin-bottom:8px">
         <div style="font-weight:600;margin-bottom:6px;color:#15803d">✅ 결제 승인 결과</div>
-        <table style="font-size:12px;border-collapse:collapse;width:100%">
-          <tr><td style="padding:2px 8px;color:#555;width:130px">tid</td><td style="font-family:monospace;font-size:11px">{{ result.approveResult.tid }}</td></tr>
-          <tr><td style="padding:2px 8px;color:#555">partner_order_id</td><td>{{ result.approveResult.partner_order_id }}</td></tr>
-          <tr><td style="padding:2px 8px;color:#555">amount.total</td><td>{{ result.approveResult.amount?.total?.toLocaleString() }} 원</td></tr>
-          <tr><td style="padding:2px 8px;color:#555">payment_method_type</td><td><span class="badge badge-blue">{{ result.approveResult.payment_method_type }}</span></td></tr>
-          <tr><td style="padding:2px 8px;color:#555">item_name</td><td>{{ result.approveResult.item_name }}</td></tr>
-          <tr><td style="padding:2px 8px;color:#555">approved_at</td><td>{{ result.approveResult.approved_at }}</td></tr>
-        </table>
+        <bo-grid :columns="approveGridColumns" :rows="result.approveResult ? [result.approveResult] : []" :show-row-num="false" />
       </div>
 
       <!-- 취소 결과 -->
