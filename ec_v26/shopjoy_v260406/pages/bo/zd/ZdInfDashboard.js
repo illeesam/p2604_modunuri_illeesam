@@ -320,7 +320,7 @@ window.ZdInfDashboard = {
         desc: 'Google OAuth 2.0 소셜 로그인에 사용합니다. Google Cloud Console에서 OAuth 클라이언트 ID를 발급받아 등록하세요.',
         guideUrl: 'https://console.cloud.google.com/apis/credentials',
         guideLabel: 'Google Cloud Console',
-        feDesc: 'FE에서 Google Sign-In 버튼 초기화에 사용 (window.google.accounts.id.initialize)',
+        feDesc: 'FE에서 Google Sign-In 버튼 초기화에 사용 (window.google.accounts.id.initialize) | {illeesam@gmail.com, 앱이름:illeesam_app_260628, 비번:ndem vvnt xwpu hswa } ',
         feFile: 'sy_prop:app.ext-sdk.google-client-id',
         beDesc: 'BE에서 Google 토큰 검증 및 사용자 정보 조회 시 사용',
         beFile: 'sy_prop:app.ext-sdk.google-client-id',

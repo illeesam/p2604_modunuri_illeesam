@@ -164,15 +164,24 @@ window.ZdTestSnsLoginGoogle = {
     /* ##### [05] 폼/그리드 컬럼 정의 #################################################### */
 
     const cfgFormColumns = [
-      { key: 'googleClientId', label: 'Google Client ID', type: 'text', hint: 'app.ext-sdk.google-client-id', mono: true, colSpan: 3, required: true, placeholder: 'sy_prop: app.ext-sdk.google-client-id' },
+      { key: 'googleClientId', label: 'Google Client ID', type: 'text', hint: 'app.ext-sdk.google-client-id',
+        mono: true, colSpan: 3, required: true, placeholder: 'sy_prop: app.ext-sdk.google-client-id' },
     ];
 
     const userInfoGridColumns = [
       { key: '_label', label: '항목', cellStyle: 'color:#555;width:120px' },
-      { key: '_value', label: '값', type: 'slot', name: 'userInfoValue' },
+      { key: '_value', label: '값',   type: 'slot', name: 'userInfoValue' },
     ];
 
-    return { cfg, result, uiState, handleBtnAction, cfgFormColumns, userInfoGridColumns };
+    const cfUserInfoRows = () => result.userInfo ? [
+      { _label: 'Sub (ID)',      _value: result.userInfo.sub,            _key: 'sub' },
+      { _label: '이름',          _value: result.userInfo.name,           _key: 'name' },
+      { _label: '이메일',        _value: result.userInfo.email,          _key: 'email' },
+      { _label: '이메일 인증',   _value: result.userInfo.email_verified, _key: 'email_verified' },
+      { _label: '프로필 이미지', _value: result.userInfo.picture,        _key: 'picture' },
+    ] : [];
+
+    return { cfg, result, uiState, handleBtnAction, cfgFormColumns, userInfoGridColumns, cfUserInfoRows };
   },
 
   template: `
@@ -210,13 +219,7 @@ window.ZdTestSnsLoginGoogle = {
       <div v-if="result.error" style="padding:8px;background:#fff5f5;border:1px solid #fca5a5;border-radius:4px;font-size:12px;color:#b91c1c;white-space:pre-wrap;margin-bottom:8px">{{ result.error }}</div>
       <div v-if="result.userInfo" style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:10px">
         <div style="font-weight:600;margin-bottom:6px;color:#15803d">✅ 사용자 정보 (JWT Payload)</div>
-        <bo-grid :columns="userInfoGridColumns" :rows="result.userInfo ? [
-          { _label: 'Sub (ID)',    _value: result.userInfo.sub,   _key: 'sub' },
-          { _label: '이름',        _value: result.userInfo.name,  _key: 'name' },
-          { _label: '이메일',      _value: result.userInfo.email, _key: 'email' },
-          { _label: '이메일 인증', _value: result.userInfo.email_verified, _key: 'email_verified' },
-          { _label: '프로필 이미지', _value: result.userInfo.picture, _key: 'picture' }
-        ] : []" :show-row-num="false">
+        <bo-grid :columns="userInfoGridColumns" :rows="cfUserInfoRows()" :show-row-num="false">
           <template #userInfoValue="{ row }">
             <span v-if="row._key === 'email_verified'">{{ row._value ? '✅ 인증됨' : '❌ 미인증' }}</span>
             <span v-else-if="row._key === 'picture'">

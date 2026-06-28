@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 개발도구 — APNs (Apple Push Notification service) 테스트
  */
 window.ZdTestPushAlimApns = {
@@ -41,6 +41,61 @@ window.ZdTestPushAlimApns = {
 
     const uiState = reactive({ loading: false, loadingTokens: false });
 
+    // ── APNs 설정 폼 컬럼 ─────────────────────────────────
+    const cfgFormColumns = [
+      { key: 'keyId',   label: 'Key ID (10자리)',  type: 'text',   hint: 'keyId',   placeholder: 'ABCD1234EF', mono: true },
+      { key: 'teamId',  label: 'Team ID (10자리)', type: 'text',   hint: 'teamId',  placeholder: 'AB12CD34EF', mono: true },
+      { key: 'bundleId', label: 'Bundle ID',       type: 'text',   hint: 'bundleId', placeholder: 'com.shopjoy.app', mono: true },
+      {
+        key: 'keyFile', label: '.p8 Key 파일 경로', type: 'text',  hint: 'keyFile',
+        placeholder: '/etc/shopjoy/AuthKey_ABCD1234EF.p8', mono: true, colSpan: 2,
+      },
+      {
+        key: 'production', label: '환경', type: 'select',
+        hint: 'production',
+        options: [
+          { value: false, label: 'Sandbox (개발)' },
+          { value: true,  label: 'Production (운영)' },
+        ],
+      },
+    ];
+
+    // ── 설정 요약 그리드 컬럼 ─────────────────────────────
+    const configSummaryGridColumns = [
+      { key: 'label', label: '항목', width: '160px', cellStyle: 'color:#555' },
+      { key: 'value', label: '값',   cellType: 'slot', name: 'cfg-value' },
+    ];
+
+    const configSummaryRows = [
+      { label: 'Key ID',    cfgKey: 'keyId' },
+      { label: 'Team ID',   cfgKey: 'teamId' },
+      { label: 'Bundle ID', cfgKey: 'bundleId' },
+      { label: '환경',      cfgKey: 'production', isBadge: true },
+    ];
+
+    // ── 발송 폼 컬럼 ──────────────────────────────────────
+    const baseFormColumns = [
+      { key: 'deviceToken', label: 'iOS Device Token', type: 'text',     hint: 'deviceToken', placeholder: 'a1b2c3d4e5f6…(64자 hex)', mono: true, colSpan: 3, required: true },
+      { key: 'title',       label: '제목',              type: 'text',     hint: 'title',    colSpan: 2 },
+      { key: 'badge',       label: 'Badge',             type: 'number',   hint: 'badge' },
+      { key: 'body',        label: '본문',              type: 'textarea', hint: 'body',     colSpan: 2 },
+      { key: 'sound',       label: 'Sound',             type: 'text',     hint: 'sound',    placeholder: 'default' },
+      { key: 'data',        label: 'Custom Data (JSON)', type: 'textarea', hint: 'data',    colSpan: 3, mono: true },
+    ];
+
+    // ── 디바이스 토큰 그리드 컬럼 ─────────────────────────
+    const deviceGridColumns = [
+      { key: 'memberId', label: '회원 ID' },
+      {
+        key: '_token', label: '토큰 (앞 20자)', mono: true,
+        fmt: (v, row) => ((row.fcmToken || row.apnsToken || '').substring(0, 20)) + '…',
+      },
+      { key: 'regDate', label: '등록일' },
+      {
+        key: '_action', label: '사용', width: '60px', align: 'center',
+        cellType: 'slot', name: 'token-action',
+      },
+    ];
 
     /* ##### [02] 초기 로드 #################################################### */
 
@@ -139,7 +194,11 @@ window.ZdTestPushAlimApns = {
       if (cmd === 'key-save')      return saveKey();
     };
 
-    return { cfg, form, result, uiState, handleBtnAction };
+    return {
+      cfg, form, result, uiState, handleBtnAction,
+      cfgFormColumns, baseFormColumns, deviceGridColumns,
+      configSummaryGridColumns, configSummaryRows,
+    };
   },
 
   template: `
@@ -155,43 +214,19 @@ window.ZdTestPushAlimApns = {
       </div>
     </div>
     <div style="padding:12px">
-      <div class="form-row" style="gap:8px;margin-bottom:8px">
-        <div class="form-group" style="flex:1">
-          <label class="form-label">Key ID (10자리)</label>
-          <input class="form-control" v-model="cfg.keyId" placeholder="ABCD1234EF" style="font-family:monospace" />
-        </div>
-        <div class="form-group" style="flex:1">
-          <label class="form-label">Team ID (10자리)</label>
-          <input class="form-control" v-model="cfg.teamId" placeholder="AB12CD34EF" style="font-family:monospace" />
-        </div>
-        <div class="form-group" style="flex:1">
-          <label class="form-label">Bundle ID</label>
-          <input class="form-control" v-model="cfg.bundleId" placeholder="com.shopjoy.app" style="font-family:monospace" />
-        </div>
+      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+      <div style="margin-top:12px">
+        <bo-grid :columns="configSummaryGridColumns" :rows="configSummaryRows" :show-row-num="false">
+          <template #cfg-value="{ row }">
+            <template v-if="row.isBadge">
+              <span :class="cfg.production ? 'badge badge-red' : 'badge badge-blue'">{{ cfg.production ? 'Production' : 'Sandbox' }}</span>
+            </template>
+            <template v-else>
+              <code>{{ cfg[row.cfgKey] || '(not set)' }}</code>
+            </template>
+          </template>
+        </bo-grid>
       </div>
-      <div class="form-row" style="gap:8px;margin-bottom:8px">
-        <div class="form-group" style="flex:2">
-          <label class="form-label">.p8 Key 파일 경로</label>
-          <input class="form-control" v-model="cfg.keyFile" placeholder="/etc/shopjoy/AuthKey_ABCD1234EF.p8" style="font-family:monospace;font-size:12px" />
-        </div>
-        <div class="form-group" style="flex:0 0 160px">
-          <label class="form-label">환경</label>
-          <select class="form-control" v-model="cfg.production">
-            <option :value="false">Sandbox (개발)</option>
-            <option :value="true">Production (운영)</option>
-          </select>
-        </div>
-      </div>
-      <table class="admin-table" style="font-size:12px;margin-top:4px">
-        <tbody>
-          <tr><td style="width:160px;color:#555">Key ID</td><td><code>{{ cfg.keyId || '(not set)' }}</code></td></tr>
-          <tr><td style="color:#555">Team ID</td><td><code>{{ cfg.teamId || '(not set)' }}</code></td></tr>
-          <tr><td style="color:#555">Bundle ID</td><td><code>{{ cfg.bundleId || '(not set)' }}</code></td></tr>
-          <tr><td style="color:#555">환경</td>
-            <td><span :class="cfg.production ? 'badge badge-red' : 'badge badge-blue'">{{ cfg.production ? 'Production' : 'Sandbox' }}</span></td>
-          </tr>
-        </tbody>
-      </table>
     </div>
   </div>
 
@@ -206,34 +241,7 @@ window.ZdTestPushAlimApns = {
       </div>
     </div>
     <div style="padding:12px">
-      <div class="form-group" style="margin-bottom:8px">
-        <label class="form-label">iOS Device Token <span style="color:#e74c3c">*</span></label>
-        <input class="form-control" v-model="form.deviceToken" placeholder="a1b2c3d4e5f6…(64자 hex)" style="font-family:monospace;font-size:12px" />
-      </div>
-      <div class="form-row" style="gap:8px;margin-bottom:8px">
-        <div class="form-group" style="flex:1">
-          <label class="form-label">제목</label>
-          <input class="form-control" v-model="form.title" />
-        </div>
-        <div class="form-group" style="flex:0 0 80px">
-          <label class="form-label">Badge</label>
-          <input class="form-control" type="number" v-model="form.badge" min="0" />
-        </div>
-        <div class="form-group" style="flex:0 0 120px">
-          <label class="form-label">Sound</label>
-          <input class="form-control" v-model="form.sound" placeholder="default" />
-        </div>
-      </div>
-      <div class="form-row" style="gap:8px;margin-bottom:8px">
-        <div class="form-group" style="flex:1">
-          <label class="form-label">본문</label>
-          <textarea class="form-control" v-model="form.body" rows="2" style="resize:vertical"></textarea>
-        </div>
-        <div class="form-group" style="flex:1">
-          <label class="form-label">Custom Data (JSON)</label>
-          <textarea class="form-control" v-model="form.data" rows="2" style="font-family:monospace;font-size:12px;resize:vertical"></textarea>
-        </div>
-      </div>
+      <bo-form-area :columns="baseFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
       <div v-if="result.status" style="margin-top:8px;font-size:13px;font-weight:600">{{ result.status }}</div>
       <div v-if="result.error" style="padding:8px;background:#fff5f5;border:1px solid #fca5a5;border-radius:4px;font-size:12px;color:#b91c1c;margin-top:8px;white-space:pre-wrap">{{ result.error }}</div>
       <div v-if="result.response" style="padding:8px;background:#f0fdf4;border:1px solid #86efac;border-radius:4px;font-size:12px;margin-top:8px">
@@ -257,26 +265,11 @@ window.ZdTestPushAlimApns = {
         [iOS 토큰 목록 조회] 버튼을 클릭하세요
       </div>
       <div v-else style="max-height:280px;overflow-y:auto">
-        <table class="admin-table" style="font-size:11px">
-          <thead><tr>
-            <th style="width:36px">번호</th>
-            <th>회원 ID</th>
-            <th>토큰 (앞 20자)</th>
-            <th>등록일</th>
-            <th style="width:60px">사용</th>
-          </tr></thead>
-          <tbody>
-            <tr v-for="(t, idx) in result.tokenLogs" :key="t.deviceTokenId">
-              <td style="text-align:center">{{ idx + 1 }}</td>
-              <td>{{ t.memberId }}</td>
-              <td style="font-family:monospace">{{ (t.fcmToken || t.apnsToken || '').substring(0, 20) }}…</td>
-              <td>{{ t.regDate }}</td>
-              <td style="text-align:center">
-                <button class="btn btn_row_edit" @click="handleBtnAction('token-use', t.fcmToken || t.apnsToken)">선택</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <bo-grid :columns="deviceGridColumns" :rows="result.tokenLogs" :show-row-num="true">
+          <template #token-action="{ row }">
+            <button class="btn btn_row_edit" @click="handleBtnAction('token-use', row.fcmToken || row.apnsToken)">선택</button>
+          </template>
+        </bo-grid>
       </div>
     </div>
   </div>

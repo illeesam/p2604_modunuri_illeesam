@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 개발도구 — SMS 문자 발송 테스트
  */
 window.ZdTestSms = {
@@ -42,6 +42,20 @@ window.ZdTestSms = {
       ncp:      'Naver Cloud Platform SMS',
       twilio:   'Twilio',
     };
+
+    const cfgFormColumns = [
+      { key: 'provider',  label: 'Provider',   type: 'text', mono: true, hint: 'app.sms.provider' },
+      { key: 'from',      label: '발신 번호',   type: 'text', mono: true, hint: 'app.sms.from' },
+      { key: 'apiKey',    label: 'API Key',     type: 'text', mono: true, hint: 'app.sms.api-key' },
+      { key: 'apiSecret', label: 'API Secret',  type: 'text', mono: true, hint: 'app.sms.api-secret' },
+    ];
+
+    const smsFormColumns = [
+      { key: 'toPhone', label: '수신 번호', type: 'text', required: true,
+        placeholder: '01012345678 (하이픈 제외)', hint: 'toPhone' },
+      { key: 'message', label: '메시지 (90자 이내 = SMS, 초과 = LMS)', type: 'textarea',
+        colSpan: 3, hint: 'message' },
+    ];
 
     /* ##### [02] 초기 로드 #################################################### */
 
@@ -100,7 +114,7 @@ window.ZdTestSms = {
 
     const fnProviderLabel = (p) => PROVIDER_LABELS[p] || p || '(not configured)';
 
-    return { cfg, form, result, uiState, handleBtnAction, fnProviderLabel };
+    return { cfg, form, result, uiState, cfgFormColumns, smsFormColumns, handleBtnAction, fnProviderLabel };
   },
 
   template: `
@@ -118,19 +132,7 @@ window.ZdTestSms = {
       </div>
     </div>
     <div style="padding:12px">
-      <div class="form-row" style="gap:8px;margin-bottom:8px">
-        <div class="form-group" style="flex:0 0 220px">
-          <label class="form-label">수신 번호 <span style="color:#e74c3c">*</span></label>
-          <input class="form-control" v-model="form.toPhone" placeholder="01012345678 (하이픈 제외)" />
-        </div>
-        <div class="form-group" style="flex:1">
-          <label class="form-label">메시지 (90자 이내 = SMS, 초과 = LMS)</label>
-          <div style="display:flex;gap:4px;align-items:flex-start">
-            <textarea class="form-control" v-model="form.message" rows="3" style="flex:1;font-size:12px;resize:vertical"></textarea>
-            <span style="font-size:11px;color:#888;white-space:nowrap;padding-top:4px">{{ form.message.length }}자</span>
-          </div>
-        </div>
-      </div>
+      <bo-form-area :columns="smsFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
 
       <!-- 결과 -->
       <div v-if="result.status" style="margin-top:8px;font-size:13px;font-weight:600">{{ result.status }}</div>
@@ -150,6 +152,14 @@ window.ZdTestSms = {
         <span style="color:#999;white-space:nowrap">{{ log.time }}</span>
         <span :style="log.type==='error'?'color:#b91c1c':log.type==='success'?'color:#15803d':''">{{ log.msg }}</span>
       </div>
+    </div>
+  </div>
+
+  <!-- SMS 설정 현황 -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="toolbar"><span class="list-title">SMS 설정 현황 (sy_prop)</span></div>
+    <div style="padding:12px">
+      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="true" />
     </div>
   </div>
 

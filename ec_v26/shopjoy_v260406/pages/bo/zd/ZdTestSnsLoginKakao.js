@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 개발도구 — 카카오 소셜 로그인 테스트
  */
 window.ZdTestSnsLoginKakao = {
@@ -11,7 +11,7 @@ window.ZdTestSnsLoginKakao = {
 
     /* ##### [01] 초기 변수 정의 #################################################### */
 
-    const { ref, reactive, onMounted } = Vue;
+    const { reactive, onMounted } = Vue;
     const showToast = props.showToast || window.boApp?.showToast || (() => {});
 
     const cfg = reactive({
@@ -162,7 +162,30 @@ window.ZdTestSnsLoginKakao = {
       if (cmd === 'key-save')      return saveKey();
     };
 
-    return { cfg, result, uiState, handleBtnAction };
+    /* ##### [05] 폼/그리드 컬럼 정의 #################################################### */
+
+    const cfgFormColumns = [
+      { key: 'kakaoJsKey', label: 'Kakao JS Key', type: 'text', hint: 'app.ext-sdk.kakao-js-key',
+        mono: true, colSpan: 3, required: true, placeholder: 'sy_prop: app.ext-sdk.kakao-js-key' },
+    ];
+
+    const tokenFormColumns = [
+      { key: 'tokenRaw', label: 'Access Token (인증 완료 후 붙여넣기)', type: 'slot', name: 'tokenRawSlot', colSpan: 3 },
+    ];
+
+    const userInfoGridColumns = [
+      { key: '_label', label: '항목', cellStyle: 'color:#555;width:120px' },
+      { key: '_value', label: '값',   type: 'slot', name: 'userInfoValue' },
+    ];
+
+    const cfUserInfoRows = () => result.userInfo ? [
+      { _label: 'ID',          _value: result.userInfo.id,                              _key: 'id' },
+      { _label: '닉네임',      _value: result.userInfo.properties?.nickname,            _key: 'nickname' },
+      { _label: '이메일',      _value: result.userInfo.kakao_account?.email,            _key: 'email' },
+      { _label: '프로필 이미지', _value: result.userInfo.properties?.profile_image,     _key: 'profile_image' },
+    ] : [];
+
+    return { cfg, result, uiState, handleBtnAction, cfgFormColumns, tokenFormColumns, userInfoGridColumns, cfUserInfoRows };
   },
 
   template: `
@@ -173,15 +196,10 @@ window.ZdTestSnsLoginKakao = {
   <div class="card" style="margin-bottom:12px">
     <div class="toolbar"><span class="list-title">설정 / 키 확인</span></div>
     <div style="padding:12px">
-      <div class="form-row" style="gap:8px;margin-bottom:8px">
-        <div class="form-group" style="flex:1">
-          <label class="form-label">Kakao JS Key <span style="color:#e74c3c">*</span></label>
-          <input class="form-control" v-model="cfg.kakaoJsKey" placeholder="sy_prop: app.ext-sdk.kakao-js-key" />
-        </div>
-        <div style="display:flex;align-items:flex-end;gap:6px;padding-bottom:1px">
-          <button class="btn btn_save" @click="handleBtnAction('key-save')">sy_prop 저장</button>
-          <button class="btn btn_apply" @click="handleBtnAction('sdk-init')">SDK 초기화</button>
-        </div>
+      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+      <div style="display:flex;gap:6px;margin-top:8px;margin-bottom:8px">
+        <button class="btn btn_save" @click="handleBtnAction('key-save')">sy_prop 저장</button>
+        <button class="btn btn_apply" @click="handleBtnAction('sdk-init')">SDK 초기화</button>
       </div>
       <div style="font-size:12px;color:#666;padding:6px 8px;background:#f8f9fa;border-radius:4px;line-height:2">
         <div>SDK 상태: <strong>{{ result.sdkStatus || '확인 중…' }}</strong><span v-if="result.sdkUrl" style="margin-left:8px;color:#aaa;font-family:monospace;font-size:11px;">{{ result.sdkUrl }}</span></div>
@@ -203,31 +221,30 @@ window.ZdTestSnsLoginKakao = {
       <div style="font-size:12px;color:#666;margin-bottom:10px;padding:8px;background:#fffbeb;border-radius:4px;line-height:1.6">
         ⓘ 카카오 OAuth 인증 창이 열립니다. 로그인 완료 후 리다이렉트 URL의 <b>#access_token=…</b> 값을 복사해 아래에 붙여넣고 [프로필 조회] 하세요.
       </div>
-      <div class="form-row" style="gap:8px;margin-bottom:8px">
-        <div class="form-group" style="flex:1">
-          <label class="form-label">Access Token (인증 완료 후 붙여넣기)</label>
-          <input class="form-control" v-model="result.tokenRaw" placeholder="예: AAABxxxxx..." style="font-family:monospace;font-size:12px" />
-        </div>
-        <div style="display:flex;align-items:flex-end;padding-bottom:1px">
-          <button class="btn btn_search" :disabled="uiState.loading" @click="handleBtnAction('profile-fetch')">
-            {{ uiState.loading ? '⏳' : '프로필 조회' }}
-          </button>
-        </div>
-      </div>
-      <div v-if="result.loginStatus" style="margin-bottom:8px;font-size:13px;font-weight:600">{{ result.loginStatus }}</div>
+      <bo-form-area :columns="tokenFormColumns" :form="result" :errors="{}" :cols="3" :show-actions="false" :readonly="false">
+        <template #tokenRawSlot>
+          <div style="display:flex;gap:8px;align-items:flex-end">
+            <input class="form-control" v-model="result.tokenRaw" placeholder="예: AAABxxxxx…" style="font-family:monospace;font-size:12px;flex:1" />
+            <button class="btn btn_search" :disabled="uiState.loading" @click="handleBtnAction('profile-fetch')">
+              {{ uiState.loading ? '⏳' : '프로필 조회' }}
+            </button>
+          </div>
+        </template>
+      </bo-form-area>
+      <div v-if="result.loginStatus" style="margin-top:8px;margin-bottom:8px;font-size:13px;font-weight:600">{{ result.loginStatus }}</div>
       <div v-if="result.error" style="padding:8px;background:#fff5f5;border:1px solid #fca5a5;border-radius:4px;font-size:12px;color:#b91c1c;white-space:pre-wrap;margin-bottom:8px">{{ result.error }}</div>
       <!-- 사용자 정보 -->
       <div v-if="result.userInfo" style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:10px">
         <div style="font-weight:600;margin-bottom:6px;color:#15803d">✅ 사용자 정보</div>
-        <table style="font-size:12px;border-collapse:collapse;width:100%">
-          <tr><td style="padding:2px 8px;color:#555;width:120px">ID</td><td>{{ result.userInfo.id }}</td></tr>
-          <tr><td style="padding:2px 8px;color:#555">닉네임</td><td>{{ result.userInfo.properties?.nickname }}</td></tr>
-          <tr><td style="padding:2px 8px;color:#555">이메일</td><td>{{ result.userInfo.kakao_account?.email }}</td></tr>
-          <tr><td style="padding:2px 8px;color:#555">프로필 이미지</td><td>
-            <img v-if="result.userInfo.properties?.profile_image" :src="result.userInfo.properties.profile_image" style="width:40px;height:40px;border-radius:50%;vertical-align:middle;margin-right:6px" />
-            {{ result.userInfo.properties?.profile_image ? '' : '(없음)' }}
-          </td></tr>
-        </table>
+        <bo-grid :columns="userInfoGridColumns" :rows="cfUserInfoRows()" :show-row-num="false">
+          <template #userInfoValue="{ row }">
+            <span v-if="row._key === 'profile_image'">
+              <img v-if="row._value" :src="row._value" style="width:40px;height:40px;border-radius:50%;vertical-align:middle;margin-right:6px" />
+              <span v-if="!row._value">(없음)</span>
+            </span>
+            <span v-else>{{ row._value }}</span>
+          </template>
+        </bo-grid>
       </div>
     </div>
   </div>

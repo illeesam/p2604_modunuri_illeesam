@@ -31,12 +31,12 @@ window.ZdTestPayNaverpay = {
     });
 
     const form = reactive({
-      amount:        1000,
-      taxScopeAmount: 1000,  // 과세 금액 (totalPayAmount 와 같거나 작아야 함)
-      taxExScopeAmount: 0,   // 면세 금액 (taxScopeAmount + taxExScopeAmount = totalPayAmount)
-      payKey:        'NAVER-' + Date.now(), // merchantPayKey
-      orderName:     '네이버페이 테스트 상품',
-      returnUrl:     window.location.origin + '/?naverpay_return=1',
+      amount:           1000,
+      taxScopeAmount:   1000,  // 과세 금액 (totalPayAmount 와 같거나 작아야 함)
+      taxExScopeAmount: 0,     // 면세 금액 (taxScopeAmount + taxExScopeAmount = totalPayAmount)
+      payKey:           'NAVER-' + Date.now(), // merchantPayKey
+      orderName:        '네이버페이 테스트 상품',
+      returnUrl:        window.location.origin + '/?naverpay_return=1',
     });
 
     const result = reactive({
@@ -86,12 +86,12 @@ window.ZdTestPayNaverpay = {
       result.reserveResult = null;
       try {
         const res = await boApi.post('/co/cm/naverpay/reserve', {
-          merchantPayKey:  form.payKey,
-          productName:     form.orderName,
-          totalPayAmount:  Number(form.amount),
-          taxScopeAmount:  Number(form.taxScopeAmount),
+          merchantPayKey:   form.payKey,
+          productName:      form.orderName,
+          totalPayAmount:   Number(form.amount),
+          taxScopeAmount:   Number(form.taxScopeAmount),
           taxExScopeAmount: Number(form.taxExScopeAmount),
-          returnUrl:       form.returnUrl,
+          returnUrl:        form.returnUrl,
         }, coUtil.cofApiHdr('네이버페이 결제 테스트', '결제예약'));
         result.reserveResult = res.data?.data || res.data;
         if (result.reserveResult?.body?.reserveId) {
@@ -146,9 +146,9 @@ window.ZdTestPayNaverpay = {
       try {
         const res = await boApi.post('/co/cm/naverpay/cancel', {
           paymentId,
-          cancelAmount:    Number(form.amount),
-          cancelReason:    '개발자 테스트 취소',
-          taxScopeAmount:  Number(form.taxScopeAmount),
+          cancelAmount:     Number(form.amount),
+          cancelReason:     '개발자 테스트 취소',
+          taxScopeAmount:   Number(form.taxScopeAmount),
           taxExScopeAmount: Number(form.taxExScopeAmount),
         }, coUtil.cofApiHdr('네이버페이 결제 테스트', '결제취소'));
         result.cancelResult = res.data?.data || res.data;
@@ -176,15 +176,60 @@ window.ZdTestPayNaverpay = {
     /* ##### [04] 액션 dispatch #################################################### */
 
     const handleBtnAction = (cmd) => {
-      if (cmd === 'reserve-test')    return testReserve();
-      if (cmd === 'open-window')     return openNaverPayWindow();
-      if (cmd === 'approve-test')    return testApprove();
-      if (cmd === 'cancel-test')     return testCancel();
-      if (cmd === 'keys-save')       return saveKeys();
-      if (cmd === 'paykey-refresh')  return refreshPayKey();
+      if (cmd === 'reserve-test')   return testReserve();
+      if (cmd === 'open-window')    return openNaverPayWindow();
+      if (cmd === 'approve-test')   return testApprove();
+      if (cmd === 'cancel-test')    return testCancel();
+      if (cmd === 'keys-save')      return saveKeys();
+      if (cmd === 'paykey-refresh') return refreshPayKey();
     };
 
-    return { cfg, form, result, uiState, manualApprove, handleBtnAction };
+    /* ##### [05] 폼/그리드 컬럼 정의 #################################################### */
+
+    // API 키 설정 폼 (cfg)
+    const cfgFormColumns = [
+      { key: 'clientId',     label: 'Client ID',     type: 'text', hint: 'client-id',     mono: true, placeholder: '네이버페이 파트너센터 → Client ID' },
+      { key: 'clientSecret', label: 'Client Secret', type: 'text', hint: 'client-secret', mono: true, placeholder: 'Client Secret' },
+      { key: 'apiUrl',       label: 'API URL',        type: 'text', hint: 'api-url',        mono: true, placeholder: 'https://dev.apis.naver.com/naverpay-partner/naverpay (테스트)', colSpan: 3 },
+    ];
+
+    // 결제 파라미터 폼 (form)
+    const payFormColumns = [
+      { key: 'amount',           label: '결제금액',         type: 'number', hint: 'amount' },
+      { key: 'taxScopeAmount',   label: '과세 금액',         type: 'number', hint: 'taxScopeAmount' },
+      { key: 'taxExScopeAmount', label: '면세 금액',         type: 'number', hint: 'taxExScopeAmount' },
+      { key: '_payKey',          label: 'merchantPayKey',    type: 'slot',   name: 'payKeySlot', hint: 'merchantPayKey', mono: true },
+      { key: 'orderName',        label: '상품명',             type: 'text',   hint: 'productName' },
+      { key: 'returnUrl',        label: 'returnUrl',          type: 'text',   hint: 'returnUrl', mono: true, colSpan: 3 },
+    ];
+
+    // 수동 승인 폼 (manualApprove)
+    const approveFormColumns = [
+      { key: 'reserveId', label: 'reserveId', type: 'text', hint: 'reserveId', mono: true, placeholder: '예약 응답의 body.reserveId' },
+      { key: 'paymentId', label: 'paymentId', type: 'text', hint: 'paymentId', mono: true, placeholder: 'returnUrl 파라미터의 paymentId', colSpan: 2 },
+    ];
+
+    // 결제 예약 결과 그리드
+    const reserveGridColumns = [
+      { key: 'code',      label: 'code',      mono: true, cellStyle: 'font-size:11px' },
+      { key: '_reserveId', label: 'reserveId', mono: true, cellStyle: 'font-size:11px', fmt: (v, row) => row.body?.reserveId || '' },
+      { key: '_payUrl',   label: '결제 URL',   cellStyle: 'font-size:11px;word-break:break-all', fmt: (v, row) => row.body?.reserveId ? ('https://pay.naver.com/payments/new?reservationId=' + row.body.reserveId) : '' },
+    ];
+
+    // 결제 승인 결과 그리드
+    const approveGridColumns = [
+      { key: 'code',          label: 'code',           mono: true, cellStyle: 'font-size:11px' },
+      { key: '_paymentId',    label: 'paymentId',      fmt: (v, row) => row.body?.detail?.paymentId || '' },
+      { key: '_totalAmount',  label: 'totalPayAmount', align: 'right', fmt: (v, row) => (row.body?.detail?.totalPayAmount?.toLocaleString() || '') + ' 원' },
+      { key: '_payMeans',     label: 'paymentMeans',   badge: () => 'badge-green', fmt: (v, row) => row.body?.detail?.primaryPayMeans || '' },
+      { key: '_productName',  label: 'productName',    fmt: (v, row) => row.body?.detail?.productName || '' },
+    ];
+
+    return {
+      cfg, form, result, uiState, manualApprove, handleBtnAction,
+      cfgFormColumns, payFormColumns, approveFormColumns,
+      reserveGridColumns, approveGridColumns,
+    };
   },
 
   template: `
@@ -195,24 +240,9 @@ window.ZdTestPayNaverpay = {
   <div class="card" style="margin-bottom:12px">
     <div class="toolbar"><span class="list-title">API 키 설정</span></div>
     <div style="padding:12px">
-      <div class="form-row" style="gap:8px;margin-bottom:8px">
-        <div class="form-group" style="flex:1">
-          <label class="form-label">Client ID</label>
-          <input class="form-control" v-model="cfg.clientId" placeholder="네이버페이 파트너센터 → Client ID" style="font-family:monospace" />
-        </div>
-        <div class="form-group" style="flex:1">
-          <label class="form-label">Client Secret</label>
-          <input class="form-control" v-model="cfg.clientSecret" placeholder="Client Secret" />
-        </div>
-        <div style="display:flex;align-items:flex-end;padding-bottom:1px">
-          <button class="btn btn_save" @click="handleBtnAction('keys-save')">sy_prop 저장</button>
-        </div>
-      </div>
-      <div class="form-row" style="gap:8px">
-        <div class="form-group" style="flex:1">
-          <label class="form-label">API URL</label>
-          <input class="form-control" v-model="cfg.apiUrl" placeholder="https://dev.apis.naver.com/naverpay-partner/naverpay (테스트)" style="font-family:monospace;font-size:12px" />
-        </div>
+      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+      <div style="display:flex;justify-content:flex-end;margin-top:8px">
+        <button class="btn btn_save" @click="handleBtnAction('keys-save')">sy_prop 저장</button>
       </div>
       <div style="font-size:11px;color:#666;background:#e8f5e9;padding:6px 10px;border-radius:4px;margin-top:8px;line-height:1.8;border:1px solid #a5d6a7">
         키 발급: <a href="https://developer.pay.naver.com/app" target="_blank" style="color:#2e7d32">developer.pay.naver.com</a>
@@ -226,37 +256,14 @@ window.ZdTestPayNaverpay = {
   <div class="card" style="margin-bottom:12px">
     <div class="toolbar"><span class="list-title">결제 파라미터</span></div>
     <div style="padding:12px">
-      <div class="form-row" style="gap:8px;margin-bottom:8px">
-        <div class="form-group">
-          <label class="form-label">결제금액</label>
-          <input class="form-control" type="number" v-model="form.amount" style="width:120px" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">과세 금액</label>
-          <input class="form-control" type="number" v-model="form.taxScopeAmount" style="width:120px" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">면세 금액</label>
-          <input class="form-control" type="number" v-model="form.taxExScopeAmount" style="width:120px" />
-        </div>
-        <div class="form-group" style="flex:1">
-          <label class="form-label">merchantPayKey</label>
+      <bo-form-area :columns="payFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false">
+        <template #payKeySlot>
           <div style="display:flex;gap:4px">
             <input class="form-control" v-model="form.payKey" style="flex:1;font-family:monospace;font-size:12px" />
             <button class="btn btn_reset" @click="handleBtnAction('paykey-refresh')" style="white-space:nowrap">새로고침</button>
           </div>
-        </div>
-        <div class="form-group" style="flex:1">
-          <label class="form-label">상품명</label>
-          <input class="form-control" v-model="form.orderName" />
-        </div>
-      </div>
-      <div class="form-row" style="gap:8px">
-        <div class="form-group" style="flex:1">
-          <label class="form-label">returnUrl</label>
-          <input class="form-control" v-model="form.returnUrl" style="font-family:monospace;font-size:12px" />
-        </div>
-      </div>
+        </template>
+      </bo-form-area>
     </div>
   </div>
 
@@ -278,11 +285,7 @@ window.ZdTestPayNaverpay = {
       <!-- reserve 결과 -->
       <div v-if="result.reserveResult" style="background:#f1f8e9;border:1px solid #a5d6a7;border-radius:6px;padding:10px;margin-bottom:12px">
         <div style="font-weight:600;margin-bottom:6px;color:#2e7d32">📋 결제 예약 결과</div>
-        <table style="font-size:12px;border-collapse:collapse;width:100%">
-          <tr><td style="padding:2px 8px;color:#555;width:130px">code</td><td style="font-family:monospace;font-size:11px">{{ result.reserveResult.code }}</td></tr>
-          <tr><td style="padding:2px 8px;color:#555">reserveId</td><td style="font-family:monospace;font-size:11px">{{ result.reserveResult.body?.reserveId }}</td></tr>
-          <tr><td style="padding:2px 8px;color:#555">결제 URL</td><td style="font-size:11px;word-break:break-all">https://pay.naver.com/payments/new?reservationId={{ result.reserveResult.body?.reserveId }}</td></tr>
-        </table>
+        <bo-grid :columns="reserveGridColumns" :rows="result.reserveResult ? [result.reserveResult] : []" :show-row-num="false" />
       </div>
 
       <!-- 수동 승인 영역 -->
@@ -291,31 +294,16 @@ window.ZdTestPayNaverpay = {
         <div style="font-size:11px;color:#555;margin-bottom:6px">
           네이버페이 완료 후 returnUrl 에 <code>paymentId</code> 파라미터가 붙습니다. 복사 후 아래 입력:
         </div>
-        <div class="form-row" style="gap:8px;align-items:flex-end">
-          <div class="form-group" style="flex:1">
-            <label class="form-label">reserveId</label>
-            <input class="form-control" v-model="manualApprove.reserveId" style="font-family:monospace;font-size:12px" placeholder="예약 응답의 body.reserveId" />
-          </div>
-          <div class="form-group" style="flex:1">
-            <label class="form-label">paymentId</label>
-            <input class="form-control" v-model="manualApprove.paymentId" style="font-family:monospace;font-size:12px" placeholder="returnUrl 파라미터의 paymentId" />
-          </div>
-          <div style="padding-bottom:1px">
-            <button class="btn btn_apply" :disabled="uiState.loading" @click="handleBtnAction('approve-test')">결제 승인 (approve)</button>
-          </div>
+        <bo-form-area :columns="approveFormColumns" :form="manualApprove" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+        <div style="display:flex;justify-content:flex-end;margin-top:8px">
+          <button class="btn btn_apply" :disabled="uiState.loading" @click="handleBtnAction('approve-test')">결제 승인 (approve)</button>
         </div>
       </div>
 
       <!-- 승인 결과 -->
       <div v-if="result.approveResult" style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:10px;margin-bottom:8px">
         <div style="font-weight:600;margin-bottom:6px;color:#15803d">✅ 결제 승인 결과</div>
-        <table style="font-size:12px;border-collapse:collapse;width:100%">
-          <tr><td style="padding:2px 8px;color:#555;width:130px">code</td><td style="font-family:monospace;font-size:11px">{{ result.approveResult.code }}</td></tr>
-          <tr><td style="padding:2px 8px;color:#555">paymentId</td><td>{{ result.approveResult.body?.detail?.paymentId }}</td></tr>
-          <tr><td style="padding:2px 8px;color:#555">totalPayAmount</td><td>{{ result.approveResult.body?.detail?.totalPayAmount?.toLocaleString() }} 원</td></tr>
-          <tr><td style="padding:2px 8px;color:#555">paymentMeans</td><td><span class="badge badge-green">{{ result.approveResult.body?.detail?.primaryPayMeans }}</span></td></tr>
-          <tr><td style="padding:2px 8px;color:#555">productName</td><td>{{ result.approveResult.body?.detail?.productName }}</td></tr>
-        </table>
+        <bo-grid :columns="approveGridColumns" :rows="result.approveResult ? [result.approveResult] : []" :show-row-num="false" />
       </div>
 
       <!-- 취소 결과 -->

@@ -282,7 +282,23 @@ window.ZdTestPayTossWidget = {
       { key: '_currencyNote',      label: '', type: 'slot', name: 'currencyNote' },
     ];
 
-    return { cfg, form, result, uiState, widgetContainerId, handleBtnAction, baseFormColumns, hiddenFormColumns, cfPayParams, previewGridColumns };
+    const cfgFormColumns = [
+      { key: 'clientKey', label: 'Widget Client Key (클라이언트)', type: 'text', colSpan: 2, mono: true,
+        placeholder: 'test_gck_… or live_gck_…', hint: 'clientKey' },
+      { key: 'secretKey', label: 'Secret Key (서버)',              type: 'text', mono: true,
+        placeholder: 'test_gsk_… or live_gsk_…', hint: 'secretKey' },
+    ];
+
+    const confirmGridColumns = [
+      { key: 'paymentKey',  label: 'paymentKey',  cellStyle: 'font-family:monospace;font-size:10px;word-break:break-all;color:#1e40af' },
+      { key: 'orderId',     label: 'orderId',     cellStyle: 'font-family:monospace;font-size:11px' },
+      { key: 'orderName',   label: 'orderName' },
+      { key: 'totalAmount', label: 'totalAmount', fmt: (v) => (v || 0).toLocaleString() + ' 원', align: 'right' },
+      { key: 'status',      label: 'status',      badge: () => 'badge-green' },
+      { key: 'method',      label: 'method' },
+    ];
+
+    return { cfg, form, result, uiState, widgetContainerId, handleBtnAction, cfgFormColumns, baseFormColumns, hiddenFormColumns, cfPayParams, previewGridColumns, confirmGridColumns };
   },
 
   template: `
@@ -293,20 +309,11 @@ window.ZdTestPayTossWidget = {
   <div class="card" style="margin-bottom:12px">
     <div class="toolbar"><span class="list-title">API 키 설정</span><span style="font-size:11px;color:#888;margin-left:8px">결제위젯 전용 키 (test_gck_ / live_gck_ 접두어)</span></div>
     <div style="padding:12px">
-      <div class="form-row" style="gap:8px;margin-bottom:8px">
-        <div class="form-group" style="flex:1">
-          <label class="form-label">Widget Client Key (클라이언트)</label>
-          <input class="form-control" v-model="cfg.clientKey" placeholder="test_gck_… or live_gck_…" />
-        </div>
-        <div class="form-group" style="flex:1">
-          <label class="form-label">Secret Key (서버)</label>
-          <input class="form-control" v-model="cfg.secretKey" placeholder="test_gsk_… or live_gsk_…" />
-        </div>
-        <div style="display:flex;align-items:flex-end;padding-bottom:1px">
-          <button class="btn btn_save" @click="handleBtnAction('keys-save')">sy_prop 저장</button>
-        </div>
+      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+      <div class="form-actions" style="justify-content:flex-start;margin-top:8px">
+        <button class="btn btn_save" @click="handleBtnAction('keys-save')">sy_prop 저장</button>
       </div>
-      <div style="font-size:12px;color:#666;padding:6px 8px;background:#f8f9fa;border-radius:4px;line-height:2">
+      <div style="font-size:12px;color:#666;padding:6px 8px;background:#f8f9fa;border-radius:4px;line-height:2;margin-top:8px">
         <div>SDK 상태: <strong>{{ result.sdkStatus || '확인 중…' }}</strong><span v-if="result.sdkUrl" style="margin-left:8px;color:#aaa;font-family:monospace;font-size:11px;">{{ result.sdkUrl }}</span></div>
         <div>초기화 상태: <strong>{{ result.initDetail || (uiState.sdkLoaded ? '초기화 완료' : '미초기화') }}</strong></div>
       </div>
@@ -404,14 +411,7 @@ window.ZdTestPayTossWidget = {
       <!-- 승인 결과 -->
       <div v-if="result.confirmResult" style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:10px;margin-bottom:8px">
         <div style="font-weight:600;margin-bottom:6px;color:#15803d">✅ 결제 승인 결과</div>
-        <bo-grid :columns="[
-          { key: 'paymentKey', label: 'paymentKey', cellStyle: 'font-family:monospace;font-size:10px;word-break:break-all;color:#1e40af' },
-          { key: 'orderId',    label: 'orderId',    cellStyle: 'font-family:monospace;font-size:11px' },
-          { key: 'orderName',  label: 'orderName' },
-          { key: 'totalAmount',label: 'totalAmount', fmt: v => (v || 0).toLocaleString() + ' 원', align: 'right' },
-          { key: 'status',     label: 'status',     badge: () => 'badge-green' },
-          { key: 'method',     label: 'method' },
-        ]" :rows="[result.confirmResult]" :show-row-num="false" />
+        <bo-grid :columns="confirmGridColumns" :rows="[result.confirmResult]" :show-row-num="false" />
       </div>
       <!-- 취소 결과 -->
       <div v-if="result.cancelResult" style="background:#fff7ed;border:1px solid #fdba74;border-radius:6px;padding:10px">

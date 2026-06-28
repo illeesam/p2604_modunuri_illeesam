@@ -115,7 +115,30 @@ window.ZdTestChattingKakaoChannel = {
       if (cmd === 'key-save') return saveKey();
     };
 
-    return { cfg, form, result, uiState, handleBtnAction };
+    /* ##### [05] 폼 컬럼 정의 #################################################### */
+
+    const cfgFormColumns = [
+      { key: 'channelId',    label: '채널 공개 ID',          type: 'text', placeholder: '@shopjoy',                              hint: 'app.kakao.channel-id',      mono: true },
+      { key: 'from',         label: '발신 번호 (사전 등록)',  type: 'text', placeholder: '0212345678',                            hint: 'app.kakao.from' },
+      { key: 'bizMsgApiKey', label: '비즈메시지 API Key',     type: 'text', placeholder: 'sy_prop: app.kakao.biz-msg-api-key',    hint: 'app.kakao.biz-msg-api-key', mono: true },
+      { key: 'senderKey',    label: '발신 프로필 키 (Sender Key)', type: 'text', placeholder: 'sy_prop: app.kakao.sender-key',   hint: 'app.kakao.sender-key',      mono: true },
+    ];
+
+    const msgFormColumns = [
+      { key: 'msgType',      label: '메시지 유형',  type: 'select',
+        options: [{ value: 'alimtalk', label: '알림톡 (Alimtalk)' }, { value: 'friendtalk', label: '친구톡 (Friendtalk)' }, { value: 'channel_add', label: '채널 추가 요청' }],
+        hint: 'msgType' },
+      { key: 'toPhone',      label: '수신 번호',    type: 'text', placeholder: '01012345678',    hint: 'toPhone' },
+      { key: 'templateCode', label: '템플릿 코드',  type: 'text', placeholder: 'ORDER_CONFIRM_01', mono: true, hint: 'templateCode',
+        visible: (f) => f.msgType === 'alimtalk' },
+      { key: 'variables',    label: '변수 (JSON)',  type: 'text', placeholder: '{"name":"홍길동"}', mono: true, hint: 'variables',
+        visible: (f) => f.msgType === 'alimtalk' },
+      { key: 'content',      label: '메시지 내용',  type: 'textarea', colSpan: 3,
+        placeholder: '친구톡 내용을 입력하세요. (최대 1000자)',
+        visible: (f) => f.msgType === 'friendtalk', hint: 'content' },
+    ];
+
+    return { cfg, form, result, uiState, handleBtnAction, cfgFormColumns, msgFormColumns };
   },
 
   template: `
@@ -126,27 +149,10 @@ window.ZdTestChattingKakaoChannel = {
   <div class="card" style="margin-bottom:12px">
     <div class="toolbar"><span class="list-title">카카오 비즈메시지 설정</span></div>
     <div style="padding:12px">
-      <div class="form-row" style="gap:8px;margin-bottom:8px">
-        <div class="form-group" style="flex:1">
-          <label class="form-label">채널 공개 ID</label>
-          <input class="form-control" v-model="cfg.channelId" placeholder="@shopjoy" />
-        </div>
-        <div class="form-group" style="flex:1">
-          <label class="form-label">발신 번호 (사전 등록)</label>
-          <input class="form-control" v-model="cfg.from" placeholder="0212345678" />
-        </div>
+      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+      <div class="form-actions" style="justify-content:flex-start;margin-top:8px">
+        <button class="btn btn_save" @click="handleBtnAction('key-save')">sy_prop 저장</button>
       </div>
-      <div class="form-row" style="gap:8px;margin-bottom:8px">
-        <div class="form-group" style="flex:1">
-          <label class="form-label">비즈메시지 API Key</label>
-          <input class="form-control" v-model="cfg.bizMsgApiKey" placeholder="sy_prop: app.kakao.biz-msg-api-key" />
-        </div>
-        <div class="form-group" style="flex:1">
-          <label class="form-label">발신 프로필 키 (Sender Key)</label>
-          <input class="form-control" v-model="cfg.senderKey" placeholder="sy_prop: app.kakao.sender-key" />
-        </div>
-      </div>
-      <button class="btn btn_save" @click="handleBtnAction('key-save')">sy_prop 저장</button>
     </div>
   </div>
 
@@ -161,35 +167,8 @@ window.ZdTestChattingKakaoChannel = {
       </div>
     </div>
     <div style="padding:12px">
-      <div class="form-row" style="gap:8px;margin-bottom:8px">
-        <div class="form-group" style="flex:0 0 160px">
-          <label class="form-label">메시지 유형</label>
-          <select class="form-control" v-model="form.msgType">
-            <option value="alimtalk">알림톡 (Alimtalk)</option>
-            <option value="friendtalk">친구톡 (Friendtalk)</option>
-            <option value="channel_add">채널 추가 요청</option>
-          </select>
-        </div>
-        <div class="form-group" style="flex:1">
-          <label class="form-label">수신 번호 <span style="color:#e74c3c" v-if="form.msgType!=='channel_add'">*</span></label>
-          <input class="form-control" v-model="form.toPhone" placeholder="01012345678" :disabled="form.msgType==='channel_add'" />
-        </div>
-      </div>
-      <div v-if="form.msgType==='alimtalk'" class="form-row" style="gap:8px;margin-bottom:8px">
-        <div class="form-group" style="flex:1">
-          <label class="form-label">템플릿 코드 <span style="color:#e74c3c">*</span></label>
-          <input class="form-control" v-model="form.templateCode" placeholder="ORDER_CONFIRM_01" style="font-family:monospace" />
-        </div>
-        <div class="form-group" style="flex:1">
-          <label class="form-label">변수 (JSON)</label>
-          <input class="form-control" v-model="form.variables" style="font-family:monospace;font-size:12px" />
-        </div>
-      </div>
-      <div v-if="form.msgType==='friendtalk'" class="form-group" style="margin-bottom:8px">
-        <label class="form-label">메시지 내용 <span style="color:#e74c3c">*</span></label>
-        <textarea class="form-control" v-model="form.content" rows="3" placeholder="친구톡 내용을 입력하세요. (최대 1000자)" style="resize:vertical"></textarea>
-      </div>
-      <div v-if="form.msgType==='channel_add'" style="padding:8px;background:#f0f4ff;border-radius:4px;font-size:12px;color:#444">
+      <bo-form-area :columns="msgFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+      <div v-if="form.msgType==='channel_add'" style="padding:8px;background:#f0f4ff;border-radius:4px;font-size:12px;color:#444;margin-top:8px">
         채널 추가 요청 메시지를 발송합니다. 채널 ID: <b>{{ cfg.channelId || '(미설정)' }}</b>
       </div>
       <div v-if="result.status" style="margin-top:8px;font-size:13px;font-weight:600">{{ result.status }}</div>

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 개발도구 — 구글 지도 API 테스트
  */
 window.ZdTestMapGoogle = {
@@ -36,6 +36,27 @@ window.ZdTestMapGoogle = {
 
     let googleMap = null;
     let gMarker   = null;
+
+    const cfgFormColumns = [
+      { key: 'apiKey', label: 'Google Maps API Key', type: 'text', required: true,
+        placeholder: 'sy_prop: app.ext-sdk.google-map-api-key', mono: true, colSpan: 3,
+        hint: 'app.ext-sdk.google-map-api-key' },
+    ];
+
+    const mapFormColumns = [
+      { key: 'lat',  label: '위도', type: 'number', hint: 'lat' },
+      { key: 'lng',  label: '경도', type: 'number', hint: 'lng' },
+      { key: 'zoom', label: '줌',   type: 'number', hint: 'zoom' },
+    ];
+
+    const geocodeFormColumns = [
+      { key: 'address', label: '주소', type: 'text', colSpan: 3, hint: 'address' },
+    ];
+
+    const geocodeGridColumns = [
+      { key: '_label', label: '항목',  cellStyle: 'color:#555;width:120px' },
+      { key: '_value', label: '값' },
+    ];
 
     /* ##### [02] 초기 로드 #################################################### */
 
@@ -147,6 +168,17 @@ window.ZdTestMapGoogle = {
       }
     };
 
+    const cfGeocodeRows = () => {
+      if (!result.geocodeResult) return [];
+      const g = result.geocodeResult;
+      return [
+        { _label: '포맷 주소', _value: g.formattedAddress },
+        { _label: '위도',      _value: g.lat },
+        { _label: '경도',      _value: g.lng },
+        { _label: 'Place ID',  _value: g.placeId },
+      ];
+    };
+
     /* ##### [04] 액션 dispatch #################################################### */
 
     const handleBtnAction = (cmd) => {
@@ -157,7 +189,12 @@ window.ZdTestMapGoogle = {
       if (cmd === 'key-save')   return saveKey();
     };
 
-    return { cfg, form, result, uiState, handleBtnAction };
+    return {
+      cfg, form, result, uiState,
+      cfgFormColumns, mapFormColumns, geocodeFormColumns, geocodeGridColumns,
+      cfGeocodeRows,
+      handleBtnAction,
+    };
   },
 
   template: `
@@ -166,18 +203,15 @@ window.ZdTestMapGoogle = {
 
   <!-- 키 설정 -->
   <div class="card" style="margin-bottom:12px">
-    <div class="toolbar"><span class="list-title">API 키 설정</span></div>
-    <div style="padding:12px">
-      <div class="form-row" style="gap:8px;margin-bottom:8px">
-        <div class="form-group" style="flex:1">
-          <label class="form-label">Google Maps API Key <span style="color:#e74c3c">*</span></label>
-          <input class="form-control" v-model="cfg.apiKey" placeholder="sy_prop: app.ext-sdk.google-map-api-key" style="font-family:monospace" />
-        </div>
-        <div style="display:flex;align-items:flex-end;gap:6px;padding-bottom:1px">
-          <button class="btn btn_save" @click="handleBtnAction('key-save')">sy_prop 저장</button>
-          <button class="btn btn_apply" @click="handleBtnAction('sdk-load')">SDK 로드 + 지도 렌더링</button>
-        </div>
+    <div class="toolbar">
+      <span class="list-title">API 키 설정</span>
+      <div style="margin-left:auto;display:flex;gap:6px">
+        <button class="btn btn_save" @click="handleBtnAction('key-save')">sy_prop 저장</button>
+        <button class="btn btn_apply" @click="handleBtnAction('sdk-load')">SDK 로드 + 지도 렌더링</button>
       </div>
+    </div>
+    <div style="padding:12px">
+      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
       <div style="font-size:12px;color:#666;padding:6px 8px;background:#f8f9fa;border-radius:4px;line-height:2">
         <div>SDK 상태: <strong>{{ result.sdkStatus || '확인 중…' }}</strong><span v-if="result.sdkUrl" style="margin-left:8px;color:#aaa;font-family:monospace;font-size:11px;">{{ result.sdkUrl }}</span></div>
         <div>초기화 상태: <strong>{{ result.initDetail || (uiState.sdkLoaded ? '초기화 완료' : '미초기화') }}</strong></div>
@@ -195,20 +229,7 @@ window.ZdTestMapGoogle = {
       </div>
     </div>
     <div style="padding:12px">
-      <div class="form-row" style="gap:8px;margin-bottom:8px">
-        <div class="form-group">
-          <label class="form-label">위도 (lat)</label>
-          <input class="form-control" type="number" v-model="form.lat" style="width:140px" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">경도 (lng)</label>
-          <input class="form-control" type="number" v-model="form.lng" style="width:140px" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">줌</label>
-          <input class="form-control" type="number" v-model="form.zoom" style="width:80px" min="1" max="21" />
-        </div>
-      </div>
+      <bo-form-area :columns="mapFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
       <div id="zd-google-map" style="width:100%;height:360px;border:1px solid #ddd;border-radius:6px;background:#f0f0f0;display:flex;align-items:center;justify-content:center">
         <span v-if="!uiState.mapLoaded" style="color:#999;font-size:13px">SDK 로드 후 지도가 여기 표시됩니다</span>
       </div>
@@ -217,28 +238,20 @@ window.ZdTestMapGoogle = {
 
   <!-- 지오코딩 -->
   <div class="card" style="margin-bottom:12px">
-    <div class="toolbar"><span class="list-title">지오코딩 (주소 → 좌표)</span></div>
-    <div style="padding:12px">
-      <div class="form-row" style="gap:8px;margin-bottom:8px">
-        <div class="form-group" style="flex:1">
-          <label class="form-label">주소</label>
-          <input class="form-control" v-model="form.address" @keyup.enter="handleBtnAction('geocode')" />
-        </div>
-        <div style="display:flex;align-items:flex-end;padding-bottom:1px">
-          <button class="btn btn_search" :disabled="uiState.loading" @click="handleBtnAction('geocode')">
-            {{ uiState.loading ? '⏳ 조회 중…' : '지오코딩' }}
-          </button>
-        </div>
+    <div class="toolbar">
+      <span class="list-title">지오코딩 (주소 → 좌표)</span>
+      <div style="margin-left:auto">
+        <button class="btn btn_search" :disabled="uiState.loading" @click="handleBtnAction('geocode')">
+          {{ uiState.loading ? '⏳ 조회 중…' : '지오코딩' }}
+        </button>
       </div>
+    </div>
+    <div style="padding:12px">
+      <bo-form-area :columns="geocodeFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
       <div v-if="result.error" style="padding:8px;background:#fff5f5;border:1px solid #fca5a5;border-radius:4px;font-size:12px;color:#b91c1c">{{ result.error }}</div>
       <div v-if="result.geocodeResult" style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:10px;margin-top:8px">
         <div style="font-weight:600;margin-bottom:6px;color:#15803d">✅ 지오코딩 결과</div>
-        <table style="font-size:12px;border-collapse:collapse">
-          <tr><td style="padding:2px 8px;color:#555;width:120px">포맷 주소</td><td>{{ result.geocodeResult.formattedAddress }}</td></tr>
-          <tr><td style="padding:2px 8px;color:#555">위도</td><td>{{ result.geocodeResult.lat }}</td></tr>
-          <tr><td style="padding:2px 8px;color:#555">경도</td><td>{{ result.geocodeResult.lng }}</td></tr>
-          <tr><td style="padding:2px 8px;color:#555">Place ID</td><td style="font-family:monospace;font-size:11px">{{ result.geocodeResult.placeId }}</td></tr>
-        </table>
+        <bo-grid :columns="geocodeGridColumns" :rows="cfGeocodeRows()" :show-row-num="false" />
       </div>
     </div>
   </div>

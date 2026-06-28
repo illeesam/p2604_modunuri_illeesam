@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 개발도구 — SMTP 메일 발송 테스트
  */
 window.ZdTestMailSmtp = {
@@ -39,6 +39,20 @@ window.ZdTestMailSmtp = {
 
     const uiState = reactive({ loading: false });
 
+    const cfgFormColumns = [
+      { key: 'smtpHost', label: 'SMTP Host', type: 'text', mono: true, hint: 'site.email.smtp.host' },
+      { key: 'smtpPort', label: 'SMTP Port', type: 'text', mono: true, hint: 'site.email.smtp.port' },
+      { key: 'username', label: 'Username',  type: 'text', mono: true, hint: 'username' },
+      { key: 'from',     label: '발신 이메일', type: 'text', mono: true, hint: 'app.mail.from' },
+      { key: 'fromNm',   label: '발신자명',    type: 'text', hint: 'app.mail.from-nm' },
+    ];
+
+    const mailFormColumns = [
+      { key: 'toEmail',  label: '수신자 이메일', type: 'text',     required: true, hint: 'toEmail' },
+      { key: 'toName',   label: '수신자 이름',   type: 'text',     hint: 'toName' },
+      { key: 'subject',  label: '제목',          type: 'text',     colSpan: 3, hint: 'subject' },
+      { key: 'body',     label: '본문 (plain text)', type: 'textarea', colSpan: 3, hint: 'body' },
+    ];
 
     /* ##### [02] 초기 로드 #################################################### */
 
@@ -110,7 +124,7 @@ window.ZdTestMailSmtp = {
       if (cmd === 'mail-send') return sendTestMail();
     };
 
-    return { cfg, form, result, uiState, handleBtnAction };
+    return { cfg, form, result, uiState, cfgFormColumns, mailFormColumns, handleBtnAction };
   },
 
   template: `
@@ -128,24 +142,7 @@ window.ZdTestMailSmtp = {
       </div>
     </div>
     <div style="padding:12px">
-      <div class="form-row" style="gap:8px;margin-bottom:8px">
-        <div class="form-group" style="flex:1">
-          <label class="form-label">수신자 이메일 <span style="color:#e74c3c">*</span></label>
-          <input class="form-control" v-model="form.toEmail" placeholder="test@example.com" type="email" />
-        </div>
-        <div class="form-group" style="flex:1">
-          <label class="form-label">수신자 이름</label>
-          <input class="form-control" v-model="form.toName" placeholder="홍길동" />
-        </div>
-      </div>
-      <div class="form-group" style="margin-bottom:8px">
-        <label class="form-label">제목</label>
-        <input class="form-control" v-model="form.subject" />
-      </div>
-      <div class="form-group">
-        <label class="form-label">본문 (plain text)</label>
-        <textarea class="form-control" v-model="form.body" rows="5" style="font-size:12px;font-family:monospace;resize:vertical"></textarea>
-      </div>
+      <bo-form-area :columns="mailFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
 
       <!-- 결과 -->
       <div v-if="uiState.loading" style="margin-top:12px;font-size:13px;font-weight:600;color:#6b7280;">⏳ 메일 발송 중…</div>
@@ -174,6 +171,14 @@ window.ZdTestMailSmtp = {
         <span style="color:#999;white-space:nowrap">{{ log.time }}</span>
         <span :style="log.type==='error'?'color:#b91c1c':log.type==='success'?'color:#15803d':''">{{ log.msg }}</span>
       </div>
+    </div>
+  </div>
+
+  <!-- SMTP 설정 현황 -->
+  <div class="card" style="margin-bottom:12px">
+    <div class="toolbar"><span class="list-title">SMTP 설정 현황 (sy_prop)</span></div>
+    <div style="padding:12px">
+      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="true" />
     </div>
   </div>
 

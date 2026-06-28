@@ -151,7 +151,19 @@ window.ZdTestChattingWebSocket = {
       if (cmd === 'clear')      return clearLog();
     };
 
-    return { cfg, form, result, uiState, handleBtnAction, onKeydown };
+    /* ##### [05] 폼 컬럼 정의 #################################################### */
+
+    const cfgFormColumns = [
+      { key: 'wsUrl',    label: 'WebSocket URL', type: 'text', colSpan: 3, mono: true,
+        placeholder: 'ws://localhost:8080/ws/chat', hint: 'wsUrl',
+        readonly: (f) => !!result.connected },
+      { key: 'roomId',   label: 'Room ID',        type: 'text', placeholder: 'ROOM001',    hint: 'roomId',
+        readonly: (f) => !!result.connected },
+      { key: 'senderId', label: 'Sender ID',       type: 'text', placeholder: 'admin-test', hint: 'senderId',
+        readonly: (f) => !!result.connected },
+    ];
+
+    return { cfg, form, result, uiState, handleBtnAction, onKeydown, cfgFormColumns };
   },
 
   template: `
@@ -174,21 +186,8 @@ window.ZdTestChattingWebSocket = {
       </div>
     </div>
     <div style="padding:12px">
-      <div class="form-row" style="gap:8px;margin-bottom:8px">
-        <div class="form-group" style="flex:2">
-          <label class="form-label">WebSocket URL</label>
-          <input class="form-control" v-model="cfg.wsUrl" placeholder="ws://localhost:8080/ws/chat" style="font-family:monospace;font-size:12px" :disabled="result.connected" />
-        </div>
-        <div class="form-group" style="flex:1">
-          <label class="form-label">Room ID</label>
-          <input class="form-control" v-model="cfg.roomId" placeholder="ROOM001" :disabled="result.connected" />
-        </div>
-        <div class="form-group" style="flex:1">
-          <label class="form-label">Sender ID</label>
-          <input class="form-control" v-model="cfg.senderId" placeholder="admin-test" :disabled="result.connected" />
-        </div>
-      </div>
-      <div style="font-size:12px;color:#666;padding:6px 8px;background:#f8f9fa;border-radius:4px">
+      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+      <div style="font-size:12px;color:#666;padding:6px 8px;background:#f8f9fa;border-radius:4px;margin-top:8px">
         상태: <strong>{{ result.status }}</strong>
         <span v-if="result.pingMs" style="margin-left:12px;color:#15803d">RTT: {{ result.pingMs }}ms</span>
       </div>

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * 개발도구 — FCM 푸시 알림 테스트
  */
 window.ZdTestPushAlimFcm = {
@@ -39,6 +39,47 @@ window.ZdTestPushAlimFcm = {
 
     const uiState = reactive({ loading: false, loadingTokens: false });
 
+    // ── 발송 폼 컬럼 ──────────────────────────────────────
+    const baseFormColumns = [
+      {
+        key: 'targetType', label: '대상 유형', type: 'select',
+        hint: 'targetType',
+        options: [
+          { value: 'token',  label: 'FCM Token (단건)' },
+          { value: 'topic',  label: 'Topic (구독자)' },
+          { value: 'member', label: '회원 ID' },
+        ],
+      },
+      {
+        key: 'targetValue', label: '발송 대상',
+        hint: 'targetValue',
+        type: 'slot', name: 'target-value',
+        colSpan: 2,
+        required: true,
+      },
+      { key: 'title',    label: '제목',               type: 'text',     hint: 'title',    colSpan: 2 },
+      { key: 'imageUrl', label: '이미지 URL (선택)',  type: 'text',     hint: 'imageUrl', placeholder: 'https://…/image.png' },
+      { key: 'body',     label: '본문',               type: 'textarea', hint: 'body',     colSpan: 2 },
+      { key: 'data',     label: 'Data Payload (JSON)', type: 'textarea', hint: 'data',    colSpan: 3, mono: true },
+    ];
+
+    // ── 디바이스 토큰 그리드 컬럼 ─────────────────────────
+    const deviceGridColumns = [
+      { key: 'memberId', label: '회원 ID' },
+      {
+        key: 'platform', label: '플랫폼', align: 'center',
+        badge: (row) => row.platform === 'ANDROID' ? 'badge badge-green' : row.platform === 'IOS' ? 'badge badge-blue' : 'badge badge-gray',
+      },
+      {
+        key: '_token', label: '토큰 (앞 30자)', mono: true,
+        fmt: (v, row) => ((row.fcmToken || '').substring(0, 30)) + '…',
+      },
+      { key: 'regDate', label: '등록일' },
+      {
+        key: '_action', label: '사용', width: '60px', align: 'center',
+        cellType: 'slot', name: 'token-action',
+      },
+    ];
 
     /* ##### [02] 초기 로드 #################################################### */
 
@@ -121,7 +162,7 @@ window.ZdTestPushAlimFcm = {
       if (cmd === 'token-use')   return useToken(param);
     };
 
-    return { cfg, form, result, uiState, handleBtnAction };
+    return { cfg, form, result, uiState, handleBtnAction, baseFormColumns, deviceGridColumns };
   },
 
   template: `
@@ -139,45 +180,13 @@ window.ZdTestPushAlimFcm = {
       </div>
     </div>
     <div style="padding:12px">
-      <div class="form-row" style="gap:8px;margin-bottom:8px">
-        <div class="form-group" style="flex:0 0 160px">
-          <label class="form-label">대상 유형</label>
-          <select class="form-control" v-model="form.targetType">
-            <option value="token">FCM Token (단건)</option>
-            <option value="topic">Topic (구독자)</option>
-            <option value="member">회원 ID</option>
-          </select>
-        </div>
-        <div class="form-group" style="flex:1">
-          <label class="form-label">
-            {{ form.targetType === 'token' ? 'FCM Registration Token' : form.targetType === 'topic' ? 'Topic 명' : '회원 ID' }}
-            <span style="color:#e74c3c">*</span>
-          </label>
+      <bo-form-area :columns="baseFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false">
+        <template #target-value>
           <input class="form-control" v-model="form.targetValue"
             :placeholder="form.targetType==='token'?'eXxxxxxx…':form.targetType==='topic'?'all_members':'MB000001'"
             style="font-family:monospace;font-size:12px" />
-        </div>
-      </div>
-      <div class="form-row" style="gap:8px;margin-bottom:8px">
-        <div class="form-group" style="flex:1">
-          <label class="form-label">제목</label>
-          <input class="form-control" v-model="form.title" />
-        </div>
-        <div class="form-group" style="flex:1">
-          <label class="form-label">이미지 URL (선택)</label>
-          <input class="form-control" v-model="form.imageUrl" placeholder="https://…/image.png" />
-        </div>
-      </div>
-      <div class="form-row" style="gap:8px;margin-bottom:8px">
-        <div class="form-group" style="flex:1">
-          <label class="form-label">본문</label>
-          <textarea class="form-control" v-model="form.body" rows="2" style="resize:vertical"></textarea>
-        </div>
-        <div class="form-group" style="flex:1">
-          <label class="form-label">Data Payload (JSON)</label>
-          <textarea class="form-control" v-model="form.data" rows="2" style="font-family:monospace;font-size:12px;resize:vertical"></textarea>
-        </div>
-      </div>
+        </template>
+      </bo-form-area>
       <div v-if="result.status" style="margin-top:8px;font-size:13px;font-weight:600">{{ result.status }}</div>
       <div v-if="result.error" style="padding:8px;background:#fff5f5;border:1px solid #fca5a5;border-radius:4px;font-size:12px;color:#b91c1c;margin-top:8px;white-space:pre-wrap">{{ result.error }}</div>
       <div v-if="result.response" style="padding:8px;background:#f0fdf4;border:1px solid #86efac;border-radius:4px;font-size:12px;margin-top:8px">
@@ -201,28 +210,11 @@ window.ZdTestPushAlimFcm = {
         [토큰 목록 조회] 버튼을 클릭하세요
       </div>
       <div v-else style="max-height:300px;overflow-y:auto">
-        <table class="admin-table" style="font-size:11px">
-          <thead><tr>
-            <th style="width:36px">번호</th>
-            <th>회원 ID</th>
-            <th>플랫폼</th>
-            <th>토큰 (앞 30자)</th>
-            <th>등록일</th>
-            <th style="width:60px">사용</th>
-          </tr></thead>
-          <tbody>
-            <tr v-for="(t, idx) in result.tokenLogs" :key="t.deviceTokenId">
-              <td style="text-align:center">{{ idx + 1 }}</td>
-              <td>{{ t.memberId }}</td>
-              <td><span :class="t.platform==='ANDROID'?'badge badge-green':t.platform==='IOS'?'badge badge-blue':'badge badge-gray'">{{ t.platform }}</span></td>
-              <td style="font-family:monospace">{{ (t.fcmToken || '').substring(0, 30) }}…</td>
-              <td>{{ t.regDate }}</td>
-              <td style="text-align:center">
-                <button class="btn btn_row_edit" @click="handleBtnAction('token-use', t.fcmToken)">선택</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <bo-grid :columns="deviceGridColumns" :rows="result.tokenLogs" :show-row-num="true">
+          <template #token-action="{ row }">
+            <button class="btn btn_row_edit" @click="handleBtnAction('token-use', row.fcmToken)">선택</button>
+          </template>
+        </bo-grid>
       </div>
     </div>
   </div>

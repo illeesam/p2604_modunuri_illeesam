@@ -186,12 +186,12 @@ window.ZdTestSnsLoginNaver = {
     /* ##### [05] 폼/그리드 컬럼 정의 #################################################### */
 
     const cfgFormColumns = [
-      { key: 'clientId',     label: 'Client ID',     type: 'text',     hint: 'clientId',     mono: true, required: true,
-        placeholder: 'sy_prop: app.ext-sdk.naver-client-id' },
-      { key: 'clientSecret', label: 'Client Secret', type: 'text',     hint: 'clientSecret',
+      { key: 'clientId',     label: 'Client ID',     type: 'text',     hint: 'app.ext-sdk.naver-client-id',
+        mono: true, required: true, placeholder: 'sy_prop: app.ext-sdk.naver-client-id' },
+      { key: 'clientSecret', label: 'Client Secret', type: 'text',     hint: 'app.ext-sdk.naver-client-secret',
         placeholder: 'sy_prop: app.ext-sdk.naver-client-secret' },
-      { key: 'callbackUrl',  label: 'Callback URL',  type: 'readonly', hint: 'callbackUrl',  mono: true, colSpan: 3,
-        fmt: () => cfg.callbackUrl },
+      { key: 'callbackUrl',  label: 'Callback URL',  type: 'readonly', hint: 'callbackUrl',
+        mono: true, colSpan: 3, fmt: () => cfg.callbackUrl },
     ];
 
     const tokenFormColumns = [

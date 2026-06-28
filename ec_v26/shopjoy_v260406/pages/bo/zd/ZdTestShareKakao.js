@@ -168,7 +168,36 @@ window.ZdTestShareKakao = {
       if (cmd === 'key-save') return saveKey();
     };
 
-    return { cfg, form, result, uiState, handleBtnAction };
+    /* ##### [05] 폼 컬럼 정의 #################################################### */
+
+    const cfgFormColumns = [
+      { key: 'kakaoJsKey', label: 'Kakao JS Key (JavaScript 키)', type: 'text', colSpan: 3, mono: true,
+        placeholder: 'sy_prop: app.ext-sdk.kakao-js-key', hint: 'app.ext-sdk.kakao-js-key' },
+    ];
+
+    const shareFormColumns = [
+      { key: 'shareType', label: '공유 유형', type: 'select',
+        options: [{ value: 'feed', label: '피드 (Feed)' }, { value: 'text', label: '텍스트 (Text)' }, { value: 'scrap', label: '스크랩 (Scrap)' }],
+        hint: 'shareType' },
+      { key: 'linkUrl',     label: '링크 URL',                  type: 'text', colSpan: 2, mono: true, placeholder: 'https://...', hint: 'linkUrl' },
+      { key: 'title',       label: '제목',                      type: 'text', placeholder: '공유 제목',         hint: 'content.title',
+        visible: (f) => f.shareType === 'feed' },
+      { key: 'buttonTitle', label: '버튼 텍스트',               type: 'text', placeholder: '자세히 보기',       hint: 'buttons[].title',
+        visible: (f) => f.shareType === 'feed' },
+      { key: 'description', label: '설명',                      type: 'text', placeholder: '공유 내용 설명',    hint: 'content.description',
+        visible: (f) => f.shareType === 'feed' },
+      { key: 'imageUrl',    label: '이미지 URL (비워두면 기본 이미지 사용)', type: 'text', colSpan: 2, mono: true,
+        placeholder: 'https://...', hint: 'content.imageUrl',
+        visible: (f) => f.shareType === 'feed' },
+      { key: 'text',        label: '공유 텍스트',               type: 'textarea', colSpan: 3,
+        placeholder: '공유할 텍스트 내용', hint: 'text',
+        visible: (f) => f.shareType === 'text' },
+      { key: 'scrapUrl',    label: '스크랩 URL',                type: 'text', colSpan: 3, mono: true,
+        placeholder: 'https://스크랩할-페이지-URL', hint: 'requestUrl',
+        visible: (f) => f.shareType === 'scrap' },
+    ];
+
+    return { cfg, form, result, uiState, handleBtnAction, cfgFormColumns, shareFormColumns };
   },
 
   template: `
@@ -179,17 +208,12 @@ window.ZdTestShareKakao = {
   <div class="card" style="margin-bottom:12px">
     <div class="toolbar"><span class="list-title">API 키 설정</span></div>
     <div style="padding:12px">
-      <div class="form-row" style="gap:8px;margin-bottom:8px">
-        <div class="form-group" style="flex:1">
-          <label class="form-label">Kakao JS Key (JavaScript 키)</label>
-          <input class="form-control" v-model="cfg.kakaoJsKey" placeholder="sy_prop: app.ext-sdk.kakao-js-key" style="font-family:monospace" />
-        </div>
-        <div style="display:flex;align-items:flex-end;padding-bottom:1px;gap:6px">
-          <button class="btn btn_save" @click="handleBtnAction('key-save')">sy_prop 저장</button>
-          <button class="btn btn_apply" @click="handleBtnAction('sdk-init')">SDK 초기화</button>
-        </div>
+      <bo-form-area :columns="cfgFormColumns" :form="cfg" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+      <div class="form-actions" style="justify-content:flex-start;margin-top:8px">
+        <button class="btn btn_save" @click="handleBtnAction('key-save')">sy_prop 저장</button>
+        <button class="btn btn_apply" @click="handleBtnAction('sdk-init')">SDK 초기화</button>
       </div>
-      <div style="font-size:12px;color:#666;padding:6px 8px;background:#f8f9fa;border-radius:4px;line-height:2">
+      <div style="font-size:12px;color:#666;padding:6px 8px;background:#f8f9fa;border-radius:4px;line-height:2;margin-top:8px">
         <div>SDK 상태: <strong>{{ result.sdkStatus || '확인 중…' }}</strong><span v-if="result.sdkUrl" style="margin-left:8px;color:#aaa;font-family:monospace;font-size:11px;">{{ result.sdkUrl }}</span></div>
         <div>초기화 상태: <strong>{{ result.initDetail || result.initStatus || (uiState.sdkInited ? '초기화 완료' : '미초기화') }}</strong></div>
       </div>
@@ -207,62 +231,10 @@ window.ZdTestShareKakao = {
       </div>
     </div>
     <div style="padding:12px">
-      <div class="form-row" style="gap:8px;margin-bottom:8px">
-        <div class="form-group" style="flex:0 0 160px">
-          <label class="form-label">공유 유형</label>
-          <select class="form-control" v-model="form.shareType">
-            <option value="feed">피드 (Feed)</option>
-            <option value="text">텍스트 (Text)</option>
-            <option value="scrap">스크랩 (Scrap)</option>
-          </select>
-        </div>
-        <div class="form-group" style="flex:1">
-          <label class="form-label">링크 URL</label>
-          <input class="form-control" v-model="form.linkUrl" placeholder="https://..." style="font-family:monospace;font-size:12px" />
-        </div>
+      <bo-form-area :columns="shareFormColumns" :form="form" :errors="{}" :cols="3" :show-actions="false" :readonly="false" />
+      <div v-if="form.shareType === 'scrap'" style="padding:8px;background:#fff8e1;border-radius:4px;font-size:12px;color:#92400e;margin-top:8px">
+        ⚠️ 스크랩은 해당 URL 의 Open Graph 메타 태그를 읽어 공유합니다. 카카오 개발자 콘솔에 도메인 등록 필요.
       </div>
-
-      <!-- 피드 유형 -->
-      <div v-if="form.shareType === 'feed'">
-        <div class="form-row" style="gap:8px;margin-bottom:8px">
-          <div class="form-group" style="flex:1">
-            <label class="form-label">제목</label>
-            <input class="form-control" v-model="form.title" placeholder="공유 제목" />
-          </div>
-          <div class="form-group" style="flex:1">
-            <label class="form-label">버튼 텍스트</label>
-            <input class="form-control" v-model="form.buttonTitle" placeholder="자세히 보기" />
-          </div>
-        </div>
-        <div class="form-group" style="margin-bottom:8px">
-          <label class="form-label">설명</label>
-          <input class="form-control" v-model="form.description" placeholder="공유 내용 설명" />
-        </div>
-        <div class="form-group" style="margin-bottom:8px">
-          <label class="form-label">이미지 URL (비워두면 기본 이미지 사용)</label>
-          <input class="form-control" v-model="form.imageUrl" placeholder="https://..." style="font-family:monospace;font-size:12px" />
-        </div>
-      </div>
-
-      <!-- 텍스트 유형 -->
-      <div v-if="form.shareType === 'text'">
-        <div class="form-group" style="margin-bottom:8px">
-          <label class="form-label">공유 텍스트</label>
-          <textarea class="form-control" v-model="form.text" rows="3" placeholder="공유할 텍스트 내용" style="resize:vertical"></textarea>
-        </div>
-      </div>
-
-      <!-- 스크랩 유형 -->
-      <div v-if="form.shareType === 'scrap'">
-        <div class="form-group" style="margin-bottom:8px">
-          <label class="form-label">스크랩 URL <span style="color:#e74c3c">*</span></label>
-          <input class="form-control" v-model="form.scrapUrl" placeholder="https://스크랩할-페이지-URL" style="font-family:monospace;font-size:12px" />
-        </div>
-        <div style="padding:8px;background:#fff8e1;border-radius:4px;font-size:12px;color:#92400e">
-          ⚠️ 스크랩은 해당 URL 의 Open Graph 메타 태그를 읽어 공유합니다. 카카오 개발자 콘솔에 도메인 등록 필요.
-        </div>
-      </div>
-
       <div v-if="result.error" style="padding:8px;background:#fff5f5;border:1px solid #fca5a5;border-radius:4px;font-size:12px;color:#b91c1c;margin-top:8px">{{ result.error }}</div>
       <div v-if="result.shareResult" style="padding:8px;background:#f0fdf4;border:1px solid #86efac;border-radius:4px;font-size:12px;margin-top:8px">
         ✅ {{ result.shareResult.status }}
