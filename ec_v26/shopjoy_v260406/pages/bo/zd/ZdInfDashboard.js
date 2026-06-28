@@ -16,7 +16,7 @@ window.ZdInfDashboard = {
 
     /* ##### [01] 초기 변수 정의 #################################################### */
 
-    const { reactive, ref, computed, onMounted } = Vue;
+    const { reactive, ref, onMounted } = Vue;
     const showToast = props.showToast || window.boApp?.showToast || (() => {});
 
     const codes = reactive({});
@@ -145,6 +145,142 @@ window.ZdInfDashboard = {
 
 
     /* ##### [02] 그리드 컬럼 정의 ################################################### */
+
+    /* ── 참고자료 그리드 (사용 안 함 — 트리 테이블로 대체) ── */
+    const refGridColumns = [];
+
+    /* ── 참고자료 행 ──
+     * svc / app / level / kind / val / applied / note / propKey / color
+     * propKey : 실제 적용 키명 (sy_prop 키 또는 yml 경로)
+     * _where  : propKey 자동 추론 — sy_prop / yml / foEnvConsts / boEnvConsts / (없음)
+     */
+    const _mkR = (svc, app, level, kind, val, applied, note, propKey, color) => {
+      let _where = '';
+      if (propKey) {
+        /* 토스 테스트키·SDK URL은 fo/boEnvConsts.js 하드코딩 */
+        if (propKey === '__foEnvConsts__')       _where = 'foEnvConsts';
+        else if (propKey === '__boEnvConsts__')  _where = 'boEnvConsts';
+        /* spring.mail.* 은 yml 설정 + sy_prop 양쪽 */
+        else if (propKey.startsWith('spring.'))  _where = 'sy_prop + yml';
+        /* app.* 는 모두 sy_prop */
+        else if (propKey.startsWith('app.'))     _where = 'sy_prop';
+      }
+      return { _svc: svc, _app: app || '', _level: level || '', _kind: kind, _val: val,
+               _applied: applied || '', _note: note || '', _propKey: propKey || '',
+               _where, _color: color || 'gray' };
+    };
+
+    const refRows = [
+      /* ── YouTube 강좌 ── */
+      _mkR('YouTube', '소셜로그인', '-', '강좌링크', '소셜로그인 구현 원리 (네이버/카카오/깃헙)',  '참고', 'https://www.youtube.com/watch?v=Aa6oqanyOHY', '', 'red'),
+      _mkR('YouTube', '소셜로그인', '-', '강좌링크', '카카오 로그인 설정 및 준비',                 '참고', 'https://www.youtube.com/watch?v=Aa6oqanyOHY', '', 'red'),
+      _mkR('YouTube', '소셜로그인', '-', '강좌링크', '네이버 소셜 로그인 구현',                    '참고', 'https://www.youtube.com/watch?v=NrMUyA47gdU', '', 'red'),
+      _mkR('YouTube', '소셜로그인', '-', '강좌링크', 'Google OAuth 구글 소셜 로그인',              '참고', 'https://www.youtube.com/watch?v=olnJzoa4A68', '', 'red'),
+      _mkR('YouTube', '결제',       '-', '강좌링크', '토스페이먼츠 5분 결제 연동',                 '참고', 'https://www.youtube.com/watch?v=HtwLMwzTG5c', '', 'red'),
+      _mkR('YouTube', '메일',       '-', '강좌링크', '스프링 SMTP / 구글 앱 비밀번호 신청',        '참고', 'https://www.youtube.com/watch?v=Sedf9uO7W4E', '', 'red'),
+      /* ── Kakao: illeesam_netlify (ID: 1429368) ── */
+      _mkR('Kakao', 'illeesam_netlify (1429368)', 'Lv1 앱',       'REST API 키',          '44074b1c358f60292145b3068460f37d', '미설정',   'https://developers.kakao.com/console/app', '',                                'green'),
+      _mkR('Kakao', 'illeesam_netlify (1429368)', 'Lv1 앱',       'JavaScript 키',        '797a116c08880d3865a89cf4f70b91f5',  '미설정',   'Kakao.init() / 카카오맵 공용',             '',                                'blue'),
+      _mkR('Kakao', 'illeesam_netlify (1429368)', 'Lv1 앱',       '네이티브 앱 키',       '96e57663db167a8e7a78345c9d0cf9d2',  '미사용',   '',                                         '',                                'purple'),
+      _mkR('Kakao', 'illeesam_netlify (1429368)', 'Lv2 로그인',   '시크릿(로그인)',       '1gV3lHvBP6KNju9P5E6I4TbchWByfPIh', '미설정',   '활성화:ON',                                '',                                'yellow'),
+      _mkR('Kakao', 'illeesam_netlify (1429368)', 'Lv2 로그인',   '시크릿(비즈)',         'ZyuNrjSOp2yilmTv9MSxDlXRdwPFXDTB', '미설정',   'Redirect: /login/oauth2/code/kakao | 활성화:ON', '',                         'yellow'),
+      _mkR('Kakao', 'illeesam_netlify (1429368)', 'Lv3 동의항목', '닉네임',               '',                                   '필수동의', '',                                         '',                                'gray'),
+      _mkR('Kakao', 'illeesam_netlify (1429368)', 'Lv3 동의항목', '프로필사진',           '',                                   '필수동의', '',                                         '',                                'gray'),
+      _mkR('Kakao', 'illeesam_netlify (1429368)', 'Lv3 동의항목', '친구목록',             '',                                   '이용중동의','카카오서비스내 친구목록',                '',                                'gray'),
+      _mkR('Kakao', 'illeesam_netlify (1429368)', 'Lv3 접근권한', '카카오톡 메시지 전송', '',                                   '선택동의', '',                                         '',                                'gray'),
+      /* ── Kakao: illeesam_synology (ID: 1491354) — DB 적용 앱 ── */
+      _mkR('Kakao', 'illeesam_synology (1491354)', 'Lv1 앱',      'REST API 키',          '63d491e61a4caacf2fc90ee252f2d644',  '미설정',   '',                                         '',                                'green'),
+      _mkR('Kakao', 'illeesam_synology (1491354)', 'Lv1 앱',      'JavaScript 키',        'a2990e41aa57c3a4ad1fe97a210938d7',  '적용됨',   'app.auth.social.kakao-js-key / app.map.kakao-js-key', 'app.auth.social.kakao-js-key', 'blue'),
+      _mkR('Kakao', 'illeesam_synology (1491354)', 'Lv1 앱',      '네이티브 앱 키',       '4f43ddc38e22c79280d18595a31ff27b',  '미사용',   '',                                         '',                                'purple'),
+      _mkR('Kakao', 'illeesam_synology (1491354)', 'Lv2 로그인',  '시크릿(로그인)',       '7gxUHEectTM7qYSDmhnXUJc3ZE1ymqRO', '미설정',   '활성화:ON',                                '',                                'yellow'),
+      _mkR('Kakao', 'illeesam_synology (1491354)', 'Lv2 로그인',  '시크릿(비즈)',         'Q6d7uCUnJBXCXQ2qINFWt2wSZ0sEzpB2', '미설정',   'Redirect: /login/oauth2/code/kakao | 활성화:ON', '',                         'yellow'),
+      _mkR('Kakao', 'illeesam_synology (1491354)', 'Lv3 동의항목','닉네임',               '',                                  '필수동의', '',                                         '',                                'gray'),
+      _mkR('Kakao', 'illeesam_synology (1491354)', 'Lv3 동의항목','프로필사진',           '',                                  '필수동의', '',                                         '',                                'gray'),
+      _mkR('Kakao', 'illeesam_synology (1491354)', 'Lv3 동의항목','친구목록',             '',                                  '이용중동의','',                                         '',                                'gray'),
+      _mkR('Kakao', 'illeesam_synology (1491354)', 'Lv3 접근권한','카카오톡 메시지 전송', '',                                  '선택동의', '',                                         '',                                'gray'),
+      /* ── Kakao: illeesam_localhost (ID: 1491909) ── */
+      _mkR('Kakao', 'illeesam_localhost (1491909)', 'Lv1 앱',     'REST API 키',          '2e8671b1cc341f7d4d92724a2d4eee2c',  '미설정',   '',                                         '',                                'green'),
+      _mkR('Kakao', 'illeesam_localhost (1491909)', 'Lv1 앱',     'JavaScript 키',        '2e8671b1cc341f7d4d92724a2d4eee2c',  '미설정',   '',                                         '',                                'blue'),
+      _mkR('Kakao', 'illeesam_localhost (1491909)', 'Lv1 앱',     '네이티브 앱 키',       '4f43ddc38e22c79280d18595a31ff27b',  '미사용',   '',                                         '',                                'purple'),
+      _mkR('Kakao', 'illeesam_localhost (1491909)', 'Lv2 로그인', '시크릿(로그인)',       '7gxUHEectTM7qYSDmhnXUJc3ZE1ymqRO', '미설정',   '활성화:ON',                                '',                                'yellow'),
+      _mkR('Kakao', 'illeesam_localhost (1491909)', 'Lv2 로그인', '시크릿(비즈)',         'Q6d7uCUnJBXCXQ2qINFWt2wSZ0sEzpB2', '미설정',   '활성화:ON',                                '',                                'yellow'),
+      _mkR('Kakao', 'illeesam_localhost (1491909)', 'Lv3 동의항목','닉네임',              '',                                  '필수동의', '',                                         '',                                'gray'),
+      _mkR('Kakao', 'illeesam_localhost (1491909)', 'Lv3 동의항목','프로필사진',          '',                                  '필수동의', '',                                         '',                                'gray'),
+      _mkR('Kakao', 'illeesam_localhost (1491909)', 'Lv3 동의항목','친구목록',            '',                                  '이용중동의','',                                         '',                                'gray'),
+      _mkR('Kakao', 'illeesam_localhost (1491909)', 'Lv3 접근권한','카카오톡 메시지 전송','',                                  '선택동의', '',                                         '',                                'gray'),
+      /* ── Naver ── */
+      _mkR('Naver', 'illeesam_netlify',   'Lv1 앱',       'Client ID',     'r6RWBr2qMOCZbGPFALrA', '미설정',   'https://developers.naver.com/apps',    '',                                    'green'),
+      _mkR('Naver', 'illeesam_netlify',   'Lv1 앱',       'Client Secret', 'c_V0sjmlR5',            '미설정',   'Callback: /oauth/callback/naver',       '',                                    'yellow'),
+      _mkR('Naver', 'illeesam_netlify',   'Lv2 동의항목', '회원이름',      '', '필수', '', '', 'gray'),
+      _mkR('Naver', 'illeesam_netlify',   'Lv2 동의항목', '이메일',        '', '필수', '', '', 'gray'),
+      _mkR('Naver', 'illeesam_synology',  'Lv1 앱',       'Client ID',     'jWtLT9SUfE2JWEji2XGq', '적용됨',   '',                                     'app.auth.social.naver-client-id',     'green'),
+      _mkR('Naver', 'illeesam_synology',  'Lv1 앱',       'Client Secret', 'QOX2GZO1uk',            '적용됨',   'Callback: /oauth/callback/naver',       'app.auth.social.naver-client-secret', 'yellow'),
+      _mkR('Naver', 'illeesam_synology',  'Lv2 동의항목', '회원이름',      '', '필수', '', '', 'gray'),
+      _mkR('Naver', 'illeesam_synology',  'Lv2 동의항목', '이메일',        '', '필수', '', '', 'gray'),
+      _mkR('Naver', 'illeesam_localhost', 'Lv1 앱',       'Client ID',     '01sBNJ_R7mdQDl5_d3AM', '미설정',   '',                                     '',                                    'green'),
+      _mkR('Naver', 'illeesam_localhost', 'Lv1 앱',       'Client Secret', 'c5cSSSZCaF',            '미설정',   'Callback: /oauth/callback/naver',       '',                                    'yellow'),
+      _mkR('Naver', 'illeesam_localhost', 'Lv2 동의항목', '회원이름',      '', '필수', '', '', 'gray'),
+      _mkR('Naver', 'illeesam_localhost', 'Lv2 동의항목', '이메일',        '', '필수', '', '', 'gray'),
+      /* ── Google ── */
+      _mkR('Google', '공통 계정',   'Lv1 계정', 'Client ID',  '207844440856-5ib9mk6frvt7rfpt8823e48c3c0lavth.apps.googleusercontent.com', '적용됨', 'developers.google.com / cloud console', 'app.auth.social.google-client-id', 'blue'),
+      _mkR('Google', 'Play Console','Lv1',      'Console URL','developer.android.com/distribute/console', '참고',   '',                                             '', 'blue'),
+      /* ── 토스페이먼츠 ── */
+      _mkR('토스페이먼츠', '문서용 테스트키', 'Lv1 FE', '클라이언트 키 (sy_prop)',    'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm', '적용됨',      'https://developers.tosspayments.com/', 'app.pay.toss.widget-client-key', 'green'),
+      _mkR('토스페이먼츠', '문서용 테스트키', 'Lv1 FE', '클라이언트 키 (하드코딩)',   'test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm', '적용됨',      'foEnvConsts.toss.TEST_CLIENT_KEY (폴백)', '__foEnvConsts__',               'green'),
+      _mkR('토스페이먼츠', '문서용 테스트키', 'Lv1 BE', '시크릿 키 (sy_prop)',        'test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6',  '적용됨',      '결제 연동하기 가이드',                'app.pay.toss.secret-key',        'yellow'),
+      _mkR('토스페이먼츠', '문서용 테스트키', 'Lv1 BE', '시크릿 키 (하드코딩)',       'test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6',  '적용됨',      'fo/boEnvConsts.toss.TEST_SECRET_KEY (폴백)', '__foEnvConsts__',            'yellow'),
+      /* ── SMTP/Gmail ── */
+      _mkR('SMTP/Gmail', 'illeesam4app', 'Lv1', '계정',       'illeesam4@gmail.com', '사용중', 'myaccount.google.com/apppasswords', 'spring.mail.username', 'blue'),
+      _mkR('SMTP/Gmail', 'illeesam4app', 'Lv1', '비밀번호',   'sxxx5xx4x!',          '사용중', '구글 계정 비밀번호',                 '',                     'red'),
+      _mkR('SMTP/Gmail', 'illeesam4app', 'Lv1', '앱 비밀번호','wqji ylpf pcwt vhnh', '사용중', '2단계 인증 활성화 필수',             'spring.mail.password', 'yellow'),
+    ];
+
+    /* 트리 렌더용: refRows를 서비스→앱→레벨→키 4단계 계층으로 변환 (정적 배열 → 일반 변수) */
+    const cfRefTree = (() => {
+      const svcMap = {};
+      refRows.forEach((r, idx) => {
+        const svcKey = r._svc;
+        const appKey = r._app || '(공통)';
+        const lvKey  = r._level || '-';
+        if (!svcMap[svcKey]) svcMap[svcKey] = { label: svcKey, color: r._color, apps: {} };
+        const svc = svcMap[svcKey];
+        if (!svc.apps[appKey]) svc.apps[appKey] = { label: appKey, levels: {} };
+        const app = svc.apps[appKey];
+        if (!app.levels[lvKey]) app.levels[lvKey] = { label: lvKey, rows: [] };
+        app.levels[lvKey].rows.push({ ...r, _idx: idx });
+      });
+      return Object.values(svcMap).map(svc => ({
+        ...svc,
+        apps: Object.values(svc.apps).map(app => ({
+          ...app,
+          levels: Object.values(app.levels),
+        })),
+      }));
+    })();
+
+    /* 펼침/접힘 상태 (서비스·앱 단위) */
+    const refOpenSvc = reactive({});
+    const refOpenApp = reactive({});
+    const fnRefToggleSvc = (svcLabel) => {
+      refOpenSvc[svcLabel] = !(refOpenSvc[svcLabel] !== false);
+    };
+    const fnRefToggleApp = (key) => {
+      refOpenApp[key] = !(refOpenApp[key] !== false);
+    };
+    const fnRefSvcOpen = (lbl) => refOpenSvc[lbl] !== false;
+    const fnRefAppOpen = (key) => refOpenApp[key]  !== false;
+    const fnRefExpandAll = () => {
+      cfRefTree.forEach(svc => {
+        refOpenSvc[svc.label] = true;
+        svc.apps.forEach(app => { refOpenApp[svc.label + '|' + app.label] = true; });
+      });
+    };
+    const fnRefCollapseAll = () => {
+      cfRefTree.forEach(svc => {
+        refOpenSvc[svc.label] = false;
+        svc.apps.forEach(app => { refOpenApp[svc.label + '|' + app.label] = false; });
+      });
+    };
 
     const baseGridColumns = [
       { key: 'channelCode', label: '코드',          width: '110px', mono: true },
@@ -738,6 +874,9 @@ window.ZdInfDashboard = {
 
     return {
       codes, loading,
+      refGridColumns, refRows, cfRefTree,
+      refOpenSvc, refOpenApp, fnRefToggleSvc, fnRefToggleApp, fnRefSvcOpen, fnRefAppOpen,
+      fnRefExpandAll, fnRefCollapseAll,
       baseGridColumns, rows,
       histState, fnFmtDatetime, fnFmtAccount, fnFmtReq, fnFmtResp,
       handleHistOpen, handleHistClose, handleHistPage,
@@ -1040,171 +1179,114 @@ window.ZdInfDashboard = {
       </div>
     </bo-container>
 
-    <bo-container title="참고자료 · 계정정보">
-      <style>
-        .ref-svc-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(360px,1fr)); gap:14px; padding:4px 0; }
-        .ref-svc-card { border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; }
-        .ref-svc-head { padding:8px 14px; display:flex; align-items:center; gap:8px; font-weight:700; font-size:13px; }
-        .ref-svc-body { padding:10px 14px; font-size:12px; line-height:1.9; }
-        .ref-sub { background:#f9fafb; border:1px solid #e5e7eb; border-radius:6px; padding:8px 12px; margin:6px 0; }
-        .ref-sub-title { font-weight:700; font-size:11px; color:#374151; margin-bottom:4px; }
-        .ref-kv { display:flex; gap:6px; align-items:flex-start; flex-wrap:wrap; margin:1px 0; }
-        .ref-lbl { color:#9ca3af; font-size:11px; white-space:nowrap; min-width:80px; }
-        .ref-key { font-family:monospace; font-size:11px; padding:1px 6px; border-radius:3px; word-break:break-all; }
-        .ref-key.green  { background:#d1fae5; color:#065f46; }
-        .ref-key.blue   { background:#dbeafe; color:#1e40af; }
-        .ref-key.purple { background:#ede9fe; color:#5b21b6; }
-        .ref-key.yellow { background:#fef3c7; color:#92400e; }
-        .ref-key.red    { background:#fee2e2; color:#991b1b; font-size:15px; letter-spacing:3px; font-weight:700; }
-        .ref-key.gray   { background:#f3f4f6; color:#374151; }
-        .ref-link { color:#2563eb; text-decoration:none; font-size:11px; }
-        .ref-link:hover { text-decoration:underline; }
-        .ref-badge { font-size:10px; font-weight:700; padding:1px 6px; border-radius:3px; }
-        .ref-urls { font-size:10px; color:#6b7280; margin-top:2px; }
-      </style>
 
-      <div class="ref-svc-grid">
-
-        <!-- ① YouTube 강좌 -->
-        <div class="ref-svc-card">
-          <div class="ref-svc-head" style="background:#fef2f2;">
-            <span class="ref-badge" style="background:#dc2626;color:#fff;">YT</span>
-            YouTube 참고 강좌
-          </div>
-          <div class="ref-svc-body">
-            <div><a class="ref-link" href="https://www.youtube.com/watch?v=Aa6oqanyOHY" target="_blank">소셜로그인 구현 원리 (네이버/카카오/깃헙)</a></div>
-            <div><a class="ref-link" href="https://www.youtube.com/watch?v=Aa6oqanyOHY" target="_blank">카카오 로그인 설정 및 준비</a></div>
-            <div><a class="ref-link" href="https://www.youtube.com/watch?v=NrMUyA47gdU" target="_blank">네이버 소셜 로그인 구현</a></div>
-            <div><a class="ref-link" href="https://www.youtube.com/watch?v=olnJzoa4A68" target="_blank">Google OAuth 구글 소셜 로그인</a></div>
-            <div><a class="ref-link" href="https://www.youtube.com/watch?v=HtwLMwzTG5c" target="_blank">토스페이먼츠 5분 결제 연동</a></div>
-            <div><a class="ref-link" href="https://www.youtube.com/watch?v=Sedf9uO7W4E" target="_blank">스프링 SMTP / 구글 앱 비밀번호 신청</a></div>
-          </div>
-        </div>
-
-        <!-- ② Kakao -->
-        <div class="ref-svc-card">
-          <div class="ref-svc-head" style="background:#fefce8;">
-            <span class="ref-badge" style="background:#ca8a04;color:#fff;">KA</span>
-            Kakao &nbsp;<a class="ref-link" href="https://developers.kakao.com/console/app" target="_blank">developers console</a>
-          </div>
-          <div class="ref-svc-body">
-
-            <div class="ref-sub">
-              <div class="ref-sub-title">illeesam_netlify &nbsp;<span style="color:#9ca3af;font-weight:400;">ID: 1429368</span></div>
-              <div class="ref-kv"><span class="ref-lbl">REST API 키</span><span class="ref-key green">44074b1c358f60292145b3068460f37d</span></div>
-              <div class="ref-kv"><span class="ref-lbl">JavaScript 키</span><span class="ref-key blue">797a116c08880d3865a89cf4f70b91f5</span></div>
-              <div class="ref-kv"><span class="ref-lbl">네이티브 앱 키</span><span class="ref-key purple">96e57663db167a8e7a78345c9d0cf9d2</span></div>
-              <div class="ref-kv"><span class="ref-lbl">시크릿(로그인)</span><span class="ref-key yellow">1gV3lHvBP6KNju9P5E6I4TbchWByfPIh</span></div>
-              <div class="ref-kv"><span class="ref-lbl">시크릿(비즈)</span><span class="ref-key yellow">ZyuNrjSOp2yilmTv9MSxDlXRdwPFXDTB</span></div>
-              <div class="ref-urls">Redirect: /login/oauth2/code/kakao (netlify / synology:3000 / 127.0.0.1:3000)</div>
-            </div>
-
-            <div class="ref-sub">
-              <div class="ref-sub-title">illeesam_synology &nbsp;<span style="color:#9ca3af;font-weight:400;">ID: 1491354</span></div>
-              <div class="ref-kv"><span class="ref-lbl">REST API 키</span><span class="ref-key green">63d491e61a4caacf2fc90ee252f2d644</span></div>
-              <div class="ref-kv"><span class="ref-lbl">JavaScript 키</span><span class="ref-key blue">a2990e41aa57c3a4ad1fe97a210938d7</span></div>
-              <div class="ref-kv"><span class="ref-lbl">네이티브 앱 키</span><span class="ref-key purple">4f43ddc38e22c79280d18595a31ff27b</span></div>
-              <div class="ref-kv"><span class="ref-lbl">시크릿(로그인)</span><span class="ref-key yellow">7gxUHEectTM7qYSDmhnXUJc3ZE1ymqRO</span></div>
-              <div class="ref-kv"><span class="ref-lbl">시크릿(비즈)</span><span class="ref-key yellow">Q6d7uCUnJBXCXQ2qINFWt2wSZ0sEzpB2</span></div>
-            </div>
-
-            <div class="ref-sub">
-              <div class="ref-sub-title">illeesam_localhost &nbsp;<span style="color:#9ca3af;font-weight:400;">ID: 1491909</span></div>
-              <div class="ref-kv"><span class="ref-lbl">REST API 키</span><span class="ref-key green">2e8671b1cc341f7d4d92724a2d4eee2c</span></div>
-              <div class="ref-kv"><span class="ref-lbl">JavaScript 키</span><span class="ref-key blue">2e8671b1cc341f7d4d92724a2d4eee2c</span></div>
-              <div class="ref-kv"><span class="ref-lbl">네이티브 앱 키</span><span class="ref-key purple">4f43ddc38e22c79280d18595a31ff27b</span></div>
-              <div class="ref-kv"><span class="ref-lbl">시크릿(로그인)</span><span class="ref-key yellow">7gxUHEectTM7qYSDmhnXUJc3ZE1ymqRO</span></div>
-              <div class="ref-kv"><span class="ref-lbl">시크릿(비즈)</span><span class="ref-key yellow">Q6d7uCUnJBXCXQ2qINFWt2wSZ0sEzpB2</span></div>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- ③ Naver -->
-        <div class="ref-svc-card">
-          <div class="ref-svc-head" style="background:#f0fdf4;">
-            <span class="ref-badge" style="background:#16a34a;color:#fff;">NV</span>
-            Naver &nbsp;<a class="ref-link" href="https://developers.naver.com/apps/#/myapps/K0Xy5CSEtyzRrHnDbf75/overview" target="_blank">developers console</a>
-          </div>
-          <div class="ref-svc-body">
-
-            <div class="ref-sub">
-              <div class="ref-sub-title">illeesam_netlify</div>
-              <div class="ref-kv"><span class="ref-lbl">Client ID</span><span class="ref-key green">r6RWBr2qMOCZbGPFALrA</span></div>
-              <div class="ref-kv"><span class="ref-lbl">Client Secret</span><span class="ref-key yellow">c_V0sjmlR5</span></div>
-              <div class="ref-urls">Callback: http://127.0.0.1:3000/oauth/callback/naver</div>
-            </div>
-
-            <div class="ref-sub">
-              <div class="ref-sub-title">illeesam_synology</div>
-              <div class="ref-kv"><span class="ref-lbl">Client ID</span><span class="ref-key green">jWtLT9SUfE2JWEji2XGq</span></div>
-              <div class="ref-kv"><span class="ref-lbl">Client Secret</span><span class="ref-key yellow">QOX2GZO1uk</span></div>
-              <div class="ref-urls">Callback: http://127.0.0.1:3000/oauth/callback/naver</div>
-            </div>
-
-            <div class="ref-sub">
-              <div class="ref-sub-title">illeesam_localhost</div>
-              <div class="ref-kv"><span class="ref-lbl">Client ID</span><span class="ref-key green">01sBNJ_R7mdQDl5_d3AM</span></div>
-              <div class="ref-kv"><span class="ref-lbl">Client Secret</span><span class="ref-key yellow">c5cSSSZCaF</span></div>
-              <div class="ref-urls">Callback: http://127.0.0.1:3000/oauth/callback/naver</div>
-            </div>
-
-          </div>
-        </div>
-
-        <!-- ④ Google -->
-        <div class="ref-svc-card">
-          <div class="ref-svc-head" style="background:#eff6ff;">
-            <span class="ref-badge" style="background:#2563eb;color:#fff;">GO</span>
-            Google &nbsp;<a class="ref-link" href="https://developers.google.com/?hl=ko" target="_blank">developers</a>
-            &nbsp;/&nbsp;<a class="ref-link" href="https://console.cloud.google.com/apis/credentials" target="_blank">cloud console</a>
-          </div>
-          <div class="ref-svc-body">
-            <div class="ref-sub">
-              <div class="ref-kv"><span class="ref-lbl">계정</span><span class="ref-key blue">illeesam4@gmail.com</span></div>
-              <div style="margin-top:6px;font-size:11px;color:#6b7280;">
-                <a class="ref-link" href="https://developer.android.com/distribute/console?hl=ko" target="_blank">Google Play Console</a>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- ⑤ Toss -->
-        <div class="ref-svc-card">
-          <div class="ref-svc-head" style="background:#f5f3ff;">
-            <span class="ref-badge" style="background:#7c3aed;color:#fff;">TP</span>
-            토스페이먼츠 &nbsp;<a class="ref-link" href="https://developers.tosspayments.com/" target="_blank">개발자센터</a>
-            &nbsp;/&nbsp;<a class="ref-link" href="https://developers.tosspayments.com/sandbox" target="_blank">sandbox</a>
-          </div>
-          <div class="ref-svc-body">
-            <div class="ref-sub">
-              <div class="ref-sub-title">문서용 테스트 키</div>
-              <div class="ref-kv"><span class="ref-lbl">클라이언트 키</span><span class="ref-key green">test_gck_docs_Ovk5rk1EwkEbP0W43n07xlzm</span></div>
-              <div class="ref-kv"><span class="ref-lbl">시크릿 키</span><span class="ref-key yellow">test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6</span></div>
-              <div class="ref-urls">
-                <a class="ref-link" href="https://docs.tosspayments.com/guides/v2/payment-widget/integration" target="_blank">결제 연동하기 가이드</a>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- ⑥ SMTP / Gmail -->
-        <div class="ref-svc-card">
-          <div class="ref-svc-head" style="background:#fef2f2;">
-            <span class="ref-badge" style="background:#dc2626;color:#fff;">ML</span>
-            SMTP / Gmail &nbsp;<a class="ref-link" href="https://myaccount.google.com/apppasswords" target="_blank">앱 비밀번호 발급</a>
-          </div>
-          <div class="ref-svc-body">
-            <div class="ref-sub">
-              <div class="ref-kv"><span class="ref-lbl">계정</span><span class="ref-key blue">illeesam4@gmail.com</span></div>
-              <div class="ref-kv"><span class="ref-lbl">비밀번호</span><span class="ref-key red">sxxx5xx4x!</span></div>
-              <div class="ref-kv"><span class="ref-lbl">앱 이름</span><span class="ref-key gray">illeesam4app</span></div>
-              <div class="ref-kv"><span class="ref-lbl">앱 비밀번호</span><span class="ref-key yellow">wqji ylpf pcwt vhnh</span></div>
-              <div class="ref-urls">2단계 인증 활성화 필수 · 구글 계정관리에서 앱 비밀번호 생성</div>
-            </div>
-          </div>
-        </div>
-
+    <bo-container title="외부 연동 참고자료" :count-text="refRows.length + '건'">
+      <template #toolbar>
+        <button class="btn btn_expand_all"   @click="fnRefExpandAll">전체펼치기</button>
+        <button class="btn btn_collapse_all" @click="fnRefCollapseAll">전체접기</button>
+      </template>
+      <div style="overflow-x:auto;">
+        <table class="bo-table" style="width:100%;min-width:1000px;">
+          <colgroup>
+            <col style="width:260px;">
+            <col style="width:265px;">
+            <col style="width:200px;">
+            <col style="width:90px;">
+            <col style="width:76px;">
+            <col style="width:200px;">
+          </colgroup>
+          <thead>
+            <tr>
+              <th>키 구분</th>
+              <th>값</th>
+              <th>적용 prop</th>
+              <th style="text-align:center;">적용위치</th>
+              <th style="text-align:center;">적용여부</th>
+              <th>비고</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template v-for="svc in cfRefTree" :key="svc.label">
+              <!-- Lv0 ── 서비스 ────────────────────────────── -->
+              <tr style="background:#eff6ff;cursor:pointer;" @click="fnRefToggleSvc(svc.label)">
+                <td colspan="6" style="padding:5px 10px;font-weight:700;font-size:13px;border-left:4px solid #3b82f6;">
+                  <span style="margin-right:6px;font-size:9px;color:#3b82f6;line-height:1;">{{ fnRefSvcOpen(svc.label) ? '▼' : '▶' }}</span>
+                  <span :class="{
+                    'badge badge-red':    svc.color === 'red',
+                    'badge badge-green':  svc.color === 'green',
+                    'badge badge-blue':   svc.color === 'blue',
+                    'badge badge-purple': svc.color === 'purple',
+                    'badge badge-orange': svc.color === 'yellow',
+                    'badge badge-gray':   svc.color === 'gray'
+                  }" style="margin-right:8px;font-size:12px;">{{ svc.label }}</span>
+                  <span style="font-size:11px;font-weight:400;color:#6b7280;">{{ svc.apps.length }}개 앱</span>
+                </td>
+              </tr>
+              <template v-if="fnRefSvcOpen(svc.label)" v-for="app in svc.apps" :key="svc.label + '|' + app.label">
+                <!-- Lv1 ── 앱 / 환경 ──────────────────────── -->
+                <tr style="background:#f8fafc;cursor:pointer;" @click="fnRefToggleApp(svc.label + '|' + app.label)">
+                  <td colspan="6" style="padding:4px 10px 4px 22px;font-size:12px;border-left:4px solid #93c5fd;">
+                    <span style="margin-right:6px;font-size:9px;color:#60a5fa;line-height:1;">{{ fnRefAppOpen(svc.label + '|' + app.label) ? '▼' : '▶' }}</span>
+                    <span style="background:#e0f2fe;color:#0369a1;border-radius:4px;padding:1px 8px;font-family:monospace;font-size:11px;font-weight:600;">{{ app.label }}</span>
+                    <span style="font-size:10px;color:#9ca3af;margin-left:8px;">{{ app.levels.reduce((s, l) => s + l.rows.length, 0) }}개 항목</span>
+                  </td>
+                </tr>
+                <template v-if="fnRefAppOpen(svc.label + '|' + app.label)" v-for="lv in app.levels" :key="svc.label + '|' + app.label + '|' + lv.label">
+                  <!-- Lv2 ── 레벨 그룹 (복수일 때만) ───────── -->
+                  <tr v-if="app.levels.length > 1" style="background:#fafafa;">
+                    <td colspan="6" style="padding:2px 10px 2px 40px;font-size:10px;color:#9ca3af;letter-spacing:.4px;border-left:4px solid #e2e8f0;">
+                      ▸ {{ lv.label }}
+                    </td>
+                  </tr>
+                  <!-- Lv3 ── 키 데이터 행 ──────────────────── -->
+                  <tr v-for="r in lv.rows" :key="r._idx" style="background:#fff;">
+                    <td style="padding-left:56px;font-size:12px;border-left:4px solid #e2e8f0;"
+                      :style="r._where ? 'font-weight:700;color:#1e40af;' : 'font-weight:400;color:#6b7280;'">
+                      {{ r._kind }}
+                    </td>
+                    <td style="font-family:monospace;font-size:11px;color:#374151;word-break:break-all;">
+                      <a v-if="r._val &amp;&amp; r._val.startsWith('http')" :href="r._val" target="_blank"
+                        style="color:#2563eb;text-decoration:underline;word-break:break-all;">{{ r._val }}</a>
+                      <span v-else-if="r._val">{{ r._val }}</span>
+                      <span v-else style="color:#d1d5db;">-</span>
+                    </td>
+                    <td>
+                      <span v-if="r._propKey"
+                        style="font-size:10px;background:#dbeafe;color:#1e40af;border-radius:3px;padding:1px 5px;font-family:monospace;word-break:break-all;">{{ r._propKey }}</span>
+                      <span v-else style="color:#d1d5db;font-size:11px;">-</span>
+                    </td>
+                    <td style="text-align:center;">
+                      <span v-if="r._where === 'sy_prop'"       class="badge badge-blue"   style="font-size:10px;">sy_prop</span>
+                      <span v-else-if="r._where === 'sy_prop + yml'" class="badge badge-purple" style="font-size:10px;">sy_prop+yml</span>
+                      <span v-else-if="r._where === 'foEnvConsts'" class="badge badge-orange" style="font-size:10px;">foEnvConsts</span>
+                      <span v-else-if="r._where === 'boEnvConsts'" class="badge badge-orange" style="font-size:10px;">boEnvConsts</span>
+                      <span v-else style="color:#d1d5db;font-size:11px;">-</span>
+                    </td>
+                    <td style="text-align:center;">
+                      <span v-if="r._applied === '적용됨'"      class="badge badge-green"  style="font-size:10px;">적용됨</span>
+                      <span v-else-if="r._applied === '테스트 적용'" class="badge badge-blue"  style="font-size:10px;">테스트</span>
+                      <span v-else-if="r._applied === '사용중'"      class="badge badge-green"  style="font-size:10px;">사용중</span>
+                      <span v-else-if="r._applied === '미설정'"      class="badge badge-red"    style="font-size:10px;">미설정</span>
+                      <span v-else-if="r._applied === '미사용'"      class="badge badge-gray"   style="font-size:10px;">미사용</span>
+                      <span v-else-if="r._applied === '필수동의'"    class="badge badge-orange" style="font-size:10px;">필수동의</span>
+                      <span v-else-if="r._applied === '이용중동의'"  class="badge badge-orange" style="font-size:10px;">이용중</span>
+                      <span v-else-if="r._applied === '선택동의'"    class="badge badge-gray"   style="font-size:10px;">선택동의</span>
+                      <span v-else-if="r._applied === '필수'"        class="badge badge-orange" style="font-size:10px;">필수</span>
+                      <span v-else-if="r._applied === '참고'"        class="badge badge-gray"   style="font-size:10px;">참고</span>
+                      <span v-else style="color:#d1d5db;font-size:11px;">-</span>
+                    </td>
+                    <td style="font-size:11px;color:#6b7280;word-break:break-all;">
+                      <a v-if="r._note &amp;&amp; r._note.startsWith('http')" :href="r._note" target="_blank"
+                        style="color:#2563eb;text-decoration:underline;">{{ r._note }}</a>
+                      <span v-else-if="r._note">{{ r._note }}</span>
+                      <span v-else style="color:#d1d5db;">-</span>
+                    </td>
+                  </tr>
+                </template>
+              </template>
+            </template>
+          </tbody>
+        </table>
       </div>
     </bo-container>
 
