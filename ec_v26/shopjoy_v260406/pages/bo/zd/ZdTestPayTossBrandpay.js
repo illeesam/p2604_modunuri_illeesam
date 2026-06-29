@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 개발도구 — 토스페이먼츠 브랜드페이 테스트 (test_ck_ 키)
  * 브랜드페이: 토스 자체 간편결제. 회원 customerKey 필수 (비회원 불가)
  */
@@ -277,7 +277,7 @@ window.ZdTestPayTossBrandpay = {
     </div>
   </div>
 
-  <bo-zd-yml-grid endpoint="/bo/sy/app-config/toss" title="application.yml — 토스페이먼츠 설정" />
-  <bo-zd-sy-prop-grid prop-key-prefixes="app.pay.toss." default-prop-key-filter="app.pay.toss." />
+  <bo-zd-sy-prop-grid prop-key-prefixes="app.pay.toss." default-prop-key-filter="app.pay.toss" />
+  <bo-zd-yml-grid endpoint="/bo/sy/app-config/toss" default-key-filter="app.pay.toss" />
 </div>`,
 };

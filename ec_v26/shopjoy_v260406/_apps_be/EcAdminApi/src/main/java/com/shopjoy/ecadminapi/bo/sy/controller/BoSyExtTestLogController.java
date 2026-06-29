@@ -83,14 +83,16 @@ public class BoSyExtTestLogController {
         return ResponseEntity.ok(ApiResponse.ok(saved));
     }
 
-    /** 채널별 이력 조회 (페이징) */
+    /** 채널별 이력 조회 (페이징) — channelKey 없으면 전체 조회 */
     @GetMapping("/list")
     public ResponseEntity<ApiResponse<PageResult<SyhExtTestLog>>> list(
-            @RequestParam String channelKey,
+            @RequestParam(required = false) String channelKey,
             @RequestParam(defaultValue = "1")  int pageNo,
             @RequestParam(defaultValue = "5")  int pageSize) {
         PageRequest pr = PageRequest.of(pageNo - 1, pageSize);
-        Page<SyhExtTestLog> page = repository.findByChannelKey(channelKey, pr);
+        Page<SyhExtTestLog> page = (channelKey != null && !channelKey.isBlank())
+            ? repository.findByChannelKey(channelKey, pr)
+            : repository.findAllOrderByRegDateDesc(pr);
         PageResult<SyhExtTestLog> result = PageResult.of(
             page.getContent(), page.getTotalElements(), pageNo, pageSize, null);
         return ResponseEntity.ok(ApiResponse.ok(result));

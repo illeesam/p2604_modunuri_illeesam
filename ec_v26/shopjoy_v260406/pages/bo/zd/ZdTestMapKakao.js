@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 개발도구 — 카카오 지도 API 테스트
  */
 window.ZdTestMapKakao = {
@@ -38,8 +38,8 @@ window.ZdTestMapKakao = {
 
     const cfgFormColumns = [
       { key: 'jsKey', label: 'JavaScript 키', type: 'text', required: true,
-        placeholder: 'sy_prop: app.ext-sdk.kakao-map-js-key', mono: true, colSpan: 3,
-        hint: 'app.ext-sdk.kakao-map-js-key' },
+        placeholder: 'sy_prop: app.map.kakao-js-key', mono: true, colSpan: 3,
+        hint: 'app.map.kakao-js-key' },
     ];
 
     const mapFormColumns = [
@@ -64,13 +64,13 @@ window.ZdTestMapKakao = {
         // /all 엔드포인트: 현재 active profile 기준으로 resolved 값 반환 (profile-aware)
         const r1 = await boApi.get('/bo/sy/app-config/all', coUtil.cofApiHdr('카카오 지도 테스트', '키 조회'));
         const ymlItems = r1.data?.data?.items || [];
-        const kakaoItem = ymlItems.find(it => it.ymlKey === 'app.ext-sdk.kakao-map-js-key' || it.ymlKey === 'app.ext-sdk.kakao-js-key');
+        const kakaoItem = ymlItems.find(it => it.ymlKey === 'app.map.kakao-js-key');
         if (kakaoItem?.ymlValue && kakaoItem.ymlValue !== '(미설정)') {
           cfg.jsKey = kakaoItem.ymlValue;
         }
         // /all 에 없으면 sy_prop 직접 조회 (propProfile 포함해 최적값 선택)
         if (!cfg.jsKey) {
-          const r2 = await boApiSvc.syProp.getList({ propKeys: 'app.ext-sdk.kakao-map-js-key,app.ext-sdk.kakao-js-key' }, '카카오 지도 테스트', '키 조회');
+          const r2 = await boApiSvc.syProp.getList({ propKeys: 'app.map.kakao-js-key' }, '카카오 지도 테스트', '키 조회');
           const list = r2?.data?.data || [];
           // 값이 있는 행 중 propProfile 에 local 또는 dev 포함한 행 우선, 없으면 아무거나
           const withVal = list.filter(p => p.propValue);
@@ -214,7 +214,7 @@ window.ZdTestMapKakao = {
       if (!cfg.jsKey) { showToast('JavaScript 키를 입력하세요.', 'error'); return; }
       try {
         await boApi.put('/bo/sy/prop/bulk', [
-          { propKey: 'app.ext-sdk.kakao-map-js-key', propValue: cfg.jsKey },
+          { propKey: 'app.map.kakao-js-key', propValue: cfg.jsKey },
         ], coUtil.cofApiHdr('카카오 지도 테스트', '키 저장'));
         showToast('sy_prop 에 저장되었습니다.', 'success');
       } catch (e) {
@@ -320,12 +320,12 @@ window.ZdTestMapKakao = {
       <b>1.</b> Kakao Developers → 앱 생성 → 플랫폼 → Web → 사이트 도메인에 <code>http://127.0.0.1:5501</code> 추가<br>
       <b>2.</b> 제품 설정 → 카카오맵 → 활성화 ON<br>
       <b>3.</b> 앱 키 → JavaScript 키 복사<br>
-      <b>4.</b> sy_prop <code>app.ext-sdk.kakao-map-js-key</code> 에 JavaScript 키 등록<br>
+      <b>4.</b> sy_prop <code>app.map.kakao-js-key</code> 에 JavaScript 키 등록<br>
       <b>5.</b> Kakao 지도 줌 레벨은 숫자가 클수록 멀어집니다 (Naver/Google 과 반대)
     </div>
   </div>
 
-  <bo-zd-yml-grid endpoint="/bo/sy/app-config/map" title="application.yml — 지도 API 설정" />
-  <bo-zd-sy-prop-grid prop-key-prefixes="app.ext-sdk.kakao-map" default-prop-key-filter="app.ext-sdk.kakao-map" />
+  <bo-zd-sy-prop-grid prop-key-prefixes="app.map." default-prop-key-filter="app.map.kakao" />
+  <bo-zd-yml-grid endpoint="/bo/sy/app-config/map" default-key-filter="app.map.kakao" />
 </div>`,
 };

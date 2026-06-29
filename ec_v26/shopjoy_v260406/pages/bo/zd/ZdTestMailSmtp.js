@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 개발도구 — SMTP 메일 발송 테스트
  */
 window.ZdTestMailSmtp = {
@@ -193,7 +193,7 @@ window.ZdTestMailSmtp = {
     </div>
   </div>
 
-  <bo-zd-yml-grid endpoint="/bo/sy/app-config/mail" title="application.yml — 메일(SMTP) 설정" />
-  <bo-zd-sy-prop-grid prop-key-prefixes="app.mail.,spring.mail." default-prop-key-filter="app.mail." />
+  <bo-zd-sy-prop-grid prop-key-prefixes="app.mail.,spring.mail." default-prop-key-filter="app.mail;spring.mail" />
+  <bo-zd-yml-grid endpoint="/bo/sy/app-config/mail" default-key-filter="app.mail;spring.mail" />
 </div>`,
 };

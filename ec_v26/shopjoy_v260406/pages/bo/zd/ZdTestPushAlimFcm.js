@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 개발도구 — FCM 푸시 알림 테스트
  */
 window.ZdTestPushAlimFcm = {
@@ -245,7 +245,7 @@ window.ZdTestPushAlimFcm = {
     </div>
   </div>
 
-  <bo-zd-yml-grid endpoint="/bo/sy/app-config/all" title="application.yml — FCM 푸시 설정" />
-  <bo-zd-sy-prop-grid prop-key-prefixes="app.push.fcm." default-prop-key-filter="app.push.fcm." />
+  <bo-zd-sy-prop-grid prop-key-prefixes="app.push.fcm." default-prop-key-filter="app.push.fcm" />
+  <bo-zd-yml-grid endpoint="/bo/sy/app-config/all" default-key-filter="app.push.fcm" />
 </div>`,
 };

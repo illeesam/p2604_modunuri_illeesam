@@ -14,6 +14,9 @@ public interface SyhExtTestLogRepository extends JpaRepository<SyhExtTestLog, St
     @Query("SELECT l FROM SyhExtTestLog l WHERE l.channelKey = :channelKey ORDER BY l.regDate DESC")
     Page<SyhExtTestLog> findByChannelKey(@Param("channelKey") String channelKey, Pageable pageable);
 
+    @Query("SELECT l FROM SyhExtTestLog l ORDER BY l.regDate DESC")
+    Page<SyhExtTestLog> findAllOrderByRegDateDesc(Pageable pageable);
+
     @Query("SELECT COUNT(l) FROM SyhExtTestLog l WHERE l.channelKey = :channelKey")
     long countByChannelKey(@Param("channelKey") String channelKey);
 

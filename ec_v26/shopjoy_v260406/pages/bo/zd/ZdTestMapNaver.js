@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 개발도구 — 네이버 지도 API 테스트
  */
 window.ZdTestMapNaver = {
@@ -267,7 +267,7 @@ window.ZdTestMapNaver = {
     </div>
   </div>
 
-  <bo-zd-yml-grid endpoint="/bo/sy/app-config/map" title="application.yml — 지도 API 설정" />
-  <bo-zd-sy-prop-grid prop-key-prefixes="app.map." default-prop-key-filter="app.map." />
+  <bo-zd-sy-prop-grid prop-key-prefixes="app.map." default-prop-key-filter="app.map.naver" />
+  <bo-zd-yml-grid endpoint="/bo/sy/app-config/map" default-key-filter="app.map.naver" />
 </div>`,
 };

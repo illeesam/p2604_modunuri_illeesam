@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 개발도구 — WebSocket 채팅 서버 연결 테스트
  */
 window.ZdTestChattingWebSocket = {
@@ -233,7 +233,7 @@ window.ZdTestChattingWebSocket = {
     </div>
   </div>
 
-  <bo-zd-yml-grid endpoint="/bo/sy/app-config/all" title="application.yml — WebSocket 설정" />
-  <bo-zd-sy-prop-grid prop-key-prefixes="app.websocket.,app.chat." default-prop-key-filter="app.websocket." />
+  <bo-zd-sy-prop-grid prop-key-prefixes="app.websocket.,app.chat." default-prop-key-filter="app.websocket" />
+  <bo-zd-yml-grid endpoint="/bo/sy/app-config/all" default-key-filter="app.websocket" />
 </div>`,
 };

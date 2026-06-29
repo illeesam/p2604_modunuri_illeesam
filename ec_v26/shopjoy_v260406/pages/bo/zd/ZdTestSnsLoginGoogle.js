@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 개발도구 — 구글 소셜 로그인 테스트
  */
 window.ZdTestSnsLoginGoogle = {
@@ -32,7 +32,7 @@ window.ZdTestSnsLoginGoogle = {
 
     onMounted(async () => {
       try {
-        const res = await boApiSvc.syProp?.getList?.({ propKeys: 'app.ext-sdk.google-client-id' }, '구글 소셜 로그인 테스트', '키 조회');
+        const res = await boApiSvc.syProp?.getList?.({ propKeys: 'app.auth.social.google-client-id' }, '구글 소셜 로그인 테스트', '키 조회');
         const list = res?.data?.data || [];
         // 동일 propKey가 여러 프로파일 행으로 올 수 있음 → local/dev 우선, 없으면 값 있는 행
         const pickVal = (key) => {
@@ -40,7 +40,7 @@ window.ZdTestSnsLoginGoogle = {
           const preferred = rows.find(p => /local|dev/.test(p.propProfile || '')) || rows[0];
           return preferred?.propValue || '';
         };
-        cfg.googleClientId = pickVal('app.ext-sdk.google-client-id');
+        cfg.googleClientId = pickVal('app.auth.social.google-client-id');
       } catch (e) {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);
       }
@@ -145,7 +145,7 @@ window.ZdTestSnsLoginGoogle = {
       if (!cfg.googleClientId) { showToast('Client ID 를 입력하세요.', 'error'); return; }
       try {
         await boApi.put('/bo/sy/prop/bulk', [
-          { propKey: 'app.ext-sdk.google-client-id', propValue: cfg.googleClientId },
+          { propKey: 'app.auth.social.google-client-id', propValue: cfg.googleClientId },
         ], coUtil.cofApiHdr('구글 SDK 테스트', '키 저장'));
         showToast('sy_prop 에 저장되었습니다.', 'success');
       } catch (e) {
@@ -164,8 +164,8 @@ window.ZdTestSnsLoginGoogle = {
     /* ##### [05] 폼/그리드 컬럼 정의 #################################################### */
 
     const cfgFormColumns = [
-      { key: 'googleClientId', label: 'Google Client ID', type: 'text', hint: 'app.ext-sdk.google-client-id',
-        mono: true, colSpan: 3, required: true, placeholder: 'sy_prop: app.ext-sdk.google-client-id' },
+      { key: 'googleClientId', label: 'Google Client ID', type: 'text', hint: 'app.auth.social.google-client-id',
+        mono: true, colSpan: 3, required: true, placeholder: 'sy_prop: app.auth.social.google-client-id' },
     ];
 
     const userInfoGridColumns = [
@@ -237,8 +237,8 @@ window.ZdTestSnsLoginGoogle = {
     </div>
   </div>
 
-  <bo-zd-yml-grid endpoint="/bo/sy/app-config/social" title="application.yml — 소셜 로그인 설정" />
-  <bo-zd-sy-prop-grid prop-key-prefixes="app.ext-sdk.,app.auth.social." default-prop-key-filter="app.ext-sdk.google-client" />
+  <bo-zd-sy-prop-grid prop-key-prefixes="app.auth.social." default-prop-key-filter="app.auth.social.google" />
+  <bo-zd-yml-grid endpoint="/bo/sy/app-config/social" default-key-filter="app.auth.social.google" />
 
   <!-- 흐름 안내 -->
   <div class="card">
@@ -246,7 +246,7 @@ window.ZdTestSnsLoginGoogle = {
     <div style="padding:12px;font-size:12px;line-height:1.8;color:#444">
       <b>1.</b> Google Cloud Console → OAuth 2.0 클라이언트 ID 발급 (Web 유형)<br>
       <b>2.</b> 승인된 JavaScript 원본에 <code>http://127.0.0.1:5501</code>, <code>http://localhost:3000</code> 추가<br>
-      <b>3.</b> sy_prop <code>app.ext-sdk.google-client-id</code> 에 Client ID 등록<br>
+      <b>3.</b> sy_prop <code>app.auth.social.google-client-id</code> 에 Client ID 등록<br>
       <b>4.</b> 로그인 팝업 → ID Token(JWT) 수신 → 백엔드 <code>POST /api/co/fo-auth/social-login</code> 로 전달<br>
       <b>5.</b> 백엔드: Google tokeninfo 엔드포인트로 토큰 검증 후 JWT 발급
     </div>

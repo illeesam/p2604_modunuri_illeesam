@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 개발도구 — 네이버 소셜 로그인 테스트
  */
 window.ZdTestSnsLoginNaver = {
@@ -48,7 +48,7 @@ window.ZdTestSnsLoginNaver = {
     onMounted(async () => {
       try {
         const res = await boApiSvc.syProp?.getList?.({
-          propKeys: 'app.ext-sdk.naver-client-id,app.ext-sdk.naver-client-secret',
+          propKeys: 'app.auth.social.naver-client-id,app.auth.social.naver-client-secret',
         }, '네이버 소셜 로그인 테스트', '키 조회');
         const list = res?.data?.data || [];
         // 동일 propKey가 여러 프로파일 행으로 올 수 있음 → local/dev 우선, 없으면 값 있는 행
@@ -57,8 +57,8 @@ window.ZdTestSnsLoginNaver = {
           const preferred = rows.find(p => /local|dev/.test(p.propProfile || '')) || rows[0];
           return preferred?.propValue || '';
         };
-        cfg.clientId     = pickVal('app.ext-sdk.naver-client-id');
-        cfg.clientSecret = pickVal('app.ext-sdk.naver-client-secret');
+        cfg.clientId     = pickVal('app.auth.social.naver-client-id');
+        cfg.clientSecret = pickVal('app.auth.social.naver-client-secret');
       } catch (e) {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);
       }
@@ -154,8 +154,8 @@ window.ZdTestSnsLoginNaver = {
       if (!cfg.clientId) { showToast('Client ID 를 입력하세요.', 'error'); return; }
       try {
         await boApi.put('/bo/sy/prop/bulk', [
-          { propKey: 'app.ext-sdk.naver-client-id',     propValue: cfg.clientId },
-          { propKey: 'app.ext-sdk.naver-client-secret', propValue: cfg.clientSecret },
+          { propKey: 'app.auth.social.naver-client-id',     propValue: cfg.clientId },
+          { propKey: 'app.auth.social.naver-client-secret', propValue: cfg.clientSecret },
         ], coUtil.cofApiHdr('네이버 로그인 테스트', '키 저장'));
         showToast('sy_prop 에 저장되었습니다.', 'success');
       } catch (e) {
@@ -186,10 +186,10 @@ window.ZdTestSnsLoginNaver = {
     /* ##### [05] 폼/그리드 컬럼 정의 #################################################### */
 
     const cfgFormColumns = [
-      { key: 'clientId',     label: 'Client ID',     type: 'text',     hint: 'app.ext-sdk.naver-client-id',
-        mono: true, required: true, placeholder: 'sy_prop: app.ext-sdk.naver-client-id' },
-      { key: 'clientSecret', label: 'Client Secret', type: 'text',     hint: 'app.ext-sdk.naver-client-secret',
-        placeholder: 'sy_prop: app.ext-sdk.naver-client-secret' },
+      { key: 'clientId',     label: 'Client ID',     type: 'text',     hint: 'app.auth.social.naver-client-id',
+        mono: true, required: true, placeholder: 'sy_prop: app.auth.social.naver-client-id' },
+      { key: 'clientSecret', label: 'Client Secret', type: 'text',     hint: 'app.auth.social.naver-client-secret',
+        placeholder: 'sy_prop: app.auth.social.naver-client-secret' },
       { key: 'callbackUrl',  label: 'Callback URL',  type: 'readonly', hint: 'callbackUrl',
         mono: true, colSpan: 3, fmt: () => cfg.callbackUrl },
     ];
@@ -285,12 +285,12 @@ window.ZdTestSnsLoginNaver = {
       <b>2.</b> 네이버 로그인 사용 API 추가 → 권한: 이름/이메일/닉네임/프로필사진<br>
       <b>3.</b> 서비스 URL: <code>http://127.0.0.1:3000</code><br>
       <b>4.</b> Callback URL: <code>{{ cfg.callbackUrl }}</code><br>
-      <b>5.</b> sy_prop <code>app.ext-sdk.naver-client-id</code> / <code>app.ext-sdk.naver-client-secret</code> 등록<br><br>
+      <b>5.</b> sy_prop <code>app.auth.social.naver-client-id</code> / <code>app.auth.social.naver-client-secret</code> 등록<br><br>
       <b>백엔드 API:</b> <code>POST /api/co/ext/sns-naver/profile</code> → 네이버 userinfo 프록시 호출
     </div>
   </div>
 
-  <bo-zd-yml-grid endpoint="/bo/sy/app-config/social" title="application.yml — 소셜 로그인 설정" />
-  <bo-zd-sy-prop-grid prop-key-prefixes="app.ext-sdk.,app.auth.social." default-prop-key-filter="app.ext-sdk.naver-client" />
+  <bo-zd-sy-prop-grid prop-key-prefixes="app.auth.social." default-prop-key-filter="app.auth.social.naver" />
+  <bo-zd-yml-grid endpoint="/bo/sy/app-config/social" default-key-filter="app.auth.social.naver" />
 </div>`,
 };

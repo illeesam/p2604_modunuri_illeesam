@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 개발도구 — 네이버페이 결제 테스트
  *
  * 흐름:
@@ -329,6 +329,7 @@ window.ZdTestPayNaverpay = {
     </div>
   </div>
 
-  <bo-zd-sy-prop-grid prop-key-prefixes="app.pay.naverpay." default-prop-key-filter="app.pay.naverpay." />
+  <bo-zd-sy-prop-grid prop-key-prefixes="app.pay.naverpay." default-prop-key-filter="app.pay.naverpay" />
+  <bo-zd-yml-grid endpoint="/bo/sy/app-config/naverpay" default-key-filter="app.pay.naverpay" />
 </div>`,
 };

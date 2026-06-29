@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 개발도구 — 카카오페이 결제 테스트
  *
  * 흐름:
@@ -331,6 +331,7 @@ window.ZdTestPayKakaopay = {
     </div>
   </div>
 
-  <bo-zd-sy-prop-grid prop-key-prefixes="app.pay.kakaopay." default-prop-key-filter="app.pay.kakaopay." />
+  <bo-zd-sy-prop-grid prop-key-prefixes="app.pay.kakaopay." default-prop-key-filter="app.pay.kakaopay" />
+  <bo-zd-yml-grid endpoint="/bo/sy/app-config/kakaopay" default-key-filter="app.pay.kakaopay" />
 </div>`,
 };

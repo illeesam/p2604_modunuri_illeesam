@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 개발도구 — 토스페이먼츠 결제위젯 테스트 (test_gck_ 키)
  */
 window.ZdTestPayTossWidget = {
@@ -1619,7 +1619,7 @@ boApi.post('/api/co/cm/toss/cancel',
     </div>
   </div>
 
-  <bo-zd-yml-grid endpoint="/bo/sy/app-config/toss" title="application.yml — 토스페이먼츠 설정" />
-  <bo-zd-sy-prop-grid prop-key-prefixes="app.pay.toss." default-prop-key-filter="app.pay.toss." />
+  <bo-zd-sy-prop-grid prop-key-prefixes="app.pay.toss." default-prop-key-filter="app.pay.toss" />
+  <bo-zd-yml-grid endpoint="/bo/sy/app-config/toss" default-key-filter="app.pay.toss" />
 </div>`,
 };

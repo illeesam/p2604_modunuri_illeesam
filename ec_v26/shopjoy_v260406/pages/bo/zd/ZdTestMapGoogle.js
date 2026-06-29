@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 개발도구 — 구글 지도 API 테스트
  */
 window.ZdTestMapGoogle = {
@@ -39,8 +39,8 @@ window.ZdTestMapGoogle = {
 
     const cfgFormColumns = [
       { key: 'apiKey', label: 'Google Maps API Key', type: 'text', required: true,
-        placeholder: 'sy_prop: app.ext-sdk.google-map-api-key', mono: true, colSpan: 3,
-        hint: 'app.ext-sdk.google-map-api-key' },
+        placeholder: 'sy_prop: app.map.google-api-key', mono: true, colSpan: 3,
+        hint: 'app.map.google-api-key' },
     ];
 
     const mapFormColumns = [
@@ -62,7 +62,7 @@ window.ZdTestMapGoogle = {
 
     onMounted(async () => {
       try {
-        const res = await boApiSvc.syProp?.getList?.({ propKeys: 'app.ext-sdk.google-map-api-key' }, '구글 지도 API 테스트', '키 조회');
+        const res = await boApiSvc.syProp?.getList?.({ propKeys: 'app.map.google-api-key' }, '구글 지도 API 테스트', '키 조회');
         const list = res?.data?.data || [];
         // 동일 propKey가 여러 프로파일 행으로 올 수 있음 → local/dev 우선, 없으면 값 있는 행
         const pickVal = (key) => {
@@ -70,7 +70,7 @@ window.ZdTestMapGoogle = {
           const preferred = rows.find(p => /local|dev/.test(p.propProfile || '')) || rows[0];
           return preferred?.propValue || '';
         };
-        cfg.apiKey = pickVal('app.ext-sdk.google-map-api-key');
+        cfg.apiKey = pickVal('app.map.google-api-key');
       } catch (e) {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);
       }
@@ -160,7 +160,7 @@ window.ZdTestMapGoogle = {
       if (!cfg.apiKey) { showToast('API Key 를 입력하세요.', 'error'); return; }
       try {
         await boApi.put('/bo/sy/prop/bulk', [
-          { propKey: 'app.ext-sdk.google-map-api-key', propValue: cfg.apiKey },
+          { propKey: 'app.map.google-api-key', propValue: cfg.apiKey },
         ], coUtil.cofApiHdr('구글 지도 테스트', '키 저장'));
         showToast('sy_prop 에 저장되었습니다.', 'success');
       } catch (e) {
@@ -262,12 +262,12 @@ window.ZdTestMapGoogle = {
     <div style="padding:12px;font-size:12px;line-height:1.8;color:#444">
       <b>1.</b> Google Cloud Console → Maps JavaScript API + Geocoding API 활성화<br>
       <b>2.</b> API 키 생성 → HTTP 리퍼러 제한: <code>127.0.0.1:*</code>, <code>localhost:*</code><br>
-      <b>3.</b> sy_prop <code>app.ext-sdk.google-map-api-key</code> 에 API Key 등록<br>
+      <b>3.</b> sy_prop <code>app.map.google-api-key</code> 에 API Key 등록<br>
       <b>4.</b> SDK 로드 → 지도 렌더링 → 지오코딩 순서로 테스트
     </div>
   </div>
 
-  <bo-zd-yml-grid endpoint="/bo/sy/app-config/map" title="application.yml — 지도 API 설정" />
-  <bo-zd-sy-prop-grid prop-key-prefixes="app.ext-sdk.,app.map." default-prop-key-filter="app.ext-sdk.google-map" />
+  <bo-zd-sy-prop-grid prop-key-prefixes="app.map." default-prop-key-filter="app.map.google" />
+  <bo-zd-yml-grid endpoint="/bo/sy/app-config/map" default-key-filter="app.map.google" />
 </div>`,
 };

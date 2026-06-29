@@ -684,7 +684,92 @@ ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
   SET prop_value=EXCLUDED.prop_value, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
 
 -- ──────────────────────────────────────────────────────────────
--- [9] 비즈니스 정책 — biz.*
+-- [9] 카카오 알림톡/친구톡/채널 — app.kakao.*
+-- ──────────────────────────────────────────────────────────────
+
+INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
+VALUES ('2604010000000001','app.kakao','app.kakao.channel-id',
+ '@shopjoy',
+ '채널 공개 ID','STRING',10,'Y','^local^dev^',
+ '카카오 비즈니스 → 채널 관리 → 채널 공개 ID (예: @shopjoy)',
+ 'SYSTEM','2026-06-20 00:00:00')
+ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
+  SET prop_value=EXCLUDED.prop_value, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
+
+INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
+VALUES ('2604010000000001','app.kakao','app.kakao.channel-id',
+ '@shopjoy',
+ '채널 공개 ID','STRING',10,'Y','^prod^',
+ '카카오 비즈니스 → 채널 관리 → 채널 공개 ID (운영)',
+ 'SYSTEM','2026-06-20 00:00:00')
+ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
+  SET prop_value=EXCLUDED.prop_value, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
+
+INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
+VALUES ('2604010000000001','app.kakao','app.kakao.from',
+ '0212345678',
+ '발신 번호 (사전 등록)','STRING',20,'Y','^local^dev^',
+ '카카오 비즈니스 → 발신 번호 사전 등록 필요',
+ 'SYSTEM','2026-06-20 00:00:00')
+ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
+  SET prop_value=EXCLUDED.prop_value, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
+
+INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
+VALUES ('2604010000000001','app.kakao','app.kakao.from',
+ '0212345678',
+ '발신 번호 (사전 등록)','STRING',20,'Y','^prod^',
+ '카카오 비즈니스 → 발신 번호 사전 등록 필요 (운영)',
+ 'SYSTEM','2026-06-20 00:00:00')
+ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
+  SET prop_value=EXCLUDED.prop_value, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
+
+INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
+VALUES ('2604010000000001','app.kakao','app.kakao.biz-msg-api-key',
+ '',
+ '비즈메시지 API Key','SECRET',30,'Y','^local^dev^',
+ '카카오 비즈니스 파트너사 포털 → 비즈메시지 API Key 발급',
+ 'SYSTEM','2026-06-20 00:00:00')
+ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
+  SET prop_value=EXCLUDED.prop_value, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
+
+INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
+VALUES ('2604010000000001','app.kakao','app.kakao.biz-msg-api-key',
+ '',
+ '비즈메시지 API Key','SECRET',30,'Y','^prod^',
+ '카카오 비즈니스 파트너사 포털 → 비즈메시지 API Key (운영)',
+ 'SYSTEM','2026-06-20 00:00:00')
+ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
+  SET prop_value=EXCLUDED.prop_value, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
+
+INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
+VALUES ('2604010000000001','app.kakao','app.kakao.sender-key',
+ '',
+ '발신 프로필 키 (Sender Key)','SECRET',40,'Y','^local^dev^',
+ '알림톡 발신 프로필 등록 → Sender Key 발급 (알림톡 템플릿 검수 후 사용 가능)',
+ 'SYSTEM','2026-06-20 00:00:00')
+ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
+  SET prop_value=EXCLUDED.prop_value, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
+
+INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
+VALUES ('2604010000000001','app.kakao','app.kakao.sender-key',
+ '',
+ '발신 프로필 키 (Sender Key)','SECRET',40,'Y','^prod^',
+ '알림톡 발신 프로필 등록 → Sender Key 발급 (운영)',
+ 'SYSTEM','2026-06-20 00:00:00')
+ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
+  SET prop_value=EXCLUDED.prop_value, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
+
+INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)
+VALUES ('2604010000000001','app.kakao','app.kakao.alimtalk.sender-key',
+ '',
+ '알림톡 Sender Key (application.yml 폴백)','SECRET',50,'Y','^local^dev^',
+ 'app.kakao.sender-key 와 동일한 값 — application.yml @Value 바인딩용',
+ 'SYSTEM','2026-06-20 00:00:00')
+ON CONFLICT (site_id,path_id,prop_key,COALESCE(prop_profile,'')) DO UPDATE
+  SET prop_value=EXCLUDED.prop_value, upd_by='SYSTEM', upd_date=CURRENT_TIMESTAMP;
+
+-- ──────────────────────────────────────────────────────────────
+-- [10] 비즈니스 정책 — biz.*
 -- ──────────────────────────────────────────────────────────────
 
 INSERT INTO shopjoy_2604.sy_prop (site_id,path_id,prop_key,prop_value,prop_label,prop_type_cd,sort_ord,use_yn,prop_profile,prop_remark,reg_by,reg_date)

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 개발도구 — Android / iOS 앱 메시지 발송 & 수신 확인 통합 테스트
  *
  * 채널별 발송:
@@ -804,8 +804,8 @@ window.ZdTestAppMsgSendReceiv = {
     </div>
   </div>
 
-  <bo-zd-yml-grid endpoint="/bo/sy/app-config/all" title="application.yml — 앱 메시지 설정" />
-  <bo-zd-sy-prop-grid prop-key-prefixes="app.push.,app.sms.,app.kakao." default-prop-key-filter="app.push.; app.sms." />
+  <bo-zd-sy-prop-grid prop-key-prefixes="app.push.,app.sms.,app.kakao." default-prop-key-filter="app.push" />
+  <bo-zd-yml-grid endpoint="/bo/sy/app-config/all" default-key-filter="app.push" />
 
 </div>`,
 };

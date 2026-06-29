@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 개발도구 — AI 챗봇 (OpenAI / Claude) 테스트
  */
 window.ZdTestAiChatbot = {
@@ -244,7 +244,7 @@ window.ZdTestAiChatbot = {
     </div>
   </div>
 
-  <bo-zd-yml-grid endpoint="/bo/sy/app-config/all" title="application.yml — AI 챗봇 설정" />
-  <bo-zd-sy-prop-grid prop-key-prefixes="app.ai." default-prop-key-filter="app.ai." />
+  <bo-zd-sy-prop-grid prop-key-prefixes="app.ai." default-prop-key-filter="app.ai" />
+  <bo-zd-yml-grid endpoint="/bo/sy/app-config/all" default-key-filter="app.ai" />
 </div>`,
 };

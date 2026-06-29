@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 개발도구 — SMS 문자 발송 테스트
  */
 window.ZdTestSms = {
@@ -175,7 +175,7 @@ window.ZdTestSms = {
     </div>
   </div>
 
-  <bo-zd-yml-grid endpoint="/bo/sy/app-config/all" title="application.yml — SMS 설정" />
-  <bo-zd-sy-prop-grid prop-key-prefixes="app.sms." default-prop-key-filter="app.sms." />
+  <bo-zd-sy-prop-grid prop-key-prefixes="app.sms." default-prop-key-filter="app.sms" />
+  <bo-zd-yml-grid endpoint="/bo/sy/app-config/all" default-key-filter="app.sms" />
 </div>`,
 };

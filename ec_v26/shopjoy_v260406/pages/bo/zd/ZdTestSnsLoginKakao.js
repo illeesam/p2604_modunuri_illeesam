@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 개발도구 — 카카오 소셜 로그인 테스트
  */
 window.ZdTestSnsLoginKakao = {
@@ -42,7 +42,7 @@ window.ZdTestSnsLoginKakao = {
     onMounted(async () => {
       // sy_prop 에서 키 조회
       try {
-        const res = await boApiSvc.syProp?.getList?.({ propKeys: 'app.ext-sdk.kakao-js-key,app.ext-sdk.naver-client-id,app.ext-sdk.naver-callback-url' }, '카카오 소셜 로그인 테스트', '키 조회');
+        const res = await boApiSvc.syProp?.getList?.({ propKeys: 'app.auth.social.kakao-js-key,app.auth.social.naver-client-id,app.auth.social.naver-callback-url' }, '카카오 소셜 로그인 테스트', '키 조회');
         const list = res?.data?.data || [];
         // 동일 propKey가 여러 프로파일 행으로 올 수 있음 → local/dev 우선, 없으면 값 있는 행
         const pickVal = (key) => {
@@ -50,9 +50,9 @@ window.ZdTestSnsLoginKakao = {
           const preferred = rows.find(p => /local|dev/.test(p.propProfile || '')) || rows[0];
           return preferred?.propValue || '';
         };
-        cfg.kakaoJsKey       = pickVal('app.ext-sdk.kakao-js-key');
-        cfg.naverClientId    = pickVal('app.ext-sdk.naver-client-id');
-        cfg.naverCallbackUrl = pickVal('app.ext-sdk.naver-callback-url');
+        cfg.kakaoJsKey       = pickVal('app.auth.social.kakao-js-key');
+        cfg.naverClientId    = pickVal('app.auth.social.naver-client-id');
+        cfg.naverCallbackUrl = pickVal('app.auth.social.naver-callback-url');
       } catch (e) {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);
       }
@@ -144,7 +144,7 @@ window.ZdTestSnsLoginKakao = {
       if (!cfg.kakaoJsKey) { showToast('JS Key 를 입력하세요.', 'error'); return; }
       try {
         await boApi.put('/bo/sy/prop/bulk', [
-          { propKey: 'app.ext-sdk.kakao-js-key', propValue: cfg.kakaoJsKey },
+          { propKey: 'app.auth.social.kakao-js-key', propValue: cfg.kakaoJsKey },
         ], coUtil.cofApiHdr('카카오 SDK 테스트', '키 저장'));
         showToast('sy_prop 에 저장되었습니다.', 'success');
       } catch (e) {
@@ -165,8 +165,8 @@ window.ZdTestSnsLoginKakao = {
     /* ##### [05] 폼/그리드 컬럼 정의 #################################################### */
 
     const cfgFormColumns = [
-      { key: 'kakaoJsKey', label: 'Kakao JS Key', type: 'text', hint: 'app.ext-sdk.kakao-js-key',
-        mono: true, colSpan: 3, required: true, placeholder: 'sy_prop: app.ext-sdk.kakao-js-key' },
+      { key: 'kakaoJsKey', label: 'Kakao JS Key', type: 'text', hint: 'app.auth.social.kakao-js-key',
+        mono: true, colSpan: 3, required: true, placeholder: 'sy_prop: app.auth.social.kakao-js-key' },
     ];
 
     const tokenFormColumns = [
@@ -253,7 +253,7 @@ window.ZdTestSnsLoginKakao = {
   <div class="card" style="margin-bottom:12px">
     <div class="toolbar"><span class="list-title">연동 흐름</span></div>
     <div style="padding:12px;font-size:12px;line-height:1.8;color:#444">
-      <b>1.</b> sy_prop <code>app.ext-sdk.kakao-js-key</code> 에 카카오 앱 JS 키 등록<br>
+      <b>1.</b> sy_prop <code>app.auth.social.kakao-js-key</code> 에 카카오 앱 JS 키 등록<br>
       <b>2.</b> 카카오 개발자 콘솔 → 앱 → 플랫폼 → Web 사이트 도메인 등록 (<code>http://127.0.0.1:5501</code>)<br>
       <b>3.</b> 동의 항목 → profile, account_email 활성화<br>
       <b>4.</b> SDK 초기화 → 로그인 팝업 → 사용자 정보 확인<br>
@@ -261,7 +261,7 @@ window.ZdTestSnsLoginKakao = {
     </div>
   </div>
 
-  <bo-zd-yml-grid endpoint="/bo/sy/app-config/social" title="application.yml — 소셜 로그인 설정" />
-  <bo-zd-sy-prop-grid prop-key-prefixes="app.ext-sdk.,app.auth.social." default-prop-key-filter="app.ext-sdk.kakao" />
+  <bo-zd-sy-prop-grid prop-key-prefixes="app.auth.social." default-prop-key-filter="app.auth.social.kakao" />
+  <bo-zd-yml-grid endpoint="/bo/sy/app-config/social" default-key-filter="app.auth.social.kakao" />
 </div>`,
 };

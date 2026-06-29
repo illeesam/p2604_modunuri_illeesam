@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 개발도구 — 카카오톡 공유 테스트
  */
 window.ZdTestShareKakao = {
@@ -45,7 +45,7 @@ window.ZdTestShareKakao = {
     onMounted(async () => {
       try {
         const res = await boApiSvc.syProp?.getList?.({
-          propKeys: 'app.ext-sdk.kakao-js-key',
+          propKeys: 'app.auth.social.kakao-js-key',
         }, '카카오톡 공유 테스트', '키 조회');
         const list = res?.data?.data || [];
         const pickVal = (key) => {
@@ -53,7 +53,7 @@ window.ZdTestShareKakao = {
           const pref = rows.find(p => /local|dev/.test(p.propProfile || '')) || rows[0];
           return pref?.propValue || '';
         };
-        cfg.kakaoJsKey = pickVal('app.ext-sdk.kakao-js-key');
+        cfg.kakaoJsKey = pickVal('app.auth.social.kakao-js-key');
       } catch (e) {
         result.error = 'sy_prop 조회 실패: ' + (e.message || e);
       }
@@ -152,7 +152,7 @@ window.ZdTestShareKakao = {
       if (!cfg.kakaoJsKey) { showToast('Kakao JS Key 를 입력하세요.', 'error'); return; }
       try {
         await boApi.put('/bo/sy/prop/bulk', [
-          { propKey: 'app.ext-sdk.kakao-js-key', propValue: cfg.kakaoJsKey },
+          { propKey: 'app.auth.social.kakao-js-key', propValue: cfg.kakaoJsKey },
         ], coUtil.cofApiHdr('카카오톡 공유 테스트', '키 저장'));
         showToast('sy_prop 에 저장되었습니다.', 'success');
       } catch (e) {
@@ -172,7 +172,7 @@ window.ZdTestShareKakao = {
 
     const cfgFormColumns = [
       { key: 'kakaoJsKey', label: 'Kakao JS Key (JavaScript 키)', type: 'text', colSpan: 3, mono: true,
-        placeholder: 'sy_prop: app.ext-sdk.kakao-js-key', hint: 'app.ext-sdk.kakao-js-key' },
+        placeholder: 'sy_prop: app.auth.social.kakao-js-key', hint: 'app.auth.social.kakao-js-key' },
     ];
 
     const shareFormColumns = [
@@ -248,7 +248,7 @@ window.ZdTestShareKakao = {
     <div style="padding:12px;font-size:12px;line-height:1.8;color:#444">
       <b>1.</b> <a href="https://developers.kakao.com/console/app" target="_blank">Kakao Developers</a> → 앱 → 플랫폼 → Web → 도메인 등록<br>
       <b>2.</b> 등록 도메인: <code>http://127.0.0.1:5501</code> (개발) / 운영 도메인<br>
-      <b>3.</b> sy_prop <code>app.ext-sdk.kakao-js-key</code> 에 JavaScript 키 등록 (소셜 로그인과 동일 키)<br>
+      <b>3.</b> sy_prop <code>app.auth.social.kakao-js-key</code> 에 JavaScript 키 등록 (소셜 로그인과 동일 키)<br>
       <b>4.</b> [SDK 초기화] → 공유 유형 선택 → [카카오톡 공유창 열기]<br><br>
       <b>공유 유형 설명:</b><br>
       &nbsp;&nbsp;• <b>피드</b>: 이미지 + 제목 + 설명 + 링크 버튼이 포함된 카드형 메시지<br>
@@ -259,6 +259,7 @@ window.ZdTestShareKakao = {
     </div>
   </div>
 
-  <bo-zd-sy-prop-grid prop-key-prefixes="app.ext-sdk.kakao" default-prop-key-filter="app.ext-sdk.kakao-js-key" />
+  <bo-zd-sy-prop-grid prop-key-prefixes="app.auth.social." default-prop-key-filter="app.auth.social.kakao" />
+  <bo-zd-yml-grid endpoint="/bo/sy/app-config/kakao" default-key-filter="app.kakao" />
 </div>`,
 };

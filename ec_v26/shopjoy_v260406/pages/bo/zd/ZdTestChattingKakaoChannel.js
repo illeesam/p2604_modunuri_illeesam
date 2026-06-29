@@ -204,7 +204,7 @@ window.ZdTestChattingKakaoChannel = {
     </div>
   </div>
 
-  <bo-zd-yml-grid endpoint="/bo/sy/app-config/kakao" title="application.yml — 카카오 알림톡 설정" />
-  <bo-zd-sy-prop-grid prop-key-prefixes="app.kakao." default-prop-key-filter="app.kakao." />
+  <bo-zd-sy-prop-grid prop-key-prefixes="app.kakao." default-prop-key-filter="app.kakao" />
+  <bo-zd-yml-grid endpoint="/bo/sy/app-config/kakao" default-key-filter="app.kakao" />
 </div>`,
 };
