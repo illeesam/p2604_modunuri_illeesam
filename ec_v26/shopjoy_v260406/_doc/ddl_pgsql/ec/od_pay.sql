@@ -12,10 +12,13 @@ CREATE TABLE shopjoy_2604.od_pay (
     pay_method_cd           VARCHAR(20)  NOT NULL,
     pay_channel_cd          VARCHAR(20) ,
     pay_amt                 BIGINT       NOT NULL,
+    balance_amt             BIGINT       DEFAULT 0,
     pay_status_cd           VARCHAR(20)  DEFAULT 'PENDING'::character varying,
     pay_status_cd_before    VARCHAR(20) ,
     pay_date                TIMESTAMP   ,
     pg_company_cd           VARCHAR(20) ,
+    pg_provider             VARCHAR(50) ,
+    payment_key             VARCHAR(200),
     pg_transaction_id       VARCHAR(100),
     pg_approval_no          VARCHAR(50) ,
     pg_response             TEXT        ,
@@ -58,10 +61,13 @@ COMMENT ON COLUMN shopjoy_2604.od_pay.pay_occur_type_cd IS '결제발생유형 (
 COMMENT ON COLUMN shopjoy_2604.od_pay.pay_method_cd IS '결제수단 (코드: PAY_METHOD)';
 COMMENT ON COLUMN shopjoy_2604.od_pay.pay_channel_cd IS '결제채널 (코드: PAY_CHANNEL — TOSS만: CARD/ACCOUNT/KAKAO/NAVER)';
 COMMENT ON COLUMN shopjoy_2604.od_pay.pay_amt IS '결제 금액';
+COMMENT ON COLUMN shopjoy_2604.od_pay.balance_amt IS '잔여 취소 가능 금액 (pay_amt - 누적취소액 = 부분취소 후 토스 balanceAmount)';
 COMMENT ON COLUMN shopjoy_2604.od_pay.pay_status_cd IS '결제상태 (코드: PAY_STATUS)';
 COMMENT ON COLUMN shopjoy_2604.od_pay.pay_status_cd_before IS '변경 전 결제상태 (코드: PAY_STATUS)';
 COMMENT ON COLUMN shopjoy_2604.od_pay.pay_date IS '결제 완료일시';
 COMMENT ON COLUMN shopjoy_2604.od_pay.pg_company_cd IS 'PG사 (TOSS/KAKAO/NAVER 등)';
+COMMENT ON COLUMN shopjoy_2604.od_pay.pg_provider IS 'PG 제공자 식별자 (toss_widget/kakao/naver 등 프론트 전달값)';
+COMMENT ON COLUMN shopjoy_2604.od_pay.payment_key IS '토스 paymentKey (결제창 후 토스 발급 — 취소/조회 시 사용)';
 COMMENT ON COLUMN shopjoy_2604.od_pay.pg_transaction_id IS 'PG 거래ID';
 COMMENT ON COLUMN shopjoy_2604.od_pay.pg_approval_no IS 'PG 승인번호';
 COMMENT ON COLUMN shopjoy_2604.od_pay.pg_response IS 'PG 응답 데이터 (JSON)';

@@ -157,7 +157,6 @@
       { id: 'zdTestSnsLoginGoogle', label: '구글 로그인 테스트' },
       { id: 'zdTestSnsLoginNaver', label: '네이버 로그인 테스트' },
       { group: '결제' },
-      { id: 'zdTestPayTosspay', label: '토스 결제창 테스트' },
       { id: 'zdTestPayTossWidget',  label: '토스 결제위젯 테스트' },
       { id: 'zdTestPayTossBrandpay', label: '토스 브랜드페이 테스트' },
       { id: 'zdTestPayKakaopay',   label: '카카오페이 결제 테스트' },
@@ -476,7 +475,6 @@
         zdLocalStorage: 'zd-local-storage',
         zdTestSnsLoginKakao:   'zd-test-sns-login-kakao',
         zdTestSnsLoginGoogle:  'zd-test-sns-login-google',
-        zdTestPayTosspay: 'zd-test-pay-tosspay',
         zdTestPayTossWidget:  'zd-test-pay-toss-widget',
         zdTestPayTossBrandpay: 'zd-test-pay-toss-brandpay',
         zdTestPayKakaopay:   'zd-test-pay-kakaopay',
@@ -2593,7 +2591,6 @@
             <zd-local-storage  v-else-if="page==='zdLocalStorage'"  :navigate="navigate" />
             <zd-test-sns-login-kakao  v-else-if="page==='zdTestSnsLoginKakao'"  :navigate="navigate" :show-toast="showToast" />
             <zd-test-sns-login-google v-else-if="page==='zdTestSnsLoginGoogle'" :navigate="navigate" :show-toast="showToast" />
-            <zd-test-pay-tosspay v-else-if="page==='zdTestPayTosspay'" :navigate="navigate" :show-toast="showToast" />
             <zd-test-pay-toss-widget  v-else-if="page==='zdTestPayTossWidget'"  :navigate="navigate" :show-toast="showToast" />
             <zd-test-pay-toss-brandpay v-else-if="page==='zdTestPayTossBrandpay'" :navigate="navigate" :show-toast="showToast" />
             <zd-test-pay-kakaopay     v-else-if="page==='zdTestPayKakaopay'"    :navigate="navigate" :show-toast="showToast" />
@@ -3182,7 +3179,6 @@
     .component('ZdLocalStorage', window.ZdLocalStorage)
     .component('ZdTestSnsLoginKakao',  window.ZdTestSnsLoginKakao)
     .component('ZdTestSnsLoginGoogle', window.ZdTestSnsLoginGoogle)
-    .component('ZdTestPayTosspay', window.ZdTestPayTosspay)
     .component('ZdTestPayTossWidget',  window.ZdTestPayTossWidget)
     .component('ZdTestPayTossBrandpay', window.ZdTestPayTossBrandpay)
     .component('ZdTestPayKakaopay',    window.ZdTestPayKakaopay)
