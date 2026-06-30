@@ -71,7 +71,7 @@ window.ZdTestPayTossWidget = {
 
     const form = reactive({
       amount:              1000,
-      orderId:             'TEST-' + Date.now(),
+      orderId:             'PAY-' + Date.now(),
       orderName:           '테스트 상품',
       customerName:        '송성일',
       customerEmail:       'illeesam@gmail.com',
@@ -102,7 +102,10 @@ window.ZdTestPayTossWidget = {
       callbackParams: null,   // callback_pay_toss_succ 복귀 시 토스가 붙여준 파라미터
     });
 
-    const uiState = reactive({ sdkLoaded: false, loading: false, widgetMounted: false, diagramOpen: false });
+    const uiState = reactive({
+      sdkLoaded: false, loading: false, widgetMounted: false, diagramOpen: false, erdOpen: false,
+      apiPanel1Open: false, apiPanel2Open: false, apiPanel3Open: false, apiPanel4Open: false, apiPanel5Open: false,
+    });
     const widgetContainerId = 'toss-widget-container-' + Math.random().toString(36).slice(2);
     let widgetsInstance = null;
 
@@ -165,7 +168,7 @@ window.ZdTestPayTossWidget = {
       result.initDetail = ok ? ('Widget Client Key: ' + (cfg.clientKey || '(미설정)')) : '';
     };
 
-    const refreshOrderId = () => { form.orderId = 'TEST-' + Date.now(); };
+    const refreshOrderId = () => { form.orderId = 'PAY-' + Date.now(); };
 
     const mountWidget = async () => {
       if (!cfg.clientKey) { showToast('Widget Client Key 를 입력하세요.', 'error'); return; }
@@ -423,12 +426,40 @@ window.ZdTestPayTossWidget = {
     ];
 
     const confirmGridColumns = [
-      { key: 'paymentKey',  label: 'paymentKey',  cellStyle: 'font-family:monospace;font-size:10px;word-break:break-all;color:#1e40af' },
-      { key: 'orderId',     label: 'orderId',     cellStyle: 'font-family:monospace;font-size:11px' },
-      { key: 'orderName',   label: 'orderName' },
-      { key: 'totalAmount', label: 'totalAmount', fmt: (v) => (v || 0).toLocaleString() + ' 원', align: 'right' },
-      { key: 'status',      label: 'status',      badge: () => 'badge-green' },
-      { key: 'method',      label: 'method' },
+      { key: 'paymentKey',     label: 'paymentKey',     cellStyle: 'font-family:monospace;font-size:10px;word-break:break-all;color:#1e40af' },
+      { key: 'orderId',        label: 'orderId',        cellStyle: 'font-family:monospace;font-size:11px' },
+      { key: 'orderName',      label: 'orderName' },
+      { key: 'totalAmount',    label: 'totalAmount',    fmt: (v) => (v || 0).toLocaleString() + ' 원', align: 'right' },
+      { key: 'status',         label: 'status',         badge: () => 'badge-green' },
+      { key: 'method',         label: 'method' },
+      { key: 'approvedAt',     label: 'approvedAt',     cellStyle: 'font-family:monospace;font-size:10px;color:#6b7280' },
+      { key: 'transactionKey', label: 'transactionKey', cellStyle: 'font-family:monospace;font-size:10px;color:#7c3aed' },
+      { key: 'receiptUrl',     label: 'receiptUrl',     fmt: (v) => v ? '🧾 링크' : '-',
+        cellStyle: (v) => v ? 'color:#1d4ed8;cursor:pointer;text-decoration:underline' : 'color:#aaa' },
+    ];
+
+    // 취소 응답 — 결제 상태 요약 (Payment 객체 최상위)
+    const cancelSummaryGridColumns = [
+      { key: 'paymentKey',        label: 'paymentKey',        cellStyle: 'font-family:monospace;font-size:10px;word-break:break-all;color:#1e40af' },
+      { key: 'status',            label: 'status',
+        badge: (row) => row.status === 'CANCELED' ? 'badge-red' : 'badge-orange' },
+      { key: 'totalAmount',       label: 'totalAmount',       fmt: (v) => (v || 0).toLocaleString() + ' 원', align: 'right' },
+      { key: 'balanceAmount',     label: 'balanceAmount',     fmt: (v) => (v || 0).toLocaleString() + ' 원', align: 'right',
+        cellStyle: (v) => v === 0 ? 'color:#dc2626;font-weight:700' : 'color:#d97706;font-weight:700' },
+      { key: 'isPartialCancelable', label: 'isPartialCancelable',
+        fmt: (v) => v ? '✅ 가능' : '❌ 불가',
+        cellStyle: (v) => v ? 'color:#15803d' : 'color:#b91c1c' },
+    ];
+
+    // 취소 응답 — cancels[] 이력 테이블
+    const cancelHistGridColumns = [
+      { key: 'cancelAmount',  label: 'cancelAmount',  fmt: (v) => (v || 0).toLocaleString() + ' 원', align: 'right',
+        cellStyle: 'color:#dc2626;font-weight:600' },
+      { key: 'canceledAt',    label: 'canceledAt',    cellStyle: 'font-family:monospace;font-size:10px;color:#6b7280' },
+      { key: 'cancelReason',  label: 'cancelReason' },
+      { key: 'transactionKey', label: 'transactionKey', cellStyle: 'font-family:monospace;font-size:10px;color:#7c3aed' },
+      { key: 'refundableAmount', label: 'refundableAmount', fmt: (v) => v != null ? (v).toLocaleString() + ' 원' : '-', align: 'right' },
+      { key: 'taxFreeAmount', label: 'taxFreeAmount',  fmt: (v) => v != null ? (v).toLocaleString() + ' 원' : '-', align: 'right' },
     ];
 
     return {
@@ -436,6 +467,7 @@ window.ZdTestPayTossWidget = {
       handleBtnAction,
       cfgFormColumns, baseFormColumns, hiddenFormColumns,
       cfPayParams, previewGridColumns, confirmGridColumns,
+      cancelSummaryGridColumns, cancelHistGridColumns,
       ENV, TOSS_SUCCESS_URL, TOSS_FAIL_URL,
     };
   },
@@ -461,12 +493,382 @@ window.ZdTestPayTossWidget = {
         <span><span style="display:inline-block;width:10px;height:10px;background:#fee2e2;border:1px solid #fca5a5;border-radius:2px;margin-right:4px"></span>오류 / 사용자 취소</span>
       </div>
 
+      <!-- 🗂 ERD — 주문/결제/클레임/배송 테이블 관계도 -->
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#374151;margin-bottom:10px;display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none"
+          @click="uiState.erdOpen=!uiState.erdOpen">
+          <span style="background:#374151;color:#fff;border-radius:4px;padding:2px 8px;font-size:11px">🗂</span>
+          주문 · 결제 · 클레임 · 배송 ERD (접기/펼치기)
+          <span style="margin-left:auto;font-size:12px;color:#64748b">{{ uiState.erdOpen ? '▲' : '▼' }}</span>
+        </div>
+        <div v-if="uiState.erdOpen">
+
+          <!-- 라이프사이클 관리 원칙 -->
+          <div style="background:#f0f7ff;border:1px solid #93c5fd;border-radius:8px;padding:12px 14px;margin-bottom:10px;font-size:11px;line-height:1.75">
+            <div style="font-weight:700;color:#1d4ed8;margin-bottom:8px;font-size:12px">📐 라이프사이클 관리 원칙 — 이중 레벨 구조</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+              <div style="background:#fff;border:1px solid #bfdbfe;border-radius:6px;padding:8px 10px">
+                <div style="font-weight:700;color:#6366f1;margin-bottom:4px">od_order_item <span style="font-weight:400;font-size:10px;color:#888">Source of Truth</span></div>
+                <div style="color:#333">order_item_status_cd 가 상품별 실제 처리 상태. 부분배송·부분클레임 모두 item 단위로 독립 처리.</div>
+              </div>
+              <div style="background:#fff;border:1px solid #bfdbfe;border-radius:6px;padding:8px 10px">
+                <div style="font-weight:700;color:#3b82f6;margin-bottom:4px">od_order <span style="font-weight:400;font-size:10px;color:#888">집계 요약</span></div>
+                <div style="color:#333">order_status_cd 는 활성 item 상태의 집계값. 목록 조회·필터·통계 전용. item 변동 시 재산정.</div>
+              </div>
+              <div style="background:#fff;border:1px solid #bfdbfe;border-radius:6px;padding:8px 10px">
+                <div style="font-weight:700;color:#f97316;margin-bottom:4px">od_claim_item <span style="font-weight:400;font-size:10px;color:#888">독립 공존</span></div>
+                <div style="color:#333">클레임 진행 중에도 order_item_status_cd 는 유지. claim_item_status_cd 가 취소·반품·교환 흐름만 추적.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 상태 범례 -->
+          <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:10px;margin-bottom:10px;padding:7px 10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px">
+            <b style="color:#374151;margin-right:4px">상태 코드 범례:</b>
+            <span style="background:#fef9c3;border:1px solid #fde047;border-radius:3px;padding:1px 6px;color:#92400e">PENDING 대기</span>
+            <span style="background:#dbeafe;border:1px solid #93c5fd;border-radius:3px;padding:1px 6px;color:#1d4ed8">PAID 결제완료</span>
+            <span style="background:#dcfce7;border:1px solid #86efac;border-radius:3px;padding:1px 6px;color:#166534">DONE 승인완료</span>
+            <span style="background:#f3e8ff;border:1px solid #d8b4fe;border-radius:3px;padding:1px 6px;color:#5b21b6">PREPARING 준비중</span>
+            <span style="background:#e0f2fe;border:1px solid #7dd3fc;border-radius:3px;padding:1px 6px;color:#0369a1">SHIPPED 배송중</span>
+            <span style="background:#ecfdf5;border:1px solid #6ee7b7;border-radius:3px;padding:1px 6px;color:#065f46">COMPLT 완료</span>
+            <span style="background:#fee2e2;border:1px solid #fca5a5;border-radius:3px;padding:1px 6px;color:#b91c1c">CANCELED 취소</span>
+            <span style="background:#fff7ed;border:1px solid #fdba74;border-radius:3px;padding:1px 6px;color:#c2410c">PARTIAL_CANCELED 부분취소</span>
+            <span style="background:#fdf2f8;border:1px solid #f0abfc;border-radius:3px;padding:1px 6px;color:#86198f">CLAIM 클레임중</span>
+          </div>
+
+          <!-- ERD 테이블 그리드 -->
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;font-size:10px;margin-bottom:10px">
+
+            <!-- od_order -->
+            <div style="background:#fff;border:2px solid #3b82f6;border-radius:8px;overflow:hidden">
+              <div style="background:#3b82f6;color:#fff;font-weight:700;padding:5px 10px;font-size:11px">📦 od_order <span style="font-weight:400;font-size:9px;opacity:.85">주문</span></div>
+              <div style="padding:6px 10px;display:flex;flex-direction:column;gap:2px;font-family:monospace">
+                <div><span style="color:#f59e0b;font-weight:700">PK</span> order_id VARCHAR</div>
+                <div style="color:#64748b">order_status_cd <span style="color:#1d4ed8">ORDER_STATUS</span></div>
+                <div style="color:#64748b">order_amt NUMERIC — 원 주문금액</div>
+                <div style="color:#64748b">add_pay_amt NUMERIC — 추가결제 합계</div>
+                <div style="color:#64748b">customer_nm / customer_email</div>
+                <div style="color:#64748b">site_id / reg_date / upd_date</div>
+              </div>
+              <div style="background:#eff6ff;padding:4px 10px;font-size:9px;color:#1d4ed8;line-height:1.8">
+                <b>ORDER_STATUS</b><br>
+                <span style="color:#92400e">PENDING</span> 결제 전 임시저장<br>
+                <span style="color:#1d4ed8">PAID</span> 결제 완료<br>
+                <span style="color:#5b21b6">PREPARING</span> 출고 준비중<br>
+                <span style="color:#0369a1">SHIPPED</span> 배송중 (송장 등록)<br>
+                <span style="color:#065f46">COMPLT</span> 배송완료·구매확정<br>
+                <span style="color:#b91c1c">CANCELED</span> 전체 취소<br>
+                <span style="color:#86198f">CLAIM</span> 클레임 처리중
+              </div>
+            </div>
+
+            <!-- od_order_item -->
+            <div style="background:#fff;border:2px solid #6366f1;border-radius:8px;overflow:hidden">
+              <div style="background:#6366f1;color:#fff;font-weight:700;padding:5px 10px;font-size:11px">📋 od_order_item <span style="font-weight:400;font-size:9px;opacity:.85">주문항목</span></div>
+              <div style="padding:6px 10px;display:flex;flex-direction:column;gap:2px;font-family:monospace">
+                <div><span style="color:#f59e0b;font-weight:700">PK</span> order_item_id VARCHAR</div>
+                <div><span style="color:#3b82f6;font-weight:700">FK</span> order_id → od_order</div>
+                <div style="color:#64748b">item_status_cd <span style="color:#5b21b6">ORDER_ITEM_STATUS</span></div>
+                <div style="color:#64748b">prod_id / sku_id / prod_nm</div>
+                <div style="color:#64748b">qty / unit_price / item_amt</div>
+                <div style="color:#64748b">dliv_tmplt_id / dliv_fee</div>
+              </div>
+              <div style="background:#eef2ff;padding:4px 10px;font-size:9px;color:#4338ca;line-height:1.8">
+                <b>ORDER_ITEM_STATUS</b><br>
+                <span style="color:#92400e">PENDING</span> 결제 전<br>
+                <span style="color:#1d4ed8">PAID</span> 결제 완료<br>
+                <span style="color:#5b21b6">PREPARING</span> 출고 준비중<br>
+                <span style="color:#0369a1">SHIPPED</span> 배송중<br>
+                <span style="color:#065f46">COMPLT</span> 구매확정<br>
+                <span style="color:#b91c1c">CANCELED</span> 항목 취소<br>
+                <span style="color:#86198f">CLAIM</span> 클레임 처리중
+              </div>
+            </div>
+
+            <!-- od_pay -->
+            <div style="background:#fff;border:2px solid #7c3aed;border-radius:8px;overflow:hidden">
+              <div style="background:#7c3aed;color:#fff;font-weight:700;padding:5px 10px;font-size:11px">💳 od_pay <span style="font-weight:400;font-size:9px;opacity:.85">결제</span></div>
+              <div style="padding:6px 10px;display:flex;flex-direction:column;gap:2px;font-family:monospace">
+                <div><span style="color:#f59e0b;font-weight:700">PK</span> pay_id VARCHAR <span style="color:#dc2626">= 토스 orderId</span></div>
+                <div><span style="color:#3b82f6;font-weight:700">FK</span> order_id → od_order</div>
+                <div style="color:#64748b">pay_status_cd <span style="color:#7c3aed">PAY_STATUS</span></div>
+                <div style="color:#64748b">pay_div_cd — ORDER / CLAIM</div>
+                <div style="color:#64748b">pay_occur_type_cd — ORDER / CLAIM_EXTRA / EXCHANGE_EXTRA</div>
+                <div style="color:#64748b">pay_amt / pay_method_cd</div>
+                <div style="color:#15803d;font-weight:600">payment_key ← 토스 confirm 후 채움</div>
+                <div style="color:#64748b">approved_at / receipt_url</div>
+              </div>
+              <div style="background:#f5f3ff;padding:4px 10px;font-size:9px;color:#5b21b6;line-height:1.8">
+                <b>PAY_STATUS</b><br>
+                <span style="color:#92400e">PENDING</span> confirm 전 임시<br>
+                <span style="color:#065f46">DONE</span> 토스 승인 완료<br>
+                <span style="color:#c2410c">PARTIAL_CANCELED</span> 부분취소·잔여 있음<br>
+                <span style="color:#b91c1c">CANCELED</span> 전액취소 완료
+              </div>
+            </div>
+
+            <!-- od_dliv -->
+            <div style="background:#fff;border:2px solid #0891b2;border-radius:8px;overflow:hidden">
+              <div style="background:#0891b2;color:#fff;font-weight:700;padding:5px 10px;font-size:11px">🚚 od_dliv <span style="font-weight:400;font-size:9px;opacity:.85">배송</span></div>
+              <div style="padding:6px 10px;display:flex;flex-direction:column;gap:2px;font-family:monospace">
+                <div><span style="color:#f59e0b;font-weight:700">PK</span> dliv_id VARCHAR</div>
+                <div><span style="color:#3b82f6;font-weight:700">FK</span> order_id → od_order</div>
+                <div style="color:#64748b">dliv_status_cd <span style="color:#0369a1">DLIV_STATUS</span></div>
+                <div style="color:#64748b">dliv_div_cd — OUTBOUND / INBOUND</div>
+                <div style="color:#64748b">courier_cd / invoice_no — 택배사/송장</div>
+                <div style="color:#64748b">rcvr_nm / rcvr_phone / rcvr_addr</div>
+                <div style="color:#64748b">dliv_fee / dliv_start_date / dliv_end_date</div>
+              </div>
+              <div style="background:#ecfeff;padding:4px 10px;font-size:9px;color:#0e7490;line-height:1.8">
+                <b>DLIV_STATUS</b><br>
+                <span style="color:#5b21b6">READY</span> 출고 준비<br>
+                <span style="color:#0369a1">SHIPPING</span> 배송중 (송장 등록)<br>
+                <span style="color:#065f46">DELIVERED</span> 배송 완료<br>
+                <span style="color:#92400e">RETURN_REQ</span> 반품 수거 요청<br>
+                <span style="color:#b91c1c">RETURN_DONE</span> 반품 입고 완료<br>
+                <span style="color:#64748b">※ INBOUND: 반품 수거 흐름</span>
+              </div>
+            </div>
+
+            <!-- od_dliv_item -->
+            <div style="background:#fff;border:2px solid #0284c7;border-radius:8px;overflow:hidden">
+              <div style="background:#0284c7;color:#fff;font-weight:700;padding:5px 10px;font-size:11px">📬 od_dliv_item <span style="font-weight:400;font-size:9px;opacity:.85">배송항목</span></div>
+              <div style="padding:6px 10px;display:flex;flex-direction:column;gap:2px;font-family:monospace">
+                <div><span style="color:#f59e0b;font-weight:700">PK</span> dliv_item_id VARCHAR</div>
+                <div><span style="color:#3b82f6;font-weight:700">FK</span> dliv_id → od_dliv</div>
+                <div><span style="color:#3b82f6;font-weight:700">FK</span> order_item_id → od_order_item</div>
+                <div style="color:#64748b">qty / dliv_status_cd</div>
+              </div>
+              <div style="background:#f0f9ff;padding:4px 10px;font-size:9px;color:#0369a1;line-height:1.7">
+                od_order_item ↔ od_dliv 의<br>N:M 매핑 (부분출고 대응)
+              </div>
+            </div>
+
+            <!-- od_claim -->
+            <div style="background:#fff;border:2px solid #dc2626;border-radius:8px;overflow:hidden">
+              <div style="background:#dc2626;color:#fff;font-weight:700;padding:5px 10px;font-size:11px">⚠ od_claim <span style="font-weight:400;font-size:9px;opacity:.85">클레임(취소/반품/교환)</span></div>
+              <div style="padding:6px 10px;display:flex;flex-direction:column;gap:2px;font-family:monospace">
+                <div><span style="color:#f59e0b;font-weight:700">PK</span> claim_id VARCHAR</div>
+                <div><span style="color:#3b82f6;font-weight:700">FK</span> order_id → od_order</div>
+                <div style="color:#64748b">claim_status_cd <span style="color:#b91c1c">CLAIM_STATUS</span></div>
+                <div style="color:#64748b">claim_type_cd — CANCEL / RETURN / EXCHANGE</div>
+                <div style="color:#64748b">claim_reason_cd / claim_reason_detail</div>
+                <div style="color:#64748b">req_date / proc_date</div>
+              </div>
+              <div style="background:#fff5f5;padding:4px 10px;font-size:9px;color:#b91c1c;line-height:1.8">
+                <b>CLAIM_STATUS</b><br>
+                <span style="color:#92400e">REQ</span> 고객 접수<br>
+                <span style="color:#1d4ed8">APPROVED</span> 관리자 승인<br>
+                <span style="color:#5b21b6">IN_PROC</span> 처리중 (수거·환불 진행)<br>
+                <span style="color:#065f46">DONE</span> 처리 완료<br>
+                <span style="color:#b91c1c">REJECTED</span> 반려 (사유 포함)<br>
+                <span style="color:#64748b">※ claim_type별 후속 분기</span>
+              </div>
+            </div>
+
+            <!-- od_claim_item -->
+            <div style="background:#fff;border:2px solid #ef4444;border-radius:8px;overflow:hidden">
+              <div style="background:#ef4444;color:#fff;font-weight:700;padding:5px 10px;font-size:11px">📋 od_claim_item <span style="font-weight:400;font-size:9px;opacity:.85">클레임 항목</span></div>
+              <div style="padding:6px 10px;display:flex;flex-direction:column;gap:2px;font-family:monospace">
+                <div><span style="color:#f59e0b;font-weight:700">PK</span> claim_item_id VARCHAR</div>
+                <div><span style="color:#3b82f6;font-weight:700">FK</span> claim_id → od_claim</div>
+                <div><span style="color:#3b82f6;font-weight:700">FK</span> order_item_id → od_order_item</div>
+                <div style="color:#64748b">claim_item_status_cd</div>
+                <div style="color:#64748b">qty / reason_cd</div>
+              </div>
+              <div style="background:#fff5f5;padding:4px 10px;font-size:9px;color:#b91c1c;line-height:1.7">
+                클레임 대상 주문항목 연결<br>
+                부분 취소/반품 지원 (qty 기준)
+              </div>
+            </div>
+
+            <!-- od_refund -->
+            <div style="background:#fff;border:2px solid #ea580c;border-radius:8px;overflow:hidden">
+              <div style="background:#ea580c;color:#fff;font-weight:700;padding:5px 10px;font-size:11px">💸 od_refund <span style="font-weight:400;font-size:9px;opacity:.85">환불</span></div>
+              <div style="padding:6px 10px;display:flex;flex-direction:column;gap:2px;font-family:monospace">
+                <div><span style="color:#f59e0b;font-weight:700">PK</span> refund_id VARCHAR</div>
+                <div><span style="color:#3b82f6;font-weight:700">FK</span> claim_id → od_claim</div>
+                <div><span style="color:#3b82f6;font-weight:700">FK</span> pay_id → od_pay</div>
+                <div style="color:#64748b">refund_status_cd — REQ / DONE</div>
+                <div style="color:#64748b">refund_amt / refund_method_cd</div>
+                <div style="color:#64748b">toss_cancel_key ← 토스 취소 transactionKey</div>
+                <div style="color:#64748b">refund_date</div>
+              </div>
+              <div style="background:#fff7ed;padding:4px 10px;font-size:9px;color:#c2410c;line-height:1.7">
+                취소/반품 확정 시 생성<br>
+                토스 cancel API 호출 후<br>
+                transactionKey 저장
+              </div>
+            </div>
+
+            <!-- od_pay_method -->
+            <div style="background:#fff;border:2px solid #9333ea;border-radius:8px;overflow:hidden">
+              <div style="background:#9333ea;color:#fff;font-weight:700;padding:5px 10px;font-size:11px">🔑 od_pay_method <span style="font-weight:400;font-size:9px;opacity:.85">결제수단 상세</span></div>
+              <div style="padding:6px 10px;display:flex;flex-direction:column;gap:2px;font-family:monospace">
+                <div><span style="color:#f59e0b;font-weight:700">PK</span> pay_method_id VARCHAR</div>
+                <div><span style="color:#3b82f6;font-weight:700">FK</span> pay_id → od_pay</div>
+                <div style="color:#64748b">method_type_cd — CARD/TRANSFER/EASY</div>
+                <div style="color:#64748b">card_no(masked) / card_company</div>
+                <div style="color:#64748b">install_months / approve_no</div>
+                <div style="color:#64748b">bank_cd / account_no(masked)</div>
+              </div>
+              <div style="background:#faf5ff;padding:4px 10px;font-size:9px;color:#6b21a8;line-height:1.7">
+                토스 Payment 객체의<br>card/transfer/easyPay 필드를<br>관계형으로 정규화
+              </div>
+            </div>
+
+          </div>
+
+          <!-- 관계도 ASCII -->
+          <div style="background:#1e293b;border-radius:8px;padding:12px 14px;font-family:monospace;font-size:10px;color:#e2e8f0;line-height:1.8;overflow-x:auto">
+            <div style="color:#94a3b8;margin-bottom:6px;font-size:9px">── 테이블 관계도 (1:N 방향) ─────────────────────────────────────</div>
+            <pre style="margin:0;color:#e2e8f0;white-space:pre">od_order (1)
+  ├─── od_order_item (N)   ← 주문항목 (상품/SKU별)
+  │      └── od_dliv_item (N) ← 배송항목 매핑
+  ├─── od_pay (N)          ← 결제 (pay_id = 토스 orderId)
+  │      ├── od_pay_method (1) ← 카드/계좌 상세
+  │      └── od_refund (N) ← 환불 (클레임 확정 시)
+  ├─── od_dliv (N)         ← 배송 (OUTBOUND/INBOUND)
+  │      └── od_dliv_item (N) ← 배송항목 매핑
+  └─── od_claim (N)        ← 클레임 (CANCEL/RETURN/EXCHANGE)
+         ├── od_claim_item (N) ← 클레임 항목 (부분처리)
+         └── od_refund (N) ← 환불 연결</pre>
+          </div>
+
+          <!-- 결제 취소 플로우 상세 -->
+          <div style="margin-top:10px;background:#fff5f5;border:1px solid #fca5a5;border-radius:8px;padding:10px 12px">
+            <div style="font-weight:700;color:#b91c1c;margin-bottom:8px;font-size:11px">💳 결제 취소 (cancel) 플로우 상세</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:10px">
+              <div>
+                <div style="font-weight:600;color:#374151;margin-bottom:4px">① 전액 취소 (cancelAmount 생략)</div>
+                <pre style="margin:0;background:#f8fafc;border:1px solid #fca5a5;border-radius:4px;padding:7px;font-size:10px;line-height:1.6;white-space:pre">POST /api/co/cm/toss/cancel
+{
+  "paymentKey":   "tgen_...",
+  "cancelReason": "고객 요청"
+  // cancelAmount 생략 → 전액
+}
+
+응답 (성공):
+{
+  "status":        "CANCELED",
+  "balanceAmount": 0,         // 취소 가능액 = 0
+  "cancels": [{
+    "cancelAmount":   1000,
+    "canceledAt":     "2026-06-28T...",
+    "cancelReason":   "고객 요청",
+    "transactionKey": "..."   // 이 취소의 거래키
+  }]
+}
+
+응답 (실패):
+{
+  "code":    "ALREADY_CANCELED_PAYMENT",
+  "message": "이미 취소된 결제입니다."
+}</pre>
+              </div>
+              <div>
+                <div style="font-weight:600;color:#374151;margin-bottom:4px">② 부분 취소 (cancelAmount 지정)</div>
+                <pre style="margin:0;background:#f8fafc;border:1px solid #fca5a5;border-radius:4px;padding:7px;font-size:10px;line-height:1.6;white-space:pre">POST /api/co/cm/toss/cancel
+{
+  "paymentKey":   "tgen_...",
+  "cancelReason": "배송비 환불",
+  "cancelAmount": 500        // 부분 금액
+}
+
+응답 (성공):
+{
+  "status":        "DONE",   // 잔여 있으면 DONE
+  "totalAmount":   1000,     // 원 결제금액 (불변)
+  "balanceAmount": 500,      // 남은 취소 가능액
+  "cancels": [
+    { "cancelAmount": 500, "canceledAt": "..." }
+  ]
+}
+
+// 부분취소 2회 → cancels[] 에 2건 누적
+// balanceAmount = 0 → status = CANCELED</pre>
+              </div>
+            </div>
+            <div style="margin-top:8px;font-size:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div style="background:#fff7ed;border-radius:4px;padding:6px 8px;color:#c2410c;line-height:1.7">
+                ⚠ <b>od_refund 생성 시점:</b><br>
+                토스 cancel 성공 후 → od_refund INSERT<br>
+                (toss_cancel_key = transactionKey 저장)<br>
+                od_pay.pay_status_cd 업데이트<br>
+                od_order.order_status_cd → CANCELED
+              </div>
+              <div style="background:#f0fdf4;border-radius:4px;padding:6px 8px;color:#166534;line-height:1.7">
+                ✅ <b>취소 가능 조건:</b><br>
+                pay_status_cd = DONE 이어야 함<br>
+                balanceAmount &gt; 0 이어야 함<br>
+                클레임(CLAIM_TYPE) 확정 후 자동 호출<br>
+                운영: od_claim → od_refund → toss cancel
+              </div>
+            </div>
+          </div>
+
+          <!-- 상태 전이 요약 -->
+          <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:10px">
+            <div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:6px;padding:8px 10px">
+              <div style="font-weight:700;color:#1d4ed8;margin-bottom:5px">📦 주문 상태 흐름</div>
+              <pre style="margin:0;font-size:9px;color:#374151;white-space:pre;line-height:1.8">PENDING   결제 전 임시저장
+  ↓
+PAID      결제 완료 (confirm 후)
+  ↓
+PREPARING 출고 준비중
+  ↓
+SHIPPED   배송중 (송장 등록)
+  ↓
+COMPLT    배송 완료 / 구매확정
+  ↓
+CANCELED  전체 취소
+CLAIM     클레임 처리중</pre>
+            </div>
+            <div style="background:#f5f3ff;border:1px solid #d8b4fe;border-radius:6px;padding:8px 10px">
+              <div style="font-weight:700;color:#5b21b6;margin-bottom:5px">💳 결제 상태 흐름</div>
+              <pre style="margin:0;font-size:9px;color:#374151;white-space:pre;line-height:1.8">PENDING          임시저장 (confirm 전)
+  ↓
+DONE             토스 confirm 성공
+  ↓
+PARTIAL_CANCELED 부분취소 (잔여 있음)
+  ↓
+CANCELED         전액취소 완료
+
+pay_occur_type_cd:
+  ORDER          정상 결제
+  CLAIM_EXTRA    클레임 추가결제
+  EXCHANGE_EXTRA 교환 추가결제</pre>
+            </div>
+            <div style="background:#fff5f5;border:1px solid #fca5a5;border-radius:6px;padding:8px 10px">
+              <div style="font-weight:700;color:#b91c1c;margin-bottom:5px">⚠ 클레임 상태 흐름</div>
+              <pre style="margin:0;font-size:9px;color:#374151;white-space:pre;line-height:1.8">REQ     고객 클레임 접수
+  ↓
+APPROVED 관리자 승인
+  ↓
+IN_PROC  처리중
+  ↓
+DONE    처리 완료
+REJECTED 반려 (사유 포함)
+
+claim_type_cd:
+  CANCEL   주문 취소
+  RETURN   반품
+  EXCHANGE 교환</pre>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <hr style="border:none;border-top:1px solid #e5e7eb" />
+
       <!-- ① 위젯 렌더링 -->
       <div>
         <div style="font-size:13px;font-weight:700;color:#1e40af;margin-bottom:10px;display:flex;align-items:center;gap:6px">
           <span style="background:#1e40af;color:#fff;border-radius:4px;padding:2px 8px;font-size:11px">①</span> 위젯 렌더링 — [위젯 렌더링] 버튼
         </div>
-        <div style="display:flex;align-items:flex-start;gap:0;font-size:12px;overflow-x:auto">
+        <div style="display:flex;align-items:flex-start;gap:12px;font-size:12px">
+        <div style="flex:1;display:flex;align-items:flex-start;gap:0;overflow-x:auto">
           <!-- FE -->
           <div style="min-width:220px;background:#dbeafe;border:1px solid #93c5fd;border-radius:8px;padding:10px 12px">
             <div style="font-weight:700;color:#1d4ed8;margin-bottom:8px;font-size:11px">🖥 Frontend</div>
@@ -520,6 +922,69 @@ window.ZdTestPayTossWidget = {
             </div>
           </div>
         </div>
+        <!-- ① API 상세 패널 -->
+        <div style="width:320px;flex-shrink:0">
+          <div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:6px;overflow:hidden">
+            <div style="padding:6px 10px;background:#dbeafe;display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none"
+              @click="uiState.apiPanel1Open=!uiState.apiPanel1Open">
+              <span style="font-size:11px;font-weight:700;color:#1e40af">📡 API 상세 (접기/펼치기)</span>
+              <span style="margin-left:auto;font-size:12px;color:#64748b">{{ uiState.apiPanel1Open ? '▲' : '▼' }}</span>
+            </div>
+            <div v-if="uiState.apiPanel1Open" style="padding:10px;font-size:11px;display:flex;flex-direction:column;gap:10px">
+
+              <div>
+                <div style="font-weight:700;color:#1e40af;margin-bottom:4px;font-size:10px;letter-spacing:0.5px">CDN 로드 (SDK 내부 자동)</div>
+                <pre style="margin:0;background:#f8fafc;border:1px solid #cbd5e1;border-radius:4px;padding:8px;font-size:10px;line-height:1.6;overflow-x:auto;white-space:pre">// 요청
+GET js.tosspayments.com/v2/esm/
+  → 인증 없음 (public CDN)
+  → 요청 바디 없음
+
+// 응답
+SDK JS + CSS + iframe 에셋
+  (clientKey 공개키 — 소스 노출 무해)
+  (secretKey 절대 FE 노출 금지)</pre>
+              </div>
+
+              <div>
+                <div style="font-weight:700;color:#1e40af;margin-bottom:4px;font-size:10px;letter-spacing:0.5px">결제수단 조회 (SDK 내부 자동)</div>
+                <pre style="margin:0;background:#f8fafc;border:1px solid #cbd5e1;border-radius:4px;padding:8px;font-size:10px;line-height:1.6;overflow-x:auto;white-space:pre">// SDK 내부 호출 — 코드 불필요
+GET api.tosspayments.com/v1/...
+
+// 요청 파라미터 (SDK 자동 전달)
+clientKey: "test_gck_..."
+customerKey: "ANONYMOUS"  // 비회원 고정
+
+// 응답 (성공)
+[
+  { method: "카드", ... },
+  { method: "간편결제", ... },
+  { method: "계좌이체", ... }
+]
+
+// 응답 (실패 — 토스 에러 객체)
+{
+  "code":    "INVALID_CLIENT_KEY",  // 에러 코드
+  "message": "유효하지 않은 클라이언트 키입니다."
+}</pre>
+              </div>
+
+              <div>
+                <div style="font-weight:700;color:#15803d;margin-bottom:4px;font-size:10px;letter-spacing:0.5px">widgets.renderPaymentMethods() 응답</div>
+                <pre style="margin:0;background:#f8fafc;border:1px solid #86efac;border-radius:4px;padding:8px;font-size:10px;line-height:1.6;overflow-x:auto;white-space:pre">// 성공 — 반환값 없음 (void)
+// #toss-widget-container DOM 에 결제 UI iframe 삽입 완료
+
+// 실패 — Promise reject (try/catch 로 잡아야 함)
+{
+  "code":    "WIDGET_RENDER_FAILED",
+  "message": "결제창을 불러오지 못했습니다."
+}
+// → 원인: clientKey 오류 / CDN 차단 / DOM 셀렉터 없음</pre>
+              </div>
+
+            </div>
+          </div>
+        </div>
+        </div>
       </div>
 
       <hr style="border:none;border-top:1px solid #e5e7eb" />
@@ -529,7 +994,8 @@ window.ZdTestPayTossWidget = {
         <div style="font-size:13px;font-weight:700;color:#7c3aed;margin-bottom:10px;display:flex;align-items:center;gap:6px">
           <span style="background:#7c3aed;color:#fff;border-radius:4px;padding:2px 8px;font-size:11px">②</span> 결제하기 — [결제하기] 버튼
         </div>
-        <div style="display:flex;align-items:flex-start;gap:0;font-size:12px;overflow-x:auto">
+        <div style="display:flex;align-items:flex-start;gap:12px;font-size:12px">
+        <div style="flex:1;display:flex;align-items:flex-start;gap:0;overflow-x:auto">
 
           <!-- FE -->
           <div style="min-width:250px;background:#dbeafe;border:1px solid #93c5fd;border-radius:8px;padding:10px 12px">
@@ -542,11 +1008,11 @@ window.ZdTestPayTossWidget = {
               <div style="background:#fff;border-radius:4px;padding:6px 8px;border-left:3px solid #3b82f6">
                 <div style="font-weight:600;color:#1e40af">POST /bo/zd/pay-test/pre-save</div>
                 <div style="color:#64748b;font-size:10px;margin-top:4px;line-height:1.7">
-                  <span style="color:#374151;font-weight:600">orderId</span> TEST-1782… <span style="color:#94a3b8">(우리 시스템 발급)</span><br>
+                  <span style="color:#374151;font-weight:600">payId</span> <span style="color:#7c3aed;font-weight:700">PAY-1782…</span> <span style="color:#94a3b8">← 우리 BE가 발급 (od_pay PK)</span><br>
+                  <span style="color:#374151;font-weight:600">orderId</span> <span style="color:#64748b">= payId</span> <span style="color:#94a3b8">← 토스에 넘길 키 (payId 재사용)</span><br>
                   <span style="color:#374151;font-weight:600">orderName</span> 테스트 상품<br>
                   <span style="color:#374151;font-weight:600">amount</span> 1,000<br>
                   <span style="color:#374151;font-weight:600">customerName</span> 송성일<br>
-                  <span style="color:#374151;font-weight:600">customerEmail</span> illeesam@…<br>
                   <span style="color:#374151;font-weight:600">pgProvider</span> toss_widget<br>
                   <span style="color:#374151;font-weight:600">status</span> <span style="color:#f59e0b;font-weight:700">PENDING</span><br>
                   <span style="color:#374151;font-weight:600">paymentKey</span> <span style="color:#94a3b8">null ← 아직 미발급</span>
@@ -560,7 +1026,7 @@ window.ZdTestPayTossWidget = {
               <div style="background:#fff;border-radius:4px;padding:6px 8px;border-left:3px solid #7c3aed">
                 <div style="font-weight:600;color:#7c3aed">widgets.requestPayment(params)</div>
                 <div style="color:#64748b;font-size:10px;margin-top:4px;line-height:1.7">
-                  <span style="color:#374151;font-weight:600">orderId</span> TEST-1782… <span style="color:#94a3b8">(STEP1과 동일)</span><br>
+                  <span style="color:#374151;font-weight:600">orderId</span> PAY-1782… <span style="color:#94a3b8">(= payId, STEP1과 동일)</span><br>
                   <span style="color:#374151;font-weight:600">orderName</span> 테스트 상품<br>
                   <span style="color:#374151;font-weight:600">amount</span> 1,000 (setAmount와 일치)<br>
                   <span style="color:#374151;font-weight:600">successUrl</span> bo.html?callback_pay_toss_succ=1<br>
@@ -580,7 +1046,7 @@ window.ZdTestPayTossWidget = {
                 <div style="color:#64748b;font-size:10px;margin-top:4px;line-height:1.7">
                   <span style="color:#374151;font-weight:600">callback_pay_toss_succ</span> 1<br>
                   <span style="color:#374151;font-weight:600">paymentKey</span> <span style="color:#15803d;font-weight:700">tgen_20260628… ← 토스 발급</span><br>
-                  <span style="color:#374151;font-weight:600">orderId</span> TEST-1782… (우리 발급과 동일)<br>
+                  <span style="color:#374151;font-weight:600">orderId</span> PAY-1782… (= payId, STEP1과 동일)<br>
                   <span style="color:#374151;font-weight:600">amount</span> 1000 (위변조 검증용)
                 </div>
               </div>
@@ -614,24 +1080,25 @@ window.ZdTestPayTossWidget = {
                 <div style="color:#64748b;font-size:10px;margin-top:2px">POST /bo/zd/pay-test/pre-save</div>
               </div>
               <div style="text-align:center;color:#22c55e;font-size:14px;line-height:1">↓</div>
-              <div style="background:#fff;border-radius:4px;padding:6px 8px;border-left:3px solid #22c55e">
-                <div style="font-weight:600;color:#166534">od_order 임시 생성</div>
+              <div style="background:#fff;border-radius:4px;padding:6px 8px;border-left:3px solid #7c3aed">
+                <div style="font-weight:600;color:#7c3aed">① od_pay 먼저 생성 → payId 결정</div>
                 <div style="color:#64748b;font-size:10px;margin-top:4px;line-height:1.7">
-                  <span style="color:#374151;font-weight:600">order_id</span> TEST-1782…<br>
-                  <span style="color:#374151;font-weight:600">order_status_cd</span> <span style="color:#f59e0b;font-weight:700">PENDING</span><br>
-                  <span style="color:#374151;font-weight:600">order_amt</span> 1,000<br>
-                  <span style="color:#374151;font-weight:600">customer_nm</span> 송성일
+                  <span style="color:#7c3aed;font-weight:700">pay_id</span> PAY-1782… <span style="color:#94a3b8">← 이게 토스 orderId</span><br>
+                  <span style="color:#374151;font-weight:600">pay_status_cd</span> <span style="color:#f59e0b;font-weight:700">PENDING</span><br>
+                  <span style="color:#374151;font-weight:600">pay_amt</span> 1,000<br>
+                  <span style="color:#374151;font-weight:600">pay_method_cd</span> toss_widget<br>
+                  <span style="color:#374151;font-weight:600">pay_occur_type_cd</span> ORDER<br>
+                  <span style="color:#374151;font-weight:600">payment_key</span> <span style="color:#94a3b8">null ← confirm 후 채워짐</span>
                 </div>
               </div>
               <div style="text-align:center;color:#22c55e;font-size:14px;line-height:1">↓</div>
               <div style="background:#fff;border-radius:4px;padding:6px 8px;border-left:3px solid #22c55e">
-                <div style="font-weight:600;color:#166534">od_pay 임시 생성</div>
+                <div style="font-weight:600;color:#166534">② od_order 임시 생성</div>
                 <div style="color:#64748b;font-size:10px;margin-top:4px;line-height:1.7">
-                  <span style="color:#374151;font-weight:600">order_id</span> TEST-1782… <span style="color:#94a3b8">(FK)</span><br>
-                  <span style="color:#374151;font-weight:600">pg_provider</span> toss_widget<br>
-                  <span style="color:#374151;font-weight:600">pay_amt</span> 1,000<br>
-                  <span style="color:#374151;font-weight:600">pay_status_cd</span> <span style="color:#f59e0b;font-weight:700">PENDING</span><br>
-                  <span style="color:#374151;font-weight:600">payment_key</span> <span style="color:#94a3b8">null ← 미발급</span>
+                  <span style="color:#374151;font-weight:600">order_id</span> ORD-1782… (별도 PK)<br>
+                  <span style="color:#374151;font-weight:600">order_status_cd</span> <span style="color:#f59e0b;font-weight:700">PENDING</span><br>
+                  <span style="color:#374151;font-weight:600">order_amt</span> 1,000<br>
+                  <span style="color:#374151;font-weight:600">customer_nm</span> 송성일
                 </div>
               </div>
               <div style="text-align:center;color:#22c55e;font-size:14px;line-height:1">↓</div>
@@ -676,7 +1143,7 @@ window.ZdTestPayTossWidget = {
                 <div style="font-weight:600;color:#15803d">🔑 paymentKey 발급</div>
                 <div style="color:#64748b;font-size:10px;margin-top:4px;line-height:1.7">
                   <span style="color:#15803d;font-weight:700">paymentKey</span> tgen_20260628…<br>
-                  <span style="color:#374151;font-weight:600">orderId</span> TEST-1782… (검증용 echo)<br>
+                  <span style="color:#374151;font-weight:600">orderId</span> PAY-1782… (= payId, echo)<br>
                   <span style="color:#374151;font-weight:600">amount</span> 1000
                 </div>
               </div>
@@ -689,12 +1156,79 @@ window.ZdTestPayTossWidget = {
           </div>
 
         </div>
-        <div style="font-size:11px;color:#64748b;background:#f8fafc;border-radius:4px;padding:8px 10px;margin-top:8px;border:1px solid #e2e8f0;line-height:1.9">
-          💡 <b>orderId vs paymentKey 발급 시점:</b>
-          &nbsp;<code style="background:#dbeafe;padding:1px 5px;border-radius:3px;color:#1e40af">orderId</code> 우리 시스템이 STEP1에서 직접 발급 — 결제 전부터 존재 · od_order PK
-          &nbsp;/&nbsp;
-          <code style="background:#dcfce7;padding:1px 5px;border-radius:3px;color:#166534">paymentKey</code> 토스가 결제 인증 완료 후 발급 — STEP3 confirm 시 od_pay에 저장<br>
-          💡 <b>뒤로가기 완충:</b> 복귀 후 <code>history.replaceState</code>(파라미터 제거) + <code>history.pushState</code>(동일 URL 추가) → 뒤로가기 1회는 bo.html 유지
+        <!-- ② API 상세 패널 -->
+        <div style="width:320px;flex-shrink:0">
+          <div style="background:#faf5ff;border:1px solid #d8b4fe;border-radius:6px;overflow:hidden">
+            <div style="padding:6px 10px;background:#f3e8ff;display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none"
+              @click="uiState.apiPanel2Open=!uiState.apiPanel2Open">
+              <span style="font-size:11px;font-weight:700;color:#7c3aed">📡 API 상세 (접기/펼치기)</span>
+              <span style="margin-left:auto;font-size:12px;color:#64748b">{{ uiState.apiPanel2Open ? '▲' : '▼' }}</span>
+            </div>
+            <div v-if="uiState.apiPanel2Open" style="padding:10px;font-size:11px;display:flex;flex-direction:column;gap:10px">
+              <div>
+                <div style="font-weight:700;color:#7c3aed;margin-bottom:4px;font-size:10px;letter-spacing:0.5px">STEP1 · 임시저장 (우리 BE)</div>
+                <pre style="margin:0;background:#f8fafc;border:1px solid #d8b4fe;border-radius:4px;padding:8px;font-size:10px;line-height:1.6;overflow-x:auto;white-space:pre">// 요청
+POST /api/bo/zd/pay-test/pre-save
+Authorization: BO 세션 (X-UI-Nm 헤더)
+
+{
+  "orderName":     "테스트 상품",
+  "amount":        1000,
+  "customerName":  "홍길동",
+  "customerEmail": "test@example.com",
+  "pgProvider":    "toss_widget",
+  "status":        "PENDING",
+  "paymentKey":    null                   // 아직 미발급
+}
+
+// BE 처리: od_pay 먼저 INSERT → pay_id 발급
+//          → pay_id 를 토스 orderId 로 사용
+
+// 응답 (성공)
+{
+  "payId":   "PAY-1782601234567",  // ← 이걸 토스 orderId 로 사용
+  "status":  "PENDING"
+}
+
+// 응답 (실패 — ApiResponse 에러 구조)
+HTTP 400 / 500
+{
+  "code":    "INVALID_AMOUNT",
+  "message": "결제 금액이 올바르지 않습니다."
+}
+// 또는 인증 실패 시:
+HTTP 401
+{ "code": "UNAUTHORIZED", "message": "로그인이 필요합니다." }</pre>
+              </div>
+              <div>
+                <div style="font-weight:700;color:#7c3aed;margin-bottom:4px;font-size:10px;letter-spacing:0.5px">STEP2 · 결제창 호출 (SDK — BE 없음)</div>
+                <pre style="margin:0;background:#f8fafc;border:1px solid #d8b4fe;border-radius:4px;padding:8px;font-size:10px;line-height:1.6;overflow-x:auto;white-space:pre">// SDK 호출 (FE only)
+widgets.requestPayment({
+  orderId:       "PAY-1782601234567",  // ← BE가 반환한 payId
+  orderName:     "테스트 상품",
+  successUrl:    window.location.origin + "/bo.html?bo_callback=toss_success",
+  failUrl:       window.location.origin + "/bo.html?bo_callback=toss_fail",
+  customerName:  "홍길동",
+  customerEmail: "test@example.com",
+})
+// BE 호출 없음 — SDK가 토스 서버 직접 통신
+// 사용자 인증 완료 시 successUrl로 GET redirect</pre>
+              </div>
+              <div>
+                <div style="font-weight:700;color:#7c3aed;margin-bottom:4px;font-size:10px;letter-spacing:0.5px">STEP2 · 성공 콜백 파라미터</div>
+                <pre style="margin:0;background:#f8fafc;border:1px solid #d8b4fe;border-radius:4px;padding:8px;font-size:10px;line-height:1.6;overflow-x:auto;white-space:pre">// GET redirect → successUrl?
+paymentKey=tgen_20260628...  // 토스 발급 결제 식별자
+orderId=PAY-1782601234567    // = payId (echo, 검증용)
+amount=1000                  // ⚠ 위변조 가능 — 서버에서 od_pay.pay_amt 와 반드시 비교</pre>
+              </div>
+              <div style="background:#f0f9ff;border-radius:4px;padding:7px 9px;font-size:10px;color:#374151;line-height:1.8;border:1px solid #bae6fd">
+                💡 <b>orderId (토스)</b> = <b>payId (우리)</b> — od_pay.pay_id 를 토스 orderId 로 그대로 사용. 추가결제도 새 payId 발급으로 자연스럽게 분리<br>
+                💡 <b>paymentKey</b> — 토스가 인증 완료 후 발급 (STEP3 confirm 시 od_pay.payment_key 에 저장)<br>
+                💡 <b>뒤로가기 완충:</b> 복귀 후 history.replaceState(파라미터 제거) + history.pushState(동일 URL) → 뒤로가기 1회 bo.html 유지
+              </div>
+            </div>
+          </div>
+        </div>
         </div>
       </div>
 
@@ -705,7 +1239,8 @@ window.ZdTestPayTossWidget = {
         <div style="font-size:13px;font-weight:700;color:#0f766e;margin-bottom:10px;display:flex;align-items:center;gap:6px">
           <span style="background:#0f766e;color:#fff;border-radius:4px;padding:2px 8px;font-size:11px">③</span> 승인 요청 — [승인 요청] 배너 또는 [수동 승인] 버튼
         </div>
-        <div style="display:flex;align-items:flex-start;gap:0;font-size:12px;overflow-x:auto">
+        <div style="display:flex;align-items:flex-start;gap:12px;font-size:12px">
+        <div style="flex:1;display:flex;align-items:flex-start;gap:0;overflow-x:auto">
           <!-- FE -->
           <div style="min-width:230px;background:#dbeafe;border:1px solid #93c5fd;border-radius:8px;padding:10px 12px">
             <div style="font-weight:700;color:#1d4ed8;margin-bottom:8px;font-size:11px">🖥 Frontend</div>
@@ -784,8 +1319,86 @@ window.ZdTestPayTossWidget = {
             </div>
           </div>
         </div>
-        <div style="font-size:11px;color:#64748b;background:#f0fdf4;border-radius:4px;padding:6px 10px;margin-top:8px;border:1px solid #86efac">
-          💡 <b>수동 승인:</b> [수동 승인] 버튼 클릭 → prompt로 paymentKey · orderId · amount 직접 입력 → 동일 confirm 흐름. 예외 상황(URL 파라미터 유실, 콜백 배너 사라진 경우) 대응용.
+        <!-- ③ API 상세 패널 -->
+        <div style="width:320px;flex-shrink:0">
+          <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;overflow:hidden">
+            <div style="padding:6px 10px;background:#dcfce7;display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none"
+              @click="uiState.apiPanel3Open=!uiState.apiPanel3Open">
+              <span style="font-size:11px;font-weight:700;color:#0f766e">📡 API 상세 (접기/펼치기)</span>
+              <span style="margin-left:auto;font-size:12px;color:#64748b">{{ uiState.apiPanel3Open ? '▲' : '▼' }}</span>
+            </div>
+            <div v-if="uiState.apiPanel3Open" style="padding:10px;font-size:11px;display:flex;flex-direction:column;gap:10px">
+              <div>
+                <div style="font-weight:700;color:#0f766e;margin-bottom:4px;font-size:10px;letter-spacing:0.5px">승인 요청 (우리 BE → 토스 서버)</div>
+                <pre style="margin:0;background:#f8fafc;border:1px solid #86efac;border-radius:4px;padding:8px;font-size:10px;line-height:1.6;overflow-x:auto;white-space:pre">// FE → 우리 BE
+POST /api/co/cm/toss/confirm
+{
+  "paymentKey": "tgen_20260628...",  // 토스 발급
+  "orderId":    "PAY-1782601234",    // = payId (검증용)
+  "amount":     1000                 // ⚠ 위변조 — BE에서 od_pay.pay_amt 와 비교
+}
+
+// 우리 BE → 토스 서버
+POST api.tosspayments.com/v1/payments/confirm
+Authorization: Basic {Base64(secretKey:)}  // secretKey + 콜론 인코딩
+Content-Type: application/json
+{
+  "paymentKey": "tgen_...",
+  "orderId":    "PAY-...",           // payId 그대로 전달
+  "amount":     1000
+}</pre>
+              </div>
+              <div>
+                <div style="font-weight:700;color:#0f766e;margin-bottom:4px;font-size:10px;letter-spacing:0.5px">토스 응답 — Payment 객체 (성공)</div>
+                <pre style="margin:0;background:#f8fafc;border:1px solid #86efac;border-radius:4px;padding:8px;font-size:10px;line-height:1.6;overflow-x:auto;white-space:pre">HTTP 200
+{
+  "paymentKey":    "tgen_...",         // 토스 결제 식별자 → od_pay.payment_key
+  "orderId":       "PAY-...",          // = payId (echo)
+  "status":        "DONE",            // 승인 완료
+  "method":        "카드",             // 카드/간편결제/계좌이체 등
+  "totalAmount":   1000,              // 승인 금액 ⚠ DB 금액과 반드시 일치 검증
+  "balanceAmount": 1000,              // 취소 가능 잔여 금액 (최초 = totalAmount)
+  "approvedAt":    "2026-06-28T...",  // 카드사 실제 승인 일시 → od_pay.approved_at
+  "transactionKey":"...",             // 이 결제 건 거래 식별자
+  "receiptUrl":    "https://...",     // 토스 전자영수증 URL → od_pay.receipt_url
+  "isPartialCancelable": true,        // 부분취소 가능 여부
+  "suppliedAmount": 909,              // 공급가액 (부가세 별도)
+  "vat":           91,                // 부가세
+  "taxFreeAmount": 0,                 // 면세 금액
+  "card": {
+    "number":                "****-****-****-1234",  // 마스킹 카드번호
+    "installmentPlanMonths": 0,                      // 할부 개월 (0=일시불)
+    "approveNo":             "00000000"              // 카드사 승인번호
+  }
+}</pre>
+              </div>
+              <div>
+                <div style="font-weight:700;color:#dc2626;margin-bottom:4px;font-size:10px;letter-spacing:0.5px">토스 응답 — 실패 (에러 객체)</div>
+                <pre style="margin:0;background:#fff5f5;border:1px solid #fca5a5;border-radius:4px;padding:8px;font-size:10px;line-height:1.6;overflow-x:auto;white-space:pre">HTTP 400 / 403 / 500
+{
+  "code":    "PAY_PROCESS_ABORTED",        // 결제 중단 (사용자 취소)
+  "message": "결제가 취소되었습니다."
+}
+// 주요 실패 코드:
+// ALREADY_PROCESSED_PAYMENT — 이미 처리된 결제
+// PROVIDER_ERROR             — 카드사/PG 오류
+// INVALID_AUTHORIZE_AUTH     — 인증 불일치 (위변조 의심)
+// EXCEED_MAX_DAILY_PAYMENT_COUNT — 일 최대 결제 횟수 초과
+// INVALID_STOPPED_CARD       — 이용 정지 카드
+
+// ⚠ BE 에서 amount 위변조 감지 시 즉시 cancel 후 에러:
+{
+  "code":    "AMOUNT_MISMATCH",
+  "message": "결제 금액 불일치. 즉시 취소 처리됨."
+}</pre>
+              </div>
+              <div style="background:#fef3c7;border-radius:4px;padding:6px 8px;color:#92400e;font-size:10px;line-height:1.6">
+                💡 amount 위변조 방지: BE에서 DB 저장 금액과 토스 응답 totalAmount 를 반드시 비교. 불일치 시 즉시 취소 후 에러 반환.<br>
+                💡 <b>수동 승인:</b> [수동 승인] 버튼 → prompt로 paymentKey · orderId · amount 직접 입력 → 동일 confirm 흐름 (URL 파라미터 유실 대응용).
+              </div>
+            </div>
+          </div>
+        </div>
         </div>
       </div>
 
@@ -796,7 +1409,8 @@ window.ZdTestPayTossWidget = {
         <div style="font-size:13px;font-weight:700;color:#dc2626;margin-bottom:10px;display:flex;align-items:center;gap:6px">
           <span style="background:#dc2626;color:#fff;border-radius:4px;padding:2px 8px;font-size:11px">④</span> 결제 취소 — [결제 취소] 버튼
         </div>
-        <div style="display:flex;align-items:flex-start;gap:0;font-size:12px;overflow-x:auto">
+        <div style="display:flex;align-items:flex-start;gap:12px;font-size:12px">
+        <div style="flex:1;display:flex;align-items:flex-start;gap:0;overflow-x:auto">
           <!-- FE -->
           <div style="min-width:230px;background:#dbeafe;border:1px solid #93c5fd;border-radius:8px;padding:10px 12px">
             <div style="font-weight:700;color:#1d4ed8;margin-bottom:8px;font-size:11px">🖥 Frontend</div>
@@ -875,8 +1489,288 @@ window.ZdTestPayTossWidget = {
             </div>
           </div>
         </div>
-        <div style="font-size:11px;color:#64748b;background:#fff5f5;border-radius:4px;padding:6px 10px;margin-top:8px;border:1px solid #fca5a5">
-          ⚠ <b>주의:</b> 이 화면은 개발 테스트용으로 실제 od_order / od_pay 도메인 후처리(DB 반영, 재고 복구 등)는 실행되지 않습니다.<br>운영 취소 흐름은 주문관리 → 클레임 처리 → OdRefund 엔티티 연동으로 별도 구현.
+        <!-- ④ API 상세 패널 -->
+        <div style="width:320px;flex-shrink:0">
+          <div style="background:#fff5f5;border:1px solid #fca5a5;border-radius:6px;overflow:hidden">
+            <div style="padding:6px 10px;background:#fee2e2;display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none"
+              @click="uiState.apiPanel4Open=!uiState.apiPanel4Open">
+              <span style="font-size:11px;font-weight:700;color:#dc2626">📡 API 상세 (접기/펼치기)</span>
+              <span style="margin-left:auto;font-size:12px;color:#64748b">{{ uiState.apiPanel4Open ? '▲' : '▼' }}</span>
+            </div>
+            <div v-if="uiState.apiPanel4Open" style="padding:10px;font-size:11px;display:flex;flex-direction:column;gap:10px">
+              <div>
+                <div style="font-weight:700;color:#dc2626;margin-bottom:4px;font-size:10px;letter-spacing:0.5px">취소 요청 (우리 BE → 토스 서버)</div>
+                <pre style="margin:0;background:#f8fafc;border:1px solid #fca5a5;border-radius:4px;padding:8px;font-size:10px;line-height:1.6;overflow-x:auto;white-space:pre">// FE → 우리 BE
+POST /api/co/cm/toss/cancel
+{
+  "paymentKey":   "tgen_20260628...",  // 토스 발급 결제 식별자
+  "cancelReason": "고객 요청",
+  "cancelAmount": 500                  // 부분취소 금액 (생략 시 전액 취소)
+}
+
+// 우리 BE → 토스 서버
+POST api.tosspayments.com
+     /v1/payments/{paymentKey}/cancel
+Authorization: Basic {Base64(secretKey:)}
+{
+  "cancelReason": "고객 요청",
+  "cancelAmount": 500                  // null 이면 전액 취소
+}</pre>
+              </div>
+              <div>
+                <div style="font-weight:700;color:#dc2626;margin-bottom:4px;font-size:10px;letter-spacing:0.5px">토스 응답 — Payment 객체 (취소 후)</div>
+                <pre style="margin:0;background:#f8fafc;border:1px solid #fca5a5;border-radius:4px;padding:8px;font-size:10px;line-height:1.6;overflow-x:auto;white-space:pre">{
+  "status":              "DONE",       // 부분취소=DONE / 전액취소=CANCELED
+  "totalAmount":         1000,         // 원 결제금액 (취소해도 불변)
+  "balanceAmount":       500,          // 남은 취소 가능 금액 (0이면 종료)
+  "isPartialCancelable": true,         // 추가 부분취소 가능 여부
+  "cancels": [                         // 누적 취소 이력 배열
+    {
+      "cancelAmount":    500,          // 이번 차감 금액
+      "canceledAt":      "2026-06-28T12:34:56+09:00",  // 취소 완료 일시
+      "cancelReason":    "고객 요청",
+      "transactionKey":  "...",        // 이번 취소의 거래 식별자 (매 취소마다 새로 발급)
+      "refundableAmount": 500,         // 실제 환급 가능액 (면세 분리 후)
+      "taxFreeAmount":   0             // 면세 취소 금액
+    }
+    // 부분취소 2회면 cancels[] 2건 누적
+  ]
+}</pre>
+              </div>
+              <div style="background:#fef3c7;border-radius:4px;padding:6px 8px;color:#92400e;font-size:10px;line-height:1.6">
+                💡 취소 후 별도 조회 없이 응답 그대로 사용 가능.<br>
+                balanceAmount = 0 이면 status = CANCELED 로 전환.<br>
+                paymentKey 는 불변, transactionKey 는 취소마다 새로 발급.
+              </div>
+              <div style="background:#fff5f5;border-radius:4px;padding:6px 8px;color:#b91c1c;font-size:10px;line-height:1.6;border:1px solid #fca5a5">
+                ⚠ <b>이 화면은 개발 테스트용</b> — od_order / od_pay 도메인 후처리(DB 반영, 재고 복구 등)는 실행되지 않습니다.<br>
+                운영 취소는 주문관리 → 클레임 처리 → OdRefund 엔티티 연동으로 별도 구현.
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <hr style="border:none;border-top:1px solid #e5e7eb" />
+
+      <!-- ⑤ 배송비 추가결제 -->
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#0369a1;margin-bottom:10px;display:flex;align-items:center;gap:6px">
+          <span style="background:#0369a1;color:#fff;border-radius:4px;padding:2px 8px;font-size:11px">⑤</span> 배송비 추가결제 — 같은 주문에 별도 결제 건 추가
+        </div>
+
+        <!-- 핵심 제약 설명 -->
+        <div style="background:#f0f9ff;border:1px solid #7dd3fc;border-radius:6px;padding:9px 12px;margin-bottom:12px;font-size:11px;color:#0c4a6e;line-height:1.8">
+          ✅ <b>토스 orderId = od_pay.pay_id 정책 적용:</b> 결제 건마다 새 od_pay 행을 생성하면 새 pay_id 가 발급되고,
+          그것이 곧 새 토스 orderId가 됩니다. orderId 충돌 없이 추가결제가 자연스럽게 분리됩니다.<br>
+          예) 원 결제 <code style="background:#fff;padding:1px 5px;border-radius:3px">pay_id = PAY-001</code> (pay_occur_type_cd = ORDER)
+          → 추가결제 <code style="background:#fff;padding:1px 5px;border-radius:3px">pay_id = PAY-002</code> (pay_occur_type_cd = CLAIM_EXTRA)
+          → 둘 다 <code style="background:#fff;padding:1px 5px;border-radius:3px">order_id = ORD-001</code> FK로 같은 주문에 연결
+        </div>
+
+        <div style="display:flex;align-items:flex-start;gap:12px;font-size:12px">
+        <div style="flex:1;display:flex;align-items:flex-start;gap:0;overflow-x:auto">
+
+          <!-- FE -->
+          <div style="min-width:250px;background:#dbeafe;border:1px solid #93c5fd;border-radius:8px;padding:10px 12px">
+            <div style="font-weight:700;color:#1d4ed8;margin-bottom:8px;font-size:11px">🖥 Frontend (관리자 화면)</div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div style="background:#fff;border-radius:4px;padding:6px 8px;border-left:3px solid #0369a1">
+                <div style="font-weight:600;color:#0369a1">추가결제 금액 입력</div>
+                <div style="color:#64748b;font-size:11px;margin-top:2px">배송비 금액 + 사유 입력<br>(관리자가 직접 지정)</div>
+              </div>
+              <div style="text-align:center;color:#0369a1;font-size:16px;line-height:1">↓</div>
+              <div style="background:#fff;border-radius:4px;padding:6px 8px;border-left:3px solid #3b82f6">
+                <div style="font-weight:600;color:#1e40af">STEP1 · 추가결제 pre-save</div>
+                <div style="color:#64748b;font-size:11px;margin-top:2px;font-family:monospace">pay_occur_type_cd = "CLAIM_EXTRA"<br>pay_div_cd = "CLAIM"<br>ref_order_id = "ORD-001"<br>amount = 배송비</div>
+              </div>
+              <div style="text-align:center;color:#3b82f6;font-size:16px;line-height:1">↓</div>
+              <div style="background:#faf5ff;border-radius:4px;padding:6px 8px;border-left:3px solid #7c3aed">
+                <div style="font-weight:600;color:#7c3aed">STEP2 · 결제창 호출</div>
+                <div style="color:#64748b;font-size:11px;margin-top:2px">새 orderId로 widgets.requestPayment()<br>고객이 결제 완료 → GET redirect</div>
+              </div>
+              <div style="text-align:center;color:#0369a1;font-size:16px;line-height:1">↓</div>
+              <div style="background:#fff;border-radius:4px;padding:6px 8px;border-left:3px solid #0f766e">
+                <div style="font-weight:600;color:#0f766e">STEP3 · confirm</div>
+                <div style="color:#64748b;font-size:11px;margin-top:2px;font-family:monospace">POST /co/cm/toss/confirm<br>{ paymentKey, orderId, amount }</div>
+              </div>
+              <div style="text-align:center;color:#0f766e;font-size:16px;line-height:1">↓</div>
+              <div style="background:#fff;border-radius:4px;padding:6px 8px;border-left:3px solid #22c55e">
+                <div style="font-weight:600;color:#15803d">추가결제 완료 표시</div>
+                <div style="color:#64748b;font-size:11px;margin-top:2px">od_pay 2번째 행 생성<br>원 주문과 ref_order_id 연결</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- FE → BE 화살표 -->
+          <div style="display:flex;flex-direction:column;align-items:center;padding:0 4px;margin-top:60px;gap:2px">
+            <div style="font-size:10px;font-weight:700;color:#0369a1;white-space:nowrap;background:#fff;border:1px solid #7dd3fc;border-radius:3px;padding:1px 5px">(A1)</div>
+            <div style="font-size:11px;color:#0369a1;white-space:nowrap">pre-save →</div>
+            <div style="font-size:14px;color:#0369a1">⟶</div>
+            <div style="font-size:10px;font-weight:700;color:#0369a1;white-space:nowrap;background:#fff;border:1px solid #7dd3fc;border-radius:3px;padding:1px 5px">(A3)</div>
+            <div style="font-size:11px;color:#0369a1;white-space:nowrap">confirm →</div>
+            <div style="font-size:14px;color:#0369a1">⟶</div>
+            <div style="font-size:10px;font-weight:700;color:#0369a1;white-space:nowrap;background:#fff;border:1px solid #7dd3fc;border-radius:3px;padding:1px 5px">(A4)</div>
+            <div style="font-size:11px;color:#0369a1;white-space:nowrap">← 결과</div>
+            <div style="font-size:14px;color:#0369a1">⟵</div>
+          </div>
+
+          <!-- BE -->
+          <div style="min-width:240px;background:#dcfce7;border:1px solid #86efac;border-radius:8px;padding:10px 12px">
+            <div style="font-weight:700;color:#166534;margin-bottom:8px;font-size:11px">⚙ Backend (Spring Boot)</div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div style="background:#fff;border-radius:4px;padding:6px 8px;border-left:3px solid #22c55e">
+                <div style="font-weight:600;color:#166534">ZdPayTestController (또는 OdPayController)</div>
+                <div style="color:#64748b;font-size:11px;margin-top:2px">POST /bo/zd/pay-test/pre-save</div>
+              </div>
+              <div style="text-align:center;color:#22c55e;font-size:14px;line-height:1">↓</div>
+              <div style="background:#fff;border-radius:4px;padding:6px 8px;border-left:3px solid #22c55e">
+                <div style="font-weight:600;color:#166534">od_pay 추가 행 생성</div>
+                <div style="color:#64748b;font-size:11px;margin-top:4px;line-height:1.7">
+                  <span style="color:#7c3aed;font-weight:700">pay_id</span> PAY-002 ← 자동 발급 = 토스 orderId<br>
+                  <span style="color:#374151;font-weight:600">order_id</span> ORD-001 (원 주문 FK 유지)<br>
+                  <span style="color:#374151;font-weight:600">pay_occur_type_cd</span> <span style="color:#7c3aed;font-weight:700">CLAIM_EXTRA</span><br>
+                  <span style="color:#374151;font-weight:600">pay_status_cd</span> PENDING<br>
+                  <span style="color:#374151;font-weight:600">pay_amt</span> 배송비 금액
+                </div>
+              </div>
+              <div style="text-align:center;color:#22c55e;font-size:14px;line-height:1">↓</div>
+              <div style="background:#fff;border-radius:4px;padding:6px 8px;border-left:3px solid #0f766e">
+                <div style="font-weight:600;color:#166534">CmPayTossService.confirm()</div>
+                <div style="color:#64748b;font-size:11px;margin-top:2px">토스 confirm 호출<br>od_pay.payment_key 저장<br>pay_status_cd = DONE</div>
+              </div>
+              <div style="text-align:center;color:#22c55e;font-size:14px;line-height:1">↓</div>
+              <div style="background:#fff;border-radius:4px;padding:6px 8px;border-left:3px solid #22c55e">
+                <div style="font-weight:600;color:#15803d">od_order.add_pay_amt 갱신</div>
+                <div style="color:#64748b;font-size:11px;margin-top:2px">원 주문 합계에 배송비 반영<br>(order_amt는 불변 · add_pay_amt 별도 관리)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BE → 토스 화살표 -->
+          <div style="display:flex;flex-direction:column;align-items:center;padding:0 4px;margin-top:140px;gap:2px">
+            <div style="font-size:10px;font-weight:700;color:#fbbf24;white-space:nowrap;background:#fff;border:1px solid #fde047;border-radius:3px;padding:1px 5px">(A2)</div>
+            <div style="font-size:11px;color:#fbbf24;white-space:nowrap">STEP2 →</div>
+            <div style="font-size:14px;color:#fbbf24">⟶</div>
+            <div style="font-size:10px;font-weight:700;color:#fbbf24;white-space:nowrap;background:#fff;border:1px solid #fde047;border-radius:3px;padding:1px 5px">(A2.1)</div>
+            <div style="font-size:11px;color:#fbbf24;white-space:nowrap">← redirect</div>
+            <div style="font-size:14px;color:#fbbf24">⟵</div>
+            <div style="margin-top:12px;font-size:10px;font-weight:700;color:#fbbf24;white-space:nowrap;background:#fff;border:1px solid #fde047;border-radius:3px;padding:1px 5px">(A3.1)</div>
+            <div style="font-size:11px;color:#fbbf24;white-space:nowrap">confirm →</div>
+            <div style="font-size:14px;color:#fbbf24">⟶</div>
+            <div style="font-size:10px;font-weight:700;color:#fbbf24;white-space:nowrap;background:#fff;border:1px solid #fde047;border-radius:3px;padding:1px 5px">(A3.2)</div>
+            <div style="font-size:11px;color:#fbbf24;white-space:nowrap">← 승인결과</div>
+            <div style="font-size:14px;color:#fbbf24">⟵</div>
+          </div>
+
+          <!-- 토스 -->
+          <div style="min-width:180px;background:#fef9c3;border:1px solid #fde047;border-radius:8px;padding:10px 12px">
+            <div style="font-weight:700;color:#92400e;margin-bottom:8px;font-size:11px">☁ 토스페이먼츠 서버</div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div style="background:#fff;border-radius:4px;padding:6px 8px;border-left:3px solid #a855f7">
+                <div style="font-weight:600;color:#7c3aed">결제창 (STEP2)</div>
+                <div style="color:#64748b;font-size:11px;margin-top:2px">orderId = PAY-002 (새 pay_id)<br>토스가 결제 인증 처리</div>
+              </div>
+              <div style="text-align:center;color:#fbbf24;font-size:14px">↓</div>
+              <div style="background:#fff;border-radius:4px;padding:6px 8px;border-left:3px solid #fbbf24">
+                <div style="font-weight:600;color:#92400e">결제 승인 (STEP3)</div>
+                <div style="color:#64748b;font-size:11px;margin-top:2px">POST /v1/payments/confirm<br>별도 paymentKey 발급</div>
+              </div>
+              <div style="text-align:center;color:#fbbf24;font-size:14px">↓</div>
+              <div style="background:#fff;border-radius:4px;padding:6px 8px;border-left:3px solid #22c55e">
+                <div style="font-weight:600;color:#15803d">Payment 객체 반환</div>
+                <div style="color:#64748b;font-size:11px;margin-top:2px">status: DONE<br>새 paymentKey 포함</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <!-- ⑤ API 상세 패널 -->
+        <div style="width:320px;flex-shrink:0">
+          <div style="background:#f0f9ff;border:1px solid #7dd3fc;border-radius:6px;overflow:hidden">
+            <div style="padding:6px 10px;background:#e0f2fe;display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none"
+              @click="uiState.apiPanel5Open=!uiState.apiPanel5Open">
+              <span style="font-size:11px;font-weight:700;color:#0369a1">📡 API 상세 (접기/펼치기)</span>
+              <span style="margin-left:auto;font-size:12px;color:#64748b">{{ uiState.apiPanel5Open ? '▲' : '▼' }}</span>
+            </div>
+            <div v-if="uiState.apiPanel5Open" style="padding:10px;font-size:11px;display:flex;flex-direction:column;gap:10px">
+              <div>
+                <div style="font-weight:700;color:#0369a1;margin-bottom:4px;font-size:10px;letter-spacing:0.5px">STEP1 · 추가결제 pre-save</div>
+                <pre style="margin:0;background:#f8fafc;border:1px solid #7dd3fc;border-radius:4px;padding:8px;font-size:10px;line-height:1.6;overflow-x:auto;white-space:pre">// FE → 우리 BE
+POST /api/bo/zd/pay-test/pre-save
+{
+  "orderName":      "배송비 추가결제",
+  "amount":         3000,             // 배송비 금액
+  "pgProvider":     "toss_widget",
+  "payOccurTypeCd": "CLAIM_EXTRA",   // 추가결제 구분 (실 DB 컬럼)
+  "payDivCd":       "CLAIM",
+  "refOrderId":     "ORD-001",       // 원 주문 연결
+  "status":         "PENDING",
+  "paymentKey":     null
+}
+
+// BE 처리: 새 od_pay INSERT → 새 pay_id 자동 발급
+//          → 이 pay_id 가 토스 orderId (suffix 불필요!)
+pay_id           = "PAY-002"         // ← 새로 발급된 PK = 토스 orderId
+order_id         = "ORD-001"         // 원 주문 FK
+pay_occur_type_cd= "CLAIM_EXTRA"
+pay_div_cd       = "CLAIM"
+pay_amt          = 3000
+pay_status_cd    = "PENDING"</pre>
+              </div>
+              <div>
+                <div style="font-weight:700;color:#0369a1;margin-bottom:4px;font-size:10px;letter-spacing:0.5px">STEP2~3 · 결제창→승인 (②③과 동일 흐름)</div>
+                <pre style="margin:0;background:#f8fafc;border:1px solid #7dd3fc;border-radius:4px;padding:8px;font-size:10px;line-height:1.6;overflow-x:auto;white-space:pre">// STEP2: SDK (FE only)
+widgets.requestPayment({
+  orderId:    "PAY-002",             // ← BE가 반환한 새 payId
+  orderName:  "배송비 추가결제",
+  amount:     3000,
+  successUrl: ".../bo.html?bo_callback=toss_success",
+  failUrl:    ".../bo.html?bo_callback=toss_fail",
+})
+
+// STEP3: confirm (②③과 완전 동일)
+POST /api/co/cm/toss/confirm
+{
+  "paymentKey": "tgen_NEW...",       // 새 paymentKey (토스 발급)
+  "orderId":    "PAY-002",           // = 새 payId
+  "amount":     3000
+}
+
+// BE 처리 후 od_pay 갱신
+payment_key      = "tgen_NEW..."
+pay_status_cd    = "DONE"
+pay_occur_type_cd= "CLAIM_EXTRA"
+
+od_order:
+  // 필요 시 add_pay_amt += 3000 갱신</pre>
+              </div>
+              <div>
+                <div style="font-weight:700;color:#0369a1;margin-bottom:4px;font-size:10px;letter-spacing:0.5px">DB 결과 — 한 주문에 od_pay 2행</div>
+                <pre style="margin:0;background:#f8fafc;border:1px solid #7dd3fc;border-radius:4px;padding:8px;font-size:10px;line-height:1.6;overflow-x:auto;white-space:pre">od_pay 테이블 (같은 order_id 에 2행)
+┌──────────────────────────────────────────┐
+│ pay_id   : PAY-001  ← 토스 orderId      │
+│ order_id : ORD-001  ← 주문 FK           │
+│ pay_occur_type_cd: ORDER  (원 결제)      │
+│ pay_amt  : 10,000   pay_status_cd: DONE  │
+│ payment_key: tgen_ORIGINAL...            │
+├──────────────────────────────────────────┤
+│ pay_id   : PAY-002  ← 토스 orderId      │ ← 새 PK
+│ order_id : ORD-001  ← 같은 주문 FK      │
+│ pay_occur_type_cd: CLAIM_EXTRA (배송비)  │
+│ pay_amt  : 3,000    pay_status_cd: DONE  │
+│ payment_key: tgen_NEW...                 │
+└──────────────────────────────────────────┘</pre>
+              </div>
+              <div style="background:#eff6ff;border-radius:4px;padding:6px 8px;color:#1e40af;font-size:10px;line-height:1.7">
+                ✅ <b>payId = 토스 orderId 정책:</b> 새 od_pay 행을 INSERT 하면 새 pay_id 가 자동 발급 → suffix 규칙 불필요.<br>
+                추가결제가 여러 번이어도 pay_id 가 자동으로 달라지므로 토스 orderId 중복 없음.<br>
+                💡 <b>취소 시:</b> 각 pay_id(= orderId) 의 paymentKey로 독립적으로 cancel 호출.
+              </div>
+            </div>
+          </div>
+        </div>
         </div>
       </div>
 
@@ -916,6 +1810,19 @@ window.ZdTestPayTossWidget = {
           <span style="color:#94a3b8;font-family:monospace">←(8.1)</span>
           <span style="color:#94a3b8;font-family:monospace">←(9)</span>
           <span style="color:#94a3b8">FE 결과 표시</span>
+          <br style="width:100%" />
+          <span style="background:#e0f2fe;border:1px solid #7dd3fc;border-radius:4px;padding:3px 8px;color:#0369a1">⑤ 배송비 추가결제</span>
+          <span style="color:#94a3b8;font-family:monospace">(A1)→</span>
+          <span style="background:#dcfce7;border:1px solid #86efac;border-radius:4px;padding:3px 8px;color:#166534">BE pre-save (새 orderId)</span>
+          <span style="color:#94a3b8;font-family:monospace">(A2)→</span>
+          <span style="background:#fef9c3;border:1px solid #fde047;border-radius:4px;padding:3px 8px;color:#92400e">토스 결제창</span>
+          <span style="color:#94a3b8;font-family:monospace">←(A2.1)</span>
+          <span style="color:#94a3b8;font-family:monospace">(A3)→</span>
+          <span style="background:#dcfce7;border:1px solid #86efac;border-radius:4px;padding:3px 8px;color:#166534">BE confirm</span>
+          <span style="color:#94a3b8;font-family:monospace">(A3.1)→</span>
+          <span style="background:#fef9c3;border:1px solid #fde047;border-radius:4px;padding:3px 8px;color:#92400e">토스 API</span>
+          <span style="color:#94a3b8;font-family:monospace">←(A3.2)←(A4)</span>
+          <span style="color:#94a3b8">od_pay 2행째 생성</span>
         </div>
       </div>
 
@@ -1134,6 +2041,7 @@ window.ZdTestPayTossWidget = {
             <div style="background:#fee2e2;padding:7px 12px;font-weight:700;color:#991b1b;display:flex;align-items:center;gap:6px">
               <span style="color:#dc2626">Q11</span> 부분취소는 어떻게 하나요? 전액취소와 무엇이 다른가요?
             </div>
+
             <div style="padding:10px 12px;background:#fff8f8;display:flex;flex-direction:column;gap:8px">
               <div>
                 <div style="color:#374151;font-weight:600;margin-bottom:4px">▶ 전액취소 vs 부분취소 차이</div>
@@ -1235,6 +2143,144 @@ window.ZdTestPayTossWidget = {
                   <span style="background:#fee2e2;border:1px solid #fca5a5;border-radius:4px;padding:3px 8px;color:#b91c1c">CANCELED → 추가취소 ❌</span>
                   <span style="background:#fee2e2;border:1px solid #fca5a5;border-radius:4px;padding:3px 8px;color:#b91c1c">PENDING → 취소 ❌ (confirm 전)</span>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Q12 -->
+          <div style="border:1px solid #fee2e2;border-radius:6px;overflow:hidden">
+            <div style="background:#fee2e2;padding:7px 12px;font-weight:700;color:#991b1b;display:flex;align-items:center;gap:6px">
+              <span style="color:#dc2626">Q12</span> 부분취소 2회로 완전취소 — 시뮬레이션
+            </div>
+            <div style="padding:10px 12px;background:#fff8f8;display:flex;flex-direction:column;gap:8px">
+              <div style="color:#374151;font-weight:600;margin-bottom:2px">▶ 시나리오: 30,000원 결제 → 10,000원 부분취소 → 나머지 20,000원 취소</div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+
+                <!-- 원 결제 -->
+                <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:5px;padding:8px 10px;font-size:11px">
+                  <div style="font-weight:600;color:#166534;margin-bottom:4px">원 결제 (DONE)</div>
+                  <div style="display:grid;grid-template-columns:130px 1fr;gap:2px 8px;color:#374151;font-family:monospace">
+                    <span style="color:#6b7280">od_order.order_id</span><span>ORD-2026-001</span>
+                    <span style="color:#6b7280">od_pay.payment_key</span><span style="color:#1e40af">tgen_ABC</span>
+                    <span style="color:#6b7280">od_pay.pay_amt</span><span>30,000원</span>
+                    <span style="color:#6b7280">od_pay.pay_status_cd</span><span style="color:#15803d;font-weight:700">DONE</span>
+                  </div>
+                </div>
+
+                <!-- 1차 부분취소 -->
+                <div style="background:#fff7ed;border:1px solid #fdba74;border-radius:5px;padding:8px 10px;font-size:11px">
+                  <div style="font-weight:600;color:#c2410c;margin-bottom:4px">1차 부분취소 — cancelAmount: 10,000</div>
+                  <pre style="margin:0 0 4px;font-size:10px;background:#1e293b;color:#e2e8f0;padding:7px;border-radius:4px;overflow-x:auto">boApi.post('/api/co/cm/toss/cancel', {
+  paymentKey: 'tgen_ABC',
+  cancelReason: '상품 A 반품',
+  cancelAmount: 10000   // ← 부분취소 금액 명시
+}, coUtil.cofApiHdr('부분취소 1차', '테스트'))</pre>
+                  <div style="margin-top:4px;display:grid;grid-template-columns:130px 1fr;gap:2px 8px;color:#374151;font-family:monospace">
+                    <span style="color:#6b7280">응답 status</span><span style="color:#15803d;font-weight:700">DONE</span>
+                    <span style="color:#6b7280">balanceAmount</span><span>20,000원 (잔여)</span>
+                    <span style="color:#6b7280">cancels[0].cancelAmount</span><span>10,000원</span>
+                    <span style="color:#6b7280">cancels[0].transactionKey</span><span style="color:#7c3aed">tx_ABC_002 ← 새 발급</span>
+                    <span style="color:#6b7280">od_pay.pay_status_cd</span><span style="color:#f59e0b;font-weight:700">PARTIAL_CANCELED</span>
+                  </div>
+                </div>
+
+                <!-- 2차 부분취소 -->
+                <div style="background:#fff7ed;border:1px solid #fdba74;border-radius:5px;padding:8px 10px;font-size:11px">
+                  <div style="font-weight:600;color:#c2410c;margin-bottom:4px">2차 부분취소 — cancelAmount: 20,000 (잔여 전부)</div>
+                  <pre style="margin:0 0 4px;font-size:10px;background:#1e293b;color:#e2e8f0;padding:7px;border-radius:4px;overflow-x:auto">boApi.post('/api/co/cm/toss/cancel', {
+  paymentKey: 'tgen_ABC',   // ← 동일 paymentKey 재사용
+  cancelReason: '나머지 전체 취소',
+  cancelAmount: 20000       // ← refundableAmount 전액
+}, coUtil.cofApiHdr('부분취소 2차', '테스트'))</pre>
+                  <div style="margin-top:4px;display:grid;grid-template-columns:130px 1fr;gap:2px 8px;color:#374151;font-family:monospace">
+                    <span style="color:#6b7280">응답 status</span><span style="color:#b91c1c;font-weight:700">CANCELED ← 전액 취소 완료</span>
+                    <span style="color:#6b7280">balanceAmount</span><span>0원</span>
+                    <span style="color:#6b7280">cancels[0].transactionKey</span><span style="color:#7c3aed">tx_ABC_002 (1차)</span>
+                    <span style="color:#6b7280">cancels[1].transactionKey</span><span style="color:#7c3aed">tx_ABC_003 ← 새 발급</span>
+                    <span style="color:#6b7280">od_pay.pay_status_cd</span><span style="color:#b91c1c;font-weight:700">CANCELED</span>
+                  </div>
+                </div>
+
+              </div>
+              <div style="font-size:11px;color:#64748b;background:#fafafa;border-radius:4px;padding:7px 10px;line-height:1.8">
+                <b>포인트:</b> paymentKey(tgen_ABC)는 1·2차 모두 동일 — 취소 회차마다 <code>transactionKey</code> 만 새로 발급<br>
+                <b>운영 주의:</b> 2차 cancelAmount = balanceAmount 정확히 일치해야 함 — 초과 시 토스 400 에러(<code>EXCEED_CANCEL_AMOUNT</code>)
+              </div>
+            </div>
+          </div>
+
+          <!-- Q13 -->
+          <div style="border:1px solid #ddd6fe;border-radius:6px;overflow:hidden">
+            <div style="background:#ede9fe;padding:7px 12px;font-weight:700;color:#4c1d95;display:flex;align-items:center;gap:6px">
+              <span style="color:#7c3aed">Q13</span> 추가결제는 어떻게 하나요? 같은 orderId 로 하면 되나요?
+            </div>
+            <div style="padding:10px 12px;background:#fdfaff;display:flex;flex-direction:column;gap:8px;font-size:12px">
+
+              <div>
+                <div style="color:#dc2626;font-weight:600;margin-bottom:4px">❌ 같은 orderId 사용 불가</div>
+                <div style="color:#64748b;line-height:1.8">
+                  토스페이먼츠에서 <code>orderId</code>는 결제 건당 유일합니다.<br>
+                  동일 orderId로 결제창을 열면 토스가 <b>"이미 사용된 orderId"</b>로 거부합니다.
+                </div>
+              </div>
+
+              <div>
+                <div style="color:#374151;font-weight:600;margin-bottom:6px">✅ 올바른 추가결제 설계</div>
+                <div style="display:flex;gap:8px">
+                  <div style="flex:1;background:#f0fdf4;border:1px solid #86efac;border-radius:5px;padding:8px 10px;font-size:11px">
+                    <div style="font-weight:600;color:#166534;margin-bottom:4px">원 주문</div>
+                    <div style="font-family:monospace;display:flex;flex-direction:column;gap:2px;color:#374151">
+                      <span>order_id = <b>ORD-001</b></span>
+                      <span>order_type_cd = NORMAL</span>
+                      <span>order_amt = 30,000원</span>
+                      <span>paymentKey = <span style="color:#1e40af">tgen_ABC</span></span>
+                      <span>pay_status_cd = DONE</span>
+                    </div>
+                  </div>
+                  <div style="display:flex;align-items:center;font-size:18px;color:#94a3b8;padding:0 4px">+</div>
+                  <div style="flex:1;background:#ede9fe;border:1px solid #c4b5fd;border-radius:5px;padding:8px 10px;font-size:11px">
+                    <div style="font-weight:600;color:#5b21b6;margin-bottom:4px">추가결제 (새 od_pay 행)</div>
+                    <div style="font-family:monospace;display:flex;flex-direction:column;gap:2px;color:#374151">
+                      <span>pay_id = <b>PAY-002</b> ← 토스 orderId</span>
+                      <span>order_id = ORD-001 ← 원 주문 FK</span>
+                      <span>pay_occur_type_cd = CLAIM_EXTRA</span>
+                      <span>pay_amt = 5,000원</span>
+                      <span>paymentKey = <span style="color:#1e40af">tgen_XYZ ← 새 발급</span></span>
+                      <span>pay_status_cd = DONE</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div style="color:#374151;font-weight:600;margin-bottom:4px">▶ 이 테스트 화면에서 추가결제 진행하는 법</div>
+                <div style="display:flex;flex-direction:column;gap:4px;color:#64748b;line-height:1.8;font-size:11px">
+                  <span>① [orderId 새로고침] → 새 <code>PAY-{timestamp}</code> 가 자동 생성됨 (수동 입력 불필요)</span>
+                  <span>② amount 를 추가결제 금액(5,000)으로 변경</span>
+                  <span>③ [위젯 렌더링] → [결제하기] → 토스 결제창 → [승인 요청]</span>
+                  <span>④ 원 결제(PAY-001)와 추가결제(PAY-002)는 각각 독립된 paymentKey 로 관리</span>
+                </div>
+              </div>
+
+              <div>
+                <div style="color:#374151;font-weight:600;margin-bottom:6px">▶ 추가결제 취소는?</div>
+                <div style="font-size:11px;display:flex;gap:6px;flex-wrap:wrap">
+                  <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:4px;padding:6px 8px;flex:1">
+                    <div style="font-weight:600;color:#166534;margin-bottom:2px">원 주문 취소</div>
+                    <div style="font-family:monospace;font-size:10px;color:#374151">paymentKey: tgen_ABC<br>cancelAmount: 30,000</div>
+                  </div>
+                  <div style="background:#ede9fe;border:1px solid #c4b5fd;border-radius:4px;padding:6px 8px;flex:1">
+                    <div style="font-weight:600;color:#5b21b6;margin-bottom:2px">추가결제 독립 취소</div>
+                    <div style="font-family:monospace;font-size:10px;color:#374151">paymentKey: tgen_XYZ<br>cancelAmount: 5,000</div>
+                  </div>
+                </div>
+                <div style="font-size:11px;color:#94a3b8;margin-top:4px">각각 독립 취소 · od_claim에 parent_order_id 기준으로 묶어서 화면 표시</div>
+              </div>
+
+              <div style="background:#fefce8;border:1px solid #fde047;border-radius:5px;padding:8px 10px;font-size:11px;color:#64748b;line-height:1.8">
+                <b style="color:#92400e">요약:</b>
+                추가결제 = 새 od_pay 행 INSERT → 새 pay_id 자동 발급 → 이 pay_id 를 토스 orderId 로 사용<br>
+                같은 주문의 추가결제임은 od_pay.order_id (FK) 로 원 주문 ORD-001 에 연결
               </div>
             </div>
           </div>
@@ -1410,7 +2456,23 @@ window.ZdTestPayTossWidget = {
           ✅ STEP 3 — 결제 승인 + 최종저장
           <span class="badge badge-green" style="margin-left:6px;font-size:10px">DONE</span>
         </div>
-        <bo-grid :columns="confirmGridColumns" :rows="[result.confirmResult]" :show-row-num="false" />
+        <bo-grid :columns="confirmGridColumns" :rows="[result.confirmResult]" :show-row-num="false"
+          @cell-click="(e) => { if (e.colKey==='receiptUrl' && result.confirmResult.receiptUrl) window.open(result.confirmResult.receiptUrl, '_blank'); }" />
+        <!-- 승인 응답 핵심 3필드 설명 -->
+        <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px;font-size:11px;padding:8px 10px;background:#ecfdf5;border-radius:5px;border:1px solid #a7f3d0">
+          <div style="display:flex;gap:8px;align-items:baseline">
+            <code style="background:#d1fae5;padding:1px 5px;border-radius:3px;color:#065f46;white-space:nowrap">approvedAt</code>
+            <span style="color:#374151">카드사 실제 승인 일시 (ISO8601, 타임존 포함) — od_pay.approved_at(TIMESTAMP)에 저장</span>
+          </div>
+          <div style="display:flex;gap:8px;align-items:baseline">
+            <code style="background:#ede9fe;padding:1px 5px;border-radius:3px;color:#5b21b6;white-space:nowrap">transactionKey</code>
+            <span style="color:#374151">이 결제 건의 거래 식별자 — 부분취소 2회차 등 취소 이력별로 새 값 발급 (cancels[].transactionKey)</span>
+          </div>
+          <div style="display:flex;gap:8px;align-items:baseline">
+            <code style="background:#dbeafe;padding:1px 5px;border-radius:3px;color:#1e40af;white-space:nowrap">receiptUrl</code>
+            <span style="color:#374151">토스 발행 공식 전자영수증 URL — 클릭하면 새 탭으로 오픈 · od_pay.receipt_url 에 저장 권장</span>
+          </div>
+        </div>
         <div style="font-size:11px;color:#64748b;margin-top:6px;padding-top:6px;border-top:1px solid #bbf7d0">
           paymentKey 로 od_pay 업데이트 · orderId 로 od_order.status → PAID
         </div>
@@ -1418,8 +2480,101 @@ window.ZdTestPayTossWidget = {
 
       <!-- 결제 취소 결과 -->
       <div v-if="result.cancelResult" style="background:#fff7ed;border:1px solid #fdba74;border-radius:6px;padding:10px">
-        <div style="font-weight:600;margin-bottom:6px;color:#c2410c">⊘ 결제 취소 결과</div>
-        <pre style="font-size:11px;overflow:auto;max-height:120px">{{ JSON.stringify(result.cancelResult, null, 2) }}</pre>
+        <div style="font-weight:600;margin-bottom:8px;color:#c2410c;font-size:12px">
+          ⊘ 결제 취소 결과
+          <span class="badge badge-red" style="margin-left:6px;font-size:10px">{{ result.cancelResult.status }}</span>
+        </div>
+
+        <!-- 좌우 2단: 왼쪽=요약그리드+이력, 오른쪽=필드 코멘트 -->
+        <div style="display:grid;grid-template-columns:1fr 280px;gap:10px;align-items:start">
+          <!-- 왼쪽: 상태 요약 + 취소 이력 -->
+          <div>
+            <!-- 상태 요약 -->
+            <div style="font-size:11px;font-weight:600;color:#92400e;margin-bottom:4px">📊 결제 상태 요약</div>
+            <bo-grid :columns="cancelSummaryGridColumns" :rows="[result.cancelResult]" :show-row-num="false" />
+
+            <!-- cancels[] 이력 -->
+            <div style="font-size:11px;font-weight:600;color:#92400e;margin-top:10px;margin-bottom:4px">
+              📋 취소 이력 (cancels[])
+              <span style="font-family:monospace;font-weight:400;color:#b45309;margin-left:4px">{{ (result.cancelResult.cancels || []).length }}건</span>
+            </div>
+            <div v-if="!(result.cancelResult.cancels || []).length" style="font-size:11px;color:#aaa;padding:6px">이력 없음</div>
+            <bo-grid v-else :columns="cancelHistGridColumns" :rows="result.cancelResult.cancels || []" :show-row-num="true" />
+
+            <!-- paymentKey 안내 -->
+            <div style="font-size:11px;color:#78716c;margin-top:6px;padding-top:6px;border-top:1px solid #fde68a">
+              paymentKey 동일 — 전체 취소가 될 때까지 같은 키로 반복 취소 가능
+            </div>
+          </div>
+
+          <!-- 오른쪽: 필드별 코멘트 -->
+          <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:5px;padding:10px;font-size:11px;display:flex;flex-direction:column;gap:6px">
+            <div style="font-weight:700;color:#92400e;margin-bottom:2px">📌 응답 필드 설명</div>
+
+            <div>
+              <code style="background:#fef3c7;padding:1px 5px;border-radius:3px;color:#78350f">status</code>
+              <div style="color:#44403c;margin-top:2px;line-height:1.5">
+                부분취소 → <code style="background:#fff7ed;color:#c2410c">DONE</code><br>
+                전액취소 → <code style="background:#fff1f2;color:#be123c">CANCELED</code>
+              </div>
+            </div>
+
+            <div>
+              <code style="background:#fef3c7;padding:1px 5px;border-radius:3px;color:#78350f">totalAmount</code>
+              <div style="color:#44403c;margin-top:2px;line-height:1.5">
+                원 결제금액. 취소해도 변하지 않음
+              </div>
+            </div>
+
+            <div>
+              <code style="background:#fef3c7;padding:1px 5px;border-radius:3px;color:#78350f">balanceAmount</code>
+              <div style="color:#44403c;margin-top:2px;line-height:1.5">
+                지금 추가로 취소 가능한 잔여 금액<br>
+                <span style="color:#dc2626">0이면 더 이상 취소 불가</span>
+              </div>
+            </div>
+
+            <div>
+              <code style="background:#fef3c7;padding:1px 5px;border-radius:3px;color:#78350f">isPartialCancelable</code>
+              <div style="color:#44403c;margin-top:2px;line-height:1.5">
+                부분취소 가능 여부<br>
+                가상계좌 미입금 상태 등은 false
+              </div>
+            </div>
+
+            <div>
+              <code style="background:#ede9fe;padding:1px 5px;border-radius:3px;color:#5b21b6">cancels[].transactionKey</code>
+              <div style="color:#44403c;margin-top:2px;line-height:1.5">
+                취소 1건당 새로 발급되는 거래 식별자<br>
+                부분취소 2회 = transactionKey 2개 누적
+              </div>
+            </div>
+
+            <div>
+              <code style="background:#fef3c7;padding:1px 5px;border-radius:3px;color:#78350f">cancels[].cancelAmount</code>
+              <div style="color:#44403c;margin-top:2px;line-height:1.5">
+                이번 취소에서 차감된 금액<br>
+                cancelAmount 없이 요청 = 전액
+              </div>
+            </div>
+
+            <div>
+              <code style="background:#fef3c7;padding:1px 5px;border-radius:3px;color:#78350f">cancels[].refundableAmount</code>
+              <div style="color:#44403c;margin-top:2px;line-height:1.5">
+                이 취소 건에서 환급 가능한 금액<br>
+                (면세·부가세 분리 적용 후 순액)
+              </div>
+            </div>
+
+            <div>
+              <code style="background:#fef3c7;padding:1px 5px;border-radius:3px;color:#78350f">cancels[].canceledAt</code>
+              <div style="color:#44403c;margin-top:2px;line-height:1.5">
+                취소 처리 완료 일시 (ISO8601)<br>
+                od_pay.canceled_at 에 저장
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

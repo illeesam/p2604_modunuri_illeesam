@@ -20,6 +20,33 @@
 > 클레임 상태는 별도 테이블(`od_claim_item`)이 독립 관리.
 > → order_item 상태와 클레임 상태는 동시에 공존 가능.
 
+### 이중 레벨 라이프사이클 구조 (2026-06-30 명문화)
+
+| 레벨 | 테이블.컬럼 | 역할 | 변경 트리거 |
+|------|------------|------|------------|
+| **item 레벨** | `od_order_item.order_item_status_cd` | Source of Truth. 상품별 실제 처리 상태 | 판매자·배송사·클레임 처리 이벤트 |
+| **order 레벨** | `od_order.order_status_cd` | 집계 요약. 빠른 목록 조회·필터·통계용 | item 상태 변동 시 집계 재산정 |
+| **claim 레벨** | `od_claim_item.claim_item_status_cd` | 클레임 흐름. order_item과 독립 공존 | 클레임 승인·수거·검수·완료 이벤트 |
+
+**원칙**: 클레임 진행 중이어도 `order_item_status_cd`는 주문 흐름 상태를 **그대로 유지**한다.
+전량 취소·반품 완료(`cancel_qty = order_qty`)가 확정된 시점에만 `CANCELLED`로 전환.
+
+### order_status_cd 집계 규칙
+
+아이템 레벨 상태들을 다음 우선순위로 집계하여 `od_order.order_status_cd`를 결정한다.
+
+| 조건 (활성 item 기준) | 결과 order_status_cd |
+|----------------------|---------------------|
+| 모든 item이 CONFIRMED | COMPLT |
+| 1개 이상 item이 SHIPPING 또는 교환상품 발송 중 | SHIPPED |
+| 1개 이상 item이 PREPARING | PREPARING |
+| 모든 item이 CANCELLED (cancel_qty = order_qty) | CANCELLED |
+| 모든 item이 반품 완료로 CANCELLED | RETURNED |
+| 기타 (결제 완료, 일부 DELIVERED) | PAID 또는 가장 앞선 active 상태 |
+
+> **부분처리 중 집계 예시**: 3개 주문 중 1개 반품 신청 중 → 나머지 2개 SHIPPED → `order_status_cd = SHIPPED`
+> (반품 진행 item도 취소 확정되기 전까지는 active item으로 집계 대상에 포함)
+
 ---
 
 ## 전체 흐름도
@@ -478,3 +505,4 @@ order_item_status_cd:
 - 2026-04-18: 전체 상태 코드 표 재작성 (주문·취소·반품·교환 O/- 및 비고 포함), 흐름도 추가
 - 2026-04-18: 관련 정책서 번호 od.11~14 → od.12~15 수정. 적립금 지급 시점 "배송완료 후 5일"로, 지급율 회원등급별 1~2.5%로 변경
 - 2026-04-19: 관련 테이블 od_order_item_discnt / od_order_discnt / od_refund / od_refund_method 추가. 테이블명(코멘트) 형식 통일
+- 2026-06-30: 이중 레벨 라이프사이클 구조 명문화 — item 레벨(SoT) / order 레벨(집계) / claim 레벨(독립) 분리 설명 및 order_status_cd 집계 규칙 표 추가

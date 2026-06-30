@@ -25,6 +25,7 @@ window.HelpBoModal = {
       { id: 'claim',     label: '🔄 클레임' },
       { id: 'promotion', label: '🎫 프로모션' },
       { id: 'display',   label: '🖼 전시관리' },
+      { id: 'settle',    label: '💰 정산관리' },
       { id: 'system',    label: '🔧 시스템' },
     ];
 
@@ -249,9 +250,44 @@ window.HelpBoModal = {
       { title: '표시경로(Path)', desc: 'biz_cd 기준 카테고리, 메뉴 트리 경로 관리.' },
     ];
 
+    const SETTLE_STATUS_STEPS = [
+      { code: 'DRAFT',     label: '작성중',   color: '#9ca3af', desc: '정산 집계 작성 중. 수정 가능.' },
+      { code: 'CONFIRMED', label: '확정',     color: '#3b82f6', desc: '정산액 확정 완료. 이후 수정 불가. 이의신청 기간 시작.' },
+      { code: 'CLOSED',    label: '마감',     color: '#8b5cf6', desc: '정산 마감 처리 완료. 지급 대기 레코드(PENDING) 생성.' },
+      { code: 'PAID',      label: '지급완료', color: '#10b981', desc: '업체 계좌 송금 완료. ERP 전표 생성 및 확인.' },
+    ];
+
+    const SETTLE_CALC_ROWS = [
+      { item: '총주문금액',    field: 'total_order_amt',  sign: '+', desc: '구매확정(CONFIRMED) 기준 매출 귀속분 합계' },
+      { item: '총환불금액',    field: 'total_return_amt', sign: '-', desc: '환불 확정 시점 귀속 월에 반영 (발생주의)' },
+      { item: '총할인금액',    field: 'total_discnt_amt', sign: '-', desc: '쿠폰/프로모션 할인 합계' },
+      { item: '수수료',        field: 'commission_amt',   sign: '-', desc: '정산기준 수수료율 × 정산대상금액' },
+      { item: '조정금액',      field: 'adj_amt',          sign: '±', desc: '배송료 조정, 이의신청 보정 등' },
+      { item: '기타조정금액',  field: 'etc_adj_amt',      sign: '±', desc: '수동 조정, 분쟁 처리, 환수 등' },
+      { item: '최종정산금액',  field: 'final_settle_amt', sign: '=', desc: '업체 계좌로 실제 지급되는 금액' },
+    ];
+
+    const SETTLE_RAW_TYPES = [
+      { code: 'ORDER',    label: '주문',   color: '#10b981', desc: 'od_order_item CONFIRMED 기준 매출 수집' },
+      { code: 'CANCEL',   label: '취소',   color: '#ef4444', desc: 'od_claim_item COMPLT(CANCEL) 기준 차감' },
+      { code: 'RETURN',   label: '반품',   color: '#f97316', desc: 'od_claim_item COMPLT(RETURN) 기준 차감' },
+      { code: 'EXCHANGE', label: '교환',   color: '#8b5cf6', desc: 'od_claim_item COMPLT(EXCHANGE) 기준 조정' },
+      { code: 'SHIP',     label: '배송비', color: '#0891b2', desc: 'od_dliv DELIVERED 기준 배송비 수익·차감' },
+    ];
+
+    const SETTLE_POLICY_ROWS = [
+      { title: '정산 주기',    desc: '월 1회 / 매월 마지막 영업일 마감' },
+      { title: '타월 환불',    desc: '환불 확정 시점의 귀속 월에 반영 (발생주의). 1월 주문 → 3월 반품 완료 → 3월 정산 차감' },
+      { title: '마이너스 정산', desc: 'final_settle_amt < 0 시 다음 달 이월(adj_amt) 또는 수동 조정' },
+      { title: '이의신청',     desc: 'CONFIRMED 후 30일 이내. 인정 시 보정 정산(etc_adj_amt 반영)' },
+      { title: '지급 보류',    desc: '거래 분쟁 / 계좌 오류 / 정산계좌 미확인 / 서류 미제출 시 다음 정산까지 보류' },
+      { title: '지급 기한',    desc: 'CLOSED 후 5 영업일 이내 자동 송금. 실패 시 3회 재시도 후 담당자 연락' },
+    ];
+
     const activeTab    = ref(props.topic || 'overview');
     const optSubTab    = ref('basic');
     const orderSubTab  = ref('flow');
+    const settleSubTab = ref('overview');
     const showExtHelp  = ref(false);
 
     watch(() => props.topic, (v) => { if (v) activeTab.value = v; });
@@ -287,6 +323,10 @@ window.HelpBoModal = {
       } else if (cmd === 'orderSubTab-select') {
         orderSubTab.value = param;
         return;
+      // 정산 서브탭 전환
+      } else if (cmd === 'settleSubTab-select') {
+        settleSubTab.value = param;
+        return;
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
       }
@@ -296,18 +336,20 @@ window.HelpBoModal = {
 
     return {
       handleBtnAction, handleSelectAction,                                  // dispatch
-      activeTab, optSubTab, orderSubTab, showExtHelp,                       // 탭 상태
+      activeTab, optSubTab, orderSubTab, settleSubTab, showExtHelp,        // 탭 상태
       TABS, OPT_SUB_TABS,                                                   // 탭 정의
       OPT_OVERVIEW_ROWS, OPT_CLOTHING_ROWS, OPT_SHOES_ROWS, OPT_ELEC_ROWS, OPT_SINGLE_ROWS, INPUT_TYPES,  // 옵션 데이터
       OVERVIEW_CARDS, PRODUCT_STEPS, PRODUCT_TABS, MEMBER_TABS_LIST,        // 개요/회원/상품
       ORDER_STEPS, ORDER_STEP_DETAILS, ORDER_PARTIAL_SCENARIO,              // 주문
       REFUND_ORDER_ROWS, RETURN_FEE_ROWS, COUPON_REFUND_ROWS,               // 환불/반품/쿠폰
-      CLAIM_TYPES, CLAIM_DETAILS, PROMO_ITEMS, DISP_LEVELS, DISP_WIDGETS, SYS_ITEMS,  // 클레임/프로모/전시/시스템
+      CLAIM_TYPES, CLAIM_DETAILS, PROMO_ITEMS, DISP_LEVELS, DISP_WIDGETS,    // 클레임/프로모/전시
+      SETTLE_STATUS_STEPS, SETTLE_CALC_ROWS, SETTLE_RAW_TYPES, SETTLE_POLICY_ROWS,  // 정산
+      SYS_ITEMS,                                                             // 시스템
     };
   },
   template: `
 <!-- ===== ■. 모달 ====================================================== -->
-<bo-modal :show="show" max-width="860px" height="92vh" max-height="92vh"
+<bo-modal :show="show" width="960px" max-width="98vw" height="92vh" max-height="92vh"
   box-pad="0" body-pad="0" :z-index="3000" @close="handleBtnAction('modal-close')">
   <!-- ===== ■. 본문 영역 =================================================== -->
   <div style="background:#fff;border-radius:14px;height:100%;display:flex;flex-direction:column;overflow:hidden;">
@@ -327,7 +369,7 @@ window.HelpBoModal = {
     <!-- ===== ■.■. 바디 ==================================================== -->
     <div style="flex:1;display:flex;overflow:hidden;">
       <!-- ===== ■.■.■. 좌측 탭 ================================================ -->
-      <div style="width:148px;flex-shrink:0;background:#f7f8fa;border-right:1px solid #efe0e5;display:flex;flex-direction:column;padding:12px 0;overflow-y:auto;">
+      <div style="width:176px;flex-shrink:0;background:#f7f8fa;border-right:1px solid #efe0e5;display:flex;flex-direction:column;padding:12px 0;overflow-y:auto;">
         <button v-for="t in TABS" :key="t.id" @click="handleSelectAction('tab-select', t.id)"
           :style="activeTab===t.id
           ? 'display:block;width:100%;text-align:left;padding:9px 16px;font-size:12px;font-weight:700;color:#e8587a;background:#fff;border:none;border-right:3px solid #e8587a;cursor:pointer;line-height:1.4;'
@@ -838,7 +880,7 @@ window.HelpBoModal = {
           </p>
           <!-- ===== ■.■.■.■.■. 서브탭 ============================================= -->
           <div style="display:flex;gap:4px;margin-bottom:16px;flex-wrap:wrap;">
-            <button v-for="st in [{id:'flow',label:'상태 흐름'},{id:'partial',label:'부분처리/구매확정'},{id:'refund',label:'환불 순서'},{id:'bulk',label:'일괄 작업'}]"
+            <button v-for="st in [{id:'lifecycle',label:'라이프사이클 원칙'},{id:'flow',label:'상태 흐름'},{id:'partial',label:'부분처리/구매확정'},{id:'refund',label:'환불 순서'},{id:'bulk',label:'일괄 작업'}]"
               :key="st.id" @click="handleSelectAction('orderSubTab-select', st.id)"
               :style="orderSubTab===st.id
               ? 'padding:5px 12px;font-size:11px;border:1px solid #1677ff;border-radius:6px;cursor:pointer;background:#e6f4ff;color:#1677ff;font-weight:700;'
@@ -846,8 +888,104 @@ window.HelpBoModal = {
               {{ st.label }}
             </button>
           </div>
+          <!-- ===== ■.■.■.■.■. 서브: 라이프사이클 원칙 ================================== -->
+          <template v-if="orderSubTab==='lifecycle'">
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <!-- 이중 레벨 구조 개요 -->
+              <div style="border:1px solid #bae0ff;border-radius:8px;padding:16px;background:#f0f7ff;">
+                <div style="font-weight:700;color:#1677ff;margin-bottom:10px;font-size:13px;">
+                  주문 라이프사이클 — 이중 레벨 구조
+                </div>
+                <div style="display:flex;flex-direction:column;gap:8px;font-size:12px;color:#333;">
+                  <div style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:#fff;border:1px solid #d9eaff;border-radius:6px;">
+                    <div style="flex-shrink:0;width:120px;font-weight:700;color:#1d4ed8;">
+                      od_order_item
+                    </div>
+                    <div style="flex:1;line-height:1.7;">
+                      <b>실제 라이프사이클 기준 (Source of Truth)</b><br>
+                      order_item_status_cd 가 상품별 실제 처리 상태를 추적.<br>
+                      부분배송·부분취소·부분반품 등 item 단위 독립 처리가 가능.
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:#fff;border:1px solid #d9eaff;border-radius:6px;">
+                    <div style="flex-shrink:0;width:120px;font-weight:700;color:#6b7280;">
+                      od_order
+                    </div>
+                    <div style="flex:1;line-height:1.7;">
+                      <b>집계 요약 상태 (빠른 조회·필터용)</b><br>
+                      order_status_cd 는 활성 order_item 상태들을 집계한 요약값.<br>
+                      목록 검색·통계·알림에서 전체 주문 상태를 한 번에 파악하는 용도.
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:#fff;border:1px solid #d9eaff;border-radius:6px;">
+                    <div style="flex-shrink:0;width:120px;font-weight:700;color:#b45309;">
+                      od_claim_item
+                    </div>
+                    <div style="flex:1;line-height:1.7;">
+                      <b>클레임 상태 — order_item과 독립 공존</b><br>
+                      클레임 진행 중이어도 order_item_status_cd 는 그대로 유지됨.<br>
+                      claim_item_status_cd 가 취소/반품/교환 흐름을 독립 추적.
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- 상태 집계 규칙 -->
+              <div style="border:1px solid #e0e0e0;border-radius:8px;padding:16px;background:#fafafa;">
+                <div style="font-weight:700;color:#333;margin-bottom:10px;font-size:13px;">
+                  order_status_cd 집계 규칙
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px;">
+                  <div v-for="rule in [
+                    {cond:'모든 item이 CONFIRMED', result:'COMPLT', color:'#10b981'},
+                    {cond:'1개 이상 item이 SHIPPING (나머지 DELIVERED/CONFIRMED)', result:'SHIPPED', color:'#8b5cf6'},
+                    {cond:'1개 이상 item이 PREPARING', result:'PREPARING', color:'#f59e0b'},
+                    {cond:'모든 item이 CANCELLED', result:'CANCELLED', color:'#9ca3af'},
+                    {cond:'모든 item이 cancel_qty=order_qty (취소+반품 완료)', result:'RETURNED/CANCELLED', color:'#6b7280'},
+                  ]" :key="rule.result"
+                  style="display:flex;gap:10px;align-items:center;padding:8px 12px;background:#fff;border:1px solid #e8e8e8;border-radius:6px;font-size:12px;">
+                    <span style="flex:1;color:#444;">
+                      {{ rule.cond }}
+                    </span>
+                    <span style="flex-shrink:0;font-size:10px;">→</span>
+                    <span :style="'flex-shrink:0;background:'+rule.color+';color:#fff;border-radius:3px;padding:2px 8px;font-size:10px;font-weight:700;'">
+                      {{ rule.result }}
+                    </span>
+                  </div>
+                </div>
+                <div style="margin-top:8px;font-size:11px;color:#888;line-height:1.7;padding:8px 10px;background:#f0f0f0;border-radius:6px;">
+                  * 부분취소/부분반품 진행 중: 취소되지 않은 활성 item 중 가장 앞선 상태를 order_status_cd에 반영<br>
+                  예) 3개 중 1개 반품 중 → 나머지 2개가 SHIPPED → order_status_cd = SHIPPED
+                </div>
+              </div>
+              <!-- item 상태와 claim 상태 공존 다이어그램 -->
+              <div style="border:1px solid #d1fae5;border-radius:8px;padding:16px;background:#f0fdf4;">
+                <div style="font-weight:700;color:#059669;margin-bottom:10px;font-size:13px;">
+                  order_item + claim_item 상태 공존 예시
+                </div>
+                <div style="font-size:11px;color:#555;margin-bottom:10px;line-height:1.6;">
+                  주문 수량 3개 중 1개 반품 신청 시 — 두 상태가 동시에 독립 존재:
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px;font-size:12px;">
+                  <div style="padding:10px 12px;background:#fff;border:1px solid #a7f3d0;border-radius:6px;line-height:1.8;">
+                    <div style="font-weight:700;color:#059669;margin-bottom:4px;">od_order_item</div>
+                    <div>order_item_status_cd = <b style="color:#10b981">DELIVERED</b> <span style="color:#888;font-size:10px;">(주문 흐름 — 그대로 유지)</span></div>
+                    <div>order_qty = 3, cancel_qty = 0</div>
+                    <div style="font-size:10px;color:#888;">→ 반품 완료 후: cancel_qty = 1, item_cancel_amt += 반품금액</div>
+                  </div>
+                  <div style="text-align:center;color:#aaa;font-size:11px;">
+                    ↕ order_item_id (FK) 연결
+                  </div>
+                  <div style="padding:10px 12px;background:#fff;border:1px solid #fed7aa;border-radius:6px;line-height:1.8;">
+                    <div style="font-weight:700;color:#f97316;margin-bottom:4px;">od_claim_item</div>
+                    <div>claim_item_status_cd = <b style="color:#f97316">IN_PICKUP</b> <span style="color:#888;font-size:10px;">(클레임 흐름 — 독립 진행)</span></div>
+                    <div>claim_qty = 1, claim_type_cd = RETURN</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
           <!-- ===== ■.■.■.■.■. 서브: 상태 흐름 ======================================= -->
-          <template v-if="orderSubTab==='flow'">
+          <template v-else-if="orderSubTab==='flow'">
             <div style="border:1px solid #bae0ff;border-radius:8px;padding:14px;background:#f0f7ff;margin-bottom:12px;">
               <div style="font-weight:700;color:#1677ff;margin-bottom:10px;font-size:13px;">
                 주문 상태 흐름
@@ -1329,6 +1467,365 @@ window.HelpBoModal = {
               </span>
             </div>
           </div>
+        </template>
+        <!-- ===== ■.■.■.■. 정산관리 ============================================== -->
+        <template v-else-if="activeTab==='settle'">
+          <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 4px;">
+            💰 정산관리
+          </h3>
+          <p style="font-size:12px;color:#888;margin:0 0 10px;">
+            판매자 월별 정산. 구매확정 기준 수집 → 수수료 차감 → 마감 → 지급.
+          </p>
+          <!-- 서브탭 버튼 -->
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:14px;">
+            <button v-for="st in [{id:'overview',label:'개요'},{id:'raw',label:'매출수집예'},{id:'deduct',label:'차감예'},{id:'readjust',label:'재정산 예'},{id:'adjust',label:'정산조정예'},{id:'close',label:'마감기준설명'},{id:'erp',label:'전표처리예'},{id:'pay',label:'지급'}]"
+              :key="st.id" @click="handleSelectAction('settleSubTab-select', st.id)"
+              :style="settleSubTab===st.id
+              ? 'padding:5px 12px;font-size:11px;border:1px solid #059669;border-radius:6px;cursor:pointer;background:#ecfdf5;color:#059669;font-weight:700;'
+              : 'padding:5px 12px;font-size:11px;border:1px solid #d1d5db;border-radius:6px;cursor:pointer;background:#fff;color:#555;'">
+              {{ st.label }}
+            </button>
+          </div>
+          <!-- ===== ■.■.■.■.■. 서브: 개요 ========================================= -->
+          <template v-if="settleSubTab==='overview'">
+            <!-- 정산 상태 흐름 -->
+            <div style="border:1px solid #d1fae5;border-radius:8px;padding:14px;background:#f0fdf4;margin-bottom:12px;">
+              <div style="font-weight:700;color:#059669;margin-bottom:10px;font-size:13px;">정산 상태 흐름</div>
+              <div style="display:flex;align-items:stretch;gap:0;margin-bottom:10px;border:1px solid #a7f3d0;border-radius:6px;overflow:hidden;">
+                <div v-for="(s,i) in SETTLE_STATUS_STEPS" :key="s.code"
+                  :style="'flex:1;padding:10px 8px;background:'+s.color+'18;border-right:'+(i<SETTLE_STATUS_STEPS.length-1?'1px solid #a7f3d0':'none')+';'">
+                  <div :style="'font-size:10px;font-weight:700;color:'+s.color+';margin-bottom:4px;'">
+                    <span :style="'display:inline-block;background:'+s.color+';color:#fff;border-radius:3px;padding:1px 6px;margin-right:4px;'">{{ s.code }}</span>
+                    {{ s.label }}
+                  </div>
+                  <div style="font-size:10px;color:#555;line-height:1.5;">{{ s.desc }}</div>
+                </div>
+              </div>
+              <div style="font-size:11px;color:#065f46;line-height:1.7;">
+                • CONFIRMED 이후 수정 불가 &nbsp;·&nbsp; CLOSED 시 지급 대기(PENDING) 레코드 자동 생성
+              </div>
+            </div>
+            <!-- 정산액 계산식 -->
+            <div style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;background:#fafafa;margin-bottom:12px;">
+              <div style="font-weight:700;color:#333;margin-bottom:10px;font-size:13px;">정산액 계산식</div>
+              <div style="display:flex;flex-direction:column;gap:4px;">
+                <div v-for="(row,i) in SETTLE_CALC_ROWS" :key="row.field"
+                  :style="'display:flex;gap:8px;align-items:flex-start;padding:7px 10px;border-radius:5px;font-size:12px;'+(i===SETTLE_CALC_ROWS.length-1?'background:#e5f9ee;border:1px solid #a7f3d0;font-weight:700;':'background:#fff;border:1px solid #e8e8e8;')">
+                  <span :style="'flex-shrink:0;width:22px;text-align:center;font-weight:700;font-size:13px;color:'+(row.sign==='+'?'#10b981':row.sign==='-'?'#ef4444':row.sign==='='?'#1d4ed8':'#f59e0b')+';'">{{ row.sign }}</span>
+                  <span style="flex-shrink:0;width:88px;color:#555;">{{ row.item }}</span>
+                  <span style="flex-shrink:0;width:130px;color:#888;font-size:10px;font-family:monospace;">{{ row.field }}</span>
+                  <span style="flex:1;color:#666;font-size:11px;line-height:1.5;">{{ row.desc }}</span>
+                </div>
+              </div>
+            </div>
+            <!-- 핵심 정책 -->
+            <div style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;background:#fafafa;">
+              <div style="font-weight:700;color:#333;margin-bottom:8px;font-size:13px;">핵심 정책</div>
+              <div style="display:flex;flex-direction:column;gap:6px;">
+                <div v-for="p in SETTLE_POLICY_ROWS" :key="p.title"
+                  style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#fff;border:1px solid #e8e8e8;border-radius:5px;font-size:12px;">
+                  <span style="flex-shrink:0;font-weight:700;color:#1d4ed8;min-width:80px;line-height:1.5;">{{ p.title }}</span>
+                  <span style="flex:1;color:#444;line-height:1.6;">{{ p.desc }}</span>
+                </div>
+              </div>
+            </div>
+          </template>
+          <!-- ===== ■.■.■.■.■. 서브: 매출수집예 ===================================== -->
+          <template v-else-if="settleSubTab==='raw'">
+            <div style="border:1px solid #d1fae5;border-radius:8px;padding:14px;background:#f0fdf4;margin-bottom:12px;">
+              <div style="font-weight:700;color:#059669;margin-bottom:8px;font-size:13px;">수집원장 유형 (st_settle_raw.raw_type_cd)</div>
+              <div style="display:flex;flex-direction:column;gap:6px;">
+                <div v-for="r in SETTLE_RAW_TYPES" :key="r.code"
+                  style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#fff;border:1px solid #e8e8e8;border-radius:5px;font-size:12px;">
+                  <span :style="'flex-shrink:0;background:'+r.color+';color:#fff;border-radius:3px;padding:1px 8px;font-size:10px;font-weight:700;min-width:56px;text-align:center;'">{{ r.label }}</span>
+                  <span style="flex-shrink:0;font-size:10px;font-family:monospace;color:#999;min-width:64px;">{{ r.code }}</span>
+                  <span style="flex:1;color:#555;line-height:1.5;">{{ r.desc }}</span>
+                </div>
+              </div>
+            </div>
+            <div style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;background:#fafafa;">
+              <div style="font-weight:700;color:#333;margin-bottom:10px;font-size:13px;">매출수집 예시 (3월 구매확정 기준)</div>
+              <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                <thead><tr style="background:#f0fdf4;">
+                  <th style="padding:7px 10px;border:1px solid #d1fae5;text-align:left;">od_order_item.order_item_id</th>
+                  <th style="padding:7px 10px;border:1px solid #d1fae5;text-align:left;">order_item_status_cd</th>
+                  <th style="padding:7px 10px;border:1px solid #d1fae5;text-align:right;">order_item_amt</th>
+                  <th style="padding:7px 10px;border:1px solid #d1fae5;text-align:left;">raw_type_cd</th>
+                  <th style="padding:7px 10px;border:1px solid #d1fae5;text-align:right;">수집금액</th>
+                </tr></thead>
+                <tbody>
+                  <tr><td style="padding:6px 10px;border:1px solid #e8e8e8;">ITEM-001</td><td style="padding:6px 10px;border:1px solid #e8e8e8;"><span style="background:#10b981;color:#fff;border-radius:3px;padding:1px 6px;font-size:10px;">CONFIRMED</span></td><td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;">50,000</td><td style="padding:6px 10px;border:1px solid #e8e8e8;"><span style="background:#10b981;color:#fff;border-radius:3px;padding:1px 5px;font-size:10px;">ORDER</span></td><td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;color:#10b981;font-weight:700;">+50,000</td></tr>
+                  <tr><td style="padding:6px 10px;border:1px solid #e8e8e8;">ITEM-002</td><td style="padding:6px 10px;border:1px solid #e8e8e8;"><span style="background:#10b981;color:#fff;border-radius:3px;padding:1px 6px;font-size:10px;">CONFIRMED</span></td><td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;">30,000</td><td style="padding:6px 10px;border:1px solid #e8e8e8;"><span style="background:#10b981;color:#fff;border-radius:3px;padding:1px 5px;font-size:10px;">ORDER</span></td><td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;color:#10b981;font-weight:700;">+30,000</td></tr>
+                  <tr><td style="padding:6px 10px;border:1px solid #e8e8e8;">ITEM-003</td><td style="padding:6px 10px;border:1px solid #e8e8e8;"><span style="background:#9ca3af;color:#fff;border-radius:3px;padding:1px 6px;font-size:10px;">SHIPPED</span></td><td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;">20,000</td><td style="padding:6px 10px;border:1px solid #e8e8e8;color:#9ca3af;">미수집</td><td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;color:#9ca3af;">-</td></tr>
+                  <tr style="background:#f0fdf4;font-weight:700;"><td colspan="4" style="padding:7px 10px;border:1px solid #a7f3d0;text-align:right;">3월 ORDER 수집합계</td><td style="padding:7px 10px;border:1px solid #a7f3d0;text-align:right;color:#059669;">+80,000</td></tr>
+                </tbody>
+              </table>
+              <div style="font-size:11px;color:#065f46;margin-top:8px;line-height:1.6;">
+                • 수집 기준: <code style="background:#d1fae5;padding:1px 4px;border-radius:3px;">order_item_status_cd = 'CONFIRMED'</code> 확정 시점의 귀속 월<br>
+                • 배송비(SHIP)는 od_dliv.dliv_status_cd = 'DELIVERED' 확정 시 별도 수집
+              </div>
+            </div>
+          </template>
+          <!-- ===== ■.■.■.■.■. 서브: 차감예 ======================================= -->
+          <template v-else-if="settleSubTab==='deduct'">
+            <div style="border:1px solid #fee2e2;border-radius:8px;padding:14px;background:#fff5f5;margin-bottom:12px;">
+              <div style="font-weight:700;color:#dc2626;margin-bottom:8px;font-size:13px;">취소·반품 차감 예시</div>
+              <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                <thead><tr style="background:#fee2e2;">
+                  <th style="padding:7px 10px;border:1px solid #fecaca;text-align:left;">od_claim_item.claim_item_id</th>
+                  <th style="padding:7px 10px;border:1px solid #fecaca;text-align:left;">claim_type_cd</th>
+                  <th style="padding:7px 10px;border:1px solid #fecaca;text-align:left;">claim_item_status_cd</th>
+                  <th style="padding:7px 10px;border:1px solid #fecaca;text-align:right;">refund_amt</th>
+                  <th style="padding:7px 10px;border:1px solid #fecaca;text-align:left;">raw_type_cd</th>
+                  <th style="padding:7px 10px;border:1px solid #fecaca;text-align:right;">차감금액</th>
+                </tr></thead>
+                <tbody>
+                  <tr><td style="padding:6px 10px;border:1px solid #e8e8e8;">CLM-001-1</td><td style="padding:6px 10px;border:1px solid #e8e8e8;"><span style="background:#ef4444;color:#fff;border-radius:3px;padding:1px 5px;font-size:10px;">CANCEL</span></td><td style="padding:6px 10px;border:1px solid #e8e8e8;"><span style="background:#6b7280;color:#fff;border-radius:3px;padding:1px 5px;font-size:10px;">COMPLT</span></td><td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;">25,000</td><td style="padding:6px 10px;border:1px solid #e8e8e8;"><span style="background:#ef4444;color:#fff;border-radius:3px;padding:1px 5px;font-size:10px;">CANCEL</span></td><td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;color:#ef4444;font-weight:700;">-25,000</td></tr>
+                  <tr><td style="padding:6px 10px;border:1px solid #e8e8e8;">CLM-002-1</td><td style="padding:6px 10px;border:1px solid #e8e8e8;"><span style="background:#f97316;color:#fff;border-radius:3px;padding:1px 5px;font-size:10px;">RETURN</span></td><td style="padding:6px 10px;border:1px solid #e8e8e8;"><span style="background:#6b7280;color:#fff;border-radius:3px;padding:1px 5px;font-size:10px;">COMPLT</span></td><td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;">15,000</td><td style="padding:6px 10px;border:1px solid #e8e8e8;"><span style="background:#f97316;color:#fff;border-radius:3px;padding:1px 5px;font-size:10px;">RETURN</span></td><td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;color:#f97316;font-weight:700;">-15,000</td></tr>
+                  <tr><td style="padding:6px 10px;border:1px solid #e8e8e8;">CLM-003-1</td><td style="padding:6px 10px;border:1px solid #e8e8e8;"><span style="background:#8b5cf6;color:#fff;border-radius:3px;padding:1px 5px;font-size:10px;">EXCHANGE</span></td><td style="padding:6px 10px;border:1px solid #e8e8e8;"><span style="background:#9ca3af;color:#fff;border-radius:3px;padding:1px 5px;font-size:10px;">PROC</span></td><td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;">10,000</td><td style="padding:6px 10px;border:1px solid #e8e8e8;color:#9ca3af;">미수집</td><td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;color:#9ca3af;">-</td></tr>
+                  <tr style="background:#fff5f5;font-weight:700;"><td colspan="5" style="padding:7px 10px;border:1px solid #fecaca;text-align:right;">3월 차감합계</td><td style="padding:7px 10px;border:1px solid #fecaca;text-align:right;color:#dc2626;">-40,000</td></tr>
+                </tbody>
+              </table>
+              <div style="font-size:11px;color:#991b1b;margin-top:8px;line-height:1.6;">
+                • 차감 기준: <code style="background:#fee2e2;padding:1px 4px;border-radius:3px;">claim_item_status_cd = 'COMPLT'</code> 완료 시점의 귀속 월<br>
+                • 교환(EXCHANGE)은 COMPLT 이후 교환배송 DELIVERED 확정 시 EXCHANGE 원장 수집<br>
+                • 쿠폰/할인 차감은 total_discnt_amt 컬럼에 별도 집계
+              </div>
+            </div>
+          </template>
+          <!-- ===== ■.■.■.■.■. 서브: 재정산 예 ===================================== -->
+          <template v-else-if="settleSubTab==='readjust'">
+            <div style="border:1px solid #ede9fe;border-radius:8px;padding:14px;background:#f5f3ff;margin-bottom:12px;">
+              <div style="font-weight:700;color:#7c3aed;margin-bottom:8px;font-size:13px;">타월(他月) 환불 발생 시 재정산 흐름</div>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:#fff;border:1px solid #ddd6fe;border-radius:6px;font-size:12px;">
+                  <span style="flex-shrink:0;background:#7c3aed;color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;">1</span>
+                  <div><strong>1월</strong> — ITEM-001 구매확정(CONFIRMED) → 1월 ORDER 수집 +50,000</div>
+                </div>
+                <div style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:#fff;border:1px solid #ddd6fe;border-radius:6px;font-size:12px;">
+                  <span style="flex-shrink:0;background:#7c3aed;color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;">2</span>
+                  <div><strong>1월 말</strong> — 1월 정산 CONFIRMED(확정). final_settle_amt = 50,000 - 수수료. 수정 불가.</div>
+                </div>
+                <div style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:#fff;border:1px solid #ddd6fe;border-radius:6px;font-size:12px;">
+                  <span style="flex-shrink:0;background:#7c3aed;color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;">3</span>
+                  <div><strong>3월</strong> — 고객 반품 신청 → 반품 수거 → COMPLT → <code style="background:#ede9fe;padding:1px 4px;border-radius:3px;">3월 RETURN 원장</code> 수집 -50,000</div>
+                </div>
+                <div style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:#f5f3ff;border:1px solid #c4b5fd;border-radius:6px;font-size:12px;">
+                  <span style="flex-shrink:0;background:#7c3aed;color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;">4</span>
+                  <div><strong>3월 말 정산</strong> — total_return_amt += 50,000 반영 → 3월 final_settle_amt 차감 적용<br><span style="color:#7c3aed;font-size:11px;">→ 1월 정산은 건드리지 않음. 3월 정산에 발생주의로 반영.</span></div>
+                </div>
+              </div>
+              <div style="font-size:11px;color:#5b21b6;margin-top:10px;padding:8px 10px;background:#ede9fe;border-radius:5px;line-height:1.7;">
+                ⭐ <strong>발생주의 원칙</strong>: 반품·취소 사건이 발생한 월의 정산에 차감. 최초 매출 귀속 월(1월)은 수정하지 않는다.<br>
+                ⭐ <strong>마이너스 정산</strong>: final_settle_amt &lt; 0 이면 다음 달 adj_amt로 이월 처리.
+              </div>
+            </div>
+            <!-- 두 가지 방법 비교 -->
+            <div style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;background:#fafafa;margin-bottom:12px;">
+              <div style="font-weight:700;color:#333;margin-bottom:10px;font-size:13px;">왜 1월 정산을 건드리지 않는가?</div>
+              <div style="display:flex;gap:10px;margin-bottom:0;">
+                <div style="flex:1;padding:10px 12px;background:#fff0f0;border:1px solid #fecaca;border-radius:6px;font-size:12px;">
+                  <div style="font-weight:700;color:#dc2626;margin-bottom:6px;">❌ 소급 수정 방식 (안 하는 방식)</div>
+                  <div style="color:#555;line-height:1.7;">
+                    3월에 반품 완료 → <strong>1월 정산으로 돌아가서</strong> -50,000 수정<br>
+                    • 이미 PAID(지급완료)된 정산 재오픈 필요<br>
+                    • ERP 전표 이미 발행됨 → 회계 역분개 필요<br>
+                    • 업체가 이미 받은 돈 환수 → 분쟁 위험
+                  </div>
+                </div>
+                <div style="flex:1;padding:10px 12px;background:#f0fdf4;border:1px solid #a7f3d0;border-radius:6px;font-size:12px;">
+                  <div style="font-weight:700;color:#059669;margin-bottom:6px;">✅ 발생주의 방식 (우리 방식)</div>
+                  <div style="color:#555;line-height:1.7;">
+                    3월에 반품 완료 → <strong>3월 정산에 -50,000 차감</strong><br>
+                    • 1월 정산은 그대로 유지 (PAID 봉인)<br>
+                    • 회계 수정 없음, ERP 전표 신규 발행만<br>
+                    • 업체와의 정산은 3월분에서 자동 상계
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- 숫자 예시 테이블 -->
+            <div style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;background:#fafafa;">
+              <div style="font-weight:700;color:#333;margin-bottom:10px;font-size:13px;">숫자로 보는 정산 흐름 (수수료 10% 가정)</div>
+              <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                <thead><tr style="background:#f3f4f6;">
+                  <th style="padding:7px 10px;border:1px solid #e5e7eb;text-align:center;">월</th>
+                  <th style="padding:7px 10px;border:1px solid #e5e7eb;text-align:right;">매출수집</th>
+                  <th style="padding:7px 10px;border:1px solid #e5e7eb;text-align:right;">반품차감</th>
+                  <th style="padding:7px 10px;border:1px solid #e5e7eb;text-align:right;">수수료</th>
+                  <th style="padding:7px 10px;border:1px solid #e5e7eb;text-align:right;">adj_amt</th>
+                  <th style="padding:7px 10px;border:1px solid #e5e7eb;text-align:right;">final_settle_amt</th>
+                  <th style="padding:7px 10px;border:1px solid #e5e7eb;text-align:center;">상태</th>
+                </tr></thead>
+                <tbody>
+                  <tr>
+                    <td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:center;font-weight:700;">1월</td>
+                    <td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;color:#10b981;">+50,000</td>
+                    <td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;color:#9ca3af;">0</td>
+                    <td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;color:#ef4444;">-5,000</td>
+                    <td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;color:#9ca3af;">0</td>
+                    <td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;font-weight:700;color:#1d4ed8;">+45,000</td>
+                    <td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:center;"><span style="background:#10b981;color:#fff;border-radius:3px;padding:1px 5px;font-size:10px;">PAID</span> 🔒</td>
+                  </tr>
+                  <tr style="background:#f9fafb;">
+                    <td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:center;font-weight:700;">2월</td>
+                    <td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;color:#10b981;">+80,000</td>
+                    <td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;color:#9ca3af;">0</td>
+                    <td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;color:#ef4444;">-8,000</td>
+                    <td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;color:#9ca3af;">0</td>
+                    <td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;font-weight:700;color:#1d4ed8;">+72,000</td>
+                    <td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:center;"><span style="background:#10b981;color:#fff;border-radius:3px;padding:1px 5px;font-size:10px;">PAID</span></td>
+                  </tr>
+                  <tr style="background:#f5f3ff;">
+                    <td style="padding:6px 10px;border:1px solid #c4b5fd;text-align:center;font-weight:700;">3월</td>
+                    <td style="padding:6px 10px;border:1px solid #c4b5fd;text-align:right;color:#10b981;">+30,000</td>
+                    <td style="padding:6px 10px;border:1px solid #c4b5fd;text-align:right;color:#ef4444;font-weight:700;">-50,000</td>
+                    <td style="padding:6px 10px;border:1px solid #c4b5fd;text-align:right;color:#ef4444;">-3,000</td>
+                    <td style="padding:6px 10px;border:1px solid #c4b5fd;text-align:right;color:#9ca3af;">0</td>
+                    <td style="padding:6px 10px;border:1px solid #c4b5fd;text-align:right;font-weight:700;color:#dc2626;">-23,000 ⚠️</td>
+                    <td style="padding:6px 10px;border:1px solid #c4b5fd;text-align:center;"><span style="background:#8b5cf6;color:#fff;border-radius:3px;padding:1px 5px;font-size:10px;">CLOSED</span><br><span style="font-size:10px;color:#7c3aed;">지급 없음 → 이월</span></td>
+                  </tr>
+                  <tr style="background:#fef3c7;">
+                    <td style="padding:6px 10px;border:1px solid #fde68a;text-align:center;font-weight:700;">4월</td>
+                    <td style="padding:6px 10px;border:1px solid #fde68a;text-align:right;color:#10b981;">+60,000</td>
+                    <td style="padding:6px 10px;border:1px solid #fde68a;text-align:right;color:#9ca3af;">0</td>
+                    <td style="padding:6px 10px;border:1px solid #fde68a;text-align:right;color:#ef4444;">-6,000</td>
+                    <td style="padding:6px 10px;border:1px solid #fde68a;text-align:right;color:#ef4444;font-weight:700;">-23,000</td>
+                    <td style="padding:6px 10px;border:1px solid #fde68a;text-align:right;font-weight:700;color:#059669;">+31,000</td>
+                    <td style="padding:6px 10px;border:1px solid #fde68a;text-align:center;"><span style="background:#10b981;color:#fff;border-radius:3px;padding:1px 5px;font-size:10px;">PAID</span><br><span style="font-size:10px;color:#92400e;">3월 적자 상계</span></td>
+                  </tr>
+                </tbody>
+              </table>
+              <div style="font-size:11px;color:#374151;margin-top:8px;padding:8px 10px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:5px;line-height:1.8;">
+                🔒 <strong>1월 PAID 봉인</strong>: 3월에 반품이 발생해도 1월 정산(+45,000)은 절대 수정하지 않음.<br>
+                ⚠️ <strong>3월 마이너스(-23,000)</strong>: 3월 매출(30,000)보다 반품(50,000)이 많아 적자. 3월은 업체에 지급 없음.<br>
+                🔄 <strong>4월 adj_amt 이월</strong>: 3월 적자 -23,000을 4월 adj_amt에 자동 반영 → 4월 실지급 = 60,000 - 6,000 - 23,000 = <strong>+31,000</strong>
+              </div>
+            </div>
+          </template>
+          <!-- ===== ■.■.■.■.■. 서브: 정산조정예 ===================================== -->
+          <template v-else-if="settleSubTab==='adjust'">
+            <div style="border:1px solid #fef3c7;border-radius:8px;padding:14px;background:#fffbeb;margin-bottom:12px;">
+              <div style="font-weight:700;color:#d97706;margin-bottom:8px;font-size:13px;">정산 조정 항목 (adj_amt / etc_adj_amt)</div>
+              <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                <thead><tr style="background:#fef3c7;">
+                  <th style="padding:7px 10px;border:1px solid #fde68a;text-align:left;">조정 컬럼</th>
+                  <th style="padding:7px 10px;border:1px solid #fde68a;text-align:left;">발생 원인</th>
+                  <th style="padding:7px 10px;border:1px solid #fde68a;text-align:right;">금액 예시</th>
+                  <th style="padding:7px 10px;border:1px solid #fde68a;text-align:left;">처리 방식</th>
+                </tr></thead>
+                <tbody>
+                  <tr><td style="padding:6px 10px;border:1px solid #e8e8e8;font-family:monospace;font-size:11px;">adj_amt</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">배송료 조정 (착불→선불 전환)</td><td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;">+3,000</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">배송 담당자 승인 후 자동 반영</td></tr>
+                  <tr><td style="padding:6px 10px;border:1px solid #e8e8e8;font-family:monospace;font-size:11px;">adj_amt</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">이의신청 인정 (과다 수수료 보정)</td><td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;">+5,000</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">정산팀 인정 처리 후 adj_amt 추가</td></tr>
+                  <tr><td style="padding:6px 10px;border:1px solid #e8e8e8;font-family:monospace;font-size:11px;">adj_amt</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">마이너스 정산 이월 (전월 적자 회수)</td><td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;">-12,000</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">전월 final_settle_amt &lt; 0 이월</td></tr>
+                  <tr><td style="padding:6px 10px;border:1px solid #e8e8e8;font-family:monospace;font-size:11px;">etc_adj_amt</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">분쟁 보정 (배상 합의)</td><td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;">+8,000</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">법무팀 확인 후 수동 입력</td></tr>
+                  <tr><td style="padding:6px 10px;border:1px solid #e8e8e8;font-family:monospace;font-size:11px;">etc_adj_amt</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">환수 (페널티 부과)</td><td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;">-20,000</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">운영팀 승인 후 수동 차감</td></tr>
+                </tbody>
+              </table>
+              <div style="font-size:11px;color:#92400e;margin-top:10px;padding:8px 10px;background:#fef3c7;border-radius:5px;line-height:1.7;">
+                • <strong>adj_amt</strong>: 시스템 연동 조정 (배송료·이월·이의신청). 정산 집계 배치가 자동 계산.<br>
+                • <strong>etc_adj_amt</strong>: 수동 조정 (분쟁·환수·기타). 담당자가 직접 st_settle에 입력. 이력 필수.
+              </div>
+            </div>
+          </template>
+          <!-- ===== ■.■.■.■.■. 서브: 마감기준설명 ==================================== -->
+          <template v-else-if="settleSubTab==='close'">
+            <div style="border:1px solid #bae0ff;border-radius:8px;padding:14px;background:#f0f7ff;margin-bottom:12px;">
+              <div style="font-weight:700;color:#1677ff;margin-bottom:10px;font-size:13px;">정산 마감 기준 및 절차</div>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div style="padding:10px 12px;background:#fff;border:1px solid #91caff;border-radius:6px;font-size:12px;">
+                  <div style="font-weight:700;color:#0958d9;margin-bottom:4px;">📅 마감 일정</div>
+                  <div style="color:#555;line-height:1.7;">
+                    매월 <strong>마지막 영업일</strong> 자정(00:00) 기준으로 해당 월 귀속 원장(st_settle_raw) 집계 배치 실행.<br>
+                    집계 완료 후 상태: <code style="background:#e6f4ff;padding:1px 4px;border-radius:3px;">DRAFT</code> 자동 생성 → 정산팀 검토 후 <code style="background:#e6f4ff;padding:1px 4px;border-radius:3px;">CONFIRMED</code> 전환.
+                  </div>
+                </div>
+                <div style="padding:10px 12px;background:#fff;border:1px solid #91caff;border-radius:6px;font-size:12px;">
+                  <div style="font-weight:700;color:#0958d9;margin-bottom:4px;">📋 귀속 월 결정 기준</div>
+                  <table style="width:100%;border-collapse:collapse;margin-top:4px;">
+                    <thead><tr style="background:#e6f4ff;"><th style="padding:5px 8px;border:1px solid #bae0ff;text-align:left;">원장 유형</th><th style="padding:5px 8px;border:1px solid #bae0ff;text-align:left;">귀속 기준 컬럼</th><th style="padding:5px 8px;border:1px solid #bae0ff;text-align:left;">설명</th></tr></thead>
+                    <tbody>
+                      <tr><td style="padding:5px 8px;border:1px solid #e8e8e8;">ORDER</td><td style="padding:5px 8px;border:1px solid #e8e8e8;font-family:monospace;font-size:10px;">od_order_item.confirmed_date</td><td style="padding:5px 8px;border:1px solid #e8e8e8;">구매확정 완료 시각</td></tr>
+                      <tr><td style="padding:5px 8px;border:1px solid #e8e8e8;">CANCEL / RETURN</td><td style="padding:5px 8px;border:1px solid #e8e8e8;font-family:monospace;font-size:10px;">od_claim_item.complt_date</td><td style="padding:5px 8px;border:1px solid #e8e8e8;">클레임 처리 완료 시각</td></tr>
+                      <tr><td style="padding:5px 8px;border:1px solid #e8e8e8;">EXCHANGE</td><td style="padding:5px 8px;border:1px solid #e8e8e8;font-family:monospace;font-size:10px;">od_dliv.delivered_date (교환배송)</td><td style="padding:5px 8px;border:1px solid #e8e8e8;">교환 배송 완료 시각</td></tr>
+                      <tr><td style="padding:5px 8px;border:1px solid #e8e8e8;">SHIP</td><td style="padding:5px 8px;border:1px solid #e8e8e8;font-family:monospace;font-size:10px;">od_dliv.delivered_date</td><td style="padding:5px 8px;border:1px solid #e8e8e8;">배송 완료 시각</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div style="padding:10px 12px;background:#fff;border:1px solid #91caff;border-radius:6px;font-size:12px;">
+                  <div style="font-weight:700;color:#0958d9;margin-bottom:4px;">⚠️ 마감 후 조정 규칙</div>
+                  <div style="color:#555;line-height:1.7;">
+                    • CONFIRMED 이후: 원장 추가·삭제 불가. adj_amt / etc_adj_amt 로만 보정.<br>
+                    • CLOSED 이후: 정산 레코드 전체 잠금. 보정 필요 시 다음 달 정산에 이월 처리.<br>
+                    • PAID 이후: 지급 취소 불가. ERP 전표 생성 완료. 환수는 etc_adj_amt 별도 등록.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+          <!-- ===== ■.■.■.■.■. 서브: 전표처리예 ===================================== -->
+          <template v-else-if="settleSubTab==='erp'">
+            <div style="border:1px solid #e0e7ff;border-radius:8px;padding:14px;background:#eef2ff;margin-bottom:12px;">
+              <div style="font-weight:700;color:#4338ca;margin-bottom:10px;font-size:13px;">ERP 전표 처리 예시 (st_erp_voucher)</div>
+              <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                <thead><tr style="background:#e0e7ff;">
+                  <th style="padding:7px 10px;border:1px solid #c7d2fe;text-align:left;">voucher_type_cd</th>
+                  <th style="padding:7px 10px;border:1px solid #c7d2fe;text-align:left;">발생 시점</th>
+                  <th style="padding:7px 10px;border:1px solid #c7d2fe;text-align:left;">차변(DR)</th>
+                  <th style="padding:7px 10px;border:1px solid #c7d2fe;text-align:left;">대변(CR)</th>
+                  <th style="padding:7px 10px;border:1px solid #c7d2fe;text-align:right;">금액</th>
+                </tr></thead>
+                <tbody>
+                  <tr><td style="padding:6px 10px;border:1px solid #e8e8e8;"><span style="background:#10b981;color:#fff;border-radius:3px;padding:1px 5px;font-size:10px;">SETTLE_CLOSE</span></td><td style="padding:6px 10px;border:1px solid #e8e8e8;">정산 CLOSED 시</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">미지급금(부채)</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">매입채무 정산</td><td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;">final_settle_amt</td></tr>
+                  <tr><td style="padding:6px 10px;border:1px solid #e8e8e8;"><span style="background:#3b82f6;color:#fff;border-radius:3px;padding:1px 5px;font-size:10px;">SETTLE_PAY</span></td><td style="padding:6px 10px;border:1px solid #e8e8e8;">지급 PAID 시</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">미지급금 감소</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">보통예금(자산)</td><td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;">pay_amt</td></tr>
+                  <tr><td style="padding:6px 10px;border:1px solid #e8e8e8;"><span style="background:#f59e0b;color:#fff;border-radius:3px;padding:1px 5px;font-size:10px;">COMMISSION</span></td><td style="padding:6px 10px;border:1px solid #e8e8e8;">정산 CONFIRMED 시</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">수수료수익(수익)</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">미지급금 감소</td><td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;">commission_amt</td></tr>
+                  <tr><td style="padding:6px 10px;border:1px solid #e8e8e8;"><span style="background:#ef4444;color:#fff;border-radius:3px;padding:1px 5px;font-size:10px;">REFUND_ADJ</span></td><td style="padding:6px 10px;border:1px solid #e8e8e8;">환불 반영 시</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">반품손실(비용)</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">미지급금 증가</td><td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:right;">total_return_amt</td></tr>
+                </tbody>
+              </table>
+              <div style="font-size:11px;color:#3730a3;margin-top:10px;padding:8px 10px;background:#e0e7ff;border-radius:5px;line-height:1.7;">
+                • ERP 전송 상태: <code style="background:#c7d2fe;padding:1px 4px;border-radius:3px;">erp_status_cd</code> — PENDING → SENT → CONFIRMED → ERROR<br>
+                • 전송 실패 시 3회 재시도 후 ERROR 상태 전환. 담당자 수동 확인 필요.<br>
+                • ERP 시스템: SAP / 더존 / 세금계산서 자동 발행 연동
+              </div>
+            </div>
+          </template>
+          <!-- ===== ■.■.■.■.■. 서브: 지급 ========================================= -->
+          <template v-else-if="settleSubTab==='pay'">
+            <div style="border:1px solid #d1fae5;border-radius:8px;padding:14px;background:#f0fdf4;margin-bottom:12px;">
+              <div style="font-weight:700;color:#059669;margin-bottom:10px;font-size:13px;">지급 절차 및 상태 흐름</div>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:#fff;border:1px solid #a7f3d0;border-radius:6px;font-size:12px;">
+                  <span style="flex-shrink:0;background:#6b7280;color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;">1</span>
+                  <div><strong>CLOSED</strong> → st_settle_pay 레코드 <code style="background:#f0fdf4;padding:1px 4px;border-radius:3px;">pay_status_cd=PENDING</code> 자동 생성</div>
+                </div>
+                <div style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:#fff;border:1px solid #a7f3d0;border-radius:6px;font-size:12px;">
+                  <span style="flex-shrink:0;background:#3b82f6;color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;">2</span>
+                  <div><strong>계좌 검증</strong> → 업체 정산계좌(sy_vendor.bank_acct_no) 확인. 오류 시 HOLD 처리</div>
+                </div>
+                <div style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:#fff;border:1px solid #a7f3d0;border-radius:6px;font-size:12px;">
+                  <span style="flex-shrink:0;background:#f59e0b;color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;">3</span>
+                  <div><strong>자동 송금</strong> → CLOSED 후 5 영업일 이내 펌뱅킹 API 호출. 성공 시 PAID 전환</div>
+                </div>
+                <div style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:#fff;border:1px solid #a7f3d0;border-radius:6px;font-size:12px;">
+                  <span style="flex-shrink:0;background:#10b981;color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;">4</span>
+                  <div><strong>PAID</strong> → ERP SETTLE_PAY 전표 자동 생성. 업체에 지급 완료 알림 발송</div>
+                </div>
+              </div>
+            </div>
+            <div style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;background:#fafafa;">
+              <div style="font-weight:700;color:#333;margin-bottom:8px;font-size:13px;">지급 보류(HOLD) 사유 및 처리</div>
+              <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                <thead><tr style="background:#f3f4f6;"><th style="padding:7px 10px;border:1px solid #e5e7eb;text-align:left;">보류 사유</th><th style="padding:7px 10px;border:1px solid #e5e7eb;text-align:left;">해제 조건</th></tr></thead>
+                <tbody>
+                  <tr><td style="padding:6px 10px;border:1px solid #e8e8e8;">정산계좌 미확인 / 오류</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">업체가 계좌 재등록 → 다음 정산 지급</td></tr>
+                  <tr><td style="padding:6px 10px;border:1px solid #e8e8e8;">거래 분쟁 진행 중</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">분쟁 종결 후 법무팀 해제 승인</td></tr>
+                  <tr><td style="padding:6px 10px;border:1px solid #e8e8e8;">서류 미제출 (사업자등록증 등)</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">서류 제출 확인 후 즉시 해제 가능</td></tr>
+                  <tr><td style="padding:6px 10px;border:1px solid #e8e8e8;">펌뱅킹 오류 (3회 재시도 실패)</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">담당자 수동 송금 처리 후 PAID 전환</td></tr>
+                  <tr><td style="padding:6px 10px;border:1px solid #e8e8e8;">마이너스 정산 (환수 대기)</td><td style="padding:6px 10px;border:1px solid #e8e8e8;">다음 달 adj_amt 이월로 자동 상계</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </template>
         </template>
         <!-- ===== ■.■.■.■. 시스템 =============================================== -->
         <template v-else-if="activeTab==='system'">
