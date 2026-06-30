@@ -1479,10 +1479,10 @@ window.PdProdDtl = {
           <div style="display:flex;gap:6px;align-items:flex-end;">
             <input class="form-control" :value="cfMdSelectedNm||''" readonly placeholder="담당MD를 선택해주세요"
               style="flex:1;background:#fafafa;" @click="openMdModal" />
-            <button class="btn btn-secondary btn-sm" type="button" @click="openMdModal" style="flex-shrink:0;">선택</button>
+            <button class="btn btn-secondary btn-sm" type="button" @click="openMdModal" style="flex-shrink:0;padding:2px 7px;" title="선택">🔍</button>
             <button v-if="form.mdUserId" type="button" title="선택 해제" @click="form.mdUserId=''"
-              style="background:none;border:none;padding:0 2px 2px;margin-left:-4px;color:#999;cursor:pointer;font-size:13px;line-height:1;flex-shrink:0;">
-              x
+              style="padding:1px 5px;font-size:10px;line-height:1;color:#aaa;background:none;border:1px solid #e0e0e0;border-radius:3px;cursor:pointer;flex-shrink:0;">
+              ✕
             </button>
           </div>
         </template>

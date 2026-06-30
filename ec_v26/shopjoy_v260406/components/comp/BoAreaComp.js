@@ -292,12 +292,12 @@ window.BoSearchArea = {
           readonly :placeholder="col.placeholder || '선택'"
           class="form-control" :style="(col.width ? ('width:' + col.width) : 'width:140px;') + ';background:#f9f9f9;cursor:pointer;'"
           @click="handleSelectAction('field-pick-open', { col, target: po(col) })" />
-    <button class="btn btn-secondary btn-sm" @click="handleSelectAction('field-pick-open', { col, target: po(col) })">
-      {{ col.openLabel || '검색' }}
+    <button class="btn btn-secondary btn-sm" style="padding:2px 7px;" @click="handleSelectAction('field-pick-open', { col, target: po(col) })" :title="col.openLabel || '검색'">
+      🔍
     </button>
     <button v-if="po(col)[col.key]" class="btn btn-sm"
-          style="padding:2px 6px;font-size:11px;color:#999;background:none;border:1px solid #ddd;"
-          @click="handleSelectAction('field-pick-clear', { col, target: po(col) })">
+          style="padding:1px 5px;font-size:10px;line-height:1;color:#aaa;background:none;border:1px solid #e0e0e0;"
+          @click="handleSelectAction('field-pick-clear', { col, target: po(col) })" title="초기화">
       ✕
     </button>
   </template>
@@ -689,9 +689,11 @@ window.BoGrid = {
       </button>
     </div>
   </div>
-  <!-- 그리드 본문 — non-bare 모드에서는 max-height 로 감싸 내부 스크롤 + 페이저 하단 고정.
-       min-height 미지정: 행 수가 적으면 내용 높이만큼만 차지(하단 빈 공백 제거). max-height 로만 상한 제한. -->
-  <div :style="(bare ? 'overflow-x:auto;' : 'max-height:' + (tableMaxHeight || 'calc(100vh - 380px)') + ';overflow:auto;') + 'position:relative;'">
+  <!-- 그리드 본문.
+       tableMaxHeight 명시 시: 해당 높이로 내부 스크롤 (thead sticky = 이 div 기준).
+       tableMaxHeight 미지정: overflow 없음 — bo-main 스크롤 컨테이너 기준으로 thead sticky top:0 동작.
+       bare: 가로 스크롤만. -->
+  <div :style="bare ? 'overflow-x:auto;position:relative;' : tableMaxHeight ? 'max-height:' + tableMaxHeight + ';overflow:auto;position:relative;' : 'overflow-x:auto;position:relative;'">
     <!-- 조회 중 오버레이 (기존 행 위에 표시 — 재조회/페이지 이동 피드백). 행이 없을 땐 빈행 문구로 안내 -->
     <div v-if="loading ? (rows.length) : false" style="position:absolute;inset:0;z-index:5;background:rgba(255,255,255,.55);display:flex;align-items:flex-start;justify-content:center;padding-top:40px;pointer-events:none;">
       <span style="font-size:13px;color:#e8587a;background:#fff;border:1px solid #f3c6d4;border-radius:14px;padding:4px 14px;box-shadow:0 2px 8px rgba(0,0,0,.08);">⏳ 조회 중…</span>

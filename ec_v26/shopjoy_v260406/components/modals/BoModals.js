@@ -5188,16 +5188,16 @@ window.BoRefModal = {
 
     /* memberFormColumns — 회원 상세 (BoFormArea readonly, cols=2, labelLeft) */
     const memberFormColumns = [
-      { key: 'userId',        label: '회원ID',     type: 'readonly' },
-      { key: 'memberNm',      label: '이름',       type: 'readonly' },
-      { key: 'email',         label: '이메일',     type: 'readonly' },
-      { key: 'phone',         label: '연락처',     type: 'readonly' },
-      { key: 'gradeCd',       label: '등급',       type: 'readonly', html: true, fmt: (v) => v ? `<span class="badge badge-purple">${v}</span>` : '-' },
-      { key: 'statusCd',      label: '상태',       type: 'readonly', html: true, fmt: (v) => v ? `<span class="badge ${badgeCls(v)}">${v}</span>` : '-' },
-      { key: 'joinDate',      label: '가입일',     type: 'readonly' },
-      { key: 'lastLogin',     label: '최근 로그인', type: 'readonly' },
-      { key: 'orderCount',    label: '주문수',     type: 'readonly', fmt: (v) => (v != null ? v + '건' : '-') },
-      { key: 'totalPurchase', label: '총 구매액',  type: 'readonly', fmt: (v) => (v != null ? v.toLocaleString() + '원' : '-') },
+      { key: 'memberId',          label: '회원ID',      type: 'readonly' },
+      { key: 'memberNm',          label: '이름',        type: 'readonly' },
+      { key: 'loginId',           label: '이메일(ID)',  type: 'readonly' },
+      { key: 'memberPhone',       label: '연락처',      type: 'readonly', fmt: (v) => v || '-' },
+      { key: 'gradeCd',           label: '등급',        type: 'readonly', html: true, fmt: (v) => v ? `<span class="badge badge-purple">${v}</span>` : '-' },
+      { key: 'memberStatusCd',    label: '상태',        type: 'readonly', html: true, fmt: (v) => v ? `<span class="badge ${badgeCls(v)}">${v}</span>` : '-' },
+      { key: 'joinDate',          label: '가입일',      type: 'readonly', fmt: (v) => v ? String(v).slice(0, 10) : '-' },
+      { key: 'lastLogin',         label: '최근 로그인', type: 'readonly', fmt: (v) => v ? String(v).slice(0, 16) : '-' },
+      { key: 'orderCount',        label: '주문수',      type: 'readonly', fmt: (v) => (v != null ? v + '건' : '-') },
+      { key: 'totalPurchaseAmt',  label: '총 구매액',   type: 'readonly', fmt: (v) => (v != null ? v.toLocaleString() + '원' : '-') },
     ];
 
     /* productFormColumns — 상품 상세 */

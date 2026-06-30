@@ -176,8 +176,8 @@ window.ZdInfDashboard = {
       { key: 'channelCode', label: '코드',          width: '110px', mono: true },
       { key: 'category',    label: '분류',           width: '80px' },
       { key: 'channel',     label: '채널 / 서비스',  width: '130px' },
-      { key: 'beStat',      label: 'BE 설정',        width: '190px', align: 'center' },
-      { key: 'feStat',      label: 'FE 설정',        width: '120px', align: 'center' },
+      { key: 'beStat',      label: 'BE 설정',        width: '240px', align: 'center' },
+      { key: 'feStat',      label: 'FE 설정',        width: '200px', align: 'center' },
       { key: '_test',       label: '테스트',         width: '90px',  align: 'center' },
       { key: 'testResult',  label: '연동결과',       width: '150px', align: 'center' },
       { key: 'testMsg',     label: '테스트 결과',    width: '180px' },
@@ -398,7 +398,7 @@ window.ZdInfDashboard = {
     /* 이력 패널 상태 */
     const histState = reactive({
       show: true, channelKey: '', channelLabel: '전체', logs: [], loading: false,
-      pageNo: 1, pageSize: 5, total: 0,
+      pageNo: 1, pageSize: 5, total: 0, searchWord: '',
       get pageTotalPage() { return Math.max(1, Math.ceil(this.total / this.pageSize)); },
     });
 
@@ -538,6 +538,7 @@ window.ZdInfDashboard = {
       try {
         const params = { pageNo: histState.pageNo, pageSize: histState.pageSize };
         if (histState.channelKey) params.channelKey = histState.channelKey;
+        if (histState.searchWord) params.searchWord = histState.searchWord;
         const res = await boApi.get('/bo/sy/ext-test-log/list', {
           params,
           ...coUtil.cofApiHdr('연동설정대시보드', '이력조회'),
@@ -562,6 +563,7 @@ window.ZdInfDashboard = {
     const handleHistClose = () => { histState.show = false; };
 
     const handleHistPage = async (n) => { histState.pageNo = n; await _loadHist(); };
+    const handleHistSearch = async () => { histState.pageNo = 1; await _loadHist(); };
 
     /* ##### [04] BE 설정 조회 ####################################################### */
 
@@ -749,7 +751,7 @@ window.ZdInfDashboard = {
       fnRefExpandAll, fnRefCollapseAll,
       baseGridColumns, rows,
       histState, fnFmtDatetime, fnFmtAccount, fnFmtReq, fnFmtResp,
-      handleHistOpen, handleHistClose, handleHistPage,
+      handleHistOpen, handleHistClose, handleHistPage, handleHistSearch,
       handleTest, handleRefresh, handleTestAll, _fetchLatestResults,
     };
   },
@@ -768,7 +770,7 @@ window.ZdInfDashboard = {
         :loading="loading"
         list-title="연동 채널 목록"
         empty-text="연동 설정 항목이 없습니다."
-        table-max-height="300px"
+        table-max-height="720px"
       >
         <template #toolbar-actions>
           <button class="btn btn_reset" @click="handleRefresh">새로고침</button>
@@ -781,11 +783,13 @@ window.ZdInfDashboard = {
             <span v-if="row.beStat === '설정됨'" class="badge badge-green">설정됨</span>
             <span v-else-if="row.beStat === '미설정'" class="badge badge-red">미설정</span>
             <span v-else class="badge badge-gray">-</span>
-            <div v-if="row._beFile &amp;&amp; row.beStat !== '-'" style="margin-top:4px;font-size:11px;line-height:1.4;word-break:break-all;">
-              <span :style="row._beFile.startsWith('yml:') ? 'font-weight:600;color:#0284c7;background:#bae6fd;border-radius:3px;padding:1px 4px;font-family:sans-serif;font-size:10px;' : 'font-weight:600;color:#1e40af;background:#dbeafe;border-radius:3px;padding:1px 4px;font-family:sans-serif;font-size:10px;'">
+            <div v-if="row._beFile &amp;&amp; row.beStat !== '-'"
+              style="margin-top:4px;display:flex;align-items:center;gap:3px;overflow:hidden;max-width:100%;"
+              :title="row._beFile.replace(/^(yml:|sy_prop:)/, '')">
+              <span style="flex-shrink:0;" :style="row._beFile.startsWith('yml:') ? 'font-weight:600;color:#0284c7;background:#bae6fd;border-radius:3px;padding:1px 4px;font-family:sans-serif;font-size:10px;' : 'font-weight:600;color:#1e40af;background:#dbeafe;border-radius:3px;padding:1px 4px;font-family:sans-serif;font-size:10px;'">
                 {{ row._beFile.startsWith('yml:') ? 'app~.yml' : 'sy_prop' }}
               </span>
-              <span style="font-family:monospace;color:#374151;margin-left:3px;">
+              <span style="font-family:monospace;font-size:11px;color:#374151;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;">
                 {{ row._beFile.replace(/^(yml:|sy_prop:)/, '') }}
               </span>
             </div>
@@ -798,11 +802,13 @@ window.ZdInfDashboard = {
             <span v-if="row.feStat === '설정됨'" class="badge badge-green">설정됨</span>
             <span v-else-if="row.feStat === '미설정'" class="badge badge-red">미설정</span>
             <span v-else class="badge badge-gray">-</span>
-            <div v-if="row._feFile &amp;&amp; row.feStat !== '-'" style="margin-top:4px;font-size:11px;line-height:1.4;word-break:break-all;">
-              <span :style="row._feFile.startsWith('yml:') ? 'font-weight:600;color:#0284c7;background:#bae6fd;border-radius:3px;padding:1px 4px;font-family:sans-serif;font-size:10px;' : 'font-weight:600;color:#6d28d9;background:#ede9fe;border-radius:3px;padding:1px 4px;font-family:sans-serif;font-size:10px;'">
+            <div v-if="row._feFile &amp;&amp; row.feStat !== '-'"
+              style="margin-top:4px;display:flex;align-items:center;gap:3px;overflow:hidden;max-width:100%;"
+              :title="row._feFile.replace(/^(yml:|sy_prop:)/, '')">
+              <span style="flex-shrink:0;" :style="row._feFile.startsWith('yml:') ? 'font-weight:600;color:#0284c7;background:#bae6fd;border-radius:3px;padding:1px 4px;font-family:sans-serif;font-size:10px;' : 'font-weight:600;color:#6d28d9;background:#ede9fe;border-radius:3px;padding:1px 4px;font-family:sans-serif;font-size:10px;'">
                 {{ row._feFile.startsWith('yml:') ? 'app~.yml' : 'sy_prop' }}
               </span>
-              <span style="font-family:monospace;color:#374151;margin-left:3px;">
+              <span style="font-family:monospace;font-size:11px;color:#374151;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;">
                 {{ row._feFile.replace(/^(yml:|sy_prop:)/, '') }}
               </span>
             </div>
@@ -845,6 +851,8 @@ window.ZdInfDashboard = {
       :title="'테스트 이력 — ' + histState.channelLabel"
       :count-text="histState.total + '건'">
       <template #toolbar-actions>
+        <input v-model="histState.searchWord" class="form-control" style="width:180px;" placeholder="검색어 입력" @keyup.enter="handleHistSearch" />
+        <button class="btn btn_search" @click="handleHistSearch">검색</button>
         <button class="btn btn_close" @click="handleHistClose">닫기</button>
       </template>
       <div v-if="histState.loading" style="padding:20px;text-align:center;color:#aaa;font-size:13px;">조회 중...</div>

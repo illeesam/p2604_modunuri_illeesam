@@ -251,10 +251,10 @@ window.HelpBoModal = {
     ];
 
     const SETTLE_STATUS_STEPS = [
-      { code: 'DRAFT',     label: '작성중',   color: '#9ca3af', desc: '정산 집계 작성 중. 수정 가능.' },
-      { code: 'CONFIRMED', label: '확정',     color: '#3b82f6', desc: '정산액 확정 완료. 이후 수정 불가. 이의신청 기간 시작.' },
-      { code: 'CLOSED',    label: '마감',     color: '#8b5cf6', desc: '정산 마감 처리 완료. 지급 대기 레코드(PENDING) 생성.' },
-      { code: 'PAID',      label: '지급완료', color: '#10b981', desc: '업체 계좌 송금 완료. ERP 전표 생성 및 확인.' },
+      { code: 'DRAFT',     label: '작성중',   color: '#9ca3af', desc: '정산 집계 작성 중. 수정 가능.',                              table: 'st_settle', col: 'settle_status_cd' },
+      { code: 'CONFIRMED', label: '확정',     color: '#3b82f6', desc: '정산액 확정 완료. 이후 수정 불가. 이의신청 기간 시작.',        table: 'st_settle', col: 'settle_status_cd' },
+      { code: 'CLOSED',    label: '마감',     color: '#8b5cf6', desc: '정산 마감 처리 완료. 지급 대기 레코드(PENDING) 생성.',          table: 'st_settle', col: 'settle_status_cd' },
+      { code: 'PAID',      label: '지급완료', color: '#10b981', desc: '업체 계좌 송금 완료. ERP 전표 생성 및 확인.',                  table: 'st_settle', col: 'settle_status_cd' },
     ];
 
     const SETTLE_CALC_ROWS = [
@@ -276,12 +276,12 @@ window.HelpBoModal = {
     ];
 
     const SETTLE_POLICY_ROWS = [
-      { title: '정산 주기',    desc: '월 1회 / 매월 마지막 영업일 마감' },
-      { title: '타월 환불',    desc: '환불 확정 시점의 귀속 월에 반영 (발생주의). 1월 주문 → 3월 반품 완료 → 3월 정산 차감' },
-      { title: '마이너스 정산', desc: 'final_settle_amt < 0 시 다음 달 이월(adj_amt) 또는 수동 조정' },
-      { title: '이의신청',     desc: 'CONFIRMED 후 30일 이내. 인정 시 보정 정산(etc_adj_amt 반영)' },
-      { title: '지급 보류',    desc: '거래 분쟁 / 계좌 오류 / 정산계좌 미확인 / 서류 미제출 시 다음 정산까지 보류' },
-      { title: '지급 기한',    desc: 'CLOSED 후 5 영업일 이내 자동 송금. 실패 시 3회 재시도 후 담당자 연락' },
+      { title: '정산 주기',    desc: '월 1회 / 매월 마지막 영업일 마감',                                              table: 'st_settle',      col: 'settle_ym' },
+      { title: '타월 환불',    desc: '환불 확정 시점의 귀속 월에 반영 (발생주의). 1월 주문 → 3월 반품 완료 → 3월 정산 차감', table: 'st_settle_raw',  col: 'raw_type_cd / settle_ym' },
+      { title: '마이너스 정산', desc: 'final_settle_amt < 0 시 다음 달 이월(adj_amt) 또는 수동 조정',                    table: 'st_settle',      col: 'final_settle_amt / adj_amt' },
+      { title: '이의신청',     desc: 'CONFIRMED 후 30일 이내. 인정 시 보정 정산(etc_adj_amt 반영)',                     table: 'st_settle',      col: 'etc_adj_amt' },
+      { title: '지급 보류',    desc: '거래 분쟁 / 계좌 오류 / 정산계좌 미확인 / 서류 미제출 시 다음 정산까지 보류',          table: 'st_settle_pay',  col: 'pay_status_cd' },
+      { title: '지급 기한',    desc: 'CLOSED 후 5 영업일 이내 자동 송금. 실패 시 3회 재시도 후 담당자 연락',               table: 'st_settle_pay',  col: 'pay_date / pay_status_cd' },
     ];
 
     const activeTab    = ref(props.topic || 'overview');
@@ -1490,7 +1490,10 @@ window.HelpBoModal = {
           <template v-if="settleSubTab==='overview'">
             <!-- 정산 상태 흐름 -->
             <div style="border:1px solid #d1fae5;border-radius:8px;padding:14px;background:#f0fdf4;margin-bottom:12px;">
-              <div style="font-weight:700;color:#059669;margin-bottom:10px;font-size:13px;">정산 상태 흐름</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                <div style="font-weight:700;color:#059669;font-size:13px;">정산 상태 흐름</div>
+                <span style="font-size:10px;font-family:monospace;color:#059669;background:#fff;border:1px solid #a7f3d0;border-radius:4px;padding:2px 7px;">st_settle.settle_status_cd</span>
+              </div>
               <div style="display:flex;align-items:stretch;gap:0;margin-bottom:10px;border:1px solid #a7f3d0;border-radius:6px;overflow:hidden;">
                 <div v-for="(s,i) in SETTLE_STATUS_STEPS" :key="s.code"
                   :style="'flex:1;padding:10px 8px;background:'+s.color+'18;border-right:'+(i<SETTLE_STATUS_STEPS.length-1?'1px solid #a7f3d0':'none')+';'">
@@ -1502,12 +1505,15 @@ window.HelpBoModal = {
                 </div>
               </div>
               <div style="font-size:11px;color:#065f46;line-height:1.7;">
-                • CONFIRMED 이후 수정 불가 &nbsp;·&nbsp; CLOSED 시 지급 대기(PENDING) 레코드 자동 생성
+                • CONFIRMED 이후 수정 불가 &nbsp;·&nbsp; CLOSED 시 지급 대기(PENDING) 레코드 자동 생성 (<code style="background:#fff;border:1px solid #a7f3d0;border-radius:3px;padding:0 4px;">st_settle_pay</code>)
               </div>
             </div>
             <!-- 정산액 계산식 -->
             <div style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;background:#fafafa;margin-bottom:12px;">
-              <div style="font-weight:700;color:#333;margin-bottom:10px;font-size:13px;">정산액 계산식</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                <div style="font-weight:700;color:#333;font-size:13px;">정산액 계산식</div>
+                <span style="font-size:10px;font-family:monospace;color:#555;background:#fff;border:1px solid #ddd;border-radius:4px;padding:2px 7px;">테이블: st_settle</span>
+              </div>
               <div style="display:flex;flex-direction:column;gap:4px;">
                 <div v-for="(row,i) in SETTLE_CALC_ROWS" :key="row.field"
                   :style="'display:flex;gap:8px;align-items:flex-start;padding:7px 10px;border-radius:5px;font-size:12px;'+(i===SETTLE_CALC_ROWS.length-1?'background:#e5f9ee;border:1px solid #a7f3d0;font-weight:700;':'background:#fff;border:1px solid #e8e8e8;')">
@@ -1526,6 +1532,7 @@ window.HelpBoModal = {
                   style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#fff;border:1px solid #e8e8e8;border-radius:5px;font-size:12px;">
                   <span style="flex-shrink:0;font-weight:700;color:#1d4ed8;min-width:80px;line-height:1.5;">{{ p.title }}</span>
                   <span style="flex:1;color:#444;line-height:1.6;">{{ p.desc }}</span>
+                  <span style="flex-shrink:0;font-size:10px;font-family:monospace;color:#888;background:#f9fafb;border:1px solid #e5e7eb;border-radius:4px;padding:2px 6px;white-space:nowrap;">{{ p.table }}.{{ p.col }}</span>
                 </div>
               </div>
             </div>
@@ -1620,6 +1627,94 @@ window.HelpBoModal = {
                 ⭐ <strong>마이너스 정산</strong>: final_settle_amt &lt; 0 이면 다음 달 adj_amt로 이월 처리.
               </div>
             </div>
+            <!-- 주문 1건 추적표 -->
+            <div style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;background:#fff;margin-bottom:12px;">
+              <div style="font-weight:700;color:#333;margin-bottom:4px;font-size:13px;">📦 같은 주문 1건(ITEM-001)을 끝까지 따라가 보기</div>
+              <div style="font-size:11px;color:#777;margin-bottom:10px;">"하나의 주문이 어느 시점에 어느 테이블·정산 월로 반영되는가"를 시간순으로 펼친 표입니다.</div>
+              <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                <thead><tr style="background:#f3f4f6;">
+                  <th style="padding:7px 10px;border:1px solid #e5e7eb;text-align:center;">시점</th>
+                  <th style="padding:7px 10px;border:1px solid #e5e7eb;text-align:left;">실제 일어난 일</th>
+                  <th style="padding:7px 10px;border:1px solid #e5e7eb;text-align:left;">데이터 변화</th>
+                  <th style="padding:7px 10px;border:1px solid #e5e7eb;text-align:center;">정산 귀속 월</th>
+                </tr></thead>
+                <tbody>
+                  <tr>
+                    <td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:center;white-space:nowrap;">1/15</td>
+                    <td style="padding:6px 10px;border:1px solid #e8e8e8;">고객이 50,000원 상품 주문 → 결제 완료(PAID)</td>
+                    <td style="padding:6px 10px;border:1px solid #e8e8e8;font-family:monospace;font-size:11px;">od_order_item.status = PAID</td>
+                    <td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:center;color:#9ca3af;">아직 없음</td>
+                  </tr>
+                  <tr style="background:#f9fafb;">
+                    <td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:center;white-space:nowrap;">1/18</td>
+                    <td style="padding:6px 10px;border:1px solid #e8e8e8;">배송 완료 + 구매확정(자동/수동) → <strong>CONFIRMED</strong></td>
+                    <td style="padding:6px 10px;border:1px solid #e8e8e8;font-family:monospace;font-size:11px;">status = CONFIRMED</td>
+                    <td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:center;color:#9ca3af;">아직 없음</td>
+                  </tr>
+                  <tr style="background:#ecfdf5;">
+                    <td style="padding:6px 10px;border:1px solid #a7f3d0;text-align:center;white-space:nowrap;font-weight:700;">1/31</td>
+                    <td style="padding:6px 10px;border:1px solid #a7f3d0;">월말 정산 배치 → CONFIRMED 건 매출로 수집</td>
+                    <td style="padding:6px 10px;border:1px solid #a7f3d0;font-family:monospace;font-size:11px;">st_settle_raw(raw_type=ORDER, +50,000)</td>
+                    <td style="padding:6px 10px;border:1px solid #a7f3d0;text-align:center;font-weight:700;color:#059669;">1월</td>
+                  </tr>
+                  <tr style="background:#ecfdf5;">
+                    <td style="padding:6px 10px;border:1px solid #a7f3d0;text-align:center;white-space:nowrap;font-weight:700;">2/3</td>
+                    <td style="padding:6px 10px;border:1px solid #a7f3d0;">1월 정산 확정·지급 → <strong>PAID(봉인)</strong></td>
+                    <td style="padding:6px 10px;border:1px solid #a7f3d0;font-family:monospace;font-size:11px;">st_settle.status = PAID 🔒</td>
+                    <td style="padding:6px 10px;border:1px solid #a7f3d0;text-align:center;font-weight:700;color:#059669;">1월</td>
+                  </tr>
+                  <tr>
+                    <td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:center;white-space:nowrap;">3/5</td>
+                    <td style="padding:6px 10px;border:1px solid #e8e8e8;">고객이 <strong>뒤늦게 반품 신청</strong> (구매확정 후에도 반품 가능 기간 내)</td>
+                    <td style="padding:6px 10px;border:1px solid #e8e8e8;font-family:monospace;font-size:11px;">od_claim 생성 (RETURN)</td>
+                    <td style="padding:6px 10px;border:1px solid #e8e8e8;text-align:center;color:#9ca3af;">아직 미반영</td>
+                  </tr>
+                  <tr style="background:#f5f3ff;">
+                    <td style="padding:6px 10px;border:1px solid #c4b5fd;text-align:center;white-space:nowrap;font-weight:700;">3/12</td>
+                    <td style="padding:6px 10px;border:1px solid #c4b5fd;">반품 상품 수거 입고 확인 → <strong>COMPLT(반품 완료)</strong></td>
+                    <td style="padding:6px 10px;border:1px solid #c4b5fd;font-family:monospace;font-size:11px;">od_claim_item.status = COMPLT</td>
+                    <td style="padding:6px 10px;border:1px solid #c4b5fd;text-align:center;color:#9ca3af;">사건 발생 시점</td>
+                  </tr>
+                  <tr style="background:#f5f3ff;">
+                    <td style="padding:6px 10px;border:1px solid #c4b5fd;text-align:center;white-space:nowrap;font-weight:700;">3/31</td>
+                    <td style="padding:6px 10px;border:1px solid #c4b5fd;">월말 정산 배치 → <strong>3월 원장에 반품 차감 수집</strong></td>
+                    <td style="padding:6px 10px;border:1px solid #c4b5fd;font-family:monospace;font-size:11px;">st_settle_raw(raw_type=RETURN, -50,000)</td>
+                    <td style="padding:6px 10px;border:1px solid #c4b5fd;text-align:center;font-weight:700;color:#7c3aed;">3월 ⭐</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div style="font-size:11px;color:#374151;margin-top:8px;padding:8px 10px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:5px;line-height:1.7;">
+                같은 주문 1건이지만 <strong>매출(+50,000)은 1월 정산</strong>에, <strong>반품(-50,000)은 3월 정산</strong>에 따로 기록됩니다.
+                "반품이 일어난 사건의 날짜"가 기준이지, "원래 주문했던 날짜"가 기준이 아니기 때문입니다. 1월 정산은 이미 지급까지 끝났으므로(🔒) 건드릴 수 없고,
+                건드릴 필요도 없습니다 — 손실은 "지금(3월)" 발생했으니 "지금(3월)" 정산에서 처리하는 것이 발생주의 회계의 핵심입니다.
+              </div>
+            </div>
+            <!-- 같은 달에 여러 건이 겹치는 경우 -->
+            <div style="border:1px solid #fbcfe8;border-radius:8px;padding:14px;background:#fdf2f8;margin-bottom:12px;">
+              <div style="font-weight:700;color:#be185d;margin-bottom:8px;font-size:13px;">💡 한 달 안에 매출·반품이 동시에 섞이면?</div>
+              <div style="font-size:12px;color:#555;line-height:1.8;margin-bottom:10px;">
+                실제로는 한 업체가 한 달에 수십~수백 건을 동시에 처리합니다. 3월 한 달 동안 다음과 같이 섞여 있다고 가정하면:
+              </div>
+              <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                <thead><tr style="background:#fce7f3;">
+                  <th style="padding:7px 10px;border:1px solid #fbcfe8;text-align:left;">3월에 일어난 일</th>
+                  <th style="padding:7px 10px;border:1px solid #fbcfe8;text-align:center;">건수</th>
+                  <th style="padding:7px 10px;border:1px solid #fbcfe8;text-align:right;">금액 합계</th>
+                  <th style="padding:7px 10px;border:1px solid #fbcfe8;text-align:left;">3월 원장 반영</th>
+                </tr></thead>
+                <tbody>
+                  <tr><td style="padding:6px 10px;border:1px solid #f3d4e4;">3월에 새로 주문·구매확정된 건</td><td style="padding:6px 10px;border:1px solid #f3d4e4;text-align:center;">12건</td><td style="padding:6px 10px;border:1px solid #f3d4e4;text-align:right;color:#10b981;">+30,000</td><td style="padding:6px 10px;border:1px solid #f3d4e4;font-family:monospace;font-size:11px;">ORDER +30,000</td></tr>
+                  <tr><td style="padding:6px 10px;border:1px solid #f3d4e4;"><strong>1월에 팔았지만 3월에 반품 완료된 건</strong> (ITEM-001 포함)</td><td style="padding:6px 10px;border:1px solid #f3d4e4;text-align:center;">3건</td><td style="padding:6px 10px;border:1px solid #f3d4e4;text-align:right;color:#ef4444;">-50,000</td><td style="padding:6px 10px;border:1px solid #f3d4e4;font-family:monospace;font-size:11px;">RETURN -50,000</td></tr>
+                  <tr><td style="padding:6px 10px;border:1px solid #f3d4e4;">2월에 팔았지만 3월에 취소 완료된 건</td><td style="padding:6px 10px;border:1px solid #f3d4e4;text-align:center;">1건</td><td style="padding:6px 10px;border:1px solid #f3d4e4;text-align:right;color:#ef4444;">-15,000</td><td style="padding:6px 10px;border:1px solid #f3d4e4;font-family:monospace;font-size:11px;">CANCEL -15,000</td></tr>
+                  <tr style="background:#fce7f3;"><td style="padding:6px 10px;border:1px solid #f3d4e4;font-weight:700;" colspan="3">→ 3월 정산 final_settle_amt (수수료 별도)</td><td style="padding:6px 10px;border:1px solid #f3d4e4;font-weight:700;color:#dc2626;">30,000 - 50,000 - 15,000 = -35,000</td></tr>
+                </tbody>
+              </table>
+              <div style="font-size:11px;color:#9d174d;margin-top:8px;line-height:1.7;">
+                핵심은 <strong>"3월에 일어난 사건"만 모아서 3월 원장 1개에 합산</strong>한다는 점입니다. 그 사건이 원래 언제 팔린 상품인지(1월/2월/3월)는
+                3월 정산 계산에 전혀 영향을 주지 않습니다 — 오직 <code style="background:#fce7f3;padding:1px 4px;border-radius:3px;">CONFIRMED</code>(매출 확정)·
+                <code style="background:#fce7f3;padding:1px 4px;border-radius:3px;">COMPLT</code>(클레임 완료)가 <strong>3월에 찍혔는지</strong>만 봅니다.
+              </div>
+            </div>
             <!-- 두 가지 방법 비교 -->
             <div style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;background:#fafafa;margin-bottom:12px;">
               <div style="font-weight:700;color:#333;margin-bottom:10px;font-size:13px;">왜 1월 정산을 건드리지 않는가?</div>
@@ -1646,16 +1741,19 @@ window.HelpBoModal = {
             </div>
             <!-- 숫자 예시 테이블 -->
             <div style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;background:#fafafa;">
-              <div style="font-weight:700;color:#333;margin-bottom:10px;font-size:13px;">숫자로 보는 정산 흐름 (수수료 10% 가정)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                <div style="font-weight:700;color:#333;font-size:13px;">숫자로 보는 정산 흐름 (수수료 10% 가정)</div>
+                <span style="font-size:10px;font-family:monospace;color:#555;background:#fff;border:1px solid #ddd;border-radius:4px;padding:2px 7px;">테이블: st_settle_raw → st_settle</span>
+              </div>
               <table style="width:100%;border-collapse:collapse;font-size:12px;">
                 <thead><tr style="background:#f3f4f6;">
                   <th style="padding:7px 10px;border:1px solid #e5e7eb;text-align:center;">월</th>
-                  <th style="padding:7px 10px;border:1px solid #e5e7eb;text-align:right;">매출수집</th>
-                  <th style="padding:7px 10px;border:1px solid #e5e7eb;text-align:right;">반품차감</th>
-                  <th style="padding:7px 10px;border:1px solid #e5e7eb;text-align:right;">수수료</th>
+                  <th style="padding:7px 10px;border:1px solid #e5e7eb;text-align:right;">매출수집<br><span style="font-weight:400;font-size:9px;color:#9ca3af;">raw.ORDER</span></th>
+                  <th style="padding:7px 10px;border:1px solid #e5e7eb;text-align:right;">반품차감<br><span style="font-weight:400;font-size:9px;color:#9ca3af;">raw.RETURN</span></th>
+                  <th style="padding:7px 10px;border:1px solid #e5e7eb;text-align:right;">수수료<br><span style="font-weight:400;font-size:9px;color:#9ca3af;">commission_amt</span></th>
                   <th style="padding:7px 10px;border:1px solid #e5e7eb;text-align:right;">adj_amt</th>
                   <th style="padding:7px 10px;border:1px solid #e5e7eb;text-align:right;">final_settle_amt</th>
-                  <th style="padding:7px 10px;border:1px solid #e5e7eb;text-align:center;">상태</th>
+                  <th style="padding:7px 10px;border:1px solid #e5e7eb;text-align:center;">상태<br><span style="font-weight:400;font-size:9px;color:#9ca3af;">settle_status_cd</span></th>
                 </tr></thead>
                 <tbody>
                   <tr>
@@ -1706,7 +1804,10 @@ window.HelpBoModal = {
           <!-- ===== ■.■.■.■.■. 서브: 정산조정예 ===================================== -->
           <template v-else-if="settleSubTab==='adjust'">
             <div style="border:1px solid #fef3c7;border-radius:8px;padding:14px;background:#fffbeb;margin-bottom:12px;">
-              <div style="font-weight:700;color:#d97706;margin-bottom:8px;font-size:13px;">정산 조정 항목 (adj_amt / etc_adj_amt)</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                <div style="font-weight:700;color:#d97706;font-size:13px;">정산 조정 항목 (adj_amt / etc_adj_amt)</div>
+                <span style="font-size:10px;font-family:monospace;color:#92400e;background:#fff;border:1px solid #fde68a;border-radius:4px;padding:2px 7px;">테이블: st_settle</span>
+              </div>
               <table style="width:100%;border-collapse:collapse;font-size:12px;">
                 <thead><tr style="background:#fef3c7;">
                   <th style="padding:7px 10px;border:1px solid #fde68a;text-align:left;">조정 컬럼</th>
@@ -1731,7 +1832,10 @@ window.HelpBoModal = {
           <!-- ===== ■.■.■.■.■. 서브: 마감기준설명 ==================================== -->
           <template v-else-if="settleSubTab==='close'">
             <div style="border:1px solid #bae0ff;border-radius:8px;padding:14px;background:#f0f7ff;margin-bottom:12px;">
-              <div style="font-weight:700;color:#1677ff;margin-bottom:10px;font-size:13px;">정산 마감 기준 및 절차</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                <div style="font-weight:700;color:#1677ff;font-size:13px;">정산 마감 기준 및 절차</div>
+                <span style="font-size:10px;font-family:monospace;color:#0958d9;background:#fff;border:1px solid #91caff;border-radius:4px;padding:2px 7px;">테이블: st_settle_raw / st_settle</span>
+              </div>
               <div style="display:flex;flex-direction:column;gap:8px;">
                 <div style="padding:10px 12px;background:#fff;border:1px solid #91caff;border-radius:6px;font-size:12px;">
                   <div style="font-weight:700;color:#0958d9;margin-bottom:4px;">📅 마감 일정</div>
@@ -1792,7 +1896,10 @@ window.HelpBoModal = {
           <!-- ===== ■.■.■.■.■. 서브: 지급 ========================================= -->
           <template v-else-if="settleSubTab==='pay'">
             <div style="border:1px solid #d1fae5;border-radius:8px;padding:14px;background:#f0fdf4;margin-bottom:12px;">
-              <div style="font-weight:700;color:#059669;margin-bottom:10px;font-size:13px;">지급 절차 및 상태 흐름</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                <div style="font-weight:700;color:#059669;font-size:13px;">지급 절차 및 상태 흐름</div>
+                <span style="font-size:10px;font-family:monospace;color:#059669;background:#fff;border:1px solid #a7f3d0;border-radius:4px;padding:2px 7px;">테이블: st_settle_pay</span>
+              </div>
               <div style="display:flex;flex-direction:column;gap:8px;">
                 <div style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:#fff;border:1px solid #a7f3d0;border-radius:6px;font-size:12px;">
                   <span style="flex-shrink:0;background:#6b7280;color:#fff;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;">1</span>
@@ -1813,7 +1920,10 @@ window.HelpBoModal = {
               </div>
             </div>
             <div style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;background:#fafafa;">
-              <div style="font-weight:700;color:#333;margin-bottom:8px;font-size:13px;">지급 보류(HOLD) 사유 및 처리</div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+                <div style="font-weight:700;color:#333;font-size:13px;">지급 보류(HOLD) 사유 및 처리</div>
+                <span style="font-size:10px;font-family:monospace;color:#555;background:#fff;border:1px solid #ddd;border-radius:4px;padding:2px 7px;">st_settle_pay.pay_status_cd</span>
+              </div>
               <table style="width:100%;border-collapse:collapse;font-size:12px;">
                 <thead><tr style="background:#f3f4f6;"><th style="padding:7px 10px;border:1px solid #e5e7eb;text-align:left;">보류 사유</th><th style="padding:7px 10px;border:1px solid #e5e7eb;text-align:left;">해제 조건</th></tr></thead>
                 <tbody>

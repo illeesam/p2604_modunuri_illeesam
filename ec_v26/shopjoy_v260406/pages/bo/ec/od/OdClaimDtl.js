@@ -24,6 +24,8 @@ window.OdClaimDtl = {
     const codes = reactive({ claim_statuses: [], claim_types: [] });
     const claimItems = reactive([]);                                            // 클레임 항목 목록
     const expandedItems = reactive(new Set());                                  // 펼쳐진 클레임 항목 행 인덱스
+    const orderPick = reactive({ open: false });                                // 주문 선택 모달 상태
+    const memberPick = reactive({ open: false });                               // 회원 선택 모달 상태
 
     const cfIsNew = computed(() => !props.dtlId);
 
@@ -63,6 +65,24 @@ window.OdClaimDtl = {
       // 폼 닫기 → 상세영역 유지 + 빈 신규 폼으로 초기화
       } else if (cmd === 'form-close') {
         return props.navigate('__cancelEdit__');
+      // 주문 선택 모달 열기
+      } else if (cmd === 'orderPickModal-open') {
+        orderPick.open = true; return;
+      // 주문 선택 모달 닫기
+      } else if (cmd === 'orderPickModal-close') {
+        orderPick.open = false; return;
+      // 회원 선택 모달 열기
+      } else if (cmd === 'memberPickModal-open') {
+        memberPick.open = true; return;
+      // 회원 선택 모달 닫기
+      } else if (cmd === 'memberPickModal-close') {
+        memberPick.open = false; return;
+      // 주문ID 초기화
+      } else if (cmd === 'orderId-clear') {
+        form.orderId = ''; return;
+      // 회원ID 초기화
+      } else if (cmd === 'memberId-clear') {
+        form.memberId = ''; form.memberNm = ''; return;
       // 주문 참조 모달 열기
       } else if (cmd === 'form-orderRef') {
         return showRefModal('order', form.orderId);
@@ -100,6 +120,28 @@ window.OdClaimDtl = {
         return;
       } else {
         console.warn('[handleSelectAction] unknown cmd:', cmd);
+      }
+    };
+
+    /* fnCallbackModal — 모달 선택 결과 처리 (cmd = modalName) */
+    const fnCallbackModal = (cmd, param, result) => {
+      // 주문 선택
+      if (cmd === 'order-pick') {
+        orderPick.open = false;
+        if (result) {
+          form.orderId  = result.orderId || '';
+          // 주문에서 회원정보 자동 채움
+          if (result.memberNm || result.userNm) { form.memberNm = result.memberNm || result.userNm || ''; }
+        }
+        return;
+      // 회원 선택
+      } else if (cmd === 'member-pick') {
+        memberPick.open = false;
+        if (result) {
+          form.memberId = result.memberId || '';
+          form.memberNm = result.memberNm || result.loginId || result.memberId || '';
+        }
+        return;
       }
     };
 
@@ -349,8 +391,9 @@ window.OdClaimDtl = {
       // 2행: 회원명 / 클레임유형 / 처리상태
       { key: 'memberNm',     label: '회원명', type: 'text' },
       { key: 'claimTypeCd',  label: '클레임 유형', type: 'select', options: () => codes.claim_types },
-      { key: 'claimStatusCd', label: '처리 상태', type: 'select', nullable: false,
-        options: () => cfStatusOptions.value },
+      { key: 'claimStatusCd', label: '처리 상태', type: 'select',
+        nullLabel: '상태 선택',
+        options: () => cfStatusOptions.value.length ? cfStatusOptions.value : cfClaimStatusCodes.value.map(c => c.codeLabel) },
       // 3행: 상품명 / 사유 / 신청일
       { key: 'prodNm',       label: '상품명', type: 'text' },
       { key: 'reasonCd',     label: '사유', type: 'text' },
@@ -374,7 +417,8 @@ window.OdClaimDtl = {
     return {
       columns,
       form, errors, claimItems, activeTab, tabMode2,                      // 상태 / 데이터
-      handleBtnAction, handleSelectAction,                                                                // dispatch (모든 이벤트 / 액션 라우팅)
+      orderPick, memberPick,                                               // 모달 상태
+      handleBtnAction, handleSelectAction, fnCallbackModal,               // dispatch (모든 이벤트 / 액션 라우팅)
       cfIsNew, cfDtlMode, cfClaimSteps, cfCurrentStepIdx, tabs, cfEditHistList,                 // computed
       cfPaymentList, cfStatusHistList, cfAllExpanded, // computed
       CLAIM_TYPE_COLOR, // 상수
@@ -446,18 +490,26 @@ window.OdClaimDtl = {
         @cancel="handleBtnAction('form-cancel')"
         @edit="handleBtnAction('form-edit')"
         @close="handleBtnAction('form-close')">
-        <!-- ===== ■.■.■.■. 주문ID + 보기 버튼 ====================================== -->
+        <!-- ===== ■.■.■.■. 주문ID + 선택/초기화/보기 ===================================== -->
         <template #orderId>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <input class="form-control" v-model="form.orderId" placeholder="ORD-2026-XXX" :readonly="cfDtlMode" :class="errors.orderId ? 'is-invalid' : ''" />
+          <div style="display:flex;gap:6px;align-items:center;">
+            <input class="form-control" v-model="form.orderId" placeholder="ORD-2026-XXX" :readonly="cfDtlMode" :class="errors.orderId ? 'is-invalid' : ''" style="flex:1;" />
+            <template v-if="!cfDtlMode">
+              <button class="btn btn-sm btn-secondary" style="padding:2px 7px;" @click="handleBtnAction('orderPickModal-open')" title="선택">🔍</button>
+              <button v-if="form.orderId" class="btn btn-sm" style="padding:1px 5px;font-size:10px;line-height:1;color:#aaa;background:none;border:1px solid #e0e0e0;" @click="handleBtnAction('orderId-clear')" title="초기화">✕</button>
+            </template>
             <span v-if="form.orderId" class="ref-link" @click="handleBtnAction('form-orderRef')">보기</span>
           </div>
           <span v-if="errors.orderId" class="field-error">{{ errors.orderId }}</span>
         </template>
-        <!-- ===== ■.■.■.■. 회원ID + 보기 버튼 ====================================== -->
+        <!-- ===== ■.■.■.■. 회원ID + 선택/초기화/보기 ===================================== -->
         <template #memberId>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <input class="form-control" v-model="form.memberId" placeholder="회원 ID" :readonly="cfDtlMode" />
+          <div style="display:flex;gap:6px;align-items:center;">
+            <input class="form-control" v-model="form.memberId" placeholder="회원 ID" :readonly="cfDtlMode" style="flex:1;" />
+            <template v-if="!cfDtlMode">
+              <button class="btn btn-sm btn-secondary" style="padding:2px 7px;" @click="handleBtnAction('memberPickModal-open')" title="선택">🔍</button>
+              <button v-if="form.memberId" class="btn btn-sm" style="padding:1px 5px;font-size:10px;line-height:1;color:#aaa;background:none;border:1px solid #e0e0e0;" @click="handleBtnAction('memberId-clear')" title="초기화">✕</button>
+            </template>
             <span v-if="form.memberId" class="ref-link" @click="handleBtnAction('form-memberRef')">보기</span>
           </div>
         </template>
@@ -535,5 +587,15 @@ window.OdClaimDtl = {
 </bo-container>
 <!-- ===== □. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
 <!-- ===== □.□. 정보수정이력 탭 ============================================== -->
+<!-- ===== ■. 주문 선택 모달 ================================================= -->
+<div v-if="orderPick.open">
+  <order-select-modal modal-name="order-pick" :on-callback="fnCallbackModal"
+    @close="handleBtnAction('orderPickModal-close')" />
+</div>
+<!-- ===== ■. 회원 선택 모달 ================================================= -->
+<od-member-pick-modal :show="memberPick.open" ui-nm="클레임관리"
+  subtitle="클레임 등록할 회원을 선택해주세요" modal-name="member-pick"
+  :on-callback="fnCallbackModal"
+  @close="handleBtnAction('memberPickModal-close')" />
 `
 };
