@@ -691,6 +691,13 @@ window.OdOrderKanban = {
                 <div :class="['od-kanban-card-id', fnIsHlOrderItem(item) ? 'hl-id' : '']">
                   {{ item.orderItemId || item.order_item_id || '' }}
                 </div>
+                <div class="od-kanban-card-nm">
+                  {{ item.prodNm || item.prod_nm || '—' }}
+                  <span v-if="item.orderQty || item.order_qty" class="od-kanban-card-qty">{{ item.orderQty || item.order_qty }}</span>
+                </div>
+                <div v-if="item.optItemNm1 || item.opt_item_nm1" class="od-kanban-card-meta">
+                  {{ [item.optItemNm1 || item.opt_item_nm1, item.optItemNm2 || item.opt_item_nm2].filter(Boolean).join(' / ') }}
+                </div>
               </div>
 
             </div>
@@ -744,6 +751,13 @@ window.OdOrderKanban = {
               >
                 <div :class="['od-kanban-card-id', fnIsHlClaim(claim) ? 'hl-id' : '']">
                   {{ claim.claimId || claim.claim_id || '' }}
+                </div>
+                <div v-if="claim.prodNm || claim.prod_nm" class="od-kanban-card-nm">
+                  {{ claim.prodNm || claim.prod_nm }}
+                  <span v-if="claim.claimQty || claim.claim_qty" class="od-kanban-card-qty">{{ claim.claimQty || claim.claim_qty }}</span>
+                </div>
+                <div v-if="claim.prodOption || claim.prod_option" class="od-kanban-card-meta">
+                  {{ claim.prodOption || claim.prod_option }}
                 </div>
               </div>
 
