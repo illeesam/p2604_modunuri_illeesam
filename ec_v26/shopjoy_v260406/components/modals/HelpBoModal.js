@@ -175,53 +175,49 @@ window.HelpBoModal = {
       { type: '즉시할인',  rule: '안분 차감', detail: '프로모션 즉시할인도 비율로 안분하여 환불 금액 차감.' },
     ];
 
+    /* DB CLAIM_STATUS 코드 기준 (OdOrderKanban CLAIM_FLOWS 정합) */
     const CLAIM_TYPES = [
-      { title: '취소', color: '#ef4444', steps: ['취소요청', '취소처리중', '취소완료'],        doubleArrowAfter: [] },
-      { title: '반품', color: '#f97316', steps: ['반품요청', '수거예정', '수거중', '수거완료', '환불처리중', '환불완료'], doubleArrowAfter: [3] },
-      { title: '교환', color: '#3b82f6', steps: ['교환요청', '수거예정', '수거중', '수거완료', '상품준비중', '발송중', '발송완료', '교환완료'], doubleArrowAfter: [3] },
-    ];
-
-    const CLAIM_DETAILS = [
       {
-        title: '취소', color: '#ef4444', bg: '#fff5f5',
-        period: '결제완료 후 7일 이내, 배송준비 착수 전',
+        title: '취소', emoji: '🔴', color: '#dc2626', bg: '#fff1f1',
+        steps: [
+          { key: 'REQUESTED',  label: '취소요청',   icon: '📋', desc: '고객이 취소 신청. 사유 입력 필수. 신청 직후 철회 가능.' },
+          { key: 'PROCESSING', label: '취소처리중', icon: '⏳', desc: '관리자 승인 완료. 결제사에 환불 요청 진행 중.' },
+          { key: 'COMPLT',     label: '취소완료',   icon: '✅', desc: '환불 완료. 원 결제수단으로 3~5 영업일 내 입금.' },
+        ],
+        cancelStep: { key: 'CANCELLED', label: '철회', icon: '↩️', desc: 'REQUESTED 상태에서만 가능. 철회 시 주문 복원.' },
+        period: '결제완료 후 ~ 배송준비 착수 전',
         refund: '원 결제수단으로 3~5 영업일 내 환불',
-        notes: ['배송 후 취소 시 왕복 배송료 공제', '배송준비 이후 상태에서는 취소 불가'],
-        stepDetails: [
-          { step: '취소요청',  desc: '고객이 취소 신청. 사유 입력 필수. 신청 후 관리자 승인 전까지 취소 철회 가능.' },
-          { step: '취소처리중', desc: '관리자 승인 완료. 결제사에 환불 요청 진행 중.' },
-          { step: '취소완료',  desc: '환불 처리 완료. 원 결제수단으로 3~5 영업일 내 입금.' },
-        ],
+        notes: ['배송준비(PREPARING) 이후에는 취소 불가', '배송 출발 후 취소 시 반품으로 전환 처리'],
       },
       {
-        title: '반품', color: '#f97316', bg: '#fff8f0',
-        period: '배송완료 후 30일 이내 (상품하자: 180일, 배송손상: 7일)',
-        refund: '수거 확인 후 5~7 영업일 내 환불',
-        notes: ['단순변심: 배송료 고객/판매자 50% 부담', '상품하자/오배송: 판매자 100% 부담'],
-        stepDetails: [
-          { step: '반품요청',   desc: '고객이 반품 신청. 사유 및 사진 첨부. 신청 후 취소 가능.' },
-          { step: '수거예정',   desc: '관리자 승인 완료. 택배사 지정 및 수거 일정 협의 중.' },
-          { step: '수거중',     desc: '택배사가 상품 픽업 완료. 창고로 이동 중.' },
-          { step: '수거완료',   desc: '상품 창고 입고 완료. 검수 진행 (정상/손상/불량 판정).' },
-          { step: '환불처리중', desc: '검수 완료 후 환불 금액 확정. 결제사에 환불 요청 중.' },
-          { step: '환불완료',   desc: '환불 처리 완료. 배송료/손상 비용 공제 후 입금.' },
+        title: '반품', emoji: '🩷', color: '#db2777', bg: '#fff0f8',
+        steps: [
+          { key: 'REQUESTED',   label: '반품요청', icon: '📋', desc: '고객이 반품 신청. 사유·사진 첨부 필수. 신청 직후 철회 가능.' },
+          { key: 'APPROVED',    label: '수거예정', icon: '🗓️', desc: '관리자 승인 완료. 택배사 지정 및 수거 일정 확정.' },
+          { key: 'IN_PICKUP',   label: '수거중',   icon: '🚚', desc: '택배사가 상품 픽업. 창고 이동 중.' },
+          { key: 'PROCESSING',  label: '검품중',   icon: '🔍', desc: '창고 입고 완료. 정상/손상/불량 여부 검수 진행.' },
+          { key: 'REFUND_WAIT', label: '환불대기', icon: '💳', desc: '검수 완료. 환불 금액 확정 후 결제사 환불 요청.' },
+          { key: 'COMPLT',      label: '환불완료', icon: '✅', desc: '환불 처리 완료. 배송료·손상 공제 후 입금.' },
         ],
+        cancelStep: { key: 'CANCELLED', label: '철회', icon: '↩️', desc: 'REQUESTED 상태에서만 가능.' },
+        period: '배송완료 후 30일 이내 (상품하자 180일, 배송손상 7일)',
+        refund: '검품 완료 후 5~7 영업일 내 환불',
+        notes: ['단순변심: 배송료 고객/판매자 50% 부담', '상품하자·오배송: 판매자 100% 부담', 'PROCESSING(검품) 단계에서 불량 판정 시 환불 금액 조정 가능'],
       },
       {
-        title: '교환', color: '#3b82f6', bg: '#f0f7ff',
-        period: '배송완료 후 30일 이내 (상품하자: 180일, 배송손상: 7일)',
+        title: '교환', emoji: '🔵', color: '#2563eb', bg: '#f0f5ff',
+        steps: [
+          { key: 'REQUESTED',   label: '교환요청', icon: '📋', desc: '고객이 교환 신청. 교환 옵션(사이즈·색상) 선택. 차액 발생 시 추가 결제.' },
+          { key: 'APPROVED',    label: '수거예정', icon: '🗓️', desc: '관리자 승인 완료. 기존 상품 수거 택배사 지정 및 일정 확정.' },
+          { key: 'IN_PICKUP',   label: '수거중',   icon: '🚚', desc: '기존 상품 픽업 완료. 창고 이동 중.' },
+          { key: 'PROCESSING',  label: '재고확인', icon: '📦', desc: '기존 상품 입고 및 검수. 교환 상품 재고 확인 및 피킹·패킹.' },
+          { key: 'REFUND_WAIT', label: '발송대기', icon: '🚀', desc: '교환 상품 발송 준비 완료. 출고 대기 중.' },
+          { key: 'COMPLT',      label: '교환완료', icon: '🏁', desc: '교환 상품 발송 완료 확인. 추가 반품·취소는 새 클레임으로 신청.' },
+        ],
+        cancelStep: { key: 'CANCELLED', label: '철회', icon: '↩️', desc: 'REQUESTED 상태에서만 가능.' },
+        period: '배송완료 후 30일 이내 (상품하자 180일, 배송손상 7일)',
         refund: '총 7~10일 소요 (수거 3~5일 + 발송 3~5일)',
-        notes: ['단순변심: 수거료 50%/50%, 발송비 고객 100%', '상품하자/사이즈오류: 왕복 배송료 판매자 100%'],
-        stepDetails: [
-          { step: '교환요청',   desc: '고객이 교환 신청. 교환 상품(사이즈/색상) 선택. 차액 발생 시 추가 결제.' },
-          { step: '수거예정',   desc: '관리자 승인 완료. 기존 상품 수거 택배사 지정 및 일정 협의.' },
-          { step: '수거중',     desc: '기존 상품 픽업 완료. 창고로 이동 중.' },
-          { step: '수거완료',   desc: '기존 상품 입고 및 검수 완료. 교환 상품 준비 시작.' },
-          { step: '상품준비중', desc: '교환 상품 피킹/패킹 중. 발송 준비 완료 대기.' },
-          { step: '발송중',     desc: '교환 상품 출고 완료. 송장번호 등록. 고객에게 발송 알림.' },
-          { step: '발송완료',   desc: '교환 상품 고객 수령 완료.' },
-          { step: '교환완료',   desc: '교환 처리 최종 완료. 추가 반품/취소는 새 클레임으로 신청.' },
-        ],
+        notes: ['단순변심: 수거료 50%/50%, 발송비 고객 100%', '상품하자·사이즈오류: 왕복 배송료 판매자 100%', 'PROCESSING(재고확인)에서 교환 불가 판정 시 반품 전환'],
       },
     ];
 
@@ -342,7 +338,7 @@ window.HelpBoModal = {
       OVERVIEW_CARDS, PRODUCT_STEPS, PRODUCT_TABS, MEMBER_TABS_LIST,        // 개요/회원/상품
       ORDER_STEPS, ORDER_STEP_DETAILS, ORDER_PARTIAL_SCENARIO,              // 주문
       REFUND_ORDER_ROWS, RETURN_FEE_ROWS, COUPON_REFUND_ROWS,               // 환불/반품/쿠폰
-      CLAIM_TYPES, CLAIM_DETAILS, PROMO_ITEMS, DISP_LEVELS, DISP_WIDGETS,    // 클레임/프로모/전시
+      CLAIM_TYPES, PROMO_ITEMS, DISP_LEVELS, DISP_WIDGETS,                    // 클레임/프로모/전시
       SETTLE_STATUS_STEPS, SETTLE_CALC_ROWS, SETTLE_RAW_TYPES, SETTLE_POLICY_ROWS,  // 정산
       SYS_ITEMS,                                                             // 시스템
     };
@@ -1316,87 +1312,97 @@ window.HelpBoModal = {
           <h3 style="font-size:15px;font-weight:800;color:#333;margin:0 0 4px;">
             🔄 클레임 처리
           </h3>
-          <p style="font-size:12px;color:#888;margin:0 0 14px;">
-            취소 / 반품 / 교환 3가지 유형으로 구분
+          <p style="font-size:12px;color:#888;margin:0 0 16px;">
+            취소 / 반품 / 교환 — DB 코드: <code style="background:#f3f4f6;border-radius:3px;padding:1px 5px;font-size:11px;">CLAIM_STATUS</code>
           </p>
-          <!-- ===== ■.■.■.■.■. 상태 흐름 요약 ======================================== -->
-          <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+          <!-- ===== ■.■.■.■.■. 클레임 유형별 카드 ===================================== -->
+          <div style="display:flex;flex-direction:column;gap:18px;">
             <div v-for="ct in CLAIM_TYPES" :key="ct.title"
-              style="border:1px solid #e0e0e0;border-radius:8px;padding:12px;background:#fafafa;">
-              <div :style="'font-weight:700;color:'+ct.color+';margin-bottom:8px;font-size:13px;'">
-                {{ ct.title }} 상태 흐름
+              :style="'border:1px solid '+ct.color+'40;border-radius:10px;overflow:hidden;background:'+ct.bg+';'">
+              <!-- ===== 유형 헤더 ==================================================== -->
+              <div :style="'background:'+ct.color+';padding:9px 14px;display:flex;align-items:center;gap:8px;'">
+                <span style="font-size:15px;">
+                  {{ ct.emoji }}
+                </span>
+                <span style="font-weight:800;color:#fff;font-size:13px;">
+                  {{ ct.title }}
+                </span>
+                <span style="font-size:11px;color:rgba(255,255,255,.75);margin-left:4px;">
+                  {{ ct.period }}
+                </span>
               </div>
-              <div style="display:flex;align-items:center;gap:4px;font-size:11px;flex-wrap:wrap;">
-                <!-- ===== ■.■.■.■.■.■.■.■. 영역 ======================================== -->
-                <template v-for="(s,i) in ct.steps" :key="s">
-                  <span :style="'background:'+ct.color+';color:#fff;border-radius:4px;padding:3px 8px;white-space:nowrap;'">
-                    {{ s }}
-                  </span>
-                  <template v-if="i < ct.steps.length-1">
-                    <span v-if="ct.doubleArrowAfter.includes(i)" style="color:#bbb;display:inline-flex;gap:2px;">
-                      <span>
-                        -&gt;
+              <!-- ===== 상태 흐름 시각화 ============================================== -->
+              <div style="padding:12px 14px 10px;">
+                <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
+                  <!-- ===== ■.■.■.■.■.■.■.■. 상태 배지 행 ============================= -->
+                  <template v-for="(s,i) in ct.steps" :key="s.key">
+                    <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+                      <span :style="'background:'+ct.color+';color:#fff;border-radius:5px;padding:3px 9px;font-size:10px;font-weight:700;white-space:nowrap;'">
+                        {{ s.icon }} {{ s.label }}
                       </span>
-                      <span>
-                        -&gt;
+                      <span style="font-size:9px;color:#999;font-family:monospace;">
+                        {{ s.key }}
                       </span>
-                    </span>
-                    <span v-else style="color:#bbb;">
-                      -&gt;
+                    </div>
+                    <span v-if="i < ct.steps.length-1" style="color:#bbb;font-size:12px;flex-shrink:0;padding-bottom:12px;">
+                      →
                     </span>
                   </template>
-                </template>
+                  <!-- ===== 철회 경로 ================================================= -->
+                  <span v-if="ct.cancelStep" style="color:#d1d5db;font-size:11px;padding-bottom:12px;margin-left:4px;">
+                    |
+                  </span>
+                  <div v-if="ct.cancelStep" style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+                    <span style="background:#9ca3af;color:#fff;border-radius:5px;padding:3px 9px;font-size:10px;font-weight:700;white-space:nowrap;">
+                      {{ ct.cancelStep.icon }} {{ ct.cancelStep.label }}
+                    </span>
+                    <span style="font-size:9px;color:#999;font-family:monospace;">
+                      {{ ct.cancelStep.key }}
+                    </span>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-          <!-- ===== ■.■.■.■.■. 상세 정책 =========================================== -->
-          <div style="display:flex;flex-direction:column;gap:14px;">
-            <div v-for="cd in CLAIM_DETAILS" :key="cd.title"
-              :style="'border:1px solid #ddd;border-radius:8px;padding:14px;background:'+cd.bg+';'">
-              <div :style="'font-weight:700;color:'+cd.color+';margin-bottom:10px;font-size:13px;'">
-                {{ cd.title }} 상세
-              </div>
-              <!-- ===== ■.■.■.■.■.■.■. 단계별 설명 ====================================== -->
-              <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;">
+              <!-- ===== 단계별 설명 ================================================== -->
+              <div style="padding:0 14px 12px;display:flex;flex-direction:column;gap:5px;">
                 <!-- ===== ■.■.■.■.■.■.■.■. 영역 ======================================== -->
-                <div v-for="sd in cd.stepDetails" :key="sd.step"
+                <div v-for="s in ct.steps" :key="s.key+'_d'"
                   style="display:flex;gap:10px;align-items:flex-start;font-size:12px;">
-                  <span :style="'flex-shrink:0;min-width:68px;display:inline-block;border-radius:3px;padding:1px 7px;font-size:10px;font-weight:700;color:#fff;background:'+cd.color+';text-align:center;'">
-                    {{ sd.step }}
+                  <span :style="'flex-shrink:0;min-width:60px;border-radius:3px;padding:1px 6px;font-size:10px;font-weight:700;color:#fff;background:'+ct.color+';text-align:center;'">
+                    {{ s.label }}
                   </span>
-                  <span style="color:#444;line-height:1.7;">
-                    {{ sd.desc }}
+                  <span style="color:#444;line-height:1.65;padding-top:1px;">
+                    {{ s.desc }}
+                  </span>
+                </div>
+                <div v-if="ct.cancelStep" style="display:flex;gap:10px;align-items:flex-start;font-size:12px;">
+                  <span style="flex-shrink:0;min-width:60px;border-radius:3px;padding:1px 6px;font-size:10px;font-weight:700;color:#fff;background:#9ca3af;text-align:center;">
+                    {{ ct.cancelStep.label }}
+                  </span>
+                  <span style="color:#444;line-height:1.65;padding-top:1px;">
+                    {{ ct.cancelStep.desc }}
                   </span>
                 </div>
               </div>
-              <!-- ===== ■.■.■.■.■.■.■. 정책 요약 ======================================= -->
-              <div style="border-top:1px dashed #ddd;padding-top:8px;font-size:11px;color:#666;line-height:1.9;">
-                <div>
-                  <b>
-                    신청기간:
-                  </b>
-                  {{ cd.period }}
-                </div>
-                <div>
-                  <b>
-                    환불/완료:
-                  </b>
-                  {{ cd.refund }}
-                </div>
-                <div v-for="note in cd.notes" :key="note">
+              <!-- ===== 정책 요약 ==================================================== -->
+              <div :style="'border-top:1px dashed '+ct.color+'40;padding:8px 14px 10px;font-size:11px;color:#555;line-height:1.9;'">
+                <span style="font-weight:700;">
+                  환불/완료:
+                </span>
+                {{ ct.refund }}
+                <span v-for="note in ct.notes" :key="note" style="display:block;">
                   • {{ note }}
-                </div>
+                </span>
               </div>
             </div>
           </div>
           <!-- ===== ■.■.■.■.■. 공통 제약사항 ========================================= -->
-          <div style="margin-top:14px;border:1px solid #ffe58f;border-radius:8px;padding:12px;background:#fffbe6;font-size:12px;color:#7c5500;">
+          <div style="margin-top:16px;border:1px solid #ffe58f;border-radius:8px;padding:12px;background:#fffbe6;font-size:12px;color:#7c5500;">
             <div style="font-weight:700;margin-bottom:6px;">
-              공통 제약사항
+              ⚠ 공통 제약사항
             </div>
             <div style="line-height:1.9;">
               <div>
-                • 동일 상품당 취소/반품/교환 중 1가지만 신청 가능
+                • 동일 상품당 취소/반품/교환 중 1가지만 동시 진행 불가
               </div>
               <div>
                 • 진행 중인 클레임이 있으면 동일 상품 추가 신청 불가
@@ -1405,7 +1411,7 @@ window.HelpBoModal = {
                 • 위생상품, 개봉식품, 디지털상품, 주문제작품은 반품/교환 불가
               </div>
               <div>
-                • 첫 단계(요청) 상태에서만 신청 취소 가능
+                • REQUESTED 상태에서만 철회(CANCELLED) 가능
               </div>
             </div>
           </div>

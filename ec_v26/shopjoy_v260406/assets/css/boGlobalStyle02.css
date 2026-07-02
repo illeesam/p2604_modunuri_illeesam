@@ -358,6 +358,8 @@ textarea.form-control { resize: vertical; min-height: 80px; font-family: inherit
 /* 3열/4열 모드일 때 화면 폭 제한 해제 */
 .bo-wrap:has(.dtl-tab-grid.cols-3),
 .bo-wrap:has(.dtl-tab-grid.cols-4) { max-width: none; }
+/* 채팅 칸반 보드: bo-wrap padding/max-width 해제 */
+.bo-wrap:has([data-chk]) { max-width: none; padding: 0; }
 
 @media (max-width: 640px) {
   .form-row, .form-row.col3 { grid-template-columns: 1fr; }
@@ -571,3 +573,7 @@ textarea.form-control { resize: vertical; min-height: 80px; font-family: inherit
 .modal-box .btn-primary:hover { transform:translateY(-1px); box-shadow:0 4px 10px rgba(232,88,122,0.5) !important; }
 .modal-box .btn-secondary { background:#f3f4f6 !important; color:#4b5563 !important; border:1px solid #e5e7eb !important; }
 .modal-box .btn-secondary:hover { background:#e5e7eb !important; }
+
+/* ── 채팅 칸반 flash animation ── */
+@keyframes chkFlash { 0%,100%{box-shadow:0 0 0 0 rgba(232,88,122,0);} 40%{box-shadow:0 0 0 7px rgba(232,88,122,.45);} 80%{box-shadow:0 0 0 0 rgba(232,88,122,0);} }
+.chk-flash { animation:chkFlash 0.9s ease 5; border-color:#e8587a !important; }

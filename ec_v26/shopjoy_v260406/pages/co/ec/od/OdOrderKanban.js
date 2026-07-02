@@ -26,74 +26,122 @@
   var s = document.createElement('style');
   s.id = 'od-kanban-style';
   s.textContent = [
-    '.od-kanban-wrap{font-family:inherit;color:#1f2937;}',
-    '.od-kanban-hdr{display:flex;align-items:center;gap:12px;padding:14px 18px 10px;border-bottom:1px solid #f0f0f0;flex-wrap:wrap;}',
-    '.od-kanban-hdr-title{font-size:15px;font-weight:700;color:#111;}',
-    '.od-kanban-hdr-id{font-size:12px;color:#6b7280;font-family:monospace;}',
-    '.od-kanban-hdr-id.hl-id{color:#1d4ed8;font-weight:800;}',
-    '.od-kanban-hdr-close{margin-left:auto;background:none;border:none;font-size:18px;cursor:pointer;color:#9ca3af;padding:4px 8px;}',
-    '.od-kanban-hdr-close:hover{color:#ef4444;}',
-    '.od-kanban-order-info{display:flex;gap:18px;flex-wrap:wrap;padding:10px 18px 12px;font-size:12px;background:#fafafa;border-bottom:1px solid #f0f0f0;}',
-    '.od-kanban-order-info dt{color:#6b7280;margin-bottom:1px;font-size:11px;}',
-    '.od-kanban-order-info dd{font-weight:600;color:#111;margin:0;}',
-    '.od-kanban-status-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:#e0f2fe;color:#0369a1;}',
-    '.od-kanban-section{padding:14px 18px 0;}',
-    '.od-kanban-section-title{font-size:13px;font-weight:600;color:#374151;margin-bottom:10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}',
-    '.od-kanban-hl-badge{font-size:11px;font-weight:700;background:#3b82f6;color:#fff;padding:2px 7px;border-radius:10px;}',
-    /* 칸반 보드 */
-    '.od-kanban-board{display:flex;gap:0;overflow-x:auto;padding-bottom:10px;width:100%;}',
-    '.od-kanban-col{flex:1 1 100px;min-width:90px;display:flex;flex-direction:column;}',
-    '.od-kanban-col-hdr{text-align:center;padding:7px 4px 6px;background:#f9fafb;border-top:3px solid #e5e7eb;border-bottom:1px solid #e5e7eb;font-size:11px;font-weight:600;color:#374151;transition:border-color .15s;line-height:1.3;}',
-    '.od-kanban-col-hdr.active-col{border-top-color:#3b82f6;background:#eff6ff;color:#1d4ed8;}',
-    '.od-kanban-col-hdr.drag-over-col{background:#fef3c7;border-top-color:#f59e0b;}',
-    '.od-kanban-col-body{flex:1;min-height:40px;padding:6px 5px;background:#f9fafb;border-right:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0;transition:background .15s;}',
+    /* ── 기본 래퍼 ── */
+    '.od-kanban-wrap{font-family:inherit;color:#1f2937;background:#f8fafc;border-radius:12px;overflow:hidden;}',
+    /* ── 헤더 ── */
+    '.od-kanban-hdr{display:flex;align-items:center;gap:12px;padding:14px 20px 12px;background:linear-gradient(135deg,#1e293b 0%,#334155 100%);flex-wrap:wrap;}',
+    '.od-kanban-hdr-title{font-size:15px;font-weight:700;color:#f1f5f9;letter-spacing:-.3px;}',
+    '.od-kanban-hdr-id{font-size:11px;color:#94a3b8;font-family:monospace;background:rgba(255,255,255,.08);padding:2px 8px;border-radius:6px;}',
+    '.od-kanban-hdr-id.hl-id{color:#60a5fa;font-weight:800;}',
+    '.od-kanban-hdr-close{margin-left:auto;background:rgba(255,255,255,.1);border:none;font-size:16px;cursor:pointer;color:#94a3b8;padding:4px 8px;border-radius:6px;}',
+    '.od-kanban-hdr-close:hover{background:rgba(239,68,68,.3);color:#fca5a5;}',
+    /* ── 주문 요약 ── */
+    '.od-kanban-order-info{display:flex;gap:0;flex-wrap:wrap;padding:0;font-size:12px;background:#fff;border-bottom:2px solid #e2e8f0;}',
+    '.od-kanban-order-info>div{display:flex;flex-direction:column;padding:10px 20px;border-right:1px solid #f1f5f9;gap:2px;}',
+    '.od-kanban-order-info dt{color:#94a3b8;font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;}',
+    '.od-kanban-order-info dd{font-weight:700;color:#1e293b;margin:0;font-size:13px;}',
+    '.od-kanban-status-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:#dbeafe;color:#1d4ed8;letter-spacing:.3px;}',
+    /* ── 섹션 공통 ── */
+    '.od-kanban-section{padding:14px 16px 0;}',
+    '.od-kanban-section-title{font-size:12px;font-weight:700;color:#475569;margin-bottom:8px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;letter-spacing:.2px;}',
+    '.od-kanban-hl-badge{font-size:10px;font-weight:700;background:#3b82f6;color:#fff;padding:2px 7px;border-radius:10px;}',
+    /* ── 칸반 보드 공통 ── */
+    '.od-kanban-board{display:flex;gap:1px;overflow-x:auto;padding-bottom:14px;width:100%;background:#e2e8f0;border-radius:10px;overflow:hidden;}',
+    '.od-kanban-col{flex:1 1 100px;min-width:88px;display:flex;flex-direction:column;}',
+    '.od-kanban-col-hdr{text-align:center;padding:8px 4px 7px;background:#f1f5f9;border-top:3px solid transparent;font-size:10px;font-weight:700;color:#64748b;transition:all .15s;line-height:1.3;letter-spacing:.2px;}',
+    '.od-kanban-col-hdr.drag-over-col{background:#fef9c3;border-top-color:#f59e0b;}',
+    '.od-kanban-col-body{flex:1;min-height:40px;padding:6px 5px;background:#f8fafc;transition:background .15s;}',
     '.od-kanban-col-body.drag-over-body{background:#fef9c3;}',
+    /* ── 카드 공통 ── */
+    '.od-kanban-card{background:#fff;border:1.5px solid #e2e8f0;border-radius:8px;margin-bottom:6px;font-size:11px;transition:box-shadow .15s,transform .1s;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06);}',
+    '.od-kanban-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.1);}',
+    '.od-kanban-card.dragging-card{opacity:.4;transform:scale(1.02);}',
+    '.od-kanban-card.locked-card{border-color:#fca5a5;background:#fff7f7;}',
+    /* 카드 내용 영역 */
+    '.od-kanban-card-body{padding:6px 9px 8px;}',
+    '.od-kanban-card-nm{font-weight:600;color:#1e293b;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;font-size:11px;}',
+    '.od-kanban-card-meta{color:#94a3b8;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
+    '.od-kanban-card-qty{font-size:10px;color:#64748b;font-weight:500;margin-left:4px;background:#f1f5f9;padding:0 4px;border-radius:4px;}',
+    /* ── 카드 헤더 (드래그 핸들) ── */
+    '.od-kanban-card-hdr{display:flex;align-items:center;gap:4px;padding:5px 8px 5px;cursor:grab;user-select:none;border-bottom:1px solid #f1f5f9;}',
+    '.od-kanban-card-hdr:active{cursor:grabbing;}',
+    '.od-kanban-card-hdr-id{font-family:monospace;font-size:10px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;}',
+    '.od-kanban-card-hdr-id.hl-id{color:#1d4ed8;font-weight:800;}',
+    '.od-kanban-card-hdr-sub{font-family:monospace;font-size:9px;opacity:.6;margin-left:1px;}',
+    '.od-kanban-card-hdr-icons{display:flex;align-items:center;gap:1px;flex-shrink:0;}',
+    '.od-kanban-card-icon-btn{background:none;border:none;cursor:pointer;padding:1px 2px;border-radius:4px;font-size:11px;line-height:1;opacity:.7;transition:opacity .1s,background .1s;}',
+    '.od-kanban-card-icon-btn:hover{opacity:1;background:rgba(0,0,0,.06);}',
+    /* ─────────────────────────────────────────────
+       주문(ORDER): 초록 계열
+    ───────────────────────────────────────────── */
+    /* 섹션 타이틀 */
+    '.kanban-theme-order .od-kanban-section-title-bar{background:linear-gradient(90deg,#dcfce7,#f0fdf4);border-left:4px solid #16a34a;padding:7px 12px;border-radius:0 6px 6px 0;margin-bottom:10px;}',
+    /* 열 헤더 */
+    '.kanban-theme-order .od-kanban-col-hdr.active-col{border-top-color:#16a34a;background:#dcfce7;color:#14532d;font-weight:800;}',
     /* 카드 */
-    '.od-kanban-card{background:#fff;border:1.5px solid #e5e7eb;border-radius:8px;padding:8px 9px;margin-bottom:6px;font-size:11px;transition:box-shadow .15s,transform .1s;user-select:none;}',
-    '.od-kanban-card.draggable-card{cursor:grab;}',
-    '.od-kanban-card.draggable-card:active{cursor:grabbing;transform:scale(1.02);box-shadow:0 4px 16px rgba(0,0,0,.13);}',
-    '.od-kanban-card.hl-card{border-color:#3b82f6;background:#eff6ff;font-weight:700;box-shadow:0 0 0 2px rgba(59,130,246,.5);}',
-    '.od-kanban-card.dragging-card{opacity:.45;}',
-    '.od-kanban-card-id{font-family:monospace;font-size:10px;color:#6b7280;margin-bottom:2px;}',
-    '.od-kanban-card-id.hl-id{color:#1d4ed8;font-weight:800;}',
-    '.od-kanban-card-nm{font-weight:600;color:#111;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:104px;}',
-    '.od-kanban-card-meta{color:#6b7280;font-size:10px;}',
-    '.od-kanban-card-dliv{display:flex;align-items:center;gap:3px;font-size:10px;color:#6b7280;margin-top:3px;background:#f0fdf4;border-radius:4px;padding:2px 5px;}',
-    '.od-kanban-card-dliv .dliv-no-reg{color:#ef4444;}',
-    /* 정산 뱃지 */
+    '.kanban-theme-order .od-kanban-card.hl-card{border-color:#16a34a;box-shadow:0 0 0 2px rgba(22,163,74,.25);}',
+    /* 카드 헤더 배경 */
+    '.kanban-theme-order .od-kanban-card-hdr{background:#f0fdf4;}',
+    '.kanban-theme-order .od-kanban-card-hdr-id{color:#15803d;}',
+    /* drop-zone 활성 */
+    '.kanban-theme-order .od-kanban-col-body.drag-over-body{background:#dcfce7;}',
+    /* ─────────────────────────────────────────────
+       취소(CANCEL): 적색 계열
+    ───────────────────────────────────────────── */
+    '.kanban-theme-cancel .od-kanban-section-title-bar{background:linear-gradient(90deg,#fee2e2,#fff1f2);border-left:4px solid #dc2626;padding:7px 12px;border-radius:0 6px 6px 0;margin-bottom:10px;}',
+    '.kanban-theme-cancel .od-kanban-col-hdr.active-col{border-top-color:#dc2626;background:#fee2e2;color:#7f1d1d;font-weight:800;}',
+    '.kanban-theme-cancel .od-kanban-card.hl-card{border-color:#dc2626;box-shadow:0 0 0 2px rgba(220,38,38,.2);}',
+    '.kanban-theme-cancel .od-kanban-card-hdr{background:#fff1f2;}',
+    '.kanban-theme-cancel .od-kanban-card-hdr-id{color:#b91c1c;}',
+    '.kanban-theme-cancel .od-kanban-col-body.drag-over-body{background:#fee2e2;}',
+    /* ─────────────────────────────────────────────
+       반품(RETURN): 분홍 계열
+    ───────────────────────────────────────────── */
+    '.kanban-theme-return .od-kanban-section-title-bar{background:linear-gradient(90deg,#fce7f3,#fdf2f8);border-left:4px solid #db2777;padding:7px 12px;border-radius:0 6px 6px 0;margin-bottom:10px;}',
+    '.kanban-theme-return .od-kanban-col-hdr.active-col{border-top-color:#db2777;background:#fce7f3;color:#831843;font-weight:800;}',
+    '.kanban-theme-return .od-kanban-card.hl-card{border-color:#db2777;box-shadow:0 0 0 2px rgba(219,39,119,.2);}',
+    '.kanban-theme-return .od-kanban-card-hdr{background:#fdf2f8;}',
+    '.kanban-theme-return .od-kanban-card-hdr-id{color:#be185d;}',
+    '.kanban-theme-return .od-kanban-col-body.drag-over-body{background:#fce7f3;}',
+    /* ─────────────────────────────────────────────
+       교환(EXCHANGE): 파랑 계열
+    ───────────────────────────────────────────── */
+    '.kanban-theme-exchange .od-kanban-section-title-bar{background:linear-gradient(90deg,#dbeafe,#eff6ff);border-left:4px solid #2563eb;padding:7px 12px;border-radius:0 6px 6px 0;margin-bottom:10px;}',
+    '.kanban-theme-exchange .od-kanban-col-hdr.active-col{border-top-color:#2563eb;background:#dbeafe;color:#1e3a8a;font-weight:800;}',
+    '.kanban-theme-exchange .od-kanban-card.hl-card{border-color:#2563eb;box-shadow:0 0 0 2px rgba(37,99,235,.2);}',
+    '.kanban-theme-exchange .od-kanban-card-hdr{background:#eff6ff;}',
+    '.kanban-theme-exchange .od-kanban-card-hdr-id{color:#1d4ed8;}',
+    '.kanban-theme-exchange .od-kanban-col-body.drag-over-body{background:#dbeafe;}',
+    /* ── 정산/잠금 뱃지 ── */
     '.od-kanban-settle{display:flex;flex-wrap:wrap;gap:2px;margin-top:4px;}',
     '.od-kanban-settle-badge{display:inline-flex;align-items:center;gap:2px;font-size:10px;font-weight:600;padding:1px 6px;border-radius:8px;white-space:nowrap;}',
     '.od-kanban-settle-badge.settle-locked{background:#fef2f2;color:#dc2626;border:1px solid #fca5a5;}',
     '.od-kanban-settle-badge.settle-closed{background:#f0fdf4;color:#16a34a;border:1px solid #86efac;}',
     '.od-kanban-settle-badge.settle-pending{background:#fffbeb;color:#d97706;border:1px solid #fcd34d;}',
     '.od-kanban-settle-badge.settle-voucher{background:#f5f3ff;color:#7c3aed;border:1px solid #c4b5fd;}',
-    '.od-kanban-settle-badge.settle-amt{background:#f0f9ff;color:#0369a1;border:1px solid #7dd3fc;}',
-    '.od-kanban-card.locked-card{cursor:not-allowed!important;border-color:#fca5a5;background:#fff7f7;}',
     '.od-kanban-move-btn.btn-locked{opacity:.4;cursor:not-allowed;}',
-    '.od-kanban-empty{color:#d1d5db;text-align:center;font-size:11px;padding:16px 0;}',
-    '.od-kanban-loading{text-align:center;padding:40px;color:#9ca3af;font-size:13px;}',
-    '.od-kanban-divider{border:none;border-top:1px solid #f0f0f0;margin:0 18px;}',
-    /* 빠른 이동 버튼 */
-    '.od-kanban-move-btn{border:none;border-radius:5px;padding:3px 8px;font-size:10px;font-weight:600;background:#3b82f6;color:#fff;cursor:pointer;flex:0 0 auto;white-space:nowrap;}',
-    '.od-kanban-move-btn:hover{background:#1d4ed8;}',
-    '.od-kanban-move-btns{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap;padding:0 2px;}',
-    /* 검색바 */
-    '.od-kanban-search{padding:10px 18px;background:#fff;border-bottom:1px solid #f0f0f0;display:flex;flex-wrap:wrap;gap:6px;align-items:center;}',
-    '.od-kanban-search-group{display:flex;align-items:center;gap:5px;flex-wrap:wrap;}',
-    '.od-kanban-search-label{font-size:11px;color:#6b7280;font-weight:600;white-space:nowrap;}',
-    '.od-kanban-search input,.od-kanban-search select{border:1px solid #d1d5db;border-radius:5px;padding:4px 8px;font-size:12px;background:#fff;color:#111;outline:none;}',
-    '.od-kanban-search input:focus,.od-kanban-search select:focus{border-color:#6366f1;box-shadow:0 0 0 2px rgba(99,102,241,.15);}',
-    '.od-kanban-search .btn-search{background:#6366f1;color:#fff;border:none;border-radius:5px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;}',
-    '.od-kanban-search .btn-search:hover{background:#4f46e5;}',
-    '.od-kanban-search .btn-reset{background:#f3f4f6;color:#374151;border:1px solid #d1d5db;border-radius:5px;padding:4px 10px;font-size:12px;cursor:pointer;}',
-    '.od-kanban-search .btn-reset:hover{background:#e5e7eb;}',
-    '.od-kanban-hl-row{padding:6px 18px 8px;background:#fafafa;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}',
-    '.od-kanban-hl-row-label{font-size:11px;color:#6b7280;font-weight:600;white-space:nowrap;}',
-    '.od-kanban-hl-row input{border:1px solid #d1d5db;border-radius:5px;padding:3px 8px;font-size:12px;background:#fff;color:#111;width:180px;font-family:monospace;outline:none;}',
+    /* ── 검색바 ── */
+    '.od-kanban-search{padding:10px 20px;background:#fff;border-bottom:1px solid #e2e8f0;display:flex;flex-wrap:wrap;gap:8px;align-items:center;}',
+    '.od-kanban-search-group{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}',
+    '.od-kanban-search-label{font-size:11px;color:#64748b;font-weight:600;white-space:nowrap;}',
+    '.od-kanban-search input,.od-kanban-search select{border:1px solid #e2e8f0;border-radius:6px;padding:5px 10px;font-size:12px;background:#f8fafc;color:#1e293b;outline:none;transition:border .15s,box-shadow .15s;}',
+    '.od-kanban-search input:focus,.od-kanban-search select:focus{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.12);background:#fff;}',
+    '.od-kanban-search .btn-search{background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;border:none;border-radius:6px;padding:5px 14px;font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 2px 6px rgba(99,102,241,.3);}',
+    '.od-kanban-search .btn-search:hover{background:linear-gradient(135deg,#4f46e5,#4338ca);}',
+    '.od-kanban-search .btn-reset{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;border-radius:6px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;}',
+    '.od-kanban-search .btn-reset:hover{background:#e2e8f0;}',
+    /* ── 강조 표시 행 ── */
+    '.od-kanban-hl-row{padding:7px 20px;background:#f8fafc;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}',
+    '.od-kanban-hl-row-label{font-size:10px;color:#94a3b8;font-weight:700;white-space:nowrap;letter-spacing:.5px;text-transform:uppercase;}',
+    '.od-kanban-hl-row input{border:1px solid #e2e8f0;border-radius:6px;padding:3px 10px;font-size:12px;background:#fff;color:#1e293b;width:190px;font-family:monospace;outline:none;}',
     '.od-kanban-hl-row input:focus{border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,.15);}',
-    '.od-kanban-hl-tag{display:inline-flex;align-items:center;gap:4px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:10px;padding:2px 10px;font-size:11px;font-weight:700;font-family:monospace;}',
+    '.od-kanban-hl-tag{display:inline-flex;align-items:center;gap:5px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:20px;padding:3px 12px;font-size:11px;font-weight:700;font-family:monospace;}',
     '.od-kanban-hl-tag button{background:none;border:none;color:#93c5fd;cursor:pointer;font-size:12px;padding:0 2px;line-height:1;}',
     '.od-kanban-hl-tag button:hover{color:#1d4ed8;}',
+    /* ── 기타 ── */
+    '.od-kanban-empty{color:#cbd5e1;text-align:center;font-size:11px;padding:20px 0;}',
+    '.od-kanban-loading{text-align:center;padding:40px;color:#94a3b8;font-size:13px;}',
+    '.od-kanban-divider{border:none;border-top:2px solid #f1f5f9;margin:14px 0 0;}',
   ].join('');
   document.head.appendChild(s);
 }());
@@ -558,6 +606,91 @@ window.OdOrderKanban = {
       return dragState.overType === ('claim_' + cid) && dragState.overCol === stepKey;
     };
 
+    /* ── 카드 헤더 아이콘 헬퍼 ── */
+
+    /* 주문항목 — 배송 정보 아이콘 표시 여부 */
+    const fnItemHasDliv = function (item) {
+      return !!(item.dlivCourierCd || item.dliv_courier_cd || item.dlivTrackingNo || item.dliv_tracking_no);
+    };
+    /* 주문항목 — 정산마감 아이콘 표시 여부 */
+    const fnItemHasSettleClosed = function (item) {
+      var id = item.orderItemId || item.order_item_id;
+      return settleRaws.some(function (r) {
+        return (r.orderItemId || r.order_item_id) === id && r.closeYn === 'Y';
+      });
+    };
+    /* 주문항목 — 전표 아이콘 표시 여부 */
+    const fnItemHasVoucher = function (item) {
+      var id = item.orderItemId || item.order_item_id;
+      return settleRaws.some(function (r) {
+        return (r.orderItemId || r.order_item_id) === id && !!(r.erpVoucherId || r.erp_voucher_id);
+      });
+    };
+    /* 주문항목 — 배송 아이콘 클릭 (배송 탭으로 이동) */
+    const handleItemDlivIconClick = function (item) {
+      var trackingNo = item.dlivTrackingNo || item.dliv_tracking_no || '';
+      var courier    = item.dlivCourierCd  || item.dliv_courier_cd  || '';
+      toast((courier ? courier + ' ' : '') + (trackingNo || '송장번호 미등록'), 'success');
+    };
+    /* 주문항목 — 정산마감 아이콘 클릭 */
+    const handleItemSettleIconClick = function (item) {
+      var id = item.orderItemId || item.order_item_id;
+      var rows = settleRaws.filter(function (r) { return (r.orderItemId || r.order_item_id) === id; });
+      var closed = rows.filter(function (r) { return r.closeYn === 'Y'; });
+      toast('정산마감 ' + closed.length + '건', 'success');
+    };
+    /* 주문항목 — 전표 아이콘 클릭 */
+    const handleItemVoucherIconClick = function (item) {
+      var id = item.orderItemId || item.order_item_id;
+      var rows = settleRaws.filter(function (r) {
+        return (r.orderItemId || r.order_item_id) === id && !!(r.erpVoucherId || r.erp_voucher_id);
+      });
+      var vid = rows.length ? (rows[0].erpVoucherId || rows[0].erp_voucher_id) : '';
+      toast('ERP 전표 ' + (vid || '') + ' (' + rows.length + '건)', 'success');
+    };
+
+    /* 클레임 — 배송 정보 아이콘 표시 여부 */
+    const fnClaimHasDliv = function (claim) {
+      return !!(claim.dlivCourierCd || claim.dliv_courier_cd || claim.dlivTrackingNo || claim.dliv_tracking_no);
+    };
+    /* 클레임 — 정산마감 아이콘 표시 여부 */
+    const fnClaimHasSettleClosed = function (claim) {
+      var cid = claim.claimId || claim.claim_id;
+      return settleRaws.some(function (r) {
+        return (r.claimId || r.claim_id) === cid && r.closeYn === 'Y';
+      });
+    };
+    /* 클레임 — 전표 아이콘 표시 여부 */
+    const fnClaimHasVoucher = function (claim) {
+      var cid = claim.claimId || claim.claim_id;
+      return settleRaws.some(function (r) {
+        return (r.claimId || r.claim_id) === cid && !!(r.erpVoucherId || r.erp_voucher_id);
+      });
+    };
+    /* 클레임 — 배송 아이콘 클릭 */
+    const handleClaimDlivIconClick = function (claim) {
+      var trackingNo = claim.dlivTrackingNo || claim.dliv_tracking_no || '';
+      var courier    = claim.dlivCourierCd  || claim.dliv_courier_cd  || '';
+      toast((courier ? courier + ' ' : '') + (trackingNo || '송장번호 미등록'), 'success');
+    };
+    /* 클레임 — 정산마감 아이콘 클릭 */
+    const handleClaimSettleIconClick = function (claim) {
+      var cid = claim.claimId || claim.claim_id;
+      var rows = settleRaws.filter(function (r) {
+        return (r.claimId || r.claim_id) === cid && r.closeYn === 'Y';
+      });
+      toast('정산마감 ' + rows.length + '건', 'success');
+    };
+    /* 클레임 — 전표 아이콘 클릭 */
+    const handleClaimVoucherIconClick = function (claim) {
+      var cid = claim.claimId || claim.claim_id;
+      var rows = settleRaws.filter(function (r) {
+        return (r.claimId || r.claim_id) === cid && !!(r.erpVoucherId || r.erp_voucher_id);
+      });
+      var vid = rows.length ? (rows[0].erpVoucherId || rows[0].erp_voucher_id) : '';
+      toast('ERP 전표 ' + (vid || '') + ' (' + rows.length + '건)', 'success');
+    };
+
     /* ##### [06] 라이프사이클 ###################################################### */
 
     onMounted(function () { handleLoadOrder(); });
@@ -570,7 +703,7 @@ window.OdOrderKanban = {
       cfReadonly, cfOrderId, cfMemberNm, cfOrderDate, cfTotalAmt, cfPayMethod, cfOrderStatus,
       hlOrderItemId: _oi, hlClaimId: _ci,
       ORDER_STEPS, DLIV_SHOW_STEPS,
-      fnStepLabel, fnClaimTypeLabel, fnClaimFlow, fnDlivInfo,
+      fnStepLabel, fnClaimTypeKey, fnClaimTypeLabel, fnClaimFlow, fnDlivInfo,
       fnIsOrderItemStep, fnIsClaimStep,
       fnIsHlOrderItem, fnIsHlClaim,
       fnIsDragOverOrderItemCol, fnIsDragOverClaimCol,
@@ -580,20 +713,24 @@ window.OdOrderKanban = {
       handleDropOrderItem, handleDropClaim,
       handleChangeOrderItemStatus, handleChangeClaimStatus,
       handleClose,
+      fnItemHasDliv, fnItemHasSettleClosed, fnItemHasVoucher,
+      handleItemDlivIconClick, handleItemSettleIconClick, handleItemVoucherIconClick,
+      fnClaimHasDliv, fnClaimHasSettleClosed, fnClaimHasVoucher,
+      handleClaimDlivIconClick, handleClaimSettleIconClick, handleClaimVoucherIconClick,
     };
   },
 
   template: `
 <div class="od-kanban-wrap">
 
-  <!-- ① 헤더 (항상 표시) -->
+  <!-- ① 헤더 -->
   <div class="od-kanban-hdr">
     <span class="od-kanban-hdr-title">📋 주문 칸반 보드</span>
     <span class="od-kanban-hdr-id">{{ cfOrderId }}</span>
     <button v-if="asModal" class="od-kanban-hdr-close" @click="handleClose">✕</button>
   </div>
 
-  <!-- ② 검색바 (항상 표시) -->
+  <!-- ② 검색바 -->
   <div class="od-kanban-search">
     <div class="od-kanban-search-group">
       <span class="od-kanban-search-label">주문번호</span>
@@ -609,7 +746,7 @@ window.OdOrderKanban = {
     <button class="btn-reset" @click="handleSearchReset">초기화</button>
   </div>
 
-  <!-- ③ 강조표시란 (항상 표시) -->
+  <!-- ③ 강조표시 -->
   <div class="od-kanban-hl-row">
     <span class="od-kanban-hl-row-label">강조 표시</span>
     <span v-if="hlClaimId" class="od-kanban-hl-tag">
@@ -620,20 +757,20 @@ window.OdOrderKanban = {
       🔵 {{ hlOrderItemId }}
       <button @click="handleClearHlOrderItem">✕</button>
     </span>
-    <span v-else style="font-size:11px;color:#d1d5db;">없음 — 클레임번호로 조회하면 자동 설정됩니다</span>
+    <span v-else style="font-size:11px;color:#cbd5e1;">없음 — 클레임번호로 조회하면 자동 설정됩니다</span>
   </div>
 
   <!-- 로딩 -->
   <div v-if="uiState.loading" class="od-kanban-loading">⏳ 불러오는 중...</div>
 
   <!-- 조회 전 안내 -->
-  <div v-else-if="!currentOrderId" class="od-kanban-empty" style="padding:40px;font-size:13px;color:#9ca3af;">
+  <div v-else-if="!currentOrderId" class="od-kanban-empty" style="padding:48px;font-size:13px;color:#94a3b8;">
     주문번호 또는 클레임번호를 입력하고 조회하세요.
   </div>
 
   <template v-else>
 
-    <!-- ④ 주문정보 -->
+    <!-- ④ 주문 요약 -->
     <dl class="od-kanban-order-info">
       <div><dt>회원</dt><dd>{{ cfMemberNm }}</dd></div>
       <div><dt>주문일시</dt><dd>{{ cfOrderDate }}</dd></div>
@@ -642,37 +779,30 @@ window.OdOrderKanban = {
       <div><dt>주문상태</dt><dd><span class="od-kanban-status-badge">{{ cfOrderStatus }}</span></dd></div>
     </dl>
 
-    <!-- ③ 주문항목 칸반 -->
-    <div class="od-kanban-section">
-      <div class="od-kanban-section-title">
-        📦 주문항목
+    <!-- ⑤ 주문항목 칸반 — 초록 테마 -->
+    <div class="od-kanban-section kanban-theme-order">
+      <div class="od-kanban-section-title-bar" style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:14px;font-weight:800;color:#15803d;">🟢 주문항목</span>
         <span v-if="hlOrderItemId" class="od-kanban-hl-badge">ID 강조 중</span>
       </div>
 
       <div v-if="!orderItems.length" class="od-kanban-empty">주문항목이 없습니다.</div>
 
-      <div v-for="(item, idx) in orderItems" :key="item.orderItemId || item.order_item_id || idx" style="margin-bottom:20px;">
+      <div v-for="(item, idx) in orderItems" :key="item.orderItemId || item.order_item_id || idx" style="margin-bottom:18px;">
 
-        <!-- 항목 행 제목 -->
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-          <span style="font-size:11px;font-weight:700;color:#374151;">항목 {{ idx + 1 }}</span>
-          <span :class="['od-kanban-hdr-id', fnIsHlOrderItem(item) ? 'hl-id' : '']">
-            {{ item.orderItemId || item.order_item_id || '' }}
-          </span>
-          <span style="font-size:11px;color:#6b7280;">{{ item.prodNm || item.prod_nm || '' }}</span>
+        <!-- 항목 소제목 -->
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;padding:0 2px;">
+          <span style="font-size:10px;font-weight:800;color:#16a34a;background:#dcfce7;padding:2px 8px;border-radius:10px;">항목 {{ idx + 1 }}</span>
+          <span style="font-family:monospace;font-size:10px;color:#15803d;font-weight:700;">{{ item.orderItemId || item.order_item_id || '' }}</span>
+          <span style="font-size:11px;color:#374151;font-weight:600;">{{ item.prodNm || item.prod_nm || '' }}</span>
         </div>
 
         <!-- 칸반 보드 -->
         <div class="od-kanban-board">
           <div v-for="step in ORDER_STEPS" :key="step.key" class="od-kanban-col">
-
-            <!-- 열 헤더 -->
             <div
               :class="['od-kanban-col-hdr', fnIsOrderItemStep(item, step.key) ? 'active-col' : '', fnIsDragOverOrderItemCol(step.key) ? 'drag-over-col' : '']"
-              :style="fnIsOrderItemStep(item, step.key) ? ('border-top-color:' + step.color) : ''"
-            ><span style="display:inline-flex;align-items:center;justify-content:center;gap:4px;width:100%;">{{ step.icon }} {{ step.label }}</span></div>
-
-            <!-- 열 바디 (드롭 영역) -->
+            ><span style="display:inline-flex;align-items:center;justify-content:center;gap:3px;width:100%;">{{ step.icon }} {{ step.label }}</span></div>
             <div
               :class="['od-kanban-col-body', fnIsDragOverOrderItemCol(step.key) ? 'drag-over-body' : '']"
               :style="!fnIsOrderItemStep(item, step.key) &amp;&amp; !fnIsDragOverOrderItemCol(step.key) ? 'min-height:0;padding:0;' : ''"
@@ -680,24 +810,26 @@ window.OdOrderKanban = {
               @dragleave="handleDragLeave($event, step.key, 'orderItem')"
               @drop="handleDropOrderItem($event, step.key)"
             >
-              <!-- 현재 상태 카드 -->
               <div
                 v-if="fnIsOrderItemStep(item, step.key)"
                 :class="['od-kanban-card', fnIsHlOrderItem(item) ? 'hl-card' : '', fnSettleLockState(item.orderItemId || item.order_item_id) === 'blocked' ? 'locked-card' : '', dragState.id === (item.orderItemId || item.order_item_id) ? 'dragging-card' : '']"
-                style="padding:0;overflow:hidden;"
               >
-                <!-- 헤더: 드래그 가능 -->
                 <div
-                  :class="['od-kanban-card-id', fnIsHlOrderItem(item) ? 'hl-id' : '']"
-                  style="padding:5px 8px;cursor:grab;border-bottom:1px solid #f0f0f0;user-select:none;"
+                  class="od-kanban-card-hdr"
                   :draggable="!cfReadonly &amp;&amp; fnSettleLockState(item.orderItemId || item.order_item_id) !== 'blocked'"
                   @dragstart="handleDragStart($event, item.orderItemId || item.order_item_id, 'orderItem', step.key)"
                   @dragend="handleDragEnd"
                 >
-                  ⠿ {{ item.orderItemId || item.order_item_id || '' }}
+                  <span :class="['od-kanban-card-hdr-id', fnIsHlOrderItem(item) ? 'hl-id' : '']">
+                    ⠿ {{ item.orderItemId || item.order_item_id || '' }}
+                  </span>
+                  <div class="od-kanban-card-hdr-icons">
+                    <button v-if="fnItemHasDliv(item)" class="od-kanban-card-icon-btn" title="배송정보" @click.stop="handleItemDlivIconClick(item)">🚚</button>
+                    <button v-if="fnItemHasSettleClosed(item)" class="od-kanban-card-icon-btn" title="정산마감" @click.stop="handleItemSettleIconClick(item)">🔒</button>
+                    <button v-if="fnItemHasVoucher(item)" class="od-kanban-card-icon-btn" title="ERP전표" @click.stop="handleItemVoucherIconClick(item)">📄</button>
+                  </div>
                 </div>
-                <!-- 내용: 드래그 불가 -->
-                <div style="padding:5px 8px;">
+                <div class="od-kanban-card-body">
                   <div class="od-kanban-card-nm">
                     {{ item.prodNm || item.prod_nm || '—' }}
                     <span v-if="item.orderQty || item.order_qty" class="od-kanban-card-qty">{{ item.orderQty || item.order_qty }}</span>
@@ -707,7 +839,6 @@ window.OdOrderKanban = {
                   </div>
                 </div>
               </div>
-
             </div>
           </div>
         </div>
@@ -715,34 +846,33 @@ window.OdOrderKanban = {
       </div>
     </div>
 
-    <!-- ④ 클레임 칸반 -->
+    <!-- ⑥ 클레임 칸반 -->
     <template v-if="claims.length">
-      <hr class="od-kanban-divider" style="margin-top:16px;" />
+      <hr class="od-kanban-divider" />
 
       <template v-for="(claim, cidx) in claims" :key="claim.claimId || claim.claim_id || cidx">
       <div
         v-if="fnClaimFlow(claim).some(function(s){ return s.key === (claim.claimStatusCd || claim.claim_status_cd); })"
-        class="od-kanban-section"
+        :class="['od-kanban-section', 'kanban-theme-' + (fnClaimTypeKey(claim) === 'CANCEL' ? 'cancel' : fnClaimTypeKey(claim) === 'RETURN' ? 'return' : 'exchange')]"
         style="margin-top:14px;"
       >
         <!-- 클레임 섹션 제목 -->
-        <div class="od-kanban-section-title">
-          <span>↩️ <strong>{{ fnClaimTypeLabel(claim) }}</strong></span>
-          <span :class="['od-kanban-hdr-id', fnIsHlClaim(claim) ? 'hl-id' : '']">{{ claim.claimId || claim.claim_id || '' }}</span>
+        <div class="od-kanban-section-title-bar" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span style="font-size:14px;font-weight:800;">
+            {{ fnClaimTypeKey(claim) === 'CANCEL' ? '🔴 취소' : fnClaimTypeKey(claim) === 'RETURN' ? '🩷 반품' : '🔵 교환' }}
+          </span>
+          <span style="font-family:monospace;font-size:11px;font-weight:700;opacity:.75;">{{ claim.claimId || claim.claim_id || '' }}</span>
           <span v-if="fnIsHlClaim(claim)" class="od-kanban-hl-badge">강조</span>
-          <span style="font-size:11px;color:#6b7280;margin-left:4px;">{{ claim.prodNm || claim.prod_nm || '' }}</span>
-          <span style="font-size:11px;color:#9ca3af;">{{ (claim.requestDate || claim.request_date || claim.regDate || claim.reg_date || '').slice(0, 10) }}</span>
+          <span style="font-size:11px;color:#475569;font-weight:600;">{{ claim.prodNm || claim.prod_nm || '' }}</span>
+          <span style="font-size:10px;color:#94a3b8;margin-left:auto;">{{ (claim.requestDate || claim.request_date || claim.regDate || claim.reg_date || '').slice(0, 10) }}</span>
         </div>
 
         <!-- 클레임 칸반 보드 -->
         <div class="od-kanban-board">
           <div v-for="step in fnClaimFlow(claim)" :key="step.key" class="od-kanban-col">
-
             <div
               :class="['od-kanban-col-hdr', fnIsClaimStep(claim, step.key) ? 'active-col' : '', fnIsDragOverClaimCol(claim, step.key) ? 'drag-over-col' : '']"
-              :style="fnIsClaimStep(claim, step.key) ? ('border-top-color:' + step.color) : ''"
-            ><span style="display:inline-flex;align-items:center;justify-content:center;gap:4px;width:100%;">{{ step.icon }} {{ step.label }}</span></div>
-
+            ><span style="display:inline-flex;align-items:center;justify-content:center;gap:3px;width:100%;">{{ step.icon }} {{ step.label }}</span></div>
             <div
               :class="['od-kanban-col-body', fnIsDragOverClaimCol(claim, step.key) ? 'drag-over-body' : '']"
               :style="!fnIsClaimStep(claim, step.key) &amp;&amp; !fnIsDragOverClaimCol(claim, step.key) ? 'min-height:0;padding:0;' : ''"
@@ -753,20 +883,24 @@ window.OdOrderKanban = {
               <div
                 v-if="fnIsClaimStep(claim, step.key)"
                 :class="['od-kanban-card', fnIsHlClaim(claim) ? 'hl-card' : '', dragState.id === (claim.claimId || claim.claim_id) ? 'dragging-card' : '']"
-                style="padding:0;overflow:hidden;"
               >
-                <!-- 헤더: 드래그 가능 -->
                 <div
-                  :class="['od-kanban-card-id', fnIsHlClaim(claim) ? 'hl-id' : '']"
-                  style="padding:5px 8px;cursor:grab;border-bottom:1px solid #f0f0f0;user-select:none;"
+                  class="od-kanban-card-hdr"
                   :draggable="!cfReadonly"
                   @dragstart="handleDragStart($event, claim.claimId || claim.claim_id, 'claim', step.key)"
                   @dragend="handleDragEnd"
                 >
-                  ⠿ {{ claim.claimId || claim.claim_id || '' }}
+                  <span :class="['od-kanban-card-hdr-id', fnIsHlClaim(claim) ? 'hl-id' : '']">
+                    ⠿ {{ claim.claimId || claim.claim_id || '' }}
+                    <span v-if="claim.orderItemId || claim.order_item_id" class="od-kanban-card-hdr-sub">({{ claim.orderItemId || claim.order_item_id }})</span>
+                  </span>
+                  <div class="od-kanban-card-hdr-icons">
+                    <button v-if="fnClaimHasDliv(claim)" class="od-kanban-card-icon-btn" title="배송정보" @click.stop="handleClaimDlivIconClick(claim)">🚚</button>
+                    <button v-if="fnClaimHasSettleClosed(claim)" class="od-kanban-card-icon-btn" title="정산마감" @click.stop="handleClaimSettleIconClick(claim)">🔒</button>
+                    <button v-if="fnClaimHasVoucher(claim)" class="od-kanban-card-icon-btn" title="ERP전표" @click.stop="handleClaimVoucherIconClick(claim)">📄</button>
+                  </div>
                 </div>
-                <!-- 내용: 드래그 불가 -->
-                <div style="padding:5px 8px;">
+                <div class="od-kanban-card-body">
                   <div v-if="claim.prodNm || claim.prod_nm" class="od-kanban-card-nm">
                     {{ claim.prodNm || claim.prod_nm }}
                     <span v-if="claim.claimQty || claim.claim_qty" class="od-kanban-card-qty">{{ claim.claimQty || claim.claim_qty }}</span>
@@ -776,7 +910,6 @@ window.OdOrderKanban = {
                   </div>
                 </div>
               </div>
-
             </div>
           </div>
         </div>

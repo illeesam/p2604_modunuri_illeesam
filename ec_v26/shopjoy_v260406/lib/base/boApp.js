@@ -88,6 +88,7 @@
       { group: '고객센터' },
       { id: 'syContactMng', label: '문의관리' },
       { id: 'cmChattMng', label: '채팅관리' },
+      { id: 'cmChattKanban', label: '채팅칸반보드' },
       { group: '공통업무' },
       { id: 'cmNoticeMng', label: '공지사항관리' },
       { id: 'cmFaqMng', label: 'FAQ관리' },
@@ -458,6 +459,7 @@
         syContactDtl: 'sy-contact-dtl',
         cmChattMng: 'cm-chatt-mng',
         cmChattDtl: 'cm-chatt-dtl',
+        cmChattKanban: 'cm-chatt-kanban',
         sySiteMng: 'sy-site-mng',
         sySiteDtl: 'sy-site-dtl',
         syCodeMng: 'sy-code-mng',
@@ -2562,8 +2564,9 @@
             <mb-cust-info-mng v-else-if="page==='mbCustInfoMng'" :navigate="navigate" />
             <sy-contact-mng v-else-if="page==='syContactMng'" :navigate="navigate" />
             <sy-contact-dtl v-else-if="page==='syContactDtl'" :navigate="navigate" :dtl-id="dtlId" />
-            <cm-chatt-mng  v-else-if="page==='cmChattMng'"  :navigate="navigate" />
-            <cm-chatt-dtl  v-else-if="page==='cmChattDtl'"  :navigate="navigate" :dtl-id="dtlId" />
+            <cm-chatt-mng     v-else-if="page==='cmChattMng'"     :navigate="navigate" />
+            <cm-chatt-dtl     v-else-if="page==='cmChattDtl'"     :navigate="navigate" :dtl-id="dtlId" />
+            <cm-chatt-kanban  v-else-if="page==='cmChattKanban'"  :navigate="navigate" />
             <sy-site-mng  v-else-if="page==='sySiteMng'"  :navigate="navigate" />
             <sy-site-dtl  v-else-if="page==='sySiteDtl'"  :navigate="navigate" :dtl-id="dtlId" />
             <sy-code-mng  v-else-if="page==='syCodeMng'"  :navigate="navigate" />
@@ -3103,6 +3106,7 @@
     /* ── pages/bo/ec/ — 채팅/고객 ── */
     .component('CmChattMng', window.CmChattMng)
     .component('CmChattDtl', window.CmChattDtl)
+    .component('CmChattKanban', window.CmChattKanban)
     .component('MbCustInfoMng', window.MbCustInfoMng)
     /* ── pages/bo/sy/ — 대시보드 ── */
     .component('SyDashboardMng', window.SyDashboardMng)
