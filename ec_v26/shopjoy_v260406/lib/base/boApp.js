@@ -214,8 +214,27 @@
       .map((p) => p.id.replace('Mng', 'Dtl')),
   ];
 
-  /* Mng 페이지의 탭 ID 반환 (Dtl → 부모 Mng) */
-  const toTabId = (pg) => (pg.endsWith('Dtl') ? pg.replace('Dtl', 'Mng') : pg);
+  /* 주문별 별개 탭을 생성하는 페이지 집합 */
+  const MULTI_TAB_PAGES = new Set(['odOrderKanban']);
+
+  /* Mng 페이지의 탭 ID 반환 (Dtl → 부모 Mng, odOrderKanban → odOrderKanban__<id>) */
+  const toTabId = (pg, id) => {
+    if (pg.endsWith('Dtl')) return pg.replace('Dtl', 'Mng');
+    if (MULTI_TAB_PAGES.has(pg) && id) return pg + '__' + id;
+    return pg;
+  };
+
+  /* 탭 ID에서 페이지명 추출 (odOrderKanban__ORD... → odOrderKanban) */
+  const toPageFromTabId = (tabId) => {
+    const sep = tabId.indexOf('__');
+    return sep === -1 ? tabId : tabId.slice(0, sep);
+  };
+
+  /* 탭 ID에서 id 파라미터 추출 (odOrderKanban__ORD... → ORD...) */
+  const toIdFromTabId = (tabId) => {
+    const sep = tabId.indexOf('__');
+    return sep === -1 ? null : tabId.slice(sep + 2);
+  };
 
   /* 인증방식 옵션 */
   const AUTH_METHODS = ['메인', 'SMS', 'OTP', 'Authenticator'];
@@ -358,7 +377,7 @@
 
       /* ── 탭 관리 ── */
       const openTabs = reactive([{ id: 'dashboard', label: '대시보드' }]);
-      const cfActiveTabId = computed(() => toTabId(page.value));
+      const cfActiveTabId = computed(() => toTabId(page.value, dtlId.value));
       const refreshKeys = reactive({}); // pageId → 재마운트 카운터
 
       /* ── 탭 고정 (keep-alive 시뮬레이션) ── */
@@ -501,9 +520,13 @@
       };
 
       /* addTab */
-      const addTab = (mngId) => {
-        if (!openTabs.find((t) => t.id === mngId)) {
-          openTabs.push({ id: mngId, label: PAGE_LABELS[mngId] || mngId });
+      const addTab = (tabId) => {
+        if (!openTabs.find((t) => t.id === tabId)) {
+          const pg = toPageFromTabId(tabId);
+          const subId = toIdFromTabId(tabId);
+          const baseLabel = PAGE_LABELS[pg] || pg;
+          const label = subId ? baseLabel + ' · ' + String(subId).slice(-4) : baseLabel;
+          openTabs.push({ id: tabId, label });
         }
       };
 
@@ -516,8 +539,11 @@
         openTabs.splice(idx, 1);
         if (cfActiveTabId.value === tabId) {
           const next = openTabs[Math.min(idx, openTabs.length - 1)];
-          if (next) navigate(next.id);
-          else {
+          if (next) {
+            const nextPg = toPageFromTabId(next.id);
+            const nextId = toIdFromTabId(next.id);
+            navigate(nextPg, nextId ? { id: nextId } : {});
+          } else {
             page.value = 'dashboard';
             dtlId.value = null;
           }
@@ -621,7 +647,8 @@
       const cfOpenTabsWithGroup = computed(() =>
         [...openTabs]
           .map((tab) => {
-            const topId = PAGE_TO_TOP[tab.id];
+            const pg = toPageFromTabId(tab.id);
+            const topId = PAGE_TO_TOP[pg];
             const topLabel = TOP_MENUS.find((t) => t.id === topId)?.label || (tab.id === 'dashboard' ? '홈' : '');
             return { ...tab, topLabel };
           })
@@ -653,6 +680,8 @@
         const newEmbed = embedVal === '1' || embedVal === 'true';
         if (embed.value !== newEmbed) embed.value = newEmbed;
         const pg = p.get('page');
+        const id = p.get('id');
+        const newDtlId = id !== null ? (isNaN(id) ? id : Number(id)) : null;
         if (pg && ALL_PAGES.includes(pg)) {
           const isLoggedIn = !!localStorage.getItem('modu-bo-auth-accessToken');
           if (!isLoggedIn && pg !== 'dashboard') {
@@ -664,16 +693,20 @@
           if (page.value !== pg) page.value = pg;
           const newTop = PAGE_TO_TOP[pg];
           if (newTop && activeTop.value !== newTop) activeTop.value = newTop;
-          addTab(toTabId(pg));
+          addTab(toTabId(pg, newDtlId));
         }
-        const id = p.get('id');
-        const newDtlId = id !== null ? (isNaN(id) ? id : Number(id)) : null;
         if (dtlId.value !== newDtlId) dtlId.value = newDtlId;
       };
       readHash(false);
 
-      /* navigate */
+      /* navigate — pg에 '__' 포함 시 탭 ID로 간주하여 page/id 자동 분해 */
       const navigate = (pg, opts = {}) => {
+        // 탭 ID(odOrderKanban__ORD...) 를 직접 넘긴 경우 분해
+        const subId = toIdFromTabId(pg);
+        if (subId) {
+          opts = Object.assign({}, opts, { id: subId });
+          pg = toPageFromTabId(pg);
+        }
         const isLoggedIn = !!localStorage.getItem('modu-bo-auth-accessToken');
         if (!isLoggedIn && pg !== 'dashboard') {
           showToast('로그인이 필요합니다.', 'error');
@@ -682,9 +715,9 @@
         page.value = pg;
         dtlId.value = opts.id ?? null;
         if (PAGE_TO_TOP[pg]) activeTop.value = PAGE_TO_TOP[pg];
-        addTab(toTabId(pg));
+        const tabId = toTabId(pg, opts.id ?? null);
+        addTab(tabId);
         // 즐겨찾기 keep 설정이 있으면 자동으로 탭 고정
-        const tabId = toTabId(pg);
         if (favKeepSet.has(tabId)) keptTabIds.add(tabId);
         const p2 = new URLSearchParams();
         p2.set('page', pg);
@@ -2073,6 +2106,7 @@
         openTabs,
         closeTab,
         cfActiveTabId,
+        toPageFromTabId,
         refreshKeys,
         keptTabIds,
         toggleKeep,
@@ -2481,19 +2515,19 @@
           <!-- 고정된 탭: v-show로 항상 마운트 유지, 전환 시 상태 보존 -->
           <component
             v-for="keptId in keptTabIds" :key="'kept_' + keptId"
-            :is="PAGE_COMP_MAP[keptId]"
-            v-show="page === keptId"
+            :is="PAGE_COMP_MAP[toPageFromTabId(keptId)]"
+            v-show="cfActiveTabId === keptId"
             :navigate="navigate"
             :dtl-id="dtlId"
             />
           <!-- 비고정 현재 탭: 전환 시 재마운트 -->
-          <div v-if="!keptTabIds.has(page)" :key="page + '_' + (refreshKeys[page] || 0)" style="display:contents;">
+          <div v-if="!keptTabIds.has(cfActiveTabId)" :key="cfActiveTabId + '_' + (refreshKeys[cfActiveTabId] || 0)" style="display:contents;">
             <component v-if="page==='dashboard'" :is="cfDashboardComp" :navigate="navigate" />
             <mb-member-mng  v-else-if="page==='mbMemberMng'"  :navigate="navigate" />
             <mb-member-dtl  v-else-if="page==='mbMemberDtl'"  :navigate="navigate" :dtl-id="dtlId" />
             <pd-prod-mng  v-else-if="page==='pdProdMng'"  :navigate="navigate" />
             <pd-prod-dtl  v-else-if="page==='pdProdDtl'"  :navigate="navigate" :dtl-id="dtlId" />
-            <od-order-kanban v-else-if="page==='odOrderKanban'" :order-id="dtlId" mode="bo" :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
+            <od-order-kanban v-else-if="page==='odOrderKanban'" :key="'kanban_' + dtlId" :order-id="dtlId" mode="bo" :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
             <od-order-mng  v-else-if="page==='odOrderMng'"  :navigate="navigate" />
             <od-order-dtl  v-else-if="page==='odOrderDtl'"  :navigate="navigate" :dtl-id="dtlId" />
             <od-claim-mng  v-else-if="page==='odClaimMng'"  :navigate="navigate" />

@@ -108,6 +108,10 @@ window.OdClaimMng = {
       // 그리드 행 수정 → 행 선택(저장/취소 노출)
       } else if (cmd === 'claims-rowEdit') {
         return selectRow(param);
+      // 칸반 보드 열기 (주문ID 기준 조회, 클레임ID 강조)
+      } else if (cmd === 'claims-rowKanban') {
+        window._odKanbanParams = { orderId: param.orderId, claimId: param.claimId };
+        return props.navigate('odOrderKanban', { id: param.orderId });
       // 그리드 행 삭제
       } else if (cmd === 'claims-rowDelete') {
         return handleDelete(param);
@@ -633,6 +637,10 @@ window.OdClaimMng = {
             </button>
             <button class="btn btn_row_delete" @click="handleSelectAction('claims-rowDelete', row)">
               삭제
+            </button>
+            <button v-if="row.orderId" class="btn btn-xs" style="background:#3b82f6;color:#fff;border:none;"
+              @click="handleSelectAction('claims-rowKanban', { orderId: row.orderId, claimId: row.claimId })">
+              칸반
             </button>
           </div>
         </template>

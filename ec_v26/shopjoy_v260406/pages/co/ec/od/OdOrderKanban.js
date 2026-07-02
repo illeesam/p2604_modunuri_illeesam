@@ -46,7 +46,7 @@
     '.od-kanban-col-hdr{text-align:center;padding:7px 4px 6px;background:#f9fafb;border-top:3px solid #e5e7eb;border-bottom:1px solid #e5e7eb;font-size:11px;font-weight:600;color:#374151;transition:border-color .15s;line-height:1.3;}',
     '.od-kanban-col-hdr.active-col{border-top-color:#3b82f6;background:#eff6ff;color:#1d4ed8;}',
     '.od-kanban-col-hdr.drag-over-col{background:#fef3c7;border-top-color:#f59e0b;}',
-    '.od-kanban-col-body{flex:1;min-height:180px;padding:6px 5px;background:#f9fafb;border-right:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0;transition:background .15s;}',
+    '.od-kanban-col-body{flex:1;min-height:40px;padding:6px 5px;background:#f9fafb;border-right:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0;transition:background .15s;}',
     '.od-kanban-col-body.drag-over-body{background:#fef9c3;}',
     /* 카드 */
     '.od-kanban-card{background:#fff;border:1.5px solid #e5e7eb;border-radius:8px;padding:8px 9px;margin-bottom:6px;font-size:11px;transition:box-shadow .15s,transform .1s;user-select:none;}',
@@ -670,11 +670,12 @@ window.OdOrderKanban = {
             <div
               :class="['od-kanban-col-hdr', fnIsOrderItemStep(item, step.key) ? 'active-col' : '', fnIsDragOverOrderItemCol(step.key) ? 'drag-over-col' : '']"
               :style="fnIsOrderItemStep(item, step.key) ? ('border-top-color:' + step.color) : ''"
-            >{{ step.icon }}<br>{{ step.label }}</div>
+            ><span style="display:inline-flex;align-items:center;justify-content:center;gap:4px;width:100%;">{{ step.icon }} {{ step.label }}</span></div>
 
             <!-- 열 바디 (드롭 영역) -->
             <div
               :class="['od-kanban-col-body', fnIsDragOverOrderItemCol(step.key) ? 'drag-over-body' : '']"
+              :style="!fnIsOrderItemStep(item, step.key) &amp;&amp; !fnIsDragOverOrderItemCol(step.key) ? 'min-height:0;padding:0;' : ''"
               @dragover="handleDragOver($event, step.key, 'orderItem')"
               @dragleave="handleDragLeave($event, step.key, 'orderItem')"
               @drop="handleDropOrderItem($event, step.key)"
@@ -692,7 +693,6 @@ window.OdOrderKanban = {
                 </div>
               </div>
 
-              <div v-else class="od-kanban-empty">—</div>
             </div>
           </div>
         </div>
@@ -704,23 +704,19 @@ window.OdOrderKanban = {
     <template v-if="claims.length">
       <hr class="od-kanban-divider" style="margin-top:16px;" />
 
+      <template v-for="(claim, cidx) in claims" :key="claim.claimId || claim.claim_id || cidx">
       <div
-        v-for="(claim, cidx) in claims"
-        :key="claim.claimId || claim.claim_id || cidx"
+        v-if="fnClaimFlow(claim).some(function(s){ return s.key === (claim.claimStatusCd || claim.claim_status_cd); })"
         class="od-kanban-section"
         style="margin-top:14px;"
       >
         <!-- 클레임 섹션 제목 -->
         <div class="od-kanban-section-title">
-          <span>↩️ 클레임 {{ cidx + 1 }} — <strong>{{ fnClaimTypeLabel(claim) }}</strong></span>
-          <span :class="['od-kanban-hdr-id', fnIsHlClaim(claim) ? 'hl-id' : '']">
-            {{ claim.claimId || claim.claim_id || '' }}
-          </span>
+          <span>↩️ <strong>{{ fnClaimTypeLabel(claim) }}</strong></span>
+          <span :class="['od-kanban-hdr-id', fnIsHlClaim(claim) ? 'hl-id' : '']">{{ claim.claimId || claim.claim_id || '' }}</span>
           <span v-if="fnIsHlClaim(claim)" class="od-kanban-hl-badge">강조</span>
           <span style="font-size:11px;color:#6b7280;margin-left:4px;">{{ claim.prodNm || claim.prod_nm || '' }}</span>
-          <span style="font-size:11px;color:#9ca3af;">
-            {{ (claim.requestDate || claim.request_date || claim.regDate || claim.reg_date || '').slice(0, 10) }}
-          </span>
+          <span style="font-size:11px;color:#9ca3af;">{{ (claim.requestDate || claim.request_date || claim.regDate || claim.reg_date || '').slice(0, 10) }}</span>
         </div>
 
         <!-- 클레임 칸반 보드 -->
@@ -730,10 +726,11 @@ window.OdOrderKanban = {
             <div
               :class="['od-kanban-col-hdr', fnIsClaimStep(claim, step.key) ? 'active-col' : '', fnIsDragOverClaimCol(claim, step.key) ? 'drag-over-col' : '']"
               :style="fnIsClaimStep(claim, step.key) ? ('border-top-color:' + step.color) : ''"
-            >{{ step.icon }}<br>{{ step.label }}</div>
+            ><span style="display:inline-flex;align-items:center;justify-content:center;gap:4px;width:100%;">{{ step.icon }} {{ step.label }}</span></div>
 
             <div
               :class="['od-kanban-col-body', fnIsDragOverClaimCol(claim, step.key) ? 'drag-over-body' : '']"
+              :style="!fnIsClaimStep(claim, step.key) &amp;&amp; !fnIsDragOverClaimCol(claim, step.key) ? 'min-height:0;padding:0;' : ''"
               @dragover="handleDragOver($event, step.key, 'claim_' + (claim.claimId || claim.claim_id))"
               @dragleave="handleDragLeave($event, step.key, 'claim_' + (claim.claimId || claim.claim_id))"
               @drop="handleDropClaim($event, claim, step.key)"
@@ -750,19 +747,13 @@ window.OdOrderKanban = {
                 </div>
               </div>
 
-              <div v-else class="od-kanban-empty">—</div>
             </div>
           </div>
         </div>
 
       </div>
+      </template>
     </template>
-
-    <!-- 클레임 없음 -->
-    <div v-else class="od-kanban-section" style="padding-bottom:16px;">
-      <hr class="od-kanban-divider" style="margin-bottom:10px;" />
-      <div class="od-kanban-empty" style="text-align:left;color:#d1d5db;">↩️ 클레임 없음</div>
-    </div>
 
   </template>
 </div>
