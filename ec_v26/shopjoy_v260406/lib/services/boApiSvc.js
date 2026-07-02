@@ -61,7 +61,7 @@
     getById(_id, uiNm, cmdNm)        { return chkId(_id, uiNm, cmdNm) || global.boApi.get(   `/bo/ec/cm/chatt/${_id}`, hdr(uiNm, cmdNm)); },
     getMessages(_id, params, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.boApi.get(`/bo/ec/cm/chatt/${_id}/messages`, { params, ...hdr(uiNm, cmdNm) }); },
     sendMsg(_id, body, uiNm, cmdNm)  { return chkId(_id, uiNm, cmdNm) || global.boApi.post(`/bo/ec/cm/chatt/${_id}/msg`, body, hdr(uiNm, cmdNm)); },
-    updateStatus(_id, body, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.boApi.put(`/bo/ec/cm/chatt/${_id}/status`, body, hdr(uiNm, cmdNm)); },
+    updateStatus(_id, body, uiNm, cmdNm) { return chkId(_id, uiNm, cmdNm) || global.boApi.patch(`/bo/ec/cm/chatt/${_id}/status`, body, hdr(uiNm, cmdNm)); },
     create(body, uiNm, cmdNm)        { return global.boApi.post(  '/bo/ec/cm/chatt', body, hdr(uiNm, cmdNm)); },
     remove(_id, uiNm, cmdNm)         { return chkId(_id, uiNm, cmdNm) || global.boApi.delete(`/bo/ec/cm/chatt/${_id}`, hdr(uiNm, cmdNm)); },
   };
