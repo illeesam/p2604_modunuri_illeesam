@@ -197,8 +197,13 @@
   /* 대시보드는 별도 페이지 */
   PAGE_LABELS['dashboard'] = '대시보드';
 
+  /* 메뉴 트리 밖의 특수 페이지 (F5 후 URL 복원 대상) */
+  PAGE_TO_TOP['odOrderKanban'] = 'order';
+  PAGE_LABELS['odOrderKanban'] = '주문 칸반 보드';
+
   const ALL_PAGES = [
     'dashboard',
+    'odOrderKanban',
     ...Object.values(LEFT_MENUS)
       .flat()
       .filter((p) => p.id)
