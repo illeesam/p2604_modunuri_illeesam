@@ -125,14 +125,14 @@ public class AppTableLog {
         try {
             org.springframework.core.env.Environment env = ctx.getEnvironment();
             String masterEnabled = env.getProperty("auth.master-pwd.enabled", "true");
-            String jwtSecret     = env.getProperty("jwt.secret", "");
+            String jwtSecret     = env.getProperty("app.auth.jwt.secret", "");
             String nc = "(not configured)";
             logTable("Auth / Master Password", new String[][]{
                 {"Master Pwd", masterEnabled, "application-{profile}.yml : auth.master-pwd.enabled",
                     "true=dev only, prod must be false"},
                 {"JWT Secret", jwtSecret.isBlank() ? nc : maskMiddle(jwtSecret),
-                    "application-{profile}.yml : jwt.secret",
-                    jwtSecret.isBlank() ? "application-{profile}.yml에 jwt.secret 값 설정 필요" : ""},
+                    "application-{profile}.yml : app.auth.jwt.secret",
+                    jwtSecret.isBlank() ? "application-{profile}.yml에 app.auth.jwt.secret 값 설정 필요" : ""},
             });
         } catch (Exception e) {
             log.warn("[Auth] Config check failed — {}", e.getMessage());
@@ -144,15 +144,15 @@ public class AppTableLog {
     private static void checkJwtConfiguration(ConfigurableApplicationContext ctx) {
         try {
             org.springframework.core.env.Environment env = ctx.getEnvironment();
-            String boAccess  = env.getProperty("jwt.bo-access-expiry",  "");
-            String foAccess  = env.getProperty("jwt.fo-access-expiry",  "");
-            String boRefresh = env.getProperty("jwt.bo-refresh-expiry", "");
-            String foRefresh = env.getProperty("jwt.fo-refresh-expiry", "");
+            String boAccess  = env.getProperty("app.auth.jwt.bo-access-expiry",  "");
+            String foAccess  = env.getProperty("app.auth.jwt.fo-access-expiry",  "");
+            String boRefresh = env.getProperty("app.auth.jwt.bo-refresh-expiry", "");
+            String foRefresh = env.getProperty("app.auth.jwt.fo-refresh-expiry", "");
             logTable("JWT Token Expiry", new String[][]{
-                {"BO Access",  fmtMs(boAccess),  "application-{profile}.yml : jwt.bo-access-expiry",  ""},
-                {"FO Access",  fmtMs(foAccess),  "application-{profile}.yml : jwt.fo-access-expiry",  ""},
-                {"BO Refresh", fmtMs(boRefresh), "application-{profile}.yml : jwt.bo-refresh-expiry", ""},
-                {"FO Refresh", fmtMs(foRefresh), "application-{profile}.yml : jwt.fo-refresh-expiry", ""},
+                {"BO Access",  fmtMs(boAccess),  "application-{profile}.yml : app.auth.jwt.bo-access-expiry",  ""},
+                {"FO Access",  fmtMs(foAccess),  "application-{profile}.yml : app.auth.jwt.fo-access-expiry",  ""},
+                {"BO Refresh", fmtMs(boRefresh), "application-{profile}.yml : app.auth.jwt.bo-refresh-expiry", ""},
+                {"FO Refresh", fmtMs(foRefresh), "application-{profile}.yml : app.auth.jwt.fo-refresh-expiry", ""},
             });
         } catch (Exception e) {
             log.warn("[JWT] Config check failed — {}", e.getMessage());

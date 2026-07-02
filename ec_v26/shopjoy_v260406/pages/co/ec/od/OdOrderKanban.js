@@ -17,7 +17,7 @@
  * 상태코드 (DB 기준):
  *   ORDER_ITEM_STATUS: ORDERED/PAID/PREPARING/SHIPPING/DELIVERED/CONFIRMED/CANCELLED
  *   CLAIM_TYPE       : CANCEL/RETURN/EXCHANGE
- *   CLAIM_STATUS     : REQUESTED/APPROVED/IN_PICKUP/PROCESSING/REFUND_WAIT/COMPLT/CANCELLED
+ *   CLAIM_STATUS     : REQUESTED/APPROVED/IN_PICKUP/PROCESSING/COMPLT/REJECTED/CANCELLED
  */
 
 /* ── 스타일 한 번만 주입 ── */
@@ -62,9 +62,11 @@
     '.od-kanban-card-nm{font-weight:600;color:#1e293b;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;font-size:11px;}',
     '.od-kanban-card-meta{color:#94a3b8;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
     '.od-kanban-card-qty{font-size:10px;color:#64748b;font-weight:500;margin-left:4px;background:#f1f5f9;padding:0 4px;border-radius:4px;}',
-    /* ── 카드 헤더 (드래그 핸들) ── */
-    '.od-kanban-card-hdr{display:flex;align-items:center;gap:4px;padding:5px 8px 5px;cursor:grab;user-select:none;border-bottom:1px solid #f1f5f9;}',
-    '.od-kanban-card-hdr:active{cursor:grabbing;}',
+    /* ── 카드 헤더 ── */
+    '.od-kanban-card-hdr{display:flex;align-items:center;gap:4px;padding:5px 8px 5px;cursor:default;user-select:none;border-bottom:1px solid #f1f5f9;}',
+    '.od-kanban-drag-handle{font-size:14px;color:#94a3b8;cursor:grab;padding:0 3px;flex-shrink:0;line-height:1;border-radius:3px;transition:color .1s,background .1s;}',
+    '.od-kanban-drag-handle:hover{color:#475569;background:rgba(0,0,0,.06);}',
+    '.od-kanban-drag-handle:active{cursor:grabbing;color:#1e293b;}',
     '.od-kanban-card-hdr-id{font-family:monospace;font-size:10px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;}',
     '.od-kanban-card-hdr-id.hl-id{color:#1d4ed8;font-weight:800;}',
     '.od-kanban-card-hdr-sub{font-family:monospace;font-size:9px;opacity:.6;margin-left:1px;}',
@@ -112,6 +114,14 @@
     '.kanban-theme-exchange .od-kanban-card-hdr{background:#eff6ff;}',
     '.kanban-theme-exchange .od-kanban-card-hdr-id{color:#1d4ed8;}',
     '.kanban-theme-exchange .od-kanban-col-body.drag-over-body{background:#dbeafe;}',
+    /* ── 교환 2행 레이아웃 ── */
+    '.od-kanban-exchange-rows{display:flex;flex-direction:column;gap:6px;}',
+    '.od-kanban-exchange-row-wrap{display:flex;align-items:stretch;gap:0;}',
+    '.od-kanban-exchange-row-label{writing-mode:vertical-rl;text-orientation:mixed;font-size:10px;font-weight:700;color:#fff;letter-spacing:1px;padding:10px 0;display:flex;align-items:center;justify-content:center;min-width:28px;white-space:nowrap;border-radius:8px 0 0 8px;flex-shrink:0;}',
+    '.od-kanban-exchange-row-label.row-pickup{background:linear-gradient(180deg,#8b5cf6,#6d28d9);}',
+    '.od-kanban-exchange-row-label.row-dliv{background:linear-gradient(180deg,#3b82f6,#1d4ed8);}',
+    '.od-kanban-exchange-row-label.row-refund{background:linear-gradient(180deg,#db2777,#9d174d);}',
+    '.od-kanban-exchange-row-board{flex:1;border-radius:0 8px 8px 0;overflow:hidden;}',
     /* ── 정산/잠금 뱃지 ── */
     '.od-kanban-settle{display:flex;flex-wrap:wrap;gap:2px;margin-top:4px;}',
     '.od-kanban-settle-badge{display:inline-flex;align-items:center;gap:2px;font-size:10px;font-weight:600;padding:1px 6px;border-radius:8px;white-space:nowrap;}',
@@ -263,34 +273,36 @@ window.OdOrderKanban = {
     const DLIV_REQ_STEPS  = new Set(['SHIPPING', 'DELIVERED', 'CONFIRMED']);
     const DLIV_SHOW_STEPS = new Set(['PREPARING', 'SHIPPING', 'DELIVERED', 'CONFIRMED']);
 
-    /* ── 클레임 유형별 흐름 (DB CLAIM_STATUS 기준) ── */
+    /* ── 클레임 유형별 흐름 (DB CLAIM_STATUS 기준, 정책서 1-C 준수) ── */
     const CLAIM_FLOWS = {
-      /* CANCEL: REQUESTED → PROCESSING → COMPLT (철회: CANCELLED) */
+      /* CANCEL: REQUESTED → APPROVED → COMPLT (철회: CANCELLED) */
       CANCEL: [
-        { key: 'REQUESTED',  label: '취소요청',   icon: '📋', color: '#ef4444' },
-        { key: 'PROCESSING', label: '취소처리중', icon: '⏳', color: '#f97316' },
-        { key: 'COMPLT',     label: '취소완료',   icon: '✅', color: '#9ca3af' },
-        { key: 'CANCELLED',  label: '철회',       icon: '↩️', color: '#d1d5db' },
+        { key: 'REQUESTED', label: '취소요청',   icon: '📋', color: '#ef4444' },
+        { key: 'APPROVED',  label: '취소처리중', icon: '⏳', color: '#f97316' },
+        { key: 'COMPLT',    label: '취소완료',   icon: '✅', color: '#9ca3af' },
+        { key: 'CANCELLED', label: '철회',       icon: '↩️', color: '#d1d5db' },
       ],
-      /* RETURN: REQUESTED → APPROVED → IN_PICKUP → PROCESSING → REFUND_WAIT → COMPLT */
+      /* RETURN: 1행(수거) REQUESTED→APPROVED→IN_PICKUP+CANCELLED / 2행(환불) PROCESSING→REFUND_WAIT→COMPLT */
       RETURN: [
-        { key: 'REQUESTED',   label: '반품요청',   icon: '📋', color: '#ef4444' },
-        { key: 'APPROVED',    label: '수거예정',   icon: '🗓️', color: '#f59e0b' },
-        { key: 'IN_PICKUP',   label: '수거중',     icon: '🚚', color: '#8b5cf6' },
-        { key: 'PROCESSING',  label: '검품중',     icon: '📦', color: '#3b82f6' },
-        { key: 'REFUND_WAIT', label: '환불대기',   icon: '💳', color: '#f97316' },
-        { key: 'COMPLT',      label: '환불완료',   icon: '✅', color: '#9ca3af' },
-        { key: 'CANCELLED',   label: '철회',       icon: '↩️', color: '#d1d5db' },
+        { key: 'REQUESTED',   label: '반품요청', icon: '📋', color: '#ef4444', row: 1 },
+        { key: 'APPROVED',    label: '수거예정', icon: '🗓️', color: '#f59e0b', row: 1 },
+        { key: 'IN_PICKUP',   label: '수거중',   icon: '🚚', color: '#8b5cf6', row: 1 },
+        { key: 'CANCELLED',   label: '철회',     icon: '↩️', color: '#d1d5db', row: 1 },
+        { key: 'PROCESSING',  label: '검수중',   icon: '📦', color: '#3b82f6', row: 2 },
+        { key: 'REFUND_WAIT', label: '환불대기', icon: '💳', color: '#f97316', row: 2 },
+        { key: 'COMPLT',      label: '환불완료', icon: '✅', color: '#9ca3af', row: 2 },
       ],
-      /* EXCHANGE: REQUESTED → APPROVED → IN_PICKUP → PROCESSING → REFUND_WAIT → COMPLT */
+      /* EXCHANGE: 1행(수거) REQUESTED→APPROVED→IN_PICKUP+CANCELLED / 2행(배송) od_dliv 기준 */
       EXCHANGE: [
-        { key: 'REQUESTED',   label: '교환요청',   icon: '📋', color: '#3b82f6' },
-        { key: 'APPROVED',    label: '수거예정',   icon: '🗓️', color: '#f59e0b' },
-        { key: 'IN_PICKUP',   label: '수거중',     icon: '🚚', color: '#8b5cf6' },
-        { key: 'PROCESSING',  label: '재고확인',   icon: '📦', color: '#22c55e' },
-        { key: 'REFUND_WAIT', label: '발송대기',   icon: '🚀', color: '#f97316' },
-        { key: 'COMPLT',      label: '교환완료',   icon: '🏁', color: '#9ca3af' },
-        { key: 'CANCELLED',   label: '철회',       icon: '↩️', color: '#d1d5db' },
+        { key: 'REQUESTED', label: '교환요청',   icon: '📋', color: '#3b82f6', row: 1 },
+        { key: 'APPROVED',  label: '수거예정',   icon: '🗓️', color: '#f59e0b', row: 1 },
+        { key: 'IN_PICKUP', label: '수거중',     icon: '🚚', color: '#8b5cf6', row: 1 },
+        { key: 'CANCELLED', label: '철회',       icon: '↩️', color: '#d1d5db', row: 1 },
+        /* 2행: 교환 배송 단계 (od_dliv.dliv_status_cd 기준, dlivOnly=true) + 교환완료(클레임 집계) */
+        { key: 'DLIV_READY',       label: '배송준비',   icon: '📦', color: '#6366f1', row: 2, dlivOnly: true, dlivKey: 'READY' },
+        { key: 'DLIV_IN_TRANSIT',  label: '배송중',     icon: '🚚', color: '#3b82f6', row: 2, dlivOnly: true, dlivKey: 'IN_TRANSIT' },
+        { key: 'DLIV_DELIVERED',   label: '배송완료',   icon: '📬', color: '#10b981', row: 2, dlivOnly: true, dlivKey: 'DELIVERED' },
+        { key: 'COMPLT',           label: '교환완료',   icon: '🏁', color: '#22c55e', row: 2 },
       ],
     };
 
@@ -441,9 +453,37 @@ window.OdOrderKanban = {
     /* 클레임 상태 변경 */
     const handleChangeClaimStatus = async (claim, toKey) => {
       if (cfReadonly.value) return;
+      const flow = fnClaimFlow(claim);
+      const toStep = flow.find(function (s) { return s.key === toKey; });
+
+      /* 교환 배송 전용 스텝 (DLIV_*) → od_dliv 배송 상태 변경 */
+      if (toStep && toStep.dlivOnly) {
+        const dlivStatusCd = claim.exchangeDlivStatusCd || claim.exchange_dliv_status_cd
+          || claim.dlivStatusCd || claim.dliv_status_cd || '';
+        if (dlivStatusCd === toStep.dlivKey) return;
+        const fromLabel = dlivStatusCd || '(이전 상태)';
+        const ok = await doConfirm('교환 배송 상태 변경', '"' + fromLabel + '" → "' + toStep.label + '" 으로 변경하시겠습니까?');
+        if (!ok) return;
+        try {
+          const cid = claim.claimId || claim.claim_id;
+          await apiInst.value.post(
+            '/bo/ec/od/claim/save/exchange-dliv-status',
+            { claimId: cid, dlivStatusCd: toStep.dlivKey, rowStatus: 'U' },
+            coUtil.cofApiHdr('주문칸반', '교환배송상태변경')
+          );
+          /* 로컬 반영 */
+          if (Object.prototype.hasOwnProperty.call(claim, 'exchangeDlivStatusCd')) claim.exchangeDlivStatusCd = toStep.dlivKey;
+          else claim.exchange_dliv_status_cd = toStep.dlivKey;
+          toast(toStep.label + '으로 변경되었습니다.', 'success');
+        } catch (e) {
+          toast((e.response && e.response.data && e.response.data.message) || e.message || '배송 상태 변경 중 오류가 발생했습니다.', 'error', 0);
+        }
+        return;
+      }
+
+      /* 일반 클레임 상태 변경 */
       const fromKey = claim.claimStatusCd || claim.claim_status_cd || '';
       if (fromKey === toKey) return;
-      const flow     = fnClaimFlow(claim);
       const fromLabel = fnStepLabel(flow, fromKey);
       const toLabel   = fnStepLabel(flow, toKey);
       const ok = await doConfirm('클레임 상태 변경', '"' + fromLabel + '" → "' + toLabel + '" 으로 변경하시겠습니까?');
@@ -572,6 +612,29 @@ window.OdOrderKanban = {
       return CLAIM_FLOWS[fnClaimTypeKey(c)] || CLAIM_FLOWS.CANCEL;
     };
 
+    /* 반품/교환: row 속성 기준으로 행별 스텝 그룹 반환 [{rowNo, label, steps}] */
+    const fnClaimFlowRows = function (c) {
+      var flow = fnClaimFlow(c);
+      var typeKey = fnClaimTypeKey(c);
+      if (typeKey === 'EXCHANGE') {
+        var row1 = flow.filter(function (s) { return s.row === 1; });
+        var row2 = flow.filter(function (s) { return s.row === 2; });
+        return [
+          { rowNo: 1, label: '🚚 수거', steps: row1 },
+          { rowNo: 2, label: '📦 배송', steps: row2 },
+        ];
+      }
+      if (typeKey === 'RETURN') {
+        var row1 = flow.filter(function (s) { return s.row === 1; });
+        var row2 = flow.filter(function (s) { return s.row === 2; });
+        return [
+          { rowNo: 1, label: '🚚 수거', steps: row1 },
+          { rowNo: 2, label: '💳 환불', steps: row2 },
+        ];
+      }
+      return [{ rowNo: 1, label: '', steps: flow }];
+    };
+
     /* 배송 정보 */
     const fnDlivInfo = function (item) {
       return {
@@ -585,7 +648,15 @@ window.OdOrderKanban = {
       return (item.orderItemStatusCd || item.order_item_status_cd || '') === stepKey;
     };
     const fnIsClaimStep = function (claim, stepKey) {
-      return (claim.claimStatusCd || claim.claim_status_cd || '') === stepKey;
+      var claimStatus = claim.claimStatusCd || claim.claim_status_cd || '';
+      /* 교환 배송 전용 스텝 (DLIV_*): claim의 exchangeDlivStatusCd 또는 dlivStatusCd 로 판단 */
+      if (stepKey.startsWith('DLIV_')) {
+        var dlivStatus = claim.exchangeDlivStatusCd || claim.exchange_dliv_status_cd
+          || claim.dlivStatusCd || claim.dliv_status_cd || '';
+        var dlivKey = stepKey.replace('DLIV_', '');
+        return dlivStatus === dlivKey;
+      }
+      return claimStatus === stepKey;
     };
 
     /* 강조 여부 */
@@ -703,7 +774,7 @@ window.OdOrderKanban = {
       cfReadonly, cfOrderId, cfMemberNm, cfOrderDate, cfTotalAmt, cfPayMethod, cfOrderStatus,
       hlOrderItemId: _oi, hlClaimId: _ci,
       ORDER_STEPS, DLIV_SHOW_STEPS,
-      fnStepLabel, fnClaimTypeKey, fnClaimTypeLabel, fnClaimFlow, fnDlivInfo,
+      fnStepLabel, fnClaimTypeKey, fnClaimTypeLabel, fnClaimFlow, fnClaimFlowRows, fnDlivInfo,
       fnIsOrderItemStep, fnIsClaimStep,
       fnIsHlOrderItem, fnIsHlClaim,
       fnIsDragOverOrderItemCol, fnIsDragOverClaimCol,
@@ -814,14 +885,18 @@ window.OdOrderKanban = {
                 v-if="fnIsOrderItemStep(item, step.key)"
                 :class="['od-kanban-card', fnIsHlOrderItem(item) ? 'hl-card' : '', fnSettleLockState(item.orderItemId || item.order_item_id) === 'blocked' ? 'locked-card' : '', dragState.id === (item.orderItemId || item.order_item_id) ? 'dragging-card' : '']"
               >
-                <div
-                  class="od-kanban-card-hdr"
-                  :draggable="!cfReadonly &amp;&amp; fnSettleLockState(item.orderItemId || item.order_item_id) !== 'blocked'"
-                  @dragstart="handleDragStart($event, item.orderItemId || item.order_item_id, 'orderItem', step.key)"
-                  @dragend="handleDragEnd"
-                >
+                <div class="od-kanban-card-hdr">
+                  <span
+                    v-if="!cfReadonly &amp;&amp; fnSettleLockState(item.orderItemId || item.order_item_id) !== 'blocked'"
+                    class="od-kanban-drag-handle"
+                    draggable="true"
+                    @dragstart="handleDragStart($event, item.orderItemId || item.order_item_id, 'orderItem', step.key)"
+                    @dragend="handleDragEnd"
+                    title="드래그하여 이동"
+                  >☰</span>
+                  <span v-else style="min-width:20px;"></span>
                   <span :class="['od-kanban-card-hdr-id', fnIsHlOrderItem(item) ? 'hl-id' : '']">
-                    ⠿ {{ item.orderItemId || item.order_item_id || '' }}
+                    {{ item.orderItemId || item.order_item_id || '' }}
                   </span>
                   <div class="od-kanban-card-hdr-icons">
                     <button v-if="fnItemHasDliv(item)" class="od-kanban-card-icon-btn" title="배송정보" @click.stop="handleItemDlivIconClick(item)">🚚</button>
@@ -867,51 +942,69 @@ window.OdOrderKanban = {
           <span style="font-size:10px;color:#94a3b8;margin-left:auto;">{{ (claim.requestDate || claim.request_date || claim.regDate || claim.reg_date || '').slice(0, 10) }}</span>
         </div>
 
-        <!-- 클레임 칸반 보드 -->
-        <div class="od-kanban-board">
-          <div v-for="step in fnClaimFlow(claim)" :key="step.key" class="od-kanban-col">
+        <!-- 클레임 칸반 보드 (반품/교환=2행, 취소=1행) -->
+        <div :class="fnClaimTypeKey(claim) !== 'CANCEL' ? 'od-kanban-exchange-rows' : ''">
+          <template v-for="rowGroup in fnClaimFlowRows(claim)" :key="rowGroup.rowNo">
+            <div :class="fnClaimTypeKey(claim) !== 'CANCEL' ? 'od-kanban-exchange-row-wrap' : ''">
+            <div v-if="rowGroup.label"
+              :class="['od-kanban-exchange-row-label', rowGroup.rowNo === 1 ? 'row-pickup' : (fnClaimTypeKey(claim) === 'RETURN' ? 'row-refund' : 'row-dliv')]"
+            >{{ rowGroup.label }}</div>
+            <div :class="fnClaimTypeKey(claim) !== 'CANCEL' ? 'od-kanban-exchange-row-board' : ''" style="width:100%;">
             <div
-              :class="['od-kanban-col-hdr', fnIsClaimStep(claim, step.key) ? 'active-col' : '', fnIsDragOverClaimCol(claim, step.key) ? 'drag-over-col' : '']"
-            ><span style="display:inline-flex;align-items:center;justify-content:center;gap:3px;width:100%;">{{ step.icon }} {{ step.label }}</span></div>
-            <div
-              :class="['od-kanban-col-body', fnIsDragOverClaimCol(claim, step.key) ? 'drag-over-body' : '']"
-              :style="!fnIsClaimStep(claim, step.key) &amp;&amp; !fnIsDragOverClaimCol(claim, step.key) ? 'min-height:0;padding:0;' : ''"
-              @dragover="handleDragOver($event, step.key, 'claim_' + (claim.claimId || claim.claim_id))"
-              @dragleave="handleDragLeave($event, step.key, 'claim_' + (claim.claimId || claim.claim_id))"
-              @drop="handleDropClaim($event, claim, step.key)"
+              class="od-kanban-board"
+              style="border-radius:0;overflow:hidden;width:100%;"
             >
-              <div
-                v-if="fnIsClaimStep(claim, step.key)"
-                :class="['od-kanban-card', fnIsHlClaim(claim) ? 'hl-card' : '', dragState.id === (claim.claimId || claim.claim_id) ? 'dragging-card' : '']"
-              >
+              <div v-for="step in rowGroup.steps" :key="step.key" class="od-kanban-col">
                 <div
-                  class="od-kanban-card-hdr"
-                  :draggable="!cfReadonly"
-                  @dragstart="handleDragStart($event, claim.claimId || claim.claim_id, 'claim', step.key)"
-                  @dragend="handleDragEnd"
+                  :class="['od-kanban-col-hdr', fnIsClaimStep(claim, step.key) ? 'active-col' : '', fnIsDragOverClaimCol(claim, step.key) ? 'drag-over-col' : '']"
+                ><span style="display:inline-flex;align-items:center;justify-content:center;gap:3px;width:100%;">{{ step.icon }} {{ step.label }}</span></div>
+                <div
+                  :class="['od-kanban-col-body', fnIsDragOverClaimCol(claim, step.key) ? 'drag-over-body' : '']"
+                  :style="!fnIsClaimStep(claim, step.key) &amp;&amp; !fnIsDragOverClaimCol(claim, step.key) ? 'min-height:48px;' : ''"
+                  @dragover="handleDragOver($event, step.key, 'claim_' + (claim.claimId || claim.claim_id))"
+                  @dragleave="handleDragLeave($event, step.key, 'claim_' + (claim.claimId || claim.claim_id))"
+                  @drop="handleDropClaim($event, claim, step.key)"
                 >
-                  <span :class="['od-kanban-card-hdr-id', fnIsHlClaim(claim) ? 'hl-id' : '']">
-                    ⠿ {{ claim.claimId || claim.claim_id || '' }}
-                    <span v-if="claim.orderItemId || claim.order_item_id" class="od-kanban-card-hdr-sub">({{ claim.orderItemId || claim.order_item_id }})</span>
-                  </span>
-                  <div class="od-kanban-card-hdr-icons">
-                    <button v-if="fnClaimHasDliv(claim)" class="od-kanban-card-icon-btn" title="배송정보" @click.stop="handleClaimDlivIconClick(claim)">🚚</button>
-                    <button v-if="fnClaimHasSettleClosed(claim)" class="od-kanban-card-icon-btn" title="정산마감" @click.stop="handleClaimSettleIconClick(claim)">🔒</button>
-                    <button v-if="fnClaimHasVoucher(claim)" class="od-kanban-card-icon-btn" title="ERP전표" @click.stop="handleClaimVoucherIconClick(claim)">📄</button>
-                  </div>
-                </div>
-                <div class="od-kanban-card-body">
-                  <div v-if="claim.prodNm || claim.prod_nm" class="od-kanban-card-nm">
-                    {{ claim.prodNm || claim.prod_nm }}
-                    <span v-if="claim.claimQty || claim.claim_qty" class="od-kanban-card-qty">{{ claim.claimQty || claim.claim_qty }}</span>
-                  </div>
-                  <div v-if="claim.prodOption || claim.prod_option" class="od-kanban-card-meta">
-                    {{ claim.prodOption || claim.prod_option }}
+                  <div
+                    v-if="fnIsClaimStep(claim, step.key)"
+                    :class="['od-kanban-card', fnIsHlClaim(claim) ? 'hl-card' : '', dragState.id === (claim.claimId || claim.claim_id) ? 'dragging-card' : '']"
+                  >
+                    <div class="od-kanban-card-hdr">
+                      <span
+                        v-if="!cfReadonly"
+                        class="od-kanban-drag-handle"
+                        draggable="true"
+                        @dragstart="handleDragStart($event, claim.claimId || claim.claim_id, 'claim', step.key)"
+                        @dragend="handleDragEnd"
+                        title="드래그하여 이동"
+                      >☰</span>
+                      <span v-else style="min-width:20px;"></span>
+                      <span :class="['od-kanban-card-hdr-id', fnIsHlClaim(claim) ? 'hl-id' : '']">
+                        {{ claim.claimId || claim.claim_id || '' }}
+                        <span v-if="claim.orderItemId || claim.order_item_id" class="od-kanban-card-hdr-sub">(~{{ (claim.orderItemId || claim.order_item_id || '').slice(-4) }})</span>
+                      </span>
+                      <div class="od-kanban-card-hdr-icons">
+                        <button v-if="fnClaimHasDliv(claim)" class="od-kanban-card-icon-btn" title="배송정보" @click.stop="handleClaimDlivIconClick(claim)">🚚</button>
+                        <button v-if="fnClaimHasSettleClosed(claim)" class="od-kanban-card-icon-btn" title="정산마감" @click.stop="handleClaimSettleIconClick(claim)">🔒</button>
+                        <button v-if="fnClaimHasVoucher(claim)" class="od-kanban-card-icon-btn" title="ERP전표" @click.stop="handleClaimVoucherIconClick(claim)">📄</button>
+                      </div>
+                    </div>
+                    <div class="od-kanban-card-body">
+                      <div v-if="claim.prodNm || claim.prod_nm" class="od-kanban-card-nm">
+                        {{ claim.prodNm || claim.prod_nm }}
+                        <span v-if="claim.claimQty || claim.claim_qty" class="od-kanban-card-qty">{{ claim.claimQty || claim.claim_qty }}</span>
+                      </div>
+                      <div v-if="claim.prodOption || claim.prod_option" class="od-kanban-card-meta">
+                        {{ claim.prodOption || claim.prod_option }}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+            </div>
+            </div>
+          </template>
         </div>
 
       </div>

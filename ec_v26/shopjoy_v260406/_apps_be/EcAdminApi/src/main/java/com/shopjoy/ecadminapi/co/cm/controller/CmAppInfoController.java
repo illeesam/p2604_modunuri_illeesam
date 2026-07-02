@@ -82,14 +82,20 @@ public class CmAppInfoController {
     private String contextPath;
 
     // ── JWT ──────────────────────────────────────────────────────────
-    @Value("${jwt.secret:}")
+    @Value("${app.auth.jwt.secret:}")
     private String jwtSecret;
 
-    @Value("${jwt.access-expiry:0}")
-    private long jwtAccessExpiry;
+    @Value("${app.auth.jwt.bo-access-expiry:0}")
+    private long jwtBoAccessExpiry;
 
-    @Value("${jwt.refresh-expiry:0}")
-    private long jwtRefreshExpiry;
+    @Value("${app.auth.jwt.fo-access-expiry:0}")
+    private long jwtFoAccessExpiry;
+
+    @Value("${app.auth.jwt.bo-refresh-expiry:0}")
+    private long jwtBoRefreshExpiry;
+
+    @Value("${app.auth.jwt.fo-refresh-expiry:0}")
+    private long jwtFoRefreshExpiry;
 
     // ── Scheduler ────────────────────────────────────────────────────
     @Value("${app.scheduler.enabled:false}")
@@ -322,11 +328,15 @@ public class CmAppInfoController {
     /** buildJwt — 구성 */
     private Map<String, Object> buildJwt() {
         Map<String, Object> m = new LinkedHashMap<>();
-        m.put("secret",          mask(jwtSecret));
-        m.put("accessExpiryMs",  jwtAccessExpiry);
-        m.put("refreshExpiryMs", jwtRefreshExpiry);
-        m.put("accessExpirySec", jwtAccessExpiry / 1000);
-        m.put("refreshExpirySec", jwtRefreshExpiry / 1000);
+        m.put("secret",              mask(jwtSecret));
+        m.put("boAccessExpiryMs",    jwtBoAccessExpiry);
+        m.put("foAccessExpiryMs",    jwtFoAccessExpiry);
+        m.put("boRefreshExpiryMs",   jwtBoRefreshExpiry);
+        m.put("foRefreshExpiryMs",   jwtFoRefreshExpiry);
+        m.put("boAccessExpirySec",   jwtBoAccessExpiry / 1000);
+        m.put("foAccessExpirySec",   jwtFoAccessExpiry / 1000);
+        m.put("boRefreshExpirySec",  jwtBoRefreshExpiry / 1000);
+        m.put("foRefreshExpirySec",  jwtFoRefreshExpiry / 1000);
         return m;
     }
 

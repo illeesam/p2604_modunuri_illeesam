@@ -53,13 +53,6 @@ mybatis:
 server:
   port: 3000
 
-jwt:
-  secret: ${JWT_SECRET:c2hvcGpveTI2MDRBZG1pbkFwaVNlY3JldEtleU11c3RCZTE2MEJpdHNNaW5pbXVt}
-  bo-access-expiry: 900000
-  fo-access-expiry: 900000
-  bo-refresh-expiry: 7200000
-  fo-refresh-expiry: 1296000000
-
 management:
   endpoints:
     web:
@@ -70,6 +63,14 @@ management:
       enabled: false
 
 app:
+  auth:
+    jwt:
+      secret: ${JWT_SECRET:c2hvcGpveTI2MDRBZG1pbkFwaVNlY3JldEtleU11c3RCZTE2MEJpdHNNaW5pbXVt}
+      bo-access-expiry: 900000
+      fo-access-expiry: 900000
+      bo-refresh-expiry: 7200000
+      fo-refresh-expiry: 1296000000
+
   license:
     enabled: false             # validation: 라이선스 검증 비활성
 

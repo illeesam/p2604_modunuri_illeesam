@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test;
  *  spring:
  *    datasource:
  *      password: ENC(암호화된값)
- *  jwt:
+ *  app.auth.jwt:
  *    secret: ENC(암호화된값)
  *
  * ── 마스터키 주입 방법 (택1) ───────────────────────────────────────────────

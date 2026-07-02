@@ -460,19 +460,15 @@ window.OdOrderDtl = {
     const cfRelatedClaim = computed(() =>
       (claims).find(c => c.orderId === props.dtlId)
     );
-    const _TYPE_CD = { '취소': 'CANCEL', '반품': 'RETURN', '교환': 'EXCHANGE' };
+    /* CLAIM_FLOWS: 정책서 1-C 기준 static 흐름 (parentCodeValues DB 동기 불필요) */
+    const CLAIM_FLOWS = {
+      '취소':   ['취소요청', '취소처리중', '취소완료'],
+      '반품':   ['반품요청', '수거예정', '수거중', '검수중', '환불대기', '환불완료'],
+      '교환':   ['교환요청', '수거예정', '수거중', '교환완료'],
+    };
     const cfClaimStatusCodes = computed(() =>
-      (codes.claim_statuses || [])
-        .filter(c => c.useYn === 'Y')
-        .sort((a, b) => a.sortOrd - b.sortOrd)
+      (codes.claim_statuses || []).filter(c => c.useYn === 'Y').sort((a, b) => a.sortOrd - b.sortOrd)
     );
-
-    /* _claimFlow — 클레임 흐름 */
-    const _claimFlow = type => cfClaimStatusCodes.value
-      .filter(c => !c.parentCodeValues || c.parentCodeValues.includes('^' + (_TYPE_CD[type] || type) + '^'))
-      .map(c => c.codeLabel)
-      .filter(l => !['거부','철회'].includes(l));
-    const CLAIM_FLOWS = { '취소': _claimFlow('취소'), '반품': _claimFlow('반품'), '교환': _claimFlow('교환') };
     const CLAIM_TYPE_COLOR = { '취소': '#ef4444', '반품': '#FFBB00', '교환': '#3b82f6' };
 
     /* trackingUrl — 추적 URL */

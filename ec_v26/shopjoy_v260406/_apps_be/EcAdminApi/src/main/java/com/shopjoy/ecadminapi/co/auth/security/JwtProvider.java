@@ -26,11 +26,11 @@ public class JwtProvider {
     private final long foRefreshExpiry;   // FO 회원 refreshToken: 15일
 
     public JwtProvider(
-            @Value("${jwt.secret}") String secret,
-            @Value("${jwt.bo-access-expiry}") long boAccessExpiry,
-            @Value("${jwt.fo-access-expiry}") long foAccessExpiry,
-            @Value("${jwt.bo-refresh-expiry}") long boRefreshExpiry,
-            @Value("${jwt.fo-refresh-expiry}") long foRefreshExpiry) {
+            @Value("${app.auth.jwt.secret}") String secret,
+            @Value("${app.auth.jwt.bo-access-expiry}") long boAccessExpiry,
+            @Value("${app.auth.jwt.fo-access-expiry}") long foAccessExpiry,
+            @Value("${app.auth.jwt.bo-refresh-expiry}") long boRefreshExpiry,
+            @Value("${app.auth.jwt.fo-refresh-expiry}") long foRefreshExpiry) {
         this.secretKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
         this.boAccessExpiry = boAccessExpiry;
         this.foAccessExpiry = foAccessExpiry;

@@ -156,18 +156,21 @@ window.OdClaimDtl = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    /* CLAIM_STEPS: parentCodeValues 기반 동적 파생 */
+    /* CLAIM_STEPS: 정책서 1-C 기준 static 흐름 (parentCodeValues DB 동기 불필요) */
+    const CLAIM_STEP_MAP = {
+      CANCEL:   ['취소요청', '취소처리중', '취소완료'],
+      RETURN:   ['반품요청', '수거예정', '수거중', '검수중', '환불대기', '환불완료'],
+      EXCHANGE: ['교환요청', '수거예정', '수거중', '교환완료'],
+    };
     const TYPE_CD = { '취소': 'CANCEL', '반품': 'RETURN', '교환': 'EXCHANGE' };
+    const cfClaimSteps = computed(() => {
+      const typeKey = TYPE_CD[form.claimTypeCd] || form.claimTypeCd || 'CANCEL';
+      return CLAIM_STEP_MAP[typeKey] || CLAIM_STEP_MAP.CANCEL;
+    });
+    /* cfClaimStatusCodes: status 드롭다운용 — DB 코드 전체 (필터 없이) */
     const cfClaimStatusCodes = computed(() =>
-      (codes.claim_statuses || [])
-        .filter(c => c.useYn === 'Y')
-        .sort((a, b) => a.sortOrd - b.sortOrd)
+      (codes.claim_statuses || []).filter(c => c.useYn === 'Y').sort((a, b) => a.sortOrd - b.sortOrd)
     );
-    const cfClaimSteps = computed(() => cfClaimStatusCodes.value
-      .filter(c => !c.parentCodeValues || c.parentCodeValues.includes('^' + (TYPE_CD[form.claimTypeCd] || form.claimTypeCd) + '^'))
-      .map(c => c.codeLabel)
-      .filter(l => !['거부','철회'].includes(l)));
-
     const cfCurrentStepIdx = computed(() => cfClaimSteps.value.indexOf(form.claimStatusCd));
     const cfStatusOptions   = computed(() => cfClaimSteps.value);
 
