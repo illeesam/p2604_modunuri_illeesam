@@ -683,20 +683,28 @@ window.OdOrderKanban = {
               <!-- 현재 상태 카드 -->
               <div
                 v-if="fnIsOrderItemStep(item, step.key)"
-                :class="['od-kanban-card', !cfReadonly &amp;&amp; fnSettleLockState(item.orderItemId || item.order_item_id) !== 'blocked' ? 'draggable-card' : '', fnIsHlOrderItem(item) ? 'hl-card' : '', fnSettleLockState(item.orderItemId || item.order_item_id) === 'blocked' ? 'locked-card' : '', dragState.id === (item.orderItemId || item.order_item_id) ? 'dragging-card' : '']"
-                :draggable="!cfReadonly &amp;&amp; fnSettleLockState(item.orderItemId || item.order_item_id) !== 'blocked'"
-                @dragstart="handleDragStart($event, item.orderItemId || item.order_item_id, 'orderItem', step.key)"
-                @dragend="handleDragEnd"
+                :class="['od-kanban-card', fnIsHlOrderItem(item) ? 'hl-card' : '', fnSettleLockState(item.orderItemId || item.order_item_id) === 'blocked' ? 'locked-card' : '', dragState.id === (item.orderItemId || item.order_item_id) ? 'dragging-card' : '']"
+                style="padding:0;overflow:hidden;"
               >
-                <div :class="['od-kanban-card-id', fnIsHlOrderItem(item) ? 'hl-id' : '']">
-                  {{ item.orderItemId || item.order_item_id || '' }}
+                <!-- 헤더: 드래그 가능 -->
+                <div
+                  :class="['od-kanban-card-id', fnIsHlOrderItem(item) ? 'hl-id' : '']"
+                  style="padding:5px 8px;cursor:grab;border-bottom:1px solid #f0f0f0;user-select:none;"
+                  :draggable="!cfReadonly &amp;&amp; fnSettleLockState(item.orderItemId || item.order_item_id) !== 'blocked'"
+                  @dragstart="handleDragStart($event, item.orderItemId || item.order_item_id, 'orderItem', step.key)"
+                  @dragend="handleDragEnd"
+                >
+                  ⠿ {{ item.orderItemId || item.order_item_id || '' }}
                 </div>
-                <div class="od-kanban-card-nm">
-                  {{ item.prodNm || item.prod_nm || '—' }}
-                  <span v-if="item.orderQty || item.order_qty" class="od-kanban-card-qty">{{ item.orderQty || item.order_qty }}</span>
-                </div>
-                <div v-if="item.optItemNm1 || item.opt_item_nm1" class="od-kanban-card-meta">
-                  {{ [item.optItemNm1 || item.opt_item_nm1, item.optItemNm2 || item.opt_item_nm2].filter(Boolean).join(' / ') }}
+                <!-- 내용: 드래그 불가 -->
+                <div style="padding:5px 8px;">
+                  <div class="od-kanban-card-nm">
+                    {{ item.prodNm || item.prod_nm || '—' }}
+                    <span v-if="item.orderQty || item.order_qty" class="od-kanban-card-qty">{{ item.orderQty || item.order_qty }}</span>
+                  </div>
+                  <div v-if="item.optItemNm1 || item.opt_item_nm1" class="od-kanban-card-meta">
+                    {{ [item.optItemNm1 || item.opt_item_nm1, item.optItemNm2 || item.opt_item_nm2].filter(Boolean).join(' / ') }}
+                  </div>
                 </div>
               </div>
 
@@ -744,20 +752,28 @@ window.OdOrderKanban = {
             >
               <div
                 v-if="fnIsClaimStep(claim, step.key)"
-                :class="['od-kanban-card', !cfReadonly ? 'draggable-card' : '', fnIsHlClaim(claim) ? 'hl-card' : '', dragState.id === (claim.claimId || claim.claim_id) ? 'dragging-card' : '']"
-                :draggable="!cfReadonly"
-                @dragstart="handleDragStart($event, claim.claimId || claim.claim_id, 'claim', step.key)"
-                @dragend="handleDragEnd"
+                :class="['od-kanban-card', fnIsHlClaim(claim) ? 'hl-card' : '', dragState.id === (claim.claimId || claim.claim_id) ? 'dragging-card' : '']"
+                style="padding:0;overflow:hidden;"
               >
-                <div :class="['od-kanban-card-id', fnIsHlClaim(claim) ? 'hl-id' : '']">
-                  {{ claim.claimId || claim.claim_id || '' }}
+                <!-- 헤더: 드래그 가능 -->
+                <div
+                  :class="['od-kanban-card-id', fnIsHlClaim(claim) ? 'hl-id' : '']"
+                  style="padding:5px 8px;cursor:grab;border-bottom:1px solid #f0f0f0;user-select:none;"
+                  :draggable="!cfReadonly"
+                  @dragstart="handleDragStart($event, claim.claimId || claim.claim_id, 'claim', step.key)"
+                  @dragend="handleDragEnd"
+                >
+                  ⠿ {{ claim.claimId || claim.claim_id || '' }}
                 </div>
-                <div v-if="claim.prodNm || claim.prod_nm" class="od-kanban-card-nm">
-                  {{ claim.prodNm || claim.prod_nm }}
-                  <span v-if="claim.claimQty || claim.claim_qty" class="od-kanban-card-qty">{{ claim.claimQty || claim.claim_qty }}</span>
-                </div>
-                <div v-if="claim.prodOption || claim.prod_option" class="od-kanban-card-meta">
-                  {{ claim.prodOption || claim.prod_option }}
+                <!-- 내용: 드래그 불가 -->
+                <div style="padding:5px 8px;">
+                  <div v-if="claim.prodNm || claim.prod_nm" class="od-kanban-card-nm">
+                    {{ claim.prodNm || claim.prod_nm }}
+                    <span v-if="claim.claimQty || claim.claim_qty" class="od-kanban-card-qty">{{ claim.claimQty || claim.claim_qty }}</span>
+                  </div>
+                  <div v-if="claim.prodOption || claim.prod_option" class="od-kanban-card-meta">
+                    {{ claim.prodOption || claim.prod_option }}
+                  </div>
                 </div>
               </div>
 
