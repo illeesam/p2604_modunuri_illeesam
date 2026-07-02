@@ -853,6 +853,31 @@ const tabs = reactive([
 | `dtl-tab-grid.cols-1/2/3/4` | Dtl 탭 컨텐츠 그리드 |
 | `dtl-tab-card-title` | 1/2/3/4열 모드에서만 보이는 카드 헤더 |
 
+### 그리드 헤더 고정 (Sticky Header) 정책 ⭐⭐ (2026-07-01)
+
+**원칙**: 목록 그리드의 `<thead>` 는 스크롤 시 항상 화면 상단에 고정되어야 한다.
+
+#### 구현 방식
+
+- **CSS**: `.bo-table thead th { position: sticky; top: 0; z-index: 2; }` — 전역 CSS 자동 적용
+- **스크롤 컨테이너**: `.bo-main { height: calc(100vh - 94px); overflow-y: auto; }` — BO 메인 콘텐츠 영역이 독립 스크롤 컨테이너. `thead sticky top:0` 이 이 컨테이너 기준으로 동작
+- **BoGrid `tableMaxHeight` 미지정 시**: `overflow-x:auto` 만 적용(스크롤 컨테이너 생성 안 함) → `bo-main` 기준 sticky 자동 동작
+- **BoGrid `tableMaxHeight` 명시 시**: 해당 높이로 내부 스크롤 컨테이너 생성 → `thead sticky` 가 그 컨테이너 기준으로 동작 (화면 안에서 헤더 고정)
+
+#### 금지 사항
+
+- ❌ BoGrid wrapper에 `overflow:auto/hidden` 를 임의로 추가하면 sticky 컨텍스트가 갇혀 헤더 고정이 깨짐
+- ❌ `<thead>` 에 `position:static` 또는 `position:relative` 부여 — CSS 덮어쓰기 금지
+- ❌ 중간 조상 div에 `overflow:hidden` 적용 — sticky가 그 조상 밖으로 나가지 못해 고정 안 됨
+
+#### sticky 안 되는 원인 진단
+
+| 증상 | 원인 | 해결 |
+|---|---|---|
+| 스크롤해도 헤더 사라짐 | 중간에 `overflow:hidden/auto` 조상 존재 | 해당 조상의 overflow 제거 또는 BoGrid `tableMaxHeight` 명시 |
+| `bo-main` 스크롤이 아닌 `body` 전체 스크롤 | `.bo-main` 에 `height` + `overflow-y:auto` 미적용 | CSS `.bo-main` 확인 |
+| `tableMaxHeight` 내부에서도 안 됨 | wrapper div `position:relative` 가 stacking context 형성 | BoAreaComp.js wrapper 확인 |
+
 ### 사용자 (`assets/css/foGlobalStyle{01|02|03}.css`)
 
 CSS 변수 기반 테마 전환:

@@ -1206,6 +1206,8 @@
   .component('MyCache',      window.MyCache)
   .component('MyContact',    window.MyContact)
   .component('MyChatt',      window.MyChatt)
+  /* ── pages/co/ec/ (FO/BO 공용) ── */
+  .component('OdOrderKanban', window.OdOrderKanban)
   /* ── components/disp/ (전시 컴포넌트) ── */
   .component('DispX04Widget', window.DispX04Widget)
   /* ── pages/fo/xd/ (전시 UI 데모) — 스크립트 미로드 시 건너뜀 ── */

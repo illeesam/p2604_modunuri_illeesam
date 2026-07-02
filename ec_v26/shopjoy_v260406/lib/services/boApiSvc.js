@@ -237,6 +237,12 @@
     requestExtraPay(body, uiNm, cmdNm)  { return global.boApi.post('/bo/ec/od/order/extra-pay', body, hdr(uiNm, cmdNm)); },
   };
 
+  /* ── od: 주문항목 상태 (칸반용) ──────────────────────────────── */
+  boApiSvc.odOrderItem = {
+    /* 단건 상태 변경 — entity: { orderItemId, orderItemStatusCd, rowStatus:'U' } */
+    saveBase(entity, uiNm, cmdNm)  { return global.boApi.post('/base/ec/od/order-item/save/base', entity, hdr(uiNm, cmdNm)); },
+  };
+
   /* ── pd: 묶음상품 ───────────────────────────────────────────── */
   boApiSvc.pdBundle = {
     getPage(params, uiNm, cmdNm)        { return global.boApi.get(   '/bo/ec/pd/bundle/page', { params, ...hdr(uiNm, cmdNm) }); },
@@ -410,11 +416,19 @@
     remove(_id, uiNm, cmdNm)       { return chkId(_id, uiNm, cmdNm) || global.boApi.delete(`/bo/ec/st/config/${_id}`, hdr(uiNm, cmdNm)); },
   };
 
+  /* ── st: 정산마스터 ─────────────────────────────────────────── */
+  boApiSvc.stSettle = {
+    getPage(params, uiNm, cmdNm) { return global.boApi.get(   '/bo/ec/st/settle/page', { params, ...hdr(uiNm, cmdNm) }); },
+    getById(_id, uiNm, cmdNm)    { return chkId(_id, uiNm, cmdNm) || global.boApi.get(`/bo/ec/st/settle/${_id}`, hdr(uiNm, cmdNm)); },
+  };
+
   /* ── st: 정산원장 ───────────────────────────────────────────── */
   boApiSvc.stSettleRaw = {
-    getPage(params, uiNm, cmdNm) { return global.boApi.get(   '/bo/ec/st/raw/page', { params, ...hdr(uiNm, cmdNm) }); },
-    getById(_id, uiNm, cmdNm)    { return chkId(_id, uiNm, cmdNm) || global.boApi.get(`/bo/ec/st/raw/${_id}`, hdr(uiNm, cmdNm)); },
-    collect(body, uiNm, cmdNm)   { return global.boApi.post(  '/bo/ec/st/raw/collect', body, hdr(uiNm, cmdNm)); },
+    getPage(params, uiNm, cmdNm)        { return global.boApi.get(   '/bo/ec/st/raw/page', { params, ...hdr(uiNm, cmdNm) }); },
+    getById(_id, uiNm, cmdNm)           { return chkId(_id, uiNm, cmdNm) || global.boApi.get(`/bo/ec/st/raw/${_id}`, hdr(uiNm, cmdNm)); },
+    /* orderId 기준 정산원장 목록 조회 (칸반 등 주문 기반 화면용) */
+    getByOrderId(orderId, uiNm, cmdNm)  { return global.boApi.get(   '/bo/ec/st/raw/page', { params: { orderId, pageSize: 100 }, ...hdr(uiNm, cmdNm) }); },
+    collect(body, uiNm, cmdNm)          { return global.boApi.post(  '/bo/ec/st/raw/collect', body, hdr(uiNm, cmdNm)); },
   };
 
   /* ── st: 정산조정 ───────────────────────────────────────────── */

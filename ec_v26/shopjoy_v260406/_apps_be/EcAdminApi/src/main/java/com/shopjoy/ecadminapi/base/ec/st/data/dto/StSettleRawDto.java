@@ -16,6 +16,10 @@ public class StSettleRawDto {
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
         @Size(max = 21) private String settleRawId;
+        @Size(max = 21) private String orderId;
+        @Size(max = 21) private String orderItemId;
+        @Size(max = 21) private String claimId;
+        @Size(max = 21) private String claimItemId;
         @Size(max = 20) private String rawTypeCd;
         @Size(max = 20) private String rawStatusCd;
         @Size(max = 20) private String vendorTypeCd;

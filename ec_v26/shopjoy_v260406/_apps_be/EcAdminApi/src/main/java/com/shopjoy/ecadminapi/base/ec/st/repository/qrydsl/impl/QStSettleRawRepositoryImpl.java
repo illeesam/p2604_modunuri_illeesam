@@ -149,6 +149,10 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
                 .where(
                     baseAndSiteId(search),
                     baseAndSettleRawId(search),
+                    baseAndOrderId(search),
+                    baseAndOrderItemId(search),
+                    baseAndClaimId(search),
+                    baseAndClaimItemId(search),
                     baseAndRawTypeCd(search),
                     baseAndRawStatusCd(search),
                     baseAndVendorTypeCd(search),
@@ -186,6 +190,10 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
         BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndSettleRawId(search),
+                baseAndOrderId(search),
+                baseAndOrderItemId(search),
+                baseAndClaimId(search),
+                baseAndClaimItemId(search),
                 baseAndRawTypeCd(search),
                 baseAndRawStatusCd(search),
                 baseAndVendorTypeCd(search),
@@ -242,6 +250,30 @@ public class QStSettleRawRepositoryImpl implements QStSettleRawRepository {
     private BooleanExpression baseAndSettleRawId(StSettleRawDto.Request search) {
         return search != null && StringUtils.hasText(search.getSettleRawId())
                 ? stSettleRaw.settleRawId.eq(search.getSettleRawId()) : null;
+    }
+
+    /* orderId 정확 일치 — 주문 기준 정산원장 조회 */
+    private BooleanExpression baseAndOrderId(StSettleRawDto.Request search) {
+        return search != null && StringUtils.hasText(search.getOrderId())
+                ? stSettleRaw.orderId.eq(search.getOrderId()) : null;
+    }
+
+    /* orderItemId 정확 일치 */
+    private BooleanExpression baseAndOrderItemId(StSettleRawDto.Request search) {
+        return search != null && StringUtils.hasText(search.getOrderItemId())
+                ? stSettleRaw.orderItemId.eq(search.getOrderItemId()) : null;
+    }
+
+    /* claimId 정확 일치 — 클레임 기준 정산원장 조회 */
+    private BooleanExpression baseAndClaimId(StSettleRawDto.Request search) {
+        return search != null && StringUtils.hasText(search.getClaimId())
+                ? stSettleRaw.claimId.eq(search.getClaimId()) : null;
+    }
+
+    /* claimItemId 정확 일치 */
+    private BooleanExpression baseAndClaimItemId(StSettleRawDto.Request search) {
+        return search != null && StringUtils.hasText(search.getClaimItemId())
+                ? stSettleRaw.claimItemId.eq(search.getClaimItemId()) : null;
     }
 
     /* rawTypeCd 정확 일치 (검색 필터) */

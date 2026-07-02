@@ -140,6 +140,11 @@ window.OdOrderMng = {
           return;
         }
         if (colKey === 'btn_row_delete') { return handleDelete(row); }
+        if (colKey === 'btn_row_kanban') {
+          window._odKanbanParams = { orderItemId: null, claimId: null };
+          props.navigate('odOrderKanban', { id: row.orderId });
+          return;
+        }
         // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
         const VIEW_COLS = ['__no__'];
         if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
@@ -605,12 +610,9 @@ window.OdOrderMng = {
         @ref-click="({type,id}) => handleSelectAction('orders-rowRefClick', {type, id})" row-actions>
         <template #row-actions="{ row, gridId }">
           <div class="actions">
-            <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_row_edit', row)">
-              수정
-            </button>
-            <button class="btn btn_row_delete" @click.stop="handleGridCellAction(gridId, 'btn_row_delete', row)">
-              삭제
-            </button>
+            <button class="btn btn_row_edit" @click.stop="handleGridCellAction(gridId, 'btn_row_edit', row)">수정</button>
+            <button class="btn btn_row_delete" @click.stop="handleGridCellAction(gridId, 'btn_row_delete', row)">삭제</button>
+            <button class="btn btn_row_kanban" style="background:#8b5cf6;color:#fff;border:none;border-radius:5px;padding:3px 7px;font-size:11px;font-weight:600;cursor:pointer;" @click.stop="handleGridCellAction(gridId, 'btn_row_kanban', row)">📋 칸반</button>
           </div>
         </template>
       </bo-grid>

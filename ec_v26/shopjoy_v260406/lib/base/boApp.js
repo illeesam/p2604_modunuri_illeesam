@@ -379,6 +379,7 @@
         pdQnaMng: 'pd-qna-mng',
         pdRestockNotiMng: 'pd-restock-noti-mng',
         pdTagMng: 'pd-tag-mng',
+        odOrderKanban: 'od-order-kanban',
         odOrderMng: 'od-order-mng',
         odOrderDtl: 'od-order-dtl',
         odClaimMng: 'od-claim-mng',
@@ -2487,6 +2488,7 @@
             <mb-member-dtl  v-else-if="page==='mbMemberDtl'"  :navigate="navigate" :dtl-id="dtlId" />
             <pd-prod-mng  v-else-if="page==='pdProdMng'"  :navigate="navigate" />
             <pd-prod-dtl  v-else-if="page==='pdProdDtl'"  :navigate="navigate" :dtl-id="dtlId" />
+            <od-order-kanban v-else-if="page==='odOrderKanban'" :order-id="dtlId" mode="bo" :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
             <od-order-mng  v-else-if="page==='odOrderMng'"  :navigate="navigate" />
             <od-order-dtl  v-else-if="page==='odOrderDtl'"  :navigate="navigate" :dtl-id="dtlId" />
             <od-claim-mng  v-else-if="page==='odClaimMng'"  :navigate="navigate" />
@@ -2987,6 +2989,8 @@
     .component('PdQnaMng', window.PdQnaMng)
     .component('PdRestockNotiMng', window.PdRestockNotiMng)
     .component('PdTagMng', window.PdTagMng)
+    /* ── pages/co/ec/ — 주문 칸반 ── */
+    .component('OdOrderKanban', window.OdOrderKanban)
     /* ── pages/bo/ec/ — 주문 ── */
     .component('OdOrderMng', window.OdOrderMng)
     .component('OdOrderDtl', window.OdOrderDtl)
