@@ -128,8 +128,8 @@ window.CmChattKanban = {
         const roomCard = rooms.find(x => x.chattId === id);
         tab.memberNm = memberEntry?.refNm || roomCard?.memberNm || '';
         tab.chattStatusCd = info.chattStatusCd || 'OPEN';
-        const r2 = await boApiSvc.cmChatt.getMessages(id, null, '채팅칸반', '메시지');
-        const msgs = r2.data?.data || [];
+        const r2 = await boApiSvc.cmChatt.getMessages(id, {}, '채팅칸반', '메시지');
+        const msgs = Array.isArray(r2.data?.data) ? r2.data.data : [];
         tab.messages.push(...msgs);
         if (msgs.length) { tab.pollLastId = msgs[msgs.length - 1].chattMsgId; }
         scrollToBottom(id);
@@ -186,7 +186,7 @@ window.CmChattKanban = {
         await boApiSvc.cmChatt.updateStatus(id, { statusCd: 'CLOSED' }, '채팅칸반', '채팅종료');
         tab.chattStatusCd = 'CLOSED';
         if (tab.pollTimer) { clearInterval(tab.pollTimer); tab.pollTimer = null; }
-        tab.messages.push({ chattMsgId: '_sys_' + Date.now(), senderCd: 'SYSTEM', msgText: '채팅이 종료되었습니다.', sendDate: new Date().toISOString() });
+        tab.messages.push({ chattMsgId: '_sys_' + Date.now(), senderTypeCd: 'SYSTEM', msgText: '채팅이 종료되었습니다.', sendDate: new Date().toISOString() });
         scrollToBottom(id);
         showToast('채팅이 종료되었습니다.');
         handleSearchRooms();
@@ -478,10 +478,9 @@ window.CmChattKanban = {
       <span style="font-size:13px;">참여한 채팅이 없습니다</span>
     </div>
 
-    <!-- 탭 컨텐츠 (v-show로 모두 마운트, 활성만 표시) -->
+    <!-- 탭 컨텐츠 (flex:1 고정, 비활성은 position:absolute+visibility:hidden으로 숨김) -->
     <div v-for="tab in openTabs" :key="tab.chattId + '_body'"
-      v-show="uiState.activeChatId===tab.chattId"
-      style="flex:1;display:flex;overflow:hidden;min-height:0;">
+      :style="uiState.activeChatId===tab.chattId ? 'flex:1;display:flex;overflow:hidden;min-height:0;' : 'position:absolute;visibility:hidden;pointer-events:none;width:0;height:0;overflow:hidden;'">
 
       <!-- ─── 좌: 메시지 + 입력창 (flex-col) ─── -->
       <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0;min-width:0;">
@@ -564,8 +563,7 @@ window.CmChattKanban = {
               <textarea v-model="tab.replyText" rows="3"
                 placeholder="메시지를 입력하세요... (Enter: 전송 / Shift+Enter: 줄바꿈)"
                 style="flex:1;resize:none;font-size:13px;line-height:1.5;padding:10px 12px;border:none;outline:none;background:#fff;font-family:inherit;"
-                @keydown.enter.exact.prevent="handleBtnAction('tab-send', {id: tab.chattId})"
-                @keydown.shift.enter="null">
+                @keydown.enter.exact.prevent="handleBtnAction('tab-send', {id: tab.chattId})">
               </textarea>
               <!-- 우측 버튼 세로 스택 -->
               <div style="display:flex;flex-direction:column;gap:4px;padding:8px 10px;align-items:center;border-left:1px solid #f1f5f9;flex-shrink:0;">
