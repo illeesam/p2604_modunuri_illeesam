@@ -29,7 +29,7 @@
     /* ── 기본 래퍼 ── */
     '.od-kanban-wrap{font-family:inherit;color:#1f2937;background:#f8fafc;border-radius:12px;overflow:hidden;}',
     /* ── 헤더 ── */
-    '.od-kanban-hdr{display:flex;align-items:center;gap:12px;padding:14px 20px 12px;background:linear-gradient(135deg,#1e293b 0%,#334155 100%);flex-wrap:wrap;}',
+    '.od-kanban-hdr{display:flex;align-items:center;gap:12px;padding:12px 12px 10px;background:linear-gradient(135deg,#1e293b 0%,#334155 100%);flex-wrap:wrap;}',
     '.od-kanban-hdr-title{font-size:15px;font-weight:700;color:#f1f5f9;letter-spacing:-.3px;}',
     '.od-kanban-hdr-id{font-size:11px;color:#94a3b8;font-family:monospace;background:rgba(255,255,255,.08);padding:2px 8px;border-radius:6px;}',
     '.od-kanban-hdr-id.hl-id{color:#60a5fa;font-weight:800;}',
@@ -37,33 +37,33 @@
     '.od-kanban-hdr-close:hover{background:rgba(239,68,68,.3);color:#fca5a5;}',
     /* ── 주문 요약 ── */
     '.od-kanban-order-info{display:flex;gap:0;flex-wrap:wrap;padding:0;font-size:12px;background:#fff;border-bottom:2px solid #e2e8f0;}',
-    '.od-kanban-order-info>div{display:flex;flex-direction:column;padding:10px 20px;border-right:1px solid #f1f5f9;gap:2px;}',
+    '.od-kanban-order-info>div{display:flex;flex-direction:column;padding:8px 12px;border-right:1px solid #f1f5f9;gap:2px;}',
     '.od-kanban-order-info dt{color:#94a3b8;font-size:10px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;}',
     '.od-kanban-order-info dd{font-weight:700;color:#1e293b;margin:0;font-size:13px;}',
     '.od-kanban-status-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:#dbeafe;color:#1d4ed8;letter-spacing:.3px;}',
     /* ── 섹션 공통 ── */
-    '.od-kanban-section{padding:8px 16px 0;}',
+    '.od-kanban-section{padding:8px 8px 0;}',
     '.od-kanban-section-title{font-size:12px;font-weight:700;color:#475569;margin-bottom:8px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;letter-spacing:.2px;}',
     '.od-kanban-hl-badge{font-size:10px;font-weight:700;background:#3b82f6;color:#fff;padding:2px 7px;border-radius:10px;}',
     /* ── 칸반 보드 공통 ── */
     '.od-kanban-board{display:flex;gap:1px;overflow-x:auto;padding-bottom:0;width:100%;background:#e2e8f0;border-radius:10px;overflow:hidden;}',
-    '.od-kanban-col{flex:1 1 100px;min-width:88px;display:flex;flex-direction:column;}',
+    '.od-kanban-col{flex:1 1 130px;min-width:120px;display:flex;flex-direction:column;}',
     '.od-kanban-col-hdr{text-align:center;padding:6px 4px 5px;background:#f1f5f9;border-top:3px solid #cbd5e1;font-size:10px;font-weight:700;color:#64748b;transition:all .15s;line-height:1.3;letter-spacing:.2px;}',
     '.od-kanban-col-hdr.drag-over-col{background:#fef9c3;border-top-color:#f59e0b;}',
     '.od-kanban-col-body{flex:1;min-height:0;padding:5px 5px 4px;background:#f8fafc;transition:background .15s;}',
     '.od-kanban-col-body.drag-over-body{background:#fef9c3;}',
     /* ── 카드 공통 ── */
-    '.od-kanban-card{background:#fff;border:1.5px solid #e2e8f0;border-radius:8px;margin-bottom:6px;font-size:11px;transition:box-shadow .15s,transform .1s;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.06);}',
-    '.od-kanban-card:hover{box-shadow:0 4px 12px rgba(0,0,0,.1);}',
+    '.od-kanban-card{background:linear-gradient(160deg,#fffdf8 0%,#fdf8f0 60%,#faf4ea 100%);border:1px solid #e8dfd0;border-radius:10px;margin-bottom:6px;font-size:11px;transition:box-shadow .2s,transform .1s;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);max-width:160px;}',
+    '.od-kanban-card:hover{box-shadow:0 6px 16px rgba(0,0,0,.12),0 2px 4px rgba(0,0,0,.06);transform:translateY(-1px);}',
     '.od-kanban-card.dragging-card{opacity:.4;transform:scale(1.02);}',
-    '.od-kanban-card.locked-card{border-color:#fca5a5;background:#fff7f7;}',
+    '.od-kanban-card.locked-card{border-color:#fca5a5;background:linear-gradient(160deg,#fff7f7,#fff0f0);}',
     /* 카드 내용 영역 */
-    '.od-kanban-card-body{padding:6px 9px 8px;}',
-    '.od-kanban-card-nm{font-weight:600;color:#1e293b;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;font-size:11px;}',
+    '.od-kanban-card-body{padding:6px 9px 8px;background:transparent;}',
+    '.od-kanban-card-nm{font-weight:600;color:#1e293b;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;font-size:11px;}',
     '.od-kanban-card-meta{color:#94a3b8;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
     '.od-kanban-card-qty{font-size:10px;color:#64748b;font-weight:500;margin-left:4px;background:#f1f5f9;padding:0 4px;border-radius:4px;}',
     /* ── 카드 헤더 ── */
-    '.od-kanban-card-hdr{display:flex;align-items:center;gap:4px;padding:5px 8px 5px;cursor:default;border-bottom:1px solid #f1f5f9;}',
+    '.od-kanban-card-hdr{display:flex;align-items:center;gap:4px;padding:5px 8px 5px;cursor:default;border-bottom:1px solid #ede5d8;}',
     '.od-kanban-drag-handle{font-size:14px;color:#94a3b8;cursor:grab;padding:0 3px;flex-shrink:0;line-height:1;border-radius:3px;transition:color .1s,background .1s;}',
     '.od-kanban-drag-handle:hover{color:#475569;background:rgba(0,0,0,.06);}',
     '.od-kanban-drag-handle:active{cursor:grabbing;color:#1e293b;}',
@@ -77,54 +77,54 @@
        주문(ORDER): 초록 계열
     ───────────────────────────────────────────── */
     /* 섹션 타이틀 */
-    '.kanban-theme-order .od-kanban-section-title-bar{background:linear-gradient(90deg,#dcfce7,#f0fdf4);border-left:4px solid #16a34a;border-top:2px solid #16a34a;padding:5px 12px;border-radius:0 6px 6px 0;margin-bottom:6px;}',
+    '.kanban-theme-order .od-kanban-section-title-bar{background:linear-gradient(90deg,#dcfce7,#f0fdf4);border-left:4px solid #16a34a;border-top:2px solid #16a34a;padding:5px 8px;border-radius:0 6px 6px 0;margin-bottom:6px;}',
     /* 열 헤더 */
     '.kanban-theme-order .od-kanban-col-hdr{border-top-color:#d1d5db;}',
     '.kanban-theme-order .od-kanban-col-hdr.active-col{border-top-color:#16a34a;background:#dcfce7;color:#14532d;font-weight:800;}',
     /* 카드 */
     '.kanban-theme-order .od-kanban-card.hl-card{border-color:#16a34a;box-shadow:0 0 0 2px rgba(22,163,74,.25);}',
     /* 카드 헤더 배경 */
-    '.kanban-theme-order .od-kanban-card-hdr{background:#f0fdf4;}',
+    '.kanban-theme-order .od-kanban-card-hdr{background:linear-gradient(90deg,#f0fdf4,#fdfff5);}',
     '.kanban-theme-order .od-kanban-card-hdr-id{color:#15803d;}',
     /* drop-zone 활성 */
     '.kanban-theme-order .od-kanban-col-body.drag-over-body{background:#dcfce7;}',
     /* ─────────────────────────────────────────────
        취소(CANCEL): 적색 계열
     ───────────────────────────────────────────── */
-    '.kanban-theme-cancel .od-kanban-section-title-bar{background:linear-gradient(90deg,#fee2e2,#fff1f2);border-left:4px solid #dc2626;border-top:2px solid #dc2626;padding:5px 12px;border-radius:0 6px 6px 0;margin-bottom:6px;}',
+    '.kanban-theme-cancel .od-kanban-section-title-bar{background:linear-gradient(90deg,#fee2e2,#fff1f2);border-left:4px solid #dc2626;border-top:2px solid #dc2626;padding:5px 8px;border-radius:0 6px 6px 0;margin-bottom:6px;}',
     '.kanban-theme-cancel .od-kanban-col-hdr{border-top-color:#d1d5db;}',
     '.kanban-theme-cancel .od-kanban-col-hdr.active-col{border-top-color:#dc2626;background:#fee2e2;color:#7f1d1d;font-weight:800;}',
     '.kanban-theme-cancel .od-kanban-card.hl-card{border-color:#dc2626;box-shadow:0 0 0 2px rgba(220,38,38,.2);}',
-    '.kanban-theme-cancel .od-kanban-card-hdr{background:#fff1f2;}',
+    '.kanban-theme-cancel .od-kanban-card-hdr{background:linear-gradient(90deg,#fff1f2,#fff8f8);}',
     '.kanban-theme-cancel .od-kanban-card-hdr-id{color:#b91c1c;}',
     '.kanban-theme-cancel .od-kanban-col-body.drag-over-body{background:#fee2e2;}',
     /* ─────────────────────────────────────────────
        반품(RETURN): 분홍 계열
     ───────────────────────────────────────────── */
-    '.kanban-theme-return .od-kanban-section-title-bar{background:linear-gradient(90deg,#fce7f3,#fdf2f8);border-left:4px solid #db2777;border-top:2px solid #db2777;padding:5px 12px;border-radius:0 6px 6px 0;margin-bottom:6px;}',
+    '.kanban-theme-return .od-kanban-section-title-bar{background:linear-gradient(90deg,#fce7f3,#fdf2f8);border-left:4px solid #db2777;border-top:2px solid #db2777;padding:5px 8px;border-radius:0 6px 6px 0;margin-bottom:6px;}',
     '.kanban-theme-return .od-kanban-col-hdr{border-top-color:#d1d5db;}',
     '.kanban-theme-return .od-kanban-col-hdr.active-col{border-top-color:#db2777;background:#fce7f3;color:#831843;font-weight:800;}',
     '.kanban-theme-return .od-kanban-card.hl-card{border-color:#db2777;box-shadow:0 0 0 2px rgba(219,39,119,.2);}',
-    '.kanban-theme-return .od-kanban-card-hdr{background:#fdf2f8;}',
+    '.kanban-theme-return .od-kanban-card-hdr{background:linear-gradient(90deg,#fdf2f8,#fff8fc);}',
     '.kanban-theme-return .od-kanban-card-hdr-id{color:#be185d;}',
     '.kanban-theme-return .od-kanban-col-body.drag-over-body{background:#fce7f3;}',
     /* ─────────────────────────────────────────────
        교환(EXCHANGE): 파랑 계열
     ───────────────────────────────────────────── */
-    '.kanban-theme-exchange .od-kanban-section-title-bar{background:linear-gradient(90deg,#dbeafe,#eff6ff);border-left:4px solid #2563eb;border-top:2px solid #2563eb;padding:5px 12px;border-radius:0 6px 6px 0;margin-bottom:6px;}',
+    '.kanban-theme-exchange .od-kanban-section-title-bar{background:linear-gradient(90deg,#dbeafe,#eff6ff);border-left:4px solid #2563eb;border-top:2px solid #2563eb;padding:5px 8px;border-radius:0 6px 6px 0;margin-bottom:6px;}',
     '.kanban-theme-exchange .od-kanban-col-hdr{border-top-color:#d1d5db;}',
     '.kanban-theme-exchange .od-kanban-col-hdr.active-col{border-top-color:#2563eb;background:#dbeafe;color:#1e3a8a;font-weight:800;}',
     '.kanban-theme-exchange .od-kanban-card.hl-card{border-color:#2563eb;box-shadow:0 0 0 2px rgba(37,99,235,.2);}',
-    '.kanban-theme-exchange .od-kanban-card-hdr{background:#eff6ff;}',
+    '.kanban-theme-exchange .od-kanban-card-hdr{background:linear-gradient(90deg,#eff6ff,#f8fbff);}',
     '.kanban-theme-exchange .od-kanban-card-hdr-id{color:#1d4ed8;}',
     '.kanban-theme-exchange .od-kanban-col-body.drag-over-body{background:#dbeafe;}',
     /* ── 교환 2행 레이아웃 ── */
     '.od-kanban-exchange-rows{display:flex;flex-direction:column;gap:6px;}',
     '.od-kanban-exchange-row-wrap{display:flex;align-items:stretch;gap:0;}',
-    '.od-kanban-exchange-row-label{writing-mode:vertical-rl;text-orientation:mixed;font-size:10px;font-weight:700;color:#fff;letter-spacing:1px;padding:10px 0;display:flex;align-items:center;justify-content:center;min-width:28px;white-space:nowrap;border-radius:8px 0 0 8px;flex-shrink:0;}',
-    '.od-kanban-exchange-row-label.row-pickup{background:linear-gradient(180deg,#8b5cf6,#6d28d9);}',
-    '.od-kanban-exchange-row-label.row-dliv{background:linear-gradient(180deg,#3b82f6,#1d4ed8);}',
-    '.od-kanban-exchange-row-label.row-refund{background:linear-gradient(180deg,#db2777,#9d174d);}',
+    '.od-kanban-exchange-row-label{writing-mode:vertical-rl;text-orientation:mixed;font-size:10px;font-weight:600;color:rgba(255,255,255,.82);letter-spacing:1px;padding:8px 0;display:flex;align-items:center;justify-content:center;min-width:22px;white-space:nowrap;border-radius:6px 0 0 6px;flex-shrink:0;}',
+    '.od-kanban-exchange-row-label.row-pickup{background:linear-gradient(180deg,#a78bfa,#8b5cf6);}',
+    '.od-kanban-exchange-row-label.row-dliv{background:linear-gradient(180deg,#60a5fa,#3b82f6);}',
+    '.od-kanban-exchange-row-label.row-refund{background:linear-gradient(180deg,#f472b6,#db2777);}',
     '.od-kanban-exchange-row-board{flex:1;border-radius:0 8px 8px 0;overflow:hidden;}',
     /* ── 정산/잠금 뱃지 ── */
     '.od-kanban-settle{display:flex;flex-wrap:wrap;gap:2px;margin-top:4px;}',
@@ -160,7 +160,7 @@
     '.od-kanban-search .btn-reset{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;border-radius:6px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;}',
     '.od-kanban-search .btn-reset:hover{background:#e2e8f0;}',
     /* ── 강조 표시 행 ── */
-    '.od-kanban-hl-row{padding:7px 20px;background:#f8fafc;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}',
+    '.od-kanban-hl-row{padding:6px 10px;background:#f8fafc;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}',
     '.od-kanban-hl-row-label{font-size:10px;color:#94a3b8;font-weight:700;white-space:nowrap;letter-spacing:.5px;text-transform:uppercase;}',
     '.od-kanban-hl-row input{border:1px solid #e2e8f0;border-radius:6px;padding:3px 10px;font-size:12px;background:#fff;color:#1e293b;width:190px;font-family:monospace;outline:none;}',
     '.od-kanban-hl-row input:focus{border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,.15);}',
@@ -169,6 +169,34 @@
     '.od-kanban-hl-tag button:hover{color:#1d4ed8;}',
     /* ── 기타 ── */
     '.od-kanban-empty{color:#cbd5e1;text-align:center;font-size:11px;padding:20px 0;}',
+    /* ── 카드 액션 버튼 ── */
+    /* ── 메모 다이얼로그 ── */
+    '.od-kanban-memo-overlay{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:9999;display:flex;align-items:center;justify-content:center;}',
+    '.od-kanban-memo-box{background:#fff;border-radius:14px;box-shadow:0 8px 40px rgba(0,0,0,.22);min-width:320px;max-width:440px;width:90%;overflow:hidden;}',
+    '.od-kanban-memo-hdr{display:flex;align-items:center;gap:10px;padding:13px 18px 12px;background:linear-gradient(135deg,#fff0f4,#ffe4ec,#ffd5e1);border-bottom:1px solid #fbc4d4;}',
+    '.od-kanban-memo-hdr-icon{font-size:18px;line-height:1;}',
+    '.od-kanban-memo-title{font-size:14px;font-weight:700;color:#1e293b;flex:1;}',
+    '.od-kanban-memo-hdr-close{background:none;border:none;cursor:pointer;font-size:16px;color:#94a3b8;padding:2px 4px;border-radius:6px;line-height:1;transition:background .1s,color .1s;}',
+    '.od-kanban-memo-hdr-close:hover{background:rgba(239,68,68,.12);color:#ef4444;}',
+    '.od-kanban-memo-body{padding:16px 20px 18px;}',
+    '.od-kanban-memo-desc{font-size:12px;color:#64748b;margin-bottom:12px;}',
+    '.od-kanban-memo-label{font-size:11px;font-weight:600;color:#475569;margin-bottom:4px;}',
+    '.od-kanban-memo-ta{width:100%;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:8px;padding:8px 10px;font-size:12px;resize:vertical;min-height:72px;font-family:inherit;outline:none;color:#1e293b;}',
+    '.od-kanban-memo-ta:focus{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.15);}',
+    '.od-kanban-memo-actions{display:flex;gap:8px;justify-content:center;margin-top:14px;}',
+    '.od-kanban-memo-btn-ok{padding:6px 18px;border-radius:8px;border:none;background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;font-size:13px;font-weight:700;cursor:pointer;}',
+    '.od-kanban-memo-btn-ok:hover{filter:brightness(.93);}',
+    '.od-kanban-memo-btn-cancel{padding:6px 14px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;color:#64748b;font-size:13px;cursor:pointer;}',
+    '.od-kanban-memo-btn-cancel:hover{background:#f1f5f9;}',
+    '.od-kanban-card-actions{display:flex;align-items:center;justify-content:center;padding:3px 6px 3px;border-top:1px solid #ede5d8;background:linear-gradient(90deg,#fdf8f0,#faf4ea);gap:4px;}',
+    '.od-kanban-card-actions-left{display:flex;gap:3px;flex-wrap:wrap;justify-content:flex-end;flex:1;}',
+    '.od-kanban-card-actions-right{display:flex;gap:3px;flex-wrap:wrap;justify-content:flex-start;flex:1;}',
+    '.od-kanban-card-actions-divider{width:1px;height:12px;background:#e2e8f0;flex-shrink:0;}',
+    '.od-kanban-act-btn{font-size:9px;font-weight:600;padding:1px 5px;border-radius:8px;border:1px solid;cursor:pointer;line-height:1.5;transition:filter .1s;white-space:nowrap;}',
+    '.od-kanban-act-btn:hover{filter:brightness(.92);}',
+    '.od-kanban-act-btn.act-forward{background:#dcfce7;color:#15803d;border-color:#86efac;}',
+    '.od-kanban-act-btn.act-back{background:#fef3c7;color:#92400e;border-color:#fcd34d;}',
+    '.od-kanban-act-btn.act-danger{background:#fee2e2;color:#b91c1c;border-color:#fca5a5;}',
     '.od-kanban-loading{text-align:center;padding:40px;color:#94a3b8;font-size:13px;}',
     '.od-kanban-divider{border:none;border-top:1px solid #e2e8f0;margin:6px 0 0;}',
   ].join('');
@@ -269,6 +297,33 @@ window.OdOrderKanban = {
       if (props.showConfirm) return props.showConfirm(title, msg);
       if (window.boApp && window.boApp.showConfirm) return window.boApp.showConfirm(title, msg);
       return window.confirm(msg);
+    };
+
+    /* ── 메모 확인 다이얼로그 (클레임/주문항목 상태변경 시 사용) ── */
+    const memoDialog = reactive({
+      show:      false,
+      title:     '',
+      desc:      '',
+      memo:      '',
+      resolve:   null,   // Promise resolver
+    });
+    /* 메모 다이얼로그를 열고 { ok, memo } 를 반환하는 Promise */
+    const doConfirmWithMemo = (title, desc) => {
+      return new Promise(function (resolve) {
+        memoDialog.title   = title;
+        memoDialog.desc    = desc;
+        memoDialog.memo    = '';
+        memoDialog.resolve = resolve;
+        memoDialog.show    = true;
+      });
+    };
+    const handleMemoDialogOk = () => {
+      memoDialog.show = false;
+      if (memoDialog.resolve) memoDialog.resolve({ ok: true, memo: memoDialog.memo });
+    };
+    const handleMemoDialogCancel = () => {
+      memoDialog.show = false;
+      if (memoDialog.resolve) memoDialog.resolve({ ok: false, memo: '' });
     };
 
     /* 읽기전용 여부 */
@@ -474,13 +529,13 @@ window.OdOrderKanban = {
 
       const fromLabel = fnStepLabel(ORDER_STEPS, fromKey);
       const toLabel   = fnStepLabel(ORDER_STEPS, toKey);
-      const ok = await doConfirm('상태 변경', '"' + fromLabel + '" → "' + toLabel + '" 으로 변경하시겠습니까?');
-      if (!ok) return;
+      const dlg = await doConfirmWithMemo('주문 상태 변경', '"' + fromLabel + '" → "' + toLabel + '" 으로 변경');
+      if (!dlg.ok) return;
       try {
         const itemId = item.orderItemId || item.order_item_id;
         await apiInst.value.post(
           '/base/ec/od/order-item/save/base',
-          { orderItemId: itemId, orderItemStatusCd: toKey, rowStatus: 'U' },
+          { orderItemId: itemId, orderItemStatusCd: toKey, memo: dlg.memo || null, rowStatus: 'U' },
           coUtil.cofApiHdr('주문칸반', '상태변경')
         );
         /* 로컬 상태 즉시 반영 */
@@ -504,13 +559,13 @@ window.OdOrderKanban = {
           || claim.dlivStatusCd || claim.dliv_status_cd || '';
         if (dlivStatusCd === toStep.dlivKey) return;
         const fromLabel = dlivStatusCd || '(이전 상태)';
-        const ok = await doConfirm('교환 배송 상태 변경', '"' + fromLabel + '" → "' + toStep.label + '" 으로 변경하시겠습니까?');
-        if (!ok) return;
+        const dlg = await doConfirmWithMemo('교환 배송 상태 변경', '"' + fromLabel + '" → "' + toStep.label + '" 으로 변경');
+        if (!dlg.ok) return;
         try {
           const cid = claim.claimId || claim.claim_id;
           await apiInst.value.post(
             '/bo/ec/od/claim/save/exchange-dliv-status',
-            { claimId: cid, dlivStatusCd: toStep.dlivKey, rowStatus: 'U' },
+            { claimId: cid, dlivStatusCd: toStep.dlivKey, memo: dlg.memo || null, rowStatus: 'U' },
             coUtil.cofApiHdr('주문칸반', '교환배송상태변경')
           );
           /* 로컬 반영 */
@@ -528,13 +583,14 @@ window.OdOrderKanban = {
       if (fromKey === toKey) return;
       const fromLabel = fnStepLabel(flow, fromKey);
       const toLabel   = fnStepLabel(flow, toKey);
-      const ok = await doConfirm('클레임 상태 변경', '"' + fromLabel + '" → "' + toLabel + '" 으로 변경하시겠습니까?');
-      if (!ok) return;
+      const typeLabel = fnClaimTypeLabel(claim);
+      const dlg = await doConfirmWithMemo(typeLabel + ' 상태 변경', '"' + fromLabel + '" → "' + toLabel + '" 으로 변경');
+      if (!dlg.ok) return;
       try {
         const cid = claim.claimId || claim.claim_id;
         await apiInst.value.post(
           '/bo/ec/od/claim/save/status',
-          { claimId: cid, claimStatusCd: toKey, rowStatus: 'U' },
+          { claimId: cid, claimStatusCd: toKey, memo: dlg.memo || null, rowStatus: 'U' },
           coUtil.cofApiHdr('주문칸반', '클레임상태변경')
         );
         if (Object.prototype.hasOwnProperty.call(claim, 'claimStatusCd')) claim.claimStatusCd = toKey;
@@ -857,6 +913,74 @@ window.OdOrderKanban = {
       return order_.concat(item_).concat(claim_).concat(citem_).concat(dliv_);
     });
 
+    /* ##### [06-B] 카드 액션 버튼 정의 ############################################# */
+
+    /* 주문항목 현재 상태 → 다음 가능한 버튼 목록 */
+    const fnOrderItemActions = function (item) {
+      var st = item.orderItemStatusCd || item.order_item_status_cd || '';
+      var locked = fnSettleLockState(item.orderItemId || item.order_item_id) === 'blocked';
+      if (locked) return [];
+      var MAP = {
+        ORDERED:   [{ key: 'PAID',      label: '결제확인', cls: 'act-forward', side: 'right' }],
+        PAID:      [{ key: 'PREPARING', label: '준비시작', cls: 'act-forward', side: 'right' }],
+        PREPARING: [{ key: 'SHIPPING',  label: '배송처리', cls: 'act-forward', side: 'right' },
+                    { key: 'CANCELLED', label: '취소',      cls: 'act-danger',  side: 'left'  }],
+        SHIPPING:  [{ key: 'DELIVERED', label: '배송완료', cls: 'act-forward', side: 'right' }],
+        DELIVERED: [{ key: 'CONFIRMED', label: '구매확정', cls: 'act-forward', side: 'right' }],
+      };
+      return MAP[st] || [];
+    };
+
+    /* 클레임 현재 상태 → 다음 가능한 버튼 목록 */
+    const fnClaimActions = function (claim) {
+      var tk  = fnClaimTypeKey(claim);
+      var st  = claim.claimStatusCd || claim.claim_status_cd || '';
+      var dst = claim.exchangeDlivStatusCd || claim.exchange_dliv_status_cd
+              || claim.dlivStatusCd || claim.dliv_status_cd || '';
+      if (tk === 'CANCEL') {
+        var MAP_C = {
+          REQUESTED: [{ key: 'APPROVED',  label: '취소승인', cls: 'act-forward', side: 'right' },
+                      { key: 'CANCELLED', label: '거절',      cls: 'act-danger',  side: 'left'  }],
+          APPROVED:  [{ key: 'COMPLT',    label: '취소완료', cls: 'act-forward', side: 'right' }],
+        };
+        return MAP_C[st] || [];
+      }
+      if (tk === 'RETURN') {
+        var MAP_R = {
+          REQUESTED:   [{ key: 'APPROVED',    label: '수거예약',   cls: 'act-forward', side: 'right' },
+                        { key: 'CANCELLED',   label: '거절',        cls: 'act-danger',  side: 'left'  }],
+          APPROVED:    [{ key: 'IN_PICKUP',   label: '수거시작',   cls: 'act-forward', side: 'right' },
+                        { key: 'REQUESTED',   label: '요청으로', cls: 'act-back',    side: 'left'  }],
+          IN_PICKUP:   [{ key: 'PROCESSING',  label: '입고완료',   cls: 'act-forward', side: 'right' },
+                        { key: 'APPROVED',    label: '수거예정', cls: 'act-back',    side: 'left'  }],
+          PROCESSING:  [{ key: 'REFUND_WAIT', label: '검수완료',   cls: 'act-forward', side: 'right' },
+                        { key: 'CANCELLED',   label: '검수불합격',  cls: 'act-danger',  side: 'left'  }],
+          REFUND_WAIT: [{ key: 'COMPLT',      label: '환불처리',   cls: 'act-forward', side: 'right' },
+                        { key: 'PROCESSING',  label: '검수중',   cls: 'act-back',    side: 'left'  }],
+        };
+        return MAP_R[st] || [];
+      }
+      if (tk === 'EXCHANGE') {
+        var MAP_E1 = {
+          REQUESTED: [{ key: 'APPROVED',   label: '수거예약',      cls: 'act-forward', side: 'right' },
+                      { key: 'CANCELLED',  label: '거절',           cls: 'act-danger',  side: 'left'  }],
+          APPROVED:  [{ key: 'IN_PICKUP',  label: '수거시작',      cls: 'act-forward', side: 'right' },
+                      { key: 'REQUESTED',  label: '요청으로',    cls: 'act-back',    side: 'left'  }],
+          IN_PICKUP: [{ key: 'DLIV_READY', label: '입고→배송준비', cls: 'act-forward', side: 'right' },
+                      { key: 'APPROVED',   label: '수거예정',    cls: 'act-back',    side: 'left'  }],
+        };
+        var MAP_E2 = {
+          READY:      [{ key: 'DLIV_IN_TRANSIT', label: '배송시작', cls: 'act-forward', side: 'right' }],
+          IN_TRANSIT: [{ key: 'DLIV_DELIVERED',  label: '배송완료', cls: 'act-forward', side: 'right' },
+                       { key: 'DLIV_READY',      label: '배송준비', cls: 'act-back', side: 'left'  }],
+          DELIVERED:  [{ key: 'COMPLT',           label: '교환완료', cls: 'act-forward', side: 'right' },
+                       { key: 'DLIV_IN_TRANSIT',  label: '배송중', cls: 'act-back',   side: 'left'  }],
+        };
+        return (MAP_E1[st] || []).concat(MAP_E2[dst] || []);
+      }
+      return [];
+    };
+
     /* ##### [07] return ############################################################ */
 
     return {
@@ -874,7 +998,9 @@ window.OdOrderKanban = {
       cfIdChips, fnIsHlId, handleHlIdValue, handleHlIdClear,
       handleDragStart, handleDragEnd, handleDragOver, handleDragLeave,
       handleDropOrderItem, handleDropClaim,
+      fnOrderItemActions, fnClaimActions,
       handleChangeOrderItemStatus, handleChangeClaimStatus,
+      memoDialog, handleMemoDialogOk, handleMemoDialogCancel,
       handleClose,
       fnItemHasDliv, fnItemHasSettleClosed, fnItemHasVoucher,
       handleItemDlivIconClick, handleItemSettleIconClick, handleItemVoucherIconClick,
@@ -911,19 +1037,6 @@ window.OdOrderKanban = {
     <button class="btn-reset" @click="handleSearchReset">초기화</button>
   </div>
 
-  <!-- ③ 강조표시 -->
-  <div class="od-kanban-hl-row">
-    <span class="od-kanban-hl-row-label">강조 표시</span>
-    <span v-if="hlClaimId" class="od-kanban-hl-tag">
-      🔵 {{ hlClaimId }}
-      <button @click="handleClearHlClaim">✕</button>
-    </span>
-    <span v-else-if="hlOrderItemId" class="od-kanban-hl-tag">
-      🔵 {{ hlOrderItemId }}
-      <button @click="handleClearHlOrderItem">✕</button>
-    </span>
-    <span v-else style="font-size:11px;color:#cbd5e1;">없음 — 클레임번호로 조회하면 자동 설정됩니다</span>
-  </div>
 
   <!-- 로딩 -->
   <div v-if="uiState.loading" class="od-kanban-loading">⏳ 불러오는 중...</div>
@@ -950,8 +1063,9 @@ window.OdOrderKanban = {
         :title="uiState.idPanelOpen ? 'ID 패널 접기' : 'ID 패널 펼치기'">
         🏷 {{ uiState.idPanelOpen ? '▲' : '▼' }}
       </button>
-      <button v-if="Object.keys(uiState.hlIdValues).length" class="od-kanban-id-toggle"
-        style="color:#ef4444;border:1px solid #fca5a5;background:#fff1f2;"
+      <button class="od-kanban-id-toggle"
+        :disabled="!Object.keys(uiState.hlIdValues).length"
+        :style="Object.keys(uiState.hlIdValues).length ? 'color:#ef4444;border:1px solid #fca5a5;background:#fff1f2;' : 'color:#cbd5e1;border:1px solid #e2e8f0;background:#f8fafc;cursor:default;'"
         @click="handleHlIdClear" title="강조 전체 해제">✕ 해제</button>
       <div v-if="uiState.idPanelOpen" class="od-kanban-id-chips">
         <span v-for="chip in cfIdChips" :key="chip.val"
@@ -966,7 +1080,6 @@ window.OdOrderKanban = {
     <div class="od-kanban-section kanban-theme-order">
       <div class="od-kanban-section-title-bar" style="display:flex;align-items:center;gap:8px;">
         <span style="font-size:14px;font-weight:800;color:#15803d;">🟢 주문</span>
-        <span v-if="hlOrderItemId" class="od-kanban-hl-badge">ID 강조 중</span>
       </div>
 
       <div v-if="!orderItems.length" class="od-kanban-empty">주문항목이 없습니다.</div>
@@ -1022,6 +1135,21 @@ window.OdOrderKanban = {
                     :style="fnIsHlId(item.dlivId || item.dliv_id) ? 'outline:2px solid #ea580c;background:#ffedd5;border-radius:4px;opacity:1;' : ''"
                   >🚚 {{ item.dlivId || item.dliv_id || '' }}</div>
                 </div>
+                <div v-if="!cfReadonly &amp;&amp; fnOrderItemActions(item).length" class="od-kanban-card-actions">
+                  <div class="od-kanban-card-actions-left">
+                    <button v-for="act in fnOrderItemActions(item).filter(function(a){return a.side==='left';})" :key="act.key"
+                      :class="['od-kanban-act-btn', act.cls]"
+                      @click.stop="handleChangeOrderItemStatus(item, act.key)"
+                    >◃ {{ act.label }}</button>
+                  </div>
+                  <div class="od-kanban-card-actions-divider"></div>
+                  <div class="od-kanban-card-actions-right">
+                    <button v-for="act in fnOrderItemActions(item).filter(function(a){return a.side==='right';})" :key="act.key"
+                      :class="['od-kanban-act-btn', act.cls]"
+                      @click.stop="handleChangeOrderItemStatus(item, act.key)"
+                    >{{ act.label }} ▹</button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -1048,7 +1176,6 @@ window.OdOrderKanban = {
           <span style="font-family:monospace;font-size:11px;font-weight:700;opacity:.75;"
             :style="fnIsHlId(claim.claimId || claim.claim_id) ? 'outline:2px solid #db2777;background:#fce7f3;border-radius:4px;opacity:1;' : ''"
           >{{ claim.claimId || claim.claim_id || '' }}</span>
-          <span v-if="fnIsHlClaim(claim)" class="od-kanban-hl-badge">강조</span>
           <span style="font-size:11px;color:#475569;font-weight:600;">{{ claim.prodNm || claim.prod_nm || '' }}</span>
           <span style="font-size:10px;color:#94a3b8;margin-left:auto;">{{ (claim.requestDate || claim.request_date || claim.regDate || claim.reg_date || '').slice(0, 10) }}</span>
         </div>
@@ -1115,6 +1242,21 @@ window.OdOrderKanban = {
                         :style="fnIsHlId(claim.dlivId || claim.dliv_id || claim.exchangeDlivId || claim.exchange_dliv_id) ? 'outline:2px solid #ea580c;background:#ffedd5;border-radius:4px;opacity:1;' : ''"
                       >🚚 {{ claim.dlivId || claim.dliv_id || claim.exchangeDlivId || claim.exchange_dliv_id || '' }}</div>
                     </div>
+                    <div v-if="!cfReadonly &amp;&amp; fnClaimActions(claim).length" class="od-kanban-card-actions">
+                      <div class="od-kanban-card-actions-left">
+                        <button v-for="act in fnClaimActions(claim).filter(function(a){return a.side==='left';})" :key="act.key"
+                          :class="['od-kanban-act-btn', act.cls]"
+                          @click.stop="handleChangeClaimStatus(claim, act.key)"
+                        >◃ {{ act.label }}</button>
+                      </div>
+                      <div class="od-kanban-card-actions-divider"></div>
+                      <div class="od-kanban-card-actions-right">
+                        <button v-for="act in fnClaimActions(claim).filter(function(a){return a.side==='right';})" :key="act.key"
+                          :class="['od-kanban-act-btn', act.cls]"
+                          @click.stop="handleChangeClaimStatus(claim, act.key)"
+                        >{{ act.label }} ▹</button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1129,6 +1271,31 @@ window.OdOrderKanban = {
     </template>
 
   </template>
+
+  <!-- ── 메모 확인 다이얼로그 ── -->
+  <teleport to="body">
+    <div v-if="memoDialog.show" class="od-kanban-memo-overlay" @mousedown.self="handleMemoDialogCancel">
+      <div class="od-kanban-memo-box">
+        <div class="od-kanban-memo-hdr">
+          <span class="od-kanban-memo-hdr-icon">💾</span>
+          <span class="od-kanban-memo-title">{{ memoDialog.title }}</span>
+          <button class="od-kanban-memo-hdr-close" @click="handleMemoDialogCancel" title="닫기">✕</button>
+        </div>
+        <div class="od-kanban-memo-body">
+          <div class="od-kanban-memo-desc">{{ memoDialog.desc }}</div>
+          <div class="od-kanban-memo-label">메모 (선택)</div>
+          <textarea class="od-kanban-memo-ta" v-model="memoDialog.memo"
+            placeholder="상태 변경 사유나 메모를 입력하세요..."
+            @keydown.ctrl.enter="handleMemoDialogOk"></textarea>
+          <div class="od-kanban-memo-actions">
+            <button class="od-kanban-memo-btn-cancel" @click="handleMemoDialogCancel">취소</button>
+            <button class="od-kanban-memo-btn-ok" @click="handleMemoDialogOk">확인</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </teleport>
+
 </div>
 `,
 };

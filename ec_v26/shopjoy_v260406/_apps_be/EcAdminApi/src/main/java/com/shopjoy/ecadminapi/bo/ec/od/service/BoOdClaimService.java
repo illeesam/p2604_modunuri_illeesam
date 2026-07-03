@@ -3,9 +3,11 @@ package com.shopjoy.ecadminapi.bo.ec.od.service;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimItemDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdClaim;
+import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdhClaimStatusHist;
 import com.shopjoy.ecadminapi.base.ec.od.repository.OdClaimRepository;
 import com.shopjoy.ecadminapi.base.ec.od.service.OdClaimItemService;
 import com.shopjoy.ecadminapi.base.ec.od.service.OdClaimService;
+import com.shopjoy.ecadminapi.base.ec.od.service.OdhClaimStatusHistService;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
 import jakarta.persistence.EntityManager;
@@ -32,6 +34,7 @@ public class BoOdClaimService {
     private final OdClaimService odClaimService;
     private final OdClaimItemService odClaimItemService;
     private final OdClaimRepository odClaimRepository;
+    private final OdhClaimStatusHistService odhClaimStatusHistService;
 
     @PersistenceContext
     private EntityManager em;
@@ -98,19 +101,39 @@ public class BoOdClaimService {
     @Transactional public void delete(String id) { odClaimService.delete(id); }
     @Transactional public void saveListBase(List<OdClaim> rows) { odClaimService.saveListBase(rows); }
 
-    /** saveOneStatus — 단건 claimStatusCd 변경 (이력 보존). row: claimId + claimStatusCd */
+    /** saveOneStatus — 단건 claimStatusCd 변경 + 상태이력 INSERT + od_claim.memo 업데이트.
+     *  row: claimId + claimStatusCd + memo(선택) */
     @Transactional
     public OdClaimDto.Item saveOneStatus(OdClaim row) {
         CmUtil.requireId(row == null ? null : row.getClaimId(), "claimId", this);
         OdClaim entity = odClaimRepository.findById(row.getClaimId())
             .orElseThrow(() -> new CmBizException("존재하지 않습니다: " + row.getClaimId() + "::" + CmUtil.svcCallerInfo(this)));
-        entity.setClaimStatusCdBefore(entity.getClaimStatusCd());
+        String prevStatus = entity.getClaimStatusCd();
+        entity.setClaimStatusCdBefore(prevStatus);
         entity.setClaimStatusCd(row.getClaimStatusCd());
-        entity.setUpdBy(SecurityUtil.getAuthUser().authId());
+        /* 메모가 전달된 경우 od_claim.memo 도 업데이트 */
+        if (row.getMemo() != null && !row.getMemo().isBlank()) {
+            entity.setMemo(row.getMemo());
+        }
+        String authId = SecurityUtil.getAuthUser().authId();
+        entity.setUpdBy(authId);
         entity.setUpdDate(LocalDateTime.now());
         OdClaim saved = odClaimRepository.save(entity);
         if (saved == null) throw new CmBizException("데이터 저장에 실패했습니다." + "::" + CmUtil.svcCallerInfo(this));
         em.flush();
+
+        /* 상태 변경 이력 INSERT */
+        OdhClaimStatusHist hist = new OdhClaimStatusHist();
+        hist.setSiteId(entity.getSiteId());
+        hist.setClaimId(entity.getClaimId());
+        hist.setOrderId(entity.getOrderId());
+        hist.setClaimStatusCdBefore(prevStatus);
+        hist.setClaimStatusCd(row.getClaimStatusCd());
+        hist.setMemo(row.getMemo());
+        hist.setChgUserId(authId);
+        hist.setChgDate(LocalDateTime.now());
+        odhClaimStatusHistService.create(hist);
+
         return odClaimService.getById(row.getClaimId());
     }
 
