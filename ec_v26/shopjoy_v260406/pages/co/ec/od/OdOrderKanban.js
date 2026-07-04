@@ -169,6 +169,41 @@
     '.od-kanban-hl-tag button:hover{color:#1d4ed8;}',
     /* ── 기타 ── */
     '.od-kanban-empty{color:#cbd5e1;text-align:center;font-size:11px;padding:20px 0;}',
+    /* ── 검색 picker 버튼 ── */
+    '.od-kanban-pick-btn{border:1px solid #e2e8f0;background:#f1f5f9;border-radius:6px;padding:4px 8px;font-size:12px;cursor:pointer;color:#475569;line-height:1.4;flex-shrink:0;transition:background .1s;}',
+    '.od-kanban-pick-btn:hover{background:#e2e8f0;color:#1e293b;}',
+    /* ── picker 모달 ── */
+    '.od-kanban-pick-overlay{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:9990;display:flex;align-items:center;justify-content:center;}',
+    '.od-kanban-pick-box{background:#fff;border-radius:14px;box-shadow:0 8px 40px rgba(0,0,0,.22);width:840px;max-width:95vw;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;}',
+    '.od-kanban-pick-hdr{display:flex;align-items:center;gap:10px;padding:13px 18px 12px;background:linear-gradient(135deg,#fff0f4,#ffe4ec,#ffd5e1);border-bottom:1px solid #fbc4d4;flex-shrink:0;}',
+    '.od-kanban-pick-hdr-title{font-size:14px;font-weight:700;color:#1e293b;flex:1;}',
+    '.od-kanban-pick-hdr-close{background:none;border:none;cursor:pointer;font-size:16px;color:#94a3b8;padding:2px 4px;border-radius:6px;line-height:1;transition:background .1s,color .1s;}',
+    '.od-kanban-pick-hdr-close:hover{background:rgba(239,68,68,.12);color:#ef4444;}',
+    '.od-kanban-pick-body{padding:14px 18px;display:flex;flex-direction:column;gap:10px;flex:1;overflow:hidden;}',
+    '.od-kanban-pick-search{display:flex;flex-direction:column;gap:0;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;flex-shrink:0;}',
+    '.od-kanban-pick-search-row{display:flex;align-items:center;gap:0;padding:7px 12px;border-bottom:1px solid #e2e8f0;}',
+    '.od-kanban-pick-search-row:last-child{border-bottom:none;}',
+    '.od-kanban-pick-search-lbl{font-size:11px;font-weight:600;color:#64748b;white-space:nowrap;min-width:44px;padding-right:8px;}',
+    '.od-kanban-pick-search-fields{display:flex;gap:6px;align-items:center;flex:1;}',
+    '.od-kanban-pick-search input{border:1px solid #e2e8f0;border-radius:5px;padding:5px 9px;font-size:12px;outline:none;background:#fff;height:28px;box-sizing:border-box;}',
+    '.od-kanban-pick-search input[type=date]{font-size:12px;}',
+    '.od-kanban-pick-search input:focus{border-color:#6366f1;box-shadow:0 0 0 2px rgba(99,102,241,.12);}',
+    '.od-kanban-pick-search button{border:none;border-radius:5px;padding:5px 16px;font-size:12px;font-weight:700;cursor:pointer;background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;white-space:nowrap;height:28px;}',
+    '.od-kanban-pick-table{min-height:260px;flex:1;overflow-y:auto;border:1px solid #e2e8f0;border-radius:8px;}',
+    '.od-kanban-pick-pager{display:flex;align-items:center;justify-content:center;gap:4px;padding:8px 0 2px;flex-shrink:0;}',
+    '.od-kanban-pick-pager-btn{border:1px solid #e2e8f0;background:#fff;border-radius:5px;padding:3px 9px;font-size:12px;cursor:pointer;color:#475569;line-height:1.4;}',
+    '.od-kanban-pick-pager-btn:hover{background:#f1f5f9;}',
+    '.od-kanban-pick-pager-btn.active{background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;border-color:#6366f1;font-weight:700;}',
+    '.od-kanban-pick-pager-btn:disabled{opacity:.35;cursor:default;}',
+    '.od-kanban-pick-pager-info{font-size:11px;color:#94a3b8;margin:0 6px;}',
+    '.od-kanban-pick-table table{width:100%;border-collapse:collapse;font-size:12px;}',
+    '.od-kanban-pick-table th{background:#f8fafc;padding:7px 10px;text-align:left;font-weight:700;color:#64748b;font-size:11px;border-bottom:1px solid #e2e8f0;position:sticky;top:0;}',
+    '.od-kanban-pick-table td{padding:7px 10px;border-bottom:1px solid #f1f5f9;color:#1e293b;vertical-align:middle;}',
+    '.od-kanban-pick-table tr:last-child td{border-bottom:none;}',
+    '.od-kanban-pick-table tr:hover td{background:#f0f9ff;cursor:pointer;}',
+    '.od-kanban-pick-row-select{background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;border:none;border-radius:5px;padding:2px 8px;font-size:11px;font-weight:700;cursor:pointer;}',
+    '.od-kanban-pick-empty{text-align:center;color:#cbd5e1;padding:32px;font-size:12px;}',
+    '.od-kanban-pick-loading{text-align:center;color:#94a3b8;padding:24px;font-size:12px;}',
     /* ── 카드 액션 버튼 ── */
     /* ── 메모 다이얼로그 ── */
     '.od-kanban-memo-overlay{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:9999;display:flex;align-items:center;justify-content:center;}',
@@ -285,6 +320,98 @@ window.OdOrderKanban = {
       orderItems.splice(0, orderItems.length);
       claims.splice(0, claims.length);
       settleRaws.splice(0, settleRaws.length);
+    };
+
+    /* ── picker 모달 ── */
+    const pickerState = reactive({
+      show: false,
+      type: '',       // 'order' | 'claim'
+      keyword: '',
+      memberNm: '',
+      dateStart: '',
+      dateEnd: '',
+      loading: false,
+      rows: [],
+      pageNo: 1,
+      pageSize: 15,
+      pageTotalCount: 0,
+      pageTotalPage: 1,
+    });
+
+    const handlePickerOpen = async (type) => {
+      pickerState.type           = type;
+      pickerState.keyword        = '';
+      pickerState.memberNm       = '';
+      pickerState.dateStart      = '';
+      pickerState.dateEnd        = '';
+      pickerState.rows           = [];
+      pickerState.pageNo         = 1;
+      pickerState.pageTotalCount = 0;
+      pickerState.pageTotalPage  = 1;
+      pickerState.show           = true;
+      await handlePickerSearch();
+    };
+
+    const handlePickerSearch = async (pageNo) => {
+      if (!window.boApiSvc) return;
+      if (pageNo) pickerState.pageNo = pageNo;
+      pickerState.loading = true;
+      pickerState.rows = [];
+      try {
+        const params = {
+          searchValue: (pickerState.keyword || '').trim(),
+          memberNm: pickerState.memberNm,
+          dateStart: pickerState.dateStart,
+          dateEnd: pickerState.dateEnd,
+          pageNo: pickerState.pageNo,
+          pageSize: pickerState.pageSize,
+        };
+        const svc = pickerState.type === 'order'
+          ? boApiSvc.odOrder.getPage(params, '주문칸반', '주문선택')
+          : boApiSvc.odClaim.getPage(params, '주문칸반', '클레임선택');
+        const res = await svc;
+        const d = (res.data && res.data.data) || {};
+        pickerState.rows           = d.pageList       || [];
+        pickerState.pageTotalCount = d.pageTotalCount || 0;
+        pickerState.pageTotalPage  = d.pageTotalPage  || 1;
+      } catch (_) { /* 무시 */ }
+      pickerState.loading = false;
+    };
+
+    const handlePickerSelect = async (row) => {
+      pickerState.show = false;
+      if (pickerState.type === 'order') {
+        const oid = row.orderId || row.order_id;
+        searchParam.orderId  = oid;
+        searchParam.claimId  = '';
+        currentOrderId.value = oid;
+        _ci.value = null;
+        _oi.value = null;
+        await handleLoadOrder();
+      } else {
+        const cid = row.claimId || row.claim_id;
+        const oid = row.orderId || row.order_id;
+        searchParam.claimId  = cid;
+        searchParam.orderId  = oid || '';
+        _ci.value = cid;
+        _oi.value = null;
+        if (oid) {
+          currentOrderId.value = oid;
+          await handleLoadOrder();
+        } else {
+          /* orderId 없으면 클레임 단건 조회로 보강 */
+          try {
+            const cr = await boApiSvc.odClaim.getById(cid, '주문칸반', '클레임조회');
+            const cd = (cr.data && cr.data.data) || {};
+            const resolvedOid = cd.orderId || cd.order_id;
+            if (resolvedOid) {
+              searchParam.orderId  = resolvedOid;
+              currentOrderId.value = resolvedOid;
+              await handleLoadOrder();
+            }
+          } catch (_) { /* 무시 */ }
+        }
+      }
     };
 
     /* toast / confirm fallback */
@@ -408,53 +535,39 @@ window.OdOrderKanban = {
       settleRaws.splice(0, settleRaws.length);
       try {
         const isBo = props.mode !== 'fo';
-        const orderUrl = isBo
-          ? '/bo/ec/od/order/' + currentOrderId.value
-          : '/fo/ec/od/order/' + currentOrderId.value;
-        const res = await apiInst.value.get(orderUrl, isBo ? coUtil.cofApiHdr('주문칸반', '주문조회') : undefined);
-        const d   = (res.data && res.data.data) || res.data || {};
-        Object.assign(order, d);
-        const items = d.orderItems || d.items || [];
-        orderItems.splice(0, orderItems.length, ...items);
 
-        /* 클레임 — BO: boApiSvc.odClaim.getPage로 별도 조회 */
         if (isBo && window.boApiSvc) {
-          try {
-            const cr = await boApiSvc.odClaim.getPage({ orderId: currentOrderId.value, pageSize: 50 }, '주문칸반', '클레임조회');
-            const cd = (cr.data && cr.data.data) || {};
-            const claimList = cd.pageList || cd.list || [];
-            claims.splice(0, claims.length, ...claimList);
+          /* BO: 칸반 통합 API 1회 호출 — 주문 + 클레임(claimItems 포함) */
+          const kr = await boApiSvc.odOrder.getKanban(currentOrderId.value, '주문칸반', '칸반조회');
+          const kd = (kr.data && kr.data.data) || {};
+          const od = kd.order || {};
+          Object.assign(order, od);
+          orderItems.splice(0, orderItems.length, ...(od.orderItems || []));
 
-            /* 클레임 상세 병렬 조회 → orderItemId 보강 (페이지 응답에 미포함) */
-            if (claimList.length) {
-              Promise.all(claimList.map(function (c) {
-                var cid = c.claimId || c.claim_id;
-                return boApiSvc.odClaim.getById(cid, '주문칸반', '클레임상세')
-                  .then(function (dr) {
-                    var dd = (dr.data && dr.data.data) || {};
-                    var items = dd.claimItems || dd.claim_items || [];
-                    if (items.length) {
-                      var oid = items[0].orderItemId || items[0].order_item_id || '';
-                      var citemId = items[0].claimItemId || items[0].claim_item_id || '';
-                      if (oid) {
-                        if (Object.prototype.hasOwnProperty.call(c, 'orderItemId')) c.orderItemId = oid;
-                        else c.order_item_id_ref = oid;
-                        c._orderItemId = oid;
-                      }
-                      if (citemId) c._claimItemId = citemId; /* 클레임항목ID */
-                    }
-                  }).catch(function () { /* 상세 조회 실패 무시 */ });
-              }));
+          /* claimItems → _orderItemId / _claimItemId 보강 */
+          const claimList = kd.claims || [];
+          claimList.forEach(function (c) {
+            var items = c.claimItems || [];
+            if (items.length) {
+              c._orderItemId  = items[0].orderItemId  || items[0].order_item_id  || '';
+              c._claimItemId  = items[0].claimItemId  || items[0].claim_item_id  || '';
             }
-          } catch (_) { /* 클레임 조회 실패 무시 */ }
+          });
+          claims.splice(0, claims.length, ...claimList);
 
-          /* 정산 원장 — orderId 기준 조회 (BO 전용) */
+          /* 정산 원장 — 별도 조회 (BO 전용, 실패해도 무시) */
           try {
             const sr = await boApiSvc.stSettleRaw.getByOrderId(currentOrderId.value, '주문칸반', '정산조회');
             const sd = (sr.data && sr.data.data) || {};
             settleRaws.splice(0, settleRaws.length, ...(sd.pageList || sd.list || []));
-          } catch (_) { /* 정산 조회 실패 무시 (권한 없을 수도 있음) */ }
+          } catch (_) { /* 정산 조회 실패 무시 */ }
+
         } else {
+          /* FO: 기존 단일 주문 조회 */
+          const res = await apiInst.value.get('/fo/ec/od/order/' + currentOrderId.value);
+          const d   = (res.data && res.data.data) || res.data || {};
+          Object.assign(order, d);
+          orderItems.splice(0, orderItems.length, ...(d.orderItems || d.items || []));
           claims.splice(0, claims.length, ...(d.claims || []));
         }
       } catch (e) {
@@ -1001,6 +1114,7 @@ window.OdOrderKanban = {
       fnOrderItemActions, fnClaimActions,
       handleChangeOrderItemStatus, handleChangeClaimStatus,
       memoDialog, handleMemoDialogOk, handleMemoDialogCancel,
+      pickerState, handlePickerOpen, handlePickerSearch, handlePickerSelect,
       handleClose,
       fnItemHasDliv, fnItemHasSettleClosed, fnItemHasVoucher,
       handleItemDlivIconClick, handleItemSettleIconClick, handleItemVoucherIconClick,
@@ -1025,13 +1139,15 @@ window.OdOrderKanban = {
   <div class="od-kanban-search">
     <div class="od-kanban-search-group">
       <span class="od-kanban-search-label">주문번호</span>
-      <input v-model="searchParam.orderId" placeholder="주문번호 입력" style="width:160px;"
+      <input v-model="searchParam.orderId" placeholder="주문번호 입력" style="width:150px;"
         @keyup.enter="handleSearch" />
+      <button class="od-kanban-pick-btn" @click="handlePickerOpen('order')" title="주문 선택">🔎</button>
     </div>
     <div class="od-kanban-search-group">
       <span class="od-kanban-search-label">클레임번호</span>
-      <input v-model="searchParam.claimId" placeholder="클레임번호 입력" style="width:180px;font-family:monospace;"
+      <input v-model="searchParam.claimId" placeholder="클레임번호 입력" style="width:160px;font-family:monospace;"
         @keyup.enter="handleSearch" />
+      <button class="od-kanban-pick-btn" @click="handlePickerOpen('claim')" title="클레임 선택">🔎</button>
     </div>
     <button class="btn-search" @click="handleSearch">🔍 조회</button>
     <button class="btn-reset" @click="handleSearchReset">초기화</button>
@@ -1271,6 +1387,88 @@ window.OdOrderKanban = {
     </template>
 
   </template>
+
+  <!-- ── picker 모달 ── -->
+  <teleport to="body">
+    <div v-if="pickerState.show" class="od-kanban-pick-overlay" @mousedown.self="pickerState.show=false">
+      <div class="od-kanban-pick-box">
+        <div class="od-kanban-pick-hdr">
+          <span style="font-size:18px;line-height:1;">{{ pickerState.type === 'order' ? '📦' : '🏷' }}</span>
+          <span class="od-kanban-pick-hdr-title">{{ pickerState.type === 'order' ? '주문 선택' : '클레임 선택' }}</span>
+          <button class="od-kanban-pick-hdr-close" @click="pickerState.show=false">✕</button>
+        </div>
+        <div class="od-kanban-pick-body">
+          <div class="od-kanban-pick-search">
+            <div class="od-kanban-pick-search-row">
+              <span class="od-kanban-pick-search-lbl">검색어</span>
+              <div class="od-kanban-pick-search-fields">
+                <input v-model="pickerState.keyword"
+                  :placeholder="pickerState.type === 'order' ? '주문번호 입력...' : '클레임번호 / 주문번호 입력...'"
+                  @keyup.enter="handlePickerSearch" style="flex:2;min-width:120px;" />
+                <input v-model="pickerState.memberNm" placeholder="회원명"
+                  @keyup.enter="handlePickerSearch" style="flex:1;min-width:70px;" />
+              </div>
+            </div>
+            <div class="od-kanban-pick-search-row">
+              <span class="od-kanban-pick-search-lbl">생성일</span>
+              <div class="od-kanban-pick-search-fields">
+                <input type="date" v-model="pickerState.dateStart" @keyup.enter="handlePickerSearch" style="flex:1;" />
+                <span style="color:#94a3b8;font-size:13px;">~</span>
+                <input type="date" v-model="pickerState.dateEnd" @keyup.enter="handlePickerSearch" style="flex:1;" />
+                <button @click="handlePickerSearch">조회</button>
+              </div>
+            </div>
+          </div>
+          <div class="od-kanban-pick-table">
+            <div v-if="pickerState.loading" class="od-kanban-pick-loading">⏳ 조회 중...</div>
+            <div v-else-if="!pickerState.rows.length" class="od-kanban-pick-empty">조회 결과가 없습니다.</div>
+            <table v-else>
+              <thead>
+                <tr v-if="pickerState.type === 'order'">
+                  <th>주문번호</th><th>회원</th><th>결제금액</th><th>주문상태</th><th>주문일시</th><th></th>
+                </tr>
+                <tr v-else>
+                  <th>클레임번호</th><th>유형</th><th>주문번호</th><th>회원</th><th>상태</th><th>생성일시</th><th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="row in pickerState.rows" :key="row.orderId || row.claimId" @click="handlePickerSelect(row)">
+                  <template v-if="pickerState.type === 'order'">
+                    <td style="font-family:monospace;font-size:11px;">{{ row.orderId }}</td>
+                    <td>{{ row.memberNm || '-' }}</td>
+                    <td style="text-align:right;">{{ row.totalAmt != null ? row.totalAmt.toLocaleString() + '원' : '-' }}</td>
+                    <td><span style="font-size:11px;color:#64748b;">{{ row.orderStatusCdNm || row.orderStatusCd }}</span></td>
+                    <td style="font-size:11px;color:#94a3b8;white-space:nowrap;">{{ row.orderDate ? String(row.orderDate).slice(0,16).replace('T',' ') : '-' }}</td>
+                  </template>
+                  <template v-else>
+                    <td style="font-family:monospace;font-size:11px;">{{ row.claimId }}</td>
+                    <td><span style="font-size:11px;">{{ row.claimTypeCd === 'RETURN' ? '반품' : row.claimTypeCd === 'CANCEL' ? '취소' : row.claimTypeCd === 'EXCHANGE' ? '교환' : row.claimTypeCd }}</span></td>
+                    <td style="font-family:monospace;font-size:11px;">{{ row.orderId }}</td>
+                    <td>{{ row.memberNm || '-' }}</td>
+                    <td><span style="font-size:11px;color:#64748b;">{{ row.claimStatusCdNm || row.claimStatusCd }}</span></td>
+                    <td style="font-size:11px;color:#94a3b8;white-space:nowrap;">{{ row.requestDate ? String(row.requestDate).slice(0,16).replace('T',' ') : (row.regDate ? String(row.regDate).slice(0,16).replace('T',' ') : '-') }}</td>
+                  </template>
+                  <td><button class="od-kanban-pick-row-select">선택</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div v-if="pickerState.pageTotalPage > 1" class="od-kanban-pick-pager">
+            <button class="od-kanban-pick-pager-btn" :disabled="pickerState.pageNo <= 1" @click="handlePickerSearch(1)">«</button>
+            <button class="od-kanban-pick-pager-btn" :disabled="pickerState.pageNo <= 1" @click="handlePickerSearch(pickerState.pageNo - 1)">‹</button>
+            <template v-for="n in pickerState.pageTotalPage" :key="n">
+              <button v-if="n >= pickerState.pageNo - 2 &amp;&amp; n <= pickerState.pageNo + 2"
+                class="od-kanban-pick-pager-btn" :class="{ active: n === pickerState.pageNo }"
+                @click="handlePickerSearch(n)">{{ n }}</button>
+            </template>
+            <button class="od-kanban-pick-pager-btn" :disabled="pickerState.pageNo >= pickerState.pageTotalPage" @click="handlePickerSearch(pickerState.pageNo + 1)">›</button>
+            <button class="od-kanban-pick-pager-btn" :disabled="pickerState.pageNo >= pickerState.pageTotalPage" @click="handlePickerSearch(pickerState.pageTotalPage)">»</button>
+            <span class="od-kanban-pick-pager-info">{{ pickerState.pageNo }} / {{ pickerState.pageTotalPage }}p · 총 {{ pickerState.pageTotalCount }}건</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </teleport>
 
   <!-- ── 메모 확인 다이얼로그 ── -->
   <teleport to="body">

@@ -108,6 +108,13 @@ public class OdOrderDto {
         private List<OdOrderItemDto.SaveItem> orderItems;  // 주문항목
     }
 
+    /** Kanban — 칸반 보드 통합 응답 (주문 + 클레임 목록(claimItems 포함) + 정산원장) */
+    @Getter @Setter @NoArgsConstructor
+    public static class Kanban {
+        private Item                      order;       // 주문 상세 (orderItems/orderPays/orderDlivs 포함)
+        private List<OdClaimDto.Item>     claims;      // 클레임 목록 (각 클aimItems 포함)
+    }
+
     /** ExtraPayRequest — 추가결제 요청 (배송비 등 추가 비용을 고객에게 요청) */
     @Getter @Setter @NoArgsConstructor
     public static class ExtraPayRequest {

@@ -49,6 +49,12 @@ public class BoOdOrderController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
+    /** getKanban — 칸반 통합조회 (주문 + 클레임 목록 + claimItems 1회 응답) */
+    @GetMapping("/{id}/kanban")
+    public ResponseEntity<ApiResponse<OdOrderDto.Kanban>> getKanban(@PathVariable("id") String id) {
+        return ResponseEntity.ok(ApiResponse.ok(boOdOrderService.getKanban(id)));
+    }
+
     /** create — 생성 */
     @PostMapping
     public ResponseEntity<ApiResponse<OdOrder>> create(@RequestBody OdOrder body) {

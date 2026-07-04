@@ -164,6 +164,7 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
                 .where(
                     baseAndSiteId(search),
                     baseAndClaimId(search),
+                    baseAndOrderId(search),
                     baseAndMemberId(search),
                     baseAndClaimStatusCd(search),
                     baseAndClaimTypeCd(search),
@@ -193,6 +194,7 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
         BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndClaimId(search),
+                baseAndOrderId(search),
                 baseAndMemberId(search),
                 baseAndClaimStatusCd(search),
                 baseAndClaimTypeCd(search),
@@ -241,6 +243,12 @@ public class QOdClaimRepositoryImpl implements QOdClaimRepository {
     private BooleanExpression baseAndClaimId(OdClaimDto.Request search) {
         return search != null && StringUtils.hasText(search.getClaimId())
                 ? odClaim.claimId.eq(search.getClaimId()) : null;
+    }
+
+    /* orderId 정확 일치 */
+    private BooleanExpression baseAndOrderId(OdClaimDto.Request search) {
+        return search != null && StringUtils.hasText(search.getOrderId())
+                ? odClaim.orderId.eq(search.getOrderId()) : null;
     }
 
     /* memberId 정확 일치 */

@@ -1,5 +1,6 @@
 package com.shopjoy.ecadminapi.bo.ec.od.service;
 
+import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdDlivDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDiscntDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdOrderDto;
@@ -44,6 +45,7 @@ public class BoOdOrderService {
     private final OdPayService           odPayService;
     private final OdDlivService          odDlivService;
     private final OdOrderDiscntService   odOrderDiscntService;
+    private final BoOdClaimService       boOdClaimService;
 
     @PersistenceContext
     private EntityManager em;
@@ -53,6 +55,19 @@ public class BoOdOrderService {
         OdOrderDto.Item dto = odOrderService.getById(id);
         _itemFillRelations(dto);
         return dto;
+    }
+
+    /** 칸반 통합조회 — 주문(orderItems/orderPays/orderDlivs 포함) + 클레임 목록(claimItems 포함) 1회 응답 */
+    public OdOrderDto.Kanban getKanban(String orderId) {
+        OdOrderDto.Item order = getById(orderId);
+        OdClaimDto.Request claimReq = new OdClaimDto.Request();
+        claimReq.setOrderId(orderId);
+        claimReq.setPageSize(100);
+        List<OdClaimDto.Item> claims = boOdClaimService.getList(claimReq);
+        OdOrderDto.Kanban kanban = new OdOrderDto.Kanban();
+        kanban.setOrder(order);
+        kanban.setClaims(claims);
+        return kanban;
     }
     /* 목록조회 */
     public List<OdOrderDto.Item> getList(OdOrderDto.Request req) {

@@ -136,6 +136,7 @@ window.OdOrderMng = {
       if (cmd === 'orders-cellClick') {
         // 행 액션 버튼 (colKey='btn_*') — [수정]/[삭제] 등
         if (colKey === 'btn_row_edit') {
+          if (window._odOrderDtlState) window._odOrderDtlState.activeTab = 'items';
           detailPanel.selectedId = row.orderId; detailPanel.openMode = 'edit'; detailPanel.active = true; detailPanel.reloadTrigger++;
           return;
         }
@@ -148,6 +149,7 @@ window.OdOrderMng = {
         // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명
         const VIEW_COLS = ['__no__'];
         if ((e.col && e.col.link) || VIEW_COLS.includes(colKey)) {
+          if (window._odOrderDtlState) window._odOrderDtlState.activeTab = 'items';
           detailPanel.selectedId = row.orderId; detailPanel.openMode = 'view'; detailPanel.active = true; detailPanel.reloadTrigger++;
           return;
         }
