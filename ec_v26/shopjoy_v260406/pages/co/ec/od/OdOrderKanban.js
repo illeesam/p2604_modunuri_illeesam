@@ -865,11 +865,12 @@ window.OdOrderKanban = {
 
     /* ── 클레임 금액 계산 다이얼로그 ── */
     const calcDialog = reactive({
-      show:    false,
-      loading: false,
-      claimId: '',
-      claimType: '',
-      data:    null,  /* { order, claimItems, discounts } */
+      show:         false,
+      loading:      false,
+      claimId:      '',
+      claimType:    '',
+      previewItems: [],   /* memo-preview 시 직접 전달 항목 */
+      data:         null,
     });
 
     /* fnCalcClaimAmt — 클레임 대상 항목 기준 환불 예정 계산 */
@@ -920,9 +921,10 @@ window.OdOrderKanban = {
      */
     const handleOpenCalcDialog = async function (claimOrId) {
       if (claimOrId === 'memo-preview') {
-        /* 메모 다이얼로그 내 미리보기 — itemRows로 직접 계산 */
+        /* 메모 다이얼로그 내 미리보기 — itemRows로 직접 계산 → OdClaimCalcModal previewItems로 위임 */
         var previewItems = memoDialog.itemRows.filter(function (r) { return r.claimQty > 0; }).map(function (r) {
-          return { orderItemId: r.orderItemId, claimQty: r.claimQty, unitPrice: 0, itemAmt: 0 };
+          return { orderItemId: r.orderItemId, claimQty: r.claimQty, unitPrice: 0, itemAmt: 0,
+                   prodNm: (orderItems.find(function (it) { return (it.orderItemId || it.order_item_id) === r.orderItemId; }) || {}).prodNm || '' };
         });
         /* itemAmt 역산: orderItems에서 단가 조회 */
         previewItems.forEach(function (pi) {
@@ -933,13 +935,12 @@ window.OdOrderKanban = {
             pi.itemAmt   = price * pi.claimQty;
           }
         });
-        calcDialog.claimId   = '';
-        calcDialog.claimType = memoDialog.claimType;
-        calcDialog.data      = null;
-        calcDialog.loading   = false;
-        calcDialog.show      = true;
-        var calc = fnCalcClaimAmt({ claimItems: previewItems });
-        calcDialog.data = { claim: { claimItems: previewItems }, calc: calc };
+        calcDialog.claimId      = '';
+        calcDialog.claimType    = memoDialog.claimType;
+        calcDialog.previewItems = previewItems;
+        calcDialog.data         = null;
+        calcDialog.loading      = false;
+        calcDialog.show         = true;
         return;
       }
       var cid = '';
@@ -951,11 +952,12 @@ window.OdOrderKanban = {
         existClaim = claimOrId;
         cid = claimOrId.claimId || claimOrId.claim_id || '';
       }
-      calcDialog.claimId   = cid;
-      calcDialog.claimType = existClaim ? (existClaim.claimTypeCd || existClaim.claim_type_cd || '') : '';
-      calcDialog.data      = null;
-      calcDialog.loading   = true;
-      calcDialog.show      = true;
+      calcDialog.claimId      = cid;
+      calcDialog.claimType    = existClaim ? (existClaim.claimTypeCd || existClaim.claim_type_cd || '') : '';
+      calcDialog.previewItems = [];
+      calcDialog.data         = null;
+      calcDialog.loading      = true;
+      calcDialog.show         = true;
       try {
         /* 클레임 상세(claimItems 포함)가 이미 있으면 재사용, 없으면 API 조회 */
         var claimData = existClaim;
@@ -1917,114 +1919,8 @@ window.OdOrderKanban = {
     </div>
   </teleport>
 
-  <!-- ── 클레임 금액 계산 다이얼로그 (claimId 있는 경우: 공용 풀모달) ── -->
-  <od-claim-calc-modal :show="calcDialog.show &amp;&amp; !!calcDialog.claimId" :claim-id="calcDialog.claimId" @close="handleCloseCalcDialog" />
-  <!-- ── 클레임 금액 계산 다이얼로그 (memo-preview: claimId 없는 간단 오버레이) ── -->
-  <teleport to="body">
-    <div v-if="calcDialog.show &amp;&amp; !calcDialog.claimId" class="od-kanban-calc-overlay" @mousedown.self="handleCloseCalcDialog">
-      <div class="od-kanban-calc-box">
-        <div class="od-kanban-calc-hdr">
-          <span class="od-kanban-calc-hdr-icon">💰</span>
-          <span class="od-kanban-calc-hdr-title">
-            환불 예정 계산
-            <span v-if="calcDialog.claimType" style="font-size:11px;font-weight:600;margin-left:8px;opacity:.7;">
-              ({{ calcDialog.claimType === 'CANCEL' ? '취소' : calcDialog.claimType === 'RETURN' ? '반품' : calcDialog.claimType === 'EXCHANGE' ? '교환' : calcDialog.claimType }})
-            </span>
-            <span v-if="calcDialog.claimId" style="font-size:10px;font-weight:400;color:#6b7280;margin-left:6px;">{{ calcDialog.claimId }}</span>
-          </span>
-          <button class="od-kanban-calc-hdr-close" @click="handleCloseCalcDialog">✕</button>
-        </div>
-        <div class="od-kanban-calc-body">
-          <div v-if="calcDialog.loading" class="od-kanban-calc-loading">⏳ 계산 중...</div>
-          <template v-else-if="calcDialog.data">
-            <!-- 클레임 항목 테이블 -->
-            <div class="od-kanban-calc-section">
-              <div class="od-kanban-calc-section-title">🛍️ 클레임 대상 항목</div>
-              <table class="od-kanban-calc-items-table">
-                <thead><tr>
-                  <th style="text-align:left;">상품명</th>
-                  <th>클레임수량</th>
-                  <th style="text-align:right;">항목금액</th>
-                </tr></thead>
-                <tbody>
-                  <tr v-for="(it, i) in (calcDialog.data.claim.claimItems || [])" :key="i">
-                    <td>{{ it.prodNm || it.prod_nm || '-' }}</td>
-                    <td style="text-align:center;">{{ it.claimQty || it.claim_qty || 1 }}</td>
-                    <td style="text-align:right;font-family:monospace;">
-                      {{ (it.itemAmt || it.item_amt || 0).toLocaleString() }}원
-                    </td>
-                  </tr>
-                  <tr v-if="!(calcDialog.data.claim.claimItems || []).length">
-                    <td colspan="3" style="text-align:center;color:#94a3b8;">항목 없음</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <!-- 금액 계산 내역 -->
-            <div class="od-kanban-calc-section">
-              <div class="od-kanban-calc-section-title">📊 환불 계산 내역</div>
-              <div class="od-kanban-calc-row">
-                <span class="od-kanban-calc-label">클레임 항목 금액</span>
-                <span class="od-kanban-calc-value">{{ calcDialog.data.calc.itemAmt.toLocaleString() }}원</span>
-              </div>
-              <div v-if="calcDialog.data.calc.dlivFeeRefund > 0" class="od-kanban-calc-row refund">
-                <span class="od-kanban-calc-label">배송비 환불 (전체취소)</span>
-                <span class="od-kanban-calc-value">+ {{ calcDialog.data.calc.dlivFeeRefund.toLocaleString() }}원</span>
-              </div>
-              <div v-if="calcDialog.data.calc.couponDiscAmt > 0" class="od-kanban-calc-row deduct">
-                <span class="od-kanban-calc-label">쿠폰 할인 차감
-                  <span v-if="calcDialog.data.calc.couponNm" style="font-size:10px;margin-left:4px;color:#9ca3af;">({{ calcDialog.data.calc.couponNm }})</span>
-                </span>
-                <span class="od-kanban-calc-value">- {{ calcDialog.data.calc.couponDiscAmt.toLocaleString() }}원</span>
-              </div>
-              <div v-if="calcDialog.data.calc.saveUsedAmt > 0" class="od-kanban-calc-row deduct">
-                <span class="od-kanban-calc-label">적립금 사용 차감</span>
-                <span class="od-kanban-calc-value">- {{ calcDialog.data.calc.saveUsedAmt.toLocaleString() }}원</span>
-              </div>
-              <div v-if="calcDialog.data.calc.cacheUsedAmt > 0" class="od-kanban-calc-row deduct">
-                <span class="od-kanban-calc-label">충전금(캐시) 사용 차감</span>
-                <span class="od-kanban-calc-value">- {{ calcDialog.data.calc.cacheUsedAmt.toLocaleString() }}원</span>
-              </div>
-              <div class="od-kanban-calc-row total">
-                <span class="od-kanban-calc-label">환불 예정액</span>
-                <span class="od-kanban-calc-value" style="color:#059669;font-size:15px;">
-                  {{ calcDialog.data.calc.refundBase.toLocaleString() }}원
-                </span>
-              </div>
-            </div>
-            <!-- 프로모션 복구 정보 -->
-            <div v-if="calcDialog.data.calc.couponDiscAmt > 0 || calcDialog.data.calc.saveUsedAmt > 0 || calcDialog.data.calc.cacheUsedAmt > 0"
-              class="od-kanban-calc-section">
-              <div class="od-kanban-calc-section-title">🎁 프로모션 복구 정보</div>
-              <div v-if="calcDialog.data.calc.couponDiscAmt > 0" class="od-kanban-calc-row">
-                <span class="od-kanban-calc-label">쿠폰 복구</span>
-                <span><span class="od-kanban-calc-chip orange">쿠폰 재발급 필요</span></span>
-              </div>
-              <div v-if="calcDialog.data.calc.saveUsedAmt > 0" class="od-kanban-calc-row">
-                <span class="od-kanban-calc-label">적립금 복구</span>
-                <span>
-                  <span class="od-kanban-calc-chip green">{{ calcDialog.data.calc.saveUsedAmt.toLocaleString() }}원 복구</span>
-                  <span v-if="calcDialog.data.calc.saveGradePct" class="od-kanban-calc-chip gray" style="margin-left:2px;">등급 적립 {{ calcDialog.data.calc.saveGradePct }}%</span>
-                </span>
-              </div>
-              <div v-if="calcDialog.data.calc.cacheUsedAmt > 0" class="od-kanban-calc-row">
-                <span class="od-kanban-calc-label">충전금 복구</span>
-                <span><span class="od-kanban-calc-chip blue">{{ calcDialog.data.calc.cacheUsedAmt.toLocaleString() }}원 복구</span></span>
-              </div>
-            </div>
-            <!-- 참고 -->
-            <div class="od-kanban-calc-note">
-              ※ 비례 계산 기준: 클레임 항목 금액 / 전체 주문 상품금액 ({{ Math.round(calcDialog.data.calc.ratio * 100) }}%)
-              <br>※ 실제 환불액은 결제 수단별 정책 및 배송비 공제 여부에 따라 달라질 수 있습니다.
-            </div>
-          </template>
-        </div>
-        <div class="od-kanban-calc-actions">
-          <button class="od-kanban-calc-close-btn" @click="handleCloseCalcDialog">닫기</button>
-        </div>
-      </div>
-    </div>
-  </teleport>
+  <!-- ── 클레임 금액 계산 다이얼로그 (공용 풀모달 통일 / z-index 10001: memoDialog 9999보다 위) ── -->
+  <od-claim-calc-modal :show="calcDialog.show" :claim-id="calcDialog.claimId" :preview-items="calcDialog.previewItems" :preview-claim-type="calcDialog.claimType" :preview-order-id="String(currentOrderId || '')" :z-index="10001" @close="handleCloseCalcDialog" />
 
 </div>
 `,

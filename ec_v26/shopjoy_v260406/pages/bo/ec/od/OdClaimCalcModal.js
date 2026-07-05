@@ -17,9 +17,13 @@
 window.OdClaimCalcModal = {
   name: 'OdClaimCalcModal',
   props: {
-    show:    { type: Boolean, default: false },
-    claimId: { type: String,  default: '' },
-    orderId: { type: String,  default: '' },
+    show:             { type: Boolean, default: false },
+    claimId:          { type: String,  default: '' },
+    orderId:          { type: String,  default: '' },
+    previewItems:     { type: Array,   default: () => [] },  // claimId 없을 때 직접 전달
+    previewClaimType: { type: String,  default: '' },        // 'CANCEL'|'RETURN'|'EXCHANGE'
+    previewOrderId:   { type: String,  default: '' },        // orderId 별칭 (칸반용)
+    zIndex:           { type: Number,  default: 9000 },      // 중첩 모달 z-index 조정용
   },
   emits: ['close'],
   setup(props, { emit }) {
@@ -28,12 +32,13 @@ window.OdClaimCalcModal = {
     /* ##### [01] 상태 ########################################################## */
 
     const state = reactive({
-      loading:      false,
+      loading:       false,
       switchLoading: false,
-      claimId:      '',
-      claimType:    '',
-      data:         null,   // { claim, order, calc, statusHist }
-      orderClaims:  [],
+      claimId:       '',
+      claimType:     '',
+      isPreview:     false,  // true: claimId 없이 previewItems로 계산한 경우
+      data:          null,   // { claim, order, calc, statusHist }
+      orderClaims:   [],
     });
 
     /* ##### [02] 계산 헬퍼 ##################################################### */
@@ -77,9 +82,36 @@ window.OdClaimCalcModal = {
 
     /* ##### [03] 최초 로드 ##################################################### */
 
+    /* preview 모드: claimId 없이 items + orderId로 직접 계산 */
+    const fnDoPreview = async function () {
+      state.loading     = true;
+      state.isPreview   = true;
+      state.data        = null;
+      state.orderClaims = [];
+      state.claimId     = '';
+      state.claimType   = props.previewClaimType || '';
+      try {
+        var resolvedOrderId = props.previewOrderId || props.orderId || '';
+        var orderData = {};
+        if (resolvedOrderId) {
+          var or = await boApiSvc.odOrder.getById(resolvedOrderId, '클레임계산', '주문조회').catch(function () { return null; });
+          orderData = (or && ((or.data && or.data.data) || or.data)) || {};
+        }
+        var claimData = { claimItems: props.previewItems || [], claimTypeCd: props.previewClaimType || '', orderId: resolvedOrderId };
+        var lor = resolvedOrderId ? await boApiSvc.odClaim.getPage({ orderId: resolvedOrderId, pageNo: 1, pageSize: 100 }, '클레임계산', '주문클레임목록').catch(function () { return null; }) : null;
+        state.orderClaims = (lor && (lor.data?.data?.pageList || lor.data?.data?.list || [])) || [];
+        state.data = { claim: claimData, order: orderData, calc: fnCalcAmt(claimData, orderData), statusHist: [] };
+      } catch (e) {
+        console.error('[OdClaimCalcModal] preview error', e);
+      } finally {
+        state.loading = false;
+      }
+    };
+
     const fnDoLoad = async function (newId, newOrderId) {
       if (!newId) return;
       state.loading     = true;
+      state.isPreview   = false;
       state.data        = null;
       state.orderClaims = [];
       state.claimId     = newId;
@@ -102,13 +134,16 @@ window.OdClaimCalcModal = {
 
     /* show/claimId 변경 감지 (Mng/Dtl: v-if 없이 show 토글 방식) */
     watch([() => props.show, () => props.claimId], async function ([newShow, newId]) {
-      if (!newShow || !newId) return;
-      await fnDoLoad(newId, props.orderId);
+      if (!newShow) return;
+      if (newId) { await fnDoLoad(newId, props.orderId); }
+      else if (props.previewItems && props.previewItems.length) { await fnDoPreview(); }
     }, { immediate: false });
 
     /* 마운트 시점에 이미 show=true인 경우 (Kanban: v-if로 새로 마운트) */
     onMounted(function () {
-      if (props.show && props.claimId) { fnDoLoad(props.claimId, props.orderId); }
+      if (!props.show) return;
+      if (props.claimId) { fnDoLoad(props.claimId, props.orderId); }
+      else if (props.previewItems && props.previewItems.length) { fnDoPreview(); }
     });
 
     /* ##### [04] 클레임 전환 ################################################### */
@@ -131,15 +166,63 @@ window.OdClaimCalcModal = {
 
     const handleClose = function () { emit('close'); };
 
-    return { state, handleSwitch, handleClose };
+    const debugOpen = Vue.ref(false);
+
+    return { state, handleSwitch, handleClose, debugOpen };
   },
   template: /* html */`
-<bo-modal :show="show" :title="state.claimType==='CANCEL'?'취소 클레임 계산 (예정)':state.claimType==='RETURN'?'반품 클레임 계산 (예정)':state.claimType==='EXCHANGE'?'교환 클레임 계산 (예정)':'클레임 계산 (예정)'" width="760px" @close="handleClose">
+<bo-modal :show="show" :title="state.claimType==='CANCEL'?'취소 클레임 계산 (예정)':state.claimType==='RETURN'?'반품 클레임 계산 (예정)':state.claimType==='EXCHANGE'?'교환 클레임 계산 (예정)':'클레임 계산 (예정)'" width="680px" box-pad="12px" body-pad="12px" :z-index="zIndex" @close="handleClose">
   <template #default>
+    <!-- ── 파라미터 디버그 섹션 (접이식 / 다크 톤) ── -->
+    <div style="margin-bottom:10px;border-radius:8px;overflow:hidden;font-size:11px;border:1px solid #334155;">
+      <div @click="debugOpen=!debugOpen" style="display:flex;align-items:center;gap:6px;padding:5px 10px;background:#1e293b;cursor:pointer;user-select:none;">
+        <span style="color:#94a3b8;font-weight:600;font-family:monospace;">📋 전달된 파라미터</span>
+        <span style="margin-left:auto;color:#64748b;font-size:10px;">{{ debugOpen ? '▲ 접기' : '▼ 펼치기' }}</span>
+      </div>
+      <div v-if="debugOpen" style="padding:8px 10px;background:#0f172a;display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-family:monospace;">
+        <span style="color:#64748b;">mode</span>
+        <span :style="state.isPreview?'color:#fbbf24':'color:#60a5fa'">{{ state.isPreview ? 'preview (claimId 없음)' : 'claimId 직접 조회' }}</span>
+        <span style="color:#64748b;">claimId</span>
+        <span style="color:#f1f5f9;">{{ claimId || '—' }}</span>
+        <span style="color:#64748b;">orderId</span>
+        <span style="color:#38bdf8;">{{ previewOrderId || orderId || '—' }}</span>
+        <span style="color:#64748b;">previewClaimType</span>
+        <span :style="previewClaimType==='CANCEL'?'color:#f87171':previewClaimType==='RETURN'?'color:#fb923c':'color:#818cf8'">{{ previewClaimType || '—' }}</span>
+        <span style="color:#64748b;">state.claimType</span>
+        <span :style="state.claimType==='CANCEL'?'color:#f87171':state.claimType==='RETURN'?'color:#fb923c':'color:#818cf8'">{{ state.claimType || '(미결정)' }}</span>
+        <template v-if="state.isPreview">
+          <span style="color:#64748b;">previewItems</span>
+          <span style="color:#f1f5f9;">{{ previewItems ? previewItems.length + '건' : '—' }}</span>
+        </template>
+        <!-- previewItems 목록 -->
+        <template v-if="state.isPreview &amp;&amp; previewItems &amp;&amp; previewItems.length">
+          <div style="grid-column:1/-1;margin-top:4px;border-top:1px solid #1e293b;padding-top:6px;">
+            <div v-for="(it, i) in previewItems" :key="i"
+              style="display:grid;grid-template-columns:1fr auto auto auto;gap:0 10px;align-items:center;padding:3px 0;border-bottom:1px solid #1e293b;">
+              <span style="color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="it.orderItemId">
+                {{ it.prodNm || it.orderItemId }}
+              </span>
+              <span style="color:#64748b;white-space:nowrap;">qty</span>
+              <span style="color:#e2e8f0;text-align:right;">{{ it.claimQty }}</span>
+              <span style="color:#34d399;text-align:right;min-width:72px;">{{ (it.itemAmt||0).toLocaleString() }}원</span>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
+    <!-- ──────────────────────────────────────────────── -->
     <div v-if="state.loading" style="text-align:center;padding:40px;color:#94a3b8;">⏳ 계산 중...</div>
     <template v-else-if="state.data">
-      <!-- ① 메타 바: 회원·주문·클레임·신청일·상태 한 줄 -->
-      <div style="display:grid;grid-template-columns:auto auto 1fr auto auto;gap:0;align-items:stretch;margin-bottom:14px;border-radius:10px;overflow:hidden;border:1px solid #e2e8f0;font-size:11px;">
+      <!-- ① 메타 바: 회원·주문·클레임·신청일·상태 한 줄 (preview 모드는 주문번호만) -->
+      <div v-if="state.isPreview" style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:8px 14px;background:#f1f5f9;border-radius:10px;border:1px solid #e2e8f0;font-size:11px;">
+        <span style="color:#94a3b8;">주문번호</span>
+        <span style="font-weight:700;color:#1d4ed8;font-family:monospace;">{{ state.data.claim.orderId || '-' }}</span>
+        <span style="padding:1px 8px;border-radius:8px;font-size:10px;font-weight:700;"
+          :style="state.claimType==='CANCEL'?'background:#fee2e2;color:#b91c1c':state.claimType==='RETURN'?'background:#fff7ed;color:#9a3412':'background:#dbeafe;color:#1d4ed8'">
+          {{ state.claimType==='CANCEL'?'취소':state.claimType==='RETURN'?'반품':'교환' }} (신청 예정)
+        </span>
+      </div>
+      <div v-else style="display:grid;grid-template-columns:auto auto 1fr auto auto;gap:0;align-items:stretch;margin-bottom:14px;border-radius:10px;overflow:hidden;border:1px solid #e2e8f0;font-size:11px;">
         <div style="padding:8px 14px;background:#f1f5f9;border-right:1px solid #e2e8f0;">
           <div style="color:#94a3b8;margin-bottom:2px;">회원</div>
           <div style="font-weight:700;color:#111;white-space:nowrap;">{{ state.data.claim.memberNm || state.data.claim.member_nm || '-' }}</div>
@@ -171,7 +254,7 @@ window.OdClaimCalcModal = {
             </span>
           </div>
         </div>
-      </div>
+      </div><!-- v-else 메타 바 끝 -->
       <!-- ② 클레임 전환 선택바 -->
       <div v-if="state.orderClaims.length >= 1" style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 12px;background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;font-size:11px;">
         <span style="color:#6b7280;white-space:nowrap;">이 주문의 클레임</span>
