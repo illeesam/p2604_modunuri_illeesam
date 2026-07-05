@@ -5,10 +5,12 @@ import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdContent;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdImg;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdOpt;
 import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdOptItem;
+import com.shopjoy.ecadminapi.base.ec.pd.data.entity.PdProdSku;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdContentRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdImgRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdOptItemRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdOptRepository;
+import com.shopjoy.ecadminapi.base.ec.pd.repository.PdProdSkuRepository;
 import com.shopjoy.ecadminapi.base.ec.pd.service.*;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.util.SecurityUtil;
@@ -48,6 +50,7 @@ public class BoPdProdTabController {
     private final PdProdOptRepository pdProdOptRepository;
     private final PdProdOptItemRepository pdProdOptItemRepository;
     private final PdProdImgRepository pdProdImgRepository;
+    private final PdProdSkuRepository pdProdSkuRepository;
 
     private static final DateTimeFormatter ID_FMT = DateTimeFormatter.ofPattern("yyMMddHHmmss");
 
@@ -85,6 +88,60 @@ public class BoPdProdTabController {
         PdProdSkuDto.Request req = new PdProdSkuDto.Request();
         req.setProdId(prodId);
         return ResponseEntity.ok(ApiResponse.ok(skuService.getList(req)));
+    }
+
+    /**
+     * SKU 저장 (전체 교체).
+     * body 예: {
+     *   "skus": [
+     *     { "optItemId1": "PI...", "optItemId2": "PI...", "addPrice": 0, "prodOptStock": 100, "skuCode": "", "useYn": "Y" },
+     *     ...
+     *   ]
+     * }
+     * 처리: 기존 pd_prod_sku 전체 삭제 → 페이로드 순서대로 INSERT.
+     *        skuCode 미전달 시 자동 생성 (prodId 뒤 3자리 인덱스). useYn 미전달 시 "Y".
+     */
+    @PutMapping("/skus")
+    @Transactional
+    public ResponseEntity<ApiResponse<Void>> updateSkus(
+            @PathVariable("prodId") String prodId,
+            @RequestBody Map<String, Object> body) {
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> skuRows = body != null && body.get("skus") instanceof List
+            ? (List<Map<String, Object>>) body.get("skus") : List.of();
+        String authId = SecurityUtil.getAuthUser().authId();
+        String siteId = SecurityUtil.getSiteIdOrDefault("SITE000001");
+        LocalDateTime now = LocalDateTime.now();
+
+        // 1) 기존 데이터 전체 삭제
+        pdProdSkuRepository.deleteByProdId(prodId);
+
+        // 2) 신규 INSERT
+        int idx = 0;
+        for (Map<String, Object> row : skuRows) {
+            PdProdSku sku = new PdProdSku();
+            sku.setSkuId("SK" + now.format(ID_FMT) + String.format("%04d", (int) (Math.random() * 10000)) + idx);
+            sku.setSiteId(siteId);
+            sku.setProdId(prodId);
+            sku.setOptItemId1(row.get("optItemId1") != null ? String.valueOf(row.get("optItemId1")) : null);
+            sku.setOptItemId2(row.get("optItemId2") != null ? String.valueOf(row.get("optItemId2")) : null);
+            String skuCode = row.get("skuCode") != null ? String.valueOf(row.get("skuCode")) : "";
+            sku.setSkuCode(skuCode.isBlank() ? prodId + "-" + String.format("%03d", idx + 1) : skuCode);
+            Object addPriceObj = row.get("addPrice");
+            sku.setAddPrice(addPriceObj != null ? Long.parseLong(String.valueOf(addPriceObj)) : 0L);
+            Object stockObj = row.get("prodOptStock");
+            sku.setProdOptStock(stockObj != null ? Integer.parseInt(String.valueOf(stockObj)) : 0);
+            String useYn = row.get("useYn") != null ? String.valueOf(row.get("useYn")) : "Y";
+            sku.setUseYn(useYn.isBlank() ? "Y" : useYn);
+            sku.setRegBy(authId);
+            sku.setRegDate(now);
+            sku.setUpdBy(authId);
+            sku.setUpdDate(now);
+            pdProdSkuRepository.save(sku);
+            idx++;
+        }
+
+        return ResponseEntity.ok(ApiResponse.ok(null, "저장되었습니다."));
     }
 
     /**

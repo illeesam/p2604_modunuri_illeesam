@@ -75,6 +75,12 @@
       };
       const _round = (n) => Math.round(n / (domCfg.priceRoundUnit || 100)) * (domCfg.priceRoundUnit || 100);
 
+      /* 고정 옵션 풀 */
+      const OPT1_ITEMS = ['레드', '화이트', '블랙'];
+      const OPT2_ITEMS = ['S', 'M', 'L'];
+      /* picsum 색상 seed — 옵션1 3색에 대응 */
+      const IMG_SEEDS  = [237, 432, 870];
+
       const simul = useSimulSetup({
         domain: '상품',
         label: '시뮬상품',
@@ -89,20 +95,72 @@
             const pfix      = pick(PROD_PREFIXES);
             const pnm       = pick(PROD_NAMES);
             const prodNm    = (namePrefix || '') + pfix + ' ' + pnm + (suffix ? ' ' + suffix : '');
+            const isOption  = type.cd === 'OPTION';
             const body = {
-              prodNm, salePrice, costPrice, stockQty: stock,
+              prodNm, salePrice, costPrice, stockQty: isOption ? 0 : stock,
               prodSaleTypeCd: type.cd, prodStatusCd: domCfg.createStatus,
               adCopyYn: domCfg.useAdCopy ? 'Y' : 'N',
               adCopy: domCfg.useAdCopy ? pick(AD_COPIES) : '',
             };
             const res = await boApi.post('/bo/ec/pd/prod/save/base', body, coUtil.apiHdr('상품시뮬', '생성'));
-            const id  = res?.data?.data?.prodId || res?.data?.data?.id || '-';
+            const prodId  = res?.data?.data?.prodId || res?.data?.data?.id || null;
+
+            /* 옵션형 상품: 옵션 → SKU → 이미지 자동 생성 */
+            if (prodId && isOption) {
+              try {
+                /* 1) 옵션 저장 (색상 1단 + 사이즈 2단) */
+                await boApi.put('/bo/ec/pd/prod/' + prodId + '/opts', {
+                  optGroups: [
+                    { _id: 1, grpNm: '색상', level: 1, inputTypeCd: 'SELECT',
+                      items: OPT1_ITEMS.map((nm, i) => ({ _id: 10 + i, nm, val: 'COL_' + nm.toUpperCase(), sortOrd: i + 1, useYn: 'Y' })) },
+                    { _id: 2, grpNm: '사이즈', level: 2, inputTypeCd: 'SELECT',
+                      items: OPT2_ITEMS.map((nm, i) => ({ _id: 20 + i, nm, val: 'SIZ_' + nm, sortOrd: i + 1, useYn: 'Y' })) },
+                  ],
+                }, coUtil.apiHdr('상품시뮬', '옵션생성'));
+
+                /* 2) 저장된 옵션 아이템 ID 조회 */
+                const optsRes = await boApi.get('/bo/ec/pd/prod/' + prodId + '/opts', coUtil.apiHdr('상품시뮬', '옵션조회'));
+                const optItems = optsRes?.data?.data?.items || [];
+                const grp1Items = optItems.filter(it => it.optLevel === 1 || (!it.optLevel && optItems.indexOf(it) < OPT1_ITEMS.length));
+                const grp2Items = optItems.filter(it => it.optLevel === 2 || (!it.optLevel && optItems.indexOf(it) >= OPT1_ITEMS.length));
+
+                /* 3) SKU 조합 저장 (3색 × 3사이즈 = 9 SKU) */
+                const skus = [];
+                for (let i = 0; i < grp1Items.length; i++) {
+                  for (let j = 0; j < grp2Items.length; j++) {
+                    skus.push({
+                      optItemId1: grp1Items[i].optItemId,
+                      optItemId2: grp2Items[j].optItemId,
+                      addPrice: i * 1000,
+                      prodOptStock: randInt(domCfg.stockMin || 0, domCfg.stockMax || 100),
+                      useYn: 'Y',
+                    });
+                  }
+                }
+                await boApi.put('/bo/ec/pd/prod/' + prodId + '/skus', { skus }, coUtil.apiHdr('상품시뮬', 'SKU생성'));
+
+                /* 4) 이미지 저장 (색상별 1장씩 picsum URL) */
+                const images = OPT1_ITEMS.map((nm, i) => ({
+                  previewUrl: 'https://picsum.photos/seed/' + IMG_SEEDS[i] + '/400/400',
+                  isMain: i === 0,
+                  optItemId1: grp1Items[i] ? grp1Items[i].optItemId : '',
+                  optItemId2: '',
+                  imgAltText: nm,
+                }));
+                await boApi.put('/bo/ec/pd/prod/' + prodId + '/images', { images }, coUtil.apiHdr('상품시뮬', '이미지생성'));
+              } catch (optErr) {
+                /* 옵션/SKU/이미지 실패해도 상품 자체 생성은 성공으로 간주 */
+              }
+            }
+
+            const id = prodId || '-';
             if (!window._zdSimulStats['상품']) window._zdSimulStats['상품'] = { totalPrice: 0, count: 0, byType: {}, byStatus: {} };
             const st = window._zdSimulStats['상품'];
             st.count++; st.totalPrice += salePrice;
             st.byType[type.cd]  = (st.byType[type.cd] || 0) + 1;
             st.byStatus[domCfg.createStatus] = (st.byStatus[domCfg.createStatus] || 0) + 1;
-            return { ok: true, desc: '[' + type.label + '] ' + prodNm + ' ' + salePrice.toLocaleString('ko-KR') + '원', meta: { id, type: type.label, salePrice } };
+            const optNote = isOption ? ' +옵션/SKU/이미지' : '';
+            return { ok: true, desc: '[' + type.label + '] ' + prodNm + ' ' + salePrice.toLocaleString('ko-KR') + '원' + optNote, meta: { id, type: type.label, salePrice } };
           } else {
             const list = (await boApiSvc.pdProd.getPage({ pageNo: 1, pageSize: 50, prodStatusCd: 'SELLING' })).data?.data?.pageList || [];
             if (!list.length) return { ok: false, reason: '수정할 판매중 상품 없음' };

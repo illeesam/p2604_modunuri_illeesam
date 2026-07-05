@@ -77,54 +77,27 @@
 
             const order = pick(orders);
 
-            /* 2) 주문 상품 목록 조회 */
-            let items = [];
-            try {
-              const detail = (await boApi.get('/bo/ec/od/order/' + order.orderId, coUtil.apiHdr('클레임시뮬', '주문조회'))).data?.data;
-              items = detail?.orderItems || [];
-            } catch (e) { /* 상세 실패 시 금액 기반 단순 클레임으로 폴백 */ }
-
-            /* 3) 클레임 유형 & 사유 */
+            /* 2) 클레임 유형 & 사유 */
             const type   = _pickType();
             const reason = domCfg.randomReason ? _pickReason(type.cd) : '시뮬레이터 테스트';
             const refRate = randInt(domCfg.refundRateMin, domCfg.refundRateMax);
 
-            /* 4) 클레임 상품 구성 (부분 클레임 지원) */
-            let claimItems = [];
-            let claimAmt   = 0;
-            if (items.length) {
-              const selected = domCfg.partialClaim
-                ? items.filter(() => Math.random() > 0.3)
-                : items;
-              const pool = selected.length ? selected : [pick(items)];
-              claimItems = pool.map(it => {
-                const maxQty  = it.orderQty || it.qty || 1;
-                const qty     = domCfg.partialClaim ? randInt(1, maxQty) : maxQty;
-                const unitPrice = it.unitPrice || it.itemAmt || 0;
-                claimAmt += unitPrice * qty;
-                return { orderItemId: it.orderItemId, prodId: it.prodId, claimQty: qty, unitPrice };
-              });
-            } else {
-              claimAmt = Math.round((order.totalPayAmt || 10000) * refRate / 100);
-            }
-
-            /* 5) 클레임 신청 */
-            const body = {
+            /* 3) 시뮬 전용 API — 서버사이드에서 orderItems 조회 후 클레임 자동 생성 */
+            const res = await boApi.post('/bo/zd/simul/claim/from-order', {
               orderId:       order.orderId,
               claimTypeCd:   type.cd,
-              claimReason:   reason,
+              reasonCd:      reason.replace(/\s/g, '_').toUpperCase().slice(0, 20),
               claimStatusCd: domCfg.createStatus,
-              claimAmt,
-              refundAmt:     claimAmt,
-            };
-            if (claimItems.length) body.claimItems = claimItems;
-
-            const res = await boApi.post('/bo/ec/od/claim/save/base', body, coUtil.apiHdr('클레임시뮬', '생성'));
-            const id  = res?.data?.data?.claimId || '-';
-            const itemDesc = claimItems.length ? claimItems.length + '개 상품' : '금액기반';
+              partialClaim:  domCfg.partialClaim,
+              refundRate:    refRate,
+            }, coUtil.apiHdr('클레임시뮬', '생성'));
+            const d = res?.data?.data || {};
+            const id = d.claimId || '-';
+            const itemDesc = d.itemCount ? d.itemCount + '개 상품' : '금액기반';
+            const refundAmt = d.refundAmt || 0;
             return {
               ok: true,
-              desc: '[' + type.label + '] ' + order.orderId + ' | ' + itemDesc + ' | ' + claimAmt.toLocaleString() + '원 | ' + reason,
+              desc: '[' + type.label + '] ' + order.orderId + ' | ' + itemDesc + ' | ' + refundAmt.toLocaleString() + '원 | ' + reason,
               meta: { id, type: type.label, reason },
             };
 

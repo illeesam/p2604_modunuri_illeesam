@@ -58,7 +58,11 @@
         defaultCfg: { mode: 'create', countMin: 1, countMax: 2, intervalVal: 15, intervalUnit: 'sec', durationMin: 3 },
         runFn: async ({ mode, randInt, pick }) => {
           if (mode === 'create') {
-            const prods   = (await boApiSvc.pdProd.getPage({ pageNo: 1, pageSize: 50, prodStatusCd: 'SELLING' })).data?.data?.pageList || [];
+            /* 판매중 상품은 시뮬 Controller에서 랜덤 N개 취합 (shuffle 포함) */
+            const cnt     = randInt(domCfg.itemCountMin, domCfg.itemCountMax);
+            const randRes = await boApi.post('/bo/zd/simul/order/rand-prod',
+              { count: Math.max(cnt, 5), prodStatusCd: 'SELLING' }, coUtil.apiHdr('주문시뮬', '상품조회'));
+            const prods   = randRes?.data?.data?.prods || [];
             const members = (await boApiSvc.mbMember.getPage({ pageNo: 1, pageSize: 50, memberStatusCd: 'ACTIVE' })).data?.data?.pageList || [];
             if (!prods.length) return { ok: false, reason: '판매중 상품 없음' };
             if (!members.length) return { ok: false, reason: 'ACTIVE 회원 없음' };
