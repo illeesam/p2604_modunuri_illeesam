@@ -1259,11 +1259,11 @@ window.BaseTossPayWidget = {
   },
   template: /* html */`
 <div>
-  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+  <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;">
+    <span style="font-size:12px;color:#888;">결제 금액 <b style="color:#e8587a;">{{ fmtWon(cfAmount) }}</b></span>
     <button type="button" class="btn btn-secondary btn-sm" :disabled="ui.processing" @click="toggle">
       {{ ui.open ? '✕ 위젯 닫기' : buttonLabel }}
     </button>
-    <span style="font-size:12px;color:#888;">결제 금액 <b style="color:#e8587a;">{{ fmtWon(cfAmount) }}</b></span>
   </div>
   <div v-show="ui.open" style="margin-top:14px;border-top:1px dashed #e0e0e0;padding-top:14px;">
     <div style="font-size:12px;color:#888;margin-bottom:8px;">결제 수단을 선택한 뒤 [결제하기] 를 누르세요. (Toss Client Key 미설정 시 테스트 키)</div>

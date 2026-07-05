@@ -1,6 +1,7 @@
 package com.shopjoy.ecadminapi.bo.ec.od.controller;
 
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimDto;
+import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhClaimStatusHistDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdClaim;
 import com.shopjoy.ecadminapi.bo.ec.od.service.BoOdClaimService;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
@@ -85,6 +86,13 @@ public class BoOdClaimController {
             default -> throw new CmBizException("알 수 없는 save cmd: " + cmd);
         };
         return ResponseEntity.ok(ApiResponse.ok(result, "저장되었습니다."));
+    }
+
+    /** getStatusHist — claimId 기준 상태 이력 목록 조회 */
+    @GetMapping("/{claimId}/status-hist")
+    public ResponseEntity<ApiResponse<List<OdhClaimStatusHistDto.Item>>> getStatusHist(
+            @PathVariable("claimId") String claimId) {
+        return ResponseEntity.ok(ApiResponse.ok(boOdClaimService.getClaimStatusHist(claimId)));
     }
 
     /** saveList -- 일괄 저장 (cmd 변형: status/type/approval/approvalReq 등) */

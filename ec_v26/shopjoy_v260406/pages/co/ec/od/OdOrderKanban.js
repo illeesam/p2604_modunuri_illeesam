@@ -22,9 +22,10 @@
 
 /* ── 스타일 한 번만 주입 ── */
 (function () {
-  if (document.getElementById('od-kanban-style')) return;
+  if (document.getElementById('od-kanban-style-v2')) return;
+  var old = document.getElementById('od-kanban-style'); if (old) old.remove();
   var s = document.createElement('style');
-  s.id = 'od-kanban-style';
+  s.id = 'od-kanban-style-v2';
   s.textContent = [
     /* ── 기본 래퍼 ── */
     '.od-kanban-wrap{font-family:inherit;color:#1f2937;background:#f8fafc;border-radius:12px;overflow:hidden;}',
@@ -207,7 +208,7 @@
     /* ── 카드 액션 버튼 ── */
     /* ── 메모 다이얼로그 ── */
     '.od-kanban-memo-overlay{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:9999;display:flex;align-items:center;justify-content:center;}',
-    '.od-kanban-memo-box{background:#fff;border-radius:14px;box-shadow:0 8px 40px rgba(0,0,0,.22);min-width:320px;max-width:440px;width:90%;overflow:hidden;}',
+    '.od-kanban-memo-box{background:#fff;border-radius:14px;box-shadow:0 8px 40px rgba(0,0,0,.22);min-width:320px;max-width:600px;width:94%;max-height:90vh;overflow-y:auto;}',
     '.od-kanban-memo-hdr{display:flex;align-items:center;gap:10px;padding:13px 18px 12px;background:linear-gradient(135deg,#fff0f4,#ffe4ec,#ffd5e1);border-bottom:1px solid #fbc4d4;}',
     '.od-kanban-memo-hdr-icon{font-size:18px;line-height:1;}',
     '.od-kanban-memo-title{font-size:14px;font-weight:700;color:#1e293b;flex:1;}',
@@ -218,6 +219,62 @@
     '.od-kanban-memo-label{font-size:11px;font-weight:600;color:#475569;margin-bottom:4px;}',
     '.od-kanban-memo-ta{width:100%;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:8px;padding:8px 10px;font-size:12px;resize:vertical;min-height:72px;font-family:inherit;outline:none;color:#1e293b;}',
     '.od-kanban-memo-ta:focus{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.15);}',
+    '.od-kanban-dliv-section{background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;margin-bottom:12px;}',
+    '.od-kanban-dliv-section-title{font-size:11px;font-weight:700;color:#4f46e5;margin-bottom:10px;display:flex;align-items:center;gap:5px;}',
+    '.od-kanban-dliv-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;}',
+    '.od-kanban-dliv-pair{display:flex;flex-direction:column;gap:3px;}',
+    '.od-kanban-dliv-pair-lbl{font-size:11px;font-weight:600;color:#475569;margin-bottom:2px;}',
+    '.od-kanban-dliv-pair-lbl.req::after{content:" *";color:#ef4444;}',
+    '.od-kanban-dliv-pair-row{display:flex;gap:4px;align-items:center;}',
+    '.od-kanban-dliv-courier-sel{flex:1;width:100%;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:6px;padding:5px 8px;font-size:12px;background:#fff;color:#1e293b;outline:none;cursor:pointer;}',
+    '.od-kanban-dliv-courier-sel:focus{border-color:#6366f1;box-shadow:0 0 0 2px rgba(99,102,241,.15);}',
+    '.od-kanban-dliv-courier-sel.err{border-color:#ef4444;}',
+    '.od-kanban-dliv-input{width:100%;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:6px;padding:5px 8px;font-size:12px;outline:none;color:#1e293b;}',
+    '.od-kanban-dliv-input:focus{border-color:#6366f1;box-shadow:0 0 0 2px rgba(99,102,241,.15);}',
+    '.od-kanban-dliv-input.err{border-color:#ef4444;}',
+    '.od-kanban-dliv-err{font-size:10px;color:#ef4444;margin-top:1px;}',
+    '.od-kanban-item-rows{margin:10px 0 2px;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;}',
+    '.od-kanban-item-rows-hdr{display:flex;align-items:center;justify-content:space-between;padding:5px 10px;background:#f1f5f9;border-bottom:1px solid #e2e8f0;}',
+    '.od-kanban-item-rows-title{font-size:12px;font-weight:700;color:#334155;}',
+    '.od-kanban-item-rows-all-btn{font-size:10px;padding:2px 8px;border-radius:6px;border:1px solid #6366f1;background:#fff;color:#6366f1;cursor:pointer;font-weight:600;}',
+    '.od-kanban-item-rows-all-btn:hover{background:#eef2ff;}',
+    '.od-kanban-item-table{width:100%;border-collapse:collapse;font-size:11px;}',
+    '.od-kanban-item-table th{background:#f8fafc;padding:4px 6px;text-align:center;color:#64748b;font-weight:600;border-bottom:1px solid #e2e8f0;}',
+    '.od-kanban-item-table td{padding:4px 6px;border-bottom:1px solid #f1f5f9;vertical-align:middle;color:#1e293b;}',
+    '.od-kanban-item-table tr:last-child td{border-bottom:none;}',
+    '.od-kanban-item-table tr.row-checked{background:#f0fdf4;}',
+    '.od-kanban-claim-qty-input{width:52px;text-align:right;border:1px solid #cbd5e1;border-radius:5px;padding:2px 5px;font-size:11px;outline:none;}',
+    '.od-kanban-claim-qty-input:focus{border-color:#6366f1;}',
+    '.od-kanban-calc-overlay{position:fixed;inset:0;background:rgba(15,23,42,.45);backdrop-filter:blur(2px);z-index:10000;display:flex;align-items:center;justify-content:center;}',
+    '.od-kanban-calc-box{background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,.22);width:560px;max-width:96vw;max-height:90vh;overflow-y:auto;}',
+    '.od-kanban-calc-hdr{display:flex;align-items:center;gap:8px;padding:14px 18px;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-bottom:1px solid #bbf7d0;border-radius:16px 16px 0 0;}',
+    '.od-kanban-calc-hdr-icon{font-size:18px;}',
+    '.od-kanban-calc-hdr-title{flex:1;font-size:14px;font-weight:800;color:#14532d;}',
+    '.od-kanban-calc-hdr-close{background:none;border:none;font-size:16px;color:#6b7280;cursor:pointer;padding:2px 6px;border-radius:6px;}',
+    '.od-kanban-calc-hdr-close:hover{background:#f3f4f6;}',
+    '.od-kanban-calc-body{padding:16px 18px;}',
+    '.od-kanban-calc-section{margin-bottom:14px;}',
+    '.od-kanban-calc-section-title{font-size:11px;font-weight:800;color:#374151;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #f3f4f6;}',
+    '.od-kanban-calc-row{display:flex;align-items:center;justify-content:space-between;padding:4px 0;font-size:12px;color:#374151;}',
+    '.od-kanban-calc-row.total{border-top:2px solid #e5e7eb;margin-top:4px;padding-top:8px;font-weight:800;font-size:13px;}',
+    '.od-kanban-calc-row.refund{color:#059669;font-weight:700;}',
+    '.od-kanban-calc-row.deduct{color:#dc2626;}',
+    '.od-kanban-calc-label{color:#6b7280;flex:1;}',
+    '.od-kanban-calc-value{font-weight:600;font-family:monospace;font-size:12px;}',
+    '.od-kanban-calc-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;}',
+    '.od-kanban-calc-chip.green{background:#dcfce7;color:#15803d;}',
+    '.od-kanban-calc-chip.orange{background:#ffedd5;color:#c2410c;}',
+    '.od-kanban-calc-chip.blue{background:#dbeafe;color:#1d4ed8;}',
+    '.od-kanban-calc-chip.gray{background:#f3f4f6;color:#6b7280;}',
+    '.od-kanban-calc-note{font-size:10px;color:#9ca3af;margin-top:8px;padding:6px 10px;background:#f9fafb;border-radius:6px;border-left:3px solid #e5e7eb;}',
+    '.od-kanban-calc-actions{display:flex;justify-content:center;padding:12px 18px;border-top:1px solid #f3f4f6;}',
+    '.od-kanban-calc-close-btn{padding:7px 24px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;color:#374151;font-size:13px;font-weight:600;cursor:pointer;}',
+    '.od-kanban-calc-close-btn:hover{background:#f1f5f9;}',
+    '.od-kanban-calc-items-table{width:100%;border-collapse:collapse;font-size:11px;margin:4px 0;}',
+    '.od-kanban-calc-items-table th{background:#f8fafc;padding:3px 6px;text-align:center;color:#64748b;font-weight:600;border-bottom:1px solid #e2e8f0;}',
+    '.od-kanban-calc-items-table td{padding:3px 6px;border-bottom:1px solid #f1f5f9;vertical-align:middle;color:#1e293b;}',
+    '.od-kanban-calc-promo-tag{display:inline-block;padding:1px 6px;border-radius:6px;font-size:10px;font-weight:700;margin:1px 2px;}',
+    '.od-kanban-calc-loading{text-align:center;padding:30px;color:#94a3b8;font-size:13px;}',
     '.od-kanban-memo-actions{display:flex;gap:8px;justify-content:center;margin-top:14px;}',
     '.od-kanban-memo-btn-ok{padding:6px 18px;border-radius:8px;border:none;background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;font-size:13px;font-weight:700;cursor:pointer;}',
     '.od-kanban-memo-btn-ok:hover{filter:brightness(.93);}',
@@ -232,6 +289,8 @@
     '.od-kanban-act-btn.act-forward{background:#dcfce7;color:#15803d;border-color:#86efac;}',
     '.od-kanban-act-btn.act-back{background:#fef3c7;color:#92400e;border-color:#fcd34d;}',
     '.od-kanban-act-btn.act-danger{background:#fee2e2;color:#b91c1c;border-color:#fca5a5;}',
+    '.od-kanban-act-btn.act-claim-return{background:#fff7ed;color:#9a3412;border-color:#fdba74;}',
+    '.od-kanban-act-btn.act-claim-exchange{background:#eff6ff;color:#1d4ed8;border-color:#93c5fd;}',
     '.od-kanban-loading{text-align:center;padding:40px;color:#94a3b8;font-size:13px;}',
     '.od-kanban-divider{border:none;border-top:1px solid #e2e8f0;margin:6px 0 0;}',
   ].join('');
@@ -427,26 +486,79 @@ window.OdOrderKanban = {
     };
 
     /* ── 메모 확인 다이얼로그 (클레임/주문항목 상태변경 시 사용) ── */
+    /*
+     * dlivFields: [{ key, label, value }] — 동적 택배사/송장번호 필드 목록
+     *   key: 'returnCourierCd' | 'returnTrackingNo' | 'exchangeCourierCd' | 'exchangeTrackingNo'
+     *        | 'dlivCourierCd' | 'dlivTrackingNo'
+     */
+    /* 택배사 코드 목록 (COURIER 그룹) */
+    const courierCodes = reactive([]);
+
+
     const memoDialog = reactive({
-      show:      false,
-      title:     '',
-      desc:      '',
-      memo:      '',
-      resolve:   null,   // Promise resolver
+      show:       false,
+      title:      '',
+      desc:       '',
+      memo:       '',
+      dlivFields: [],   // [{ key, label, value, error }]
+      itemRows:   [],   // [{ orderItemId, prodNm, optItemNm1, optItemNm2, orderQty, claimQty, checked }]
+      claimType:  '',   // 계산 버튼용 (RETURN/EXCHANGE/CANCEL)
+      resolve:    null,
     });
-    /* 메모 다이얼로그를 열고 { ok, memo } 를 반환하는 Promise */
-    const doConfirmWithMemo = (title, desc) => {
+    /* 메모 다이얼로그를 열고 { ok, memo, ...dlivValues, claimItems } 를 반환하는 Promise */
+    const doConfirmWithMemo = (title, desc, opts) => {
       return new Promise(function (resolve) {
-        memoDialog.title   = title;
-        memoDialog.desc    = desc;
-        memoDialog.memo    = '';
-        memoDialog.resolve = resolve;
-        memoDialog.show    = true;
+        memoDialog.title      = title;
+        memoDialog.desc       = desc;
+        memoDialog.memo       = '';
+        memoDialog.dlivFields = (opts && opts.dlivFields) ? opts.dlivFields.map(function (f) {
+          return { key: f.key, label: f.label, value: f.value || '', error: '', required: f.required !== false,
+                   isCourier: !!f.isCourier, courierCd: f.courierCd || '' };
+        }) : [];
+        memoDialog.itemRows   = (opts && opts.itemRows)   ? opts.itemRows.map(function (r) {
+          return { orderItemId: r.orderItemId, prodNm: r.prodNm, optItemNm1: r.optItemNm1 || '',
+                   optItemNm2: r.optItemNm2 || '', orderQty: r.orderQty, claimQty: r.claimQty,
+                   checked: r.claimQty >= 1 };
+        }) : [];
+        memoDialog.claimType  = (opts && opts.claimType)  ? opts.claimType : '';
+        memoDialog.resolve    = resolve;
+        memoDialog.show       = true;
+      });
+    };
+    /* itemRows 에서 claimQty 변경 시 checked 자동 동기화 */
+    const handleItemRowClaimQtyInput = (row, e) => {
+      var v = parseInt(e.target.value, 10);
+      if (isNaN(v) || v < 0) v = 0;
+      if (v > row.orderQty) v = row.orderQty;
+      row.claimQty = v;
+      row.checked  = v >= 1;
+    };
+    /* 전체 주문상품 선택 버튼 */
+    const handleSelectAllItemRows = () => {
+      memoDialog.itemRows.forEach(function (r) {
+        r.claimQty = r.orderQty;
+        r.checked  = true;
       });
     };
     const handleMemoDialogOk = () => {
+      var hasErr = false;
+      memoDialog.dlivFields.forEach(function (f) {
+        f.error = (f.required && !f.value.trim()) ? (f.label + '을(를) 입력하세요.') : '';
+        if (f.error) hasErr = true;
+      });
+      if (hasErr) return;
       memoDialog.show = false;
-      if (memoDialog.resolve) memoDialog.resolve({ ok: true, memo: memoDialog.memo });
+      var result = { ok: true, memo: memoDialog.memo };
+      memoDialog.dlivFields.forEach(function (f) {
+        result[f.key] = f.value;
+        if (f.isCourier) result[f.key + '_code'] = f.courierCd;
+      });
+      if (memoDialog.itemRows.length) {
+        result.claimItems = memoDialog.itemRows
+          .filter(function (r) { return r.claimQty > 0; })
+          .map(function (r) { return { orderItemId: r.orderItemId, claimQty: r.claimQty }; });
+      }
+      if (memoDialog.resolve) memoDialog.resolve(result);
     };
     const handleMemoDialogCancel = () => {
       memoDialog.show = false;
@@ -624,7 +736,10 @@ window.OdOrderKanban = {
     /* 주문항목 상태 변경 */
     const handleChangeOrderItemStatus = async (item, toKey) => {
       if (cfReadonly.value) return;
-      if (DLIV_REQ_STEPS.has(toKey) && !handleValidateDliv(item)) return;
+      /* 반품/교환 신청 — 클레임 신규 생성 흐름으로 위임 */
+      if (toKey === 'NEW_RETURN' || toKey === 'NEW_EXCHANGE') {
+        return handleCreateClaim(item, toKey === 'NEW_RETURN' ? 'RETURN' : 'EXCHANGE');
+      }
       const fromKey = item.orderItemStatusCd || item.order_item_status_cd || '';
       if (fromKey === toKey) return;
 
@@ -642,23 +757,222 @@ window.OdOrderKanban = {
 
       const fromLabel = fnStepLabel(ORDER_STEPS, fromKey);
       const toLabel   = fnStepLabel(ORDER_STEPS, toKey);
-      const dlg = await doConfirmWithMemo('주문 상태 변경', '"' + fromLabel + '" → "' + toLabel + '" 으로 변경');
+      /* 취소(CANCELLED) / SHIPPING 진입 시 itemRows / 배송 정보 포함 */
+      var dlgOpts = {};
+      if (toKey === 'SHIPPING') {
+        dlgOpts.dlivFields = [
+          { key: 'dlivCourierCd',  label: '배송 택배사',  required: true, isCourier: true, value: item.dlivCourierCd  || item.dliv_courier_cd  || '' },
+          { key: 'dlivTrackingNo', label: '배송 송장번호', required: true, value: item.dlivTrackingNo || item.dliv_tracking_no || '' },
+        ];
+      }
+      if (toKey === 'CANCELLED') {
+        dlgOpts.claimType = 'CANCEL';
+        dlgOpts.itemRows = orderItems.map(function (it) {
+          var oid = it.orderItemId || it.order_item_id || '';
+          var qty = it.orderQty || it.order_qty || 1;
+          var isTarget = oid === (item.orderItemId || item.order_item_id || '');
+          return {
+            orderItemId: oid,
+            prodNm:      it.prodNm || it.prod_nm || '',
+            optItemNm1:  it.optItemNm1 || it.opt_item_nm1 || '',
+            optItemNm2:  it.optItemNm2 || it.opt_item_nm2 || '',
+            orderQty:    qty,
+            claimQty:    isTarget ? qty : 0,
+          };
+        });
+      }
+      const dlg = await doConfirmWithMemo('주문 상태 변경', '"' + fromLabel + '" → "' + toLabel + '" 으로 변경', dlgOpts);
       if (!dlg.ok) return;
       try {
-        const itemId = item.orderItemId || item.order_item_id;
+        const body = { orderItemId: itemId, orderItemStatusCd: toKey, memo: dlg.memo || null, rowStatus: 'U' };
+        if (toKey === 'SHIPPING') {
+          body.dlivCourierCd  = dlg.dlivCourierCd;
+          body.dlivTrackingNo = dlg.dlivTrackingNo;
+        }
         await apiInst.value.post(
           '/base/ec/od/order-item/save/base',
-          { orderItemId: itemId, orderItemStatusCd: toKey, memo: dlg.memo || null, rowStatus: 'U' },
+          body,
           coUtil.cofApiHdr('주문칸반', '상태변경')
         );
         /* 로컬 상태 즉시 반영 */
         if (Object.prototype.hasOwnProperty.call(item, 'orderItemStatusCd')) item.orderItemStatusCd = toKey;
         else item.order_item_status_cd = toKey;
+        if (toKey === 'SHIPPING') {
+          item.dlivCourierCd  = dlg.dlivCourierCd;
+          item.dlivTrackingNo = dlg.dlivTrackingNo;
+        }
         toast(toLabel + '으로 변경되었습니다.', 'success');
       } catch (e) {
         toast((e.response && e.response.data && e.response.data.message) || e.message || '상태 변경 중 오류가 발생했습니다.', 'error', 0);
       }
     };
+
+    /* 반품/교환 클레임 신규 생성 */
+    const handleCreateClaim = async (item, claimType) => {
+      const typeLabel = claimType === 'RETURN' ? '반품' : '교환';
+      const itemId    = item.orderItemId || item.order_item_id || '';
+      const orderId   = order.orderId    || order.order_id    || '';
+      const memberId  = order.memberId   || order.member_id   || '';
+      const prodNm    = item.prodNm      || item.prod_nm      || '';
+      /* 주문상품 전체를 itemRows로 빌드 — 클릭한 항목만 전체수량, 나머지는 0 */
+      const claimItemRows = orderItems.map(function (it) {
+        var oid = it.orderItemId || it.order_item_id || '';
+        var qty = it.orderQty || it.order_qty || 1;
+        var isTarget = oid === itemId;
+        return {
+          orderItemId: oid,
+          prodNm:      it.prodNm || it.prod_nm || '',
+          optItemNm1:  it.optItemNm1 || it.opt_item_nm1 || '',
+          optItemNm2:  it.optItemNm2 || it.opt_item_nm2 || '',
+          orderQty:    qty,
+          claimQty:    isTarget ? qty : 0,
+        };
+      });
+      const dlg = await doConfirmWithMemo(
+        typeLabel + ' 신청',
+        '신청 대상 항목을 확인하고 클레임 수량을 입력하세요.',
+        { itemRows: claimItemRows, claimType: claimType }
+      );
+      if (!dlg.ok) return;
+      try {
+        const body = {
+          siteId:         order.siteId    || order.site_id    || '',
+          orderId:        orderId,
+          orderItemId:    itemId,
+          memberId:       memberId,
+          memberNm:       order.memberNm  || order.member_nm  || '',
+          prodNm:         prodNm,
+          claimTypeCd:    claimType,
+          claimStatusCd:  'REQUESTED',
+          reasonDetail:   dlg.memo || '',
+          claimItems:     dlg.claimItems  || [],
+        };
+        await apiInst.value.post(
+          '/bo/ec/od/claim',
+          body,
+          coUtil.cofApiHdr('주문칸반', typeLabel + '신청')
+        );
+        toast(typeLabel + ' 신청이 등록되었습니다.', 'success');
+        /* 클레임 목록 새로고침 */
+        await handleLoadOrder();
+      } catch (e) {
+        toast((e.response && e.response.data && e.response.data.message) || e.message || typeLabel + ' 신청 중 오류가 발생했습니다.', 'error', 0);
+      }
+    };
+
+    /* ── 클레임 금액 계산 다이얼로그 ── */
+    const calcDialog = reactive({
+      show:    false,
+      loading: false,
+      claimId: '',
+      claimType: '',
+      data:    null,  /* { order, claimItems, discounts } */
+    });
+
+    /* fnCalcClaimAmt — 클레임 대상 항목 기준 환불 예정 계산 */
+    const fnCalcClaimAmt = function (claimData) {
+      var items = claimData.claimItems || [];
+      /* 기본 상품금액 합산 */
+      var itemAmt = items.reduce(function (s, it) {
+        return s + (it.itemAmt || it.item_amt || (it.unitPrice || it.unit_price || 0) * (it.claimQty || it.claim_qty || 1));
+      }, 0);
+      /* 비례 할인 계산 (주문 총액 대비 클레임 항목 비율) */
+      var orderTotalAmt = order.payAmt || order.pay_amt || order.totalAmt || order.total_amt || 0;
+      var orderItemAmt  = orderItems.reduce(function (s, it) {
+        return s + ((it.salePrice || it.sale_price || 0) * (it.orderQty || it.order_qty || 1));
+      }, 0);
+      var ratio = orderItemAmt > 0 ? itemAmt / orderItemAmt : 0;
+      /* 쿠폰 할인 복구 */
+      var couponDiscAmt = Math.round((order.couponDiscAmt || order.coupon_disc_amt || 0) * ratio);
+      /* 적립금 사용 복구 */
+      var saveUsedAmt   = Math.round((order.saveUsedAmt  || order.save_used_amt  || 0) * ratio);
+      /* 포인트/캐시 사용 복구 */
+      var cacheUsedAmt  = Math.round((order.cacheUsedAmt || order.cache_used_amt || 0) * ratio);
+      /* 배송비 환불 여부 (전체 취소인 경우만) */
+      var totalClaimQty = items.reduce(function (s, it) { return s + (it.claimQty || it.claim_qty || 1); }, 0);
+      var totalOrderQty = orderItems.reduce(function (s, it) { return s + (it.orderQty || it.order_qty || 1); }, 0);
+      var isFullCancel  = totalClaimQty >= totalOrderQty;
+      var dlivFeeRefund = isFullCancel ? (order.dlivFee || order.dliv_fee || 0) : 0;
+      /* 최종 환불 예정액 */
+      var refundBase = itemAmt - couponDiscAmt - saveUsedAmt - cacheUsedAmt + dlivFeeRefund;
+      if (refundBase < 0) refundBase = 0;
+      return {
+        itemAmt:        itemAmt,
+        couponDiscAmt:  couponDiscAmt,
+        saveUsedAmt:    saveUsedAmt,
+        cacheUsedAmt:   cacheUsedAmt,
+        dlivFeeRefund:  dlivFeeRefund,
+        refundBase:     refundBase,
+        isFullCancel:   isFullCancel,
+        ratio:          ratio,
+        orderTotalAmt:  orderTotalAmt,
+        couponNm:       order.couponNm       || order.coupon_nm       || '',
+        saveGradePct:   order.saveGradePct   || order.save_grade_pct  || 0,
+      };
+    };
+
+    /* handleOpenCalcDialog(claimOrId | 'memo-preview')
+     *   - claimId 문자열 or 클레임 객체: API 조회 후 계산
+     *   - 'memo-preview': 메모 다이얼로그의 현재 itemRows로 즉시 계산 (저장 전 미리보기)
+     */
+    const handleOpenCalcDialog = async function (claimOrId) {
+      if (claimOrId === 'memo-preview') {
+        /* 메모 다이얼로그 내 미리보기 — itemRows로 직접 계산 */
+        var previewItems = memoDialog.itemRows.filter(function (r) { return r.claimQty > 0; }).map(function (r) {
+          return { orderItemId: r.orderItemId, claimQty: r.claimQty, unitPrice: 0, itemAmt: 0 };
+        });
+        /* itemAmt 역산: orderItems에서 단가 조회 */
+        previewItems.forEach(function (pi) {
+          var oi = orderItems.find(function (it) { return (it.orderItemId || it.order_item_id) === pi.orderItemId; });
+          if (oi) {
+            var price = oi.salePrice || oi.sale_price || oi.unitPrice || oi.unit_price || 0;
+            pi.unitPrice = price;
+            pi.itemAmt   = price * pi.claimQty;
+          }
+        });
+        calcDialog.claimId   = '';
+        calcDialog.claimType = memoDialog.claimType;
+        calcDialog.data      = null;
+        calcDialog.loading   = false;
+        calcDialog.show      = true;
+        var calc = fnCalcClaimAmt({ claimItems: previewItems });
+        calcDialog.data = { claim: { claimItems: previewItems }, calc: calc };
+        return;
+      }
+      var cid = '';
+      var existClaim = null;
+      if (typeof claimOrId === 'string') {
+        cid = claimOrId;
+        existClaim = claims.find(function (c) { return (c.claimId || c.claim_id) === cid; });
+      } else if (claimOrId && typeof claimOrId === 'object') {
+        existClaim = claimOrId;
+        cid = claimOrId.claimId || claimOrId.claim_id || '';
+      }
+      calcDialog.claimId   = cid;
+      calcDialog.claimType = existClaim ? (existClaim.claimTypeCd || existClaim.claim_type_cd || '') : '';
+      calcDialog.data      = null;
+      calcDialog.loading   = true;
+      calcDialog.show      = true;
+      try {
+        /* 클레임 상세(claimItems 포함)가 이미 있으면 재사용, 없으면 API 조회 */
+        var claimData = existClaim;
+        if (!claimData || !(claimData.claimItems && claimData.claimItems.length)) {
+          var cr = await boApiSvc.odClaim.getById(cid, '주문칸반', '계산조회');
+          claimData = (cr.data && cr.data.data) || cr.data || {};
+        }
+        /* 주문 정보가 없으면 로드 */
+        if (!order.orderId && !order.order_id) { await handleLoadOrder(); }
+        var calc = fnCalcClaimAmt(claimData);
+        calcDialog.data      = { claim: claimData, calc: calc };
+        calcDialog.claimType = claimData.claimTypeCd || claimData.claim_type_cd || calcDialog.claimType;
+      } catch (e) {
+        toast('계산 정보를 불러오는 중 오류가 발생했습니다.', 'error', 0);
+        calcDialog.show = false;
+      } finally {
+        calcDialog.loading = false;
+      }
+    };
+    const handleCloseCalcDialog = function () { calcDialog.show = false; };
 
     /* 클레임 상태 변경 */
     const handleChangeClaimStatus = async (claim, toKey) => {
@@ -672,18 +986,28 @@ window.OdOrderKanban = {
           || claim.dlivStatusCd || claim.dliv_status_cd || '';
         if (dlivStatusCd === toStep.dlivKey) return;
         const fromLabel = dlivStatusCd || '(이전 상태)';
-        const dlg = await doConfirmWithMemo('교환 배송 상태 변경', '"' + fromLabel + '" → "' + toStep.label + '" 으로 변경');
+        /* DLIV_IN_TRANSIT(배송중) 진입 시 재배송 택배사/송장번호 필수 */
+        const needExchDliv = toStep.dlivKey === 'IN_TRANSIT';
+        const exchDlgOpts = needExchDliv ? { dlivFields: [
+          { key: 'exchangeCourierCd',  label: '재배송 택배사',  required: true, isCourier: true, value: claim.exchangeCourierCd  || '' },
+          { key: 'exchangeTrackingNo', label: '재배송 송장번호', required: true, value: claim.exchangeTrackingNo || '' },
+        ]} : {};
+        const dlg = await doConfirmWithMemo('교환 배송 상태 변경', '"' + fromLabel + '" → "' + toStep.label + '" 으로 변경', exchDlgOpts);
         if (!dlg.ok) return;
         try {
           const cid = claim.claimId || claim.claim_id;
-          await apiInst.value.post(
-            '/bo/ec/od/claim/save/exchange-dliv-status',
-            { claimId: cid, dlivStatusCd: toStep.dlivKey, memo: dlg.memo || null, rowStatus: 'U' },
-            coUtil.cofApiHdr('주문칸반', '교환배송상태변경')
-          );
-          /* 로컬 반영 */
+          const body = { claimId: cid, dlivStatusCd: toStep.dlivKey, memo: dlg.memo || null, rowStatus: 'U' };
+          if (needExchDliv) {
+            body.exchangeCourierCd  = dlg.exchangeCourierCd;
+            body.exchangeTrackingNo = dlg.exchangeTrackingNo;
+          }
+          await apiInst.value.post('/bo/ec/od/claim/save/exchange-dliv-status', body, coUtil.cofApiHdr('주문칸반', '교환배송상태변경'));
           if (Object.prototype.hasOwnProperty.call(claim, 'exchangeDlivStatusCd')) claim.exchangeDlivStatusCd = toStep.dlivKey;
           else claim.exchange_dliv_status_cd = toStep.dlivKey;
+          if (needExchDliv) {
+            claim.exchangeCourierCd  = dlg.exchangeCourierCd;
+            claim.exchangeTrackingNo = dlg.exchangeTrackingNo;
+          }
           toast(toStep.label + '으로 변경되었습니다.', 'success');
         } catch (e) {
           toast((e.response && e.response.data && e.response.data.message) || e.message || '배송 상태 변경 중 오류가 발생했습니다.', 'error', 0);
@@ -692,22 +1016,41 @@ window.OdOrderKanban = {
       }
 
       /* 일반 클레임 상태 변경 */
-      const fromKey = claim.claimStatusCd || claim.claim_status_cd || '';
+      const fromKey   = claim.claimStatusCd || claim.claim_status_cd || '';
       if (fromKey === toKey) return;
       const fromLabel = fnStepLabel(flow, fromKey);
       const toLabel   = fnStepLabel(flow, toKey);
       const typeLabel = fnClaimTypeLabel(claim);
-      const dlg = await doConfirmWithMemo(typeLabel + ' 상태 변경', '"' + fromLabel + '" → "' + toLabel + '" 으로 변경');
+      const claimType = fnClaimTypeKey(claim);
+      /*
+       * 택배사/송장번호 필드 구성:
+       * - RETURN/EXCHANGE + APPROVED→IN_PICKUP : 반품 수거 택배사 + 송장번호 (필수)
+       * 나머지는 필드 없음 (메모만)
+       */
+      var dlgFields = [];
+      if (toKey === 'IN_PICKUP' && (claimType === 'RETURN' || claimType === 'EXCHANGE')) {
+        dlgFields = [
+          { key: 'returnCourierCd',  label: '반품 수거 택배사',  required: true, isCourier: true, value: claim.returnCourierCd  || '' },
+          { key: 'returnTrackingNo', label: '반품 수거 송장번호', required: true, value: claim.returnTrackingNo || '' },
+        ];
+      }
+      const claimDlgOpts = dlgFields.length ? { dlivFields: dlgFields } : {};
+      const dlg = await doConfirmWithMemo(typeLabel + ' 상태 변경', '"' + fromLabel + '" → "' + toLabel + '" 으로 변경', claimDlgOpts);
       if (!dlg.ok) return;
       try {
         const cid = claim.claimId || claim.claim_id;
-        await apiInst.value.post(
-          '/bo/ec/od/claim/save/status',
-          { claimId: cid, claimStatusCd: toKey, memo: dlg.memo || null, rowStatus: 'U' },
-          coUtil.cofApiHdr('주문칸반', '클레임상태변경')
-        );
+        const body = { claimId: cid, claimStatusCd: toKey, memo: dlg.memo || null, rowStatus: 'U' };
+        if (dlgFields.length) {
+          body.returnCourierCd  = dlg.returnCourierCd;
+          body.returnTrackingNo = dlg.returnTrackingNo;
+        }
+        await apiInst.value.post('/bo/ec/od/claim/save/status', body, coUtil.cofApiHdr('주문칸반', '클레임상태변경'));
         if (Object.prototype.hasOwnProperty.call(claim, 'claimStatusCd')) claim.claimStatusCd = toKey;
         else claim.claim_status_cd = toKey;
+        if (dlgFields.length) {
+          claim.returnCourierCd  = dlg.returnCourierCd;
+          claim.returnTrackingNo = dlg.returnTrackingNo;
+        }
         toast(toLabel + '으로 변경되었습니다.', 'success');
       } catch (e) {
         toast((e.response && e.response.data && e.response.data.message) || e.message || '클레임 상태 변경 중 오류가 발생했습니다.', 'error', 0);
@@ -975,7 +1318,16 @@ window.OdOrderKanban = {
 
     /* ##### [06] 라이프사이클 ###################################################### */
 
-    onMounted(function () { handleLoadOrder(); });
+    onMounted(function () {
+      handleLoadOrder();
+      /* 택배사 코드 로드 */
+      if (window.coApiSvc && window.coApiSvc.syCode) {
+        window.coApiSvc.syCode.getGrpCodes('COURIER', '주문칸반', '택배사코드조회').then(function (r) {
+          var list = (r.data && r.data.data) || [];
+          courierCodes.splice(0, courierCodes.length, ...list);
+        }).catch(function () {});
+      }
+    });
 
     /* ##### [06-B] ID 패널 핸들러 ################################################## */
 
@@ -1034,12 +1386,16 @@ window.OdOrderKanban = {
       var locked = fnSettleLockState(item.orderItemId || item.order_item_id) === 'blocked';
       if (locked) return [];
       var MAP = {
-        ORDERED:   [{ key: 'PAID',      label: '결제확인', cls: 'act-forward', side: 'right' }],
-        PAID:      [{ key: 'PREPARING', label: '준비시작', cls: 'act-forward', side: 'right' }],
-        PREPARING: [{ key: 'SHIPPING',  label: '배송처리', cls: 'act-forward', side: 'right' },
-                    { key: 'CANCELLED', label: '취소',      cls: 'act-danger',  side: 'left'  }],
+        ORDERED:   [{ key: 'CANCELLED', label: '취소',      cls: 'act-danger',  side: 'left'  },
+                    { key: 'PAID',      label: '결제확인', cls: 'act-forward', side: 'right' }],
+        PAID:      [{ key: 'CANCELLED', label: '취소',      cls: 'act-danger',  side: 'left'  },
+                    { key: 'PREPARING', label: '준비시작', cls: 'act-forward', side: 'right' }],
+        PREPARING: [{ key: 'CANCELLED', label: '취소',      cls: 'act-danger',  side: 'left'  },
+                    { key: 'SHIPPING',  label: '배송처리', cls: 'act-forward', side: 'right' }],
         SHIPPING:  [{ key: 'DELIVERED', label: '배송완료', cls: 'act-forward', side: 'right' }],
-        DELIVERED: [{ key: 'CONFIRMED', label: '구매확정', cls: 'act-forward', side: 'right' }],
+        DELIVERED: [{ key: 'NEW_RETURN',   label: '반품',   cls: 'act-claim-return',   side: 'left'  },
+                    { key: 'NEW_EXCHANGE', label: '교환',   cls: 'act-claim-exchange', side: 'left'  },
+                    { key: 'CONFIRMED',    label: '구매확정', cls: 'act-forward',         side: 'right' }],
       };
       return MAP[st] || [];
     };
@@ -1112,8 +1468,11 @@ window.OdOrderKanban = {
       handleDragStart, handleDragEnd, handleDragOver, handleDragLeave,
       handleDropOrderItem, handleDropClaim,
       fnOrderItemActions, fnClaimActions,
-      handleChangeOrderItemStatus, handleChangeClaimStatus,
+      handleChangeOrderItemStatus, handleCreateClaim, handleChangeClaimStatus,
       memoDialog, handleMemoDialogOk, handleMemoDialogCancel,
+      handleItemRowClaimQtyInput, handleSelectAllItemRows,
+      calcDialog, handleOpenCalcDialog, handleCloseCalcDialog,
+      courierCodes,
       pickerState, handlePickerOpen, handlePickerSearch, handlePickerSelect,
       handleClose,
       fnItemHasDliv, fnItemHasSettleClosed, fnItemHasVoucher,
@@ -1340,6 +1699,7 @@ window.OdOrderKanban = {
                         :style="fnIsHlId(claim._orderItemId) ? 'outline:2px solid #2563eb;background:#dbeafe;border-radius:3px;opacity:1;' : ''"
                       >{{ claim._orderItemId }}</span>
                       <div class="od-kanban-card-hdr-icons">
+                        <button class="od-kanban-card-icon-btn" title="환불 계산" style="font-size:9px;padding:1px 4px;" @click.stop="handleOpenCalcDialog(claim)">💰</button>
                         <button v-if="fnClaimHasDliv(claim)" class="od-kanban-card-icon-btn" title="배송정보" @click.stop="handleClaimDlivIconClick(claim)">🚚</button>
                         <button v-if="fnClaimHasSettleClosed(claim)" class="od-kanban-card-icon-btn" title="정산마감" @click.stop="handleClaimSettleIconClick(claim)">🔒</button>
                         <button v-if="fnClaimHasVoucher(claim)" class="od-kanban-card-icon-btn" title="ERP전표" @click.stop="handleClaimVoucherIconClick(claim)">📄</button>
@@ -1481,6 +1841,66 @@ window.OdOrderKanban = {
         </div>
         <div class="od-kanban-memo-body">
           <div class="od-kanban-memo-desc">{{ memoDialog.desc }}</div>
+          <div v-if="memoDialog.itemRows.length" class="od-kanban-item-rows">
+            <div class="od-kanban-item-rows-hdr">
+              <span class="od-kanban-item-rows-title">🛍️ 주문 상품 목록</span>
+              <div style="display:flex;gap:4px;">
+                <button class="od-kanban-item-rows-all-btn" @click="handleSelectAllItemRows">전체주문상품선택</button>
+                <button class="od-kanban-item-rows-all-btn" style="border-color:#059669;color:#059669;" @click="handleOpenCalcDialog('memo-preview')">💰 계산</button>
+              </div>
+            </div>
+            <table class="od-kanban-item-table">
+              <thead><tr>
+                <th style="width:24px;"></th>
+                <th style="text-align:left;">상품명</th>
+                <th>옵션1</th>
+                <th>옵션2</th>
+                <th>수량</th>
+                <th>클레임수량</th>
+              </tr></thead>
+              <tbody>
+                <tr v-for="(row, ri) in memoDialog.itemRows" :key="row.orderItemId || ri"
+                  :class="{ 'row-checked': row.checked }">
+                  <td style="text-align:center;">
+                    <input type="checkbox" v-model="row.checked" style="cursor:pointer;" />
+                  </td>
+                  <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" :title="row.prodNm">{{ row.prodNm }}</td>
+                  <td style="text-align:center;">{{ row.optItemNm1 || '-' }}</td>
+                  <td style="text-align:center;">{{ row.optItemNm2 || '-' }}</td>
+                  <td style="text-align:center;">{{ row.orderQty }}</td>
+                  <td style="text-align:center;">
+                    <input type="number" class="od-kanban-claim-qty-input"
+                      :value="row.claimQty" min="0" :max="row.orderQty"
+                      @input="e => handleItemRowClaimQtyInput(row, e)" />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div v-if="memoDialog.dlivFields.length" class="od-kanban-dliv-section">
+            <div class="od-kanban-dliv-section-title">🚚 배송 정보 입력</div>
+            <div class="od-kanban-dliv-grid">
+              <div v-for="f in memoDialog.dlivFields" :key="f.key" class="od-kanban-dliv-pair">
+                <div :class="['od-kanban-dliv-pair-lbl', f.required ? 'req' : '']">{{ f.label }}</div>
+                <div class="od-kanban-dliv-pair-row">
+                  <template v-if="f.isCourier">
+                    <select :class="['od-kanban-dliv-courier-sel', f.error ? 'err' : '']"
+                      :value="f.courierCd"
+                      @change="e => { const opt = courierCodes.find(c => c.codeValue === e.target.value); f.courierCd = e.target.value; f.value = opt ? opt.codeLabel : e.target.value; f.error = ''; }">
+                      <option value="">택배사 선택...</option>
+                      <option v-for="c in courierCodes" :key="c.codeValue" :value="c.codeValue">{{ c.codeLabel }}</option>
+                    </select>
+                  </template>
+                  <template v-else>
+                    <input class="od-kanban-dliv-input" :class="{ err: f.error }"
+                      v-model="f.value" placeholder="송장번호 입력..."
+                      @input="f.error = ''" />
+                  </template>
+                </div>
+                <span v-if="f.error" class="od-kanban-dliv-err">{{ f.error }}</span>
+              </div>
+            </div>
+          </div>
           <div class="od-kanban-memo-label">메모 (선택)</div>
           <textarea class="od-kanban-memo-ta" v-model="memoDialog.memo"
             placeholder="상태 변경 사유나 메모를 입력하세요..."
@@ -1489,6 +1909,115 @@ window.OdOrderKanban = {
             <button class="od-kanban-memo-btn-cancel" @click="handleMemoDialogCancel">취소</button>
             <button class="od-kanban-memo-btn-ok" @click="handleMemoDialogOk">확인</button>
           </div>
+        </div>
+      </div>
+    </div>
+  </teleport>
+
+  <!-- ── 클레임 금액 계산 다이얼로그 (claimId 있는 경우: 공용 풀모달) ── -->
+  <od-claim-calc-modal :show="calcDialog.show &amp;&amp; !!calcDialog.claimId" :claim-id="calcDialog.claimId" @close="handleCloseCalcDialog" />
+  <!-- ── 클레임 금액 계산 다이얼로그 (memo-preview: claimId 없는 간단 오버레이) ── -->
+  <teleport to="body">
+    <div v-if="calcDialog.show &amp;&amp; !calcDialog.claimId" class="od-kanban-calc-overlay" @mousedown.self="handleCloseCalcDialog">
+      <div class="od-kanban-calc-box">
+        <div class="od-kanban-calc-hdr">
+          <span class="od-kanban-calc-hdr-icon">💰</span>
+          <span class="od-kanban-calc-hdr-title">
+            환불 예정 계산
+            <span v-if="calcDialog.claimType" style="font-size:11px;font-weight:600;margin-left:8px;opacity:.7;">
+              ({{ calcDialog.claimType === 'CANCEL' ? '취소' : calcDialog.claimType === 'RETURN' ? '반품' : calcDialog.claimType === 'EXCHANGE' ? '교환' : calcDialog.claimType }})
+            </span>
+            <span v-if="calcDialog.claimId" style="font-size:10px;font-weight:400;color:#6b7280;margin-left:6px;">{{ calcDialog.claimId }}</span>
+          </span>
+          <button class="od-kanban-calc-hdr-close" @click="handleCloseCalcDialog">✕</button>
+        </div>
+        <div class="od-kanban-calc-body">
+          <div v-if="calcDialog.loading" class="od-kanban-calc-loading">⏳ 계산 중...</div>
+          <template v-else-if="calcDialog.data">
+            <!-- 클레임 항목 테이블 -->
+            <div class="od-kanban-calc-section">
+              <div class="od-kanban-calc-section-title">🛍️ 클레임 대상 항목</div>
+              <table class="od-kanban-calc-items-table">
+                <thead><tr>
+                  <th style="text-align:left;">상품명</th>
+                  <th>클레임수량</th>
+                  <th style="text-align:right;">항목금액</th>
+                </tr></thead>
+                <tbody>
+                  <tr v-for="(it, i) in (calcDialog.data.claim.claimItems || [])" :key="i">
+                    <td>{{ it.prodNm || it.prod_nm || '-' }}</td>
+                    <td style="text-align:center;">{{ it.claimQty || it.claim_qty || 1 }}</td>
+                    <td style="text-align:right;font-family:monospace;">
+                      {{ (it.itemAmt || it.item_amt || 0).toLocaleString() }}원
+                    </td>
+                  </tr>
+                  <tr v-if="!(calcDialog.data.claim.claimItems || []).length">
+                    <td colspan="3" style="text-align:center;color:#94a3b8;">항목 없음</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <!-- 금액 계산 내역 -->
+            <div class="od-kanban-calc-section">
+              <div class="od-kanban-calc-section-title">📊 환불 계산 내역</div>
+              <div class="od-kanban-calc-row">
+                <span class="od-kanban-calc-label">클레임 항목 금액</span>
+                <span class="od-kanban-calc-value">{{ calcDialog.data.calc.itemAmt.toLocaleString() }}원</span>
+              </div>
+              <div v-if="calcDialog.data.calc.dlivFeeRefund > 0" class="od-kanban-calc-row refund">
+                <span class="od-kanban-calc-label">배송비 환불 (전체취소)</span>
+                <span class="od-kanban-calc-value">+ {{ calcDialog.data.calc.dlivFeeRefund.toLocaleString() }}원</span>
+              </div>
+              <div v-if="calcDialog.data.calc.couponDiscAmt > 0" class="od-kanban-calc-row deduct">
+                <span class="od-kanban-calc-label">쿠폰 할인 차감
+                  <span v-if="calcDialog.data.calc.couponNm" style="font-size:10px;margin-left:4px;color:#9ca3af;">({{ calcDialog.data.calc.couponNm }})</span>
+                </span>
+                <span class="od-kanban-calc-value">- {{ calcDialog.data.calc.couponDiscAmt.toLocaleString() }}원</span>
+              </div>
+              <div v-if="calcDialog.data.calc.saveUsedAmt > 0" class="od-kanban-calc-row deduct">
+                <span class="od-kanban-calc-label">적립금 사용 차감</span>
+                <span class="od-kanban-calc-value">- {{ calcDialog.data.calc.saveUsedAmt.toLocaleString() }}원</span>
+              </div>
+              <div v-if="calcDialog.data.calc.cacheUsedAmt > 0" class="od-kanban-calc-row deduct">
+                <span class="od-kanban-calc-label">충전금(캐시) 사용 차감</span>
+                <span class="od-kanban-calc-value">- {{ calcDialog.data.calc.cacheUsedAmt.toLocaleString() }}원</span>
+              </div>
+              <div class="od-kanban-calc-row total">
+                <span class="od-kanban-calc-label">환불 예정액</span>
+                <span class="od-kanban-calc-value" style="color:#059669;font-size:15px;">
+                  {{ calcDialog.data.calc.refundBase.toLocaleString() }}원
+                </span>
+              </div>
+            </div>
+            <!-- 프로모션 복구 정보 -->
+            <div v-if="calcDialog.data.calc.couponDiscAmt > 0 || calcDialog.data.calc.saveUsedAmt > 0 || calcDialog.data.calc.cacheUsedAmt > 0"
+              class="od-kanban-calc-section">
+              <div class="od-kanban-calc-section-title">🎁 프로모션 복구 정보</div>
+              <div v-if="calcDialog.data.calc.couponDiscAmt > 0" class="od-kanban-calc-row">
+                <span class="od-kanban-calc-label">쿠폰 복구</span>
+                <span><span class="od-kanban-calc-chip orange">쿠폰 재발급 필요</span></span>
+              </div>
+              <div v-if="calcDialog.data.calc.saveUsedAmt > 0" class="od-kanban-calc-row">
+                <span class="od-kanban-calc-label">적립금 복구</span>
+                <span>
+                  <span class="od-kanban-calc-chip green">{{ calcDialog.data.calc.saveUsedAmt.toLocaleString() }}원 복구</span>
+                  <span v-if="calcDialog.data.calc.saveGradePct" class="od-kanban-calc-chip gray" style="margin-left:2px;">등급 적립 {{ calcDialog.data.calc.saveGradePct }}%</span>
+                </span>
+              </div>
+              <div v-if="calcDialog.data.calc.cacheUsedAmt > 0" class="od-kanban-calc-row">
+                <span class="od-kanban-calc-label">충전금 복구</span>
+                <span><span class="od-kanban-calc-chip blue">{{ calcDialog.data.calc.cacheUsedAmt.toLocaleString() }}원 복구</span></span>
+              </div>
+            </div>
+            <!-- 참고 -->
+            <div class="od-kanban-calc-note">
+              ※ 비례 계산 기준: 클레임 항목 금액 / 전체 주문 상품금액 ({{ Math.round(calcDialog.data.calc.ratio * 100) }}%)
+              <br>※ 실제 환불액은 결제 수단별 정책 및 배송비 공제 여부에 따라 달라질 수 있습니다.
+            </div>
+          </template>
+        </div>
+        <div class="od-kanban-calc-actions">
+          <button class="od-kanban-calc-close-btn" @click="handleCloseCalcDialog">닫기</button>
         </div>
       </div>
     </div>

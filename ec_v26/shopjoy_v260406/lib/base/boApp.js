@@ -3039,6 +3039,7 @@
     .component('OdOrderDtl', window.OdOrderDtl)
     .component('OdOrderHist', window.OdOrderHist)
     /* ── pages/bo/ec/ — 클레임 ── */
+    .component('OdClaimCalcModal', window.OdClaimCalcModal)
     .component('OdClaimMng', window.OdClaimMng)
     .component('OdClaimDtl', window.OdClaimDtl)
     .component('OdClaimHist', window.OdClaimHist)

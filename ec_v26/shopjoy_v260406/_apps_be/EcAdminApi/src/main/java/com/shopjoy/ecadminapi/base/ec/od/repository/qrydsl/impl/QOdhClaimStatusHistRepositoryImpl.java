@@ -58,6 +58,7 @@ public class QOdhClaimStatusHistRepositoryImpl implements QOdhClaimStatusHistRep
                 .where(
                     baseAndSiteId(search),
                     baseAndClaimStatusHistId(search),
+                    baseAndClaimId(search),
                     baseAndSearchValue(search)
                 )
                 .orderBy(orderList.toArray(OrderSpecifier[]::new));
@@ -83,6 +84,7 @@ public class QOdhClaimStatusHistRepositoryImpl implements QOdhClaimStatusHistRep
         BooleanExpression[] wheres = {
                 baseAndSiteId(search),
                 baseAndClaimStatusHistId(search),
+                baseAndClaimId(search),
                 baseAndSearchValue(search)
         };
 
@@ -125,6 +127,12 @@ public class QOdhClaimStatusHistRepositoryImpl implements QOdhClaimStatusHistRep
     private BooleanExpression baseAndClaimStatusHistId(OdhClaimStatusHistDto.Request search) {
         return search != null && StringUtils.hasText(search.getClaimStatusHistId())
                 ? odhClaimStatusHist.claimStatusHistId.eq(search.getClaimStatusHistId()) : null;
+    }
+
+    /* claimId 정확 일치 */
+    private BooleanExpression baseAndClaimId(OdhClaimStatusHistDto.Request search) {
+        return search != null && StringUtils.hasText(search.getClaimId())
+                ? odhClaimStatusHist.claimId.eq(search.getClaimId()) : null;
     }
 
     /* searchValue LIKE OR — searchType csv 분기 (없으면 전체 필드) */

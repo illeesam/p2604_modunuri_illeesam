@@ -850,34 +850,34 @@ window.OdOrderDtl = {
     <!-- ===== ■.■. 결제정보 탭 ================================================ -->
     <div v-if="showTab('payment')" class="dtl-pane" style="padding:20px;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">💳 결제정보 <span class="tab-count"> {{ cfPaymentList.length }} </span></div>
-      <!-- ===== ■.■.■. 결제 요약 + 토스 브랜드페이 결제 (편집 모드) ==================== -->
+      <!-- ===== ■.■.■. 결제 요약 + 토스 간편위젯 결제 (편집 모드) ==================== -->
       <div v-if="!cfDtlMode" style="margin-bottom:18px;padding:16px 18px;background:#f9fafb;border:1px solid #e5e8ed;border-radius:10px;">
-        <div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;">
-          <div class="form-group" style="margin:0;">
-            <label class="form-label">상품 합계</label>
-            <div class="form-control" style="background:#fff;text-align:right;font-weight:700;min-width:120px;">{{ fmt(orderItems.reduce((s,x)=>s+(Number(x.price)||0),0)) }}</div>
+        <div style="display:flex;gap:24px;align-items:flex-start;">
+          <!-- 좌: 금액 요약 -->
+          <div style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;flex:1;">
+            <div class="form-group" style="margin:0;">
+              <label class="form-label">상품 합계</label>
+              <div class="form-control" style="background:#fff;text-align:right;font-weight:700;min-width:120px;">{{ fmt(orderItems.reduce((s,x)=>s+(Number(x.price)||0),0)) }}</div>
+            </div>
+            <div style="font-size:18px;color:#bbb;padding-bottom:6px;">+</div>
+            <div class="form-group" style="margin:0;">
+              <label class="form-label">배송비 <span style="font-size:10px;color:#e8587a;">(추가요청 가능)</span></label>
+              <input class="form-control" type="number" v-model.number="form.dlivFee" style="text-align:right;min-width:120px;" @input="handleSelectAction('dlivFee-change')" />
+            </div>
+            <div style="font-size:18px;color:#bbb;padding-bottom:6px;">=</div>
+            <div class="form-group" style="margin:0;">
+              <label class="form-label">결제 금액</label>
+              <div class="form-control" style="background:#fff8f9;border-color:#f3c6d4;text-align:right;font-weight:800;color:#e8587a;min-width:140px;">{{ fmt(form.totalAmt) }}</div>
+            </div>
           </div>
-          <div style="font-size:18px;color:#bbb;padding-bottom:6px;">+</div>
-          <div class="form-group" style="margin:0;">
-            <label class="form-label">배송비 <span style="font-size:10px;color:#e8587a;">(추가요청 가능)</span></label>
-            <input class="form-control" type="number" v-model.number="form.dlivFee" style="text-align:right;min-width:120px;" @input="handleSelectAction('dlivFee-change')" />
-          </div>
-          <div style="font-size:18px;color:#bbb;padding-bottom:6px;">=</div>
-          <div class="form-group" style="margin:0;">
-            <label class="form-label">결제 금액</label>
-            <div class="form-control" style="background:#fff8f9;border-color:#f3c6d4;text-align:right;font-weight:800;color:#e8587a;min-width:140px;">{{ fmt(form.totalAmt) }}</div>
-          </div>
-          <!-- 간편 위젯 결제 (브랜드페이 결제 왼쪽) — 공통 컴포넌트, FO/BO 공용 -->
-          <div style="margin-left:auto;">
+          <!-- 우: 간편 위젯 결제 (결제위젯 연동 키 사용) -->
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px;flex-shrink:0;min-width:220px;">
             <base-toss-pay-widget :amount="Number(form.totalAmt)||0"
               :order-id="form.orderId" :order-name="form.prodNm || '주문결제'"
               :customer-key="form.memberId" :customer-name="form.memberNm || '고객'"
               success-page="odOrderMng" fail-page="odOrderMng"
               :show-toast="showToast" :show-confirm="showConfirm" />
           </div>
-          <button type="button" class="btn btn-primary" style="min-width:160px;" :disabled="payState.processing" @click="handleBtnAction('pay-request')">
-            {{ payState.processing ? '결제 처리중…' : '💳 브랜드페이 결제' }}
-          </button>
         </div>
       </div>
       <!-- ===== ■.■.■. 추가결제 요청 (편집 모드) ===================================== -->

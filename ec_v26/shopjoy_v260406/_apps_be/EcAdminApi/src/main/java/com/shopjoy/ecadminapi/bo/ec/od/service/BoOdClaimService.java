@@ -2,6 +2,7 @@ package com.shopjoy.ecadminapi.bo.ec.od.service;
 
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdClaimItemDto;
+import com.shopjoy.ecadminapi.base.ec.od.data.dto.OdhClaimStatusHistDto;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdClaim;
 import com.shopjoy.ecadminapi.base.ec.od.data.entity.OdhClaimStatusHist;
 import com.shopjoy.ecadminapi.base.ec.od.repository.OdClaimRepository;
@@ -94,6 +95,13 @@ public class BoOdClaimService {
             String cid = claim.getClaimId();
             claim.setClaimItems(itemMap.getOrDefault(cid, List.of())); // 클레임상품목록
         }
+    }
+
+    /** getClaimStatusHist — claimId 기준 상태 이력 목록 조회 */
+    public List<OdhClaimStatusHistDto.Item> getClaimStatusHist(String claimId) {
+        OdhClaimStatusHistDto.Request req = new OdhClaimStatusHistDto.Request();
+        req.setClaimId(claimId);
+        return odhClaimStatusHistService.getList(req);
     }
 
     @Transactional public OdClaim create(OdClaim body) { return odClaimService.create(body); }

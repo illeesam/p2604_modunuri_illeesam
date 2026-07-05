@@ -205,6 +205,8 @@
     saveOne(cmd, entity, uiNm, cmdNm)  { return global.boApi.post('/bo/ec/od/claim/save/' + cmd, entity, hdr(uiNm, cmdNm)); },
     /* 일괄저장 — cmd: status/type/approval/approvalReq. rows = List<OdClaim> */
     saveList(cmd, rows, uiNm, cmdNm)   { return global.boApi.post('/bo/ec/od/claim/save-list/' + cmd, rows, hdr(uiNm, cmdNm)); },
+    /* 상태이력 조회 */
+    getStatusHist(claimId, uiNm, cmdNm) { return global.boApi.get(`/bo/ec/od/claim/${claimId}/status-hist`, hdr(uiNm, cmdNm)); },
   };
 
   /* ── od: 배송 ───────────────────────────────────────────────── */

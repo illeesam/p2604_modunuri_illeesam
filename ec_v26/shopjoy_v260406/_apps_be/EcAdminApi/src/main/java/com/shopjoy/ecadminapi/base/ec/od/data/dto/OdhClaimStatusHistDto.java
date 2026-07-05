@@ -15,6 +15,7 @@ public class OdhClaimStatusHistDto {
     public static class Request extends BaseRequest {
         @Size(max = 21) private String siteId;
         @Size(max = 21) private String claimStatusHistId;
+        @Size(max = 21) private String claimId;
     }
 
     @Getter @Setter @NoArgsConstructor
