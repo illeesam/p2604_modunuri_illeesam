@@ -139,52 +139,53 @@
     },
 
     template: `
-<div>
+<div class="zd-simul">
   <div class="page-title">👥 회원 시뮬레이터</div>
-  <div style="display:grid;grid-template-columns:360px 1fr;gap:12px;align-items:start;">
 
-    <!-- 좌측: 설정 패널 -->
-    <div style="display:flex;flex-direction:column;gap:12px;">
+  <!-- 실행 제어 -->
+  <zd-simul-control-panel
+    :cfg="cfg" :state="state" :base-cfg-columns="baseCfgColumns"
+    :cf-is-running="cfIsRunning" :cf-success-rate="cfSuccessRate"
+    accent-color="linear-gradient(90deg,#7c3aed,#a855f7)"
+    accent-active="background:#ede9fe;border:1.5px solid #7c3aed;color:#6d28d9;"
+    @start="onStart" @stop="onStop" @run-once="onRunOnce" />
 
-      <!-- 실행 제어 (공통 컴포넌트) -->
-      <zd-simul-control-panel
-        :cfg="cfg" :state="state" :base-cfg-columns="baseCfgColumns"
-        :cf-is-running="cfIsRunning" :cf-success-rate="cfSuccessRate"
-        accent-color="linear-gradient(90deg,#7c3aed,#a855f7)"
-        accent-active="background:#ede9fe;border:1.5px solid #7c3aed;color:#6d28d9;"
-        @start="onStart" @stop="onStop" @run-once="onRunOnce" />
+  <!-- 생성 옵션 (전체 폭) -->
+  <div v-if="cfg.mode==='create'" class="card" style="padding:14px 16px;margin-top:12px;">
+    <div class="list-title">👤 회원 생성 옵션</div>
+    <bo-form-area :columns="createCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;" />
+  </div>
 
-      <!-- 생성 옵션 카드 -->
-      <div v-if="cfg.mode==='create'" class="card" style="padding:14px 16px;">
-        <div class="list-title">👤 회원 생성 옵션</div>
-        <bo-form-area :columns="createCfgColumns" :form="domCfg" :show-actions="false" :cols="2" style="margin-top:10px;" />
-        <div style="border-top:1px solid #f1f5f9;margin-top:12px;padding-top:12px;">
-          <div style="font-size:12px;font-weight:600;color:#475569;margin-bottom:8px;">등급 가중치</div>
-          <div v-for="g in GRADES" :key="g.cd" style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-            <span :class="'badge '+g.badge" style="min-width:42px;text-align:center;">{{ g.label }}</span>
-            <input type="range" min="0" max="100" v-model.number="domCfg.gradeWeights[g.cd]" style="flex:1;accent-color:#7c3aed;" />
-            <input type="number" min="0" max="100" v-model.number="domCfg.gradeWeights[g.cd]" style="width:44px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:12px;padding:2px;" />
-            <span style="font-size:10px;color:#94a3b8;min-width:32px;">{{ Math.round(domCfg.gradeWeights[g.cd]/cfGradeTotal*100) }}%</span>
-          </div>
-          <div style="height:10px;border-radius:5px;overflow:hidden;display:flex;margin-top:6px;">
-            <div v-for="g in GRADES" :key="g.cd" :style="'flex:'+domCfg.gradeWeights[g.cd]+';transition:flex .2s;'+({'BASIC':'background:#94a3b8','SILVER':'background:#3b82f6','GOLD':'background:#f59e0b','VIP':'background:#a855f7'}[g.cd])"></div>
-          </div>
+  <!-- 등급 가중치 (1/3 폭만 차지, 아래 줄) -->
+  <div v-if="cfg.mode==='create'" style="margin-top:12px;display:grid;grid-template-columns:1fr 2fr;gap:12px;">
+    <div class="card" style="padding:14px 16px;">
+      <div class="list-title">📊 등급 가중치</div>
+      <div style="margin-top:10px;">
+        <div v-for="g in GRADES" :key="g.cd" style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+          <span :class="'badge '+g.badge" style="min-width:38px;text-align:center;font-size:11px;">{{ g.label }}</span>
+          <input type="range" min="0" max="100" v-model.number="domCfg.gradeWeights[g.cd]" style="flex:1;accent-color:#7c3aed;" />
+          <input type="number" min="0" max="100" v-model.number="domCfg.gradeWeights[g.cd]" style="width:40px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;padding:2px;" />
+          <span style="font-size:10px;color:#94a3b8;min-width:28px;">{{ Math.round(domCfg.gradeWeights[g.cd]/cfGradeTotal*100) }}%</span>
         </div>
-      </div>
-
-      <!-- 수정 옵션 카드 -->
-      <div v-if="cfg.mode==='update'" class="card" style="padding:14px 16px;">
-        <div class="list-title">✏ 수정 옵션</div>
-        <bo-form-area :columns="updateCfgColumns" :form="domCfg" :show-actions="false" :cols="1" style="margin-top:10px;" />
-        <div style="background:#fef3c7;border-radius:6px;padding:8px 12px;font-size:11px;color:#92400e;margin-top:10px;">
-          💡 ACTIVE 상태 회원 50명 중 랜덤 선택 후 수정
+        <div style="height:8px;border-radius:4px;overflow:hidden;display:flex;margin-top:6px;">
+          <div v-for="g in GRADES" :key="g.cd" :style="'flex:'+domCfg.gradeWeights[g.cd]+';transition:flex .2s;'+({'BASIC':'background:#94a3b8','SILVER':'background:#3b82f6','GOLD':'background:#f59e0b','VIP':'background:#a855f7'}[g.cd])"></div>
         </div>
       </div>
     </div>
-
-    <!-- 우측: 로그 (공통 컴포넌트) -->
-    <zd-simul-log-panel :logs="logs" :log-cols="logCols" @clear="onClearLog" />
+    <div></div>
   </div>
+
+  <!-- 수정 옵션 (전체 폭) -->
+  <div v-if="cfg.mode==='update'" class="card" style="padding:14px 16px;margin-top:12px;">
+    <div class="list-title">✏ 수정 옵션</div>
+    <bo-form-area :columns="updateCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;" />
+    <div style="background:#fef3c7;border-radius:6px;padding:8px 12px;font-size:11px;color:#92400e;margin-top:10px;">
+      💡 ACTIVE 상태 회원 50명 중 랜덤 선택 후 수정
+    </div>
+  </div>
+
+  <!-- 실행 로그 -->
+  <zd-simul-log-panel :logs="logs" :log-cols="logCols" max-height="320px" style="margin-top:12px;" @clear="onClearLog" />
 </div>`,
   };
 })();

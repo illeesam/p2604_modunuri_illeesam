@@ -154,53 +154,56 @@
     },
 
     template: `
-<div>
+<div class="zd-simul">
   <div class="page-title">💳 정산 시뮬레이터</div>
-  <div style="display:grid;grid-template-columns:400px 1fr;gap:12px;align-items:start;">
 
-    <div style="display:flex;flex-direction:column;gap:12px;">
-      <!-- 실행 제어 (공통 컴포넌트) -->
-      <zd-simul-control-panel
-        :cfg="cfg" :state="state" :base-cfg-columns="baseCfgColumns"
-        :cf-is-running="cfIsRunning" :cf-success-rate="cfSuccessRate"
-        accent-color="linear-gradient(90deg,#16a34a,#4ade80)"
-        accent-active="background:#f0fdf4;border:1.5px solid #16a34a;color:#14532d;"
-        @start="onStart" @stop="onStop" @run-once="onRunOnce" />
+  <!-- 실행 제어 -->
+  <zd-simul-control-panel
+    :cfg="cfg" :state="state" :base-cfg-columns="baseCfgColumns"
+    :cf-is-running="cfIsRunning" :cf-success-rate="cfSuccessRate"
+    accent-color="linear-gradient(90deg,#16a34a,#4ade80)"
+    accent-active="background:#f0fdf4;border:1.5px solid #16a34a;color:#14532d;"
+    @start="onStart" @stop="onStop" @run-once="onRunOnce" />
 
-      <div v-if="cfg.mode==='create'" class="card" style="padding:14px 16px;">
-        <div class="list-title">💳 정산 생성 옵션</div>
-        <bo-form-area :columns="createCfgColumns" :form="domCfg" :show-actions="false" :cols="2" style="margin-top:10px;" />
-        <div style="border-top:1px solid #f1f5f9;margin-top:12px;padding-top:12px;">
-          <div style="font-size:11px;font-weight:600;color:#475569;margin-bottom:8px;">📊 평균값 기준 미리보기</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:11px;">
-            <div style="display:flex;justify-content:space-between;padding:4px 8px;background:#f8fafc;border-radius:4px;">
-              <span style="color:#64748b;">매출액</span><span style="font-weight:600;">{{ cfPreview.saleAmt.toLocaleString('ko-KR') }}원</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;padding:4px 8px;background:#fef2f2;border-radius:4px;">
-              <span style="color:#64748b;">환불액</span><span style="font-weight:600;color:#dc2626;">-{{ cfPreview.refundAmt.toLocaleString('ko-KR') }}원</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;padding:4px 8px;background:#fef2f2;border-radius:4px;">
-              <span style="color:#64748b;">수수료</span><span style="font-weight:600;color:#dc2626;">-{{ cfPreview.feeAmt.toLocaleString('ko-KR') }}원</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;padding:4px 8px;background:#fef2f2;border-radius:4px;">
-              <span style="color:#64748b;">PG수수료</span><span style="font-weight:600;color:#dc2626;">-{{ cfPreview.pgAmt.toLocaleString('ko-KR') }}원</span>
-            </div>
-            <div style="grid-column:1/-1;display:flex;justify-content:space-between;padding:6px 8px;background:#f0fdf4;border-radius:4px;border:1px solid #bbf7d0;">
-              <span style="color:#166534;font-weight:600;">최종 정산액</span><span style="font-weight:700;color:#16a34a;font-size:13px;">{{ cfPreview.settleAmt.toLocaleString('ko-KR') }}원</span>
-            </div>
-          </div>
+  <!-- 생성 옵션 -->
+  <div v-if="cfg.mode==='create'" class="card" style="padding:14px 16px;margin-top:12px;">
+    <div class="list-title">💳 정산 생성 옵션</div>
+    <bo-form-area :columns="createCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;" />
+  </div>
+
+  <!-- 수정 옵션 -->
+  <div v-if="cfg.mode==='update'" class="card" style="padding:14px 16px;margin-top:12px;">
+    <div class="list-title">✏ 정산 수정 옵션</div>
+    <bo-form-area :columns="updateCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;" />
+  </div>
+
+  <!-- 정산 미리보기 (1/3 폭, 아래 줄) -->
+  <div v-if="cfg.mode==='create'" style="margin-top:12px;display:grid;grid-template-columns:1fr 2fr;gap:12px;">
+    <div class="card" style="padding:14px 16px;">
+      <div class="list-title">📊 평균값 기준 미리보기</div>
+      <div style="margin-top:10px;display:flex;flex-direction:column;gap:5px;font-size:11px;">
+        <div style="display:flex;justify-content:space-between;padding:5px 8px;background:#f8fafc;border-radius:4px;">
+          <span style="color:#64748b;">매출액</span><span style="font-weight:600;">{{ cfPreview.saleAmt.toLocaleString('ko-KR') }}원</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:5px 8px;background:#fef2f2;border-radius:4px;">
+          <span style="color:#64748b;">환불액</span><span style="font-weight:600;color:#dc2626;">-{{ cfPreview.refundAmt.toLocaleString('ko-KR') }}원</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:5px 8px;background:#fef2f2;border-radius:4px;">
+          <span style="color:#64748b;">수수료</span><span style="font-weight:600;color:#dc2626;">-{{ cfPreview.feeAmt.toLocaleString('ko-KR') }}원</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:5px 8px;background:#fef2f2;border-radius:4px;">
+          <span style="color:#64748b;">PG수수료</span><span style="font-weight:600;color:#dc2626;">-{{ cfPreview.pgAmt.toLocaleString('ko-KR') }}원</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:7px 8px;background:#f0fdf4;border-radius:4px;border:1px solid #bbf7d0;margin-top:2px;">
+          <span style="color:#166534;font-weight:600;">최종 정산액</span><span style="font-weight:700;color:#16a34a;font-size:13px;">{{ cfPreview.settleAmt.toLocaleString('ko-KR') }}원</span>
         </div>
       </div>
-
-      <div v-if="cfg.mode==='update'" class="card" style="padding:14px 16px;">
-        <div class="list-title">✏ 정산 수정 옵션</div>
-        <bo-form-area :columns="updateCfgColumns" :form="domCfg" :show-actions="false" :cols="1" style="margin-top:10px;" />
-      </div>
     </div>
-
-    <!-- 우측: 로그 (공통 컴포넌트) -->
-    <zd-simul-log-panel :logs="logs" :log-cols="logCols" @clear="onClearLog" />
+    <div></div>
   </div>
+
+  <!-- 실행 로그 -->
+  <zd-simul-log-panel :logs="logs" :log-cols="logCols" max-height="320px" style="margin-top:12px;" @clear="onClearLog" />
 </div>`,
   };
 })();

@@ -173,45 +173,47 @@
     },
 
     template: `
-<div>
+<div class="zd-simul">
   <div class="page-title">📦 상품 시뮬레이터</div>
-  <div style="display:grid;grid-template-columns:380px 1fr;gap:12px;align-items:start;">
 
-    <div style="display:flex;flex-direction:column;gap:12px;">
+  <!-- 실행 제어 -->
+  <zd-simul-control-panel
+    :cfg="cfg" :state="state" :base-cfg-columns="baseCfgColumns"
+    :cf-is-running="cfIsRunning" :cf-success-rate="cfSuccessRate"
+    accent-color="linear-gradient(90deg,#059669,#34d399)"
+    accent-active="background:#ecfdf5;border:1.5px solid #059669;color:#065f46;"
+    @start="onStart" @stop="onStop" @run-once="onRunOnce" />
 
-      <!-- 실행 제어 (공통 컴포넌트) -->
-      <zd-simul-control-panel
-        :cfg="cfg" :state="state" :base-cfg-columns="baseCfgColumns"
-        :cf-is-running="cfIsRunning" :cf-success-rate="cfSuccessRate"
-        accent-color="linear-gradient(90deg,#059669,#34d399)"
-        accent-active="background:#ecfdf5;border:1.5px solid #059669;color:#065f46;"
-        @start="onStart" @stop="onStop" @run-once="onRunOnce" />
+  <!-- 생성 옵션 (전체 폭) -->
+  <div v-if="cfg.mode==='create'" class="card" style="padding:14px 16px;margin-top:12px;">
+    <div class="list-title">📦 상품 생성 옵션</div>
+    <bo-form-area :columns="createCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;" />
+  </div>
 
-      <!-- 생성 옵션 -->
-      <div v-if="cfg.mode==='create'" class="card" style="padding:14px 16px;">
-        <div class="list-title">📦 상품 생성 옵션</div>
-        <bo-form-area :columns="createCfgColumns" :form="domCfg" :show-actions="false" :cols="2" style="margin-top:10px;" />
-        <div style="border-top:1px solid #f1f5f9;margin-top:12px;padding-top:12px;">
-          <div style="font-size:12px;font-weight:600;color:#475569;margin-bottom:8px;">판매유형 가중치</div>
-          <div v-for="t in SALE_TYPES" :key="t.cd" style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-            <span :class="'badge '+t.badge" style="min-width:46px;text-align:center;">{{ t.label }}</span>
-            <input type="range" min="0" max="100" v-model.number="domCfg.saleTypeWeights[t.cd]" style="flex:1;accent-color:#059669;" />
-            <input type="number" min="0" max="100" v-model.number="domCfg.saleTypeWeights[t.cd]" style="width:44px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:12px;padding:2px;" />
-            <span style="font-size:10px;color:#94a3b8;min-width:32px;">{{ Math.round(domCfg.saleTypeWeights[t.cd]/cfTypeTotal*100) }}%</span>
-          </div>
+  <!-- 판매유형 가중치 (1/3 폭, 아래 줄) -->
+  <div v-if="cfg.mode==='create'" style="margin-top:12px;display:grid;grid-template-columns:1fr 2fr;gap:12px;">
+    <div class="card" style="padding:14px 16px;">
+      <div class="list-title">📊 판매유형 가중치</div>
+      <div style="margin-top:10px;">
+        <div v-for="t in SALE_TYPES" :key="t.cd" style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+          <span :class="'badge '+t.badge" style="min-width:42px;text-align:center;font-size:11px;">{{ t.label }}</span>
+          <input type="range" min="0" max="100" v-model.number="domCfg.saleTypeWeights[t.cd]" style="flex:1;accent-color:#059669;" />
+          <input type="number" min="0" max="100" v-model.number="domCfg.saleTypeWeights[t.cd]" style="width:40px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;padding:2px;" />
+          <span style="font-size:10px;color:#94a3b8;min-width:28px;">{{ Math.round(domCfg.saleTypeWeights[t.cd]/cfTypeTotal*100) }}%</span>
         </div>
       </div>
-
-      <!-- 수정 옵션 -->
-      <div v-if="cfg.mode==='update'" class="card" style="padding:14px 16px;">
-        <div class="list-title">✏ 상품 수정 옵션</div>
-        <bo-form-area :columns="updateCfgColumns" :form="domCfg" :show-actions="false" :cols="2" style="margin-top:10px;" />
-      </div>
     </div>
-
-    <!-- 우측: 로그 (공통 컴포넌트) -->
-    <zd-simul-log-panel :logs="logs" :log-cols="logCols" @clear="onClearLog" />
+    <div></div>
   </div>
+
+  <!-- 수정 옵션 (전체 폭) -->
+  <div v-if="cfg.mode==='update'" class="card" style="padding:14px 16px;margin-top:12px;">
+    <div class="list-title">✏ 상품 수정 옵션</div>
+    <bo-form-area :columns="updateCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;" />
+  </div>
+
+  <!-- 실행 로그 -->
+  <zd-simul-log-panel :logs="logs" :log-cols="logCols" max-height="320px" style="margin-top:12px;" @clear="onClearLog" />
 </div>`,
   };
 })();

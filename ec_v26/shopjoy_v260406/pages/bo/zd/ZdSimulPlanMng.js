@@ -136,33 +136,31 @@
     },
 
     template: `
-<div>
+<div class="zd-simul">
   <div class="page-title">🗂 기획전 시뮬레이터</div>
-  <div style="display:grid;grid-template-columns:380px 1fr;gap:12px;align-items:start;">
 
-    <div style="display:flex;flex-direction:column;gap:12px;">
-      <!-- 실행 제어 (공통 컴포넌트) -->
-      <zd-simul-control-panel
-        :cfg="cfg" :state="state" :base-cfg-columns="baseCfgColumns"
-        :cf-is-running="cfIsRunning" :cf-success-rate="cfSuccessRate"
-        accent-color="linear-gradient(90deg,#d97706,#fbbf24)"
-        accent-active="background:#fff7ed;border:1.5px solid #d97706;color:#92400e;"
-        @start="onStart" @stop="onStop" @run-once="onRunOnce" />
+  <!-- 실행 제어 -->
+  <zd-simul-control-panel
+    :cfg="cfg" :state="state" :base-cfg-columns="baseCfgColumns"
+    :cf-is-running="cfIsRunning" :cf-success-rate="cfSuccessRate"
+    accent-color="linear-gradient(90deg,#d97706,#fbbf24)"
+    accent-active="background:#fff7ed;border:1.5px solid #d97706;color:#92400e;"
+    @start="onStart" @stop="onStop" @run-once="onRunOnce" />
 
-      <div v-if="cfg.mode==='create'" class="card" style="padding:14px 16px;">
-        <div class="list-title">🗂 기획전 생성 옵션</div>
-        <bo-form-area :columns="createCfgColumns" :form="domCfg" :show-actions="false" :cols="2" style="margin-top:10px;" />
-      </div>
-
-      <div v-if="cfg.mode==='update'" class="card" style="padding:14px 16px;">
-        <div class="list-title">✏ 기획전 수정 옵션</div>
-        <bo-form-area :columns="updateCfgColumns" :form="domCfg" :show-actions="false" :cols="1" style="margin-top:10px;" />
-      </div>
-    </div>
-
-    <!-- 우측: 로그 (공통 컴포넌트) -->
-    <zd-simul-log-panel :logs="logs" :log-cols="logCols" @clear="onClearLog" />
+  <!-- 생성 옵션 -->
+  <div v-if="cfg.mode==='create'" class="card" style="padding:14px 16px;margin-top:12px;">
+    <div class="list-title">🗂 기획전 생성 옵션</div>
+    <bo-form-area :columns="createCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;" />
   </div>
+
+  <!-- 수정 옵션 -->
+  <div v-if="cfg.mode==='update'" class="card" style="padding:14px 16px;margin-top:12px;">
+    <div class="list-title">✏ 기획전 수정 옵션</div>
+    <bo-form-area :columns="updateCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;" />
+  </div>
+
+  <!-- 실행 로그 -->
+  <zd-simul-log-panel :logs="logs" :log-cols="logCols" max-height="320px" style="margin-top:12px;" @clear="onClearLog" />
 </div>`,
   };
 })();

@@ -137,6 +137,12 @@ textarea.form-control { resize: vertical; min-height: 80px; font-family: inherit
 .bo-form-compact .form-group { margin-bottom: 6px; }
 .bo-form-compact .form-actions { margin-top: 8px; }
 
+/* 시뮬레이터 화면 전체 compact */
+.zd-simul .form-control { padding: 4px 10px; font-size: 13px; min-height: 28px; }
+.zd-simul .form-label { font-size: 12px; margin-bottom: 2px; }
+.zd-simul .form-group { margin-bottom: 6px; }
+.zd-simul .readonly-field { padding: 4px 10px; font-size: 13px; }
+
 .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; white-space: nowrap; }
 .badge-blue   { background: #e6f4ff; color: #1677ff; }
 .badge-green  { background: #f6ffed; color: #389e0d; }

@@ -158,42 +158,47 @@
     },
 
     template: `
-<div>
+<div class="zd-simul">
   <div class="page-title">🎉 이벤트 시뮬레이터</div>
-  <div style="display:grid;grid-template-columns:400px 1fr;gap:12px;align-items:start;">
 
-    <div style="display:flex;flex-direction:column;gap:12px;">
-      <!-- 실행 제어 (공통 컴포넌트) -->
-      <zd-simul-control-panel
-        :cfg="cfg" :state="state" :base-cfg-columns="baseCfgColumns"
-        :cf-is-running="cfIsRunning" :cf-success-rate="cfSuccessRate"
-        accent-color="linear-gradient(90deg,#a21caf,#e879f9)"
-        accent-active="background:#fdf4ff;border:1.5px solid #a21caf;color:#86198f;"
-        @start="onStart" @stop="onStop" @run-once="onRunOnce" />
+  <!-- 실행 제어 -->
+  <zd-simul-control-panel
+    :cfg="cfg" :state="state" :base-cfg-columns="baseCfgColumns"
+    :cf-is-running="cfIsRunning" :cf-success-rate="cfSuccessRate"
+    accent-color="linear-gradient(90deg,#a21caf,#e879f9)"
+    accent-active="background:#fdf4ff;border:1.5px solid #a21caf;color:#86198f;"
+    @start="onStart" @stop="onStop" @run-once="onRunOnce" />
 
-      <div v-if="cfg.mode==='create'" class="card" style="padding:14px 16px;">
-        <div class="list-title">🎉 이벤트 생성 옵션</div>
-        <bo-form-area :columns="createCfgColumns" :form="domCfg" :show-actions="false" :cols="2" style="margin-top:10px;" />
-        <div style="border-top:1px solid #f1f5f9;margin-top:12px;padding-top:12px;">
-          <div style="font-size:12px;font-weight:600;color:#475569;margin-bottom:8px;">이벤트 유형 가중치</div>
-          <div v-for="t in EVENT_TYPES" :key="t.cd" style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
-            <span :class="'badge '+t.badge" style="min-width:64px;text-align:center;font-size:10px;">{{ t.label }}</span>
-            <input type="range" min="0" max="50" v-model.number="domCfg.eventTypeWeights[t.cd]" style="flex:1;accent-color:#a21caf;" />
-            <input type="number" min="0" max="50" v-model.number="domCfg.eventTypeWeights[t.cd]" style="width:40px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;padding:2px;" />
-            <span style="font-size:10px;color:#94a3b8;min-width:28px;">{{ Math.round(domCfg.eventTypeWeights[t.cd]/cfTypeTotal*100) }}%</span>
-          </div>
+  <!-- 생성 옵션 -->
+  <div v-if="cfg.mode==='create'" class="card" style="padding:14px 16px;margin-top:12px;">
+    <div class="list-title">🎉 이벤트 생성 옵션</div>
+    <bo-form-area :columns="createCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;" />
+  </div>
+
+  <!-- 수정 옵션 -->
+  <div v-if="cfg.mode==='update'" class="card" style="padding:14px 16px;margin-top:12px;">
+    <div class="list-title">✏ 이벤트 수정 옵션</div>
+    <bo-form-area :columns="updateCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;" />
+  </div>
+
+  <!-- 이벤트 유형 가중치 (1/3 폭, 아래 줄) -->
+  <div v-if="cfg.mode==='create'" style="margin-top:12px;display:grid;grid-template-columns:1fr 2fr;gap:12px;">
+    <div class="card" style="padding:14px 16px;">
+      <div class="list-title">📊 이벤트 유형 가중치</div>
+      <div style="margin-top:10px;">
+        <div v-for="t in EVENT_TYPES" :key="t.cd" style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+          <span :class="'badge '+t.badge" style="min-width:64px;text-align:center;font-size:10px;">{{ t.label }}</span>
+          <input type="range" min="0" max="50" v-model.number="domCfg.eventTypeWeights[t.cd]" style="flex:1;accent-color:#a21caf;" />
+          <input type="number" min="0" max="50" v-model.number="domCfg.eventTypeWeights[t.cd]" style="width:40px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;padding:2px;" />
+          <span style="font-size:10px;color:#94a3b8;min-width:28px;">{{ Math.round(domCfg.eventTypeWeights[t.cd]/cfTypeTotal*100) }}%</span>
         </div>
       </div>
-
-      <div v-if="cfg.mode==='update'" class="card" style="padding:14px 16px;">
-        <div class="list-title">✏ 이벤트 수정 옵션</div>
-        <bo-form-area :columns="updateCfgColumns" :form="domCfg" :show-actions="false" :cols="1" style="margin-top:10px;" />
-      </div>
     </div>
-
-    <!-- 우측: 로그 (공통 컴포넌트) -->
-    <zd-simul-log-panel :logs="logs" :log-cols="logCols" @clear="onClearLog" />
+    <div></div>
   </div>
+
+  <!-- 실행 로그 -->
+  <zd-simul-log-panel :logs="logs" :log-cols="logCols" max-height="320px" style="margin-top:12px;" @clear="onClearLog" />
 </div>`,
   };
 })();

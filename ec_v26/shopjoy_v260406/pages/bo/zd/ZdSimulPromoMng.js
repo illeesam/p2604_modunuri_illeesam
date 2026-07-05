@@ -192,51 +192,54 @@
     },
 
     template: `
-<div>
+<div class="zd-simul">
   <div class="page-title">🎁 프로모션 시뮬레이터</div>
-  <div style="display:grid;grid-template-columns:400px 1fr;gap:12px;align-items:start;">
 
-    <div style="display:flex;flex-direction:column;gap:12px;">
-      <!-- 실행 제어 (공통 컴포넌트) — 프로모션 유형 선택이 slot으로 기본 설정 폼 위에 삽입 -->
-      <zd-simul-control-panel
-        :cfg="cfg" :state="state" :base-cfg-columns="baseCfgColumns"
-        :cf-is-running="cfIsRunning" :cf-success-rate="cfSuccessRate"
-        accent-color="linear-gradient(90deg,#9333ea,#c084fc)"
-        accent-active="background:#faf5ff;border:1.5px solid #9333ea;color:#7e22ce;"
-        @start="onStart" @stop="onStop" @run-once="onRunOnce">
-        <div style="margin-bottom:10px;padding-top:4px;">
-          <div style="font-size:11px;color:#64748b;font-weight:600;margin-bottom:6px;">프로모션 유형</div>
-          <div style="display:flex;flex-wrap:wrap;gap:6px;">
-            <label v-for="t in PROMO_TYPES" :key="t.value"
-              :style="'cursor:pointer;padding:5px 12px;border-radius:5px;font-size:12px;font-weight:500;' + (domCfg.promoType===t.value ? 'background:#faf5ff;border:1.5px solid #9333ea;color:#7e22ce;' : 'background:#f8fafc;border:1.5px solid #e2e8f0;color:#64748b;')">
-              <input type="radio" :value="t.value" v-model="domCfg.promoType" style="display:none;">{{ t.label }}
-            </label>
-          </div>
-        </div>
-      </zd-simul-control-panel>
+  <!-- 실행 제어 -->
+  <zd-simul-control-panel
+    :cfg="cfg" :state="state" :base-cfg-columns="baseCfgColumns"
+    :cf-is-running="cfIsRunning" :cf-success-rate="cfSuccessRate"
+    accent-color="linear-gradient(90deg,#9333ea,#c084fc)"
+    accent-active="background:#faf5ff;border:1.5px solid #9333ea;color:#7e22ce;"
+    @start="onStart" @stop="onStop" @run-once="onRunOnce" />
 
-      <!-- 쿠폰 옵션 -->
-      <div v-if="domCfg.promoType==='coupon' || domCfg.promoType==='both'" class="card" style="padding:14px 16px;">
-        <div class="list-title">🎟 쿠폰 설정</div>
-        <bo-form-area :columns="couponCfgColumns" :form="domCfg" :show-actions="false" :cols="2" style="margin-top:10px;" />
-      </div>
-
-      <!-- 할인 옵션 -->
-      <div v-if="domCfg.promoType==='discnt' || domCfg.promoType==='both'" class="card" style="padding:14px 16px;">
-        <div class="list-title">💰 할인정책 설정</div>
-        <bo-form-area :columns="discntCfgColumns" :form="domCfg" :show-actions="false" :cols="2" style="margin-top:10px;" />
-      </div>
-
-      <!-- 적립금 옵션 -->
-      <div v-if="domCfg.promoType==='save'" class="card" style="padding:14px 16px;">
-        <div class="list-title">💎 적립금 설정</div>
-        <bo-form-area :columns="saveCfgColumns" :form="domCfg" :show-actions="false" :cols="2" style="margin-top:10px;" />
+  <!-- 프로모션 유형 탭 (별도 카드) -->
+  <div class="card" style="margin-top:12px;">
+    <div class="tab-bar-row" style="padding:0 4px;">
+      <div class="tab-nav">
+        <button v-for="t in PROMO_TYPES" :key="t.value"
+          :class="'tab-btn' + (domCfg.promoType===t.value ? ' active' : '')"
+          @click="domCfg.promoType=t.value">{{ t.label }}</button>
       </div>
     </div>
 
-    <!-- 우측: 로그 (공통 컴포넌트) -->
-    <zd-simul-log-panel :logs="logs" :log-cols="logCols" @clear="onClearLog" />
+    <!-- 쿠폰 설정 -->
+    <div v-if="domCfg.promoType==='coupon' || domCfg.promoType==='both'" style="padding:14px 16px;">
+      <div class="list-title">🎟 쿠폰 설정</div>
+      <bo-form-area :columns="couponCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;" />
+    </div>
+
+    <!-- 할인정책 설정 -->
+    <div v-if="domCfg.promoType==='discnt'" style="padding:14px 16px;">
+      <div class="list-title">💰 할인정책 설정</div>
+      <bo-form-area :columns="discntCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;" />
+    </div>
+
+    <!-- 적립금 설정 -->
+    <div v-if="domCfg.promoType==='save'" style="padding:14px 16px;">
+      <div class="list-title">💎 적립금 설정</div>
+      <bo-form-area :columns="saveCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;" />
+    </div>
+
+    <!-- 쿠폰+할인 혼합 -->
+    <div v-if="domCfg.promoType==='both'" style="padding:0 16px 14px;">
+      <div class="list-title">💰 할인정책 설정</div>
+      <bo-form-area :columns="discntCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;" />
+    </div>
   </div>
+
+  <!-- 실행 로그 -->
+  <zd-simul-log-panel :logs="logs" :log-cols="logCols" max-height="320px" style="margin-top:12px;" @clear="onClearLog" />
 </div>`,
   };
 })();

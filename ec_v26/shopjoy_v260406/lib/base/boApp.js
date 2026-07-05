@@ -2691,6 +2691,16 @@
             <zd-test-share-kakao            v-else-if="page==='zdTestShareKakao'"            :navigate="navigate" :show-toast="showToast" />
             <zd-test-chatting-web-socket    v-else-if="page==='zdTestChattingWebSocket'"    :navigate="navigate" :show-toast="showToast" />
             <zd-test-app-msg-send-receiv    v-else-if="page==='zdTestAppMsgSendReceiv'"    :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
+            <zd-simul-member-mng  v-else-if="page==='zdSimulMemberMng'"  :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
+            <zd-simul-promo-mng   v-else-if="page==='zdSimulPromoMng'"   :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
+            <zd-simul-plan-mng    v-else-if="page==='zdSimulPlanMng'"    :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
+            <zd-simul-event-mng   v-else-if="page==='zdSimulEventMng'"   :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
+            <zd-simul-prod-mng    v-else-if="page==='zdSimulProdMng'"    :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
+            <zd-simul-order-mng   v-else-if="page==='zdSimulOrderMng'"   :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
+            <zd-simul-claim-mng   v-else-if="page==='zdSimulClaimMng'"   :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
+            <zd-simul-kanban-mng  v-else-if="page==='zdSimulKanbanMng'"  :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
+            <zd-simul-settle-mng  v-else-if="page==='zdSimulSettleMng'"  :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
+            <zd-simul-log-mng     v-else-if="page==='zdSimulLogMng'"     :navigate="navigate" :show-toast="showToast" />
             <bo-error-401 v-else-if="page==='error401'" :navigate="navigate" />
             <bo-error-500 v-else-if="page==='error500'" :navigate="navigate" :message="errorMessage" />
             <bo-error-404 v-else :navigate="navigate" :page-id="page" />

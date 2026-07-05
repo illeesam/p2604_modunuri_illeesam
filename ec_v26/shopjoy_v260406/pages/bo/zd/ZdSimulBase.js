@@ -44,7 +44,7 @@
       mode: 'create',
       countMin: 1,
       countMax: 3,
-      namePrefix: label,
+      namePrefix: 'simul',
       addSuffix: true,
       intervalUnit: 'sec',
       intervalVal: 10,

@@ -1,12 +1,12 @@
-/* ZdSimulClaimMng — 클레임 시뮬레이터 (bo-form-area / bo-grid 활용) */
+/* ZdSimulClaimMng — 클레임 시뮬레이터 */
 (function () {
   const { reactive, computed } = Vue;
   const { useSimulSetup, makeLogCols, makeBaseCfgColumns } = window.ZdSimulBase;
 
   const CLAIM_TYPES = [
-    { cd: 'CANCEL',   label: '취소',  badge: 'badge-orange' },
-    { cd: 'RETURN',   label: '반품',  badge: 'badge-purple' },
-    { cd: 'EXCHANGE', label: '교환',  badge: 'badge-blue'   },
+    { cd: 'CANCEL',   label: '취소',  badge: 'badge-orange', color: '#f97316' },
+    { cd: 'RETURN',   label: '반품',  badge: 'badge-purple', color: '#a855f7' },
+    { cd: 'EXCHANGE', label: '교환',  badge: 'badge-blue',   color: '#3b82f6' },
   ];
   const STATUS_FLOW = {
     CANCEL:   ['CLAIM_RECV', 'CANCEL_REQ', 'CANCEL_DONE'],
@@ -25,6 +25,7 @@
     { value: 'advance', label: '상태 진행' },
     { value: 'memo',    label: '처리 메모 추가' },
   ];
+  const ORDER_STATUS_POOL = ['PAID', 'PREPARING', 'SHIPPED', 'COMPLT'];
 
   window.ZdSimulClaimMng = {
     name: 'ZdSimulClaimMng',
@@ -36,15 +37,17 @@
     setup(props) {
       /* ── [01] 도메인 설정 ────────────────────────────── */
       const domCfg = reactive({
-        typeWeights: { CANCEL: 40, RETURN: 35, EXCHANGE: 25 },
-        refundRateMin: 80,
-        refundRateMax: 100,
-        advanceSteps: 1,
-        createStatus: 'CLAIM_RECV',
-        randomReason: true,
-        fromStatus: 'CLAIM_RECV',
-        updateAction: 'advance',
-        targetType: 'CANCEL',
+        typeWeights:     { CANCEL: 40, RETURN: 35, EXCHANGE: 25 },
+        refundRateMin:   80,
+        refundRateMax:   100,
+        partialClaim:    true,
+        randomReason:    true,
+        fromOrderStatus: 'COMPLT',
+        createStatus:    'CLAIM_RECV',
+        updateAction:    'advance',
+        advanceSteps:    1,
+        targetType:      'CANCEL',
+        fromStatus:      'CLAIM_RECV',
       });
 
       /* ── [02] 공통 엔진 ──────────────────────────────── */
@@ -55,8 +58,8 @@
         for (const t of CLAIM_TYPES) { r -= Number(w[t.cd] || 0); if (r <= 0) return t; }
         return CLAIM_TYPES[0];
       };
-      const _pickReason = (type) => {
-        const pool = type === 'CANCEL' ? CANCEL_REASONS : type === 'RETURN' ? RETURN_REASONS : EXCH_REASONS;
+      const _pickReason = (typeCd) => {
+        const pool = typeCd === 'CANCEL' ? CANCEL_REASONS : typeCd === 'RETURN' ? RETURN_REASONS : EXCH_REASONS;
         return pool[Math.floor(Math.random() * pool.length)];
       };
 
@@ -66,42 +69,87 @@
         defaultCfg: { mode: 'create', countMin: 1, countMax: 2, intervalVal: 20, intervalUnit: 'sec', durationMin: 3 },
         runFn: async ({ mode, randInt, pick }) => {
           if (mode === 'create') {
-            const orders = (await boApiSvc.odOrder.getPage({ pageNo: 1, pageSize: 50, orderStatusCd: 'COMPLT' })).data?.data?.pageList || [];
-            if (!orders.length) return { ok: false, reason: '완료된 주문 없음 (COMPLT 주문 필요)' };
-            const order    = pick(orders);
-            const type     = _pickType();
-            const reason   = domCfg.randomReason ? _pickReason(type.cd) : '테스트 클레임';
-            const refRate  = randInt(domCfg.refundRateMin, domCfg.refundRateMax);
-            const claimAmt = Math.round((order.totalPayAmt || 10000) * refRate / 100);
-            const body     = {
-              orderId: order.orderId, claimTypeCd: type.cd,
-              claimReason: reason, claimStatusCd: domCfg.createStatus,
-              claimAmt, refundAmt: claimAmt,
+            /* 1) 대상 주문 조회 */
+            const q = { pageNo: 1, pageSize: 50 };
+            if (domCfg.fromOrderStatus) q.orderStatusCd = domCfg.fromOrderStatus;
+            const orders = (await boApiSvc.odOrder.getPage(q)).data?.data?.pageList || [];
+            if (!orders.length) return { ok: false, reason: '대상 주문 없음 (상태: ' + (domCfg.fromOrderStatus || '전체') + ')' };
+
+            const order = pick(orders);
+
+            /* 2) 주문 상품 목록 조회 */
+            let items = [];
+            try {
+              const detail = (await boApi.get('/bo/ec/od/order/' + order.orderId, coUtil.apiHdr('클레임시뮬', '주문조회'))).data?.data;
+              items = detail?.orderItems || [];
+            } catch (e) { /* 상세 실패 시 금액 기반 단순 클레임으로 폴백 */ }
+
+            /* 3) 클레임 유형 & 사유 */
+            const type   = _pickType();
+            const reason = domCfg.randomReason ? _pickReason(type.cd) : '시뮬레이터 테스트';
+            const refRate = randInt(domCfg.refundRateMin, domCfg.refundRateMax);
+
+            /* 4) 클레임 상품 구성 (부분 클레임 지원) */
+            let claimItems = [];
+            let claimAmt   = 0;
+            if (items.length) {
+              const selected = domCfg.partialClaim
+                ? items.filter(() => Math.random() > 0.3)
+                : items;
+              const pool = selected.length ? selected : [pick(items)];
+              claimItems = pool.map(it => {
+                const maxQty  = it.orderQty || it.qty || 1;
+                const qty     = domCfg.partialClaim ? randInt(1, maxQty) : maxQty;
+                const unitPrice = it.unitPrice || it.itemAmt || 0;
+                claimAmt += unitPrice * qty;
+                return { orderItemId: it.orderItemId, prodId: it.prodId, claimQty: qty, unitPrice };
+              });
+            } else {
+              claimAmt = Math.round((order.totalPayAmt || 10000) * refRate / 100);
+            }
+
+            /* 5) 클레임 신청 */
+            const body = {
+              orderId:       order.orderId,
+              claimTypeCd:   type.cd,
+              claimReason:   reason,
+              claimStatusCd: domCfg.createStatus,
+              claimAmt,
+              refundAmt:     claimAmt,
             };
+            if (claimItems.length) body.claimItems = claimItems;
+
             const res = await boApi.post('/bo/ec/od/claim/save/base', body, coUtil.apiHdr('클레임시뮬', '생성'));
-            const id  = res?.data?.data?.claimId || res?.data?.data?.id || '-';
+            const id  = res?.data?.data?.claimId || '-';
+            const itemDesc = claimItems.length ? claimItems.length + '개 상품' : '금액기반';
             return {
               ok: true,
-              desc: '[' + type.label + '] ' + order.orderId + ' | ' + reason + ' | ' + claimAmt.toLocaleString() + '원',
+              desc: '[' + type.label + '] ' + order.orderId + ' | ' + itemDesc + ' | ' + claimAmt.toLocaleString() + '원 | ' + reason,
               meta: { id, type: type.label, reason },
             };
+
           } else {
+            /* 수정 모드 */
             const q = { pageNo: 1, pageSize: 50 };
             if (domCfg.fromStatus) q.claimStatusCd = domCfg.fromStatus;
             if (domCfg.targetType) q.claimTypeCd   = domCfg.targetType;
             const list = (await boApiSvc.odClaim.getPage(q)).data?.data?.pageList || [];
-            if (!list.length) return { ok: false, reason: '수정할 클레임 없음' };
+            if (!list.length) return { ok: false, reason: '수정할 클레임 없음 (유형: ' + domCfg.targetType + ', 상태: ' + domCfg.fromStatus + ')' };
+
             const target = pick(list);
             const flow   = STATUS_FLOW[target.claimTypeCd] || STATUS_FLOW.CANCEL;
             let body = {}, desc = '';
+
             if (domCfg.updateAction === 'advance') {
               const idx = flow.indexOf(target.claimStatusCd);
               const nst = flow[Math.min(idx + (domCfg.advanceSteps || 1), flow.length - 1)];
               body.claimStatusCd = nst;
               desc = (STATUS_LABELS[target.claimStatusCd] || target.claimStatusCd) + ' → ' + (STATUS_LABELS[nst] || nst);
             } else {
-              body.claimMemo = '[시뮬처리] ' + new Date().toLocaleTimeString('ko-KR'); desc = '처리 메모 추가';
+              body.claimMemo = '[시뮬처리] ' + new Date().toLocaleTimeString('ko-KR');
+              desc = '메모 추가';
             }
+
             await boApi.put('/bo/ec/od/claim/save/' + target.claimId, body, coUtil.apiHdr('클레임시뮬', '수정'));
             return { ok: true, desc: target.claimId + ' ' + desc, meta: { id: target.claimId } };
           }
@@ -111,22 +159,29 @@
 
       /* ── [03] Computed ──────────────────────────────── */
       const cfTypeTotal = computed(() => Object.values(domCfg.typeWeights).reduce((a, b) => a + Number(b), 0) || 1);
-      const cfCurrentFlow = computed(() => STATUS_FLOW[domCfg.targetType] || STATUS_FLOW.CANCEL);
+      const cfAutoFlow  = computed(() => STATUS_FLOW[domCfg.targetType] || STATUS_FLOW.CANCEL);
 
       /* ── [04] 컬럼 정의 ─────────────────────────────── */
       const logCols = makeLogCols();
       const baseCfgColumns = makeBaseCfgColumns();
       const createCfgColumns = [
-        { key: 'createStatus', label: '초기 상태', type: 'select',
+        { key: 'fromOrderStatus', label: '대상 주문 상태', type: 'select',
+          options: [{ value: '', label: '전체' }, ...ORDER_STATUS_POOL.map(s => ({ value: s, label: s }))] },
+        { key: 'createStatus',   label: '클레임 초기 상태', type: 'select',
           options: [{ value: 'CLAIM_RECV', label: '접수' }] },
-        { key: 'refundRateMin', label: '환불률 최소', type: 'number', hint: '%' },
-        { key: 'refundRateMax', label: '환불률 최대', type: 'number', hint: '%' },
-        { key: 'randomReason',  label: '사유 랜덤 생성', type: 'checkbox' },
+        { key: 'partialClaim',   label: '부분 클레임 (랜덤 수량)', type: 'checkbox' },
+        { key: 'refundRateMin',  label: '환불률 최소', type: 'number', hint: '%',
+          visible: (f) => !f.partialClaim },
+        { key: 'refundRateMax',  label: '환불률 최대', type: 'number', hint: '%',
+          visible: (f) => !f.partialClaim },
+        { key: 'randomReason',   label: '사유 랜덤 생성', type: 'checkbox' },
       ];
       const updateCfgColumns = [
         { key: 'updateAction', label: '수정 액션', type: 'select', options: UPDATE_ACTIONS },
         { key: 'targetType',   label: '대상 유형', type: 'select',
           options: CLAIM_TYPES.map(t => ({ value: t.cd, label: t.label })) },
+        { key: 'fromStatus',   label: '현재 상태', type: 'select',
+          options: [{ value: '', label: '전체' }, ...Object.entries(STATUS_LABELS).map(([v, l]) => ({ value: v, label: l }))] },
         { key: 'advanceSteps', label: '진행 단계', type: 'select',
           options: [{ value: 1, label: '1단계' }, { value: 2, label: '2단계' }],
           visible: (f) => f.updateAction === 'advance' },
@@ -134,63 +189,67 @@
 
       return {
         cfg, domCfg, state, logs, cfIsRunning, cfSuccessRate,
-        cfTypeTotal, cfCurrentFlow, logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
+        cfTypeTotal, cfAutoFlow,
+        logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
         onStart, onStop, onRunOnce, onClearLog,
         CLAIM_TYPES, STATUS_FLOW, STATUS_LABELS,
       };
     },
 
     template: `
-<div>
+<div class="zd-simul">
   <div class="page-title">🔄 클레임 시뮬레이터</div>
-  <div style="display:grid;grid-template-columns:380px 1fr;gap:12px;align-items:start;">
 
-    <div style="display:flex;flex-direction:column;gap:12px;">
-      <!-- 실행 제어 (공통 컴포넌트) -->
-      <zd-simul-control-panel
-        :cfg="cfg" :state="state" :base-cfg-columns="baseCfgColumns"
-        :cf-is-running="cfIsRunning" :cf-success-rate="cfSuccessRate"
-        accent-color="linear-gradient(90deg,#ea580c,#fb923c)"
-        accent-active="background:#fff7ed;border:1.5px solid #ea580c;color:#9a3412;"
-        @start="onStart" @stop="onStop" @run-once="onRunOnce" />
+  <!-- 실행 제어 -->
+  <zd-simul-control-panel
+    :cfg="cfg" :state="state" :base-cfg-columns="baseCfgColumns"
+    :cf-is-running="cfIsRunning" :cf-success-rate="cfSuccessRate"
+    accent-color="linear-gradient(90deg,#ea580c,#fb923c)"
+    accent-active="background:#fff7ed;border:1.5px solid #ea580c;color:#9a3412;"
+    @start="onStart" @stop="onStop" @run-once="onRunOnce" />
 
-      <!-- 생성 옵션 -->
-      <div v-if="cfg.mode==='create'" class="card" style="padding:14px 16px;">
-        <div class="list-title">🔄 클레임 생성 옵션</div>
-        <bo-form-area :columns="createCfgColumns" :form="domCfg" :show-actions="false" :cols="2" style="margin-top:10px;" />
-        <div style="border-top:1px solid #f1f5f9;margin-top:12px;padding-top:12px;">
-          <div style="font-size:12px;font-weight:600;color:#475569;margin-bottom:8px;">클레임 유형 가중치</div>
-          <div v-for="t in CLAIM_TYPES" :key="t.cd" style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-            <span :class="'badge '+t.badge" style="min-width:40px;text-align:center;">{{ t.label }}</span>
-            <input type="range" min="0" max="100" v-model.number="domCfg.typeWeights[t.cd]" style="flex:1;accent-color:#ea580c;" />
-            <input type="number" min="0" max="100" v-model.number="domCfg.typeWeights[t.cd]" style="width:44px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:12px;padding:2px;" />
-            <span style="font-size:10px;color:#94a3b8;min-width:32px;">{{ Math.round(domCfg.typeWeights[t.cd]/cfTypeTotal*100) }}%</span>
-          </div>
-          <div style="height:10px;border-radius:5px;overflow:hidden;display:flex;margin-top:4px;">
-            <div v-for="t in CLAIM_TYPES" :key="t.cd" :style="'flex:'+domCfg.typeWeights[t.cd]+';transition:flex .2s;'+({'CANCEL':'background:#f97316','RETURN':'background:#a855f7','EXCHANGE':'background:#3b82f6'}[t.cd])"></div>
-          </div>
+  <!-- 생성 옵션 (전체 폭) -->
+  <div v-if="cfg.mode==='create'" class="card" style="padding:14px 16px;margin-top:12px;">
+    <div class="list-title">🔄 클레임 생성 옵션</div>
+    <bo-form-area :columns="createCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;" />
+  </div>
+
+  <!-- 클레임 유형 가중치 (1/3 폭) -->
+  <div v-if="cfg.mode==='create'" style="margin-top:12px;display:grid;grid-template-columns:1fr 2fr;gap:12px;">
+    <div class="card" style="padding:14px 16px;">
+      <div class="list-title">📊 클레임 유형 가중치</div>
+      <div style="margin-top:10px;">
+        <div v-for="t in CLAIM_TYPES" :key="t.cd" style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+          <span :class="'badge '+t.badge" style="min-width:40px;text-align:center;font-size:11px;">{{ t.label }}</span>
+          <input type="range" min="0" max="100" v-model.number="domCfg.typeWeights[t.cd]" style="flex:1;accent-color:#ea580c;" />
+          <input type="number" min="0" max="100" v-model.number="domCfg.typeWeights[t.cd]" style="width:40px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;padding:2px;" />
+          <span style="font-size:10px;color:#94a3b8;min-width:28px;">{{ Math.round(domCfg.typeWeights[t.cd]/cfTypeTotal*100) }}%</span>
         </div>
-      </div>
-
-      <!-- 수정 옵션 -->
-      <div v-if="cfg.mode==='update'" class="card" style="padding:14px 16px;">
-        <div class="list-title">✏ 클레임 수정 옵션</div>
-        <bo-form-area :columns="updateCfgColumns" :form="domCfg" :show-actions="false" :cols="1" style="margin-top:10px;" />
-        <div style="border-top:1px solid #f1f5f9;margin-top:12px;padding-top:12px;">
-          <div style="font-size:12px;font-weight:600;color:#475569;margin-bottom:6px;">{{ domCfg.targetType }} 상태 흐름</div>
-          <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
-            <template v-for="(s,i) in cfCurrentFlow" :key="s">
-              <span style="font-size:10px;padding:3px 7px;border-radius:4px;background:#f1f5f9;color:#64748b;">{{ STATUS_LABELS[s] || s }}</span>
-              <span v-if="i < cfCurrentFlow.length-1" style="color:#94a3b8;font-size:10px;"> → </span>
-            </template>
-          </div>
+        <div style="height:8px;border-radius:4px;overflow:hidden;display:flex;margin-top:4px;">
+          <div v-for="t in CLAIM_TYPES" :key="t.cd" :style="'flex:'+domCfg.typeWeights[t.cd]+';transition:flex .2s;background:'+t.color"></div>
         </div>
       </div>
     </div>
-
-    <!-- 우측: 로그 (공통 컴포넌트) -->
-    <zd-simul-log-panel :logs="logs" :log-cols="logCols" @clear="onClearLog" />
+    <div></div>
   </div>
+
+  <!-- 수정 옵션 -->
+  <div v-if="cfg.mode==='update'" class="card" style="padding:14px 16px;margin-top:12px;">
+    <div class="list-title">✏ 클레임 수정 옵션</div>
+    <bo-form-area :columns="updateCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;" />
+    <div style="border-top:1px solid #f1f5f9;margin-top:10px;padding-top:10px;">
+      <div style="font-size:11px;font-weight:600;color:#475569;margin-bottom:6px;">{{ domCfg.targetType }} 상태 흐름</div>
+      <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
+        <template v-for="(s,i) in cfAutoFlow" :key="s">
+          <span style="font-size:10px;padding:3px 7px;border-radius:4px;background:#f1f5f9;color:#64748b;">{{ STATUS_LABELS[s] || s }}</span>
+          <span v-if="i < cfAutoFlow.length-1" style="color:#94a3b8;font-size:10px;"> → </span>
+        </template>
+      </div>
+    </div>
+  </div>
+
+  <!-- 실행 로그 -->
+  <zd-simul-log-panel :logs="logs" :log-cols="logCols" max-height="320px" style="margin-top:12px;" @clear="onClearLog" />
 </div>`,
   };
 })();
