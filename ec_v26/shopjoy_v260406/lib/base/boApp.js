@@ -17,6 +17,7 @@
     { id: 'settle', label: '정산' },
     { id: 'system', label: '시스템' },
     { id: 'devtools', label: '개발도구' },
+    { id: 'simul', label: '시뮬레이션' },
   ];
   const TOP_MENUS = _ALL_TOP_MENUS.filter((m) => {
     if (_BO_SITE_NO === '02' && m.id === 'customer') return false;
@@ -179,6 +180,20 @@
       { id: 'zdTestChattingWebSocket', label: 'WebSocket 채팅 테스트' },
       { group: '앱 메시지' },
       { id: 'zdTestAppMsgSendReceiv', label: 'Android/iOS 메시지 발송&수신' },
+    ],
+    simul: [
+      { group: '시뮬레이션' },
+      { id: 'zdSimulMemberMng', label: '회원시뮬' },
+      { id: 'zdSimulPromoMng', label: '프로모션시뮬' },
+      { id: 'zdSimulPlanMng', label: '기획전시뮬' },
+      { id: 'zdSimulEventMng', label: '이벤트시뮬' },
+      { id: 'zdSimulProdMng', label: '상품시뮬' },
+      { id: 'zdSimulOrderMng', label: '주문시뮬' },
+      { id: 'zdSimulClaimMng', label: '클레임시뮬' },
+      { id: 'zdSimulKanbanMng', label: '주문칸반시뮬' },
+      { id: 'zdSimulSettleMng', label: '정산시뮬' },
+      { group: '이력' },
+      { id: 'zdSimulLogMng', label: '시뮬로그' },
     ],
   };
 
@@ -521,6 +536,16 @@
         zdTestShareKakao:          'zd-test-share-kakao',
         zdTestChattingWebSocket:   'zd-test-chatting-web-socket',
         zdTestAppMsgSendReceiv:    'zd-test-app-msg-send-receiv',
+        zdSimulMemberMng:  'zd-simul-member-mng',
+        zdSimulPromoMng:   'zd-simul-promo-mng',
+        zdSimulPlanMng:    'zd-simul-plan-mng',
+        zdSimulEventMng:   'zd-simul-event-mng',
+        zdSimulProdMng:    'zd-simul-prod-mng',
+        zdSimulOrderMng:   'zd-simul-order-mng',
+        zdSimulClaimMng:   'zd-simul-claim-mng',
+        zdSimulKanbanMng:  'zd-simul-kanban-mng',
+        zdSimulSettleMng:  'zd-simul-settle-mng',
+        zdSimulLogMng:     'zd-simul-log-mng',
       };
 
       /* addTab */
@@ -3258,6 +3283,19 @@
     .component('ZdTestShareKakao',           window.ZdTestShareKakao)
     .component('ZdTestChattingWebSocket',    window.ZdTestChattingWebSocket)
     .component('ZdTestAppMsgSendReceiv',     window.ZdTestAppMsgSendReceiv)
+    /* ── pages/bo/zd/ — 시뮬레이션 공통 + 도메인 ── */
+    .component('ZdSimulControlPanel', window.ZdSimulControlPanel)
+    .component('ZdSimulLogPanel',     window.ZdSimulLogPanel)
+    .component('ZdSimulMemberMng',    window.ZdSimulMemberMng)
+    .component('ZdSimulPromoMng',   window.ZdSimulPromoMng)
+    .component('ZdSimulPlanMng',    window.ZdSimulPlanMng)
+    .component('ZdSimulEventMng',   window.ZdSimulEventMng)
+    .component('ZdSimulProdMng',    window.ZdSimulProdMng)
+    .component('ZdSimulOrderMng',   window.ZdSimulOrderMng)
+    .component('ZdSimulClaimMng',   window.ZdSimulClaimMng)
+    .component('ZdSimulKanbanMng',  window.ZdSimulKanbanMng)
+    .component('ZdSimulSettleMng',  window.ZdSimulSettleMng)
+    .component('ZdSimulLogMng',     window.ZdSimulLogMng)
     .use(Pinia.createPinia())
     .mount('#app');
 

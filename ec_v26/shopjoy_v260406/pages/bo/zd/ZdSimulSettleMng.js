@@ -1,0 +1,206 @@
+/* ZdSimulSettleMng — 정산 시뮬레이터 (bo-form-area / bo-grid 활용) */
+(function () {
+  const { ref, reactive, computed } = Vue;
+  const { useSimulSetup, makeLogCols, makeBaseCfgColumns } = window.ZdSimulBase;
+
+  const SETTLE_STATUSES = [
+    { value: 'PENDING',   label: '정산대기'   },
+    { value: 'CONFIRMED', label: '정산확정'   },
+    { value: 'PAID',      label: '지급완료'   },
+    { value: 'DISPUTED',  label: '이의신청중' },
+    { value: 'HOLD',      label: '보류'       },
+  ];
+  const SETTLE_PERIODS = [
+    { value: 'WEEKLY',   label: '주간' },
+    { value: 'MONTHLY',  label: '월간' },
+    { value: 'BIWEEKLY', label: '격주' },
+  ];
+  const UPDATE_ACTIONS = [
+    { value: 'status',  label: '상태 변경' },
+    { value: 'adjust',  label: '금액 조정' },
+    { value: 'memo',    label: '정산 메모' },
+  ];
+
+  window.ZdSimulSettleMng = {
+    name: 'ZdSimulSettleMng',
+    props: {
+      navigate:    { type: Function, required: true },
+      showToast:   { type: Function, default: () => {} },
+      showConfirm: { type: Function, default: () => Promise.resolve(true) },
+    },
+    setup(props) {
+      /* ── [01] 도메인 설정 ────────────────────────────── */
+      const domCfg = reactive({
+        saleAmtMin: 100000,
+        saleAmtMax: 5000000,
+        feeRateMin: 3,
+        feeRateMax: 15,
+        pgFeeRateMin: 1,
+        pgFeeRateMax: 3,
+        refundAmtRatio: 10,
+        settlePeriod: 'MONTHLY',
+        createStatus: 'PENDING',
+        vendorFromDB: true,
+        updateAction: 'status',
+        updateStatus: 'CONFIRMED',
+        adjustAmtMin: -100000,
+        adjustAmtMax: 100000,
+      });
+      const vendors = ref([]);
+
+      /* ── [02] 실시간 계산 미리보기 ───────────────────── */
+      const cfPreview = computed(() => {
+        const saleAmt   = Math.round((domCfg.saleAmtMin + domCfg.saleAmtMax) / 2);
+        const feeRate   = (domCfg.feeRateMin + domCfg.feeRateMax) / 2;
+        const pgRate    = (domCfg.pgFeeRateMin + domCfg.pgFeeRateMax) / 2;
+        const refundAmt = Math.round(saleAmt * domCfg.refundAmtRatio / 100);
+        const feeAmt    = Math.round(saleAmt * feeRate / 100);
+        const pgAmt     = Math.round(saleAmt * pgRate / 100);
+        const settleAmt = saleAmt - refundAmt - feeAmt - pgAmt;
+        return { saleAmt, refundAmt, feeAmt, pgAmt, settleAmt };
+      });
+
+      /* ── [03] 공통 엔진 ──────────────────────────────── */
+      const _fmtDate = (d) => d.toISOString().substring(0, 7);
+      const _makeDate = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return d; };
+      const _wonFmt  = (n) => Number(n).toLocaleString('ko-KR') + '원';
+
+      const simul = useSimulSetup({
+        domain: '정산',
+        label: '시뮬정산',
+        defaultCfg: { mode: 'create', countMin: 1, countMax: 2, intervalVal: 15, intervalUnit: 'sec', durationMin: 3 },
+        runFn: async ({ mode, randInt, pick }) => {
+          if (mode === 'create') {
+            /* 업체 목록 캐시 */
+            if (domCfg.vendorFromDB && !vendors.value.length) {
+              const r = await boApiSvc.syVendor.getPage({ pageNo: 1, pageSize: 50, vendorStatusCd: 'ACTIVE' });
+              vendors.value = r.data?.data?.pageList || [];
+            }
+            const vendorId   = vendors.value.length ? pick(vendors.value).vendorId : 'VENDOR_SIM';
+            const vendorNm   = vendors.value.find(v => v.vendorId === vendorId)?.vendorNm || '시뮬업체';
+            const saleAmt    = randInt(domCfg.saleAmtMin, domCfg.saleAmtMax);
+            const feeRate    = randInt(domCfg.feeRateMin, domCfg.feeRateMax) / 100;
+            const pgRate     = randInt(domCfg.pgFeeRateMin, domCfg.pgFeeRateMax) / 100;
+            const refundAmt  = Math.round(saleAmt * domCfg.refundAmtRatio / 100);
+            const feeAmt     = Math.round(saleAmt * feeRate);
+            const pgAmt      = Math.round(saleAmt * pgRate);
+            const settleAmt  = saleAmt - refundAmt - feeAmt - pgAmt;
+            const baseDate   = _makeDate(0);
+            const body       = {
+              vendorId, settlePeriod: domCfg.settlePeriod,
+              settleYm: _fmtDate(baseDate),
+              settleStatusCd: domCfg.createStatus,
+              saleAmt, refundAmt, feeAmt, pgAmt, settleAmt,
+              feeRate: Math.round(feeRate * 10000) / 100,
+            };
+            const res = await boApi.post('/bo/st/settle/save/base', body, coUtil.apiHdr('정산시뮬', '생성'));
+            const id  = res?.data?.data?.settleId || '-';
+            return {
+              ok: true,
+              desc: vendorNm + ' | 매출:' + _wonFmt(saleAmt) + ' → 정산:' + _wonFmt(settleAmt),
+              meta: { id, vendorNm, saleAmt, settleAmt },
+            };
+          } else {
+            const list = (await boApi.get('/bo/st/settle/page', { params: { pageNo: 1, pageSize: 30 } })).data?.data?.pageList || [];
+            if (!list.length) return { ok: false, reason: '수정할 정산 없음' };
+            const target = pick(list);
+            let body = {}, desc = '';
+            if (domCfg.updateAction === 'status') {
+              body.settleStatusCd = domCfg.updateStatus; desc = '상태→' + domCfg.updateStatus;
+            } else if (domCfg.updateAction === 'adjust') {
+              const adj = randInt(domCfg.adjustAmtMin, domCfg.adjustAmtMax);
+              body.adjustAmt = adj; desc = '조정금액 ' + (adj >= 0 ? '+' : '') + _wonFmt(adj);
+            } else {
+              body.settleMemo = '[시뮬메모] ' + new Date().toLocaleTimeString('ko-KR'); desc = '메모 추가';
+            }
+            await boApi.put('/bo/st/settle/save/' + target.settleId, body, coUtil.apiHdr('정산시뮬', '수정'));
+            return { ok: true, desc: target.settleId + ' ' + desc, meta: { id: target.settleId } };
+          }
+        },
+      });
+      const { cfg, state, logs, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onClearLog } = simul;
+
+      /* ── [04] 컬럼 정의 ─────────────────────────────── */
+      const logCols = makeLogCols();
+      const baseCfgColumns = makeBaseCfgColumns();
+      const createCfgColumns = [
+        { key: 'saleAmtMin',      label: '매출 최소',     type: 'number', hint: '원' },
+        { key: 'saleAmtMax',      label: '매출 최대',     type: 'number', hint: '원' },
+        { key: 'feeRateMin',      label: '수수료율 최소', type: 'number', hint: '%' },
+        { key: 'feeRateMax',      label: '수수료율 최대', type: 'number', hint: '%' },
+        { key: 'pgFeeRateMin',    label: 'PG수수료 최소', type: 'number', hint: '%' },
+        { key: 'pgFeeRateMax',    label: 'PG수수료 최대', type: 'number', hint: '%' },
+        { key: 'refundAmtRatio',  label: '환불비율',      type: 'number', hint: '%' },
+        { key: 'settlePeriod',    label: '정산 주기',     type: 'select', options: SETTLE_PERIODS },
+        { key: 'createStatus',    label: '초기 상태',     type: 'select', options: SETTLE_STATUSES },
+        { key: 'vendorFromDB',    label: 'DB 업체 자동 배정', type: 'checkbox' },
+      ];
+      const updateCfgColumns = [
+        { key: 'updateAction', label: '수정 액션', type: 'select', options: UPDATE_ACTIONS },
+        { key: 'updateStatus', label: '변경 상태', type: 'select', options: SETTLE_STATUSES,
+          visible: (f) => f.updateAction === 'status' },
+        { key: 'adjustAmtMin', label: '조정 최소', type: 'number', hint: '원',
+          visible: (f) => f.updateAction === 'adjust' },
+        { key: 'adjustAmtMax', label: '조정 최대', type: 'number', hint: '원',
+          visible: (f) => f.updateAction === 'adjust' },
+      ];
+
+      return {
+        cfg, domCfg, state, logs, cfIsRunning, cfSuccessRate,
+        cfPreview, logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
+        onStart, onStop, onRunOnce, onClearLog,
+        SETTLE_STATUSES, vendors,
+      };
+    },
+
+    template: `
+<div>
+  <div class="page-title">💳 정산 시뮬레이터</div>
+  <div style="display:grid;grid-template-columns:400px 1fr;gap:12px;align-items:start;">
+
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <!-- 실행 제어 (공통 컴포넌트) -->
+      <zd-simul-control-panel
+        :cfg="cfg" :state="state" :base-cfg-columns="baseCfgColumns"
+        :cf-is-running="cfIsRunning" :cf-success-rate="cfSuccessRate"
+        accent-color="linear-gradient(90deg,#16a34a,#4ade80)"
+        accent-active="background:#f0fdf4;border:1.5px solid #16a34a;color:#14532d;"
+        @start="onStart" @stop="onStop" @run-once="onRunOnce" />
+
+      <div v-if="cfg.mode==='create'" class="card" style="padding:14px 16px;">
+        <div class="list-title">💳 정산 생성 옵션</div>
+        <bo-form-area :columns="createCfgColumns" :form="domCfg" :show-actions="false" :cols="2" style="margin-top:10px;" />
+        <div style="border-top:1px solid #f1f5f9;margin-top:12px;padding-top:12px;">
+          <div style="font-size:11px;font-weight:600;color:#475569;margin-bottom:8px;">📊 평균값 기준 미리보기</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:11px;">
+            <div style="display:flex;justify-content:space-between;padding:4px 8px;background:#f8fafc;border-radius:4px;">
+              <span style="color:#64748b;">매출액</span><span style="font-weight:600;">{{ cfPreview.saleAmt.toLocaleString('ko-KR') }}원</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:4px 8px;background:#fef2f2;border-radius:4px;">
+              <span style="color:#64748b;">환불액</span><span style="font-weight:600;color:#dc2626;">-{{ cfPreview.refundAmt.toLocaleString('ko-KR') }}원</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:4px 8px;background:#fef2f2;border-radius:4px;">
+              <span style="color:#64748b;">수수료</span><span style="font-weight:600;color:#dc2626;">-{{ cfPreview.feeAmt.toLocaleString('ko-KR') }}원</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:4px 8px;background:#fef2f2;border-radius:4px;">
+              <span style="color:#64748b;">PG수수료</span><span style="font-weight:600;color:#dc2626;">-{{ cfPreview.pgAmt.toLocaleString('ko-KR') }}원</span>
+            </div>
+            <div style="grid-column:1/-1;display:flex;justify-content:space-between;padding:6px 8px;background:#f0fdf4;border-radius:4px;border:1px solid #bbf7d0;">
+              <span style="color:#166534;font-weight:600;">최종 정산액</span><span style="font-weight:700;color:#16a34a;font-size:13px;">{{ cfPreview.settleAmt.toLocaleString('ko-KR') }}원</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="cfg.mode==='update'" class="card" style="padding:14px 16px;">
+        <div class="list-title">✏ 정산 수정 옵션</div>
+        <bo-form-area :columns="updateCfgColumns" :form="domCfg" :show-actions="false" :cols="1" style="margin-top:10px;" />
+      </div>
+    </div>
+
+    <!-- 우측: 로그 (공통 컴포넌트) -->
+    <zd-simul-log-panel :logs="logs" :log-cols="logCols" @clear="onClearLog" />
+  </div>
+</div>`,
+  };
+})();
