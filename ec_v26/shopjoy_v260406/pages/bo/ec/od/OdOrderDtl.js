@@ -456,10 +456,20 @@ window.OdOrderDtl = {
     const cfRelatedDelivery = computed(() =>
       (deliveries).find(d => d.orderId === props.dtlId)
     );
-    /* 클레임 정보 (이 주문에 연결된 클레임) */
-    const cfRelatedClaim = computed(() =>
-      (claims).find(c => c.orderId === props.dtlId)
-    );
+    /* 클레임 정보 (이 주문에 연결된 클레임) — DB 필드명 → 표시용 필드로 정규화 */
+    const CLAIM_TYPE_LABEL  = { CANCEL: '취소', RETURN: '반품', EXCHANGE: '교환' };
+    const CLAIM_STATUS_LABEL = {
+      REQUESTED: '요청', APPROVED: '승인', IN_PICKUP: '수거중',
+      PROCESSING: '처리중', COMPLT: '완료', REJECTED: '거절', CANCELLED: '철회', REFUND_WAIT: '환불대기',
+    };
+    const cfRelatedClaim = computed(() => {
+      const raw = (claims).find(c => c.orderId === props.dtlId);
+      if (!raw) return null;
+      return Object.assign({}, raw, {
+        type:   CLAIM_TYPE_LABEL[raw.claimTypeCd]  || raw.claimTypeCd  || raw.type  || '-',
+        status: CLAIM_STATUS_LABEL[raw.claimStatusCd] || raw.claimStatusCd || raw.status || '-',
+      });
+    });
     /* CLAIM_FLOWS: 정책서 1-C 기준 static 흐름 (parentCodeValues DB 동기 불필요) */
     const CLAIM_FLOWS = {
       '취소':   ['취소요청', '취소처리중', '취소완료'],

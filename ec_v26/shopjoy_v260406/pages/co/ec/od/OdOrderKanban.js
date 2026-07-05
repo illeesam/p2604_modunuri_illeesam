@@ -318,8 +318,8 @@ window.OdOrderKanban = {
     const { ref, reactive, computed, onMounted } = Vue;
 
     /* orderItemId / claimId / orderId:
-     *   props 우선, 없으면 window._odKanbanParams 에서 읽음 (boApp navigate 우회).
-     *   사용법: window._odKanbanParams = { orderItemId, claimId }; navigate('odOrderKanban', { id: orderId }); */
+     *   props 우선(boApp이 URL의 orderId/claimId 파라미터를 props로 전달), 없으면 window._odKanbanParams 폴백.
+     *   사용법: navigate('odOrderKanban', { orderId, claimId }); → URL: #page=odOrderKanban&orderId=...&claimId=... */
     var _kp = window._odKanbanParams || {};
     var _oi = ref(props.orderItemId || _kp.orderItemId || null);
     var _ci = ref(props.claimId     || _kp.claimId     || null);
@@ -649,15 +649,18 @@ window.OdOrderKanban = {
         const isBo = props.mode !== 'fo';
 
         if (isBo && window.boApiSvc) {
-          /* BO: 칸반 통합 API 1회 호출 — 주문 + 클레임(claimItems 포함) */
-          const kr = await boApiSvc.odOrder.getKanban(currentOrderId.value, '주문칸반', '칸반조회');
-          const kd = (kr.data && kr.data.data) || {};
-          const od = kd.order || {};
+          /* BO: 주문 단건 + 클레임 목록 병렬 조회 */
+          const [or, cr] = await Promise.all([
+            boApiSvc.odOrder.getById(currentOrderId.value, '주문칸반', '주문조회'),
+            boApiSvc.odClaim.getPage({ orderId: currentOrderId.value, pageNo: 1, pageSize: 100 }, '주문칸반', '클레임조회').catch(function () { return null; }),
+          ]);
+          const od = (or.data && or.data.data) || {};
           Object.assign(order, od);
-          orderItems.splice(0, orderItems.length, ...(od.orderItems || []));
+          orderItems.splice(0, orderItems.length, ...(od.orderItems || od.items || []));
 
           /* claimItems → _orderItemId / _claimItemId 보강 */
-          const claimList = kd.claims || [];
+          const cd = (cr && cr.data && cr.data.data) || {};
+          const claimList = cd.pageList || cd.list || [];
           claimList.forEach(function (c) {
             var items = c.claimItems || [];
             if (items.length) {

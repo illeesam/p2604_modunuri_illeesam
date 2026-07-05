@@ -376,6 +376,7 @@
         }
       });
       const dtlId = ref(null);
+      const kanbanClaimId = ref(null); // odOrderKanban 전용 claimId (URL 파라미터로 F5 복원)
 
       /* ── 탭 관리 ── */
       const openTabs = reactive([{ id: 'dashboard', label: '대시보드' }]);
@@ -683,8 +684,11 @@
         const newEmbed = embedVal === '1' || embedVal === 'true';
         if (embed.value !== newEmbed) embed.value = newEmbed;
         const pg = p.get('page');
-        const id = p.get('id');
+        // orderId: Kanban 전용 파라미터. 없으면 id 폴백 (레거시 URL 호환)
+        const rawOrderId = p.get('orderId') || p.get('id');
+        const id = rawOrderId;
         const newDtlId = id !== null ? (isNaN(id) ? id : Number(id)) : null;
+        const newClaimId = p.get('claimId') || null;
         if (pg && ALL_PAGES.includes(pg)) {
           const isLoggedIn = !!localStorage.getItem('modu-bo-auth-accessToken');
           if (!isLoggedIn && pg !== 'dashboard') {
@@ -699,6 +703,7 @@
           addTab(toTabId(pg, newDtlId));
         }
         if (dtlId.value !== newDtlId) dtlId.value = newDtlId;
+        if (kanbanClaimId.value !== newClaimId) kanbanClaimId.value = newClaimId;
       };
       readHash(false);
 
@@ -716,15 +721,23 @@
           return;
         }
         page.value = pg;
-        dtlId.value = opts.id ?? null;
+        // Kanban: orderId/claimId 파라미터 지원 (opts.orderId 우선, 없으면 opts.id 폴백)
+        const resolvedOrderId = opts.orderId ?? opts.id ?? null;
+        dtlId.value = resolvedOrderId;
+        kanbanClaimId.value = opts.claimId ?? null;
         if (PAGE_TO_TOP[pg]) activeTop.value = PAGE_TO_TOP[pg];
-        const tabId = toTabId(pg, opts.id ?? null);
+        const tabId = toTabId(pg, resolvedOrderId);
         addTab(tabId);
         // 즐겨찾기 keep 설정이 있으면 자동으로 탭 고정
         if (favKeepSet.has(tabId)) keptTabIds.add(tabId);
         const p2 = new URLSearchParams();
         p2.set('page', pg);
-        if (opts.id != null) p2.set('id', opts.id);
+        if (opts.orderId != null) {
+          p2.set('orderId', opts.orderId);                       // Kanban: orderId 키로 기록
+        } else if (opts.id != null) {
+          p2.set('id', opts.id);                                 // 일반 Dtl: id 키 유지
+        }
+        if (opts.claimId != null) p2.set('claimId', opts.claimId); // Kanban: claimId 추가
         if (embed.value) p2.set('embed', '1');
         // 동일 hash 재설정 시 hashchange 이벤트 재발화로 인한 무한 마운트 루프 방지
         const newHash = p2.toString();
@@ -2530,7 +2543,7 @@
             <mb-member-dtl  v-else-if="page==='mbMemberDtl'"  :navigate="navigate" :dtl-id="dtlId" />
             <pd-prod-mng  v-else-if="page==='pdProdMng'"  :navigate="navigate" />
             <pd-prod-dtl  v-else-if="page==='pdProdDtl'"  :navigate="navigate" :dtl-id="dtlId" />
-            <od-order-kanban v-else-if="page==='odOrderKanban'" :key="'kanban_' + dtlId" :order-id="dtlId" mode="bo" :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
+            <od-order-kanban v-else-if="page==='odOrderKanban'" :key="'kanban_' + dtlId" :order-id="dtlId" :claim-id="kanbanClaimId" mode="bo" :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
             <od-order-mng  v-else-if="page==='odOrderMng'"  :navigate="navigate" />
             <od-order-dtl  v-else-if="page==='odOrderDtl'"  :navigate="navigate" :dtl-id="dtlId" />
             <od-claim-mng  v-else-if="page==='odClaimMng'"  :navigate="navigate" />

@@ -222,6 +222,7 @@ window.OdClaimDtl = {
     /* policy: re-fetch detail API whenever parent Mng increments reloadTrigger */
     watch(() => props.reloadTrigger, async (n, o) => {
       if (n === o || n === 0) { return; }
+      uiState.activeTab = 'items'; // 행 변경 시 클레임항목 탭 기본
       try { Object.keys(errors).forEach(k => delete errors[k]); } catch(_) {}
       await handleSearchDetail();
     });

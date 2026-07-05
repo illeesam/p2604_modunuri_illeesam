@@ -142,8 +142,7 @@ window.OdOrderMng = {
         }
         if (colKey === 'btn_row_delete') { return handleDelete(row); }
         if (colKey === 'btn_row_kanban') {
-          window._odKanbanParams = { orderItemId: null, claimId: null };
-          props.navigate('odOrderKanban', { id: row.orderId });
+          props.navigate('odOrderKanban', { orderId: row.orderId });
           return;
         }
         // 보기모드 트리거 컬럼: 제목(link) 셀 + 행번호(__no__) + VIEW_COLS 명시 헤더명

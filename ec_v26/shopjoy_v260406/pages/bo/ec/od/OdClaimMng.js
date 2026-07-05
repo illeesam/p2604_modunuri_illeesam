@@ -111,7 +111,7 @@ window.OdClaimMng = {
       // 칸반 보드 열기 (주문ID 기준 조회, 클레임ID 강조)
       } else if (cmd === 'claims-rowKanban') {
         window._odKanbanParams = { orderId: param.orderId, claimId: param.claimId };
-        return props.navigate('odOrderKanban', { id: param.orderId });
+        return props.navigate('odOrderKanban', { orderId: param.orderId, claimId: param.claimId });
       // 그리드 행 삭제
       } else if (cmd === 'claims-rowDelete') {
         return handleDelete(param);

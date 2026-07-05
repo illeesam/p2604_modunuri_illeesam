@@ -1,5 +1,5 @@
 /**
- * OdClaimCalcModal.js — 환불 (예정) 계산 공용 모달
+ * OdClaimCalcModal.js — 클레임 계산 (예정) 공용 모달 (취소/반품/교환)
  *
  * 클레임관리(OdClaimMng), 클레임상세(OdClaimDtl), 칸반보드(OdOrderKanban) 공용.
  *
@@ -134,7 +134,7 @@ window.OdClaimCalcModal = {
     return { state, handleSwitch, handleClose };
   },
   template: /* html */`
-<bo-modal :show="show" title="환불 (예정) 계산" width="760px" @close="handleClose">
+<bo-modal :show="show" :title="state.claimType==='CANCEL'?'취소 클레임 계산 (예정)':state.claimType==='RETURN'?'반품 클레임 계산 (예정)':state.claimType==='EXCHANGE'?'교환 클레임 계산 (예정)':'클레임 계산 (예정)'" width="760px" @close="handleClose">
   <template #default>
     <div v-if="state.loading" style="text-align:center;padding:40px;color:#94a3b8;">⏳ 계산 중...</div>
     <template v-else-if="state.data">
@@ -298,12 +298,16 @@ window.OdClaimCalcModal = {
                   <span style="font-family:monospace;">{{ (state.data.order.payAmt || state.data.calc.orderTotalAmt || 0).toLocaleString() }}원</span>
                 </div>
                 <div style="display:flex;justify-content:space-between;padding:2px 0;color:#059669;">
-                  <span>환불 예정액</span>
+                  <span>환불 예정액 (현재 클레임)</span>
                   <span style="font-family:monospace;font-weight:700;">- {{ (state.data.calc.refundBase || 0).toLocaleString() }}원</span>
                 </div>
+                <div style="display:flex;justify-content:space-between;padding:2px 0;color:#dc2626;">
+                  <span>클레임 환불합계 (전체)</span>
+                  <span style="font-family:monospace;">- {{ state.orderClaims.reduce(function(s,c){return s+(c.refundAmt||0);},0).toLocaleString() }}원</span>
+                </div>
                 <div style="display:flex;justify-content:space-between;padding:5px 0 2px;font-weight:800;border-top:1px solid #a5b4fc;margin-top:2px;">
-                  <span style="color:#3730a3;">최종 부담액</span>
-                  <span style="font-family:monospace;color:#1d4ed8;">{{ ((state.data.order.payAmt || state.data.calc.orderTotalAmt || 0) - (state.data.calc.refundBase || 0)).toLocaleString() }}원</span>
+                  <span style="color:#3730a3;">최종 결제잔액</span>
+                  <span style="font-family:monospace;color:#1d4ed8;">{{ ((state.data.order.payAmt || state.data.calc.orderTotalAmt || 0) - state.orderClaims.reduce(function(s,c){return s+(c.refundAmt||0);},0)).toLocaleString() }}원</span>
                 </div>
                 <div style="margin-top:6px;padding:5px 8px;background:#e0e7ff;border-radius:6px;text-align:center;font-size:10px;color:#4338ca;font-weight:700;">
                   비례율 {{ Math.round((state.data.calc.ratio || 0) * 100) }}% 적용
@@ -358,12 +362,16 @@ window.OdClaimCalcModal = {
                 <span style="font-family:monospace;">{{ (state.data.order.payAmt || state.data.calc.orderTotalAmt || 0).toLocaleString() }}원</span>
               </div>
               <div style="display:flex;justify-content:space-between;padding:3px 0;color:#059669;">
-                <span>환불 예정액</span>
+                <span>환불 예정액 (현재 클레임)</span>
                 <span style="font-family:monospace;font-weight:700;">{{ (state.data.calc.refundBase || 0).toLocaleString() }}원</span>
               </div>
+              <div style="display:flex;justify-content:space-between;padding:3px 0;color:#dc2626;">
+                <span>클레임 환불합계 (전체)</span>
+                <span style="font-family:monospace;">{{ state.orderClaims.reduce(function(s,c){return s+(c.refundAmt||0);},0).toLocaleString() }}원</span>
+              </div>
               <div style="display:flex;justify-content:space-between;padding:3px 0;border-top:1px solid #e2e8f0;margin-top:2px;font-weight:800;">
-                <span style="color:#374151;">최종 부담액</span>
-                <span style="font-family:monospace;color:#1d4ed8;">{{ ((state.data.order.payAmt || state.data.calc.orderTotalAmt || 0) - (state.data.calc.refundBase || 0)).toLocaleString() }}원</span>
+                <span style="color:#374151;">최종 결제잔액</span>
+                <span style="font-family:monospace;color:#1d4ed8;">{{ ((state.data.order.payAmt || state.data.calc.orderTotalAmt || 0) - state.orderClaims.reduce(function(s,c){return s+(c.refundAmt||0);},0)).toLocaleString() }}원</span>
               </div>
               <div style="margin-top:6px;padding:5px 8px;background:#e0e7ff;border-radius:6px;text-align:center;font-size:10px;color:#4338ca;font-weight:700;">
                 비례율 {{ Math.round((state.data.calc.ratio || 0) * 100) }}% 적용
@@ -374,7 +382,7 @@ window.OdClaimCalcModal = {
       </div>
       <!-- ⑤ 프로모션 정보 카드 (3열) -->
       <div style="margin-top:12px;border-radius:10px;border:1px solid #e9d5ff;overflow:hidden;">
-        <div style="padding:8px 12px;background:#f5f3ff;font-size:11px;font-weight:800;color:#6d28d9;border-bottom:1px solid #e9d5ff;">🎁 프로모션 정보</div>
+        <div style="padding:8px 12px;background:#f5f3ff;font-size:11px;font-weight:800;color:#6d28d9;border-bottom:1px solid #e9d5ff;">🎁 프로모션 정보 (할인, 쿠폰)</div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;">
           <div style="padding:10px 14px;border-right:1px solid #e9d5ff;">
             <div style="font-size:10px;font-weight:700;color:#7c3aed;margin-bottom:8px;">📌 사용된 프로모션 (주문 시)</div>
