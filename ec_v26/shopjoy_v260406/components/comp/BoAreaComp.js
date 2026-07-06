@@ -2133,7 +2133,9 @@ window.BoFormArea = {
         if (param.col.onChange) return param.col.onChange(props.form[param.col.key], props.form, param.event);
       } else if (cmd === 'field-checkbox-change') {
         const col = param.col, e = param.event;
-        props.form[col.key] = e.target.checked ? (col.checkedValue || 'Y') : (col.uncheckedValue || 'N');
+        props.form[col.key] = e.target.checked
+          ? (col.checkedValue != null ? col.checkedValue : 'Y')
+          : (col.uncheckedValue != null ? col.uncheckedValue : 'N');
       } else if (cmd === 'field-pathPick-open') {
         if (param.col.onOpen) return param.col.onOpen(props.form);
       } else {
@@ -2211,10 +2213,11 @@ window.BoFormArea = {
         v-model="form[col.key]" :readonly="readonly"
         :class="errors[col.key] ? 'is-invalid' : ''" @change="handleSelectAction('field-change', { col, event: $event })" />
 <!-- checkbox (Y/N 토글) -->
-<label v-else-if="col.type === 'checkbox'" style="display:flex;align-items:center;gap:6px;cursor:pointer;min-height:34px;">
+<label v-else-if="col.type === 'checkbox'" style="display:flex;align-items:center;gap:6px;cursor:pointer;min-height:34px;position:relative;z-index:1;pointer-events:auto;">
   <input type="checkbox"
-          :checked="form[col.key] === (col.checkedValue || 'Y')"
+          :checked="form[col.key] === (col.checkedValue != null ? col.checkedValue : 'Y')"
           :disabled="readonly"
+          style="pointer-events:auto;cursor:pointer;width:14px;height:14px;flex-shrink:0;"
           @change="handleSelectAction('field-checkbox-change', { col, event: $event })" />
   <span>
     {{ col.checkboxLabel || col.label }}

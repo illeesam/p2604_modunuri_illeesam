@@ -718,5 +718,10 @@
     removeRole(_id, uiNm, cmdNm)   { return chkId(_id, uiNm, cmdNm) || global.boApi.delete(`/bo/sy/vendor-user-role/${_id}`, hdr(uiNm, cmdNm)); },
   };
 
+  boApiSvc.zdSimulLog = {
+    getPage(params, uiNm, cmdNm) { return global.boApi.get('/bo/zd/simul/log/page', { params, ...hdr(uiNm || '시뮬레이터', cmdNm || '로그조회') }); },
+    save(body, uiNm, cmdNm)      { return global.boApi.post('/bo/zd/simul/log/save', body, hdr(uiNm || '시뮬레이터', cmdNm || '로그저장')); },
+  };
+
   global.boApiSvc = boApiSvc;
 })(window);

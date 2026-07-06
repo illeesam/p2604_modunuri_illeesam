@@ -31,7 +31,7 @@ CREATE TABLE shopjoy_2604.syh_access_error_log (
     func_nm      VARCHAR(200) ,
     line_no      VARCHAR(10)  ,
     trace_id     VARCHAR(50)  ,
-    site_id      VARCHAR(21)   NOT NULL
+    site_id      VARCHAR(21)   NULL
 );
 
 COMMENT ON TABLE  shopjoy_2604.syh_access_error_log IS 'HTTP 요청 에러 로그 (비동기 수집)';

@@ -224,4 +224,8 @@ public class OdOrder extends BaseEntity {
     @Column(name = "appr_aprv_date")
     private LocalDateTime apprAprvDate;
 
+    @Comment("시뮬데이터여부 (Y/N)")
+    @Column(name = "simul_yn", length = 1, columnDefinition = "VARCHAR(1) DEFAULT 'N'")
+    private String simulYn;
+
 }

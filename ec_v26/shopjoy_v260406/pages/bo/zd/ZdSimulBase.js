@@ -2,7 +2,20 @@
  * bo-form-area / bo-grid 최대 활용 버전
  */
 (function () {
-  const { ref, reactive, computed, onBeforeUnmount } = Vue;
+  /* ── 듀얼 range 슬라이더 스타일 주입 (1회) ─────────────── */
+  if (!document.getElementById('zd-simul-range-style')) {
+    const s = document.createElement('style');
+    s.id = 'zd-simul-range-style';
+    s.textContent = [
+      '.zd-simul input[type=range]{height:4px;background:transparent;outline:none;}',
+      '.zd-simul input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#7c3aed;border:2px solid #fff;box-shadow:0 1px 4px rgba(124,58,237,.5);cursor:pointer;margin-top:-6px;}',
+      '.zd-simul input[type=range]::-webkit-slider-runnable-track{height:4px;background:transparent;}',
+      '.zd-simul input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#7c3aed;border:2px solid #fff;box-shadow:0 1px 4px rgba(124,58,237,.5);cursor:pointer;}',
+      '.zd-simul input[type=range]::-moz-range-track{height:4px;background:transparent;}',
+    ].join('');
+    document.head.appendChild(s);
+  }
+  const { ref, reactive, computed, onMounted, onBeforeUnmount } = Vue;
 
   /* ── 공통 유틸 ──────────────────────────────────────────── */
   const _nowSuffix = () => {
@@ -21,34 +34,44 @@
   };
   const _shortTs  = () => new Date().toLocaleTimeString('ko-KR');
 
-  /* ── 세션 공유 로그 저장소 ────────────────────────────────── */
-  if (!window._zdSimulLogs)   window._zdSimulLogs   = [];
+  /* ── 공유 통계 ────────────────────────────────────────────── */
   if (!window._zdSimulStats)  window._zdSimulStats   = {};
 
-  const _addLog = (domain, mode, status, desc, reason, meta) => {
-    const entry = { ts: _ts(), domain, mode, status, desc, reason: reason || '', meta: meta || {} };
-    window._zdSimulLogs.unshift(entry);
-    if (window._zdSimulLogs.length > 1000) window._zdSimulLogs.splice(800);
+  /* DB 저장 — 비동기 fire-and-forget */
+  const _addLog = (domain, mode, status, desc, reason, meta, userNm, uiNm) => {
     if (!window._zdSimulStats[domain]) window._zdSimulStats[domain] = { ok: 0, fail: 0, total: 0 };
     window._zdSimulStats[domain].total++;
     if (status === '성공') window._zdSimulStats[domain].ok++;
     else window._zdSimulStats[domain].fail++;
+    const body = {
+      domain,
+      mode,
+      status: status === '성공' ? 'SUCCESS' : 'FAIL',
+      desc: desc || '',
+      reason: reason || '',
+      targetId: (meta && meta.id) ? String(meta.id) : null,
+      userNm: userNm || '-',
+      uiNm: uiNm || domain,
+    };
+    if (window.boApiSvc && window.boApiSvc.zdSimulLog) {
+      window.boApiSvc.zdSimulLog.save(body).catch(() => {});
+    }
   };
 
   /* ── 공통 setup 팩토리 ───────────────────────────────────── */
   const useSimulSetup = (opts) => {
-    const { domain, label, runFn, defaultCfg } = opts;
+    const { domain, label, uiNm, runFn, defaultCfg } = opts;
 
     /* [01] 기본 + 도메인 확장 설정 */
     const cfg = reactive(Object.assign({
       mode: 'create',
       countMin: 1,
-      countMax: 3,
+      countMax: 1,
       namePrefix: 'simul',
       addSuffix: true,
       intervalUnit: 'sec',
-      intervalVal: 10,
-      durationMin: 5,
+      intervalVal: 30,
+      durationMin: 10,
     }, defaultCfg || {}));
 
     /* [02] 실행 상태 */
@@ -64,6 +87,38 @@
     });
 
     const logs = ref([]);
+    const logPager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1 });
+    const logSearch = reactive({ uiNm: '', userNm: '' });
+
+    /* DB 조회 */
+    const _fetchLogs = async (pageNo) => {
+      if (!window.boApiSvc || !window.boApiSvc.zdSimulLog) return;
+      try {
+        const params = {
+          domain,
+          pageNo: pageNo || logPager.pageNo,
+          pageSize: logPager.pageSize,
+          uiNm:   logSearch.uiNm   || undefined,
+          userNm: logSearch.userNm || undefined,
+        };
+        const res = await window.boApiSvc.zdSimulLog.getPage(params);
+        const d = res.data?.data || {};
+        const rows = (d.pageList || []).map(e => ({
+          ts:     e.regDate ? e.regDate.replace('T', ' ').slice(0, 19) : (e.reg_date || ''),
+          userNm: e.userNm || '-',
+          uiNm:   e.uiNm   || '-',
+          mode:   e.simulMode || '-',
+          status: e.simulStatus === 'SUCCESS' ? 'ok' : 'fail',
+          desc:   e.descTxt   || '',
+          reason: e.reasonTxt || '',
+          meta:   {},
+        }));
+        logs.value = rows;
+        logPager.pageTotalCount = d.pageTotalCount || 0;
+        logPager.pageTotalPage  = d.pageTotalPage  || 1;
+        logPager.pageNo = pageNo || logPager.pageNo;
+      } catch (_) {}
+    };
 
     /* [03] computed */
     const cfIntervalMs   = computed(() => {
@@ -98,21 +153,23 @@
           const meta   = res?.meta   || {};
           state.totalRun++;
           if (ok) state.totalOk++; else state.totalFail++;
-          const entry = { ts: _shortTs(), mode: cfg.mode === 'create' ? '생성' : '수정', status: ok ? 'ok' : 'fail', desc, reason, meta };
-          logs.value.unshift(entry);
-          if (logs.value.length > 300) logs.value.splice(250);
-          _addLog(domain, entry.mode, ok ? '성공' : '실패', desc, reason, meta);
+          const _au = window.boAuthStore?.svAuthUser || (window.boAuthStore && window.boAuthStore.sgCurrentUser?.()) || {};
+          const userNm = _au.name || _au.authNm || _au.userNm || '-';
+          const entry = { ts: _ts(), userNm, mode: cfg.mode === 'create' ? '생성' : '수정', status: ok ? 'ok' : 'fail', desc, reason, meta };
+          _addLog(domain, entry.mode, ok ? '성공' : '실패', desc, reason, meta, userNm, uiNm || label);
           if (ok && meta.id) created.push(meta);
         } catch (e) {
           state.totalRun++; state.totalFail++;
           const reason = e?.response?.data?.message || e?.message || String(e);
-          const entry  = { ts: _shortTs(), mode: cfg.mode === 'create' ? '생성' : '수정', status: 'fail', desc: '오류 발생', reason, meta: {} };
-          logs.value.unshift(entry);
-          _addLog(domain, entry.mode, '실패', '오류 발생', reason, {});
+          const _au = window.boAuthStore?.svAuthUser || (window.boAuthStore && window.boAuthStore.sgCurrentUser?.()) || {};
+          const userNm = _au.name || _au.authNm || _au.userNm || '-';
+          _addLog(domain, cfg.mode === 'create' ? '생성' : '수정', '실패', '오류 발생', reason, {}, userNm, uiNm || label);
         }
       }
       state.lastCreated = created;
       if (state.running) _tickTimer = setTimeout(_doOneTick, cfIntervalMs.value);
+    /* 틱 완료 후 1페이지 재조회 */
+    setTimeout(() => _fetchLogs(1), 300);
     };
 
     /* [06] 제어 */
@@ -124,7 +181,6 @@
       state.progress = 0;
       state.remainSec = Math.floor(cfDurationMs.value / 1000);
       state.lastCreated = [];
-      logs.value = [];
       _doOneTick();
       _stopTimer = setTimeout(() => { state.running = false; state.progress = 100; _clearTimers(); }, cfDurationMs.value);
       _countdownTimer = setInterval(() => {
@@ -141,13 +197,16 @@
       await _doOneTick();
       if (wasStopped) state.running = false;
     };
-    const onClearLog    = () => { logs.value = []; state.lastCreated = []; };
+    const onClearLog    = () => { state.lastCreated = []; _fetchLogs(1); };
     const onResetStats  = () => { state.totalRun = state.totalOk = state.totalFail = 0; };
+    const onSetLogPage  = (n) => { logPager.pageNo = n; _fetchLogs(n); };
+    const onSearchLog   = () => { logPager.pageNo = 1; _fetchLogs(1); };
 
+    onMounted(() => { _fetchLogs(1); });
     onBeforeUnmount(() => { state.running = false; _clearTimers(); });
 
-    return { cfg, state, logs, cfIsRunning, cfIntervalMs, cfDurationMs, cfSuccessRate,
-             onStart, onStop, onRunOnce, onClearLog, onResetStats,
+    return { cfg, state, logs, logPager, logSearch, cfIsRunning, cfIntervalMs, cfDurationMs, cfSuccessRate,
+             onStart, onStop, onRunOnce, onClearLog, onResetStats, onSetLogPage, onSearchLog,
              _randInt, _randF, _pick, _wonFmt, _nowSuffix };
   };
 
@@ -241,8 +300,10 @@
   const makeLogCols = () => [
     { key: '_idx',   label: '번호', width: '36px',  align: 'center',
       fmt: (v, row, i) => i + 1 },
-    { key: 'ts',     label: '시각', width: '88px',
-      cellStyle: 'color:#94a3b8;font-family:monospace;font-size:10px;' },
+    { key: 'ts',     label: '등록일시', width: '140px',
+      cellStyle: 'color:#64748b;font-family:monospace;font-size:10px;' },
+    { key: 'userNm', label: '등록자', width: '72px', align: 'center',
+      cellStyle: 'color:#475569;font-size:11px;' },
     { key: 'mode',   label: '유형', width: '44px',  align: 'center',
       badge: (row) => row.mode === '생성' ? 'badge-blue' : 'badge-orange' },
     { key: 'status', label: '결과', width: '36px',  align: 'center',
@@ -259,12 +320,99 @@
     { key: 'countMin',    label: '1회 개수 최소', type: 'number', hint: '건' },
     { key: 'countMax',    label: '1회 개수 최대', type: 'number', hint: '건' },
     { key: 'namePrefix',  label: 'Prefix',        type: 'text',   placeholder: '테스트_' },
-    { key: 'addSuffix',   label: 'YYMMDD_hhmm 추가', type: 'checkbox' },
+    { key: 'addSuffix',   label: 'YYMMDD_hhmm 추가', type: 'checkbox', checkedValue: true, uncheckedValue: false },
     { key: 'intervalVal', label: '실행 주기 값',  type: 'number' },
     { key: 'intervalUnit', label: '단위', type: 'select',
       options: [{ value: 'sec', label: '초' }, { value: 'min', label: '분' }, { value: 'hr', label: '시간' }] },
     { key: 'durationMin', label: '총 실행 시간',  type: 'number', hint: '분', colSpan: 1 },
   ];
+
+  /* ── 듀얼 range 슬라이더 헬퍼 ──────────────────────────────
+   * makeRangeCol(minKey, maxKey, label, absMin, absMax, unit, opts)
+   *   → BoFormArea columns 배열에 삽입할 slot 컬럼 1개 반환
+   *   opts: { colSpan, visible }
+   *
+   * makeRangeHandlers(domCfg, pairs)
+   *   pairs: [{ minKey, maxKey }, ...]
+   *   → { on{MinKey}Change, on{MaxKey}Change, ... } 핸들러 객체 반환
+   *
+   * rangeSlotTemplate(minKey, maxKey, absMin, absMax, unit)
+   *   → #slotName 에 들어갈 Vue template 문자열 반환
+   *
+   * 사용법 (각 시뮬레이터):
+   *   columns 에 makeRangeCol(...) 삽입
+   *   setup return 에 makeRangeHandlers(domCfg, [...]) 스프레드
+   *   template bo-form-area 안에 rangeSlotTemplate(...) 삽입
+   * ─────────────────────────────────────────────────────────── */
+  const _capFirst = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+
+  const makeRangeCol = (minKey, maxKey, label, absMin, absMax, unit, opts) => {
+    const slotName = minKey.replace(/Min$/, '') + 'Range';
+    return {
+      key: '_' + slotName, label,
+      type: 'slot', name: slotName,
+      colSpan: opts && opts.colSpan != null ? opts.colSpan : 1,
+      ...(opts && opts.visible ? { visible: opts.visible } : {}),
+    };
+  };
+
+  const makeRangeHandlers = (domCfg, pairs) => {
+    const handlers = {};
+    pairs.forEach(({ minKey, maxKey }) => {
+      handlers['on' + _capFirst(minKey) + 'Change'] = () => {
+        if (domCfg[minKey] >= domCfg[maxKey]) domCfg[minKey] = domCfg[maxKey] - 1;
+      };
+      handlers['on' + _capFirst(maxKey) + 'Change'] = () => {
+        if (domCfg[maxKey] <= domCfg[minKey]) domCfg[maxKey] = domCfg[minKey] + 1;
+      };
+    });
+    return handlers;
+  };
+
+  /* slotName을 minKey에서 자동 도출: priceMin → priceRange */
+  const _slotName = (minKey) => minKey.replace(/Min$/, '') + 'Range';
+
+  /* fill bar left/right % 계산 */
+  const _fillStyle = (minKey, maxKey, absMin, absMax) => {
+    const span = absMax - absMin;
+    /* absMin < 0 이면 '-(-50)' → '--50' (decrement 오파싱) 방지: 괄호로 감쌈 */
+    const offset = absMin === 0 ? '' : `-(${absMin})`;
+    const minPct = absMin === 0
+      ? `domCfg.${minKey}/${span}*100`
+      : `(domCfg.${minKey}${offset})/${span}*100`;
+    const maxPct = absMin === 0
+      ? `domCfg.${maxKey}/${span}*100`
+      : `(domCfg.${maxKey}${offset})/${span}*100`;
+    return `'position:absolute;left:'+(${minPct})+'%;right:'+(100-(${maxPct}))+'%;height:4px;background:linear-gradient(90deg,#7c3aed,#a855f7);border-radius:2px;pointer-events:none;'`;
+  };
+
+  const rangeSlotTemplate = (minKey, maxKey, absMin, absMax, unit) => {
+    const sn = _slotName(minKey);
+    const minHandler = 'on' + _capFirst(minKey) + 'Change';
+    const maxHandler = 'on' + _capFirst(maxKey) + 'Change';
+    const fillStyle  = _fillStyle(minKey, maxKey, absMin, absMax);
+    const minFmt = unit === '원' ? `{{ domCfg.${minKey}.toLocaleString() }}${unit}` : `{{ domCfg.${minKey} }}${unit}`;
+    const maxFmt = unit === '원' ? `{{ domCfg.${maxKey}.toLocaleString() }}${unit}` : `{{ domCfg.${maxKey} }}${unit}`;
+    return `<template #${sn}>
+        <div style="padding:0;">
+          <div style="position:relative;height:20px;display:flex;align-items:center;">
+            <div style="position:absolute;left:0;right:0;height:4px;background:#e2e8f0;border-radius:2px;pointer-events:none;"></div>
+            <div :style="${fillStyle}"></div>
+            <input type="range" min="${absMin}" max="${absMax}" v-model.number="domCfg.${minKey}" @change="${minHandler}"
+              style="position:absolute;left:0;right:0;width:100%;margin:0;appearance:none;-webkit-appearance:none;background:transparent;cursor:pointer;pointer-events:auto;" />
+            <input type="range" min="${absMin}" max="${absMax}" v-model.number="domCfg.${maxKey}" @change="${maxHandler}"
+              style="position:absolute;left:0;right:0;width:100%;margin:0;appearance:none;-webkit-appearance:none;background:transparent;cursor:pointer;pointer-events:auto;" />
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:2px;">
+            <span style="font-size:10px;color:#cbd5e1;">${absMin}${unit}</span>
+            <span style="font-size:11px;color:#6d28d9;font-weight:700;">${minFmt}</span>
+            <span style="font-size:10px;color:#94a3b8;">~</span>
+            <span style="font-size:11px;color:#7c3aed;font-weight:700;">${maxFmt}</span>
+            <span style="font-size:10px;color:#cbd5e1;">${absMax}${unit}</span>
+          </div>
+        </div>
+      </template>`;
+  };
 
   window.ZdSimulBase = {
     useSimulSetup,
@@ -276,6 +424,10 @@
     makeBaseCfgColumns,
     baseCfgColumns,
     logGridColumns,
+    /* range 슬라이더 헬퍼 */
+    makeRangeCol,
+    makeRangeHandlers,
+    rangeSlotTemplate,
     /* 공통 유틸 */
     _randInt, _randF, _pick, _wonFmt,
   };

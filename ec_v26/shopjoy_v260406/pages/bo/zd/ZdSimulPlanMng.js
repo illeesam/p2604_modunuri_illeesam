@@ -1,7 +1,7 @@
-/* ZdSimulPlanMng — 기획전 시뮬레이터 (bo-form-area / bo-grid 활용) */
+﻿/* ZdSimulPlanMng — 기획전 시뮬레이터 (bo-form-area / bo-grid 활용) */
 (function () {
   const { reactive } = Vue;
-  const { useSimulSetup, makeLogCols, makeBaseCfgColumns } = window.ZdSimulBase;
+  const { useSimulSetup, makeLogCols, makeBaseCfgColumns, makeRangeCol, makeRangeHandlers, rangeSlotTemplate } = window.ZdSimulBase;
 
   const PLAN_STATUSES = [
     { value: 'READY',  label: '준비중' },
@@ -53,7 +53,7 @@
       const simul = useSimulSetup({
         domain: '기획전',
         label: '시뮬기획전',
-        defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 15, intervalUnit: 'sec', durationMin: 3 },
+        defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
         runFn: async ({ mode, namePrefix, randInt, pick }) => {
           if (mode === 'create') {
             const prods = (await boApiSvc.pdProd.getPage({ pageNo: 1, pageSize: 100, prodStatusCd: 'SELLING' })).data?.data?.pageList || [];
@@ -71,8 +71,8 @@
               startDate: _makeDate(offset), endDate: _makeDate(offset + dur),
               items,
             };
-            const res = await boApi.post('/bo/ec/pm/plan/save/base', body, coUtil.apiHdr('기획전시뮬', '생성'));
-            const id  = res?.data?.data?.planId || res?.data?.data?.id || '-';
+            const res = await boApi.post('/bo/zd/simul/plan/create', body, coUtil.cofApiHdr('기획전시뮬', '생성'));
+            const id  = res?.data?.data?.planId || '-';
             return {
               ok: true,
               desc: planNm + ' | ' + cnt + '개 상품 | ' + offset + '일 후 시작 ' + dur + '일',
@@ -98,26 +98,23 @@
               if (prods.length) { body.addProdIds = [pick(prods).prodId]; desc = '상품 1개 추가'; }
               else return { ok: false, reason: '추가할 상품 없음' };
             }
-            await boApi.put('/bo/ec/pm/plan/save/' + target.planId, body, coUtil.apiHdr('기획전시뮬', '수정'));
+            await boApi.post('/bo/zd/simul/plan/update', { planId: target.planId, ...body }, coUtil.cofApiHdr('기획전시뮬', '수정'));
             return { ok: true, desc: target.planNm + ' — ' + desc, meta: { id: target.planId } };
           }
         },
       });
-      const { cfg, state, logs, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onClearLog } = simul;
+      const { cfg, state, logs, logPager, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onClearLog, onSetLogPage } = simul;
 
       /* ── [03] 컬럼 정의 ─────────────────────────────── */
       const logCols = makeLogCols();
       const baseCfgColumns = makeBaseCfgColumns();
       const createCfgColumns = [
         { key: 'createStatus',       label: '초기 상태',      type: 'select', options: PLAN_STATUSES },
-        { key: 'useTheme',           label: '테마명 자동',    type: 'checkbox' },
-        { key: 'prodCountMin',       label: '상품 수 최소',   type: 'number', hint: '개' },
-        { key: 'prodCountMax',       label: '상품 수 최대',   type: 'number', hint: '개' },
-        { key: 'startOffsetDaysMin', label: '시작 오프셋 최소', type: 'number', hint: '일 후' },
-        { key: 'startOffsetDaysMax', label: '시작 오프셋 최대', type: 'number', hint: '일 후' },
-        { key: 'durationDaysMin',    label: '기간 최소',      type: 'number', hint: '일' },
-        { key: 'durationDaysMax',    label: '기간 최대',      type: 'number', hint: '일' },
-        { key: 'addBanner',          label: '배너 이미지 URL 자동 생성', type: 'checkbox' },
+        { key: 'useTheme',           label: '테마명 자동',    type: 'checkbox', checkedValue: true, uncheckedValue: false },
+        makeRangeCol('prodCountMin', 'prodCountMax', '상품 수 범위', 1, 50, '개'),
+        makeRangeCol('startOffsetDaysMin', 'startOffsetDaysMax', '시작 오프셋 범위', 0, 30, '일'),
+        makeRangeCol('durationDaysMin', 'durationDaysMax', '기간 범위', 1, 60, '일'),
+        { key: 'addBanner',          label: '배너 이미지 URL 자동 생성', type: 'checkbox', checkedValue: true, uncheckedValue: false },
       ];
       const updateCfgColumns = [
         { key: 'updateAction', label: '수정 액션', type: 'select', options: UPDATE_ACTIONS },
@@ -127,10 +124,17 @@
           visible: (f) => f.updateAction === 'period' },
       ];
 
+      const rangeHandlers = makeRangeHandlers(domCfg, [
+        { minKey: 'prodCountMin',       maxKey: 'prodCountMax'       },
+        { minKey: 'startOffsetDaysMin', maxKey: 'startOffsetDaysMax' },
+        { minKey: 'durationDaysMin',    maxKey: 'durationDaysMax'    },
+      ]);
+
       return {
-        cfg, domCfg, state, logs, cfIsRunning, cfSuccessRate,
+        cfg, domCfg, state, logs, logPager, cfIsRunning, cfSuccessRate,
         logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
-        onStart, onStop, onRunOnce, onClearLog,
+        onStart, onStop, onRunOnce, onClearLog, onSetLogPage,
+        ...rangeHandlers,
         PLAN_STATUSES,
       };
     },
@@ -150,7 +154,11 @@
   <!-- 생성 옵션 -->
   <div v-if="cfg.mode==='create'" class="card" style="padding:14px 16px;margin-top:12px;">
     <div class="list-title">🗂 기획전 생성 옵션</div>
-    <bo-form-area :columns="createCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;" />
+    <bo-form-area :columns="createCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;">
+      ${rangeSlotTemplate('prodCountMin','prodCountMax',1,50,'개')}
+      ${rangeSlotTemplate('startOffsetDaysMin','startOffsetDaysMax',0,30,'일')}
+      ${rangeSlotTemplate('durationDaysMin','durationDaysMax',1,60,'일')}
+    </bo-form-area>
   </div>
 
   <!-- 수정 옵션 -->
@@ -160,7 +168,7 @@
   </div>
 
   <!-- 실행 로그 -->
-  <zd-simul-log-panel :logs="logs" :log-cols="logCols" max-height="320px" style="margin-top:12px;" @clear="onClearLog" />
+  <zd-simul-log-panel :logs="logs" :log-cols="logCols" :pager="logPager" max-height="320px" style="margin-top:12px;" @clear="onClearLog" @set-page="onSetLogPage" />
 </div>`,
   };
 })();

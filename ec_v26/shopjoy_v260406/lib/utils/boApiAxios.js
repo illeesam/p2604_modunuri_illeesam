@@ -68,12 +68,17 @@
     /* X-UI-Nm / X-Cmd-Nm: 필수 헤더 검증 */
     var chk = coUtil.cofCheckNmHeaders(cfg.headers, 'BO API');
     if (!chk.ok) {
-      var errMsg = chk.errMsg + '\n\n' +
-                   'Method: ' + (cfg.method || 'GET').toUpperCase() + '\n' +
-                   'URL: ' + (cfg.url || '');
-      try { if (typeof global.alert === 'function') global.alert(errMsg); } catch (_) {}
-      console.error(TAG + ' ✗ REQUIRED HEADERS MISSING', { method: cfg.method, url: cfg.url });
-      return Promise.reject(new Error('[BO API] 필수 헤더 누락: X-UI-Nm, X-Cmd-Nm'));
+      var method  = (cfg.method || 'GET').toUpperCase();
+      var url     = cfg.url || '';
+      var errMsg  = chk.errMsg + '\n\nMethod: ' + method + '\nURL: ' + url;
+      console.error(TAG + ' ✗ REQUIRED HEADERS MISSING', { method: method, url: url });
+      /* api-response-error 이벤트 발행 → boApp 500 에러 화면에 method/url/메시지 표시 */
+      try {
+        global.dispatchEvent(new CustomEvent('api-response-error', {
+          detail: { status: 500, method: method, url: url, fullUrl: url, message: errMsg, uiLabel: '' }
+        }));
+      } catch (_) {}
+      return Promise.reject(new Error(errMsg));
     }
     var uiNm = chk.uiNm, cmdNm = chk.cmdNm;
     /* X-UI-Nm / X-Cmd-Nm: 한글은 ISO-8859-1 불가 → encodeURIComponent로 인코딩 후 전송, 로그는 디코딩 */

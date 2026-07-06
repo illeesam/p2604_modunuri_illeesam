@@ -1,7 +1,7 @@
-/* ZdSimulEventMng — 이벤트 시뮬레이터 (bo-form-area / bo-grid 활용) */
+﻿/* ZdSimulEventMng — 이벤트 시뮬레이터 (bo-form-area / bo-grid 활용) */
 (function () {
   const { reactive, computed } = Vue;
-  const { useSimulSetup, makeLogCols, makeBaseCfgColumns } = window.ZdSimulBase;
+  const { useSimulSetup, makeLogCols, makeBaseCfgColumns, makeRangeCol, makeRangeHandlers, rangeSlotTemplate } = window.ZdSimulBase;
 
   const EVENT_TYPES = [
     { cd: 'ATTEND',   label: '출석체크',  badge: 'badge-blue'   },
@@ -77,7 +77,7 @@
       const simul = useSimulSetup({
         domain: '이벤트',
         label: '시뮬이벤트',
-        defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 15, intervalUnit: 'sec', durationMin: 3 },
+        defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
         runFn: async ({ mode, namePrefix, randInt, pick }) => {
           if (mode === 'create') {
             const type    = _pickType();
@@ -94,8 +94,8 @@
               benefitAmt: randInt(domCfg.benefitAmtMin, domCfg.benefitAmtMax),
               winnerCount: randInt(domCfg.winnerCountMin, domCfg.winnerCountMax),
             };
-            const res = await boApi.post('/bo/ec/pm/event/save/base', body, coUtil.apiHdr('이벤트시뮬', '생성'));
-            const id  = res?.data?.data?.eventId || res?.data?.data?.id || '-';
+            const res = await boApi.post('/bo/zd/simul/event/create', body, coUtil.cofApiHdr('이벤트시뮬', '생성'));
+            const id  = res?.data?.data?.eventId || '-';
             return {
               ok: true,
               desc: '[' + type.label + '] ' + title + ' | 당첨자 최대 ' + body.winnerCount + '명',
@@ -115,12 +115,12 @@
             } else {
               body.winnerCount = randInt(1, 50); desc = '당첨자 수 변경';
             }
-            await boApi.put('/bo/ec/pm/event/save/' + target.eventId, body, coUtil.apiHdr('이벤트시뮬', '수정'));
+            await boApi.post('/bo/zd/simul/event/update', { eventId: target.eventId, ...body }, coUtil.cofApiHdr('이벤트시뮬', '수정'));
             return { ok: true, desc: target.eventNm + ' — ' + desc, meta: { id: target.eventId } };
           }
         },
       });
-      const { cfg, state, logs, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onClearLog } = simul;
+      const { cfg, state, logs, logPager, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onClearLog, onSetLogPage } = simul;
 
       /* ── [03] Computed ──────────────────────────────── */
       const cfTypeTotal = computed(() => Object.values(domCfg.eventTypeWeights).reduce((a, b) => a + Number(b), 0) || 1);
@@ -131,15 +131,11 @@
       const createCfgColumns = [
         { key: 'createStatus',   label: '초기 상태',   type: 'select', options: EVENT_STATUSES },
         { key: 'benefitType',    label: '혜택 유형',   type: 'select', options: BENEFIT_TYPES },
-        { key: 'benefitAmtMin',  label: '혜택 최소액', type: 'number', hint: '원' },
-        { key: 'benefitAmtMax',  label: '혜택 최대액', type: 'number', hint: '원' },
-        { key: 'winnerCountMin', label: '당첨자 최소', type: 'number', hint: '명' },
-        { key: 'winnerCountMax', label: '당첨자 최대', type: 'number', hint: '명' },
-        { key: 'startOffsetMin', label: '시작 오프셋 최소', type: 'number', hint: '일' },
-        { key: 'startOffsetMax', label: '시작 오프셋 최대', type: 'number', hint: '일' },
-        { key: 'durationDaysMin', label: '기간 최소',  type: 'number', hint: '일' },
-        { key: 'durationDaysMax', label: '기간 최대',  type: 'number', hint: '일' },
-        { key: 'useRandomTitle', label: '제목 자동 생성', type: 'checkbox' },
+        makeRangeCol('benefitAmtMin', 'benefitAmtMax', '혜택 금액 범위', 1000, 50000, '원'),
+        makeRangeCol('winnerCountMin', 'winnerCountMax', '당첨자 수 범위', 1, 200, '명'),
+        makeRangeCol('startOffsetMin', 'startOffsetMax', '시작 오프셋 범위', 0, 30, '일'),
+        makeRangeCol('durationDaysMin', 'durationDaysMax', '이벤트 기간 범위', 1, 60, '일'),
+        { key: 'useRandomTitle', label: '제목 자동 생성', type: 'checkbox', checkedValue: true, uncheckedValue: false },
       ];
       const updateCfgColumns = [
         { key: 'updateAction', label: '수정 액션', type: 'select', options: UPDATE_ACTIONS },
@@ -149,10 +145,18 @@
           visible: (f) => f.updateAction === 'period' },
       ];
 
+      const rangeHandlers = makeRangeHandlers(domCfg, [
+        { minKey: 'benefitAmtMin',   maxKey: 'benefitAmtMax'   },
+        { minKey: 'winnerCountMin',  maxKey: 'winnerCountMax'  },
+        { minKey: 'startOffsetMin',  maxKey: 'startOffsetMax'  },
+        { minKey: 'durationDaysMin', maxKey: 'durationDaysMax' },
+      ]);
+
       return {
-        cfg, domCfg, state, logs, cfIsRunning, cfSuccessRate,
+        cfg, domCfg, state, logs, logPager, cfIsRunning, cfSuccessRate,
         cfTypeTotal, logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
-        onStart, onStop, onRunOnce, onClearLog,
+        onStart, onStop, onRunOnce, onClearLog, onSetLogPage,
+        ...rangeHandlers,
         EVENT_TYPES,
       };
     },
@@ -172,7 +176,12 @@
   <!-- 생성 옵션 -->
   <div v-if="cfg.mode==='create'" class="card" style="padding:14px 16px;margin-top:12px;">
     <div class="list-title">🎉 이벤트 생성 옵션</div>
-    <bo-form-area :columns="createCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;" />
+    <bo-form-area :columns="createCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;">
+      ${rangeSlotTemplate('benefitAmtMin','benefitAmtMax',1000,50000,'원')}
+      ${rangeSlotTemplate('winnerCountMin','winnerCountMax',1,200,'명')}
+      ${rangeSlotTemplate('startOffsetMin','startOffsetMax',0,30,'일')}
+      ${rangeSlotTemplate('durationDaysMin','durationDaysMax',1,60,'일')}
+    </bo-form-area>
   </div>
 
   <!-- 수정 옵션 -->
@@ -198,7 +207,7 @@
   </div>
 
   <!-- 실행 로그 -->
-  <zd-simul-log-panel :logs="logs" :log-cols="logCols" max-height="320px" style="margin-top:12px;" @clear="onClearLog" />
+  <zd-simul-log-panel :logs="logs" :log-cols="logCols" :pager="logPager" max-height="320px" style="margin-top:12px;" @clear="onClearLog" @set-page="onSetLogPage" />
 </div>`,
   };
 })();

@@ -1,7 +1,7 @@
-/* ZdSimulOrderMng — 주문 시뮬레이터 (bo-form-area / bo-grid 활용) */
+﻿/* ZdSimulOrderMng — 주문 시뮬레이터 (bo-form-area / bo-grid 활용) */
 (function () {
   const { reactive, computed } = Vue;
-  const { useSimulSetup, makeLogCols, makeBaseCfgColumns } = window.ZdSimulBase;
+  const { useSimulSetup, makeLogCols, makeBaseCfgColumns, makeRangeCol, makeRangeHandlers, rangeSlotTemplate } = window.ZdSimulBase;
 
   const STATUS_FLOW    = ['PENDING', 'PAID', 'PREPARING', 'SHIPPED', 'COMPLT'];
   const STATUS_LABELS  = { PENDING: '결제대기', PAID: '결제완료', PREPARING: '준비중', SHIPPED: '배송중', COMPLT: '완료' };
@@ -55,19 +55,18 @@
       const simul = useSimulSetup({
         domain: '주문',
         label: '시뮬주문',
-        defaultCfg: { mode: 'create', countMin: 1, countMax: 2, intervalVal: 15, intervalUnit: 'sec', durationMin: 3 },
+        defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
         runFn: async ({ mode, randInt, pick }) => {
           if (mode === 'create') {
             /* 판매중 상품은 시뮬 Controller에서 랜덤 N개 취합 (shuffle 포함) */
             const cnt     = randInt(domCfg.itemCountMin, domCfg.itemCountMax);
             const randRes = await boApi.post('/bo/zd/simul/order/rand-prod',
-              { count: Math.max(cnt, 5), prodStatusCd: 'SELLING' }, coUtil.apiHdr('주문시뮬', '상품조회'));
+              { count: Math.max(cnt, 5), prodStatusCd: 'SELLING' }, coUtil.cofApiHdr('주문시뮬', '상품조회'));
             const prods   = randRes?.data?.data?.prods || [];
             const members = (await boApiSvc.mbMember.getPage({ pageNo: 1, pageSize: 50, memberStatusCd: 'ACTIVE' })).data?.data?.pageList || [];
             if (!prods.length) return { ok: false, reason: '판매중 상품 없음' };
             if (!members.length) return { ok: false, reason: 'ACTIVE 회원 없음' };
             const member  = pick(members);
-            const cnt     = randInt(domCfg.itemCountMin, domCfg.itemCountMax);
             const items   = [];
             let   totalAmt = 0;
             for (let i = 0; i < cnt; i++) {
@@ -91,8 +90,8 @@
               zipCode: addr.zipCode, dlivAddr: addr.addr, dlivAddrDtl: addr.addrDtl,
               orderItems: items,
             };
-            const res = await boApi.post('/bo/ec/od/order/save/base', body, coUtil.apiHdr('주문시뮬', '생성'));
-            const id  = res?.data?.data?.orderId || res?.data?.data?.id || '-';
+            const res = await boApi.post('/bo/zd/simul/order/create', body, coUtil.cofApiHdr('주문시뮬', '생성'));
+            const id  = res?.data?.data?.orderId || '-';
             return {
               ok: true,
               desc: member.memberNm + ' | ' + cnt + '개 상품 | ' + (totalAmt + dlivFee).toLocaleString('ko-KR') + '원',
@@ -117,26 +116,24 @@
             } else {
               body.orderMemo = '[시뮬] ' + new Date().toLocaleTimeString('ko-KR'); desc = '메모 추가';
             }
-            await boApi.put('/bo/ec/od/order/save/' + target.orderId, body, coUtil.apiHdr('주문시뮬', '수정'));
+            await boApi.post('/bo/zd/simul/order/update', { orderId: target.orderId, ...body }, coUtil.cofApiHdr('주문시뮬', '수정'));
             return { ok: true, desc: target.orderId + ' ' + desc, meta: { id: target.orderId } };
           }
         },
       });
-      const { cfg, state, logs, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onClearLog } = simul;
+      const { cfg, state, logs, logPager, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onClearLog, onSetLogPage } = simul;
 
       /* ── [03] 컬럼 정의 ─────────────────────────────── */
       const logCols = makeLogCols();
       const baseCfgColumns = makeBaseCfgColumns();
       const createCfgColumns = [
-        { key: 'itemCountMin',  label: '아이템 최소',    type: 'number', hint: '개' },
-        { key: 'itemCountMax',  label: '아이템 최대',    type: 'number', hint: '개' },
-        { key: 'amtMin',        label: '주문 금액 최소', type: 'number', hint: '원' },
-        { key: 'amtMax',        label: '주문 금액 최대', type: 'number', hint: '원' },
+        makeRangeCol('itemCountMin', 'itemCountMax', '아이템 수 범위', 1, 20, '개'),
+        makeRangeCol('amtMin', 'amtMax', '주문 금액 범위', 10000, 300000, '원'),
         { key: 'createStatus',  label: '초기 상태', type: 'select',
           options: STATUS_FLOW.map(s => ({ value: s, label: STATUS_LABELS[s] })) },
-        { key: 'addDlivFee',    label: '배송비 적용',    type: 'checkbox' },
+        { key: 'addDlivFee',    label: '배송비 적용',    type: 'checkbox', checkedValue: true, uncheckedValue: false },
         { key: 'dlivFeeAmt',    label: '배송비',         type: 'number', hint: '원', visible: (f) => !!f.addDlivFee },
-        { key: 'randomAddr',    label: '주소 랜덤',      type: 'checkbox' },
+        { key: 'randomAddr',    label: '주소 랜덤',      type: 'checkbox', checkedValue: true, uncheckedValue: false },
       ];
       const updateCfgColumns = [
         { key: 'updateAction', label: '수정 액션', type: 'select', options: UPDATE_ACTIONS },
@@ -148,10 +145,16 @@
           visible: (f) => f.updateAction === 'advance' },
       ];
 
+      const rangeHandlers = makeRangeHandlers(domCfg, [
+        { minKey: 'itemCountMin', maxKey: 'itemCountMax' },
+        { minKey: 'amtMin',       maxKey: 'amtMax'       },
+      ]);
+
       return {
-        cfg, domCfg, state, logs, cfIsRunning, cfSuccessRate,
+        cfg, domCfg, state, logs, logPager, cfIsRunning, cfSuccessRate,
         logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
-        onStart, onStop, onRunOnce, onClearLog,
+        onStart, onStop, onRunOnce, onClearLog, onSetLogPage,
+        ...rangeHandlers,
         STATUS_FLOW, STATUS_LABELS, PAY_METHODS,
       };
     },
@@ -171,7 +174,10 @@
   <!-- 생성 옵션 (전체 폭) -->
   <div v-if="cfg.mode==='create'" class="card" style="padding:14px 16px;margin-top:12px;">
     <div class="list-title">🛒 주문 생성 옵션</div>
-    <bo-form-area :columns="createCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;" />
+    <bo-form-area :columns="createCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;">
+      ${rangeSlotTemplate('itemCountMin','itemCountMax',1,20,'개')}
+      ${rangeSlotTemplate('amtMin','amtMax',10000,300000,'원')}
+    </bo-form-area>
   </div>
 
   <!-- 결제수단/상태흐름 (1/3 폭, 아래 줄) -->
@@ -205,7 +211,7 @@
   </div>
 
   <!-- 실행 로그 -->
-  <zd-simul-log-panel :logs="logs" :log-cols="logCols" max-height="320px" style="margin-top:12px;" @clear="onClearLog" />
+  <zd-simul-log-panel :logs="logs" :log-cols="logCols" :pager="logPager" max-height="320px" style="margin-top:12px;" @clear="onClearLog" @set-page="onSetLogPage" />
 </div>`,
   };
 })();

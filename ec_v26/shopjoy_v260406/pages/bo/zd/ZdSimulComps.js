@@ -182,44 +182,63 @@
 
   /* ─────────────────────────────────────────────────────────────────────
      ZdSimulLogPanel
-     로그 패널 공통 컴포넌트.
-     - 헤더: "📋 실행 로그" + 건수 배지 + 지우기 버튼
-     - 빈 상태 일러스트
-     - bo-grid (logCols 기반)
+     로그 패널 공통 컴포넌트 — DB 서버사이드 페이징 버전
      Props:
-       logs       (Array)   — useSimulSetup 반환 logs ref
-       logCols    (Array)   — makeLogCols() 결과
-       maxHeight  (String)  — bo-grid tableMaxHeight (기본 'calc(100vh - 260px)')
-     Emits: clear
+       logs      (Array)  — 현재 페이지 rows (useSimulSetup.logs)
+       logCols   (Array)  — makeLogCols() 결과
+       pager     (Object) — { pageNo, pageTotalCount, pageTotalPage }
+     Emits: clear, set-page(n)
   ─────────────────────────────────────────────────────────────────────── */
+  const { computed: _computed } = Vue;
+
   window.ZdSimulLogPanel = {
     name: 'ZdSimulLogPanel',
-    emits: ['clear'],
+    emits: ['clear', 'set-page'],
     props: {
-      logs:      { type: Array,  required: true },
-      logCols:   { type: Array,  required: true },
-      maxHeight: { type: String, default: 'calc(100vh - 260px)' },
+      logs:    { type: Array,  required: true },
+      logCols: { type: Array,  required: true },
+      pager:   { type: Object, default: () => ({ pageNo: 1, pageTotalCount: 0, pageTotalPage: 1 }) },
     },
     setup(props, { emit }) {
-      const onClear = () => emit('clear');
-      return { onClear };
+      const cfPageNums = _computed(() => {
+        const total = props.pager.pageTotalPage || 1, cur = props.pager.pageNo || 1;
+        const start = Math.max(1, cur - 2), end = Math.min(total, start + 4);
+        const nums = [];
+        for (let i = start; i <= end; i++) nums.push(i);
+        return nums;
+      });
+      const onClear   = () => emit('clear');
+      const onSetPage = (n) => emit('set-page', n);
+      return { cfPageNums, onClear, onSetPage };
     },
     template: `
 <div class="card" style="padding:14px 16px;">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
     <div class="list-title">📋 실행 로그
-      <span v-if="logs.length" class="list-count">{{ logs.length }}건</span>
+      <span v-if="pager.pageTotalCount" class="list-count">{{ pager.pageTotalCount }}건</span>
     </div>
-    <button v-if="logs.length" class="btn btn_reset" @click="onClear">지우기</button>
+    <button class="btn btn_reset" @click="onClear">새로고침</button>
   </div>
 
-  <div v-if="logs.length === 0" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:300px;color:#cbd5e1;border:1px solid #f1f5f9;border-radius:6px;">
-    <div style="font-size:40px;margin-bottom:10px;">🔇</div>
+  <div v-if="logs.length === 0" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:200px;color:#cbd5e1;border:1px solid #f1f5f9;border-radius:6px;">
+    <div style="font-size:36px;margin-bottom:8px;">🔇</div>
     <div style="font-size:13px;margin-bottom:4px;">아직 실행 이력이 없습니다.</div>
     <div style="font-size:11px;color:#94a3b8;">▶ 시작 또는 ⚡ 1회 실행을 눌러주세요.</div>
   </div>
 
-  <bo-grid v-else :rows="logs" :columns="logCols" :table-max-height="maxHeight" style="font-size:11px;" />
+  <template v-else>
+    <bo-grid :rows="logs" :columns="logCols" style="font-size:11px;" />
+    <div v-if="pager.pageTotalPage > 1" class="pagination" style="margin-top:10px;display:flex;justify-content:center;align-items:center;gap:4px;">
+      <button class="pager" @click="onSetPage(1)" :disabled="pager.pageNo===1">&laquo;</button>
+      <button class="pager" @click="onSetPage(pager.pageNo-1)" :disabled="pager.pageNo===1">&lsaquo;</button>
+      <button v-for="n in cfPageNums" :key="n" class="pager"
+        :class="n===pager.pageNo ? 'active' : ''"
+        @click="onSetPage(n)">{{ n }}</button>
+      <button class="pager" @click="onSetPage(pager.pageNo+1)" :disabled="pager.pageNo===pager.pageTotalPage">&rsaquo;</button>
+      <button class="pager" @click="onSetPage(pager.pageTotalPage)" :disabled="pager.pageNo===pager.pageTotalPage">&raquo;</button>
+      <span style="font-size:11px;color:#94a3b8;margin-left:6px;">{{ pager.pageNo }}/{{ pager.pageTotalPage }} 페이지</span>
+    </div>
+  </template>
 </div>`,
   };
 

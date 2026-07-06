@@ -1,7 +1,7 @@
-/* ZdSimulSettleMng — 정산 시뮬레이터 (bo-form-area / bo-grid 활용) */
+﻿/* ZdSimulSettleMng — 정산 시뮬레이터 (bo-form-area / bo-grid 활용) */
 (function () {
   const { ref, reactive, computed } = Vue;
-  const { useSimulSetup, makeLogCols, makeBaseCfgColumns } = window.ZdSimulBase;
+  const { useSimulSetup, makeLogCols, makeBaseCfgColumns, makeRangeCol, makeRangeHandlers, rangeSlotTemplate } = window.ZdSimulBase;
 
   const SETTLE_STATUSES = [
     { value: 'PENDING',   label: '정산대기'   },
@@ -68,7 +68,7 @@
       const simul = useSimulSetup({
         domain: '정산',
         label: '시뮬정산',
-        defaultCfg: { mode: 'create', countMin: 1, countMax: 2, intervalVal: 15, intervalUnit: 'sec', durationMin: 3 },
+        defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
         runFn: async ({ mode, randInt, pick }) => {
           if (mode === 'create') {
             /* 업체 목록 캐시 */
@@ -93,7 +93,7 @@
               saleAmt, refundAmt, feeAmt, pgAmt, settleAmt,
               feeRate: Math.round(feeRate * 10000) / 100,
             };
-            const res = await boApi.post('/bo/st/settle/save/base', body, coUtil.apiHdr('정산시뮬', '생성'));
+            const res = await boApi.post('/bo/zd/simul/settle/create', body, coUtil.cofApiHdr('정산시뮬', '생성'));
             const id  = res?.data?.data?.settleId || '-';
             return {
               ok: true,
@@ -101,7 +101,7 @@
               meta: { id, vendorNm, saleAmt, settleAmt },
             };
           } else {
-            const list = (await boApi.get('/bo/st/settle/page', { params: { pageNo: 1, pageSize: 30 } })).data?.data?.pageList || [];
+            const list = (await boApiSvc.stSettle.getPage({ pageNo: 1, pageSize: 30 })).data?.data?.pageList || [];
             if (!list.length) return { ok: false, reason: '수정할 정산 없음' };
             const target = pick(list);
             let body = {}, desc = '';
@@ -113,27 +113,24 @@
             } else {
               body.settleMemo = '[시뮬메모] ' + new Date().toLocaleTimeString('ko-KR'); desc = '메모 추가';
             }
-            await boApi.put('/bo/st/settle/save/' + target.settleId, body, coUtil.apiHdr('정산시뮬', '수정'));
+            await boApi.post('/bo/zd/simul/settle/update', { settleId: target.settleId, ...body }, coUtil.cofApiHdr('정산시뮬', '수정'));
             return { ok: true, desc: target.settleId + ' ' + desc, meta: { id: target.settleId } };
           }
         },
       });
-      const { cfg, state, logs, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onClearLog } = simul;
+      const { cfg, state, logs, logPager, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onClearLog, onSetLogPage } = simul;
 
       /* ── [04] 컬럼 정의 ─────────────────────────────── */
       const logCols = makeLogCols();
       const baseCfgColumns = makeBaseCfgColumns();
       const createCfgColumns = [
-        { key: 'saleAmtMin',      label: '매출 최소',     type: 'number', hint: '원' },
-        { key: 'saleAmtMax',      label: '매출 최대',     type: 'number', hint: '원' },
-        { key: 'feeRateMin',      label: '수수료율 최소', type: 'number', hint: '%' },
-        { key: 'feeRateMax',      label: '수수료율 최대', type: 'number', hint: '%' },
-        { key: 'pgFeeRateMin',    label: 'PG수수료 최소', type: 'number', hint: '%' },
-        { key: 'pgFeeRateMax',    label: 'PG수수료 최대', type: 'number', hint: '%' },
+        makeRangeCol('saleAmtMin', 'saleAmtMax', '매출 범위', 100000, 5000000, '원'),
+        makeRangeCol('feeRateMin', 'feeRateMax', '수수료율 범위', 0, 30, '%'),
+        makeRangeCol('pgFeeRateMin', 'pgFeeRateMax', 'PG수수료 범위', 0, 10, '%'),
         { key: 'refundAmtRatio',  label: '환불비율',      type: 'number', hint: '%' },
         { key: 'settlePeriod',    label: '정산 주기',     type: 'select', options: SETTLE_PERIODS },
         { key: 'createStatus',    label: '초기 상태',     type: 'select', options: SETTLE_STATUSES },
-        { key: 'vendorFromDB',    label: 'DB 업체 자동 배정', type: 'checkbox' },
+        { key: 'vendorFromDB',    label: 'DB 업체 자동 배정', type: 'checkbox', checkedValue: true, uncheckedValue: false },
       ];
       const updateCfgColumns = [
         { key: 'updateAction', label: '수정 액션', type: 'select', options: UPDATE_ACTIONS },
@@ -145,10 +142,17 @@
           visible: (f) => f.updateAction === 'adjust' },
       ];
 
+      const rangeHandlers = makeRangeHandlers(domCfg, [
+        { minKey: 'saleAmtMin',   maxKey: 'saleAmtMax'   },
+        { minKey: 'feeRateMin',   maxKey: 'feeRateMax'   },
+        { minKey: 'pgFeeRateMin', maxKey: 'pgFeeRateMax' },
+      ]);
+
       return {
-        cfg, domCfg, state, logs, cfIsRunning, cfSuccessRate,
+        cfg, domCfg, state, logs, logPager, cfIsRunning, cfSuccessRate,
         cfPreview, logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
-        onStart, onStop, onRunOnce, onClearLog,
+        onStart, onStop, onRunOnce, onClearLog, onSetLogPage,
+        ...rangeHandlers,
         SETTLE_STATUSES, vendors,
       };
     },
@@ -168,7 +172,11 @@
   <!-- 생성 옵션 -->
   <div v-if="cfg.mode==='create'" class="card" style="padding:14px 16px;margin-top:12px;">
     <div class="list-title">💳 정산 생성 옵션</div>
-    <bo-form-area :columns="createCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;" />
+    <bo-form-area :columns="createCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;">
+      ${rangeSlotTemplate('saleAmtMin','saleAmtMax',100000,5000000,'원')}
+      ${rangeSlotTemplate('feeRateMin','feeRateMax',0,30,'%')}
+      ${rangeSlotTemplate('pgFeeRateMin','pgFeeRateMax',0,10,'%')}
+    </bo-form-area>
   </div>
 
   <!-- 수정 옵션 -->
@@ -203,7 +211,7 @@
   </div>
 
   <!-- 실행 로그 -->
-  <zd-simul-log-panel :logs="logs" :log-cols="logCols" max-height="320px" style="margin-top:12px;" @clear="onClearLog" />
+  <zd-simul-log-panel :logs="logs" :log-cols="logCols" :pager="logPager" max-height="320px" style="margin-top:12px;" @clear="onClearLog" @set-page="onSetLogPage" />
 </div>`,
   };
 })();

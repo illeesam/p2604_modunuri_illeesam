@@ -1,7 +1,7 @@
-/* ZdSimulClaimMng — 클레임 시뮬레이터 */
+﻿/* ZdSimulClaimMng — 클레임 시뮬레이터 */
 (function () {
   const { reactive, computed } = Vue;
-  const { useSimulSetup, makeLogCols, makeBaseCfgColumns } = window.ZdSimulBase;
+  const { useSimulSetup, makeLogCols, makeBaseCfgColumns, makeRangeCol, makeRangeHandlers, rangeSlotTemplate } = window.ZdSimulBase;
 
   const CLAIM_TYPES = [
     { cd: 'CANCEL',   label: '취소',  badge: 'badge-orange', color: '#f97316' },
@@ -66,7 +66,7 @@
       const simul = useSimulSetup({
         domain: '클레임',
         label: '시뮬클레임',
-        defaultCfg: { mode: 'create', countMin: 1, countMax: 2, intervalVal: 20, intervalUnit: 'sec', durationMin: 3 },
+        defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
         runFn: async ({ mode, randInt, pick }) => {
           if (mode === 'create') {
             /* 1) 대상 주문 조회 */
@@ -90,7 +90,7 @@
               claimStatusCd: domCfg.createStatus,
               partialClaim:  domCfg.partialClaim,
               refundRate:    refRate,
-            }, coUtil.apiHdr('클레임시뮬', '생성'));
+            }, coUtil.cofApiHdr('클레임시뮬', '생성'));
             const d = res?.data?.data || {};
             const id = d.claimId || '-';
             const itemDesc = d.itemCount ? d.itemCount + '개 상품' : '금액기반';
@@ -123,12 +123,12 @@
               desc = '메모 추가';
             }
 
-            await boApi.put('/bo/ec/od/claim/save/' + target.claimId, body, coUtil.apiHdr('클레임시뮬', '수정'));
+            await boApi.post('/bo/zd/simul/claim/update', { claimId: target.claimId, ...body }, coUtil.cofApiHdr('클레임시뮬', '수정'));
             return { ok: true, desc: target.claimId + ' ' + desc, meta: { id: target.claimId } };
           }
         },
       });
-      const { cfg, state, logs, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onClearLog } = simul;
+      const { cfg, state, logs, logPager, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onClearLog, onSetLogPage } = simul;
 
       /* ── [03] Computed ──────────────────────────────── */
       const cfTypeTotal = computed(() => Object.values(domCfg.typeWeights).reduce((a, b) => a + Number(b), 0) || 1);
@@ -142,12 +142,10 @@
           options: [{ value: '', label: '전체' }, ...ORDER_STATUS_POOL.map(s => ({ value: s, label: s }))] },
         { key: 'createStatus',   label: '클레임 초기 상태', type: 'select',
           options: [{ value: 'CLAIM_RECV', label: '접수' }] },
-        { key: 'partialClaim',   label: '부분 클레임 (랜덤 수량)', type: 'checkbox' },
-        { key: 'refundRateMin',  label: '환불률 최소', type: 'number', hint: '%',
-          visible: (f) => !f.partialClaim },
-        { key: 'refundRateMax',  label: '환불률 최대', type: 'number', hint: '%',
-          visible: (f) => !f.partialClaim },
-        { key: 'randomReason',   label: '사유 랜덤 생성', type: 'checkbox' },
+        { key: 'partialClaim',   label: '부분 클레임 (랜덤 수량)', type: 'checkbox', checkedValue: true, uncheckedValue: false },
+        makeRangeCol('refundRateMin', 'refundRateMax', '환불률 범위', 0, 100, '%',
+          { visible: (f) => !f.partialClaim }),
+        { key: 'randomReason',   label: '사유 랜덤 생성', type: 'checkbox', checkedValue: true, uncheckedValue: false },
       ];
       const updateCfgColumns = [
         { key: 'updateAction', label: '수정 액션', type: 'select', options: UPDATE_ACTIONS },
@@ -160,11 +158,16 @@
           visible: (f) => f.updateAction === 'advance' },
       ];
 
+      const rangeHandlers = makeRangeHandlers(domCfg, [
+        { minKey: 'refundRateMin', maxKey: 'refundRateMax' },
+      ]);
+
       return {
-        cfg, domCfg, state, logs, cfIsRunning, cfSuccessRate,
+        cfg, domCfg, state, logs, logPager, cfIsRunning, cfSuccessRate,
         cfTypeTotal, cfAutoFlow,
         logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
-        onStart, onStop, onRunOnce, onClearLog,
+        onStart, onStop, onRunOnce, onClearLog, onSetLogPage,
+        ...rangeHandlers,
         CLAIM_TYPES, STATUS_FLOW, STATUS_LABELS,
       };
     },
@@ -184,7 +187,9 @@
   <!-- 생성 옵션 (전체 폭) -->
   <div v-if="cfg.mode==='create'" class="card" style="padding:14px 16px;margin-top:12px;">
     <div class="list-title">🔄 클레임 생성 옵션</div>
-    <bo-form-area :columns="createCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;" />
+    <bo-form-area :columns="createCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;">
+      ${rangeSlotTemplate('refundRateMin','refundRateMax',0,100,'%')}
+    </bo-form-area>
   </div>
 
   <!-- 클레임 유형 가중치 (1/3 폭) -->
@@ -222,7 +227,7 @@
   </div>
 
   <!-- 실행 로그 -->
-  <zd-simul-log-panel :logs="logs" :log-cols="logCols" max-height="320px" style="margin-top:12px;" @clear="onClearLog" />
+  <zd-simul-log-panel :logs="logs" :log-cols="logCols" :pager="logPager" max-height="320px" style="margin-top:12px;" @clear="onClearLog" @set-page="onSetLogPage" />
 </div>`,
   };
 })();

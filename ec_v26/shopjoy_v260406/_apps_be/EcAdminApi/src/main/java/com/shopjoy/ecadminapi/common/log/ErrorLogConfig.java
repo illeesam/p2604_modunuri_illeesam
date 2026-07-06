@@ -6,8 +6,11 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.net.InetAddress;
 
@@ -31,12 +34,14 @@ import java.net.InetAddress;
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
-public class ErrorLogConfig {
+public class ErrorLogConfig implements ApplicationRunner {
 
     /** Appender 에 bind 할 에러 로그 비동기 큐 */
     private final ErrorLogQueue errorLogQueue;
     /** 활성 프로파일 조회용 — 로그 레코드의 profile 컬럼에 기록 */
     private final Environment   env;
+    /** syh_access_error_log.site_id NOT NULL → NULL 마이그레이션용 */
+    private final JdbcTemplate  jdbcTemplate;
 
     /**
      * Spring 컨텍스트 로드 후 DbErrorLogAppender 를 Logback root logger 에 동적 등록한다.
@@ -46,6 +51,22 @@ public class ErrorLogConfig {
      * 프로파일을 정적 필드에 늦게 주입하고, (2) Appender 인스턴스를 생성·start 한 뒤
      * root logger 에 add 한다. 등록 이후 발생하는 모든 ERROR 로그가 DB 적재 대상이 된다.
      */
+    /**
+     * 앱 완전 기동 후 syh_access_error_log.site_id NOT NULL → NULL 마이그레이션.
+     * 이미 적용된 경우 idempotent하게 무시된다.
+     */
+    @Override
+    public void run(ApplicationArguments args) {
+        try {
+            jdbcTemplate.execute(
+                "ALTER TABLE shopjoy_2604.syh_access_error_log ALTER COLUMN site_id DROP NOT NULL");
+            log.info("[ErrorLog] syh_access_error_log.site_id NOT NULL 제약 제거 완료");
+        } catch (Exception e) {
+            // 이미 nullable이면 PostgreSQL이 오류 없이 통과하므로 경고만
+            log.debug("[ErrorLog] site_id ALTER 스킵 (이미 nullable이거나 오류): {}", e.getMessage());
+        }
+    }
+
     @PostConstruct
     public void registerAppender() {
         String serverNm = resolveServerName();

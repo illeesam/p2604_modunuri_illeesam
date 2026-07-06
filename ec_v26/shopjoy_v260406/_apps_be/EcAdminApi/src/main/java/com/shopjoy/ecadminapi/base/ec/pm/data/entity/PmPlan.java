@@ -76,4 +76,8 @@ public class PmPlan extends BaseEntity {
     @Column(name = "use_yn", length = 1)
     private String useYn;
 
+    @Comment("시뮬데이터여부 (Y/N)")
+    @Column(name = "simul_yn", length = 1, columnDefinition = "VARCHAR(1) DEFAULT 'N'")
+    private String simulYn;
+
 }

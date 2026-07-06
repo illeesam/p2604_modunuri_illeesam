@@ -1,7 +1,7 @@
-/* ZdSimulProdMng — 상품 시뮬레이터 (bo-form-area / bo-grid 활용) */
+﻿/* ZdSimulProdMng — 상품 시뮬레이터 (bo-form-area / bo-grid 활용) */
 (function () {
-  const { reactive, computed } = Vue;
-  const { useSimulSetup, makeLogCols, makeBaseCfgColumns } = window.ZdSimulBase;
+  const { reactive, computed, ref, onMounted } = Vue;
+  const { useSimulSetup, makeLogCols, makeBaseCfgColumns, makeRangeCol, makeRangeHandlers, rangeSlotTemplate } = window.ZdSimulBase;
 
   const SALE_TYPES = [
     { cd: 'NORMAL', label: '단품',    badge: 'badge-blue'   },
@@ -56,7 +56,12 @@
         saleTypeWeights: { NORMAL: 60, OPTION: 25, SET: 10, BUNDLE: 5 },
         createStatus: 'SELLING',
         useAdCopy: true,
-        randomCategory: false,
+        useOptImg: true,
+        fixedCategoryId: '',
+        opt1CountMin: 2,
+        opt1CountMax: 3,
+        opt2CountMin: 2,
+        opt2CountMax: 3,
         updateAction: 'status',
         updateStatus: 'SOLDOUT',
         priceChangeRateMin: -20,
@@ -64,6 +69,9 @@
         stockAddMin: -50,
         stockAddMax: 200,
       });
+
+      /* 카테고리 목록 (onMounted 로드) */
+      const categories = ref([]);
 
       /* ── [02] 공통 엔진 ──────────────────────────────── */
       const _pickType = () => {
@@ -75,16 +83,55 @@
       };
       const _round = (n) => Math.round(n / (domCfg.priceRoundUnit || 100)) * (domCfg.priceRoundUnit || 100);
 
-      /* 고정 옵션 풀 */
-      const OPT1_ITEMS = ['레드', '화이트', '블랙'];
-      const OPT2_ITEMS = ['S', 'M', 'L'];
-      /* picsum 색상 seed — 옵션1 3색에 대응 */
-      const IMG_SEEDS  = [237, 432, 870];
+      /* 옵션 풀 (opt1CountMin~Max 범위로 슬라이스) */
+      const OPT1_POOL = ['레드', '화이트', '블랙', '네이비', '그린', '옐로우', '퍼플', '그레이'];
+      const OPT2_POOL = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+      /* 옵션1 색상에 대응하는 hex 팔레트 */
+      const OPT1_COLORS = {
+        '레드': '#e74c3c', '화이트': '#f5f5f5', '블랙': '#2c2c2c',
+        '네이비': '#1a3a5c', '그린': '#27ae60', '옐로우': '#f1c40f',
+        '퍼플': '#8e44ad', '그레이': '#7f8c8d',
+      };
+
+      /* Canvas로 단색 PNG Blob 생성 (400×400) */
+      const _makeColorBlob = (hex) => new Promise((resolve) => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 400; canvas.height = 400;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = hex;
+        ctx.fillRect(0, 0, 400, 400);
+        /* 색상명 라벨 */
+        ctx.fillStyle = (hex === '#f5f5f5') ? '#555' : '#fff';
+        ctx.font = 'bold 32px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(hex, 200, 200);
+        canvas.toBlob(resolve, 'image/png');
+      });
+
+      /* opt 이미지 업로드 — 색상 배열 기준 Promise.all */
+      const _uploadOptImgs = async (opt1List) => {
+        const results = [];
+        for (const nm of opt1List) {
+          const hex  = OPT1_COLORS[nm] || '#cccccc';
+          const blob = await _makeColorBlob(hex);
+          const fd   = new FormData();
+          fd.append('file', blob, 'opt_' + nm + '.png');
+          try {
+            const r = await coApiSvc.cmUpload.uploadOne(fd, '상품시뮬', '옵션이미지');
+            const url = r?.data?.data?.cdnImgUrl || r?.data?.data?.attachUrl || '';
+            results.push({ nm, url });
+          } catch (e) {
+            results.push({ nm, url: '' });
+          }
+        }
+        return results;
+      };
 
       const simul = useSimulSetup({
         domain: '상품',
         label: '시뮬상품',
-        defaultCfg: { mode: 'create', countMin: 1, countMax: 2, intervalVal: 10, intervalUnit: 'sec', durationMin: 3 },
+        defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
         runFn: async ({ mode, namePrefix, suffix, randInt, randF, pick }) => {
           if (mode === 'create') {
             const type      = _pickType();
@@ -96,62 +143,50 @@
             const pnm       = pick(PROD_NAMES);
             const prodNm    = (namePrefix || '') + pfix + ' ' + pnm + (suffix ? ' ' + suffix : '');
             const isOption  = type.cd === 'OPTION';
+            /* 카테고리 결정: 고정 지정 > 랜덤 배정 */
+            let categoryId = '';
+            if (domCfg.fixedCategoryId) {
+              categoryId = domCfg.fixedCategoryId;
+            } else if (categories.value.length) {
+              categoryId = pick(categories.value).categoryId;
+            }
             const body = {
               prodNm, salePrice, costPrice, stockQty: isOption ? 0 : stock,
               prodSaleTypeCd: type.cd, prodStatusCd: domCfg.createStatus,
               adCopyYn: domCfg.useAdCopy ? 'Y' : 'N',
               adCopy: domCfg.useAdCopy ? pick(AD_COPIES) : '',
+              ...(categoryId                ? { categoryId }                              : {}),
+              ...(defaults.value.siteId     ? { siteId:     defaults.value.siteId }     : {}),
+              ...(defaults.value.dlivTmpltId ? { dlivTmpltId: defaults.value.dlivTmpltId } : {}),
             };
-            const res = await boApi.post('/bo/ec/pd/prod/save/base', body, coUtil.apiHdr('상품시뮬', '생성'));
-            const prodId  = res?.data?.data?.prodId || res?.data?.data?.id || null;
-
-            /* 옵션형 상품: 옵션 → SKU → 이미지 자동 생성 */
-            if (prodId && isOption) {
-              try {
-                /* 1) 옵션 저장 (색상 1단 + 사이즈 2단) */
-                await boApi.put('/bo/ec/pd/prod/' + prodId + '/opts', {
-                  optGroups: [
-                    { _id: 1, grpNm: '색상', level: 1, inputTypeCd: 'SELECT',
-                      items: OPT1_ITEMS.map((nm, i) => ({ _id: 10 + i, nm, val: 'COL_' + nm.toUpperCase(), sortOrd: i + 1, useYn: 'Y' })) },
-                    { _id: 2, grpNm: '사이즈', level: 2, inputTypeCd: 'SELECT',
-                      items: OPT2_ITEMS.map((nm, i) => ({ _id: 20 + i, nm, val: 'SIZ_' + nm, sortOrd: i + 1, useYn: 'Y' })) },
-                  ],
-                }, coUtil.apiHdr('상품시뮬', '옵션생성'));
-
-                /* 2) 저장된 옵션 아이템 ID 조회 */
-                const optsRes = await boApi.get('/bo/ec/pd/prod/' + prodId + '/opts', coUtil.apiHdr('상품시뮬', '옵션조회'));
-                const optItems = optsRes?.data?.data?.items || [];
-                const grp1Items = optItems.filter(it => it.optLevel === 1 || (!it.optLevel && optItems.indexOf(it) < OPT1_ITEMS.length));
-                const grp2Items = optItems.filter(it => it.optLevel === 2 || (!it.optLevel && optItems.indexOf(it) >= OPT1_ITEMS.length));
-
-                /* 3) SKU 조합 저장 (3색 × 3사이즈 = 9 SKU) */
-                const skus = [];
-                for (let i = 0; i < grp1Items.length; i++) {
-                  for (let j = 0; j < grp2Items.length; j++) {
-                    skus.push({
-                      optItemId1: grp1Items[i].optItemId,
-                      optItemId2: grp2Items[j].optItemId,
-                      addPrice: i * 1000,
-                      prodOptStock: randInt(domCfg.stockMin || 0, domCfg.stockMax || 100),
-                      useYn: 'Y',
-                    });
-                  }
-                }
-                await boApi.put('/bo/ec/pd/prod/' + prodId + '/skus', { skus }, coUtil.apiHdr('상품시뮬', 'SKU생성'));
-
-                /* 4) 이미지 저장 (색상별 1장씩 picsum URL) */
-                const images = OPT1_ITEMS.map((nm, i) => ({
-                  previewUrl: 'https://picsum.photos/seed/' + IMG_SEEDS[i] + '/400/400',
-                  isMain: i === 0,
-                  optItemId1: grp1Items[i] ? grp1Items[i].optItemId : '',
-                  optItemId2: '',
-                  imgAltText: nm,
-                }));
-                await boApi.put('/bo/ec/pd/prod/' + prodId + '/images', { images }, coUtil.apiHdr('상품시뮬', '이미지생성'));
-              } catch (optErr) {
-                /* 옵션/SKU/이미지 실패해도 상품 자체 생성은 성공으로 간주 */
+            /* 옵션형: opt1/opt2 count range 기준 슬라이스 */
+            let opt1List = null, opt2List = null;
+            if (isOption) {
+              const o1cnt = randInt(domCfg.opt1CountMin, domCfg.opt1CountMax);
+              const o2cnt = randInt(domCfg.opt2CountMin, domCfg.opt2CountMax);
+              opt1List = OPT1_POOL.slice(0, Math.min(o1cnt, OPT1_POOL.length));
+              opt2List = OPT2_POOL.slice(0, Math.min(o2cnt, OPT2_POOL.length));
+              body.optGroups = [
+                { grpNm: '색상', level: 1, inputTypeCd: 'SELECT', sortOrd: 1,
+                  items: opt1List.map((nm, i) => ({ nm, val: 'COL_' + nm.toUpperCase(), sortOrd: i + 1, useYn: 'Y' })) },
+                { grpNm: '사이즈', level: 2, inputTypeCd: 'SELECT', sortOrd: 2,
+                  items: opt2List.map((nm, i) => ({ nm, val: 'SIZ_' + nm, sortOrd: i + 1, useYn: 'Y' })) },
+              ];
+              /* 옵션별 이미지 업로드 */
+              if (domCfg.useOptImg) {
+                const imgResults = await _uploadOptImgs(opt1List);
+                body.prodImgs = imgResults
+                  .filter(r => r.url)
+                  .map((r, i) => ({
+                    cdnImgUrl: r.url,
+                    optItemId1: 'COL_' + r.nm.toUpperCase(),
+                    isMain: i === 0 ? 'Y' : 'N',
+                    sortOrd: i + 1,
+                  }));
               }
             }
+            const res = await boApi.post('/bo/zd/simul/prod/create', body, coUtil.cofApiHdr('상품시뮬', '생성'));
+            const prodId  = res?.data?.data?.prodId || null;
 
             const id = prodId || '-';
             if (!window._zdSimulStats['상품']) window._zdSimulStats['상품'] = { totalPrice: 0, count: 0, byType: {}, byStatus: {} };
@@ -159,7 +194,9 @@
             st.count++; st.totalPrice += salePrice;
             st.byType[type.cd]  = (st.byType[type.cd] || 0) + 1;
             st.byStatus[domCfg.createStatus] = (st.byStatus[domCfg.createStatus] || 0) + 1;
-            const optNote = isOption ? ' +옵션/SKU/이미지' : '';
+            const optNote = isOption
+              ? ' +옵션(' + (opt1List ? opt1List.length : 0) + 'x' + (opt2List ? opt2List.length : 0) + ')' + (domCfg.useOptImg ? '+이미지' : '')
+              : '';
             return { ok: true, desc: '[' + type.label + '] ' + prodNm + ' ' + salePrice.toLocaleString('ko-KR') + '원' + optNote, meta: { id, type: type.label, salePrice } };
           } else {
             const list = (await boApiSvc.pdProd.getPage({ pageNo: 1, pageSize: 50, prodStatusCd: 'SELLING' })).data?.data?.pageList || [];
@@ -182,51 +219,94 @@
             } else {
               body.adCopy = pick(AD_COPIES); desc = '광고문구 갱신';
             }
-            await boApi.put('/bo/ec/pd/prod/save/' + target.prodId, body, coUtil.apiHdr('상품시뮬', '수정'));
+            await boApi.post('/bo/zd/simul/prod/update', { prodId: target.prodId, ...body }, coUtil.cofApiHdr('상품시뮬', '수정'));
             return { ok: true, desc: target.prodNm + ' — ' + desc, meta: { id: target.prodId } };
           }
         },
       });
-      const { cfg, state, logs, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onClearLog } = simul;
+      const { cfg, state, logs, logPager, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onClearLog, onSetLogPage } = simul;
 
-      /* ── [03] Computed ──────────────────────────────── */
+      /* ── [03] Defaults + 카테고리 로드 ──────────────── */
+      const defaults = ref({ siteId: '', dlivTmpltId: '', dlivTmpltNm: '' });
+      onMounted(async () => {
+        try {
+          const r = await boApi.post('/bo/zd/simul/prod/defaults', {}, coUtil.cofApiHdr('상품시뮬', 'defaults'));
+          if (r?.data?.data) Object.assign(defaults.value, r.data.data);
+        } catch (e) { /* defaults 실패 시 백엔드가 자동 처리 */ }
+        try {
+          const cr = await boApiSvc.pdCategory.getList({ useYn: 'Y', pageSize: 300 }, '상품시뮬', '카테고리조회');
+          const raw = cr?.data?.data;
+          const list = Array.isArray(raw) ? raw : (raw?.pageList || raw?.list || []);
+          /* 트리 순서로 정렬: depth1 → depth2 → depth3, parent 기준 그룹화 */
+          const byParent = {};
+          list.forEach(c => {
+            const pid = c.parentCategoryId || '__root__';
+            if (!byParent[pid]) byParent[pid] = [];
+            byParent[pid].push(c);
+          });
+          const sorted = [];
+          const nameMap = {};
+          list.forEach(c => { nameMap[c.categoryId] = c.categoryNm; });
+          const walk = (pid, ancestors) => {
+            (byParent[pid] || []).sort((a, b) => (a.sortOrd || 0) - (b.sortOrd || 0)).forEach(c => {
+              const path = [...ancestors, c.categoryNm];
+              sorted.push({ ...c, _fullPath: path.join(' > ') });
+              walk(c.categoryId, path);
+            });
+          };
+          walk('__root__', []);
+          categories.value = sorted;
+        } catch (e) { /* 카테고리 로드 실패 무시 */ }
+      });
+
+      /* ── [04] Computed ──────────────────────────────── */
       const cfTypeTotal = computed(() => Object.values(domCfg.saleTypeWeights).reduce((a, b) => a + Number(b), 0) || 1);
 
-      /* ── [04] 컬럼 정의 ─────────────────────────────── */
+      /* ── [05] 컬럼 정의 ─────────────────────────────── */
       const logCols = makeLogCols();
       const baseCfgColumns = makeBaseCfgColumns();
       const createCfgColumns = [
-        { key: 'priceMin',       label: '가격 최소',     type: 'number', hint: '원' },
-        { key: 'priceMax',       label: '가격 최대',     type: 'number', hint: '원' },
-        { key: 'costRateMin',    label: '원가율 최소',   type: 'number', hint: '%' },
-        { key: 'costRateMax',    label: '원가율 최대',   type: 'number', hint: '%' },
-        { key: 'stockMin',       label: '재고 최소',     type: 'number', hint: '개' },
-        { key: 'stockMax',       label: '재고 최대',     type: 'number', hint: '개' },
+        makeRangeCol('priceMin', 'priceMax', '가격 범위', 5000, 500000, '원'),
+        makeRangeCol('costRateMin', 'costRateMax', '원가율 범위', 0, 100, '%'),
+        makeRangeCol('stockMin',    'stockMax',    '재고 범위',   0, 999, '개'),
         { key: 'priceRoundUnit', label: '가격 단위',     type: 'select',
           options: [{ value: 100, label: '100원' }, { value: 500, label: '500원' }, { value: 1000, label: '1,000원' }] },
         { key: 'createStatus',   label: '초기 판매상태', type: 'select', options: PROD_STATUSES },
-        { key: 'useAdCopy',      label: '광고문구 자동 생성', type: 'checkbox' },
-        { key: 'randomCategory', label: '카테고리 자동 배정', type: 'checkbox' },
+        { key: 'useAdCopy',      label: '광고문구 자동 생성', type: 'checkbox', checkedValue: true, uncheckedValue: false },
+        { key: 'useOptImg',      label: '옵션별 이미지 자동 업로드', type: 'checkbox',
+          checkedValue: true, uncheckedValue: false, hint: '옵션1 색상별 단색 이미지 생성 후 첨부' },
+        makeRangeCol('opt1CountMin', 'opt1CountMax', '옵션1 항목 수', 1, 8, '개',
+          { hint: '색상 (레드~그레이 풀)' }),
+        makeRangeCol('opt2CountMin', 'opt2CountMax', '옵션2 항목 수', 1, 6, '개',
+          { hint: '사이즈 (XS~XXL 풀)' }),
+        { key: 'fixedCategoryId', label: '카테고리 선택', type: 'slot', name: 'catPick' },
       ];
       const updateCfgColumns = [
-        { key: 'updateAction',        label: '수정 액션', type: 'select', options: UPDATE_ACTIONS },
-        { key: 'updateStatus',        label: '변경 상태', type: 'select', options: PROD_STATUSES,
+        { key: 'updateAction',  label: '수정 액션', type: 'select', options: UPDATE_ACTIONS },
+        { key: 'updateStatus',  label: '변경 상태', type: 'select', options: PROD_STATUSES,
           visible: (f) => f.updateAction === 'status' },
-        { key: 'priceChangeRateMin',  label: '가격 변동률 최소', type: 'number', hint: '%',
-          visible: (f) => f.updateAction === 'price' },
-        { key: 'priceChangeRateMax',  label: '가격 변동률 최대', type: 'number', hint: '%',
-          visible: (f) => f.updateAction === 'price' },
-        { key: 'stockAddMin',  label: '재고 증감 최소', type: 'number', hint: '개',
-          visible: (f) => f.updateAction === 'stock' },
-        { key: 'stockAddMax',  label: '재고 증감 최대', type: 'number', hint: '개',
-          visible: (f) => f.updateAction === 'stock' },
+        makeRangeCol('priceChangeRateMin', 'priceChangeRateMax', '가격 변동률 범위', -50, 50, '%',
+          { visible: (f) => f.updateAction === 'price' }),
+        makeRangeCol('stockAddMin', 'stockAddMax', '재고 증감 범위', -200, 500, '개',
+          { visible: (f) => f.updateAction === 'stock' }),
       ];
 
+      const rangeHandlers = makeRangeHandlers(domCfg, [
+        { minKey: 'priceMin',           maxKey: 'priceMax'           },
+        { minKey: 'costRateMin',        maxKey: 'costRateMax'        },
+        { minKey: 'stockMin',           maxKey: 'stockMax'           },
+        { minKey: 'opt1CountMin',       maxKey: 'opt1CountMax'       },
+        { minKey: 'opt2CountMin',       maxKey: 'opt2CountMax'       },
+        { minKey: 'priceChangeRateMin', maxKey: 'priceChangeRateMax' },
+        { minKey: 'stockAddMin',        maxKey: 'stockAddMax'        },
+      ]);
+
       return {
-        cfg, domCfg, state, logs, cfIsRunning, cfSuccessRate,
-        cfTypeTotal, logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
-        onStart, onStop, onRunOnce, onClearLog,
-        SALE_TYPES, PROD_STATUSES, UPDATE_ACTIONS,
+        cfg, domCfg, state, logs, logPager, cfIsRunning, cfSuccessRate,
+        defaults, cfTypeTotal, categories, logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
+        onStart, onStop, onRunOnce, onClearLog, onSetLogPage,
+        ...rangeHandlers,
+        SALE_TYPES, PROD_STATUSES, UPDATE_ACTIONS, OPT1_POOL, OPT2_POOL, OPT1_COLORS,
       };
     },
 
@@ -245,7 +325,46 @@
   <!-- 생성 옵션 (전체 폭) -->
   <div v-if="cfg.mode==='create'" class="card" style="padding:14px 16px;margin-top:12px;">
     <div class="list-title">📦 상품 생성 옵션</div>
-    <bo-form-area :columns="createCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;" />
+    <bo-form-area :columns="createCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;">
+      ${rangeSlotTemplate('priceMin','priceMax',5000,500000,'원')}
+      ${rangeSlotTemplate('costRateMin','costRateMax',0,100,'%')}
+      ${rangeSlotTemplate('stockMin','stockMax',0,999,'개')}
+      ${rangeSlotTemplate('opt1CountMin','opt1CountMax',1,8,'개')}
+      ${rangeSlotTemplate('opt2CountMin','opt2CountMax',1,6,'개')}
+      <template #catPick>
+        <select v-model="domCfg.fixedCategoryId" class="form-control" style="width:100%;font-size:12px;">
+          <option value="">— 랜덤 배정</option>
+          <option v-for="c in categories" :key="c.categoryId" :value="c.categoryId">{{ c._fullPath }}</option>
+          <option v-if="!categories.length" disabled value="">카테고리 로딩 중...</option>
+        </select>
+      </template>
+    </bo-form-area>
+
+    <!-- 옵션 풀 프리뷰 -->
+    <div style="margin-top:10px;padding-top:10px;border-top:1px solid #f1f5f9;display:flex;flex-direction:column;gap:6px;">
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+        <span style="font-size:11px;color:#64748b;font-weight:600;min-width:80px;">옵션1 색상 풀</span>
+        <template v-for="(nm, i) in OPT1_POOL" :key="nm">
+          <span :style="'display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:10px;font-size:11px;border:1px solid #e2e8f0;' + (i < domCfg.opt1CountMax ? '' : 'opacity:0.3;')">
+            <span :style="'display:inline-block;width:10px;height:10px;border-radius:50%;background:' + OPT1_COLORS[nm] + ';border:1px solid #ccc;'"></span>
+            {{ nm }}
+            <span v-if="i < domCfg.opt1CountMin" style="color:#059669;font-size:9px;">●</span>
+            <span v-else-if="i < domCfg.opt1CountMax" style="color:#d97706;font-size:9px;">○</span>
+          </span>
+        </template>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+        <span style="font-size:11px;color:#64748b;font-weight:600;min-width:80px;">옵션2 사이즈 풀</span>
+        <template v-for="(nm, i) in OPT2_POOL" :key="nm">
+          <span :style="'display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:10px;font-size:11px;border:1px solid #e2e8f0;' + (i < domCfg.opt2CountMax ? '' : 'opacity:0.3;')">
+            {{ nm }}
+            <span v-if="i < domCfg.opt2CountMin" style="color:#059669;font-size:9px;">●</span>
+            <span v-else-if="i < domCfg.opt2CountMax" style="color:#d97706;font-size:9px;">○</span>
+          </span>
+        </template>
+      </div>
+      <div style="font-size:10px;color:#94a3b8;">● 확정 포함 ○ 가능 범위 ∙ 흐린 항목은 범위 초과</div>
+    </div>
   </div>
 
   <!-- 판매유형 가중치 (1/3 폭, 아래 줄) -->
@@ -267,11 +386,14 @@
   <!-- 수정 옵션 (전체 폭) -->
   <div v-if="cfg.mode==='update'" class="card" style="padding:14px 16px;margin-top:12px;">
     <div class="list-title">✏ 상품 수정 옵션</div>
-    <bo-form-area :columns="updateCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;" />
+    <bo-form-area :columns="updateCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;">
+      ${rangeSlotTemplate('priceChangeRateMin','priceChangeRateMax',-50,50,'%')}
+      ${rangeSlotTemplate('stockAddMin','stockAddMax',-200,500,'개')}
+    </bo-form-area>
   </div>
 
   <!-- 실행 로그 -->
-  <zd-simul-log-panel :logs="logs" :log-cols="logCols" max-height="320px" style="margin-top:12px;" @clear="onClearLog" />
+  <zd-simul-log-panel :logs="logs" :log-cols="logCols" :pager="logPager" max-height="320px" style="margin-top:12px;" @clear="onClearLog" @set-page="onSetLogPage" />
 </div>`,
   };
 })();

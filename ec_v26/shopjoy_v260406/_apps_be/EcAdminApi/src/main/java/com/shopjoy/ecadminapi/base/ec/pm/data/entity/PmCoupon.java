@@ -137,4 +137,8 @@ public class PmCoupon extends BaseEntity {
     @Column(name = "memo", columnDefinition = "TEXT")
     private String memo;
 
+    @Comment("시뮬데이터여부 (Y/N)")
+    @Column(name = "simul_yn", length = 1, columnDefinition = "VARCHAR(1) DEFAULT 'N'")
+    private String simulYn;
+
 }

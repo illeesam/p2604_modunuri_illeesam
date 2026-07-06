@@ -60,4 +60,8 @@ public class PmSave extends BaseEntity {
     @Column(name = "save_memo", columnDefinition = "TEXT")
     private String saveMemo;
 
+    @Comment("시뮬데이터여부 (Y/N)")
+    @Column(name = "simul_yn", length = 1, columnDefinition = "VARCHAR(1) DEFAULT 'N'")
+    private String simulYn;
+
 }

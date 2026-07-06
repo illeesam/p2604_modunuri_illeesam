@@ -189,4 +189,8 @@ public class PdProd extends BaseEntity {
     @Column(name = "advrt_end_date")
     private LocalDateTime advrtEndDate;
 
+    @Comment("시뮬데이터여부 (Y/N)")
+    @Column(name = "simul_yn", length = 1, columnDefinition = "VARCHAR(1) DEFAULT 'N'")
+    private String simulYn;
+
 }
