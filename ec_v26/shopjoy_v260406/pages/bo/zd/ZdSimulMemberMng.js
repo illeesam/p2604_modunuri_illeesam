@@ -254,15 +254,15 @@
     </bo-form-area>
   </div>
 
-  <!-- 등급 가중치 (1/3 폭만 차지, 아래 줄) -->
-  <div v-if="cfg.mode==='create'" style="margin-top:12px;display:grid;grid-template-columns:1fr 2fr;gap:12px;">
-    <div class="card" style="padding:14px 16px;">
+  <!-- 가중치 카드 행 -->
+  <div v-if="cfg.mode==='create'" style="margin-top:12px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;">
+    <!-- 등급 가중치 -->
+    <div class="card" style="padding:14px 16px;width:340px;">
       <div class="list-title">📊 등급 가중치</div>
       <div style="margin-top:8px;margin-bottom:10px;">
-        <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">등급 지정</label>
         <select v-model="domCfg.fixedGrade" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
           <option value="">-- 없음 --</option>
-          <option value="__weighted__" selected>-- 가중치적용 --</option>
+          <option value="__weighted__">-- 가중치적용 --</option>
           <option v-for="g in GRADES" :key="g.cd" :value="g.cd">{{ g.label }}</option>
         </select>
       </div>
@@ -278,24 +278,22 @@
         </div>
       </div>
     </div>
-    <div></div>
-  </div>
-
-  <!-- 이메일 도메인 가중치 카드 -->
-  <div v-if="cfg.mode==='create'" class="card" style="margin-top:12px;padding:14px 16px;width:340px;">
-    <div class="list-title">📧 이메일 도메인 가중치</div>
-    <div style="margin-top:8px;">
-      <select v-model="domCfg.fixedDomain" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;margin-bottom:6px;">
-        <option value="">-- 없음 --</option>
-        <option value="__weighted__">-- 가중치적용 --</option>
-        <option v-for="d in DOMAINS" :key="d" :value="d">{{ d }}</option>
-      </select>
-      <div v-show="domCfg.fixedDomain === '__weighted__'">
-        <div v-for="d in DOMAINS" :key="d" style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
-          <span style="font-size:10px;color:#475569;min-width:84px;white-space:nowrap;">{{ d }}</span>
-          <input type="range" min="0" max="100" v-model.number="domCfg.domainWeights[d]" style="flex:1;accent-color:#7c3aed;" />
-          <input type="number" min="0" max="100" v-model.number="domCfg.domainWeights[d]" style="width:40px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;padding:2px;" />
-          <span style="font-size:10px;color:#94a3b8;min-width:28px;">{{ Math.round(domCfg.domainWeights[d]/cfDomainTotal*100) }}%</span>
+    <!-- 이메일 도메인 가중치 -->
+    <div class="card" style="padding:14px 16px;width:340px;">
+      <div class="list-title">📧 이메일 도메인 가중치</div>
+      <div style="margin-top:8px;">
+        <select v-model="domCfg.fixedDomain" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;margin-bottom:6px;">
+          <option value="">-- 없음 --</option>
+          <option value="__weighted__">-- 가중치적용 --</option>
+          <option v-for="d in DOMAINS" :key="d" :value="d">{{ d }}</option>
+        </select>
+        <div v-show="domCfg.fixedDomain === '__weighted__'">
+          <div v-for="d in DOMAINS" :key="d" style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+            <span style="font-size:10px;color:#475569;min-width:84px;white-space:nowrap;">{{ d }}</span>
+            <input type="range" min="0" max="100" v-model.number="domCfg.domainWeights[d]" style="flex:1;accent-color:#7c3aed;" />
+            <input type="number" min="0" max="100" v-model.number="domCfg.domainWeights[d]" style="width:40px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;padding:2px;" />
+            <span style="font-size:10px;color:#94a3b8;min-width:28px;">{{ Math.round(domCfg.domainWeights[d]/cfDomainTotal*100) }}%</span>
+          </div>
         </div>
       </div>
     </div>
