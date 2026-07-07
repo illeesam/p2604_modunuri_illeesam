@@ -187,7 +187,7 @@
             return {
               ok: true,
               desc: member.memberNm + ' | ' + cnt + '개 상품 | ' + (totalAmt + dlivFee).toLocaleString('ko-KR') + '원',
-              meta: { id, payMethod, totalAmt, dlivFee, memberId: member.memberId },
+              meta: { id, payMethod, totalAmt, dlivFee, memberId: member.memberId, params: body },
             };
           } else {
             /* 수정: 고정 주문 or 랜덤 */
@@ -215,8 +215,9 @@
             } else {
               body.orderMemo = '[시뮬] ' + new Date().toLocaleTimeString('ko-KR'); desc = '메모 추가';
             }
-            await boApi.post('/bo/zd/simul/order/update', { orderId: target.orderId, ...body }, coUtil.cofApiHdr('주문시뮬', '수정'));
-            return { ok: true, desc: target.orderId + ' ' + desc, meta: { id: target.orderId } };
+            const updateBody = { orderId: target.orderId, ...body };
+            await boApi.post('/bo/zd/simul/order/update', updateBody, coUtil.cofApiHdr('주문시뮬', '수정'));
+            return { ok: true, desc: target.orderId + ' ' + desc, meta: { id: target.orderId, params: updateBody } };
           }
         },
       });

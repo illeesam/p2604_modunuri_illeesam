@@ -189,7 +189,7 @@
        pager     (Object) — { pageNo, pageTotalCount, pageTotalPage }
      Emits: clear, set-page(n)
   ─────────────────────────────────────────────────────────────────────── */
-  const { computed: _computed } = Vue;
+  const { computed: _computed, ref: _ref } = Vue;
 
   window.ZdSimulLogPanel = {
     name: 'ZdSimulLogPanel',
@@ -208,32 +208,59 @@
         for (let i = start; i <= end; i++) nums.push(i);
         return nums;
       });
-      const onClear     = () => emit('clear');
-      const onSetPage   = (n) => emit('set-page', n);
-      const onSearch    = () => emit('search-log');
+      const onClear   = () => emit('clear');
+      const onSetPage = (n) => emit('set-page', n);
+      const onSearch  = () => emit('search-log');
+
+      /* 펼침 행 (한 행만 유지) */
+      const expandedId = _ref(null);
+      const onToggleExpand = (row) => {
+        const key = row.ts + '_' + row.targetId;
+        expandedId.value = expandedId.value === key ? null : key;
+      };
+      const isExpanded = (row) => expandedId.value === (row.ts + '_' + row.targetId);
+
+      /* desc_txt 를 항목별로 파싱 — "[태그] 내용 | key:val | ..." 형식 */
+      const parseDesc = (desc) => {
+        if (!desc) return [];
+        /* "| " 구분자로 분리 후 각 항목을 label:value 로 분리 */
+        return desc.split(/\s*\|\s*/).map((seg, i) => {
+          const colonIdx = seg.indexOf(':');
+          if (colonIdx > 0 && colonIdx < 30) {
+            return { label: seg.slice(0, colonIdx).trim(), value: seg.slice(colonIdx + 1).trim() };
+          }
+          return { label: i === 0 ? '내용' : '항목' + i, value: seg.trim() };
+        }).filter(x => x.value);
+      };
 
       /* 로그 기능 버튼 핸들러 */
       const _base = () => window.ZdSimulBase;
-      const cfDomainMeta  = (row) => (_base() && row.domain) ? _base()._DOMAIN_PAGE_MAP[row.domain] : null;
-      const onOpenBo      = (row) => _base() && _base()._openBoPage(row);
-      const onOpenFo      = (row) => _base() && _base()._openFoPage(row);
-      const onOpenKanban  = (row) => _base() && _base()._openKanban(row);
-      const onOpenCalc    = (row) => _base() && _base()._openClaimCalc(row);
+      const cfDomainMeta = (row) => (_base() && row.domain) ? _base()._DOMAIN_PAGE_MAP[row.domain] : null;
+      const onOpenBo        = (row) => _base() && _base()._openBoPage(row);
+      const onOpenFo        = (row) => _base() && _base()._openFoPage(row);
+      const onOpenFoLogin   = (row) => _base() && _base()._openFoLogin(row);
+      const onOpenFoProfile = (row) => _base() && _base()._openFoProfile(row);
+      const onOpenKanban    = (row) => _base() && _base()._openKanban(row);
+      const onOpenCalc      = (row) => _base() && _base()._openClaimCalc(row);
 
-      return { cfPageNums, onClear, onSetPage, onSearch, cfDomainMeta, onOpenBo, onOpenFo, onOpenKanban, onOpenCalc };
+      return {
+        cfPageNums, onClear, onSetPage, onSearch,
+        expandedId, onToggleExpand, isExpanded, parseDesc,
+        cfDomainMeta, onOpenBo, onOpenFo, onOpenFoLogin, onOpenFoProfile, onOpenKanban, onOpenCalc,
+      };
     },
     template: `
 <div class="card" style="padding:14px 16px;">
-  <!-- 카드 헤더: 제목 + 새로고침 -->
+  <!-- 카드 헤더 -->
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
     <div class="list-title" style="margin:0;">📋 실행 로그</div>
     <button class="btn btn_reset" @click="onClear">새로고침</button>
   </div>
-  <!-- BoGrid: toolbar에 검색조건 슬롯 삽입 → "● 목록 총 N건" 우측에 자동 배치 -->
-  <bo-grid :rows="logs" :columns="logCols" :pager="pager" list-title="목록"
-    empty-text="아직 실행 이력이 없습니다. ▶ 시작 또는 ⚡ 1회 실행을 눌러주세요."
-    style="font-size:11px;">
-    <template #toolbar-actions>
+
+  <!-- 검색 바 -->
+  <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
+    <span style="font-size:11px;color:#94a3b8;font-weight:600;">● 목록 총 {{ pager.pageTotalCount }}건</span>
+    <div style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;">
       <input v-model="logSearch.uiNm" type="text" placeholder="화면명" @keyup.enter="onSearch"
         style="width:110px;height:26px;padding:0 7px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;outline:none;color:#334155;" />
       <input v-model="logSearch.userNm" type="text" placeholder="등록자" @keyup.enter="onSearch"
@@ -247,46 +274,134 @@
         <option value="FAIL">✗ 실패</option>
       </select>
       <button class="btn btn_search" style="height:26px;padding:0 10px;font-size:11px;" @click="onSearch">조회</button>
-    </template>
-    <!-- 기능 버튼 컬럼 슬롯: #cell-{key} 는 <td> 포함 전체 대체 -->
-    <template #cell-_actions="{ row }">
-      <td style="text-align:center;padding:4px 6px;white-space:nowrap;">
-        <template v-if="row.targetId">
-          <!-- BO 상세 -->
-          <button v-if="cfDomainMeta(row) &amp;&amp; cfDomainMeta(row).bo"
-            class="btn btn_detail"
-            style="padding:1px 7px;font-size:10px;height:20px;margin:1px;"
-            @click.stop="onOpenBo(row)"
-            title="관리자 상세 열기">
-            BO상세
-          </button>
-          <!-- FO 상세 (fo 매핑 있을 때만) -->
-          <button v-if="cfDomainMeta(row) &amp;&amp; cfDomainMeta(row).fo"
-            class="btn btn_preview"
-            style="padding:1px 7px;font-size:10px;height:20px;margin:1px;"
-            @click.stop="onOpenFo(row)"
-            title="사용자 화면 열기">
-            FO상세
-          </button>
-          <!-- 칸반 (주문/클레임) -->
-          <button v-if="cfDomainMeta(row) &amp;&amp; cfDomainMeta(row).kanban"
-            style="padding:1px 7px;font-size:10px;height:20px;margin:1px;background:#fef3c7;color:#92400e;border:1px solid #fde68a;border-radius:4px;cursor:pointer;"
-            @click.stop="onOpenKanban(row)"
-            title="칸반보드 열기">
-            칸반
-          </button>
-          <!-- 환불계산 (클레임) -->
-          <button v-if="cfDomainMeta(row) &amp;&amp; cfDomainMeta(row).calc"
-            style="padding:1px 7px;font-size:10px;height:20px;margin:1px;background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;border-radius:4px;cursor:pointer;"
-            @click.stop="onOpenCalc(row)"
-            title="환불 계산 탭 열기">
-            계산
-          </button>
-        </template>
-        <span v-else style="font-size:10px;color:#cbd5e1;">-</span>
-      </td>
-    </template>
-  </bo-grid>
+    </div>
+  </div>
+
+  <!-- 로그 테이블 (expand 행 지원) -->
+  <div style="overflow-x:auto;">
+    <table class="admin-table" style="font-size:11px;width:100%;">
+      <thead><tr>
+        <th style="width:28px;"></th>
+        <th style="width:36px;text-align:center;">번호</th>
+        <th style="width:140px;">등록일시</th>
+        <th style="width:110px;">화면명</th>
+        <th style="width:72px;text-align:center;">등록자</th>
+        <th style="width:44px;text-align:center;">유형</th>
+        <th style="width:36px;text-align:center;">결과</th>
+        <th>내용</th>
+        <th style="width:180px;">실패 사유</th>
+        <th style="width:170px;text-align:center;">기능</th>
+      </tr></thead>
+      <tbody v-if="!logs.length">
+        <tr><td colspan="10" style="text-align:center;padding:24px;color:#94a3b8;">
+          아직 실행 이력이 없습니다. ▶ 시작 또는 ⚡ 1회 실행을 눌러주세요.
+        </td></tr>
+      </tbody>
+      <template v-for="(row, idx) in logs" :key="row.ts+'_'+row.targetId+'_'+idx">
+        <!-- 메인 행 -->
+        <tbody>
+          <tr :style="row.status==='fail' ? 'background:#fff5f5;' : (isExpanded(row) ? 'background:#f8faff;' : '')">
+            <!-- 펼치기 버튼 -->
+            <td style="text-align:center;padding:4px 2px;cursor:pointer;" @click="onToggleExpand(row)">
+              <span style="font-size:13px;color:#94a3b8;user-select:none;transition:transform .15s;display:inline-block;"
+                :style="isExpanded(row) ? 'transform:rotate(90deg);color:#6366f1;' : ''">▶</span>
+            </td>
+            <td style="text-align:center;color:#94a3b8;">{{ (pager.pageNo-1)*10 + idx + 1 }}</td>
+            <td style="color:#64748b;font-family:monospace;font-size:10px;">{{ row.ts }}</td>
+            <td style="color:#6366f1;font-size:11px;">{{ row.uiNm }}</td>
+            <td style="text-align:center;color:#475569;">{{ row.userNm }}</td>
+            <td style="text-align:center;">
+              <span :class="'badge '+(row.mode==='생성' ? 'badge-blue' : 'badge-orange')" style="font-size:10px;">{{ row.mode }}</span>
+            </td>
+            <td style="text-align:center;font-weight:700;font-size:13px;"
+              :style="row.status==='ok' ? 'color:#16a34a' : 'color:#dc2626'">
+              {{ row.status==='ok' ? '✓' : '✗' }}
+            </td>
+            <td :style="row.status==='fail' ? 'background:#fff5f5;' : ''">{{ row.desc }}</td>
+            <td style="color:#ef4444;font-size:11px;">{{ row.reason }}</td>
+            <td style="text-align:center;padding:4px 6px;white-space:nowrap;">
+              <template v-if="row.targetId">
+                <button v-if="cfDomainMeta(row) &amp;&amp; cfDomainMeta(row).bo"
+                  class="btn btn_detail" style="padding:1px 7px;font-size:10px;height:20px;margin:1px;"
+                  @click.stop="onOpenBo(row)" title="관리자 상세 열기">BO상세</button>
+                <button v-if="cfDomainMeta(row) &amp;&amp; cfDomainMeta(row).fo"
+                  class="btn btn_preview" style="padding:1px 7px;font-size:10px;height:20px;margin:1px;"
+                  @click.stop="onOpenFo(row)" title="사용자 화면 열기">FO상세</button>
+                <button v-if="cfDomainMeta(row) &amp;&amp; cfDomainMeta(row).foLogin"
+                  style="padding:1px 7px;font-size:10px;height:20px;margin:1px;background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:4px;cursor:pointer;"
+                  @click.stop="onOpenFoLogin(row)" title="FO 로그인 (in-session 로그만 loginId 자동입력)">FO로그인</button>
+                <button v-if="cfDomainMeta(row) &amp;&amp; cfDomainMeta(row).foProfile"
+                  style="padding:1px 7px;font-size:10px;height:20px;margin:1px;background:#ede9fe;color:#6d28d9;border:1px solid #ddd6fe;border-radius:4px;cursor:pointer;"
+                  @click.stop="onOpenFoProfile(row)" title="FO 마이페이지 열기">FO프로필</button>
+                <button v-if="cfDomainMeta(row) &amp;&amp; cfDomainMeta(row).kanban"
+                  style="padding:1px 7px;font-size:10px;height:20px;margin:1px;background:#fef3c7;color:#92400e;border:1px solid #fde68a;border-radius:4px;cursor:pointer;"
+                  @click.stop="onOpenKanban(row)" title="칸반보드 열기">칸반</button>
+                <button v-if="cfDomainMeta(row) &amp;&amp; cfDomainMeta(row).calc"
+                  style="padding:1px 7px;font-size:10px;height:20px;margin:1px;background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;border-radius:4px;cursor:pointer;"
+                  @click.stop="onOpenCalc(row)" title="환불 계산 탭 열기">계산</button>
+              </template>
+              <span v-else style="font-size:10px;color:#cbd5e1;">-</span>
+            </td>
+          </tr>
+          <!-- 펼침 행 -->
+          <tr v-if="isExpanded(row)" style="background:#f0f4ff;">
+            <td colspan="10" style="padding:0;">
+              <div style="padding:12px 16px 14px 44px;border-top:1px solid #e0e7ff;border-bottom:2px solid #c7d2fe;">
+                <!-- 항목 그리드 -->
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px 16px;margin-bottom:10px;">
+                  <!-- 고정 항목 -->
+                  <div style="display:flex;flex-direction:column;gap:2px;">
+                    <span style="font-size:10px;color:#6366f1;font-weight:600;letter-spacing:.3px;">로그 ID / 도메인</span>
+                    <span style="font-size:11px;color:#334155;font-family:monospace;">
+                      {{ row.targetId || '-' }} / {{ row.domain || '-' }}
+                    </span>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:2px;">
+                    <span style="font-size:10px;color:#6366f1;font-weight:600;letter-spacing:.3px;">화면명 / 등록자</span>
+                    <span style="font-size:11px;color:#334155;">{{ row.uiNm || '-' }} / {{ row.userNm || '-' }}</span>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:2px;">
+                    <span style="font-size:10px;color:#6366f1;font-weight:600;letter-spacing:.3px;">유형 / 결과 / 등록일시</span>
+                    <span style="font-size:11px;color:#334155;">
+                      {{ row.mode }} /
+                      <span :style="row.status==='ok' ? 'color:#16a34a;font-weight:700;' : 'color:#dc2626;font-weight:700;'">
+                        {{ row.status==='ok' ? '성공' : '실패' }}
+                      </span>
+                      / {{ row.ts }}
+                    </span>
+                  </div>
+                </div>
+                <!-- desc 파싱 항목 -->
+                <div style="background:#fff;border:1px solid #e0e7ff;border-radius:6px;padding:10px 12px;">
+                  <div style="font-size:10px;color:#6366f1;font-weight:700;margin-bottom:6px;letter-spacing:.3px;">📋 실행 내용 상세</div>
+                  <div v-if="parseDesc(row.desc).length" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:4px 16px;">
+                    <div v-for="item in parseDesc(row.desc)" :key="item.label"
+                      style="display:flex;gap:6px;align-items:baseline;padding:3px 0;border-bottom:1px solid #f1f5f9;">
+                      <span style="font-size:10px;color:#94a3b8;white-space:nowrap;min-width:60px;font-weight:600;">{{ item.label }}</span>
+                      <span style="font-size:11px;color:#334155;word-break:break-all;">{{ item.value }}</span>
+                    </div>
+                  </div>
+                  <div v-else style="font-size:11px;color:#94a3b8;font-family:monospace;">{{ row.desc || '-' }}</div>
+                </div>
+                <!-- INSERT 파라미터 -->
+                <div v-if="row.params" style="margin-top:8px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:10px 12px;">
+                  <div style="font-size:10px;color:#7c3aed;font-weight:700;margin-bottom:6px;letter-spacing:.3px;">🔧 INSERT 파라미터</div>
+                  <pre style="font-size:10px;color:#334155;margin:0;white-space:pre-wrap;word-break:break-all;line-height:1.6;">{{ JSON.stringify(row.params, null, 2) }}</pre>
+                </div>
+                <!-- 실패 사유 -->
+                <div v-if="row.reason" style="margin-top:8px;background:#fff5f5;border:1px solid #fecaca;border-radius:6px;padding:8px 12px;">
+                  <span style="font-size:10px;color:#dc2626;font-weight:700;">✗ 실패 사유: </span>
+                  <span style="font-size:11px;color:#b91c1c;">{{ row.reason }}</span>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </template>
+    </table>
+  </div>
+
+  <!-- 페이지네이션 -->
   <div v-if="pager.pageTotalPage > 1" class="pagination" style="margin-top:10px;display:flex;justify-content:center;align-items:center;gap:4px;">
     <button class="pager" @click="onSetPage(1)" :disabled="pager.pageNo===1">&laquo;</button>
     <button class="pager" @click="onSetPage(pager.pageNo-1)" :disabled="pager.pageNo===1">&lsaquo;</button>

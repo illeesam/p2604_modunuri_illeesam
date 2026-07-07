@@ -108,7 +108,7 @@
               const res = await boApi.post('/bo/zd/simul/promo/coupon-create', body, coUtil.cofApiHdr('프로모시뮬', '쿠폰생성'));
               const id  = res?.data?.data?.couponId || '-';
               const discStr = isRate ? discVal + '%' : discVal.toLocaleString() + '원';
-              return { ok: true, desc: '[쿠폰] ' + nm + ' ' + discStr + ' 할인', meta: { id, type: '쿠폰' } };
+              return { ok: true, desc: '[쿠폰] ' + nm + ' ' + discStr + ' 할인', meta: { id, type: '쿠폰', params: body } };
             } else if (type === 'discnt') {
               const isRate  = domCfg.discntType === 'RATE';
               const discVal = isRate
@@ -124,7 +124,7 @@
               const res = await boApi.post('/bo/zd/simul/promo/discnt-create', body, coUtil.cofApiHdr('프로모시뮬', '할인생성'));
               const id  = res?.data?.data?.discntId || '-';
               const discStr = isRate ? discVal + '%' : discVal.toLocaleString() + '원';
-              return { ok: true, desc: '[할인] ' + nm + ' ' + discStr, meta: { id, type: '할인' } };
+              return { ok: true, desc: '[할인] ' + nm + ' ' + discStr, meta: { id, type: '할인', params: body } };
             } else {
               const saveRate = randInt(domCfg.saveRateMin, domCfg.saveRateMax);
               const nm   = (namePrefix || '') + pick(SAVE_NAMES);
@@ -134,7 +134,7 @@
               };
               const res = await boApi.post('/bo/zd/simul/promo/save-create', body, coUtil.cofApiHdr('프로모시뮬', '적립생성'));
               const id  = res?.data?.data?.saveId || '-';
-              return { ok: true, desc: '[적립] ' + nm + ' ' + saveRate + '% 적립', meta: { id, type: '적립' } };
+              return { ok: true, desc: '[적립] ' + nm + ' ' + saveRate + '% 적립', meta: { id, type: '적립', params: body } };
             }
           } else {
             const type = domCfg.promoType === 'both' ? 'coupon' : domCfg.promoType;
@@ -146,8 +146,9 @@
                 if (!list.length) return { ok: false, reason: '수정할 쿠폰 없음' };
                 couponId = pick(list).couponId;
               }
-              await boApi.post('/bo/zd/simul/promo/coupon-update', { couponId, ...body }, coUtil.cofApiHdr('프로모시뮬', '쿠폰수정'));
-              return { ok: true, desc: '[쿠폰] ' + couponId + ' 기간 연장', meta: { id: couponId } };
+              const couponBody = { couponId, ...body };
+              await boApi.post('/bo/zd/simul/promo/coupon-update', couponBody, coUtil.cofApiHdr('프로모시뮬', '쿠폰수정'));
+              return { ok: true, desc: '[쿠폰] ' + couponId + ' 기간 연장', meta: { id: couponId, params: couponBody } };
             } else {
               let discntId = domCfg.fixedDiscntId;
               if (!discntId) {
@@ -155,8 +156,9 @@
                 if (!list.length) return { ok: false, reason: '수정할 할인정책 없음' };
                 discntId = pick(list).discntId;
               }
-              await boApi.post('/bo/zd/simul/promo/discnt-update', { discntId, ...body }, coUtil.cofApiHdr('프로모시뮬', '할인수정'));
-              return { ok: true, desc: '[할인] ' + discntId + ' 기간 연장', meta: { id: discntId } };
+              const discntBody = { discntId, ...body };
+              await boApi.post('/bo/zd/simul/promo/discnt-update', discntBody, coUtil.cofApiHdr('프로모시뮬', '할인수정'));
+              return { ok: true, desc: '[할인] ' + discntId + ' 기간 연장', meta: { id: discntId, params: discntBody } };
             }
           }
         },

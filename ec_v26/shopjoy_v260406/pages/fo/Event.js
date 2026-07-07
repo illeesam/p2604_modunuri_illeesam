@@ -172,6 +172,12 @@ window.EventPage = {
 
 
     onMounted(() => {
+      /* URL 해시에 eventId 파라미터가 있으면 검색창에 채우고 조회 */
+      try {
+        const hash = window.location.hash || '';
+        const m = hash.match(/[?&]eventId=([^&]+)/);
+        if (m) { searchValue.value = decodeURIComponent(m[1]); }
+      } catch (_) {}
       handleSearchList();
     });
 

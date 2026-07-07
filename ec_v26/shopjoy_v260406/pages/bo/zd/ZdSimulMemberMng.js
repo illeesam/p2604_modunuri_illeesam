@@ -92,7 +92,7 @@
             };
             const res = await boApi.post('/bo/zd/simul/member/create', body, coUtil.cofApiHdr('회원시뮬', '생성'));
             const id  = res?.data?.data?.memberId || loginId;
-            return { ok: true, desc: '[' + grade.label + '] ' + nm + ' / ' + email, meta: { id, grade: grade.label } };
+            return { ok: true, desc: '[' + grade.label + '] ' + nm + ' / ' + email, meta: { id, grade: grade.label, params: body } };
           } else {
             let target;
             if (domCfg.fixedMemberId) {
@@ -115,8 +115,9 @@
               body.memberMemo = '[시뮬수정] ' + new Date().toLocaleTimeString('ko-KR');
               desc = '메모 업데이트';
             }
-            await boApi.post('/bo/zd/simul/member/update', { memberId: target.memberId, ...body }, coUtil.cofApiHdr('회원시뮬', '수정'));
-            return { ok: true, desc: target.memberNm + ' ' + desc, meta: { id: target.memberId } };
+            const updateBody = { memberId: target.memberId, ...body };
+            await boApi.post('/bo/zd/simul/member/update', updateBody, coUtil.cofApiHdr('회원시뮬', '수정'));
+            return { ok: true, desc: target.memberNm + ' ' + desc, meta: { id: target.memberId, params: updateBody } };
           }
         },
       });

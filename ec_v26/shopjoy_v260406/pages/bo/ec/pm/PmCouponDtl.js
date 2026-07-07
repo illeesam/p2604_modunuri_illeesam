@@ -1,5 +1,6 @@
 /* ShopJoy Admin - 쿠폰관리 상세/등록 (다중탭: 기본정보/미리보기/상세정보/발급목록/사용목록) */
-window._pmCouponDtlState = window._pmCouponDtlState || { tab: 'info', tabMode: 'tab' };
+window._pmCouponDtlState = window._pmCouponDtlState || { tab: 'info', tabMode: '1col' };
+if (!window._pmCouponDtlState.tabMode || window._pmCouponDtlState.tabMode === 'tab') window._pmCouponDtlState.tabMode = '1col';
 window.PmCouponDtl = {
   name: 'PmCouponDtl',
   props: {

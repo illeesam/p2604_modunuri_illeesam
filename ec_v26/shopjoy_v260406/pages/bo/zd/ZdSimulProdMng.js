@@ -201,7 +201,7 @@
             const optNote = isOption
               ? ' +옵션(' + (opt1List ? opt1List.length : 0) + 'x' + (opt2List ? opt2List.length : 0) + ')' + (domCfg.useOptImg ? '+이미지' : '')
               : '';
-            return { ok: true, desc: '[' + type.label + '] ' + prodNm + ' ' + salePrice.toLocaleString('ko-KR') + '원' + optNote, meta: { id, type: type.label, salePrice } };
+            return { ok: true, desc: '[' + type.label + '] ' + prodNm + ' ' + salePrice.toLocaleString('ko-KR') + '원' + optNote, meta: { id, type: type.label, salePrice, params: body } };
           } else {
             let target;
             if (domCfg.fixedProdId) {
@@ -228,8 +228,9 @@
             } else {
               body.adCopy = pick(AD_COPIES); desc = '광고문구 갱신';
             }
-            await boApi.post('/bo/zd/simul/prod/update', { prodId: target.prodId, ...body }, coUtil.cofApiHdr('상품시뮬', '수정'));
-            return { ok: true, desc: target.prodNm + ' — ' + desc, meta: { id: target.prodId } };
+            const updateBody = { prodId: target.prodId, ...body };
+            await boApi.post('/bo/zd/simul/prod/update', updateBody, coUtil.cofApiHdr('상품시뮬', '수정'));
+            return { ok: true, desc: target.prodNm + ' — ' + desc, meta: { id: target.prodId, params: updateBody } };
           }
         },
       });

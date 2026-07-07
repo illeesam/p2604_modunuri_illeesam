@@ -99,7 +99,7 @@
             return {
               ok: true,
               desc: vendorNm + ' | 매출:' + _wonFmt(saleAmt) + ' → 정산:' + _wonFmt(settleAmt),
-              meta: { id, vendorNm, saleAmt, settleAmt },
+              meta: { id, vendorNm, saleAmt, settleAmt, params: body },
             };
           } else {
             const list = (await boApiSvc.stSettle.getPage({ pageNo: 1, pageSize: 30 })).data?.data?.pageList || [];
@@ -114,8 +114,9 @@
             } else {
               body.settleMemo = '[시뮬메모] ' + new Date().toLocaleTimeString('ko-KR'); desc = '메모 추가';
             }
-            await boApi.post('/bo/zd/simul/settle/update', { settleId: target.settleId, ...body }, coUtil.cofApiHdr('정산시뮬', '수정'));
-            return { ok: true, desc: target.settleId + ' ' + desc, meta: { id: target.settleId } };
+            const updateBody = { settleId: target.settleId, ...body };
+            await boApi.post('/bo/zd/simul/settle/update', updateBody, coUtil.cofApiHdr('정산시뮬', '수정'));
+            return { ok: true, desc: target.settleId + ' ' + desc, meta: { id: target.settleId, params: updateBody } };
           }
         },
       });

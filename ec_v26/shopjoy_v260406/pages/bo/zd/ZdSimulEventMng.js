@@ -102,7 +102,7 @@
             return {
               ok: true,
               desc: '[' + type.label + '] ' + title + ' | 당첨자 최대 ' + body.winnerCount + '명',
-              meta: { id, type: type.label },
+              meta: { id, type: type.label, params: body },
             };
           } else {
             let target;
@@ -123,8 +123,9 @@
             } else {
               body.winnerCount = randInt(1, 50); desc = '당첨자 수 변경';
             }
-            await boApi.post('/bo/zd/simul/event/update', { eventId: target.eventId, ...body }, coUtil.cofApiHdr('이벤트시뮬', '수정'));
-            return { ok: true, desc: target.eventNm + ' — ' + desc, meta: { id: target.eventId } };
+            const updateBody = { eventId: target.eventId, ...body };
+            await boApi.post('/bo/zd/simul/event/update', updateBody, coUtil.cofApiHdr('이벤트시뮬', '수정'));
+            return { ok: true, desc: target.eventNm + ' — ' + desc, meta: { id: target.eventId, params: updateBody } };
           }
         },
       });

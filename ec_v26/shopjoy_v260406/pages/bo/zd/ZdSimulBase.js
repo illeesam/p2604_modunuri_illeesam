@@ -162,15 +162,31 @@
           if (ok) state.totalOk++; else state.totalFail++;
           const _au = window.boAuthStore?.svAuthUser || (window.boAuthStore && window.boAuthStore.sgCurrentUser?.()) || {};
           const userNm = _au.name || _au.authNm || _au.userNm || '-';
-          const entry = { ts: _ts(), userNm, mode: cfg.mode === 'create' ? '생성' : '수정', status: ok ? 'ok' : 'fail', desc, reason, meta };
-          _addLog(domain, entry.mode, ok ? '성공' : '실패', desc, reason, meta, userNm, uiNm || label);
+          const mode = cfg.mode === 'create' ? '생성' : '수정';
+          /* 로컬 로그 즉시 프리펜드 (params 포함) */
+          const localEntry = {
+            _rowNo: 0, ts: _ts(), userNm, uiNm: uiNm || label, domain,
+            mode, status: ok ? 'ok' : 'fail', desc, reason,
+            targetId: meta.id ? String(meta.id) : '',
+            meta,
+            params: meta.params || null, /* runFn이 meta.params 반환 시 저장 */
+          };
+          logs.value = [localEntry, ...logs.value].slice(0, logPager.pageSize * 2);
+          _addLog(domain, mode, ok ? '성공' : '실패', desc, reason, meta, userNm, uiNm || label);
           if (ok && meta.id) created.push(meta);
         } catch (e) {
           state.totalRun++; state.totalFail++;
           const reason = e?.response?.data?.message || e?.message || String(e);
           const _au = window.boAuthStore?.svAuthUser || (window.boAuthStore && window.boAuthStore.sgCurrentUser?.()) || {};
           const userNm = _au.name || _au.authNm || _au.userNm || '-';
-          _addLog(domain, cfg.mode === 'create' ? '생성' : '수정', '실패', '오류 발생', reason, {}, userNm, uiNm || label);
+          const mode = cfg.mode === 'create' ? '생성' : '수정';
+          const errEntry = {
+            _rowNo: 0, ts: _ts(), userNm, uiNm: uiNm || label, domain,
+            mode, status: 'fail', desc: '오류 발생', reason,
+            targetId: '', meta: {}, params: null,
+          };
+          logs.value = [errEntry, ...logs.value].slice(0, logPager.pageSize * 2);
+          _addLog(domain, mode, '실패', '오류 발생', reason, {}, userNm, uiNm || label);
         }
       }
       state.lastCreated = created;
@@ -325,6 +341,8 @@
     '회원': {
       bo: { page: 'mbMemberMng',      idParam: 'dtlId' },
       fo: null,
+      foLogin:   true, /* FO 로그인 링크 (params.loginId + params.loginPwd 활용) */
+      foProfile: true, /* FO 마이페이지 링크 */
     },
     '이벤트': {
       bo: { page: 'pmEventMng',       idParam: 'dtlId' },
@@ -367,6 +385,20 @@
     let url = 'bo.html#page=' + meta.kanban + '&dtlId=' + encodeURIComponent(row.targetId);
     if (row.domain === '클레임') url += '&claimId=' + encodeURIComponent(row.targetId);
     window.open(url, '_blank', 'width=1600,height=960,scrollbars=yes,resizable=yes');
+  };
+
+  /* 회원 FO 로그인 window.open — 로그인 페이지를 loginId/pwd 쿼리로 열기 */
+  const _openFoLogin = (row) => {
+    const loginId = row.params?.loginId || (row.meta?.params?.loginId) || '';
+    const loginPwd = row.params?.loginPwd || (row.meta?.params?.loginPwd) || '1111';
+    if (!loginId) { alert('loginId 정보가 없습니다. (DB 로드 로그는 params 미포함)'); return; }
+    const url = 'index.html#page=login&autoLoginId=' + encodeURIComponent(loginId) + '&autoLoginPwd=' + encodeURIComponent(loginPwd);
+    window.open(url, '_blank', 'width=480,height=700,scrollbars=yes,resizable=yes');
+  };
+
+  /* 회원 FO 마이페이지 window.open */
+  const _openFoProfile = (row) => {
+    window.open('index.html#page=myOrder', '_blank', 'width=1280,height=900,scrollbars=yes,resizable=yes');
   };
 
   /* 클레임 환불계산 window.open */
@@ -514,6 +546,8 @@
     _DOMAIN_PAGE_MAP,
     _openBoPage,
     _openFoPage,
+    _openFoLogin,
+    _openFoProfile,
     _openKanban,
     _openClaimCalc,
     /* 공통 유틸 */

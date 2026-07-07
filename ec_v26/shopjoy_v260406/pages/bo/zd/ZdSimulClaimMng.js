@@ -99,7 +99,7 @@
             return {
               ok: true,
               desc: '[' + type.label + '] ' + order.orderId + ' | ' + itemDesc + ' | ' + refundAmt.toLocaleString() + '원 | ' + reason,
-              meta: { id, type: type.label, reason },
+              meta: { id, type: type.label, reason, params: { orderId: order.orderId, claimTypeCd: type.cd, claimStatusCd: domCfg.createStatus, partialClaim: domCfg.partialClaim, refundRate: refRate } },
             };
 
           } else {
@@ -124,8 +124,9 @@
               desc = '메모 추가';
             }
 
-            await boApi.post('/bo/zd/simul/claim/update', { claimId: target.claimId, ...body }, coUtil.cofApiHdr('클레임시뮬', '수정'));
-            return { ok: true, desc: target.claimId + ' ' + desc, meta: { id: target.claimId } };
+            const updateBody = { claimId: target.claimId, ...body };
+            await boApi.post('/bo/zd/simul/claim/update', updateBody, coUtil.cofApiHdr('클레임시뮬', '수정'));
+            return { ok: true, desc: target.claimId + ' ' + desc, meta: { id: target.claimId, params: updateBody } };
           }
         },
       });

@@ -80,7 +80,7 @@
             return {
               ok: true,
               desc: planNm + ' | ' + cnt + '개 상품 | ' + offset + '일 후 시작 ' + dur + '일',
-              meta: { id, theme, cnt },
+              meta: { id, theme, cnt, params: body },
             };
           } else {
             let target;
@@ -107,8 +107,9 @@
               if (prods.length) { body.addProdIds = [pick(prods).prodId]; desc = '상품 1개 추가'; }
               else return { ok: false, reason: '추가할 상품 없음' };
             }
-            await boApi.post('/bo/zd/simul/plan/update', { planId: target.planId, ...body }, coUtil.cofApiHdr('기획전시뮬', '수정'));
-            return { ok: true, desc: target.planNm + ' — ' + desc, meta: { id: target.planId } };
+            const updateBody = { planId: target.planId, ...body };
+            await boApi.post('/bo/zd/simul/plan/update', updateBody, coUtil.cofApiHdr('기획전시뮬', '수정'));
+            return { ok: true, desc: target.planNm + ' — ' + desc, meta: { id: target.planId, params: updateBody } };
           }
         },
       });
