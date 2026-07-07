@@ -39,6 +39,8 @@
       const domCfg = reactive({
         fixedGrade: '__weighted__',
         gradeWeights: { BASIC: 50, SILVER: 25, GOLD: 15, VIP: 10 },
+        fixedDomain: '__weighted__',
+        domainWeights: { 'gmail.com': 35, 'naver.com': 30, 'kakao.com': 15, 'daum.net': 8, 'hotmail.com': 5, 'yahoo.com': 3, 'icloud.com': 2, 'outlook.com': 2 },
         statusOnCreate: 'ACTIVE',
         loginPwd: '1111',
         randomGender: true,
@@ -54,6 +56,15 @@
       });
 
       /* ── [02] 공통 엔진 연결 ────────────────────────── */
+      const _pickDomain = () => {
+        if (domCfg.fixedDomain && domCfg.fixedDomain !== '__weighted__') return domCfg.fixedDomain;
+        const w = domCfg.domainWeights;
+        const total = Object.values(w).reduce((a, b) => a + Number(b), 0) || 1;
+        let r = Math.random() * total;
+        for (const d of DOMAINS) { r -= Number(w[d] || 0); if (r <= 0) return d; }
+        return DOMAINS[0];
+      };
+
       const _pickGrade = () => {
         if (domCfg.fixedGrade && domCfg.fixedGrade !== '__weighted__') {
           return GRADES.find(g => g.cd === domCfg.fixedGrade) || GRADES[0];
@@ -81,7 +92,7 @@
             const grade   = _pickGrade();
             const gender  = domCfg.randomGender ? _pick(GENDERS).cd : 'M';
             const age     = _randInt(domCfg.agentRangeMin, domCfg.agentRangeMax);
-            const email   = loginId + '@' + pick(DOMAINS);
+            const email   = loginId + '@' + _pickDomain();
             const phone   = '010-' + String(randInt(1000, 9999)) + '-' + String(randInt(1000, 9999));
             const nm      = (namePrefix || '시뮬') + ln + fn;
             const body    = {
@@ -164,7 +175,8 @@
       });
 
       /* ── [04] Computed ──────────────────────────────── */
-      const cfGradeTotal = computed(() => Object.values(domCfg.gradeWeights).reduce((a, b) => a + Number(b), 0) || 1);
+      const cfGradeTotal  = computed(() => Object.values(domCfg.gradeWeights).reduce((a, b) => a + Number(b), 0) || 1);
+      const cfDomainTotal = computed(() => Object.values(domCfg.domainWeights).reduce((a, b) => a + Number(b), 0) || 1);
 
       /* ── [05] 컬럼 정의 ─────────────────────────────── */
       const logCols = makeLogCols();
@@ -173,11 +185,15 @@
         { key: 'statusOnCreate', label: '초기 상태', type: 'select',
           options: [{ value: 'ACTIVE', label: '정상' }, { value: 'DORMANT', label: '휴면' }] },
         { key: 'loginPwd',       label: '비밀번호',          type: 'text', placeholder: 'bypass 비밀번호 (기본: 1111)', mono: true },
-        { key: 'randomGender',  label: '성별 랜덤',        type: 'checkbox', checkedValue: true, uncheckedValue: false },
-        { key: 'emailVerified', label: '이메일 인증 완료', type: 'checkbox', checkedValue: true, uncheckedValue: false },
-        { key: 'snsLinkYn',     label: 'SNS 연동 표시',    type: 'checkbox', checkedValue: true, uncheckedValue: false },
+        { key: 'randomGender',  label: '성별 랜덤',        type: 'select',
+          options: [{ value: true, label: '예' }, { value: false, label: '아니오' }] },
+        { key: 'emailVerified', label: '이메일 인증 완료', type: 'select',
+          options: [{ value: true, label: '예' }, { value: false, label: '아니오' }] },
+        { key: 'snsLinkYn',     label: 'SNS 연동 표시',    type: 'select',
+          options: [{ value: true, label: '예' }, { value: false, label: '아니오' }] },
         { key: '_ageRange',     label: '연령 범위',        type: 'slot', name: 'ageRange' },
-        { key: 'memoOnCreate',  label: '메모 자동 생성',   type: 'checkbox', checkedValue: true, uncheckedValue: false },
+        { key: 'memoOnCreate',  label: '메모 자동 생성',   type: 'select',
+          options: [{ value: true, label: '예' }, { value: false, label: '아니오' }] },
       ];
       const updateCfgColumns = [
         { key: 'updateType', label: '수정 유형', type: 'select', options: UPDATE_TYPES },
@@ -189,10 +205,10 @@
 
       return {
         cfg, domCfg, state, logs, logPager, cfIsRunning, cfSuccessRate,
-        memberDefaults, cfGradeTotal, logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
+        memberDefaults, cfGradeTotal, cfDomainTotal, logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
         onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog, logSearch,
         onAgeMinChange, onAgeMaxChange,
-        GRADES, STATUSES_UPD, UPDATE_TYPES,
+        GRADES, DOMAINS, STATUSES_UPD, UPDATE_TYPES,
         /* picker */
         memberPicker, onOpenMemberPicker, onSelectMember, _loadMemberPicker,
       };
@@ -251,7 +267,7 @@
         </select>
       </div>
       <div v-show="domCfg.fixedGrade === '__weighted__'">
-        <div v-for="g in GRADES" :key="g.cd" style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+        <div v-for="g in GRADES" :key="g.cd" style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
           <span :class="'badge '+g.badge" style="min-width:38px;text-align:center;font-size:11px;">{{ g.label }}</span>
           <input type="range" min="0" max="100" v-model.number="domCfg.gradeWeights[g.cd]" style="flex:1;accent-color:#7c3aed;" />
           <input type="number" min="0" max="100" v-model.number="domCfg.gradeWeights[g.cd]" style="width:40px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;padding:2px;" />
@@ -263,6 +279,26 @@
       </div>
     </div>
     <div></div>
+  </div>
+
+  <!-- 이메일 도메인 가중치 카드 -->
+  <div v-if="cfg.mode==='create'" class="card" style="margin-top:12px;padding:14px 16px;width:340px;">
+    <div class="list-title">📧 이메일 도메인 가중치</div>
+    <div style="margin-top:8px;">
+      <select v-model="domCfg.fixedDomain" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;margin-bottom:6px;">
+        <option value="">-- 없음 --</option>
+        <option value="__weighted__">-- 가중치적용 --</option>
+        <option v-for="d in DOMAINS" :key="d" :value="d">{{ d }}</option>
+      </select>
+      <div v-show="domCfg.fixedDomain === '__weighted__'">
+        <div v-for="d in DOMAINS" :key="d" style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+          <span style="font-size:10px;color:#475569;min-width:84px;white-space:nowrap;">{{ d }}</span>
+          <input type="range" min="0" max="100" v-model.number="domCfg.domainWeights[d]" style="flex:1;accent-color:#7c3aed;" />
+          <input type="number" min="0" max="100" v-model.number="domCfg.domainWeights[d]" style="width:40px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;padding:2px;" />
+          <span style="font-size:10px;color:#94a3b8;min-width:28px;">{{ Math.round(domCfg.domainWeights[d]/cfDomainTotal*100) }}%</span>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- 수정 옵션 (전체 폭) -->

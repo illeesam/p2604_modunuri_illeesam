@@ -287,9 +287,11 @@
         { key: 'priceRoundUnit', label: '가격 단위',     type: 'select',
           options: [{ value: 100, label: '100원' }, { value: 500, label: '500원' }, { value: 1000, label: '1,000원' }] },
         { key: 'createStatus',   label: '초기 판매상태', type: 'select', options: PROD_STATUSES },
-        { key: 'useAdCopy',      label: '광고문구 자동 생성', type: 'checkbox', checkedValue: true, uncheckedValue: false },
-        { key: 'useOptImg',      label: '옵션별 이미지 자동 업로드', type: 'checkbox',
-          checkedValue: true, uncheckedValue: false, hint: '옵션1 색상별 단색 이미지 생성 후 첨부' },
+        { key: 'useAdCopy',      label: '광고문구 자동 생성', type: 'select',
+          options: [{ value: true, label: '예' }, { value: false, label: '아니오' }] },
+        { key: 'useOptImg',      label: '옵션별 이미지 자동 업로드', type: 'select',
+          options: [{ value: true, label: '예' }, { value: false, label: '아니오' }],
+          hint: '옵션1 색상별 단색 이미지 생성 후 첨부' },
         makeRangeCol('opt1CountMin', 'opt1CountMax', '옵션1 항목 수', 1, 8, '개',
           { hint: '색상 (레드~그레이 풀)' }),
         makeRangeCol('opt2CountMin', 'opt2CountMax', '옵션2 항목 수', 1, 6, '개',
@@ -421,7 +423,7 @@
         </select>
       </div>
       <div v-show="domCfg.fixedSaleType === '__weighted__'">
-        <div v-for="t in SALE_TYPES" :key="t.cd" style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+        <div v-for="t in SALE_TYPES" :key="t.cd" style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
           <span :class="'badge '+t.badge" style="min-width:42px;text-align:center;font-size:11px;">{{ t.label }}</span>
           <input type="range" min="0" max="100" v-model.number="domCfg.saleTypeWeights[t.cd]" style="flex:1;accent-color:#059669;" />
           <input type="number" min="0" max="100" v-model.number="domCfg.saleTypeWeights[t.cd]" style="width:40px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;padding:2px;" />

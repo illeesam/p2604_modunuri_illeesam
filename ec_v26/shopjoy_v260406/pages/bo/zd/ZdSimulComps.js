@@ -86,6 +86,16 @@
 
     <div class="list-title" style="margin:0;">⚙ 실행 제어</div>
 
+    <!-- 시뮬여부 -->
+    <div style="display:flex;align-items:center;gap:4px;font-size:11px;color:#64748b;white-space:nowrap;">
+      <span>시뮬여부</span>
+      <select v-model="cfg.simulYn" :disabled="cfIsRunning"
+        style="font-size:11px;padding:3px 6px;border:1px solid #e2e8f0;border-radius:5px;background:#f8fafc;color:#334155;height:26px;cursor:pointer;">
+        <option value="Y">예</option>
+        <option value="N">아니오</option>
+      </select>
+    </div>
+
     <!-- 작업 유형 토글 (인라인) -->
     <div style="display:flex;gap:6px;">
       <label v-for="opt in [{value:'create',label:'+ 생성'},{value:'update',label:'— 수정'}]" :key="opt.value"
@@ -131,7 +141,7 @@
 
   <!-- 공통 설정 폼 — Prefix / addSuffix 만 (주기·건수·시간은 헤더 select로 이동) -->
   <div class="bo-form-compact">
-    <bo-form-area :columns="baseCfgColumns.filter(c => ['namePrefix','addSuffix'].includes(c.key))"
+    <bo-form-area :columns="['namePrefix','addSuffix'].map(k => baseCfgColumns.find(c => c.key === k)).filter(Boolean)"
       :form="cfg" :show-actions="false" :cols="3" />
   </div>
 
@@ -175,7 +185,7 @@
     </div>
 
     <!-- 마지막 생성 정보 (펼치기/접기 JSON 뷰) -->
-    <div v-if="state.lastCreated && state.lastCreated.length" style="flex:1;min-width:0;">
+    <div v-if="state.lastCreated &amp;&amp; state.lastCreated.length" style="flex:1;min-width:0;">
       <div @click="onToggleLast"
         style="display:inline-flex;align-items:center;gap:5px;cursor:pointer;font-size:11px;color:#6366f1;user-select:none;padding:2px 6px;border-radius:4px;border:1px solid #c7d2fe;background:#eef2ff;">
         <span>{{ lastExpanded ? '▲' : '▼' }}</span>
@@ -198,7 +208,7 @@
        pager     (Object) — { pageNo, pageTotalCount, pageTotalPage }
      Emits: clear, set-page(n)
   ─────────────────────────────────────────────────────────────────────── */
-  const { computed: _computed, ref: _ref } = Vue;
+  const { computed: _computed, ref: _ref, reactive: _reactive } = Vue;
 
   window.ZdSimulLogPanel = {
     name: 'ZdSimulLogPanel',
@@ -250,12 +260,20 @@
       const onOpenFoLogin   = (row) => _base() && _base()._openFoLogin(row);
       const onOpenFoProfile = (row) => _base() && _base()._openFoProfile(row);
       const onOpenKanban    = (row) => _base() && _base()._openKanban(row);
-      const onOpenCalc      = (row) => _base() && _base()._openClaimCalc(row);
+
+      /* 클레임 계산 — 인라인 모달 */
+      const calcModal = _reactive({ show: false, claimId: '' });
+      const onOpenCalc = (row) => {
+        if (!row.targetId) return;
+        calcModal.claimId = row.targetId;
+        calcModal.show = true;
+      };
 
       return {
         cfPageNums, onClear, onSetPage, onSearch,
         expandedId, onToggleExpand, isExpanded, parseDesc,
-        cfDomainMeta, onOpenBo, onOpenFo, onOpenFoLogin, onOpenFoProfile, onOpenKanban, onOpenCalc,
+        cfDomainMeta, onOpenBo, onOpenFo, onOpenFoLogin, onOpenFoProfile, onOpenKanban,
+        onOpenCalc, calcModal,
       };
     },
     template: `
@@ -399,22 +417,10 @@
                     </span>
                   </div>
                 </div>
-                <!-- desc 파싱 항목 -->
-                <div style="background:#fff;border:1px solid #e0e7ff;border-radius:6px;padding:10px 12px;">
-                  <div style="font-size:10px;color:#6366f1;font-weight:700;margin-bottom:6px;letter-spacing:.3px;">📋 실행 내용 상세</div>
-                  <div v-if="parseDesc(row.desc).length" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:4px 16px;">
-                    <div v-for="item in parseDesc(row.desc)" :key="item.label"
-                      style="display:flex;gap:6px;align-items:baseline;padding:3px 0;border-bottom:1px solid #f1f5f9;">
-                      <span style="font-size:10px;color:#94a3b8;white-space:nowrap;min-width:60px;font-weight:600;">{{ item.label }}</span>
-                      <span style="font-size:11px;color:#334155;word-break:break-all;">{{ item.value }}</span>
-                    </div>
-                  </div>
-                  <div v-else style="font-size:11px;color:#94a3b8;font-family:monospace;">{{ row.desc || '-' }}</div>
-                </div>
-                <!-- INSERT 파라미터 -->
-                <div v-if="row.params" style="margin-top:8px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:10px 12px;">
-                  <div style="font-size:10px;color:#7c3aed;font-weight:700;margin-bottom:6px;letter-spacing:.3px;">🔧 INSERT 파라미터</div>
-                  <pre style="font-size:10px;color:#334155;margin:0;white-space:pre-wrap;word-break:break-all;line-height:1.6;">{{ JSON.stringify(row.params, null, 2) }}</pre>
+                <!-- 실행 내용 상세 (JSON) -->
+                <div>
+                  <div style="font-size:10px;color:#6366f1;font-weight:700;margin-bottom:4px;letter-spacing:.3px;">📋 실행 내용 상세</div>
+                  <div style="background:#1e1e2e;border-radius:6px;border:1px solid #374151;padding:8px 10px;max-height:300px;overflow-y:auto;font-family:monospace;font-size:11px;line-height:1.6;color:#a5f3fc;white-space:pre;word-break:break-all;">{{ JSON.stringify(row.params ? [{ id: row.targetId, desc: row.desc, params: row.params }] : { desc: row.desc }, null, 2) }}</div>
                 </div>
                 <!-- 실패 사유 -->
                 <div v-if="row.reason" style="margin-top:8px;background:#fff5f5;border:1px solid #fecaca;border-radius:6px;padding:8px 12px;">
@@ -440,6 +446,9 @@
     <button class="pager" @click="onSetPage(pager.pageTotalPage)" :disabled="pager.pageNo===pager.pageTotalPage">&raquo;</button>
     <span style="font-size:11px;color:#94a3b8;margin-left:6px;">{{ pager.pageNo }}/{{ pager.pageTotalPage }} 페이지</span>
   </div>
+
+  <!-- 클레임 계산 모달 -->
+  <od-claim-calc-modal :show="calcModal.show" :claim-id="calcModal.claimId" @close="calcModal.show=false" />
 </div>`,
   };
 

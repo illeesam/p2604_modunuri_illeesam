@@ -50,6 +50,8 @@
       const domCfg = reactive({
         fixedEventType: '__weighted__',
         eventTypeWeights: { ATTEND: 20, QUIZ: 20, REVIEW: 15, SHARE: 15, PURCHASE: 15, LOTTERY: 10, PHOTO: 3, SURVEY: 2 },
+        fixedBenefitType: '__weighted__',
+        benefitTypeWeights: { COUPON: 45, SAVE: 30, PRODUCT: 15, POINT: 10 },
         durationDaysMin: 5,
         durationDaysMax: 30,
         startOffsetMin: 0,
@@ -69,6 +71,15 @@
       });
 
       /* ── [02] 공통 엔진 ──────────────────────────────── */
+      const _pickBenefitType = () => {
+        if (domCfg.fixedBenefitType && domCfg.fixedBenefitType !== '__weighted__') return domCfg.fixedBenefitType;
+        const w = domCfg.benefitTypeWeights;
+        const total = Object.values(w).reduce((a, b) => a + Number(b), 0) || 1;
+        let r = Math.random() * total;
+        for (const b of BENEFIT_TYPES) { r -= Number(w[b.value] || 0); if (r <= 0) return b.value; }
+        return BENEFIT_TYPES[0].value;
+      };
+
       const _pickType = () => {
         if (domCfg.fixedEventType && domCfg.fixedEventType !== '__weighted__') {
           return EVENT_TYPES.find(t => t.cd === domCfg.fixedEventType) || EVENT_TYPES[0];
@@ -99,7 +110,7 @@
               eventNm: title, eventTypeCd: type.cd,
               eventStatusCd: domCfg.createStatus,
               startDate: _makeDate(offset), endDate: _makeDate(offset + dur),
-              benefitTypeCd: domCfg.benefitType,
+              benefitTypeCd: _pickBenefitType(),
               benefitAmt: randInt(domCfg.benefitAmtMin, domCfg.benefitAmtMax),
               winnerCount: randInt(domCfg.winnerCountMin, domCfg.winnerCountMax),
               simulYn: simulYn || 'Y',
@@ -139,19 +150,20 @@
       const { cfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog } = simul;
 
       /* ── [03] Computed ──────────────────────────────── */
-      const cfTypeTotal = computed(() => Object.values(domCfg.eventTypeWeights).reduce((a, b) => a + Number(b), 0) || 1);
+      const cfTypeTotal    = computed(() => Object.values(domCfg.eventTypeWeights).reduce((a, b) => a + Number(b), 0) || 1);
+      const cfBenefitTotal = computed(() => Object.values(domCfg.benefitTypeWeights).reduce((a, b) => a + Number(b), 0) || 1);
 
       /* ── [04] 컬럼 정의 ─────────────────────────────── */
       const logCols = makeLogCols();
       const baseCfgColumns = makeBaseCfgColumns();
       const createCfgColumns = [
         { key: 'createStatus',   label: '초기 상태',   type: 'select', options: EVENT_STATUSES },
-        { key: 'benefitType',    label: '혜택 유형',   type: 'select', options: BENEFIT_TYPES },
         makeRangeCol('benefitAmtMin', 'benefitAmtMax', '혜택 금액 범위', 1000, 50000, '원'),
         makeRangeCol('winnerCountMin', 'winnerCountMax', '당첨자 수 범위', 1, 200, '명'),
         makeRangeCol('startOffsetMin', 'startOffsetMax', '시작 오프셋 범위', 0, 30, '일'),
         makeRangeCol('durationDaysMin', 'durationDaysMax', '이벤트 기간 범위', 1, 60, '일'),
-        { key: 'useRandomTitle', label: '제목 자동 생성', type: 'checkbox', checkedValue: true, uncheckedValue: false },
+        { key: 'useRandomTitle', label: '제목 자동 생성', type: 'select',
+          options: [{ value: true, label: '예' }, { value: false, label: '아니오' }] },
       ];
       const updateCfgColumns = [
         { key: 'updateAction', label: '수정 액션', type: 'select', options: UPDATE_ACTIONS },
@@ -194,10 +206,10 @@
 
       return {
         cfg, domCfg, state, logs, logPager, cfIsRunning, cfSuccessRate,
-        cfTypeTotal, logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
+        cfTypeTotal, cfBenefitTotal, logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
         onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog, logSearch,
         ...rangeHandlers,
-        EVENT_TYPES,
+        EVENT_TYPES, BENEFIT_TYPES,
         eventPicker, onOpenEventPicker, onSelectEvent, _loadEventPicker,
       };
     },
@@ -241,12 +253,12 @@
     </div>
   </div>
 
-  <!-- 이벤트 유형 가중치 (1/3 폭, 아래 줄) -->
-  <div v-if="cfg.mode==='create'" style="margin-top:12px;display:grid;grid-template-columns:1fr 2fr;gap:12px;">
-    <div class="card" style="padding:14px 16px;">
+  <!-- 가중치 카드 행 -->
+  <div v-if="cfg.mode==='create'" style="margin-top:12px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;">
+    <!-- 이벤트 유형 가중치 -->
+    <div class="card" style="padding:14px 16px;width:340px;">
       <div class="list-title">📊 이벤트 유형 가중치</div>
       <div style="margin-top:8px;margin-bottom:10px;">
-        <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">유형 지정</label>
         <select v-model="domCfg.fixedEventType" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
           <option value="">-- 없음 --</option>
           <option value="__weighted__">-- 가중치적용 --</option>
@@ -254,15 +266,39 @@
         </select>
       </div>
       <div v-show="domCfg.fixedEventType === '__weighted__'">
-        <div v-for="t in EVENT_TYPES" :key="t.cd" style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+        <div v-for="t in EVENT_TYPES" :key="t.cd" style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
           <span :class="'badge '+t.badge" style="min-width:64px;text-align:center;font-size:10px;">{{ t.label }}</span>
-          <input type="range" min="0" max="50" v-model.number="domCfg.eventTypeWeights[t.cd]" style="flex:1;accent-color:#a21caf;" />
-          <input type="number" min="0" max="50" v-model.number="domCfg.eventTypeWeights[t.cd]" style="width:40px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;padding:2px;" />
+          <input type="range" min="0" max="100" v-model.number="domCfg.eventTypeWeights[t.cd]" style="flex:1;accent-color:#a21caf;" />
+          <input type="number" min="0" max="100" v-model.number="domCfg.eventTypeWeights[t.cd]" style="width:40px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;padding:2px;" />
           <span style="font-size:10px;color:#94a3b8;min-width:28px;">{{ Math.round(domCfg.eventTypeWeights[t.cd]/cfTypeTotal*100) }}%</span>
+        </div>
+        <div style="display:flex;border-radius:4px;overflow:hidden;height:8px;margin-top:8px;">
+          <div v-for="t in EVENT_TYPES" :key="t.cd" :title="t.label" :style="{flex:domCfg.eventTypeWeights[t.cd],background:t.badge==='badge-blue'?'#3b82f6':t.badge==='badge-purple'?'#a21caf':t.badge==='badge-green'?'#16a34a':'#ea580c',transition:'flex .2s'}"></div>
         </div>
       </div>
     </div>
-    <div></div>
+    <!-- 혜택 유형 가중치 -->
+    <div class="card" style="padding:14px 16px;width:340px;">
+      <div class="list-title">🎁 혜택 유형 가중치</div>
+      <div style="margin-top:8px;margin-bottom:10px;">
+        <select v-model="domCfg.fixedBenefitType" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
+          <option value="">-- 없음 --</option>
+          <option value="__weighted__">-- 가중치적용 --</option>
+          <option v-for="b in BENEFIT_TYPES" :key="b.value" :value="b.value">{{ b.label }}</option>
+        </select>
+      </div>
+      <div v-show="domCfg.fixedBenefitType === '__weighted__'">
+        <div v-for="b in BENEFIT_TYPES" :key="b.value" style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+          <span style="font-size:11px;color:#475569;min-width:64px;">{{ b.label }}</span>
+          <input type="range" min="0" max="100" v-model.number="domCfg.benefitTypeWeights[b.value]" style="flex:1;accent-color:#a21caf;" />
+          <input type="number" min="0" max="100" v-model.number="domCfg.benefitTypeWeights[b.value]" style="width:40px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;padding:2px;" />
+          <span style="font-size:10px;color:#94a3b8;min-width:28px;">{{ Math.round(domCfg.benefitTypeWeights[b.value]/cfBenefitTotal*100) }}%</span>
+        </div>
+        <div style="display:flex;border-radius:4px;overflow:hidden;height:8px;margin-top:8px;">
+          <div v-for="b in BENEFIT_TYPES" :key="b.value" :title="b.label" :style="{flex:domCfg.benefitTypeWeights[b.value],background:b.value==='COUPON'?'#f59e0b':b.value==='SAVE'?'#16a34a':b.value==='PRODUCT'?'#3b82f6':'#a21caf',transition:'flex .2s'}"></div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- 실행 로그 -->

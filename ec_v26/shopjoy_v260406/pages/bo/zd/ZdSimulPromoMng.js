@@ -15,6 +15,10 @@
     { value: 'CATEGORY', label: '카테고리' },
     { value: 'PRODUCT',  label: '특정 상품' },
   ];
+  /* 쿠폰/할인 할인방식 가중치 항목 */
+  const DISC_TYPE_ITEMS  = [{ cd: 'RATE', label: '% 할인' }, { cd: 'AMOUNT', label: '정액 할인' }];
+  /* 적립금 유형 가중치 항목 */
+  const SAVE_TYPE_ITEMS  = [{ cd: 'RATE', label: '적립률 %' }, { cd: 'AMOUNT', label: '정액 적립' }];
   const COUPON_NAMES = [
     '첫구매 감사 쿠폰', '재방문 할인 쿠폰', '생일 특별 쿠폰', '주말 특가 쿠폰',
     '신상품 런칭 쿠폰', '회원등급 업그레이드 쿠폰', 'VIP 전용 혜택 쿠폰', '오늘만 특가 쿠폰',
@@ -44,7 +48,8 @@
         fixedCouponId: '',
         fixedDiscntId: '',
         /* 쿠폰 설정 */
-        couponDiscType: 'RATE',
+        fixedCouponDiscType: '__weighted__',
+        couponDiscTypeWeights: { RATE: 70, AMOUNT: 30 },
         couponDiscRateMin: 5,
         couponDiscRateMax: 30,
         couponDiscAmtMin: 1000,
@@ -52,11 +57,13 @@
         couponIssueCountMin: 10,
         couponIssueCountMax: 500,
         couponDurationDays: 30,
-        couponScope: 'ALL',
+        couponScope: 'PRODUCT',
+        couponProdIds: '',
         couponMinOrderAmt: 0,
         couponMaxDiscAmt: 50000,
         /* 할인정책 설정 */
-        discntType: 'RATE',
+        fixedDiscntType: '__weighted__',
+        discntTypeWeights: { RATE: 60, AMOUNT: 40 },
         discntRateMin: 3,
         discntRateMax: 20,
         discntAmtMin: 500,
@@ -65,6 +72,8 @@
         discntMinOrderAmt: 0,
         discntMaxDiscAmt: 50000,
         /* 적립금 설정 */
+        fixedSaveType: '__weighted__',
+        saveTypeWeights: { RATE: 65, AMOUNT: 35 },
         saveRateMin: 1,
         saveRateMax: 10,
         saveAmtMin: 100,
@@ -73,6 +82,18 @@
       });
 
       /* ── [02] 공통 엔진 ──────────────────────────────── */
+      const _pickWeighted = (items, weights, fixedKey) => {
+        const fixed = domCfg[fixedKey];
+        if (fixed && fixed !== '__weighted__') return items.find(t => t.cd === fixed) || items[0];
+        const total = Object.values(weights).reduce((a, b) => a + Number(b), 0) || 1;
+        let r = Math.random() * total;
+        for (const t of items) { r -= Number(weights[t.cd] || 0); if (r <= 0) return t; }
+        return items[0];
+      };
+      const _pickCouponDiscType = () => _pickWeighted(DISC_TYPE_ITEMS,  domCfg.couponDiscTypeWeights, 'fixedCouponDiscType');
+      const _pickDiscntType     = () => _pickWeighted(DISC_TYPE_ITEMS,  domCfg.discntTypeWeights,     'fixedDiscntType');
+      const _pickSaveType       = () => _pickWeighted(SAVE_TYPE_ITEMS,  domCfg.saveTypeWeights,       'fixedSaveType');
+
       const _makeDate = (daysLater) => {
         const d = new Date(); d.setDate(d.getDate() + daysLater);
         return d.toISOString().replace('T', ' ').substring(0, 19);
@@ -84,57 +105,72 @@
         uiNm: '프로모션 시뮬레이터',
         label: '시뮬프로모',
         defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
-        runFn: async ({ mode, namePrefix, randInt, pick }) => {
+        runFn: async ({ mode, simulYn, namePrefix, randInt, pick }) => {
           if (mode === 'create') {
             let type = domCfg.promoType;
             if (type === 'both') type = Math.random() < 0.5 ? 'coupon' : 'discnt';
             const now = _makeDate(0);
 
             if (type === 'coupon') {
-              const isRate  = domCfg.couponDiscType === 'RATE';
-              const discVal = isRate
+              const discType = _pickCouponDiscType();
+              const isRate   = discType.cd === 'RATE';
+              const discVal  = isRate
                 ? randInt(domCfg.couponDiscRateMin, domCfg.couponDiscRateMax)
                 : randInt(domCfg.couponDiscAmtMin, domCfg.couponDiscAmtMax);
               const nm  = (namePrefix || '') + pick(COUPON_NAMES);
+              /* 적용범위 PRODUCT 시 시뮬 상품 ID 목록 파싱 */
+              const prodIds = domCfg.couponScope === 'PRODUCT' && domCfg.couponProdIds
+                ? domCfg.couponProdIds.split(/[\s,]+/).map(s => s.trim()).filter(Boolean)
+                : [];
               const body = {
                 couponNm: nm, couponCd: 'SIM_C_' + _shortId(),
-                couponDiscTypeCd: domCfg.couponDiscType, discVal,
+                couponDiscTypeCd: discType.cd, discVal,
                 issueCount: randInt(domCfg.couponIssueCountMin, domCfg.couponIssueCountMax),
                 startDate: now, endDate: _makeDate(domCfg.couponDurationDays),
                 scopeCd: domCfg.couponScope,
+                ...(prodIds.length ? { prodIds } : {}),
                 minOrderAmt: domCfg.couponMinOrderAmt,
                 maxDiscAmt: domCfg.couponMaxDiscAmt,
+                simulYn: simulYn || 'Y',
               };
               const res = await boApi.post('/bo/zd/simul/promo/coupon-create', body, coUtil.cofApiHdr('프로모시뮬', '쿠폰생성'));
               const id  = res?.data?.data?.couponId || '-';
               const discStr = isRate ? discVal + '%' : discVal.toLocaleString() + '원';
-              return { ok: true, desc: '[쿠폰] ' + nm + ' ' + discStr + ' 할인', meta: { id, type: '쿠폰', params: body } };
+              return { ok: true, desc: '[쿠폰] ' + nm + ' ' + discStr + ' 할인 [' + discType.label + ']', meta: { id, type: '쿠폰', params: body } };
             } else if (type === 'discnt') {
-              const isRate  = domCfg.discntType === 'RATE';
-              const discVal = isRate
+              const discType = _pickDiscntType();
+              const isRate   = discType.cd === 'RATE';
+              const discVal  = isRate
                 ? randInt(domCfg.discntRateMin, domCfg.discntRateMax)
                 : randInt(domCfg.discntAmtMin, domCfg.discntAmtMax);
               const nm   = (namePrefix || '') + pick(DISCNT_NAMES);
               const body = {
-                discntNm: nm, discntTypeCd: domCfg.discntType, discVal,
+                discntNm: nm, discntTypeCd: discType.cd, discVal,
                 startDate: now, endDate: _makeDate(domCfg.discntDurationDays),
                 minOrderAmt: domCfg.discntMinOrderAmt,
                 maxDiscAmt: domCfg.discntMaxDiscAmt,
+                simulYn: simulYn || 'Y',
               };
               const res = await boApi.post('/bo/zd/simul/promo/discnt-create', body, coUtil.cofApiHdr('프로모시뮬', '할인생성'));
               const id  = res?.data?.data?.discntId || '-';
               const discStr = isRate ? discVal + '%' : discVal.toLocaleString() + '원';
-              return { ok: true, desc: '[할인] ' + nm + ' ' + discStr, meta: { id, type: '할인', params: body } };
+              return { ok: true, desc: '[할인] ' + nm + ' ' + discStr + ' [' + discType.label + ']', meta: { id, type: '할인', params: body } };
             } else {
-              const saveRate = randInt(domCfg.saveRateMin, domCfg.saveRateMax);
+              const saveType = _pickSaveType();
+              const isRate   = saveType.cd === 'RATE';
+              const saveRate = isRate ? randInt(domCfg.saveRateMin, domCfg.saveRateMax) : 0;
+              const saveAmt  = isRate ? 0 : randInt(domCfg.saveAmtMin, domCfg.saveAmtMax);
               const nm   = (namePrefix || '') + pick(SAVE_NAMES);
               const body = {
-                saveNm: nm, saveRatePct: saveRate, saveAmt: randInt(domCfg.saveAmtMin, domCfg.saveAmtMax),
+                saveNm: nm,
+                ...(isRate ? { saveRatePct: saveRate } : { saveAmt }),
                 startDate: now, endDate: _makeDate(domCfg.saveDurationDays),
+                simulYn: simulYn || 'Y',
               };
               const res = await boApi.post('/bo/zd/simul/promo/save-create', body, coUtil.cofApiHdr('프로모시뮬', '적립생성'));
               const id  = res?.data?.data?.saveId || '-';
-              return { ok: true, desc: '[적립] ' + nm + ' ' + saveRate + '% 적립', meta: { id, type: '적립', params: body } };
+              const saveStr = isRate ? saveRate + '% 적립률' : saveAmt.toLocaleString() + '원 정액';
+              return { ok: true, desc: '[적립] ' + nm + ' ' + saveStr + ' [' + saveType.label + ']', meta: { id, type: '적립', params: body } };
             }
           } else {
             const type = domCfg.promoType === 'both' ? 'coupon' : domCfg.promoType;
@@ -208,33 +244,40 @@
       const logCols = makeLogCols();
       const baseCfgColumns = makeBaseCfgColumns();
       const couponCfgColumns = [
-        { key: 'couponDiscType',     label: '할인 방식',   type: 'select', options: DISC_TYPES },
         makeRangeCol('couponDiscRateMin', 'couponDiscRateMax', '할인율 범위', 0, 100, '%',
-          { visible: (f) => f.couponDiscType === 'RATE' }),
-        { key: 'couponDiscAmtMin',   label: '할인액 최소', type: 'number', hint: '원', visible: (f) => f.couponDiscType === 'AMOUNT' },
-        { key: 'couponDiscAmtMax',   label: '할인액 최대', type: 'number', hint: '원', visible: (f) => f.couponDiscType === 'AMOUNT' },
+          { visible: (f) => f.fixedCouponDiscType !== 'AMOUNT' }),
+        { key: 'couponDiscAmtMin',   label: '할인액 최소', type: 'number', hint: '원', visible: (f) => f.fixedCouponDiscType === 'AMOUNT' },
+        { key: 'couponDiscAmtMax',   label: '할인액 최대', type: 'number', hint: '원', visible: (f) => f.fixedCouponDiscType === 'AMOUNT' },
         makeRangeCol('couponIssueCountMin', 'couponIssueCountMax', '발행수 범위', 1, 1000, '매'),
         { key: 'couponDurationDays', label: '유효기간',    type: 'number', hint: '일' },
         { key: 'couponScope',        label: '적용범위',    type: 'select', options: COUPON_SCOPES },
+        { key: 'couponProdIds',      label: '시뮬 상품 ID', type: 'text',
+          placeholder: 'ID 콤마 구분 (기본 5개 자동)',
+          hint: '비우면 simulYn=Y 상품 자동조회',
+          visible: (f) => f.couponScope === 'PRODUCT' },
         { key: 'couponMinOrderAmt',  label: '최소 주문액', type: 'number', hint: '원' },
         { key: 'couponMaxDiscAmt',   label: '최대 할인액', type: 'number', hint: '원' },
       ];
       const discntCfgColumns = [
-        { key: 'discntType',     label: '할인 방식',   type: 'select', options: DISC_TYPES },
         makeRangeCol('discntRateMin', 'discntRateMax', '할인율 범위', 0, 100, '%',
-          { visible: (f) => f.discntType === 'RATE' }),
-        { key: 'discntAmtMin',   label: '할인액 최소', type: 'number', hint: '원', visible: (f) => f.discntType === 'AMOUNT' },
-        { key: 'discntAmtMax',   label: '할인액 최대', type: 'number', hint: '원', visible: (f) => f.discntType === 'AMOUNT' },
+          { visible: (f) => f.fixedDiscntType !== 'AMOUNT' }),
+        { key: 'discntAmtMin',   label: '할인액 최소', type: 'number', hint: '원', visible: (f) => f.fixedDiscntType === 'AMOUNT' },
+        { key: 'discntAmtMax',   label: '할인액 최대', type: 'number', hint: '원', visible: (f) => f.fixedDiscntType === 'AMOUNT' },
         { key: 'discntDurationDays', label: '기간',    type: 'number', hint: '일' },
         { key: 'discntMinOrderAmt',  label: '최소주문', type: 'number', hint: '원' },
         { key: 'discntMaxDiscAmt',   label: '최대할인', type: 'number', hint: '원' },
       ];
       const saveCfgColumns = [
-        makeRangeCol('saveRateMin', 'saveRateMax', '적립률 범위', 0, 50, '%'),
-        { key: 'saveAmtMin',       label: '적립액 최소',  type: 'number', hint: '원' },
-        { key: 'saveAmtMax',       label: '적립액 최대',  type: 'number', hint: '원' },
-        { key: 'saveDurationDays', label: '유효기간',     type: 'number', hint: '일' },
+        makeRangeCol('saveRateMin', 'saveRateMax', '적립률 범위', 0, 50, '%',
+          { visible: (f) => f.fixedSaveType !== 'AMOUNT' }),
+        { key: 'saveAmtMin',       label: '정액 적립 최소', type: 'number', hint: '원', visible: (f) => f.fixedSaveType === 'AMOUNT' },
+        { key: 'saveAmtMax',       label: '정액 적립 최대', type: 'number', hint: '원', visible: (f) => f.fixedSaveType === 'AMOUNT' },
+        { key: 'saveDurationDays', label: '유효기간',       type: 'number', hint: '일' },
       ];
+
+      const cfCouponDiscTotal = computed(() => Object.values(domCfg.couponDiscTypeWeights).reduce((a, b) => a + Number(b), 0) || 1);
+      const cfDiscntTotal     = computed(() => Object.values(domCfg.discntTypeWeights).reduce((a, b) => a + Number(b), 0) || 1);
+      const cfSaveTotal       = computed(() => Object.values(domCfg.saveTypeWeights).reduce((a, b) => a + Number(b), 0) || 1);
 
       const rangeHandlers = makeRangeHandlers(domCfg, [
         { minKey: 'couponDiscRateMin',  maxKey: 'couponDiscRateMax'  },
@@ -246,6 +289,8 @@
       return {
         cfg, domCfg, state, logs, logPager, cfIsRunning, cfSuccessRate,
         logCols, baseCfgColumns, couponCfgColumns, discntCfgColumns, saveCfgColumns,
+        cfCouponDiscTotal, cfDiscntTotal, cfSaveTotal,
+        DISC_TYPE_ITEMS, SAVE_TYPE_ITEMS,
         onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog, logSearch,
         ...rangeHandlers,
         PROMO_TYPES,
@@ -289,7 +334,7 @@
     </div>
 
     <!-- 할인정책 설정 -->
-    <div v-if="domCfg.promoType==='discnt'" style="padding:14px 16px;">
+    <div v-if="domCfg.promoType==='discnt' || domCfg.promoType==='both'" style="padding:14px 16px;">
       <div class="list-title">💰 할인정책 설정</div>
       <bo-form-area :columns="discntCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;">
         ${rangeSlotTemplate('discntRateMin','discntRateMax',0,100,'%')}
@@ -303,13 +348,65 @@
         ${rangeSlotTemplate('saveRateMin','saveRateMax',0,50,'%')}
       </bo-form-area>
     </div>
+  </div>
 
-    <!-- 쿠폰+할인 혼합 -->
-    <div v-if="domCfg.promoType==='both'" style="padding:0 16px 14px;">
-      <div class="list-title">💰 할인정책 설정</div>
-      <bo-form-area :columns="discntCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;">
-        ${rangeSlotTemplate('discntRateMin','discntRateMax',0,100,'%')}
-      </bo-form-area>
+  <!-- 쿠폰 할인방식 가중치 카드 -->
+  <div v-if="domCfg.promoType==='coupon' || domCfg.promoType==='both'" class="card" style="margin-top:12px;padding:14px 16px;width:340px;">
+    <div class="list-title">📊 할인방식 가중치</div>
+    <div style="margin-top:8px;">
+      <select v-model="domCfg.fixedCouponDiscType" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;margin-bottom:6px;">
+        <option value="">-- 없음 --</option>
+        <option value="__weighted__">-- 가중치적용 --</option>
+        <option v-for="t in DISC_TYPE_ITEMS" :key="t.cd" :value="t.cd">{{ t.label }}</option>
+      </select>
+      <div v-show="domCfg.fixedCouponDiscType === '__weighted__'">
+        <div v-for="t in DISC_TYPE_ITEMS" :key="t.cd" style="display:grid;grid-template-columns:55px 1fr 40px 36px;align-items:center;gap:6px;margin-bottom:2px;">
+          <span style="font-size:11px;font-weight:600;color:#475569;">{{ t.label }}</span>
+          <input type="range" min="0" max="100" v-model.number="domCfg.couponDiscTypeWeights[t.cd]" style="accent-color:#6366f1;width:100%;" />
+          <input type="number" min="0" max="100" v-model.number="domCfg.couponDiscTypeWeights[t.cd]" style="width:40px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;padding:1px 4px;text-align:center;" />
+          <span style="font-size:10px;color:#94a3b8;text-align:right;">{{ Math.round(domCfg.couponDiscTypeWeights[t.cd]/cfCouponDiscTotal*100) }}%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 할인정책 유형 가중치 카드 -->
+  <div v-if="domCfg.promoType==='discnt' || domCfg.promoType==='both'" class="card" style="margin-top:12px;padding:14px 16px;width:340px;">
+    <div class="list-title">📊 할인방식 가중치</div>
+    <div style="margin-top:8px;">
+      <select v-model="domCfg.fixedDiscntType" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;margin-bottom:6px;">
+        <option value="">-- 없음 --</option>
+        <option value="__weighted__">-- 가중치적용 --</option>
+        <option v-for="t in DISC_TYPE_ITEMS" :key="t.cd" :value="t.cd">{{ t.label }}</option>
+      </select>
+      <div v-show="domCfg.fixedDiscntType === '__weighted__'">
+        <div v-for="t in DISC_TYPE_ITEMS" :key="t.cd" style="display:grid;grid-template-columns:55px 1fr 40px 36px;align-items:center;gap:6px;margin-bottom:2px;">
+          <span style="font-size:11px;font-weight:600;color:#475569;">{{ t.label }}</span>
+          <input type="range" min="0" max="100" v-model.number="domCfg.discntTypeWeights[t.cd]" style="accent-color:#6366f1;width:100%;" />
+          <input type="number" min="0" max="100" v-model.number="domCfg.discntTypeWeights[t.cd]" style="width:40px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;padding:1px 4px;text-align:center;" />
+          <span style="font-size:10px;color:#94a3b8;text-align:right;">{{ Math.round(domCfg.discntTypeWeights[t.cd]/cfDiscntTotal*100) }}%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 적립금 유형 가중치 카드 -->
+  <div v-if="domCfg.promoType==='save'" class="card" style="margin-top:12px;padding:14px 16px;width:340px;">
+    <div class="list-title">📊 적립 유형 가중치</div>
+    <div style="margin-top:8px;">
+      <select v-model="domCfg.fixedSaveType" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;margin-bottom:6px;">
+        <option value="">-- 없음 --</option>
+        <option value="__weighted__">-- 가중치적용 --</option>
+        <option v-for="t in SAVE_TYPE_ITEMS" :key="t.cd" :value="t.cd">{{ t.label }}</option>
+      </select>
+      <div v-show="domCfg.fixedSaveType === '__weighted__'">
+        <div v-for="t in SAVE_TYPE_ITEMS" :key="t.cd" style="display:grid;grid-template-columns:60px 1fr 40px 36px;align-items:center;gap:6px;margin-bottom:2px;">
+          <span style="font-size:11px;font-weight:600;color:#475569;">{{ t.label }}</span>
+          <input type="range" min="0" max="100" v-model.number="domCfg.saveTypeWeights[t.cd]" style="accent-color:#6366f1;width:100%;" />
+          <input type="number" min="0" max="100" v-model.number="domCfg.saveTypeWeights[t.cd]" style="width:40px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;padding:1px 4px;text-align:center;" />
+          <span style="font-size:10px;color:#94a3b8;text-align:right;">{{ Math.round(domCfg.saveTypeWeights[t.cd]/cfSaveTotal*100) }}%</span>
+        </div>
+      </div>
     </div>
   </div>
 

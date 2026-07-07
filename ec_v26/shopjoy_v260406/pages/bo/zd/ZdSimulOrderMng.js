@@ -55,6 +55,9 @@
         fixedProdId: '',
         fixedProdNm: '',
         fixedOrderId: '',
+        /* 결제수단 가중치 */
+        fixedPayMethod: '__weighted__',
+        payMethodWeights: { CARD: 45, TOSS_PAY: 20, KAKAO_PAY: 15, NAVER_PAY: 10, BANK: 7, VBANK: 3 },
       });
 
       /* ── picker 모달 상태 ──────────────────────────── */
@@ -129,6 +132,15 @@
       };
 
       /* ── [02] 공통 엔진 ──────────────────────────────── */
+      const _pickPayMethod = () => {
+        if (domCfg.fixedPayMethod && domCfg.fixedPayMethod !== '__weighted__') return domCfg.fixedPayMethod;
+        const w = domCfg.payMethodWeights;
+        const total = Object.values(w).reduce((a, b) => a + Number(b), 0) || 1;
+        let r = Math.random() * total;
+        for (const p of PAY_METHODS) { r -= Number(w[p.value] || 0); if (r <= 0) return p.value; }
+        return PAY_METHODS[0].value;
+      };
+
       const simul = useSimulSetup({
         domain: '주문',
         uiNm: '주문 시뮬레이터',
@@ -170,7 +182,7 @@
               totalAmt += Math.round(price) * qty;
             }
             const dlivFee = domCfg.addDlivFee && totalAmt < 50000 ? domCfg.dlivFeeAmt : 0;
-            const payMethod = domCfg.payMethods.length ? pick(domCfg.payMethods) : 'CARD';
+            const payMethod = _pickPayMethod();
             const addr = domCfg.randomAddr ? pick(ADDR_LIST) : ADDR_LIST[0];
             const body = {
               memberId: member.memberId, memberNm: member.memberNm,
@@ -226,6 +238,8 @@
       const { cfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog } = simul;
 
       /* ── [03] 컬럼 정의 ─────────────────────────────── */
+      const cfPayMethodTotal = computed(() => Object.values(domCfg.payMethodWeights).reduce((a, b) => a + Number(b), 0) || 1);
+
       const logCols = makeLogCols();
       const baseCfgColumns = makeBaseCfgColumns();
       const createCfgColumns = [
@@ -233,9 +247,11 @@
         makeRangeCol('amtMin', 'amtMax', '주문 금액 범위', 10000, 300000, '원'),
         { key: 'createStatus',  label: '초기 상태', type: 'select',
           options: STATUS_FLOW.map(s => ({ value: s, label: STATUS_LABELS[s] })) },
-        { key: 'addDlivFee',    label: '배송비 적용',    type: 'checkbox', checkedValue: true, uncheckedValue: false },
+        { key: 'addDlivFee',    label: '배송비 적용',    type: 'select',
+          options: [{ value: true, label: '예' }, { value: false, label: '아니오' }] },
         { key: 'dlivFeeAmt',    label: '배송비',         type: 'number', hint: '원', visible: (f) => !!f.addDlivFee },
-        { key: 'randomAddr',    label: '주소 랜덤',      type: 'checkbox', checkedValue: true, uncheckedValue: false },
+        { key: 'randomAddr',    label: '주소 랜덤',      type: 'select',
+          options: [{ value: true, label: '예' }, { value: false, label: '아니오' }] },
       ];
       const updateCfgColumns = [
         { key: 'updateAction', label: '수정 액션', type: 'select', options: UPDATE_ACTIONS },
@@ -254,7 +270,7 @@
 
       return {
         cfg, domCfg, state, logs, logPager, cfIsRunning, cfSuccessRate,
-        logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
+        cfPayMethodTotal, logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
         onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog, logSearch,
         ...rangeHandlers,
         STATUS_FLOW, STATUS_LABELS, PAY_METHODS,
@@ -339,28 +355,27 @@
     </bo-form-area>
   </div>
 
-  <!-- 결제수단/상태흐름 (1/3 폭, 아래 줄) -->
-  <div v-if="cfg.mode==='create'" style="margin-top:12px;display:grid;grid-template-columns:1fr 2fr;gap:12px;">
-    <div class="card" style="padding:14px 16px;">
-      <div class="list-title">💳 결제수단 / 상태흐름</div>
-      <div style="margin-top:10px;">
-        <div style="font-size:11px;font-weight:600;color:#475569;margin-bottom:6px;">결제수단 선택</div>
-        <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;">
-          <label v-for="p in PAY_METHODS" :key="p.value"
-            :style="'cursor:pointer;padding:3px 8px;border-radius:4px;font-size:11px;' + (domCfg.payMethods.includes(p.value) ? 'background:#eff6ff;border:1px solid #2563eb;color:#1d4ed8;' : 'background:#f8fafc;border:1px solid #e2e8f0;color:#64748b;')">
-            <input type="checkbox" :value="p.value" v-model="domCfg.payMethods" style="display:none;">{{ p.label }}
-          </label>
+  <!-- 결제수단 가중치 카드 -->
+  <div v-if="cfg.mode==='create'" class="card" style="margin-top:12px;padding:14px 16px;width:340px;">
+    <div class="list-title">💳 결제수단 가중치</div>
+    <div style="margin-top:8px;">
+      <select v-model="domCfg.fixedPayMethod" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;margin-bottom:6px;">
+        <option value="">-- 없음 --</option>
+        <option value="__weighted__">-- 가중치적용 --</option>
+        <option v-for="p in PAY_METHODS" :key="p.value" :value="p.value">{{ p.label }}</option>
+      </select>
+      <div v-show="domCfg.fixedPayMethod === '__weighted__'">
+        <div v-for="p in PAY_METHODS" :key="p.value" style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+          <span style="font-size:11px;color:#475569;min-width:68px;white-space:nowrap;">{{ p.label }}</span>
+          <input type="range" min="0" max="100" v-model.number="domCfg.payMethodWeights[p.value]" style="flex:1;accent-color:#2563eb;" />
+          <input type="number" min="0" max="100" v-model.number="domCfg.payMethodWeights[p.value]" style="width:40px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;padding:2px;" />
+          <span style="font-size:10px;color:#94a3b8;min-width:28px;">{{ Math.round(domCfg.payMethodWeights[p.value]/cfPayMethodTotal*100) }}%</span>
         </div>
-        <div style="font-size:11px;font-weight:600;color:#475569;margin-bottom:6px;">주문 상태 흐름</div>
-        <div style="display:flex;flex-direction:column;gap:3px;">
-          <template v-for="(s,i) in STATUS_FLOW" :key="s">
-            <span :style="'font-size:11px;padding:4px 8px;border-radius:4px;' + (s===domCfg.createStatus ? 'background:#2563eb;color:#fff;font-weight:600;' : 'background:#f1f5f9;color:#64748b;')">{{ STATUS_LABELS[s] }}</span>
-            <span v-if="i < STATUS_FLOW.length-1" style="color:#94a3b8;font-size:10px;padding-left:8px;">↓</span>
-          </template>
+        <div style="height:8px;border-radius:4px;overflow:hidden;display:flex;margin-top:6px;">
+          <div v-for="p in PAY_METHODS" :key="p.value" :style="'flex:'+domCfg.payMethodWeights[p.value]+';transition:flex .2s;'+(({'CARD':'background:#2563eb','TOSS_PAY':'background:#3b82f6','KAKAO_PAY':'background:#f59e0b','NAVER_PAY':'background:#22c55e','BANK':'background:#6366f1','VBANK':'background:#94a3b8'})[p.value]||'background:#94a3b8')"></div>
         </div>
       </div>
     </div>
-    <div></div>
   </div>
 
   <!-- 수정 옵션 (전체 폭) -->

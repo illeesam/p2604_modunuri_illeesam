@@ -96,6 +96,9 @@
     const logPager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1 });
     const logSearch = reactive({ uiNm: uiNm || label || '', userNm: '', desc: '', status: '' });
 
+    /* 로컬 params 캐시 — targetId → params (DB 재조회 후 복원용, 최대 200건) */
+    const _paramsCache = new Map();
+
     /* DB 조회 */
     const _fetchLogs = async (pageNo) => {
       if (!window.boApiSvc || !window.boApiSvc.zdSimulLog) return;
@@ -113,19 +116,23 @@
         const res = await window.boApiSvc.zdSimulLog.getPage(params);
         const d = res.data?.data || {};
         const offset = (curPage - 1) * logPager.pageSize;
-        const rows = (d.pageList || []).map((e, i) => ({
-          _rowNo:   offset + i + 1,
-          ts:       e.regDate ? e.regDate.replace('T', ' ').slice(0, 19) : (e.reg_date || ''),
-          userNm:   e.userNm || '-',
-          uiNm:     e.uiNm   || '-',
-          mode:     e.simulMode || '-',
-          status:   e.simulStatus === 'SUCCESS' ? 'ok' : 'fail',
-          desc:     e.descTxt   || '',
-          reason:   e.reasonTxt || '',
-          domain:   e.domain   || '',
-          targetId: e.targetId || '',
-          meta:   {},
-        }));
+        const rows = (d.pageList || []).map((e, i) => {
+          const tid = e.targetId || '';
+          return {
+            _rowNo:   offset + i + 1,
+            ts:       e.regDate ? e.regDate.replace('T', ' ').slice(0, 19) : (e.reg_date || ''),
+            userNm:   e.userNm || '-',
+            uiNm:     e.uiNm   || '-',
+            mode:     e.simulMode || '-',
+            status:   e.simulStatus === 'SUCCESS' ? 'ok' : 'fail',
+            desc:     e.descTxt   || '',
+            reason:   e.reasonTxt || '',
+            domain:   e.domain   || '',
+            targetId: tid,
+            meta:     {},
+            params:   _paramsCache.get(tid) || null,
+          };
+        });
         logs.value = rows;
         logPager.pageTotalCount = d.pageTotalCount || 0;
         logPager.pageTotalPage  = d.pageTotalPage  || 1;
@@ -170,12 +177,17 @@
           const userNm = _au.name || _au.authNm || _au.userNm || '-';
           const mode = cfg.mode === 'create' ? '생성' : '수정';
           /* 로컬 로그 즉시 프리펜드 (params 포함) */
+          const localParams = meta.params || null;
+          if (meta.id && localParams) {
+            _paramsCache.set(String(meta.id), localParams);
+            if (_paramsCache.size > 200) _paramsCache.delete(_paramsCache.keys().next().value);
+          }
           const localEntry = {
             _rowNo: 0, ts: _ts(), userNm, uiNm: uiNm || label, domain,
             mode, status: ok ? 'ok' : 'fail', desc, reason,
             targetId: meta.id ? String(meta.id) : '',
             meta,
-            params: meta.params || null, /* runFn이 meta.params 반환 시 저장 */
+            params: localParams,
           };
           logs.value = [localEntry, ...logs.value].slice(0, logPager.pageSize * 2);
           _addLog(domain, mode, ok ? '성공' : '실패', desc, reason, meta, userNm, uiNm || label);
@@ -470,7 +482,8 @@
     { key: 'countMin',    label: '1회 개수 최소', type: 'number', hint: '건' },
     { key: 'countMax',    label: '1회 개수 최대', type: 'number', hint: '건' },
     { key: 'namePrefix',  label: 'Prefix',        type: 'text',   placeholder: '테스트_' },
-    { key: 'addSuffix',   label: 'YYMMDD_hhmm 추가', type: 'checkbox', checkedValue: true, uncheckedValue: false },
+    { key: 'addSuffix',   label: 'YYMMDD_hhmm 추가', type: 'select',
+      options: [{ value: true, label: '예' }, { value: false, label: '아니오' }] },
     { key: 'intervalVal', label: '실행 주기 값',  type: 'number' },
     { key: 'intervalUnit', label: '단위', type: 'select',
       options: [{ value: 'sec', label: '초' }, { value: 'min', label: '분' }, { value: 'hr', label: '시간' }] },

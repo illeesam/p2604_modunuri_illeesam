@@ -148,11 +148,13 @@
       const baseCfgColumns = makeBaseCfgColumns();
       const createCfgColumns = [
         { key: 'createStatus',       label: '초기 상태',      type: 'select', options: PLAN_STATUSES },
-        { key: 'useTheme',           label: '테마명 자동',    type: 'checkbox', checkedValue: true, uncheckedValue: false },
+        { key: 'useTheme',           label: '테마명 자동',    type: 'select',
+          options: [{ value: true, label: '예' }, { value: false, label: '아니오' }] },
         makeRangeCol('prodCountMin', 'prodCountMax', '상품 수 범위', 1, 50, '개'),
         makeRangeCol('startOffsetDaysMin', 'startOffsetDaysMax', '시작 오프셋 범위', 0, 30, '일'),
         makeRangeCol('durationDaysMin', 'durationDaysMax', '기간 범위', 1, 60, '일'),
-        { key: 'addBanner',          label: '배너 이미지 URL 자동 생성', type: 'checkbox', checkedValue: true, uncheckedValue: false },
+        { key: 'addBanner',          label: '배너 이미지 URL 자동 생성', type: 'select',
+          options: [{ value: true, label: '예' }, { value: false, label: '아니오' }] },
       ];
       const updateCfgColumns = [
         { key: 'updateAction', label: '수정 액션', type: 'select', options: UPDATE_ACTIONS },
@@ -240,10 +242,10 @@
         </select>
       </div>
       <div v-show="domCfg.fixedTheme === '__weighted__'">
-        <div v-for="t in PLAN_THEMES" :key="t.cd" style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+        <div v-for="t in PLAN_THEMES" :key="t.cd" style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
           <span style="font-size:10px;color:#475569;min-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" :title="t.cd">{{ t.cd }}</span>
-          <input type="range" min="0" max="20" v-model.number="domCfg.themeWeights[t.cd]" style="flex:1;accent-color:#d97706;" />
-          <input type="number" min="0" max="20" v-model.number="domCfg.themeWeights[t.cd]" style="width:36px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;padding:2px;" />
+          <input type="range" min="0" max="100" v-model.number="domCfg.themeWeights[t.cd]" style="flex:1;accent-color:#d97706;" />
+          <input type="number" min="0" max="100" v-model.number="domCfg.themeWeights[t.cd]" style="width:36px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;padding:2px;" />
           <span style="font-size:10px;color:#94a3b8;min-width:28px;">{{ Math.round(domCfg.themeWeights[t.cd]/cfThemeTotal*100) }}%</span>
         </div>
       </div>

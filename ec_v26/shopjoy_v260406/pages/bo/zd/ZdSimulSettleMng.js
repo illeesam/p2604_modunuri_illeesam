@@ -70,7 +70,7 @@
         uiNm: '정산 시뮬레이터',
         label: '시뮬정산',
         defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
-        runFn: async ({ mode, randInt, pick }) => {
+        runFn: async ({ mode, simulYn, randInt, pick }) => {
           if (mode === 'create') {
             /* 업체 목록 캐시 */
             if (domCfg.vendorFromDB && !vendors.value.length) {
@@ -93,6 +93,7 @@
               settleStatusCd: domCfg.createStatus,
               saleAmt, refundAmt, feeAmt, pgAmt, settleAmt,
               feeRate: Math.round(feeRate * 10000) / 100,
+              simulYn: simulYn || 'Y',
             };
             const res = await boApi.post('/bo/zd/simul/settle/create', body, coUtil.cofApiHdr('정산시뮬', '생성'));
             const id  = res?.data?.data?.settleId || '-';
@@ -132,7 +133,8 @@
         { key: 'refundAmtRatio',  label: '환불비율',      type: 'number', hint: '%' },
         { key: 'settlePeriod',    label: '정산 주기',     type: 'select', options: SETTLE_PERIODS },
         { key: 'createStatus',    label: '초기 상태',     type: 'select', options: SETTLE_STATUSES },
-        { key: 'vendorFromDB',    label: 'DB 업체 자동 배정', type: 'checkbox', checkedValue: true, uncheckedValue: false },
+        { key: 'vendorFromDB',    label: 'DB 업체 자동 배정', type: 'select',
+          options: [{ value: true, label: '예' }, { value: false, label: '아니오' }] },
       ];
       const updateCfgColumns = [
         { key: 'updateAction', label: '수정 액션', type: 'select', options: UPDATE_ACTIONS },

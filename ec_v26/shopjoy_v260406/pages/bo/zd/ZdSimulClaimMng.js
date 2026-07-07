@@ -126,7 +126,7 @@
         uiNm: '클레임 시뮬레이터',
         label: '시뮬클레임',
         defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
-        runFn: async ({ mode, randInt, pick }) => {
+        runFn: async ({ mode, simulYn, randInt, pick }) => {
           if (mode === 'create') {
             /* 1) 대상 주문: 고정 지정 or 랜덤 */
             let order;
@@ -154,6 +154,7 @@
               claimStatusCd: domCfg.createStatus,
               partialClaim:  domCfg.partialClaim,
               refundRate:    refRate,
+              simulYn:       simulYn || 'Y',
             }, coUtil.cofApiHdr('클레임시뮬', '생성'));
             const d = res?.data?.data || {};
             const id = d.claimId || '-';
@@ -207,10 +208,12 @@
           options: [{ value: '', label: '전체' }, ...ORDER_STATUS_POOL.map(s => ({ value: s, label: s }))] },
         { key: 'createStatus',   label: '클레임 초기 상태', type: 'select',
           options: [{ value: 'CLAIM_RECV', label: '접수' }] },
-        { key: 'partialClaim',   label: '부분 클레임 (랜덤 수량)', type: 'checkbox', checkedValue: true, uncheckedValue: false },
+        { key: 'partialClaim',   label: '부분 클레임 (랜덤 수량)', type: 'select',
+          options: [{ value: true, label: '예' }, { value: false, label: '아니오' }] },
         makeRangeCol('refundRateMin', 'refundRateMax', '환불률 범위', 0, 100, '%',
           { visible: (f) => !f.partialClaim }),
-        { key: 'randomReason',   label: '사유 랜덤 생성', type: 'checkbox', checkedValue: true, uncheckedValue: false },
+        { key: 'randomReason',   label: '사유 랜덤 생성', type: 'select',
+          options: [{ value: true, label: '예' }, { value: false, label: '아니오' }] },
       ];
       const updateCfgColumns = [
         { key: 'updateAction', label: '수정 액션', type: 'select', options: UPDATE_ACTIONS },
@@ -312,7 +315,7 @@
         </select>
       </div>
       <div v-show="domCfg.fixedClaimType === '__weighted__'">
-        <div v-for="t in CLAIM_TYPES" :key="t.cd" style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+        <div v-for="t in CLAIM_TYPES" :key="t.cd" style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
           <span :class="'badge '+t.badge" style="min-width:40px;text-align:center;font-size:11px;">{{ t.label }}</span>
           <input type="range" min="0" max="100" v-model.number="domCfg.typeWeights[t.cd]" style="flex:1;accent-color:#ea580c;" />
           <input type="number" min="0" max="100" v-model.number="domCfg.typeWeights[t.cd]" style="width:40px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;padding:2px;" />
