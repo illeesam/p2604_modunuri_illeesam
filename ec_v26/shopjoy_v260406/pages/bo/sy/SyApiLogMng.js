@@ -351,6 +351,14 @@ window.SyApiLogMng = {
       { key: 'reqIp',      label: 'IP', mono: true, fmt: (v) => v || '-' },
       { key: 'userId',     label: '사용자ID', cellStyle: 'color:#555', fmt: (v) => v || '-' },
       { key: '_uiNm', label: '화면 > 기능', cellStyle: 'color:#555;font-size:12px;', fmt: (v, row) => coUtil.cofUiNmCmdNm(row.uiNm, row.cmdNm) },
+      { key: '_fileFuncLine', label: 'file · func · line', mono: true,
+        cellStyle: 'font-size:11px;color:#6d5fa8;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;',
+        cellTitle: (v, row) => [row.fileNm, row.funcNm, row.lineNo ? 'L'+row.lineNo : ''].filter(Boolean).join(' · '),
+        fmt: (v, row) => {
+          const parts = [row.fileNm, row.funcNm, row.lineNo ? 'L'+row.lineNo : ''].filter(Boolean);
+          return parts.length ? parts.join(' · ') : '-';
+        }
+      },
       { key: 'traceId',    label: 'Trace ID', mono: true, cellStyle: 'font-size:11px;color:#888;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', fmt: (v) => v || '-' },
       { key: 'regDate',    label: '등록일시', cellStyle: 'white-space:nowrap', fmt: (v) => coUtil.cofYmdHms(v || '') },
     ];
@@ -367,6 +375,14 @@ window.SyApiLogMng = {
       { key: 'reqIp',      label: 'IP', mono: true, fmt: (v) => v || '-' },
       { key: 'userId',     label: '사용자ID', cellStyle: 'color:#555', fmt: (v) => v || '-' },
       { key: '_uiNm', label: '화면 > 기능', cellStyle: 'color:#555;font-size:12px;', fmt: (v, row) => coUtil.cofUiNmCmdNm(row.uiNm, row.cmdNm) },
+      { key: '_fileFuncLine', label: 'file · func · line', mono: true,
+        cellStyle: 'font-size:11px;color:#6d5fa8;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;',
+        cellTitle: (v, row) => [row.fileNm, row.funcNm, row.lineNo ? 'L'+row.lineNo : ''].filter(Boolean).join(' · '),
+        fmt: (v, row) => {
+          const parts = [row.fileNm, row.funcNm, row.lineNo ? 'L'+row.lineNo : ''].filter(Boolean);
+          return parts.length ? parts.join(' · ') : '-';
+        }
+      },
       { key: 'traceId',    label: 'Trace ID', mono: true, cellStyle: 'font-size:11px;color:#888;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap', fmt: (v) => v || '-' },
       { key: 'regDate',    label: '등록일시', cellStyle: 'white-space:nowrap', fmt: (v) => coUtil.cofYmdHms(v || '') },
     ];

@@ -37,6 +37,7 @@
     setup(props) {
       /* ── [01] 도메인 설정 ────────────────────────────── */
       const domCfg = reactive({
+        fixedGrade: '__weighted__',
         gradeWeights: { BASIC: 50, SILVER: 25, GOLD: 15, VIP: 10 },
         statusOnCreate: 'ACTIVE',
         loginPwd: '1111',
@@ -54,6 +55,9 @@
 
       /* ── [02] 공통 엔진 연결 ────────────────────────── */
       const _pickGrade = () => {
+        if (domCfg.fixedGrade && domCfg.fixedGrade !== '__weighted__') {
+          return GRADES.find(g => g.cd === domCfg.fixedGrade) || GRADES[0];
+        }
         const w = domCfg.gradeWeights;
         const total = Object.values(w).reduce((a, b) => a + Number(b), 0);
         let r = Math.random() * total;
@@ -68,7 +72,7 @@
         uiNm: '회원 시뮬레이터',
         label: '시뮬회원',
         defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
-        runFn: async ({ mode, namePrefix, suffix, randInt, pick }) => {
+        runFn: async ({ mode, namePrefix, simulYn, suffix, randInt, pick }) => {
           const ln = pick(LAST_NAMES);
           const fn = pick(FIRST_NAMES);
           if (mode === 'create') {
@@ -89,6 +93,7 @@
               memberMemo: domCfg.memoOnCreate ? '[시뮬] 나이:' + age + '세 등급:' + grade.label : '',
               ...(memberDefaults.value.siteId       ? { siteId:       memberDefaults.value.siteId }       : {}),
               ...(memberDefaults.value.memberGradeId ? { memberGradeId: memberDefaults.value.memberGradeId } : {}),
+              simulYn: simulYn || 'Y',
             };
             const res = await boApi.post('/bo/zd/simul/member/create', body, coUtil.cofApiHdr('회원시뮬', '생성'));
             const id  = res?.data?.data?.memberId || loginId;
@@ -144,7 +149,8 @@
       };
       const onSelectMember = (row) => {
         domCfg.fixedMemberId = row.memberId;
-        domCfg.fixedMemberNm = row.memberNm || row.loginId || row.memberId;
+        const nm = row.memberNm || row.loginId || row.memberId;
+        domCfg.fixedMemberNm = window.ZdSimulBase?._sanitize ? window.ZdSimulBase._sanitize(nm) : nm;
         memberPicker.show = false;
       };
 
@@ -236,7 +242,15 @@
   <div v-if="cfg.mode==='create'" style="margin-top:12px;display:grid;grid-template-columns:1fr 2fr;gap:12px;">
     <div class="card" style="padding:14px 16px;">
       <div class="list-title">📊 등급 가중치</div>
-      <div style="margin-top:10px;">
+      <div style="margin-top:8px;margin-bottom:10px;">
+        <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">등급 지정</label>
+        <select v-model="domCfg.fixedGrade" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
+          <option value="">-- 없음 --</option>
+          <option value="__weighted__" selected>-- 가중치적용 --</option>
+          <option v-for="g in GRADES" :key="g.cd" :value="g.cd">{{ g.label }}</option>
+        </select>
+      </div>
+      <div v-show="domCfg.fixedGrade === '__weighted__'">
         <div v-for="g in GRADES" :key="g.cd" style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
           <span :class="'badge '+g.badge" style="min-width:38px;text-align:center;font-size:11px;">{{ g.label }}</span>
           <input type="range" min="0" max="100" v-model.number="domCfg.gradeWeights[g.cd]" style="flex:1;accent-color:#7c3aed;" />

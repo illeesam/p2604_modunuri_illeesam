@@ -82,7 +82,7 @@
         memberPicker.loading = true;
         try {
           const res = await boApiSvc.mbMember.getPage({
-            pageNo: 1, pageSize: 20, memberStatusCd: 'ACTIVE',
+            pageNo: 1, pageSize: 30, simulYn: 'Y',
             ...(memberPicker.searchValue ? { searchValue: memberPicker.searchValue, searchType: 'memberId,memberNm,loginId' } : {}),
           });
           memberPicker.rows = res.data?.data?.pageList || [];
@@ -93,7 +93,7 @@
         prodPicker.loading = true;
         try {
           const res = await boApiSvc.pdProd.getPage({
-            pageNo: 1, pageSize: 20, prodStatusCd: 'SELLING',
+            pageNo: 1, pageSize: 30, simulYn: 'Y',
             ...(prodPicker.searchValue ? { searchValue: prodPicker.searchValue, searchType: 'prodId,prodNm' } : {}),
           });
           prodPicker.rows = res.data?.data?.pageList || [];
@@ -104,7 +104,7 @@
         orderPicker.loading = true;
         try {
           const res = await boApiSvc.odOrder.getPage({
-            pageNo: 1, pageSize: 20,
+            pageNo: 1, pageSize: 30, simulYn: 'Y',
             ...(orderPicker.searchValue ? { searchValue: orderPicker.searchValue, searchType: 'orderId' } : {}),
           });
           orderPicker.rows = res.data?.data?.pageList || [];
@@ -114,7 +114,8 @@
 
       const onSelectMember = (row) => {
         domCfg.fixedMemberId = row.memberId;
-        domCfg.fixedMemberNm = row.memberNm || row.loginId || row.memberId;
+        const nm = row.memberNm || row.loginId || row.memberId;
+        domCfg.fixedMemberNm = window.ZdSimulBase?._sanitize ? window.ZdSimulBase._sanitize(nm) : nm;
         memberPicker.show = false;
       };
       const onSelectProd = (row) => {
@@ -133,7 +134,7 @@
         uiNm: '주문 시뮬레이터',
         label: '시뮬주문',
         defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
-        runFn: async ({ mode, randInt, pick }) => {
+        runFn: async ({ mode, simulYn, randInt, pick }) => {
           if (mode === 'create') {
             /* 상품: 고정 지정 or 랜덤 */
             let prods = [];
@@ -181,6 +182,7 @@
               receiverPhone: '010-' + String(randInt(1000, 9999)) + '-' + String(randInt(1000, 9999)),
               zipCode: addr.zipCode, dlivAddr: addr.addr, dlivAddrDtl: addr.addrDtl,
               orderItems: items,
+              simulYn: simulYn || 'Y',
             };
             const res = await boApi.post('/bo/zd/simul/order/create', body, coUtil.cofApiHdr('주문시뮬', '생성'));
             const id  = res?.data?.data?.orderId || '-';

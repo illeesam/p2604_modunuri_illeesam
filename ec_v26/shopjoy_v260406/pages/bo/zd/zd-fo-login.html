@@ -75,14 +75,14 @@
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-UI-Nm': 'ZD시뮬FO로그인',
-          'X-Cmd-Nm': '강제로그인',
+          'X-UI-Nm': 'ZdSimulFoLogin',
+          'X-Cmd-Nm': 'ForceLogin',
         },
         body: JSON.stringify({ loginId: loginId, loginPwd: loginPwd }),
       });
 
       var json = await res.json();
-      if (!res.ok || json.status !== 'OK') {
+      if (!res.ok || json.ok === false) {
         throw new Error(json.message || ('HTTP ' + res.status));
       }
 

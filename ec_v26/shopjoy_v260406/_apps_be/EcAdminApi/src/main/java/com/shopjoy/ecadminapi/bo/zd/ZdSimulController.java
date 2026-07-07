@@ -130,13 +130,19 @@ public class ZdSimulController {
         log.setDomain(str(body, "domain", "unknown"));
         log.setSimulMode(str(body, "mode", "생성"));
         log.setSimulStatus(str(body, "status", "SUCCESS"));
-        log.setDescTxt(str(body, "desc", null));
-        log.setReasonTxt(str(body, "reason", null));
+        log.setDescTxt(sanitizeText(str(body, "desc", null)));
+        log.setReasonTxt(sanitizeText(str(body, "reason", null)));
         log.setTargetId(str(body, "targetId", null));
-        log.setUserNm(str(body, "userNm", null));
+        log.setUserNm(sanitizeText(str(body, "userNm", null)));
         log.setUiNm(str(body, "uiNm", null));
         ZdSimulLog saved = zdSimulLogRepository.save(log);
         return ResponseEntity.ok(ApiResponse.ok(Map.of("logId", saved.getLogId())));
+    }
+
+    /** 깨진 UTF-8 replacement char(�) 제거 */
+    private static String sanitizeText(String s) {
+        if (s == null) return null;
+        return s.replace("�", "?");
     }
 
     private static String blankToNull(String s) {
@@ -182,6 +188,8 @@ public class ZdSimulController {
             @RequestBody Map<String, Object> body) {
         String siteId = SecurityUtil.getSiteIdOrDefault("SITE000001");
 
+        /* prodNm 깨짐 방지 */
+        if (body.get("prodNm") instanceof String nm) body.put("prodNm", sanitizeText(nm));
         PdProd prod = new PdProd();
         VoUtil.mapCopy(body, prod, "optGroups", "images");
         prod.setSiteId(siteId);
@@ -342,6 +350,8 @@ public class ZdSimulController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> orderCreate(
             @RequestBody Map<String, Object> body) {
         String siteId = SecurityUtil.getSiteIdOrDefault("SITE000001");
+        /* memberNm 깨짐 방지 */
+        if (body.get("memberNm") instanceof String nm) body.put("memberNm", sanitizeText(nm));
         OdOrder order = new OdOrder();
         VoUtil.mapCopy(body, order);
         order.setSiteId(siteId);
@@ -441,6 +451,8 @@ public class ZdSimulController {
     public ResponseEntity<ApiResponse<Map<String, Object>>> memberCreate(
             @RequestBody Map<String, Object> body) {
         String siteId = SecurityUtil.getSiteIdOrDefault("SITE000001");
+        /* memberNm 깨짐 방지 */
+        if (body.get("memberNm") instanceof String nm) body.put("memberNm", sanitizeText(nm));
         MbMember member = new MbMember();
         VoUtil.mapCopy(body, member);
         member.setSiteId(siteId);

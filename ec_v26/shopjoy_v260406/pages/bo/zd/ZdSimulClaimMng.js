@@ -1,6 +1,6 @@
 ﻿/* ZdSimulClaimMng — 클레임 시뮬레이터 */
 (function () {
-  const { reactive, computed } = Vue;
+  const { reactive, computed, onMounted } = Vue;
   const { useSimulSetup, makeLogCols, makeBaseCfgColumns, makeRangeCol, makeRangeHandlers, rangeSlotTemplate } = window.ZdSimulBase;
 
   const CLAIM_TYPES = [
@@ -37,6 +37,7 @@
     setup(props) {
       /* ── [01] 도메인 설정 ────────────────────────────── */
       const domCfg = reactive({
+        fixedClaimType:  '__weighted__',
         typeWeights:     { CANCEL: 40, RETURN: 35, EXCHANGE: 25 },
         refundRateMin:   80,
         refundRateMax:   100,
@@ -48,10 +49,67 @@
         advanceSteps:    1,
         targetType:      'CANCEL',
         fromStatus:      'CLAIM_RECV',
+        /* 고정 지정 */
+        fixedOrderId:    '',
+        fixedMemberId:   '',
+        fixedMemberNm:   '',
       });
+
+      /* ── picker 모달 상태 ──────────────────────────── */
+      const memberPicker = reactive({ show: false, searchValue: '', rows: [], loading: false });
+      const orderPicker  = reactive({ show: false, searchValue: '', rows: [], loading: false });
+
+      const _loadMemberPicker = async () => {
+        memberPicker.loading = true;
+        try {
+          const res = await boApiSvc.mbMember.getPage({
+            pageNo: 1, pageSize: 30, simulYn: 'Y',
+            ...(memberPicker.searchValue ? { searchValue: memberPicker.searchValue, searchType: 'memberId,memberNm,loginId' } : {}),
+          });
+          memberPicker.rows = res.data?.data?.pageList || [];
+        } catch (_) { memberPicker.rows = []; }
+        memberPicker.loading = false;
+      };
+      const _loadOrderPicker = async () => {
+        orderPicker.loading = true;
+        try {
+          const res = await boApiSvc.odOrder.getPage({
+            pageNo: 1, pageSize: 30, simulYn: 'Y',
+            ...(domCfg.fixedMemberId ? { memberId: domCfg.fixedMemberId } : {}),
+            ...(orderPicker.searchValue ? { searchValue: orderPicker.searchValue, searchType: 'orderId' } : {}),
+          });
+          orderPicker.rows = res.data?.data?.pageList || [];
+        } catch (_) { orderPicker.rows = []; }
+        orderPicker.loading = false;
+      };
+      const onOpenMemberPicker = async () => {
+        memberPicker.show = true;
+        memberPicker.searchValue = '';
+        await _loadMemberPicker();
+      };
+      const onOpenOrderPicker = async () => {
+        orderPicker.show = true;
+        orderPicker.searchValue = '';
+        await _loadOrderPicker();
+      };
+      const onSelectMember = (row) => {
+        domCfg.fixedMemberId = row.memberId;
+        const nm = row.memberNm || row.loginId || row.memberId;
+        domCfg.fixedMemberNm = window.ZdSimulBase?._sanitize ? window.ZdSimulBase._sanitize(nm) : nm;
+        memberPicker.show = false;
+        /* 회원 바꾸면 주문 초기화 */
+        domCfg.fixedOrderId = '';
+      };
+      const onSelectOrder = (row) => {
+        domCfg.fixedOrderId = row.orderId;
+        orderPicker.show = false;
+      };
 
       /* ── [02] 공통 엔진 ──────────────────────────────── */
       const _pickType = () => {
+        if (domCfg.fixedClaimType && domCfg.fixedClaimType !== '__weighted__') {
+          return CLAIM_TYPES.find(t => t.cd === domCfg.fixedClaimType) || CLAIM_TYPES[0];
+        }
         const w = domCfg.typeWeights;
         const total = Object.values(w).reduce((a, b) => a + Number(b), 0);
         let r = Math.random() * total;
@@ -70,13 +128,18 @@
         defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
         runFn: async ({ mode, randInt, pick }) => {
           if (mode === 'create') {
-            /* 1) 대상 주문 조회 */
-            const q = { pageNo: 1, pageSize: 50 };
-            if (domCfg.fromOrderStatus) q.orderStatusCd = domCfg.fromOrderStatus;
-            const orders = (await boApiSvc.odOrder.getPage(q)).data?.data?.pageList || [];
-            if (!orders.length) return { ok: false, reason: '대상 주문 없음 (상태: ' + (domCfg.fromOrderStatus || '전체') + ')' };
-
-            const order = pick(orders);
+            /* 1) 대상 주문: 고정 지정 or 랜덤 */
+            let order;
+            if (domCfg.fixedOrderId) {
+              order = { orderId: domCfg.fixedOrderId };
+            } else {
+              const q = { pageNo: 1, pageSize: 50, simulYn: 'Y' };
+              if (domCfg.fromOrderStatus) q.orderStatusCd = domCfg.fromOrderStatus;
+              if (domCfg.fixedMemberId)   q.memberId = domCfg.fixedMemberId;
+              const orders = (await boApiSvc.odOrder.getPage(q)).data?.data?.pageList || [];
+              if (!orders.length) return { ok: false, reason: '대상 주문 없음 (상태: ' + (domCfg.fromOrderStatus || '전체') + ')' };
+              order = pick(orders);
+            }
 
             /* 2) 클레임 유형 & 사유 */
             const type   = _pickType();
@@ -171,6 +234,11 @@
         onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog, logSearch,
         ...rangeHandlers,
         CLAIM_TYPES, STATUS_FLOW, STATUS_LABELS,
+        /* picker */
+        memberPicker, orderPicker,
+        onOpenMemberPicker, onOpenOrderPicker,
+        onSelectMember, onSelectOrder,
+        _loadMemberPicker, _loadOrderPicker,
       };
     },
 
@@ -186,6 +254,43 @@
     accent-active="background:#fff7ed;border:1.5px solid #ea580c;color:#9a3412;"
     @start="onStart" @stop="onStop" @run-once="onRunOnce" />
 
+  <!-- 시뮬 대상 지정 -->
+  <div class="card" style="padding:12px 16px;margin-top:12px;">
+    <div class="list-title">🎯 시뮬 대상 지정</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
+      <!-- 회원 지정 -->
+      <div>
+        <div style="font-size:11px;font-weight:600;color:#475569;margin-bottom:5px;">👤 주문 회원 지정</div>
+        <div style="display:flex;gap:5px;align-items:center;">
+          <input type="text" :value="domCfg.fixedMemberNm || domCfg.fixedMemberId || ''" readonly
+            placeholder="랜덤 선택"
+            style="flex:1;height:28px;padding:0 8px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;background:#f8fafc;color:#334155;cursor:pointer;"
+            @click="onOpenMemberPicker" />
+          <button v-if="domCfg.fixedMemberId" class="btn" style="height:28px;padding:0 7px;font-size:11px;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;"
+            @click="domCfg.fixedMemberId='';domCfg.fixedMemberNm='';domCfg.fixedOrderId=''">✕</button>
+          <button v-else class="btn btn_detail" style="height:28px;padding:0 9px;font-size:11px;" @click="onOpenMemberPicker">선택</button>
+        </div>
+        <div v-if="domCfg.fixedMemberId" style="font-size:10px;color:#6366f1;margin-top:3px;font-family:monospace;">{{ domCfg.fixedMemberId }}</div>
+        <div v-else style="font-size:10px;color:#94a3b8;margin-top:3px;">미지정 시 시뮬 주문의 회원 랜덤</div>
+      </div>
+      <!-- 주문 지정 -->
+      <div>
+        <div style="font-size:11px;font-weight:600;color:#475569;margin-bottom:5px;">🛒 대상 주문 지정</div>
+        <div style="display:flex;gap:5px;align-items:center;">
+          <input type="text" :value="domCfg.fixedOrderId || ''" readonly
+            placeholder="랜덤 선택"
+            style="flex:1;height:28px;padding:0 8px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;background:#f8fafc;color:#334155;cursor:pointer;font-family:monospace;"
+            @click="onOpenOrderPicker" />
+          <button v-if="domCfg.fixedOrderId" class="btn" style="height:28px;padding:0 7px;font-size:11px;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;"
+            @click="domCfg.fixedOrderId=''">✕</button>
+          <button v-else class="btn btn_detail" style="height:28px;padding:0 9px;font-size:11px;" @click="onOpenOrderPicker">선택</button>
+        </div>
+        <div v-if="domCfg.fixedOrderId" style="font-size:10px;color:#6366f1;margin-top:3px;font-family:monospace;">{{ domCfg.fixedOrderId }}</div>
+        <div v-else style="font-size:10px;color:#94a3b8;margin-top:3px;">미지정 시 조건에 맞는 시뮬 주문 랜덤</div>
+      </div>
+    </div>
+  </div>
+
   <!-- 생성 옵션 (전체 폭) -->
   <div v-if="cfg.mode==='create'" class="card" style="padding:14px 16px;margin-top:12px;">
     <div class="list-title">🔄 클레임 생성 옵션</div>
@@ -198,7 +303,15 @@
   <div v-if="cfg.mode==='create'" style="margin-top:12px;display:grid;grid-template-columns:1fr 2fr;gap:12px;">
     <div class="card" style="padding:14px 16px;">
       <div class="list-title">📊 클레임 유형 가중치</div>
-      <div style="margin-top:10px;">
+      <div style="margin-top:8px;margin-bottom:10px;">
+        <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">유형 지정</label>
+        <select v-model="domCfg.fixedClaimType" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
+          <option value="">-- 없음 --</option>
+          <option value="__weighted__">-- 가중치적용 --</option>
+          <option v-for="t in CLAIM_TYPES" :key="t.cd" :value="t.cd">{{ t.label }}</option>
+        </select>
+      </div>
+      <div v-show="domCfg.fixedClaimType === '__weighted__'">
         <div v-for="t in CLAIM_TYPES" :key="t.cd" style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
           <span :class="'badge '+t.badge" style="min-width:40px;text-align:center;font-size:11px;">{{ t.label }}</span>
           <input type="range" min="0" max="100" v-model.number="domCfg.typeWeights[t.cd]" style="flex:1;accent-color:#ea580c;" />
@@ -230,6 +343,79 @@
 
   <!-- 실행 로그 -->
   <zd-simul-log-panel :logs="logs" :log-cols="logCols" :pager="logPager" :log-search="logSearch" @search-log="onSearchLog" max-height="320px" style="margin-top:12px;" @clear="onClearLog" @set-page="onSetLogPage" />
+
+  <!-- 회원 picker 모달 -->
+  <bo-modal :show="memberPicker.show" title="시뮬 회원 선택" width="640px" @close="memberPicker.show=false">
+    <div style="padding:12px 0 8px;">
+      <div style="display:flex;gap:6px;margin-bottom:10px;">
+        <input type="text" v-model="memberPicker.searchValue" placeholder="회원ID / 이름 / 로그인ID 검색"
+          class="form-control" style="flex:1;height:30px;font-size:12px;"
+          @keyup.enter="onOpenMemberPicker" />
+        <button class="btn btn_search" style="height:30px;font-size:12px;" @click="onOpenMemberPicker">조회</button>
+      </div>
+      <table class="admin-table" style="font-size:11px;">
+        <thead><tr>
+          <th style="width:36px;text-align:center;">번호</th>
+          <th>회원ID</th>
+          <th>이름</th>
+          <th>로그인ID</th>
+          <th style="width:70px;text-align:center;">선택</th>
+        </tr></thead>
+        <tbody>
+          <tr v-if="memberPicker.loading"><td colspan="5" style="text-align:center;padding:20px;color:#94a3b8;">조회 중...</td></tr>
+          <tr v-else-if="!memberPicker.rows.length"><td colspan="5" style="text-align:center;padding:20px;color:#94a3b8;">조회 결과 없음</td></tr>
+          <tr v-else v-for="(r,i) in memberPicker.rows" :key="r.memberId">
+            <td style="text-align:center;">{{ i+1 }}</td>
+            <td style="font-family:monospace;font-size:10px;">{{ r.memberId }}</td>
+            <td>{{ r.memberNm }}</td>
+            <td>{{ r.loginId }}</td>
+            <td style="text-align:center;">
+              <button class="btn btn_select" style="font-size:11px;height:24px;padding:0 8px;" @click="onSelectMember(r)">선택</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </bo-modal>
+
+  <!-- 주문 picker 모달 -->
+  <bo-modal :show="orderPicker.show" title="시뮬 주문 선택" width="760px" @close="orderPicker.show=false">
+    <div style="padding:12px 0 8px;">
+      <div v-if="domCfg.fixedMemberId" style="font-size:11px;color:#6366f1;margin-bottom:8px;padding:6px 10px;background:#f0f0ff;border-radius:6px;">
+        👤 회원 필터: {{ domCfg.fixedMemberNm || domCfg.fixedMemberId }} ({{ domCfg.fixedMemberId }})
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:10px;">
+        <input type="text" v-model="orderPicker.searchValue" placeholder="주문ID 검색"
+          class="form-control" style="flex:1;height:30px;font-size:12px;font-family:monospace;"
+          @keyup.enter="onOpenOrderPicker" />
+        <button class="btn btn_search" style="height:30px;font-size:12px;" @click="onOpenOrderPicker">조회</button>
+      </div>
+      <table class="admin-table" style="font-size:11px;">
+        <thead><tr>
+          <th style="width:36px;text-align:center;">번호</th>
+          <th>주문ID</th>
+          <th>회원</th>
+          <th>주문상태</th>
+          <th style="text-align:right;">결제금액</th>
+          <th style="width:70px;text-align:center;">선택</th>
+        </tr></thead>
+        <tbody>
+          <tr v-if="orderPicker.loading"><td colspan="6" style="text-align:center;padding:20px;color:#94a3b8;">조회 중...</td></tr>
+          <tr v-else-if="!orderPicker.rows.length"><td colspan="6" style="text-align:center;padding:20px;color:#94a3b8;">조회 결과 없음</td></tr>
+          <tr v-else v-for="(r,i) in orderPicker.rows" :key="r.orderId">
+            <td style="text-align:center;">{{ i+1 }}</td>
+            <td style="font-family:monospace;font-size:10px;">{{ r.orderId }}</td>
+            <td>{{ r.memberNm || r.memberId }}</td>
+            <td><span class="badge badge-blue" style="font-size:10px;">{{ r.orderStatusCd }}</span></td>
+            <td style="text-align:right;font-family:monospace;">{{ (r.totalPayAmt||0).toLocaleString() }}원</td>
+            <td style="text-align:center;">
+              <button class="btn btn_select" style="font-size:11px;height:24px;padding:0 8px;" @click="onSelectOrder(r)">선택</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </bo-modal>
 </div>`,
   };
 })();

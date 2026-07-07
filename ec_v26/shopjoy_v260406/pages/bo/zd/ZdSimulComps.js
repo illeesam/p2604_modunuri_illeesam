@@ -35,10 +35,13 @@
       accentActive:   { type: String,  default: 'background:#eff6ff;border:1.5px solid #2563eb;color:#1d4ed8;' },
     },
     setup(props, { emit }) {
+      const { ref: _ref } = Vue;
       const cfHasStats = computed(() => props.state.totalRun > 0 || props.cfIsRunning);
       const onStart   = () => emit('start');
       const onStop    = () => emit('stop');
       const onRunOnce = () => emit('run-once');
+      const lastExpanded = _ref(false);
+      const onToggleLast = () => { lastExpanded.value = !lastExpanded.value; };
 
       /* 프리셋 목록 — label / intervalVal / intervalUnit / countMin / countMax / durationMin */
       const PRESETS = [
@@ -69,7 +72,7 @@
         e.target.value = '0'; // 선택 후 초기화 (항상 placeholder로)
       };
 
-      return { cfHasStats, onStart, onStop, onRunOnce, PRESETS, onPreset };
+      return { cfHasStats, onStart, onStop, onRunOnce, PRESETS, onPreset, lastExpanded, onToggleLast };
     },
     template: `
 <div class="card" style="padding:10px 14px;">
@@ -171,9 +174,15 @@
       </div>
     </div>
 
-    <!-- 마지막 생성 정보 -->
-    <div v-if="state.lastCreated && !cfIsRunning" style="font-size:10px;color:#94a3b8;white-space:nowrap;">
-      최근: {{ state.lastCreated }}
+    <!-- 마지막 생성 정보 (펼치기/접기 JSON 뷰) -->
+    <div v-if="state.lastCreated && state.lastCreated.length" style="flex:1;min-width:0;">
+      <div @click="onToggleLast"
+        style="display:inline-flex;align-items:center;gap:5px;cursor:pointer;font-size:11px;color:#6366f1;user-select:none;padding:2px 6px;border-radius:4px;border:1px solid #c7d2fe;background:#eef2ff;">
+        <span>{{ lastExpanded ? '▲' : '▼' }}</span>
+        <span>최근 결과 {{ state.lastCreated.length }}건</span>
+      </div>
+      <div v-if="lastExpanded"
+        style="margin-top:4px;background:#1e1e2e;border-radius:6px;border:1px solid #374151;padding:8px 10px;max-height:260px;overflow-y:auto;font-family:monospace;font-size:11px;line-height:1.6;color:#a5f3fc;white-space:pre;word-break:break-all;">{{ JSON.stringify(state.lastCreated, null, 2) }}</div>
     </div>
   </div>
 </div>`,
@@ -290,10 +299,11 @@
         <th style="width:36px;text-align:center;">결과</th>
         <th>내용</th>
         <th style="width:180px;">실패 사유</th>
-        <th style="width:170px;text-align:center;">기능</th>
+        <th style="width:140px;text-align:center;">데이터ID</th>
+        <th style="width:200px;text-align:center;">기능</th>
       </tr></thead>
       <tbody v-if="!logs.length">
-        <tr><td colspan="10" style="text-align:center;padding:24px;color:#94a3b8;">
+        <tr><td colspan="11" style="text-align:center;padding:24px;color:#94a3b8;">
           아직 실행 이력이 없습니다. ▶ 시작 또는 ⚡ 1회 실행을 눌러주세요.
         </td></tr>
       </tbody>
@@ -319,6 +329,24 @@
             </td>
             <td :style="row.status==='fail' ? 'background:#fff5f5;' : ''">{{ row.desc }}</td>
             <td style="color:#ef4444;font-size:11px;">{{ row.reason }}</td>
+            <!-- 데이터ID 컬럼 -->
+            <td style="text-align:center;padding:4px 6px;white-space:nowrap;">
+              <template v-if="row.targetId">
+                <div style="font-size:10px;color:#94a3b8;margin-bottom:2px;">
+                  {{ cfDomainMeta(row) ? cfDomainMeta(row).idLabel : '데이터ID' }}
+                </div>
+                <div style="font-size:11px;color:#334155;font-family:monospace;font-weight:600;">{{ row.targetId }}</div>
+                <!-- meta에서 회원명/부가정보 표시 -->
+                <div v-if="row.meta &amp;&amp; (row.meta.memberId || row.meta.memberNm)" style="font-size:10px;color:#6366f1;margin-top:1px;">
+                  {{ row.meta.memberNm || row.meta.memberId || '' }}
+                </div>
+                <div v-else-if="row.domain === '회원' &amp;&amp; row.desc" style="font-size:10px;color:#6366f1;margin-top:1px;">
+                  {{ row.desc.replace(/^\[[^\]]+\]\s*/, '').split(' / ')[0] }}
+                </div>
+              </template>
+              <span v-else style="font-size:10px;color:#cbd5e1;">-</span>
+            </td>
+            <!-- 기능 버튼 컬럼 -->
             <td style="text-align:center;padding:4px 6px;white-space:nowrap;">
               <template v-if="row.targetId">
                 <button v-if="cfDomainMeta(row) &amp;&amp; cfDomainMeta(row).bo"
@@ -329,7 +357,7 @@
                   @click.stop="onOpenFo(row)" title="사용자 화면 열기">FO상세</button>
                 <button v-if="cfDomainMeta(row) &amp;&amp; cfDomainMeta(row).foLogin"
                   style="padding:1px 7px;font-size:10px;height:20px;margin:1px;background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:4px;cursor:pointer;"
-                  @click.stop="onOpenFoLogin(row)" title="FO 로그인 (in-session 로그만 loginId 자동입력)">FO로그인</button>
+                  @click.stop="onOpenFoLogin(row)" title="FO 로그인">FO로그인</button>
                 <button v-if="cfDomainMeta(row) &amp;&amp; cfDomainMeta(row).foProfile"
                   style="padding:1px 7px;font-size:10px;height:20px;margin:1px;background:#ede9fe;color:#6d28d9;border:1px solid #ddd6fe;border-radius:4px;cursor:pointer;"
                   @click.stop="onOpenFoProfile(row)" title="FO 마이페이지 열기">FO프로필</button>
@@ -345,7 +373,7 @@
           </tr>
           <!-- 펼침 행 -->
           <tr v-if="isExpanded(row)" style="background:#f0f4ff;">
-            <td colspan="10" style="padding:0;">
+            <td colspan="11" style="padding:0;">
               <div style="padding:12px 16px 14px 44px;border-top:1px solid #e0e7ff;border-bottom:2px solid #c7d2fe;">
                 <!-- 항목 그리드 -->
                 <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px 16px;margin-bottom:10px;">

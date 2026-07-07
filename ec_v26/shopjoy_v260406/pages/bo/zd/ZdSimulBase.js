@@ -18,6 +18,11 @@
   const { ref, reactive, computed, onMounted, onBeforeUnmount } = Vue;
 
   /* ── 공통 유틸 ──────────────────────────────────────────── */
+  /* UTF-8 replacement char(U+FFFD, ?) 포함 여부 탐지 */
+  const _hasBrokenKorean = (s) => s != null && s.includes('�');
+  /* 깨진 문자 제거 (? 로 치환) */
+  const _sanitize = (s) => (s == null ? s : s.replace(/�/g, '?'));
+
   const _nowSuffix = () => {
     const d = new Date();
     const p = (n) => String(n).padStart(2, '0');
@@ -47,10 +52,10 @@
       domain,
       mode,
       status: status === '성공' ? 'SUCCESS' : 'FAIL',
-      desc: desc || '',
-      reason: reason || '',
+      desc: _sanitize(desc || ''),
+      reason: _sanitize(reason || ''),
       targetId: (meta && meta.id) ? String(meta.id) : null,
-      userNm: userNm || '-',
+      userNm: _sanitize(userNm || '-'),
       uiNm: uiNm || domain,
     };
     if (window.boApiSvc && window.boApiSvc.zdSimulLog) {
@@ -69,6 +74,7 @@
       countMax: 1,
       namePrefix: 'simul',
       addSuffix: true,
+      simulYn: 'Y',
       intervalUnit: 'sec',
       intervalVal: 30,
       durationMin: 10,
@@ -325,40 +331,53 @@
   const _DOMAIN_PAGE_MAP = {
     '주문': {
       bo: { page: 'odOrderMng',       idParam: 'dtlId' },
-      fo: null, /* FO myOrder는 세션 필요 → BO상세로 확인 */
+      fo: null,
       kanban: 'odOrderKanban',
+      foLogin:   true,
+      foProfile: true,
+      idLabel: '주문ID',
     },
     '클레임': {
       bo: { page: 'odClaimMng',       idParam: 'dtlId' },
-      fo: null, /* FO myClaim은 세션 필요 → BO상세로 확인 */
+      fo: null,
       kanban: 'odOrderKanban',
       calc: true,
+      foLogin:   true,
+      foProfile: true,
+      idLabel: '클레임ID',
     },
     '상품': {
       bo: { page: 'pdProdMng',        idParam: 'dtlId' },
       fo: (id) => 'page=prodView&prodid=' + encodeURIComponent(id),
+      idLabel: '상품ID',
     },
     '회원': {
       bo: { page: 'mbMemberMng',      idParam: 'dtlId' },
       fo: null,
-      foLogin:   true, /* FO 로그인 링크 (params.loginId + params.loginPwd 활용) */
-      foProfile: true, /* FO 마이페이지 링크 */
+      foLogin:   true,
+      foProfile: true,
+      idLabel: '회원ID',
     },
     '이벤트': {
       bo: { page: 'pmEventMng',       idParam: 'dtlId' },
       fo: (id) => 'page=event&eventId=' + encodeURIComponent(id),
+      idLabel: '이벤트ID',
     },
     '기획전': {
       bo: { page: 'pmPlanMng',        idParam: 'dtlId' },
       fo: null,
+      idLabel: '기획전ID',
     },
     '프로모션': {
       bo: { page: 'pmCouponMng',      idParam: 'dtlId' },
       fo: null,
+      idLabel: '프로모션ID',
     },
     '정산': {
       bo: { page: 'stSettleCloseMng', idParam: 'dtlId' },
       fo: null,
+      foLogin:   true,
+      idLabel: '정산ID',
     },
   };
 
@@ -395,13 +414,15 @@
     let loginId  = row.params?.loginId || '';
     let loginPwd = row.params?.loginPwd || '1111';
     if (!loginId) {
-      /* desc: "[실버] simul김윤서 / sim_86782@outlook.com" 형태에서 이메일 추출 */
+      /* desc: "[실버] simul김윤서 / sim_86782@outlook.com" 형태에서 loginId 추출
+       * 이메일 앞부분(@ 앞)이 곧 loginId (sim_XXXXX 패턴) */
       const src = (row.desc || row.uiNm || '');
-      const m = src.match(/([a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})/);
+      const m = src.match(/([a-zA-Z0-9._%+\-]+)@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/);
       if (m) loginId = m[1];
     }
     if (!loginId && row.meta) {
-      loginId = row.meta.loginId || row.meta.email || '';
+      /* 주문/클레임 등: meta.memberId가 곧 loginId 패턴(sim_XXXXX) */
+      loginId = row.meta.loginId || row.meta.memberId || '';
     }
     const hash = loginId
       ? '#autoLoginId=' + encodeURIComponent(loginId) + '&autoLoginPwd=' + encodeURIComponent(loginPwd)
@@ -444,6 +465,8 @@
 
   /* ── bo-form-area 기반 공통 설정 컬럼 생성 ─────────────── */
   const makeBaseCfgColumns = () => [
+    { key: 'simulYn', label: '시뮬여부', type: 'select',
+      options: [{ value: 'Y', label: '예' }, { value: 'N', label: '아니오' }] },
     { key: 'countMin',    label: '1회 개수 최소', type: 'number', hint: '건' },
     { key: 'countMax',    label: '1회 개수 최대', type: 'number', hint: '건' },
     { key: 'namePrefix',  label: 'Prefix',        type: 'text',   placeholder: '테스트_' },
@@ -565,5 +588,7 @@
     _openClaimCalc,
     /* 공통 유틸 */
     _randInt, _randF, _pick, _wonFmt,
+    /* 인코딩 유틸 */
+    _hasBrokenKorean, _sanitize,
   };
 })();

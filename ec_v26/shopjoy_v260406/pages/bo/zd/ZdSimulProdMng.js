@@ -53,6 +53,7 @@
         stockMin: 0,
         stockMax: 999,
         priceRoundUnit: 100,
+        fixedSaleType: '__weighted__',
         saleTypeWeights: { NORMAL: 60, OPTION: 25, SET: 10, BUNDLE: 5 },
         createStatus: 'SELLING',
         useAdCopy: true,
@@ -78,6 +79,9 @@
 
       /* ── [02] 공통 엔진 ──────────────────────────────── */
       const _pickType = () => {
+        if (domCfg.fixedSaleType && domCfg.fixedSaleType !== '__weighted__') {
+          return SALE_TYPES.find(t => t.cd === domCfg.fixedSaleType) || SALE_TYPES[0];
+        }
         const w = domCfg.saleTypeWeights;
         const total = Object.values(w).reduce((a, b) => a + Number(b), 0);
         let r = Math.random() * total;
@@ -136,7 +140,7 @@
         uiNm: '상품 시뮬레이터',
         label: '시뮬상품',
         defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
-        runFn: async ({ mode, namePrefix, suffix, randInt, randF, pick }) => {
+        runFn: async ({ mode, namePrefix, simulYn, suffix, randInt, randF, pick }) => {
           if (mode === 'create') {
             const type      = _pickType();
             const salePrice = _round(randInt(domCfg.priceMin, domCfg.priceMax));
@@ -162,6 +166,7 @@
               ...(categoryId                ? { categoryId }                              : {}),
               ...(defaults.value.siteId     ? { siteId:     defaults.value.siteId }     : {}),
               ...(defaults.value.dlivTmpltId ? { dlivTmpltId: defaults.value.dlivTmpltId } : {}),
+              simulYn: simulYn || 'Y',
             };
             /* 옵션형: opt1/opt2 count range 기준 슬라이스 */
             let opt1List = null, opt2List = null;
@@ -407,7 +412,15 @@
   <div v-if="cfg.mode==='create'" style="margin-top:12px;display:grid;grid-template-columns:1fr 2fr;gap:12px;">
     <div class="card" style="padding:14px 16px;">
       <div class="list-title">📊 판매유형 가중치</div>
-      <div style="margin-top:10px;">
+      <div style="margin-top:8px;margin-bottom:10px;">
+        <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">유형 지정</label>
+        <select v-model="domCfg.fixedSaleType" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
+          <option value="">-- 없음 --</option>
+          <option value="__weighted__">-- 가중치적용 --</option>
+          <option v-for="t in SALE_TYPES" :key="t.cd" :value="t.cd">{{ t.label }}</option>
+        </select>
+      </div>
+      <div v-show="domCfg.fixedSaleType === '__weighted__'">
         <div v-for="t in SALE_TYPES" :key="t.cd" style="display:flex;align-items:center;gap:6px;margin-bottom:6px;">
           <span :class="'badge '+t.badge" style="min-width:42px;text-align:center;font-size:11px;">{{ t.label }}</span>
           <input type="range" min="0" max="100" v-model.number="domCfg.saleTypeWeights[t.cd]" style="flex:1;accent-color:#059669;" />

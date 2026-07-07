@@ -1,6 +1,6 @@
 ﻿/* ZdSimulPlanMng — 기획전 시뮬레이터 (bo-form-area / bo-grid 활용) */
 (function () {
-  const { reactive, ref } = Vue;
+  const { reactive, ref, computed } = Vue;
   const { useSimulSetup, makeLogCols, makeBaseCfgColumns, makeRangeCol, makeRangeHandlers, rangeSlotTemplate } = window.ZdSimulBase;
 
   const PLAN_STATUSES = [
@@ -10,10 +10,27 @@
     { value: 'PAUSE',  label: '일시정지' },
   ];
   const PLAN_THEMES   = [
-    '봄 신상품 기획전', '여름 쿨링 기획전', '추석 선물 기획전', '겨울 방한 기획전',
-    '블랙프라이데이 특가', '명품 브랜드 위크', '아웃도어 시즌 기획전', '홈인테리어 특집',
-    '건강식품 모음전', '디지털 기기 행사', '패션 트렌드 기획전', '뷰티 페스타',
-    '키즈 특별 기획전', '여행용품 모음전', '반려동물 용품전',
+    { cd: '봄 신상품 기획전',    w: 10 },
+    { cd: '여름 쿨링 기획전',    w: 10 },
+    { cd: '추석 선물 기획전',    w: 10 },
+    { cd: '겨울 방한 기획전',    w: 10 },
+    { cd: '블랙프라이데이 특가', w: 8  },
+    { cd: '명품 브랜드 위크',    w: 5  },
+    { cd: '아웃도어 시즌 기획전',w: 7  },
+    { cd: '홈인테리어 특집',     w: 7  },
+    { cd: '건강식품 모음전',     w: 8  },
+    { cd: '디지털 기기 행사',    w: 5  },
+    { cd: '패션 트렌드 기획전',  w: 8  },
+    { cd: '뷰티 페스타',         w: 7  },
+    { cd: '키즈 특별 기획전',    w: 5  },
+    { cd: '여행용품 모음전',     w: 5  },
+    { cd: '반려동물 용품전',     w: 5  },
+    { cd: '어린이날 기획전',     w: 5  },
+    { cd: '성탄절 특별전',       w: 7  },
+    { cd: '새해맞이 기획전',     w: 7  },
+    { cd: '좀비의날 특가전',     w: 3  },
+    { cd: '장애인의날 기획전',   w: 3  },
+    { cd: '할로윈 기획전',       w: 5  },
   ];
   const UPDATE_ACTIONS = [
     { value: 'status', label: '상태 변경' },
@@ -44,12 +61,22 @@
         useTheme: true,
         addBanner: false,
         periodExtendDays: 7,
+        fixedTheme: '__weighted__',
+        themeWeights: Object.fromEntries(PLAN_THEMES.map(t => [t.cd, t.w])),
         /* 수정 모드 고정 대상 */
         fixedPlanId: '',
         fixedPlanNm: '',
       });
 
       /* ── [02] 공통 엔진 ──────────────────────────────── */
+      const _pickTheme = () => {
+        if (domCfg.fixedTheme && domCfg.fixedTheme !== '__weighted__') return domCfg.fixedTheme;
+        const w = domCfg.themeWeights;
+        const total = Object.values(w).reduce((a, b) => a + Number(b), 0);
+        let r = Math.random() * total;
+        for (const t of PLAN_THEMES) { r -= Number(w[t.cd] || 0); if (r <= 0) return t.cd; }
+        return PLAN_THEMES[0].cd;
+      };
       const _fmtDate = (d) => d.toISOString().replace('T', ' ').substring(0, 19);
       const _makeDate = (offsetDays) => { const d = new Date(); d.setDate(d.getDate() + offsetDays); return _fmtDate(d); };
 
@@ -58,12 +85,12 @@
         uiNm: '기획전 시뮬레이터',
         label: '시뮬기획전',
         defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
-        runFn: async ({ mode, namePrefix, randInt, pick }) => {
+        runFn: async ({ mode, namePrefix, simulYn, randInt, pick }) => {
           if (mode === 'create') {
             const prods = (await boApiSvc.pdProd.getPage({ pageNo: 1, pageSize: 100, prodStatusCd: 'SELLING' })).data?.data?.pageList || [];
             if (prods.length < 3) return { ok: false, reason: '판매중 상품 부족 (최소 3개 필요)' };
             const cnt    = randInt(domCfg.prodCountMin, Math.min(domCfg.prodCountMax, prods.length));
-            const theme  = domCfg.useTheme ? pick(PLAN_THEMES) : '';
+            const theme  = domCfg.useTheme ? _pickTheme() : '';
             const planNm = (namePrefix || '') + (theme || '기획전_' + String(Date.now()).slice(-4));
             const offset = randInt(domCfg.startOffsetDaysMin, domCfg.startOffsetDaysMax);
             const dur    = randInt(domCfg.durationDaysMin, domCfg.durationDaysMax);
@@ -74,6 +101,7 @@
               planNm, planStatusCd: domCfg.createStatus,
               startDate: _makeDate(offset), endDate: _makeDate(offset + dur),
               items,
+              simulYn: simulYn || 'Y',
             };
             const res = await boApi.post('/bo/zd/simul/plan/create', body, coUtil.cofApiHdr('기획전시뮬', '생성'));
             const id  = res?.data?.data?.planId || '-';
@@ -134,6 +162,8 @@
           visible: (f) => f.updateAction === 'period' },
       ];
 
+      const cfThemeTotal = computed(() => Object.values(domCfg.themeWeights).reduce((a, b) => a + Number(b), 0) || 1);
+
       const rangeHandlers = makeRangeHandlers(domCfg, [
         { minKey: 'prodCountMin',       maxKey: 'prodCountMax'       },
         { minKey: 'startOffsetDaysMin', maxKey: 'startOffsetDaysMax' },
@@ -170,7 +200,7 @@
         logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
         onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog, logSearch,
         ...rangeHandlers,
-        PLAN_STATUSES,
+        PLAN_STATUSES, PLAN_THEMES, cfThemeTotal,
         planPicker, onOpenPlanPicker, onSelectPlan, _loadPlanPicker,
       };
     },
@@ -195,6 +225,30 @@
       ${rangeSlotTemplate('startOffsetDaysMin','startOffsetDaysMax',0,30,'일')}
       ${rangeSlotTemplate('durationDaysMin','durationDaysMax',1,60,'일')}
     </bo-form-area>
+  </div>
+
+  <!-- 테마 가중치 (1/3 폭, 아래 줄) -->
+  <div v-if="cfg.mode==='create' && domCfg.useTheme" style="margin-top:12px;display:grid;grid-template-columns:1fr 2fr;gap:12px;">
+    <div class="card" style="padding:14px 16px;">
+      <div class="list-title">📊 테마 가중치</div>
+      <div style="margin-top:8px;margin-bottom:10px;">
+        <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">테마 지정</label>
+        <select v-model="domCfg.fixedTheme" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
+          <option value="">-- 없음 --</option>
+          <option value="__weighted__">-- 가중치적용 --</option>
+          <option v-for="t in PLAN_THEMES" :key="t.cd" :value="t.cd">{{ t.cd }}</option>
+        </select>
+      </div>
+      <div v-show="domCfg.fixedTheme === '__weighted__'">
+        <div v-for="t in PLAN_THEMES" :key="t.cd" style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+          <span style="font-size:10px;color:#475569;min-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" :title="t.cd">{{ t.cd }}</span>
+          <input type="range" min="0" max="20" v-model.number="domCfg.themeWeights[t.cd]" style="flex:1;accent-color:#d97706;" />
+          <input type="number" min="0" max="20" v-model.number="domCfg.themeWeights[t.cd]" style="width:36px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;padding:2px;" />
+          <span style="font-size:10px;color:#94a3b8;min-width:28px;">{{ Math.round(domCfg.themeWeights[t.cd]/cfThemeTotal*100) }}%</span>
+        </div>
+      </div>
+    </div>
+    <div></div>
   </div>
 
   <!-- 수정 옵션 -->

@@ -29,6 +29,8 @@
     '여름 특별 이벤트', '가을 감사 이벤트', '신년 이벤트', '창립기념 이벤트',
     '할로윈 이벤트', '크리스마스 이벤트', '블랙프라이데이 이벤트', '추석 특별 이벤트',
     '봄맞이 이벤트', '신상품 출시 이벤트', '회원 감사 이벤트', '주년 기념 이벤트',
+    '어린이날 이벤트', '성탄절 이벤트', '새해맞이 이벤트',
+    '좀비의날 이벤트', '장애인의날 이벤트', '할로윈 공포 이벤트',
   ];
   const UPDATE_ACTIONS = [
     { value: 'status',  label: '상태 변경' },
@@ -46,6 +48,7 @@
     setup(props) {
       /* ── [01] 도메인 설정 ────────────────────────────── */
       const domCfg = reactive({
+        fixedEventType: '__weighted__',
         eventTypeWeights: { ATTEND: 20, QUIZ: 20, REVIEW: 15, SHARE: 15, PURCHASE: 15, LOTTERY: 10, PHOTO: 3, SURVEY: 2 },
         durationDaysMin: 5,
         durationDaysMax: 30,
@@ -67,6 +70,9 @@
 
       /* ── [02] 공통 엔진 ──────────────────────────────── */
       const _pickType = () => {
+        if (domCfg.fixedEventType && domCfg.fixedEventType !== '__weighted__') {
+          return EVENT_TYPES.find(t => t.cd === domCfg.fixedEventType) || EVENT_TYPES[0];
+        }
         const w = domCfg.eventTypeWeights;
         const total = Object.values(w).reduce((a, b) => a + Number(b), 0);
         let r = Math.random() * total;
@@ -81,7 +87,7 @@
         uiNm: '이벤트 시뮬레이터',
         label: '시뮬이벤트',
         defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
-        runFn: async ({ mode, namePrefix, randInt, pick }) => {
+        runFn: async ({ mode, namePrefix, simulYn, randInt, pick }) => {
           if (mode === 'create') {
             const type    = _pickType();
             const offset  = randInt(domCfg.startOffsetMin, domCfg.startOffsetMax);
@@ -96,6 +102,7 @@
               benefitTypeCd: domCfg.benefitType,
               benefitAmt: randInt(domCfg.benefitAmtMin, domCfg.benefitAmtMax),
               winnerCount: randInt(domCfg.winnerCountMin, domCfg.winnerCountMax),
+              simulYn: simulYn || 'Y',
             };
             const res = await boApi.post('/bo/zd/simul/event/create', body, coUtil.cofApiHdr('이벤트시뮬', '생성'));
             const id  = res?.data?.data?.eventId || '-';
@@ -238,7 +245,15 @@
   <div v-if="cfg.mode==='create'" style="margin-top:12px;display:grid;grid-template-columns:1fr 2fr;gap:12px;">
     <div class="card" style="padding:14px 16px;">
       <div class="list-title">📊 이벤트 유형 가중치</div>
-      <div style="margin-top:10px;">
+      <div style="margin-top:8px;margin-bottom:10px;">
+        <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">유형 지정</label>
+        <select v-model="domCfg.fixedEventType" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
+          <option value="">-- 없음 --</option>
+          <option value="__weighted__">-- 가중치적용 --</option>
+          <option v-for="t in EVENT_TYPES" :key="t.cd" :value="t.cd">{{ t.label }}</option>
+        </select>
+      </div>
+      <div v-show="domCfg.fixedEventType === '__weighted__'">
         <div v-for="t in EVENT_TYPES" :key="t.cd" style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
           <span :class="'badge '+t.badge" style="min-width:64px;text-align:center;font-size:10px;">{{ t.label }}</span>
           <input type="range" min="0" max="50" v-model.number="domCfg.eventTypeWeights[t.cd]" style="flex:1;accent-color:#a21caf;" />

@@ -253,18 +253,8 @@ public class QSyhAccessLogRepositoryImpl implements QSyhAccessLogRepository {
     @SuppressWarnings({"rawtypes","unchecked"})
     private List<OrderSpecifier<?>> buildOrder(SyhAccessLogDto.Request s) {
         List<OrderSpecifier<?>> orders = new ArrayList<>();
-        String sort = s == null ? null : s.getSort();
-        if (!StringUtils.hasText(sort)) {
-            orders.add(new OrderSpecifier(Order.DESC, syhAccessLog.reqDt));
-            orders.add(new OrderSpecifier<>(Order.ASC, syhAccessLog.logId));
-            return orders;
-        }
-        /* 기본 정렬 — sort 지정 없을 때 regDate DESC fallback */
-        /* unknown sort fallback: 안정 정렬 보장 (PK 동률 키) */
-        if (orders.isEmpty()) {
-            orders.add(new OrderSpecifier<>(Order.DESC, syhAccessLog.regDate));
-            orders.add(new OrderSpecifier<>(Order.ASC, syhAccessLog.logId));
-        }
+        orders.add(new OrderSpecifier(Order.DESC, syhAccessLog.reqDt));
+        orders.add(new OrderSpecifier<>(Order.ASC, syhAccessLog.logId));
         return orders;
     }
 }
