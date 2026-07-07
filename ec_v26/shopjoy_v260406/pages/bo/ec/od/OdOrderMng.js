@@ -2,7 +2,8 @@
 window.OdOrderMng = {
   name: 'OdOrderMng',
   props: {
-    navigate:     { type: Function, required: true }, // 페이지 이동
+    navigate:          { type: Function, required: true }, // 페이지 이동
+    initSearchValue:   { type: String,   default: null },  // ZdSimul BO상세 자동 조회값
   },
   setup(props) {
 
@@ -275,6 +276,10 @@ window.OdOrderMng = {
     // ★ onMounted
     onMounted(() => {
       if (isAppReady.value) { fnLoadCodes(); }
+      if (props.initSearchValue) {
+        searchParam.searchValue = props.initSearchValue;
+        searchParam.dateStart = ''; searchParam.dateEnd = '';
+      }
       handleSearchData('DEFAULT');
     });
 

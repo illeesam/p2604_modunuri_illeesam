@@ -1,6 +1,6 @@
-﻿/* ZdSimulOrderMng — 주문 시뮬레이터 (bo-form-area / bo-grid 활용) */
+/* ZdSimulOrderMng — 주문 시뮬레이터 (bo-form-area / bo-grid 활용) */
 (function () {
-  const { reactive, computed } = Vue;
+  const { reactive, ref, computed, onMounted } = Vue;
   const { useSimulSetup, makeLogCols, makeBaseCfgColumns, makeRangeCol, makeRangeHandlers, rangeSlotTemplate } = window.ZdSimulBase;
 
   const STATUS_FLOW    = ['PENDING', 'PAID', 'PREPARING', 'SHIPPED', 'COMPLT'];
@@ -49,24 +49,116 @@
         dlivFeeAmt: 3000,
         updateAction: 'advance',
         fromStatus: 'PENDING',
+        /* 고정 지정 */
+        fixedMemberId: '',
+        fixedMemberNm: '',
+        fixedProdId: '',
+        fixedProdNm: '',
+        fixedOrderId: '',
       });
+
+      /* ── picker 모달 상태 ──────────────────────────── */
+      const memberPicker = reactive({ show: false, searchValue: '', rows: [], loading: false });
+      const prodPicker   = reactive({ show: false, searchValue: '', rows: [], loading: false });
+      const orderPicker  = reactive({ show: false, searchValue: '', rows: [], loading: false });
+
+      const onOpenMemberPicker = async () => {
+        memberPicker.show = true;
+        memberPicker.searchValue = '';
+        await _loadMemberPicker();
+      };
+      const onOpenProdPicker = async () => {
+        prodPicker.show = true;
+        prodPicker.searchValue = '';
+        await _loadProdPicker();
+      };
+      const onOpenOrderPicker = async () => {
+        orderPicker.show = true;
+        orderPicker.searchValue = '';
+        await _loadOrderPicker();
+      };
+
+      const _loadMemberPicker = async () => {
+        memberPicker.loading = true;
+        try {
+          const res = await boApiSvc.mbMember.getPage({
+            pageNo: 1, pageSize: 20, memberStatusCd: 'ACTIVE',
+            ...(memberPicker.searchValue ? { searchValue: memberPicker.searchValue, searchType: 'memberId,memberNm,loginId' } : {}),
+          });
+          memberPicker.rows = res.data?.data?.pageList || [];
+        } catch (_) { memberPicker.rows = []; }
+        memberPicker.loading = false;
+      };
+      const _loadProdPicker = async () => {
+        prodPicker.loading = true;
+        try {
+          const res = await boApiSvc.pdProd.getPage({
+            pageNo: 1, pageSize: 20, prodStatusCd: 'SELLING',
+            ...(prodPicker.searchValue ? { searchValue: prodPicker.searchValue, searchType: 'prodId,prodNm' } : {}),
+          });
+          prodPicker.rows = res.data?.data?.pageList || [];
+        } catch (_) { prodPicker.rows = []; }
+        prodPicker.loading = false;
+      };
+      const _loadOrderPicker = async () => {
+        orderPicker.loading = true;
+        try {
+          const res = await boApiSvc.odOrder.getPage({
+            pageNo: 1, pageSize: 20,
+            ...(orderPicker.searchValue ? { searchValue: orderPicker.searchValue, searchType: 'orderId' } : {}),
+          });
+          orderPicker.rows = res.data?.data?.pageList || [];
+        } catch (_) { orderPicker.rows = []; }
+        orderPicker.loading = false;
+      };
+
+      const onSelectMember = (row) => {
+        domCfg.fixedMemberId = row.memberId;
+        domCfg.fixedMemberNm = row.memberNm || row.loginId || row.memberId;
+        memberPicker.show = false;
+      };
+      const onSelectProd = (row) => {
+        domCfg.fixedProdId = row.prodId;
+        domCfg.fixedProdNm = row.prodNm || row.prodId;
+        prodPicker.show = false;
+      };
+      const onSelectOrder = (row) => {
+        domCfg.fixedOrderId = row.orderId;
+        orderPicker.show = false;
+      };
 
       /* ── [02] 공통 엔진 ──────────────────────────────── */
       const simul = useSimulSetup({
         domain: '주문',
+        uiNm: '주문 시뮬레이터',
         label: '시뮬주문',
         defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
         runFn: async ({ mode, randInt, pick }) => {
           if (mode === 'create') {
-            /* 판매중 상품은 시뮬 Controller에서 랜덤 N개 취합 (shuffle 포함) */
-            const cnt     = randInt(domCfg.itemCountMin, domCfg.itemCountMax);
-            const randRes = await boApi.post('/bo/zd/simul/order/rand-prod',
-              { count: Math.max(cnt, 5), prodStatusCd: 'SELLING' }, coUtil.cofApiHdr('주문시뮬', '상품조회'));
-            const prods   = randRes?.data?.data?.prods || [];
-            const members = (await boApiSvc.mbMember.getPage({ pageNo: 1, pageSize: 50, memberStatusCd: 'ACTIVE' })).data?.data?.pageList || [];
+            /* 상품: 고정 지정 or 랜덤 */
+            let prods = [];
+            if (domCfg.fixedProdId) {
+              prods = [{ prodId: domCfg.fixedProdId, prodNm: domCfg.fixedProdNm, salePrice: domCfg.amtMin }];
+            } else {
+              const cnt = randInt(domCfg.itemCountMin, domCfg.itemCountMax);
+              const randRes = await boApi.post('/bo/zd/simul/order/rand-prod',
+                { count: Math.max(cnt, 5), prodStatusCd: 'SELLING' }, coUtil.cofApiHdr('주문시뮬', '상품조회'));
+              prods = randRes?.data?.data?.prods || [];
+            }
+
+            /* 회원: 고정 지정 or 랜덤 */
+            let member;
+            if (domCfg.fixedMemberId) {
+              member = { memberId: domCfg.fixedMemberId, memberNm: domCfg.fixedMemberNm };
+            } else {
+              const members = (await boApiSvc.mbMember.getPage({ pageNo: 1, pageSize: 50, memberStatusCd: 'ACTIVE' })).data?.data?.pageList || [];
+              if (!members.length) return { ok: false, reason: 'ACTIVE 회원 없음' };
+              member = pick(members);
+            }
+
             if (!prods.length) return { ok: false, reason: '판매중 상품 없음' };
-            if (!members.length) return { ok: false, reason: 'ACTIVE 회원 없음' };
-            const member  = pick(members);
+
+            const cnt     = randInt(domCfg.itemCountMin, domCfg.itemCountMax);
             const items   = [];
             let   totalAmt = 0;
             for (let i = 0; i < cnt; i++) {
@@ -95,22 +187,29 @@
             return {
               ok: true,
               desc: member.memberNm + ' | ' + cnt + '개 상품 | ' + (totalAmt + dlivFee).toLocaleString('ko-KR') + '원',
-              meta: { id, payMethod, totalAmt, dlivFee },
+              meta: { id, payMethod, totalAmt, dlivFee, memberId: member.memberId },
             };
           } else {
+            /* 수정: 고정 주문 or 랜덤 */
+            let target;
+            if (domCfg.fixedOrderId) {
+              target = { orderId: domCfg.fixedOrderId, orderStatusCd: domCfg.fromStatus || 'PENDING' };
+            } else {
+              const action = domCfg.updateAction;
+              const excl   = action === 'cancel' ? [] : ['COMPLT'];
+              const q      = { pageNo: 1, pageSize: 50 };
+              if (domCfg.fromStatus) q.orderStatusCd = domCfg.fromStatus;
+              const list = (await boApiSvc.odOrder.getPage(q)).data?.data?.pageList || [];
+              if (!list.length) return { ok: false, reason: '수정할 주문 없음' };
+              target = pick(list.filter(o => !excl.includes(o.orderStatusCd)));
+              if (!target) return { ok: false, reason: '조건에 맞는 주문 없음' };
+            }
             const action = domCfg.updateAction;
-            const excl   = action === 'cancel' ? [] : ['COMPLT'];
-            const q      = { pageNo: 1, pageSize: 50 };
-            if (domCfg.fromStatus) q.orderStatusCd = domCfg.fromStatus;
-            const list = (await boApiSvc.odOrder.getPage(q)).data?.data?.pageList || [];
-            if (!list.length) return { ok: false, reason: '수정할 주문 없음' };
-            const target = pick(list.filter(o => !excl.includes(o.orderStatusCd)));
-            if (!target) return { ok: false, reason: '조건에 맞는 주문 없음' };
             let body = {}, desc = '';
             if (action === 'advance') {
               const idx = STATUS_FLOW.indexOf(target.orderStatusCd);
               const nst = STATUS_FLOW[Math.min(idx + (domCfg.advanceSteps || 1), STATUS_FLOW.length - 1)];
-              body.orderStatusCd = nst; desc = STATUS_LABELS[target.orderStatusCd] + ' → ' + STATUS_LABELS[nst];
+              body.orderStatusCd = nst; desc = (STATUS_LABELS[target.orderStatusCd] || target.orderStatusCd) + ' → ' + STATUS_LABELS[nst];
             } else if (action === 'cancel') {
               body.orderStatusCd = 'CANCEL'; desc = '강제 취소';
             } else {
@@ -121,7 +220,7 @@
           }
         },
       });
-      const { cfg, state, logs, logPager, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onClearLog, onSetLogPage } = simul;
+      const { cfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog } = simul;
 
       /* ── [03] 컬럼 정의 ─────────────────────────────── */
       const logCols = makeLogCols();
@@ -153,9 +252,14 @@
       return {
         cfg, domCfg, state, logs, logPager, cfIsRunning, cfSuccessRate,
         logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
-        onStart, onStop, onRunOnce, onClearLog, onSetLogPage,
+        onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog, logSearch,
         ...rangeHandlers,
         STATUS_FLOW, STATUS_LABELS, PAY_METHODS,
+        /* picker */
+        memberPicker, prodPicker, orderPicker,
+        onOpenMemberPicker, onOpenProdPicker, onOpenOrderPicker,
+        onSelectMember, onSelectProd, onSelectOrder,
+        _loadMemberPicker, _loadProdPicker, _loadOrderPicker,
       };
     },
 
@@ -170,6 +274,58 @@
     accent-color="linear-gradient(90deg,#2563eb,#60a5fa)"
     accent-active="background:#eff6ff;border:1.5px solid #2563eb;color:#1d4ed8;"
     @start="onStart" @stop="onStop" @run-once="onRunOnce" />
+
+  <!-- 시뮬 대상 고정 지정 -->
+  <div class="card" style="padding:12px 16px;margin-top:12px;">
+    <div class="list-title">🎯 시뮬 대상 지정</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px;">
+      <!-- 회원 지정 -->
+      <div>
+        <div style="font-size:11px;font-weight:600;color:#475569;margin-bottom:5px;">👤 주문 회원 지정</div>
+        <div style="display:flex;gap:5px;align-items:center;">
+          <input type="text" :value="domCfg.fixedMemberNm || domCfg.fixedMemberId || ''" readonly
+            placeholder="랜덤 선택"
+            style="flex:1;height:28px;padding:0 8px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;background:#f8fafc;color:#334155;cursor:pointer;"
+            @click="onOpenMemberPicker" />
+          <button v-if="domCfg.fixedMemberId" class="btn" style="height:28px;padding:0 7px;font-size:11px;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;"
+            @click="domCfg.fixedMemberId='';domCfg.fixedMemberNm=''">✕</button>
+          <button v-else class="btn btn_detail" style="height:28px;padding:0 9px;font-size:11px;" @click="onOpenMemberPicker">선택</button>
+        </div>
+        <div v-if="domCfg.fixedMemberId" style="font-size:10px;color:#6366f1;margin-top:3px;font-family:monospace;">{{ domCfg.fixedMemberId }}</div>
+        <div v-else style="font-size:10px;color:#94a3b8;margin-top:3px;">미지정 시 ACTIVE 회원 랜덤</div>
+      </div>
+      <!-- 상품 지정 -->
+      <div>
+        <div style="font-size:11px;font-weight:600;color:#475569;margin-bottom:5px;">📦 주문 상품 지정</div>
+        <div style="display:flex;gap:5px;align-items:center;">
+          <input type="text" :value="domCfg.fixedProdNm || domCfg.fixedProdId || ''" readonly
+            placeholder="랜덤 선택"
+            style="flex:1;height:28px;padding:0 8px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;background:#f8fafc;color:#334155;cursor:pointer;"
+            @click="onOpenProdPicker" />
+          <button v-if="domCfg.fixedProdId" class="btn" style="height:28px;padding:0 7px;font-size:11px;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;"
+            @click="domCfg.fixedProdId='';domCfg.fixedProdNm=''">✕</button>
+          <button v-else class="btn btn_detail" style="height:28px;padding:0 9px;font-size:11px;" @click="onOpenProdPicker">선택</button>
+        </div>
+        <div v-if="domCfg.fixedProdId" style="font-size:10px;color:#6366f1;margin-top:3px;font-family:monospace;">{{ domCfg.fixedProdId }}</div>
+        <div v-else style="font-size:10px;color:#94a3b8;margin-top:3px;">미지정 시 판매중 상품 랜덤</div>
+      </div>
+      <!-- 수정 대상 주문 지정 (수정 모드) -->
+      <div v-if="cfg.mode==='update'">
+        <div style="font-size:11px;font-weight:600;color:#475569;margin-bottom:5px;">🛒 수정 대상 주문 지정</div>
+        <div style="display:flex;gap:5px;align-items:center;">
+          <input type="text" :value="domCfg.fixedOrderId || ''" readonly
+            placeholder="랜덤 선택"
+            style="flex:1;height:28px;padding:0 8px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;background:#f8fafc;color:#334155;cursor:pointer;font-family:monospace;"
+            @click="onOpenOrderPicker" />
+          <button v-if="domCfg.fixedOrderId" class="btn" style="height:28px;padding:0 7px;font-size:11px;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;"
+            @click="domCfg.fixedOrderId=''">✕</button>
+          <button v-else class="btn btn_detail" style="height:28px;padding:0 9px;font-size:11px;" @click="onOpenOrderPicker">선택</button>
+        </div>
+        <div v-if="!domCfg.fixedOrderId" style="font-size:10px;color:#94a3b8;margin-top:3px;">미지정 시 조건에 맞는 주문 랜덤</div>
+      </div>
+      <div v-else style="font-size:10px;color:#94a3b8;padding-top:24px;">※ 수정 모드 전환 시 주문도 지정 가능</div>
+    </div>
+  </div>
 
   <!-- 생성 옵션 (전체 폭) -->
   <div v-if="cfg.mode==='create'" class="card" style="padding:14px 16px;margin-top:12px;">
@@ -211,7 +367,107 @@
   </div>
 
   <!-- 실행 로그 -->
-  <zd-simul-log-panel :logs="logs" :log-cols="logCols" :pager="logPager" max-height="320px" style="margin-top:12px;" @clear="onClearLog" @set-page="onSetLogPage" />
+  <zd-simul-log-panel :logs="logs" :log-cols="logCols" :pager="logPager" :log-search="logSearch" @search-log="onSearchLog" max-height="320px" style="margin-top:12px;" @clear="onClearLog" @set-page="onSetLogPage" />
+
+  <!-- 회원 picker 모달 -->
+  <bo-modal :show="memberPicker.show" title="회원 선택" @close="memberPicker.show=false" box-width="600px">
+    <div style="padding:12px 0 8px;">
+      <div style="display:flex;gap:6px;margin-bottom:10px;">
+        <input type="text" v-model="memberPicker.searchValue" placeholder="이름 / 이메일 / ID 검색" @keyup.enter="_loadMemberPicker"
+          style="flex:1;height:32px;padding:0 10px;font-size:12px;border:1px solid #e2e8f0;border-radius:4px;" />
+        <button class="btn btn_search" style="height:32px;padding:0 12px;" @click="_loadMemberPicker">조회</button>
+      </div>
+      <div v-if="memberPicker.loading" style="text-align:center;padding:20px;color:#94a3b8;font-size:12px;">조회 중...</div>
+      <table v-else class="admin-table" style="width:100%;font-size:12px;">
+        <thead><tr>
+          <th style="width:36px;">번호</th>
+          <th>ID</th>
+          <th>이름</th>
+          <th>이메일</th>
+          <th>상태</th>
+          <th style="width:60px;">선택</th>
+        </tr></thead>
+        <tbody>
+          <tr v-if="!memberPicker.rows.length"><td colspan="6" style="text-align:center;padding:20px;color:#94a3b8;">조회 결과 없음</td></tr>
+          <tr v-for="(r,i) in memberPicker.rows" :key="r.memberId" style="cursor:pointer;" @click="onSelectMember(r)">
+            <td style="text-align:center;">{{ i+1 }}</td>
+            <td style="font-family:monospace;font-size:11px;">{{ r.memberId }}</td>
+            <td>{{ r.memberNm }}</td>
+            <td style="font-size:11px;color:#64748b;">{{ r.loginId }}</td>
+            <td style="text-align:center;"><span class="badge badge-green" style="font-size:10px;">{{ r.memberStatusCd }}</span></td>
+            <td style="text-align:center;"><button class="btn btn_select" style="font-size:10px;padding:1px 8px;height:22px;">선택</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </bo-modal>
+
+  <!-- 상품 picker 모달 -->
+  <bo-modal :show="prodPicker.show" title="상품 선택" @close="prodPicker.show=false" box-width="640px">
+    <div style="padding:12px 0 8px;">
+      <div style="display:flex;gap:6px;margin-bottom:10px;">
+        <input type="text" v-model="prodPicker.searchValue" placeholder="상품명 / 상품ID 검색" @keyup.enter="_loadProdPicker"
+          style="flex:1;height:32px;padding:0 10px;font-size:12px;border:1px solid #e2e8f0;border-radius:4px;" />
+        <button class="btn btn_search" style="height:32px;padding:0 12px;" @click="_loadProdPicker">조회</button>
+      </div>
+      <div v-if="prodPicker.loading" style="text-align:center;padding:20px;color:#94a3b8;font-size:12px;">조회 중...</div>
+      <table v-else class="admin-table" style="width:100%;font-size:12px;">
+        <thead><tr>
+          <th style="width:36px;">번호</th>
+          <th>상품ID</th>
+          <th>상품명</th>
+          <th style="text-align:right;">판매가</th>
+          <th>상태</th>
+          <th style="width:60px;">선택</th>
+        </tr></thead>
+        <tbody>
+          <tr v-if="!prodPicker.rows.length"><td colspan="6" style="text-align:center;padding:20px;color:#94a3b8;">조회 결과 없음</td></tr>
+          <tr v-for="(r,i) in prodPicker.rows" :key="r.prodId" style="cursor:pointer;" @click="onSelectProd(r)">
+            <td style="text-align:center;">{{ i+1 }}</td>
+            <td style="font-family:monospace;font-size:11px;">{{ r.prodId }}</td>
+            <td>{{ r.prodNm }}</td>
+            <td style="text-align:right;">{{ (r.salePrice||0).toLocaleString() }}원</td>
+            <td style="text-align:center;"><span class="badge badge-green" style="font-size:10px;">{{ r.prodStatusCd }}</span></td>
+            <td style="text-align:center;"><button class="btn btn_select" style="font-size:10px;padding:1px 8px;height:22px;">선택</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </bo-modal>
+
+  <!-- 주문 picker 모달 -->
+  <bo-modal :show="orderPicker.show" title="주문 선택" @close="orderPicker.show=false" box-width="620px">
+    <div style="padding:12px 0 8px;">
+      <div style="display:flex;gap:6px;margin-bottom:10px;">
+        <input type="text" v-model="orderPicker.searchValue" placeholder="주문ID 검색" @keyup.enter="_loadOrderPicker"
+          style="flex:1;height:32px;padding:0 10px;font-size:12px;border:1px solid #e2e8f0;border-radius:4px;font-family:monospace;" />
+        <button class="btn btn_search" style="height:32px;padding:0 12px;" @click="_loadOrderPicker">조회</button>
+      </div>
+      <div v-if="orderPicker.loading" style="text-align:center;padding:20px;color:#94a3b8;font-size:12px;">조회 중...</div>
+      <table v-else class="admin-table" style="width:100%;font-size:12px;">
+        <thead><tr>
+          <th style="width:36px;">번호</th>
+          <th>주문ID</th>
+          <th>주문자</th>
+          <th>상태</th>
+          <th style="text-align:right;">결제금액</th>
+          <th style="width:60px;">선택</th>
+        </tr></thead>
+        <tbody>
+          <tr v-if="!orderPicker.rows.length"><td colspan="6" style="text-align:center;padding:20px;color:#94a3b8;">조회 결과 없음</td></tr>
+          <tr v-for="(r,i) in orderPicker.rows" :key="r.orderId" style="cursor:pointer;" @click="onSelectOrder(r)">
+            <td style="text-align:center;">{{ i+1 }}</td>
+            <td style="font-family:monospace;font-size:11px;">{{ r.orderId }}</td>
+            <td>{{ r.memberNm || '-' }}</td>
+            <td style="text-align:center;"><span class="badge badge-blue" style="font-size:10px;">{{ r.orderStatusCd }}</span></td>
+            <td style="text-align:right;">{{ (r.totalPayAmt||0).toLocaleString() }}원</td>
+            <td style="text-align:center;"><button class="btn btn_select" style="font-size:10px;padding:1px 8px;height:22px;">선택</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </bo-modal>
+
 </div>`,
   };
 })();

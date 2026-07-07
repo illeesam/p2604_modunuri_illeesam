@@ -1,6 +1,6 @@
 ﻿/* ZdSimulPromoMng — 프로모션 시뮬레이터 (bo-form-area / bo-grid 활용) */
 (function () {
-  const { reactive, computed } = Vue;
+  const { reactive, ref, computed } = Vue;
   const { useSimulSetup, makeLogCols, makeBaseCfgColumns, makeRangeCol, makeRangeHandlers, rangeSlotTemplate } = window.ZdSimulBase;
 
   const PROMO_TYPES = [
@@ -40,6 +40,9 @@
       /* ── [01] 도메인 설정 ────────────────────────────── */
       const domCfg = reactive({
         promoType: 'coupon',
+        /* 수정 시 고정 대상 */
+        fixedCouponId: '',
+        fixedDiscntId: '',
         /* 쿠폰 설정 */
         couponDiscType: 'RATE',
         couponDiscRateMin: 5,
@@ -78,6 +81,7 @@
 
       const simul = useSimulSetup({
         domain: '프로모션',
+        uiNm: '프로모션 시뮬레이터',
         label: '시뮬프로모',
         defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
         runFn: async ({ mode, namePrefix, randInt, pick }) => {
@@ -134,23 +138,69 @@
             }
           } else {
             const type = domCfg.promoType === 'both' ? 'coupon' : domCfg.promoType;
-            let list = [];
-            if (type === 'coupon') list = (await boApiSvc.pmCoupon.getPage({ pageNo: 1, pageSize: 30 })).data?.data?.pageList || [];
-            else list = (await boApiSvc.pmDiscnt.getPage({ pageNo: 1, pageSize: 30 })).data?.data?.pageList || [];
-            if (!list.length) return { ok: false, reason: '수정할 ' + type + ' 없음' };
-            const target = pick(list);
             const body = { endDate: _makeDate(randInt(7, 30)) };
             if (type === 'coupon') {
-              await boApi.post('/bo/zd/simul/promo/coupon-update', { couponId: target.couponId, ...body }, coUtil.cofApiHdr('프로모시뮬', '쿠폰수정'));
+              let couponId = domCfg.fixedCouponId;
+              if (!couponId) {
+                const list = (await boApiSvc.pmCoupon.getPage({ pageNo: 1, pageSize: 30 })).data?.data?.pageList || [];
+                if (!list.length) return { ok: false, reason: '수정할 쿠폰 없음' };
+                couponId = pick(list).couponId;
+              }
+              await boApi.post('/bo/zd/simul/promo/coupon-update', { couponId, ...body }, coUtil.cofApiHdr('프로모시뮬', '쿠폰수정'));
+              return { ok: true, desc: '[쿠폰] ' + couponId + ' 기간 연장', meta: { id: couponId } };
             } else {
-              await boApi.post('/bo/zd/simul/promo/discnt-update', { discntId: target.discntId, ...body }, coUtil.cofApiHdr('프로모시뮬', '할인수정'));
+              let discntId = domCfg.fixedDiscntId;
+              if (!discntId) {
+                const list = (await boApiSvc.pmDiscnt.getPage({ pageNo: 1, pageSize: 30 })).data?.data?.pageList || [];
+                if (!list.length) return { ok: false, reason: '수정할 할인정책 없음' };
+                discntId = pick(list).discntId;
+              }
+              await boApi.post('/bo/zd/simul/promo/discnt-update', { discntId, ...body }, coUtil.cofApiHdr('프로모시뮬', '할인수정'));
+              return { ok: true, desc: '[할인] ' + discntId + ' 기간 연장', meta: { id: discntId } };
             }
-            const id = target.couponId || target.discntId;
-            return { ok: true, desc: '[' + type + '] ' + id + ' 기간 연장', meta: { id } };
           }
         },
       });
-      const { cfg, state, logs, logPager, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onClearLog, onSetLogPage } = simul;
+      const { cfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog } = simul;
+
+      /* ── picker 모달 ─────────────────────────────── */
+      const couponPicker = reactive({ show: false, searchValue: '', rows: [], loading: false });
+      const discntPicker = reactive({ show: false, searchValue: '', rows: [], loading: false });
+
+      const _loadCouponPicker = async () => {
+        couponPicker.loading = true;
+        try {
+          const res = await boApiSvc.pmCoupon.getPage({
+            pageNo: 1, pageSize: 20,
+            ...(couponPicker.searchValue ? { searchValue: couponPicker.searchValue, searchType: 'couponId,couponNm' } : {}),
+          });
+          couponPicker.rows = res.data?.data?.pageList || [];
+        } catch (_) { couponPicker.rows = []; }
+        couponPicker.loading = false;
+      };
+      const _loadDiscntPicker = async () => {
+        discntPicker.loading = true;
+        try {
+          const res = await boApiSvc.pmDiscnt.getPage({
+            pageNo: 1, pageSize: 20,
+            ...(discntPicker.searchValue ? { searchValue: discntPicker.searchValue, searchType: 'discntId,discntNm' } : {}),
+          });
+          discntPicker.rows = res.data?.data?.pageList || [];
+        } catch (_) { discntPicker.rows = []; }
+        discntPicker.loading = false;
+      };
+      const onOpenCouponPicker = async () => {
+        couponPicker.show = true;
+        couponPicker.searchValue = '';
+        await _loadCouponPicker();
+      };
+      const onOpenDiscntPicker = async () => {
+        discntPicker.show = true;
+        discntPicker.searchValue = '';
+        await _loadDiscntPicker();
+      };
+      const onSelectCoupon = (row) => { domCfg.fixedCouponId = row.couponId; couponPicker.show = false; };
+      const onSelectDiscnt = (row) => { domCfg.fixedDiscntId = row.discntId; discntPicker.show = false; };
 
       /* ── [03] 컬럼 정의 ─────────────────────────────── */
       const logCols = makeLogCols();
@@ -194,9 +244,14 @@
       return {
         cfg, domCfg, state, logs, logPager, cfIsRunning, cfSuccessRate,
         logCols, baseCfgColumns, couponCfgColumns, discntCfgColumns, saveCfgColumns,
-        onStart, onStop, onRunOnce, onClearLog, onSetLogPage,
+        onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog, logSearch,
         ...rangeHandlers,
         PROMO_TYPES,
+        /* picker */
+        couponPicker, discntPicker,
+        onOpenCouponPicker, onOpenDiscntPicker,
+        onSelectCoupon, onSelectDiscnt,
+        _loadCouponPicker, _loadDiscntPicker,
       };
     },
 
@@ -256,8 +311,106 @@
     </div>
   </div>
 
+  <!-- 수정 모드 대상 지정 -->
+  <div v-if="cfg.mode==='update'" class="card" style="padding:12px 16px;margin-top:12px;">
+    <div class="list-title">🎯 수정 대상 지정</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
+      <!-- 쿠폰 지정 -->
+      <div v-if="domCfg.promoType==='coupon' || domCfg.promoType==='both'">
+        <div style="font-size:11px;font-weight:600;color:#475569;margin-bottom:5px;">🎟 수정할 쿠폰 지정</div>
+        <div style="display:flex;gap:5px;align-items:center;">
+          <input type="text" :value="domCfg.fixedCouponId || ''" readonly
+            placeholder="랜덤 선택"
+            style="flex:1;height:28px;padding:0 8px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;background:#f8fafc;color:#334155;cursor:pointer;font-family:monospace;"
+            @click="onOpenCouponPicker" />
+          <button v-if="domCfg.fixedCouponId" class="btn" style="height:28px;padding:0 7px;font-size:11px;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;"
+            @click="domCfg.fixedCouponId=''">✕</button>
+          <button v-else class="btn btn_detail" style="height:28px;padding:0 9px;font-size:11px;" @click="onOpenCouponPicker">선택</button>
+        </div>
+        <div v-if="!domCfg.fixedCouponId" style="font-size:10px;color:#94a3b8;margin-top:3px;">미지정 시 랜덤 쿠폰 선택</div>
+      </div>
+      <!-- 할인정책 지정 -->
+      <div v-if="domCfg.promoType==='discnt' || domCfg.promoType==='both'">
+        <div style="font-size:11px;font-weight:600;color:#475569;margin-bottom:5px;">💰 수정할 할인정책 지정</div>
+        <div style="display:flex;gap:5px;align-items:center;">
+          <input type="text" :value="domCfg.fixedDiscntId || ''" readonly
+            placeholder="랜덤 선택"
+            style="flex:1;height:28px;padding:0 8px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;background:#f8fafc;color:#334155;cursor:pointer;font-family:monospace;"
+            @click="onOpenDiscntPicker" />
+          <button v-if="domCfg.fixedDiscntId" class="btn" style="height:28px;padding:0 7px;font-size:11px;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;"
+            @click="domCfg.fixedDiscntId=''">✕</button>
+          <button v-else class="btn btn_detail" style="height:28px;padding:0 9px;font-size:11px;" @click="onOpenDiscntPicker">선택</button>
+        </div>
+        <div v-if="!domCfg.fixedDiscntId" style="font-size:10px;color:#94a3b8;margin-top:3px;">미지정 시 랜덤 할인정책 선택</div>
+      </div>
+    </div>
+  </div>
+
   <!-- 실행 로그 -->
-  <zd-simul-log-panel :logs="logs" :log-cols="logCols" :pager="logPager" max-height="320px" style="margin-top:12px;" @clear="onClearLog" @set-page="onSetLogPage" />
+  <zd-simul-log-panel :logs="logs" :log-cols="logCols" :pager="logPager" :log-search="logSearch" @search-log="onSearchLog" max-height="320px" style="margin-top:12px;" @clear="onClearLog" @set-page="onSetLogPage" />
+
+  <!-- 쿠폰 picker 모달 -->
+  <bo-modal :show="couponPicker.show" title="쿠폰 선택" @close="couponPicker.show=false" box-width="600px">
+    <div style="padding:12px 0 8px;">
+      <div style="display:flex;gap:6px;margin-bottom:10px;">
+        <input type="text" v-model="couponPicker.searchValue" placeholder="쿠폰명 / 쿠폰ID 검색" @keyup.enter="_loadCouponPicker"
+          style="flex:1;height:32px;padding:0 10px;font-size:12px;border:1px solid #e2e8f0;border-radius:4px;" />
+        <button class="btn btn_search" style="height:32px;padding:0 12px;" @click="_loadCouponPicker">조회</button>
+      </div>
+      <div v-if="couponPicker.loading" style="text-align:center;padding:20px;color:#94a3b8;font-size:12px;">조회 중...</div>
+      <table v-else class="admin-table" style="width:100%;font-size:12px;">
+        <thead><tr>
+          <th style="width:36px;">번호</th>
+          <th>쿠폰ID</th>
+          <th>쿠폰명</th>
+          <th>할인</th>
+          <th style="width:60px;">선택</th>
+        </tr></thead>
+        <tbody>
+          <tr v-if="!couponPicker.rows.length"><td colspan="5" style="text-align:center;padding:20px;color:#94a3b8;">조회 결과 없음</td></tr>
+          <tr v-for="(r,i) in couponPicker.rows" :key="r.couponId" style="cursor:pointer;" @click="onSelectCoupon(r)">
+            <td style="text-align:center;">{{ i+1 }}</td>
+            <td style="font-family:monospace;font-size:11px;">{{ r.couponId }}</td>
+            <td>{{ r.couponNm }}</td>
+            <td style="font-size:11px;color:#6366f1;">{{ r.couponDiscTypeCd==='RATE' ? r.discVal+'%' : (r.discVal||0).toLocaleString()+'원' }}</td>
+            <td style="text-align:center;"><button class="btn btn_select" style="font-size:10px;padding:1px 8px;height:22px;">선택</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </bo-modal>
+
+  <!-- 할인정책 picker 모달 -->
+  <bo-modal :show="discntPicker.show" title="할인정책 선택" @close="discntPicker.show=false" box-width="600px">
+    <div style="padding:12px 0 8px;">
+      <div style="display:flex;gap:6px;margin-bottom:10px;">
+        <input type="text" v-model="discntPicker.searchValue" placeholder="할인정책명 / ID 검색" @keyup.enter="_loadDiscntPicker"
+          style="flex:1;height:32px;padding:0 10px;font-size:12px;border:1px solid #e2e8f0;border-radius:4px;" />
+        <button class="btn btn_search" style="height:32px;padding:0 12px;" @click="_loadDiscntPicker">조회</button>
+      </div>
+      <div v-if="discntPicker.loading" style="text-align:center;padding:20px;color:#94a3b8;font-size:12px;">조회 중...</div>
+      <table v-else class="admin-table" style="width:100%;font-size:12px;">
+        <thead><tr>
+          <th style="width:36px;">번호</th>
+          <th>할인ID</th>
+          <th>할인명</th>
+          <th>할인</th>
+          <th style="width:60px;">선택</th>
+        </tr></thead>
+        <tbody>
+          <tr v-if="!discntPicker.rows.length"><td colspan="5" style="text-align:center;padding:20px;color:#94a3b8;">조회 결과 없음</td></tr>
+          <tr v-for="(r,i) in discntPicker.rows" :key="r.discntId" style="cursor:pointer;" @click="onSelectDiscnt(r)">
+            <td style="text-align:center;">{{ i+1 }}</td>
+            <td style="font-family:monospace;font-size:11px;">{{ r.discntId }}</td>
+            <td>{{ r.discntNm }}</td>
+            <td style="font-size:11px;color:#6366f1;">{{ r.discntTypeCd==='RATE' ? r.discVal+'%' : (r.discVal||0).toLocaleString()+'원' }}</td>
+            <td style="text-align:center;"><button class="btn btn_select" style="font-size:10px;padding:1px 8px;height:22px;">선택</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </bo-modal>
+
 </div>`,
   };
 })();

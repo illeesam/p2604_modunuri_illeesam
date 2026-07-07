@@ -193,11 +193,12 @@
 
   window.ZdSimulLogPanel = {
     name: 'ZdSimulLogPanel',
-    emits: ['clear', 'set-page'],
+    emits: ['clear', 'set-page', 'search-log'],
     props: {
-      logs:    { type: Array,  required: true },
-      logCols: { type: Array,  required: true },
-      pager:   { type: Object, default: () => ({ pageNo: 1, pageTotalCount: 0, pageTotalPage: 1 }) },
+      logs:      { type: Array,    required: true },
+      logCols:   { type: Array,    required: true },
+      pager:     { type: Object,   default: () => ({ pageNo: 1, pageTotalCount: 0, pageTotalPage: 1 }) },
+      logSearch: { type: Object,   default: () => ({ uiNm: '', userNm: '', desc: '', status: '' }) },
     },
     setup(props, { emit }) {
       const cfPageNums = _computed(() => {
@@ -207,38 +208,95 @@
         for (let i = start; i <= end; i++) nums.push(i);
         return nums;
       });
-      const onClear   = () => emit('clear');
-      const onSetPage = (n) => emit('set-page', n);
-      return { cfPageNums, onClear, onSetPage };
+      const onClear     = () => emit('clear');
+      const onSetPage   = (n) => emit('set-page', n);
+      const onSearch    = () => emit('search-log');
+
+      /* 로그 기능 버튼 핸들러 */
+      const _base = () => window.ZdSimulBase;
+      const cfDomainMeta  = (row) => (_base() && row.domain) ? _base()._DOMAIN_PAGE_MAP[row.domain] : null;
+      const onOpenBo      = (row) => _base() && _base()._openBoPage(row);
+      const onOpenFo      = (row) => _base() && _base()._openFoPage(row);
+      const onOpenKanban  = (row) => _base() && _base()._openKanban(row);
+      const onOpenCalc    = (row) => _base() && _base()._openClaimCalc(row);
+
+      return { cfPageNums, onClear, onSetPage, onSearch, cfDomainMeta, onOpenBo, onOpenFo, onOpenKanban, onOpenCalc };
     },
     template: `
 <div class="card" style="padding:14px 16px;">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-    <div class="list-title">📋 실행 로그
-      <span v-if="pager.pageTotalCount" class="list-count">{{ pager.pageTotalCount }}건</span>
-    </div>
+  <!-- 카드 헤더: 제목 + 새로고침 -->
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+    <div class="list-title" style="margin:0;">📋 실행 로그</div>
     <button class="btn btn_reset" @click="onClear">새로고침</button>
   </div>
-
-  <div v-if="logs.length === 0" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:200px;color:#cbd5e1;border:1px solid #f1f5f9;border-radius:6px;">
-    <div style="font-size:36px;margin-bottom:8px;">🔇</div>
-    <div style="font-size:13px;margin-bottom:4px;">아직 실행 이력이 없습니다.</div>
-    <div style="font-size:11px;color:#94a3b8;">▶ 시작 또는 ⚡ 1회 실행을 눌러주세요.</div>
+  <!-- BoGrid: toolbar에 검색조건 슬롯 삽입 → "● 목록 총 N건" 우측에 자동 배치 -->
+  <bo-grid :rows="logs" :columns="logCols" :pager="pager" list-title="목록"
+    empty-text="아직 실행 이력이 없습니다. ▶ 시작 또는 ⚡ 1회 실행을 눌러주세요."
+    style="font-size:11px;">
+    <template #toolbar-actions>
+      <input v-model="logSearch.uiNm" type="text" placeholder="화면명" @keyup.enter="onSearch"
+        style="width:110px;height:26px;padding:0 7px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;outline:none;color:#334155;" />
+      <input v-model="logSearch.userNm" type="text" placeholder="등록자" @keyup.enter="onSearch"
+        style="width:80px;height:26px;padding:0 7px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;outline:none;color:#334155;" />
+      <input v-model="logSearch.desc" type="text" placeholder="내용" @keyup.enter="onSearch"
+        style="width:120px;height:26px;padding:0 7px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;outline:none;color:#334155;" />
+      <select v-model="logSearch.status"
+        style="height:26px;padding:0 6px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;background:#fff;color:#334155;">
+        <option value="">성공/실패 전체</option>
+        <option value="SUCCESS">✓ 성공</option>
+        <option value="FAIL">✗ 실패</option>
+      </select>
+      <button class="btn btn_search" style="height:26px;padding:0 10px;font-size:11px;" @click="onSearch">조회</button>
+    </template>
+    <!-- 기능 버튼 컬럼 슬롯: #cell-{key} 는 <td> 포함 전체 대체 -->
+    <template #cell-_actions="{ row }">
+      <td style="text-align:center;padding:4px 6px;white-space:nowrap;">
+        <template v-if="row.targetId">
+          <!-- BO 상세 -->
+          <button v-if="cfDomainMeta(row) &amp;&amp; cfDomainMeta(row).bo"
+            class="btn btn_detail"
+            style="padding:1px 7px;font-size:10px;height:20px;margin:1px;"
+            @click.stop="onOpenBo(row)"
+            title="관리자 상세 열기">
+            BO상세
+          </button>
+          <!-- FO 상세 (fo 매핑 있을 때만) -->
+          <button v-if="cfDomainMeta(row) &amp;&amp; cfDomainMeta(row).fo"
+            class="btn btn_preview"
+            style="padding:1px 7px;font-size:10px;height:20px;margin:1px;"
+            @click.stop="onOpenFo(row)"
+            title="사용자 화면 열기">
+            FO상세
+          </button>
+          <!-- 칸반 (주문/클레임) -->
+          <button v-if="cfDomainMeta(row) &amp;&amp; cfDomainMeta(row).kanban"
+            style="padding:1px 7px;font-size:10px;height:20px;margin:1px;background:#fef3c7;color:#92400e;border:1px solid #fde68a;border-radius:4px;cursor:pointer;"
+            @click.stop="onOpenKanban(row)"
+            title="칸반보드 열기">
+            칸반
+          </button>
+          <!-- 환불계산 (클레임) -->
+          <button v-if="cfDomainMeta(row) &amp;&amp; cfDomainMeta(row).calc"
+            style="padding:1px 7px;font-size:10px;height:20px;margin:1px;background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;border-radius:4px;cursor:pointer;"
+            @click.stop="onOpenCalc(row)"
+            title="환불 계산 탭 열기">
+            계산
+          </button>
+        </template>
+        <span v-else style="font-size:10px;color:#cbd5e1;">-</span>
+      </td>
+    </template>
+  </bo-grid>
+  <div v-if="pager.pageTotalPage > 1" class="pagination" style="margin-top:10px;display:flex;justify-content:center;align-items:center;gap:4px;">
+    <button class="pager" @click="onSetPage(1)" :disabled="pager.pageNo===1">&laquo;</button>
+    <button class="pager" @click="onSetPage(pager.pageNo-1)" :disabled="pager.pageNo===1">&lsaquo;</button>
+    <button v-for="n in cfPageNums" :key="n" class="pager"
+      :class="n===pager.pageNo ? 'active' : ''"
+      @click="onSetPage(n)">{{ n }}</button>
+    <button class="pager" @click="onSetPage(pager.pageNo+1)" :disabled="pager.pageNo===pager.pageTotalPage">&rsaquo;</button>
+    <button class="pager" @click="onSetPage(pager.pageTotalPage)" :disabled="pager.pageNo===pager.pageTotalPage">&raquo;</button>
+    <span style="font-size:11px;color:#94a3b8;margin-left:6px;">{{ pager.pageNo }}/{{ pager.pageTotalPage }} 페이지</span>
   </div>
-
-  <template v-else>
-    <bo-grid :rows="logs" :columns="logCols" style="font-size:11px;" />
-    <div v-if="pager.pageTotalPage > 1" class="pagination" style="margin-top:10px;display:flex;justify-content:center;align-items:center;gap:4px;">
-      <button class="pager" @click="onSetPage(1)" :disabled="pager.pageNo===1">&laquo;</button>
-      <button class="pager" @click="onSetPage(pager.pageNo-1)" :disabled="pager.pageNo===1">&lsaquo;</button>
-      <button v-for="n in cfPageNums" :key="n" class="pager"
-        :class="n===pager.pageNo ? 'active' : ''"
-        @click="onSetPage(n)">{{ n }}</button>
-      <button class="pager" @click="onSetPage(pager.pageNo+1)" :disabled="pager.pageNo===pager.pageTotalPage">&rsaquo;</button>
-      <button class="pager" @click="onSetPage(pager.pageTotalPage)" :disabled="pager.pageNo===pager.pageTotalPage">&raquo;</button>
-      <span style="font-size:11px;color:#94a3b8;margin-left:6px;">{{ pager.pageNo }}/{{ pager.pageTotalPage }} 페이지</span>
-    </div>
-  </template>
 </div>`,
   };
 

@@ -2,7 +2,8 @@
 window.PmPlanMng = {
   name: 'PmPlanMng',
   props: {
-    navigate:     { type: Function, required: true }, // 페이지 이동
+    navigate:          { type: Function, required: true }, // 페이지 이동
+    initSearchValue:   { type: String,   default: null },  // ZdSimul BO상세 자동 조회값
   },
   setup(props) {
 
@@ -174,6 +175,10 @@ window.PmPlanMng = {
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
       if (isAppReady.value) { fnLoadCodes(); }
+      if (props.initSearchValue) {
+        searchParam.searchValue = props.initSearchValue;
+        searchParam.dateStart = ''; searchParam.dateEnd = '';
+      }
       handleSearchList('DEFAULT');
     });
 

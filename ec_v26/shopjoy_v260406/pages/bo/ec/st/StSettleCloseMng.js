@@ -2,7 +2,8 @@
 window.StSettleCloseMng = {
   name: 'StSettleCloseMng',
   props: {
-    navigate:     { type: Function, required: true }, // 페이지 이동
+    navigate:          { type: Function, required: true }, // 페이지 이동
+    initSearchValue:   { type: String,   default: null },  // ZdSimul BO상세 자동 조회값
   },
   setup(props) {
 
@@ -81,14 +82,19 @@ window.StSettleCloseMng = {
       } catch (_) { console.error('[catch-info]', _); }
     };
 
-    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
-    onMounted(() => {
-      if (isAppReady.value) fnLoadCodes(); handleSearchData('DEFAULT'); });
-
     const searchParam = reactive({ searchType: '', searchValue: '', searchStatus: '' });
 
     /* 적용된 검색조건 스냅샷 — 입력 즉시 filter 금지, [조회] 시점에만 반영 (UI/UX 검색 방식 정책) */
     const applied = reactive({ searchType: '', searchValue: '', searchStatus: '' });
+
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    onMounted(() => {
+      if (isAppReady.value) { fnLoadCodes(); }
+      if (props.initSearchValue) {
+        searchParam.searchValue = props.initSearchValue;
+      }
+      handleSearchData('DEFAULT');
+    });
 
     /* 정산 마감 목록조회 — [조회] 클릭/Enter 시점에만 검색조건 적용 */
 

@@ -1,6 +1,6 @@
 ﻿/* ZdSimulEventMng — 이벤트 시뮬레이터 (bo-form-area / bo-grid 활용) */
 (function () {
-  const { reactive, computed } = Vue;
+  const { reactive, computed, ref } = Vue;
   const { useSimulSetup, makeLogCols, makeBaseCfgColumns, makeRangeCol, makeRangeHandlers, rangeSlotTemplate } = window.ZdSimulBase;
 
   const EVENT_TYPES = [
@@ -61,6 +61,8 @@
         updateAction: 'status',
         updateStatus: 'ONGOING',
         periodExtendDays: 7,
+        /* 수정 모드 고정 대상 */
+        fixedEventId: '',
       });
 
       /* ── [02] 공통 엔진 ──────────────────────────────── */
@@ -76,6 +78,7 @@
 
       const simul = useSimulSetup({
         domain: '이벤트',
+        uiNm: '이벤트 시뮬레이터',
         label: '시뮬이벤트',
         defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
         runFn: async ({ mode, namePrefix, randInt, pick }) => {
@@ -102,9 +105,14 @@
               meta: { id, type: type.label },
             };
           } else {
-            const list = (await boApiSvc.pmEvent.getPage({ pageNo: 1, pageSize: 30 })).data?.data?.pageList || [];
-            if (!list.length) return { ok: false, reason: '수정할 이벤트 없음' };
-            const target = pick(list);
+            let target;
+            if (domCfg.fixedEventId) {
+              target = { eventId: domCfg.fixedEventId, eventNm: domCfg.fixedEventId, endDate: null };
+            } else {
+              const list = (await boApiSvc.pmEvent.getPage({ pageNo: 1, pageSize: 30 })).data?.data?.pageList || [];
+              if (!list.length) return { ok: false, reason: '수정할 이벤트 없음' };
+              target = pick(list);
+            }
             let body = {}, desc = '';
             if (domCfg.updateAction === 'status') {
               body.eventStatusCd = domCfg.updateStatus; desc = '상태→' + domCfg.updateStatus;
@@ -120,7 +128,7 @@
           }
         },
       });
-      const { cfg, state, logs, logPager, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onClearLog, onSetLogPage } = simul;
+      const { cfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog } = simul;
 
       /* ── [03] Computed ──────────────────────────────── */
       const cfTypeTotal = computed(() => Object.values(domCfg.eventTypeWeights).reduce((a, b) => a + Number(b), 0) || 1);
@@ -152,12 +160,37 @@
         { minKey: 'durationDaysMin', maxKey: 'durationDaysMax' },
       ]);
 
+      /* ── [05] 이벤트 picker ──────────────────────────── */
+      const eventPicker = reactive({ show: false, searchValue: '', rows: [], loading: false });
+
+      const _loadEventPicker = async () => {
+        eventPicker.loading = true;
+        try {
+          const res = await boApiSvc.pmEvent.getPage({
+            pageNo: 1, pageSize: 20,
+            ...(eventPicker.searchValue ? { searchValue: eventPicker.searchValue, searchType: 'eventId,eventNm' } : {}),
+          });
+          eventPicker.rows = res.data?.data?.pageList || [];
+        } catch (_) { eventPicker.rows = []; }
+        eventPicker.loading = false;
+      };
+      const onOpenEventPicker = async () => {
+        eventPicker.show = true;
+        eventPicker.searchValue = '';
+        await _loadEventPicker();
+      };
+      const onSelectEvent = (row) => {
+        domCfg.fixedEventId = row.eventId;
+        eventPicker.show = false;
+      };
+
       return {
         cfg, domCfg, state, logs, logPager, cfIsRunning, cfSuccessRate,
         cfTypeTotal, logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
-        onStart, onStop, onRunOnce, onClearLog, onSetLogPage,
+        onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog, logSearch,
         ...rangeHandlers,
         EVENT_TYPES,
+        eventPicker, onOpenEventPicker, onSelectEvent, _loadEventPicker,
       };
     },
 
@@ -188,6 +221,16 @@
   <div v-if="cfg.mode==='update'" class="card" style="padding:14px 16px;margin-top:12px;">
     <div class="list-title">✏ 이벤트 수정 옵션</div>
     <bo-form-area :columns="updateCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;" />
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid #f1f5f9;">
+      <div style="font-size:12px;font-weight:600;color:#475569;margin-bottom:8px;">🎯 수정 대상 지정 (미지정 시 랜덤)</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:12px;color:#64748b;min-width:64px;">이벤트</span>
+        <input type="text" :value="domCfg.fixedEventId" readonly placeholder="미지정 (랜덤)"
+          style="flex:1;padding:4px 8px;border:1px solid #e2e8f0;border-radius:4px;font-size:12px;background:#f8fafc;cursor:default;" />
+        <button class="btn btn-sm" style="background:#a21caf;color:#fff;" @click="onOpenEventPicker">선택</button>
+        <button v-if="domCfg.fixedEventId" class="btn btn-sm btn-secondary" @click="domCfg.fixedEventId=''">해제</button>
+      </div>
+    </div>
   </div>
 
   <!-- 이벤트 유형 가중치 (1/3 폭, 아래 줄) -->
@@ -207,7 +250,38 @@
   </div>
 
   <!-- 실행 로그 -->
-  <zd-simul-log-panel :logs="logs" :log-cols="logCols" :pager="logPager" max-height="320px" style="margin-top:12px;" @clear="onClearLog" @set-page="onSetLogPage" />
+  <zd-simul-log-panel :logs="logs" :log-cols="logCols" :pager="logPager" :log-search="logSearch" @search-log="onSearchLog" max-height="320px" style="margin-top:12px;" @clear="onClearLog" @set-page="onSetLogPage" />
+
+  <!-- 이벤트 picker 모달 -->
+  <bo-modal :show="eventPicker.show" title="이벤트 선택" width="700px" @close="eventPicker.show=false">
+    <div style="display:flex;gap:6px;margin-bottom:10px;">
+      <input type="text" v-model="eventPicker.searchValue" placeholder="이벤트ID/이벤트명 검색" class="form-control"
+        style="flex:1;" @keyup.enter="_loadEventPicker" />
+      <button class="btn btn-sm btn_search" @click="_loadEventPicker">조회</button>
+    </div>
+    <table class="admin-table">
+      <thead><tr>
+        <th style="width:36px;text-align:center;">번호</th>
+        <th>이벤트ID</th>
+        <th>이벤트명</th>
+        <th>유형</th>
+        <th>상태</th>
+        <th style="width:60px;"></th>
+      </tr></thead>
+      <tbody>
+        <tr v-if="eventPicker.loading"><td colspan="6" style="text-align:center;padding:16px;color:#94a3b8;">조회 중...</td></tr>
+        <tr v-else-if="!eventPicker.rows.length"><td colspan="6" style="text-align:center;padding:16px;color:#94a3b8;">조회 결과 없음</td></tr>
+        <tr v-for="(row,idx) in eventPicker.rows" :key="row.eventId">
+          <td style="text-align:center;">{{ idx+1 }}</td>
+          <td style="font-family:monospace;font-size:11px;">{{ row.eventId }}</td>
+          <td>{{ row.eventNm }}</td>
+          <td>{{ row.eventTypeCd }}</td>
+          <td>{{ row.eventStatusCd }}</td>
+          <td><button class="btn btn-xs btn_select" @click="onSelectEvent(row)">선택</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </bo-modal>
 </div>`,
   };
 })();

@@ -51,6 +51,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -102,9 +107,11 @@ public class ZdSimulController {
         String domain  = blankToNull(str(p, "domain",  null));
         String uiNm    = blankToNull(str(p, "uiNm",    null));
         String userNm  = blankToNull(str(p, "userNm",  null));
+        String desc    = blankToNull(str(p, "desc",    null));
+        String status  = blankToNull(str(p, "status",  null));
 
         Pageable pageable = PageRequest.of(pageNo - 1, pageSize);
-        Page<ZdSimulLog> page = zdSimulLogRepository.search(siteId, domain, uiNm, userNm, pageable);
+        Page<ZdSimulLog> page = zdSimulLogRepository.search(siteId, domain, uiNm, userNm, desc, status, pageable);
 
         PageResult<ZdSimulLog> result = PageResult.of(
             page.getContent(), page.getTotalElements(), pageNo, pageSize, p);
@@ -466,9 +473,14 @@ public class ZdSimulController {
             @RequestBody Map<String, Object> body) {
         String siteId = SecurityUtil.getSiteIdOrDefault("SITE000001");
         PmEvent event = new PmEvent();
-        VoUtil.mapCopy(body, event);
+        VoUtil.mapCopy(body, event, "startDate", "endDate");
         event.setSiteId(siteId);
         event.setSimulYn("Y");
+        /* startDate / endDate: 프론트가 "YYYY-MM-DD HH:mm:ss" 형식으로 전송 → LocalDate 변환 */
+        event.setStartDate(parseLocalDate(body.get("startDate")));
+        event.setEndDate(parseLocalDate(body.get("endDate")));
+        if (event.getStartDate() == null) event.setStartDate(LocalDate.now());
+        if (event.getEndDate()   == null) event.setEndDate(LocalDate.now().plusDays(7));
         PmEvent saved = pmEventService.create(event);
         return ResponseEntity.ok(ApiResponse.ok(Map.of("eventId", saved.getEventId())));
     }
@@ -497,6 +509,9 @@ public class ZdSimulController {
         VoUtil.mapCopy(body, plan, "items", "addProdIds");
         plan.setSiteId(siteId);
         plan.setSimulYn("Y");
+        /* planTitle(노출용): 프론트 미전송 시 planNm으로 대체 */
+        if (plan.getPlanTitle() == null)
+            plan.setPlanTitle(plan.getPlanNm() != null ? plan.getPlanNm() : "시뮬기획전");
         PmPlan saved = pmPlanService.create(plan);
         return ResponseEntity.ok(ApiResponse.ok(Map.of("planId", saved.getPlanId())));
     }
@@ -525,6 +540,7 @@ public class ZdSimulController {
         VoUtil.mapCopy(body, coupon);
         coupon.setSiteId(siteId);
         coupon.setSimulYn("Y");
+        if (coupon.getCouponTypeCd() == null) coupon.setCouponTypeCd("GENERAL");
         PmCoupon saved = pmCouponService.create(coupon);
         return ResponseEntity.ok(ApiResponse.ok(Map.of("couponId", saved.getCouponId())));
     }
@@ -587,9 +603,21 @@ public class ZdSimulController {
             @RequestBody Map<String, Object> body) {
         String siteId = SecurityUtil.getSiteIdOrDefault("SITE000001");
         StSettle settle = new StSettle();
-        VoUtil.mapCopy(body, settle);
+        VoUtil.mapCopy(body, settle, "settleYm");
         settle.setSiteId(siteId);
         settle.setSimulYn("Y");
+        /* settleYm: 프론트가 "YYYY-MM" 형식으로 전송 → DB는 "YYYYMM" 6자리 */
+        String rawYm = body.get("settleYm") != null ? body.get("settleYm").toString() : null;
+        String settleYm = rawYm != null ? rawYm.replace("-", "") : null;
+        if (settleYm == null || settleYm.length() != 6)
+            settleYm = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMM"));
+        settle.setSettleYm(settleYm);
+        /* settleStartDate / settleEndDate: settleYm에서 파생 */
+        if (settle.getSettleStartDate() == null || settle.getSettleEndDate() == null) {
+            YearMonth ym = YearMonth.parse(settleYm, DateTimeFormatter.ofPattern("yyyyMM"));
+            settle.setSettleStartDate(ym.atDay(1).atStartOfDay());
+            settle.setSettleEndDate(ym.atEndOfMonth().atTime(23, 59, 59));
+        }
         StSettle saved = stSettleService.create(settle);
         return ResponseEntity.ok(ApiResponse.ok(Map.of("settleId", saved.getSettleId())));
     }
@@ -624,5 +652,16 @@ public class ZdSimulController {
     private static int intVal(Map<String, Object> m, String key, int def) {
         Object v = m.get(key);
         return v instanceof Number ? ((Number) v).intValue() : def;
+    }
+
+    /** "YYYY-MM-DD HH:mm:ss" 또는 "YYYY-MM-DD" 문자열 → LocalDate 변환 */
+    private static LocalDate parseLocalDate(Object v) {
+        if (v == null) return null;
+        String s = v.toString().trim();
+        if (s.isEmpty()) return null;
+        try {
+            if (s.length() >= 10) return LocalDate.parse(s.substring(0, 10));
+        } catch (DateTimeParseException ignored) {}
+        return null;
     }
 }

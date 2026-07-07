@@ -2,7 +2,8 @@
 window.MbMemberMng = {
   name: 'MbMemberMng',
   props: {
-    navigate:     { type: Function, required: true }, // 페이지 이동
+    navigate:          { type: Function, required: true }, // 페이지 이동
+    initSearchValue:   { type: String,   default: null },  // ZdSimul BO상세 자동 조회값
   },
   setup(props) {
 
@@ -137,7 +138,7 @@ window.MbMemberMng = {
         };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'memberNm,loginId';
+          params.searchType = 'memberId,memberNm,loginId';
         }
         const res = await boApiSvc.mbMember.getPage(params, '회원관리', '목록조회');
         const data = res.data?.data;
@@ -280,6 +281,9 @@ window.MbMemberMng = {
 
     // ★ onMounted — 진입 시 목록 초기 조회
     onMounted(() => {
+      if (props.initSearchValue) {
+        searchParam.searchValue = props.initSearchValue;
+      }
       handleSearchList('DEFAULT');
     });
 
@@ -306,6 +310,7 @@ window.MbMemberMng = {
     columns.baseSearch = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
+          { value: 'memberId', label: 'ID' },
           { value: 'memberNm', label: '이름' },
           { value: 'loginId',  label: '이메일' },
         ],

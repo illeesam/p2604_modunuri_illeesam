@@ -16,7 +16,8 @@
 
   /* uiNm/cmdNm 둘 다 있을 때만 apiHdr 생성, 없으면 빈 객체 */
   function hdr(uiNm, cmdNm) {
-    return uiNm && cmdNm ? coUtil.cofApiHdr(uiNm, cmdNm) : {};
+    /* uiNm/cmdNm 미전달 시 'BO' / '조회' 기본값으로 헤더 보장 */
+    return coUtil.cofApiHdr(uiNm || 'BO', cmdNm || '조회');
   }
 
   /* _id / saveList rows 검증은 coUtil.cofChkId / coUtil.cofChkRowIds 위임 */

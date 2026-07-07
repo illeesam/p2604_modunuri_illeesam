@@ -13,6 +13,7 @@ window.EventPage = {
     const uiState = reactive({ loading: false, error: null, isPageCodeLoad: false, activeTab: 'ongoing', sortBy: 'latest', broadened: false });
     const codes = reactive({});
 
+    const searchValue = ref('');
 
     const events = reactive([]);
 
@@ -33,6 +34,17 @@ window.EventPage = {
       // 정렬 변경 (param: 'latest' | 'deadline')
       } else if (cmd === 'sort-change') {
         uiState.sortBy = param;
+        return;
+      // 검색 실행
+      } else if (cmd === 'search-submit') {
+        pager.pageNo = 1;
+        handleSearchList();
+        return;
+      // 검색 초기화
+      } else if (cmd === 'search-reset') {
+        searchValue.value = '';
+        pager.pageNo = 1;
+        handleSearchList();
         return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -82,10 +94,12 @@ window.EventPage = {
 
     /* _fetchEvents — 서버 조회 1회 (eventStatusCd 옵션). { list, total, totalPage } 반환 */
     const _fetchEvents = async (statusCd) => {
+      const sv = searchValue.value.trim();
       const params = {
         pageNo: pager.pageNo, pageSize: pager.pageSize,
         ...(statusCd ? { eventStatusCd: statusCd } : {}),
         ...(uiState.sortBy === 'deadline' ? { sort: 'endDate asc' } : {}),
+        ...(sv ? { searchValue: sv, searchType: 'eventId,eventTitle' } : {}),
       };
       const res = await foApiSvc.pmEvent.getPage(params, '이벤트', '목록조회');
       const d = res.data?.data || {};
@@ -99,6 +113,12 @@ window.EventPage = {
     const handleSearchList = async (searchType = 'DEFAULT') => {
       try {
         uiState.broadened = false;
+        // 검색어가 있으면 탭 필터 없이 전체 검색
+        if (searchValue.value.trim()) {
+          const r = await _fetchEvents(uiState.activeTab === 'ended' ? 'ENDED' : null);
+          _applyResult(r);
+          return;
+        }
         if (uiState.activeTab === 'ended') {
           const r = await _fetchEvents('ENDED');
           _applyResult(r);
@@ -159,6 +179,7 @@ window.EventPage = {
 
     return {
       uiState,       // 상태
+      searchValue,
       handleBtnAction, handleSelectAction, // dispatch
       events, // 데이터
       cfOngoingCount,              // computed
@@ -170,6 +191,25 @@ window.EventPage = {
   banner-align="center 40%"
   :crumbs="[{ label:'홈', page:'home' }, { label:'이벤트' }]"
   @nav="() => handleBtnAction('page-goHome')">
+  <!-- ===== ■. 검색창 ======================================================= -->
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;">
+    <div style="position:relative;flex:1;max-width:400px;">
+      <input
+        v-model="searchValue"
+        type="text"
+        placeholder="ID 또는 이벤트명 검색"
+        @keyup.enter="handleBtnAction('search-submit')"
+        style="width:100%;padding:9px 40px 9px 14px;border:1px solid var(--border);border-radius:6px;font-size:0.88rem;background:var(--bg-card);color:var(--text-primary);box-sizing:border-box;outline:none;" />
+      <button v-if="searchValue"
+        @click="handleBtnAction('search-reset')"
+        style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:1rem;line-height:1;padding:2px 4px;">✕</button>
+    </div>
+    <button @click="handleBtnAction('search-submit')"
+      style="padding:9px 20px;background:var(--text-primary);color:#fff;border:none;border-radius:6px;font-size:0.88rem;font-weight:600;cursor:pointer;white-space:nowrap;">
+      검색
+    </button>
+  </div>
+  <!-- ===== □. 검색창 ======================================================= -->
   <!-- ===== ■. 탭 + 정렬 ================================================== -->
   <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;border-bottom:1px solid var(--border);margin-bottom:28px;">
     <!-- ===== ■.■. 탭 ===================================================== -->
@@ -279,7 +319,7 @@ window.EventPage = {
       📭
     </div>
     <div style="font-size:0.95rem;">
-      {{ uiState.activeTab === 'ongoing' ? '진행 중인 이벤트가 없습니다.' : '종료된 이벤트가 없습니다.' }}
+      {{ searchValue ? '검색 결과가 없습니다.' : (uiState.activeTab === 'ongoing' ? '진행 중인 이벤트가 없습니다.' : '종료된 이벤트가 없습니다.') }}
     </div>
   </div>
   <!-- ===== □. 빈 상태 ==================================================== -->

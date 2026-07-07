@@ -68,6 +68,9 @@
         priceChangeRateMax: 20,
         stockAddMin: -50,
         stockAddMax: 200,
+        /* 수정 모드 고정 대상 */
+        fixedProdId: '',
+        fixedProdNm: '',
       });
 
       /* 카테고리 목록 (onMounted 로드) */
@@ -130,6 +133,7 @@
 
       const simul = useSimulSetup({
         domain: '상품',
+        uiNm: '상품 시뮬레이터',
         label: '시뮬상품',
         defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
         runFn: async ({ mode, namePrefix, suffix, randInt, randF, pick }) => {
@@ -199,9 +203,14 @@
               : '';
             return { ok: true, desc: '[' + type.label + '] ' + prodNm + ' ' + salePrice.toLocaleString('ko-KR') + '원' + optNote, meta: { id, type: type.label, salePrice } };
           } else {
-            const list = (await boApiSvc.pdProd.getPage({ pageNo: 1, pageSize: 50, prodStatusCd: 'SELLING' })).data?.data?.pageList || [];
-            if (!list.length) return { ok: false, reason: '수정할 판매중 상품 없음' };
-            const target = pick(list);
+            let target;
+            if (domCfg.fixedProdId) {
+              target = { prodId: domCfg.fixedProdId, prodNm: domCfg.fixedProdNm || domCfg.fixedProdId, salePrice: 10000, stockQty: 0 };
+            } else {
+              const list = (await boApiSvc.pdProd.getPage({ pageNo: 1, pageSize: 50, prodStatusCd: 'SELLING' })).data?.data?.pageList || [];
+              if (!list.length) return { ok: false, reason: '수정할 판매중 상품 없음' };
+              target = pick(list);
+            }
             const action  = domCfg.updateAction;
             let body = {}, desc = '';
             if (action === 'status') {
@@ -224,7 +233,7 @@
           }
         },
       });
-      const { cfg, state, logs, logPager, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onClearLog, onSetLogPage } = simul;
+      const { cfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog } = simul;
 
       /* ── [03] Defaults + 카테고리 로드 ──────────────── */
       const defaults = ref({ siteId: '', dlivTmpltId: '', dlivTmpltNm: '' });
@@ -301,12 +310,38 @@
         { minKey: 'stockAddMin',        maxKey: 'stockAddMax'        },
       ]);
 
+      /* ── [05] 상품 picker (수정 모드 대상 지정) ──────── */
+      const updateProdPicker = reactive({ show: false, searchValue: '', rows: [], loading: false });
+
+      const _loadUpdateProdPicker = async () => {
+        updateProdPicker.loading = true;
+        try {
+          const res = await boApiSvc.pdProd.getPage({
+            pageNo: 1, pageSize: 20,
+            ...(updateProdPicker.searchValue ? { searchValue: updateProdPicker.searchValue, searchType: 'prodId,prodNm' } : {}),
+          });
+          updateProdPicker.rows = res.data?.data?.pageList || [];
+        } catch (_) { updateProdPicker.rows = []; }
+        updateProdPicker.loading = false;
+      };
+      const onOpenUpdateProdPicker = async () => {
+        updateProdPicker.show = true;
+        updateProdPicker.searchValue = '';
+        await _loadUpdateProdPicker();
+      };
+      const onSelectUpdateProd = (row) => {
+        domCfg.fixedProdId = row.prodId;
+        domCfg.fixedProdNm = row.prodNm || '';
+        updateProdPicker.show = false;
+      };
+
       return {
         cfg, domCfg, state, logs, logPager, cfIsRunning, cfSuccessRate,
         defaults, cfTypeTotal, categories, logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
-        onStart, onStop, onRunOnce, onClearLog, onSetLogPage,
+        onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog, logSearch,
         ...rangeHandlers,
         SALE_TYPES, PROD_STATUSES, UPDATE_ACTIONS, OPT1_POOL, OPT2_POOL, OPT1_COLORS,
+        updateProdPicker, onOpenUpdateProdPicker, onSelectUpdateProd, _loadUpdateProdPicker,
       };
     },
 
@@ -390,10 +425,51 @@
       ${rangeSlotTemplate('priceChangeRateMin','priceChangeRateMax',-50,50,'%')}
       ${rangeSlotTemplate('stockAddMin','stockAddMax',-200,500,'개')}
     </bo-form-area>
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid #f1f5f9;">
+      <div style="font-size:12px;font-weight:600;color:#475569;margin-bottom:8px;">🎯 수정 대상 지정 (미지정 시 랜덤)</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:12px;color:#64748b;min-width:64px;">상품</span>
+        <input type="text" :value="domCfg.fixedProdNm || domCfg.fixedProdId" readonly placeholder="미지정 (판매중 상품 중 랜덤)"
+          style="flex:1;padding:4px 8px;border:1px solid #e2e8f0;border-radius:4px;font-size:12px;background:#f8fafc;cursor:default;" />
+        <button class="btn btn-sm" style="background:#059669;color:#fff;" @click="onOpenUpdateProdPicker">선택</button>
+        <button v-if="domCfg.fixedProdId" class="btn btn-sm btn-secondary" @click="domCfg.fixedProdId='';domCfg.fixedProdNm=''">해제</button>
+      </div>
+    </div>
   </div>
 
   <!-- 실행 로그 -->
-  <zd-simul-log-panel :logs="logs" :log-cols="logCols" :pager="logPager" max-height="320px" style="margin-top:12px;" @clear="onClearLog" @set-page="onSetLogPage" />
+  <zd-simul-log-panel :logs="logs" :log-cols="logCols" :pager="logPager" :log-search="logSearch" @search-log="onSearchLog" max-height="320px" style="margin-top:12px;" @clear="onClearLog" @set-page="onSetLogPage" />
+
+  <!-- 수정 대상 상품 picker 모달 -->
+  <bo-modal :show="updateProdPicker.show" title="수정 대상 상품 선택" width="720px" @close="updateProdPicker.show=false">
+    <div style="display:flex;gap:6px;margin-bottom:10px;">
+      <input type="text" v-model="updateProdPicker.searchValue" placeholder="상품ID/상품명 검색" class="form-control"
+        style="flex:1;" @keyup.enter="_loadUpdateProdPicker" />
+      <button class="btn btn-sm btn_search" @click="_loadUpdateProdPicker">조회</button>
+    </div>
+    <table class="admin-table">
+      <thead><tr>
+        <th style="width:36px;text-align:center;">번호</th>
+        <th>상품ID</th>
+        <th>상품명</th>
+        <th>상태</th>
+        <th style="text-align:right;">판매가</th>
+        <th style="width:60px;"></th>
+      </tr></thead>
+      <tbody>
+        <tr v-if="updateProdPicker.loading"><td colspan="6" style="text-align:center;padding:16px;color:#94a3b8;">조회 중...</td></tr>
+        <tr v-else-if="!updateProdPicker.rows.length"><td colspan="6" style="text-align:center;padding:16px;color:#94a3b8;">조회 결과 없음</td></tr>
+        <tr v-for="(row,idx) in updateProdPicker.rows" :key="row.prodId">
+          <td style="text-align:center;">{{ idx+1 }}</td>
+          <td style="font-family:monospace;font-size:11px;">{{ row.prodId }}</td>
+          <td>{{ row.prodNm }}</td>
+          <td>{{ row.prodStatusCd }}</td>
+          <td style="text-align:right;">{{ (row.salePrice||0).toLocaleString() }}원</td>
+          <td><button class="btn btn-xs btn_select" @click="onSelectUpdateProd(row)">선택</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </bo-modal>
 </div>`,
   };
 })();

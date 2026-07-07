@@ -1,6 +1,7 @@
 ﻿/* ZdSimulMemberMng — 회원 시뮬레이터 (bo-form-area / bo-grid 활용) */
 (function () {
   const { ref, reactive, computed, onMounted } = Vue;
+
   const { useSimulSetup, makeLogCols, makeBaseCfgColumns, logPanelHtml, statCardHtml } = window.ZdSimulBase;
 
   /* ── 도메인 상수 ───────────────────────────────────────── */
@@ -46,6 +47,9 @@
         emailVerified: true,
         snsLinkYn: false,
         memoOnCreate: false,
+        /* 수정 모드 고정 대상 */
+        fixedMemberId: '',
+        fixedMemberNm: '',
       });
 
       /* ── [02] 공통 엔진 연결 ────────────────────────── */
@@ -61,6 +65,7 @@
 
       const simul = useSimulSetup({
         domain: '회원',
+        uiNm: '회원 시뮬레이터',
         label: '시뮬회원',
         defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
         runFn: async ({ mode, namePrefix, suffix, randInt, pick }) => {
@@ -89,9 +94,14 @@
             const id  = res?.data?.data?.memberId || loginId;
             return { ok: true, desc: '[' + grade.label + '] ' + nm + ' / ' + email, meta: { id, grade: grade.label } };
           } else {
-            const list = (await boApiSvc.mbMember.getPage({ pageNo: 1, pageSize: 50, memberStatusCd: 'ACTIVE' })).data?.data?.pageList || [];
-            if (!list.length) return { ok: false, reason: '수정할 ACTIVE 회원 없음' };
-            const target = pick(list);
+            let target;
+            if (domCfg.fixedMemberId) {
+              target = { memberId: domCfg.fixedMemberId, memberNm: domCfg.fixedMemberNm };
+            } else {
+              const list = (await boApiSvc.mbMember.getPage({ pageNo: 1, pageSize: 50, memberStatusCd: 'ACTIVE' })).data?.data?.pageList || [];
+              if (!list.length) return { ok: false, reason: '수정할 ACTIVE 회원 없음' };
+              target = pick(list);
+            }
             const type   = domCfg.updateType;
             let body = {}, desc = '';
             if (type === 'grade') {
@@ -110,7 +120,32 @@
           }
         },
       });
-      const { cfg, state, logs, logPager, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onClearLog, onSetLogPage } = simul;
+      const { cfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog } = simul;
+
+      /* ── picker 모달 ──────────────────────────────── */
+      const memberPicker = reactive({ show: false, searchValue: '', rows: [], loading: false });
+
+      const _loadMemberPicker = async () => {
+        memberPicker.loading = true;
+        try {
+          const res = await boApiSvc.mbMember.getPage({
+            pageNo: 1, pageSize: 20, memberStatusCd: 'ACTIVE',
+            ...(memberPicker.searchValue ? { searchValue: memberPicker.searchValue, searchType: 'memberId,memberNm,loginId' } : {}),
+          });
+          memberPicker.rows = res.data?.data?.pageList || [];
+        } catch (_) { memberPicker.rows = []; }
+        memberPicker.loading = false;
+      };
+      const onOpenMemberPicker = async () => {
+        memberPicker.show = true;
+        memberPicker.searchValue = '';
+        await _loadMemberPicker();
+      };
+      const onSelectMember = (row) => {
+        domCfg.fixedMemberId = row.memberId;
+        domCfg.fixedMemberNm = row.memberNm || row.loginId || row.memberId;
+        memberPicker.show = false;
+      };
 
       /* ── [03] Defaults from ZdSimulController ──────── */
       const memberDefaults = ref({ siteId: '', memberGradeId: '', gradeNm: '' });
@@ -148,9 +183,11 @@
       return {
         cfg, domCfg, state, logs, logPager, cfIsRunning, cfSuccessRate,
         memberDefaults, cfGradeTotal, logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
-        onStart, onStop, onRunOnce, onClearLog, onSetLogPage,
+        onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog, logSearch,
         onAgeMinChange, onAgeMaxChange,
         GRADES, STATUSES_UPD, UPDATE_TYPES,
+        /* picker */
+        memberPicker, onOpenMemberPicker, onSelectMember, _loadMemberPicker,
       };
     },
 
@@ -217,13 +254,59 @@
   <div v-if="cfg.mode==='update'" class="card" style="padding:14px 16px;margin-top:12px;">
     <div class="list-title">✏ 수정 옵션</div>
     <bo-form-area :columns="updateCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;" />
-    <div style="background:#fef3c7;border-radius:6px;padding:8px 12px;font-size:11px;color:#92400e;margin-top:10px;">
-      💡 ACTIVE 상태 회원 50명 중 랜덤 선택 후 수정
+    <!-- 수정 대상 회원 지정 -->
+    <div style="margin-top:12px;padding-top:10px;border-top:1px solid #f1f5f9;">
+      <div style="font-size:11px;font-weight:600;color:#475569;margin-bottom:6px;">🎯 수정 대상 회원 지정</div>
+      <div style="display:flex;gap:6px;align-items:center;max-width:400px;">
+        <input type="text" :value="domCfg.fixedMemberNm || domCfg.fixedMemberId || ''" readonly
+          placeholder="랜덤 (ACTIVE 회원 50명 중)"
+          style="flex:1;height:28px;padding:0 8px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;background:#f8fafc;color:#334155;cursor:pointer;"
+          @click="onOpenMemberPicker" />
+        <button v-if="domCfg.fixedMemberId" class="btn" style="height:28px;padding:0 7px;font-size:11px;background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;"
+          @click="domCfg.fixedMemberId='';domCfg.fixedMemberNm=''">✕</button>
+        <button v-else class="btn btn_detail" style="height:28px;padding:0 9px;font-size:11px;" @click="onOpenMemberPicker">선택</button>
+      </div>
+      <div v-if="domCfg.fixedMemberId" style="font-size:10px;color:#6366f1;margin-top:3px;font-family:monospace;">{{ domCfg.fixedMemberId }}</div>
+      <div v-else style="font-size:10px;color:#94a3b8;margin-top:3px;">💡 미지정 시 ACTIVE 상태 회원 50명 중 랜덤 선택</div>
     </div>
   </div>
 
   <!-- 실행 로그 -->
-  <zd-simul-log-panel :logs="logs" :log-cols="logCols" :pager="logPager" max-height="320px" style="margin-top:12px;" @clear="onClearLog" @set-page="onSetLogPage" />
+  <zd-simul-log-panel :logs="logs" :log-cols="logCols" :pager="logPager" :log-search="logSearch" @search-log="onSearchLog" max-height="320px" style="margin-top:12px;" @clear="onClearLog" @set-page="onSetLogPage" />
+
+  <!-- 회원 picker 모달 (수정 모드) -->
+  <bo-modal :show="memberPicker.show" title="수정할 회원 선택" @close="memberPicker.show=false" box-width="600px">
+    <div style="padding:12px 0 8px;">
+      <div style="display:flex;gap:6px;margin-bottom:10px;">
+        <input type="text" v-model="memberPicker.searchValue" placeholder="이름 / 이메일 / ID 검색" @keyup.enter="_loadMemberPicker"
+          style="flex:1;height:32px;padding:0 10px;font-size:12px;border:1px solid #e2e8f0;border-radius:4px;" />
+        <button class="btn btn_search" style="height:32px;padding:0 12px;" @click="_loadMemberPicker">조회</button>
+      </div>
+      <div v-if="memberPicker.loading" style="text-align:center;padding:20px;color:#94a3b8;font-size:12px;">조회 중...</div>
+      <table v-else class="admin-table" style="width:100%;font-size:12px;">
+        <thead><tr>
+          <th style="width:36px;">번호</th>
+          <th>ID</th>
+          <th>이름</th>
+          <th>이메일</th>
+          <th>상태</th>
+          <th style="width:60px;">선택</th>
+        </tr></thead>
+        <tbody>
+          <tr v-if="!memberPicker.rows.length"><td colspan="6" style="text-align:center;padding:20px;color:#94a3b8;">조회 결과 없음</td></tr>
+          <tr v-for="(r,i) in memberPicker.rows" :key="r.memberId" style="cursor:pointer;" @click="onSelectMember(r)">
+            <td style="text-align:center;">{{ i+1 }}</td>
+            <td style="font-family:monospace;font-size:11px;">{{ r.memberId }}</td>
+            <td>{{ r.memberNm }}</td>
+            <td style="font-size:11px;color:#64748b;">{{ r.loginId }}</td>
+            <td style="text-align:center;"><span class="badge badge-green" style="font-size:10px;">{{ r.memberStatusCd }}</span></td>
+            <td style="text-align:center;"><button class="btn btn_select" style="font-size:10px;padding:1px 8px;height:22px;">선택</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </bo-modal>
+
 </div>`,
   };
 })();

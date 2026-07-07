@@ -88,29 +88,36 @@
 
     const logs = ref([]);
     const logPager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1 });
-    const logSearch = reactive({ uiNm: '', userNm: '' });
+    const logSearch = reactive({ uiNm: uiNm || label || '', userNm: '', desc: '', status: '' });
 
     /* DB 조회 */
     const _fetchLogs = async (pageNo) => {
       if (!window.boApiSvc || !window.boApiSvc.zdSimulLog) return;
       try {
+        const curPage = pageNo || logPager.pageNo;
         const params = {
           domain,
-          pageNo: pageNo || logPager.pageNo,
+          pageNo: curPage,
           pageSize: logPager.pageSize,
-          uiNm:   logSearch.uiNm   || undefined,
-          userNm: logSearch.userNm || undefined,
+          uiNm:    logSearch.uiNm    || undefined,
+          userNm:  logSearch.userNm  || undefined,
+          desc:    logSearch.desc    || undefined,
+          status:  logSearch.status  || undefined,
         };
         const res = await window.boApiSvc.zdSimulLog.getPage(params);
         const d = res.data?.data || {};
-        const rows = (d.pageList || []).map(e => ({
-          ts:     e.regDate ? e.regDate.replace('T', ' ').slice(0, 19) : (e.reg_date || ''),
-          userNm: e.userNm || '-',
-          uiNm:   e.uiNm   || '-',
-          mode:   e.simulMode || '-',
-          status: e.simulStatus === 'SUCCESS' ? 'ok' : 'fail',
-          desc:   e.descTxt   || '',
-          reason: e.reasonTxt || '',
+        const offset = (curPage - 1) * logPager.pageSize;
+        const rows = (d.pageList || []).map((e, i) => ({
+          _rowNo:   offset + i + 1,
+          ts:       e.regDate ? e.regDate.replace('T', ' ').slice(0, 19) : (e.reg_date || ''),
+          userNm:   e.userNm || '-',
+          uiNm:     e.uiNm   || '-',
+          mode:     e.simulMode || '-',
+          status:   e.simulStatus === 'SUCCESS' ? 'ok' : 'fail',
+          desc:     e.descTxt   || '',
+          reason:   e.reasonTxt || '',
+          domain:   e.domain   || '',
+          targetId: e.targetId || '',
           meta:   {},
         }));
         logs.value = rows;
@@ -296,12 +303,86 @@
   </bo-grid>
 </div>`;
 
+  /* ── 도메인 → 페이지 URL 매핑 ──────────────────────────── */
+  /* bo: BO 페이지 ID (bo.html 기준)
+   * fo: FO 페이지 ID + 파라미터 생성 fn (index.html 기준) — null 이면 FO 버튼 미표시 */
+  const _DOMAIN_PAGE_MAP = {
+    '주문': {
+      bo: { page: 'odOrderMng',       idParam: 'dtlId' },
+      fo: null, /* FO myOrder는 세션 필요 → BO상세로 확인 */
+      kanban: 'odOrderKanban',
+    },
+    '클레임': {
+      bo: { page: 'odClaimMng',       idParam: 'dtlId' },
+      fo: null, /* FO myClaim은 세션 필요 → BO상세로 확인 */
+      kanban: 'odOrderKanban',
+      calc: true,
+    },
+    '상품': {
+      bo: { page: 'pdProdMng',        idParam: 'dtlId' },
+      fo: (id) => 'page=prodView&prodid=' + encodeURIComponent(id),
+    },
+    '회원': {
+      bo: { page: 'mbMemberMng',      idParam: 'dtlId' },
+      fo: null,
+    },
+    '이벤트': {
+      bo: { page: 'pmEventMng',       idParam: 'dtlId' },
+      fo: (id) => 'page=event&eventId=' + encodeURIComponent(id),
+    },
+    '기획전': {
+      bo: { page: 'pmPlanMng',        idParam: 'dtlId' },
+      fo: null,
+    },
+    '프로모션': {
+      bo: { page: 'pmCouponMng',      idParam: 'dtlId' },
+      fo: null,
+    },
+    '정산': {
+      bo: { page: 'stSettleCloseMng', idParam: 'dtlId' },
+      fo: null,
+    },
+  };
+
+  /* BO 상세 window.open — searchValue 파라미터로 Mng 자동 조회 */
+  const _openBoPage = (row) => {
+    const meta = _DOMAIN_PAGE_MAP[row.domain];
+    if (!meta || !meta.bo || !row.targetId) return;
+    const url = 'bo.html#page=' + meta.bo.page + '&searchValue=' + encodeURIComponent(row.targetId);
+    window.open(url, '_blank', 'width=1400,height=900,scrollbars=yes,resizable=yes');
+  };
+
+  /* FO 상세 window.open */
+  const _openFoPage = (row) => {
+    const meta = _DOMAIN_PAGE_MAP[row.domain];
+    if (!meta || !meta.fo || !row.targetId) return;
+    const hash = meta.fo(row.targetId);
+    window.open('index.html#' + hash, '_blank', 'width=1280,height=900,scrollbars=yes,resizable=yes');
+  };
+
+  /* 주문 칸반 window.open (주문/클레임 공용) */
+  const _openKanban = (row) => {
+    const meta = _DOMAIN_PAGE_MAP[row.domain];
+    if (!meta || !meta.kanban || !row.targetId) return;
+    let url = 'bo.html#page=' + meta.kanban + '&dtlId=' + encodeURIComponent(row.targetId);
+    if (row.domain === '클레임') url += '&claimId=' + encodeURIComponent(row.targetId);
+    window.open(url, '_blank', 'width=1600,height=960,scrollbars=yes,resizable=yes');
+  };
+
+  /* 클레임 환불계산 window.open */
+  const _openClaimCalc = (row) => {
+    if (!row.targetId) return;
+    const url = 'bo.html#page=odClaimMng&dtlId=' + encodeURIComponent(row.targetId) + '&tab=calc';
+    window.open(url, '_blank', 'width=1400,height=900,scrollbars=yes,resizable=yes');
+  };
+
   /* ── logCols 생성 함수 (각 컴포넌트 setup에서 호출) ─────── */
   const makeLogCols = () => [
-    { key: '_idx',   label: '번호', width: '36px',  align: 'center',
-      fmt: (v, row, i) => i + 1 },
+    { key: '_rowNo', label: '번호', width: '36px',  align: 'center' },
     { key: 'ts',     label: '등록일시', width: '140px',
       cellStyle: 'color:#64748b;font-family:monospace;font-size:10px;' },
+    { key: 'uiNm',   label: '화면명', width: '110px',
+      cellStyle: 'color:#6366f1;font-size:11px;' },
     { key: 'userNm', label: '등록자', width: '72px', align: 'center',
       cellStyle: 'color:#475569;font-size:11px;' },
     { key: 'mode',   label: '유형', width: '44px',  align: 'center',
@@ -313,6 +394,7 @@
       cellStyle: (v, row) => row.status === 'fail' ? 'background:#fff5f5;' : '' },
     { key: 'reason', label: '실패 사유', width: '180px',
       cellStyle: 'color:#ef4444;font-size:11px;' },
+    { key: '_actions', label: '기능', width: '170px', align: 'center' },
   ];
 
   /* ── bo-form-area 기반 공통 설정 컬럼 생성 ─────────────── */
@@ -428,6 +510,12 @@
     makeRangeCol,
     makeRangeHandlers,
     rangeSlotTemplate,
+    /* 로그 기능 버튼 헬퍼 */
+    _DOMAIN_PAGE_MAP,
+    _openBoPage,
+    _openFoPage,
+    _openKanban,
+    _openClaimCalc,
     /* 공통 유틸 */
     _randInt, _randF, _pick, _wonFmt,
   };

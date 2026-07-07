@@ -392,6 +392,7 @@
       });
       const dtlId = ref(null);
       const kanbanClaimId = ref(null); // odOrderKanban 전용 claimId (URL 파라미터로 F5 복원)
+      const initSearchValue = ref(null); // ZdSimul BO상세 클릭 시 Mng 자동 조회용
 
       /* ── 탭 관리 ── */
       const openTabs = reactive([{ id: 'dashboard', label: '대시보드' }]);
@@ -729,6 +730,18 @@
         }
         if (dtlId.value !== newDtlId) dtlId.value = newDtlId;
         if (kanbanClaimId.value !== newClaimId) kanbanClaimId.value = newClaimId;
+        // ZdSimul BO상세에서 넘어온 searchValue — 최초 1회만 소비 후 URL에서 제거
+        const sv = p.get('searchValue');
+        if (sv) {
+          initSearchValue.value = sv;
+          // URL hash에서 searchValue 파라미터 제거 (재로드/히스토리 오염 방지)
+          p.delete('searchValue');
+          const cleaned = p.toString();
+          const current = String(window.location.hash || '').replace(/^#/, '');
+          if (current !== cleaned) {
+            history.replaceState(null, '', '#' + cleaned);
+          }
+        }
       };
       readHash(false);
 
@@ -2138,6 +2151,7 @@
         isApiLoading,
         page,
         dtlId,
+        initSearchValue,
         navigate,
         errorMessage,
         cfDashboardComp,
@@ -2564,19 +2578,19 @@
           <!-- 비고정 현재 탭: 전환 시 재마운트 -->
           <div v-if="!keptTabIds.has(cfActiveTabId)" :key="cfActiveTabId + '_' + (refreshKeys[cfActiveTabId] || 0)" style="display:contents;">
             <component v-if="page==='dashboard'" :is="cfDashboardComp" :navigate="navigate" />
-            <mb-member-mng  v-else-if="page==='mbMemberMng'"  :navigate="navigate" />
+            <mb-member-mng  v-else-if="page==='mbMemberMng'"  :navigate="navigate" :init-search-value="initSearchValue" />
             <mb-member-dtl  v-else-if="page==='mbMemberDtl'"  :navigate="navigate" :dtl-id="dtlId" />
-            <pd-prod-mng  v-else-if="page==='pdProdMng'"  :navigate="navigate" />
+            <pd-prod-mng  v-else-if="page==='pdProdMng'"  :navigate="navigate" :init-search-value="initSearchValue" />
             <pd-prod-dtl  v-else-if="page==='pdProdDtl'"  :navigate="navigate" :dtl-id="dtlId" />
             <od-order-kanban v-else-if="page==='odOrderKanban'" :key="'kanban_' + dtlId" :order-id="dtlId" :claim-id="kanbanClaimId" mode="bo" :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
-            <od-order-mng  v-else-if="page==='odOrderMng'"  :navigate="navigate" />
+            <od-order-mng  v-else-if="page==='odOrderMng'"  :navigate="navigate" :init-search-value="initSearchValue" />
             <od-order-dtl  v-else-if="page==='odOrderDtl'"  :navigate="navigate" :dtl-id="dtlId" />
-            <od-claim-mng  v-else-if="page==='odClaimMng'"  :navigate="navigate" />
+            <od-claim-mng  v-else-if="page==='odClaimMng'"  :navigate="navigate" :init-search-value="initSearchValue" />
             <od-claim-dtl  v-else-if="page==='odClaimDtl'"  :navigate="navigate" :dtl-id="dtlId" />
             <od-dliv-mng  v-else-if="page==='odDlivMng'"  :navigate="navigate" />
             <od-dliv-dtl  v-else-if="page==='odDlivDtl'"  :navigate="navigate" :dtl-id="dtlId" />
             <od-cart-mng  v-else-if="page==='odCartMng'"  :navigate="navigate" />
-            <pm-coupon-mng  v-else-if="page==='pmCouponMng'"  :navigate="navigate" />
+            <pm-coupon-mng  v-else-if="page==='pmCouponMng'"  :navigate="navigate" :init-search-value="initSearchValue" />
             <pm-coupon-dtl  v-else-if="page==='pmCouponDtl'"  :navigate="navigate" :dtl-id="dtlId" />
             <pm-cache-mng  v-else-if="page==='pmCacheMng'"  :navigate="navigate" />
             <pm-discnt-mng v-else-if="page==='pmDiscntMng'" :navigate="navigate" />
@@ -2596,9 +2610,9 @@
             <dp-disp-widget-lib-mng  v-else-if="page==='dpDispWidgetLibMng'"  :navigate="navigate" />
             <dp-disp-widget-lib-dtl  v-else-if="page==='dpDispWidgetLibDtl'"  :navigate="navigate" :dtl-id="dtlId" />
             <dp-disp-widget-lib-preview v-else-if="page==='dpDispWidgetLibPreview'" :navigate="navigate" />
-            <pm-event-mng  v-else-if="page==='pmEventMng'"  :navigate="navigate" />
+            <pm-event-mng  v-else-if="page==='pmEventMng'"  :navigate="navigate" :init-search-value="initSearchValue" />
             <pm-event-dtl  v-else-if="page==='pmEventDtl'"  :navigate="navigate" :dtl-id="dtlId" />
-            <pm-plan-mng  v-else-if="page==='pmPlanMng'"  :navigate="navigate" />
+            <pm-plan-mng  v-else-if="page==='pmPlanMng'"  :navigate="navigate" :init-search-value="initSearchValue" />
             <pm-plan-dtl  v-else-if="page==='pmPlanDtl'"  :navigate="navigate" :dtl-id="dtlId" />
             <mb-cust-info-mng v-else-if="page==='mbCustInfoMng'" :navigate="navigate" />
             <sy-contact-mng v-else-if="page==='syContactMng'" :navigate="navigate" />
@@ -2654,7 +2668,7 @@
             <st-raw-mng  v-else-if="page==='stRawMng'"  :navigate="navigate" />
             <st-settle-adj-mng  v-else-if="page==='stSettleAdjMng'"  :navigate="navigate" />
             <st-settle-etc-adj-mng v-else-if="page==='stSettleEtcAdjMng'" :navigate="navigate" />
-            <st-settle-close-mng v-else-if="page==='stSettleCloseMng'"  :navigate="navigate" />
+            <st-settle-close-mng v-else-if="page==='stSettleCloseMng'"  :navigate="navigate" :init-search-value="initSearchValue" />
             <st-settle-pay-mng  v-else-if="page==='stSettlePayMng'"  :navigate="navigate" />
             <st-status-mng  v-else-if="page==='stStatusMng'"  :navigate="navigate" />
             <st-recon-order-mng  v-else-if="page==='stReconOrderMng'"  :navigate="navigate" />

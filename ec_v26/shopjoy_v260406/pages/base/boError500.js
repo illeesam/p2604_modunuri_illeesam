@@ -7,14 +7,16 @@ window.boError500 = {
       if (!this.message) return null;
       const lines = this.message.split('\n');
       const mainLine  = lines[0] || '';
-      /* "METHOD URL STATUS" 또는 "[BO API] 필수 헤더 누락... \n\nMethod: ...\nURL: ..." 패턴 파싱 */
-      let method = '', url = '', status = '', detail = '';
-      /* 첫 줄이 "GET /bo/... 500" 형식인지 확인 */
-      const m1 = mainLine.match(/^(GET|POST|PUT|DELETE|PATCH)\s+(\S+)\s*(\d*)(.*)$/i);
+      /* "METHOD URL STATUS  [uiNm > cmdNm]" 또는 멀티라인 형식 파싱 */
+      let method = '', url = '', status = '', detail = '', uiNm = '', cmdNm = '';
+      /* 첫 줄: "GET /bo/... 500  [uiNm > cmdNm]" */
+      const m1 = mainLine.match(/^(GET|POST|PUT|DELETE|PATCH)\s+(\S+)\s*(\d*)\s*(?:\[([^\]>]*)(?:>\s*([^\]]*))?\])?(.*)$/i);
       if (m1) {
         method = m1[1].toUpperCase();
         url    = m1[2];
         status = m1[3] || '';
+        uiNm   = (m1[4] || '').trim();
+        cmdNm  = (m1[5] || '').trim();
         detail = lines.slice(1).join('\n').trim();
       } else {
         /* 멀티라인 "Method: ...\nURL: ..." 형식 */
@@ -26,7 +28,16 @@ window.boError500 = {
         });
         detail = lines.filter(l => !/^(Method:|URL:)/i.test(l)).join('\n').trim();
       }
-      return { method, url, status, detail: detail || this.message };
+      /* 헤더 누락 에러인 경우 detail에서 x-ui-nm / x-cmd-nm 값 추출 시도 */
+      if (!uiNm && !cmdNm && detail) {
+        /* "[BO API] 필수 헤더 누락: X-UI-Nm, X-Cmd-Nm" → 누락 헤더명을 표시 */
+        const mMissing = detail.match(/필수 헤더 누락[:\s]+(.+)/i);
+        if (mMissing) {
+          uiNm  = '(누락)';
+          cmdNm = mMissing[1].trim();
+        }
+      }
+      return { method, url, status, uiNm, cmdNm, detail: detail || this.message };
     },
   },
   methods: {
@@ -56,6 +67,15 @@ window.boError500 = {
           style="background:#fab387;color:#1e1e2e;padding:2px 8px;border-radius:4px;font-weight:700;font-size:12px;">
           {{ cfParsed.status }}
         </span>
+      </div>
+      <!-- x-ui-nm / x-cmd-nm 헤더 정보 행 -->
+      <div v-if="cfParsed &amp;&amp; (cfParsed.uiNm || cfParsed.cmdNm)"
+        style="display:flex;align-items:center;gap:6px;background:#2a2a3e;padding:6px 14px;border-top:1px solid #444466;font-family:monospace;font-size:11px;flex-wrap:wrap;">
+        <span style="color:#94a3b8;font-size:10px;">x-ui-nm:</span>
+        <span style="color:#e879f9;font-weight:700;">{{ cfParsed.uiNm || '-' }}</span>
+        <span style="color:#64748b;margin:0 6px;">|</span>
+        <span style="color:#94a3b8;font-size:10px;">x-cmd-nm:</span>
+        <span style="color:#38bdf8;font-weight:700;">{{ cfParsed.cmdNm || '-' }}</span>
       </div>
       <!-- 에러 메시지 본문 -->
       <div style="font-size:12px;color:#c62828;background:#fff5f5;padding:10px 14px;border-radius:0 0 8px 8px;border:1px solid #fca5a5;border-top:none;font-family:monospace;white-space:pre-wrap;word-break:break-all;">{{ cfParsed ? cfParsed.detail : message }}</div>

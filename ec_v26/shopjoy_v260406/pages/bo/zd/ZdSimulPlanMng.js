@@ -1,6 +1,6 @@
 ﻿/* ZdSimulPlanMng — 기획전 시뮬레이터 (bo-form-area / bo-grid 활용) */
 (function () {
-  const { reactive } = Vue;
+  const { reactive, ref } = Vue;
   const { useSimulSetup, makeLogCols, makeBaseCfgColumns, makeRangeCol, makeRangeHandlers, rangeSlotTemplate } = window.ZdSimulBase;
 
   const PLAN_STATUSES = [
@@ -44,6 +44,9 @@
         useTheme: true,
         addBanner: false,
         periodExtendDays: 7,
+        /* 수정 모드 고정 대상 */
+        fixedPlanId: '',
+        fixedPlanNm: '',
       });
 
       /* ── [02] 공통 엔진 ──────────────────────────────── */
@@ -52,6 +55,7 @@
 
       const simul = useSimulSetup({
         domain: '기획전',
+        uiNm: '기획전 시뮬레이터',
         label: '시뮬기획전',
         defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
         runFn: async ({ mode, namePrefix, randInt, pick }) => {
@@ -79,9 +83,14 @@
               meta: { id, theme, cnt },
             };
           } else {
-            const list = (await boApiSvc.pmPlan.getPage({ pageNo: 1, pageSize: 30 })).data?.data?.pageList || [];
-            if (!list.length) return { ok: false, reason: '수정할 기획전 없음' };
-            const target  = pick(list);
+            let target;
+            if (domCfg.fixedPlanId) {
+              target = { planId: domCfg.fixedPlanId, planNm: domCfg.fixedPlanNm || domCfg.fixedPlanId, endDate: null };
+            } else {
+              const list = (await boApiSvc.pmPlan.getPage({ pageNo: 1, pageSize: 30 })).data?.data?.pageList || [];
+              if (!list.length) return { ok: false, reason: '수정할 기획전 없음' };
+              target = pick(list);
+            }
             const action  = domCfg.updateAction;
             let body = {}, desc = '';
             if (action === 'status') {
@@ -103,7 +112,7 @@
           }
         },
       });
-      const { cfg, state, logs, logPager, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onClearLog, onSetLogPage } = simul;
+      const { cfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog } = simul;
 
       /* ── [03] 컬럼 정의 ─────────────────────────────── */
       const logCols = makeLogCols();
@@ -130,12 +139,38 @@
         { minKey: 'durationDaysMin',    maxKey: 'durationDaysMax'    },
       ]);
 
+      /* ── [05] 기획전 picker ──────────────────────────── */
+      const planPicker = reactive({ show: false, searchValue: '', rows: [], loading: false });
+
+      const _loadPlanPicker = async () => {
+        planPicker.loading = true;
+        try {
+          const res = await boApiSvc.pmPlan.getPage({
+            pageNo: 1, pageSize: 20,
+            ...(planPicker.searchValue ? { searchValue: planPicker.searchValue, searchType: 'planId,planNm' } : {}),
+          });
+          planPicker.rows = res.data?.data?.pageList || [];
+        } catch (_) { planPicker.rows = []; }
+        planPicker.loading = false;
+      };
+      const onOpenPlanPicker = async () => {
+        planPicker.show = true;
+        planPicker.searchValue = '';
+        await _loadPlanPicker();
+      };
+      const onSelectPlan = (row) => {
+        domCfg.fixedPlanId = row.planId;
+        domCfg.fixedPlanNm = row.planNm || '';
+        planPicker.show = false;
+      };
+
       return {
         cfg, domCfg, state, logs, logPager, cfIsRunning, cfSuccessRate,
         logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
-        onStart, onStop, onRunOnce, onClearLog, onSetLogPage,
+        onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog, logSearch,
         ...rangeHandlers,
         PLAN_STATUSES,
+        planPicker, onOpenPlanPicker, onSelectPlan, _loadPlanPicker,
       };
     },
 
@@ -165,10 +200,53 @@
   <div v-if="cfg.mode==='update'" class="card" style="padding:14px 16px;margin-top:12px;">
     <div class="list-title">✏ 기획전 수정 옵션</div>
     <bo-form-area :columns="updateCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;" />
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid #f1f5f9;">
+      <div style="font-size:12px;font-weight:600;color:#475569;margin-bottom:8px;">🎯 수정 대상 지정 (미지정 시 랜덤)</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:12px;color:#64748b;min-width:64px;">기획전</span>
+        <input type="text" :value="domCfg.fixedPlanNm || domCfg.fixedPlanId" readonly placeholder="미지정 (랜덤)"
+          style="flex:1;padding:4px 8px;border:1px solid #e2e8f0;border-radius:4px;font-size:12px;background:#f8fafc;cursor:default;" />
+        <button class="btn btn-sm" style="background:#d97706;color:#fff;" @click="onOpenPlanPicker">선택</button>
+        <button v-if="domCfg.fixedPlanId" class="btn btn-sm btn-secondary" @click="domCfg.fixedPlanId='';domCfg.fixedPlanNm=''">해제</button>
+      </div>
+    </div>
   </div>
 
   <!-- 실행 로그 -->
-  <zd-simul-log-panel :logs="logs" :log-cols="logCols" :pager="logPager" max-height="320px" style="margin-top:12px;" @clear="onClearLog" @set-page="onSetLogPage" />
+  <zd-simul-log-panel :logs="logs" :log-cols="logCols" :pager="logPager" :log-search="logSearch" @search-log="onSearchLog" max-height="320px" style="margin-top:12px;" @clear="onClearLog" @set-page="onSetLogPage" />
+
+  <!-- 기획전 picker 모달 -->
+  <bo-modal :show="planPicker.show" title="기획전 선택" width="700px" @close="planPicker.show=false">
+    <div style="display:flex;gap:6px;margin-bottom:10px;">
+      <input type="text" v-model="planPicker.searchValue" placeholder="기획전ID/기획전명 검색" class="form-control"
+        style="flex:1;" @keyup.enter="_loadPlanPicker" />
+      <button class="btn btn-sm btn_search" @click="_loadPlanPicker">조회</button>
+    </div>
+    <table class="admin-table">
+      <thead><tr>
+        <th style="width:36px;text-align:center;">번호</th>
+        <th>기획전ID</th>
+        <th>기획전명</th>
+        <th>상태</th>
+        <th>시작일</th>
+        <th>종료일</th>
+        <th style="width:60px;"></th>
+      </tr></thead>
+      <tbody>
+        <tr v-if="planPicker.loading"><td colspan="7" style="text-align:center;padding:16px;color:#94a3b8;">조회 중...</td></tr>
+        <tr v-else-if="!planPicker.rows.length"><td colspan="7" style="text-align:center;padding:16px;color:#94a3b8;">조회 결과 없음</td></tr>
+        <tr v-for="(row,idx) in planPicker.rows" :key="row.planId">
+          <td style="text-align:center;">{{ idx+1 }}</td>
+          <td style="font-family:monospace;font-size:11px;">{{ row.planId }}</td>
+          <td>{{ row.planNm }}</td>
+          <td>{{ row.planStatusCd }}</td>
+          <td>{{ row.startDate }}</td>
+          <td>{{ row.endDate }}</td>
+          <td><button class="btn btn-xs btn_select" @click="onSelectPlan(row)">선택</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </bo-modal>
 </div>`,
   };
 })();

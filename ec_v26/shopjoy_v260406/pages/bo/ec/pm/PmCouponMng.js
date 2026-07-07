@@ -2,7 +2,8 @@
 window.PmCouponMng = {
   name: 'PmCouponMng',
   props: {
-    navigate:     { type: Function, required: true }, // 페이지 이동
+    navigate:          { type: Function, required: true }, // 페이지 이동
+    initSearchValue:   { type: String,   default: null },  // ZdSimul BO상세 자동 조회값
   },
   setup(props) {
 
@@ -162,7 +163,7 @@ window.PmCouponMng = {
         const params = { pageNo: baseGridPager.pageNo, pageSize: baseGridPager.pageSize, ...getSortParam(), ...coUtil.cofOmitEmpty(searchParam) };
         // searchValue 가 있는데 searchType 가 비어있으면 전체 필드로 검색
         if (params.searchValue && !params.searchType) {
-          params.searchType = 'couponNm,couponCd';
+          params.searchType = 'couponId,couponNm,couponCd';
         }
         const res = await boApiSvc.pmCoupon.getPage(params, '쿠폰관리', '목록조회');
         const data = res.data?.data;
@@ -182,7 +183,13 @@ window.PmCouponMng = {
 
     // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
     onMounted(() => {
-      if (isAppReady.value) fnLoadCodes(); handleSearchList('DEFAULT'); });
+      if (isAppReady.value) { fnLoadCodes(); }
+      if (props.initSearchValue) {
+        searchParam.searchValue = props.initSearchValue;
+        searchParam.dateStart = ''; searchParam.dateEnd = '';
+      }
+      handleSearchList('DEFAULT');
+    });
 
     /* loadView — 뷰 로드 */
     const loadView = (id) => { uiStateDetail.selectedId = id; uiStateDetail.openMode = 'view'; uiStateDetail.active = true; uiStateDetail.reloadTrigger++; };
@@ -264,7 +271,8 @@ window.PmCouponMng = {
         columns.baseSearch = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
-          { value: 'couponNm',   label: '쿠폰명' },
+          { value: 'couponId', label: 'ID' },
+          { value: 'couponNm', label: '쿠폰명' },
           { value: 'couponCd', label: '코드' },
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
