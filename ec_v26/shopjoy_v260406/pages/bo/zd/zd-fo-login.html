@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FO 강제 로그인 (시뮬레이터)</title>
+<style>
+  body { font-family: 'Noto Sans KR', sans-serif; background:#f8fafc; display:flex; align-items:center; justify-content:center; min-height:100vh; margin:0; }
+  .box { background:#fff; border-radius:12px; padding:32px 36px; width:360px; box-shadow:0 4px 20px rgba(0,0,0,.08); text-align:center; }
+  .title { font-size:16px; font-weight:700; color:#1e293b; margin-bottom:8px; }
+  .sub   { font-size:12px; color:#64748b; margin-bottom:24px; }
+  .info  { font-size:13px; color:#374151; background:#f1f5f9; border-radius:6px; padding:10px 14px; margin-bottom:20px; text-align:left; line-height:1.8; }
+  .info b { color:#6366f1; }
+  .btn   { width:100%; padding:10px; background:linear-gradient(90deg,#6366f1,#8b5cf6); color:#fff; border:none; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; margin-top:4px; }
+  .btn:hover { opacity:.9; }
+  .btn:disabled { opacity:.5; cursor:not-allowed; }
+  .msg   { font-size:12px; margin-top:14px; min-height:18px; }
+  .msg.ok   { color:#16a34a; }
+  .msg.err  { color:#dc2626; }
+  .msg.info { color:#6366f1; }
+  .spinner { display:inline-block; width:14px; height:14px; border:2px solid #fff; border-top-color:transparent; border-radius:50%; animation:spin .7s linear infinite; vertical-align:middle; margin-right:6px; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="title">🔐 FO 강제 로그인</div>
+  <div class="sub">시뮬레이터 회원 FO 자동 로그인</div>
+  <div class="info" id="infoBox">
+    <b>ID:</b> <span id="dispId">-</span><br>
+    <b>PW:</b> <span id="dispPw">-</span>
+  </div>
+  <button class="btn" id="btnLogin" onclick="doLogin()" disabled>로그인 후 FO 홈으로 이동</button>
+  <div class="msg info" id="msg">준비 중...</div>
+</div>
+<script>
+(function () {
+  /* URL 파라미터 파싱 */
+  var hash = location.hash || '';
+  var params = {};
+  hash.replace(/^#/, '').split('&').forEach(function (seg) {
+    var i = seg.indexOf('=');
+    if (i > 0) params[seg.slice(0, i)] = decodeURIComponent(seg.slice(i + 1));
+  });
+
+  var loginId  = params.autoLoginId  || '';
+  var loginPwd = params.autoLoginPwd || '1111';
+  var apiBase  = 'http://' + location.hostname + ':3000/api';
+  var foBase   = location.origin + location.pathname.replace(/\/pages\/.*$/, '');
+
+  document.getElementById('dispId').textContent = loginId || '(없음)';
+  document.getElementById('dispPw').textContent = loginPwd ? '●'.repeat(loginPwd.length) : '-';
+
+  if (!loginId) {
+    document.getElementById('msg').textContent = '⚠ loginId 파라미터가 없습니다.';
+    document.getElementById('msg').className = 'msg err';
+    return;
+  }
+
+  /* loginId 있으면 버튼 활성화 후 자동 로그인 */
+  document.getElementById('btnLogin').disabled = false;
+  document.getElementById('msg').className = 'msg info';
+  document.getElementById('msg').textContent = '자동 로그인 시도 중...';
+
+  window.doLogin = async function () {
+    var btn = document.getElementById('btnLogin');
+    var msg = document.getElementById('msg');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>로그인 중...';
+    msg.className = 'msg info';
+    msg.textContent = '로그인 API 호출 중...';
+
+    try {
+      var res = await fetch(apiBase + '/co/fo-auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-UI-Nm': 'ZD시뮬FO로그인',
+          'X-Cmd-Nm': '강제로그인',
+        },
+        body: JSON.stringify({ loginId: loginId, loginPwd: loginPwd }),
+      });
+
+      var json = await res.json();
+      if (!res.ok || json.status !== 'OK') {
+        throw new Error(json.message || ('HTTP ' + res.status));
+      }
+
+      var d = json.data || {};
+      /* FO localStorage에 토큰 저장 */
+      if (d.accessToken)  localStorage.setItem('modu-fo-auth-accessToken',  d.accessToken);
+      if (d.refreshToken) localStorage.setItem('modu-fo-auth-refreshToken', d.refreshToken);
+      if (d.authUser)     localStorage.setItem('modu-fo-auth-authUser', JSON.stringify(d.authUser));
+
+      msg.className = 'msg ok';
+      msg.textContent = '✓ 로그인 성공! FO 홈으로 이동합니다...';
+      btn.innerHTML = '✓ 성공';
+
+      setTimeout(function () {
+        location.href = foBase + '/index.html#page=home';
+      }, 600);
+
+    } catch (e) {
+      msg.className = 'msg err';
+      msg.textContent = '✗ 로그인 실패: ' + (e.message || String(e));
+      btn.disabled = false;
+      btn.innerHTML = '다시 시도';
+    }
+  };
+
+  /* loginId 있으면 자동 실행 */
+  doLogin();
+})();
+</script>
+</body>
+</html>

@@ -124,18 +124,8 @@ window.Login = {
     };
     const isAppReady = coUtil.cofUseAppCodeReady(uiState, fnLoadCodes);
 
-    // ★ onMounted — 진입 시 코드 로드 + 시뮬레이터 자동 채우기
-    onMounted(() => {
-      if (isAppReady.value) fnLoadCodes();
-      /* URL 해시에 autoLoginId 파라미터가 있으면 로그인 폼에 자동 채우기 (시뮬레이터 FO로그인 버튼용) */
-      try {
-        const hash = window.location.hash || '';
-        const mId  = hash.match(/[?&]autoLoginId=([^&]+)/);
-        const mPwd = hash.match(/[?&]autoLoginPwd=([^&]+)/);
-        if (mId)  { form.email    = decodeURIComponent(mId[1]); }
-        if (mPwd) { form.password = decodeURIComponent(mPwd[1]); }
-      } catch (_) {}
-    });
+    // ★ onMounted — 진입 시 코드 로드 + 목록 초기 조회
+    onMounted(() => { if (isAppReady.value) fnLoadCodes(); });
 
     // login | terms | signup | sns-signup  → uiState.step 사용
 

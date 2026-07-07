@@ -387,13 +387,26 @@
     window.open(url, '_blank', 'width=1600,height=960,scrollbars=yes,resizable=yes');
   };
 
-  /* 회원 FO 로그인 window.open — 로그인 페이지를 loginId/pwd 쿼리로 열기 */
+  /* 회원 FO 로그인 window.open — 브릿지 HTML(zd-fo-login.html) 경유
+   * in-session 로그(params 있음): loginId/pwd 자동 채워 로그인 API 호출 → FO 홈 redirect
+   * DB 로드 로그(params 없음): 브릿지 열되 loginId 없음 안내 */
   const _openFoLogin = (row) => {
-    const loginId = row.params?.loginId || (row.meta?.params?.loginId) || '';
-    const loginPwd = row.params?.loginPwd || (row.meta?.params?.loginPwd) || '1111';
-    if (!loginId) { alert('loginId 정보가 없습니다. (DB 로드 로그는 params 미포함)'); return; }
-    const url = 'index.html#page=login&autoLoginId=' + encodeURIComponent(loginId) + '&autoLoginPwd=' + encodeURIComponent(loginPwd);
-    window.open(url, '_blank', 'width=480,height=700,scrollbars=yes,resizable=yes');
+    /* params 있으면 우선, 없으면 desc/meta에서 이메일 파싱 fallback */
+    let loginId  = row.params?.loginId || '';
+    let loginPwd = row.params?.loginPwd || '1111';
+    if (!loginId) {
+      /* desc: "[실버] simul김윤서 / sim_86782@outlook.com" 형태에서 이메일 추출 */
+      const src = (row.desc || row.uiNm || '');
+      const m = src.match(/([a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})/);
+      if (m) loginId = m[1];
+    }
+    if (!loginId && row.meta) {
+      loginId = row.meta.loginId || row.meta.email || '';
+    }
+    const hash = loginId
+      ? '#autoLoginId=' + encodeURIComponent(loginId) + '&autoLoginPwd=' + encodeURIComponent(loginPwd)
+      : '';
+    window.open('pages/bo/zd/zd-fo-login.html' + hash, '_blank', 'width=440,height=480,scrollbars=no,resizable=yes');
   };
 
   /* 회원 FO 마이페이지 window.open */
