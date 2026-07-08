@@ -182,16 +182,26 @@
       { id: 'zdTestAppMsgSendReceiv', label: 'Android/iOS 메시지 발송&수신' },
     ],
     simul: [
-      { group: '시뮬레이션' },
+      { group: '회원' },
       { id: 'zdSimulMemberMng', label: '회원시뮬' },
-      { id: 'zdSimulPromoMng', label: '프로모션시뮬' },
-      { id: 'zdSimulPlanMng', label: '기획전시뮬' },
-      { id: 'zdSimulEventMng', label: '이벤트시뮬' },
+      { id: 'zdSimulUserMng', label: '사용자시뮬' },
+      { id: 'zdSimulVendorMng', label: '업체시뮬' },
+      { group: '상품/주문' },
       { id: 'zdSimulProdMng', label: '상품시뮬' },
       { id: 'zdSimulOrderMng', label: '주문시뮬' },
       { id: 'zdSimulClaimMng', label: '클레임시뮬' },
       { id: 'zdSimulKanbanMng', label: '주문칸반시뮬' },
+      { group: '프로모션' },
+      { id: 'zdSimulCouponMng', label: '쿠폰시뮬' },
+      { id: 'zdSimulDiscntMng', label: '할인시뮬' },
+      { id: 'zdSimulSaveMng',   label: '마일리지시뮬' },
+      { id: 'zdSimulMixMng',    label: '혼합시뮬' },
+      { group: '전시/이벤트' },
+      { id: 'zdSimulPlanMng', label: '기획전시뮬' },
+      { id: 'zdSimulEventMng', label: '이벤트시뮬' },
+      { group: '정산/재무' },
       { id: 'zdSimulSettleMng', label: '정산시뮬' },
+      { id: 'zdSimulVoucherMng', label: '전표시뮬' },
       { group: '이력' },
       { id: 'zdSimulLogMng', label: '시뮬로그' },
     ],
@@ -538,7 +548,10 @@
         zdTestChattingWebSocket:   'zd-test-chatting-web-socket',
         zdTestAppMsgSendReceiv:    'zd-test-app-msg-send-receiv',
         zdSimulMemberMng:  'zd-simul-member-mng',
-        zdSimulPromoMng:   'zd-simul-promo-mng',
+        zdSimulCouponMng:  'zd-simul-coupon-mng',
+        zdSimulDiscntMng:  'zd-simul-discnt-mng',
+        zdSimulSaveMng:    'zd-simul-save-mng',
+        zdSimulMixMng:     'zd-simul-mix-mng',
         zdSimulPlanMng:    'zd-simul-plan-mng',
         zdSimulEventMng:   'zd-simul-event-mng',
         zdSimulProdMng:    'zd-simul-prod-mng',
@@ -546,6 +559,9 @@
         zdSimulClaimMng:   'zd-simul-claim-mng',
         zdSimulKanbanMng:  'zd-simul-kanban-mng',
         zdSimulSettleMng:  'zd-simul-settle-mng',
+        zdSimulUserMng:    'zd-simul-user-mng',
+        zdSimulVendorMng:  'zd-simul-vendor-mng',
+        zdSimulVoucherMng: 'zd-simul-voucher-mng',
         zdSimulLogMng:     'zd-simul-log-mng',
       };
 
@@ -2706,7 +2722,10 @@
             <zd-test-chatting-web-socket    v-else-if="page==='zdTestChattingWebSocket'"    :navigate="navigate" :show-toast="showToast" />
             <zd-test-app-msg-send-receiv    v-else-if="page==='zdTestAppMsgSendReceiv'"    :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
             <zd-simul-member-mng  v-else-if="page==='zdSimulMemberMng'"  :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
-            <zd-simul-promo-mng   v-else-if="page==='zdSimulPromoMng'"   :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
+            <zd-simul-coupon-mng  v-else-if="page==='zdSimulCouponMng'"  :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
+            <zd-simul-discnt-mng  v-else-if="page==='zdSimulDiscntMng'"  :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
+            <zd-simul-save-mng    v-else-if="page==='zdSimulSaveMng'"    :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
+            <zd-simul-mix-mng     v-else-if="page==='zdSimulMixMng'"     :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
             <zd-simul-plan-mng    v-else-if="page==='zdSimulPlanMng'"    :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
             <zd-simul-event-mng   v-else-if="page==='zdSimulEventMng'"   :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
             <zd-simul-prod-mng    v-else-if="page==='zdSimulProdMng'"    :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
@@ -2714,6 +2733,9 @@
             <zd-simul-claim-mng   v-else-if="page==='zdSimulClaimMng'"   :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
             <zd-simul-kanban-mng  v-else-if="page==='zdSimulKanbanMng'"  :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
             <zd-simul-settle-mng  v-else-if="page==='zdSimulSettleMng'"  :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
+            <zd-simul-user-mng    v-else-if="page==='zdSimulUserMng'"    :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
+            <zd-simul-vendor-mng  v-else-if="page==='zdSimulVendorMng'"  :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
+            <zd-simul-voucher-mng v-else-if="page==='zdSimulVoucherMng'" :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
             <zd-simul-log-mng     v-else-if="page==='zdSimulLogMng'"     :navigate="navigate" :show-toast="showToast" />
             <bo-error-401 v-else-if="page==='error401'" :navigate="navigate" />
             <bo-error-500 v-else-if="page==='error500'" :navigate="navigate" :message="errorMessage" />
@@ -3311,7 +3333,10 @@
     .component('ZdSimulControlPanel', window.ZdSimulControlPanel)
     .component('ZdSimulLogPanel',     window.ZdSimulLogPanel)
     .component('ZdSimulMemberMng',    window.ZdSimulMemberMng)
-    .component('ZdSimulPromoMng',   window.ZdSimulPromoMng)
+    .component('ZdSimulCouponMng',  window.ZdSimulCouponMng)
+    .component('ZdSimulDiscntMng',  window.ZdSimulDiscntMng)
+    .component('ZdSimulSaveMng',    window.ZdSimulSaveMng)
+    .component('ZdSimulMixMng',     window.ZdSimulMixMng)
     .component('ZdSimulPlanMng',    window.ZdSimulPlanMng)
     .component('ZdSimulEventMng',   window.ZdSimulEventMng)
     .component('ZdSimulProdMng',    window.ZdSimulProdMng)
@@ -3319,6 +3344,9 @@
     .component('ZdSimulClaimMng',   window.ZdSimulClaimMng)
     .component('ZdSimulKanbanMng',  window.ZdSimulKanbanMng)
     .component('ZdSimulSettleMng',  window.ZdSimulSettleMng)
+    .component('ZdSimulUserMng',    window.ZdSimulUserMng)
+    .component('ZdSimulVendorMng',  window.ZdSimulVendorMng)
+    .component('ZdSimulVoucherMng', window.ZdSimulVoucherMng)
     .component('ZdSimulLogMng',     window.ZdSimulLogMng)
     .use(Pinia.createPinia())
     .mount('#app');

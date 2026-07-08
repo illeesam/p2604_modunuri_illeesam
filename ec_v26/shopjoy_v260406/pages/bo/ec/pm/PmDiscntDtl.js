@@ -41,7 +41,7 @@ window.PmDiscntDtl = {
     /* _applyNewDefaults — 신규 등록 진입 시 기본값 채움 */
     const _applyNewDefaults = () => {
       Object.assign(form, {
-        discntTypeCd: '정률', discntValue: 0, discntStatusCd: '활성',
+        discntTypeCd: 'RATE', discntValue: 0, discntStatusCd: '활성',
         startDate: DEFAULT_START, endDate: DEFAULT_END,
         discntTargetCd: '전체상품', minOrderAmt: 0, maxDiscntAmt: 0,
       });
@@ -178,7 +178,7 @@ window.PmDiscntDtl = {
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
-      codes.discnt_types = codeStore.sgGetGrpCodes('DISCNT_TYPE_KR');
+      codes.discnt_types = codeStore.sgGetGrpCodes('DISCNT_TYPE');
       codes.promo_statuses = codeStore.sgGetGrpCodes('PROMO_STATUS');
       codes.discnt_apply_targets = codeStore.sgGetGrpCodes('DISCNT_APPLY_TARGET');
       uiState.isPageCodeLoad = true;

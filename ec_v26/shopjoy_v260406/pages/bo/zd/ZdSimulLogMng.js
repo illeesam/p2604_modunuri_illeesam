@@ -4,10 +4,10 @@
 
   const DOMAIN_PAGE_MAP = {
     '회원': 'zdSimulMember', '상품': 'zdSimulProd', '주문': 'zdSimulOrder',
-    '클레임': 'zdSimulClaim', '프로모션': 'zdSimulPromo', '기획전': 'zdSimulPlan',
+    '클레임': 'zdSimulClaim', '프로모션': 'zdSimulPromo', '마일리지': 'zdSimulSave', '기획전': 'zdSimulPlan',
     '이벤트': 'zdSimulEvent', '정산': 'zdSimulSettle',
   };
-  const DOMAINS_ALL = ['전체', '회원', '상품', '주문', '클레임', '프로모션', '기획전', '이벤트', '정산'];
+  const DOMAINS_ALL = ['전체', '회원', '상품', '주문', '클레임', '프로모션', '마일리지', '기획전', '이벤트', '정산'];
 
   window.ZdSimulLogMng = {
     name: 'ZdSimulLogMng',
@@ -18,11 +18,15 @@
     },
     setup(props) {
       /* ── [01] 상태 ──────────────────────────────────── */
+      const _today   = () => new Date().toISOString().slice(0, 10);
+      const _yearAgo = () => { const d = new Date(); d.setFullYear(d.getFullYear() - 1); return d.toISOString().slice(0, 10); };
       const searchParam = reactive({
         domain: '전체',
         mode: '전체',
         status: '전체',
         keyword: '',
+        dateFrom: _yearAgo(),
+        dateTo: _today(),
       });
       const pager = reactive({ pageNo: 1, pageSize: 50, pageTotalPage: 1, pageTotalCount: 0 });
       const allLogs = ref([]);
@@ -35,10 +39,12 @@
       };
       const onSearch = () => handleSearchList();
       const onReset  = () => {
-        searchParam.domain = '전체';
-        searchParam.mode   = '전체';
-        searchParam.status = '전체';
-        searchParam.keyword = '';
+        searchParam.domain   = '전체';
+        searchParam.mode     = '전체';
+        searchParam.status   = '전체';
+        searchParam.keyword  = '';
+        searchParam.dateFrom = _yearAgo();
+        searchParam.dateTo   = _today();
         handleSearchList();
       };
 
@@ -53,6 +59,8 @@
           if (searchParam.status === '성공') list = list.filter(r => r.status === 'ok');
           else list = list.filter(r => r.status !== 'ok');
         }
+        if (searchParam.dateFrom) list = list.filter(r => (r.ts || '') >= searchParam.dateFrom);
+        if (searchParam.dateTo)   list = list.filter(r => (r.ts || '').slice(0, 10) <= searchParam.dateTo);
         if (searchParam.keyword) {
           const kw = searchParam.keyword.toLowerCase();
           list = list.filter(r => (r.desc || '').toLowerCase().includes(kw) || (r.reason || '').toLowerCase().includes(kw));
@@ -128,6 +136,8 @@
 
       /* 검색 컬럼 */
       const baseSearchColumns = [
+        { key: 'dateRange', type: 'dateRange', label: '등록기간',
+          startKey: 'dateFrom', endKey: 'dateTo', typeKey: null },
         { key: 'domain', type: 'select', label: '도메인', options: DOMAINS_ALL.map(d => ({ value: d, label: d })) },
         { key: 'mode',   type: 'select', label: '유형',
           options: [{ value: '전체', label: '전체' }, { value: '생성', label: '생성' }, { value: '수정', label: '수정' }] },

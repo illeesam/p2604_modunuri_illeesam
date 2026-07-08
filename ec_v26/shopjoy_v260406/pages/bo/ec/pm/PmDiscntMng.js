@@ -108,7 +108,7 @@ window.PmDiscntMng = {
       try {
         codes.discount_types = codeStore.sgGetGrpCodes('DISCOUNT_TYPE');
         codes.discount_statuses = codeStore.sgGetGrpCodes('DISCOUNT_STATUS');
-        codes.discnt_types = codeStore.sgGetGrpCodes('DISCNT_TYPE_KR');
+        codes.discnt_types = codeStore.sgGetGrpCodes('DISCNT_TYPE');
         codes.promo_statuses = codeStore.sgGetGrpCodes('PROMO_STATUS');
         codes.date_range_opts = codeStore.sgGetGrpCodes('DATE_RANGE_OPT');
         uiState.isPageCodeLoad = true;
@@ -230,10 +230,9 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
     // ===== 페이저 번호 빌더 ================================================
 
     // ===== 배지(badge) 헬퍼 ================================================
-    /* 할인 fnTypeBadge — sy_code DISCNT_TYPE_KR code_opt1 우선, 없으면 FB */
-    const _DISCNT_TYPE_FB = { '정률': 'badge-blue', '정액': 'badge-green', '장바구니': 'badge-orange' };
-    /* fnTypeBadge — 유형 배지 */
-    const fnTypeBadge   = t => coUtil.cofCodeBadge('DISCNT_TYPE_KR', t, _DISCNT_TYPE_FB[t] || 'badge-gray');
+    /* fnTypeBadge — 유형 배지 (DISCNT_TYPE: RATE/FIXED/FREE_SHIP) */
+    const _DISCNT_TYPE_FB = { RATE: 'badge-blue', FIXED: 'badge-green', FREE_SHIP: 'badge-orange' };
+    const fnTypeBadge   = t => coUtil.cofCodeBadge('DISCNT_TYPE', t, _DISCNT_TYPE_FB[t] || 'badge-gray');
 
     /* 할인 fnStatusBadge */
     const _DISCNT_STATUS_FB = { '활성': 'badge-green', '비활성': 'badge-gray', '종료': 'badge-red' };

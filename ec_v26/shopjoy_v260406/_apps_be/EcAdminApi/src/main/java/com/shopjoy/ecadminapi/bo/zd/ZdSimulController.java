@@ -33,8 +33,14 @@ import com.shopjoy.ecadminapi.base.ec.pm.service.PmDiscntService;
 import com.shopjoy.ecadminapi.base.ec.pm.service.PmEventService;
 import com.shopjoy.ecadminapi.base.ec.pm.service.PmPlanService;
 import com.shopjoy.ecadminapi.base.ec.pm.service.PmSaveService;
+import com.shopjoy.ecadminapi.base.ec.st.data.entity.StErpVoucher;
 import com.shopjoy.ecadminapi.base.ec.st.data.entity.StSettle;
+import com.shopjoy.ecadminapi.base.ec.st.service.StErpVoucherService;
 import com.shopjoy.ecadminapi.base.ec.st.service.StSettleService;
+import com.shopjoy.ecadminapi.base.sy.data.entity.SyUser;
+import com.shopjoy.ecadminapi.base.sy.data.entity.SyVendor;
+import com.shopjoy.ecadminapi.base.sy.service.SyUserService;
+import com.shopjoy.ecadminapi.base.sy.service.SyVendorService;
 import com.shopjoy.ecadminapi.common.exception.CmBizException;
 import com.shopjoy.ecadminapi.common.response.ApiResponse;
 import com.shopjoy.ecadminapi.common.response.PageResult;
@@ -90,6 +96,9 @@ public class ZdSimulController {
     private final PmDiscntService      pmDiscntService;
     private final PmSaveService        pmSaveService;
     private final StSettleService      stSettleService;
+    private final StErpVoucherService  stErpVoucherService;
+    private final SyUserService        syUserService;
+    private final SyVendorService      syVendorService;
     private final PasswordEncoder      passwordEncoder;
     private final ZdSimulLogRepository zdSimulLogRepository;
 
@@ -135,6 +144,9 @@ public class ZdSimulController {
         log.setTargetId(str(body, "targetId", null));
         log.setUserNm(sanitizeText(str(body, "userNm", null)));
         log.setUiNm(str(body, "uiNm", null));
+        /* paramsJson: 프론트가 전송한 실행 파라미터 JSON 문자열을 detail_json 에 그대로 저장 */
+        String paramsJson = str(body, "paramsJson", null);
+        if (paramsJson != null && !paramsJson.isBlank()) log.setDetailJson(paramsJson);
         ZdSimulLog saved = zdSimulLogRepository.save(log);
         return ResponseEntity.ok(ApiResponse.ok(Map.of("logId", saved.getLogId())));
     }
@@ -643,6 +655,103 @@ public class ZdSimulController {
         VoUtil.mapCopy(body, patch, "settleId");
         stSettleService.update(settleId, patch);
         return ResponseEntity.ok(ApiResponse.ok(Map.of("settleId", settleId)));
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       사용자(관리자) 시뮬
+    ═══════════════════════════════════════════════════════════ */
+
+    /** 관리자 사용자 생성 */
+    @PostMapping("/user/create")
+    @Transactional
+    public ResponseEntity<ApiResponse<Map<String, Object>>> userCreate(
+            @RequestBody Map<String, Object> body) {
+        String siteId = SecurityUtil.getSiteIdOrDefault("SITE000001");
+        SyUser user = new SyUser();
+        VoUtil.mapCopy(body, user, "loginPwd");
+        user.setSiteId(siteId);
+        String rawPwd = body.get("loginPwd") instanceof String s && !s.isBlank() ? s : "1111";
+        user.setLoginPwdHash(passwordEncoder.encode(rawPwd));
+        if (user.getUserStatusCd() == null) user.setUserStatusCd("ACTIVE");
+        if (body.get("userNm") instanceof String nm) user.setUserNm(sanitizeText(nm));
+        SyUser saved = syUserService.create(user);
+        return ResponseEntity.ok(ApiResponse.ok(Map.of("userId", saved.getUserId())));
+    }
+
+    /** 관리자 사용자 수정 */
+    @PostMapping("/user/update")
+    @Transactional
+    public ResponseEntity<ApiResponse<Map<String, Object>>> userUpdate(
+            @RequestBody Map<String, Object> body) {
+        String userId = requireStr(body, "userId");
+        SyUser patch = new SyUser();
+        VoUtil.mapCopy(body, patch, "userId", "loginPwd");
+        syUserService.update(userId, patch);
+        return ResponseEntity.ok(ApiResponse.ok(Map.of("userId", userId)));
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       업체 시뮬
+    ═══════════════════════════════════════════════════════════ */
+
+    /** 업체 생성 */
+    @PostMapping("/vendor/create")
+    @Transactional
+    public ResponseEntity<ApiResponse<Map<String, Object>>> vendorCreate(
+            @RequestBody Map<String, Object> body) {
+        String siteId = SecurityUtil.getSiteIdOrDefault("SITE000001");
+        SyVendor vendor = new SyVendor();
+        VoUtil.mapCopy(body, vendor);
+        vendor.setSiteId(siteId);
+        if (vendor.getVendorStatusCd() == null) vendor.setVendorStatusCd("ACTIVE");
+        if (vendor.getVendorNo() == null || vendor.getVendorNo().isBlank())
+            vendor.setVendorNo("SIM" + System.currentTimeMillis() % 100000000L);
+        if (body.get("vendorNm") instanceof String nm) vendor.setVendorNm(sanitizeText(nm));
+        SyVendor saved = syVendorService.create(vendor);
+        return ResponseEntity.ok(ApiResponse.ok(Map.of("vendorId", saved.getVendorId())));
+    }
+
+    /** 업체 수정 */
+    @PostMapping("/vendor/update")
+    @Transactional
+    public ResponseEntity<ApiResponse<Map<String, Object>>> vendorUpdate(
+            @RequestBody Map<String, Object> body) {
+        String vendorId = requireStr(body, "vendorId");
+        SyVendor patch = new SyVendor();
+        VoUtil.mapCopy(body, patch, "vendorId");
+        syVendorService.update(vendorId, patch);
+        return ResponseEntity.ok(ApiResponse.ok(Map.of("vendorId", vendorId)));
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       ERP 전표 시뮬
+    ═══════════════════════════════════════════════════════════ */
+
+    /** ERP 전표 생성 */
+    @PostMapping("/voucher/create")
+    @Transactional
+    public ResponseEntity<ApiResponse<Map<String, Object>>> voucherCreate(
+            @RequestBody Map<String, Object> body) {
+        String siteId = SecurityUtil.getSiteIdOrDefault("SITE000001");
+        StErpVoucher voucher = new StErpVoucher();
+        VoUtil.mapCopy(body, voucher);
+        voucher.setSiteId(siteId);
+        if (voucher.getErpVoucherStatusCd() == null) voucher.setErpVoucherStatusCd("DRAFT");
+        if (voucher.getVoucherDate() == null) voucher.setVoucherDate(LocalDate.now());
+        StErpVoucher saved = stErpVoucherService.create(voucher);
+        return ResponseEntity.ok(ApiResponse.ok(Map.of("erpVoucherId", saved.getErpVoucherId())));
+    }
+
+    /** ERP 전표 수정 */
+    @PostMapping("/voucher/update")
+    @Transactional
+    public ResponseEntity<ApiResponse<Map<String, Object>>> voucherUpdate(
+            @RequestBody Map<String, Object> body) {
+        String erpVoucherId = requireStr(body, "erpVoucherId");
+        StErpVoucher patch = new StErpVoucher();
+        VoUtil.mapCopy(body, patch, "erpVoucherId");
+        stErpVoucherService.update(erpVoucherId, patch);
+        return ResponseEntity.ok(ApiResponse.ok(Map.of("erpVoucherId", erpVoucherId)));
     }
 
     /* ─── 헬퍼 ─────────────────────────────────────────────── */

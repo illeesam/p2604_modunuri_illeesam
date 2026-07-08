@@ -216,17 +216,10 @@
     props: {
       logs:      { type: Array,    required: true },
       logCols:   { type: Array,    required: true },
-      pager:     { type: Object,   default: () => ({ pageNo: 1, pageTotalCount: 0, pageTotalPage: 1 }) },
-      logSearch: { type: Object,   default: () => ({ uiNm: '', userNm: '', desc: '', status: '' }) },
+      pager:     { type: Object,   default: () => ({ pageNo: 1, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSize: 10, pageSizes: [10, 20, 50] }) },
+      logSearch: { type: Object,   default: () => ({ uiNm: '', userNm: '', desc: '', status: '', dateFrom: '', dateTo: '' }) },
     },
     setup(props, { emit }) {
-      const cfPageNums = _computed(() => {
-        const total = props.pager.pageTotalPage || 1, cur = props.pager.pageNo || 1;
-        const start = Math.max(1, cur - 2), end = Math.min(total, start + 4);
-        const nums = [];
-        for (let i = start; i <= end; i++) nums.push(i);
-        return nums;
-      });
       const onClear   = () => emit('clear');
       const onSetPage = (n) => emit('set-page', n);
       const onSearch  = () => emit('search-log');
@@ -270,7 +263,7 @@
       };
 
       return {
-        cfPageNums, onClear, onSetPage, onSearch,
+        onClear, onSetPage, onSearch,
         expandedId, onToggleExpand, isExpanded, parseDesc,
         cfDomainMeta, onOpenBo, onOpenFo, onOpenFoLogin, onOpenFoProfile, onOpenKanban,
         onOpenCalc, calcModal,
@@ -287,13 +280,18 @@
   <!-- 검색 바 -->
   <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap;">
     <span style="font-size:11px;color:#94a3b8;font-weight:600;">● 목록 총 {{ pager.pageTotalCount }}건</span>
-    <div style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;">
+    <div style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+      <input v-model="logSearch.dateFrom" type="date" @keyup.enter="onSearch"
+        style="height:26px;padding:0 6px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;outline:none;color:#334155;" />
+      <span style="font-size:11px;color:#94a3b8;">~</span>
+      <input v-model="logSearch.dateTo" type="date" @keyup.enter="onSearch"
+        style="height:26px;padding:0 6px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;outline:none;color:#334155;" />
       <input v-model="logSearch.uiNm" type="text" placeholder="화면명" @keyup.enter="onSearch"
-        style="width:110px;height:26px;padding:0 7px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;outline:none;color:#334155;" />
+        style="width:100px;height:26px;padding:0 7px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;outline:none;color:#334155;" />
       <input v-model="logSearch.userNm" type="text" placeholder="등록자" @keyup.enter="onSearch"
-        style="width:80px;height:26px;padding:0 7px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;outline:none;color:#334155;" />
+        style="width:70px;height:26px;padding:0 7px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;outline:none;color:#334155;" />
       <input v-model="logSearch.desc" type="text" placeholder="내용" @keyup.enter="onSearch"
-        style="width:120px;height:26px;padding:0 7px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;outline:none;color:#334155;" />
+        style="width:110px;height:26px;padding:0 7px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;outline:none;color:#334155;" />
       <select v-model="logSearch.status"
         style="height:26px;padding:0 6px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;background:#fff;color:#334155;">
         <option value="">성공/실패 전체</option>
@@ -334,7 +332,7 @@
               <span style="font-size:13px;color:#94a3b8;user-select:none;transition:transform .15s;display:inline-block;"
                 :style="isExpanded(row) ? 'transform:rotate(90deg);color:#6366f1;' : ''">▶</span>
             </td>
-            <td style="text-align:center;color:#94a3b8;">{{ (pager.pageNo-1)*10 + idx + 1 }}</td>
+            <td style="text-align:center;color:#94a3b8;">{{ pager.pageTotalCount - (pager.pageNo-1)*(pager.pageSize||10) - idx }}</td>
             <td style="color:#64748b;font-family:monospace;font-size:10px;">{{ row.ts }}</td>
             <td style="color:#6366f1;font-size:11px;">{{ row.uiNm }}</td>
             <td style="text-align:center;color:#475569;">{{ row.userNm }}</td>
@@ -436,16 +434,7 @@
   </div>
 
   <!-- 페이지네이션 -->
-  <div v-if="pager.pageTotalPage > 1" class="pagination" style="margin-top:10px;display:flex;justify-content:center;align-items:center;gap:4px;">
-    <button class="pager" @click="onSetPage(1)" :disabled="pager.pageNo===1">&laquo;</button>
-    <button class="pager" @click="onSetPage(pager.pageNo-1)" :disabled="pager.pageNo===1">&lsaquo;</button>
-    <button v-for="n in cfPageNums" :key="n" class="pager"
-      :class="n===pager.pageNo ? 'active' : ''"
-      @click="onSetPage(n)">{{ n }}</button>
-    <button class="pager" @click="onSetPage(pager.pageNo+1)" :disabled="pager.pageNo===pager.pageTotalPage">&rsaquo;</button>
-    <button class="pager" @click="onSetPage(pager.pageTotalPage)" :disabled="pager.pageNo===pager.pageTotalPage">&raquo;</button>
-    <span style="font-size:11px;color:#94a3b8;margin-left:6px;">{{ pager.pageNo }}/{{ pager.pageTotalPage }} 페이지</span>
-  </div>
+  <bo-pager :pager="pager" :on-set-page="onSetPage" />
 
   <!-- 클레임 계산 모달 -->
   <od-claim-calc-modal :show="calcModal.show" :claim-id="calcModal.claimId" @close="calcModal.show=false" />

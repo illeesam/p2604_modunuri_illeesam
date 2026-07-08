@@ -57,6 +57,8 @@
       targetId: (meta && meta.id) ? String(meta.id) : null,
       userNm: _sanitize(userNm || '-'),
       uiNm: uiNm || domain,
+      /* params를 JSON 문자열로 저장 → 조회 시 파싱하여 복원 */
+      paramsJson: (meta && meta.params) ? JSON.stringify(meta.params) : null,
     };
     if (window.boApiSvc && window.boApiSvc.zdSimulLog) {
       window.boApiSvc.zdSimulLog.save(body).catch(() => {});
@@ -93,10 +95,13 @@
     });
 
     const logs = ref([]);
-    const logPager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1 });
-    const logSearch = reactive({ uiNm: uiNm || label || '', userNm: '', desc: '', status: '' });
+    const logPager = reactive({ pageNo: 1, pageSize: 10, pageTotalCount: 0, pageTotalPage: 1, pageNums: [1], pageSizes: [10, 20, 50] });
+    const _today     = () => new Date().toISOString().slice(0, 10);
+    const _yearAgo   = () => { const d = new Date(); d.setFullYear(d.getFullYear() - 1); return d.toISOString().slice(0, 10); };
+    const logSearch = reactive({ uiNm: uiNm || label || '', userNm: '', desc: '', status: '', dateFrom: _yearAgo(), dateTo: _today() });
 
-    /* 로컬 params 캐시 — targetId → params (DB 재조회 후 복원용, 최대 200건) */
+    /* 로컬 params 캐시 — desc → params (DB 재조회 후 desc 매칭 복원용, 최대 200건)
+     * targetId 기준 매칭은 DB 저장 타이밍에 따라 불일치 발생 → desc 기준으로 변경 */
     const _paramsCache = new Map();
 
     /* DB 조회 */
@@ -108,16 +113,26 @@
           domain,
           pageNo: curPage,
           pageSize: logPager.pageSize,
-          uiNm:    logSearch.uiNm    || undefined,
-          userNm:  logSearch.userNm  || undefined,
-          desc:    logSearch.desc    || undefined,
-          status:  logSearch.status  || undefined,
+          uiNm:     logSearch.uiNm     || undefined,
+          userNm:   logSearch.userNm   || undefined,
+          desc:     logSearch.desc     || undefined,
+          status:   logSearch.status   || undefined,
+          dateFrom: logSearch.dateFrom || undefined,
+          dateTo:   logSearch.dateTo   || undefined,
         };
         const res = await window.boApiSvc.zdSimulLog.getPage(params);
         const d = res.data?.data || {};
         const offset = (curPage - 1) * logPager.pageSize;
         const rows = (d.pageList || []).map((e, i) => {
-          const tid = e.targetId || '';
+          const tid  = e.targetId || '';
+          const desc = e.descTxt  || '';
+          /* 1순위: DB에서 detailJson 파싱, 2순위: 로컬 메모리 캐시 */
+          let params = null;
+          const rawJson = e.detailJson || e.paramsJson || null;
+          if (rawJson) {
+            try { params = JSON.parse(rawJson); } catch (_) {}
+          }
+          if (!params) params = _paramsCache.get(tid) || _paramsCache.get(desc) || null;
           return {
             _rowNo:   offset + i + 1,
             ts:       e.regDate ? e.regDate.replace('T', ' ').slice(0, 19) : (e.reg_date || ''),
@@ -125,18 +140,19 @@
             uiNm:     e.uiNm   || '-',
             mode:     e.simulMode || '-',
             status:   e.simulStatus === 'SUCCESS' ? 'ok' : 'fail',
-            desc:     e.descTxt   || '',
+            desc,
             reason:   e.reasonTxt || '',
             domain:   e.domain   || '',
             targetId: tid,
             meta:     {},
-            params:   _paramsCache.get(tid) || null,
+            params,
           };
         });
         logs.value = rows;
         logPager.pageTotalCount = d.pageTotalCount || 0;
         logPager.pageTotalPage  = d.pageTotalPage  || 1;
         logPager.pageNo = pageNo || logPager.pageNo;
+        if (window.coUtil?.cofBuildPagerNums) window.coUtil.cofBuildPagerNums(logPager);
       } catch (_) {}
     };
 
@@ -176,20 +192,13 @@
           const _au = window.boAuthStore?.svAuthUser || (window.boAuthStore && window.boAuthStore.sgCurrentUser?.()) || {};
           const userNm = _au.name || _au.authNm || _au.userNm || '-';
           const mode = cfg.mode === 'create' ? '생성' : '수정';
-          /* 로컬 로그 즉시 프리펜드 (params 포함) */
+          /* params 캐시 (DB 재조회 시 동일 desc/id 매칭 복원용) */
           const localParams = meta.params || null;
-          if (meta.id && localParams) {
-            _paramsCache.set(String(meta.id), localParams);
-            if (_paramsCache.size > 200) _paramsCache.delete(_paramsCache.keys().next().value);
+          if (localParams) {
+            _paramsCache.set(desc, localParams);
+            if (meta.id) _paramsCache.set(String(meta.id), localParams);
+            if (_paramsCache.size > 400) _paramsCache.delete(_paramsCache.keys().next().value);
           }
-          const localEntry = {
-            _rowNo: 0, ts: _ts(), userNm, uiNm: uiNm || label, domain,
-            mode, status: ok ? 'ok' : 'fail', desc, reason,
-            targetId: meta.id ? String(meta.id) : '',
-            meta,
-            params: localParams,
-          };
-          logs.value = [localEntry, ...logs.value].slice(0, logPager.pageSize * 2);
           _addLog(domain, mode, ok ? '성공' : '실패', desc, reason, meta, userNm, uiNm || label);
           if (ok && meta.id) created.push(meta);
         } catch (e) {
@@ -198,12 +207,6 @@
           const _au = window.boAuthStore?.svAuthUser || (window.boAuthStore && window.boAuthStore.sgCurrentUser?.()) || {};
           const userNm = _au.name || _au.authNm || _au.userNm || '-';
           const mode = cfg.mode === 'create' ? '생성' : '수정';
-          const errEntry = {
-            _rowNo: 0, ts: _ts(), userNm, uiNm: uiNm || label, domain,
-            mode, status: 'fail', desc: '오류 발생', reason,
-            targetId: '', meta: {}, params: null,
-          };
-          logs.value = [errEntry, ...logs.value].slice(0, logPager.pageSize * 2);
           _addLog(domain, mode, '실패', '오류 발생', reason, {}, userNm, uiNm || label);
         }
       }

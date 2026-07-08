@@ -161,7 +161,7 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
     /* 폼 초기값 = 빈 폼 (미선택/초기화 상태에서는 모든 필드 비움).
      *   신규 등록 기본값(구매적립/365/활성/날짜)은 [+신규] 진입 시에만 _applyNewDefaults() 로 채움. */
     const form = reactive({
-      saveId: null, saveNm: '', saveType: '', saveVal: '', saveUnit: '',
+      saveId: null, saveNm: '', saveTypeCd: '', saveType: '', saveVal: '', saveUnit: '',
       saveStatus: '', startDate: '', endDate: '',
       expireDay: '', minOrderAmt: '', remark: '',
       visibilityTargets: '^PUBLIC^',
@@ -170,7 +170,7 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
     /* _applyNewDefaults — 신규 등록 진입 시 기본값 채움 */
     const _applyNewDefaults = () => {
       Object.assign(form, {
-        saveType: '구매적립', saveVal: 0, saveUnit: '원', saveStatus: '활성',
+        saveTypeCd: 'EARN', saveType: '구매적립', saveVal: 0, saveUnit: '원', saveStatus: '활성',
         startDate: DEFAULT_START, endDate: DEFAULT_END, expireDay: 365, minOrderAmt: 0,
       });
     };

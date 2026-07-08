@@ -27,7 +27,7 @@ window.PmCouponDtl = {
       coupon_issue_type_opts: [{value:'auto',label:'자동 발급'},{value:'manual',label:'수동 발급'},{value:'event',label:'이벤트 발급'}],
       coupon_target_opts: [{value:'all',label:'전체 회원'},{value:'newMember',label:'신규 회원'},{value:'subscribe',label:'구독자'},{value:'purchase',label:'구매 고객'}],
       coupon_apply_opts: [{value:'all',label:'모든 상품'},{value:'category',label:'카테고리 제한'},{value:'product',label:'특정 상품만'},{value:'exclude',label:'제외 상품'}],
-      coupon_types: ['배송비할인쿠폰','회원가입축하쿠폰','상품할인쿠폰','주문할인쿠폰','클레임관리자지급쿠폰','VIP쿠폰'],
+      coupon_types: ['상품할인쿠폰','주문할인쿠폰','배송비할인쿠폰','무료배송쿠폰','회원가입축하쿠폰','VIP쿠폰','클레임관리자지급쿠폰'],
       issue_targets: ['상품','판매업체','브랜드','카테고리'],
       discount_types: [{value:'amount',label:'정액'},{value:'percent',label:'정률'}],
     });

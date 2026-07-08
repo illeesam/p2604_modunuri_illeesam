@@ -71,6 +71,8 @@
         discntDurationDays: 14,
         discntMinOrderAmt: 0,
         discntMaxDiscAmt: 50000,
+        discntScope: 'PRODUCT',
+        discntProdIds: '',
         /* 적립금 설정 */
         fixedSaveType: '__weighted__',
         saveTypeWeights: { RATE: 65, AMOUNT: 35 },
@@ -79,6 +81,8 @@
         saveAmtMin: 100,
         saveAmtMax: 5000,
         saveDurationDays: 365,
+        saveScope: 'PRODUCT',
+        saveProdIds: '',
       });
 
       /* ── [02] 공통 엔진 ──────────────────────────────── */
@@ -144,9 +148,14 @@
                 ? randInt(domCfg.discntRateMin, domCfg.discntRateMax)
                 : randInt(domCfg.discntAmtMin, domCfg.discntAmtMax);
               const nm   = (namePrefix || '') + pick(DISCNT_NAMES);
+              const discntProdIds = domCfg.discntScope === 'PRODUCT' && domCfg.discntProdIds
+                ? domCfg.discntProdIds.split(/[\s,]+/).map(s => s.trim()).filter(Boolean)
+                : [];
               const body = {
                 discntNm: nm, discntTypeCd: discType.cd, discVal,
                 startDate: now, endDate: _makeDate(domCfg.discntDurationDays),
+                scopeCd: domCfg.discntScope,
+                ...(discntProdIds.length ? { prodIds: discntProdIds } : {}),
                 minOrderAmt: domCfg.discntMinOrderAmt,
                 maxDiscAmt: domCfg.discntMaxDiscAmt,
                 simulYn: simulYn || 'Y',
@@ -161,10 +170,15 @@
               const saveRate = isRate ? randInt(domCfg.saveRateMin, domCfg.saveRateMax) : 0;
               const saveAmt  = isRate ? 0 : randInt(domCfg.saveAmtMin, domCfg.saveAmtMax);
               const nm   = (namePrefix || '') + pick(SAVE_NAMES);
+              const saveProdIds = domCfg.saveScope === 'PRODUCT' && domCfg.saveProdIds
+                ? domCfg.saveProdIds.split(/[\s,]+/).map(s => s.trim()).filter(Boolean)
+                : [];
               const body = {
                 saveNm: nm,
                 ...(isRate ? { saveRatePct: saveRate } : { saveAmt }),
                 startDate: now, endDate: _makeDate(domCfg.saveDurationDays),
+                scopeCd: domCfg.saveScope,
+                ...(saveProdIds.length ? { prodIds: saveProdIds } : {}),
                 simulYn: simulYn || 'Y',
               };
               const res = await boApi.post('/bo/zd/simul/promo/save-create', body, coUtil.cofApiHdr('프로모시뮬', '적립생성'));
@@ -266,6 +280,11 @@
         { key: 'discntDurationDays', label: '기간',    type: 'number', hint: '일' },
         { key: 'discntMinOrderAmt',  label: '최소주문', type: 'number', hint: '원' },
         { key: 'discntMaxDiscAmt',   label: '최대할인', type: 'number', hint: '원' },
+        { key: 'discntScope',        label: '적용범위', type: 'select', options: COUPON_SCOPES },
+        { key: 'discntProdIds',      label: '시뮬 상품 ID', type: 'text',
+          placeholder: 'ID 콤마 구분 (기본 5개 자동)',
+          hint: '비우면 simulYn=Y 상품 자동조회',
+          visible: (f) => f.discntScope === 'PRODUCT' },
       ];
       const saveCfgColumns = [
         makeRangeCol('saveRateMin', 'saveRateMax', '적립률 범위', 0, 50, '%',
@@ -273,6 +292,11 @@
         { key: 'saveAmtMin',       label: '정액 적립 최소', type: 'number', hint: '원', visible: (f) => f.fixedSaveType === 'AMOUNT' },
         { key: 'saveAmtMax',       label: '정액 적립 최대', type: 'number', hint: '원', visible: (f) => f.fixedSaveType === 'AMOUNT' },
         { key: 'saveDurationDays', label: '유효기간',       type: 'number', hint: '일' },
+        { key: 'saveScope',        label: '적용범위', type: 'select', options: COUPON_SCOPES },
+        { key: 'saveProdIds',      label: '시뮬 상품 ID', type: 'text',
+          placeholder: 'ID 콤마 구분 (기본 5개 자동)',
+          hint: '비우면 simulYn=Y 상품 자동조회',
+          visible: (f) => f.saveScope === 'PRODUCT' },
       ];
 
       const cfCouponDiscTotal = computed(() => Object.values(domCfg.couponDiscTypeWeights).reduce((a, b) => a + Number(b), 0) || 1);
