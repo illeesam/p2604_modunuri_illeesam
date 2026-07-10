@@ -1,4 +1,4 @@
-/* ShopJoy Admin - 판촉마일리지 상세/등록 */
+/* ShopJoy Admin - 판촉적립금 상세/등록 */
 window._pmSaveDtlState = window._pmSaveDtlState || { tab: 'info', tabMode: 'tab' };
 window.PmSaveDtl = {
   name: 'PmSaveDtl',
@@ -20,7 +20,7 @@ window.PmSaveDtl = {
     const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmSaveDtlState.tab || 'info', tabMode2: window._pmSaveDtlState.tabMode || 'tab'});
     const tab = Vue.toRef(uiState, 'tab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
-    const codes = reactive({ save_issue_types: [], save_units: [], promo_statuses: [] });
+    const codes = reactive({ save_types: [], save_issue_types: [], save_units: [], promo_statuses: [] });
 
     // 단건 조회
     /* loadVendors — 로드 */
@@ -65,7 +65,7 @@ window.PmSaveDtl = {
         return toggleVisibility(param);
       // 미리보기 확인 토스트
       } else if (cmd === 'form-previewConfirm') {
-        showToast('마일리지를 확인하였습니다.', 'success');
+        showToast('적립금을 확인하였습니다.', 'success');
         return;
       } else {
         console.warn('[handleBtnAction] unknown cmd:', cmd);
@@ -144,6 +144,7 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
     /* fnLoadCodes — 공통코드 로드 */
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
+      codes.save_types = codeStore.sgGetGrpCodes('SAVE_TYPE');
       codes.save_issue_types = codeStore.sgGetGrpCodes('SAVE_ISSUE_TYPE');
       codes.save_units = codeStore.sgGetGrpCodes('SAVE_UNIT');
       codes.promo_statuses = codeStore.sgGetGrpCodes('PROMO_STATUS');
@@ -177,7 +178,7 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
     const errors = reactive({});
 
     const schema = yup.object({
-      saveNm: yup.string().required('마일리지명을 입력해주세요.'),
+      saveNm: yup.string().required('적립금명을 입력해주세요.'),
       saveVal: yup.number().min(0, '적립값은 0 이상이어야 합니다.').required('적립값을 입력해주세요.'),
     });
 
@@ -297,8 +298,9 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
     // --- [컬럼 정의] ---
     const columns = {};
     columns.infoForm = [
-      { key: 'saveNm',      label: '마일리지명', type: 'text', required: true,
-        placeholder: '마일리지명 입력' },
+      { key: 'saveNm',      label: '적립금명', type: 'text', required: true,
+        placeholder: '적립금명 입력' },
+      { key: 'saveTypeCd',  label: '적립금 유형', type: 'select', options: () => codes.save_types },
       { key: 'saveType',    label: '적립유형', type: 'select', options: () => codes.save_issue_types },
       { key: 'saveVal',     label: '적립값', type: 'number', required: true, placeholder: '적립값 입력' },
       { key: 'saveUnit',    label: '적립단위', type: 'select', options: () => codes.save_units },
@@ -327,7 +329,7 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
   },
   template: /* html */`
 <!-- ===== ■. 상세 카드 (제목 + 탭바 + 탭컨텐츠를 한 영역으로) ===================== -->
-<bo-container :title="!active ? '마일리지 상세' : (cfIsNew ? '마일리지 등록' : (cfDtlMode ? '마일리지 상세' : '마일리지 수정'))"
+<bo-container :title="!active ? '적립금 상세' : (cfIsNew ? '적립금 등록' : (cfDtlMode ? '적립금 상세' : '적립금 수정'))"
   :title-id="!active ? '' : (cfIsNew ? '' : form.saveId)">
   <!-- ===== ■.■. 탭바 ==================================================== -->
   <bo-tab-bar :tabs="tabs" :tab="tab" :tab-mode="tabMode2"
@@ -393,7 +395,7 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
     <div class="dtl-pane" v-show="showTab('preview')" style="margin:0;">
       <div v-if="tabMode2!=='tab'" class="dtl-tab-card-title">👁 미리보기</div>
       <div style="background:#f9f9f9;border-radius:10px;padding:20px;border:1px solid #e8e8e8;max-width:600px;">
-        <div style="font-size:18px;font-weight:700;margin-bottom:12px;color:#1a1a2e;">{{ form.saveNm || '마일리지명' }}</div>
+        <div style="font-size:18px;font-weight:700;margin-bottom:12px;color:#1a1a2e;">{{ form.saveNm || '적립금명' }}</div>
         <div style="font-size:12px;color:#aaa;margin-bottom:16px;">{{ form.startDate }} ~ {{ form.endDate }}</div>
         <div style="background:#fff;padding:12px;border-radius:6px;margin-bottom:12px;border-left:4px solid #10b981;">
           <div style="font-size:13px;color:#666;margin-bottom:4px;">
@@ -413,7 +415,7 @@ watch(() => uiState.tab, v => { window._pmSaveDtlState.tab = v; });
             <span style="font-weight:700;">{{ (form.minOrderAmt||0).toLocaleString() }}원</span>
           </div>
         </div>
-        <button class="btn btn-primary" @click="handleBtnAction('form-previewConfirm')">마일리지 확인</button>
+        <button class="btn btn-primary" @click="handleBtnAction('form-previewConfirm')">적립금 확인</button>
       </div>
     </div>
     <!-- ===== □.□. 미리보기 ================================================== -->

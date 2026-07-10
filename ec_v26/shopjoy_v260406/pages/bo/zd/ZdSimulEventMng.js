@@ -4,14 +4,14 @@
   const { useSimulSetup, makeLogCols, makeBaseCfgColumns, makeRangeCol, makeRangeHandlers, rangeSlotTemplate } = window.ZdSimulBase;
 
   const EVENT_TYPES = [
-    { cd: 'ATTEND',   label: '출석체크',  badge: 'badge-blue'   },
-    { cd: 'QUIZ',     label: '퀴즈이벤트', badge: 'badge-purple' },
-    { cd: 'REVIEW',   label: '리뷰이벤트', badge: 'badge-green'  },
-    { cd: 'SHARE',    label: '공유이벤트', badge: 'badge-orange' },
-    { cd: 'PURCHASE', label: '구매이벤트', badge: 'badge-blue'   },
-    { cd: 'LOTTERY',  label: '복권이벤트', badge: 'badge-purple' },
-    { cd: 'PHOTO',    label: '포토이벤트', badge: 'badge-orange' },
-    { cd: 'SURVEY',   label: '설문이벤트', badge: 'badge-green'  },
+    { cd: 'ATTEND',   label: '출석체크',  badge: 'badge-blue',   color: '#3b82f6' },
+    { cd: 'QUIZ',     label: '퀴즈이벤트', badge: 'badge-purple', color: '#a855f7' },
+    { cd: 'REVIEW',   label: '리뷰이벤트', badge: 'badge-green',  color: '#22c55e' },
+    { cd: 'SHARE',    label: '공유이벤트', badge: 'badge-orange', color: '#f97316' },
+    { cd: 'PURCHASE', label: '구매이벤트', badge: 'badge-blue',   color: '#0ea5e9' },
+    { cd: 'LOTTERY',  label: '복권이벤트', badge: 'badge-purple', color: '#8b5cf6' },
+    { cd: 'PHOTO',    label: '포토이벤트', badge: 'badge-orange', color: '#f59e0b' },
+    { cd: 'SURVEY',   label: '설문이벤트', badge: 'badge-green',  color: '#16a34a' },
   ];
   const EVENT_STATUSES = [
     { value: 'READY',   label: '준비중' },
@@ -20,10 +20,10 @@
     { value: 'PAUSE',   label: '일시정지' },
   ];
   const BENEFIT_TYPES = [
-    { value: 'COUPON',  label: '쿠폰 지급' },
-    { value: 'SAVE',    label: '적립금 지급' },
-    { value: 'PRODUCT', label: '상품 증정' },
-    { value: 'POINT',   label: '포인트 지급' },
+    { value: 'COUPON',  label: '쿠폰 지급',   color: '#f59e0b' },
+    { value: 'SAVE',    label: '적립금 지급', color: '#22c55e' },
+    { value: 'PRODUCT', label: '상품 증정',   color: '#3b82f6' },
+    { value: 'POINT',   label: '포인트 지급', color: '#a855f7' },
   ];
   const EVENT_TITLES = [
     '여름 특별 이벤트', '가을 감사 이벤트', '신년 이벤트', '창립기념 이벤트',
@@ -254,51 +254,52 @@
   </div>
 
   <!-- 가중치 카드 행 -->
-  <div v-if="cfg.mode==='create'" style="margin-top:12px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;">
+  <div v-if="cfg.mode==='create'" style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
     <!-- 이벤트 유형 가중치 -->
-    <div class="card" style="padding:14px 16px;width:340px;">
+    <div class="card" style="padding:14px 16px;">
       <div class="list-title">📊 이벤트 유형 가중치</div>
       <div style="margin-top:8px;margin-bottom:10px;">
         <select v-model="domCfg.fixedEventType" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
           <option value="">-- 없음 --</option>
           <option value="__weighted__">-- 가중치적용 --</option>
-          <option v-for="t in EVENT_TYPES" :key="t.cd" :value="t.cd">{{ t.label }}</option>
         </select>
       </div>
       <div v-show="domCfg.fixedEventType === '__weighted__'">
         <div v-for="t in EVENT_TYPES" :key="t.cd" style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+          <span :style="'width:8px;height:8px;border-radius:50%;background:'+t.color+';flex-shrink:0;display:inline-block;'"></span>
           <span :class="'badge '+t.badge" style="min-width:64px;text-align:center;font-size:10px;">{{ t.label }}</span>
-          <input type="range" min="0" max="100" v-model.number="domCfg.eventTypeWeights[t.cd]" style="flex:1;accent-color:#a21caf;" />
+          <input type="range" min="0" max="100" v-model.number="domCfg.eventTypeWeights[t.cd]" :style="'flex:1;accent-color:'+t.color+';'" />
           <input type="number" min="0" max="100" v-model.number="domCfg.eventTypeWeights[t.cd]" style="width:40px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;padding:2px;" />
           <span style="font-size:10px;color:#94a3b8;min-width:28px;">{{ Math.round(domCfg.eventTypeWeights[t.cd]/cfTypeTotal*100) }}%</span>
         </div>
         <div style="display:flex;border-radius:4px;overflow:hidden;height:8px;margin-top:8px;">
-          <div v-for="t in EVENT_TYPES" :key="t.cd" :title="t.label" :style="{flex:domCfg.eventTypeWeights[t.cd],background:t.badge==='badge-blue'?'#3b82f6':t.badge==='badge-purple'?'#a21caf':t.badge==='badge-green'?'#16a34a':'#ea580c',transition:'flex .2s'}"></div>
+          <div v-for="t in EVENT_TYPES" :key="t.cd" :title="t.label" :style="'flex:'+domCfg.eventTypeWeights[t.cd]+';background:'+t.color+';transition:flex .2s'"></div>
         </div>
       </div>
     </div>
     <!-- 혜택 유형 가중치 -->
-    <div class="card" style="padding:14px 16px;width:340px;">
+    <div class="card" style="padding:14px 16px;">
       <div class="list-title">🎁 혜택 유형 가중치</div>
       <div style="margin-top:8px;margin-bottom:10px;">
         <select v-model="domCfg.fixedBenefitType" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
           <option value="">-- 없음 --</option>
           <option value="__weighted__">-- 가중치적용 --</option>
-          <option v-for="b in BENEFIT_TYPES" :key="b.value" :value="b.value">{{ b.label }}</option>
         </select>
       </div>
       <div v-show="domCfg.fixedBenefitType === '__weighted__'">
         <div v-for="b in BENEFIT_TYPES" :key="b.value" style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+          <span :style="'width:8px;height:8px;border-radius:50%;background:'+b.color+';flex-shrink:0;display:inline-block;'"></span>
           <span style="font-size:11px;color:#475569;min-width:64px;">{{ b.label }}</span>
-          <input type="range" min="0" max="100" v-model.number="domCfg.benefitTypeWeights[b.value]" style="flex:1;accent-color:#a21caf;" />
+          <input type="range" min="0" max="100" v-model.number="domCfg.benefitTypeWeights[b.value]" :style="'flex:1;accent-color:'+b.color+';'" />
           <input type="number" min="0" max="100" v-model.number="domCfg.benefitTypeWeights[b.value]" style="width:40px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;padding:2px;" />
           <span style="font-size:10px;color:#94a3b8;min-width:28px;">{{ Math.round(domCfg.benefitTypeWeights[b.value]/cfBenefitTotal*100) }}%</span>
         </div>
         <div style="display:flex;border-radius:4px;overflow:hidden;height:8px;margin-top:8px;">
-          <div v-for="b in BENEFIT_TYPES" :key="b.value" :title="b.label" :style="{flex:domCfg.benefitTypeWeights[b.value],background:b.value==='COUPON'?'#f59e0b':b.value==='SAVE'?'#16a34a':b.value==='PRODUCT'?'#3b82f6':'#a21caf',transition:'flex .2s'}"></div>
+          <div v-for="b in BENEFIT_TYPES" :key="b.value" :title="b.label" :style="'flex:'+domCfg.benefitTypeWeights[b.value]+';background:'+b.color+';transition:flex .2s'"></div>
         </div>
       </div>
     </div>
+    <div></div>
   </div>
 
   <!-- 실행 로그 -->

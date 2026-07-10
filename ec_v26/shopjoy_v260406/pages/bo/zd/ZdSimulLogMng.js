@@ -4,10 +4,10 @@
 
   const DOMAIN_PAGE_MAP = {
     '회원': 'zdSimulMember', '상품': 'zdSimulProd', '주문': 'zdSimulOrder',
-    '클레임': 'zdSimulClaim', '프로모션': 'zdSimulPromo', '마일리지': 'zdSimulSave', '기획전': 'zdSimulPlan',
+    '클레임': 'zdSimulClaim', '프로모션': 'zdSimulPromo', '적립금': 'zdSimulSave', '기획전': 'zdSimulPlan',
     '이벤트': 'zdSimulEvent', '정산': 'zdSimulSettle',
   };
-  const DOMAINS_ALL = ['전체', '회원', '상품', '주문', '클레임', '프로모션', '마일리지', '기획전', '이벤트', '정산'];
+  const DOMAINS_ALL = ['전체', '회원', '상품', '주문', '클레임', '프로모션', '적립금', '기획전', '이벤트', '정산'];
 
   window.ZdSimulLogMng = {
     name: 'ZdSimulLogMng',

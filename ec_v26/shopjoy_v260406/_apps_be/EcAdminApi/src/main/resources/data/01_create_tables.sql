@@ -5692,7 +5692,7 @@ COMMENT ON COLUMN pm_cache.upd_date      IS '수정일';
 -- [CODES] pm_cache.cache_type_cd (유형) : 적립금유형 { EARN_BUY:구매 적립, EARN_ADMIN:관리자 지급, EARN_EVENT:이벤트 지급, USE_ORDER:주문 사용, REFUND:환불 복원, EXPIRE:소멸 }
 
 -- ============================================================
--- pm_save : 마일리지 적립/사용 이력
+-- pm_save : 적립금 적립/사용 이력
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- 용도: 구매 시 자동 적립, 유효기간 소멸 있는 포인트
 -- ============================================================
@@ -5701,7 +5701,7 @@ CREATE TABLE IF NOT EXISTS pm_save (
     site_id             VARCHAR(21),                            -- sy_site.site_id
     member_id           VARCHAR(21)     NOT NULL,               -- mb_member.member_id
     save_type_cd        VARCHAR(20)     NOT NULL,               -- 코드: SAVE_TYPE (EARN:구매적립/USE:사용/EXPIRE:소멸/CANCEL:적립취소/ADMIN:관리자조정)
-    save_amt            BIGINT          NOT NULL,               -- 마일리지 변동액 (양수:적립/음수:차감)
+    save_amt            BIGINT          NOT NULL,               -- 적립금 변동액 (양수:적립/음수:차감)
     balance_amt         BIGINT          DEFAULT 0,              -- 처리 후 잔액
     ref_type_cd         VARCHAR(30),                            -- 연관유형 (ORDER/EVENT/ADMIN 등)
     ref_id              VARCHAR(21),                            -- 연관ID (order_id 등)
@@ -5712,11 +5712,11 @@ CREATE TABLE IF NOT EXISTS pm_save (
     PRIMARY KEY (save_id)
 );
 
-COMMENT ON TABLE pm_save IS '마일리지 적립/사용 이력';
-COMMENT ON COLUMN pm_save.save_id       IS '마일리지ID (YYMMDDhhmmss+rand4)';
+COMMENT ON TABLE pm_save IS '적립금 적립/사용 이력';
+COMMENT ON COLUMN pm_save.save_id       IS '적립금ID (YYMMDDhhmmss+rand4)';
 COMMENT ON COLUMN pm_save.site_id       IS '사이트ID';
 COMMENT ON COLUMN pm_save.member_id     IS '회원ID (mb_member.member_id)';
-COMMENT ON COLUMN pm_save.save_type_cd  IS '유형 (코드: SAVE_TYPE — EARN/USE/EXPIRE/CANCEL/ADMIN)';
+COMMENT ON COLUMN pm_save.save_type_cd  IS '적립금유형 (코드: SAVE_TYPE — EARN/USE/EXPIRE/CANCEL/ADMIN)';
 COMMENT ON COLUMN pm_save.save_amt      IS '변동액 (양수:적립, 음수:차감)';
 COMMENT ON COLUMN pm_save.balance_amt   IS '처리 후 잔액';
 COMMENT ON COLUMN pm_save.ref_type_cd   IS '연관유형 (ORDER/EVENT/ADMIN 등)';
@@ -7492,7 +7492,7 @@ CREATE INDEX idx_st_settle_etc_adj_settle ON st_settle_etc_adj (settle_id);
 -- st_settle_raw : 정산 수집원장
 -- ID 규칙: YYMMDDhhmmss + random(4) = VARCHAR(16)
 -- 기본 수집 단위: od_order_item / od_claim_item
--- 프로모션·쿠폰·할인·상품권·캐쉬·사은품·마일리지 등
+-- 프로모션·쿠폰·할인·상품권·캐쉬·사은품·적립금 등
 -- 정산에 영향을 미치는 모든 요소를 1행에 펼쳐 저장
 -- 통계·분석 쿼리의 기반 테이블 — od_order_item join 없이 독립 조회 가능해야 함
 -- ============================================================
@@ -7560,9 +7560,9 @@ CREATE TABLE IF NOT EXISTS st_settle_raw (
     voucher_issue_id        VARCHAR(21),                            -- pm_voucher_issue.voucher_issue_id
     voucher_use_amt         BIGINT          DEFAULT 0,              -- 상품권 사용금액
 
-    -- ── 캐쉬 · 마일리지 · 적립
+    -- ── 캐쉬 · 적립금 · 적립
     cache_use_amt           BIGINT          DEFAULT 0,              -- 캐쉬(적립금) 사용금액
-    mileage_use_amt         BIGINT          DEFAULT 0,              -- 마일리지 사용금액
+    mileage_use_amt         BIGINT          DEFAULT 0,              -- 적립금 사용금액
     save_schd_amt           BIGINT          DEFAULT 0,              -- 적립 예정금액 (구매확정 전=예상, 확정 후=실적립)
 
     -- ── 사은품
@@ -7652,7 +7652,7 @@ COMMENT ON COLUMN st_settle_raw.voucher_id           IS '상품권ID (pm_voucher
 COMMENT ON COLUMN st_settle_raw.voucher_issue_id     IS '상품권발급ID (pm_voucher_issue.voucher_issue_id)';
 COMMENT ON COLUMN st_settle_raw.voucher_use_amt      IS '상품권 사용금액';
 COMMENT ON COLUMN st_settle_raw.cache_use_amt        IS '캐쉬(적립금) 사용금액';
-COMMENT ON COLUMN st_settle_raw.mileage_use_amt      IS '마일리지 사용금액';
+COMMENT ON COLUMN st_settle_raw.mileage_use_amt      IS '적립금 사용금액';
 COMMENT ON COLUMN st_settle_raw.save_schd_amt        IS '적립 예정금액 (구매확정 전=예상, 확정 후=실적립)';
 COMMENT ON COLUMN st_settle_raw.gift_id              IS '사은품ID (pm_gift.gift_id)';
 COMMENT ON COLUMN st_settle_raw.gift_amt             IS '사은품 원가금액 (정산 차감 대상)';

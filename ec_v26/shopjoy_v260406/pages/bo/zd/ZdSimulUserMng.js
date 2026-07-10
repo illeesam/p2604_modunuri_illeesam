@@ -155,18 +155,32 @@
   <div v-if="cfg.mode==='create'" class="card" style="padding:14px 16px;margin-top:12px;">
     <div class="list-title">🧑‍💼 사용자 생성 옵션</div>
     <bo-form-area :columns="createCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;" />
-    <!-- 이메일 도메인 가중치 (가중치 랜덤 선택 시) -->
-    <div v-if="domCfg.emailDomain==='__weighted__'" style="margin-top:14px;padding-top:12px;border-top:1px solid #f1f5f9;">
-      <div style="font-size:11px;font-weight:600;color:#475569;margin-bottom:10px;">📧 이메일 도메인 가중치</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px 20px;">
-        <div v-for="d in DOMAINS" :key="d" style="display:flex;align-items:center;gap:5px;">
-          <span style="font-size:11px;color:#334155;min-width:82px;white-space:nowrap;">{{ d }}</span>
-          <input type="range" min="0" max="100" v-model.number="domCfg.domainWeights[d]" style="flex:1;accent-color:#0284c7;" />
+  </div>
+
+  <!-- 가중치 패널 -->
+  <div v-if="cfg.mode==='create'" style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+    <div class="card" style="padding:14px 16px;">
+      <div class="list-title">📧 이메일 도메인 가중치</div>
+      <div style="margin-top:8px;margin-bottom:10px;">
+        <select v-model="domCfg.emailDomain" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
+          <option value="__weighted__">-- 가중치적용 --</option>
+        </select>
+      </div>
+      <div v-show="domCfg.emailDomain === '__weighted__'">
+        <div v-for="(d, di) in DOMAINS" :key="d" style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+          <span :style="'width:8px;height:8px;border-radius:50%;background:hsl('+(di*67)+',60%,52%);flex-shrink:0;display:inline-block;'"></span>
+          <span style="font-size:11px;color:#334155;min-width:76px;white-space:nowrap;">{{ d }}</span>
+          <input type="range" min="0" max="100" v-model.number="domCfg.domainWeights[d]" :style="'flex:1;accent-color:hsl('+(di*67)+',60%,52%);'" />
           <input type="number" min="0" max="100" v-model.number="domCfg.domainWeights[d]" style="width:40px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;padding:2px;" />
-          <span style="font-size:10px;color:#94a3b8;min-width:30px;text-align:right;">{{ Math.round(domCfg.domainWeights[d]/cfDomainTotal*100) }}%</span>
+          <span style="font-size:10px;color:#94a3b8;min-width:28px;text-align:right;">{{ Math.round(domCfg.domainWeights[d]/cfDomainTotal*100) }}%</span>
+        </div>
+        <div style="height:8px;border-radius:4px;overflow:hidden;display:flex;margin-top:6px;">
+          <div v-for="(d, di) in DOMAINS" :key="d" :style="'flex:'+domCfg.domainWeights[d]+';transition:flex .2s;background:hsl('+(di*67)+',60%,52%);'"></div>
         </div>
       </div>
     </div>
+    <div></div>
+    <div></div>
   </div>
 
   <!-- 수정 옵션 -->

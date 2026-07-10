@@ -67,7 +67,7 @@ DRAFT → CONFIRMED → CLOSED → PAID
 | `stVoucherStatusMng` | 정산 > 상품권별현황 | st_settle_raw |
 | `stCacheStatusMng` | 정산 > 캐쉬별현황 | st_settle_raw |
 | `stGiftStatusMng` | 정산 > 사은품별현황 | st_settle_raw |
-| `stMileageStatusMng` | 정산 > 마일리지별현황 | st_settle_raw |
+| `stMileageStatusMng` | 정산 > 적립금별현황 | st_settle_raw |
 | `stPayMethodStatusMng` | 정산 > 결제수단별현황 | st_settle_raw |
 | `stDailyMng` | 정산 > 일별정산현황 | st_settle_raw |
 | `stMonthlyMng` | 정산 > 월별정산현황 | st_settle |

@@ -75,7 +75,7 @@
       return { cfHasStats, onStart, onStop, onRunOnce, PRESETS, onPreset, lastExpanded, onToggleLast };
     },
     template: `
-<div class="card" style="padding:10px 14px;">
+<div class="card" style="padding:10px 14px;background:#f7f8fa;">
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
     <!-- 프리셋 select (맨 왼쪽) -->
     <select :disabled="cfIsRunning" @change="onPreset"
@@ -270,7 +270,7 @@
       };
     },
     template: `
-<div class="card" style="padding:14px 16px;">
+<div class="card" style="padding:14px 16px;background:#f7f8fa;">
   <!-- 카드 헤더 -->
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
     <div class="list-title" style="margin:0;">📋 실행 로그</div>

@@ -1,5 +1,5 @@
 -- pm_save 테이블 DDL
--- 마일리지 적립/사용 이력
+-- 적립금 적립/사용 이력
 
 CREATE TABLE shopjoy_2604.pm_save (
     save_id      VARCHAR(21) NOT NULL PRIMARY KEY,
@@ -18,11 +18,11 @@ CREATE TABLE shopjoy_2604.pm_save (
     upd_date     TIMESTAMP  
 );
 
-COMMENT ON TABLE  shopjoy_2604.pm_save IS '마일리지 적립/사용 이력';
-COMMENT ON COLUMN shopjoy_2604.pm_save.save_id IS '마일리지ID (YYMMDDhhmmss+rand4)';
+COMMENT ON TABLE  shopjoy_2604.pm_save IS '적립금 적립/사용 이력';
+COMMENT ON COLUMN shopjoy_2604.pm_save.save_id IS '적립금ID (YYMMDDhhmmss+rand4)';
 COMMENT ON COLUMN shopjoy_2604.pm_save.site_id IS '사이트ID';
 COMMENT ON COLUMN shopjoy_2604.pm_save.member_id IS '회원ID (mb_member.member_id)';
-COMMENT ON COLUMN shopjoy_2604.pm_save.save_type_cd IS '유형 (코드: SAVE_TYPE — EARN/USE/EXPIRE/CANCEL/ADMIN)';
+COMMENT ON COLUMN shopjoy_2604.pm_save.save_type_cd IS '적립금유형 (코드: SAVE_TYPE — EARN/USE/EXPIRE/CANCEL/ADMIN)';
 COMMENT ON COLUMN shopjoy_2604.pm_save.save_amt IS '변동액 (양수:적립, 음수:차감)';
 COMMENT ON COLUMN shopjoy_2604.pm_save.balance_amt IS '처리 후 잔액';
 COMMENT ON COLUMN shopjoy_2604.pm_save.ref_type_cd IS '연관유형 (ORDER/EVENT/ADMIN 등)';

@@ -482,7 +482,7 @@ window.PmDiscntDtl = {
           <div style="font-size:13px;color:#666;margin-bottom:4px;">
             할인값:
             <span style="font-weight:700;color:#e8587a;">
-              {{ form.discntTypeCd === '정률' ? (form.discntValue + '%') : (form.discntValue||0).toLocaleString() + '원' }}
+              {{ form.discntTypeCd === 'RATE' ? (form.discntValue + '%') : (form.discntValue||0).toLocaleString() + '원' }}
             </span>
           </div>
           <div style="font-size:13px;color:#666;">

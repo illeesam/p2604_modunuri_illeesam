@@ -238,15 +238,18 @@
         <select v-model="domCfg.fixedTheme" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
           <option value="">-- 없음 --</option>
           <option value="__weighted__">-- 가중치적용 --</option>
-          <option v-for="t in PLAN_THEMES" :key="t.cd" :value="t.cd">{{ t.cd }}</option>
         </select>
       </div>
       <div v-show="domCfg.fixedTheme === '__weighted__'">
-        <div v-for="t in PLAN_THEMES" :key="t.cd" style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+        <div v-for="(t, ti) in PLAN_THEMES" :key="t.cd" style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+          <span :style="'width:8px;height:8px;border-radius:50%;background:hsl('+(ti*17)+',65%,52%);flex-shrink:0;display:inline-block;'"></span>
           <span style="font-size:10px;color:#475569;min-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" :title="t.cd">{{ t.cd }}</span>
-          <input type="range" min="0" max="100" v-model.number="domCfg.themeWeights[t.cd]" style="flex:1;accent-color:#d97706;" />
+          <input type="range" min="0" max="100" v-model.number="domCfg.themeWeights[t.cd]" :style="'flex:1;accent-color:hsl('+(ti*17)+',65%,52%);'" />
           <input type="number" min="0" max="100" v-model.number="domCfg.themeWeights[t.cd]" style="width:36px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;padding:2px;" />
           <span style="font-size:10px;color:#94a3b8;min-width:28px;">{{ Math.round(domCfg.themeWeights[t.cd]/cfThemeTotal*100) }}%</span>
+        </div>
+        <div style="height:8px;border-radius:4px;overflow:hidden;display:flex;margin-top:6px;">
+          <div v-for="(t, ti) in PLAN_THEMES" :key="t.cd" :style="'flex:'+domCfg.themeWeights[t.cd]+';transition:flex .2s;background:hsl('+(ti*17)+',65%,52%)'"></div>
         </div>
       </div>
     </div>

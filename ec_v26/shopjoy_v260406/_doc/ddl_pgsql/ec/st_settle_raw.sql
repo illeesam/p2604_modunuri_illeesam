@@ -116,7 +116,7 @@ COMMENT ON COLUMN shopjoy_2604.st_settle_raw.voucher_id IS '상품권ID (pm_vouc
 COMMENT ON COLUMN shopjoy_2604.st_settle_raw.voucher_issue_id IS '상품권발급ID (pm_voucher_issue.voucher_issue_id)';
 COMMENT ON COLUMN shopjoy_2604.st_settle_raw.voucher_use_amt IS '상품권 사용금액';
 COMMENT ON COLUMN shopjoy_2604.st_settle_raw.cache_use_amt IS '캐쉬(적립금) 사용금액';
-COMMENT ON COLUMN shopjoy_2604.st_settle_raw.mileage_use_amt IS '마일리지 사용금액';
+COMMENT ON COLUMN shopjoy_2604.st_settle_raw.mileage_use_amt IS '적립금 사용금액';
 COMMENT ON COLUMN shopjoy_2604.st_settle_raw.save_schd_amt IS '적립 예정금액 (구매확정 전=예상, 확정 후=실적립)';
 COMMENT ON COLUMN shopjoy_2604.st_settle_raw.gift_id IS '사은품ID (pm_gift.gift_id)';
 COMMENT ON COLUMN shopjoy_2604.st_settle_raw.gift_amt IS '사은품 원가금액 (정산 차감 대상)';

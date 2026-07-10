@@ -4,10 +4,10 @@
   const { useSimulSetup, makeLogCols, makeBaseCfgColumns, makeRangeCol, makeRangeHandlers, rangeSlotTemplate } = window.ZdSimulBase;
 
   const SALE_TYPES = [
-    { cd: 'NORMAL', label: '단품',    badge: 'badge-blue'   },
-    { cd: 'OPTION', label: '옵션형',  badge: 'badge-purple' },
-    { cd: 'SET',    label: '세트',    badge: 'badge-orange' },
-    { cd: 'BUNDLE', label: '묶음',    badge: 'badge-green'  },
+    { cd: 'NORMAL', label: '단품',   badge: 'badge-blue',   color: '#3b82f6' },
+    { cd: 'OPTION', label: '옵션형', badge: 'badge-purple', color: '#a855f7' },
+    { cd: 'SET',    label: '세트',   badge: 'badge-orange', color: '#f97316' },
+    { cd: 'BUNDLE', label: '묶음',   badge: 'badge-green',  color: '#22c55e' },
   ];
   const PROD_STATUSES = [
     { value: 'SELLING',     label: '판매중'   },
@@ -36,6 +36,19 @@
   const PROD_PREFIXES = ['프리미엄','스페셜','에코','프로','울트라','스마트','베이직','럭셔리','클래식','미니'];
   const PROD_NAMES = ['무선 이어폰','텀블러','노트북 파우치','가죽 지갑','실리콘 케이스','캔버스 토트백','스테인리스 컵','스포츠 양말','코튼 후드티','LED 스탠드'];
 
+  /* 옵션 카테고리 프리셋 — 각 프리셋은 opt1/opt2 풀 슬라이스 범위를 정의 */
+  const OPT_PRESETS = [
+    { cd: 'CLOTH',    label: '의류 (색상-사이즈-소재)',   color: '#3b82f6', opt1Pool: ['레드','화이트','블랙','네이비','그린','옐로우','퍼플','그레이'], opt1LabelType: 'color', opt2Pool: ['XS','S','M','L','XL','XXL'], opt2LabelType: 'size'  },
+    { cd: 'OUTER',    label: '아우터 (색상-사이즈)',      color: '#0ea5e9', opt1Pool: ['블랙','네이비','그레이','화이트','카키'],                      opt1LabelType: 'color', opt2Pool: ['S','M','L','XL','XXL'],           opt2LabelType: 'size'  },
+    { cd: 'PANTS',    label: '바지 (색상-허리사이즈)',    color: '#6366f1', opt1Pool: ['블랙','네이비','그레이','카키','화이트'],                      opt1LabelType: 'color', opt2Pool: ['26','28','30','32','34','36'],     opt2LabelType: 'other' },
+    { cd: 'SHOES',    label: '신발 (신발사이즈-색상)',    color: '#a855f7', opt1Pool: ['225','230','235','240','245','250','255','260'],              opt1LabelType: 'other', opt2Pool: ['블랙','화이트','그레이','네이비'], opt2LabelType: 'color' },
+    { cd: 'BAG',      label: '가방 (색상-소재)',          color: '#f97316', opt1Pool: ['블랙','브라운','베이지','화이트','네이비'],                    opt1LabelType: 'color', opt2Pool: ['가죽','캔버스','나일론','스웨이드'], opt2LabelType: 'other' },
+    { cd: 'COSMETIC', label: '화장품 (색상/쉐이드-용량)', color: '#ec4899', opt1Pool: ['#01 내추럴','#02 누드','#03 로즈','#04 레드','#05 버건디'],   opt1LabelType: 'other', opt2Pool: ['10ml','30ml','50ml','100ml'],      opt2LabelType: 'other' },
+    { cd: 'PERFUME',  label: '향수 (향-용량)',            color: '#8b5cf6', opt1Pool: ['플로럴','우디','시트러스','머스크','오리엔탈'],                opt1LabelType: 'other', opt2Pool: ['30ml','50ml','100ml'],             opt2LabelType: 'other' },
+    { cd: 'FOOD',     label: '식품/음료 (맛-용량)',       color: '#22c55e', opt1Pool: ['오리지널','딸기','초코','바닐라','말차'],                      opt1LabelType: 'other', opt2Pool: ['100g','200g','500g','1kg'],        opt2LabelType: 'other' },
+    { cd: 'ETC',      label: '기타/커스텀 (직접입력)',    color: '#94a3b8', opt1Pool: ['레드','화이트','블랙','네이비'],                               opt1LabelType: 'color', opt2Pool: ['S','M','L','XL'],                 opt2LabelType: 'size'  },
+  ];
+
   window.ZdSimulProdMng = {
     name: 'ZdSimulProdMng',
     props: {
@@ -59,6 +72,8 @@
         useAdCopy: true,
         useOptImg: true,
         fixedCategoryId: '',
+        fixedOptPreset: '__weighted__',
+        optPresetWeights: { CLOTH: 40, OUTER: 15, PANTS: 10, SHOES: 10, BAG: 10, COSMETIC: 5, PERFUME: 5, FOOD: 3, ETC: 2 },
         opt1CountMin: 2,
         opt1CountMax: 3,
         opt2CountMin: 2,
@@ -90,14 +105,27 @@
       };
       const _round = (n) => Math.round(n / (domCfg.priceRoundUnit || 100)) * (domCfg.priceRoundUnit || 100);
 
-      /* 옵션 풀 (opt1CountMin~Max 범위로 슬라이스) */
+      /* 옵션 프리셋 선택 */
+      const _pickOptPreset = () => {
+        if (domCfg.fixedOptPreset && domCfg.fixedOptPreset !== '__weighted__') {
+          return OPT_PRESETS.find(p => p.cd === domCfg.fixedOptPreset) || OPT_PRESETS[0];
+        }
+        const w = domCfg.optPresetWeights;
+        const total = Object.values(w).reduce((a, b) => a + Number(b), 0);
+        let r = Math.random() * total;
+        for (const p of OPT_PRESETS) { r -= Number(w[p.cd] || 0); if (r <= 0) return p; }
+        return OPT_PRESETS[0];
+      };
+
+      /* 레거시 호환 — 기본 풀 (카테고리 프리뷰용) */
       const OPT1_POOL = ['레드', '화이트', '블랙', '네이비', '그린', '옐로우', '퍼플', '그레이'];
       const OPT2_POOL = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
       /* 옵션1 색상에 대응하는 hex 팔레트 */
       const OPT1_COLORS = {
         '레드': '#e74c3c', '화이트': '#f5f5f5', '블랙': '#2c2c2c',
         '네이비': '#1a3a5c', '그린': '#27ae60', '옐로우': '#f1c40f',
-        '퍼플': '#8e44ad', '그레이': '#7f8c8d',
+        '퍼플': '#8e44ad', '그레이': '#7f8c8d', '카키': '#7d8c3a',
+        '브라운': '#7b5e3a', '베이지': '#c8b79b',
       };
 
       /* Canvas로 단색 PNG Blob 생성 (400×400) */
@@ -168,27 +196,37 @@
               ...(defaults.value.dlivTmpltId ? { dlivTmpltId: defaults.value.dlivTmpltId } : {}),
               simulYn: simulYn || 'Y',
             };
-            /* 옵션형: opt1/opt2 count range 기준 슬라이스 */
+            /* 옵션형: 프리셋 기반 opt1/opt2 풀 선택 후 count range 기준 슬라이스 */
             let opt1List = null, opt2List = null;
+            let optPresetLabel = '';
             if (isOption) {
-              const o1cnt = randInt(domCfg.opt1CountMin, domCfg.opt1CountMax);
-              const o2cnt = randInt(domCfg.opt2CountMin, domCfg.opt2CountMax);
-              opt1List = OPT1_POOL.slice(0, Math.min(o1cnt, OPT1_POOL.length));
-              opt2List = OPT2_POOL.slice(0, Math.min(o2cnt, OPT2_POOL.length));
+              const preset = _pickOptPreset();
+              optPresetLabel = preset.label;
+              const o1cnt = randInt(domCfg.opt1CountMin, Math.min(domCfg.opt1CountMax, preset.opt1Pool.length));
+              const o2cnt = randInt(domCfg.opt2CountMin, Math.min(domCfg.opt2CountMax, preset.opt2Pool.length));
+              opt1List = preset.opt1Pool.slice(0, o1cnt);
+              opt2List = preset.opt2Pool.slice(0, o2cnt);
+              const _makeVal = (nm, type, prefix) => {
+                if (type === 'color') return 'COL_' + nm.replace(/[^A-Za-z0-9가-힣]/g, '_').toUpperCase();
+                if (type === 'size')  return 'SIZ_' + nm;
+                return (prefix || 'OPT') + '_' + nm.replace(/[^A-Za-z0-9가-힣]/g, '_').toUpperCase();
+              };
+              const grp1Nm = preset.opt1LabelType === 'color' ? '색상' : preset.opt1LabelType === 'size' ? '사이즈' : '옵션1';
+              const grp2Nm = preset.opt2LabelType === 'size' ? '사이즈' : preset.opt2LabelType === 'color' ? '색상' : '옵션2';
               body.optGroups = [
-                { grpNm: '색상', level: 1, inputTypeCd: 'SELECT', sortOrd: 1,
-                  items: opt1List.map((nm, i) => ({ nm, val: 'COL_' + nm.toUpperCase(), sortOrd: i + 1, useYn: 'Y' })) },
-                { grpNm: '사이즈', level: 2, inputTypeCd: 'SELECT', sortOrd: 2,
-                  items: opt2List.map((nm, i) => ({ nm, val: 'SIZ_' + nm, sortOrd: i + 1, useYn: 'Y' })) },
+                { grpNm: grp1Nm, level: 1, inputTypeCd: 'SELECT', sortOrd: 1,
+                  items: opt1List.map((nm, i) => ({ nm, val: _makeVal(nm, preset.opt1LabelType, 'O1'), sortOrd: i + 1, useYn: 'Y' })) },
+                { grpNm: grp2Nm, level: 2, inputTypeCd: 'SELECT', sortOrd: 2,
+                  items: opt2List.map((nm, i) => ({ nm, val: _makeVal(nm, preset.opt2LabelType, 'O2'), sortOrd: i + 1, useYn: 'Y' })) },
               ];
-              /* 옵션별 이미지 업로드 */
-              if (domCfg.useOptImg) {
+              /* 옵션별 이미지 업로드 (색상 타입 opt1만) */
+              if (domCfg.useOptImg && preset.opt1LabelType === 'color') {
                 const imgResults = await _uploadOptImgs(opt1List);
                 body.prodImgs = imgResults
                   .filter(r => r.url)
                   .map((r, i) => ({
                     cdnImgUrl: r.url,
-                    optItemId1: 'COL_' + r.nm.toUpperCase(),
+                    optItemId1: _makeVal(r.nm, 'color', 'O1'),
                     isMain: i === 0 ? 'Y' : 'N',
                     sortOrd: i + 1,
                   }));
@@ -204,7 +242,7 @@
             st.byType[type.cd]  = (st.byType[type.cd] || 0) + 1;
             st.byStatus[domCfg.createStatus] = (st.byStatus[domCfg.createStatus] || 0) + 1;
             const optNote = isOption
-              ? ' +옵션(' + (opt1List ? opt1List.length : 0) + 'x' + (opt2List ? opt2List.length : 0) + ')' + (domCfg.useOptImg ? '+이미지' : '')
+              ? ' +옵션(' + (opt1List ? opt1List.length : 0) + 'x' + (opt2List ? opt2List.length : 0) + ')[' + optPresetLabel.split(' ')[0] + ']' + (domCfg.useOptImg ? '+이미지' : '')
               : '';
             return { ok: true, desc: '[' + type.label + '] ' + prodNm + ' ' + salePrice.toLocaleString('ko-KR') + '원' + optNote, meta: { id, type: type.label, salePrice, params: body } };
           } else {
@@ -276,6 +314,7 @@
 
       /* ── [04] Computed ──────────────────────────────── */
       const cfTypeTotal = computed(() => Object.values(domCfg.saleTypeWeights).reduce((a, b) => a + Number(b), 0) || 1);
+      const cfOptPresetTotal = computed(() => Object.values(domCfg.optPresetWeights).reduce((a, b) => a + Number(b), 0) || 1);
 
       /* ── [05] 컬럼 정의 ─────────────────────────────── */
       const logCols = makeLogCols();
@@ -345,10 +384,10 @@
 
       return {
         cfg, domCfg, state, logs, logPager, cfIsRunning, cfSuccessRate,
-        defaults, cfTypeTotal, categories, logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
+        defaults, cfTypeTotal, cfOptPresetTotal, categories, logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
         onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog, logSearch,
         ...rangeHandlers,
-        SALE_TYPES, PROD_STATUSES, UPDATE_ACTIONS, OPT1_POOL, OPT2_POOL, OPT1_COLORS,
+        SALE_TYPES, PROD_STATUSES, UPDATE_ACTIONS, OPT1_POOL, OPT2_POOL, OPT1_COLORS, OPT_PRESETS,
         updateProdPicker, onOpenUpdateProdPicker, onSelectUpdateProd, _loadUpdateProdPicker,
       };
     },
@@ -410,8 +449,9 @@
     </div>
   </div>
 
-  <!-- 판매유형 가중치 (1/3 폭, 아래 줄) -->
-  <div v-if="cfg.mode==='create'" style="margin-top:12px;display:grid;grid-template-columns:1fr 2fr;gap:12px;">
+  <!-- 가중치 패널 (판매유형 + 옵션 카테고리) -->
+  <div v-if="cfg.mode==='create'" style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+    <!-- 판매유형 가중치 -->
     <div class="card" style="padding:14px 16px;">
       <div class="list-title">📊 판매유형 가중치</div>
       <div style="margin-top:8px;margin-bottom:10px;">
@@ -419,15 +459,47 @@
         <select v-model="domCfg.fixedSaleType" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
           <option value="">-- 없음 --</option>
           <option value="__weighted__">-- 가중치적용 --</option>
-          <option v-for="t in SALE_TYPES" :key="t.cd" :value="t.cd">{{ t.label }}</option>
         </select>
       </div>
       <div v-show="domCfg.fixedSaleType === '__weighted__'">
         <div v-for="t in SALE_TYPES" :key="t.cd" style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+          <span :style="'width:8px;height:8px;border-radius:50%;background:'+t.color+';flex-shrink:0;display:inline-block;'"></span>
           <span :class="'badge '+t.badge" style="min-width:42px;text-align:center;font-size:11px;">{{ t.label }}</span>
-          <input type="range" min="0" max="100" v-model.number="domCfg.saleTypeWeights[t.cd]" style="flex:1;accent-color:#059669;" />
+          <input type="range" min="0" max="100" v-model.number="domCfg.saleTypeWeights[t.cd]" :style="'flex:1;accent-color:'+t.color+';'" />
           <input type="number" min="0" max="100" v-model.number="domCfg.saleTypeWeights[t.cd]" style="width:40px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;padding:2px;" />
           <span style="font-size:10px;color:#94a3b8;min-width:28px;">{{ Math.round(domCfg.saleTypeWeights[t.cd]/cfTypeTotal*100) }}%</span>
+        </div>
+        <div style="height:8px;border-radius:4px;overflow:hidden;display:flex;margin-top:6px;">
+          <div v-for="t in SALE_TYPES" :key="t.cd" :style="'flex:'+domCfg.saleTypeWeights[t.cd]+';transition:flex .2s;background:'+t.color+';'"></div>
+        </div>
+      </div>
+    </div>
+    <!-- 옵션 카테고리 가중치 (옵션형일 때만 적용) -->
+    <div class="card" style="padding:14px 16px;">
+      <div class="list-title">🗂 옵션 카테고리 가중치</div>
+      <div style="margin-top:4px;margin-bottom:6px;font-size:11px;color:#94a3b8;">옵션형 상품 생성 시 옵션 구성 카테고리 비율</div>
+      <div style="margin-bottom:10px;">
+        <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">카테고리 지정</label>
+        <select v-model="domCfg.fixedOptPreset" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
+          <option value="__weighted__">-- 가중치적용 --</option>
+        </select>
+      </div>
+      <div v-show="domCfg.fixedOptPreset === '__weighted__'">
+        <div v-for="p in OPT_PRESETS" :key="p.cd" style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+          <span :style="'width:8px;height:8px;border-radius:50%;background:'+p.color+';flex-shrink:0;display:inline-block;'"></span>
+          <span style="min-width:46px;font-size:11px;color:#475569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ p.label.split(' ')[0] }}</span>
+          <input type="range" min="0" max="100" v-model.number="domCfg.optPresetWeights[p.cd]" :style="'flex:1;accent-color:'+p.color+';'" />
+          <input type="number" min="0" max="100" v-model.number="domCfg.optPresetWeights[p.cd]" style="width:40px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;padding:2px;" />
+          <span style="font-size:10px;color:#94a3b8;min-width:28px;">{{ Math.round(domCfg.optPresetWeights[p.cd]/cfOptPresetTotal*100) }}%</span>
+        </div>
+        <div style="height:8px;border-radius:4px;overflow:hidden;display:flex;margin-top:6px;">
+          <div v-for="p in OPT_PRESETS" :key="p.cd" :style="'flex:'+domCfg.optPresetWeights[p.cd]+';transition:flex .2s;background:'+p.color+';'"></div>
+        </div>
+      </div>
+      <div v-if="domCfg.fixedOptPreset !== '__weighted__'" style="margin-top:4px;">
+        <div v-for="p in OPT_PRESETS.filter(x => x.cd === domCfg.fixedOptPreset)" :key="p.cd">
+          <div style="font-size:11px;color:#64748b;margin-bottom:4px;">옵션1 풀: {{ p.opt1Pool.join(', ') }}</div>
+          <div style="font-size:11px;color:#64748b;">옵션2 풀: {{ p.opt2Pool.join(', ') }}</div>
         </div>
       </div>
     </div>

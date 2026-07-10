@@ -47,7 +47,7 @@
 |---|---|---|
 | `pmCouponMng` | 프로모션 > 쿠폰관리 | pm_coupon, pm_coupon_item, pm_coupon_issue, pm_coupon_usage |
 | `pmCacheMng` | 프로모션 > 캐쉬관리 | pm_cache |
-| `pmSaveMng` | 프로모션 > 마일리지관리 | pm_save, pm_save_issue, pm_save_usage |
+| `pmSaveMng` | 프로모션 > 적립금관리 | pm_save, pm_save_issue, pm_save_usage |
 | `pmDiscntMng` | 프로모션 > 할인관리 | pm_discnt, pm_discnt_item, pm_discnt_usage |
 | `pmGiftMng` | 프로모션 > 사은품관리 | pm_gift, pm_gift_cond, pm_gift_issue |
 | `pmVoucherMng` | 프로모션 > 상품권관리 | pm_voucher, pm_voucher_issue |

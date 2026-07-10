@@ -5,15 +5,15 @@
 
   /* 할인 값 방식 (정률 / 정액) */
   const DISC_VAL_ITEMS = [
-    { cd: 'RATE',   label: '% 할인 (정률)' },
-    { cd: 'AMOUNT', label: '원 할인 (정액)' },
+    { cd: 'RATE',   label: '% 할인 (정률)', color: '#3b82f6' },
+    { cd: 'AMOUNT', label: '원 할인 (정액)', color: '#f59e0b' },
   ];
 
   /* 할인 정책 타입 (DB DISCNT_TYPE: RATE/FIXED/FREE_SHIP) */
   const DISCNT_TYPE_ITEMS = [
-    { cd: 'RATE',     label: '정률 할인' },
-    { cd: 'FIXED',    label: '정액 할인' },
-    { cd: 'FREE_SHIP', label: '무료배송' },
+    { cd: 'RATE',      label: '정률 할인', color: '#3b82f6' },
+    { cd: 'FIXED',     label: '정액 할인', color: '#f59e0b' },
+    { cd: 'FREE_SHIP', label: '무료배송',  color: '#22c55e' },
   ];
 
   const DISCNT_SCOPES   = [
@@ -191,44 +191,53 @@
     <bo-form-area :columns="discntCfgColumns" :form="domCfg" :show-actions="false" :cols="3" style="margin-top:10px;">
       ${rangeSlotTemplate('discntRateMin','discntRateMax',0,100,'%')}
     </bo-form-area>
+  </div>
 
-    <!-- 할인 정책 타입 가중치 (DISCNT_TYPE: RATE/FIXED/FREE_SHIP) -->
-    <div style="margin-top:14px;padding-top:12px;border-top:1px solid #f1f5f9;">
-      <div style="font-size:11px;font-weight:600;color:#475569;margin-bottom:8px;">🏷 할인 정책 타입 가중치</div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-        <select v-model="domCfg.fixedDiscntTypeCd" style="border:1px solid #e2e8f0;border-radius:6px;padding:3px 8px;font-size:12px;">
-          <option value="__weighted__">가중치 적용</option>
-          <option v-for="t in DISCNT_TYPE_ITEMS" :key="t.cd" :value="t.cd">{{ t.label }} 고정</option>
+  <!-- 가중치 패널 -->
+  <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+    <!-- 할인 유형 가중치 (DISCNT_TYPE: RATE/FIXED/FREE_SHIP) -->
+    <div class="card" style="padding:14px 16px;">
+      <div class="list-title">🏷 할인 유형 가중치</div>
+      <div style="margin-top:8px;margin-bottom:10px;">
+        <select v-model="domCfg.fixedDiscntTypeCd" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
+          <option value="__weighted__">-- 가중치적용 --</option>
         </select>
       </div>
-      <div v-show="domCfg.fixedDiscntTypeCd==='__weighted__'" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px 20px;">
-        <div v-for="t in DISCNT_TYPE_ITEMS" :key="t.cd" style="display:flex;align-items:center;gap:5px;">
-          <span style="font-size:11px;color:#334155;min-width:64px;white-space:nowrap;">{{ t.label }}</span>
-          <input type="range" min="0" max="100" v-model.number="domCfg.discntTypeCdWeights[t.cd]" style="flex:1;accent-color:#2563eb;" />
+      <div v-show="domCfg.fixedDiscntTypeCd==='__weighted__'">
+        <div v-for="t in DISCNT_TYPE_ITEMS" :key="t.cd" style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+          <span :style="'width:8px;height:8px;border-radius:50%;background:'+t.color+';flex-shrink:0;display:inline-block;'"></span>
+          <span style="font-size:11px;color:#334155;min-width:58px;white-space:nowrap;">{{ t.label }}</span>
+          <input type="range" min="0" max="100" v-model.number="domCfg.discntTypeCdWeights[t.cd]" :style="'flex:1;accent-color:'+t.color+';'" />
           <input type="number" min="0" max="100" v-model.number="domCfg.discntTypeCdWeights[t.cd]" style="width:40px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;padding:2px;" />
-          <span style="font-size:10px;color:#94a3b8;min-width:30px;text-align:right;">{{ Math.round(domCfg.discntTypeCdWeights[t.cd]/cfDiscntTypeCdTotal*100) }}%</span>
+          <span style="font-size:10px;color:#94a3b8;min-width:28px;text-align:right;">{{ Math.round(domCfg.discntTypeCdWeights[t.cd]/cfDiscntTypeCdTotal*100) }}%</span>
+        </div>
+        <div style="height:8px;border-radius:4px;overflow:hidden;display:flex;margin-top:6px;">
+          <div v-for="t in DISCNT_TYPE_ITEMS" :key="t.cd" :style="'flex:'+domCfg.discntTypeCdWeights[t.cd]+';transition:flex .2s;background:'+t.color+';'"></div>
         </div>
       </div>
     </div>
-
-    <!-- 할인 값 방식 가중치 (정률/정액) -->
-    <div style="margin-top:14px;padding-top:12px;border-top:1px solid #f1f5f9;">
-      <div style="font-size:11px;font-weight:600;color:#475569;margin-bottom:8px;">💡 할인 값 방식 가중치</div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-        <select v-model="domCfg.fixedDiscntValType" style="border:1px solid #e2e8f0;border-radius:6px;padding:3px 8px;font-size:12px;">
-          <option value="__weighted__">가중치 적용</option>
-          <option v-for="t in DISC_VAL_ITEMS" :key="t.cd" :value="t.cd">{{ t.label }} 고정</option>
+    <!-- 할인 방식 가중치 (정률/정액) -->
+    <div class="card" style="padding:14px 16px;">
+      <div class="list-title">💡 할인 방식 가중치</div>
+      <div style="margin-top:8px;margin-bottom:10px;">
+        <select v-model="domCfg.fixedDiscntValType" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
+          <option value="__weighted__">-- 가중치적용 --</option>
         </select>
       </div>
-      <div v-show="domCfg.fixedDiscntValType==='__weighted__'" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px 20px;">
-        <div v-for="t in DISC_VAL_ITEMS" :key="t.cd" style="display:flex;align-items:center;gap:5px;">
-          <span style="font-size:11px;color:#334155;min-width:80px;white-space:nowrap;">{{ t.label }}</span>
-          <input type="range" min="0" max="100" v-model.number="domCfg.discntValTypeWeights[t.cd]" style="flex:1;accent-color:#2563eb;" />
+      <div v-show="domCfg.fixedDiscntValType==='__weighted__'">
+        <div v-for="t in DISC_VAL_ITEMS" :key="t.cd" style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+          <span :style="'width:8px;height:8px;border-radius:50%;background:'+t.color+';flex-shrink:0;display:inline-block;'"></span>
+          <span style="font-size:11px;color:#334155;min-width:76px;white-space:nowrap;">{{ t.label }}</span>
+          <input type="range" min="0" max="100" v-model.number="domCfg.discntValTypeWeights[t.cd]" :style="'flex:1;accent-color:'+t.color+';'" />
           <input type="number" min="0" max="100" v-model.number="domCfg.discntValTypeWeights[t.cd]" style="width:40px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;padding:2px;" />
-          <span style="font-size:10px;color:#94a3b8;min-width:30px;text-align:right;">{{ Math.round(domCfg.discntValTypeWeights[t.cd]/cfDiscValTypeTotal*100) }}%</span>
+          <span style="font-size:10px;color:#94a3b8;min-width:28px;text-align:right;">{{ Math.round(domCfg.discntValTypeWeights[t.cd]/cfDiscValTypeTotal*100) }}%</span>
+        </div>
+        <div style="height:8px;border-radius:4px;overflow:hidden;display:flex;margin-top:6px;">
+          <div v-for="t in DISC_VAL_ITEMS" :key="t.cd" :style="'flex:'+domCfg.discntValTypeWeights[t.cd]+';transition:flex .2s;background:'+t.color+';'"></div>
         </div>
       </div>
     </div>
+    <div></div>
   </div>
 
   <!-- 수정 대상 지정 -->

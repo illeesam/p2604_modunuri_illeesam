@@ -5,10 +5,10 @@
 
   /* ── 도메인 상수 ──────────────────────────────────────────── */
   const VOUCHER_TYPES = [
-    { value: 'SETTLE',  label: '정산' },
-    { value: 'RETURN',  label: '반품' },
-    { value: 'ADJ',     label: '조정' },
-    { value: 'PAY',     label: '지급' },
+    { value: 'SETTLE',  label: '정산', color: '#3b82f6' },
+    { value: 'RETURN',  label: '반품', color: '#ef4444' },
+    { value: 'ADJ',     label: '조정', color: '#f59e0b' },
+    { value: 'PAY',     label: '지급', color: '#22c55e' },
   ];
   const VOUCHER_STATUSES = [
     { value: 'DRAFT',     label: '초안' },
@@ -176,18 +176,27 @@
     <div style="margin-top:10px;font-size:11px;color:#64748b;line-height:1.6;">
       ✅ 정산년월 = 이번달 / 전표일자 = 오늘 / 차변·대변 동일 금액 / 업체 = ACTIVE 목록 중 랜덤
     </div>
-    <!-- 전표 유형 가중치 -->
-    <div style="margin-top:14px;padding-top:12px;border-top:1px solid #f1f5f9;">
-      <div style="font-size:11px;font-weight:600;color:#475569;margin-bottom:10px;">📊 전표 유형 가중치</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px 20px;">
-        <div v-for="t in VOUCHER_TYPES" :key="t.value" style="display:flex;align-items:center;gap:5px;">
-          <span style="font-size:11px;color:#334155;min-width:36px;white-space:nowrap;">{{ t.label }}</span>
-          <input type="range" min="0" max="100" v-model.number="domCfg.typeWeights[t.value]" style="flex:1;accent-color:#d97706;" />
+  </div>
+
+  <!-- 가중치 패널 -->
+  <div v-if="cfg.mode==='create'" style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+    <div class="card" style="padding:14px 16px;">
+      <div class="list-title">📊 전표 유형 가중치</div>
+      <div style="margin-top:10px;">
+        <div v-for="t in VOUCHER_TYPES" :key="t.value" style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+          <span :style="'width:8px;height:8px;border-radius:50%;background:'+t.color+';flex-shrink:0;display:inline-block;'"></span>
+          <span style="font-size:11px;color:#334155;min-width:32px;white-space:nowrap;">{{ t.label }}</span>
+          <input type="range" min="0" max="100" v-model.number="domCfg.typeWeights[t.value]" :style="'flex:1;accent-color:'+t.color+';'" />
           <input type="number" min="0" max="100" v-model.number="domCfg.typeWeights[t.value]" style="width:40px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;padding:2px;" />
-          <span style="font-size:10px;color:#94a3b8;min-width:30px;text-align:right;">{{ Math.round(domCfg.typeWeights[t.value]/cfTypeTotal*100) }}%</span>
+          <span style="font-size:10px;color:#94a3b8;min-width:28px;text-align:right;">{{ Math.round(domCfg.typeWeights[t.value]/cfTypeTotal*100) }}%</span>
+        </div>
+        <div style="height:8px;border-radius:4px;overflow:hidden;display:flex;margin-top:6px;">
+          <div v-for="t in VOUCHER_TYPES" :key="t.value" :style="'flex:'+domCfg.typeWeights[t.value]+';transition:flex .2s;background:'+t.color+';'"></div>
         </div>
       </div>
     </div>
+    <div></div>
+    <div></div>
   </div>
 
   <!-- 수정 옵션 -->

@@ -1,4 +1,4 @@
-/* ShopJoy Admin - 판촉마일리지 관리 목록 + 하단 PmSaveDtl 임베드 */
+/* ShopJoy Admin - 판촉적립금 관리 목록 + 하단 PmSaveDtl 임베드 */
 window.PmSaveMng = {
   name: 'PmSaveMng',
   // ===== Props 정의 ========================================================
@@ -248,7 +248,7 @@ window.PmSaveMng = {
     // ===== 삭제 / 엑셀 다운로드 ============================================
     /* handleDelete — 삭제 */
     const handleDelete = async (s) => {
-      const ok = await showConfirm('삭제', `[${s.saveNm}] 마일리지를 삭제하시겠습니까?`);
+      const ok = await showConfirm('삭제', `[${s.saveNm}] 적립금을 삭제하시겠습니까?`);
       if (!ok) { return; }
       const idx = (saves || []).findIndex(x => x.saveId === s.saveId);
       if (idx !== -1) { saves.splice(idx, 1); }
@@ -265,8 +265,8 @@ window.PmSaveMng = {
 
     /* exportExcel — 엑셀 내보내기 */
     const exportExcel = () => coUtil.cofExportCsv(saves,
-      [{label:'ID',key:'saveId'},{label:'마일리지명',key:'saveNm'},{label:'유형',key:'saveType'},{label:'적립값',key:'saveVal'},{label:'단위',key:'saveUnit'},{label:'상태',key:'saveStatus'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}],
-      '마일리지목록.csv');
+      [{label:'ID',key:'saveId'},{label:'적립금명',key:'saveNm'},{label:'유형',key:'saveType'},{label:'적립값',key:'saveVal'},{label:'단위',key:'saveUnit'},{label:'상태',key:'saveStatus'},{label:'시작일',key:'startDate'},{label:'종료일',key:'endDate'}],
+      '적립금목록.csv');
 
     // ===== 탭 모드 (리스트/카드) ===========================================
     const tabMode = Vue.toRef(uiState, 'tabMode');
@@ -279,7 +279,7 @@ window.PmSaveMng = {
     columns.baseSearch = [
       { key: 'searchType', type: 'multiCheck', label: '검색대상',
         options: [
-          { value: 'saveNm', label: '마일리지명' },
+          { value: 'saveNm', label: '적립금명' },
           { value: 'saveId', label: 'ID' },
         ],
         placeholder: '검색대상 전체', allLabel: '전체 선택', minWidth: '160px' },
@@ -294,7 +294,7 @@ window.PmSaveMng = {
 
     // 기본 그리드
     columns.baseGrid = [
-      { key: 'saveNm',     label: '마일리지명', sortKey: 'nm', link: true,
+      { key: 'saveNm',     label: '적립금명', sortKey: 'nm', link: true,
         cellInnerStyle: (v) => detailPanel.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'saveType',   label: '유형', badge: (row) => fnTypeBadge(row.saveType) },
       { key: 'saveVal',    label: '적립값', fmt: (v) => (v || 0).toLocaleString() },
@@ -321,13 +321,13 @@ window.PmSaveMng = {
   },
   // ===== 템플릿 ===========================================================
   template: /* html */`
-<bo-page title="마일리지관리">
+<bo-page title="적립금관리">
   <!-- ===== ■. 검색영역 ==================================================== -->
   <bo-container>
     <bo-search-area :loading="uiState.loading" @search="handleBtnAction('searchParam-list')" @reset="handleBtnAction('searchParam-reset')" :columns="columns.baseSearch" :param="searchParam" />
   </bo-container>
   <!-- ===== ■. 목록영역 (리스트/카드 토글) ======================================== -->
-  <bo-container title="마일리지목록" :count-text="baseGridPager.pageTotalCount + '건'">
+  <bo-container title="적립금목록" :count-text="baseGridPager.pageTotalCount + '건'">
     <!-- ===== ■.■. 툴바 액션: 탭모드 토글 + 엑셀/신규 =================================== -->
     <template #toolbar-actions>
       <div style="display:flex;gap:6px;align-items:center;">
@@ -379,7 +379,7 @@ window.PmSaveMng = {
         @click="handleSelectAction('saves-rowView', s.saveId)">
         <div style="padding:16px;border-bottom:1px solid #f0f0f0;">
           <div style="font-size:12px;color:#999;margin-bottom:6px;">
-            <span style="display:inline-block;min-width:20px;font-weight:700;color:#e8587a;">{{ (baseGridPager.pageNo-1)*baseGridPager.pageSize + idx + 1 }}</span> 마일리지 #{{ s.saveId }}
+            <span style="display:inline-block;min-width:20px;font-weight:700;color:#e8587a;">{{ (baseGridPager.pageNo-1)*baseGridPager.pageSize + idx + 1 }}</span> 적립금 #{{ s.saveId }}
           </div>
           <div style="font-size:14px;font-weight:700;color:#222;margin-bottom:8px;" @click="handleSelectAction('saves-rowView', s.saveId)" :style="detailPanel.selectedId===s.saveId?{color:'#e8587a'}:{}">
             {{ s.saveNm }}

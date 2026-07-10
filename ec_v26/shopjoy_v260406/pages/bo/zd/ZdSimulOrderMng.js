@@ -6,12 +6,12 @@
   const STATUS_FLOW    = ['PENDING', 'PAID', 'PREPARING', 'SHIPPED', 'COMPLT'];
   const STATUS_LABELS  = { PENDING: '결제대기', PAID: '결제완료', PREPARING: '준비중', SHIPPED: '배송중', COMPLT: '완료' };
   const PAY_METHODS    = [
-    { value: 'CARD',       label: '신용카드' },
-    { value: 'TOSS_PAY',   label: '토스페이' },
-    { value: 'KAKAO_PAY',  label: '카카오페이' },
-    { value: 'NAVER_PAY',  label: '네이버페이' },
-    { value: 'BANK',       label: '무통장입금' },
-    { value: 'VBANK',      label: '가상계좌' },
+    { value: 'CARD',       label: '신용카드',  color: '#2563eb' },
+    { value: 'TOSS_PAY',   label: '토스페이',  color: '#3b82f6' },
+    { value: 'KAKAO_PAY',  label: '카카오페이', color: '#f59e0b' },
+    { value: 'NAVER_PAY',  label: '네이버페이', color: '#22c55e' },
+    { value: 'BANK',       label: '무통장입금', color: '#6366f1' },
+    { value: 'VBANK',      label: '가상계좌',  color: '#94a3b8' },
   ];
   const ADDR_LIST      = [
     { zipCode: '06236', addr: '서울 강남구 테헤란로 152', addrDtl: 'GS타워 15층' },
@@ -355,27 +355,31 @@
     </bo-form-area>
   </div>
 
-  <!-- 결제수단 가중치 카드 -->
-  <div v-if="cfg.mode==='create'" class="card" style="margin-top:12px;padding:14px 16px;width:340px;">
-    <div class="list-title">💳 결제수단 가중치</div>
-    <div style="margin-top:8px;">
-      <select v-model="domCfg.fixedPayMethod" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;margin-bottom:6px;">
-        <option value="">-- 없음 --</option>
-        <option value="__weighted__">-- 가중치적용 --</option>
-        <option v-for="p in PAY_METHODS" :key="p.value" :value="p.value">{{ p.label }}</option>
-      </select>
+  <!-- 가중치 패널 -->
+  <div v-if="cfg.mode==='create'" style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+    <div class="card" style="padding:14px 16px;">
+      <div class="list-title">💳 결제수단 가중치</div>
+      <div style="margin-top:8px;margin-bottom:10px;">
+        <select v-model="domCfg.fixedPayMethod" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
+          <option value="">-- 없음 --</option>
+          <option value="__weighted__">-- 가중치적용 --</option>
+        </select>
+      </div>
       <div v-show="domCfg.fixedPayMethod === '__weighted__'">
         <div v-for="p in PAY_METHODS" :key="p.value" style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+          <span :style="'width:8px;height:8px;border-radius:50%;background:'+p.color+';flex-shrink:0;display:inline-block;'"></span>
           <span style="font-size:11px;color:#475569;min-width:68px;white-space:nowrap;">{{ p.label }}</span>
-          <input type="range" min="0" max="100" v-model.number="domCfg.payMethodWeights[p.value]" style="flex:1;accent-color:#2563eb;" />
+          <input type="range" min="0" max="100" v-model.number="domCfg.payMethodWeights[p.value]" :style="'flex:1;accent-color:'+p.color+';'" />
           <input type="number" min="0" max="100" v-model.number="domCfg.payMethodWeights[p.value]" style="width:40px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;padding:2px;" />
           <span style="font-size:10px;color:#94a3b8;min-width:28px;">{{ Math.round(domCfg.payMethodWeights[p.value]/cfPayMethodTotal*100) }}%</span>
         </div>
         <div style="height:8px;border-radius:4px;overflow:hidden;display:flex;margin-top:6px;">
-          <div v-for="p in PAY_METHODS" :key="p.value" :style="'flex:'+domCfg.payMethodWeights[p.value]+';transition:flex .2s;'+(({'CARD':'background:#2563eb','TOSS_PAY':'background:#3b82f6','KAKAO_PAY':'background:#f59e0b','NAVER_PAY':'background:#22c55e','BANK':'background:#6366f1','VBANK':'background:#94a3b8'})[p.value]||'background:#94a3b8')"></div>
+          <div v-for="p in PAY_METHODS" :key="p.value" :style="'flex:'+domCfg.payMethodWeights[p.value]+';transition:flex .2s;background:'+p.color"></div>
         </div>
       </div>
     </div>
+    <div></div>
+    <div></div>
   </div>
 
   <!-- 수정 옵션 (전체 폭) -->

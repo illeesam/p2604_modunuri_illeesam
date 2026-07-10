@@ -5,19 +5,19 @@
 
   /* 쿠폰 할인방식 (COUPON_TYPE: RATE/FIXED) */
   const DISC_TYPE_ITEMS = [
-    { cd: 'RATE',  label: '정률 할인 (%)' },
-    { cd: 'FIXED', label: '정액 할인 (원)' },
+    { cd: 'RATE',  label: '정률 할인 (%)', color: '#3b82f6' },
+    { cd: 'FIXED', label: '정액 할인 (원)', color: '#f59e0b' },
   ];
 
   /* 쿠폰 용도 타입 (PmCouponDtl couponTypeCd 기준) */
   const COUPON_TYPE_ITEMS = [
-    { cd: '상품할인쿠폰',         label: '상품할인쿠폰' },
-    { cd: '주문할인쿠폰',         label: '주문할인쿠폰' },
-    { cd: '배송비할인쿠폰',       label: '배송비할인쿠폰' },
-    { cd: '무료배송쿠폰',         label: '무료배송쿠폰' },
-    { cd: '회원가입축하쿠폰',     label: '회원가입축하쿠폰' },
-    { cd: 'VIP쿠폰',              label: 'VIP쿠폰' },
-    { cd: '클레임관리자지급쿠폰', label: '클레임관리자지급쿠폰' },
+    { cd: '상품할인쿠폰',         label: '상품할인쿠폰',         color: '#3b82f6' },
+    { cd: '주문할인쿠폰',         label: '주문할인쿠폰',         color: '#a855f7' },
+    { cd: '배송비할인쿠폰',       label: '배송비할인쿠폰',       color: '#22c55e' },
+    { cd: '무료배송쿠폰',         label: '무료배송쿠폰',         color: '#06b6d4' },
+    { cd: '회원가입축하쿠폰',     label: '회원가입축하쿠폰',     color: '#f59e0b' },
+    { cd: 'VIP쿠폰',              label: 'VIP쿠폰',              color: '#f97316' },
+    { cd: '클레임관리자지급쿠폰', label: '클레임관리자지급쿠폰', color: '#ef4444' },
   ];
 
   const COUPON_SCOPES = [
@@ -204,41 +204,49 @@
       ${rangeSlotTemplate('couponDiscRateMin','couponDiscRateMax',0,100,'%')}
       ${rangeSlotTemplate('couponIssueCountMin','couponIssueCountMax',1,1000,'매')}
     </bo-form-area>
+  </div>
 
-    <!-- 쿠폰 타입 가중치 -->
-    <div style="margin-top:14px;padding-top:12px;border-top:1px solid #f1f5f9;">
-      <div style="font-size:11px;font-weight:600;color:#475569;margin-bottom:8px;">🏷 쿠폰 타입 가중치</div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-        <select v-model="domCfg.fixedCouponType" style="border:1px solid #e2e8f0;border-radius:6px;padding:3px 8px;font-size:12px;">
-          <option value="__weighted__">가중치 적용</option>
-          <option v-for="t in COUPON_TYPE_ITEMS" :key="t.cd" :value="t.cd">{{ t.label }} 고정</option>
+  <!-- 가중치 패널 (쿠폰 타입 1/3 + 할인방식 1/3 + 빈칸 1/3) -->
+  <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+    <!-- 쿠폰 유형 가중치 -->
+    <div class="card" style="padding:14px 16px;">
+      <div class="list-title">🏷 쿠폰 유형 가중치</div>
+      <div style="margin-top:8px;margin-bottom:10px;">
+        <select v-model="domCfg.fixedCouponType" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
+          <option value="__weighted__">-- 가중치적용 --</option>
         </select>
       </div>
-      <div v-show="domCfg.fixedCouponType==='__weighted__'" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px 20px;">
-        <div v-for="t in COUPON_TYPE_ITEMS" :key="t.cd" style="display:flex;align-items:center;gap:5px;">
-          <span style="font-size:11px;color:#334155;min-width:104px;white-space:nowrap;">{{ t.label }}</span>
-          <input type="range" min="0" max="100" v-model.number="domCfg.couponTypeWeights[t.cd]" style="flex:1;accent-color:#7c3aed;" />
+      <div v-show="domCfg.fixedCouponType==='__weighted__'">
+        <div v-for="t in COUPON_TYPE_ITEMS" :key="t.cd" style="display:flex;align-items:center;gap:5px;margin-bottom:2px;">
+          <span :style="'width:8px;height:8px;border-radius:50%;background:'+t.color+';flex-shrink:0;display:inline-block;'"></span>
+          <span style="font-size:11px;color:#334155;min-width:108px;white-space:nowrap;">{{ t.label }}</span>
+          <input type="range" min="0" max="100" v-model.number="domCfg.couponTypeWeights[t.cd]" :style="'flex:1;accent-color:'+t.color+';'" />
           <input type="number" min="0" max="100" v-model.number="domCfg.couponTypeWeights[t.cd]" style="width:40px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;padding:2px;" />
-          <span style="font-size:10px;color:#94a3b8;min-width:30px;text-align:right;">{{ Math.round(domCfg.couponTypeWeights[t.cd]/cfCouponTypeTotal*100) }}%</span>
+          <span style="font-size:10px;color:#94a3b8;min-width:28px;text-align:right;">{{ Math.round(domCfg.couponTypeWeights[t.cd]/cfCouponTypeTotal*100) }}%</span>
+        </div>
+        <div style="height:8px;border-radius:4px;overflow:hidden;display:flex;margin-top:6px;">
+          <div v-for="t in COUPON_TYPE_ITEMS" :key="t.cd" :style="'flex:'+domCfg.couponTypeWeights[t.cd]+';transition:flex .2s;background:'+t.color"></div>
         </div>
       </div>
     </div>
-
-    <!-- 할인방식 가중치 -->
-    <div style="margin-top:14px;padding-top:12px;border-top:1px solid #f1f5f9;">
-      <div style="font-size:11px;font-weight:600;color:#475569;margin-bottom:8px;">💡 할인방식 가중치</div>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-        <select v-model="domCfg.fixedCouponDiscType" style="border:1px solid #e2e8f0;border-radius:6px;padding:3px 8px;font-size:12px;">
-          <option value="__weighted__">가중치 적용</option>
-          <option v-for="t in DISC_TYPE_ITEMS" :key="t.cd" :value="t.cd">{{ t.label }} 고정</option>
+    <!-- 할인 방식 가중치 -->
+    <div class="card" style="padding:14px 16px;">
+      <div class="list-title">💡 할인 방식 가중치</div>
+      <div style="margin-top:8px;margin-bottom:10px;">
+        <select v-model="domCfg.fixedCouponDiscType" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
+          <option value="__weighted__">-- 가중치적용 --</option>
         </select>
       </div>
-      <div v-show="domCfg.fixedCouponDiscType==='__weighted__'" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px 20px;">
-        <div v-for="t in DISC_TYPE_ITEMS" :key="t.cd" style="display:flex;align-items:center;gap:5px;">
-          <span style="font-size:11px;color:#334155;min-width:88px;white-space:nowrap;">{{ t.label }}</span>
-          <input type="range" min="0" max="100" v-model.number="domCfg.couponDiscTypeWeights[t.cd]" style="flex:1;accent-color:#7c3aed;" />
+      <div v-show="domCfg.fixedCouponDiscType==='__weighted__'">
+        <div v-for="t in DISC_TYPE_ITEMS" :key="t.cd" style="display:flex;align-items:center;gap:5px;margin-bottom:2px;">
+          <span :style="'width:8px;height:8px;border-radius:50%;background:'+t.color+';flex-shrink:0;display:inline-block;'"></span>
+          <span style="font-size:11px;color:#334155;min-width:80px;white-space:nowrap;">{{ t.label }}</span>
+          <input type="range" min="0" max="100" v-model.number="domCfg.couponDiscTypeWeights[t.cd]" :style="'flex:1;accent-color:'+t.color+';'" />
           <input type="number" min="0" max="100" v-model.number="domCfg.couponDiscTypeWeights[t.cd]" style="width:40px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;padding:2px;" />
-          <span style="font-size:10px;color:#94a3b8;min-width:30px;text-align:right;">{{ Math.round(domCfg.couponDiscTypeWeights[t.cd]/cfDiscTotal*100) }}%</span>
+          <span style="font-size:10px;color:#94a3b8;min-width:28px;text-align:right;">{{ Math.round(domCfg.couponDiscTypeWeights[t.cd]/cfDiscTotal*100) }}%</span>
+        </div>
+        <div style="height:8px;border-radius:4px;overflow:hidden;display:flex;margin-top:6px;">
+          <div v-for="t in DISC_TYPE_ITEMS" :key="t.cd" :style="'flex:'+domCfg.couponDiscTypeWeights[t.cd]+';transition:flex .2s;background:'+t.color"></div>
         </div>
       </div>
     </div>

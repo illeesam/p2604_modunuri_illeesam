@@ -193,7 +193,7 @@ public class StSettleRaw extends BaseEntity {
     @Column(name = "cache_use_amt")
     private Long cacheUseAmt;
 
-    @Comment("마일리지 사용금액")
+    @Comment("적립금 사용금액")
     @Column(name = "mileage_use_amt")
     private Long mileageUseAmt;
 

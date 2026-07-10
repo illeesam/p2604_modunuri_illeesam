@@ -16,9 +16,9 @@
     { value: 'PRODUCT',  label: '특정 상품' },
   ];
   /* 쿠폰/할인 할인방식 가중치 항목 */
-  const DISC_TYPE_ITEMS  = [{ cd: 'RATE', label: '% 할인' }, { cd: 'AMOUNT', label: '정액 할인' }];
+  const DISC_TYPE_ITEMS  = [{ cd: 'RATE', label: '% 할인', color: '#3b82f6' }, { cd: 'AMOUNT', label: '정액 할인', color: '#f59e0b' }];
   /* 적립금 유형 가중치 항목 */
-  const SAVE_TYPE_ITEMS  = [{ cd: 'RATE', label: '적립률 %' }, { cd: 'AMOUNT', label: '정액 적립' }];
+  const SAVE_TYPE_ITEMS  = [{ cd: 'RATE', label: '적립률 %', color: '#22c55e' }, { cd: 'AMOUNT', label: '정액 적립', color: '#f97316' }];
   const COUPON_NAMES = [
     '첫구매 감사 쿠폰', '재방문 할인 쿠폰', '생일 특별 쿠폰', '주말 특가 쿠폰',
     '신상품 런칭 쿠폰', '회원등급 업그레이드 쿠폰', 'VIP 전용 혜택 쿠폰', '오늘만 특가 쿠폰',
@@ -376,59 +376,68 @@
 
   <!-- 가중치 카드 행 -->
   <div style="margin-top:12px;display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;">
-    <!-- 쿠폰 할인방식 가중치 -->
+    <!-- 쿠폰 할인 방식 가중치 -->
     <div v-if="domCfg.promoType==='coupon' || domCfg.promoType==='both'" class="card" style="padding:14px 16px;width:340px;">
-      <div class="list-title">🎟 쿠폰 할인방식 가중치</div>
+      <div class="list-title">🎟 쿠폰 할인 방식 가중치</div>
       <div style="margin-top:8px;">
         <select v-model="domCfg.fixedCouponDiscType" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;margin-bottom:6px;">
           <option value="">-- 없음 --</option>
           <option value="__weighted__">-- 가중치적용 --</option>
-          <option v-for="t in DISC_TYPE_ITEMS" :key="t.cd" :value="t.cd">{{ t.label }}</option>
         </select>
         <div v-show="domCfg.fixedCouponDiscType === '__weighted__'">
-          <div v-for="t in DISC_TYPE_ITEMS" :key="t.cd" style="display:grid;grid-template-columns:55px 1fr 40px 36px;align-items:center;gap:6px;margin-bottom:2px;">
+          <div v-for="t in DISC_TYPE_ITEMS" :key="t.cd" style="display:grid;grid-template-columns:10px 55px 1fr 40px 36px;align-items:center;gap:6px;margin-bottom:2px;">
+            <span :style="'width:8px;height:8px;border-radius:50%;background:'+t.color+';display:inline-block;'"></span>
             <span style="font-size:11px;font-weight:600;color:#475569;">{{ t.label }}</span>
-            <input type="range" min="0" max="100" v-model.number="domCfg.couponDiscTypeWeights[t.cd]" style="accent-color:#6366f1;width:100%;" />
+            <input type="range" min="0" max="100" v-model.number="domCfg.couponDiscTypeWeights[t.cd]" :style="'accent-color:'+t.color+';width:100%;'" />
             <input type="number" min="0" max="100" v-model.number="domCfg.couponDiscTypeWeights[t.cd]" style="width:40px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;padding:1px 4px;text-align:center;" />
             <span style="font-size:10px;color:#94a3b8;text-align:right;">{{ Math.round(domCfg.couponDiscTypeWeights[t.cd]/cfCouponDiscTotal*100) }}%</span>
+          </div>
+          <div style="height:8px;border-radius:4px;overflow:hidden;display:flex;margin-top:6px;">
+            <div v-for="t in DISC_TYPE_ITEMS" :key="t.cd" :style="'flex:'+domCfg.couponDiscTypeWeights[t.cd]+';transition:flex .2s;background:'+t.color"></div>
           </div>
         </div>
       </div>
     </div>
-    <!-- 할인정책 할인방식 가중치 -->
+    <!-- 할인 방식 가중치 -->
     <div v-if="domCfg.promoType==='discnt' || domCfg.promoType==='both'" class="card" style="padding:14px 16px;width:340px;">
-      <div class="list-title">💰 할인정책 할인방식 가중치</div>
+      <div class="list-title">💰 할인 방식 가중치</div>
       <div style="margin-top:8px;">
         <select v-model="domCfg.fixedDiscntType" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;margin-bottom:6px;">
           <option value="">-- 없음 --</option>
           <option value="__weighted__">-- 가중치적용 --</option>
-          <option v-for="t in DISC_TYPE_ITEMS" :key="t.cd" :value="t.cd">{{ t.label }}</option>
         </select>
         <div v-show="domCfg.fixedDiscntType === '__weighted__'">
-          <div v-for="t in DISC_TYPE_ITEMS" :key="t.cd" style="display:grid;grid-template-columns:55px 1fr 40px 36px;align-items:center;gap:6px;margin-bottom:2px;">
+          <div v-for="t in DISC_TYPE_ITEMS" :key="t.cd" style="display:grid;grid-template-columns:10px 55px 1fr 40px 36px;align-items:center;gap:6px;margin-bottom:2px;">
+            <span :style="'width:8px;height:8px;border-radius:50%;background:'+t.color+';display:inline-block;'"></span>
             <span style="font-size:11px;font-weight:600;color:#475569;">{{ t.label }}</span>
-            <input type="range" min="0" max="100" v-model.number="domCfg.discntTypeWeights[t.cd]" style="accent-color:#6366f1;width:100%;" />
+            <input type="range" min="0" max="100" v-model.number="domCfg.discntTypeWeights[t.cd]" :style="'accent-color:'+t.color+';width:100%;'" />
             <input type="number" min="0" max="100" v-model.number="domCfg.discntTypeWeights[t.cd]" style="width:40px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;padding:1px 4px;text-align:center;" />
             <span style="font-size:10px;color:#94a3b8;text-align:right;">{{ Math.round(domCfg.discntTypeWeights[t.cd]/cfDiscntTotal*100) }}%</span>
+          </div>
+          <div style="height:8px;border-radius:4px;overflow:hidden;display:flex;margin-top:6px;">
+            <div v-for="t in DISC_TYPE_ITEMS" :key="t.cd" :style="'flex:'+domCfg.discntTypeWeights[t.cd]+';transition:flex .2s;background:'+t.color"></div>
           </div>
         </div>
       </div>
     </div>
-    <!-- 적립금 적립방식 가중치 -->
+    <!-- 적립 방식 가중치 -->
     <div v-if="domCfg.promoType==='save'" class="card" style="padding:14px 16px;width:340px;">
-      <div class="list-title">🪙 적립금 적립방식 가중치</div>
+      <div class="list-title">🪙 적립 방식 가중치</div>
       <div style="margin-top:8px;">
         <select v-model="domCfg.fixedSaveType" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;margin-bottom:6px;">
           <option value="">-- 없음 --</option>
           <option value="__weighted__">-- 가중치적용 --</option>
-          <option v-for="t in SAVE_TYPE_ITEMS" :key="t.cd" :value="t.cd">{{ t.label }}</option>
         </select>
         <div v-show="domCfg.fixedSaveType === '__weighted__'">
-          <div v-for="t in SAVE_TYPE_ITEMS" :key="t.cd" style="display:grid;grid-template-columns:60px 1fr 40px 36px;align-items:center;gap:6px;margin-bottom:2px;">
+          <div v-for="t in SAVE_TYPE_ITEMS" :key="t.cd" style="display:grid;grid-template-columns:10px 60px 1fr 40px 36px;align-items:center;gap:6px;margin-bottom:2px;">
+            <span :style="'width:8px;height:8px;border-radius:50%;background:'+t.color+';display:inline-block;'"></span>
             <span style="font-size:11px;font-weight:600;color:#475569;">{{ t.label }}</span>
-            <input type="range" min="0" max="100" v-model.number="domCfg.saveTypeWeights[t.cd]" style="accent-color:#6366f1;width:100%;" />
+            <input type="range" min="0" max="100" v-model.number="domCfg.saveTypeWeights[t.cd]" :style="'accent-color:'+t.color+';width:100%;'" />
             <input type="number" min="0" max="100" v-model.number="domCfg.saveTypeWeights[t.cd]" style="width:40px;font-size:11px;border:1px solid #e2e8f0;border-radius:4px;padding:1px 4px;text-align:center;" />
             <span style="font-size:10px;color:#94a3b8;text-align:right;">{{ Math.round(domCfg.saveTypeWeights[t.cd]/cfSaveTotal*100) }}%</span>
+          </div>
+          <div style="height:8px;border-radius:4px;overflow:hidden;display:flex;margin-top:6px;">
+            <div v-for="t in SAVE_TYPE_ITEMS" :key="t.cd" :style="'flex:'+domCfg.saveTypeWeights[t.cd]+';transition:flex .2s;background:'+t.color"></div>
           </div>
         </div>
       </div>

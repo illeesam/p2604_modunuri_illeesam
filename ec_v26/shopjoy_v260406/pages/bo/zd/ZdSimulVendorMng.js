@@ -5,11 +5,11 @@
 
   /* ── 도메인 상수 ──────────────────────────────────────────── */
   const VENDOR_TYPES = [
-    { value: 'BRAND',       label: '브랜드' },
-    { value: 'DISTRIBUTOR', label: '총판/도매' },
-    { value: 'DIRECT',      label: '직매입' },
-    { value: 'CONSIGNMENT', label: '위탁판매' },
-    { value: 'PLATFORM',    label: '플랫폼입점' },
+    { value: 'BRAND',       label: '브랜드',   color: '#3b82f6' },
+    { value: 'DISTRIBUTOR', label: '총판/도매', color: '#a855f7' },
+    { value: 'DIRECT',      label: '직매입',   color: '#22c55e' },
+    { value: 'CONSIGNMENT', label: '위탁판매', color: '#f59e0b' },
+    { value: 'PLATFORM',    label: '플랫폼입점', color: '#ef4444' },
   ];
   const VENDOR_STATUSES = [
     { value: 'ACTIVE',      label: '계약중' },
@@ -162,18 +162,27 @@
     <div style="margin-top:10px;font-size:11px;color:#64748b;line-height:1.6;">
       ✅ 업체명 = <b>시뮬[업종][접미사]</b> / 법인번호 자동생성 / 개업일·계약일 = 오늘
     </div>
-    <!-- 업체 유형 가중치 -->
-    <div style="margin-top:14px;padding-top:12px;border-top:1px solid #f1f5f9;">
-      <div style="font-size:11px;font-weight:600;color:#475569;margin-bottom:10px;">🏷 업체 유형 가중치</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px 20px;">
-        <div v-for="t in VENDOR_TYPES" :key="t.value" style="display:flex;align-items:center;gap:5px;">
-          <span style="font-size:11px;color:#334155;min-width:55px;white-space:nowrap;">{{ t.label }}</span>
-          <input type="range" min="0" max="100" v-model.number="domCfg.typeWeights[t.value]" style="flex:1;accent-color:#7c3aed;" />
+  </div>
+
+  <!-- 가중치 패널 -->
+  <div v-if="cfg.mode==='create'" style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+    <div class="card" style="padding:14px 16px;">
+      <div class="list-title">🏷 업체 유형 가중치</div>
+      <div style="margin-top:10px;">
+        <div v-for="t in VENDOR_TYPES" :key="t.value" style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+          <span :style="'width:8px;height:8px;border-radius:50%;background:'+t.color+';flex-shrink:0;display:inline-block;'"></span>
+          <span style="font-size:11px;color:#334155;min-width:52px;white-space:nowrap;">{{ t.label }}</span>
+          <input type="range" min="0" max="100" v-model.number="domCfg.typeWeights[t.value]" :style="'flex:1;accent-color:'+t.color+';'" />
           <input type="number" min="0" max="100" v-model.number="domCfg.typeWeights[t.value]" style="width:40px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;padding:2px;" />
-          <span style="font-size:10px;color:#94a3b8;min-width:30px;text-align:right;">{{ Math.round(domCfg.typeWeights[t.value]/cfTypeTotal*100) }}%</span>
+          <span style="font-size:10px;color:#94a3b8;min-width:28px;text-align:right;">{{ Math.round(domCfg.typeWeights[t.value]/cfTypeTotal*100) }}%</span>
+        </div>
+        <div style="height:8px;border-radius:4px;overflow:hidden;display:flex;margin-top:6px;">
+          <div v-for="t in VENDOR_TYPES" :key="t.value" :style="'flex:'+domCfg.typeWeights[t.value]+';transition:flex .2s;background:'+t.color+';'"></div>
         </div>
       </div>
     </div>
+    <div></div>
+    <div></div>
   </div>
 
   <!-- 수정 옵션 -->

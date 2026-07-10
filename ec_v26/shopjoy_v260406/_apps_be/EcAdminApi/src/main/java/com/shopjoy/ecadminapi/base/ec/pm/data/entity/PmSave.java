@@ -16,11 +16,11 @@ import org.hibernate.annotations.Comment;
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor @SuperBuilder
 // 적립금 엔티티
-@Comment("마일리지 적립/사용 이력")
+@Comment("적립금 적립/사용 이력")
 public class PmSave extends BaseEntity {
 
     @Id
-    @Comment("마일리지ID (YYMMDDhhmmss+rand4)")
+    @Comment("적립금ID (YYMMDDhhmmss+rand4)")
     @Column(name = "save_id", length = 21, nullable = false)
     private String saveId;
 
@@ -32,7 +32,7 @@ public class PmSave extends BaseEntity {
     @Column(name = "member_id", length = 21, nullable = false)
     private String memberId;
 
-    @Comment("유형 (코드: SAVE_TYPE — EARN/USE/EXPIRE/CANCEL/ADMIN)")
+    @Comment("적립금유형 (코드: SAVE_TYPE — EARN/USE/EXPIRE/CANCEL/ADMIN)")
     @Column(name = "save_type_cd", length = 20, nullable = false)
     private String saveTypeCd;
 
