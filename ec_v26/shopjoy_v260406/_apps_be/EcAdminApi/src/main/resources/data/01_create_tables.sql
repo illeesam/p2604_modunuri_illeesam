@@ -5289,7 +5289,7 @@ CREATE TABLE IF NOT EXISTS pm_coupon (
     site_id             VARCHAR(21),                            -- sy_site.site_id
     coupon_cd           VARCHAR(50)     NOT NULL,               -- 쿠폰코드 (중복 방지)
     coupon_nm           VARCHAR(100)    NOT NULL,
-    coupon_type_cd      VARCHAR(20)     NOT NULL,               -- 코드: COUPON_TYPE (RATE/FIXED)
+    coupon_type_cd      VARCHAR(20)     NOT NULL,               -- 코드: COUPON_TYPE (PROD_DISCNT/ORDER_DISCNT/SHIP_DISCNT/SHIP_FREE/JOIN_GIFT/VIP/CLAIM_COMP)
     discount_rate       DECIMAL(5, 2)   DEFAULT 0,              -- 할인률 (%)
     discount_amt        BIGINT          DEFAULT 0,              -- 할인금액
     min_order_amt       BIGINT          DEFAULT 0,              -- 최소주문금액
@@ -5499,7 +5499,8 @@ CREATE TABLE IF NOT EXISTS pm_discnt (
     discnt_id           VARCHAR(21)     NOT NULL,
     site_id             VARCHAR(21),                            -- sy_site.site_id
     discnt_nm           VARCHAR(100)    NOT NULL,               -- 할인명
-    discnt_type_cd      VARCHAR(20)     NOT NULL,               -- 코드: DISCNT_TYPE (RATE:정률/FIXED:정액/FREE_SHIP:무료배송)
+    discnt_type_cd      VARCHAR(20)     NOT NULL,               -- 코드: DISCNT_TYPE (PROD:상품할인/ORDER:주문할인/SHIP:배송비할인/SHIP_FREE:무료배송)
+    discnt_val_type_cd  VARCHAR(20),                            -- 코드: DISCNT_VAL_TYPE (RATE:정률/AMOUNT:정액, SHIP_FREE 유형은 해당없음)
     discnt_target_cd    VARCHAR(20)     DEFAULT 'ALL',          -- 코드: DISCNT_TARGET (ALL:전체/CATEGORY:카테고리/PRODUCT:상품/MEMBER_GRADE:등급)
     discnt_value        NUMERIC(10,2)   DEFAULT 0,              -- 할인값 (율이면 %, 금액이면 원)
     min_order_amt       BIGINT          DEFAULT 0,              -- 최소주문금액
@@ -5530,7 +5531,8 @@ COMMENT ON TABLE pm_discnt IS '할인정책';
 COMMENT ON COLUMN pm_discnt.discnt_id           IS '할인ID (YYMMDDhhmmss+rand4)';
 COMMENT ON COLUMN pm_discnt.site_id             IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN pm_discnt.discnt_nm           IS '할인명';
-COMMENT ON COLUMN pm_discnt.discnt_type_cd      IS '할인유형 (코드: DISCNT_TYPE — RATE/FIXED/FREE_SHIP)';
+COMMENT ON COLUMN pm_discnt.discnt_type_cd      IS '할인유형 (코드: DISCNT_TYPE — PROD/ORDER/SHIP/SHIP_FREE)';
+COMMENT ON COLUMN pm_discnt.discnt_val_type_cd  IS '할인방식 (코드: DISCNT_VAL_TYPE — RATE/AMOUNT, SHIP_FREE 유형은 해당없음)';
 COMMENT ON COLUMN pm_discnt.discnt_target_cd    IS '할인대상 (코드: DISCNT_TARGET — ALL/CATEGORY/PRODUCT/MEMBER_GRADE)';
 COMMENT ON COLUMN pm_discnt.discnt_value        IS '할인값 (정률이면 %, 정액이면 원)';
 COMMENT ON COLUMN pm_discnt.min_order_amt       IS '최소주문금액';
@@ -5561,7 +5563,8 @@ CREATE INDEX idx_pm_discnt_grade  ON pm_discnt (mem_grade_cd);
 -- ============================================================
 -- 코드값 참조
 -- ============================================================
--- [CODES] pm_discnt.discnt_type_cd (할인유형) : DISCNT_TYPE { RATE:정률할인, FIXED:정액할인, FREE_SHIP:무료배송 }
+-- [CODES] pm_discnt.discnt_type_cd (할인유형) : DISCNT_TYPE { PROD:상품할인, ORDER:주문할인, SHIP:배송비할인, SHIP_FREE:무료배송 }
+-- [CODES] pm_discnt.discnt_val_type_cd (할인방식) : DISCNT_VAL_TYPE { RATE:정률, AMOUNT:정액 }
 -- [CODES] pm_discnt.discnt_target_cd (할인대상) : DISCNT_TARGET { ALL:전체, CATEGORY:카테고리, PRODUCT:상품, MEMBER_GRADE:회원등급 }
 -- [CODES] pm_discnt.discnt_status_cd (상태) : DISCNT_STATUS { ACTIVE:활성, INACTIVE:비활성, EXPIRED:만료 }
 
@@ -5612,7 +5615,7 @@ CREATE TABLE IF NOT EXISTS pm_discnt_usage (
     order_id            VARCHAR(21),                            -- od_order.order_id
     order_item_id       VARCHAR(21),                            -- od_order_item.order_item_id (상품별 할인 적용 시)
     prod_id             VARCHAR(21),                            -- pd_prod.prod_id (할인 적용 상품)
-    discnt_type_cd      VARCHAR(20),                            -- 할인유형 스냅샷 (RATE/FIXED/FREE_SHIP)
+    discnt_type_cd      VARCHAR(20),                            -- 할인유형 스냅샷 (PROD/ORDER/SHIP/SHIP_FREE)
     discnt_value        NUMERIC(10,2)   DEFAULT 0,              -- 할인값 스냅샷 (율 또는 금액)
     discnt_amt          BIGINT          DEFAULT 0,              -- 실할인금액
     used_date           TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
@@ -5631,7 +5634,7 @@ COMMENT ON COLUMN pm_discnt_usage.member_id        IS '회원ID (mb_member.membe
 COMMENT ON COLUMN pm_discnt_usage.order_id         IS '주문ID (od_order.order_id)';
 COMMENT ON COLUMN pm_discnt_usage.order_item_id    IS '주문상품ID (od_order_item.order_item_id, 상품별 할인 적용 시)';
 COMMENT ON COLUMN pm_discnt_usage.prod_id          IS '상품ID (pd_prod.prod_id, 할인 적용 상품)';
-COMMENT ON COLUMN pm_discnt_usage.discnt_type_cd   IS '할인유형 스냅샷 (RATE=정률 / FIXED=정액 / FREE_SHIP=무료배송)';
+COMMENT ON COLUMN pm_discnt_usage.discnt_type_cd   IS '할인유형 스냅샷 (PROD=상품할인 / ORDER=주문할인 / SHIP=배송비할인 / SHIP_FREE=무료배송)';
 COMMENT ON COLUMN pm_discnt_usage.discnt_value     IS '할인값 스냅샷 (정률이면 % / 정액이면 원)';
 COMMENT ON COLUMN pm_discnt_usage.discnt_amt       IS '실할인금액';
 COMMENT ON COLUMN pm_discnt_usage.used_date        IS '적용일시';
@@ -5701,6 +5704,7 @@ CREATE TABLE IF NOT EXISTS pm_save (
     site_id             VARCHAR(21),                            -- sy_site.site_id
     member_id           VARCHAR(21)     NOT NULL,               -- mb_member.member_id
     save_type_cd        VARCHAR(20)     NOT NULL,               -- 코드: SAVE_TYPE (EARN:구매적립/USE:사용/EXPIRE:소멸/CANCEL:적립취소/ADMIN:관리자조정)
+    save_purpose_cd     VARCHAR(20),                            -- 코드: SAVE_PURPOSE (PURCHASE/REVIEW/JOIN/BIRTHDAY/VIP/EVENT/ADMIN)
     save_amt            BIGINT          NOT NULL,               -- 적립금 변동액 (양수:적립/음수:차감)
     balance_amt         BIGINT          DEFAULT 0,              -- 처리 후 잔액
     ref_type_cd         VARCHAR(30),                            -- 연관유형 (ORDER/EVENT/ADMIN 등)
@@ -5716,8 +5720,9 @@ COMMENT ON TABLE pm_save IS '적립금 적립/사용 이력';
 COMMENT ON COLUMN pm_save.save_id       IS '적립금ID (YYMMDDhhmmss+rand4)';
 COMMENT ON COLUMN pm_save.site_id       IS '사이트ID';
 COMMENT ON COLUMN pm_save.member_id     IS '회원ID (mb_member.member_id)';
-COMMENT ON COLUMN pm_save.save_type_cd  IS '적립금유형 (코드: SAVE_TYPE — EARN/USE/EXPIRE/CANCEL/ADMIN)';
-COMMENT ON COLUMN pm_save.save_amt      IS '변동액 (양수:적립, 음수:차감)';
+COMMENT ON COLUMN pm_save.save_type_cd    IS '적립금유형 (코드: SAVE_TYPE — EARN/USE/EXPIRE/CANCEL/ADMIN)';
+COMMENT ON COLUMN pm_save.save_purpose_cd IS '적립용도 (코드: SAVE_PURPOSE — PURCHASE/REVIEW/JOIN/BIRTHDAY/VIP/EVENT/ADMIN)';
+COMMENT ON COLUMN pm_save.save_amt        IS '변동액 (양수:적립, 음수:차감)';
 COMMENT ON COLUMN pm_save.balance_amt   IS '처리 후 잔액';
 COMMENT ON COLUMN pm_save.ref_type_cd   IS '연관유형 (ORDER/EVENT/ADMIN 등)';
 COMMENT ON COLUMN pm_save.ref_id        IS '연관ID';
@@ -6136,6 +6141,7 @@ CREATE TABLE IF NOT EXISTS pm_plan (
     plan_nm             VARCHAR(100)    NOT NULL,               -- 기획전명
     plan_title          VARCHAR(200)    NOT NULL,               -- 기획전 타이틀 (노출용)
     plan_type_cd        VARCHAR(20)     DEFAULT 'THEME',        -- 코드: PLAN_TYPE (SEASON:시즌/BRAND:브랜드/THEME:테마/COLLAB:협업)
+    plan_theme_cd       VARCHAR(30),                            -- 코드: PLAN_THEME (SPRING_NEW/SUMMER_COOL/CHUSEOK/WINTER_WARM/BLACK_FRI/...)
     plan_desc           TEXT,                                   -- 기획전 설명
     thumbnail_url       VARCHAR(500),                           -- 썸네일 이미지 URL
     banner_url          VARCHAR(500),                           -- 배너 이미지 URL
@@ -6158,6 +6164,7 @@ COMMENT ON COLUMN pm_plan.site_id           IS '사이트ID';
 COMMENT ON COLUMN pm_plan.plan_nm           IS '기획전명 (내부용)';
 COMMENT ON COLUMN pm_plan.plan_title        IS '기획전 타이틀 (노출용)';
 COMMENT ON COLUMN pm_plan.plan_type_cd      IS '유형 (코드: PLAN_TYPE — SEASON/BRAND/THEME/COLLAB)';
+COMMENT ON COLUMN pm_plan.plan_theme_cd     IS '테마 (코드: PLAN_THEME — SPRING_NEW/SUMMER_COOL/CHUSEOK/WINTER_WARM/BLACK_FRI/LUXURY_BRAND/OUTDOOR/HOME_DECOR/HEALTH_FOOD/DIGITAL/FASHION/BEAUTY/KIDS/TRAVEL/PET/CHILDREN_DAY/CHRISTMAS/NEW_YEAR/ZOMBIE_DAY/DISABILITY/HALLOWEEN)';
 COMMENT ON COLUMN pm_plan.plan_desc         IS '기획전 설명';
 COMMENT ON COLUMN pm_plan.thumbnail_url     IS '썸네일 이미지 URL';
 COMMENT ON COLUMN pm_plan.banner_url        IS '배너 이미지 URL';

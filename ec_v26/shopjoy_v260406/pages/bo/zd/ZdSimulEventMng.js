@@ -262,6 +262,7 @@
         <select v-model="domCfg.fixedEventType" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
           <option value="">-- 없음 --</option>
           <option value="__weighted__">-- 가중치적용 --</option>
+          <option v-for="t in EVENT_TYPES" :key="t.cd" :value="t.cd">{{ t.label }}</option>
         </select>
       </div>
       <div v-show="domCfg.fixedEventType === '__weighted__'">
@@ -284,6 +285,7 @@
         <select v-model="domCfg.fixedBenefitType" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
           <option value="">-- 없음 --</option>
           <option value="__weighted__">-- 가중치적용 --</option>
+          <option v-for="b in BENEFIT_TYPES" :key="b.value" :value="b.value">{{ b.label }}</option>
         </select>
       </div>
       <div v-show="domCfg.fixedBenefitType === '__weighted__'">

@@ -75,7 +75,7 @@
       return { cfHasStats, onStart, onStop, onRunOnce, PRESETS, onPreset, lastExpanded, onToggleLast };
     },
     template: `
-<div class="card" style="padding:10px 14px;background:#f7f8fa;">
+<div class="card" style="padding:10px 14px;background:#dde3ed;">
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
     <!-- 프리셋 select (맨 왼쪽) -->
     <select :disabled="cfIsRunning" @change="onPreset"
@@ -270,7 +270,7 @@
       };
     },
     template: `
-<div class="card" style="padding:14px 16px;background:#f7f8fa;">
+<div class="card" style="padding:14px 16px;background:#dde3ed;">
   <!-- 카드 헤더 -->
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
     <div class="list-title" style="margin:0;">📋 실행 로그</div>
@@ -304,9 +304,9 @@
 
   <!-- 로그 테이블 (expand 행 지원) -->
   <div style="overflow-x:auto;">
-    <table class="admin-table" style="font-size:11px;width:100%;">
+    <table class="admin-table bo-table" style="font-size:11px;width:100%;">
       <thead><tr>
-        <th style="width:28px;"></th>
+        <th style="width:28px;text-align:center;"></th>
         <th style="width:36px;text-align:center;">번호</th>
         <th style="width:140px;">등록일시</th>
         <th style="width:110px;">화면명</th>

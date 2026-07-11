@@ -230,8 +230,8 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
     // ===== 페이저 번호 빌더 ================================================
 
     // ===== 배지(badge) 헬퍼 ================================================
-    /* fnTypeBadge — 유형 배지 (DISCNT_TYPE: RATE/FIXED/FREE_SHIP) */
-    const _DISCNT_TYPE_FB = { RATE: 'badge-blue', FIXED: 'badge-green', FREE_SHIP: 'badge-orange' };
+    /* fnTypeBadge — 유형 배지 (DISCNT_TYPE: PROD/ORDER/SHIP/SHIP_FREE) */
+    const _DISCNT_TYPE_FB = { PROD: 'badge-blue', ORDER: 'badge-purple', SHIP: 'badge-green', SHIP_FREE: 'badge-orange' };
     const fnTypeBadge   = t => coUtil.cofCodeBadge('DISCNT_TYPE', t, _DISCNT_TYPE_FB[t] || 'badge-gray');
 
     /* 할인 fnStatusBadge */
@@ -313,7 +313,8 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
         cellInnerStyle: (v) => uiStateDetail.selectedId === v ? 'color:#e8587a;font-weight:700;' : '' },
       { key: 'discntTypeCd',   label: '유형', badge: (row) => fnTypeBadge(row.discntTypeCd) },
       { key: 'discntValue',    label: '할인값',
-        fmt: (v, row) => row.discntTypeCd === '정률' ? (row.discntValue + '%')
+        fmt: (v, row) => row.discntTypeCd === 'SHIP_FREE' ? '무료배송'
+          : row.discntValTypeCd === 'RATE' ? (row.discntValue + '%')
           : (row.discntValue || 0).toLocaleString() + '원' },
       { key: 'discntTargetCd', label: '적용대상', cellStyle: 'color:#555',
         fmt: (v) => v || '전체상품' },
@@ -411,7 +412,7 @@ const uiStateDetail = reactive({ selectedId: '__new__', openMode: 'edit', reload
           </div>
           <div style="font-size:12px;color:#666;line-height:1.5;">
             <div>
-              🎯 {{ d.discntTypeCd === '정률' ? (d.discntValue + '%') : (d.discntValue||0).toLocaleString() + '원' }}
+              🎯 {{ d.discntTypeCd === 'SHIP_FREE' ? '무료배송' : d.discntValTypeCd === 'RATE' ? (d.discntValue + '%') : (d.discntValue||0).toLocaleString() + '원' }}
             </div>
             <div>
               📅 {{ d.startDate }} ~ {{ d.endDate }}

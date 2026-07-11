@@ -7,6 +7,7 @@ CREATE TABLE shopjoy_2604.pm_plan (
     plan_nm               VARCHAR(100) NOT NULL,
     plan_title            VARCHAR(200) NOT NULL,
     plan_type_cd          VARCHAR(20)  DEFAULT 'THEME'::character varying,
+    plan_theme_cd         VARCHAR(30) ,
     plan_desc             TEXT        ,
     thumbnail_url         VARCHAR(500),
     banner_url            VARCHAR(500),
@@ -28,6 +29,7 @@ COMMENT ON COLUMN shopjoy_2604.pm_plan.site_id IS '사이트ID';
 COMMENT ON COLUMN shopjoy_2604.pm_plan.plan_nm IS '기획전명 (내부용)';
 COMMENT ON COLUMN shopjoy_2604.pm_plan.plan_title IS '기획전 타이틀 (노출용)';
 COMMENT ON COLUMN shopjoy_2604.pm_plan.plan_type_cd IS '유형 (코드: PLAN_TYPE — SEASON/BRAND/THEME/COLLAB)';
+COMMENT ON COLUMN shopjoy_2604.pm_plan.plan_theme_cd IS '테마 (코드: PLAN_THEME — SPRING_NEW/SUMMER_COOL/CHUSEOK/WINTER_WARM/BLACK_FRI/LUXURY_BRAND/OUTDOOR/HOME_DECOR/HEALTH_FOOD/DIGITAL/FASHION/BEAUTY/KIDS/TRAVEL/PET/CHILDREN_DAY/CHRISTMAS/NEW_YEAR/ZOMBIE_DAY/DISABILITY/HALLOWEEN)';
 COMMENT ON COLUMN shopjoy_2604.pm_plan.plan_desc IS '기획전 설명';
 COMMENT ON COLUMN shopjoy_2604.pm_plan.thumbnail_url IS '썸네일 이미지 URL';
 COMMENT ON COLUMN shopjoy_2604.pm_plan.banner_url IS '배너 이미지 URL';

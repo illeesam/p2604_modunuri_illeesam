@@ -9,13 +9,15 @@
     { cd: 'AMOUNT', label: '정액 적립금', color: '#f59e0b' },
   ];
 
-  /* 적립금 유형 (DB SAVE_TYPE: EARN/USE/EXPIRE/CANCEL/ADMIN) */
+  /* 적립 용도 유형 (DB SAVE_PURPOSE: PURCHASE/REVIEW/JOIN/BIRTHDAY/VIP/EVENT/ADMIN — save_purpose_cd) */
   const SAVE_TYPE_ITEMS = [
-    { cd: 'EARN',   label: '적립',     color: '#22c55e' },
-    { cd: 'USE',    label: '사용',     color: '#3b82f6' },
-    { cd: 'EXPIRE', label: '소멸',     color: '#94a3b8' },
-    { cd: 'CANCEL', label: '적립취소', color: '#ef4444' },
-    { cd: 'ADMIN',  label: '관리자조정', color: '#a855f7' },
+    { cd: 'PURCHASE', label: '구매적립',       color: '#22c55e' },
+    { cd: 'REVIEW',   label: '리뷰적립',       color: '#3b82f6' },
+    { cd: 'JOIN',     label: '가입적립',       color: '#f59e0b' },
+    { cd: 'BIRTHDAY', label: '생일적립',       color: '#f97316' },
+    { cd: 'VIP',      label: 'VIP추가적립',    color: '#a855f7' },
+    { cd: 'EVENT',    label: '이벤트참여적립', color: '#06b6d4' },
+    { cd: 'ADMIN',    label: '관리자지급적립', color: '#ef4444' },
   ];
 
   const SAVE_SCOPES = [
@@ -38,9 +40,9 @@
     setup(props) {
       /* ── [01] 도메인 설정 ─────────────────────────────── */
       const domCfg = reactive({
-        /* 적립금 유형 가중치 */
+        /* 적립금 정책 용도 유형 가중치 */
         fixedSaveTypeCd:    '__weighted__',
-        saveTypeCdWeights:  { EARN: 60, USE: 20, EXPIRE: 8, CANCEL: 7, ADMIN: 5 },
+        saveTypeCdWeights:  { PURCHASE: 35, REVIEW: 20, JOIN: 15, BIRTHDAY: 10, VIP: 10, EVENT: 7, ADMIN: 3 },
         /* 적립 방식 가중치 */
         fixedSaveValType:   '__weighted__',
         saveValTypeWeights: { RATE: 65, AMOUNT: 35 },
@@ -88,13 +90,13 @@
             const isRate     = valType.cd === 'RATE';
             const saveRate   = isRate ? randInt(domCfg.saveRateMin, domCfg.saveRateMax) : 0;
             const saveAmt    = isRate ? 0 : randInt(domCfg.saveAmtMin, domCfg.saveAmtMax);
-            const nm = (namePrefix || '') + pick(SAVE_NAMES);
+            const nm = (namePrefix || '') + '[' + saveTypeCd.label + '] ' + pick(SAVE_NAMES);
             const prodIds = domCfg.saveScope === 'PRODUCT' && domCfg.saveProdIds
               ? domCfg.saveProdIds.split(/[\s,]+/).map(s => s.trim()).filter(Boolean)
               : [];
             const body = {
               saveNm: nm,
-              saveTypeCd: saveTypeCd.cd,
+              savePurposeCd: saveTypeCd.cd,
               ...(isRate ? { saveRatePct: saveRate } : { saveAmt }),
               startDate: _makeDate(0), endDate: _makeDate(domCfg.saveDurationDays),
               scopeCd: domCfg.saveScope,
@@ -104,7 +106,7 @@
             const res = await boApi.post('/bo/zd/simul/promo/save-create', body, coUtil.cofApiHdr('적립금시뮬', '적립금생성'));
             const id  = res?.data?.data?.saveId || '-';
             const saveStr = isRate ? saveRate + '% 적립률' : saveAmt.toLocaleString() + '원 정액';
-            return { ok: true, desc: '[' + saveTypeCd.label + '] ' + nm + ' ' + saveStr, meta: { id, params: body } };
+            return { ok: true, desc: nm + ' ' + saveStr, meta: { id, params: body } };
           } else {
             return { ok: false, reason: '적립금정책 수정은 미지원 (생성 모드 사용)' };
           }
@@ -165,18 +167,19 @@
 
   <!-- 가중치 패널 -->
   <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
-    <!-- 적립금 유형 가중치 (SAVE_TYPE) -->
+    <!-- 적립금 용도 유형 가중치 -->
     <div class="card" style="padding:14px 16px;">
-      <div class="list-title">🏷 적립금 유형 가중치</div>
+      <div class="list-title">🎯 적립금 유형 가중치</div>
       <div style="margin-top:8px;margin-bottom:10px;">
         <select v-model="domCfg.fixedSaveTypeCd" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
           <option value="__weighted__">-- 가중치적용 --</option>
+          <option v-for="t in SAVE_TYPE_ITEMS" :key="t.cd" :value="t.cd">{{ t.label }}</option>
         </select>
       </div>
       <div v-show="domCfg.fixedSaveTypeCd==='__weighted__'">
-        <div v-for="t in SAVE_TYPE_ITEMS" :key="t.cd" style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+        <div v-for="t in SAVE_TYPE_ITEMS" :key="t.cd" style="display:flex;align-items:center;gap:5px;margin-bottom:2px;">
           <span :style="'width:8px;height:8px;border-radius:50%;background:'+t.color+';flex-shrink:0;display:inline-block;'"></span>
-          <span style="font-size:11px;color:#334155;min-width:58px;white-space:nowrap;">{{ t.label }}</span>
+          <span style="font-size:11px;color:#334155;min-width:100px;white-space:nowrap;">{{ t.label }}</span>
           <input type="range" min="0" max="100" v-model.number="domCfg.saveTypeCdWeights[t.cd]" :style="'flex:1;accent-color:'+t.color+';'" />
           <input type="number" min="0" max="100" v-model.number="domCfg.saveTypeCdWeights[t.cd]" style="width:40px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;padding:2px;" />
           <span style="font-size:10px;color:#94a3b8;min-width:28px;text-align:right;">{{ Math.round(domCfg.saveTypeCdWeights[t.cd]/cfSaveTypeCdTotal*100) }}%</span>
@@ -186,12 +189,13 @@
         </div>
       </div>
     </div>
-    <!-- 적립 방식 가중치 (정률/정액) -->
+    <!-- 적립 방식 가중치 -->
     <div class="card" style="padding:14px 16px;">
       <div class="list-title">💡 적립 방식 가중치</div>
       <div style="margin-top:8px;margin-bottom:10px;">
         <select v-model="domCfg.fixedSaveValType" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
           <option value="__weighted__">-- 가중치적용 --</option>
+          <option v-for="t in SAVE_VAL_ITEMS" :key="t.cd" :value="t.cd">{{ t.label }}</option>
         </select>
       </div>
       <div v-show="domCfg.fixedSaveValType==='__weighted__'">
@@ -207,7 +211,6 @@
         </div>
       </div>
     </div>
-    <div></div>
   </div>
 
   <!-- 로그 -->

@@ -42,7 +42,7 @@ COMMENT ON COLUMN shopjoy_2604.pm_coupon.coupon_id IS '쿠폰ID (YYMMDDhhmmss+ra
 COMMENT ON COLUMN shopjoy_2604.pm_coupon.site_id IS '사이트ID (sy_site.site_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon.coupon_cd IS '쿠폰코드';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon.coupon_nm IS '쿠폰명';
-COMMENT ON COLUMN shopjoy_2604.pm_coupon.coupon_type_cd IS '쿠폰유형 (코드: COUPON_TYPE)';
+COMMENT ON COLUMN shopjoy_2604.pm_coupon.coupon_type_cd IS '쿠폰유형 (코드: COUPON_TYPE — PROD_DISCNT/ORDER_DISCNT/SHIP_DISCNT/SHIP_FREE/JOIN_GIFT/VIP/CLAIM_COMP)';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon.discount_rate IS '할인률 (%)';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon.discount_amt IS '할인금액';
 COMMENT ON COLUMN shopjoy_2604.pm_coupon.min_order_amt IS '최소주문금액';

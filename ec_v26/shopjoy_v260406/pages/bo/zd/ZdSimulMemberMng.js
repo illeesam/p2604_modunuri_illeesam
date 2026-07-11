@@ -380,6 +380,7 @@
         <select v-model="domCfg.fixedGrade" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
           <option value="">-- 없음 --</option>
           <option value="__weighted__">-- 가중치적용 --</option>
+          <option v-for="g in GRADES" :key="g.cd" :value="g.cd">{{ g.label }}</option>
         </select>
       </div>
       <div v-show="domCfg.fixedGrade === '__weighted__'">
@@ -402,6 +403,7 @@
         <select v-model="domCfg.fixedDomain" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
           <option value="">-- 없음 --</option>
           <option value="__weighted__">-- 가중치적용 --</option>
+          <option v-for="d in DOMAINS" :key="d" :value="d">{{ d }}</option>
         </select>
       </div>
       <div v-show="domCfg.fixedDomain === '__weighted__'">
@@ -423,6 +425,7 @@
       <div style="margin-top:8px;margin-bottom:10px;">
         <select v-model="domCfg.fixedGender" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
           <option value="__weighted__">-- 가중치적용 --</option>
+          <option v-for="g in GENDERS" :key="g.cd" :value="g.cd">{{ g.label }}</option>
         </select>
       </div>
       <div v-show="domCfg.fixedGender === '__weighted__'">
@@ -450,6 +453,7 @@
       <div style="margin-top:8px;margin-bottom:10px;">
         <select v-model="domCfg.fixedAgeGroup" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
           <option value="__weighted__">-- 가중치적용 --</option>
+          <option v-for="a in AGE_GROUPS" :key="a.cd" :value="a.cd">{{ a.label }}</option>
         </select>
       </div>
       <div v-show="domCfg.fixedAgeGroup === '__weighted__'">
@@ -471,6 +475,7 @@
       <div style="margin-top:8px;margin-bottom:10px;">
         <select v-model="domCfg.fixedCountry" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
           <option value="__weighted__">-- 가중치적용 --</option>
+          <option v-for="c in COUNTRIES" :key="c.cd" :value="c.cd">{{ c.icon }} {{ c.label }}</option>
         </select>
       </div>
       <div v-show="domCfg.fixedCountry === '__weighted__'">
@@ -492,6 +497,7 @@
       <div style="margin-top:8px;margin-bottom:10px;">
         <select v-model="domCfg.fixedChannel" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
           <option value="__weighted__">-- 가중치적용 --</option>
+          <option v-for="ch in CHANNELS" :key="ch.cd" :value="ch.cd">{{ ch.icon }} {{ ch.label }}</option>
         </select>
       </div>
       <div v-show="domCfg.fixedChannel === '__weighted__'">
@@ -517,6 +523,7 @@
       <div style="margin-top:8px;margin-bottom:10px;">
         <select v-model="domCfg.fixedBuyType" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
           <option value="__weighted__">-- 가중치적용 --</option>
+          <option v-for="b in BUY_TYPES" :key="b.cd" :value="b.cd">{{ b.icon }} {{ b.label }}</option>
         </select>
       </div>
       <div v-show="domCfg.fixedBuyType === '__weighted__'">
@@ -538,6 +545,7 @@
       <div style="margin-top:8px;margin-bottom:10px;">
         <select v-model="domCfg.fixedEmpType" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
           <option value="__weighted__">-- 가중치적용 --</option>
+          <option v-for="e in EMP_TYPES" :key="e.cd" :value="e.cd">{{ e.label }}</option>
         </select>
       </div>
       <div v-show="domCfg.fixedEmpType === '__weighted__'">
@@ -560,6 +568,7 @@
       <div style="margin-top:8px;margin-bottom:10px;">
         <select v-model="domCfg.fixedSnsType" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
           <option value="__weighted__">-- 가중치적용 --</option>
+          <option v-for="s in SNS_TYPES" :key="s.cd" :value="s.cd">{{ s.icon }} {{ s.label }}</option>
         </select>
       </div>
       <div v-show="domCfg.fixedSnsType === '__weighted__'">

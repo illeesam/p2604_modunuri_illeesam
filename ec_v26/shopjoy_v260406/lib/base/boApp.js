@@ -195,7 +195,6 @@
       { id: 'zdSimulCouponMng', label: '쿠폰시뮬' },
       { id: 'zdSimulDiscntMng', label: '할인시뮬' },
       { id: 'zdSimulSaveMng',   label: '적립금시뮬' },
-      { id: 'zdSimulMixMng',    label: '혼합시뮬' },
       { group: '전시/이벤트' },
       { id: 'zdSimulPlanMng', label: '기획전시뮬' },
       { id: 'zdSimulEventMng', label: '이벤트시뮬' },
@@ -551,7 +550,6 @@
         zdSimulCouponMng:  'zd-simul-coupon-mng',
         zdSimulDiscntMng:  'zd-simul-discnt-mng',
         zdSimulSaveMng:    'zd-simul-save-mng',
-        zdSimulMixMng:     'zd-simul-mix-mng',
         zdSimulPlanMng:    'zd-simul-plan-mng',
         zdSimulEventMng:   'zd-simul-event-mng',
         zdSimulProdMng:    'zd-simul-prod-mng',
@@ -2725,7 +2723,6 @@
             <zd-simul-coupon-mng  v-else-if="page==='zdSimulCouponMng'"  :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
             <zd-simul-discnt-mng  v-else-if="page==='zdSimulDiscntMng'"  :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
             <zd-simul-save-mng    v-else-if="page==='zdSimulSaveMng'"    :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
-            <zd-simul-mix-mng     v-else-if="page==='zdSimulMixMng'"     :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
             <zd-simul-plan-mng    v-else-if="page==='zdSimulPlanMng'"    :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
             <zd-simul-event-mng   v-else-if="page==='zdSimulEventMng'"   :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
             <zd-simul-prod-mng    v-else-if="page==='zdSimulProdMng'"    :navigate="navigate" :show-toast="showToast" :show-confirm="showConfirm" />
@@ -3336,7 +3333,6 @@
     .component('ZdSimulCouponMng',  window.ZdSimulCouponMng)
     .component('ZdSimulDiscntMng',  window.ZdSimulDiscntMng)
     .component('ZdSimulSaveMng',    window.ZdSimulSaveMng)
-    .component('ZdSimulMixMng',     window.ZdSimulMixMng)
     .component('ZdSimulPlanMng',    window.ZdSimulPlanMng)
     .component('ZdSimulEventMng',   window.ZdSimulEventMng)
     .component('ZdSimulProdMng',    window.ZdSimulProdMng)

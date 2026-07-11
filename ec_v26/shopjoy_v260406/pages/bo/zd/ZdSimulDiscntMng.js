@@ -3,17 +3,18 @@
   const { reactive, computed } = Vue;
   const { useSimulSetup, makeLogCols, makeBaseCfgColumns, makeRangeCol, makeRangeHandlers, rangeSlotTemplate } = window.ZdSimulBase;
 
-  /* 할인 값 방식 (정률 / 정액) */
-  const DISC_VAL_ITEMS = [
-    { cd: 'RATE',   label: '% 할인 (정률)', color: '#3b82f6' },
-    { cd: 'AMOUNT', label: '원 할인 (정액)', color: '#f59e0b' },
+  /* 할인 유형 (DB DISCNT_TYPE: PROD/ORDER/SHIP/SHIP_FREE) */
+  const DISCNT_TYPE_ITEMS = [
+    { cd: 'PROD',      label: '상품할인',   color: '#3b82f6' },
+    { cd: 'ORDER',     label: '주문할인',   color: '#a855f7' },
+    { cd: 'SHIP',      label: '배송비할인', color: '#22c55e' },
+    { cd: 'SHIP_FREE', label: '무료배송',   color: '#06b6d4' },
   ];
 
-  /* 할인 정책 타입 (DB DISCNT_TYPE: RATE/FIXED/FREE_SHIP) */
-  const DISCNT_TYPE_ITEMS = [
-    { cd: 'RATE',      label: '정률 할인', color: '#3b82f6' },
-    { cd: 'FIXED',     label: '정액 할인', color: '#f59e0b' },
-    { cd: 'FREE_SHIP', label: '무료배송',  color: '#22c55e' },
+  /* 할인 방식 (DB DISCNT_VAL_TYPE: RATE/AMOUNT — SHIP_FREE 유형은 해당없음) */
+  const DISCNT_VAL_TYPE_ITEMS = [
+    { cd: 'RATE',   label: '정률 (%)', color: '#f59e0b' },
+    { cd: 'AMOUNT', label: '정액 (원)', color: '#f97316' },
   ];
 
   const DISCNT_SCOPES   = [
@@ -37,11 +38,11 @@
       /* ── [01] 도메인 설정 ─────────────────────────────── */
       const domCfg = reactive({
         fixedDiscntId:       '',
-        /* 할인 정책 타입 가중치 */
-        fixedDiscntTypeCd:   '__weighted__',
-        discntTypeCdWeights: { RATE: 50, FIXED: 35, FREE_SHIP: 15 },
-        /* 할인 값 방식 가중치 */
-        fixedDiscntValType:  '__weighted__',
+        /* 할인 유형 가중치 (PROD/ORDER/SHIP/SHIP_FREE) */
+        fixedDiscntTypeCd:    '__weighted__',
+        discntTypeCdWeights:  { PROD: 40, ORDER: 30, SHIP: 15, SHIP_FREE: 15 },
+        /* 할인 방식 가중치 (RATE/AMOUNT) */
+        fixedDiscntValTypeCd: '__weighted__',
         discntValTypeWeights: { RATE: 60, AMOUNT: 40 },
         discntRateMin:       3,
         discntRateMax:       20,
@@ -67,9 +68,9 @@
         return _pickWeighted(DISCNT_TYPE_ITEMS, domCfg.discntTypeCdWeights);
       };
       const _pickDiscntValType = () => {
-        const fixed = domCfg.fixedDiscntValType;
-        if (fixed && fixed !== '__weighted__') return DISC_VAL_ITEMS.find(t => t.cd === fixed) || DISC_VAL_ITEMS[0];
-        return _pickWeighted(DISC_VAL_ITEMS, domCfg.discntValTypeWeights);
+        const fixed = domCfg.fixedDiscntValTypeCd;
+        if (fixed && fixed !== '__weighted__') return DISCNT_VAL_TYPE_ITEMS.find(t => t.cd === fixed) || DISCNT_VAL_TYPE_ITEMS[0];
+        return _pickWeighted(DISCNT_VAL_TYPE_ITEMS, domCfg.discntValTypeWeights);
       };
       const _makeDate = (daysLater) => {
         const d = new Date(); d.setDate(d.getDate() + daysLater);
@@ -84,20 +85,21 @@
         defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
         runFn: async ({ mode, namePrefix, randInt, pick }) => {
           if (mode === 'create') {
-            const discntTypeCd = _pickDiscntTypeCd();
-            const valType      = _pickDiscntValType();
-            const isRate       = valType.cd === 'RATE';
-            const discVal      = isRate
-              ? randInt(domCfg.discntRateMin, domCfg.discntRateMax)
+            const discntType   = _pickDiscntTypeCd();
+            const isFreeShip   = discntType.cd === 'SHIP_FREE';
+            const valType      = isFreeShip ? null : _pickDiscntValType();
+            const isRate       = valType?.cd === 'RATE';
+            const discVal      = isFreeShip ? 0
+              : isRate ? randInt(domCfg.discntRateMin, domCfg.discntRateMax)
               : randInt(domCfg.discntAmtMin, domCfg.discntAmtMax);
-            const nm = (namePrefix || '') + pick(DISCNT_NAMES);
+            const nm = (namePrefix || '') + '[' + discntType.label + '] ' + pick(DISCNT_NAMES);
             const prodIds = domCfg.discntScope === 'PRODUCT' && domCfg.discntProdIds
               ? domCfg.discntProdIds.split(/[\s,]+/).map(s => s.trim()).filter(Boolean)
               : [];
             const body = {
               discntNm: nm,
-              discntTypeCd: discntTypeCd.cd,
-              discntValTypeCd: valType.cd,
+              discntTypeCd: discntType.cd,
+              ...(valType ? { discntValTypeCd: valType.cd } : {}),
               discVal,
               startDate: _makeDate(0), endDate: _makeDate(domCfg.discntDurationDays),
               scopeCd: domCfg.discntScope,
@@ -108,8 +110,8 @@
             };
             const res = await boApi.post('/bo/zd/simul/promo/discnt-create', body, coUtil.cofApiHdr('할인시뮬', '할인생성'));
             const id  = res?.data?.data?.discntId || '-';
-            const discStr = discntTypeCd.cd === 'FREE_SHIP' ? '무료배송' : (isRate ? discVal + '%' : discVal.toLocaleString() + '원');
-            return { ok: true, desc: '[' + discntTypeCd.label + '] ' + nm + ' ' + discStr, meta: { id, params: body } };
+            const discStr = isFreeShip ? '무료배송' : isRate ? discVal + '%' : discVal.toLocaleString() + '원';
+            return { ok: true, desc: '[' + discntType.label + (valType ? '/' + valType.label : '') + '] ' + nm + ' ' + discStr, meta: { id, params: body } };
           } else {
             let discntId = domCfg.fixedDiscntId;
             if (!discntId) {
@@ -131,9 +133,9 @@
       const baseCfgColumns = makeBaseCfgColumns();
       const discntCfgColumns = [
         makeRangeCol('discntRateMin', 'discntRateMax', '할인율 범위', 0, 100, '%',
-          { visible: (f) => f.fixedDiscntValType !== 'AMOUNT' }),
-        { key: 'discntAmtMin', label: '할인액 최소', type: 'number', hint: '원', visible: (f) => f.fixedDiscntValType === 'AMOUNT' },
-        { key: 'discntAmtMax', label: '할인액 최대', type: 'number', hint: '원', visible: (f) => f.fixedDiscntValType === 'AMOUNT' },
+          { visible: (f) => f.fixedDiscntValTypeCd !== 'AMOUNT' }),
+        { key: 'discntAmtMin', label: '할인액 최소', type: 'number', hint: '원', visible: (f) => f.fixedDiscntValTypeCd === 'AMOUNT' },
+        { key: 'discntAmtMax', label: '할인액 최대', type: 'number', hint: '원', visible: (f) => f.fixedDiscntValTypeCd === 'AMOUNT' },
         { key: 'discntDurationDays', label: '기간',    type: 'number', hint: '일' },
         { key: 'discntMinOrderAmt',  label: '최소주문', type: 'number', hint: '원' },
         { key: 'discntMaxDiscAmt',   label: '최대할인', type: 'number', hint: '원' },
@@ -143,8 +145,8 @@
           visible: (f) => f.discntScope === 'PRODUCT' },
       ];
 
-      const cfDiscntTypeCdTotal = computed(() => Object.values(domCfg.discntTypeCdWeights).reduce((a, b) => a + Number(b), 0) || 1);
-      const cfDiscValTypeTotal  = computed(() => Object.values(domCfg.discntValTypeWeights).reduce((a, b) => a + Number(b), 0) || 1);
+      const cfDiscntTypeCdTotal  = computed(() => Object.values(domCfg.discntTypeCdWeights).reduce((a, b) => a + Number(b), 0) || 1);
+      const cfDiscntValTypeTotal = computed(() => Object.values(domCfg.discntValTypeWeights).reduce((a, b) => a + Number(b), 0) || 1);
       const rangeHandlers = makeRangeHandlers(domCfg, [
         { minKey: 'discntRateMin', maxKey: 'discntRateMax' },
       ]);
@@ -166,8 +168,8 @@
       return {
         cfg, domCfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate,
         logCols, baseCfgColumns, discntCfgColumns,
-        cfDiscntTypeCdTotal, cfDiscValTypeTotal,
-        DISCNT_TYPE_ITEMS, DISC_VAL_ITEMS,
+        cfDiscntTypeCdTotal, cfDiscntValTypeTotal,
+        DISCNT_TYPE_ITEMS, DISCNT_VAL_TYPE_ITEMS,
         onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog,
         ...rangeHandlers,
         discntPicker, onOpenDiscntPicker, onSelectDiscnt, _loadDiscntPicker,
@@ -194,19 +196,20 @@
   </div>
 
   <!-- 가중치 패널 -->
-  <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
-    <!-- 할인 유형 가중치 (DISCNT_TYPE: RATE/FIXED/FREE_SHIP) -->
+  <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+    <!-- 할인 유형 가중치 (PROD/ORDER/SHIP/SHIP_FREE) -->
     <div class="card" style="padding:14px 16px;">
-      <div class="list-title">🏷 할인 유형 가중치</div>
+      <div class="list-title">🎯 할인 유형 가중치</div>
       <div style="margin-top:8px;margin-bottom:10px;">
         <select v-model="domCfg.fixedDiscntTypeCd" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
           <option value="__weighted__">-- 가중치적용 --</option>
+          <option v-for="t in DISCNT_TYPE_ITEMS" :key="t.cd" :value="t.cd">{{ t.label }}</option>
         </select>
       </div>
       <div v-show="domCfg.fixedDiscntTypeCd==='__weighted__'">
-        <div v-for="t in DISCNT_TYPE_ITEMS" :key="t.cd" style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+        <div v-for="t in DISCNT_TYPE_ITEMS" :key="t.cd" style="display:flex;align-items:center;gap:5px;margin-bottom:2px;">
           <span :style="'width:8px;height:8px;border-radius:50%;background:'+t.color+';flex-shrink:0;display:inline-block;'"></span>
-          <span style="font-size:11px;color:#334155;min-width:58px;white-space:nowrap;">{{ t.label }}</span>
+          <span style="font-size:11px;color:#334155;min-width:72px;white-space:nowrap;">{{ t.label }}</span>
           <input type="range" min="0" max="100" v-model.number="domCfg.discntTypeCdWeights[t.cd]" :style="'flex:1;accent-color:'+t.color+';'" />
           <input type="number" min="0" max="100" v-model.number="domCfg.discntTypeCdWeights[t.cd]" style="width:40px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;padding:2px;" />
           <span style="font-size:10px;color:#94a3b8;min-width:28px;text-align:right;">{{ Math.round(domCfg.discntTypeCdWeights[t.cd]/cfDiscntTypeCdTotal*100) }}%</span>
@@ -216,28 +219,29 @@
         </div>
       </div>
     </div>
-    <!-- 할인 방식 가중치 (정률/정액) -->
+    <!-- 할인 방식 가중치 (RATE 정률 / AMOUNT 정액) -->
     <div class="card" style="padding:14px 16px;">
       <div class="list-title">💡 할인 방식 가중치</div>
-      <div style="margin-top:8px;margin-bottom:10px;">
-        <select v-model="domCfg.fixedDiscntValType" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
+      <div style="font-size:10px;color:#94a3b8;margin-bottom:8px;">SHIP_FREE 유형 선택 시 적용 안 됨</div>
+      <div style="margin-bottom:10px;">
+        <select v-model="domCfg.fixedDiscntValTypeCd" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
           <option value="__weighted__">-- 가중치적용 --</option>
+          <option v-for="t in DISCNT_VAL_TYPE_ITEMS" :key="t.cd" :value="t.cd">{{ t.label }}</option>
         </select>
       </div>
-      <div v-show="domCfg.fixedDiscntValType==='__weighted__'">
-        <div v-for="t in DISC_VAL_ITEMS" :key="t.cd" style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+      <div v-show="domCfg.fixedDiscntValTypeCd==='__weighted__'">
+        <div v-for="t in DISCNT_VAL_TYPE_ITEMS" :key="t.cd" style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
           <span :style="'width:8px;height:8px;border-radius:50%;background:'+t.color+';flex-shrink:0;display:inline-block;'"></span>
-          <span style="font-size:11px;color:#334155;min-width:76px;white-space:nowrap;">{{ t.label }}</span>
+          <span style="font-size:11px;color:#334155;min-width:72px;white-space:nowrap;">{{ t.label }}</span>
           <input type="range" min="0" max="100" v-model.number="domCfg.discntValTypeWeights[t.cd]" :style="'flex:1;accent-color:'+t.color+';'" />
           <input type="number" min="0" max="100" v-model.number="domCfg.discntValTypeWeights[t.cd]" style="width:40px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;padding:2px;" />
-          <span style="font-size:10px;color:#94a3b8;min-width:28px;text-align:right;">{{ Math.round(domCfg.discntValTypeWeights[t.cd]/cfDiscValTypeTotal*100) }}%</span>
+          <span style="font-size:10px;color:#94a3b8;min-width:28px;text-align:right;">{{ Math.round(domCfg.discntValTypeWeights[t.cd]/cfDiscntValTypeTotal*100) }}%</span>
         </div>
         <div style="height:8px;border-radius:4px;overflow:hidden;display:flex;margin-top:6px;">
-          <div v-for="t in DISC_VAL_ITEMS" :key="t.cd" :style="'flex:'+domCfg.discntValTypeWeights[t.cd]+';transition:flex .2s;background:'+t.color+';'"></div>
+          <div v-for="t in DISCNT_VAL_TYPE_ITEMS" :key="t.cd" :style="'flex:'+domCfg.discntValTypeWeights[t.cd]+';transition:flex .2s;background:'+t.color+';'"></div>
         </div>
       </div>
     </div>
-    <div></div>
   </div>
 
   <!-- 수정 대상 지정 -->
@@ -278,7 +282,7 @@
             <td style="font-family:monospace;font-size:11px;">{{ r.discntId }}</td>
             <td>{{ r.discntNm }}</td>
             <td style="font-size:11px;color:#64748b;">{{ r.discntTypeCd || '-' }}</td>
-            <td style="font-size:11px;color:#2563eb;">{{ r.discntTypeCd==='FREE_SHIP' ? '무료배송' : (r.discntValTypeCd==='RATE' ? r.discVal+'%' : (r.discVal||0).toLocaleString()+'원') }}</td>
+            <td style="font-size:11px;color:#2563eb;">{{ r.discntTypeCd==='SHIP_FREE' ? '무료배송' : (r.discntValTypeCd==='RATE' ? r.discVal+'%' : (r.discVal||0).toLocaleString()+'원') }}</td>
             <td style="text-align:center;"><button class="btn btn_select" style="font-size:10px;padding:1px 8px;height:22px;">선택</button></td>
           </tr>
         </tbody>

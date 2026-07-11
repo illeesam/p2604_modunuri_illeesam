@@ -15,10 +15,10 @@
     { value: 'CATEGORY', label: '카테고리' },
     { value: 'PRODUCT',  label: '특정 상품' },
   ];
-  /* 쿠폰/할인 할인방식 가중치 항목 */
+  /* 쿠폰/할인 할인방식 가중치 항목 (RATE/AMOUNT) */
   const DISC_TYPE_ITEMS  = [{ cd: 'RATE', label: '% 할인', color: '#3b82f6' }, { cd: 'AMOUNT', label: '정액 할인', color: '#f59e0b' }];
-  /* 적립금 유형 가중치 항목 */
-  const SAVE_TYPE_ITEMS  = [{ cd: 'RATE', label: '적립률 %', color: '#22c55e' }, { cd: 'AMOUNT', label: '정액 적립', color: '#f97316' }];
+  /* 적립 방식 가중치 항목 (RATE/AMOUNT) */
+  const SAVE_VAL_ITEMS   = [{ cd: 'RATE', label: '적립률 %', color: '#22c55e' }, { cd: 'AMOUNT', label: '정액 적립', color: '#f97316' }];
   const COUPON_NAMES = [
     '첫구매 감사 쿠폰', '재방문 할인 쿠폰', '생일 특별 쿠폰', '주말 특가 쿠폰',
     '신상품 런칭 쿠폰', '회원등급 업그레이드 쿠폰', 'VIP 전용 혜택 쿠폰', '오늘만 특가 쿠폰',
@@ -96,7 +96,7 @@
       };
       const _pickCouponDiscType = () => _pickWeighted(DISC_TYPE_ITEMS,  domCfg.couponDiscTypeWeights, 'fixedCouponDiscType');
       const _pickDiscntType     = () => _pickWeighted(DISC_TYPE_ITEMS,  domCfg.discntTypeWeights,     'fixedDiscntType');
-      const _pickSaveType       = () => _pickWeighted(SAVE_TYPE_ITEMS,  domCfg.saveTypeWeights,       'fixedSaveType');
+      const _pickSaveType       = () => _pickWeighted(SAVE_VAL_ITEMS,   domCfg.saveTypeWeights,       'fixedSaveType');
 
       const _makeDate = (daysLater) => {
         const d = new Date(); d.setDate(d.getDate() + daysLater);
@@ -152,7 +152,7 @@
                 ? domCfg.discntProdIds.split(/[\s,]+/).map(s => s.trim()).filter(Boolean)
                 : [];
               const body = {
-                discntNm: nm, discntTypeCd: discType.cd, discVal,
+                discntNm: nm, discntValTypeCd: discType.cd, discVal,
                 startDate: now, endDate: _makeDate(domCfg.discntDurationDays),
                 scopeCd: domCfg.discntScope,
                 ...(discntProdIds.length ? { prodIds: discntProdIds } : {}),
@@ -314,7 +314,7 @@
         cfg, domCfg, state, logs, logPager, cfIsRunning, cfSuccessRate,
         logCols, baseCfgColumns, couponCfgColumns, discntCfgColumns, saveCfgColumns,
         cfCouponDiscTotal, cfDiscntTotal, cfSaveTotal,
-        DISC_TYPE_ITEMS, SAVE_TYPE_ITEMS,
+        DISC_TYPE_ITEMS, SAVE_VAL_ITEMS,
         onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog, logSearch,
         ...rangeHandlers,
         PROMO_TYPES,
@@ -383,6 +383,7 @@
         <select v-model="domCfg.fixedCouponDiscType" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;margin-bottom:6px;">
           <option value="">-- 없음 --</option>
           <option value="__weighted__">-- 가중치적용 --</option>
+          <option v-for="t in DISC_TYPE_ITEMS" :key="t.cd" :value="t.cd">{{ t.label }}</option>
         </select>
         <div v-show="domCfg.fixedCouponDiscType === '__weighted__'">
           <div v-for="t in DISC_TYPE_ITEMS" :key="t.cd" style="display:grid;grid-template-columns:10px 55px 1fr 40px 36px;align-items:center;gap:6px;margin-bottom:2px;">
@@ -405,6 +406,7 @@
         <select v-model="domCfg.fixedDiscntType" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;margin-bottom:6px;">
           <option value="">-- 없음 --</option>
           <option value="__weighted__">-- 가중치적용 --</option>
+          <option v-for="t in DISC_TYPE_ITEMS" :key="t.cd" :value="t.cd">{{ t.label }}</option>
         </select>
         <div v-show="domCfg.fixedDiscntType === '__weighted__'">
           <div v-for="t in DISC_TYPE_ITEMS" :key="t.cd" style="display:grid;grid-template-columns:10px 55px 1fr 40px 36px;align-items:center;gap:6px;margin-bottom:2px;">
@@ -427,9 +429,10 @@
         <select v-model="domCfg.fixedSaveType" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;margin-bottom:6px;">
           <option value="">-- 없음 --</option>
           <option value="__weighted__">-- 가중치적용 --</option>
+          <option v-for="t in SAVE_VAL_ITEMS" :key="t.cd" :value="t.cd">{{ t.label }}</option>
         </select>
         <div v-show="domCfg.fixedSaveType === '__weighted__'">
-          <div v-for="t in SAVE_TYPE_ITEMS" :key="t.cd" style="display:grid;grid-template-columns:10px 60px 1fr 40px 36px;align-items:center;gap:6px;margin-bottom:2px;">
+          <div v-for="t in SAVE_VAL_ITEMS" :key="t.cd" style="display:grid;grid-template-columns:10px 60px 1fr 40px 36px;align-items:center;gap:6px;margin-bottom:2px;">
             <span :style="'width:8px;height:8px;border-radius:50%;background:'+t.color+';display:inline-block;'"></span>
             <span style="font-size:11px;font-weight:600;color:#475569;">{{ t.label }}</span>
             <input type="range" min="0" max="100" v-model.number="domCfg.saveTypeWeights[t.cd]" :style="'accent-color:'+t.color+';width:100%;'" />
@@ -437,7 +440,7 @@
             <span style="font-size:10px;color:#94a3b8;text-align:right;">{{ Math.round(domCfg.saveTypeWeights[t.cd]/cfSaveTotal*100) }}%</span>
           </div>
           <div style="height:8px;border-radius:4px;overflow:hidden;display:flex;margin-top:6px;">
-            <div v-for="t in SAVE_TYPE_ITEMS" :key="t.cd" :style="'flex:'+domCfg.saveTypeWeights[t.cd]+';transition:flex .2s;background:'+t.color"></div>
+            <div v-for="t in SAVE_VAL_ITEMS" :key="t.cd" :style="'flex:'+domCfg.saveTypeWeights[t.cd]+';transition:flex .2s;background:'+t.color"></div>
           </div>
         </div>
       </div>

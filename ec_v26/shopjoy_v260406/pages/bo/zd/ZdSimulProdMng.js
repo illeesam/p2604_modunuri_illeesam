@@ -202,10 +202,13 @@
             if (isOption) {
               const preset = _pickOptPreset();
               optPresetLabel = preset.label;
-              const o1cnt = randInt(domCfg.opt1CountMin, Math.min(domCfg.opt1CountMax, preset.opt1Pool.length));
-              const o2cnt = randInt(domCfg.opt2CountMin, Math.min(domCfg.opt2CountMax, preset.opt2Pool.length));
-              opt1List = preset.opt1Pool.slice(0, o1cnt);
-              opt2List = preset.opt2Pool.slice(0, o2cnt);
+              const useCustomPool = domCfg.fixedOptPreset === '__weighted__';
+              const pool1 = useCustomPool && cfOpt1Pool.value.length ? cfOpt1Pool.value : preset.opt1Pool;
+              const pool2 = useCustomPool && cfOpt2Pool.value.length ? cfOpt2Pool.value : preset.opt2Pool;
+              const o1cnt = randInt(domCfg.opt1CountMin, Math.min(domCfg.opt1CountMax, pool1.length));
+              const o2cnt = randInt(domCfg.opt2CountMin, Math.min(domCfg.opt2CountMax, pool2.length));
+              opt1List = pool1.slice(0, o1cnt);
+              opt2List = pool2.slice(0, o2cnt);
               const _makeVal = (nm, type, prefix) => {
                 if (type === 'color') return 'COL_' + nm.replace(/[^A-Za-z0-9가-힣]/g, '_').toUpperCase();
                 if (type === 'size')  return 'SIZ_' + nm;
@@ -316,6 +319,12 @@
       const cfTypeTotal = computed(() => Object.values(domCfg.saleTypeWeights).reduce((a, b) => a + Number(b), 0) || 1);
       const cfOptPresetTotal = computed(() => Object.values(domCfg.optPresetWeights).reduce((a, b) => a + Number(b), 0) || 1);
 
+      /* 옵션 풀 — wrap=true 모드: 전체 선택도 명시적 콤마 문자열로 저장 */
+      const opt1PoolStr = ref(OPT1_POOL.join(','));
+      const opt2PoolStr = ref(OPT2_POOL.join(','));
+      const cfOpt1Pool = computed(() => (opt1PoolStr.value || '').split(',').map(s => s.trim()).filter(Boolean));
+      const cfOpt2Pool = computed(() => (opt2PoolStr.value || '').split(',').map(s => s.trim()).filter(Boolean));
+
       /* ── [05] 컬럼 정의 ─────────────────────────────── */
       const logCols = makeLogCols();
       const baseCfgColumns = makeBaseCfgColumns();
@@ -388,6 +397,7 @@
         onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog, logSearch,
         ...rangeHandlers,
         SALE_TYPES, PROD_STATUSES, UPDATE_ACTIONS, OPT1_POOL, OPT2_POOL, OPT1_COLORS, OPT_PRESETS,
+        opt1PoolStr, opt2PoolStr, cfOpt1Pool, cfOpt2Pool,
         updateProdPicker, onOpenUpdateProdPicker, onSelectUpdateProd, _loadUpdateProdPicker,
       };
     },
@@ -422,30 +432,31 @@
       </template>
     </bo-form-area>
 
-    <!-- 옵션 풀 프리뷰 -->
-    <div style="margin-top:10px;padding-top:10px;border-top:1px solid #f1f5f9;display:flex;flex-direction:column;gap:6px;">
-      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-        <span style="font-size:11px;color:#64748b;font-weight:600;min-width:80px;">옵션1 색상 풀</span>
-        <template v-for="(nm, i) in OPT1_POOL" :key="nm">
-          <span :style="'display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:10px;font-size:11px;border:1px solid #e2e8f0;' + (i < domCfg.opt1CountMax ? '' : 'opacity:0.3;')">
-            <span :style="'display:inline-block;width:10px;height:10px;border-radius:50%;background:' + OPT1_COLORS[nm] + ';border:1px solid #ccc;'"></span>
-            {{ nm }}
-            <span v-if="i < domCfg.opt1CountMin" style="color:#059669;font-size:9px;">●</span>
-            <span v-else-if="i < domCfg.opt1CountMax" style="color:#d97706;font-size:9px;">○</span>
-          </span>
-        </template>
+    <!-- 옵션 풀 선택 (체크박스 드롭다운) -->
+    <div style="margin-top:10px;padding-top:10px;border-top:1px solid #f1f5f9;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+      <div>
+        <label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px;">옵션1 색상 풀</label>
+        <bo-multi-check-select
+          v-model="opt1PoolStr"
+          :options="OPT1_POOL.map(nm => ({ value: nm, label: nm, color: OPT1_COLORS[nm] || '#ccc' }))"
+          placeholder="색상 선택"
+          all-label="전체 색상"
+          :wrap="true"
+          min-width="100%"
+          style="width:100%;display:block;" />
       </div>
-      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-        <span style="font-size:11px;color:#64748b;font-weight:600;min-width:80px;">옵션2 사이즈 풀</span>
-        <template v-for="(nm, i) in OPT2_POOL" :key="nm">
-          <span :style="'display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:10px;font-size:11px;border:1px solid #e2e8f0;' + (i < domCfg.opt2CountMax ? '' : 'opacity:0.3;')">
-            {{ nm }}
-            <span v-if="i < domCfg.opt2CountMin" style="color:#059669;font-size:9px;">●</span>
-            <span v-else-if="i < domCfg.opt2CountMax" style="color:#d97706;font-size:9px;">○</span>
-          </span>
-        </template>
+      <div>
+        <label style="font-size:11px;font-weight:600;color:#64748b;display:block;margin-bottom:4px;">옵션2 사이즈 풀</label>
+        <bo-multi-check-select
+          v-model="opt2PoolStr"
+          :options="OPT2_POOL.map(nm => ({ value: nm, label: nm }))"
+          placeholder="사이즈 선택"
+          all-label="전체 사이즈"
+          :wrap="true"
+          min-width="100%"
+          style="width:100%;display:block;" />
       </div>
-      <div style="font-size:10px;color:#94a3b8;">● 확정 포함 ○ 가능 범위 ∙ 흐린 항목은 범위 초과</div>
+      <div></div>
     </div>
   </div>
 
@@ -459,6 +470,7 @@
         <select v-model="domCfg.fixedSaleType" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
           <option value="">-- 없음 --</option>
           <option value="__weighted__">-- 가중치적용 --</option>
+          <option v-for="t in SALE_TYPES" :key="t.cd" :value="t.cd">{{ t.label }}</option>
         </select>
       </div>
       <div v-show="domCfg.fixedSaleType === '__weighted__'">
@@ -482,12 +494,13 @@
         <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">카테고리 지정</label>
         <select v-model="domCfg.fixedOptPreset" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
           <option value="__weighted__">-- 가중치적용 --</option>
+          <option v-for="p in OPT_PRESETS" :key="p.cd" :value="p.cd">{{ p.label }}</option>
         </select>
       </div>
       <div v-show="domCfg.fixedOptPreset === '__weighted__'">
         <div v-for="p in OPT_PRESETS" :key="p.cd" style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
           <span :style="'width:8px;height:8px;border-radius:50%;background:'+p.color+';flex-shrink:0;display:inline-block;'"></span>
-          <span style="min-width:46px;font-size:11px;color:#475569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ p.label.split(' ')[0] }}</span>
+          <span style="min-width:120px;font-size:11px;color:#475569;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" :title="p.label">{{ p.label }}</span>
           <input type="range" min="0" max="100" v-model.number="domCfg.optPresetWeights[p.cd]" :style="'flex:1;accent-color:'+p.color+';'" />
           <input type="number" min="0" max="100" v-model.number="domCfg.optPresetWeights[p.cd]" style="width:40px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;padding:2px;" />
           <span style="font-size:10px;color:#94a3b8;min-width:28px;">{{ Math.round(domCfg.optPresetWeights[p.cd]/cfOptPresetTotal*100) }}%</span>

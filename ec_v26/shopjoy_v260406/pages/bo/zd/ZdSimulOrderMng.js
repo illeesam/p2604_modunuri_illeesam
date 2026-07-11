@@ -363,6 +363,7 @@
         <select v-model="domCfg.fixedPayMethod" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
           <option value="">-- 없음 --</option>
           <option value="__weighted__">-- 가중치적용 --</option>
+          <option v-for="p in PAY_METHODS" :key="p.value" :value="p.value">{{ p.label }}</option>
         </select>
       </div>
       <div v-show="domCfg.fixedPayMethod === '__weighted__'">

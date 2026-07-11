@@ -3,10 +3,10 @@
   const { reactive, computed } = Vue;
   const { useSimulSetup, makeLogCols, makeBaseCfgColumns, makeRangeCol, makeRangeHandlers, rangeSlotTemplate } = window.ZdSimulBase;
 
-  /* 쿠폰 할인방식 */
+  /* 쿠폰 할인방식 (COUPON_DISC_TYPE: RATE/AMOUNT) */
   const COUPON_DISC_ITEMS = [
-    { cd: 'RATE',  label: '정률 할인 (%)', color: '#3b82f6' },
-    { cd: 'FIXED', label: '정액 할인 (원)', color: '#f59e0b' },
+    { cd: 'RATE',   label: '정률 할인 (%)', color: '#3b82f6' },
+    { cd: 'AMOUNT', label: '정액 할인 (원)', color: '#f59e0b' },
   ];
   /* 쿠폰 용도 타입 */
   const COUPON_TYPE_ITEMS = [
@@ -18,13 +18,14 @@
     { cd: 'VIP쿠폰',              label: 'VIP쿠폰',              color: '#f97316' },
     { cd: '클레임관리자지급쿠폰', label: '클레임관리자지급쿠폰', color: '#ef4444' },
   ];
-  /* 할인정책 타입 (DISCNT_TYPE) */
+  /* 할인 유형 (DB DISCNT_TYPE: PROD/ORDER/SHIP/SHIP_FREE) */
   const DISCNT_TYPE_ITEMS = [
-    { cd: 'RATE',      label: '정률 할인', color: '#3b82f6' },
-    { cd: 'FIXED',     label: '정액 할인', color: '#f59e0b' },
-    { cd: 'FREE_SHIP', label: '무료배송',  color: '#22c55e' },
+    { cd: 'PROD',      label: '상품할인',   color: '#3b82f6' },
+    { cd: 'ORDER',     label: '주문할인',   color: '#a855f7' },
+    { cd: 'SHIP',      label: '배송비할인', color: '#22c55e' },
+    { cd: 'SHIP_FREE', label: '무료배송',   color: '#06b6d4' },
   ];
-  /* 할인 값 방식 */
+  /* 할인 방식 (DB DISCNT_VAL_TYPE: RATE/AMOUNT) */
   const DISCNT_VAL_ITEMS = [
     { cd: 'RATE',   label: '% 할인', color: '#3b82f6' },
     { cd: 'AMOUNT', label: '원 할인', color: '#f59e0b' },
@@ -59,7 +60,7 @@
         couponTypeWeights:     { '상품할인쿠폰': 35, '주문할인쿠폰': 22, '배송비할인쿠폰': 13, '무료배송쿠폰': 10, '회원가입축하쿠폰': 10, 'VIP쿠폰': 7, '클레임관리자지급쿠폰': 3 },
         /* 쿠폰 — 할인방식 */
         fixedCouponDiscType:   '__weighted__',
-        couponDiscTypeWeights: { RATE: 70, FIXED: 30 },
+        couponDiscTypeWeights: { RATE: 70, AMOUNT: 30 },
         couponDiscRateMin:     5, couponDiscRateMax: 30,
         couponDiscAmtMin:      1000, couponDiscAmtMax: 30000,
         couponIssueCountMin:   10, couponIssueCountMax: 500,
@@ -68,9 +69,9 @@
         couponProdIds:         '',
         couponMinOrderAmt:     0,
         couponMaxDiscAmt:      50000,
-        /* 할인 — 정책 타입 */
+        /* 할인 — 유형 (PROD/ORDER/SHIP/SHIP_FREE) */
         fixedDiscntTypeCd:     '__weighted__',
-        discntTypeCdWeights:   { RATE: 50, FIXED: 35, FREE_SHIP: 15 },
+        discntTypeCdWeights:   { PROD: 40, ORDER: 30, SHIP: 15, SHIP_FREE: 15 },
         /* 할인 — 값 방식 */
         fixedDiscntValType:    '__weighted__',
         discntValTypeWeights:  { RATE: 60, AMOUNT: 40 },
@@ -177,7 +178,7 @@
               };
               const res = await boApi.post('/bo/zd/simul/promo/discnt-create', body, coUtil.cofApiHdr('혼합시뮬', '할인생성'));
               const id  = res?.data?.data?.discntId || '-';
-              const discStr = discntTypeCd.cd === 'FREE_SHIP' ? '무료배송' : (isRate ? discVal + '%' : discVal.toLocaleString() + '원');
+              const discStr = discntTypeCd.cd === 'SHIP_FREE' ? '무료배송' : (isRate ? discVal + '%' : discVal.toLocaleString() + '원');
               return { ok: true, desc: '[할인|' + discntTypeCd.label + '] ' + nm + ' ' + discStr, meta: { id, type: '할인', params: body } };
             }
           } else {
@@ -193,9 +194,9 @@
       const baseCfgColumns = makeBaseCfgColumns();
       const couponCfgColumns = [
         makeRangeCol('couponDiscRateMin', 'couponDiscRateMax', '할인율 범위', 0, 100, '%',
-          { visible: (f) => f.fixedCouponDiscType !== 'FIXED' }),
-        { key: 'couponDiscAmtMin', label: '할인액 최소', type: 'number', hint: '원', visible: (f) => f.fixedCouponDiscType === 'FIXED' },
-        { key: 'couponDiscAmtMax', label: '할인액 최대', type: 'number', hint: '원', visible: (f) => f.fixedCouponDiscType === 'FIXED' },
+          { visible: (f) => f.fixedCouponDiscType !== 'AMOUNT' }),
+        { key: 'couponDiscAmtMin', label: '할인액 최소', type: 'number', hint: '원', visible: (f) => f.fixedCouponDiscType === 'AMOUNT' },
+        { key: 'couponDiscAmtMax', label: '할인액 최대', type: 'number', hint: '원', visible: (f) => f.fixedCouponDiscType === 'AMOUNT' },
         makeRangeCol('couponIssueCountMin', 'couponIssueCountMax', '발행수 범위', 1, 1000, '매'),
         { key: 'couponDurationDays', label: '유효기간', type: 'number', hint: '일' },
         { key: 'couponScope',        label: '적용범위', type: 'select', options: SCOPES },
@@ -269,6 +270,7 @@
       <div style="margin-top:8px;margin-bottom:10px;">
         <select v-model="domCfg.fixedCouponType" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
           <option value="__weighted__">-- 가중치적용 --</option>
+          <option v-for="t in COUPON_TYPE_ITEMS" :key="t.cd" :value="t.cd">{{ t.label }}</option>
         </select>
       </div>
       <div v-show="domCfg.fixedCouponType==='__weighted__'">
@@ -290,6 +292,7 @@
       <div style="margin-top:8px;margin-bottom:10px;">
         <select v-model="domCfg.fixedCouponDiscType" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
           <option value="__weighted__">-- 가중치적용 --</option>
+          <option v-for="t in COUPON_DISC_ITEMS" :key="t.cd" :value="t.cd">{{ t.label }}</option>
         </select>
       </div>
       <div v-show="domCfg.fixedCouponDiscType==='__weighted__'">
@@ -324,6 +327,7 @@
       <div style="margin-top:8px;margin-bottom:10px;">
         <select v-model="domCfg.fixedDiscntTypeCd" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
           <option value="__weighted__">-- 가중치적용 --</option>
+          <option v-for="t in DISCNT_TYPE_ITEMS" :key="t.cd" :value="t.cd">{{ t.label }}</option>
         </select>
       </div>
       <div v-show="domCfg.fixedDiscntTypeCd==='__weighted__'">
@@ -345,6 +349,7 @@
       <div style="margin-top:8px;margin-bottom:10px;">
         <select v-model="domCfg.fixedDiscntValType" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
           <option value="__weighted__">-- 가중치적용 --</option>
+          <option v-for="t in DISCNT_VAL_ITEMS" :key="t.cd" :value="t.cd">{{ t.label }}</option>
         </select>
       </div>
       <div v-show="domCfg.fixedDiscntValType==='__weighted__'">

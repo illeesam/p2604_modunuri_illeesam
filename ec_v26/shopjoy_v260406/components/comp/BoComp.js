@@ -968,11 +968,11 @@ window.BoMultiCheckSelect = {
     });
 
     const cfDisplay = computed(() => {
-      if (noneMode.value) return '선택 안 함';
-      if (cfIsAll.value) return props.placeholder;
+      if (noneMode.value) return '- 선택없음 -';
+      if (cfIsAll.value) return props.wrap ? '전체 (' + cfNorm.value.length + ')' : props.placeholder;
       const sel = cfSelected.value;
       const labels = cfNorm.value.filter(o => sel.has(o.value)).map(o => o.label);
-      if (labels.length === 0) return props.placeholder;
+      if (labels.length === 0) return '- 선택없음 -';
       if (labels.length <= 2) return labels.join(', ');
       // 3개 이상: 앞 2개 라벨 + (전체개수)...
       return labels.slice(0, 2).join(', ') + ' (' + labels.length + ')...';
@@ -1052,7 +1052,7 @@ window.BoMultiCheckSelect = {
     };
   },
   template: /* html */`
-<div ref="rootRef" class="multi-check-select" :style="'position:relative;display:inline-block;min-width:'+minWidth">
+<div ref="rootRef" class="multi-check-select" :style="'position:relative;display:block;min-width:'+minWidth">
   <div @click="handleBtnAction('select-toggle')"
     :style="'border:1px solid #d4d4d8;border-radius:6px;padding:4px 28px 4px 10px;background:'+(disabled?'#f5f5f5':'#fff')+';cursor:'+(disabled?'not-allowed':'pointer')+';font-size:13px;color:'+(noneMode?'#aaa':'#333')+';position:relative;user-select:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'">
     {{ cfDisplay }}
@@ -1073,9 +1073,8 @@ window.BoMultiCheckSelect = {
       @mouseenter="$event.currentTarget.style.background='#f9fafb'"
       @mouseleave="$event.currentTarget.style.background='transparent'">
       <input type="checkbox" :checked="cfSelected.has(o.value)" @change="handleSelectAction('select-click-option', o.value)" style="flex:0 0 auto;width:14px;min-width:14px;height:14px;margin:0;" />
-      <span style="white-space:nowrap;">
-        {{ o.label }}
-      </span>
+      <span v-if="o.color" :style="'display:inline-block;width:11px;height:11px;border-radius:50%;background:'+o.color+';border:1px solid #ccc;flex:0 0 auto;'"></span>
+      <span style="white-space:nowrap;">{{ o.label }}</span>
     </label>
   </div>
 </div>

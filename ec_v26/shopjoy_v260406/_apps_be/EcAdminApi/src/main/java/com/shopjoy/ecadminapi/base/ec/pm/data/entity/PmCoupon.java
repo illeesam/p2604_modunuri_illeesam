@@ -37,7 +37,7 @@ public class PmCoupon extends BaseEntity {
     @Column(name = "coupon_nm", length = 100, nullable = false)
     private String couponNm;
 
-    @Comment("쿠폰유형 (코드: COUPON_TYPE)")
+    @Comment("쿠폰유형 (코드: COUPON_TYPE — PROD_DISCNT/ORDER_DISCNT/SHIP_DISCNT/SHIP_FREE/JOIN_GIFT/VIP/CLAIM_COMP)")
     @Column(name = "coupon_type_cd", length = 20, nullable = false)
     private String couponTypeCd;
 

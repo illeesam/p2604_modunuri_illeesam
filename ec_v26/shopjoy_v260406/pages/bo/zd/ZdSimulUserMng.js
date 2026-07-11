@@ -164,6 +164,7 @@
       <div style="margin-top:8px;margin-bottom:10px;">
         <select v-model="domCfg.emailDomain" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
           <option value="__weighted__">-- 가중치적용 --</option>
+          <option v-for="d in DOMAINS" :key="d" :value="d">{{ d }}</option>
         </select>
       </div>
       <div v-show="domCfg.emailDomain === '__weighted__'">

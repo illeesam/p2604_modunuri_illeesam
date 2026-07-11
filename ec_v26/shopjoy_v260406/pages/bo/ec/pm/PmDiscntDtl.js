@@ -20,7 +20,7 @@ window.PmDiscntDtl = {
     const uiState = reactive({ loading: false, showVendorModal: false, error: null, isPageCodeLoad: false, tab: window._pmDiscntDtlState.tab || 'info', tabMode2: window._pmDiscntDtlState.tabMode || 'tab'});
     const tab = Vue.toRef(uiState, 'tab');
     const tabMode2 = Vue.toRef(uiState, 'tabMode2');
-    const codes = reactive({ discnt_types: [], promo_statuses: [], discnt_apply_targets: [] });
+    const codes = reactive({ discnt_types: [], discnt_val_types: [], promo_statuses: [], discnt_apply_targets: [] });
 
     const _today = new Date();
 
@@ -32,7 +32,7 @@ window.PmDiscntDtl = {
     /* 폼 초기값 = 빈 폼 (미선택/초기화 상태에서는 모든 필드 비움).
      *   신규 등록 기본값(정률/활성/전체상품/날짜)은 [+신규] 진입 시에만 _applyNewDefaults() 로 채움. */
     const form = reactive({
-      discntId: null, discntNm: '', discntTypeCd: '', discntValue: '',
+      discntId: null, discntNm: '', discntTypeCd: '', discntValTypeCd: '', discntValue: '',
       discntStatusCd: '', startDate: '', endDate: '',
       discntTargetCd: '', minOrderAmt: '', maxDiscntAmt: '', discntDesc: '',
       visibilityTargets: '^PUBLIC^',
@@ -41,7 +41,7 @@ window.PmDiscntDtl = {
     /* _applyNewDefaults — 신규 등록 진입 시 기본값 채움 */
     const _applyNewDefaults = () => {
       Object.assign(form, {
-        discntTypeCd: 'RATE', discntValue: 0, discntStatusCd: '활성',
+        discntTypeCd: 'PROD', discntValTypeCd: 'RATE', discntValue: 0, discntStatusCd: '활성',
         startDate: DEFAULT_START, endDate: DEFAULT_END,
         discntTargetCd: '전체상품', minOrderAmt: 0, maxDiscntAmt: 0,
       });
@@ -179,6 +179,7 @@ window.PmDiscntDtl = {
     const fnLoadCodes = () => {
       const codeStore = window.sfGetBoCodeStore();
       codes.discnt_types = codeStore.sgGetGrpCodes('DISCNT_TYPE');
+      codes.discnt_val_types = codeStore.sgGetGrpCodes('DISCNT_VAL_TYPE');
       codes.promo_statuses = codeStore.sgGetGrpCodes('PROMO_STATUS');
       codes.discnt_apply_targets = codeStore.sgGetGrpCodes('DISCNT_APPLY_TARGET');
       uiState.isPageCodeLoad = true;
@@ -297,12 +298,15 @@ window.PmDiscntDtl = {
     // 정보 영역 폼
     const columns = {};
     columns.infoForm = [
-      { key: 'discntNm',     label: '할인명', type: 'text', required: true,
+      { key: 'discntNm',       label: '할인명', type: 'text', required: true, colSpan: 2,
         placeholder: '할인명 입력' },
-      { key: 'discntTypeCd', label: '할인유형', type: 'select', options: () => codes.discnt_types },
-      { key: 'discntValue',  label: '할인값', type: 'number', required: true },
-      { key: 'vendorId',     label: '판매업체', type: 'slot', name: 'vendor' },
-      { key: 'chargeStaff',  label: '판매담당자', type: 'text', placeholder: '담당자명 입력' },
+      { key: 'discntTypeCd',   label: '할인유형', type: 'select', options: () => codes.discnt_types },
+      { key: 'discntValTypeCd', label: '할인방식', type: 'select', options: () => codes.discnt_val_types,
+        visible: (f) => f.discntTypeCd !== 'SHIP_FREE' },
+      { key: 'discntValue',    label: '할인값', type: 'number', required: true,
+        visible: (f) => f.discntTypeCd !== 'SHIP_FREE' },
+      { key: 'vendorId',       label: '판매업체', type: 'slot', name: 'vendor' },
+      { key: 'chargeStaff',    label: '판매담당자', type: 'text', placeholder: '담당자명 입력' },
     ];
 
     // ===== 폼 컬럼 정의 (BoFormArea :columns) - detail 탭 할인적용/기간설정 ===
@@ -478,11 +482,12 @@ window.PmDiscntDtl = {
           <div style="font-size:13px;color:#666;margin-bottom:4px;">
             할인유형:
             <span style="font-weight:700;color:#e8587a;">{{ form.discntTypeCd }}</span>
+            <span v-if="form.discntValTypeCd" style="font-weight:700;color:#e8587a;margin-left:4px;">({{ form.discntValTypeCd }})</span>
           </div>
-          <div style="font-size:13px;color:#666;margin-bottom:4px;">
+          <div v-if="form.discntTypeCd !== 'SHIP_FREE'" style="font-size:13px;color:#666;margin-bottom:4px;">
             할인값:
             <span style="font-weight:700;color:#e8587a;">
-              {{ form.discntTypeCd === 'RATE' ? (form.discntValue + '%') : (form.discntValue||0).toLocaleString() + '원' }}
+              {{ form.discntValTypeCd === 'RATE' ? (form.discntValue + '%') : (form.discntValue||0).toLocaleString() + '원' }}
             </span>
           </div>
           <div style="font-size:13px;color:#666;">

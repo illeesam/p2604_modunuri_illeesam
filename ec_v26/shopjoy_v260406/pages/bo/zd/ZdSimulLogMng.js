@@ -28,16 +28,35 @@
         dateFrom: _yearAgo(),
         dateTo: _today(),
       });
-      const pager = reactive({ pageNo: 1, pageSize: 50, pageTotalPage: 1, pageTotalCount: 0 });
+      const pager = reactive({ pageNo: 1, pageSize: 20, pageTotalPage: 1, pageTotalCount: 0 });
       const allLogs = ref([]);
       const codes   = reactive({});
 
       /* ── [02] 데이터 로드 ───────────────────────────── */
-      const handleSearchList = () => {
-        allLogs.value = window._zdSimulLogs ? [...window._zdSimulLogs] : [];
-        pager.pageNo = 1;
+      const handleSearchList = async () => {
+        try {
+          const params = {
+            pageNo:   pager.pageNo,
+            pageSize: pager.pageSize,
+          };
+          if (searchParam.domain !== '전체') params.domain = searchParam.domain;
+          if (searchParam.mode !== '전체')   params.mode   = searchParam.mode;
+          if (searchParam.status === '성공') params.status = 'SUCCESS';
+          else if (searchParam.status === '실패') params.status = 'FAIL';
+          if (searchParam.dateFrom) params.dateFrom = searchParam.dateFrom;
+          if (searchParam.dateTo)   params.dateTo   = searchParam.dateTo;
+          if (searchParam.keyword)  params.desc     = searchParam.keyword;
+
+          const res = await boApiSvc.zdSimulLog.getPage(params);
+          const d = res.data?.data || {};
+          allLogs.value = d.pageList || [];
+          pager.pageTotalCount = d.pageTotalCount || 0;
+          pager.pageTotalPage  = d.pageTotalPage  || 1;
+        } catch (e) {
+          allLogs.value = [];
+        }
       };
-      const onSearch = () => handleSearchList();
+      const onSearch = () => { pager.pageNo = 1; handleSearchList(); };
       const onReset  = () => {
         searchParam.domain   = '전체';
         searchParam.mode     = '전체';
@@ -45,40 +64,15 @@
         searchParam.keyword  = '';
         searchParam.dateFrom = _yearAgo();
         searchParam.dateTo   = _today();
+        pager.pageNo = 1;
         handleSearchList();
       };
 
       onMounted(handleSearchList);
 
-      /* ── [03] 필터 + 클라이언트 페이징 (예외 허용) ──── */
-      const cfFiltered = computed(() => {
-        let list = allLogs.value;
-        if (searchParam.domain !== '전체') list = list.filter(r => r.domain === searchParam.domain);
-        if (searchParam.mode !== '전체')   list = list.filter(r => r.mode === searchParam.mode);
-        if (searchParam.status !== '전체') {
-          if (searchParam.status === '성공') list = list.filter(r => r.status === 'ok');
-          else list = list.filter(r => r.status !== 'ok');
-        }
-        if (searchParam.dateFrom) list = list.filter(r => (r.ts || '') >= searchParam.dateFrom);
-        if (searchParam.dateTo)   list = list.filter(r => (r.ts || '').slice(0, 10) <= searchParam.dateTo);
-        if (searchParam.keyword) {
-          const kw = searchParam.keyword.toLowerCase();
-          list = list.filter(r => (r.desc || '').toLowerCase().includes(kw) || (r.reason || '').toLowerCase().includes(kw));
-        }
-        return list;
-      });
-      const cfPageList = computed(() => {
-        const start = (pager.pageNo - 1) * pager.pageSize;
-        return cfFiltered.value.slice(start, start + pager.pageSize);
-      });
-      const cfPageNums = computed(() => {
-        const total = Math.max(1, Math.ceil(cfFiltered.value.length / pager.pageSize));
-        pager.pageTotalPage  = total;
-        pager.pageTotalCount = cfFiltered.value.length;
-        const start = Math.max(1, pager.pageNo - 4);
-        const end   = Math.min(total, start + 8);
-        return Array.from({ length: end - start + 1 }, (_, i) => start + i);
-      });
+      /* ── [03] 파생 ──────────────────────────────────── */
+      const cfFiltered = computed(() => allLogs.value);
+      const cfPageList = computed(() => allLogs.value);
 
       /* ── [04] 통계 ──────────────────────────────────── */
       const cfStats = computed(() => {
@@ -92,11 +86,12 @@
         }));
       });
 
+      const onSetPage = (n) => { pager.pageNo = n; handleSearchList(); };
+
       /* ── [05] 전체 삭제 ─────────────────────────────── */
       const onClearAll = async () => {
         const ok = await props.showConfirm('로그 삭제', '전체 시뮬로그를 삭제하시겠습니까?');
         if (!ok) return;
-        window._zdSimulLogs  = [];
         window._zdSimulStats = {};
         handleSearchList();
         props.showToast('전체 로그가 삭제되었습니다.', 'success');
@@ -110,18 +105,20 @@
 
       /* ── [07] 그리드 컬럼 ───────────────────────────── */
       const baseGridColumns = [
-        { key: '_no',    label: '번호', width: '40px',  align: 'center', fmt: (v, row, i) => (pager.pageNo - 1) * pager.pageSize + i + 1 },
-        { key: 'ts',     label: '시각', width: '148px', cellStyle: 'font-family:monospace;font-size:11px;color:#64748b;' },
-        { key: 'domain', label: '도메인', width: '64px', align: 'center',
+        { key: 'regDate',   label: '시각', width: '148px', cellStyle: 'font-family:monospace;font-size:11px;color:#64748b;' },
+        { key: 'domain',    label: '도메인', width: '64px', align: 'center',
           badge: (row) => ({ '회원': 'badge-blue', '상품': 'badge-green', '주문': 'badge-purple', '클레임': 'badge-orange', '프로모션': 'badge-purple', '기획전': 'badge-orange', '이벤트': 'badge-blue', '정산': 'badge-green' }[row.domain] || 'badge-gray') },
-        { key: 'mode',   label: '유형', width: '40px',  align: 'center',
-          badge: (row) => row.mode === '생성' ? 'badge-blue' : 'badge-orange' },
-        { key: 'status', label: '결과', width: '36px',  align: 'center',
-          fmt: (v) => v === 'ok' ? '✓' : '✗',
-          cellStyle: (v) => 'font-weight:700;font-size:14px;color:' + (v === 'ok' ? '#16a34a' : '#dc2626') },
-        { key: 'desc',   label: '내용',
-          cellStyle: (v, row) => row.status !== 'ok' ? 'background:#fff5f5;' : '' },
-        { key: 'reason', label: '실패 사유', width: '200px', cellStyle: 'color:#ef4444;font-size:11px;' },
+        { key: 'simulMode', label: '유형', width: '40px', align: 'center',
+          badge: (row) => row.simulMode === '생성' ? 'badge-blue' : 'badge-orange' },
+        { key: 'simulStatus', label: '결과', width: '36px', align: 'center',
+          fmt: (v) => v === 'SUCCESS' ? '✓' : '✗',
+          cellStyle: (v) => 'font-weight:700;font-size:14px;color:' + (v === 'SUCCESS' ? '#16a34a' : '#dc2626') },
+        { key: 'uiNm',     label: '화면명', width: '110px' },
+        { key: 'userNm',   label: '등록자', width: '72px', align: 'center' },
+        { key: 'descTxt',  label: '내용',
+          cellStyle: (v, row) => row.simulStatus !== 'SUCCESS' ? 'background:#fff5f5;' : '' },
+        { key: 'reasonTxt', label: '실패 사유', width: '200px', cellStyle: 'color:#ef4444;font-size:11px;' },
+        { key: 'targetId',  label: '데이터ID', width: '160px', cellStyle: 'font-family:monospace;font-size:10px;color:#64748b;' },
       ];
 
       /* 통계 그리드 컬럼 */
@@ -138,20 +135,20 @@
       const baseSearchColumns = [
         { key: 'dateRange', type: 'dateRange', label: '등록기간',
           startKey: 'dateFrom', endKey: 'dateTo', typeKey: null },
-        { key: 'domain', type: 'select', label: '도메인', options: DOMAINS_ALL.map(d => ({ value: d, label: d })) },
-        { key: 'mode',   type: 'select', label: '유형',
+        { key: 'domain',  type: 'select', label: '도메인', options: DOMAINS_ALL.map(d => ({ value: d, label: d })) },
+        { key: 'mode',    type: 'select', label: '유형',
           options: [{ value: '전체', label: '전체' }, { value: '생성', label: '생성' }, { value: '수정', label: '수정' }] },
-        { key: 'status', type: 'select', label: '결과',
-          options: [{ value: '전체', label: '전체' }, { value: '성공', label: '성공' }, { value: '실패', label: '실패' }] },
-        { key: 'keyword', type: 'text', label: '내용 검색', placeholder: '내용 또는 사유 입력' },
+        { key: 'status',  type: 'select', label: '결과',
+          options: [{ value: '전체', label: '전체' }, { value: '성공', label: '✓ 성공' }, { value: '실패', label: '✗ 실패' }] },
+        { key: 'keyword', type: 'text',   label: '내용 검색', placeholder: '내용 또는 사유 입력' },
       ];
 
       /* ── [08] 반환 ──────────────────────────────────── */
       return {
         searchParam, pager, allLogs, codes,
-        cfFiltered, cfPageList, cfPageNums, cfStats,
+        cfFiltered, cfPageList, cfStats,
         baseGridColumns, statGridColumns, baseSearchColumns,
-        onSearch, onReset, onClearAll, onGoSimul,
+        onSearch, onReset, onClearAll, onGoSimul, onSetPage,
         handleSearchList,
         DOMAINS_ALL, DOMAIN_PAGE_MAP,
       };
@@ -182,34 +179,22 @@
   <!-- 로그 그리드 -->
   <div class="card" style="padding:14px 16px;">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-      <div class="list-title">📋 실행 로그 <span class="list-count">{{ cfFiltered.length }}건</span></div>
+      <div class="list-title">📋 실행 로그 <span class="list-count">{{ pager.pageTotalCount }}건</span></div>
       <div style="display:flex;gap:6px;align-items:center;">
         <button class="btn btn_reset" @click="onSearch">🔄 새로고침</button>
-        <button v-if="allLogs.length" class="btn btn_delete" @click="onClearAll">전체 삭제</button>
+        <button v-if="pager.pageTotalCount > 0" class="btn btn_delete" @click="onClearAll">전체 삭제</button>
       </div>
     </div>
 
-    <div v-if="cfFiltered.length === 0" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:300px;color:#cbd5e1;border:1px solid #f1f5f9;border-radius:6px;">
+    <div v-if="allLogs.length === 0" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:300px;color:#cbd5e1;border:1px solid #f1f5f9;border-radius:6px;">
       <div style="font-size:40px;margin-bottom:12px;">📭</div>
-      <div style="font-size:14px;margin-bottom:6px;">{{ allLogs.length === 0 ? '시뮬레이션 로그가 없습니다.' : '검색 조건에 맞는 로그가 없습니다.' }}</div>
-      <div v-if="allLogs.length === 0" style="font-size:12px;color:#94a3b8;">각 시뮬레이터에서 실행하면 이곳에 기록됩니다.</div>
+      <div style="font-size:14px;margin-bottom:6px;">{{ pager.pageTotalCount === 0 ? '시뮬레이션 로그가 없습니다.' : '검색 조건에 맞는 로그가 없습니다.' }}</div>
+      <div v-if="pager.pageTotalCount === 0" style="font-size:12px;color:#94a3b8;">각 시뮬레이터에서 실행하면 이곳에 기록됩니다.</div>
     </div>
 
-    <bo-grid v-else :rows="cfPageList" :columns="baseGridColumns" style="font-size:11px;" />
+    <bo-grid v-else :rows="cfPageList" :columns="baseGridColumns" :pager="pager" style="font-size:11px;" />
 
-    <!-- 페이지네이션 -->
-    <div v-if="cfPageNums.length > 1" style="display:flex;justify-content:center;gap:4px;margin-top:12px;flex-wrap:wrap;">
-      <button class="btn btn-xs" :disabled="pager.pageNo===1" @click="pager.pageNo=1">«</button>
-      <button class="btn btn-xs" :disabled="pager.pageNo===1" @click="pager.pageNo--">‹</button>
-      <button v-for="n in cfPageNums" :key="n" class="btn btn-xs"
-        :style="n===pager.pageNo ? 'background:#3b82f6;color:#fff;border-color:#2563eb;' : ''"
-        @click="pager.pageNo=n">{{ n }}</button>
-      <button class="btn btn-xs" :disabled="pager.pageNo===pager.pageTotalPage" @click="pager.pageNo++">›</button>
-      <button class="btn btn-xs" :disabled="pager.pageNo===pager.pageTotalPage" @click="pager.pageNo=pager.pageTotalPage">»</button>
-      <span style="font-size:11px;color:#94a3b8;align-self:center;margin-left:8px;">
-        {{ (pager.pageNo-1)*pager.pageSize+1 }}–{{ Math.min(pager.pageNo*pager.pageSize, cfFiltered.length) }} / {{ cfFiltered.length }}건
-      </span>
-    </div>
+    <bo-pager :pager="pager" @set-page="onSetPage" @size-change="onSearch" />
   </div>
 </div>`,
   };

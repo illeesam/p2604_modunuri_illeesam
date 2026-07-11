@@ -9,28 +9,29 @@
     { value: 'ENDED',  label: '종료'   },
     { value: 'PAUSE',  label: '일시정지' },
   ];
-  const PLAN_THEMES   = [
-    { cd: '봄 신상품 기획전',    w: 10 },
-    { cd: '여름 쿨링 기획전',    w: 10 },
-    { cd: '추석 선물 기획전',    w: 10 },
-    { cd: '겨울 방한 기획전',    w: 10 },
-    { cd: '블랙프라이데이 특가', w: 8  },
-    { cd: '명품 브랜드 위크',    w: 5  },
-    { cd: '아웃도어 시즌 기획전',w: 7  },
-    { cd: '홈인테리어 특집',     w: 7  },
-    { cd: '건강식품 모음전',     w: 8  },
-    { cd: '디지털 기기 행사',    w: 5  },
-    { cd: '패션 트렌드 기획전',  w: 8  },
-    { cd: '뷰티 페스타',         w: 7  },
-    { cd: '키즈 특별 기획전',    w: 5  },
-    { cd: '여행용품 모음전',     w: 5  },
-    { cd: '반려동물 용품전',     w: 5  },
-    { cd: '어린이날 기획전',     w: 5  },
-    { cd: '성탄절 특별전',       w: 7  },
-    { cd: '새해맞이 기획전',     w: 7  },
-    { cd: '좀비의날 특가전',     w: 3  },
-    { cd: '장애인의날 기획전',   w: 3  },
-    { cd: '할로윈 기획전',       w: 5  },
+  /* 기획전 유형 (코드: PLAN_TYPE — plan_type_cd) */
+  const PLAN_TYPE_ITEMS = [
+    { cd: 'SPRING_NEW',   label: '봄 신상품 기획전',    w: 10 },
+    { cd: 'SUMMER_COOL',  label: '여름 쿨링 기획전',    w: 10 },
+    { cd: 'CHUSEOK',      label: '추석 선물 기획전',    w: 10 },
+    { cd: 'WINTER_WARM',  label: '겨울 방한 기획전',    w: 10 },
+    { cd: 'BLACK_FRI',    label: '블랙프라이데이 특가', w: 8  },
+    { cd: 'LUXURY_BRAND', label: '명품 브랜드 위크',    w: 5  },
+    { cd: 'OUTDOOR',      label: '아웃도어 시즌 기획전',w: 7  },
+    { cd: 'HOME_DECOR',   label: '홈인테리어 특집',     w: 7  },
+    { cd: 'HEALTH_FOOD',  label: '건강식품 모음전',     w: 8  },
+    { cd: 'DIGITAL',      label: '디지털 기기 행사',    w: 5  },
+    { cd: 'FASHION',      label: '패션 트렌드 기획전',  w: 8  },
+    { cd: 'BEAUTY',       label: '뷰티 페스타',         w: 7  },
+    { cd: 'KIDS',         label: '키즈 특별 기획전',    w: 5  },
+    { cd: 'TRAVEL',       label: '여행용품 모음전',     w: 5  },
+    { cd: 'PET',          label: '반려동물 용품전',     w: 5  },
+    { cd: 'CHILDREN_DAY', label: '어린이날 기획전',     w: 5  },
+    { cd: 'CHRISTMAS',    label: '성탄절 특별전',       w: 7  },
+    { cd: 'NEW_YEAR',     label: '새해맞이 기획전',     w: 7  },
+    { cd: 'ZOMBIE_DAY',   label: '좀비의날 특가전',     w: 3  },
+    { cd: 'DISABILITY',   label: '장애인의날 기획전',   w: 3  },
+    { cd: 'HALLOWEEN',    label: '할로윈 기획전',       w: 5  },
   ];
   const UPDATE_ACTIONS = [
     { value: 'status', label: '상태 변경' },
@@ -58,24 +59,26 @@
         updateStatus: 'ACTIVE',
         prodCountMin: 3,
         prodCountMax: 20,
-        useTheme: true,
+        usePlanType: true,
         addBanner: false,
         periodExtendDays: 7,
-        fixedTheme: '__weighted__',
-        themeWeights: Object.fromEntries(PLAN_THEMES.map(t => [t.cd, t.w])),
+        fixedPlanType: '__weighted__',
+        planTypeWeights: Object.fromEntries(PLAN_TYPE_ITEMS.map(t => [t.cd, t.w])),
         /* 수정 모드 고정 대상 */
         fixedPlanId: '',
         fixedPlanNm: '',
       });
 
       /* ── [02] 공통 엔진 ──────────────────────────────── */
-      const _pickTheme = () => {
-        if (domCfg.fixedTheme && domCfg.fixedTheme !== '__weighted__') return domCfg.fixedTheme;
-        const w = domCfg.themeWeights;
+      const _pickPlanType = () => {
+        if (domCfg.fixedPlanType && domCfg.fixedPlanType !== '__weighted__') {
+          return PLAN_TYPE_ITEMS.find(t => t.cd === domCfg.fixedPlanType) || PLAN_TYPE_ITEMS[0];
+        }
+        const w = domCfg.planTypeWeights;
         const total = Object.values(w).reduce((a, b) => a + Number(b), 0);
         let r = Math.random() * total;
-        for (const t of PLAN_THEMES) { r -= Number(w[t.cd] || 0); if (r <= 0) return t.cd; }
-        return PLAN_THEMES[0].cd;
+        for (const t of PLAN_TYPE_ITEMS) { r -= Number(w[t.cd] || 0); if (r <= 0) return t; }
+        return PLAN_TYPE_ITEMS[0];
       };
       const _fmtDate = (d) => d.toISOString().replace('T', ' ').substring(0, 19);
       const _makeDate = (offsetDays) => { const d = new Date(); d.setDate(d.getDate() + offsetDays); return _fmtDate(d); };
@@ -90,8 +93,8 @@
             const prods = (await boApiSvc.pdProd.getPage({ pageNo: 1, pageSize: 100, prodStatusCd: 'SELLING' })).data?.data?.pageList || [];
             if (prods.length < 3) return { ok: false, reason: '판매중 상품 부족 (최소 3개 필요)' };
             const cnt    = randInt(domCfg.prodCountMin, Math.min(domCfg.prodCountMax, prods.length));
-            const theme  = domCfg.useTheme ? _pickTheme() : '';
-            const planNm = (namePrefix || '') + (theme || '기획전_' + String(Date.now()).slice(-4));
+            const theme  = domCfg.usePlanType ? _pickPlanType() : null;
+            const planNm = (namePrefix || '') + (theme ? theme.label : '기획전_' + String(Date.now()).slice(-4));
             const offset = randInt(domCfg.startOffsetDaysMin, domCfg.startOffsetDaysMax);
             const dur    = randInt(domCfg.durationDaysMin, domCfg.durationDaysMax);
             /* 랜덤 상품 선택 (중복 없이) */
@@ -99,6 +102,7 @@
             const items    = shuffled.slice(0, cnt).map((p, i) => ({ prodId: p.prodId, sortOrd: i + 1 }));
             const body     = {
               planNm, planStatusCd: domCfg.createStatus,
+              ...(theme ? { planThemeCd: theme.cd } : {}),
               startDate: _makeDate(offset), endDate: _makeDate(offset + dur),
               items,
               simulYn: simulYn || 'Y',
@@ -108,7 +112,7 @@
             return {
               ok: true,
               desc: planNm + ' | ' + cnt + '개 상품 | ' + offset + '일 후 시작 ' + dur + '일',
-              meta: { id, theme, cnt, params: body },
+              meta: { id, theme: theme ? theme.cd : null, cnt, params: body },
             };
           } else {
             let target;
@@ -148,7 +152,7 @@
       const baseCfgColumns = makeBaseCfgColumns();
       const createCfgColumns = [
         { key: 'createStatus',       label: '초기 상태',      type: 'select', options: PLAN_STATUSES },
-        { key: 'useTheme',           label: '테마명 자동',    type: 'select',
+        { key: 'usePlanType',        label: '유형명 자동',    type: 'select',
           options: [{ value: true, label: '예' }, { value: false, label: '아니오' }] },
         makeRangeCol('prodCountMin', 'prodCountMax', '상품 수 범위', 1, 50, '개'),
         makeRangeCol('startOffsetDaysMin', 'startOffsetDaysMax', '시작 오프셋 범위', 0, 30, '일'),
@@ -164,7 +168,7 @@
           visible: (f) => f.updateAction === 'period' },
       ];
 
-      const cfThemeTotal = computed(() => Object.values(domCfg.themeWeights).reduce((a, b) => a + Number(b), 0) || 1);
+      const cfPlanTypeTotal = computed(() => Object.values(domCfg.planTypeWeights).reduce((a, b) => a + Number(b), 0) || 1);
 
       const rangeHandlers = makeRangeHandlers(domCfg, [
         { minKey: 'prodCountMin',       maxKey: 'prodCountMax'       },
@@ -202,7 +206,7 @@
         logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
         onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog, logSearch,
         ...rangeHandlers,
-        PLAN_STATUSES, PLAN_THEMES, cfThemeTotal,
+        PLAN_STATUSES, PLAN_TYPE_ITEMS, cfPlanTypeTotal,
         planPicker, onOpenPlanPicker, onSelectPlan, _loadPlanPicker,
       };
     },
@@ -229,27 +233,28 @@
     </bo-form-area>
   </div>
 
-  <!-- 테마 가중치 (1/3 폭, 아래 줄) -->
-  <div v-if="cfg.mode==='create' && domCfg.useTheme" style="margin-top:12px;display:grid;grid-template-columns:1fr 2fr;gap:12px;">
+  <!-- 기획전 유형 가중치 (1/3 폭, 아래 줄) -->
+  <div v-if="cfg.mode==='create' && domCfg.usePlanType" style="margin-top:12px;display:grid;grid-template-columns:1fr 2fr;gap:12px;">
     <div class="card" style="padding:14px 16px;">
-      <div class="list-title">📊 테마 가중치</div>
+      <div class="list-title">📊 기획전 유형 가중치</div>
       <div style="margin-top:8px;margin-bottom:10px;">
-        <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">테마 지정</label>
-        <select v-model="domCfg.fixedTheme" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
+        <label style="font-size:11px;font-weight:600;color:#475569;display:block;margin-bottom:4px;">유형 지정</label>
+        <select v-model="domCfg.fixedPlanType" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
           <option value="">-- 없음 --</option>
           <option value="__weighted__">-- 가중치적용 --</option>
+          <option v-for="t in PLAN_TYPE_ITEMS" :key="t.cd" :value="t.cd">{{ t.label }}</option>
         </select>
       </div>
-      <div v-show="domCfg.fixedTheme === '__weighted__'">
-        <div v-for="(t, ti) in PLAN_THEMES" :key="t.cd" style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+      <div v-show="domCfg.fixedPlanType === '__weighted__'">
+        <div v-for="(t, ti) in PLAN_TYPE_ITEMS" :key="t.cd" style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
           <span :style="'width:8px;height:8px;border-radius:50%;background:hsl('+(ti*17)+',65%,52%);flex-shrink:0;display:inline-block;'"></span>
-          <span style="font-size:10px;color:#475569;min-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" :title="t.cd">{{ t.cd }}</span>
-          <input type="range" min="0" max="100" v-model.number="domCfg.themeWeights[t.cd]" :style="'flex:1;accent-color:hsl('+(ti*17)+',65%,52%);'" />
-          <input type="number" min="0" max="100" v-model.number="domCfg.themeWeights[t.cd]" style="width:36px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;padding:2px;" />
-          <span style="font-size:10px;color:#94a3b8;min-width:28px;">{{ Math.round(domCfg.themeWeights[t.cd]/cfThemeTotal*100) }}%</span>
+          <span style="font-size:10px;color:#475569;min-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" :title="t.label">{{ t.label }}</span>
+          <input type="range" min="0" max="100" v-model.number="domCfg.planTypeWeights[t.cd]" :style="'flex:1;accent-color:hsl('+(ti*17)+',65%,52%);'" />
+          <input type="number" min="0" max="100" v-model.number="domCfg.planTypeWeights[t.cd]" style="width:36px;text-align:center;border:1px solid #e2e8f0;border-radius:4px;font-size:11px;padding:2px;" />
+          <span style="font-size:10px;color:#94a3b8;min-width:28px;">{{ Math.round(domCfg.planTypeWeights[t.cd]/cfPlanTypeTotal*100) }}%</span>
         </div>
         <div style="height:8px;border-radius:4px;overflow:hidden;display:flex;margin-top:6px;">
-          <div v-for="(t, ti) in PLAN_THEMES" :key="t.cd" :style="'flex:'+domCfg.themeWeights[t.cd]+';transition:flex .2s;background:hsl('+(ti*17)+',65%,52%)'"></div>
+          <div v-for="(t, ti) in PLAN_TYPE_ITEMS" :key="t.cd" :style="'flex:'+domCfg.planTypeWeights[t.cd]+';transition:flex .2s;background:hsl('+(ti*17)+',65%,52%)'"></div>
         </div>
       </div>
     </div>

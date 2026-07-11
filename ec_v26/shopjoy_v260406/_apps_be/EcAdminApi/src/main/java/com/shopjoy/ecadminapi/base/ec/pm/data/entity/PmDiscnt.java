@@ -33,9 +33,13 @@ public class PmDiscnt extends BaseEntity {
     @Column(name = "discnt_nm", length = 100, nullable = false)
     private String discntNm;
 
-    @Comment("할인유형 (코드: DISCNT_TYPE — RATE/FIXED/FREE_SHIP)")
+    @Comment("할인유형 (코드: DISCNT_TYPE — PROD/ORDER/SHIP/SHIP_FREE)")
     @Column(name = "discnt_type_cd", length = 20, nullable = false)
     private String discntTypeCd;
+
+    @Comment("할인방식 (코드: DISCNT_VAL_TYPE — RATE/AMOUNT, SHIP_FREE 유형은 해당없음)")
+    @Column(name = "discnt_val_type_cd", length = 20)
+    private String discntValTypeCd;
 
     @Comment("할인대상 (코드: DISCNT_TARGET — ALL/CATEGORY/PRODUCT/MEMBER_GRADE)")
     @Column(name = "discnt_target_cd", length = 20)

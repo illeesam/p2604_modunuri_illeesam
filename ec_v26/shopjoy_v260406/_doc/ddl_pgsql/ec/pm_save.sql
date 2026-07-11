@@ -5,8 +5,9 @@ CREATE TABLE shopjoy_2604.pm_save (
     save_id      VARCHAR(21) NOT NULL PRIMARY KEY,
     site_id      VARCHAR(21) NOT NULL,
     member_id    VARCHAR(21) NOT NULL,
-    save_type_cd VARCHAR(20) NOT NULL,
-    save_amt     BIGINT      NOT NULL,
+    save_type_cd    VARCHAR(20) NOT NULL,
+    save_purpose_cd VARCHAR(20),
+    save_amt        BIGINT      NOT NULL,
     balance_amt  BIGINT      DEFAULT 0,
     ref_type_cd  VARCHAR(30),
     ref_id       VARCHAR(21),
@@ -23,6 +24,7 @@ COMMENT ON COLUMN shopjoy_2604.pm_save.save_id IS '적립금ID (YYMMDDhhmmss+ran
 COMMENT ON COLUMN shopjoy_2604.pm_save.site_id IS '사이트ID';
 COMMENT ON COLUMN shopjoy_2604.pm_save.member_id IS '회원ID (mb_member.member_id)';
 COMMENT ON COLUMN shopjoy_2604.pm_save.save_type_cd IS '적립금유형 (코드: SAVE_TYPE — EARN/USE/EXPIRE/CANCEL/ADMIN)';
+COMMENT ON COLUMN shopjoy_2604.pm_save.save_purpose_cd IS '적립용도 (코드: SAVE_PURPOSE — PURCHASE/REVIEW/JOIN/BIRTHDAY/VIP/EVENT/ADMIN)';
 COMMENT ON COLUMN shopjoy_2604.pm_save.save_amt IS '변동액 (양수:적립, 음수:차감)';
 COMMENT ON COLUMN shopjoy_2604.pm_save.balance_amt IS '처리 후 잔액';
 COMMENT ON COLUMN shopjoy_2604.pm_save.ref_type_cd IS '연관유형 (ORDER/EVENT/ADMIN 등)';

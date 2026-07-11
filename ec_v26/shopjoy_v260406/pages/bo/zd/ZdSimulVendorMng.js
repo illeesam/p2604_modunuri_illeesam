@@ -5,11 +5,9 @@
 
   /* ── 도메인 상수 ──────────────────────────────────────────── */
   const VENDOR_TYPES = [
-    { value: 'BRAND',       label: '브랜드',   color: '#3b82f6' },
-    { value: 'DISTRIBUTOR', label: '총판/도매', color: '#a855f7' },
-    { value: 'DIRECT',      label: '직매입',   color: '#22c55e' },
-    { value: 'CONSIGNMENT', label: '위탁판매', color: '#f59e0b' },
-    { value: 'PLATFORM',    label: '플랫폼입점', color: '#ef4444' },
+    { value: 'DELIVERY', label: '배송업체',     color: '#3b82f6' },
+    { value: 'SALES',    label: '판매업체',     color: '#22c55e' },
+    { value: 'SYSTEM',   label: '시스템운영업체', color: '#a855f7' },
   ];
   const VENDOR_STATUSES = [
     { value: 'ACTIVE',      label: '계약중' },
@@ -36,15 +34,17 @@
     setup(props) {
       /* ── [01] 도메인 설정 ────────────────────────────────── */
       const domCfg = reactive({
-        statusOnCreate: 'ACTIVE',
-        typeWeights: { BRAND: 30, DISTRIBUTOR: 25, DIRECT: 20, CONSIGNMENT: 15, PLATFORM: 10 },
-        updateType:     'status',
-        fixedVendorId:  '',
-        fixedVendorNm:  '',
+        statusOnCreate:  'ACTIVE',
+        fixedVendorType: '__weighted__',
+        typeWeights:     { DELIVERY: 40, SALES: 40, SYSTEM: 20 },
+        updateType:      'status',
+        fixedVendorId:   '',
+        fixedVendorNm:   '',
       });
 
       /* ── 가중치 기반 유형 선택 ─────────────────────────── */
       const _pickWeightedType = () => {
+        if (domCfg.fixedVendorType && domCfg.fixedVendorType !== '__weighted__') return domCfg.fixedVendorType;
         const w = domCfg.typeWeights;
         const total = Object.values(w).reduce((a, b) => a + Number(b), 0) || 1;
         let r = Math.random() * total;
@@ -168,6 +168,12 @@
   <div v-if="cfg.mode==='create'" style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
     <div class="card" style="padding:14px 16px;">
       <div class="list-title">🏷 업체 유형 가중치</div>
+      <div style="margin-top:8px;margin-bottom:10px;">
+        <select v-model="domCfg.fixedVendorType" style="width:100%;border:1px solid #e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
+          <option value="__weighted__">-- 가중치적용 --</option>
+          <option v-for="t in VENDOR_TYPES" :key="t.value" :value="t.value">{{ t.label }}</option>
+        </select>
+      </div>
       <div style="margin-top:10px;">
         <div v-for="t in VENDOR_TYPES" :key="t.value" style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
           <span :style="'width:8px;height:8px;border-radius:50%;background:'+t.color+';flex-shrink:0;display:inline-block;'"></span>

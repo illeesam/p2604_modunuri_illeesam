@@ -36,6 +36,10 @@ public class PmSave extends BaseEntity {
     @Column(name = "save_type_cd", length = 20, nullable = false)
     private String saveTypeCd;
 
+    @Comment("적립용도 (코드: SAVE_PURPOSE — PURCHASE/REVIEW/JOIN/BIRTHDAY/VIP/EVENT/ADMIN)")
+    @Column(name = "save_purpose_cd", length = 20)
+    private String savePurposeCd;
+
     @Comment("변동액 (양수:적립, 음수:차감)")
     @Column(name = "save_amt", nullable = false)
     private Long saveAmt;
