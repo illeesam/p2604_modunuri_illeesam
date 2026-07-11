@@ -1,4 +1,4 @@
-﻿/* ZdSimulSettleMng — 정산 시뮬레이터 (bo-form-area / bo-grid 활용) */
+/* ZdSimulSettleMng — 정산 시뮬레이터 (bo-form-area / bo-grid 활용) */
 (function () {
   const { ref, reactive, computed } = Vue;
   const { useSimulSetup, makeLogCols, makeBaseCfgColumns, makeRangeCol, makeRangeHandlers, rangeSlotTemplate } = window.ZdSimulBase;
@@ -121,7 +121,7 @@
           }
         },
       });
-      const { cfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog } = simul;
+      const { cfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onPreview, onClearLog, onSetLogPage, onSearchLog } = simul;
 
       /* ── [04] 컬럼 정의 ─────────────────────────────── */
       const logCols = makeLogCols();
@@ -155,7 +155,7 @@
       return {
         cfg, domCfg, state, logs, logPager, cfIsRunning, cfSuccessRate,
         cfPreview, logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
-        onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog, logSearch,
+        onStart, onStop, onRunOnce, onPreview, onClearLog, onSetLogPage, onSearchLog, logSearch,
         ...rangeHandlers,
         SETTLE_STATUSES, vendors,
       };
@@ -171,7 +171,7 @@
     :cf-is-running="cfIsRunning" :cf-success-rate="cfSuccessRate"
     accent-color="linear-gradient(90deg,#16a34a,#4ade80)"
     accent-active="background:#f0fdf4;border:1.5px solid #16a34a;color:#14532d;"
-    @start="onStart" @stop="onStop" @run-once="onRunOnce" />
+    @start="onStart" @stop="onStop" @run-once="onRunOnce" @preview="onPreview" />
 
   <!-- 생성 옵션 -->
   <div v-if="cfg.mode==='create'" class="card" style="padding:14px 16px;margin-top:12px;">

@@ -1,4 +1,4 @@
-﻿/* ZdSimulPromoMng — 프로모션 시뮬레이터 (bo-form-area / bo-grid 활용) */
+/* ZdSimulPromoMng — 프로모션 시뮬레이터 (bo-form-area / bo-grid 활용) */
 (function () {
   const { reactive, ref, computed } = Vue;
   const { useSimulSetup, makeLogCols, makeBaseCfgColumns, makeRangeCol, makeRangeHandlers, rangeSlotTemplate } = window.ZdSimulBase;
@@ -132,7 +132,7 @@
                 issueCount: randInt(domCfg.couponIssueCountMin, domCfg.couponIssueCountMax),
                 startDate: now, endDate: _makeDate(domCfg.couponDurationDays),
                 scopeCd: domCfg.couponScope,
-                ...(prodIds.length ? { prodIds } : {}),
+                prodIds,
                 minOrderAmt: domCfg.couponMinOrderAmt,
                 maxDiscAmt: domCfg.couponMaxDiscAmt,
                 simulYn: simulYn || 'Y',
@@ -155,7 +155,7 @@
                 discntNm: nm, discntValTypeCd: discType.cd, discVal,
                 startDate: now, endDate: _makeDate(domCfg.discntDurationDays),
                 scopeCd: domCfg.discntScope,
-                ...(discntProdIds.length ? { prodIds: discntProdIds } : {}),
+                prodIds: discntProdIds,
                 minOrderAmt: domCfg.discntMinOrderAmt,
                 maxDiscAmt: domCfg.discntMaxDiscAmt,
                 simulYn: simulYn || 'Y',
@@ -175,10 +175,11 @@
                 : [];
               const body = {
                 saveNm: nm,
-                ...(isRate ? { saveRatePct: saveRate } : { saveAmt }),
+                saveRatePct: isRate ? saveRate : null,
+                saveAmt: isRate ? null : saveAmt,
                 startDate: now, endDate: _makeDate(domCfg.saveDurationDays),
                 scopeCd: domCfg.saveScope,
-                ...(saveProdIds.length ? { prodIds: saveProdIds } : {}),
+                prodIds: saveProdIds,
                 simulYn: simulYn || 'Y',
               };
               const res = await boApi.post('/bo/zd/simul/promo/save-create', body, coUtil.cofApiHdr('프로모시뮬', '적립생성'));
@@ -213,7 +214,7 @@
           }
         },
       });
-      const { cfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog } = simul;
+      const { cfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onPreview, onClearLog, onSetLogPage, onSearchLog } = simul;
 
       /* ── picker 모달 ─────────────────────────────── */
       const couponPicker = reactive({ show: false, searchValue: '', rows: [], loading: false });
@@ -315,7 +316,7 @@
         logCols, baseCfgColumns, couponCfgColumns, discntCfgColumns, saveCfgColumns,
         cfCouponDiscTotal, cfDiscntTotal, cfSaveTotal,
         DISC_TYPE_ITEMS, SAVE_VAL_ITEMS,
-        onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog, logSearch,
+        onStart, onStop, onRunOnce, onPreview, onClearLog, onSetLogPage, onSearchLog, logSearch,
         ...rangeHandlers,
         PROMO_TYPES,
         /* picker */
@@ -336,7 +337,7 @@
     :cf-is-running="cfIsRunning" :cf-success-rate="cfSuccessRate"
     accent-color="linear-gradient(90deg,#9333ea,#c084fc)"
     accent-active="background:#faf5ff;border:1.5px solid #9333ea;color:#7e22ce;"
-    @start="onStart" @stop="onStop" @run-once="onRunOnce" />
+    @start="onStart" @stop="onStop" @run-once="onRunOnce" @preview="onPreview" />
 
   <!-- 프로모션 유형 탭 (별도 카드) -->
   <div class="card" style="margin-top:12px;">

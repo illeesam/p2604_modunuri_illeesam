@@ -76,7 +76,8 @@ public class PdProdSkuService {
     /* 상품 SKU 등록 */
     @Transactional
     public PdProdSku create(PdProdSku body) {
-        body.setSkuId(CmUtil.generateId("pd_prod_sku"));
+        if (body.getSkuId() == null || body.getSkuId().isBlank())
+            body.setSkuId(CmUtil.generateId("pd_prod_sku"));
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());

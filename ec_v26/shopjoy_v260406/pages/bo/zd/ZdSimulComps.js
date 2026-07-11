@@ -24,7 +24,7 @@
   ─────────────────────────────────────────────────────────────────────── */
   window.ZdSimulControlPanel = {
     name: 'ZdSimulControlPanel',
-    emits: ['start', 'stop', 'run-once'],
+    emits: ['start', 'stop', 'run-once', 'preview', 'preview-create'],
     props: {
       cfg:            { type: Object,  required: true },
       state:          { type: Object,  required: true },
@@ -39,9 +39,19 @@
       const cfHasStats = computed(() => props.state.totalRun > 0 || props.cfIsRunning);
       const onStart   = () => emit('start');
       const onStop    = () => emit('stop');
-      const onRunOnce = () => emit('run-once');
+      const runOnceCount = _ref(1);
+      const onRunOnce = () => emit('run-once', runOnceCount.value);
+      const onPreview = () => emit('preview');
       const lastExpanded = _ref(false);
-      const onToggleLast = () => { lastExpanded.value = !lastExpanded.value; };
+      const previewJson  = _ref(null);
+      const onToggleLast = () => { lastExpanded.value = !lastExpanded.value; if (!lastExpanded.value) previewJson.value = null; };
+      /* zd-preview 이벤트 수신 → parsed object로 저장 */
+      const _onZdPreviewCtrl = (e) => {
+        try { previewJson.value = JSON.parse(e.detail?.json || 'null'); }
+        catch (_) { previewJson.value = e.detail?.json || null; }
+      };
+      Vue.onMounted(() => window.addEventListener('zd-preview', _onZdPreviewCtrl));
+      Vue.onBeforeUnmount(() => window.removeEventListener('zd-preview', _onZdPreviewCtrl));
 
       /* 프리셋 목록 — label / intervalVal / intervalUnit / countMin / countMax / durationMin */
       const PRESETS = [
@@ -72,7 +82,7 @@
         e.target.value = '0'; // 선택 후 초기화 (항상 placeholder로)
       };
 
-      return { cfHasStats, onStart, onStop, onRunOnce, PRESETS, onPreset, lastExpanded, onToggleLast };
+      return { cfHasStats, onStart, onStop, onRunOnce, onPreview, runOnceCount, PRESETS, onPreset, lastExpanded, previewJson, onToggleLast };
     },
     template: `
 <div class="card" style="padding:10px 14px;background:#dde3ed;">
@@ -135,7 +145,12 @@
       <!-- 실행 버튼 -->
       <button v-if="!cfIsRunning" class="btn btn_search" style="padding:3px 14px;font-size:12px;margin-left:4px;" @click="onStart">▶ 시작</button>
       <button v-else class="btn btn_delete" style="padding:3px 14px;font-size:12px;margin-left:4px;" @click="onStop">⏹ 정지</button>
-      <button class="btn btn_preview" style="padding:3px 9px;font-size:12px;" @click="onRunOnce">⚡ 1회</button>
+      <span style="width:1px;height:20px;background:#cbd5e1;display:inline-block;margin:0 2px;flex-shrink:0;"></span>
+      <input type="number" v-model.number="runOnceCount" min="1" max="100"
+        style="width:40px;text-align:center;border:1px solid #e2e8f0;border-radius:5px;font-size:12px;padding:3px 4px;height:26px;" />
+      <button class="btn btn_preview" style="padding:3px 9px;font-size:12px;" @click="onRunOnce">회실행</button>
+      <span style="width:1px;height:20px;background:#cbd5e1;display:inline-block;margin:0 2px;flex-shrink:0;"></span>
+      <button class="btn" style="padding:3px 9px;font-size:12px;background:#fdf4ff;border:1px solid #e9d5ff;color:#7c3aed;" @click="onPreview">🔍 미리보기</button>
     </div>
   </div>
 
@@ -184,16 +199,37 @@
       </div>
     </div>
 
-    <!-- 마지막 생성 정보 (펼치기/접기 JSON 뷰) -->
-    <div v-if="state.lastCreated &amp;&amp; state.lastCreated.length" style="flex:1;min-width:0;">
-      <div @click="onToggleLast"
-        style="display:inline-flex;align-items:center;gap:5px;cursor:pointer;font-size:11px;color:#6366f1;user-select:none;padding:2px 6px;border-radius:4px;border:1px solid #c7d2fe;background:#eef2ff;">
-        <span>{{ lastExpanded ? '▲' : '▼' }}</span>
-        <span>최근 결과 {{ state.lastCreated.length }}건</span>
-      </div>
-      <div v-if="lastExpanded"
-        style="margin-top:4px;background:#1e1e2e;border-radius:6px;border:1px solid #374151;padding:8px 10px;max-height:260px;overflow-y:auto;font-family:monospace;font-size:11px;line-height:1.6;color:#a5f3fc;white-space:pre;word-break:break-all;">{{ JSON.stringify(state.lastCreated, null, 2) }}</div>
+    <!-- 최근 결과 토글 -->
+    <div v-if="state.lastCreated &amp;&amp; state.lastCreated.length" @click="onToggleLast"
+      style="display:inline-flex;align-items:center;gap:5px;cursor:pointer;font-size:11px;color:#6366f1;user-select:none;padding:2px 6px;border-radius:4px;border:1px solid #c7d2fe;background:#eef2ff;">
+      <span>{{ lastExpanded ? '▲' : '▼' }}</span>
+      <span>최근 결과 {{ state.lastCreated.length }}건</span>
     </div>
+  </div>
+
+  <!-- 최근 결과 JSON 뷰 (토글) -->
+  <div v-if="lastExpanded &amp;&amp; !previewJson"
+    style="margin-top:6px;background:#1e1e2e;border-radius:6px;border:1px solid #374151;padding:8px 10px;max-height:260px;overflow-y:auto;font-family:monospace;font-size:11px;line-height:1.6;color:#a5f3fc;white-space:pre;word-break:break-all;">{{ JSON.stringify(state.lastCreated, null, 2) }}</div>
+
+  <!-- 미리보기 테이블 패널 -->
+  <div v-if="previewJson"
+    style="margin-top:6px;background:#f8f7ff;border:1.5px solid #c4b5fd;border-radius:8px;padding:10px 12px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:11px;color:#7c3aed;font-weight:600;">📋 전송 데이터 미리보기</span>
+        <!-- method + url 표시 (단건 캡처 시) -->
+        <template v-if="previewJson &amp;&amp; previewJson.method">
+          <span :style="'font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;color:#fff;background:'+(previewJson.method==='POST'?'#7c3aed':previewJson.method==='PUT'?'#2563eb':'#d97706')">{{ previewJson.method }}</span>
+          <span style="font-size:10px;font-family:monospace;color:#475569;">{{ previewJson.url }}</span>
+        </template>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <button @click="$emit('preview-create')" style="font-size:11px;padding:2px 10px;background:#ecfdf5;border:1px solid #6ee7b7;color:#065f46;border-radius:4px;cursor:pointer;font-weight:600;">⚡ 미리보기 생성</button>
+        <button @click="previewJson=null" style="font-size:13px;color:#94a3b8;background:none;border:none;cursor:pointer;padding:0 4px;line-height:1;">✕</button>
+      </div>
+    </div>
+    <!-- 단건: body를 메인으로, 다건: 전체 표시 -->
+    <zd-preview-table :data="previewJson ? (previewJson.body !== undefined ? previewJson.body : previewJson) : null" />
   </div>
 </div>`,
   };
@@ -438,7 +474,341 @@
 
   <!-- 클레임 계산 모달 -->
   <od-claim-calc-modal :show="calcModal.show" :claim-id="calcModal.claimId" @close="calcModal.show=false" />
+
 </div>`,
+  };
+
+  /* ─────────────────────────────────────────────────────────────────────
+     ZdPreviewTable
+     전송 데이터를 object→name/value 표, list→자식 그리드로 재귀 렌더
+  ─────────────────────────────────────────────────────────────────────── */
+  /* 필드 한글 레이블 매핑 */
+  const _FIELD_LABELS = {
+    /* pd_prod Entity 컬럼명 기준 */
+    prodNm: '상품명', salePrice: '판매가', purchasePrice: '매입가(원가)',
+    prodStock: '재고수량', prodTypeCd: '상품유형', prodStatusCd: '판매상태',
+    advrtStmt: '홍보문구', categoryId: '카테고리ID', siteId: '사이트ID',
+    dlivTmpltId: '배송템플릿ID', simulYn: '시뮬여부', prodId: '상품ID',
+    optTypeCd: '옵션카테고리코드',
+    /* prodOpts — pd_prod_opt Entity 컬럼명 기준 */
+    optTypeCdNm: '옵션그룹명(opt_grp_nm)', optTypeCd: '옵션유형코드', optLevel: '옵션단계',
+    optInputTypeCd: '입력유형', sortOrd: '정렬순서',
+    prodOptItems: '옵션항목목록(prodOptItems)',
+    /* prodOptItems — pd_prod_opt_item Entity 컬럼명 기준 */
+    optNm: '항목명(전송)', optVal: '항목값(전송)', optItemId: '옵션항목ID(전송)',
+    optValCodeId: '코드참조ID', parentOptItemId: '상위항목ID', optStyle: '항목스타일',
+    useYn: '사용여부',
+    /* SKU (백엔드 자동생성 참고용) */
+    skuId: 'SKU ID', skuNm: 'SKU명',
+    optItemId1: '옵션1 ID', optItemId2: '옵션2 ID',
+    addPrice: '추가금액', prodOptStock: '재고수량',
+    /* prodImages (실제 전송 key의 필드명) */
+    prodImgId: '이미지ID', cdnImgUrl: '이미지URL',
+    isThumb: '대표이미지', isMain: '대표이미지',
+    skuStatusCd: 'SKU상태',
+    /* 공통 */
+    method: '메서드', url: 'URL', body: '요청본문',
+    tmpPlanId: '기획전임시ID',
+    prodId: '상품ID', userId: '사용자ID', orderId: '주문ID', planId: '플랜ID',
+    memberId: '회원ID', couponId: '쿠폰ID', discntId: '할인ID', eventId: '이벤트ID',
+    saveId: '적립ID', voucherId: '바우처ID', claimId: '클레임ID', dlivId: '배송ID',
+    vendorId: '업체ID', planType: '플랜유형', planName: '플랜명',
+    memberNm: '회원명', email: '이메일', phone: '전화번호',
+    loginId: '로그인ID', memberStatusCd: '회원상태', memberGradeCd: '회원등급',
+    orderStatusCd: '주문상태', payMethodCd: '결제수단',
+    totalAmt: '합계금액', discntAmt: '할인금액', payAmt: '결제금액',
+    couponNm: '쿠폰명', discntNm: '할인명', saveNm: '적립금정책명',
+    issueYn: '발급여부', useYn2: '사용여부', expireDate: '만료일',
+    /* 쿠폰/할인/적립금 공통 */
+    couponCd: '쿠폰코드', couponTypeCd: '쿠폰유형', couponDiscTypeCd: '할인유형',
+    discntTypeCd: '할인정책유형', discntValTypeCd: '할인값유형',
+    savePurposeCd: '적립목적', saveRatePct: '적립률(%)', saveAmt: '정액적립금',
+    discVal: '할인값', issueCount: '발급수량',
+    startDate: '시작일', endDate: '종료일',
+    scopeCd: '적용범위', minOrderAmt: '최소주문금액', maxDiscAmt: '최대할인금액',
+    /* 이벤트 */
+    eventNm: '이벤트명', eventTypeCd: '이벤트유형', eventStatusCd: '이벤트상태',
+    benefitTypeCd: '혜택유형', benefitAmt: '혜택금액', winnerCount: '당첨자수',
+    /* 기획전 */
+    planNm: '기획전명', planStatusCd: '기획전상태', planThemeCd: '테마코드',
+    /* 주문 */
+    orderAmt: '주문금액', dlivFee: '배송비', totalPayAmt: '총결제금액',
+    receiverNm: '수령자명', zipCode: '우편번호', dlivAddr: '배송주소',
+    orderItems: '주문항목(전송)',
+    qty: '수량', unitPrice: '단가', rowAmt: '행금액',
+    /* 클레임 */
+    claimTypeCd: '클레임유형', reasonCd: '사유코드', claimStatusCd: '클레임상태',
+    partialClaim: '부분클레임', refundRate: '환불비율(%)',
+    /* 회원 */
+    memberNm: '회원명', gradeCd: '등급코드', memberGender: '성별',
+    empTypeCd: '재직유형', snsProvider: 'SNS제공자',
+    emailVerifiedYn: '이메일인증여부', snsLinkYn: 'SNS연동여부',
+    /* 사용자 */
+    userNm: '사용자명', userEmail: '이메일', userPhone: '전화번호', userStatusCd: '사용자상태',
+    /* 업체 */
+    vendorNm: '업체명', ceoNm: '대표자명', vendorType: '업체유형',
+    vendorPhone: '업체전화', vendorEmail: '업체이메일', corpNo: '사업자번호',
+    vendorStatusCd: '업체상태', openDate: '개업일', contractDate: '계약일',
+    /* 바우처 */
+    erpVoucherTypeCd: '전표유형', erpVoucherStatusCd: '전표상태', erpVoucherDesc: '전표설명',
+    voucherDate: '전표일자', totalDebitAmt: '총차변금액', totalCreditAmt: '총대변금액', settleYm: '정산년월',
+  };
+
+  /* 코드값 → 한글 코드명 매핑 */
+  const _CODE_LABELS = {
+    /* 판매유형 */
+    NORMAL: '단품', OPTION: '옵션형', SET: '세트', BUNDLE: '묶음',
+    /* 상품상태 */
+    SELLING: '판매중', SOLDOUT: '품절', PAUSE: '판매중지', READY: '판매준비', DISCONTINUED: '단종',
+    /* SKU상태 */
+    SKU_SELLING: '판매중', SKU_SOLDOUT: '품절', SKU_STOP: '중지',
+    /* 주문상태 */
+    ORDER_PENDING: '결제대기', ORDER_PAID: '결제완료', ORDER_PREPARING: '상품준비중',
+    ORDER_SHIPPED: '배송중', ORDER_DELIVERED: '배송완료', ORDER_COMPLETE: '구매확정', ORDER_CANCEL: '주문취소',
+    PENDING: '결제대기', PAID: '결제완료', PREPARING: '상품준비중',
+    SHIPPED: '배송중', DELIVERED: '배송완료', COMPLETE: '구매확정', CANCEL: '취소',
+    /* 클레임유형 */
+    CANCEL_REQ: '취소요청', RETURN_REQ: '반품요청', EXCHANGE_REQ: '교환요청',
+    CANCEL_DONE: '취소완료', RETURN_DONE: '반품완료', EXCHANGE_DONE: '교환완료',
+    /* 배송상태 */
+    DLIV_READY: '출고준비', DLIV_ING: '배송중', DLIV_DONE: '배송완료',
+    OUTBOUND: '출고', INBOUND: '입고(반품)',
+    /* 결제수단 */
+    CARD: '신용카드', VIRTUAL_ACCOUNT: '가상계좌', TRANSFER: '무통장입금',
+    TOSS: '토스페이', KAKAO: '카카오페이', NAVER: '네이버페이', PHONE: '핸드폰결제',
+    /* 회원상태 */
+    ACTIVE: '정상', DORMANT: '휴면', SUSPENDED: '정지', WITHDRAWN: '탈퇴',
+    /* 회원등급 */
+    GRADE_BASIC: '일반', GRADE_SILVER: '실버', GRADE_GOLD: '골드', GRADE_VIP: 'VIP',
+    BASIC: '일반', SILVER: '실버', GOLD: '골드', VIP: 'VIP',
+    /* 공통 Y/N */
+    Y: '예', N: '아니오',
+    /* 입력유형 */
+    SELECT: '선택형', TEXT: '텍스트', RADIO: '라디오',
+    /* 플랜유형 */
+    MONTHLY: '월간', YEARLY: '연간', ONETIME: '일회성',
+    /* 쿠폰/할인유형 */
+    RATE: '정률(%)', AMOUNT: '정액(원)', FREE_SHIP: '무료배송',
+    /* 이벤트상태 */
+    EVENT_ACTIVE: '진행중', EVENT_READY: '예정', EVENT_END: '종료',
+    /* 적립금유형 */
+    SAVE_PURCHASE: '구매적립', SAVE_REVIEW: '리뷰적립', SAVE_JOIN: '가입적립', SAVE_MANUAL: '수동지급',
+    /* 바우처상태 */
+    VOUCHER_UNUSED: '미사용', VOUCHER_USED: '사용완료', VOUCHER_EXPIRE: '만료',
+  };
+
+  /* 코드값 → 코드명 조회 (필드키 + 값 조합으로 우선, 없으면 값만으로) */
+  const _getCodeLabel = (fieldKey, val) => {
+    if (val === null || val === undefined || typeof val === 'boolean') return '';
+    const s = String(val);
+    /* Y/N은 모든 *Yn 필드에만 적용 */
+    if ((s === 'Y' || s === 'N') && fieldKey && !fieldKey.endsWith('Yn') && !fieldKey.endsWith('YN')) return '';
+    return _CODE_LABELS[s] || '';
+  };
+
+  /* _preview_[actualKey]suffix 형식 파싱
+   * _REAL_BODY_KEYS 에 있으면 "전송key" 배지 + bold, 없으면 "참고" 표시
+   * e.g. "_preview_[couponBody]"          → isRealKey:true  (body 전체가 실제 전송)
+   *      "_preview_[orderItems](3개)"      → isRealKey:true  (배열 key 실제 전송)
+   *      "_preview_[items](5개)"           → isRealKey:true  (planBody items 배열)
+   *      "_preview_[prodOpts]"             → isRealKey:true  (상품 prodOpts)
+   *      "_preview_[optCategory]"          → isRealKey:false (참고용 프리셋 정보)
+   *      "_preview_[prodSkus](3건)"        → isRealKey:false (백엔드 자동생성 참고)
+   */
+  /* 실제 body에 전송되는 최상위 key (또는 body 자체를 나타내는 xxxBody 패턴) */
+  const _REAL_BODY_KEYS = new Set([
+    /* 상품 시뮬 */
+    'prodOpts', 'prodImages',
+    /* 도메인 body 전체 전송 (VoUtil.mapCopy(body, entity)) */
+    'couponBody', 'discntBody', 'saveBody', 'eventBody', 'planBody',
+    'memberBody', 'orderBody', 'claimBody', 'userBody', 'vendorBody', 'voucherBody',
+    /* 배열 필드 */
+    'orderItems', 'addProdIds', 'items',
+    /* 혼합 */
+    'claimItems', 'dlivItems', 'payMethods', 'members', 'prods',
+  ]);
+  /* prodOpts[].optItems 의 실제 전송 필드명 — pd_prod_opt_item Entity 기준 */
+  const _REAL_OPT_ITEM_FIELDS = new Set(['optItemId', 'optNm', 'optVal', 'optTypeCd', 'optValCodeId', 'parentOptItemId', 'optStyle', 'sortOrd', 'useYn']);
+  /* prodOpts[] 의 실제 전송 필드명 — pd_prod_opt Entity 기준 (optTypeCdNm → opt_grp_nm 저장) */
+  const _REAL_OPT_GRP_FIELDS  = new Set(['optTypeCdNm', 'optTypeCd', 'optLevel', 'optInputTypeCd', 'sortOrd', 'prodOptItems']);
+  const _parsePreviewKey = (k) => {
+    if (!k.startsWith('_preview_')) return null;
+    const rest = k.slice('_preview_'.length); // e.g. "[prodOpts](6건)" or "optCategory"
+    const m = rest.match(/^\[([^\]]+)\](.*)/);
+    if (m) {
+      const inner = m[1];
+      const suffix = m[2] || '';
+      const isRealKey = _REAL_BODY_KEYS.has(inner);
+      return { displayKey: inner + suffix, innerKey: inner, suffix, isRealKey };
+    }
+    /* 구형 키 ([] 없음) — 참고용으로 처리 */
+    return { displayKey: rest, innerKey: null, suffix: '', isRealKey: false };
+  };
+
+  window.ZdPreviewTable = {
+    name: 'ZdPreviewTable',
+    props: { data: { default: null } },
+    computed: {
+      isArray()  { return Array.isArray(this.data); },
+      isObject() { return this.data !== null && typeof this.data === 'object' && !Array.isArray(this.data); },
+      isPrim()   { return !this.isArray && !this.isObject; },
+      objEntries() {
+        if (!this.isObject) return [];
+        return Object.entries(this.data)
+          .filter(([k]) => !k.startsWith('_hide_'))
+          .map(([k, v]) => {
+            const isPreview = k.startsWith('_preview_');
+            const parsed = isPreview ? _parsePreviewKey(k) : null;
+            return {
+              key: k,
+              isPreview,
+              parsed,  /* { displayKey, innerKey, suffix, isRealKey } or null */
+              label: _FIELD_LABELS[k] || '',
+              codeLabel: (v === null || typeof v === 'object') ? '' : _getCodeLabel(k, v),
+              isArr: Array.isArray(v),
+              isObj: v !== null && typeof v === 'object' && !Array.isArray(v),
+              isPrim: v === null || typeof v !== 'object',
+              val: v,
+            };
+          });
+      },
+    },
+    methods: {
+      colLabel(k) { return _FIELD_LABELS[k] || ''; },
+      cellCodeLabel(k, v) { return _getCodeLabel(k, v); },
+      cellDisplay(k, v) {
+        if (v === null) return 'null';
+        const s = String(v);
+        const cd = _getCodeLabel(k, v);
+        return cd ? s + '  (' + cd + ')' : s;
+      },
+    },
+    template: `
+<div>
+  <!-- primitive (최상위가 원시값인 경우) -->
+  <span v-if="isPrim" style="font-family:monospace;font-size:10px;color:#334155;">{{ data === null ? 'null' : String(data) }}</span>
+
+  <!-- object → 3열 표: 키 | 값 | 한글명 -->
+  <table v-else-if="isObject" style="width:100%;border-collapse:collapse;font-size:10px;table-layout:fixed;">
+    <colgroup>
+      <col style="width:150px;" />
+      <col />
+      <col style="width:70px;" />
+    </colgroup>
+    <tbody>
+      <tr v-for="e in objEntries" :key="e.key">
+        <!-- 열1: 키
+             - 실제 전송 key (_preview_[xxx] where xxx is real): 오렌지 bold + 실선 밑줄
+             - 참고용 preview (_preview_[xxx] where xxx is ref): 오렌지 normal
+             - 실제 body key (non-preview): 보라 bold -->
+        <td style="padding:2px 6px;white-space:nowrap;vertical-align:top;border-bottom:1px solid #ede9fe;line-height:1.4;">
+          <template v-if="e.isPreview &amp;&amp; e.parsed">
+            <span v-if="e.parsed.isRealKey" style="font-weight:700;color:#b45309;text-decoration:underline;text-underline-offset:2px;">{{ e.parsed.displayKey }}</span>
+            <span v-else style="font-weight:400;color:#d97706;">{{ e.parsed.displayKey }}</span>
+            <span v-if="e.parsed.isRealKey" style="font-size:8px;color:#92400e;margin-left:3px;font-weight:600;background:#fef3c7;border:1px solid #fbbf24;border-radius:2px;padding:0 3px;">전송key</span>
+            <span v-else style="font-size:8px;color:#b45309;margin-left:3px;font-weight:400;">참고</span>
+          </template>
+          <template v-else>
+            <span style="font-weight:700;color:#6d28d9;">{{ e.key }}</span>
+          </template>
+        </td>
+        <!-- 열2: 값 (배열/중첩객체는 colspan=2로 한글명 열 흡수) -->
+        <td v-if="e.isArr" colspan="2" style="padding:2px 6px;border-bottom:1px solid #ede9fe;line-height:1.4;">
+          <span v-if="!e.val.length" style="color:#94a3b8;font-style:italic;">[]</span>
+          <div v-else style="overflow-x:auto;margin-top:1px;">
+            <table style="border-collapse:collapse;font-size:10px;width:100%;">
+              <thead>
+                <tr style="background:#ede9fe;">
+                  <th v-for="k in Object.keys(e.val[0]||{})" :key="k"
+                    :style="'padding:2px 6px;text-align:left;white-space:nowrap;border:1px solid #c4b5fd;line-height:1.4;' + (e.parsed &amp;&amp; e.parsed.isRealKey ? 'font-weight:700;color:#1e1b4b;' : 'font-weight:400;color:#6d28d9;')">
+                    {{ k }}<span v-if="colLabel(k)" style="color:#a78bfa;font-weight:400;font-size:9px;margin-left:3px;">({{ colLabel(k) }})</span>
+                  </th>
+                  <th v-if="typeof e.val[0] !== 'object' || e.val[0]===null"
+                    style="padding:2px 6px;text-align:left;font-weight:600;color:#5b21b6;border:1px solid #c4b5fd;">값</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(row,ri) in e.val" :key="ri" :style="ri%2===1?'background:#f5f3ff;':''">
+                  <template v-if="row !== null && typeof row === 'object' && !Array.isArray(row)">
+                    <td v-for="k in Object.keys(row)" :key="k"
+                      :style="(row[k] !== null && typeof row[k] === 'object') ? 'padding:2px 4px;border:1px solid #ddd6fe;vertical-align:top;' : 'padding:2px 6px;border:1px solid #ddd6fe;font-family:monospace;color:#1e1b4b;line-height:1.4;white-space:nowrap;'">
+                      <!-- prodOptItems 배열: 인라인 그리드로 펼침 (pd_prod_opt_item) -->
+                      <template v-if="k === 'prodOptItems' && Array.isArray(row[k]) && row[k].length">
+                        <table style="border-collapse:collapse;font-size:10px;min-width:320px;">
+                          <thead>
+                            <tr style="background:#d1fae5;">
+                              <th v-for="ik in Object.keys(row[k][0]||{})" :key="ik"
+                                :style="'padding:2px 6px;text-align:left;white-space:nowrap;border:1px solid #6ee7b7;line-height:1.4;' + (e.parsed &amp;&amp; e.parsed.isRealKey ? 'font-weight:700;color:#064e3b;' : 'font-weight:400;color:#065f46;')">
+                                {{ ik }}<span v-if="colLabel(ik)" style="color:#10b981;font-weight:400;font-size:9px;margin-left:3px;">({{ colLabel(ik) }})</span>
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr v-for="(irow,iri) in row[k]" :key="iri" :style="iri%2===1?'background:#ecfdf5;':''">
+                              <td v-for="ik in Object.keys(irow)" :key="ik"
+                                style="padding:2px 6px;border:1px solid #6ee7b7;font-family:monospace;color:#064e3b;line-height:1.4;white-space:nowrap;">
+                                {{ irow[ik] === null ? 'null' : String(irow[ik]) }}<span v-if="cellCodeLabel(ik, irow[ik])" style="color:#059669;font-size:9px;font-weight:600;margin-left:4px;font-family:sans-serif;">({{ cellCodeLabel(ik, irow[ik]) }})</span>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </template>
+                      <template v-else-if="row[k] !== null && typeof row[k] === 'object'">
+                        <zd-preview-table :data="row[k]" />
+                      </template>
+                      <template v-else>{{ row[k] === null ? 'null' : String(row[k]) }}<span v-if="cellCodeLabel(k, row[k])" style="color:#7c3aed;font-size:9px;font-weight:600;margin-left:4px;font-family:sans-serif;">({{ cellCodeLabel(k, row[k]) }})</span></template>
+                    </td>
+                  </template>
+                  <td v-else style="padding:2px 6px;border:1px solid #ddd6fe;font-family:monospace;color:#1e1b4b;line-height:1.4;">{{ row === null ? 'null' : String(row) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </td>
+        <td v-else-if="e.isObj" colspan="2" style="padding:2px 6px;border-bottom:1px solid #ede9fe;line-height:1.4;">
+          <zd-preview-table :data="e.val" />
+        </td>
+        <!-- primitive: 열2=값, 열3=필드명·코드명 -->
+        <template v-else>
+          <td style="padding:2px 6px;border-bottom:1px solid #ede9fe;color:#1e293b;font-family:monospace;line-height:1.4;">{{ e.val === null ? 'null' : String(e.val) }}</td>
+          <td style="padding:2px 6px;border-bottom:1px solid #ede9fe;white-space:nowrap;line-height:1.4;">
+            <span v-if="e.label" style="color:#9ca3af;font-size:9px;">{{ e.label }}</span>
+            <span v-if="e.codeLabel" :style="e.label ? 'color:#7c3aed;font-size:9px;margin-left:3px;font-weight:600;' : 'color:#7c3aed;font-size:9px;font-weight:600;'">{{ e.label ? '· ' : '' }}{{ e.codeLabel }}</span>
+          </td>
+        </template>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- 최상위가 배열인 경우 -->
+  <div v-else-if="isArray" style="overflow-x:auto;">
+    <div v-for="(item,i) in data" :key="i" style="margin-bottom:6px;">
+      <div style="font-size:9px;color:#7c3aed;font-weight:600;margin-bottom:2px;">[{{ i }}]</div>
+      <zd-preview-table :data="item" />
+    </div>
+  </div>
+</div>`,
+  };
+
+  /* ─────────────────────────────────────────────────────────────────────
+     ZdSimulPreviewModal
+     전송 데이터 JSON 미리보기 모달
+  ─────────────────────────────────────────────────────────────────────── */
+  window.ZdSimulPreviewModal = {
+    name: 'ZdSimulPreviewModal',
+    emits: ['close'],
+    props: {
+      show: { type: Boolean, default: false },
+      json: { type: String, default: '' },
+    },
+    template: `
+<bo-modal :show="show" title="전송 데이터 미리보기" @close="$emit('close')" box-style="max-width:760px;width:90vw;">
+  <div style="background:#1e1e2e;border-radius:6px;padding:12px 14px;max-height:60vh;overflow-y:auto;
+    font-family:monospace;font-size:12px;line-height:1.7;color:#a5f3fc;white-space:pre;word-break:break-all;">{{ json }}</div>
+  <div style="margin-top:12px;font-size:11px;color:#94a3b8;">
+    ※ API 호출 없이 생성될 파라미터만 미리 확인합니다. <code>previewOnly: true</code> 플래그로 실행됩니다.
+  </div>
+</bo-modal>`,
   };
 
 })();

@@ -1175,6 +1175,122 @@ const refreshList = () => {
 - 모달 내부 `watch` 는 `if (props.reloadTrigger)` 가드로 0 일 때 호출 방지 (옵션).
 - 자식 컴포넌트는 `reloadTrigger` 자체를 emit/수정해서는 안 된다 — 부모만 증가시킨다.
 
+## §7. 시뮬레이터 임시 ID 정책 (ZdSimul, 2026-07-11)
+
+### 7.1 배경
+
+시뮬레이터(`pages/bo/zd/ZdSimul*.js`)는 백엔드 API를 실제 호출하기 전에 **부모-자식 관계가 연결된 body를 미리 구성**해야 한다.
+예: 상품 옵션항목 ID → SKU `optItemId1/2` + 이미지 `optItemId1` 에서 동시 참조.
+
+백엔드가 항목 INSERT 후 생성한 ID를 후속 항목에 다시 써주는 구조라면 프론트 사전 할당이 불필요하지만,
+**단일 요청 body** 안에서 ID 참조가 교차하는 경우 프론트에서 ID를 미리 만들어 보내는 것이 더 명확하다.
+
+### 7.2 임시 ID 생성 규칙
+
+```js
+// ZdSimulBase.js 공통 헬퍼
+const _makeSimulId = (prefix) => {
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, '0');
+  const ts = YY+MM+DD+HH+mm+ss;   // 6자리씩 조합
+  const r4 = randInt(1000, 9999);  // 4자리 랜덤
+  return (prefix || 'SI') + ts + r4;
+};
+```
+
+- **prefix 규칙**: 반드시 `tmp_` 로 시작 — DB에 실제 저장된 ID와 임시 ID를 즉시 구별
+- **예시**: `tmp_OI260711140534781` (옵션항목), `tmp_SKU260711140534123` (SKU)
+- **체번 충돌 확률**: 초 단위 + 4자리 랜덤 → 동시 수천 건 생성 시도 시에도 충돌 극히 미비
+- `_makeSimulId`는 `useSimulSetup` return에 포함되어 각 시뮬 `runFn` 파라미터로 전달됨
+
+### 7.3 백엔드 처리 규칙
+
+프론트가 임시 ID를 body에 포함해 전송하는 경우, **백엔드 Service의 `create()` 메서드는 제공된 ID를 우선 사용**하고 없을 때만 자동 생성한다.
+
+```java
+// PdProdOptItemService.create() — 표준 패턴
+@Transactional
+public PdProdOptItem create(PdProdOptItem body) {
+    // 프론트 제공 ID 우선(tmp_ 포함), 없으면 자동생성
+    if (body.getOptItemId() == null || body.getOptItemId().isBlank())
+        body.setOptItemId(CmUtil.generateId("pd_prod_opt_item"));
+    ...
+}
+```
+
+- `tmp_` prefix가 붙은 ID도 그대로 DB에 저장된다 — 별도 정제 불필요
+- 시뮬 전용 데이터는 `simul_yn = 'Y'`로 식별하므로 prefix로 구분할 필요 없음
+- 단, 실제 운영 create API는 항상 자동 생성을 유지 — `tmp_` ID 허용은 **시뮬 전용 Controller에만** 적용
+
+### 7.4 임시 ID 값 체계 — 짧고 계층이 보이는 시퀀셜 규칙 (2026-07-11)
+
+임시 ID 값은 긴 타임스탬프 대신 **계층이 즉시 보이는 짧은 시퀀셜** 방식을 사용한다.
+
+| 대상 | 임시 ID 예시 | 규칙 |
+|---|---|---|
+| 상품 | `prod-01` | 고정값, body.tmpProdId 로 전달 |
+| 옵션 1레벨 항목 | `optItemId1-01`, `optItemId1-02`... | `'optItemId1-' + _pad2(i)` |
+| 옵션 2레벨 항목 | `optItemId2-01`, `optItemId2-02`... | `'optItemId2-' + _pad2(i)` |
+
+```js
+const _pad2 = (n) => String(n + 1).padStart(2, '0');
+
+// 상품: prod-01 (고정, 시뮬 1회 실행에 상품 1개)
+body.tmpProdId = 'prod-01';
+
+// 1레벨: optItemId1-01, optItemId1-02 ...
+opt1Items = opt1List.map((nm, i) => ({ tmpOptItemId: 'optItemId1-' + _pad2(i), ... }));
+
+// 2레벨: optItemId2-01, optItemId2-02 ...
+opt2Items = opt2List.map((nm, i) => ({ tmpOptItemId: 'optItemId2-' + _pad2(i), ... }));
+```
+
+- 어떤 레벨인지 ID 값 자체에서 보임: `optItemId1-01` (1단 1번째), `optItemId2-03` (2단 3번째)
+- 충돌 없음: 동일 요청 body 안에서만 유효한 식별자이므로 유일성 보장
+- 필드명(key)도 `tmp` 접두로 통일하여 실제 DB ID 컬럼과 즉시 구별
+
+| 필드명 | 용도 |
+|---|---|
+| `tmpProdId` | 상품 임시 ID (body에 포함, 백엔드 prodId로 그대로 INSERT) |
+| `tmpOptItemId` | 옵션항목 임시 ID (items[] 배열 내) |
+| `tmpOptItemId1` | SKU/이미지에서 옵션1 참조 |
+| `tmpOptItemId2` | SKU에서 옵션2 참조 |
+
+```java
+// 백엔드 ZdSimulController: tmpOptItemId 로 읽음
+optItem.setOptItemId(str(it, "tmpOptItemId")); // 프론트 임시ID 우선
+```
+
+```java
+// 백엔드 응답도 tmpProdId 로
+return ResponseEntity.ok(ApiResponse.ok(Map.of("tmpProdId", prodId)));
+```
+
+### 7.5 미리보기(dry-run) 연결 관계 시각화
+
+미리보기 시 `_preview_` prefix 키로 연결 관계를 body에 추가 표시한다:
+
+```js
+// 옵션항목 ID 사전 생성 (필드명: tmpOptItemId)
+const opt1Items = opt1List.map((nm, i) => ({
+  tmpOptItemId: _makeSimulId('tmp_OI'),  // 임시 ID
+  nm, val, sortOrd: i+1, useYn: 'Y',
+}));
+
+// SKU에서 tmpOptItemId1/2 참조
+body['_preview_SKU목록(N건)'] = opt1Items.flatMap(o1 =>
+  opt2Items.map(o2 => ({ tmpOptItemId1: o1.tmpOptItemId, tmpOptItemId2: o2.tmpOptItemId, ... }))
+);
+
+// 이미지에서 tmpOptItemId1 참조
+body['_preview_이미지(색상별)'] = opt1Items.map(o1 => ({
+  tmpOptItemId1: o1.tmpOptItemId, ...
+}));
+```
+
+- `_preview_` 키는 실제 API 호출 시 백엔드에서 무시됨 (미리보기 전용)
+- `ZdPreviewTable`에서 노란 배경으로 시각적 구분 표시
+
 ## 관련 정책
 - 611. 전시관리 정책
-- 911. 시스템공통 정책
+- 911. 시스템공통 정책 (ID 생성 규칙)

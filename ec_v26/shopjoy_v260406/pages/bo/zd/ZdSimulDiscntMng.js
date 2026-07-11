@@ -99,11 +99,11 @@
             const body = {
               discntNm: nm,
               discntTypeCd: discntType.cd,
-              ...(valType ? { discntValTypeCd: valType.cd } : {}),
+              discntValTypeCd: valType ? valType.cd : null,
               discVal,
               startDate: _makeDate(0), endDate: _makeDate(domCfg.discntDurationDays),
               scopeCd: domCfg.discntScope,
-              ...(prodIds.length ? { prodIds } : {}),
+              prodIds,
               minOrderAmt: domCfg.discntMinOrderAmt,
               maxDiscAmt: domCfg.discntMaxDiscAmt,
               simulYn: 'Y',
@@ -126,7 +126,7 @@
         },
       });
       const { cfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate,
-              onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog } = simul;
+              onStart, onStop, onRunOnce, onPreview, onPreviewCreate, onClearLog, onSetLogPage, onSearchLog } = simul;
 
       /* ── [03] 컬럼 정의 ──────────────────────────────── */
       const logCols = makeLogCols();
@@ -170,7 +170,7 @@
         logCols, baseCfgColumns, discntCfgColumns,
         cfDiscntTypeCdTotal, cfDiscntValTypeTotal,
         DISCNT_TYPE_ITEMS, DISCNT_VAL_TYPE_ITEMS,
-        onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog,
+        onStart, onStop, onRunOnce, onPreview, onPreviewCreate, onClearLog, onSetLogPage, onSearchLog,
         ...rangeHandlers,
         discntPicker, onOpenDiscntPicker, onSelectDiscnt, _loadDiscntPicker,
       };
@@ -185,7 +185,7 @@
     :cf-is-running="cfIsRunning" :cf-success-rate="cfSuccessRate"
     accent-color="linear-gradient(90deg,#2563eb,#60a5fa)"
     accent-active="background:#eff6ff;border:1.5px solid #2563eb;color:#1d4ed8;"
-    @start="onStart" @stop="onStop" @run-once="onRunOnce" />
+    @start="onStart" @stop="onStop" @run-once="onRunOnce" @preview="onPreview" @preview-create="onPreviewCreate" />
 
   <!-- 할인정책 설정 -->
   <div class="card" style="padding:14px 16px;margin-top:12px;">

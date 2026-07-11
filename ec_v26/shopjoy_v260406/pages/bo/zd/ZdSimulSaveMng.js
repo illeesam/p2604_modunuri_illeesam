@@ -97,10 +97,11 @@
             const body = {
               saveNm: nm,
               savePurposeCd: saveTypeCd.cd,
-              ...(isRate ? { saveRatePct: saveRate } : { saveAmt }),
+              saveRatePct: isRate ? saveRate : null,
+              saveAmt: isRate ? null : saveAmt,
               startDate: _makeDate(0), endDate: _makeDate(domCfg.saveDurationDays),
               scopeCd: domCfg.saveScope,
-              ...(prodIds.length ? { prodIds } : {}),
+              prodIds,
               simulYn: 'Y',
             };
             const res = await boApi.post('/bo/zd/simul/promo/save-create', body, coUtil.cofApiHdr('적립금시뮬', '적립금생성'));
@@ -113,7 +114,7 @@
         },
       });
       const { cfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate,
-              onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog } = simul;
+              onStart, onStop, onRunOnce, onPreview, onPreviewCreate, onClearLog, onSetLogPage, onSearchLog } = simul;
 
       /* ── [03] 컬럼 정의 ──────────────────────────────── */
       const logCols = makeLogCols();
@@ -141,7 +142,7 @@
         logCols, baseCfgColumns, saveCfgColumns,
         cfSaveTypeCdTotal, cfSaveValTypeTotal,
         SAVE_TYPE_ITEMS, SAVE_VAL_ITEMS,
-        onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog,
+        onStart, onStop, onRunOnce, onPreview, onPreviewCreate, onClearLog, onSetLogPage, onSearchLog,
         ...rangeHandlers,
       };
     },
@@ -155,7 +156,7 @@
     :cf-is-running="cfIsRunning" :cf-success-rate="cfSuccessRate"
     accent-color="linear-gradient(90deg,#059669,#34d399)"
     accent-active="background:#ecfdf5;border:1.5px solid #059669;color:#065f46;"
-    @start="onStart" @stop="onStop" @run-once="onRunOnce" />
+    @start="onStart" @stop="onStop" @run-once="onRunOnce" @preview="onPreview" @preview-create="onPreviewCreate" />
 
   <!-- 적립금 설정 -->
   <div class="card" style="padding:14px 16px;margin-top:12px;">

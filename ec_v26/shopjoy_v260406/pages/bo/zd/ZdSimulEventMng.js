@@ -1,4 +1,4 @@
-﻿/* ZdSimulEventMng — 이벤트 시뮬레이터 (bo-form-area / bo-grid 활용) */
+/* ZdSimulEventMng — 이벤트 시뮬레이터 (bo-form-area / bo-grid 활용) */
 (function () {
   const { reactive, computed, ref } = Vue;
   const { useSimulSetup, makeLogCols, makeBaseCfgColumns, makeRangeCol, makeRangeHandlers, rangeSlotTemplate } = window.ZdSimulBase;
@@ -98,7 +98,7 @@
         uiNm: '이벤트 시뮬레이터',
         label: '시뮬이벤트',
         defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
-        runFn: async ({ mode, namePrefix, simulYn, randInt, pick }) => {
+        runFn: async ({ mode, namePrefix, simulYn, previewOnly, randInt, pick }) => {
           if (mode === 'create') {
             const type    = _pickType();
             const offset  = randInt(domCfg.startOffsetMin, domCfg.startOffsetMax);
@@ -115,6 +115,15 @@
               winnerCount: randInt(domCfg.winnerCountMin, domCfg.winnerCountMax),
               simulYn: simulYn || 'Y',
             };
+            if (previewOnly) {
+              body['_preview_[eventBody]'] = {
+                eventNm: body.eventNm, eventTypeCd: body.eventTypeCd,
+                eventStatusCd: body.eventStatusCd,
+                startDate: body.startDate, endDate: body.endDate,
+                benefitTypeCd: body.benefitTypeCd, benefitAmt: body.benefitAmt,
+                winnerCount: body.winnerCount,
+              };
+            }
             const res = await boApi.post('/bo/zd/simul/event/create', body, coUtil.cofApiHdr('이벤트시뮬', '생성'));
             const id  = res?.data?.data?.eventId || '-';
             return {
@@ -147,7 +156,7 @@
           }
         },
       });
-      const { cfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog } = simul;
+      const { cfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onPreview, onPreviewCreate, onClearLog, onSetLogPage, onSearchLog } = simul;
 
       /* ── [03] Computed ──────────────────────────────── */
       const cfTypeTotal    = computed(() => Object.values(domCfg.eventTypeWeights).reduce((a, b) => a + Number(b), 0) || 1);
@@ -207,7 +216,7 @@
       return {
         cfg, domCfg, state, logs, logPager, cfIsRunning, cfSuccessRate,
         cfTypeTotal, cfBenefitTotal, logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
-        onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog, logSearch,
+        onStart, onStop, onRunOnce, onPreview, onPreviewCreate, onClearLog, onSetLogPage, onSearchLog, logSearch,
         ...rangeHandlers,
         EVENT_TYPES, BENEFIT_TYPES,
         eventPicker, onOpenEventPicker, onSelectEvent, _loadEventPicker,
@@ -224,7 +233,7 @@
     :cf-is-running="cfIsRunning" :cf-success-rate="cfSuccessRate"
     accent-color="linear-gradient(90deg,#a21caf,#e879f9)"
     accent-active="background:#fdf4ff;border:1.5px solid #a21caf;color:#86198f;"
-    @start="onStart" @stop="onStop" @run-once="onRunOnce" />
+    @start="onStart" @stop="onStop" @run-once="onRunOnce" @preview="onPreview" @preview-create="onPreviewCreate" />
 
   <!-- 생성 옵션 -->
   <div v-if="cfg.mode==='create'" class="card" style="padding:14px 16px;margin-top:12px;">

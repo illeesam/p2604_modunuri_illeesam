@@ -1,4 +1,4 @@
-﻿/* ZdSimulPlanMng — 기획전 시뮬레이터 (bo-form-area / bo-grid 활용) */
+/* ZdSimulPlanMng — 기획전 시뮬레이터 (bo-form-area / bo-grid 활용) */
 (function () {
   const { reactive, ref, computed } = Vue;
   const { useSimulSetup, makeLogCols, makeBaseCfgColumns, makeRangeCol, makeRangeHandlers, rangeSlotTemplate } = window.ZdSimulBase;
@@ -88,7 +88,7 @@
         uiNm: '기획전 시뮬레이터',
         label: '시뮬기획전',
         defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
-        runFn: async ({ mode, namePrefix, simulYn, randInt, pick }) => {
+        runFn: async ({ mode, namePrefix, simulYn, previewOnly, randInt, pick }) => {
           if (mode === 'create') {
             const prods = (await boApiSvc.pdProd.getPage({ pageNo: 1, pageSize: 100, prodStatusCd: 'SELLING' })).data?.data?.pageList || [];
             if (prods.length < 3) return { ok: false, reason: '판매중 상품 부족 (최소 3개 필요)' };
@@ -102,11 +102,16 @@
             const items    = shuffled.slice(0, cnt).map((p, i) => ({ prodId: p.prodId, sortOrd: i + 1 }));
             const body     = {
               planNm, planStatusCd: domCfg.createStatus,
-              ...(theme ? { planThemeCd: theme.cd } : {}),
+              planThemeCd: theme ? theme.cd : null,
               startDate: _makeDate(offset), endDate: _makeDate(offset + dur),
               items,
               simulYn: simulYn || 'Y',
             };
+            if (previewOnly) {
+              body['_preview_[items](' + items.length + '개)'] = items.map(it => ({
+                prodId: it.prodId, sortOrd: it.sortOrd,
+              }));
+            }
             const res = await boApi.post('/bo/zd/simul/plan/create', body, coUtil.cofApiHdr('기획전시뮬', '생성'));
             const id  = res?.data?.data?.planId || '-';
             return {
@@ -145,7 +150,7 @@
           }
         },
       });
-      const { cfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog } = simul;
+      const { cfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onPreview, onPreviewCreate, onClearLog, onSetLogPage, onSearchLog } = simul;
 
       /* ── [03] 컬럼 정의 ─────────────────────────────── */
       const logCols = makeLogCols();
@@ -204,7 +209,7 @@
       return {
         cfg, domCfg, state, logs, logPager, cfIsRunning, cfSuccessRate,
         logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
-        onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog, logSearch,
+        onStart, onStop, onRunOnce, onPreview, onPreviewCreate, onClearLog, onSetLogPage, onSearchLog, logSearch,
         ...rangeHandlers,
         PLAN_STATUSES, PLAN_TYPE_ITEMS, cfPlanTypeTotal,
         planPicker, onOpenPlanPicker, onSelectPlan, _loadPlanPicker,
@@ -221,7 +226,7 @@
     :cf-is-running="cfIsRunning" :cf-success-rate="cfSuccessRate"
     accent-color="linear-gradient(90deg,#d97706,#fbbf24)"
     accent-active="background:#fff7ed;border:1.5px solid #d97706;color:#92400e;"
-    @start="onStart" @stop="onStop" @run-once="onRunOnce" />
+    @start="onStart" @stop="onStop" @run-once="onRunOnce" @preview="onPreview" @preview-create="onPreviewCreate" />
 
   <!-- 생성 옵션 -->
   <div v-if="cfg.mode==='create'" class="card" style="padding:14px 16px;margin-top:12px;">

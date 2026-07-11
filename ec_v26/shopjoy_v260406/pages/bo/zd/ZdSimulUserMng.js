@@ -53,7 +53,7 @@
         uiNm: '사용자 시뮬레이터',
         label: '시뮬사용자',
         defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
-        runFn: async ({ mode, namePrefix, simulYn, suffix, randInt, pick }) => {
+        runFn: async ({ mode, namePrefix, simulYn, previewOnly, suffix, randInt, pick }) => {
           if (mode === 'create') {
             const seq     = String(Date.now()).slice(-5);
             const ln      = pick(LAST_NAMES);
@@ -68,6 +68,12 @@
               userStatusCd: domCfg.statusOnCreate,
               loginPwd: domCfg.loginPwd || '1111',
             };
+            if (previewOnly) {
+              body['_preview_[userBody]'] = {
+                loginId: body.loginId, userNm: body.userNm, userEmail: body.userEmail,
+                userPhone: body.userPhone, userStatusCd: body.userStatusCd,
+              };
+            }
             const res = await boApi.post('/bo/zd/simul/user/create', body, coUtil.cofApiHdr('사용자시뮬', '생성'));
             const id  = res?.data?.data?.userId || loginId;
             return { ok: true, desc: nm + ' / ' + email + ' / ' + dept, meta: { id, params: body } };
@@ -98,7 +104,7 @@
         },
       });
       const { cfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate,
-              onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog } = simul;
+              onStart, onStop, onRunOnce, onPreview, onPreviewCreate, onClearLog, onSetLogPage, onSearchLog } = simul;
 
       /* ── [03] 컬럼 정의 ─────────────────────────────────── */
       const logCols = makeLogCols();
@@ -134,7 +140,7 @@
       return {
         cfg, domCfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate,
         logCols, baseCfgColumns, createCfgColumns, updateCfgColumns, cfDomainTotal,
-        onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog,
+        onStart, onStop, onRunOnce, onPreview, onPreviewCreate, onClearLog, onSetLogPage, onSearchLog,
         STATUSES, DOMAINS, UPDATE_TYPES,
         userPicker, onOpenUserPicker, onSelectUser, _loadUserPicker,
       };
@@ -149,7 +155,7 @@
     :cf-is-running="cfIsRunning" :cf-success-rate="cfSuccessRate"
     accent-color="linear-gradient(90deg,#0284c7,#38bdf8)"
     accent-active="background:#e0f2fe;border:1.5px solid #0284c7;color:#0369a1;"
-    @start="onStart" @stop="onStop" @run-once="onRunOnce" />
+    @start="onStart" @stop="onStop" @run-once="onRunOnce" @preview="onPreview" @preview-create="onPreviewCreate" />
 
   <!-- 생성 옵션 -->
   <div v-if="cfg.mode==='create'" class="card" style="padding:14px 16px;margin-top:12px;">

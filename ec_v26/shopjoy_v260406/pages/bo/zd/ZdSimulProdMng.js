@@ -1,4 +1,4 @@
-﻿/* ZdSimulProdMng — 상품 시뮬레이터 (bo-form-area / bo-grid 활용) */
+/* ZdSimulProdMng — 상품 시뮬레이터 (bo-form-area / bo-grid 활용) */
 (function () {
   const { reactive, computed, ref, onMounted } = Vue;
   const { useSimulSetup, makeLogCols, makeBaseCfgColumns, makeRangeCol, makeRangeHandlers, rangeSlotTemplate } = window.ZdSimulBase;
@@ -78,6 +78,8 @@
         opt1CountMax: 3,
         opt2CountMin: 2,
         opt2CountMax: 3,
+        imgCountMin: 2,
+        imgCountMax: 3,
         updateAction: 'status',
         updateStatus: 'SOLDOUT',
         priceChangeRateMin: -20,
@@ -168,7 +170,7 @@
         uiNm: '상품 시뮬레이터',
         label: '시뮬상품',
         defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
-        runFn: async ({ mode, namePrefix, simulYn, suffix, randInt, randF, pick }) => {
+        runFn: async ({ mode, namePrefix, simulYn, suffix, randInt, randF, pick, previewOnly, _makeSimulId }) => {
           if (mode === 'create') {
             const type      = _pickType();
             const salePrice = _round(randInt(domCfg.priceMin, domCfg.priceMax));
@@ -187,18 +189,34 @@
               categoryId = pick(categories.value).categoryId;
             }
             const body = {
-              prodNm, salePrice, costPrice, stockQty: isOption ? 0 : stock,
-              prodSaleTypeCd: type.cd, prodStatusCd: domCfg.createStatus,
-              adCopyYn: domCfg.useAdCopy ? 'Y' : 'N',
-              adCopy: domCfg.useAdCopy ? pick(AD_COPIES) : '',
+              prodNm, salePrice,
+              purchasePrice: costPrice,           /* pd_prod.purchase_price */
+              prodStock: isOption ? 0 : stock,    /* pd_prod.prod_stock */
+              prodTypeCd: type.cd,                /* pd_prod.prod_type_cd (SINGLE/OPTION/SET) */
+              prodStatusCd: domCfg.createStatus,
+              advrtStmt: domCfg.useAdCopy ? pick(AD_COPIES) : '', /* pd_prod.advrt_stmt */
               ...(categoryId                ? { categoryId }                              : {}),
               ...(defaults.value.siteId     ? { siteId:     defaults.value.siteId }     : {}),
               ...(defaults.value.dlivTmpltId ? { dlivTmpltId: defaults.value.dlivTmpltId } : {}),
               simulYn: simulYn || 'Y',
+              /* 항상 포함 — 값 없으면 null/[] */
+              optTypeCd:   null,    /* pd_prod.opt_type_cd */
+              prodOpts:    [],      /* pd_prod_opt[] */
+              prodSkus:    [],      /* pd_prod_sku[] (참고) */
+              prodImages:  [],      /* pd_prod_img[] */
             };
             /* 옵션형: 프리셋 기반 opt1/opt2 풀 선택 후 count range 기준 슬라이스 */
             let opt1List = null, opt2List = null;
             let optPresetLabel = '';
+            const _makeVal = (nm, type, prefix) => {
+              if (type === 'color') return 'COL_' + nm.replace(/[^A-Za-z0-9가-힣]/g, '_').toUpperCase();
+              if (type === 'size')  return 'SIZ_' + nm;
+              return (prefix || 'OPT') + '_' + nm.replace(/[^A-Za-z0-9가-힣]/g, '_').toUpperCase();
+            };
+            /* 상품 자체 임시 ID — 본 ID에 tmp- 접두어, body.prodId로 전송 */
+            const tmpProdId = 'tmp-prod-01';
+            body.prodId = tmpProdId;
+
             if (isOption) {
               const preset = _pickOptPreset();
               optPresetLabel = preset.label;
@@ -209,36 +227,126 @@
               const o2cnt = randInt(domCfg.opt2CountMin, Math.min(domCfg.opt2CountMax, pool2.length));
               opt1List = pool1.slice(0, o1cnt);
               opt2List = pool2.slice(0, o2cnt);
-              const _makeVal = (nm, type, prefix) => {
-                if (type === 'color') return 'COL_' + nm.replace(/[^A-Za-z0-9가-힣]/g, '_').toUpperCase();
-                if (type === 'size')  return 'SIZ_' + nm;
-                return (prefix || 'OPT') + '_' + nm.replace(/[^A-Za-z0-9가-힣]/g, '_').toUpperCase();
-              };
               const grp1Nm = preset.opt1LabelType === 'color' ? '색상' : preset.opt1LabelType === 'size' ? '사이즈' : '옵션1';
               const grp2Nm = preset.opt2LabelType === 'size' ? '사이즈' : preset.opt2LabelType === 'color' ? '색상' : '옵션2';
-              body.optGroups = [
-                { grpNm: grp1Nm, level: 1, inputTypeCd: 'SELECT', sortOrd: 1,
-                  items: opt1List.map((nm, i) => ({ nm, val: _makeVal(nm, preset.opt1LabelType, 'O1'), sortOrd: i + 1, useYn: 'Y' })) },
-                { grpNm: grp2Nm, level: 2, inputTypeCd: 'SELECT', sortOrd: 2,
-                  items: opt2List.map((nm, i) => ({ nm, val: _makeVal(nm, preset.opt2LabelType, 'O2'), sortOrd: i + 1, useYn: 'Y' })) },
+              /* 상품 레벨 옵션 카테고리 코드 (pd_prod.opt_type_cd) */
+              body.optTypeCd = preset.cd;
+              /* 옵션항목 임시 ID: 본 ID(optItemId)에 tmp-opt1-/tmp-opt2- 접두어 */
+              const _pad2 = (n) => String(n + 1).padStart(2, '0');
+              const opt1Items = opt1List.map((nm, i) => ({
+                optItemId: 'tmp-opt1-' + _pad2(i),
+                optNm: nm, optVal: _makeVal(nm, preset.opt1LabelType, 'O1'),
+                optTypeCd: preset.opt1LabelType, sortOrd: i + 1, useYn: 'Y',
+              }));
+              const opt2Items = opt2List.map((nm, i) => ({
+                optItemId: 'tmp-opt2-' + _pad2(i),
+                optNm: nm, optVal: _makeVal(nm, preset.opt2LabelType, 'O2'),
+                optTypeCd: preset.opt2LabelType, sortOrd: i + 1, useYn: 'Y',
+              }));
+              /* 실제 전송 body: prodOpts — pd_prod_opt.opt_grp_nm 에 저장, optTypeCdNm 키로 전송 */
+              body.prodOpts = [
+                { optTypeCdNm: grp1Nm, optTypeCd: preset.opt1LabelType, optLevel: 1, optInputTypeCd: 'SELECT', sortOrd: 1, prodOptItems: opt1Items },
+                { optTypeCdNm: grp2Nm, optTypeCd: preset.opt2LabelType, optLevel: 2, optInputTypeCd: 'SELECT', sortOrd: 2, prodOptItems: opt2Items },
               ];
-              /* 옵션별 이미지 업로드 (색상 타입 opt1만) */
-              if (domCfg.useOptImg && preset.opt1LabelType === 'color') {
-                const imgResults = await _uploadOptImgs(opt1List);
-                body.prodImgs = imgResults
-                  .filter(r => r.url)
-                  .map((r, i) => ({
-                    cdnImgUrl: r.url,
-                    optItemId1: _makeVal(r.nm, 'color', 'O1'),
-                    isMain: i === 0 ? 'Y' : 'N',
-                    sortOrd: i + 1,
-                  }));
+              if (previewOnly) {
+                /* prodOpts: 실제 전송 key. pd_prod_opt Entity 컬럼명 기준 표시 */
+                body['_preview_[prodOpts]'] = body.prodOpts.map(grp => ({
+                  optTypeCdNm: grp.optTypeCdNm,
+                  optTypeCd: grp.optTypeCd,
+                  optLevel: grp.optLevel,
+                  optInputTypeCd: grp.optInputTypeCd,
+                  sortOrd: grp.sortOrd,
+                  prodOptItems: grp.prodOptItems.map(it => ({
+                    optItemId: it.optItemId,
+                    optNm: it.optNm,
+                    optVal: it.optVal,
+                    optTypeCd: it.optTypeCd,
+                    sortOrd: it.sortOrd,
+                    useYn: it.useYn,
+                  })),
+                }));
+                body['_hide_prodOpts'] = body.prodOpts;
+                delete body.prodOpts;
+                /* prodSkus: 백엔드가 prodOpts에서 자동 생성 (별도 전송 key 없음, 참고용) */
+                const skuPreview = [];
+                let addP = 0;
+                let skuIdx = 0;
+                for (const o1 of opt1Items) {
+                  for (const o2 of opt2Items) {
+                    skuPreview.push({
+                      skuId: 'tmp-sku-' + _pad2(skuIdx++),
+                      skuNm: o1.optNm + ' / ' + o2.optNm,
+                      optItemId1: o1.optItemId,
+                      optItemId2: o2.optItemId,
+                      addPrice: addP,
+                      prodOptStock: randInt(domCfg.stockMin, domCfg.stockMax),
+                      useYn: 'Y',
+                    });
+                    addP += 1000;
+                  }
+                }
+                body.prodSkus = skuPreview;
+                /* prodImages: 옵션 이미지 (미리보기) */
+                const imgPreview = [];
+                if (domCfg.useOptImg && preset.opt1LabelType === 'color') {
+                  const perColor = randInt(domCfg.imgCountMin, domCfg.imgCountMax);
+                  let imgIdx = 0;
+                  for (const o1 of opt1Items) {
+                    for (let j = 0; j < perColor; j++) {
+                      imgPreview.push({
+                        prodImgId: 'tmp-img-' + _pad2(imgIdx++),
+                        optItemId1: o1.optItemId,
+                        optNm: o1.optNm,
+                        cdnImgUrl: 'https://picsum.photos/seed/' + (200 + imgIdx * 37) + '/400/400',
+                        isThumb: imgIdx === 1 ? 'Y' : 'N',
+                        sortOrd: imgIdx,
+                      });
+                    }
+                  }
+                }
+                body.prodImages = imgPreview;
+              } else {
+                /* 실제 실행: 이미지 업로드 (색상 opt1) */
+                if (domCfg.useOptImg && preset.opt1LabelType === 'color') {
+                  const perColor = randInt(domCfg.imgCountMin, domCfg.imgCountMax);
+                  /* 색상별로 perColor장씩 업로드 (같은 색상 Blob 재사용) */
+                  let imgIdx = 0;
+                  for (let ci = 0; ci < opt1Items.length; ci++) {
+                    const o1 = opt1Items[ci];
+                    const hex = OPT1_COLORS[o1.optNm] || '#cccccc';
+                    const blob = await _makeColorBlob(hex);
+                    for (let j = 0; j < perColor; j++) {
+                      const fd = new FormData();
+                      fd.append('file', blob, 'opt_' + o1.optNm + '_' + (j + 1) + '.png');
+                      try {
+                        const r = await coApiSvc.cmUpload.uploadOne(fd, '상품시뮬', '옵션이미지');
+                        const url = r?.data?.data?.cdnImgUrl || r?.data?.data?.attachUrl || '';
+                        if (url) {
+                          body.prodImages.push({
+                            prodImgId: 'tmp-img-' + _pad2(imgIdx++),
+                            cdnImgUrl: url,
+                            optItemId1: o1.optItemId,
+                            isThumb: imgIdx === 1 ? 'Y' : 'N',
+                            sortOrd: imgIdx,
+                          });
+                        }
+                      } catch (_) { /* 업로드 실패 시 해당 장 건너뜀 */ }
+                    }
+                  }
+                }
+              }
+            } else {
+              /* 단품/세트/묶음: 대표 이미지 1장 (백엔드 picsum 자동) */
+              /* prodSkus: 백엔드가 자동 생성, 단일 SKU 참고용 */
+              body.prodSkus = [{ skuNm: prodNm, salePrice, purchasePrice: costPrice, prodOptStock: stock, useYn: 'Y' }];
+              if (previewOnly) {
+                body.prodImages = [{ cdnImgUrl: 'https://picsum.photos/seed/200/400/400', isThumb: 'Y', sortOrd: 1 }];
               }
             }
             const res = await boApi.post('/bo/zd/simul/prod/create', body, coUtil.cofApiHdr('상품시뮬', '생성'));
-            const prodId  = res?.data?.data?.prodId || null;
+            const savedProdId = res?.data?.data?.prodId || tmpProdId;
 
-            const id = prodId || '-';
+            const id = savedProdId || '-';
             if (!window._zdSimulStats['상품']) window._zdSimulStats['상품'] = { totalPrice: 0, count: 0, byType: {}, byStatus: {} };
             const st = window._zdSimulStats['상품'];
             st.count++; st.totalPrice += salePrice;
@@ -280,7 +388,7 @@
           }
         },
       });
-      const { cfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog } = simul;
+      const { cfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onPreview, onPreviewCreate, onClearLog, onSetLogPage, onSearchLog } = simul;
 
       /* ── [03] Defaults + 카테고리 로드 ──────────────── */
       const defaults = ref({ siteId: '', dlivTmpltId: '', dlivTmpltNm: '' });
@@ -340,10 +448,12 @@
         { key: 'useOptImg',      label: '옵션별 이미지 자동 업로드', type: 'select',
           options: [{ value: true, label: '예' }, { value: false, label: '아니오' }],
           hint: '옵션1 색상별 단색 이미지 생성 후 첨부' },
-        makeRangeCol('opt1CountMin', 'opt1CountMax', '옵션1 항목 수', 1, 8, '개',
+        makeRangeCol('opt1CountMin', 'opt1CountMax', '옵션1 항목 수', 1, 10, '개',
           { hint: '색상 (레드~그레이 풀)' }),
-        makeRangeCol('opt2CountMin', 'opt2CountMax', '옵션2 항목 수', 1, 6, '개',
+        makeRangeCol('opt2CountMin', 'opt2CountMax', '옵션2 항목 수', 1, 10, '개',
           { hint: '사이즈 (XS~XXL 풀)' }),
+        makeRangeCol('imgCountMin', 'imgCountMax', '옵션1별 이미지 수', 1, 10, '장',
+          { hint: '옵션1 색상별 이미지 장수 범위' }),
         { key: 'fixedCategoryId', label: '카테고리 선택', type: 'slot', name: 'catPick' },
       ];
       const updateCfgColumns = [
@@ -362,6 +472,7 @@
         { minKey: 'stockMin',           maxKey: 'stockMax'           },
         { minKey: 'opt1CountMin',       maxKey: 'opt1CountMax'       },
         { minKey: 'opt2CountMin',       maxKey: 'opt2CountMax'       },
+        { minKey: 'imgCountMin',        maxKey: 'imgCountMax'        },
         { minKey: 'priceChangeRateMin', maxKey: 'priceChangeRateMax' },
         { minKey: 'stockAddMin',        maxKey: 'stockAddMax'        },
       ]);
@@ -394,7 +505,7 @@
       return {
         cfg, domCfg, state, logs, logPager, cfIsRunning, cfSuccessRate,
         defaults, cfTypeTotal, cfOptPresetTotal, categories, logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
-        onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog, logSearch,
+        onStart, onStop, onRunOnce, onPreview, onPreviewCreate, onClearLog, onSetLogPage, onSearchLog, logSearch,
         ...rangeHandlers,
         SALE_TYPES, PROD_STATUSES, UPDATE_ACTIONS, OPT1_POOL, OPT2_POOL, OPT1_COLORS, OPT_PRESETS,
         opt1PoolStr, opt2PoolStr, cfOpt1Pool, cfOpt2Pool,
@@ -412,7 +523,7 @@
     :cf-is-running="cfIsRunning" :cf-success-rate="cfSuccessRate"
     accent-color="linear-gradient(90deg,#059669,#34d399)"
     accent-active="background:#ecfdf5;border:1.5px solid #059669;color:#065f46;"
-    @start="onStart" @stop="onStop" @run-once="onRunOnce" />
+    @start="onStart" @stop="onStop" @run-once="onRunOnce" @preview="onPreview" @preview-create="onPreviewCreate" />
 
   <!-- 생성 옵션 (전체 폭) -->
   <div v-if="cfg.mode==='create'" class="card" style="padding:14px 16px;margin-top:12px;">
@@ -421,8 +532,9 @@
       ${rangeSlotTemplate('priceMin','priceMax',5000,500000,'원')}
       ${rangeSlotTemplate('costRateMin','costRateMax',0,100,'%')}
       ${rangeSlotTemplate('stockMin','stockMax',0,999,'개')}
-      ${rangeSlotTemplate('opt1CountMin','opt1CountMax',1,8,'개')}
-      ${rangeSlotTemplate('opt2CountMin','opt2CountMax',1,6,'개')}
+      ${rangeSlotTemplate('opt1CountMin','opt1CountMax',1,10,'개')}
+      ${rangeSlotTemplate('opt2CountMin','opt2CountMax',1,10,'개')}
+      ${rangeSlotTemplate('imgCountMin','imgCountMax',1,10,'장')}
       <template #catPick>
         <select v-model="domCfg.fixedCategoryId" class="form-control" style="width:100%;font-size:12px;">
           <option value="">— 랜덤 배정</option>

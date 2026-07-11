@@ -203,16 +203,19 @@ public class ZdSimulController {
         /* prodNm 깨짐 방지 */
         if (body.get("prodNm") instanceof String nm) body.put("prodNm", sanitizeText(nm));
         PdProd prod = new PdProd();
-        VoUtil.mapCopy(body, prod, "optGroups", "images");
+        VoUtil.mapCopy(body, prod, "prodOpts", "prodImages", "prodId");
         prod.setSiteId(siteId);
         prod.setSimulYn("Y");
+        /* 프론트 제공 prodId(tmp-prod-01 등) 우선 사용 — 없으면 서비스에서 자동생성 */
+        String tmpProdId = str(body, "prodId");
+        if (tmpProdId != null && !tmpProdId.isBlank()) prod.setProdId(tmpProdId);
         PdProd saved = pdProdService.create(prod);
         String prodId = saved.getProdId();
 
-        /* 옵션형: optGroups 처리 */
+        /* 옵션형: prodOpts 처리 (optTypeCdNm → pd_prod_opt.opt_grp_nm 저장) */
         @SuppressWarnings("unchecked")
-        List<Map<String, Object>> optGroups = body.get("optGroups") instanceof List
-            ? (List<Map<String, Object>>) body.get("optGroups") : null;
+        List<Map<String, Object>> optGroups = body.get("prodOpts") instanceof List
+            ? (List<Map<String, Object>>) body.get("prodOpts") : null;
 
         if (optGroups != null && !optGroups.isEmpty()) {
             List<String> grp1ItemIds = new ArrayList<>();
@@ -222,24 +225,27 @@ public class ZdSimulController {
                 PdProdOpt opt = new PdProdOpt();
                 opt.setSiteId(siteId);
                 opt.setProdId(prodId);
-                opt.setOptGrpNm(str(grp, "grpNm"));
-                opt.setOptLevel(intVal(grp, "level", 1));
-                opt.setOptInputTypeCd(str(grp, "inputTypeCd", "SELECT"));
+                opt.setOptGrpNm(str(grp, "optTypeCdNm")); /* optTypeCdNm → opt_grp_nm */
+                opt.setOptLevel(intVal(grp, "optLevel", 1));
+                opt.setOptTypeCd(str(grp, "optTypeCd"));
+                opt.setOptInputTypeCd(str(grp, "optInputTypeCd", "SELECT"));
                 opt.setSortOrd(intVal(grp, "sortOrd", 1));
                 PdProdOpt savedOpt = pdProdOptService.create(opt);
                 String optId = savedOpt.getOptId();
 
                 @SuppressWarnings("unchecked")
-                List<Map<String, Object>> items = grp.get("items") instanceof List
-                    ? (List<Map<String, Object>>) grp.get("items") : List.of();
+                List<Map<String, Object>> optItems = grp.get("prodOptItems") instanceof List
+                    ? (List<Map<String, Object>>) grp.get("prodOptItems") : List.of();
 
-                int level = intVal(grp, "level", 1);
-                for (Map<String, Object> it : items) {
+                int level = intVal(grp, "optLevel", 1);
+                for (Map<String, Object> it : optItems) {
                     PdProdOptItem optItem = new PdProdOptItem();
                     optItem.setSiteId(siteId);
                     optItem.setOptId(optId);
-                    optItem.setOptNm(str(it, "nm"));
-                    optItem.setOptVal(str(it, "val"));
+                    optItem.setOptItemId(str(it, "optItemId")); // 프론트 임시ID(tmp-opt1-01 등) 우선, null이면 서비스에서 자동생성
+                    optItem.setOptNm(str(it, "optNm"));
+                    optItem.setOptVal(str(it, "optVal"));
+                    optItem.setOptTypeCd(str(it, "optTypeCd"));
                     optItem.setSortOrd(intVal(it, "sortOrd", 1));
                     optItem.setUseYn(str(it, "useYn", "Y"));
                     PdProdOptItem savedItem = pdProdOptItemService.create(optItem);
@@ -250,9 +256,11 @@ public class ZdSimulController {
 
             /* SKU 조합 (그룹1 × 그룹2) */
             if (!grp1ItemIds.isEmpty()) {
+                int skuIdx = 0;
                 if (grp2ItemIds.isEmpty()) {
                     for (int i = 0; i < grp1ItemIds.size(); i++) {
                         PdProdSku sku = new PdProdSku();
+                        sku.setSkuId("tmp-sku-" + pad2(skuIdx++));
                         sku.setSiteId(siteId);
                         sku.setProdId(prodId);
                         sku.setOptItemId1(grp1ItemIds.get(i));
@@ -265,6 +273,7 @@ public class ZdSimulController {
                     for (int i = 0; i < grp1ItemIds.size(); i++) {
                         for (int j = 0; j < grp2ItemIds.size(); j++) {
                             PdProdSku sku = new PdProdSku();
+                            sku.setSkuId("tmp-sku-" + pad2(skuIdx++));
                             sku.setSiteId(siteId);
                             sku.setProdId(prodId);
                             sku.setOptItemId1(grp1ItemIds.get(i));
@@ -281,6 +290,7 @@ public class ZdSimulController {
             /* 이미지 (색상별 picsum URL) */
             for (int i = 0; i < grp1ItemIds.size(); i++) {
                 PdProdImg img = new PdProdImg();
+                img.setProdImgId("tmp-img-" + pad2(i));
                 img.setSiteId(siteId);
                 img.setProdId(prodId);
                 img.setOptItemId1(grp1ItemIds.get(i));
@@ -290,20 +300,29 @@ public class ZdSimulController {
                 pdProdImgService.create(img);
             }
         } else {
-            /* 단순 상품: 대표 이미지 1장 */
+            /* 단순 상품: prodImages — 프론트 전송 이미지 목록 (빈 배열이면 기본 picsum 1장 생성) */
             @SuppressWarnings("unchecked")
-            List<Map<String, Object>> images = body.get("images") instanceof List
-                ? (List<Map<String, Object>>) body.get("images") : null;
-            if (images != null) {
-                for (int i = 0; i < images.size(); i++) {
+            List<Map<String, Object>> prodImages = body.get("prodImages") instanceof List
+                ? (List<Map<String, Object>>) body.get("prodImages") : null;
+            if (prodImages != null && !prodImages.isEmpty()) {
+                for (int i = 0; i < prodImages.size(); i++) {
                     PdProdImg img = new PdProdImg();
                     img.setSiteId(siteId);
                     img.setProdId(prodId);
-                    img.setCdnImgUrl(str(images.get(i), "cdnImgUrl"));
+                    img.setCdnImgUrl(str(prodImages.get(i), "cdnImgUrl"));
                     img.setIsThumb(i == 0 ? "Y" : "N");
                     img.setSortOrd(i + 1);
                     pdProdImgService.create(img);
                 }
+            } else {
+                /* 이미지 미전송 시 기본 picsum 1장 */
+                PdProdImg img = new PdProdImg();
+                img.setSiteId(siteId);
+                img.setProdId(prodId);
+                img.setCdnImgUrl("https://picsum.photos/seed/" + Math.abs(prodId.hashCode() % 1000) + "/400/400");
+                img.setIsThumb("Y");
+                img.setSortOrd(1);
+                pdProdImgService.create(img);
             }
         }
 
@@ -761,6 +780,11 @@ public class ZdSimulController {
         if (!(v instanceof String) || ((String) v).isBlank())
             throw new CmBizException(key + " 가 필요합니다.");
         return (String) v;
+    }
+
+    /** 시퀀셜 임시 ID 패딩 — 0→"01", 1→"02" ... */
+    private static String pad2(int n) {
+        return String.format("%02d", n + 1);
     }
 
     private static String str(Map<String, Object> m, String key) {

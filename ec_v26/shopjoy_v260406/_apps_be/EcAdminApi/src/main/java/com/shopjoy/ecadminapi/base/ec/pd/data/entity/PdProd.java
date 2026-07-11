@@ -193,4 +193,8 @@ public class PdProd extends BaseEntity {
     @Column(name = "simul_yn", length = 1, columnDefinition = "VARCHAR(1) DEFAULT 'N'")
     private String simulYn;
 
+    @Comment("옵션 카테고리 코드 (코드: PROD_OPT_CATEGORY level=1) — 옵션형 상품에서 옵션 그룹들이 속하는 카테고리")
+    @Column(name = "opt_type_cd", length = 20)
+    private String optTypeCd;
+
 }

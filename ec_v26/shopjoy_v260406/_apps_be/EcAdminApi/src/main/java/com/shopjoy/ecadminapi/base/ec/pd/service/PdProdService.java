@@ -75,7 +75,8 @@ public class PdProdService {
     /* 상품 등록 */
     @Transactional
     public PdProd create(PdProd body) {
-        body.setProdId(CmUtil.generateId("pd_prod"));
+        if (body.getProdId() == null || body.getProdId().isBlank())
+            body.setProdId(CmUtil.generateId("pd_prod"));
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());

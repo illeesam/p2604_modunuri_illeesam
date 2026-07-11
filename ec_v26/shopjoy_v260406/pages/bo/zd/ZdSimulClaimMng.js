@@ -1,4 +1,4 @@
-﻿/* ZdSimulClaimMng — 클레임 시뮬레이터 */
+/* ZdSimulClaimMng — 클레임 시뮬레이터 */
 (function () {
   const { reactive, computed, onMounted } = Vue;
   const { useSimulSetup, makeLogCols, makeBaseCfgColumns, makeRangeCol, makeRangeHandlers, rangeSlotTemplate } = window.ZdSimulBase;
@@ -126,7 +126,7 @@
         uiNm: '클레임 시뮬레이터',
         label: '시뮬클레임',
         defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
-        runFn: async ({ mode, simulYn, randInt, pick }) => {
+        runFn: async ({ mode, simulYn, previewOnly, randInt, pick }) => {
           if (mode === 'create') {
             /* 1) 대상 주문: 고정 지정 or 랜덤 */
             let order;
@@ -147,7 +147,7 @@
             const refRate = randInt(domCfg.refundRateMin, domCfg.refundRateMax);
 
             /* 3) 시뮬 전용 API — 서버사이드에서 orderItems 조회 후 클레임 자동 생성 */
-            const res = await boApi.post('/bo/zd/simul/claim/from-order', {
+            const body = {
               orderId:       order.orderId,
               claimTypeCd:   type.cd,
               reasonCd:      reason.replace(/\s/g, '_').toUpperCase().slice(0, 20),
@@ -155,7 +155,15 @@
               partialClaim:  domCfg.partialClaim,
               refundRate:    refRate,
               simulYn:       simulYn || 'Y',
-            }, coUtil.cofApiHdr('클레임시뮬', '생성'));
+            };
+            if (previewOnly) {
+              body['_preview_[claimBody]'] = {
+                orderId: body.orderId, claimTypeCd: body.claimTypeCd,
+                reasonCd: body.reasonCd, claimStatusCd: body.claimStatusCd,
+                partialClaim: body.partialClaim, refundRate: body.refundRate,
+              };
+            }
+            const res = await boApi.post('/bo/zd/simul/claim/from-order', body, coUtil.cofApiHdr('클레임시뮬', '생성'));
             const d = res?.data?.data || {};
             const id = d.claimId || '-';
             const itemDesc = d.itemCount ? d.itemCount + '개 상품' : '금액기반';
@@ -194,7 +202,7 @@
           }
         },
       });
-      const { cfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog } = simul;
+      const { cfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onPreview, onPreviewCreate, onClearLog, onSetLogPage, onSearchLog } = simul;
 
       /* ── [03] Computed ──────────────────────────────── */
       const cfTypeTotal = computed(() => Object.values(domCfg.typeWeights).reduce((a, b) => a + Number(b), 0) || 1);
@@ -234,7 +242,7 @@
         cfg, domCfg, state, logs, logPager, cfIsRunning, cfSuccessRate,
         cfTypeTotal, cfAutoFlow,
         logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
-        onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog, logSearch,
+        onStart, onStop, onRunOnce, onPreview, onPreviewCreate, onClearLog, onSetLogPage, onSearchLog, logSearch,
         ...rangeHandlers,
         CLAIM_TYPES, STATUS_FLOW, STATUS_LABELS,
         /* picker */
@@ -255,7 +263,7 @@
     :cf-is-running="cfIsRunning" :cf-success-rate="cfSuccessRate"
     accent-color="linear-gradient(90deg,#ea580c,#fb923c)"
     accent-active="background:#fff7ed;border:1.5px solid #ea580c;color:#9a3412;"
-    @start="onStart" @stop="onStop" @run-once="onRunOnce" />
+    @start="onStart" @stop="onStop" @run-once="onRunOnce" @preview="onPreview" @preview-create="onPreviewCreate" />
 
   <!-- 시뮬 대상 지정 -->
   <div class="card" style="padding:12px 16px;margin-top:12px;">

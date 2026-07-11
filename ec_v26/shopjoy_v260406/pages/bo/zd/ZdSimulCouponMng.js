@@ -111,7 +111,7 @@
               issueCount: randInt(domCfg.couponIssueCountMin, domCfg.couponIssueCountMax),
               startDate: _makeDate(0), endDate: _makeDate(domCfg.couponDurationDays),
               scopeCd: domCfg.couponScope,
-              ...(prodIds.length ? { prodIds } : {}),
+              prodIds,
               minOrderAmt: domCfg.couponMinOrderAmt,
               maxDiscAmt: domCfg.couponMaxDiscAmt,
               simulYn: 'Y',
@@ -134,7 +134,7 @@
         },
       });
       const { cfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate,
-              onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog } = simul;
+              onStart, onStop, onRunOnce, onPreview, onPreviewCreate, onClearLog, onSetLogPage, onSearchLog } = simul;
 
       /* ── [03] 컬럼 정의 ──────────────────────────────── */
       const logCols = makeLogCols();
@@ -180,7 +180,7 @@
         logCols, baseCfgColumns, couponCfgColumns,
         cfCouponTypeTotal, cfDiscTotal,
         COUPON_TYPE_ITEMS, DISC_TYPE_ITEMS,
-        onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog,
+        onStart, onStop, onRunOnce, onPreview, onPreviewCreate, onClearLog, onSetLogPage, onSearchLog,
         ...rangeHandlers,
         couponPicker, onOpenCouponPicker, onSelectCoupon, _loadCouponPicker,
       };
@@ -195,7 +195,7 @@
     :cf-is-running="cfIsRunning" :cf-success-rate="cfSuccessRate"
     accent-color="linear-gradient(90deg,#7c3aed,#c084fc)"
     accent-active="background:#faf5ff;border:1.5px solid #7c3aed;color:#6d28d9;"
-    @start="onStart" @stop="onStop" @run-once="onRunOnce" />
+    @start="onStart" @stop="onStop" @run-once="onRunOnce" @preview="onPreview" @preview-create="onPreviewCreate" />
 
   <!-- 쿠폰 설정 -->
   <div class="card" style="padding:14px 16px;margin-top:12px;">

@@ -107,7 +107,7 @@
         },
       });
       const { cfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate,
-              onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog } = simul;
+              onStart, onStop, onRunOnce, onPreview, onPreviewCreate, onClearLog, onSetLogPage, onSearchLog } = simul;
 
       /* ── [03] 컬럼 정의 ─────────────────────────────────── */
       const logCols = makeLogCols();
@@ -138,7 +138,7 @@
       return {
         cfg, domCfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate,
         logCols, baseCfgColumns, createCfgColumns, updateCfgColumns, cfTypeTotal,
-        onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog,
+        onStart, onStop, onRunOnce, onPreview, onPreviewCreate, onClearLog, onSetLogPage, onSearchLog,
         VENDOR_TYPES, VENDOR_STATUSES, UPDATE_TYPES,
         vendorPicker, onOpenVendorPicker, onSelectVendor, _loadVendorPicker,
       };
@@ -153,7 +153,7 @@
     :cf-is-running="cfIsRunning" :cf-success-rate="cfSuccessRate"
     accent-color="linear-gradient(90deg,#7c3aed,#a78bfa)"
     accent-active="background:#f5f3ff;border:1.5px solid #7c3aed;color:#6d28d9;"
-    @start="onStart" @stop="onStop" @run-once="onRunOnce" />
+    @start="onStart" @stop="onStop" @run-once="onRunOnce" @preview="onPreview" @preview-create="onPreviewCreate" />
 
   <!-- 생성 옵션 -->
   <div v-if="cfg.mode==='create'" class="card" style="padding:14px 16px;margin-top:12px;">

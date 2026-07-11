@@ -334,7 +334,67 @@ codeGrp: OPT_TYPE  (Level 1 — 옵션 카테고리, parentCodeValue=NULL)
 - `pd.03.상품.md` — 상품 기본 정보
 - `pd.09.상품가격-재고.md` — 가격·재고 상세 정책
 
+## 시뮬레이터 연동 body key 규칙 (2026-07-12 기준)
+
+### 시뮬레이터 전송 key 명명 원칙
+
+| 기준 | 원칙 |
+|---|---|
+| 배열 key | 테이블명 기반 (`prodOpts`, `prodSkus`, `prodImages`) |
+| 코드+Nm 필드 | `코드필드명 + Nm` → 예: `optTypeCd` → `optTypeCdNm` |
+| 일반 Entity 필드 | Entity camelCase 그대로 (`optTypeCd`, `optLevel`, `optNm`, ...) |
+
+### 전송 body 구조
+
+```
+body (pd_prod)
+├─ prodNm, salePrice, purchasePrice, prodStock
+├─ prodTypeCd, prodStatusCd, advrtStmt
+├─ optTypeCd      ← 상품 레벨 옵션 카테고리 (pd_prod.opt_type_cd)
+├─ prodOpts[]     ← pd_prod_opt (옵션 차원 배열)
+│   ├─ optTypeCdNm  ← pd_prod_opt.opt_grp_nm 에 저장 (옵션유형 이름)
+│   ├─ optTypeCd    ← pd_prod_opt.opt_type_cd
+│   ├─ optLevel, optInputTypeCd, sortOrd
+│   └─ prodOptItems[]  ← pd_prod_opt_item (옵션값 배열)
+│       ├─ optItemId, optNm, optVal, optTypeCd
+│       └─ sortOrd, useYn
+└─ prodImages[]  ← pd_prod_img (항상 포함, 미전송 시 빈 배열)
+```
+
+※ `prodSkus`는 백엔드가 `prodOpts` 조합에서 자동 생성 (별도 전송 불필요, 미리보기용 참고 표시)
+※ `optTypeCd`, `prodOpts`, `prodSkus`, `prodImages` 는 **값 없어도 항상 포함** (빈 값=null/[])
+
+### 임시 ID 사전 할당
+
+단일 요청 body에서 `optItemId`가 SKU와 이미지에 동시 참조되므로,
+시뮬레이터(`ZdSimulProdMng`)는 **계층이 보이는 짧은 시퀀셜 ID**를 생성해 `optItems[].optItemId`에 미리 할당한다.
+
+```
+body.prodId = 'tmp-prod-01'                       ← 상품 임시 ID (프론트 생성)
+
+prodOpts[0].prodOptItems[0].optItemId = 'tmp-opt1-01' ← 1레벨 1번째
+prodOpts[0].prodOptItems[1].optItemId = 'tmp-opt1-02' ← 1레벨 2번째
+prodOpts[1].prodOptItems[0].optItemId = 'tmp-opt2-01' ← 2레벨 1번째
+prodOpts[1].prodOptItems[1].optItemId = 'tmp-opt2-02' ← 2레벨 2번째
+  ↓ 참조
+_preview_[prodSkus][*].optItemId1 = 'tmp-opt1-01'
+_preview_[prodSkus][*].optItemId2 = 'tmp-opt2-01'
+prodImages[0].optItemId1 = 'tmp-opt1-01'
+```
+
+백엔드(`ZdSimulController`)는:
+- `str(body, "prodId")` → `prod.setProdId()` → `PdProdService.create()` 제공 ID 우선 INSERT
+- `str(it, "optItemId")` → `optItem.setOptItemId()` → `PdProdOptItemService.create()` 제공 ID 우선 INSERT
+
+`tmp-` prefix는 시뮬 데이터(`simul_yn = 'Y'`)에만 실질적으로 부여되며 별도 정제는 하지 않는다.
+
+상세 규칙 → `sy.51.프로그램설계정책.md` §7
+
 ## 변경이력
+- 2026-07-12: `prodOpts[].optItems` → `prodOptItems` 변경 (DB 테이블명 룰 — pd_prod_opt_item), `prodImgs`/`images` → `prodImages` 통일, 항상 포함 키 정책 추가 (`optTypeCd`/`prodOpts`/`prodSkus`/`prodImages` 값 없어도 전송)
+- 2026-07-12: body key 명명 원칙 정립 — `optGroups` → `prodOpts`, `optGrpNm` → `optTypeCdNm`, `skus` → `prodSkus` (코드+Nm 패턴 / 테이블명 기반 배열명 통일)
+- 2026-07-11: 필드명 변경 — `optItemId` → `tmpOptItemId`, `optItemId1/2` → `tmpOptItemId1/2`, `prodId` → `tmpProdId` (key rename, 백엔드 ZdSimulController 동기화)
+- 2026-07-11: 시뮬레이터 임시 ID 사전 할당 정책 추가 (tmp_OI prefix, PdProdOptItemService 우선사용 로직)
 - 2026-04-19: 스키마 변경 전면 반영 (opt_grp_id→opt_id, opt_id→opt_item_id, opt_item_id_1/2, opt_level, opt_type_cd, opt_input_type_cd, opt_val/opt_cd, 이력테이블 분리)
 - 2026-04-19: opt_cd → opt_item_code_id 리네임 (공통코드 참조ID 의미 명확화)
 - 2026-04-19: opt_item_code_id → opt_val_code_id 리네임

@@ -76,7 +76,8 @@ public class PdProdImgService {
     /* 상품 이미지 등록 */
     @Transactional
     public PdProdImg create(PdProdImg body) {
-        body.setProdImgId(CmUtil.generateId("pd_prod_img"));
+        if (body.getProdImgId() == null || body.getProdImgId().isBlank())
+            body.setProdImgId(CmUtil.generateId("pd_prod_img"));
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());

@@ -146,7 +146,7 @@
         uiNm: '주문 시뮬레이터',
         label: '시뮬주문',
         defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
-        runFn: async ({ mode, simulYn, randInt, pick }) => {
+        runFn: async ({ mode, simulYn, previewOnly, randInt, pick }) => {
           if (mode === 'create') {
             /* 상품: 고정 지정 or 랜덤 */
             let prods = [];
@@ -196,6 +196,11 @@
               orderItems: items,
               simulYn: simulYn || 'Y',
             };
+            if (previewOnly) {
+              body['_preview_[orderItems](' + items.length + '개)'] = items.map(it => ({
+                prodId: it.prodId, qty: it.qty, unitPrice: it.unitPrice, rowAmt: it.rowAmt,
+              }));
+            }
             const res = await boApi.post('/bo/zd/simul/order/create', body, coUtil.cofApiHdr('주문시뮬', '생성'));
             const id  = res?.data?.data?.orderId || '-';
             return {
@@ -235,7 +240,7 @@
           }
         },
       });
-      const { cfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog } = simul;
+      const { cfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onPreview, onPreviewCreate, onClearLog, onSetLogPage, onSearchLog } = simul;
 
       /* ── [03] 컬럼 정의 ─────────────────────────────── */
       const cfPayMethodTotal = computed(() => Object.values(domCfg.payMethodWeights).reduce((a, b) => a + Number(b), 0) || 1);
@@ -271,7 +276,7 @@
       return {
         cfg, domCfg, state, logs, logPager, cfIsRunning, cfSuccessRate,
         cfPayMethodTotal, logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
-        onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog, logSearch,
+        onStart, onStop, onRunOnce, onPreview, onPreviewCreate, onClearLog, onSetLogPage, onSearchLog, logSearch,
         ...rangeHandlers,
         STATUS_FLOW, STATUS_LABELS, PAY_METHODS,
         /* picker */
@@ -292,7 +297,7 @@
     :cf-is-running="cfIsRunning" :cf-success-rate="cfSuccessRate"
     accent-color="linear-gradient(90deg,#2563eb,#60a5fa)"
     accent-active="background:#eff6ff;border:1.5px solid #2563eb;color:#1d4ed8;"
-    @start="onStart" @stop="onStop" @run-once="onRunOnce" />
+    @start="onStart" @stop="onStop" @run-once="onRunOnce" @preview="onPreview" @preview-create="onPreviewCreate" />
 
   <!-- 시뮬 대상 고정 지정 -->
   <div class="card" style="padding:12px 16px;margin-top:12px;">

@@ -85,7 +85,7 @@
               totalDebitAmt: amt,
               totalCreditAmt: amt,
               settleYm,
-              ...(vendor ? { vendorId: vendor.vendorId } : {}),
+              vendorId: vendor ? vendor.vendorId : null,
             };
             const res = await boApi.post('/bo/zd/simul/voucher/create', body, coUtil.cofApiHdr('전표시뮬', '생성'));
             const id  = res?.data?.data?.erpVoucherId || '';
@@ -116,7 +116,7 @@
         },
       });
       const { cfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate,
-              onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog } = simul;
+              onStart, onStop, onRunOnce, onPreview, onPreviewCreate, onClearLog, onSetLogPage, onSearchLog } = simul;
 
       /* ── [03] 컬럼 정의 ─────────────────────────────────── */
       const logCols = makeLogCols();
@@ -151,7 +151,7 @@
       return {
         cfg, domCfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate,
         logCols, baseCfgColumns, createCfgColumns, updateCfgColumns, cfTypeTotal,
-        onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog,
+        onStart, onStop, onRunOnce, onPreview, onPreviewCreate, onClearLog, onSetLogPage, onSearchLog,
         VOUCHER_TYPES, VOUCHER_STATUSES, UPDATE_TYPES,
         voucherPicker, onOpenVoucherPicker, onSelectVoucher, _loadVoucherPicker,
         fnVoucherTypeLabel,
@@ -167,7 +167,7 @@
     :cf-is-running="cfIsRunning" :cf-success-rate="cfSuccessRate"
     accent-color="linear-gradient(90deg,#d97706,#fbbf24)"
     accent-active="background:#fffbeb;border:1.5px solid #d97706;color:#b45309;"
-    @start="onStart" @stop="onStop" @run-once="onRunOnce" />
+    @start="onStart" @stop="onStop" @run-once="onRunOnce" @preview="onPreview" @preview-create="onPreviewCreate" />
 
   <!-- 생성 옵션 -->
   <div v-if="cfg.mode==='create'" class="card" style="padding:14px 16px;margin-top:12px;">

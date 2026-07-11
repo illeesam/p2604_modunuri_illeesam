@@ -1,4 +1,4 @@
-﻿/* ZdSimulMemberMng — 회원 시뮬레이터 (bo-form-area / bo-grid 활용) */
+/* ZdSimulMemberMng — 회원 시뮬레이터 (bo-form-area / bo-grid 활용) */
 (function () {
   const { ref, reactive, computed, onMounted } = Vue;
 
@@ -180,7 +180,7 @@
         uiNm: '회원 시뮬레이터',
         label: '시뮬회원',
         defaultCfg: { mode: 'create', countMin: 1, countMax: 1, intervalVal: 30, intervalUnit: 'sec', durationMin: 10 },
-        runFn: async ({ mode, namePrefix, simulYn, suffix, randInt, pick }) => {
+        runFn: async ({ mode, namePrefix, simulYn, previewOnly, suffix, randInt, pick }) => {
           const ln = pick(LAST_NAMES);
           const fn = pick(FIRST_NAMES);
           if (mode === 'create') {
@@ -210,8 +210,8 @@
               snsProvider: snsType !== 'NONE' ? snsType.toLowerCase() : null,
               empTypeCd: empType,
               memberMemo: domCfg.memoOnCreate ? '[시뮬] ' + memoArr.join(' / ') : '',
-              ...(memberDefaults.value.siteId        ? { siteId:        memberDefaults.value.siteId }        : {}),
-              ...(memberDefaults.value.memberGradeId  ? { memberGradeId: memberDefaults.value.memberGradeId }  : {}),
+              siteId: memberDefaults.value.siteId || null,
+              memberGradeId: memberDefaults.value.memberGradeId || null,
               simulYn: simulYn || 'Y',
             };
             const res = await boApi.post('/bo/zd/simul/member/create', body, coUtil.cofApiHdr('회원시뮬', '생성'));
@@ -246,7 +246,7 @@
           }
         },
       });
-      const { cfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog } = simul;
+      const { cfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate, onStart, onStop, onRunOnce, onPreview, onPreviewCreate, onClearLog, onSetLogPage, onSearchLog } = simul;
 
       /* ── picker 모달 ──────────────────────────────── */
       const memberPicker = reactive({ show: false, searchValue: '', rows: [], loading: false });
@@ -323,7 +323,7 @@
         cfg, domCfg, state, logs, logPager, cfIsRunning, cfSuccessRate,
         memberDefaults, cfGradeTotal, cfDomainTotal, cfGenderTotal, cfAgeGroupTotal, cfCountryTotal, cfChannelTotal, cfBuyTypeTotal, cfEmpTypeTotal, cfSnsTypeTotal,
         logCols, baseCfgColumns, createCfgColumns, updateCfgColumns,
-        onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog, logSearch,
+        onStart, onStop, onRunOnce, onPreview, onPreviewCreate, onClearLog, onSetLogPage, onSearchLog, logSearch,
         onAgeMinChange, onAgeMaxChange,
         GRADES, DOMAINS, GENDERS, AGE_GROUPS, COUNTRIES, CHANNELS, BUY_TYPES, EMP_TYPES, SNS_TYPES, STATUSES_UPD, UPDATE_TYPES,
         /* picker */
@@ -341,7 +341,7 @@
     :cf-is-running="cfIsRunning" :cf-success-rate="cfSuccessRate"
     accent-color="linear-gradient(90deg,#7c3aed,#a855f7)"
     accent-active="background:#ede9fe;border:1.5px solid #7c3aed;color:#6d28d9;"
-    @start="onStart" @stop="onStop" @run-once="onRunOnce" />
+    @start="onStart" @stop="onStop" @run-once="onRunOnce" @preview="onPreview" @preview-create="onPreviewCreate" />
 
   <!-- 생성 옵션 (전체 폭) -->
   <div v-if="cfg.mode==='create'" class="card" style="padding:14px 16px;margin-top:12px;">

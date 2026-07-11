@@ -32,6 +32,15 @@
   const _randF    = (min, max, dec) => parseFloat((Math.random() * (max - min) + min).toFixed(dec || 0));
   const _pick     = (arr) => arr[_randInt(0, arr.length - 1)];
   const _wonFmt   = (n) => Number(n).toLocaleString('ko-KR') + '원';
+  /* 시뮬용 임시 ID 생성: 체번룰 YYMMDDHHmmss + rand4 (백엔드 CmUtil.generateId 동일 패턴) */
+  const _makeSimulId = (prefix) => {
+    const d = new Date();
+    const p = (n) => String(n).padStart(2, '0');
+    const ts = String(d.getFullYear()).slice(2) + p(d.getMonth()+1) + p(d.getDate())
+             + p(d.getHours()) + p(d.getMinutes()) + p(d.getSeconds());
+    const r4 = String(_randInt(1000, 9999));
+    return (prefix || 'SI') + ts + r4;
+  };
   const _ts       = () => {
     const d = new Date();
     const p = (n) => String(n).padStart(2, '0');
@@ -182,7 +191,7 @@
       for (let i = 0; i < count; i++) {
         const suffix = cfg.addSuffix ? '_' + _nowSuffix() : '';
         try {
-          const res    = await runFn({ ...cfg, suffix, randInt: _randInt, randF: _randF, pick: _pick, wonFmt: _wonFmt, index: i });
+          const res    = await runFn({ ...cfg, suffix, randInt: _randInt, randF: _randF, pick: _pick, wonFmt: _wonFmt, _makeSimulId, index: i });
           const ok     = res?.ok !== false;
           const desc   = res?.desc || (ok ? '성공' : '실패');
           const reason = res?.reason || '';
@@ -235,11 +244,77 @@
       }, 300);
     };
     const onStop     = () => { state.running = false; _clearTimers(); };
-    const onRunOnce  = async () => {
+    const onRunOnce  = async (count = 1) => {
+      const n = Math.max(1, Math.min(100, Number(count) || 1));
       const wasStopped = !state.running;
       if (wasStopped) { state.startedAt = Date.now(); state.running = true; }
-      await _doOneTick();
+      for (let i = 0; i < n; i++) await _doOneTick();
       if (wasStopped) state.running = false;
+    };
+    /* 마지막 미리보기 캡처 payload — "미리보기 생성" 버튼에서 재사용 */
+    let _lastPreviewPayloads = null;
+
+    const onPreview  = async () => {
+      const suffix = cfg.addSuffix ? '_' + _nowSuffix() : '';
+      /* boApi의 변경성 메서드를 dry-run proxy로 임시 교체 — get은 실제 호출(목록 조회 필요) */
+      const _api = window.boApi;
+      const _captured = [];
+      const _dryMethod = (method) => (url, body) => {
+        _captured.push({ method: method.toUpperCase(), url, body: body || null });
+        /* prodId 등은 프론트가 body에 미리 담아 전송 → mock 응답은 최소화 */
+        return Promise.resolve({ data: { data: {
+          prodId:  body && body.prodId  ? body.prodId  : '__preview__',
+          userId:  '__preview__',
+          orderId: '__preview__',
+        } } });
+      };
+      window.boApi = Object.assign(Object.create(_api), {
+        post:   _dryMethod('POST'),
+        put:    _dryMethod('PUT'),
+        patch:  _dryMethod('PATCH'),
+        delete: _dryMethod('DELETE'),
+      });
+      try {
+        await runFn({ ...cfg, suffix, randInt: _randInt, randF: _randF, pick: _pick, wonFmt: _wonFmt, _makeSimulId, index: 0, previewOnly: true });
+        const payload = _captured.length === 1 ? _captured[0] : _captured;
+        _lastPreviewPayloads = _captured; // 실제 실행용 저장
+        window.dispatchEvent(new CustomEvent('zd-preview', { detail: { json: JSON.stringify(payload, null, 2) } }));
+      } catch (e) {
+        _lastPreviewPayloads = null;
+        window.dispatchEvent(new CustomEvent('zd-preview', { detail: { json: JSON.stringify({ error: e?.message || String(e) }, null, 2) } }));
+      } finally {
+        window.boApi = _api;
+      }
+    };
+
+    /* 마지막 미리보기 payload를 그대로 실제 API로 전송 */
+    const onPreviewCreate = async () => {
+      if (!_lastPreviewPayloads || !_lastPreviewPayloads.length) return;
+      state.totalRun++;
+      try {
+        for (const p of _lastPreviewPayloads) {
+          const method = (p.method || 'POST').toLowerCase();
+          if (typeof window.boApi[method] === 'function') {
+            /* _hide_XXX → XXX 복원: previewOnly 시 display 숨김용으로 rename된 키를 원래 키로 되돌림 */
+            const body = p.body ? Object.assign({}, p.body) : null;
+            if (body) {
+              Object.keys(body).forEach(k => {
+                if (k.startsWith('_hide_')) {
+                  const origKey = k.slice('_hide_'.length);
+                  body[origKey] = body[k];
+                  delete body[k];
+                }
+              });
+            }
+            await window.boApi[method](p.url, body, coUtil.cofApiHdr('상품시뮬', '미리보기생성'));
+          }
+        }
+        state.totalOk++;
+        window.dispatchEvent(new CustomEvent('zd-preview-created', {}));
+      } catch (e) {
+        state.totalFail++;
+        throw e;
+      }
     };
     const onClearLog    = () => { state.lastCreated = []; _fetchLogs(1); };
     const onResetStats  = () => { state.totalRun = state.totalOk = state.totalFail = 0; };
@@ -250,8 +325,8 @@
     onBeforeUnmount(() => { state.running = false; _clearTimers(); });
 
     return { cfg, state, logs, logPager, logSearch, cfIsRunning, cfIntervalMs, cfDurationMs, cfSuccessRate,
-             onStart, onStop, onRunOnce, onClearLog, onResetStats, onSetLogPage, onSearchLog,
-             _randInt, _randF, _pick, _wonFmt, _nowSuffix };
+             onStart, onStop, onRunOnce, onPreview, onPreviewCreate, onClearLog, onResetStats, onSetLogPage, onSearchLog,
+             _randInt, _randF, _pick, _wonFmt, _nowSuffix, _makeSimulId };
   };
 
   /* ── BoFormArea 컬럼 헬퍼 ───────────────────────────────── */

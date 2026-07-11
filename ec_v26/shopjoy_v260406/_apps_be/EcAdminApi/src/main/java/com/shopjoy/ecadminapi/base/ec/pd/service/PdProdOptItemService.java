@@ -76,7 +76,8 @@ public class PdProdOptItemService {
     /* 상품 옵션 아이템 등록 */
     @Transactional
     public PdProdOptItem create(PdProdOptItem body) {
-        body.setOptItemId(CmUtil.generateId("pd_prod_opt_item"));
+        if (body.getOptItemId() == null || body.getOptItemId().isBlank())
+            body.setOptItemId(CmUtil.generateId("pd_prod_opt_item"));
         body.setRegBy(SecurityUtil.getAuthUser().authId());
         body.setRegDate(LocalDateTime.now());
         body.setUpdBy(SecurityUtil.getAuthUser().authId());

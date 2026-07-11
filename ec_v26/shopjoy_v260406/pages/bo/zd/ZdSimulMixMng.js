@@ -145,7 +145,7 @@
                 issueCount: randInt(domCfg.couponIssueCountMin, domCfg.couponIssueCountMax),
                 startDate: now, endDate: _makeDate(domCfg.couponDurationDays),
                 scopeCd: domCfg.couponScope,
-                ...(prodIds.length ? { prodIds } : {}),
+                prodIds,
                 minOrderAmt: domCfg.couponMinOrderAmt,
                 maxDiscAmt: domCfg.couponMaxDiscAmt,
                 simulYn: 'Y',
@@ -171,7 +171,7 @@
                 discVal,
                 startDate: now, endDate: _makeDate(domCfg.discntDurationDays),
                 scopeCd: domCfg.discntScope,
-                ...(prodIds.length ? { prodIds } : {}),
+                prodIds,
                 minOrderAmt: domCfg.discntMinOrderAmt,
                 maxDiscAmt: domCfg.discntMaxDiscAmt,
                 simulYn: 'Y',
@@ -187,7 +187,7 @@
         },
       });
       const { cfg, state, logs, logPager, logSearch, cfIsRunning, cfSuccessRate,
-              onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog } = simul;
+              onStart, onStop, onRunOnce, onPreview, onPreviewCreate, onClearLog, onSetLogPage, onSearchLog } = simul;
 
       /* ── [03] 컬럼 정의 ──────────────────────────────── */
       const logCols = makeLogCols();
@@ -233,7 +233,7 @@
         logCols, baseCfgColumns, couponCfgColumns, discntCfgColumns,
         cfCouponTypeTotal, cfCouponDiscTotal, cfDiscntTypeCdTotal, cfDiscntValTotal,
         COUPON_TYPE_ITEMS, COUPON_DISC_ITEMS, DISCNT_TYPE_ITEMS, DISCNT_VAL_ITEMS,
-        onStart, onStop, onRunOnce, onClearLog, onSetLogPage, onSearchLog,
+        onStart, onStop, onRunOnce, onPreview, onPreviewCreate, onClearLog, onSetLogPage, onSearchLog,
         ...rangeHandlers,
       };
     },
@@ -247,7 +247,7 @@
     :cf-is-running="cfIsRunning" :cf-success-rate="cfSuccessRate"
     accent-color="linear-gradient(90deg,#ea580c,#fb923c)"
     accent-active="background:#fff7ed;border:1.5px solid #ea580c;color:#c2410c;"
-    @start="onStart" @stop="onStop" @run-once="onRunOnce" />
+    @start="onStart" @stop="onStop" @run-once="onRunOnce" @preview="onPreview" @preview-create="onPreviewCreate" />
 
   <div style="margin-top:10px;padding:8px 12px;background:#fff7ed;border:1px solid #fed7aa;border-radius:6px;font-size:11px;color:#92400e;">
     💡 실행 1회마다 <b>쿠폰 또는 할인정책</b>을 50% 확률로 선택 생성합니다. 두 설정을 동시 적용하여 혼합 데이터를 만들 수 있습니다.

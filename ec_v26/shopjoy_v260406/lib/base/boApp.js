@@ -3327,8 +3327,10 @@
     .component('ZdTestChattingWebSocket',    window.ZdTestChattingWebSocket)
     .component('ZdTestAppMsgSendReceiv',     window.ZdTestAppMsgSendReceiv)
     /* ── pages/bo/zd/ — 시뮬레이션 공통 + 도메인 ── */
-    .component('ZdSimulControlPanel', window.ZdSimulControlPanel)
-    .component('ZdSimulLogPanel',     window.ZdSimulLogPanel)
+    .component('ZdSimulControlPanel',  window.ZdSimulControlPanel)
+    .component('ZdSimulLogPanel',      window.ZdSimulLogPanel)
+    .component('ZdSimulPreviewModal',  window.ZdSimulPreviewModal)
+    .component('ZdPreviewTable',       window.ZdPreviewTable)
     .component('ZdSimulMemberMng',    window.ZdSimulMemberMng)
     .component('ZdSimulCouponMng',  window.ZdSimulCouponMng)
     .component('ZdSimulDiscntMng',  window.ZdSimulDiscntMng)
