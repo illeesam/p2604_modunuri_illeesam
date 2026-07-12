@@ -387,7 +387,7 @@ prodImages[0].prodOptId1 = 'tmp-opt1-01'
 
 ## 변경이력
 - 2026-07-13: 옵션 컬럼 체계 개편
-  - `pd_prod.opt_grp_cd` → `pd_prod.prod_opt_type_level1_cd` (rename)
+  - `pd_prod.opt_type_cd` → `pd_prod.prod_opt_type_level1_cd` (rename)
   - `pd_prod_opt_type.prod_opt_input_type_cd` 제거 (OPT_INPUT_TYPE 코드그룹 폐기)
   - `pd_prod_opt_type.prod_opt_type_level1_cd` / `prod_opt_type_level2_cd` 신규 추가
   - `pd_prod_opt.prod_opt_val_code_id` 제거 → `prod_opt_type_level2_cd` 로 대체

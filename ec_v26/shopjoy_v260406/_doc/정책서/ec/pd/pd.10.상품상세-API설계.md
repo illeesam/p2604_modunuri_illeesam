@@ -64,7 +64,7 @@ GET /api/bo/ec/pd/prod/{prodId}/opts
 
 ```json
 {
-  "optTypes": [ { "prodOptTypeId": "...", "prodOptTypeNm": "색상", "prodOptTypeLevel": 1, "prodOptInputTypeCd": "SELECT", ... } ],
+  "optTypes": [ { "prodOptTypeId": "...", "prodOptTypeNm": "색상", "prodOptTypeLevel": 1, "prodOptTypeLevel1Cd": "COLOR", ... } ],
   "opts":     [ { "prodOptId": "...", "prodOptTypeId": "...", "prodOptNm": "빨강", "prodOptVal": "RED", ... } ]
 }
 ```

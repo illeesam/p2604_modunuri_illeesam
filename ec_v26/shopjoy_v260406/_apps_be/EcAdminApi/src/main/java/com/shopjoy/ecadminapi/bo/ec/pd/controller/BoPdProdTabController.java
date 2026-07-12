@@ -201,8 +201,8 @@ public class BoPdProdTabController {
      * 옵션설정 저장 (전체 교체).
      * body 예: {
      *   "optTypes": [{
-     *     "_id": 1, "optTypeNm": "색상", "optInputTypeCd": "SELECT", "optTypeLevel": 1,
-     *     "optVals": [{ "_id": 11, "nm": "블랙", "val": "VAL_OCOL_BLACK", "valCodeId": "CD000963",
+     *     "_id": 1, "optTypeNm": "색상", "prodOptTypeLevel1Cd": "COLOR", "optTypeLevel": 1,
+     *     "optVals": [{ "_id": 11, "nm": "블랙", "val": "VAL_OCOL_BLACK", "prodOptStyle": "#000000",
      *                   "parentOptId": "", "sortOrd": 1, "useYn": "Y" }, ...]
      *   }, ...]
      * }
@@ -271,6 +271,7 @@ public class BoPdProdTabController {
                 opt.setSiteId(siteId);
                 opt.setProdOptNm(it.getNm() != null ? it.getNm() : "");
                 opt.setProdOptVal(it.getVal() != null ? it.getVal() : "");
+                opt.setProdOptStdCd(nullIfEmpty(it.getStdCd()));
                 opt.setProdOptTypeLevel1Cd(level1Cd);
                 opt.setProdOptTypeLevel2Cd(level2Cd);
                 opt.setProdOptStyle(nullIfEmpty(it.getProdOptStyle()));

@@ -39,9 +39,13 @@ public class PdProdOpt extends BaseEntity {
     @Column(name = "prod_opt_nm", length = 100, nullable = false)
     private String prodOptNm;
 
-    @Comment("실제 저장값 — 직접입력 또는 prod_opt_type_level2_cd 유형의 코드값 자동 채움")
+    @Comment("실제 저장값 — 직접입력 또는 프리셋 선택 시 자동 채움 (자유 문자열)")
     @Column(name = "prod_opt_val", length = 50)
     private String prodOptVal;
+
+    @Comment("표준 코드값 (코드: OPT_VAL — BLACK/WHITE/SIZE_M 등). 프리셋 선택 시 자동 세팅, 직접입력 시 NULL. 통계·필터 기준 컬럼")
+    @Column(name = "prod_opt_std_cd", length = 20)
+    private String prodOptStdCd;
 
     @Comment("1단 분류 코드 — pd_prod.prod_opt_type_level1_cd 비정규화 (COLOR/SIZE 등)")
     @Column(name = "prod_opt_type_level1_cd", length = 20)

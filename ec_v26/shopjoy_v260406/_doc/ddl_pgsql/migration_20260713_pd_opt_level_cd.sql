@@ -1,5 +1,5 @@
 -- migration_20260713_pd_opt_level_cd.sql
--- 2026-07-13: 상품 옵션 레벨 분류 코드 컬럼 재설계
+-- 2026-07-13: 상품 옵션 레벨 분류 코드 컬럼 재설계 + prod_opt_std_cd 추가
 --
 -- 변경 내용:
 --   pd_prod:          opt_type_cd             → prod_opt_type_level1_cd (rename)
@@ -10,6 +10,7 @@
 --                     opt_style               → prod_opt_style (rename)
 --                     prod_opt_type_level1_cd → ADD (VARCHAR 20, 비정규화)
 --                     prod_opt_type_level2_cd → ADD (VARCHAR 20, 비정규화, NULL 가능)
+--                     prod_opt_std_cd         → ADD (VARCHAR 20, OPT_VAL 공통코드 참조, 통계/필터용)
 
 SET search_path = shopjoy_2604;
 
@@ -50,9 +51,14 @@ ALTER TABLE pd_prod_opt
   ADD COLUMN prod_opt_type_level1_cd VARCHAR(20),
   ADD COLUMN prod_opt_type_level2_cd VARCHAR(20);
 
+ALTER TABLE pd_prod_opt
+  ADD COLUMN IF NOT EXISTS prod_opt_std_cd VARCHAR(20);
+
 COMMENT ON COLUMN pd_prod_opt.prod_opt_style
   IS '옵션 스타일 (컬러 hex 값, 아이콘 클래스 등 자유 문자열). 비어 있으면 표시명 텍스트만 사용';
 COMMENT ON COLUMN pd_prod_opt.prod_opt_type_level1_cd
   IS '1단 분류 코드 — pd_prod.prod_opt_type_level1_cd 비정규화 (COLOR/SIZE 등)';
 COMMENT ON COLUMN pd_prod_opt.prod_opt_type_level2_cd
   IS '2단 분류 코드 — pd_prod_opt_type.prod_opt_type_level2_cd 비정규화 (NULL 가능)';
+COMMENT ON COLUMN pd_prod_opt.prod_opt_std_cd
+  IS '표준 코드값 (코드: OPT_VAL — BLACK/WHITE/SIZE_M 등). 프리셋 선택 시 자동 세팅, 직접입력 시 NULL. 통계·필터 기준 컬럼';

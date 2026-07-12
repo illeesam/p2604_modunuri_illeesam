@@ -34,6 +34,7 @@ public class PdProdOptUpdateDto {
         private Object _id;
         private String nm;
         private String val;
+        private String stdCd;       // OPT_VAL 공통코드 참조값 (BLACK/SIZE_M 등), 직접입력 시 null
         private String prodOptStyle;
         /** 부모 _id 또는 부모 optId */
         private Object parentOptId;

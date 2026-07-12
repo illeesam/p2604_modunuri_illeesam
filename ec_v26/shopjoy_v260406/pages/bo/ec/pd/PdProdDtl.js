@@ -189,8 +189,8 @@ window.PdProdDtl = {
 
           // 옵션그룹+아이템 [4]
           //   백엔드 키:  pd_prod_opt_type → prodOptTypeId / prodOptTypeNm / prodOptTypeLevel1Cd / prodOptTypeLevel2Cd / prodOptTypeLevel / sortOrd
-          //              pd_prod_opt      → prodOptId / prodOptTypeId / prodOptNm / prodOptVal / prodOptTypeLevel1Cd / prodOptTypeLevel2Cd / prodOptStyle / parentProdOptId / sortOrd / useYn
-          //   화면 키:    {_id, grpNm, level1Cd, level2Cd, level, items:[{_id, nm, val, prodOptStyle, parentOptId, sortOrd, useYn}]}
+          //              pd_prod_opt      → prodOptId / prodOptTypeId / prodOptNm / prodOptVal / prodOptStdCd / prodOptTypeLevel1Cd / prodOptTypeLevel2Cd / prodOptStyle / parentProdOptId / sortOrd / useYn
+          //   화면 키:    {_id, grpNm, level1Cd, level2Cd, level, items:[{_id, nm, val, stdCd, prodOptStyle, parentOptId, sortOrd, useYn}]}
           //   getById 응답에 embedded (PdProdDto.Item: prodOptTypes=옵션유형배열, prodOpts=옵션값배열)
           const prodOptTypes_ = p.prodOptTypes || [];
           const prodOpts_     = p.prodOpts     || [];
@@ -224,6 +224,7 @@ window.PdProdDtl = {
                   _id: itemClientId[i.prodOptId],
                   nm:           i.prodOptNm || '',
                   val:          i.prodOptVal || '',
+                  stdCd:        i.prodOptStdCd || '',
                   prodOptStyle: i.prodOptStyle || '',
                   parentOptId:  parentClient ? String(parentClient) : '',
                   sortOrd:      Number(i.sortOrd || 0),
@@ -395,6 +396,7 @@ window.PdProdDtl = {
         _id: _itemSeq++,
         nm:           preset ? (preset.codeLabel || preset.codeValue || '') : '',
         val:          preset ? (preset.codeValue || '') : '',
+        stdCd:        preset ? (preset.codeValue || '') : '',
         prodOptStyle: preset ? (preset.codeOpt1 || '') : '',
         parentOptId:  parentOptId || '',
         sortOrd:      sortOrd,
@@ -525,7 +527,7 @@ window.PdProdDtl = {
 
     /* addOptItem — 추가 */
     const addOptItem = (grp) => {
-      grp.items.push({ _id: _itemSeq++, nm: '', val: '', prodOptStyle: '', parentOptId: '', sortOrd: grp.items.length + 1, useYn: 'Y' });
+      grp.items.push({ _id: _itemSeq++, nm: '', val: '', stdCd: '', prodOptStyle: '', parentOptId: '', sortOrd: grp.items.length + 1, useYn: 'Y' });
     };
 
     /* removeOptItem — 제거 */
@@ -1135,7 +1137,26 @@ window.PdProdDtl = {
               g.grpNm = g.level2Cd || g.level1Cd || ('옵션' + (i + 1));
             }
           });
-          payload = { optGroups };
+          // 백엔드 PdProdOptUpdateDto 필드명으로 변환 (optGroups → optTypes)
+          payload = {
+            optTypes: optGroups.map(g => ({
+              _id:          g._id,
+              optTypeNm:    g.grpNm,
+              level1Cd:     g.level1Cd,
+              level2Cd:     g.level2Cd,
+              optTypeLevel: g.level,
+              optVals: (g.items || []).map(it => ({
+                _id:          it._id,
+                nm:           it.nm,
+                val:          it.val,
+                stdCd:        it.stdCd || null,
+                prodOptStyle: it.prodOptStyle,
+                parentOptId:  it.parentOptId,
+                sortOrd:      it.sortOrd,
+                useYn:        it.useYn,
+              })),
+            })),
+          };
           break;
         }
         case 'price':    payload = { skus };          break;

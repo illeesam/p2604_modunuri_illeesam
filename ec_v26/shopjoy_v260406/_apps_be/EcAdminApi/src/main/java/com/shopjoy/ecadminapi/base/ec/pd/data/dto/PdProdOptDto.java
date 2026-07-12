@@ -30,6 +30,7 @@ public class PdProdOptDto {
         private String prodId;
         private String prodOptNm;
         private String prodOptVal;
+        private String prodOptStdCd;
         private String prodOptTypeLevel1Cd;
         private String prodOptTypeLevel2Cd;
         private String parentProdOptId;

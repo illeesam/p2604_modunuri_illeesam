@@ -928,7 +928,7 @@
   /* cofMergeProdOpts — 백엔드 상품상세 응답(prod + opts + skus + images)을
    *   화면이 기대하는 단일 prod 형태(opt1s/opt2s/opt2sAll/opt2Prices/mainImage/images)로 머지.
    *   Prod*View.fnMergeProdOpts 통합 (Prod01 의 opt2sAll 포함 슈퍼셋 기준 — View02/03 도 호환).
-   *   - opts.groups (PdProdOptTypeDto) → opt1s = [{ optId, name, val, priceDelta, imgUrl, optStyle, hex }]
+   *   - opts.groups (PdProdOptTypeDto) → opt1s = [{ optId, name, val, priceDelta, imgUrl, prodOptStyle, hex }]
    *   - opts.items  (PdProdOptDto)     → opt2s(unique 이름) + opt2sAll(parentProdOptId 포함)
    *   - skus 의 2단별 addPrice 평균   → opt2Prices = { '사이즈명': delta } */
   function cofMergeProdOpts(prod, optsObj, skusList, imgList) {
@@ -949,7 +949,7 @@
 
     var opt1s = lv1Items.map(function (it) {
       var optImgs = imgs.filter(function (im) { return im.prodOptId1 === it.prodOptId; });
-      var style = (it.optStyle || '').trim();
+      var style = (it.prodOptStyle || '').trim();
       return {
         optId: it.prodOptId,
         name: it.prodOptNm || it.prodOptVal || '',

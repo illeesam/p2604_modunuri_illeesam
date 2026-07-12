@@ -553,11 +553,11 @@ COMMENT ON COLUMN pm_save.save_issue_type_cd IS '지급유형';
 | SIZE | 사이즈 | OPT_VAL에서 parentCodeValue=SIZE 값 목록 제공 |
 | MATERIAL | 소재 | OPT_VAL에서 parentCodeValue=MATERIAL 값 목록 제공 |
 | CUSTOM | 직접입력 | 프리셋 없이 관리자가 직접 opt_code 입력 |
-> 적용: `pd_prod.opt_type_cd` (상품 레벨 옵션 카테고리 코드)
+> 적용: `pd_prod.prod_opt_type_level1_cd` (상품 레벨 옵션 1단 분류 코드)
 
 #### OPT_VAL — 옵션프리셋값
 OPT_TYPE 하위 사전정의 옵션값. `parentCodeValue`로 OPT_TYPE 값을 참조.
-관리자가 옵션 유형 선택 시 해당 parentCodeValue의 OPT_VAL 목록을 자동 제시 → `pd_prod_opt.prod_opt_val_code_id`에 저장.
+관리자가 옵션 유형 선택 시 해당 parentCodeValue의 OPT_VAL 목록을 프리셋으로 제시. 선택값은 `pd_prod_opt.prod_opt_val` (자유 문자열) + `pd_prod_opt.prod_opt_style` (hex 등)에 저장.
 | code_value | label | parentCodeValue |
 |---|---|---|
 | BLACK | 검정 | COLOR |
